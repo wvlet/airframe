@@ -3,7 +3,7 @@ package wvlet.airframe.rx.widget
 import org.scalajs.dom
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html.all._
-import wvlet.airframe.rx.html.{DOMRenderer, Embedded, HtmlElement, RxComponent, RxElement}
+import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxComponent, RxElement}
 import wvlet.airframe.rx.widget.ui.Layout
 import wvlet.airframe.rx.widget.ui.bootstrap._
 import wvlet.airspec._
@@ -12,7 +12,7 @@ object RxWidgetTest {}
 
 class RxWidgetTest extends AirSpec {
 
-  private def renderTo(node: dom.Node, elem: HtmlElement): Unit = {
+  private def renderTo(node: dom.Node, elem: RxElement): Unit = {
     DOMRenderer.renderTo(node, elem)
   }
 

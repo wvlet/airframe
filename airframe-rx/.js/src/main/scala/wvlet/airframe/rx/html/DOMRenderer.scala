@@ -46,6 +46,8 @@ object DOMRenderer extends LogSupport {
           traverse(l.render)
         case Embedded(v) =>
           traverse(v)
+        case r: RxElement =>
+          traverse(r.render)
         case other =>
           throw new IllegalArgumentException(s"unsupported top level element: ${other}")
       }
@@ -63,11 +65,9 @@ object DOMRenderer extends LogSupport {
           Cancelable.empty
         case e: HtmlElement =>
           val elem = dom.document.createElement(e.name)
-          val cancelables = for (g <- e.modifiers.reverse; m <- g) yield {
-            renderTo(elem, m)
-          }
+          val c    = e.traverseModifiers(m => renderTo(elem, m))
           node.mountHere(elem, anchor)
-          Cancelable.merge(cancelables)
+          c
         case rx: Rx[_] =>
           val (start, end) = node.createMountSection()
           var c1           = Cancelable.empty
@@ -79,15 +79,18 @@ object DOMRenderer extends LogSupport {
             c1 = traverse(value, Some(start))
           }
           Cancelable.merge(c1, c2)
-        case HtmlAttribute(name, value, ns) =>
-          addAttribute(node, name, value)
+        case a: HtmlAttribute =>
+          addAttribute(node, a)
         case n: dom.Node =>
           node.mountHere(n, anchor)
           Cancelable.empty
         case e: Embedded =>
           traverse(e.v, anchor)
         case rx: RxElement =>
-          traverse(rx.render, anchor)
+          val (elem, c1) = render(rx.render)
+          val c2         = rx.traverseModifiers(m => renderTo(elem, m))
+          node.mountHere(elem, anchor)
+          Cancelable.merge(c1, c2)
         case s: String =>
           val textNode = newTextNode(s)
           node.mountHere(textNode, anchor)
@@ -138,13 +141,13 @@ object DOMRenderer extends LogSupport {
     traverse(htmlNode, anchor = None)
   }
 
-  private def addAttribute(node: dom.Node, name: String, value: Any): Cancelable = {
+  private def addAttribute(node: dom.Node, a: HtmlAttribute): Cancelable = {
     val htmlNode = node.asInstanceOf[dom.html.Html]
 
     def traverse(v: Any): Cancelable = {
       v match {
         case null | None | false =>
-          htmlNode.removeAttribute(name)
+          htmlNode.removeAttribute(a.name)
           Cancelable.empty
         case Some(x) =>
           traverse(x)
@@ -157,15 +160,15 @@ object DOMRenderer extends LogSupport {
           }
           Cancelable.merge(c1, c2)
         case f: Function0[Unit @unchecked] =>
-          node.setEventListener(name, (_: dom.Event) => f())
+          node.setEventListener(a.name, (_: dom.Event) => f())
         case f: Function1[dom.Node @unchecked, Unit @unchecked] =>
-          node.setEventListener(name, f)
+          node.setEventListener(a.name, f)
         case _ =>
           val value = v match {
             case true => ""
             case _    => v.toString
           }
-          name match {
+          a.name match {
             case "style" =>
               val prev = htmlNode.style.cssText
               if (prev.isEmpty) {
@@ -175,13 +178,13 @@ object DOMRenderer extends LogSupport {
               }
               Cancelable.empty
             case _ =>
-              htmlNode.setAttribute(name, value)
+              htmlNode.setAttribute(a.name, value)
               Cancelable.empty
           }
       }
     }
 
-    traverse(value)
+    traverse(a.v)
   }
 
   private implicit class RichDomNode(node: dom.Node) {

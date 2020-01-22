@@ -22,6 +22,7 @@ import wvlet.log.LogSupport
   */
 case class Button(
     name: String,
+    private val primaryClass: String = "btn-primary",
     private var _disabled: Boolean = false
 ) extends RxElement {
 
@@ -37,19 +38,19 @@ case class Button(
     this
   }
 
-  def render: HtmlElement = {
-    button(_type -> "button", _class -> "btn", disabled.when(_disabled), name)
+  def render: RxElement = {
+    button(tpe -> "button", cls -> "btn btn-primary", disabled.when(_disabled), name)
   }
 }
 
 object Button extends LogSupport {
-  def primary(name: String)   = button(name, cls -> "btn btn-primary")
-  def secondary(name: String) = button(name, cls -> "btn btn-secondary")
-  def success(name: String)   = button(name, cls -> "btn btn-success")
-  def danger(name: String)    = button(name, cls -> "btn btn-danger")
-  def warning(name: String)   = button(name, cls -> "btn btn-warning")
-  def info(name: String)      = button(name, cls -> "btn btn-info")
-  def light(name: String)     = button(name, cls -> "btn btn-light")
-  def dark(name: String)      = button(name, cls -> "btn btn-dark")
-  def link(name: String)      = button(name, cls -> "btn btn-link")
+  def primary(name: String)   = Button(name)
+  def secondary(name: String) = Button(name, "btn-secondary")
+  def success(name: String)   = Button(name, "btn-success")
+  def danger(name: String)    = Button(name, "btn-danger")
+  def warning(name: String)   = Button(name, "btn-warning")
+  def info(name: String)      = Button(name, "btn-info")
+  def light(name: String)     = Button(name, "btn-light")
+  def dark(name: String)      = Button(name, "btn-dark")
+  def link(name: String)      = Button(name, "btn-link")
 }

@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.rx.widget.ui
 import wvlet.airframe.rx.html.all._
-import wvlet.airframe.rx.html.{HtmlElement, RxComponent, tags}
+import wvlet.airframe.rx.html.{RxComponent, RxElement, tags}
 import wvlet.airframe.rx.widget.ui.Layout.divOf
 
 /**
@@ -43,27 +43,27 @@ package object bootstrap {
 //    def screenReadersOnly = x(_class -> "sr-only")
   }
 
-  def row: HtmlElement   = divOf("row")
-  def col: HtmlElement   = divOf("col")
-  def col1: HtmlElement  = divOf("col-1")
-  def col2: HtmlElement  = divOf("col-2")
-  def col3: HtmlElement  = divOf("col-3")
-  def col4: HtmlElement  = divOf("col-4")
-  def col5: HtmlElement  = divOf("col-5")
-  def col6: HtmlElement  = divOf("col-6")
-  def col7: HtmlElement  = divOf("col-7")
-  def col8: HtmlElement  = divOf("col-8")
-  def col9: HtmlElement  = divOf("col-9")
-  def col10: HtmlElement = divOf("col-10")
-  def col11: HtmlElement = divOf("col-11")
-  def col12: HtmlElement = divOf("col-12")
-  def colSm: HtmlElement = divOf("col-sm")
+  def row: RxElement   = divOf("row")
+  def col: RxElement   = divOf("col")
+  def col1: RxElement  = divOf("col-1")
+  def col2: RxElement  = divOf("col-2")
+  def col3: RxElement  = divOf("col-3")
+  def col4: RxElement  = divOf("col-4")
+  def col5: RxElement  = divOf("col-5")
+  def col6: RxElement  = divOf("col-6")
+  def col7: RxElement  = divOf("col-7")
+  def col8: RxElement  = divOf("col-8")
+  def col9: RxElement  = divOf("col-9")
+  def col10: RxElement = divOf("col-10")
+  def col11: RxElement = divOf("col-11")
+  def col12: RxElement = divOf("col-12")
+  def colSm: RxElement = divOf("col-sm")
 
-  def container: HtmlElement      = divOf("container")
-  def containerFluid: HtmlElement = divOf("container-fluid")
+  def container: RxElement      = divOf("container")
+  def containerFluid: RxElement = divOf("container-fluid")
 
-  def flexbox: HtmlElement       = divOf("d-flex")
-  def inlineFlexbox: HtmlElement = divOf("d-inline-flex")
+  def flexbox: RxElement       = divOf("d-flex")
+  def inlineFlexbox: RxElement = divOf("d-inline-flex")
 
-  def figure: HtmlElement = tags.figure(cls -> "figure")
+  def figure: RxElement = tags.figure(cls -> "figure")
 }

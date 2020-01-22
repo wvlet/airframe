@@ -13,15 +13,14 @@
  */
 package wvlet.airframe.rx.widget.ui
 import wvlet.airframe.rx.html.all._
-import wvlet.airframe.rx.html.{Embedded, HtmlElement, RxComponent}
+import wvlet.airframe.rx.html.{RxComponent, RxElement}
 
 /**
   *
   */
 object Layout {
-  def of                                       = div()
-  def of(list: HtmlElement*)                   = div(Embedded(list.toSeq))
-  def divOf(primaryClass: String): HtmlElement = div(_class -> primaryClass)
+  def of                                     = div()
+  def divOf(primaryClass: String): RxElement = div(_class -> primaryClass)
 
   def codeBlock: RxComponent = RxComponent { content =>
     pre(code(content))

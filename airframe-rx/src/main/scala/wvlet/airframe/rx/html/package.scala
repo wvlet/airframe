@@ -48,48 +48,14 @@ package object html {
     object empty extends HtmlNode
   }
 
-  case class HtmlAttribute(name: String, v: Any, ns: Namespace = Namespace.xhtml) extends HtmlNode
+  case class HtmlAttribute(name: String, v: Any, ns: Namespace = Namespace.xhtml, append: Boolean = false)
+      extends HtmlNode
 
   class HtmlAttributeOf(name: String, namespace: Namespace = Namespace.xhtml) {
-    def apply[V: EmbeddableAttribute](v: V): RxElement = HtmlAttribute(name, v, namespace)
-    def ->[V: EmbeddableAttribute](v: V): RxElement    = HtmlAttribute(name, v, namespace)
-    def empty: RxElement                               = HtmlAttribute(name, None, namespace)
-  }
-
-  trait RxElement extends HtmlNode {
-    def render: RxElement
-  }
-
-  object RxElement {
-    def apply(a: HtmlElement): RxElement = new RxElement {
-      override def render: RxElement = a
-    }
-    def apply(a: RxElement): RxElement = new RxElement {
-      override def render: RxElement = a
-    }
-    def apply[A <: RxElement](a: Rx[A]): RxElement = new RxElement {
-      override def render: RxElement = LazyRxElement(() => a)
-    }
-  }
-
-  case class LazyRxElement[A: EmbeddableNode](v: () => A) extends RxElement with LogSupport {
-    def render: RxElement = Embedded(v())
-  }
-
-  case class HtmlElement(
-      name: String,
-      modifiers: List[Seq[HtmlNode]] = List.empty,
-      namespace: Namespace = Namespace.xhtml
-  ) extends RxElement {
-    def render: RxElement = this
-
-    def apply(xs: HtmlNode*): HtmlElement = {
-      if (xs.isEmpty) {
-        this
-      } else {
-        HtmlElement(name = name, modifiers = xs :: modifiers, namespace = namespace)
-      }
-    }
+    def apply[V: EmbeddableAttribute](v: V): HtmlNode = HtmlAttribute(name, v, namespace)
+    def ->[V: EmbeddableAttribute](v: V): HtmlNode    = HtmlAttribute(name, v, namespace)
+    def +=[V: EmbeddableAttribute](v: V): HtmlNode    = HtmlAttribute(name, v, namespace, append = true)
+    def empty: HtmlNode                               = HtmlAttribute(name, None, namespace)
   }
 
   case class EntityRef(ref: String) extends HtmlNode
@@ -155,5 +121,5 @@ package object html {
     }
   }
 
-  implicit def embedAsNode[A: EmbeddableNode](v: A): RxElement = Embedded(v)
+  implicit def embedAsNode[A: EmbeddableNode](v: A): HtmlNode = Embedded(v)
 }

@@ -152,7 +152,7 @@ object Gallery extends LogSupport {
     )
   }
 
-  def buttons: Seq[HtmlElement] = Seq(
+  def buttons: Seq[RxElement] = Seq(
     Button.primary("Primary"),
     Button.secondary("Secondary"),
     Button.success("Success"),

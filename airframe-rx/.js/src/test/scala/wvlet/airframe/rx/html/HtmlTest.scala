@@ -15,12 +15,12 @@ package wvlet.airframe.rx.html
 
 import org.scalajs.dom
 import wvlet.airframe.rx.Rx
-import wvlet.airspec._
 import wvlet.airframe.rx.html.all._
+import wvlet.airspec._
 
 class HtmlTest extends AirSpec {
 
-  def render(node: HtmlElement): String = {
+  def render(node: RxElement): String = {
     val txt = DOMRenderer.render(node) match {
       case (elem: dom.Element, c) =>
         c.cancel
@@ -43,8 +43,7 @@ class HtmlTest extends AirSpec {
   }
 
   test("create component") {
-    def d(content: RxElement
-        /**EndMarker*/**) = {
+    def d(content: RxElement*): RxElement = {
       div(cls("main"), div(cls("container"), content))
     }
 

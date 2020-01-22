@@ -42,8 +42,15 @@ object Cancelable {
     lst.size match {
       case 1 => lst.head
       case _ =>
-        Cancelable { () =>
-          lst.map(c => Try(c.cancel))
+        val nonEmpty = lst.filter(_ != Cancelable.empty)
+        if (nonEmpty.isEmpty) {
+          Cancelable.empty
+        } else {
+          Cancelable { () =>
+            nonEmpty.map { c =>
+              Try(c.cancel)
+            }
+          }
         }
     }
   }
