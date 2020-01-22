@@ -65,6 +65,12 @@ class RxWidgetTest extends AirSpec {
     html.contains("btn btn-primary") shouldBe true
   }
 
+  test("render disabled buttons") {
+    val elem = Button.secondary("my button").disable
+    val html = render(elem)
+    html.contains("disabled") shouldBe true
+  }
+
   test("Apply Rx variable change") {
     val node = dom.document.createElement("div")
     val v    = Rx.variable(1)

@@ -55,7 +55,7 @@ package object html {
     def apply[V: EmbeddableAttribute](v: V): HtmlNode = HtmlAttribute(name, v, namespace)
     def ->[V: EmbeddableAttribute](v: V): HtmlNode    = HtmlAttribute(name, v, namespace)
     def +=[V: EmbeddableAttribute](v: V): HtmlNode    = HtmlAttribute(name, v, namespace, append = true)
-    def empty: HtmlNode                               = HtmlAttribute(name, None, namespace)
+    def noValue: HtmlNode                             = HtmlAttribute(name, true, namespace)
   }
 
   case class EntityRef(ref: String) extends HtmlNode
@@ -70,6 +70,7 @@ package object html {
   }
 
   def tag(name: String): HtmlElement                            = new HtmlElement(name)
+  def tagOf(name: String, namespace: Namespace)                 = new HtmlElement(name, namespace)
   def attr(name: String): HtmlAttributeOf                       = new HtmlAttributeOf(name)
   def attr(name: String, namespace: Namespace): HtmlAttributeOf = new HtmlAttributeOf(name, namespace)
   def attributeOf(name: String): HtmlAttributeOf                = attr(name)

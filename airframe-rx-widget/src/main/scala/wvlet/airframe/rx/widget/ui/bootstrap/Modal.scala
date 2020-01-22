@@ -39,8 +39,7 @@ case class Modal(title: String, footer: RxElement = div()) extends RxComponent {
               _class          -> "close",
               data("dismiss") -> "modal",
               aria.label      -> "Close",
-              span(aria.hidden -> "true", EntityRef("times")),
-              p("hello &times;", EntityRef("times"), "entity")
+              span(aria.hidden -> "true", EntityRef("times"))
             )
           ),
           div(_class -> "modal-body", content),

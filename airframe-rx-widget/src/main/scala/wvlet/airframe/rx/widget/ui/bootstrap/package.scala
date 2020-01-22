@@ -13,34 +13,34 @@
  */
 package wvlet.airframe.rx.widget.ui
 import wvlet.airframe.rx.html.all._
-import wvlet.airframe.rx.html.{RxComponent, RxElement, tags}
+import wvlet.airframe.rx.html.{RxElement, tags}
 import wvlet.airframe.rx.widget.ui.Layout.divOf
 
 /**
   * Twitter Bootstrap extensions
   */
 package object bootstrap {
-  implicit class RichRxComponent(val x: RxComponent) extends AnyVal {
-    def withBorder        = x(_class -> "border")
-    def withRoundedCorner = x(_class -> "rounded")
-//    def withShadow: RxComponent        = x(_class -> "shadow-sm")
-//
-//    def withOverflowAuto   = x(_class -> "overflow-auto")
-//    def withOverflowHidden = x(_class -> "overflow-hidden")
-//
-//    def withPositionStatic   = x(_class -> "position-static")
-//    def withPositionRelative = x(_class -> "position-relative")
-//    def withPositionAbsolute = x(_class -> "position-absolute")
-//    def withPositionFixed    = x(_class -> "position-fiOxed")
-//    def withPositionSticky   = x(_class -> "position-sticky")
-//
-//    def withFixedTop    = x(_class -> "fixed-top")
-//    def withFixedBottom = x(_class -> "fixed-bottom")
-//    def withStickyTop   = x(_class -> "sticky-top")
-//
-//    def withAlertLink = x(_class -> "alert-link")
-//
-//    def screenReadersOnly = x(_class -> "sr-only")
+  implicit class RichRxComponent(val x: RxElement) extends AnyVal {
+    def withBorder        = x(_class += "border")
+    def withRoundedCorner = x(_class += "rounded")
+    def withShadow        = x(_class += "shadow-sm")
+
+    def withOverflowAuto   = x(_class += "overflow-auto")
+    def withOverflowHidden = x(_class += "overflow-hidden")
+
+    def withPositionStatic   = x(_class += "position-static")
+    def withPositionRelative = x(_class += "position-relative")
+    def withPositionAbsolute = x(_class += "position-absolute")
+    def withPositionFixed    = x(_class += "position-fiOxed")
+    def withPositionSticky   = x(_class += "position-sticky")
+
+    def withFixedTop    = x(_class += "fixed-top")
+    def withFixedBottom = x(_class += "fixed-bottom")
+    def withStickyTop   = x(_class += "sticky-top")
+
+    def withAlertLink = x(_class += "alert-link")
+
+    def screenReadersOnly = x(_class += "sr-only")
   }
 
   def row: RxElement   = divOf("row")

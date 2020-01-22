@@ -39,7 +39,7 @@ case class Button(
   }
 
   def render: RxElement = {
-    button(tpe -> "button", cls -> "btn btn-primary", disabled.when(_disabled), name)
+    button(tpe -> "button", cls -> s"btn ${primaryClass}", disabled.when(_disabled), name)
   }
 }
 

@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.html
+import wvlet.airframe.rx.html
 
 /**
   * This code is based on ScalaTags by Li Haoyi
@@ -20,6 +21,8 @@ package wvlet.airframe.rx.html
   * SVG attribute definitions
   */
 trait SvgAttrs {
+
+  //private def attr(name: String): HtmlAttributeOf = html.attr(name, Namespace.svg)
 
   /**
     * This attribute defines the distance from the origin to the top of accent characters,
@@ -1315,7 +1318,7 @@ trait SvgAttrs {
    *
    * MDN
    */
-  lazy val xLinkHref = attr("xlink:href", namespace = Namespace.svgXLink)
+  lazy val xLinkHref = html.attr("xlink:href", namespace = Namespace.svgXLink)
 
   /*
    *

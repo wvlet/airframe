@@ -84,11 +84,12 @@ object Gallery extends LogSupport {
     elementGallery,
     reactiveTest,
     canvasGallery,
+    svgGallery,
     browserGallery,
     buttonGallery,
-    //buttonDisabledGallery,
+    buttonDisabledGallery,
     alertGallery,
-    modalGallery,
+//    modalGallery,
     gridGallery
   )
 
@@ -99,13 +100,11 @@ object Gallery extends LogSupport {
       Layout.scalaCode(
         code(
           s"""import wvlet.airframe.rx.html._
+           |import wvlet.airframe.rx.html.all._
            |
            |class MyComponent extends RxComponent {
-           |  def render(content: HtmlNode): RxElement =
-           |    div(cls->"main",
-           |      h2("Hello Airframe Rx Widget!"),
-           |      content
-           |    )
+           |  def render(content: RxElement): RxElement =
+           |    div(cls -> "main", h2("Hello Airframe Rx Widget!"), content)
            |}
            |""".stripMargin
         )
@@ -114,10 +113,7 @@ object Gallery extends LogSupport {
       Layout.scalaCode(
         """// Short-hand notation for defining a new RxComponent at ease
           |RxComponent { content =>
-          |  <div class="main">
-          |    <h2>Hello Airframe Rx Widget!</h2>
-          |    {content}
-          |  </div>
+          |  div(cls -> "main", h2("Hello Airframe Rx Widget!"), content)
           |}
           |""".stripMargin
       )
@@ -128,15 +124,16 @@ object Gallery extends LogSupport {
     div(
       h4("RxElement"),
       Layout.scalaCode(
-        s"""import wvlet.airframe.rx.widget._
+        s"""import wvlet.airframe.rx.html._
+           |import wvlet.airframe.rx.html.all._
            |
            |class MyButton(name:String) extends RxElement {
-           |  def render: xml.Node = <button class="button">{name}</button>
+           |  def render: RxElement = button(cls -> "button", name)
            |}
            |
            |// Short-hand notation
            |def newButton(name:String): RxElement =
-           |  RxElement{ <button class="button">{name}</button> }
+           |  RxElement(button(cls -> "button", name))
            |""".stripMargin
       )
     )
@@ -145,14 +142,14 @@ object Gallery extends LogSupport {
   def demo(title: String, main: RxElement, code: String): RxElement = {
     containerFluid(
       h4(title),
-      row( // .withBorder.withRoundedCorner(
+      row(
         bootstrap.col(main),
-        bootstrap.col(Layout.scalaCode(code))
-      )
+        bootstrap.col(Layout.scalaCode(code)).withRoundedCorner
+      ).withBorder
     )
   }
 
-  def buttons: Seq[RxElement] = Seq(
+  def buttons: Seq[Button] = Seq(
     Button.primary("Primary"),
     Button.secondary("Secondary"),
     Button.success("Success"),
@@ -167,7 +164,7 @@ object Gallery extends LogSupport {
   def buttonGallery = {
     demo(
       "Buttons",
-      Layout.of(buttons: _*),
+      Layout.of(buttons),
       """import wvlet.airframe.rx.widget.ui.bootstrap._
         |
         |Button.primary("Primary")
@@ -182,24 +179,24 @@ object Gallery extends LogSupport {
     )
   }
 
-//  def buttonDisabledGallery = {
-//    val disabledButtons = buttons.map(_.disable)
-//    demo(
-//      "Buttons (disabled)",
-//      div(disabledButtons:_*),
-//      """import wvlet.airframe.rx.widget.ui.bootstrap._
-//        |
-//        |Button.primary("Primary").disable
-//        |Button.secondary("Secondary").disable
-//        |Button.success("Success").disable
-//        |Button.danger("Danger").disable
-//        |Button.warning("warning").disable
-//        |Button.info("Info").disable
-//        |Button.light("Light").disable
-//        |Button.dark("Dark").disable
-//        |Button.link("Link").disable""".stripMargin
-//    )
-//  }
+  def buttonDisabledGallery = {
+    val disabledButtons = buttons.map(_.disable)
+    demo(
+      "Buttons (disabled)",
+      Layout.of(disabledButtons),
+      """import wvlet.airframe.rx.widget.ui.bootstrap._
+        |
+        |Button.primary("Primary").disable
+        |Button.secondary("Secondary").disable
+        |Button.success("Success").disable
+        |Button.danger("Danger").disable
+        |Button.warning("warning").disable
+        |Button.info("Info").disable
+        |Button.light("Light").disable
+        |Button.dark("Dark").disable
+        |Button.link("Link").disable""".stripMargin
+    )
+  }
 
   def alertGallery = demo(
     "Alerts",
@@ -230,16 +227,13 @@ object Gallery extends LogSupport {
     "Modal",
     Modal
       .default(title = "ModalDemo")
-      //.addStyle("display: block")
-      //.addStyle("position: relative")
       .withFooter(
         div(
-          button(_type -> "button", _class -> "btn btn-secondary", data("dismiss") -> "modal", "Close"),
-          button(_type -> "button", _class -> "btn btn-primary", "Save changes")
+          Button.secondary("Close").addModifier(data("dismiss") -> "modal", "Close"),
+          Button.primary("Save changes")
         )
-      ).apply(
-        b("Modal body text goes here")
-      ),
+      )
+      .apply(style -> "display: block; position: relative", b("Modal body text goes here")),
     """Modal
       |  .default(title = "ModalDemo")
       |  .addStyle("display: block")
@@ -263,16 +257,16 @@ object Gallery extends LogSupport {
       col("One of three columns")
     ),
     """row(
-        |  col { "One of three columns" },
-        |  col { "One of three columns" },
-        |  col { "One of three columns" }
+        |  col("One of three columns"),
+        |  col("One of three columns"),
+        |  col("One of three columns")
         |)""".stripMargin
   )
 
   def browserGallery = demo(
     "Browser Info",
     p(s"browser url: ${Browser.url}"),
-    """Layout.p(s"browser url: ${Browser.url}")""".stripMargin
+    """p(s"browser url: ${Browser.url}")""".stripMargin
   )
 
   def canvasGallery = demo(
@@ -299,27 +293,44 @@ object Gallery extends LogSupport {
       |""".stripMargin
   )
 
+  def svgGallery = {
+    import wvlet.airframe.rx.html.svgAttrs._
+    import wvlet.airframe.rx.html.svgTags._
+
+    demo(
+      "SVG",
+      svg(
+        viewBox -> "0 0 10 10",
+        rect(x    -> 0, y      -> 0, width -> "100%", height -> "100%", fill -> "#336699"),
+        circle(cx -> "50%", cy -> "50%", r -> 4, fill        -> "white")
+      ),
+      """import wvlet.airframe.rx.html.svg._
+      |svg(
+      |  viewBox -> "0 0 10 10",
+      |  rect(x -> 0, y -> 0, width -> "100%", height -> "100%", fill -> "#336699"),
+      |  circle(cx -> "50%", cy -> "50%", r -> 4, fill -> "white")
+      |)
+      |""".stripMargin
+    )
+  }
+
   def reactiveTest = {
     val v = Rx.variable(1)
     demo(
       "Rx",
       p(
-        Button
-          .primary("add")(onclick { e: dom.Event =>
-            v.update(_ + 1)
-          }),
+        button(cls -> "btn btn-primary", "Add", onclick { e: dom.Event =>
+          v.update(_ + 1)
+        }),
         v.map(x => s" count: ${x}")
       ),
       """val v = Rx(1)
         |
-        |<p>
-        |  { v.map(x => s"count: ${x}") }
-        |  {
-        |   Button
-        |    .primary("add")
-        |    .onClick { e: dom.Event => v.set(_ + 1) }
-        |  }
-        |</p>
+        |p(
+        |  button(cls -> "btn btn-primary", "Add"
+        |    onclick{ e: dom.Event => v.update(_ + 1) }),
+        |  v.map(x => s"count: ${x}"),
+        |)
         |""".stripMargin
     )
   }

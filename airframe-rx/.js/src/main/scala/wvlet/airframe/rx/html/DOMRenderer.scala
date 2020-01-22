@@ -32,22 +32,30 @@ object DOMRenderer extends LogSupport {
     }
   }
 
+  private def createNode(e: HtmlElement): dom.Node = {
+    val elem = e.namespace match {
+      case Namespace.xhtml => dom.document.createElement(e.name)
+      case _               => dom.document.createElementNS(e.namespace.uri, e.name)
+    }
+    elem
+  }
+
   def render(e: RxElement): (dom.Node, Cancelable) = {
 
     def traverse(v: Any): (dom.Node, Cancelable) = {
       v match {
         case h: HtmlElement =>
-          val node: dom.Node = dom.document.createElement(h.name)
-          val cancelables = for (g <- h.modifiers.reverse; m <- g) yield {
-            renderTo(node, m)
-          }
-          (node, Cancelable.merge(cancelables))
+          val node: dom.Node = createNode(h)
+          val cancelable     = h.traverseModifiers(m => renderTo(node, m))
+          (node, cancelable)
         case l: LazyRxElement[_] =>
           traverse(l.render)
         case Embedded(v) =>
           traverse(v)
         case r: RxElement =>
           traverse(r.render)
+        case d: dom.Node =>
+          (d, Cancelable.empty)
         case other =>
           throw new IllegalArgumentException(s"unsupported top level element: ${other}")
       }
@@ -64,7 +72,7 @@ object DOMRenderer extends LogSupport {
         case HtmlNode.empty =>
           Cancelable.empty
         case e: HtmlElement =>
-          val elem = dom.document.createElement(e.name)
+          val elem = createNode(e)
           val c    = e.traverseModifiers(m => renderTo(elem, m))
           node.mountHere(elem, anchor)
           c
@@ -178,7 +186,17 @@ object DOMRenderer extends LogSupport {
               }
               Cancelable.empty
             case _ =>
-              htmlNode.setAttribute(a.name, value)
+              val newAttrValue = if (a.append && htmlNode.hasAttribute(a.name)) {
+                s"${htmlNode.getAttribute(a.name)} ${value}"
+              } else {
+                value
+              }
+              a.ns match {
+                case Namespace.xhtml =>
+                  htmlNode.setAttribute(a.name, newAttrValue)
+                case ns =>
+                  htmlNode.setAttributeNS(ns.uri, a.name, newAttrValue)
+              }
               Cancelable.empty
           }
       }

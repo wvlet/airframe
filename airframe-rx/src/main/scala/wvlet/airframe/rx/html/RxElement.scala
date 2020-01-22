@@ -63,12 +63,12 @@ case class LazyRxElement[A: EmbeddableNode](v: () => A) extends RxElement() with
 
 case class HtmlElement(
     name: String,
-    override val modifiers: List[Seq[HtmlNode]] = List.empty,
-    namespace: Namespace = Namespace.xhtml
+    namespace: Namespace = Namespace.xhtml,
+    override val modifiers: List[Seq[HtmlNode]] = List.empty
 ) extends RxElement(modifiers) {
   def render: RxElement = this
 
   override def addModifier(cs: HtmlNode*): HtmlElement = {
-    HtmlElement(name, cs :: modifiers, namespace)
+    HtmlElement(name, namespace, cs :: modifiers)
   }
 }
