@@ -40,7 +40,8 @@ object DOMRenderer extends LogSupport {
           renderTo(node, m)
         }
         (node, Cancelable.merge(cancelables))
-      case Embedded(v) =>
+      case Elem(body) =>
+        render(body())
       case _ =>
         throw new IllegalArgumentException(s"unsuppored: ${e}")
     }
@@ -75,7 +76,7 @@ object DOMRenderer extends LogSupport {
           node.mountHere(n, anchor)
           Cancelable.empty
         case e: Elem =>
-          traverse(e.render, anchor)
+          traverse(e.body(), anchor)
         case rx: RxElement =>
           traverse(rx.render, anchor)
         case a: Embedded =>

@@ -123,7 +123,7 @@ package object html {
     * Holder for embedding various types as tag contents
     * @param v
     */
-  case class Embedded(v: Any) extends HtmlNode
+  case class Embedded(v: Any) extends Element
 
   implicit def embedAsNode[A: EmbeddableNode](v: A): HtmlNode = Embedded(v)
 }

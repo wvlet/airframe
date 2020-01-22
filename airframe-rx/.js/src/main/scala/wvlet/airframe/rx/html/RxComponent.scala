@@ -16,15 +16,13 @@ package wvlet.airframe.rx.html
 import org.scalajs.dom
 import wvlet.airframe.rx.{Cancelable, Rx}
 
-case class Elem(body: () => Embedded) extends RxElement {
-  override def render: Element = body()
-}
+case class Elem(body: () => Element) extends Element
 
 /**
   * A placeholder for rendering elements lazily
   */
-private[html] case class LazyElement(elem: RxElement)
-private[html] case class LazyElementSeq(elems: Seq[RxElement])
+private[html] case class LazyNode(elem: HtmlNode)
+private[html] case class LazyNodeSeq(elems: Seq[HtmlNode])
 
 /**
   *
@@ -34,12 +32,12 @@ trait RxComponent {
 
   def apply(elems: HtmlNode*): Element = {
     elems.size match {
-      case 1     => Elem(() => Embedded(elems.head))
-      case other => Elem(() => Embedded(elems.toSeq))
+      case 1     => Elem(() => render(elems.head))
+      case other => Elem(() => render(Embedded(elems.toSeq)))
     }
   }
   def apply[A: EmbeddableNode](elem: A): Element = {
-    Elem(() => Embedded(elem))
+    Elem(() => render(Embedded(elem)))
   }
 }
 
@@ -70,9 +68,9 @@ object RxElement {
     override def render: Element = a
   }
   def apply(a: RxElement): RxElement = new RxElement {
-    override def render: Element = Embedded(a)
+    override def render: Element = a
   }
-  def apply[A](a: Rx[A]): RxElement = new RxElement {
-    override def render: Element = Embedded(a)
+  def apply[A <: Element](a: Rx[A]): RxElement = new RxElement {
+    override def render: Element = Elem(() => Embedded(a))
   }
 }
