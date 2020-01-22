@@ -15,12 +15,11 @@ package wvlet.airframe.rx.widget.demo
 import org.scalajs.dom
 import org.scalajs.dom.document
 import wvlet.airframe.rx.Rx
-import wvlet.airframe.rx.html.RxComponent
+import wvlet.airframe.rx.html.{RxComponent, _}
+import wvlet.airframe.rx.html.all._
 import wvlet.airframe.rx.widget.ui._
 import wvlet.airframe.rx.widget.ui.bootstrap._
 import wvlet.log.{LogLevel, LogSupport, Logger}
-import wvlet.airframe.rx.html._
-import wvlet.airframe.rx.html.all._
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
@@ -45,8 +44,7 @@ object Gallery extends LogSupport {
         document.body.appendChild(elem)
       case other => other
     }
-    val content = galleryFrame(gallery: _*)
-
+    val content: RxElement = galleryFrame(gallery: _*)
     content.mountTo(main)
   }
 
@@ -75,44 +73,45 @@ object Gallery extends LogSupport {
               })
             )
           ),
-          main(role -> "main", _class -> "col-md-10 ml-md-auto", h2("Airframe RxWidget Gallery"), content)
+          tags.main(role -> "main", _class -> "col-md-10 ml-md-auto", h2("Airframe RxWidget Gallery"), content)
         )
       )
     )
   }
 
-  def gallery = Seq(
+  def gallery: Seq[HtmlNode] = Seq(
     componentGallery,
     elementGallery,
     reactiveTest,
     canvasGallery,
     browserGallery,
     buttonGallery,
-    buttonDisabledGallery,
-    alertGallery
-    //modalGallery,
-    //gridGallery
+    //buttonDisabledGallery,
+    alertGallery,
+    modalGallery,
+    gridGallery
   )
 
   def componentGallery = {
     div(
       h4("RxComponent"),
       p("RxComponent is the unit of a reactive widget that can enclose other components or elements."),
-      Layout.scalaCode {
-        s"""import scala.xml
-           |import wvlet.airframe.rx.widget._
+      Layout.scalaCode(
+        code(
+          s"""import wvlet.airframe.rx.widget._
            |
            |class MyComponent extends RxComponent {
            |  def render(content: xml.Node): xml.Node =
-           |    <div class="main">
-           |      <h2>Hello Airframe Rx Widget!</h2>
-           |      {content}
-           |    </div>
+           |    div(cls->"main",
+           |      h2("Hello Airframe Rx Widget!"),
+           |      content
+           |    )
            |}
            |""".stripMargin
-      },
+        )
+      ),
       p("Here is a handy-syntax to define a new component:"),
-      Layout.scalaCode {
+      Layout.scalaCode(
         """// Short-hand notation for defining a new RxComponent at ease
           |RxComponent { content =>
           |  <div class="main">
@@ -121,7 +120,7 @@ object Gallery extends LogSupport {
           |  </div>
           |}
           |""".stripMargin
-      }
+      )
     )
   }
 
@@ -143,17 +142,17 @@ object Gallery extends LogSupport {
     )
   }
 
-  def demo(title: String, main: RxElement, code: String): RxElement = {
+  def demo(title: String, main: HtmlNode, code: String): HtmlNode = {
     containerFluid(
       h4(title),
       row( // .withBorder.withRoundedCorner(
-        col(main),
-        col(Layout.scalaCode(code))
+        bootstrap.col(main),
+        bootstrap.col(Layout.scalaCode(code))
       )
     )
   }
 
-  def buttons: Seq[Button] = Seq(
+  def buttons: Seq[HtmlElement] = Seq(
     Button.primary("Primary"),
     Button.secondary("Secondary"),
     Button.success("Success"),
@@ -183,24 +182,24 @@ object Gallery extends LogSupport {
     )
   }
 
-  def buttonDisabledGallery = {
-    val disabledButtons = buttons.map(_.disable)
-    demo(
-      "Buttons (disabled)",
-      Layout.of(disabledButtons),
-      """import wvlet.airframe.rx.widget.ui.bootstrap._
-        |
-        |Button.primary("Primary").disable
-        |Button.secondary("Secondary").disable
-        |Button.success("Success").disable
-        |Button.danger("Danger").disable
-        |Button.warning("warning").disable
-        |Button.info("Info").disable
-        |Button.light("Light").disable
-        |Button.dark("Dark").disable
-        |Button.link("Link").disable""".stripMargin
-    )
-  }
+//  def buttonDisabledGallery = {
+//    val disabledButtons = buttons.map(_.disable)
+//    demo(
+//      "Buttons (disabled)",
+//      div(disabledButtons:_*),
+//      """import wvlet.airframe.rx.widget.ui.bootstrap._
+//        |
+//        |Button.primary("Primary").disable
+//        |Button.secondary("Secondary").disable
+//        |Button.success("Success").disable
+//        |Button.danger("Danger").disable
+//        |Button.warning("warning").disable
+//        |Button.info("Info").disable
+//        |Button.light("Light").disable
+//        |Button.dark("Dark").disable
+//        |Button.link("Link").disable""".stripMargin
+//    )
+//  }
 
   def alertGallery = demo(
     "Alerts",
@@ -227,49 +226,49 @@ object Gallery extends LogSupport {
         |""".stripMargin
   )
 
-//  def modalGallery = demo(
-//    "Modal",
-//    Modal
-//      .default(title = "ModalDemo")
-//      .addStyle("display: block")
-//      .addStyle("position: relative")
-//      .withFooter(
-//        <div>
-//          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-//          <button type="button" class="btn btn-primary">Save changes</button>
-//        </div>
-//      ).apply(
-//        <b>Modal body text goes here</b>
-//      ),
-//    """Modal
-//      |  .default(title = "ModalDemo")
-//      |  .addStyle("display: block")
-//      |  .addStyle("position: relative") {
-//      |  .withFooter(
-//      |    <div>
-//      |      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-//      |      <button type="button" class="btn btn-primary">Save changes</button>
-//      |    </div>
-//      |  ).apply(
-//      |    <b>Modal body text goes here</b>
-//      |  )
-//      |""".stripMargin
-//  )
-//
-//  def gridGallery = demo(
-//    "Grid",
-//    row(
-//      col { "One of three columns" },
-//      col { "One of three columns" },
-//      col { "One of three columns" }
-//    ),
-//    """row(
-//        |  col { "One of three columns" },
-//        |  col { "One of three columns" },
-//        |  col { "One of three columns" }
-//        |)""".stripMargin
-//  )
-//
+  def modalGallery = demo(
+    "Modal",
+    Modal
+      .default(title = "ModalDemo")
+      //.addStyle("display: block")
+      //.addStyle("position: relative")
+      .withFooter(
+        div(
+          button(_type -> "button", _class -> "btn btn-secondary", data("dismiss") -> "modal", "Close"),
+          button(_type -> "button", _class -> "btn btn-primary", "Save changes")
+        )
+      ).apply(
+        b("Modal body text goes here")
+      ),
+    """Modal
+      |  .default(title = "ModalDemo")
+      |  .addStyle("display: block")
+      |  .addStyle("position: relative") {
+      |  .withFooter(
+      |    <div>
+      |      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      |      <button type="button" class="btn btn-primary">Save changes</button>
+      |    </div>
+      |  ).apply(
+      |    <b>Modal body text goes here</b>
+      |  )
+      |""".stripMargin
+  )
+
+  def gridGallery = demo(
+    "Grid",
+    row(
+      col("One of three columns"),
+      col("One of three columns"),
+      col("One of three columns")
+    ),
+    """row(
+        |  col { "One of three columns" },
+        |  col { "One of three columns" },
+        |  col { "One of three columns" }
+        |)""".stripMargin
+  )
+
   def browserGallery = demo(
     "Browser Info",
     p(s"browser url: ${Browser.url}"),

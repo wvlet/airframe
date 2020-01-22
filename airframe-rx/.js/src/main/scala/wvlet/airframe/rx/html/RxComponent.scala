@@ -31,13 +31,14 @@ private[html] case class LazyElementSeq(elems: Seq[RxElement])
   */
 trait RxComponent {
   def render(content: HtmlNode): HtmlNode
-  def apply(elems: RxElement*): RxElement = {
+
+  def apply(elems: HtmlNode*): RxElement = {
     elems.size match {
       case 1     => Elem(() => Embedded(elems.head))
       case other => Elem(() => Embedded(elems.toSeq))
     }
   }
-  def apply(elem: HtmlNode): RxElement = {
+  def apply[A: EmbeddableNode](elem: A): HtmlNode = {
     Elem(() => Embedded(elem))
   }
 }
@@ -56,7 +57,7 @@ object RxComponent {
   }
 }
 
-trait RxElement {
+trait RxElement extends HtmlNode {
   def render: HtmlNode
 
   def mountTo(parent: dom.Node): Cancelable = {

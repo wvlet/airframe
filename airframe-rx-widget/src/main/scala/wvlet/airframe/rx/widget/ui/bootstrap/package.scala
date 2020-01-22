@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.widget.ui
-import wvlet.airframe.rx.html.RxComponent
-import wvlet.airframe.rx.widget.ui.Layout.divOf
 import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.{HtmlElement, RxComponent, tags}
+import wvlet.airframe.rx.widget.ui.Layout.divOf
 
 /**
   * Twitter Bootstrap extensions
@@ -43,29 +43,27 @@ package object bootstrap {
 //    def screenReadersOnly = x(_class -> "sr-only")
   }
 
-  def row: RxComponent   = divOf("row")
-  def col: RxComponent   = divOf("col")
-  def col1: RxComponent  = divOf("col-1")
-  def col2: RxComponent  = divOf("col-2")
-  def col3: RxComponent  = divOf("col-3")
-  def col4: RxComponent  = divOf("col-4")
-  def col5: RxComponent  = divOf("col-5")
-  def col6: RxComponent  = divOf("col-6")
-  def col7: RxComponent  = divOf("col-7")
-  def col8: RxComponent  = divOf("col-8")
-  def col9: RxComponent  = divOf("col-9")
-  def col10: RxComponent = divOf("col-10")
-  def col11: RxComponent = divOf("col-11")
-  def col12: RxComponent = divOf("col-12")
-  def colSm: RxComponent = divOf("col-sm")
+  def row: HtmlElement   = divOf("row")
+  def col: HtmlElement   = divOf("col")
+  def col1: HtmlElement  = divOf("col-1")
+  def col2: HtmlElement  = divOf("col-2")
+  def col3: HtmlElement  = divOf("col-3")
+  def col4: HtmlElement  = divOf("col-4")
+  def col5: HtmlElement  = divOf("col-5")
+  def col6: HtmlElement  = divOf("col-6")
+  def col7: HtmlElement  = divOf("col-7")
+  def col8: HtmlElement  = divOf("col-8")
+  def col9: HtmlElement  = divOf("col-9")
+  def col10: HtmlElement = divOf("col-10")
+  def col11: HtmlElement = divOf("col-11")
+  def col12: HtmlElement = divOf("col-12")
+  def colSm: HtmlElement = divOf("col-sm")
 
-  def container: RxComponent      = divOf("container")
-  def containerFluid: RxComponent = divOf("container-fluid")
+  def container: HtmlElement      = divOf("container")
+  def containerFluid: HtmlElement = divOf("container-fluid")
 
-  def flexbox: RxComponent       = divOf("d-flex")
-  def inlineFlexbox: RxComponent = divOf("d-inline-flex")
+  def flexbox: HtmlElement       = divOf("d-flex")
+  def inlineFlexbox: HtmlElement = divOf("d-inline-flex")
 
-  def figure: RxComponent = RxComponent { content =>
-    figure(cls -> "figure", content)
-  }
+  def figure: HtmlElement = tags.figure(cls -> "figure")
 }

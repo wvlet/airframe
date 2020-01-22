@@ -2,29 +2,35 @@ package wvlet.airframe.rx.widget
 
 import org.scalajs.dom
 import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.{DOMRenderer, Embedded, HtmlElement}
+import wvlet.airframe.rx.widget.ui.Layout
 import wvlet.airframe.rx.widget.ui.bootstrap._
-import wvlet.airframe.rx.widget.ui.{DomElement, Layout}
 import wvlet.airspec._
 
 object RxWidgetTest {}
 
 class RxWidgetTest extends AirSpec {
 
-  private def renderTo(node: dom.Element, elem: RxElement): String = {
-    RxDOM.mountTo(node, elem)
-    val html = node.innerHTML
-    debug(html)
-    html
+  private def renderTo(node: dom.Node, elem: HtmlElement): Unit = {
+    DOMRenderer.renderTo(node, elem)
   }
 
-  private def render(elem: RxElement): String = {
-    val node = dom.document.createElement("div")
-    renderTo(node, elem)
+  private def render(elem: HtmlElement): String = {
+    val (dom, c) = DOMRenderer.render(elem)
+    val html = dom match {
+      case x: org.scalajs.dom.Element =>
+        x.outerHTML
+      case _ =>
+        dom.innerText
+    }
+    info(html)
+    html
   }
 
   test("render nested components") {
     val elem = Layout.of(
-      Layout.div(
+      div(
         Button.primary("click me")
       )
     )
@@ -33,15 +39,17 @@ class RxWidgetTest extends AirSpec {
   }
 
   test("render nested DOM element") {
-    val elem = Layout.div(
-      DomElement(dom.document.createElement("main"))
+    val elem = div(
+      Embedded(dom.document.createElement("main"))
     )
     val html = render(elem)
     html.contains("<main>") shouldBe true
   }
 
   test("render buttons with click action") {
-    val elem = Button.primary("my button").onClick(e => debug("clicked"))
+    val elem = Button.primary("my button")(onclick { () =>
+      debug("clicked")
+    })
     val html = render(elem)
     html.contains("btn btn-primary") shouldBe true
   }
@@ -49,7 +57,7 @@ class RxWidgetTest extends AirSpec {
   test("Apply Rx variable change") {
     val node = dom.document.createElement("div")
     val v    = Rx.variable(1)
-    val elem = Layout.div(v.map(x => x))
+    val elem = div(v.map(x => x))
     val html = renderTo(node, elem)
     html shouldBe "<div>1</div>"
     v := 2
@@ -59,13 +67,13 @@ class RxWidgetTest extends AirSpec {
   test("Update the local dom element upon Rx variable change") {
     val node = dom.document.createElement("div")
     val v    = Rx.variable("Home")
-    val content = Layout.div(
+    val content = div(
       v.map { selected =>
-        <ul>{
+        ul(
           Seq("Home", "Blog").map { page =>
-            <li class={if (page == selected) Some("active") else None}>{page}</li>
+            li(_class -> { if (page == selected) Some("active") else None }, page)
           }
-        }</ul>
+        )
       }
     )
     val html = renderTo(node, content)

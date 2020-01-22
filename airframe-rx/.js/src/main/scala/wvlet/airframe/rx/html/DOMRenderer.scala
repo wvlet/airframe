@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.html
+import org.scalajs.dom
 import wvlet.airframe.rx.{Cancelable, Rx}
+import wvlet.log.LogSupport
 
 import scala.scalajs.js
-import org.scalajs.dom
-import wvlet.log.LogSupport
 
 /**
   *
@@ -49,7 +49,6 @@ object DOMRenderer extends LogSupport {
         case HtmlNode.empty =>
           Cancelable.empty
         case e: HtmlElement =>
-          // TODO renderer
           val (childDOM, c1) = render(e)
           node.mountHere(childDOM, anchor)
           c1
@@ -69,6 +68,10 @@ object DOMRenderer extends LogSupport {
         case n: dom.Node =>
           node.mountHere(n, anchor)
           Cancelable.empty
+        case e: Elem =>
+          traverse(e.render, anchor)
+        case rx: RxElement =>
+          traverse(rx.render, anchor)
         case a: Embedded =>
           traverse(a.v, anchor)
         case s: String =>
@@ -109,7 +112,7 @@ object DOMRenderer extends LogSupport {
           }
           Cancelable.merge(cancelables)
         case other =>
-          throw new IllegalArgumentException(s"unsupported: ${other}")
+          throw new IllegalArgumentException(s"unsupported: class:${other.getClass}, ${other}")
       }
     }
 

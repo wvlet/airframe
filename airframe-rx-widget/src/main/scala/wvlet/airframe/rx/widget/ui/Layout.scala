@@ -12,24 +12,22 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.widget.ui
-import wvlet.airframe.rx.html.{Embedded, RxComponent, RxElement}
 import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.{Embedded, HtmlElement, RxComponent}
 
 /**
   *
   */
 object Layout {
-  def of                   = div()
-  def of(list: RxElement*) = div(Embedded(list.toSeq))
-  def divOf(primaryClass: String): RxComponent = RxComponent { content =>
-    div(_class -> primaryClass, content)
-  }
+  def of                                       = div()
+  def of(list: HtmlElement*)                   = div(Embedded(list.toSeq))
+  def divOf(primaryClass: String): HtmlElement = div(_class -> primaryClass)
 
   def codeBlock: RxComponent = RxComponent { content =>
     pre(code(content))
   }
 
   def scalaCode: RxComponent = RxComponent { content =>
-    pre(code(_class -> "language-scala rounded"), content)
+    pre(code(_class -> "language-scala rounded", content))
   }
 }
