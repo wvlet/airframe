@@ -3,7 +3,7 @@ package wvlet.airframe.rx.widget
 import org.scalajs.dom
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html.all._
-import wvlet.airframe.rx.html.{DOMRenderer, Element, Embedded, HtmlElement, RxComponent}
+import wvlet.airframe.rx.html.{DOMRenderer, Embedded, HtmlElement, RxComponent, RxElement}
 import wvlet.airframe.rx.widget.ui.Layout
 import wvlet.airframe.rx.widget.ui.bootstrap._
 import wvlet.airspec._
@@ -16,7 +16,7 @@ class RxWidgetTest extends AirSpec {
     DOMRenderer.renderTo(node, elem)
   }
 
-  private def render(elem: Element): String = {
+  private def render(elem: RxElement): String = {
     val (dom, c) = DOMRenderer.render(elem)
     val html = dom match {
       case x: org.scalajs.dom.Element =>
@@ -25,6 +25,7 @@ class RxWidgetTest extends AirSpec {
         dom.innerText
     }
     info(html)
+    c.cancel // cleanup
     html
   }
 
@@ -43,8 +44,8 @@ class RxWidgetTest extends AirSpec {
       pre(code(content))
     }
 
-    val node: Element = myCode("import wvlet")
-    val html          = render(node)
+    val node: RxElement = myCode("import wvlet")
+    val html            = render(node)
     html shouldBe "<pre><code>import wvlet</code></pre>"
   }
 
@@ -68,8 +69,8 @@ class RxWidgetTest extends AirSpec {
     val node = dom.document.createElement("div")
     val v    = Rx.variable(1)
     val elem = div(v.map(x => x))
-    val html = renderTo(node, elem)
-    html shouldBe "<div>1</div>"
+    renderTo(node, elem)
+    node.innerHTML shouldBe "<div>1</div>"
     v := 2
     node.innerHTML shouldBe "<div>2</div>"
   }
@@ -86,8 +87,8 @@ class RxWidgetTest extends AirSpec {
         )
       }
     )
-    val html = renderTo(node, content)
-    html shouldBe """<div><ul><li class="active">Home</li><li>Blog</li></ul></div>"""
+    renderTo(node, content)
+    node.innerHTML shouldBe """<div><ul><li class="active">Home</li><li>Blog</li></ul></div>"""
     v := "Blog"
     node.innerHTML shouldBe """<div><ul><li>Home</li><li class="active">Blog</li></ul></div>"""
   }

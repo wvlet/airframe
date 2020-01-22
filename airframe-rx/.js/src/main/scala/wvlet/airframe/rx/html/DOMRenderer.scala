@@ -42,11 +42,14 @@ object DOMRenderer extends LogSupport {
             renderTo(node, m)
           }
           (node, Cancelable.merge(cancelables))
+        case l: LazyRxElement[_] =>
+          traverse(l.render)
+        case Embedded(v) =>
+          traverse(v)
         case other =>
           throw new IllegalArgumentException(s"unsupported top level element: ${other}")
       }
     }
-
     traverse(e)
   }
 
@@ -91,7 +94,7 @@ object DOMRenderer extends LogSupport {
           Cancelable.empty
         case EntityRef(entityName) =>
           val domNode = dom.document.createTextNode("").asInstanceOf[dom.Element]
-          domNode.innerHTML = s"&&${entityName};"
+          domNode.innerHTML = s"&${entityName};"
           node.mountHere(domNode, anchor)
           Cancelable.empty
         case v: Int =>
@@ -128,7 +131,7 @@ object DOMRenderer extends LogSupport {
           }
           Cancelable.merge(cancelables)
         case other =>
-          throw new IllegalArgumentException(s"unsupported: class:${other.getClass}, ${other}")
+          throw new IllegalArgumentException(s"unsupported class ${other}")
       }
     }
 
