@@ -297,12 +297,17 @@ object Gallery extends LogSupport {
     import wvlet.airframe.rx.html.svgAttrs._
     import wvlet.airframe.rx.html.svgTags._
 
+    val circleColor = Rx("white")
     demo(
       "SVG",
       svg(
         viewBox -> "0 0 10 10",
         rect(x    -> 0, y      -> 0, width -> "100%", height -> "100%", fill -> "#336699"),
-        circle(cx -> "50%", cy -> "50%", r -> 4, fill        -> "white")
+        circle(cx -> "50%", cy -> "50%", r -> 4, fill        -> circleColor, onmouseover { () =>
+          circleColor.set("#99CCFF")
+        }, onmouseout { () =>
+          circleColor.set("white")
+        })
       ),
       """import wvlet.airframe.rx.html.svg._
       |svg(
