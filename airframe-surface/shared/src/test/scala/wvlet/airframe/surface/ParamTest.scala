@@ -21,6 +21,7 @@ object ParamTest {
 
   def getter(x: Int): Int = x * 2
   case class A(id: Int = -1, p1: Int = getter(10))
+  case class B(pub: Int, private val priv1: Int, private val priv2: Int = 100)
 }
 
 class ParamTest extends SurfaceSpec {
@@ -32,5 +33,16 @@ class ParamTest extends SurfaceSpec {
     assert(p.getDefaultValue == Option(-1))
     val p1 = s.params(1)
     assert(p1.getDefaultValue == Option(20))
+  }
+
+  def `private field access`: Unit = {
+    val s  = Surface.of[ParamTest.B]
+    val p1 = s.params(0)
+    val p2 = s.params(1)
+    val p3 = s.params(2)
+    val v  = ParamTest.B(1, 2, 3)
+    p1.get(v) shouldBe 1
+    p2.get(v) shouldBe 2
+    p3.get(v) shouldBe 3
   }
 }
