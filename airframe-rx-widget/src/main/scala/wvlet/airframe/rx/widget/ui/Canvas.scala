@@ -14,10 +14,10 @@
 package wvlet.airframe.rx.widget.ui
 import org.scalajs.dom
 import org.scalajs.dom.html
-import wvlet.airframe.rx.html.{Element, Embedded, RxElement}
+import wvlet.airframe.rx.html.{Embedded, RxElement}
 
 case class Canvas2D(canvas: html.Canvas, context: dom.CanvasRenderingContext2D) extends RxElement {
-  override def render: Element = Embedded(canvas)
+  override def render: RxElement = Embedded(canvas)
 }
 
 /**

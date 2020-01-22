@@ -44,7 +44,7 @@ object Gallery extends LogSupport {
         document.body.appendChild(elem)
       case other => other
     }
-    val content: Element = galleryFrame(gallery: _*)
+    val content: RxElement = galleryFrame(gallery: _*)
     DOMRenderer.renderTo(main, content)
   }
 
@@ -79,7 +79,7 @@ object Gallery extends LogSupport {
     )
   }
 
-  def gallery: Seq[HtmlNode] = Seq(
+  def gallery: Seq[RxElement] = Seq(
     componentGallery,
     elementGallery,
     reactiveTest,
@@ -98,10 +98,10 @@ object Gallery extends LogSupport {
       p("RxComponent is the unit of a reactive widget that can enclose other components or elements."),
       Layout.scalaCode(
         code(
-          s"""import wvlet.airframe.rx.widget._
+          s"""import wvlet.airframe.rx.html._
            |
            |class MyComponent extends RxComponent {
-           |  def render(content: xml.Node): xml.Node =
+           |  def render(content: HtmlNode): RxElement =
            |    div(cls->"main",
            |      h2("Hello Airframe Rx Widget!"),
            |      content
@@ -142,7 +142,7 @@ object Gallery extends LogSupport {
     )
   }
 
-  def demo(title: String, main: HtmlNode, code: String): HtmlNode = {
+  def demo(title: String, main: RxElement, code: String): RxElement = {
     containerFluid(
       h4(title),
       row( // .withBorder.withRoundedCorner(
@@ -304,11 +304,11 @@ object Gallery extends LogSupport {
     demo(
       "Rx",
       p(
-        v.map(x => s"count: ${x}"),
         Button
           .primary("add")(onclick { e: dom.Event =>
             v.update(_ + 1)
-          })
+          }),
+        v.map(x => s" count: ${x}")
       ),
       """val v = Rx(1)
         |

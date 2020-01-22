@@ -32,19 +32,22 @@ object DOMRenderer extends LogSupport {
     }
   }
 
-  def render(e: Element): (dom.Node, Cancelable) = {
-    e match {
-      case h: HtmlElement =>
-        val node: dom.Node = dom.document.createElement(h.name)
-        val cancelables = for (g <- h.modifiers.reverse; m <- g) yield {
-          renderTo(node, m)
-        }
-        (node, Cancelable.merge(cancelables))
-      case Elem(body) =>
-        render(body())
-      case _ =>
-        throw new IllegalArgumentException(s"unsuppored: ${e}")
+  def render(e: RxElement): (dom.Node, Cancelable) = {
+
+    def traverse(v: Any): (dom.Node, Cancelable) = {
+      v match {
+        case h: HtmlElement =>
+          val node: dom.Node = dom.document.createElement(h.name)
+          val cancelables = for (g <- h.modifiers.reverse; m <- g) yield {
+            renderTo(node, m)
+          }
+          (node, Cancelable.merge(cancelables))
+        case other =>
+          throw new IllegalArgumentException(s"unsupported top level element: ${other}")
+      }
     }
+
+    traverse(e)
   }
 
   private def newTextNode(s: String): dom.Text = dom.document.createTextNode(s)
@@ -56,9 +59,12 @@ object DOMRenderer extends LogSupport {
         case HtmlNode.empty =>
           Cancelable.empty
         case e: HtmlElement =>
-          val (childDOM, c1) = render(e)
-          node.mountHere(childDOM, anchor)
-          c1
+          val elem = dom.document.createElement(e.name)
+          val cancelables = for (g <- e.modifiers.reverse; m <- g) yield {
+            renderTo(elem, m)
+          }
+          node.mountHere(elem, anchor)
+          Cancelable.merge(cancelables)
         case rx: Rx[_] =>
           val (start, end) = node.createMountSection()
           var c1           = Cancelable.empty
@@ -75,15 +81,18 @@ object DOMRenderer extends LogSupport {
         case n: dom.Node =>
           node.mountHere(n, anchor)
           Cancelable.empty
-        case e: Elem =>
-          traverse(e.body(), anchor)
+        case e: Embedded =>
+          traverse(e.v, anchor)
         case rx: RxElement =>
           traverse(rx.render, anchor)
-        case a: Embedded =>
-          traverse(a.v, anchor)
         case s: String =>
           val textNode = newTextNode(s)
           node.mountHere(textNode, anchor)
+          Cancelable.empty
+        case EntityRef(entityName) =>
+          val domNode = dom.document.createTextNode("").asInstanceOf[dom.Element]
+          domNode.innerHTML = s"&&${entityName};"
+          node.mountHere(domNode, anchor)
           Cancelable.empty
         case v: Int =>
           val textNode = newTextNode(v.toString)

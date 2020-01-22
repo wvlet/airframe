@@ -31,7 +31,7 @@ package object bootstrap {
 //    def withPositionStatic   = x(_class -> "position-static")
 //    def withPositionRelative = x(_class -> "position-relative")
 //    def withPositionAbsolute = x(_class -> "position-absolute")
-//    def withPositionFixed    = x(_class -> "position-fixed")
+//    def withPositionFixed    = x(_class -> "position-fiOxed")
 //    def withPositionSticky   = x(_class -> "position-sticky")
 //
 //    def withFixedTop    = x(_class -> "fixed-top")

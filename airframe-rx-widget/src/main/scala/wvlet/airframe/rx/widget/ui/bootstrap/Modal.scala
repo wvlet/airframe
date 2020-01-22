@@ -14,13 +14,13 @@
 package wvlet.airframe.rx.widget.ui.bootstrap
 
 import wvlet.airframe.rx.html.all._
-import wvlet.airframe.rx.html.{Element, HtmlElement, HtmlNode, RxComponent}
+import wvlet.airframe.rx.html.{EntityRef, HtmlElement, RxElement, RxComponent}
 
 case class Modal(title: String, footer: HtmlElement = div()) extends RxComponent {
 
   def withFooter(footer: HtmlElement): Modal = this.copy(footer = footer)
 
-  override def render(content: HtmlNode): Element =
+  override def render(content: RxElement): RxElement =
     div(
       _class   -> "modal",
       style    -> "display: block; position: relative;",
@@ -39,7 +39,8 @@ case class Modal(title: String, footer: HtmlElement = div()) extends RxComponent
               _class          -> "close",
               data("dismiss") -> "modal",
               aria.label      -> "Close",
-              span(aria.hidden -> "true", "&times;")
+              span(aria.hidden -> "true", EntityRef("times")),
+              p("hello &times;", EntityRef("times"), "entity")
             )
           ),
           div(_class -> "modal-body", content),

@@ -12,6 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx
+
+import wvlet.log.LogSupport
+
 import scala.annotation.implicitNotFound
 import scala.language.{higherKinds, implicitConversions}
 
@@ -48,18 +51,38 @@ package object html {
   case class HtmlAttribute(name: String, v: Any, ns: Namespace = Namespace.xhtml) extends HtmlNode
 
   class HtmlAttributeOf(name: String, namespace: Namespace = Namespace.xhtml) {
-    def apply[V: EmbeddableAttribute](v: V): HtmlNode = HtmlAttribute(name, v, namespace)
-    def ->[V: EmbeddableAttribute](v: V): HtmlNode    = HtmlAttribute(name, v, namespace)
-    def empty: HtmlNode                               = HtmlAttribute(name, None, namespace)
+    def apply[V: EmbeddableAttribute](v: V): RxElement = HtmlAttribute(name, v, namespace)
+    def ->[V: EmbeddableAttribute](v: V): RxElement    = HtmlAttribute(name, v, namespace)
+    def empty: RxElement                               = HtmlAttribute(name, None, namespace)
   }
 
-  trait Element extends HtmlNode
+  trait RxElement extends HtmlNode {
+    def render: RxElement
+  }
+
+  object RxElement {
+    def apply(a: HtmlElement): RxElement = new RxElement {
+      override def render: RxElement = a
+    }
+    def apply(a: RxElement): RxElement = new RxElement {
+      override def render: RxElement = a
+    }
+    def apply[A <: RxElement](a: Rx[A]): RxElement = new RxElement {
+      override def render: RxElement = LazyRxElement(() => a)
+    }
+  }
+
+  case class LazyRxElement[A: EmbeddableNode](v: () => A) extends RxElement with LogSupport {
+    def render: RxElement = Embedded(v())
+  }
 
   case class HtmlElement(
       name: String,
       modifiers: List[Seq[HtmlNode]] = List.empty,
       namespace: Namespace = Namespace.xhtml
-  ) extends Element {
+  ) extends RxElement {
+    def render: RxElement = this
+
     def apply(xs: HtmlNode*): HtmlElement = {
       if (xs.isEmpty) {
         this
@@ -68,6 +91,8 @@ package object html {
       }
     }
   }
+
+  case class EntityRef(ref: String) extends HtmlNode
 
   // TODO embed namespace properly to DOM
   case class Namespace(uri: String)
@@ -123,7 +148,12 @@ package object html {
     * Holder for embedding various types as tag contents
     * @param v
     */
-  case class Embedded(v: Any) extends Element
+  case class Embedded(v: Any) extends RxElement with LogSupport {
+    override def render: RxElement = {
+      warn(s"render is caled for ${v}")
+      ???
+    }
+  }
 
-  implicit def embedAsNode[A: EmbeddableNode](v: A): HtmlNode = Embedded(v)
+  implicit def embedAsNode[A: EmbeddableNode](v: A): RxElement = Embedded(v)
 }

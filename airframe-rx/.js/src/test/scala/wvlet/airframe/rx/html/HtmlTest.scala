@@ -43,7 +43,8 @@ class HtmlTest extends AirSpec {
   }
 
   test("create component") {
-    def d(content: HtmlNode*) = {
+    def d(content: RxElement
+        /**EndMarker*/**) = {
       div(cls("main"), div(cls("container"), content))
     }
 
