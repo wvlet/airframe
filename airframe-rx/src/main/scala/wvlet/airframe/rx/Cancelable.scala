@@ -29,11 +29,17 @@ object Cancelable {
   }
 
   def merge(c1: Cancelable, c2: Cancelable): Cancelable = {
-    Cancelable { () =>
-      try {
-        c1.cancel
-      } finally {
-        c2.cancel
+    if (c1 == Cancelable.empty) {
+      c2
+    } else if (c2 == Cancelable.empty) {
+      c1
+    } else {
+      Cancelable { () =>
+        try {
+          c1.cancel
+        } finally {
+          c2.cancel
+        }
       }
     }
   }

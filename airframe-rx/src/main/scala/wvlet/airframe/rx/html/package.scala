@@ -116,10 +116,10 @@ package object html {
     */
   case class Embedded(v: Any) extends RxElement with LogSupport {
     override def render: RxElement = {
-      warn(s"render is caled for ${v}")
+      warn(s"render is called for ${v}")
       ???
     }
   }
 
-  implicit def embedAsNode[A: EmbeddableNode](v: A): HtmlNode = Embedded(v)
+  implicit def embedAsNode[A: EmbeddableNode](v: A): RxElement = Embedded(v)
 }
