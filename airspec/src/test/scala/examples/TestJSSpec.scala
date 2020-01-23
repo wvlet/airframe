@@ -43,3 +43,7 @@ class FlexWordSpecTest extends AirSpec {
 
   def `should support long method names`: Unit = {}
 }
+
+class NoTestTest extends AirSpec {
+  def `should show warning for Scala.js`: Unit = {}
+}
