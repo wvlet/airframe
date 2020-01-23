@@ -81,6 +81,14 @@ private[airspec] class AirSpecTaskRunner(
   }
 
   private[airspec] def run(parentContext: Option[AirSpecContext], spec: AirSpecSpi, testDefs: Seq[AirSpecDef]): Unit = {
+    if (testDefs.isEmpty && Compat.isScalaJs) {
+      val name = specName(parentContext, spec)
+      warn(
+        s"No test definition is found in ${name}. In Scala.js make sure calling scalaJsSupport inside test classes to register" +
+          s" public methods as test cases. Alternatively, you can use test(...) function, which works without calling scalaJsSupport."
+      )
+    }
+
     val selectedMethods =
       config.pattern match {
         case Some(regex) =>
