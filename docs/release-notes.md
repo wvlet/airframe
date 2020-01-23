@@ -6,6 +6,21 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.1.2
+This release introduces airframe-rx-html for rendering complex DOM elements (html tags, canvas, SVG, etc.) at ease with Scala.js. You can compose your own DOM elements by defining RxElement and RxComponent classes. 
+
+-  airframe-surface: Fix private field access ([#907](https://github.com/wvlet/airframe/issues/907)) [[16866f4](https://github.com/wvlet/airframe/commit/16866f4)]
+-  airspec: [#906](https://github.com/wvlet/airframe/issues/906) Show warning if scalaJsSupport is missing ([#909](https://github.com/wvlet/airframe/issues/909)) [[f272e5d](https://github.com/wvlet/airframe/commit/f272e5d)]
+-  airframe-rx-html: Rewrite Gallery with airframe-rx-html ([#905](https://github.com/wvlet/airframe/issues/905)) [[657db9e](https://github.com/wvlet/airframe/commit/657db9e)]
+-  airframe-rx-html: Add more tags, attrs, and SVG elements ([#904](https://github.com/wvlet/airframe/issues/904)) [[669e71a](https://github.com/wvlet/airframe/commit/669e71a)]
+-  airframe-rx: Add wvlet.airframe.rx.html  ([#903](https://github.com/wvlet/airframe/issues/903)) [[2b7e7d6](https://github.com/wvlet/airframe/commit/2b7e7d6)]
+-  airframe-control: Add CircuitBreaker.withRecoveryPolicy() ([#900](https://github.com/wvlet/airframe/issues/900)) [[133f8c9](https://github.com/wvlet/airframe/commit/133f8c9)]
+-  airframe-di: Add an option to disable implicit instance creation: `Design.noDefaultInstanceInjection` ([#886](https://github.com/wvlet/airframe/issues/886)) [[15b2558](https://github.com/wvlet/airframe/commit/15b2558)]
+
+Internal changes:
+- Rename SCALA_JS_VERSION -> SCALAJS_VESRION to be consistent with other Scala.js projects ([#898](https://github.com/wvlet/airframe/issues/898)) [[029f000](https://github.com/wvlet/airframe/commit/029f000)]
+-  Update sbt to 1.3.7 ([#897](https://github.com/wvlet/airframe/issues/897)) [[f63b9d7](https://github.com/wvlet/airframe/commit/f63b9d7)]
+
 ## 20.1.1
 -  airframe-log: Fix warning log message color ([#896](https://github.com/wvlet/airframe/issues/896)) [[a1f6e1d](https://github.com/wvlet/airframe/commit/a1f6e1d)]
 -  airframe-rx: Support generic event handlers ([#893](https://github.com/wvlet/airframe/issues/893)) [[774687c](https://github.com/wvlet/airframe/commit/774687c)]
