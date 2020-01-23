@@ -36,6 +36,7 @@ class ParamTest extends SurfaceSpec {
   }
 
   def `private field access`: Unit = {
+    pendingUntil("Find a way to access private fields in Scala.js")
     val s  = Surface.of[ParamTest.B]
     val p1 = s.params(0)
     val p2 = s.params(1)
