@@ -18,6 +18,8 @@ import java.{lang => jl}
 import wvlet.airframe.surface.{MethodParameter, MethodRef, Surface, required}
 import wvlet.log.LogSupport
 
+import scala.util.Try
+
 /**
   * MethodParameter implementation using reflection for accessing parameter values
   */
@@ -30,7 +32,14 @@ case class RuntimeMethodParameter(
     with LogSupport {
   override def toString: String = s"${name}:${surface.name}"
 
-  private lazy val field: jl.reflect.Field = method.owner.getDeclaredField(name)
+  private lazy val field: jl.reflect.Field = Try {
+    method.owner.getDeclaredField(name)
+  }.getOrElse {
+    // private fields in case classes can have special field names if default paramters are defined.
+    // https://github.com/wvlet/airframe/issues/901
+    val privateFieldName = method.owner.getName.replaceAll("\\.", "\\$") + s"$$$$${name}"
+    method.owner.getDeclaredField(privateFieldName)
+  }
 
   def get(x: Any): Any = {
     try {
