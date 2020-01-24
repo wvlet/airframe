@@ -23,6 +23,7 @@ import wvlet.airframe.surface.{Surface, Zero}
 import wvlet.log.LogSupport
 import wvlet.log.io.{IOUtil, Resource}
 
+import scala.collection.immutable.ListMap
 import scala.reflect.runtime.{universe => ru}
 
 case class ConfigHolder(tpe: Surface, value: Any)
@@ -90,39 +91,79 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     with LogSupport {
   override def toString: String = printConfig
 
+  import wvlet.airframe.surface.reflect._
+
+  /**
+    * Create a map representation of this config for display purpose.
+    * Parameters with @secret annotation will be hidden.
+    */
+  def toPrintableMap: Map[String, Any] = {
+    def traverse(s: Surface, v: Any, secret: Option[secret]): Any = {
+      if (s.params.isEmpty) {
+        val value = v match {
+          case null => ""
+          case Some(x) if x != null =>
+            x.toString // unwrap Option
+          case _ =>
+            v.toString
+        }
+        // Hide secrete values
+        secret match {
+          case Some(h) if h.mask() =>
+            value.replaceAll(".", "x")
+          case Some(h) =>
+            val trimLen = h.trim().min(value.length)
+            s"${value.substring(0, trimLen)}..."
+          case _ =>
+            value
+        }
+      } else {
+        // Use ListMap to preserve the parameter order
+        val m = ListMap.newBuilder[String, Any]
+        for (p <- s.params) {
+          m += p.name -> traverse(p.surface, p.get(v), p.findAnnotationOf[secret])
+        }
+        m.result()
+      }
+    }
+
+    val m = ListMap.newBuilder[String, Any]
+    for (c <- getAll) yield {
+      m += c.tpe.name -> traverse(c.tpe, c.value, secret = None)
+    }
+    m.result()
+  }
+
   def printConfig: String = {
     val s = Seq.newBuilder[String]
     s += "Configurations:"
-    for (c <- getAll) {
-      s += s"[${c.tpe}]"
-      val paramWidth = c.tpe.params.map(_.name.length).max
-      for (p <- c.tpe.params) {
-        import wvlet.airframe.surface.reflect._
-        val v = Option(p.get(c.value))
-          .map { x =>
-            x match {
-              case Some(xx) =>
-                // Unwrap optional value
-                xx.toString
-              case _ => x.toString
-            }
-          }
-          .getOrElse("")
-        val processedValue = p.findAnnotationOf[secret] match {
-          case Some(h) =>
-            if (h.mask()) {
-              v.replaceAll(".", "x")
-            } else {
-              val trimLen = h.trim().min(v.length)
-              s"${v.substring(0, trimLen)}..."
-            }
-          case _ =>
-            v
+
+    def traverse(m: Map[String, Any], indent: Int): Unit = {
+      val paramWidth = m.keys.map(_.length).max
+      for ((paramName, v) <- m) {
+        val prefix = if (indent == 0) {
+          s += s"[${paramName}]"
+          ""
+        } else {
+          val ws = " " * (indent * 2)
+          s"${ws}- ${paramName}"
         }
-        val ws = " " * (paramWidth - p.name.length).max(0)
-        s += s" - ${p.name}${ws}: ${processedValue}"
+        val gap = " " * (paramWidth - paramName.length).max(0)
+        v match {
+          case mm: Map[String @unchecked, Any @unchecked] =>
+            if (indent > 0) {
+              s += prefix
+            }
+            traverse(mm, indent + 1)
+          case _ =>
+            s += s"${prefix}${gap}: ${v}"
+        }
       }
     }
+
+    val m = toPrintableMap
+    traverse(m, 0)
+
     val lines = s.result().mkString("\n")
     lines
   }
