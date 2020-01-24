@@ -18,9 +18,9 @@ import wvlet.airframe.surface._
 import wvlet.airframe.surface.reflect.ReflectTypeUtil._
 import wvlet.log.LogSupport
 
-import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.jdk.CollectionConverters._
 import scala.language.existentials
 
 //--------------------------------------
@@ -69,6 +69,9 @@ trait ObjectBuilder extends GenericBuilder {
   def build: Any
 }
 
+/**
+  * ObjectBuilder support overriding nested parameters by specifying a parameter path (Path)
+  */
 trait StandardBuilder extends GenericBuilder with LogSupport {
   import ObjectBuilder._
 
@@ -84,9 +87,10 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
     val v: BuilderElement = findParameter(name).map {
       case p if canBuildFromBuffer(p.surface)      => Value(value)
       case p if canBuildFromStringValue(p.surface) => Value(value)
+
+      case p if p.surface.objectFactory.isEmpty => Value(value) // When no constructor to build p is found
       case p => {
         // nested object
-        // TODO handling of recursive objects
         val b = new SimpleObjectBuilder(p.surface)
         for (x <- p.surface.params) {
           b.set(x.name.canonicalName, x.get(value))
@@ -174,7 +178,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
               holder += name -> Value(v)
             }
           } else {
-            error(s"failed to set $value to path $path")
+            holder += name -> Value(value)
           }
         } else {
           // nested object

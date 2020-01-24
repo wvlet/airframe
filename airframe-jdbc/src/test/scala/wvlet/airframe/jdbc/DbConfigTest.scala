@@ -45,10 +45,11 @@ class DbConfigTest extends AirSpec {
       .bindConfigFromYaml[DbConfig]("dbconfig.yml")
       .overrideConfigWithPropertiesFile("config.properties")
 
-    info(d.currentConfig.printConfig)
+    val configList = d.currentConfig.printConfig
+    info(configList)
 
     d.build[DbConfig] { c =>
-      info(c)
+      debug(c)
     }
   }
 
