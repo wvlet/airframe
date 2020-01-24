@@ -13,17 +13,16 @@
  */
 package wvlet.airframe.config
 
-import java.io.{File, FileInputStream, FileNotFoundException}
+import java.io.{File, FileNotFoundException, StringReader}
 import java.util.Properties
 
-import PropertiesConfig.ConfigKey
 import wvlet.airframe.Design
+import wvlet.airframe.config.PropertiesConfig.ConfigKey
 import wvlet.airframe.config.YamlReader.loadMapOf
+import wvlet.airframe.surface.{Surface, Zero}
 import wvlet.log.LogSupport
 import wvlet.log.io.{IOUtil, Resource}
-import wvlet.airframe.surface.{Surface, Zero}
 
-import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}
 
 case class ConfigHolder(tpe: Surface, value: Any)
@@ -281,12 +280,9 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
       case None =>
         throw new FileNotFoundException(s"Properties file ${propertiesFile} is not found")
       case Some(propPath) =>
-        val props = IOUtil.withResource(new FileInputStream(propPath)) { in =>
-          val p = new Properties()
-          p.load(in)
-          p
-        }
-        overrideWithProperties(props, onUnusedProperties)
+        val p = new Properties()
+        p.load(new StringReader(IOUtil.readAsString(propPath)))
+        overrideWithProperties(p, onUnusedProperties)
     }
   }
 
