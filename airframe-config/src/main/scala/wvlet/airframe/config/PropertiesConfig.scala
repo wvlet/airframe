@@ -15,10 +15,10 @@ package wvlet.airframe.config
 
 import java.util.Properties
 
-import wvlet.log.LogSupport
 import wvlet.airframe.surface.CanonicalNameFormatter._
 import wvlet.airframe.surface.reflect.ObjectBuilder
 import wvlet.airframe.surface.{Surface, TaggedSurface}
+import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
 
@@ -116,6 +116,7 @@ object PropertiesConfig extends LogSupport {
         trace(s"override: ${p}")
         configBuilder.set(p.key.param, p.v)
       }
+
       tpe -> ConfigHolder(tpe, configBuilder.build)
     }
 

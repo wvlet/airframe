@@ -1,0 +1,7 @@
+default:
+  type: postgresql
+  database: public
+  user: xxxx
+  password: yyyy
+  postgres:
+    use_ssl: false
