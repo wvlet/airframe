@@ -53,8 +53,9 @@ package object html {
 
   class HtmlAttributeOf(name: String, namespace: Namespace = Namespace.xhtml) {
     def apply[V: EmbeddableAttribute](v: V): HtmlNode = HtmlAttribute(name, v, namespace)
-    def ->[V: EmbeddableAttribute](v: V): HtmlNode    = HtmlAttribute(name, v, namespace)
-    def +=[V: EmbeddableAttribute](v: V): HtmlNode    = HtmlAttribute(name, v, namespace, append = true)
+    def ->[V: EmbeddableAttribute](v: V): HtmlNode    = apply(v)
+    def add[V: EmbeddableAttribute](v: V): HtmlNode   = HtmlAttribute(name, v, namespace, append = true)
+    def +=[V: EmbeddableAttribute](v: V): HtmlNode    = add(v)
     def noValue: HtmlNode                             = HtmlAttribute(name, true, namespace)
   }
 

@@ -58,9 +58,10 @@ class RxWidgetTest extends AirSpec {
   }
 
   test("render buttons with click action") {
-    val elem = Button.primary("my button")(onclick { () =>
-      debug("clicked")
-    })
+    val elem = Button
+      .primary("my button").add(onclick { () =>
+        debug("clicked")
+      })
     val html = render(elem)
     html.contains("btn btn-primary") shouldBe true
   }
@@ -97,6 +98,19 @@ class RxWidgetTest extends AirSpec {
     node.innerHTML shouldBe """<div><ul><li class="active">Home</li><li>Blog</li></ul></div>"""
     v := "Blog"
     node.innerHTML shouldBe """<div><ul><li>Home</li><li class="active">Blog</li></ul></div>"""
+  }
+
+  case class Label(id: String, name: String)
+
+  test("Render Rx as top-level node") {
+    val currentPage = Rx.variable("home")
+    val d = currentPage.map { page =>
+      p(s"page: ${page}")
+    }
+
+    val node = dom.document.createElement("div")
+    renderTo(node, d)
+    node.innerHTML shouldBe "<p>page: home</p>"
   }
 
 }

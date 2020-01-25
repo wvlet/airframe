@@ -35,9 +35,10 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
     }
   }
 
-  def addModifier(xs: HtmlNode*): RxElement = new RxElement(xs :: modifiers) {
+  def add(xs: HtmlNode*): RxElement = new RxElement(xs :: modifiers) {
     override def render = self.render
   }
+  def addModifier(xs: HtmlNode*): RxElement = add(xs: _*)
 
   private[html] def traverseModifiers(f: HtmlNode => Cancelable): Cancelable = {
     val cancelables = for (g <- modifiers.reverse; m <- g) yield {
