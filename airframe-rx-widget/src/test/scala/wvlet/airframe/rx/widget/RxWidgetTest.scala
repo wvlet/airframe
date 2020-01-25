@@ -58,9 +58,10 @@ class RxWidgetTest extends AirSpec {
   }
 
   test("render buttons with click action") {
-    val elem = Button.primary("my button")(onclick { () =>
-      debug("clicked")
-    })
+    val elem = Button
+      .primary("my button").add(onclick { () =>
+        debug("clicked")
+      })
     val html = render(elem)
     html.contains("btn btn-primary") shouldBe true
   }
