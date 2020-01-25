@@ -57,7 +57,7 @@ object DOMRenderer extends LogSupport {
         case d: dom.Node =>
           (d, Cancelable.empty)
         case other =>
-          throw new IllegalArgumentException(s"unsupported top level element: ${other}")
+          throw new IllegalArgumentException(s"unsupported top level element: ${other}. Use renderTo")
       }
     }
     traverse(e)
@@ -65,7 +65,7 @@ object DOMRenderer extends LogSupport {
 
   private def newTextNode(s: String): dom.Text = dom.document.createTextNode(s)
 
-  def renderTo(node: dom.Node, htmlNode: HtmlNode): Cancelable = {
+  def renderTo(node: dom.Node, htmlNode: HtmlNode, modifier: dom.Node => dom.Node = identity): Cancelable = {
 
     def traverse(v: Any, anchor: Option[dom.Node]): Cancelable = {
       v match {
@@ -95,8 +95,9 @@ object DOMRenderer extends LogSupport {
         case e: Embedded =>
           traverse(e.v, anchor)
         case rx: RxElement =>
-          val (elem, c1) = render(rx.render)
-          val c2         = rx.traverseModifiers(m => renderTo(elem, m))
+          val c1   = renderTo(node, rx.render)
+          val elem = node.lastChild
+          val c2   = rx.traverseModifiers(m => renderTo(elem, m))
           node.mountHere(elem, anchor)
           Cancelable.merge(c1, c2)
         case s: String =>

@@ -14,7 +14,7 @@
 package wvlet.airframe.rx.widget.ui.bootstrap
 
 import wvlet.airframe.rx.html.all._
-import wvlet.airframe.rx.html.{RxElement, RxComponent}
+import wvlet.airframe.rx.html.{RxComponent, RxElement}
 
 /**
   *
@@ -40,7 +40,8 @@ case class NavBar(title: String, iconFile: String = "img/favicon.ico", iconWidth
         aria.expanded  -> "false",
         aria.label     -> "Toggle navigation",
         span(cls -> "navbar-toggler-icon")
-      ) { content }
+      ),
+      content
     )
 }
 

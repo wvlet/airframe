@@ -99,4 +99,17 @@ class RxWidgetTest extends AirSpec {
     node.innerHTML shouldBe """<div><ul><li>Home</li><li class="active">Blog</li></ul></div>"""
   }
 
+  case class Label(id: String, name: String)
+
+  test("Render Rx as top-level node") {
+    val currentPage = Rx.variable("home")
+    val d = currentPage.map { page =>
+      p(s"page: ${page}")
+    }
+
+    val node = dom.document.createElement("div")
+    renderTo(node, d)
+    node.innerHTML shouldBe "<p>page: home</p>"
+  }
+
 }
