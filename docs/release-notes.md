@@ -6,6 +6,15 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.1.3
+Minor bug fix release:
+-  airframe-rx-html: Fix Rx node rendering ([#912](https://github.com/wvlet/airframe/issues/912)) [[ec91f15](https://github.com/wvlet/airframe/commit/ec91f15)]
+-  airframe-config: various config mapping improvements ([#911](https://github.com/wvlet/airframe/issues/911)) [[a9b9be7](https://github.com/wvlet/airframe/commit/a9b9be7)]
+
+Internal changes:
+-  Update jmh-core, jmh-generator-bytecode, ... to 1.23 ([#908](https://github.com/wvlet/airframe/issues/908)) [[64fd0c9](https://github.com/wvlet/airframe/commit/64fd0c9)]
+-  Update presto-main to 329 ([#910](https://github.com/wvlet/airframe/issues/910)) [[0711050](https://github.com/wvlet/airframe/commit/0711050)]
+
 ## 20.1.2
 This release introduces airframe-rx-html for rendering complex DOM elements (html tags, canvas, SVG, etc.) at ease with Scala.js. You can compose your own DOM elements by defining RxElement and RxComponent classes. 
 
