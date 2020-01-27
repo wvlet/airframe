@@ -27,44 +27,9 @@ import scala.util.{Failure, Success, Try}
   */
 object JavaTimeCodec {
   val javaTimeCodecs = Map(
-    Surface.of[Instant]       -> JavaInstantTimeCodec,
     Surface.of[ZonedDateTime] -> ZonedDateTimeCodec,
     Surface.of[Date]          -> JavaUtilDateCodec
   )
-
-  object JavaInstantTimeCodec extends MessageCodec[Instant] {
-    override def pack(p: Packer, v: Instant): Unit = {
-      // TODO airframe-msgpack in Codec interface
-      // Use msgpack Timestamp type
-      val buf    = ByteArrayBuffer.newBuffer(15)
-      val cursor = WriteCursor(buf, 0)
-      OffsetPacker.packTimestamp(cursor, v)
-      val extData = buf.readBytes(0, cursor.lastWrittenBytes)
-      p.writePayload(extData, 0, cursor.lastWrittenBytes)
-    }
-
-    override def unpack(u: Unpacker, v: MessageContext): Unit = {
-      Try {
-        u.getNextFormat.getValueType match {
-          case ValueType.STRING =>
-            // Use ISO instant formatter
-            val isoInstantFormat = u.unpackString
-            Try(Instant.parse(isoInstantFormat))
-              .getOrElse(Instant.ofEpochMilli(isoInstantFormat.toLong))
-          case ValueType.INTEGER =>
-            val epochMillis = u.unpackLong
-            Instant.ofEpochMilli(epochMillis)
-          case ValueType.EXTENSION =>
-            u.unpackTimestamp
-          case other =>
-            v.setIncompatibleFormatException(this, s"Cannot create Instant from ${other} type")
-        }
-      } match {
-        case Success(x) => v.setObject(x)
-        case Failure(e) => v.setError(e)
-      }
-    }
-  }
 
   object ZonedDateTimeCodec extends MessageCodec[ZonedDateTime] {
     override def pack(p: Packer, v: ZonedDateTime): Unit = {
@@ -86,16 +51,4 @@ object JavaTimeCodec {
     }
   }
 
-  object JavaUtilDateCodec extends MessageCodec[Date] with LogSupport {
-    override def pack(p: Packer, v: Date): Unit = {
-      // Use Instant for encoding
-      JavaInstantTimeCodec.pack(p, v.toInstant)
-    }
-    override def unpack(u: Unpacker, v: MessageContext): Unit = {
-      JavaInstantTimeCodec.unpack(u, v)
-      if (!v.isNull) {
-        v.setObject(Date.from(v.getLastValue.asInstanceOf[Instant]))
-      }
-    }
-  }
 }
