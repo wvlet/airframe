@@ -144,13 +144,13 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
 lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[ProjectReference](
   jdbc,
   fluentd,
-  airspecLight
+  airspecLight,
+  finagle,
+  httpRecorder
 )
 
 // JVM projects excluded from Scala 2.13 build
 lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
-  finagle,
-  httpRecorder,
   sql,
   benchmark,
   examples
@@ -553,7 +553,6 @@ lazy val finagle =
       name := "airframe-http-finagle",
       description := "REST API binding for Finagle",
       // Finagle doesn't support Scala 2.13 yet
-      crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
         "com.twitter" %% "finagle-http"        % FINAGLE_VERSION,
         "com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION,
@@ -573,9 +572,7 @@ lazy val httpRecorder =
       name := "airframe-http-recorder",
       description := "Http Response Recorder",
       // Finagle doesn't support Scala 2.13 yet
-      crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
-        "com.twitter" %% "finatra-http"        % FINAGLE_VERSION,
         "com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION,
         "com.twitter" %% "finagle-netty4"      % FINAGLE_VERSION,
         "com.twitter" %% "finagle-core"        % FINAGLE_VERSION,
