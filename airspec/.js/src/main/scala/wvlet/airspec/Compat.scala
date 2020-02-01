@@ -95,7 +95,7 @@ private[airspec] object Compat extends CompatApi with LogSupport {
 
   import scala.scalajs.js
   override private[airspec] def platformSpecificPrinter: PartialFunction[Any, String] = {
-    case x: js.Object if js.Object.keys(x).length == 0 =>
-      js.JSON.stringify(x)
+    case x: js.Object =>
+      Try(js.JSON.stringify(x)).getOrElse(x.toLocaleString())
   }
 }
