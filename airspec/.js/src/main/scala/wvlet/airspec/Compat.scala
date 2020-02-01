@@ -14,9 +14,13 @@
 package wvlet.airspec
 
 import org.portablescala.reflect.Reflect
+import sbt.testing.Fingerprint
 import wvlet.airframe.surface.MethodSurface
+import wvlet.airspec.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.{ConsoleLogHandler, LogSupport, Logger}
+
+import scala.util.Try
 
 /**
   *
@@ -28,6 +32,27 @@ private[airspec] object Compat extends CompatApi with LogSupport {
     clsOpt.map {
       _.loadModule()
     }
+  }
+
+  private[airspec] def getFingerprint(fullyQualifiedName: String, classLoader: ClassLoader): Option[Fingerprint] = {
+    Try(findCompanionObjectOf(fullyQualifiedName, classLoader)).toOption
+      .flatMap { x =>
+        x match {
+          case spec: AirSpecSpi => Some(AirSpecObjectFingerPrint)
+          case _                => None
+        }
+      }
+      .orElse {
+        Reflect
+          .lookupInstantiatableClass(fullyQualifiedName)
+          .flatMap { x =>
+            if (classOf[AirSpecSpi].isAssignableFrom(x.runtimeClass)) {
+              Some(AirSpecClassFingerPrint)
+            } else {
+              None
+            }
+          }
+      }
   }
 
   private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
@@ -58,4 +83,10 @@ private[airspec] object Compat extends CompatApi with LogSupport {
     }
     name
   }
+
+  private[airspec] def getContextClassLoader: ClassLoader = {
+    // Scala.js doesn't need to use ClassLoader for loading tests
+    null
+  }
+
 }

@@ -15,7 +15,7 @@ package wvlet.airspec.runner
 
 import sbt.testing._
 import wvlet.airframe.{Design, Session}
-import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
+import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
 import wvlet.airspec.spi.{AirSpecContext, AirSpecException}
 import wvlet.log.LogSupport
 

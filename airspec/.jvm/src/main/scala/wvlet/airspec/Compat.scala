@@ -15,12 +15,14 @@ package wvlet.airspec
 
 import java.lang.reflect.InvocationTargetException
 
+import sbt.testing.Fingerprint
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.Logger
 
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 import wvlet.airframe.surface.reflect.{ReflectSurfaceFactory, ReflectTypeUtil}
+import wvlet.airspec.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
 import wvlet.airspec.spi.AirSpecException
 
 /**
@@ -32,6 +34,28 @@ private[airspec] object Compat extends CompatApi {
   private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     val cls = classLoader.loadClass(fullyQualifiedName)
     ReflectTypeUtil.companionObject(cls)
+  }
+
+  private[airspec] def getFingerprint(fullyQualifiedName: String, classLoader: ClassLoader): Option[Fingerprint] = {
+    Try(findCompanionObjectOf(fullyQualifiedName, classLoader)).toOption
+      .flatMap { x =>
+        x match {
+          case spec: AirSpecSpi =>
+            Some(AirSpecObjectFingerPrint)
+          case _ =>
+            None
+        }
+      }
+      .orElse {
+        Try(classLoader.loadClass(fullyQualifiedName)).toOption
+          .flatMap { x =>
+            if (classOf[AirSpec].isAssignableFrom(x))
+              Some(AirSpecClassFingerPrint)
+            else {
+              None
+            }
+          }
+      }
   }
 
   private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
@@ -87,4 +111,9 @@ private[airspec] object Compat extends CompatApi {
     }
     name
   }
+
+  private[airspec] def getContextClassLoader: ClassLoader = {
+    Thread.currentThread().getContextClassLoader
+  }
+
 }

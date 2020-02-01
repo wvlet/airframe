@@ -15,7 +15,7 @@ package wvlet.airspec.runner
 
 import sbt.testing._
 import wvlet.airframe.Design
-import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
+import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
 import wvlet.log.LogSupport
 
 import scala.concurrent.duration.Duration
