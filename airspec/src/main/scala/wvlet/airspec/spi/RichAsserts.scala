@@ -17,6 +17,7 @@ import java.util
 
 import wvlet.airframe.SourceCode
 import wvlet.airspec.AirSpecSpi
+import wvlet.airspec.spi.Asserts._
 import wvlet.log.LogSupport
 
 /**
@@ -27,27 +28,21 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
   // Here we do not extend implicit classes with AnyVal, which needs to be a public class in an object,
   // to make this enrichment available as trait
 
-  private def pp(v: Any): String = {
-    v match {
-      case null =>
-        "null"
-      case a: Array[_] =>
-        s"[${a.mkString(",")}]"
-      case _ =>
-        v.toString
-    }
+  private def defaultPrinter: PartialFunction[Any, String] = {
+    case null =>
+      "null"
+    case a: Array[_] =>
+      s"[${a.mkString(",")}]"
   }
 
-  sealed trait TestResult
-  case object Ok     extends TestResult
-  case object Failed extends TestResult
+  private def pp(v: Any): String = {
+    val printer = defaultPrinter
+      .orElse(wvlet.airspec.compat.platformSpecificPrinter)
+      .orElse[Any, String] {
+        case _ => v.toString
+      }
 
-  private def check(cond: Boolean): TestResult = {
-    if (cond) {
-      Ok
-    } else {
-      Failed
-    }
+    printer(v)
   }
 
   private[airspec] sealed trait OptionTarget {
@@ -104,6 +99,7 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
 
     private def test(expected: Any): TestResult = {
       arrayDeepEqualMatcher
+        .orElse(wvlet.airspec.compat.platformSpecificMatcher)
         .orElse[(Any, Any), TestResult] {
           case _ =>
             check(value == expected)

@@ -17,6 +17,7 @@ import org.portablescala.reflect.Reflect
 import sbt.testing.Fingerprint
 import wvlet.airframe.surface.MethodSurface
 import wvlet.airspec.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
+import wvlet.airspec.spi.{Asserts, JsObjectMatcher}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.{ConsoleLogHandler, LogSupport, Logger}
 
@@ -89,4 +90,12 @@ private[airspec] object Compat extends CompatApi with LogSupport {
     null
   }
 
+  override private[airspec] def platformSpecificMatcher: PartialFunction[(Any, Any), Asserts.TestResult] =
+    JsObjectMatcher.matcher
+
+  import scala.scalajs.js
+  override private[airspec] def platformSpecificPrinter: PartialFunction[Any, String] = {
+    case x: js.Object if js.Object.keys(x).length == 0 =>
+      js.JSON.stringify(x)
+  }
 }

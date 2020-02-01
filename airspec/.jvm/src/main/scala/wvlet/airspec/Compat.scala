@@ -23,7 +23,7 @@ import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 import wvlet.airframe.surface.reflect.{ReflectSurfaceFactory, ReflectTypeUtil}
 import wvlet.airspec.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
-import wvlet.airspec.spi.AirSpecException
+import wvlet.airspec.spi.{AirSpecException, Asserts}
 
 /**
   *
@@ -115,5 +115,4 @@ private[airspec] object Compat extends CompatApi {
   private[airspec] def getContextClassLoader: ClassLoader = {
     Thread.currentThread().getContextClassLoader
   }
-
 }
