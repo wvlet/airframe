@@ -48,4 +48,34 @@ class DesignTimeLifeCycleHookTest extends AirSpec {
     beforeShutdownTime.get shouldBe 4
     shutdownTime.get shouldBe 5
   }
+
+  def `add lifecycle only`: Unit = {
+    val v = new AtomicInteger(0)
+    val d = newSilentDesign
+      .bind[AtomicInteger].toInstance(v)
+
+    val d2 = d
+      .bind[AtomicInteger]
+      .onStart { x =>
+        x.addAndGet(1)
+      }
+      .onShutdown { x =>
+        x.addAndGet(1 << 1)
+      }
+      .beforeShutdown { x =>
+        x.addAndGet(1 << 2)
+      }
+      .onInit { x =>
+        x.addAndGet(1 << 3)
+      }
+      .onInject { x =>
+        x.addAndGet(1 << 4)
+      }
+
+    d2.withSession { s =>
+    }
+
+    v.get() shouldBe 0x1F
+  }
+
 }

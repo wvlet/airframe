@@ -192,6 +192,22 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
     macro bindToEagerSingletonProvider4[A, D1, D2, D3, D4]
   def toEagerSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): DesignWithContext[A] =
     macro bindToEagerSingletonProvider5[A, D1, D2, D3, D4, D5]
+
+  def onInit(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(ON_INIT, from, body.asInstanceOf[Any => Unit]))
+  }
+  def onInject(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(ON_INJECT, from, body.asInstanceOf[Any => Unit]))
+  }
+  def onStart(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(ON_START, from, body.asInstanceOf[Any => Unit]))
+  }
+  def beforeShutdown(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(BEFORE_SHUTDOWN, from, body.asInstanceOf[Any => Unit]))
+  }
+  def onShutdown(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(ON_SHUTDOWN, from, body.asInstanceOf[Any => Unit]))
+  }
 }
 
 class DesignWithContext[A](
