@@ -13,6 +13,7 @@
  */
 package wvlet.airspec
 
+import sbt.testing.Fingerprint
 import wvlet.airframe.surface.MethodSurface
 
 /**
@@ -22,7 +23,7 @@ trait CompatApi {
   def isScalaJs: Boolean
 
   private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
-  private[airspec] def existsClass(fullyQualifiedName: String, classLoader: ClassLoader): Boolean
+  private[airspec] def getFingerprint(fullyQualifiedName: String, classLoader: ClassLoader): Option[Fingerprint]
   private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
   private[airspec] def withLogScanner[U](block: => U): U
   private[airspec] def findCause(e: Throwable): Throwable

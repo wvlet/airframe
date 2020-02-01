@@ -14,7 +14,9 @@
 package wvlet.airspec
 
 import org.portablescala.reflect.Reflect
+import sbt.testing.Fingerprint
 import wvlet.airframe.surface.MethodSurface
+import wvlet.airspec.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.{ConsoleLogHandler, LogSupport, Logger}
 
@@ -32,11 +34,24 @@ private[airspec] object Compat extends CompatApi with LogSupport {
     }
   }
 
-  private[airspec] def existsClass(fullyQualifiedName: String, classLoader: ClassLoader): Boolean = {
+  private[airspec] def getFingerprint(fullyQualifiedName: String, classLoader: ClassLoader): Option[Fingerprint] = {
     Try(findCompanionObjectOf(fullyQualifiedName, classLoader)).toOption
-      .map(x => true)
-      .getOrElse {
-        Reflect.lookupInstantiatableClass(fullyQualifiedName).isDefined
+      .flatMap { x =>
+        x match {
+          case spec: AirSpecSpi => Some(AirSpecObjectFingerPrint)
+          case _                => None
+        }
+      }
+      .orElse {
+        Reflect
+          .lookupInstantiatableClass(fullyQualifiedName)
+          .flatMap { x =>
+            if (classOf[AirSpecSpi].isAssignableFrom(x.runtimeClass)) {
+              Some(AirSpecClassFingerPrint)
+            } else {
+              None
+            }
+          }
       }
   }
 

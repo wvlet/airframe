@@ -15,12 +15,14 @@ package wvlet.airspec
 
 import java.lang.reflect.InvocationTargetException
 
+import sbt.testing.Fingerprint
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.Logger
 
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 import wvlet.airframe.surface.reflect.{ReflectSurfaceFactory, ReflectTypeUtil}
+import wvlet.airspec.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
 import wvlet.airspec.spi.AirSpecException
 
 /**
@@ -34,13 +36,25 @@ private[airspec] object Compat extends CompatApi {
     ReflectTypeUtil.companionObject(cls)
   }
 
-  private[airspec] def existsClass(fullyQualifiedName: String, classLoader: ClassLoader): Boolean = {
+  private[airspec] def getFingerprint(fullyQualifiedName: String, classLoader: ClassLoader): Option[Fingerprint] = {
     Try(findCompanionObjectOf(fullyQualifiedName, classLoader)).toOption
-      .map { x =>
-        true
+      .flatMap { x =>
+        x match {
+          case spec: AirSpecSpi =>
+            Some(AirSpecObjectFingerPrint)
+          case _ =>
+            None
+        }
       }
-      .getOrElse {
-        Try(classLoader.loadClass(fullyQualifiedName)).isSuccess
+      .orElse {
+        Try(classLoader.loadClass(fullyQualifiedName)).toOption
+          .flatMap { x =>
+            if (classOf[AirSpec].isAssignableFrom(x))
+              Some(AirSpecClassFingerPrint)
+            else {
+              None
+            }
+          }
       }
   }
 

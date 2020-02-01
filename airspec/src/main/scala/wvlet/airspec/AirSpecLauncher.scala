@@ -57,20 +57,11 @@ object AirSpecLauncher extends LogSupport {
         info(s"Run tests in ${testClassFullName}")
         val cl = compat.getContextClassLoader
 
-        if (!compat.existsClass(testClassFullName, cl)) {
-          warn(s"${testClassFullName} is not found. Use the full class name")
-          throw new IllegalArgumentException(s"${testClassFullName} is not found")
+        val fingerprint = compat.getFingerprint(testClassFullName, cl).getOrElse {
+          val msg = s"Class ${testClassFullName} is not found. Use the full class name to specify a test suite"
+          warn(msg)
+          throw new IllegalArgumentException(msg)
         }
-
-        // check the test class is object or class
-        val isObjectSpec = Try(
-          compat
-            .findCompanionObjectOf(testClassFullName, cl)
-        ).toOption
-          .flatMap { cls =>
-            cls.map(_.isInstanceOf[AirSpec])
-          }.getOrElse(false)
-        val fingerprint = if (isObjectSpec) AirSpecObjectFingerPrint else AirSpecClassFingerPrint
 
         val taskDef = new TaskDef(
           testClassFullName,
