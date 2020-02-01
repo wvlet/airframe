@@ -29,4 +29,6 @@ trait CompatApi {
   private[airspec] def methodSurfacesOf(cls: Class[_]): Seq[MethodSurface]
 
   private[airspec] def getSpecName(cls: Class[_]): String
+
+  private[airspec] def getContextClassLoader: ClassLoader
 }

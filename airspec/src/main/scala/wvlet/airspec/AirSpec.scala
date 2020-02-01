@@ -17,6 +17,7 @@ import wvlet.airframe.Design
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.airspec
 import wvlet.airspec.spi.{AirSpecContext, Asserts, RichAsserts}
+import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}

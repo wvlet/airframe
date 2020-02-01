@@ -58,4 +58,10 @@ private[airspec] object Compat extends CompatApi with LogSupport {
     }
     name
   }
+
+  private[airspec] def getContextClassLoader: ClassLoader = {
+    // Scala.js doesn't need to use ClassLoader for loading tests
+    null
+  }
+
 }

@@ -87,4 +87,9 @@ private[airspec] object Compat extends CompatApi {
     }
     name
   }
+
+  private[airspec] def getContextClassLoader: ClassLoader = {
+    Thread.currentThread().getContextClassLoader
+  }
+
 }

@@ -15,7 +15,7 @@ package wvlet.airspec
 
 import sbt.testing
 import sbt.testing.{Fingerprint, SubclassFingerprint}
-import wvlet.airspec.runner.AirSpecRunner
+import wvlet.airspec.runner.AirSpecSbtRunner
 
 /**
   * Include this class to your build.sbt:
@@ -26,7 +26,7 @@ class Framework extends sbt.testing.Framework {
   override def name(): String                     = "airspec"
   override def fingerprints(): Array[Fingerprint] = Array(AirSpecClassFingerPrint, AirSpecObjectFingerPrint)
   override def runner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): testing.Runner = {
-    AirSpecRunner.newRunner(args, remoteArgs, testClassLoader)
+    AirSpecSbtRunner.newRunner(args, remoteArgs, testClassLoader)
   }
 
   // This method is necessary for Scala.js

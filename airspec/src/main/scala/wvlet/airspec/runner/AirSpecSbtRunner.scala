@@ -14,7 +14,7 @@
 package wvlet.airspec.runner
 
 import sbt.testing.{Task, TaskDef}
-import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
+import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
 import wvlet.log.{LogSupport, Logger}
 
 import scala.util.matching.Regex
@@ -22,7 +22,7 @@ import scala.util.matching.Regex
 /**
   * AirSpecRunner receives a list of TaskDefs from sbt, then create AirSpecTasks to execute.
   */
-private[airspec] class AirSpecRunner(config: AirSpecConfig, val remoteArgs: Array[String], classLoader: ClassLoader)
+private[airspec] class AirSpecSbtRunner(config: AirSpecConfig, val remoteArgs: Array[String], classLoader: ClassLoader)
     extends sbt.testing.Runner {
   private lazy val taskLogger = new AirSpecLogger()
 
@@ -52,9 +52,9 @@ private[airspec] class AirSpecRunner(config: AirSpecConfig, val remoteArgs: Arra
   }
 }
 
-private[airspec] object AirSpecRunner extends LogSupport {
-  def newRunner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): AirSpecRunner = {
-    new AirSpecRunner(AirSpecConfig(args), remoteArgs, testClassLoader)
+private[airspec] object AirSpecSbtRunner extends LogSupport {
+  def newRunner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): AirSpecSbtRunner = {
+    new AirSpecSbtRunner(AirSpecConfig(args), remoteArgs, testClassLoader)
   }
 
   case class AirSpecConfig(args: Array[String]) {
