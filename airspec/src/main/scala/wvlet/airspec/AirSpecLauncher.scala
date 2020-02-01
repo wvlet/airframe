@@ -58,7 +58,8 @@ object AirSpecLauncher extends LogSupport {
         val cl = compat.getContextClassLoader
 
         val fingerprint = compat.getFingerprint(testClassFullName, cl).getOrElse {
-          val msg = s"Class ${testClassFullName} is not found. Use the full class name to specify a test suite"
+          val msg =
+            s"Class ${testClassFullName} extending AirSpec is not found"
           warn(msg)
           throw new IllegalArgumentException(msg)
         }
