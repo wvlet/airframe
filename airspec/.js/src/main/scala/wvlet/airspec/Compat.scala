@@ -18,6 +18,8 @@ import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.{ConsoleLogHandler, LogSupport, Logger}
 
+import scala.util.Try
+
 /**
   *
   */
@@ -28,6 +30,14 @@ private[airspec] object Compat extends CompatApi with LogSupport {
     clsOpt.map {
       _.loadModule()
     }
+  }
+
+  private[airspec] def existsClass(fullyQualifiedName: String, classLoader: ClassLoader): Boolean = {
+    Try(findCompanionObjectOf(fullyQualifiedName, classLoader)).toOption
+      .map(x => true)
+      .getOrElse {
+        Reflect.lookupInstantiatableClass(fullyQualifiedName).isDefined
+      }
   }
 
   private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {

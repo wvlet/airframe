@@ -55,11 +55,17 @@ object AirSpecLauncher extends LogSupport {
       case _ =>
         val testClassFullName = args(0)
         info(s"Run tests in ${testClassFullName}")
-        // check the test class is object or class
+        val cl = compat.getContextClassLoader
 
+        if (!compat.existsClass(testClassFullName, cl)) {
+          warn(s"${testClassFullName} is not found. Use the full class name")
+          throw new IllegalArgumentException(s"${testClassFullName} is not found")
+        }
+
+        // check the test class is object or class
         val isObjectSpec = Try(
           compat
-            .findCompanionObjectOf(testClassFullName, compat.getContextClassLoader)
+            .findCompanionObjectOf(testClassFullName, cl)
         ).toOption
           .flatMap { cls =>
             cls.map(_.isInstanceOf[AirSpec])
@@ -78,7 +84,7 @@ object AirSpecLauncher extends LogSupport {
           config,
           new AirSpecLogger(),
           new AirSpecEventHandler(),
-          compat.getContextClassLoader
+          cl
         )
         runner.runTask
     }

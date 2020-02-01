@@ -34,6 +34,16 @@ private[airspec] object Compat extends CompatApi {
     ReflectTypeUtil.companionObject(cls)
   }
 
+  private[airspec] def existsClass(fullyQualifiedName: String, classLoader: ClassLoader): Boolean = {
+    Try(findCompanionObjectOf(fullyQualifiedName, classLoader)).toOption
+      .map { x =>
+        true
+      }
+      .getOrElse {
+        Try(classLoader.loadClass(fullyQualifiedName)).isSuccess
+      }
+  }
+
   private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     Try(classLoader.loadClass(fullyQualifiedName).getDeclaredConstructor().newInstance()) match {
       case Success(x) => Some(x)
