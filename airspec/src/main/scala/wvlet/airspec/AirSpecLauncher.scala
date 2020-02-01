@@ -19,6 +19,8 @@ import wvlet.airspec.runner.{AirSpecEventHandler, AirSpecLogger, AirSpecTaskRunn
 import wvlet.log.LogSupport
 import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
 
+import scala.util.Try
+
 /**
   *
   */
@@ -54,11 +56,16 @@ object AirSpecLauncher extends LogSupport {
         val testClassFullName = args(0)
         info(s"Run tests in ${testClassFullName}")
         // check the test class is object or class
-        val isObjectSpec = compat
-          .findCompanionObjectOf(testClassFullName, compat.getContextClassLoader).map { cls =>
-            cls.isInstanceOf[AirSpec]
+
+        val isObjectSpec = Try(
+          compat
+            .findCompanionObjectOf(testClassFullName, compat.getContextClassLoader)
+        ).toOption
+          .flatMap { cls =>
+            cls.map(_.isInstanceOf[AirSpec])
           }.getOrElse(false)
         val fingerprint = if (isObjectSpec) AirSpecObjectFingerPrint else AirSpecClassFingerPrint
+
         val taskDef = new TaskDef(
           testClassFullName,
           fingerprint,

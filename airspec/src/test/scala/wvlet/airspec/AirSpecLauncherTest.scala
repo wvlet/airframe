@@ -37,4 +37,7 @@ class AirSpecLauncherTest extends AirSpec {
     AirSpecLauncher.main(Array("test", "examples.CommonSpec", "hello"))
   }
 
+  test("try to run test with non-exisiting test") {
+    AirSpecLauncher.main(Array("test", "dummy.NonExistingSpec"))
+  }
 }
