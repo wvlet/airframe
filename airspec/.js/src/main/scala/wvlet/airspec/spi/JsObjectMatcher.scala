@@ -18,7 +18,7 @@ import scala.scalajs.js
 /**
   *
   */
-object JsObjectMatcher {
+private[airspec] object JsObjectMatcher {
 
   import Asserts._
 
@@ -47,6 +47,7 @@ object JsObjectMatcher {
     } else if (k1.length == 0) {
       js.JSON.stringify(v1) == js.JSON.stringify(v2)
     } else {
+      // TODO: Wait until js.Object.entries will be available https://github.com/scala-js/scala-js/pull/3869
       v1 == v2
     }
 //    else {
