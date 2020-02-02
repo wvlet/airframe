@@ -1,9 +1,12 @@
 package wvlet.airframe.rx
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 
+import wvlet.airframe.Design
+import wvlet.airframe.rx.Rx.RxVar
+import wvlet.airframe.surface.Surface
 import wvlet.airspec._
 
-class RxTest extends AirSpec {
+object RxTest extends AirSpec {
 
   test("create a new Rx variable") {
     val v = Rx(1)
@@ -37,4 +40,5 @@ class RxTest extends AirSpec {
     updateCount.get() shouldBe 2
     value.get() shouldBe s"count: 2"
   }
+
 }
