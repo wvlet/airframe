@@ -432,7 +432,9 @@ private[surface] object SurfaceMacros {
 
     def methodParametersOf(targetType: c.Type, method: MethodSymbol, args: Seq[MethodArg]): c.Tree = {
       val argTypes = args.map { x: MethodArg =>
-        toClassOf(x.tpe)
+        // #913 dealias is necessary to resolve the actual type and type parameter
+        val cls = toClassOf(x.tpe.dealias)
+        cls
       }
       val ref =
         q"wvlet.airframe.surface.MethodRef(${toClassOf(targetType)}, ${method.name.decodedName.toString}, Seq(..$argTypes), ${method.isConstructor})"
@@ -488,10 +490,9 @@ private[surface] object SurfaceMacros {
             }
 
           // Create a constructor call
+          val id = Ident(targetType.typeSymbol)
           val constructor: c.Tree =
-            argExtractor.foldLeft[c.Tree](Select(New(Ident(targetType.dealias.typeSymbol)), termNames.CONSTRUCTOR))(
-              (x, arg) => Apply(x, arg)
-            )
+            argExtractor.foldLeft[c.Tree](Select(New(id), termNames.CONSTRUCTOR))((x, arg) => Apply(x, arg))
 
           // TODO: Support companion object call for instantiating the object
           val expr =
@@ -515,13 +516,15 @@ private[surface] object SurfaceMacros {
           case Some(x) => q"Some($x)"
           case None    => q"None"
         }
-        q"""
+
+        val expr = q"""
           new wvlet.airframe.surface.GenericSurface(
             classOf[$t],
             IndexedSeq(..$typeArgs),
             params = ${methodParametersOf(t, primaryConstructor)},
             objectFactory=${factory}
         )"""
+        expr
       }
     }
 
