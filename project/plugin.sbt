@@ -5,7 +5,7 @@ addSbtPlugin("org.scalameta"      % "sbt-scalafmt"             % "2.3.1")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.6.1")
 
 // For Scala.js
-val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.0.0-RC2")
+val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.0.0")
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % SCALAJS_VERSION)
 //addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.16.0")
 
