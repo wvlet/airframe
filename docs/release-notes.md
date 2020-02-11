@@ -6,6 +6,26 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.2.0
+
+Airfarme/Airspec now support the first major release of Scala.js 1.0.0, and airframe-http-finagle becomes available for Scala 2.13.
+
+-  Upgrade to Scala.js 1.0.0 ([#926](https://github.com/wvlet/airframe/issues/926)) [[c3bd7c1](https://github.com/wvlet/airframe/commit/c3bd7c1)]
+-  airspec: Support js.Objects in shouldBe comparison ([#922](https://github.com/wvlet/airframe/issues/922)) [[fa2d66c](https://github.com/wvlet/airframe/commit/fa2d66c)]
+-  airspec: Add AirSpecLauncher for standalone testing ([#921](https://github.com/wvlet/airframe/issues/921)) [[366bca4](https://github.com/wvlet/airframe/commit/366bca4)]
+-  airframe-http: Fiangle Scala 2.13 support ([#920](https://github.com/wvlet/airframe/issues/920)) [[03c65af](https://github.com/wvlet/airframe/commit/03c65af)]
+-  airframe-http: Update finagle-core, finagle-http, ... to 20.1.0 ([#916](https://github.com/wvlet/airframe/issues/916)) [[755ea01](https://github.com/wvlet/airframe/commit/755ea01)]
+-  airframe-di: [#887](https://github.com/wvlet/airframe/issues/887) Support bind only lifecycle hooks ([#919](https://github.com/wvlet/airframe/issues/919)) [[db3648d](https://github.com/wvlet/airframe/commit/db3648d)]
+-  airframe-codec: Support Instant codec in Scala.js ([#914](https://github.com/wvlet/airframe/issues/914)) [[9974409](https://github.com/wvlet/airframe/commit/9974409)]
+-  airframe-surface: [#913](https://github.com/wvlet/airframe/issues/913): Fixed Surface.of[X] with alias parameters ([#924](https://github.com/wvlet/airframe/issues/924)) [[f30277b](https://github.com/wvlet/airframe/commit/f30277b)]
+
+
+Internal changes:
+-  Update sbt-scalajs-crossproject to 1.0.0 ([#931](https://github.com/wvlet/airframe/issues/931)) [[100fc60](https://github.com/wvlet/airframe/commit/100fc60)]
+-  Update postgresql to 42.2.10 ([#929](https://github.com/wvlet/airframe/issues/929)) [[d151605](https://github.com/wvlet/airframe/commit/d151605)]
+-  Update sbt to 1.3.8 ([#925](https://github.com/wvlet/airframe/issues/925)) [[547a331](https://github.com/wvlet/airframe/commit/547a331)]
+-  Update sbt-scalafmt to 2.3.1 ([#917](https://github.com/wvlet/airframe/issues/917)) [[e7321c1](https://github.com/wvlet/airframe/commit/e7321c1)]
+
 ## 20.1.3
 Minor bug fix release:
 -  airframe-rx-html: Fix Rx node rendering ([#912](https://github.com/wvlet/airframe/issues/912)) [[ec91f15](https://github.com/wvlet/airframe/commit/ec91f15)]
