@@ -8,7 +8,7 @@ Airframe uses YY.MM.patch versioning scheme, so the version numbers match with t
 
 ## 20.2.0
 
-Airfarme/Airspec now support the first major release of Scala.js 1.0.0, and airframe-http-finagle becomes available for Scala 2.13.
+Airframe and Airspec now support the first major release of Scala.js 1.0.0, and airframe-http-finagle becomes available for Scala 2.13.
 
 -  Upgrade to Scala.js 1.0.0 ([#926](https://github.com/wvlet/airframe/issues/926)) [[c3bd7c1](https://github.com/wvlet/airframe/commit/c3bd7c1)]
 -  airspec: Support js.Objects in shouldBe comparison ([#922](https://github.com/wvlet/airframe/issues/922)) [[fa2d66c](https://github.com/wvlet/airframe/commit/fa2d66c)]
