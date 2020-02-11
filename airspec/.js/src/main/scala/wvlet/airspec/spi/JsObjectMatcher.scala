@@ -56,7 +56,7 @@ private[airspec] object JsObjectMatcher {
       values1.zip(values2).forall {
         case ((k1, _), (k2, _)) if k1 != k2 => false
         case ((_, v1), (_, v2)) =>
-          if (js.typeOf(v1) == "object" && js.typeOf(v2) == "object")
+          if (js.typeOf(v1.asInstanceOf[js.Any]) == "object" && js.typeOf(v2.asInstanceOf[js.Any]) == "object")
             jsObjEquals(v1.asInstanceOf[js.Object], v2.asInstanceOf[js.Object])
           else
             v1 == v2
