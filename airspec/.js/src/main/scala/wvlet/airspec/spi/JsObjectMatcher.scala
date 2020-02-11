@@ -37,6 +37,10 @@ private[airspec] object JsObjectMatcher {
     }
   }
 
+  private def getValues(v: js.Object): js.Array[(String, Any)] = {
+    js.Object.entries(v).sortBy(_._1).map(p => (p._1, p._2.asInstanceOf[js.Any]))
+  }
+
   @inline
   private def deepEqual(v1: js.Object, v2: js.Object): Boolean = {
     val k1 = js.Object.keys(v1)
@@ -47,21 +51,16 @@ private[airspec] object JsObjectMatcher {
     } else if (k1.length == 0) {
       js.JSON.stringify(v1) == js.JSON.stringify(v2)
     } else {
-      // TODO: Wait until js.Object.entries will be available https://github.com/scala-js/scala-js/pull/3869
-      v1 == v2
+      val values1 = getValues(v1)
+      val values2 = getValues(v2)
+      values1.zip(values2).forall {
+        case ((k1, _), (k2, _)) if k1 != k2 => false
+        case ((_, v1), (_, v2)) =>
+          if (js.typeOf(v1) == "object" && js.typeOf(v2) == "object")
+            jsObjEquals(v1.asInstanceOf[js.Object], v2.asInstanceOf[js.Object])
+          else
+            v1 == v2
+      }
     }
-//    else {
-//      v1.
-//      val values1 = v1.entries1.sortBy(_._1).map(p => (p._1, p._2.asInstanceOf[js.Any]))
-//      val values2 = entries2.sortBy(_._1).map(p => (p._1, p._2.asInstanceOf[js.Any]))
-//      values1.zip(values2).forall {
-//        case ((k1, _), (k2, _)) if k1 != k2 => false
-//        case ((_, v1), (_, v2)) =>
-//          if (js.typeOf(v1) == "object" && js.typeOf(v2) == "object")
-//            this.apply(v1.asInstanceOf[js.Object], v2.asInstanceOf[js.Object])
-//          else
-//            v1 == v2
-//      }
-//    }
   }
 }

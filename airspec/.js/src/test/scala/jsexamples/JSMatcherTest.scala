@@ -162,7 +162,7 @@ class JSMatcherTest extends AirSpec {
   test("equal if both array have deep-equal elements in same order") {
     js.Array() shouldBe js.Array()
     js.Array(1, "a") shouldBe js.Array(1, "a")
-    js.Array(new js.Object()) shouldNotBe js.Array(new js.Object())
+    js.Array(new js.Object()) shouldBe js.Array(new js.Object())
   }
 
   test("not equal if both array have not-deep-equal elements") {
