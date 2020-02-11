@@ -19,7 +19,6 @@ Airfarme/Airspec now support the first major release of Scala.js 1.0.0, and airf
 -  airframe-codec: Support Instant codec in Scala.js ([#914](https://github.com/wvlet/airframe/issues/914)) [[9974409](https://github.com/wvlet/airframe/commit/9974409)]
 -  airframe-surface: [#913](https://github.com/wvlet/airframe/issues/913): Fixed Surface.of[X] with alias parameters ([#924](https://github.com/wvlet/airframe/issues/924)) [[f30277b](https://github.com/wvlet/airframe/commit/f30277b)]
 
-
 Internal changes:
 -  Update sbt-scalajs-crossproject to 1.0.0 ([#931](https://github.com/wvlet/airframe/issues/931)) [[100fc60](https://github.com/wvlet/airframe/commit/100fc60)]
 -  Update postgresql to 42.2.10 ([#929](https://github.com/wvlet/airframe/issues/929)) [[d151605](https://github.com/wvlet/airframe/commit/d151605)]
