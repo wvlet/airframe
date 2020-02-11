@@ -17,6 +17,7 @@ import java.util
 
 import wvlet.airframe.SourceCode
 import wvlet.airspec.AirSpecSpi
+import wvlet.airspec.spi.Asserts._
 import wvlet.log.LogSupport
 
 /**
@@ -27,33 +28,21 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
   // Here we do not extend implicit classes with AnyVal, which needs to be a public class in an object,
   // to make this enrichment available as trait
 
+  private def defaultPrinter: PartialFunction[Any, String] = {
+    case null =>
+      "null"
+    case a: Array[_] =>
+      s"[${a.mkString(",")}]"
+  }
+
   private def pp(v: Any): String = {
-    v match {
-      case null =>
-        "null"
-      case a: Array[_] =>
-        s"[${a.mkString(",")}]"
-      case _ =>
-        v.toString
-    }
-  }
+    val printer = defaultPrinter
+      .orElse(wvlet.airspec.compat.platformSpecificPrinter)
+      .orElse[Any, String] {
+        case _ => v.toString
+      }
 
-  private def arrayDeepEqual[A <: Any](value: Array[A], expected: Array[A])(code: SourceCode): Unit = {
-    if (!util.Arrays.deepEquals(
-          value.asInstanceOf[Array[java.lang.Object]],
-          expected.asInstanceOf[Array[java.lang.Object]]
-        )) {
-      throw AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
-    }
-  }
-
-  private def arrayNotDeepEqual[A](value: Array[A], expected: Array[A])(code: SourceCode): Unit = {
-    if (util.Arrays.deepEquals(
-          value.asInstanceOf[Array[java.lang.Object]],
-          expected.asInstanceOf[Array[java.lang.Object]]
-        )) {
-      throw AssertionFailure(s"${pp(value)} match with ${pp(expected)}", code)
-    }
+    printer(v)
   }
 
   private[airspec] sealed trait OptionTarget {
@@ -82,6 +71,24 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
   protected def defined: OptionTarget = DefinedTarget
   protected def empty: OptionTarget   = EmptyTarget
 
+  private def arrayDeepEqualMatcher: PartialFunction[(Any, Any), TestResult] = {
+    case (a: Array[Int], b: Array[Int])         => check(util.Arrays.equals(a, b))
+    case (a: Array[Short], b: Array[Short])     => check(util.Arrays.equals(a, b))
+    case (a: Array[Byte], b: Array[Byte])       => check(util.Arrays.equals(a, b))
+    case (a: Array[Char], b: Array[Char])       => check(util.Arrays.equals(a, b))
+    case (a: Array[Long], b: Array[Long])       => check(util.Arrays.equals(a, b))
+    case (a: Array[Boolean], b: Array[Boolean]) => check(util.Arrays.equals(a, b))
+    case (a: Array[Float], b: Array[Float])     => check(util.Arrays.equals(a, b))
+    case (a: Array[Double], b: Array[Double])   => check(util.Arrays.equals(a, b))
+    case (a: Array[AnyRef], b: Array[AnyRef]) =>
+      check(
+        util.Arrays
+          .deepEquals(a.asInstanceOf[Array[java.lang.Object]], b.asInstanceOf[Array[java.lang.Object]])
+      )
+    case (a: Iterable[_], b: Iterable[_]) => check(a == b)
+    case (a: Product, b: Product)         => check(a == b)
+  }
+
   implicit protected class ShouldBe(val value: Any) {
     protected def matchFailure(expected: Any, code: SourceCode): AssertionFailure = {
       AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
@@ -90,106 +97,30 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
       AssertionFailure(s"${pp(value)} matched with ${pp(unexpected)}", code)
     }
 
-    def shouldBe(expected: Any)(implicit code: SourceCode): Boolean = {
-      (value, expected) match {
-        case (a: Array[Int], b: Array[Int]) =>
-          if (!util.Arrays.equals(a, b)) {
-            throw matchFailure(b, code)
-          }
-        case (a: Array[Short], b: Array[Short]) =>
-          if (!util.Arrays.equals(a, b)) {
-            throw matchFailure(b, code)
-          }
-        case (a: Array[Byte], b: Array[Byte]) =>
-          if (!util.Arrays.equals(a, b)) {
-            throw matchFailure(b, code)
-          }
-        case (a: Array[Char], b: Array[Char]) =>
-          if (!util.Arrays.equals(a, b)) {
-            throw matchFailure(b, code)
-          }
-        case (a: Array[Long], b: Array[Long]) =>
-          if (!util.Arrays.equals(a, b)) {
-            throw matchFailure(b, code)
-          }
-        case (a: Array[Boolean], b: Array[Boolean]) =>
-          if (!util.Arrays.equals(a, b)) {
-            throw matchFailure(b, code)
-          }
-        case (a: Array[Float], b: Array[Float]) =>
-          if (!util.Arrays.equals(a, b)) {
-            throw matchFailure(b, code)
-          }
-        case (a: Array[Double], b: Array[Double]) =>
-          if (!util.Arrays.equals(a, b)) {
-            throw matchFailure(b, code)
-          }
-        case (a: Array[AnyRef], b: Array[AnyRef]) =>
-          arrayDeepEqual(a, b)(code)
-        case (a: Iterable[_], b: Iterable[_]) =>
-          if (a != b) {
-            throw matchFailure(b, code)
-          }
-        case (a: Product, b: Product) =>
-          if (a != b) {
-            throw matchFailure(b, code)
-          }
-        case _ =>
-          if (value != expected) {
-            throw matchFailure(expected, code)
-          }
-      }
-      true
+    private def test(expected: Any): TestResult = {
+      arrayDeepEqualMatcher
+        .orElse(wvlet.airspec.compat.platformSpecificMatcher)
+        .orElse[(Any, Any), TestResult] {
+          case _ =>
+            check(value == expected)
+        }
+        .apply(value, expected)
     }
 
-    def shouldNotBe(unexpected: Any)(implicit code: SourceCode): Unit = {
-      (value, unexpected) match {
-        case (a: Array[Int], b: Array[Int]) =>
-          if (util.Arrays.equals(a, b)) {
-            throw unmatchFailure(b, code)
-          }
-        case (a: Array[Short], b: Array[Short]) =>
-          if (util.Arrays.equals(a, b)) {
-            throw unmatchFailure(b, code)
-          }
-        case (a: Array[Byte], b: Array[Byte]) =>
-          if (util.Arrays.equals(a, b)) {
-            throw unmatchFailure(b, code)
-          }
-        case (a: Array[Char], b: Array[Char]) =>
-          if (util.Arrays.equals(a, b)) {
-            throw unmatchFailure(b, code)
-          }
-        case (a: Array[Long], b: Array[Long]) =>
-          if (util.Arrays.equals(a, b)) {
-            throw unmatchFailure(b, code)
-          }
-        case (a: Array[Boolean], b: Array[Boolean]) =>
-          if (util.Arrays.equals(a, b)) {
-            throw unmatchFailure(b, code)
-          }
-        case (a: Array[Float], b: Array[Float]) =>
-          if (util.Arrays.equals(a, b)) {
-            throw unmatchFailure(b, code)
-          }
-        case (a: Array[Double], b: Array[Double]) =>
-          if (util.Arrays.equals(a, b)) {
-            throw unmatchFailure(b, code)
-          }
-        case (a: Array[AnyRef], b: Array[AnyRef]) =>
-          arrayNotDeepEqual(a, b)(code)
-        case (a: Iterable[_], b: Iterable[_]) =>
-          if (a == b) {
-            throw unmatchFailure(b, code)
-          }
-        case (a: Product, b: Product) =>
-          if (a == b) {
-            throw unmatchFailure(b, code)
-          }
-        case _ =>
-          if (value == unexpected) {
-            throw unmatchFailure(unexpected, code)
-          }
+    def shouldBe(expected: Any)(implicit code: SourceCode): Boolean = {
+      test(expected) match {
+        case Ok => true
+        case Failed =>
+          throw matchFailure(expected, code)
+      }
+    }
+
+    def shouldNotBe(unexpected: Any)(implicit code: SourceCode): Boolean = {
+      test(unexpected) match {
+        case Ok =>
+          throw unmatchFailure(unexpected, code)
+        case Failed =>
+          true
       }
     }
 

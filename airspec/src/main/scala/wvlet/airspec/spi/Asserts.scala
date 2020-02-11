@@ -19,6 +19,20 @@ import wvlet.airspec.{AirSpecMacros, AirSpecSpi}
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
 
+object Asserts {
+  private[airspec] sealed trait TestResult
+  private[airspec] case object Ok     extends TestResult
+  private[airspec] case object Failed extends TestResult
+
+  private[airspec] def check(cond: Boolean): TestResult = {
+    if (cond) {
+      Ok
+    } else {
+      Failed
+    }
+  }
+}
+
 /**
   *
   */

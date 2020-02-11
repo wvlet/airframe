@@ -15,6 +15,7 @@ package wvlet.airspec
 
 import sbt.testing.Fingerprint
 import wvlet.airframe.surface.MethodSurface
+import wvlet.airspec.spi.Asserts
 
 /**
   * An interface for compatibility between Scala JVM and Scala.js
@@ -33,4 +34,7 @@ trait CompatApi {
   private[airspec] def getSpecName(cls: Class[_]): String
 
   private[airspec] def getContextClassLoader: ClassLoader
+
+  private[airspec] def platformSpecificMatcher: PartialFunction[(Any, Any), Asserts.TestResult] = PartialFunction.empty
+  private[airspec] def platformSpecificPrinter: PartialFunction[Any, String]                    = PartialFunction.empty
 }
