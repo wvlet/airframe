@@ -690,7 +690,7 @@ lazy val rx =
       jsBuildSettings,
       jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % "0.9.8"
+        "org.scala-js" %%% "scalajs-dom" % "1.0.0"
       )
     )
     .dependsOn(log, airspecRef % "test")
