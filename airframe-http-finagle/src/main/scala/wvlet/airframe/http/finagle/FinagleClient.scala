@@ -86,6 +86,13 @@ case class FinagleClientConfig(
 class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     extends HttpClient[Future, http.Request, http.Response]
     with LogSupport {
+
+  // Use the bridged scheduler by default to avoid blocking at Await.result in SyncClient.
+  // The forkjoin scheduler was unstable in CI
+  Option(System.getProperty("com.twitter.finagle.exp.scheduler")).getOrElse {
+    System.setProperty("com.twitter.finagle.exp.scheduler", "bridged")
+  }
+
   private[this] val client = {
     val retryFilter                = new FinagleRetryFilter(config.retryContext)
     var finagleClient: Http.Client = config.initClient(Http.client)
