@@ -89,7 +89,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
 
   // Use the forkjoin scheduler by default to avoid blocking at Await.result in SyncClient
   Option(System.getProperty("com.twitter.finagle.exp.scheduler")).getOrElse {
-    System.setProperty("com.twitter.finagle.exp.scheduler", "forkjoin")
+    System.setProperty("com.twitter.finagle.exp.scheduler", "bridged")
   }
 
   private[this] val client = {
