@@ -33,8 +33,6 @@ object SealedTraitBindingTest extends AirSpec {
     val design = Design.newSilentDesign
       .bind[Adt].toInstance(Adt.Foo)
 
-    design.build[Service] { s =>
-      info(s.adt)
-    }
+    design.build[Service] { s => info(s.adt) }
   }
 }
