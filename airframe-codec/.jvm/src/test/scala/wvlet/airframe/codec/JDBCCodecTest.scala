@@ -32,9 +32,7 @@ class JDBCCodecTest extends AirSpec {
     withResource(DriverManager.getConnection("jdbc:sqlite::memory:")) { conn =>
       withResource(conn.createStatement()) { stmt =>
         debug(sql)
-        withResource(stmt.executeQuery(sql)) { rs =>
-          body(rs)
-        }
+        withResource(stmt.executeQuery(sql)) { rs => body(rs) }
       }
     }
   }

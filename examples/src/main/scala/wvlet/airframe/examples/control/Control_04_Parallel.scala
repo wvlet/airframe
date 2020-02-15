@@ -19,7 +19,5 @@ import wvlet.airframe.control.Parallel
   *
   */
 object Control_04_Parallel extends App {
-  Parallel.run(source = 1 until 100, parallelism = 10) { i =>
-    i * 2
-  }
+  Parallel.run(source = 1 until 100, parallelism = 10) { i => i * 2 }
 }

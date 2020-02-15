@@ -63,9 +63,7 @@ trait ConnectionPool extends LogSupport with AutoCloseable {
     withConnection { conn =>
       withResource(conn.createStatement()) { stmt =>
         debug(s"execute query: ${sql}")
-        withResource(stmt.executeQuery(sql)) { rs =>
-          handler(rs)
-        }
+        withResource(stmt.executeQuery(sql)) { rs => handler(rs) }
       }
     }
   }
@@ -84,9 +82,7 @@ trait ConnectionPool extends LogSupport with AutoCloseable {
       withResource(conn.prepareStatement(preparedStatement)) { stmt =>
         body(stmt)
         debug(s"execute query: ${preparedStatement}")
-        withResource(stmt.executeQuery) { rs =>
-          handler(rs)
-        }
+        withResource(stmt.executeQuery) { rs => handler(rs) }
       }
     }
   }

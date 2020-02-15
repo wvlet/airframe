@@ -26,8 +26,6 @@ class DesignBuildTest extends AirSpec {
     val d = newSilentDesign
       .bind[String].toInstance(helloDesign)
 
-    d.build[String] { x =>
-      helloDesign
-    }
+    d.build[String] { x => helloDesign }
   }
 }

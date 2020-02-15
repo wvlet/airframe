@@ -462,9 +462,7 @@ object PrimitiveCodec {
   object IntArrayCodec extends MessageCodec[Array[Int]] {
     override def pack(p: Packer, v: Array[Int]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x =>
-        IntCodec.pack(p, x)
-      }
+      v.foreach { x => IntCodec.pack(p, x) }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
@@ -488,9 +486,7 @@ object PrimitiveCodec {
   object ShortArrayCodec extends MessageCodec[Array[Short]] {
     override def pack(p: Packer, v: Array[Short]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x =>
-        ShortCodec.pack(p, x)
-      }
+      v.foreach { x => ShortCodec.pack(p, x) }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
@@ -519,9 +515,7 @@ object PrimitiveCodec {
   object CharArrayCodec extends MessageCodec[Array[Char]] {
     override def pack(p: Packer, v: Array[Char]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x =>
-        CharCodec.pack(p, x)
-      }
+      v.foreach { x => CharCodec.pack(p, x) }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
@@ -550,9 +544,7 @@ object PrimitiveCodec {
   object LongArrayCodec extends MessageCodec[Array[Long]] {
     override def pack(p: Packer, v: Array[Long]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x =>
-        LongCodec.pack(p, x)
-      }
+      v.foreach { x => LongCodec.pack(p, x) }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
@@ -576,9 +568,7 @@ object PrimitiveCodec {
   object FloatArrayCodec extends MessageCodec[Array[Float]] {
     override def pack(p: Packer, v: Array[Float]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x =>
-        FloatCodec.pack(p, x)
-      }
+      v.foreach { x => FloatCodec.pack(p, x) }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
@@ -602,9 +592,7 @@ object PrimitiveCodec {
   object DoubleArrayCodec extends MessageCodec[Array[Double]] {
     override def pack(p: Packer, v: Array[Double]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x =>
-        DoubleCodec.pack(p, x)
-      }
+      v.foreach { x => DoubleCodec.pack(p, x) }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
@@ -627,9 +615,7 @@ object PrimitiveCodec {
   object BooleanArrayCodec extends MessageCodec[Array[Boolean]] {
     override def pack(p: Packer, v: Array[Boolean]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x =>
-        BooleanCodec.pack(p, x)
-      }
+      v.foreach { x => BooleanCodec.pack(p, x) }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
@@ -703,9 +689,7 @@ object PrimitiveCodec {
   object StringArrayCodec extends MessageCodec[Array[String]] {
     override def pack(p: Packer, v: Array[String]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x =>
-        StringCodec.pack(p, x)
-      }
+      v.foreach { x => StringCodec.pack(p, x) }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {

@@ -375,9 +375,7 @@ private[surface] object SurfaceMacros {
 
       // Exclude implicit ClassTag arguments
       val filteredParamLists = constructor.paramLists.map { params =>
-        params.filter { x =>
-          !x.typeSignature.toString.startsWith("scala.reflect.ClassTag[")
-        }
+        params.filter { x => !x.typeSignature.toString.startsWith("scala.reflect.ClassTag[") }
       }
 
       val ret = for (params <- filteredParamLists) yield {
@@ -392,9 +390,7 @@ private[surface] object SurfaceMacros {
                 findMethod(x, "apply$default$" + index)
                   .orElse(findMethod(x, "$lessinit$greater$default$" + index))
               // TODO: This doesn't work for local case class with default parameter values in Scala.js
-              defaultValueGetter.map { method =>
-                q"${method}"
-              }
+              defaultValueGetter.map { method => q"${method}" }
             }
 
           val isRequired = p.annotations.exists(_.tree.tpe == typeOf[required])

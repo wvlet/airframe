@@ -21,6 +21,4 @@ import org.portablescala.reflect.annotation.EnableReflectiveInstantiation
   * EnableReflectiveInstantiation annotation is necessary to support (test class).getInstance() in Scala.js
   */
 @EnableReflectiveInstantiation
-trait PlatformAirSpec {
-  this: AirSpecSpi =>
-}
+trait PlatformAirSpec { this: AirSpecSpi => }

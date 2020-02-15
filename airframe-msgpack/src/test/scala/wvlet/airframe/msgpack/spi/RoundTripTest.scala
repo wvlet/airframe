@@ -174,22 +174,16 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     // Long
     b4.foreach { b =>
       intercept[IntegerOverflowException] {
-        rawRoundtrip(b) { OffsetPacker.packBigInteger(_, _) } { x =>
-          BigInteger.valueOf(OffsetUnpacker.unpackLong(x))
-        }
+        rawRoundtrip(b) { OffsetPacker.packBigInteger(_, _) } { x => BigInteger.valueOf(OffsetUnpacker.unpackLong(x)) }
       }
     }
   }
 
   def `support Nil`: Unit = {
-    rawRoundtrip(null) { (cursor, v) =>
-      OffsetPacker.packNil(cursor)
-    } { cursor =>
+    rawRoundtrip(null) { (cursor, v) => OffsetPacker.packNil(cursor) } { cursor =>
       OffsetUnpacker.unpackNil(cursor); null
     }
-    rawRoundtrip(null) { (cursor, v) =>
-      OffsetPacker.packNil(cursor)
-    } { cursor =>
+    rawRoundtrip(null) { (cursor, v) => OffsetPacker.packNil(cursor) } { cursor =>
       OffsetUnpacker.tryUnpackNil(cursor); null
     }
   }
@@ -200,27 +194,17 @@ class RoundTripTest extends AirSpec with PropertyCheck {
   }
 
   def `support Fixnum`: Unit = {
-    forAll(Gen.chooseNum[Byte](-32, 127)) { v: Byte =>
-      testByte(v)
-    }
+    forAll(Gen.chooseNum[Byte](-32, 127)) { v: Byte => testByte(v) }
   }
 
   def `support Byte`: Unit = {
-    forAll { (v: Byte) =>
-      testByte(v)
-    }
+    forAll { (v: Byte) => testByte(v) }
   }
 
   def `support Short`: Unit = {
-    forAll { v: Short =>
-      testShort(v)
-    }
-    forAll(Gen.chooseNum[Short]((Byte.MaxValue.toShort + 1).toShort, (1 << 8).toShort)) { v: Short =>
-      testShort(v)
-    }
-    forAll(Gen.chooseNum[Short]((1 << 8).toShort, Short.MaxValue)) { v: Short =>
-      testShort(v)
-    }
+    forAll { v: Short => testShort(v) }
+    forAll(Gen.chooseNum[Short]((Byte.MaxValue.toShort + 1).toShort, (1 << 8).toShort)) { v: Short => testShort(v) }
+    forAll(Gen.chooseNum[Short]((1 << 8).toShort, Short.MaxValue)) { v: Short => testShort(v) }
   }
 
   def `support Int`: Unit = {
@@ -256,9 +240,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
 
   def `support Long`: Unit = {
     // UINT32
-    roundtrip((1L << 31) + 1) { (c, v) =>
-      OffsetPacker.packUINT32(c, v.toInt)
-    } { OffsetUnpacker.unpackLong(_) }
+    roundtrip((1L << 31) + 1) { (c, v) => OffsetPacker.packUINT32(c, v.toInt) } { OffsetUnpacker.unpackLong(_) }
 
     forAll { (v: Long) =>
       val packers = Seq[(WriteCursor, Long) => Unit](
@@ -288,24 +270,18 @@ class RoundTripTest extends AirSpec with PropertyCheck {
 
   def `support INT8`: Unit = {
     // INT8
-    roundtrip[Short](-1) { (cursor, v) =>
-      OffsetPacker.packShort(cursor, v)
-    } { OffsetUnpacker.unpackShort(_) }
+    roundtrip[Short](-1) { (cursor, v) => OffsetPacker.packShort(cursor, v) } { OffsetUnpacker.unpackShort(_) }
 
-    roundtrip(-1) { (cursor, v) =>
-      OffsetPacker.packInt(cursor, v)
-    } { OffsetUnpacker.unpackInt(_) }
+    roundtrip(-1) { (cursor, v) => OffsetPacker.packInt(cursor, v) } { OffsetUnpacker.unpackInt(_) }
 
-    roundtrip(-1.toLong) { (cursor, v) =>
-      OffsetPacker.packLong(cursor, v)
-    } { OffsetUnpacker.unpackLong(_) }
+    roundtrip(-1.toLong) { (cursor, v) => OffsetPacker.packLong(cursor, v) } { OffsetUnpacker.unpackLong(_) }
   }
 
   def `support BigInteger`: Unit = {
     // UINT32
-    roundtrip((1L << 31) + 1) { (c, v) =>
-      OffsetPacker.packUINT32(c, v.toInt)
-    } { OffsetUnpacker.unpackBigInteger(_).longValue() }
+    roundtrip((1L << 31) + 1) { (c, v) => OffsetPacker.packUINT32(c, v.toInt) } {
+      OffsetUnpacker.unpackBigInteger(_).longValue()
+    }
     forAll { (l: Long) =>
       val v = BigInteger.valueOf(l)
       roundtrip(v) { OffsetPacker.packBigInteger(_, _) } { OffsetUnpacker.unpackBigInteger(_) }

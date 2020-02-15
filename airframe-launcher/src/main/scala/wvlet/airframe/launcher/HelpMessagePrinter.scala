@@ -124,9 +124,7 @@ object HelpMessagePrinter extends LogSupport with AnsiColorPalette {
     val format            = s" %-${math.max(10, maxCommandNameLen)}s\t%s"
     // Show sub commend lists
     commandList
-      .map { c =>
-        format.format(c.name, withColor(BRIGHT_CYAN, c.description))
-      }
+      .map { c => format.format(c.name, withColor(BRIGHT_CYAN, c.description)) }
       .mkString("\n")
   }
 

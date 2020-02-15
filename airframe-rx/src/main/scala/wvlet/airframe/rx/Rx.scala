@@ -75,9 +75,7 @@ object Rx extends LogSupport {
           c1.cancel
           c1 = run(rxb)(effect)
         }
-        Cancelable { () =>
-          c1.cancel; c2.cancel
-        }
+        Cancelable { () => c1.cancel; c2.cancel }
       case NamedOp(input, name) =>
         run(input)(effect)
       case v @ RxVar(currentValue) =>
@@ -119,10 +117,8 @@ object Rx extends LogSupport {
       }
     }
 
-    def :=(newValue: A): Unit = set(newValue)
-    def set(newValue: A): Unit = update { x: A =>
-      newValue
-    }
+    def :=(newValue: A): Unit  = set(newValue)
+    def set(newValue: A): Unit = update { x: A => newValue }
 
     /**
       * Updates the variable and trigger the recalculation of the subscribers
@@ -132,9 +128,7 @@ object Rx extends LogSupport {
       val newValue = updater(currentValue)
       if (currentValue != newValue) {
         currentValue = newValue
-        subscribers.map { s =>
-          s(newValue)
-        }
+        subscribers.map { s => s(newValue) }
       }
     }
   }

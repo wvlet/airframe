@@ -97,13 +97,9 @@ class BenchmarkMain(
       .measurementTime(TimeValue.milliseconds(measurementTime.toMillis.toLong))
       .include(targetPackage.map(x => s".*${x}.*").getOrElse(".*"))
 
-    resultFormat.map { rf =>
-      opt = opt.resultFormat(ResultFormatType.valueOf(rf.toUpperCase()))
-    }
+    resultFormat.map { rf => opt = opt.resultFormat(ResultFormatType.valueOf(rf.toUpperCase())) }
 
-    resultOutput.map { out =>
-      opt = opt.result(out)
-    }
+    resultOutput.map { out => opt = opt.result(out) }
 
     new Runner(opt.build()).run()
   }

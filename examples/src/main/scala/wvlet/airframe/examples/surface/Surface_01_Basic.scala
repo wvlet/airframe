@@ -34,8 +34,6 @@ object Surface_01_Basic extends App with LogSupport {
   info(p1.surface)         // Primitive.String
   info(p1.getDefaultValue) // None
 
-  val obj = surface.objectFactory.map { f =>
-    f.newInstance(Seq(10010, "hello"))
-  }
+  val obj = surface.objectFactory.map { f => f.newInstance(Seq(10010, "hello")) }
   info(obj) // Some(MyConfig(10010, hello))
 }

@@ -40,9 +40,7 @@ object ChildSessionTest {
 
   trait ThreadManagerService extends LogSupport {
     val threadManager = bind[ThreadManager]
-      .onStart { t =>
-        debug(s"Started thread manager: ${t.threadId}")
-      }
+      .onStart { t => debug(s"Started thread manager: ${t.threadId}") }
       .onShutdown { t =>
         if (closed.get()) {
           throw new IllegalStateException("ThreadManager is already closed")
@@ -86,9 +84,7 @@ object ChildSessionTest {
 
   trait HttpRequestHandler extends LogSupport with ThreadManagerService with UserAuth {
     val req = bind[HttpRequest]
-      .onShutdown { r =>
-        requestCount.incrementAndGet()
-      }
+      .onShutdown { r => requestCount.incrementAndGet() }
     val user = bind[User]
 
     def handle: HandlerResult = {

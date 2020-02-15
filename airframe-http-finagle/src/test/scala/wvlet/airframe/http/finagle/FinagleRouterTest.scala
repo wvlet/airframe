@@ -117,9 +117,7 @@ class FinagleRouterTest extends AirSpec {
   protected override def design: Design = {
     newFinagleServerDesign(router = Router.add[MyApi]).noLifeCycleLogging
       .bind[FinagleServer].toEagerSingleton
-      .bind[FinagleClient].toProvider { server: FinagleServer =>
-        Finagle.client.noRetry.newClient(server.localAddress)
-      }
+      .bind[FinagleClient].toProvider { server: FinagleServer => Finagle.client.noRetry.newClient(server.localAddress) }
   }
 
   def `support Router.of[X] and Router.add[X]` : Unit = {
@@ -138,36 +136,26 @@ class FinagleRouterTest extends AirSpec {
 
   class ResponseTest(client: FinagleClient) extends AirSpec {
     def `Support future responses`: Unit = {
-      val f1 = client.send(Request("/v1/info")).map { response =>
-        debug(response.contentString)
-      }
-      val f2 = client.send(Request("/v1/rich_info")).map { r =>
-        debug(r.contentString)
-      }
+      val f1 = client.send(Request("/v1/info")).map { response => debug(response.contentString) }
+      val f2 = client.send(Request("/v1/rich_info")).map { r => debug(r.contentString) }
 
       Await.result(f1.join(f2))
 
       // making many requests
       val futures = (0 until 5).map { x =>
-        client.send(Request("/v1/rich_info")).map { response =>
-          response.contentString
-        }
+        client.send(Request("/v1/rich_info")).map { response => response.contentString }
       }
 
       val result = Await.result(Future.collect(futures))
       debug(result.mkString(", "))
 
       // Future response
-      Await.result(client.send(Request("/v1/future")).map { response =>
-        response.contentString
-      }) shouldBe "hello"
+      Await.result(client.send(Request("/v1/future")).map { response => response.contentString }) shouldBe "hello"
     }
 
     def `support JSON response` = {
       // JSON response
-      val json = Await.result(client.send(Request("/v1/rich_info_future")).map { response =>
-        response.contentString
-      })
+      val json = Await.result(client.send(Request("/v1/rich_info_future")).map { response => response.contentString })
 
       json shouldBe """{"version":"0.1","name":"MyApi","details":{"serverType":"test-server"}}"""
     }

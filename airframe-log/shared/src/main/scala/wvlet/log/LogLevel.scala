@@ -27,13 +27,9 @@ object LogLevel {
   case object TRACE extends LogLevel(5, Level.FINER, "trace")
   case object ALL   extends LogLevel(6, Level.ALL, "all")
 
-  val values = IndexedSeq(OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL)
-  private lazy val index = values.map { l =>
-    l.name.toLowerCase -> l
-  }.toMap
-  private lazy val jlLevelIndex = values.map { l =>
-    l.jlLevel -> l
-  }.toMap
+  val values                    = IndexedSeq(OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL)
+  private lazy val index        = values.map { l => l.name.toLowerCase -> l }.toMap
+  private lazy val jlLevelIndex = values.map { l => l.jlLevel -> l }.toMap
 
   def apply(name: String): LogLevel = {
     val n  = name.toLowerCase()

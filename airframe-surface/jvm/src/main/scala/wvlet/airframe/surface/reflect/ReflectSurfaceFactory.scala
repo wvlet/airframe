@@ -128,9 +128,7 @@ object ReflectSurfaceFactory extends LogSupport {
 
   def methodsOf(s: Surface): Seq[MethodSurface] = {
     findTypeOf(s)
-      .map { tpe =>
-        methodsOfType(tpe)
-      }
+      .map { tpe => methodsOfType(tpe) }
       .getOrElse(Seq.empty)
   }
 
@@ -486,11 +484,9 @@ object ReflectSurfaceFactory extends LogSupport {
     }
 
     def methodParametersOf(targetType: ru.Type, method: MethodSymbol): Seq[RuntimeMethodParameter] = {
-      val args = methodArgsOf(targetType, method).flatten
-      val argTypes = args.map { x: MethodArg =>
-        resolveClass(x.tpe)
-      }.toSeq
-      val ref = MethodRef(resolveClass(targetType), method.name.decodedName.toString, argTypes, method.isConstructor)
+      val args     = methodArgsOf(targetType, method).flatten
+      val argTypes = args.map { x: MethodArg => resolveClass(x.tpe) }.toSeq
+      val ref      = MethodRef(resolveClass(targetType), method.name.decodedName.toString, argTypes, method.isConstructor)
 
       var index = 0
       val surfaceParams = args.map { arg =>
@@ -603,9 +599,7 @@ object ReflectSurfaceFactory extends LogSupport {
               val argList = Seq.newBuilder[AnyRef]
               if (!isStatic) {
                 // Add a reference to the context instance if this surface represents an inner class
-                outerInstance.foreach { x =>
-                  argList += x
-                }
+                outerInstance.foreach { x => argList += x }
               }
               argList ++= args.map(_.asInstanceOf[AnyRef])
               val a = argList.result()

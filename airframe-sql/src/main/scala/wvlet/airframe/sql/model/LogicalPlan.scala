@@ -46,9 +46,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
       }
     }
 
-    productIterator.flatMap { x =>
-      collectExpression(x)
-    }.toSeq
+    productIterator.flatMap { x => collectExpression(x) }.toSeq
   }
 
   def mapChildren(f: LogicalPlan => LogicalPlan): LogicalPlan = {

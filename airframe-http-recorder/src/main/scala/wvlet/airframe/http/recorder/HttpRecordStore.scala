@@ -152,18 +152,14 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
       prepare.setString(1, recorderConfig.sessionName)
       prepare.setInt(2, rh)
       prepare.setInt(3, hitCount)
-    } { rs =>
-      HttpRecord.read(rs).headOption
-    }
+    } { rs => HttpRecord.read(rs).headOption }
   }
 
   def record(request: Request, response: Response): Unit = {
     val rh = recorderConfig.requestMatcher.computeHash(request)
 
     val httpHeadersForRecording: Seq[(String, String)] =
-      request.headerMap.toSeq.filterNot { x =>
-        recorderConfig.excludeHeaderFilterForRecording(x._1, x._2)
-      }
+      request.headerMap.toSeq.filterNot { x => recorderConfig.excludeHeaderFilterForRecording(x._1, x._2) }
     val entry = HttpRecord(
       recorderConfig.sessionName,
       requestHash = rh,
@@ -179,9 +175,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     )
 
     trace(s"record: request hash ${rh} for ${request} -> ${entry.summary}")
-    connectionPool.withConnection { conn =>
-      entry.insertInto(recordTableName, conn)
-    }
+    connectionPool.withConnection { conn => entry.insertInto(recordTableName, conn) }
   }
 
   override def close(): Unit = {

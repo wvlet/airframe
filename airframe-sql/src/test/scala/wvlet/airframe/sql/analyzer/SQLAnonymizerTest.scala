@@ -39,9 +39,7 @@ class SQLAnonymizerTest extends AirSpec {
   protected def processQueries(input: Seq[TestQuery]): Unit = {
     val queries = input.map(_.sql)
     val dict    = SQLAnonymizer.buildAnonymizationDictionary(queries)
-    input.foreach { x =>
-      process(x, dict)
-    }
+    input.foreach { x => process(x, dict) }
   }
 
   def `anonymize standard queries`: Unit = {

@@ -56,9 +56,7 @@ object HttpRequestMatcher {
         case headers if headers.isEmpty => prefix.hashCode * 13
         case headers =>
           val headerHash = headers
-            .map { x =>
-              s"${x._1.toLowerCase(Locale.ENGLISH)}:${x._2}".hashCode
-            }.reduce { (xor, next) =>
+            .map { x => s"${x._1.toLowerCase(Locale.ENGLISH)}:${x._2}".hashCode }.reduce { (xor, next) =>
               xor ^ next // Take XOR to compute order-insensitive hash values.
             }
           prefix.hashCode * 13 + headerHash

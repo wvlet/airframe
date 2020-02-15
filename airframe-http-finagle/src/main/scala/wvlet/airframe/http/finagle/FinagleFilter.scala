@@ -39,8 +39,6 @@ class FinagleRouter(session: Session, private[finagle] val config: FinagleServer
     )
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
-    dispatcher.apply(request, FinagleBackend.newContext { request: Request =>
-      service(request)
-    })
+    dispatcher.apply(request, FinagleBackend.newContext { request: Request => service(request) })
   }
 }

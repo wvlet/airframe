@@ -37,14 +37,10 @@ object TimeParser extends LogSupport {
 
   def parseLocalDateTime(s: String, zone: ZoneOffset): Option[TimeParseResult] = {
     Try(LocalDateTime.parse(s, localDateTimePattern))
-      .map { d =>
-        TimeParseResult(ZonedDateTime.of(d, zone), TimeWindowUnit.Second)
-      }
+      .map { d => TimeParseResult(ZonedDateTime.of(d, zone), TimeWindowUnit.Second) }
       .orElse {
         Try(LocalDate.parse(s, localDatePattern))
-          .map { d =>
-            TimeParseResult(d.atStartOfDay(zone), TimeWindowUnit.Day)
-          }
+          .map { d => TimeParseResult(d.atStartOfDay(zone), TimeWindowUnit.Day) }
       }
       .toOption
   }

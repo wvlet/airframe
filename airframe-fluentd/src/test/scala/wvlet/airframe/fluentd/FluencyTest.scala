@@ -26,9 +26,7 @@ import wvlet.log.io.IOUtil
 case class MockFluentdConfig(port: Int)
 
 trait MockFluentd extends LogSupport {
-  lazy val socket = bind { config: MockFluentdConfig =>
-    new ServerSocket(config.port)
-  }
+  lazy val socket = bind { config: MockFluentdConfig => new ServerSocket(config.port) }
 
   val shutdown = new AtomicBoolean(false)
 

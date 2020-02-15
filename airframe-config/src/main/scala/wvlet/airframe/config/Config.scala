@@ -299,9 +299,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
   ): Config = {
     val p = new Properties
     for ((k, v) <- props) {
-      Option(v).map { x =>
-        p.setProperty(k, x.toString)
-      }
+      Option(v).map { x => p.setProperty(k, x.toString) }
     }
     if (p.isEmpty) this else PropertiesConfig.overrideWithProperties(this, p, onUnusedProperties)
   }

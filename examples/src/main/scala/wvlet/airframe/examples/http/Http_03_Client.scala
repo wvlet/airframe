@@ -48,9 +48,7 @@ object Http_03_Client extends App with LogSupport {
         // Set request timeout
         .withTimeout(Duration(90, TimeUnit.SECONDS))
         // Add Finagle specific configuration
-        .withInitializer { client: Http.Client =>
-          client.withHttp2
-        } // optional
+        .withInitializer { client: Http.Client => client.withHttp2 } // optional
         .newSyncClient(server.localAddress)
     } { client =>
       // Read the JSON response as an object

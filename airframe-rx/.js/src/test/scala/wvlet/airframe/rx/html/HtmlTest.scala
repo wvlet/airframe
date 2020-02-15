@@ -54,9 +54,7 @@ class HtmlTest extends AirSpec {
   test("table") {
     val t = table(
       th(
-        Seq("col1", "col2").map { x =>
-          td(cls("col"), x)
-        }
+        Seq("col1", "col2").map { x => td(cls("col"), x) }
       ),
       for (i <- 0 to 2) yield {
         tr(
@@ -88,16 +86,12 @@ class HtmlTest extends AirSpec {
   }
 
   test("add onclick") {
-    val d = button("hello", onclick { e: dom.MouseEvent =>
-      println("clicked")
-    })
+    val d = button("hello", onclick { e: dom.MouseEvent => println("clicked") })
     render(d)
   }
 
   test("add onclick without arg") {
-    val d = button("hello", onclick { () =>
-      println("clicked")
-    })
+    val d = button("hello", onclick { () => println("clicked") })
     render(d)
   }
 

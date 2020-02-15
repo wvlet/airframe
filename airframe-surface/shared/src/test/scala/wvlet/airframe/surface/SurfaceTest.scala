@@ -205,10 +205,8 @@ class SurfaceTest extends SurfaceSpec {
   }
 
   def `generate concrete object factory`: Unit = {
-    val d = check(Surface.of[D[String]], "D[String]")
-    val d0 = d.objectFactory.map { f =>
-      f.newInstance(Seq(1, "leo"))
-    }.get
+    val d  = check(Surface.of[D[String]], "D[String]")
+    val d0 = d.objectFactory.map { f => f.newInstance(Seq(1, "leo")) }.get
     debug(d0)
     assert(d0 == D(1, "leo"))
   }

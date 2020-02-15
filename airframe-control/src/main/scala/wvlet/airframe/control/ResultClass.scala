@@ -43,11 +43,7 @@ object ResultClass {
   def retryableFailure(e: Throwable): Failed    = Retry.retryableFailure(e)
   def nonRetryableFailure(e: Throwable): Failed = Retry.nonRetryableFailure(e)
 
-  def ALWAYS_SUCCEED: Any => ResultClass = { x: Any =>
-    Succeeded
-  }
+  def ALWAYS_SUCCEED: Any => ResultClass = { x: Any => Succeeded }
 
-  def ALWAYS_RETRY: Throwable => ResultClass.Failed = { e: Throwable =>
-    retryableFailure(e)
-  }
+  def ALWAYS_RETRY: Throwable => ResultClass.Failed = { e: Throwable => retryableFailure(e) }
 }

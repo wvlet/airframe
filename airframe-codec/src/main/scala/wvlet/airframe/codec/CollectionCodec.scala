@@ -163,9 +163,7 @@ object CollectionCodec {
           val json = u.unpackString
           try {
             val msgpack = JSONCodec.toMsgPack(json)
-            this.unpackMsgPack(msgpack).map { x =>
-              v.setObject(x)
-            }
+            this.unpackMsgPack(msgpack).map { x => v.setObject(x) }
           } catch {
             case e: JSONParseException =>
               v.setError(e)
@@ -206,9 +204,7 @@ object CollectionCodec {
           val json = u.unpackString
           try {
             val msgpack = JSONCodec.toMsgPack(json)
-            this.unpackMsgPack(msgpack).map { x =>
-              v.setObject(x)
-            }
+            this.unpackMsgPack(msgpack).map { x => v.setObject(x) }
           } catch {
             case e: JSONParseException =>
               v.setError(e)

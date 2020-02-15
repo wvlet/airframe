@@ -36,9 +36,7 @@ object LogLevelScanner {
     */
   def setLogLevels(file: File): Unit = {
     val logLevels = new Properties()
-    withResource(new FileReader(file)) { in =>
-      logLevels.load(in)
-    }
+    withResource(new FileReader(file)) { in => logLevels.load(in) }
     Logger.setLogLevels(logLevels)
   }
 

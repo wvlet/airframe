@@ -25,17 +25,13 @@ object Path extends LogSupport {
   def apply(s: String): Path = {
     if (s.startsWith("""/""")) {
       val c = s.substring(1).split("""\/""")
-      c.foldLeft[Path](Root) { (parent, component) =>
-        parent / component
-      }
+      c.foldLeft[Path](Root) { (parent, component) => parent / component }
     } else {
       val c = s.split("""\/""")
       c.length match {
         case 0 => Current
         case _ =>
-          c.foldLeft[Path](Current) { (parent, component) =>
-            parent / component
-          }
+          c.foldLeft[Path](Current) { (parent, component) => parent / component }
       }
     }
   }
@@ -87,9 +83,7 @@ trait Path extends Iterable[String] {
     if (isEmpty) {
       Path.Current
     } else {
-      drop(1).foldLeft[Path](Path.Current) { (p, c) =>
-        p / c
-      }
+      drop(1).foldLeft[Path](Path.Current) { (p, c) => p / c }
     }
 
   def iterator: Iterator[String] = parent match {

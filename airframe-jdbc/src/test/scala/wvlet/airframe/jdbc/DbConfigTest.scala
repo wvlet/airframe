@@ -48,9 +48,7 @@ class DbConfigTest extends AirSpec {
     val configList = d.currentConfig.printConfig
     info(configList)
 
-    d.build[DbConfig] { c =>
-      debug(c)
-    }
+    d.build[DbConfig] { c => debug(c) }
   }
 
 }

@@ -40,9 +40,7 @@ class RxWidgetTest extends AirSpec {
   }
 
   test("reuse component") {
-    val myCode: RxComponent = RxComponent { content =>
-      pre(code(content))
-    }
+    val myCode: RxComponent = RxComponent { content => pre(code(content)) }
 
     val node: RxElement = myCode("import wvlet")
     val html            = render(node)
@@ -59,9 +57,7 @@ class RxWidgetTest extends AirSpec {
 
   test("render buttons with click action") {
     val elem = Button
-      .primary("my button").add(onclick { () =>
-        debug("clicked")
-      })
+      .primary("my button").add(onclick { () => debug("clicked") })
     val html = render(elem)
     html.contains("btn btn-primary") shouldBe true
   }
@@ -88,9 +84,7 @@ class RxWidgetTest extends AirSpec {
     val content = div(
       v.map { selected =>
         ul(
-          Seq("Home", "Blog").map { page =>
-            li(_class -> { if (page == selected) Some("active") else None }, page)
-          }
+          Seq("Home", "Blog").map { page => li(_class -> { if (page == selected) Some("active") else None }, page) }
         )
       }
     )
@@ -104,9 +98,7 @@ class RxWidgetTest extends AirSpec {
 
   test("Render Rx as top-level node") {
     val currentPage = Rx.variable("home")
-    val d = currentPage.map { page =>
-      p(s"page: ${page}")
-    }
+    val d           = currentPage.map { page => p(s"page: ${page}") }
 
     val node = dom.document.createElement("div")
     renderTo(node, d)

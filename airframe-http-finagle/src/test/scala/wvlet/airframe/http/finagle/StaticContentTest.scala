@@ -105,11 +105,7 @@ class StaticContentTest extends AirSpec {
     val resp   = client.get[Response]("/html/asset/airframe_icon_small.png")
     val img    = resp.contentBytes
     val imgUrl = Resource.find("/wvlet/airframe/http/finagle/static/asset/airframe_icon_small.png").get
-    Control.withResource(imgUrl.openStream()) { in =>
-      IOUtil.readFully(in) { bytes =>
-        img shouldBe bytes
-      }
-    }
+    Control.withResource(imgUrl.openStream()) { in => IOUtil.readFully(in) { bytes => img shouldBe bytes } }
   }
 
   def `read from an alternative static content path`(client: FinagleSyncClient): Unit = {

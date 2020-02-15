@@ -44,9 +44,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
 
     // Apply the rule to itself
     rule
-      .applyOrElse(newExpr, { x: Expression =>
-        x
-      }).asInstanceOf[this.type]
+      .applyOrElse(newExpr, { x: Expression => x }).asInstanceOf[this.type]
   }
 
   def collectSubExpressions: List[Expression] = {

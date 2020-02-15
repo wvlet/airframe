@@ -120,9 +120,7 @@ object HttpClientException extends LogSupport {
       "Idle connections will be closed".r
     )
 
-    retriable400ErrorMessage.find { pattern =>
-      pattern.findFirstIn(m).isDefined
-    }.isDefined
+    retriable400ErrorMessage.find { pattern => pattern.findFirstIn(m).isDefined }.isDefined
   }
 
   /**

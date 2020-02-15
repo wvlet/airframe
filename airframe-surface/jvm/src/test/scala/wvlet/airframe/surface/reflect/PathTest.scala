@@ -36,9 +36,7 @@ class PathTest extends SurfaceSpec {
     assert(p.fullPath == "/abs/path")
     val pp = p.parent
     assert(pp.isDefined)
-    pp.map { pp =>
-      assert(pp.fullPath == "/abs")
-    }
+    pp.map { pp => assert(pp.fullPath == "/abs") }
 
     val p2 = Path("/abs/path")
     assert(p == p2)

@@ -17,9 +17,7 @@ package wvlet.airframe.control
   *
   */
 case class MultipleExceptions(causes: Seq[Throwable]) extends Exception {
-  causes.foreach { ex =>
-    this.addSuppressed(ex)
-  }
+  causes.foreach { ex => this.addSuppressed(ex) }
   override def getMessage: String = {
     s"Multiple failures occurred:\n${causes.map(x => s"  - ${x.getMessage}").mkString("\n")}"
   }

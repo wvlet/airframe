@@ -68,9 +68,7 @@ object ClassOptionSchema extends LogSupport {
       val argAnnot = p.findAnnotationOf[argument]
 
       // @option
-      optAnnot.map { opt =>
-        o += new CLOption(nextPath, opt, p)
-      }
+      optAnnot.map { opt => o += new CLOption(nextPath, opt, p) }
 
       // @argument
       argAnnot.map { arg =>

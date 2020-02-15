@@ -133,12 +133,8 @@ object ServiceMixinExample {
   case class HelloConfig(message: String)
 
   trait FactoryExample {
-    val hello = bind { config: HelloConfig =>
-      s"${config.message}"
-    }
-    val hello2 = bind { (c1: HelloConfig, c2: EagerSingleton) =>
-      s"${c1.message}:${c2.getClass.getSimpleName}"
-    }
+    val hello  = bind { config: HelloConfig => s"${config.message}" }
+    val hello2 = bind { (c1: HelloConfig, c2: EagerSingleton) => s"${c1.message}:${c2.getClass.getSimpleName}" }
 
     val helloFromProvider = bind(provider _)
 

@@ -69,18 +69,10 @@ trait LifeCycleOrder {
   var shutdown    = 0
 
   val v = bind[Int] { 0 }
-    .onInit { x =>
-      init = t.incrementAndGet()
-    }
-    .onStart { x =>
-      start = t.incrementAndGet()
-    }
-    .beforeShutdown { x =>
-      preShutdown = t.incrementAndGet()
-    }
-    .onShutdown { x =>
-      shutdown = t.incrementAndGet()
-    }
+    .onInit { x => init = t.incrementAndGet() }
+    .onStart { x => start = t.incrementAndGet() }
+    .beforeShutdown { x => preShutdown = t.incrementAndGet() }
+    .onShutdown { x => shutdown = t.incrementAndGet() }
 }
 
 /**
@@ -222,8 +214,7 @@ class LifeCycleManagerTest extends AirSpec {
 
   def `handle exceptions in shutdown hooks`: Unit = {
     val e = intercept[SHUTDOWN_FAILURE] {
-      newSilentDesign.build[CloseExceptionTest] { x =>
-      }
+      newSilentDesign.build[CloseExceptionTest] { x => }
     }
     e.getMessage.contains("failure test") shouldBe true
   }
@@ -238,8 +229,7 @@ class LifeCycleManagerTest extends AirSpec {
     val e = intercept[MULTIPLE_SHUTDOWN_FAILURES] {
       newSilentDesign
         .bind[CloseExceptionTest].toSingleton // Inner class needs to be defined where the outer context can be found
-        .build[MultipleShutdownExceptionTest] { x =>
-        }
+        .build[MultipleShutdownExceptionTest] { x => }
     }
     debug(e)
     e.causes.find(_.getMessage.contains("failure test")) shouldBe defined

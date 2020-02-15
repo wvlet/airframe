@@ -41,9 +41,7 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
       s1: Shrink[T],
       pp1: T => Pretty
   ): Unit = {
-    forAll { (v: T) =>
-      roundtrip(surface, v, dataType)
-    }
+    forAll { (v: T) => roundtrip(surface, v, dataType) }
   }
 
   protected def arrayRoundTripTest[T](surface: Surface)(

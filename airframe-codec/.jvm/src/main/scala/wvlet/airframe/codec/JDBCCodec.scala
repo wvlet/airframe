@@ -46,9 +46,7 @@ object JDBCCodec extends LogSupport {
       * Encode the all ResultSet rows as JSON object values
       */
     def toJsonSeq: IterableOnce[String] = {
-      mapMsgPackMapRows { msgpack =>
-        JSONCodec.toJson(msgpack)
-      }
+      mapMsgPackMapRows { msgpack => JSONCodec.toJson(msgpack) }
     }
 
     /**

@@ -37,9 +37,7 @@ case class DIStatsReport(
     report += f"design coverage: ${coverage * 100}%.1f%%"
     if (unusedTypes.nonEmpty) {
       report += "[unused types]"
-      unusedTypes.map { x =>
-        report += x.toString
-      }
+      unusedTypes.map { x => report += x.toString }
     }
     // Access stat report
     report += "[access stats]"

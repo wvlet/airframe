@@ -30,7 +30,5 @@ object DI_20_BindSession extends App {
     }
   }
 
-  newDesign.build[MyApi] { api =>
-    api.shutdown
-  }
+  newDesign.build[MyApi] { api => api.shutdown }
 }

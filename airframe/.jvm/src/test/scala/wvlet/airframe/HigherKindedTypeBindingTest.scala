@@ -57,12 +57,8 @@ class HigherKindedTypeBindingTest extends AirSpec {
       .bind[WebApp[Option]].toInstance(webAppWithOption)
       .noLifeCycleLogging
 
-    d.build[WebApp[Future]] { app =>
-      app.serverInfo.value shouldBe Some(Success("hello"))
-    }
+    d.build[WebApp[Future]] { app => app.serverInfo.value shouldBe Some(Success("hello")) }
 
-    d.build[WebApp[Option]] { app =>
-      app.serverInfo shouldBe Some("hello")
-    }
+    d.build[WebApp[Option]] { app => app.serverInfo shouldBe Some("hello") }
   }
 }

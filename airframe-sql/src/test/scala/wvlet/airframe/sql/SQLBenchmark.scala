@@ -38,9 +38,7 @@ object SQLBenchmark {
           .map { y =>
             val msgpack = YamlReader.toMsgPack(y)
             val codec   = MessageCodecFactory.defaultFactory.of[TestQuery]
-            codec.unpackMsgPack(msgpack).map { x =>
-              x
-            }
+            codec.unpackMsgPack(msgpack).map { x => x }
           }
           .filter(_.isDefined)
           .flatten

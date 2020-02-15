@@ -67,8 +67,6 @@ class SessionTest extends AirSpec {
   }
 
   def `should bind an equivalent design`: Unit = {
-    d1.build[DesignBindExample] { e =>
-      e.design shouldBe d1.minimize
-    }
+    d1.build[DesignBindExample] { e => e.design shouldBe d1.minimize }
   }
 }

@@ -97,9 +97,7 @@ object HttpRequestMapper extends LogSupport {
                         case _ =>
                           // Try parsing as JSON first
                           Try(JSON.parse(contentBytes))
-                            .map { jsonValue =>
-                              JSONCodec.toMsgPack(jsonValue)
-                            }
+                            .map { jsonValue => JSONCodec.toMsgPack(jsonValue) }
                             .getOrElse {
                               // If parsing as JSON fails, treat the content body as a regular string
                               StringCodec.toMsgPack(adapter.contentStringOf(request))

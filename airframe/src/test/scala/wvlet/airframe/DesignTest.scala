@@ -74,12 +74,8 @@ class DesignTest extends AirSpec {
     val d3 = d1 + d2
     val d4 = d1.add(d2)
 
-    d3.build[Hello] { h =>
-      h shouldBeTheSameInstanceAs o
-    }
-    d4.build[Hello] { h =>
-      h shouldBeTheSameInstanceAs o
-    }
+    d3.build[Hello] { h => h shouldBeTheSameInstanceAs o }
+    d4.build[Hello] { h => h shouldBeTheSameInstanceAs o }
   }
 
   def `display design`: Unit = {
@@ -106,23 +102,17 @@ class DesignTest extends AirSpec {
 
   def `bind providers`: Unit = {
     val d = newSilentDesign
-      .bind[Hello].toProvider { (m: ProductionString) =>
-        Hello(m)
-      }
+      .bind[Hello].toProvider { (m: ProductionString) => Hello(m) }
       .bind[ProductionString].toInstance("hello production")
 
-    d.build[Hello] { h =>
-      h.message shouldBe "hello production"
-    }
+    d.build[Hello] { h => h.message shouldBe "hello production" }
   }
 
   def `bind type aliases`: Unit = {
     val d = newSilentDesign
       .bind[HelloRef].toInstance(new StringHello)
 
-    d.build[HelloRef] { h =>
-      h.hello shouldBe "hello world"
-    }
+    d.build[HelloRef] { h => h.hello shouldBe "hello world" }
   }
 
   def `start and stop session`: Unit = {

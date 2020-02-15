@@ -248,9 +248,7 @@ case class ClassMethodSurface(
     def unsupported = throw new UnsupportedOperationException(s"Calling method ${name} is not supported: ${this}")
 
     methodCaller
-      .map { caller =>
-        caller(obj, x.toSeq)
-      }
+      .map { caller => caller(obj, x.toSeq) }
       .getOrElse {
         unsupported
       }

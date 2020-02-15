@@ -58,9 +58,7 @@ class NestedMessagePackBuilder extends JSONContext[Seq[MsgPack]] with LogSupport
 
   override def isObjectContext: Boolean = false
   override def add(v: Seq[MsgPack]): Unit = {
-    v.foreach { b =>
-      packer.writePayload(b)
-    }
+    v.foreach { b => packer.writePayload(b) }
   }
   override def closeContext(s: JSONSource, end: Int): Unit          = {}
   override def addNull(s: JSONSource, start: Int, end: Int): Unit   = packer.packNil

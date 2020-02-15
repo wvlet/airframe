@@ -160,9 +160,7 @@ object Session extends LogSupport {
 
   def getSession(obj: Any): Option[Session] = {
     require(obj != null, "object is null")
-    findSessionAccess(obj.getClass).flatMap { access =>
-      Try(access.apply(obj.asInstanceOf[AnyRef])).toOption
-    }
+    findSessionAccess(obj.getClass).flatMap { access => Try(access.apply(obj.asInstanceOf[AnyRef])).toOption }
   }
 
   def findSession[A](enclosingObj: A): Session = {
@@ -184,9 +182,7 @@ object Session extends LogSupport {
 
     def findEmbeddedSession: Option[AnyRef => Session] = {
       if (classOf[DISupport] isAssignableFrom (cl)) {
-        Some({ obj: AnyRef =>
-          obj.asInstanceOf[DISupport].session
-        })
+        Some({ obj: AnyRef => obj.asInstanceOf[DISupport].session })
       } else {
         None
       }

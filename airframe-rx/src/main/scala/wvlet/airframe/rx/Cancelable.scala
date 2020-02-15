@@ -52,11 +52,7 @@ object Cancelable {
         if (nonEmpty.isEmpty) {
           Cancelable.empty
         } else {
-          Cancelable { () =>
-            nonEmpty.map { c =>
-              Try(c.cancel)
-            }
-          }
+          Cancelable { () => nonEmpty.map { c => Try(c.cancel) } }
         }
     }
   }

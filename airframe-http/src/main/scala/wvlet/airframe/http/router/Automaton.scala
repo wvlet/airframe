@@ -113,9 +113,7 @@ object Automaton {
     // (currentStateId, tokenId) -> (nextState, nextStateId)
     // TODO: Use array-lookup for faster lookup
     private val transitionTable: Map[(Int, Int), NextNode[Node]] = {
-      edges.map { x =>
-        (nodeTable(x.src), tokenTable(x.token)) -> NextNode[Node](x.dest, nodeTable(x.dest))
-      }.toMap
+      edges.map { x => (nodeTable(x.src), tokenTable(x.token)) -> NextNode[Node](x.dest, nodeTable(x.dest)) }.toMap
     }
     private val tokenIdTable = tokenTable.map(x => x._2 -> x._1).toMap
 

@@ -31,8 +31,6 @@ class DISupportTest extends AirSpec {
     val d = newSilentDesign
       .bind[String].toInstance("hello")
 
-    d.build[A] { a =>
-      a.getString shouldBe "hello"
-    }
+    d.build[A] { a => a.getString shouldBe "hello" }
   }
 }

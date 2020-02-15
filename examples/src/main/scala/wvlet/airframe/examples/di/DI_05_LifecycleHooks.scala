@@ -25,9 +25,7 @@ object DI_05_LifecycleHooks extends App {
 
   trait MyApp extends LogSupport {
     private val threadManager = bind[ExecutorService] { Executors.newCachedThreadPool() }
-      .onStart { x =>
-        info(f"Started a thread manager: ${x.hashCode()}%x")
-      }
+      .onStart { x => info(f"Started a thread manager: ${x.hashCode()}%x") }
       .onShutdown { x =>
         info(f"Shutting down the thread manager: ${x.hashCode()}%x")
         x.shutdown()

@@ -27,9 +27,7 @@ private[wvlet] object AirframeMacros {
       // Find the public default constructor that has no arguments
       val hasPublicDefaultConstructor = t.members
         .find(_.isConstructor)
-        .map(_.asMethod).exists { m =>
-          m.isPublic && m.paramLists.size == 1 && m.paramLists(0).size == 0
-        }
+        .map(_.asMethod).exists { m => m.isPublic && m.paramLists.size == 1 && m.paramLists(0).size == 0 }
 
       val hasAbstractMethods = t.members.exists(x => x.isMethod && x.isAbstract && !x.isAbstractOverride)
 
