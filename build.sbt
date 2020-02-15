@@ -969,3 +969,20 @@ lazy val airspecRef =
 
 lazy val airspecRefJVM = airspecRef.jvm
 lazy val airspecRefJS  = airspecRef.js
+
+// sbt plugin
+
+lazy val sbtAirframeHttp =
+  project
+    .in(file("sbt-airframe-http"))
+    .enablePlugins(SbtPlugin)
+    .settings(
+      buildSettings,
+      name := "sbt-airframe-http",
+      crossSbtVersions := Vector("1.2.8"),
+      scriptedLaunchOpts := {
+        scriptedLaunchOpts.value ++
+          Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
+      },
+      scriptedBufferLog := false
+    ).dependsOn(http)
