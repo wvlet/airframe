@@ -25,6 +25,7 @@ object SealedTraitBindingTest extends AirSpec {
   }
 
   trait Service {
+    // This code compilation may fail when using Mill.
     val adt = bind[Adt]
   }
 
@@ -33,6 +34,6 @@ object SealedTraitBindingTest extends AirSpec {
     val design = Design.newSilentDesign
       .bind[Adt].toInstance(Adt.Foo)
 
-    design.build[Service] { s => info(s.adt) }
+    design.build[Service] { s => debug(s.adt) }
   }
 }
