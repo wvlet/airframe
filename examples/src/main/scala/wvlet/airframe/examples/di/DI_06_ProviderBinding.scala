@@ -45,7 +45,5 @@ object DI_06_ProviderBinding extends App {
   val d = newSilentDesign
     .bind[MyAppConfig].toInstance(MyAppConfig(numThreads = 2))
 
-  d.build[MyApp] { app =>
-    app.run
-  }
+  d.build[MyApp] { app => app.run }
 }

@@ -231,7 +231,8 @@ object Resource {
     }
     if (file.isDirectory) {
       for (childFile <- file.listFiles) {
-        val childResourceURL = resourceURLString + (if (resourceURLString.endsWith("/")) "" else "/") + childFile.getName
+        val childResourceURL =
+          resourceURLString + (if (resourceURLString.endsWith("/")) "" else "/") + childFile.getName
         b ++= collectFileResources(childResourceURL, packagePath, resourceFilter)
       }
     }
@@ -303,9 +304,7 @@ object Resource {
     * @return
     */
   def listResources(packageName: String): Seq[VirtualFile] =
-    listResources(packageName, { f: String =>
-      true
-    })
+    listResources(packageName, { f: String => true })
 
   /**
     * Collect resources under the given package
@@ -361,9 +360,7 @@ object Resource {
       toSearch: Class[A],
       classLoader: ClassLoader = Thread.currentThread.getContextClassLoader
   ): Seq[Class[A]] = {
-    val classFileList = listResources(packageName, { f: String =>
-      f.endsWith(".class")
-    }, classLoader)
+    val classFileList = listResources(packageName, { f: String => f.endsWith(".class") }, classLoader)
 
     def componentName(path: String): Option[String] = {
       val dot: Int = path.lastIndexOf(".")

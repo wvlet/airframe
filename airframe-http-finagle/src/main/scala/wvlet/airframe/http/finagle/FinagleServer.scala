@@ -134,9 +134,7 @@ case class FinagleServerConfig(
   }
 
   def start[U](body: FinagleServer => U): U = {
-    newFinagleServerDesign(this).run[FinagleServer, U] { server =>
-      body(server)
-    }
+    newFinagleServerDesign(this).run[FinagleServer, U] { server => body(server) }
   }
 }
 

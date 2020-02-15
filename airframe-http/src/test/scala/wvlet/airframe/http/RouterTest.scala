@@ -140,9 +140,7 @@ class RouterTest extends AirSpec {
       val ret =
         router
           .findRoute(request)
-          .flatMap { m =>
-            m.call(session, serviceProvider, request, null)
-          }
+          .flatMap { m => m.call(session, serviceProvider, request, null) }
 
       ret shouldBe defined
       ret.get shouldBe exepected

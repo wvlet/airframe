@@ -223,9 +223,7 @@ class FinagleClientTest extends AirSpec {
 
   def `support sendRaw`: Unit = {
     withResource(Finagle.newClient("https://wvlet.org")) { client =>
-      val r = client.sendRaw(Request("/airframe/")).map { x =>
-        x.contentString.contains("<html") shouldBe true
-      }
+      val r = client.sendRaw(Request("/airframe/")).map { x => x.contentString.contains("<html") shouldBe true }
       Await.result(r)
     }
   }

@@ -35,24 +35,19 @@ class CloseableShutdownHookTest extends AirSpec {
   def `support closeable`: Unit = {
     val a = new A
     val d = newSilentDesign.bind[A].toInstance(a)
-    d.build[A] { a =>
-    }
+    d.build[A] { a => }
 
     a.closeIsCalled.get() shouldBe true
   }
 
   trait A1 {
     val onShutdownIsCalled = new AtomicBoolean(false)
-    val a = bind[A].onShutdown { x =>
-      onShutdownIsCalled.set(true)
-    }
+    val a                  = bind[A].onShutdown { x => onShutdownIsCalled.set(true) }
   }
 
   def `favor onShutdownHook`: Unit = {
     val x = newSilentDesign
-      .build[A1] { a1 =>
-        a1
-      }.asInstanceOf[A1]
+      .build[A1] { a1 => a1 }.asInstanceOf[A1]
 
     x.onShutdownIsCalled.get shouldBe true
     x.a.closeIsCalled.get shouldBe false

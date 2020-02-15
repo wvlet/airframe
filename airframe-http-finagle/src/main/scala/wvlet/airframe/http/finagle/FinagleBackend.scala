@@ -44,9 +44,7 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
   def wrapFilter(filter: com.twitter.finagle.Filter[Request, Response, Request, Response]): FinagleFilter = {
     new FinagleFilter with LogSupport {
       override def apply(request: Request, context: Context): Future[Response] = {
-        filter(request, Service.mk { req: Request =>
-          context(req)
-        })
+        filter(request, Service.mk { req: Request => context(req) })
       }
     }
   }
@@ -90,14 +88,10 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
   }
 
   override def setThreadLocal[A](key: String, value: A): Unit = {
-    Contexts.local.get(contextParamHolderKey).foreach { ref =>
-      ref.get().put(key, value)
-    }
+    Contexts.local.get(contextParamHolderKey).foreach { ref => ref.get().put(key, value) }
   }
 
   override def getThreadLocal[A](key: String): Option[A] = {
-    Contexts.local.get(contextParamHolderKey).flatMap { ref =>
-      ref.get.get(key).asInstanceOf[Option[A]]
-    }
+    Contexts.local.get(contextParamHolderKey).flatMap { ref => ref.get.get(key).asInstanceOf[Option[A]] }
   }
 }

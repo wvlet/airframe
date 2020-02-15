@@ -37,9 +37,7 @@ class FluentdLoggerTest extends AirSpec {
     val d =
       fluentd.withDebugConsoleLogging.noLifeCycleLogging
 
-    d.build[MetricLogger] { f =>
-      f.emit("data", Map("id" -> 1, "event" -> "GET"))
-    }
+    d.build[MetricLogger] { f => f.emit("data", Map("id" -> 1, "event" -> "GET")) }
   }
 
   def `generate multiple loggers`: Unit = {

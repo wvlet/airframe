@@ -40,9 +40,7 @@ class BindLocalTest extends AirSpec {
     val d = newSilentDesign
       .bind[AtomicInteger].toInstance(counter)
 
-    d.build[App] { a =>
-      counter.get() shouldBe 0
-    }
+    d.build[App] { a => counter.get() shouldBe 0 }
     counter.get() shouldBe 1
   }
 
@@ -55,27 +53,15 @@ class BindLocalTest extends AirSpec {
     }
 
     val d = newSilentDesign.bind[Y].toSingleton
-    d.build[App2] { a =>
-      a.y0 shouldNotBeTheSameInstanceAs a.yLocal
-    }
+    d.build[App2] { a => a.y0 shouldNotBeTheSameInstanceAs a.yLocal }
   }
 
   trait LocalProviderTest {
-    val x1 = bindLocal { d1: D1 =>
-      X(d1 = d1)
-    }
-    val x2 = bindLocal { (d1: D1, d2: D2) =>
-      X(d1 = d1, d2 = d2)
-    }
-    val x3 = bindLocal { (d1: D1, d2: D2, d3: D3) =>
-      X(d1 = d1, d2 = d2, d3 = d3)
-    }
-    val x4 = bindLocal { (d1: D1, d2: D2, d3: D3, d4: D4) =>
-      X(d1 = d1, d2 = d2, d3 = d3, d4 = d4)
-    }
-    val x5 = bindLocal { (d1: D1, d2: D2, d3: D3, d4: D4, d5: D5) =>
-      X(d1 = d1, d2 = d2, d3 = d3, d4 = d4, d5 = d5)
-    }
+    val x1 = bindLocal { d1: D1 => X(d1 = d1) }
+    val x2 = bindLocal { (d1: D1, d2: D2) => X(d1 = d1, d2 = d2) }
+    val x3 = bindLocal { (d1: D1, d2: D2, d3: D3) => X(d1 = d1, d2 = d2, d3 = d3) }
+    val x4 = bindLocal { (d1: D1, d2: D2, d3: D3, d4: D4) => X(d1 = d1, d2 = d2, d3 = d3, d4 = d4) }
+    val x5 = bindLocal { (d1: D1, d2: D2, d3: D3, d4: D4, d5: D5) => X(d1 = d1, d2 = d2, d3 = d3, d4 = d4, d5 = d5) }
   }
 
   def `support bindLocal with dependencies`: Unit = {

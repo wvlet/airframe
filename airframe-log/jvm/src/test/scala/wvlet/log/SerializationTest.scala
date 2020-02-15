@@ -20,9 +20,7 @@ class SerializationTest extends Spec {
   def `logger should be serializable`: Unit = {
     val a = new A {}
     val b = new ByteArrayOutputStream()
-    IOUtil.withResource(new ObjectOutputStream(b)) { out =>
-      out.writeObject(a)
-    }
+    IOUtil.withResource(new ObjectOutputStream(b)) { out => out.writeObject(a) }
     val ser = b.toByteArray
     IOUtil.withResource(new ObjectInputStream(new ByteArrayInputStream(ser))) { in =>
       debug("deserialization")

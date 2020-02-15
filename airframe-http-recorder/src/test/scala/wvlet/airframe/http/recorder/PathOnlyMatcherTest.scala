@@ -27,21 +27,21 @@ class PathOnlyMatcherTest extends AirSpec {
     Design.newDesign
       .bind[HttpRecorderServer].toInstance(HttpRecorder.createInMemoryServer(config))
       .onStart { recorder => // Record responses
-      {
-        val req = Request("/hello")
-        req.headerMap.put("Accept-Encoding", "gzip")
-        val resp = Response()
-        resp.contentString = "hello"
-        recorder.recordIfNotExists(req, resp)
-      }
+        {
+          val req = Request("/hello")
+          req.headerMap.put("Accept-Encoding", "gzip")
+          val resp = Response()
+          resp.contentString = "hello"
+          recorder.recordIfNotExists(req, resp)
+        }
 
-      {
-        val r = Request("/hello-hello")
-        r.headerMap.put("Accept-Encoding", "gzip")
-        val resp = Response()
-        resp.contentString = "hello-hello"
-        recorder.recordIfNotExists(r, resp)
-      }
+        {
+          val r = Request("/hello-hello")
+          r.headerMap.put("Accept-Encoding", "gzip")
+          val resp = Response()
+          resp.contentString = "hello-hello"
+          recorder.recordIfNotExists(r, resp)
+        }
       }
       .bind[FinagleSyncClient].toProvider { recorder: HttpRecorderServer =>
         FinagleClient.newSyncClient(recorder.localAddress)

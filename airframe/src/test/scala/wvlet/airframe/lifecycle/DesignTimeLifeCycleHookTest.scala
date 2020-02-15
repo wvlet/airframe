@@ -56,24 +56,13 @@ class DesignTimeLifeCycleHookTest extends AirSpec {
 
     val d2 = d
       .bind[AtomicInteger]
-      .onStart { x =>
-        x.addAndGet(1)
-      }
-      .onShutdown { x =>
-        x.addAndGet(1 << 1)
-      }
-      .beforeShutdown { x =>
-        x.addAndGet(1 << 2)
-      }
-      .onInit { x =>
-        x.addAndGet(1 << 3)
-      }
-      .onInject { x =>
-        x.addAndGet(1 << 4)
-      }
+      .onStart { x => x.addAndGet(1) }
+      .onShutdown { x => x.addAndGet(1 << 1) }
+      .beforeShutdown { x => x.addAndGet(1 << 2) }
+      .onInit { x => x.addAndGet(1 << 3) }
+      .onInject { x => x.addAndGet(1 << 4) }
 
-    d2.withSession { s =>
-    }
+    d2.withSession { s => }
 
     v.get() shouldBe 0x1F
   }

@@ -28,9 +28,7 @@ class PathDependentTypeTest extends AirSpec {
     val d = newDesign.noLifeCycleLogging
       .bind[JdbcProfile#Backend#Database].toInstance(new PathDependentType.MyBackend.DatabaseDef)
 
-    d.build[JdbcServcie] { s =>
-      s.p.hello shouldBe "hello jdbc"
-    }
+    d.build[JdbcServcie] { s => s.p.hello shouldBe "hello jdbc" }
   }
 }
 

@@ -95,9 +95,7 @@ object StaticContent extends LogSupport {
   }
 
   def fromResource(basePaths: List[String], relativePath: String): SimpleHttpResponse = {
-    val sc = basePaths.foldLeft(StaticContent()) { (sc, x) =>
-      sc.fromResource(x)
-    }
+    val sc = basePaths.foldLeft(StaticContent()) { (sc, x) => sc.fromResource(x) }
     sc.apply(relativePath)
   }
 
@@ -106,9 +104,7 @@ object StaticContent extends LogSupport {
   }
 
   def fromDirectory(dirPaths: List[String], relativePath: String): SimpleHttpResponse = {
-    val sc = dirPaths.foldLeft(StaticContent()) { (sc, x) =>
-      sc.fromDirectory(x)
-    }
+    val sc = dirPaths.foldLeft(StaticContent()) { (sc, x) => sc.fromDirectory(x) }
     sc.apply(relativePath)
   }
 

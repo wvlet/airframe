@@ -29,12 +29,8 @@ import scala.util.Random
   */
 class HttpRecorderTest extends AirSpec {
   private def orderInsensitveHash(m: Map[String, String]): Int = {
-    m.map { x =>
-        s"${x._1}:${x._2}".hashCode
-      }
-      .reduce { (xor, next) =>
-        xor ^ next
-      }
+    m.map { x => s"${x._1}:${x._2}".hashCode }
+      .reduce { (xor, next) => xor ^ next }
   }
 
   private def withClient[U](addr: String)(body: FinagleService => U): U = {
@@ -160,9 +156,7 @@ class HttpRecorderTest extends AirSpec {
 
     // Wait until expiration
     Thread.sleep(1000)
-    withResource(new HttpRecordStore(recorderConfig)) { store =>
-      store.numRecordsInSession shouldBe 0
-    }
+    withResource(new HttpRecordStore(recorderConfig)) { store => store.numRecordsInSession shouldBe 0 }
   }
 
   def `support binary contents`: Unit = {

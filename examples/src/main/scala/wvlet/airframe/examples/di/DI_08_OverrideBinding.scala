@@ -43,15 +43,11 @@ object DI_08_OverrideBinding extends App {
 
   val coreDesign = newSilentDesign
 
-  coreDesign.build[MyApp] { app =>
-    app.run
-  }
+  coreDesign.build[MyApp] { app => app.run }
 
   // Switch the implementation of DB to MockDB
   val testDesign = coreDesign
     .bind[DB].to[MockDB]
 
-  testDesign.build[MyApp] { app =>
-    app.run
-  }
+  testDesign.build[MyApp] { app => app.run }
 }

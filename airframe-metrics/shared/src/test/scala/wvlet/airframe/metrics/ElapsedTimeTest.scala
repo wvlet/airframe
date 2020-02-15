@@ -97,15 +97,11 @@ class ElapsedTimeTest extends AirSpec {
   import ElapsedTime._
 
   def `parse time`: Unit = {
-    examples.foreach { x =>
-      ElapsedTime(x.str) shouldBe ElapsedTime(x.value, x.unit)
-    }
+    examples.foreach { x => ElapsedTime(x.str) shouldBe ElapsedTime(x.value, x.unit) }
   }
 
   def `print string`: Unit = {
-    examples.foreach { x =>
-      ElapsedTime(x.str).toString shouldBe f"${x.value}%.2f${timeUnitToString(x.unit)}"
-    }
+    examples.foreach { x => ElapsedTime(x.str).toString shouldBe f"${x.value}%.2f${timeUnitToString(x.unit)}" }
   }
 
   def `throw exception for invalid inputs`: Unit = {
@@ -162,9 +158,7 @@ class ElapsedTimeTest extends AirSpec {
   }
 
   def `support toMillis`: Unit = {
-    examples.map(x => parse(x.str)).foreach { x =>
-      assertEquals(x.toMillis, x.roundTo(MILLISECONDS), 0.001)
-    }
+    examples.map(x => parse(x.str)).foreach { x => assertEquals(x.toMillis, x.roundTo(MILLISECONDS), 0.001) }
   }
 
   def `convert units`: Unit = {

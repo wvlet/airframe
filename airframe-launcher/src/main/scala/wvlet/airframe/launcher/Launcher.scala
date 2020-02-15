@@ -92,12 +92,7 @@ object Launcher extends LogSupport {
           case None      => false
         }
       }
-      .map {
-        m =>
-          { li: LauncherInstance =>
-            m.call(li.instance)
-          }
-      }
+      .map { m => { li: LauncherInstance => m.call(li.instance) } }
 
     new CommandLauncher(
       LauncherInfo(commandName, commandDescription, commandUsage),
@@ -137,9 +132,7 @@ private[launcher] case class LauncherConfig(
     helpMessagePrinter: HelpMessagePrinter = HelpMessagePrinter.default,
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactory,
     // command name -> default action
-    defaultCommand: LauncherInstance => Any = { li: LauncherInstance =>
-      println("Type --help to see the usage")
-    }
+    defaultCommand: LauncherInstance => Any = { li: LauncherInstance => println("Type --help to see the usage") }
 )
 
 case class Launcher private[launcher] (config: LauncherConfig, private[launcher] val mainLauncher: CommandLauncher) {
@@ -330,12 +323,8 @@ class CommandLauncher(
           } else {
             // Run the default command
             defaultCommand
-              .map { defaultCommand =>
-                defaultCommand(head)
-              }
-              .map { x =>
-                LauncherResult(nextStack, Some(x))
-              }
+              .map { defaultCommand => defaultCommand(head) }
+              .map { x => LauncherResult(nextStack, Some(x)) }
               .getOrElse {
                 LauncherResult(nextStack, None)
               }
@@ -368,9 +357,7 @@ class CommandLauncher(
           try {
             // parseTree -> msgpack -> method arguments
             val methodSurface = m.method
-            val paramCodecs = methodSurface.args.map { x =>
-              launcherConfig.codecFactory.of(x.surface)
-            }
+            val paramCodecs   = methodSurface.args.map { x => launcherConfig.codecFactory.of(x.surface) }
             val methodArgCodec = new ParamListCodec(
               methodSurface.name,
               methodSurface.args.toIndexedSeq,

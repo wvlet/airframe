@@ -151,9 +151,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
                     Seq(other)
                 }
                 lst
-                  .flatMap { x =>
-                    TypeConverter.convert(x, elementType)
-                  }
+                  .flatMap { x => TypeConverter.convert(x, elementType) }
                   .foreach { arr.holder += _ }
               case 2 =>
                 // Append map elements to the buffer
@@ -166,17 +164,13 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
                 val valueType    = targetType.typeArgs(1)
                 val tupleSurface = TupleSurface(classOf[Tuple2[_, _]], Seq(keyType, valueType))
                 lst
-                  .flatMap { x =>
-                    TypeConverter.convert(x, tupleSurface)
-                  }
+                  .flatMap { x => TypeConverter.convert(x, tupleSurface) }
                   .foreach { arr.holder += _ }
               case other =>
                 error(s"Cannot convert ${value} to ${targetType}")
             }
           } else if (canBuildFromStringValue(targetType)) {
-            TypeConverter.convert(value, targetType).map { v =>
-              holder += name -> Value(v)
-            }
+            TypeConverter.convert(value, targetType).map { v => holder += name -> Value(v) }
           } else {
             holder += name -> Value(value)
           }

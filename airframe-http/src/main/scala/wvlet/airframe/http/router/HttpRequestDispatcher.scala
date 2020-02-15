@@ -92,9 +92,7 @@ object HttpRequestDispatcher extends LogSupport {
 
       val currentFilter: HttpFilter[Req, Resp, F] =
         localFilterOpt
-          .map { l =>
-            parentFilter.andThen(l)
-          }
+          .map { l => parentFilter.andThen(l) }
           .getOrElse(parentFilter)
 
       val m = Map.newBuilder[Route, RouteFilter[Req, Resp, F]]

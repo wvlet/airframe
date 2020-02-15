@@ -30,51 +30,33 @@ class CanvasTest extends AirSpec with PropertyCheck {
 
   protected def checkReadWritePrimitiveValues(c: Canvas): Unit = {
     for (offset <- 0L until c.size) {
-      forAll { (v: Boolean) =>
-        check(v, c, _.writeBoolean(offset, v), _.readBoolean(offset))
-      }
+      forAll { (v: Boolean) => check(v, c, _.writeBoolean(offset, v), _.readBoolean(offset)) }
     }
     for (offset <- 0L until c.size - 4) {
-      forAll { (v: Int) =>
-        check(v, c, _.writeInt(offset, v), _.readInt(offset))
-      }
+      forAll { (v: Int) => check(v, c, _.writeInt(offset, v), _.readInt(offset)) }
     }
     for (offset <- 0L until c.size - 4) {
-      forAll { (v: Int) =>
-        check(v, c, _.writeIntBigEndian(offset, v), _.readIntBigEndian(offset))
-      }
+      forAll { (v: Int) => check(v, c, _.writeIntBigEndian(offset, v), _.readIntBigEndian(offset)) }
     }
     for (offset <- 0L until c.size - 8) {
-      forAll { (v: Long) =>
-        check(v, c, _.writeLong(offset, v), _.readLong(offset))
-      }
+      forAll { (v: Long) => check(v, c, _.writeLong(offset, v), _.readLong(offset)) }
     }
     for (offset <- 0L until c.size - 8) {
-      forAll { (v: Long) =>
-        check(v, c, _.writeLongBigEndian(offset, v), _.readLongBigEndian(offset))
-      }
+      forAll { (v: Long) => check(v, c, _.writeLongBigEndian(offset, v), _.readLongBigEndian(offset)) }
     }
     for (offset <- 0L until c.size - 2) {
-      forAll { (v: Short) =>
-        check(v, c, _.writeShort(offset, v), _.readShort(offset))
-      }
+      forAll { (v: Short) => check(v, c, _.writeShort(offset, v), _.readShort(offset)) }
     }
 
     for (offset <- 0L until c.size) {
-      forAll { (v: Byte) =>
-        check(v, c, _.writeByte(offset, v), _.readByte(offset))
-      }
+      forAll { (v: Byte) => check(v, c, _.writeByte(offset, v), _.readByte(offset)) }
     }
 
     for (offset <- 0L until c.size - 4) {
-      forAll { (v: Float) =>
-        check(v, c, _.writeFloat(offset, v), _.readFloat(offset))
-      }
+      forAll { (v: Float) => check(v, c, _.writeFloat(offset, v), _.readFloat(offset)) }
     }
     for (offset <- 0L until c.size - 8) {
-      forAll { (v: Double) =>
-        check(v, c, _.writeDouble(offset, v), _.readDouble(offset))
-      }
+      forAll { (v: Double) => check(v, c, _.writeDouble(offset, v), _.readDouble(offset)) }
     }
 
     forAll { (v: Array[Byte]) =>
@@ -87,47 +69,33 @@ class CanvasTest extends AirSpec with PropertyCheck {
   val canvasSize = 64
 
   protected def withCanvas(creator: => Canvas)(body: Canvas => Unit): Unit = {
-    Control.withResource(creator) { c =>
-      body(c)
-    }
+    Control.withResource(creator) { c => body(c) }
   }
 
   def `create on-heap canvas`: Unit = {
-    withCanvas(Canvas.newCanvas(canvasSize)) { c =>
-      checkReadWritePrimitiveValues(c)
-    }
+    withCanvas(Canvas.newCanvas(canvasSize)) { c => checkReadWritePrimitiveValues(c) }
   }
 
   def `create off-heap canvas`: Unit = {
-    withCanvas(Canvas.newOffHeapCanvas(canvasSize)) { c =>
-      checkReadWritePrimitiveValues(c)
-    }
+    withCanvas(Canvas.newOffHeapCanvas(canvasSize)) { c => checkReadWritePrimitiveValues(c) }
   }
 
   def `create array-wrapped canvas`: Unit = {
-    withCanvas(Canvas.wrap(Array.ofDim[Byte](canvasSize))) { c =>
-      checkReadWritePrimitiveValues(c)
-    }
+    withCanvas(Canvas.wrap(Array.ofDim[Byte](canvasSize))) { c => checkReadWritePrimitiveValues(c) }
   }
 
   def `create sub-array wrapped canvas`: Unit = {
     val b = Array.ofDim[Byte](canvasSize)
-    withCanvas(Canvas.wrap(b, 10, 30)) { c =>
-      checkReadWritePrimitiveValues(c)
-    }
+    withCanvas(Canvas.wrap(b, 10, 30)) { c => checkReadWritePrimitiveValues(c) }
   }
 
   def `create ByteBuffer-based canvas`: Unit = {
-    withCanvas(Canvas.wrap(ByteBuffer.allocate(canvasSize))) { c =>
-      checkReadWritePrimitiveValues(c)
-    }
+    withCanvas(Canvas.wrap(ByteBuffer.allocate(canvasSize))) { c => checkReadWritePrimitiveValues(c) }
   }
 
   def `create DirectByteBuffer-based canvas`: Unit = {
     val b = ByteBuffer.allocateDirect(canvasSize)
-    withCanvas(Canvas.wrap(b)) { c =>
-      checkReadWritePrimitiveValues(c)
-    }
+    withCanvas(Canvas.wrap(b)) { c => checkReadWritePrimitiveValues(c) }
   }
 
   def `create slices`: Unit = {

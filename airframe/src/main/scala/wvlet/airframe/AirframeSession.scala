@@ -99,9 +99,7 @@ private[airframe] class AirframeSession(
   def name: String = sessionName.getOrElse {
     val current = f"session:${sessionId}%x"
     parent
-      .map { p =>
-        f"${p.name} -> ${current}"
-      }
+      .map { p => f"${p.name} -> ${current}" }
       .getOrElse(current)
   }
 
@@ -244,9 +242,7 @@ private[airframe] class AirframeSession(
       val lst = Seq.newBuilder[LifeCycleHookDesign]
       // hooks in the child session has higher precedence than that in the parent
       lst ++= design.hooks.filter(_.surface == t)
-      parent.foreach { p =>
-        lst ++= p.findLifeCycleHooksFor(t)
-      }
+      parent.foreach { p => lst ++= p.findLifeCycleHooksFor(t) }
       lst.result()
     }
   }

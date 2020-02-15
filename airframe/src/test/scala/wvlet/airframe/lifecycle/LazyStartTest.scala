@@ -26,22 +26,14 @@ object LazyStartTest {
 
   trait MyApp extends LogSupport {
     val a = bind[F1]
-      .onStart { x =>
-        x.set(true)
-      }
-      .onShutdown { x =>
-        x.set(false)
-      }
+      .onStart { x => x.set(true) }
+      .onShutdown { x => x.set(false) }
   }
 
   trait MyApp2 extends LogSupport {
     val a = bind[F2]
-      .onStart { x =>
-        x.set(true)
-      }
-      .onShutdown { x =>
-        x.set(false)
-      }
+      .onStart { x => x.set(true) }
+      .onShutdown { x => x.set(false) }
   }
 }
 
@@ -64,45 +56,31 @@ class LazyStartTest extends AirSpec {
 
   def `support lazy start`: Unit = {
     (f1.get, f2.get) shouldBe (false, false)
-    d.build[MyApp] { app =>
-      (f1.get, f2.get) shouldBe (true, false)
-    }
+    d.build[MyApp] { app => (f1.get, f2.get) shouldBe (true, false) }
     (f1.get, f2.get) shouldBe (false, false)
 
-    d.withLazyMode.build[MyApp] { app =>
-      (f1.get, f2.get) shouldBe (true, false)
-    }
+    d.withLazyMode.build[MyApp] { app => (f1.get, f2.get) shouldBe (true, false) }
     (f1.get, f2.get) shouldBe (false, false)
 
     // Override config
-    d.withProductionMode.withLazyMode.build[MyApp] { app =>
-      (f1.get, f2.get) shouldBe (true, false)
-    }
+    d.withProductionMode.withLazyMode.build[MyApp] { app => (f1.get, f2.get) shouldBe (true, false) }
     (f1.get, f2.get) shouldBe (false, false)
 
-    d.build[MyApp2] { app =>
-      (f1.get, f2.get) shouldBe (false, true)
-    }
+    d.build[MyApp2] { app => (f1.get, f2.get) shouldBe (false, true) }
     (f1.get, f2.get) shouldBe (false, false)
   }
 
   def `support eager start`: Unit = {
     (f1.get, f2.get) shouldBe (false, false)
-    d.withProductionMode.build[MyApp] { app =>
-      (f1.get, f2.get) shouldBe (true, true)
-    }
+    d.withProductionMode.build[MyApp] { app => (f1.get, f2.get) shouldBe (true, true) }
     (f1.get, f2.get) shouldBe (false, false)
 
     // Override config
     (f1.get, f2.get) shouldBe (false, false)
-    d.withLazyMode.withProductionMode.build[MyApp] { app =>
-      (f1.get, f2.get) shouldBe (true, true)
-    }
+    d.withLazyMode.withProductionMode.build[MyApp] { app => (f1.get, f2.get) shouldBe (true, true) }
     (f1.get, f2.get) shouldBe (false, false)
 
-    d.withProductionMode.build[MyApp2] { app =>
-      (f1.get, f2.get) shouldBe (true, true)
-    }
+    d.withProductionMode.build[MyApp2] { app => (f1.get, f2.get) shouldBe (true, true) }
     (f1.get, f2.get) shouldBe (false, false)
   }
 }

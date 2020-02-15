@@ -23,9 +23,7 @@ class InnerClassTest extends AirSpec {
 
   def `pass inner class context to Surface`: Unit = {
     val s = Surface.of[A]
-    val a = s.objectFactory.map { x =>
-      x.newInstance(Seq(1, "leo"))
-    }
+    val a = s.objectFactory.map { x => x.newInstance(Seq(1, "leo")) }
     a shouldBe Some(A(1, "leo"))
   }
 
@@ -33,9 +31,7 @@ class InnerClassTest extends AirSpec {
     val e = intercept[IllegalStateException] {
       new {
         val s = Surface.of[A]
-        s.objectFactory.map { x =>
-          x.newInstance(Seq(1, "leo"))
-        }
+        s.objectFactory.map { x => x.newInstance(Seq(1, "leo")) }
       }
     }
     e.getMessage.contains(s"${this.getClass.getSimpleName}") shouldBe true

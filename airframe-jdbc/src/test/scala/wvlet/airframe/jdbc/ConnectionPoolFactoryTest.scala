@@ -55,9 +55,7 @@ trait TestConnection extends LogSupport {
       ps.setInt(1, 2)
       ps.setString(2, "yui")
     }
-    pool.queryWith("select * from test where id = ?") { ps =>
-      ps.setInt(1, 2)
-    } { rs =>
+    pool.queryWith("select * from test where id = ?") { ps => ps.setInt(1, 2) } { rs =>
       while (rs.next()) {
         val id   = rs.getInt("id")
         val name = rs.getString("name")
@@ -110,24 +108,18 @@ class ConnectionPoolFactoryTest extends AirSpec {
   def `use PostgreSQL connection pool`: Unit = {
     if (!inTravisCI) pending
 
-    d.build[TestConnection] { t =>
-      t.test(t.pgPool)
-    }
+    d.build[TestConnection] { t => t.test(t.pgPool) }
   }
 
   def `report error for unknown db type`: Unit = {
     intercept[IllegalArgumentException] {
-      d.build[ConnectionPoolFactory] { f =>
-        f.newConnectionPool(DbConfig.of("superdb"))
-      }
+      d.build[ConnectionPoolFactory] { f => f.newConnectionPool(DbConfig.of("superdb")) }
     }
   }
 
   def `report error for missing postgresql host`: Unit = {
     intercept[IllegalArgumentException] {
-      d.build[ConnectionPoolFactory] { f =>
-        f.newConnectionPool(DbConfig.of("postgresql"))
-      }
+      d.build[ConnectionPoolFactory] { f => f.newConnectionPool(DbConfig.of("postgresql")) }
     }
   }
 }

@@ -66,15 +66,11 @@ package object json {
 
   implicit class JSONValueSeqOps(val jsonValues: Seq[JSONValue]) extends AnyVal {
     def /(name: String): Seq[JSONValue] = {
-      jsonValues.flatMap { jsonValue =>
-        jsonValue / name
-      }
+      jsonValues.flatMap { jsonValue => jsonValue / name }
     }
 
     def values: Seq[Any] = {
-      jsonValues.map { jsonValue =>
-        jsonValue.value
-      }
+      jsonValues.map { jsonValue => jsonValue.value }
     }
 
     def value: Any = {

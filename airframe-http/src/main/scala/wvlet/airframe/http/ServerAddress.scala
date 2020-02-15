@@ -34,9 +34,7 @@ case class ServerAddress(
   // Returns URI with the protocol schema (if specified)
   def uri: String = {
     val prefix = scheme
-      .map { x =>
-        s"${x}://${host}"
-      }.getOrElse(host)
+      .map { x => s"${x}://${host}" }.getOrElse(host)
     if (port != -1) {
       s"${prefix}:${port}"
     } else {

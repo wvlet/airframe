@@ -26,9 +26,7 @@ case class TableScan(name: QName, table: DbTable, columns: Seq[String]) extends 
   override def inputAttributes: Seq[Attribute] = Seq.empty
   override def outputAttributes: Seq[Attribute] = {
     columns.flatMap { col =>
-      table.schema.columns.find(_.name == col).map { c =>
-        ResolvedAttribute(c.name, c.dataType)
-      }
+      table.schema.columns.find(_.name == col).map { c => ResolvedAttribute(c.name, c.dataType) }
     }
   }
   override def sig(config: QuerySignatureConfig): String = {

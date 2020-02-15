@@ -42,9 +42,7 @@ object IOUtil {
 
   def randomPort: Int = unusedPort
   def unusedPort: Int = {
-    withResource(new ServerSocket(0)) { socket =>
-      socket.getLocalPort
-    }
+    withResource(new ServerSocket(0)) { socket => socket.getLocalPort }
   }
 
   def findPath(path: String): Option[File] = findPath(new File(path))
@@ -63,9 +61,7 @@ object IOUtil {
   }
 
   def readAsString(url: URL): String = {
-    withResource(url.openStream()) { in =>
-      readAsString(in)
-    }
+    withResource(url.openStream()) { in => readAsString(in) }
   }
 
   def readAsString(resourcePath: String): String = {
@@ -83,9 +79,7 @@ object IOUtil {
   }
 
   def readAsString(in: InputStream): String = {
-    readFully(in) { data =>
-      new String(data, StandardCharsets.UTF_8)
-    }
+    readFully(in) { data => new String(data, StandardCharsets.UTF_8) }
   }
 
   def readFully[U](in: InputStream)(f: Array[Byte] => U): U = {

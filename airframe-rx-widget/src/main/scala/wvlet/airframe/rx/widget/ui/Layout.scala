@@ -22,11 +22,7 @@ object Layout {
   def of                                     = div()
   def divOf(primaryClass: String): RxElement = div(_class -> primaryClass)
 
-  def codeBlock: RxComponent = RxComponent { content =>
-    pre(code(content))
-  }
+  def codeBlock: RxComponent = RxComponent { content => pre(code(content)) }
 
-  def scalaCode: RxComponent = RxComponent { content =>
-    pre(code(_class -> "language-scala rounded", content))
-  }
+  def scalaCode: RxComponent = RxComponent { content => pre(code(_class -> "language-scala rounded", content)) }
 }

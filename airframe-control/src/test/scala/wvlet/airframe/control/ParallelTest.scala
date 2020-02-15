@@ -120,10 +120,8 @@ class ParallelTest extends AirSpec {
     Parallel.jmxStats.startedTasks.set(0)
     Parallel.jmxStats.finishedTasks.set(0)
 
-    val source = Seq(1, 2, 3)
-    val result: Seq[Int] = source.parallel.withParallelism(2).map { x =>
-      x * 2
-    }
+    val source           = Seq(1, 2, 3)
+    val result: Seq[Int] = source.parallel.withParallelism(2).map { x => x * 2 }
 
     assert(result == List(2, 4, 6))
 
@@ -137,10 +135,8 @@ class ParallelTest extends AirSpec {
     Parallel.jmxStats.startedTasks.set(0)
     Parallel.jmxStats.finishedTasks.set(0)
 
-    val source = Seq(1, 2, 3).iterator
-    val result: Iterator[Int] = source.parallel.withParallelism(2).map { x =>
-      x * 2
-    }
+    val source                = Seq(1, 2, 3).iterator
+    val result: Iterator[Int] = source.parallel.withParallelism(2).map { x => x * 2 }
 
     val list = result.toList
     assert(List(2, 4, 6).forall(x => list.contains(x)))

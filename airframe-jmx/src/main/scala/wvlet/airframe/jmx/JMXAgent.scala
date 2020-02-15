@@ -58,20 +58,14 @@ class JMXAgent(config: JMXConfig) extends JMXRegistry with JMXMBeanServerService
   }
 
   def withConnector[U](f: JMXConnector => U): U = {
-    withResource(JMXConnectorFactory.connect(serviceUrl)) { connector =>
-      f(connector)
-    }
+    withResource(JMXConnectorFactory.connect(serviceUrl)) { connector => f(connector) }
   }
 
   def getMBeanInfo(mbeanName: String): MBeanInfo = {
-    withConnector { connector =>
-      connector.getMBeanServerConnection.getMBeanInfo(new ObjectName(mbeanName))
-    }
+    withConnector { connector => connector.getMBeanServerConnection.getMBeanInfo(new ObjectName(mbeanName)) }
   }
 
   def getMBeanAttribute(mbeanName: String, attrName: String): Any = {
-    withConnector { connector =>
-      connector.getMBeanServerConnection.getAttribute(new ObjectName(mbeanName), attrName)
-    }
+    withConnector { connector => connector.getMBeanServerConnection.getAttribute(new ObjectName(mbeanName), attrName) }
   }
 }

@@ -54,9 +54,7 @@ object RouteMatcher extends LogSupport {
     }
 
     def findRoute[Req](request: Req)(implicit tp: HttpRequestAdapter[Req]): Option[RouteMatch] = {
-      routesByMethod.get(tp.methodOf(request)).flatMap { nextRouter =>
-        nextRouter.findRoute(request)(tp)
-      }
+      routesByMethod.get(tp.methodOf(request)).flatMap { nextRouter => nextRouter.findRoute(request)(tp) }
     }
   }
 
@@ -96,18 +94,14 @@ object RouteMatcher extends LogSupport {
               trace(s"path index:${pathIndex}/${pc.length}, transition: ${currentState} -> ${token} -> ${nextStateId}")
               currentState = nextStateId
               // Update variable bindings here
-              actions.foreach { action =>
-                params = action.updateMatch(params, token)
-              }
+              actions.foreach { action => params = action.updateMatch(params, token) }
 
               // Try to find a match at the last path component
               if (pathIndex >= pc.length) {
                 toContinue = false
                 actions
                   .find(_.isTerminal)
-                  .map { matchedAction =>
-                    foundRoute = matchedAction.route
-                  }
+                  .map { matchedAction => foundRoute = matchedAction.route }
                   .getOrElse {
                     // Try empty token shift
                     loop("")

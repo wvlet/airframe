@@ -38,9 +38,7 @@ class ClassSurfaceTest extends SurfaceSpec {
     assert(p1.name == "context")
 
     val a0 = a.objectFactory
-      .map { x =>
-        x.newInstance(Seq(1, "c"))
-      }
+      .map { x => x.newInstance(Seq(1, "c")) }
       .get
       .asInstanceOf[A]
 

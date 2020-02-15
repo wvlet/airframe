@@ -41,7 +41,5 @@ object DI_10_TypeAliasBinding extends App {
     .bind[LogDbConfig].toInstance(DbConfig("log"))
     .bind[ChatDbConfig].toInstance(DbConfig("chat"))
 
-  d.build[MyApp] { app =>
-    app.run
-  }
+  d.build[MyApp] { app => app.run }
 }

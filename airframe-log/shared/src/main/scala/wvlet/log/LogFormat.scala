@@ -41,10 +41,8 @@ object LogFormatter {
 
   private val testFrameworkFilter =
     Pattern.compile("""\s+at (sbt\.|org\.scalatest\.).*""")
-  val DEFAULT_STACKTRACE_FILTER: String => Boolean = { line: String =>
-    !testFrameworkFilter.matcher(line).matches()
-  }
-  private var stackTraceFilter: String => Boolean = DEFAULT_STACKTRACE_FILTER
+  val DEFAULT_STACKTRACE_FILTER: String => Boolean = { line: String => !testFrameworkFilter.matcher(line).matches() }
+  private var stackTraceFilter: String => Boolean  = DEFAULT_STACKTRACE_FILTER
 
   /**
     * Set stack trace line filter

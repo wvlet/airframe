@@ -45,9 +45,7 @@ case class HttpRecord(
   def toResponse: Response = {
     val r = Response(Version.Http11, Status.fromCode(responseCode))
 
-    responseHeader.foreach { x =>
-      r.headerMap.set(x._1, x._2)
-    }
+    responseHeader.foreach { x => r.headerMap.set(x._1, x._2) }
 
     // Decode binary contents with Base64
     val contentBytes = HttpRecordStore.decodeFromBase64(responseBody)

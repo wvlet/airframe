@@ -29,9 +29,7 @@ class PackBenchmark extends MsgpackData {
   @Benchmark
   def packInt = {
     val packer = MessagePack.newBufferPacker
-    intArray.foreach { x =>
-      packer.packInt(x)
-    }
+    intArray.foreach { x => packer.packInt(x) }
   }
 }
 

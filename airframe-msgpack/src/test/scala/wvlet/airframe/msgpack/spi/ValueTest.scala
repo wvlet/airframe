@@ -54,18 +54,10 @@ class ValueTest extends AirSpec with PropertyCheck {
   }
 
   def `tell most succinct integer type`: Unit = {
-    forAll { (v: Byte) =>
-      checkSuccinctType(OffsetPacker.packByte(_, v), MessageFormat.INT8)
-    }
-    forAll { (v: Short) =>
-      checkSuccinctType(OffsetPacker.packShort(_, v), MessageFormat.INT16)
-    }
-    forAll { (v: Int) =>
-      checkSuccinctType(OffsetPacker.packInt(_, v), MessageFormat.INT32)
-    }
-    forAll { (v: Long) =>
-      checkSuccinctType(OffsetPacker.packLong(_, v), MessageFormat.INT64)
-    }
+    forAll { (v: Byte) => checkSuccinctType(OffsetPacker.packByte(_, v), MessageFormat.INT8) }
+    forAll { (v: Short) => checkSuccinctType(OffsetPacker.packShort(_, v), MessageFormat.INT16) }
+    forAll { (v: Int) => checkSuccinctType(OffsetPacker.packInt(_, v), MessageFormat.INT32) }
+    forAll { (v: Long) => checkSuccinctType(OffsetPacker.packLong(_, v), MessageFormat.INT64) }
     forAll { (v: Long) =>
       checkSuccinctType(OffsetPacker.packBigInteger(_, BigInteger.valueOf(v)), MessageFormat.INT64)
     }

@@ -30,9 +30,7 @@ package object config {
 
   implicit class ConfigurableDesign(d: Design) {
     def showConfig: Design = {
-      processConfig { c =>
-        logger.info(c.printConfig)
-      }
+      processConfig { c => logger.info(c.printConfig) }
     }
 
     /**
@@ -97,9 +95,7 @@ package object config {
         props: Map[String, Any],
         onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES
     )(implicit sourceCode: SourceCode): Design = {
-      overrideConfig { c =>
-        c.overrideWith(props, onUnusedProperties)
-      }
+      overrideConfig { c => c.overrideWith(props, onUnusedProperties) }
     }
 
     /**
@@ -109,9 +105,7 @@ package object config {
         props: Properties,
         onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES
     ): Design = {
-      overrideConfig { c =>
-        c.overrideWithProperties(props, onUnusedProperties)
-      }
+      overrideConfig { c => c.overrideWithProperties(props, onUnusedProperties) }
     }
 
     /**
@@ -121,9 +115,7 @@ package object config {
         propertiesFile: String,
         onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES
     )(implicit sourceCode: SourceCode): Design = {
-      overrideConfig { c =>
-        c.overrideWithPropertiesFile(propertiesFile, onUnusedProperties)
-      }
+      overrideConfig { c => c.overrideWithPropertiesFile(propertiesFile, onUnusedProperties) }
     }
 
     private def overrideConfig(f: Config => Config)(implicit sourceCode: SourceCode): Design = {
