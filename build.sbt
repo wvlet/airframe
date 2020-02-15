@@ -539,7 +539,7 @@ lazy val http =
     .settings(buildSettings)
     .settings(
       name := "airframe-http",
-      description := "JAX-RS based REST API Framework",
+      description := "REST API Framework",
       libraryDependencies ++= Seq(
         )
     )
