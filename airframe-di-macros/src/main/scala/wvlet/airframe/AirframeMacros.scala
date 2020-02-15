@@ -33,6 +33,8 @@ private[wvlet] object AirframeMacros {
 
       val isTaggedType = t.typeSymbol.fullName.startsWith("wvlet.airframe.surface.tag.")
 
+      val isSealedType = t.typeSymbol.isClass && t.typeSymbol.asClass.isSealed
+
       val shouldInstantiateTrait = if (!a.isStatic) {
         // = Non static type
         // If X is non static type (= local class or trait),
@@ -57,8 +59,8 @@ private[wvlet] object AirframeMacros {
         hasPublicDefaultConstructor
       }
 
-      // Tagged type binding should be found in Design
-      !isTaggedType && shouldInstantiateTrait
+      // Tagged type or sealed class binding should be found in Design
+      !isTaggedType && !isSealedType && shouldInstantiateTrait
     }
 
     def bind(session: c.Tree, t: c.Type): c.Tree = {
