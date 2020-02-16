@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.sbt.http
+import java.net.URLClassLoader
+
 import sbt.Keys._
 import sbt._
 import wvlet.airframe.surface.SurfaceFactory
@@ -19,7 +21,7 @@ import wvlet.airframe.surface.reflect.{ReflectMethodSurface, ReflectSurfaceFacto
 import wvlet.log.LogSupport
 import wvlet.log.io.Resource
 
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 /**
   *
@@ -42,27 +44,33 @@ object AirframePlugin extends AutoPlugin with LogSupport {
     airframeHttpPackages := Seq(),
     airframeHttpGenerateClient := {
       wvlet.airframe.log.init
-      val files    = (sources in Compile).value
-      val baseDirs = (sourceDirectories in Compile).value
-      def relativise(f: File): Option[File] = {
-        baseDirs.collectFirst { case dir if f.relativeTo(dir).isDefined => f.relativeTo(dir).get }
-      }
-
-      val lst = for (f <- files; r <- relativise(f)) yield r
-      findHttpInterface(lst)
+      val files       = (sources in Compile).value
+      val baseDirs    = (sourceDirectories in Compile).value
+      val classDir    = (classDirectory in Runtime).value
+      val classLoader = new URLClassLoader(Array(classDir.toURI.toURL), getClass.getClassLoader)
+      findHttpInterface(baseDirs, files, classLoader)
       Seq.empty
     }
   )
 
-  def findHttpInterface(files: Seq[File]): Unit = {
-    val classLoader = getClass.getClassLoader
-    val classes = files
+  def findHttpInterface(sourceDirs: Seq[File], files: Seq[File], classLoader: ClassLoader): Unit = {
+    def relativise(f: File): Option[File] = {
+      sourceDirs.collectFirst { case dir if f.relativeTo(dir).isDefined => f.relativeTo(dir).get }
+    }
+    val lst = for (f <- files; r <- relativise(f)) yield r
+
+    val classes = lst
       .map { f => f.getPath }
       .filter(_.endsWith(".scala"))
       .map(_.stripSuffix(".scala").replaceAll("/", "."))
       .map { clsName =>
         info(clsName)
-        Try(Class.forName(clsName))
+        Try(classLoader.loadClass(clsName)) match {
+          case x if x.isSuccess => x
+          case f @ Failure(e) =>
+            warn(e)
+            f
+        }
       }
       .collect {
         case Success(cls) =>
