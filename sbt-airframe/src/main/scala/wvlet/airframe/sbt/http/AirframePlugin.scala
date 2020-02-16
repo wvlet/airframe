@@ -14,11 +14,15 @@
 package wvlet.airframe.sbt.http
 import sbt.Keys._
 import sbt._
+import wvlet.log.LogSupport
+import wvlet.log.io.Resource
+
+import scala.util.Try
 
 /**
   *
   */
-object AirframePlugin extends AutoPlugin {
+object AirframePlugin extends AutoPlugin with LogSupport {
 
   trait AirframeHttpKeys {
     val airframeHttpPackages       = settingKey[Seq[String]]("The list of package names containing Airframe HTTP interfaces")
@@ -35,11 +39,20 @@ object AirframePlugin extends AutoPlugin {
   override def projectSettings = Seq(
     airframeHttpPackages := Seq(),
     airframeHttpGenerateClient := {
-      val logger = state.value.log
       for (p <- airframeHttpPackages.value) yield {
-        logger.info(s"processing ${p}")
+        findHttpInterface(p)
       }
       Seq.empty
     }
   )
+
+  def findHttpInterface(packageName: String): Unit = {
+    wvlet.airframe.log.init
+    info(s"Searching ${packageName}")
+
+    Resource
+      .listResources(packageName, _.endsWith(".class"), getClass.getClassLoader)
+      .map(_.logicalPath.stripSuffix(".class").replaceAll("/", "."))
+      .map(path => info(path))
+  }
 }
