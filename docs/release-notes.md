@@ -6,6 +6,14 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.2.1
+-  airframe-di: Fix a compilation error while binding sealed traits [#939](https://github.com/wvlet/airframe/issues/939) ([#940](https://github.com/wvlet/airframe/issues/940)) [[e381bfa](https://github.com/wvlet/airframe/commit/e381bfa)]
+-  airframe-http-finagle: [#930](https://github.com/wvlet/airframe/issues/930) Use bridged schduler for sync client ([#937](https://github.com/wvlet/airframe/issues/937)) [[9ffd0d5](https://github.com/wvlet/airframe/commit/9ffd0d5)]
+-  Update scalajs-dom to 1.0.0 ([#936](https://github.com/wvlet/airframe/issues/936)) [[89e5bb7](https://github.com/wvlet/airframe/commit/89e5bb7)]
+-  Update scalajs-java-logging to 1.0.0 ([#934](https://github.com/wvlet/airframe/issues/934)) [[efcd37a](https://github.com/wvlet/airframe/commit/efcd37a)]
+-  Update portable-scala-reflect to 1.0.0 ([#933](https://github.com/wvlet/airframe/issues/933)) [[fb97343](https://github.com/wvlet/airframe/commit/fb97343)]
+-  Update scalajs-java-time to 1.0.0 ([#935](https://github.com/wvlet/airframe/issues/935)) [[4ebf554](https://github.com/wvlet/airframe/commit/4ebf554)]
+
 ## 20.2.0
 
 Airframe and Airspec now support the first major release of Scala.js 1.0.0, and airframe-http-finagle becomes available for Scala 2.13.
