@@ -97,7 +97,7 @@ lazy val root =
       }
     }
     //    .aggregate(scaladoc)
-    .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjectsCore ++ jsProjectsSub): _*)
+    .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects ++ sbtProjects): _*)
 
 // Removed as running scaladoc hits https://github.com/sbt/zinc/issues/622
 //lazy val scaladoc =
@@ -157,16 +157,12 @@ lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
 )
 
 // Scala.js build (only for Scala 2.12 + 2.13)
-lazy val jsProjectsCore: Seq[ProjectReference] = Seq(
+lazy val jsProjects: Seq[ProjectReference] = Seq(
   logJS,
   surfaceJS,
   airframeJS,
   metricsJS,
-  airspecJS
-)
-
-// A workaround for https://github.com/scala-js/scala-js/issues/3921
-lazy val jsProjectsSub: Seq[ProjectReference] = Seq(
+  airspecJS,
   jsonJS,
   msgpackJS,
   codecJS,
@@ -184,6 +180,8 @@ lazy val airspecProjects: Seq[ProjectReference] = Seq(
   airspecLogJVM,
   airspecLogJS
 )
+
+lazy val sbtProjects: Seq[ProjectReference] = Seq(sbtAirframe)
 
 // For community-build
 lazy val communityBuild =
@@ -229,23 +227,7 @@ lazy val projectJS =
       noPublish,
       crossScalaVersions := exceptScala2_11
     )
-    .aggregate(projectJSCore, projectJSSub)
-
-lazy val projectJSCore =
-  project
-    .settings(
-      noPublish,
-      crossScalaVersions := exceptScala2_11
-    )
-    .aggregate(jsProjectsCore: _*)
-
-lazy val projectJSSub =
-  project
-    .settings(
-      noPublish,
-      crossScalaVersions := exceptScala2_11
-    )
-    .aggregate(jsProjectsSub: _*)
+    .aggregate(jsProjects: _*)
 
 lazy val docs =
   project
@@ -972,17 +954,26 @@ lazy val airspecRefJS  = airspecRef.js
 
 // sbt plugin
 
-lazy val sbtAirframeHttp =
+lazy val sbtAirframe =
   project
-    .in(file("sbt-airframe-http"))
+    .in(file("sbt-airframe"))
     .enablePlugins(SbtPlugin)
     .settings(
       buildSettings,
-      name := "sbt-airframe-http",
+      name := "sbt-airframe",
+      description := "sbt plugin for helping programming with Airframe",
+      scalaVersion := SCALA_2_12,
+      crossScalaVersions := Seq(SCALA_2_12),
       crossSbtVersions := Vector("1.2.8"),
       scriptedLaunchOpts := {
         scriptedLaunchOpts.value ++
           Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
       },
+      scriptedDependencies := {
+        // Publish all dependencies for runnign scripted tests
+        scriptedDependencies.value
+        publishLocal.all(ScopeFilter(inDependencies(http))).value
+      },
       scriptedBufferLog := false
-    ).dependsOn(http)
+    )
+    .dependsOn(http, airspecRefJVM % "test")

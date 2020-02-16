@@ -18,7 +18,7 @@ import sbt._
 /**
   *
   */
-class AirframeHttpPlugin extends AutoPlugin {
+object AirframePlugin extends AutoPlugin {
 
   trait AirframeHttpKeys {
     val airframeHttpPackages       = settingKey[Seq[String]]("The list of package names containing Airframe HTTP interfaces")
@@ -26,22 +26,20 @@ class AirframeHttpPlugin extends AutoPlugin {
 
   }
 
-  object AirframeHttpKeys extends AirframeHttpKeys
-  import AirframeHttpKeys._
+  object autoImport extends AirframeHttpKeys
+  import autoImport._
 
-  override def trigger = allRequirements
+  override def requires: Plugins = plugins.JvmPlugin
+  override def trigger           = noTrigger
 
   override def projectSettings = Seq(
+    airframeHttpPackages := Seq(),
     airframeHttpGenerateClient := {
       val logger = state.value.log
-
       for (p <- airframeHttpPackages.value) yield {
         logger.info(s"processing ${p}")
       }
       Seq.empty
     }
   )
-
-  import sbt.ScriptedPlugin.autoImport._
-  import complete.DefaultParsers._
 }
