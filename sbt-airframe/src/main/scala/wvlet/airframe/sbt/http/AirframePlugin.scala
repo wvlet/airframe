@@ -14,10 +14,12 @@
 package wvlet.airframe.sbt.http
 import sbt.Keys._
 import sbt._
+import wvlet.airframe.surface.SurfaceFactory
+import wvlet.airframe.surface.reflect.{ReflectMethodSurface, ReflectSurfaceFactory}
 import wvlet.log.LogSupport
 import wvlet.log.io.Resource
 
-import scala.util.Try
+import scala.util.{Success, Try}
 
 /**
   *
@@ -39,20 +41,42 @@ object AirframePlugin extends AutoPlugin with LogSupport {
   override def projectSettings = Seq(
     airframeHttpPackages := Seq(),
     airframeHttpGenerateClient := {
-      for (p <- airframeHttpPackages.value) yield {
-        findHttpInterface(p)
+      wvlet.airframe.log.init
+      val files    = (sources in Compile).value
+      val baseDirs = (sourceDirectories in Compile).value
+      def relativise(f: File): Option[File] = {
+        baseDirs.collectFirst { case dir if f.relativeTo(dir).isDefined => f.relativeTo(dir).get }
       }
+
+      val lst = for (f <- files; r <- relativise(f)) yield r
+      findHttpInterface(lst)
       Seq.empty
     }
   )
 
-  def findHttpInterface(packageName: String): Unit = {
-    wvlet.airframe.log.init
-    info(s"Searching ${packageName}")
+  def findHttpInterface(files: Seq[File]): Unit = {
+    val classLoader = getClass.getClassLoader
+    val classes = files
+      .map { f => f.getPath }
+      .filter(_.endsWith(".scala"))
+      .map(_.stripSuffix(".scala").replaceAll("/", "."))
+      .map { clsName =>
+        info(clsName)
+        Try(Class.forName(clsName))
+      }
+      .collect {
+        case Success(cls) =>
+          info(cls)
+          cls
+      }
 
-    Resource
-      .listResources(packageName, _.endsWith(".class"), getClass.getClassLoader)
-      .map(_.logicalPath.stripSuffix(".class").replaceAll("/", "."))
-      .map(path => info(path))
+    for (cl <- classes) yield {
+      val s = ReflectSurfaceFactory.ofClass(cl)
+      val m = ReflectSurfaceFactory.methodsOfClass(cl)
+
+      info(s)
+      info(m)
+    }
+
   }
 }
