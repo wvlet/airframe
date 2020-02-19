@@ -671,7 +671,7 @@ lazy val sql =
         // Include Spark just as a reference implementation
         "org.apache.spark" %% "spark-sql" % "2.4.4" % "test",
         // Include Presto as a reference implementation
-        "io.prestosql" % "presto-main" % "329" % "test"
+        "io.prestosql" % "presto-main" % "330" % "test"
       )
     )
     .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecRefJVM % "test")
