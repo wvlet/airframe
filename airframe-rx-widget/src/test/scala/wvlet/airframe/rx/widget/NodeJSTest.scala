@@ -12,19 +12,18 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.widget
+
 import wvlet.airspec.AirSpec
 
 /**
   *
   */
 class NodeJSTest extends AirSpec {
-  import scalajs.js.Dynamic.{global => g}
+  import io.scalajs.nodejs.fs.Fs
 
   test("read resource files using node.js") {
-    pendingUntil("Resolve node.js access from Scala.js")
-
-    val fs  = g.require("fs")
-    val txt = fs.readFileSync("src/test/resources/hello.txt").toString
+    val txt = Fs.readFileSync("airframe-rx-widget/src/test/resources/hello.txt").toString("utf8")
+    info(txt)
     txt.contains("hello") shouldBe true
   }
 }

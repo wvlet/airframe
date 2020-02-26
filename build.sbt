@@ -29,6 +29,9 @@ addCommandAlias(
 // Allow using Ctrl+C in sbt without exiting the prompt
 // cancelable in Global := true
 
+// Reload build.sbt on change
+Global / onChangedBuildSource := ReloadOnSourceChanges
+
 //ThisBuild / turbo := true
 
 // For using Scala 2.12 in sbt
@@ -702,7 +705,7 @@ lazy val widget =
   crossProject(JSPlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-rx-widget"))
-    //    .enablePlugins(ScalaJSBundlerPlugin)
+    .enablePlugins(ScalaJSBundlerPlugin)
     .settings(buildSettings)
     .settings(
       name := "airframe-rx-widget",
@@ -710,8 +713,12 @@ lazy val widget =
     )
     .jsSettings(
       jsBuildSettings,
-      jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
-//      npmDependencies in Test += "node" -> "12.14.1"
+      //jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+      //webpackBundlingMode := BundlingMode.LibraryOnly(),
+      libraryDependencies += "net.exoego" %%% "scala-js-nodejs-v12" % "0.10.0",
+      //npmDependencies in Test += "node"   -> "12.14.1",
+      //requireJsDomEnv in Test := true,
+      useYarn in Test := true
     )
     .dependsOn(log, rx, airspecRef % "test")
 
