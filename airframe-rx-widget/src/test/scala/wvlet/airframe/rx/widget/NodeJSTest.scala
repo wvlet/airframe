@@ -15,18 +15,15 @@ package wvlet.airframe.rx.widget
 
 import wvlet.airspec.AirSpec
 
-object NodeJSTest {
-  //val fs = js.Dynamic.global.require("fs")
-}
-
-/**
-  *
-  */
 class NodeJSTest extends AirSpec {
-  //import io.scalajs.nodejs.fs.Fs
+//  test("read resource files using node.js") {
+//    val fs  = scalajs.js.Dynamic.global.require("fs")
+//    val txt = fs.readFileSync("airframe-rx-widget/src/test/resources/hello.txt").toString()
+//    info(txt)
+//  }
 
-  test("read resource files using node.js") {
-    //val txt = NodeJSTest.fs.readFileSync("airframe-rx-widget/src/test/resources/hello.txt").toString()
+  test("use scala-js-node-js-v12") {
+    // Removing this nodejs access code resolves the error at jsEnvInput phase
     val txt = io.scalajs.nodejs.fs.Fs.readFileSync("airframe-rx-widget/src/test/resources/hello.txt").toString("utf8")
     info(txt)
     txt.contains("hello") shouldBe true
