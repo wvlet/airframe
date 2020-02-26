@@ -711,15 +711,7 @@ lazy val widget =
       name := "airframe-rx-widget",
       description := "Reactive Widget library for Scala.js"
     )
-    .jsSettings(
-      jsBuildSettings,
-      //jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
-      //webpackBundlingMode := BundlingMode.LibraryOnly(),
-      libraryDependencies += "net.exoego" %%% "scala-js-nodejs-v12" % "0.10.0",
-      //npmDependencies in Test += "node"   -> "12.14.1",
-      //requireJsDomEnv in Test := true,
-      useYarn in Test := true
-    )
+    .jsSettings(log, rx, airspecRef % "test")
     .dependsOn(log, rx, airspecRef % "test")
 
 lazy val widgetJS = widget.js

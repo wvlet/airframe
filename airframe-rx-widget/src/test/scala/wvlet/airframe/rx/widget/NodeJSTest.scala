@@ -15,14 +15,19 @@ package wvlet.airframe.rx.widget
 
 import wvlet.airspec.AirSpec
 
+object NodeJSTest {
+  //val fs = js.Dynamic.global.require("fs")
+}
+
 /**
   *
   */
 class NodeJSTest extends AirSpec {
-  import io.scalajs.nodejs.fs.Fs
+  //import io.scalajs.nodejs.fs.Fs
 
   test("read resource files using node.js") {
-    val txt = Fs.readFileSync("airframe-rx-widget/src/test/resources/hello.txt").toString("utf8")
+    //val txt = NodeJSTest.fs.readFileSync("airframe-rx-widget/src/test/resources/hello.txt").toString()
+    val txt = io.scalajs.nodejs.fs.Fs.readFileSync("airframe-rx-widget/src/test/resources/hello.txt").toString("utf8")
     info(txt)
     txt.contains("hello") shouldBe true
   }
