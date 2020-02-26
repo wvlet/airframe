@@ -711,7 +711,14 @@ lazy val widget =
       name := "airframe-rx-widget",
       description := "Reactive Widget library for Scala.js"
     )
-    .jsSettings(log, rx, airspecRef % "test")
+    .jsSettings(
+      jsBuildSettings,
+      libraryDependencies ++= Seq(
+        "net.exoego" %%% "scala-js-nodejs-v12" % "0.10.0"
+      ),
+      // Removing this setting makes Node.js code works, but 'window is not defined' error was thrown
+      requireJsDomEnv in Test := true
+    )
     .dependsOn(log, rx, airspecRef % "test")
 
 lazy val widgetJS = widget.js
