@@ -12,11 +12,15 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
+import java.time.Instant
+
 import wvlet.airframe.codec.JavaStandardCodec.EnumCodec
+import wvlet.airframe.metrics.TimeParser
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.airframe.surface.{EnumSurface, Surface}
 
 import scala.reflect.runtime.{universe => ru}
+import scala.util.Try
 
 /**
   *
@@ -43,4 +47,9 @@ object Compat {
     JavaTimeCodec.javaTimeCodecs ++ JavaStandardCodec.javaStandardCodecs
 
   def codecOf[A: ru.TypeTag]: MessageCodec[A] = MessageCodecFactory.defaultFactory.of[A]
+
+  private[codec] def parseInstant(s: String): Option[Instant] = {
+    Try(Instant.parse(s)).toOption
+      .orElse(TimeParser.parseAtLocalTimeZone(s).map(_.toInstant))
+  }
 }

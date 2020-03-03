@@ -12,7 +12,11 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
+import java.time.Instant
+
 import wvlet.airframe.surface.Surface
+
+import scala.util.Try
 
 /**
   *
@@ -20,4 +24,8 @@ import wvlet.airframe.surface.Surface
 object Compat {
   def messageCodecFinder: MessageCodecFinder                = MessageCodecFinder.defaultMessageCodecFinder
   def platformSpecificCodecs: Map[Surface, MessageCodec[_]] = Map.empty
+
+  private[codec] def parseInstant(s: String): Option[Instant] = {
+    Try(Instant.parse(s)).toOption
+  }
 }
