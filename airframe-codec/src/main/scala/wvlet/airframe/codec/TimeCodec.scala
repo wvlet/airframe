@@ -41,7 +41,7 @@ object JavaInstantTimeCodec extends MessageCodec[Instant] {
         case ValueType.STRING =>
           // Use ISO instant formatter
           val isoInstantFormat = u.unpackString
-          Compat
+          wvlet.airframe.codec.Compat
             .parseInstant(isoInstantFormat)
             .getOrElse(Instant.ofEpochMilli(isoInstantFormat.toLong))
         case ValueType.INTEGER =>
