@@ -14,6 +14,8 @@
 package wvlet.airframe.codec
 import java.time.{Instant, ZonedDateTime}
 
+import wvlet.airframe.codec.PrimitiveCodec.StringCodec
+import wvlet.airframe.metrics.TimeParser
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.Surface
 
@@ -22,7 +24,7 @@ import wvlet.airframe.surface.Surface
   */
 class JavaTimeCodecTest extends CodecSpec {
 
-  def `support ZonedDateTime`: Unit = {
+  test("support ZonedDateTime") {
     roundtrip(Surface.of[ZonedDateTime], ZonedDateTime.now())
     roundtrip(Surface.of[ZonedDateTime], ZonedDateTime.parse("2007-12-03T10:15:30+01:00[Europe/Paris]"))
 
@@ -33,8 +35,19 @@ class JavaTimeCodecTest extends CodecSpec {
     v shouldBe empty
   }
 
-  def `support java.util.Date`: Unit = {
+  test("support java.util.Date") {
     val now = java.util.Date.from(Instant.now())
     roundtrip(Surface.of[java.util.Date], now)
+  }
+
+  test("parse various time strings in InstantCodec") {
+    val timeStr = "2018-05-26 21:10:29-0800"
+    val z       = TimeParser.parseAtLocalTimeZone(timeStr).get
+    val i1      = z.toInstant
+
+    val msgpack = StringCodec.toMsgPack(timeStr)
+    val i2      = JavaInstantTimeCodec.fromMsgPack(msgpack)
+
+    i1 shouldBe i2
   }
 }
