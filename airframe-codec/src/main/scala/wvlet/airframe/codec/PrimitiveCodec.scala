@@ -708,6 +708,30 @@ object PrimitiveCodec {
     }
   }
 
+  object AnyArrayCodec extends MessageCodec[Array[Any]] {
+    override def pack(p: Packer, v: Array[Any]): Unit = {
+      p.packArrayHeader(v.length)
+      v.foreach { x => AnyCodec.pack(p, x) }
+    }
+    override def unpack(
+        u: Unpacker,
+        v: MessageContext
+    ): Unit = {
+      val len = u.unpackArrayHeader
+      val b   = Array.newBuilder[Any]
+      b.sizeHint(len)
+      (0 until len).foreach { i =>
+        StringCodec.unpack(u, v)
+        if (v.isNull) {
+          b += null // or report error?
+        } else {
+          b += v.getLastValue
+        }
+      }
+      v.setObject(b.result())
+    }
+  }
+
   /**
     * MessagePack value codec
     */
