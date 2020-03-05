@@ -17,6 +17,7 @@ import java.sql.{ResultSet, Time, Timestamp, Types}
 import wvlet.airframe.codec.PrimitiveCodec._
 import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, ValueType}
 import wvlet.log.LogSupport
+
 import scala.collection.compat._
 
 /**
@@ -433,10 +434,8 @@ object JDBCCodec extends LogSupport {
           DoubleArrayCodec.pack(p, a)
         case a: Array[Boolean] =>
           BooleanArrayCodec.pack(p, a)
-        case a: Array[AnyRef] =>
-          throw new UnsupportedOperationException(
-            s"Reading array type of ${arr.getClass} is not supported:\n${a.mkString(", ")}"
-          )
+        case a: Array[_] =>
+          AnyArrayCodec.pack(p, a.asInstanceOf[Array[Any]])
         case other =>
           throw new UnsupportedOperationException(s"Reading array type of ${arr.getClass} is not supported: ${arr}")
       }
