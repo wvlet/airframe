@@ -179,9 +179,7 @@ class JDBCCodecTest extends AirSpec {
     JavaSqlArrayCodec.pack(p, MockArray(Array('a', 'b', 'c')))
     JavaSqlArrayCodec.pack(p, MockArray(Array(0.toByte, 1.toByte)))
     JavaSqlArrayCodec.pack(p, MockArray(Array(10L, 20L)))
-    intercept[UnsupportedOperationException] {
-      JavaSqlArrayCodec.pack(p, MockArray(Array(1, "a", 10L)))
-    }
+    JavaSqlArrayCodec.pack(p, MockArray(Array(1, "a", 10L)))
     intercept[UnsupportedOperationException] {
       JavaSqlArrayCodec.pack(p, MockArray(Seq(1, 2, 3)))
     }
