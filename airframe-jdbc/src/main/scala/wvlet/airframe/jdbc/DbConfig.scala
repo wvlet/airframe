@@ -75,8 +75,8 @@ case class DbConfig(
   def withUser(user: String): DbConfig =
     this.copy(user = Option(user))
 
-  def withPassword(password: String): DbConfig = _
-  this.copy(password = Some(password))
+  def withPassword(password: String): DbConfig =
+    this.copy(password = Some(password))
 
   def jdbcDriverName: String = {
     driver match {
