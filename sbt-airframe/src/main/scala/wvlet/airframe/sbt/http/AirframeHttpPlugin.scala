@@ -59,6 +59,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     },
     airframeHttpGenerateClient := {
       val router = airframeHttpRouter.value
+      generateHttpClient(router)
       Seq.empty
     }
   )
@@ -92,8 +93,13 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           cls
       }
 
+    buildRouter(classes)
+  }
+
+  def buildRouter(classes: Seq[Class[_]]): Router = {
     var router = Router.empty
     for (cl <- classes) yield {
+      debug(s"Searching ${cl} for HTTP endpoints")
       import wvlet.airframe.surface.reflect._
       val s       = ReflectSurfaceFactory.ofClass(cl)
       val methods = ReflectSurfaceFactory.methodsOfClass(cl)
@@ -103,6 +109,12 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       }
     }
     router
+  }
+
+  def generateHttpClient(router: Router): Unit = {
+
+    router.routes
+
   }
 
 }

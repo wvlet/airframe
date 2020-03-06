@@ -183,18 +183,17 @@ object ReflectSurfaceFactory extends LogSupport {
     private def allMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
       // Sort the members in the source code order
       t.members.sorted
-        .filter(x =>
+        .filter { x =>
           nonObject(x.owner) &&
-            x.isMethod &&
-            x.isPublic &&
-            !x.isConstructor &&
-            !x.isImplementationArtifact &&
-            !x.isMacro &&
-            !x.isImplicit &&
-            !x.isAbstract &&
-            // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
-            !x.isSynthetic
-        )
+          x.isMethod &&
+          x.isPublic &&
+          !x.isConstructor &&
+          !x.isImplementationArtifact &&
+          !x.isMacro &&
+          !x.isImplicit &&
+          // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
+          !x.isSynthetic
+        }
         .map(_.asMethod)
         .filter { x =>
           val name = x.name.decodedName.toString
@@ -206,7 +205,7 @@ object ReflectSurfaceFactory extends LogSupport {
 
     def localMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
       allMethodsOf(t)
-        .filter(m => isOwnedByTargetClass(m, t))
+        .filter { m => isOwnedByTargetClass(m, t) }
     }
 
     private def nonObject(x: ru.Symbol): Boolean = {
@@ -235,7 +234,8 @@ object ReflectSurfaceFactory extends LogSupport {
               localMethodsOf(t.dealias).toSeq.distinct
             case t @ RefinedType(List(_, baseType), decls: MemberScope) =>
               (localMethodsOf(baseType) ++ localMethodsOf(t)).toSeq.distinct
-            case _ => Seq.empty
+            case _ =>
+              Seq.empty
           }
 
           val lst = IndexedSeq.newBuilder[MethodSurface]
