@@ -16,23 +16,13 @@ import java.net.URLClassLoader
 
 import sbt.Keys._
 import sbt._
-import wvlet.airframe.surface.SurfaceFactory
-import wvlet.airframe.surface.reflect.{ReflectMethodSurface, ReflectSurfaceFactory}
+import wvlet.airframe.sbt.http.HttpPlugin.AirframeHttpKeys
 import wvlet.log.LogSupport
-import wvlet.log.io.Resource
-
-import scala.util.{Failure, Success, Try}
 
 /**
   *
   */
 object AirframePlugin extends AutoPlugin with LogSupport {
-
-  trait AirframeHttpKeys {
-    val airframeHttpPackages       = settingKey[Seq[String]]("The list of package names containing Airframe HTTP interfaces")
-    val airframeHttpGenerateClient = taskKey[Seq[File]]("Generate the client code")
-
-  }
 
   object autoImport extends AirframeHttpKeys
   import autoImport._
@@ -42,49 +32,18 @@ object AirframePlugin extends AutoPlugin with LogSupport {
 
   override def projectSettings = Seq(
     airframeHttpPackages := Seq(),
-    airframeHttpGenerateClient := {
-      wvlet.airframe.log.init
+    airframeHttpRouter := {
       val files       = (sources in Compile).value
       val baseDirs    = (sourceDirectories in Compile).value
       val classDir    = (classDirectory in Runtime).value
       val classLoader = new URLClassLoader(Array(classDir.toURI.toURL), getClass.getClassLoader)
-      findHttpInterface(baseDirs, files, classLoader)
+      val router      = HttpPlugin.buildRouter(baseDirs, files, classLoader)
+      info(router)
+      router
+    },
+    airframeHttpGenerateClient := {
+      val router = airframeHttpRouter.value
       Seq.empty
     }
   )
-
-  def findHttpInterface(sourceDirs: Seq[File], files: Seq[File], classLoader: ClassLoader): Unit = {
-    def relativise(f: File): Option[File] = {
-      sourceDirs.collectFirst { case dir if f.relativeTo(dir).isDefined => f.relativeTo(dir).get }
-    }
-    val lst = for (f <- files; r <- relativise(f)) yield r
-
-    val classes = lst
-      .map { f => f.getPath }
-      .filter(_.endsWith(".scala"))
-      .map(_.stripSuffix(".scala").replaceAll("/", "."))
-      .map { clsName =>
-        info(clsName)
-        Try(classLoader.loadClass(clsName)) match {
-          case x if x.isSuccess => x
-          case f @ Failure(e) =>
-            warn(e)
-            f
-        }
-      }
-      .collect {
-        case Success(cls) =>
-          info(cls)
-          cls
-      }
-
-    for (cl <- classes) yield {
-      val s = ReflectSurfaceFactory.ofClass(cl)
-      val m = ReflectSurfaceFactory.methodsOfClass(cl)
-
-      info(s)
-      info(m)
-    }
-
-  }
 }

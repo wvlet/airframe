@@ -963,14 +963,13 @@ lazy val sbtAirframe =
       name := "sbt-airframe",
       description := "sbt plugin for helping programming with Airframe",
       scalaVersion := SCALA_2_12,
-      crossScalaVersions := Seq(SCALA_2_12),
       crossSbtVersions := Vector("1.2.8"),
       scriptedLaunchOpts := {
         scriptedLaunchOpts.value ++
           Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
       },
       scriptedDependencies := {
-        // Publish all dependencies for runnign scripted tests
+        // Publish all dependencies for running the scripted tests
         scriptedDependencies.value
         publishLocal.all(ScopeFilter(inDependencies(http))).value
       },

@@ -13,9 +13,9 @@
  */
 package wvlet.airframe.surface.reflect
 
-import wvlet.airframe.surface.{AnyRefSurface, MethodParameter, MethodSurface, Surface}
 import java.{lang => jl}
 
+import wvlet.airframe.surface.{MethodParameter, MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 import scala.util.Try
@@ -26,20 +26,14 @@ import scala.util.Try
 case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[MethodParameter])
     extends MethodSurface
     with LogSupport {
-  private def findActualMethod(cls: Class[_]): Option[jl.reflect.Method] = {
-    // For `symbol-based method names`, we need to encode Scala method names into the bytecode format used in class files.
-    val rawMethodName = scala.reflect.NameTransformer.encode(name)
-    Try(cls.getDeclaredMethod(rawMethodName, args.map(_.surface.rawType): _*)).toOption
-  }
-
-  private lazy val method: Option[jl.reflect.Method] = findActualMethod(owner.rawType)
+  private lazy val method: Option[jl.reflect.Method] = ReflectMethodSurface.findMethod(owner.rawType, this)
 
   def getMethod: Option[jl.reflect.Method] = method
 
   override def call(obj: Any, x: Any*): Any = {
     val targetMethod: Option[jl.reflect.Method] = method.orElse {
       // RefinedTypes may have new methods which cannot be found from the owner
-      Option(obj).flatMap(objRef => findActualMethod(objRef.getClass))
+      Option(obj).flatMap(objRef => ReflectMethodSurface.findMethod(objRef.getClass, this))
     }
 
     targetMethod match {
@@ -57,4 +51,14 @@ case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnTy
         null
     }
   }
+}
+
+object ReflectMethodSurface {
+
+  def findMethod(owner: Class[_], m: MethodSurface): Option[jl.reflect.Method] = {
+    // For `symbol-based method names`, we need to encode Scala method names into the bytecode format used in class files.
+    val rawMethodName = scala.reflect.NameTransformer.encode(m.name)
+    Try(owner.getDeclaredMethod(rawMethodName, m.args.map(_.surface.rawType): _*)).toOption
+  }
+
 }

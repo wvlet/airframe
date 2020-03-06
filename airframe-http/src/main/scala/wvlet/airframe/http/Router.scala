@@ -13,13 +13,13 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.http.router.{ControllerRoute, Route, RouteMatch, RouteMatcher, RouterMacros}
+import wvlet.airframe.http.router._
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 import scala.annotation.tailrec
-import scala.language.higherKinds
 import scala.language.experimental.macros
+import scala.language.higherKinds
 
 /**
   * Router defines mappings from HTTP requests to Routes.
@@ -43,7 +43,7 @@ case class Router(
     localRoutes: Seq[Route] = Seq.empty,
     filterSurface: Option[Surface] = None,
     filterInstance: Option[HttpFilterType] = None
-) {
+) extends LogSupport {
   def isEmpty = this eq Router.empty
 
   def isLeafFilter = children.isEmpty && localRoutes.isEmpty
@@ -134,7 +134,7 @@ case class Router(
     // Add methods annotated with @Endpoint
     val newRoutes =
       controllerMethodSurfaces
-        .map(m => (m, m.findAnnotationOf[Endpoint]))
+        .map { m => (m, m.findAnnotationOf[Endpoint]) }
         .collect {
           case (m: ReflectMethodSurface, Some(endPoint)) =>
             ControllerRoute(controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)

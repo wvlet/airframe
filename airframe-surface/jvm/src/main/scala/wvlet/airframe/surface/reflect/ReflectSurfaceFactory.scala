@@ -49,8 +49,14 @@ object ReflectSurfaceFactory extends LogSupport {
     apply(tpe)
   }
   def ofClass(cls: Class[_]): Surface = {
-    val tpe = scala.reflect.runtime.currentMirror.classSymbol(cls).toType
-    ofType(tpe)
+    val cs  = scala.reflect.runtime.currentMirror.classSymbol(cls)
+    val tpe = cs.toType
+    ofType(tpe) match {
+      // Workaround for sbt's layered class loader, which cannot find the original classes using the reflect mirror
+      case Alias(_, _, AnyRefSurface) if cs.isTrait =>
+        new GenericSurface(cls)
+      case other => other
+    }
   }
 
   private def getPrimaryConstructorOf(cls: Class[_]): Option[Constructor[_]] = {
@@ -134,15 +140,15 @@ object ReflectSurfaceFactory extends LogSupport {
 
   def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = methodsOfType(implicitly[ru.WeakTypeTag[A]].tpe)
 
-  def methodsOfType(tpe: ru.Type): Seq[MethodSurface] = {
+  def methodsOfType(tpe: ru.Type, cls: Option[Class[_]] = None): Seq[MethodSurface] = {
     methodSurfaceCache.getOrElseUpdate(fullTypeNameOf(tpe), {
-      new SurfaceFinder().createMethodSurfaceOf(tpe)
+      new SurfaceFinder().createMethodSurfaceOf(tpe, cls)
     })
   }
 
   def methodsOfClass(cls: Class[_]): Seq[MethodSurface] = {
     val tpe = scala.reflect.runtime.currentMirror.classSymbol(cls).toType
-    methodsOfType(tpe)
+    methodsOfType(tpe, Some(cls))
   }
 
   private[surface] def mirror = ru.runtimeMirror(Thread.currentThread.getContextClassLoader)
@@ -215,7 +221,7 @@ object ReflectSurfaceFactory extends LogSupport {
       m.owner == t.typeSymbol || t.baseClasses.filter(nonObject).exists(_ == m.owner)
     }
 
-    def createMethodSurfaceOf(targetType: ru.Type): Seq[MethodSurface] = {
+    def createMethodSurfaceOf(targetType: ru.Type, cls: Option[Class[_]] = None): Seq[MethodSurface] = {
       val name = fullTypeNameOf(targetType)
       if (methodSurfaceCache.contains(name)) {
         methodSurfaceCache(name)
@@ -236,7 +242,7 @@ object ReflectSurfaceFactory extends LogSupport {
           for (m <- localMethods) {
             try {
               val mod   = modifierBitMaskOf(m)
-              val owner = surfaceOf(targetType)
+              val owner = cls.map(ofClass(_)).getOrElse(surfaceOf(targetType))
               val name  = m.name.decodedName.toString
               val ret   = surfaceOf(m.returnType)
               val args  = methodParametersOf(targetType, m)
