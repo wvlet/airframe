@@ -12,18 +12,33 @@
  * limitations under the License.
  */
 package wvlet.airframe.sbt.http
+import java.net.URLClassLoader
+
+import sbt.Keys.{classDirectory, sourceDirectories, sources}
 import sbt.{File, settingKey, taskKey, _}
 import wvlet.airframe.http.{Endpoint, Router}
-import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
 
 /**
+  * sbt plugin for supporting Airframe HTTP development.
+  *
+  * This plugin supports:
+  * - Building a Router by scanning interfaces that have methods with @Endpoint annotations in the project
+  * - Generate HTTP client code for Scala and Scala.js
   *
   */
-object HttpPlugin extends LogSupport {
+object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   wvlet.airframe.log.init
+
+  object autoImport extends AirframeHttpKeys
+  import autoImport._
+
+  override def requires: Plugins = plugins.JvmPlugin
+  override def trigger           = noTrigger
+
+  override def projectSettings = httpProjectSettings
 
   trait AirframeHttpKeys {
     val airframeHttpPackages       = settingKey[Seq[String]]("A list of package names containing Airframe HTTP interfaces")
@@ -31,8 +46,22 @@ object HttpPlugin extends LogSupport {
     val airframeHttpRouter         = taskKey[Router]("Airframe Router")
   }
 
-  case class HttpInterface(surface: Surface, endpoints: Seq[HttpEndpoint])
-  case class HttpEndpoint(endpoint: Endpoint, method: MethodSurface)
+  def httpProjectSettings = Seq(
+    airframeHttpPackages := Seq(),
+    airframeHttpRouter := {
+      val files       = (sources in Compile).value
+      val baseDirs    = (sourceDirectories in Compile).value
+      val classDir    = (classDirectory in Runtime).value
+      val classLoader = new URLClassLoader(Array(classDir.toURI.toURL), getClass.getClassLoader)
+      val router      = buildRouter(baseDirs, files, classLoader)
+      info(router)
+      router
+    },
+    airframeHttpGenerateClient := {
+      val router = airframeHttpRouter.value
+      Seq.empty
+    }
+  )
 
   /**
     * Find Airframe HTTP interfaces and build a Router object
@@ -69,7 +98,7 @@ object HttpPlugin extends LogSupport {
       val s       = ReflectSurfaceFactory.ofClass(cl)
       val methods = ReflectSurfaceFactory.methodsOfClass(cl)
       if (methods.exists(_.findAnnotationOf[Endpoint].isDefined)) {
-        info(s"Adding ${s.fullName} to Router")
+        info(s"Found HTTP interface: ${s.fullName}")
         router = router.addInternal(s, methods)
       }
     }

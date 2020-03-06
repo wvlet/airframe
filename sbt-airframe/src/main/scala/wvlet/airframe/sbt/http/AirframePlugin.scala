@@ -16,34 +16,10 @@ import java.net.URLClassLoader
 
 import sbt.Keys._
 import sbt._
-import wvlet.airframe.sbt.http.HttpPlugin.AirframeHttpKeys
+import wvlet.airframe.sbt.http.AirframeHttpPlugin.AirframeHttpKeys
 import wvlet.log.LogSupport
 
 /**
   *
   */
-object AirframePlugin extends AutoPlugin with LogSupport {
-
-  object autoImport extends AirframeHttpKeys
-  import autoImport._
-
-  override def requires: Plugins = plugins.JvmPlugin
-  override def trigger           = noTrigger
-
-  override def projectSettings = Seq(
-    airframeHttpPackages := Seq(),
-    airframeHttpRouter := {
-      val files       = (sources in Compile).value
-      val baseDirs    = (sourceDirectories in Compile).value
-      val classDir    = (classDirectory in Runtime).value
-      val classLoader = new URLClassLoader(Array(classDir.toURI.toURL), getClass.getClassLoader)
-      val router      = HttpPlugin.buildRouter(baseDirs, files, classLoader)
-      info(router)
-      router
-    },
-    airframeHttpGenerateClient := {
-      val router = airframeHttpRouter.value
-      Seq.empty
-    }
-  )
-}
+object AirframePlugin extends AutoPlugin with LogSupport {}
