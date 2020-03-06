@@ -98,7 +98,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     * Parameters with @secret annotation will be hidden.
     */
   def toPrintableMap: Map[String, Any] = {
-    def traverse(s: Surface, v: Any, secret: Option[secret]): Any = {
+    def traverse(s: Surface, v: Any, secret: Option[wvlet.airframe.surface.secret]): Any = {
       if (s.params.isEmpty) {
         val value = v match {
           case null => ""
@@ -121,7 +121,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
         // Use ListMap to preserve the parameter order
         val m = ListMap.newBuilder[String, Any]
         for (p <- s.params) {
-          m += p.name -> traverse(p.surface, p.get(v), p.findAnnotationOf[secret])
+          m += p.name -> traverse(p.surface, p.get(v), p.findAnnotationOf[wvlet.airframe.surface.secret])
         }
         m.result()
       }

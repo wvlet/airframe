@@ -11,29 +11,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package wvlet.airframe.config;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+package wvlet.airframe.surface
+import wvlet.airspec.AirSpec
 
 /**
- * Hide a parameter in case classes from display
- */
-@Retention(RUNTIME)
-@Target({ElementType.METHOD, ElementType.FIELD})
-public @interface secret {
+  *
+  */
+object SecretParamTest extends AirSpec {
 
-    /**
-     * Mask the value totally
-     */
-    boolean mask() default false;
+  case class WithSecretParam(
+      user: String,
+      @secret password: String
+  )
 
-    /**
-     * The length for trimming
-     */
-    int trim() default 7;
+  test("support @secret annotation") {
+    val s          = Surface.of[WithSecretParam]
+    val p_user     = s.params(0)
+    val p_password = s.params(1)
+
+    p_user.isSecret shouldBe false
+    p_password.isSecret shouldBe true
+  }
 }
