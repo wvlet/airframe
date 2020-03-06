@@ -16,7 +16,8 @@ import java.net.URLClassLoader
 
 import sbt.Keys.{classDirectory, sourceDirectories, sources}
 import sbt.{File, settingKey, taskKey, _}
-import wvlet.airframe.http.{Endpoint, Router}
+import wvlet.airframe.http.router.ControllerRoute
+import wvlet.airframe.http.{Endpoint, HttpRequest, Router}
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
@@ -99,12 +100,12 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   def buildRouter(classes: Seq[Class[_]]): Router = {
     var router = Router.empty
     for (cl <- classes) yield {
-      debug(s"Searching ${cl} for HTTP endpoints")
+      debug(f"Searching ${cl} for HTTP endpoints")
       import wvlet.airframe.surface.reflect._
       val s       = ReflectSurfaceFactory.ofClass(cl)
       val methods = ReflectSurfaceFactory.methodsOfClass(cl)
       if (methods.exists(_.findAnnotationOf[Endpoint].isDefined)) {
-        info(s"Found HTTP interface: ${s.fullName}")
+        info(s"Found an Airframe HTTP interface: ${s.fullName}")
         router = router.addInternal(s, methods)
       }
     }
@@ -113,7 +114,47 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
 
   def generateHttpClient(router: Router): Unit = {
 
-    router.routes
+    val lines = Seq.newBuilder[String]
+    for ((controllerSurface, routes) <- router.routes.groupBy(_.controllerSurface)) {
+      lines += s"object ${controllerSurface.name} {"
+      for (r <- routes) {
+        r match {
+          case cr: ControllerRoute =>
+            // Filter server-side only arguments
+            val clientSideArgs = cr.methodSurface.args.filter { x =>
+              !classOf[HttpRequest[_]].isAssignableFrom(x.surface.rawType) &&
+              !x.surface.fullName.startsWith("wvlet.airframe.http.HttpContext") &&
+              x.surface.fullName != "com.twitter.finagle.http.Request"
+            }
+
+            val args =
+              if (clientSideArgs.isEmpty) ""
+              else {
+                s"(${clientSideArgs.map { x => s"${x.name}: ${x.surface.name}" }.mkString(", ")})"
+              }
+            val ret  = cr.returnTypeSurface.name
+            val body = s"""client.${cr.method.toString.toLowerCase}("${cr.path}")"""
+            lines += s"  def ${cr.methodSurface.name}${args}: ${ret} = {"
+            lines += s"    ${body}"
+            lines += s"  }"
+          case _ =>
+        }
+      }
+      lines += "}"
+    }
+    val methods = lines.result().map(x => s"  ${x}").mkString("\n")
+
+    val code = s"""
+       |package ...
+       |import wvlet.airframe.http.HttpClient
+       |
+       |class MyHttpClient[F[_], Req, Resp](private val client:HttpClient[F, Req, Resp]) {
+       |  def getClient: HttpClient[F, Req, Resp] = client
+       |${methods}
+       |}
+       |""".stripMargin
+
+    info(code)
 
   }
 

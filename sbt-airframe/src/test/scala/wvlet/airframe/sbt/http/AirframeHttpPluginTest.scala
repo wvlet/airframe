@@ -21,7 +21,8 @@ import wvlet.airspec.AirSpec
   */
 class AirframeHttpPluginTest extends AirSpec {
 
-  val router = AirframeHttpPlugin.buildRouter(Seq(classOf[ResourceApi], classOf[QueryApi]))
+  val router =
+    AirframeHttpPlugin.buildRouter(Seq(classOf[ResourceApi], classOf[QueryApi]))
 
   test("build router") {
     debug(router)

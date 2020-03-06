@@ -14,7 +14,9 @@
 package example
 import java.util.UUID
 
-import wvlet.airframe.http.{Endpoint, HttpMethod}
+import wvlet.airframe.http._
+
+import scala.concurrent.Future
 
 case class GetResourceRequest(id: String)
 case class ResourceResponse(id: String, data: String)
@@ -26,20 +28,17 @@ case class DeleteResourceRequest(id: String)
   */
 trait ResourceApi {
   @Endpoint(method = HttpMethod.GET, path = "/v1/resources/:id")
-  def getResource(getRequest: GetResourceRequest): ResourceResponse = {
-    ResourceResponse(getRequest.id, "hello")
-  }
+  def getResource(getRequest: GetResourceRequest): ResourceResponse
 
   @Endpoint(method = HttpMethod.POST, path = "/v1/resources")
-  def addResource(createResourceRequest: CreateResourceRequest): ResourceResponse = {
-    ResourceResponse(createResourceRequest.id, createResourceRequest.data)
-  }
+  def addResource(createResourceRequest: CreateResourceRequest): ResourceResponse
 
   @Endpoint(method = HttpMethod.DELETE, path = "/v1/resources/:id")
-  def deleteResource(deleteResourceRequest: DeleteResourceRequest): Unit = {}
+  def deleteResource(deleteResourceRequest: DeleteResourceRequest, request: SimpleHttpRequest): Unit
 
   @Endpoint(method = HttpMethod.GET, path = "/v1/resources")
-  def listResources: Seq[ResourceResponse] = {
+  def listResources(context: HttpContext[SimpleHttpRequest, SimpleHttpResponse, Future]): Seq[ResourceResponse] = {
+    // Non abstract method example
     Seq.empty
   }
 }

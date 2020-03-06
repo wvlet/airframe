@@ -78,7 +78,6 @@ private[surface] object SurfaceMacros {
             !x.isImplementationArtifact &&
             !x.isMacro &&
             !x.isImplicit &&
-            !x.isAbstract &&
             // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
             !x.isSynthetic
         )
