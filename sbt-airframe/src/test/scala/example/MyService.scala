@@ -51,6 +51,12 @@ trait QueryApi {
   @Endpoint(method = HttpMethod.GET, path = "/v1/query")
   def listQueries: Seq[Query]
 
+  @Endpoint(method = HttpMethod.GET, path = "/v1/query/:id")
+  def getQueryById(id: Int): QueryResultResponse
+
+  @Endpoint(method = HttpMethod.GET, path = "/v1/query/:id/page/:page")
+  def getQueryPage(id: Int, page: Int): QueryResultResponse
+
   @Endpoint(method = HttpMethod.POST, path = "/v1/query")
   def newQuery(createQueryRequest: CreateQueryRequest): QueryResultResponse
 }

@@ -36,6 +36,6 @@ class AirframeHttpPluginTest extends AirSpec {
 
   test("generate client") {
     info(router)
-    AirframeHttpPlugin.generateHttpClient(router)
+    HttpClientGenerator.generateHttpClient(router)
   }
 }

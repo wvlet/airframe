@@ -14,10 +14,9 @@
 package wvlet.airframe.sbt.http
 import java.net.URLClassLoader
 
-import sbt.Keys.{classDirectory, sourceDirectories, sources}
+import sbt.Keys._
 import sbt.{File, settingKey, taskKey, _}
-import wvlet.airframe.http.router.ControllerRoute
-import wvlet.airframe.http.{Endpoint, HttpRequest, Router}
+import wvlet.airframe.http.{Endpoint, Router}
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
@@ -43,27 +42,35 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
 
   trait AirframeHttpKeys {
     val airframeHttpPackages       = settingKey[Seq[String]]("A list of package names containing Airframe HTTP interfaces")
+    val airframeHttpTargetPackage  = settingKey[Option[String]]("Generate target package")
     val airframeHttpGenerateClient = taskKey[Seq[File]]("Generate the client code")
     val airframeHttpRouter         = taskKey[Router]("Airframe Router")
   }
 
-  def httpProjectSettings = Seq(
-    airframeHttpPackages := Seq(),
-    airframeHttpRouter := {
-      val files       = (sources in Compile).value
-      val baseDirs    = (sourceDirectories in Compile).value
-      val classDir    = (classDirectory in Runtime).value
-      val classLoader = new URLClassLoader(Array(classDir.toURI.toURL), getClass.getClassLoader)
-      val router      = buildRouter(baseDirs, files, classLoader)
-      info(router)
-      router
-    },
-    airframeHttpGenerateClient := {
-      val router = airframeHttpRouter.value
-      generateHttpClient(router)
-      Seq.empty
-    }
-  )
+  def httpProjectSettings =
+    Seq(
+      airframeHttpPackages := Seq(),
+      airframeHttpTargetPackage := None,
+      airframeHttpRouter := {
+        val files       = (sources in Compile).value
+        val baseDirs    = (sourceDirectories in Compile).value
+        val classDir    = (classDirectory in Runtime).value
+        val classLoader = new URLClassLoader(Array(classDir.toURI.toURL), getClass.getClassLoader)
+        val router      = buildRouter(baseDirs, files, classLoader)
+        info(router)
+        router
+      },
+      airframeHttpGenerateClient := {
+        val router = airframeHttpRouter.value
+        HttpClientGenerator.generateHttpClient(router, airframeHttpTargetPackage.value)
+        Seq.empty
+      },
+      Compile / sourceGenerators += Def.task {
+        val path       = airframeHttpTargetPackage.value.getOrElse("generated").replaceAll("\\.", "/")
+        val file: File = (Compile / sourceManaged).value / path / "ServiceClient.scala"
+        Seq(file)
+      }.taskValue
+    )
 
   /**
     * Find Airframe HTTP interfaces and build a Router object
@@ -110,52 +117,6 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       }
     }
     router
-  }
-
-  def generateHttpClient(router: Router): Unit = {
-
-    val lines = Seq.newBuilder[String]
-    for ((controllerSurface, routes) <- router.routes.groupBy(_.controllerSurface)) {
-      lines += s"object ${controllerSurface.name} {"
-      for (r <- routes) {
-        r match {
-          case cr: ControllerRoute =>
-            // Filter server-side only arguments
-            val clientSideArgs = cr.methodSurface.args.filter { x =>
-              !classOf[HttpRequest[_]].isAssignableFrom(x.surface.rawType) &&
-              !x.surface.fullName.startsWith("wvlet.airframe.http.HttpContext") &&
-              x.surface.fullName != "com.twitter.finagle.http.Request"
-            }
-
-            val args =
-              if (clientSideArgs.isEmpty) ""
-              else {
-                s"(${clientSideArgs.map { x => s"${x.name}: ${x.surface.name}" }.mkString(", ")})"
-              }
-            val ret  = cr.returnTypeSurface.name
-            val body = s"""client.${cr.method.toString.toLowerCase}("${cr.path}")"""
-            lines += s"  def ${cr.methodSurface.name}${args}: ${ret} = {"
-            lines += s"    ${body}"
-            lines += s"  }"
-          case _ =>
-        }
-      }
-      lines += "}"
-    }
-    val methods = lines.result().map(x => s"  ${x}").mkString("\n")
-
-    val code = s"""
-       |package ...
-       |import wvlet.airframe.http.HttpClient
-       |
-       |class MyHttpClient[F[_], Req, Resp](private val client:HttpClient[F, Req, Resp]) {
-       |  def getClient: HttpClient[F, Req, Resp] = client
-       |${methods}
-       |}
-       |""".stripMargin
-
-    info(code)
-
   }
 
 }
