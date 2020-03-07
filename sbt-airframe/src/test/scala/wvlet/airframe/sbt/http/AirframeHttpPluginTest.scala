@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.sbt.http
+import java.net.URLClassLoader
+
 import example.{QueryApi, ResourceApi}
 import wvlet.airframe.http.HttpMethod
 import wvlet.airspec.AirSpec
@@ -38,4 +40,18 @@ class AirframeHttpPluginTest extends AirSpec {
     info(router)
     HttpClientGenerator.generateHttpClient(router)
   }
+
+  test("scan classes") {
+    skip("This is a test used only for debugging")
+    val urls = Array[java.net.URL](
+      new java.net.URL("file:./sbt-airframe/target/scala-2.12/sbt-1.0/test-classes/"),
+      new java.net.URL(
+        "file:/Users/leo/.coursier/cache/v1/https/repo1.maven.org/maven2/org/wvlet/airframe/airframe-json_2.12/20.2.1/airframe-json_2.12-20.2.1.jar"
+      )
+    )
+    val cl      = new URLClassLoader(urls)
+    val classes = HttpInterfaceScanner.scanClasses(cl, Seq("example", "wvlet.airframe.json"))
+    debug(classes)
+  }
+
 }

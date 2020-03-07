@@ -211,7 +211,7 @@ object Resource {
     val pos: Int = resourcePath.indexOf(p)
     if (pos < 0) return null
     val logicalName: String = resourcePath.substring(pos + p.length)
-    return logicalName
+    logicalName
   }
 
   private def collectFileResources(
@@ -392,10 +392,5 @@ object Resource {
 
   def findClasses[A](searchPath: Package, toSearch: Class[A], classLoader: ClassLoader): Seq[Class[A]] = {
     findClasses(searchPath.getName, toSearch, classLoader)
-  }
-
-  def scanClasses(cl: ClassLoader, packages: Seq[String]): Seq[URL] = {
-    val urls = packages.flatMap { p => findResourceURLs(cl, p) }
-    urls
   }
 }

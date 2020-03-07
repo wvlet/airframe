@@ -19,9 +19,8 @@ import sbt.Keys._
 import sbt._
 import wvlet.airframe.http.{Endpoint, Router}
 import wvlet.log.LogSupport
-import wvlet.log.io.Resource
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
 
 /**
   * sbt plugin for supporting Airframe HTTP development.
@@ -48,7 +47,6 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     val airframeHttpGenerateClient = taskKey[Seq[File]]("Generate the client code")
     val airframeHttpRouter         = taskKey[Router]("Airframe Router")
     val airframeHttpClassLoader    = taskKey[URLClassLoader]("class loader for dependent classes")
-    val airframeHttpInputClasses   = taskKey[Seq[Class[_]]]("Airframe input classes")
   }
 
   private def dependentProjects: ScopeFilter =
@@ -68,17 +66,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         val cl = new URLClassLoader(cp.toArray, getClass().getClassLoader)
         cl
       },
-      airframeHttpInputClasses := {
-        val urlClassLoader = airframeHttpClassLoader.value
-        // scan
-        Seq.empty
-      },
       airframeHttpRouter := {
-//        val files       = (sources in Compile).value
-//        val baseDirs    = (sourceDirectories in Compile).value
-//        val classDir    = (classDirectory in Runtime).value
-//        val classLoader = new URLClassLoader(Array(classDir.toURI.toURL), getClass.getClassLoader)
-//        val router      = buildRouter(baseDirs, files, classLoader)
         val router = buildRouter(airframeHttpPackages.value, airframeHttpClassLoader.value)
         info(router)
         router
@@ -98,41 +86,20 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
 
   /**
     * Find Airframe HTTP interfaces and build a Router object
-    * @param sourceDirs
-    * @param files
+    * @param targetPackages
     * @param classLoader
     */
-  def buildRouter(sourceDirs: Seq[File], files: Seq[File], classLoader: ClassLoader): Router = {
-    def relativise(f: File): Option[File] = {
-      sourceDirs.collectFirst { case dir if f.relativeTo(dir).isDefined => f.relativeTo(dir).get }
-    }
-    val lst = for (f <- files; r <- relativise(f)) yield r
-
-    val classes = lst
-      .map { f => f.getPath }
-      .filter(_.endsWith(".scala"))
-      .map(_.stripSuffix(".scala").replaceAll("/", "."))
-      .map { clsName =>
-        trace(s"Searching endpoints in ${clsName}")
-        Try(classLoader.loadClass(clsName)) match {
-          case x if x.isSuccess => x
-          case f @ Failure(e) =>
-            f
-        }
-      }
-      .collect {
-        case Success(cls) =>
-          cls
-      }
-
-    buildRouter(classes)
-  }
-
   def buildRouter(targetPackages: Seq[String], classLoader: URLClassLoader): Router = {
-    info(s"buildRouter: ${targetPackages}\n${classLoader.getURLs.mkString("\n")}")
-    val lst = Resource.scanClasses(classLoader, targetPackages)
-    info(s"find: ${lst}")
-    Router.empty
+    trace(s"buildRouter: ${targetPackages}\n${classLoader.getURLs.mkString("\n")}")
+    val lst     = HttpInterfaceScanner.scanClasses(classLoader, targetPackages)
+    val classes = Seq.newBuilder[Class[_]]
+    lst.foreach { x =>
+      Try(classLoader.loadClass(x)) match {
+        case Success(cl) => classes += cl
+        case _           =>
+      }
+    }
+    buildRouter(classes.result())
   }
 
   def buildRouter(classes: Seq[Class[_]]): Router = {
