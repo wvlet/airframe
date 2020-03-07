@@ -16,7 +16,7 @@ import java.util.Locale
 
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{HttpRequest, Router}
-import wvlet.airframe.surface.{CName, MethodParameter}
+import wvlet.airframe.surface.{CName, MethodParameter, MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 /**
@@ -127,9 +127,42 @@ object HttpClientGenerator extends LogSupport {
     )
   }
 
+  def findImportedClases(router: Router): Seq[Surface] = {
+    val importedClasses = Set.newBuilder[Surface]
+
+    def add(surface: Surface): Unit = {
+      val fullName = surface.fullName
+      if (!(fullName.startsWith("scala.") || fullName.startsWith("wvlet.airframe.http.") || surface.isPrimitive)) {
+        importedClasses += surface
+      }
+    }
+
+    def loop(x: Any): Unit = x match {
+      case s: Surface =>
+        add(s)
+        s.typeArgs.foreach(loop)
+      case m: MethodSurface =>
+        m.args.foreach(loop)
+      case p: MethodParameter =>
+        loop(p.surface)
+      case _ =>
+    }
+
+    router.routes.foreach { r =>
+      loop(r.returnTypeSurface)
+      loop(r.methodSurface)
+    }
+
+    importedClasses.result().toSeq.sortBy(_.fullName)
+  }
+
   def generateHttpClient(router: Router, targetPackage: Option[String] = None): String = {
 
     val lines = Seq.newBuilder[String]
+
+    val importedClasses = findImportedClases(router)
+    debug(importedClasses.map(_.rawType.getName).mkString("\n"))
+
     for ((controllerSurface, routes) <- router.routes.groupBy(_.controllerSurface)) {
 
       // Use a lowercase word for the accessor objects
@@ -145,16 +178,19 @@ object HttpClientGenerator extends LogSupport {
     }
     val methods = lines.result().map(x => s"  ${x}").mkString("\n")
 
-    val pkg  = targetPackage.getOrElse("generated")
+    val pkg = targetPackage.getOrElse("generated")
     val code = s"""
                   |package ${pkg}
-                  |import wvlet.airframe.http.HttpClient
+                  |
+                  |import wvlet.airframe.http._
+                  |${importedClasses.map(x => s"import ${x.rawType.getName}").mkString("\n")}
                   |
                   |class MyHttpClient[F[_], Req, Resp](private val client:HttpClient[F, Req, Resp]) {
                   |  def getClient: HttpClient[F, Req, Resp] = client
                   |${methods}
                   |}
-                  |""".stripMargin
+                  |"""
+    /**EndMarker*/ .stripMargin.stripMargin
 
     info(code)
     code
