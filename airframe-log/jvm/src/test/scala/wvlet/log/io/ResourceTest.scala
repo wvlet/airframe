@@ -13,7 +13,7 @@
  */
 package wvlet.log.io
 
-import wvlet.log.Spec
+import wvlet.airspec.AirSpec
 
 //--------------------------------------
 //
@@ -22,7 +22,7 @@ import wvlet.log.Spec
 //
 //--------------------------------------
 
-class ResourceTest extends Spec {
+class ResourceTest extends AirSpec {
   def `find files from the current class loader`: Unit = {
     debug("find files from package")
     val l = Resource.listResources("wvlet.log.io", { s: String => s.endsWith(".class") })
@@ -30,11 +30,12 @@ class ResourceTest extends Spec {
   }
 
   def `find resources from jar files`: Unit = {
-    debug("find files from a jar file")
+    info("find files from a jar file")
 
     val l = Resource.listResources("scala.io", { s: String => s.endsWith(".class") })
     assert(l.size > 0)
     for (each <- l) {
+      info(each)
       assert(each.url.toString.contains("/scala/io"))
     }
   }

@@ -973,6 +973,8 @@ lazy val sbtAirframe =
         scriptedDependencies.value
         publishLocal.all(ScopeFilter(inDependencies(http))).value
       },
-      scriptedBufferLog := false
+      scriptedBufferLog := false,
+      libraryDependencies +=
+        "com.google.guava" % "guava" % "28.2-jre"
     )
     .dependsOn(http, airspecRefJVM % "test")

@@ -343,7 +343,8 @@ object Resource {
         case Some(urlClassLoader) =>
           val e = urlClassLoader.findResources(path)
           while (e.hasMoreElements) {
-            b += e.nextElement
+            val elem = e.nextElement()
+            b += elem
           }
           loop(urlClassLoader.getParent)
         case None =>
@@ -391,5 +392,10 @@ object Resource {
 
   def findClasses[A](searchPath: Package, toSearch: Class[A], classLoader: ClassLoader): Seq[Class[A]] = {
     findClasses(searchPath.getName, toSearch, classLoader)
+  }
+
+  def scanClasses(cl: ClassLoader, packages: Seq[String]): Seq[URL] = {
+    val urls = packages.flatMap { p => findResourceURLs(cl, p) }
+    urls
   }
 }

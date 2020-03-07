@@ -1,4 +1,4 @@
-package myspp.spi
+package myapp.spi
 
 import wvlet.airframe.http._
 

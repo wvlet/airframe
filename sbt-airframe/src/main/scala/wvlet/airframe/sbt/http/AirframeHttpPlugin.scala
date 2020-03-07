@@ -19,6 +19,7 @@ import sbt.Keys._
 import sbt._
 import wvlet.airframe.http.{Endpoint, Router}
 import wvlet.log.LogSupport
+import wvlet.log.io.Resource
 
 import scala.util.{Failure, Success, Try}
 
@@ -42,31 +43,43 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   override def projectSettings = httpProjectSettings
 
   trait AirframeHttpKeys {
-    val airframeHttpPackages          = settingKey[Seq[String]]("A list of package names containing Airframe HTTP interfaces")
-    val airframeHttpTargetPackage     = settingKey[Option[String]]("Generate target package")
-    val airframeHttpGenerateClient    = taskKey[Seq[File]]("Generate the client code")
-    val airframeHttpRouter            = taskKey[Router]("Airframe Router")
-    val airframeHttpDependencyClasses = taskKey[Seq[File]]("target classes")
+    val airframeHttpPackages       = settingKey[Seq[String]]("A list of package names containing Airframe HTTP interfaces")
+    val airframeHttpTargetPackage  = settingKey[Option[String]]("Generate target package")
+    val airframeHttpGenerateClient = taskKey[Seq[File]]("Generate the client code")
+    val airframeHttpRouter         = taskKey[Router]("Airframe Router")
+    val airframeHttpClassLoader    = taskKey[URLClassLoader]("class loader for dependent classes")
+    val airframeHttpInputClasses   = taskKey[Seq[Class[_]]]("Airframe input classes")
   }
+
+  private def dependentProjects: ScopeFilter =
+    ScopeFilter(inDependencies(ThisProject, transitive = true, includeRoot = false))
 
   def httpProjectSettings =
     Seq(
       airframeHttpPackages := Seq(),
       airframeHttpTargetPackage := None,
-      airframeHttpDependencyClasses := {
+      airframeHttpClassLoader := {
         // Compile all dependent projects
-        (compile in Compile).all(ScopeFilter(inDependencies(ThisProject, transitive = true, includeRoot = false))).value
-        val classDirs: Seq[File] = (classDirectory in Compile)
-          .all(ScopeFilter(inDependencies(ThisProject, transitive = true, includeRoot = false))).value
+        (compile in Compile).all(dependentProjects).value
 
-        classDirs.flatMap { d => (d ** "*.class").get() }
+        val urls = Seq.newBuilder[URL]
+        (dependencyClasspath in Compile).value.files.foreach { f => urls += f.toURI.toURL }
+        val cp = urls.result()
+        val cl = new URLClassLoader(cp.toArray, getClass().getClassLoader)
+        cl
+      },
+      airframeHttpInputClasses := {
+        val urlClassLoader = airframeHttpClassLoader.value
+        // scan
+        Seq.empty
       },
       airframeHttpRouter := {
-        val files       = (sources in Compile).value
-        val baseDirs    = (sourceDirectories in Compile).value
-        val classDir    = (classDirectory in Runtime).value
-        val classLoader = new URLClassLoader(Array(classDir.toURI.toURL), getClass.getClassLoader)
-        val router      = buildRouter(baseDirs, files, classLoader)
+//        val files       = (sources in Compile).value
+//        val baseDirs    = (sourceDirectories in Compile).value
+//        val classDir    = (classDirectory in Runtime).value
+//        val classLoader = new URLClassLoader(Array(classDir.toURI.toURL), getClass.getClassLoader)
+//        val router      = buildRouter(baseDirs, files, classLoader)
+        val router = buildRouter(airframeHttpPackages.value, airframeHttpClassLoader.value)
         info(router)
         router
       },
@@ -82,50 +95,6 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
 //        val code= airframeHttpGenerateClient.value
 //      }.taskValue
     )
-
-  private def allDependentProjects(currentProject: ProjectRef, state: State): Seq[ProjectRef] = {
-    val extracted = Project.extract(state)
-    val structure = extracted.structure
-
-    def isCompileConfig(cp: ClasspathDep[ProjectRef]) = cp.configuration.forall(_.contains("compile->"))
-
-    def loop(p: ProjectRef): Seq[ProjectRef] = {
-      val childProjects: Seq[ProjectRef] = Project
-        .getProject(p, structure)
-        .toSeq
-        .flatMap { child => child.dependencies.filter(isCompileConfig).map(_.project) }
-
-      p +: (childProjects flatMap loop)
-    }
-
-    loop(currentProject).distinct
-  }
-
-  private def getFromAllChildProjects[T](
-      contextProject: ProjectRef,
-      targetTask: TaskKey[T],
-      state: State,
-      exclude: Seq[String] = Seq.empty
-  ): Task[Seq[(T, ProjectRef)]] = {
-    val extracted = Project.extract(state)
-    val structure = extracted.structure
-
-    def transitiveDependencies(currentProject: ProjectRef): Seq[ProjectRef] = {
-      def isExcluded(p: ProjectRef) = exclude.contains(p.project)
-
-      def isCompileConfig(cp: ClasspathDep[ProjectRef]) = cp.configuration.forall(_.contains("compile->"))
-
-      // Traverse all dependent projects
-      val children = Project
-        .getProject(currentProject, structure)
-        .toSeq
-        .flatMap { _.dependencies.filter(isCompileConfig).map(_.project) }
-
-      (currentProject +: (children flatMap transitiveDependencies)) filterNot (isExcluded)
-    }
-    val projects: Seq[ProjectRef] = transitiveDependencies(contextProject).distinct
-    projects.map(p => (Def.task { ((targetTask in p).value, p) }) evaluate structure.data).join
-  }
 
   /**
     * Find Airframe HTTP interfaces and build a Router object
@@ -157,6 +126,13 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       }
 
     buildRouter(classes)
+  }
+
+  def buildRouter(targetPackages: Seq[String], classLoader: URLClassLoader): Router = {
+    info(s"buildRouter: ${targetPackages}\n${classLoader.getURLs.mkString("\n")}")
+    val lst = Resource.scanClasses(classLoader, targetPackages)
+    info(s"find: ${lst}")
+    Router.empty
   }
 
   def buildRouter(classes: Seq[Class[_]]): Router = {
