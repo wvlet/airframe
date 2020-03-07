@@ -185,7 +185,7 @@ object HttpClientGenerator extends LogSupport {
                   |import wvlet.airframe.http._
                   |${importedClasses.map(x => s"import ${x.rawType.getName}").mkString("\n")}
                   |
-                  |class MyHttpClient[F[_], Req, Resp](private val client:HttpClient[F, Req, Resp]) {
+                  |class ServiceClient[F[_], Req, Resp](private val client:HttpClient[F, Req, Resp]) {
                   |  def getClient: HttpClient[F, Req, Resp] = client
                   |${methods}
                   |}

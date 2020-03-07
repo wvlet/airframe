@@ -1,5 +1,18 @@
-libraryDependencies += "org.wvlet.airframe" %% "airframe-http" % "20.2.0"
+lazy val root =
+  project.aggregate(spi, server)
 
-enablePlugins(AirframeHttpPlugin)
+lazy val spi =
+  project
+    .in(file("spi"))
+    .settings(
+      libraryDependencies += "org.wvlet.airframe" %% "airframe-http" % sys.props("plugin.version")
+    )
 
-airframeHttpPackages ++= Seq("example")
+lazy val server =
+  project
+    .in(file("server"))
+    .enablePlugins(AirframeHttpPlugin)
+    .settings(
+      airframeHttpPackages ++= Seq("myapp.spi")
+    )
+    .dependsOn(spi)

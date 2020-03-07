@@ -1,8 +1,8 @@
-package example
+package myspp.spi
 
 import wvlet.airframe.http._
 
-trait MyApp {
+trait MyService {
   @Endpoint(method = HttpMethod.GET, path = "/v1/hello/:id")
   def hello(id: Int): String = {
     s"hello: ${id}"
