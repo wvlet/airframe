@@ -78,10 +78,10 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         val file: File = (Compile / sourceManaged).value / path / "ServiceClient.scala"
         IO.write(file, code)
         Seq(file)
-      }
-//      Compile / sourceGenerators += Def.task {
-//        val code= airframeHttpGenerateClient.value
-//      }.taskValue
+      },
+      Compile / sourceGenerators += Def.task {
+        airframeHttpGenerateClient.value
+      }.taskValue
     )
 
   /**

@@ -12,7 +12,5 @@ lazy val server =
   project
     .in(file("server"))
     .enablePlugins(AirframeHttpPlugin)
-    .settings(
-      airframeHttpPackages ++= Seq("myapp.spi", "wvlet.log")
-    )
+    .settings(spi)
     .dependsOn(spi)
