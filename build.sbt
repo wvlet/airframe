@@ -16,7 +16,7 @@ val SQLITE_JDBC_VERSION             = "3.30.1"
 val SLF4J_VERSION                   = "1.7.30"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
-val FINAGLE_VERSION                 = "20.1.0"
+val FINAGLE_VERSION                 = "20.3.0"
 val FLUENCY_VERSION                 = "2.4.0"
 val airSpecFramework                = new TestFramework("wvlet.airspec.Framework")
 
