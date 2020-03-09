@@ -19,7 +19,7 @@ val JS_JAVA_TIME_VERSION            = "1.0.0"
 val FINAGLE_VERSION                 = "20.3.0"
 val FLUENCY_VERSION                 = "2.4.1"
 
-val airSpecFramework                = new TestFramework("wvlet.airspec.Framework")
+val airSpecFramework = new TestFramework("wvlet.airspec.Framework")
 
 // Publish only Scala 2.12 projects for snapshot releases
 addCommandAlias(
