@@ -1,6 +1,7 @@
 package wvlet.airframe.http.js
 
 import wvlet.airframe.surface.Surface
+import wvlet.airspec.AirSpec
 
 object HttpClientTest extends AirSpec {
 
