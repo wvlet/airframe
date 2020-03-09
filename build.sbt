@@ -166,6 +166,7 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   jsonJS,
   msgpackJS,
   codecJS,
+  httpJsJS,
   rxJS,
   widgetJS
 )
@@ -527,6 +528,26 @@ lazy val http =
     )
     .dependsOn(airframeJVM, airframeMacrosJVMRef, control, surfaceJVM, jsonJVM, codecJVM, airspecRefJVM % "test")
 
+lazy val httpJs =
+  crossProject(JSPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airframe-http-js"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-http-js",
+      description := "airframe-http extension for Scala.js"
+    )
+    .jsSettings(
+      jsBuildSettings,
+      jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+      libraryDependencies ++= Seq(
+        "org.scala-js" %%% "scalajs-dom" % "1.0.0"
+      )
+    )
+    .dependsOn(log, codec, airspecRef % "test")
+
+lazy val httpJsJS = httpJs.js
+
 lazy val finagle =
   project
     .in(file("airframe-http-finagle"))
@@ -675,7 +696,7 @@ lazy val rx =
         "org.scala-js" %%% "scalajs-dom" % "1.0.0"
       )
     )
-    .dependsOn(log, airspecRef % "test")
+    .dependsOn(log, surface, airspecRef % "test")
 
 lazy val rxJVM = rx.jvm
 lazy val rxJS  = rx.js
