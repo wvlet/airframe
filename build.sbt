@@ -32,6 +32,9 @@ addCommandAlias(
 
 //ThisBuild / turbo := true
 
+// Reload build.sbt on changes
+Global / onChangedBuildSource := ReloadOnSourceChanges
+
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := SCALA_2_12
 organization in ThisBuild := "org.wvlet.airframe"
@@ -129,7 +132,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   airframeScalaTest,
   canvas,
   config,
-  control,
+  controlJVM,
   jmx,
   launcher,
   metricsJVM,
@@ -164,6 +167,7 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   airframeJS,
   metricsJS,
   airspecJS,
+  controlJS,
   jsonJS,
   msgpackJS,
   codecJS,
@@ -341,7 +345,7 @@ lazy val canvas =
       name := "airframe-canvas",
       description := "Airframe off-heap memory library"
     )
-    .dependsOn(logJVM, control % "test", airspecRefJVM % "test")
+    .dependsOn(logJVM, controlJVM % "test", airspecRefJVM % "test")
 
 lazy val config =
   project
@@ -357,17 +361,26 @@ lazy val config =
     .dependsOn(airframeJVM, airframeMacrosJVMRef, codecJVM, airspecRefJVM % "test")
 
 lazy val control =
-  project
+  crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe-control"))
     .settings(buildSettings)
     .settings(
       name := "airframe-control",
-      description := "A library for controlling program flows and retrying",
+      description := "A library for controlling program flows and retrying"
+    )
+    .jvmSettings(
       libraryDependencies ++= Seq(
+        // A workaround for compiling Parallel, which depends on JMX
+        // Essential we need to use JVM-only project dependency to jmx, but I can't figure out how to configure that.
+        "org.wvlet.airframe"     %% "airframe-jmx"             % "20.3.0" % "provided",
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
-    .dependsOn(logJVM, jmx, airspecRefJVM % "test")
+    .dependsOn(log, airspecRef % "test")
+
+lazy val controlJVM = control.jvm
+lazy val controlJS  = control.js
 
 lazy val jmx =
   project
@@ -392,7 +405,7 @@ lazy val launcher =
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
-    .dependsOn(surfaceJVM, control, codecJVM, airspecRefJVM % "test")
+    .dependsOn(surfaceJVM, controlJVM, codecJVM, airspecRefJVM % "test")
 
 val logDependencies = { scalaVersion: String =>
   Seq(
@@ -515,7 +528,7 @@ lazy val jdbc =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, control, config, airspecRefJVM % "test")
+    .dependsOn(airframeJVM, airframeMacrosJVMRef, controlJVM, config, airspecRefJVM % "test")
 
 lazy val http =
   project
@@ -527,7 +540,7 @@ lazy val http =
       libraryDependencies ++= Seq(
         )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, control, surfaceJVM, jsonJVM, codecJVM, airspecRefJVM % "test")
+    .dependsOn(airframeJVM, airframeMacrosJVMRef, controlJVM, surfaceJVM, jsonJVM, codecJVM, airspecRefJVM % "test")
 
 lazy val httpJs =
   crossProject(JSPlatform)
@@ -584,7 +597,7 @@ lazy val httpRecorder =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, metricsJVM, control, finagle, jdbc, airframeMacrosJVMRef, airspecRefJVM % "test")
+    .dependsOn(codecJVM, metricsJVM, controlJVM, finagle, jdbc, airframeMacrosJVMRef, airspecRefJVM % "test")
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)

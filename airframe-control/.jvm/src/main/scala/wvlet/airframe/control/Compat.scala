@@ -12,22 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe.control
-import wvlet.airspec.AirSpec
 
-//--------------------------------------
-//
-// CommandLineTokenizerTest.scala
-// Since: 2012/07/17 18:40
-//
-//--------------------------------------
-class CommandLineTokenizerTest extends AirSpec {
-  def `tokenize a single string into args`: Unit = {
-    val args = CommandLineTokenizer.tokenize("""-c "hello world!" -f 3.432""")
-
-    args.length shouldBe 4
-    debug {
-      args.mkString(", ")
-    }
-    args shouldBe Array("-c", "hello world!", "-f", "3.432")
+/**
+  *
+  */
+object Compat {
+  def sleep(millis: Long): Unit = {
+    Thread.sleep(millis)
   }
 }

@@ -22,6 +22,8 @@ import scala.concurrent.TimeoutException
   *
   */
 class RetryTest extends AirSpec {
+  scalaJsSupport
+
   def `support backoff retry`: Unit = {
     var count = 0
 
