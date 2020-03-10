@@ -37,9 +37,12 @@ class AirframeHttpPluginTest extends AirSpec {
   }
 
   test("generate client") {
-    info(router)
     val code = HttpClientGenerator.generateHttpClient(router)
     info(code)
+  }
+
+  test("generate Scala.js client") {
+    val code = HttpClientGenerator.generateScalaJsHttpClient(router)
   }
 
   test("scan classes") {

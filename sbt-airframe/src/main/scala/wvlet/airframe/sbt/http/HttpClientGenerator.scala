@@ -72,6 +72,13 @@ object HttpClientGenerator extends LogSupport {
     code
   }
 
+  def generateScalaJsHttpClient(router: Router, config: ClientBuilderConfig = ClientBuilderConfig()): String = {
+    val ir   = buildIR(router, config)
+    val code = generateScalaJSCode(ir)
+    debug(code)
+    code
+  }
+
   /**
     * Building an intermediate representation of the client code
     */
@@ -259,22 +266,53 @@ object HttpClientGenerator extends LogSupport {
   }
 
   def generateScalaJSCode(src: ClientSourceDef): String = {
-    def code: String =
+    def code =
       s"""${header(src.packageName)}
          |
+         |import scala.concurrent.Future
+         |import wvlet.airframe.surface.Surface
          |import wvlet.airframe.http.js.HttpClient
+         |${src.imports.map(x => s"import ${x.rawType.getName}").mkString("\n")}
          |
-         |""".stripMargin
+         |${cls}""".stripMargin
 
-    def cls: String = {
+    def cls: String =
       s"""object ${src.classDef.clsName} {
-         |
+         |${indent(clsBody)}
          |}
          |""".stripMargin
-    }
 
     def clsBody: String = {
-      ""
+      src.classDef.services
+        .map { svc =>
+          s"""object ${svc.serviceName} {
+             |${indent(serviceBody(svc))}
+             |}""".stripMargin
+        }.mkString("\n")
+    }
+
+    def serviceBody(svc: ClientServiceDef): String = {
+      svc.methods
+        .map { m =>
+          val httpMethodName       = m.httpMethod.toString.toLowerCase(Locale.ENGLISH)
+          val httpClientMethodName = if (m.isOpsRequest) s"${httpMethodName}Ops" else httpMethodName
+
+          val inputArgs = {
+            m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++
+              Seq("headers: Map[String, String] = Map.empty")
+          }
+
+          val sendRequestArgs = Seq.newBuilder[String]
+          sendRequestArgs += s"""path = s"${m.path}""""
+          sendRequestArgs ++= m.clientCallParameters.map(x => s"${x.name}")
+          sendRequestArgs ++= m.typeArgs.map(s => s"Surface.of[${s.name}]")
+          sendRequestArgs += "headers = headers"
+
+          s"""def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType.name}] = {
+             |  HttpClient.${httpClientMethodName}[${m.typeArgs.map(_.name).mkString(", ")}](${sendRequestArgs.result
+               .mkString(", ")})
+             |}""".stripMargin
+        }.mkString("\n")
     }
 
     code
