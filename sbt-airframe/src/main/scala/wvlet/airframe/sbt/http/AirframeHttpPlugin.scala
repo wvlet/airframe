@@ -42,11 +42,11 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   override def projectSettings = httpProjectSettings
 
   trait AirframeHttpKeys {
-    val airframeHttpPackages       = settingKey[Seq[String]]("A list of package names containing Airframe HTTP interfaces")
-    val airframeHttpTargetPackage  = settingKey[Option[String]]("Generate target package")
-    val airframeHttpGenerateClient = taskKey[Seq[File]]("Generate the client code")
-    val airframeHttpRouter         = taskKey[Router]("Airframe Router")
-    val airframeHttpClassLoader    = taskKey[URLClassLoader]("class loader for dependent classes")
+    val airframeHttpPackages                  = settingKey[Seq[String]]("A list of package names containing Airframe HTTP interfaces")
+    val airframeHttpTargetPackage             = settingKey[Option[String]]("Generate target package")
+    val airframeHttpGenerateClient            = taskKey[Seq[File]]("Generate the client code")
+    private[http] val airframeHttpRouter      = taskKey[Router]("Airframe Router")
+    private[http] val airframeHttpClassLoader = taskKey[URLClassLoader]("class loader for dependent classes")
   }
 
   private def dependentProjects: ScopeFilter =

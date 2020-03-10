@@ -32,7 +32,7 @@ object HttpClient extends LogSupport {
   // Import a queue for callling AJAX call immediately
   import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
-  private def send[Response](
+  def send[Response](
       method: String,
       path: String,
       data: InputData = null,
