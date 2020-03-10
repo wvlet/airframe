@@ -59,7 +59,7 @@ class ServerAddressTest extends AirSpec {
     )
   )
 
-  def `parse host and port`: Unit = {
+  test("parse host and port") {
     for (x <- examples) {
       x._1 shouldBe x._2
       x._1.uri shouldBe x._3

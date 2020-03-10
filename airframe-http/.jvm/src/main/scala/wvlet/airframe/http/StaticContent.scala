@@ -12,11 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import java.io.File
+import java.net.URL
+
 import wvlet.airframe.control.Control
 import wvlet.log.LogSupport
 import wvlet.log.io.{IOUtil, Resource}
-import java.net.URL
-import java.io.File
 
 import scala.annotation.tailrec
 
@@ -112,7 +113,7 @@ object StaticContent extends LogSupport {
   def fromDirectory(basePath: String): StaticContent = StaticContent().fromDirectory(basePath)
 }
 
-import StaticContent._
+import wvlet.airframe.http.StaticContent._
 
 case class StaticContent(resourcePaths: List[StaticContent.ResourceType] = List.empty) {
   def fromDirectory(basePath: String): StaticContent = {

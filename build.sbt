@@ -138,7 +138,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   metricsJVM,
   codecJVM,
   msgpackJVM,
-  http,
+  httpJVM,
   jsonJVM,
   rxJVM,
   airspecJVM
@@ -171,7 +171,7 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   jsonJS,
   msgpackJS,
   codecJS,
-  httpJsJS,
+  httpJS,
   rxJS,
   widgetJS
 )
@@ -531,7 +531,8 @@ lazy val jdbc =
     .dependsOn(airframeJVM, airframeMacrosJVMRef, controlJVM, config, airspecRefJVM % "test")
 
 lazy val http =
-  project
+  crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe-http"))
     .settings(buildSettings)
     .settings(
@@ -540,17 +541,6 @@ lazy val http =
       libraryDependencies ++= Seq(
         )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, controlJVM, surfaceJVM, jsonJVM, codecJVM, airspecRefJVM % "test")
-
-lazy val httpJs =
-  crossProject(JSPlatform)
-    .crossType(CrossType.Pure)
-    .in(file("airframe-http-js"))
-    .settings(buildSettings)
-    .settings(
-      name := "airframe-http-js",
-      description := "airframe-http extension for Scala.js"
-    )
     .jsSettings(
       jsBuildSettings,
       jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
@@ -558,9 +548,10 @@ lazy val httpJs =
         "org.scala-js" %%% "scalajs-dom" % "1.0.0"
       )
     )
-    .dependsOn(log, codec, airspecRef % "test")
+    .dependsOn(airframe, airframeMacrosRef, control, surface, json, codec, airspecRef % "test")
 
-lazy val httpJsJS = httpJs.js
+lazy val httpJVM = http.jvm
+lazy val httpJS  = http.js
 
 lazy val finagle =
   project
@@ -579,7 +570,7 @@ lazy val finagle =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(http, airframeMacrosJVMRef, airspecRefJVM % "test")
+    .dependsOn(httpJVM, airframeMacrosJVMRef, airspecRefJVM % "test")
 
 lazy val httpRecorder =
   project
@@ -1010,4 +1001,4 @@ lazy val sbtAirframe =
       },
       scriptedBufferLog := false
     )
-    .dependsOn(http, airspecRefJVM % "test")
+    .dependsOn(httpJVM, airspecRefJVM % "test")
