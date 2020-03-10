@@ -98,7 +98,7 @@ lazy val root =
       }
     }
     //    .aggregate(scaladoc)
-    .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjectsCore ++ jsProjectsSub): _*)
+    .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects ++ sbtProjects): _*)
 
 // Removed as running scaladoc hits https://github.com/sbt/zinc/issues/622
 //lazy val scaladoc =
@@ -158,19 +158,16 @@ lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
 )
 
 // Scala.js build (only for Scala 2.12 + 2.13)
-lazy val jsProjectsCore: Seq[ProjectReference] = Seq(
+lazy val jsProjects: Seq[ProjectReference] = Seq(
   logJS,
   surfaceJS,
   airframeJS,
   metricsJS,
-  airspecJS
-)
-
-// A workaround for https://github.com/scala-js/scala-js/issues/3921
-lazy val jsProjectsSub: Seq[ProjectReference] = Seq(
+  airspecJS,
   jsonJS,
   msgpackJS,
   codecJS,
+  httpJsJS,
   rxJS,
   widgetJS
 )
@@ -185,6 +182,8 @@ lazy val airspecProjects: Seq[ProjectReference] = Seq(
   airspecLogJVM,
   airspecLogJS
 )
+
+lazy val sbtProjects: Seq[ProjectReference] = Seq(sbtAirframe)
 
 // For community-build
 lazy val communityBuild =
@@ -230,23 +229,7 @@ lazy val projectJS =
       noPublish,
       crossScalaVersions := exceptScala2_11
     )
-    .aggregate(projectJSCore, projectJSSub)
-
-lazy val projectJSCore =
-  project
-    .settings(
-      noPublish,
-      crossScalaVersions := exceptScala2_11
-    )
-    .aggregate(jsProjectsCore: _*)
-
-lazy val projectJSSub =
-  project
-    .settings(
-      noPublish,
-      crossScalaVersions := exceptScala2_11
-    )
-    .aggregate(jsProjectsSub: _*)
+    .aggregate(jsProjects: _*)
 
 lazy val docs =
   project
@@ -540,11 +523,31 @@ lazy val http =
     .settings(buildSettings)
     .settings(
       name := "airframe-http",
-      description := "JAX-RS based REST API Framework",
+      description := "REST API Framework",
       libraryDependencies ++= Seq(
         )
     )
     .dependsOn(airframeJVM, airframeMacrosJVMRef, control, surfaceJVM, jsonJVM, codecJVM, airspecRefJVM % "test")
+
+lazy val httpJs =
+  crossProject(JSPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airframe-http-js"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-http-js",
+      description := "airframe-http extension for Scala.js"
+    )
+    .jsSettings(
+      jsBuildSettings,
+      jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+      libraryDependencies ++= Seq(
+        "org.scala-js" %%% "scalajs-dom" % "1.0.0"
+      )
+    )
+    .dependsOn(log, codec, airspecRef % "test")
+
+lazy val httpJsJS = httpJs.js
 
 lazy val finagle =
   project
@@ -694,7 +697,7 @@ lazy val rx =
         "org.scala-js" %%% "scalajs-dom" % "1.0.0"
       )
     )
-    .dependsOn(log, airspecRef % "test")
+    .dependsOn(log, surface, airspecRef % "test")
 
 lazy val rxJVM = rx.jvm
 lazy val rxJS  = rx.js
@@ -970,3 +973,28 @@ lazy val airspecRef =
 
 lazy val airspecRefJVM = airspecRef.jvm
 lazy val airspecRefJS  = airspecRef.js
+
+// sbt plugin
+
+lazy val sbtAirframe =
+  project
+    .in(file("sbt-airframe"))
+    .enablePlugins(SbtPlugin)
+    .settings(
+      buildSettings,
+      name := "sbt-airframe",
+      description := "sbt plugin for helping programming with Airframe",
+      scalaVersion := SCALA_2_12,
+      crossSbtVersions := Vector("1.2.8"),
+      scriptedLaunchOpts := {
+        scriptedLaunchOpts.value ++
+          Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
+      },
+      scriptedDependencies := {
+        // Publish all dependencies necessary for running the scripted tests
+        scriptedDependencies.value
+        publishLocal.all(ScopeFilter(inDependencies(finagle))).value
+      },
+      scriptedBufferLog := false
+    )
+    .dependsOn(http, airspecRefJVM % "test")

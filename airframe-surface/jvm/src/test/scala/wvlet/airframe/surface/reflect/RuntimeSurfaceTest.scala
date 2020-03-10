@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.surface.reflect
 
-import wvlet.airframe.surface.{Surface, SurfaceSpec}
+import wvlet.airframe.surface.{SurfaceSpec, secret}
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -34,6 +34,11 @@ object RuntimeExamples {
   case class E(a: A)
 
   case class F(p0: Int = 10)
+
+  trait TraitOnly {
+    @secret
+    def methodInTrait: Unit = {}
+  }
 }
 
 /**
@@ -52,6 +57,18 @@ class RuntimeSurfaceTest extends SurfaceSpec {
     assert(b.isAlias == false)
     assert(b.isOption == false)
     assert(b.isPrimitive == false)
+  }
+
+  def `resolve trait type`: Unit = {
+    val s = ReflectSurfaceFactory.ofClass(classOf[TraitOnly])
+    s.isAlias shouldBe false
+    s.rawType shouldBe classOf[TraitOnly]
+
+    val m = ReflectSurfaceFactory.methodsOfClass(classOf[TraitOnly]).head
+    m.owner.isAlias shouldNotBe true
+    m.owner.rawType shouldBe classOf[TraitOnly]
+
+    m.findAnnotationOf[secret] shouldBe defined
   }
 
   def `Find surface from Class[_]` : Unit = {

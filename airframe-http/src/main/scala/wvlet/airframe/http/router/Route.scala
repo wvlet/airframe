@@ -16,9 +16,10 @@ package wvlet.airframe.http.router
 import wvlet.airframe.Session
 import wvlet.airframe.codec.{MISSING_PARAMETER, MessageCodecException}
 import wvlet.airframe.http._
-import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
+import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
+
 import scala.language.higherKinds
 
 /**
@@ -26,6 +27,7 @@ import scala.language.higherKinds
   */
 trait Route {
   def method: HttpMethod
+  def methodSurface: MethodSurface
   def path: String
   val pathComponents: IndexedSeq[String] = {
     path

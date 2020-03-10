@@ -30,4 +30,7 @@ addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.2")
 addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.3.7")
 addSbtPlugin("org.xerial.sbt"     % "sbt-pack" % "0.12")
 
+// For sbt-airframe-http
+libraryDependencies += "org.scala-sbt" %% "scripted-plugin" % sbtVersion.value
+
 scalacOptions ++= Seq("-deprecation", "-feature")

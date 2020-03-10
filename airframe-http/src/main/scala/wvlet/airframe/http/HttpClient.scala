@@ -63,6 +63,11 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
       resourceRequest: ResourceRequest,
       requestFilter: Req => Req = identity
   ): F[Resource]
+  def getOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): F[OperationResponse] = getResource[Resource, OperationResponse](resourcePath, resource, requestFilter)
 
   def list[OperationResponse: ru.TypeTag](
       resourcePath: String,
