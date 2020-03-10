@@ -4,6 +4,7 @@ import wvlet.airframe.http.Router
 import wvlet.airframe.http.finagle._
 import wvlet.log.LogSupport
 import myapp.spi.MyService
+import com.twitter.util.Await
 
 class MyServer extends myapp.spi.MyService {
   override def hello(id: Int): String = s"hello ${id}"
