@@ -66,8 +66,10 @@ object HttpClientGenerator extends LogSupport {
   )
 
   def generateHttpClient(router: Router, config: ClientBuilderConfig = ClientBuilderConfig()): String = {
-    val ir = buildIR(router, config)
-    generateScalaCode(ir)
+    val ir   = buildIR(router, config)
+    val code = generateScalaCode(ir)
+    info(code)
+    code
   }
 
   /**
@@ -216,8 +218,7 @@ object HttpClientGenerator extends LogSupport {
          |${cls}""".stripMargin
 
     def cls: String =
-      s"""class ${src.classDef.clsName}[F[_], Req, Resp](private val client: HttpClient[F, Req, Resp])
-         |  extends HttpClient with AutoCloseable {
+      s"""class ${src.classDef.clsName}[F[_], Req, Resp](private val client: HttpClient[F, Req, Resp]) extends AutoCloseable {
          |  override def close(): Unit = { client.close() }
          |  def getClient: HttpClient[F, Req, Resp] = client
          |${indent(clsBody)}
@@ -227,7 +228,6 @@ object HttpClientGenerator extends LogSupport {
     def clsBody: String = {
       src.classDef.services
         .map { svc =>
-          // Use a lowercase word for the accessor objects
           s"""object ${svc.serviceName} {
              |${indent(serviceBody(svc))}
              |}""".stripMargin
@@ -244,11 +244,11 @@ object HttpClientGenerator extends LogSupport {
             m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++ Seq("requestFilter: Req => Req = identity")
 
           val sendRequestArgs = Seq.newBuilder[String]
-          sendRequestArgs += s"resourcePath = ${m.path}"
+          sendRequestArgs += s"""resourcePath = s"${m.path}""""
           sendRequestArgs ++= m.clientCallParameters.map(x => s"${x.name}")
           sendRequestArgs += "requestFilter = requestFilter"
 
-          s"""def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType.name}] {
+          s"""def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType.name}] = {
              |  client.${httpClientMethodName}[${m.typeArgs.map(_.name).mkString(", ")}](${sendRequestArgs.result
                .mkString(", ")})
              |}""".stripMargin

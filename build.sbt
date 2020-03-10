@@ -990,12 +990,10 @@ lazy val sbtAirframe =
           Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
       },
       scriptedDependencies := {
-        // Publish all dependencies for running the scripted tests
+        // Publish all dependencies necessary for running the scripted tests
         scriptedDependencies.value
-        publishLocal.all(ScopeFilter(inDependencies(http))).value
+        publishLocal.all(ScopeFilter(inDependencies(finagle))).value
       },
-      scriptedBufferLog := false,
-      libraryDependencies +=
-        "com.google.guava" % "guava" % "28.2-jre"
+      scriptedBufferLog := false
     )
     .dependsOn(http, airspecRefJVM % "test")
