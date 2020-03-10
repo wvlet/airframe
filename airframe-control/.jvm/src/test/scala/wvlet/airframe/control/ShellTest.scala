@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.control
-import wvlet.airframe.AirframeSpec
+import wvlet.airspec.AirSpec
 
 //--------------------------------------
 //
@@ -26,73 +26,71 @@ import wvlet.airframe.AirframeSpec
 /**
   * @author leo
   */
-class ShellTest extends AirframeSpec {
-  "Shell" should {
-    def `find JVM`: Unit = {
-      val j = Shell.findJavaCommand()
-      j should be('defined)
-    }
+class ShellTest extends AirSpec {
 
-    def `find javaw.exe`: Unit = {
-      if (OS.isWindows) {
-        When("OS is windows")
-        val cmd = Shell.findJavaCommand("javaw").get
-        cmd shouldNot be(null)
-        cmd should include("javaw")
-      }
-    }
+  def `find JVM`: Unit = {
+    val j = Shell.findJavaCommand()
+    j shouldBe defined
+  }
 
-    def `detect process IDs`: Unit = {
-      val p   = Shell.launchProcess("echo hello world")
-      val pid = Shell.getProcessID(p)
-      debug(s"process ID:$pid")
-      if (!OS.isWindows) {
-        pid should be > (0)
-      }
-    }
-
-    def `detect current JVM process ID`: Unit = {
-      val pid = Shell.getProcessIDOfCurrentJVM
-      debug(s"JVM process ID:$pid")
-      pid should not be (-1)
-    }
-
-    def `be able to launch Java`: Unit = {
-      Shell.launchJava("-version -Duser.language=en")
-    }
-
-    def `be able to kill processes`: Unit = {
-      val p        = Shell.launchProcess("cat")
-      val pid      = Shell.getProcessID(p)
-      val exitCode = Shell.kill(pid)
-    }
-
-    def `be able to kill process trees`: Unit = {
-      val p   = Shell.launchProcess("cat")
-      val pid = Shell.getProcessID(p)
-      Shell.killTree(pid)
-    }
-
-    def `find sh`: Unit = {
-      val cmd = Shell.findSh
-      cmd should be('defined)
-    }
-
-    def `launch command`: Unit = {
-      Shell.launchProcess("echo hello world")
-      Shell.launchProcess("echo cygwin env=$CYGWIN")
-    }
-
-    "launch process" taggedAs ("launch_process") in {
-      if (OS.isWindows) {
-        When("OS is windows")
-        Shell.launchCmdExe("echo hello cmd.exe")
-      }
-    }
-
-    def `launch a remote process as a daemon`: Unit = {
-      pending // disabled because ssh cannot be used in travis CI
-      Shell.launchRemoteDaemon("localhost", "sleep 5")
+  def `find javaw.exe`: Unit = {
+    if (OS.isWindows) {
+      val cmd = Shell.findJavaCommand("javaw").get
+      cmd shouldNotBe null
+      cmd.contains("javaw") shouldBe true
     }
   }
+
+  def `detect process IDs`: Unit = {
+    val p   = Shell.launchProcess("echo hello world")
+    val pid = Shell.getProcessID(p)
+    debug(s"process ID:$pid")
+    if (!OS.isWindows) {
+      pid > 0 shouldBe true
+    }
+  }
+
+  def `detect current JVM process ID`: Unit = {
+    val pid = Shell.getProcessIDOfCurrentJVM
+    debug(s"JVM process ID:$pid")
+    pid shouldNotBe -1
+  }
+
+  def `be able to launch Java`: Unit = {
+    Shell.launchJava("-version -Duser.language=en")
+  }
+
+  def `be able to kill processes`: Unit = {
+    val p        = Shell.launchProcess("cat")
+    val pid      = Shell.getProcessID(p)
+    val exitCode = Shell.kill(pid)
+  }
+
+  def `be able to kill process trees`: Unit = {
+    val p   = Shell.launchProcess("cat")
+    val pid = Shell.getProcessID(p)
+    Shell.killTree(pid)
+  }
+
+  def `find sh`: Unit = {
+    val cmd = Shell.findSh
+    cmd shouldBe defined
+  }
+
+  def `launch command`: Unit = {
+    Shell.launchProcess("echo hello world")
+    Shell.launchProcess("echo cygwin env=$CYGWIN")
+  }
+
+  def `launch process`: Unit = {
+    if (OS.isWindows) {
+      Shell.launchCmdExe("echo hello cmd.exe")
+    }
+  }
+
+  def `launch a remote process as a daemon`: Unit = {
+    pending // disabled because ssh cannot be used in travis CI
+    Shell.launchRemoteDaemon("localhost", "sleep 5")
+  }
+
 }
