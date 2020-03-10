@@ -185,10 +185,25 @@ object HttpClientGenerator extends LogSupport {
   }
 
   // Intermediate representation (IR) of HTTP client code
-  case class ClientSourceDef(packageName: String, imports: Seq[Surface], classDef: ClientClassDef)
+  case class ClientSourceDef(packageName: String, classDef: ClientClassDef) {
+    def imports: Seq[Surface] = {
+      // Collect all Surfaces used in the generated code
+      def loop(s: Any): Seq[Surface] = {
+        s match {
+          case c: ClientClassDef     => c.services.flatMap(loop)
+          case x: ClientServiceDef   => x.methods.flatMap(loop)
+          case m: ClientMethodDef    => Seq(m.returnType) ++ m.args.flatMap(loop)
+          case a: ClientMethodArgDef => Seq(a.tpe)
+          case _                     => Seq.empty
+        }
+      }
+      loop(classDef).distinct
+    }
+  }
   case class ClientClassDef(clsName: String, services: Seq[ClientServiceDef])
   case class ClientServiceDef(serviceName: String, methods: Seq[ClientMethodDef])
-  case class ClientMethodDef(name: String, args: (String, String), returnType: Surface, body: String)
+  case class ClientMethodDef(name: String, args: Seq[ClientMethodArgDef], returnType: Surface, body: String)
+  case class ClientMethodArgDef(name: String, tpe: Surface)
 
   private def header(packageName: String): String = {
     s"""/**
@@ -219,7 +234,25 @@ object HttpClientGenerator extends LogSupport {
          |}
          |""".stripMargin
 
-    def clsBody = {}
+    def clsBody: String = {
+      src.classDef.services
+        .map { svc =>
+          // Use a lowercase word for the accessor objects
+          s"""object ${svc.serviceName} {
+           |${serviceBody(svc)}
+           |}""".stripMargin
+        }.mkString("\n")
+    }
+
+    def serviceBody(svc: ClientServiceDef): String = {
+      svc.methods
+        .map { m =>
+          s"""def ${m.name}(${m.args.map(x => s"${x.name}: ${x.tpe.name}").mkString(", ")}): F[${m.returnType.name}] {
+           |
+           |}""".stripMargin
+        }.mkString("\n")
+    }
+
     code
   }
 
