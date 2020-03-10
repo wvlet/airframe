@@ -20,7 +20,7 @@ import wvlet.airframe.surface.{CName, MethodParameter, Surface}
 import wvlet.log.LogSupport
 
 /**
-  *
+  * Generate Scala HTTP client code from a given airframe-http interface definition (Router)
   */
 object HttpClientGenerator extends LogSupport {
 

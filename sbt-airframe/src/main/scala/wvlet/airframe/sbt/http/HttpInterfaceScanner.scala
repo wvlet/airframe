@@ -19,7 +19,7 @@ import java.util.jar.JarFile
 import wvlet.log.LogSupport
 
 /**
-  *
+  * Scan all class files in the class path and jar files to find airframe-http interface classes
   */
 object HttpInterfaceScanner extends LogSupport {
 

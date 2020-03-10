@@ -48,6 +48,8 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     val airframeHttpGenerateClient            = taskKey[Seq[File]]("Generate the client code")
     private[http] val airframeHttpRouter      = taskKey[Router]("Airframe Router")
     private[http] val airframeHttpClassLoader = taskKey[URLClassLoader]("class loader for dependent classes")
+    // A dummy key import to check Scala.js environment or not
+    private[http] val scalaJSSourceFiles = settingKey[Seq[File]]("scalaJSSourceFiles")
   }
 
   private def dependentProjects: ScopeFilter =
@@ -73,9 +75,19 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         router
       },
       airframeHttpGenerateClient := {
-        val router     = airframeHttpRouter.value
-        val config     = ClientBuilderConfig(packageName = airframeHttpTargetPackage.value)
-        val code       = HttpClientGenerator.generateHttpClient(router, config)
+        val router = airframeHttpRouter.value
+        val config = ClientBuilderConfig(packageName = airframeHttpTargetPackage.value)
+
+        val isScalaJS = scalaJSSourceFiles.?.value.isDefined
+        val code = {
+          if (isScalaJS) {
+            info(s"Generating http client code for Scala.js")
+            HttpClientGenerator.generateScalaJsHttpClient(router, config)
+          } else {
+            info(s"Generating http client code for Scala")
+            HttpClientGenerator.generateHttpClient(router, config)
+          }
+        }
         val path       = config.packageName.replaceAll("\\.", "/")
         val file: File = (Compile / sourceManaged).value / path / s"${config.className}.scala"
         IO.write(file, code)
