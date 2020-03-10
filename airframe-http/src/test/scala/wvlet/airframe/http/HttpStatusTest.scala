@@ -19,7 +19,7 @@ import wvlet.airspec.AirSpec
   *
   */
 class HttpStatusTest extends AirSpec {
-  def `have reasons`: Unit = {
+  test("have reasons") {
     HttpStatus.knownStatuses.foreach { x =>
       x.toString
       HttpStatus.ofCode(x.code) == x
