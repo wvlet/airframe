@@ -989,7 +989,7 @@ lazy val sbtAirframe =
       name := "sbt-airframe",
       description := "sbt plugin for helping programming with Airframe",
       scalaVersion := SCALA_2_12,
-      crossSbtVersions := Vector("1.2.8"),
+      crossSbtVersions := Vector("1.3.8"),
       scriptedLaunchOpts := {
         scriptedLaunchOpts.value ++
           Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
@@ -998,6 +998,7 @@ lazy val sbtAirframe =
         // Publish all dependencies necessary for running the scripted tests
         scriptedDependencies.value
         publishLocal.all(ScopeFilter(inDependencies(finagle))).value
+        publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
       },
       scriptedBufferLog := false
     )
