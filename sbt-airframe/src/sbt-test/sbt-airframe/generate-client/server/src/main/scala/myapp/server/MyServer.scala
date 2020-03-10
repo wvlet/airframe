@@ -2,6 +2,7 @@ package myapp.server
 
 import wvlet.airframe.http.Router
 import wvlet.log.LogSupport
+import wvlet.airframe.http.finagle._
 
 class MyServer extends myapp.spi.MyService {
   override def hello(id: Int): String = s"hello ${id}"
