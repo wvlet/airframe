@@ -38,7 +38,8 @@ class AirframeHttpPluginTest extends AirSpec {
 
   test("generate client") {
     info(router)
-    HttpClientGenerator.generateHttpClient(router)
+    val code = HttpClientGenerator.generateHttpClient(router)
+    info(code)
   }
 
   test("scan classes") {

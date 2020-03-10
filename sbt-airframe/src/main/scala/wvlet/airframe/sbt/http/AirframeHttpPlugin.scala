@@ -18,6 +18,7 @@ import java.net.URLClassLoader
 import sbt.Keys._
 import sbt._
 import wvlet.airframe.http.{Endpoint, Router}
+import wvlet.airframe.sbt.http.HttpClientGenerator.ClientBuilderConfig
 import wvlet.log.LogSupport
 
 import scala.util.{Success, Try}
@@ -73,7 +74,8 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       },
       airframeHttpGenerateClient := {
         val router     = airframeHttpRouter.value
-        val code       = HttpClientGenerator.generateHttpClient(router, airframeHttpTargetPackage.value)
+        val config     = ClientBuilderConfig(packageName = airframeHttpTargetPackage.value)
+        val code       = HttpClientGenerator.generateHttpClient(router, config)
         val path       = airframeHttpTargetPackage.value.getOrElse("generated").replaceAll("\\.", "/")
         val file: File = (Compile / sourceManaged).value / path / "ServiceClient.scala"
         IO.write(file, code)
