@@ -44,7 +44,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
 
   trait AirframeHttpKeys {
     val airframeHttpPackages                  = settingKey[Seq[String]]("A list of package names containing Airframe HTTP interfaces")
-    val airframeHttpTargetPackage             = settingKey[Option[String]]("Generate target package")
+    val airframeHttpTargetPackage             = settingKey[String]("Generate target package name for the generated code")
     val airframeHttpGenerateClient            = taskKey[Seq[File]]("Generate the client code")
     private[http] val airframeHttpRouter      = taskKey[Router]("Airframe Router")
     private[http] val airframeHttpClassLoader = taskKey[URLClassLoader]("class loader for dependent classes")
@@ -56,7 +56,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   def httpProjectSettings =
     Seq(
       airframeHttpPackages := Seq(),
-      airframeHttpTargetPackage := None,
+      airframeHttpTargetPackage := "generated",
       airframeHttpClassLoader := {
         // Compile all dependent projects
         (compile in Compile).all(dependentProjects).value
@@ -76,8 +76,8 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         val router     = airframeHttpRouter.value
         val config     = ClientBuilderConfig(packageName = airframeHttpTargetPackage.value)
         val code       = HttpClientGenerator.generateHttpClient(router, config)
-        val path       = airframeHttpTargetPackage.value.getOrElse("generated").replaceAll("\\.", "/")
-        val file: File = (Compile / sourceManaged).value / path / "ServiceClient.scala"
+        val path       = config.packageName.replaceAll("\\.", "/")
+        val file: File = (Compile / sourceManaged).value / path / s"${config.className}.scala"
         IO.write(file, code)
         Seq(file)
       },

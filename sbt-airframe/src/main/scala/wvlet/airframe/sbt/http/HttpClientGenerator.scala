@@ -31,10 +31,9 @@ object HttpClientGenerator extends LogSupport {
       // Collect all Surfaces used in the generated code
       def loop(s: Any): Seq[Surface] = {
         s match {
-          case c: ClientClassDef     => c.services.flatMap(loop)
-          case x: ClientServiceDef   => x.methods.flatMap(loop)
-          case m: ClientMethodDef    => Seq(m.returnType) ++ m.args.flatMap(loop)
-          case a: ClientMethodArgDef => Seq(a.tpe)
+          case c: ClientClassDef   => c.services.flatMap(loop)
+          case x: ClientServiceDef => x.methods.flatMap(loop)
+          case m: ClientMethodDef  => Seq(m.returnType) ++ m.inputParameters.map(_.surface)
         }
       }
 
@@ -53,16 +52,16 @@ object HttpClientGenerator extends LogSupport {
       isOpsRequest: Boolean,
       name: String,
       typeArgs: Seq[Surface],
-      args: Seq[ClientMethodArgDef],
+      inputParameters: Seq[MethodParameter],
+      clientCallParameters: Seq[MethodParameter],
       returnType: Surface,
       path: String
   ) extends ClientCodeIR
-  case class ClientMethodArgDef(name: String, tpe: Surface) extends ClientCodeIR
 
   private case class PathVariableParam(name: String, param: MethodParameter)
 
   case class ClientBuilderConfig(
-      packageName: Option[String] = None,
+      packageName: String = "generated",
       className: String = "ServiceClient"
   )
 
@@ -102,21 +101,27 @@ object HttpClientGenerator extends LogSupport {
       val analysis: RouteAnalysis = analyzeRoute(route)
 
       val remainingParams = analysis.inputParameters.toSet -- analysis.pathOnlyParameters
-      val name            = route.method.name().toLowerCase(Locale.ENGLISH)
+      val name            = route.methodSurface.name
+
+      val typeArgBuilder = Seq.newBuilder[Surface]
+
+      remainingParams.headOption.map { x => typeArgBuilder += x.surface }
+      typeArgBuilder += route.returnTypeSurface
 
       ClientMethodDef(
         httpMethod = route.method,
         isOpsRequest = remainingParams.nonEmpty,
         name = name,
-        typeArgs = Seq(route.returnTypeSurface),
-        args = Seq(),
+        typeArgs = typeArgBuilder.result(),
+        inputParameters = analysis.inputParameters,
+        clientCallParameters = remainingParams.toSeq,
         path = analysis.pathString,
         returnType = route.returnTypeSurface
       )
     }
 
     ClientSourceDef(
-      packageName = config.packageName.getOrElse("generated"),
+      packageName = config.packageName,
       classDef = buildClassDef
     )
   }
@@ -235,9 +240,17 @@ object HttpClientGenerator extends LogSupport {
           val httpMethodName       = m.httpMethod.toString.toLowerCase(Locale.ENGLISH)
           val httpClientMethodName = if (m.isOpsRequest) s"${httpMethodName}Ops" else httpMethodName
 
-          s"""def ${m.name}(${m.args
-               .map(x => s"${x.name}: ${x.tpe.name}").mkString(", ")}, requestFilter: Req => Req = identity): F[${m.returnType.name}] {
-             |  client.${httpClientMethodName}(resourcePath = ${m.path}, xxxxxx, requestFilter = requestFilter)
+          val inputArgs =
+            m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++ Seq("requestFilter: Req => Req = identity")
+
+          val sendRequestArgs = Seq.newBuilder[String]
+          sendRequestArgs += s"resourcePath = ${m.path}"
+          sendRequestArgs ++= m.clientCallParameters.map(x => s"${x.name}")
+          sendRequestArgs += "requestFilter = requestFilter"
+
+          s"""def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType.name}] {
+             |  client.${httpClientMethodName}[${m.typeArgs.map(_.name).mkString(", ")}](${sendRequestArgs.result
+               .mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")
     }
