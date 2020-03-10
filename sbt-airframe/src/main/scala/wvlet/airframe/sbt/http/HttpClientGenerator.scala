@@ -68,7 +68,7 @@ object HttpClientGenerator extends LogSupport {
   def generateHttpClient(router: Router, config: ClientBuilderConfig = ClientBuilderConfig()): String = {
     val ir   = buildIR(router, config)
     val code = generateScalaCode(ir)
-    info(code)
+    debug(code)
     code
   }
 
