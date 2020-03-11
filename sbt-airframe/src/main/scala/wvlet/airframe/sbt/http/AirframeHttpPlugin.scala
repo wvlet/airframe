@@ -110,15 +110,24 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     */
   def buildRouter(targetPackages: Seq[String], classLoader: URLClassLoader): Router = {
     trace(s"buildRouter: ${targetPackages}\n${classLoader.getURLs.mkString("\n")}")
-    val lst     = HttpInterfaceScanner.scanClasses(classLoader, targetPackages)
-    val classes = Seq.newBuilder[Class[_]]
-    lst.foreach { x =>
-      Try(classLoader.loadClass(x)) match {
-        case Success(cl) => classes += cl
-        case _           =>
+
+    // We need to use our own class loader as sbt's layered classloader cannot find application classes
+    val currentClassLoader = Thread.currentThread().getContextClassLoader
+    try {
+      Thread.currentThread().setContextClassLoader(classLoader)
+
+      val lst     = HttpInterfaceScanner.scanClasses(classLoader, targetPackages)
+      val classes = Seq.newBuilder[Class[_]]
+      lst.foreach { x =>
+        Try(classLoader.loadClass(x)) match {
+          case Success(cl) => classes += cl
+          case _           =>
+        }
       }
+      buildRouter(classes.result())
+    } finally {
+      Thread.currentThread().setContextClassLoader(currentClassLoader)
     }
-    buildRouter(classes.result())
   }
 
   def buildRouter(classes: Seq[Class[_]]): Router = {
