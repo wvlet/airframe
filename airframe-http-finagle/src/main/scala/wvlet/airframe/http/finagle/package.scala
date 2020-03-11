@@ -26,7 +26,7 @@ import wvlet.log.io.IOUtil
   */
 package object finagle {
   type FinagleContext    = HttpContext[Request, Response, Future]
-  type FinagleSyncClient = HttpSyncClient[Future, http.Request, http.Response]
+  type FinagleSyncClient = HttpSyncClient[Request, Response]
 
   /**
     * A design for setting up airframe-http-finagle.
