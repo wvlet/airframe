@@ -24,9 +24,10 @@ object MapConversionTest extends AirSpec {
   case class A(id: Int, name: String, key: UUID)
 
   test("convert Map[String, Any] to object") {
-    val m     = Map("id" -> 10, "name" -> "leo", "key" -> UUID.randomUUID())
+    val uuid  = UUID.randomUUID()
+    val m     = Map("id" -> 10, "name" -> "leo", "key" -> uuid)
     val codec = MessageCodec.of[A]
     val a     = codec.fromMap(m)
-    info(a)
+    a shouldBe A(10, "leo", uuid)
   }
 }
