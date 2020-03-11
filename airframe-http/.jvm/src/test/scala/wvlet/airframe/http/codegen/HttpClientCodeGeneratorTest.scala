@@ -11,20 +11,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.sbt.http
-import java.net.URLClassLoader
-
-import example.{QueryApi, ResourceApi}
-import wvlet.airframe.http.HttpMethod
+package wvlet.airframe.http.codegen
 import wvlet.airspec.AirSpec
+import example._
+import wvlet.airframe.http._
+import java.net.URLClassLoader
 
 /**
   *
   */
-class AirframeHttpPluginTest extends AirSpec {
-
+class HttpClientCodeGeneratorTest extends AirSpec {
   val router =
-    AirframeHttpPlugin.buildRouter(Seq(classOf[ResourceApi], classOf[QueryApi]))
+    RouteScanner.buildRouter(Seq(classOf[ResourceApi], classOf[QueryApi]))
 
   test("build router") {
     debug(router)
@@ -37,12 +35,11 @@ class AirframeHttpPluginTest extends AirSpec {
   }
 
   test("generate client") {
-    val code = HttpClientGenerator.generateHttpClient(router)
-    info(code)
+    val code = HttpClientCodeGenerator.generateHttpClient(router)
   }
 
   test("generate Scala.js client") {
-    val code = HttpClientGenerator.generateScalaJsHttpClient(router)
+    val code = HttpClientCodeGenerator.generateScalaJsHttpClient(router)
   }
 
   test("scan classes") {
@@ -54,8 +51,7 @@ class AirframeHttpPluginTest extends AirSpec {
       )
     )
     val cl      = new URLClassLoader(urls)
-    val classes = HttpInterfaceScanner.scanClasses(cl, Seq("example", "wvlet.airframe.json"))
+    val classes = ClassScanner.scanClasses(cl, Seq("example", "wvlet.airframe.json"))
     debug(classes)
   }
-
 }

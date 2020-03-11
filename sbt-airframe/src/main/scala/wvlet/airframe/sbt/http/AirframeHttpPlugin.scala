@@ -17,8 +17,9 @@ import java.net.URLClassLoader
 
 import sbt.Keys._
 import sbt._
+import wvlet.airframe.http.codegen.{HttpClientGenerator, ClassScanner, RouteScanner}
 import wvlet.airframe.http.{Endpoint, Router}
-import wvlet.airframe.sbt.http.HttpClientGenerator.ClientBuilderConfig
+import wvlet.airframe.http.codegen.HttpClientGenerator.ClientBuilderConfig
 import wvlet.log.LogSupport
 
 import scala.util.{Success, Try}
@@ -74,7 +75,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         cl
       },
       airframeHttpRouter := {
-        val router = buildRouter(airframeHttpPackages.value, airframeHttpClassLoader.value)
+        val router = RouteScanner.buildRouter(airframeHttpPackages.value, airframeHttpClassLoader.value)
         info(router)
         router
       },
@@ -104,47 +105,5 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         airframeHttpGenerateClient.value
       }.taskValue
     )
-
-  /**
-    * Find Airframe HTTP interfaces and build a Router object
-    * @param targetPackages
-    * @param classLoader
-    */
-  def buildRouter(targetPackages: Seq[String], classLoader: URLClassLoader): Router = {
-    trace(s"buildRouter: ${targetPackages}\n${classLoader.getURLs.mkString("\n")}")
-
-    // We need to use our own class loader as sbt's layered classloader cannot find application classes
-    val currentClassLoader = Thread.currentThread().getContextClassLoader
-    try {
-      Thread.currentThread().setContextClassLoader(classLoader)
-
-      val lst     = HttpInterfaceScanner.scanClasses(classLoader, targetPackages)
-      val classes = Seq.newBuilder[Class[_]]
-      lst.foreach { x =>
-        Try(classLoader.loadClass(x)) match {
-          case Success(cl) => classes += cl
-          case _           =>
-        }
-      }
-      buildRouter(classes.result())
-    } finally {
-      Thread.currentThread().setContextClassLoader(currentClassLoader)
-    }
-  }
-
-  def buildRouter(classes: Seq[Class[_]]): Router = {
-    var router = Router.empty
-    for (cl <- classes) yield {
-      debug(f"Searching ${cl} for HTTP endpoints")
-      import wvlet.airframe.surface.reflect._
-      val s       = ReflectSurfaceFactory.ofClass(cl)
-      val methods = ReflectSurfaceFactory.methodsOfClass(cl)
-      if (methods.exists(_.findAnnotationOf[Endpoint].isDefined)) {
-        info(s"Found an Airframe HTTP interface: ${s.fullName}")
-        router = router.addInternal(s, methods)
-      }
-    }
-    router
-  }
 
 }
