@@ -83,16 +83,18 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         val router = airframeHttpRouter.value
         val config = ClientBuilderConfig(packageName = airframeHttpTargetPackage.value)
 
-        val path       = config.packageName.replaceAll("\\.", "/")
-        val file: File = (Compile / sourceManaged).value / path / s"${config.className}.scala"
+        val path            = config.packageName.replaceAll("\\.", "/")
+        val file: File      = (Compile / sourceManaged).value / path / s"${config.className}.scala"
+        val baseDir         = (ThisBuild / baseDirectory).value
+        val relativeFileLoc = file.relativeTo(baseDir).getOrElse(file)
 
         val code = airframeHttpClientType.value match {
           case AsyncClient =>
-            info(s"Generating http client code for Scala: ${file}")
+            info(s"Generating http client code for Scala: ${relativeFileLoc}")
             HttpClientGenerator.generateHttpClient(router, config)
           case SyncClient => throw new NotImplementedError("SyncClient is not yet supported")
           case ScalaJSClient =>
-            info(s"Generating http client code for Scala.js: ${file}")
+            info(s"Generating http client code for Scala.js: ${relativeFileLoc}")
             HttpClientGenerator.generateScalaJsHttpClient(router, config)
         }
         IO.write(file, code)
