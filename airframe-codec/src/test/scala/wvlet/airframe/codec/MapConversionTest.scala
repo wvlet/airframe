@@ -12,25 +12,21 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import java.time.Instant
 import java.util.UUID
 
-import wvlet.airframe.surface.Surface
-
-import scala.util.Try
+import wvlet.airspec.AirSpec
 
 /**
   *
   */
-object Compat {
-  def messageCodecFinder: MessageCodecFinder                = MessageCodecFinder.defaultMessageCodecFinder
-  def platformSpecificCodecs: Map[Surface, MessageCodec[_]] = Map.empty
+object MapConversionTest extends AirSpec {
 
-  private[codec] def parseInstant(s: String): Option[Instant] = {
-    Try(Instant.parse(s)).toOption
-  }
+  case class A(id: Int, name: String, key: UUID)
 
-  def readUUIDFromBytes(data: Array[Byte]): UUID = {
-    throw new IllegalArgumentException("Reading binary UUID is not supported in Scala.js")
+  test("convert Map[String, Any] to object") {
+    val m     = Map("id" -> 10, "name" -> "leo", "key" -> UUID.randomUUID())
+    val codec = MessageCodec.of[A]
+    val a     = codec.fromMap(m)
+    info(a)
   }
 }

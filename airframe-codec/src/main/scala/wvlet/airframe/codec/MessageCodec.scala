@@ -141,6 +141,14 @@ trait MessageCodec[A] extends LogSupport {
       v.getLastValue.asInstanceOf[A]
     }
   }
+
+  def fromMap(m: Map[String, Any]): A = {
+    // We cannot call MessageCodec.of[Map[String, Any]] as this macro is defined in this project, so using
+    // MessageCodec.ofSurface instead.
+    val mapCodec = MessageCodec.ofSurface(Surface.of[Map[String, Any]]).asInstanceOf[MessageCodec[Map[String, Any]]]
+    val msgpack  = mapCodec.toMsgPack(m)
+    fromMsgPack(msgpack)
+  }
 }
 
 trait MessageValueCodec[A] extends MessageCodec[A] {
