@@ -28,6 +28,8 @@ object ControlTest {
   *
   */
 class ControlTest extends AirSpec {
+  scalaJsSupport
+
   def `have loan pattern`: Unit = {
     val out = new ControlTest.A
     out.closed shouldBe false

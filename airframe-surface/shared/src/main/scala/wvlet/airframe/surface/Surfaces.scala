@@ -23,6 +23,7 @@ case class StdMethodParameter(
     index: Int,
     name: String,
     isRequired: Boolean,
+    isSecret: Boolean,
     surface: Surface,
     private val defaultValue: Option[Any] = None,
     accessor: Option[Any => Any] = None
@@ -98,7 +99,10 @@ object Primitive {
   }
   case object String extends PrimitiveSurface(classOf[String])
 
-  case object Unit extends PrimitiveSurface(classOf[Unit])
+  case object Unit extends PrimitiveSurface(classOf[Unit]) {
+    override def name: String     = "Unit"
+    override def fullName: String = "Unit"
+  }
 }
 
 case class Alias(override val name: String, override val fullName: String, ref: Surface)

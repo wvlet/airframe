@@ -60,6 +60,11 @@ trait Parameter extends ParameterBase {
   def isRequired: Boolean
 
   /**
+    * Returns true if this parameter has @required annotation
+    */
+  def isSecret: Boolean
+
+  /**
     * Get this parameter value from a given object x
     */
   def get(x: Any): Any

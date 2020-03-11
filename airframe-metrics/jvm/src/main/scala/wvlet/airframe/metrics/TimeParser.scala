@@ -63,7 +63,7 @@ object TimeParser extends LogSupport {
     loop(zonedDateTimePatterns.toList)
   }
 
-  def parseAtLocalTimeZone(s: String) = parse(s, systemTimeZone)
+  def parseAtLocalTimeZone(s: String): Option[ZonedDateTime] = parse(s, systemTimeZone)
 
   def parse(s: String, zone: ZoneOffset): Option[ZonedDateTime] = {
     parseTimeAndUnit(s, zone).map(_.dateTime)

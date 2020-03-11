@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.examples.http
 
-import wvlet.airframe.http.finagle.{FinagleServer, finagleDefaultDesign, newFinagleServerDesign}
-import wvlet.airframe.http.{Endpoint, HttpMethod, Router, finagle}
+import wvlet.airframe.http.finagle.{FinagleServer, newFinagleServerDesign}
+import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
 import wvlet.log.LogSupport
 
 /**
@@ -32,7 +32,7 @@ object Http_01_Interface extends App {
   }
 
   val router = Router.add[MyApp]
-  val design = newFinagleServerDesign(name = "myapp", port = 8080, router = router)
+  val design = newFinagleServerDesign(name = "myapp", port = 18080, router = router)
 
   design.build[FinagleServer] { server =>
     val serverAddress = server.localAddress

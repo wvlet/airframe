@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import java.time.{Instant, LocalTime}
+import java.time.Instant
 import java.util.Date
 
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
-import wvlet.airframe.msgpack.spi.{OffsetPacker, Packer, Unpacker, ValueType, WriteCursor}
+import wvlet.airframe.msgpack.spi._
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
@@ -41,7 +41,8 @@ object JavaInstantTimeCodec extends MessageCodec[Instant] {
         case ValueType.STRING =>
           // Use ISO instant formatter
           val isoInstantFormat = u.unpackString
-          Try(Instant.parse(isoInstantFormat))
+          wvlet.airframe.codec.Compat
+            .parseInstant(isoInstantFormat)
             .getOrElse(Instant.ofEpochMilli(isoInstantFormat.toLong))
         case ValueType.INTEGER =>
           val epochMillis = u.unpackLong

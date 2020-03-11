@@ -85,15 +85,15 @@ package object html {
     @inline implicit def embedInt: EA[Int]                               = null
     @inline implicit def embedLong: EA[Long]                             = null
     @inline implicit def embedString: EA[String]                         = null
-    @inline implicit def embedF0: EA[() => Unit]                         = null
-    @inline implicit def embedF1[I]: EA[I => Unit]                       = null
+    @inline implicit def embedF0[U]: EA[() => U]                         = null
+    @inline implicit def embedF1[I, U]: EA[I => U]                       = null
     @inline implicit def embedOption[C[x] <: Option[x], A: EA]: EA[C[A]] = null
     @inline implicit def embedRx[C[x] <: Rx[x], A: EA]: EA[C[A]]         = null
   }
 
   @implicitNotFound(msg = "Unsupported type as an HtmlNode")
   trait EmbeddableNode[A]
-  object EmbeddableNode {
+  object EmbeddableNode extends compat.PlatformEmbeddableNode {
     type EN[A] = EmbeddableNode[A]
     @inline implicit def embedNil: EN[Nil.type]                          = null
     @inline implicit def embedNone: EN[None.type]                        = null

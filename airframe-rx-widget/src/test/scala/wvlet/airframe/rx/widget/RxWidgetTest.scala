@@ -105,4 +105,12 @@ class RxWidgetTest extends AirSpec {
     node.innerHTML shouldBe "<p>page: home</p>"
   }
 
+  test("Embed raw HTML element") {
+    val node = dom.document.createElement("p")
+    val html = render(
+      div(node)
+    )
+    html shouldBe "<div><p></p></div>"
+  }
+
 }

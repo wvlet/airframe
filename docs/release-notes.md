@@ -6,6 +6,12 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.3.0
+-  airframe-codec: Support reading Array[AnyRef] in JDBCCodec ([#960](https://github.com/wvlet/airframe/issues/960)) [[d1c1342](https://github.com/wvlet/airframe/commit/d1c1342)]
+-  airframe-codec: Support more variations of time strings for InstantCodec ([#955](https://github.com/wvlet/airframe/issues/955)) [[e36c328](https://github.com/wvlet/airframe/commit/e36c328)]
+-  airframe-rx: Support embedding raw HTMLElements ([#952](https://github.com/wvlet/airframe/issues/952)) [[70a393e](https://github.com/wvlet/airframe/commit/70a393e)]
+-  airframe-metrics: Fix TimeVector tests across leap years [#953](https://github.com/wvlet/airframe/issues/953) ([#954](https://github.com/wvlet/airframe/issues/954)) [[f536f82](https://github.com/wvlet/airframe/commit/f536f82)]
+
 ## 20.2.1
 -  airframe-di: Fix a compilation error while binding sealed traits [#939](https://github.com/wvlet/airframe/issues/939) ([#940](https://github.com/wvlet/airframe/issues/940)) [[e381bfa](https://github.com/wvlet/airframe/commit/e381bfa)]
 -  airframe-http-finagle: [#930](https://github.com/wvlet/airframe/issues/930) Use bridged schduler for sync client ([#937](https://github.com/wvlet/airframe/issues/937)) [[9ffd0d5](https://github.com/wvlet/airframe/commit/9ffd0d5)]

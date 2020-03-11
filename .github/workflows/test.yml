@@ -108,3 +108,18 @@ jobs:
           restore-keys: ${{ runner.os }}-scala-js_2.13-
       - name: Scala.js test
         run: ./sbt ++2.13.1 "; projectJS/test"
+  test_sbt_plugin:
+    name: sbt-airframe
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: olafurpg/setup-scala@v5
+        with:
+          java-version: adopt@1.11
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-sbt-airframe-${{ hashFiles('**/*.sbt') }}
+          restore-keys: ${{ runner.os }}-sbt-airframe-
+      - name: sbt-airframe test
+        run: ./sbt sbtAirframe/scripted

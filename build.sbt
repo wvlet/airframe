@@ -16,20 +16,24 @@ val SQLITE_JDBC_VERSION             = "3.30.1"
 val SLF4J_VERSION                   = "1.7.30"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
-val FINAGLE_VERSION                 = "20.1.0"
-val FLUENCY_VERSION                 = "2.4.0"
-val airSpecFramework                = new TestFramework("wvlet.airspec.Framework")
+val FINAGLE_VERSION                 = "20.3.0"
+val FLUENCY_VERSION                 = "2.4.1"
+
+val airSpecFramework = new TestFramework("wvlet.airspec.Framework")
 
 // Publish only Scala 2.12 projects for snapshot releases
 addCommandAlias(
   "publishSnapshots",
-  s"; ++ ${SCALA_2_12}; projectJVM2_13/publish; projectJVM2_12/publish; projectJS/publish"
+  s"; ++ ${SCALA_2_12}; projectJVM2_13/publish; projectJVM2_12/publish; projectJS/publish; sbtAirframe/publish;"
 )
 
 // Allow using Ctrl+C in sbt without exiting the prompt
 // cancelable in Global := true
 
 //ThisBuild / turbo := true
+
+// Reload build.sbt on changes
+Global / onChangedBuildSource := ReloadOnSourceChanges
 
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := SCALA_2_12
@@ -97,7 +101,7 @@ lazy val root =
       }
     }
     //    .aggregate(scaladoc)
-    .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjectsCore ++ jsProjectsSub): _*)
+    .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects ++ sbtProjects): _*)
 
 // Removed as running scaladoc hits https://github.com/sbt/zinc/issues/622
 //lazy val scaladoc =
@@ -128,13 +132,13 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   airframeScalaTest,
   canvas,
   config,
-  control,
+  controlJVM,
   jmx,
   launcher,
   metricsJVM,
   codecJVM,
   msgpackJVM,
-  http,
+  httpJVM,
   jsonJVM,
   rxJVM,
   airspecJVM
@@ -157,19 +161,17 @@ lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
 )
 
 // Scala.js build (only for Scala 2.12 + 2.13)
-lazy val jsProjectsCore: Seq[ProjectReference] = Seq(
+lazy val jsProjects: Seq[ProjectReference] = Seq(
   logJS,
   surfaceJS,
   airframeJS,
   metricsJS,
-  airspecJS
-)
-
-// A workaround for https://github.com/scala-js/scala-js/issues/3921
-lazy val jsProjectsSub: Seq[ProjectReference] = Seq(
+  airspecJS,
+  controlJS,
   jsonJS,
   msgpackJS,
   codecJS,
+  httpJS,
   rxJS,
   widgetJS
 )
@@ -184,6 +186,8 @@ lazy val airspecProjects: Seq[ProjectReference] = Seq(
   airspecLogJVM,
   airspecLogJS
 )
+
+lazy val sbtProjects: Seq[ProjectReference] = Seq(sbtAirframe)
 
 // For community-build
 lazy val communityBuild =
@@ -229,23 +233,7 @@ lazy val projectJS =
       noPublish,
       crossScalaVersions := exceptScala2_11
     )
-    .aggregate(projectJSCore, projectJSSub)
-
-lazy val projectJSCore =
-  project
-    .settings(
-      noPublish,
-      crossScalaVersions := exceptScala2_11
-    )
-    .aggregate(jsProjectsCore: _*)
-
-lazy val projectJSSub =
-  project
-    .settings(
-      noPublish,
-      crossScalaVersions := exceptScala2_11
-    )
-    .aggregate(jsProjectsSub: _*)
+    .aggregate(jsProjects: _*)
 
 lazy val docs =
   project
@@ -357,7 +345,7 @@ lazy val canvas =
       name := "airframe-canvas",
       description := "Airframe off-heap memory library"
     )
-    .dependsOn(logJVM, control % "test", airspecRefJVM % "test")
+    .dependsOn(logJVM, controlJVM % "test", airspecRefJVM % "test")
 
 lazy val config =
   project
@@ -367,23 +355,32 @@ lazy val config =
       name := "airframe-config",
       description := "airframe configuration module",
       libraryDependencies ++= Seq(
-        "org.yaml" % "snakeyaml" % "1.25"
+        "org.yaml" % "snakeyaml" % "1.26"
       )
     )
     .dependsOn(airframeJVM, airframeMacrosJVMRef, codecJVM, airspecRefJVM % "test")
 
 lazy val control =
-  project
+  crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe-control"))
     .settings(buildSettings)
     .settings(
       name := "airframe-control",
-      description := "A library for controlling program flows and retrying",
+      description := "A library for controlling program flows and retrying"
+    )
+    .jvmSettings(
       libraryDependencies ++= Seq(
+        // A workaround for compiling Parallel, which depends on JMX
+        // Essential we need to use JVM-only project dependency to jmx, but I can't figure out how to configure that.
+        "org.wvlet.airframe"     %% "airframe-jmx"             % "20.3.0" % "provided",
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
-    .dependsOn(logJVM, jmx, airspecRefJVM % "test")
+    .dependsOn(log, airspecRef % "test")
+
+lazy val controlJVM = control.jvm
+lazy val controlJS  = control.js
 
 lazy val jmx =
   project
@@ -408,7 +405,7 @@ lazy val launcher =
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
-    .dependsOn(surfaceJVM, control, codecJVM, airspecRefJVM % "test")
+    .dependsOn(surfaceJVM, controlJVM, codecJVM, airspecRefJVM % "test")
 
 val logDependencies = { scalaVersion: String =>
   Seq(
@@ -525,25 +522,36 @@ lazy val jdbc =
       description := "JDBC connection pool service",
       libraryDependencies ++= Seq(
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
-        "org.postgresql" % "postgresql"  % "42.2.10",
+        "org.postgresql" % "postgresql"  % "42.2.11",
         "com.zaxxer"     % "HikariCP"    % "3.4.2",
         // For routing slf4j log to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, control, config, airspecRefJVM % "test")
+    .dependsOn(airframeJVM, airframeMacrosJVMRef, controlJVM, config, airspecRefJVM % "test")
 
 lazy val http =
-  project
+  crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe-http"))
     .settings(buildSettings)
     .settings(
       name := "airframe-http",
-      description := "JAX-RS based REST API Framework",
+      description := "REST API Framework",
       libraryDependencies ++= Seq(
         )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, control, surfaceJVM, jsonJVM, codecJVM, airspecRefJVM % "test")
+    .jsSettings(
+      jsBuildSettings,
+      jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+      libraryDependencies ++= Seq(
+        "org.scala-js" %%% "scalajs-dom" % "1.0.0"
+      )
+    )
+    .dependsOn(airframe, airframeMacrosRef, control, surface, json, codec, airspecRef % "test")
+
+lazy val httpJVM = http.jvm
+lazy val httpJS  = http.js
 
 lazy val finagle =
   project
@@ -562,7 +570,7 @@ lazy val finagle =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(http, airframeMacrosJVMRef, airspecRefJVM % "test")
+    .dependsOn(httpJVM, airframeMacrosJVMRef, airspecRefJVM % "test")
 
 lazy val okhttp =
   project
@@ -593,7 +601,7 @@ lazy val httpRecorder =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, metricsJVM, control, finagle, jdbc, airframeMacrosJVMRef, airspecRefJVM % "test")
+    .dependsOn(codecJVM, metricsJVM, controlJVM, finagle, jdbc, airframeMacrosJVMRef, airspecRefJVM % "test")
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)
@@ -684,7 +692,7 @@ lazy val sql =
         // Include Spark just as a reference implementation
         "org.apache.spark" %% "spark-sql" % "2.4.4" % "test",
         // Include Presto as a reference implementation
-        "io.prestosql" % "presto-main" % "329" % "test"
+        "io.prestosql" % "presto-main" % "330" % "test"
       )
     )
     .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecRefJVM % "test")
@@ -706,7 +714,7 @@ lazy val rx =
         "org.scala-js" %%% "scalajs-dom" % "1.0.0"
       )
     )
-    .dependsOn(log, airspecRef % "test")
+    .dependsOn(log, surface, airspecRef % "test")
 
 lazy val rxJVM = rx.jvm
 lazy val rxJS  = rx.js
@@ -982,3 +990,29 @@ lazy val airspecRef =
 
 lazy val airspecRefJVM = airspecRef.jvm
 lazy val airspecRefJS  = airspecRef.js
+
+// sbt plugin
+
+lazy val sbtAirframe =
+  project
+    .in(file("sbt-airframe"))
+    .enablePlugins(SbtPlugin)
+    .settings(
+      buildSettings,
+      name := "sbt-airframe",
+      description := "sbt plugin for helping programming with Airframe",
+      scalaVersion := SCALA_2_12,
+      crossSbtVersions := Vector("1.3.8"),
+      scriptedLaunchOpts := {
+        scriptedLaunchOpts.value ++
+          Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
+      },
+      scriptedDependencies := {
+        // Publish all dependencies necessary for running the scripted tests
+        scriptedDependencies.value
+        publishLocal.all(ScopeFilter(inDependencies(finagle))).value
+        publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
+      },
+      scriptedBufferLog := false
+    )
+    .dependsOn(httpJVM, airspecRefJVM % "test")

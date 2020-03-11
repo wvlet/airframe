@@ -168,9 +168,9 @@ object DOMRenderer extends LogSupport {
             c1 = traverse(value)
           }
           Cancelable.merge(c1, c2)
-        case f: Function0[Unit @unchecked] =>
+        case f: Function0[_] =>
           node.setEventListener(a.name, (_: dom.Event) => f())
-        case f: Function1[dom.Node @unchecked, Unit @unchecked] =>
+        case f: Function1[dom.Node @unchecked, _] =>
           node.setEventListener(a.name, f)
         case _ =>
           val value = v match {
@@ -207,7 +207,7 @@ object DOMRenderer extends LogSupport {
   }
 
   private implicit class RichDomNode(node: dom.Node) {
-    def setEventListener[A](key: String, listener: A => Unit): Cancelable = {
+    def setEventListener[A, U](key: String, listener: A => U): Cancelable = {
       val dyn = node.asInstanceOf[js.Dynamic]
       dyn.updateDynamic(key)(listener)
       Cancelable(() => dyn.updateDynamic(key)(null))

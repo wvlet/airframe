@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.control
-import wvlet.airframe.AirframeSpec
+import wvlet.airspec.AirSpec
 
 //--------------------------------------
 //
@@ -20,7 +20,7 @@ import wvlet.airframe.AirframeSpec
 // Since: 2012/07/17 18:40
 //
 //--------------------------------------
-class CommandLineTokenizerTest extends AirframeSpec {
+class CommandLineTokenizerTest extends AirSpec {
   def `tokenize a single string into args`: Unit = {
     val args = CommandLineTokenizer.tokenize("""-c "hello world!" -f 3.432""")
 
@@ -28,6 +28,6 @@ class CommandLineTokenizerTest extends AirframeSpec {
     debug {
       args.mkString(", ")
     }
-    args should equal(Array("-c", "hello world!", "-f", "3.432"))
+    args shouldBe Array("-c", "hello world!", "-f", "3.432")
   }
 }

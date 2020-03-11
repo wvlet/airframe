@@ -14,7 +14,7 @@
 package wvlet.airframe.jdbc
 
 import com.zaxxer.hikari.HikariConfig
-import wvlet.airframe.config.secret
+import wvlet.airframe.surface.secret
 
 /**
   *
