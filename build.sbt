@@ -583,7 +583,7 @@ lazy val okhttp =
         "com.squareup.okhttp3" % "okhttp" % "3.12.0"
       )
     )
-    .dependsOn(http, airframeMacrosJVMRef, finagle % "test", airspecRefJVM % "test")
+    .dependsOn(httpJVM, airframeMacrosJVMRef, finagle % "test", airspecRefJVM % "test")
 
 lazy val httpRecorder =
   project
