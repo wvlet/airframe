@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.codec
 import java.time.Instant
+import java.util.UUID
 
 import wvlet.airframe.codec.JavaStandardCodec.EnumCodec
 import wvlet.airframe.metrics.TimeParser
@@ -51,5 +52,9 @@ object Compat {
   private[codec] def parseInstant(s: String): Option[Instant] = {
     Try(Instant.parse(s)).toOption
       .orElse(TimeParser.parseAtLocalTimeZone(s).map(_.toInstant))
+  }
+
+  def readUUIDFromBytes(data: Array[Byte]): UUID = {
+    UUID.nameUUIDFromBytes(data)
   }
 }

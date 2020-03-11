@@ -14,6 +14,7 @@
 package wvlet.airframe.codec
 
 import java.io.{PrintWriter, StringWriter}
+import java.util.UUID
 
 import wvlet.airframe.msgpack.spi._
 import wvlet.airframe.surface.Surface
@@ -25,7 +26,8 @@ object StandardCodec {
   val javaClassCodec = Map(
     Surface.of[Throwable]         -> ThrowableCodec,
     Surface.of[Exception]         -> ThrowableCodec,
-    Surface.of[java.time.Instant] -> JavaInstantTimeCodec
+    Surface.of[java.time.Instant] -> JavaInstantTimeCodec,
+    Surface.of[UUID]              -> UUIDCodec
   )
 
   val standardCodec: Map[Surface, MessageCodec[_]] =
