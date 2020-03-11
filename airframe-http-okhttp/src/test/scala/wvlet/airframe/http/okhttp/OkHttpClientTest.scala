@@ -2,7 +2,7 @@ package wvlet.airframe.http.okhttp
 
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.{HttpClientException, HttpClientMaxRetryException, HttpStatus, Router}
-import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig, finagleDefaultDesign}
+import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig, newFinagleServerDesign}
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
@@ -87,112 +87,108 @@ trait FinagleClientTestApi extends LogSupport {
 
 class OkHttpClientTest extends AirSpec {
   val r = Router.add[FinagleClientTestApi]
-  val d = finagleDefaultDesign
-    .bind[FinagleServerConfig].toInstance(
-      FinagleServerConfig(name = "test-server", router = r)
-    )
-    .noLifeCycleLogging
 
-  def `create client`: Unit = {
+  override protected def design =
+    newFinagleServerDesign(FinagleServerConfig(name = "test-server", router = r))
+
+  def `create client`(server: FinagleServer): Unit = {
     def addRequestId(request: okhttp3.Request.Builder): okhttp3.Request.Builder = {
       request.addHeader("X-Request-Id", "10")
     }
 
-    d.build[FinagleServer] { server =>
-      withResource(OkHttpClient.newClient(s"http://${server.localAddress}")) { client =>
-        // Sending an implementation specific Request type
-        val ret = client.send(new okhttp3.Request.Builder().url(s"http://${server.localAddress}/")).contentString
-        ret shouldBe "Ok"
+    withResource(OkHttpClient.newClient(server.localAddress)) { client =>
+      // Sending an implementation specific Request type
+      val ret = client.send(new okhttp3.Request.Builder().url(s"http://${server.localAddress}/")).contentString
+      ret shouldBe "Ok"
 
-        // Using HTTP request wrappers
-        client.get[User]("/user/1") shouldBe User(1, "leo", "N/A")
-        client.getResource[UserRequest, User]("/user/info", UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
-        client.getResource[UserRequest, User]("/user/info2", UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
-        client.list[Seq[User]]("/user") shouldBe Seq(User(1, "leo", "N/A"))
+      // Using HTTP request wrappers
+      client.get[User]("/user/1") shouldBe User(1, "leo", "N/A")
+      client.getResource[UserRequest, User]("/user/info", UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
+      client.getResource[UserRequest, User]("/user/info2", UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
+      client.getOps[UserRequest, User]("/user/info2", UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
+      client.list[Seq[User]]("/user") shouldBe Seq(User(1, "leo", "N/A"))
 
-        client.post[User]("/user", User(2, "yui", "N/A")) shouldBe User(2, "yui", "N/A")
-        client.postOps[User, User]("/user", User(2, "yui", "N/A")) shouldBe User(2, "yui", "N/A")
+      client.post[User]("/user", User(2, "yui", "N/A")) shouldBe User(2, "yui", "N/A")
+      client.postOps[User, User]("/user", User(2, "yui", "N/A")) shouldBe User(2, "yui", "N/A")
 
-        client.put[User]("/user", User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
-        client.putOps[User, User]("/user", User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
+      client.put[User]("/user", User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
+      client.putOps[User, User]("/user", User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
 
-        client.patch[User]("/user", User(20, "joy", "N/A")) shouldBe User(20, "joy", "N/A")
-        client.patchOps[User, User]("/user", User(20, "joy", "N/A")) shouldBe User(20, "joy", "N/A")
+      client.patch[User]("/user", User(20, "joy", "N/A")) shouldBe User(20, "joy", "N/A")
+      client.patchOps[User, User]("/user", User(20, "joy", "N/A")) shouldBe User(20, "joy", "N/A")
 
-        client.delete[User]("/user/1") shouldBe User(1, "xxx", "N/A")
-        client.deleteOps[DeleteRequestBody, User]("/user/1", DeleteRequestBody(true)) shouldBe User(1, "xxx", "N/A")
+      client.delete[User]("/user/1") shouldBe User(1, "xxx", "N/A")
+      client.deleteOps[DeleteRequestBody, User]("/user/1", DeleteRequestBody(true)) shouldBe User(1, "xxx", "N/A")
 
-        // Get a response as is
-        client.get[okhttp3.Response]("/response").contentString shouldBe "raw response"
+      // Get a response as is
+      client.get[okhttp3.Response]("/response").contentString shouldBe "raw response"
 
-        // Using a custom HTTP header
-        client.get[User]("/user/1", addRequestId) shouldBe User(1, "leo", "10")
-        client.getResource[UserRequest, User]("/user/info", UserRequest(2, "kai"), addRequestId) shouldBe User(
-          2,
-          "kai",
-          "10"
-        )
-        client.getResource[UserRequest, User]("/user/info2", UserRequest(2, "kai"), addRequestId) shouldBe User(
-          2,
-          "kai",
-          "10"
-        )
+      // Using a custom HTTP header
+      client.get[User]("/user/1", addRequestId) shouldBe User(1, "leo", "10")
+      client.getResource[UserRequest, User]("/user/info", UserRequest(2, "kai"), addRequestId) shouldBe User(
+        2,
+        "kai",
+        "10"
+      )
+      client.getResource[UserRequest, User]("/user/info2", UserRequest(2, "kai"), addRequestId) shouldBe User(
+        2,
+        "kai",
+        "10"
+      )
 
-        client.list[Seq[User]]("/user", addRequestId) shouldBe Seq(User(1, "leo", "10"))
+      client.list[Seq[User]]("/user", addRequestId) shouldBe Seq(User(1, "leo", "10"))
 
-        client.post[User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
-        client.postOps[User, User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
-        client.postRaw[User]("/user", User(2, "yui", "N/A"), addRequestId).contentString shouldBe """{"id":2,"name":"yui","requestId":"10"}"""
+      client.post[User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
+      client.postOps[User, User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
+      client.postRaw[User]("/user", User(2, "yui", "N/A"), addRequestId).contentString shouldBe """{"id":2,"name":"yui","requestId":"10"}"""
 
-        client.put[User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
-        client.putOps[User, User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
-        client.putRaw[User]("/user", User(10, "aina", "N/A"), addRequestId).contentString shouldBe """{"id":10,"name":"aina","requestId":"10"}"""
+      client.put[User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
+      client.putOps[User, User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
+      client.putRaw[User]("/user", User(10, "aina", "N/A"), addRequestId).contentString shouldBe """{"id":10,"name":"aina","requestId":"10"}"""
 
-        client.patch[User]("/user", User(20, "joy", "N/A"), addRequestId) shouldBe User(20, "joy", "10")
-        client.patchOps[User, User]("/user", User(20, "joy", "N/A"), addRequestId) shouldBe User(20, "joy", "10")
-        client.patchRaw[User]("/user", User(20, "joy", "N/A"), addRequestId).contentString shouldBe """{"id":20,"name":"joy","requestId":"10"}"""
+      client.patch[User]("/user", User(20, "joy", "N/A"), addRequestId) shouldBe User(20, "joy", "10")
+      client.patchOps[User, User]("/user", User(20, "joy", "N/A"), addRequestId) shouldBe User(20, "joy", "10")
+      client.patchRaw[User]("/user", User(20, "joy", "N/A"), addRequestId).contentString shouldBe """{"id":20,"name":"joy","requestId":"10"}"""
 
-        client.delete[User]("/user/1", addRequestId) shouldBe User(1, "xxx", "10")
-        client.deleteOps[DeleteRequestBody, User]("/user/1", DeleteRequestBody(true), addRequestId) shouldBe User(
-          1,
-          "xxx",
-          "10"
-        )
-        client.deleteRaw("/user/1", addRequestId).contentString shouldBe """{"id":1,"name":"xxx","requestId":"10"}"""
-      }
+      client.delete[User]("/user/1", addRequestId) shouldBe User(1, "xxx", "10")
+      client.deleteOps[DeleteRequestBody, User]("/user/1", DeleteRequestBody(true), addRequestId) shouldBe User(
+        1,
+        "xxx",
+        "10"
+      )
+      client.deleteRaw("/user/1", addRequestId).contentString shouldBe """{"id":1,"name":"xxx","requestId":"10"}"""
     }
   }
 
-  def `fail request`: Unit = {
-    d.build[FinagleServer] { server =>
-      withResource(
-        OkHttpClient.newClient(
-          s"http://${server.localAddress}",
-          OkHttpClientConfig().withMaxRetry(3).withBackOff(initialIntervalMillis = 1)
-        )
-      ) { client =>
-        warn("Starting http client failure tests")
+  def `fail request`(server: FinagleServer): Unit = {
+    withResource(
+      OkHttpClient.newClient(
+        // Test for the full URI
+        s"http://${server.localAddress}",
+        OkHttpClientConfig().withMaxRetry(3).withBackOff(initialIntervalMillis = 1)
+      )
+    ) { client =>
+      warn("Starting http client failure tests")
 
-        {
-          // Test max retry failure
-          val ex = intercept[HttpClientMaxRetryException] {
-            client.get[String]("/busy")
-          }
-          warn(ex.getMessage)
-          ex.retryContext.retryCount shouldBe 3
-          ex.retryContext.maxRetry shouldBe 3
-          val cause = ex.retryContext.lastError.asInstanceOf[HttpClientException]
-          cause.status shouldBe HttpStatus.InternalServerError_500
+      {
+        // Test max retry failure
+        val ex = intercept[HttpClientMaxRetryException] {
+          client.get[String]("/busy")
         }
+        warn(ex.getMessage)
+        ex.retryContext.retryCount shouldBe 3
+        ex.retryContext.maxRetry shouldBe 3
+        val cause = ex.retryContext.lastError.asInstanceOf[HttpClientException]
+        cause.status shouldBe HttpStatus.InternalServerError_500
+      }
 
-        {
-          // Non retryable response
-          val cause = intercept[HttpClientException] {
-            client.get[String]("/forbidden")
-          }
-          warn(cause.getMessage)
-          cause.status shouldBe HttpStatus.Forbidden_403
+      {
+        // Non retryable response
+        val cause = intercept[HttpClientException] {
+          client.get[String]("/forbidden")
         }
+        warn(cause.getMessage)
+        cause.status shouldBe HttpStatus.Forbidden_403
       }
     }
   }

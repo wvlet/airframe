@@ -97,6 +97,14 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
     convert[Resource](send(newRequestBuilder(resourcePath), requestFilter))
   }
 
+  override def getOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request.Builder => Request.Builder
+  ): OperationResponse = {
+    getResource[Resource, OperationResponse](resourcePath, resource, requestFilter)
+  }
+
   override def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](
       resourcePath: String,
       resourceRequest: ResourceRequest,
