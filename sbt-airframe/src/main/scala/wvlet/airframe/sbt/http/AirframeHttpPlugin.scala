@@ -83,16 +83,18 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         val router = airframeHttpRouter.value
         val config = ClientBuilderConfig(packageName = airframeHttpTargetPackage.value)
 
-        val path       = config.packageName.replaceAll("\\.", "/")
-        val file: File = (Compile / sourceManaged).value / path / s"${config.className}.scala"
+        val path            = config.packageName.replaceAll("\\.", "/")
+        val file: File      = (Compile / sourceManaged).value / path / s"${config.className}.scala"
+        val baseDir         = (ThisBuild / baseDirectory).value
+        val relativeFileLoc = file.relativeTo(baseDir).getOrElse(file)
 
         val code = airframeHttpClientType.value match {
           case AsyncClient =>
-            info(s"Generating http client code for Scala: ${file}")
+            info(s"Generating http client code for Scala: ${relativeFileLoc}")
             HttpClientGenerator.generateHttpClient(router, config)
           case SyncClient => throw new NotImplementedError("SyncClient is not yet supported")
           case ScalaJSClient =>
-            info(s"Generating http client code for Scala.js: ${file}")
+            info(s"Generating http client code for Scala.js: ${relativeFileLoc}")
             HttpClientGenerator.generateScalaJsHttpClient(router, config)
         }
         IO.write(file, code)
@@ -110,15 +112,24 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     */
   def buildRouter(targetPackages: Seq[String], classLoader: URLClassLoader): Router = {
     trace(s"buildRouter: ${targetPackages}\n${classLoader.getURLs.mkString("\n")}")
-    val lst     = HttpInterfaceScanner.scanClasses(classLoader, targetPackages)
-    val classes = Seq.newBuilder[Class[_]]
-    lst.foreach { x =>
-      Try(classLoader.loadClass(x)) match {
-        case Success(cl) => classes += cl
-        case _           =>
+
+    // We need to use our own class loader as sbt's layered classloader cannot find application classes
+    val currentClassLoader = Thread.currentThread().getContextClassLoader
+    try {
+      Thread.currentThread().setContextClassLoader(classLoader)
+
+      val lst     = HttpInterfaceScanner.scanClasses(classLoader, targetPackages)
+      val classes = Seq.newBuilder[Class[_]]
+      lst.foreach { x =>
+        Try(classLoader.loadClass(x)) match {
+          case Success(cl) => classes += cl
+          case _           =>
+        }
       }
+      buildRouter(classes.result())
+    } finally {
+      Thread.currentThread().setContextClassLoader(currentClassLoader)
     }
-    buildRouter(classes.result())
   }
 
   def buildRouter(classes: Seq[Class[_]]): Router = {
