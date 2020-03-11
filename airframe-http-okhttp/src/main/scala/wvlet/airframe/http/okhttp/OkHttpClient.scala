@@ -15,9 +15,9 @@ import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
 
 case class OkHttpClientConfig(
-  requestFilter: Request.Builder => Request.Builder = identity,
-  timeout: Duration = Duration.ofSeconds(90),
-  retryContext: RetryContext = OkHttpClient.defaultRetryContext
+    requestFilter: Request.Builder => Request.Builder = identity,
+    timeout: Duration = Duration.ofSeconds(90),
+    retryContext: RetryContext = OkHttpClient.defaultRetryContext
 ) {
   def noRetry: OkHttpClientConfig = {
     this.copy(retryContext = retryContext.noRetry)
@@ -37,7 +37,7 @@ case class OkHttpClientConfig(
 }
 
 class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
-  extends HttpSyncClient[Request.Builder, Response]
+    extends HttpSyncClient[Request.Builder, Response]
     with LogSupport {
   private[this] val client = {
     new okhttp3.OkHttpClient.Builder()
@@ -68,7 +68,7 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
       response.asInstanceOf[A]
     } else {
       // Need a conversion
-      val codec = MessageCodec.of[A]
+      val codec   = MessageCodec.of[A]
       val msgpack = responseCodec.toMsgPack(response)
       codec.unpack(msgpack)
     }
@@ -92,14 +92,16 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
 
   override def get[Resource: ru.TypeTag](
       resourcePath: String,
-      requestFilter: Request.Builder => Request.Builder): Resource = {
+      requestFilter: Request.Builder => Request.Builder
+  ): Resource = {
     convert[Resource](send(newRequestBuilder(resourcePath), requestFilter))
   }
 
   override def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](
       resourcePath: String,
       resourceRequest: ResourceRequest,
-      requestFilter: Request.Builder => Request.Builder): Resource = {
+      requestFilter: Request.Builder => Request.Builder
+  ): Resource = {
     // Read resource as JSON
     val resourceRequestJsonValue = codecFactory.of[ResourceRequest].toJSONObject(resourceRequest)
     val queryParams: Seq[String] =
@@ -117,14 +119,16 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
 
   override def list[OperationResponse: ru.TypeTag](
       resourcePath: String,
-      requestFilter: Request.Builder => Request.Builder): OperationResponse = {
+      requestFilter: Request.Builder => Request.Builder
+  ): OperationResponse = {
     convert[OperationResponse](send(newRequestBuilder(resourcePath), requestFilter))
   }
 
   override def post[Resource: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request.Builder => Request.Builder): Resource = {
+      requestFilter: Request.Builder => Request.Builder
+  ): Resource = {
     val r = newRequestBuilder(resourcePath)
       .post(RequestBody.create(ContentTypeJson, toJson(resource)))
     convert[Resource](send(r, requestFilter))
@@ -133,14 +137,16 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
   override def postRaw[Resource: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request.Builder => Request.Builder): Response = {
+      requestFilter: Request.Builder => Request.Builder
+  ): Response = {
     postOps[Resource, Response](resourcePath, resource, requestFilter)
   }
 
   override def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request.Builder => Request.Builder): OperationResponse = {
+      requestFilter: Request.Builder => Request.Builder
+  ): OperationResponse = {
     val r = newRequestBuilder(resourcePath)
       .post(RequestBody.create(ContentTypeJson, toJson(resource)))
     convert[OperationResponse](send(r, requestFilter))
@@ -149,7 +155,8 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
   override def put[Resource: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request.Builder => Request.Builder): Resource = {
+      requestFilter: Request.Builder => Request.Builder
+  ): Resource = {
     val r = newRequestBuilder(resourcePath)
       .put(RequestBody.create(ContentTypeJson, toJson(resource)))
     convert[Resource](send(r, requestFilter))
@@ -158,14 +165,16 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
   override def putRaw[Resource: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request.Builder => Request.Builder): Response = {
+      requestFilter: Request.Builder => Request.Builder
+  ): Response = {
     putOps[Resource, Response](resourcePath, resource, requestFilter)
   }
 
   override def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request.Builder => Request.Builder): OperationResponse = {
+      requestFilter: Request.Builder => Request.Builder
+  ): OperationResponse = {
     val r = newRequestBuilder(resourcePath)
       .put(RequestBody.create(ContentTypeJson, toJson(resource)))
     convert[OperationResponse](send(r, requestFilter))
@@ -173,7 +182,8 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
 
   override def delete[OperationResponse: ru.TypeTag](
       resourcePath: String,
-      requestFilter: Request.Builder => Request.Builder): OperationResponse = {
+      requestFilter: Request.Builder => Request.Builder
+  ): OperationResponse = {
     val r = newRequestBuilder(resourcePath)
       .delete()
     convert[OperationResponse](send(r, requestFilter))
@@ -181,14 +191,16 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
 
   override def deleteRaw(
       resourcePath: String,
-      requestFilter: Request.Builder => Request.Builder): Response = {
+      requestFilter: Request.Builder => Request.Builder
+  ): Response = {
     delete[Response](resourcePath, requestFilter)
   }
 
   override def deleteOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request.Builder => Request.Builder): OperationResponse = {
+      requestFilter: Request.Builder => Request.Builder
+  ): OperationResponse = {
     val r = newRequestBuilder(resourcePath)
       .delete(RequestBody.create(ContentTypeJson, toJson(resource)))
     convert[OperationResponse](send(r, requestFilter))
@@ -197,7 +209,8 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
   override def patch[Resource: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request.Builder => Request.Builder): Resource = {
+      requestFilter: Request.Builder => Request.Builder
+  ): Resource = {
     val r = newRequestBuilder(resourcePath)
       .patch(RequestBody.create(ContentTypeJson, toJson(resource)))
     convert[Resource](send(r, requestFilter))
@@ -206,14 +219,16 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
   override def patchRaw[Resource: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request.Builder => Request.Builder): Response = {
+      requestFilter: Request.Builder => Request.Builder
+  ): Response = {
     patchOps[Resource, Response](resourcePath, resource, requestFilter)
   }
 
   override def patchOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request.Builder => Request.Builder): OperationResponse = {
+      requestFilter: Request.Builder => Request.Builder
+  ): OperationResponse = {
     val r = newRequestBuilder(resourcePath)
       .patch(RequestBody.create(ContentTypeJson, toJson(resource)))
     convert[OperationResponse](send(r, requestFilter))
@@ -227,7 +242,10 @@ object OkHttpClient {
   def defaultRetryContext: RetryContext = {
     HttpClient.defaultHttpClientRetry[Request, Response]
   }
-  def newClient(hostAndPort: String, config: OkHttpClientConfig = OkHttpClientConfig()): HttpSyncClient[Request.Builder, Response] = {
+  def newClient(
+      hostAndPort: String,
+      config: OkHttpClientConfig = OkHttpClientConfig()
+  ): HttpSyncClient[Request.Builder, Response] = {
     new OkHttpClient(address = ServerAddress(hostAndPort), config)
   }
 }

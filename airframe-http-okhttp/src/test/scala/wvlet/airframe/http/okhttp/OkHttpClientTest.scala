@@ -166,8 +166,10 @@ class OkHttpClientTest extends AirSpec {
   def `fail request`: Unit = {
     d.build[FinagleServer] { server =>
       withResource(
-        OkHttpClient.newClient(s"http://${server.localAddress}",
-          OkHttpClientConfig().withMaxRetry(3).withBackOff(initialIntervalMillis = 1))
+        OkHttpClient.newClient(
+          s"http://${server.localAddress}",
+          OkHttpClientConfig().withMaxRetry(3).withBackOff(initialIntervalMillis = 1)
+        )
       ) { client =>
         warn("Starting http client failure tests")
 

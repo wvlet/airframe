@@ -39,7 +39,7 @@ class OkHttpRetryInterceptor(retry: RetryContext) extends Interceptor {
   }
 
   override def intercept(chain: Interceptor.Chain): Response = {
-    val request = chain.request()
+    val request      = chain.request()
     val retryContext = retry.init(Option(request))
     dispatch(retryContext, chain)
   }

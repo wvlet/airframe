@@ -11,16 +11,16 @@ package object okhttp {
 
   implicit class OkHttpRequest(val raw: Request) extends HttpRequest[Request] {
     override protected def adapter: HttpRequestAdapter[Request] = OkHttpRequestAdapter
-    override def toRaw: Request = raw
+    override def toRaw: Request                                 = raw
   }
 
   implicit object OkHttpRequestAdapter extends HttpRequestAdapter[Request] {
-    override def methodOf(request: Request): HttpMethod          = toHttpMethod(request.method())
-    override def pathOf(request: Request): String                = request.url().encodedPath()
+    override def methodOf(request: Request): HttpMethod = toHttpMethod(request.method())
+    override def pathOf(request: Request): String       = request.url().encodedPath()
     override def headerOf(request: Request): Map[String, String] = {
       request.headers().toMultimap.asScala.toMap.map { case (k, v) => k -> v.get(0) }
     }
-    override def queryOf(request: Request): Map[String, String]  = {
+    override def queryOf(request: Request): Map[String, String] = {
       (0 until request.url().querySize()).map { i =>
         request.url().queryParameterName(i) -> request.url().queryParameterValue(i)
       }.toMap
@@ -35,7 +35,7 @@ package object okhttp {
       Option(request.body()).foreach(_.writeTo(sink))
       sink.buffer().readByteArray()
     }
-    override def contentTypeOf(request: Request): Option[String] = Option(request.body()).map(_.contentType().toString)
+    override def contentTypeOf(request: Request): Option[String]       = Option(request.body()).map(_.contentType().toString)
     override def httpRequestOf(request: Request): HttpRequest[Request] = OkHttpRequest(request)
     override def requestType: Class[Request]                           = classOf[Request]
   }
@@ -46,23 +46,23 @@ package object okhttp {
   }
 
   implicit object OkHttpResponseAdapter extends HttpResponseAdapter[Response] {
-    override def statusCodeOf(res: Response): Int = res.code()
-    override def contentStringOf(res: Response): String = Option(res.body()).map(_.string()).getOrElse("")
-    override def contentBytesOf(res: Response): Array[Byte] = Option(res.body()).map(_.bytes()).getOrElse(Array.empty)
-    override def contentTypeOf(res: Response): Option[String] = Option(res.body()).map(_.contentType().toString)
+    override def statusCodeOf(res: Response): Int                       = res.code()
+    override def contentStringOf(res: Response): String                 = Option(res.body()).map(_.string()).getOrElse("")
+    override def contentBytesOf(res: Response): Array[Byte]             = Option(res.body()).map(_.bytes()).getOrElse(Array.empty)
+    override def contentTypeOf(res: Response): Option[String]           = Option(res.body()).map(_.contentType().toString)
     override def httpResponseOf(resp: Response): HttpResponse[Response] = OkHttpResponse(resp)
   }
 
   private[okhttp] def toHttpMethod(method: String): HttpMethod = method match {
-    case "GET" => HttpMethod.GET
-    case "POST" => HttpMethod.POST
-    case "PUT" => HttpMethod.PUT
-    case "PATCH" => HttpMethod.PATCH
-    case "DELETE" => HttpMethod.DELETE
+    case "GET"     => HttpMethod.GET
+    case "POST"    => HttpMethod.POST
+    case "PUT"     => HttpMethod.PUT
+    case "PATCH"   => HttpMethod.PATCH
+    case "DELETE"  => HttpMethod.DELETE
     case "OPTIONS" => HttpMethod.OPTIONS
-    case "HEAD" => HttpMethod.HEAD
-    case "TRACE" => HttpMethod.TRACE
-    case _ => throw new IllegalArgumentException(s"Unsupported method: ${method}")
+    case "HEAD"    => HttpMethod.HEAD
+    case "TRACE"   => HttpMethod.TRACE
+    case _         => throw new IllegalArgumentException(s"Unsupported method: ${method}")
   }
 
 }
