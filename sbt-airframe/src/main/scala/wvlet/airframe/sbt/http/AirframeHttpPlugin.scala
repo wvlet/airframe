@@ -17,12 +17,10 @@ import java.net.URLClassLoader
 
 import sbt.Keys._
 import sbt._
-import wvlet.airframe.http.codegen.{HttpClientGenerator, ClassScanner, RouteScanner}
-import wvlet.airframe.http.{Endpoint, Router}
-import wvlet.airframe.http.codegen.HttpClientGenerator.ClientBuilderConfig
+import wvlet.airframe.http.codegen._
+import wvlet.airframe.http.Router
+import wvlet.airframe.http.codegen.HttpClientGeneratorConfig
 import wvlet.log.LogSupport
-
-import scala.util.{Success, Try}
 
 /**
   * sbt plugin for supporting Airframe HTTP development.
@@ -82,22 +80,16 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       airframeHttpClientType := AsyncClient,
       airframeHttpGenerateClient := {
         val router = airframeHttpRouter.value
-        val config = ClientBuilderConfig(packageName = airframeHttpTargetPackage.value)
+        val config = HttpClientGeneratorConfig(packageName = airframeHttpTargetPackage.value)
 
         val path            = config.packageName.replaceAll("\\.", "/")
         val file: File      = (Compile / sourceManaged).value / path / s"${config.className}.scala"
         val baseDir         = (ThisBuild / baseDirectory).value
         val relativeFileLoc = file.relativeTo(baseDir).getOrElse(file)
 
-        val code = airframeHttpClientType.value match {
-          case AsyncClient =>
-            info(s"Generating http client code for Scala: ${relativeFileLoc}")
-            HttpClientGenerator.generateHttpClient(router, config)
-          case SyncClient => throw new NotImplementedError("SyncClient is not yet supported")
-          case ScalaJSClient =>
-            info(s"Generating http client code for Scala.js: ${relativeFileLoc}")
-            HttpClientGenerator.generateScalaJsHttpClient(router, config)
-        }
+        val clientType = airframeHttpClientType.value
+        info(s"Generating http client code for ${clientType}: ${relativeFileLoc}")
+        val code = HttpClientGenerator.generate(router, clientType.toString, config)
         IO.write(file, code)
         Seq(file)
       },

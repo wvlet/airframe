@@ -15,24 +15,25 @@ package wvlet.airframe.http.codegen
 import java.util.Locale
 
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.codegen.HttpClientIR.{ClientBuilderConfig, ClientServiceDef, ClientSourceDef, buildIR, debug}
+import wvlet.airframe.http.codegen.HttpClientIR._
 import wvlet.log.LogSupport
 
 /**
   * Genearate HTTP client code for Scala, Scala.js targets using a given IR
   */
-object HttpClientCodeGenerator extends LogSupport {
+object HttpClientGenerator extends LogSupport {
 
-  def generateHttpClient(router: Router, config: ClientBuilderConfig = ClientBuilderConfig()): String = {
-    val ir   = HttpClientIR.buildIR(router, config)
-    val code = generateScalaCode(ir)
-    debug(code)
-    code
-  }
-
-  def generateScalaJsHttpClient(router: Router, config: ClientBuilderConfig = ClientBuilderConfig()): String = {
-    val ir   = HttpClientIR.buildIR(router, config)
-    val code = generateScalaJSCode(ir)
+  def generate(
+      router: Router,
+      target: String,
+      config: HttpClientGeneratorConfig = HttpClientGeneratorConfig()
+  ): String = {
+    val ir = HttpClientIR.buildIR(router, config)
+    val code = target match {
+      case "AsyncClient" => generateAsyncClient(ir)
+      case "SyncClient"  => generateSyncClient(ir)
+      case "ScalaJS"     => generateScalaJSClient(ir)
+    }
     debug(code)
     code
   }
@@ -51,7 +52,7 @@ object HttpClientCodeGenerator extends LogSupport {
       .mkString("\n")
   }
 
-  def generateScalaCode(src: ClientSourceDef): String = {
+  def generateAsyncClient(src: ClientSourceDef): String = {
     def code =
       s"""${header(src.packageName)}
          |
@@ -101,7 +102,57 @@ object HttpClientCodeGenerator extends LogSupport {
     code
   }
 
-  def generateScalaJSCode(src: ClientSourceDef): String = {
+  def generateSyncClient(src: ClientSourceDef): String = {
+    def code =
+      s"""${header(src.packageName)}
+         |
+         |import wvlet.airframe.http._
+         |${src.imports.map(x => s"import ${x.rawType.getName}").mkString("\n")}
+         |
+         |${cls}""".stripMargin
+
+    def cls: String =
+      s"""class ${src.classDef.clsName}[Req, Resp](private val client: HttpSyncClient[Req, Resp]) extends AutoCloseable {
+         |  override def close(): Unit = { client.close() }
+         |  def getClient: HttpSyncClient[Req, Resp] = client
+         |${indent(clsBody)}
+         |}
+         |""".stripMargin
+
+    def clsBody: String = {
+      src.classDef.services
+        .map { svc =>
+          s"""object ${svc.serviceName} {
+             |${indent(serviceBody(svc))}
+             |}""".stripMargin
+        }.mkString("\n")
+    }
+
+    def serviceBody(svc: ClientServiceDef): String = {
+      svc.methods
+        .map { m =>
+          val httpMethodName       = m.httpMethod.toString.toLowerCase(Locale.ENGLISH)
+          val httpClientMethodName = if (m.isOpsRequest) s"${httpMethodName}Ops" else httpMethodName
+
+          val inputArgs =
+            m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++ Seq("requestFilter: Req => Req = identity")
+
+          val sendRequestArgs = Seq.newBuilder[String]
+          sendRequestArgs += s"""resourcePath = s"${m.path}""""
+          sendRequestArgs ++= m.clientCallParameters.map(x => s"${x.name}")
+          sendRequestArgs += "requestFilter = requestFilter"
+
+          s"""def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType.name} = {
+             |  client.${httpClientMethodName}[${m.typeArgs.map(_.name).mkString(", ")}](${sendRequestArgs.result
+               .mkString(", ")})
+             |}""".stripMargin
+        }.mkString("\n")
+    }
+
+    code
+  }
+
+  def generateScalaJSClient(src: ClientSourceDef): String = {
     def code =
       s"""${header(src.packageName)}
          |

@@ -20,7 +20,7 @@ import java.net.URLClassLoader
 /**
   *
   */
-class HttpClientCodeGeneratorTest extends AirSpec {
+class HttpClientGeneratorTest extends AirSpec {
   val router =
     RouteScanner.buildRouter(Seq(classOf[ResourceApi], classOf[QueryApi]))
 
@@ -34,12 +34,16 @@ class HttpClientCodeGeneratorTest extends AirSpec {
     q shouldBe defined
   }
 
-  test("generate client") {
-    val code = HttpClientCodeGenerator.generateHttpClient(router)
+  test("generate async client") {
+    val code = HttpClientGenerator.generate(router, "AsyncClient")
+  }
+
+  test("generate sync client") {
+    val code = HttpClientGenerator.generate(router, "SyncClient")
   }
 
   test("generate Scala.js client") {
-    val code = HttpClientCodeGenerator.generateScalaJsHttpClient(router)
+    val code = HttpClientGenerator.generate(router, "ScalaJS")
   }
 
   test("scan classes") {

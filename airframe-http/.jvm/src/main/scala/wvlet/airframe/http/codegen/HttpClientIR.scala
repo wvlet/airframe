@@ -21,7 +21,9 @@ import wvlet.airframe.surface.{CName, MethodParameter, Surface}
 import wvlet.log.LogSupport
 
 /**
-  * Generate an IR of Scala HTTP client code from a given airframe-http interface definition (Router)
+  * Generate an intermediate represenatation (IR) of Scala HTTP client code from a given airframe-http interface definition (Router).
+  *
+  * This IR abstracts away the differences between Scala (Sync/Async clients) and Scala.js (Async + AJAX).
   */
 object HttpClientIR extends LogSupport {
 
@@ -61,15 +63,10 @@ object HttpClientIR extends LogSupport {
 
   private case class PathVariableParam(name: String, param: MethodParameter)
 
-  case class ClientBuilderConfig(
-      packageName: String = "generated",
-      className: String = "ServiceClient"
-  )
-
   /**
     * Building an intermediate representation of the client code
     */
-  def buildIR(router: Router, config: ClientBuilderConfig): ClientSourceDef = {
+  def buildIR(router: Router, config: HttpClientGeneratorConfig): ClientSourceDef = {
 
     // Build service clients for controllers
     def buildClassDef: ClientClassDef = {
