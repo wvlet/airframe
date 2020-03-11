@@ -24,7 +24,7 @@ val airSpecFramework = new TestFramework("wvlet.airspec.Framework")
 // Publish only Scala 2.12 projects for snapshot releases
 addCommandAlias(
   "publishSnapshots",
-  s"; ++ ${SCALA_2_12}; projectJVM2_13/publish; projectJVM2_12/publish; projectJS/publish"
+  s"; ++ ${SCALA_2_12}; projectJVM2_13/publish; projectJVM2_12/publish; projectJS/publish; sbtAirframe/publish;"
 )
 
 // Allow using Ctrl+C in sbt without exiting the prompt
