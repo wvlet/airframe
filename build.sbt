@@ -572,6 +572,19 @@ lazy val finagle =
     )
     .dependsOn(httpJVM, airframeMacrosJVMRef, airspecRefJVM % "test")
 
+lazy val okhttp =
+  project
+    .in(file("airframe-http-okhttp"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-http-okhttp",
+      description := "REST API binding for OkHttp",
+      libraryDependencies ++= Seq(
+        "com.squareup.okhttp3" % "okhttp" % "3.12.0"
+      )
+    )
+    .dependsOn(httpJVM, airframeMacrosJVMRef, finagle % "test", airspecRefJVM % "test")
+
 lazy val httpRecorder =
   project
     .in(file("airframe-http-recorder"))

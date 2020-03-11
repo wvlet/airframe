@@ -97,7 +97,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     val retryFilter                = new FinagleRetryFilter(config.retryContext)
     var finagleClient: Http.Client = config.initClient(Http.client)
 
-    address.scheme.map {
+    address.scheme match {
       case "https" =>
         // Set TLS for http (443) connection
         finagleClient = finagleClient.withTls(address.host)
