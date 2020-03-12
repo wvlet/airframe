@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Http, Service, http}
 import com.twitter.util._
+import wvlet.airframe.Design
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpClient.urlEncode
@@ -72,6 +73,16 @@ case class FinagleClientConfig(
     withRetryContext(
       retryContext.withJitter(initialIntervalMillis, maxIntervalMillis, multiplier)
     )
+  }
+
+  def asyncClientDesign: Design = {
+    Design.newDesign
+      .bind[FinagleClient].toProvider { server: FinagleServer => this.newClient(server.localAddress) }
+  }
+
+  def syncClientDesign: Design = {
+    Design.newDesign
+      .bind[FinagleSyncClient].toProvider { server: FinagleServer => this.newSyncClient(server.localAddress) }
   }
 
   def newClient(hostAndPort: String): FinagleClient = {
