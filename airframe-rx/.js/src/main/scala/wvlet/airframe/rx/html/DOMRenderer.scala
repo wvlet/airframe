@@ -19,7 +19,7 @@ import wvlet.log.LogSupport
 import scala.scalajs.js
 
 /**
-  *
+  * Convert HtmlNodes into DOM elements for Scala.js
   */
 object DOMRenderer extends LogSupport {
 
@@ -180,8 +180,8 @@ object DOMRenderer extends LogSupport {
           a.name match {
             case "style" =>
               val prev = htmlNode.style.cssText
-              if (prev.isEmpty) {
-                htmlNode.style.cssText = s"${prev} ${v}"
+              if (prev.nonEmpty && a.append && value.nonEmpty) {
+                htmlNode.style.cssText = s"${prev} ${value}"
               } else {
                 htmlNode.style.cssText = value
               }

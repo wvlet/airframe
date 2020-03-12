@@ -94,4 +94,29 @@ class HtmlTest extends AirSpec {
     val d = button("hello", onclick { () => println("clicked") })
     render(d)
   }
+
+  test("append attribute") {
+    val d = div(id -> "main", cls -> "btn")
+    render(d) shouldBe """<div id="main" class="btn"></div>"""
+
+    val d2 = d(cls += "btn-primary")
+    render(d2) shouldBe """<div id="main" class="btn btn-primary"></div>"""
+
+    val d3 = d(cls -> "alert")
+    render(d3) shouldBe """<div id="main" class="alert"></div>"""
+  }
+
+  test("append style") {
+    val d = div(style -> "color: white;")
+    render(d) shouldBe """<div style="color: white;"></div>"""
+
+    val d2 = d(style += "background-color: black;")
+    render(d2) shouldBe """<div style="color: white; background-color: black;"></div>"""
+
+    val d3 = d(style -> "font-family: Monaco;")
+    render(d3) shouldBe """<div style="font-family: Monaco;"></div>"""
+
+    val d4 = d3(style.noValue)
+    render(d4) shouldBe """<div style=""></div>"""
+  }
 }
