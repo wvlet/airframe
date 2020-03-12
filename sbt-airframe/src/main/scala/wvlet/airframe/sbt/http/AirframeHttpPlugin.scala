@@ -49,7 +49,6 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   trait AirframeHttpKeys {
     val airframeHttpClientMappings            = settingKey[Seq[HttpClientGeneratorConfig]]("HTTP client generator settings")
     val airframeHttpGenerateClient            = taskKey[Seq[File]]("Generate the client code")
-    private[http] val airframeHttpRouter      = taskKey[Router]("Airframe Router")
     private[http] val airframeHttpClassLoader = taskKey[URLClassLoader]("class loader for dependent classes")
   }
 
@@ -68,13 +67,9 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         val cl = new URLClassLoader(cp.toArray, getClass().getClassLoader)
         cl
       },
-      airframeHttpRouter := {
-        val router = RouteScanner.buildRouter(airframeHttpPackages.value, airframeHttpClassLoader.value)
-        info(router)
-        router
-      },
       airframeHttpGenerateClient := {
-        val router = airframeHttpRouter.value
+
+        val router = RouteScanner.buildRouter(airframeHttpPackages.value, airframeHttpClassLoader.value)
         val config = HttpClientGeneratorConfig(packageName = airframeHttpTargetPackage.value)
 
         val path            = config.packageName.replaceAll("\\.", "/")

@@ -16,8 +16,9 @@ import java.util.Locale
 
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.HttpClientIR._
-import wvlet.airframe.http.codegen.client.{HttpClientType, AsyncClient}
+import wvlet.airframe.http.codegen.client.{AsyncClient, HttpClientType}
 import wvlet.log.LogSupport
+import java.net.{URL, URLClassLoader}
 
 case class HttpClientGeneratorConfig(
     // A package name to search for airframe-http interfaces
@@ -25,36 +26,35 @@ case class HttpClientGeneratorConfig(
     // scala-async, scala-sync, scala-js, etc.
     clientType: HttpClientType = AsyncClient,
     // [optional] Which package to use for the generating client code?
-    targetPackageName: Option[String] = None
+    targetPackageName: String
 ) {
   def className = clientType.defaultClassName
 }
 
 object HttpClientGeneratorConfig {
 
-  def apply(lst: Seq[(String, String)]): Seq[HttpClientGeneratorConfig] = {
-    // Parse strings like:
-    //    Seq(
-    //      "example.api" -> s"async:example.api.client",
-    //      "example.api" -> s"sync"
-    //    )
-    for ((name, clientTypeAndClassName) <- lst) yield {
-      val (tpe, pkgOpt) = clientTypeAndClassName.split(":") match {
-        case Array(tpe, clsName) =>
-          (tpe, Some(clsName))
-        case Array(tpe) =>
-          (tpe, None)
-        case _ =>
-          throw new IllegalArgumentException(s"Invalid argument: ${clientTypeAndClassName}")
-      }
-      HttpClientGeneratorConfig(
-        apiPackageName = name,
-        clientType = HttpClientType.findClient(tpe).getOrElse {
-          throw new IllegalArgumentException(s"Unknown client type: ${tpe}")
-        },
-        targetPackageName = pkgOpt
-      )
+  def apply(s: String): HttpClientGeneratorConfig = {
+    // Parse strings of (package):(type)(:(targetPackage))? format. For example:
+    //    "example.api:async:example.api.client"
+    //    "example.api:sync"
+    val (packageName, tpe, targetPackage) = s.split(":") match {
+      case Array(p, tpe, clsName) =>
+        (p, tpe, clsName)
+      case Array(p, tpe) =>
+        (p, tpe, p)
+      case Array(p) =>
+        (p, "async", p)
+      case _ =>
+        throw new IllegalArgumentException(s"Invalid argument: ${s}")
     }
+
+    HttpClientGeneratorConfig(
+      apiPackageName = packageName,
+      clientType = HttpClientType.findClient(tpe).getOrElse {
+        throw new IllegalArgumentException(s"Unknown client type: ${tpe}")
+      },
+      targetPackageName = targetPackage
+    )
   }
 }
 
@@ -62,7 +62,6 @@ object HttpClientGeneratorConfig {
   * Generate HTTP client code for Scala, Scala.js targets using a given IR
   */
 object HttpClientGenerator extends LogSupport {
-
   def generate(
       router: Router,
       config: HttpClientGeneratorConfig
@@ -70,6 +69,12 @@ object HttpClientGenerator extends LogSupport {
     val ir   = HttpClientIR.buildIR(router, config)
     val code = config.clientType.generate(ir)
     debug(code)
+    code
+  }
+
+  def generate(config: HttpClientGeneratorConfig, cl: URLClassLoader): String = {
+    val router = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
+    val code   = generate(router, config)
     code
   }
 }

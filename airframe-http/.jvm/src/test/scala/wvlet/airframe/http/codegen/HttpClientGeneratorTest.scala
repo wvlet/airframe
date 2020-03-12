@@ -39,25 +39,28 @@ class HttpClientGeneratorTest extends AirSpec {
   test("generate async client") {
     val code = HttpClientGenerator.generate(
       router,
-      HttpClientGeneratorConfig(apiPackageName = "example.api", clientType = AsyncClient)
+      HttpClientGeneratorConfig("example.api:async:example.api.client")
     )
     info(code)
+    code.contains("package example.api.client") shouldBe true
   }
 
   test("generate sync client") {
     val code = HttpClientGenerator.generate(
       router,
-      HttpClientGeneratorConfig(apiPackageName = "example.api", clientType = SyncClient)
+      HttpClientGeneratorConfig("example.api:sync")
     )
     info(code)
+    code.contains("package example.api") shouldBe true
   }
 
   test("generate Scala.js client") {
     val code = HttpClientGenerator.generate(
       router,
-      HttpClientGeneratorConfig(apiPackageName = "example.api", clientType = ScalaJSClient)
+      HttpClientGeneratorConfig("example.api:scalajs:example.api.client.js")
     )
     info(code)
+    code.contains("package example.api.client.js") shouldBe true
   }
 
   test("scan classes") {
@@ -72,15 +75,4 @@ class HttpClientGeneratorTest extends AirSpec {
     val classes = ClassScanner.scanClasses(cl, Seq("example", "wvlet.airframe.json"))
     debug(classes)
   }
-
-  test("test multiple config") {
-    val configList = HttpClientGeneratorConfig(
-      Seq(
-        "example.api" -> "async:myexample.api.client",
-        "example.api" -> "sync"
-      )
-    )
-
-  }
-
 }

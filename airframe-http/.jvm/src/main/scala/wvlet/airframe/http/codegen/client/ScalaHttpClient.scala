@@ -149,7 +149,7 @@ object SyncClient extends HttpClientType {
   *
   */
 object ScalaJSClient extends HttpClientType {
-  override def name: String             = "scala-js"
+  override def name: String             = "scalajs"
   override def defaultClassName: String = "ServiceJSClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
