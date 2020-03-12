@@ -71,13 +71,16 @@ object Rx extends LogSupport {
       case FlatMapOp(in, f) =>
         var c1 = Cancelable.empty
         val c2 = run(in) { x =>
-          val rxb = f.asInstanceOf[Any => Rx[A]](in)
+          val rxb = f.asInstanceOf[Any => Rx[A]](x)
           c1.cancel
           c1 = run(rxb)(effect)
         }
         Cancelable { () => c1.cancel; c2.cancel }
       case NamedOp(input, name) =>
         run(input)(effect)
+      case SingleOp(v) =>
+        effect(v)
+        Cancelable.empty
       case v @ RxVar(currentValue) =>
         v.foreach(effect)
     }
