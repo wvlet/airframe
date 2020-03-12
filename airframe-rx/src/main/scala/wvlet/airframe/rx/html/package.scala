@@ -108,7 +108,7 @@ package object html {
     @inline implicit def embedString: EN[String]                         = null
     @inline implicit def embedHtmlNode[A <: HtmlNode]: EN[A]             = null
     @inline implicit def embedRx[C[x] <: Rx[x], A: EN]: EN[C[A]]         = null
-    @inline implicit def embedSeq[C[x] <: Seq[x], A: EN]: EN[C[A]]       = null
+    @inline implicit def embedSeq[C[x] <: Iterable[x], A: EN]: EN[C[A]]  = null
     @inline implicit def embedOption[C[x] <: Option[x], A: EN]: EN[C[A]] = null
   }
 

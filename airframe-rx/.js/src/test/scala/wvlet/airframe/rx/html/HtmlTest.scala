@@ -94,5 +94,4 @@ class HtmlTest extends AirSpec {
     val d = button("hello", onclick { () => println("clicked") })
     render(d)
   }
-
 }
