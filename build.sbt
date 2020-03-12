@@ -371,9 +371,6 @@ lazy val control =
     )
     .jvmSettings(
       libraryDependencies ++= Seq(
-        // A workaround for compiling Parallel, which depends on JMX
-        // Essential we need to use JVM-only project dependency to jmx, but I can't figure out how to configure that.
-        "org.wvlet.airframe"     %% "airframe-jmx"             % "20.3.0" % "provided",
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )

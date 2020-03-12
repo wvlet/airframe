@@ -22,8 +22,8 @@ import scala.util.{Failure, Success, Try}
 
 class ParallelTest extends AirSpec {
   def `run() in parallel with Seq`: Unit = {
-    Parallel.jmxStats.startedTasks.set(0)
-    Parallel.jmxStats.finishedTasks.set(0)
+    Parallel.stats.startedTasks.set(0)
+    Parallel.stats.finishedTasks.set(0)
 
     val source    = Seq(1, 2, 3)
     val counter   = new AtomicInteger(0)
@@ -41,13 +41,13 @@ class ParallelTest extends AirSpec {
     assert(startTime.forall(_ <= endTime))
     assert(result == List(2, 4, 6))
 
-    assert(Parallel.jmxStats.startedTasks.get() == 3)
-    assert(Parallel.jmxStats.finishedTasks.get() == 3)
+    assert(Parallel.stats.startedTasks.get() == 3)
+    assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
   def `iterate() in parallel with Iterator`: Unit = {
-    Parallel.jmxStats.startedTasks.set(0)
-    Parallel.jmxStats.finishedTasks.set(0)
+    Parallel.stats.startedTasks.set(0)
+    Parallel.stats.finishedTasks.set(0)
 
     val source    = Seq(1, 2, 3)
     val startTime = Array(Long.MaxValue, Long.MaxValue, Long.MaxValue)
@@ -64,13 +64,13 @@ class ParallelTest extends AirSpec {
     // The result element order can be shuffled
     assert(List(2, 4, 6).forall(x => list.contains(x)))
 
-    assert(Parallel.jmxStats.startedTasks.get() == 3)
-    assert(Parallel.jmxStats.finishedTasks.get() == 3)
+    assert(Parallel.stats.startedTasks.get() == 3)
+    assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
   def `handle errors in run()` : Unit = {
-    Parallel.jmxStats.startedTasks.set(0)
-    Parallel.jmxStats.finishedTasks.set(0)
+    Parallel.stats.startedTasks.set(0)
+    Parallel.stats.finishedTasks.set(0)
 
     val source    = Seq(1, 2, 3)
     val exception = new RuntimeException("failure")
@@ -87,13 +87,13 @@ class ParallelTest extends AirSpec {
 
     assert(List(Success(2), Failure(exception), Success(6)).forall(x => result.contains(x)))
 
-    assert(Parallel.jmxStats.startedTasks.get() == 3)
-    assert(Parallel.jmxStats.finishedTasks.get() == 3)
+    assert(Parallel.stats.startedTasks.get() == 3)
+    assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
   def `handle errors in iterate()` : Unit = {
-    Parallel.jmxStats.startedTasks.set(0)
-    Parallel.jmxStats.finishedTasks.set(0)
+    Parallel.stats.startedTasks.set(0)
+    Parallel.stats.finishedTasks.set(0)
 
     val source    = Seq(1, 2, 3)
     val exception = new RuntimeException("failure")
@@ -110,30 +110,30 @@ class ParallelTest extends AirSpec {
 
     assert(List(Success(2), Failure(exception), Success(6)).forall(x => result.contains(x)))
 
-    assert(Parallel.jmxStats.startedTasks.get() == 3)
-    assert(Parallel.jmxStats.finishedTasks.get() == 3)
+    assert(Parallel.stats.startedTasks.get() == 3)
+    assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
   def `be run for Seq using syntax sugar`: Unit = {
     import wvlet.airframe.control.parallel._
 
-    Parallel.jmxStats.startedTasks.set(0)
-    Parallel.jmxStats.finishedTasks.set(0)
+    Parallel.stats.startedTasks.set(0)
+    Parallel.stats.finishedTasks.set(0)
 
     val source           = Seq(1, 2, 3)
     val result: Seq[Int] = source.parallel.withParallelism(2).map { x => x * 2 }
 
     assert(result == List(2, 4, 6))
 
-    assert(Parallel.jmxStats.startedTasks.get() == 3)
-    assert(Parallel.jmxStats.finishedTasks.get() == 3)
+    assert(Parallel.stats.startedTasks.get() == 3)
+    assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
   def `be run for Iterator using syntax sugar`: Unit = {
     import wvlet.airframe.control.parallel._
 
-    Parallel.jmxStats.startedTasks.set(0)
-    Parallel.jmxStats.finishedTasks.set(0)
+    Parallel.stats.startedTasks.set(0)
+    Parallel.stats.finishedTasks.set(0)
 
     val source                = Seq(1, 2, 3).iterator
     val result: Iterator[Int] = source.parallel.withParallelism(2).map { x => x * 2 }
@@ -141,8 +141,8 @@ class ParallelTest extends AirSpec {
     val list = result.toList
     assert(List(2, 4, 6).forall(x => list.contains(x)))
 
-    assert(Parallel.jmxStats.startedTasks.get() == 3)
-    assert(Parallel.jmxStats.finishedTasks.get() == 3)
+    assert(Parallel.stats.startedTasks.get() == 3)
+    assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
 //    def `repeat() and stop`: Unit =  {
