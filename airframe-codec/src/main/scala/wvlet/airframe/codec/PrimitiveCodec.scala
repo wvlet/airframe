@@ -39,6 +39,7 @@ object PrimitiveCodec {
     Primitive.Byte    -> ByteCodec,
     Primitive.Short   -> ShortCodec,
     Primitive.Char    -> CharCodec,
+    Primitive.Unit    -> UnitCodec,
     // MessagePack types
     Surface.of[Value]   -> ValueCodec,
     Surface.of[MsgPack] -> RawMsgPackCodec,
@@ -69,6 +70,20 @@ object PrimitiveCodec {
 
   trait PrimitiveCodec[A] extends MessageCodec[A] {
     def surface: Surface
+  }
+
+  object UnitCodec extends PrimitiveCodec[Unit] {
+    override def surface: Surface = Primitive.Unit
+    override def pack(p: Packer, v: Unit): Unit = {
+      // do not pack anything
+    }
+    override def unpack(
+        u: Unpacker,
+        v: MessageContext
+    ): Unit = {
+      // Do not read anything
+      v.setNull
+    }
   }
 
   object ByteCodec extends PrimitiveCodec[Byte] {

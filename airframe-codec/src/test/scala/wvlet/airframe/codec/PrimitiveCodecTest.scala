@@ -440,4 +440,11 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     val x     = codec.fromJson(json)
     x.data shouldBe data
   }
+
+  def `Unit codec should have no value`: Unit = {
+    val c       = PrimitiveCodec.UnitCodec
+    val msgpack = c.toMsgPack({})
+    val v       = c.fromMsgPack(msgpack)
+    v shouldBe null
+  }
 }
