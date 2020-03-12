@@ -24,7 +24,7 @@ import scala.language.{higherKinds, implicitConversions}
 package object html {
 
   object tags       extends Tags
-  object tags_extra extends Tags
+  object tags_extra extends TagsExtra
   object attrs      extends Attrs
 
   object all extends Tags with Attrs
@@ -85,10 +85,13 @@ package object html {
     @inline implicit def embedInt: EA[Int]                               = null
     @inline implicit def embedLong: EA[Long]                             = null
     @inline implicit def embedString: EA[String]                         = null
+    @inline implicit def embedFloat: EA[Float]                           = null
+    @inline implicit def embedDouble: EA[Double]                         = null
     @inline implicit def embedF0[U]: EA[() => U]                         = null
     @inline implicit def embedF1[I, U]: EA[I => U]                       = null
     @inline implicit def embedOption[C[x] <: Option[x], A: EA]: EA[C[A]] = null
     @inline implicit def embedRx[C[x] <: Rx[x], A: EA]: EA[C[A]]         = null
+    @inline implicit def embedSeq[C[x] <: Iterable[x], A: EA]: EA[C[A]]  = null
   }
 
   @implicitNotFound(msg = "Unsupported type as an HtmlNode")

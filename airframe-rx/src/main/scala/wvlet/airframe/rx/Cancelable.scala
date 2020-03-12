@@ -48,7 +48,7 @@ object Cancelable {
     lst.size match {
       case 1 => lst.head
       case _ =>
-        val nonEmpty = lst.filter(_ != Cancelable.empty)
+        val nonEmpty = lst.filter(_ != Cancelable.empty).toIndexedSeq
         if (nonEmpty.isEmpty) {
           Cancelable.empty
         } else {
