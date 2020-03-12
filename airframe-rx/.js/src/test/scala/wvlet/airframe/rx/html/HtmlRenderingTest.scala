@@ -18,7 +18,7 @@ import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html.all._
 import wvlet.airspec._
 
-class HtmlTest extends AirSpec {
+class HtmlRenderingTest extends AirSpec {
 
   def render(node: RxElement): String = {
     val txt = DOMRenderer.render(node) match {
