@@ -137,7 +137,7 @@ object DOMRenderer extends LogSupport {
           Cancelable.empty
         case Some(x) =>
           traverse(x, anchor)
-        case s: Seq[_] =>
+        case s: Iterable[_] =>
           val cancelables = for (el <- s) yield {
             traverse(el, anchor)
           }

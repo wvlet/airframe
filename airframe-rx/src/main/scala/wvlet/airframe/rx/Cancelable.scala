@@ -44,7 +44,7 @@ object Cancelable {
     }
   }
 
-  def merge(lst: Seq[Cancelable]): Cancelable = {
+  def merge(lst: Iterable[Cancelable]): Cancelable = {
     lst.size match {
       case 1 => lst.head
       case _ =>
