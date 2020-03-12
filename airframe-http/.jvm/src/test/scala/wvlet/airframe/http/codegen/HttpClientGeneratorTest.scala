@@ -11,20 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.sbt.http
+package wvlet.airframe.http.codegen
+import wvlet.airspec.AirSpec
+import example._
+import wvlet.airframe.http._
 import java.net.URLClassLoader
 
-import example.{QueryApi, ResourceApi}
-import wvlet.airframe.http.HttpMethod
-import wvlet.airspec.AirSpec
+import wvlet.airframe.http.codegen.client._
 
 /**
   *
   */
-class AirframeHttpPluginTest extends AirSpec {
-
+class HttpClientGeneratorTest extends AirSpec {
   val router =
-    AirframeHttpPlugin.buildRouter(Seq(classOf[ResourceApi], classOf[QueryApi]))
+    RouteScanner.buildRouter(Seq(classOf[ResourceApi], classOf[QueryApi]))
 
   test("build router") {
     debug(router)
@@ -36,13 +36,31 @@ class AirframeHttpPluginTest extends AirSpec {
     q shouldBe defined
   }
 
-  test("generate client") {
-    val code = HttpClientGenerator.generateHttpClient(router)
-    info(code)
+  test("generate async client") {
+    val code = HttpClientGenerator.generate(
+      router,
+      HttpClientGeneratorConfig("example.api:async:example.api.client")
+    )
+    code.contains("package example.api.client") shouldBe true
+    code.contains("class ServiceClient[F[_], Req, Resp]")
+  }
+
+  test("generate sync client") {
+    val code = HttpClientGenerator.generate(
+      router,
+      HttpClientGeneratorConfig("example.api:sync")
+    )
+    code.contains("package example.api") shouldBe true
+    code.contains("class ServiceSyncClient[Req, Resp]")
   }
 
   test("generate Scala.js client") {
-    val code = HttpClientGenerator.generateScalaJsHttpClient(router)
+    val code = HttpClientGenerator.generate(
+      router,
+      HttpClientGeneratorConfig("example.api:scalajs:example.api.client.js")
+    )
+    code.contains("package example.api.client.js") shouldBe true
+    code.contains("object ServiceJSClient")
   }
 
   test("scan classes") {
@@ -54,8 +72,7 @@ class AirframeHttpPluginTest extends AirSpec {
       )
     )
     val cl      = new URLClassLoader(urls)
-    val classes = HttpInterfaceScanner.scanClasses(cl, Seq("example", "wvlet.airframe.json"))
+    val classes = ClassScanner.scanClasses(cl, Seq("example", "wvlet.airframe.json"))
     debug(classes)
   }
-
 }

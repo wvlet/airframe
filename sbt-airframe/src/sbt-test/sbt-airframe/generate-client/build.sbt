@@ -1,3 +1,5 @@
+import wvlet.airframe.sbt.http.AirframeHttpPlugin
+
 lazy val root =
   project.aggregate(spi, server)
 
@@ -13,7 +15,10 @@ lazy val server =
     .in(file("server"))
     .enablePlugins(AirframeHttpPlugin)
     .settings(
-      airframeHttpPackages ++= Seq("myapp.spi"),
+      airframeHttpClients := Seq(
+        "myapp.spi",
+        "myapp.spi:sync"
+      ),
       libraryDependencies ++= Seq(
         "org.wvlet.airframe" %% "airframe-http-finagle" % sys.props("plugin.version")
       )

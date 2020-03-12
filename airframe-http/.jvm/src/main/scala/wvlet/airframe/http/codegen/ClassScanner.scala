@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.sbt.http
+package wvlet.airframe.http.codegen
 import java.io.File
 import java.net.{URL, URLClassLoader}
 import java.util.jar.JarFile
@@ -21,7 +21,7 @@ import wvlet.log.LogSupport
 /**
   * Scan all class files in the class path and jar files to find airframe-http interface classes
   */
-object HttpInterfaceScanner extends LogSupport {
+object ClassScanner extends LogSupport {
 
   def scanClasses(cl: ClassLoader, targetPackageNames: Seq[String]): Seq[String] = {
     def loop(c: ClassLoader): Seq[URL] = {
