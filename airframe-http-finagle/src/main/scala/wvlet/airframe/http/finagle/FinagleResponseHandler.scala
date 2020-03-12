@@ -82,6 +82,10 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
   // TODO: Extract this logic into airframe-http
   def toHttpResponse[A](request: Request, responseSurface: Surface, a: A): Response = {
     a match {
+      case null =>
+        // Empty response
+        val r = newResponse(request, responseSurface)
+        r
       case r: Response =>
         // Return the response as is
         r
@@ -120,10 +124,6 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
         val r = newResponse(request, responseSurface)
         r.contentString = s
         r
-      case null =>
-        // Empty response
-        val r = newResponse(request, responseSurface)
-        r
       case _ =>
         // To return large responses with streams, the interface should return Reader[X] response
 
@@ -136,7 +136,7 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
             throw new IllegalArgumentException(s"Unknown codec: ${rs}")
         }
 
-        // Return application/msgpack content type
+        // Return application/x-msgpack content type
         if (isMsgPackRequest(request)) {
           val res = newResponse(request, responseSurface)
           res.contentType = xMsgPack
