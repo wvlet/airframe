@@ -14,10 +14,9 @@
 package wvlet.airframe.control
 
 import java.util.UUID
-import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 import java.util.concurrent._
+import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 
-import wvlet.airframe.jmx.{JMX, JMXAgent}
 import wvlet.log.LogSupport
 
 import scala.reflect.ClassTag
@@ -26,16 +25,12 @@ import scala.reflect.ClassTag
   * Utilities for parallel execution.
   */
 object Parallel extends LogSupport {
-  val jmxStats = new ParallelExecutionStats()
+  val stats = new ParallelExecutionStats()
 
   class ParallelExecutionStats(
-      @JMX(description = "Total number of worker threads")
       val totalThreads: AtomicLong = new AtomicLong(0),
-      @JMX(description = "Total number of running workers")
       val runningWorkers: AtomicLong = new AtomicLong(0),
-      @JMX(description = "Accumulated total number of started tasks")
       val startedTasks: AtomicLong = new AtomicLong(0),
-      @JMX(description = "Accumulated total number of finished tasks")
       val finishedTasks: AtomicLong = new AtomicLong(0)
   )
 
@@ -75,7 +70,7 @@ object Parallel extends LogSupport {
     }
 
     val executor = Executors.newFixedThreadPool(parallelism)
-    jmxStats.totalThreads.addAndGet(parallelism)
+    stats.totalThreads.addAndGet(parallelism)
 
     try {
       // Process all elements of source
@@ -102,7 +97,7 @@ object Parallel extends LogSupport {
       // Cleanup
       executor.shutdown()
       requestQueue.clear()
-      jmxStats.totalThreads.addAndGet(parallelism * -1)
+      stats.totalThreads.addAndGet(parallelism * -1)
     }
   }
 
@@ -117,8 +112,7 @@ object Parallel extends LogSupport {
     */
   def iterate[T, R](
       source: Iterator[T],
-      parallelism: Int = Runtime.getRuntime.availableProcessors(),
-      jmxAgent: Option[JMXAgent] = None
+      parallelism: Int = Runtime.getRuntime.availableProcessors()
   )(f: T => R): Iterator[R] = {
     val executionId = UUID.randomUUID.toString
     trace(s"$executionId - Begin Parallel.iterate (parallelism = ${parallelism})")
@@ -134,7 +128,7 @@ object Parallel extends LogSupport {
     new Thread {
       override def run(): Unit = {
         val executor = Executors.newFixedThreadPool(parallelism)
-        jmxStats.totalThreads.addAndGet(parallelism)
+        stats.totalThreads.addAndGet(parallelism)
 
         try {
           // Process all elements of source
@@ -161,7 +155,7 @@ object Parallel extends LogSupport {
           // Cleanup
           executor.shutdown()
           requestQueue.clear()
-          jmxStats.totalThreads.addAndGet(parallelism * -1)
+          stats.totalThreads.addAndGet(parallelism * -1)
         }
       }
     }.start()
@@ -236,8 +230,8 @@ object Parallel extends LogSupport {
 
     override def run: Unit = {
       trace(s"$executionId - Begin worker-$workerId")
-      Parallel.jmxStats.runningWorkers.incrementAndGet()
-      jmxStats.startedTasks.incrementAndGet()
+      Parallel.stats.runningWorkers.incrementAndGet()
+      stats.startedTasks.incrementAndGet()
       try {
         resultQueue.put(Some(f(message.get())))
       } catch {
@@ -247,8 +241,8 @@ object Parallel extends LogSupport {
       } finally {
         requestQueue.put(this)
         trace(s"$executionId - End worker-$workerId")
-        jmxStats.finishedTasks.incrementAndGet()
-        Parallel.jmxStats.runningWorkers.decrementAndGet()
+        stats.finishedTasks.incrementAndGet()
+        Parallel.stats.runningWorkers.decrementAndGet()
       }
     }
   }
@@ -265,8 +259,8 @@ object Parallel extends LogSupport {
 
     override def run: Unit = {
       trace(s"$executionId - Begin worker-$workerId")
-      Parallel.jmxStats.runningWorkers.incrementAndGet()
-      jmxStats.startedTasks.incrementAndGet()
+      Parallel.stats.runningWorkers.incrementAndGet()
+      stats.startedTasks.incrementAndGet()
       try {
         val (m, i) = message.get()
         resultArray(i) = f(m)
@@ -277,8 +271,8 @@ object Parallel extends LogSupport {
       } finally {
         requestQueue.put(this)
         trace(s"$executionId - End worker-$workerId")
-        jmxStats.finishedTasks.incrementAndGet()
-        Parallel.jmxStats.runningWorkers.decrementAndGet()
+        stats.finishedTasks.incrementAndGet()
+        Parallel.stats.runningWorkers.decrementAndGet()
       }
     }
   }
