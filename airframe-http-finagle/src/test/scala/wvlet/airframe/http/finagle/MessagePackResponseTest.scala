@@ -13,10 +13,10 @@
  */
 package wvlet.airframe.http.finagle
 import com.twitter.finagle.http
-import com.twitter.util.Await
+import com.twitter.finagle.http.Method
+import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.control.Control.withResource
-import wvlet.airframe.http.{Endpoint, Router}
+import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
 import wvlet.airspec.AirSpec
 
 case class SampleResponse(id: Int, name: String)
@@ -26,27 +26,44 @@ trait TestMessagePackApi {
   def hello: SampleResponse = {
     SampleResponse(1, "leo")
   }
+
+  @Endpoint(method = HttpMethod.DELETE, path = "/v1/resource/:id")
+  def delete(id: Int): Unit = {}
 }
 
 /**
   *
   */
 class MessagePackResponseTest extends AirSpec {
-  def `support Accept: application/x-msgpack`: Unit = {
-    newFinagleServerDesign(name = "msgpack-test-server", router = Router.of[TestMessagePackApi]).build[FinagleServer] {
-      server =>
-        withResource(Finagle.newClient(server.localAddress)) { client =>
-          val req = http.Request("/v1/hello")
-          req.accept = "application/x-msgpack"
-          val msgpack = Await.result(client.send(req).map { x =>
-            val c = x.content
-            val b = new Array[Byte](c.length)
-            c.write(b, 0)
-            b
-          })
 
-          MessageCodec.of[SampleResponse].unpackMsgPack(msgpack) shouldBe Some(SampleResponse(1, "leo"))
-        }
-    }
+  val router = Router.of[TestMessagePackApi]
+
+  override protected def design: Design =
+    Finagle.server.withRouter(router).design +
+      Finagle.client.syncClientDesign
+
+  def `support Accept: application/x-msgpack`(client: FinagleSyncClient): Unit = {
+    val req = http.Request("/v1/hello")
+    req.accept = "application/x-msgpack"
+    val resp    = client.send(req)
+    val c       = resp.content
+    val msgpack = new Array[Byte](c.length)
+    c.write(msgpack, 0)
+
+    val decoded = MessageCodec.of[SampleResponse].fromMsgPack(msgpack)
+    info(decoded)
+    decoded shouldBe SampleResponse(1, "leo")
+  }
+
+  def `DELETE response should have no content body`(client: FinagleSyncClient): Unit = {
+    val req = http.Request("/v1/resource/100")
+    req.method = Method.Delete
+    req.contentType = "application/x-msgpack"
+    req.accept = "application/x-msgpack"
+
+    val resp = client.send(req)
+    val c    = resp.content
+    resp.status.code shouldBe 204
+    c.length shouldBe 0
   }
 }

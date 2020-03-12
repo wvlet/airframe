@@ -120,8 +120,12 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
         val r = newResponse(request, responseSurface)
         r.contentString = s
         r
+      case null =>
+        // Empty response
+        val r = newResponse(request, responseSurface)
+        r
       case _ =>
-        // To return large responses with streams, the interface should return Redaer[X] response
+        // To return large responses with streams, the interface should return Reader[X] response
 
         // Convert the response object into JSON
         val rs = mapCodecFactory.of(responseSurface)
