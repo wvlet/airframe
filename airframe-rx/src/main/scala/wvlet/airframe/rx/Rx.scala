@@ -26,10 +26,7 @@ trait Rx[A] extends LogSupport {
   def map[B](f: A => B): Rx[B]         = MapOp[A, B](this, f)
   def flatMap[B](f: A => Rx[B]): Rx[B] = FlatMapOp(this, f)
 
-  def withName(name: String): Rx[A] = this match {
-    case NamedOp(p, oldName) => NamedOp(p, name)
-    case _                   => NamedOp(this, name)
-  }
+  def withName(name: String): Rx[A] = NamedOp(this, name)
 
   def parents: Seq[Rx[_]]
 
@@ -69,15 +66,20 @@ object Rx extends LogSupport {
       case MapOp(in, f) =>
         run(in)(x => effect(f.asInstanceOf[Any => A](x)))
       case FlatMapOp(in, f) =>
+        // This var is a placeholder to remember the preceding Cancelable operator, which will be updated later
         var c1 = Cancelable.empty
         val c2 = run(in) { x =>
-          val rxb = f.asInstanceOf[Any => Rx[A]](in)
+          val rxb = f.asInstanceOf[Any => Rx[A]](x)
+          // This code is necessary to properly cancel the effect if this operator is evaluated before
           c1.cancel
           c1 = run(rxb)(effect)
         }
         Cancelable { () => c1.cancel; c2.cancel }
       case NamedOp(input, name) =>
         run(input)(effect)
+      case SingleOp(v) =>
+        effect(v)
+        Cancelable.empty
       case v @ RxVar(currentValue) =>
         v.foreach(effect)
     }

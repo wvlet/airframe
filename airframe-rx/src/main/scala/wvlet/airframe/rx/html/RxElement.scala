@@ -59,7 +59,7 @@ object RxElement {
 }
 
 case class LazyRxElement[A: EmbeddableNode](v: () => A) extends RxElement() with LogSupport {
-  def render: RxElement = Embedded(v())
+  override def render: RxElement = Embedded(v())
 }
 
 case class HtmlElement(
