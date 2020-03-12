@@ -47,9 +47,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   case object ScalaJSClient extends ClientType
 
   trait AirframeHttpKeys {
-    val airframeHttpPackages                  = settingKey[Seq[String]]("A list of package names containing Airframe HTTP interfaces")
-    val airframeHttpTargetPackage             = settingKey[String]("Generate target package name for the generated code")
-    val airframeHttpClientType                = settingKey[ClientType]("Client type to generate")
+    val airframeHttpClientMappings            = settingKey[Seq[HttpClientGeneratorConfig]]("HTTP client generator settings")
     val airframeHttpGenerateClient            = taskKey[Seq[File]]("Generate the client code")
     private[http] val airframeHttpRouter      = taskKey[Router]("Airframe Router")
     private[http] val airframeHttpClassLoader = taskKey[URLClassLoader]("class loader for dependent classes")
@@ -60,8 +58,6 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
 
   def httpProjectSettings =
     Seq(
-      airframeHttpPackages := Seq(),
-      airframeHttpTargetPackage := "generated",
       airframeHttpClassLoader := {
         // Compile all dependent projects
         (compile in Compile).all(dependentProjects).value
@@ -77,7 +73,6 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         info(router)
         router
       },
-      airframeHttpClientType := AsyncClient,
       airframeHttpGenerateClient := {
         val router = airframeHttpRouter.value
         val config = HttpClientGeneratorConfig(packageName = airframeHttpTargetPackage.value)

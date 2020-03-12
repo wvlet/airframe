@@ -116,7 +116,7 @@ object HttpClientIR extends LogSupport {
     }
 
     ClientSourceDef(
-      packageName = config.packageName,
+      packageName = config.targetPackageName.getOrElse(config.apiPackageName),
       classDef = buildClassDef
     )
   }
