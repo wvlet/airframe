@@ -51,7 +51,7 @@ class MessagePackResponseTest extends AirSpec {
     c.write(msgpack, 0)
 
     val decoded = MessageCodec.of[SampleResponse].fromMsgPack(msgpack)
-    info(decoded)
+    debug(decoded)
     decoded shouldBe SampleResponse(1, "leo")
   }
 
