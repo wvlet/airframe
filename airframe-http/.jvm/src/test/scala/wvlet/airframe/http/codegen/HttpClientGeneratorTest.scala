@@ -41,8 +41,8 @@ class HttpClientGeneratorTest extends AirSpec {
       router,
       HttpClientGeneratorConfig("example.api:async:example.api.client")
     )
-    info(code)
     code.contains("package example.api.client") shouldBe true
+    code.contains("class ServiceClient[F[_], Req, Resp]")
   }
 
   test("generate sync client") {
@@ -50,8 +50,8 @@ class HttpClientGeneratorTest extends AirSpec {
       router,
       HttpClientGeneratorConfig("example.api:sync")
     )
-    info(code)
     code.contains("package example.api") shouldBe true
+    code.contains("class ServiceSyncClient[Req, Resp]")
   }
 
   test("generate Scala.js client") {
@@ -59,8 +59,8 @@ class HttpClientGeneratorTest extends AirSpec {
       router,
       HttpClientGeneratorConfig("example.api:scalajs:example.api.client.js")
     )
-    info(code)
     code.contains("package example.api.client.js") shouldBe true
+    code.contains("object ServiceJSClient")
   }
 
   test("scan classes") {

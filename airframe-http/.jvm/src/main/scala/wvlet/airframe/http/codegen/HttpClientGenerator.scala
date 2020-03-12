@@ -66,6 +66,7 @@ object HttpClientGenerator extends LogSupport {
       router: Router,
       config: HttpClientGeneratorConfig
   ): String = {
+
     val ir   = HttpClientIR.buildIR(router, config)
     val code = config.clientType.generate(ir)
     debug(code)

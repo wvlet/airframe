@@ -17,9 +17,7 @@ import java.net.URLClassLoader
 
 import sbt.Keys._
 import sbt._
-import wvlet.airframe.http.codegen._
-import wvlet.airframe.http.Router
-import wvlet.airframe.http.codegen.HttpClientGeneratorConfig
+import wvlet.airframe.http.codegen.{HttpClientGeneratorConfig, _}
 import wvlet.log.LogSupport
 
 /**
@@ -33,7 +31,7 @@ import wvlet.log.LogSupport
 object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   wvlet.airframe.log.init
 
-  object autoImport extends AirframeHttpKeys
+  object autoImport extends Keys
   import autoImport._
 
   override def requires: Plugins = plugins.JvmPlugin
@@ -41,13 +39,10 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
 
   override def projectSettings = httpProjectSettings
 
-  sealed trait ClientType
-  case object AsyncClient   extends ClientType
-  case object SyncClient    extends ClientType
-  case object ScalaJSClient extends ClientType
-
-  trait AirframeHttpKeys {
-    val airframeHttpClientMappings            = settingKey[Seq[HttpClientGeneratorConfig]]("HTTP client generator settings")
+  trait Keys {
+    val airframeHttpClients = settingKey[Seq[String]](
+      "HTTP client generator targets, <api package name>(:<client type>(:<target package name>)?)?"
+    )
     val airframeHttpGenerateClient            = taskKey[Seq[File]]("Generate the client code")
     private[http] val airframeHttpClassLoader = taskKey[URLClassLoader]("class loader for dependent classes")
   }
@@ -57,6 +52,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
 
   def httpProjectSettings =
     Seq(
+      airframeHttpClients := Seq.empty,
       airframeHttpClassLoader := {
         // Compile all dependent projects
         (compile in Compile).all(dependentProjects).value
@@ -68,20 +64,22 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         cl
       },
       airframeHttpGenerateClient := {
+        val cl = airframeHttpClassLoader.value
+        val generatedFiles = for (target <- airframeHttpClients.value) yield {
+          val config = HttpClientGeneratorConfig(target)
+          val router = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
 
-        val router = RouteScanner.buildRouter(airframeHttpPackages.value, airframeHttpClassLoader.value)
-        val config = HttpClientGeneratorConfig(packageName = airframeHttpTargetPackage.value)
+          val path            = config.targetPackageName.replaceAll("\\.", "/")
+          val file: File      = (Compile / sourceManaged).value / path / s"${config.className}.scala"
+          val baseDir         = (ThisBuild / baseDirectory).value
+          val relativeFileLoc = file.relativeTo(baseDir).getOrElse(file)
 
-        val path            = config.packageName.replaceAll("\\.", "/")
-        val file: File      = (Compile / sourceManaged).value / path / s"${config.className}.scala"
-        val baseDir         = (ThisBuild / baseDirectory).value
-        val relativeFileLoc = file.relativeTo(baseDir).getOrElse(file)
-
-        val clientType = airframeHttpClientType.value
-        info(s"Generating http client code for ${clientType}: ${relativeFileLoc}")
-        val code = HttpClientGenerator.generate(router, clientType.toString, config)
-        IO.write(file, code)
-        Seq(file)
+          info(s"Generating http client code for ${config.clientType.toString}: ${relativeFileLoc}")
+          val code = HttpClientGenerator.generate(router, config)
+          IO.write(file, code)
+          file
+        }
+        generatedFiles
       },
       Compile / sourceGenerators += Def.task {
         airframeHttpGenerateClient.value

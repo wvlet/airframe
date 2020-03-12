@@ -17,8 +17,7 @@ lazy val client =
     .in(file("client"))
     .enablePlugins(AirframeHttpPlugin)
     .settings(
-      airframeHttpPackages ++= Seq("myapp.spi"),
-      airframeHttpClientType := AirframeHttpPlugin.ScalaJSClient
+      airframeHttpClients := Seq("myapp.spi:scalajs")
     )
     .jsSettings(
       libraryDependencies ++= Seq(

@@ -21,12 +21,17 @@ object MyServer extends LogSupport {
         .bind[MyService].to[MyServer]
 
     d.build[FinagleClient] { finagleClient =>
-      val client = new generated.ServiceClient(finagleClient)
+      val client = new myapp.spi.ServiceClient(finagleClient)
       val future = client.myService.hello(100).map { v =>
         logger.info(v)
         assert(v == "hello 100")
       }
       Await.result(future)
+
+      val syncClient = new myapp.spi.ServiceSyncClient(finagleClient.syncClient)
+      val ret        = syncClient.myService.hello(101)
+      info(ret)
+      assert(ret == "hello 101")
     }
   }
 }
