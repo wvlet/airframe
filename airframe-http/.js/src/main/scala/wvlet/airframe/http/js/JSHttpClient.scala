@@ -14,13 +14,12 @@
 package wvlet.airframe.http.js
 import java.nio.ByteBuffer
 
-import org.scalajs.dom.XMLHttpRequest
+import org.scalajs.dom.{XMLHttpRequest, window}
 import org.scalajs.dom.ext.Ajax
 import org.scalajs.dom.ext.Ajax.InputData
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.airframe.surface.Surface
-import wvlet.log.LogSupport
 
 import scala.concurrent.Future
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
@@ -28,8 +27,8 @@ import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 /**
   * HttpClient utilities for Scala.js
   */
-object HttpClient extends LogSupport {
-  // Import a queue for callling AJAX call immediately
+object JSHttpClient {
+
   import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
   def send[Response](
@@ -39,10 +38,15 @@ object HttpClient extends LogSupport {
       responseCodec: MessageCodec[Response],
       headers: Map[String, String] = Map.empty
   ): Future[Response] = {
+    val protocol = window.location.protocol
+    val hostname = window.location.hostname
+    val port     = window.location.port
+    val fullUrl  = s"${protocol}//${hostname}${if (port.isEmpty) "" else ":" + port}${path}"
+
     val future =
       Ajax(
         method = method,
-        url = path,
+        url = fullUrl,
         data = data,
         headers = Map(
           // Use MessagePack RPC

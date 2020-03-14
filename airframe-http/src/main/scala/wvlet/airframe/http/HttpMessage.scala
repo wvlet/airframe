@@ -11,25 +11,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.js
-import wvlet.airframe.surface.Surface
-import wvlet.airspec.AirSpec
+package wvlet.airframe.http
 
 /**
-  *
+  * Http request/response data type definitions
   */
-object HttpClientTest extends AirSpec {
+object HttpMessage {
 
-  implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
-  case class Person(id: Int, name: String)
-
-  test("create http client") {
-    ignore("ignore server interaction tests")
-    val s = Surface.of[Person]
-    JSHttpClient.getOps[Person, Person]("/v1/info", Person(1, "leo"), s, s).recover {
-      case e: Throwable =>
-        logger.warn(e)
-        1
+  case class Request(
+      method: HttpMethod = HttpMethod.GET,
+      uri: String = "/",
+      header: HttpHeader = HttpHeader.empty
+  ) {
+    def path: String = {
+      val u = uri
+      u.indexOf("?") match {
+        case -1  => u
+        case pos => u.substring(0, pos)
+      }
     }
+
+    def withMethod(method: HttpMethod): Request = {
+      this.copy(method = method)
+    }
+
   }
+
+  object Request {
+    val empty: Request = Request()
+  }
+
 }
