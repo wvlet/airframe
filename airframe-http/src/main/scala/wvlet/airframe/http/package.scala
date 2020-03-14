@@ -16,7 +16,4 @@ package wvlet.airframe
 /**
   *
   */
-package object http {
-
-  def request: HttpMessage.Request =
-}
+package object http {}

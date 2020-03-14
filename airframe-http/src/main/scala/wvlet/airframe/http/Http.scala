@@ -13,6 +13,11 @@
  */
 package wvlet.airframe.http
 
+object Http {
+  def request(uri: String): HttpMessage.Request = HttpMessage.Request.empty.withUri(uri)
+  def request(method: HttpMethod, uri: String)  = HttpMessage.Request.empty.withMethod(method).withUri(uri)
+}
+
 /**
   * Type class to bridge the original requests
   *
