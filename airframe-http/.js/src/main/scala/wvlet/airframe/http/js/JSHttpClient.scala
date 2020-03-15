@@ -23,6 +23,7 @@ import wvlet.airframe.control.{ResultClass, Retry}
 import wvlet.airframe.http.HttpClient.defaultBeforeRetryAction
 import wvlet.airframe.http.HttpMessage._
 import wvlet.airframe.http._
+import wvlet.airframe.http.js.JSHttpClient.{MessageEncoding, MessagePackEncoding}
 import wvlet.airframe.surface.Surface
 
 import scala.concurrent.{Future, Promise}
@@ -30,6 +31,11 @@ import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 import scala.util.{Failure, Success}
 
 object JSHttpClient {
+
+  sealed trait MessageEncoding
+  object MessagePackEncoding extends MessageEncoding
+  object JsonEncoding        extends MessageEncoding
+
   val defaultClient = {
     val protocol = window.location.protocol
     val hostname = window.location.hostname
@@ -47,7 +53,10 @@ object JSHttpClient {
   }
 }
 
+import JSHttpClient._
+
 case class JSHttpClientConfig(
+    requestEncoding: MessageEncoding = MessagePackEncoding,
     requestFilter: Request => Request = identity,
     retryContext: RetryContext = JSHttpClient.defaultHttpClientRetrier
 ) {
@@ -78,6 +87,7 @@ case class JSHttpClient(address: ServerAddress, config: JSHttpClientConfig = JSH
     xhr.responseType = "arraybuffer"
     xhr.timeout = 0
     xhr.withCredentials = false
+    // Setting the header must be called after xhr.open(...)
     request.header.entries.foreach { x => xhr.setRequestHeader(x.key, x.value) }
 
     val promise           = Promise[Response]()
@@ -95,10 +105,14 @@ case class JSHttpClient(address: ServerAddress, config: JSHttpClientConfig = JSH
         retryContext.resultClassifier(resp) match {
           case ResultClass.Succeeded =>
             //if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304)
+            // If the request succeeds, set the content bytes to the response
             val arrayBuffer = xhr.response.asInstanceOf[ArrayBuffer]
             val dst         = new Array[Byte](arrayBuffer.byteLength)
             TypedArrayBuffer.wrap(arrayBuffer).get(dst, 0, arrayBuffer.byteLength)
-            promise.success(resp.withContent(dst))
+
+            // Set response headers of our interests
+            val contentType = xhr.getResponseHeader("Content-Type")
+            promise.success(resp.withContentType(contentType).withContent(dst))
           case ResultClass.Failed(isRetryable, cause, extraWait) =>
             if (!retryContext.canContinue) {
               promise.failure(HttpClientMaxRetryException(resp, retryContext, cause))
@@ -118,6 +132,10 @@ case class JSHttpClient(address: ServerAddress, config: JSHttpClientConfig = JSH
     future
   }
 
+  def sendRaw(request: Request, requestFilter: Request => Request = identity): Future[Response] = {
+    dispatch(config.retryContext, requestFilter(config.requestFilter(request)))
+  }
+
   def send[OperationResponse](
       originalRequest: Request,
       operationResponseSurface: Surface,
@@ -132,8 +150,26 @@ case class JSHttpClient(address: ServerAddress, config: JSHttpClientConfig = JSH
         case _ =>
           val responseCodec =
             MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
-          responseCodec.fromMsgPack(resp.contentBytes)
+
+          // Read the response body as MessagePack or JSON
+          resp.contentType match {
+            case Some("application/x-msgpack") =>
+              responseCodec.fromMsgPack(resp.contentBytes)
+            case _ =>
+              responseCodec.fromJson(resp.contentString)
+          }
       }
+    }
+  }
+
+  private def prepareRequest[Resource](request: Request, resource: Resource, resourceSurface: Surface): Request = {
+    val resourceCodec = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
+    // Support MsgPack or JSON RPC
+    config.requestEncoding match {
+      case MessagePackEncoding =>
+        request.withContentTypeMsgPack.withAcceptMsgPack.withContent(resourceCodec.toMsgPack(resource))
+      case JsonEncoding =>
+        request.withContentTypeJson.withContent(resourceCodec.toJson(resource))
     }
   }
 
@@ -143,9 +179,7 @@ case class JSHttpClient(address: ServerAddress, config: JSHttpClientConfig = JSH
       resourceSurface: Surface,
       requestFilter: Request => Request
   ): Future[Resource] = {
-    val resourceCodec   = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceMsgpack = resourceCodec.toMsgPack(resource)
-    send(request.withContent(resourceMsgpack), resourceSurface, requestFilter)
+    send(prepareRequest(request, resource, resourceSurface), resourceSurface, requestFilter)
   }
 
   def sendResourceOps[Resource, OperationResponse](
@@ -155,9 +189,7 @@ case class JSHttpClient(address: ServerAddress, config: JSHttpClientConfig = JSH
       operationResponseSurface: Surface,
       requestFilter: Request => Request
   ): Future[OperationResponse] = {
-    val resourceCodec   = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceMsgpack = resourceCodec.toMsgPack(resource)
-    send(request.withContent(resourceMsgpack), operationResponseSurface, requestFilter = requestFilter)
+    send(prepareRequest(request, resource, resourceSurface), operationResponseSurface, requestFilter = requestFilter)
   }
 
   def get[Resource](
