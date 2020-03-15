@@ -158,12 +158,15 @@ object ScalaJSClient extends HttpClientType {
          |import scala.concurrent.Future
          |import wvlet.airframe.surface.Surface
          |import wvlet.airframe.http.js.JSHttpClient
+         |import wvlet.airframe.http.HttpMessage.Request
          |${src.imports.map(x => s"import ${x.rawType.getName}").mkString("\n")}
          |
          |${cls}""".stripMargin
 
     def cls: String =
-      s"""object ${src.classDef.clsName} {
+      s"""class ${src.classDef.clsName}(private val client: JSHttpClient = JSHttpClient.defaultClient) {
+         |  def getClient: JSHttpClient = client
+         |
          |${indent(clsBody)}
          |}
          |""".stripMargin
@@ -185,17 +188,17 @@ object ScalaJSClient extends HttpClientType {
 
           val inputArgs = {
             m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++
-              Seq("headers: Map[String, String] = Map.empty")
+              Seq("requestFilter: Request => Request = identity")
           }
 
           val sendRequestArgs = Seq.newBuilder[String]
-          sendRequestArgs += s"""path = s"${m.path}""""
+          sendRequestArgs += s"""resourcePath = s"${m.path}""""
           sendRequestArgs ++= m.clientCallParameters.map(x => s"${x.name}")
           sendRequestArgs ++= m.typeArgs.map(s => s"Surface.of[${s.name}]")
-          sendRequestArgs += "headers = headers"
+          sendRequestArgs += "requestFilter = requestFilter"
 
           s"""def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType.name}] = {
-             |  JSHttpClient.${httpClientMethodName}[${m.typeArgs.map(_.name).mkString(", ")}](${sendRequestArgs.result
+             |  client.${httpClientMethodName}[${m.typeArgs.map(_.name).mkString(", ")}](${sendRequestArgs.result
                .mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")

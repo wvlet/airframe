@@ -15,17 +15,20 @@ package wvlet.airframe.http.js
 import java.nio.ByteBuffer
 
 import org.scalajs.dom
-import org.scalajs.dom.{XMLHttpRequest, window}
-import org.scalajs.dom.ext.{Ajax, AjaxException}
 import org.scalajs.dom.ext.Ajax.InputData
+import org.scalajs.dom.ext.AjaxException
+import org.scalajs.dom.{XMLHttpRequest, window}
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http.{Http, HttpClient, HttpMethod}
 import wvlet.airframe.http.HttpMessage.Request
-import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
+import wvlet.airframe.http.{Http, HttpClient, HttpMessage, HttpMethod, HttpStatus}
 import wvlet.airframe.surface.Surface
 
 import scala.concurrent.{Future, Promise}
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
+
+object JSHttpClient {
+  val defaultClient = new JSHttpClient()
+}
 
 /**
   * HttpClient utilities for Scala.js
@@ -33,11 +36,13 @@ import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 class JSHttpClient {
   import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
-  def send[Response](
-      request: Request,
-      responseCodec: MessageCodec[Response],
+  def send[OperationResponse](
+      originalRequest: Request,
+      operationResponseSurface: Surface,
       requestFilter: Request => Request = identity
-  ): Future[Response] = {
+  ): Future[OperationResponse] = {
+
+    val request = requestFilter(originalRequest)
 
     val protocol = window.location.protocol
     val hostname = window.location.hostname
@@ -47,6 +52,7 @@ class JSHttpClient {
     val xhr     = new dom.XMLHttpRequest()
     val promise = Promise[dom.XMLHttpRequest]()
 
+    // TODO Use our custom retry logic like FinagleClient
     xhr.onreadystatechange = { (e: dom.Event) =>
       if (xhr.readyState == 4) {
         if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304)
@@ -73,7 +79,17 @@ class JSHttpClient {
       val arrayBuffer = xhr.response.asInstanceOf[ArrayBuffer]
       val dst         = new Array[Byte](arrayBuffer.byteLength)
       TypedArrayBuffer.wrap(arrayBuffer).get(dst, 0, arrayBuffer.byteLength)
-      responseCodec.fromMsgPack(dst)
+
+      operationResponseSurface.rawType match {
+        case c if c == classOf[HttpMessage.Response] =>
+          Http
+            .response(HttpStatus.ofCode(xhr.status))
+            .withContent(dst).asInstanceOf[OperationResponse]
+        case _ =>
+          val responseCodec =
+            MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
+          responseCodec.fromMsgPack(dst)
+      }
     }
   }
 
@@ -85,7 +101,7 @@ class JSHttpClient {
   ): Future[Resource] = {
     val resourceCodec   = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
     val resourceMsgpack = resourceCodec.toMsgPack(resource)
-    send(request.withContent(resourceMsgpack), resourceCodec, requestFilter)
+    send(request.withContent(resourceMsgpack), resourceSurface, requestFilter)
   }
 
   def sendResourceOps[Resource, OperationResponse](
@@ -97,33 +113,29 @@ class JSHttpClient {
   ): Future[OperationResponse] = {
     val resourceCodec   = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
     val resourceMsgpack = resourceCodec.toMsgPack(resource)
-    val operationResponseCodec =
-      MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
-    send(request.withContent(resourceMsgpack), responseCodec = operationResponseCodec, requestFilter = requestFilter)
+    send(request.withContent(resourceMsgpack), operationResponseSurface, requestFilter = requestFilter)
   }
 
   def get[Resource](
-      requestPath: String,
+      resourcePath: String,
       resourceSurface: Surface,
       requestFilter: Request => Request = identity
   ): Future[Resource] = {
     val resourceCodec = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    send(Http.request(HttpMethod.GET, requestPath), responseCodec = resourceCodec, requestFilter = requestFilter)
+    send(Http.request(HttpMethod.GET, resourcePath), resourceSurface, requestFilter = requestFilter)
   }
 
   def getOps[Resource, OperationResponse](
-      requestPath: String,
+      resourcePath: String,
       resource: Resource,
       resourceSurface: Surface,
       operationResponseSurface: Surface,
       requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
-    val path = HttpClient.buildResourceUri(requestPath, resource, resourceSurface)
-    val operationResponseCodec =
-      MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
+    val path = HttpClient.buildResourceUri(resourcePath, resource, resourceSurface)
     send(
       Http.request(HttpMethod.GET, path),
-      responseCodec = operationResponseCodec,
+      operationResponseSurface,
       requestFilter = requestFilter
     )
   }
