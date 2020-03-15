@@ -51,7 +51,7 @@ object HttpClientIR extends LogSupport {
   case class ClientClassDef(clsName: String, services: Seq[ClientServiceDef])     extends ClientCodeIR
   case class ClientServiceDef(serviceName: String, methods: Seq[ClientMethodDef]) extends ClientCodeIR
   case class ClientMethodDef(
-      httpMethod: HttpMethod,
+      httpMethod: String,
       isOpsRequest: Boolean,
       name: String,
       typeArgs: Seq[Surface],

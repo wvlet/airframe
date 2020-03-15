@@ -47,7 +47,7 @@ object RouteMatcher extends LogSupport {
     * A set of RouteMatchers for different HTTP method types
     */
   class RouteMatcherByHttpMethodTypes(routes: Seq[Route]) extends RouteMatcher {
-    private val routesByMethod: Map[HttpMethod, RouteMatcher] = {
+    private val routesByMethod: Map[String, RouteMatcher] = {
       for ((method, lst) <- routes.groupBy(_.method)) yield {
         method -> new FastRouteMatcher(method, lst)
       }
@@ -61,7 +61,7 @@ object RouteMatcher extends LogSupport {
   /**
     * DFA-based RouterMatcher
     */
-  class FastRouteMatcher(targetMethod: HttpMethod, routes: Seq[Route]) extends RouteMatcher with LogSupport {
+  class FastRouteMatcher(targetMethod: String, routes: Seq[Route]) extends RouteMatcher with LogSupport {
     private val dfa = buildPathDFA(routes)
     trace(s"DFA for ${routes.size} ${targetMethod} requests:\n${dfa}")
 

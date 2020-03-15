@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.js
+import wvlet.airframe.http.Http
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
@@ -26,10 +27,14 @@ object HttpClientTest extends AirSpec {
   test("create http client") {
     ignore("ignore server interaction tests")
     val s = Surface.of[Person]
-    HttpClient.getOps[Person, Person]("/v1/info", Person(1, "leo"), s, s).recover {
+    JSHttpClient.getOps[Person, Person]("/v1/info", Person(1, "leo"), s, s).recover {
       case e: Throwable =>
         logger.warn(e)
         1
     }
+  }
+
+  test("request") {
+    val req = Http.request("/v1/info")
   }
 }

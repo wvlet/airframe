@@ -11,16 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package wvlet.airframe.http
+import wvlet.airspec.AirSpec
 
-package wvlet.airframe.http;
+/**
+  *
+  */
+object EndpointTest extends AirSpec {
 
-public enum HttpMethod {
-    GET,
-    POST,
-    DELETE,
-    PUT,
-    PATCH,
-    OPTIONS,
-    TRACE,
-    HEAD;
+  class MyApp {
+    @Endpoint(method = HttpMethod.GET, path = "/v1/info")
+    def hello: String = {
+      "hello"
+    }
+  }
+
+  test("test endpoint compilation") {
+    // Only need to check HTTP interface can be compiled both in JVM and Scala.js
+  }
 }

@@ -164,7 +164,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   /**
     * Create a new Request
     */
-  protected def newRequest(method: HttpMethod, path: String): Request = {
+  protected def newRequest(method: String, path: String): Request = {
     Request(toFinagleHttpMethod(method), path)
   }
 

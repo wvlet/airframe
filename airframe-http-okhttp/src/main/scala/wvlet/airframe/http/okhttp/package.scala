@@ -15,15 +15,21 @@ package object okhttp {
   }
 
   implicit object OkHttpRequestAdapter extends HttpRequestAdapter[Request] {
-    override def methodOf(request: Request): HttpMethod = toHttpMethod(request.method())
-    override def pathOf(request: Request): String       = request.url().encodedPath()
-    override def headerOf(request: Request): Map[String, String] = {
-      request.headers().toMultimap.asScala.toMap.map { case (k, v) => k -> v.get(0) }
+    override def methodOf(request: Request): String = toHttpMethod(request.method())
+    override def pathOf(request: Request): String   = request.url().encodedPath()
+    override def headerOf(request: Request): HttpMultiMap = {
+      val m = HttpMultiMap.newBuilder
+      for ((k, lst) <- request.headers().toMultimap.asScala; v <- lst.asScala) {
+        m += k -> v
+      }
+      m.result()
     }
-    override def queryOf(request: Request): Map[String, String] = {
+    override def queryOf(request: Request): HttpMultiMap = {
+      val m = HttpMultiMap.newBuilder
       (0 until request.url().querySize()).map { i =>
-        request.url().queryParameterName(i) -> request.url().queryParameterValue(i)
-      }.toMap
+        m += request.url().queryParameterName(i) -> request.url().queryParameterValue(i)
+      }
+      m.result()
     }
     override def contentStringOf(request: Request): String = {
       val sink: BufferedSink = new Buffer()
@@ -53,7 +59,7 @@ package object okhttp {
     override def httpResponseOf(resp: Response): HttpResponse[Response] = OkHttpResponse(resp)
   }
 
-  private[okhttp] def toHttpMethod(method: String): HttpMethod = method match {
+  private[okhttp] def toHttpMethod(method: String): String = method match {
     case "GET"     => HttpMethod.GET
     case "POST"    => HttpMethod.POST
     case "PUT"     => HttpMethod.PUT

@@ -50,7 +50,6 @@ trait ResourceApi {
 case class Query(id: String, sql: String)
 case class CreateQueryRequest(request_id: String = UUID.randomUUID().toString, sql: String)
 case class QueryResultResponse(id: String, nextToken: String)
-
 trait QueryApi {
   @Endpoint(method = HttpMethod.GET, path = "/v1/query")
   def listQueries: Seq[Query]

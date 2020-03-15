@@ -13,10 +13,18 @@
  */
 package wvlet.airframe.http
 
-import java.nio.charset.StandardCharsets
+object Http {
 
-import wvlet.airframe.http.SimpleHttpRequest.SimpleHttpRequestAdapter
-import wvlet.airframe.http.SimpleHttpResponse.SimpleHttpResponseAdapter
+  def request(method: String, uri: String)      = HttpMessage.Request.empty.withMethod(method).withUri(uri)
+  def request(uri: String): HttpMessage.Request = request(HttpMethod.GET, uri)
+  def GET(uri: String)                          = request(HttpMethod.GET, uri)
+  def POST(uri: String)                         = request(HttpMethod.POST, uri)
+  def DELETE(uri: String)                       = request(HttpMethod.DELETE, uri)
+  def PUT(uri: String)                          = request(HttpMethod.PUT, uri)
+  def PATCH(uri: String)                        = request(HttpMethod.PATCH, uri)
+
+  def response(status: HttpStatus = HttpStatus.Ok_200) = HttpMessage.Response.empty.withStatus(status)
+}
 
 /**
   * Type class to bridge the original requests
@@ -26,10 +34,10 @@ import wvlet.airframe.http.SimpleHttpResponse.SimpleHttpResponseAdapter
 trait HttpRequestAdapter[Req] {
   def requestType: Class[Req]
 
-  def methodOf(request: Req): HttpMethod
+  def methodOf(request: Req): String
   def pathOf(request: Req): String
-  def queryOf(request: Req): Map[String, String]
-  def headerOf(request: Req): Map[String, String]
+  def queryOf(request: Req): HttpMultiMap
+  def headerOf(request: Req): HttpMultiMap
   def contentStringOf(request: Req): String
   def contentBytesOf(request: Req): Array[Byte]
   def contentTypeOf(request: Req): Option[String]
@@ -42,12 +50,12 @@ trait HttpRequestAdapter[Req] {
 trait HttpRequest[Req] {
   protected def adapter: HttpRequestAdapter[Req]
 
-  def method: HttpMethod         = adapter.methodOf(toRaw)
-  def path: String               = adapter.pathOf(toRaw)
-  def query: Map[String, String] = adapter.queryOf(toRaw)
-  // TODO Use multi-map
-  def header: Map[String, String]        = adapter.headerOf(toRaw)
-  def contentString: String              = adapter.contentStringOf(toRaw)
+  def method: String        = adapter.methodOf(toRaw)
+  def path: String          = adapter.pathOf(toRaw)
+  def query: HttpMultiMap   = adapter.queryOf(toRaw)
+  def header: HttpMultiMap  = adapter.headerOf(toRaw)
+  def contentString: String = adapter.contentStringOf(toRaw)
+  // TODO Support streams
   def contentBytes: Array[Byte]          = adapter.contentBytesOf(toRaw)
   def contentType: Option[String]        = adapter.contentTypeOf(toRaw)
   def pathComponents: IndexedSeq[String] = adapter.pathComponentsOf(toRaw)
@@ -56,7 +64,7 @@ trait HttpRequest[Req] {
 }
 
 /**
-  * Type class to bridge the original response type and HttpResponse
+  * A type class to bridge the original response type and HttpResponse
   *
   * @tparam Resp
   */
@@ -80,76 +88,4 @@ trait HttpResponse[Resp] {
 
   def toHttpResponse: HttpResponse[Resp] = adapter.httpResponseOf(toRaw)
   def toRaw: Resp
-}
-
-case class SimpleHttpRequest(
-    override val method: HttpMethod,
-    override val path: String,
-    override val header: Map[String, String] = Map.empty,
-    override val query: Map[String, String] = Map.empty,
-    override val contentString: String = ""
-) extends HttpRequest[SimpleHttpRequest] {
-  override protected def adapter: HttpRequestAdapter[SimpleHttpRequest] = SimpleHttpRequestAdapter
-  override def contentBytes: Array[Byte]                                = contentString.getBytes(StandardCharsets.UTF_8)
-  override def contentType                                              = None
-  override def toRaw: SimpleHttpRequest                                 = this
-}
-
-object SimpleHttpRequest {
-  implicit object SimpleHttpRequestAdapter extends HttpRequestAdapter[SimpleHttpRequest] {
-    override def methodOf(request: SimpleHttpRequest): HttpMethod          = request.method
-    override def pathOf(request: SimpleHttpRequest): String                = request.path
-    override def queryOf(request: SimpleHttpRequest): Map[String, String]  = request.query
-    override def headerOf(request: SimpleHttpRequest): Map[String, String] = request.header
-    override def contentStringOf(request: SimpleHttpRequest): String       = request.contentString
-    override def contentBytesOf(request: SimpleHttpRequest): Array[Byte]   = request.contentBytes
-    override def contentTypeOf(request: SimpleHttpRequest): Option[String] = request.contentType
-    override def httpRequestOf(request: SimpleHttpRequest): HttpRequest[SimpleHttpRequest] = {
-      request
-    }
-    override def requestType: Class[SimpleHttpRequest] = classOf[SimpleHttpRequest]
-  }
-}
-
-case class SimpleHttpResponse(
-    override val status: HttpStatus,
-    private val contentStr: String = "",
-    private val content: Array[Byte] = Array.empty,
-    override val contentType: Option[String] = None
-) extends HttpResponse[SimpleHttpResponse] {
-
-  override def contentString: String = {
-    if (contentStr.nonEmpty) {
-      contentStr
-    } else {
-      if (content.nonEmpty) {
-        new String(content, StandardCharsets.UTF_8)
-      } else {
-        ""
-      }
-    }
-  }
-
-  def getContentBytes: Array[Byte] = {
-    if (contentStr.nonEmpty) {
-      contentStr.getBytes(StandardCharsets.UTF_8)
-    } else if (content.nonEmpty) {
-      content
-    } else {
-      Array.emptyByteArray
-    }
-  }
-
-  override protected def adapter: HttpResponseAdapter[SimpleHttpResponse] = SimpleHttpResponseAdapter
-  override def toRaw: SimpleHttpResponse                                  = this
-}
-
-object SimpleHttpResponse {
-  implicit object SimpleHttpResponseAdapter extends HttpResponseAdapter[SimpleHttpResponse] {
-    override def statusCodeOf(resp: SimpleHttpResponse): Int                                = resp.status.code
-    override def contentStringOf(resp: SimpleHttpResponse): String                          = resp.contentString
-    override def contentBytesOf(resp: SimpleHttpResponse): Array[Byte]                      = resp.getContentBytes
-    override def contentTypeOf(resp: SimpleHttpResponse): Option[String]                    = resp.contentType
-    override def httpResponseOf(resp: SimpleHttpResponse): HttpResponse[SimpleHttpResponse] = resp
-  }
 }

@@ -15,22 +15,20 @@ package wvlet.airframe.http.router
 
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
-import wvlet.airframe.http.{HttpContext, HttpMethod, HttpRequest, HttpRequestAdapter}
+import wvlet.airframe.http.{HttpContext, HttpMethod, HttpMultiMap, HttpMultiMapCodec, HttpRequest, HttpRequestAdapter}
 import wvlet.airframe.json.JSON
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airframe.surface.{OptionSurface, Zero}
 import wvlet.log.LogSupport
-import scala.language.higherKinds
 
+import scala.language.higherKinds
 import scala.util.Try
 
 /**
   * Mapping HTTP requests to method call arguments
   */
 object HttpRequestMapper extends LogSupport {
-  private val stringMapCodec = MessageCodec.of[Map[String, String]]
-
   def buildControllerMethodArgs[Req, Resp, F[_]](
       // This instance is necessary to retrieve the default method argument values
       controller: Any,
@@ -44,8 +42,8 @@ object HttpRequestMapper extends LogSupport {
       implicit adapter: HttpRequestAdapter[Req]
   ): Seq[Any] = {
     // Collect URL query parameters and other parameters embedded inside URL.
-    val requestParams: Map[String, String] = adapter.queryOf(request) ++ params
-    lazy val queryParamMsgpack             = stringMapCodec.toMsgPack(requestParams)
+    val requestParams: HttpMultiMap = adapter.queryOf(request) ++ params
+    lazy val queryParamMsgpack      = HttpMultiMapCodec.toMsgPack(requestParams)
 
     // Build the function arguments
     val methodArgs: Seq[Any] =

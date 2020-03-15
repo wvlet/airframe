@@ -14,23 +14,67 @@
 package wvlet.airframe.http.js
 import java.nio.ByteBuffer
 
-import org.scalajs.dom.XMLHttpRequest
-import org.scalajs.dom.ext.Ajax
+import org.scalajs.dom
+import org.scalajs.dom.{XMLHttpRequest, window}
+import org.scalajs.dom.ext.{Ajax, AjaxException}
 import org.scalajs.dom.ext.Ajax.InputData
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.airframe.surface.Surface
-import wvlet.log.LogSupport
 
-import scala.concurrent.Future
+import scala.concurrent.{Future, Promise}
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 
 /**
   * HttpClient utilities for Scala.js
   */
-object HttpClient extends LogSupport {
-  // Import a queue for callling AJAX call immediately
+object JSHttpClient {
   import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+
+  def sendRaw[Response](
+      request: Request,
+      responseCodec: MessageCodec[Response],
+      requestFilter: Request => Request = identity
+  ): Future[Response] = {
+
+    val protocol = window.location.protocol
+    val hostname = window.location.hostname
+    val port     = window.location.port
+    val fullUri  = s"${protocol}//${hostname}${if (port.isEmpty) "" else ":" + port}${request.path}"
+
+    val xhr     = new dom.XMLHttpRequest()
+    val promise = Promise[dom.XMLHttpRequest]()
+
+    xhr.onreadystatechange = { (e: dom.Event) =>
+      if (xhr.readyState == 4) {
+        if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304)
+          promise.success(xhr)
+        else
+          promise.failure(AjaxException(xhr))
+      }
+    }
+    xhr.open(request.method.toString, fullUri)
+    xhr.responseType = "arraybuffer"
+    xhr.timeout = 0
+    xhr.withCredentials = false
+    request.header.entries.foreach { x => xhr.setRequestHeader(x.key, x.value) }
+    val data: Array[Byte] = request.contentBytes
+    if (data.isEmpty) {
+      xhr.send()
+    } else {
+      val input: InputData = ByteBuffer.wrap(data)
+      xhr.send(input)
+    }
+
+    val future = promise.future
+    future.map { xhr: XMLHttpRequest =>
+      val arrayBuffer = xhr.response.asInstanceOf[ArrayBuffer]
+      val dst         = new Array[Byte](arrayBuffer.byteLength)
+      TypedArrayBuffer.wrap(arrayBuffer).get(dst, 0, arrayBuffer.byteLength)
+      responseCodec.fromMsgPack(dst)
+    }
+  }
 
   def send[Response](
       method: String,
@@ -39,10 +83,15 @@ object HttpClient extends LogSupport {
       responseCodec: MessageCodec[Response],
       headers: Map[String, String] = Map.empty
   ): Future[Response] = {
+    val protocol = window.location.protocol
+    val hostname = window.location.hostname
+    val port     = window.location.port
+    val fullUrl  = s"${protocol}//${hostname}${if (port.isEmpty) "" else ":" + port}${path}"
+
     val future =
       Ajax(
         method = method,
-        url = path,
+        url = fullUrl,
         data = data,
         headers = Map(
           // Use MessagePack RPC
