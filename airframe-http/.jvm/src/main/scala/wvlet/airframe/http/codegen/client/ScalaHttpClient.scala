@@ -157,7 +157,7 @@ object ScalaJSClient extends HttpClientType {
          |
          |import scala.concurrent.Future
          |import wvlet.airframe.surface.Surface
-         |import wvlet.airframe.http.js.HttpClient
+         |import wvlet.airframe.http.js.JSHttpClient
          |${src.imports.map(x => s"import ${x.rawType.getName}").mkString("\n")}
          |
          |${cls}""".stripMargin
@@ -195,7 +195,7 @@ object ScalaJSClient extends HttpClientType {
           sendRequestArgs += "headers = headers"
 
           s"""def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType.name}] = {
-             |  HttpClient.${httpClientMethodName}[${m.typeArgs.map(_.name).mkString(", ")}](${sendRequestArgs.result
+             |  JSHttpClient.${httpClientMethodName}[${m.typeArgs.map(_.name).mkString(", ")}](${sendRequestArgs.result
                .mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")

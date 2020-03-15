@@ -56,6 +56,10 @@ case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) {
     m.toMap
   }
 
+  def entries: Seq[(String, String)] = {
+    toSeq.map(x => x.key -> x.value)
+  }
+
   def toSeq: Seq[HttpMultiMapEntry] = {
     val b = Seq.newBuilder[HttpMultiMapEntry]
     for ((k, v) <- map) {
