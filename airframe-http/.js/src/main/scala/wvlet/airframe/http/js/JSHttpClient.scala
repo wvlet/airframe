@@ -19,7 +19,7 @@ import org.scalajs.dom.{XMLHttpRequest, window}
 import org.scalajs.dom.ext.{Ajax, AjaxException}
 import org.scalajs.dom.ext.Ajax.InputData
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http.{Http, HttpMethod}
+import wvlet.airframe.http.{Http, HttpClient, HttpMethod}
 import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.airframe.surface.Surface
@@ -118,31 +118,11 @@ class JSHttpClient {
       operationResponseSurface: Surface,
       requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
-
-    import wvlet.airframe.http.compat.urlEncode
-
-    // Flatten the input Resource objects into URL query parameter as GET request usually will not receive the message body
-    val resourceCodec            = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceRequestJsonValue = resourceCodec.toJSONObject(resource)
-    val queryParams: Seq[String] =
-      resourceRequestJsonValue.v.map {
-        case (k, j @ JSONArray(_)) =>
-          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON array value
-        case (k, j @ JSONObject(_)) =>
-          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON object value
-        case (k, other) =>
-          s"${urlEncode(k)}=${urlEncode(other.toString)}"
-      }
-
-    val pathWithParams = new StringBuilder()
-    pathWithParams.append(requestPath)
-    pathWithParams.append("?")
-    pathWithParams.append(queryParams.mkString("&"))
-
+    val path = HttpClient.buildResourceUri(requestPath, resource, resourceSurface)
     val operationResponseCodec =
       MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
     send(
-      Http.request(HttpMethod.GET, pathWithParams.result()),
+      Http.request(HttpMethod.GET, path),
       responseCodec = operationResponseCodec,
       requestFilter = requestFilter
     )
