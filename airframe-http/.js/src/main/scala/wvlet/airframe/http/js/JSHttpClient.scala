@@ -58,7 +58,7 @@ object JSHttpClient {
     xhr.responseType = "arraybuffer"
     xhr.timeout = 0
     xhr.withCredentials = false
-    request.header.entries.foreach { x => xhr.setRequestHeader(x._1, x._2) }
+    request.header.entries.foreach { x => xhr.setRequestHeader(x.key, x.value) }
     val data: Array[Byte] = request.contentBytes
     if (data.isEmpty) {
       xhr.send()
