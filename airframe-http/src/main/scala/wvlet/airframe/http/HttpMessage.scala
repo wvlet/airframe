@@ -53,23 +53,23 @@ trait HttpMessage[Raw] {
 
   // HTTP header setting utility methods
   def withAccept(acceptType: String): Raw = {
-    withHeader("Accept", acceptType)
+    withHeader(HttpHeader.Accept, acceptType)
   }
   def withAllow(allow: String): Raw = {
-    withHeader("Allow", allow)
+    withHeader(HttpHeader.Allow, allow)
   }
 
   def withAuthorization(authorization: String): Raw = {
-    withHeader("Authorization", authorization)
+    withHeader(HttpHeader.Authorization, authorization)
   }
 
   def withCacheControl(cacheControl: String): Raw = {
-    withHeader("Cache-Control", cacheControl)
+    withHeader(HttpHeader.CacheControl, cacheControl)
   }
 
-  def contentType: Option[String] = header.get("Content-Type")
+  def contentType: Option[String] = header.get(HttpHeader.ContentType)
   def withContentType(contentType: String): Raw = {
-    withHeader("Content-Type", contentType)
+    withHeader(HttpHeader.ContentType, contentType)
   }
 
   def withContentTypeJson: Raw = {
@@ -81,35 +81,35 @@ trait HttpMessage[Raw] {
   }
 
   def withContentLength(length: Long): Raw = {
-    withHeader("Content-Length", s"${length}")
+    withHeader(HttpHeader.ContentLength, s"${length}")
   }
 
   def withDate(date: String): Raw = {
-    withHeader("Date", date)
+    withHeader(HttpHeader.Date, date)
   }
 
   def withExpires(expires: String): Raw = {
-    withHeader("Expires", expires)
+    withHeader(HttpHeader.Expires, expires)
   }
 
   def withHost(host: String): Raw = {
-    withHeader("Host", host)
+    withHeader(HttpHeader.Host, host)
   }
 
   def withLastModified(lastModified: String): Raw = {
-    withHeader("Last-Modified", lastModified)
+    withHeader(HttpHeader.LastModified, lastModified)
   }
 
   def withUserAgent(userAgenet: String): Raw = {
-    withHeader("User-Agent", userAgenet)
+    withHeader(HttpHeader.UserAgent, userAgenet)
   }
 
   def withXForwardedFor(xForwardedFor: String): Raw = {
-    withHeader("X-Forwarded-For", xForwardedFor)
+    withHeader(HttpHeader.xForwardedFor, xForwardedFor)
   }
 
   def withXForwardedProto(xForwardedProto: String): Raw = {
-    withHeader("X-Forwarded-Proto", xForwardedProto)
+    withHeader(HttpHeader.xForwardedProto, xForwardedProto)
   }
 }
 
