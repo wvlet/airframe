@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets
 
 import okhttp3.internal.http.HttpMethod
 import okhttp3.{Protocol, Request, RequestBody, Response, ResponseBody}
-import wvlet.airframe.http.HttpStatus
+import wvlet.airframe.http.{HttpMultiMap, HttpStatus}
 import wvlet.airspec.AirSpec
 
 class OkHttpTest extends AirSpec {
@@ -26,7 +26,7 @@ class OkHttpTest extends AirSpec {
       val r = req.toHttpRequest
       r.method shouldBe toHttpMethod(req.method())
       r.path shouldBe "/hello"
-      r.query shouldBe Map.empty
+      r.query shouldBe HttpMultiMap.empty
       if (HttpMethod.permitsRequestBody(req.method())) {
         r.contentString shouldBe "hello okhttp"
         r.contentBytes shouldBe "hello okhttp".getBytes(StandardCharsets.UTF_8)

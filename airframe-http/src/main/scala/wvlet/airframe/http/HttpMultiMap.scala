@@ -17,6 +17,22 @@ case class HttpMultiMapEntry(key: String, value: String)
 
 object HttpMultiMap {
   val empty: HttpMultiMap = HttpMultiMap()
+
+  def newBuilder: HttpMultiMapBuilder = new HttpMultiMapBuilder()
+
+  class HttpMultiMapBuilder(private var m: HttpMultiMap = HttpMultiMap.empty) {
+    def add(k: String, v: String): HttpMultiMapBuilder = {
+      m = m.add(k, v)
+      this
+    }
+    def +=(e: (String, String)): HttpMultiMapBuilder = {
+      add(e._1, e._2)
+    }
+    def ++=(entries: Seq[(String, String)]): HttpMultiMapBuilder = {
+      entries.foldLeft(this)((m, entry) => m.add(entry._1, entry._2))
+    }
+    def result(): HttpMultiMap = m
+  }
 }
 
 /**
@@ -26,6 +42,18 @@ case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) {
 
   override def toString: String = {
     toSeq.mkString(",")
+  }
+
+  def toMultiMap: Map[String, Seq[String]] = {
+    val m = for ((k, v) <- map) yield {
+      v match {
+        case s: Seq[String @unchecked] =>
+          k -> s
+        case other =>
+          k -> Seq(other.toString)
+      }
+    }
+    m.toMap
   }
 
   def toSeq: Seq[HttpMultiMapEntry] = {
