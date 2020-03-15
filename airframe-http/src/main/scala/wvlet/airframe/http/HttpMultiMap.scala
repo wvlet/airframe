@@ -31,7 +31,8 @@ object HttpMultiMap {
 /**
   * Immutable MultiMap structure for representing Http headers, query parameters, etc.
   */
-case class HttpMultiMap(private val map: Map[String, Any] = Map.empty) extends HttpMultiMapAccess {
+case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) extends HttpMultiMapAccess {
+
   override def toString: String = {
     toSeq.mkString(",")
   }
@@ -79,6 +80,14 @@ case class HttpMultiMap(private val map: Map[String, Any] = Map.empty) extends H
 
     this.copy(map = newMap)
   }
+
+  def ++(m: Map[String, String]): HttpMultiMap = {
+    m.foldLeft(this) {
+      case (mm, entry) =>
+        mm.add(entry._1, entry._2)
+    }
+  }
+
   def remove(key: String): HttpMultiMap = {
     this.copy(map = map - key)
   }

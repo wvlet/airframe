@@ -34,8 +34,8 @@ trait HttpRequestAdapter[Req] {
 
   def methodOf(request: Req): HttpMethod
   def pathOf(request: Req): String
-  def queryOf(request: Req): Map[String, String]
-  def headerOf(request: Req): Map[String, String]
+  def queryOf(request: Req): HttpMultiMap
+  def headerOf(request: Req): HttpMultiMap
   def contentStringOf(request: Req): String
   def contentBytesOf(request: Req): Array[Byte]
   def contentTypeOf(request: Req): Option[String]
@@ -48,12 +48,12 @@ trait HttpRequestAdapter[Req] {
 trait HttpRequest[Req] {
   protected def adapter: HttpRequestAdapter[Req]
 
-  def method: HttpMethod         = adapter.methodOf(toRaw)
-  def path: String               = adapter.pathOf(toRaw)
-  def query: Map[String, String] = adapter.queryOf(toRaw)
+  def method: HttpMethod  = adapter.methodOf(toRaw)
+  def path: String        = adapter.pathOf(toRaw)
+  def query: HttpMultiMap = adapter.queryOf(toRaw)
   // TODO Use multi-map
-  def header: Map[String, String] = adapter.headerOf(toRaw)
-  def contentString: String       = adapter.contentStringOf(toRaw)
+  def header: HttpMultiMap  = adapter.headerOf(toRaw)
+  def contentString: String = adapter.contentStringOf(toRaw)
   // TODO Support streams
   def contentBytes: Array[Byte]          = adapter.contentBytesOf(toRaw)
   def contentType: Option[String]        = adapter.contentTypeOf(toRaw)

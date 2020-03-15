@@ -23,8 +23,8 @@ import wvlet.airframe.http.SimpleHttpResponse.SimpleHttpResponseAdapter
 case class SimpleHttpRequest(
     override val method: HttpMethod,
     override val path: String,
-    override val header: Map[String, String] = Map.empty,
-    override val query: Map[String, String] = Map.empty,
+    override val header: HttpMultiMap = HttpMultiMap.empty,
+    override val query: HttpMultiMap = HttpMultiMap.empty,
     override val contentString: String = ""
 ) extends HttpRequest[SimpleHttpRequest] {
   override protected def adapter: HttpRequestAdapter[SimpleHttpRequest] = SimpleHttpRequestAdapter
@@ -37,8 +37,8 @@ object SimpleHttpRequest {
   implicit object SimpleHttpRequestAdapter extends HttpRequestAdapter[SimpleHttpRequest] {
     override def methodOf(request: SimpleHttpRequest): HttpMethod          = request.method
     override def pathOf(request: SimpleHttpRequest): String                = request.path
-    override def queryOf(request: SimpleHttpRequest): Map[String, String]  = request.query
-    override def headerOf(request: SimpleHttpRequest): Map[String, String] = request.header
+    override def queryOf(request: SimpleHttpRequest): HttpMultiMap         = request.query
+    override def headerOf(request: SimpleHttpRequest): HttpMultiMap        = request.header
     override def contentStringOf(request: SimpleHttpRequest): String       = request.contentString
     override def contentBytesOf(request: SimpleHttpRequest): Array[Byte]   = request.contentBytes
     override def contentTypeOf(request: SimpleHttpRequest): Option[String] = request.contentType
