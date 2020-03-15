@@ -17,11 +17,11 @@ import java.nio.charset.StandardCharsets
 import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, Message, StringMessage}
 
 trait HttpMessage[Raw] {
-  def header: HttpHeaderAccess = headerHolder
-  protected def headerHolder: HttpHeader
+  def header: HttpMultiMapAccess = headerHolder
+  protected def headerHolder: HttpMultiMap
   protected def message: Message
 
-  protected def copyWith(newHeader: HttpHeader): Raw
+  protected def copyWith(newHeader: HttpMultiMap): Raw
   protected def copyWith(newMessage: Message): Raw
 
   def withHeader(key: String, value: String): Raw = {
@@ -142,7 +142,7 @@ object HttpMessage {
   case class Request(
       method: HttpMethod = HttpMethod.GET,
       uri: String = "/",
-      protected val headerHolder: HttpHeader = HttpHeader.empty,
+      protected val headerHolder: HttpMultiMap = HttpMultiMap.empty,
       protected val message: Message = EmptyMessage
   ) extends HttpMessage[Request] {
 
@@ -175,7 +175,7 @@ object HttpMessage {
     }
     def withUri(uri: String): Request = this.copy(uri = uri)
 
-    override protected def copyWith(newHeader: HttpHeader): Request = {
+    override protected def copyWith(newHeader: HttpMultiMap): Request = {
       this.copy(headerHolder = newHeader)
     }
     override protected def copyWith(
@@ -193,10 +193,10 @@ object HttpMessage {
 
   case class Response(
       status: HttpStatus,
-      protected val headerHolder: HttpHeader = HttpHeader.empty,
+      protected val headerHolder: HttpMultiMap = HttpMultiMap.empty,
       protected val message: Message = EmptyMessage
   ) extends HttpMessage[Response] {
-    override protected def copyWith(newHeader: HttpHeader): Response = {
+    override protected def copyWith(newHeader: HttpMultiMap): Response = {
       this.copy(headerHolder = newHeader)
     }
     override protected def copyWith(newMessage: Message): Response = {
