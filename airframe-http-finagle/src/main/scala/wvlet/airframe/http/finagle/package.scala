@@ -80,8 +80,8 @@ package object finagle {
   }
 
   implicit object FinagleHttpRequestAdapter extends HttpRequestAdapter[http.Request] {
-    override def methodOf(request: Request): HttpMethod = toHttpMethod(request.method)
-    override def pathOf(request: Request): String       = request.path
+    override def methodOf(request: Request): String = toHttpMethod(request.method)
+    override def pathOf(request: Request): String   = request.path
     override def headerOf(request: Request): HttpMultiMap = {
       val h = request.headerMap
       var m = HttpMultiMap.empty
@@ -146,11 +146,11 @@ package object finagle {
   )
   private val httpMethodMappingReverse = httpMethodMapping.map(x => x._2 -> x._1).toMap
 
-  private[finagle] def toHttpMethod(method: http.Method): HttpMethod = {
+  private[finagle] def toHttpMethod(method: http.Method): String = {
     httpMethodMappingReverse.getOrElse(method, throw new IllegalArgumentException(s"Unsupported method: ${method}"))
   }
 
-  private[finagle] def toFinagleHttpMethod(method: HttpMethod): http.Method = {
+  private[finagle] def toFinagleHttpMethod(method: String): http.Method = {
     httpMethodMapping.getOrElse(method, throw new IllegalArgumentException(s"Unsupported method: ${method}"))
   }
 }

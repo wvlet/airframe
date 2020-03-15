@@ -15,8 +15,8 @@ package object okhttp {
   }
 
   implicit object OkHttpRequestAdapter extends HttpRequestAdapter[Request] {
-    override def methodOf(request: Request): HttpMethod = toHttpMethod(request.method())
-    override def pathOf(request: Request): String       = request.url().encodedPath()
+    override def methodOf(request: Request): String = toHttpMethod(request.method())
+    override def pathOf(request: Request): String   = request.url().encodedPath()
     override def headerOf(request: Request): HttpMultiMap = {
       val m = HttpMultiMap.newBuilder
       for ((k, lst) <- request.headers().toMultimap.asScala; v <- lst.asScala) {
@@ -59,7 +59,7 @@ package object okhttp {
     override def httpResponseOf(resp: Response): HttpResponse[Response] = OkHttpResponse(resp)
   }
 
-  private[okhttp] def toHttpMethod(method: String): HttpMethod = method match {
+  private[okhttp] def toHttpMethod(method: String): String = method match {
     case "GET"     => HttpMethod.GET
     case "POST"    => HttpMethod.POST
     case "PUT"     => HttpMethod.PUT
