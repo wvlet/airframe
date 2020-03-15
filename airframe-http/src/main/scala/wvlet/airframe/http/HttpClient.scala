@@ -402,6 +402,7 @@ object HttpClient extends LogSupport {
   }
 
   def urlEncode(s: String): String = {
-    URLEncoder.encode(s, "UTF-8")
+    compat.urlEncode(s)
   }
+
 }

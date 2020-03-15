@@ -11,12 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.http
 
 /**
-  *
+  * An interface for using different implementation betweeen Scala JVM and Scala.js
   */
-package object http {
-  // A trick to minimize compilation warnings in IntelliJ IDEA when using corss projects
-  val compat: CompatApi = wvlet.airframe.http.Compat
+trait CompatApi {
+  def urlEncode(s: String): String
 }
