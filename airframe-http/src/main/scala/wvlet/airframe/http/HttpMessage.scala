@@ -118,7 +118,7 @@ object HttpMessage {
   }
 
   case class Request(
-      method: HttpMethod = HttpMethod.GET,
+      method: String = HttpMethod.GET,
       uri: String = "/",
       header: HttpMultiMap = HttpMultiMap.empty,
       protected val message: Message = EmptyMessage
@@ -155,7 +155,7 @@ object HttpMessage {
 
     def withFilter(f: Request => Request): Request = f(this)
 
-    def withMethod(method: HttpMethod): Request = {
+    def withMethod(method: String): Request = {
       this.copy(method = method)
     }
     def withUri(uri: String): Request = this.copy(uri = uri)
@@ -197,7 +197,7 @@ object HttpMessage {
 
   object HttpMessageRequestAdapter extends HttpRequestAdapter[Request] {
     override def requestType: Class[Request]             = classOf[Request]
-    override def methodOf(request: Request): HttpMethod  = request.method
+    override def methodOf(request: Request): String      = request.method
     override def pathOf(request: Request): String        = request.path
     override def queryOf(request: Request): HttpMultiMap = request.query
 

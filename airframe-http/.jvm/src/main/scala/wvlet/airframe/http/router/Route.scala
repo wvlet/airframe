@@ -26,7 +26,7 @@ import scala.language.higherKinds
   * A mapping from an HTTP endpoint to a corresponding method (or function)
   */
 trait Route {
-  def method: HttpMethod
+  def method: String
   def methodSurface: MethodSurface
   def path: String
   val pathComponents: IndexedSeq[String] = {
@@ -63,7 +63,7 @@ trait Route {
   */
 case class ControllerRoute(
     controllerSurface: Surface,
-    method: HttpMethod,
+    method: String,
     path: String,
     methodSurface: ReflectMethodSurface
 ) extends Route

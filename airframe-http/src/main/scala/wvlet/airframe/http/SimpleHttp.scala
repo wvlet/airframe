@@ -21,7 +21,7 @@ import wvlet.airframe.http.SimpleHttpResponse.SimpleHttpResponseAdapter
   *
   */
 case class SimpleHttpRequest(
-    override val method: HttpMethod,
+    override val method: String,
     override val path: String,
     override val header: HttpMultiMap = HttpMultiMap.empty,
     override val query: HttpMultiMap = HttpMultiMap.empty,
@@ -35,7 +35,7 @@ case class SimpleHttpRequest(
 
 object SimpleHttpRequest {
   implicit object SimpleHttpRequestAdapter extends HttpRequestAdapter[SimpleHttpRequest] {
-    override def methodOf(request: SimpleHttpRequest): HttpMethod          = request.method
+    override def methodOf(request: SimpleHttpRequest): String              = request.method
     override def pathOf(request: SimpleHttpRequest): String                = request.path
     override def queryOf(request: SimpleHttpRequest): HttpMultiMap         = request.query
     override def headerOf(request: SimpleHttpRequest): HttpMultiMap        = request.header

@@ -35,6 +35,6 @@ public @interface Endpoint {
      * Uri beginning from / (slash)
      */
     String path();
-    HttpMethod method() default HttpMethod.GET;
+    String method() default "GET";
     String description() default "";
 }

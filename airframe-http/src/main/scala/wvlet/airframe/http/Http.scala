@@ -15,7 +15,7 @@ package wvlet.airframe.http
 
 object Http {
 
-  def request(method: HttpMethod, uri: String)  = HttpMessage.Request.empty.withMethod(method).withUri(uri)
+  def request(method: String, uri: String)      = HttpMessage.Request.empty.withMethod(method).withUri(uri)
   def request(uri: String): HttpMessage.Request = request(HttpMethod.GET, uri)
   def GET(uri: String)                          = request(HttpMethod.GET, uri)
   def POST(uri: String)                         = request(HttpMethod.POST, uri)
@@ -34,7 +34,7 @@ object Http {
 trait HttpRequestAdapter[Req] {
   def requestType: Class[Req]
 
-  def methodOf(request: Req): HttpMethod
+  def methodOf(request: Req): String
   def pathOf(request: Req): String
   def queryOf(request: Req): HttpMultiMap
   def headerOf(request: Req): HttpMultiMap
@@ -50,7 +50,7 @@ trait HttpRequestAdapter[Req] {
 trait HttpRequest[Req] {
   protected def adapter: HttpRequestAdapter[Req]
 
-  def method: HttpMethod    = adapter.methodOf(toRaw)
+  def method: String        = adapter.methodOf(toRaw)
   def path: String          = adapter.pathOf(toRaw)
   def query: HttpMultiMap   = adapter.queryOf(toRaw)
   def header: HttpMultiMap  = adapter.headerOf(toRaw)

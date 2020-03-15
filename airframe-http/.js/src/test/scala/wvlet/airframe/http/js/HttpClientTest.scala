@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.js
+import wvlet.airframe.http.Http
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
@@ -31,5 +32,9 @@ object HttpClientTest extends AirSpec {
         logger.warn(e)
         1
     }
+  }
+
+  test("request") {
+    val req = Http.request("/v1/info")
   }
 }

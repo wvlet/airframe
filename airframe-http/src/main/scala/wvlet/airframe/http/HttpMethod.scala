@@ -14,13 +14,14 @@
 
 package wvlet.airframe.http;
 
-public enum HttpMethod {
-    GET,
-    POST,
-    DELETE,
-    PUT,
-    PATCH,
-    OPTIONS,
-    TRACE,
-    HEAD;
+object HttpMethod {
+  // These constants need to be final so that they can be called from Java annotation (Endpoint)
+  final val GET     = "GET"
+  final val POST    = "POST"
+  final val DELETE  = "DELETE"
+  final val PUT     = "PUT"
+  final val PATCH   = "PATCH"
+  final val OPTIONS = "OPTIONS"
+  final val TRACE   = "TRACE"
+  final val HEAD    = "HEAD"
 }
