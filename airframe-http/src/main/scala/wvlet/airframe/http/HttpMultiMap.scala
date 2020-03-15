@@ -13,7 +13,9 @@
  */
 package wvlet.airframe.http
 
-case class HttpMultiMapEntry(key: String, value: String)
+case class HttpMultiMapEntry(key: String, value: String) {
+  override def toString: String = s"${key}:${value}"
+}
 
 object HttpMultiMap {
   val empty: HttpMultiMap = HttpMultiMap()
@@ -41,7 +43,7 @@ object HttpMultiMap {
 case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) {
 
   override def toString: String = {
-    toSeq.mkString(",")
+    entries.mkString(",")
   }
 
   def toMultiMap: Map[String, Seq[String]] = {
@@ -56,11 +58,9 @@ case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) {
     m.toMap
   }
 
-  def entries: Seq[(String, String)] = {
-    toSeq.map(x => x.key -> x.value)
-  }
+  def toSeq: Seq[HttpMultiMapEntry] = entries
 
-  def toSeq: Seq[HttpMultiMapEntry] = {
+  def entries: Seq[HttpMultiMapEntry] = {
     val b = Seq.newBuilder[HttpMultiMapEntry]
     for ((k, v) <- map) {
       v match {

@@ -17,11 +17,11 @@ object Http {
 
   def request(method: HttpMethod, uri: String)  = HttpMessage.Request.empty.withMethod(method).withUri(uri)
   def request(uri: String): HttpMessage.Request = request(HttpMethod.GET, uri)
-  def getRequest(uri: String)                   = request(HttpMethod.GET, uri)
-  def postRequest(uri: String)                  = request(HttpMethod.POST, uri)
-  def deleteRequest(uri: String)                = request(HttpMethod.DELETE, uri)
-  def putRequest(uri: String)                   = request(HttpMethod.PUT, uri)
-  def patchRequest(uri: String)                 = request(HttpMethod.PATCH, uri)
+  def GET(uri: String)                          = request(HttpMethod.GET, uri)
+  def POST(uri: String)                         = request(HttpMethod.POST, uri)
+  def DELETE(uri: String)                       = request(HttpMethod.DELETE, uri)
+  def PUT(uri: String)                          = request(HttpMethod.PUT, uri)
+  def PATCH(uri: String)                        = request(HttpMethod.PATCH, uri)
 }
 
 /**

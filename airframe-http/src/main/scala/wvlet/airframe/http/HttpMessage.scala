@@ -128,10 +128,12 @@ object HttpMessage {
   }
 
   case class StringMessage(content: String) extends Message {
+    override def toString: String            = content
     override def toContentString: String     = content
     override def toContentBytes: Array[Byte] = content.getBytes(StandardCharsets.UTF_8)
   }
   case class ByteArrayMessage(content: Array[Byte]) extends Message {
+    override def toString: String = toContentString
     override def toContentString: String = {
       new String(content, StandardCharsets.UTF_8)
     }
@@ -173,6 +175,8 @@ object HttpMessage {
           m
       }
     }
+
+    def withFilter(f: Request => Request): Request = f(this)
 
     def withMethod(method: HttpMethod): Request = {
       this.copy(method = method)
