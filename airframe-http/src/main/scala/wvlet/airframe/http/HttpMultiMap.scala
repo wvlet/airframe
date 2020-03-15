@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 /**
-  * Read-only immutable MultiMap interface
+  * Read-only immutable MultiMap interface. Use getAll to get all values for a key.
   */
 trait HttpMultiMapAccess {
   def get(key: String): Option[String]
@@ -58,6 +58,13 @@ case class HttpMultiMap(private val map: Map[String, Any] = Map.empty) extends H
       map = map + (key -> value)
     )
   }
+
+  /**
+    *
+    * @param key
+    * @param value
+    * @return
+    */
   def add(key: String, value: String): HttpMultiMap = {
     val newMap = map
       .get(key).map { v =>

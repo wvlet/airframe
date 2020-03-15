@@ -17,23 +17,23 @@ import java.nio.charset.StandardCharsets
 import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, Message, StringMessage}
 
 trait HttpMessage[Raw] {
-  def header: HttpMultiMapAccess = headerHolder
-  protected def headerHolder: HttpMultiMap
+  def header: HttpMultiMapAccess = headerMap
+  protected def headerMap: HttpMultiMap
   protected def message: Message
 
   protected def copyWith(newHeader: HttpMultiMap): Raw
   protected def copyWith(newMessage: Message): Raw
 
   def withHeader(key: String, value: String): Raw = {
-    copyWith(headerHolder.set(key, value))
+    copyWith(headerMap.set(key, value))
   }
 
   def addHeader(key: String, value: String): Raw = {
-    copyWith(headerHolder.add(key, value))
+    copyWith(headerMap.add(key, value))
   }
 
   def removeHeader(key: String): Raw = {
-    copyWith(headerHolder.remove(key))
+    copyWith(headerMap.remove(key))
   }
 
   def withContent(content: String): Raw = {
@@ -142,7 +142,7 @@ object HttpMessage {
   case class Request(
       method: HttpMethod = HttpMethod.GET,
       uri: String = "/",
-      protected val headerHolder: HttpMultiMap = HttpMultiMap.empty,
+      protected val headerMap: HttpMultiMap = HttpMultiMap.empty,
       protected val message: Message = EmptyMessage
   ) extends HttpMessage[Request] {
 
@@ -154,19 +154,24 @@ object HttpMessage {
       }
     }
 
-    def query: Map[String, String] = {
+    def query: HttpMultiMap = {
       val u = uri
       u.indexOf("?") match {
-        case -1 => Map.empty
+        case -1 =>
+          HttpMultiMap.empty
         case pos =>
+          var m           = HttpMultiMap.empty
           val queryString = u.substring(0, pos)
           queryString
             .split("&").map { x =>
               x.split("=") match {
-                case Array(key, value) => key -> value
-                case _                 => x   -> ""
+                case Array(key, value) =>
+                  m = m.add(key, value)
+                case _ =>
+                  m = m.add(x, "")
               }
-            }.toMap
+            }
+          m
       }
     }
 
@@ -176,7 +181,7 @@ object HttpMessage {
     def withUri(uri: String): Request = this.copy(uri = uri)
 
     override protected def copyWith(newHeader: HttpMultiMap): Request = {
-      this.copy(headerHolder = newHeader)
+      this.copy(headerMap = newHeader)
     }
     override protected def copyWith(
         newMessage: Message
@@ -193,11 +198,11 @@ object HttpMessage {
 
   case class Response(
       status: HttpStatus,
-      protected val headerHolder: HttpMultiMap = HttpMultiMap.empty,
+      protected val headerMap: HttpMultiMap = HttpMultiMap.empty,
       protected val message: Message = EmptyMessage
   ) extends HttpMessage[Response] {
     override protected def copyWith(newHeader: HttpMultiMap): Response = {
-      this.copy(headerHolder = newHeader)
+      this.copy(headerMap = newHeader)
     }
     override protected def copyWith(newMessage: Message): Response = {
       this.copy(message = newMessage)
