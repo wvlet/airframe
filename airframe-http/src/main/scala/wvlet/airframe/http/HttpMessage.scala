@@ -195,7 +195,7 @@ object HttpMessage {
     val empty: Response = Response()
   }
 
-  object HttpMessageRequestAdapter extends HttpRequestAdapter[Request] {
+  implicit object HttpMessageRequestAdapter extends HttpRequestAdapter[Request] {
     override def requestType: Class[Request]             = classOf[Request]
     override def methodOf(request: Request): String      = request.method
     override def pathOf(request: Request): String        = request.path
@@ -211,6 +211,23 @@ object HttpMessage {
   implicit class HttpMessageRequest(val raw: Request) extends HttpRequest[Request] {
     override protected def adapter: HttpRequestAdapter[Request] = HttpMessageRequestAdapter
     override def toRaw: Request                                 = raw
+  }
+
+  implicit object HttpMessageResponseAdapter extends HttpResponseAdapter[Response] {
+    override def statusCodeOf(resp: Response): Int           = resp.status.code
+    override def contentStringOf(resp: Response): String     = resp.contentString
+    override def contentBytesOf(resp: Response): Array[Byte] = resp.contentBytes
+    override def contentTypeOf(
+        resp: Response
+    ): Option[String] = resp.contentType
+    override def httpResponseOf(
+        resp: Response
+    ): HttpResponse[Response] = resp
+  }
+
+  implicit class HttpMessageResponse(val raw: Response) extends HttpResponse[Response] {
+    override protected def adapter: HttpResponseAdapter[Response] = HttpMessageResponseAdapter
+    override def toRaw: Response                                  = raw
   }
 
 }

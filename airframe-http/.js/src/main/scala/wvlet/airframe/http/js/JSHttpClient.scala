@@ -16,56 +16,71 @@ import java.nio.ByteBuffer
 
 import org.scalajs.dom
 import org.scalajs.dom.ext.Ajax.InputData
-import org.scalajs.dom.ext.AjaxException
-import org.scalajs.dom.{XMLHttpRequest, window}
+import org.scalajs.dom.window
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http.HttpMessage.Request
-import wvlet.airframe.http.{Http, HttpClient, HttpMessage, HttpMethod, HttpStatus}
+import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.control.{ResultClass, Retry}
+import wvlet.airframe.http.HttpClient.defaultBeforeRetryAction
+import wvlet.airframe.http.HttpMessage._
+import wvlet.airframe.http._
 import wvlet.airframe.surface.Surface
 
 import scala.concurrent.{Future, Promise}
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
+import scala.util.{Failure, Success}
 
 object JSHttpClient {
-  val defaultClient = new JSHttpClient()
+  val defaultClient = {
+    val protocol = window.location.protocol
+    val hostname = window.location.hostname
+    val port     = window.location.port.toInt
+    val address  = ServerAddress(hostname, port, protocol)
+    JSHttpClient(address)
+  }
+
+  def defaultHttpClientRetrier: RetryContext = {
+    Retry
+      .withBackOff(maxRetry = 3)
+      .withResultClassifier(HttpClientException.classifyHttpResponse[Response])
+      .withErrorClassifier { e: Throwable => Retry.nonRetryableFailure(e) }
+      .beforeRetry(defaultBeforeRetryAction[Request])
+  }
+}
+
+case class JSHttpClientConfig(
+    requestFilter: Request => Request = identity,
+    retryContext: RetryContext = JSHttpClient.defaultHttpClientRetrier
+) {
+  def withRequestFilter(newRequestFilter: Request => Request): JSHttpClientConfig =
+    this.copy(requestFilter = newRequestFilter)
+  def noRetry: JSHttpClientConfig = this.copy(retryContext = retryContext.noRetry)
 }
 
 /**
   * HttpClient utilities for Scala.js
   */
-class JSHttpClient {
+case class JSHttpClient(address: ServerAddress, config: JSHttpClientConfig = JSHttpClientConfig()) {
   import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
-  def send[OperationResponse](
-      originalRequest: Request,
-      operationResponseSurface: Surface,
-      requestFilter: Request => Request = identity
-  ): Future[OperationResponse] = {
+  def withConfig(newConfig: JSHttpClientConfig): JSHttpClient = {
+    this.copy(config = newConfig)
+  }
 
-    val request = requestFilter(originalRequest)
-
-    val protocol = window.location.protocol
-    val hostname = window.location.hostname
-    val port     = window.location.port
-    val fullUri  = s"${protocol}//${hostname}${if (port.isEmpty) "" else ":" + port}${request.path}"
-
-    val xhr     = new dom.XMLHttpRequest()
-    val promise = Promise[dom.XMLHttpRequest]()
-
-    // TODO Use our custom retry logic like FinagleClient
-    xhr.onreadystatechange = { (e: dom.Event) =>
-      if (xhr.readyState == 4) {
-        if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304)
-          promise.success(xhr)
-        else
-          promise.failure(AjaxException(xhr))
-      }
-    }
-    xhr.open(request.method.toString, fullUri)
+  /**
+    * Send the request. If necessary, retry the request
+    * @param retryContext
+    * @param request
+    * @return
+    */
+  private def dispatch(retryContext: RetryContext, request: Request): Future[Response] = {
+    val xhr = new dom.XMLHttpRequest()
+    xhr.open(request.method.toString, s"${address.uri}${request.path}")
     xhr.responseType = "arraybuffer"
     xhr.timeout = 0
     xhr.withCredentials = false
     request.header.entries.foreach { x => xhr.setRequestHeader(x.key, x.value) }
+
+    val promise           = Promise[Response]()
     val data: Array[Byte] = request.contentBytes
     if (data.isEmpty) {
       xhr.send()
@@ -74,21 +89,50 @@ class JSHttpClient {
       xhr.send(input)
     }
 
-    val future = promise.future
-    future.map { xhr: XMLHttpRequest =>
-      val arrayBuffer = xhr.response.asInstanceOf[ArrayBuffer]
-      val dst         = new Array[Byte](arrayBuffer.byteLength)
-      TypedArrayBuffer.wrap(arrayBuffer).get(dst, 0, arrayBuffer.byteLength)
+    xhr.onreadystatechange = { (e: dom.Event) =>
+      if (xhr.readyState == 4) { // Ajax request is DONE
+        val resp = Http.response(HttpStatus.ofCode(xhr.status))
+        retryContext.resultClassifier(resp) match {
+          case ResultClass.Succeeded =>
+            //if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304)
+            val arrayBuffer = xhr.response.asInstanceOf[ArrayBuffer]
+            val dst         = new Array[Byte](arrayBuffer.byteLength)
+            TypedArrayBuffer.wrap(arrayBuffer).get(dst, 0, arrayBuffer.byteLength)
+            promise.success(resp.withContent(dst))
+          case ResultClass.Failed(isRetryable, cause, extraWait) =>
+            if (!retryContext.canContinue) {
+              promise.failure(HttpClientMaxRetryException(resp, retryContext, cause))
+            } else if (!isRetryable) {
+              promise.failure(cause)
+            } else {
+              dispatch(retryContext.nextRetry(cause), request).onComplete {
+                case Success(resp) => promise.success(resp)
+                case Failure(e)    => promise.failure(e)
+              }
+            }
+        }
+      }
+    }
 
+    val future = promise.future
+    future
+  }
+
+  def send[OperationResponse](
+      originalRequest: Request,
+      operationResponseSurface: Surface,
+      requestFilter: Request => Request = identity
+  ): Future[OperationResponse] = {
+    // Apply the default request filter first, and then apply the custom filter
+    val request = requestFilter(config.requestFilter(originalRequest))
+    dispatch(config.retryContext, request).map { resp =>
       operationResponseSurface.rawType match {
         case c if c == classOf[HttpMessage.Response] =>
-          Http
-            .response(HttpStatus.ofCode(xhr.status))
-            .withContent(dst).asInstanceOf[OperationResponse]
+          resp.asInstanceOf[OperationResponse]
         case _ =>
           val responseCodec =
             MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
-          responseCodec.fromMsgPack(dst)
+          responseCodec.fromMsgPack(resp.contentBytes)
       }
     }
   }

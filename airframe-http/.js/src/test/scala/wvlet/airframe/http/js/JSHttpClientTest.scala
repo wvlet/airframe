@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.js
 import wvlet.airframe.http.Http
+import wvlet.airframe.http.ServerAddress
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
@@ -26,8 +27,9 @@ object JSHttpClientTest extends AirSpec {
 
   test("create http client") {
     ignore("ignore server interaction tests")
-    val s = Surface.of[Person]
-    new JSHttpClient().getOps[Person, Person]("/v1/info", Person(1, "leo"), s, s).recover {
+    val s      = Surface.of[Person]
+    val client = JSHttpClient(ServerAddress("localhost"))
+    client.getOps[Person, Person]("/v1/info", Person(1, "leo"), s, s).recover {
       case e: Throwable =>
         logger.warn(e)
         1
