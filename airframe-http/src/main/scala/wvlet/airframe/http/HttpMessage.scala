@@ -12,95 +12,105 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import java.nio.charset.StandardCharsets
+
 import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, Message, StringMessage}
 
-trait HttpMessage {
-  protected def header: HttpHeader
+trait HttpMessage[Raw] {
+  def header: HttpHeaderAccess = headerHolder
+  protected def headerHolder: HttpHeader
   protected def message: Message
 
-  protected def copyWith(newHeader: HttpHeader): this.type
-  protected def copyWith(newMessage: Message): this.type
+  protected def copyWith(newHeader: HttpHeader): Raw
+  protected def copyWith(newMessage: Message): Raw
 
-  def withHeader(key: String, value: String): this.type = {
-    copyWith(header.set(key, value))
+  def withHeader(key: String, value: String): Raw = {
+    copyWith(headerHolder.set(key, value))
   }
 
-  def addHeader(key: String, value: String): this.type = {
-    copyWith(header.add(key, value))
+  def addHeader(key: String, value: String): Raw = {
+    copyWith(headerHolder.add(key, value))
   }
 
-  def removeHeader(key: String): this.type = {
-    copyWith(header.remove(key))
+  def removeHeader(key: String): Raw = {
+    copyWith(headerHolder.remove(key))
   }
 
-  def withContent(content: String): this.type = {
+  def withContent(content: String): Raw = {
     copyWith(StringMessage(content))
   }
 
-  def withContent(content: Array[Byte]): this.type = {
+  def withContent(content: Array[Byte]): Raw = {
     copyWith(ByteArrayMessage(content))
+  }
+  // Content reader
+  def contentString: String = {
+    message.toContentString
+  }
+  def contentBytes: Array[Byte] = {
+    message.toContentBytes
   }
 
   // HTTP header setting utility methods
-  def withAccept(acceptType: String): this.type = {
+  def withAccept(acceptType: String): Raw = {
     withHeader("Accept", acceptType)
   }
-  def withAllow(allow: String): this.type = {
+  def withAllow(allow: String): Raw = {
     withHeader("Allow", allow)
   }
 
-  def withAuthorization(authorization: String): this.type = {
+  def withAuthorization(authorization: String): Raw = {
     withHeader("Authorization", authorization)
   }
 
-  def withCacheControl(cacheControl: String): this.type = {
+  def withCacheControl(cacheControl: String): Raw = {
     withHeader("Cache-Control", cacheControl)
   }
 
-  def withContentType(contentType: String): this.type = {
+  def contentType: Option[String] = header.get("Content-Type")
+  def withContentType(contentType: String): Raw = {
     withHeader("Content-Type", contentType)
   }
 
-  def withContentTypeJson: this.type = {
+  def withContentTypeJson: Raw = {
     withContentType("application/json;charset=utf-8")
   }
 
-  def withContentTypeMsgPack: this.type = {
+  def withContentTypeMsgPack: Raw = {
     withContentType("application/x-msgpack")
   }
 
-  def withContentLength(length: Long): this.type = {
+  def withContentLength(length: Long): Raw = {
     withHeader("Content-Length", s"${length}")
   }
 
-  def withDate(date: String): this.type = {
+  def withDate(date: String): Raw = {
     withHeader("Date", date)
   }
 
-  def withExpires(expires: String): this.type = {
+  def withExpires(expires: String): Raw = {
     withHeader("Expires", expires)
   }
 
-  def withHost(host: String): this.type = {
+  def withHost(host: String): Raw = {
     withHeader("Host", host)
   }
 
-  def withLastModified(lastModified: String): this.type = {
+  def withLastModified(lastModified: String): Raw = {
     withHeader("Last-Modified", lastModified)
   }
 
-  def withUserAgent(userAgenet: String): this.type = {
+  def withUserAgent(userAgenet: String): Raw = {
     withHeader("User-Agent", userAgenet)
   }
 
-  def withXForwardedFor(xForwardedFor: String): this.type = {
+  def withXForwardedFor(xForwardedFor: String): Raw = {
     withHeader("X-Forwarded-For", xForwardedFor)
   }
 
-  def withXForwardedProto(xForwardedProto: String): this.type = {
+  def withXForwardedProto(xForwardedProto: String): Raw = {
     withHeader("X-Forwarded-Proto", xForwardedProto)
   }
-
 }
 
 /**
@@ -108,26 +118,33 @@ trait HttpMessage {
   */
 object HttpMessage {
 
-  trait Message
-  case object EmptyMessage                          extends Message
-  case class StringMessage(content: String)         extends Message
-  case class ByteArrayMessage(content: Array[Byte]) extends Message
+  trait Message {
+    def toContentString: String
+    def toContentBytes: Array[Byte]
+  }
+
+  case object EmptyMessage extends Message {
+    override def toContentString: String     = ""
+    override def toContentBytes: Array[Byte] = Array.empty
+  }
+
+  case class StringMessage(content: String) extends Message {
+    override def toContentString: String     = content
+    override def toContentBytes: Array[Byte] = content.getBytes(StandardCharsets.UTF_8)
+  }
+  case class ByteArrayMessage(content: Array[Byte]) extends Message {
+    override def toContentString: String = {
+      new String(content, StandardCharsets.UTF_8)
+    }
+    override def toContentBytes: Array[Byte] = content
+  }
 
   case class Request(
       method: HttpMethod = HttpMethod.GET,
       uri: String = "/",
-      protected val header: HttpHeader = HttpHeader.empty,
+      protected val headerHolder: HttpHeader = HttpHeader.empty,
       protected val message: Message = EmptyMessage
-  ) extends HttpMessage {
-
-    override protected def copyWith(newHeader: HttpHeader): Request.this.type = {
-      this.copy(header = newHeader)
-    }
-    override protected def copyWith(
-        newMessage: Message
-    ): Request.this.type = {
-      this.copy(message = newMessage)
-    }
+  ) extends HttpMessage[Request] {
 
     def path: String = {
       val u = uri
@@ -136,10 +153,38 @@ object HttpMessage {
         case pos => u.substring(0, pos)
       }
     }
+
+    def query: Map[String, String] = {
+      val u = uri
+      u.indexOf("?") match {
+        case -1 => Map.empty
+        case pos =>
+          val queryString = u.substring(0, pos)
+          queryString
+            .split("&").map { x =>
+              x.split("=") match {
+                case Array(key, value) => key -> value
+                case _                 => x   -> ""
+              }
+            }.toMap
+      }
+    }
+
     def withMethod(method: HttpMethod): Request = {
       this.copy(method = method)
     }
     def withUri(uri: String): Request = this.copy(uri = uri)
+
+    override protected def copyWith(newHeader: HttpHeader): Request = {
+      this.copy(headerHolder = newHeader)
+    }
+    override protected def copyWith(
+        newMessage: Message
+    ): Request = {
+      this.copy(message = newMessage)
+    }
+//    override protected def adapter: HttpRequestAdapter[Request] = HttpMessageRequestAdapter
+//    override def toRaw: Request                                 = this
   }
 
   object Request {
@@ -148,15 +193,28 @@ object HttpMessage {
 
   case class Response(
       status: HttpStatus,
-      protected val header: HttpHeader = HttpHeader.empty,
+      protected val headerHolder: HttpHeader = HttpHeader.empty,
       protected val message: Message = EmptyMessage
-  ) extends HttpMessage {
-    override protected def copyWith(newHeader: HttpHeader): Response.this.type = {
-      this.copy(header = newHeader)
+  ) extends HttpMessage[Response] {
+    override protected def copyWith(newHeader: HttpHeader): Response = {
+      this.copy(headerHolder = newHeader)
     }
-    override protected def copyWith(newMessage: Message): Response.this.type = {
+    override protected def copyWith(newMessage: Message): Response = {
       this.copy(message = newMessage)
     }
   }
+
+//  object HttpMessageRequestAdapter extends HttpRequestAdapter[Request] {
+//    override def requestType: Class[Request]                    = classOf[Request]
+//    override def methodOf(request: Request): HttpMethod         = request.method
+//    override def pathOf(request: Request): String               = request.path
+//    override def queryOf(request: Request): Map[String, String] = request.query
+//
+//    override def headerOf(request: Request): Map[String, String]       = request.header
+//    override def contentStringOf(request: Request): String             = request.contentString
+//    override def contentBytesOf(request: Request): Array[Byte]         = request.contentBytes
+//    override def contentTypeOf(request: Request): Option[String]       = request.contentType
+//    override def httpRequestOf(request: Request): HttpRequest[Request] = request
+//  }
 
 }

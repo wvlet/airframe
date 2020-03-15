@@ -14,8 +14,14 @@
 package wvlet.airframe.http
 
 object Http {
-  def request(uri: String): HttpMessage.Request = HttpMessage.Request.empty.withUri(uri)
+
   def request(method: HttpMethod, uri: String)  = HttpMessage.Request.empty.withMethod(method).withUri(uri)
+  def request(uri: String): HttpMessage.Request = request(HttpMethod.GET, uri)
+  def getRequest(uri: String)                   = request(HttpMethod.GET, uri)
+  def postRequest(uri: String)                  = request(HttpMethod.POST, uri)
+  def deleteRequest(uri: String)                = request(HttpMethod.DELETE, uri)
+  def putRequest(uri: String)                   = request(HttpMethod.PUT, uri)
+  def patchRequest(uri: String)                 = request(HttpMethod.PATCH, uri)
 }
 
 /**

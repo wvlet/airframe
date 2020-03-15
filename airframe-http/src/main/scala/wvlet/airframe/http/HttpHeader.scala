@@ -16,15 +16,28 @@ package wvlet.airframe.http
 object HttpHeader {
   val empty = HttpHeader(Map.empty)
 
-  case class HeaderEntry(key: String, value: String)
+  case class HeaderEntry(key: String, value: String) {
+    override def toString: String = s"${key}: ${value}"
+  }
 }
 
 import HttpHeader._
 
+trait HttpHeaderAccess { this: HttpHeader =>
+  def get(key: String): Option[String]
+  def getAll(key: String): Seq[String]
+  def isEmpty: Boolean
+  def toSeq: Seq[HeaderEntry]
+}
+
 /**
   * An immutable multi-map implementation for storing HTTP headers
   */
-case class HttpHeader(private val map: Map[String, Any]) {
+case class HttpHeader(private val map: Map[String, Any]) extends HttpHeaderAccess {
+  override def toString: String = {
+    toSeq.mkString(", ")
+  }
+
   def set(key: String, value: String): HttpHeader = {
     this.copy(
       map = map + (key -> value)
@@ -34,8 +47,8 @@ case class HttpHeader(private val map: Map[String, Any]) {
     val newMap = map
       .get(key).map { v =>
         val newValue = v match {
-          case s: String        => Seq(s, value)
-          case lst: Seq[String] => lst +: value
+          case s: String                   => Seq(s, value)
+          case lst: Seq[String @unchecked] => lst +: value
         }
         map + (key -> newValue)
       }.getOrElse {
@@ -48,38 +61,38 @@ case class HttpHeader(private val map: Map[String, Any]) {
     this.copy(map = map - key)
   }
 
-  def get(key: String): Option[String] = {
+  override def get(key: String): Option[String] = {
     map.get(key).flatMap { v: Any =>
       v match {
-        case s: String        => Some(s)
-        case lst: Seq[String] => Option(lst.head)
-        case null             => None
-        case _                => Some(v.toString)
+        case s: String                   => Some(s)
+        case lst: Seq[String @unchecked] => Option(lst.head)
+        case null                        => None
+        case _                           => Some(v.toString)
       }
     }
   }
 
-  def getAll(key: String): Seq[String] = {
+  override def getAll(key: String): Seq[String] = {
     map
       .get(key).map { v: Any =>
         v match {
-          case s: String        => Seq(s)
-          case lst: Seq[String] => lst
-          case null             => Seq.empty
-          case v                => Seq(v.toString)
+          case s: String                   => Seq(s)
+          case lst: Seq[String @unchecked] => lst
+          case null                        => Seq.empty
+          case v                           => Seq(v.toString)
         }
       }.getOrElse(Seq.empty)
   }
 
-  def isEmpty: Boolean = map.isEmpty
+  override def isEmpty: Boolean = map.isEmpty
 
-  def toSeq: Seq[HeaderEntry] = {
+  override def toSeq: Seq[HeaderEntry] = {
     val b = Seq.newBuilder[HeaderEntry]
     for ((k, v) <- map) {
       v match {
         case s: String =>
           b += HeaderEntry(k, s)
-        case lst: Seq[String] =>
+        case lst: Seq[String @unchecked] =>
           b ++= lst.map { x => HeaderEntry(k, x) }
         case null =>
         // do nothing
