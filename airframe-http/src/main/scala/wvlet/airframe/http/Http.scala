@@ -48,10 +48,9 @@ trait HttpRequestAdapter[Req] {
 trait HttpRequest[Req] {
   protected def adapter: HttpRequestAdapter[Req]
 
-  def method: HttpMethod  = adapter.methodOf(toRaw)
-  def path: String        = adapter.pathOf(toRaw)
-  def query: HttpMultiMap = adapter.queryOf(toRaw)
-  // TODO Use multi-map
+  def method: HttpMethod    = adapter.methodOf(toRaw)
+  def path: String          = adapter.pathOf(toRaw)
+  def query: HttpMultiMap   = adapter.queryOf(toRaw)
   def header: HttpMultiMap  = adapter.headerOf(toRaw)
   def contentString: String = adapter.contentStringOf(toRaw)
   // TODO Support streams

@@ -17,23 +17,22 @@ import java.nio.charset.StandardCharsets
 import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, Message, StringMessage}
 
 trait HttpMessage[Raw] {
-  def header: HttpMultiMapAccess = headerMap
-  protected def headerMap: HttpMultiMap
+  def header: HttpMultiMap
   protected def message: Message
 
   protected def copyWith(newHeader: HttpMultiMap): Raw
   protected def copyWith(newMessage: Message): Raw
 
   def withHeader(key: String, value: String): Raw = {
-    copyWith(headerMap.set(key, value))
+    copyWith(header.set(key, value))
   }
 
   def addHeader(key: String, value: String): Raw = {
-    copyWith(headerMap.add(key, value))
+    copyWith(header.add(key, value))
   }
 
   def removeHeader(key: String): Raw = {
-    copyWith(headerMap.remove(key))
+    copyWith(header.remove(key))
   }
 
   def withContent(content: String): Raw = {
@@ -142,7 +141,7 @@ object HttpMessage {
   case class Request(
       method: HttpMethod = HttpMethod.GET,
       uri: String = "/",
-      protected val headerMap: HttpMultiMap = HttpMultiMap.empty,
+      header: HttpMultiMap = HttpMultiMap.empty,
       protected val message: Message = EmptyMessage
   ) extends HttpMessage[Request] {
 
@@ -181,15 +180,13 @@ object HttpMessage {
     def withUri(uri: String): Request = this.copy(uri = uri)
 
     override protected def copyWith(newHeader: HttpMultiMap): Request = {
-      this.copy(headerMap = newHeader)
+      this.copy(header = newHeader)
     }
     override protected def copyWith(
         newMessage: Message
     ): Request = {
       this.copy(message = newMessage)
     }
-//    override protected def adapter: HttpRequestAdapter[Request] = HttpMessageRequestAdapter
-//    override def toRaw: Request                                 = this
   }
 
   object Request {
@@ -198,28 +195,33 @@ object HttpMessage {
 
   case class Response(
       status: HttpStatus,
-      protected val headerMap: HttpMultiMap = HttpMultiMap.empty,
+      header: HttpMultiMap = HttpMultiMap.empty,
       protected val message: Message = EmptyMessage
   ) extends HttpMessage[Response] {
     override protected def copyWith(newHeader: HttpMultiMap): Response = {
-      this.copy(headerMap = newHeader)
+      this.copy(header = newHeader)
     }
     override protected def copyWith(newMessage: Message): Response = {
       this.copy(message = newMessage)
     }
   }
 
-//  object HttpMessageRequestAdapter extends HttpRequestAdapter[Request] {
-//    override def requestType: Class[Request]                    = classOf[Request]
-//    override def methodOf(request: Request): HttpMethod         = request.method
-//    override def pathOf(request: Request): String               = request.path
-//    override def queryOf(request: Request): Map[String, String] = request.query
-//
-//    override def headerOf(request: Request): Map[String, String]       = request.header
-//    override def contentStringOf(request: Request): String             = request.contentString
-//    override def contentBytesOf(request: Request): Array[Byte]         = request.contentBytes
-//    override def contentTypeOf(request: Request): Option[String]       = request.contentType
-//    override def httpRequestOf(request: Request): HttpRequest[Request] = request
-//  }
+  object HttpMessageRequestAdapter extends HttpRequestAdapter[Request] {
+    override def requestType: Class[Request]             = classOf[Request]
+    override def methodOf(request: Request): HttpMethod  = request.method
+    override def pathOf(request: Request): String        = request.path
+    override def queryOf(request: Request): HttpMultiMap = request.query
+
+    override def headerOf(request: Request): HttpMultiMap              = request.header
+    override def contentStringOf(request: Request): String             = request.contentString
+    override def contentBytesOf(request: Request): Array[Byte]         = request.contentBytes
+    override def contentTypeOf(request: Request): Option[String]       = request.contentType
+    override def httpRequestOf(request: Request): HttpRequest[Request] = request
+  }
+
+  implicit class HttpMessageRequest(val raw: Request) extends HttpRequest[Request] {
+    override protected def adapter: HttpRequestAdapter[Request] = HttpMessageRequestAdapter
+    override def toRaw: Request                                 = raw
+  }
 
 }

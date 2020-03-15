@@ -13,15 +13,6 @@
  */
 package wvlet.airframe.http
 
-/**
-  * Read-only immutable MultiMap interface. Use getAll to get all values for a key.
-  */
-trait HttpMultiMapAccess {
-  def get(key: String): Option[String]
-  def getAll(key: String): Seq[String]
-  def isEmpty: Boolean
-}
-
 case class HttpMultiMapEntry(key: String, value: String)
 
 object HttpMultiMap {
@@ -31,7 +22,7 @@ object HttpMultiMap {
 /**
   * Immutable MultiMap structure for representing Http headers, query parameters, etc.
   */
-case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) extends HttpMultiMapAccess {
+case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) {
 
   override def toString: String = {
     toSeq.mkString(",")
@@ -92,7 +83,7 @@ case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) ext
     this.copy(map = map - key)
   }
 
-  override def get(key: String): Option[String] = {
+  def get(key: String): Option[String] = {
     map.get(key).flatMap { v: Any =>
       v match {
         case s: String                   => Some(s)
@@ -103,7 +94,11 @@ case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) ext
     }
   }
 
-  override def getAll(key: String): Seq[String] = {
+  def getOrElse(key: String, defaultValue: => String): String = {
+    get(key).getOrElse(defaultValue)
+  }
+
+  def getAll(key: String): Seq[String] = {
     map
       .get(key).map { v: Any =>
         v match {
@@ -115,6 +110,6 @@ case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) ext
       }.getOrElse(Seq.empty)
   }
 
-  override def isEmpty: Boolean = map.isEmpty
+  def isEmpty: Boolean = map.isEmpty
 
 }

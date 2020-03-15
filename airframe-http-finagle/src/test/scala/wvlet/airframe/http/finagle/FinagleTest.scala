@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets
 
 import com.twitter.finagle.http
 import com.twitter.finagle.http.Status
-import wvlet.airframe.http.HttpStatus
+import wvlet.airframe.http.{HttpMultiMap, HttpStatus}
 import wvlet.airspec.AirSpec
 
 /**
@@ -43,7 +43,7 @@ class FinagleTest extends AirSpec {
       val r = req.toHttpRequest
       r.method shouldBe toHttpMethod(m)
       r.path shouldBe "/hello"
-      r.query shouldBe Map.empty
+      r.query shouldBe HttpMultiMap.empty
       r.contentString shouldBe "hello finagle"
       r.contentBytes shouldBe "hello finagle".getBytes(StandardCharsets.UTF_8)
       r.contentType shouldBe Some("application/json;charset=utf-8")
