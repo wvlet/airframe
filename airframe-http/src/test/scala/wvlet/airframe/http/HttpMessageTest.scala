@@ -18,10 +18,33 @@ import wvlet.airspec.AirSpec
   *
   */
 class HttpMessageTest extends AirSpec {
+
+  test("request builder shortcut") {
+    val r1 = Http.GET("/v1/info")
+    r1.method shouldBe HttpMethod.GET
+    r1.path shouldBe "/v1/info"
+
+    val r2 = Http.POST("/v1/books")
+    r2.method shouldBe HttpMethod.POST
+    r2.path shouldBe "/v1/books"
+
+    val r3 = Http.PUT("/v1/books/1")
+    r3.method shouldBe HttpMethod.PUT
+    r3.path shouldBe "/v1/books/1"
+
+    val r4 = Http.DELETE("/v1/books/1")
+    r4.method shouldBe HttpMethod.DELETE
+    r4.path shouldBe "/v1/books/1"
+
+    val r5 = Http.PATCH("/v1/books/1")
+    r5.method shouldBe HttpMethod.PATCH
+    r5.path shouldBe "/v1/books/1"
+  }
+
   test("create new requests") {
     val r = Http
       .GET("/v1/info")
-      .withAllow("origin")
+      .withAllow("all")
       .withAccept("application/json")
       .withHeader("X-MyApp-Version", "1.0")
       .withExpires("xxx")
@@ -33,7 +56,73 @@ class HttpMessageTest extends AirSpec {
       .withHost("myserver.org")
       .withLastModified("Wed, 21 Oct 2015 07:28:00 GMT")
       .withUserAgent("my-client 1.0")
+      .addHeader(HttpHeader.UserAgent, "my-browser")
+      .withXForwardedFor("123.45.678.9")
+      .withXForwardedProto("https")
 
-    info(r)
+    val s = r.toString
+    s.contains("/v1/info") shouldBe true
+    debug(s)
+
+    r.method shouldBe HttpMethod.GET
+    r.getHeader("unknown-key") shouldBe empty
+    r.getAllHeader("unknown-key") shouldBe Seq.empty
+
+    r.allow shouldBe Some("all")
+    r.accept shouldBe Some("application/json")
+    r.getHeader("X-MyApp-Version") shouldBe Some("1.0")
+    r.expires shouldBe Some("xxx")
+    r.authorization shouldBe Some("xxx-yyy")
+    r.cacheControl shouldBe Some("zzzzz")
+    r.contentString shouldBe """{"message":"Hello Airframe!"}"""
+    r.date shouldBe Some("2020-01-23")
+    r.host shouldBe Some("myserver.org")
+    r.lastModified shouldBe Some("Wed, 21 Oct 2015 07:28:00 GMT")
+    r.userAgent shouldBe Some("my-client 1.0")
+    r.getAllHeader(HttpHeader.UserAgent) shouldBe Seq("my-client 1.0", "my-browser")
+    r.xForwardedFor shouldBe Some("123.45.678.9")
+    r.xForwardedProto shouldBe Some("https")
+  }
+
+  test("create new response") {
+    val r = Http
+      .response()
+      .withAllow("all")
+      .withAccept("application/json")
+      .withHeader("X-MyApp-Version", "1.0")
+      .withExpires("xxx")
+      .withAuthorization("xxx-yyy")
+      .withCacheControl("zzzzz")
+      .withContent("""{"message":"Hello Airframe!"}""")
+      .withContentTypeJson
+      .withDate("2020-01-23")
+      .withHost("myserver.org")
+      .withLastModified("Wed, 21 Oct 2015 07:28:00 GMT")
+      .withUserAgent("my-client 1.0")
+      .addHeader(HttpHeader.UserAgent, "my-browser")
+      .withXForwardedFor("123.45.678.9")
+      .withXForwardedProto("https")
+
+    val s = r.toString
+    s.contains("200") shouldBe true
+    debug(s)
+
+    r.getHeader("unknown-key") shouldBe empty
+    r.getAllHeader("unknown-key") shouldBe Seq.empty
+
+    r.allow shouldBe Some("all")
+    r.accept shouldBe Some("application/json")
+    r.getHeader("X-MyApp-Version") shouldBe Some("1.0")
+    r.expires shouldBe Some("xxx")
+    r.authorization shouldBe Some("xxx-yyy")
+    r.cacheControl shouldBe Some("zzzzz")
+    r.contentString shouldBe """{"message":"Hello Airframe!"}"""
+    r.date shouldBe Some("2020-01-23")
+    r.host shouldBe Some("myserver.org")
+    r.lastModified shouldBe Some("Wed, 21 Oct 2015 07:28:00 GMT")
+    r.userAgent shouldBe Some("my-client 1.0")
+    r.getAllHeader(HttpHeader.UserAgent) shouldBe Seq("my-client 1.0", "my-browser")
+    r.xForwardedFor shouldBe Some("123.45.678.9")
+    r.xForwardedProto shouldBe Some("https")
   }
 }

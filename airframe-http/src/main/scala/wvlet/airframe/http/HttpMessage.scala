@@ -18,6 +18,26 @@ import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, Message, StringMessage
 
 trait HttpMessage[Raw] {
   def header: HttpMultiMap
+
+  // Accessors
+  def getHeader(key: String): Option[String] = header.get(key)
+  def getAllHeader(key: String): Seq[String] = header.getAll(key)
+
+  def allow: Option[String]           = header.get(HttpHeader.Allow)
+  def accept: Option[String]          = header.get(HttpHeader.Accept)
+  def authorization: Option[String]   = header.get(HttpHeader.Authorization)
+  def cacheControl: Option[String]    = header.get(HttpHeader.CacheControl)
+  def contentType: Option[String]     = header.get(HttpHeader.ContentType)
+  def contentLength: Option[Long]     = header.get(HttpHeader.ContentLength).map(_.toLong)
+  def date: Option[String]            = header.get(HttpHeader.Date)
+  def expires: Option[String]         = header.get(HttpHeader.Expires)
+  def host: Option[String]            = header.get(HttpHeader.Host)
+  def lastModified: Option[String]    = header.get(HttpHeader.LastModified)
+  def referer: Option[String]         = header.get(HttpHeader.Referer)
+  def userAgent: Option[String]       = header.get(HttpHeader.UserAgent)
+  def xForwardedFor: Option[String]   = header.get(HttpHeader.xForwardedFor)
+  def xForwardedProto: Option[String] = header.get(HttpHeader.xForwardedProto)
+
   protected def message: Message
 
   protected def copyWith(newHeader: HttpMultiMap): Raw
@@ -51,65 +71,22 @@ trait HttpMessage[Raw] {
   }
 
   // HTTP header setting utility methods
-  def withAccept(acceptType: String): Raw = {
-    withHeader(HttpHeader.Accept, acceptType)
-  }
-  def withAllow(allow: String): Raw = {
-    withHeader(HttpHeader.Allow, allow)
-  }
-
-  def withAuthorization(authorization: String): Raw = {
-    withHeader(HttpHeader.Authorization, authorization)
-  }
-
-  def withCacheControl(cacheControl: String): Raw = {
-    withHeader(HttpHeader.CacheControl, cacheControl)
-  }
-
-  def contentType: Option[String] = header.get(HttpHeader.ContentType)
-  def withContentType(contentType: String): Raw = {
-    withHeader(HttpHeader.ContentType, contentType)
-  }
-
-  def withContentTypeJson: Raw = {
-    withContentType("application/json;charset=utf-8")
-  }
-
-  def withContentTypeMsgPack: Raw = {
-    withContentType("application/x-msgpack")
-  }
-
-  def withContentLength(length: Long): Raw = {
-    withHeader(HttpHeader.ContentLength, s"${length}")
-  }
-
-  def withDate(date: String): Raw = {
-    withHeader(HttpHeader.Date, date)
-  }
-
-  def withExpires(expires: String): Raw = {
-    withHeader(HttpHeader.Expires, expires)
-  }
-
-  def withHost(host: String): Raw = {
-    withHeader(HttpHeader.Host, host)
-  }
-
-  def withLastModified(lastModified: String): Raw = {
-    withHeader(HttpHeader.LastModified, lastModified)
-  }
-
-  def withUserAgent(userAgenet: String): Raw = {
-    withHeader(HttpHeader.UserAgent, userAgenet)
-  }
-
-  def withXForwardedFor(xForwardedFor: String): Raw = {
-    withHeader(HttpHeader.xForwardedFor, xForwardedFor)
-  }
-
-  def withXForwardedProto(xForwardedProto: String): Raw = {
-    withHeader(HttpHeader.xForwardedProto, xForwardedProto)
-  }
+  def withAccept(acceptType: String): Raw               = withHeader(HttpHeader.Accept, acceptType)
+  def withAllow(allow: String): Raw                     = withHeader(HttpHeader.Allow, allow)
+  def withAuthorization(authorization: String): Raw     = withHeader(HttpHeader.Authorization, authorization)
+  def withCacheControl(cacheControl: String): Raw       = withHeader(HttpHeader.CacheControl, cacheControl)
+  def withContentType(contentType: String): Raw         = withHeader(HttpHeader.ContentType, contentType)
+  def withContentTypeJson: Raw                          = withContentType("application/json;charset=utf-8")
+  def withContentTypeMsgPack: Raw                       = withContentType("application/x-msgpack")
+  def withContentLength(length: Long): Raw              = withHeader(HttpHeader.ContentLength, length.toString)
+  def withDate(date: String): Raw                       = withHeader(HttpHeader.Date, date)
+  def withExpires(expires: String): Raw                 = withHeader(HttpHeader.Expires, expires)
+  def withHost(host: String): Raw                       = withHeader(HttpHeader.Host, host)
+  def withLastModified(lastModified: String): Raw       = withHeader(HttpHeader.LastModified, lastModified)
+  def withReferer(referer: String): Raw                 = withHeader(HttpHeader.Referer, referer)
+  def withUserAgent(userAgenet: String): Raw            = withHeader(HttpHeader.UserAgent, userAgenet)
+  def withXForwardedFor(xForwardedFor: String): Raw     = withHeader(HttpHeader.xForwardedFor, xForwardedFor)
+  def withXForwardedProto(xForwardedProto: String): Raw = withHeader(HttpHeader.xForwardedProto, xForwardedProto)
 }
 
 /**
@@ -198,7 +175,7 @@ object HttpMessage {
   }
 
   case class Response(
-      status: HttpStatus,
+      status: HttpStatus = HttpStatus.Ok_200,
       header: HttpMultiMap = HttpMultiMap.empty,
       protected val message: Message = EmptyMessage
   ) extends HttpMessage[Response] {
@@ -208,6 +185,14 @@ object HttpMessage {
     override protected def copyWith(newMessage: Message): Response = {
       this.copy(message = newMessage)
     }
+
+    def withStatus(newStatus: HttpStatus): Response = {
+      this.copy(status = newStatus)
+    }
+  }
+
+  object Response {
+    val empty: Response = Response()
   }
 
   object HttpMessageRequestAdapter extends HttpRequestAdapter[Request] {

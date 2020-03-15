@@ -22,6 +22,8 @@ object Http {
   def DELETE(uri: String)                       = request(HttpMethod.DELETE, uri)
   def PUT(uri: String)                          = request(HttpMethod.PUT, uri)
   def PATCH(uri: String)                        = request(HttpMethod.PATCH, uri)
+
+  def response(status: HttpStatus = HttpStatus.Ok_200) = HttpMessage.Response.empty.withStatus(status)
 }
 
 /**
