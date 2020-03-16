@@ -28,7 +28,7 @@ object JSHttpClientTest extends AirSpec {
   test("create http client") {
     ignore("ignore server interaction tests")
     val s      = Surface.of[Person]
-    val client = JSHttpClient(ServerAddress("localhost"))
+    val client = JSHttpClient()
     client.getOps[Person, Person]("/v1/info", Person(1, "leo"), s, s).recover {
       case e: Throwable =>
         logger.warn(e)

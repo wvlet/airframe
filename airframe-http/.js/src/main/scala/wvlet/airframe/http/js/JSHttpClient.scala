@@ -25,6 +25,8 @@ import wvlet.airframe.http.HttpMessage._
 import wvlet.airframe.http._
 import wvlet.airframe.http.js.JSHttpClient.{MessageEncoding, MessagePackEncoding}
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.surface.Primitive
+import wvlet.log.LogSupport
 
 import scala.concurrent.{Future, Promise}
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
@@ -41,7 +43,7 @@ object JSHttpClient {
     val hostname = window.location.hostname
     val port     = window.location.port.toInt
     val address  = ServerAddress(hostname, port, protocol)
-    JSHttpClient(address)
+    JSHttpClient(JSHttpClientConfig(serverAddress = Some(address)))
   }
 
   def defaultHttpClientRetrier: RetryContext = {
@@ -56,10 +58,14 @@ object JSHttpClient {
 import JSHttpClient._
 
 case class JSHttpClientConfig(
+    serverAddress: Option[ServerAddress] = None,
     requestEncoding: MessageEncoding = MessagePackEncoding,
     requestFilter: Request => Request = identity,
     retryContext: RetryContext = JSHttpClient.defaultHttpClientRetrier
 ) {
+  def withServerAddress(newServerAddress: ServerAddress): JSHttpClientConfig = {
+    this.copy(serverAddress = Some(newServerAddress))
+  }
   def withRequestFilter(newRequestFilter: Request => Request): JSHttpClientConfig =
     this.copy(requestFilter = newRequestFilter)
   def noRetry: JSHttpClientConfig = this.copy(retryContext = retryContext.noRetry)
@@ -68,7 +74,7 @@ case class JSHttpClientConfig(
 /**
   * HttpClient utilities for Scala.js
   */
-case class JSHttpClient(address: ServerAddress, config: JSHttpClientConfig = JSHttpClientConfig()) {
+case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) extends LogSupport {
   import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
   def withConfig(newConfig: JSHttpClientConfig): JSHttpClient = {
@@ -83,7 +89,9 @@ case class JSHttpClient(address: ServerAddress, config: JSHttpClientConfig = JSH
     */
   private def dispatch(retryContext: RetryContext, request: Request): Future[Response] = {
     val xhr = new dom.XMLHttpRequest()
-    xhr.open(request.method.toString, s"${address.uri}${request.path}")
+    val uri = config.serverAddress.map(address => s"${address.uri}${request.path}").getOrElse(request.path)
+    debug(s"Sending request: ${request.method} ${uri}")
+    xhr.open(request.method, uri)
     xhr.responseType = "arraybuffer"
     xhr.timeout = 0
     xhr.withCredentials = false
@@ -111,6 +119,7 @@ case class JSHttpClient(address: ServerAddress, config: JSHttpClientConfig = JSH
             TypedArrayBuffer.wrap(arrayBuffer).get(dst, 0, arrayBuffer.byteLength)
 
             // Set response headers of our interests
+            info(s"headers: ${xhr.getAllResponseHeaders()}")
             val contentType = xhr.getResponseHeader("Content-Type")
             promise.success(resp.withContentType(contentType).withContent(dst))
           case ResultClass.Failed(isRetryable, cause, extraWait) =>
@@ -144,19 +153,21 @@ case class JSHttpClient(address: ServerAddress, config: JSHttpClientConfig = JSH
     // Apply the default request filter first, and then apply the custom filter
     val request = requestFilter(config.requestFilter(originalRequest))
     dispatch(config.retryContext, request).map { resp =>
-      operationResponseSurface.rawType match {
-        case c if c == classOf[HttpMessage.Response] =>
+      operationResponseSurface match {
+        case s if s.rawType == classOf[HttpMessage.Response] =>
           resp.asInstanceOf[OperationResponse]
+        case Primitive.Unit =>
+          null.asInstanceOf[OperationResponse]
         case _ =>
           val responseCodec =
             MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
-
           // Read the response body as MessagePack or JSON
           resp.contentType match {
             case Some("application/x-msgpack") =>
               responseCodec.fromMsgPack(resp.contentBytes)
             case _ =>
-              responseCodec.fromJson(resp.contentString)
+              val json = resp.contentString
+              responseCodec.fromJson(json)
           }
       }
     }
