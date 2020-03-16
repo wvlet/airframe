@@ -56,8 +56,10 @@ class StaticContentTest extends AirSpec {
 
   override protected def design: Design = {
     val r = Router.add[StaticContentTest.StaticContentServer]
-    newFinagleServerDesign(name = "static-content-test", router = r)
-      .add(finagleSyncClientDesign)
+
+    Finagle.server
+      .withName("static-content-test").withRouter(r).design
+      .add(Finagle.client.syncClientDesign)
   }
 
   def `serve static contents from resources in classpath`(client: FinagleSyncClient): Unit = {

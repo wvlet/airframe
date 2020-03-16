@@ -16,6 +16,7 @@ import java.io.File
 import java.net.URL
 
 import wvlet.airframe.control.Control
+import wvlet.airframe.http.HttpMessage.Response
 import wvlet.log.LogSupport
 import wvlet.log.io.{IOUtil, Resource}
 
@@ -91,20 +92,20 @@ object StaticContent extends LogSupport {
     }
   }
 
-  def fromResource(basePath: String, relativePath: String): SimpleHttpResponse = {
+  def fromResource(basePath: String, relativePath: String): Response = {
     StaticContent().fromResource(basePath).apply(relativePath)
   }
 
-  def fromResource(basePaths: List[String], relativePath: String): SimpleHttpResponse = {
+  def fromResource(basePaths: List[String], relativePath: String): Response = {
     val sc = basePaths.foldLeft(StaticContent()) { (sc, x) => sc.fromResource(x) }
     sc.apply(relativePath)
   }
 
-  def fromDirectory(dirPath: String, relativePath: String): SimpleHttpResponse = {
+  def fromDirectory(dirPath: String, relativePath: String): Response = {
     StaticContent().fromDirectory(dirPath).apply(relativePath)
   }
 
-  def fromDirectory(dirPaths: List[String], relativePath: String): SimpleHttpResponse = {
+  def fromDirectory(dirPaths: List[String], relativePath: String): Response = {
     val sc = dirPaths.foldLeft(StaticContent()) { (sc, x) => sc.fromDirectory(x) }
     sc.apply(relativePath)
   }
@@ -140,9 +141,9 @@ case class StaticContent(resourcePaths: List[StaticContent.ResourceType] = List.
     loop(resourcePaths)
   }
 
-  def apply(relativePath: String): SimpleHttpResponse = {
+  def apply(relativePath: String): Response = {
     if (!isSafeRelativePath(relativePath)) {
-      SimpleHttpResponse(HttpStatus.Forbidden_403)
+      Http.response(HttpStatus.Forbidden_403)
     } else {
       find(relativePath)
         .map { uri =>
@@ -151,11 +152,11 @@ case class StaticContent(resourcePaths: List[StaticContent.ResourceType] = List.
           Control.withResource(uri.openStream()) { in =>
             IOUtil.readFully(in) { content =>
               // TODO cache control (e.g., max-age, last-updated)
-              SimpleHttpResponse(HttpStatus.Ok_200, content = content, contentType = Some(mediaType))
+              Http.response(HttpStatus.Ok_200).withContent(content).withContentType(mediaType)
             }
           }
         }.getOrElse {
-          SimpleHttpResponse(HttpStatus.NotFound_404)
+          Http.response(HttpStatus.NotFound_404)
         }
     }
   }

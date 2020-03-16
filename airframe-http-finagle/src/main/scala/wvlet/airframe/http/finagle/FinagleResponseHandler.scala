@@ -21,7 +21,7 @@ import com.twitter.io.Buf.ByteArray
 import com.twitter.io.{Buf, Reader}
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.router.ResponseHandler
-import wvlet.airframe.http.{HttpStatus, SimpleHttpResponse}
+import wvlet.airframe.http.{HttpMessage, HttpStatus, SimpleHttpResponse}
 import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
 
@@ -110,6 +110,12 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
           case None =>
             throw new IllegalArgumentException(s"Unknown Reader[X] type: ${responseSurface}")
         }
+      case r: HttpMessage.Response =>
+        val resp = newResponse(request, responseSurface)
+        resp.statusCode = r.statusCode
+        resp.content = ByteArray.Owned(r.contentBytes)
+        r.contentType.map { c => resp.contentType = c }
+        resp
       case r: SimpleHttpResponse =>
         val resp = newResponse(request, responseSurface)
         resp.statusCode = r.statusCode
