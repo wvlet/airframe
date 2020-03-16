@@ -23,11 +23,12 @@ trait HttpMessage[Raw] {
   def getHeader(key: String): Option[String] = header.get(key)
   def getAllHeader(key: String): Seq[String] = header.getAll(key)
 
-  def allow: Option[String]           = header.get(HttpHeader.Allow)
-  def accept: Option[String]          = header.get(HttpHeader.Accept)
-  def authorization: Option[String]   = header.get(HttpHeader.Authorization)
-  def cacheControl: Option[String]    = header.get(HttpHeader.CacheControl)
-  def contentType: Option[String]     = header.get(HttpHeader.ContentType)
+  def allow: Option[String]         = header.get(HttpHeader.Allow)
+  def accept: Option[String]        = header.get(HttpHeader.Accept)
+  def authorization: Option[String] = header.get(HttpHeader.Authorization)
+  def cacheControl: Option[String]  = header.get(HttpHeader.CacheControl)
+  def contentType: Option[String] =
+    header.get(HttpHeader.ContentType).orElse(header.get("content-type"))
   def contentLength: Option[Long]     = header.get(HttpHeader.ContentLength).map(_.toLong)
   def date: Option[String]            = header.get(HttpHeader.Date)
   def expires: Option[String]         = header.get(HttpHeader.Expires)
@@ -38,13 +39,17 @@ trait HttpMessage[Raw] {
   def xForwardedFor: Option[String]   = header.get(HttpHeader.xForwardedFor)
   def xForwardedProto: Option[String] = header.get(HttpHeader.xForwardedProto)
 
-  protected def message: Message
+  def message: Message
 
   protected def copyWith(newHeader: HttpMultiMap): Raw
   protected def copyWith(newMessage: Message): Raw
 
   def withHeader(key: String, value: String): Raw = {
     copyWith(header.set(key, value))
+  }
+
+  def withHeader(newHeader: HttpMultiMap): Raw = {
+    copyWith(newHeader)
   }
 
   def addHeader(key: String, value: String): Raw = {
@@ -72,6 +77,7 @@ trait HttpMessage[Raw] {
 
   // HTTP header setting utility methods
   def withAccept(acceptType: String): Raw               = withHeader(HttpHeader.Accept, acceptType)
+  def withAcceptMsgPack: Raw                            = withHeader(HttpHeader.Accept, "application/x-msgpack")
   def withAllow(allow: String): Raw                     = withHeader(HttpHeader.Allow, allow)
   def withAuthorization(authorization: String): Raw     = withHeader(HttpHeader.Authorization, authorization)
   def withCacheControl(cacheControl: String): Raw       = withHeader(HttpHeader.CacheControl, cacheControl)
@@ -121,7 +127,7 @@ object HttpMessage {
       method: String = HttpMethod.GET,
       uri: String = "/",
       header: HttpMultiMap = HttpMultiMap.empty,
-      protected val message: Message = EmptyMessage
+      message: Message = EmptyMessage
   ) extends HttpMessage[Request] {
 
     def path: String = {
@@ -154,20 +160,11 @@ object HttpMessage {
     }
 
     def withFilter(f: Request => Request): Request = f(this)
+    def withMethod(method: String): Request        = this.copy(method = method)
+    def withUri(uri: String): Request              = this.copy(uri = uri)
 
-    def withMethod(method: String): Request = {
-      this.copy(method = method)
-    }
-    def withUri(uri: String): Request = this.copy(uri = uri)
-
-    override protected def copyWith(newHeader: HttpMultiMap): Request = {
-      this.copy(header = newHeader)
-    }
-    override protected def copyWith(
-        newMessage: Message
-    ): Request = {
-      this.copy(message = newMessage)
-    }
+    override protected def copyWith(newHeader: HttpMultiMap): Request = this.copy(header = newHeader)
+    override protected def copyWith(newMessage: Message): Request     = this.copy(message = newMessage)
   }
 
   object Request {
@@ -177,25 +174,19 @@ object HttpMessage {
   case class Response(
       status: HttpStatus = HttpStatus.Ok_200,
       header: HttpMultiMap = HttpMultiMap.empty,
-      protected val message: Message = EmptyMessage
+      message: Message = EmptyMessage
   ) extends HttpMessage[Response] {
-    override protected def copyWith(newHeader: HttpMultiMap): Response = {
-      this.copy(header = newHeader)
-    }
-    override protected def copyWith(newMessage: Message): Response = {
-      this.copy(message = newMessage)
-    }
+    override protected def copyWith(newHeader: HttpMultiMap): Response = this.copy(header = newHeader)
+    override protected def copyWith(newMessage: Message): Response     = this.copy(message = newMessage)
 
-    def withStatus(newStatus: HttpStatus): Response = {
-      this.copy(status = newStatus)
-    }
+    def withStatus(newStatus: HttpStatus): Response = this.copy(status = newStatus)
   }
 
   object Response {
     val empty: Response = Response()
   }
 
-  object HttpMessageRequestAdapter extends HttpRequestAdapter[Request] {
+  implicit object HttpMessageRequestAdapter extends HttpRequestAdapter[Request] {
     override def requestType: Class[Request]             = classOf[Request]
     override def methodOf(request: Request): String      = request.method
     override def pathOf(request: Request): String        = request.path
@@ -211,6 +202,19 @@ object HttpMessage {
   implicit class HttpMessageRequest(val raw: Request) extends HttpRequest[Request] {
     override protected def adapter: HttpRequestAdapter[Request] = HttpMessageRequestAdapter
     override def toRaw: Request                                 = raw
+  }
+
+  implicit object HttpMessageResponseAdapter extends HttpResponseAdapter[Response] {
+    override def statusCodeOf(resp: Response): Int                      = resp.status.code
+    override def contentStringOf(resp: Response): String                = resp.contentString
+    override def contentBytesOf(resp: Response): Array[Byte]            = resp.contentBytes
+    override def contentTypeOf(resp: Response): Option[String]          = resp.contentType
+    override def httpResponseOf(resp: Response): HttpResponse[Response] = resp
+  }
+
+  implicit class HttpMessageResponse(val raw: Response) extends HttpResponse[Response] {
+    override protected def adapter: HttpResponseAdapter[Response] = HttpMessageResponseAdapter
+    override def toRaw: Response                                  = raw
   }
 
 }

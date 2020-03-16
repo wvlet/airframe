@@ -21,10 +21,9 @@ import com.twitter.util._
 import wvlet.airframe.Design
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
-import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http._
 import wvlet.airframe.http.router.HttpResponseCodec
-import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
@@ -214,25 +213,10 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
       resourceRequest: ResourceRequest,
       requestFilter: Request => Request = identity
   ): Future[Resource] = {
-    // Read resource as JSON
-    val resourceRequestJsonValue = codecFactory.of[ResourceRequest].toJSONObject(resourceRequest)
-    val queryParams: Seq[String] =
-      resourceRequestJsonValue.v.map {
-        case (k, j @ JSONArray(_)) =>
-          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON array value
-        case (k, j @ JSONObject(_)) =>
-          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON object value
-        case (k, other) =>
-          s"${urlEncode(k)}=${urlEncode(other.toString)}"
-      }
 
-    // Build query strings
-    val pathWithQueryParam = new StringBuilder
-    pathWithQueryParam.append(resourcePath)
-    pathWithQueryParam.append("?")
-    pathWithQueryParam.append(queryParams.mkString("&"))
-
-    convert[Resource](send(newRequest(HttpMethod.GET, pathWithQueryParam.result()), requestFilter))
+    val resourceSurface = Surface.of[ResourceRequest]
+    val path            = HttpClient.buildResourceUri(resourcePath, resourceRequest, resourceSurface)
+    convert[Resource](send(newRequest(HttpMethod.GET, path), requestFilter))
   }
 
   override def list[OperationResponse: ru.TypeTag](

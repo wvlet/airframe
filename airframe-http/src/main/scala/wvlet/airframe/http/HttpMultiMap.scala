@@ -40,14 +40,16 @@ object HttpMultiMap {
 /**
   * Immutable MultiMap structure for representing Http headers, query parameters, etc.
   */
-case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) {
+case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
+
+  private[http] def getUnderlyingMap: Map[String, Any] = underlying
 
   override def toString: String = {
     entries.mkString(",")
   }
 
   def toMultiMap: Map[String, Seq[String]] = {
-    val m = for ((k, v) <- map) yield {
+    val m = for ((k, v) <- underlying) yield {
       v match {
         case s: Seq[String @unchecked] =>
           k -> s
@@ -62,7 +64,7 @@ case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) {
 
   def entries: Seq[HttpMultiMapEntry] = {
     val b = Seq.newBuilder[HttpMultiMapEntry]
-    for ((k, v) <- map) {
+    for ((k, v) <- underlying) {
       v match {
         case s: String =>
           b += HttpMultiMapEntry(k, s)
@@ -79,7 +81,7 @@ case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) {
 
   def set(key: String, value: String): HttpMultiMap = {
     this.copy(
-      map = map + (key -> value)
+      underlying = underlying + (key -> value)
     )
   }
 
@@ -90,18 +92,17 @@ case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) {
     * @return
     */
   def add(key: String, value: String): HttpMultiMap = {
-    val newMap = map
+    val newMap = underlying
       .get(key).map { v =>
         val newValue = v match {
           case s: String                   => Seq(s, value)
           case lst: Seq[String @unchecked] => lst +: value
         }
-        map + (key -> newValue)
+        underlying + (key -> newValue)
       }.getOrElse {
-        map + (key -> value)
+        underlying + (key -> value)
       }
-
-    this.copy(map = newMap)
+    this.copy(underlying = newMap)
   }
 
   def ++(m: Map[String, String]): HttpMultiMap = {
@@ -112,11 +113,11 @@ case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) {
   }
 
   def remove(key: String): HttpMultiMap = {
-    this.copy(map = map - key)
+    this.copy(underlying = underlying - key)
   }
 
   def get(key: String): Option[String] = {
-    map.get(key).flatMap { v: Any =>
+    underlying.get(key).flatMap { v: Any =>
       v match {
         case s: String                   => Some(s)
         case lst: Seq[String @unchecked] => Option(lst.head)
@@ -131,7 +132,7 @@ case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) {
   }
 
   def getAll(key: String): Seq[String] = {
-    map
+    underlying
       .get(key).map { v: Any =>
         v match {
           case s: String                   => Seq(s)
@@ -142,6 +143,7 @@ case class HttpMultiMap(private[http] val map: Map[String, Any] = Map.empty) {
       }.getOrElse(Seq.empty)
   }
 
-  def isEmpty: Boolean = map.isEmpty
+  def isEmpty: Boolean  = underlying.isEmpty
+  def nonEmpty: Boolean = !isEmpty
 
 }

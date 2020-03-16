@@ -13,28 +13,30 @@
  */
 package wvlet.airframe.http.js
 import wvlet.airframe.http.Http
+import wvlet.airframe.http.ServerAddress
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 /**
   *
   */
-object HttpClientTest extends AirSpec {
+object JSHttpClientTest extends AirSpec {
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
   case class Person(id: Int, name: String)
 
   test("create http client") {
     ignore("ignore server interaction tests")
-    val s = Surface.of[Person]
-    JSHttpClient.getOps[Person, Person]("/v1/info", Person(1, "leo"), s, s).recover {
+    val s      = Surface.of[Person]
+    val client = JSHttpClient()
+    client.getOps[Person, Person]("/v1/info", Person(1, "leo"), s, s).recover {
       case e: Throwable =>
         logger.warn(e)
         1
     }
   }
 
-  test("request") {
+  test("crete a request") {
     val req = Http.request("/v1/info")
   }
 }

@@ -15,50 +15,93 @@ package wvlet.airframe.http.js
 import java.nio.ByteBuffer
 
 import org.scalajs.dom
-import org.scalajs.dom.{XMLHttpRequest, window}
-import org.scalajs.dom.ext.{Ajax, AjaxException}
 import org.scalajs.dom.ext.Ajax.InputData
+import org.scalajs.dom.window
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http.HttpMessage.Request
-import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.control.{ResultClass, Retry}
+import wvlet.airframe.http.HttpClient.defaultBeforeRetryAction
+import wvlet.airframe.http.HttpMessage._
+import wvlet.airframe.http._
+import wvlet.airframe.http.js.JSHttpClient.{MessageEncoding, MessagePackEncoding}
+import wvlet.airframe.surface.{Primitive, Surface}
+import wvlet.log.LogSupport
 
 import scala.concurrent.{Future, Promise}
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
+import scala.util.{Failure, Success}
+
+object JSHttpClient {
+
+  sealed trait MessageEncoding
+  object MessagePackEncoding extends MessageEncoding
+  object JsonEncoding        extends MessageEncoding
+
+  // An http client for production-use
+  def defaultClient = {
+    val protocol = window.location.protocol
+    val hostname = window.location.hostname
+    val port     = window.location.port.toInt
+    val address  = ServerAddress(hostname, port, protocol)
+    JSHttpClient(JSHttpClientConfig(serverAddress = Some(address)))
+  }
+
+  // An http client that can be used for local testing
+  def localClient = JSHttpClient()
+
+  def defaultHttpClientRetrier: RetryContext = {
+    Retry
+      .withBackOff(maxRetry = 3)
+      .withResultClassifier(HttpClientException.classifyHttpResponse[Response])
+      .withErrorClassifier { e: Throwable => Retry.nonRetryableFailure(e) }
+      .beforeRetry(defaultBeforeRetryAction[Request])
+  }
+}
+
+import wvlet.airframe.http.js.JSHttpClient._
+
+case class JSHttpClientConfig(
+    serverAddress: Option[ServerAddress] = None,
+    requestEncoding: MessageEncoding = MessagePackEncoding,
+    requestFilter: Request => Request = identity,
+    retryContext: RetryContext = JSHttpClient.defaultHttpClientRetrier
+) {
+  def withServerAddress(newServerAddress: ServerAddress): JSHttpClientConfig = {
+    this.copy(serverAddress = Some(newServerAddress))
+  }
+  def withRequestFilter(newRequestFilter: Request => Request): JSHttpClientConfig =
+    this.copy(requestFilter = newRequestFilter)
+  def noRetry: JSHttpClientConfig = this.copy(retryContext = retryContext.noRetry)
+}
 
 /**
   * HttpClient utilities for Scala.js
   */
-object JSHttpClient {
+case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) extends LogSupport {
   import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
-  def sendRaw[Response](
-      request: Request,
-      responseCodec: MessageCodec[Response],
-      requestFilter: Request => Request = identity
-  ): Future[Response] = {
+  def withConfig(newConfig: JSHttpClientConfig): JSHttpClient = {
+    this.copy(config = newConfig)
+  }
 
-    val protocol = window.location.protocol
-    val hostname = window.location.hostname
-    val port     = window.location.port
-    val fullUri  = s"${protocol}//${hostname}${if (port.isEmpty) "" else ":" + port}${request.path}"
-
-    val xhr     = new dom.XMLHttpRequest()
-    val promise = Promise[dom.XMLHttpRequest]()
-
-    xhr.onreadystatechange = { (e: dom.Event) =>
-      if (xhr.readyState == 4) {
-        if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304)
-          promise.success(xhr)
-        else
-          promise.failure(AjaxException(xhr))
-      }
-    }
-    xhr.open(request.method.toString, fullUri)
+  /**
+    * Send the request. If necessary, retry the request
+    * @param retryContext
+    * @param request
+    * @return
+    */
+  private def dispatch(retryContext: RetryContext, request: Request): Future[Response] = {
+    val xhr = new dom.XMLHttpRequest()
+    val uri = config.serverAddress.map(address => s"${address.uri}${request.path}").getOrElse(request.path)
+    debug(s"Sending request: ${request}")
+    xhr.open(request.method, uri)
     xhr.responseType = "arraybuffer"
     xhr.timeout = 0
     xhr.withCredentials = false
+    // Setting the header must be called after xhr.open(...)
     request.header.entries.foreach { x => xhr.setRequestHeader(x.key, x.value) }
+
+    val promise           = Promise[Response]()
     val data: Array[Byte] = request.contentBytes
     if (data.isEmpty) {
       xhr.send()
@@ -67,190 +110,256 @@ object JSHttpClient {
       xhr.send(input)
     }
 
+    xhr.onreadystatechange = { (e: dom.Event) =>
+      if (xhr.readyState == 4) { // Ajax request is DONE
+        val resp = Http.response(HttpStatus.ofCode(xhr.status))
+        retryContext.resultClassifier(resp) match {
+          case ResultClass.Succeeded =>
+            //if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304)
+            // If the request succeeds, set the content bytes to the response
+            val arrayBuffer = xhr.response.asInstanceOf[ArrayBuffer]
+            val dst         = new Array[Byte](arrayBuffer.byteLength)
+            TypedArrayBuffer.wrap(arrayBuffer).get(dst, 0, arrayBuffer.byteLength)
+
+            // Set response headers of our interests
+            val header = HttpMultiMap.newBuilder
+            xhr
+              .getAllResponseHeaders()
+              .split("\n")
+              .foreach { line =>
+                line.split(":") match {
+                  case Array(k, v) => header += k.trim -> v.trim
+                  case _           =>
+                }
+              }
+            val newResp = resp.withHeader(header.result()).withContent(dst)
+            debug(s"Get response: ${newResp}")
+            promise.success(newResp)
+          case ResultClass.Failed(isRetryable, cause, extraWait) =>
+            if (!retryContext.canContinue) {
+              promise.failure(HttpClientMaxRetryException(resp, retryContext, cause))
+            } else if (!isRetryable) {
+              promise.failure(cause)
+            } else {
+              dispatch(retryContext.nextRetry(cause), request).onComplete {
+                case Success(resp) => promise.success(resp)
+                case Failure(e)    => promise.failure(e)
+              }
+            }
+        }
+      }
+    }
+
     val future = promise.future
-    future.map { xhr: XMLHttpRequest =>
-      val arrayBuffer = xhr.response.asInstanceOf[ArrayBuffer]
-      val dst         = new Array[Byte](arrayBuffer.byteLength)
-      TypedArrayBuffer.wrap(arrayBuffer).get(dst, 0, arrayBuffer.byteLength)
-      responseCodec.fromMsgPack(dst)
+    future
+  }
+
+  def sendRaw(request: Request, requestFilter: Request => Request = identity): Future[Response] = {
+    dispatch(config.retryContext, finalizeRequest(request, requestFilter))
+  }
+
+  def send[OperationResponse](
+      originalRequest: Request,
+      operationResponseSurface: Surface,
+      requestFilter: Request => Request = identity
+  ): Future[OperationResponse] = {
+    // Apply the default request filter first, and then apply the custom filter
+    val request = finalizeRequest(originalRequest, requestFilter)
+    dispatch(config.retryContext, request).map { resp =>
+      operationResponseSurface match {
+        case s if s.rawType == classOf[HttpMessage.Response] =>
+          resp.asInstanceOf[OperationResponse]
+        case Primitive.Unit =>
+          null.asInstanceOf[OperationResponse]
+        case _ =>
+          val responseCodec =
+            MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
+          // Read the response body as MessagePack or JSON
+          val ct = resp.contentType
+          resp.contentType match {
+            case Some("application/x-msgpack") =>
+              responseCodec.fromMsgPack(resp.contentBytes)
+            case _ =>
+              val json = resp.contentString
+              if (json.nonEmpty) {
+                responseCodec.fromJson(json)
+              } else {
+                throw new HttpClientException(resp, resp.status, "Empty response from the server")
+              }
+          }
+      }
     }
   }
 
-  def send[Response](
-      method: String,
-      path: String,
-      data: InputData = null,
-      responseCodec: MessageCodec[Response],
-      headers: Map[String, String] = Map.empty
-  ): Future[Response] = {
-    val protocol = window.location.protocol
-    val hostname = window.location.hostname
-    val port     = window.location.port
-    val fullUrl  = s"${protocol}//${hostname}${if (port.isEmpty) "" else ":" + port}${path}"
-
-    val future =
-      Ajax(
-        method = method,
-        url = fullUrl,
-        data = data,
-        headers = Map(
-          // Use MessagePack RPC
-          "Accept"       -> "application/x-msgpack",
-          "Content-Type" -> "application/x-msgpack"
-        ) ++ headers,
-        timeout = 0,
-        withCredentials = false,
-        responseType = "arraybuffer"
-      )
-    future.map { xhr: XMLHttpRequest =>
-      val arrayBuffer = xhr.response.asInstanceOf[ArrayBuffer]
-      val dst         = new Array[Byte](arrayBuffer.byteLength)
-      TypedArrayBuffer.wrap(arrayBuffer).get(dst, 0, arrayBuffer.byteLength)
-      responseCodec.fromMsgPack(dst)
+  private def prepareRequestBody[Resource](request: Request, resource: Resource, resourceSurface: Surface): Request = {
+    val resourceCodec = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
+    // Support MsgPack or JSON RPC
+    config.requestEncoding match {
+      case MessagePackEncoding =>
+        request.withContentTypeMsgPack.withAcceptMsgPack.withContent(resourceCodec.toMsgPack(resource))
+      case JsonEncoding =>
+        request.withContentTypeJson.withContent(resourceCodec.toJson(resource))
     }
+  }
+
+  private def finalizeRequest(request: Request, requestFilter: Request => Request): Request = {
+    request
+      .withFilter(config.requestFilter)
+      .withFilter { r =>
+        config.requestEncoding match {
+          case MessagePackEncoding =>
+            r.withContentTypeMsgPack.withAcceptMsgPack
+          case JsonEncoding =>
+            r.withContentTypeJson
+        }
+      }
+      .withFilter(requestFilter)
+  }
+
+  def sendResource[Resource](
+      request: Request,
+      resource: Resource,
+      resourceSurface: Surface,
+      requestFilter: Request => Request
+  ): Future[Resource] = {
+    send(prepareRequestBody(request, resource, resourceSurface), resourceSurface, requestFilter)
+  }
+
+  def sendResourceOps[Resource, OperationResponse](
+      request: Request,
+      resource: Resource,
+      resourceSurface: Surface,
+      operationResponseSurface: Surface,
+      requestFilter: Request => Request
+  ): Future[OperationResponse] = {
+    send(
+      prepareRequestBody(request, resource, resourceSurface),
+      operationResponseSurface,
+      requestFilter = requestFilter
+    )
   }
 
   def get[Resource](
-      path: String,
+      resourcePath: String,
       resourceSurface: Surface,
-      headers: Map[String, String] = Map.empty
+      requestFilter: Request => Request = identity
   ): Future[Resource] = {
     val resourceCodec = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    send("GET", path = path, responseCodec = resourceCodec, headers = headers)
+    send(Http.request(HttpMethod.GET, resourcePath), resourceSurface, requestFilter = requestFilter)
   }
 
   def getOps[Resource, OperationResponse](
-      path: String,
+      resourcePath: String,
       resource: Resource,
       resourceSurface: Surface,
       operationResponseSurface: Surface,
-      headers: Map[String, String] = Map.empty
+      requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
-
-    // Flatten the input Resource objects into URL query parameter as GET request usually will not receive the message body
-    val resourceCodec            = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceRequestJsonValue = resourceCodec.toJSONObject(resource)
-    val queryParams: Seq[String] =
-      resourceRequestJsonValue.v.map {
-        case (k, j @ JSONArray(_)) =>
-          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON array value
-        case (k, j @ JSONObject(_)) =>
-          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON object value
-        case (k, other) =>
-          s"${urlEncode(k)}=${urlEncode(other.toString)}"
-      }
-
-    val pathWithParams = new StringBuilder()
-    pathWithParams.append(path)
-    pathWithParams.append("?")
-    pathWithParams.append(queryParams.mkString("&"))
-
-    val operationResponseCodec =
-      MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
-    send("GET", path = pathWithParams.result(), responseCodec = operationResponseCodec, headers = headers)
+    val path = HttpClient.buildResourceUri(resourcePath, resource, resourceSurface)
+    send(
+      Http.request(HttpMethod.GET, path),
+      operationResponseSurface,
+      requestFilter = requestFilter
+    )
   }
 
   def post[Resource](
-      path: String,
+      resourcePath: String,
       resource: Resource,
       resourceSurface: Surface,
-      headers: Map[String, String] = Map.empty
+      requestFilter: Request => Request = identity
   ): Future[Resource] = {
-    val resourceCodec   = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceMsgpack = ByteBuffer.wrap(resourceCodec.toMsgPack(resource))
-    send("POST", path = path, data = resourceMsgpack, responseCodec = resourceCodec, headers = headers)
+    sendResource(Http.request(HttpMethod.POST, resourcePath), resource, resourceSurface, requestFilter)
   }
 
   def postOps[Resource, OperationResponse](
-      path: String,
+      resourcePath: String,
       resource: Resource,
       resourceSurface: Surface,
       operationResponseSurface: Surface,
-      headers: Map[String, String] = Map.empty
+      requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
-    val resourceCodec   = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceMsgpack = ByteBuffer.wrap(resourceCodec.toMsgPack(resource))
-    val operationResponseCodec =
-      MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
-    send("POST", path = path, data = resourceMsgpack, responseCodec = operationResponseCodec, headers = headers)
+    sendResourceOps[Resource, OperationResponse](
+      Http.request(HttpMethod.POST, resourcePath),
+      resource,
+      resourceSurface,
+      operationResponseSurface,
+      requestFilter
+    )
   }
 
   def put[Resource](
-      path: String,
+      resourcePath: String,
       resource: Resource,
       resourceSurface: Surface,
-      headers: Map[String, String] = Map.empty
+      requestFilter: Request => Request = identity
   ): Future[Resource] = {
-    val resourceCodec   = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceMsgpack = ByteBuffer.wrap(resourceCodec.toMsgPack(resource))
-    send("PUT", path = path, data = resourceMsgpack, responseCodec = resourceCodec, headers = headers)
+    sendResource(Http.request(HttpMethod.PUT, resourcePath), resource, resourceSurface, requestFilter)
   }
 
   def putOps[Resource, OperationResponse](
-      path: String,
+      resourcePath: String,
       resource: Resource,
       resourceSurface: Surface,
       operationResponseSurface: Surface,
-      headers: Map[String, String] = Map.empty
+      requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
-    val resourceCodec   = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceMsgpack = ByteBuffer.wrap(resourceCodec.toMsgPack(resource))
-    val operationResponseCodec =
-      MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
-    send("PUT", path = path, data = resourceMsgpack, responseCodec = operationResponseCodec, headers = headers)
+    sendResourceOps[Resource, OperationResponse](
+      Http.request(HttpMethod.PUT, resourcePath),
+      resource,
+      resourceSurface,
+      operationResponseSurface,
+      requestFilter
+    )
   }
 
   def delete[Resource](
-      path: String,
+      resourcePath: String,
       resource: Resource,
       resourceSurface: Surface,
-      headers: Map[String, String] = Map.empty
+      requestFilter: Request => Request = identity
   ): Future[Resource] = {
-    val resourceCodec   = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceMsgpack = ByteBuffer.wrap(resourceCodec.toMsgPack(resource))
-    send("DELETE", path = path, data = resourceMsgpack, responseCodec = resourceCodec, headers = headers)
+    sendResource(Http.request(HttpMethod.DELETE, resourcePath), resource, resourceSurface, requestFilter)
   }
 
   def deleteOps[Resource, OperationResponse](
-      path: String,
+      resourcePath: String,
       resource: Resource,
       resourceSurface: Surface,
       operationResponseSurface: Surface,
-      headers: Map[String, String] = Map.empty
+      requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
-    val resourceCodec   = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceMsgpack = ByteBuffer.wrap(resourceCodec.toMsgPack(resource))
-    val operationResponseCodec =
-      MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
-    send("DELETE", path = path, data = resourceMsgpack, responseCodec = operationResponseCodec, headers = headers)
+    sendResourceOps[Resource, OperationResponse](
+      Http.request(HttpMethod.DELETE, resourcePath),
+      resource,
+      resourceSurface,
+      operationResponseSurface,
+      requestFilter
+    )
   }
 
   def patch[Resource](
-      path: String,
+      resourcePath: String,
       resource: Resource,
       resourceSurface: Surface,
-      headers: Map[String, String] = Map.empty
+      requestFilter: Request => Request = identity
   ): Future[Resource] = {
-    val resourceCodec   = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceMsgpack = ByteBuffer.wrap(resourceCodec.toMsgPack(resource))
-    send("PATCH", path = path, data = resourceMsgpack, responseCodec = resourceCodec, headers = headers)
+    sendResource(Http.request(HttpMethod.PATCH, resourcePath), resource, resourceSurface, requestFilter)
   }
 
   def patchOps[Resource, OperationResponse](
-      path: String,
+      resourcePath: String,
       resource: Resource,
       resourceSurface: Surface,
       operationResponseSurface: Surface,
-      headers: Map[String, String] = Map.empty
+      requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
-    val resourceCodec   = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceMsgpack = ByteBuffer.wrap(resourceCodec.toMsgPack(resource))
-    val operationResponseCodec =
-      MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
-    send("PATCH", path = path, data = resourceMsgpack, responseCodec = operationResponseCodec, headers = headers)
-  }
-
-  private def urlEncode(s: String): String = {
-    scala.scalajs.js.URIUtils.encodeURI(s)
+    sendResourceOps[Resource, OperationResponse](
+      Http.request(HttpMethod.PATCH, resourcePath),
+      resource,
+      resourceSurface,
+      operationResponseSurface,
+      requestFilter
+    )
   }
 }

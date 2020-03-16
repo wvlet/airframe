@@ -14,8 +14,11 @@
 package wvlet.airframe.http
 import java.net.URLEncoder
 
+import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 import scala.language.higherKinds
@@ -402,6 +405,53 @@ object HttpClient extends LogSupport {
   }
 
   def urlEncode(s: String): String = {
-    URLEncoder.encode(s, "UTF-8")
+    compat.urlEncode(s)
   }
+
+  /**
+    * Generate a GET resource url by embedding the resource object into query parameters
+    * @param path
+    * @param resource
+    * @param resourceSurface
+    * @tparam Resource
+    * @return
+    */
+  private[http] def buildResourceUri[Resource](path: String, resource: Resource, resourceSurface: Surface): String = {
+    val queryParams    = HttpClient.flattenResourceToQueryParams(resource, resourceSurface)
+    val pathWithParams = new StringBuilder()
+    pathWithParams.append(path)
+    if (queryParams.nonEmpty) {
+      val queryParamString = queryParams.entries.map(x => s"${x.key}=${x.value}").mkString("&")
+      pathWithParams.append("?")
+      pathWithParams.append(queryParamString)
+    }
+    pathWithParams.result()
+  }
+
+  /**
+    * Flatten resource objects into query parameters for GET request
+    * @param resource
+    * @param resourceSurface
+    * @tparam Resource
+    * @return
+    */
+  private[http] def flattenResourceToQueryParams[Resource](
+      resource: Resource,
+      resourceSurface: Surface
+  ): HttpMultiMap = {
+    val resourceCodec = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
+    val resourceJson  = resourceCodec.toJSONObject(resource)
+
+    val queryParams = HttpMultiMap.newBuilder
+    resourceJson.v.map {
+      case (k, j @ JSONArray(_)) =>
+        queryParams += urlEncode(k) -> urlEncode(j.toJSON) // Flatten the JSON array value
+      case (k, j @ JSONObject(_)) =>
+        queryParams += urlEncode(k) -> urlEncode(j.toJSON) // Flatten the JSON object value
+      case (k, other) =>
+        queryParams += urlEncode(k) -> urlEncode(other.toString)
+    }
+    queryParams.result()
+  }
+
 }
