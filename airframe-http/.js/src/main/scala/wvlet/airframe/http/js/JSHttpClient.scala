@@ -16,6 +16,7 @@ import java.nio.ByteBuffer
 
 import org.scalajs.dom
 import org.scalajs.dom.ext.Ajax.InputData
+import org.scalajs.dom.ext.AjaxException
 import org.scalajs.dom.window
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Retry.RetryContext
@@ -38,13 +39,17 @@ object JSHttpClient {
   object MessagePackEncoding extends MessageEncoding
   object JsonEncoding        extends MessageEncoding
 
-  val defaultClient = {
+  // An http client for production-use
+  def defaultClient = {
     val protocol = window.location.protocol
     val hostname = window.location.hostname
     val port     = window.location.port.toInt
     val address  = ServerAddress(hostname, port, protocol)
     JSHttpClient(JSHttpClientConfig(serverAddress = Some(address)))
   }
+
+  // An http client that can be used for local testing
+  def localClient = JSHttpClient()
 
   def defaultHttpClientRetrier: RetryContext = {
     Retry
@@ -90,7 +95,7 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
   private def dispatch(retryContext: RetryContext, request: Request): Future[Response] = {
     val xhr = new dom.XMLHttpRequest()
     val uri = config.serverAddress.map(address => s"${address.uri}${request.path}").getOrElse(request.path)
-    debug(s"Sending request: ${request.method} ${uri}")
+    debug(s"Sending request: ${request}")
     xhr.open(request.method, uri)
     xhr.responseType = "arraybuffer"
     xhr.timeout = 0
@@ -130,6 +135,7 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
                 }
               }
             val newResp = resp.withHeader(header.result()).withContent(dst)
+            debug(s"Get response: ${newResp}")
             promise.success(newResp)
           case ResultClass.Failed(isRetryable, cause, extraWait) =>
             if (!retryContext.canContinue) {
@@ -151,7 +157,7 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
   }
 
   def sendRaw(request: Request, requestFilter: Request => Request = identity): Future[Response] = {
-    dispatch(config.retryContext, requestFilter(config.requestFilter(request)))
+    dispatch(config.retryContext, finalizeRequest(request, requestFilter))
   }
 
   def send[OperationResponse](
@@ -160,7 +166,7 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
       requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
     // Apply the default request filter first, and then apply the custom filter
-    val request = requestFilter(config.requestFilter(originalRequest))
+    val request = finalizeRequest(originalRequest, requestFilter)
     dispatch(config.retryContext, request).map { resp =>
       operationResponseSurface match {
         case s if s.rawType == classOf[HttpMessage.Response] =>
@@ -176,13 +182,17 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
               responseCodec.fromMsgPack(resp.contentBytes)
             case _ =>
               val json = resp.contentString
-              responseCodec.fromJson(json)
+              if (json.nonEmpty) {
+                responseCodec.fromJson(json)
+              } else {
+                throw new HttpClientException(resp, resp.status, "Empty response from the server")
+              }
           }
       }
     }
   }
 
-  private def prepareRequest[Resource](request: Request, resource: Resource, resourceSurface: Surface): Request = {
+  private def prepareRequestBody[Resource](request: Request, resource: Resource, resourceSurface: Surface): Request = {
     val resourceCodec = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
     // Support MsgPack or JSON RPC
     config.requestEncoding match {
@@ -193,13 +203,27 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
     }
   }
 
+  private def finalizeRequest(request: Request, requestFilter: Request => Request): Request = {
+    request
+      .withFilter(config.requestFilter)
+      .withFilter { r =>
+        config.requestEncoding match {
+          case MessagePackEncoding =>
+            r.withContentTypeMsgPack.withAcceptMsgPack
+          case JsonEncoding =>
+            r.withContentTypeJson
+        }
+      }
+      .withFilter(requestFilter)
+  }
+
   def sendResource[Resource](
       request: Request,
       resource: Resource,
       resourceSurface: Surface,
       requestFilter: Request => Request
   ): Future[Resource] = {
-    send(prepareRequest(request, resource, resourceSurface), resourceSurface, requestFilter)
+    send(prepareRequestBody(request, resource, resourceSurface), resourceSurface, requestFilter)
   }
 
   def sendResourceOps[Resource, OperationResponse](
@@ -209,7 +233,11 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
       operationResponseSurface: Surface,
       requestFilter: Request => Request
   ): Future[OperationResponse] = {
-    send(prepareRequest(request, resource, resourceSurface), operationResponseSurface, requestFilter = requestFilter)
+    send(
+      prepareRequestBody(request, resource, resourceSurface),
+      operationResponseSurface,
+      requestFilter = requestFilter
+    )
   }
 
   def get[Resource](
