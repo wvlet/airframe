@@ -12,13 +12,11 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
-import java.util.Locale
+import java.net.URLClassLoader
 
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.codegen.HttpClientIR._
 import wvlet.airframe.http.codegen.client.{AsyncClient, HttpClientType}
 import wvlet.log.LogSupport
-import java.net.{URL, URLClassLoader}
 
 case class HttpClientGeneratorConfig(
     // A package name to search for airframe-http interfaces
