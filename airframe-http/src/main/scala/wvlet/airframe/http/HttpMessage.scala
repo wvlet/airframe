@@ -47,6 +47,10 @@ trait HttpMessage[Raw] {
     copyWith(header.set(key, value))
   }
 
+  def withHeader(newHeader: HttpMultiMap): Raw = {
+    copyWith(newHeader)
+  }
+
   def addHeader(key: String, value: String): Raw = {
     copyWith(header.add(key, value))
   }

@@ -119,9 +119,18 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
             TypedArrayBuffer.wrap(arrayBuffer).get(dst, 0, arrayBuffer.byteLength)
 
             // Set response headers of our interests
-            info(s"headers: ${xhr.getAllResponseHeaders()}")
-            val contentType = xhr.getResponseHeader("Content-Type")
-            promise.success(resp.withContentType(contentType).withContent(dst))
+            val header = HttpMultiMap.newBuilder
+            xhr
+              .getAllResponseHeaders()
+              .split("\n")
+              .foreach { line =>
+                line.split(":") match {
+                  case Array(k, v) => header += k -> v
+                  case _           =>
+                }
+              }
+            val newResp = resp.withHeader(header.result()).withContent(dst)
+            promise.success(newResp)
           case ResultClass.Failed(isRetryable, cause, extraWait) =>
             if (!retryContext.canContinue) {
               promise.failure(HttpClientMaxRetryException(resp, retryContext, cause))
