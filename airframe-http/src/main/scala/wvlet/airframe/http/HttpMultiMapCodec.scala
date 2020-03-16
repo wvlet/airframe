@@ -22,7 +22,7 @@ object HttpMultiMapCodec extends MessageCodec[HttpMultiMap] {
   private val codec = MessageCodec.of[Map[String, Any]]
 
   override def pack(p: Packer, v: HttpMultiMap): Unit = {
-    codec.pack(p, v.underlying)
+    codec.pack(p, v.getUnderlyingMap)
   }
   override def unpack(
       u: Unpacker,

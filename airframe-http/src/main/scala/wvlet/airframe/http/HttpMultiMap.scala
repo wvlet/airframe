@@ -40,7 +40,9 @@ object HttpMultiMap {
 /**
   * Immutable MultiMap structure for representing Http headers, query parameters, etc.
   */
-case class HttpMultiMap(private[http] val underlying: Map[String, Any] = Map.empty) {
+case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
+
+  private[http] def getUnderlyingMap: Map[String, Any] = underlying
 
   override def toString: String = {
     entries.mkString(",")

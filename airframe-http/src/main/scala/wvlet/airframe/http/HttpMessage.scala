@@ -38,7 +38,7 @@ trait HttpMessage[Raw] {
   def xForwardedFor: Option[String]   = header.get(HttpHeader.xForwardedFor)
   def xForwardedProto: Option[String] = header.get(HttpHeader.xForwardedProto)
 
-  protected def message: Message
+  def message: Message
 
   protected def copyWith(newHeader: HttpMultiMap): Raw
   protected def copyWith(newMessage: Message): Raw
@@ -122,7 +122,7 @@ object HttpMessage {
       method: String = HttpMethod.GET,
       uri: String = "/",
       header: HttpMultiMap = HttpMultiMap.empty,
-      protected val message: Message = EmptyMessage
+      message: Message = EmptyMessage
   ) extends HttpMessage[Request] {
 
     def path: String = {
@@ -155,20 +155,11 @@ object HttpMessage {
     }
 
     def withFilter(f: Request => Request): Request = f(this)
+    def withMethod(method: String): Request        = this.copy(method = method)
+    def withUri(uri: String): Request              = this.copy(uri = uri)
 
-    def withMethod(method: String): Request = {
-      this.copy(method = method)
-    }
-    def withUri(uri: String): Request = this.copy(uri = uri)
-
-    override protected def copyWith(newHeader: HttpMultiMap): Request = {
-      this.copy(header = newHeader)
-    }
-    override protected def copyWith(
-        newMessage: Message
-    ): Request = {
-      this.copy(message = newMessage)
-    }
+    override protected def copyWith(newHeader: HttpMultiMap): Request = this.copy(header = newHeader)
+    override protected def copyWith(newMessage: Message): Request     = this.copy(message = newMessage)
   }
 
   object Request {
@@ -178,18 +169,12 @@ object HttpMessage {
   case class Response(
       status: HttpStatus = HttpStatus.Ok_200,
       header: HttpMultiMap = HttpMultiMap.empty,
-      protected val message: Message = EmptyMessage
+      message: Message = EmptyMessage
   ) extends HttpMessage[Response] {
-    override protected def copyWith(newHeader: HttpMultiMap): Response = {
-      this.copy(header = newHeader)
-    }
-    override protected def copyWith(newMessage: Message): Response = {
-      this.copy(message = newMessage)
-    }
+    override protected def copyWith(newHeader: HttpMultiMap): Response = this.copy(header = newHeader)
+    override protected def copyWith(newMessage: Message): Response     = this.copy(message = newMessage)
 
-    def withStatus(newStatus: HttpStatus): Response = {
-      this.copy(status = newStatus)
-    }
+    def withStatus(newStatus: HttpStatus): Response = this.copy(status = newStatus)
   }
 
   object Response {
@@ -215,15 +200,11 @@ object HttpMessage {
   }
 
   implicit object HttpMessageResponseAdapter extends HttpResponseAdapter[Response] {
-    override def statusCodeOf(resp: Response): Int           = resp.status.code
-    override def contentStringOf(resp: Response): String     = resp.contentString
-    override def contentBytesOf(resp: Response): Array[Byte] = resp.contentBytes
-    override def contentTypeOf(
-        resp: Response
-    ): Option[String] = resp.contentType
-    override def httpResponseOf(
-        resp: Response
-    ): HttpResponse[Response] = resp
+    override def statusCodeOf(resp: Response): Int                      = resp.status.code
+    override def contentStringOf(resp: Response): String                = resp.contentString
+    override def contentBytesOf(resp: Response): Array[Byte]            = resp.contentBytes
+    override def contentTypeOf(resp: Response): Option[String]          = resp.contentType
+    override def httpResponseOf(resp: Response): HttpResponse[Response] = resp
   }
 
   implicit class HttpMessageResponse(val raw: Response) extends HttpResponse[Response] {
