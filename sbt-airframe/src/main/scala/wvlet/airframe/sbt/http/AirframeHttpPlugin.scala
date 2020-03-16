@@ -65,18 +65,23 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       },
       airframeHttpGenerateClient := {
         val cl = airframeHttpClassLoader.value
-        val generatedFiles = for (target <- airframeHttpClients.value) yield {
-          val config = HttpClientGeneratorConfig(target)
-          val router = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
+        val generatedFiles = for (targetClient <- airframeHttpClients.value) yield {
+          val config               = HttpClientGeneratorConfig(targetClient)
+          val router               = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
+          val routerHash           = router.toString.hashCode
+          val routerHashFile: File = (Compile / target).value / f"router-${routerHash}%07x.update"
+          val path                 = config.targetPackageName.replaceAll("\\.", "/")
+          val file: File           = (Compile / sourceManaged).value / path / s"${config.className}.scala"
+          val baseDir              = (ThisBuild / baseDirectory).value
+          val relativeFileLoc      = file.relativeTo(baseDir).getOrElse(file)
 
-          val path            = config.targetPackageName.replaceAll("\\.", "/")
-          val file: File      = (Compile / sourceManaged).value / path / s"${config.className}.scala"
-          val baseDir         = (ThisBuild / baseDirectory).value
-          val relativeFileLoc = file.relativeTo(baseDir).getOrElse(file)
-
-          info(s"Generating http client code for ${config.clientType.toString}: ${relativeFileLoc}")
-          val code = HttpClientGenerator.generate(router, config)
-          IO.write(file, code)
+          if (!(file.exists() && routerHashFile.exists())) {
+            info(s"Found Airframe HTTP interfaces:\n${router}")
+            info(s"Generating an HTTP ${config.clientType.name} client code: ${relativeFileLoc}")
+            val code = HttpClientGenerator.generate(router, config)
+            IO.write(file, code)
+            IO.touch(routerHashFile)
+          }
           file
         }
         generatedFiles
