@@ -697,11 +697,11 @@ lazy val sql =
 lazy val rx =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
-    .in(file("airframe-rx"))
+    .in(file("airframe-http-rx"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-rx",
-      description := "Reactive operators for Scala and Scala.js",
+      name := "airframe-http-rx",
+      description := "Reactive HTML elements for Scala and Scala.js",
       libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
     )
     .jsSettings(
@@ -719,11 +719,11 @@ lazy val rxJS  = rx.js
 lazy val widget =
   crossProject(JSPlatform)
     .crossType(CrossType.Pure)
-    .in(file("airframe-rx-widget"))
+    .in(file("airframe-http-widget"))
     //    .enablePlugins(ScalaJSBundlerPlugin)
     .settings(buildSettings)
     .settings(
-      name := "airframe-rx-widget",
+      name := "airframe-http-widget",
       description := "Reactive Widget library for Scala.js"
     )
     .jsSettings(
