@@ -76,7 +76,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           val relativeFileLoc      = file.relativeTo(baseDir).getOrElse(file)
 
           if (!(file.exists() && routerHashFile.exists())) {
-            info(s"Found an airframe-http router:\n${router}")
+            info(s"Found an airframe-http router for package ${config.apiPackageName}:\n${router}")
             info(s"Generating a ${config.clientType.name} client code: ${relativeFileLoc}")
             val code = HttpClientGenerator.generate(router, config)
             IO.write(file, code)
