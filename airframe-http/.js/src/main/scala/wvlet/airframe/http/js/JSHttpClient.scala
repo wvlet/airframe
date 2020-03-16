@@ -16,7 +16,6 @@ import java.nio.ByteBuffer
 
 import org.scalajs.dom
 import org.scalajs.dom.ext.Ajax.InputData
-import org.scalajs.dom.ext.AjaxException
 import org.scalajs.dom.window
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Retry.RetryContext
@@ -25,8 +24,7 @@ import wvlet.airframe.http.HttpClient.defaultBeforeRetryAction
 import wvlet.airframe.http.HttpMessage._
 import wvlet.airframe.http._
 import wvlet.airframe.http.js.JSHttpClient.{MessageEncoding, MessagePackEncoding}
-import wvlet.airframe.surface.Surface
-import wvlet.airframe.surface.Primitive
+import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
 
 import scala.concurrent.{Future, Promise}
@@ -60,7 +58,7 @@ object JSHttpClient {
   }
 }
 
-import JSHttpClient._
+import wvlet.airframe.http.js.JSHttpClient._
 
 case class JSHttpClientConfig(
     serverAddress: Option[ServerAddress] = None,
@@ -130,7 +128,7 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
               .split("\n")
               .foreach { line =>
                 line.split(":") match {
-                  case Array(k, v) => header += k -> v
+                  case Array(k, v) => header += k.trim -> v.trim
                   case _           =>
                 }
               }
@@ -177,6 +175,7 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
           val responseCodec =
             MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
           // Read the response body as MessagePack or JSON
+          val ct = resp.contentType
           resp.contentType match {
             case Some("application/x-msgpack") =>
               responseCodec.fromMsgPack(resp.contentBytes)
