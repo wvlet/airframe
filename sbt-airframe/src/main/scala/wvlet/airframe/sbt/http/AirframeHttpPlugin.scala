@@ -81,6 +81,8 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
             val code = HttpClientGenerator.generate(router, config)
             IO.write(file, code)
             IO.touch(routerHashFile)
+          } else {
+            info(s"${relativeFileLoc} is up-to-date")
           }
           file
         }

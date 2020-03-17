@@ -14,17 +14,20 @@
 
 package wvlet.airframe.surface
 
+import java.lang.annotation.Annotation
+import java.lang.reflect.Method
 import java.{lang => jl}
 
+import scala.annotation.tailrec
 import scala.reflect.ClassTag
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 /**
   *
   */
 package object reflect {
   private[reflect] def findAnnotation[T <: jl.annotation.Annotation: ClassTag](
-      annot: Array[jl.annotation.Annotation]
+      annot: Seq[jl.annotation.Annotation]
   ): Option[T] = {
     val c = implicitly[ClassTag[T]]
     annot
@@ -36,7 +39,16 @@ package object reflect {
 
   implicit class ToRuntimeSurface(s: Surface) {
     def findAnnotationOf[T <: jl.annotation.Annotation: ClassTag]: Option[T] = {
-      val annot = s.rawType.getDeclaredAnnotations
+
+      def loop(cl: Class[_]): Seq[Annotation] = {
+        cl match {
+          case null => Seq.empty
+          case other =>
+            cl.getDeclaredAnnotations ++ cl.getInterfaces.flatMap(loop)
+        }
+      }
+
+      val annot = loop(s.rawType)
       findAnnotation[T](annot)
     }
   }
@@ -78,17 +90,30 @@ package object reflect {
   }
 
   implicit class ToRuntimeMethodSurface(m: MethodSurface) {
-    def annotations: Array[jl.annotation.Annotation] = {
+    def annotations: Seq[jl.annotation.Annotation] = {
       Try {
-        val cl = m.owner.rawType
-        val mt = cl.getMethod(m.name, m.args.map(_.surface.rawType): _*)
-        mt.getDeclaredAnnotations
+        val cl             = m.owner.rawType
+        val methodArgTypes = m.args.map(_.surface.rawType)
+        def loop(cl: Class[_]): Seq[Annotation] = {
+          cl match {
+            case null => Seq.empty
+            case other =>
+              Try(cl.getMethod(m.name, methodArgTypes: _*)) match {
+                case Success(mt) =>
+                  mt.getDeclaredAnnotations ++
+                    cl.getInterfaces.flatMap(parent => loop(parent))
+                case _ =>
+                  Seq.empty
+              }
+          }
+        }
+        val annot = loop(cl)
+        annot
       } match {
         case Success(annot) =>
           annot
         case Failure(e) =>
-          //logger.warn(e)
-          Array.empty
+          Seq.empty
       }
     }
 

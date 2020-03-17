@@ -6,19 +6,18 @@ import wvlet.log.LogSupport
 import myapp.spi.MyService
 import com.twitter.util.Await
 
-class MyServer extends myapp.spi.MyService {
+class MyServiceImpl extends myapp.spi.MyService {
   override def hello(id: Int): String = s"hello ${id}"
 }
 
 object MyServer extends LogSupport {
 
   def main(args: Array[String]): Unit = {
-    val router = Router.of[MyService]
+    val router = Router.of[MyServiceImpl]
 
     val d =
       newFinagleServerDesign(router = router)
         .add(finagleClientDesign)
-        .bind[MyService].to[MyServer]
 
     d.build[FinagleClient] { finagleClient =>
       val client = new myapp.spi.ServiceClient(finagleClient)
