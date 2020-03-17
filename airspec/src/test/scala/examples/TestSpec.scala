@@ -55,6 +55,9 @@ class TestSpec extends AirSpec with LogSupport {
   def `should support pending`: Unit = {
     pendingUntil("fixing #012")
   }
+  def `should support pending with a reason`: Unit = {
+    pending("pending reason")
+  }
 
   def interceptTest: Unit = {
     intercept[NoSuchElementException] {

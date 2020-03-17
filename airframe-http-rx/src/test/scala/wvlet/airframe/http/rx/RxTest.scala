@@ -19,6 +19,9 @@ import wvlet.airframe.Design
 import wvlet.airframe.http.rx.html.Embedded
 import wvlet.airspec._
 
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
+
 object RxTest extends AirSpec {
 
   test("create a new Rx variable") {
@@ -65,7 +68,7 @@ object RxTest extends AirSpec {
   }
 
   test("chain Rx operators") {
-    val v  = Rx.of(2)
+    val v  = Rx.const(2)
     val v1 = v.map(_ + 1)
     val v2 = v1.flatMap(i => Rx(i * 2))
     val op = v2.withName("multiply")
@@ -100,4 +103,29 @@ object RxTest extends AirSpec {
       em.render
     }
   }
+
+  implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+
+  test("from Future[X]") {
+    val f  = Future.successful(1)
+    val rx = f.toRx
+
+    pending("requries async test")
+    rx.run(x => x shouldBe Some(1))
+  }
+
+  test("from Future[Exception]") {
+    val fe: Future[Exception] = Future.failed(new IllegalArgumentException)
+
+    val rx = fe.toRx
+
+    pending("requires async test")
+    rx.run { x: Option[Exception] =>
+      x match {
+        case None => // ok
+        case _    => fail()
+      }
+    }
+  }
+
 }

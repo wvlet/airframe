@@ -71,6 +71,10 @@ trait Asserts { this: AirSpecSpi =>
     throw Pending(reason, code)
   }
 
+  protected def pending(reason: String = "pending")(implicit code: SourceCode): Unit = {
+    throw Pending(reason, code)
+  }
+
   protected def cancel(reason: String = "cancelled")(implicit code: SourceCode): Unit = {
     throw Cancelled(reason, code)
   }

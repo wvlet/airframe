@@ -16,6 +16,8 @@ package wvlet.airframe.http.rx
 import wvlet.log.LogSupport
 
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 /**
   *
@@ -46,9 +48,22 @@ trait Rx[A] extends LogSupport {
 }
 
 object Rx extends LogSupport {
-  def of[A](v: A): Rx[A]          = SingleOp(v)
+  def const[A](v: A): Rx[A]       = SingleOp(v)
   def variable[A](v: A): RxVar[A] = Rx.apply(v)
   def apply[A](v: A): RxVar[A]    = new RxVar(v)
+
+  /**
+    * Mapping a Scala Future into Rx
+    * @param f
+    * @param ec
+    * @tparam A
+    * @return
+    */
+  def fromFuture[A](f: Future[A])(implicit ec: ExecutionContext): Rx[Option[A]] = {
+    val v = Rx.variable[Option[A]](None)
+    f.foreach { x => v := Some(x) }
+    v
+  }
 
   /**
     * Build a executable chain of Rx operators, and the resulting chain
