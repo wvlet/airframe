@@ -64,6 +64,6 @@ File.write(RELEASE_NOTES_FILE, release_notes.join)
 
 run "git commit #{RELEASE_NOTES_FILE} -m \"Release #{next_version}\""
 run "git tag -a -F #{TMP_RELEASE_NOTES_FILE} v#{next_version}"
-# run "git push --follow-tags"
+run "git push --follow-tags"
 
 File.delete(TMP_RELEASE_NOTES_FILE)
