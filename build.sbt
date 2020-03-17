@@ -18,6 +18,7 @@ val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
 val FINAGLE_VERSION                 = "20.3.0"
 val FLUENCY_VERSION                 = "2.4.1"
+val SCALAJS_DOM_VERSION             = "1.0.0"
 
 val airSpecFramework = new TestFramework("wvlet.airspec.Framework")
 
@@ -542,7 +543,7 @@ lazy val http =
       jsBuildSettings,
       jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % "1.0.1"
+        "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
     .dependsOn(airframe, airframeMacrosRef, control, surface, json, codec, airspecRef % "test")
@@ -708,7 +709,7 @@ lazy val rx =
       jsBuildSettings,
       jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % "1.0.1"
+        "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
     .dependsOn(log, surface, airspecRef % "test")
