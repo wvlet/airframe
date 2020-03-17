@@ -542,7 +542,7 @@ lazy val http =
       jsBuildSettings,
       jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % "1.0.0"
+        "org.scala-js" %%% "scalajs-dom" % "1.0.1"
       )
     )
     .dependsOn(airframe, airframeMacrosRef, control, surface, json, codec, airspecRef % "test")
@@ -708,7 +708,7 @@ lazy val rx =
       jsBuildSettings,
       jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % "1.0.0"
+        "org.scala-js" %%% "scalajs-dom" % "1.0.1"
       )
     )
     .dependsOn(log, surface, airspecRef % "test")
