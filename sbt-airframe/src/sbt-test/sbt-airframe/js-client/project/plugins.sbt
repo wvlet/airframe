@@ -5,6 +5,6 @@ sys.props.get("plugin.version") match {
 }
 
 // For Scala.js
-addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")
-val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.0.0")
+addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.1")
+val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.0.1")
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % SCALAJS_VERSION)
