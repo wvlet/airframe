@@ -44,6 +44,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       "HTTP client generator targets, <api package name>(:<client type>(:<target package name>)?)?"
     )
     val airframeHttpGenerateClient            = taskKey[Seq[File]]("Generate the client code")
+    val airframeHttpClean                     = taskKey[Unit]("clean artifacts")
     private[http] val airframeHttpClassLoader = taskKey[URLClassLoader]("class loader for dependent classes")
   }
 
@@ -63,11 +64,20 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         val cl = new URLClassLoader(cp.toArray, getClass().getClassLoader)
         cl
       },
+      airframeHttpClean := {
+        for (targetClient <- airframeHttpClients.value) {
+          val config     = HttpClientGeneratorConfig(targetClient)
+          val path       = config.targetPackageName.replaceAll("\\.", "/")
+          val file: File = (Compile / sourceManaged).value / path / s"${config.className}.scala"
+          IO.delete(file)
+        }
+      },
       airframeHttpGenerateClient := {
         val cl = airframeHttpClassLoader.value
         val generatedFiles = for (targetClient <- airframeHttpClients.value) yield {
-          val config               = HttpClientGeneratorConfig(targetClient)
-          val router               = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
+          val config = HttpClientGeneratorConfig(targetClient)
+          val router = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
+          info(s"Found router:\n${router}")
           val routerHash           = router.toString.hashCode
           val routerHashFile: File = (Compile / target).value / f"router-${routerHash}%07x.update"
           val path                 = config.targetPackageName.replaceAll("\\.", "/")
