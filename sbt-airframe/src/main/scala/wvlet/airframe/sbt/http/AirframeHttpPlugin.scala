@@ -13,10 +13,19 @@
  */
 package wvlet.airframe.sbt.http
 
+import java.io.{FileInputStream, FileOutputStream}
+import java.nio.file.Files
+import java.util.zip.GZIPInputStream
+
 import coursier.core.{Extension, Publication}
+import org.apache.commons.compress.archivers.ArchiveStreamFactory
+import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveInputStream}
+import org.apache.commons.compress.utils.IOUtils
 import sbt._
 import wvlet.airframe.codec.MessageCodec
 import wvlet.log.LogSupport
+import wvlet.log.io.IOUtil
+import wvlet.log.io.IOUtil.withResource
 
 /**
   * sbt plugin for supporting Airframe HTTP development.
@@ -74,14 +83,16 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       },
       airframeHttpVersion := wvlet.airframe.sbt.BuildInfo.version,
       airframeHttpBinaryDir := {
-        val airframeVersion = airframeHttpVersion.value
-        val targetDir       = (Compile / target).value / scalaBinaryVersion.value / "airframe-http"
+        val airframeVersion        = airframeHttpVersion.value
+        val airframeHttpPackageDir = (Compile / target).value / scalaBinaryVersion.value / "airframe-http"
 
-        val versionFile = targetDir / "VERSION"
-        if (!(versionFile.exists() && IO
-              .readLines(versionFile).exists { line => line.startsWith("version:=") && line.endsWith(airframeVersion) })) {
+        val versionFile = airframeHttpPackageDir / "VERSION"
+        val needsUpdate = !versionFile.exists() ||
+          IO.readLines(versionFile).exists { line => line.contains(s"version:=${airframeVersion}") }
+
+        if (needsUpdate) {
+          // Download airframe-http.tgz with coursier
           import coursier._
-
           val moduleName = s"airframe-http_${scalaBinaryVersion.value}"
           val d = new Dependency(
             module = Module(
@@ -100,23 +111,51 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           val files =
             Fetch()
               .addDependencies(d)
-              .allArtifactTypes()
+              .allArtifactTypes() // This line is necessary to choose a specific publication (arch, tar.gz)
               .run()
 
-          targetDir.mkdirs()
-          files.headOption.map { tgz =>
-            import scala.sys.process._
-            // TODO: Use pure-java tar.gz unarchiver
-            val cmd = s"tar xvfz ${tgz.getAbsolutePath} --strip-components 1 -C ${targetDir.getAbsolutePath}/"
-            debug(cmd)
-            cmd.!!
+          // Unpack .tgz file
+          val packageDir = airframeHttpPackageDir.getAbsoluteFile
+          airframeHttpPackageDir.mkdirs()
+          files.headOption.map {
+            tgz =>
+              import scala.sys.process._
+              // Extract tar.gz archive using commons-compress library
+              withResource(new GZIPInputStream(new FileInputStream(tgz))) {
+                in =>
+                  val tgzInput = new TarArchiveInputStream(in)
+                  Iterator
+                    .continually(tgzInput.getNextTarEntry)
+                    .takeWhile(entry => entry != null)
+                    .filter(tgzInput.canReadEntryData(_))
+                    .foreach {
+                      entry =>
+                        val fileName     = entry.getName
+                        val mode         = entry.getMode
+                        val isExecutable = (mode & (1 << 6)) != 0
+
+                        // Strip the first path component
+                        val path       = fileName.split("/").tail.mkString("/")
+                        val outputFile = new File(packageDir, path)
+                        if (entry.isDirectory) {
+                          debug(s"Creating dir : ${path}")
+                          outputFile.mkdirs()
+                        } else {
+                          withResource(Files.newOutputStream(outputFile.toPath)) { out =>
+                            debug(s"Creating file: ${path}")
+                            IOUtils.copy(tgzInput, out)
+                          }
+                          outputFile.setExecutable(isExecutable)
+                        }
+                    }
+              }
           }
         }
-        targetDir
+        airframeHttpPackageDir
       },
       airframeHttpGenerateClient := {
         val binDir = airframeHttpBinaryDir.value
-        info(s"airframe-http dir: ${binDir}")
+        info(s"airframe-http directory: ${binDir}")
         val cp = airframeHttpClasspass.value.mkString(":")
 
         val outDir: String    = (Compile / sourceManaged).value.getPath

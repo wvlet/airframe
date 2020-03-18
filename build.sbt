@@ -1010,9 +1010,8 @@ lazy val sbtAirframe =
       scalaVersion := SCALA_2_12,
       crossSbtVersions := Vector("1.3.8"),
       libraryDependencies ++= Seq(
-        "io.get-coursier"     %% "coursier"       % "2.0.0-RC5-6",
-        "org.codehaus.plexus" % "plexus-archiver" % "4.2.2"
-//"org.apache.commons" % "commons-compress" % "1.2"
+        "io.get-coursier"    %% "coursier"        % "2.0.0-RC5-6",
+        "org.apache.commons" % "commons-compress" % "1.2"
       ),
       scriptedLaunchOpts := {
         scriptedLaunchOpts.value ++
@@ -1027,4 +1026,4 @@ lazy val sbtAirframe =
       },
       scriptedBufferLog := false
     )
-    .dependsOn(codecJVM, httpJVM % "test", logJVM, airspecRefJVM % "test")
+    .dependsOn(controlJVM, codecJVM, logJVM, httpJVM % "test", airspecRefJVM % "test")
