@@ -22,6 +22,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.utils.IOUtils
 import sbt._
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.control.{OS, OSType}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil.withResource
 
@@ -52,11 +53,13 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     val airframeHttpClients = settingKey[Seq[String]](
       "HTTP client generator targets, <api package name>(:<client type>(:<target package name>)?)?"
     )
-    val airframeHttpGenerateClient = taskKey[Seq[File]]("Generate the client code")
-    val airframeHttpClean          = taskKey[Unit]("clean artifacts")
-    val airframeHttpClasspass      = taskKey[Seq[String]]("class loader for dependent classes")
-    val airframeHttpBinaryDir      = taskKey[File]("Download Airframe HTTP Binary")
-    val airframeHttpVersion        = settingKey[String]("airframe-http version")
+    val airframeHttpWorkDir         = settingKey[File]("working directory for airframe-http")
+    val airframeHttpGenerateClient  = taskKey[Seq[File]]("Generate the client code")
+    val airframeHttpClean           = taskKey[Unit]("clean artifacts")
+    val airframeHttpClasspass       = taskKey[Seq[String]]("class loader for dependent classes")
+    val airframeHttpBinaryDir       = taskKey[File]("Downloaded Airframe HTTP Binary location")
+    val airframeHttpVersion         = settingKey[String]("airframe-http version to use")
+    val airframeHttpGeneratorOption = settingKey[String]("airframe-http client-generator options")
   }
 
   private def dependentProjects: ScopeFilter =
@@ -75,22 +78,21 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           .map { p => p.relativeTo(baseDir).getOrElse(p).getPath }
         classpaths
       },
+      airframeHttpWorkDir := (Compile / target).value / s"scala-${scalaBinaryVersion.value}" / "airframe-http",
       airframeHttpClean := {
-//        for (targetClient <- airframeHttpClients.value) {
-//          val config     = HttpClientGeneratorConfig(targetClient)
-//          val path       = config.targetPackageName.replaceAll("\\.", "/")
-//          val file: File = (Compile / sourceManaged).value / path / s"${config.className}.scala"
-//          IO.delete(file)
-//        }
+        val d = airframeHttpWorkDir.value
+        if (d.exists) {
+          IO.delete(d)
+        }
       },
       airframeHttpVersion := wvlet.airframe.sbt.BuildInfo.version,
       airframeHttpBinaryDir := {
         val airframeVersion        = airframeHttpVersion.value
-        val airframeHttpPackageDir = (Compile / target).value / scalaBinaryVersion.value / "airframe-http"
+        val airframeHttpPackageDir = airframeHttpWorkDir.value / "local"
 
         val versionFile = airframeHttpPackageDir / "VERSION"
         val needsUpdate = !versionFile.exists() ||
-          IO.readLines(versionFile).exists { line => line.contains(s"version:=${airframeVersion}") }
+          !IO.readLines(versionFile).exists { line => line.contains(s"version:=${airframeVersion}") }
 
         if (needsUpdate) {
           // Download airframe-http.tgz with coursier
@@ -122,6 +124,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           files.headOption.map {
             tgz =>
               // Extract tar.gz archive using commons-compress library
+              info(s"Extracting airframe-http ${airframeVersion} package to ${airframeHttpPackageDir}")
               withResource(new GZIPInputStream(new FileInputStream(tgz))) {
                 in =>
                   val tgzInput = new TarArchiveInputStream(in)
@@ -155,15 +158,21 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         }
         airframeHttpPackageDir
       },
+      airframeHttpGeneratorOption := "",
       airframeHttpGenerateClient := {
         val binDir = airframeHttpBinaryDir.value
-        info(s"airframe-http directory: ${binDir}")
+        debug(s"airframe-http directory: ${binDir}")
         val cp = airframeHttpClasspass.value.mkString(":")
 
         val outDir: String    = (Compile / sourceManaged).value.getPath
-        val targetDir: String = (Compile / target).value.getPath
+        val targetDir: String = airframeHttpWorkDir.value.getPath
+        val cmdName = if (OS.isWindows) {
+          "airframe-http-client-generator.bat"
+        } else {
+          "airframe-http-client-generator"
+        }
         val cmd =
-          s"${binDir}/bin/airframe-http-client-generator generate -cp ${cp} -o ${outDir} -t ${targetDir} ${airframeHttpClients.value
+          s"${binDir}/bin/${cmdName} generate ${airframeHttpGeneratorOption.value} -cp ${cp} -o ${outDir} -t ${targetDir} ${airframeHttpClients.value
             .mkString(" ")}"
         debug(cmd)
         import scala.sys.process._

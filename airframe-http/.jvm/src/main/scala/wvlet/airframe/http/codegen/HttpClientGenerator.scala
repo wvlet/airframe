@@ -18,10 +18,8 @@ import java.net.URLClassLoader
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Control
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.codegen.HttpClientGenerator.{Artifacts, generate}
 import wvlet.airframe.http.codegen.client.{AsyncClient, HttpClientType}
 import wvlet.airframe.launcher.Launcher
-import wvlet.log.io.IOUtil
 import wvlet.log.{LogSupport, Logger}
 
 case class HttpClientGeneratorConfig(
@@ -109,7 +107,7 @@ class HttpClientGenerator(
       classpath: String = "",
       @option(prefix = "-o", description = "output base directory")
       outDir: File,
-      @option(prefix = "-t", description = "working directory")
+      @option(prefix = "-t", description = "target directory")
       targetDir: File,
       @argument(description = "client code generation targets: (package):(type)(:(targetPackage))?")
       targets: Seq[String] = Seq.empty
@@ -118,29 +116,28 @@ class HttpClientGenerator(
     val cl = new URLClassLoader(cp, Thread.currentThread().getContextClassLoader)
     val artifacts = for (x <- targets) yield {
       val config = HttpClientGeneratorConfig(x)
-      info(config)
-      val router    = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
-      val routerStr = router.toString
-      info(s"Found a router for package ${config.apiPackageName}:\n${routerStr}")
-      val routerHash = routerStr.hashCode
-
+      debug(config)
       if (!targetDir.exists()) {
         targetDir.mkdirs()
       }
-      val routerHashFile = new File(targetDir, f"router-${routerHash}%07x.update")
-
       val path       = s"${config.targetPackageName.replaceAll("\\.", "/")}/${config.fileName}"
       val outputFile = new File(outDir, path)
-      outputFile.getParentFile.mkdirs()
 
+      val router         = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
+      val routerStr      = router.toString
+      val routerHash     = routerStr.hashCode
+      val routerHashFile = new File(targetDir, f"router-${routerHash}%07x.update")
       if (!(outputFile.exists() && routerHashFile.exists())) {
+        outputFile.getParentFile.mkdirs()
+        info(f"Router for package ${config.apiPackageName}:\n${routerStr}")
         val code = HttpClientGenerator.generate(router, config)
 
-        info(s"Generating a ${config.clientType.name} client code: ${path}\n${code}")
+        info(s"Generating a ${config.clientType.name} client code: ${path}")
+        info(code)
         writeFile(outputFile, code)
         touch(routerHashFile)
       } else {
-        info(s"${outputFile} is up-to-date")
+        info(s"${path} is up-to-date")
       }
       outputFile
     }
@@ -148,7 +145,9 @@ class HttpClientGenerator(
   }
 
   private def touch(f: File): Unit = {
-    f.setLastModified(System.currentTimeMillis())
+    if (!f.createNewFile()) {
+      f.setLastModified(System.currentTimeMillis())
+    }
   }
 
   private def writeFile(outputFile: File, data: String): Unit = {

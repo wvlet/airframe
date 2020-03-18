@@ -71,7 +71,7 @@ object RouteScanner extends LogSupport {
       val s       = ReflectSurfaceFactory.ofClass(cl)
       val methods = ReflectSurfaceFactory.methodsOfClass(cl)
       if (methods.exists(_.findAnnotationOf[Endpoint].isDefined)) {
-        info(s"Found an Airframe HTTP interface: ${s.fullName}")
+        debug(s"Found an Airframe HTTP interface: ${s.fullName}")
         router = router.addInternal(s, methods)
       }
     }

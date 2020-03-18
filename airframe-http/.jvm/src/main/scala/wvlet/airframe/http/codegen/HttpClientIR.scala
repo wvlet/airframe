@@ -34,9 +34,14 @@ object HttpClientIR extends LogSupport {
       // Collect all Surfaces used in the generated code
       def loop(s: Any): Seq[Surface] = {
         s match {
+          case s: Surface =>
+            Seq(s) ++ s.typeArgs.flatMap(loop)
+          case m: MethodParameter =>
+            loop(m.surface)
           case c: ClientClassDef   => c.services.flatMap(loop)
           case x: ClientServiceDef => x.methods.flatMap(loop)
-          case m: ClientMethodDef  => Seq(m.returnType) ++ m.inputParameters.map(_.surface)
+          case m: ClientMethodDef =>
+            loop(m.returnType) ++ m.inputParameters.flatMap(loop)
         }
       }
 
@@ -45,7 +50,7 @@ object HttpClientIR extends LogSupport {
         !(fullName.startsWith("scala.") || fullName.startsWith("wvlet.airframe.http.") || surface.isPrimitive)
       }
 
-      loop(classDef).filter(requireImports).distinct
+      loop(classDef).filter(requireImports).distinct.sortBy(_.name)
     }
   }
   case class ClientClassDef(clsName: String, services: Seq[ClientServiceDef])     extends ClientCodeIR
