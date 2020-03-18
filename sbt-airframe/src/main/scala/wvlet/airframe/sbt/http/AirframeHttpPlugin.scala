@@ -13,18 +13,16 @@
  */
 package wvlet.airframe.sbt.http
 
-import java.io.{FileInputStream, FileOutputStream}
+import java.io.FileInputStream
 import java.nio.file.Files
 import java.util.zip.GZIPInputStream
 
 import coursier.core.{Extension, Publication}
-import org.apache.commons.compress.archivers.ArchiveStreamFactory
-import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveInputStream}
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.utils.IOUtils
 import sbt._
 import wvlet.airframe.codec.MessageCodec
 import wvlet.log.LogSupport
-import wvlet.log.io.IOUtil
 import wvlet.log.io.IOUtil.withResource
 
 /**
@@ -32,7 +30,11 @@ import wvlet.log.io.IOUtil.withResource
   *
   * This plugin supports:
   * - Building a Router by scanning interfaces that have methods with @Endpoint annotations in the project
-  * - Generate HTTP client code for Scala and Scala.js
+  * - Generate HTTP client code for Scala and Scala.js.
+  *
+  * The client code generator is defined in wvlet.airframe.http.codegen package.
+  * This plugin downloads a pre-built archive (airframe-http_(scala version)-(airframe version).tgz) and
+  * invoke HttpClientGenerator.
   *
   */
 object AirframeHttpPlugin extends AutoPlugin with LogSupport {
@@ -119,7 +121,6 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           airframeHttpPackageDir.mkdirs()
           files.headOption.map {
             tgz =>
-              import scala.sys.process._
               // Extract tar.gz archive using commons-compress library
               withResource(new GZIPInputStream(new FileInputStream(tgz))) {
                 in =>
@@ -145,6 +146,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
                             debug(s"Creating file: ${path}")
                             IOUtils.copy(tgzInput, out)
                           }
+                          // Set +x for executables
                           outputFile.setExecutable(isExecutable)
                         }
                     }
@@ -166,9 +168,9 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         debug(cmd)
         import scala.sys.process._
         val json: String = cmd.!!
-        info(json)
-
-        MessageCodec.fromJson[Seq[File]](json)
+        debug(s"client generator result: ${json}")
+        // Return generated files
+        MessageCodec.of[Seq[File]].unpackJson(json).getOrElse(Seq.empty)
       },
       Compile / sourceGenerators += Def.task {
         airframeHttpGenerateClient.value

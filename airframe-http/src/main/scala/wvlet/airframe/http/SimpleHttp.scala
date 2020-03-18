@@ -18,6 +18,8 @@ import wvlet.airframe.http.SimpleHttpRequest.SimpleHttpRequestAdapter
 import wvlet.airframe.http.SimpleHttpResponse.SimpleHttpResponseAdapter
 
 /**
+  * Http Request
+  *
   * @deprecated(message = "Use Http.request(...) instead")
   */
 case class SimpleHttpRequest(
@@ -49,9 +51,10 @@ object SimpleHttpRequest {
   }
 }
 
-/*
- * @deprecated(message = "Use Http.response(...) instead")
- */
+/**
+  * Http Response
+  * @deprecated(message = "Use Http.response(...) instead")
+  */
 case class SimpleHttpResponse(
     override val status: HttpStatus,
     private val contentStr: String = "",

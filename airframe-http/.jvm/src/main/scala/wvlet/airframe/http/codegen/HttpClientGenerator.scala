@@ -123,7 +123,10 @@ class HttpClientGenerator(
       val routerStr = router.toString
       info(s"Found a router for package ${config.apiPackageName}:\n${routerStr}")
       val routerHash = routerStr.hashCode
-      targetDir.mkdirs()
+
+      if (!targetDir.exists()) {
+        targetDir.mkdirs()
+      }
       val routerHashFile = new File(targetDir, f"router-${routerHash}%07x.update")
 
       val path       = s"${config.targetPackageName.replaceAll("\\.", "/")}/${config.fileName}"
