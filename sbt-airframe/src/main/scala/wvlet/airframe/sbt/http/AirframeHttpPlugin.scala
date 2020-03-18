@@ -106,7 +106,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           targetDir.mkdirs()
           files.headOption.map { tgz =>
             import scala.sys.process._
-            // Use pure-java tar.gz unarchiver
+            // TODO: Use pure-java tar.gz unarchiver
             val cmd = s"tar xvfz ${tgz.getAbsolutePath} --strip-components 1 -C ${targetDir.getAbsolutePath}/"
             debug(cmd)
             cmd.!!
