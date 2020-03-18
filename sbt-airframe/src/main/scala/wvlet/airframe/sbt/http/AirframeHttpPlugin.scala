@@ -78,7 +78,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           .map { p => p.relativeTo(baseDir).getOrElse(p).getPath }
         classpaths
       },
-      airframeHttpWorkDir := (Compile / target).value / s"scala-${scalaBinaryVersion.value}" / "airframe-http",
+      airframeHttpWorkDir := (Compile / target).value / s"scala-${scalaBinaryVersion.value}" / s"airframe" / airframeHttpVersion.value,
       airframeHttpClean := {
         val d = airframeHttpWorkDir.value
         if (d.exists) {
