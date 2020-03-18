@@ -14,10 +14,10 @@
 package wvlet.airframe.http.codegen
 import java.util.Locale
 
+import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.router.Route
-import wvlet.airframe.http.{HttpMethod, HttpRequest, Router}
-import wvlet.airframe.surface.{CName, MethodParameter, Surface}
+import wvlet.airframe.surface.{MethodParameter, Parameter, Surface}
 import wvlet.log.LogSupport
 
 /**
@@ -36,7 +36,7 @@ object HttpClientIR extends LogSupport {
         s match {
           case s: Surface =>
             Seq(s) ++ s.typeArgs.flatMap(loop)
-          case m: MethodParameter =>
+          case m: Parameter =>
             loop(m.surface)
           case c: ClientClassDef   => c.services.flatMap(loop)
           case x: ClientServiceDef => x.methods.flatMap(loop)
