@@ -135,10 +135,8 @@ class HttpClientGenerator(
         if (!(outputFile.exists() && routerHashFile.exists())) {
           outputFile.getParentFile.mkdirs()
           info(f"Router for package ${config.apiPackageName}:\n${routerStr}")
-          val code = HttpClientGenerator.generate(router, config)
-
           info(s"Generating a ${config.clientType.name} client code: ${path}")
-          debug(code)
+          val code = HttpClientGenerator.generate(router, config)
           writeFile(outputFile, code)
           touch(routerHashFile)
         } else {
