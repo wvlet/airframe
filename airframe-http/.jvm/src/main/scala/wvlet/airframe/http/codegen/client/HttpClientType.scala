@@ -20,6 +20,7 @@ import wvlet.airframe.http.codegen.HttpClientIR.ClientSourceDef
 trait HttpClientType {
   def name: String
   def defaultFileName: String
+  def defaultClassName: String
   def generate(src: ClientSourceDef): String
 }
 

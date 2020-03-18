@@ -106,6 +106,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           targetDir.mkdirs()
           files.headOption.map { tgz =>
             import scala.sys.process._
+            // Use pure-java tar.gz unarchiver
             val cmd = s"tar xvfz ${tgz.getAbsolutePath} --strip-components 1 -C ${targetDir.getAbsolutePath}/"
             debug(cmd)
             cmd.!!
@@ -123,26 +124,16 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         val cmd =
           s"${binDir}/bin/airframe-http-client-generator generate -cp ${cp} -o ${outDir} -t ${targetDir} ${airframeHttpClients.value
             .mkString(" ")}"
-        info(cmd)
+        debug(cmd)
         import scala.sys.process._
         val json: String = cmd.!!
         info(json)
 
-        val result = Generator.parseResult(json)
-        result.file.map { x => new File(x) }
+        MessageCodec.fromJson[Seq[File]](json)
       },
       Compile / sourceGenerators += Def.task {
         airframeHttpGenerateClient.value
       }.taskValue
     )
   }
-
 }
-
-object Generator {
-  def parseResult(json: String): GeneratorResults = {
-    MessageCodec.fromJson[GeneratorResults](json)
-  }
-}
-
-case class GeneratorResults(file: Seq[String])

@@ -38,8 +38,9 @@ object ScalaHttpClient {
 import ScalaHttpClient._
 
 object AsyncClient extends HttpClientType {
-  override def name: String            = "async"
-  override def defaultFileName: String = "ServiceClient.scala"
+  override def name: String             = "async"
+  override def defaultFileName: String  = "ServiceClient.scala"
+  override def defaultClassName: String = "ServiceClient"
   override def generate(src: ClientSourceDef): String = {
     def code = s"""${header(src.packageName)}
          |
@@ -91,8 +92,9 @@ object AsyncClient extends HttpClientType {
 }
 
 object SyncClient extends HttpClientType {
-  override def name: String            = "sync"
-  override def defaultFileName: String = "ServiceSyncClient.scala"
+  override def name: String             = "sync"
+  override def defaultFileName: String  = "ServiceSyncClient.scala"
+  override def defaultClassName: String = "ServiceSyncClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
       s"""${header(src.packageName)}
@@ -149,8 +151,9 @@ object SyncClient extends HttpClientType {
   *
   */
 object ScalaJSClient extends HttpClientType {
-  override def name: String            = "scalajs"
-  override def defaultFileName: String = "ServiceJSClient.scala"
+  override def name: String             = "scalajs"
+  override def defaultFileName: String  = "ServiceJSClient.scala"
+  override def defaultClassName: String = "ServiceJSClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
       s"""${header(src.packageName)}

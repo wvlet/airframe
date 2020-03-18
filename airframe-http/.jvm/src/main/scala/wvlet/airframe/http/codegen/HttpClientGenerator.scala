@@ -139,8 +139,7 @@ class HttpClientGenerator(
       }
       outputFile
     }
-    val result = Artifacts(artifacts)
-    println(MessageCodec.of[Artifacts].toJson(result))
+    println(MessageCodec.of[Seq[File]].toJson(artifacts))
   }
 
   private def touch(f: File): Unit = {
