@@ -49,7 +49,8 @@ object HttpClientIR extends LogSupport {
 
       def requireImports(surface: Surface): Boolean = {
         val fullName = surface.fullName
-        !(fullName.startsWith("scala.") ||
+        // Primitive Scala collections can be found in scala.Predef. No need to include them
+        !(surface.rawType.getPackageName == "scala.collection" ||
           fullName.startsWith("wvlet.airframe.http.") ||
           surface.isPrimitive ||
           // Within the same package
