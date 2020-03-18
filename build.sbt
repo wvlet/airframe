@@ -1011,7 +1011,7 @@ lazy val sbtAirframe =
       crossSbtVersions := Vector("1.3.8"),
       libraryDependencies ++= Seq(
         "io.get-coursier"    %% "coursier"        % "2.0.0-RC5-6",
-        "org.apache.commons" % "commons-compress" % "1.2"
+        "org.apache.commons" % "commons-compress" % "1.20"
       ),
       scriptedLaunchOpts := {
         scriptedLaunchOpts.value ++
