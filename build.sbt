@@ -1011,8 +1011,9 @@ lazy val sbtAirframe =
       scalaVersion := SCALA_2_12,
       crossSbtVersions := Vector("1.3.8"),
       libraryDependencies ++= Seq(
-        "io.get-coursier" %% "coursier-core"  % "2.0.0-RC6-10",
-        "io.get-coursier" %% "coursier-cache" % "2.0.0-RC6-10"
+        "io.get-coursier" %% "coursier" % "2.0.0-RC5-6"
+        //"io.get-coursier" %% "coursier-core"  % "2.0.0-RC6-10",
+        //"io.get-coursier" %% "coursier-cache" % "2.0.0-RC6-10"
       ),
       scriptedLaunchOpts := {
         scriptedLaunchOpts.value ++
@@ -1021,9 +1022,10 @@ lazy val sbtAirframe =
       scriptedDependencies := {
         // Publish all dependencies necessary for running the scripted tests
         scriptedDependencies.value
+        publishLocal.in(httpJVM, packArchiveTgz).value
         publishLocal.all(ScopeFilter(inDependencies(finagle))).value
         publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
       },
       scriptedBufferLog := false
     )
-    .dependsOn(httpJVM, airspecRefJVM % "test")
+    .dependsOn(httpJVM % "test", logJVM, airspecRefJVM % "test")

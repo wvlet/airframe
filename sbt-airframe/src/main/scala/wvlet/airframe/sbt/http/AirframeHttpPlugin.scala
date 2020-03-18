@@ -13,12 +13,8 @@
  */
 package wvlet.airframe.sbt.http
 
-import java.net.URLClassLoader
-
-import coursier.Fetch
-import sbt.Keys._
+import coursier.core.{Extension, Publication}
 import sbt._
-import wvlet.airframe.http.codegen.{HttpClientGeneratorConfig, _}
 import wvlet.log.LogSupport
 
 /**
@@ -35,7 +31,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   object autoImport extends Keys
   import autoImport._
 
-  override def requires: Plugins = plugins.JvmPlugin
+  override def requires: Plugins = sbt.plugins.JvmPlugin
   override def trigger           = noTrigger
 
   override def projectSettings = httpProjectSettings
@@ -44,81 +40,98 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     val airframeHttpClients = settingKey[Seq[String]](
       "HTTP client generator targets, <api package name>(:<client type>(:<target package name>)?)?"
     )
-    val airframeHttpGenerateClient            = taskKey[Seq[File]]("Generate the client code")
-    val airframeHttpClean                     = taskKey[Unit]("clean artifacts")
-    private[http] val airframeHttpClassLoader = taskKey[URLClassLoader]("class loader for dependent classes")
-    val airframeHttpBinary                    = taskKey[File]("Download Airframe HTTP Binary")
-    val airframeHttpVersion                   = taskKey[String]("airframe-http version")
+    val airframeHttpGenerateClient = taskKey[Seq[File]]("Generate the client code")
+    val airframeHttpClean          = taskKey[Unit]("clean artifacts")
+    val airframeHttpClasspass      = taskKey[Seq[String]]("class loader for dependent classes")
+    val airframeHttpBinary         = taskKey[Seq[File]]("Download Airframe HTTP Binary")
+    val airframeHttpVersion        = taskKey[String]("airframe-http version")
   }
 
   private def dependentProjects: ScopeFilter =
     ScopeFilter(inDependencies(ThisProject, transitive = true, includeRoot = false))
 
-  def httpProjectSettings =
+  def httpProjectSettings = {
+    import sbt.Keys._
     Seq(
       airframeHttpClients := Seq.empty,
-      airframeHttpClassLoader := {
+      airframeHttpClasspass := {
         // Compile all dependent projects
         (compile in Compile).all(dependentProjects).value
 
         val urls = Seq.newBuilder[URL]
         (dependencyClasspath in Compile).value.files.foreach { f => urls += f.toURI.toURL }
         val cp = urls.result()
-        info(cp.map(_.getPath).mkString(":"))
-        val cl = new URLClassLoader(cp.toArray)
-        cl
+        cp.map(_.getPath).toSeq
       },
       airframeHttpClean := {
-        for (targetClient <- airframeHttpClients.value) {
-          val config     = HttpClientGeneratorConfig(targetClient)
-          val path       = config.targetPackageName.replaceAll("\\.", "/")
-          val file: File = (Compile / sourceManaged).value / path / s"${config.className}.scala"
-          IO.delete(file)
-        }
+//        for (targetClient <- airframeHttpClients.value) {
+//          val config     = HttpClientGeneratorConfig(targetClient)
+//          val path       = config.targetPackageName.replaceAll("\\.", "/")
+//          val file: File = (Compile / sourceManaged).value / path / s"${config.className}.scala"
+//          IO.delete(file)
+//        }
       },
       airframeHttpVersion := wvlet.airframe.sbt.BuildInfo.version,
       airframeHttpBinary := {
         import coursier._
-        val artifactName =
-          dep"org.wvlet.airframe:airframe-http_${scalaBinaryVersion.value}_${airframeHttpVersion.value}"
 
-        val files = Fetch()
-          .addDependencies(artifactName)
-          .addArtifactTypes(Type("tar.gz"))
+        val moduleName = s"airframe-http_${scalaBinaryVersion.value}"
+        val d = new Dependency(
+          module = Module(
+            Organization("org.wvlet.airframe"),
+            ModuleName(moduleName)
+          ),
+          version = airframeHttpVersion.value,
+          configuration = coursier.core.Configuration.empty,
+          exclusions = Set.empty,
+          publication = Publication("", Type("arch"), Extension("tar.gz"), coursier.Classifier.empty),
+          optional = false,
+          transitive = false
+        )
+        info(s"Download ${d}")
 
-        info(files.mkString("\n"))
-        new File("")
+        val files =
+          Fetch()
+            .addDependencies(d) //dep"org.wvlet.airframe:airframe-http_2.12:20.3.0+38-7a83cf4b+20200317-2205-SNAPSHOT")
+            .allArtifactTypes()
+            .run()
+
+        files
       },
       airframeHttpGenerateClient := {
-        val cl = airframeHttpClassLoader.value
-        val generatedFiles = for (targetClient <- airframeHttpClients.value) yield {
-          val config = HttpClientGeneratorConfig(targetClient)
-          val router = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
-
-          val routerHash           = router.toString.hashCode
-          val routerHashFile: File = (Compile / target).value / f"router-${routerHash}%07x.update"
-          info(s"Found router ${routerHashFile}:\n${router}")
-          val path            = config.targetPackageName.replaceAll("\\.", "/")
-          val file: File      = (Compile / sourceManaged).value / path / s"${config.className}.scala"
-          val baseDir         = (ThisBuild / baseDirectory).value
-          val relativeFileLoc = file.relativeTo(baseDir).getOrElse(file)
-
-          if (!(file.exists() && routerHashFile.exists())) {
-            info(s"Found an airframe-http router for package ${config.apiPackageName}:\n${router}")
-            info(s"Generating a ${config.clientType.name} client code: ${relativeFileLoc}")
-            val code = HttpClientGenerator.generate(router, config)
-            IO.write(file, code)
-            IO.touch(routerHashFile)
-          } else {
-            info(s"${relativeFileLoc} is up-to-date")
-          }
-          file
-        }
-        generatedFiles
+        val files = airframeHttpBinary.value
+        info(s"binary files: ${files.mkString("\n")}")
+//        val cl = airframeHttpClassLoader.value
+//        val generatedFiles = for (targetClient <- airframeHttpClients.value) yield {
+//          val config = HttpClientGeneratorConfig(targetClient)
+//          val router = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
+//
+//          val routerHash           = router.toString.hashCode
+//          val routerHashFile: File = (Compile / target).value / f"router-${routerHash}%07x.update"
+//          info(s"Found router ${routerHashFile}:\n${router}")
+//          val path            = config.targetPackageName.replaceAll("\\.", "/")
+//          val file: File      = (Compile / sourceManaged).value / path / s"${config.className}.scala"
+//          val baseDir         = (ThisBuild / baseDirectory).value
+//          val relativeFileLoc = file.relativeTo(baseDir).getOrElse(file)
+//
+//          if (!(file.exists() && routerHashFile.exists())) {
+//            info(s"Found an airframe-http router for package ${config.apiPackageName}:\n${router}")
+//            info(s"Generating a ${config.clientType.name} client code: ${relativeFileLoc}")
+//            val code = HttpClientGenerator.generate(router, config)
+//            IO.write(file, code)
+//            IO.touch(routerHashFile)
+//          } else {
+//            info(s"${relativeFileLoc} is up-to-date")
+//          }
+//          file
+//        }
+//        generatedFiles
+        Seq.empty
       },
       Compile / sourceGenerators += Def.task {
         airframeHttpGenerateClient.value
       }.taskValue
     )
+  }
 
 }
