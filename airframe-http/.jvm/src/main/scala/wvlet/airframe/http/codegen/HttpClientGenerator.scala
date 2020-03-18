@@ -12,11 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
+import java.io.File
 import java.net.URLClassLoader
 
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.client.{AsyncClient, HttpClientType}
-import wvlet.log.LogSupport
+import wvlet.log.{LogSupport, Logger}
 
 case class HttpClientGeneratorConfig(
     // A package name to search for airframe-http interfaces
@@ -71,9 +72,21 @@ object HttpClientGenerator extends LogSupport {
     code
   }
 
-  def generate(config: HttpClientGeneratorConfig, cl: URLClassLoader): String = {
+  def generate(config: HttpClientGeneratorConfig, cl: ClassLoader): String = {
     val router = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
     val code   = generate(router, config)
     code
+  }
+
+  def main(args: Array[String]): Unit = {
+    Logger.init
+    val cp = args(0)
+    val cl = new URLClassLoader(Array(new File(cp).toURI.toURL), Thread.currentThread().getContextClassLoader)
+    for (x <- args.tail) {
+      val config = HttpClientGeneratorConfig(x)
+      info(config)
+      val code = generate(config, cl)
+      info(code)
+    }
   }
 }

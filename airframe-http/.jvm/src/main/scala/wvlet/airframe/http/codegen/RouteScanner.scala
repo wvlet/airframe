@@ -46,12 +46,13 @@ object RouteScanner extends LogSupport {
     * @param targetPackages
     * @param classLoader
     */
-  def buildRouter(targetPackages: Seq[String], classLoader: URLClassLoader): Router = {
-    trace(s"buildRouter: ${targetPackages}\n${classLoader.getURLs.mkString("\n")}")
+  def buildRouter(targetPackages: Seq[String], classLoader: ClassLoader): Router = {
+    trace(s"buildRouter: ${targetPackages}")
 
     // We need to use our own class loader as sbt's layered classloader cannot find application classes
     withClassLoader(classLoader) {
-      val lst     = ClassScanner.scanClasses(classLoader, targetPackages)
+      val lst = ClassScanner.scanClasses(classLoader, targetPackages)
+      info(s"classes: ${lst.mkString(",")}")
       val classes = Seq.newBuilder[Class[_]]
       lst.foreach { x =>
         info(s"load: ${x}")

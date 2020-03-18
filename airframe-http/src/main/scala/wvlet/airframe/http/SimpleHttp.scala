@@ -49,9 +49,9 @@ object SimpleHttpRequest {
   }
 }
 
-/**
-  * @deprecated(message = "Use Http.response(...) instead")
-  */
+/*
+ * @deprecated(message = "Use Http.response(...) instead")
+ */
 case class SimpleHttpResponse(
     override val status: HttpStatus,
     private val contentStr: String = "",
