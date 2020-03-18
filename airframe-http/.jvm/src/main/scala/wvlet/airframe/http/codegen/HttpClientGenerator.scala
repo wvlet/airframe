@@ -122,11 +122,13 @@ class HttpClientGenerator(
       val router    = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
       val routerStr = router.toString
       info(s"Found a router for package ${config.apiPackageName}:\n${routerStr}")
-      val routerHash     = routerStr.hashCode
+      val routerHash = routerStr.hashCode
+      targetDir.mkdirs()
       val routerHashFile = new File(targetDir, f"router-${routerHash}%07x.update")
 
       val path       = s"${config.targetPackageName.replaceAll("\\.", "/")}/${config.fileName}"
       val outputFile = new File(outDir, path)
+      outputFile.getParentFile.mkdirs()
 
       if (!(outputFile.exists() && routerHashFile.exists())) {
         val code = HttpClientGenerator.generate(router, config)
