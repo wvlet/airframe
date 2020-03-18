@@ -12,11 +12,15 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
+import java.io.{File, FileWriter}
 import java.net.URLClassLoader
 
+import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.control.Control
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.client.{AsyncClient, HttpClientType}
-import wvlet.log.LogSupport
+import wvlet.airframe.launcher.Launcher
+import wvlet.log.{LogLevel, LogSupport, Logger}
 
 case class HttpClientGeneratorConfig(
     // A package name to search for airframe-http interfaces
@@ -26,7 +30,7 @@ case class HttpClientGeneratorConfig(
     // [optional] Which package to use for the generating client code?
     targetPackageName: String
 ) {
-  def className = clientType.defaultClassName
+  def fileName = clientType.defaultFileName
 }
 
 object HttpClientGeneratorConfig {
@@ -71,9 +75,91 @@ object HttpClientGenerator extends LogSupport {
     code
   }
 
-  def generate(config: HttpClientGeneratorConfig, cl: URLClassLoader): String = {
+  def generate(config: HttpClientGeneratorConfig, cl: ClassLoader): String = {
     val router = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
     val code   = generate(router, config)
     code
   }
+
+  def main(args: Array[String]): Unit = {
+    Launcher.of[HttpClientGenerator].execute(args)
+  }
+
+  case class Artifacts(file: Seq[File])
+}
+
+import wvlet.airframe.launcher._
+
+class HttpClientGenerator(
+    @option(prefix = "-h,--help", description = "show help message", isHelp = true)
+    isHelp: Boolean = false,
+    @option(prefix = "-l,--loglevel", description = "log level")
+    logLevel: Option[LogLevel] = None
+) extends LogSupport {
+  Logger.init
+
+  logLevel.foreach { x => Logger.setDefaultLogLevel(x) }
+
+  @command(isDefault = true)
+  def default = {
+    info(s"Type --help for the available options")
+  }
+
+  @command(description = "Generate HTTP client codes")
+  def generate(
+      @option(prefix = "-cp", description = "semi-colon separated application classpaths")
+      classpath: String = "",
+      @option(prefix = "-o", description = "output base directory")
+      outDir: File,
+      @option(prefix = "-t", description = "target directory")
+      targetDir: File,
+      @argument(description = "client code generation targets: (package):(type)(:(targetPackage))?")
+      targets: Seq[String] = Seq.empty
+  ): Unit = {
+    try {
+      val cp = classpath.split(":").map(x => new File(x).toURI.toURL).toArray
+      val cl = new URLClassLoader(cp)
+      val artifacts = for (x <- targets) yield {
+        val config = HttpClientGeneratorConfig(x)
+        debug(config)
+        if (!targetDir.exists()) {
+          targetDir.mkdirs()
+        }
+        val path       = s"${config.targetPackageName.replaceAll("\\.", "/")}/${config.fileName}"
+        val outputFile = new File(outDir, path)
+
+        val router         = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
+        val routerStr      = router.toString
+        val routerHash     = routerStr.hashCode
+        val routerHashFile = new File(targetDir, f"router-${routerHash}%07x.update")
+        if (!(outputFile.exists() && routerHashFile.exists())) {
+          outputFile.getParentFile.mkdirs()
+          info(f"Router for package ${config.apiPackageName}:\n${routerStr}")
+          info(s"Generating a ${config.clientType.name} client code: ${path}")
+          val code = HttpClientGenerator.generate(router, config)
+          writeFile(outputFile, code)
+          touch(routerHashFile)
+        } else {
+          info(s"${path} is up-to-date")
+        }
+        outputFile
+      }
+      println(MessageCodec.of[Seq[File]].toJson(artifacts))
+    } catch {
+      case e: Throwable =>
+        warn(e)
+        println("[]") // empty result
+    }
+  }
+
+  private def touch(f: File): Unit = {
+    if (!f.createNewFile()) {
+      f.setLastModified(System.currentTimeMillis())
+    }
+  }
+
+  private def writeFile(outputFile: File, data: String): Unit = {
+    Control.withResource(new FileWriter(outputFile)) { out => out.write(data); out.flush() }
+  }
+
 }

@@ -42,6 +42,7 @@ class HttpClientGeneratorTest extends AirSpec {
       HttpClientGeneratorConfig("example.api:async:example.api.client")
     )
     code.contains("package example.api.client") shouldBe true
+    code.contains("import example.Query") shouldBe true
     code.contains("class ServiceClient[F[_], Req, Resp]")
   }
 

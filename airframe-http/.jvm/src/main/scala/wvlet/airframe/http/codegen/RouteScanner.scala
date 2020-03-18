@@ -12,8 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
-import java.net.URLClassLoader
-
 import wvlet.airframe.http.{Endpoint, Router}
 import wvlet.log.LogSupport
 
@@ -46,11 +44,10 @@ object RouteScanner extends LogSupport {
     * @param targetPackages
     * @param classLoader
     */
-  def buildRouter(targetPackages: Seq[String], classLoader: URLClassLoader): Router = {
-    trace(s"buildRouter: ${targetPackages}\n${classLoader.getURLs.mkString("\n")}")
+  def buildRouter(targetPackages: Seq[String], classLoader: ClassLoader): Router = {
+    trace(s"buildRouter: ${targetPackages}")
 
     // We need to use our own class loader as sbt's layered classloader cannot find application classes
-    val currentClassLoader = Thread.currentThread().getContextClassLoader
     withClassLoader(classLoader) {
       val lst     = ClassScanner.scanClasses(classLoader, targetPackages)
       val classes = Seq.newBuilder[Class[_]]
@@ -67,7 +64,7 @@ object RouteScanner extends LogSupport {
   private[codegen] def buildRouter(classes: Seq[Class[_]]): Router = {
     var router = Router.empty
     for (cl <- classes) yield {
-      debug(f"Searching ${cl} for HTTP endpoints")
+      trace(f"Searching ${cl} for HTTP endpoints")
       import wvlet.airframe.surface.reflect._
       val s       = ReflectSurfaceFactory.ofClass(cl)
       val methods = ReflectSurfaceFactory.methodsOfClass(cl)

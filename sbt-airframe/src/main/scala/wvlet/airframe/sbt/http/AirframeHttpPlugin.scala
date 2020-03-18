@@ -13,19 +13,29 @@
  */
 package wvlet.airframe.sbt.http
 
-import java.net.URLClassLoader
+import java.io.FileInputStream
+import java.nio.file.Files
+import java.util.zip.GZIPInputStream
 
-import sbt.Keys._
+import coursier.core.{Extension, Publication}
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
+import org.apache.commons.compress.utils.IOUtils
 import sbt._
-import wvlet.airframe.http.codegen.{HttpClientGeneratorConfig, _}
+import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.control.{OS, OSType}
 import wvlet.log.LogSupport
+import wvlet.log.io.IOUtil.withResource
 
 /**
   * sbt plugin for supporting Airframe HTTP development.
   *
   * This plugin supports:
   * - Building a Router by scanning interfaces that have methods with @Endpoint annotations in the project
-  * - Generate HTTP client code for Scala and Scala.js
+  * - Generate HTTP client code for Scala and Scala.js.
+  *
+  * The client code generator is defined in wvlet.airframe.http.codegen package.
+  * This plugin downloads a pre-built archive (airframe-http_(scala version)-(airframe version).tgz) and
+  * invoke HttpClientGenerator.
   *
   */
 object AirframeHttpPlugin extends AutoPlugin with LogSupport {
@@ -34,7 +44,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   object autoImport extends Keys
   import autoImport._
 
-  override def requires: Plugins = plugins.JvmPlugin
+  override def requires: Plugins = sbt.plugins.JvmPlugin
   override def trigger           = noTrigger
 
   override def projectSettings = httpProjectSettings
@@ -43,54 +53,137 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     val airframeHttpClients = settingKey[Seq[String]](
       "HTTP client generator targets, <api package name>(:<client type>(:<target package name>)?)?"
     )
-    val airframeHttpGenerateClient            = taskKey[Seq[File]]("Generate the client code")
-    private[http] val airframeHttpClassLoader = taskKey[URLClassLoader]("class loader for dependent classes")
+    val airframeHttpWorkDir         = settingKey[File]("working directory for airframe-http")
+    val airframeHttpGenerateClient  = taskKey[Seq[File]]("Generate the client code")
+    val airframeHttpClean           = taskKey[Unit]("clean artifacts")
+    val airframeHttpClasspass       = taskKey[Seq[String]]("class loader for dependent classes")
+    val airframeHttpBinaryDir       = taskKey[File]("Downloaded Airframe HTTP Binary location")
+    val airframeHttpVersion         = settingKey[String]("airframe-http version to use")
+    val airframeHttpGeneratorOption = settingKey[String]("airframe-http client-generator options")
   }
 
   private def dependentProjects: ScopeFilter =
     ScopeFilter(inDependencies(ThisProject, transitive = true, includeRoot = false))
 
-  def httpProjectSettings =
+  def httpProjectSettings = {
+    import sbt.Keys._
     Seq(
       airframeHttpClients := Seq.empty,
-      airframeHttpClassLoader := {
+      airframeHttpClasspass := {
         // Compile all dependent projects
         (compile in Compile).all(dependentProjects).value
 
-        val urls = Seq.newBuilder[URL]
-        (dependencyClasspath in Compile).value.files.foreach { f => urls += f.toURI.toURL }
-        val cp = urls.result()
-        val cl = new URLClassLoader(cp.toArray, getClass().getClassLoader)
-        cl
+        val baseDir = (ThisBuild / baseDirectory).value
+        val classpaths = (dependencyClasspath in Compile).value.files
+          .map { p => p.relativeTo(baseDir).getOrElse(p).getPath }
+        classpaths
       },
-      airframeHttpGenerateClient := {
-        val cl = airframeHttpClassLoader.value
-        val generatedFiles = for (targetClient <- airframeHttpClients.value) yield {
-          val config               = HttpClientGeneratorConfig(targetClient)
-          val router               = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
-          val routerHash           = router.toString.hashCode
-          val routerHashFile: File = (Compile / target).value / f"router-${routerHash}%07x.update"
-          val path                 = config.targetPackageName.replaceAll("\\.", "/")
-          val file: File           = (Compile / sourceManaged).value / path / s"${config.className}.scala"
-          val baseDir              = (ThisBuild / baseDirectory).value
-          val relativeFileLoc      = file.relativeTo(baseDir).getOrElse(file)
-
-          if (!(file.exists() && routerHashFile.exists())) {
-            info(s"Found an airframe-http router for package ${config.apiPackageName}:\n${router}")
-            info(s"Generating a ${config.clientType.name} client code: ${relativeFileLoc}")
-            val code = HttpClientGenerator.generate(router, config)
-            IO.write(file, code)
-            IO.touch(routerHashFile)
-          } else {
-            info(s"${relativeFileLoc} is up-to-date")
-          }
-          file
+      airframeHttpWorkDir := (Compile / target).value / s"scala-${scalaBinaryVersion.value}" / s"airframe" / airframeHttpVersion.value,
+      airframeHttpClean := {
+        val d = airframeHttpWorkDir.value
+        if (d.exists) {
+          IO.delete(d)
         }
-        generatedFiles
+      },
+      airframeHttpVersion := wvlet.airframe.sbt.BuildInfo.version,
+      airframeHttpBinaryDir := {
+        val airframeVersion        = airframeHttpVersion.value
+        val airframeHttpPackageDir = airframeHttpWorkDir.value / "local"
+
+        val versionFile = airframeHttpPackageDir / "VERSION"
+        val needsUpdate = !versionFile.exists() ||
+          !IO.readLines(versionFile).exists { line => line.contains(s"version:=${airframeVersion}") }
+
+        if (needsUpdate) {
+          // Download airframe-http.tgz with coursier
+          import coursier._
+          val moduleName = s"airframe-http_${scalaBinaryVersion.value}"
+          val d = new Dependency(
+            module = Module(
+              Organization("org.wvlet.airframe"),
+              ModuleName(moduleName)
+            ),
+            version = airframeHttpVersion.value,
+            configuration = coursier.core.Configuration.empty,
+            exclusions = Set.empty,
+            publication = Publication("", Type("arch"), Extension("tar.gz"), coursier.Classifier.empty),
+            optional = false,
+            transitive = false
+          )
+          debug(s"Downloading ${d} with Coursier")
+
+          val files =
+            Fetch()
+              .addDependencies(d)
+              .allArtifactTypes() // This line is necessary to choose a specific publication (arch, tar.gz)
+              .run()
+
+          // Unpack .tgz file
+          val packageDir = airframeHttpPackageDir.getAbsoluteFile
+          airframeHttpPackageDir.mkdirs()
+          files.headOption.map {
+            tgz =>
+              // Extract tar.gz archive using commons-compress library
+              info(s"Extracting airframe-http ${airframeVersion} package to ${airframeHttpPackageDir}")
+              withResource(new GZIPInputStream(new FileInputStream(tgz))) {
+                in =>
+                  val tgzInput = new TarArchiveInputStream(in)
+                  Iterator
+                    .continually(tgzInput.getNextTarEntry)
+                    .takeWhile(entry => entry != null)
+                    .filter(tgzInput.canReadEntryData(_))
+                    .foreach {
+                      entry =>
+                        val fileName     = entry.getName
+                        val mode         = entry.getMode
+                        val isExecutable = (mode & (1 << 6)) != 0
+
+                        // Strip the first path component
+                        val path       = fileName.split("/").tail.mkString("/")
+                        val outputFile = new File(packageDir, path)
+                        if (entry.isDirectory) {
+                          debug(s"Creating dir : ${path}")
+                          outputFile.mkdirs()
+                        } else {
+                          withResource(Files.newOutputStream(outputFile.toPath)) { out =>
+                            debug(s"Creating file: ${path}")
+                            IOUtils.copy(tgzInput, out)
+                          }
+                          // Set +x for executables
+                          outputFile.setExecutable(isExecutable)
+                        }
+                    }
+              }
+          }
+        }
+        airframeHttpPackageDir
+      },
+      airframeHttpGeneratorOption := "",
+      airframeHttpGenerateClient := {
+        val binDir = airframeHttpBinaryDir.value
+        debug(s"airframe-http directory: ${binDir}")
+        val cp = airframeHttpClasspass.value.mkString(":")
+
+        val outDir: String    = (Compile / sourceManaged).value.getPath
+        val targetDir: String = airframeHttpWorkDir.value.getPath
+        val cmdName = if (OS.isWindows) {
+          "airframe-http-client-generator.bat"
+        } else {
+          "airframe-http-client-generator"
+        }
+        val cmd =
+          s"${binDir}/bin/${cmdName} generate ${airframeHttpGeneratorOption.value} -cp ${cp} -o ${outDir} -t ${targetDir} ${airframeHttpClients.value
+            .mkString(" ")}"
+        debug(cmd)
+        import scala.sys.process._
+        val json: String = cmd.!!
+        debug(s"client generator result: ${json}")
+        // Return generated files
+        MessageCodec.of[Seq[File]].unpackJson(json).getOrElse(Seq.empty)
       },
       Compile / sourceGenerators += Def.task {
         airframeHttpGenerateClient.value
       }.taskValue
     )
-
+  }
 }

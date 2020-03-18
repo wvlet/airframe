@@ -42,8 +42,13 @@ object JSHttpClient {
     val protocol = window.location.protocol
     val hostname = window.location.hostname
     val port     = window.location.port.toInt
-    val address  = ServerAddress(hostname, port, protocol)
-    JSHttpClient(JSHttpClientConfig(serverAddress = Some(address)))
+    if (hostname == "localhost" && protocol == "http") {
+      // Use local client for testing
+      localClient
+    } else {
+      val address = ServerAddress(hostname, port, protocol)
+      JSHttpClient(JSHttpClientConfig(serverAddress = Some(address)))
+    }
   }
 
   // An http client that can be used for local testing

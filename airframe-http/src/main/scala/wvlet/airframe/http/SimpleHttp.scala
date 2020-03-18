@@ -18,6 +18,8 @@ import wvlet.airframe.http.SimpleHttpRequest.SimpleHttpRequestAdapter
 import wvlet.airframe.http.SimpleHttpResponse.SimpleHttpResponseAdapter
 
 /**
+  * Http Request
+  *
   * @deprecated(message = "Use Http.request(...) instead")
   */
 case class SimpleHttpRequest(
@@ -50,6 +52,7 @@ object SimpleHttpRequest {
 }
 
 /**
+  * Http Response
   * @deprecated(message = "Use Http.response(...) instead")
   */
 case class SimpleHttpResponse(

@@ -1,4 +1,5 @@
 import sbtcrossproject.{CrossType, crossProject}
+import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
 val SCALA_2_11 = "2.11.12"
 val SCALA_2_12 = "2.12.11"
@@ -535,9 +536,7 @@ lazy val http =
     .settings(buildSettings)
     .settings(
       name := "airframe-http",
-      description := "REST API Framework",
-      libraryDependencies ++= Seq(
-        )
+      description := "REST API Framework"
     )
     .jsSettings(
       jsBuildSettings,
@@ -549,7 +548,14 @@ lazy val http =
     .dependsOn(airframe, airframeMacrosRef, control, surface, json, codec, airspecRef % "test")
 
 lazy val httpJVM = http.jvm
-lazy val httpJS  = http.js
+  .enablePlugins(PackPlugin)
+  .settings(
+    packMain := Map("airframe-http-client-generator" -> "wvlet.airframe.http.codegen.HttpClientGenerator"),
+    packExcludeLibJars := Seq("airspec_2.12"),
+    publishPackArchiveTgz
+  ).dependsOn(launcher)
+
+lazy val httpJS = http.js
 
 lazy val finagle =
   project
@@ -994,13 +1000,19 @@ lazy val airspecRefJS  = airspecRef.js
 lazy val sbtAirframe =
   project
     .in(file("sbt-airframe"))
-    .enablePlugins(SbtPlugin)
+    .enablePlugins(SbtPlugin, BuildInfoPlugin)
     .settings(
       buildSettings,
+      buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+      buildInfoPackage := "wvlet.airframe.sbt",
       name := "sbt-airframe",
       description := "sbt plugin for helping programming with Airframe",
       scalaVersion := SCALA_2_12,
       crossSbtVersions := Vector("1.3.8"),
+      libraryDependencies ++= Seq(
+        "io.get-coursier"    %% "coursier"        % "2.0.0-RC5-6",
+        "org.apache.commons" % "commons-compress" % "1.2"
+      ),
       scriptedLaunchOpts := {
         scriptedLaunchOpts.value ++
           Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
@@ -1008,9 +1020,10 @@ lazy val sbtAirframe =
       scriptedDependencies := {
         // Publish all dependencies necessary for running the scripted tests
         scriptedDependencies.value
+        publishLocal.in(httpJVM, packArchiveTgz).value
         publishLocal.all(ScopeFilter(inDependencies(finagle))).value
         publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
       },
       scriptedBufferLog := false
     )
-    .dependsOn(httpJVM, airspecRefJVM % "test")
+    .dependsOn(controlJVM, codecJVM, logJVM, httpJVM % "test", airspecRefJVM % "test")

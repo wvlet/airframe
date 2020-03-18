@@ -14,10 +14,10 @@
 package wvlet.airframe.http.codegen
 import java.util.Locale
 
+import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.router.Route
-import wvlet.airframe.http.{HttpMethod, HttpRequest, Router}
-import wvlet.airframe.surface.{CName, MethodParameter, Surface}
+import wvlet.airframe.surface.{MethodParameter, Parameter, Surface}
 import wvlet.log.LogSupport
 
 /**
@@ -34,18 +34,30 @@ object HttpClientIR extends LogSupport {
       // Collect all Surfaces used in the generated code
       def loop(s: Any): Seq[Surface] = {
         s match {
+          case s: Surface =>
+            Seq(s) ++ s.typeArgs.flatMap(loop)
+          case m: Parameter =>
+            loop(m.surface)
           case c: ClientClassDef   => c.services.flatMap(loop)
           case x: ClientServiceDef => x.methods.flatMap(loop)
-          case m: ClientMethodDef  => Seq(m.returnType) ++ m.inputParameters.map(_.surface)
+          case m: ClientMethodDef =>
+            loop(m.returnType) ++ m.inputParameters.flatMap(loop)
+          case _ =>
+            Seq.empty
         }
       }
 
       def requireImports(surface: Surface): Boolean = {
         val fullName = surface.fullName
-        !(fullName.startsWith("scala.") || fullName.startsWith("wvlet.airframe.http.") || surface.isPrimitive)
+        // Primitive Scala collections can be found in scala.Predef. No need to include them
+        !(surface.rawType.getPackageName == "scala.collection" ||
+          fullName.startsWith("wvlet.airframe.http.") ||
+          surface.isPrimitive ||
+          // Within the same package
+          surface.rawType.getPackageName == packageName)
       }
 
-      loop(classDef).filter(requireImports).distinct
+      loop(classDef).filter(requireImports).distinct.sortBy(_.name)
     }
   }
   case class ClientClassDef(clsName: String, services: Seq[ClientServiceDef])     extends ClientCodeIR
@@ -75,7 +87,7 @@ object HttpClientIR extends LogSupport {
       }
 
       ClientClassDef(
-        clsName = config.className,
+        clsName = config.clientType.defaultClassName,
         services = services.toIndexedSeq
       )
     }
