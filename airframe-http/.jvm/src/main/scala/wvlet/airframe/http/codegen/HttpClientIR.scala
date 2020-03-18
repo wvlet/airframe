@@ -42,6 +42,8 @@ object HttpClientIR extends LogSupport {
           case x: ClientServiceDef => x.methods.flatMap(loop)
           case m: ClientMethodDef =>
             loop(m.returnType) ++ m.inputParameters.flatMap(loop)
+          case _ =>
+            Seq.empty
         }
       }
 
