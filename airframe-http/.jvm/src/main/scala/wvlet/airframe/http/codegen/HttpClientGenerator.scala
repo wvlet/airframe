@@ -20,7 +20,7 @@ import wvlet.airframe.control.Control
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.client.{AsyncClient, HttpClientType}
 import wvlet.airframe.launcher.Launcher
-import wvlet.log.{LogSupport, Logger}
+import wvlet.log.{LogLevel, LogSupport, Logger}
 
 case class HttpClientGeneratorConfig(
     // A package name to search for airframe-http interfaces
@@ -92,9 +92,13 @@ import wvlet.airframe.launcher._
 
 class HttpClientGenerator(
     @option(prefix = "-h,--help", description = "show help message", isHelp = true)
-    isHelp: Boolean = false
+    isHelp: Boolean = false,
+    @option(prefix = "-l,--loglevel", description = "log level")
+    logLevel: Option[LogLevel] = None
 ) extends LogSupport {
   Logger.init
+
+  logLevel.foreach { x => Logger.setDefaultLogLevel(x) }
 
   @command(isDefault = true)
   def default = {
@@ -112,36 +116,42 @@ class HttpClientGenerator(
       @argument(description = "client code generation targets: (package):(type)(:(targetPackage))?")
       targets: Seq[String] = Seq.empty
   ): Unit = {
-    val cp = classpath.split(":").map(x => new File(x).toURI.toURL).toArray
-    val cl = new URLClassLoader(cp)
-    val artifacts = for (x <- targets) yield {
-      val config = HttpClientGeneratorConfig(x)
-      debug(config)
-      if (!targetDir.exists()) {
-        targetDir.mkdirs()
-      }
-      val path       = s"${config.targetPackageName.replaceAll("\\.", "/")}/${config.fileName}"
-      val outputFile = new File(outDir, path)
+    try {
+      val cp = classpath.split(":").map(x => new File(x).toURI.toURL).toArray
+      val cl = new URLClassLoader(cp)
+      val artifacts = for (x <- targets) yield {
+        val config = HttpClientGeneratorConfig(x)
+        debug(config)
+        if (!targetDir.exists()) {
+          targetDir.mkdirs()
+        }
+        val path       = s"${config.targetPackageName.replaceAll("\\.", "/")}/${config.fileName}"
+        val outputFile = new File(outDir, path)
 
-      val router         = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
-      val routerStr      = router.toString
-      val routerHash     = routerStr.hashCode
-      val routerHashFile = new File(targetDir, f"router-${routerHash}%07x.update")
-      if (!(outputFile.exists() && routerHashFile.exists())) {
-        outputFile.getParentFile.mkdirs()
-        info(f"Router for package ${config.apiPackageName}:\n${routerStr}")
-        val code = HttpClientGenerator.generate(router, config)
+        val router         = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
+        val routerStr      = router.toString
+        val routerHash     = routerStr.hashCode
+        val routerHashFile = new File(targetDir, f"router-${routerHash}%07x.update")
+        if (!(outputFile.exists() && routerHashFile.exists())) {
+          outputFile.getParentFile.mkdirs()
+          info(f"Router for package ${config.apiPackageName}:\n${routerStr}")
+          val code = HttpClientGenerator.generate(router, config)
 
-        info(s"Generating a ${config.clientType.name} client code: ${path}")
-        debug(code)
-        writeFile(outputFile, code)
-        touch(routerHashFile)
-      } else {
-        info(s"${path} is up-to-date")
+          info(s"Generating a ${config.clientType.name} client code: ${path}")
+          debug(code)
+          writeFile(outputFile, code)
+          touch(routerHashFile)
+        } else {
+          info(s"${path} is up-to-date")
+        }
+        outputFile
       }
-      outputFile
+      println(MessageCodec.of[Seq[File]].toJson(artifacts))
+    } catch {
+      case e: Throwable =>
+        warn(e)
+        println("[]") // empty result
     }
-    println(MessageCodec.of[Seq[File]].toJson(artifacts))
   }
 
   private def touch(f: File): Unit = {

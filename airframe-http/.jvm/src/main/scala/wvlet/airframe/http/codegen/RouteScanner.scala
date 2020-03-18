@@ -12,12 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
-import java.net.URLClassLoader
-
 import wvlet.airframe.http.{Endpoint, Router}
 import wvlet.log.LogSupport
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
 
 /**
   * Scans Airframe HTTP interfaces from the class loader and build a Router object
@@ -66,7 +64,7 @@ object RouteScanner extends LogSupport {
   private[codegen] def buildRouter(classes: Seq[Class[_]]): Router = {
     var router = Router.empty
     for (cl <- classes) yield {
-      debug(f"Searching ${cl} for HTTP endpoints")
+      trace(f"Searching ${cl} for HTTP endpoints")
       import wvlet.airframe.surface.reflect._
       val s       = ReflectSurfaceFactory.ofClass(cl)
       val methods = ReflectSurfaceFactory.methodsOfClass(cl)
