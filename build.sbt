@@ -999,10 +999,12 @@ lazy val airspecRefJS  = airspecRef.js
 // sbt plugin
 
 lazy val sbtAirframe =
-project
+  project
     .in(file("sbt-airframe"))
     .enablePlugins(SbtPlugin, BuildInfoPlugin)
-    .settings(httpJVM, airspecRefJVM % "test")
+    .settings(
+      buildSettings,
+      buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
       buildInfoPackage := "wvlet.airframe.sbt",
       name := "sbt-airframe",
       description := "sbt plugin for helping programming with Airframe",
