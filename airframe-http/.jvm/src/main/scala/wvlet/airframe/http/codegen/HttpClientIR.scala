@@ -49,7 +49,11 @@ object HttpClientIR extends LogSupport {
 
       def requireImports(surface: Surface): Boolean = {
         val fullName = surface.fullName
-        !(fullName.startsWith("scala.") || fullName.startsWith("wvlet.airframe.http.") || surface.isPrimitive)
+        !(fullName.startsWith("scala.") ||
+          fullName.startsWith("wvlet.airframe.http.") ||
+          surface.isPrimitive ||
+          // Within the same package
+          surface.rawType.getPackageName == packageName)
       }
 
       loop(classDef).filter(requireImports).distinct.sortBy(_.name)

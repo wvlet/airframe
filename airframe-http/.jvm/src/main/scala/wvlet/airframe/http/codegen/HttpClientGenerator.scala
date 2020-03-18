@@ -113,7 +113,7 @@ class HttpClientGenerator(
       targets: Seq[String] = Seq.empty
   ): Unit = {
     val cp = classpath.split(":").map(x => new File(x).toURI.toURL).toArray
-    val cl = new URLClassLoader(cp, Thread.currentThread().getContextClassLoader)
+    val cl = new URLClassLoader(cp)
     val artifacts = for (x <- targets) yield {
       val config = HttpClientGeneratorConfig(x)
       debug(config)
