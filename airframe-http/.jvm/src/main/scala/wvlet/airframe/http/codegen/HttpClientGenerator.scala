@@ -133,7 +133,7 @@ class HttpClientGenerator(
         val code = HttpClientGenerator.generate(router, config)
 
         info(s"Generating a ${config.clientType.name} client code: ${path}")
-        info(code)
+        debug(code)
         writeFile(outputFile, code)
         touch(routerHashFile)
       } else {
