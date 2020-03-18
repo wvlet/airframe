@@ -17,6 +17,7 @@ import java.net.URLClassLoader
 
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.client.{AsyncClient, HttpClientType}
+import wvlet.airframe.launcher.Launcher
 import wvlet.log.{LogSupport, Logger}
 
 case class HttpClientGeneratorConfig(
@@ -79,13 +80,36 @@ object HttpClientGenerator extends LogSupport {
   }
 
   def main(args: Array[String]): Unit = {
-    Logger.init
-    val cp = args(0)
-    val cl = new URLClassLoader(Array(new File(cp).toURI.toURL), Thread.currentThread().getContextClassLoader)
-    for (x <- args.tail) {
+    Launcher.of[HttpClientGenerator].execute(args)
+  }
+}
+
+import wvlet.airframe.launcher._
+
+class HttpClientGenerator(
+    @option(prefix = "-h,--help", description = "show help message", isHelp = true)
+    isHelp: Boolean = false
+) extends LogSupport {
+  Logger.init
+
+  @command(isDefault = true)
+  def default = {
+    info(s"Type --help for the available options")
+  }
+
+  @command(description = "Generate HTTP client codes")
+  def generate(
+      @option(prefix = "-cp", description = "semi-colon separated application classpaths")
+      classpath: String = "",
+      @argument(description = "client code generation targets: (package):(type)(:(targetPackage))?")
+      targets: Seq[String] = Seq.empty
+  ): Unit = {
+    val cp = classpath.split(":").map(x => new File(x).toURI.toURL).toArray
+    val cl = new URLClassLoader(cp, Thread.currentThread().getContextClassLoader)
+    for (x <- targets) {
       val config = HttpClientGeneratorConfig(x)
       info(config)
-      val code = generate(config, cl)
+      val code = HttpClientGenerator.generate(config, cl)
       info(code)
     }
   }

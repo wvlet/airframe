@@ -536,9 +536,7 @@ lazy val http =
     .settings(buildSettings)
     .settings(
       name := "airframe-http",
-      description := "REST API Framework",
-      libraryDependencies ++= Seq(
-        )
+      description := "REST API Framework"
     )
     .jsSettings(
       jsBuildSettings,
@@ -553,8 +551,9 @@ lazy val httpJVM = http.jvm
   .enablePlugins(PackPlugin)
   .settings(
     packMain := Map("airframe-http-client-generator" -> "wvlet.airframe.http.codegen.HttpClientGenerator"),
+    packExcludeLibJars := Seq("airspec_2.12"),
     publishPackArchiveTgz
-  )
+  ).dependsOn(launcher)
 
 lazy val httpJS = http.js
 
@@ -1011,9 +1010,9 @@ lazy val sbtAirframe =
       scalaVersion := SCALA_2_12,
       crossSbtVersions := Vector("1.3.8"),
       libraryDependencies ++= Seq(
-        "io.get-coursier" %% "coursier" % "2.0.0-RC5-6"
-        //"io.get-coursier" %% "coursier-core"  % "2.0.0-RC6-10",
-        //"io.get-coursier" %% "coursier-cache" % "2.0.0-RC6-10"
+        "io.get-coursier"     %% "coursier"       % "2.0.0-RC5-6",
+        "org.codehaus.plexus" % "plexus-archiver" % "4.2.2"
+//"org.apache.commons" % "commons-compress" % "1.2"
       ),
       scriptedLaunchOpts := {
         scriptedLaunchOpts.value ++

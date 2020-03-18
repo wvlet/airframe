@@ -14,6 +14,7 @@
 package wvlet.airframe.sbt.http
 
 import coursier.core.{Extension, Publication}
+import org.codehaus.plexus.archiver.tar.TarGZipUnArchiver
 import sbt._
 import wvlet.log.LogSupport
 
@@ -43,7 +44,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     val airframeHttpGenerateClient = taskKey[Seq[File]]("Generate the client code")
     val airframeHttpClean          = taskKey[Unit]("clean artifacts")
     val airframeHttpClasspass      = taskKey[Seq[String]]("class loader for dependent classes")
-    val airframeHttpBinary         = taskKey[Seq[File]]("Download Airframe HTTP Binary")
+    val airframeHttpBinaryDir      = taskKey[File]("Download Airframe HTTP Binary")
     val airframeHttpVersion        = taskKey[String]("airframe-http version")
   }
 
@@ -72,7 +73,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
 //        }
       },
       airframeHttpVersion := wvlet.airframe.sbt.BuildInfo.version,
-      airframeHttpBinary := {
+      airframeHttpBinaryDir := {
         import coursier._
 
         val moduleName = s"airframe-http_${scalaBinaryVersion.value}"
@@ -88,19 +89,28 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           optional = false,
           transitive = false
         )
-        info(s"Download ${d}")
+        debug(s"Downloading ${d} with Coursier")
 
         val files =
           Fetch()
-            .addDependencies(d) //dep"org.wvlet.airframe:airframe-http_2.12:20.3.0+38-7a83cf4b+20200317-2205-SNAPSHOT")
+            .addDependencies(d)
             .allArtifactTypes()
             .run()
 
-        files
+        val targetDir = (Compile / target).value / scalaBinaryVersion.value / "airframe-http"
+        targetDir.mkdirs()
+        files.foreach { tgz =>
+          import scala.sys.process._
+          val cmd = s"tar xvfz ${tgz.getAbsolutePath} -C ${targetDir.getAbsolutePath}/"
+          info(cmd)
+          val run = cmd.!!
+        }
+        targetDir
       },
       airframeHttpGenerateClient := {
-        val files = airframeHttpBinary.value
-        info(s"binary files: ${files.mkString("\n")}")
+        val binDir = airframeHttpBinaryDir.value
+        info(s"airframe-http dir: ${binDir}")
+
 //        val cl = airframeHttpClassLoader.value
 //        val generatedFiles = for (targetClient <- airframeHttpClients.value) yield {
 //          val config = HttpClientGeneratorConfig(targetClient)
