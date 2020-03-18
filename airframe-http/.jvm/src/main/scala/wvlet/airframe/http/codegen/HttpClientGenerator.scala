@@ -12,12 +12,16 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
-import java.io.File
+import java.io.{File, FileWriter}
 import java.net.URLClassLoader
 
+import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.control.Control
 import wvlet.airframe.http.Router
+import wvlet.airframe.http.codegen.HttpClientGenerator.{Artifacts, generate}
 import wvlet.airframe.http.codegen.client.{AsyncClient, HttpClientType}
 import wvlet.airframe.launcher.Launcher
+import wvlet.log.io.IOUtil
 import wvlet.log.{LogSupport, Logger}
 
 case class HttpClientGeneratorConfig(
@@ -28,7 +32,7 @@ case class HttpClientGeneratorConfig(
     // [optional] Which package to use for the generating client code?
     targetPackageName: String
 ) {
-  def className = clientType.defaultClassName
+  def fileName = clientType.defaultFileName
 }
 
 object HttpClientGeneratorConfig {
@@ -82,6 +86,8 @@ object HttpClientGenerator extends LogSupport {
   def main(args: Array[String]): Unit = {
     Launcher.of[HttpClientGenerator].execute(args)
   }
+
+  case class Artifacts(file: Seq[File])
 }
 
 import wvlet.airframe.launcher._
@@ -101,16 +107,48 @@ class HttpClientGenerator(
   def generate(
       @option(prefix = "-cp", description = "semi-colon separated application classpaths")
       classpath: String = "",
+      @option(prefix = "-o", description = "output base directory")
+      outDir: File,
+      @option(prefix = "-t", description = "working directory")
+      targetDir: File,
       @argument(description = "client code generation targets: (package):(type)(:(targetPackage))?")
       targets: Seq[String] = Seq.empty
   ): Unit = {
     val cp = classpath.split(":").map(x => new File(x).toURI.toURL).toArray
     val cl = new URLClassLoader(cp, Thread.currentThread().getContextClassLoader)
-    for (x <- targets) {
+    val artifacts = for (x <- targets) yield {
       val config = HttpClientGeneratorConfig(x)
       info(config)
-      val code = HttpClientGenerator.generate(config, cl)
-      info(code)
+      val router    = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
+      val routerStr = router.toString
+      info(s"Found a router for package ${config.apiPackageName}:\n${routerStr}")
+      val routerHash     = routerStr.hashCode
+      val routerHashFile = new File(targetDir, f"router-${routerHash}%07x.update")
+
+      val path       = s"${config.targetPackageName.replaceAll("\\.", "/")}/${config.fileName}"
+      val outputFile = new File(outDir, path)
+
+      if (!(outputFile.exists() && routerHashFile.exists())) {
+        val code = HttpClientGenerator.generate(router, config)
+
+        info(s"Generating a ${config.clientType.name} client code: ${path}\n${code}")
+        writeFile(outputFile, code)
+        touch(routerHashFile)
+      } else {
+        info(s"${outputFile} is up-to-date")
+      }
+      outputFile
     }
+    val result = Artifacts(artifacts)
+    println(MessageCodec.of[Artifacts].toJson(result))
   }
+
+  private def touch(f: File): Unit = {
+    f.setLastModified(System.currentTimeMillis())
+  }
+
+  private def writeFile(outputFile: File, data: String): Unit = {
+    Control.withResource(new FileWriter(outputFile)) { out => out.write(data); out.flush() }
+  }
+
 }

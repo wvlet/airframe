@@ -51,11 +51,9 @@ object RouteScanner extends LogSupport {
 
     // We need to use our own class loader as sbt's layered classloader cannot find application classes
     withClassLoader(classLoader) {
-      val lst = ClassScanner.scanClasses(classLoader, targetPackages)
-      info(s"classes: ${lst.mkString(",")}")
+      val lst     = ClassScanner.scanClasses(classLoader, targetPackages)
       val classes = Seq.newBuilder[Class[_]]
       lst.foreach { x =>
-        info(s"load: ${x}")
         Try(classLoader.loadClass(x)) match {
           case Success(cl) => classes += cl
           case _           =>
@@ -68,7 +66,7 @@ object RouteScanner extends LogSupport {
   private[codegen] def buildRouter(classes: Seq[Class[_]]): Router = {
     var router = Router.empty
     for (cl <- classes) yield {
-      info(f"Searching ${cl} for HTTP endpoints")
+      debug(f"Searching ${cl} for HTTP endpoints")
       import wvlet.airframe.surface.reflect._
       val s       = ReflectSurfaceFactory.ofClass(cl)
       val methods = ReflectSurfaceFactory.methodsOfClass(cl)

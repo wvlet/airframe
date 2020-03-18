@@ -75,7 +75,7 @@ object HttpClientIR extends LogSupport {
       }
 
       ClientClassDef(
-        clsName = config.className,
+        clsName = config.fileName,
         services = services.toIndexedSeq
       )
     }

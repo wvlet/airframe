@@ -1027,4 +1027,4 @@ lazy val sbtAirframe =
       },
       scriptedBufferLog := false
     )
-    .dependsOn(httpJVM % "test", logJVM, airspecRefJVM % "test")
+    .dependsOn(codecJVM, httpJVM % "test", logJVM, airspecRefJVM % "test")
