@@ -174,7 +174,7 @@ class SurfaceTest extends SurfaceSpec {
   def `resolve generic type`: Unit = {
     val d1 = check(Surface.of[D[String]], "D[String]")
     val d2 = check(Surface.of[D[A]], "D[A]")
-    assert(d1 ne d2)
+    d1 shouldNotBeTheSameInstanceAs d2
   }
 
   def `resolve recursive type`: Unit = {

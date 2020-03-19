@@ -301,6 +301,7 @@ object ReflectSurfaceFactory extends LogSupport {
           // Cache if not yet cached
           surfaceCache.getOrElseUpdate(fullName, surface)
           typeMap.getOrElseUpdate(surface, tpe)
+          //info(s"${tpe}, ${surface}, ${showRaw(tpe)}")
           surface
         }
       } catch {
@@ -356,7 +357,12 @@ object ReflectSurfaceFactory extends LogSupport {
         val inner    = surfaceOf(t.erasure)
         val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
-        HigherKindedTypeSurface(name, fullName, inner)
+        HigherKindedTypeSurface(name, fullName, inner, inner.typeArgs)
+      case t @ TypeRef(NoPrefix, tpe, List()) if tpe.name.decodedName.toString.contains("$") =>
+        wvlet.airframe.surface.ExistentialType
+      case t @ TypeRef(NoPrefix, tpe, args) if !t.typeSymbol.isClass =>
+        val name = tpe.name.decodedName.toString
+        HigherKindedTypeSurface(name, name, surfaceOf(t.erasure), args.map(ta => surfaceOf(ta)))
     }
 
     private def taggedTypeFactory: SurfaceMatcher = {

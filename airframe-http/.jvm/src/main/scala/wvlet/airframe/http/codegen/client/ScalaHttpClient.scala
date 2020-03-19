@@ -42,12 +42,14 @@ object AsyncClient extends HttpClientType {
   override def defaultFileName: String  = "ServiceClient.scala"
   override def defaultClassName: String = "ServiceClient"
   override def generate(src: ClientSourceDef): String = {
-    def code = s"""${header(src.packageName)}
+    def code =
+      s"""${header(src.packageName)}
          |
          |import wvlet.airframe.http._
-         |${src.imports.map(x => s"import ${x.rawType.getName}").mkString("\n")}
+         |${src.importStatements}
          |
-         |${cls}""".stripMargin
+         |${cls}"""
+      /**EndMarker*/ .stripMargin.stripMargin
 
     def cls: String =
       s"""class ${src.classDef.clsName}[F[_], Req, Resp](private val client: HttpClient[F, Req, Resp]) extends AutoCloseable {
@@ -80,8 +82,8 @@ object AsyncClient extends HttpClientType {
           sendRequestArgs ++= m.clientCallParameters.map(x => s"${x.name}")
           sendRequestArgs += "requestFilter = requestFilter"
 
-          s"""def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType.name}] = {
-             |  client.${httpClientMethodName}[${m.typeArgs.map(_.name).mkString(", ")}](${sendRequestArgs.result
+          s"""def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType}] = {
+             |  client.${httpClientMethodName}[${m.typeArgString}](${sendRequestArgs.result
                .mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")
@@ -100,7 +102,7 @@ object SyncClient extends HttpClientType {
       s"""${header(src.packageName)}
          |
          |import wvlet.airframe.http._
-         |${src.imports.map(x => s"import ${x.rawType.getName}").mkString("\n")}
+         |${src.importStatements}
          |
          |${cls}""".stripMargin
 
@@ -136,7 +138,7 @@ object SyncClient extends HttpClientType {
           sendRequestArgs += "requestFilter = requestFilter"
 
           s"""def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType.name} = {
-             |  client.${httpClientMethodName}[${m.typeArgs.map(_.name).mkString(", ")}](${sendRequestArgs.result
+             |  client.${httpClientMethodName}[${m.typeArgString}](${sendRequestArgs.result
                .mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")
@@ -162,7 +164,7 @@ object ScalaJSClient extends HttpClientType {
          |import wvlet.airframe.surface.Surface
          |import wvlet.airframe.http.js.JSHttpClient
          |import wvlet.airframe.http.HttpMessage.Request
-         |${src.imports.map(x => s"import ${x.rawType.getName}").mkString("\n")}
+         |${src.importStatements}
          |
          |${cls}""".stripMargin
 
@@ -200,8 +202,8 @@ object ScalaJSClient extends HttpClientType {
           sendRequestArgs ++= m.typeArgs.map(s => s"Surface.of[${s.name}]")
           sendRequestArgs += "requestFilter = requestFilter"
 
-          s"""def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType.name}] = {
-             |  client.${httpClientMethodName}[${m.typeArgs.map(_.name).mkString(", ")}](${sendRequestArgs.result
+          s"""def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType}] = {
+             |  client.${httpClientMethodName}[${m.typeArgString}](${sendRequestArgs.result
                .mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")

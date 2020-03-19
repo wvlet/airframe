@@ -53,6 +53,7 @@ class BindLocalTest extends AirSpec {
     }
 
     val d = newSilentDesign.bind[Y].toSingleton
+    // test 2
     d.build[App2] { a => a.y0 shouldNotBeTheSameInstanceAs a.yLocal }
   }
 

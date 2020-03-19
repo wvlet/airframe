@@ -17,7 +17,7 @@ import java.util.Locale
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.router.Route
-import wvlet.airframe.surface.{MethodParameter, Parameter, Surface}
+import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface}
 import wvlet.log.LogSupport
 
 /**
@@ -30,7 +30,7 @@ object HttpClientIR extends LogSupport {
   // Intermediate representation (IR) of HTTP client code
   sealed trait ClientCodeIR
   case class ClientSourceDef(packageName: String, classDef: ClientClassDef) extends ClientCodeIR {
-    def imports: Seq[Surface] = {
+    private def imports: Seq[Surface] = {
       // Collect all Surfaces used in the generated code
       def loop(s: Any): Seq[Surface] = {
         s match {
@@ -41,24 +41,34 @@ object HttpClientIR extends LogSupport {
           case c: ClientClassDef   => c.services.flatMap(loop)
           case x: ClientServiceDef => x.methods.flatMap(loop)
           case m: ClientMethodDef =>
-            loop(m.returnType) ++ m.inputParameters.flatMap(loop)
+            loop(m.returnType) ++ m.typeArgs.flatMap(loop) ++ m.inputParameters.flatMap(loop)
           case _ =>
             Seq.empty
         }
       }
 
       def requireImports(surface: Surface): Boolean = {
-        val fullName = surface.fullName
+        val fullName          = surface.fullName
+        val importPackageName = resolveObjectName(fullName).split(".").dropRight(1).mkString(".")
         // Primitive Scala collections can be found in scala.Predef. No need to include them
-        !(surface.rawType.getPackageName == "scala.collection" ||
-          fullName.startsWith("wvlet.airframe.http.") ||
+        !(importPackageName == "scala.collection" ||
+          importPackageName == "wvlet.airframe.http" ||
           surface.isPrimitive ||
           // Within the same package
-          surface.rawType.getPackageName == packageName)
+          importPackageName == packageName)
       }
 
       loop(classDef).filter(requireImports).distinct.sortBy(_.name)
     }
+
+    private def resolveObjectName(fullName: String): String = {
+      fullName.replaceAll("\\$", ".")
+    }
+
+    def importStatements: String = {
+      imports.map(x => s"import ${resolveObjectName(x.rawType.getName)}").mkString("\n")
+    }
+
   }
   case class ClientClassDef(clsName: String, services: Seq[ClientServiceDef])     extends ClientCodeIR
   case class ClientServiceDef(serviceName: String, methods: Seq[ClientMethodDef]) extends ClientCodeIR
@@ -71,7 +81,10 @@ object HttpClientIR extends LogSupport {
       clientCallParameters: Seq[MethodParameter],
       returnType: Surface,
       path: String
-  ) extends ClientCodeIR
+  ) extends ClientCodeIR {
+    def typeArgString = typeArgs.map(_.name).mkString(", ")
+
+  }
 
   private case class PathVariableParam(name: String, param: MethodParameter)
 
@@ -113,7 +126,7 @@ object HttpClientIR extends LogSupport {
         throw new IllegalStateException(s"HttpClient doesn't support multiple object inputs: ${route}")
       }
       httpClientCallInputs.headOption.map { x => typeArgBuilder += x.surface }
-      typeArgBuilder += route.returnTypeSurface
+      typeArgBuilder += unwrapFuture(route.returnTypeSurface)
 
       ClientMethodDef(
         httpMethod = route.method,
@@ -123,7 +136,7 @@ object HttpClientIR extends LogSupport {
         inputParameters = analysis.userInputParameters,
         clientCallParameters = httpClientCallInputs,
         path = analysis.pathString,
-        returnType = route.returnTypeSurface
+        returnType = unwrapFuture(route.returnTypeSurface)
       )
     }
 
@@ -131,6 +144,19 @@ object HttpClientIR extends LogSupport {
       packageName = config.targetPackageName,
       classDef = buildClassDef
     )
+  }
+
+  private def unwrapFuture(s: Surface): Surface = {
+    s match {
+      case h: HigherKindedTypeSurface
+          if h.typeArgs.size == 1 && h.name == "F" => // Only support 'F' for tagless-final pattern
+        h.typeArgs.head
+      case s: Surface
+          if s.rawType == classOf[scala.concurrent.Future[_]] || s.rawType.getName == "com.twitter.util.Future" =>
+        s.typeArgs.head
+      case _ =>
+        s
+    }
   }
 
 }

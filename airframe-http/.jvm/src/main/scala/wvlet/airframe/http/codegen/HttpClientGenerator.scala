@@ -140,7 +140,7 @@ class HttpClientGenerator(
           writeFile(outputFile, code)
           touch(routerHashFile)
         } else {
-          info(s"${path} is up-to-date")
+          info(s"${outputFile} is up-to-date")
         }
         outputFile
       }
