@@ -233,11 +233,12 @@ private[surface] object SurfaceMacros {
         q"wvlet.airframe.surface.HigherKindedTypeSurface(${name}, ${fullName}, ${inner}, Seq.empty)"
       case t @ TypeRef(NoPrefix, tpe, List()) if tpe.name.decodedName.toString.contains("$") =>
         q"wvlet.airframe.surface.ExistentialType"
-      case t @ TypeRef(NoPrefix, tpe, args) =>
+      case t @ TypeRef(NoPrefix, tpe, args) if !t.typeSymbol.isClass =>
+        val fullName = tpe.fullName
         val name     = tpe.name.decodedName.toString
         val inner    = surfaceOf(t.erasure)
         val typeArgs = args.map(ta => surfaceOf(ta))
-        q"wvlet.airframe.surface.HigherKindedTypeSurface(${name}, ${name}, ${inner}, Seq(..${typeArgs}))"
+        q"wvlet.airframe.surface.HigherKindedTypeSurface(${name}, ${fullName}, ${inner}, Seq(..${typeArgs}))"
     }
 
     private val primitiveFactory: SurfaceFactory = {

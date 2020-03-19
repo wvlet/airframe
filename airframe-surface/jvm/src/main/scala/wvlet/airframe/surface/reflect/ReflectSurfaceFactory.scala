@@ -360,7 +360,7 @@ object ReflectSurfaceFactory extends LogSupport {
         HigherKindedTypeSurface(name, fullName, inner, inner.typeArgs)
       case t @ TypeRef(NoPrefix, tpe, List()) if tpe.name.decodedName.toString.contains("$") =>
         wvlet.airframe.surface.ExistentialType
-      case t @ TypeRef(NoPrefix, tpe, args) =>
+      case t @ TypeRef(NoPrefix, tpe, args) if !t.typeSymbol.isClass =>
         val name = tpe.name.decodedName.toString
         HigherKindedTypeSurface(name, name, surfaceOf(t.erasure), args.map(ta => surfaceOf(ta)))
     }
