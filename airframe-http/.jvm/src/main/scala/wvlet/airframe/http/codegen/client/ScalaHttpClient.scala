@@ -80,8 +80,8 @@ object AsyncClient extends HttpClientType {
           sendRequestArgs ++= m.clientCallParameters.map(x => s"${x.name}")
           sendRequestArgs += "requestFilter = requestFilter"
 
-          s"""def ${m.name}(${inputArgs.mkString(", ")}): F[${m.resolveLeafReturnTypeName}] = {
-             |  client.${httpClientMethodName}[${m.typeArgs.map(_.name).mkString(", ")}](${sendRequestArgs.result
+          s"""def ${m.name}(${inputArgs.mkString(", ")}): F[${m.unwrapFutureFromReturnType}] = {
+             |  client.${httpClientMethodName}[${m.unwrapFutureFromReturnType}](${sendRequestArgs.result
                .mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")

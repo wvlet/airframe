@@ -17,7 +17,7 @@ import java.util.Locale
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.router.Route
-import wvlet.airframe.surface.{HigherKindedTypeSurface, MethodParameter, Parameter, Surface}
+import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface}
 import wvlet.log.LogSupport
 
 /**
@@ -73,11 +73,13 @@ object HttpClientIR extends LogSupport {
       path: String
   ) extends ClientCodeIR {
 
-    def resolveLeafReturnTypeName: String = {
-      logger.info(returnType)
+    def unwrapFutureFromReturnType: String = {
       returnType match {
-        case f if f.name.startsWith("Future[") || f.name.startsWith("Object[") || f.name.startsWith("F[") =>
-          returnType.typeArgs.mkString(", ")
+        case h: HigherKindedTypeSurface =>
+          h.typeArgs.mkString(",")
+        case g: GenericSurface
+            if g.rawType == classOf[scala.concurrent.Future[_]] || g.rawType.getName == "com.twitter.util.Future" =>
+          g.typeArgs.mkString(",")
         case _ =>
           returnType.name
       }

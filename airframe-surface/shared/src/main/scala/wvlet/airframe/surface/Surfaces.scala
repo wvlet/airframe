@@ -120,6 +120,13 @@ case class HigherKindedTypeSurface(
     ref: Surface,
     override val typeArgs: Seq[Surface]
 ) extends GenericSurface(ref.rawType, typeArgs, ref.params, ref.objectFactory) {
+  override def toString: String = {
+    if (typeArgs.isEmpty) {
+      name
+    } else {
+      s"${name}[${typeArgs.mkString(",")}]"
+    }
+  }
   override def isAlias: Boolean     = false
   override def isPrimitive: Boolean = ref.isPrimitive
   override def isOption: Boolean    = ref.isOption
