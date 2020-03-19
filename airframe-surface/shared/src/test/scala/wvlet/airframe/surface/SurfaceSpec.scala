@@ -23,7 +23,7 @@ trait SurfaceSpec extends AirSpec with LogSupport {
   protected def check(body: => Surface, expectedName: String): Surface = {
     val surface = body
     debug(s"[${surface.getClass.getSimpleName}] $surface, ${surface.fullName}")
-    assert(surface.toString == expectedName)
+    surface.toString shouldBe expectedName
     surface
   }
 

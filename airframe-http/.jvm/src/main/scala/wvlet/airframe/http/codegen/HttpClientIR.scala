@@ -17,7 +17,7 @@ import java.util.Locale
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.router.Route
-import wvlet.airframe.surface.{MethodParameter, Parameter, Surface}
+import wvlet.airframe.surface.{HigherKindedTypeSurface, MethodParameter, Parameter, Surface}
 import wvlet.log.LogSupport
 
 /**
@@ -71,7 +71,18 @@ object HttpClientIR extends LogSupport {
       clientCallParameters: Seq[MethodParameter],
       returnType: Surface,
       path: String
-  ) extends ClientCodeIR
+  ) extends ClientCodeIR {
+
+    def resolveLeafReturnTypeName: String = {
+      logger.info(returnType)
+      returnType match {
+        case f if f.name.startsWith("Future[") || f.name.startsWith("Object[") || f.name.startsWith("F[") =>
+          returnType.typeArgs.mkString(", ")
+        case _ =>
+          returnType.name
+      }
+    }
+  }
 
   private case class PathVariableParam(name: String, param: MethodParameter)
 

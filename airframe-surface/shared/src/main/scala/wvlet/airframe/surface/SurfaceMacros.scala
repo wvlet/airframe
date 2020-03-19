@@ -17,7 +17,9 @@ import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
 
 /**
+  * Surface genration Macros for Scala.js.
   *
+  * This code needs to be almost the same with ReflectSurfaceFactory
   */
 private[surface] object SurfaceMacros {
   def surfaceOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
@@ -229,6 +231,13 @@ private[surface] object SurfaceMacros {
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         val inner    = surfaceOf(t.erasure)
         q"wvlet.airframe.surface.HigherKindedTypeSurface(${name}, ${fullName}, ${inner})"
+      case t @ TypeRef(NoPrefix, tpe, List()) if tpe.name.decodedName.toString.contains("$") =>
+        q"wvlet.airframe.surface.ExistentialType"
+      case t @ TypeRef(NoPrefix, tpe, args) =>
+        val name     = tpe.name.decodedName.toString
+        val inner    = surfaceOf(t.erasure)
+        val typeArgs = args.map(ta => surfaceOf(ta))
+        q"wvlet.airframe.surface.HigherKindedTypeSurface(${name}, ${name}, ${inner}, Seq(..${typeArgs}))"
     }
 
     private val primitiveFactory: SurfaceFactory = {

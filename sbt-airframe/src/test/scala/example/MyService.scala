@@ -28,16 +28,16 @@ case class DeleteResourceRequest(id: String)
   */
 trait ResourceApi {
   @Endpoint(method = HttpMethod.GET, path = "/v1/resources/:id")
-  def getResource(getRequest: GetResourceRequest): ResourceResponse
+  def getResource(getRequest: GetResourceRequest): api.ResourceResponse
 
   @Endpoint(method = HttpMethod.POST, path = "/v1/resources")
-  def addResource(createResourceRequest: CreateResourceRequest): ResourceResponse
+  def addResource(createResourceRequest: CreateResourceRequest): api.ResourceResponse
 
   @Endpoint(method = HttpMethod.DELETE, path = "/v1/resources/:id")
   def deleteResource(deleteResourceRequest: DeleteResourceRequest, request: SimpleHttpRequest): Unit
 
   @Endpoint(method = HttpMethod.GET, path = "/v1/resources")
-  def listResources(context: HttpContext[SimpleHttpRequest, SimpleHttpResponse, Future]): Seq[ResourceResponse] = {
+  def listResources(context: HttpContext[SimpleHttpRequest, SimpleHttpResponse, Future]): Seq[api.ResourceResponse] = {
     // Non abstract method example
     Seq.empty
   }
@@ -52,11 +52,11 @@ trait QueryApi {
   def listQueries: Seq[Query]
 
   @Endpoint(method = HttpMethod.GET, path = "/v1/query/:id")
-  def getQueryById(id: Int): QueryResultResponse
+  def getQueryById(id: Int): api.QueryResultResponse
 
   @Endpoint(method = HttpMethod.GET, path = "/v1/query/:id/page/:page")
-  def getQueryPage(id: Int, page: Int): QueryResultResponse
+  def getQueryPage(id: Int, page: Int): api.QueryResultResponse
 
   @Endpoint(method = HttpMethod.POST, path = "/v1/query")
-  def newQuery(createQueryRequest: CreateQueryRequest): QueryResultResponse
+  def newQuery(createQueryRequest: CreateQueryRequest): api.QueryResultResponse
 }
