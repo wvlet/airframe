@@ -13,6 +13,7 @@
  */
 package example.generic
 import wvlet.airframe.http.Endpoint
+import wvlet.airframe.http.HttpMessage.Response
 
 import scala.concurrent.Future
 import scala.language.higherKinds
@@ -26,4 +27,11 @@ trait GenericService[F[_]] {
 
   @Endpoint(path = "/v1/hello_f")
   def concreteFuture: Future[Int]
+
+  @Endpoint(path = "/v1/hello_ops")
+  def ops(in: String): Future[Response]
+
+  @Endpoint(path = "/v1/hello_ops2")
+  def ops2(in: String): F[Response]
+
 }

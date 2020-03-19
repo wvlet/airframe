@@ -24,12 +24,33 @@ class GenericServiceTest extends AirSpec {
 
   private val router = RouteScanner.buildRouter(Seq(classOf[GenericService[Future]]))
 
-  test("support F and Future return values") {
+  test("support F and Future return values in async clients") {
     debug(router)
 
     val code = HttpClientGenerator.generate(router, HttpClientGeneratorConfig("example.generic:async"))
     code.contains(": F[String]") shouldBe true
     code.contains(": F[Int]") shouldBe true
+    code.contains("import wvlet.airframe.http.HttpMessage.Response")
   }
 
+  test("support F and Future return values in sync clients") {
+    debug(router)
+
+    val code = HttpClientGenerator.generate(router, HttpClientGeneratorConfig("example.generic:sync"))
+    code.contains(": String = {") shouldBe true
+    code.contains(": Int = {") shouldBe true
+    code.contains("import wvlet.airframe.http.HttpMessage.Response")
+  }
+
+  test("support F and Future return values in Scala.js clients") {
+    debug(router)
+
+    val code = HttpClientGenerator.generate(router, HttpClientGeneratorConfig("example.generic:scalajs"))
+    code.contains(": Future[String] = {") shouldBe true
+    code.contains("Surface.of[String]") shouldBe true
+    code.contains(": Future[Int] = {") shouldBe true
+    code.contains("Surface.of[Int]") shouldBe true
+    code.contains("import wvlet.airframe.http.HttpMessage.Response")
+    code.contains("import wvlet.airframe.http.HttpMessage.Request")
+  }
 }
