@@ -151,9 +151,9 @@ object HttpClientIR extends LogSupport {
       case h: HigherKindedTypeSurface
           if h.typeArgs.size == 1 && h.name == "F" => // Only support 'F' for tagless-final pattern
         h.typeArgs.head
-      case g: GenericSurface
-          if g.rawType == classOf[scala.concurrent.Future[_]] || g.rawType.getName == "com.twitter.util.Future" =>
-        g.typeArgs.head
+      case s: Surface
+          if s.rawType == classOf[scala.concurrent.Future[_]] || s.rawType.getName == "com.twitter.util.Future" =>
+        s.typeArgs.head
       case _ =>
         s
     }
