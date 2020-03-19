@@ -230,7 +230,7 @@ private[surface] object SurfaceMacros {
         val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         val inner    = surfaceOf(t.erasure)
-        q"wvlet.airframe.surface.HigherKindedTypeSurface(${name}, ${fullName}, ${inner})"
+        q"wvlet.airframe.surface.HigherKindedTypeSurface(${name}, ${fullName}, ${inner}, Seq.empty)"
       case t @ TypeRef(NoPrefix, tpe, List()) if tpe.name.decodedName.toString.contains("$") =>
         q"wvlet.airframe.surface.ExistentialType"
       case t @ TypeRef(NoPrefix, tpe, args) =>
