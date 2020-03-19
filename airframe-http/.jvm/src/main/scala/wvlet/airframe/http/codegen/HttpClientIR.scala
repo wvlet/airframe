@@ -49,7 +49,7 @@ object HttpClientIR extends LogSupport {
 
       def requireImports(surface: Surface): Boolean = {
         val fullName          = surface.fullName
-        val importPackageName = resolveObjectName(fullName).split("\\.").dropRight(1).mkString(".")
+        val importPackageName = resolveObjectName(fullName).split(".").dropRight(1).mkString(".")
         // Primitive Scala collections can be found in scala.Predef. No need to include them
         !(importPackageName == "scala.collection" ||
           importPackageName == "wvlet.airframe.http" ||
