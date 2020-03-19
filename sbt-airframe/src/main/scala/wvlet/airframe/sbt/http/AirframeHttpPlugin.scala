@@ -160,12 +160,13 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       },
       airframeHttpGeneratorOption := "",
       airframeHttpGenerateClient := {
+        val targetDir: String = airframeHttpWorkDir.value.getPath
+
         val binDir = airframeHttpBinaryDir.value
         debug(s"airframe-http directory: ${binDir}")
-        val cp = airframeHttpClasspass.value.mkString(":")
+        val cp             = airframeHttpClasspass.value.mkString(":")
+        val outDir: String = (Compile / sourceManaged).value.getPath
 
-        val outDir: String    = (Compile / sourceManaged).value.getPath
-        val targetDir: String = airframeHttpWorkDir.value.getPath
         val cmdName = if (OS.isWindows) {
           "airframe-http-client-generator.bat"
         } else {
@@ -182,7 +183,11 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         MessageCodec.of[Seq[File]].unpackJson(json).getOrElse(Seq.empty)
       },
       Compile / sourceGenerators += Def.task {
-        airframeHttpGenerateClient.value
+        import sbt.util.CacheImplicits._
+        airframeHttpGenerateClient.previous match {
+          case Some(cached) => cached
+          case None         => airframeHttpGenerateClient.value
+        }
       }.taskValue
     )
   }
