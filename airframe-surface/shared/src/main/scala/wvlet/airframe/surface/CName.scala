@@ -53,7 +53,7 @@ object CName {
 
   def toCanonicalName(paramName: String): String = {
     if (paramName == null) {
-      paramName
+      ""
     } else {
       canonicalNameTable.getOrElseUpdate(
         paramName,
@@ -64,7 +64,7 @@ object CName {
 
   def toNaturalName(varName: String): String = {
     if (varName == null) {
-      varName
+      ""
     } else {
       def translate(varName: String) = {
         def wikiNameComponents: List[String] = {

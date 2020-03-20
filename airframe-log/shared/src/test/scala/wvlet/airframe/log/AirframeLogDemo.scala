@@ -86,4 +86,9 @@ class AirframeLogDemo extends AirSpec {
       Thread.currentThread().setName(name)
     }
   }
+
+  def `ANSI color paleter`: Unit = {
+    // Just for improving the test coverage
+    object MyColor extends AnsiColorPalette {}
+  }
 }

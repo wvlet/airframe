@@ -59,4 +59,8 @@ class ExamplesSpec extends AirSpec {
   def `surface examples`: Unit = {
     runAll("surface")
   }
+
+  def `json examples`: Unit = {
+    runAll("json")
+  }
 }
