@@ -49,4 +49,19 @@ class CNameTest extends AirSpec {
     assert(CName("airframeSurface").lowerCamelCase == "airframeSurface")
     assert(CName("Airframe Surface").lowerCamelCase == "airframeSurface")
   }
+
+  def `null values`: Unit = {
+    val nullName = CName(null)
+    nullName.canonicalName shouldBe ""
+    nullName.naturalName shouldBe ""
+  }
+
+  def `comparison`: Unit = {
+    val a = CName("Apple")
+    val b = CName("Banana")
+    a.compareTo(b) < 0 shouldBe true
+    a shouldBe a
+    a shouldNotBe b
+    a.hashCode shouldNotBe b.hashCode
+  }
 }

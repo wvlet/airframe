@@ -37,7 +37,7 @@ object Http_02_ObjectMapping extends App with LogSupport {
       AppInfo("myapp")
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/v1/list/")
+    @Endpoint(method = HttpMethod.GET, path = "/v1/list")
     def list(listRequest: ListRequest): ListResponse = {
       ListResponse(
         name = listRequest.name,
@@ -70,6 +70,10 @@ object Http_02_ObjectMapping extends App with LogSupport {
     withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
       val appInfo = client.get[AppInfo]("/v1/info")
       info(appInfo) // AppInfo(myapp,1.0)
+
+      client.get[ListResponse]("/v1/list")
+
+      client.get[Response]("/v1/resource/resource_path")
     }
 
   //server.waitServerTermination

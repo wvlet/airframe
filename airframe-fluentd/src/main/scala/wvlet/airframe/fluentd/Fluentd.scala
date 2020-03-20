@@ -64,7 +64,7 @@ object Fluentd {
       tagPrefix: String = "",
       maxBufferSize: Long = 512 * 1024 * 1024,
       flushIntervalMillis: Int = 600,
-      bufferChunkRetentionSize: Int = 4 * 1024 * 1024,
+      bufferChunkRetentionSize: Int = 8 * 1024 * 1024,
       bufferChunkRetentionTimeMillis: Int = 1000,
       jvmHeapBufferMode: Boolean = true,
       // Use the extended EventTime timestamps

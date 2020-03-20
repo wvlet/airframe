@@ -51,4 +51,36 @@ class DbConfigTest extends AirSpec {
     d.build[DbConfig] { c => debug(c) }
   }
 
+  test("builder") {
+    val c =
+      DbConfig()
+        .withHost("localhost")
+        .withDatabase("public")
+        .withHikariConfig(identity)
+
+    intercept[IllegalArgumentException] { c.jdbcPort }
+
+    val p = c
+      .withPostgreSQLConfig(PostgreSQLConfig())
+      .withPassword("xxx")
+    p.jdbcPort shouldBe 5432
+    p.jdbcDriverName shouldBe "org.postgresql.Driver"
+
+    val presto =
+      c.withType("presto")
+        .withDriver("io.prestosql.jdbc.Driver")
+        .withPort(8080)
+        .withConnectionPoolConfig(ConnectionPoolConfig())
+
+    presto.jdbcPort shouldBe 8080
+    presto.jdbcDriverName shouldBe "io.prestosql.jdbc.Driver"
+    presto.jdbcUrl
+
+    val mysql = c
+      .withType("mysql")
+      .withDriver("com.mysql.jdbc.Driver")
+
+    mysql.jdbcPort shouldBe 3306
+  }
+
 }

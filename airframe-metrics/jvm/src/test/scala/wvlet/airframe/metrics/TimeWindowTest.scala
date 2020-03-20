@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.metrics
 
-import java.time.ZoneOffset
+import java.time.{ZoneOffset, ZonedDateTime}
 import java.time.temporal.ChronoUnit
 import java.util.TimeZone
 
@@ -259,4 +259,28 @@ class TimeWindowTest extends AirSpec {
       TimeZone.setDefault(default)
     }
   }
+
+  def `succinct time selcetor`: Unit = {
+    def time(z: ZonedDateTime): String = TimeStampFormatter.formatTimestamp(z)
+
+    time(t.now) shouldBe "2016-06-26 01:23:45-0700"
+    time(t.beginningOfTheDay) shouldBe "2016-06-26 00:00:00-0700"
+    time(t.endOfTheDay) shouldBe "2016-06-27 00:00:00-0700"
+    time(t.beginningOfTheHour) shouldBe "2016-06-26 01:00:00-0700"
+    time(t.endOfTheHour) shouldBe "2016-06-26 02:00:00-0700"
+    time(t.beginningOfTheMonth) shouldBe "2016-06-01 00:00:00-0700"
+    time(t.endOfTheMonth) shouldBe "2016-07-01 00:00:00-0700"
+    time(t.beginningOfTheWeek) shouldBe "2016-06-20 00:00:00-0700"
+    time(t.endOfTheWeek) shouldBe "2016-06-27 00:00:00-0700"
+    time(t.beginningOfTheYear) shouldBe "2016-01-01 00:00:00-0700"
+    time(t.endOfTheYear) shouldBe "2017-01-01 00:00:00-0700"
+
+    t.today.toString shouldBe "[2016-06-26 00:00:00-0700,2016-06-27 00:00:00-0700)"
+    t.thisHour.toString shouldBe "[2016-06-26 01:00:00-0700,2016-06-26 02:00:00-0700)"
+    t.thisWeek.toString shouldBe "[2016-06-20 00:00:00-0700,2016-06-27 00:00:00-0700)"
+    t.thisMonth.toString shouldBe "[2016-06-01 00:00:00-0700,2016-07-01 00:00:00-0700)"
+    t.thisYear.toString shouldBe "[2016-01-01 00:00:00-0700,2017-01-01 00:00:00-0700)"
+    t.yesterday.toString shouldBe "[2016-06-25 00:00:00-0700,2016-06-26 00:00:00-0700)"
+  }
+
 }

@@ -19,7 +19,7 @@ import scala.concurrent.TimeoutException
   * Adding randomness to the retry interval of exponential backoff is good to spread out
   * retry interval timings. See also https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
   */
-object Control_02_Jitter {
+object Control_02_Jitter extends App {
   import wvlet.airframe.control.Retry
 
   Retry

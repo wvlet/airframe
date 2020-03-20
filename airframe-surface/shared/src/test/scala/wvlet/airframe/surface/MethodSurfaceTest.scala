@@ -38,6 +38,10 @@ object MethodExamples {
     }
   }
   class C extends G
+
+  class D {
+    def hello(v: String = "hello"): String = v
+  }
 }
 
 import wvlet.airframe.surface.MethodExamples._
@@ -92,5 +96,22 @@ class MethodSurfaceTest extends SurfaceSpec {
   def `support generic methods`: Unit = {
     val m = Surface.methodsOf[C]
     m.find(_.name == "generic") shouldBe defined
+  }
+
+  def `find method default parameter`: Unit = {
+    val ms = Surface.methodsOf[D]
+    val m  = ms.find(_.name == "hello").get
+    m.args.headOption shouldBe defined
+    val h = m.args.head
+
+    val d = new D
+    val v = h.getMethodArgDefaultValue(d)
+    if (!isScalaJS) {
+      // Scala.js doesn't support reading default method arguments
+      v shouldBe Some("hello")
+    }
+
+    val msg = m.call(d, "world")
+    msg shouldBe "world"
   }
 }
