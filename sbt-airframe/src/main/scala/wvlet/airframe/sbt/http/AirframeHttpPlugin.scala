@@ -22,7 +22,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.utils.IOUtils
 import sbt._
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.control.{OS, OSType}
+import wvlet.airframe.control.OS
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil.withResource
 
@@ -55,12 +55,12 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     )
     val airframeHttpWorkDir         = settingKey[File]("working directory for airframe-http")
     val airframeHttpGenerateClient  = taskKey[Seq[File]]("Generate the client code")
+    val airframeHttpGeneratorOption = settingKey[String]("airframe-http client-generator options")
     val airframeHttpClean           = taskKey[Unit]("clean artifacts")
     val airframeHttpClasspass       = taskKey[Seq[String]]("class loader for dependent classes")
     val airframeHttpBinaryDir       = taskKey[File]("Downloaded Airframe HTTP Binary location")
     val airframeHttpVersion         = settingKey[String]("airframe-http version to use")
-    val airframeHttpGeneratorOption = settingKey[String]("airframe-http client-generator options")
-    val airframeHttpReload          = taskKey[Unit]("refresh generated clients")
+    val airframeHttpReload          = taskKey[Seq[File]]("refresh generated clients")
   }
 
   private def dependentProjects: ScopeFilter =
@@ -163,12 +163,15 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         airframeHttpPackageDir
       },
       airframeHttpGeneratorOption := "",
-      airframeHttpReload := {
-        val targetDir: File = airframeHttpWorkDir.value
-        val cacheFile       = targetDir / cacheFileName
-        IO.delete(cacheFile)
-        airframeHttpGenerateClient.value
-      },
+      airframeHttpReload := Def
+        .sequential(
+          Def.task {
+            val targetDir: File = airframeHttpWorkDir.value
+            val cacheFile       = targetDir / cacheFileName
+            IO.delete(cacheFile)
+          },
+          airframeHttpGenerateClient
+        ).value,
       airframeHttpGenerateClient := {
         val targetDir: File = airframeHttpWorkDir.value
         val cacheFile       = targetDir / cacheFileName
