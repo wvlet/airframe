@@ -17,13 +17,13 @@ import java.nio.ByteBuffer
 import org.scalajs.dom
 import org.scalajs.dom.ext.Ajax.InputData
 import org.scalajs.dom.window
-import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.control.{ResultClass, Retry}
 import wvlet.airframe.http.HttpClient.defaultBeforeRetryAction
 import wvlet.airframe.http.HttpMessage._
 import wvlet.airframe.http._
-import wvlet.airframe.http.js.JSHttpClient.{MessageEncoding, MessagePackEncoding}
+import wvlet.airframe.http.js.JSHttpClient.MessageEncoding
 import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
 
@@ -34,8 +34,10 @@ import scala.util.{Failure, Success}
 object JSHttpClient {
 
   sealed trait MessageEncoding
-  object MessagePackEncoding extends MessageEncoding
-  object JsonEncoding        extends MessageEncoding
+  object MessageEncoding {
+    object MessagePackEncoding extends MessageEncoding
+    object JsonEncoding        extends MessageEncoding
+  }
 
   // An http client for production-use
   def defaultClient = {
@@ -63,20 +65,26 @@ object JSHttpClient {
   }
 }
 
-import wvlet.airframe.http.js.JSHttpClient._
-
 case class JSHttpClientConfig(
     serverAddress: Option[ServerAddress] = None,
-    requestEncoding: MessageEncoding = MessagePackEncoding,
+    requestEncoding: MessageEncoding = MessageEncoding.MessagePackEncoding,
     requestFilter: Request => Request = identity,
-    retryContext: RetryContext = JSHttpClient.defaultHttpClientRetrier
+    retryContext: RetryContext = JSHttpClient.defaultHttpClientRetrier,
+    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
 ) {
   def withServerAddress(newServerAddress: ServerAddress): JSHttpClientConfig = {
     this.copy(serverAddress = Some(newServerAddress))
   }
+  def withRequestEncoding(newRequestEncoding: MessageEncoding): JSHttpClientConfig = {
+    this.copy(requestEncoding = newRequestEncoding)
+  }
   def withRequestFilter(newRequestFilter: Request => Request): JSHttpClientConfig =
     this.copy(requestFilter = newRequestFilter)
   def noRetry: JSHttpClientConfig = this.copy(retryContext = retryContext.noRetry)
+
+  def withCodecFactory(newCodecFactory: MessageCodecFactory): JSHttpClientConfig = {
+    this.copy(codecFactory = newCodecFactory)
+  }
 }
 
 /**
@@ -84,6 +92,8 @@ case class JSHttpClientConfig(
   */
 case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) extends LogSupport {
   import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+
+  private val codecFactory = config.codecFactory.withMapOutput
 
   def withConfig(newConfig: JSHttpClientConfig): JSHttpClient = {
     this.copy(config = newConfig)
@@ -178,7 +188,7 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
           null.asInstanceOf[OperationResponse]
         case _ =>
           val responseCodec =
-            MessageCodec.ofSurface(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
+            codecFactory.of(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
           // Read the response body as MessagePack or JSON
           val ct = resp.contentType
           resp.contentType match {
@@ -196,13 +206,17 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
     }
   }
 
-  private def prepareRequestBody[Resource](request: Request, resource: Resource, resourceSurface: Surface): Request = {
-    val resourceCodec = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
+  private[js] def prepareRequestBody[Resource](
+      request: Request,
+      resource: Resource,
+      resourceSurface: Surface
+  ): Request = {
+    val resourceCodec = codecFactory.of(resourceSurface).asInstanceOf[MessageCodec[Resource]]
     // Support MsgPack or JSON RPC
     config.requestEncoding match {
-      case MessagePackEncoding =>
+      case MessageEncoding.MessagePackEncoding =>
         request.withContentTypeMsgPack.withAcceptMsgPack.withContent(resourceCodec.toMsgPack(resource))
-      case JsonEncoding =>
+      case MessageEncoding.JsonEncoding =>
         request.withContentTypeJson.withContent(resourceCodec.toJson(resource))
     }
   }
@@ -212,9 +226,9 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
       .withFilter(config.requestFilter)
       .withFilter { r =>
         config.requestEncoding match {
-          case MessagePackEncoding =>
+          case MessageEncoding.MessagePackEncoding =>
             r.withContentTypeMsgPack.withAcceptMsgPack
-          case JsonEncoding =>
+          case MessageEncoding.JsonEncoding =>
             r.withContentTypeJson
         }
       }
