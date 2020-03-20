@@ -33,7 +33,8 @@ case class FinagleClientConfig(
     initClient: Http.Client => Http.Client = FinagleClient.defaultInitClient,
     requestFilter: http.Request => http.Request = identity,
     timeout: Duration = Duration(90, TimeUnit.SECONDS),
-    retryContext: RetryContext = FinagleClient.defaultRetryContext
+    retryContext: RetryContext = FinagleClient.defaultRetryContext,
+    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
 ) {
   def withInitializer(initClient: Http.Client => Http.Client): FinagleClientConfig = {
     this.copy(initClient = initClient)
@@ -72,6 +73,10 @@ case class FinagleClientConfig(
     withRetryContext(
       retryContext.withJitter(initialIntervalMillis, maxIntervalMillis, multiplier)
     )
+  }
+
+  def withCodecFactory(newCodecFactory: MessageCodecFactory): FinagleClientConfig = {
+    this.copy(codecFactory = newCodecFactory)
   }
 
   def asyncClientDesign: Design = {
@@ -176,7 +181,8 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     r
   }
 
-  private val codecFactory  = MessageCodecFactory.defaultFactoryForJSON
+  // make sure using Map output
+  private val codecFactory  = config.codecFactory.withMapOutput
   private val responseCodec = new HttpResponseCodec[Response]
 
   private def convert[A: ru.TypeTag](response: Future[Response]): Future[A] = {
