@@ -79,6 +79,10 @@ class SurfaceTest extends SurfaceSpec {
     checkPrimitive(Surface.of[java.lang.String], "String")
   }
 
+  def `find primitive Surfaces`: Unit = {
+    Primitive(classOf[Int]) shouldBe Primitive.Int
+  }
+
   def `resolve surface from class`: Unit = {
     pendingUntil("Scala.js doesn't support reflection")
     val a = Surface.of[A]
@@ -224,5 +228,12 @@ class SurfaceTest extends SurfaceSpec {
     assert(a.params(3).get(a0) == 10)
     assert(a.params(4).get(a0) == 20L)
     assert(a.params(7).get(a0) == "hello")
+  }
+
+  def `object factory`: Unit = {
+    val s = Surface.of[F]
+    s.objectFactory shouldBe defined
+    val f = s.objectFactory.map(_.newInstance(Seq(100)))
+    f shouldBe Some(F(100))
   }
 }

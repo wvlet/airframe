@@ -99,5 +99,15 @@ class FluencyTest extends AirSpec {
     // Use object metric logger
     val l = f.getTypedLogger[FluencyMetric]
     l.emit(FluencyMetric(1, "leo"))
+    f.getLoggerWithTagPrefix("system").emit("mytag", Map("data" -> "metric value"))
+  }
+
+  test(
+    "test extended time",
+    design = fluentd.withFluentdLogger(port = fluentdPort, ackResponseMode = false, useExtendedEventTime = true)
+  ) { f: MetricLoggerFactory =>
+    val l = f.getLogger
+    l.emit("mytag", Map("data" -> "hello"))
+    l.emitMsgPack("tag", Array(0xc6.toByte))
   }
 }

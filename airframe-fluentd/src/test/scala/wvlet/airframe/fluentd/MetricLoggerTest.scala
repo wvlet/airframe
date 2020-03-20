@@ -41,6 +41,9 @@ class MetricLoggerTest extends AirSpec {
     val l = f.getTypedLogger[SampleMetric]
     l.emit(SampleMetric(100000, "hello"))
     l.emit(SampleMetric(100001, "fluentd"))
+
+    val ll = f.getTypedLoggerWithTagPrefix[NestedMetric]("extended")
+    ll.emit(NestedMetric("test nested logs", Seq(1, 2, 3), None, SampleMetric(100002, "I'm happy")))
   }
 
   def `support nested metrics`(f: MetricLoggerFactory): Unit = {

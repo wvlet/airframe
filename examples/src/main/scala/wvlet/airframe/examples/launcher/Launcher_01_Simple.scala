@@ -35,4 +35,7 @@ object Launcher_01_Simple extends App {
 
   // Launch a CUI program defined in MyApp
   Launcher.of[MyApp].execute("-h")
+
+  // Launch a sub command
+  Launcher.of[MyApp].execute("monitor demo")
 }

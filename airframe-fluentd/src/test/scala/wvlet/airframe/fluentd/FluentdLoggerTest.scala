@@ -13,9 +13,17 @@
  */
 package wvlet.airframe.fluentd
 import wvlet.airframe._
-import wvlet.airframe.fluentd.FluentdLoggerTest.{Logger1, Logger2, LoggerFactory1, LoggerFactory2}
+import wvlet.airframe.fluentd.FluentdLoggerTest.{
+  Logger1,
+  Logger2,
+  Logger3,
+  LoggerFactory1,
+  LoggerFactory2,
+  LoggerFactory3
+}
 import wvlet.airspec.AirSpec
 import wvlet.log.LogLevel
+import wvlet.log.io.IOUtil
 
 /**
   *
@@ -45,14 +53,44 @@ class FluentdLoggerTest extends AirSpec {
       newDesign
         .bind[Logger1].toInstance(new ConsoleLogger(Some("l1"), LogLevel.DEBUG))
         .bind[Logger2].toInstance(new ConsoleLogger(Some("l2"), LogLevel.DEBUG))
+        .bind[Logger3].toInstance(new ConsoleLogger(Some("l3"), LogLevel.DEBUG).withTagPrefix("mytag"))
         .noLifeCycleLogging
 
     d.withSession { s =>
       val f1 = s.build[LoggerFactory1]
       val f2 = s.build[LoggerFactory2]
+      val f3 = s.build[LoggerFactory3]
 
       f1.getLogger.emit("a", Map("value" -> 1))
       f2.getLogger.emit("a", Map("value" -> 1))
+      f3.getLogger.emit("a", Map("value" -> 1))
+    }
+  }
+
+  def `fluentd logger`: Unit = {
+    // sanity test
+    IOUtil.withResource(Fluentd.newFluentdLogger()) { f =>
+      //
+      f.withTagPrefix("system")
+    }
+
+    IOUtil.withResource(Fluentd.newFluentdLogger(tagPrefix = "mymetric")) { f =>
+      //
+    }
+  }
+
+  def `td logger`: Unit = {
+    // sanity test
+    IOUtil.withResource(Fluentd.newTDLogger(apikey = "xxxxx")) { td =>
+      //
+    }
+
+    IOUtil.withResource(Fluentd.newTDLogger(apikey = "xxxxx", tagPrefix = "mymetric")) { td =>
+      //
+    }
+
+    fluentd.withTDLogger("xxx").noLifeCycleLogging.build[MetricLogger] { l =>
+      //
     }
   }
 }
@@ -60,7 +98,9 @@ class FluentdLoggerTest extends AirSpec {
 object FluentdLoggerTest {
   type Logger1 = MetricLogger
   type Logger2 = MetricLogger
+  type Logger3 = MetricLogger
 
   class LoggerFactory1(l1: Logger1) extends MetricLoggerFactory(l1)
   class LoggerFactory2(l2: Logger2) extends MetricLoggerFactory(l2)
+  class LoggerFactory3(l3: Logger3) extends MetricLoggerFactory(l3)
 }
