@@ -47,6 +47,10 @@ case class DbConfig(
     }
   }
 
+  def withType(newType: String): DbConfig = {
+    this.copy(`type` = newType)
+  }
+
   def withHost(host: String): DbConfig = {
     this.copy(host = Some(host))
   }

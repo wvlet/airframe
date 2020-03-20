@@ -18,7 +18,7 @@ import wvlet.airframe.codec.MessageCodec
 /**
   *
   */
-object Codec_02_ObjectCodec {
+object Codec_02_ObjectCodec extends App {
   case class A(
       port: Int,
       name: String,
