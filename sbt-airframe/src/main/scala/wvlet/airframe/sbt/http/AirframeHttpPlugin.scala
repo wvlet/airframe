@@ -60,10 +60,14 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     val airframeHttpBinaryDir       = taskKey[File]("Downloaded Airframe HTTP Binary location")
     val airframeHttpVersion         = settingKey[String]("airframe-http version to use")
     val airframeHttpGeneratorOption = settingKey[String]("airframe-http client-generator options")
+    val airframeHttpReload          = taskKey[Unit]("refresh generated clients")
   }
 
   private def dependentProjects: ScopeFilter =
     ScopeFilter(inDependencies(ThisProject, transitive = true, includeRoot = false))
+
+  private val seqFileCodec  = MessageCodec.of[Seq[File]]
+  private val cacheFileName = "generated.cache"
 
   def httpProjectSettings = {
     import sbt.Keys._
@@ -159,35 +163,46 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         airframeHttpPackageDir
       },
       airframeHttpGeneratorOption := "",
+      airframeHttpReload := {
+        val targetDir: File = airframeHttpWorkDir.value
+        val cacheFile       = targetDir / cacheFileName
+        IO.delete(cacheFile)
+        airframeHttpGenerateClient.value
+      },
       airframeHttpGenerateClient := {
-        val targetDir: String = airframeHttpWorkDir.value.getPath
+        val targetDir: File = airframeHttpWorkDir.value
+        val cacheFile       = targetDir / cacheFileName
+        val binDir          = airframeHttpBinaryDir.value
+        val cp              = airframeHttpClasspass.value.mkString(":")
+        val opts            = airframeHttpGeneratorOption.value
 
-        val binDir = airframeHttpBinaryDir.value
-        debug(s"airframe-http directory: ${binDir}")
-        val cp             = airframeHttpClasspass.value.mkString(":")
-        val outDir: String = (Compile / sourceManaged).value.getPath
-
-        val cmdName = if (OS.isWindows) {
-          "airframe-http-client-generator.bat"
+        val result: Seq[File] = if (!cacheFile.exists) {
+          debug(s"airframe-http directory: ${binDir}")
+          val outDir: String = (Compile / sourceManaged).value.getPath
+          val cmdName = if (OS.isWindows) {
+            "airframe-http-client-generator.bat"
+          } else {
+            "airframe-http-client-generator"
+          }
+          val cmd =
+            s"${binDir}/bin/${cmdName} generate ${opts} -cp ${cp} -o ${outDir} -t ${targetDir.getPath} ${airframeHttpClients.value
+              .mkString(" ")}"
+          debug(cmd)
+          import scala.sys.process._
+          val json: String = cmd.!!
+          debug(s"client generator result: ${json}")
+          IO.write(cacheFile, json)
+          // Return generated files
+          seqFileCodec.unpackJson(json).getOrElse(Seq.empty)
         } else {
-          "airframe-http-client-generator"
+          debug(s"Using cached client")
+          val json = IO.read(cacheFile)
+          seqFileCodec.fromJson(json)
         }
-        val cmd =
-          s"${binDir}/bin/${cmdName} generate ${airframeHttpGeneratorOption.value} -cp ${cp} -o ${outDir} -t ${targetDir} ${airframeHttpClients.value
-            .mkString(" ")}"
-        debug(cmd)
-        import scala.sys.process._
-        val json: String = cmd.!!
-        debug(s"client generator result: ${json}")
-        // Return generated files
-        MessageCodec.of[Seq[File]].unpackJson(json).getOrElse(Seq.empty)
+        result
       },
       Compile / sourceGenerators += Def.task {
-        import sbt.util.CacheImplicits._
-        airframeHttpGenerateClient.previous match {
-          case Some(cached) => cached
-          case None         => airframeHttpGenerateClient.value
-        }
+        airframeHttpGenerateClient.value
       }.taskValue
     )
   }
