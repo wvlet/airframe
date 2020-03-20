@@ -43,7 +43,8 @@ class HttpClientGeneratorTest extends AirSpec {
     )
     code.contains("package example.api.client") shouldBe true
     code.contains("import example.api.Query") shouldBe true
-    code.contains("class ServiceClient[F[_], Req, Resp]")
+    code.contains("class ServiceClient[F[_], Req, Resp]") shouldBe true
+    code.contains("import scala.collection.Seq") shouldBe false
   }
 
   test("generate sync client") {
