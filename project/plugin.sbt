@@ -22,7 +22,7 @@ libraryDependencies ++= (
 addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.0.0")
 
 // Documentation
-addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.1.4")
+addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.1.5")
 
 // For generating Lexer/Parser from ANTLR4 grammar (.g4)
 addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.2")
