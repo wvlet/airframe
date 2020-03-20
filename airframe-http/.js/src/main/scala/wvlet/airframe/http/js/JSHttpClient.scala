@@ -41,13 +41,13 @@ object JSHttpClient {
 
   // An http client for production-use
   def defaultClient = {
-    val protocol = window.location.protocol
+    val protocol = window.location.protocol.stripSuffix(":")
     val hostname = window.location.hostname
-    val port     = window.location.port.toInt
     if (hostname == "localhost" && protocol == "http") {
       // Use local client for testing
       localClient
     } else {
+      val port    = window.location.port.toInt
       val address = ServerAddress(hostname, port, protocol)
       JSHttpClient(JSHttpClientConfig(serverAddress = Some(address)))
     }
@@ -95,8 +95,13 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
 
   private val codecFactory = config.codecFactory.withMapOutput
 
-  def withConfig(newConfig: JSHttpClientConfig): JSHttpClient = {
-    this.copy(config = newConfig)
+  /**
+    * Modify the configuration based on the current configuration
+    * @param configFilter
+    * @return
+    */
+  def withConfig(configFilter: JSHttpClientConfig => JSHttpClientConfig): JSHttpClient = {
+    this.copy(config = configFilter(config))
   }
 
   /**
