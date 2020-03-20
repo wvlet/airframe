@@ -6,6 +6,62 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.3.1
+
+Airframe 20.3.1 added several modules for developing Scala.js applictions using airframe-http framework. 
+
+New Modules:
+-  airframe-http-rx: A module for building reactive DOM components. Renamed from airframe-rx.
+-  airframe-http-widget: An extension of airframe-http-rx for using [Twitter Bootstrap](https://getbootstrap.com/) CSS collections. Renamed from airframe-rx-widget
+-  airframe-http-okhttp: A sync HTTP client implementation backed by okhttp3 ([#946](https://github.com/wvlet/airframe/issues/946)) [[038e960](https://github.com/wvlet/airframe/commit/038e960)]
+-  sbt-airframe: An sbt-plugin for generating HTTP client code for accesing REST APIs defined in airframe-http ([#943](https://github.com/wvlet/airframe/issues/943)) [[d78781e](https://github.com/wvlet/airframe/commit/d78781e)]
+
+New Features:
+-  airframe-control: Support Scala.js [[0a2c90e](https://github.com/wvlet/airframe/commit/0a2c90e)]
+-  airframe-http: Support Scala.js for defining Web interfaces as well as Scala JVM [[0e017db](https://github.com/wvlet/airframe/commit/0e017db)]
+-  airframe-http: Support adding a custom codec to clients ([#1004](https://github.com/wvlet/airframe/issues/1004)) [[9675669](https://github.com/wvlet/airframe/commit/9675669)]
+-  airframe-http: Add cross-platform HttpMessage.Request and Response classes ([#982](https://github.com/wvlet/airframe/issues/982)) [[f55d438](https://github.com/wvlet/airframe/commit/f55d438)]
+-  airframe-http-finagle: Update finagle-core, finagle-http, ... to 20.3.0 ([#965](https://github.com/wvlet/airframe/issues/965)) [[111e5ad](https://github.com/wvlet/airframe/commit/111e5ad)]
+-  airframe-http-rx: [#993](https://github.com/wvlet/airframe/issues/993) Support Future[X] to Rx[X] conversion ([#996](https://github.com/wvlet/airframe/issues/996)) [[b54bbe7](https://github.com/wvlet/airframe/commit/b54bbe7)]
+-  airframe-http-rx: [#961](https://github.com/wvlet/airframe/issues/961) Support add/overwrite of DOM attributes ([#976](https://github.com/wvlet/airframe/issues/976)) [[02b54b2](https://github.com/wvlet/airframe/commit/02b54b2)]
+-  airframe-codec: Add Unit codec ([#980](https://github.com/wvlet/airframe/issues/980)) [[58ef3ff](https://github.com/wvlet/airframe/commit/58ef3ff)]
+-  airframe-codec: Support UUID and MessageCodec.fromMap(Map[String, Any]) ([#972](https://github.com/wvlet/airframe/issues/972)) [[31eea9a](https://github.com/wvlet/airframe/commit/31eea9a)]
+
+Major changes:
+-  airframe-http: Deprecated SimpleHttpRequest/Response in favor of HttpMessage.Request/Response
+-  airframe-surface: Moved `@secret` annotation to wvlet.airframe.surface package. ([#962](https://github.com/wvlet/airframe/issues/962)) [[b79783e](https://github.com/wvlet/airframe/commit/b79783e)]
+
+Minor Fixes:
+-  airframe-http: Find Endpoint annotations in parent interfaces ([#997](https://github.com/wvlet/airframe/issues/997)) [[8f54793](https://github.com/wvlet/airframe/commit/8f54793)]
+-  airframe-http: Support JSHttpClient config filter airframe-http: Fix protocol check [[c7f34d5](https://github.com/wvlet/airframe/commit/c7f34d5)]
+-  airframe-http: Support Future[_], F[_] return types in IDL ([#1001](https://github.com/wvlet/airframe/issues/1001)) [[abf0595](https://github.com/wvlet/airframe/commit/abf0595)]
+-  airframe-http: [#956](https://github.com/wvlet/airframe/issues/956) Do not generate response body for 204 responses ([#975](https://github.com/wvlet/airframe/issues/975)) [[bb979dd](https://github.com/wvlet/airframe/commit/bb979dd)]
+-  ariframe-http-finagle: Use HttpMessage.Response for static content server ([#984](https://github.com/wvlet/airframe/issues/984)) [[2c91a73](https://github.com/wvlet/airframe/commit/2c91a73)]
+-  airframe-http-rx: Migrate airframe-rx as a companion module of airframe-http ([#986](https://github.com/wvlet/airframe/issues/986)) [[39e9be3](https://github.com/wvlet/airframe/commit/39e9be3)]
+-  airframe-http-rx: Fix flatMap evaluation and improve the test coverage ([#979](https://github.com/wvlet/airframe/issues/979)) [[8ad4e59](https://github.com/wvlet/airframe/commit/8ad4e59)]
+-  airframe-http-rx: [#958](https://github.com/wvlet/airframe/issues/958) Support embedding Iterable[X <: RxElement] inside DOM ([#974](https://github.com/wvlet/airframe/issues/974)) [[f224234](https://github.com/wvlet/airframe/commit/f224234)]
+-  airframe-di: Improve the error message for abstract types [[de50bbb](https://github.com/wvlet/airframe/commit/de50bbb)]
+-  sbt-airframe: Fix import cleanup [[41523f2](https://github.com/wvlet/airframe/commit/41523f2)]
+-  sbt-airframe: Cache the previous client generation results ([#1002](https://github.com/wvlet/airframe/issues/1002)) [[a51a9e2](https://github.com/wvlet/airframe/commit/a51a9e2)]
+-  sbt-airframe: Use pre-built airframe-http package for generating client code ([#998](https://github.com/wvlet/airframe/issues/998)) [[a893a26](https://github.com/wvlet/airframe/commit/a893a26)]
+-  sbt-airframe: Update client code only when necessary ([#985](https://github.com/wvlet/airframe/issues/985)) [[122c49c](https://github.com/wvlet/airframe/commit/122c49c)]
+-  sbt-airframe: Use airframeHttpClients := Seq("(api pkg):(type):(target pkg)") format ([#973](https://github.com/wvlet/airframe/issues/973)) [[346b24f](https://github.com/wvlet/airframe/commit/346b24f)]
+-  sbt-airframe: Fix a class loader issue  ([#971](https://github.com/wvlet/airframe/issues/971)) [[8917e42](https://github.com/wvlet/airframe/commit/8917e42)]
+-  sbt-airframe: Support generating Scala.js client [[16a2551](https://github.com/wvlet/airframe/commit/16a2551)]
+-  airframe-control: Remove dependency to airframe-jmx ([#977](https://github.com/wvlet/airframe/issues/977)) [[154f283](https://github.com/wvlet/airframe/commit/154f283)]
+-  [#995](https://github.com/wvlet/airframe/issues/995): Embed release notes into git annotated tags [[45b3e53](https://github.com/wvlet/airframe/commit/45b3e53)]
+
+Internal changes:
+-  Improve test coverage ([#1006](https://github.com/wvlet/airframe/issues/1006)) [[5920a1b](https://github.com/wvlet/airframe/commit/5920a1b)]
+-  Upgrade to Scala.js 1.0.1 ([#994](https://github.com/wvlet/airframe/issues/994)) [[08c675d](https://github.com/wvlet/airframe/commit/08c675d)]
+-  Upgrade to Scala 2.12.11 https://github.com/scala/scala/releases/tag/v2.12.11 ([#991](https://github.com/wvlet/airframe/issues/991)) [[39c0eca](https://github.com/wvlet/airframe/commit/39c0eca)]
+-  Update presto-main to 331 ([#990](https://github.com/wvlet/airframe/issues/990)) [[d313263](https://github.com/wvlet/airframe/commit/d313263)]
+-  Update sbt-mdoc to 2.1.4 ([#988](https://github.com/wvlet/airframe/issues/988)) [[4d28b21](https://github.com/wvlet/airframe/commit/4d28b21)]
+-  Update postgresql to 42.2.11 ([#968](https://github.com/wvlet/airframe/issues/968)) [[52430fd](https://github.com/wvlet/airframe/commit/52430fd)]
+-  Add settings for publishing sbt-airframe ([#969](https://github.com/wvlet/airframe/issues/969)) [[c4bdb09](https://github.com/wvlet/airframe/commit/c4bdb09)]
+-  Upgrade scalafmt binary ([#966](https://github.com/wvlet/airframe/issues/966)) [[6bad48a](https://github.com/wvlet/airframe/commit/6bad48a)]
+-  Update fluency-core, fluency-fluentd, ... to 2.4.1 ([#964](https://github.com/wvlet/airframe/issues/964)) [[938e702](https://github.com/wvlet/airframe/commit/938e702)]
+
 ## 20.3.0
 -  airframe-codec: Support reading Array[AnyRef] in JDBCCodec ([#960](https://github.com/wvlet/airframe/issues/960)) [[d1c1342](https://github.com/wvlet/airframe/commit/d1c1342)]
 -  airframe-codec: Support more variations of time strings for InstantCodec ([#955](https://github.com/wvlet/airframe/issues/955)) [[e36c328](https://github.com/wvlet/airframe/commit/e36c328)]
