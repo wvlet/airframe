@@ -5,7 +5,8 @@ import wvlet.airframe.control.ResultClass
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpClientMaxRetryException
 
-import scala.util.Try
+import scala.util.control.NonFatal
+import scala.util.{Failure, Success, Try}
 
 class OkHttpRetryInterceptor(retry: RetryContext) extends Interceptor {
 
@@ -13,11 +14,19 @@ class OkHttpRetryInterceptor(retry: RetryContext) extends Interceptor {
     val request = chain.request()
 
     val response = Try(chain.proceed(request))
+    val resultClass = response match {
+      case Success(r) =>
+        try {
+          retryContext.resultClassifier(r)
+        } catch {
+          case NonFatal(e) =>
+            retryContext.errorClassifier(e)
+        }
+      case Failure(e) =>
+        retryContext.errorClassifier(e)
+    }
 
-    response.fold(
-      e => retryContext.errorClassifier(e),
-      r => retryContext.resultClassifier(r)
-    ) match {
+    resultClass match {
       case ResultClass.Succeeded =>
         response.get
       case ResultClass.Failed(isRetryable, cause, extraWait) =>
