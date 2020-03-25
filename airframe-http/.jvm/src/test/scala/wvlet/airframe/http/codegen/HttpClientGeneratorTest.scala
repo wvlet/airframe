@@ -71,6 +71,7 @@ class HttpClientGeneratorTest extends AirSpec {
       code.contains("def getBooks(limit: Int") shouldBe true
       code.contains("""Map("limit" -> limit, "sort" -> sort)""") shouldBe true
     }
+    code.contains("import java.lang.Object") shouldBe false
   }
 
   test("scan classes") {

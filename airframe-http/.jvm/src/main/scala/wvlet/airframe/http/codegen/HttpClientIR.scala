@@ -52,6 +52,7 @@ object HttpClientIR extends LogSupport {
           resolveObjectName(surface.rawType.getName).split("\\.").dropRight(1).mkString(".")
         // Primitive Scala collections can be found in scala.Predef. No need to include them
         !(importPackageName.isEmpty ||
+          importPackageName == "java.lang" ||
           importPackageName == "scala.collection" ||
           importPackageName == "wvlet.airframe.http" ||
           surface.isPrimitive ||
