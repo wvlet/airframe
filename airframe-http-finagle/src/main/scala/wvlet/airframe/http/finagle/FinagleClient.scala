@@ -224,7 +224,6 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     val path            = HttpClient.buildResourceUri(resourcePath, resourceRequest, resourceSurface)
     convert[Resource](send(newRequest(HttpMethod.GET, path), requestFilter))
   }
-
   override def list[OperationResponse: ru.TypeTag](
       resourcePath: String,
       requestFilter: Request => Request = identity

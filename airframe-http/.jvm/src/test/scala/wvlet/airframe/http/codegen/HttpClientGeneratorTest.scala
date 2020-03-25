@@ -12,19 +12,18 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
-import wvlet.airspec.AirSpec
-import example.api._
-import wvlet.airframe.http._
 import java.net.URLClassLoader
 
-import wvlet.airframe.http.codegen.client._
+import example.api._
+import wvlet.airframe.http._
+import wvlet.airspec.AirSpec
 
 /**
   *
   */
 class HttpClientGeneratorTest extends AirSpec {
   val router =
-    RouteScanner.buildRouter(Seq(classOf[ResourceApi], classOf[QueryApi]))
+    RouteScanner.buildRouter(Seq(classOf[ResourceApi], classOf[QueryApi], classOf[BookApi]))
 
   test("build router") {
     debug(router)
@@ -45,6 +44,10 @@ class HttpClientGeneratorTest extends AirSpec {
     code.contains("import example.api.Query") shouldBe true
     code.contains("class ServiceClient[F[_], Req, Resp]") shouldBe true
     code.contains("import scala.collection.Seq") shouldBe false
+
+    test("Map client parameters to GET query strings") {
+      code.contains("def getBooks(limit: Int") shouldBe true
+    }
   }
 
   test("generate sync client") {
@@ -62,7 +65,13 @@ class HttpClientGeneratorTest extends AirSpec {
       HttpClientGeneratorConfig("example.api:scalajs:example.api.client.js")
     )
     code.contains("package example.api.client.js") shouldBe true
-    code.contains("object ServiceJSClient")
+    code.contains("class ServiceJSClient") shouldBe true
+
+    test("Map client parameters to GET query strings") {
+      code.contains("def getBooks(limit: Int") shouldBe true
+      code.contains("""Map("limit" -> limit, "sort" -> sort)""") shouldBe true
+    }
+    code.contains("import java.lang.Object") shouldBe false
   }
 
   test("scan classes") {
@@ -77,4 +86,5 @@ class HttpClientGeneratorTest extends AirSpec {
     val classes = ClassScanner.scanClasses(cl, Seq("example", "wvlet.airframe.json"))
     debug(classes)
   }
+
 }

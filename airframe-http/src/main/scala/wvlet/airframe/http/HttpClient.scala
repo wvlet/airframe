@@ -24,6 +24,7 @@ import wvlet.log.LogSupport
 import scala.language.higherKinds
 import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}
+import scala.util.Try
 
 /**
   * Asynchronous HTTP Client interface
@@ -440,7 +441,7 @@ object HttpClient extends LogSupport {
       resourceSurface: Surface
   ): HttpMultiMap = {
     val resourceCodec = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceJson  = resourceCodec.toJSONObject(resource)
+    val resourceJson  = Try(resourceCodec.toJSONObject(resource)).getOrElse(JSONObject.empty)
 
     val queryParams = HttpMultiMap.newBuilder
     resourceJson.v.map {

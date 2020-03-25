@@ -112,7 +112,7 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
     */
   private def dispatch(retryContext: RetryContext, request: Request): Future[Response] = {
     val xhr = new dom.XMLHttpRequest()
-    val uri = config.serverAddress.map(address => s"${address.uri}${request.path}").getOrElse(request.path)
+    val uri = config.serverAddress.map(address => s"${address.uri}${request.uri}").getOrElse(request.uri)
     debug(s"Sending request: ${request}")
     xhr.open(request.method, uri)
     xhr.responseType = "arraybuffer"
@@ -268,7 +268,6 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
       resourceSurface: Surface,
       requestFilter: Request => Request = identity
   ): Future[Resource] = {
-    val resourceCodec = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
     send(Http.request(HttpMethod.GET, resourcePath), resourceSurface, requestFilter = requestFilter)
   }
 
