@@ -152,6 +152,7 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
   fluentd,
   airspecLight,
   finagle,
+  okhttp,
   httpRecorder
 )
 
