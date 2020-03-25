@@ -63,3 +63,10 @@ trait QueryApi {
   @Endpoint(method = HttpMethod.POST, path = "/v1/query")
   def newQuery(createQueryRequest: CreateQueryRequest): QueryResultResponse
 }
+
+case class Book(id: String, name: String)
+
+trait BookApi {
+  @Endpoint(method = HttpMethod.GET, path = "/v1/books")
+  def getBooks(limit: Int = 100, sort: Option[Boolean] = None): Seq[Book]
+}

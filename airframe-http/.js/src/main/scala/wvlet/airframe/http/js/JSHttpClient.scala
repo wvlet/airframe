@@ -268,7 +268,6 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
       resourceSurface: Surface,
       requestFilter: Request => Request = identity
   ): Future[Resource] = {
-    val resourceCodec = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
     send(Http.request(HttpMethod.GET, resourcePath), resourceSurface, requestFilter = requestFilter)
   }
 

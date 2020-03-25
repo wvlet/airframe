@@ -71,19 +71,16 @@ object AsyncClient extends HttpClientType {
     def serviceBody(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
-          val httpMethodName       = m.httpMethod.toString.toLowerCase(Locale.ENGLISH)
-          val httpClientMethodName = if (m.isOpsRequest) s"${httpMethodName}Ops" else httpMethodName
-
           val inputArgs =
             m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++ Seq("requestFilter: Req => Req = identity")
 
           val sendRequestArgs = Seq.newBuilder[String]
           sendRequestArgs += s"""resourcePath = s"${m.path}""""
-          sendRequestArgs ++= m.clientCallParameters.map(x => s"${x.name}")
+          sendRequestArgs ++= m.clientCallParameters
           sendRequestArgs += "requestFilter = requestFilter"
 
           s"""def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType}] = {
-             |  client.${httpClientMethodName}[${m.typeArgString}](${sendRequestArgs.result
+             |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result
                .mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")
@@ -126,19 +123,16 @@ object SyncClient extends HttpClientType {
     def serviceBody(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
-          val httpMethodName       = m.httpMethod.toString.toLowerCase(Locale.ENGLISH)
-          val httpClientMethodName = if (m.isOpsRequest) s"${httpMethodName}Ops" else httpMethodName
-
           val inputArgs =
             m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++ Seq("requestFilter: Req => Req = identity")
 
           val sendRequestArgs = Seq.newBuilder[String]
           sendRequestArgs += s"""resourcePath = s"${m.path}""""
-          sendRequestArgs ++= m.clientCallParameters.map(x => s"${x.name}")
+          sendRequestArgs ++= m.clientCallParameters
           sendRequestArgs += "requestFilter = requestFilter"
 
           s"""def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType.name} = {
-             |  client.${httpClientMethodName}[${m.typeArgString}](${sendRequestArgs.result
+             |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result
                .mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")
@@ -188,9 +182,6 @@ object ScalaJSClient extends HttpClientType {
     def serviceBody(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
-          val httpMethodName       = m.httpMethod.toString.toLowerCase(Locale.ENGLISH)
-          val httpClientMethodName = if (m.isOpsRequest) s"${httpMethodName}Ops" else httpMethodName
-
           val inputArgs = {
             m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++
               Seq("requestFilter: Request => Request = identity")
@@ -198,12 +189,12 @@ object ScalaJSClient extends HttpClientType {
 
           val sendRequestArgs = Seq.newBuilder[String]
           sendRequestArgs += s"""resourcePath = s"${m.path}""""
-          sendRequestArgs ++= m.clientCallParameters.map(x => s"${x.name}")
+          sendRequestArgs ++= m.clientCallParameters
           sendRequestArgs ++= m.typeArgs.map(s => s"Surface.of[${s.name}]")
           sendRequestArgs += "requestFilter = requestFilter"
 
           s"""def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType}] = {
-             |  client.${httpClientMethodName}[${m.typeArgString}](${sendRequestArgs.result
+             |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result
                .mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")

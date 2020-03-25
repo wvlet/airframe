@@ -7,7 +7,8 @@ import myapp.spi.MyService
 import com.twitter.util.Await
 
 class MyServiceImpl extends myapp.spi.MyService {
-  override def hello(id: Int): String = s"hello ${id}"
+  override def hello(id: Int): String    = s"hello ${id}"
+  override def books(limit: Int): String = s"${limit} books"
 }
 
 object MyServer extends LogSupport {
@@ -31,6 +32,12 @@ object MyServer extends LogSupport {
       val ret        = syncClient.myService.hello(101)
       info(ret)
       assert(ret == "hello 101")
+
+      val future2 = client.myService.books(10).map { v =>
+        logger.info(v)
+        assert(v == s"10 books")
+      }
+      Await.result(future2)
     }
   }
 }

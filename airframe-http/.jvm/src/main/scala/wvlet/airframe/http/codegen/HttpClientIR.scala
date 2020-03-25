@@ -79,11 +79,15 @@ object HttpClientIR extends LogSupport {
       name: String,
       typeArgs: Seq[Surface],
       inputParameters: Seq[MethodParameter],
-      clientCallParameters: Seq[MethodParameter],
+      clientCallParameters: Seq[String],
       returnType: Surface,
       path: String
   ) extends ClientCodeIR {
     def typeArgString = typeArgs.map(_.name).mkString(", ")
+    def clientMethodName = {
+      val methodName = httpMethod.toString.toLowerCase(Locale.ENGLISH)
+      if (isOpsRequest) s"${methodName}Ops" else methodName
+    }
 
   }
 
@@ -123,10 +127,31 @@ object HttpClientIR extends LogSupport {
 
       val typeArgBuilder = Seq.newBuilder[Surface]
 
-      if (httpClientCallInputs.size >= 2) {
-        throw new IllegalStateException(s"HttpClient doesn't support multiple object inputs: ${route}")
+      def isPrimitive(s: Surface): Boolean = s.isPrimitive || (s.isOption && s.typeArgs.forall(_.isPrimitive))
+
+      val hasPrimitiveInputs =
+        if (httpClientCallInputs.nonEmpty && httpClientCallInputs.forall(x => isPrimitive(x.surface))) {
+          true
+        } else if (httpClientCallInputs.size >= 2) {
+          throw new IllegalStateException(s"HttpClient doesn't support multiple non-primitive object inputs: ${route}")
+        } else {
+          false
+        }
+
+      val clientCallParams = Seq.newBuilder[String]
+
+      if (hasPrimitiveInputs) {
+        // Primitive values (or its Option) cannot be represented in JSON, so we need to wrap them with a map
+        val params = Seq.newBuilder[String]
+        httpClientCallInputs.foreach { x => params += s""""${x.name}" -> ${x.name}""" }
+        clientCallParams += s"Map(${params.result.mkString(", ")})"
+        typeArgBuilder += Surface.of[Map[String, Any]]
+      } else {
+        httpClientCallInputs.headOption.map { x =>
+          clientCallParams += x.name
+          typeArgBuilder += x.surface
+        }
       }
-      httpClientCallInputs.headOption.map { x => typeArgBuilder += x.surface }
       typeArgBuilder += unwrapFuture(route.returnTypeSurface)
 
       ClientMethodDef(
@@ -135,7 +160,7 @@ object HttpClientIR extends LogSupport {
         name = name,
         typeArgs = typeArgBuilder.result(),
         inputParameters = analysis.userInputParameters,
-        clientCallParameters = httpClientCallInputs,
+        clientCallParameters = clientCallParams.result(),
         path = analysis.pathString,
         returnType = unwrapFuture(route.returnTypeSurface)
       )
