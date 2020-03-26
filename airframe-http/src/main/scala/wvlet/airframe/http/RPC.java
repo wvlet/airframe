@@ -22,19 +22,18 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * An annotation used for defining airframe-http REST endpoints.
- * <p>
- * Scala doesn't support reading such annotation values at runtime, so
- * we need to defined this as Java's annotation to support runtime reflections.
- * </p>
+ * An annotation used for defining RPC interfaces.
+ * All public methods inside the class marked with @RPC will be HTTP endpoints.
  */
 @Retention(RUNTIME)
-@Target({METHOD, TYPE})
-public @interface Endpoint {
+@Target({TYPE, METHOD})
+public @interface RPC {
     /**
-     * An uri beginning from / (slash)
+     * An uri beginning from / (slash).
+     * <p>
+     * If no path is specified, the class and function names will be used for defining HTTP endpoint path
      */
-    String path();
-    String method() default "GET";
+    String path() default "";
+    String method() default "POST";
     String description() default "";
 }

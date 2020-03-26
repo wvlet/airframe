@@ -124,21 +124,46 @@ case class Router(
     // Import ReflectSurface to find method annotations (Endpoint)
     import wvlet.airframe.surface.reflect._
 
-    // Get a common prefix of Endpoints if exists
-    val prefixPath =
-      controllerSurface
-        .findAnnotationOf[Endpoint]
-        .map(_.path())
-        .getOrElse("")
+    val endpointOpt = controllerSurface.findAnnotationOf[Endpoint]
+    val rpcOpt      = controllerSurface.findAnnotationOf[RPC]
 
-    // Add methods annotated with @Endpoint
+    if (endpointOpt.isDefined && rpcOpt.isDefined) {
+      throw new IllegalArgumentException(s"Cannot define both of @Endpoint and @RPC annotations: ${controllerSurface}")
+    }
+
     val newRoutes =
-      controllerMethodSurfaces
-        .map { m => (m, m.findAnnotationOf[Endpoint]) }
-        .collect {
-          case (m: ReflectMethodSurface, Some(endPoint)) =>
-            ControllerRoute(controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
+      if (endpointOpt.isDefined) {
+        val endpoint   = endpointOpt.get
+        val prefixPath = endpoint.path()
+        // Add methods annotated with @Endpoint
+        controllerMethodSurfaces
+          .map { m => (m, m.findAnnotationOf[Endpoint]) }
+          .collect {
+            case (m: ReflectMethodSurface, Some(endPoint)) =>
+              ControllerRoute(controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
+          }
+      } else if (rpcOpt.isDefined) {
+        val rpc             = rpcOpt.get
+        val serviceFullName = controllerSurface.rawType.getName.replaceAll("\\$anon\\$", "").replaceAll("\\$", ".")
+        val prefixPath = if (rpc.path().isEmpty) {
+          s"/${serviceFullName}"
+        } else {
+          val serviceName = serviceFullName.split("\\.").last
+          s"${rpc.path()}/${serviceName}"
         }
+        controllerMethodSurfaces
+          .filter(_.isPublic)
+          .map { m => (m, m.findAnnotationOf[RPC]) }
+          .collect {
+            case (m: ReflectMethodSurface, Some(rpc)) =>
+              val path = if (rpc.path().nonEmpty) rpc.path() else s"/${m.name}"
+              ControllerRoute(controllerSurface, rpc.method(), prefixPath + path, m)
+            case (m: ReflectMethodSurface, None) =>
+              ControllerRoute(controllerSurface, rpc.method(), prefixPath + s"/${m.name}", m)
+          }
+      } else {
+        Seq.empty
+      }
 
     val newRouter = new Router(surface = Some(controllerSurface), localRoutes = newRoutes)
     if (this.isEmpty) {
