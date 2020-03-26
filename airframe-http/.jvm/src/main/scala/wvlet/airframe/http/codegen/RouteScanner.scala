@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
-import wvlet.airframe.http.{Endpoint, Router}
+import wvlet.airframe.http.{Endpoint, RPC, Router}
 import wvlet.log.LogSupport
 
 import scala.util.{Success, Try}
@@ -68,7 +68,7 @@ object RouteScanner extends LogSupport {
       import wvlet.airframe.surface.reflect._
       val s       = ReflectSurfaceFactory.ofClass(cl)
       val methods = ReflectSurfaceFactory.methodsOfClass(cl)
-      if (methods.exists(_.findAnnotationOf[Endpoint].isDefined)) {
+      if (s.findAnnotationOf[RPC].isDefined || methods.exists(m => m.findAnnotationOf[Endpoint].isDefined)) {
         debug(s"Found an Airframe HTTP interface: ${s.fullName}")
         router = router.addInternal(s, methods)
       }

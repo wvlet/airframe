@@ -131,7 +131,7 @@ case class Router(
       throw new IllegalArgumentException(s"Cannot define both of @Endpoint and @RPC annotations: ${controllerSurface}")
     }
 
-    val newRoutes =
+    val newRoutes: Seq[Route] =
       if (endpointOpt.isDefined) {
         val endpoint   = endpointOpt.get
         val prefixPath = endpoint.path()

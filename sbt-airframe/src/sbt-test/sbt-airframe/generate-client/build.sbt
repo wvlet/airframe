@@ -14,5 +14,14 @@ lazy val server =
   project
     .in(file("server"))
     .enablePlugins(AirframeHttpPlugin)
-    .settings(spi)
+    .settings(
+      airframeHttpGeneratorOption := "-l debug",
+      airframeHttpClients := Seq(
+        "myapp.spi",
+        "myapp.spi:sync"
+      ),
+      libraryDependencies ++= Seq(
+        "org.wvlet.airframe" %% "airframe-http-finagle" % sys.props("plugin.version")
+      )
+    )
     .dependsOn(spi)
