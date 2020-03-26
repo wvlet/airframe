@@ -30,7 +30,16 @@ object RPCTest extends AirSpec {
 
   test("Create a router from RPC annotation") {
     val r = Router.add[MyRPCService]
-    info(r)
+    debug(r)
+    val m1 = r.routes.find(_.path == "/v1/MyRPCService/hello")
+    m1 shouldBe defined
+    m1.get.method shouldBe HttpMethod.POST
+    m1.get.methodSurface.name shouldBe "hello"
+
+    val m2 = r.routes.find(_.path == "/v1/MyRPCService/book")
+    m2 shouldBe defined
+    m2.get.method shouldBe HttpMethod.POST
+    m2.get.methodSurface.name shouldBe "book"
   }
 
   @RPC(description = "My RPC service interface")
@@ -40,7 +49,11 @@ object RPCTest extends AirSpec {
 
   test("Create RPC interface without any path") {
     val r = Router.add[MyRPCService2]
-    info(r)
+    debug(r)
+    val m = r.routes.find(_.path == "/wvlet.airframe.http.RPCTest.MyRPCService2/hello")
+    m shouldBe defined
+    m.get.method shouldBe HttpMethod.POST
+    m.get.methodSurface.name shouldBe "hello"
   }
 
   @RPC(path = "/v1", description = "My RPC service interface")
@@ -51,7 +64,10 @@ object RPCTest extends AirSpec {
 
   test("Create RPC interface with full paths") {
     val r = Router.add[MyRPCService3]
-    info(r)
+    debug(r)
+    val m = r.routes.find(_.path == "/v1/MyRPCService3/hello_world")
+    m shouldBe defined
+    m.get.method shouldBe HttpMethod.POST
+    m.get.methodSurface.name shouldBe "hello"
   }
-
 }

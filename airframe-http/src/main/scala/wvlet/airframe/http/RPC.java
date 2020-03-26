@@ -34,6 +34,5 @@ public @interface RPC {
      * If no path is specified, the class and function names will be used for defining HTTP endpoint path
      */
     String path() default "";
-    String method() default "POST";
     String description() default "";
 }
