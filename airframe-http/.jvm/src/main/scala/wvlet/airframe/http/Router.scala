@@ -143,7 +143,9 @@ case class Router(
                 ControllerRoute(controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
             }
         case (None, Some(rpc)) =>
-          val serviceFullName = controllerSurface.rawType.getName.replaceAll("\\$anon\\$", "").replaceAll("\\$", ".")
+          // We need to find the owner class of the RPC interface because the controller might be extending the RPC interface (e.g., RPCImpl)
+          val rpcInterfaceCls = controllerSurface.findAnnotationOwnerOf[RPC].getOrElse(controllerSurface.rawType)
+          val serviceFullName = rpcInterfaceCls.getName.replaceAll("\\$anon\\$", "").replaceAll("\\$", ".")
           val prefixPath = if (rpc.path().isEmpty) {
             s"/${serviceFullName}"
           } else {
