@@ -11,10 +11,15 @@ class MyServiceImpl extends myapp.spi.MyService {
   override def books(limit: Int): String = s"${limit} books"
 }
 
+class MyRPCImpl extends myapp.spi.MyRPC {
+  override def world: String = "world"
+}
+
 object MyServer extends LogSupport {
 
   def main(args: Array[String]): Unit = {
-    val router = Router.of[MyServiceImpl]
+    val router = Router.add[MyServiceImpl].add[MyRPCImpl]
+    info(router)
 
     val d =
       newFinagleServerDesign(router = router)
@@ -38,6 +43,10 @@ object MyServer extends LogSupport {
         assert(v == s"10 books")
       }
       Await.result(future2)
+
+      val ret2 = syncClient.myRPC.world()
+      info(ret2)
+      assert(ret2 == "world")
     }
   }
 }

@@ -9,3 +9,8 @@ trait MyService {
   @Endpoint(method = HttpMethod.GET, path = "/v1/books")
   def books(limit: Int = 100): String
 }
+
+@RPC
+trait MyRPC {
+  def world: String
+}
