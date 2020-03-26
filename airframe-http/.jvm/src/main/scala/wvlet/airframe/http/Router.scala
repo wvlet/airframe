@@ -127,43 +127,41 @@ case class Router(
     val endpointOpt = controllerSurface.findAnnotationOf[Endpoint]
     val rpcOpt      = controllerSurface.findAnnotationOf[RPC]
 
-    if (endpointOpt.isDefined && rpcOpt.isDefined) {
-      throw new IllegalArgumentException(s"Cannot define both of @Endpoint and @RPC annotations: ${controllerSurface}")
-    }
-
-    val newRoutes: Seq[Route] =
-      if (endpointOpt.isDefined) {
-        val endpoint   = endpointOpt.get
-        val prefixPath = endpoint.path()
-        // Add methods annotated with @Endpoint
-        controllerMethodSurfaces
-          .map { m => (m, m.findAnnotationOf[Endpoint]) }
-          .collect {
-            case (m: ReflectMethodSurface, Some(endPoint)) =>
-              ControllerRoute(controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
+    val newRoutes: Seq[Route] = {
+      (endpointOpt, rpcOpt) match {
+        case (Some(endpoint), Some(rpcOpt)) =>
+          throw new IllegalArgumentException(
+            s"Cannot define both of @Endpoint and @RPC annotations: ${controllerSurface}"
+          )
+        case (_, None) =>
+          val prefixPath = endpointOpt.map(_.path()).getOrElse("")
+          // Add methods annotated with @Endpoint
+          controllerMethodSurfaces
+            .map { m => (m, m.findAnnotationOf[Endpoint]) }
+            .collect {
+              case (m: ReflectMethodSurface, Some(endPoint)) =>
+                ControllerRoute(controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
+            }
+        case (None, Some(rpc)) =>
+          val serviceFullName = controllerSurface.rawType.getName.replaceAll("\\$anon\\$", "").replaceAll("\\$", ".")
+          val prefixPath = if (rpc.path().isEmpty) {
+            s"/${serviceFullName}"
+          } else {
+            val serviceName = serviceFullName.split("\\.").last
+            s"${rpc.path()}/${serviceName}"
           }
-      } else if (rpcOpt.isDefined) {
-        val rpc             = rpcOpt.get
-        val serviceFullName = controllerSurface.rawType.getName.replaceAll("\\$anon\\$", "").replaceAll("\\$", ".")
-        val prefixPath = if (rpc.path().isEmpty) {
-          s"/${serviceFullName}"
-        } else {
-          val serviceName = serviceFullName.split("\\.").last
-          s"${rpc.path()}/${serviceName}"
-        }
-        controllerMethodSurfaces
-          .filter(_.isPublic)
-          .map { m => (m, m.findAnnotationOf[RPC]) }
-          .collect {
-            case (m: ReflectMethodSurface, Some(rpc)) =>
-              val path = if (rpc.path().nonEmpty) rpc.path() else s"/${m.name}"
-              ControllerRoute(controllerSurface, HttpMethod.POST, prefixPath + path, m)
-            case (m: ReflectMethodSurface, None) =>
-              ControllerRoute(controllerSurface, HttpMethod.POST, prefixPath + s"/${m.name}", m)
-          }
-      } else {
-        Seq.empty
+          controllerMethodSurfaces
+            .filter(_.isPublic)
+            .map { m => (m, m.findAnnotationOf[RPC]) }
+            .collect {
+              case (m: ReflectMethodSurface, Some(rpc)) =>
+                val path = if (rpc.path().nonEmpty) rpc.path() else s"/${m.name}"
+                ControllerRoute(controllerSurface, HttpMethod.POST, prefixPath + path, m)
+              case (m: ReflectMethodSurface, None) =>
+                ControllerRoute(controllerSurface, HttpMethod.POST, prefixPath + s"/${m.name}", m)
+            }
       }
+    }
 
     val newRouter = new Router(surface = Some(controllerSurface), localRoutes = newRoutes)
     if (this.isEmpty) {
