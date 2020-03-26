@@ -23,7 +23,13 @@ object Http {
   def PUT(uri: String)                          = request(HttpMethod.PUT, uri)
   def PATCH(uri: String)                        = request(HttpMethod.PATCH, uri)
 
-  def response(status: HttpStatus = HttpStatus.Ok_200) = HttpMessage.Response.empty.withStatus(status)
+  def response(status: HttpStatus = HttpStatus.Ok_200): HttpMessage.Response = {
+    HttpMessage.Response.empty.withStatus(status)
+  }
+
+  def response(status: HttpStatus, content: String): HttpMessage.Response = {
+    response(status).withContent(content)
+  }
 }
 
 /**
