@@ -149,8 +149,7 @@ case class Router(
           val prefixPath = if (rpc.path().isEmpty) {
             s"/${serviceFullName}"
           } else {
-            val serviceName = serviceFullName.split("\\.").last
-            s"${rpc.path()}/${serviceName}"
+            s"${rpc.path()}/${serviceFullName}"
           }
           controllerMethodSurfaces
             .filter(_.isPublic)
