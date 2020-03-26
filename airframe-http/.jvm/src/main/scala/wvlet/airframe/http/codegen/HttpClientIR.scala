@@ -14,7 +14,7 @@
 package wvlet.airframe.http.codegen
 import java.util.Locale
 
-import wvlet.airframe.http.Router
+import wvlet.airframe.http.{HttpMethod, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface}
@@ -148,18 +148,25 @@ object HttpClientIR extends LogSupport {
         clientCallParams += s"Map(${params.result.mkString(", ")})"
         typeArgBuilder += Surface.of[Map[String, Any]]
       } else {
-        httpClientCallInputs.headOption.map { x =>
-          clientCallParams += x.name
-          typeArgBuilder += x.surface
+        if (httpClientCallInputs.isEmpty && route.method == HttpMethod.POST) {
+          // For RPC calls without any input, embed an empty json
+          clientCallParams += "Map.empty"
+          typeArgBuilder += Surface.of[Map[String, Any]]
+        } else {
+          httpClientCallInputs.headOption.map { x =>
+            clientCallParams += x.name
+            typeArgBuilder += x.surface
+          }
         }
       }
       typeArgBuilder += unwrapFuture(route.returnTypeSurface)
+      val typeArgs = typeArgBuilder.result()
 
       ClientMethodDef(
         httpMethod = route.method,
-        isOpsRequest = httpClientCallInputs.nonEmpty,
+        isOpsRequest = typeArgs.size > 1,
         name = name,
-        typeArgs = typeArgBuilder.result(),
+        typeArgs = typeArgs,
         inputParameters = analysis.userInputParameters,
         clientCallParameters = clientCallParams.result(),
         path = analysis.pathString,
