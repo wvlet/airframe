@@ -26,14 +26,14 @@ import wvlet.airspec.AirSpec
 class HttpClientTest extends AirSpec {
   import HttpClient._
   abstract class RetryTest(expectedRetryCount: Int, expectedExecCount: Int) {
-    val retryer = defaultHttpClientRetry[SimpleHttpRequest, SimpleHttpResponse]
+    val retryer = defaultHttpClientRetry[HttpMessage.Request, HttpMessage.Response]
       .withBackOff(initialIntervalMillis = 0)
     var retryCount = 0
     var execCount  = 0
 
-    def body: SimpleHttpResponse
+    def body: HttpMessage.Response
 
-    def run = {
+    def run: HttpMessage.Response = {
       retryer.run {
         if (execCount > 0) {
           retryCount += 1
@@ -42,7 +42,7 @@ class HttpClientTest extends AirSpec {
         val ret = if (retryCount == 0) {
           body
         } else {
-          SimpleHttpResponse(HttpStatus.Ok_200)
+          Http.response(HttpStatus.Ok_200)
         }
         ret
       }
@@ -59,14 +59,15 @@ class HttpClientTest extends AirSpec {
   }
 
   def `retry on failed http requests`: Unit = {
-    val retryableResponses: Seq[SimpleHttpResponse] = Seq(
-      SimpleHttpResponse(HttpStatus.ServiceUnavailable_503),
-      SimpleHttpResponse(HttpStatus.TooManyRequests_429),
-      SimpleHttpResponse(HttpStatus.InternalServerError_500),
-      SimpleHttpResponse(
-        HttpStatus.BadRequest_400,
-        "Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed."
-      )
+    val retryableResponses: Seq[HttpMessage.Response] = Seq(
+      Http.response(HttpStatus.ServiceUnavailable_503),
+      Http.response(HttpStatus.TooManyRequests_429),
+      Http.response(HttpStatus.InternalServerError_500),
+      Http
+        .response(
+          HttpStatus.BadRequest_400,
+          "Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed."
+        )
     )
     retryableResponses.foreach { r =>
       new RetryTest(expectedRetryCount = 1, expectedExecCount = 2) {
@@ -75,12 +76,12 @@ class HttpClientTest extends AirSpec {
     }
   }
   def `never retry on deterministic http request failrues`: Unit = {
-    val nonRetryableResponses: Seq[SimpleHttpResponse] = Seq(
-      SimpleHttpResponse(HttpStatus.BadRequest_400, "bad request"),
-      SimpleHttpResponse(HttpStatus.Unauthorized_401, "permission deniend"),
-      SimpleHttpResponse(HttpStatus.Forbidden_403, "forbidden"),
-      SimpleHttpResponse(HttpStatus.NotFound_404, "not found"),
-      SimpleHttpResponse(HttpStatus.Conflict_409, "conflict")
+    val nonRetryableResponses: Seq[HttpMessage.Response] = Seq(
+      Http.response(HttpStatus.BadRequest_400, "bad request"),
+      Http.response(HttpStatus.Unauthorized_401, "permission deniend"),
+      Http.response(HttpStatus.Forbidden_403, "forbidden"),
+      Http.response(HttpStatus.NotFound_404, "not found"),
+      Http.response(HttpStatus.Conflict_409, "conflict")
     )
 
     nonRetryableResponses.foreach { r =>

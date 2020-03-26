@@ -38,8 +38,24 @@ package object reflect {
   }
 
   implicit class ToRuntimeSurface(s: Surface) {
-    def findAnnotationOf[T <: jl.annotation.Annotation: ClassTag]: Option[T] = {
+    def findAnnotationOwnerOf[T <: jl.annotation.Annotation: ClassTag]: Option[Class[_]] = {
+      val c = implicitly[ClassTag[T]]
 
+      def loop(cl: Class[_]): Option[Class[_]] = {
+        cl match {
+          case null => None
+          case _ =>
+            if (cl.getDeclaredAnnotations.exists(a => c.runtimeClass.isAssignableFrom(a.annotationType()))) {
+              Some(cl)
+            } else {
+              cl.getInterfaces.find(x => loop(x).isDefined)
+            }
+        }
+      }
+      loop(s.rawType)
+    }
+
+    def findAnnotationOf[T <: jl.annotation.Annotation: ClassTag]: Option[T] = {
       def loop(cl: Class[_]): Seq[Annotation] = {
         cl match {
           case null => Seq.empty

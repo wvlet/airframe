@@ -24,18 +24,18 @@ class LongPathTest extends AirSpec {
     val r = Router.add[LongPathExample]
 
     {
-      val m = r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config/entry"))
+      val m = r.findRoute(Http.GET("/v1/config/entry"))
       m shouldBe defined
     }
 
     {
-      val m = r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config/entry/myapp"))
+      val m = r.findRoute(Http.GET("/v1/config/entry/myapp"))
       m shouldBe defined
       m.get.params("scope") shouldBe "myapp"
     }
 
     {
-      val m = r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config/entry/myapp/long/path/entry"))
+      val m = r.findRoute(Http.GET("/v1/config/entry/myapp/long/path/entry"))
       m shouldBe defined
       val p = m.get.params
       p("scope") shouldBe "myapp"
@@ -45,7 +45,7 @@ class LongPathTest extends AirSpec {
     {
       val m =
         r.findRoute(
-          SimpleHttpRequest(HttpMethod.GET, "/v1/config/entry/config/autoscaling/clusters/default/maxCapacity")
+          Http.GET("/v1/config/entry/config/autoscaling/clusters/default/maxCapacity")
         )
 
       m shouldBe defined

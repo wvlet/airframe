@@ -92,32 +92,32 @@ class RouterTest extends AirSpec {
   def `find target method`: Unit = {
     val router = Router.of[ControllerExample]
 
-    val r = router.findRoute(SimpleHttpRequest(HttpMethod.GET, "/user/1"))
+    val r = router.findRoute(Http.GET("/user/1"))
     debug(r)
     r shouldBe defined
     r.get.route.method shouldBe HttpMethod.GET
 
-    val r2 = router.findRoute(SimpleHttpRequest(HttpMethod.POST, "/user"))
+    val r2 = router.findRoute(Http.POST("/user"))
     debug(r2)
     r2 shouldBe defined
     r2.get.route.method shouldBe HttpMethod.POST
 
-    val r3 = router.findRoute(SimpleHttpRequest(HttpMethod.PUT, "/user/2"))
+    val r3 = router.findRoute(Http.PUT("/user/2"))
     debug(r3)
     r3 shouldBe defined
     r3.get.route.method shouldBe HttpMethod.PUT
 
-    val r4 = router.findRoute(SimpleHttpRequest(HttpMethod.DELETE, "/user/3"))
+    val r4 = router.findRoute(Http.DELETE("/user/3"))
     debug(r4)
     r4 shouldBe defined
     r4.get.route.method shouldBe HttpMethod.DELETE
 
-    val r5 = router.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config/info"))
+    val r5 = router.findRoute(Http.GET("/v1/config/info"))
     debug(r5)
     r5 shouldBe defined
     r5.get.route.method shouldBe HttpMethod.GET
 
-    val r6 = router.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config/xxxx/info"))
+    val r6 = router.findRoute(Http.GET("/v1/config/xxxx/info"))
     debug(r6)
     r6 shouldNotBe defined
   }
@@ -136,7 +136,7 @@ class RouterTest extends AirSpec {
       }
     }
 
-    def call[A](request: SimpleHttpRequest, exepected: A): Unit = {
+    def call[A](request: HttpMessage.Request, exepected: A): Unit = {
       val ret =
         router
           .findRoute(request)
@@ -146,37 +146,37 @@ class RouterTest extends AirSpec {
       ret.get shouldBe exepected
     }
 
-    call(SimpleHttpRequest(HttpMethod.GET, "/user/10"), ControllerExample.User("10", "leo"))
-    call(SimpleHttpRequest(HttpMethod.PUT, "/user/2", contentString = "hello"), "hello")
+    call(Http.GET("/user/10"), ControllerExample.User("10", "leo"))
+    call(Http.PUT("/user/2").withContent("hello"), "hello")
     call(
-      SimpleHttpRequest(HttpMethod.POST, "/user", contentString = """{"name":"aina", "id":"xxxx"}"""),
+      Http.POST("/user").withContent("""{"name":"aina", "id":"xxxx"}"""),
       User("xxxx", "aina")
     )
-    call(SimpleHttpRequest(HttpMethod.GET, "/scala/users"), ControllerExample.Group("scala", Seq(User("10", "leo"))))
+    call(Http.GET("/scala/users"), ControllerExample.Group("scala", Seq(User("10", "leo"))))
 
-    call(SimpleHttpRequest(HttpMethod.GET, "/scala/user/11"), ControllerExample.Group("scala", Seq(User("11", "leo"))))
-    call(SimpleHttpRequest(HttpMethod.GET, "/conflict/users"), ControllerExample.Group("xxx", Seq(User("10", "leo"))))
+    call(Http.GET("/scala/user/11"), ControllerExample.Group("scala", Seq(User("11", "leo"))))
+    call(Http.GET("/conflict/users"), ControllerExample.Group("xxx", Seq(User("10", "leo"))))
 
-    call(SimpleHttpRequest(HttpMethod.GET, "/v1/config/entry/long/path"), "long/path")
-    call(SimpleHttpRequest(HttpMethod.GET, "/v1/config/info"), "hello")
+    call(Http.GET("/v1/config/entry/long/path"), "long/path")
+    call(Http.GET("/v1/config/info"), "hello")
   }
 
   def `find ambiguous path patterns`: Unit = {
     val r = Router.add[AmbiguousPathExample]
     warn("Ambiguous HTTP path pattern test")
     val ex = intercept[Throwable] {
-      r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1"))
+      r.findRoute(Http.GET("/v1"))
     }
     warn(ex.getMessage)
   }
 
   def `find methods with the same prefix`: Unit = {
     val r  = Router.add[SharedPathPrefix]
-    val m1 = r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config"))
+    val m1 = r.findRoute(Http.GET("/v1/config"))
     m1 shouldBe defined
     m1.get.route.path shouldBe "/v1/config"
 
-    val m2 = r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config/app"))
+    val m2 = r.findRoute(Http.GET("/v1/config/app"))
     m2 shouldBe defined
     m2.get.route.path shouldBe "/v1/config/app"
   }

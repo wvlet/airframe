@@ -35,20 +35,20 @@ object PathSequenceTest extends AirSpec {
   private val r = Router.of[MyService]
 
   def `handle empty path`: Unit = {
-    val m = r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/html/"))
+    val m = r.findRoute(Http.GET("/html/"))
     m shouldBe defined
     m.get.params("path") shouldBe ""
   }
 
   def `handle long paths`: Unit = {
-    val m = r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/html/long/path"))
+    val m = r.findRoute(Http.GET("/html/long/path"))
     m shouldBe defined
     m.get.params("path") shouldBe "long/path"
   }
 
   def `handle the root path for path sequence`: Unit = {
     val r2 = Router.of[MyHTTPService]
-    val m  = r2.findRoute(SimpleHttpRequest(HttpMethod.GET, "/"))
+    val m  = r2.findRoute(Http.GET("/"))
     m shouldBe defined
     m.get.route match {
       case c: ControllerRoute =>
@@ -57,7 +57,7 @@ object PathSequenceTest extends AirSpec {
         fail("failed")
     }
 
-    val m2 = r2.findRoute(SimpleHttpRequest(HttpMethod.GET, "/css/main.css"))
+    val m2 = r2.findRoute(Http.GET("/css/main.css"))
     m2 shouldBe defined
     m2.get.route match {
       case c: ControllerRoute =>
