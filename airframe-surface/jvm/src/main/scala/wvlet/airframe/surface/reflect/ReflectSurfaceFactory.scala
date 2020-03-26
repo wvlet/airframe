@@ -301,7 +301,7 @@ object ReflectSurfaceFactory extends LogSupport {
           // Cache if not yet cached
           surfaceCache.getOrElseUpdate(fullName, surface)
           typeMap.getOrElseUpdate(surface, tpe)
-          //info(s"${tpe}, ${surface}, ${showRaw(tpe)}")
+          //info(s"${tpe}, ${surface}, ${surface.getClass} ${showRaw(tpe)}")
           surface
         }
       } catch {
