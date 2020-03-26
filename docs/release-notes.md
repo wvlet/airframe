@@ -6,6 +6,14 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.3.2
+
+This release is a hot fix to properly deploy airframe-http-okhttp library to Maven central.
+
+-  airframe-http-okhttp: Fix for Scala 2.11 and release process in build.sbt ([#1008](https://github.com/wvlet/airframe/issues/1008)) [[b63bbe5](https://github.com/wvlet/airframe/commit/b63bbe5)]
+-  airframe-http-okhttp: Update okhttp to 3.12.10 ([#1009](https://github.com/wvlet/airframe/issues/1009)) [[ab367a8](https://github.com/wvlet/airframe/commit/ab367a8)]
+-  sbt-airframe: Wrap primitive args into Map[String, Any] ([#1010](https://github.com/wvlet/airframe/issues/1010)) [[8b8582a](https://github.com/wvlet/airframe/commit/8b8582a)]
+
 ## 20.3.1
 
 Airframe 20.3.1 added several modules for developing Scala.js applictions using airframe-http framework. 
