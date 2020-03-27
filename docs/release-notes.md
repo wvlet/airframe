@@ -6,6 +6,12 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.3.3
+
+-  airframe-http: [#989](https://github.com/wvlet/airframe/issues/989) Add @RPC Annotation ([#1012](https://github.com/wvlet/airframe/issues/1012)) [[cdd626d](https://github.com/wvlet/airframe/commit/cdd626d)]
+-  airframe-surface: Resolve Surfaces properly within sbt classloader [#1014](https://github.com/wvlet/airframe/issues/1014)) [[f6b6cbf](https://github.com/wvlet/airframe/commit/f6b6cbf)]
+-  airframe-surface: Fix a rare case when $ symbol is found in Surface.name ([#1013](https://github.com/wvlet/airframe/issues/1013)) [[67d0dfd](https://github.com/wvlet/airframe/commit/67d0dfd)]
+
 ## 20.3.2
 
 This release is a hot fix to properly deploy airframe-http-okhttp library to Maven central.
