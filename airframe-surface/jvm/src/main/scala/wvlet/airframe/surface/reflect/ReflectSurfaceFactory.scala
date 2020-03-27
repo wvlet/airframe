@@ -157,7 +157,8 @@ object ReflectSurfaceFactory extends LogSupport {
 
   private[surface] def mirror = {
     val cl = Thread.currentThread.getContextClassLoader
-    mirrorCache.getOrElseUpdate(cl, ru.runtimeMirror(cl))
+    val m  = mirrorCache.getOrElseUpdate(cl, ru.runtimeMirror(cl))
+    m
   }
 
   private def resolveClass(tpe: ru.Type): Class[_] = {
