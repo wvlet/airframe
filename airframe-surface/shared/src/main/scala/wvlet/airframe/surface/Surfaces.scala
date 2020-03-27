@@ -168,7 +168,9 @@ case class TaggedSurface(base: Surface, tag: Surface) extends Surface {
   override def objectFactory: Option[ObjectFactory] = base.objectFactory
 }
 
-case object AnyRefSurface extends GenericSurface(classOf[AnyRef])
+case object AnyRefSurface extends GenericSurface(classOf[AnyRef]) {
+  override def name: String = "AnyRef"
+}
 
 /**
   * Base class for generic surfaces with type args

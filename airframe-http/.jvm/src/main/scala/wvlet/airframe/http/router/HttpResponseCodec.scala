@@ -29,12 +29,15 @@ class HttpResponseCodec[Resp: HttpResponseAdapter] extends MessageCodec[HttpResp
         p.writePayload(b)
       case Some(x) if x.startsWith("application/json") =>
         // JSON -> MsgPack
-        JSONCodec.pack(p, v.contentString)
+        val json = v.contentString
+        trace(s"response: ${json}")
+        JSONCodec.pack(p, json)
       case _ =>
         val content = v.contentString
         if (content.startsWith("{") || content.startsWith("[")) {
           // JSON -> MsgPack
-          JSONCodec.pack(p, v.contentString)
+          trace(s"response: ${content}")
+          JSONCodec.pack(p, content)
         } else {
           p.packString(content)
         }
