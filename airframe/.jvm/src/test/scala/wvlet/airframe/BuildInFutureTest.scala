@@ -13,33 +13,36 @@
  */
 package wvlet.airframe
 
+import java.util.concurrent.Executors
+
 import wvlet.airspec.AirSpec
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 case class Config1(port: Int = 8080)
 case class Config2()
 
 class BuildInFutureTest extends AirSpec {
 
+  // We need to use an executor which can load applicttion classes #918.
+  //
+  // https://github.com/sbt/sbt/issues/5410
+  private val threadPool              = Executors.newCachedThreadPool()
+  private implicit val futureExecutor = ExecutionContext.fromExecutor(threadPool)
+
   def `Building in Future causes MISSING_DEPENDENCY` = {
     val f = Future {
-      newDesign.build[Config1] { config =>
-        println(config)
-      }
+      newSilentDesign.build[Config1] { config => debug(config) }
     }
     Await.result(f, Duration.Inf)
   }
 
   def `Building in Future causes java.lang.ClassCastException` = {
     val f = Future {
-      newDesign
+      newSilentDesign
         .bind[Config2].toInstance(Config2())
-        .build[Config1] { config =>
-          println(config)
-        }
+        .build[Config1] { config => debug(config) }
     }
     Await.result(f, Duration.Inf)
   }

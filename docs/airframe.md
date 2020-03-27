@@ -160,7 +160,7 @@ class A {
   val a = bind[B] // [Error] class A can't find the current session
 }
 
-// To use bind[X] inside classes, extends wvlet.airframe.DISupport 
+// To use bind[X] inside classes, extends wvlet.airframe.DISupport
 class A(val session:Session) extends DISupport {
   val a = bind[B] // OK
 }
@@ -466,7 +466,7 @@ trait MyService {
   def init {
     // Called when the object is initialized. The same behavior with onInit
   }
-  
+
   @PreDestroy
   def stop {
     // Called when session.shutdown is called. The same with onShutdown.
@@ -554,7 +554,7 @@ val productionDesign =
 
 ### Multi-Binding
 
-If you want to switch a service to be called depending on the user input, you can just use Scala's functionality + Airframe binding. 
+If you want to switch a service to be called depending on the user input, you can just use Scala's functionality + Airframe binding.
 
 To illustrate this, consider building an web application that receives a request and returns a string message.
 `Dispatcher` class receives an URL path and choose an appropriate `Handler` to use:
@@ -579,15 +579,15 @@ trait Dispatcher {
     case "info" => bind[InfoHandler]
     case _ => bind[DefaultHandler]
   }
-  
+
   def dispatch(path:String, request:Request): String =  {
      dispatcher(path).handle(request)
   }
 }
 ```
 
-In Google Guice, we need to use a special binder like [Multibinder](https://github.com/google/guice/wiki/Multibindings). 
-In Airframe, we just need to write a Scala code that uses `bind[X]`. 
+In Google Guice, we need to use a special binder like [Multibinder](https://github.com/google/guice/wiki/Multibindings).
+In Airframe, we just need to write a Scala code that uses `bind[X]`.
 
 ### Tagged Type Binding
 
@@ -604,6 +604,38 @@ trait A {
   val name = bind[String @@ Name]
   val id = bind[Int @@ Id]
 }
+```
+
+## Known Issues
+
+### Running `design.build[X]` inside Future causes ClassNotFoundException in sbt 1.3.x
+
+This is caused by [LayeredClassLoader of sbt 1.3.x](https://github.com/sbt/sbt/issues/5410), which
+initialize Scala's global ExecutionContext with a class loader isolated from the application classloader.
+
+To avoid this issue, we need to explicitly prepare an executor for the Future inside the application,
+instead of using `scala.concurrent.ExecutionContext.Implicits.global`
+
+```scala
+import java.util.concurrent.Executors
+import scala.concurrent.{Await, ExecutionContext, Future}
+import wvlet.airframe._
+
+// Do not import scala.concurrent.ExecutionContext.Implicits.global
+val threadPool              = Executors.newCachedThreadPool()
+implicit val futureExecutor = ExecutionContext.fromExecutor(threadPool)
+
+case class MyConfig(port: Int = 8080)
+
+Future {
+  newDesign.build[MyConfig] { config => println(config) }
+}
+```
+
+Another workaround is setting `fork in run := true` or `fork in test := test` to your `build.sbt`, or using `Flat` classloader layering strategy:
+
+```scala
+Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
 ```
 
 ## Debugging DI
@@ -691,7 +723,7 @@ val testDesign =
   d.bind[Config].toInstance(new Config("localhost", randomPort))
 ```
 
-Airframe has a submodule called [airframe-config](airframe-config.md), which is useful for 
+Airframe has a submodule called [airframe-config](airframe-config.md), which is useful for
 configuring your applications with YAML files.
 
 ### Managing Resources
@@ -744,9 +776,9 @@ If you need to configure a service (e.g., port number of an web client), but you
 ```scala
 trait MyClient {
   private val port = bind[Int] // This will be overwritten by the factory
-  private val httpClientConfig = bind[HttpClientConfig] // Use the shared instance 
+  private val httpClientConfig = bind[HttpClientConfig] // Use the shared instance
   private val httpClient = new HttpClient(port, httpClientConfig)
-  
+
   @PreDestroy
   def stop: Unit = {
     httpClient.close()
@@ -767,8 +799,8 @@ newDesign
   }
 // clients will be closed here
 ```
-In this example, port number (Int) can be provided later when instantiating MyClient. 
-HttpClientConfig instance can be shared between generated clients. 
+In this example, port number (Int) can be provided later when instantiating MyClient.
+HttpClientConfig instance can be shared between generated clients.
 You can also define lifecycle hooks to MyClient, which will be added for each generated instance of MyClient.
 
 
@@ -891,7 +923,7 @@ val testDesign =
 
 This page describes the internals of Airframe for developers who are interested in extending Airframe.
 
-### Session 
+### Session
 
 A Session in Airframe is a holder of instances and binding rules. Airframe is designed to simplify the instantiation of complex objects like:
 ```scala
@@ -924,7 +956,7 @@ val session =
   newDesign
   .bind[B].toInstance(new B(...))
   .newSesion // Creates a session thats holds the above instance of B
- 
+
 val app = session.build[App]
 ```
 This code builds an instance of `App` using a concrete instance of `B` stored in the session.
@@ -944,7 +976,7 @@ val app = session.build[App]
 Airframe expands this code into this form at compile-time:
 
 ```scala
-val app: App = 
+val app: App =
 { ss: Session =>
   // Extends DISupport to pass Session object
   new App extends DISupport {
@@ -958,7 +990,7 @@ val app: App =
       // If no session is found, MISSING_SESSION exception will be thrown
       val ss1 = wvlet.airframe.Session.findSession(this)
       val binder: Session => A = (ss2: Session =>
-        // Register a code for instantiating A 
+        // Register a code for instantiating A
         ss2.getOrElseUpdate(Surface.of[A],
 	  (new A with DISupport { def session = ss1 }).asInstanceOf[A]
         )
@@ -987,23 +1019,23 @@ new A extends DISupport {
   // (original code) val b = bind[B]
   val b: B = { ss: Session =>
     val ss = findSession(this)
-    // If the session already has an instance of B, return it. Otherwise, craete a new instance of B 
+    // If the session already has an instance of B, return it. Otherwise, craete a new instance of B
     ss.getOrElse(Surface.of[B], (session:Session => new B with DISupport { ... } ))
   }
   // Inject the current session to build B
-  .apply(session) 
+  .apply(session)
 }
 ```
 
 ### Comparison with a naive approach
 
-The above macro-generated code looks quite scarly at first glance. 
+The above macro-generated code looks quite scarly at first glance.
 However, if you write similar code by yourself, you will end up doing almost the same thing with Session.
 
 For example, consider building `App` trait using a custom `B` instance:
 
 ```scala
-{ 
+{
   val myB = new B {}
   val myA = new A(b = myB) {}
   new App(a = myA)
@@ -1025,7 +1057,7 @@ val app = new App(a = session.get(classOf[A])) {}
 session += classOf[App] -> app
 
 // At shutdown phase
-session.objects.foreach { x=> 
+session.objects.foreach { x=>
   x match {
     case a:A => // release A
     case b:B => // release B ...
@@ -1035,7 +1067,7 @@ session.objects.foreach { x=>
 
 ```
 As we have seen in the example of [Service Mix-in](#service-mix-in), if we need to manage hundreds of services,
-manually writing such object management functions will be cumbersome. Airframe helps you to oraganize building service objects. 
+manually writing such object management functions will be cumbersome. Airframe helps you to oraganize building service objects.
 
 
 ### Instantiation Methods
@@ -1043,7 +1075,7 @@ manually writing such object management functions will be cumbersome. Airframe h
 When `bind[X]` is used, according to the type of `X` different code can be generated:
 
 - If `X` is a non-abstract trait, the generated code will be like the above.
-- If `X` is a non-abstract class that has a primary constructor, Airframe inject dependencies to the constructor arguments: 
+- If `X` is a non-abstract class that has a primary constructor, Airframe inject dependencies to the constructor arguments:
 
 ```scala
 // case class X(a:A, b:B, ..)
@@ -1061,7 +1093,7 @@ session.get(Surface.of[X])
 ```
 
 
-### Suface
+### Surface
 
 Airframe uses `Surface.of[X]` as identifiers of object types. [Surface](https://github.com/wvlet/airframe/tree/master/surface) is an object type inspection library.
 
@@ -1090,9 +1122,9 @@ Seq[_] => Seq[AnyRef]
 Surface knows the detailed type parameters like `Seq[Int]` and `Seq[_]`, so it can distinguish these two `Seq` types.
 
 
-To provide detailed type information only available at compile-time, Surface uses runtime-reflecation, which can pass compile-type type information such as 
- function argument names, generic types, etc., to the runtime environment. Surface extensively uses `scala.reflect.runtime.universe.Type` 
-information so that bindings using type names can be convenient for the users.  
+To provide detailed type information only available at compile-time, Surface uses runtime-reflecation, which can pass compile-type type information such as
+ function argument names, generic types, etc., to the runtime environment. Surface extensively uses `scala.reflect.runtime.universe.Type`
+information so that bindings using type names can be convenient for the users.
 
 For compatibility with [Scala.js](https://www.scala-js.org/), which doesn't support any runtime reflection,
 Surface uses Scala macros to embed compile-time type information into the runtime objects.
