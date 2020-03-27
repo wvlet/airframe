@@ -177,7 +177,7 @@ d.build[<span class="hljs-type">MyApp</span>] { app: <span class="hljs-type">MyA
   <span class="hljs-keyword">val</span> a = bind[<span class="hljs-type">B</span>] <span class="hljs-comment">// [Error] class A can't find the current session</span>
 }
 
-<span class="hljs-comment">// To use bind[X] inside classes, extends wvlet.airframe.DISupport </span>
+<span class="hljs-comment">// To use bind[X] inside classes, extends wvlet.airframe.DISupport</span>
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">A</span>(<span class="hljs-params">val session:<span class="hljs-type">Session</span></span>) <span class="hljs-keyword">extends</span> <span class="hljs-title">DISupport</span> </span>{
   <span class="hljs-keyword">val</span> a = bind[<span class="hljs-type">B</span>] <span class="hljs-comment">// OK</span>
 }
@@ -416,7 +416,7 @@ design
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">init</span> </span>{
     <span class="hljs-comment">// Called when the object is initialized. The same behavior with onInit</span>
   }
-  
+
   <span class="hljs-meta">@PreDestroy</span>
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">stop</span> </span>{
     <span class="hljs-comment">// Called when session.shutdown is called. The same with onShutdown.</span>
@@ -505,7 +505,7 @@ bind[<span class="hljs-type">Map</span>[_,_]]
     <span class="hljs-keyword">case</span> <span class="hljs-string">"info"</span> =&gt; bind[<span class="hljs-type">InfoHandler</span>]
     <span class="hljs-keyword">case</span> _ =&gt; bind[<span class="hljs-type">DefaultHandler</span>]
   }
-  
+
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">dispatch</span></span>(path:<span class="hljs-type">String</span>, request:<span class="hljs-type">Request</span>): <span class="hljs-type">String</span> =  {
      dispatcher(path).handle(request)
   }
@@ -525,6 +525,29 @@ In Airframe, we just need to write a Scala code that uses <code>bind[X]</code>.<
   <span class="hljs-keyword">val</span> name = bind[<span class="hljs-type">String</span> @@ <span class="hljs-type">Name</span>]
   <span class="hljs-keyword">val</span> id = bind[<span class="hljs-type">Int</span> @@ <span class="hljs-type">Id</span>]
 }
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="known-issues"></a><a href="#known-issues" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Known Issues</h2>
+<h3><a class="anchor" aria-hidden="true" id="running-designbuildx-inside-future-causes-classnotfoundexception-in-sbt-13x"></a><a href="#running-designbuildx-inside-future-causes-classnotfoundexception-in-sbt-13x" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Running <code>design.build[X]</code> inside Future causes ClassNotFoundException in sbt 1.3.x</h3>
+<p>This is caused by <a href="https://github.com/sbt/sbt/issues/5410">LayeredClassLoader of sbt 1.3.x</a>, which
+initialize Scala's global ExecutionContext with a class loader isolated from the application classloader.</p>
+<p>To avoid this issue, we need to explicitly prepare an executor for the Future inside the application,
+instead of using <code>scala.concurrent.ExecutionContext.Implicits.global</code></p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> java.util.concurrent.<span class="hljs-type">Executors</span>
+<span class="hljs-keyword">import</span> scala.concurrent.{<span class="hljs-type">Await</span>, <span class="hljs-type">ExecutionContext</span>, <span class="hljs-type">Future</span>}
+<span class="hljs-keyword">import</span> wvlet.airframe._
+
+<span class="hljs-comment">// Do not import scala.concurrent.ExecutionContext.Implicits.global</span>
+<span class="hljs-keyword">val</span> threadPool              = <span class="hljs-type">Executors</span>.newCachedThreadPool()
+<span class="hljs-keyword">implicit</span> <span class="hljs-keyword">val</span> futureExecutor = <span class="hljs-type">ExecutionContext</span>.fromExecutor(threadPool)
+
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyConfig</span>(<span class="hljs-params">port: <span class="hljs-type">Int</span> = 8080</span>)</span>
+
+<span class="hljs-type">Future</span> {
+  newDesign.build[<span class="hljs-type">MyConfig</span>] { config =&gt; println(config) }
+}
+</code></pre>
+<p>Another workaround is setting <code>fork in run := true</code> or <code>fork in test := test</code> to your <code>build.sbt</code>, or using <code>Flat</code> classloader layering strategy:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-type">Test</span> / classLoaderLayeringStrategy := <span class="hljs-type">ClassLoaderLayeringStrategy</span>.<span class="hljs-type">Flat</span>
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="debugging-di"></a><a href="#debugging-di" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Debugging DI</h2>
 <p>To check the runtime behavior of Airframe's dependency injection, set the log level of <code>wvlet.airframe</code> to <code>debug</code> or <code>trace</code>:</p>
@@ -640,9 +663,9 @@ d.withSession { session =&gt;
 <code>bindFactory[I =&gt; A]</code> can be used.</p>
 <pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyClient</span> </span>{
   <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> port = bind[<span class="hljs-type">Int</span>] <span class="hljs-comment">// This will be overwritten by the factory</span>
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> httpClientConfig = bind[<span class="hljs-type">HttpClientConfig</span>] <span class="hljs-comment">// Use the shared instance </span>
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> httpClientConfig = bind[<span class="hljs-type">HttpClientConfig</span>] <span class="hljs-comment">// Use the shared instance</span>
   <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> httpClient = <span class="hljs-keyword">new</span> <span class="hljs-type">HttpClient</span>(port, httpClientConfig)
-  
+
   <span class="hljs-meta">@PreDestroy</span>
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">stop</span></span>: <span class="hljs-type">Unit</span> = {
     httpClient.close()
@@ -789,7 +812,7 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
   newDesign
   .bind[<span class="hljs-type">B</span>].toInstance(<span class="hljs-keyword">new</span> <span class="hljs-type">B</span>(...))
   .newSesion <span class="hljs-comment">// Creates a session thats holds the above instance of B</span>
- 
+
 <span class="hljs-keyword">val</span> app = session.build[<span class="hljs-type">App</span>]
 </code></pre>
 <p>This code builds an instance of <code>App</code> using a concrete instance of <code>B</code> stored in the session.</p>
@@ -800,7 +823,7 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> app = session.build[<span class="hljs-type">App</span>]
 </code></pre>
 <p>Airframe expands this code into this form at compile-time:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> app: <span class="hljs-type">App</span> = 
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> app: <span class="hljs-type">App</span> =
 { ss: <span class="hljs-type">Session</span> =&gt;
   <span class="hljs-comment">// Extends DISupport to pass Session object</span>
   <span class="hljs-keyword">new</span> <span class="hljs-type">App</span> <span class="hljs-keyword">extends</span> <span class="hljs-type">DISupport</span> {
@@ -814,7 +837,7 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
       <span class="hljs-comment">// If no session is found, MISSING_SESSION exception will be thrown</span>
       <span class="hljs-keyword">val</span> ss1 = wvlet.airframe.<span class="hljs-type">Session</span>.findSession(<span class="hljs-keyword">this</span>)
       <span class="hljs-keyword">val</span> binder: <span class="hljs-type">Session</span> =&gt; <span class="hljs-type">A</span> = (ss2: <span class="hljs-type">Session</span> =&gt;
-        <span class="hljs-comment">// Register a code for instantiating A </span>
+        <span class="hljs-comment">// Register a code for instantiating A</span>
         ss2.getOrElseUpdate(<span class="hljs-type">Surface</span>.of[<span class="hljs-type">A</span>],
       (<span class="hljs-keyword">new</span> <span class="hljs-type">A</span> <span class="hljs-keyword">with</span> <span class="hljs-type">DISupport</span> { <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">session</span> </span>= ss1 }).asInstanceOf[<span class="hljs-type">A</span>]
         )
@@ -836,18 +859,18 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
   <span class="hljs-comment">// (original code) val b = bind[B]</span>
   <span class="hljs-keyword">val</span> b: <span class="hljs-type">B</span> = { ss: <span class="hljs-type">Session</span> =&gt;
     <span class="hljs-keyword">val</span> ss = findSession(<span class="hljs-keyword">this</span>)
-    <span class="hljs-comment">// If the session already has an instance of B, return it. Otherwise, craete a new instance of B </span>
+    <span class="hljs-comment">// If the session already has an instance of B, return it. Otherwise, craete a new instance of B</span>
     ss.getOrElse(<span class="hljs-type">Surface</span>.of[<span class="hljs-type">B</span>], (session:<span class="hljs-type">Session</span> =&gt; <span class="hljs-keyword">new</span> <span class="hljs-type">B</span> <span class="hljs-keyword">with</span> <span class="hljs-type">DISupport</span> { ... } ))
   }
   <span class="hljs-comment">// Inject the current session to build B</span>
-  .apply(session) 
+  .apply(session)
 }
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="comparison-with-a-naive-approach"></a><a href="#comparison-with-a-naive-approach" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Comparison with a naive approach</h3>
 <p>The above macro-generated code looks quite scarly at first glance.
 However, if you write similar code by yourself, you will end up doing almost the same thing with Session.</p>
 <p>For example, consider building <code>App</code> trait using a custom <code>B</code> instance:</p>
-<pre><code class="hljs css language-scala">{ 
+<pre><code class="hljs css language-scala">{
   <span class="hljs-keyword">val</span> myB = <span class="hljs-keyword">new</span> <span class="hljs-type">B</span> {}
   <span class="hljs-keyword">val</span> myA = <span class="hljs-keyword">new</span> <span class="hljs-type">A</span>(b = myB) {}
   <span class="hljs-keyword">new</span> <span class="hljs-type">App</span>(a = myA)
@@ -866,7 +889,7 @@ session += classOf[<span class="hljs-type">A</span>] -&gt; <span class="hljs-key
 session += classOf[<span class="hljs-type">App</span>] -&gt; app
 
 <span class="hljs-comment">// At shutdown phase</span>
-session.objects.foreach { x=&gt; 
+session.objects.foreach { x=&gt;
   x <span class="hljs-keyword">match</span> {
     <span class="hljs-keyword">case</span> a:<span class="hljs-type">A</span> =&gt; <span class="hljs-comment">// release A</span>
     <span class="hljs-keyword">case</span> b:<span class="hljs-type">B</span> =&gt; <span class="hljs-comment">// release B ...</span>
@@ -895,7 +918,7 @@ surface.objectFactory.newInstance(p)
 </ul>
 <pre><code class="hljs css language-scala">session.get(<span class="hljs-type">Surface</span>.of[<span class="hljs-type">X</span>])
 </code></pre>
-<h3><a class="anchor" aria-hidden="true" id="suface"></a><a href="#suface" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Suface</h3>
+<h3><a class="anchor" aria-hidden="true" id="surface"></a><a href="#surface" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Surface</h3>
 <p>Airframe uses <code>Surface.of[X]</code> as identifiers of object types. <a href="https://github.com/wvlet/airframe/tree/master/surface">Surface</a> is an object type inspection library.</p>
 <p>Here are some examples of Surface:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.surface
@@ -928,4 +951,4 @@ Surface uses Scala macros to embed compile-time type information into the runtim
 <span class="hljs-comment">// B and C will be necessary to build A</span>
 <span class="hljs-type">Surface</span>.of[<span class="hljs-type">A</span>] =&gt; <span class="hljs-type">Surface</span>(<span class="hljs-string">"A"</span>, params:<span class="hljs-type">Seq</span>(<span class="hljs-string">"b"</span> -&gt; <span class="hljs-type">Surface</span>.of[<span class="hljs-type">B</span>], <span class="hljs-string">"c"</span> -&gt; <span class="hljs-type">Surface</span>.of[<span class="hljs-type">C</span>]))
 </code></pre>
-</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/logos"><span class="arrow-prev">← </span><span>Logos</span></a><a class="docs-next button" href="/airframe/docs/airframe-http"><span>airframe-http: Web Service IDL</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#quick-start">Quick Start</a><ul class="toc-headings"><li><a href="#scalafmtconf">.scalafmt.conf</a></li><li><a href="#basic-usage">Basic Usage</a></li></ul></li><li><a href="#bind">Bind</a><ul class="toc-headings"><li><a href="#constructor-injection">Constructor Injection</a></li><li><a href="#in-trait-injection">In-Trait Injection</a></li><li><a href="#binding-types">Binding Types</a></li></ul></li><li><a href="#design">Design</a><ul class="toc-headings"><li><a href="#singleton-bindings">Singleton Bindings</a></li><li><a href="#design-is-immutable">Design is Immutable</a></li></ul></li><li><a href="#session">Session</a><ul class="toc-headings"><li><a href="#child-sessions">Child Sessions</a></li><li><a href="#finding-the-current-session">Finding The Current Session</a></li></ul></li><li><a href="#life-cycle">Life Cycle</a><ul class="toc-headings"><li><a href="#eager-initialization-of-singletons-for-production">Eager Initialization of Singletons for Production</a></li><li><a href="#suppress-life-cycle-logging">Suppress Life Cycle Logging</a></li><li><a href="#annotation-based-life-cycle-hooks">Annotation-based life cycle hooks</a></li></ul></li><li><a href="#designing-applications-with-airframe">Designing Applications with Airframe</a></li><li><a href="#advanced-binding-types">Advanced Binding Types</a><ul class="toc-headings"><li><a href="#generic-type-binding">Generic Type Binding</a></li><li><a href="#type-alias-binding">Type Alias Binding</a></li><li><a href="#multi-binding">Multi-Binding</a></li><li><a href="#tagged-type-binding">Tagged Type Binding</a></li></ul></li><li><a href="#debugging-di">Debugging DI</a></li><li><a href="#use-cases">Use Cases</a><ul class="toc-headings"><li><a href="#configuring-applications">Configuring Applications</a></li><li><a href="#managing-resources">Managing Resources</a></li><li><a href="#factory-binding">Factory Binding</a></li><li><a href="#service-mix-in">Service Mix-In</a></li><li><a href="#override-bindings">Override Bindings</a></li></ul></li><li><a href="#airframe-internals">Airframe Internals</a><ul class="toc-headings"><li><a href="#session-1">Session</a></li><li><a href="#example">Example</a></li><li><a href="#injecting-session">Injecting Session</a></li><li><a href="#comparison-with-a-naive-approach">Comparison with a naive approach</a></li><li><a href="#instantiation-methods">Instantiation Methods</a></li><li><a href="#suface">Suface</a></li><li><a href="#surface-parameters">Surface Parameters</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2020 wvlet.org</section></footer></div></body></html>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/logos"><span class="arrow-prev">← </span><span>Logos</span></a><a class="docs-next button" href="/airframe/docs/airframe-http"><span>airframe-http: Web Service IDL</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#quick-start">Quick Start</a><ul class="toc-headings"><li><a href="#scalafmtconf">.scalafmt.conf</a></li><li><a href="#basic-usage">Basic Usage</a></li></ul></li><li><a href="#bind">Bind</a><ul class="toc-headings"><li><a href="#constructor-injection">Constructor Injection</a></li><li><a href="#in-trait-injection">In-Trait Injection</a></li><li><a href="#binding-types">Binding Types</a></li></ul></li><li><a href="#design">Design</a><ul class="toc-headings"><li><a href="#singleton-bindings">Singleton Bindings</a></li><li><a href="#design-is-immutable">Design is Immutable</a></li></ul></li><li><a href="#session">Session</a><ul class="toc-headings"><li><a href="#child-sessions">Child Sessions</a></li><li><a href="#finding-the-current-session">Finding The Current Session</a></li></ul></li><li><a href="#life-cycle">Life Cycle</a><ul class="toc-headings"><li><a href="#eager-initialization-of-singletons-for-production">Eager Initialization of Singletons for Production</a></li><li><a href="#suppress-life-cycle-logging">Suppress Life Cycle Logging</a></li><li><a href="#annotation-based-life-cycle-hooks">Annotation-based life cycle hooks</a></li></ul></li><li><a href="#designing-applications-with-airframe">Designing Applications with Airframe</a></li><li><a href="#advanced-binding-types">Advanced Binding Types</a><ul class="toc-headings"><li><a href="#generic-type-binding">Generic Type Binding</a></li><li><a href="#type-alias-binding">Type Alias Binding</a></li><li><a href="#multi-binding">Multi-Binding</a></li><li><a href="#tagged-type-binding">Tagged Type Binding</a></li></ul></li><li><a href="#known-issues">Known Issues</a><ul class="toc-headings"><li><a href="#running-designbuildx-inside-future-causes-classnotfoundexception-in-sbt-13x">Running <code>design.build[X]</code> inside Future causes ClassNotFoundException in sbt 1.3.x</a></li></ul></li><li><a href="#debugging-di">Debugging DI</a></li><li><a href="#use-cases">Use Cases</a><ul class="toc-headings"><li><a href="#configuring-applications">Configuring Applications</a></li><li><a href="#managing-resources">Managing Resources</a></li><li><a href="#factory-binding">Factory Binding</a></li><li><a href="#service-mix-in">Service Mix-In</a></li><li><a href="#override-bindings">Override Bindings</a></li></ul></li><li><a href="#airframe-internals">Airframe Internals</a><ul class="toc-headings"><li><a href="#session-1">Session</a></li><li><a href="#example">Example</a></li><li><a href="#injecting-session">Injecting Session</a></li><li><a href="#comparison-with-a-naive-approach">Comparison with a naive approach</a></li><li><a href="#instantiation-methods">Instantiation Methods</a></li><li><a href="#surface">Surface</a></li><li><a href="#surface-parameters">Surface Parameters</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2020 wvlet.org</section></footer></div></body></html>
