@@ -43,7 +43,6 @@ trait HttpRequest[Req] {
   def contentType: Option[String]  = adapter.contentTypeOf(toRaw)
   def contentBytes: Array[Byte]    = adapter.contentBytesOf(toRaw)
   def contentString: String        = adapter.contentStringOf(toRaw)
-
 }
 
 trait HttpResponse[Resp] {
