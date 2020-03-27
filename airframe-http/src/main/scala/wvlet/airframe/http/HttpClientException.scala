@@ -63,9 +63,9 @@ object HttpClientException extends LogSupport {
     val status  = adapter.statusOf(response)
     val content = adapter.contentStringOf(response)
     if (content == null || content.isEmpty) {
-      new HttpClientException(adapter.httpResponseOf(response), status)
+      new HttpClientException(adapter.wrap(response), status)
     } else {
-      new HttpClientException(adapter.httpResponseOf(response), status, s"Request failed: ${content}")
+      new HttpClientException(adapter.wrap(response), status, s"Request failed: ${content}")
     }
   }
 

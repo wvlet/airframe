@@ -16,8 +16,8 @@ package wvlet.airframe.http
 /**
   * Exception to report errors to client
   */
-class HttpServerException(val request: HttpRequest[_], val status: HttpStatus, message: String, cause: Throwable)
+class HttpServerException(val request: HttpMessage.Request, val status: HttpStatus, message: String, cause: Throwable)
     extends Exception(message, cause) {
-  def this(request: HttpRequest[_], status: HttpStatus) = this(request, status, status.toString, null)
-  def this(request: HttpRequest[_], status: HttpStatus, message: String) = this(request, status, message, null)
+  def this(request: HttpMessage.Request, status: HttpStatus) = this(request, status, status.toString, null)
+  def this(request: HttpMessage.Request, status: HttpStatus, message: String) = this(request, status, message, null)
 }

@@ -47,22 +47,22 @@ class FinagleTest extends AirSpec {
       r.contentString shouldBe "hello finagle"
       r.contentBytes shouldBe "hello finagle".getBytes(StandardCharsets.UTF_8)
       r.contentType shouldBe Some("application/json;charset=utf-8")
-      r.toRaw shouldBe req
+      req.toRaw shouldBeTheSameInstanceAs req
     }
   }
 
   def `provide facade of http responses`: Unit = {
-    val orig = http.Response(Status.Forbidden)
-    orig.setContentString("hello world")
-    orig.setContentTypeJson()
+    val resp = http.Response(Status.Forbidden)
+    resp.setContentString("hello world")
+    resp.setContentTypeJson()
 
-    val r = orig.toHttpResponse
+    val r = resp.toHttpResponse
 
     r.status shouldBe HttpStatus.Forbidden_403
     r.statusCode shouldBe 403
     r.contentString shouldBe "hello world"
     r.contentType shouldBe Some("application/json;charset=utf-8")
     r.contentBytes shouldBe "hello world".getBytes(StandardCharsets.UTF_8)
-    r.toRaw shouldBeTheSameInstanceAs orig
+    resp.toRaw shouldBeTheSameInstanceAs resp
   }
 }

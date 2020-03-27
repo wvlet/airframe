@@ -18,6 +18,7 @@ package example.api
   */
 import java.util.UUID
 
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
 
 import scala.concurrent.Future
@@ -38,10 +39,10 @@ trait ResourceApi {
   def addResource(createResourceRequest: CreateResourceRequest): ResourceResponse
 
   @Endpoint(method = HttpMethod.DELETE, path = "/v1/resources/:id")
-  def deleteResource(deleteResourceRequest: DeleteResourceRequest, request: SimpleHttpRequest): Unit
+  def deleteResource(deleteResourceRequest: DeleteResourceRequest, request: Request): Unit
 
   @Endpoint(method = HttpMethod.GET, path = "/v1/resources")
-  def listResources(context: HttpContext[SimpleHttpRequest, SimpleHttpResponse, Future]): Seq[ResourceResponse] = {
+  def listResources(context: HttpContext[Request, Response, Future]): Seq[ResourceResponse] = {
     // Non abstract method example
     Seq.empty
   }

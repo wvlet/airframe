@@ -35,7 +35,7 @@ trait FinagleClientTestApi extends LogSupport {
   }
 
   private def getRequestId(request: Request): String = {
-    request.header.getOrElse("X-Request-Id", "N/A")
+    request.headerMap.getOrElse("X-Request-Id", "N/A")
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/user/:id")

@@ -14,7 +14,8 @@
 package wvlet.airframe.http
 
 import com.twitter.finagle.http
-import com.twitter.finagle.http.{Request, Response}
+import com.twitter.finagle.http.{HeaderMap, Request, Response}
+import com.twitter.io.Buf
 import com.twitter.io.Buf.ByteArray
 import com.twitter.util.Future
 import wvlet.airframe.{Design, Session}
@@ -98,17 +99,22 @@ package object finagle {
       }
       m
     }
-    override def contentStringOf(request: Request): String = request.contentString
-    override def contentBytesOf(request: Request): Array[Byte] = {
-      val content = request.content
-      val size    = content.length
-      val b       = new Array[Byte](size)
-      content.write(b, 0)
-      b
+    override def messageOf(request: Request): HttpMessage.Message = toMessage(request.content)
+    override def contentTypeOf(request: Request): Option[String]  = request.contentType
+    override def requestType: Class[Request]                      = classOf[Request]
+    override def uriOf(request: Request): String                  = request.uri
+    override def wrap(request: Request): HttpRequest[Request]     = new FinagleHttpRequest(request)
+  }
+
+  private def toMessage(buf: Buf): HttpMessage.Message = {
+    buf match {
+      case b: ByteArray =>
+        HttpMessage.ByteArrayMessage(ByteArray.Owned.extract(b))
+      case c =>
+        val buf = new Array[Byte](c.length)
+        c.write(buf, 0)
+        HttpMessage.ByteArrayMessage(buf)
     }
-    override def contentTypeOf(request: Request): Option[String]       = request.contentType
-    override def httpRequestOf(request: Request): HttpRequest[Request] = FinagleHttpRequest(request)
-    override def requestType: Class[Request]                           = classOf[Request]
   }
 
   implicit class FinagleHttpResponse(val raw: http.Response) extends HttpResponse[http.Response] {
@@ -117,21 +123,19 @@ package object finagle {
   }
 
   implicit object FinagleHttpResponseAdapter extends HttpResponseAdapter[http.Response] {
-    override def statusCodeOf(res: http.Response): Int       = res.statusCode
-    override def contentStringOf(res: http.Response): String = res.contentString
-    override def contentBytesOf(res: http.Response): Array[Byte] = {
-      val c = res.content
-      c match {
-        case b: ByteArray =>
-          ByteArray.Owned.extract(b)
-        case _ =>
-          val buf = new Array[Byte](c.length)
-          c.write(buf, 0)
-          buf
-      }
+    override def statusCodeOf(res: http.Response): Int               = res.statusCode
+    override def messageOf(resp: http.Response): HttpMessage.Message = toMessage(resp.content)
+    override def contentTypeOf(res: http.Response): Option[String]   = res.contentType
+    override def headerOf(resp: Response): HttpMultiMap              = toHttpMultiMap(resp.headerMap)
+    override def wrap(resp: Response): HttpResponse[Response]        = new FinagleHttpResponse(resp)
+  }
+
+  private def toHttpMultiMap(headerMap: HeaderMap): HttpMultiMap = {
+    val m = HttpMultiMap.newBuilder
+    for (k <- headerMap.keys) {
+      headerMap.getAll(k).map { v => m += k -> v }
     }
-    override def contentTypeOf(res: http.Response): Option[String]      = res.contentType
-    override def httpResponseOf(resp: Response): HttpResponse[Response] = FinagleHttpResponse(resp)
+    m.result()
   }
 
   private val httpMethodMapping = Map(
