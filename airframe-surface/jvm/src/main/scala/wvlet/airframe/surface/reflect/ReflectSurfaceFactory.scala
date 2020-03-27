@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
 
+import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 import scala.reflect.runtime.{universe => ru}
 
@@ -49,7 +50,7 @@ object ReflectSurfaceFactory extends LogSupport {
     apply(tpe)
   }
   def ofClass(cls: Class[_]): Surface = {
-    val cs  = scala.reflect.runtime.currentMirror.classSymbol(cls)
+    val cs  = mirror.classSymbol(cls)
     val tpe = cs.toType
     ofType(tpe) match {
       // Workaround for sbt's layered class loader, which cannot find the original classes using the reflect mirror
@@ -147,16 +148,30 @@ object ReflectSurfaceFactory extends LogSupport {
   }
 
   def methodsOfClass(cls: Class[_]): Seq[MethodSurface] = {
-    val tpe = scala.reflect.runtime.currentMirror.classSymbol(cls).toType
+    val tpe = mirror.classSymbol(cls).toType
     methodsOfType(tpe, Some(cls))
   }
 
-  private[surface] def mirror = ru.runtimeMirror(Thread.currentThread.getContextClassLoader)
+  private val rootMirror  = ru.runtimeMirror(this.getClass.getClassLoader)
+  private val mirrorCache = new ConcurrentHashMap[ClassLoader, Mirror]().asScala
+
+  private[surface] def mirror = {
+    val cl = Thread.currentThread.getContextClassLoader
+    mirrorCache.getOrElseUpdate(cl, ru.runtimeMirror(cl))
+  }
+
   private def resolveClass(tpe: ru.Type): Class[_] = {
     try {
       mirror.runtimeClass(tpe)
     } catch {
-      case e: Throwable => classOf[Any]
+      case e: Throwable =>
+        try {
+          // Using the root mirror is necessary to resolve classes within sbt's class loader
+          rootMirror.runtimeClass(tpe)
+        } catch {
+          case e: Throwable =>
+            classOf[Any]
+        }
     }
   }
 
@@ -301,7 +316,7 @@ object ReflectSurfaceFactory extends LogSupport {
           // Cache if not yet cached
           surfaceCache.getOrElseUpdate(fullName, surface)
           typeMap.getOrElseUpdate(surface, tpe)
-          //info(s"${tpe}, ${surface}, ${surface.getClass} ${showRaw(tpe)}")
+          trace(s"surfaceOf(${tpe}) Surface: ${surface}, Surace class:${surface.getClass}, tpe: ${showRaw(tpe)}")
           surface
         }
       } catch {
