@@ -93,7 +93,7 @@ case class ControllerRoute(
       methodSurface.call(controller, methodArgs: _*)
     } catch {
       case e: MessageCodecException[_] if e.errorCode == MISSING_PARAMETER =>
-        val r = implicitly[HttpRequestAdapter[Req]].httpRequestOf(request)
+        val r = implicitly[HttpRequestAdapter[Req]].wrap(request)
         throw new HttpServerException(r, HttpStatus.BadRequest_400, e.message, e)
     }
   }
