@@ -45,7 +45,8 @@ object HttpRequestMapper extends LogSupport {
       request: Req,
       context: HttpContext[Req, Resp, F],
       // Additional parameters
-      params: Map[String, String]
+      params: Map[String, String],
+      codecFactory: MessageCodecFactory
   )(
       implicit adapter: HttpRequestAdapter[Req]
   ): Seq[Any] = {
@@ -70,7 +71,7 @@ object HttpRequestMapper extends LogSupport {
             context
           case _ =>
             // Build from the string value in the request params
-            val argCodec = MessageCodecFactory.defaultFactory.of(argSurface)
+            val argCodec = codecFactory.of(argSurface)
             val v: Option[Any] = requestParams.get(arg.name) match {
               case Some(paramValue) =>
                 // Pass the String parameter to the method argument

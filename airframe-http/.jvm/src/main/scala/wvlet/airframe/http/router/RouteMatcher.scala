@@ -14,6 +14,7 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.Session
+import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http._
 import wvlet.airframe.http.router.Automaton.{DFA, NextNode}
 import wvlet.log.LogSupport
@@ -25,9 +26,10 @@ case class RouteMatch(route: Route, params: Map[String, String]) {
       session: Session,
       controllerProvider: ControllerProvider,
       request: Req,
-      context: HttpContext[Req, Resp, F]
+      context: HttpContext[Req, Resp, F],
+      codecFactory: MessageCodecFactory
   ): Option[Any] = {
-    route.callWithProvider(session, controllerProvider, request, params, context)
+    route.callWithProvider(session, controllerProvider, request, params, context, codecFactory)
   }
 }
 
