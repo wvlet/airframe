@@ -75,7 +75,7 @@ package object finagle {
       .bind[FinagleSyncClient].toProvider { server: FinagleServer => Finagle.client.newSyncClient(server.localAddress) }
   }
 
-  implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {
+  implicit class FinagleHttpRequestWrapper(val raw: http.Request) extends HttpRequest[http.Request] {
     override protected def adapter: HttpRequestAdapter[Request] = FinagleHttpRequestAdapter
     override def toRaw: Request                                 = raw
   }
@@ -103,7 +103,7 @@ package object finagle {
     override def contentTypeOf(request: Request): Option[String]  = request.contentType
     override def requestType: Class[Request]                      = classOf[Request]
     override def uriOf(request: Request): String                  = request.uri
-    override def wrap(request: Request): HttpRequest[Request]     = new FinagleHttpRequest(request)
+    override def wrap(request: Request): HttpRequest[Request]     = new FinagleHttpRequestWrapper(request)
   }
 
   private def toMessage(buf: Buf): HttpMessage.Message = {
@@ -117,7 +117,7 @@ package object finagle {
     }
   }
 
-  implicit class FinagleHttpResponse(val raw: http.Response) extends HttpResponse[http.Response] {
+  implicit class FinagleHttpResponseWrapper(val raw: http.Response) extends HttpResponse[http.Response] {
     override protected def adapter: HttpResponseAdapter[Response] = FinagleHttpResponseAdapter
     override def toRaw: Response                                  = raw
   }
@@ -127,7 +127,7 @@ package object finagle {
     override def messageOf(resp: http.Response): HttpMessage.Message = toMessage(resp.content)
     override def contentTypeOf(res: http.Response): Option[String]   = res.contentType
     override def headerOf(resp: Response): HttpMultiMap              = toHttpMultiMap(resp.headerMap)
-    override def wrap(resp: Response): HttpResponse[Response]        = new FinagleHttpResponse(resp)
+    override def wrap(resp: Response): HttpResponse[Response]        = new FinagleHttpResponseWrapper(resp)
   }
 
   private def toHttpMultiMap(headerMap: HeaderMap): HttpMultiMap = {

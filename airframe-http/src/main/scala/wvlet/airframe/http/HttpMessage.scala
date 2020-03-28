@@ -200,12 +200,7 @@ object HttpMessage {
     override def messageOf(request: Request): Message            = request.message
     override def contentTypeOf(request: Request): Option[String] = request.contentType
     override def httpRequestOf(request: Request): Request        = request
-    override def wrap(
-        request: Request
-    ): HttpRequest[Request] = new HttpRequest[Request] {
-      override protected def adapter: HttpRequestAdapter[Request] = self
-      override def toRaw: Request                                 = request
-    }
+    override def wrap(request: Request): HttpRequest[Request]    = new HttpMessageRequestWrapper(request)
   }
 
   implicit object HttpMessageResponseAdapter extends HttpResponseAdapter[Response] { self =>
@@ -214,12 +209,16 @@ object HttpMessage {
     override def httpResponseOf(resp: Response): Response      = resp
     override def messageOf(resp: Response): Message            = resp.message
     override def headerOf(resp: Response): HttpMultiMap        = resp.header
-    override def wrap(
-        resp: Response
-    ): HttpResponse[Response] = new HttpResponse[Response] {
-      override protected def adapter: HttpResponseAdapter[Response] = self
-      override def toRaw: Response                                  = resp
-    }
+    override def wrap(resp: Response): HttpResponse[Response]  = new HttpMessageResponseWrapper(resp)
   }
 
+  implicit class HttpMessageRequestWrapper(val raw: Request) extends HttpRequest[Request] {
+    override protected def adapter: HttpRequestAdapter[Request] = HttpMessageRequestAdapter
+    override def toRaw: Request                                 = raw
+  }
+
+  implicit class HttpMessageResponseWrapper(val raw: Response) extends HttpResponse[Response] {
+    override protected def adapter: HttpResponseAdapter[Response] = HttpMessageResponseAdapter
+    override def toRaw: Response                                  = raw
+  }
 }

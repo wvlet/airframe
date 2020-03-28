@@ -1,9 +1,8 @@
 package wvlet.airframe.http
 
-import okhttp3.{Headers, MediaType, Request, RequestBody, Response}
+import okhttp3.{Headers, MediaType, Request, Response}
 import okio.{Buffer, BufferedSink}
 import wvlet.airframe.http.HttpMessage.Message
-import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 
@@ -11,7 +10,7 @@ package object okhttp {
 
   private[okhttp] val ContentTypeJson = MediaType.get("application/json;charset=utf-8")
 
-  implicit class OkHttpRequest(val raw: Request) extends HttpRequest[Request] {
+  implicit class OkHttpRequestWrapper(val raw: Request) extends HttpRequest[Request] {
     override protected def adapter: HttpRequestAdapter[Request] = OkHttpRequestAdapter
     override def toRaw: Request                                 = raw
   }
@@ -46,11 +45,11 @@ package object okhttp {
       HttpMessage.ByteArrayMessage(sink.buffer().readByteArray())
     }
     override def contentTypeOf(request: Request): Option[String] = Option(request.body()).map(_.contentType().toString)
-    override def wrap(request: Request): HttpRequest[Request]    = OkHttpRequest(request)
+    override def wrap(request: Request): HttpRequest[Request]    = OkHttpRequestWrapper(request)
     override def requestType: Class[Request]                     = classOf[Request]
   }
 
-  implicit class OkHttpResponse(val raw: Response) extends HttpResponse[Response] {
+  implicit class OkHttpResponseWrapper(val raw: Response) extends HttpResponse[Response] {
     override protected def adapter: HttpResponseAdapter[Response] = OkHttpResponseAdapter
     override def toRaw: Response                                  = raw
   }
@@ -62,7 +61,7 @@ package object okhttp {
       HttpMessage.ByteArrayMessage(bytes)
     }
     override def contentTypeOf(res: Response): Option[String] = Option(res.body()).map(_.contentType().toString)
-    override def wrap(resp: Response): HttpResponse[Response] = OkHttpResponse(resp)
+    override def wrap(resp: Response): HttpResponse[Response] = OkHttpResponseWrapper(resp)
     override def headerOf(resp: Response): HttpMultiMap = {
       var h = toHttpMultiMap(resp.headers())
       // OkHttp may place Content-Type and Content-Length headers separately from headers()
