@@ -15,7 +15,14 @@ package wvlet.airframe.http
 
 object Http {
 
-  def request(method: String, uri: String)      = HttpMessage.Request.empty.withMethod(method).withUri(uri)
+  /**
+    * Create a new request
+    */
+  def request(method: String, uri: String) = HttpMessage.Request.empty.withMethod(method).withUri(uri)
+
+  /**
+    * Create a new request
+    */
   def request(uri: String): HttpMessage.Request = request(HttpMethod.GET, uri)
   def GET(uri: String)                          = request(HttpMethod.GET, uri)
   def POST(uri: String)                         = request(HttpMethod.POST, uri)
@@ -32,6 +39,11 @@ object Http {
   }
 }
 
+/**
+  * HttpRequest[Req] wraps native request classes (e.g., okhttp's Response, finagle Response, etc.) so that we can
+  * implement common logic for various backends.
+  * @tparam Req
+  */
 trait HttpRequest[Req] {
   protected def adapter: HttpRequestAdapter[Req]
   def toRaw: Req
@@ -45,6 +57,12 @@ trait HttpRequest[Req] {
   def contentString: String        = adapter.contentStringOf(toRaw)
 }
 
+/**
+  * HttpResponse[Resp] wraps native response classes (e.g., okhttp's Response, finagle Response, etc.) so that we can
+  * implement common logic for various backends.
+  *
+  * @tparam Resp
+  */
 trait HttpResponse[Resp] {
   protected def adapter: HttpResponseAdapter[Resp]
   def toRaw: Resp

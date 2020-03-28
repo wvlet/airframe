@@ -19,7 +19,6 @@ import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http._
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
-import wvlet.log.io.IOUtil
 
 case class User(id: Int, name: String, requestId: String) {
   def withRequestId(newRequestId: String): User = User(id, name, newRequestId)
