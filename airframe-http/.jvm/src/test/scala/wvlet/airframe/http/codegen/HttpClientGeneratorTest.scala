@@ -45,6 +45,8 @@ class HttpClientGeneratorTest extends AirSpec {
     code.contains("class ServiceClient[F[_], Req, Resp]") shouldBe true
     code.contains("import scala.collection.Seq") shouldBe false
 
+    code.contains("HttpRequest[Request]") shouldBe false
+
     test("Map client parameters to GET query strings") {
       code.contains("def getBooks(limit: Int") shouldBe true
     }

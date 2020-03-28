@@ -19,7 +19,6 @@ import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http._
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
-import wvlet.log.io.IOUtil
 
 case class User(id: Int, name: String, requestId: String) {
   def withRequestId(newRequestId: String): User = User(id, name, newRequestId)
@@ -35,7 +34,7 @@ trait FinagleClientTestApi extends LogSupport {
   }
 
   private def getRequestId(request: Request): String = {
-    request.header.getOrElse("X-Request-Id", "N/A")
+    request.headerMap.getOrElse("X-Request-Id", "N/A")
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/user/:id")

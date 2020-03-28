@@ -34,10 +34,10 @@ trait ResourceApi {
   def addResource(createResourceRequest: CreateResourceRequest): ResourceResponse
 
   @Endpoint(method = HttpMethod.DELETE, path = "/v1/resources/:id")
-  def deleteResource(deleteResourceRequest: DeleteResourceRequest, request: SimpleHttpRequest): Unit
+  def deleteResource(deleteResourceRequest: DeleteResourceRequest, request: HttpMessage.Request): Unit
 
   @Endpoint(method = HttpMethod.GET, path = "/v1/resources")
-  def listResources(context: HttpContext[SimpleHttpRequest, SimpleHttpResponse, Future]): Seq[ResourceResponse] = {
+  def listResources(context: HttpContext[HttpMessage.Request, HttpMessage.Response, Future]): Seq[ResourceResponse] = {
     // Non abstract method example
     Seq.empty
   }

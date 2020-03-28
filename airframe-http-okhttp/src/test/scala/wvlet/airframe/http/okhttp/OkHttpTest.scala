@@ -22,8 +22,7 @@ class OkHttpTest extends AirSpec {
       new Request.Builder().method("TRACE", body)
     ).foreach { builder =>
       val req = builder.url("http://localhost/hello").build()
-
-      val r = req.toHttpRequest
+      val r   = req.toHttpRequest
       r.method shouldBe toHttpMethod(req.method())
       r.path shouldBe "/hello"
       r.query shouldBe HttpMultiMap.empty
@@ -36,7 +35,7 @@ class OkHttpTest extends AirSpec {
         r.contentBytes shouldBe Array.empty[Byte]
         r.contentType shouldBe empty
       }
-      r.toRaw shouldBeTheSameInstanceAs req
+      req.toRaw shouldBeTheSameInstanceAs req
     }
   }
 
@@ -54,7 +53,7 @@ class OkHttpTest extends AirSpec {
     r.statusCode shouldBe 403
     r.contentType shouldBe Some("application/json;charset=utf-8")
     r.contentBytes shouldBe "hello world".getBytes(StandardCharsets.UTF_8)
-    r.toRaw shouldBeTheSameInstanceAs res
+    res.toRaw shouldBeTheSameInstanceAs res
   }
 
 }

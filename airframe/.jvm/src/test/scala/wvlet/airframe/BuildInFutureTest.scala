@@ -31,6 +31,10 @@ class BuildInFutureTest extends AirSpec {
   private val threadPool              = Executors.newCachedThreadPool()
   private implicit val futureExecutor = ExecutionContext.fromExecutor(threadPool)
 
+  override protected def afterAll: Unit = {
+    threadPool.shutdownNow()
+  }
+
   def `Building in Future causes MISSING_DEPENDENCY` = {
     val f = Future {
       newSilentDesign.build[Config1] { config => debug(config) }

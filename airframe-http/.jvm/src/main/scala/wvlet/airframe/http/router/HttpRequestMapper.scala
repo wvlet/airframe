@@ -15,7 +15,15 @@ package wvlet.airframe.http.router
 
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
-import wvlet.airframe.http.{HttpContext, HttpMethod, HttpMultiMap, HttpMultiMapCodec, HttpRequest, HttpRequestAdapter}
+import wvlet.airframe.http.{
+  HttpContext,
+  HttpMessage,
+  HttpMethod,
+  HttpMultiMap,
+  HttpMultiMapCodec,
+  HttpRequest,
+  HttpRequestAdapter
+}
 import wvlet.airframe.json.JSON
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
@@ -50,9 +58,12 @@ object HttpRequestMapper extends LogSupport {
       for (arg <- methodSurface.args) yield {
         val argSurface = arg.surface
         argSurface.rawType match {
-          case cl if classOf[HttpRequest[_]].isAssignableFrom(cl) =>
+          case cl if classOf[HttpMessage.Request].isAssignableFrom(cl) =>
             // Bind the current http request instance
             adapter.httpRequestOf(request)
+          case cl if classOf[HttpRequest[_]].isAssignableFrom(cl) =>
+            // Bind the current http request instance
+            adapter.wrap(request)
           case cl if adapter.requestType.isAssignableFrom(cl) =>
             request
           case cl if classOf[HttpContext[Req, Resp, F]].isAssignableFrom(cl) =>

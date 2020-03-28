@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.example
 
-import wvlet.airframe.http.{Endpoint, HttpMethod, HttpRequest, HttpRequestAdapter}
+import wvlet.airframe.http.{Endpoint, HttpMessage, HttpMethod}
 import wvlet.log.LogSupport
 
 object ControllerExample {
@@ -50,7 +50,7 @@ trait ControllerExample extends LogSupport {
   }
 
   @Endpoint(path = "/user/:id", method = HttpMethod.PUT)
-  def updateUser(id: String, httpRequest: HttpRequest[_]): String = {
+  def updateUser(id: String, httpRequest: HttpMessage.Request): String = {
     debug(s"id: ${id}, ${httpRequest.contentString}")
     httpRequest.contentString
   }

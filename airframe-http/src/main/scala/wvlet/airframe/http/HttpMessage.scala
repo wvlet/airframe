@@ -60,10 +60,12 @@ trait HttpMessage[Raw] {
     copyWith(header.remove(key))
   }
 
+  def withContent(content: Message): Raw = {
+    copyWith(content)
+  }
   def withContent(content: String): Raw = {
     copyWith(StringMessage(content))
   }
-
   def withContent(content: Array[Byte]): Raw = {
     copyWith(ByteArrayMessage(content))
   }
@@ -179,6 +181,7 @@ object HttpMessage {
     override protected def copyWith(newHeader: HttpMultiMap): Response = this.copy(header = newHeader)
     override protected def copyWith(newMessage: Message): Response     = this.copy(message = newMessage)
 
+    def statusCode: Int                             = status.code
     def withStatus(newStatus: HttpStatus): Response = this.copy(status = newStatus)
   }
 
@@ -186,35 +189,36 @@ object HttpMessage {
     val empty: Response = Response()
   }
 
-  implicit object HttpMessageRequestAdapter extends HttpRequestAdapter[Request] {
+  implicit object HttpMessageRequestAdapter extends HttpRequestAdapter[Request] { self =>
     override def requestType: Class[Request]             = classOf[Request]
     override def methodOf(request: Request): String      = request.method
+    override def uriOf(request: Request): String         = request.uri
     override def pathOf(request: Request): String        = request.path
     override def queryOf(request: Request): HttpMultiMap = request.query
 
-    override def headerOf(request: Request): HttpMultiMap              = request.header
-    override def contentStringOf(request: Request): String             = request.contentString
-    override def contentBytesOf(request: Request): Array[Byte]         = request.contentBytes
-    override def contentTypeOf(request: Request): Option[String]       = request.contentType
-    override def httpRequestOf(request: Request): HttpRequest[Request] = request
+    override def headerOf(request: Request): HttpMultiMap        = request.header
+    override def messageOf(request: Request): Message            = request.message
+    override def contentTypeOf(request: Request): Option[String] = request.contentType
+    override def httpRequestOf(request: Request): Request        = request
+    override def wrap(request: Request): HttpRequest[Request]    = new HttpMessageRequestWrapper(request)
   }
 
-  implicit class HttpMessageRequest(val raw: Request) extends HttpRequest[Request] {
+  implicit object HttpMessageResponseAdapter extends HttpResponseAdapter[Response] { self =>
+    override def statusCodeOf(resp: Response): Int             = resp.status.code
+    override def contentTypeOf(resp: Response): Option[String] = resp.contentType
+    override def httpResponseOf(resp: Response): Response      = resp
+    override def messageOf(resp: Response): Message            = resp.message
+    override def headerOf(resp: Response): HttpMultiMap        = resp.header
+    override def wrap(resp: Response): HttpResponse[Response]  = new HttpMessageResponseWrapper(resp)
+  }
+
+  implicit class HttpMessageRequestWrapper(val raw: Request) extends HttpRequest[Request] {
     override protected def adapter: HttpRequestAdapter[Request] = HttpMessageRequestAdapter
     override def toRaw: Request                                 = raw
   }
 
-  implicit object HttpMessageResponseAdapter extends HttpResponseAdapter[Response] {
-    override def statusCodeOf(resp: Response): Int                      = resp.status.code
-    override def contentStringOf(resp: Response): String                = resp.contentString
-    override def contentBytesOf(resp: Response): Array[Byte]            = resp.contentBytes
-    override def contentTypeOf(resp: Response): Option[String]          = resp.contentType
-    override def httpResponseOf(resp: Response): HttpResponse[Response] = resp
-  }
-
-  implicit class HttpMessageResponse(val raw: Response) extends HttpResponse[Response] {
+  implicit class HttpMessageResponseWrapper(val raw: Response) extends HttpResponse[Response] {
     override protected def adapter: HttpResponseAdapter[Response] = HttpMessageResponseAdapter
     override def toRaw: Response                                  = raw
   }
-
 }

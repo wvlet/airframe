@@ -51,7 +51,7 @@ trait MessageCodec[A] extends LogSupport {
   }
 
   private def unpackError(e: Throwable): Throwable = {
-    new IllegalArgumentException(s"Failed to read the input msgpack data as ${this}", e)
+    new IllegalArgumentException(s"Failed to read the input msgpack data with codec: ${this}", e)
   }
 
   def pack(p: Packer, v: A): Unit

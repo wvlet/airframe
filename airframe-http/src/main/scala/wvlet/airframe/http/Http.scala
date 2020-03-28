@@ -15,7 +15,14 @@ package wvlet.airframe.http
 
 object Http {
 
-  def request(method: String, uri: String)      = HttpMessage.Request.empty.withMethod(method).withUri(uri)
+  /**
+    * Create a new request
+    */
+  def request(method: String, uri: String) = HttpMessage.Request.empty.withMethod(method).withUri(uri)
+
+  /**
+    * Create a new request
+    */
   def request(uri: String): HttpMessage.Request = request(HttpMethod.GET, uri)
   def GET(uri: String)                          = request(HttpMethod.GET, uri)
   def POST(uri: String)                         = request(HttpMethod.POST, uri)
@@ -33,7 +40,45 @@ object Http {
 }
 
 /**
-  * Type class to bridge the original requests
+  * HttpRequest[Req] wraps native request classes (e.g., okhttp's Response, finagle Response, etc.) so that we can
+  * implement common logic for various backends.
+  * @tparam Req
+  */
+trait HttpRequest[Req] {
+  protected def adapter: HttpRequestAdapter[Req]
+  def toRaw: Req
+  def toHttpRequest: HttpMessage.Request = adapter.httpRequestOf(toRaw)
+
+  def header: HttpMultiMap = adapter.headerOf(toRaw)
+
+  def message: HttpMessage.Message = adapter.messageOf(toRaw)
+  def contentType: Option[String]  = adapter.contentTypeOf(toRaw)
+  def contentBytes: Array[Byte]    = adapter.contentBytesOf(toRaw)
+  def contentString: String        = adapter.contentStringOf(toRaw)
+}
+
+/**
+  * HttpResponse[Resp] wraps native response classes (e.g., okhttp's Response, finagle Response, etc.) so that we can
+  * implement common logic for various backends.
+  *
+  * @tparam Resp
+  */
+trait HttpResponse[Resp] {
+  protected def adapter: HttpResponseAdapter[Resp]
+  def toRaw: Resp
+  def toHttpResponse: HttpMessage.Response = adapter.httpResponseOf(toRaw)
+
+  def status: HttpStatus   = adapter.statusOf(toRaw)
+  def header: HttpMultiMap = adapter.headerOf(toRaw)
+
+  def message: HttpMessage.Message = adapter.messageOf(toRaw)
+  def contentType: Option[String]  = adapter.contentTypeOf(toRaw)
+  def contentBytes: Array[Byte]    = adapter.contentBytesOf(toRaw)
+  def contentString: String        = adapter.contentStringOf(toRaw)
+}
+
+/**
+  * A type class to bridge the original requests and backend-specific request types (e.g., finagle, okhttp, etc.)
   *
   * @tparam Req
   */
@@ -41,32 +86,31 @@ trait HttpRequestAdapter[Req] {
   def requestType: Class[Req]
 
   def methodOf(request: Req): String
+
+  /**
+    * [/path](?[query params...])
+    *
+    * @param request
+    * @return
+    */
+  def uriOf(request: Req): String
   def pathOf(request: Req): String
   def queryOf(request: Req): HttpMultiMap
   def headerOf(request: Req): HttpMultiMap
-  def contentStringOf(request: Req): String
-  def contentBytesOf(request: Req): Array[Byte]
+  def messageOf(request: Req): HttpMessage.Message
+  def contentStringOf(request: Req): String     = messageOf(request).toContentString
+  def contentBytesOf(request: Req): Array[Byte] = messageOf(request).toContentBytes
   def contentTypeOf(request: Req): Option[String]
   def pathComponentsOf(request: Req): IndexedSeq[String] = {
     pathOf(request).replaceFirst("/", "").split("/").toIndexedSeq
   }
-  def httpRequestOf(request: Req): HttpRequest[Req]
-}
-
-trait HttpRequest[Req] {
-  protected def adapter: HttpRequestAdapter[Req]
-
-  def method: String        = adapter.methodOf(toRaw)
-  def path: String          = adapter.pathOf(toRaw)
-  def query: HttpMultiMap   = adapter.queryOf(toRaw)
-  def header: HttpMultiMap  = adapter.headerOf(toRaw)
-  def contentString: String = adapter.contentStringOf(toRaw)
-  // TODO Support streams
-  def contentBytes: Array[Byte]          = adapter.contentBytesOf(toRaw)
-  def contentType: Option[String]        = adapter.contentTypeOf(toRaw)
-  def pathComponents: IndexedSeq[String] = adapter.pathComponentsOf(toRaw)
-  def toHttpRequest: HttpRequest[Req]    = adapter.httpRequestOf(toRaw)
-  def toRaw: Req
+  def httpRequestOf(request: Req): HttpMessage.Request = {
+    Http
+      .request(methodOf(request), uriOf(request))
+      .withHeader(headerOf(request))
+      .withContent(messageOf(request))
+  }
+  def wrap(request: Req): HttpRequest[Req]
 }
 
 /**
@@ -77,21 +121,18 @@ trait HttpRequest[Req] {
 trait HttpResponseAdapter[Resp] {
   def statusOf(resp: Resp): HttpStatus = HttpStatus.ofCode(statusCodeOf(resp))
   def statusCodeOf(resp: Resp): Int
-  def contentStringOf(resp: Resp): String
-  def contentBytesOf(resp: Resp): Array[Byte]
+
+  def messageOf(resp: Resp): HttpMessage.Message
+  def contentStringOf(resp: Resp): String     = messageOf(resp).toContentString
+  def contentBytesOf(resp: Resp): Array[Byte] = messageOf(resp).toContentBytes
   def contentTypeOf(resp: Resp): Option[String]
-  def httpResponseOf(resp: Resp): HttpResponse[Resp]
-}
+  def headerOf(resp: Resp): HttpMultiMap
 
-trait HttpResponse[Resp] {
-  protected def adapter: HttpResponseAdapter[Resp]
-
-  def status: HttpStatus          = adapter.statusOf(toRaw)
-  def statusCode: Int             = adapter.statusCodeOf(toRaw)
-  def contentString: String       = adapter.contentStringOf(toRaw)
-  def contentBytes: Array[Byte]   = adapter.contentBytesOf(toRaw)
-  def contentType: Option[String] = adapter.contentTypeOf(toRaw)
-
-  def toHttpResponse: HttpResponse[Resp] = adapter.httpResponseOf(toRaw)
-  def toRaw: Resp
+  def httpResponseOf(resp: Resp): HttpMessage.Response = {
+    Http
+      .response(statusOf(resp))
+      .withHeader(headerOf(resp))
+      .withContent(messageOf(resp))
+  }
+  def wrap(resp: Resp): HttpResponse[Resp]
 }

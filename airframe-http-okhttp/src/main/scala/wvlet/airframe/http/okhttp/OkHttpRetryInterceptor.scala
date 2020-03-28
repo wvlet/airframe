@@ -32,7 +32,7 @@ class OkHttpRetryInterceptor(retry: RetryContext) extends Interceptor {
       case ResultClass.Failed(isRetryable, cause, extraWait) =>
         if (!retryContext.canContinue) {
           // Reached the max retry
-          throw HttpClientMaxRetryException(OkHttpResponse(response.toOption.orNull), retryContext, cause)
+          throw HttpClientMaxRetryException(OkHttpResponseWrapper(response.toOption.orNull), retryContext, cause)
         } else if (!isRetryable) {
           // Non-retryable failure
           throw cause
