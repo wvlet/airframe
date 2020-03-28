@@ -12,7 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
-import example.generic.GenericService
+import example.generic.{GenericRequestService, GenericService}
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future
@@ -50,7 +51,14 @@ class GenericServiceTest extends AirSpec {
     code.contains("Surface.of[String]") shouldBe true
     code.contains(": Future[Int] = {") shouldBe true
     code.contains("Surface.of[Int]") shouldBe true
-    code.contains("import wvlet.airframe.http.HttpMessage.Response")
-    code.contains("import wvlet.airframe.http.HttpMessage.Request")
+    code.contains("import wvlet.airframe.http.HttpMessage.Response") shouldBe true
+    code.contains("import wvlet.airframe.http.HttpMessage.Request") shouldBe true
+  }
+
+  test("abstract request type") {
+    pending("Not sure using backend specific request/response in IDL is a good idea")
+    val r = RouteScanner.buildRouter(Seq(classOf[GenericRequestService[Future, Request, Response]]))
+    debug(r)
+    val code = HttpClientGenerator.generate(r, HttpClientGeneratorConfig("example.generic.GenericRequestService:async"))
   }
 }

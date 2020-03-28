@@ -41,6 +41,9 @@ trait ResourceApi {
   @Endpoint(method = HttpMethod.DELETE, path = "/v1/resources/:id")
   def deleteResource(deleteResourceRequest: DeleteResourceRequest, request: Request): Unit
 
+  @Endpoint(method = HttpMethod.PATCH, path = "/v1/resources")
+  def patchResource(request: HttpRequest[Request]): Unit
+
   @Endpoint(method = HttpMethod.GET, path = "/v1/resources")
   def listResources(context: HttpContext[Request, Response, Future]): Seq[ResourceResponse] = {
     // Non abstract method example

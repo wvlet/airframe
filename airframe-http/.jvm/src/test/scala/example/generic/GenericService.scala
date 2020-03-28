@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package example.generic
-import wvlet.airframe.http.Endpoint
+import wvlet.airframe.http.{Endpoint, RPC}
 import wvlet.airframe.http.HttpMessage.Response
 
 import scala.concurrent.Future
@@ -34,4 +34,9 @@ trait GenericService[F[_]] {
   @Endpoint(path = "/v1/hello_ops2")
   def ops2(in: String): F[Response]
 
+}
+
+@RPC
+trait GenericRequestService[F[_], Req, Resp] {
+  def hello(request: Req): F[Resp]
 }
