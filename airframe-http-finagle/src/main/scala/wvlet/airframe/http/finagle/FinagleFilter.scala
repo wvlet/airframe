@@ -17,6 +17,7 @@ import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
 import wvlet.airframe.Session
+import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.{HttpBackend, HttpFilter}
 import wvlet.airframe.http.router.HttpRequestDispatcher
 
@@ -35,7 +36,8 @@ class FinagleRouter(session: Session, private[finagle] val config: FinagleServer
       config.router,
       config.controllerProvider,
       FinagleBackend,
-      config.responseHandler
+      config.responseHandler,
+      MessageCodecFactory.defaultFactory.orElse(MessageCodecFactory.newFactory(config.customCodec))
     )
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {

@@ -14,7 +14,7 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.Session
-import wvlet.airframe.codec.{MISSING_PARAMETER, MessageCodecException}
+import wvlet.airframe.codec.{MISSING_PARAMETER, MessageCodecException, MessageCodecFactory}
 import wvlet.airframe.http._
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airframe.surface.{MethodSurface, Surface}
@@ -46,7 +46,8 @@ trait Route {
       controller: Any,
       request: Req,
       params: Map[String, String],
-      context: HttpContext[Req, Resp, F]
+      context: HttpContext[Req, Resp, F],
+      codecFactory: MessageCodecFactory
   ): Any
 
   private[http] def callWithProvider[Req: HttpRequestAdapter, Resp, F[_]](
@@ -54,7 +55,8 @@ trait Route {
       controllerProvider: ControllerProvider,
       request: Req,
       params: Map[String, String],
-      context: HttpContext[Req, Resp, F]
+      context: HttpContext[Req, Resp, F],
+      codecFactory: MessageCodecFactory
   ): Option[Any]
 }
 
@@ -86,10 +88,12 @@ case class ControllerRoute(
       controller: Any,
       request: Req,
       params: Map[String, String],
-      context: HttpContext[Req, Resp, F]
+      context: HttpContext[Req, Resp, F],
+      codecFactory: MessageCodecFactory
   ): Any = {
     try {
-      val methodArgs = HttpRequestMapper.buildControllerMethodArgs(controller, methodSurface, request, context, params)
+      val methodArgs =
+        HttpRequestMapper.buildControllerMethodArgs(controller, methodSurface, request, context, params, codecFactory)
       methodSurface.call(controller, methodArgs: _*)
     } catch {
       case e: MessageCodecException[_] if e.errorCode == MISSING_PARAMETER =>
@@ -103,10 +107,11 @@ case class ControllerRoute(
       controllerProvider: ControllerProvider,
       request: Req,
       params: Map[String, String],
-      context: HttpContext[Req, Resp, F]
+      context: HttpContext[Req, Resp, F],
+      codecFactory: MessageCodecFactory
   ): Option[Any] = {
     controllerProvider.findController(session, controllerSurface).map { controller =>
-      call(controller, request, params, context)
+      call(controller, request, params, context, codecFactory)
     }
   }
 }

@@ -14,6 +14,7 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.Session
+import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
 
@@ -40,7 +41,8 @@ object HttpRequestDispatcher extends LogSupport {
       router: Router,
       controllerProvider: ControllerProvider,
       backend: HttpBackend[Req, Resp, F],
-      responseHandler: ResponseHandler[Req, Resp]
+      responseHandler: ResponseHandler[Req, Resp],
+      codecFactory: MessageCodecFactory
   ): HttpFilter[Req, Resp, F] = {
     // A table for Route -> matching HttpFilter
     val routingTable = buildRoutingTable(session, router, backend.defaultFilter, controllerProvider)
@@ -52,7 +54,7 @@ object HttpRequestDispatcher extends LogSupport {
           val routeFilter = routingTable.findFilter(routeMatch.route)
           // Create a new context for processing the matched route with the controller
           val context =
-            new HttpEndpointExecutionContext(backend, routeMatch, responseHandler, routeFilter.controller)
+            new HttpEndpointExecutionContext(backend, routeMatch, responseHandler, routeFilter.controller, codecFactory)
           val currentService = routeFilter.filter.andThen(context)
           currentService(request)
         case None =>

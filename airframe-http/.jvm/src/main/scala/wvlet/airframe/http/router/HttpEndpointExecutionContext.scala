@@ -15,6 +15,7 @@ package wvlet.airframe.http.router
 
 import java.lang.reflect.InvocationTargetException
 
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.{HttpBackend, HttpContext, HttpRequestAdapter}
 import wvlet.log.LogSupport
 
@@ -30,7 +31,8 @@ class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
     protected val backend: HttpBackend[Req, Resp, F],
     routeMatch: RouteMatch,
     responseHandler: ResponseHandler[Req, Resp],
-    controller: Any
+    controller: Any,
+    codecFactory: MessageCodecFactory
 ) extends HttpContext[Req, Resp, F]
     with LogSupport {
 
@@ -39,7 +41,7 @@ class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
     val result = {
       // Call the method in this controller
       try {
-        route.call(controller, request, routeMatch.params, this)
+        route.call(controller, request, routeMatch.params, this, codecFactory)
       } catch {
         case e: InvocationTargetException =>
           // Return the exception from the target method
