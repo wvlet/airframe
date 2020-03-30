@@ -935,7 +935,8 @@ lazy val airspec =
       mappings in (Compile, packageBin) ++= mappings.in(airspecDepsJVM, Compile, packageBin).value,
       mappings in (Compile, packageSrc) ++= mappings.in(airspecDepsJVM, Compile, packageSrc).value,
       libraryDependencies ++= Seq(
-        "org.scala-sbt" % "test-interface" % "1.0"
+        "org.scala-lang" % "scala-reflect"  % scalaVersion.value,
+        "org.scala-sbt"  % "test-interface" % "1.0"
       )
     )
     .jsSettings(
