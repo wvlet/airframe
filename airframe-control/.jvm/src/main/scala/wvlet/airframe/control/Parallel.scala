@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong, AtomicReference}
 import wvlet.log.LogSupport
 
 import scala.reflect.ClassTag
+import scala.collection.JavaConverters._
 import scala.util.control.{ControlThrowable, NonFatal}
 
 /**
@@ -68,12 +69,12 @@ object Parallel extends LogSupport {
     val executionId = UUID.randomUUID.toString
     trace(s"$executionId - Begin Parallel.run (parallelism = ${parallelism})")
 
-    val requestQueue = new LinkedBlockingQueue[IndexedWorker[T, R]](parallelism)
-    val resultArray  = new Array[R](source.length)
+    val requestQueue = new LinkedBlockingQueue[Worker[T, R]](parallelism)
+    val resultQueue  = new LinkedBlockingQueue[Option[R]]()
     val interrupted  = new AtomicBoolean(false)
 
     Range(0, parallelism).foreach { i =>
-      val worker = new IndexedWorker[T, R](executionId, i.toString, requestQueue, resultArray, interrupted, f)
+      val worker = new Worker[T, R](executionId, i.toString, requestQueue, resultQueue, interrupted, f)
       requestQueue.put(worker)
     }
 
@@ -82,7 +83,7 @@ object Parallel extends LogSupport {
 
     try {
       // Process all elements of source
-      val it = source.zipWithIndex.iterator
+      val it = source.iterator
       while (it.hasNext && !interrupted.get()) {
         val worker = requestQueue.take()
         if (!interrupted.get()) {
@@ -102,7 +103,7 @@ object Parallel extends LogSupport {
         }
       }
 
-      resultArray.toSeq
+      resultQueue.asScala.flatten.toSeq
     } catch {
       case _: InterruptedException => throw new TimeoutException()
     } finally {
@@ -180,61 +181,6 @@ object Parallel extends LogSupport {
     new ResultIterator[R](resultQueue)
   }
 
-  //  /**
-  //    * Run the given function with each element of the source periodically and repeatedly.
-  //    * Execution can be stopped by the returned Stoppable object.
-  //    *
-  //    * @param source Source collection
-  //    * @param interval Interval of execution of an element
-  //    * @param f Function which process each element of the source collection
-  //    * @return Object to stop execution
-  //    */
-  //  def repeat[T](source: Seq[T], interval: Duration, ticker: Ticker = Ticker.systemTicker)(f: T => Unit): Stoppable = {
-  //    val requestQueue = new LinkedBlockingQueue[IndexedWorker[T, Unit]](source.size)
-  //    val resultArray  = new Array[Unit](source.size)
-  //    val executor     = Executors.newFixedThreadPool(source.size)
-  //    val cancelable   = new Stoppable(executor)
-  //
-  //    Range(0, source.size).foreach { _ =>
-  //      val repeatedFunction = (arg: T) => {
-  //        while (!cancelable.isStopped) {
-  //          // Use nanotime to make it independent from the system clock time
-  //          val startNano = ticker.read
-  //          f(arg)
-  //          val durationNanos = ticker.read - startNano
-  //          val wait          = math.max(0, interval.toMillis - TimeUnit.NANOSECONDS.toMillis(durationNanos))
-  //          try {
-  //            Thread.sleep(wait)
-  //          } catch {
-  //            case _: InterruptedException => ()
-  //          }
-  //        }
-  //      }
-  //
-  //      val worker = new IndexedWorker[T, Unit](requestQueue, resultArray, repeatedFunction)
-  //      requestQueue.put(worker)
-  //    }
-  //
-  //    source.zipWithIndex.foreach {
-  //      case (e, i) =>
-  //        val worker = requestQueue.take()
-  //        worker.message.set(e, i)
-  //        executor.execute(worker)
-  //    }
-  //
-  //    cancelable
-  //  }
-  //
-  //  class Stoppable(executor: ExecutorService) {
-  //    private val cancelled  = new AtomicBoolean(false)
-  //    def isStopped: Boolean = cancelled.get()
-  //
-  //    def stop: Unit = {
-  //      executor.shutdownNow()
-  //      cancelled.set(true)
-  //    }
-  //  }
-
   private[control] class Worker[T, R](
       executionId: String,
       workerId: String,
@@ -252,39 +198,6 @@ object Parallel extends LogSupport {
       stats.startedTasks.incrementAndGet()
       try {
         resultQueue.put(Some(f(message.get())))
-      } catch {
-        case _: BreakException =>
-          interrupted.set(true)
-        case NonFatal(e) =>
-          warn(s"$executionId - Error worker-$workerId", e)
-          throw e
-      } finally {
-        trace(s"$executionId - End worker-$workerId")
-        stats.finishedTasks.incrementAndGet()
-        Parallel.stats.runningWorkers.decrementAndGet()
-        requestQueue.put(this)
-      }
-    }
-  }
-
-  private[control] class IndexedWorker[T, R](
-      executionId: String,
-      workerId: String,
-      requestQueue: BlockingQueue[IndexedWorker[T, R]],
-      resultArray: Array[R],
-      interrupted: AtomicBoolean,
-      f: T => R
-  ) extends Runnable
-      with LogSupport {
-    val message: AtomicReference[(T, Int)] = new AtomicReference[(T, Int)]()
-
-    override def run: Unit = {
-      trace(s"$executionId - Begin worker-$workerId")
-      Parallel.stats.runningWorkers.incrementAndGet()
-      stats.startedTasks.incrementAndGet()
-      try {
-        val (m, i) = message.get()
-        resultArray(i) = f(m)
       } catch {
         case _: BreakException =>
           interrupted.set(true)

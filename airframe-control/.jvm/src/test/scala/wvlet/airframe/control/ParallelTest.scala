@@ -39,7 +39,7 @@ class ParallelTest extends AirSpec {
     }
     val endTime = System.currentTimeMillis()
     assert(startTime.forall(_ <= endTime))
-    assert(result == List(2, 4, 6))
+    assert(result.sorted == List(2, 4, 6))
 
     assert(Parallel.stats.startedTasks.get() == 3)
     assert(Parallel.stats.finishedTasks.get() == 3)
@@ -62,7 +62,7 @@ class ParallelTest extends AirSpec {
     assert(startTime.forall(_ <= endTime))
 
     // The result element order can be shuffled
-    assert(List(2, 4, 6).forall(x => list.contains(x)))
+    assert(list.sorted == List(2, 4, 6))
 
     assert(Parallel.stats.startedTasks.get() == 3)
     assert(Parallel.stats.finishedTasks.get() == 3)
@@ -123,7 +123,7 @@ class ParallelTest extends AirSpec {
     val source           = Seq(1, 2, 3)
     val result: Seq[Int] = source.parallel.withParallelism(2).map { x => x * 2 }
 
-    assert(result == List(2, 4, 6))
+    assert(result.sorted == List(2, 4, 6))
 
     assert(Parallel.stats.startedTasks.get() == 3)
     assert(Parallel.stats.finishedTasks.get() == 3)
@@ -139,7 +139,7 @@ class ParallelTest extends AirSpec {
     val result: Iterator[Int] = source.parallel.withParallelism(2).map { x => x * 2 }
 
     val list = result.toList
-    assert(List(2, 4, 6).forall(x => list.contains(x)))
+    assert(list.sorted == List(2, 4, 6))
 
     assert(Parallel.stats.startedTasks.get() == 3)
     assert(Parallel.stats.finishedTasks.get() == 3)
@@ -156,7 +156,7 @@ class ParallelTest extends AirSpec {
       i
     }
 
-    assert(result == List(1, 0, 0))
+    assert(result == List(1))
     assert(Parallel.stats.startedTasks.get() == 2)
     assert(Parallel.stats.finishedTasks.get() == 2)
   }
