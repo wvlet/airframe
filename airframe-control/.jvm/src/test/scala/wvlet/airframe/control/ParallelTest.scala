@@ -39,7 +39,7 @@ class ParallelTest extends AirSpec {
     }
     val endTime = System.currentTimeMillis()
     assert(startTime.forall(_ <= endTime))
-    assert(result == List(2, 4, 6))
+    assert(result.sorted == List(2, 4, 6))
 
     assert(Parallel.stats.startedTasks.get() == 3)
     assert(Parallel.stats.finishedTasks.get() == 3)
@@ -62,7 +62,7 @@ class ParallelTest extends AirSpec {
     assert(startTime.forall(_ <= endTime))
 
     // The result element order can be shuffled
-    assert(List(2, 4, 6).forall(x => list.contains(x)))
+    assert(list.sorted == List(2, 4, 6))
 
     assert(Parallel.stats.startedTasks.get() == 3)
     assert(Parallel.stats.finishedTasks.get() == 3)
@@ -123,7 +123,7 @@ class ParallelTest extends AirSpec {
     val source           = Seq(1, 2, 3)
     val result: Seq[Int] = source.parallel.withParallelism(2).map { x => x * 2 }
 
-    assert(result == List(2, 4, 6))
+    assert(result.sorted == List(2, 4, 6))
 
     assert(Parallel.stats.startedTasks.get() == 3)
     assert(Parallel.stats.finishedTasks.get() == 3)
@@ -139,12 +139,46 @@ class ParallelTest extends AirSpec {
     val result: Iterator[Int] = source.parallel.withParallelism(2).map { x => x * 2 }
 
     val list = result.toList
-    assert(List(2, 4, 6).forall(x => list.contains(x)))
+    assert(list.sorted == List(2, 4, 6))
 
     assert(Parallel.stats.startedTasks.get() == 3)
     assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
+  def `breaking execution in run()` : Unit = {
+    Parallel.stats.startedTasks.set(0)
+    Parallel.stats.finishedTasks.set(0)
+
+    val result = Parallel.run(Seq(1, 2, 3), parallelism = 1) { i =>
+      if (i == 2) {
+        Parallel.break
+      }
+      i
+    }
+
+    assert(result == List(1))
+    assert(Parallel.stats.startedTasks.get() == 2)
+    assert(Parallel.stats.finishedTasks.get() == 2)
+  }
+
+  def `breaking execution in iterate()` : Unit = {
+    Parallel.stats.startedTasks.set(0)
+    Parallel.stats.finishedTasks.set(0)
+
+    val result = Parallel.iterate(Seq(1, 2, 3).iterator, parallelism = 1) { i =>
+      if (i == 2) {
+        Parallel.break
+      }
+      i
+    }
+
+    // wait for completion here
+    val list = result.toList
+
+    assert(list == List(1))
+    assert(Parallel.stats.startedTasks.get() == 2)
+    assert(Parallel.stats.finishedTasks.get() == 2)
+  }
 //    def `repeat() and stop`: Unit =  {
 //      val source  = Seq(0)
 //
