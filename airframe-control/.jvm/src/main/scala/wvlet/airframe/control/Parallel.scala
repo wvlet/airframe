@@ -15,16 +15,23 @@ package wvlet.airframe.control
 
 import java.util.UUID
 import java.util.concurrent._
-import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong, AtomicReference}
 
 import wvlet.log.LogSupport
 
 import scala.reflect.ClassTag
+import scala.util.control.{ControlThrowable, NonFatal}
 
 /**
   * Utilities for parallel execution.
   */
 object Parallel extends LogSupport {
+
+  private class BreakException extends ControlThrowable
+
+  // Parallel execution can be stopped by calling this method.
+  def break: Unit = throw new BreakException()
+
   val stats = new ParallelExecutionStats()
 
   class ParallelExecutionStats(
@@ -63,9 +70,10 @@ object Parallel extends LogSupport {
 
     val requestQueue = new LinkedBlockingQueue[IndexedWorker[T, R]](parallelism)
     val resultArray  = new Array[R](source.length)
+    val interrupted  = new AtomicBoolean(false)
 
     Range(0, parallelism).foreach { i =>
-      val worker = new IndexedWorker[T, R](executionId, i.toString, requestQueue, resultArray, f)
+      val worker = new IndexedWorker[T, R](executionId, i.toString, requestQueue, resultArray, interrupted, f)
       requestQueue.put(worker)
     }
 
@@ -75,10 +83,14 @@ object Parallel extends LogSupport {
     try {
       // Process all elements of source
       val it = source.zipWithIndex.iterator
-      while (it.hasNext) {
+      while (it.hasNext && !interrupted.get()) {
         val worker = requestQueue.take()
-        worker.message.set(it.next())
-        executor.execute(worker)
+        if (!interrupted.get()) {
+          worker.message.set(it.next())
+          executor.execute(worker)
+        } else {
+          requestQueue.put(worker)
+        }
       }
 
       // Wait for completion
@@ -119,9 +131,10 @@ object Parallel extends LogSupport {
 
     val requestQueue = new LinkedBlockingQueue[Worker[T, R]](parallelism)
     val resultQueue  = new LinkedBlockingQueue[Option[R]]()
+    val interrupted  = new AtomicBoolean(false)
 
     Range(0, parallelism).foreach { i =>
-      val worker = new Worker[T, R](executionId, i.toString, requestQueue, resultQueue, f)
+      val worker = new Worker[T, R](executionId, i.toString, requestQueue, resultQueue, interrupted, f)
       requestQueue.put(worker)
     }
 
@@ -132,10 +145,14 @@ object Parallel extends LogSupport {
 
         try {
           // Process all elements of source
-          while (source.hasNext) {
+          while (source.hasNext && !interrupted.get()) {
             val worker = requestQueue.take()
-            worker.message.set(source.next())
-            executor.execute(worker)
+            if (!interrupted.get()) {
+              worker.message.set(source.next())
+              executor.execute(worker)
+            } else {
+              requestQueue.put(worker)
+            }
           }
 
           // Wait for completion
@@ -223,6 +240,7 @@ object Parallel extends LogSupport {
       workerId: String,
       requestQueue: BlockingQueue[Worker[T, R]],
       resultQueue: BlockingQueue[Option[R]],
+      interrupted: AtomicBoolean,
       f: T => R
   ) extends Runnable
       with LogSupport {
@@ -235,14 +253,16 @@ object Parallel extends LogSupport {
       try {
         resultQueue.put(Some(f(message.get())))
       } catch {
-        case e: Exception =>
+        case _: BreakException =>
+          interrupted.set(true)
+        case NonFatal(e) =>
           warn(s"$executionId - Error worker-$workerId", e)
           throw e
       } finally {
-        requestQueue.put(this)
         trace(s"$executionId - End worker-$workerId")
         stats.finishedTasks.incrementAndGet()
         Parallel.stats.runningWorkers.decrementAndGet()
+        requestQueue.put(this)
       }
     }
   }
@@ -252,6 +272,7 @@ object Parallel extends LogSupport {
       workerId: String,
       requestQueue: BlockingQueue[IndexedWorker[T, R]],
       resultArray: Array[R],
+      interrupted: AtomicBoolean,
       f: T => R
   ) extends Runnable
       with LogSupport {
@@ -265,14 +286,16 @@ object Parallel extends LogSupport {
         val (m, i) = message.get()
         resultArray(i) = f(m)
       } catch {
-        case e: Exception =>
+        case _: BreakException =>
+          interrupted.set(true)
+        case NonFatal(e) =>
           warn(s"$executionId - Error worker-$workerId", e)
           throw e
       } finally {
-        requestQueue.put(this)
         trace(s"$executionId - End worker-$workerId")
         stats.finishedTasks.incrementAndGet()
         Parallel.stats.runningWorkers.decrementAndGet()
+        requestQueue.put(this)
       }
     }
   }

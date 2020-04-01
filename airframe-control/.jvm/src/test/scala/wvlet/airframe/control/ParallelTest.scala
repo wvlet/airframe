@@ -145,6 +145,40 @@ class ParallelTest extends AirSpec {
     assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
+  def `breaking execution in run()` : Unit = {
+    Parallel.stats.startedTasks.set(0)
+    Parallel.stats.finishedTasks.set(0)
+
+    val result = Parallel.run(Seq(1, 2, 3), parallelism = 1) { i =>
+      if (i == 2) {
+        Parallel.break
+      }
+      i
+    }
+
+    assert(result == List(1, 0, 0))
+    assert(Parallel.stats.startedTasks.get() == 2)
+    assert(Parallel.stats.finishedTasks.get() == 2)
+  }
+
+  def `breaking execution in iterate()` : Unit = {
+    Parallel.stats.startedTasks.set(0)
+    Parallel.stats.finishedTasks.set(0)
+
+    val result = Parallel.iterate(Seq(1, 2, 3).iterator, parallelism = 1) { i =>
+      if (i == 2) {
+        Parallel.break
+      }
+      i
+    }
+
+    // wait for completion here
+    val list = result.toList
+
+    assert(list == List(1))
+    assert(Parallel.stats.startedTasks.get() == 2)
+    assert(Parallel.stats.finishedTasks.get() == 2)
+  }
 //    def `repeat() and stop`: Unit =  {
 //      val source  = Seq(0)
 //
