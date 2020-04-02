@@ -35,7 +35,7 @@ New Features:
 -  airframe-http: Support Scala.js for defining Web interfaces as well as Scala JVM [[0e017db](https://github.com/wvlet/airframe/commit/0e017db)]
 -  airframe-http: Support adding a custom codec to clients ([#1004](https://github.com/wvlet/airframe/issues/1004)) [[9675669](https://github.com/wvlet/airframe/commit/9675669)]
 -  airframe-http: Add cross-platform HttpMessage.Request and Response classes ([#982](https://github.com/wvlet/airframe/issues/982)) [[f55d438](https://github.com/wvlet/airframe/commit/f55d438)]
--  airframe-http-finagle: Update finagle-core, finagle-http, ... to 20.3.0 ([#965](https://github.com/wvlet/airframe/issues/965)) [[111e5ad](https://github.com/wvlet/airframe/commit/111e5ad)]
+-  airframe-http-finagle: Update finagle-core, finagle-http, ... to 20.4.0 ([#965](https://github.com/wvlet/airframe/issues/965)) [[111e5ad](https://github.com/wvlet/airframe/commit/111e5ad)]
 -  airframe-http-rx: [#993](https://github.com/wvlet/airframe/issues/993) Support Future[X] to Rx[X] conversion ([#996](https://github.com/wvlet/airframe/issues/996)) [[b54bbe7](https://github.com/wvlet/airframe/commit/b54bbe7)]
 -  airframe-http-rx: [#961](https://github.com/wvlet/airframe/issues/961) Support add/overwrite of DOM attributes ([#976](https://github.com/wvlet/airframe/issues/976)) [[02b54b2](https://github.com/wvlet/airframe/commit/02b54b2)]
 -  airframe-codec: Add Unit codec ([#980](https://github.com/wvlet/airframe/issues/980)) [[58ef3ff](https://github.com/wvlet/airframe/commit/58ef3ff)]
