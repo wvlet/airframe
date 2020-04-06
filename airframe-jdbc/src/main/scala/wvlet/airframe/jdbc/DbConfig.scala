@@ -43,7 +43,7 @@ case class DbConfig(
       case "sqlite" =>
         s"jdbc:sqlite:${database}"
       case _ =>
-        s"jdbc:${`type`}://${host.getOrElse("localhost")}${port.map(p => s":${port}").getOrElse("")}/${database}"
+        s"jdbc:${`type`}://${host.getOrElse("localhost")}${port.map(p => s":${p}").getOrElse("")}/${database}"
     }
   }
 
