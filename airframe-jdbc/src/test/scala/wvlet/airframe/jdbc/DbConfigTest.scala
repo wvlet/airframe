@@ -74,7 +74,7 @@ class DbConfigTest extends AirSpec {
 
     presto.jdbcPort shouldBe 8080
     presto.jdbcDriverName shouldBe "io.prestosql.jdbc.Driver"
-    presto.jdbcUrl
+    presto.jdbcUrl shouldBe "jdbc:presto://localhost:8080/public"
 
     val mysql = c
       .withType("mysql")
