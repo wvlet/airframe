@@ -20,7 +20,6 @@ import wvlet.airframe.http.rx.html.Embedded
 import wvlet.airspec._
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
 
 object RxTest extends AirSpec {
 
@@ -94,6 +93,28 @@ object RxTest extends AirSpec {
     c3.cancel
     val c4 = op.run { v => v shouldBe 6 }
     c4.cancel
+  }
+
+  test("filter") {
+    val v = Rx.const(1)
+    v.filter(_ == 1).run { v => v shouldBe 1 }
+    v.filter(_ != 1).run { v => fail("cannot reach here") }
+  }
+
+  test("filter with Option[X]") {
+    val v = Rx.const(Some(10))
+    v.filter(_.isDefined).map(_.get).run { x => x shouldBe 10 }
+
+    val n = Rx.const[Option[Int]](None)
+    n.filter(_.isDefined).map(_.get).run { x => fail("cannot reach here") }
+  }
+
+  test("for-comprehension") {
+    val v = for (x <- Rx.const(1) if x == 1) yield x
+    v.run(x => x shouldBe 1)
+
+    val n = for (x <- Rx.const(1) if x != 1) yield x
+    n.run(x => fail("cannot reach here"))
   }
 
   test("embedded") {

@@ -17,7 +17,6 @@ import wvlet.log.LogSupport
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
 
 /**
   *
@@ -25,8 +24,10 @@ import scala.util.{Failure, Success, Try}
 trait Rx[A] extends LogSupport {
   import Rx._
 
-  def map[B](f: A => B): Rx[B]         = MapOp[A, B](this, f)
-  def flatMap[B](f: A => Rx[B]): Rx[B] = FlatMapOp(this, f)
+  def map[B](f: A => B): Rx[B]           = MapOp[A, B](this, f)
+  def flatMap[B](f: A => Rx[B]): Rx[B]   = FlatMapOp(this, f)
+  def filter(f: A => Boolean): Rx[A]     = FilterOp(this, f)
+  def withFilter(f: A => Boolean): Rx[A] = FilterOp(this, f)
 
   def withName(name: String): Rx[A] = NamedOp(this, name)
 
@@ -34,7 +35,7 @@ trait Rx[A] extends LogSupport {
 
   /**
     * Subscribe any change in the upstream, and if a change is detected,
-    *  the given suscriber code will be executed.
+    *  the given subscriber code will be executed.
     *
     * @param subscriber
     * @tparam U
@@ -90,6 +91,12 @@ object Rx extends LogSupport {
           c1 = run(rxb)(effect)
         }
         Cancelable { () => c1.cancel; c2.cancel }
+      case FilterOp(in, cond) =>
+        run(in) { x =>
+          if (cond.asInstanceOf[A => Boolean](x)) {
+            effect(x)
+          }
+        }
       case NamedOp(input, name) =>
         run(input)(effect)
       case SingleOp(v) =>
@@ -110,8 +117,9 @@ object Rx extends LogSupport {
   case class SingleOp[A](v: A) extends RxBase[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
-  case class MapOp[A, B](input: Rx[A], f: A => B)         extends UnaryRx[A, B] {}
-  case class FlatMapOp[A, B](input: Rx[A], f: A => Rx[B]) extends UnaryRx[A, B]
+  case class MapOp[A, B](input: Rx[A], f: A => B)          extends UnaryRx[A, B]
+  case class FlatMapOp[A, B](input: Rx[A], f: A => Rx[B])  extends UnaryRx[A, B]
+  case class FilterOp[A](input: Rx[A], cond: A => Boolean) extends UnaryRx[A, A]
   case class NamedOp[A](input: Rx[A], name: String) extends UnaryRx[A, A] {
     override def toString: String = s"${name}:${input}"
   }
