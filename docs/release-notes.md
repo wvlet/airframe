@@ -6,6 +6,24 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.4.0
+
+Changes and bug fixes:
+
+-  airframe-http-finagle: Update finagle-core, finagle-http, ... to 20.4.0 ([#1024](https://github.com/wvlet/airframe/issues/1024)) [[fc850c2](https://github.com/wvlet/airframe/commit/fc850c2)]
+-  airframe-http: [#1003](https://github.com/wvlet/airframe/issues/1003) Use custom codec for request mapping ([#1018](https://github.com/wvlet/airframe/issues/1018)) [[2d719bc](https://github.com/wvlet/airframe/commit/2d719bc)]
+-  airframe-http: Simplify Request/Response adapters ([#1017](https://github.com/wvlet/airframe/issues/1017)) [[5b4ef31](https://github.com/wvlet/airframe/commit/5b4ef31)]
+-  airframe-jdbc: Fix port in jdbcUrl ([#1028](https://github.com/wvlet/airframe/issues/1028)) [[9f38aea](https://github.com/wvlet/airframe/commit/9f38aea)]
+-  airframe-jdbc: Update postgresql to 42.2.12 ([#1022](https://github.com/wvlet/airframe/issues/1022)) [[1aec50b](https://github.com/wvlet/airframe/commit/1aec50b)]
+-  airframe-control: Break execution in Parallel ([#1023](https://github.com/wvlet/airframe/issues/1023)) [[7dc6d9d](https://github.com/wvlet/airframe/commit/7dc6d9d)]
+-  airspec: [#1019](https://github.com/wvlet/airframe/issues/1019) Add scala-reflect to the airspec dependency ([#1020](https://github.com/wvlet/airframe/issues/1020)) [[269224a](https://github.com/wvlet/airframe/commit/269224a)]
+
+Internal changes:
+
+-  Update sbt, scripted-plugin to 1.3.9 ([#1021](https://github.com/wvlet/airframe/issues/1021)) [[d5f928d](https://github.com/wvlet/airframe/commit/d5f928d)]
+-  Add note for workarounds for using Future with Airframe ([#918](https://github.com/wvlet/airframe/issues/918)) [[a51b9ad](https://github.com/wvlet/airframe/commit/a51b9ad)]
+-  Update sbt-sonatype to 3.9.2 ([#1016](https://github.com/wvlet/airframe/issues/1016)) [[8228ce1](https://github.com/wvlet/airframe/commit/8228ce1)]
+
 ## 20.3.3
 
 -  airframe-http: [#989](https://github.com/wvlet/airframe/issues/989) Add @RPC Annotation ([#1012](https://github.com/wvlet/airframe/issues/1012)) [[cdd626d](https://github.com/wvlet/airframe/commit/cdd626d)]
