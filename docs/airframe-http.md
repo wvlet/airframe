@@ -284,8 +284,8 @@ To fully customize the error response, use `.withXXX` methods:
 
 ```scala
 val e = Http.serverException(HttpStatus.BadRequest_400)
-e.withHeader(...)
- .withJson(...)
+    .withHeader(...)
+    .withJson(...)
 
 throw e
 ```
