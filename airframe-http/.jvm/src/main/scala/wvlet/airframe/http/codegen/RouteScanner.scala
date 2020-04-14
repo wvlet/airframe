@@ -49,7 +49,8 @@ object RouteScanner extends LogSupport {
 
     // We need to use our own class loader as sbt's layered classloader cannot find application classes
     withClassLoader(classLoader) {
-      val lst     = ClassScanner.scanClasses(classLoader, targetPackages)
+      val lst = ClassScanner.scanClasses(classLoader, targetPackages)
+      trace(s"classes: ${lst.mkString(", ")}")
       val classes = Seq.newBuilder[Class[_]]
       lst.foreach { x =>
         Try(classLoader.loadClass(x)) match {
@@ -63,12 +64,21 @@ object RouteScanner extends LogSupport {
 
   private[codegen] def buildRouter(classes: Seq[Class[_]]): Router = {
     var router = Router.empty
-    for (cl <- classes) yield {
+    // Find classes with @RPC or @Endpoint annotations.
+    //
+    // Note: We need to remove object classes ending with $, because Surface.fullTypeNameOf(...)
+    // will not distinguish regular classes and their corresponding objects.
+    // This is because we generally cannot call classOf[MyObj$] in Scala other than scanning classes directly from class loaders.
+    for (cl <- classes if !cl.getName.endsWith("$")) {
       trace(f"Searching ${cl} for HTTP endpoints")
       import wvlet.airframe.surface.reflect._
-      val s       = ReflectSurfaceFactory.ofClass(cl)
-      val methods = ReflectSurfaceFactory.methodsOfClass(cl)
-      if (s.findAnnotationOf[RPC].isDefined || methods.exists(m => m.findAnnotationOf[Endpoint].isDefined)) {
+      lazy val s       = ReflectSurfaceFactory.ofClass(cl)
+      lazy val methods = ReflectSurfaceFactory.methodsOfClass(cl)
+      val hasRPC       = findAnnotationFromClass[RPC](cl).isDefined
+      if (hasRPC) {
+        debug(s"Found an Airframe RPC interface: ${s.fullName}")
+        router = router.addInternal(s, methods)
+      } else if (methods.exists(m => m.findAnnotationOf[Endpoint].isDefined)) {
         debug(s"Found an Airframe HTTP interface: ${s.fullName}")
         router = router.addInternal(s, methods)
       }

@@ -15,7 +15,7 @@ lazy val server =
     .in(file("server"))
     .enablePlugins(AirframeHttpPlugin)
     .settings(
-      airframeHttpGeneratorOption := "-l debug",
+      airframeHttpGeneratorOption := "-l trace",
       airframeHttpClients := Seq(
         "myapp.spi",
         "myapp.spi:sync"

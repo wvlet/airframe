@@ -12,7 +12,7 @@ class MyServiceImpl extends myapp.spi.MyService {
 }
 
 class MyRPCImpl extends myapp.spi.MyRPC {
-  override def world: String = "world"
+  override def world() = myapp.spi.MyRPC.World("world")
 }
 
 object MyServer extends LogSupport {
@@ -46,7 +46,7 @@ object MyServer extends LogSupport {
 
       val ret2 = syncClient.myRPC.world()
       info(ret2)
-      assert(ret2 == "world")
+      assert(ret2 == myapp.spi.MyRPC.World("world"))
     }
   }
 }

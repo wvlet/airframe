@@ -110,7 +110,7 @@ object ReflectSurfaceFactory extends LogSupport {
     typeNameOf(t).startsWith("wvlet.airframe.surface.tag.")
   }
 
-  private def fullTypeNameOf(tpe: ru.Type): TypeName = {
+  private[reflect] def fullTypeNameOf(tpe: ru.Type): TypeName = {
     tpe match {
       case t if t.typeArgs.length == 2 && isTaggedType(t) =>
         s"${fullTypeNameOf(t.typeArgs(0))}@@${fullTypeNameOf(t.typeArgs(1))}"
@@ -142,7 +142,8 @@ object ReflectSurfaceFactory extends LogSupport {
   def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = methodsOfType(implicitly[ru.WeakTypeTag[A]].tpe)
 
   def methodsOfType(tpe: ru.Type, cls: Option[Class[_]] = None): Seq[MethodSurface] = {
-    methodSurfaceCache.getOrElseUpdate(fullTypeNameOf(tpe), {
+    val name = fullTypeNameOf(tpe)
+    methodSurfaceCache.getOrElseUpdate(name, {
       new SurfaceFinder().createMethodSurfaceOf(tpe, cls)
     })
   }
