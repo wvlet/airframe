@@ -16,7 +16,7 @@ package wvlet.airframe.http
 /**
   * Exception to report errors to client
   */
-case class HttpServerException(var response: HttpMessage.Response, cause: Throwable)
+case class HttpServerException(private var response: HttpMessage.Response, cause: Throwable)
     extends Exception(response.contentString, cause)
     with HttpMessage[HttpServerException] {
   def this(status: HttpStatus, message: String, cause: Throwable) = this(Http.response(status, message), cause)
@@ -39,4 +39,6 @@ case class HttpServerException(var response: HttpMessage.Response, cause: Throwa
     response = response.withContent(newMessage)
     this
   }
+
+  def toResponse: HttpMessage.Response = response
 }

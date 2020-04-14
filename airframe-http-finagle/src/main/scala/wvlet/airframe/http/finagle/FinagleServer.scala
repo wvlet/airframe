@@ -209,10 +209,7 @@ object FinagleServer extends LogSupport {
           logger.warn(ex)
           ex match {
             case e: HttpServerException =>
-              val resp = Response(request)
-              resp.statusCode = e.status.code
-              resp.contentString = e.getMessage
-              Future.value(resp)
+              Future.value(convertToFinagleResponse(e.toResponse))
             case _ =>
               Future.value(Response(Status.InternalServerError))
           }
