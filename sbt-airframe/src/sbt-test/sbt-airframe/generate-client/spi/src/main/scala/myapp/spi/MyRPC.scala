@@ -4,5 +4,11 @@ import wvlet.airframe.http._
 
 @RPC
 trait MyRPC {
-  def world: String
+  import MyRPC._
+
+  def world(): World
+}
+
+object MyRPC {
+  case class World(name: String)
 }

@@ -56,17 +56,20 @@ package object reflect {
     }
 
     def findAnnotationOf[T <: jl.annotation.Annotation: ClassTag]: Option[T] = {
-      def loop(cl: Class[_]): Seq[Annotation] = {
-        cl match {
-          case null => Seq.empty
-          case other =>
-            cl.getDeclaredAnnotations ++ cl.getInterfaces.flatMap(loop)
-        }
-      }
-
-      val annot = loop(s.rawType)
-      findAnnotation[T](annot)
+      findAnnotationFromClass[T](s.rawType)
     }
+  }
+
+  def findAnnotationFromClass[T <: jl.annotation.Annotation: ClassTag](cls: Class[_]): Option[T] = {
+    def loop(cl: Class[_]): Seq[Annotation] = {
+      cl match {
+        case null => Seq.empty
+        case _ =>
+          cl.getDeclaredAnnotations ++ cl.getInterfaces.flatMap(loop)
+      }
+    }
+    val annot = loop(cls)
+    findAnnotation[T](annot)
   }
 
   implicit class ToRuntimeSurfaceParameter(p: Parameter) {

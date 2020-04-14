@@ -98,7 +98,7 @@ class HttpClientGenerator(
 ) extends LogSupport {
   Logger.init
 
-  logLevel.foreach { x => Logger.setDefaultLogLevel(x) }
+  logLevel.foreach { x => Logger("wvlet.airframe.http").setLogLevel(x) }
 
   @command(isDefault = true)
   def default = {
