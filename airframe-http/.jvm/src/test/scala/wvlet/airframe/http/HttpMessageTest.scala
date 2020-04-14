@@ -125,4 +125,11 @@ class HttpMessageTest extends AirSpec {
     r.xForwardedFor shouldBe Some("123.45.678.9")
     r.xForwardedProto shouldBe Some("https")
   }
+
+  test("create json responses") {
+    val json = """{"id":1}"""
+    val r    = Http.response(HttpStatus.Ok_200).withJson(json)
+    r.contentString shouldBe json
+    r.contentType.map(_.startsWith("application/json"))
+  }
 }

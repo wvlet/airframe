@@ -37,6 +37,23 @@ object Http {
   def response(status: HttpStatus, content: String): HttpMessage.Response = {
     response(status).withContent(content)
   }
+
+  /**
+    * Create an exception to redirect (status code = 302) the request to the target locationUrl
+    * @param locationUrl
+    * @param status
+    * @return
+    */
+  def redirectException(
+      locationUrl: String,
+      status: HttpStatus = HttpStatus.Found_302
+  ): HttpServerException = {
+    new HttpServerException(status).withHeader(HttpHeader.Location, locationUrl)
+  }
+
+  def serverException(status: HttpStatus): HttpServerException = {
+    new HttpServerException(status)
+  }
 }
 
 /**
