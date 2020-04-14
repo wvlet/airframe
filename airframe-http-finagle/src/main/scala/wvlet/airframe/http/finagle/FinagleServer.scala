@@ -206,7 +206,10 @@ object FinagleServer extends LogSupport {
           }
 
           val ex = getCause(e)
-          logger.warn(ex)
+          ex match {
+            case e: HttpServerException => logger.warn(s"${request} failed: ${e.getMessage}")
+            case other                  => logger.warn(s"${request} failed: ${other}", other)
+          }
           ex match {
             case e: HttpServerException =>
               Future.value(convertToFinagleResponse(e.toResponse))

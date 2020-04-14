@@ -29,7 +29,7 @@ trait HttpMessage[Raw] {
   def getAllHeader(key: String): Seq[String] = header.getAll(key)
 
   def allow: Option[String]         = header.get(HttpHeader.Allow)
-  def accept: Option[String]        = header.get(HttpHeader.Accept)
+  def accept: Seq[String]           = Http.parseAcceptHeader(header.get(HttpHeader.Accept))
   def authorization: Option[String] = header.get(HttpHeader.Authorization)
   def cacheControl: Option[String]  = header.get(HttpHeader.CacheControl)
   def contentType: Option[String] =
@@ -85,6 +85,16 @@ trait HttpMessage[Raw] {
   def withMsgPackOf[A](a: A): Raw = macro HttpMacros.toMsgPack[A]
   def withMsgPackOf[A](a: A, codecFactory: MessageCodecFactory): Raw = macro HttpMacros.toMsgPackWithCodecFactory[A]
 
+  /**
+    * Set the content body using a given object. Encoding can be JSON or MsgPack based on Content-Type header.
+    */
+  def withContentOf[A](a: A): Raw = macro HttpMacros.toContentOf[A]
+
+  /**
+    * Set the content body using a given object and codec factory. Encoding can be JSON or MsgPack based on Content-Type header.
+    */
+  def withContentOf[A](a: A, codecFactory: MessageCodecFactory): Raw = macro HttpMacros.toContentWithCodecFactory[A]
+
   // Content reader
   def contentString: String = {
     message.toContentString
@@ -118,7 +128,12 @@ trait HttpMessage[Raw] {
   def isContentTypeMsgPack: Boolean = {
     contentType.exists(_ == HttpHeader.MediaType.ApplicationMsgPack)
   }
-
+  def acceptsJson: Boolean = {
+    accept.exists(x => x == HttpHeader.MediaType.ApplicationJson || x.startsWith("application/json"))
+  }
+  def acceptsMsgPack: Boolean = {
+    accept.exists(_ == HttpHeader.MediaType.ApplicationMsgPack)
+  }
 }
 
 /**

@@ -19,6 +19,36 @@ import scala.reflect.macros.{blackbox => sm}
   *
   */
 object HttpMacros {
+  def newServerException[A: c.WeakTypeTag](c: sm.Context)(request: c.Tree, status: c.Tree, content: c.Tree): c.Tree = {
+    import c.universe._
+    val tpe = implicitly[c.WeakTypeTag[A]].tpe
+    q"""{
+          val e = Http.serverException(${status})
+          if (${request}.acceptsMsgPack) {
+            e.withContentTypeMsgPack
+          } else {
+            e
+          }
+          e.withContentOf[${tpe}](${content})
+        }"""
+  }
+
+  def newServerExceptionWithCodecFactory[A: c.WeakTypeTag](
+      c: sm.Context
+  )(request: c.Tree, status: c.Tree, content: c.Tree, codecFactory: c.Tree): c.Tree = {
+    import c.universe._
+    val tpe = implicitly[c.WeakTypeTag[A]].tpe
+    q"""{
+          val e = Http.serverException(${status})
+          if (${request}.acceptsMsgPack) {
+            e.withContentTypeMsgPack
+          } else {
+            e
+          }
+          e.withContentOf[${tpe}](${content}, ${codecFactory})
+        }"""
+  }
+
   def toJsonWithCodecFactory[A: c.WeakTypeTag](c: sm.Context)(a: c.Tree, codecFactory: c.Tree): c.Tree = {
     import c.universe._
 
@@ -56,6 +86,32 @@ object HttpMacros {
     q"""{
           val codec = wvlet.airframe.codec.MessageCodec.of[${tpe}]
           ${c.prefix}.withMsgPack(codec.toMsgPack(${a}))
+        }"""
+  }
+
+  def toContentWithCodecFactory[A: c.WeakTypeTag](
+      c: sm.Context
+  )(a: c.Tree, codecFactory: c.Tree): c.Tree = {
+    import c.universe._
+    q"""{
+        if(${c.prefix}.isContentTypeMsgPack) {
+          ${toMsgPackWithCodecFactory[A](c)(a, codecFactory)}
+        } else {
+          ${toJsonWithCodecFactory[A](c)(a, codecFactory)}
+        }
+        }"""
+  }
+
+  def toContentOf[A: c.WeakTypeTag](c: sm.Context)(a: c.Tree): c.Tree = {
+    import c.universe._
+
+    val tpe = implicitly[c.WeakTypeTag[A]].tpe
+    q"""{
+        if(${c.prefix}.isContentTypeMsgPack) {
+          ${toMsgPack[A](c)(a)}
+        } else {
+          ${toJson[A](c)(a)}
+        }
         }"""
   }
 

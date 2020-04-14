@@ -14,8 +14,10 @@
 package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.Request
 import wvlet.airframe.Design
-import wvlet.airframe.http.{Endpoint, Http, HttpMessage, HttpStatus, RPC, Router}
+import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.http.{Endpoint, Http, HttpHeader, HttpMessage, HttpStatus, RPC, Router}
 import wvlet.airspec.AirSpec
+import wvlet.log.LogSupport
 
 /**
   *
@@ -24,20 +26,35 @@ object ErrorResponseTest extends AirSpec {
 
   case class ErrorResponse(code: Int, message: String)
 
-  trait MyApp {
+  trait MyApp extends LogSupport {
     @Endpoint(path = "/v1/test")
-    def errorResponse: String = {
-      throw Http.serverException(HttpStatus.BadRequest_400).withJsonOf(ErrorResponse(10, "error test"))
+    def errorResponse(req: HttpMessage.Request): String = {
+      val e = Http.serverException(req, HttpStatus.BadRequest_400)
+      throw e.withContentOf(ErrorResponse(10, "error test"))
     }
   }
 
-  val r = Router.of[MyApp]
+  test(
+    "Return error response using JSON/MsgPack",
+    design = Finagle.server.withRouter(Router.of[MyApp]).design + Finagle.client.syncClientDesign
+  ) { client: FinagleSyncClient =>
+    warn(s"Running an error response test")
 
-  test("error response", design = Finagle.server.withRouter(Router.of[MyApp]).design + Finagle.client.syncClientDesign) {
-    client: FinagleSyncClient =>
-      warn(s"Running an error response test")
+    test("json error response") {
       val resp = client.sendSafe(Request("/v1/test"))
       resp.statusCode shouldBe 400
       resp.contentString shouldBe """{"code":10,"message":"error test"}"""
+    }
+
+    test("msgpack error response") {
+      val req = Request("/v1/test")
+      req.accept = HttpHeader.MediaType.ApplicationMsgPack
+      val resp = client.sendSafe(req)
+      resp.statusCode shouldBe 400
+      val msgpack = resp.contentBytes
+      val e       = MessageCodec.of[ErrorResponse].fromMsgPack(msgpack)
+      e shouldBe ErrorResponse(10, "error test")
+    }
+
   }
 }

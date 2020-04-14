@@ -69,7 +69,9 @@ class HttpMessageTest extends AirSpec {
     r.getAllHeader("unknown-key") shouldBe Seq.empty
 
     r.allow shouldBe Some("all")
-    r.accept shouldBe Some("application/json")
+    r.accept shouldBe Seq("application/json")
+    r.acceptsJson shouldBe true
+    r.acceptsMsgPack shouldBe false
     r.getHeader("X-MyApp-Version") shouldBe Some("1.0")
     r.expires shouldBe Some("xxx")
     r.authorization shouldBe Some("xxx-yyy")
@@ -111,7 +113,9 @@ class HttpMessageTest extends AirSpec {
     r.getAllHeader("unknown-key") shouldBe Seq.empty
 
     r.allow shouldBe Some("all")
-    r.accept shouldBe Some("application/json")
+    r.accept shouldBe Seq("application/json")
+    r.acceptsJson shouldBe true
+    r.acceptsMsgPack shouldBe false
     r.getHeader("X-MyApp-Version") shouldBe Some("1.0")
     r.expires shouldBe Some("xxx")
     r.authorization shouldBe Some("xxx-yyy")
@@ -131,5 +135,13 @@ class HttpMessageTest extends AirSpec {
     val r    = Http.response(HttpStatus.Ok_200).withJson(json)
     r.contentString shouldBe json
     r.contentType.map(_.startsWith("application/json"))
+  }
+
+  test("msgpack request") {
+    val r = Http.request("/v1/info").withAcceptMsgPack
+
+    r.accept shouldBe Seq("application/x-msgpack")
+    r.acceptsMsgPack shouldBe true
+    r.acceptsJson shouldBe false
   }
 }

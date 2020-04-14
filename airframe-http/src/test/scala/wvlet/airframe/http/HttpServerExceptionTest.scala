@@ -21,6 +21,7 @@ import wvlet.airspec.AirSpec
   *
   */
 object HttpServerExceptionTest extends AirSpec {
+
   test("custom error responses") {
     val json = """{"message":"illegal argument"}"""
 
@@ -48,6 +49,31 @@ object HttpServerExceptionTest extends AirSpec {
 
   case class ErrorResponse(code: Int, message: String)
 
+  private val customCodec = MessageCodecFactory.newFactory(
+    Map(
+      Surface.of[ErrorResponse] ->
+        new MessageCodec[ErrorResponse] {
+          override def pack(
+              p: Packer,
+              v: ErrorResponse
+          ): Unit = {
+            p.packArrayHeader(2)
+            p.packInt(v.code)
+            p.packString(v.message)
+          }
+          override def unpack(
+              u: Unpacker,
+              v: MessageContext
+          ): Unit = {
+            u.unpackArrayHeader
+            val code = u.unpackInt
+            val m    = u.unpackString
+            v.setObject(ErrorResponse(code, m))
+          }
+        }
+    )
+  )
+
   test("custom message") {
     val err = ErrorResponse(400, "invalid response")
 
@@ -73,32 +99,6 @@ object HttpServerExceptionTest extends AirSpec {
     }
 
     test("custom codec") {
-
-      val customCodec = MessageCodecFactory.newFactory(
-        Map(
-          Surface.of[ErrorResponse] ->
-            new MessageCodec[ErrorResponse] {
-              override def pack(
-                  p: Packer,
-                  v: ErrorResponse
-              ): Unit = {
-                p.packArrayHeader(2)
-                p.packInt(v.code)
-                p.packString(v.message)
-              }
-              override def unpack(
-                  u: Unpacker,
-                  v: MessageContext
-              ): Unit = {
-                u.unpackArrayHeader
-                val code = u.unpackInt
-                val m    = u.unpackString
-                v.setObject(ErrorResponse(code, m))
-              }
-            }
-        )
-      )
-
       // JSON with custom codec
       val e =
         Http
@@ -112,5 +112,32 @@ object HttpServerExceptionTest extends AirSpec {
       customCodec.of[ErrorResponse].fromMsgPack(em.contentBytes) shouldBe err
       em.isContentTypeMsgPack shouldBe true
     }
+  }
+
+  test("object error response") {
+    val req = Http.request("/v1/info")
+
+    test("json") {
+      val e =
+        Http.serverException(req, HttpStatus.BadRequest_400, ErrorResponse(100, "invalid input"))
+      e.status shouldBe HttpStatus.BadRequest_400
+      MessageCodec.of[ErrorResponse].fromJson(e.contentString) shouldBe ErrorResponse(100, "invalid input")
+    }
+
+    test("msgpack") {
+      val e =
+        Http.serverException(req.withAcceptMsgPack, HttpStatus.BadRequest_400, ErrorResponse(100, "invalid input"))
+      e.status shouldBe HttpStatus.BadRequest_400
+      MessageCodec.of[ErrorResponse].fromMsgPack(e.contentBytes) shouldBe ErrorResponse(100, "invalid input")
+    }
+
+    test("json custom codec") {
+      val e =
+        Http.serverException(req, HttpStatus.BadRequest_400, ErrorResponse(100, "invalid input"), customCodec)
+      e.status shouldBe HttpStatus.BadRequest_400
+      e.contentString shouldBe """[100,"invalid input"]"""
+      MessageCodec.of[ErrorResponse].fromJson(e.contentString) shouldBe ErrorResponse(100, "invalid input")
+    }
+
   }
 }
