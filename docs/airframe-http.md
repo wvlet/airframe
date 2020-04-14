@@ -58,8 +58,8 @@ trait MyApi {
   // Returning Future[X] is also possible.
   // This style is convenient when you need to call another service that returns Future response.
   @Endpoint(method = HttpMethod.GET, path = "/info_f")
-  def getInfoFuture(request: HttpRequest[Request]): Future[ServerInfo] = {
-    Future.value(ServerInfo("1.0", request.toRaw.userAgent))
+  def getInfoFuture(request: HttpMessage.Request): Future[ServerInfo] = {
+    Future.value(ServerInfo("1.0", request.userAgent))
   }
 
   // It is also possible to return custom HTTP responses
@@ -254,12 +254,41 @@ sc(path) // Create an HTTP response
 To handle errors that happens during the request processing, return HttpServerException with a custom HttpStatus code.
 
 ```scala
+import wvlet.airframe.http.Http
+
 // This will return 403 http response to the client
-throw HttpServerException(request, HttpStatus.Forbidden_403, "Forbidden")
+throw Http.serverException(HttpStatus.Forbidden_403)
 ```
 
 If the endpoint returns Future type, returning just `Future[Throwable]` (will produce 500 response code) or `Future[HttpServerException]` to customize the response code by yourself will also work.
 
+
+### Returning Custom Error Responses
+
+To return JSON or MsgPack responses, use `Http.serverException(request, status, object, (codec factory)?)`:
+
+```scala
+import wvlet.airframe.http.Http
+
+case class ErrorResponse(code:Int, message:String)
+
+// The error response object will be converted into JSON by using airframe-codec:
+throw Http.serverException(request, HttpStatus.Forbidden_403, ErrorResponse(100, "forbidden"))
+
+// This will return {"code":100,"message":"forbidden"}
+```
+
+If the input request has `Accept: application/x-msgpack` header, the same code will translate the object into MessagePack format.
+
+To fully customize the error response, use `.withXXX` methods:
+
+```scala
+val e = Http.serverException(HttpStatus.BadRequest_400)
+e.withHeader(...)
+ .withJson(...)
+
+throw e
+```
 
 ## Filters
 
