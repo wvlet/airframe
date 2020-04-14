@@ -29,8 +29,7 @@ object ErrorResponseTest extends AirSpec {
   trait MyApp extends LogSupport {
     @Endpoint(path = "/v1/test")
     def errorResponse(req: HttpMessage.Request): String = {
-      val e = Http.serverException(req, HttpStatus.BadRequest_400)
-      throw e.withContentOf(ErrorResponse(10, "error test"))
+      throw Http.serverException(req, HttpStatus.BadRequest_400, ErrorResponse(10, "error test"))
     }
   }
 
