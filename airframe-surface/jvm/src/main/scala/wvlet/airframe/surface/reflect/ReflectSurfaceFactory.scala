@@ -143,7 +143,6 @@ object ReflectSurfaceFactory extends LogSupport {
 
   def methodsOfType(tpe: ru.Type, cls: Option[Class[_]] = None): Seq[MethodSurface] = {
     val name = fullTypeNameOf(tpe)
-    info(s"name: ${name}, ${tpe}")
     methodSurfaceCache.getOrElseUpdate(name, {
       new SurfaceFinder().createMethodSurfaceOf(tpe, cls)
     })
