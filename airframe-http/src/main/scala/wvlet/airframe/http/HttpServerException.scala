@@ -16,8 +16,29 @@ package wvlet.airframe.http
 /**
   * Exception to report errors to client
   */
-class HttpServerException(val request: HttpRequest[_], val status: HttpStatus, message: String, cause: Throwable)
-    extends Exception(message, cause) {
-  def this(request: HttpRequest[_], status: HttpStatus) = this(request, status, status.toString, null)
-  def this(request: HttpRequest[_], status: HttpStatus, message: String) = this(request, status, message, null)
+case class HttpServerException(private var response: HttpMessage.Response, cause: Throwable)
+    extends Exception(response.contentString, cause)
+    with HttpMessage[HttpServerException] {
+  def this(status: HttpStatus, message: String, cause: Throwable) = this(Http.response(status, message), cause)
+  def this(status: HttpStatus, message: String) = this(status, message, null)
+  def this(status: HttpStatus) = this(status, status.toString, null)
+
+  def status: HttpStatus = response.status
+  def statusCode: Int    = response.statusCode
+
+  override def header: HttpMultiMap         = response.header
+  override def message: HttpMessage.Message = response.message
+
+  override protected def copyWith(newHeader: HttpMultiMap): HttpServerException = {
+    // Do not create a copy to retain the original stack trace
+    response = response.withHeader(newHeader)
+    this
+  }
+  override protected def copyWith(newMessage: HttpMessage.Message): HttpServerException = {
+    // Do not create a copy to retain the original stack trace
+    response = response.withContent(newMessage)
+    this
+  }
+
+  def toResponse: HttpMessage.Response = response
 }

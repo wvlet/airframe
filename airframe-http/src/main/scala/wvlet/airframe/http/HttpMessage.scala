@@ -14,7 +14,12 @@
 package wvlet.airframe.http
 import java.nio.charset.StandardCharsets
 
+import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, Message, StringMessage}
+import wvlet.airframe.http.impl.HttpMacros
+import wvlet.airframe.msgpack.spi.MsgPack
+
+import scala.language.experimental.macros
 
 trait HttpMessage[Raw] {
   def header: HttpMultiMap
@@ -24,7 +29,7 @@ trait HttpMessage[Raw] {
   def getAllHeader(key: String): Seq[String] = header.getAll(key)
 
   def allow: Option[String]         = header.get(HttpHeader.Allow)
-  def accept: Option[String]        = header.get(HttpHeader.Accept)
+  def accept: Seq[String]           = Http.parseAcceptHeader(header.get(HttpHeader.Accept))
   def authorization: Option[String] = header.get(HttpHeader.Authorization)
   def cacheControl: Option[String]  = header.get(HttpHeader.CacheControl)
   def contentType: Option[String] =
@@ -69,6 +74,27 @@ trait HttpMessage[Raw] {
   def withContent(content: Array[Byte]): Raw = {
     copyWith(ByteArrayMessage(content))
   }
+  def withJson(json: String): Raw = {
+    copyWith(StringMessage(json)).asInstanceOf[HttpMessage[Raw]].withContentTypeJson
+  }
+  def withMsgPack(msgPack: MsgPack): Raw = {
+    copyWith(ByteArrayMessage(msgPack)).asInstanceOf[HttpMessage[Raw]].withContentTypeMsgPack
+  }
+  def withJsonOf[A](a: A): Raw = macro HttpMacros.toJson[A]
+  def withJsonOf[A](a: A, codecFactory: MessageCodecFactory): Raw = macro HttpMacros.toJsonWithCodecFactory[A]
+  def withMsgPackOf[A](a: A): Raw = macro HttpMacros.toMsgPack[A]
+  def withMsgPackOf[A](a: A, codecFactory: MessageCodecFactory): Raw = macro HttpMacros.toMsgPackWithCodecFactory[A]
+
+  /**
+    * Set the content body using a given object. Encoding can be JSON or MsgPack based on Content-Type header.
+    */
+  def withContentOf[A](a: A): Raw = macro HttpMacros.toContentOf[A]
+
+  /**
+    * Set the content body using a given object and codec factory. Encoding can be JSON or MsgPack based on Content-Type header.
+    */
+  def withContentOf[A](a: A, codecFactory: MessageCodecFactory): Raw = macro HttpMacros.toContentWithCodecFactory[A]
+
   // Content reader
   def contentString: String = {
     message.toContentString
@@ -79,13 +105,13 @@ trait HttpMessage[Raw] {
 
   // HTTP header setting utility methods
   def withAccept(acceptType: String): Raw               = withHeader(HttpHeader.Accept, acceptType)
-  def withAcceptMsgPack: Raw                            = withHeader(HttpHeader.Accept, "application/x-msgpack")
+  def withAcceptMsgPack: Raw                            = withHeader(HttpHeader.Accept, HttpHeader.MediaType.ApplicationMsgPack)
   def withAllow(allow: String): Raw                     = withHeader(HttpHeader.Allow, allow)
   def withAuthorization(authorization: String): Raw     = withHeader(HttpHeader.Authorization, authorization)
   def withCacheControl(cacheControl: String): Raw       = withHeader(HttpHeader.CacheControl, cacheControl)
   def withContentType(contentType: String): Raw         = withHeader(HttpHeader.ContentType, contentType)
-  def withContentTypeJson: Raw                          = withContentType("application/json;charset=utf-8")
-  def withContentTypeMsgPack: Raw                       = withContentType("application/x-msgpack")
+  def withContentTypeJson: Raw                          = withContentType(HttpHeader.MediaType.ApplicationJson)
+  def withContentTypeMsgPack: Raw                       = withContentType(HttpHeader.MediaType.ApplicationMsgPack)
   def withContentLength(length: Long): Raw              = withHeader(HttpHeader.ContentLength, length.toString)
   def withDate(date: String): Raw                       = withHeader(HttpHeader.Date, date)
   def withExpires(expires: String): Raw                 = withHeader(HttpHeader.Expires, expires)
@@ -95,6 +121,19 @@ trait HttpMessage[Raw] {
   def withUserAgent(userAgenet: String): Raw            = withHeader(HttpHeader.UserAgent, userAgenet)
   def withXForwardedFor(xForwardedFor: String): Raw     = withHeader(HttpHeader.xForwardedFor, xForwardedFor)
   def withXForwardedProto(xForwardedProto: String): Raw = withHeader(HttpHeader.xForwardedProto, xForwardedProto)
+
+  def isContentTypeJson: Boolean = {
+    contentType.exists(_.startsWith("application/json"))
+  }
+  def isContentTypeMsgPack: Boolean = {
+    contentType.exists(_ == HttpHeader.MediaType.ApplicationMsgPack)
+  }
+  def acceptsJson: Boolean = {
+    accept.exists(x => x == HttpHeader.MediaType.ApplicationJson || x.startsWith("application/json"))
+  }
+  def acceptsMsgPack: Boolean = {
+    accept.exists(_ == HttpHeader.MediaType.ApplicationMsgPack)
+  }
 }
 
 /**

@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.http.impl.HttpMacros
 
 object Http {
 
@@ -37,6 +39,51 @@ object Http {
   def response(status: HttpStatus, content: String): HttpMessage.Response = {
     response(status).withContent(content)
   }
+
+  /**
+    * Create an exception to redirect (status code = 302) the request to the target locationUrl
+    * @param locationUrl
+    * @param status
+    * @return
+    */
+  def redirectException(
+      locationUrl: String,
+      status: HttpStatus = HttpStatus.Found_302
+  ): HttpServerException = {
+    new HttpServerException(status).withHeader(HttpHeader.Location, locationUrl)
+  }
+
+  /**
+    * Create a new server exception that can be used to exit the Endpoint or RPC process.
+    */
+  def serverException(status: HttpStatus): HttpServerException = {
+    new HttpServerException(status)
+  }
+
+  import scala.language.experimental.macros
+
+  /**
+    * Create a new HttpServerException with a custom content-body in JSON or MsgPack format.
+    * The content type will be determined by the Accept header in the request
+    */
+  def serverException[A](request: HttpRequest[_], status: HttpStatus, content: A): HttpServerException =
+    macro HttpMacros.newServerException[A]
+
+  /**
+    * Create a new HttpServerException with a custom content-body in JSON or MsgPack format.
+    * The content type will be determined by the Accept header in the request
+    */
+  def serverException[A](
+      request: HttpRequest[_],
+      status: HttpStatus,
+      content: A,
+      codecFactory: MessageCodecFactory
+  ): HttpServerException =
+    macro HttpMacros.newServerExceptionWithCodecFactory[A]
+
+  private[http] def parseAcceptHeader(value: Option[String]): Seq[String] = {
+    value.map(_.split(",").map(_.trim).filter(_.nonEmpty).toSeq).getOrElse(Seq.empty)
+  }
 }
 
 /**
@@ -55,6 +102,8 @@ trait HttpRequest[Req] {
   def contentType: Option[String]  = adapter.contentTypeOf(toRaw)
   def contentBytes: Array[Byte]    = adapter.contentBytesOf(toRaw)
   def contentString: String        = adapter.contentStringOf(toRaw)
+  def accept: Seq[String]          = Http.parseAcceptHeader(header.get(HttpHeader.Accept))
+  def acceptsMsgPack: Boolean      = accept.contains(HttpHeader.MediaType.ApplicationMsgPack)
 }
 
 /**

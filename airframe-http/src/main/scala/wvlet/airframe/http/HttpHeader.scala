@@ -79,4 +79,9 @@ object HttpHeader {
   final val WwwAuthenticate               = "Www-Authenticate"
   final val xForwardedFor                 = "X-Forwarded-For"
   final val xForwardedProto               = "X-Forwarded-Proto"
+
+  object MediaType {
+    final val ApplicationJson    = "application/json;charset=utf-8"
+    final val ApplicationMsgPack = "application/x-msgpack"
+  }
 }

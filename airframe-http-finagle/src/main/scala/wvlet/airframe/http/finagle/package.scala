@@ -18,6 +18,7 @@ import com.twitter.finagle.http.{HeaderMap, Request, Response}
 import com.twitter.io.Buf
 import com.twitter.io.Buf.ByteArray
 import com.twitter.util.Future
+import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, StringMessage}
 import wvlet.airframe.{Design, Session}
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.log.io.IOUtil
@@ -156,5 +157,22 @@ package object finagle {
 
   private[finagle] def toFinagleHttpMethod(method: String): http.Method = {
     httpMethodMapping.getOrElse(method, throw new IllegalArgumentException(s"Unsupported method: ${method}"))
+  }
+
+  def convertToFinagleResponse(response: HttpMessage.Response): Response = {
+    val resp = http.Response()
+    resp.statusCode = response.statusCode
+    for (h <- response.header.entries) {
+      resp.headerMap.add(h.key, h.value)
+    }
+    response.message match {
+      case StringMessage(content) =>
+        resp.contentString = content
+      case ByteArrayMessage(content) =>
+        resp.content = Buf.ByteArray.Owned(content)
+      case other =>
+        resp.content = Buf.ByteArray.Owned(other.toContentBytes)
+    }
+    resp
   }
 }
