@@ -6,6 +6,18 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.4.1
+
+-  airframe-http: [#1025](https://github.com/wvlet/airframe/issues/1025) Support custom server exception response ([#1036](https://github.com/wvlet/airframe/issues/1036)) [[d3a872a](https://github.com/wvlet/airframe/commit/d3a872a)]
+-  airframe-http-rx: Support Rx.filter ([#1030](https://github.com/wvlet/airframe/issues/1030)) [[b619bfe](https://github.com/wvlet/airframe/commit/b619bfe)]
+-  sbt-airframe: Fixes client code generation when companion objects of API classes exist [#1034](https://github.com/wvlet/airframe/issues/1034) ([#1035](https://github.com/wvlet/airframe/issues/1035)) [[abe4167](https://github.com/wvlet/airframe/commit/abe4167)]
+
+Internal changes:
+-  Update scala-collection-compat to 2.1.5 ([#1038](https://github.com/wvlet/airframe/issues/1038)) [[1cef7ca](https://github.com/wvlet/airframe/commit/1cef7ca)]
+-  Update sbt, scripted-plugin to 1.3.10 ([#1037](https://github.com/wvlet/airframe/issues/1037)) [[13bf484](https://github.com/wvlet/airframe/commit/13bf484)]
+-  Update sbt-scalafmt to 2.3.4 ([#1033](https://github.com/wvlet/airframe/issues/1033)) [[d6be5de](https://github.com/wvlet/airframe/commit/d6be5de)]
+-  Update presto-main to 332 ([#1031](https://github.com/wvlet/airframe/issues/1031)) [[381b886](https://github.com/wvlet/airframe/commit/381b886)]
+
 ## 20.4.0
 
 Changes and bug fixes:
