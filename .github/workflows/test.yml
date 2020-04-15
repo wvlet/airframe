@@ -68,7 +68,7 @@ jobs:
       - name: Scala 2.11 test
         run: ./sbt ++2.11.12 projectJVM/test
   test_js:
-    name: Scala.js
+    name: Scala.js / Scala 2.12
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -89,7 +89,7 @@ jobs:
         # A workaround for Scala.js linker error
         run: ./sbt "; projectJS/test"
   test_js_2_13:
-    name: Scala.js with Scala 2.13
+    name: Scala.js / Scala 2.13
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
