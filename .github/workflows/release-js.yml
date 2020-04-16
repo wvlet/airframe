@@ -24,10 +24,6 @@ jobs:
           path: ~/.cache
           key: ${{ runner.os }}-release-js-${{ hashFiles('**/*.sbt') }}
           restore-keys: ${{ runner.os }}-release-js-
-      - name: Build for Scala.js 0.6.x
-        env:
-          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
-        run: SCALAJS_VERSION=0.6.32 ./sbt "; + projectJS/publishSigned"
       - name: Build for Scala.js 1.0.x
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
