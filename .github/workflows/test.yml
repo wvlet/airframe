@@ -51,7 +51,7 @@ jobs:
           key: ${{ runner.os }}-scala-2.13-${{ hashFiles('**/*.sbt') }}
           restore-keys: ${{ runner.os }}-scala-2.13-
       - name: Scala 2.13 test
-        run: ./sbt ++2.13.1 projectJVM2_13/test
+        run: ./sbt ++2.13.2 projectJVM2_13/test
   test_2_11:
     name: Scala 2.11
     runs-on: ubuntu-latest
@@ -107,7 +107,7 @@ jobs:
           key: ${{ runner.os }}-scala-js_2.13-${{ hashFiles('**/*.sbt') }}
           restore-keys: ${{ runner.os }}-scala-js_2.13-
       - name: Scala.js test
-        run: ./sbt ++2.13.1 "; projectJS/test"
+        run: ./sbt ++2.13.2 "; projectJS/test"
   test_sbt_plugin:
     name: sbt-airframe
     runs-on: ubuntu-latest
