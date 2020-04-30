@@ -35,6 +35,10 @@ const users = [
 ];
 
 const siteConfig = {
+    algolia: {
+      apiKey: '71b7e81be03c97dcd37b7a0efc8d6b76',
+      indexName: 'airframe'
+    },
     title: 'Airframe', // Title for your website.
     tagline: 'Essential Building Blocks For Scala',
     url: 'https://wvlet.org', // Your website URL
