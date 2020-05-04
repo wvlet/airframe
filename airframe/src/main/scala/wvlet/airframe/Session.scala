@@ -70,8 +70,8 @@ trait Session extends AutoCloseable {
   private[airframe] def getOrElse[A](surface: Surface, traitInstanceFactory: => A)(implicit sourceCode: SourceCode): A
 
   private[airframe] def createNewInstanceOf[A](surface: Surface)(implicit sourceCode: SourceCode): A
-  private[airframe] def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A)(
-      implicit sourceCode: SourceCode
+  private[airframe] def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A)(implicit
+      sourceCode: SourceCode
   ): A
 
   def getInstanceOf(surface: Surface)(implicit sourceCode: SourceCode): Any

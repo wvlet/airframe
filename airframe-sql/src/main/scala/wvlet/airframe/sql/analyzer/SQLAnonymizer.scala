@@ -100,10 +100,12 @@ object SQLAnonymizer extends LogSupport {
     private val symbolTable = collection.mutable.Map.empty[String, String]
 
     def lookup(token: String): String = {
-      symbolTable.getOrElseUpdate(token, {
-        val c = count.incrementAndGet()
-        s"${prefix}${c}"
-      })
+      symbolTable.getOrElseUpdate(
+        token, {
+          val c = count.incrementAndGet()
+          s"${prefix}${c}"
+        }
+      )
     }
   }
 }

@@ -204,7 +204,7 @@ object OffsetPacker {
 
     if ((sec >>> 34) == 0L) { // sec can be serialized in 34 bits.
       val data64: Long = (nsec << 34) | sec
-      if ((data64 & 0XFFFFFFFF00000000L) == 0L) { // sec can be serialized in 32 bits and nsec is 0.
+      if ((data64 & 0xffffffff00000000L) == 0L) { // sec can be serialized in 32 bits and nsec is 0.
         // use timestamp 32
         packTimestamp32(cursor, sec.toInt)
       } else { // sec exceeded 32 bits or nsec is not 0.

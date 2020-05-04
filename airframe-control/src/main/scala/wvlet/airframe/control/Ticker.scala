@@ -31,8 +31,9 @@ class ManualTicker(private var counter: Long = 0) extends Ticker {
 
 object Ticker {
   // A ticker that reads the current time using System.nanoTime()
-  def systemTicker: Ticker = new Ticker {
-    override def read: Long = System.nanoTime()
-  }
+  def systemTicker: Ticker =
+    new Ticker {
+      override def read: Long = System.nanoTime()
+    }
   def manualTicker: ManualTicker = new ManualTicker
 }

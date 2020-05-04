@@ -86,10 +86,11 @@ trait Path extends Iterable[String] {
       drop(1).foldLeft[Path](Path.Current) { (p, c) => p / c }
     }
 
-  def iterator: Iterator[String] = parent match {
-    case Some(p) => p.iterator ++ Iterator.single(name)
-    case None    => Iterator.single(name)
-  }
+  def iterator: Iterator[String] =
+    parent match {
+      case Some(p) => p.iterator ++ Iterator.single(name)
+      case None    => Iterator.single(name)
+    }
 
   override def hashCode = fullPath.hashCode
   override def equals(other: Any) = {

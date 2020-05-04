@@ -181,7 +181,7 @@ object UnpackerImpl {
   private[impl] val conversionTable = {
     import org.msgpack.{core => v8}
     val m = Map.newBuilder[v8.MessageFormat, MessageFormat]
-    for (b <- 0 until 0xFF) {
+    for (b <- 0 until 0xff) {
       val f1 = v8.MessageFormat.valueOf(b.toByte)
       val f2 = MessageFormat.of(b.toByte)
       m += f1 -> f2

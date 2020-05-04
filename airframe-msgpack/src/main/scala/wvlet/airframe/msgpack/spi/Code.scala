@@ -59,7 +59,7 @@ object Code {
   val EXT_TIMESTAMP: Byte = -1
 
   def isFixInt(b: Byte): Boolean = {
-    val v = b & 0xFF
+    val v = b & 0xff
     v <= 0x7f || v >= 0xe0
   }
 

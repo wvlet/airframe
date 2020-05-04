@@ -44,14 +44,15 @@ object MessageCodecFinder {
     }
   }
 
-  def newCodecFinder(codecTable: Map[Surface, MessageCodec[_]]): MessageCodecFinder = new MessageCodecFinder {
-    override def findCodec(
-        factory: MessageCodecFactory,
-        seenSet: Set[Surface]
-    ): PartialFunction[Surface, MessageCodec[_]] = {
-      case s: Surface if codecTable.contains(s) => codecTable(s)
+  def newCodecFinder(codecTable: Map[Surface, MessageCodec[_]]): MessageCodecFinder =
+    new MessageCodecFinder {
+      override def findCodec(
+          factory: MessageCodecFactory,
+          seenSet: Set[Surface]
+      ): PartialFunction[Surface, MessageCodec[_]] = {
+        case s: Surface if codecTable.contains(s) => codecTable(s)
+      }
     }
-  }
 
   val defaultKnownCodecs: Map[Surface, MessageCodec[_]] = {
     StandardCodec.standardCodec ++

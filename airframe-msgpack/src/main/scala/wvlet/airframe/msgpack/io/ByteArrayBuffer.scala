@@ -102,29 +102,29 @@ abstract class ByteArrayBufferBase(protected[this] var a: Array[Byte], offset: I
   override def readShort(position: Int): Short = {
     ensureCapacity(position, 2)
     val pos = offset + position
-    ((a(pos) << 8) | (a(pos + 1) & 0xFF)).toShort
+    ((a(pos) << 8) | (a(pos + 1) & 0xff)).toShort
   }
 
   override def readInt(position: Int): Int = {
     ensureCapacity(position, 4)
     val pos = offset + position
     ((a(pos).toInt << 24) |
-      ((a(pos + 1) & 0xFF) << 16) |
-      ((a(pos + 2) & 0xFF) << 8) |
-      (a(pos + 3) & 0xFF))
+      ((a(pos + 1) & 0xff) << 16) |
+      ((a(pos + 2) & 0xff) << 8) |
+      (a(pos + 3) & 0xff))
   }
 
   override def readLong(position: Int): Long = {
     ensureCapacity(position, 8)
     val pos = offset + position
     ((a(pos).toLong << 56) |
-      ((a(pos + 1).toLong & 0xFF) << 48) |
-      ((a(pos + 2).toLong & 0xFF) << 40) |
-      ((a(pos + 3).toLong & 0xFF) << 32) |
-      ((a(pos + 4).toLong & 0xFF) << 24) |
-      ((a(pos + 5).toLong & 0xFF) << 16) |
-      ((a(pos + 6).toLong & 0xFF) << 8) |
-      (a(pos + 7).toLong & 0xFF))
+      ((a(pos + 1).toLong & 0xff) << 48) |
+      ((a(pos + 2).toLong & 0xff) << 40) |
+      ((a(pos + 3).toLong & 0xff) << 32) |
+      ((a(pos + 4).toLong & 0xff) << 24) |
+      ((a(pos + 5).toLong & 0xff) << 16) |
+      ((a(pos + 6).toLong & 0xff) << 8) |
+      (a(pos + 7).toLong & 0xff))
   }
 
   override def readBytes(position: Int, length: Int): Array[Byte] = {
@@ -174,8 +174,8 @@ abstract class ByteArrayBufferBase(protected[this] var a: Array[Byte], offset: I
     ensureCapacity(position, 2)
     val pos = offset + position
     // Use big-endian order
-    a(pos) = ((v & 0xFF00) >> 8).toByte
-    a(pos + 1) = (v & 0xFF).toByte
+    a(pos) = ((v & 0xff00) >> 8).toByte
+    a(pos + 1) = (v & 0xff).toByte
     2
   }
 
@@ -183,10 +183,10 @@ abstract class ByteArrayBufferBase(protected[this] var a: Array[Byte], offset: I
     ensureCapacity(position, 4)
     val pos = offset + position
     // Use big-endian order
-    a(pos) = ((v & 0xFF000000) >> 24).toByte
-    a(pos + 1) = ((v & 0xFF0000) >> 16).toByte
-    a(pos + 2) = ((v & 0xFF00) >> 8).toByte
-    a(pos + 3) = (v & 0xFF).toByte
+    a(pos) = ((v & 0xff000000) >> 24).toByte
+    a(pos + 1) = ((v & 0xff0000) >> 16).toByte
+    a(pos + 2) = ((v & 0xff00) >> 8).toByte
+    a(pos + 3) = (v & 0xff).toByte
     4
   }
 
@@ -194,14 +194,14 @@ abstract class ByteArrayBufferBase(protected[this] var a: Array[Byte], offset: I
     ensureCapacity(position, 8)
     val pos = offset + position
     // Use big-endian order
-    a(pos) = ((v & 0XFF00000000000000L) >> 56).toByte
-    a(pos + 1) = ((v & 0XFF000000000000L) >> 48).toByte
-    a(pos + 2) = ((v & 0XFF0000000000L) >> 40).toByte
-    a(pos + 3) = ((v & 0XFF00000000L) >> 32).toByte
-    a(pos + 4) = ((v & 0XFF000000L) >> 24).toByte
-    a(pos + 5) = ((v & 0XFF0000L) >> 16).toByte
-    a(pos + 6) = ((v & 0XFF00L) >> 8).toByte
-    a(pos + 7) = (v & 0XFFL).toByte
+    a(pos) = ((v & 0xff00000000000000L) >> 56).toByte
+    a(pos + 1) = ((v & 0xff000000000000L) >> 48).toByte
+    a(pos + 2) = ((v & 0xff0000000000L) >> 40).toByte
+    a(pos + 3) = ((v & 0xff00000000L) >> 32).toByte
+    a(pos + 4) = ((v & 0xff000000L) >> 24).toByte
+    a(pos + 5) = ((v & 0xff0000L) >> 16).toByte
+    a(pos + 6) = ((v & 0xff00L) >> 8).toByte
+    a(pos + 7) = (v & 0xffL).toByte
     8
   }
 }

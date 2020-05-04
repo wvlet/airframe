@@ -35,8 +35,7 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
 
   import scala.jdk.CollectionConverters._
 
-  protected def roundTripTest[T](surface: Surface, dataType: DataType)(
-      implicit
+  protected def roundTripTest[T](surface: Surface, dataType: DataType)(implicit
       a1: Arbitrary[T],
       s1: Shrink[T],
       pp1: T => Pretty
@@ -44,8 +43,7 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     forAll { (v: T) => roundtrip(surface, v, dataType) }
   }
 
-  protected def arrayRoundTripTest[T](surface: Surface)(
-      implicit
+  protected def arrayRoundTripTest[T](surface: Surface)(implicit
       impArb: Arbitrary[Array[T]],
       shrink: Shrink[Array[T]],
       pp: Array[T] => Pretty

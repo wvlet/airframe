@@ -107,17 +107,17 @@ object JSONScanner {
   }
 
   private def utf8CharLen(code: Int): Int = {
-    val i = code & 0xFF
+    val i = code & 0xff
     if ((i & 0x80) == 0) {
       // 0xxxxxxx
       0
-    } else if ((i & 0xE0) == 0xC0) {
+    } else if ((i & 0xe0) == 0xc0) {
       // 110xxxxx
       1
-    } else if ((i & 0xF0) == 0xE0) {
+    } else if ((i & 0xf0) == 0xe0) {
       // 1110xxxx
       2
-    } else if ((i & 0xF8) == 0xF0) {
+    } else if ((i & 0xf8) == 0xf0) {
       3
     } else {
       -1
@@ -269,8 +269,10 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
           throw unexpected("json value")
         }
       }
-    } else if ((ch == RSquare && (state == ARRAY_END || state == ARRAY_START)) ||
-               (ch == RBracket && (state == OBJECT_END || state == OBJECT_START))) {
+    } else if (
+      (ch == RSquare && (state == ARRAY_END || state == ARRAY_START)) ||
+      (ch == RBracket && (state == OBJECT_END || state == OBJECT_START))
+    ) {
       if (stack.isEmpty) {
         throw unexpected("obj or array")
       } else {
@@ -415,7 +417,9 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
 
   private def scanFalse(ctx: JSONContext[J]): Unit = {
     ensure(5)
-    if (s(cursor) == 'f' && s(cursor + 1) == 'a' && s(cursor + 2) == 'l' && s(cursor + 3) == 's' && s(cursor + 4) == 'e') {
+    if (
+      s(cursor) == 'f' && s(cursor + 1) == 'a' && s(cursor + 2) == 'l' && s(cursor + 3) == 's' && s(cursor + 4) == 'e'
+    ) {
       cursor += 5
       ctx.addBoolean(s, false, cursor - 5, cursor)
     } else {
@@ -435,7 +439,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
 
   private final def scanSimpleString: Int = {
     var i  = 0
-    var ch = s(cursor + i) & 0xFF
+    var ch = s(cursor + i) & 0xff
     while (ch != DoubleQuote) {
       if (ch < 0x20) {
         throw unexpected("utf8")
@@ -444,7 +448,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
         return -1
       }
       i += 1
-      ch = s(cursor + i) & 0xFF
+      ch = s(cursor + i) & 0xff
     }
     i
   }
@@ -502,11 +506,11 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
 
   private def scanUtf8(sb: StringBuilder): Unit = {
     val ch                = s(cursor)
-    val first5bit         = (ch & 0xF8) >> 3
+    val first5bit         = (ch & 0xf8) >> 3
     val isValidUtf8Header = validUtf8BitVector & (1L << first5bit)
     if (isValidUtf8Header != 0L) {
-      val pos     = (ch & 0xF0) >> (4 - 1)
-      val mask    = 0X03L << pos
+      val pos     = (ch & 0xf0) >> (4 - 1)
+      val mask    = 0x03L << pos
       val utf8len = (utf8CharLenTable & mask) >> pos
       val start   = cursor
       cursor += 1
@@ -521,8 +525,8 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
   private def scanUtf8Body(n: Int): Unit = {
     if (n > 0) {
       val ch = s(cursor)
-      val b  = ch & 0xFF
-      if ((b & 0xC0) == 0x80) {
+      val b  = ch & 0xff
+      if ((b & 0xc0) == 0x80) {
         // 10xxxxxx
         cursor += 1
         scanUtf8Body(n - 1)

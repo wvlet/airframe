@@ -106,7 +106,7 @@ class DIStats extends LogSupport with Serializable {
     DIStatsReport(
       coverage = coverage,
       observedTypes = firstSeen.toSeq.sortBy(_._2).map(_._1).toSeq,
-      initCount = initCountTable.map(x => x._1     -> x._2.get()).toMap,
+      initCount = initCountTable.map(x => x._1 -> x._2.get()).toMap,
       injectCount = injectCountTable.map(x => x._1 -> x._2.get()).toMap,
       unusedTypes = unusedBindings.result()
     )

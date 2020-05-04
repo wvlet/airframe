@@ -35,9 +35,10 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
     }
   }
 
-  def add(xs: HtmlNode*): RxElement = new RxElement(xs :: modifiers) {
-    override def render = self.render
-  }
+  def add(xs: HtmlNode*): RxElement =
+    new RxElement(xs :: modifiers) {
+      override def render = self.render
+    }
   def addModifier(xs: HtmlNode*): RxElement = add(xs: _*)
 
   private[html] def traverseModifiers(f: HtmlNode => Cancelable): Cancelable = {
@@ -50,12 +51,14 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
 
 object RxElement {
 
-  def apply(a: RxElement): RxElement = new RxElement() {
-    override def render: RxElement = a
-  }
-  def apply[A <: RxElement](a: Rx[A]): RxElement = new RxElement() {
-    override def render: RxElement = LazyRxElement(() => a)
-  }
+  def apply(a: RxElement): RxElement =
+    new RxElement() {
+      override def render: RxElement = a
+    }
+  def apply[A <: RxElement](a: Rx[A]): RxElement =
+    new RxElement() {
+      override def render: RxElement = LazyRxElement(() => a)
+    }
 }
 
 case class LazyRxElement[A: EmbeddableNode](v: () => A) extends RxElement() with LogSupport {

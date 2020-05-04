@@ -81,7 +81,7 @@ object AsyncClient extends HttpClientType {
 
           s"""def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType}] = {
              |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result
-               .mkString(", ")})
+            .mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")
     }
@@ -133,7 +133,7 @@ object SyncClient extends HttpClientType {
 
           s"""def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType.name} = {
              |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result
-               .mkString(", ")})
+            .mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")
     }
@@ -195,7 +195,7 @@ object ScalaJSClient extends HttpClientType {
 
           s"""def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType}] = {
              |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result
-               .mkString(", ")})
+            .mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")
     }

@@ -49,29 +49,36 @@ object NavBar {
 
   def fixedTop(title: String): RxComponent = new NavBar(title)
 
-  def item: RxComponent = RxComponent { content =>
-    li(_class -> "nav-item active", a(_class -> "nav-link", href -> "#", "Home ", span(_class -> "sr-only", "current")))
-  }
+  def item: RxComponent =
+    RxComponent { content =>
+      li(
+        _class -> "nav-item active",
+        a(_class -> "nav-link", href -> "#", "Home ", span(_class -> "sr-only", "current"))
+      )
+    }
 
-  def navList: RxComponent = RxComponent { content =>
-    div(_class -> "collapse navbar-collapse", id -> "navbarCollapse", ul(_class -> "navbar-nav mr-auto", content))
-  }
+  def navList: RxComponent =
+    RxComponent { content =>
+      div(_class -> "collapse navbar-collapse", id -> "navbarCollapse", ul(_class -> "navbar-nav mr-auto", content))
+    }
 
   def navItemActive   = navItemCustom(active = true)
   def navItemDisabled = navItemCustom(disabled = true)
   def navItem         = navItemCustom()
 
-  private def navItemCustom(active: Boolean = false, disabled: Boolean = false) = RxComponent { content =>
-    val itemStyle = s"nav-item${if (active) " active" else ""}"
-    val linkStyle = s"nav-link${if (disabled) " disabled" else ""}"
-    li(_class -> itemStyle, a(_class -> linkStyle, href -> "#", content))
-  }
+  private def navItemCustom(active: Boolean = false, disabled: Boolean = false) =
+    RxComponent { content =>
+      val itemStyle = s"nav-item${if (active) " active" else ""}"
+      val linkStyle = s"nav-link${if (disabled) " disabled" else ""}"
+      li(_class -> itemStyle, a(_class -> linkStyle, href -> "#", content))
+    }
 
-  def sideBarSticky = RxComponent { content =>
-    nav(
-      _class -> "collapse navbar-collapse col-md-2 d-none d-md-block sidebar bg-light",
-      div(_class -> "sidebar-sticky", ul(_class -> "nav flex-column", content))
-    )
-  }
+  def sideBarSticky =
+    RxComponent { content =>
+      nav(
+        _class -> "collapse navbar-collapse col-md-2 d-none d-md-block sidebar bg-light",
+        div(_class -> "sidebar-sticky", ul(_class -> "nav flex-column", content))
+      )
+    }
 
 }

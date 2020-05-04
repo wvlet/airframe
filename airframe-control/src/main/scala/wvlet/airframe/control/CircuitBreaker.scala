@@ -107,28 +107,31 @@ trait CircuitBreakerRecoveryPolicy {
 }
 
 object CircuitBreakerRecoveryPolicy {
-  def recoverImmediately = new CircuitBreakerRecoveryPolicy() {
-    override def recordSuccess: Unit = {}
-    override def recordFailure: Unit = {}
-    override def reset: Unit         = {}
-    override def canRecover: Boolean = true
-  }
+  def recoverImmediately =
+    new CircuitBreakerRecoveryPolicy() {
+      override def recordSuccess: Unit = {}
+      override def recordFailure: Unit = {}
+      override def reset: Unit         = {}
+      override def canRecover: Boolean = true
+    }
 
-  def recoverAfterConsecutiveSuccesses(numberOfSuccess: Int) = new CircuitBreakerRecoveryPolicy() {
-    private val counter              = new AtomicInteger(0)
-    override def recordSuccess: Unit = counter.incrementAndGet()
-    override def recordFailure: Unit = counter.set(0)
-    override def reset: Unit         = counter.set(0)
-    override def canRecover: Boolean = counter.get() >= numberOfSuccess
-  }
+  def recoverAfterConsecutiveSuccesses(numberOfSuccess: Int) =
+    new CircuitBreakerRecoveryPolicy() {
+      private val counter              = new AtomicInteger(0)
+      override def recordSuccess: Unit = counter.incrementAndGet()
+      override def recordFailure: Unit = counter.set(0)
+      override def reset: Unit         = counter.set(0)
+      override def canRecover: Boolean = counter.get() >= numberOfSuccess
+    }
 
-  def recoverAfterWait(elapsedTimeMillis: Int) = new CircuitBreakerRecoveryPolicy() {
-    private val timestamp            = new AtomicLong(Long.MaxValue)
-    override def recordSuccess: Unit = timestamp.compareAndSet(Long.MaxValue, System.currentTimeMillis())
-    override def recordFailure: Unit = timestamp.set(Long.MaxValue)
-    override def reset: Unit         = timestamp.set(Long.MaxValue)
-    override def canRecover: Boolean = timestamp.get() <= System.currentTimeMillis() - elapsedTimeMillis
-  }
+  def recoverAfterWait(elapsedTimeMillis: Int) =
+    new CircuitBreakerRecoveryPolicy() {
+      private val timestamp            = new AtomicLong(Long.MaxValue)
+      override def recordSuccess: Unit = timestamp.compareAndSet(Long.MaxValue, System.currentTimeMillis())
+      override def recordFailure: Unit = timestamp.set(Long.MaxValue)
+      override def reset: Unit         = timestamp.set(Long.MaxValue)
+      override def canRecover: Boolean = timestamp.get() <= System.currentTimeMillis() - elapsedTimeMillis
+    }
 }
 
 case class CircuitBreaker(

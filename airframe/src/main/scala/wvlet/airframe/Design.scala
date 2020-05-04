@@ -111,14 +111,15 @@ class Design private[airframe] (
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[Design]
 
-  override def equals(other: Any): Boolean = other match {
-    case that: Design =>
-      (that canEqual this) &&
-        designOptions == that.designOptions &&
-        binding == that.binding &&
-        hooks == that.hooks
-    case _ => false
-  }
+  override def equals(other: Any): Boolean =
+    other match {
+      case that: Design =>
+        (that canEqual this) &&
+          designOptions == that.designOptions &&
+          binding == that.binding &&
+          hooks == that.hooks
+      case _ => false
+    }
 
   override def hashCode(): Int = {
     val state = Seq(designOptions, binding, hooks)

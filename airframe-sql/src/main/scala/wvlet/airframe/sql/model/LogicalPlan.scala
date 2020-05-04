@@ -51,20 +51,21 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
 
   def mapChildren(f: LogicalPlan => LogicalPlan): LogicalPlan = {
     var changed = false
-    def recursiveTransform(arg: Any): AnyRef = arg match {
-      case e: Expression => e
-      case l: LogicalPlan => {
-        val newPlan = f(l)
-        if (!newPlan.eq(l)) {
-          changed = true
+    def recursiveTransform(arg: Any): AnyRef =
+      arg match {
+        case e: Expression => e
+        case l: LogicalPlan => {
+          val newPlan = f(l)
+          if (!newPlan.eq(l)) {
+            changed = true
+          }
+          newPlan
         }
-        newPlan
+        case Some(x)       => Some(recursiveTransform(x))
+        case s: Seq[_]     => s.map(recursiveTransform _)
+        case other: AnyRef => other
+        case null          => null
       }
-      case Some(x)       => Some(recursiveTransform(x))
-      case s: Seq[_]     => s.map(recursiveTransform _)
-      case other: AnyRef => other
-      case null          => null
-    }
 
     val newArgs = productIterator.map(recursiveTransform).toArray[AnyRef]
     if (changed) {
@@ -84,14 +85,15 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   }
 
   def transformExpressions(rule: PartialFunction[Expression, Expression]): LogicalPlan = {
-    def recursiveTransform(arg: Any): AnyRef = arg match {
-      case e: Expression  => e.transformExpression(rule)
-      case l: LogicalPlan => l.transformExpressions(rule)
-      case Some(x)        => Some(recursiveTransform(x))
-      case s: Seq[_]      => s.map(recursiveTransform _)
-      case other: AnyRef  => other
-      case null           => null
-    }
+    def recursiveTransform(arg: Any): AnyRef =
+      arg match {
+        case e: Expression  => e.transformExpression(rule)
+        case l: LogicalPlan => l.transformExpressions(rule)
+        case Some(x)        => Some(recursiveTransform(x))
+        case s: Seq[_]      => s.map(recursiveTransform _)
+        case other: AnyRef  => other
+        case null           => null
+      }
 
     val newArgs = productIterator.map(recursiveTransform).toArray[AnyRef]
     copyInstance(newArgs)
@@ -104,27 +106,29 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   }
 
   def collectExpressions: List[Expression] = {
-    def recursiveCollect(arg: Any): List[Expression] = arg match {
-      case e: Expression  => e :: e.collectSubExpressions
-      case l: LogicalPlan => l.collectExpressions
-      case Some(x)        => recursiveCollect(x)
-      case s: Seq[_]      => s.flatMap(recursiveCollect _).toList
-      case other: AnyRef  => Nil
-      case null           => Nil
-    }
+    def recursiveCollect(arg: Any): List[Expression] =
+      arg match {
+        case e: Expression  => e :: e.collectSubExpressions
+        case l: LogicalPlan => l.collectExpressions
+        case Some(x)        => recursiveCollect(x)
+        case s: Seq[_]      => s.flatMap(recursiveCollect _).toList
+        case other: AnyRef  => Nil
+        case null           => Nil
+      }
 
     productIterator.flatMap(recursiveCollect).toList
   }
 
   def traverseExpressions[U](rule: PartialFunction[Expression, U]): Unit = {
-    def recursiveTraverse(arg: Any): Unit = arg match {
-      case e: Expression  => e.traverseExpressions(rule)
-      case l: LogicalPlan => l.traverseExpressions(rule)
-      case Some(x)        => recursiveTraverse(x)
-      case s: Seq[_]      => s.foreach(recursiveTraverse _)
-      case other: AnyRef  => Nil
-      case null           => Nil
-    }
+    def recursiveTraverse(arg: Any): Unit =
+      arg match {
+        case e: Expression  => e.traverseExpressions(rule)
+        case l: LogicalPlan => l.traverseExpressions(rule)
+        case Some(x)        => recursiveTraverse(x)
+        case s: Seq[_]      => s.foreach(recursiveTraverse _)
+        case other: AnyRef  => Nil
+        case null           => Nil
+      }
 
     productIterator.foreach(recursiveTraverse)
   }

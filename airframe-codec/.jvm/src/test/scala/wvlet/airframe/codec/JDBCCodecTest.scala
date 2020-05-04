@@ -146,7 +146,9 @@ class JDBCCodecTest extends AirSpec {
   }
 
   def `support sql timestamp`: Unit = {
-    JavaSqlTimestampCodec.unpackBytes(MessagePack.newBufferPacker.packString("2019-01-23 01:23:45.000").toByteArray) shouldBe Some(
+    JavaSqlTimestampCodec.unpackBytes(
+      MessagePack.newBufferPacker.packString("2019-01-23 01:23:45.000").toByteArray
+    ) shouldBe Some(
       java.sql.Timestamp.valueOf("2019-01-23 01:23:45.000")
     )
     JavaSqlTimestampCodec.unpackBytes(MessagePack.newBufferPacker.packLong(15000000).toByteArray) shouldBe Some(

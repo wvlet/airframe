@@ -222,16 +222,18 @@ class LoggerTest extends Spec {
   }
 
   def `support java.util.LogLevel`: Unit = {
-    for (l <- Seq(
-           jul.Level.ALL,
-           jul.Level.SEVERE,
-           jul.Level.WARNING,
-           jul.Level.FINE,
-           jul.Level.CONFIG,
-           jul.Level.FINER,
-           jul.Level.FINEST,
-           jul.Level.OFF
-         )) {
+    for (
+      l <- Seq(
+        jul.Level.ALL,
+        jul.Level.SEVERE,
+        jul.Level.WARNING,
+        jul.Level.FINE,
+        jul.Level.CONFIG,
+        jul.Level.FINER,
+        jul.Level.FINEST,
+        jul.Level.OFF
+      )
+    ) {
       LogLevel(l)
     }
   }

@@ -47,8 +47,8 @@ object HttpRequestMapper extends LogSupport {
       // Additional parameters
       params: Map[String, String],
       codecFactory: MessageCodecFactory
-  )(
-      implicit adapter: HttpRequestAdapter[Req]
+  )(implicit
+      adapter: HttpRequestAdapter[Req]
   ): Seq[Any] = {
     // Collect URL query parameters and other parameters embedded inside URL.
     val requestParams: HttpMultiMap = adapter.queryOf(request) ++ params

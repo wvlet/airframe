@@ -188,67 +188,71 @@ object FinagleServer extends LogSupport {
     * A simple error handler for wrapping exceptions as InternalServerError (500).
     * We do not return the exception as is because it may contain internal information.
     */
-  def defaultErrorFilter: SimpleFilter[Request, Response] = new SimpleFilter[Request, Response] {
-    override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
-      service(request).rescue {
-        case e: Throwable =>
-          // Resolve the cause of the exception
-          @tailrec
-          def getCause(x: Throwable): Throwable = {
-            x match {
-              case i: InvocationTargetException if i.getTargetException != null =>
-                getCause(i.getTargetException)
-              case e: ExecutionException if e.getCause != null =>
-                getCause(e.getCause)
-              case _ =>
-                x
+  def defaultErrorFilter: SimpleFilter[Request, Response] =
+    new SimpleFilter[Request, Response] {
+      override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
+        service(request).rescue {
+          case e: Throwable =>
+            // Resolve the cause of the exception
+            @tailrec
+            def getCause(x: Throwable): Throwable = {
+              x match {
+                case i: InvocationTargetException if i.getTargetException != null =>
+                  getCause(i.getTargetException)
+                case e: ExecutionException if e.getCause != null =>
+                  getCause(e.getCause)
+                case _ =>
+                  x
+              }
             }
-          }
 
-          val ex = getCause(e)
-          ex match {
-            case e: HttpServerException => logger.warn(s"${request} failed: ${e.getMessage}")
-            case other                  => logger.warn(s"${request} failed: ${other}", other)
-          }
-          ex match {
-            case e: HttpServerException =>
-              Future.value(convertToFinagleResponse(e.toResponse))
-            case _ =>
-              Future.value(Response(Status.InternalServerError))
-          }
+            val ex = getCause(e)
+            ex match {
+              case e: HttpServerException => logger.warn(s"${request} failed: ${e.getMessage}")
+              case other                  => logger.warn(s"${request} failed: ${other}", other)
+            }
+            ex match {
+              case e: HttpServerException =>
+                Future.value(convertToFinagleResponse(e.toResponse))
+              case _ =>
+                Future.value(Response(Status.InternalServerError))
+            }
+        }
       }
     }
-  }
 
-  def threadLocalStorageFilter: SimpleFilter[Request, Response] = new SimpleFilter[Request, Response] {
-    override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
-      FinagleBackend.withThreadLocalStore {
-        service(request)
+  def threadLocalStorageFilter: SimpleFilter[Request, Response] =
+    new SimpleFilter[Request, Response] {
+      override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
+        FinagleBackend.withThreadLocalStore {
+          service(request)
+        }
       }
     }
-  }
 
   /**
     * Simple logger for logging http requests and responses to stderr
     */
-  def defaultRequestLogger: SimpleFilter[Request, Response] = new SimpleFilter[Request, Response] {
-    override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
-      logger.trace(request)
-      service(request).map { response =>
-        logger.trace(response)
-        response
+  def defaultRequestLogger: SimpleFilter[Request, Response] =
+    new SimpleFilter[Request, Response] {
+      override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
+        logger.trace(request)
+        service(request).map { response =>
+          logger.trace(response)
+          response
+        }
       }
     }
-  }
 
   /**
     * A fallback service if FinagleRouter cannot find any matching endpoint
     */
-  def notFound: Service[Request, Response] = new Service[Request, Response] {
-    override def apply(request: Request): Future[Response] = {
-      Future.value(Response(Status.NotFound))
+  def notFound: Service[Request, Response] =
+    new Service[Request, Response] {
+      override def apply(request: Request): Future[Response] = {
+        Future.value(Response(Status.NotFound))
+      }
     }
-  }
 }
 
 /**

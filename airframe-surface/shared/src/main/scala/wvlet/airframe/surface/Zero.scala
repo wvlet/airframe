@@ -44,18 +44,19 @@ object Zero extends LogSupport {
     case g: GenericSurface if g.typeArgs.length > 0 => g
   }
 
-  private def zeroOfPrimitives: ZeroValueFactory = isPrimitive andThen {
-    case Primitive.String  => ""
-    case Primitive.Boolean => false
-    case Primitive.Int     => 0
-    case Primitive.Long    => 0L
-    case Primitive.Float   => 0f
-    case Primitive.Double  => 0.0
-    case Primitive.Unit    => null
-    case Primitive.Byte    => 0.toByte
-    case Primitive.Short   => 0.toShort
-    case Primitive.Char    => 0.toChar
-  }
+  private def zeroOfPrimitives: ZeroValueFactory =
+    isPrimitive andThen {
+      case Primitive.String  => ""
+      case Primitive.Boolean => false
+      case Primitive.Int     => 0
+      case Primitive.Long    => 0L
+      case Primitive.Float   => 0f
+      case Primitive.Double  => 0.0
+      case Primitive.Unit    => null
+      case Primitive.Byte    => 0.toByte
+      case Primitive.Short   => 0.toShort
+      case Primitive.Char    => 0.toChar
+    }
 
   private def zeroOfRegisteredTypes: ZeroValueFactory = {
     case t if preregisteredZeroInstance.contains(t) =>
@@ -76,16 +77,17 @@ object Zero extends LogSupport {
       null
   }
 
-  private def zeroOfScalaCollections: ZeroValueFactory = isGenericWithTypeArgs andThen {
-    case g if classOf[List[_]].isAssignableFrom(g.rawType) =>
-      List.empty
-    case g if classOf[Seq[_]].isAssignableFrom(g.rawType) =>
-      Seq.empty
-    case g if classOf[Map[_, _]].isAssignableFrom(g.rawType) =>
-      Map.empty
-    case g if classOf[Set[_]].isAssignableFrom(g.rawType) =>
-      Set.empty
-  }
+  private def zeroOfScalaCollections: ZeroValueFactory =
+    isGenericWithTypeArgs andThen {
+      case g if classOf[List[_]].isAssignableFrom(g.rawType) =>
+        List.empty
+      case g if classOf[Seq[_]].isAssignableFrom(g.rawType) =>
+        Seq.empty
+      case g if classOf[Map[_, _]].isAssignableFrom(g.rawType) =>
+        Map.empty
+      case g if classOf[Set[_]].isAssignableFrom(g.rawType) =>
+        Set.empty
+    }
 
   private def zeroOfTuple: ZeroValueFactory = {
     case t: TupleSurface =>

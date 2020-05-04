@@ -18,13 +18,14 @@ import wvlet.log.LogSupport
 
 class Injectee(val surface: Surface, val injectee: Any) {
   def canEqual(other: Any): Boolean = other.isInstanceOf[Injectee]
-  override def equals(other: Any): Boolean = other match {
-    case that: Injectee =>
-      (that canEqual this) &&
-        surface == that.surface &&
-        injectee == that.injectee
-    case _ => false
-  }
+  override def equals(other: Any): Boolean =
+    other match {
+      case that: Injectee =>
+        (that canEqual this) &&
+          surface == that.surface &&
+          injectee == that.injectee
+      case _ => false
+    }
 
   override def hashCode(): Int = {
     val h = 31 * surface.hashCode() + (if (injectee != null) injectee.hashCode() else 0)

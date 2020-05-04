@@ -24,10 +24,11 @@ import wvlet.airspec.AirSpec
 object NestedElementTest extends AirSpec {
 
   class MyElement(name: String) extends RxElement {
-    override def render: RxElement = div(
-      cls -> "button",
-      name
-    )
+    override def render: RxElement =
+      div(
+        cls -> "button",
+        name
+      )
   }
 
   test("compile nested elements") {

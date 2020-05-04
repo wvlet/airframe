@@ -20,10 +20,11 @@ import wvlet.airframe.http.rx.html.all._
   *
   */
 object Alert {
-  private def newAlert(style: String) = RxComponent { content =>
-    val cls = s"alert ${style}"
-    div(role -> "alert", _class -> cls, content)
-  }
+  private def newAlert(style: String) =
+    RxComponent { content =>
+      val cls = s"alert ${style}"
+      div(role -> "alert", _class -> cls, content)
+    }
 
   def primary   = newAlert("alert-primary")
   def secondary = newAlert("alert-secondary")
