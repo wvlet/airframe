@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: scalafmt test
-        run: ./scalafmt --test
+        run: ./sbt scalafmtCheckAll
   test_2_12:
     name: Scala 2.12
     runs-on: ubuntu-latest
