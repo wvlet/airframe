@@ -96,12 +96,13 @@ private[airframe] class AirframeSession(
 
   def sessionId: Long = hashCode()
 
-  def name: String = sessionName.getOrElse {
-    val current = f"session:${sessionId}%x"
-    parent
-      .map { p => f"${p.name} -> ${current}" }
-      .getOrElse(current)
-  }
+  def name: String =
+    sessionName.getOrElse {
+      val current = f"session:${sessionId}%x"
+      parent
+        .map { p => f"${p.name} -> ${current}" }
+        .getOrElse(current)
+    }
 
   def getInstanceOf(t: Surface)(implicit sourceCode: SourceCode): AnyRef = {
     getInstance(t, t, sourceCode, this, create = false, List.empty)

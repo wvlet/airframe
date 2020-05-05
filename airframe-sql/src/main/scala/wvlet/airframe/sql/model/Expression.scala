@@ -23,14 +23,15 @@ sealed trait Expression extends TreeNode[Expression] with Product {
   def sqlExpr: String = toString()
 
   def transformExpression(rule: PartialFunction[Expression, Expression]): this.type = {
-    def recursiveTransform(arg: Any): AnyRef = arg match {
-      case e: Expression  => e.transformExpression(rule)
-      case l: LogicalPlan => l.transformExpressions(rule)
-      case Some(x)        => Some(recursiveTransform(x))
-      case s: Seq[_]      => s.map(recursiveTransform _)
-      case other: AnyRef  => other
-      case null           => null
-    }
+    def recursiveTransform(arg: Any): AnyRef =
+      arg match {
+        case e: Expression  => e.transformExpression(rule)
+        case l: LogicalPlan => l.transformExpressions(rule)
+        case Some(x)        => Some(recursiveTransform(x))
+        case s: Seq[_]      => s.map(recursiveTransform _)
+        case other: AnyRef  => other
+        case null           => null
+      }
 
     val newExpr = if (productArity == 0) {
       this
@@ -48,27 +49,29 @@ sealed trait Expression extends TreeNode[Expression] with Product {
   }
 
   def collectSubExpressions: List[Expression] = {
-    def recursiveCollect(arg: Any): List[Expression] = arg match {
-      case e: Expression  => e :: e.collectSubExpressions
-      case l: LogicalPlan => l.collectExpressions
-      case Some(x)        => recursiveCollect(x)
-      case s: Seq[_]      => s.flatMap(recursiveCollect _).toList
-      case other: AnyRef  => Nil
-      case null           => Nil
-    }
+    def recursiveCollect(arg: Any): List[Expression] =
+      arg match {
+        case e: Expression  => e :: e.collectSubExpressions
+        case l: LogicalPlan => l.collectExpressions
+        case Some(x)        => recursiveCollect(x)
+        case s: Seq[_]      => s.flatMap(recursiveCollect _).toList
+        case other: AnyRef  => Nil
+        case null           => Nil
+      }
 
     productIterator.flatMap(recursiveCollect).toList
   }
 
   def traverseExpressions[U](rule: PartialFunction[Expression, U]): Unit = {
-    def recursiveTraverse(arg: Any): Unit = arg match {
-      case e: Expression  => e.traverseExpressions(rule)
-      case l: LogicalPlan => l.traverseExpressions(rule)
-      case Some(x)        => recursiveTraverse(x)
-      case s: Seq[_]      => s.foreach(recursiveTraverse _)
-      case other: AnyRef  => Nil
-      case null           => Nil
-    }
+    def recursiveTraverse(arg: Any): Unit =
+      arg match {
+        case e: Expression  => e.traverseExpressions(rule)
+        case l: LogicalPlan => l.traverseExpressions(rule)
+        case Some(x)        => recursiveTraverse(x)
+        case s: Seq[_]      => s.foreach(recursiveTraverse _)
+        case other: AnyRef  => Nil
+        case null           => Nil
+      }
 
     if (rule.isDefinedAt(this)) {
       rule.apply(this)

@@ -187,8 +187,10 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
       val defaultProps = PropertiesConfig.toConfigProperties(c.tpe, getDefaultValueOf(c.tpe))
       val currentProps = PropertiesConfig.toConfigProperties(c.tpe, c.value)
 
-      for ((k, props) <- defaultProps.groupBy(_.key); defaultValue <- props;
-           current    <- currentProps.filter(x => x.key == k)) {
+      for (
+        (k, props) <- defaultProps.groupBy(_.key); defaultValue <- props;
+        current    <- currentProps.filter(x => x.key == k)
+      ) {
         b += ConfigChange(c.tpe, k, defaultValue.v, current.v)
       }
     }
@@ -249,9 +251,12 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
 
   def registerFromYaml[ConfigType: ru.TypeTag](yamlFile: String): Config = {
     val tpe = Surface.of[ConfigType]
-    val config: Option[ConfigType] = loadFromYaml[ConfigType](yamlFile, onMissingFile = {
-      throw new FileNotFoundException(s"${yamlFile} is not found in ${env.configPaths.mkString(":")}")
-    })
+    val config: Option[ConfigType] = loadFromYaml[ConfigType](
+      yamlFile,
+      onMissingFile = {
+        throw new FileNotFoundException(s"${yamlFile} is not found in ${env.configPaths.mkString(":")}")
+      }
+    )
     config match {
       case Some(x) =>
         this + ConfigHolder(tpe, x)

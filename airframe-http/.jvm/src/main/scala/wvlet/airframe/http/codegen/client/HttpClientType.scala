@@ -26,11 +26,12 @@ trait HttpClientType {
 
 object HttpClientType {
 
-  def predefinedClients: Seq[HttpClientType] = Seq(
-    AsyncClient,
-    SyncClient,
-    ScalaJSClient
-  )
+  def predefinedClients: Seq[HttpClientType] =
+    Seq(
+      AsyncClient,
+      SyncClient,
+      ScalaJSClient
+    )
 
   def findClient(name: String): Option[HttpClientType] = {
     predefinedClients.find(_.name == name)

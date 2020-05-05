@@ -103,12 +103,13 @@ trait Timer extends Serializable {
       globalRepeat: Int = 1,
       individualBlockRepeat: Int = 1,
       f: => A
-  ): TimeReport = new TimeReport {
-    val name: String     = blockName
-    val repeat: Int      = globalRepeat
-    val blockRepeat: Int = individualBlockRepeat
-    def body()           = f
-  }
+  ): TimeReport =
+    new TimeReport {
+      val name: String     = blockName
+      val repeat: Int      = globalRepeat
+      val blockRepeat: Int = individualBlockRepeat
+      def body()           = f
+    }
 
   import wvlet.log.LogLevel._
 

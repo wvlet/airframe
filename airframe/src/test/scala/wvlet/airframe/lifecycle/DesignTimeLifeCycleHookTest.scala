@@ -64,7 +64,7 @@ class DesignTimeLifeCycleHookTest extends AirSpec {
 
     d2.withSession { s => }
 
-    v.get() shouldBe 0x1F
+    v.get() shouldBe 0x1f
   }
 
 }

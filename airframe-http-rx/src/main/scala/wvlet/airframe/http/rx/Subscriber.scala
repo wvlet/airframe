@@ -22,9 +22,10 @@ trait Subscriber[A] {
 
 object Subscriber {
 
-  def apply[A, U](subscriber: A => U): Subscriber[A] = new Subscriber[A] {
-    override def apply(v: A): Unit = {
-      subscriber(v)
+  def apply[A, U](subscriber: A => U): Subscriber[A] =
+    new Subscriber[A] {
+      override def apply(v: A): Unit = {
+        subscriber(v)
+      }
     }
-  }
 }

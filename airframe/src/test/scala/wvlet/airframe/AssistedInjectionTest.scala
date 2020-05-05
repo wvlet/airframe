@@ -61,8 +61,9 @@ object AssistedInjectionTest extends LogSupport {
       }
   }
 
-  def assistedInjector(serviceName: String, ss: Session): NamedService = new NamedService with DISupport {
-    override def session: Session = ss
-    val name: String              = serviceName
-  }
+  def assistedInjector(serviceName: String, ss: Session): NamedService =
+    new NamedService with DISupport {
+      override def session: Session = ss
+      val name: String              = serviceName
+    }
 }

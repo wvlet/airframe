@@ -130,7 +130,7 @@ object HealthCheckPolicy extends LogSupport {
 
       private def setAndMove(v: Boolean): Unit = {
         val i    = (executionCount % numExecutions).toInt
-        val mask = 1L << (63 - i % 64)
+        val mask = 1L << (63 - i   % 64)
         if (v == true) {
           executionHistory(i / 64) |= mask
         } else {

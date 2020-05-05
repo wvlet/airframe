@@ -29,15 +29,17 @@ trait RxComponent {
 
 object RxComponent {
 
-  def ofTag(name: String): RxComponent = new RxComponent { content =>
-    override def render(content: RxElement): RxElement = {
-      tag(name)(content)
+  def ofTag(name: String): RxComponent =
+    new RxComponent { content =>
+      override def render(content: RxElement): RxElement = {
+        tag(name)(content)
+      }
     }
-  }
 
-  def apply(f: RxElement => RxElement): RxComponent = new RxComponent {
-    override def render(content: RxElement): RxElement = {
-      f(content)
+  def apply(f: RxElement => RxElement): RxComponent =
+    new RxComponent {
+      override def render(content: RxElement): RxElement = {
+        f(content)
+      }
     }
-  }
 }

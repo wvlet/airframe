@@ -53,17 +53,19 @@ case class LogRecord(level: LogLevel, source: Option[LogSource], message: String
 
   def leafLoggerName: String = {
     val name = getLoggerName
-    leafLoggerNameCache.getOrElseUpdate(name, {
-      name match {
-        case null => ""
-        case name =>
-          val pos = name.lastIndexOf('.')
-          if (pos == -1) {
-            name
-          } else {
-            name.substring(pos + 1)
-          }
+    leafLoggerNameCache.getOrElseUpdate(
+      name, {
+        name match {
+          case null => ""
+          case name =>
+            val pos = name.lastIndexOf('.')
+            if (pos == -1) {
+              name
+            } else {
+              name.substring(pos + 1)
+            }
+        }
       }
-    })
+    )
   }
 }

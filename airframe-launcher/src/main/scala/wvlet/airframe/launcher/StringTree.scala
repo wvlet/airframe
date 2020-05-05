@@ -37,9 +37,10 @@ import wvlet.airframe.surface.reflect.Path
   */
 sealed trait StringTree {
   def +(e: (Path, StringTree)): StringTree = setNode(e._1, e._2)
-  def ++(it: Iterable[(Path, StringTree)]): StringTree = it.foldLeft[StringTree](this) { (h, e) =>
-    h.setNode(e._1, e._2)
-  }
+  def ++(it: Iterable[(Path, StringTree)]): StringTree =
+    it.foldLeft[StringTree](this) { (h, e) =>
+      h.setNode(e._1, e._2)
+    }
 
   /**
     * Set a value at the specified path

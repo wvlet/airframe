@@ -28,15 +28,16 @@ trait HttpRequestMatcher {
 
 object HttpRequestMatcher {
   // Http headers to ignore for request hashing purposes
-  def defaultExcludeHeaderPrefixes: Seq[String] = Seq(
-    "date",           // unstable header
-    "x-b3-",          // Finagle's tracing IDs
-    "finagle-",       // Finagle specific headers
-    "host",           // The host value can be changed
-    "content-length", // this can be 0 (or missing)
-    "connection",     // Client might set this header
-    "user-agent"      // User-agent can be arbitrary
-  )
+  def defaultExcludeHeaderPrefixes: Seq[String] =
+    Seq(
+      "date",           // unstable header
+      "x-b3-",          // Finagle's tracing IDs
+      "finagle-",       // Finagle specific headers
+      "host",           // The host value can be changed
+      "content-length", // this can be 0 (or missing)
+      "connection",     // Client might set this header
+      "user-agent"      // User-agent can be arbitrary
+    )
 
   def newRequestMatcher(extraHeadersToExclude: Seq[String]): HttpRequestMatcher = {
     new DefaultHttpRequestMatcher(defaultExcludeHeaderPrefixes ++ extraHeadersToExclude)

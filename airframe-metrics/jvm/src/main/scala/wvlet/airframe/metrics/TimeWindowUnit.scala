@@ -40,16 +40,17 @@ object TimeWindowUnit {
     "y" -> TimeWindowUnit.Year
   )
 
-  def units: List[TimeWindowUnit] = List(
-    TimeWindowUnit.Second,
-    TimeWindowUnit.Minute,
-    TimeWindowUnit.Hour,
-    TimeWindowUnit.Day,
-    TimeWindowUnit.Week,
-    TimeWindowUnit.Month,
-    TimeWindowUnit.Quarter,
-    TimeWindowUnit.Year
-  )
+  def units: List[TimeWindowUnit] =
+    List(
+      TimeWindowUnit.Second,
+      TimeWindowUnit.Minute,
+      TimeWindowUnit.Hour,
+      TimeWindowUnit.Day,
+      TimeWindowUnit.Week,
+      TimeWindowUnit.Month,
+      TimeWindowUnit.Quarter,
+      TimeWindowUnit.Year
+    )
 
   def of(s: String): TimeWindowUnit = {
     unitTable.getOrElse(s, throw new IllegalArgumentException(s"Unknown unit type ${s}"))

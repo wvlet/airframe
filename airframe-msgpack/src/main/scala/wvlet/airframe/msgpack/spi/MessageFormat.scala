@@ -68,7 +68,7 @@ object MessageFormat {
 
   {
     // Preparing a look up table for converting byte values into MessageFormat types
-    for (b <- 0 to 0xFF) {
+    for (b <- 0 to 0xff) {
       val mf = toMessageFormat(b.toByte)
       formatTable(b) = mf
     }
@@ -80,7 +80,7 @@ object MessageFormat {
     * @param code MessageFormat of the given byte
     * @return
     */
-  def of(code: Byte): MessageFormat = formatTable(code & 0xFF)
+  def of(code: Byte): MessageFormat = formatTable(code & 0xff)
 
   /**
     * Converting a byte value into MessageFormat. For faster performance, use {@link #valueOf}

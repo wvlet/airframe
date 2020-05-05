@@ -25,9 +25,10 @@ trait Cancelable {
 object Cancelable {
   val empty: Cancelable = new Cancelable {}
 
-  def apply(canceller: () => Unit): Cancelable = new Cancelable {
-    override def cancel: Unit = canceller()
-  }
+  def apply(canceller: () => Unit): Cancelable =
+    new Cancelable {
+      override def cancel: Unit = canceller()
+    }
 
   def merge(c1: Cancelable, c2: Cancelable): Cancelable = {
     if (c1 == Cancelable.empty) {

@@ -46,14 +46,15 @@ object HttpFilter {
   def newFilter[Req, Resp, F[_]](
       baseBackend: HttpBackend[Req, Resp, F],
       body: (Req, HttpContext[Req, Resp, F]) => F[Resp]
-  ): HttpFilter[Req, Resp, F] = new HttpFilter[Req, Resp, F] {
-    override protected def backend: HttpBackend[Req, Resp, F] = baseBackend
-    override def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp] = {
-      backend.rescue {
-        body(request, context)
+  ): HttpFilter[Req, Resp, F] =
+    new HttpFilter[Req, Resp, F] {
+      override protected def backend: HttpBackend[Req, Resp, F] = baseBackend
+      override def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp] = {
+        backend.rescue {
+          body(request, context)
+        }
       }
     }
-  }
 
   // Create a new default filter just for processing preceding filters
   def defaultFilter[Req, Resp, F[_]](backend: HttpBackend[Req, Resp, F]) = new SafeFilter(backend)

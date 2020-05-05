@@ -21,18 +21,19 @@ import wvlet.airframe.sql.model.LogicalPlan
   * SQL -> Token -> ANTLR parzse tree -> LogicalPlan
   */
 object SQLParser extends LogSupport {
-  private def createLexerErrorListener = new BaseErrorListener {
-    override def syntaxError(
-        recognizer: Recognizer[_, _],
-        offendingSymbol: Any,
-        line: Int,
-        charPositionInLine: Int,
-        msg: String,
-        e: RecognitionException
-    ): Unit = {
-      throw new SQLParseError(msg, line, charPositionInLine, e)
+  private def createLexerErrorListener =
+    new BaseErrorListener {
+      override def syntaxError(
+          recognizer: Recognizer[_, _],
+          offendingSymbol: Any,
+          line: Int,
+          charPositionInLine: Int,
+          msg: String,
+          e: RecognitionException
+      ): Unit = {
+        throw new SQLParseError(msg, line, charPositionInLine, e)
+      }
     }
-  }
 
   def parse(sql: String): LogicalPlan = {
     trace(s"parse: ${sql}")

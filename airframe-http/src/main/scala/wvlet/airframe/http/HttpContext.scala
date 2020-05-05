@@ -50,14 +50,15 @@ object HttpContext {
   def newContext[Req, Resp, F[_]](
       baseBackend: HttpBackend[Req, Resp, F],
       body: Req => F[Resp]
-  ): HttpContext[Req, Resp, F] = new HttpContext[Req, Resp, F] {
-    override protected def backend: HttpBackend[Req, Resp, F] = baseBackend
-    override def apply(request: Req): F[Resp] = {
-      backend.rescue {
-        body(request)
+  ): HttpContext[Req, Resp, F] =
+    new HttpContext[Req, Resp, F] {
+      override protected def backend: HttpBackend[Req, Resp, F] = baseBackend
+      override def apply(request: Req): F[Resp] = {
+        backend.rescue {
+          body(request)
+        }
       }
     }
-  }
 
   private[http] class FilterAndThenContext[Req, Resp, F[_]](
       protected val backend: HttpBackend[Req, Resp, F],

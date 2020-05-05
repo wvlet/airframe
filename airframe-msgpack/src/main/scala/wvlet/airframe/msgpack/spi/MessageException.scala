@@ -52,9 +52,9 @@ case class TooLargeMessageException(size: Long)
     extends MessageException(ErrorCode.TOO_LARGE_MESSAGE, s"Too large message size: ${size}")
 
 object MessageException {
-  def overflowU8(u8: Byte)    = new IntegerOverflowException(BigInteger.valueOf((u8 & 0xFF).toLong))
-  def overflowU16(u16: Short) = new IntegerOverflowException(BigInteger.valueOf((u16 & 0xFFFF).toLong))
-  def overflowU32(u32: Int)   = new IntegerOverflowException(BigInteger.valueOf((u32 & 0xFFFFFFFF).toLong))
+  def overflowU8(u8: Byte)    = new IntegerOverflowException(BigInteger.valueOf((u8 & 0xff).toLong))
+  def overflowU16(u16: Short) = new IntegerOverflowException(BigInteger.valueOf((u16 & 0xffff).toLong))
+  def overflowU32(u32: Int)   = new IntegerOverflowException(BigInteger.valueOf((u32 & 0xffffffff).toLong))
   def overflowU64(u64: Long)  = new IntegerOverflowException(BigInteger.valueOf(u64 + Long.MaxValue + 1L).setBit(63))
 
   def overflowI16(i16: Short) = new IntegerOverflowException(BigInteger.valueOf(i16.toLong))
@@ -62,5 +62,5 @@ object MessageException {
   def overflowI64(i64: Long)  = new IntegerOverflowException(BigInteger.valueOf(i64))
   def overflow(b: BigInteger) = new IntegerOverflowException(b)
 
-  def overflowU32Size(u32: Int) = new TooLargeMessageException(((u32 & 0x7fffffff) + 0X80000000L).toLong)
+  def overflowU32Size(u32: Int) = new TooLargeMessageException(((u32 & 0x7fffffff) + 0x80000000L).toLong)
 }

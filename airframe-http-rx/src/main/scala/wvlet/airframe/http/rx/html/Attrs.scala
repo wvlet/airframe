@@ -47,7 +47,10 @@ trait GlobalAttrs {
   lazy val cls             = `class`
   lazy val _class          = `class`
   lazy val contenteditable = attr("contenteditable") // Specifies whether the content of an element is editable or not
-  lazy val contextmenu     = attr("contextmenu") // Specifies a context menu for an element. The context menu appears when a user right-clicks on the element
+  lazy val contextmenu =
+    attr(
+      "contextmenu"
+    ) // Specifies a context menu for an element. The context menu appears when a user right-clicks on the element
 
   /**
     * This class of attributes, called custom data attributes, allows proprietary

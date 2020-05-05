@@ -76,22 +76,26 @@ object DataTypeParser extends RegexParsers with LogSupport {
   private def number: Parser[Int]      = "[0-9]*".r ^^ { _.toInt }
 
   private def primitiveType: Parser[DataType] = typeName ^^ { DataType.primitiveTypeOf(_) }
-  private def decimalType: Parser[DataType.DecimalType] = "decimal" ~ "(" ~ number ~ "," ~ number ~ ")" ^^ {
-    case _ ~ _ ~ p ~ _ ~ s ~ _ =>
-      DecimalType(p, s)
-  }
-  private def arrayType: Parser[DataType.ArrayType] = "array" ~ "[" ~ dataType ~ "]" ^^ {
-    case _ ~ _ ~ x ~ _ => ArrayType(x)
-  }
-  private def mapType: Parser[DataType.MapType] = "map" ~ "[" ~ dataType ~ "," ~ dataType ~ "]" ^^ {
-    case _ ~ _ ~ k ~ _ ~ v ~ _ => DataType.MapType(k, v)
-  }
+  private def decimalType: Parser[DataType.DecimalType] =
+    "decimal" ~ "(" ~ number ~ "," ~ number ~ ")" ^^ {
+      case _ ~ _ ~ p ~ _ ~ s ~ _ =>
+        DecimalType(p, s)
+    }
+  private def arrayType: Parser[DataType.ArrayType] =
+    "array" ~ "[" ~ dataType ~ "]" ^^ {
+      case _ ~ _ ~ x ~ _ => ArrayType(x)
+    }
+  private def mapType: Parser[DataType.MapType] =
+    "map" ~ "[" ~ dataType ~ "," ~ dataType ~ "]" ^^ {
+      case _ ~ _ ~ k ~ _ ~ v ~ _ => DataType.MapType(k, v)
+    }
 
   private def namedType: Parser[NamedType] = typeName ~ ":" ~ dataType ^^ { case n ~ _ ~ t => NamedType(n, t) }
-  private def recordType: Parser[DataType.RecordType] = "{" ~ namedType ~ rep("," ~ namedType) ~ "}" ^^ {
-    case _ ~ head ~ tail ~ _ =>
-      DataType.RecordType(head +: tail.map(_._2).toSeq)
-  }
+  private def recordType: Parser[DataType.RecordType] =
+    "{" ~ namedType ~ rep("," ~ namedType) ~ "}" ^^ {
+      case _ ~ head ~ tail ~ _ =>
+        DataType.RecordType(head +: tail.map(_._2).toSeq)
+    }
 
   def dataType: Parser[DataType] = decimalType | arrayType | mapType | recordType | primitiveType
 

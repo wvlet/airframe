@@ -27,10 +27,11 @@ import scala.util.{Failure, Success, Try}
   */
 object PropertiesConfig extends LogSupport {
   case class Prefix(prefix: String, tag: Option[String]) {
-    override def toString = tag match {
-      case Some(t) => s"${prefix}@${t}"
-      case None    => prefix
-    }
+    override def toString =
+      tag match {
+        case Some(t) => s"${prefix}@${t}"
+        case None    => prefix
+      }
   }
   case class ConfigKey(prefix: Prefix, param: String) {
     override def toString = s"${prefix}.${param}"

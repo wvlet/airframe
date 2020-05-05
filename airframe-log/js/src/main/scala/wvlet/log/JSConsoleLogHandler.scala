@@ -54,13 +54,14 @@ object JSConsoleLogHandler {
       codeLocation: String = "#B0BEC5",
       default: String = ""
   ) {
-    def cssOf(l: LogLevel): String = l match {
-      case LogLevel.ERROR => s"color:${error}"
-      case LogLevel.WARN  => s"color:${warn}"
-      case LogLevel.INFO  => s"color:${info}"
-      case LogLevel.DEBUG => s"color:${debug}"
-      case LogLevel.TRACE => s"color:${trace}"
-      case _              => default
-    }
+    def cssOf(l: LogLevel): String =
+      l match {
+        case LogLevel.ERROR => s"color:${error}"
+        case LogLevel.WARN  => s"color:${warn}"
+        case LogLevel.INFO  => s"color:${info}"
+        case LogLevel.DEBUG => s"color:${debug}"
+        case LogLevel.TRACE => s"color:${trace}"
+        case _              => default
+      }
   }
 }

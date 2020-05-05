@@ -75,24 +75,25 @@ object ElapsedTime {
     ElapsedTime(value, valueOfTimeUnit(unitString))
   }
 
-  def millisPerTimeUnit(timeUnit: TimeUnit): Double = timeUnit match {
-    case NANOSECONDS =>
-      1.0 / 1000000.0
-    case MICROSECONDS =>
-      1.0 / 1000.0
-    case MILLISECONDS =>
-      1
-    case SECONDS =>
-      1000
-    case MINUTES =>
-      1000 * 60
-    case HOURS =>
-      1000 * 60 * 60
-    case DAYS =>
-      1000 * 60 * 60 * 24
-    case _ =>
-      throw new IllegalArgumentException("Unsupported time unit " + timeUnit)
-  }
+  def millisPerTimeUnit(timeUnit: TimeUnit): Double =
+    timeUnit match {
+      case NANOSECONDS =>
+        1.0 / 1000000.0
+      case MICROSECONDS =>
+        1.0 / 1000.0
+      case MILLISECONDS =>
+        1
+      case SECONDS =>
+        1000
+      case MINUTES =>
+        1000 * 60
+      case HOURS =>
+        1000 * 60 * 60
+      case DAYS =>
+        1000 * 60 * 60 * 24
+      case _ =>
+        throw new IllegalArgumentException("Unsupported time unit " + timeUnit)
+    }
 
   def timeUnitToString(timeUnit: TimeUnit): String = {
     timeUnit match {

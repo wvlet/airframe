@@ -42,8 +42,7 @@ trait PropertyCheck extends Asserts { this: AirSpecSpi =>
 
   private def booleanProp = { x: Boolean => Prop(x) }
 
-  protected def forAll[A1, U](checker: A1 => U)(
-      implicit
+  protected def forAll[A1, U](checker: A1 => U)(implicit
       a1: Arbitrary[A1],
       s1: Shrink[A1],
       pp1: A1 => Pretty
@@ -57,8 +56,7 @@ trait PropertyCheck extends Asserts { this: AirSpecSpi =>
     checkProperty(prop)
   }
 
-  protected def forAll[A1, A2, U](checker: (A1, A2) => U)(
-      implicit
+  protected def forAll[A1, A2, U](checker: (A1, A2) => U)(implicit
       a1: Arbitrary[A1],
       s1: Shrink[A1],
       pp1: A1 => Pretty,
@@ -73,8 +71,7 @@ trait PropertyCheck extends Asserts { this: AirSpecSpi =>
     checkProperty(prop)
   }
 
-  protected def forAll[A1, A2, U](g1: Gen[A1], g2: Gen[A2])(checker: (A1, A2) => U)(
-      implicit
+  protected def forAll[A1, A2, U](g1: Gen[A1], g2: Gen[A2])(checker: (A1, A2) => U)(implicit
       s1: Shrink[A1],
       pp1: A1 => Pretty,
       s2: Shrink[A2],
@@ -87,8 +84,7 @@ trait PropertyCheck extends Asserts { this: AirSpecSpi =>
     checkProperty(prop)
   }
 
-  protected def forAll[A1, A2, A3, U](checker: (A1, A2, A3) => U)(
-      implicit
+  protected def forAll[A1, A2, A3, U](checker: (A1, A2, A3) => U)(implicit
       a1: Arbitrary[A1],
       s1: Shrink[A1],
       pp1: A1 => Pretty,

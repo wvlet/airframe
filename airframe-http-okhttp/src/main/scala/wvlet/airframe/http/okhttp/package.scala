@@ -27,7 +27,7 @@ package object okhttp {
       var h = toHttpMultiMap(request.headers())
       // OkHttp may place Content-Type and Content-Length headers separately from headers()
       for (b <- Option(request.body)) {
-        Option(b.contentType()).foreach { x => h += HttpHeader.ContentType     -> x.toString }
+        Option(b.contentType()).foreach { x => h += HttpHeader.ContentType -> x.toString }
         Option(b.contentLength()).foreach { x => h += HttpHeader.ContentLength -> x.toString }
       }
       h
@@ -66,7 +66,7 @@ package object okhttp {
       var h = toHttpMultiMap(resp.headers())
       // OkHttp may place Content-Type and Content-Length headers separately from headers()
       for (b <- Option(resp.body)) {
-        Option(b.contentType()).foreach { x => h += HttpHeader.ContentType     -> x.toString }
+        Option(b.contentType()).foreach { x => h += HttpHeader.ContentType -> x.toString }
         Option(b.contentLength()).foreach { x => h += HttpHeader.ContentLength -> x.toString }
       }
       h
@@ -81,16 +81,17 @@ package object okhttp {
     m.result()
   }
 
-  private[okhttp] def toHttpMethod(method: String): String = method match {
-    case "GET"     => HttpMethod.GET
-    case "POST"    => HttpMethod.POST
-    case "PUT"     => HttpMethod.PUT
-    case "PATCH"   => HttpMethod.PATCH
-    case "DELETE"  => HttpMethod.DELETE
-    case "OPTIONS" => HttpMethod.OPTIONS
-    case "HEAD"    => HttpMethod.HEAD
-    case "TRACE"   => HttpMethod.TRACE
-    case _         => throw new IllegalArgumentException(s"Unsupported method: ${method}")
-  }
+  private[okhttp] def toHttpMethod(method: String): String =
+    method match {
+      case "GET"     => HttpMethod.GET
+      case "POST"    => HttpMethod.POST
+      case "PUT"     => HttpMethod.PUT
+      case "PATCH"   => HttpMethod.PATCH
+      case "DELETE"  => HttpMethod.DELETE
+      case "OPTIONS" => HttpMethod.OPTIONS
+      case "HEAD"    => HttpMethod.HEAD
+      case "TRACE"   => HttpMethod.TRACE
+      case _         => throw new IllegalArgumentException(s"Unsupported method: ${method}")
+    }
 
 }

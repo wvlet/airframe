@@ -328,7 +328,7 @@ object OffsetUnpacker {
       case Code.UINT32 =>
         val u32 = cursor.readInt
         if (u32 < 0) {
-          (u32 & 0x7fffffff).toLong + 0X80000000L
+          (u32 & 0x7fffffff).toLong + 0x80000000L
         } else {
           u32.toLong
         }
@@ -368,7 +368,7 @@ object OffsetUnpacker {
       case Code.UINT32 =>
         val u32 = cursor.readInt
         if (u32 < 0) {
-          BigInteger.valueOf((u32 & 0x7fffffff).toLong + 0X80000000L)
+          BigInteger.valueOf((u32 & 0x7fffffff).toLong + 0x80000000L)
         } else {
           BigInteger.valueOf(u32.toLong)
         }
@@ -444,27 +444,29 @@ object OffsetUnpacker {
     u32
   }
 
-  private def tryReadStringHeader(b: Byte, cursor: ReadCursor) = b match {
-    case Code.STR8 =>
-      readNextLength8(cursor)
-    case Code.STR16 =>
-      readNextLength16(cursor)
-    case Code.STR32 =>
-      readNextLength32(cursor)
-    case _ =>
-      -1
-  }
+  private def tryReadStringHeader(b: Byte, cursor: ReadCursor) =
+    b match {
+      case Code.STR8 =>
+        readNextLength8(cursor)
+      case Code.STR16 =>
+        readNextLength16(cursor)
+      case Code.STR32 =>
+        readNextLength32(cursor)
+      case _ =>
+        -1
+    }
 
-  private def tryReadBinaryHeader(b: Byte, cursor: ReadCursor) = b match {
-    case Code.BIN8 => // bin 8
-      readNextLength8(cursor)
-    case Code.BIN16 => // bin 16
-      readNextLength16(cursor)
-    case Code.BIN32 => // bin 32
-      readNextLength32(cursor)
-    case _ =>
-      -1
-  }
+  private def tryReadBinaryHeader(b: Byte, cursor: ReadCursor) =
+    b match {
+      case Code.BIN8 => // bin 8
+        readNextLength8(cursor)
+      case Code.BIN16 => // bin 16
+        readNextLength16(cursor)
+      case Code.BIN32 => // bin 32
+        readNextLength32(cursor)
+      case _ =>
+        -1
+    }
 
   def unpackRawStringHeader(cursor: ReadCursor): Int = {
     val b = cursor.readByte
@@ -609,15 +611,15 @@ object OffsetUnpacker {
     }
     val instant = extTypeHeader.byteLength match {
       case 4 =>
-        val u32 = cursor.readInt & 0XFFFFFFFFL
+        val u32 = cursor.readInt & 0xffffffffL
         Instant.ofEpochSecond(u32)
       case 8 =>
         val d64  = cursor.readLong
-        val sec  = d64 & 0X00000003FFFFFFFFL
+        val sec  = d64 & 0x00000003ffffffffL
         val nsec = (d64 >>> 34).toInt
         Instant.ofEpochSecond(sec, nsec)
       case 12 =>
-        val nsecU32 = cursor.readInt & 0XFFFFFFFFL
+        val nsecU32 = cursor.readInt & 0xffffffffL
         val sec     = cursor.readLong
         Instant.ofEpochSecond(sec, nsecU32)
       case other =>

@@ -94,14 +94,17 @@ object JSONBenchmark extends Timer {
     // Extract JSON strings from twitter.json
     val j = JSON.parse(twitterJson)
     val b = IndexedSeq.newBuilder[JSONString]
-    JSONTraverser.traverse(j, new JSONVisitor {
-      override def visitKeyValue(k: String, v: JSON.JSONValue): Unit = {
-        b += JSONString(k)
+    JSONTraverser.traverse(
+      j,
+      new JSONVisitor {
+        override def visitKeyValue(k: String, v: JSON.JSONValue): Unit = {
+          b += JSONString(k)
+        }
+        override def visitString(v: JSON.JSONString): Unit = {
+          b += v
+        }
       }
-      override def visitString(v: JSON.JSONString): Unit = {
-        b += v
-      }
-    })
+    )
     val jsonArray = JSONArray(b.result()).toJSON
     jsonArray
   }

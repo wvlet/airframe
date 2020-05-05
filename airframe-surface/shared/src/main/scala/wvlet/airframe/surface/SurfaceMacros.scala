@@ -178,14 +178,15 @@ private[surface] object SurfaceMacros {
       t.baseClasses.exists(x => x.isJava && x.isType && x.asType.name.decodedName.toString.startsWith("java.lang.Enum"))
     }
 
-    private def typeArgsOf(t: c.Type): List[c.Type] = t match {
-      case TypeRef(prefix, symbol, args) =>
-        args
-      case ExistentialType(quantified, underlying) =>
-        typeArgsOf(underlying)
-      case other =>
-        List.empty
-    }
+    private def typeArgsOf(t: c.Type): List[c.Type] =
+      t match {
+        case TypeRef(prefix, symbol, args) =>
+          args
+        case ExistentialType(quantified, underlying) =>
+          typeArgsOf(underlying)
+        case other =>
+          List.empty
+      }
 
     private def typeNameOf(t: c.Type): String = {
       t.dealias.typeSymbol.fullName
@@ -338,9 +339,11 @@ private[surface] object SurfaceMacros {
 
       def accessor(t: c.Type): c.Tree = {
         try {
-          if (paramName.isSynthetic || // x$1, etc.
-              isPrivateParam(t) ||
-              (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal]))) {
+          if (
+            paramName.isSynthetic || // x$1, etc.
+            isPrivateParam(t) ||
+            (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal]))
+          ) {
             q"None"
           } else {
             t.typeArgs.size match {

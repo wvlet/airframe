@@ -143,9 +143,11 @@ object ReflectSurfaceFactory extends LogSupport {
 
   def methodsOfType(tpe: ru.Type, cls: Option[Class[_]] = None): Seq[MethodSurface] = {
     val name = fullTypeNameOf(tpe)
-    methodSurfaceCache.getOrElseUpdate(name, {
-      new SurfaceFinder().createMethodSurfaceOf(tpe, cls)
-    })
+    methodSurfaceCache.getOrElseUpdate(
+      name, {
+        new SurfaceFinder().createMethodSurfaceOf(tpe, cls)
+      }
+    )
   }
 
   def methodsOfClass(cls: Class[_]): Seq[MethodSurface] = {
@@ -355,14 +357,15 @@ object ReflectSurfaceFactory extends LogSupport {
       case t if t =:= typeOf[Unit]    => Primitive.Unit
     }
 
-    private def typeArgsOf(t: ru.Type): List[ru.Type] = t match {
-      case TypeRef(prefix, symbol, args) =>
-        args
-      case ru.ExistentialType(quantified, underlying) =>
-        typeArgsOf(underlying)
-      case other =>
-        List.empty
-    }
+    private def typeArgsOf(t: ru.Type): List[ru.Type] =
+      t match {
+        case TypeRef(prefix, symbol, args) =>
+          args
+        case ru.ExistentialType(quantified, underlying) =>
+          typeArgsOf(underlying)
+        case other =>
+          List.empty
+      }
 
     private def elementTypeOf(t: ru.Type): Surface = {
       typeArgsOf(t).map(surfaceOf(_)).head
@@ -534,23 +537,24 @@ object ReflectSurfaceFactory extends LogSupport {
       surfaceParams.toIndexedSeq
     }
 
-    private def genericSurfaceWithConstructorFactory: SurfaceMatcher = new SurfaceMatcher with LogSupport {
-      override def isDefinedAt(t: ru.Type): Boolean = {
-        !isAbstract(t) && findPrimaryConstructorOf(t).exists(!_.paramLists.isEmpty)
-      }
-      override def apply(t: ru.Type): Surface = {
-        val primaryConstructor = findPrimaryConstructorOf(t).get
-        val typeArgs           = typeArgsOf(t).map(surfaceOf(_)).toIndexedSeq
-        val methodParams       = methodParametersOf(t, primaryConstructor)
+    private def genericSurfaceWithConstructorFactory: SurfaceMatcher =
+      new SurfaceMatcher with LogSupport {
+        override def isDefinedAt(t: ru.Type): Boolean = {
+          !isAbstract(t) && findPrimaryConstructorOf(t).exists(!_.paramLists.isEmpty)
+        }
+        override def apply(t: ru.Type): Surface = {
+          val primaryConstructor = findPrimaryConstructorOf(t).get
+          val typeArgs           = typeArgsOf(t).map(surfaceOf(_)).toIndexedSeq
+          val methodParams       = methodParametersOf(t, primaryConstructor)
 
-        val s = new RuntimeGenericSurface(
-          resolveClass(t),
-          typeArgs,
-          params = methodParams
-        )
-        s
+          val s = new RuntimeGenericSurface(
+            resolveClass(t),
+            typeArgs,
+            params = methodParams
+          )
+          s
+        }
       }
-    }
 
     private def existentialTypeFactory: SurfaceMatcher = {
       case t @ ru.ExistentialType(quantified, underlying) =>
