@@ -10,7 +10,7 @@ val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.0.1")
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % SCALAJS_VERSION)
 
 libraryDependencies ++= (
-  Seq("org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.0.0")
+  Seq("org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.1.0")
 )
 
 // For setting explicit versions for each commit
