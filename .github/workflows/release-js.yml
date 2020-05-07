@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: olafurpg/setup-scala@v5
+      - uses: olafurpg/setup-scala@v7
         with:
           java-version: adopt@1.11
       - uses: olafurpg/setup-gpg@v2 # Necessary for using GPG1

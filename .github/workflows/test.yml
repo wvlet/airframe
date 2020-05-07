@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: olafurpg/setup-scala@v5
+      - uses: olafurpg/setup-scala@v7
         with:
           java-version: adopt@1.11
       - uses: actions/cache@v1
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: olafurpg/setup-scala@v5
+      - uses: olafurpg/setup-scala@v7
         with:
           java-version: adopt@1.11
       - uses: actions/cache@v1
@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: olafurpg/setup-scala@v5
+      - uses: olafurpg/setup-scala@v7
         with:
           java-version: adopt@1.11
       - uses: actions/cache@v1
@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: olafurpg/setup-scala@v5
+      - uses: olafurpg/setup-scala@v7
         with:
           java-version: adopt@1.11
       - uses: actions/setup-node@v1
@@ -93,7 +93,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: olafurpg/setup-scala@v5
+      - uses: olafurpg/setup-scala@v7
         with:
           java-version: adopt@1.11
       - uses: actions/setup-node@v1
@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: olafurpg/setup-scala@v5
+      - uses: olafurpg/setup-scala@v7
         with:
           java-version: adopt@1.11
       - uses: actions/cache@v1
