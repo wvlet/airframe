@@ -84,7 +84,7 @@ jdbc connection pool for Scala.</p>
 <span class="hljs-keyword">val</span> factory = <span class="hljs-type">ConnectionPool</span>.newFactory
 
 <span class="hljs-keyword">val</span> dbConfig = <span class="hljs-type">DbConfig</span>.ofSQLite(path = <span class="hljs-string">"mydb.sqlite"</span>)
-<span class="hljs-keyword">val</span> connectionPool = factory(dbConfig)
+<span class="hljs-keyword">val</span> connectionPool = factory.newConnectionPool(dbConfig)
 
 <span class="hljs-comment">// Create a new database</span>
 connectionPool.executeUpdate(<span class="hljs-string">"create table if not exists test(id int, name text)"</span>)
