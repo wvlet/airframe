@@ -47,8 +47,8 @@ object JSHttpClient {
       // Use local client for testing
       localClient
     } else {
-      val port    = window.location.port.toInt
-      val address = ServerAddress(hostname, port, protocol)
+      val port    = Option(window.location.port).map(x => if (x.isEmpty) "" else s":${x}").getOrElse("")
+      val address = ServerAddress(s"${protocol}://${hostname}${port}")
       JSHttpClient(JSHttpClientConfig(serverAddress = Some(address)))
     }
   }
