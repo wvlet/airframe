@@ -34,7 +34,7 @@ import wvlet.airframe.jdbc._
 val factory = ConnectionPool.newFactory
 
 val dbConfig = DbConfig.ofSQLite(path = "mydb.sqlite")
-val connectionPool = factory(dbConfig)
+val connectionPool = factory.newConnectionPool(dbConfig)
 
 // Create a new database
 connectionPool.executeUpdate("create table if not exists test(id int, name text)")
