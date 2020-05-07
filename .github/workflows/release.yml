@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       # Install OpenJDK 11
-      - uses: olafurpg/setup-scala@v7
+      - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
       - uses: olafurpg/setup-gpg@v2 # Necessary for using GPG1
