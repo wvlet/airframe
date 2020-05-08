@@ -6,6 +6,25 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.5.0
+
+Now that Scala.js 1.0.x is publicly available, we will drop support for Scala.js 0.6.x since 20.5.0.
+
+-  airframe-http: Fix a bug of JSHttpClient when the port number is empty string ([#1060](https://github.com/wvlet/airframe/issues/1060)) [[6015849](https://github.com/wvlet/airframe/commit/6015849)]
+-  airframe-http-finagle: Update finagle-core, finagle-http, ... to 20.4.1 ([#1045](https://github.com/wvlet/airframe/issues/1045)) [[0a52b93](https://github.com/wvlet/airframe/commit/0a52b93)]
+-  airframe-http-okhttp: Update okhttp to 3.12.11 ([#1047](https://github.com/wvlet/airframe/issues/1047)) [[35a5008](https://github.com/wvlet/airframe/commit/35a5008)]
+-  airframe-jdbc: Update HikariCP to 3.4.3 ([#1044](https://github.com/wvlet/airframe/issues/1044)) [[4a18359](https://github.com/wvlet/airframe/commit/4a18359)]
+
+Minor changes:
+-  Upgrade to Scala 2.13.2 ([#1042](https://github.com/wvlet/airframe/issues/1042)) [[3599f05](https://github.com/wvlet/airframe/commit/3599f05)]
+-  Update scala-collection-compat to 2.1.6 ([#1040](https://github.com/wvlet/airframe/issues/1040)) [[2ab080d](https://github.com/wvlet/airframe/commit/2ab080d)]
+
+Internal changes:
+-  Update scalajs-env-jsdom-nodejs to 1.1.0 ([#1057](https://github.com/wvlet/airframe/issues/1057)) [[d018032](https://github.com/wvlet/airframe/commit/d018032)]
+-  Update sqlite-jdbc to 3.31.1 ([#1053](https://github.com/wvlet/airframe/issues/1053)) [[cba770b](https://github.com/wvlet/airframe/commit/cba770b)]
+-  Update presto-main to 333 ([#1054](https://github.com/wvlet/airframe/issues/1054)) [[c423478](https://github.com/wvlet/airframe/commit/c423478)]
+-  Update json4s-jackson to 3.6.8 ([#1055](https://github.com/wvlet/airframe/issues/1055)) [[d31dd7b](https://github.com/wvlet/airframe/commit/d31dd7b)]
+
 ## 20.4.1
 
 -  airframe-http: [#1025](https://github.com/wvlet/airframe/issues/1025) Support custom server exception response ([#1036](https://github.com/wvlet/airframe/issues/1036)) [[d3a872a](https://github.com/wvlet/airframe/commit/d3a872a)]
