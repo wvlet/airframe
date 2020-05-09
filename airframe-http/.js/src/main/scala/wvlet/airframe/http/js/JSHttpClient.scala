@@ -113,7 +113,7 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
   private def dispatch(retryContext: RetryContext, request: Request): Future[Response] = {
     val xhr = new dom.XMLHttpRequest()
     val uri = config.serverAddress.map(address => s"${address.uri}${request.uri}").getOrElse(request.uri)
-    debug(s"Sending request: ${request}")
+    trace(s"Sending request: ${request}")
     xhr.open(request.method, uri)
     xhr.responseType = "arraybuffer"
     xhr.timeout = 0
@@ -153,7 +153,7 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
                 }
               }
             val newResp = resp.withHeader(header.result()).withContent(dst)
-            debug(s"Get response: ${newResp}")
+            trace(s"Get response: ${newResp}")
             promise.success(newResp)
           case ResultClass.Failed(isRetryable, cause, extraWait) =>
             if (!retryContext.canContinue) {

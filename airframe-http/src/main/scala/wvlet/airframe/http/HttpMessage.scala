@@ -170,6 +170,7 @@ object HttpMessage {
       header: HttpMultiMap = HttpMultiMap.empty,
       message: Message = EmptyMessage
   ) extends HttpMessage[Request] {
+    override def toString: String = s"Request(${method},${uri},${header})"
 
     def path: String = {
       val u = uri
@@ -217,6 +218,8 @@ object HttpMessage {
       header: HttpMultiMap = HttpMultiMap.empty,
       message: Message = EmptyMessage
   ) extends HttpMessage[Response] {
+    override def toString: String = s"Response(${status},${header})"
+
     override protected def copyWith(newHeader: HttpMultiMap): Response = this.copy(header = newHeader)
     override protected def copyWith(newMessage: Message): Response     = this.copy(message = newMessage)
 
