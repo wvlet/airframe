@@ -9,7 +9,7 @@ val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 val exceptScala2_11     = SCALA_2_13 :: SCALA_2_12 :: Nil
 
-val SCALATEST_VERSION               = "3.0.8"
+val SCALATEST_VERSION               = "3.1.2"
 val SCALACHECK_VERSION              = "1.14.3"
 val MSGPACK_VERSION                 = "0.8.20"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
