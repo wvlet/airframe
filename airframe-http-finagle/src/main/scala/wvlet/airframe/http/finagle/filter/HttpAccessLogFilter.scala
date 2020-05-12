@@ -65,11 +65,11 @@ case class HttpAccessLogFilter(
     }
 
     val currentNanoTime = System.nanoTime()
-    def millisSince     = TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - currentNanoTime)
+    def millisSince     = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - currentNanoTime)
 
     def reportError(e: Throwable): Future[Response] = {
-      val responseTimeNanos = millisSince
-      m += "response_time_ms" -> responseTimeNanos
+      val responseTimeMillis = millisSince
+      m += "response_time_ms" -> responseTimeMillis
       reportContext
       m ++= errorLog(request, e)
       emit(m.result())
