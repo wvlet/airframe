@@ -13,12 +13,12 @@
  */
 package wvlet.airframe.http.finagle.filter
 import java.util.Locale
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 
-import com.twitter.finagle.http.{Request, Response}
+import com.twitter.finagle.http.{HeaderMap, Request, Response}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
-import wvlet.airframe.http.HttpStatus
+import wvlet.airframe.http.{HttpHeader, HttpStatus}
 import wvlet.airframe.http.finagle.FinagleServer
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter.{HttpRequestLogger, _}
 import wvlet.log.LogTimestampFormatter
@@ -115,12 +115,13 @@ object HttpAccessLogFilter {
     Seq(
       unixTimeLogger,
       basicRequestLogger,
-      xHeaderLogger
+      defaultRequestHeaderLogger
     )
 
   def defaultResponseLoggers: Seq[HttpResponseLogger] =
     Seq(
-      basicResponseLogger
+      basicResponseLogger,
+      defaultResponseHeaderLogger
     )
 
   def defaultContextLoggers: Seq[HttpContextLogger] = Seq.empty
@@ -148,23 +149,18 @@ object HttpAccessLogFilter {
 
     m += "remote_host" -> request.remoteAddress.getHostAddress
     m += "remote_port" -> request.remotePort
-    for (h <- request.host) {
-      m += "host" -> h
-    }
-    if (request.accept.nonEmpty) {
-      m += "accept" -> request.accept.mkString(";")
-    }
-    for (x <- request.userAgent) {
-      m += "user_agent" -> x
-    }
+
     m.result
   }
 
-  def xHeaderLogger(request: Request): Map[String, Any] = {
+  private val offTargets = Set(HttpHeader.Authorization, HttpHeader.ProxyAuthorization)
+
+  def defaultRequestHeaderLogger(request: Request): Map[String, Any] = headerLogger(request.headerMap, None)
+  def headerLogger(headerMap: HeaderMap, prefix: Option[String]): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
-    // Record X-XXX headers
-    for (xHeader <- request.headerMap.filter(_._1.startsWith("X-")).toSeq) {
-      m += sanitizeHeader(xHeader._1) -> xHeader._2
+    for ((key, value) <- headerMap if !offTargets.contains(key)) {
+      val v = headerMap.getAll(key).mkString(";")
+      m += sanitizeHeader(s"${prefix.getOrElse("")}${key}") -> v
     }
     m.result()
   }
@@ -176,16 +172,16 @@ object HttpAccessLogFilter {
     for (contentLength <- response.contentLength) {
       m += "response_size" -> contentLength
     }
-
-    // Record X-XXX headers in the response
-    for (xHeader <- response.headerMap.filter(_._1.startsWith("X-"))) {
-      m += s"response_${sanitizeHeader(xHeader._1)}" -> xHeader._2
-    }
     m.result
   }
 
+  def defaultResponseHeaderLogger(response: Response) = headerLogger(response.headerMap, Some("response_"))
+
+  import scala.jdk.CollectionConverters._
+  private val headerSanitizeCache = new ConcurrentHashMap[String, String]().asScala
+
   def sanitizeHeader(h: String): String = {
-    h.replaceAll("-", "_").toLowerCase(Locale.ENGLISH)
+    headerSanitizeCache.getOrElseUpdate(h, h.replaceAll("-", "_").toLowerCase(Locale.ENGLISH))
   }
 
   def sanitize(s: String): String = {
