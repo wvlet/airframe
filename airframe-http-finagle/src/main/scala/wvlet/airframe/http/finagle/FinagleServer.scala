@@ -44,10 +44,12 @@ case class FinagleServerConfig(
     controllerProvider: ControllerProvider = ControllerProvider.defaultControllerProvider,
     tracer: Option[Tracer] = None,
     statsReceiver: Option[StatsReceiver] = None,
-    // Filter for http request logging
+    // Filter for http request/response logging
     loggingFilter: Filter[Request, Response, Request, Response] = HttpAccessLogFilter.default,
+    // Filter for handling errors
+    errorFilter: Filter[Request, Response, Request, Response] = FinagleServer.defaultErrorFilter,
     // A top-level filter applied before routing requests
-    beforeRoutingFilter: Filter[Request, Response, Request, Response] = FinagleServer.defaultErrorFilter,
+    beforeRoutingFilter: Filter[Request, Response, Request, Response] = Filter.identity,
     // Service called when no matching route is found
     fallbackService: Service[Request, Response] = FinagleServer.notFound
 ) {
@@ -93,11 +95,13 @@ case class FinagleServerConfig(
   def withLoggingFilter(filter: Filter[Request, Response, Request, Response]): FinagleServerConfig = {
     this.copy(loggingFilter = filter)
   }
-
   def noLoggingFilter: FinagleServerConfig = {
+    // Even if the default logger is disabled, add a trace request/response logger for production investigation purpose
     this.copy(loggingFilter = HttpAccessLogFilter.traceLoggingFilter)
   }
-
+  def withErrorFilter(filter: Filter[Request, Response, Request, Response]): FinagleServerConfig = {
+    this.copy(errorFilter = filter)
+  }
   def withBeforeRoutingFilter(filter: Filter[Request, Response, Request, Response]): FinagleServerConfig = {
     this.copy(beforeRoutingFilter = filter)
   }
@@ -129,6 +133,7 @@ case class FinagleServerConfig(
     val service =
       FinagleServer.threadLocalStorageFilter andThen
         loggingFilter andThen
+        errorFilter andThen
         beforeRoutingFilter andThen
         finagleRouter andThen
         fallbackService
@@ -212,8 +217,9 @@ object FinagleServer extends LogSupport {
   }
 
   /**
-    * A simple error handler for wrapping exceptions as InternalServerError (500).
-    * We do not return the exception as is because it may contain internal information.
+    * The default error handler to return HttpServerException with its error code and content body (if defined).
+    * For other types of errors, it wraps exceptions as InternalServerError (500).
+    * For such unknown errors, we do not return the exception as is because it may contain internal information.
     */
   def defaultErrorFilter: SimpleFilter[Request, Response] =
     new SimpleFilter[Request, Response] {
@@ -227,8 +233,10 @@ object FinagleServer extends LogSupport {
             }
             ex match {
               case e: HttpServerException =>
+                // HttpServerException is a properly handled exception, so convert it to an error response
                 Future.value(convertToFinagleResponse(e.toResponse))
               case _ =>
+                // Just return internal server failure with 500 respone code
                 Future.value(Response(Status.InternalServerError))
             }
         }
