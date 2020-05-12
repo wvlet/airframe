@@ -321,13 +321,12 @@ Router
  .andThen[MyApp]
 ```
 
-
 ### Thread-Local Storage
 
 To pass data between filters and applications, you can use thread-local storage in the context:
 
 ```scala
-object LoggingFilter extends FinagleFilter with LogSupport {
+object AuthLogFilter extends FinagleFilter with LogSupport {
   def apply(request: Request, context: FinagleContext): Future[Response] = {
     context(request).map { response =>
       // Read the thread-local parameter set in the context(request)
@@ -353,11 +352,34 @@ object AuthFilter extends FinagleFilter {
 
 
 Router
-  .add[LoggingFilter]
-  .andThen[AuthFilter]
+  .add(AuthLogFilter)
+  .andThen(AuthFilter)
   .andThen[MyApp]
 ```
 
 Using local variables inside filters will not work because the request processing will happen when Future[X] is evaluated, so we must use thead-local parmeter holder, which will be prepared for each request call.
 
 
+## Access Logs
+
+airframe-http stores HTTP access logs at `log/http-access.log` by default in JSON format. When the log file becomes large, it will be compressed with gz and rotated automatically. 
+
+Example JSON logs:
+```json
+{"time":1589309970,"event_time":"2020-05-12T11:59:30.360-0700","method":"GET","path":"/user","uri":"/user","request_size":0,"remote_host":"127.0.0.1","remote_port":49937,"host":"localhost:49936","user_agent":"okhttp/3.12.11","x_request_id":"10","response_time_ms":903,"status_code":200,"status_code_name":"OK"}
+{"time":1589309970,"event_time":"2020-05-12T11:59:30.370-0700","method":"POST","path":"/user","uri":"/user","request_size":39,"remote_host":"127.0.0.1","remote_port":49937,"host":"localhost:49936","user_agent":"okhttp/3.12.11","x_request_id":"10","response_time_ms":1037,"status_code":200,"status_code_name":"OK"}
+```
+
+For most of the cases, using the default logger is sufficient. If necessary, you can customize the logging by using your own request/response loggers: 
+```scala
+import wvlet.airframe.http.finagle._
+
+Finagle
+  .server
+  .withLoggingFilter {
+     HttpAccessLogFilter
+      .default
+      .addRequestLogger(...)
+      .addResponseLogger(...)
+  }
+```
