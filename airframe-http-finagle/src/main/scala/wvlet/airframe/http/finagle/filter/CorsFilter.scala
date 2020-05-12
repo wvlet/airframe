@@ -14,11 +14,11 @@
 package wvlet.airframe.http.finagle.filter
 import com.twitter.finagle.http.filter.Cors
 import com.twitter.finagle.http.filter.Cors.Policy
-import wvlet.airframe.http.finagle.FinagleBackend
+import wvlet.airframe.http.finagle.{FinagleBackend, FinagleFilter}
 
 object CorsFilter {
-  def apply(policy: Policy) = FinagleBackend.wrapFilter(new Cors.HttpFilter(policy))
+  def apply(policy: Policy): FinagleFilter = FinagleBackend.wrapFilter(new Cors.HttpFilter(policy))
 
   // CORS filter that allows all cross-origin requests. Do not use this in production.
-  def unsafePermissiveFilter = apply(Cors.UnsafePermissivePolicy)
+  def unsafePermissiveFilter: FinagleFilter = apply(Cors.UnsafePermissivePolicy)
 }

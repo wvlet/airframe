@@ -24,6 +24,7 @@ import wvlet.airframe._
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
+import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.http.router.{ControllerProvider, ResponseHandler}
 import wvlet.airframe.http.{HttpServerException, Router}
 import wvlet.airframe.surface.Surface
@@ -43,9 +44,10 @@ case class FinagleServerConfig(
     controllerProvider: ControllerProvider = ControllerProvider.defaultControllerProvider,
     tracer: Option[Tracer] = None,
     statsReceiver: Option[StatsReceiver] = None,
+    // Filter for http request logging
+    loggingFilter: Filter[Request, Response, Request, Response] = HttpAccessLogFilter.default,
     // A top-level filter applied before routing requests
-    beforeRoutingFilter: Filter[Request, Response, Request, Response] =
-      FinagleServer.defaultRequestLogger andThen FinagleServer.defaultErrorFilter,
+    beforeRoutingFilter: Filter[Request, Response, Request, Response] = FinagleServer.defaultErrorFilter,
     // Service called when no matching route is found
     fallbackService: Service[Request, Response] = FinagleServer.notFound
 ) {
@@ -87,6 +89,15 @@ case class FinagleServerConfig(
   def withServerInitializer(init: Http.Server => Http.Server): FinagleServerConfig = {
     this.copy(serverInitializer = init)
   }
+
+  def withLoggingFilter(filter: Filter[Request, Response, Request, Response]): FinagleServerConfig = {
+    this.copy(loggingFilter = filter)
+  }
+
+  def noLoggingFilter: FinagleServerConfig = {
+    this.copy(loggingFilter = HttpAccessLogFilter.traceLoggingFilter)
+  }
+
   def withBeforeRoutingFilter(filter: Filter[Request, Response, Request, Response]): FinagleServerConfig = {
     this.copy(beforeRoutingFilter = filter)
   }
@@ -117,6 +128,7 @@ case class FinagleServerConfig(
     // Build Finagle filters
     val service =
       FinagleServer.threadLocalStorageFilter andThen
+        loggingFilter andThen
         beforeRoutingFilter andThen
         finagleRouter andThen
         fallbackService
@@ -185,6 +197,21 @@ object FinagleServer extends LogSupport {
   type FinagleService = Service[Request, Response]
 
   /**
+    * Find the root cause of the exception from wrapped exception classes
+    */
+  @tailrec
+  private[finagle] def findCause(e: Throwable): Throwable = {
+    e match {
+      case i: InvocationTargetException if i.getTargetException != null =>
+        findCause(i.getTargetException)
+      case ee: ExecutionException if ee.getCause != null =>
+        findCause(ee.getCause)
+      case _ =>
+        e
+    }
+  }
+
+  /**
     * A simple error handler for wrapping exceptions as InternalServerError (500).
     * We do not return the exception as is because it may contain internal information.
     */
@@ -193,20 +220,7 @@ object FinagleServer extends LogSupport {
       override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
         service(request).rescue {
           case e: Throwable =>
-            // Resolve the cause of the exception
-            @tailrec
-            def getCause(x: Throwable): Throwable = {
-              x match {
-                case i: InvocationTargetException if i.getTargetException != null =>
-                  getCause(i.getTargetException)
-                case e: ExecutionException if e.getCause != null =>
-                  getCause(e.getCause)
-                case _ =>
-                  x
-              }
-            }
-
-            val ex = getCause(e)
+            val ex = findCause(e)
             ex match {
               case e: HttpServerException => logger.warn(s"${request} failed: ${e.getMessage}")
               case other                  => logger.warn(s"${request} failed: ${other}", other)
