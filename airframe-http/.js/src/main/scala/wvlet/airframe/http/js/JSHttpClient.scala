@@ -29,7 +29,7 @@ import wvlet.log.LogSupport
 
 import scala.concurrent.{Future, Promise}
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 object JSHttpClient {
 
@@ -132,29 +132,41 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
 
     xhr.onreadystatechange = { (e: dom.Event) =>
       if (xhr.readyState == 4) { // Ajax request is DONE
-        val resp = Http.response(HttpStatus.ofCode(xhr.status))
+        // Prepare HttpMessage.Response
+        var resp = Http.response(HttpStatus.ofCode(xhr.status))
+
+        // This part needs to be exception-free
+        Try {
+          // Set response headers
+          val header = HttpMultiMap.newBuilder
+          xhr
+            .getAllResponseHeaders()
+            .split("\n")
+            .foreach { line =>
+              line.split(":") match {
+                case Array(k, v) => header += k.trim -> v.trim
+                case _           =>
+              }
+            }
+          resp = resp.withHeader(header.result())
+        }
+
+        // This part also needs to be exception-free
+        Try {
+          // Read response content
+          Option(xhr.response).foreach { r =>
+            val arrayBuffer = r.asInstanceOf[ArrayBuffer]
+            val dst         = new Array[Byte](arrayBuffer.byteLength)
+            TypedArrayBuffer.wrap(arrayBuffer).get(dst, 0, arrayBuffer.byteLength)
+            resp = resp.withContent(dst)
+          }
+        }
+        trace(s"Get response: ${resp}")
+
         retryContext.resultClassifier(resp) match {
           case ResultClass.Succeeded =>
             //if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304)
-            // If the request succeeds, set the content bytes to the response
-            val arrayBuffer = xhr.response.asInstanceOf[ArrayBuffer]
-            val dst         = new Array[Byte](arrayBuffer.byteLength)
-            TypedArrayBuffer.wrap(arrayBuffer).get(dst, 0, arrayBuffer.byteLength)
-
-            // Set response headers of our interests
-            val header = HttpMultiMap.newBuilder
-            xhr
-              .getAllResponseHeaders()
-              .split("\n")
-              .foreach { line =>
-                line.split(":") match {
-                  case Array(k, v) => header += k.trim -> v.trim
-                  case _           =>
-                }
-              }
-            val newResp = resp.withHeader(header.result()).withContent(dst)
-            trace(s"Get response: ${newResp}")
-            promise.success(newResp)
+            promise.success(resp)
           case ResultClass.Failed(isRetryable, cause, extraWait) =>
             if (!retryContext.canContinue) {
               promise.failure(HttpClientMaxRetryException(resp, retryContext, cause))

@@ -43,6 +43,8 @@ organization in ThisBuild := "org.wvlet.airframe"
 
 // Use dynamic snapshot version strings for non tagged versions
 dynverSonatypeSnapshots in ThisBuild := true
+// Use coursier friendly version separator
+dynverSeparator in ThisBuild := "-"
 
 val buildSettings = Seq[Setting[_]](
   sonatypeProfileName := "org.wvlet",
@@ -314,7 +316,7 @@ lazy val airframeMacrosJS  = airframeMacros.js
 // To use airframe in other airframe modules, we need to reference airframeMacros project using the internal scope
 val internalScope             = "compile-internal,test-internal"
 lazy val airframeMacrosJVMRef = airframeMacrosJVM % internalScope
-lazy val airframeMacrosRef    = airframeMacros % internalScope
+lazy val airframeMacrosRef    = airframeMacros    % internalScope
 
 val surfaceDependencies = { scalaVersion: String =>
   Seq(
@@ -753,7 +755,7 @@ lazy val examples =
       description := "Airframe examples",
       crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
-        )
+      )
     )
     .dependsOn(
       codecJVM,
@@ -944,7 +946,7 @@ lazy val airspec =
         .in(airspecDepsJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
       mappings in (Compile, packageSrc) ++= mappings.in(airspecDepsJS, Compile, packageSrc).value,
       libraryDependencies ++= Seq(
-        "org.scala-js"       %% "scalajs-test-interface"  % scalaJSVersion,
+        "org.scala-js"        %% "scalajs-test-interface" % scalaJSVersion,
         "org.portable-scala" %%% "portable-scala-reflect" % "1.0.0"
       )
     )
@@ -971,8 +973,8 @@ lazy val airspecLight =
       mappings in (Compile, packageBin) := mappings.in(Compile, packageBin).value.filter(isAirSpecClass),
       mappings in (Compile, packageSrc) := mappings.in(Compile, packageSrc).value.filter(isAirSpecClass),
       libraryDependencies ++= Seq(
-        "org.scala-sbt"  % "test-interface" % "1.0"              % "provided",
-        "org.scalacheck" %%% "scalacheck"   % SCALACHECK_VERSION % "provided"
+        "org.scala-sbt"    % "test-interface" % "1.0"              % "provided",
+        "org.scalacheck" %%% "scalacheck"     % SCALACHECK_VERSION % "provided"
       )
     )
     .dependsOn(airframeJVM, airframeMacrosJVMRef, metricsJVM)
@@ -1012,7 +1014,7 @@ lazy val sbtAirframe =
       scalaVersion := SCALA_2_12,
       crossSbtVersions := Vector("1.3.8"),
       libraryDependencies ++= Seq(
-        "io.get-coursier"    %% "coursier"        % "2.0.0-RC5-6",
+        "io.get-coursier"   %% "coursier"         % "2.0.0-RC5-6",
         "org.apache.commons" % "commons-compress" % "1.20"
       ),
       scriptedLaunchOpts := {
