@@ -136,8 +136,8 @@ trait Session extends AutoCloseable {
     }
   }
 
-  def start: Unit            = { lifeCycleManager.start }
-  def shutdown: Unit         = { lifeCycleManager.shutdown }
+  def start: Unit = { lifeCycleManager.start }
+  def shutdown: Unit = { lifeCycleManager.shutdown }
   override def close(): Unit = { shutdown }
 }
 

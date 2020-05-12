@@ -79,7 +79,7 @@ class WordSpecTest extends AirSpec {
   scalaJsSupport
 
   def `should have a natural language description` = {}
-  def `should support arbitrary texts`: Unit       = {}
+  def `should support arbitrary texts`: Unit = {}
 }
 
 class JvmSpecTest extends AirSpec {

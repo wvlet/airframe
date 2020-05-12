@@ -22,14 +22,14 @@ class NullJSONContext(isObject: Boolean) extends JSONContext[Unit] with LogSuppo
   override def isObjectContext: Boolean                                    = isObject
   override def objectContext(s: JSONSource, start: Int): JSONContext[Unit] = new NullJSONContext(true)
   override def arrayContext(s: JSONSource, start: Int): JSONContext[Unit]  = new NullJSONContext(false)
-  override def closeContext(s: JSONSource, end: Int): Unit                 = {}
+  override def closeContext(s: JSONSource, end: Int): Unit = {}
 
-  override def add(v: Unit): Unit                                                                 = {}
-  override def singleContext(s: JSONSource, start: Int): JSONContext[Unit]                        = new NullJSONContext(false)
-  override def result: Unit                                                                       = {}
-  override def addNull(s: JSONSource, start: Int, end: Int): Unit                                 = {}
-  override def addString(s: JSONSource, start: Int, end: Int): Unit                               = {}
-  override def addUnescapedString(s: String): Unit                                                = {}
+  override def add(v: Unit): Unit = {}
+  override def singleContext(s: JSONSource, start: Int): JSONContext[Unit] = new NullJSONContext(false)
+  override def result: Unit = {}
+  override def addNull(s: JSONSource, start: Int, end: Int): Unit = {}
+  override def addString(s: JSONSource, start: Int, end: Int): Unit = {}
+  override def addUnescapedString(s: String): Unit = {}
   override def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {}
-  override def addBoolean(s: JSONSource, v: Boolean, start: Int, end: Int): Unit                  = {}
+  override def addBoolean(s: JSONSource, v: Boolean, start: Int, end: Int): Unit = {}
 }

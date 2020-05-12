@@ -161,9 +161,9 @@ private[airspec] trait AirSpecSpi {
   protected def localDesign: Design = Design.empty
 
   protected def beforeAll: Unit = {}
-  protected def before: Unit    = {}
-  protected def after: Unit     = {}
-  protected def afterAll: Unit  = {}
+  protected def before: Unit = {}
+  protected def after: Unit = {}
+  protected def afterAll: Unit = {}
 
   // Returns true if this is running in TravisCI
   protected def inCI: Boolean           = airspec.inCI

@@ -267,7 +267,7 @@ object Logger {
     }
   }
 
-  def scheduleLogLevelScan: Unit      = { LogEnv.scheduleLogLevelScan }
+  def scheduleLogLevelScan: Unit = { LogEnv.scheduleLogLevelScan }
   def stopScheduledLogLevelScan: Unit = { LogEnv.stopScheduledLogLevelScan }
 
   /**

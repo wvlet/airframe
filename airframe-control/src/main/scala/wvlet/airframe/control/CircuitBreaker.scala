@@ -111,7 +111,7 @@ object CircuitBreakerRecoveryPolicy {
     new CircuitBreakerRecoveryPolicy() {
       override def recordSuccess: Unit = {}
       override def recordFailure: Unit = {}
-      override def reset: Unit         = {}
+      override def reset: Unit = {}
       override def canRecover: Boolean = true
     }
 
