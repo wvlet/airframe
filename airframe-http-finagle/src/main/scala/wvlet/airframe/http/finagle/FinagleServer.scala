@@ -146,6 +146,13 @@ case class FinagleServerConfig(
       .bind[FinagleServerConfig].toInstance(this)
   }
 
+  /**
+    * Create a design for this server and a FinacleSyncClient design. This is useful for testing
+    */
+  def designWithSyncClient: Design = {
+    design + Finagle.client.syncClientDesign
+  }
+
   def newFinagleServer(session: Session): FinagleServer = {
     new FinagleServer(finagleConfig = this, newService(session))
   }

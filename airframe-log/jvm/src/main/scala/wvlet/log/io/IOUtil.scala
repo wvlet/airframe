@@ -60,6 +60,10 @@ object IOUtil {
     }
   }
 
+  def readAsString(f: File): String = {
+    readAsString(f.toURI.toURL)
+  }
+
   def readAsString(url: URL): String = {
     withResource(url.openStream()) { in => readAsString(in) }
   }

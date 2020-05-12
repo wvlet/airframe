@@ -32,7 +32,8 @@ trait HttpAccessLogWriter {
 
 object HttpAccessLogWriter {
 
-  def default = new JSONHttpAccessLogWriter()
+  def default           = new JSONHttpAccessLogWriter()
+  def inMemoryLogWriter = new InMemoryAccessLogWriter()
 
   /**
     * Write access logs to a file using a JSON format. This writer supports automatic log file rotation.
@@ -65,6 +66,22 @@ object HttpAccessLogWriter {
       // Generate one-liner JSON log
       val json = mapCodec.toJson(log)
       asyncLogHandler.publish(new java.util.logging.LogRecord(Level.INFO, json))
+    }
+  }
+
+  class InMemoryAccessLogWriter extends HttpAccessLogWriter {
+    private var logs = Seq.newBuilder[Map[String, Any]]
+
+    def getLogs: Seq[Map[String, Any]] = logs.result()
+
+    def clear(): Unit = {
+      logs.clear()
+    }
+
+    override def write(log: Map[String, Any]): Unit = {
+      synchronized {
+        logs += log
+      }
     }
   }
 }

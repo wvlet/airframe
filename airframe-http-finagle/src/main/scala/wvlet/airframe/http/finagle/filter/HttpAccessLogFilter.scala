@@ -27,7 +27,7 @@ import scala.collection.immutable.ListMap
 import scala.util.control.NonFatal
 
 case class HttpAccessLogFilter(
-    accessLogWriter: HttpAccessLogWriter = HttpAccessLogWriter.default,
+    httpAccessLogWriter: HttpAccessLogWriter = HttpAccessLogWriter.default,
     // Loggers for request contents
     requestLoggers: Seq[HttpRequestLogger] = defaultRequestLoggers,
     // Loggers for response contents
@@ -54,7 +54,7 @@ case class HttpAccessLogFilter(
 
   private def emit(m: Map[String, Any]) = {
     val filtered = m.filterNot(x => sanitizedExcludeHeader.contains(x._1))
-    accessLogWriter.write(filtered)
+    httpAccessLogWriter.write(filtered)
   }
 
   override def apply(request: Request, context: Service[Request, Response]): Future[Response] = {
@@ -115,7 +115,11 @@ case class HttpAccessLogFilter(
 
 object HttpAccessLogFilter {
 
-  def default: HttpAccessLogFilter                        = new HttpAccessLogFilter()
+  def default: HttpAccessLogFilter = new HttpAccessLogFilter()
+  def inMemoryLogWriter: HttpAccessLogFilter =
+    new HttpAccessLogFilter(
+      httpAccessLogWriter = HttpAccessLogWriter.inMemoryLogWriter
+    )
   def traceLoggingFilter: SimpleFilter[Request, Response] = FinagleServer.defaultRequestLogger
 
   type HttpRequestLogger  = Request => Map[String, Any]
@@ -178,8 +182,11 @@ object HttpAccessLogFilter {
     val m = ListMap.newBuilder[String, Any]
     m += "status_code"      -> response.statusCode
     m += "status_code_name" -> HttpStatus.ofCode(response.statusCode).reason
-    for (contentLength <- response.contentLength) {
-      m += "response_size" -> contentLength
+
+    if (response.isChunked) {
+      m += "chunked" -> true
+    } else {
+      m += "response_size" -> response.content.length
     }
     m.result
   }
