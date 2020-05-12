@@ -362,12 +362,14 @@ Using local variables inside filters will not work because the request processin
 
 ## Access Logs
 
-airframe-http stores HTTP access logs at `log/http-access.log` by default in JSON format. When the log file becomes large, it will be compressed with gz and rotated automatically. 
+airframe-http stores HTTP access logs at `log/http-access.json` by default in JSON format. When the log file becomes large, it will be compressed with gz and rotated automatically. 
+
+The default logger will record request parameters, request headers (except Authorization headers), response parameters, and response headers.
 
 Example JSON logs:
 ```json
-{"time":1589309970,"event_time":"2020-05-12T11:59:30.360-0700","method":"GET","path":"/user","uri":"/user","request_size":0,"remote_host":"127.0.0.1","remote_port":49937,"host":"localhost:49936","user_agent":"okhttp/3.12.11","x_request_id":"10","response_time_ms":903,"status_code":200,"status_code_name":"OK"}
-{"time":1589309970,"event_time":"2020-05-12T11:59:30.370-0700","method":"POST","path":"/user","uri":"/user","request_size":39,"remote_host":"127.0.0.1","remote_port":49937,"host":"localhost:49936","user_agent":"okhttp/3.12.11","x_request_id":"10","response_time_ms":1037,"status_code":200,"status_code_name":"OK"}
+{"time":1589319681,"event_time":"2020-05-12T14:41:21.567-0700","method":"GET","path":"/user/1","uri":"/user/1","request_size":0,"remote_host":"127.0.0.1","remote_port":52786,"host":"localhost:52785","connection":"Keep-Alive","user_agent":"okhttp/3.12.11","x_request_id":"10","content_length":"0","accept_encoding":"gzip","response_time_ms":714,"status_code":200,"status_code_name":"OK","response_content_type":"application/json;charset=utf-8"}
+{"time":1589319681,"event_time":"2020-05-12T14:41:21.573-0700","method":"GET","path":"/user/info","uri":"/user/info?id=2&name=kai","query_string":"id=2&name=kai","request_size":0,"remote_host":"127.0.0.1","remote_port":52786,"host":"localhost:52785","connection":"Keep-Alive","user_agent":"okhttp/3.12.11","x_request_id":"10","content_length":"0","accept_encoding":"gzip","response_time_ms":921,"status_code":200,"status_code_name":"OK","response_content_type":"application/json;charset=utf-8"}
 ```
 
 For most of the cases, using the default logger is sufficient. If necessary, you can customize the logging by using your own request/response loggers: 
@@ -381,5 +383,25 @@ Finagle
       .default
       .addRequestLogger(...)
       .addResponseLogger(...)
+      // Remove unnecessary HTTP headers from logs
+      .addExcludeHeaders(Set("X-XXX-Header"))
   }
+```
+
+
+### Reading Access Logs with Fluentd
+
+The generated HTTP access log files can be processed in Fluentd. For example, if you want to store access logs to Treasure Data, add the following [in_tail](https://docs.fluentd.org/input/tail) fluentd configuration:
+
+```scala
+<source>
+  @type tail
+  # Your log file location and position file
+  path     /var/log/http_access.json
+  pos_file /var/log/td-agent/http_access.json.pos
+  # [Optional] Append tags to the log (For using td-agent)  
+  tag      td.(your database name).http_access
+  format   json
+  time_key time
+</source>
 ```

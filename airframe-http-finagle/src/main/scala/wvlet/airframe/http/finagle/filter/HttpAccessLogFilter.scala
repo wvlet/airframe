@@ -33,7 +33,8 @@ case class HttpAccessLogFilter(
     // Loggers for response contents
     responseLoggers: Seq[HttpResponseLogger] = defaultResponseLoggers,
     // Loggers for thread-local storage contents
-    contextLoggers: Seq[HttpContextLogger] = defaultContextLoggers
+    contextLoggers: Seq[HttpContextLogger] = defaultContextLoggers,
+    excludeHeaders: Set[String] = Set(HttpHeader.Authorization, HttpHeader.ProxyAuthorization)
 ) extends SimpleFilter[Request, Response] {
 
   def addRequestLogger(logger: HttpRequestLogger): HttpAccessLogFilter = {
@@ -44,6 +45,16 @@ case class HttpAccessLogFilter(
   }
   def aadContextLogger(logger: HttpContextLogger): HttpAccessLogFilter = {
     this.copy(contextLoggers = contextLoggers :+ logger)
+  }
+  def addExcludeHeaders(excludes: Set[String]): HttpAccessLogFilter = {
+    this.copy(excludeHeaders = excludeHeaders ++ excludes)
+  }
+
+  private val sanitizedExcludeHeader = excludeHeaders.map(sanitizeHeader)
+
+  private def emit(m: Map[String, Any]) = {
+    val filtered = m.filterNot(x => sanitizedExcludeHeader.contains(x._1))
+    accessLogWriter.write(filtered)
   }
 
   override def apply(request: Request, context: Service[Request, Response]): Future[Response] = {
@@ -61,7 +72,7 @@ case class HttpAccessLogFilter(
       m += "response_time_ms" -> responseTimeNanos
       reportContext
       m ++= errorLog(request, e)
-      accessLogWriter.write(m.result())
+      emit(m.result())
       Future.exception(e)
     }
 
@@ -79,7 +90,7 @@ case class HttpAccessLogFilter(
           for (l <- responseLoggers) {
             m ++= l(response)
           }
-          accessLogWriter.write(m.result())
+          emit(m.result())
           response
         }.rescue {
           case NonFatal(e: Throwable) =>
@@ -153,12 +164,10 @@ object HttpAccessLogFilter {
     m.result
   }
 
-  private val offTargets = Set(HttpHeader.Authorization, HttpHeader.ProxyAuthorization)
-
   def defaultRequestHeaderLogger(request: Request): Map[String, Any] = headerLogger(request.headerMap, None)
   def headerLogger(headerMap: HeaderMap, prefix: Option[String]): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
-    for ((key, value) <- headerMap if !offTargets.contains(key)) {
+    for ((key, value) <- headerMap) {
       val v = headerMap.getAll(key).mkString(";")
       m += sanitizeHeader(s"${prefix.getOrElse("")}${key}") -> v
     }

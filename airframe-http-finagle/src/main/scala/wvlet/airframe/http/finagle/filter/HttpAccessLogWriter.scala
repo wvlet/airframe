@@ -18,7 +18,7 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.log.{AsyncHandler, LogFormatter, LogRecord, LogRotationHandler}
 
 case class HttpAccessLogConfig(
-    fileName: String = "log/http_access.log",
+    fileName: String = "log/http_access.json",
     maxFiles: Int = 100,
     maxSize: Long = 100 * 1024 * 1024
 )
@@ -56,7 +56,8 @@ object HttpAccessLogWriter {
         fileName = httpAccessLogConfig.fileName,
         maxNumberOfFiles = httpAccessLogConfig.maxFiles,
         maxSizeInBytes = httpAccessLogConfig.maxSize,
-        JSONLogFormatter
+        formatter = JSONLogFormatter,
+        logFileExt = ".json"
       )
     )
 
