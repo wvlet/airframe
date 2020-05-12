@@ -6,6 +6,11 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.5.1
+
+-  airframe-http: Read error response body and headers properly in Scala.js ([#1069](https://github.com/wvlet/airframe/issues/1069)) [[8936055](https://github.com/wvlet/airframe/commit/8936055)]
+-  airframe-di: [#1068](https://github.com/wvlet/airframe/issues/1068) Do not close loggers upon session shutdown ([#1070](https://github.com/wvlet/airframe/issues/1070)) [[af323d2](https://github.com/wvlet/airframe/commit/af323d2)]
+
 ## 20.5.0
 
 Now that Scala.js 1.0.x is publicly available, we will drop support for Scala.js 0.6.x since 20.5.0.
