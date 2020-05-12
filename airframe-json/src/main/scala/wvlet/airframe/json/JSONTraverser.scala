@@ -16,13 +16,13 @@ package wvlet.airframe.json
 import wvlet.airframe.json.JSON._
 
 trait JSONVisitor {
-  def visitObject(o: JSONObject): Unit             = {}
+  def visitObject(o: JSONObject): Unit = {}
   def visitKeyValue(k: String, v: JSONValue): Unit = {}
-  def visitArray(a: JSONArray): Unit               = {}
-  def visitString(v: JSONString): Unit             = {}
-  def visitNumber(n: JSONNumber): Unit             = {}
-  def visitBoolean(n: JSONBoolean): Unit           = {}
-  def visitNull: Unit                              = {}
+  def visitArray(a: JSONArray): Unit = {}
+  def visitString(v: JSONString): Unit = {}
+  def visitNumber(n: JSONNumber): Unit = {}
+  def visitBoolean(n: JSONBoolean): Unit = {}
+  def visitNull: Unit = {}
 }
 
 /**
