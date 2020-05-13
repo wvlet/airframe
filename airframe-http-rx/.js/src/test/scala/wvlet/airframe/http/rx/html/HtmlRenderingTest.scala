@@ -120,4 +120,9 @@ class HtmlRenderingTest extends AirSpec {
     val d4 = d3(style.noValue)
     render(d4) shouldBe """<div style=""></div>"""
   }
+
+  test("entity ref") {
+    val d = div("1.23", EntityRef("amp"), "0.5")
+    render(d).contains("&amp;") shouldBe true
+  }
 }
