@@ -373,6 +373,7 @@ Example JSON logs:
 ```
 
 For most of the cases, using the default logger is sufficient. If necessary, you can customize the logging by using your own request/response loggers: 
+
 ```scala
 import wvlet.airframe.http.finagle._
 
@@ -393,7 +394,7 @@ Finagle
 
 The generated HTTP access log files can be processed in Fluentd. For example, if you want to store access logs to Treasure Data, add the following [in_tail](https://docs.fluentd.org/input/tail) fluentd configuration:
 
-```scala
+```
 <source>
   @type tail
   # Your log file location and position file
