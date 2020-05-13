@@ -32,6 +32,8 @@ case class HttpAccessLogFilter(
     requestLoggers: Seq[HttpRequestLogger] = defaultRequestLoggers,
     // Loggers for response contents
     responseLoggers: Seq[HttpResponseLogger] = defaultResponseLoggers,
+    // Loggers for request errors
+    errorLoggers: Seq[HttpErrorLogger] = defaultErrorLoggers,
     // Loggers for thread-local storage contents
     contextLoggers: Seq[HttpContextLogger] = defaultContextLoggers,
     excludeHeaders: Set[String] = Set(HttpHeader.Authorization, HttpHeader.ProxyAuthorization)
@@ -42,6 +44,9 @@ case class HttpAccessLogFilter(
   }
   def addResponseLogger(logger: HttpResponseLogger): HttpAccessLogFilter = {
     this.copy(responseLoggers = responseLoggers :+ logger)
+  }
+  def addErrorLogger(logger: HttpErrorLogger): HttpAccessLogFilter = {
+    this.copy(errorLoggers = errorLoggers :+ logger)
   }
   def aadContextLogger(logger: HttpContextLogger): HttpAccessLogFilter = {
     this.copy(contextLoggers = contextLoggers :+ logger)
@@ -71,7 +76,9 @@ case class HttpAccessLogFilter(
       val responseTimeMillis = millisSince
       m += "response_time_ms" -> responseTimeMillis
       reportContext
-      m ++= errorLog(request, e)
+      for (l <- errorLoggers) {
+        m ++= l(request, e)
+      }
       emit(m.result())
       Future.exception(e)
     }
@@ -102,15 +109,6 @@ case class HttpAccessLogFilter(
         reportError(e)
     }
   }
-
-  private def errorLog(request: Request, e: Throwable): Map[String, Any] = {
-    val m = ListMap.newBuilder[String, Any]
-
-    // Resolve the cause of the exception
-    m += "exception" -> FinagleServer.findCause(e)
-
-    m.result
-  }
 }
 
 object HttpAccessLogFilter {
@@ -120,6 +118,7 @@ object HttpAccessLogFilter {
 
   type HttpRequestLogger  = Request => Map[String, Any]
   type HttpResponseLogger = Response => Map[String, Any]
+  type HttpErrorLogger    = (Request, Throwable) => Map[String, Any]
   type HttpContextLogger  = Request => Map[String, Any]
 
   def defaultRequestLoggers: Seq[HttpRequestLogger] =
@@ -133,6 +132,11 @@ object HttpAccessLogFilter {
     Seq(
       basicResponseLogger,
       defaultResponseHeaderLogger
+    )
+
+  def defaultErrorLoggers: Seq[HttpErrorLogger] =
+    Seq(
+      defaultErrorLogger
     )
 
   def defaultContextLoggers: Seq[HttpContextLogger] = Seq.empty
@@ -188,6 +192,13 @@ object HttpAccessLogFilter {
   }
 
   def defaultResponseHeaderLogger(response: Response) = headerLogger(response.headerMap, Some("response_"))
+
+  def defaultErrorLogger(request: Request, e: Throwable): Map[String, Any] = {
+    val m = ListMap.newBuilder[String, Any]
+    // Resolve the cause of the exception
+    m += "exception" -> FinagleServer.findCause(e)
+    m.result
+  }
 
   import scala.jdk.CollectionConverters._
   private val headerSanitizeCache = new ConcurrentHashMap[String, String]().asScala
