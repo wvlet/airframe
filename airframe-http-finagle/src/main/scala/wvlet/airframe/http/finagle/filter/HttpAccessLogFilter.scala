@@ -48,7 +48,7 @@ case class HttpAccessLogFilter(
   def addErrorLogger(logger: HttpErrorLogger): HttpAccessLogFilter = {
     this.copy(errorLoggers = errorLoggers :+ logger)
   }
-  def aadContextLogger(logger: HttpContextLogger): HttpAccessLogFilter = {
+  def addContextLogger(logger: HttpContextLogger): HttpAccessLogFilter = {
     this.copy(contextLoggers = contextLoggers :+ logger)
   }
   def addExcludeHeaders(excludes: Set[String]): HttpAccessLogFilter = {
