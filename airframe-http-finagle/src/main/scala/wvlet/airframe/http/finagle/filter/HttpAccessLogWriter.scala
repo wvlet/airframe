@@ -32,7 +32,11 @@ trait HttpAccessLogWriter {
 
 object HttpAccessLogWriter {
 
-  def default           = new JSONHttpAccessLogWriter()
+  def default = new JSONHttpAccessLogWriter()
+
+  /**
+    * Creates an in-memory log writer. This is only for testing purpose. Do not use it in production.
+    */
   def inMemoryLogWriter = new InMemoryAccessLogWriter()
 
   /**
@@ -69,6 +73,9 @@ object HttpAccessLogWriter {
     }
   }
 
+  /**
+    * In-memory log writer for testing purpose. Not for production use.
+    */
   class InMemoryAccessLogWriter extends HttpAccessLogWriter {
     private var logs = Seq.newBuilder[Map[String, Any]]
 

@@ -115,11 +115,7 @@ case class HttpAccessLogFilter(
 
 object HttpAccessLogFilter {
 
-  def default: HttpAccessLogFilter = new HttpAccessLogFilter()
-  def inMemoryLogWriter: HttpAccessLogFilter =
-    new HttpAccessLogFilter(
-      httpAccessLogWriter = HttpAccessLogWriter.inMemoryLogWriter
-    )
+  def default: HttpAccessLogFilter                        = new HttpAccessLogFilter()
   def traceLoggingFilter: SimpleFilter[Request, Response] = FinagleServer.defaultRequestLogger
 
   type HttpRequestLogger  = Request => Map[String, Any]
