@@ -146,7 +146,7 @@ object HttpAccessLogFilter {
     // Unix time
     ListMap(
       "time" -> (currentTimeMillis / 1000L),
-      // Nano-sec timestamp
+      // timestamp with ms resolution and zone offset
       "event_time" -> LogTimestampFormatter.formatTimestampWithNoSpaace(currentTimeMillis)
     )
   }
