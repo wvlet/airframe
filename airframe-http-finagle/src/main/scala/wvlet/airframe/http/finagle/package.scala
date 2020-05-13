@@ -110,11 +110,13 @@ package object finagle {
   private def toMessage(buf: Buf): HttpMessage.Message = {
     buf match {
       case b: ByteArray =>
-        HttpMessage.ByteArrayMessage(ByteArray.Owned.extract(b))
+        new HttpMessage.LazyByteArrayMessage(ByteArray.Owned.extract(b))
       case c =>
-        val buf = new Array[Byte](c.length)
-        c.write(buf, 0)
-        HttpMessage.ByteArrayMessage(buf)
+        new HttpMessage.LazyByteArrayMessage({
+          val buf = new Array[Byte](c.length)
+          c.write(buf, 0)
+          buf
+        })
     }
   }
 

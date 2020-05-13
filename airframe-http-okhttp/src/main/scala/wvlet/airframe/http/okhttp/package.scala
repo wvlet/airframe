@@ -2,7 +2,7 @@ package wvlet.airframe.http
 
 import okhttp3.{Headers, MediaType, Request, Response}
 import okio.{Buffer, BufferedSink}
-import wvlet.airframe.http.HttpMessage.Message
+import wvlet.airframe.http.HttpMessage.{LazyByteArrayMessage, Message}
 
 import scala.jdk.CollectionConverters._
 
@@ -40,9 +40,11 @@ package object okhttp {
       m.result()
     }
     override def messageOf(request: Request): Message = {
-      val sink: BufferedSink = new Buffer()
-      Option(request.body()).foreach(_.writeTo(sink))
-      HttpMessage.ByteArrayMessage(sink.buffer().readByteArray())
+      new LazyByteArrayMessage({
+        val sink: BufferedSink = new Buffer()
+        Option(request.body()).foreach(_.writeTo(sink))
+        sink.buffer().readByteArray()
+      })
     }
     override def contentTypeOf(request: Request): Option[String] = Option(request.body()).map(_.contentType().toString)
     override def wrap(request: Request): HttpRequest[Request]    = OkHttpRequestWrapper(request)
@@ -57,8 +59,10 @@ package object okhttp {
   implicit object OkHttpResponseAdapter extends HttpResponseAdapter[Response] {
     override def statusCodeOf(res: Response): Int = res.code()
     override def messageOf(resp: Response): Message = {
-      val bytes = Option(resp.body()).map(_.bytes()).getOrElse(Array.empty)
-      HttpMessage.ByteArrayMessage(bytes)
+      new LazyByteArrayMessage({
+        val bytes = Option(resp.body()).map(_.bytes()).getOrElse(Array.empty)
+        bytes
+      })
     }
     override def contentTypeOf(res: Response): Option[String] = Option(res.body()).map(_.contentType().toString)
     override def wrap(resp: Response): HttpResponse[Response] = OkHttpResponseWrapper(resp)

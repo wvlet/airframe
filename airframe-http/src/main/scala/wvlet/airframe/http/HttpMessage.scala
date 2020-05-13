@@ -72,13 +72,13 @@ trait HttpMessage[Raw] {
     copyWith(StringMessage(content))
   }
   def withContent(content: Array[Byte]): Raw = {
-    copyWith(ByteArrayMessage(content))
+    copyWith(HttpMessage.byteArrayMessage(content))
   }
   def withJson(json: String): Raw = {
-    copyWith(StringMessage(json)).asInstanceOf[HttpMessage[Raw]].withContentTypeJson
+    copyWith(HttpMessage.stringMessage(json)).asInstanceOf[HttpMessage[Raw]].withContentTypeJson
   }
   def withMsgPack(msgPack: MsgPack): Raw = {
-    copyWith(ByteArrayMessage(msgPack)).asInstanceOf[HttpMessage[Raw]].withContentTypeMsgPack
+    copyWith(HttpMessage.byteArrayMessage(msgPack)).asInstanceOf[HttpMessage[Raw]].withContentTypeMsgPack
   }
   def withJsonOf[A](a: A): Raw = macro HttpMacros.toJson[A]
   def withJsonOf[A](a: A, codecFactory: MessageCodecFactory): Raw = macro HttpMacros.toJsonWithCodecFactory[A]
@@ -163,6 +163,19 @@ object HttpMessage {
     }
     override def toContentBytes: Array[Byte] = content
   }
+
+  class LazyByteArrayMessage(contentReader: => Array[Byte]) extends Message {
+    // Use lazy evaluation of content body to avoid unnecessary data copy
+    private lazy val content: Array[Byte] = contentReader
+    override def toString: String         = toContentString
+    override def toContentString: String = {
+      new String(content, StandardCharsets.UTF_8)
+    }
+    override def toContentBytes: Array[Byte] = content
+  }
+
+  def stringMessage(content: String): StringMessage            = StringMessage(content)
+  def byteArrayMessage(content: Array[Byte]): ByteArrayMessage = ByteArrayMessage(content)
 
   case class Request(
       method: String = HttpMethod.GET,
