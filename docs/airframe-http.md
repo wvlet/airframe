@@ -321,13 +321,12 @@ Router
  .andThen[MyApp]
 ```
 
-
 ### Thread-Local Storage
 
 To pass data between filters and applications, you can use thread-local storage in the context:
 
 ```scala
-object LoggingFilter extends FinagleFilter with LogSupport {
+object AuthLogFilter extends FinagleFilter with LogSupport {
   def apply(request: Request, context: FinagleContext): Future[Response] = {
     context(request).map { response =>
       // Read the thread-local parameter set in the context(request)
@@ -353,11 +352,57 @@ object AuthFilter extends FinagleFilter {
 
 
 Router
-  .add[LoggingFilter]
-  .andThen[AuthFilter]
+  .add(AuthLogFilter)
+  .andThen(AuthFilter)
   .andThen[MyApp]
 ```
 
 Using local variables inside filters will not work because the request processing will happen when Future[X] is evaluated, so we must use thead-local parmeter holder, which will be prepared for each request call.
 
 
+## Access Logs
+
+airframe-http stores HTTP access logs at `log/http-access.json` by default in JSON format. When the log file becomes large, it will be compressed with gz and rotated automatically. 
+
+The default logger will record request parameters, request headers (except Authorization headers), response parameters, and response headers.
+
+Example JSON logs:
+```json
+{"time":1589319681,"event_time":"2020-05-12T14:41:21.567-0700","method":"GET","path":"/user/1","uri":"/user/1","request_size":0,"remote_host":"127.0.0.1","remote_port":52786,"host":"localhost:52785","connection":"Keep-Alive","user_agent":"okhttp/3.12.11","x_request_id":"10","content_length":"0","accept_encoding":"gzip","response_time_ms":714,"status_code":200,"status_code_name":"OK","response_content_type":"application/json;charset=utf-8"}
+{"time":1589319681,"event_time":"2020-05-12T14:41:21.573-0700","method":"GET","path":"/user/info","uri":"/user/info?id=2&name=kai","query_string":"id=2&name=kai","request_size":0,"remote_host":"127.0.0.1","remote_port":52786,"host":"localhost:52785","connection":"Keep-Alive","user_agent":"okhttp/3.12.11","x_request_id":"10","content_length":"0","accept_encoding":"gzip","response_time_ms":921,"status_code":200,"status_code_name":"OK","response_content_type":"application/json;charset=utf-8"}
+```
+
+For most of the cases, using the default logger is sufficient. If necessary, you can customize the logging by using your own request/response loggers: 
+
+```scala
+import wvlet.airframe.http.finagle._
+
+Finagle
+  .server
+  .withLoggingFilter {
+     HttpAccessLogFilter
+      .default
+      .addRequestLogger(...)
+      .addResponseLogger(...)
+      // Remove unnecessary HTTP headers from logs
+      .addExcludeHeaders(Set("X-XXX-Header"))
+  }
+```
+
+
+### Reading Access Logs with Fluentd
+
+The generated HTTP access log files can be processed in Fluentd. For example, if you want to store access logs to Treasure Data, add the following [in_tail](https://docs.fluentd.org/input/tail) fluentd configuration:
+
+```
+<source>
+  @type tail
+  # Your log file location and position file
+  path     /var/log/http_access.json
+  pos_file /var/log/td-agent/http_access.json.pos
+  # [Optional] Append tags to the log (For using td-agent)  
+  tag      td.(your database name).http_access
+  format   json
+  time_key time
+</source>
+```

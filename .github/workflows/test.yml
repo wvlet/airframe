@@ -19,14 +19,14 @@ jobs:
     name: Code format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: scalafmt test
         run: ./sbt scalafmtCheckAll
   test_2_12:
     name: Scala 2.12
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
@@ -41,7 +41,7 @@ jobs:
     name: Scala 2.13
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
@@ -56,7 +56,7 @@ jobs:
     name: Scala 2.11
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
@@ -71,7 +71,7 @@ jobs:
     name: Scala.js / Scala 2.12
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
@@ -92,7 +92,7 @@ jobs:
     name: Scala.js / Scala 2.13
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
@@ -112,7 +112,7 @@ jobs:
     name: sbt-airframe
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11

@@ -10,7 +10,7 @@ jobs:
     name: Publish Scala JVM
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       # Install OpenJDK 11
       - uses: olafurpg/setup-scala@v5
         with:
