@@ -106,8 +106,20 @@ object DOMRenderer extends LogSupport {
           node.mountHere(textNode, anchor)
           Cancelable.empty
         case EntityRef(entityName) =>
-          val domNode = dom.document.createTextNode("").asInstanceOf[dom.Element]
-          domNode.innerHTML = s"&${entityName};"
+          // Wrap entity ref with a span tag.
+          // This is a workaround if the text is inserted in the middle of text element.
+          val domNode = dom.document.createElement("span");
+          val entity = {
+            var x = entityName.trim
+            if (!x.startsWith("&")) {
+              x = s"&${x}"
+            }
+            if (!x.endsWith(";")) {
+              x = s"${x};"
+            }
+            x
+          }
+          domNode.innerHTML = entity
           node.mountHere(domNode, anchor)
           Cancelable.empty
         case v: Int =>
