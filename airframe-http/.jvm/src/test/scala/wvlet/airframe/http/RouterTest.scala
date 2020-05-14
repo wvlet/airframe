@@ -19,6 +19,7 @@ import wvlet.airframe.http.example._
 import wvlet.airframe.http.router.{ControllerProvider, RouteMatcher}
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airspec.AirSpec
 
 /**
@@ -141,7 +142,9 @@ class RouterTest extends AirSpec {
       val ret =
         router
           .findRoute(request)
-          .flatMap { m => m.call(session, serviceProvider, request, null, MessageCodecFactory.defaultFactory) }
+          .flatMap { m =>
+            m.call(session, serviceProvider, request, HttpContext.mockContext, MessageCodecFactory.defaultFactory)
+          }
 
       ret shouldBe defined
       ret.get shouldBe exepected

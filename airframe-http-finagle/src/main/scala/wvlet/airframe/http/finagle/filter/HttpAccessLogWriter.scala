@@ -68,6 +68,7 @@ object HttpAccessLogWriter {
 
     override def write(log: Map[String, Any]): Unit = {
       // Generate one-liner JSON log
+      // TODO: Handle too large log data (e.g., binary data)
       val json = mapCodec.toJson(log)
       asyncLogHandler.publish(new java.util.logging.LogRecord(Level.INFO, json))
     }

@@ -12,6 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.http.HttpMessage.{Request, Response}
+
+import scala.concurrent.Future
 import scala.language.higherKinds
 
 /***
@@ -86,4 +89,28 @@ object HttpContext {
     }
   }
 
+  /**
+    * Mock HttpContext for testing
+    */
+  private[http] def mockContext: HttpContext[Request, Response, Future] = {
+    new HttpContext[Request, Response, Future] {
+      override protected def backend: HttpBackend[
+        Request,
+        Response,
+        Future
+      ] = ???
+
+      /**
+        * Process the preceding filters and get the resulting Future[Response]
+        */
+      override def apply(
+          request: Request
+      ): Future[Response] = ???
+
+      override def setThreadLocal[A](key: String, value: A): Unit = {
+        // no-op
+      }
+      override def getThreadLocal[A](key: String): Option[A] = None
+    }
+  }
 }

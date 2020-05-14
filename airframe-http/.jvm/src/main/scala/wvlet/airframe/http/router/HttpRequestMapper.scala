@@ -14,16 +14,8 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
-import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
-import wvlet.airframe.http.{
-  HttpContext,
-  HttpMessage,
-  HttpMethod,
-  HttpMultiMap,
-  HttpMultiMapCodec,
-  HttpRequest,
-  HttpRequestAdapter
-}
+import wvlet.airframe.codec.{JSONCodec, MessageCodecFactory}
+import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.reflect.ReflectMethodSurface

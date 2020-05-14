@@ -18,9 +18,10 @@ import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import com.twitter.finagle.http.{HeaderMap, Request, Response}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
-import wvlet.airframe.http.{HttpHeader, HttpStatus}
-import wvlet.airframe.http.finagle.FinagleServer
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter.{HttpRequestLogger, _}
+import wvlet.airframe.http.finagle.{FinagleBackend, FinagleServer}
+import wvlet.airframe.http.{HttpHeader, HttpStatus}
+import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogTimestampFormatter
 
 import scala.collection.immutable.ListMap
@@ -139,7 +140,10 @@ object HttpAccessLogFilter {
       defaultErrorLogger
     )
 
-  def defaultContextLoggers: Seq[HttpContextLogger] = Seq.empty
+  def defaultContextLoggers: Seq[HttpContextLogger] =
+    Seq(
+      defaultRPCLogger
+    )
 
   def unixTimeLogger(request: Request): Map[String, Any] = {
     val currentTimeMillis = System.currentTimeMillis()
@@ -198,6 +202,23 @@ object HttpAccessLogFilter {
     // Resolve the cause of the exception
     m += "exception" -> FinagleServer.findCause(e)
     m.result
+  }
+
+  def defaultRPCLogger(request: Request): Map[String, Any] = {
+    val m = ListMap.newBuilder[String, Any]
+    FinagleBackend.getThreadLocal("rpc").foreach { x: Any =>
+      x match {
+        case (methodSurface: MethodSurface, args: Seq[Any]) =>
+          m += "rpc_method" -> methodSurface.name
+          m += "rpc_class"  -> methodSurface.owner.fullName
+          val rpcArgs = for ((p, arg) <- methodSurface.args.zip(args)) yield {
+            p.name -> arg
+          }
+          m += "rpc_args" -> rpcArgs.toMap
+        case _ =>
+      }
+    }
+    m.result()
   }
 
   import scala.jdk.CollectionConverters._
