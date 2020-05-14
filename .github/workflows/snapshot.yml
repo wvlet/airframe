@@ -17,8 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 10000
       # Fetch all tags so that sbt-dynver can find the previous release version
-      - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+      - run: git fetch --tags
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
