@@ -14,10 +14,10 @@
 package wvlet.airframe.http.finagle
 import java.lang.reflect.InvocationTargetException
 
+import com.twitter.finagle._
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.stats.StatsReceiver
 import com.twitter.finagle.tracing.Tracer
-import com.twitter.finagle._
 import com.twitter.util.{Await, Future}
 import javax.annotation.PostConstruct
 import wvlet.airframe._
@@ -26,7 +26,7 @@ import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.http.router.{ControllerProvider, ResponseHandler}
-import wvlet.airframe.http.{HttpServerException, Router}
+import wvlet.airframe.http.{HttpBackend, HttpServerException, Router}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -164,7 +164,9 @@ case class FinagleServerConfig(
     * If you want to keep running the server, call server.waitServerTermination inside the code block.
     */
   def start[U](body: FinagleServer => U): U = {
-    newFinagleServerDesign(this).run[FinagleServer, U] { server => body(server) }
+    newFinagleServerDesign(this).run[FinagleServer, U] { server =>
+      body(server)
+    }
   }
 }
 
@@ -240,16 +242,15 @@ object FinagleServer extends LogSupport {
         service(request).rescue {
           case e: Throwable =>
             val ex = findCause(e)
-            ex match {
-              case e: HttpServerException => logger.warn(s"${request} failed: ${e.getMessage}")
-              case other                  => logger.warn(s"${request} failed: ${other}", other)
-            }
+            FinagleBackend.setThreadLocal(HttpBackend.TLS_KEY_SERVER_EXCEPTION, ex)
             ex match {
               case e: HttpServerException =>
+                logger.warn(s"${request} failed: ${e.getMessage}", findCause(e.getCause))
                 // HttpServerException is a properly handled exception, so convert it to an error response
                 Future.value(convertToFinagleResponse(e.toResponse))
-              case _ =>
-                // Just return internal server failure with 500 respone code
+              case other =>
+                logger.warn(s"${request} failed: ${other}", other)
+                // Just return internal server failure with 500 response code
                 Future.value(Response(Status.InternalServerError))
             }
         }

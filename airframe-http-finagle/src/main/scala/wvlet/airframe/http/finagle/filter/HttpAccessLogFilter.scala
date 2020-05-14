@@ -18,9 +18,10 @@ import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import com.twitter.finagle.http.{HeaderMap, Request, Response}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
-import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter.{HttpRequestLogger, _}
+import wvlet.airframe.http.finagle.FinagleServer.findCause
+import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter._
 import wvlet.airframe.http.finagle.{FinagleBackend, FinagleServer}
-import wvlet.airframe.http.{HttpHeader, HttpStatus}
+import wvlet.airframe.http.{HttpBackend, HttpHeader, HttpServerException, HttpStatus}
 import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogTimestampFormatter
 
@@ -30,11 +31,11 @@ import scala.util.control.NonFatal
 case class HttpAccessLogFilter(
     httpAccessLogWriter: HttpAccessLogWriter = HttpAccessLogWriter.default,
     // Loggers for request contents
-    requestLoggers: Seq[HttpRequestLogger] = defaultRequestLoggers,
+    requestLoggers: Seq[HttpRequestLogger] = HttpAccessLogFilter.defaultRequestLoggers,
     // Loggers for response contents
-    responseLoggers: Seq[HttpResponseLogger] = defaultResponseLoggers,
+    responseLoggers: Seq[HttpResponseLogger] = HttpAccessLogFilter.defaultResponseLoggers,
     // Loggers for request errors
-    errorLoggers: Seq[HttpErrorLogger] = defaultErrorLoggers,
+    errorLoggers: Seq[HttpErrorLogger] = HttpAccessLogFilter.defaultErrorLoggers,
     // Loggers for thread-local storage contents
     contextLoggers: Seq[HttpContextLogger] = defaultContextLoggers,
     excludeHeaders: Set[String] = Set(HttpHeader.Authorization, HttpHeader.ProxyAuthorization)
@@ -73,15 +74,13 @@ case class HttpAccessLogFilter(
     val currentNanoTime = System.nanoTime()
     def millisSince     = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - currentNanoTime)
 
-    def reportError(e: Throwable): Future[Response] = {
-      val responseTimeMillis = millisSince
-      m += "response_time_ms" -> responseTimeMillis
+    def reportError(e: Throwable): Unit = {
+      m += "response_time_ms" -> millisSince
       reportContext
       for (l <- errorLoggers) {
         m ++= l(request, e)
       }
       emit(m.result())
-      Future.exception(e)
     }
 
     def reportContext: Unit = {
@@ -98,16 +97,28 @@ case class HttpAccessLogFilter(
           for (l <- responseLoggers) {
             m ++= l(response)
           }
+
+          // Report a server error that is properly handled at FinagleServer.defaultErrorFilter
+          FinagleBackend.getThreadLocal(HttpBackend.TLS_KEY_SERVER_EXCEPTION).foreach { x: Any =>
+            x match {
+              case e: Throwable =>
+                reportError(e)
+              case _ =>
+            }
+          }
+
           emit(m.result())
           response
         }.rescue {
           case NonFatal(e: Throwable) =>
             reportError(e)
+            Future.exception(e)
         }
     } catch {
       // When an unknown internal error happens
       case e: Throwable =>
         reportError(e)
+        Future.exception(e)
     }
   }
 }
@@ -126,24 +137,18 @@ object HttpAccessLogFilter {
     Seq(
       unixTimeLogger,
       basicRequestLogger,
-      defaultRequestHeaderLogger
+      requestHeaderLogger
     )
 
   def defaultResponseLoggers: Seq[HttpResponseLogger] =
     Seq(
       basicResponseLogger,
-      defaultResponseHeaderLogger
+      responseHeaderLogger
     )
 
-  def defaultErrorLoggers: Seq[HttpErrorLogger] =
-    Seq(
-      defaultErrorLogger
-    )
+  def defaultErrorLoggers: Seq[HttpErrorLogger] = Seq(errorLogger)
 
-  def defaultContextLoggers: Seq[HttpContextLogger] =
-    Seq(
-      defaultRPCLogger
-    )
+  def defaultContextLoggers: Seq[HttpContextLogger] = Seq(rpcLogger)
 
   def unixTimeLogger(request: Request): Map[String, Any] = {
     val currentTimeMillis = System.currentTimeMillis()
@@ -172,7 +177,8 @@ object HttpAccessLogFilter {
     m.result
   }
 
-  def defaultRequestHeaderLogger(request: Request): Map[String, Any] = headerLogger(request.headerMap, None)
+  def requestHeaderLogger(request: Request): Map[String, Any] = headerLogger(request.headerMap, None)
+
   def headerLogger(headerMap: HeaderMap, prefix: Option[String]): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     for ((key, value) <- headerMap) {
@@ -195,26 +201,36 @@ object HttpAccessLogFilter {
     m.result
   }
 
-  def defaultResponseHeaderLogger(response: Response) = headerLogger(response.headerMap, Some("response_"))
+  def responseHeaderLogger(response: Response) = headerLogger(response.headerMap, Some("response_"))
 
-  def defaultErrorLogger(request: Request, e: Throwable): Map[String, Any] = {
+  def errorLogger(request: Request, e: Throwable): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     // Resolve the cause of the exception
-    m += "exception" -> FinagleServer.findCause(e)
+    findCause(e) match {
+      case HttpServerException(_, cause) =>
+        // If the cause is provided, record it. Otherwise, recording the status_code is sufficient.
+        if (cause != null) {
+          m += "exception" -> findCause(cause)
+        }
+      case other =>
+        m += "exception" -> other
+    }
     m.result
   }
 
-  def defaultRPCLogger(request: Request): Map[String, Any] = {
+  def rpcLogger(request: Request): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
-    FinagleBackend.getThreadLocal("rpc").foreach { x: Any =>
+    FinagleBackend.getThreadLocal(HttpBackend.TLS_KEY_RPC).foreach { x: Any =>
       x match {
         case (methodSurface: MethodSurface, args: Seq[Any]) =>
-          m += "rpc_method" -> methodSurface.name
           m += "rpc_class"  -> methodSurface.owner.fullName
-          val rpcArgs = for ((p, arg) <- methodSurface.args.zip(args)) yield {
+          m += "rpc_method" -> methodSurface.name
+          val rpcArgs = (for ((p, arg) <- methodSurface.args.zip(args)) yield {
             p.name -> arg
+          }).toMap
+          if (rpcArgs.nonEmpty) {
+            m += "rpc_args" -> rpcArgs
           }
-          m += "rpc_args" -> rpcArgs.toMap
         case _ =>
       }
     }

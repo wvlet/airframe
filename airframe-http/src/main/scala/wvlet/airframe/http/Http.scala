@@ -60,6 +60,13 @@ object Http {
     new HttpServerException(status)
   }
 
+  /**
+    * Create a new server exception with an explicit cause
+    */
+  def serverException(status: HttpStatus, cause: Throwable): HttpServerException = {
+    new HttpServerException(status, cause.getMessage, cause)
+  }
+
   import scala.language.experimental.macros
 
   /**
