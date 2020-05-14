@@ -207,13 +207,18 @@ object HttpAccessLogFilter {
     val m = ListMap.newBuilder[String, Any]
     // Resolve the cause of the exception
     findCause(e) match {
-      case HttpServerException(_, cause) =>
+      case null =>
+      // no-op
+      case se @ HttpServerException(_, cause) =>
         // If the cause is provided, record it. Otherwise, recording the status_code is sufficient.
         if (cause != null) {
-          m += "exception" -> findCause(cause)
+          val rootCause = findCause(cause)
+          m += "exception"         -> rootCause
+          m += "exception_message" -> rootCause.getMessage
         }
       case other =>
-        m += "exception" -> other
+        m += "exception"         -> other
+        m += "exception_message" -> other.getMessage
     }
     m.result
   }

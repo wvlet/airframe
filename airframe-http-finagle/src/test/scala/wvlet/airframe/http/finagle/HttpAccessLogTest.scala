@@ -20,6 +20,7 @@ import wvlet.airframe.http.finagle.filter.HttpAccessLogWriter.JSONHttpAccessLogW
 import wvlet.airframe.http.finagle.filter.{HttpAccessLogConfig, HttpAccessLogFilter, HttpAccessLogWriter}
 import wvlet.airframe.http.{Endpoint, Http, HttpMethod, HttpServerException, HttpStatus, Router}
 import wvlet.airspec.AirSpec
+import wvlet.log.Logger
 import wvlet.log.io.IOUtil
 
 /**
@@ -50,52 +51,53 @@ object HttpAccessLogTest extends AirSpec {
 
   private val router = Router.add[MyService]
 
-  test("Record access logs") {
-    val inMemoryLogWriter = HttpAccessLogWriter.inMemoryLogWriter
+  private val inMemoryLogWriter = HttpAccessLogWriter.inMemoryLogWriter
 
-    test(
-      "contain all basic parameters",
-      design = Finagle.server
-        .withLoggingFilter(new HttpAccessLogFilter(httpAccessLogWriter = inMemoryLogWriter))
-        .withRouter(router)
-        .design
-        .add(Finagle.client.noRetry.syncClientDesign)
-    ) { client: FinagleSyncClient =>
-      test("basic log entries") {
-        val resp = client.get[String](
-          "/user/1?session_id=xxx",
-          { r: Request =>
-            // Add a custom header
-            r.headerMap.put("X-App-Version", "1.0")
-            r
-          }
-        )
-        resp shouldBe "hello user:1"
+  test(
+    "Record access logs",
+    design = Finagle.server
+      .withLoggingFilter(new HttpAccessLogFilter(httpAccessLogWriter = inMemoryLogWriter))
+      .withRouter(router)
+      .design
+      .add(Finagle.client.noRetry.syncClientDesign)
+  ) { client: FinagleSyncClient =>
+    test("basic log entries") {
+      val resp = client.get[String](
+        "/user/1?session_id=xxx",
+        { r: Request =>
+          // Add a custom header
+          r.headerMap.put("X-App-Version", "1.0")
+          r
+        }
+      )
+      resp shouldBe "hello user:1"
 
-        val log = inMemoryLogWriter.getLogs.head
-        debug(log)
-        log.get("time") shouldBe defined
-        log.get("method") shouldBe Some("GET")
-        log.get("path") shouldBe Some("/user/1")
-        log.get("uri") shouldBe Some("/user/1?session_id=xxx")
-        log.get("query_string") shouldBe Some("session_id=xxx")
-        log.get("request_size") shouldBe Some(0)
-        log.get("remote_host") shouldBe defined
-        log.get("remote_port") shouldBe defined
-        log.get("response_time_ms") shouldBe defined
-        log.get("status_code") shouldBe Some(200)
-        log.get("status_code_name") shouldBe Some(HttpStatus.Ok_200.reason)
-        // Custom headers
-        log.get("x_app_version") shouldBe Some("1.0")
+      val log = inMemoryLogWriter.getLogs.head
+      debug(log)
+      log.get("time") shouldBe defined
+      log.get("method") shouldBe Some("GET")
+      log.get("path") shouldBe Some("/user/1")
+      log.get("uri") shouldBe Some("/user/1?session_id=xxx")
+      log.get("query_string") shouldBe Some("session_id=xxx")
+      log.get("request_size") shouldBe Some(0)
+      log.get("remote_host") shouldBe defined
+      log.get("remote_port") shouldBe defined
+      log.get("response_time_ms") shouldBe defined
+      log.get("status_code") shouldBe Some(200)
+      log.get("status_code_name") shouldBe Some(HttpStatus.Ok_200.reason)
+      // Custom headers
+      log.get("x_app_version") shouldBe Some("1.0")
 
-        // RPC logs
-        log.get("rpc_method") shouldBe Some("user")
-        log.get("rpc_class") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest$MyService")
-        log.get("rpc_args") shouldBe Some(Map("id" -> 1))
-      }
+      // RPC logs
+      log.get("rpc_method") shouldBe Some("user")
+      log.get("rpc_class") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest$MyService")
+      log.get("rpc_args") shouldBe Some(Map("id" -> 1))
+    }
 
+    Logger("wvlet.airframe.http").suppressWarnings {
       test("exception logs") {
         warn("Start exception logging test")
+
         // Test exception logs
         inMemoryLogWriter.clear()
         val resp = client.sendSafe(Request(Method.Delete, "/user/0"))
@@ -109,6 +111,7 @@ object HttpAccessLogTest extends AirSpec {
           case _ =>
             fail("Can't find exception log")
         }
+        log.get("exception_message").get.toString shouldBe "failed to search user:0"
       }
 
       test("Suppress regular HttpServerException log") {
@@ -120,6 +123,7 @@ object HttpAccessLogTest extends AirSpec {
 
         resp.statusCode shouldBe HttpStatus.Forbidden_403.code
         log.get("exception") shouldBe empty
+        log.get("exception_message") shouldBe empty
       }
 
       test("Report HttpServerException with cause") {
@@ -136,6 +140,7 @@ object HttpAccessLogTest extends AirSpec {
           case _ =>
             fail("Can't find exception log")
         }
+        log.get("exception_message").get.toString shouldBe "failed to read profile"
       }
     }
   }
@@ -181,5 +186,4 @@ object HttpAccessLogTest extends AirSpec {
       log.get("rpc_args") shouldBe Some(Map("id" -> 2))
     }
   }
-
 }
