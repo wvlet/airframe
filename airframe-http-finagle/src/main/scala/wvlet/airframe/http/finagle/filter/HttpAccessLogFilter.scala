@@ -57,10 +57,10 @@ case class HttpAccessLogFilter(
     this.copy(excludeHeaders = excludeHeaders ++ excludes)
   }
 
-  private val sanitizedExcludeHeader = excludeHeaders.map(sanitizeHeader)
+  private val sanitizedExcludeHeaders = excludeHeaders.map(sanitizeHeader)
 
   private def emit(m: Map[String, Any]) = {
-    val filtered = m.filterNot(x => sanitizedExcludeHeader.contains(x._1))
+    val filtered = m.filterNot(x => sanitizedExcludeHeaders.contains(x._1))
     httpAccessLogWriter.write(filtered)
   }
 
@@ -80,7 +80,6 @@ case class HttpAccessLogFilter(
       for (l <- errorLoggers) {
         m ++= l(request, e)
       }
-      emit(m.result())
     }
 
     def reportContext: Unit = {
@@ -112,12 +111,14 @@ case class HttpAccessLogFilter(
         }.rescue {
           case NonFatal(e: Throwable) =>
             reportError(e)
+            emit(m.result())
             Future.exception(e)
         }
     } catch {
       // When an unknown internal error happens
       case e: Throwable =>
         reportError(e)
+        emit(m.result())
         Future.exception(e)
     }
   }
