@@ -157,6 +157,12 @@ case class FinagleServerConfig(
     new FinagleServer(finagleConfig = this, newService(session))
   }
 
+  /**
+    * Start the server and execute the code block. After finishing the code block,
+    * it will stop the server.
+    *
+    * If you want to keep running the server, call server.waitServerTermination inside the code block.
+    */
   def start[U](body: FinagleServer => U): U = {
     newFinagleServerDesign(this).run[FinagleServer, U] { server => body(server) }
   }
