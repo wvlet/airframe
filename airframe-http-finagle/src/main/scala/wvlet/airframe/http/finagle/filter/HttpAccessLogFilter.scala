@@ -37,7 +37,7 @@ case class HttpAccessLogFilter(
     // Loggers for request errors
     errorLoggers: Seq[HttpErrorLogger] = HttpAccessLogFilter.defaultErrorLoggers,
     // Loggers for thread-local storage contents
-    contextLoggers: Seq[HttpContextLogger] = defaultContextLoggers,
+    contextLoggers: Seq[HttpContextLogger] = HttpAccessLogFilter.defaultContextLoggers,
     excludeHeaders: Set[String] = Set(HttpHeader.Authorization, HttpHeader.ProxyAuthorization)
 ) extends SimpleFilter[Request, Response] {
 
