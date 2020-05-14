@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.finagle
-import java.io.FileInputStream
 
 import com.twitter.finagle.http.Request
 import wvlet.airframe.Design
@@ -30,7 +29,7 @@ object HttpAccessLogTest extends AirSpec {
 
   trait MyService {
     @Endpoint(path = "/user/:id")
-    def user(id: String) = {
+    def user(id: Int) = {
       s"hello user:${id}"
     }
   }
@@ -71,6 +70,11 @@ object HttpAccessLogTest extends AirSpec {
       log.get("status_code_name") shouldBe Some(HttpStatus.Ok_200.reason)
       // Custom headers
       log.get("x_app_version") shouldBe Some("1.0")
+
+      // RPC logs
+      log.get("rpc_method") shouldBe Some("user")
+      log.get("rpc_class") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest$MyService")
+      log.get("rpc_args") shouldBe Some(Map("id" -> 1))
     }
   }
 
@@ -109,6 +113,10 @@ object HttpAccessLogTest extends AirSpec {
       log.get("response_time_ms") shouldBe defined
       log.get("status_code") shouldBe Some(200)
       log.get("status_code_name") shouldBe Some(HttpStatus.Ok_200.reason)
+
+      log.get("rpc_method") shouldBe Some("user")
+      log.get("rpc_class") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest$MyService")
+      log.get("rpc_args") shouldBe Some(Map("id" -> 2))
     }
   }
 
