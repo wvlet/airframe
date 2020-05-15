@@ -9,6 +9,7 @@ on:
       - '**.scala'
       - '**.java'
       - '**.sbt'
+      - '**/codecov.yml'
 
 jobs:
   coverage:
