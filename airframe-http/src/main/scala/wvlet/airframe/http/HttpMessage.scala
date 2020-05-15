@@ -200,28 +200,7 @@ object HttpMessage {
     /**
       * Extract the query string parameters as HttpMultiMap
       */
-    def query: HttpMultiMap = {
-      val u = uri
-      u.indexOf("?") match {
-        case -1 =>
-          HttpMultiMap.empty
-        case pos =>
-          var m = HttpMultiMap.newBuilder
-          if (pos + 1 < u.length) {
-            val queryString = u.substring(pos + 1)
-            queryString
-              .split("&").map { x =>
-                x.split("=") match {
-                  case Array(key, value) =>
-                    m = m.add(key, value)
-                  case _ =>
-                    m = m.add(x, "")
-                }
-              }
-          }
-          m.result()
-      }
-    }
+    def query: HttpMultiMap = extractQueryFromUri(uri)
 
     def withFilter(f: Request => Request): Request = f(this)
     def withMethod(method: String): Request        = this.copy(method = method)
@@ -229,6 +208,28 @@ object HttpMessage {
 
     override protected def copyWith(newHeader: HttpMultiMap): Request = this.copy(header = newHeader)
     override protected def copyWith(newMessage: Message): Request     = this.copy(message = newMessage)
+  }
+
+  private[http] def extractQueryFromUri(uri: String): HttpMultiMap = {
+    uri.indexOf("?") match {
+      case -1 =>
+        HttpMultiMap.empty
+      case pos =>
+        var m = HttpMultiMap.newBuilder
+        if (pos + 1 < uri.length) {
+          val queryString = uri.substring(pos + 1)
+          queryString
+            .split("&").map { x =>
+              x.split("=") match {
+                case Array(key, value) =>
+                  m = m.add(key, value)
+                case _ =>
+                  m = m.add(x, "")
+              }
+            }
+        }
+        m.result()
+    }
   }
 
   object Request {
