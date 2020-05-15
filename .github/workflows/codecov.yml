@@ -9,6 +9,7 @@ on:
       - '**.scala'
       - '**.java'
       - '**.sbt'
+      - '**/codecov.yml'
 
 jobs:
   coverage:
@@ -26,9 +27,8 @@ jobs:
           restore-keys: ${{ runner.os }}-scala-2.12-coverage-
       - name: Scala 2.12 test with coverage report
         run: ./sbt "; coverage; projectJVM/test; projectJVM/coverageReport; projectJVM/coverageAggregate"
-      - uses: codecov/codecov-action@v1.0.2
+      - uses: codecov/codecov-action@v1.0.7
         with:
-          token: ${{ format('{3}-{0}-{2}-{4}-{1}', 'ee7b', '73fae328f624', '470b', '6e7833d4', 'b923') }}
           name: airframe-coverage
           file: ./projectJVM/target/scala-2.12/scoverage-report/scoverage.xml
       - name: Archive code coverage results
