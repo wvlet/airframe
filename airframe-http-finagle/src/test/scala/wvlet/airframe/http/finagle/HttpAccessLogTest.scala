@@ -13,18 +13,20 @@
  */
 package wvlet.airframe.http.finagle
 
-import com.twitter.finagle.http.Request
+import com.twitter.finagle.http.{Method, Request, Response}
+import com.twitter.util.Future
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.finagle.filter.HttpAccessLogWriter.JSONHttpAccessLogWriter
 import wvlet.airframe.http.finagle.filter.{HttpAccessLogConfig, HttpAccessLogFilter, HttpAccessLogWriter}
-import wvlet.airframe.http.{Endpoint, HttpStatus, Router}
+import wvlet.airframe.http.{Endpoint, Http, HttpMethod, HttpServerException, HttpStatus, Router}
 import wvlet.airspec.AirSpec
+import wvlet.log.Logger
 import wvlet.log.io.IOUtil
 
 /**
   *
- */
+  */
 object HttpAccessLogTest extends AirSpec {
 
   trait MyService {
@@ -32,19 +34,48 @@ object HttpAccessLogTest extends AirSpec {
     def user(id: Int) = {
       s"hello user:${id}"
     }
+
+    @Endpoint(method = HttpMethod.DELETE, path = "/user/:id")
+    def deleteUser(id: Int): String = {
+      throw new IllegalStateException(s"failed to search user:${id}")
+    }
+
+    @Endpoint(path = "/user/:id/profile")
+    def profile(id: Int): String = {
+      if (id == 0) {
+        throw Http.serverException(HttpStatus.Forbidden_403)
+      } else {
+        throw Http.serverException(HttpStatus.Unauthorized_401, new IllegalStateException("failed to read profile"))
+      }
+    }
   }
 
-  private val router = Router.add[MyService]
+  trait AddExtraHeaderFilter extends FinagleFilter {
+    override def apply(
+        request: Request,
+        context: Context
+    ): Future[Response] = {
+      request.headerMap.put("X-Trace-Id", "012345")
+      context(request)
+    }
+  }
 
-  test("Record access logs") {
-    val inMemoryLogWriter = HttpAccessLogWriter.inMemoryLogWriter
+  private val router =
+    Router
+      .add[AddExtraHeaderFilter]
+      .andThen[MyService]
 
-    test(
-      "contain all basic parameters",
-      design = Finagle.server
-        .withLoggingFilter(new HttpAccessLogFilter(httpAccessLogWriter = inMemoryLogWriter))
-        .withRouter(router).designWithSyncClient
-    ) { client: FinagleSyncClient =>
+  private val inMemoryLogWriter = HttpAccessLogWriter.inMemoryLogWriter
+
+  test(
+    "Record access logs",
+    design = Finagle.server
+      .withLoggingFilter(new HttpAccessLogFilter(httpAccessLogWriter = inMemoryLogWriter))
+      .withRouter(router)
+      .design
+      .add(Finagle.client.noRetry.syncClientDesign)
+  ) { client: FinagleSyncClient =>
+    test("basic log entries") {
       val resp = client.get[String](
         "/user/1?session_id=xxx",
         { r: Request =>
@@ -71,10 +102,63 @@ object HttpAccessLogTest extends AirSpec {
       // Custom headers
       log.get("x_app_version") shouldBe Some("1.0")
 
+      // Headers added in a filter
+      log.get("x_trace_id") shouldBe Some("012345")
+
       // RPC logs
       log.get("rpc_method") shouldBe Some("user")
       log.get("rpc_class") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest$MyService")
       log.get("rpc_args") shouldBe Some(Map("id" -> 1))
+    }
+
+    Logger("wvlet.airframe.http").suppressWarnings {
+      test("exception logs") {
+        warn("Start exception logging test")
+
+        // Test exception logs
+        inMemoryLogWriter.clear()
+        val resp = client.sendSafe(Request(Method.Delete, "/user/0"))
+        val log  = inMemoryLogWriter.getLogs.head
+        debug(log)
+
+        resp.statusCode shouldBe HttpStatus.InternalServerError_500.code
+        log.get("exception") match {
+          case Some(e: IllegalStateException) if e.getMessage.contains("failed to search user:0") =>
+          // OK
+          case _ =>
+            fail("Can't find exception log")
+        }
+        log.get("exception_message").get.toString shouldBe "failed to search user:0"
+      }
+
+      test("Suppress regular HttpServerException log") {
+        // Test exception logs
+        inMemoryLogWriter.clear()
+        val resp = client.sendSafe(Request("/user/0/profile"))
+        val log  = inMemoryLogWriter.getLogs.head
+        debug(log)
+
+        resp.statusCode shouldBe HttpStatus.Forbidden_403.code
+        log.get("exception") shouldBe empty
+        log.get("exception_message") shouldBe empty
+      }
+
+      test("Report HttpServerException with cause") {
+        // Test exception logs
+        inMemoryLogWriter.clear()
+        val resp = client.sendSafe(Request("/user/1/profile"))
+        val log  = inMemoryLogWriter.getLogs.head
+        debug(log)
+
+        resp.statusCode shouldBe HttpStatus.Unauthorized_401.code
+        log.get("exception") match {
+          case Some(e: IllegalStateException) if e.getMessage.contains("failed to read profile") =>
+          // OK
+          case _ =>
+            fail("Can't find exception log")
+        }
+        log.get("exception_message").get.toString shouldBe "failed to read profile"
+      }
     }
   }
 
@@ -119,5 +203,4 @@ object HttpAccessLogTest extends AirSpec {
       log.get("rpc_args") shouldBe Some(Map("id" -> 2))
     }
   }
-
 }

@@ -172,6 +172,20 @@ class Logger(
       formatted
     }
   }
+
+  /**
+    * Suppress warning messages (i.e., setting ERROR log level during the code block).
+    * Useful for exception testing
+    */
+  def suppressWarnings[U](f: => U): U = {
+    val prev = getLogLevel
+    try {
+      setLogLevel(LogLevel.ERROR)
+      f
+    } finally {
+      setLogLevel(prev)
+    }
+  }
 }
 
 object Logger {

@@ -18,25 +18,28 @@ import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import com.twitter.finagle.http.{HeaderMap, Request, Response}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
-import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter.{HttpRequestLogger, _}
+import wvlet.airframe.control.MultipleExceptions
+import wvlet.airframe.http.finagle.FinagleServer.findCause
+import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter._
 import wvlet.airframe.http.finagle.{FinagleBackend, FinagleServer}
-import wvlet.airframe.http.{HttpHeader, HttpStatus}
+import wvlet.airframe.http.{HttpBackend, HttpHeader, HttpServerException, HttpStatus}
 import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogTimestampFormatter
 
 import scala.collection.immutable.ListMap
+import scala.util.Try
 import scala.util.control.NonFatal
 
 case class HttpAccessLogFilter(
     httpAccessLogWriter: HttpAccessLogWriter = HttpAccessLogWriter.default,
     // Loggers for request contents
-    requestLoggers: Seq[HttpRequestLogger] = defaultRequestLoggers,
+    requestLoggers: Seq[HttpRequestLogger] = HttpAccessLogFilter.defaultRequestLoggers,
     // Loggers for response contents
-    responseLoggers: Seq[HttpResponseLogger] = defaultResponseLoggers,
+    responseLoggers: Seq[HttpResponseLogger] = HttpAccessLogFilter.defaultResponseLoggers,
     // Loggers for request errors
-    errorLoggers: Seq[HttpErrorLogger] = defaultErrorLoggers,
+    errorLoggers: Seq[HttpErrorLogger] = HttpAccessLogFilter.defaultErrorLoggers,
     // Loggers for thread-local storage contents
-    contextLoggers: Seq[HttpContextLogger] = defaultContextLoggers,
+    contextLoggers: Seq[HttpContextLogger] = HttpAccessLogFilter.defaultContextLoggers,
     excludeHeaders: Set[String] = Set(HttpHeader.Authorization, HttpHeader.ProxyAuthorization)
 ) extends SimpleFilter[Request, Response] {
 
@@ -56,49 +59,66 @@ case class HttpAccessLogFilter(
     this.copy(excludeHeaders = excludeHeaders ++ excludes)
   }
 
-  private val sanitizedExcludeHeader = excludeHeaders.map(sanitizeHeader)
+  private val sanitizedExcludeHeaders = excludeHeaders.map(sanitizeHeader)
 
   private def emit(m: Map[String, Any]) = {
-    val filtered = m.filterNot(x => sanitizedExcludeHeader.contains(x._1))
+    val filtered = m.filterNot(x => sanitizedExcludeHeaders.contains(x._1))
     httpAccessLogWriter.write(filtered)
   }
 
   override def apply(request: Request, context: Service[Request, Response]): Future[Response] = {
     // Use ListMap to preserve the parameter order
     val m = ListMap.newBuilder[String, Any]
-    for (l <- requestLoggers) {
-      m ++= l(request)
-    }
 
     val currentNanoTime = System.nanoTime()
     def millisSince     = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - currentNanoTime)
 
-    def reportError(e: Throwable): Future[Response] = {
-      val responseTimeMillis = millisSince
-      m += "response_time_ms" -> responseTimeMillis
-      reportContext
-      for (l <- errorLoggers) {
-        m ++= l(request, e)
-      }
-      emit(m.result())
-      Future.exception(e)
-    }
+    def report(resp: Option[Response] = None, error: Option[Throwable] = None): Unit = {
+      m += "response_time_ms" -> millisSince
 
-    def reportContext: Unit = {
+      // Report request
+      for (l <- requestLoggers) yield Try {
+        m ++= l(request)
+      }
+
+      // Report response
+      resp.foreach { response =>
+        for (l <- responseLoggers) {
+          m ++= l(response)
+        }
+      }
+
+      // Report context
       for (l <- contextLoggers) {
         m ++= l(request)
       }
+
+      def reportException(e: Throwable): Unit = {
+        for (l <- errorLoggers) {
+          m ++= l(request, e)
+        }
+      }
+
+      // Report a server error that is properly handled at FinagleServer.defaultErrorFilter
+      (error, FinagleBackend.getThreadLocal[Throwable](HttpBackend.TLS_KEY_SERVER_EXCEPTION)) match {
+        case (Some(e1), Some(e2)) => reportException(MultipleExceptions(Seq(e1, e2)))
+        case (Some(e1), None)     => reportException(e1)
+        case (None, Some(e2))     => reportException(e2)
+        case _                    =>
+      }
+
+      emit(m.result())
+    }
+
+    def reportError(e: Throwable): Future[Response] = {
+      report(error = Some(e))
+      Future.exception(e)
     }
 
     try {
       context(request)
         .map { response =>
-          reportContext
-          m += "response_time_ms" -> millisSince
-          for (l <- responseLoggers) {
-            m ++= l(response)
-          }
-          emit(m.result())
+          report(resp = Some(response))
           response
         }.rescue {
           case NonFatal(e: Throwable) =>
@@ -126,24 +146,18 @@ object HttpAccessLogFilter {
     Seq(
       unixTimeLogger,
       basicRequestLogger,
-      defaultRequestHeaderLogger
+      requestHeaderLogger
     )
 
   def defaultResponseLoggers: Seq[HttpResponseLogger] =
     Seq(
       basicResponseLogger,
-      defaultResponseHeaderLogger
+      responseHeaderLogger
     )
 
-  def defaultErrorLoggers: Seq[HttpErrorLogger] =
-    Seq(
-      defaultErrorLogger
-    )
+  def defaultErrorLoggers: Seq[HttpErrorLogger] = Seq(errorLogger)
 
-  def defaultContextLoggers: Seq[HttpContextLogger] =
-    Seq(
-      defaultRPCLogger
-    )
+  def defaultContextLoggers: Seq[HttpContextLogger] = Seq(rpcLogger)
 
   def unixTimeLogger(request: Request): Map[String, Any] = {
     val currentTimeMillis = System.currentTimeMillis()
@@ -172,7 +186,8 @@ object HttpAccessLogFilter {
     m.result
   }
 
-  def defaultRequestHeaderLogger(request: Request): Map[String, Any] = headerLogger(request.headerMap, None)
+  def requestHeaderLogger(request: Request): Map[String, Any] = headerLogger(request.headerMap, None)
+
   def headerLogger(headerMap: HeaderMap, prefix: Option[String]): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     for ((key, value) <- headerMap) {
@@ -195,26 +210,41 @@ object HttpAccessLogFilter {
     m.result
   }
 
-  def defaultResponseHeaderLogger(response: Response) = headerLogger(response.headerMap, Some("response_"))
+  def responseHeaderLogger(response: Response) = headerLogger(response.headerMap, Some("response_"))
 
-  def defaultErrorLogger(request: Request, e: Throwable): Map[String, Any] = {
+  def errorLogger(request: Request, e: Throwable): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     // Resolve the cause of the exception
-    m += "exception" -> FinagleServer.findCause(e)
+    findCause(e) match {
+      case null =>
+      // no-op
+      case se @ HttpServerException(_, cause) =>
+        // If the cause is provided, record it. Otherwise, recording the status_code is sufficient.
+        if (cause != null) {
+          val rootCause = findCause(cause)
+          m += "exception"         -> rootCause
+          m += "exception_message" -> rootCause.getMessage
+        }
+      case other =>
+        m += "exception"         -> other
+        m += "exception_message" -> other.getMessage
+    }
     m.result
   }
 
-  def defaultRPCLogger(request: Request): Map[String, Any] = {
+  def rpcLogger(request: Request): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
-    FinagleBackend.getThreadLocal("rpc").foreach { x: Any =>
+    FinagleBackend.getThreadLocal(HttpBackend.TLS_KEY_RPC).foreach { x: Any =>
       x match {
         case (methodSurface: MethodSurface, args: Seq[Any]) =>
-          m += "rpc_method" -> methodSurface.name
           m += "rpc_class"  -> methodSurface.owner.fullName
-          val rpcArgs = for ((p, arg) <- methodSurface.args.zip(args)) yield {
+          m += "rpc_method" -> methodSurface.name
+          val rpcArgs = (for ((p, arg) <- methodSurface.args.zip(args)) yield {
             p.name -> arg
+          }).toMap
+          if (rpcArgs.nonEmpty) {
+            m += "rpc_args" -> rpcArgs
           }
-          m += "rpc_args" -> rpcArgs.toMap
         case _ =>
       }
     }

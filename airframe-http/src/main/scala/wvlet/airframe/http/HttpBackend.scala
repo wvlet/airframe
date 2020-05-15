@@ -70,5 +70,10 @@ trait HttpBackend[Req, Resp, F[_]] { self =>
 
   // Get a thread-local context parameter
   def getThreadLocal[A](key: String): Option[A]
+}
 
+object HttpBackend {
+  // Pre-defined keys for the thread-local storage
+  private[http] val TLS_KEY_RPC              = "rpc"
+  private[http] val TLS_KEY_SERVER_EXCEPTION = "server_exception"
 }

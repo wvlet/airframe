@@ -96,7 +96,7 @@ case class ControllerRoute(
         HttpRequestMapper.buildControllerMethodArgs(controller, methodSurface, request, context, params, codecFactory)
 
       // Record RPC method arguments
-      context.setThreadLocal("rpc", (methodSurface, methodArgs))
+      context.setThreadLocal(HttpBackend.TLS_KEY_RPC, (methodSurface, methodArgs))
       methodSurface.call(controller, methodArgs: _*)
     } catch {
       case e: MessageCodecException[_] if e.errorCode == MISSING_PARAMETER =>

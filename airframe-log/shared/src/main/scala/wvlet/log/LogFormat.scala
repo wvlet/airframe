@@ -40,7 +40,7 @@ object LogFormatter {
   def currentThreadName: String = Thread.currentThread().getName
 
   private val testFrameworkFilter =
-    Pattern.compile("""\s+at (sbt\.|org\.scalatest\.).*""")
+    Pattern.compile("""\s+at (sbt\.|org\.scalatest\.|wvlet\.airspec\.).*""")
   val DEFAULT_STACKTRACE_FILTER: String => Boolean = { line: String => !testFrameworkFilter.matcher(line).matches() }
   private var stackTraceFilter: String => Boolean = DEFAULT_STACKTRACE_FILTER
 
@@ -54,17 +54,23 @@ object LogFormatter {
   }
 
   def formatStacktrace(e: Throwable): String = {
-    val trace = new StringWriter()
-    e.printStackTrace(new PrintWriter(trace))
-    val stackTrace = trace.toString
-    val filtered =
-      stackTrace
-        .split("\n") // Array
-        .filter(stackTraceFilter)
-        .sliding(2)
-        .collect { case Array(a, b) if a != b => a }
+    e match {
+      case null =>
+        // Exception cause can be null
+        ""
+      case _ =>
+        val trace = new StringWriter()
+        e.printStackTrace(new PrintWriter(trace))
+        val stackTrace = trace.toString
+        val filtered =
+          stackTrace
+            .split("\n") // Array
+            .filter(stackTraceFilter)
+            .sliding(2)
+            .collect { case Array(a, b) if a != b => a }
 
-    filtered.mkString("\n")
+        filtered.mkString("\n")
+    }
   }
 
   def withColor(prefix: String, s: String) = {
