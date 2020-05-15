@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.http.finagle
 
-import com.twitter.finagle.http.{Method, Request}
+import com.twitter.finagle.http.{Method, Request, Response}
+import com.twitter.util.Future
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.finagle.filter.HttpAccessLogWriter.JSONHttpAccessLogWriter
@@ -49,7 +50,20 @@ object HttpAccessLogTest extends AirSpec {
     }
   }
 
-  private val router = Router.add[MyService]
+  trait AddExtraHeaderFilter extends FinagleFilter {
+    override def apply(
+        request: Request,
+        context: Context
+    ): Future[Response] = {
+      request.headerMap.put("X-Trace-Id", "012345")
+      context(request)
+    }
+  }
+
+  private val router =
+    Router
+      .add[AddExtraHeaderFilter]
+      .andThen[MyService]
 
   private val inMemoryLogWriter = HttpAccessLogWriter.inMemoryLogWriter
 
@@ -87,6 +101,9 @@ object HttpAccessLogTest extends AirSpec {
       log.get("status_code_name") shouldBe Some(HttpStatus.Ok_200.reason)
       // Custom headers
       log.get("x_app_version") shouldBe Some("1.0")
+
+      // Headers added in a filter
+      log.get("x_trace_id") shouldBe Some("012345")
 
       // RPC logs
       log.get("rpc_method") shouldBe Some("user")

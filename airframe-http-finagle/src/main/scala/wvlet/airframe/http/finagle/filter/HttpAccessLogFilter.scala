@@ -18,6 +18,7 @@ import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import com.twitter.finagle.http.{HeaderMap, Request, Response}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
+import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.findCause
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter._
 import wvlet.airframe.http.finagle.{FinagleBackend, FinagleServer}
@@ -26,6 +27,7 @@ import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogTimestampFormatter
 
 import scala.collection.immutable.ListMap
+import scala.util.Try
 import scala.util.control.NonFatal
 
 case class HttpAccessLogFilter(
@@ -67,59 +69,65 @@ case class HttpAccessLogFilter(
   override def apply(request: Request, context: Service[Request, Response]): Future[Response] = {
     // Use ListMap to preserve the parameter order
     val m = ListMap.newBuilder[String, Any]
-    for (l <- requestLoggers) {
-      m ++= l(request)
-    }
 
     val currentNanoTime = System.nanoTime()
     def millisSince     = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - currentNanoTime)
 
-    def reportError(e: Throwable): Unit = {
+    def report(resp: Option[Response] = None, error: Option[Throwable] = None): Unit = {
       m += "response_time_ms" -> millisSince
-      reportContext
-      for (l <- errorLoggers) {
-        m ++= l(request, e)
-      }
-    }
 
-    def reportContext: Unit = {
+      // Report request
+      for (l <- requestLoggers) yield Try {
+        m ++= l(request)
+      }
+
+      // Report response
+      resp.foreach { response =>
+        for (l <- responseLoggers) {
+          m ++= l(response)
+        }
+      }
+
+      // Report context
       for (l <- contextLoggers) {
         m ++= l(request)
       }
+
+      def reportException(e: Throwable): Unit = {
+        for (l <- errorLoggers) {
+          m ++= l(request, e)
+        }
+      }
+
+      // Report a server error that is properly handled at FinagleServer.defaultErrorFilter
+      (error, FinagleBackend.getThreadLocal[Throwable](HttpBackend.TLS_KEY_SERVER_EXCEPTION)) match {
+        case (Some(e1), Some(e2)) => reportException(MultipleExceptions(Seq(e1, e2)))
+        case (Some(e1), None)     => reportException(e1)
+        case (None, Some(e2))     => reportException(e2)
+        case _                    =>
+      }
+
+      emit(m.result())
+    }
+
+    def reportError(e: Throwable): Future[Response] = {
+      report(error = Some(e))
+      Future.exception(e)
     }
 
     try {
       context(request)
         .map { response =>
-          reportContext
-          m += "response_time_ms" -> millisSince
-          for (l <- responseLoggers) {
-            m ++= l(response)
-          }
-
-          // Report a server error that is properly handled at FinagleServer.defaultErrorFilter
-          FinagleBackend.getThreadLocal(HttpBackend.TLS_KEY_SERVER_EXCEPTION).foreach { x: Any =>
-            x match {
-              case e: Throwable =>
-                reportError(e)
-              case _ =>
-            }
-          }
-
-          emit(m.result())
+          report(resp = Some(response))
           response
         }.rescue {
           case NonFatal(e: Throwable) =>
             reportError(e)
-            emit(m.result())
-            Future.exception(e)
         }
     } catch {
       // When an unknown internal error happens
       case e: Throwable =>
         reportError(e)
-        emit(m.result())
-        Future.exception(e)
     }
   }
 }
