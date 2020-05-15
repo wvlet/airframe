@@ -82,24 +82,10 @@ package object finagle {
   }
 
   implicit object FinagleHttpRequestAdapter extends HttpRequestAdapter[http.Request] {
-    override def methodOf(request: Request): String = toHttpMethod(request.method)
-    override def pathOf(request: Request): String   = request.path
-    override def headerOf(request: Request): HttpMultiMap = {
-      val h = request.headerMap
-      var m = HttpMultiMap.empty
-      for (k <- h.keys) {
-        h.getAll(k).map { v => m = m.add(k, v) }
-      }
-      m
-    }
-    override def queryOf(request: Request): HttpMultiMap = {
-      val p = request.params
-      var m = HttpMultiMap.empty
-      for (k <- p.keys) {
-        p.getAll(k).map { v => m = m.add(k, v) }
-      }
-      m
-    }
+    override def methodOf(request: Request): String               = toHttpMethod(request.method)
+    override def pathOf(request: Request): String                 = request.path
+    override def headerOf(request: Request): HttpMultiMap         = toHttpMultiMap(request.headerMap)
+    override def queryOf(request: Request): HttpMultiMap          = HttpMessage.extractQueryFromUri(request.uri)
     override def messageOf(request: Request): HttpMessage.Message = toMessage(request.content)
     override def contentTypeOf(request: Request): Option[String]  = request.contentType
     override def requestType: Class[Request]                      = classOf[Request]

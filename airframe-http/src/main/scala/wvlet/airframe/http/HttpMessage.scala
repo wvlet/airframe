@@ -179,12 +179,16 @@ object HttpMessage {
 
   case class Request(
       method: String = HttpMethod.GET,
+      // Path and query string beginning from "/"
       uri: String = "/",
       header: HttpMultiMap = HttpMultiMap.empty,
       message: Message = EmptyMessage
   ) extends HttpMessage[Request] {
     override def toString: String = s"Request(${method},${uri},${header})"
 
+    /**
+      * URI without query string (e.g., /v1/info)
+      */
     def path: String = {
       val u = uri
       u.indexOf("?") match {
@@ -193,14 +197,27 @@ object HttpMessage {
       }
     }
 
-    def query: HttpMultiMap = {
-      val u = uri
-      u.indexOf("?") match {
-        case -1 =>
-          HttpMultiMap.empty
-        case pos =>
-          var m           = HttpMultiMap.empty
-          val queryString = u.substring(0, pos)
+    /**
+      * Extract the query string parameters as HttpMultiMap
+      */
+    def query: HttpMultiMap = extractQueryFromUri(uri)
+
+    def withFilter(f: Request => Request): Request = f(this)
+    def withMethod(method: String): Request        = this.copy(method = method)
+    def withUri(uri: String): Request              = this.copy(uri = uri)
+
+    override protected def copyWith(newHeader: HttpMultiMap): Request = this.copy(header = newHeader)
+    override protected def copyWith(newMessage: Message): Request     = this.copy(message = newMessage)
+  }
+
+  private[http] def extractQueryFromUri(uri: String): HttpMultiMap = {
+    uri.indexOf("?") match {
+      case -1 =>
+        HttpMultiMap.empty
+      case pos =>
+        var m = HttpMultiMap.newBuilder
+        if (pos + 1 < uri.length) {
+          val queryString = uri.substring(pos + 1)
           queryString
             .split("&").map { x =>
               x.split("=") match {
@@ -210,16 +227,9 @@ object HttpMessage {
                   m = m.add(x, "")
               }
             }
-          m
-      }
+        }
+        m.result()
     }
-
-    def withFilter(f: Request => Request): Request = f(this)
-    def withMethod(method: String): Request        = this.copy(method = method)
-    def withUri(uri: String): Request              = this.copy(uri = uri)
-
-    override protected def copyWith(newHeader: HttpMultiMap): Request = this.copy(header = newHeader)
-    override protected def copyWith(newMessage: Message): Request     = this.copy(message = newMessage)
   }
 
   object Request {

@@ -108,6 +108,11 @@ trait MyApi extends LogSupport {
     r.contentString = "Hello Scala Future"
     scala.concurrent.Future.successful(r)
   }
+
+  @Endpoint(path = "/v1/user/:user_id/profile")
+  def queryParamTest(user_id: String, session_id: Option[String]): HttpMessage.Response = {
+    Http.response().withContent(s"${user_id}:${session_id.getOrElse("unknown")}")
+  }
 }
 
 /**
@@ -307,6 +312,18 @@ class FinagleRouterTest extends AirSpec {
       val result = Await.result(client.send(Request(Method.Get, "/v1/scala-future2")))
       result.statusCode shouldBe HttpStatus.Ok_200.code
       result.contentString shouldBe "Hello Scala Future"
+    }
+
+    def `support query parameter mapping`: Unit = {
+      val result = Await.result(client.send(Request(Method.Get, "/v1/user/1/profile?session_id=xyz")))
+      result.statusCode shouldBe HttpStatus.Ok_200.code
+      result.contentString shouldBe "1:xyz"
+    }
+
+    def `support missing query parameter mapping`: Unit = {
+      val result = Await.result(client.send(Request(Method.Get, "/v1/user/1/profile")))
+      result.statusCode shouldBe HttpStatus.Ok_200.code
+      result.contentString shouldBe "1:unknown"
     }
   }
 }
