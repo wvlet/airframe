@@ -39,9 +39,7 @@ object HttpRequestMapper extends LogSupport {
       // Additional parameters
       params: Map[String, String],
       codecFactory: MessageCodecFactory
-  )(implicit
-      adapter: HttpRequestAdapter[Req]
-  ): Seq[Any] = {
+  )(implicit adapter: HttpRequestAdapter[Req]): Seq[Any] = {
     // Collect URL query parameters and other parameters embedded inside URL.
     val requestParams: HttpMultiMap = adapter.queryOf(request) ++ params
     lazy val queryParamMsgpack      = HttpMultiMapCodec.toMsgPack(requestParams)
@@ -69,48 +67,47 @@ object HttpRequestMapper extends LogSupport {
                 // Pass the String parameter to the method argument
                 argCodec.unpackMsgPack(StringCodec.toMsgPack(paramValue))
               case None =>
-                requestParams.get(arg.name) match {
-                  case Some(x) =>
-                    // Mapping query parameters to the arg
-                    argCodec.unpackMsgPack(StringCodec.toMsgPack(x)).orElse(arg.getDefaultValue)
-                  case None =>
-                    if (adapter.methodOf(request) == HttpMethod.GET) {
-                      // Build the method argument instance from the query strings for GET requests
-                      argSurface match {
-                        case _ if argSurface.isPrimitive =>
-                          arg.getDefaultValue
-                        case o: OptionSurface if o.elementSurface.isPrimitive =>
-                          arg.getDefaultValue
-                        case _ =>
-                          argCodec.unpackMsgPack(queryParamMsgpack).orElse(arg.getDefaultValue)
-                      }
-                    } else {
-                      // Build the method argument instance from the content body for non GET requests
-                      val contentBytes = adapter.contentBytesOf(request)
+                if (adapter.methodOf(request) == HttpMethod.GET) {
+                  // Build the method argument instance from the query strings for GET requests
+                  argSurface match {
+                    case _ if argSurface.isPrimitive =>
+                      arg.getDefaultValue
+                    case o: OptionSurface if o.elementSurface.isPrimitive =>
+                      arg.getDefaultValue
+                    case _ =>
+                      argCodec.unpackMsgPack(queryParamMsgpack).orElse(arg.getDefaultValue)
+                  }
+                } else if (!argSurface.isOption) {
+                  // Build the method argument instance from the content body for non GET requests
+                  val contentBytes = adapter.contentBytesOf(request)
 
-                      if (contentBytes.nonEmpty) {
-                        val msgpack =
-                          adapter.contentTypeOf(request).map(_.split(";")(0)) match {
-                            case Some("application/x-msgpack") =>
-                              contentBytes
-                            case Some("application/json") =>
-                              // JSON -> msgpack
-                              MessagePack.fromJSON(contentBytes)
-                            case _ =>
-                              // Try parsing as JSON first
-                              Try(JSON.parse(contentBytes))
-                                .map { jsonValue => JSONCodec.toMsgPack(jsonValue) }
-                                .getOrElse {
-                                  // If parsing as JSON fails, treat the content body as a regular string
-                                  StringCodec.toMsgPack(adapter.contentStringOf(request))
-                                }
-                          }
-                        argCodec.unpackMsgPack(msgpack)
-                      } else {
-                        // Return the method default argument if exists
-                        arg.getMethodArgDefaultValue(controller)
+                  if (contentBytes.nonEmpty) {
+                    val msgpack =
+                      adapter.contentTypeOf(request).map(_.split(";")(0)) match {
+                        case Some("application/x-msgpack") =>
+                          contentBytes
+                        case Some("application/json") =>
+                          // JSON -> msgpack
+                          MessagePack.fromJSON(contentBytes)
+                        case _ =>
+                          // Try parsing as JSON first
+                          Try(JSON.parse(contentBytes))
+                            .map { jsonValue =>
+                              JSONCodec.toMsgPack(jsonValue)
+                            }
+                            .getOrElse {
+                              // If parsing as JSON fails, treat the content body as a regular string
+                              StringCodec.toMsgPack(adapter.contentStringOf(request))
+                            }
                       }
-                    }
+                    argCodec.unpackMsgPack(msgpack)
+                  } else {
+                    // Return the method default argument value if exists
+                    arg.getMethodArgDefaultValue(controller)
+                  }
+                } else {
+                  // Return the method default argument value if exists
+                  arg.getMethodArgDefaultValue(controller)
                 }
             }
             // If mapping fails, use the zero value

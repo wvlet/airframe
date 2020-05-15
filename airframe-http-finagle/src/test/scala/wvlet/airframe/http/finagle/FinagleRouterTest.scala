@@ -333,9 +333,19 @@ class FinagleRouterTest extends AirSpec {
     }
 
     def `support query parameter mapping for POST`: Unit = {
-      val result = Await.result(client.send(Request(Method.Post, "/v1/user/1/profile?session_id=xyz")))
+      val r = Request(Method.Post, "/v1/user/1/profile?session_id=xyz")
+      r.contentString = "hello"
+      val result = Await.result(client.send(r))
       result.statusCode shouldBe HttpStatus.Ok_200.code
       result.contentString shouldBe "1:xyz"
+    }
+
+    def `support missing query parameter mapping for POST`: Unit = {
+      val r = Request(Method.Post, "/v1/user/1/profile")
+      r.contentString = "hello"
+      val result = Await.result(client.send(r))
+      result.statusCode shouldBe HttpStatus.Ok_200.code
+      result.contentString shouldBe "1:unknown"
     }
   }
 }
