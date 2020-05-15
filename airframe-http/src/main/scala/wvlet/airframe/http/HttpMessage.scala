@@ -179,12 +179,16 @@ object HttpMessage {
 
   case class Request(
       method: String = HttpMethod.GET,
+      // Path and query string beginning from "/"
       uri: String = "/",
       header: HttpMultiMap = HttpMultiMap.empty,
       message: Message = EmptyMessage
   ) extends HttpMessage[Request] {
     override def toString: String = s"Request(${method},${uri},${header})"
 
+    /**
+      * URI without query string (e.g., /v1/info)
+      */
     def path: String = {
       val u = uri
       u.indexOf("?") match {
@@ -193,6 +197,9 @@ object HttpMessage {
       }
     }
 
+    /**
+      * Extract the query string parameters as HttpMultiMap
+      */
     def query: HttpMultiMap = {
       val u = uri
       u.indexOf("?") match {
@@ -200,7 +207,7 @@ object HttpMessage {
           HttpMultiMap.empty
         case pos =>
           var m           = HttpMultiMap.empty
-          val queryString = u.substring(0, pos)
+          val queryString = u.substring(pos + 1)
           queryString
             .split("&").map { x =>
               x.split("=") match {

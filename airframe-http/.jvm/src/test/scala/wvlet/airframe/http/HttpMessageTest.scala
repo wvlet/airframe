@@ -86,6 +86,23 @@ class HttpMessageTest extends AirSpec {
     r.xForwardedProto shouldBe Some("https")
   }
 
+  test("extract query from uri") {
+    val r = Http.GET("/myquery?p1=1")
+    r.uri shouldBe "/myquery?p1=1"
+    r.path shouldBe "/myquery"
+    val q = r.query
+    q.get("p1") shouldBe Some("1")
+  }
+
+  test("extract query from uri") {
+    val r = Http.GET("/v1/data?p1=1&p2=hello")
+    r.uri shouldBe "/v1/data?p1=1&p2=hello"
+    r.path shouldBe "/v1/data"
+    val q = r.query
+    q.get("p1") shouldBe Some("1")
+    q.get("p2") shouldBe Some("hello")
+  }
+
   test("create new response") {
     val r = Http
       .response()
