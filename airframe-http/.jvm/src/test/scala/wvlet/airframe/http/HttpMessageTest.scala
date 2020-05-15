@@ -94,7 +94,7 @@ class HttpMessageTest extends AirSpec {
     q.get("p1") shouldBe Some("1")
   }
 
-  test("extract query from uri") {
+  test("extract multiple query params from uri") {
     val r = Http.GET("/v1/data?p1=1&p2=hello")
     r.uri shouldBe "/v1/data?p1=1&p2=hello"
     r.path shouldBe "/v1/data"

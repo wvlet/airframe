@@ -206,18 +206,20 @@ object HttpMessage {
         case -1 =>
           HttpMultiMap.empty
         case pos =>
-          var m           = HttpMultiMap.empty
-          val queryString = u.substring(pos + 1)
-          queryString
-            .split("&").map { x =>
-              x.split("=") match {
-                case Array(key, value) =>
-                  m = m.add(key, value)
-                case _ =>
-                  m = m.add(x, "")
+          var m = HttpMultiMap.newBuilder
+          if (pos + 1 < u.length) {
+            val queryString = u.substring(pos + 1)
+            queryString
+              .split("&").map { x =>
+                x.split("=") match {
+                  case Array(key, value) =>
+                    m = m.add(key, value)
+                  case _ =>
+                    m = m.add(x, "")
+                }
               }
-            }
-          m
+          }
+          m.result()
       }
     }
 
