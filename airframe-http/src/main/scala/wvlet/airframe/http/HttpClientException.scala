@@ -182,7 +182,7 @@ object HttpClientException extends LogSupport {
         case other =>
           nonRetryableFailure(e)
       }
-    // ChannelClosedException of Finagle. Using the string class name so as not to include finagle dependency.
+    // Exceptions from Finagle. Using the string class names so as not to include Finagle dependencies.
     case e: Throwable if finagleRetryableExceptionClasses.contains(e.getClass().getName) =>
       retryableFailure(e)
   }
