@@ -15,6 +15,7 @@ package wvlet.airframe.http
 import java.io.{EOFException, IOException}
 import java.lang.reflect.InvocationTargetException
 import java.net._
+import java.nio.channels.ClosedChannelException
 import java.util.concurrent.{ExecutionException, TimeoutException}
 
 import javax.net.ssl.{SSLException, SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
@@ -22,6 +23,7 @@ import wvlet.airframe.control.ResultClass
 import wvlet.airframe.control.ResultClass.{Failed, Succeeded, nonRetryableFailure, retryableFailure}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.log.LogSupport
+
 import scala.language.existentials
 
 /**
@@ -120,7 +122,9 @@ object HttpClientException extends LogSupport {
       "Idle connections will be closed".r
     )
 
-    retriable400ErrorMessage.find { pattern => pattern.findFirstIn(m).isDefined }.isDefined
+    retriable400ErrorMessage.find { pattern =>
+      pattern.findFirstIn(m).isDefined
+    }.isDefined
   }
 
   /**
@@ -164,10 +168,11 @@ object HttpClientException extends LogSupport {
     case e: java.lang.InterruptedException =>
       // Retryable when the http client thread execution is interrupted.
       retryableFailure(e)
-    case e: ProtocolException => retryableFailure(e)
-    case e: ConnectException  => retryableFailure(e)
-    case e: EOFException      => retryableFailure(e)
-    case e: TimeoutException  => retryableFailure(e)
+    case e: ProtocolException      => retryableFailure(e)
+    case e: ConnectException       => retryableFailure(e)
+    case e: EOFException           => retryableFailure(e)
+    case e: TimeoutException       => retryableFailure(e)
+    case e: ClosedChannelException => retryableFailure(e)
     case e: SocketException =>
       e match {
         case se: BindException            => retryableFailure(e)
@@ -177,7 +182,16 @@ object HttpClientException extends LogSupport {
         case other =>
           nonRetryableFailure(e)
       }
+    // ChannelClosedException of Finagle. Using the string class name so as not to include finagle dependency.
+    case e: Throwable if finagleRetryableExceptionClasses.contains(e.getClass().getName) =>
+      retryableFailure(e)
   }
+
+  private[http] val finagleRetryableExceptionClasses = Set(
+    "com.twitter.finagle.ChannelClosedException",
+    "com.twitter.finagle.ReadTimedOutException",
+    "com.twitter.finagle.WriteTimedOutException"
+  )
 
   def sslExceptionClassifier: PartialFunction[Throwable, Failed] = {
     case e: SSLException =>
