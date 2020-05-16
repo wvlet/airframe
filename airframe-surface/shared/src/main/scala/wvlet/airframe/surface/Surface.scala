@@ -91,6 +91,12 @@ case class MethodRef(owner: Class[_], name: String, paramTypes: Seq[Class[_]], i
 
 trait MethodParameter extends Parameter {
   def method: MethodRef
+
+  /**
+    * Method owner instnce is necessary to find by-name parameter default values
+    * @param methodOwner
+    * @return
+    */
   def getMethodArgDefaultValue(methodOwner: Any): Option[Any] = getDefaultValue
 }
 

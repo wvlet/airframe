@@ -113,6 +113,12 @@ trait MyApi extends LogSupport {
   def queryParamTest(user_id: String, session_id: Option[String]): HttpMessage.Response = {
     Http.response().withContent(s"${user_id}:${session_id.getOrElse("unknown")}")
   }
+
+  @Endpoint(method = HttpMethod.POST, path = "/v1/user/:user_id/profile")
+  def queryParamPostTest(user_id: String, session_id: Option[String]): HttpMessage.Response = {
+    Http.response().withContent(s"${user_id}:${session_id.getOrElse("unknown")}")
+  }
+
 }
 
 /**
@@ -322,6 +328,22 @@ class FinagleRouterTest extends AirSpec {
 
     def `support missing query parameter mapping`: Unit = {
       val result = Await.result(client.send(Request(Method.Get, "/v1/user/1/profile")))
+      result.statusCode shouldBe HttpStatus.Ok_200.code
+      result.contentString shouldBe "1:unknown"
+    }
+
+    def `support query parameter mapping for POST`: Unit = {
+      val r = Request(Method.Post, "/v1/user/1/profile?session_id=xyz")
+      r.contentString = "hello"
+      val result = Await.result(client.send(r))
+      result.statusCode shouldBe HttpStatus.Ok_200.code
+      result.contentString shouldBe "1:xyz"
+    }
+
+    def `support missing query parameter mapping for POST`: Unit = {
+      val r = Request(Method.Post, "/v1/user/1/profile")
+      r.contentString = "hello"
+      val result = Await.result(client.send(r))
       result.statusCode shouldBe HttpStatus.Ok_200.code
       result.contentString shouldBe "1:unknown"
     }
