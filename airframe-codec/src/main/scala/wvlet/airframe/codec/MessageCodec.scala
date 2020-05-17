@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.codec
 
+import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.json.JSON.{JSONObject, JSONValue}
 import wvlet.airframe.json.UnexpectedEOF
 import wvlet.airframe.msgpack.spi._
@@ -148,6 +149,13 @@ trait MessageCodec[A] extends LogSupport {
     val mapCodec = MessageCodec.ofSurface(Surface.of[Map[String, Any]]).asInstanceOf[MessageCodec[Map[String, Any]]]
     val msgpack  = mapCodec.toMsgPack(m)
     fromMsgPack(msgpack)
+  }
+
+  /**
+    * A shortcut for fromMsgPack(StringCodec.toMsgPack(s))
+    */
+  def fromString(s: String): A = {
+    fromMsgPack(StringCodec.toMsgPack(s))
   }
 }
 
