@@ -15,10 +15,10 @@ package wvlet.airframe.codec
 import java.time.Instant
 import java.util.UUID
 
-import wvlet.airframe.codec.JavaStandardCodec.EnumCodec
+import wvlet.airframe.codec.JavaStandardCodec.JavaEnumCodec
 import wvlet.airframe.metrics.TimeParser
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
-import wvlet.airframe.surface.{EnumSurface, Surface}
+import wvlet.airframe.surface.{JavaEnumSurface, EnumSurface, Surface}
 
 import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
@@ -37,8 +37,8 @@ object Compat {
         factory: MessageCodecFactory,
         seenSet: Set[Surface]
     ): PartialFunction[Surface, MessageCodec[_]] = {
-      case EnumSurface(cl) =>
-        EnumCodec(cl)
+      case JavaEnumSurface(cl) =>
+        JavaEnumCodec(cl)
       case s if ReflectTypeUtil.hasStringUnapplyConstructor(s) =>
         new StringUnapplyCodec(s)
     }

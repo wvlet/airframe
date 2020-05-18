@@ -38,7 +38,7 @@ object JavaStandardCodec {
     }
   }
 
-  case class EnumCodec[A](enumType: Class[A]) extends MessageCodec[A] with LogSupport {
+  case class JavaEnumCodec[A](enumType: Class[A]) extends MessageCodec[A] with LogSupport {
     private lazy val enumTable: Map[String, A] = {
       // Canonical Enum names -> Enum[A]
       Try {

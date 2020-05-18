@@ -13,24 +13,20 @@
  */
 package wvlet.airframe.codec
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
-import wvlet.airframe.surface.Surface
-import wvlet.airframe.surface.reflect.TypeConverter
-import wvlet.log.LogSupport
+import wvlet.airframe.surface.EnumSurface
 
 /**
   * A codec for Enum-like case objects that can be instantiated with unapply(String)
   */
-class StringUnapplyCodec[A](codec: Surface) extends MessageCodec[A] with LogSupport {
+class EnumCodec[A](enumSurface: EnumSurface) extends MessageCodec[A] {
   override def pack(p: Packer, v: A): Unit = {
     p.packString(v.toString)
   }
   override def unpack(u: Unpacker, v: MessageContext): Unit = {
     val s = u.unpackString
-    TypeConverter.convert(s, codec.rawType) match {
-      case Some(x) =>
-        v.setObject(x)
-      case None =>
-        v.setNull
+    enumSurface.stringExtractor(enumSurface.rawType, s) match {
+      case Some(x) => v.setObject(x)
+      case None    => v.setNull
     }
   }
 }

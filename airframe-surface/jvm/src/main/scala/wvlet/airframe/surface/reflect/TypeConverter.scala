@@ -97,7 +97,7 @@ object TypeConverter extends LogSupport {
         v match {
           case Some(c) => v
           case None =>
-            warn(s"cannot create an instance of $targetType from $value")
+            debug(s"cannot create an instance of $targetType from $value")
             None
         }
       }
