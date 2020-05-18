@@ -19,7 +19,6 @@ import java.util.concurrent.ConcurrentHashMap
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
 
-import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 import scala.reflect.runtime.{universe => ru}
 
@@ -555,40 +554,6 @@ object ReflectSurfaceFactory extends LogSupport {
           s
         }
       }
-
-    private def genericSurfaceWithStringUnapplyConstructor: SurfaceMatcher = {
-      new SurfaceMatcher {
-        override def isDefinedAt(x: ru.Type): Boolean = {
-          x.companion match {
-            case companion: Type =>
-              companion.member(TermName("unapply")) match {
-                case s: Symbol if s.isMethod && s.asMethod.paramLists.size == 1 =>
-                  val m    = s.asMethod
-                  val args = m.paramLists.head
-                  args.size == 1 &&
-                  args.head.typeSignature =:= typeOf[String] &&
-                  m.returnType <:< weakTypeOf[Option[_]] &&
-                  m.returnType.typeArgs.size == 1 &&
-                  m.returnType.typeArgs.head =:= x
-                case _ => false
-              }
-            case _ => false
-          }
-        }
-
-        override def apply(t: ru.Type): Surface = {
-          val primaryConstructor = findPrimaryConstructorOf(t).get
-          val typeArgs           = typeArgsOf(t).map(surfaceOf(_)).toIndexedSeq
-          val methodParams       = methodParametersOf(t, primaryConstructor)
-          val s = new RuntimeGenericSurface(
-            resolveClass(t),
-            typeArgs,
-            params = methodParams
-          )
-          s
-        }
-      }
-    }
 
     private def hasStringUnapply(t: ru.Type): Boolean = {
       t.companion match {
