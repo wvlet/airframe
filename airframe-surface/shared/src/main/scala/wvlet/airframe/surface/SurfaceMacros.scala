@@ -280,9 +280,9 @@ private[surface] object SurfaceMacros {
         q"new wvlet.airframe.surface.GenericSurface(classOf[$t])"
     }
 
-    private val enumFactory: SurfaceFactory = {
+    private val javaEnumFactory: SurfaceFactory = {
       case t if isEnum(t) =>
-        q"wvlet.airframe.surface.EnumSurface(classOf[$t])"
+        q"wvlet.airframe.surface.JavaEnumSurface(classOf[$t])"
     }
 
     private def belongsToScalaDefault(t: c.Type) = {
@@ -549,18 +549,37 @@ private[surface] object SurfaceMacros {
         surfaceOf(underlying)
     }
 
-    private def newGenericSurfaceOf(t: c.Type): c.Tree = {
-      val finalType = {
-        if (t.typeSymbol.asType.isAbstract && !(t =:= typeOf[AnyRef])) {
-          // Use M[_] for type M
-          t.erasure
-        } else {
-          t
-        }
+    private def finalTypeOf(t: c.Type): c.Type = {
+      if (t.typeSymbol.asType.isAbstract && !(t =:= typeOf[AnyRef])) {
+        // Use M[_] for type M
+        t.erasure
+      } else {
+        t
       }
+    }
 
-      val expr = q"new wvlet.airframe.surface.GenericSurface(classOf[${finalType}])"
+    private def newGenericSurfaceOf(t: c.Type): c.Tree = {
+      val expr = q"new wvlet.airframe.surface.GenericSurface(classOf[${finalTypeOf(t)}])"
       expr
+    }
+
+    private def hasStringUnapply(t: c.Type): Boolean = {
+      t.companion match {
+        case companion: Type =>
+          // Find unapply(String): Option[X]
+          companion.member(TermName("unapply")) match {
+            case s: Symbol if s.isMethod && s.asMethod.paramLists.size == 1 =>
+              val m    = s.asMethod
+              val args = m.paramLists.head
+              args.size == 1 &&
+              args.head.typeSignature =:= typeOf[String] &&
+              m.returnType <:< weakTypeOf[Option[_]] &&
+              m.returnType.typeArgs.size == 1 &&
+              m.returnType.typeArgs.head =:= t
+            case _ => false
+          }
+        case _ => false
+      }
     }
 
     private val genericSurfaceFactory: SurfaceFactory = {
@@ -571,6 +590,21 @@ private[surface] object SurfaceMacros {
         q"wvlet.airframe.surface.ExistentialType"
       case t @ RefinedType(List(_, baseType), decl) =>
         newGenericSurfaceOf(baseType)
+      case t if hasStringUnapply(t) =>
+        t.typeSymbol.fullName.split("\\.").toList match {
+          case p1 :: tl =>
+            // companion object package -> Select(Select( .... ))) tree
+            val ex = tl.foldLeft[Tree](Ident(TermName(p1))) { (z, n) =>
+              Select(z, TermName(n))
+            }
+            val expr = q"""wvlet.airframe.surface.EnumSurface(classOf[${finalTypeOf(t)}], { (cl: Class[_], s: String) =>
+                ${ex}.unapply(s).asInstanceOf[Option[Any]]
+              }
+            )"""
+            expr
+          case _ =>
+            newGenericSurfaceOf(t)
+        }
       case t =>
         newGenericSurfaceOf(t)
     }
@@ -584,7 +618,7 @@ private[surface] object SurfaceMacros {
         optionFactory orElse
         tupleFactory orElse
         javaUtilFactory orElse
-        enumFactory orElse
+        javaEnumFactory orElse
         genericSurfaceWithConstructorFactory orElse
         existentialTypeFactory orElse
         genericSurfaceFactory

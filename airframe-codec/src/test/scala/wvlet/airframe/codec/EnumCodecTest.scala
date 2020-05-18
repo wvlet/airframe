@@ -11,14 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.surface
+package wvlet.airframe.codec
+import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airspec.AirSpec
-import wvlet.log.Logger
 
 /**
   *
  */
-object EnumTest extends AirSpec {
+object EnumCodecTest extends AirSpec {
 
   sealed trait Color
   case object Blue extends Color
@@ -31,15 +31,10 @@ object EnumTest extends AirSpec {
     }
   }
 
-  test("Find Surface.stringExtractor") {
-    Surface.of[Color] match {
-      case s: EnumSurface =>
-        val f = s.stringExtractor
-        f(classOf[Color], "Blue") shouldBe Some(Blue)
-        f(classOf[Color], "Red") shouldBe Some(Red)
-        f(classOf[Color], "White") shouldBe empty
-      case _ =>
-        fail("EnumSurface is not found...")
-    }
+  test("read Enum-like classes") {
+    val codec = MessageCodec.of[Color]
+    codec.unpackMsgPack(codec.toMsgPack(Blue)) shouldBe Some(Blue)
+    codec.unpackMsgPack(codec.toMsgPack(Red)) shouldBe Some(Red)
+    codec.unpackMsgPack(StringCodec.toMsgPack("Green")) shouldBe empty
   }
 }
