@@ -16,6 +16,7 @@ package wvlet.airframe.codec
 import java.time.Instant
 import java.util.Base64
 
+import wvlet.airframe.codec.PrimitiveCodec.IntArrayCodec.unpack
 import wvlet.airframe.codec.StandardCodec.ThrowableCodec
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
@@ -58,7 +59,8 @@ object PrimitiveCodec {
     Surface.of[Array[String]]  -> StringArrayCodec,
     Surface.of[Array[Byte]]    -> ByteArrayCodec,
     Surface.of[Array[Short]]   -> ShortArrayCodec,
-    Surface.of[Array[Char]]    -> CharArrayCodec
+    Surface.of[Array[Char]]    -> CharArrayCodec,
+    Surface.of[Array[Any]]     -> AnyArrayCodec
   )
 
   private implicit class RichBoolean(b: Boolean) {
@@ -474,179 +476,233 @@ object PrimitiveCodec {
     }
   }
 
-  object IntArrayCodec extends MessageCodec[Array[Int]] {
+  trait PrimitiveArrayCodec { self: MessageCodec[_] =>
+
+    /**
+      * Unpack the input as JSON Array (ValueType.STRING) or ValueType.ARRAY
+      * @param u
+      * @param v
+      * @param unpackRawArray
+      */
+    protected def unpackArray(u: Unpacker, v: MessageContext)(unpackRawArray: => Unit): Unit = {
+      u.getNextFormat.getValueType match {
+        case ValueType.STRING =>
+          // Assume it's JSON input
+          val jsonArray = u.unpackString
+          val msgpack   = JSONCodec.toMsgPack(jsonArray)
+          val unpacker  = MessagePack.newUnpacker(msgpack)
+          // Parse again
+          unpack(unpacker, v)
+        case ValueType.ARRAY =>
+          unpackRawArray
+        case other =>
+          v.setIncompatibleFormatException(this, s"STRING or ARRAY type ie expected, but ${other} is found")
+          u.skipValue
+      }
+    }
+  }
+
+  object IntArrayCodec extends MessageCodec[Array[Int]] with PrimitiveArrayCodec {
     override def pack(p: Packer, v: Array[Int]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x => IntCodec.pack(p, x) }
+      v.foreach { x =>
+        IntCodec.pack(p, x)
+      }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
-      val len = u.unpackArrayHeader
-      val b   = Array.newBuilder[Int]
-      b.sizeHint(len)
-      (0 until len).foreach { i =>
-        IntCodec.unpack(u, v)
-        if (v.isNull) {
-          // TODO report error?
-          b += 0
-        } else {
-          val l = v.getInt
-          b += l.toInt
+      unpackArray(u, v) {
+        val len = u.unpackArrayHeader
+        val b   = Array.newBuilder[Int]
+        b.sizeHint(len)
+        (0 until len).foreach { i =>
+          IntCodec.unpack(u, v)
+          if (v.isNull) {
+            // TODO report error?
+            b += 0
+          } else {
+            val l = v.getInt
+            b += l.toInt
+          }
         }
+        v.setObject(b.result())
       }
-      v.setObject(b.result())
     }
   }
 
-  object ShortArrayCodec extends MessageCodec[Array[Short]] {
+  object ShortArrayCodec extends MessageCodec[Array[Short]] with PrimitiveArrayCodec {
     override def pack(p: Packer, v: Array[Short]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x => ShortCodec.pack(p, x) }
+      v.foreach { x =>
+        ShortCodec.pack(p, x)
+      }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
-      val len = u.unpackArrayHeader
-      val b   = Array.newBuilder[Short]
-      b.sizeHint(len)
-      (0 until len).foreach { i =>
-        IntCodec.unpack(u, v)
-        if (v.isNull) {
-          // TODO report error?
-          b += 0
-        } else {
-          val l = v.getShort
-          if (l.isValidInt) {
-            b += l.toShort
-          } else {
-            // report error?
+      unpackArray(u, v) {
+        val len = u.unpackArrayHeader
+        val b   = Array.newBuilder[Short]
+        b.sizeHint(len)
+        (0 until len).foreach { i =>
+          IntCodec.unpack(u, v)
+          if (v.isNull) {
+            // TODO report error?
             b += 0
+          } else {
+            val l = v.getShort
+            if (l.isValidInt) {
+              b += l.toShort
+            } else {
+              // report error?
+              b += 0
+            }
           }
         }
+        v.setObject(b.result())
       }
-      v.setObject(b.result())
     }
   }
 
-  object CharArrayCodec extends MessageCodec[Array[Char]] {
+  object CharArrayCodec extends MessageCodec[Array[Char]] with PrimitiveArrayCodec {
     override def pack(p: Packer, v: Array[Char]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x => CharCodec.pack(p, x) }
+      v.foreach { x =>
+        CharCodec.pack(p, x)
+      }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
-      val len = u.unpackArrayHeader
-      val b   = Array.newBuilder[Char]
-      b.sizeHint(len)
-      (0 until len).foreach { i =>
-        CharCodec.unpack(u, v)
-        if (v.isNull) {
-          // TODO report error?
-          b += 0
-        } else {
-          val l = v.getLong
-          if (l.isValidChar) {
-            b += l.toChar
-          } else {
-            // report error?
+      unpackArray(u, v) {
+        val len = u.unpackArrayHeader
+        val b   = Array.newBuilder[Char]
+        b.sizeHint(len)
+        (0 until len).foreach { i =>
+          CharCodec.unpack(u, v)
+          if (v.isNull) {
+            // TODO report error?
             b += 0
+          } else {
+            val l = v.getLong
+            if (l.isValidChar) {
+              b += l.toChar
+            } else {
+              // report error?
+              b += 0
+            }
           }
         }
+        v.setObject(b.result())
       }
-      v.setObject(b.result())
     }
   }
 
-  object LongArrayCodec extends MessageCodec[Array[Long]] {
+  object LongArrayCodec extends MessageCodec[Array[Long]] with PrimitiveArrayCodec {
     override def pack(p: Packer, v: Array[Long]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x => LongCodec.pack(p, x) }
+      v.foreach { x =>
+        LongCodec.pack(p, x)
+      }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
-      val len = u.unpackArrayHeader
-      val b   = Array.newBuilder[Long]
-      b.sizeHint(len)
-      (0 until len).foreach { i =>
-        LongCodec.unpack(u, v)
-        if (v.isNull) {
-          // TODO report error?
-          b += 0L
-        } else {
-          val l = v.getLong
-          b += l
+      unpackArray(u, v) {
+        val len = u.unpackArrayHeader
+        val b   = Array.newBuilder[Long]
+        b.sizeHint(len)
+        (0 until len).foreach { i =>
+          LongCodec.unpack(u, v)
+          if (v.isNull) {
+            // TODO report error?
+            b += 0L
+          } else {
+            val l = v.getLong
+            b += l
+          }
         }
+        v.setObject(b.result())
       }
-      v.setObject(b.result())
     }
   }
 
-  object FloatArrayCodec extends MessageCodec[Array[Float]] {
+  object FloatArrayCodec extends MessageCodec[Array[Float]] with PrimitiveArrayCodec {
     override def pack(p: Packer, v: Array[Float]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x => FloatCodec.pack(p, x) }
+      v.foreach { x =>
+        FloatCodec.pack(p, x)
+      }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
-      val len = u.unpackArrayHeader
-      val b   = Array.newBuilder[Float]
-      b.sizeHint(len)
-      (0 until len).foreach { i =>
-        val d = FloatCodec.unpack(u, v)
-        if (v.isNull) {
-          // report error?
-          b += 0
-        } else {
-          // TODO check precision
-          b += v.getDouble.toFloat
+      unpackArray(u, v) {
+        val len = u.unpackArrayHeader
+        val b   = Array.newBuilder[Float]
+        b.sizeHint(len)
+        (0 until len).foreach { i =>
+          val d = FloatCodec.unpack(u, v)
+          if (v.isNull) {
+            // report error?
+            b += 0
+          } else {
+            // TODO check precision
+            b += v.getDouble.toFloat
+          }
         }
+        v.setObject(b.result())
       }
-      v.setObject(b.result())
     }
   }
 
-  object DoubleArrayCodec extends MessageCodec[Array[Double]] {
+  object DoubleArrayCodec extends MessageCodec[Array[Double]] with PrimitiveArrayCodec {
     override def pack(p: Packer, v: Array[Double]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x => DoubleCodec.pack(p, x) }
+      v.foreach { x =>
+        DoubleCodec.pack(p, x)
+      }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
-      val len = u.unpackArrayHeader
-      val b   = Array.newBuilder[Double]
-      b.sizeHint(len)
-      (0 until len).foreach { i =>
-        val d = DoubleCodec.unpack(u, v)
-        if (v.isNull) {
-          // report error?
-          b += 0
-        } else {
-          b += v.getDouble
+      unpackArray(u, v) {
+        val len = u.unpackArrayHeader
+        val b   = Array.newBuilder[Double]
+        b.sizeHint(len)
+        (0 until len).foreach { i =>
+          val d = DoubleCodec.unpack(u, v)
+          if (v.isNull) {
+            // report error?
+            b += 0
+          } else {
+            b += v.getDouble
+          }
         }
+        v.setObject(b.result())
       }
-      v.setObject(b.result())
     }
   }
 
-  object BooleanArrayCodec extends MessageCodec[Array[Boolean]] {
+  object BooleanArrayCodec extends MessageCodec[Array[Boolean]] with PrimitiveArrayCodec {
     override def pack(p: Packer, v: Array[Boolean]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x => BooleanCodec.pack(p, x) }
+      v.foreach { x =>
+        BooleanCodec.pack(p, x)
+      }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
-      val len = u.unpackArrayHeader
-      val b   = Array.newBuilder[Boolean]
-      b.sizeHint(len)
-      (0 until len).foreach { i =>
-        BooleanCodec.unpack(u, v)
-        if (v.isNull) {
-          // report error?
-          b += false
-        } else {
-          b += v.getBoolean
+      unpackArray(u, v) {
+        val len = u.unpackArrayHeader
+        val b   = Array.newBuilder[Boolean]
+        b.sizeHint(len)
+        (0 until len).foreach { i =>
+          BooleanCodec.unpack(u, v)
+          if (v.isNull) {
+            // report error?
+            b += false
+          } else {
+            b += v.getBoolean
+          }
         }
+        v.setObject(b.result())
       }
-      v.setObject(b.result())
     }
   }
 
@@ -701,49 +757,57 @@ object PrimitiveCodec {
     }
   }
 
-  object StringArrayCodec extends MessageCodec[Array[String]] {
+  object StringArrayCodec extends MessageCodec[Array[String]] with PrimitiveArrayCodec {
     override def pack(p: Packer, v: Array[String]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x => StringCodec.pack(p, x) }
+      v.foreach { x =>
+        StringCodec.pack(p, x)
+      }
     }
 
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
-      val len = u.unpackArrayHeader
-      val b   = Array.newBuilder[String]
-      b.sizeHint(len)
-      (0 until len).foreach { i =>
-        StringCodec.unpack(u, v)
-        if (v.isNull) {
-          b += "" // or report error?
-        } else {
-          b += v.getString
+      unpackArray(u, v) {
+        val len = u.unpackArrayHeader
+        val b   = Array.newBuilder[String]
+        b.sizeHint(len)
+        (0 until len).foreach { i =>
+          StringCodec.unpack(u, v)
+          if (v.isNull) {
+            b += "" // or report error?
+          } else {
+            b += v.getString
+          }
         }
+        v.setObject(b.result())
       }
-      v.setObject(b.result())
     }
   }
 
-  object AnyArrayCodec extends MessageCodec[Array[Any]] {
+  object AnyArrayCodec extends MessageCodec[Array[Any]] with PrimitiveArrayCodec {
     override def pack(p: Packer, v: Array[Any]): Unit = {
       p.packArrayHeader(v.length)
-      v.foreach { x => AnyCodec.pack(p, x) }
+      v.foreach { x =>
+        AnyCodec.pack(p, x)
+      }
     }
     override def unpack(
         u: Unpacker,
         v: MessageContext
     ): Unit = {
-      val len = u.unpackArrayHeader
-      val b   = Array.newBuilder[Any]
-      b.sizeHint(len)
-      (0 until len).foreach { i =>
-        StringCodec.unpack(u, v)
-        if (v.isNull) {
-          b += null // or report error?
-        } else {
-          b += v.getLastValue
+      unpackArray(u, v) {
+        val len = u.unpackArrayHeader
+        val b   = Array.newBuilder[Any]
+        b.sizeHint(len)
+        (0 until len).foreach { i =>
+          AnyCodec.unpack(u, v)
+          if (v.isNull) {
+            b += null // or report error?
+          } else {
+            b += v.getLastValue
+          }
         }
+        v.setObject(b.result())
       }
-      v.setObject(b.result())
     }
   }
 

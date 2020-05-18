@@ -170,7 +170,7 @@ case class MessageContext(
     err = Option(e)
   }
 
-  def setIncompatibleFormatException[A](codec: MessageCodec[A], message: String): Unit = {
+  def setIncompatibleFormatException(codec: MessageCodec[_], message: String): Unit = {
     setError(new MessageCodecException(INVALID_DATA, codec, message))
   }
 }

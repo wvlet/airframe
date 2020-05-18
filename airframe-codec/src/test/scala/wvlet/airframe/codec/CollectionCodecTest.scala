@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.codec
 
+import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.Surface
 
@@ -59,5 +60,41 @@ class CollectionCodecTest extends CodecSpec {
     val codec   = MessageCodec.of[java.util.Map[String, Int]]
     val msgpack = MessagePack.newBufferPacker.packString("""{"leo":1, "yui":2}""").toByteArray
     codec.unpackMsgPack(msgpack) shouldBe Some(Map("leo" -> 1, "yui" -> 2).asJava)
+  }
+
+  def `support JSON to primitive arrays`: Unit = {
+    MessageCodec.of[Array[Int]].fromMsgPack(StringCodec.toMsgPack("[1, 2, 3]")) shouldBe Array(1, 2, 3)
+    MessageCodec.of[Array[Short]].fromMsgPack(StringCodec.toMsgPack("[1, 2, 3]")) shouldBe Array(
+      1.toShort,
+      2.toShort,
+      3.toShort
+    )
+    MessageCodec.of[Array[Long]].fromMsgPack(StringCodec.toMsgPack("[1, 2, 3]")) shouldBe Array(1L, 2L, 3L)
+    MessageCodec.of[Array[Float]].fromMsgPack(StringCodec.toMsgPack("[1.0, 2.0, 3.0]")) shouldBe Array(1f, 2f, 3f)
+    MessageCodec.of[Array[Double]].fromMsgPack(StringCodec.toMsgPack("[1.0, 2.0, 3.0]")) shouldBe Array(1.0, 2.0, 3.0)
+    MessageCodec.of[Array[Char]].fromMsgPack(StringCodec.toMsgPack("[1, 2, 3]")) shouldBe Array(
+      1.toChar,
+      2.toChar,
+      3.toChar
+    )
+    MessageCodec.of[Array[Boolean]].fromMsgPack(StringCodec.toMsgPack("[true, false, true]")) shouldBe Array(
+      true,
+      false,
+      true
+    )
+    MessageCodec.of[Array[String]].fromMsgPack(StringCodec.toMsgPack("""["a","b", "c"]""")) shouldBe Array(
+      "a",
+      "b",
+      "c"
+    )
+  }
+
+  def `support JSON to Array[Any]` : Unit = {
+    val codec    = MessageCodec.of[Array[Any]]
+    val arr      = codec.fromJson("""[1, "a", true]""")
+    val expected = Array(1, "a", true)
+    for (i <- 0 until arr.size) {
+      arr(i) shouldBe expected(i)
+    }
   }
 }
