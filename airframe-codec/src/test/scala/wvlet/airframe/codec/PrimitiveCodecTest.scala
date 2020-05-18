@@ -29,7 +29,7 @@ import scala.util.Random
 /**
   *
   */
-class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
+object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
   scalaJsSupport
 
   import org.scalacheck._
@@ -377,6 +377,17 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
       "hello opt",
       null
     )
+  }
+
+  case class Person(id: Int, name: String)
+
+  def `find codec from class`: Unit = {
+    if (isScalaJS) {
+      pending("Scala.js doesn't support runtime reflection")
+    }
+    val anyCodec = MessageCodec.of[Any]
+    val json     = anyCodec.toJson(Person(1, "leo"))
+    json shouldBe """{"id":1,"name":"leo"}"""
   }
 
   def `read collection of Any values`: Unit = {

@@ -26,6 +26,11 @@ object Compat {
   def messageCodecFinder: MessageCodecFinder                = MessageCodecFinder.defaultMessageCodecFinder
   def platformSpecificCodecs: Map[Surface, MessageCodec[_]] = Map.empty
 
+  def codecOfClass(
+      cl: Class[_],
+      codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
+  ): Option[MessageCodec[_]] = None
+
   private[codec] def parseInstant(s: String): Option[Instant] = {
     Try(Instant.parse(s)).toOption
   }

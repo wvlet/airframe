@@ -885,8 +885,14 @@ object PrimitiveCodec {
         case v: Throwable =>
           ThrowableCodec.pack(p, v)
         case _ =>
-          // Pack as string for unknown types
-          StringCodec.pack(p, v.toString)
+          val cl = v.getClass
+          wvlet.airframe.codec.Compat.codecOfClass(cl) match {
+            case Some(codec) =>
+              codec.asInstanceOf[MessageCodec[Any]].pack(p, v)
+            case None =>
+              // Pack as a string for unknown types
+              StringCodec.pack(p, v.toString)
+          }
       }
     }
 
