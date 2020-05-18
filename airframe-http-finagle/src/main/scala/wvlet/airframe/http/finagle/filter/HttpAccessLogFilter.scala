@@ -16,13 +16,13 @@ import java.util.Locale
 import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 
 import com.twitter.finagle.http.{HeaderMap, Request, Response}
-import com.twitter.finagle.{Service, SimpleFilter}
+import com.twitter.finagle.{Service, SimpleFilter, http}
 import com.twitter.util.Future
 import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.findCause
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter._
 import wvlet.airframe.http.finagle.{FinagleBackend, FinagleServer}
-import wvlet.airframe.http.{HttpBackend, HttpHeader, HttpServerException, HttpStatus}
+import wvlet.airframe.http.{HttpBackend, HttpContext, HttpHeader, HttpMessage, HttpServerException, HttpStatus}
 import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogTimestampFormatter
 
@@ -239,9 +239,19 @@ object HttpAccessLogFilter {
         case (methodSurface: MethodSurface, args: Seq[Any]) =>
           m += "rpc_class"  -> methodSurface.owner.fullName
           m += "rpc_method" -> methodSurface.name
-          val rpcArgs = (for ((p, arg) <- methodSurface.args.zip(args)) yield {
-            p.name -> arg
-          }).toMap
+
+          val rpcArgsBuilder = ListMap.newBuilder[String, Any]
+          // Exclude request context objects, which will be duplicates of request parameter logs
+          for ((p, arg) <- methodSurface.args.zip(args)) {
+            arg match {
+              case r: HttpMessage.Request  =>
+              case r: http.Request         =>
+              case c: HttpContext[_, _, _] =>
+              case _ =>
+                rpcArgsBuilder += p.name -> arg
+            }
+          }
+          val rpcArgs = rpcArgsBuilder.result()
           if (rpcArgs.nonEmpty) {
             m += "rpc_args" -> rpcArgs
           }

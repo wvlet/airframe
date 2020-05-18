@@ -19,7 +19,16 @@ import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.finagle.filter.HttpAccessLogWriter.JSONHttpAccessLogWriter
 import wvlet.airframe.http.finagle.filter.{HttpAccessLogConfig, HttpAccessLogFilter, HttpAccessLogWriter}
-import wvlet.airframe.http.{Endpoint, Http, HttpMethod, HttpServerException, HttpStatus, Router}
+import wvlet.airframe.http.{
+  Endpoint,
+  Http,
+  HttpContext,
+  HttpMessage,
+  HttpMethod,
+  HttpServerException,
+  HttpStatus,
+  Router
+}
 import wvlet.airspec.AirSpec
 import wvlet.log.Logger
 import wvlet.log.io.IOUtil
@@ -47,6 +56,16 @@ object HttpAccessLogTest extends AirSpec {
       } else {
         throw Http.serverException(HttpStatus.Unauthorized_401, new IllegalStateException("failed to read profile"))
       }
+    }
+
+    @Endpoint(path = "/test")
+    def requestArgTest(
+        p1: String,
+        req1: HttpMessage.Request,
+        req2: Request,
+        context: FinagleBackend.Context
+    ): String = {
+      "test"
     }
   }
 
@@ -158,6 +177,19 @@ object HttpAccessLogTest extends AirSpec {
             fail("Can't find exception log")
         }
         log.get("exception_message").get.toString shouldBe "failed to read profile"
+      }
+
+      test("Omit request context objects from logs") {
+        inMemoryLogWriter.clear()
+        val resp                  = client.sendSafe(Request("/test?p1=hello"))
+        val log: Map[String, Any] = inMemoryLogWriter.getLogs.head
+        debug(log)
+
+        val args = log("rpc_args").asInstanceOf[Map[String, Any]]
+        args.get("req1") shouldBe empty
+        args.get("req2") shouldBe empty
+        args.get("context") shouldBe empty
+        args.get("p1") shouldBe Some("hello")
       }
     }
   }
