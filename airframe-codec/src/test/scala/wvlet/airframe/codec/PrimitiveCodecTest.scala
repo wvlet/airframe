@@ -17,6 +17,7 @@ import java.math.BigInteger
 import java.time.Instant
 
 import org.scalacheck.util.Pretty
+import wvlet.airframe.codec.PrimitiveCodec.LongCodec
 import wvlet.airframe.json.JSON.JSONString
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.msgpack.spi.Value.StringValue
@@ -445,5 +446,9 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     msgpack.length shouldBe 0
     val v = c.fromMsgPack(msgpack)
     v shouldBe null
+  }
+
+  def `fromString(str)` : Unit = {
+    LongCodec.fromString("1234") shouldBe 1234L
   }
 }
