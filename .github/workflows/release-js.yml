@@ -31,9 +31,9 @@ jobs:
       - name: Build for Scala.js 1.0.x
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
-        run: SCALAJS_VERSION=1.0.1 ./sbt "; + projectJS/publishSigned"
+        run: SCALAJS_VERSION=1.1.0 ./sbt "; + projectJS/publishSigned"
       - name: Release to Sonatype
         env:
           SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
           SONATYPE_PASSWORD: '${{ secrets.SONATYPE_PASS }}'
-        run: SCALAJS_VERSION=1.0.1 ./sbt sonatypeBundleRelease
+        run: SCALAJS_VERSION=1.1.0 ./sbt sonatypeBundleRelease
