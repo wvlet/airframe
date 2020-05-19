@@ -687,6 +687,4 @@ object ReflectSurfaceFactory extends LogSupport {
       }
     }
   }
-
-  class ReflectEnumSurface(override val rawType: Class[_]) extends GenericSurface(rawType) {}
 }
