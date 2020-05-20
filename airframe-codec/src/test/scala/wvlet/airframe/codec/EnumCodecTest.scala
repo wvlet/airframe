@@ -37,4 +37,32 @@ object EnumCodecTest extends AirSpec {
     codec.unpackMsgPack(codec.toMsgPack(Red)) shouldBe Some(Red)
     codec.unpackMsgPack(StringCodec.toMsgPack("Green")) shouldBe empty
   }
+
+  test("find unapply(String) from package object methods") {
+    pending("We need to find how to find package object in Scala Macros")
+    import enumtest._
+
+    val codec = MessageCodec.of[Status]
+    info(codec)
+    codec.unpackMsgPack(codec.toMsgPack(Status.SUCCESS)) shouldBe Some(Status.SUCCESS)
+    codec.unpackMsgPack(codec.toMsgPack(Status.FAILURE)) shouldBe Some(Status.FAILURE)
+    codec.unpackMsgPack(StringCodec.toMsgPack("unknown")) shouldBe empty
+  }
+}
+
+package enumtest {
+
+  sealed trait Status
+
+  object Status {
+    def values = Seq(SUCCESS, FAILURE)
+    case object SUCCESS extends Status
+    case object FAILURE extends Status
+  }
+
+  package object enumtest {
+    def unapply(s: String): Option[Status] = {
+      Status.values.find(_.toString == s)
+    }
+  }
 }
