@@ -19,7 +19,6 @@ import java.util.concurrent.ConcurrentHashMap
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
 
-import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 import scala.reflect.runtime.{universe => ru}
 
@@ -339,7 +338,7 @@ object ReflectSurfaceFactory extends LogSupport {
         optionFactory orElse
         tupleFactory orElse
         javaUtilFactory orElse
-        enumFactory orElse
+        javaEnumFactory orElse
         existentialTypeFactory orElse
         genericSurfaceWithConstructorFactory orElse
         genericSurfaceFactory
@@ -448,9 +447,9 @@ object ReflectSurfaceFactory extends LogSupport {
       }
     }
 
-    private def enumFactory: SurfaceMatcher = {
+    private def javaEnumFactory: SurfaceMatcher = {
       case t if isEnum(t) =>
-        EnumSurface(resolveClass(t))
+        JavaEnumSurface(resolveClass(t))
     }
 
     def hasAbstractMethods(t: ru.Type): Boolean =
@@ -493,11 +492,6 @@ object ReflectSurfaceFactory extends LogSupport {
         List.empty[Symbol]
       }
 
-      val companion = targetType.companion match {
-        case NoType => None
-        case comp   => Some(comp)
-      }
-
       for (params <- constructor.paramLists) yield {
         val concreteArgTypes = params.map { p =>
           try {
@@ -537,6 +531,11 @@ object ReflectSurfaceFactory extends LogSupport {
       surfaceParams.toIndexedSeq
     }
 
+    private def existentialTypeFactory: SurfaceMatcher = {
+      case t @ ru.ExistentialType(quantified, underlying) =>
+        surfaceOf(underlying)
+    }
+
     private def genericSurfaceWithConstructorFactory: SurfaceMatcher =
       new SurfaceMatcher with LogSupport {
         override def isDefinedAt(t: ru.Type): Boolean = {
@@ -556,9 +555,23 @@ object ReflectSurfaceFactory extends LogSupport {
         }
       }
 
-    private def existentialTypeFactory: SurfaceMatcher = {
-      case t @ ru.ExistentialType(quantified, underlying) =>
-        surfaceOf(underlying)
+    private def hasStringUnapply(t: ru.Type): Boolean = {
+      t.companion match {
+        case companion: Type =>
+          // Find unapply(String): Option[X]
+          companion.member(TermName("unapply")) match {
+            case s: Symbol if s.isMethod && s.asMethod.paramLists.size == 1 =>
+              val m    = s.asMethod
+              val args = m.paramLists.head
+              args.size == 1 &&
+              args.head.typeSignature =:= typeOf[String] &&
+              m.returnType <:< weakTypeOf[Option[_]] &&
+              m.returnType.typeArgs.size == 1 &&
+              m.returnType.typeArgs.head =:= t
+            case _ => false
+          }
+        case _ => false
+      }
     }
 
     private def genericSurfaceFactory: SurfaceMatcher = {
@@ -575,6 +588,9 @@ object ReflectSurfaceFactory extends LogSupport {
       case t @ RefinedType(List(_, baseType), decl) =>
         // For traits with extended methods
         new GenericSurface(resolveClass(baseType))
+      case t if hasStringUnapply(t) =>
+        // Surface that can be constructed with unapply(String)
+        EnumSurface(resolveClass(t), { (cl: Class[_], s: String) => TypeConverter.convert(s, cl) })
       case t =>
         new GenericSurface(resolveClass(t))
     }

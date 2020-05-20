@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.codec
 import wvlet.airframe.codec.ScalaStandardCodec.{OptionCodec, TupleCodec}
-import wvlet.airframe.surface.{Alias, GenericSurface, Surface}
+import wvlet.airframe.surface.{Alias, EnumSurface, GenericSurface, Surface}
 
 /**
   *
@@ -109,6 +109,8 @@ object MessageCodecFinder {
           factory.ofSurface(g.typeArgs(0), seenSet),
           factory.ofSurface(g.typeArgs(1), seenSet)
         )
+      case es @ EnumSurface(cl, stringExtractor) =>
+        new EnumCodec(es)
     }
   }
 }
