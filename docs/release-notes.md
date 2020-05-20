@@ -6,6 +6,27 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.5.2
+
+Airframe 20.5.2 added a built-in http/RPC request logging and fixed several bugs to airframe-http. We also upgraded to Scala.js 1.1.0, whose binary is compatible with Scala.js 1.0.x. 
+
+airframe-codec is enhanced to support mapping from JSON array strings to Array[X] types. 
+
+-  airframe-http: [#399](https://github.com/wvlet/airframe/issues/399) Add a standard JSON request logger ([#1073](https://github.com/wvlet/airframe/issues/1073)) [[22716fb](https://github.com/wvlet/airframe/commit/22716fb)]
+-  airframe-http: Add RPC call logging ([#1076](https://github.com/wvlet/airframe/issues/1076)) [[119ada2](https://github.com/wvlet/airframe/commit/119ada2)]
+-  airframe-http: Suppress request objects from rpc_args logs ([#1090](https://github.com/wvlet/airframe/issues/1090)) [[cfb0fe0](https://github.com/wvlet/airframe/commit/cfb0fe0)]
+-  airframe-http: Retry on Finagle's ChannelClosedException ([#1089](https://github.com/wvlet/airframe/issues/1089)) [[ca4980c](https://github.com/wvlet/airframe/commit/ca4980c)]
+-  airframe-http: [#1086](https://github.com/wvlet/airframe/issues/1086) Support query_string mapping for non GET requests ([#1087](https://github.com/wvlet/airframe/issues/1087)) [[2b77ad5](https://github.com/wvlet/airframe/commit/2b77ad5)]
+-  airframe-http: Fix query_string parsing of HttpMessage.Request ([#1085](https://github.com/wvlet/airframe/issues/1085)) [[5e6d52f](https://github.com/wvlet/airframe/commit/5e6d52f)]
+-  airframe-http: Report exception traces inside RPC/Endpoint methods ([#1081](https://github.com/wvlet/airframe/issues/1081)) [[217bc88](https://github.com/wvlet/airframe/commit/217bc88)]
+-  airframe-http: Evaluate request/response body lazily ([#1074](https://github.com/wvlet/airframe/issues/1074)) [[762ee16](https://github.com/wvlet/airframe/commit/762ee16)]
+-  airframe-http-rx: Fix EntityRef rendering ([#1075](https://github.com/wvlet/airframe/issues/1075)) [[079ac12](https://github.com/wvlet/airframe/commit/079ac12)]
+-  airframe-surface, airframe-codec: [#1092](https://github.com/wvlet/airframe/issues/1092) Support Enum-like classes in Scala.js ([#1099](https://github.com/wvlet/airframe/issues/1099)) [[7ee82d7](https://github.com/wvlet/airframe/commit/7ee82d7)]
+-  Update sbt-scalajs, scalajs-compiler, ... to 1.1.0 ([#1088](https://github.com/wvlet/airframe/issues/1088)) [[fa6bc92](https://github.com/wvlet/airframe/commit/fa6bc92)]
+-  airframe-codec: [#1083](https://github.com/wvlet/airframe/issues/1083) Support JSON arrays to Array[X] mapping ([#1097](https://github.com/wvlet/airframe/issues/1097)) [[3a2d703](https://github.com/wvlet/airframe/commit/3a2d703)]
+-  airframe-codec: [#1093](https://github.com/wvlet/airframe/issues/1093) Add MessageCodec.fromString(String) ([#1095](https://github.com/wvlet/airframe/issues/1095)) [[5cbdcc1](https://github.com/wvlet/airframe/commit/5cbdcc1)]
+-  airframe-http-okhttp: Update okhttp to 3.12.12 ([#1094](https://github.com/wvlet/airframe/issues/1094)) [[93fa2eb](https://github.com/wvlet/airframe/commit/93fa2eb)]
+
 ## 20.5.1
 
 -  airframe-http: Read error response body and headers properly in Scala.js ([#1069](https://github.com/wvlet/airframe/issues/1069)) [[8936055](https://github.com/wvlet/airframe/commit/8936055)]
