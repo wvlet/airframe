@@ -8,7 +8,7 @@ Airframe uses YY.MM.patch versioning scheme, so the version numbers match with t
 
 ## 20.5.2
 
-Airframe 20.5.2 added a built-in http/RPC request logging and fixed several bugs to airframe-http. We also upgraded to Scala.js 1.1.0, whose binary is compatible with Scala.js 1.0.x. 
+Airframe 20.5.2 added [a built-in http/RPC request logging](https://wvlet.org/airframe/docs/airframe-http#access-logs) and fixed several http request handling bugs. We also upgraded to Scala.js 1.1.0, whose binary is compatible with Scala.js 1.0.x.
 
 airframe-codec is enhanced to support mapping from JSON array strings to Array[X] types. 
 
