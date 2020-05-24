@@ -29,7 +29,7 @@ case class DataSize(value: Double, unit: DataSizeUnit) extends Comparable[DataSi
   require(value >= 0, s"negative size ${value}, ${unit}")
 
   override def toString: String = {
-    // Has fcation?
+    // Has fraction?
     if (value.floor == value) {
       s"${value.floor.toLong}${unit.unitString}"
     } else {
