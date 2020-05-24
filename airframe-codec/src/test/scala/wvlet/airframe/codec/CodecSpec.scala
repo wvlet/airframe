@@ -18,7 +18,7 @@ import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 /**
-  *
+  * Base class for rount-trip tesing of object serialization
   */
 trait CodecSpec extends AirSpec {
   protected def roundtrip[A](surface: Surface, v: A, expectedType: DataType = DataType.ANY): MessageContext = {
