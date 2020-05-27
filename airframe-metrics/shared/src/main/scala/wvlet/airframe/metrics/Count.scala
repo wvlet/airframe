@@ -23,31 +23,26 @@ import scala.util.{Failure, Success, Try}
   * @param value
   * @param unit
   */
-case class Count(value: Double, unit: CountUnit) extends Comparable[Count] {
+case class Count(value: Long, unit: CountUnit) extends Comparable[Count] {
   require(!value.isInfinity, s"Infinite count")
   require(!value.isNaN, s"size is not a number")
   require(value >= 0, s"negative count: ${value}, ${unit}")
 
   override def toString: String = {
     if (unit == Count.ONE) {
-      f"${value.toLong}%,d"
-    } else if (value.floor == value) {
-      s"${value.floor.toLong}${unit.unitString}"
+      f"${value}%,d"
     } else {
-      f"${value}%.2f${unit.unitString}"
+      f"${valueOf(unit)}%.2f${unit.unitString}"
     }
   }
 
-  def toLong: Long = {
-    (value * unit.factor).toLong
-  }
-
+  def toLong: Long = value
   def valueOf(unit: CountUnit): Double = {
     value * (this.unit.factor * 1.0 / unit.factor)
   }
 
-  def covnertTo(unit: CountUnit): Count = {
-    Count(valueOf(unit), unit)
+  def convertTo(unit: CountUnit): Count = {
+    Count(value, unit)
   }
 
   def mostSuccinctCount: Count = {
@@ -65,10 +60,10 @@ case class Count(value: Double, unit: CountUnit) extends Comparable[Count] {
       }
     }
     val targetUnit = loop(Count.ONE, Count.units.tail)
-    covnertTo(targetUnit)
+    convertTo(targetUnit)
   }
   override def compareTo(o: Count): Int = {
-    valueOf(Count.ONE).compareTo(o.valueOf(Count.ONE))
+    value.compareTo(o.value)
   }
 }
 
@@ -92,11 +87,7 @@ object Count {
   def succinct(x: Long): Count = {
     Count(x, ONE).mostSuccinctCount
   }
-  def succinct(x: Double): Count = {
-    Count(x, ONE).mostSuccinctCount
-  }
-  def apply(value: Long): Count   = Count(value, ONE)
-  def apply(value: Double): Count = Count(value, ONE)
+  def apply(value: Long): Count = Count(value, ONE)
 
   def unapply(countStr: String): Option[Count] = Try(apply(countStr)).toOption
 

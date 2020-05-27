@@ -18,5 +18,8 @@ import wvlet.airspec.AirSpec
   *
  */
 class CountTest extends AirSpec {
-  test("succinct count") {}
+  test("succinct count") {
+    Count("1M") shouldBe Count(1000000L, Count.MILLION)
+    Count("1.2M") shouldBe Count(120000L, Count.MILLION)
+  }
 }

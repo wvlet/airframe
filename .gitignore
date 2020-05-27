@@ -31,3 +31,4 @@ website/node_modules
 website/i18n/*
 
 log/*
+project/metals.sbt
