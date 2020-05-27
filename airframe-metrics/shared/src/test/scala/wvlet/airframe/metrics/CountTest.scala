@@ -18,8 +18,30 @@ import wvlet.airspec.AirSpec
   *
  */
 class CountTest extends AirSpec {
-  test("succinct count") {
-    Count("1M") shouldBe Count(1000000L, Count.MILLION)
-    Count("1.2M") shouldBe Count(120000L, Count.MILLION)
+
+  private def check(s: String, expected: Count, expectedString: String) {
+    val c = Count(s)
+    c shouldBe expected
+    c.toString shouldBe expectedString
+  }
+
+  test("parse count strings") {
+    check("1M", Count(1000000L, Count.MILLION), "1M")
+    check("123", Count(123, Count.ONE), "123")
+    check("1234", Count(1234, Count.ONE), "1,234")
+    check("1,234", Count(1234, Count.ONE), "1,234")
+    check("1.2K", Count(1200, Count.THOUSAND), "1.20K")
+    check("2000", Count(2000, Count.ONE), "2000")
+    check("2K", Count(2000, Count.THOUSAND), "2K")
+  }
+
+  test("parse count strings with fraction") {
+    val c = Count("1.2M")
+    c shouldBe Count(1200000L, Count.MILLION)
+    c.toString shouldBe "1.20M"
+
+    val c2 = Count("123M")
+    c2 shouldBe Count(123000000L, Count.MILLION)
+    c2.toString shouldBe "123M"
   }
 }

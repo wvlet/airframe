@@ -31,6 +31,8 @@ case class Count(value: Long, unit: CountUnit) extends Comparable[Count] {
   override def toString: String = {
     if (unit == Count.ONE) {
       f"${value}%,d"
+    } else if (valueOf(unit) == (value / unit.factor)) {
+      f"${valueOf(unit).toLong}%,d${unit.unitString}"
     } else {
       f"${valueOf(unit)}%.2f${unit.unitString}"
     }
@@ -38,7 +40,7 @@ case class Count(value: Long, unit: CountUnit) extends Comparable[Count] {
 
   def toLong: Long = value
   def valueOf(unit: CountUnit): Double = {
-    value * (this.unit.factor * 1.0 / unit.factor)
+    value * 1.0 / unit.factor
   }
 
   def convertTo(unit: CountUnit): Count = {
@@ -91,7 +93,7 @@ object Count {
 
   def unapply(countStr: String): Option[Count] = Try(apply(countStr)).toOption
 
-  private val countPattern = """^\s*(\d+(?:\.\d+)?)\s*([a-zA-Z])\s*$""".r("num", "unit")
+  private val countPattern = """^\s*([\d,]+(?:\.\d+)?)\s*([a-zA-Z])\s*$""".r("num", "unit")
   def apply(countStr: String): Count = {
     countPattern.findFirstMatchIn(countStr) match {
       case None =>
@@ -101,13 +103,13 @@ object Count {
             throw new IllegalArgumentException(s"Invalid count string: ${countStr}")
         }
       case Some(m) =>
-        val num  = m.group("num").toDouble
+        val num  = m.group("num").replaceAll(",", "").toDouble
         val unit = m.group("unit")
         unitTable.get(unit) match {
           case None =>
             throw new IllegalArgumentException(s"Invalid count unit ${unit} in ${countStr}")
           case Some(u) =>
-            Count(num, u)
+            Count((num * u.factor).round, u)
         }
     }
   }
