@@ -97,7 +97,7 @@ object Count {
   def apply(countStr: String): Count = {
     countPattern.findFirstMatchIn(countStr) match {
       case None =>
-        Try(countStr.toLong) match {
+        Try(countStr.replaceAll(",", "").toLong) match {
           case Success(v) => Count(v)
           case Failure(e) =>
             throw new IllegalArgumentException(s"Invalid count string: ${countStr}")

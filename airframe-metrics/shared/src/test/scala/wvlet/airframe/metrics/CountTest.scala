@@ -31,7 +31,7 @@ class CountTest extends AirSpec {
     check("1234", Count(1234, Count.ONE), "1,234")
     check("1,234", Count(1234, Count.ONE), "1,234")
     check("1.2K", Count(1200, Count.THOUSAND), "1.20K")
-    check("2000", Count(2000, Count.ONE), "2000")
+    check("2000", Count(2000, Count.ONE), "2,000")
     check("2K", Count(2000, Count.THOUSAND), "2K")
   }
 
