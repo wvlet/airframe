@@ -55,7 +55,7 @@ object Compat {
     // Finding the surface using reflection
     ReflectSurfaceFactory.ofClass(cl) match {
       case g: GenericSurface if g.params == 0 =>
-        // If this type has no parameters, do not use ObjectCodec for JSON output
+        // If this type has no parameters, we cannot use ObjectCodec for JSON output
         None
       case surface =>
         // Otherwise, use the regular codec finder from Surface
