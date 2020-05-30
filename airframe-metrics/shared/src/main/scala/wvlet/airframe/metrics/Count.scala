@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.metrics
 import wvlet.airframe.metrics.Count.CountUnit
+import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
@@ -72,6 +73,8 @@ case class Count(value: Long, unit: CountUnit) extends Comparable[Count] {
   *
   */
 object Count {
+  Zero.register(Surface.of[CountUnit], ONE)
+  Zero.register(Surface.of[Count], Count(0))
 
   val units             = List(ONE, THOUSAND, MILLION, BILLION, TRILLION, QUADRILLION)
   private val unitTable = units.map(x => x.unitString -> x).toMap[String, CountUnit]

@@ -1,6 +1,9 @@
 package wvlet.airframe.metrics
 
+import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+
+import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.annotation.tailrec
 import scala.concurrent.duration._
@@ -52,6 +55,9 @@ case class ElapsedTime(value: Double, unit: TimeUnit) extends Comparable[Elapsed
 }
 
 object ElapsedTime {
+  Zero.register(Surface.of[ElapsedTime], ElapsedTime.succinctMillis(0))
+  Zero.register(Surface.of[TimeUnit], TimeUnit.NANOSECONDS)
+
   def units = List(NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS, MINUTES, HOURS, DAYS)
 
   private val PATTERN = Pattern.compile("^\\s*(\\d+(?:\\.\\d+)?)\\s*([a-zA-Z]+)\\s*$")
