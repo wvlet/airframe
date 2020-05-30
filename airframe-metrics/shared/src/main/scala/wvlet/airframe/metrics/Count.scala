@@ -18,7 +18,7 @@ import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 /**
-  * A human-readable number representation.
+  * A human-readable integer (non-decimal number) representation.
   *
   * @param value
   * @param unit
@@ -26,7 +26,6 @@ import scala.util.{Failure, Success, Try}
 case class Count(value: Long, unit: CountUnit) extends Comparable[Count] {
   require(!value.isInfinity, s"Infinite count")
   require(!value.isNaN, s"size is not a number")
-  require(value >= 0, s"negative count: ${value}, ${unit}")
 
   override def toString: String = {
     if (unit == Count.ONE) {
@@ -54,7 +53,7 @@ case class Count(value: Long, unit: CountUnit) extends Comparable[Count] {
         unit
       } else {
         val nextUnit = remaining.head
-        if (valueOf(nextUnit) < 1.0) {
+        if (math.abs(valueOf(nextUnit)) < 1.0) {
           unit
         } else {
           loop(nextUnit, remaining.tail)
@@ -74,33 +73,46 @@ case class Count(value: Long, unit: CountUnit) extends Comparable[Count] {
   */
 object Count {
 
-  sealed class CountUnit private[metrics] (val factor: Long, val unitString: String)
+  val units             = List(ONE, THOUSAND, MILLION, BILLION, TRILLION, QUADRILLION)
+  private val unitTable = units.map(x => x.unitString -> x).toMap[String, CountUnit]
 
-  case object ONE         extends CountUnit(1, "")
+  sealed class CountUnit private[metrics] (val factor: Long, val unitString: String) {
+    override def toString = unitString
+  }
+  case object ONE         extends CountUnit(1L, "")
   case object THOUSAND    extends CountUnit(1000L, "K")
   case object MILLION     extends CountUnit(1000000L, "M")
   case object BILLION     extends CountUnit(1000000000L, "B")
   case object TRILLION    extends CountUnit(1000000000000L, "T")
   case object QUADRILLION extends CountUnit(1000000000000000L, "Q")
 
-  val units             = List(ONE, THOUSAND, MILLION, BILLION, TRILLION, QUADRILLION)
-  private val unitTable = units.map(x => x.unitString -> x).toMap[String, CountUnit]
+  object CountUnit {
+    // deserializer for airframe-codec
+    def unapply(unitString: String): Option[CountUnit] = units.find(_.unitString == unitString)
+  }
 
   def succinct(x: Long): Count = {
     Count(x, ONE).mostSuccinctCount
   }
-  def apply(value: Long): Count = Count(value, ONE)
 
+  def apply(value: Long): Count                = Count(value, ONE)
   def unapply(countStr: String): Option[Count] = Try(apply(countStr)).toOption
 
-  private val countPattern = """^\s*([\d,]+(?:\.\d+)?)\s*([a-zA-Z])\s*$""".r("num", "unit")
+  private val countPattern = """^\s*((?:-?)?[\d,]+(?:\.\d+)?)\s*([a-zA-Z])\s*$""".r("num", "unit")
   def apply(countStr: String): Count = {
     countPattern.findFirstMatchIn(countStr) match {
       case None =>
-        Try(countStr.replaceAll(",", "").toLong) match {
+        // When no unit string is found
+        val normalized = countStr.replaceAll(",", "")
+        Try(normalized.toLong) match {
           case Success(v) => Count(v)
           case Failure(e) =>
-            throw new IllegalArgumentException(s"Invalid count string: ${countStr}")
+            // Try parsing as double
+            Try(normalized.toDouble) match {
+              case Success(d) => Count(d.toLong)
+              case Failure(e) =>
+                throw new IllegalArgumentException(s"Invalid count string: ${countStr}")
+            }
         }
       case Some(m) =>
         val num  = m.group("num").replaceAll(",", "").toDouble
