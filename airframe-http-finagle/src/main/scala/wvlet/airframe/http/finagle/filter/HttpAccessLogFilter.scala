@@ -238,7 +238,7 @@ object HttpAccessLogFilter {
     FinagleBackend.getThreadLocal(HttpBackend.TLS_KEY_RPC).foreach { x: Any =>
       x match {
         case RPCCallContext(rpcInterface, methodSurface, args) =>
-          m += "rpc_interface" -> rpcInterface.getName
+          m += "rpc_interface" -> rpcInterface.getName.stripSuffix("$")
           m += "rpc_class"     -> methodSurface.owner.fullName
           m += "rpc_method"    -> methodSurface.name
 
