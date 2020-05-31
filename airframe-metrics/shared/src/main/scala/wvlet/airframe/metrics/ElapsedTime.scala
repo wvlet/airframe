@@ -62,6 +62,8 @@ object ElapsedTime {
     ElapsedTime(value, unit).convertToMostSuccinctTimeUnit
   def succinctMillis(milliSeconds: Long): ElapsedTime =
     ElapsedTime(milliSeconds, MILLISECONDS).convertToMostSuccinctTimeUnit
+  def succinctMillis(milliSeconds: Double): ElapsedTime =
+    ElapsedTime(milliSeconds.round, MILLISECONDS).convertToMostSuccinctTimeUnit
 
   def apply(elapsedTimeStr: String): ElapsedTime = parse(elapsedTimeStr)
 
