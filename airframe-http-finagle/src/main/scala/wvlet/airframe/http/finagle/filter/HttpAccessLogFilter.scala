@@ -23,6 +23,7 @@ import wvlet.airframe.http.finagle.FinagleServer.findCause
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter._
 import wvlet.airframe.http.finagle.{FinagleBackend, FinagleServer}
 import wvlet.airframe.http.{HttpBackend, HttpContext, HttpHeader, HttpMessage, HttpServerException, HttpStatus}
+import wvlet.airframe.http.router.RPCCallContext
 import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogTimestampFormatter
 
@@ -236,9 +237,10 @@ object HttpAccessLogFilter {
     val m = ListMap.newBuilder[String, Any]
     FinagleBackend.getThreadLocal(HttpBackend.TLS_KEY_RPC).foreach { x: Any =>
       x match {
-        case (methodSurface: MethodSurface, args: Seq[Any]) =>
-          m += "rpc_class"  -> methodSurface.owner.fullName
-          m += "rpc_method" -> methodSurface.name
+        case RPCCallContext(rpcInterface, methodSurface, args) =>
+          m += "rpc_interface" -> rpcInterface.getName
+          m += "rpc_class"     -> methodSurface.owner.fullName
+          m += "rpc_method"    -> methodSurface.name
 
           val rpcArgsBuilder = ListMap.newBuilder[String, Any]
           // Exclude request context objects, which will be duplicates of request parameter logs

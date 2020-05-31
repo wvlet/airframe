@@ -126,6 +126,7 @@ object HttpAccessLogTest extends AirSpec {
 
       // RPC logs
       log.get("rpc_method") shouldBe Some("user")
+      log.get("rpc_interface") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest$MyService")
       log.get("rpc_class") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest$MyService")
       log.get("rpc_args") shouldBe Some(Map("id" -> 1))
     }
@@ -231,6 +232,7 @@ object HttpAccessLogTest extends AirSpec {
       log.get("status_code_name") shouldBe Some(HttpStatus.Ok_200.reason)
 
       log.get("rpc_method") shouldBe Some("user")
+      log.get("rpc_interface") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest$MyService")
       log.get("rpc_class") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest$MyService")
       log.get("rpc_args") shouldBe Some(Map("id" -> 2))
     }

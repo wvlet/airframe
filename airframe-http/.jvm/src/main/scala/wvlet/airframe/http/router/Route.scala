@@ -60,10 +60,13 @@ trait Route {
   ): Option[Any]
 }
 
+case class RPCCallContext(rpcInterfaceCls: Class[_], rpcMethodSurface: MethodSurface, rpcArgs: Seq[Any])
+
 /**
   * Define mappings from an HTTP request to a controller method which has the Endpoint annotation
   */
 case class ControllerRoute(
+    rpcInterfaceCls: Class[_],
     controllerSurface: Surface,
     method: String,
     path: String,
@@ -96,7 +99,7 @@ case class ControllerRoute(
         HttpRequestMapper.buildControllerMethodArgs(controller, methodSurface, request, context, params, codecFactory)
 
       // Record RPC method arguments
-      context.setThreadLocal(HttpBackend.TLS_KEY_RPC, (methodSurface, methodArgs))
+      context.setThreadLocal(HttpBackend.TLS_KEY_RPC, RPCCallContext(rpcInterfaceCls, methodSurface, methodArgs))
       methodSurface.call(controller, methodArgs: _*)
     } catch {
       case e: MessageCodecException[_] if e.errorCode == MISSING_PARAMETER =>

@@ -140,7 +140,15 @@ case class Router(
             .map { m => (m, m.findAnnotationOf[Endpoint]) }
             .collect {
               case (m: ReflectMethodSurface, Some(endPoint)) =>
-                ControllerRoute(controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
+                val endpointInterfaceCls =
+                  controllerSurface.findAnnotationOwnerOf[Endpoint].getOrElse(controllerSurface.rawType)
+                ControllerRoute(
+                  endpointInterfaceCls,
+                  controllerSurface,
+                  endPoint.method(),
+                  prefixPath + endPoint.path(),
+                  m
+                )
             }
         case (None, Some(rpc)) =>
           // We need to find the owner class of the RPC interface because the controller might be extending the RPC interface (e.g., RPCImpl)
@@ -157,9 +165,9 @@ case class Router(
             .collect {
               case (m: ReflectMethodSurface, Some(rpc)) =>
                 val path = if (rpc.path().nonEmpty) rpc.path() else s"/${m.name}"
-                ControllerRoute(controllerSurface, HttpMethod.POST, prefixPath + path, m)
+                ControllerRoute(rpcInterfaceCls, controllerSurface, HttpMethod.POST, prefixPath + path, m)
               case (m: ReflectMethodSurface, None) =>
-                ControllerRoute(controllerSurface, HttpMethod.POST, prefixPath + s"/${m.name}", m)
+                ControllerRoute(rpcInterfaceCls, controllerSurface, HttpMethod.POST, prefixPath + s"/${m.name}", m)
             }
       }
     }
