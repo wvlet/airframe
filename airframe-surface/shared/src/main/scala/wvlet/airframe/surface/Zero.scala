@@ -28,7 +28,7 @@ object Zero extends LogSupport {
   private val preregisteredZeroInstance = new ConcurrentHashMap[Surface, Any]().asScala
 
   /**
-    * Register a zero instnce for the given type
+    * Register a zero instance for the given type
     */
   def register(surface: Surface, zero: Any): Unit = {
     preregisteredZeroInstance += surface -> zero

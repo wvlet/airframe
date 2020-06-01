@@ -48,6 +48,20 @@ val e = ElapsedTime("1h") // ElapsedTime(1.0, HOURS)
 e.toMillis // 3600000
 ```
 
+## Count
+
+Human-readable integer representation for Long (signed 64-bit integer) values.
+
+```scala
+import wvlet.airframe.metrics.Count
+
+Count.succinct(123L).toString // 123
+Count.succinct(1234L).toString // 1.23K
+Count.succinct(1234567L).toString // 1.23M
+
+Count("1.23M") // Count(1230000L, Count.MILLION)
+Count("1,234") // Count(1234, Count.ONE)
+```
 
 ## Relative Time Windows
 

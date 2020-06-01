@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.metrics.{DataSize, ElapsedTime}
+import wvlet.airframe.metrics.{Count, DataSize, ElapsedTime}
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.{Surface, Zero}
 import wvlet.airspec.AirSpec
@@ -21,6 +21,8 @@ import wvlet.airspec.AirSpec
   *
   */
 class MetricsCodecTest extends AirSpec {
+  scalaJsSupport
+
   def `support DataSize`: Unit = {
     val codec = MessageCodec.of[DataSize]
 
@@ -71,5 +73,39 @@ class MetricsCodecTest extends AirSpec {
       p.packInt(1000)
       codec.unpackMsgPack(p.toByteArray) shouldBe Some(ElapsedTime.succinctNanos(1000))
     }
+  }
+
+  def `support Zero.of[ElapsedTime]` : Unit = {
+    val z = Zero.zeroOf(Surface.of[ElapsedTime])
+    z shouldBe ElapsedTime.succinctMillis(0)
+  }
+
+  def `support Count`: Unit = {
+    val codec = MessageCodec.of[Count]
+
+    // String
+    {
+      val v = Count("10M")
+      codec.unpackMsgPack(codec.toMsgPack(v)) shouldBe Some(v)
+    }
+
+    // Float
+    {
+      val p = MessagePack.newBufferPacker
+      p.packFloat(1000)
+      codec.unpackMsgPack(p.toByteArray) shouldBe Some(Count.succinct(1000))
+    }
+
+    // Int
+    {
+      val p = MessagePack.newBufferPacker
+      p.packInt(1000)
+      codec.unpackMsgPack(p.toByteArray) shouldBe Some(Count.succinct(1000))
+    }
+  }
+
+  def `support Zero.of[Count]` : Unit = {
+    val z = Zero.zeroOf(Surface.of[Count])
+    z shouldBe Count(0)
   }
 }

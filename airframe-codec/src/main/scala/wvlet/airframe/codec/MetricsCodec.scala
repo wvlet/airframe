@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.metrics.{DataSize, ElapsedTime}
+import wvlet.airframe.metrics.{Count, DataSize, ElapsedTime}
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
 import wvlet.airframe.surface.Surface
 
@@ -22,7 +22,8 @@ import wvlet.airframe.surface.Surface
 object MetricsCodec {
   val metricsCodec = Map(
     Surface.of[DataSize]    -> DataSizeCodec,
-    Surface.of[ElapsedTime] -> ElapsedTimeCodec
+    Surface.of[ElapsedTime] -> ElapsedTimeCodec,
+    Surface.of[Count]       -> CountCodec
   )
 
   object DataSizeCodec extends MessageCodec[DataSize] {
@@ -60,6 +61,26 @@ object MetricsCodec {
         case other =>
           u.skipValue
           v.setError(throw new IllegalArgumentException(s"invalid type ${other} for ElapsedTime"))
+      }
+    }
+  }
+
+  object CountCodec extends MessageCodec[Count] {
+    override def pack(p: Packer, v: Count): Unit = {
+      p.packString(v.toString())
+    }
+
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
+      u.getNextValueType match {
+        case ValueType.STRING =>
+          v.setObject(Count(u.unpackString))
+        case ValueType.INTEGER =>
+          v.setObject(Count.succinct(u.unpackLong))
+        case ValueType.FLOAT =>
+          v.setObject(Count.succinct(u.unpackFloat.toLong))
+        case other =>
+          u.skipValue
+          v.setError(throw new IllegalArgumentException(s"invalid type ${other} for Count"))
       }
     }
   }
