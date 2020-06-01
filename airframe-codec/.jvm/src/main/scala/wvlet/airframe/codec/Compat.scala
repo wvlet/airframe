@@ -53,13 +53,14 @@ object Compat {
       codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
   ): Option[MessageCodec[_]] = {
     // Finding the surface using reflection
-    ReflectSurfaceFactory.ofClass(cl) match {
-      case g: GenericSurface if g.params == 0 =>
-        // If this type has no parameters, we cannot use ObjectCodec for JSON output
+    val surface = ReflectSurfaceFactory.ofClass(cl)
+    codecFactory.of(surface) match {
+      case o: ObjectCodecBase if o.paramCodec.isEmpty =>
+        // If the codec is an ObjectCodec without any parameters,
+        // it will produce empty json object ({}), so we cannot use it
         None
-      case surface =>
-        // Otherwise, use the regular codec finder from Surface
-        Some(codecFactory.of(surface))
+      case codec =>
+        Some(codec)
     }
   }
 
