@@ -17,8 +17,8 @@ import java.util.UUID
 
 import wvlet.airframe.codec.JavaStandardCodec.JavaEnumCodec
 import wvlet.airframe.metrics.TimeParser
-import wvlet.airframe.surface.reflect.ReflectTypeUtil
-import wvlet.airframe.surface.{JavaEnumSurface, EnumSurface, Surface}
+import wvlet.airframe.surface.reflect.{ReflectSurfaceFactory, ReflectTypeUtil}
+import wvlet.airframe.surface.{GenericSurface, JavaEnumSurface, Surface}
 
 import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
@@ -48,6 +48,21 @@ object Compat {
     JavaTimeCodec.javaTimeCodecs ++ JavaStandardCodec.javaStandardCodecs
 
   def codecOf[A: ru.TypeTag]: MessageCodec[A] = MessageCodecFactory.defaultFactory.of[A]
+  def codecOfClass(
+      cl: Class[_],
+      codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
+  ): Option[MessageCodec[_]] = {
+    // Finding the surface using reflection
+    val surface = ReflectSurfaceFactory.ofClass(cl)
+    codecFactory.of(surface) match {
+      case o: ObjectCodecBase if o.paramCodec.isEmpty =>
+        // If the codec is an ObjectCodec without any parameters,
+        // it will produce empty json object ({}), so we cannot use it
+        None
+      case codec =>
+        Some(codec)
+    }
+  }
 
   private[codec] def parseInstant(s: String): Option[Instant] = {
     Try(Instant.parse(s)).toOption

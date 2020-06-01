@@ -29,7 +29,7 @@ import scala.util.Random
 /**
   *
   */
-class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
+object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
   scalaJsSupport
 
   import org.scalacheck._
@@ -377,6 +377,37 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
       "hello opt",
       null
     )
+  }
+
+  case class Person(id: Int, name: String)
+
+  def `find the actual codec for Any class`: Unit = {
+    if (isScalaJS) {
+      pending("Scala.js doesn't support runtime reflection")
+    }
+    val anyCodec = MessageCodec.of[Any]
+    val json     = anyCodec.toJson(Person(1, "leo"))
+    json shouldBe """{"id":1,"name":"leo"}"""
+  }
+
+  sealed trait Color
+  case object RED  extends Color
+  case object BLUE extends Color
+  object Color {
+    def unapply(s: String): Option[Color] = Seq(RED, BLUE).find(_.toString == s)
+  }
+
+  def `find the actual codec for Any case objects`: Unit = {
+    val v     = Seq(RED, BLUE)
+    val codec = MessageCodec.of[Seq[Any]]
+    val json  = codec.toJson(v)
+    json shouldBe """["RED","BLUE"]"""
+
+    // AnyCodec doesn't know the original types, so roundtrip is not supported
+    codec.fromJson(json) shouldBe Seq("RED", "BLUE")
+
+    // Mapping JSON to case objects should be supported
+    MessageCodec.of[Seq[Color]].fromJson(json) shouldBe v
   }
 
   def `read collection of Any values`: Unit = {

@@ -191,11 +191,16 @@ class ParamListCodec(
   }
 }
 
+sealed trait ObjectCodecBase {
+  def paramCodec: Seq[MessageCodec[_]]
+}
+
 /**
   *
   */
 case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]])
     extends MessageCodec[A]
+    with ObjectCodecBase
     with PackAsMapSupport[A]
     with LogSupport {
   private val paramListCodec = new ParamListCodec(surface.name, surface.params.toIndexedSeq, paramCodec)
@@ -236,6 +241,7 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]])
   */
 case class ObjectMapCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]])
     extends MessageCodec[A]
+    with ObjectCodecBase
     with PackAsMapSupport[A]
     with LogSupport {
   private val paramListCodec = new ParamListCodec(surface.name, surface.params.toIndexedSeq, paramCodec)
