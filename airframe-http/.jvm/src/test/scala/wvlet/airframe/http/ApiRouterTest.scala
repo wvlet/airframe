@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http
 import wvlet.airspec.AirSpec
+import wvlet.airframe.http.router.ControllerRoute
 
 /**
   *
@@ -36,5 +37,11 @@ object ApiRouterTest extends AirSpec {
     val x = r.routes.head
     x.method shouldBe HttpMethod.GET
     x.path shouldBe "/v1/hello"
+    x match {
+      case c: ControllerRoute =>
+        c.rpcInterfaceCls shouldBe classOf[MyApi]
+      case _ =>
+        fail("cannot reach here")
+    }
   }
 }

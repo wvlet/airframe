@@ -52,6 +52,7 @@ object RPCTest extends AirSpec {
     debug(r)
     val m = r.routes.find(_.path == "/wvlet.airframe.http.RPCTest.MyRPCService2/hello")
     m shouldBe defined
+
     m.get.method shouldBe HttpMethod.POST
     m.get.methodSurface.name shouldBe "hello"
   }
