@@ -43,11 +43,20 @@ class JSONTest extends AirSpec {
     val json: Json = """{"user": [{ "id": 1, "name": "a" }, { "id": 2, "name": "b" }]}"""
     val jsonValue  = JSON.parse(json)
 
-    val id = (jsonValue / "user" / "id")(0).value
-    id shouldBe 1
+    val ids = (jsonValue / "user" / "id").values
+    ids shouldBe Seq(1, 2)
 
-    val name = (jsonValue / "user" / "name")(1).value
-    name shouldBe "b"
+    val id1 = (jsonValue / "user" / "id")(0).value
+    id1 shouldBe 1
+
+    val id2 = jsonValue("user")(1)("id").toLongValue
+    id2 shouldBe 2
+
+    val name1 = jsonValue("user")(0)("name").toStringValue
+    name1 shouldBe "a"
+
+    val name2 = (jsonValue / "user" / "name")(1).value
+    name2 shouldBe "b"
 
     val users = (jsonValue / "user").value
     users shouldBe Seq(Map("id" -> 1, "name" -> "a"), Map("id" -> 2, "name" -> "b"))

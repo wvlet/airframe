@@ -62,6 +62,36 @@ package object json {
         case JSONObject(x)  => x.map(x => (x._1, x._2.value)).toMap
       }
     }
+
+    def isNull: Boolean = {
+      jsonValue == JSONNull
+    }
+
+    def toStringValue: String = {
+      jsonValue.asInstanceOf[JSONString].v
+    }
+    def toDoubleValue: Double = {
+      jsonValue.asInstanceOf[JSONDouble].v
+    }
+    def toLongValue: Long = {
+      jsonValue.asInstanceOf[JSONLong].v
+    }
+    def toBooleanValue: Boolean = {
+      jsonValue.asInstanceOf[JSONBoolean].v
+    }
+    def toArrayValue: IndexedSeq[JSONValue] = {
+      jsonValue.asInstanceOf[JSONArray].v
+    }
+    def toObjectValue: Map[String, JSONValue] = {
+      jsonValue.asInstanceOf[JSONObject].v.toMap
+    }
+
+    def apply(name: String): JSONValue = {
+      jsonValue.asInstanceOf[JSONObject].get(name).get
+    }
+    def apply(i: Int): JSONValue = {
+      jsonValue.asInstanceOf[JSONArray].v(i)
+    }
   }
 
   implicit class JSONValueSeqOps(val jsonValues: Seq[JSONValue]) extends AnyVal {
@@ -75,6 +105,51 @@ package object json {
 
     def value: Any = {
       jsonValues.head.value
+    }
+
+    def toStringValues: Seq[String] = {
+      jsonValues.map(_.asInstanceOf[JSONString].v)
+    }
+    def toDoubleValues: Seq[Double] = {
+      jsonValues.map(_.asInstanceOf[JSONDouble].v)
+    }
+    def toLongValues: Seq[Long] = {
+      jsonValues.map(_.asInstanceOf[JSONLong].v)
+    }
+    def toBooleanValues: Seq[Boolean] = {
+      jsonValues.map(_.asInstanceOf[JSONBoolean].v)
+    }
+    def toArrayValues: Seq[IndexedSeq[JSONValue]] = {
+      jsonValues.map(_.asInstanceOf[JSONArray].v)
+    }
+    def toObjectValues: Seq[Map[String, JSONValue]] = {
+      jsonValues.map(_.asInstanceOf[JSONObject].v.toMap)
+    }
+
+    def toStringValue: String = {
+      jsonValues.head.asInstanceOf[JSONString].v
+    }
+    def toDoubleValue: Double = {
+      jsonValues.head.asInstanceOf[JSONDouble].v
+    }
+    def toLongValue: Long = {
+      jsonValues.head.asInstanceOf[JSONLong].v
+    }
+    def toBooleanValue: Boolean = {
+      jsonValues.head.asInstanceOf[JSONBoolean].v
+    }
+    def toArrayValue: IndexedSeq[JSONValue] = {
+      jsonValues.head.asInstanceOf[JSONArray].v
+    }
+    def toObjectValue: Map[String, JSONValue] = {
+      jsonValues.head.asInstanceOf[JSONObject].v.toMap
+    }
+
+    def apply(name: String): JSONValue = {
+      jsonValues.head.asInstanceOf[JSONObject].get(name).get
+    }
+    def apply(i: Int): JSONValue = {
+      jsonValues.head.asInstanceOf[JSONArray].v(i)
     }
   }
 }
