@@ -22,8 +22,8 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * An annotation used for defining RPC interfaces.
- * All public methods inside the class marked with @RPC will be HTTP endpoints.
+ * An annotation for defining RPC interfaces.
+ * All public methods inside the class marked with `@RPC` will be HTTP endpoints.
  */
 @Retention(RUNTIME)
 @Target({TYPE, METHOD})
