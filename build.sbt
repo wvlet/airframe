@@ -1,4 +1,4 @@
-import sbtcrossproject.{CrossType, crossProject}
+import sbtcrossproject.{CrossProject, CrossType, crossProject}
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
 val SCALA_2_11 = "2.11.12"
@@ -27,6 +27,11 @@ val airSpecFramework = new TestFramework("wvlet.airspec.Framework")
 addCommandAlias(
   "publishSnapshots",
   s"; ++ ${SCALA_2_12}; projectJVM2_13/publish; projectJVM2_12/publish; projectJS/publish; sbtAirframe/publish;"
+)
+
+addCommandAlias(
+  "publishJSSigned",
+  s"; ++ ${SCALA_2_12}; projectJS/publishSigned; ++ ${SCALA_2_13}; projectJS/publishSigned;"
 )
 
 // Allow using Ctrl+C in sbt without exiting the prompt
@@ -79,7 +84,6 @@ publishTo in ThisBuild := sonatypePublishToBundle.value
 val jsBuildSettings = Seq[Setting[_]](
   crossScalaVersions := exceptScala2_11,
   coverageEnabled := false
-//    Compile / parallelExecution := false
 )
 
 val noPublish = Seq(
@@ -994,6 +998,7 @@ lazy val airspecRef =
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION
       )
     )
+    .jsSettings(jsBuildSettings)
     .dependsOn(airspec, airspecDeps)
 
 lazy val airspecRefJVM = airspecRef.jvm
@@ -1012,7 +1017,7 @@ lazy val sbtAirframe =
       name := "sbt-airframe",
       description := "sbt plugin for helping programming with Airframe",
       scalaVersion := SCALA_2_12,
-      crossSbtVersions := Vector("1.3.8"),
+      crossSbtVersions := Vector("1.3.12"),
       libraryDependencies ++= Seq(
         "io.get-coursier"   %% "coursier"         % "2.0.0-RC5-6",
         "org.apache.commons" % "commons-compress" % "1.20"
