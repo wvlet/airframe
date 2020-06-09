@@ -29,6 +29,15 @@ addCommandAlias(
   s"; ++ ${SCALA_2_12}; projectJVM2_13/publish; projectJVM2_12/publish; projectJS/publish; sbtAirframe/publish;"
 )
 
+// A workaround for https://github.com/sbt/sbt/issues/5586
+//
+// sbt "+ projectJS/publishSigned" tries to build projects for Scala 2.11, but we don't want to support
+// Scala.js + Scala 2.11 anymore, so we need to explicitly specify a Scala version to use.
+addCommandAlias(
+  "publishJSSigned",
+  s"; ++ ${SCALA_2_12}; projectJS/publishSigned; ++ ${SCALA_2_13}; projectJS/publishSigned;"
+)
+
 // Allow using Ctrl+C in sbt without exiting the prompt
 // cancelable in Global := true
 
@@ -79,7 +88,6 @@ publishTo in ThisBuild := sonatypePublishToBundle.value
 val jsBuildSettings = Seq[Setting[_]](
   crossScalaVersions := exceptScala2_11,
   coverageEnabled := false
-//    Compile / parallelExecution := false
 )
 
 val noPublish = Seq(
@@ -627,8 +635,6 @@ lazy val jsonJS  = json.js
 
 val JMH_VERSION = "1.23"
 
-import xerial.sbt.pack.PackPlugin._
-
 lazy val benchmark =
   project
     .in(file("airframe-benchmark"))
@@ -994,6 +1000,7 @@ lazy val airspecRef =
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION
       )
     )
+    .jsSettings(jsBuildSettings)
     .dependsOn(airspec, airspecDeps)
 
 lazy val airspecRefJVM = airspecRef.jvm
@@ -1012,7 +1019,7 @@ lazy val sbtAirframe =
       name := "sbt-airframe",
       description := "sbt plugin for helping programming with Airframe",
       scalaVersion := SCALA_2_12,
-      crossSbtVersions := Vector("1.3.8"),
+      crossSbtVersions := Vector("1.3.12"),
       libraryDependencies ++= Seq(
         "io.get-coursier"   %% "coursier"         % "2.0.0-RC5-6",
         "org.apache.commons" % "commons-compress" % "1.20"
