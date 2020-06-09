@@ -1,4 +1,4 @@
-import sbtcrossproject.{CrossProject, CrossType, crossProject}
+import sbtcrossproject.{CrossType, crossProject}
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
 val SCALA_2_11 = "2.11.12"
@@ -29,6 +29,10 @@ addCommandAlias(
   s"; ++ ${SCALA_2_12}; projectJVM2_13/publish; projectJVM2_12/publish; projectJS/publish; sbtAirframe/publish;"
 )
 
+// A workaround for https://github.com/sbt/sbt/issues/5586
+//
+// sbt "+ projectJS/publishSigned" tries to build projects for Scala 2.11, but we don't want to support
+// Scala.js + Scala 2.11 anymore, so we need to explicitly specify a Scala version to use.
 addCommandAlias(
   "publishJSSigned",
   s"; ++ ${SCALA_2_12}; projectJS/publishSigned; ++ ${SCALA_2_13}; projectJS/publishSigned;"
@@ -630,8 +634,6 @@ lazy val jsonJVM = json.jvm
 lazy val jsonJS  = json.js
 
 val JMH_VERSION = "1.23"
-
-import xerial.sbt.pack.PackPlugin._
 
 lazy val benchmark =
   project
