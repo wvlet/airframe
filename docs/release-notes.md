@@ -11,7 +11,7 @@ Airframe uses YY.MM.patch versioning scheme, so the version numbers match with t
 -  airframe-json: Add convenient operations for JSONValues ([#1123](https://github.com/wvlet/airframe/issues/1123)) [[4675f09](https://github.com/wvlet/airframe/commit/4675f09)]
 -  airframe-jdbc: Update postgresql to 42.2.13 ([#1121](https://github.com/wvlet/airframe/issues/1121)) [[4bf5cfb](https://github.com/wvlet/airframe/commit/4bf5cfb)]
 -  airframe-codec: [#1091](https://github.com/wvlet/airframe/issues/1091) Support complex types in AnyCodec ([#1098](https://github.com/wvlet/airframe/issues/1098)) [[d333515](https://github.com/wvlet/airframe/commit/d333515)]
--  airframe-http: [#1112](https://github.com/wvlet/airframe/issues/1112) Report RPC interface class in the access_log ([#1114](https://github.com/wvlet/airframe/issues/1114)) [[cb0edbe](https://github.com/wvlet/airframe/commit/cb0edbe)]
+-  airframe-http: [#1112](https://github.com/wvlet/airframe/issues/1112) Report RPC interface class in the http_access logs ([#1114](https://github.com/wvlet/airframe/issues/1114)) [[cb0edbe](https://github.com/wvlet/airframe/commit/cb0edbe)]
 -  airframe-metrics: Add Count (succinct counter) ([#1109](https://github.com/wvlet/airframe/issues/1109)) [[cb6d659](https://github.com/wvlet/airframe/commit/cb6d659)]
 
 
