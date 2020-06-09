@@ -6,6 +6,15 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.6.0
+
+-  airframe-json: Add convenient operations for JSONValues ([#1123](https://github.com/wvlet/airframe/issues/1123)) [[4675f09](https://github.com/wvlet/airframe/commit/4675f09)]
+-  airframe-jdbc: Update postgresql to 42.2.13 ([#1121](https://github.com/wvlet/airframe/issues/1121)) [[4bf5cfb](https://github.com/wvlet/airframe/commit/4bf5cfb)]
+-  airframe-codec: [#1091](https://github.com/wvlet/airframe/issues/1091) Support complex types in AnyCodec ([#1098](https://github.com/wvlet/airframe/issues/1098)) [[d333515](https://github.com/wvlet/airframe/commit/d333515)]
+-  airframe-http: [#1112](https://github.com/wvlet/airframe/issues/1112) Report RPC interface class in the access_log ([#1114](https://github.com/wvlet/airframe/issues/1114)) [[cb0edbe](https://github.com/wvlet/airframe/commit/cb0edbe)]
+-  airframe-metrics: Add Count (succinct counter) ([#1109](https://github.com/wvlet/airframe/issues/1109)) [[cb6d659](https://github.com/wvlet/airframe/commit/cb6d659)]
+
+
 ## 20.5.2
 
 Airframe 20.5.2 added [a built-in http/RPC request logging](https://wvlet.org/airframe/docs/airframe-http#access-logs) and fixed several http request handling bugs. We also upgraded to Scala.js 1.1.0, whose binary is compatible with Scala.js 1.0.x.
