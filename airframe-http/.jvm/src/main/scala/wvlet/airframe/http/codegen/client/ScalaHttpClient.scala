@@ -79,7 +79,7 @@ object AsyncClient extends HttpClientType {
           sendRequestArgs ++= m.clientCallParameters
           sendRequestArgs += "requestFilter = requestFilter"
 
-          s"""${m.requestModelClassDef.map(x => s"${x}").getOrElse("")}
+          s"""${m.requestModelClassDef.map(x => s"\n${x}").getOrElse("")}
              |def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType}] = {
              |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})
              |}""".stripMargin
@@ -131,7 +131,7 @@ object SyncClient extends HttpClientType {
           sendRequestArgs ++= m.clientCallParameters
           sendRequestArgs += "requestFilter = requestFilter"
 
-          s"""${m.requestModelClassDef.map(x => s"${x}").getOrElse("")}
+          s"""${m.requestModelClassDef.map(x => s"\n${x}").getOrElse("")}
              |def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType.name} = {
              |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})
              |}""".stripMargin
@@ -193,7 +193,7 @@ object ScalaJSClient extends HttpClientType {
           sendRequestArgs ++= m.typeArgs.map(s => s"Surface.of[${s.name}]")
           sendRequestArgs += "requestFilter = requestFilter"
 
-          s"""${m.requestModelClassDef.map(x => s"${x}").getOrElse("")}
+          s"""${m.requestModelClassDef.map(x => s"\n${x}").getOrElse("")}
              |def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType}] = {
              |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})
              |}""".stripMargin
