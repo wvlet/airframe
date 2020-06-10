@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import java.lang.reflect.InvocationTargetException
 
 import com.twitter.concurrent.AsyncStream
-import com.twitter.finagle.http.{Method, Request, Response}
+import com.twitter.finagle.http.{MediaType, Method, Request, Response}
 import com.twitter.io.Buf.ByteArray
 import com.twitter.io.{Buf, Reader}
 import com.twitter.util.{Await, Future}
@@ -341,9 +341,18 @@ class FinagleRouterTest extends AirSpec {
       result.contentString shouldBe "1:xyz"
     }
 
-    def `support missing query parameter mapping for POST`: Unit = {
+    def `support option parameter mapping for POST`: Unit = {
       val r = Request(Method.Post, "/v1/user/1/profile")
       r.contentString = "hello"
+      val result = Await.result(client.send(r))
+      result.statusCode shouldBe HttpStatus.Ok_200.code
+      result.contentString shouldBe "1:hello"
+    }
+
+    def `skip content body mapping for application/octet-stream requests`: Unit = {
+      val r = Request(Method.Post, "/v1/user/1/profile")
+      r.contentString = "hello" // This content should not be used for RPC binding
+      r.contentType = MediaType.OctetStream
       val result = Await.result(client.send(r))
       result.statusCode shouldBe HttpStatus.Ok_200.code
       result.contentString shouldBe "1:unknown"

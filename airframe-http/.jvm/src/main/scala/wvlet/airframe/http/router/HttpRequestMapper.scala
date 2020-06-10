@@ -84,7 +84,7 @@ object HttpRequestMapper extends LogSupport {
       // Set the method argument
       value match {
         case Some(x) =>
-          methodArgs(arg.index) = value
+          methodArgs(arg.index) = x
         case None =>
           remainingArgs = arg :: remainingArgs
       }
