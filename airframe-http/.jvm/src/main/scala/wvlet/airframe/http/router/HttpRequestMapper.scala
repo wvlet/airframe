@@ -120,3 +120,4 @@ object HttpRequestMapper extends LogSupport {
     )
     methodArgs
   }
+}

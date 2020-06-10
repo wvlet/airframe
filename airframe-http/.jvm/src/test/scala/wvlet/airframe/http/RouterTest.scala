@@ -14,12 +14,11 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.Session
+import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.example.ControllerExample.User
 import wvlet.airframe.http.example._
 import wvlet.airframe.http.router.{ControllerProvider, RouteMatcher}
 import wvlet.airframe.surface.Surface
-import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airspec.AirSpec
 
 /**
@@ -138,7 +137,7 @@ class RouterTest extends AirSpec {
       }
     }
 
-    def call[A](request: HttpMessage.Request, exepected: A): Unit = {
+    def call[A](request: HttpMessage.Request, expected: A): Unit = {
       val ret =
         router
           .findRoute(request)
@@ -147,7 +146,7 @@ class RouterTest extends AirSpec {
           }
 
       ret shouldBe defined
-      ret.get shouldBe exepected
+      ret.get shouldBe expected
     }
 
     call(Http.GET("/user/10"), ControllerExample.User("10", "leo"))
