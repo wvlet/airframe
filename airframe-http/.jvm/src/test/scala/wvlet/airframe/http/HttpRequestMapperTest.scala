@@ -36,14 +36,23 @@ object HttpRequestMapperTest extends AirSpec {
     def rpc6(p1: Option[NestedRequest]): String     = s"${p1}"
   }
 
-  private val api    = new MyApi {}
-  private val router = Router.of[MyApi]
+  trait MyApi2 {
+    @Endpoint(method = HttpMethod.GET, path = "/v1/endpoint1")
+    def endpoint1(p1: NestedRequest): String = s"${p1}"
+  }
 
-  private def mapArgs(route: Route, requestFilter: HttpMessage.Request => HttpMessage.Request): Seq[Any] = {
+  private val api    = new MyApi {}
+  private val router = Router.add[MyApi].add[MyApi2]
+
+  private def mapArgs(
+      route: Route,
+      requestFilter: HttpMessage.Request => HttpMessage.Request,
+      method: String = HttpMethod.POST
+  ): Seq[Any] = {
     val args = HttpRequestMapper.buildControllerMethodArgs[HttpMessage.Request, HttpMessage.Response, Future](
       controller = api,
       methodSurface = route.methodSurface.asInstanceOf[ReflectMethodSurface],
-      request = requestFilter(Http.POST(route.path)),
+      request = requestFilter(Http.request(method, route.path)),
       context = HttpContext.mockContext,
       params = Map.empty,
       codecFactory = MessageCodecFactory.defaultFactoryForJSON
@@ -85,9 +94,22 @@ object HttpRequestMapperTest extends AirSpec {
     args shouldBe Seq(NestedRequest("hello", "world"))
   }
 
+  test("construct request object using both query parameters and body") {
+    skip("not supported for now")
+    val r    = findRoute("rpc3")
+    val args = mapArgs(r, { r => r.withUri(s"${r.uri}?name=hello").withJson("""{"msg":"world"}""") })
+    args shouldBe Seq(NestedRequest("hello", "world"))
+  }
+
   test("map a primitive value and a single request object") {
     val r    = findRoute("rpc4")
     val args = mapArgs(r, _.withJson("""{"p1":"Yes","p2":{"name":"hello","msg":"world"}}"""))
+    args shouldBe Seq("Yes", NestedRequest("hello", "world"))
+  }
+
+  test("extract a primitive value parameter from a query string") {
+    val r    = findRoute("rpc4")
+    val args = mapArgs(r, { r => r.withJson("""{"p2":{"name":"hello","msg":"world"}}""").withUri(s"${r.uri}?p1=Yes") })
     args shouldBe Seq("Yes", NestedRequest("hello", "world"))
   }
 
@@ -119,6 +141,12 @@ object HttpRequestMapperTest extends AirSpec {
     val r    = findRoute("rpc6")
     val args = mapArgs(r, identity)
     args shouldBe Seq(None)
+  }
+
+  test("construct objects using query parameters for GET") {
+    val r    = findRoute("endpoint1")
+    val args = mapArgs(r, { r => r.withUri(s"${r.uri}?name=hello&msg=world") }, method = HttpMethod.GET)
+    args shouldBe Seq(NestedRequest("hello", "world"))
   }
 
 }

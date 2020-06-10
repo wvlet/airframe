@@ -90,7 +90,7 @@ object HttpRequestMapper extends LogSupport {
       }
     }
 
-    // GET requests should have no body content, so we need to populate method args using query strings
+    // GET requests should have no body content, so we need to construct method arg objects using query strings
     if (adapter.methodOf(request) == HttpMethod.GET) {
       // A MessagePack representation of request parameters is necessary to construct non-primitive objects
       lazy val queryParamMsgPack = HttpMultiMapCodec.toMsgPack(requestParamsInUrl)
@@ -124,7 +124,9 @@ object HttpRequestMapper extends LogSupport {
       // Build the method argument instance from the content body for non GET requests
       val contentBytes = adapter.contentBytesOf(request)
 
-      if (contentBytes.nonEmpty) {
+      if (contentBytes.isEmpty) {
+        None
+      } else {
         adapter.contentTypeOf(request).map(_.split(";")(0).toLowerCase()) match {
           case Some("application/x-msgpack") =>
             Some(contentBytes)
@@ -147,8 +149,6 @@ object HttpRequestMapper extends LogSupport {
                 }
             }
         }
-      } else {
-        None
       }
     }
 
@@ -168,14 +168,15 @@ object HttpRequestMapper extends LogSupport {
               case m: MapValue if m.isEmpty =>
                 None
               case m: MapValue =>
+                // Extract the target parameter from the MapValue representation of the request content body
                 m.get(ValueFactory.newString(arg.name)).map { paramValue =>
                     // {"(param name)":(value)}
                     argCodec.unpack(paramValue.toMsgpack)
                   }
                   .orElse {
+                    // When the target paramter is not found in the MapValue
                     argCodec.unpackMsgPack(msgpack)
                   }
-
               case _ =>
                 argCodec.unpackMsgPack(msgpack)
             }
