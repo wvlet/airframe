@@ -75,8 +75,8 @@ object HttpRequestMapperTest extends AirSpec {
 
   test("map a primitive value and a single request object") {
     val r    = router.routes.find(_.methodSurface.name == "f4").get
-    val args = mapArgs(r, _.withJson("""{"p1":"Yo!","p2":{"name":"hello","msg":"world"}}"""))
-    args shouldBe Seq("Yo!", NestedRequest("hello", "world"))
+    val args = mapArgs(r, _.withJson("""{"p1":"Yes","p2":{"name":"hello","msg":"world"}}"""))
+    args shouldBe Seq("Yes", NestedRequest("hello", "world"))
   }
 
 }
