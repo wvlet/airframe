@@ -79,9 +79,9 @@ object AsyncClient extends HttpClientType {
           sendRequestArgs ++= m.clientCallParameters
           sendRequestArgs += "requestFilter = requestFilter"
 
-          s"""def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType}] = {
-             |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result
-            .mkString(", ")})
+          s"""${m.requestModelClassDef.map(x => s"${x}").getOrElse("")}
+             |def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType}] = {
+             |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")
     }
@@ -131,9 +131,9 @@ object SyncClient extends HttpClientType {
           sendRequestArgs ++= m.clientCallParameters
           sendRequestArgs += "requestFilter = requestFilter"
 
-          s"""def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType.name} = {
-             |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result
-            .mkString(", ")})
+          s"""${m.requestModelClassDef.map(x => s"${x}").getOrElse("")}
+             |def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType.name} = {
+             |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")
     }
@@ -193,9 +193,9 @@ object ScalaJSClient extends HttpClientType {
           sendRequestArgs ++= m.typeArgs.map(s => s"Surface.of[${s.name}]")
           sendRequestArgs += "requestFilter = requestFilter"
 
-          s"""def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType}] = {
-             |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result
-            .mkString(", ")})
+          s"""${m.requestModelClassDef.map(x => s"${x}").getOrElse("")}
+             |def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType}] = {
+             |  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})
              |}""".stripMargin
         }.mkString("\n")
     }

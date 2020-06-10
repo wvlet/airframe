@@ -19,3 +19,13 @@ trait MyService {
   @Endpoint(method = HttpMethod.GET, path = "/v1/hello/:id")
   def hello(id: Int): String
 }
+
+@RPC
+trait MyRPC {
+  import MyRPC._
+  def hello(time: Long, request: HelloRequest): String
+}
+
+object MyRPC {
+  case class HelloRequest()
+}

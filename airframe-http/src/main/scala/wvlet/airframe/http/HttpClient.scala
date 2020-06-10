@@ -12,8 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
-import java.net.URLEncoder
-
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.RetryContext
