@@ -15,12 +15,13 @@ package wvlet.airframe.http.router
 
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.codec.{JSONCodec, MessageCodecFactory, ObjectCodec, ParamListCodec}
+import wvlet.airframe.http.HttpHeader.MediaType
 import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
 import wvlet.airframe.msgpack.spi.Value.{MapValue, StringValue}
 import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack, ValueFactory}
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
-import wvlet.airframe.surface.{MethodParameter, OptionSurface, Zero}
+import wvlet.airframe.surface.{CName, MethodParameter, OptionSurface, Zero}
 import wvlet.log.LogSupport
 
 import scala.language.higherKinds
@@ -46,11 +47,10 @@ object HttpRequestMapper extends LogSupport {
     lazy val queryParamMsgpack      = HttpMultiMapCodec.toMsgPack(requestParams)
 
     // Created a place holder for the function arguments
-    val methodArgs: Array[Any] = Array.fill[Any](methodSurface.args.size)(null)
-
-    // Populate http request context parameters first
+    val methodArgs: Array[Any]               = Array.fill[Any](methodSurface.args.size)(null)
     var remainingArgs: List[MethodParameter] = Nil
 
+    // Populate http request context parameters first
     for (arg <- methodSurface.args) {
       val argSurface = arg.surface
       val value: Any = argSurface.rawType match {
@@ -78,6 +78,7 @@ object HttpRequestMapper extends LogSupport {
           }
           v.getOrElse(null)
       }
+      // Set the method argument
       if (value != null) {
         methodArgs(arg.index) = value
       } else {
@@ -87,7 +88,7 @@ object HttpRequestMapper extends LogSupport {
 
     // Populate the remaining function arguments
 
-    // If the request is GET, it should have no body, so we need to populate method args using query strings
+    // If GET requests should have no body content, so we need to populate method args using query strings
     if (adapter.methodOf(request) == HttpMethod.GET) {
       while (remainingArgs.nonEmpty) {
         val arg        = remainingArgs.head
@@ -112,15 +113,18 @@ object HttpRequestMapper extends LogSupport {
       val contentBytes = adapter.contentBytesOf(request)
 
       if (contentBytes.nonEmpty) {
-        val msgpack =
-          adapter.contentTypeOf(request).map(_.split(";")(0)) match {
-            case Some("application/x-msgpack") =>
-              contentBytes
-            case Some("application/json") =>
-              // JSON -> msgpack
-              MessagePack.fromJSON(contentBytes)
-            case _ =>
-              // Try parsing as JSON first
+        adapter.contentTypeOf(request).map(_.split(";")(0).toLowerCase()) match {
+          case Some("application/x-msgpack") =>
+            Some(contentBytes)
+          case Some("application/json") =>
+            // JSON -> msgpack
+            Some(MessagePack.fromJSON(contentBytes))
+          case Some("application/octet-stream") =>
+            // Do not read binary contents
+            None
+          case _ =>
+            // Try parsing the content body as as JSON
+            Some {
               Try(JSON.parse(contentBytes))
                 .map { jsonValue =>
                   JSONCodec.toMsgPack(jsonValue)
@@ -129,42 +133,76 @@ object HttpRequestMapper extends LogSupport {
                   // If parsing as JSON fails, treat the content body as a regular string
                   StringCodec.toMsgPack(adapter.contentStringOf(request))
                 }
-          }
-        Some(msgpack)
+            }
+        }
       } else {
         None
       }
     }
 
-    remainingArgs match {
-      case arg :: Nil =>
-        val argSurface = arg.surface
-        val argCodec   = codecFactory.of(argSurface)
-        // For unary functions, we can omit parameter name keys in the request body
-        readContentBodyAsMsgPack.map { msgpack =>
-          val v = MessagePack.newUnpacker(msgpack).unpackValue
-          val opt: Option[Any] = v match {
-            case m: MapValue =>
-              m.get(ValueFactory.newString(arg.name)).map { paramValue =>
-                  // {"(param name)":(value)}
-                  argCodec.unpack(paramValue.toMsgpack)
-                }
-                .orElse {
-                  // map content body as a parameter (no key is present)
-                  argCodec.unpackMsgPack(msgpack)
-                }
-            case _ =>
-              argCodec.unpackMsgPack(msgpack)
-          }
-
-          methodArgs(arg.index) = opt
-            .orElse(arg.getMethodArgDefaultValue(controller))
-            .getOrElse(Zero.zeroOf(argSurface))
-        }
-
-      case _ =>
+    def setValue(arg: MethodParameter, v: Option[Any]): Unit = {
+      methodArgs(arg.index) = v
+      // Use the method default argument value if exists
+        .orElse(arg.getMethodArgDefaultValue(controller))
+        // If no mapping is available, use the zero value
+        // TODO: Throw an error here when strict validation is enabled
+        .getOrElse(Zero.zeroOf(arg.surface))
     }
 
+    remainingArgs match {
+      case Nil =>
+      // Do nothing
+      case arg :: Nil =>
+        // For unary functions, we can omit the parameter name key in the request body
+        val argSurface = arg.surface
+        val argCodec   = codecFactory.of(argSurface)
+        readContentBodyAsMsgPack match {
+          case Some(msgpack) =>
+            // Read the content body as a MessagePack Map value
+            val v = MessagePack.newUnpacker(msgpack).unpackValue
+            val opt: Option[Any] = v match {
+              case m: MapValue =>
+                m.get(ValueFactory.newString(arg.name)).map { paramValue =>
+                    // {"(param name)":(value)}
+                    argCodec.unpack(paramValue.toMsgpack)
+                  }
+                  .orElse {
+                    // map content body as a parameter (no key is present)
+                    argCodec.unpackMsgPack(msgpack)
+                  }
+              case _ =>
+                argCodec.unpackMsgPack(msgpack)
+            }
+            setValue(arg, opt)
+          case None =>
+            setValue(arg, None)
+        }
+        remainingArgs = Nil
+      case _ =>
+        // Populate all of the remaining arguments using the content body
+        readContentBodyAsMsgPack.foreach { msgpack =>
+          MessagePack.newUnpacker(msgpack).unpackValue match {
+            case m: MapValue =>
+              val mapValue = m.entries.map { kv =>
+                CName.toCanonicalName(kv._1.toString) -> kv._2
+              }
+              remainingArgs.foreach { arg =>
+                val argValueOpt: Option[Any] = mapValue.get(CName.toCanonicalName(arg.name)).flatMap { x =>
+                  val argCodec = codecFactory.of(arg.surface)
+                  argCodec.unpackMsgPack(x.toMsgpack)
+                }
+                setValue(arg, argValueOpt)
+              }
+              remainingArgs = Nil
+            case _ =>
+          }
+        }
+    }
+
+    // Set the default value for the remaining args
+    remainingArgs.foreach { arg =>
+      setValue(arg, None)
+    }
 //
 //
 //            case None =>
