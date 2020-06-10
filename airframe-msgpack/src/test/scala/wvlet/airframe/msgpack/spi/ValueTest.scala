@@ -142,6 +142,8 @@ class ValueTest extends AirSpec with PropertyCheck {
       newString("name")    -> newString("mitsu")
     )
     // a key ("name") should be overwritten
+    m.isEmpty shouldBe false
+    m.nonEmpty shouldBe true
     m.size shouldBe 3
     m.get(StringValue("id")) shouldBe Some(LongValue(1001))
     m.get(StringValue("name")) shouldBe Some(StringValue("mitsu"))

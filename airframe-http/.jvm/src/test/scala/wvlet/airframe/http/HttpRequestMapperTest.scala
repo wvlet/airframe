@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http
 import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.router.{HttpRequestMapper, Route}
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airspec.AirSpec
@@ -28,12 +29,17 @@ object HttpRequestMapperTest extends AirSpec {
 
   @RPC
   trait MyApi {
-    def rpc1(p1: String): String                    = p1
-    def rpc2(p1: String, p2: Int): String           = s"${p1},${p2}"
-    def rpc3(p1: NestedRequest)                     = s"${p1}"
-    def rpc4(p1: String, p2: NestedRequest): String = s"${p1},${p2}"
-    def rpc5(p1: Option[String]): String            = s"${p1}"
-    def rpc6(p1: Option[NestedRequest]): String     = s"${p1}"
+    def rpc1(p1: String): Unit = {}
+    def rpc2(p1: String, p2: Int): Unit = {}
+    def rpc3(p1: NestedRequest): Unit = {}
+    def rpc4(p1: String, p2: NestedRequest): Unit = {}
+    def rpc5(p1: Option[String]): Unit = {}
+    def rpc6(p1: Option[NestedRequest]): Unit = {}
+    def rpc7(
+        request: HttpMessage.Request,
+        context: HttpContext[Request, Response, Future],
+        req: HttpRequest[Request]
+    ): Unit = {}
   }
 
   trait MyApi2 {
@@ -44,6 +50,7 @@ object HttpRequestMapperTest extends AirSpec {
   private val api    = new MyApi {}
   private val router = Router.add[MyApi].add[MyApi2]
 
+  private val mockContext = HttpContext.mockContext
   private def mapArgs(
       route: Route,
       requestFilter: HttpMessage.Request => HttpMessage.Request,
@@ -53,7 +60,7 @@ object HttpRequestMapperTest extends AirSpec {
       controller = api,
       methodSurface = route.methodSurface.asInstanceOf[ReflectMethodSurface],
       request = requestFilter(Http.request(method, route.path)),
-      context = HttpContext.mockContext,
+      context = mockContext,
       params = Map.empty,
       codecFactory = MessageCodecFactory.defaultFactoryForJSON
     )
@@ -141,6 +148,15 @@ object HttpRequestMapperTest extends AirSpec {
     val r    = findRoute("rpc6")
     val args = mapArgs(r, identity)
     args shouldBe Seq(None)
+  }
+
+  test("map http request contexts") {
+    val r    = findRoute("rpc7")
+    val args = mapArgs(r, identity)
+    args.length shouldBe 3
+    args(0).getClass shouldBe classOf[Request]
+    args(1) shouldBeTheSameInstanceAs mockContext
+    classOf[HttpRequest[Request]].isAssignableFrom(args(2).getClass) shouldBe true
   }
 
   test("construct objects using query parameters for GET") {

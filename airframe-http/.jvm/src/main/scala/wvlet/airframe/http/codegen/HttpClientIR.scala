@@ -21,7 +21,7 @@ import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodPa
 import wvlet.log.LogSupport
 
 /**
-  * Generate an intermediate represenatation (IR) of Scala HTTP client code from a given airframe-http interface definition (Router).
+  * Generate an intermediate representation (IR) of Scala HTTP client code from a given airframe-http interface definition (Router).
   *
   * This IR abstracts away the differences between Scala (Sync/Async clients) and Scala.js (Async + AJAX).
   */

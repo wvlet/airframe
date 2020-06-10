@@ -65,7 +65,7 @@ object HttpRequestMapper extends LogSupport {
           // Bind the current http request instance
           Some(adapter.wrap(request))
         case cl if adapter.requestType.isAssignableFrom(cl) =>
-          // Bind HttpRequestAdapter[_]
+          // Bind HttpRequest[_]
           Some(request)
         case cl if classOf[HttpContext[Req, Resp, F]].isAssignableFrom(cl) =>
           // Bind HttpContext
