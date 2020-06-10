@@ -21,7 +21,7 @@ import wvlet.log.LogSupport
 import scala.language.higherKinds
 
 /**
-  * Create a filter for dispatching HTTP requests to controller methods with @Endpoint annotation
+  * Create a filter for dispatching HTTP requests to controller methods with @Endpoint or @RPC annotation
   */
 object HttpRequestDispatcher extends LogSupport {
 

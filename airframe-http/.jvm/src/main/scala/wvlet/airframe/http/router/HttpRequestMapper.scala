@@ -14,11 +14,10 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
-import wvlet.airframe.codec.{JSONCodec, MessageCodecFactory, ObjectCodec, ParamListCodec}
-import wvlet.airframe.http.HttpHeader.MediaType
+import wvlet.airframe.codec.{JSONCodec, MessageCodecFactory}
 import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
-import wvlet.airframe.msgpack.spi.Value.{MapValue, StringValue}
+import wvlet.airframe.msgpack.spi.Value.MapValue
 import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack, ValueFactory}
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airframe.surface.{CName, MethodParameter, OptionSurface, Zero}
@@ -28,9 +27,15 @@ import scala.language.higherKinds
 import scala.util.Try
 
 /**
-  * Mapping HTTP requests to RPC/Endpoint method call arguments
+  * Mapping HTTP requests to RPC/Endpoint method call arguments.
+  *
+  * http request (path parameters, query parameters, request body (json or msgpack data))
+  * -> rpc function call arguments (p1:t1, p2:t2, ...)
+  *
+  *
   */
 object HttpRequestMapper extends LogSupport {
+
   def buildControllerMethodArgs[Req, Resp, F[_]](
       // This instance is necessary to retrieve the default method argument values
       controller: Any,
@@ -42,33 +47,32 @@ object HttpRequestMapper extends LogSupport {
       params: Map[String, String],
       codecFactory: MessageCodecFactory
   )(implicit adapter: HttpRequestAdapter[Req]): Seq[Any] = {
-    // Collect URL query parameters and other parameters embedded inside URL.
-    val requestParams: HttpMultiMap = adapter.queryOf(request) ++ params
-    lazy val queryParamMsgpack      = HttpMultiMapCodec.toMsgPack(requestParams)
+    // Collect URL path and query parameters
+    val requestParamsInUrl: HttpMultiMap = adapter.queryOf(request) ++ params
 
     // Created a place holder for the function arguments
     val methodArgs: Array[Any]               = Array.fill[Any](methodSurface.args.size)(null)
     var remainingArgs: List[MethodParameter] = Nil
 
-    // Populate http request context parameters first
+    // Populate http request context parameters first (e.g., HttpMessage.Request, HttpContext, etc.)
     for (arg <- methodSurface.args) {
       val argSurface = arg.surface
-      val value: Any = argSurface.rawType match {
+      val value: Option[Any] = argSurface.rawType match {
         case cl if classOf[HttpMessage.Request].isAssignableFrom(cl) =>
           // Bind the current http request instance
-          adapter.httpRequestOf(request)
+          Some(adapter.httpRequestOf(request))
         case cl if classOf[HttpRequest[_]].isAssignableFrom(cl) =>
           // Bind the current http request instance
-          adapter.wrap(request)
+          Some(adapter.wrap(request))
         case cl if adapter.requestType.isAssignableFrom(cl) =>
           // Bind HttpRequestAdapter[_]
-          request
+          Some(request)
         case cl if classOf[HttpContext[Req, Resp, F]].isAssignableFrom(cl) =>
           // Bind HttpContext
-          context
+          Some(context)
         case _ =>
           // Build from the string value in the request params
-          val v: Option[Any] = requestParams.get(arg.name) match {
+          requestParamsInUrl.get(arg.name) match {
             case Some(paramValue) =>
               // Pass the String parameter to the method argument
               val argCodec = codecFactory.of(argSurface)
@@ -76,36 +80,44 @@ object HttpRequestMapper extends LogSupport {
             case _ =>
               None
           }
-          v.getOrElse(null)
       }
       // Set the method argument
-      if (value != null) {
-        methodArgs(arg.index) = value
-      } else {
-        remainingArgs = arg :: remainingArgs
+      value match {
+        case Some(x) =>
+          methodArgs(arg.index) = value
+        case None =>
+          remainingArgs = arg :: remainingArgs
       }
     }
 
-    // Populate the remaining function arguments
-
-    // If GET requests should have no body content, so we need to populate method args using query strings
+    // GET requests should have no body content, so we need to populate method args using query strings
     if (adapter.methodOf(request) == HttpMethod.GET) {
+      // A MessagePack representation of request parameters is necessary to construct non-primitive objects
+      lazy val queryParamMsgPack = HttpMultiMapCodec.toMsgPack(requestParamsInUrl)
       while (remainingArgs.nonEmpty) {
         val arg        = remainingArgs.head
         val argSurface = arg.surface
         // Build the method argument instance from the query strings for GET requests
         argSurface match {
           case _ if argSurface.isPrimitive =>
-            arg.getDefaultValue
+            setValue(arg, None)
           case o: OptionSurface if o.elementSurface.isPrimitive =>
-            arg.getDefaultValue
+            setValue(arg, None)
           case _ =>
-            // If the
             val argCodec = codecFactory.of(argSurface)
-            argCodec.unpackMsgPack(queryParamMsgpack).orElse(arg.getDefaultValue)
+            setValue(arg, argCodec.unpackMsgPack(queryParamMsgPack))
         }
         remainingArgs = remainingArgs.tail
       }
+    }
+
+    def setValue(arg: MethodParameter, v: Option[Any]): Unit = {
+      methodArgs(arg.index) = v
+      // Use the method default argument value if exists
+        .orElse(arg.getMethodArgDefaultValue(controller))
+        // If no mapping is available, use the zero value
+        // TODO: Throw an error here when strict validation is enabled
+        .getOrElse(Zero.zeroOf(arg.surface))
     }
 
     def readContentBodyAsMsgPack: Option[MsgPack] = {
@@ -140,15 +152,7 @@ object HttpRequestMapper extends LogSupport {
       }
     }
 
-    def setValue(arg: MethodParameter, v: Option[Any]): Unit = {
-      methodArgs(arg.index) = v
-      // Use the method default argument value if exists
-        .orElse(arg.getMethodArgDefaultValue(controller))
-        // If no mapping is available, use the zero value
-        // TODO: Throw an error here when strict validation is enabled
-        .getOrElse(Zero.zeroOf(arg.surface))
-    }
-
+    // Populate the remaining function arguments
     remainingArgs match {
       case Nil =>
       // Do nothing
@@ -161,15 +165,17 @@ object HttpRequestMapper extends LogSupport {
             // Read the content body as a MessagePack Map value
             val v = MessagePack.newUnpacker(msgpack).unpackValue
             val opt: Option[Any] = v match {
+              case m: MapValue if m.isEmpty =>
+                None
               case m: MapValue =>
                 m.get(ValueFactory.newString(arg.name)).map { paramValue =>
                     // {"(param name)":(value)}
                     argCodec.unpack(paramValue.toMsgpack)
                   }
                   .orElse {
-                    // map content body as a parameter (no key is present)
                     argCodec.unpackMsgPack(msgpack)
                   }
+
               case _ =>
                 argCodec.unpackMsgPack(msgpack)
             }
@@ -203,56 +209,7 @@ object HttpRequestMapper extends LogSupport {
     remainingArgs.foreach { arg =>
       setValue(arg, None)
     }
-//
-//
-//            case None =>
-//                if (adapter.methodOf(request) == HttpMethod.GET) {
-//                  // Build the method argument instance from the query strings for GET requests
-//                  argSurface match {
-//                    case _ if argSurface.isPrimitive =>
-//                      arg.getDefaultValue
-//                    case o: OptionSurface if o.elementSurface.isPrimitive =>
-//                      arg.getDefaultValue
-//                    case _ =>
-//                      argCodec.unpackMsgPack(queryParamMsgpack).orElse(arg.getDefaultValue)
-//                  }
-//                } else if (!argSurface.isOption) {
-//                  // Build the method argument instance from the content body for non GET requests
-//                  val contentBytes = adapter.contentBytesOf(request)
-//
-//                  if (contentBytes.nonEmpty) {
-//                    val msgpack =
-//                      adapter.contentTypeOf(request).map(_.split(";")(0)) match {
-//                        case Some("application/x-msgpack") =>
-//                          contentBytes
-//                        case Some("application/json") =>
-//                          // JSON -> msgpack
-//                          MessagePack.fromJSON(contentBytes)
-//                        case _ =>
-//                          // Try parsing as JSON first
-//                          Try(JSON.parse(contentBytes))
-//                            .map { jsonValue =>
-//                              JSONCodec.toMsgPack(jsonValue)
-//                            }
-//                            .getOrElse {
-//                              // If parsing as JSON fails, treat the content body as a regular string
-//                              StringCodec.toMsgPack(adapter.contentStringOf(request))
-//                            }
-//                      }
-//                    argCodec.unpackMsgPack(msgpack)
-//                  } else {
-//                    // Return the method default argument value if exists
-//                    arg.getMethodArgDefaultValue(controller)
-//                  }
-//                } else {
-//                  // Return the method default argument value if exists
-//                  arg.getMethodArgDefaultValue(controller)
-//                }
-//            }
-//            // If mapping fails, use the zero value
-//            v.getOrElse(Zero.zeroOf(arg.surface))
-//        }
-//      }
+
     trace(
       s"Method binding for request ${adapter.pathOf(request)}: ${methodSurface.name}(${methodSurface.args
         .mkString(", ")}) <= [${methodArgs.mkString(", ")}]"

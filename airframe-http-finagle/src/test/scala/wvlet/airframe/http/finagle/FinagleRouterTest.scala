@@ -126,8 +126,9 @@ trait MyApi extends LogSupport {
   */
 class FinagleRouterTest extends AirSpec {
   protected override def design: Design = {
-    newFinagleServerDesign(router = Router.add[MyApi]).noLifeCycleLogging
-      .bind[FinagleServer].toEagerSingleton
+    Finagle.server
+      .withRouter(Router.add[MyApi])
+      .design
       .bind[FinagleClient].toProvider { server: FinagleServer => Finagle.client.noRetry.newClient(server.localAddress) }
   }
 

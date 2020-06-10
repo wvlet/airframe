@@ -93,7 +93,7 @@ trait MethodParameter extends Parameter {
   def method: MethodRef
 
   /**
-    * Method owner instnce is necessary to find by-name parameter default values
+    * Method owner instance is necessary to find by-name parameter default values
     * @param methodOwner
     * @return
     */
