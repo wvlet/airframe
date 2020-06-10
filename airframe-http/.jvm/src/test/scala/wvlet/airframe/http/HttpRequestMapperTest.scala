@@ -37,11 +37,11 @@ object HttpRequestMapperTest extends AirSpec {
   private val api    = new MyApi {}
   private val router = Router.of[MyApi]
 
-  private def mapArgs(route: Route, jsonBody: String): Seq[Any] = {
+  private def mapArgs(route: Route, requestFilter: HttpMessage.Request => HttpMessage.Request): Seq[Any] = {
     val args = HttpRequestMapper.buildControllerMethodArgs[HttpMessage.Request, HttpMessage.Response, Future](
       controller = api,
       methodSurface = route.methodSurface.asInstanceOf[ReflectMethodSurface],
-      request = Http.POST(route.path).withJson(jsonBody),
+      request = requestFilter(Http.POST(route.path)),
       context = HttpContext.mockContext,
       params = Map.empty,
       codecFactory = MessageCodecFactory.defaultFactoryForJSON
@@ -49,27 +49,33 @@ object HttpRequestMapperTest extends AirSpec {
     args
   }
 
-  test("map a single primitive argument") {
+  test("map a single primitive argument using JSON") {
     val r    = router.routes.find(_.methodSurface.name == "f1").get
-    val args = mapArgs(r, """{"p1":"hello"}""")
+    val args = mapArgs(r, _.withJson("""{"p1":"hello"}"""))
+    args shouldBe Seq("hello")
+  }
+
+  test("map a single primitive argument with a string content") {
+    val r    = router.routes.find(_.methodSurface.name == "f1").get
+    val args = mapArgs(r, _.withContent("""hello"""))
     args shouldBe Seq("hello")
   }
 
   test("map multiple primitive arguments") {
     val r    = router.routes.find(_.methodSurface.name == "f2").get
-    val args = mapArgs(r, """{"p1":"hello","p2":2020}""")
+    val args = mapArgs(r, _.withJson("""{"p1":"hello","p2":2020}"""))
     args shouldBe Seq("hello", 2020)
   }
 
   test("map a single request object") {
     val r    = router.routes.find(_.methodSurface.name == "f3").get
-    val args = mapArgs(r, """{"name":"hello","msg":"world"}""")
+    val args = mapArgs(r, _.withJson("""{"name":"hello","msg":"world"}"""))
     args shouldBe Seq(NestedRequest("hello", "world"))
   }
 
   test("map a primitive value and a single request object") {
     val r    = router.routes.find(_.methodSurface.name == "f4").get
-    val args = mapArgs(r, """{"p1":"Yo!","p2":{"name":"hello","msg":"world"}}""")
+    val args = mapArgs(r, _.withJson("""{"p1":"Yo!","p2":{"name":"hello","msg":"world"}}"""))
     args shouldBe Seq("Yo!", NestedRequest("hello", "world"))
   }
 
