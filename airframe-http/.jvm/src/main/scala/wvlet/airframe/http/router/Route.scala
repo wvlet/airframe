@@ -102,6 +102,8 @@ case class ControllerRoute(
       context.setThreadLocal(HttpBackend.TLS_KEY_RPC, RPCCallContext(rpcInterfaceCls, methodSurface, methodArgs))
       methodSurface.call(controller, methodArgs: _*)
     } catch {
+      case e: IllegalArgumentException =>
+        throw new HttpServerException(HttpStatus.BadRequest_400, e.getMessage, e)
       case e: MessageCodecException[_] if e.errorCode == MISSING_PARAMETER =>
         throw new HttpServerException(HttpStatus.BadRequest_400, e.message, e)
     }

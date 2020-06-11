@@ -18,7 +18,7 @@ import wvlet.airframe.codec.{JSONCodec, MessageCodecFactory}
 import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
 import wvlet.airframe.msgpack.spi.Value.MapValue
-import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack, ValueFactory}
+import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack, Value, ValueFactory}
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airframe.surface.{CName, MethodParameter, OptionSurface, Zero}
 import wvlet.log.LogSupport
@@ -76,7 +76,7 @@ object HttpRequestMapper extends LogSupport {
             case Some(paramValue) =>
               // Pass the String parameter to the method argument
               val argCodec = codecFactory.of(argSurface)
-              argCodec.unpackMsgPack(StringCodec.toMsgPack(paramValue))
+              Some(argCodec.fromString(paramValue))
             case _ =>
               None
           }
@@ -105,7 +105,7 @@ object HttpRequestMapper extends LogSupport {
             setValue(arg, None)
           case _ =>
             val argCodec = codecFactory.of(argSurface)
-            setValue(arg, argCodec.unpackMsgPack(queryParamMsgPack))
+            setValue(arg, Some(argCodec.fromMsgPack(queryParamMsgPack)))
         }
         remainingArgs = remainingArgs.tail
       }
@@ -134,7 +134,7 @@ object HttpRequestMapper extends LogSupport {
             // JSON -> msgpack
             Some(MessagePack.fromJSON(contentBytes))
           case Some("application/octet-stream") =>
-            // Do not read binary contents
+            // Do not read binary contents (e.g., uploaded file)
             None
           case _ =>
             // Try parsing the content body as as JSON
@@ -168,17 +168,18 @@ object HttpRequestMapper extends LogSupport {
               case m: MapValue if m.isEmpty =>
                 None
               case m: MapValue =>
+                val mapValue = toCanonicalKeyNameMap(m)
                 // Extract the target parameter from the MapValue representation of the request content body
-                m.get(ValueFactory.newString(arg.name)).map { paramValue =>
+                mapValue.get(CName.toCanonicalName(arg.name)) match {
+                  case Some(paramValue) =>
                     // {"(param name)":(value)}
-                    argCodec.unpack(paramValue.toMsgpack)
-                  }
-                  .orElse {
-                    // When the target paramter is not found in the MapValue
+                    Some(argCodec.fromMsgPack(paramValue.toMsgpack))
+                  case None =>
+                    // When the target parameter is not found in the MapValue, try mapping the content body as a whole
                     argCodec.unpackMsgPack(msgpack)
-                  }
+                }
               case _ =>
-                argCodec.unpackMsgPack(msgpack)
+                Some(argCodec.fromMsgPack(msgpack))
             }
             setValue(arg, opt)
           case None =>
@@ -190,17 +191,16 @@ object HttpRequestMapper extends LogSupport {
         readContentBodyAsMsgPack.foreach { msgpack =>
           MessagePack.newUnpacker(msgpack).unpackValue match {
             case m: MapValue =>
-              val mapValue = m.entries.map { kv =>
-                CName.toCanonicalName(kv._1.toString) -> kv._2
-              }
-              remainingArgs.foreach { arg =>
+              val mapValue = toCanonicalKeyNameMap(m)
+              while (remainingArgs.nonEmpty) {
+                val arg = remainingArgs.head
                 val argValueOpt: Option[Any] = mapValue.get(CName.toCanonicalName(arg.name)).flatMap { x =>
                   val argCodec = codecFactory.of(arg.surface)
-                  argCodec.unpackMsgPack(x.toMsgpack)
+                  Some(argCodec.fromMsgPack(x.toMsgpack))
                 }
                 setValue(arg, argValueOpt)
+                remainingArgs = remainingArgs.tail
               }
-              remainingArgs = Nil
             case _ =>
           }
         }
@@ -217,4 +217,14 @@ object HttpRequestMapper extends LogSupport {
     )
     methodArgs.toSeq
   }
+
+  /**
+    * Convert MapValue to use CName as keys to support case-insensitive match
+    */
+  private def toCanonicalKeyNameMap(m: MapValue): Map[String, Value] = {
+    m.entries.map { kv =>
+      CName.toCanonicalName(kv._1.toString) -> kv._2
+    }.toMap
+  }
+
 }

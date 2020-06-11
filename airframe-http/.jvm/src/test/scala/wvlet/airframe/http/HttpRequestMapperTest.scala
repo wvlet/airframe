@@ -26,6 +26,7 @@ import scala.concurrent.Future
 object HttpRequestMapperTest extends AirSpec {
 
   case class NestedRequest(name: String, msg: String)
+  case class NestedRequest2(id: Int)
 
   @RPC
   trait MyApi {
@@ -40,11 +41,15 @@ object HttpRequestMapperTest extends AirSpec {
         context: HttpContext[Request, Response, Future],
         req: HttpRequest[Request]
     ): Unit = {}
+    def rpc8(p1: Int): Unit = {}
   }
 
   trait MyApi2 {
     @Endpoint(method = HttpMethod.GET, path = "/v1/endpoint1")
-    def endpoint1(p1: NestedRequest): String = s"${p1}"
+    def endpoint1(p1: NestedRequest): Unit = {}
+
+    @Endpoint(method = HttpMethod.GET, path = "/v1/endpoint2")
+    def endpoint2(p1: NestedRequest2): Unit = {}
   }
 
   private val api    = new MyApi {}
@@ -87,6 +92,13 @@ object HttpRequestMapperTest extends AirSpec {
     val r    = findRoute("rpc2")
     val args = mapArgs(r, _.withJson("""{"p1":"hello","p2":2020}"""))
     args shouldBe Seq("hello", 2020)
+  }
+
+  test("throw an exception when reading incomptible primitive arguments") {
+    val r = findRoute("rpc2")
+    intercept[IllegalArgumentException] {
+      mapArgs(r, _.withJson("""{"p1":"hello","p2":"abc"}"""))
+    }
   }
 
   test("map a single request object") {
@@ -159,10 +171,43 @@ object HttpRequestMapperTest extends AirSpec {
     classOf[HttpRequest[Request]].isAssignableFrom(args(2).getClass) shouldBe true
   }
 
+  test("throws an error on incompatible type") {
+    val r = findRoute("rpc8")
+    intercept[IllegalArgumentException] {
+      mapArgs(r, _.withJson("""{"p1":"abc"}"""))
+    }
+  }
+
+  test("throws an error on incompatible type in query parameters") {
+    val r = findRoute("rpc8")
+    intercept[IllegalArgumentException] {
+      mapArgs(r, { r => r.withUri(s"${r.uri}?p1=abc") })
+    }
+  }
+
+  test("throws an error on incompatible type in request body") {
+    val r = findRoute("rpc8")
+    intercept[IllegalArgumentException] {
+      mapArgs(r, { r => r.withContent("abc") })
+    }
+  }
+
   test("construct objects using query parameters for GET") {
     val r    = findRoute("endpoint1")
     val args = mapArgs(r, { r => r.withUri(s"${r.uri}?name=hello&msg=world") }, method = HttpMethod.GET)
     args shouldBe Seq(NestedRequest("hello", "world"))
   }
 
+  test("construct nested objects using query parameters for GET") {
+    val r    = findRoute("endpoint2")
+    val args = mapArgs(r, { r => r.withUri(s"${r.uri}?id=1") }, method = HttpMethod.GET)
+    args shouldBe Seq(NestedRequest2(1))
+  }
+
+  test("throws an error when incompatible input is found when constructing nested objects with GET") {
+    val r = findRoute("endpoint2")
+    intercept[IllegalArgumentException] {
+      mapArgs(r, { r => r.withUri(s"${r.uri}?id=abc") }, method = HttpMethod.GET)
+    }
+  }
 }
