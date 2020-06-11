@@ -19,16 +19,7 @@ import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.finagle.filter.HttpAccessLogWriter.JSONHttpAccessLogWriter
 import wvlet.airframe.http.finagle.filter.{HttpAccessLogConfig, HttpAccessLogFilter, HttpAccessLogWriter}
-import wvlet.airframe.http.{
-  Endpoint,
-  Http,
-  HttpContext,
-  HttpMessage,
-  HttpMethod,
-  HttpServerException,
-  HttpStatus,
-  Router
-}
+import wvlet.airframe.http._
 import wvlet.airspec.AirSpec
 import wvlet.log.Logger
 import wvlet.log.io.IOUtil

@@ -194,10 +194,12 @@ object HttpRequestMapper extends LogSupport {
               val mapValue = toCanonicalKeyNameMap(m)
               while (remainingArgs.nonEmpty) {
                 val arg = remainingArgs.head
-                val argValueOpt: Option[Any] = mapValue.get(CName.toCanonicalName(arg.name)).flatMap { x =>
-                  val argCodec = codecFactory.of(arg.surface)
-                  Some(argCodec.fromMsgPack(x.toMsgpack))
-                }
+                val argValueOpt: Option[Any] = mapValue
+                  .get(CName.toCanonicalName(arg.name))
+                  .map { x =>
+                    val argCodec = codecFactory.of(arg.surface)
+                    argCodec.fromMsgPack(x.toMsgpack)
+                  }
                 setValue(arg, argValueOpt)
                 remainingArgs = remainingArgs.tail
               }
