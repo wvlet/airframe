@@ -50,6 +50,9 @@ object HttpRequestMapperTest extends AirSpec {
 
     @Endpoint(method = HttpMethod.GET, path = "/v1/endpoint2")
     def endpoint2(p1: NestedRequest2): Unit = {}
+
+    @Endpoint(method = HttpMethod.GET, path = "/v1/endpoint3")
+    def endpoint3(p1: Seq[String]): Unit = {}
   }
 
   private val api    = new MyApi {}
@@ -204,10 +207,29 @@ object HttpRequestMapperTest extends AirSpec {
     args shouldBe Seq(NestedRequest2(1))
   }
 
-  test("throws an error when incompatible input is found when constructing nested objects with GET") {
+  test("throw an error when incompatible input is found when constructing nested objects with GET") {
     val r = findRoute("endpoint2")
     intercept[IllegalArgumentException] {
       mapArgs(r, { r => r.withUri(s"${r.uri}?id=abc") }, method = HttpMethod.GET)
     }
+  }
+
+  test("Map query parameters to Seq[X]") {
+    val r    = findRoute("endpoint3")
+    val args = mapArgs(r, { r => r.withUri(s"${r.uri}?p1=apple") }, method = HttpMethod.GET)
+    args shouldBe Seq(Seq("apple"))
+  }
+
+  test("Map multiple query parameters to Seq[X]") {
+    val r    = findRoute("endpoint3")
+    val args = mapArgs(r, { r => r.withUri(s"${r.uri}?p1=apple&p1=banana") }, method = HttpMethod.GET)
+    args shouldBe Seq(Seq("apple", "banana"))
+  }
+
+  test("Map empty parameters to Seq[X]") {
+    pending("Fix empty parameter mapping to Seq[X]")
+    val r    = findRoute("endpoint3")
+    val args = mapArgs(r, identity, method = HttpMethod.GET)
+    args shouldBe Seq(Seq.empty)
   }
 }

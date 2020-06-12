@@ -19,6 +19,7 @@ import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
 import wvlet.airframe.msgpack.spi.Value.MapValue
 import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack, Value, ValueFactory}
+import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airframe.surface.{CName, MethodParameter, OptionSurface, Zero}
 import wvlet.log.LogSupport
@@ -71,14 +72,18 @@ object HttpRequestMapper extends LogSupport {
           // Bind HttpContext
           Some(context)
         case _ =>
+          // Pass the String parameter to the method argument
+          val argCodec = codecFactory.of(argSurface)
           // Build from the string value in the request params
-          requestParamsInUrl.get(arg.name) match {
-            case Some(paramValue) =>
-              // Pass the String parameter to the method argument
-              val argCodec = codecFactory.of(argSurface)
-              Some(argCodec.fromString(paramValue))
-            case _ =>
-              None
+          val paramValues = requestParamsInUrl.getAll(arg.name)
+          if (paramValues.isEmpty) {
+            None
+          } else if (paramValues.size == 1 && !classOf[Seq[_]].isAssignableFrom(argSurface.rawType)) {
+            // Single parmeter (e.g.,p1=v)
+            Some(argCodec.fromString(paramValues.head))
+          } else {
+            // Multiple parameter values to the same key (e.g., p1=v1&p1=v2)
+            Some(argCodec.fromMsgPack(codecFactory.of[Seq[String]].toMsgPack(paramValues)))
           }
       }
       // Set the method argument
