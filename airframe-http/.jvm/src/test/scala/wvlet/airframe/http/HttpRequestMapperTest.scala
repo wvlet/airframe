@@ -42,6 +42,7 @@ object HttpRequestMapperTest extends AirSpec {
         req: HttpRequest[Request]
     ): Unit = {}
     def rpc8(p1: Int): Unit = {}
+    def rpc9(p1: Option[Int]): Unit = {}
   }
 
   trait MyApi2 {
@@ -192,6 +193,22 @@ object HttpRequestMapperTest extends AirSpec {
     val r = findRoute("rpc8")
     intercept[IllegalArgumentException] {
       mapArgs(r, { r => r.withContent("abc") })
+    }
+  }
+
+  test("throws an error when mapping JSON [1] to Int") {
+    val r = findRoute("rpc8")
+    intercept[IllegalArgumentException] {
+      val args = mapArgs(r, { r => r.withJson("""{"p1":[1]}""") })
+      warn(args)
+    }
+  }
+
+  test("throws an error on incompatible JSON [1] to Option[X]") {
+    val r = findRoute("rpc9")
+    intercept[IllegalArgumentException] {
+      val args = mapArgs(r, { r => r.withJson("""{"p1":[1]}""") })
+      warn(args)
     }
   }
 

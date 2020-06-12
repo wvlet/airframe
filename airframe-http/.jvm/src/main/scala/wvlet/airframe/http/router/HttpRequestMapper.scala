@@ -179,7 +179,9 @@ object HttpRequestMapper extends LogSupport {
                 mapValue.get(CName.toCanonicalName(arg.name)) match {
                   case Some(paramValue) =>
                     // {"(param name)":(value)}
-                    Some(argCodec.fromMsgPack(paramValue.toMsgpack))
+                    Option(argCodec.fromMsgPack(paramValue.toMsgpack)).orElse {
+                      throw new IllegalArgumentException(s"Failed to parse ${paramValue} for ${arg}")
+                    }
                   case None =>
                     // When the target parameter is not found in the MapValue, try mapping the content body as a whole
                     argCodec.unpackMsgPack(msgpack)

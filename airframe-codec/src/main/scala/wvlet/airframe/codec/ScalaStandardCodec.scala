@@ -36,7 +36,12 @@ object ScalaStandardCodec {
           v.setObject(None)
         case _ =>
           elementCodec.unpack(u, v)
-          v.setObject(Some(v.getLastValue))
+          Option(v.getLastValue) match {
+            case Some(x) =>
+              v.setObject(Some(x))
+            case None =>
+              v.setNull
+          }
       }
     }
   }
