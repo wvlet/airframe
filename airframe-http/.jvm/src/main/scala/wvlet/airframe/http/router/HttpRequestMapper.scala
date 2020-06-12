@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.codec.PrimitiveCodec.StringCodec
+import wvlet.airframe.codec.PrimitiveCodec.{StringCodec, ValueCodec}
 import wvlet.airframe.codec.{JSONCodec, MessageCodecFactory}
 import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
@@ -50,6 +50,12 @@ object HttpRequestMapper extends LogSupport {
   )(implicit adapter: HttpRequestAdapter[Req]): Seq[Any] = {
     // Collect URL path and query parameters
     val requestParamsInUrl: HttpMultiMap = adapter.queryOf(request) ++ params
+    // A MessagePack representation of request parameters will be necessary
+    // to construct non-primitive objects
+    lazy val queryParamMsgPack = HttpMultiMapCodec.toMsgPack(requestParamsInUrl)
+    lazy val queryParamMap: Map[String, Value] = toCanonicalKeyNameMap(
+      ValueCodec.fromMsgPack(queryParamMsgPack).asInstanceOf[MapValue]
+    )
 
     // Created a place holder for the function arguments
     val methodArgs: Array[Any]               = Array.fill[Any](methodSurface.args.size)(null)
@@ -75,15 +81,12 @@ object HttpRequestMapper extends LogSupport {
           // Pass the String parameter to the method argument
           val argCodec = codecFactory.of(argSurface)
           // Build from the string value in the request params
-          val paramValues = requestParamsInUrl.getAll(arg.name)
-          if (paramValues.isEmpty) {
-            None
-          } else if (paramValues.size == 1 && !classOf[Seq[_]].isAssignableFrom(argSurface.rawType)) {
-            // Single parmeter (e.g.,p1=v)
-            Some(argCodec.fromString(paramValues.head))
-          } else {
-            // Multiple parameter values to the same key (e.g., p1=v1&p1=v2)
-            Some(argCodec.fromMsgPack(codecFactory.of[Seq[String]].toMsgPack(paramValues)))
+          queryParamMap.get(CName.toCanonicalName(arg.name)) match {
+            case Some(paramValue) =>
+              // Single parameter (e.g.,p1=v) or Multiple parameter values to the same key (e.g., p1=v1&p1=v2)
+              Some(argCodec.fromMsgPack(paramValue.toMsgpack))
+            case None =>
+              None
           }
       }
       // Set the method argument
@@ -97,8 +100,6 @@ object HttpRequestMapper extends LogSupport {
 
     // GET requests should have no body content, so we need to construct method arg objects using query strings
     if (adapter.methodOf(request) == HttpMethod.GET) {
-      // A MessagePack representation of request parameters is necessary to construct non-primitive objects
-      lazy val queryParamMsgPack = HttpMultiMapCodec.toMsgPack(requestParamsInUrl)
       while (remainingArgs.nonEmpty) {
         val arg        = remainingArgs.head
         val argSurface = arg.surface

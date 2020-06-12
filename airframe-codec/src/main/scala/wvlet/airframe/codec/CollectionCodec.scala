@@ -18,10 +18,10 @@ import java.util
 import wvlet.airframe.json.JSONParseException
 import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, ValueType}
 import wvlet.airframe.surface.{Surface, Zero}
-import wvlet.log.LogSupport
 
-import scala.jdk.CollectionConverters._
 import scala.collection.mutable
+import scala.jdk.CollectionConverters._
+import scala.util.{Failure, Success, Try}
 
 object CollectionCodec {
   object BaseSeqCodec {
@@ -42,6 +42,18 @@ object CollectionCodec {
         elementCodec: MessageCodec[A],
         newBuilder: => mutable.Builder[A, Seq[A]]
     ): Unit = {
+
+      def unpackSingle(readElement: => A): Unit = {
+        // Create a single element Seq.
+        val b = newBuilder
+        b.sizeHint(1)
+        Try(readElement) match {
+          case Success(x)  => b += x
+          case Failure(ex) => b += Zero.zeroOf(surface).asInstanceOf[A]
+        }
+        v.setObject(b.result())
+      }
+
       u.getNextValueType match {
         case ValueType.ARRAY =>
           // Read elements
@@ -61,11 +73,28 @@ object CollectionCodec {
           v.setObject(b.result())
         case ValueType.STRING =>
           // Assumes JSON array
-          val jsonArray = u.unpackString
-          val msgpack   = JSONCodec.toMsgPack(jsonArray)
-          val unpacker  = MessagePack.newUnpacker(msgpack)
-          // Parse again
-          unpack(unpacker, v, surface, elementCodec, newBuilder)
+          val s = u.unpackString
+          if (s.startsWith("[")) {
+            try {
+              val jsonArrayMsgPack = JSONCodec.toMsgPack(s)
+              val unpacker         = MessagePack.newUnpacker(jsonArrayMsgPack)
+              // Parse again
+              unpack(unpacker, v, surface, elementCodec, newBuilder)
+            } catch {
+              case e: JSONParseException =>
+                // Not a JSON value, so create a single element Seq
+                unpackSingle(elementCodec.fromString(s))
+            }
+          } else {
+            // Create a single element Seq
+            unpackSingle(elementCodec.fromString(s))
+          }
+        case ValueType.NIL =>
+          u.unpackNil
+          v.setObject(newBuilder.result())
+        case ValueType.BOOLEAN | ValueType.INTEGER | ValueType.FLOAT | ValueType.BINARY =>
+          val x = u.unpackValue
+          unpackSingle(elementCodec.fromMsgPack(x.toMsgpack))
         case other =>
           u.skipValue
           v.setError(
