@@ -58,7 +58,9 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
 
     val url = s"${address.uri}${request.uri}"
 
-    config.retryContext.run {
+    // Send the request with retry support. Setting the context request is necessary to properly show
+    // the request path upon errors
+    config.retryContext.runWithContext(request) {
       val conn0: HttpURLConnection = new java.net.URL(url).openConnection().asInstanceOf[HttpURLConnection]
       conn0.setRequestMethod(request.method)
       for (e <- request.header.entries) {
@@ -303,7 +305,7 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resource: Resource,
       requestFilter: Request => Request
   ): Resource = {
-    val r = Http.PATCH(resourcePath).withJson(toJson(resource))
+    val r = Http.POST(resourcePath).withHeader("X-HTTP-Method-Override", "PATCH").withJson(toJson(resource))
     convert[Resource](send(r, requestFilter))
   }
 
@@ -320,7 +322,9 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resource: Resource,
       requestFilter: Request => Request
   ): OperationResponse = {
-    val r = Http.PATCH(resourcePath).withJson(toJson(resource))
+    // Workaround: URLConnection doesn't support PATCH
+    //https://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch
+    val r = Http.POST(resourcePath).withHeader("X-HTTP-Method-Override", "PATCH").withJson(toJson(resource))
     convert[OperationResponse](send(r, requestFilter))
   }
 

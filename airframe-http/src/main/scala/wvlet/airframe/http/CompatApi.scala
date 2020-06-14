@@ -12,9 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
-import wvlet.airframe.http.HttpMessage.{Request, Response}
-
-import scala.concurrent.Future
 
 /**
   * An interface for using different implementation betweeen Scala JVM and Scala.js

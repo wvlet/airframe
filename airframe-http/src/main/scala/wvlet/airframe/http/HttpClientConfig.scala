@@ -34,6 +34,6 @@ case class HttpClientConfig(
     this.copy(requestFilter = newRequestFilter)
   def withCodecFactory(newCodecFactory: MessageCodecFactory): HttpClientConfig =
     this.copy(codecFactory = newCodecFactory)
-  def withRetryContext(newRetryContext: RetryContext): HttpClientConfig =
-    this.copy(retryContext = newRetryContext)
+  def withRetryContext(filter: RetryContext => RetryContext): HttpClientConfig =
+    this.copy(retryContext = filter(retryContext))
 }

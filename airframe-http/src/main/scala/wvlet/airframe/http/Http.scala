@@ -13,10 +13,20 @@
  */
 package wvlet.airframe.http
 import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.impl.HttpMacros
+
+import scala.concurrent.Future
 
 object Http {
 
+  // Aliases for http clients using standard HttpMessage.Request/Response
+  type SyncClient  = HttpSyncClient[Request, Response]
+  type AsyncClient = HttpClient[Future, Request, Response]
+
+  /**
+    * An entry point for building a new HttpClient
+    */
   def client: HttpClientConfig = HttpClientConfig()
 
   /**
