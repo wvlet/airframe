@@ -12,10 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 
 /**
   * An interface for using different implementation betweeen Scala JVM and Scala.js
   */
 trait CompatApi {
   def urlEncode(s: String): String
+  def newSyncClient(serverAddress: String, config: HttpClientConfig): HttpSyncClient[Request, Response]
 }

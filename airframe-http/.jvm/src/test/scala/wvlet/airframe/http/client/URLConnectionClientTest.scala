@@ -11,20 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.client
+import wvlet.airframe.control.Control
+import wvlet.airframe.http.{Http, HttpStatus}
+import wvlet.airspec.AirSpec
 
 /**
-  * Scala.js specific implementation
-  */
-private object Compat extends CompatApi {
-  override def urlEncode(s: String): String = {
-    scala.scalajs.js.URIUtils.encodeURI(s)
+  *
+ */
+class URLConnectionClientTest extends AirSpec {
+
+  test("Create an http client") {
+    Control.withResource(Http.client.newSyncClient("https://wvlet.org")) { client =>
+      val resp = client.send(Http.GET("/airframe/index.html"))
+      debug(resp)
+      resp.status shouldBe HttpStatus.Ok_200
+      debug(resp.contentString)
+    }
   }
-  override def newSyncClient(
-      serverAddress: String,
-      config: HttpClientConfig
-  ): HttpSyncClient[
-    HttpMessage.Request,
-    HttpMessage.Response
-  ] = ???
 }

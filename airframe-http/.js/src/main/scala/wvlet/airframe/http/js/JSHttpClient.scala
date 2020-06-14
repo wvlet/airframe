@@ -56,7 +56,7 @@ object JSHttpClient {
   // An http client that can be used for local testing
   def localClient = JSHttpClient()
 
-  def defaultHttpClientRetrier: RetryContext = {
+  def defaultHttpClientRetryer: RetryContext = {
     Retry
       .withBackOff(maxRetry = 3)
       .withResultClassifier(HttpClientException.classifyHttpResponse[Response])
@@ -69,7 +69,7 @@ case class JSHttpClientConfig(
     serverAddress: Option[ServerAddress] = None,
     requestEncoding: MessageEncoding = MessageEncoding.MessagePackEncoding,
     requestFilter: Request => Request = identity,
-    retryContext: RetryContext = JSHttpClient.defaultHttpClientRetrier,
+    retryContext: RetryContext = JSHttpClient.defaultHttpClientRetryer,
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
 ) {
   def withServerAddress(newServerAddress: ServerAddress): JSHttpClientConfig = {
@@ -88,7 +88,9 @@ case class JSHttpClientConfig(
 }
 
 /**
-  * HttpClient utilities for Scala.js
+  * HttpClient utilities for Scala.js.
+  *
+  * We do not implement HttpClient[F, Request, Response] interface as no TypeTag is available in Scala.js
   */
 case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) extends LogSupport {
   import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue

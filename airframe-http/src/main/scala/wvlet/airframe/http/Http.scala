@@ -17,6 +17,8 @@ import wvlet.airframe.http.impl.HttpMacros
 
 object Http {
 
+  def client: HttpClientConfig = HttpClientConfig()
+
   /**
     * Create a new request
     */
