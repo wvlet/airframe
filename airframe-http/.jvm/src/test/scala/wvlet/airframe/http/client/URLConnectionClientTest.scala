@@ -23,10 +23,16 @@ class URLConnectionClientTest extends AirSpec {
 
   test("Create an http client") {
     Control.withResource(Http.client.newSyncClient("https://wvlet.org")) { client =>
-      val resp = client.send(Http.GET("/airframe/index.html"))
+      val resp = client.sendSafe(Http.GET("/airframe/index.html"))
       debug(resp)
       resp.status shouldBe HttpStatus.Ok_200
       debug(resp.contentString)
+
+      val errorResp = client.sendSafe(Http.GET("/non-existing-path"))
+      debug(errorResp)
+      errorResp.status shouldBe HttpStatus.NotFound_404
+      debug(errorResp.contentString)
     }
   }
+
 }

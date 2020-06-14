@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.client
 
-import java.io.{InputStream, OutputStream}
+import java.io.{IOException, InputStream, OutputStream}
 import java.net.HttpURLConnection
 import java.util.concurrent.TimeUnit
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
@@ -87,30 +87,43 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
         }
       }
 
-      Control.withResource(conn.getInputStream()) { in: InputStream =>
-        val status = HttpStatus.ofCode(conn.getResponseCode)
-
-        val h = HttpMultiMap.newBuilder
-        for ((k, vv) <- conn.getHeaderFields().asScala if k != null; v <- vv.asScala) {
-          h += k -> v
+      try {
+        Control.withResource(conn.getInputStream()) { in: InputStream =>
+          readResponse(conn, in)
         }
-        val response = Http.response(status).withHeader(h.result())
-        val is = response.contentEncoding.map(_.toLowerCase) match {
-          case _ if in == null => in
-          case Some("gzip")    => new GZIPInputStream(in)
-          case Some("deflate") => new InflaterInputStream(in)
-          case other           =>
-            // For unsupported encoding, read content as bytes
-            in
-        }
-
-        // TODO: For supporting streaming read, we need to extend HttpMessage class
-        val responseContentBytes = IO.readFully(is) { bytes =>
-          bytes
-        }
-        response.withContent(responseContentBytes)
+      } catch {
+        case e: IOException if conn.getResponseCode != -1 =>
+          // When the request fails, but the server still returns meaningful responses
+          // (e.g., 404 NotFound throws FileNotFoundException)
+          Control.withResource(conn.getErrorStream()) { err: InputStream =>
+            readResponse(conn, err)
+          }
       }
     }
+  }
+
+  private def readResponse(conn: HttpURLConnection, in: InputStream): Response = {
+    val status = HttpStatus.ofCode(conn.getResponseCode)
+
+    val h = HttpMultiMap.newBuilder
+    for ((k, vv) <- conn.getHeaderFields().asScala if k != null; v <- vv.asScala) {
+      h += k -> v
+    }
+    val response = Http.response(status).withHeader(h.result())
+    val is = response.contentEncoding.map(_.toLowerCase) match {
+      case _ if in == null => in
+      case Some("gzip")    => new GZIPInputStream(in)
+      case Some("deflate") => new InflaterInputStream(in)
+      case other           =>
+        // For unsupported encoding, read content as bytes
+        in
+    }
+
+    // TODO: For supporting streaming read, we need to extend HttpMessage class
+    val responseContentBytes = IO.readFully(is) { bytes =>
+      bytes
+    }
+    response.withContent(responseContentBytes)
   }
 
   override def sendSafe(
