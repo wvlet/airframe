@@ -12,27 +12,36 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.client
-import wvlet.airframe.control.Control
-import wvlet.airframe.http.{Http, HttpStatus}
+import wvlet.airframe.Design
+import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.{Http, HttpStatus, HttpSyncClient}
 import wvlet.airspec.AirSpec
 
 /**
   *
  */
-class URLConnectionClientTest extends AirSpec {
+object URLConnectionClientTest extends AirSpec {
 
-  test("Create an http client") {
-    Control.withResource(Http.client.newSyncClient("https://wvlet.org")) { client =>
-      val resp = client.sendSafe(Http.GET("/airframe/index.html"))
-      debug(resp)
-      resp.status shouldBe HttpStatus.Ok_200
-      debug(resp.contentString)
+  type Client = HttpSyncClient[Request, Response]
 
-      val errorResp = client.sendSafe(Http.GET("/non-existing-path"))
-      debug(errorResp)
-      errorResp.status shouldBe HttpStatus.NotFound_404
-      debug(errorResp.contentString)
-    }
+  override protected def design: Design =
+    Design.newDesign
+      .bind[Client].toInstance(
+        Http.client.newSyncClient("https://wvlet.org")
+      )
+
+  test("Read content with 200") { client: Client =>
+    val resp = client.sendSafe(Http.GET("/airframe/index.html"))
+    debug(resp)
+    resp.status shouldBe HttpStatus.Ok_200
+    debug(resp.contentString)
+  }
+
+  test("Handle 404 (Not Found)") { client: Client =>
+    val errorResp = client.sendSafe(Http.GET("/non-existing-path"))
+    debug(errorResp)
+    errorResp.status shouldBe HttpStatus.NotFound_404
+    debug(errorResp.contentString)
   }
 
 }
