@@ -65,7 +65,13 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       }
       conn0.setDoInput(true)
 
-      def timeoutMillis(d: Duration): Int = if (d.isFinite()) d.toMillis.toInt else 0
+      def timeoutMillis(d: Duration): Int = {
+        if (d.isFinite) {
+          d.toMillis.toInt
+        } else {
+          0
+        }
+      }
       conn0.setReadTimeout(timeoutMillis(config.readTimeout))
       conn0.setConnectTimeout(timeoutMillis(config.connectTimeout))
       conn0.setInstanceFollowRedirects(config.followRedirect)
