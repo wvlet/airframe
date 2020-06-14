@@ -181,12 +181,19 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
     convert[OperationResponse](send(Http.request(resourcePath), requestFilter))
   }
 
+  private def toJson[Resource: TypeTag](resource: Resource): String = {
+    val resourceCodec = config.codecFactory.of[Resource]
+    // TODO: Support non-json content body
+    val json = resourceCodec.toJson(resource)
+    json
+  }
+
   override def post[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
   ): Resource = {
-    val r = Http.POST(resourcePath).withJsonOf(resource, config.codecFactory)
+    val r = Http.POST(resourcePath).withJson(toJson(resource))
     convert[Resource](send(r, requestFilter))
   }
 
@@ -206,7 +213,7 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resource: Resource,
       requestFilter: Request => Request
   ): OperationResponse = {
-    val r = Http.POST(resourcePath).withJsonOf(resource, config.codecFactory)
+    val r = Http.POST(resourcePath).withJson(toJson(resource))
     convert[OperationResponse](send(r, requestFilter))
   }
 
@@ -215,7 +222,7 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resource: Resource,
       requestFilter: Request => Request
   ): Resource = {
-    val r = Http.PUT(resourcePath).withJsonOf(resource, config.codecFactory)
+    val r = Http.PUT(resourcePath).withJson(toJson(resource))
     convert[Resource](send(r, requestFilter))
   }
 
@@ -233,7 +240,7 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resource: Resource,
       requestFilter: Request => Request
   ): OperationResponse = {
-    val r = Http.PUT(resourcePath).withJsonOf(resource, config.codecFactory)
+    val r = Http.PUT(resourcePath).withJson(toJson(resource))
     convert[OperationResponse](send(r, requestFilter))
   }
 
@@ -259,7 +266,7 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       requestFilter: Request => Request
   ): OperationResponse = {
 
-    val r = Http.DELETE(resourcePath).withJsonOf(resource, config.codecFactory)
+    val r = Http.DELETE(resourcePath).withJson(toJson(resource))
     convert[OperationResponse](send(r, requestFilter))
   }
 
@@ -268,7 +275,7 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resource: Resource,
       requestFilter: Request => Request
   ): Resource = {
-    val r = Http.PATCH(resourcePath).withJsonOf(resource, config.codecFactory)
+    val r = Http.PATCH(resourcePath).withJson(toJson(resource))
     convert[Resource](send(r, requestFilter))
   }
 
@@ -285,7 +292,7 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resource: Resource,
       requestFilter: Request => Request
   ): OperationResponse = {
-    val r = Http.PATCH(resourcePath).withJsonOf(resource, config.codecFactory)
+    val r = Http.PATCH(resourcePath).withJson(toJson(resource))
     convert[OperationResponse](send(r, requestFilter))
   }
 
