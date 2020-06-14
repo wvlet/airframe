@@ -16,6 +16,7 @@ package wvlet.airframe.http.client
 import java.io.{InputStream, OutputStream}
 import java.net.HttpURLConnection
 import java.util.concurrent.TimeUnit
+import java.util.zip.{GZIPInputStream, InflaterInputStream}
 
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
@@ -89,16 +90,26 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       Control.withResource(conn.getInputStream()) { in: InputStream =>
         val status = HttpStatus.ofCode(conn.getResponseCode)
 
-        val header = HttpMultiMap.newBuilder
+        val h = HttpMultiMap.newBuilder
         for ((k, vv) <- conn.getHeaderFields().asScala if k != null; v <- vv.asScala) {
-          header += k -> v
+          h += k -> v
         }
-        // TODO: For supporting streaming read, we need to extend HttpMessage class
-        val responseContentBytes = IO.readFully(in) { bytes =>
-          bytes
+        val header = h.result()
+
+        val is = header.get(HttpHeader.ContentEncoding).map(_.toLowerCase) match {
+          case _ if in == null => in
+          case Some("gzip")    => new GZIPInputStream(in)
+          case Some("deflate") => new InflaterInputStream(in)
+          case other           =>
+            // For unsupported encoding, read content as bytes
+            in
         }
 
-        val response = Http.response(status).withHeader(header.result()).withContent(responseContentBytes)
+        // TODO: For supporting streaming read, we need to extend HttpMessage class
+        val responseContentBytes = IO.readFully(is) { bytes =>
+          bytes
+        }
+        val response = Http.response(status).withHeader(header).withContent(responseContentBytes)
         response
       }
     }
