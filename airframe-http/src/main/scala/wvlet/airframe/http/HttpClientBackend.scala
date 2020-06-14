@@ -12,16 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
-import java.net.URLEncoder
-
-import wvlet.airframe.http.client.{DefaultHttpClientBackend, URLConnectionClient, URLConnectionClientConfig}
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 
 /**
   *
   */
-object Compat extends CompatApi {
-  override def urlEncode(s: String): String = {
-    URLEncoder.encode(s, "UTF-8")
-  }
-  override def defaultHttpClientBackend: HttpClientBackend = DefaultHttpClientBackend
+trait HttpClientBackend {
+  def newSyncClient(severAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response]
+  // def newClient(serverAddress: ServerAddress, clientConfig: HttpClientConfig): HttpClient[F, Request, Response] = ???
 }

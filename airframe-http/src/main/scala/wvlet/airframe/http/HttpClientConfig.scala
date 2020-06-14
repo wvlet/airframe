@@ -20,18 +20,20 @@ import wvlet.airframe.http.HttpMessage.{Request, Response}
   *
  */
 case class HttpClientConfig(
+    backend: HttpClientBackend = Compat.defaultHttpClientBackend,
     requestFilter: Request => Request = identity,
     retryContext: RetryContext = HttpClient.defaultHttpClientRetry[Request, Response],
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
 ) {
   def newSyncClient(serverAddress: String): HttpSyncClient[Request, Response] =
-    Compat.newSyncClient(serverAddress, this)
+    backend.newSyncClient(serverAddress, this)
 
+  def withBackend(newBackend: HttpClientBackend): HttpClientConfig =
+    this.copy(backend = newBackend)
   def withRequestFilter(newRequestFilter: Request => Request): HttpClientConfig =
     this.copy(requestFilter = newRequestFilter)
   def withCodecFactory(newCodecFactory: MessageCodecFactory): HttpClientConfig =
     this.copy(codecFactory = newCodecFactory)
-
   def withRetryContext(newRetryContext: RetryContext): HttpClientConfig =
     this.copy(retryContext = newRetryContext)
 }

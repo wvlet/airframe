@@ -11,15 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.client
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-
-import scala.concurrent.Future
+import wvlet.airframe.http.{HttpClientBackend, HttpClientConfig, HttpSyncClient, ServerAddress}
 
 /**
-  * An interface for using different implementation betweeen Scala JVM and Scala.js
-  */
-trait CompatApi {
-  def urlEncode(s: String): String
-  def defaultHttpClientBackend: HttpClientBackend
+  *
+ */
+object DefaultHttpClientBackend extends HttpClientBackend {
+  def newSyncClient(serverAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response] = {
+    new URLConnectionClient(
+      ServerAddress(serverAddress),
+      URLConnectionClientConfig(
+        requestFilter = clientConfig.requestFilter,
+        retryContext = clientConfig.retryContext,
+        codecFactory = clientConfig.codecFactory
+      )
+    )
+  }
 }
