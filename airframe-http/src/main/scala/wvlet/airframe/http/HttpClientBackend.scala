@@ -12,11 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 
 /**
-  * An interface for using different implementation betweeen Scala JVM and Scala.js
+  *
   */
-trait CompatApi {
-  def urlEncode(s: String): String
-  def defaultHttpClientBackend: HttpClientBackend
+trait HttpClientBackend {
+  def newSyncClient(severAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response]
+  // def newClient(serverAddress: ServerAddress, clientConfig: HttpClientConfig): HttpClient[F, Request, Response] = ???
 }

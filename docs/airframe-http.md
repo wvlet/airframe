@@ -3,7 +3,7 @@ id: airframe-http
 title: airframe-http: Web Service IDL
 ---
 
-airframe-http is a library for creating HTTP web servers at ease. airframe-http-finagle is an extention of airframe-http to use Finagle as a backend HTTP server.
+airframe-http is a library for creating HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Finagle as a backend HTTP server.
 
 - Blog article: [Airframe HTTP: Building Low-Friction Web Services Over Finagle](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
 
@@ -406,3 +406,47 @@ The generated HTTP access log files can be processed in Fluentd. For example, if
   time_key time
 </source>
 ```
+
+
+# HTTP Clients
+
+airframe-http has several HTTP client implementations (FinagleClient, OkHttp client, URLConnection client, etc.).    
+
+## Simple Http Client (No extra dependency) 
+
+```scala
+import wvlet.airframe.http.Http 
+
+// Creating a URLConnection based client 
+val client = Http.client.newSyncClient("http://localhost:8080")
+val response = client.sendSafe(Http.request("/v1/info")) 
+// Use client.send(Request) for throwing HttpClientException upon 4xx, 5xx errors
+```
+
+Note: URLConnection-based client cannot send PATCH requests due to [a bug of JDK](https://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch)
+
+
+## Finagle Http Client
+```scala
+import wvlet.airframe.http.finagle.Finagle
+
+// Asynchronous HTTP client backed by Finagle (Using twitter-util Future) 
+Finagle.client.newClient("http://localhost:8080")
+
+// a Finagle-based sync client 
+Finagle.client.newSyncClient(host_name)   
+```
+
+## OkHttp Client
+
+
+```scala
+libraryDependencies += "org.wvlet.airframe" %% "airframe-http-okhttp" % (version)
+```
+
+```scala
+// Create an OkHttp-based sync http client
+OkHttpClient.newClient(host_name, config...)
+```
+
+

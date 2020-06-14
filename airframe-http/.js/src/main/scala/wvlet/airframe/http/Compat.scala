@@ -20,4 +20,5 @@ private object Compat extends CompatApi {
   override def urlEncode(s: String): String = {
     scala.scalajs.js.URIUtils.encodeURI(s)
   }
+  override def defaultHttpClientBackend: HttpClientBackend = ???
 }
