@@ -20,12 +20,15 @@ import java.util.concurrent.TimeUnit
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.control.{Control, IO}
+import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
 import wvlet.airframe.http.router.HttpResponseCodec
+import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters._
+import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe.TypeTag
 
 case class URLConnectionClientConfig(
@@ -39,8 +42,8 @@ case class URLConnectionClientConfig(
 )
 
 /**
-  *
- */
+  * Http sync client implementation using URLConnection
+  */
 class URLConnectionClient(address: ServerAddress, config: URLConnectionClientConfig)
     extends HttpSyncClient[Request, Response] {
 
@@ -61,8 +64,10 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
         conn0.setRequestProperty(e.key, e.value)
       }
       conn0.setDoInput(true)
-      conn0.setReadTimeout(config.readTimeout.toMillis.toInt)
-      conn0.setConnectTimeout(config.connectTimeout.toMillis.toInt)
+
+      def timeoutMillis(d: Duration): Int = if (d.isFinite()) d.toMillis.toInt else 0
+      conn0.setReadTimeout(timeoutMillis(config.readTimeout))
+      conn0.setConnectTimeout(timeoutMillis(config.connectTimeout))
       conn0.setInstanceFollowRedirects(config.followRedirect)
 
       val conn    = config.connectionFilter(conn0)
@@ -82,7 +87,7 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
         for ((k, vv) <- conn.getHeaderFields().asScala if k != null; v <- vv.asScala) {
           header += k -> v
         }
-        // TODO: Support stream?
+        // TODO: For supporting streaming read, we need to extend HttpMessage class
         val responseContentBytes = IO.readFully(in) { bytes =>
           bytes
         }
@@ -133,7 +138,41 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
-  ): OperationResponse = ???
+  ): OperationResponse = {
+    getResource[Resource, OperationResponse](resourcePath, resource, requestFilter)
+  }
+
+  override def getResource[
+      ResourceRequest: universe.TypeTag,
+      Resource: universe.TypeTag
+  ](
+      resourcePath: String,
+      resourceRequest: ResourceRequest,
+      requestFilter: Request => Request
+  ): Resource = {
+    // Read resource as JSON
+    val resourceRequestJsonValue = config.codecFactory.of[ResourceRequest].toJSONObject(resourceRequest)
+    val queryParams: Seq[String] =
+      resourceRequestJsonValue.v.map {
+        case (k, j @ JSONArray(_)) =>
+          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON array value
+        case (k, j @ JSONObject(_)) =>
+          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON object value
+        case (k, other) =>
+          s"${urlEncode(k)}=${urlEncode(other.toString)}"
+      }
+
+    val r0 = Http.GET(resourcePath)
+    val r = (r0.query, queryParams) match {
+      case (query, queryParams) if query.isEmpty && queryParams.nonEmpty =>
+        r0.withUri(s"${r0.uri}?${queryParams.mkString("&")}")
+      case (query, queryParams) if query.nonEmpty && queryParams.nonEmpty =>
+        r0.withUri(s"${r0.uri}&${queryParams.mkString("&")}")
+      case _ =>
+        r0
+    }
+    convert[Resource](send(r, requestFilter))
+  }
 
   override def list[OperationResponse: TypeTag](
       resourcePath: String,
@@ -146,13 +185,19 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
-  ): Resource = ???
+  ): Resource = {
+    val r = Http.POST(resourcePath).withJsonOf(resource, config.codecFactory)
+    convert[Resource](send(r, requestFilter))
+  }
 
   override def postRaw[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
-  ): Response = ???
+  ): Response = {
+    postOps[Resource, Response](resourcePath, resource, requestFilter)
+  }
+
   override def postOps[
       Resource: TypeTag,
       OperationResponse: TypeTag
@@ -160,17 +205,26 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
-  ): OperationResponse = ???
+  ): OperationResponse = {
+    val r = Http.POST(resourcePath).withJsonOf(resource, config.codecFactory)
+    convert[OperationResponse](send(r, requestFilter))
+  }
+
   override def put[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
-  ): Resource = ???
+  ): Resource = {
+    val r = Http.PUT(resourcePath).withJsonOf(resource, config.codecFactory)
+    convert[Resource](send(r, requestFilter))
+  }
+
   override def putRaw[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
-  ): Response = ???
+  ): Response = putOps[Resource, Response](resourcePath, resource, requestFilter)
+
   override def putOps[
       Resource: TypeTag,
       OperationResponse: TypeTag
@@ -178,15 +232,24 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
-  ): OperationResponse = ???
+  ): OperationResponse = {
+    val r = Http.PUT(resourcePath).withJsonOf(resource, config.codecFactory)
+    convert[OperationResponse](send(r, requestFilter))
+  }
+
   override def delete[OperationResponse: TypeTag](
       resourcePath: String,
       requestFilter: Request => Request
-  ): OperationResponse = ???
+  ): OperationResponse = {
+    val r = Http.DELETE(resourcePath)
+    convert[OperationResponse](send(r, requestFilter))
+  }
+
   override def deleteRaw(
       resourcePath: String,
       requestFilter: Request => Request
-  ): Response = ???
+  ): Response = delete[Response](resourcePath, requestFilter)
+
   override def deleteOps[
       Resource: TypeTag,
       OperationResponse: TypeTag
@@ -194,17 +257,26 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
-  ): OperationResponse = ???
+  ): OperationResponse = {
+
+    val r = Http.DELETE(resourcePath).withJsonOf(resource, config.codecFactory)
+    convert[OperationResponse](send(r, requestFilter))
+  }
+
   override def patch[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
-  ): Resource = ???
+  ): Resource = {
+    val r = Http.PATCH(resourcePath).withJsonOf(resource, config.codecFactory)
+    convert[Resource](send(r, requestFilter))
+  }
+
   override def patchRaw[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
-  ): Response = ???
+  ): Response = patchOps[Resource, Response](resourcePath, resource, requestFilter)
   override def patchOps[
       Resource: TypeTag,
       OperationResponse: TypeTag
@@ -212,6 +284,10 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
-  ): OperationResponse       = ???
-  override def close(): Unit = ???
+  ): OperationResponse = {
+    val r = Http.PATCH(resourcePath).withJsonOf(resource, config.codecFactory)
+    convert[OperationResponse](send(r, requestFilter))
+  }
+
+  override def close(): Unit = {}
 }
