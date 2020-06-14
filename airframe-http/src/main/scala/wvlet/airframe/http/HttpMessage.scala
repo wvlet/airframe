@@ -28,12 +28,12 @@ trait HttpMessage[Raw] {
   def getHeader(key: String): Option[String] = header.get(key)
   def getAllHeader(key: String): Seq[String] = header.getAll(key)
 
-  def allow: Option[String]         = header.get(HttpHeader.Allow)
-  def accept: Seq[String]           = Http.parseAcceptHeader(header.get(HttpHeader.Accept))
-  def authorization: Option[String] = header.get(HttpHeader.Authorization)
-  def cacheControl: Option[String]  = header.get(HttpHeader.CacheControl)
-  def contentType: Option[String] =
-    header.get(HttpHeader.ContentType).orElse(header.get("content-type"))
+  def allow: Option[String]           = header.get(HttpHeader.Allow)
+  def accept: Seq[String]             = Http.parseAcceptHeader(header.get(HttpHeader.Accept))
+  def authorization: Option[String]   = header.get(HttpHeader.Authorization)
+  def cacheControl: Option[String]    = header.get(HttpHeader.CacheControl)
+  def contentType: Option[String]     = header.get(HttpHeader.ContentType)
+  def contentEncoding: Option[String] = header.get(HttpHeader.ContentEncoding)
   def contentLength: Option[Long]     = header.get(HttpHeader.ContentLength).map(_.toLong)
   def date: Option[String]            = header.get(HttpHeader.Date)
   def expires: Option[String]         = header.get(HttpHeader.Expires)

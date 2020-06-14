@@ -94,9 +94,8 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
         for ((k, vv) <- conn.getHeaderFields().asScala if k != null; v <- vv.asScala) {
           h += k -> v
         }
-        val header = h.result()
-
-        val is = header.get(HttpHeader.ContentEncoding).map(_.toLowerCase) match {
+        val response = Http.response(status).withHeader(h.result())
+        val is = response.contentEncoding.map(_.toLowerCase) match {
           case _ if in == null => in
           case Some("gzip")    => new GZIPInputStream(in)
           case Some("deflate") => new InflaterInputStream(in)
@@ -109,8 +108,7 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
         val responseContentBytes = IO.readFully(is) { bytes =>
           bytes
         }
-        val response = Http.response(status).withHeader(header).withContent(responseContentBytes)
-        response
+        response.withContent(responseContentBytes)
       }
     }
   }

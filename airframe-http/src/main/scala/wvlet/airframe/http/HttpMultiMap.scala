@@ -81,7 +81,7 @@ case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
 
   def set(key: String, value: String): HttpMultiMap = {
     this.copy(
-      underlying = underlying + (key -> value)
+      underlying = underlying + (findKey(key) -> value)
     )
   }
 
@@ -92,16 +92,19 @@ case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
     * @return
     */
   def add(key: String, value: String): HttpMultiMap = {
-    val newMap = underlying
-      .get(key).map { v =>
-        val newValue = v match {
-          case s: String                   => Seq(s, value)
-          case lst: Seq[String @unchecked] => lst +: value
+    val newMap =
+      underlying
+        .find(_._1.equalsIgnoreCase(key))
+        .map { entry =>
+          val newValue = entry._2 match {
+            case s: String                   => Seq(s, value)
+            case lst: Seq[String @unchecked] => lst +: value
+          }
+          // Use the already existing key for avoid case-insensitive key duplication
+          underlying + (entry._1 -> newValue)
+        }.getOrElse {
+          underlying + (key -> value)
         }
-        underlying + (key -> newValue)
-      }.getOrElse {
-        underlying + (key -> value)
-      }
     this.copy(underlying = newMap)
   }
 
@@ -117,11 +120,21 @@ case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
   }
 
   def remove(key: String): HttpMultiMap = {
-    this.copy(underlying = underlying - key)
+    this.copy(underlying = underlying.filterNot(_._1.equalsIgnoreCase(key)))
+  }
+
+  private def findKey(key: String): String = {
+    underlying.find(_._1.equalsIgnoreCase(key)).map(_._1).getOrElse(key)
+  }
+
+  private def caseInsensitiveSearch(key: String): Option[Any] = {
+    // NOTE: Using case insensitive search is O(N) for every insert and look-up, but practically it's not so bad as
+    // the number of HTTP headers is not so large.
+    underlying.find(_._1.equalsIgnoreCase(key)).map(_._2)
   }
 
   def get(key: String): Option[String] = {
-    underlying.get(key).flatMap { v: Any =>
+    caseInsensitiveSearch(key).flatMap { v: Any =>
       v match {
         case s: String                   => Some(s)
         case lst: Seq[String @unchecked] => Option(lst.head)
@@ -136,8 +149,8 @@ case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
   }
 
   def getAll(key: String): Seq[String] = {
-    underlying
-      .get(key).map { v: Any =>
+    caseInsensitiveSearch(key)
+      .map { v: Any =>
         v match {
           case s: String                   => Seq(s)
           case lst: Seq[String @unchecked] => lst
