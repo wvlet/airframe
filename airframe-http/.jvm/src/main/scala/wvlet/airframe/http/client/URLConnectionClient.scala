@@ -122,9 +122,7 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
     }
 
     // TODO: For supporting streaming read, we need to extend HttpMessage class
-    val responseContentBytes = IO.readFully(is) { bytes =>
-      bytes
-    }
+    val responseContentBytes = IO.readFully(is)
     response.withContent(responseContentBytes)
   }
 

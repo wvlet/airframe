@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 import java.net.URLEncoder
 
-import wvlet.airframe.http.client.{DefaultHttpClientBackend, URLConnectionClient, URLConnectionClientConfig}
+import wvlet.airframe.http.client.URLConnectionClientBackend
 
 /**
   *
@@ -23,5 +23,8 @@ object Compat extends CompatApi {
   override def urlEncode(s: String): String = {
     URLEncoder.encode(s, "UTF-8")
   }
-  override def defaultHttpClientBackend: HttpClientBackend = DefaultHttpClientBackend
+  override def defaultHttpClientBackend: HttpClientBackend = {
+    // TODO: Use JDK11's HttpClient backend
+    URLConnectionClientBackend
+  }
 }

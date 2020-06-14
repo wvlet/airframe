@@ -32,10 +32,10 @@ object IO {
   }
 
   def readAsString(in: InputStream): String = {
-    readFully(in) { data => new String(data, StandardCharsets.UTF_8) }
+    new String(readFully(in), StandardCharsets.UTF_8)
   }
 
-  def readFully[U](in: InputStream)(f: Array[Byte] => U): U = {
+  def readFully(in: InputStream): Array[Byte] = {
     val byteArray =
       if (in == null) {
         Array.emptyByteArray
@@ -54,7 +54,7 @@ object IO {
           b.toByteArray
         }
       }
-    f(byteArray)
+    byteArray
   }
 
 }

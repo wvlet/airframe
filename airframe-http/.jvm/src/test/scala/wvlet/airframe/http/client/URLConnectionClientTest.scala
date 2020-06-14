@@ -77,6 +77,11 @@ object URLConnectionClientTest extends AirSpec {
 
     }
 
+    test("getOps") {
+      val m = client.getOps[Person, Map[String, Any]]("/get", p)
+      m("args") shouldBe Map("id" -> "1", "name" -> "leo")
+    }
+
     test("xxxOps") {
       check(client.postOps[Person, Map[String, Any]]("/post", p))
       check(client.putOps[Person, Map[String, Any]]("/put", p))
