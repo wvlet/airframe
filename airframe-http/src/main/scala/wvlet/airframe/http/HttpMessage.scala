@@ -174,8 +174,19 @@ object HttpMessage {
     override def toContentBytes: Array[Byte] = content
   }
 
-  def stringMessage(content: String): StringMessage            = StringMessage(content)
-  def byteArrayMessage(content: Array[Byte]): ByteArrayMessage = ByteArrayMessage(content)
+  def stringMessage(content: String): Message = {
+    if (content == null || content.isEmpty) {
+      EmptyMessage
+    } else {
+      StringMessage(content)
+    }
+  }
+  def byteArrayMessage(content: Array[Byte]): Message = {
+    if (content == null || content.isEmpty)
+      EmptyMessage
+    else
+      ByteArrayMessage(content)
+  }
 
   case class Request(
       method: String = HttpMethod.GET,
