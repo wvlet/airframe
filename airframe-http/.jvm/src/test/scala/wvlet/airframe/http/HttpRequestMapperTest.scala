@@ -54,6 +54,9 @@ object HttpRequestMapperTest extends AirSpec {
 
     @Endpoint(method = HttpMethod.GET, path = "/v1/endpoint3")
     def endpoint3(p1: Seq[String]): Unit = {}
+
+    @Endpoint(method = HttpMethod.GET, path = "/v1/endpoint4")
+    def endpoint4(p1: Option[Seq[String]]): Unit = {}
   }
 
   private val api    = new MyApi {}
@@ -244,9 +247,15 @@ object HttpRequestMapperTest extends AirSpec {
   }
 
   test("Map empty parameters to Seq[X]") {
-    pending("Fix empty parameter mapping to Seq[X]")
     val r    = findRoute("endpoint3")
     val args = mapArgs(r, identity, method = HttpMethod.GET)
     args shouldBe Seq(Seq.empty)
   }
+
+  test("Map empty parameters to Option[Seq[X]]") {
+    val r    = findRoute("endpoint4")
+    val args = mapArgs(r, identity, method = HttpMethod.GET)
+    args shouldBe Seq(None)
+  }
+
 }

@@ -103,11 +103,16 @@ object HttpRequestMapper extends LogSupport {
       while (remainingArgs.nonEmpty) {
         val arg        = remainingArgs.head
         val argSurface = arg.surface
+
+        def isPrimitiveSeq(s: Surface): Boolean = s.isSeq && s.typeArgs.headOption.forall(_.isPrimitive)
+
         // Build the method argument instance from the query strings for GET requests
         argSurface match {
-          case _ if argSurface.isPrimitive =>
+          // For primitive type, Seq[Primitive], and Option[Primitive] values,
+          // it should already be found in the query strings, so bind None here
+          case _ if argSurface.isPrimitive || isPrimitiveSeq(argSurface) =>
             setValue(arg, None)
-          case o: OptionSurface if o.elementSurface.isPrimitive =>
+          case o: OptionSurface if o.elementSurface.isPrimitive || isPrimitiveSeq(o.elementSurface) =>
             setValue(arg, None)
           case _ =>
             val argCodec = codecFactory.of(argSurface)
