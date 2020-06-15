@@ -108,7 +108,7 @@ object HttpRequestMapper extends LogSupport {
 
         // Build the method argument instance from the query strings for GET requests
         argSurface match {
-          // For primitive type, Seq[Primitive], and Option[Primitive] values,
+          // For primitive type, Seq[Primitive], and Option[Primitive], Option[Seq[Primitive]] values,
           // it should already be found in the query strings, so bind None here
           case _ if argSurface.isPrimitive || isPrimitiveSeq(argSurface) =>
             setValue(arg, None)
