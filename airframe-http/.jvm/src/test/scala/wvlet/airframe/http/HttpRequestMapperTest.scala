@@ -178,28 +178,28 @@ object HttpRequestMapperTest extends AirSpec {
     classOf[HttpRequest[Request]].isAssignableFrom(args(2).getClass) shouldBe true
   }
 
-  test("throws an error on incompatible type") {
+  test("throw an error on incompatible type") {
     val r = findRoute("rpc8")
     intercept[IllegalArgumentException] {
       mapArgs(r, _.withJson("""{"p1":"abc"}"""))
     }
   }
 
-  test("throws an error on incompatible type in query parameters") {
+  test("throw an error on incompatible type in query parameters") {
     val r = findRoute("rpc8")
     intercept[IllegalArgumentException] {
       mapArgs(r, { r => r.withUri(s"${r.uri}?p1=abc") })
     }
   }
 
-  test("throws an error on incompatible type in request body") {
+  test("throw an error on incompatible type in request body") {
     val r = findRoute("rpc8")
     intercept[IllegalArgumentException] {
       mapArgs(r, { r => r.withContent("abc") })
     }
   }
 
-  test("throws an error when mapping JSON [1] to Int") {
+  test("throw an error when mapping JSON [1] to Int") {
     val r = findRoute("rpc8")
     intercept[IllegalArgumentException] {
       val args = mapArgs(r, { r => r.withJson("""{"p1":[1]}""") })
@@ -207,7 +207,7 @@ object HttpRequestMapperTest extends AirSpec {
     }
   }
 
-  test("throws an error on incompatible JSON [1] to Option[X]") {
+  test("throw an error on incompatible JSON [1] to Option[X]") {
     val r = findRoute("rpc9")
     intercept[IllegalArgumentException] {
       val args = mapArgs(r, { r => r.withJson("""{"p1":[1]}""") })
@@ -234,28 +234,33 @@ object HttpRequestMapperTest extends AirSpec {
     }
   }
 
-  test("Map query parameters to Seq[X]") {
+  test("map query parameters to Seq[X]") {
     val r    = findRoute("endpoint3")
     val args = mapArgs(r, { r => r.withUri(s"${r.uri}?p1=apple") }, method = HttpMethod.GET)
     args shouldBe Seq(Seq("apple"))
   }
 
-  test("Map multiple query parameters to Seq[X]") {
+  test("map multiple query parameters to Seq[X]") {
     val r    = findRoute("endpoint3")
     val args = mapArgs(r, { r => r.withUri(s"${r.uri}?p1=apple&p1=banana") }, method = HttpMethod.GET)
     args shouldBe Seq(Seq("apple", "banana"))
   }
 
-  test("Map empty parameters to Seq[X]") {
+  test("map empty parameters to Seq[X]") {
     val r    = findRoute("endpoint3")
     val args = mapArgs(r, identity, method = HttpMethod.GET)
     args shouldBe Seq(Seq.empty)
   }
 
-  test("Map empty parameters to Option[Seq[X]]") {
+  test("map empty parameters to Option[Seq[X]]") {
     val r    = findRoute("endpoint4")
     val args = mapArgs(r, identity, method = HttpMethod.GET)
     args shouldBe Seq(None)
   }
 
+  test("map multiple query parameters to Option[Seq[X]]") {
+    val r    = findRoute("endpoint4")
+    val args = mapArgs(r, { r => r.withUri(s"${r.uri}?p1=apple&p1=banana") }, method = HttpMethod.GET)
+    args shouldBe Seq(Some(Seq("apple", "banana")))
+  }
 }
