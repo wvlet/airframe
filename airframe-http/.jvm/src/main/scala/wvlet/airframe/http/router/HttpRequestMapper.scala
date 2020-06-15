@@ -106,7 +106,6 @@ object HttpRequestMapper extends LogSupport {
 
         def isPrimitiveSeq(s: Surface): Boolean = s.isSeq && s.typeArgs.headOption.forall(_.isPrimitive)
 
-        // Build the method argument instance from the query strings for GET requests
         argSurface match {
           // For primitive type, Seq[Primitive], and Option[Primitive], Option[Seq[Primitive]] values,
           // it should already be found in the query strings, so bind None here
@@ -115,6 +114,7 @@ object HttpRequestMapper extends LogSupport {
           case o: OptionSurface if o.elementSurface.isPrimitive || isPrimitiveSeq(o.elementSurface) =>
             setValue(arg, None)
           case _ =>
+            // Build the method argument object instance using MessagePack representation of the query strings of GET
             val argCodec = codecFactory.of(argSurface)
             setValue(arg, Some(argCodec.fromMsgPack(queryParamMsgPack)))
         }
