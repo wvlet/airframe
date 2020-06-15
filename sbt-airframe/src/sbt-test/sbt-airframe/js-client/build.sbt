@@ -17,6 +17,7 @@ lazy val client =
     .in(file("client"))
     .enablePlugins(AirframeHttpPlugin)
     .settings(
+      airframeHttpGeneratorOption := "-l trace",
       airframeHttpClients := Seq("myapp.spi:scalajs")
     )
     .jsSettings(

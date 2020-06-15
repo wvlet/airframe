@@ -4,6 +4,7 @@ import wvlet.airframe.http.Router
 import wvlet.airframe.http.finagle._
 import wvlet.log.LogSupport
 import myapp.spi.MyService
+import myapp.spi.MyRPC._
 import com.twitter.util.Await
 
 class MyServiceImpl extends myapp.spi.MyService {
@@ -12,7 +13,10 @@ class MyServiceImpl extends myapp.spi.MyService {
 }
 
 class MyRPCImpl extends myapp.spi.MyRPC {
-  override def world() = myapp.spi.MyRPC.World("world")
+  override def world()                                                                 = myapp.spi.MyRPC.World("world")
+  override def addEntry(id: Int, name: String)                                         = s"${id}:${name}"
+  override def createPage(createPageRequest: CreatePageRequest): String                = s"${0}:${createPageRequest}"
+  override def createPageWithId(id: Int, createPageRequest: CreatePageRequest): String = s"${id}:${createPageRequest}"
 }
 
 object MyServer extends LogSupport {
@@ -47,6 +51,18 @@ object MyServer extends LogSupport {
       val ret2 = syncClient.myRPC.world()
       info(ret2)
       assert(ret2 == myapp.spi.MyRPC.World("world"))
+
+      val ret3 = syncClient.myRPC.addEntry(1234, "rpc")
+      info(ret3)
+      assert(ret3 == "1234:rpc")
+
+      val ret4 = syncClient.myRPC.createPage(CreatePageRequest("hello"))
+      info(ret4)
+      assert(ret4 == """0:CreatePageRequest(hello)""")
+
+      val ret5 = syncClient.myRPC.createPageWithId(10, CreatePageRequest("hello"))
+      info(ret5)
+      assert(ret5 == """10:CreatePageRequest(hello)""")
     }
   }
 }

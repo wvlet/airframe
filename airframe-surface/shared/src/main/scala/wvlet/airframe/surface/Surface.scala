@@ -34,6 +34,7 @@ trait Surface extends Serializable {
   def isOption: Boolean
   def isAlias: Boolean
   def isPrimitive: Boolean
+  def isSeq: Boolean = classOf[Seq[_]].isAssignableFrom(rawType)
 
   def objectFactory: Option[ObjectFactory] = None
 }
@@ -93,7 +94,7 @@ trait MethodParameter extends Parameter {
   def method: MethodRef
 
   /**
-    * Method owner instnce is necessary to find by-name parameter default values
+    * Method owner instance is necessary to find by-name parameter default values
     * @param methodOwner
     * @return
     */

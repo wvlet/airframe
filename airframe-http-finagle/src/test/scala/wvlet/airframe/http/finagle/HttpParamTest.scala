@@ -21,7 +21,7 @@ import wvlet.log.LogSupport
 class HttpParamExample extends LogSupport {
   @Endpoint(path = "/api/get")
   def get(p1: Option[Int]): Option[Int] = {
-    info(p1)
+    debug(p1)
     p1
   }
 }
@@ -32,11 +32,7 @@ class HttpParamExample extends LogSupport {
 class HttpParamTest extends AirSpec {
   protected override def design: Design = {
     val r = Router.add[HttpParamExample]
-    newFinagleServerDesign(router = r)
-      .bind[FinagleSyncClient].toProvider { server: FinagleServer =>
-        Finagle.client.noRetry
-          .newSyncClient(server.localAddress)
-      }
+    Finagle.server.withRouter(r).designWithSyncClient
   }
 
   def `support Option[Int]`(client: FinagleSyncClient): Unit = {

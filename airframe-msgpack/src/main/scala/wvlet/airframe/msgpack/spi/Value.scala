@@ -236,6 +236,8 @@ object Value {
     def get(key: Value): Option[Value] = entries.get(key)
     def size: Int                      = entries.size
 
+    def isEmpty: Boolean  = entries.isEmpty
+    def nonEmpty: Boolean = entries.nonEmpty
     override def toJson: String = {
       s"{${entries.map(x => s"${x._1.toJson}:${x._2.toJson}").mkString(",")}}"
     }

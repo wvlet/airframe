@@ -21,6 +21,7 @@ import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 import scala.language.higherKinds
+import scala.util.{Failure, Success, Try}
 
 /**
   * A mapping from an HTTP endpoint to a corresponding method (or function)
@@ -94,14 +95,25 @@ case class ControllerRoute(
       context: HttpContext[Req, Resp, F],
       codecFactory: MessageCodecFactory
   ): Any = {
+    var methodArgs: Seq[Any] = Seq.empty
     try {
-      val methodArgs =
-        HttpRequestMapper.buildControllerMethodArgs(controller, methodSurface, request, context, params, codecFactory)
-
-      // Record RPC method arguments
-      context.setThreadLocal(HttpBackend.TLS_KEY_RPC, RPCCallContext(rpcInterfaceCls, methodSurface, methodArgs))
+      try {
+        methodArgs = HttpRequestMapper.buildControllerMethodArgs(
+          controller,
+          methodSurface,
+          request,
+          context,
+          params,
+          codecFactory
+        )
+      } finally {
+        // Ensure recording RPC method arguments
+        context.setThreadLocal(HttpBackend.TLS_KEY_RPC, RPCCallContext(rpcInterfaceCls, methodSurface, methodArgs))
+      }
       methodSurface.call(controller, methodArgs: _*)
     } catch {
+      case e: IllegalArgumentException =>
+        throw new HttpServerException(HttpStatus.BadRequest_400, s"${request} failed: ${e.getMessage}", e)
       case e: MessageCodecException[_] if e.errorCode == MISSING_PARAMETER =>
         throw new HttpServerException(HttpStatus.BadRequest_400, e.message, e)
     }

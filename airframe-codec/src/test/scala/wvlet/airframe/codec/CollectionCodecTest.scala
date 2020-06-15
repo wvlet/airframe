@@ -48,6 +48,12 @@ class CollectionCodecTest extends CodecSpec {
     codec.unpackMsgPack(msgpack) shouldBe Some(Seq(1, 2, 3))
   }
 
+  def `support mapping a single string for Seq[X]` : Unit = {
+    val codec   = MessageCodec.of[Seq[Int]]
+    val msgpack = StringCodec.toMsgPack("1")
+    codec.fromMsgPack(msgpack) shouldBe Seq(1)
+  }
+
   def `support JSON Map`: Unit = {
     val codec   = MessageCodec.of[Map[String, Int]]
     val msgpack = MessagePack.newBufferPacker.packString("""{"leo":1, "yui":2}""").toByteArray

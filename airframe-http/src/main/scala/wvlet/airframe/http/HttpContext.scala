@@ -92,7 +92,7 @@ object HttpContext {
   /**
     * Mock HttpContext for testing
     */
-  private[http] def mockContext: HttpContext[Request, Response, Future] = {
+  def mockContext: HttpContext[Request, Response, Future] = {
     new HttpContext[Request, Response, Future] {
       override protected def backend: HttpBackend[
         Request,
