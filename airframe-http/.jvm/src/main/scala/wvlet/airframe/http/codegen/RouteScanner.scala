@@ -83,6 +83,8 @@ object RouteScanner extends LogSupport {
         router = router.addInternal(s, methods)
       }
     }
+    // Check whether the route is valid or not
+    router.verifyRoutes
     router
   }
 
