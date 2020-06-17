@@ -136,6 +136,14 @@ class FinagleClientTest extends AirSpec {
         client.delete[User]("/user/1") shouldBe User(1, "xxx", "N/A")
         client.deleteOps[DeleteRequestBody, User]("/user/1", DeleteRequestBody(true)) shouldBe User(1, "xxx", "N/A")
 
+        // application/x-msgpack test
+        client.get[User]("/user/1", { r => r.accept = "application/x-msgpack"; r }) shouldBe User(1, "leo", "N/A")
+        client.post[User]("/user", User(2, "yui", "N/A"), { r => r.accept = "application/x-msgpack"; r }) shouldBe User(
+          2,
+          "yui",
+          "N/A"
+        )
+
         // Get a response as is
         client.get[Response]("/response").contentString shouldBe "raw response"
 
