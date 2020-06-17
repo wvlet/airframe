@@ -16,8 +16,7 @@ import wvlet.airspec.AirSpec
 import wvlet.log.Logger
 
 /**
-  *
- */
+  */
 object EnumTest extends AirSpec {
 
   sealed trait Color

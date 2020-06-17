@@ -17,7 +17,6 @@ package wvlet.airframe.sql.model
 import java.util.Locale
 
 /**
-  *
   */
 sealed trait Expression extends TreeNode[Expression] with Product {
   def sqlExpr: String = toString()
@@ -108,7 +107,6 @@ object Expression {
   import wvlet.airframe.sql.model.LogicalPlan.Relation
 
   /**
-    *
     */
   case class ParenthesizedExpression(child: Expression) extends UnaryExpression
 

@@ -16,7 +16,6 @@ import wvlet.airframe.http.router.ControllerRoute
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 object PathSequenceTest extends AirSpec {
 

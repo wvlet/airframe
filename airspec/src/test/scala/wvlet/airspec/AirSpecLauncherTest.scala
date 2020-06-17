@@ -14,7 +14,6 @@
 package wvlet.airspec
 
 /**
-  *
   */
 class AirSpecLauncherTest extends AirSpec {
   test("run main") {

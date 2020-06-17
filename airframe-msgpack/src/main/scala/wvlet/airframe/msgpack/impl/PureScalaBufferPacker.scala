@@ -19,7 +19,6 @@ import wvlet.airframe.msgpack.io.{ByteArrayBuffer, ByteArrayBufferBase, Infinite
 import wvlet.airframe.msgpack.spi.{BufferPacker, OffsetPacker, Packer, Value, WriteCursor}
 
 /**
-  *
   */
 class PureScalaBufferPacker extends BufferPacker {
   private val buf    = new InfiniteByteArrayBuffer

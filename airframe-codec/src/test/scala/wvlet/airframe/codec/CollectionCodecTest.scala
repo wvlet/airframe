@@ -20,7 +20,6 @@ import wvlet.airframe.surface.Surface
 import scala.jdk.CollectionConverters._
 
 /**
-  *
   */
 class CollectionCodecTest extends CodecSpec {
   scalaJsSupport

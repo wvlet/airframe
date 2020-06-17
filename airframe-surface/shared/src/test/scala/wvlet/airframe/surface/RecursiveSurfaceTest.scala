@@ -22,7 +22,6 @@ object RecursiveSurfaceTest {
 }
 
 /**
-  *
   */
 class RecursiveSurfaceTest extends SurfaceSpec {
   scalaJsSupport

@@ -16,7 +16,6 @@ package wvlet.airframe.examples.airspec
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 object AirSpec_01_Basic extends AirSpec {
   def testWithAssertion: Unit = {

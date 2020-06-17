@@ -27,7 +27,6 @@ case class AnalyzerContext(database: String, catalog: Catalog, parentAttributes:
 }
 
 /**
-  *
   */
 object SQLAnalyzer extends LogSupport {
   type PlanRewriter = PartialFunction[LogicalPlan, LogicalPlan]

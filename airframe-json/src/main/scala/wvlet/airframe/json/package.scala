@@ -24,7 +24,6 @@ import wvlet.airframe.json.JSON.{
 }
 
 /**
-  *
   */
 package object json {
   // Alias to encode msgpack into JSON strings with airframe-codec

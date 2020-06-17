@@ -14,7 +14,6 @@
 package example
 
 /**
-  *
   */
 object SealedTrait {
   sealed trait Adt

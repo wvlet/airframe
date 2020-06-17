@@ -22,7 +22,6 @@ object DefaultValueTest {
 }
 
 /**
-  *
   */
 class DefaultValueTest extends AirSpec {
   scalaJsSupport

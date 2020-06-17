@@ -16,7 +16,6 @@ package examples
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class SkipWholeSpecTest extends AirSpec {
   skip("Test skipping the whole spec")

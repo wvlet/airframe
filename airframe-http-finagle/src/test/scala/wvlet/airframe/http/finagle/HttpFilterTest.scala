@@ -22,7 +22,6 @@ import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 /**
-  *
   */
 trait SampleApp extends LogSupport {
   @Endpoint(path = "/auth")
@@ -101,7 +100,6 @@ class ExceptionTestFilter extends FinagleFilter {
 }
 
 /**
-  *
   */
 class HttpFilterTest extends AirSpec {
   def `apply filter before the route`: Unit = {

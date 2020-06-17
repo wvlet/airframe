@@ -82,7 +82,6 @@ trait Parameter extends ParameterBase {
 }
 
 /**
-  *
   */
 trait ObjectFactory extends Serializable {
   def newInstance(args: Seq[Any]): Any

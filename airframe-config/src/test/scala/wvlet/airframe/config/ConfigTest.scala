@@ -29,7 +29,6 @@ case class DefaultConfig(id: Int = 1, a: String = "hello")
 case class ClassConfig(classes: Seq[String], classAssignments: Map[String, String])
 
 /**
-  *
   */
 class ConfigTest extends AirSpec {
   val configPaths = Seq("airframe-config/src/test/resources")

@@ -325,7 +325,6 @@ trait SvgTags {
   lazy val feSpecularLighting = tag("feSpecularLighting")
 
   /**
-    *
     */
   lazy val feSpotlight = tag("feSpotlight")
 

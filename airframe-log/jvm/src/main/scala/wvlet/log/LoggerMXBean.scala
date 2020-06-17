@@ -14,7 +14,6 @@
 package wvlet.log
 
 /**
-  *
   */
 trait LoggerMXBean {
   def getLogLevel(loggerName: String): String

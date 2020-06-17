@@ -16,7 +16,6 @@ package wvlet.airframe.codec
 import scala.reflect.macros.{blackbox => sm}
 
 /**
-  *
   */
 object CodecMacros {
   def codecOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {

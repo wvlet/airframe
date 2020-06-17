@@ -78,7 +78,6 @@ class DoubleArray extends JSONParseBenchmark {
 }
 
 /**
-  *
   */
 object JSONBenchmark extends Timer {
   val r1 = new Random(0)

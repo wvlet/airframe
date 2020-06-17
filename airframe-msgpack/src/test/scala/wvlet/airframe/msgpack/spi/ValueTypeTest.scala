@@ -17,7 +17,6 @@ import wvlet.airframe.msgpack.spi.Code._
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class ValueTypeTest extends AirSpec {
   scalaJsSupport

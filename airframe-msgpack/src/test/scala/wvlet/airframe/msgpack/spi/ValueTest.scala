@@ -24,7 +24,6 @@ import wvlet.airspec.spi.PropertyCheck
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class ValueTest extends AirSpec with PropertyCheck {
   scalaJsSupport

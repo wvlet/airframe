@@ -47,7 +47,6 @@ object MethodExamples {
 import wvlet.airframe.surface.MethodExamples._
 
 /**
-  *
   */
 class MethodSurfaceTest extends SurfaceSpec {
   scalaJsSupport

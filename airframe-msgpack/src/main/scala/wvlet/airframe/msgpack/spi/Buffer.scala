@@ -21,7 +21,6 @@ package wvlet.airframe.msgpack.spi
   *
   * If the buffer capacity is insufficient, these read/write methods throw an [[InsufficientBufferException]].
   * If this exception is thrown, the user code should feed more data, and then resume reading.
-  *
   */
 trait Buffer {
   def size: Int

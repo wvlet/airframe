@@ -56,7 +56,6 @@ object FactoryBindingTest {
 }
 
 /**
-  *
   */
 class FactoryBindingTest extends AirSpec {
   scalaJsSupport

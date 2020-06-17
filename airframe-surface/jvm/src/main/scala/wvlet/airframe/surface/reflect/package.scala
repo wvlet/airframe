@@ -23,7 +23,6 @@ import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 
 /**
-  *
   */
 package object reflect {
   private[reflect] def findAnnotation[T <: jl.annotation.Annotation: ClassTag](

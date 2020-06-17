@@ -17,7 +17,6 @@ import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 class AssistedInjectionTest extends AirSpec {
   scalaJsSupport

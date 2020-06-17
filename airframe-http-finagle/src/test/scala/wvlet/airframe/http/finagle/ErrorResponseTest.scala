@@ -20,7 +20,6 @@ import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 object ErrorResponseTest extends AirSpec {
 

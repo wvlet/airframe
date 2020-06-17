@@ -16,7 +16,6 @@ package wvlet.airframe
 import java.time.{ZoneId, ZoneOffset, ZonedDateTime}
 
 /**
-  *
   */
 package object metrics {
   val systemTimeZone: ZoneOffset = {

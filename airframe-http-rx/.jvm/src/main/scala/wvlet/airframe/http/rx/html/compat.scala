@@ -14,7 +14,6 @@
 package wvlet.airframe.http.rx.html
 
 /**
-  *
   */
 object compat {
   trait PlatformEmbeddableNode {}

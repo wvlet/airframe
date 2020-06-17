@@ -15,7 +15,6 @@ package wvlet.airframe.control
 import scala.util.control.NonFatal
 
 /**
-  *
   */
 object Control {
   def withResource[R <: AutoCloseable, U](resource: R)(body: R => U): U = {

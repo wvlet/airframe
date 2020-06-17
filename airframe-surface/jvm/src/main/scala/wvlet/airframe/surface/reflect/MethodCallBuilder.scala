@@ -14,7 +14,6 @@
 package wvlet.airframe.surface.reflect
 
 /**
-  *
   */
 import wvlet.airframe.surface.CanonicalNameFormatter._
 import wvlet.airframe.surface.{CName, MethodParameter, MethodSurface, Zero}

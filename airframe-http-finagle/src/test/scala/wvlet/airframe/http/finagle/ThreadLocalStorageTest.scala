@@ -20,7 +20,6 @@ import wvlet.airframe.http.{Endpoint, HttpContext, Router}
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class ThreadLocalStorageTest extends AirSpec {
   class MyApp {

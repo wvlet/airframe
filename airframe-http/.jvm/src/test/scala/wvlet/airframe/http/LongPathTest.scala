@@ -17,7 +17,6 @@ import wvlet.airframe.http.example.LongPathExample
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class LongPathTest extends AirSpec {
   def `match long paths`: Unit = {

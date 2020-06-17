@@ -25,7 +25,6 @@ import wvlet.log.io.IOUtil
 import scala.util.{Failure, Success, Try}
 
 /**
-  *
   */
 object JMXUtil extends LogSupport {
   implicit class WithReflection(className: String) {

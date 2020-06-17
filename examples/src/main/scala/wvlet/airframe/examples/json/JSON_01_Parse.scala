@@ -14,7 +14,6 @@
 package wvlet.airframe.examples.json
 
 /**
-  *
   */
 object JSON_01_Parse extends App {
   import wvlet.airframe.json.JSON

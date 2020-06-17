@@ -17,7 +17,6 @@ package wvlet.airframe.surface
 import wvlet.airframe.surface.tag.@@
 
 /**
-  *
   */
 class ZeroTest extends SurfaceSpec {
   scalaJsSupport

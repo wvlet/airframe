@@ -16,7 +16,6 @@ import wvlet.airframe.codec.{MessageCodec, MessageContext}
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 
 /**
-  *
   */
 object HttpMultiMapCodec extends MessageCodec[HttpMultiMap] {
   private val codec = MessageCodec.of[Map[String, Any]]

@@ -51,7 +51,6 @@ case class Modal(title: String, footer: RxElement = div()) extends RxComponent {
 }
 
 /**
-  *
   */
 object Modal {
 

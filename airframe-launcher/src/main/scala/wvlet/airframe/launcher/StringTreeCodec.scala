@@ -16,7 +16,6 @@ import wvlet.airframe.codec.{MessageCodec, MessageContext}
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 
 /**
-  *
   */
 object StringTreeCodec extends MessageCodec[StringTree] {
   override def pack(p: Packer, v: StringTree): Unit = {

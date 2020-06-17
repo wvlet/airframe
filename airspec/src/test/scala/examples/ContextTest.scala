@@ -18,7 +18,6 @@ import wvlet.airspec.AirSpec
 import wvlet.airspec.spi.AirSpecContext
 
 /**
-  *
   */
 class ContextTest extends AirSpec {
   scalaJsSupport

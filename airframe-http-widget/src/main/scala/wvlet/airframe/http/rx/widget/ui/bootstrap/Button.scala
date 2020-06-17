@@ -19,7 +19,6 @@ import wvlet.airframe.http.rx.html.all._
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 case class Button(
     name: String,

@@ -17,7 +17,6 @@ import java.util.UUID
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 object MapConversionTest extends AirSpec {
 

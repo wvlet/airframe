@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.Duration
 
 /**
-  *
   */
 class LogLevelScannerTest extends Spec {
   override protected def before: Unit = {

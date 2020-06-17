@@ -152,7 +152,6 @@ object Resource {
     * e.g., "jar:file:/C:/Program Files/Software/something.jar!/org/xerial/util/FileResource.java"
     *
     * @author leo
-    *
     */
   abstract trait VirtualFile {
 
@@ -184,7 +183,6 @@ object Resource {
     * A virtual file implementation for usual files
     *
     * @author leo
-    *
     */
   case class SystemFile(file: java.io.File, logicalPath: String) extends VirtualFile {
     def url: URL = file.toURI.toURL
@@ -196,7 +194,6 @@ object Resource {
     * A virtual file implementation for file resources contained in a JAR file
     *
     * @author leo
-    *
     */
   case class FileInJar(resourceURL: URL, logicalPath: String, isDirectory: Boolean) extends VirtualFile {
     if (resourceURL == null) {

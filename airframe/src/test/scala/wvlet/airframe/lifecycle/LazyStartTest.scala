@@ -38,7 +38,6 @@ object LazyStartTest {
 }
 
 /**
-  *
   */
 class LazyStartTest extends AirSpec {
   scalaJsSupport

@@ -16,7 +16,6 @@ package wvlet.airframe.examples.codec
 import wvlet.airframe.codec.MessageCodec
 
 /**
-  *
   */
 object Codec_02_ObjectCodec extends App {
   case class A(

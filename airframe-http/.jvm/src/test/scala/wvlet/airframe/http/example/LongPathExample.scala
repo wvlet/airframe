@@ -18,7 +18,6 @@ import wvlet.airframe.http.{Endpoint, HttpMethod}
 case class PathEntry(scope: String, key: String)
 
 /**
-  *
   */
 trait LongPathExample {
   // Adding this entry to check *key match in /v1/config/entry/:scope/*key if the key contains `clusters` tokien

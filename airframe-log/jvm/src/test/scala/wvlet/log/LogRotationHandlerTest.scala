@@ -18,7 +18,6 @@ import java.io.File
 import wvlet.log.io.IOUtil._
 
 /**
-  *
   */
 class LogRotationHandlerTest extends Spec {
   def `rotate log files`: Unit = {

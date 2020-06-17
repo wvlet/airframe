@@ -21,7 +21,6 @@ object ImplicitArgTest {
 }
 
 /**
-  *
   */
 class ImplicitArgTest extends AirSpec {
   scalaJsSupport

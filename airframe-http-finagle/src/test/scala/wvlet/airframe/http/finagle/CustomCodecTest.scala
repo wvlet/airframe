@@ -22,7 +22,6 @@ import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 object CustomCodecTest extends AirSpec {
 

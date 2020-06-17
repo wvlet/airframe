@@ -17,7 +17,6 @@ import org.komamitsu.fluency.ingester.sender.ErrorHandler
 import org.komamitsu.fluency.treasuredata.FluencyBuilderForTreasureData
 
 /**
-  *
   */
 object Fluentd {
 

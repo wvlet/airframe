@@ -17,7 +17,6 @@ import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 object Surface_01_Basic extends App with LogSupport {
   case class MyConfig(port: Int = 8080, name: String)

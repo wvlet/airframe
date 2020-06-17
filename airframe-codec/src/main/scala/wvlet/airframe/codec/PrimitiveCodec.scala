@@ -27,7 +27,6 @@ import wvlet.airframe.surface.{Primitive, Surface}
 import scala.util.Try
 
 /**
-  *
   */
 object PrimitiveCodec {
   val primitiveCodec: Map[Surface, MessageCodec[_]] = Map(

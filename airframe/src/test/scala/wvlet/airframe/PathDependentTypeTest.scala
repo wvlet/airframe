@@ -16,7 +16,6 @@ import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class PathDependentTypeTest extends AirSpec {
   scalaJsSupport

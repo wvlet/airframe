@@ -19,7 +19,6 @@ import wvlet.airframe.{bind, newSilentDesign}
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class CloseableShutdownHookTest extends AirSpec {
   scalaJsSupport

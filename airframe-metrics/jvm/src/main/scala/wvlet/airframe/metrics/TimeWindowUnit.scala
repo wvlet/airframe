@@ -17,7 +17,6 @@ import java.time.temporal.ChronoUnit
 import java.time.{DayOfWeek, ZonedDateTime}
 
 /**
-  *
   */
 sealed abstract class TimeWindowUnit(val symbol: String, val secondsInUnit: Int) {
 

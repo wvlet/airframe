@@ -21,7 +21,6 @@ import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Try}
 
 /**
-  *
   */
 trait JMXRegistry extends JMXMBeanServerService with LogSupport {
   private var registeredMBean = Set.empty[ObjectName]

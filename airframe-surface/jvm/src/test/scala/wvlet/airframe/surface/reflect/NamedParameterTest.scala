@@ -18,7 +18,6 @@ import scala.concurrent.Future
 import scala.language.higherKinds
 
 /**
-  *
   */
 object NamedParameterTest extends AirSpec {
 

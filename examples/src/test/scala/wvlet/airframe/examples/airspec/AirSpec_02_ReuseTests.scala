@@ -17,7 +17,6 @@ import wvlet.airspec.spi.AirSpecContext
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class AirSpec_02_ReuseTests extends AirSpec {
   // A template for reusable test cases

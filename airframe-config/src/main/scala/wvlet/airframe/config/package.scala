@@ -21,7 +21,6 @@ import wvlet.log.Logger
 import scala.language.experimental.macros
 
 /**
-  *
   */
 package object config {
   private val logger = Logger("wvlet.airframe.config")

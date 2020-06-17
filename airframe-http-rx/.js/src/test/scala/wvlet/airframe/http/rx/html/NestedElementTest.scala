@@ -19,7 +19,6 @@ import wvlet.airframe.http.rx.html.all._
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 object NestedElementTest extends AirSpec {
 

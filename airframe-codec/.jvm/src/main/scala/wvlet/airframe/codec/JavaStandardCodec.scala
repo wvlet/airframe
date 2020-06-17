@@ -21,7 +21,6 @@ import wvlet.log.LogSupport
 import scala.util.{Success, Try}
 
 /**
-  *
   */
 object JavaStandardCodec {
   val javaStandardCodecs: Map[Surface, MessageCodec[_]] = Map(

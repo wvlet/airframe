@@ -15,7 +15,6 @@ package wvlet.airframe.http
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
-  *
   */
 package object rx {
   implicit class FutureConverter[A](val f: Future[A]) extends AnyVal {

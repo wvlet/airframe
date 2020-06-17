@@ -19,7 +19,6 @@ import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.required
 
 /**
-  *
   */
 class ObjectCodecTest extends CodecSpec {
   scalaJsSupport

@@ -16,7 +16,6 @@ package wvlet.airframe.http
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class HttpStatusTest extends AirSpec {
   test("have reasons") {

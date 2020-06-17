@@ -12,7 +12,6 @@ object SerializationTest {
 }
 
 /**
-  *
   */
 class SerializationTest extends Spec {
   import SerializationTest._

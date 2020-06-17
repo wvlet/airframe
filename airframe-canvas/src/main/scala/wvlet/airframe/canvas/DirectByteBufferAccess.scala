@@ -14,7 +14,6 @@
 package wvlet.airframe.canvas
 
 /**
-  *
   */
 import java.lang.reflect.{Constructor, InvocationTargetException, Method}
 

@@ -26,7 +26,6 @@ import wvlet.airspec.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrin
 import wvlet.airspec.spi.{AirSpecException, Asserts}
 
 /**
-  *
   */
 private[airspec] object Compat extends CompatApi {
   override def isScalaJs = false

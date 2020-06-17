@@ -19,7 +19,6 @@ import scala.concurrent.Future
 import scala.language.higherKinds
 
 /**
-  *
   */
 trait GenericService[F[_]] {
   @Endpoint(path = "/v1/hello")

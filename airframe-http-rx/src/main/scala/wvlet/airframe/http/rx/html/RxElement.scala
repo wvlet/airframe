@@ -17,7 +17,6 @@ import wvlet.airframe.http.rx.{Cancelable, Rx}
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extends HtmlNode { self =>
 

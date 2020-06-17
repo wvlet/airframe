@@ -29,7 +29,6 @@ object LeafFilterTest {
 }
 
 /**
-  *
   */
 class LeafFilterTest extends AirSpec {
   import LeafFilterTest._

@@ -14,7 +14,6 @@
 package wvlet.airframe.http.router
 
 /**
-  *
   */
 object Automaton {
   def empty[Node, Token]: Automaton[Node, Token] = new Automaton(Set.empty, Set.empty)

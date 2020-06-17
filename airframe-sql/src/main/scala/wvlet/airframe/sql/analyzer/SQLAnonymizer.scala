@@ -33,7 +33,6 @@ class SQLAnonymizer(dict: Map[Expression, Expression]) {
 }
 
 /**
-  *
   */
 object SQLAnonymizer extends LogSupport {
   def anonymize(sql: String): String = {

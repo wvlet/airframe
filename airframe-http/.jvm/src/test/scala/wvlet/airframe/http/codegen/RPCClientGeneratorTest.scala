@@ -16,7 +16,6 @@ import example.rpc.RPCTestService
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class RPCClientGeneratorTest extends AirSpec {
   test("avoid duplicate route entries") {

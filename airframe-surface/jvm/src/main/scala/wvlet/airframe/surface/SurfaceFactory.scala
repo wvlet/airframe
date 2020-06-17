@@ -18,7 +18,6 @@ import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 import scala.reflect.runtime.{universe => ru}
 
 /**
-  *
   */
 object SurfaceFactory {
   def of[A: ru.WeakTypeTag]: Surface                           = ReflectSurfaceFactory.of[A]

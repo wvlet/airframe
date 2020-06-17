@@ -24,7 +24,6 @@ import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 object Http_03_Client extends App with LogSupport {
   case class User(id: String, name: String)

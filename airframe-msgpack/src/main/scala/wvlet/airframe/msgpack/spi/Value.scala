@@ -21,7 +21,6 @@ import java.util.Base64
 import wvlet.airframe.msgpack.spi.MessageException._
 
 /**
-  *
   */
 trait Value {
   override def toString = toJson

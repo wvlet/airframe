@@ -18,7 +18,6 @@ import java.time.{Instant, ZoneOffset, ZonedDateTime}
 import java.util.Locale
 
 /**
-  *
   */
 object TimeStampFormatter {
   import java.time.temporal.ChronoField._

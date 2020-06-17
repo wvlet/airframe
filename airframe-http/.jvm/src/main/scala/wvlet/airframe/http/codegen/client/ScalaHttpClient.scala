@@ -17,7 +17,6 @@ import java.util.Locale
 import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, ClientSourceDef}
 
 /**
-  *
   */
 object ScalaHttpClient {
   def header(packageName: String): String = {
@@ -49,7 +48,7 @@ object AsyncClient extends HttpClientType {
          |${src.importStatements}
          |
          |${cls}"""
-      /**EndMarker*/ .stripMargin.stripMargin
+      /** EndMarker */ .stripMargin.stripMargin
 
     def cls: String =
       s"""class ${src.classDef.clsName}[F[_], Req, Resp](private val client: HttpClient[F, Req, Resp]) extends AutoCloseable {
@@ -152,7 +151,6 @@ object SyncClient extends HttpClientType {
 }
 
 /**
-  *
   */
 object ScalaJSClient extends HttpClientType {
   override def name: String             = "scalajs"

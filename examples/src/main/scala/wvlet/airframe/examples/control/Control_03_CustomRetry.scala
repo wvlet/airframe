@@ -19,7 +19,6 @@ import wvlet.airframe.control.Retry
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 object Control_03_CustomRetry extends App with LogSupport {
   val withRetry =

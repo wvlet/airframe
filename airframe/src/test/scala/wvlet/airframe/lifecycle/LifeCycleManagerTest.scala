@@ -76,7 +76,6 @@ trait LifeCycleOrder {
 }
 
 /**
-  *
   */
 class LifeCycleManagerTest extends AirSpec {
   scalaJsSupport

@@ -16,7 +16,6 @@ package wvlet.airframe.json
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 class NullJSONContext(isObject: Boolean) extends JSONContext[Unit] with LogSupport {
   override def isObjectContext: Boolean                                    = isObject

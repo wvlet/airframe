@@ -16,7 +16,6 @@ package wvlet.airframe.surface
 import scala.language.experimental.macros
 
 /**
-  *
   */
 object SurfaceFactory {
   def of[A]: Surface = macro SurfaceMacros.of[A]

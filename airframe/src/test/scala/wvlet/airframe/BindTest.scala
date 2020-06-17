@@ -26,7 +26,6 @@ object BindTest {
 }
 
 /**
-  *
   */
 class BindTest extends AirSpec {
   scalaJsSupport

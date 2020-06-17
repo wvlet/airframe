@@ -14,7 +14,6 @@
 package wvlet.airframe.msgpack.spi
 
 /**
-  *
   */
 trait MessageSource extends AutoCloseable {
 

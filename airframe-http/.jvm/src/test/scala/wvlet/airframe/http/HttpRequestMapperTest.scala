@@ -21,8 +21,7 @@ import wvlet.airspec.AirSpec
 import scala.concurrent.Future
 
 /**
-  *
- */
+  */
 object HttpRequestMapperTest extends AirSpec {
 
   case class NestedRequest(name: String, msg: String)

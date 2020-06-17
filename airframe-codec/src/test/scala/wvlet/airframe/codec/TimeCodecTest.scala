@@ -18,7 +18,6 @@ import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.Surface
 
 /**
-  *
   */
 class TimeCodecTest extends CodecSpec {
   test("support Java Instant") {

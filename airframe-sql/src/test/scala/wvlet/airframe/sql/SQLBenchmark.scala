@@ -19,7 +19,6 @@ import wvlet.airframe.config.YamlReader
 import wvlet.log.io.{IOUtil, Resource}
 
 /**
-  *
   */
 object SQLBenchmark {
   case class TestQuery(sql: String, path: Option[String]) {

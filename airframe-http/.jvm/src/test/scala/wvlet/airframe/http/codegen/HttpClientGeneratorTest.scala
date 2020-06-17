@@ -19,7 +19,6 @@ import wvlet.airframe.http._
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class HttpClientGeneratorTest extends AirSpec {
   val router =

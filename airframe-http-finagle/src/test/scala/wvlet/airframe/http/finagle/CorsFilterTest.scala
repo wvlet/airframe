@@ -58,7 +58,6 @@ object CorsFilterTest {
 }
 
 /**
-  *
   */
 class CorsFilterTest extends AirSpec {
 

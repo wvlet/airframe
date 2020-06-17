@@ -15,7 +15,6 @@
 package wvlet.airframe.sql.model
 
 /**
-  *
   */
 object StandardFunctions {
 //  case class AggregateExpression(func: AggregateFunction, mode: AggregateMode, isDistinct: Boolean) extends Expression

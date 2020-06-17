@@ -17,7 +17,6 @@ import wvlet.airframe.http.rx.html.all._
 import wvlet.airframe.http.rx.html.{RxComponent, RxElement}
 
 /**
-  *
   */
 object Layout {
   def of                                     = div()

@@ -17,7 +17,6 @@ import wvlet.airframe.http.rx.html.RxComponent
 import wvlet.airframe.http.rx.html.all._
 
 /**
-  *
   */
 object Alert {
   private def newAlert(style: String) =

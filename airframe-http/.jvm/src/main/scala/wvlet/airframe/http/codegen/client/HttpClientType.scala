@@ -15,7 +15,6 @@ package wvlet.airframe.http.codegen.client
 import wvlet.airframe.http.codegen.HttpClientIR.ClientSourceDef
 
 /**
-  *
   */
 trait HttpClientType {
   def name: String

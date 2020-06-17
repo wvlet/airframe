@@ -18,7 +18,6 @@ import java.time.ZonedDateTime
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class TimeParserTest extends AirSpec {
   private def parse(str: String, expected: String): Unit = {

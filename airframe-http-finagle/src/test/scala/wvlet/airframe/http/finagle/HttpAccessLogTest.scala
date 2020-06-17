@@ -25,7 +25,6 @@ import wvlet.log.Logger
 import wvlet.log.io.IOUtil
 
 /**
-  *
   */
 object HttpAccessLogTest extends AirSpec {
 

@@ -14,7 +14,6 @@
 package wvlet.airframe.msgpack
 
 /**
-  *
   */
 package object spi {
   // Raw MessagePack value

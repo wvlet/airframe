@@ -16,7 +16,6 @@ package wvlet.airframe.lifecycle
 import wvlet.airframe.surface.Surface
 
 /**
-  *
   */
 trait LifeCycleEventHandler {
   def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {}

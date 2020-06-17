@@ -16,7 +16,6 @@ package wvlet.airframe.surface
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class InnerClassTest extends AirSpec {
   case class A(id: Int, name: String)

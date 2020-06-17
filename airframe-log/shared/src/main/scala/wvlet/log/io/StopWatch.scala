@@ -52,7 +52,6 @@ import scala.collection.mutable.LinkedHashMap
   *
   * }}}
   *
-  *
   * Timer can take the average of repetitive executions:
   *
   * {{{

@@ -18,7 +18,6 @@ import wvlet.airframe.codec.PrimitiveCodec.LongCodec
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class MessageCodecTest extends AirSpec {
   scalaJsSupport

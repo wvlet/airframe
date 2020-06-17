@@ -1,7 +1,6 @@
 package wvlet.log
 
 /**
-  *
   */
 class JSConsoleLogHandlerTest extends Spec {
   scalaJsSupport

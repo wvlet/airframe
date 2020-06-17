@@ -14,7 +14,6 @@
 package wvlet.airframe
 
 /**
-  *
   */
 package object http {
   // A trick to minimize compilation warnings in IntelliJ IDEA when using corss projects

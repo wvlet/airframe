@@ -17,7 +17,6 @@ import java.util.UUID
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
 
 /**
-  *
   */
 object UUIDCodec extends MessageCodec[UUID] {
 

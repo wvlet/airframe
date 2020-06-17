@@ -26,7 +26,6 @@ trait JSONVisitor {
 }
 
 /**
-  *
   */
 object JSONTraverser {
   def traverse(json: JSONValue, visitor: JSONVisitor): Unit = {

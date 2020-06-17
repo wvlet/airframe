@@ -24,7 +24,6 @@ import wvlet.log.io.IOUtil.withResource
 import scala.collection.compat._
 
 /**
-  *
   */
 class JDBCCodecTest extends AirSpec {
   protected def withQuery[U](sql: String)(body: ResultSet => U): U = {

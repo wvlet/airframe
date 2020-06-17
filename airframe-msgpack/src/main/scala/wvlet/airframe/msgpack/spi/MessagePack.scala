@@ -18,7 +18,6 @@ import wvlet.airframe.json.{JSON, JSONScanner, JSONSource}
 import wvlet.airframe.msgpack.json.{NestedMessagePackBuilder, StreamMessagePackBuilder}
 
 /**
-  *
   */
 object MessagePack {
   def newBufferPacker: BufferPacker                                      = Compat.newBufferPacker

@@ -14,7 +14,6 @@
 package wvlet.airframe.lifecycle
 
 /**
-  *
   */
 object JSR250LifeCycleExecutor extends LifeCycleEventHandler {
   // Do nothing in Scala.js

@@ -15,7 +15,6 @@ package wvlet.airframe.codec
 import wvlet.airframe.surface.Surface
 
 /**
-  *
   */
 class ScalaStandardCodecTest extends CodecSpec {
   scalaJsSupport

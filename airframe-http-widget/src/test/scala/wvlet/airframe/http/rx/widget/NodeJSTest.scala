@@ -16,7 +16,6 @@ package wvlet.airframe.http.rx.widget
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class NodeJSTest extends AirSpec {
   import scalajs.js.Dynamic.{global => g}

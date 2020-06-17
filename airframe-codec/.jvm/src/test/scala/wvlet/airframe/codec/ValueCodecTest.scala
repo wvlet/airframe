@@ -29,7 +29,6 @@ object ValueCodecTest {
 import wvlet.airframe.codec.ValueCodecTest._
 
 /**
-  *
   */
 class ValueCodecTest extends CodecSpec {
   scalaJsSupport

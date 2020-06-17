@@ -19,7 +19,6 @@ import wvlet.airframe.Design
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class ExtendedCloseableTest extends AirSpec {
   scalaJsSupport

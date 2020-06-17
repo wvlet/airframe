@@ -16,7 +16,6 @@ package wvlet.airframe.json
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 object JSON extends LogSupport {
 
@@ -111,14 +110,14 @@ object JSON extends LogSupport {
       s.append("{")
       s.append {
         v.map {
-            case (k, v: JSONValue) =>
-              val ss = new StringBuilder
-              ss.append("\"")
-              ss.append(quoteJSONString(k))
-              ss.append("\":")
-              ss.append(v.toJSON)
-              ss.result()
-          }.mkString(",")
+          case (k, v: JSONValue) =>
+            val ss = new StringBuilder
+            ss.append("\"")
+            ss.append(quoteJSONString(k))
+            ss.append("\":")
+            ss.append(v.toJSON)
+            ss.result()
+        }.mkString(",")
       }
       s.append("}")
       s.result()

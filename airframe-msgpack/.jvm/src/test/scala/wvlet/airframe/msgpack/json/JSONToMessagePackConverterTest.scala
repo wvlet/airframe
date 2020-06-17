@@ -20,7 +20,6 @@ import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
 
 /**
-  *
   */
 class JSONToMessagePackConverterTest extends AirSpec {
   protected def msgpackToJson(msgpack: Array[Byte]): JSONValue = {

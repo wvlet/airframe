@@ -30,7 +30,6 @@ case class ErrorMetric(errorType: String, ex: Exception) extends TaggedMetric {
 }
 
 /**
-  *
   */
 class MetricLoggerTest extends AirSpec {
   override protected def design: Design = {

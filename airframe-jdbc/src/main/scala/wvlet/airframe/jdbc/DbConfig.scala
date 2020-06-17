@@ -17,7 +17,6 @@ import com.zaxxer.hikari.HikariConfig
 import wvlet.airframe.surface.secret
 
 /**
-  *
   */
 case class DbConfig(
     // "type" is often used in Yaml, so we cannot change this parameter name

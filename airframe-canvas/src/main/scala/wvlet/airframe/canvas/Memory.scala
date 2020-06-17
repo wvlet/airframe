@@ -15,7 +15,6 @@ package wvlet.airframe.canvas
 import java.lang.ref.{PhantomReference, ReferenceQueue}
 
 /**
-  *
   */
 sealed abstract class Memory {
 

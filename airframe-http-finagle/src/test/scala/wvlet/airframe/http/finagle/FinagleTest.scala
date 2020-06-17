@@ -21,7 +21,6 @@ import wvlet.airframe.http.{HttpMultiMap, HttpStatus}
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class FinagleTest extends AirSpec {
   import wvlet.airframe.http.finagle._

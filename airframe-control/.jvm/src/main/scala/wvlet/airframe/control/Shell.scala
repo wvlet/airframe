@@ -24,7 +24,6 @@ import scala.jdk.CollectionConverters._
 
 /**
   * Launch UNIX (or cygwin) commands from Scala
-  *
   */
 object Shell extends LogSupport {
   private def withAccessTo[U](f: Field)(body: => U): U = {

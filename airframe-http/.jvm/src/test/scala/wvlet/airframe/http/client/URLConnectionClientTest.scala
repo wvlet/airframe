@@ -21,8 +21,7 @@ import wvlet.airframe.http.{Http, HttpStatus}
 import wvlet.airspec.AirSpec
 
 /**
-  *
- */
+  */
 object URLConnectionClientTest extends AirSpec {
   override protected def design: Design =
     Design.newDesign

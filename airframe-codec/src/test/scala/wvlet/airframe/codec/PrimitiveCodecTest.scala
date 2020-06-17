@@ -27,7 +27,6 @@ import wvlet.airspec.spi.PropertyCheck
 import scala.util.Random
 
 /**
-  *
   */
 object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
   scalaJsSupport

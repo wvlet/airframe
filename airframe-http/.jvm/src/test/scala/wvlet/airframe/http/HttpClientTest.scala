@@ -21,7 +21,6 @@ import javax.net.ssl.{SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedE
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class HttpClientTest extends AirSpec {
   import HttpClient._

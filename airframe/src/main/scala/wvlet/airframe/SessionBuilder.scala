@@ -37,7 +37,6 @@ object Stage {
 }
 
 /**
-  *
   */
 class SessionBuilder(
     design: Design,

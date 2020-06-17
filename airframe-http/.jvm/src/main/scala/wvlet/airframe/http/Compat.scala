@@ -17,7 +17,6 @@ import java.net.URLEncoder
 import wvlet.airframe.http.client.URLConnectionClientBackend
 
 /**
-  *
   */
 object Compat extends CompatApi {
   override def urlEncode(s: String): String = {

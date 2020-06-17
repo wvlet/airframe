@@ -19,7 +19,6 @@ import wvlet.airframe.surface._
 import scala.reflect.runtime.{universe => ru}
 
 /**
-  *
   */
 object RuntimeSurface extends LogSupport {
   def of[A: ru.WeakTypeTag]: Surface = ReflectSurfaceFactory.of[A]

@@ -3,7 +3,6 @@ package wvlet.log
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 /**
-  *
   */
 @JSExportTopLevel("log")
 object JSLogger {

@@ -50,7 +50,6 @@ object StaticContentTest {
 }
 
 /**
-  *
   */
 class StaticContentTest extends AirSpec {
 

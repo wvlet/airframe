@@ -34,7 +34,6 @@ object Asserts {
 }
 
 /**
-  *
   */
 trait Asserts { this: AirSpecSpi =>
   protected def assert(cond: => Boolean)(implicit code: SourceCode) = {

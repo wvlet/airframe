@@ -196,7 +196,6 @@ sealed trait ObjectCodecBase {
 }
 
 /**
-  *
   */
 case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]])
     extends MessageCodec[A]

@@ -18,7 +18,6 @@ import wvlet.airspec.AirSpec
 import wvlet.airframe.http.rx.html.all._
 
 /**
-  *
   */
 class HtmlTest extends AirSpec {
   test("embedding values") {

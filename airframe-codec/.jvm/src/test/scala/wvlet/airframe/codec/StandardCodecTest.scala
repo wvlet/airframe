@@ -19,7 +19,6 @@ import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.Surface
 
 /**
-  *
   */
 class StandardCodecTest extends CodecSpec {
   def `support File`: Unit = {

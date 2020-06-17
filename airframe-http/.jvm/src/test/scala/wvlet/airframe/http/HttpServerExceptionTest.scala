@@ -18,7 +18,6 @@ import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 object HttpServerExceptionTest extends AirSpec {
 

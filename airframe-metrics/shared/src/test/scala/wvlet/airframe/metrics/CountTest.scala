@@ -16,8 +16,7 @@ import wvlet.airframe.metrics.Count.CountUnit
 import wvlet.airspec.AirSpec
 
 /**
-  *
- */
+  */
 class CountTest extends AirSpec {
 
   private def check(s: String, expected: Count, expectedString: String) {

@@ -20,7 +20,6 @@ import wvlet.log.LogFormatter._
 import wvlet.log.{LocalLogSupport, LogFormatter, LogLevel, LogSupport, NullHandler}
 
 /**
-  *
   */
 class AirframeLogDemo extends AirSpec {
   scalaJsSupport

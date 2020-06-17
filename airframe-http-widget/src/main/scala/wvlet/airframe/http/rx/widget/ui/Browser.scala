@@ -14,7 +14,6 @@
 package wvlet.airframe.http.rx.widget.ui
 
 /**
-  *
   */
 object Browser {
   def document = org.scalajs.dom.document

@@ -40,7 +40,6 @@ object AirframeBootstrapTest {
 }
 
 /**
-  *
   */
 class AirframeBootstrapTest extends AirSpec {
   import AirframeBootstrapTest._

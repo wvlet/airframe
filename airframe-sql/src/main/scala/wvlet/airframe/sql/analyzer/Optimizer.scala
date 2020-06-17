@@ -18,7 +18,6 @@ import wvlet.airframe.sql.model.{Attribute, Expression, TableScan}
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 object Optimizer extends LogSupport {
 

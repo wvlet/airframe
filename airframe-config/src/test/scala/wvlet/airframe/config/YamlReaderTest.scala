@@ -21,7 +21,6 @@ case class MyConfig(id: Int, fullName: String, port: Int = 8989)
 case class DB(accountId: Int, database: String, table: Seq[String])
 
 /**
-  *
   */
 class YamlReaderTest extends AirSpec {
 

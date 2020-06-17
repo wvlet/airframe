@@ -208,7 +208,6 @@ case class LauncherInfo(name: String, description: String, usage: String, isDefa
   *
   * Launcher.execute[MyCommand]("hello -r 3")  // hello x 3
   * }}}
-  *
   */
 class CommandLauncher(
     private[launcher] val launcherInfo: LauncherInfo,

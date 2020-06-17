@@ -36,7 +36,6 @@ import wvlet.log.io.IOUtil.withResource
   * The client code generator is defined in wvlet.airframe.http.codegen package.
   * This plugin downloads a pre-built archive (airframe-http_(scala version)-(airframe version).tgz) and
   * invoke HttpClientGenerator.
-  *
   */
 object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   wvlet.airframe.log.init

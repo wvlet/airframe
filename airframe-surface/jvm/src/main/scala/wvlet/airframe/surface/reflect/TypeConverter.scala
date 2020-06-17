@@ -25,7 +25,6 @@ import scala.reflect.ClassTag
 import scala.jdk.CollectionConverters._
 
 /**
-  *
   */
 object TypeConverter extends LogSupport {
   import java.lang.{reflect => jr}

@@ -17,7 +17,6 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class DbConfigTest extends AirSpec {
   test("support serde") {

@@ -16,7 +16,6 @@ package wvlet.airframe.surface.reflect
 import wvlet.airframe.surface.SurfaceSpec
 
 /**
-  *
   */
 class PathTest extends SurfaceSpec {
   import Path._

@@ -20,7 +20,6 @@ import wvlet.airframe.sql.parser.{SQLGenerator, SQLParser}
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class SQLAnonymizerTest extends AirSpec {
   protected def process(q: TestQuery, dict: Map[Expression, Expression]): Unit = {

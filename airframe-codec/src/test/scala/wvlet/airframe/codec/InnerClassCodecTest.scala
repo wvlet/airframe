@@ -16,7 +16,6 @@ package wvlet.airframe.codec
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class InnerClassCodecTest extends AirSpec {
   scalaJsSupport

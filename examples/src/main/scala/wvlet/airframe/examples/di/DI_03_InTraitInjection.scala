@@ -15,7 +15,6 @@ package wvlet.airframe.examples.di
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 object DI_03_InTraitInjection extends App {
   import wvlet.airframe._

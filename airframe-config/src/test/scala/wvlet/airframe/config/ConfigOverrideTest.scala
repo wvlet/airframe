@@ -23,7 +23,6 @@ object ConfigOverrideTest {
 }
 
 /**
-  *
   */
 class ConfigOverrideTest extends AirSpec {
   import ConfigOverrideTest._

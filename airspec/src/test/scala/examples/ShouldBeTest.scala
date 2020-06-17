@@ -17,7 +17,6 @@ import wvlet.airspec.spi.AssertionFailure
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class ShouldBeTest extends AirSpec {
   scalaJsSupport

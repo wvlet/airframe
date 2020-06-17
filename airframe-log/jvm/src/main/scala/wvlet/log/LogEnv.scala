@@ -6,7 +6,6 @@ import javax.management.{InstanceAlreadyExistsException, ObjectName}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 
 /**
-  *
   */
 private[log] object LogEnv extends LogEnvBase {
   override def isScalaJS: Boolean        = false
@@ -16,7 +15,6 @@ private[log] object LogEnv extends LogEnvBase {
   override def defaultHandler: java.util.logging.Handler = new ConsoleLogHandler(SourceCodeLogFormatter)
 
   /**
-    *
     * @param cl
     * @return
     */

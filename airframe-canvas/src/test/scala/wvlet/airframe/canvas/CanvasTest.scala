@@ -19,7 +19,6 @@ import wvlet.airspec.spi.PropertyCheck
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class CanvasTest extends AirSpec with PropertyCheck {
   protected def check[A](v: A, canvas: Canvas, writer: Canvas => Unit, reader: Canvas => A): Unit = {

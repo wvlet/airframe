@@ -26,7 +26,6 @@ import wvlet.log.LogLevel
 import wvlet.log.io.IOUtil
 
 /**
-  *
   */
 class FluentdLoggerTest extends AirSpec {
   def `should use Fluency as a Fluentd client`: Unit = {

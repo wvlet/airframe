@@ -345,7 +345,6 @@ trait MiscellaneousEventAttrs extends SharedEventAttrs {
 
 /**
   * Window Events
-  *
   */
 trait WindowEventAttrs extends SharedEventAttrs {
 
@@ -976,7 +975,6 @@ trait Attrs
     * external style sheet: the rel attribute is set to stylesheet, and the href
     * attribute is set to the URL of an external style sheet to format the page.
     *
-    *
     * MDN
     */
   lazy val rel = attr("rel")
@@ -991,7 +989,6 @@ trait Attrs
   lazy val src = attr("src")
 
   /**
-    *
     */
   lazy val xmlns = attr("xmlns")
 
@@ -1098,7 +1095,6 @@ trait Attrs
   lazy val media = attr("media")
 
   /**
-
     * This attribute contains a non-negative integer value that indicates for
     * how many columns the cell extends. Its default value is 1; if its value
     * is set to 0, it extends until the end of the <colgroup>, even if implicitly

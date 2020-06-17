@@ -51,7 +51,6 @@ object FactoryBindingLifecycleTest {
 }
 
 /**
-  *
   */
 class FactoryBindingLifecycleTest extends AirSpec {
   import FactoryBindingLifecycleTest._

@@ -18,7 +18,6 @@ import java.net.{ServerSocket, URL}
 import java.nio.charset.StandardCharsets
 
 /**
-  *
   */
 object IOUtil {
   def withResource[Resource <: AutoCloseable, U](resource: Resource)(body: Resource => U): U = {

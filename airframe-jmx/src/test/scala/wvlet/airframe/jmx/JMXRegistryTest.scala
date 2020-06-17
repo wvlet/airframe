@@ -41,7 +41,6 @@ trait MyJMXApp extends LogSupport {}
 object MyJMXAppObj
 
 /**
-  *
   */
 class JMXRegistryTest extends AirSpec {
   val agent = new JMXAgent(new JMXConfig())

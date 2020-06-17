@@ -19,7 +19,6 @@ import scala.concurrent.duration.TimeUnit
 import scala.concurrent.duration._
 
 /**
-  *
   */
 class ElapsedTimeTest extends AirSpec {
   scalaJsSupport

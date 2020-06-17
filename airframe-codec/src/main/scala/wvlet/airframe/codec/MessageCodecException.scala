@@ -18,7 +18,6 @@ case object INVALID_DATA      extends CodecErrorCode
 case object MISSING_PARAMETER extends CodecErrorCode
 
 /**
-  *
   */
 class MessageCodecException[A](val errorCode: CodecErrorCode, val codec: MessageCodec[A], val message: String)
     extends Exception(message) {

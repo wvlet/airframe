@@ -27,7 +27,6 @@ class HttpParamExample extends LogSupport {
 }
 
 /**
-  *
   */
 class HttpParamTest extends AirSpec {
   protected override def design: Design = {

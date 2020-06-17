@@ -16,7 +16,6 @@ package examples
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class CommonSpec extends AirSpec {
   scalaJsSupport

@@ -15,7 +15,6 @@ package wvlet.airframe.canvas
 import sun.misc.Unsafe
 
 /**
-  *
   */
 private[canvas] object UnsafeUtil {
   // Fetch theUnsafe object for Oracle and OpenJDK

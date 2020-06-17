@@ -16,7 +16,6 @@ package wvlet.airframe.canvas
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class OffHeapMemoryAllocatorTest extends AirSpec {
   def `allocate and release memory`: Unit = {

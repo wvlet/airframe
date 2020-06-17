@@ -22,7 +22,6 @@ import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class RouterTest extends AirSpec {
   def `reject invalid path`: Unit = {

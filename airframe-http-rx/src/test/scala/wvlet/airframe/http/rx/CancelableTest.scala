@@ -16,7 +16,6 @@ package wvlet.airframe.http.rx
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class CancelableTest extends AirSpec {
 

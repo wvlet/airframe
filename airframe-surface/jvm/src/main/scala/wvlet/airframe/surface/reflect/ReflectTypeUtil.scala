@@ -22,7 +22,6 @@ import scala.collection.mutable
 import scala.language.existentials
 
 /**
-  *
   */
 object ReflectTypeUtil extends LogSupport {
   @inline def cls[A](obj: A): Class[_] = {
@@ -177,7 +176,6 @@ object ReflectTypeUtil extends LogSupport {
   }
 
   /**
-    *
     * @param gt
     * @return
     */

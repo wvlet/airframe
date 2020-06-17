@@ -16,7 +16,6 @@ package wvlet.airframe.metrics
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class DataSizeTest extends AirSpec {
   scalaJsSupport
