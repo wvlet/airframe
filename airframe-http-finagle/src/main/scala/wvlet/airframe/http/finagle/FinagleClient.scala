@@ -199,8 +199,14 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
             codec.unpack(msgpack)
           } catch {
             case NonFatal(e) =>
-              warn(s"Failed to parse the response body (${r}): ${r.contentString}")
-              throw e
+              val msg = s"Failed to parse the response body ${r}: ${r.contentString}"
+              warn(msg)
+              throw new HttpClientException(
+                r,
+                HttpStatus.ofCode(r.statusCode),
+                msg,
+                e
+              )
           }
         }
     }

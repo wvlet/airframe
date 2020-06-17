@@ -234,10 +234,11 @@ class FinagleClientTest extends AirSpec {
 
       {
         // Parse invalid json response
-        val e = intercept[Exception] {
+        val e = intercept[HttpClientException] {
           client.get[User]("/user/1/invalid")
         }
-        warn(e)
+        e.status shouldBe HttpStatus.Ok_200
+        e.getCause.getClass shouldBe classOf[IllegalArgumentException]
       }
     }
   }
