@@ -296,7 +296,7 @@ lazy val airframe =
       // include the macro sources in the main source jar
       mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
     )
-    .dependsOn(surface, airframeMacros % "provided", airspecRef % "test")
+    .dependsOn(surface, airframeMacros % Optional, airspecRef % Test)
 
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS  = airframe.js
@@ -320,17 +320,17 @@ lazy val airframeMacros =
 lazy val airframeMacrosJVM = airframeMacros.jvm
 lazy val airframeMacrosJS  = airframeMacros.js
 
-// To use airframe in other airframe modules, we need to reference airframeMacros project using the internal scope
+// To use airframe in other airframe modules, we need to reference airframeMacros project
 val internalScope             = "compile-internal,test-internal"
-lazy val airframeMacrosJVMRef = airframeMacrosJVM % "provided"
-lazy val airframeMacrosRef    = airframeMacros    % "provided"
+lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
+lazy val airframeMacrosRef    = airframeMacros    % Optional
 
 val surfaceDependencies = { scalaVersion: String =>
   Seq(
     // For ading PreDestroy, PostConstruct annotations to Java9
     "javax.annotation" % "javax.annotation-api" % "1.3.2",
     "org.scala-lang"   % "scala-reflect"        % scalaVersion,
-    "org.scala-lang"   % "scala-compiler"       % scalaVersion % "provided"
+    "org.scala-lang"   % "scala-compiler"       % scalaVersion % Provided
   )
 }
 
@@ -344,7 +344,7 @@ lazy val surface =
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(log, airspecRef % "test")
+    .dependsOn(log, airspecRef % Test)
 
 lazy val surfaceJVM = surface.jvm
 lazy val surfaceJS  = surface.js
@@ -357,7 +357,7 @@ lazy val canvas =
       name := "airframe-canvas",
       description := "Airframe off-heap memory library"
     )
-    .dependsOn(logJVM, controlJVM % "test", airspecRefJVM % "test")
+    .dependsOn(logJVM, controlJVM % Test, airspecRefJVM % Test)
 
 lazy val config =
   project
@@ -370,7 +370,7 @@ lazy val config =
         "org.yaml" % "snakeyaml" % "1.26"
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, codecJVM, airspecRefJVM % "test")
+    .dependsOn(airframeJVM, codecJVM, airspecRefJVM % Test)
 
 lazy val control =
   crossProject(JVMPlatform, JSPlatform)
@@ -386,7 +386,7 @@ lazy val control =
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
-    .dependsOn(log, airspecRef % "test")
+    .dependsOn(log, airspecRef % Test)
 
 lazy val controlJVM = control.jvm
 lazy val controlJS  = control.js
@@ -401,7 +401,7 @@ lazy val jmx =
       // Do not run tests concurrently to avoid JMX registration failures
       runTestSequentially
     )
-    .dependsOn(surfaceJVM, airspecRefJVM % "test")
+    .dependsOn(surfaceJVM, airspecRefJVM % Test)
 
 lazy val launcher =
   project
@@ -414,11 +414,11 @@ lazy val launcher =
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
-    .dependsOn(surfaceJVM, controlJVM, codecJVM, airspecRefJVM % "test")
+    .dependsOn(surfaceJVM, controlJVM, codecJVM, airspecRefJVM % Test)
 
 val logDependencies = { scalaVersion: String =>
   Seq(
-    "org.scala-lang" % "scala-reflect" % scalaVersion % "provided"
+    "org.scala-lang" % "scala-reflect" % scalaVersion % Provided
   )
 }
 val logJVMDependencies = Seq(
@@ -445,7 +445,7 @@ lazy val log: sbtcrossproject.CrossProject =
         "org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION
       )
     )
-    .dependsOn(airspecRef % "test")
+    .dependsOn(airspecRef % Test)
 
 lazy val logJVM = log.jvm
 lazy val logJS  = log.js
@@ -460,7 +460,7 @@ lazy val metrics =
       libraryDependencies ++= Seq()
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(log, surface, airspecRef % "test")
+    .dependsOn(log, surface, airspecRef % Test)
 
 lazy val metricsJVM = metrics.jvm
 lazy val metricsJS  = metrics.js
@@ -494,7 +494,7 @@ lazy val msgpack =
       jsBuildSettings,
       libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % JS_JAVA_TIME_VERSION
     )
-    .dependsOn(log, json, airspecRef % "test")
+    .dependsOn(log, json, airspecRef % Test)
 
 lazy val msgpackJVM = msgpack.jvm
 lazy val msgpackJS  = msgpack.js
@@ -511,13 +511,13 @@ lazy val codec =
     .jvmSettings(
       libraryDependencies ++= Seq(
         // For JDBC testing
-        "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
+        "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % Test
       )
     )
     .jsSettings(
       jsBuildSettings
     )
-    .dependsOn(log, surface, msgpack, metrics, json, airspecRef % "test")
+    .dependsOn(log, surface, msgpack, metrics, json, airspecRef % Test)
 
 lazy val codecJVM = codec.jvm
 lazy val codecJS  = codec.js
@@ -537,7 +537,7 @@ lazy val jdbc =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, controlJVM, config, airspecRefJVM % "test")
+    .dependsOn(airframeJVM, airframeMacrosJVMRef, controlJVM, config, airspecRefJVM % Test)
 
 lazy val http =
   crossProject(JVMPlatform, JSPlatform)
@@ -555,7 +555,7 @@ lazy val http =
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
-    .dependsOn(airframe, airframeMacrosRef, control, surface, json, codec, airspecRef % "test")
+    .dependsOn(airframe, airframeMacrosRef, control, surface, json, codec, airspecRef % Test)
 
 lazy val httpJVM = http.jvm
   .enablePlugins(PackPlugin)
@@ -584,7 +584,7 @@ lazy val finagle =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(httpJVM, airframeMacrosJVMRef, airspecRefJVM % "test")
+    .dependsOn(httpJVM, airframeMacrosJVMRef, airspecRefJVM % Test)
 
 lazy val okhttp =
   project
@@ -597,7 +597,7 @@ lazy val okhttp =
         "com.squareup.okhttp3" % "okhttp" % "3.12.12"
       )
     )
-    .dependsOn(httpJVM, airframeMacrosJVMRef, finagle % "test", airspecRefJVM % "test")
+    .dependsOn(httpJVM, airframeMacrosJVMRef, finagle % Test, airspecRefJVM % Test)
 
 lazy val httpRecorder =
   project
@@ -615,7 +615,7 @@ lazy val httpRecorder =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, metricsJVM, controlJVM, finagle, jdbc, airframeMacrosJVMRef, airspecRefJVM % "test")
+    .dependsOn(codecJVM, metricsJVM, controlJVM, finagle, jdbc, airframeMacrosJVMRef, airspecRefJVM % Test)
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)
@@ -627,7 +627,7 @@ lazy val json =
       description := "JSON parser"
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(log, airspecRef % "test")
+    .dependsOn(log, airspecRef % Test)
 
 lazy val jsonJVM = json.jvm
 lazy val jsonJS  = json.js
@@ -666,7 +666,7 @@ lazy val benchmark =
       ),
       publishPackArchiveTgz
     )
-    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, airspecRefJVM % "test")
+    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, airspecRefJVM % Test)
 
 lazy val fluentd =
   project
@@ -678,12 +678,12 @@ lazy val fluentd =
       libraryDependencies ++= Seq(
         "org.komamitsu" % "fluency-core"         % FLUENCY_VERSION,
         "org.komamitsu" % "fluency-fluentd"      % FLUENCY_VERSION,
-        "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION % "provided",
+        "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION % Provided,
         // Redirecting slf4j log from Fluency to aiframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, airframeJVM % "compile", airframeMacrosJVMRef, airspecRefJVM % "test")
+    .dependsOn(codecJVM, airframeJVM % Compile, airframeMacrosJVMRef, airspecRefJVM % Test)
 
 lazy val sql =
   project
@@ -702,12 +702,12 @@ lazy val sql =
         // For parsing DataType strings
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
         // Include Spark just as a reference implementation
-        "org.apache.spark" %% "spark-sql" % "2.4.6" % "test",
+        "org.apache.spark" %% "spark-sql" % "2.4.6" % Test,
         // Include Presto as a reference implementation
-        "io.prestosql" % "presto-main" % "336" % "test"
+        "io.prestosql" % "presto-main" % "336" % Test
       )
     )
-    .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecRefJVM % "test")
+    .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecRefJVM % Test)
 
 lazy val rx =
   crossProject(JVMPlatform, JSPlatform)
@@ -717,7 +717,7 @@ lazy val rx =
     .settings(
       name := "airframe-http-rx",
       description := "Reactive HTML elements for Scala and Scala.js",
-      libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
+      libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided
     )
     .jsSettings(
       jsBuildSettings,
@@ -726,7 +726,7 @@ lazy val rx =
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
-    .dependsOn(log, surface, airspecRef % "test")
+    .dependsOn(log, surface, airspecRef % Test)
 
 lazy val rxJVM = rx.jvm
 lazy val rxJS  = rx.js
@@ -746,7 +746,7 @@ lazy val widget =
       jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
 //      npmDependencies in Test += "node" -> "12.14.1"
     )
-    .dependsOn(log, rx, airspecRef % "test")
+    .dependsOn(log, rx, airspecRef % Test)
 
 lazy val widgetJS = widget.js
 
@@ -771,7 +771,7 @@ lazy val examples =
       jmx,
       jdbc,
       finagle,
-      airspecRefJVM % "test"
+      airspecRefJVM % Test
     )
 
 /**
@@ -934,7 +934,7 @@ lazy val airspec =
       name := "airspec",
       description := "AirSpec: A Functional Testing Framework for Scala",
       libraryDependencies ++= Seq(
-        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "provided"
+        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % Optional
       )
     )
     .jvmSettings(
@@ -955,7 +955,7 @@ lazy val airspec =
         "org.portable-scala" %%% "portable-scala-reflect" % "1.0.0"
       )
     )
-    .dependsOn(airspecDeps % "provided")
+    .dependsOn(airspecDeps % Optional)
 
 lazy val airspecJVM = airspec.jvm
 lazy val airspecJS  = airspec.js
@@ -978,8 +978,8 @@ lazy val airspecLight =
       mappings in (Compile, packageBin) := mappings.in(Compile, packageBin).value.filter(isAirSpecClass),
       mappings in (Compile, packageSrc) := mappings.in(Compile, packageSrc).value.filter(isAirSpecClass),
       libraryDependencies ++= Seq(
-        "org.scala-sbt"    % "test-interface" % "1.0"              % "provided",
-        "org.scalacheck" %%% "scalacheck"     % SCALACHECK_VERSION % "provided"
+        "org.scala-sbt"    % "test-interface" % "1.0"              % Provided,
+        "org.scalacheck" %%% "scalacheck"     % SCALACHECK_VERSION % Provided
       )
     )
     .dependsOn(airframeJVM, airframeMacrosJVMRef, metricsJVM)
@@ -1036,4 +1036,4 @@ lazy val sbtAirframe =
       },
       scriptedBufferLog := false
     )
-    .dependsOn(controlJVM, codecJVM, logJVM, httpJVM % "test", airspecRefJVM % "test")
+    .dependsOn(controlJVM, codecJVM, logJVM, httpJVM % Test, airspecRefJVM % Test)
