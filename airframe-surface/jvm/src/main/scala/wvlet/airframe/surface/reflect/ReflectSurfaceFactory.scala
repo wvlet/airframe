@@ -616,7 +616,7 @@ object ReflectSurfaceFactory extends LogSupport {
     }
 
     private class ReflectObjectFactory extends ObjectFactory {
-      private lazy val isStatic = mirror.classSymbol(rawType).isStatic
+      private val isStatic = mirror.classSymbol(rawType).isStatic
       private def outerInstance: Option[AnyRef] = {
         if (isStatic) {
           None

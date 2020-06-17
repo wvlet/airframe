@@ -191,11 +191,17 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
       response.asInstanceOf[Future[A]]
     } else {
       // Need a conversion
-      val codec = MessageCodec.of[A]
+      val codec = codecFactory.of[A]
       response
         .map { r =>
           val msgpack = responseCodec.toMsgPack(r)
-          codec.unpack(msgpack)
+          try {
+            codec.unpack(msgpack)
+          } catch {
+            case NonFatal(e) =>
+              warn(s"Failed to parse the response body (${r}): ${r.contentString}")
+              throw e
+          }
         }
     }
   }

@@ -28,7 +28,9 @@ object Http_03_Client extends App with LogSupport {
   case class User(id: String, name: String)
   trait MyApp extends LogSupport {
     @Endpoint(method = HttpMethod.GET, path = "/user/:id")
-    def getUser(id: String): User = User(id, "xxx")
+    def getUser(id: String): User = {
+      User(id, "xxx")
+    }
   }
 
   val router = Router.add[MyApp]
@@ -61,6 +63,7 @@ object Http_03_Client extends App with LogSupport {
 
     // Read the response as is
     val request = client.send(Request("/user/2"))
-    debug(request.contentString)
+    val content = request.contentString
+    debug(content)
   }
 }
