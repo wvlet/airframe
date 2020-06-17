@@ -34,7 +34,10 @@ object Http_03_Client extends App with LogSupport {
 
   val router = Router.add[MyApp]
   val design =
-    newFinagleServerDesign(name = "myapp", router = router)
+    Finagle.server
+      .withName("myapp")
+      .withRouter(router)
+      .design
 
   design.build[FinagleServer] { server =>
     // Create a new http client to access the server.

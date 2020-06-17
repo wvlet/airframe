@@ -15,7 +15,7 @@ package wvlet.airframe.examples.http
 
 import com.twitter.finagle.http.Response
 import wvlet.airframe.control.Control.withResource
-import wvlet.airframe.http.finagle.{FinagleClient, FinagleServer}
+import wvlet.airframe.http.finagle.{Finagle, FinagleClient, FinagleServer}
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router, finagle}
 import wvlet.log.LogSupport
 
@@ -63,7 +63,11 @@ object Http_02_ObjectMapping extends App with LogSupport {
   }
 
   val router = Router.add[MyApp]
-  val design = finagle.newFinagleServerDesign(name = "myapp", router = router)
+  val design =
+    Finagle.server
+      .withName("myapp")
+      .withRouter(router)
+      .design
 
   design.build[FinagleServer] { server =>
     withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
