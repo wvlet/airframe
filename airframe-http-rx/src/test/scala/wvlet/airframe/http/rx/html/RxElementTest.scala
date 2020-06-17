@@ -18,7 +18,6 @@ import wvlet.airframe.http.rx.html.all._
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class RxElementTest extends AirSpec {
   test("create new RxElement") {

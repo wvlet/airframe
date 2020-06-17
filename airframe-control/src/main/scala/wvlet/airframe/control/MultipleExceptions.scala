@@ -14,7 +14,6 @@
 package wvlet.airframe.control
 
 /**
-  *
   */
 case class MultipleExceptions(causes: Seq[Throwable]) extends Exception {
   causes.foreach { ex => this.addSuppressed(ex) }

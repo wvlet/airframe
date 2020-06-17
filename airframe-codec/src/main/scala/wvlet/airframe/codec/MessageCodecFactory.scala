@@ -6,7 +6,6 @@ import wvlet.log.LogSupport
 import scala.reflect.runtime.{universe => ru}
 
 /**
-  *
   */
 case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageCodecFinder, mapOutput: Boolean = false)
     extends LogSupport {

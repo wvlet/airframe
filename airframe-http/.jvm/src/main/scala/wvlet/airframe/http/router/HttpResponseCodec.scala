@@ -18,7 +18,6 @@ import wvlet.airframe.http.{HttpResponse, HttpResponseAdapter}
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 
 /**
-  *
   */
 class HttpResponseCodec[Resp: HttpResponseAdapter] extends MessageCodec[HttpResponse[_]] {
   override def pack(p: Packer, v: HttpResponse[_]): Unit = {

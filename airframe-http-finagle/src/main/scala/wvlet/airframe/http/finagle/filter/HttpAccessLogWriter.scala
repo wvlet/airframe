@@ -24,7 +24,6 @@ case class HttpAccessLogConfig(
 )
 
 /**
-  *
   */
 trait HttpAccessLogWriter {
   def write(log: Map[String, Any]): Unit

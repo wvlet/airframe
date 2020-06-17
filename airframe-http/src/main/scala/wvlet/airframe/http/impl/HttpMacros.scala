@@ -16,7 +16,6 @@ package wvlet.airframe.http.impl
 import scala.reflect.macros.{blackbox => sm}
 
 /**
-  *
   */
 object HttpMacros {
   def newServerException[A: c.WeakTypeTag](c: sm.Context)(request: c.Tree, status: c.Tree, content: c.Tree): c.Tree = {

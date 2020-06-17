@@ -19,7 +19,6 @@ import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 
 /**
-  *
   */
 package object surface {
   val surfaceCache       = new ConcurrentHashMap[String, Surface]().asScala

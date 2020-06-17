@@ -23,7 +23,6 @@ case class QuerySignatureConfig(
 )
 
 /**
-  *
   */
 object QuerySignature extends LogSupport {
   def of(sql: String, config: QuerySignatureConfig = QuerySignatureConfig()): String = {

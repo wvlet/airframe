@@ -18,7 +18,6 @@ import wvlet.airframe.surface.{Surface, Zero}
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class MetricsCodecTest extends AirSpec {
   scalaJsSupport

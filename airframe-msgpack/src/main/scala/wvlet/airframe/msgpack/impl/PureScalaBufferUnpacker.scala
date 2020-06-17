@@ -19,7 +19,6 @@ import java.time.Instant
 import wvlet.airframe.msgpack.spi._
 
 /**
-  *
   */
 class PureScalaBufferUnpacker(buf: ReadBuffer) extends Unpacker {
   private var cursor = ReadCursor(buf, 0)

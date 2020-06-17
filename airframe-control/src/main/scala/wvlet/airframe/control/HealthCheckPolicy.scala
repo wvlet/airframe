@@ -19,7 +19,6 @@ import wvlet.airframe.control.util.ExponentialMovingAverage
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 trait HealthCheckPolicy {
   def isAlive: Boolean = !isMarkedDead

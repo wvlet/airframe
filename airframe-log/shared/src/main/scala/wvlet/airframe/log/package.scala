@@ -16,7 +16,6 @@ import wvlet.log.LogFormatter.PlainSourceCodeLogFormatter
 import wvlet.log.Logger
 
 /**
-  *
   */
 package object log {
 

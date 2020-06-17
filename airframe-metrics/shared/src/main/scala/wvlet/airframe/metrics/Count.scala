@@ -70,7 +70,6 @@ case class Count(value: Long, unit: CountUnit) extends Comparable[Count] {
 }
 
 /**
-  *
   */
 object Count {
   Zero.register(Surface.of[CountUnit], ONE)

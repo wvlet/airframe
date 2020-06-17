@@ -22,7 +22,6 @@ import wvlet.log.LogSupport
 import scala.util.{Failure, Success, Try}
 
 /**
-  *
   */
 object JavaInstantTimeCodec extends MessageCodec[Instant] {
   override def pack(p: Packer, v: Instant): Unit = {

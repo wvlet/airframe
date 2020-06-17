@@ -16,7 +16,6 @@ package wvlet.airframe.msgpack.io
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class ByteArrayBufferTest extends AirSpec {
   scalaJsSupport

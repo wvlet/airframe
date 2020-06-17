@@ -33,7 +33,6 @@ import wvlet.airframe.surface.reflect.Path
   * val n3 = n2.set("B.c", "car") => Node(a ->apple, B->Node(b -> Leaf(book), c->Leaf(car)))
   *
   * </pre>
-  *
   */
 sealed trait StringTree {
   def +(e: (Path, StringTree)): StringTree = setNode(e._1, e._2)

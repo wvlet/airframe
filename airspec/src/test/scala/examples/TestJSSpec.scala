@@ -18,7 +18,6 @@ import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 class TestJSSpec extends AirSpec with LogSupport {
   scalaJsSupport

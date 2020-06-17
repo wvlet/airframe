@@ -14,7 +14,6 @@
 package wvlet
 
 /**
-  *
   */
 package object airspec {
   // For Scala, Scala.js compatibility

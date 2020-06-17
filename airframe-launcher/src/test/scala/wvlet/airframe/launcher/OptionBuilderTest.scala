@@ -25,7 +25,6 @@ object OptionBuilderTest {
 }
 
 /**
-  *
   */
 class OptionBuilderTest extends AirSpec {
   import OptionBuilderTest._

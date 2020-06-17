@@ -340,7 +340,6 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
 }
 
 /**
-  *
   */
 object FinagleClient extends LogSupport {
   def defaultInitClient: Http.Client => Http.Client = { x: Http.Client => x.withSessionQualifier.noFailureAccrual }

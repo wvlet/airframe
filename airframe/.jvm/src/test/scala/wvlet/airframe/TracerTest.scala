@@ -45,7 +45,6 @@ object TracerTest extends LogSupport {
 }
 
 /**
-  *
   */
 class TracerTest extends AirSpec {
   import TracerTest._

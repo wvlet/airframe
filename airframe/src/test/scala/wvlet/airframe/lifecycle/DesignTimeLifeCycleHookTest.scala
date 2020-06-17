@@ -19,7 +19,6 @@ import wvlet.airframe.newSilentDesign
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class DesignTimeLifeCycleHookTest extends AirSpec {
   def `support design time bindings`: Unit = {

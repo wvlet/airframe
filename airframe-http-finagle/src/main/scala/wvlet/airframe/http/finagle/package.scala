@@ -24,7 +24,6 @@ import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.log.io.IOUtil
 
 /**
-  *
   */
 package object finagle {
   type FinagleContext    = HttpContext[Request, Response, Future]

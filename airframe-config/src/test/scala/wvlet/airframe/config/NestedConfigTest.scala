@@ -16,7 +16,6 @@ package wvlet.airframe.config
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class NestedConfigTest extends AirSpec {
   import NestedConfigTest._

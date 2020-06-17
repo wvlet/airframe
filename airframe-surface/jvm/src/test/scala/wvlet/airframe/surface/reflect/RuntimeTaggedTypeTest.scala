@@ -28,7 +28,6 @@ object RuntimeTaggedTypeTest {
 }
 
 /**
-  *
   */
 import RuntimeTaggedTypeTest._
 class RuntimeTaggedTypeTest extends SurfaceSpec {

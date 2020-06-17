@@ -247,7 +247,6 @@ object ServiceMixinExample {
 import wvlet.airframe.ServiceMixinExample._
 
 /**
-  *
   */
 class AirframeTest extends AirSpec {
   scalaJsSupport

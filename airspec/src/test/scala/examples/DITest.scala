@@ -17,7 +17,6 @@ import wvlet.airframe.{Design, newDesign}
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class DITest extends AirSpec {
   scalaJsSupport

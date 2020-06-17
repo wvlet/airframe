@@ -31,8 +31,6 @@ import scala.language.existentials
 //--------------------------------------
 
 /**
-  *
-  *
   */
 object ObjectBuilder extends LogSupport {
   def apply(s: Surface): ObjectBuilder = {

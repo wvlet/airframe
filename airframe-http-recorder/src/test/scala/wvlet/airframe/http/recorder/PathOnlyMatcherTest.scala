@@ -19,7 +19,6 @@ import wvlet.airframe.http.finagle.{FinagleClient, FinagleSyncClient}
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class PathOnlyMatcherTest extends AirSpec {
   protected override def design: Design = {

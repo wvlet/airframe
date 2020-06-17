@@ -16,7 +16,6 @@ package wvlet.airframe.benchmark
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class BenchmarkMainTest extends AirSpec {
   if (inCI) {

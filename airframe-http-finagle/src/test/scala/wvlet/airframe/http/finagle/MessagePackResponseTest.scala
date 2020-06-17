@@ -32,7 +32,6 @@ trait TestMessagePackApi {
 }
 
 /**
-  *
   */
 class MessagePackResponseTest extends AirSpec {
 

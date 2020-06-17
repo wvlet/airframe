@@ -24,7 +24,6 @@ import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
 
 /**
-  *
   */
 object Compat {
   def messageCodecFinder: MessageCodecFinder = {

@@ -16,7 +16,6 @@ package wvlet.airframe.json
 import java.math.BigInteger
 
 /**
-  *
   */
 abstract class JSONParseException(m: String) extends Exception(m)
 

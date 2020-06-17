@@ -104,7 +104,6 @@ object ChildSessionTest {
 }
 
 /**
-  *
   */
 class ChildSessionTest extends AirSpec {
   scalaJsSupport

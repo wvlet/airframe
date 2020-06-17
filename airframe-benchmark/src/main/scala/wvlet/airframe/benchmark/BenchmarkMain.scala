@@ -22,7 +22,6 @@ import wvlet.airframe.metrics.ElapsedTime
 import wvlet.log.{LogSupport, Logger}
 
 /**
-  *
   */
 object BenchmarkMain {
   wvlet.airframe.log.init

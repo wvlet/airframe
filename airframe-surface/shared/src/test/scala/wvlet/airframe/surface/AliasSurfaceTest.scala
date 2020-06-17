@@ -15,7 +15,6 @@ package wvlet.airframe.surface
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 object AliasSurfaceTest extends AirSpec {
 

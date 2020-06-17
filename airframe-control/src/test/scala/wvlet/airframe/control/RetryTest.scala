@@ -19,7 +19,6 @@ import wvlet.airspec.AirSpec
 import scala.concurrent.TimeoutException
 
 /**
-  *
   */
 class RetryTest extends AirSpec {
   scalaJsSupport
@@ -121,9 +120,9 @@ class RetryTest extends AirSpec {
     var count   = 0
     var checked = false
     r.beforeRetry { ctx: RetryContext =>
-        ctx.context shouldBe Some("hello world")
-        checked = true
-      }
+      ctx.context shouldBe Some("hello world")
+      checked = true
+    }
       .runWithContext("hello world") {
         if (count == 0) {
           count += 1

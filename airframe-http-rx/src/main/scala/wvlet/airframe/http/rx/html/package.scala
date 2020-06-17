@@ -19,7 +19,6 @@ import scala.annotation.implicitNotFound
 import scala.language.{higherKinds, implicitConversions}
 
 /**
-  *
   */
 package object html {
 

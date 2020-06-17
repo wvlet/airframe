@@ -17,7 +17,6 @@ import wvlet.airframe.codec.DataType.Column
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class DataTypeTest extends AirSpec {
   scalaJsSupport

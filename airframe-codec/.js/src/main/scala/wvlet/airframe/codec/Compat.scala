@@ -20,7 +20,6 @@ import wvlet.airframe.surface.Surface
 import scala.util.Try
 
 /**
-  *
   */
 object Compat {
   def messageCodecFinder: MessageCodecFinder                = MessageCodecFinder.defaultMessageCodecFinder

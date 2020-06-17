@@ -24,7 +24,6 @@ import wvlet.airframe.msgpack.json.{NestedMessagePackBuilder, StreamMessagePackB
 import wvlet.airframe.msgpack.spi.MessagePack
 
 /**
-  *
   */
 abstract class JSONToMsgPackBenchmarkBase {
   protected val json: String

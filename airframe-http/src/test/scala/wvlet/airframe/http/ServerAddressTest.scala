@@ -16,7 +16,6 @@ package wvlet.airframe.http
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class ServerAddressTest extends AirSpec {
   val examples = Seq(

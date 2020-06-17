@@ -16,8 +16,7 @@ import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.{HttpClientBackend, HttpClientConfig, HttpSyncClient, ServerAddress}
 
 /**
-  *
- */
+  */
 object URLConnectionClientBackend extends HttpClientBackend {
   def newSyncClient(serverAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response] = {
     new URLConnectionClient(

@@ -19,7 +19,6 @@ import wvlet.airspec.AirSpec
 import scala.concurrent.Future
 
 /**
-  *
   */
 class GenericServiceTest extends AirSpec {
 

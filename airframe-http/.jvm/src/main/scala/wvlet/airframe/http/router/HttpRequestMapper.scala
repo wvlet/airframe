@@ -32,8 +32,6 @@ import scala.util.Try
   *
   * http request (path parameters, query parameters, request body (json or msgpack data))
   * -> rpc function call arguments (p1:t1, p2:t2, ...)
-  *
-  *
   */
 object HttpRequestMapper extends LogSupport {
 

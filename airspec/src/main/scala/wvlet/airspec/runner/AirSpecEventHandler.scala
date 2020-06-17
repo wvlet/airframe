@@ -16,7 +16,6 @@ import sbt.testing.{Event, EventHandler}
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 class AirSpecEventHandler extends EventHandler with LogSupport {
   override def handle(event: Event): Unit = {

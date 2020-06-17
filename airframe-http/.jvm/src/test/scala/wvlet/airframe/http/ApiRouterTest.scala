@@ -16,7 +16,6 @@ import wvlet.airspec.AirSpec
 import wvlet.airframe.http.router.ControllerRoute
 
 /**
-  *
   */
 object ApiRouterTest extends AirSpec {
 

@@ -19,7 +19,6 @@ import DesignSerializationTest._
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class ProviderSerializationTest extends AirSpec {
   def `serialize design with provider`: Unit = {

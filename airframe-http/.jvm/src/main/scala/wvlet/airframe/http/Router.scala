@@ -35,7 +35,6 @@ import scala.language.higherKinds
   *   e2 -> Filter1 andThen process(e2)
   *   e3 -> Filter1 andThen Filter2 andThen process(e3)
   *   e4 -> process(e4)
-  *
   */
 case class Router(
     surface: Option[Surface] = None,

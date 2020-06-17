@@ -16,7 +16,6 @@ package wvlet.airframe
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 object ProviderVal {
   case class D1(id: Int)

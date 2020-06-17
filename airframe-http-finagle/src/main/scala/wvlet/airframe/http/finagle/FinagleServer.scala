@@ -171,7 +171,6 @@ case class FinagleServerConfig(
 }
 
 /**
-  *
   */
 class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleService)
     extends LogSupport

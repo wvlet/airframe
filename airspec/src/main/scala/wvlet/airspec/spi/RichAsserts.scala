@@ -21,7 +21,6 @@ import wvlet.airspec.spi.Asserts._
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 trait RichAsserts extends LogSupport { this: AirSpecSpi =>
 

@@ -18,7 +18,6 @@ import wvlet.airframe.json.{JSON, Json}
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class JSONCodecTest extends AirSpec {
   scalaJsSupport

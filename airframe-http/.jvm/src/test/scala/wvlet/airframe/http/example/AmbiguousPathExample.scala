@@ -15,7 +15,6 @@ package wvlet.airframe.http.example
 import wvlet.airframe.http.Endpoint
 
 /**
-  *
   */
 trait AmbiguousPathExample {
   @Endpoint(path = "/v1/:key")

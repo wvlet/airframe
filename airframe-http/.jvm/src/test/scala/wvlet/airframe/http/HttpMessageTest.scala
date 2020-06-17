@@ -15,7 +15,6 @@ package wvlet.airframe.http
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class HttpMessageTest extends AirSpec {
 

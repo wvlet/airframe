@@ -16,7 +16,6 @@ package wvlet.airframe.json
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class JSONScannerTest extends AirSpec {
   scalaJsSupport

@@ -17,8 +17,7 @@ import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 
 /**
-  *
- */
+  */
 case class HttpClientConfig(
     backend: HttpClientBackend = Compat.defaultHttpClientBackend,
     requestFilter: Request => Request = identity,

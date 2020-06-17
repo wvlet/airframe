@@ -22,7 +22,6 @@ case class Canvas2D(canvas: html.Canvas, context: dom.CanvasRenderingContext2D) 
 }
 
 /**
-  *
   */
 object Canvas {
 

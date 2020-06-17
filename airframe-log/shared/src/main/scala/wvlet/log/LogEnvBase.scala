@@ -3,7 +3,6 @@ package wvlet.log
 import java.io.PrintStream
 
 /**
-  *
   */
 private[log] trait LogEnvBase {
   def isScalaJS: Boolean
@@ -12,7 +11,6 @@ private[log] trait LogEnvBase {
   def defaultConsoleOutput: PrintStream
 
   /**
-    *
     * @param cl
     * @return
     */
@@ -36,7 +34,6 @@ private[log] trait LogEnvBase {
   def registerJMX: Unit
 
   /**
-    *
     */
   def unregisterJMX: Unit
 }

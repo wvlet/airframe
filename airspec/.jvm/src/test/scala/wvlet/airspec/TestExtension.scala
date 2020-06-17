@@ -38,7 +38,6 @@ trait MyServer extends LogSupport {
 }
 
 /**
-  *
   */
 trait CustomSpec extends AirSpec with LogSupport {
   protected val serverLaunchCounter = new AtomicInteger(0)

@@ -55,7 +55,6 @@ object Sample extends LogSupport {
 }
 
 /**
-  *
   */
 class LoggerTest extends Spec {
   scalaJsSupport

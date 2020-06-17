@@ -17,7 +17,6 @@ import wvlet.airframe._
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class AirSpec_04_Session extends AirSpec {
   override protected def design: Design = {

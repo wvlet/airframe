@@ -24,7 +24,6 @@ import ConfigProviderTest._
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class ConfigProviderTest extends AirSpec {
   def `provide config objects with Airframe`: Unit = {

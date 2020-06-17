@@ -18,7 +18,6 @@ import wvlet.airframe.surface.tag._
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class MapBindingTest extends AirSpec {
   scalaJsSupport

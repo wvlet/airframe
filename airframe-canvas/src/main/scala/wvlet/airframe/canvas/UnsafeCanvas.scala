@@ -17,7 +17,6 @@ import java.nio.ByteBuffer
 /**
   * Canvas implementation with Unsafe memory access.
   * This provides native C-code level access performance.
-  *
   */
 final class UnsafeCanvas(
     // Base object for resolving the relative address of the raw byte array.

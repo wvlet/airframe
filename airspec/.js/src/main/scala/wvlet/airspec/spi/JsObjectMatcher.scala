@@ -16,7 +16,6 @@ package wvlet.airspec.spi
 import scala.scalajs.js
 
 /**
-  *
   */
 private[airspec] object JsObjectMatcher {
 

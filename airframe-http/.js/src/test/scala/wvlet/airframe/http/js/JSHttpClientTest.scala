@@ -21,7 +21,6 @@ import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 object JSHttpClientTest extends AirSpec {
 

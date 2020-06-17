@@ -20,7 +20,6 @@ import wvlet.airframe.sql.model.Expression.QName
 import wvlet.airframe.sql.model.LogicalPlan.Relation
 
 /**
-  *
   */
 case class TableScan(name: QName, table: DbTable, columns: Seq[String]) extends Relation with LeafPlan {
   override def inputAttributes: Seq[Attribute] = Seq.empty

@@ -16,7 +16,6 @@ package wvlet.airframe.codec
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
 
 /**
-  *
   */
 object ScalaStandardCodec {
   case class OptionCodec[A](elementCodec: MessageCodec[A]) extends MessageCodec[Option[A]] {

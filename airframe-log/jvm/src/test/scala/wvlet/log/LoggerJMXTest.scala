@@ -17,7 +17,6 @@ import java.lang.management.ManagementFactory
 import javax.management.{Attribute, ObjectName}
 
 /**
-  *
   */
 class LoggerJMXTest extends Spec {
   override protected def beforeAll = {

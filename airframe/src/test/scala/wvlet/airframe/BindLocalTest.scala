@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class BindLocalTest extends AirSpec {
   scalaJsSupport

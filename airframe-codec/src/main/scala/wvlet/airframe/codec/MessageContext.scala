@@ -21,7 +21,6 @@ import wvlet.airframe.codec.DataType._
   *
   * For efficiency, it holds several primitive type values as
   * local variables to avoid the boxing overhead.
-  *
   */
 case class MessageContext(
     // For now, we have no specific configuration to add

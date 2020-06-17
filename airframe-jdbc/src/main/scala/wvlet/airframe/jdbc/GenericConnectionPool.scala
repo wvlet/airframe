@@ -17,7 +17,6 @@ import java.sql.Connection
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 
 /**
-  *
   */
 class GenericConnectionPool(val config: DbConfig) extends ConnectionPool {
 

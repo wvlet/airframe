@@ -52,7 +52,6 @@ object DesignTest {
 }
 
 /**
-  *
   */
 class DesignTest extends AirSpec {
   scalaJsSupport

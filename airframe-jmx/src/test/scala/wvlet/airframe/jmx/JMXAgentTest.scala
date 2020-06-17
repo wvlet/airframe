@@ -17,7 +17,6 @@ import javax.management.ObjectName
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class JMXAgentTest extends AirSpec {
   def `find jmx registry`: Unit = {

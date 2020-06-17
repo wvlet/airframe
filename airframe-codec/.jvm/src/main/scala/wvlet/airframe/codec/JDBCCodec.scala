@@ -21,7 +21,6 @@ import wvlet.log.LogSupport
 import scala.collection.compat._
 
 /**
-  *
   */
 object JDBCCodec extends LogSupport {
   def apply(rs: ResultSet): ResultSetCodec = new ResultSetCodec(rs)

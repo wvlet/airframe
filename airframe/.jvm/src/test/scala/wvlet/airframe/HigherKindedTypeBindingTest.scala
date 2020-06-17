@@ -41,7 +41,6 @@ object TaglessFinalExample {
 }
 
 /**
-  *
   */
 class HigherKindedTypeBindingTest extends AirSpec {
   import TaglessFinalExample._

@@ -19,7 +19,6 @@ import javax.annotation.PreDestroy
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class CloseableHookPrecedenceTest extends AirSpec {
   class A extends AutoCloseable {

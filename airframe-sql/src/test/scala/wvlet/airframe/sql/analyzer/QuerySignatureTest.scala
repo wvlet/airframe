@@ -20,7 +20,6 @@ import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class QuerySignatureTest extends AirSpec {
   def `Find input/output tables`: Unit = {

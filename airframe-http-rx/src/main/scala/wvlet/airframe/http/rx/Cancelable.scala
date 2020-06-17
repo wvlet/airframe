@@ -16,7 +16,6 @@ package wvlet.airframe.http.rx
 import scala.util.Try
 
 /**
-  *
   */
 trait Cancelable {
   def cancel: Unit = {}

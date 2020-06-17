@@ -16,7 +16,6 @@ package wvlet.log
 import java.util.concurrent.locks.ReentrantLock
 
 /**
-  *
   */
 trait Guard {
   private[this] val lock     = new ReentrantLock()

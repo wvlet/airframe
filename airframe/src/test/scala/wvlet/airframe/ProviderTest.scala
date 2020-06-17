@@ -111,7 +111,6 @@ trait PS5 {
 }
 
 /**
-  *
   */
 class ProviderTest extends AirSpec {
   scalaJsSupport

@@ -30,7 +30,6 @@ object ByteArrayBuffer {
 }
 
 /**
-  *
   */
 class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ByteArrayBufferBase(a, offset, size)
 

@@ -35,7 +35,6 @@ private[airspec] case class AirSpecEvent(
 }
 
 /**
-  *
   */
 private[airspec] class AirSpecLogger() extends AnsiColorPalette {
   // Always use ANSI color log for Travis because sbt's ansiCodeSupported() returns false even though it can show ANSI colors

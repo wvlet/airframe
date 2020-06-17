@@ -17,7 +17,6 @@ import wvlet.airspec.AirSpec
 import wvlet.airframe.http.rx.html.all._
 
 /**
-  *
   */
 class RxComponentTest extends AirSpec {
 

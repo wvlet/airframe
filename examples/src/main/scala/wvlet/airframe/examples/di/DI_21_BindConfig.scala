@@ -16,7 +16,6 @@ package wvlet.airframe.examples.di
 import wvlet.airframe.surface.Surface
 
 /**
-  *
   */
 object DI_21_BindConfig extends App {
   case class LogConfig(file: String)

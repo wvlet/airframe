@@ -5,7 +5,6 @@ import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.util.Locale
 
 /**
-  *
   */
 object LogTimestampFormatter {
   import java.time.temporal.ChronoField._

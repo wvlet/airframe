@@ -15,7 +15,6 @@ package wvlet.airframe.log
 import wvlet.log.{LogSupport, Spec}
 
 /**
-  *
   */
 class LogTest extends Spec {
   scalaJsSupport

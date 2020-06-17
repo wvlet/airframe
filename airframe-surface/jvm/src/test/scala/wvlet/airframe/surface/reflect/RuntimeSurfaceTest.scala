@@ -42,7 +42,6 @@ object RuntimeExamples {
 }
 
 /**
-  *
   */
 class RuntimeSurfaceTest extends SurfaceSpec {
   import RuntimeExamples._

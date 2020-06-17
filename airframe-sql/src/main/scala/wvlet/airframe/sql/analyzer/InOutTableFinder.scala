@@ -64,7 +64,6 @@ class InOutTableFinder {
 }
 
 /**
-  *
   */
 object InOutTableFinder {
 

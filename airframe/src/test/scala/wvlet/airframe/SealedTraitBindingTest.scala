@@ -16,7 +16,6 @@ import example.SealedTrait.Adt
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 object SealedTraitBindingTest extends AirSpec {
   trait Service {

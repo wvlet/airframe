@@ -25,7 +25,6 @@ import wvlet.airspec.AirSpec
 import scala.util.Random
 
 /**
-  *
   */
 class HttpRecorderTest extends AirSpec {
   private def orderInsensitveHash(m: Map[String, String]): Int = {

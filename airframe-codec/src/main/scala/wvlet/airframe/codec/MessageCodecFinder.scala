@@ -16,7 +16,6 @@ import wvlet.airframe.codec.ScalaStandardCodec.{OptionCodec, TupleCodec}
 import wvlet.airframe.surface.{Alias, EnumSurface, GenericSurface, Surface}
 
 /**
-  *
   */
 trait MessageCodecFinder {
   def findCodec(

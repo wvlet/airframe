@@ -24,7 +24,6 @@ import wvlet.airspec.spi.PropertyCheck
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class RoundTripTest extends AirSpec with PropertyCheck {
   scalaJsSupport

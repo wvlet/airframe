@@ -21,7 +21,6 @@ sealed trait DataType {
 }
 
 /**
-  *
   */
 object DataType {
   sealed abstract class PrimitiveType(val signature: String) extends DataType {

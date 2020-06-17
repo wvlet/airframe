@@ -18,7 +18,6 @@ import wvlet.airspec.AirSpec
 import wvlet.log.io.Resource
 
 /**
-  *
   */
 class ExamplesSpec extends AirSpec {
   private def runAll(packageName: String): Unit = {

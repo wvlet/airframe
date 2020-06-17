@@ -20,7 +20,6 @@ case class ModelWithRequiredParam(@required id: String, name: String) {
 }
 
 /**
-  *
   */
 class RequiredParamTest extends AirSpec {
   scalaJsSupport

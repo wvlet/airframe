@@ -35,7 +35,6 @@ object TaggedBindingTest {
 import TaggedBindingTest._
 
 /**
-  *
   */
 class TaggedBindingTest extends AirSpec {
   scalaJsSupport

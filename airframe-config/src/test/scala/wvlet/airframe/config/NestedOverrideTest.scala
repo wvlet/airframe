@@ -21,7 +21,6 @@ object NestedOverrideTest {
 }
 
 /**
-  *
   */
 class NestedOverrideTest extends AirSpec {
   private val configPaths = Seq("airframe-config/src/test/resources")

@@ -15,7 +15,6 @@ package example.rpc
 import wvlet.airframe.http.RPC
 
 /**
-  *
   */
 @RPC
 trait RPCTestService {

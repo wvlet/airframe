@@ -16,7 +16,6 @@ package wvlet.airframe.metrics
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class TimeVectorTest extends AirSpec {
   def `succinct time window unit`: Unit = {

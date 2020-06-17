@@ -22,7 +22,6 @@ import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
 
 /**
-  *
   */
 class FinagleDesignTest extends AirSpec {
   trait MyTestServer {

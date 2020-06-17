@@ -19,8 +19,7 @@ import java.nio.charset.StandardCharsets
 import wvlet.airframe.control.Control.withResource
 
 /**
-  *
- */
+  */
 object IO {
 
   def readAsString(f: File): String = {

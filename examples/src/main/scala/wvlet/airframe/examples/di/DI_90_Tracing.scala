@@ -18,7 +18,6 @@ import wvlet.airframe.tracing.ChromeTracer
   * You can generate a tracing data of your dependency injection.
   *
   * Trace Event Format: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview
-  *
   */
 object DI_90_Tracing extends App {
   import wvlet.airframe._

@@ -122,7 +122,6 @@ trait MyApi extends LogSupport {
 }
 
 /**
-  *
   */
 class FinagleRouterTest extends AirSpec {
   protected override def design: Design = {

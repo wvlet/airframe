@@ -24,7 +24,6 @@ case class CreateResourceRequest(id: String, data: String)
 case class DeleteResourceRequest(id: String)
 
 /**
-  *
   */
 trait ResourceApi {
   @Endpoint(method = HttpMethod.GET, path = "/v1/resources/:id")

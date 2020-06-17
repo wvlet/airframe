@@ -17,7 +17,6 @@ import javax.annotation.PostConstruct
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 object DI_11_ProductionMode extends App with LogSupport {
   import wvlet.airframe._

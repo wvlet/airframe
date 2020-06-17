@@ -19,7 +19,6 @@ import wvlet.airspec.AirSpec
 trait AppTag
 
 /**
-  *
   */
 class ConfigPackageTest extends AirSpec {
   private val configPaths = Seq("airframe-config/src/test/resources")

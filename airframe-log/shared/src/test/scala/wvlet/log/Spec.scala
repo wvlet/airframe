@@ -16,7 +16,6 @@ package wvlet.log
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 trait Spec extends AirSpec with LogSupport {
   override protected def after: Unit = {

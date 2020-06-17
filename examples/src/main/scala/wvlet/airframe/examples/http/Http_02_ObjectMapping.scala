@@ -20,7 +20,6 @@ import wvlet.airframe.http.{Endpoint, HttpMethod, Router, finagle}
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 object Http_02_ObjectMapping extends App with LogSupport {
   import wvlet.airframe._

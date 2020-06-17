@@ -97,7 +97,6 @@ trait FinagleClientTestApi extends LogSupport {
 }
 
 /**
-  *
   */
 class FinagleClientTest extends AirSpec {
   val r = Router.add[FinagleClientTestApi]

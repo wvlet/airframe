@@ -16,8 +16,7 @@ import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airspec.AirSpec
 
 /**
-  *
- */
+  */
 object EnumCodecTest extends AirSpec {
 
   sealed trait Color

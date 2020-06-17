@@ -19,7 +19,6 @@ import wvlet.airframe.sql.analyzer.QuerySignature
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class SQLParserTest extends AirSpec {
 
@@ -27,7 +26,6 @@ class SQLParserTest extends AirSpec {
     * sql 1 -> model 1 -> sql 2 -> model 2
     *
     * model 1 should be equivalent to model 2
-    *
     */
   protected def roundtrip(q: TestQuery): Unit = {
     debug(s"roundtrip test:\n${q.sql}")

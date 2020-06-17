@@ -20,7 +20,6 @@ import wvlet.log.LogSupport
 import scala.util.{Failure, Success, Try}
 
 /**
-  *
   */
 trait ControllerProvider {
   def findController(session: Session, controllerSurface: Surface): Option[Any]

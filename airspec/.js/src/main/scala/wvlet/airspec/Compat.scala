@@ -24,7 +24,6 @@ import wvlet.log.{ConsoleLogHandler, LogSupport, Logger}
 import scala.util.Try
 
 /**
-  *
   */
 private[airspec] object Compat extends CompatApi with LogSupport {
   override def isScalaJs = true

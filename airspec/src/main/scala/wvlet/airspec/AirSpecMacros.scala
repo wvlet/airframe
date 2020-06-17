@@ -18,7 +18,6 @@ import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
 
 /**
-  *
   */
 private[airspec] object AirSpecMacros {
   def sourceCode(c: sm.Context): c.Tree = {

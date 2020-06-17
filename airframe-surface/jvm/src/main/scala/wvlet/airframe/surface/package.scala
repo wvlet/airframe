@@ -18,7 +18,6 @@ import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 import scala.collection.mutable
 
 /**
-  *
   */
 package object surface {
   def getCached(fullName: String): Surface = ReflectSurfaceFactory.get(fullName)

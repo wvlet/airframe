@@ -19,7 +19,6 @@ import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
-  *
   */
 trait Rx[A] extends LogSupport {
   import Rx._

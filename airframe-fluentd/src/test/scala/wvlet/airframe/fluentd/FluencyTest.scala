@@ -73,7 +73,6 @@ case class FluencyMetric(id: Int, name: String) extends TaggedMetric {
 }
 
 /**
-  *
   */
 class FluencyTest extends AirSpec {
   private val fluentdPort = IOUtil.randomPort

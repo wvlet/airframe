@@ -36,7 +36,6 @@ object DesignSerializationTest {
 }
 
 /**
-  *
   */
 class DesignSerializationTest extends AirSpec {
   import DesignSerializationTest._

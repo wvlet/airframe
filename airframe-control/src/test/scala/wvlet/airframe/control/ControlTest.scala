@@ -25,7 +25,6 @@ object ControlTest {
 }
 
 /**
-  *
   */
 class ControlTest extends AirSpec {
   scalaJsSupport

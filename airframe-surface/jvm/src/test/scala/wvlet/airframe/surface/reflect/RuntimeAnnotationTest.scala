@@ -26,7 +26,6 @@ class RuntimeAnnot(@Resource(name = "param A") a: String, c: Int) {
 }
 
 /**
-  *
   */
 class RuntimeAnnotationTest extends SurfaceSpec {
   def `find class annotations`: Unit = {

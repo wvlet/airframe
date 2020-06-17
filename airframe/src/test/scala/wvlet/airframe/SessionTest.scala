@@ -31,7 +31,6 @@ trait DesignBindExample {
 }
 
 /**
-  *
   */
 class SessionTest extends AirSpec {
   scalaJsSupport

@@ -27,7 +27,6 @@ import scala.util.Try
 import scala.reflect.runtime.{universe => ru}
 
 /**
-  *
   */
 private[airframe] class AirframeSession(
     parent: Option[AirframeSession],

@@ -47,7 +47,6 @@ class HookOverrideTest extends JSR250Test {
 }
 
 /**
-  *
   */
 class JSR250LifeCycleExecutorTest extends AirSpec {
   def `support JSR250 event`: Unit = {

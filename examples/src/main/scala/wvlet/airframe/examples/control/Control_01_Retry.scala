@@ -16,7 +16,6 @@ package wvlet.airframe.examples.control
 import scala.concurrent.TimeoutException
 
 /**
-  *
   */
 object Control_01_Retry extends App {
   import wvlet.airframe.control.Retry

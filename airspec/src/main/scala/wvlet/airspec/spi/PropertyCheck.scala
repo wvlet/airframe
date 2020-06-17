@@ -19,7 +19,6 @@ import org.scalacheck.{Arbitrary, Gen, Prop, Shrink, Test}
 import wvlet.airspec.AirSpecSpi
 
 /**
-  *
   */
 trait PropertyCheck extends Asserts { this: AirSpecSpi =>
 

@@ -14,7 +14,6 @@
 package wvlet.airframe.control
 
 /**
-  *
   */
 object Compat {
   def sleep(millis: Long): Unit = {

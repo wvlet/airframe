@@ -16,7 +16,6 @@ package wvlet.airframe
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class DISupportTest extends AirSpec {
   scalaJsSupport

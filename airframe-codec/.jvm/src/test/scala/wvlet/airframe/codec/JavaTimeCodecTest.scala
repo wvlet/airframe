@@ -20,7 +20,6 @@ import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.Surface
 
 /**
-  *
   */
 class JavaTimeCodecTest extends CodecSpec {
 

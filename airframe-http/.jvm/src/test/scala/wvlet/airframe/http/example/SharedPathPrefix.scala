@@ -15,7 +15,6 @@ package wvlet.airframe.http.example
 import wvlet.airframe.http.{Endpoint, HttpMethod}
 
 /**
-  *
   */
 trait SharedPathPrefix {
   @Endpoint(path = "/v1/config", method = HttpMethod.GET)

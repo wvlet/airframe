@@ -15,7 +15,6 @@ package wvlet.airframe.http
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 
 /**
-  *
   */
 trait HttpClientBackend {
   def newSyncClient(severAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response]

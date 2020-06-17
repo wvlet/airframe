@@ -15,7 +15,6 @@ package wvlet.airframe.surface
 import java.util.Locale
 
 /**
-  *
   */
 object CanonicalNameFormatter {
   def format(name: String): String = {

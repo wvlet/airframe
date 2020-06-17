@@ -16,7 +16,6 @@ package wvlet.airframe.log
 import scala.io.AnsiColor
 
 /**
-  *
   */
 trait AnsiColorPalette extends AnsiColor {
   final val GRAY           = "\u001b[90m"

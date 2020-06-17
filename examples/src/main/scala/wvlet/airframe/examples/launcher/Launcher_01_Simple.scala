@@ -16,7 +16,6 @@ package wvlet.airframe.examples.launcher
 import wvlet.airframe.launcher.{Launcher, argument, command, option}
 
 /**
-  *
   */
 object Launcher_01_Simple extends App {
   // Define global options in the constructor arguments:

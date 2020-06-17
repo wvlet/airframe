@@ -22,7 +22,6 @@ import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
 import scala.util.Try
 
 /**
-  *
   */
 object AirSpecLauncher extends LogSupport {
   def main(args: Array[String]): Unit = {

@@ -16,14 +16,12 @@ import org.komamitsu.fluency.ingester.sender.ErrorHandler
 import wvlet.log.LogLevel
 
 /**
-  *
   */
 package object fluentd {
   type TDLogger = MetricLogger
 
   /**
     * A MetricLogger design for sending metrics to Fluentd
-    *
     */
   def withFluentdLogger(
       host: String = "127.0.0.1",

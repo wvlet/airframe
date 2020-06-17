@@ -23,7 +23,6 @@ import scala.jdk.CollectionConverters._
 import scala.reflect.runtime.{universe => ru}
 
 /**
-  *
   */
 object ReflectSurfaceFactory extends LogSupport {
   import ru._

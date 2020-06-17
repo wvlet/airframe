@@ -15,7 +15,6 @@
 package wvlet.airframe.sql.analyzer
 
 /**
-  *
   */
 trait Node {
   def name: String

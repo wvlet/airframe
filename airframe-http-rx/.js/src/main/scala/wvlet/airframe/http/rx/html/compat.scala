@@ -16,7 +16,6 @@ package wvlet.airframe.http.rx.html
 import org.scalajs.dom
 
 /**
-  *
   */
 object compat {
   trait PlatformEmbeddableNode {

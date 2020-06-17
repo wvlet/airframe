@@ -14,7 +14,6 @@
 package wvlet.airframe.lifecycle
 
 /**
-  *
   */
 object AddShutdownHook extends LifeCycleEventHandler {
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {

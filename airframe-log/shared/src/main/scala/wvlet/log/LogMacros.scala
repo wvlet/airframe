@@ -22,7 +22,6 @@ import scala.reflect.macros.blackbox.Context
   *
   * The log message object will created only if the log level is enabled, so logger.trace(xxx) etc. can be
   * used without any overhead.
-  *
   */
 private[log] object LogMacros {
   private class MacroHelper[C <: Context](val c: C) {

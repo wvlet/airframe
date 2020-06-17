@@ -27,7 +27,6 @@ import wvlet.log.LogSupport
 import scala.language.existentials
 
 /**
-  *
   */
 class HttpClientException(val response: HttpResponse[_], val status: HttpStatus, message: String, cause: Throwable)
     extends Exception(message, cause) {

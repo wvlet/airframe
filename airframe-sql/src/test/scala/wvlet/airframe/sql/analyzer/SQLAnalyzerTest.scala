@@ -17,7 +17,6 @@ import wvlet.airframe.sql.catalog.{Catalog, DataType}
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class SQLAnalyzerTest extends AirSpec {
   val tbl1 =

@@ -61,7 +61,6 @@ object SingletonTest {
 }
 
 /**
-  *
   */
 class SingletonTest extends AirSpec {
   scalaJsSupport

@@ -21,7 +21,6 @@ import wvlet.airframe.http.Router
 import wvlet.airspec.AirSpec
 
 /**
-  *
   */
 class FinagleServerFactoryTest extends AirSpec {
   def `start multiple FinagleServers`: Unit = {

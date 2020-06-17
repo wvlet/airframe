@@ -17,7 +17,6 @@ import wvlet.airframe.http.rx.html.all._
 import wvlet.airframe.http.rx.html.{RxComponent, RxElement}
 
 /**
-  *
   */
 case class NavBar(title: String, iconFile: String = "img/favicon.ico", iconWidth: Int = 32, iconHeight: Int = 32)
     extends RxComponent {

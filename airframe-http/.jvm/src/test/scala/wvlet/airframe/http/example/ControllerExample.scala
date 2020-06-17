@@ -23,7 +23,6 @@ object ControllerExample {
 }
 
 /**
-  *
   */
 trait ControllerExample extends LogSupport {
   import ControllerExample._

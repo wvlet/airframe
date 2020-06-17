@@ -29,7 +29,6 @@ case class CircuitBreakerOpenException(context: CircuitBreakerContext) extends E
 sealed trait CircuitBreakerState
 
 /**
-  *
   */
 object CircuitBreaker extends LogSupport {
 
@@ -57,7 +56,6 @@ object CircuitBreaker extends LogSupport {
 
   /**
     * Create a CircuitBreaker that will be open if the number of consecutive failrues excceeds the given threshold.
-    *
     */
   def withConsecutiveFailures(numFailures: Int): CircuitBreaker = {
     default.withHealthCheckPolicy(HealthCheckPolicy.markDeadOnConsecutiveFailures(numFailures))
@@ -325,7 +323,6 @@ case class CircuitBreaker(
     * If the state is CLOSED, the code block will be executed normally. If the result is marked failure or nonRetryable exception
     * is thrown, it will report to the failure to the HealthCheckPolicy. If this policy determines the target service is dead,
     * the circuit will shift to OPEN state to block the future execution.
-    *
     */
   def run[A: ClassTag](body: => A): A = {
     verifyConnection

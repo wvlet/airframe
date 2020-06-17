@@ -16,7 +16,6 @@ package wvlet.airframe.msgpack.spi
 trait ErrorCode
 
 /**
-  *
   */
 object ErrorCode {
   // Type conversion errors (data is valid, but reading to the target type failed)

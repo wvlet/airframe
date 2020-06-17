@@ -86,7 +86,6 @@ case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
   }
 
   /**
-    *
     * @param key
     * @param value
     * @return

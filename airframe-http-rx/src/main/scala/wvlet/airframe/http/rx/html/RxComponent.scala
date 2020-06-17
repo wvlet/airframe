@@ -14,7 +14,6 @@
 package wvlet.airframe.http.rx.html
 
 /**
-  *
   */
 trait RxComponent {
   def render(content: RxElement): RxElement

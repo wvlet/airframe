@@ -18,7 +18,6 @@ import java.io.FileNotFoundException
 import wvlet.log.Spec
 
 /**
-  *
   */
 class IOUtilTest extends Spec {
   def `find unused port`: Unit = {

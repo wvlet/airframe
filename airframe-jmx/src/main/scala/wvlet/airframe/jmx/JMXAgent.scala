@@ -25,7 +25,6 @@ case class HostAndPort(host: String, port: Int)
 case class JMXConfig(registryPort: Option[Int] = None, rmiPort: Option[Int] = None)
 
 /**
-  *
   */
 object JMXAgent extends LogSupport {
   def start(registryPort: Int) = new JMXAgent(JMXConfig(registryPort = Some(registryPort)))

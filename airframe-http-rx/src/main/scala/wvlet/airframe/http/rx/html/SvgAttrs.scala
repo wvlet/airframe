@@ -404,239 +404,171 @@ trait SvgAttrs {
   lazy val cy = attr("cy")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val d = attr("d")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val diffuseConstant = attr("diffuseConstant")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val direction = attr("direction")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val display = attr("display")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val divisor = attr("divisor")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val dominantBaseline = attr("dominant-baseline")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val dur = attr("dur")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val dx = attr("dx")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val dy = attr("dy")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val edgeMode = attr("edgeMode")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val elevation = attr("elevation")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val end = attr("end")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val externalResourcesRequired = attr("externalResourcesRequired")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val fill = attr("fill")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val fillOpacity = attr("fill-opacity")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val fillRule = attr("fill-rule")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val filter = attr("filter")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val filterRes = attr("filterRes")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val filterUnits = attr("filterUnits")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val floodColor = attr("flood-color")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val floodOpacity = attr("flood-opacity")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val fontFamily = attr("font-family")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val fontSize = attr("font-size")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val fontSizeAdjust = attr("font-size-adjust")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val fontStretch = attr("font-stretch")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val fontVariant = attr("font-variant")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val fontWeight = attr("font-weight")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val from = attr("from")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val fx = attr("fx")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val fy = attr("fy")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val gradientTransform = attr("gradientTransform")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val gradientUnits = attr("gradientUnits")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val height = attr("height")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val imageRendering = attr("imageRendering")
@@ -644,197 +576,141 @@ trait SvgAttrs {
   lazy val id = attr("id")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val in = attr("in")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val in2 = attr("in2")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val k1 = attr("k1")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val k2 = attr("k2")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val k3 = attr("k3")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val k4 = attr("k4")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val kernelMatrix = attr("kernelMatrix")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val kernelUnitLength = attr("kernelUnitLength")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val kerning = attr("kerning")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val keySplines = attr("keySplines")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val keyTimes = attr("keyTimes")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val letterSpacing = attr("letter-spacing")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val lightingColor = attr("lighting-color")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val limitingConeAngle = attr("limitingConeAngle")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val local = attr("local")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val markerEnd = attr("marker-end")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val markerMid = attr("marker-mid")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val markerStart = attr("marker-start")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val markerHeight = attr("markerHeight")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val markerUnits = attr("markerUnits")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val markerWidth = attr("markerWidth")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val maskContentUnits = attr("maskContentUnits")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val maskUnits = attr("maskUnits")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val mask = attr("mak")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val max = attr("max")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val min = attr("min")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val mode = attr("mode")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val numOctaves = attr("numOctaves")
@@ -849,134 +725,96 @@ trait SvgAttrs {
   lazy val orient = attr("orient")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val opacity = attr("opacity")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val operator = attr("operator")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val order = attr("order")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val overflow = attr("overflow")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val paintOrder = attr("paint-order")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val pathLength = attr("pathLength")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val patternContentUnits = attr("patternContentUnits")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val patternTransform = attr("patternTransform")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val patternUnits = attr("patternUnits")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val pointerEvents = attr("pointer-events")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val points = attr("points")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val pointsAtX = attr("pointsAtX")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val pointsAtY = attr("pointsAtY")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val pointsAtZ = attr("pointsAtZ")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val preserveAlpha = attr("preserveAlpha")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val preserveAspectRatio = attr("preserveAspectRatio")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val primitiveUnits = attr("primitiveUnits")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val r = attr("r")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val radius = attr("radius")
@@ -1000,232 +838,166 @@ trait SvgAttrs {
   lazy val refY = attr("refY")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val repeatCount = attr("repeatCount")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val repeatDur = attr("repeatDur")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val requiredFeatures = attr("requiredFeatures")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val restart = attr("restart")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val result = attr("result")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val rx = attr("rx")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val ry = attr("ry")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val scale = attr("scale")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val seed = attr("seed")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val shapeRendering = attr("shape-rendering")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val specularConstant = attr("specularConstant")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val specularExponent = attr("specularExponent")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val spreadMethod = attr("spreadMethod")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val stdDeviation = attr("stdDeviation")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val stitchTiles = attr("stitchTiles")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val stopColor = attr("stop-color")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val stopOpacity = attr("stop-opacity")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val stroke = attr("stroke")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val strokeDasharray = attr("stroke-dasharray")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val strokeDashoffset = attr("stroke-dashoffset")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val strokeLinecap = attr("stroke-linecap")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val strokeLinejoin = attr("stroke-linejoin")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val strokeMiterlimit = attr("stroke-miterlimit")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val strokeOpacity = attr("stroke-opacity")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val strokeWidth = attr("stroke-width")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val style = attr("style")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val surfaceScale = attr("surfaceScale")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val targetX = attr("targetX")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val targetY = attr("targetY")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val textAnchor = attr("text-anchor")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val textDecoration = attr("text-decoration")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val textRendering = attr("text-rendering")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val to = attr("to")
@@ -1252,8 +1024,6 @@ trait SvgAttrs {
   lazy val values = attr("values")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val viewBox = attr("viewBox")
@@ -1343,15 +1113,11 @@ trait SvgAttrs {
   lazy val xmlSpace = attr("xml:space")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val xmlns = attr("xmlns")
 
   /**
-    *
-    *
     * MDN
     */
   lazy val xmlnsXlink = attr("xmlns:xlink")

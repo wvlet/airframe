@@ -14,7 +14,6 @@
 package wvlet.airframe.surface
 
 /**
-  *
   */
 object MethodModifier {
   val PUBLIC       = 0x00000001

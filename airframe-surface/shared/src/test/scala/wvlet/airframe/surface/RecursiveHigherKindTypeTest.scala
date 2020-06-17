@@ -30,7 +30,6 @@ object RecursiveHigherKindTypeTest {
 }
 
 /**
-  *
   */
 class RecursiveHigherKindTypeTest extends SurfaceSpec {
   scalaJsSupport

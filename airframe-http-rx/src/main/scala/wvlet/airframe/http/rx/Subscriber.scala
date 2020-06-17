@@ -14,7 +14,6 @@
 package wvlet.airframe.http.rx
 
 /**
-  *
   */
 trait Subscriber[A] {
   def apply(v: A): Unit

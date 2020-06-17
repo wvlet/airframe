@@ -25,7 +25,6 @@ object JSMatcherTest {
 }
 
 /**
-  *
   */
 class JSMatcherTest extends AirSpec {
   import JSMatcherTest._

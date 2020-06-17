@@ -41,7 +41,6 @@ class ConcreteClass {
 }
 
 /**
-  *
   */
 class AirframeMacrosTest extends AirSpec {
   scalaJsSupport

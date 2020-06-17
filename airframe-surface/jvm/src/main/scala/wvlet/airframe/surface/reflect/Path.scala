@@ -16,7 +16,6 @@ package wvlet.airframe.surface.reflect
 import wvlet.log.LogSupport
 
 /**
-  *
   */
 object Path extends LogSupport {
   def root: Path    = Root

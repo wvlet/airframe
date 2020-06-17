@@ -24,7 +24,6 @@ import wvlet.log.LogSupport
 import scala.language.experimental.macros
 
 /**
-  *
   */
 private[airspec] class AirSpecContextImpl(
     taskExecutor: AirSpecTaskRunner,

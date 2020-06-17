@@ -17,7 +17,6 @@ import wvlet.airspec.AirSpec
 import scala.concurrent.TimeoutException
 
 /**
-  *
   */
 class ControlJVMOnlyTest extends AirSpec {
 

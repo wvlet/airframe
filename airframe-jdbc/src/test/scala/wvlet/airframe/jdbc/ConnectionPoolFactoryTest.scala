@@ -88,7 +88,6 @@ trait TestConnection extends LogSupport {
 }
 
 /**
-  *
   */
 class ConnectionPoolFactoryTest extends AirSpec {
   val d = newDesign
