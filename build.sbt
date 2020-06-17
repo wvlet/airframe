@@ -188,17 +188,6 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   widgetJS
 )
 
-lazy val airspecProjects: Seq[ProjectReference] = Seq(
-  airspecJVM,
-  airspecJS,
-  airspecDepsJVM,
-  airspecDepsJS,
-  airspecCoreJVM,
-  airspecCoreJS,
-  airspecLogJVM,
-  airspecLogJS
-)
-
 lazy val sbtProjects: Seq[ProjectReference] = Seq(sbtAirframe)
 
 // For community-build
@@ -267,6 +256,24 @@ def parallelCollection(scalaVersion: String) = {
   }
 }
 
+// https://stackoverflow.com/questions/41670018/how-to-prevent-sbt-to-include-test-dependencies-into-the-pom
+import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, _}
+import scala.xml.transform.{RewriteRule, RuleTransformer}
+def excludeDependency(lst: Seq[String]) = { node: XmlNode =>
+  new RuleTransformer(new RewriteRule {
+    private def exclude(artifactId: String): Boolean = lst.exists(artifactId.startsWith(_))
+    override def transform(node: XmlNode): XmlNodeSeq =
+      node match {
+        case e: Elem
+            if e.label == "dependency"
+              && e.child.exists(child => child.label == "artifactId" && exclude(child.text.trim())) =>
+          Comment(s"")
+        case _ =>
+          node
+      }
+  }).transform(node).head
+}
+
 lazy val airframe =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
@@ -277,11 +284,13 @@ lazy val airframe =
       description := "Dependency injection library tailored to Scala",
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value
-      )
+      ),
+      // A workaround for bloop, which cannot resolve Optional dependency
+      pomPostProcess := excludeDependency(Seq("airframe-di-macros"))
     )
     .jvmSettings(
       // Workaround for https://github.com/scala/scala/pull/7624 in Scala 2.13, and also
-      // testing shtudown hooks requires consistent application lifecycle between sbt and JVM https://github.com/sbt/sbt/issues/4794
+      // testing shutdown hooks requires consistent application lifecycle between sbt and JVM https://github.com/sbt/sbt/issues/4794
       fork in Test := scalaBinaryVersion.value == "2.13",
       // include the macro classes and resources in the main jar
       mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJVM, Compile, packageBin).value,
@@ -296,7 +305,12 @@ lazy val airframe =
       // include the macro sources in the main source jar
       mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
     )
-    .dependsOn(surface, airframeMacros % Optional, airspecRef % Test)
+    .dependsOn(
+      surface,
+      // Include airframe-di-macros as provided (for bloop) and remove it from pom.xml
+      airframeMacros % Provided,
+      airspecRef     % Test
+    )
 
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS  = airframe.js
@@ -370,7 +384,7 @@ lazy val config =
         "org.yaml" % "snakeyaml" % "1.26"
       )
     )
-    .dependsOn(airframeJVM, codecJVM, airspecRefJVM % Test)
+    .dependsOn(airframeJVM, airframeMacrosJVMRef, codecJVM, airspecRefJVM % Test)
 
 lazy val control =
   crossProject(JVMPlatform, JSPlatform)
@@ -935,7 +949,9 @@ lazy val airspec =
       description := "AirSpec: A Functional Testing Framework for Scala",
       libraryDependencies ++= Seq(
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % Optional
-      )
+      ),
+      // A workaround for bloop, which cannot resolve Optional dependencies
+      pomPostProcess := excludeDependency(Seq("airspec-log", "airspec-core", "airspec-deps"))
     )
     .jvmSettings(
       // Embed dependent project codes to make airspec a single jar
@@ -955,7 +971,7 @@ lazy val airspec =
         "org.portable-scala" %%% "portable-scala-reflect" % "1.0.0"
       )
     )
-    .dependsOn(airspecDeps % Optional)
+    .dependsOn(airspecDeps % Provided) // Use Provided dependency for bloop, and remove it later with pomPostProcess
 
 lazy val airspecJVM = airspec.jvm
 lazy val airspecJS  = airspec.js
