@@ -68,6 +68,9 @@ val buildSettings = Seq[Setting[_]](
   developers := List(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
+  // Exclude compile-time only projects. This is a workaround for bloop,
+  // which cannot resolve Optional dependencies nor compile-internal dependencie.
+  pomPostProcess := excludePomDependency(Seq("airframe-di-macros")),
   crossScalaVersions := targetScalaVersions,
   crossPaths := true,
   publishMavenStyle := true,
@@ -105,6 +108,7 @@ lazy val root =
     .settings {
       sonatypeSessionName := {
         if (sys.env.isDefinedAt("SCALAJS_VERSION")) {
+          // Use a different session for Scala.js projects
           s"${sonatypeSessionName.value} for Scala.js"
         } else {
           sonatypeSessionName.value
@@ -259,8 +263,8 @@ def parallelCollection(scalaVersion: String) = {
 // https://stackoverflow.com/questions/41670018/how-to-prevent-sbt-to-include-test-dependencies-into-the-pom
 import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, _}
 import scala.xml.transform.{RewriteRule, RuleTransformer}
-def excludeDependency(lst: Seq[String]) = { node: XmlNode =>
-  def isExcludeTarget(artifactId: String): Boolean = lst.exists(artifactId.startsWith(_))
+def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
+  def isExcludeTarget(artifactId: String): Boolean = excludes.exists(artifactId.startsWith(_))
   def artifactId(e: Elem): Option[String]          = e.child.find(_.label == "artifactId").map(_.text.trim())
   new RuleTransformer(new RewriteRule {
     override def transform(node: XmlNode): XmlNodeSeq =
@@ -285,9 +289,7 @@ lazy val airframe =
       description := "Dependency injection library tailored to Scala",
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value
-      ),
-      // A workaround for bloop, which cannot resolve Optional dependency
-      pomPostProcess := excludeDependency(Seq("airframe-di-macros"))
+      )
     )
     .jvmSettings(
       // Workaround for https://github.com/scala/scala/pull/7624 in Scala 2.13, and also
@@ -317,6 +319,7 @@ lazy val airframeJVM = airframe.jvm
 lazy val airframeJS  = airframe.js
 
 // Airframe DI needs to call macro methods, so we needed to split the project into DI and DI macros.
+// This project sources and classes will be embedded to airframe.jar, so we don't publish airframe-di-macros
 lazy val airframeMacros =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
@@ -336,7 +339,6 @@ lazy val airframeMacrosJVM = airframeMacros.jvm
 lazy val airframeMacrosJS  = airframeMacros.js
 
 // To use airframe in other airframe modules, we need to reference airframeMacros project
-val internalScope             = "compile-internal,test-internal"
 lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
 lazy val airframeMacrosRef    = airframeMacros    % Optional
 
@@ -952,7 +954,7 @@ lazy val airspec =
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % Optional
       ),
       // A workaround for bloop, which cannot resolve Optional dependencies
-      pomPostProcess := excludeDependency(Seq("airspec-deps"))
+      pomPostProcess := excludePomDependency(Seq("airspec-deps"))
     )
     .jvmSettings(
       // Embed dependent project codes to make airspec a single jar
