@@ -283,21 +283,21 @@ lazy val airframe =
     .jvmSettings(
       // Workaround for https://github.com/scala/scala/pull/7624 in Scala 2.13, and also
       // testing shtudown hooks requires consistent application lifecycle between sbt and JVM https://github.com/sbt/sbt/issues/4794
-      fork in Test := scalaBinaryVersion.value == "2.13",
-      // include the macro classes and resources in the main jar
-      mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJVM, Compile, packageBin).value,
-      // include the macro sources in the main source jar
-      mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJVM, Compile, packageSrc).value
+      fork in Test := scalaBinaryVersion.value == "2.13"
+//      // include the macro classes and resources in the main jar
+//      mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJVM, Compile, packageBin).value,
+//      // include the macro sources in the main source jar
+//      mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJVM, Compile, packageSrc).value
     )
     .jsSettings(
-      jsBuildSettings,
-      // Copy macro classes into the main jar
-      mappings in (Compile, packageBin) ++= mappings
-        .in(airframeMacrosJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
-      // include the macro sources in the main source jar
-      mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
+      jsBuildSettings
+//      // Copy macro classes into the main jar
+//      mappings in (Compile, packageBin) ++= mappings
+//        .in(airframeMacrosJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
+//      // include the macro sources in the main source jar
+//      mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
     )
-    .dependsOn(surface, airframeMacrosRef, airspecRef % "test")
+    .dependsOn(surface, airframeMacros, airspecRef % "test")
 
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS  = airframe.js
@@ -308,7 +308,7 @@ lazy val airframeMacros =
     .crossType(CrossType.Pure)
     .in(file("airframe-di-macros"))
     .settings(buildSettings)
-    .settings(noPublish)
+    //    .settings(noPublish)
     .settings(
       name := "airframe-di-macros",
       description := "Macros for Airframe",
@@ -322,9 +322,9 @@ lazy val airframeMacrosJVM = airframeMacros.jvm
 lazy val airframeMacrosJS  = airframeMacros.js
 
 // To use airframe in other airframe modules, we need to reference airframeMacros project using the internal scope
-val internalScope             = "compile-internal,test-internal"
-lazy val airframeMacrosJVMRef = airframeMacrosJVM % internalScope
-lazy val airframeMacrosRef    = airframeMacros    % internalScope
+val internalScope = "compile-internal,test-internal"
+//lazy val airframeMacrosJVMRef = airframeMacrosJVM % internalScope
+//lazy val airframeMacrosRef    = airframeMacros    % internalScope
 
 val surfaceDependencies = { scalaVersion: String =>
   Seq(
@@ -371,7 +371,7 @@ lazy val config =
         "org.yaml" % "snakeyaml" % "1.26"
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, codecJVM, airspecRefJVM % "test")
+    .dependsOn(airframeJVM, codecJVM, airspecRefJVM % "test")
 
 lazy val control =
   crossProject(JVMPlatform, JSPlatform)
@@ -538,7 +538,7 @@ lazy val jdbc =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, controlJVM, config, airspecRefJVM % "test")
+    .dependsOn(airframeJVM, controlJVM, config, airspecRefJVM % "test")
 
 lazy val http =
   crossProject(JVMPlatform, JSPlatform)
@@ -556,7 +556,7 @@ lazy val http =
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
-    .dependsOn(airframe, airframeMacrosRef, control, surface, json, codec, airspecRef % "test")
+    .dependsOn(airframe, control, surface, json, codec, airspecRef % "test")
 
 lazy val httpJVM = http.jvm
   .enablePlugins(PackPlugin)
@@ -585,7 +585,7 @@ lazy val finagle =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(httpJVM, airframeMacrosJVMRef, airspecRefJVM % "test")
+    .dependsOn(httpJVM, airspecRefJVM % "test")
 
 lazy val okhttp =
   project
@@ -598,7 +598,7 @@ lazy val okhttp =
         "com.squareup.okhttp3" % "okhttp" % "3.12.12"
       )
     )
-    .dependsOn(httpJVM, airframeMacrosJVMRef, finagle % "test", airspecRefJVM % "test")
+    .dependsOn(httpJVM, finagle % "test", airspecRefJVM % "test")
 
 lazy val httpRecorder =
   project
@@ -616,7 +616,7 @@ lazy val httpRecorder =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, metricsJVM, controlJVM, finagle, jdbc, airframeMacrosJVMRef, airspecRefJVM % "test")
+    .dependsOn(codecJVM, metricsJVM, controlJVM, finagle, jdbc, airspecRefJVM % "test")
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)
@@ -684,7 +684,7 @@ lazy val fluentd =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, airframeJVM % "compile", airframeMacrosJVMRef, airspecRefJVM % "test")
+    .dependsOn(codecJVM, airframeJVM % "compile", airspecRefJVM % "test")
 
 lazy val sql =
   project
@@ -983,7 +983,7 @@ lazy val airspecLight =
         "org.scalacheck" %%% "scalacheck"     % SCALACHECK_VERSION % "provided"
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, metricsJVM)
+    .dependsOn(airframeJVM, metricsJVM)
 
 // An internal-only project for using AirSpec for testing Airframe modules
 lazy val airspecRef =
