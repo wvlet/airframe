@@ -260,14 +260,15 @@ def parallelCollection(scalaVersion: String) = {
 import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, _}
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 def excludeDependency(lst: Seq[String]) = { node: XmlNode =>
+  def isExcludeTarget(artifactId: String): Boolean = lst.exists(artifactId.startsWith(_))
+  def artifactId(e: Elem): Option[String]          = e.child.find(_.label == "artifactId").map(_.text.trim())
   new RuleTransformer(new RewriteRule {
-    private def exclude(artifactId: String): Boolean = lst.exists(artifactId.startsWith(_))
     override def transform(node: XmlNode): XmlNodeSeq =
       node match {
         case e: Elem
             if e.label == "dependency"
-              && e.child.exists(child => child.label == "artifactId" && exclude(child.text.trim())) =>
-          Comment(s"")
+              && artifactId(e).exists(id => isExcludeTarget(id)) =>
+          Comment(s"Excluded compile-time only dependency: ${artifactId(e).getOrElse("")}")
         case _ =>
           node
       }
@@ -951,7 +952,7 @@ lazy val airspec =
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % Optional
       ),
       // A workaround for bloop, which cannot resolve Optional dependencies
-      pomPostProcess := excludeDependency(Seq("airspec-log", "airspec-core", "airspec-deps"))
+      pomPostProcess := excludeDependency(Seq("airspec-deps"))
     )
     .jvmSettings(
       // Embed dependent project codes to make airspec a single jar
