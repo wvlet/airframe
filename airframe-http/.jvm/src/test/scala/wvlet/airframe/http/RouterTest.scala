@@ -36,6 +36,7 @@ class RouterTest extends AirSpec {
 
     trace(r.routes)
     r.routes.filter(_.path == "/user/:id").size shouldBe 3
+    r.routes.forall(_.isRPC == false) shouldBe true
     val post = r.routes.find(p => p.path == "/user" && p.method == HttpMethod.POST)
     post shouldBe defined
   }

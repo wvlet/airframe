@@ -30,6 +30,9 @@ object RPCTest extends AirSpec {
   test("Create a router from RPC annotation") {
     val r = Router.add[MyRPCService]
     debug(r)
+
+    r.routes.forall(_.isRPC) shouldBe true
+
     val m1 = r.routes.find(_.path == "/v1/wvlet.airframe.http.RPCTest.MyRPCService/hello")
     m1 shouldBe defined
     m1.get.method shouldBe HttpMethod.POST
