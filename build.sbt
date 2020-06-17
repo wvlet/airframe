@@ -1013,7 +1013,7 @@ lazy val airspecRef =
     .settings(
       //airspecBuildSettings,
       name := "airspec-ref",
-      description := "A project for referncing airspec for internal testing",
+      description := "A project for referencing airspec for internal testing",
       libraryDependencies ++= Seq(
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION
       )
