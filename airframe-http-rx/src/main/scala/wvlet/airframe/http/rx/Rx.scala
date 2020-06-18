@@ -144,16 +144,24 @@ object Rx extends LogSupport {
     def :=(newValue: A): Unit  = set(newValue)
     def set(newValue: A): Unit = update { x: A => newValue }
 
+    def forceSet(newValue: A): Unit = update({ x: A => newValue }, force = true)
+
     /**
       * Updates the variable and trigger the recalculation of the subscribers
       * currentValue => newValue
       */
-    def update(updater: A => A): Unit = {
+    def update(updater: A => A, force: Boolean = false): Unit = {
       val newValue = updater(currentValue)
-      if (currentValue != newValue) {
+      if (force || currentValue != newValue) {
         currentValue = newValue
         subscribers.map { s => s(newValue) }
       }
     }
+
+    /**
+      * Update the variable and force notification to subscribers
+      * @param updater
+      */
+    def forceUpdate(updater: A => A): Unit = update(updater, force = true)
   }
 }

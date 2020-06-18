@@ -66,6 +66,35 @@ object RxTest extends AirSpec {
     v.get shouldBe 2
   }
 
+  test("force update RxVar") {
+
+    val v     = Rx.variable(1)
+    val count = new AtomicInteger(0)
+    v.subscribe(newValue => count.incrementAndGet())
+
+    v.get shouldBe 1
+    count.get() shouldBe 1
+    v.set(1)
+    v.get shouldBe 1
+    count.get() shouldBe 1
+
+    v.forceSet(1)
+    v.get shouldBe 1
+    count.get() shouldBe 2
+
+    v.forceUpdate(x => x * 2)
+    v.get shouldBe 2
+    count.get() shouldBe 3
+
+    v.forceUpdate(x => x)
+    v.get shouldBe 2
+    count.get() shouldBe 4
+
+    v.update(x => x)
+    v.get shouldBe 2
+    count.get() shouldBe 4
+  }
+
   test("chain Rx operators") {
     val v  = Rx.const(2)
     val v1 = v.map(_ + 1)
