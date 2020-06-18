@@ -83,6 +83,14 @@ case class Router(
   def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch] = routeMatcher.findRoute(request)
 
   /**
+    * Call this method to verify duplicated routes in an early phase
+    */
+  def verifyRoutes: Unit = {
+    // Instantiate the route mappings to check duplicate routes
+    routeMatcher
+  }
+
+  /**
     * Add methods annotated with @Endpoint to the routing table
     */
   def add[Controller]: Router = macro RouterMacros.add[Controller]
@@ -126,7 +134,7 @@ case class Router(
     val endpointOpt = controllerSurface.findAnnotationOf[Endpoint]
     val rpcOpt      = controllerSurface.findAnnotationOf[RPC]
 
-    val newRoutes: Seq[Route] = {
+    val newRoutes: Seq[ControllerRoute] = {
       (endpointOpt, rpcOpt) match {
         case (Some(endpoint), Some(rpcOpt)) =>
           throw new IllegalArgumentException(
@@ -158,7 +166,7 @@ case class Router(
           } else {
             s"${rpc.path()}/${serviceFullName}"
           }
-          controllerMethodSurfaces
+          val routes = controllerMethodSurfaces
             .filter(_.isPublic)
             .map { m => (m, m.findAnnotationOf[RPC]) }
             .collect {
@@ -168,6 +176,7 @@ case class Router(
               case (m: ReflectMethodSurface, None) =>
                 ControllerRoute(rpcInterfaceCls, controllerSurface, HttpMethod.POST, prefixPath + s"/${m.name}", m)
             }
+          routes
       }
     }
 

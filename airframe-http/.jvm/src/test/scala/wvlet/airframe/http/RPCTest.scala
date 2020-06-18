@@ -70,4 +70,18 @@ object RPCTest extends AirSpec {
     m.get.method shouldBe HttpMethod.POST
     m.get.methodSurface.name shouldBe "hello"
   }
+
+  @RPC
+  trait RPCOverload {
+    def hello: String
+    def hello(s: String): String
+  }
+
+  test("Should detect RPC method overload") {
+    val r = Router.add[RPCOverload]
+    val e = intercept[IllegalArgumentException] {
+      r.verifyRoutes
+    }
+    e.getMessage.contains("RPCOverload/hello")
+  }
 }
