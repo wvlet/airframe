@@ -23,8 +23,8 @@ class HttpResponseCodec[Resp: HttpResponseAdapter] extends MessageCodec[HttpResp
   override def pack(p: Packer, v: HttpResponse[_]): Unit = {
     v.contentType match {
       case Some("application/x-msgpack") =>
+        // Raw msgpack response
         val b = v.contentBytes
-        p.packArrayHeader(b.length)
         p.writePayload(b)
       case Some(x) if x.startsWith("application/json") =>
         // JSON -> MsgPack
