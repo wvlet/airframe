@@ -47,8 +47,7 @@ object AsyncClient extends HttpClientType {
          |import wvlet.airframe.http._
          |${src.importStatements}
          |
-         |${cls}"""
-      /** EndMarker */ .stripMargin.stripMargin
+         |${cls}""".stripMargin.stripMargin
 
     def cls: String =
       s"""class ${src.classDef.clsName}[F[_], Req, Resp](private val client: HttpClient[F, Req, Resp]) extends AutoCloseable {
