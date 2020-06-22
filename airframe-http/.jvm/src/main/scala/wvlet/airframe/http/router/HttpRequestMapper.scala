@@ -44,7 +44,8 @@ object HttpRequestMapper extends LogSupport {
       context: HttpContext[Req, Resp, F],
       // Additional parameters
       params: Map[String, String],
-      codecFactory: MessageCodecFactory
+      codecFactory: MessageCodecFactory,
+      isRPC: Boolean
   )(implicit adapter: HttpRequestAdapter[Req]): Seq[Any] = {
     // Collect URL path and query parameters
     val requestParamsInUrl: HttpMultiMap = adapter.queryOf(request) ++ params
@@ -186,11 +187,20 @@ object HttpRequestMapper extends LogSupport {
                       throw new IllegalArgumentException(s"Failed to parse ${paramValue} for ${arg}")
                     }
                   case None =>
-                    // When the target parameter is not found in the MapValue, try mapping the content body as a whole
-                    argCodec.unpackMsgPack(msgpack)
+                    if (isRPC) {
+                      // For RPC calls, we do not support empty keys
+                      throw new IllegalArgumentException(s"No key for ${arg.name} is found: ${v}")
+                    } else {
+                      // When the target parameter is not found in the MapValue, try mapping the content body as a whole
+                      argCodec.unpackMsgPack(msgpack)
+                    }
                 }
               case _ =>
-                Some(argCodec.fromMsgPack(msgpack))
+                if (isRPC) {
+                  throw new IllegalArgumentException(s"No key for ${arg.name} is found: ${v}")
+                } else {
+                  Some(argCodec.fromMsgPack(msgpack))
+                }
             }
             setValue(arg, opt)
           case None =>

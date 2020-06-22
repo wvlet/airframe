@@ -23,7 +23,6 @@ import scala.concurrent.Future
 /**
   */
 object HttpRequestMapperTest extends AirSpec {
-
   case class NestedRequest(name: String, msg: String)
   case class NestedRequest2(id: Int)
 
@@ -73,7 +72,8 @@ object HttpRequestMapperTest extends AirSpec {
       request = requestFilter(Http.request(method, route.path)),
       context = mockContext,
       params = Map.empty,
-      codecFactory = MessageCodecFactory.defaultFactoryForJSON
+      codecFactory = MessageCodecFactory.defaultFactoryForJSON,
+      isRPC = route.isRPC
     )
     args
   }
@@ -88,10 +88,21 @@ object HttpRequestMapperTest extends AirSpec {
     args shouldBe Seq("hello")
   }
 
-  test("map a single primitive argument with a string content") {
-    val r    = findRoute("rpc1")
-    val args = mapArgs(r, _.withContent("""hello"""))
-    args shouldBe Seq("hello")
+  test("detect wrong parameter mapping") {
+    val r = findRoute("rpc1")
+    intercept[IllegalArgumentException] {
+      val args = mapArgs(r, _.withJson("""{"p0":"hello"}"""))
+      warn(args)
+    }
+  }
+
+  test("forbid mapping a single primitive argument as a body") {
+    val r = findRoute("rpc1")
+    intercept[IllegalArgumentException] {
+      // Note: This should work for Endpoint calls
+      val args = mapArgs(r, _.withContent("""hello"""))
+      warn(args)
+    }
   }
 
   test("map multiple primitive arguments") {
@@ -109,7 +120,7 @@ object HttpRequestMapperTest extends AirSpec {
 
   test("map a single request object") {
     val r    = findRoute("rpc3")
-    val args = mapArgs(r, _.withJson("""{"name":"hello","msg":"world"}"""))
+    val args = mapArgs(r, _.withJson("""{"p1":{"name":"hello","msg":"world"}}"""))
     args shouldBe Seq(NestedRequest("hello", "world"))
   }
 
@@ -158,7 +169,7 @@ object HttpRequestMapperTest extends AirSpec {
 
   test("map a single request object to Option[X]") {
     val r    = findRoute("rpc6")
-    val args = mapArgs(r, _.withJson("""{"name":"hello","msg":"world"}"""))
+    val args = mapArgs(r, _.withJson("""{"p1":{"name":"hello","msg":"world"}}"""))
     args shouldBe Seq(Some(NestedRequest("hello", "world")))
   }
 

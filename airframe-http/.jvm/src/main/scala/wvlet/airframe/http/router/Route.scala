@@ -41,6 +41,11 @@ trait Route {
   def returnTypeSurface: Surface
 
   /**
+    * Returns true if this Route is for `@RPC` call, otherwise returns false (regular `@Endpoint` calls)
+    */
+  def isRPC: Boolean
+
+  /**
     * Find a corresponding controller and call the matching methods
     */
   def call[Req: HttpRequestAdapter, Resp, F[_]](
@@ -71,7 +76,8 @@ case class ControllerRoute(
     controllerSurface: Surface,
     method: String,
     path: String,
-    methodSurface: ReflectMethodSurface
+    methodSurface: ReflectMethodSurface,
+    isRPC: Boolean
 ) extends Route
     with LogSupport {
   require(
@@ -104,7 +110,8 @@ case class ControllerRoute(
           request,
           context,
           params,
-          codecFactory
+          codecFactory,
+          isRPC = isRPC
         )
       } finally {
         // Ensure recording RPC method arguments

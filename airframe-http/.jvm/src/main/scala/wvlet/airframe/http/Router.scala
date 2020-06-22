@@ -154,7 +154,8 @@ case class Router(
                   controllerSurface,
                   endPoint.method(),
                   prefixPath + endPoint.path(),
-                  m
+                  m,
+                  isRPC = false
                 )
             }
         case (None, Some(rpc)) =>
@@ -172,9 +173,16 @@ case class Router(
             .collect {
               case (m: ReflectMethodSurface, Some(rpc)) =>
                 val path = if (rpc.path().nonEmpty) rpc.path() else s"/${m.name}"
-                ControllerRoute(rpcInterfaceCls, controllerSurface, HttpMethod.POST, prefixPath + path, m)
+                ControllerRoute(rpcInterfaceCls, controllerSurface, HttpMethod.POST, prefixPath + path, m, isRPC = true)
               case (m: ReflectMethodSurface, None) =>
-                ControllerRoute(rpcInterfaceCls, controllerSurface, HttpMethod.POST, prefixPath + s"/${m.name}", m)
+                ControllerRoute(
+                  rpcInterfaceCls,
+                  controllerSurface,
+                  HttpMethod.POST,
+                  prefixPath + s"/${m.name}",
+                  m,
+                  isRPC = true
+                )
             }
           routes
       }

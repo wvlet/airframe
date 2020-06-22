@@ -146,8 +146,8 @@ object HttpClientIR extends LogSupport {
         } else {
           // Do not add any parameters for empty requests
         }
-      } else if (httpClientCallInputs.size == 1 && !primitiveOnlyInputs) {
-        // Unary RPC call
+      } else if (httpClientCallInputs.size == 1 && !primitiveOnlyInputs && !route.isRPC) {
+        // Unary Endpoint call
         httpClientCallInputs.headOption.map { x =>
           clientCallParams += x.name
           typeArgBuilder += x.surface
@@ -161,7 +161,9 @@ object HttpClientIR extends LogSupport {
         clientCallParams += s"Map(${params.result.mkString(", ")})"
         typeArgBuilder += Surface.of[Map[String, Any]]
       } else {
-        // For complex request arguments, create a model class to wrap the request parameters
+        // For complex request arguments, create a type-safe model class to wrap the request parameters.
+        // This is because if we use Map[String, Any] for request parameters, we cannot resolve the actual Surface of
+        // the complex object at compile-time in Scala.js.
         val requestModelClassName = s"__${name}_request"
         // Create Parameter objects for the model class surface
         val requestModelClassParamSurfaces: Seq[Parameter] = for ((p, i) <- httpClientCallInputs.zipWithIndex) yield {
