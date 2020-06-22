@@ -418,6 +418,7 @@ object MyServerService {
     .onInit{x:Server => ... }    // Called when the object is initialized
     .onInject{x:Server => ... }  // Called when the object is injected
     .onStart{x:Server => ... }   // Called when session.start is called
+    .afterStart{x:Server => ... }     // Called after onStart lifecycle is finished
     .beforeShutdown{x:Server => ...}  // Called right before all shutdown hook is called
                                       // Useful for adding pre-shutdown step
     .onShutdown{x:Server => ... } // Called when session.shutdown is called
