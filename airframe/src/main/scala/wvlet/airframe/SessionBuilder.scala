@@ -51,7 +51,15 @@ class SessionBuilder(
     * @return
     */
   def withEventHandler(e: LifeCycleEventHandler): SessionBuilder = {
-    new SessionBuilder(design, parent, name, addShutdownHook, e.wraps(lifeCycleEventHandler))
+    new SessionBuilder(
+      design,
+      parent,
+      name,
+      addShutdownHook,
+      // Wrap the default handler with a new LifeCycleEventHandler
+      // so as not to remove the default lifecycle hooks (e.g. FILOLifeCycleHookExecutor)
+      e.wraps(lifeCycleEventHandler)
+    )
   }
 
   def withName(sessionName: String): SessionBuilder = {

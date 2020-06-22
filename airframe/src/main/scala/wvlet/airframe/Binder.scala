@@ -212,6 +212,10 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
   }
 }
 
+/**
+  * DesignWithContext[A] is a wrapper of Design class for chaining lifecycle hooks for the same type A.
+  * This can be safely cast to just Design
+  */
 class DesignWithContext[A](
     design: Design,
     lastSurface: Surface

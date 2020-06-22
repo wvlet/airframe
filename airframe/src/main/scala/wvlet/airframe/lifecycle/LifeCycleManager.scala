@@ -185,7 +185,7 @@ class LifeCycleManager(
     }
   }
 
-  def addAfterStartHook(h: LifeCycleHook): Unit = {
+  private def addAfterStartHook(h: LifeCycleHook): Unit = {
     findLifeCycleManagerFor(h.surface) { l =>
       l.synchronized {
         if (l.afterStartHookHolder.registerOnlyOnce(h)) {
