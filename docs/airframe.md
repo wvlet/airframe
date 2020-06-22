@@ -5,13 +5,13 @@ title: airframe-di: Dependency Injection
 ---
 Airframe DI is a new dependency injection library designed for Scala. Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; Instead of manually passing all necessary objects (dependencies) into the constructor argument, DI framework builds the object on your behalf.
 
-Using Airframe DI consists of three steps:
+Airframe DI introduces three concepts to your Scala programming:
 
-- **Bind**: Inject necessary objects to your service without hand wiring.
-- **Design**: Allow switching the application implementation at runtime.
-- **Session**: Initialize and terminate injected services with lifecycle management hooks (e.g., onStart, onShutdown).
+- **Bind** for injecting necessary objects to your service through constructor arguments or `bind[X]` syntax.
+- **Design**: for customizing the actual application implementation to use at runtime.
+- **Session**: for managing singleton instances and properly initialize and terminate injected service objects with lifecycle management hooks (e.g., onStart, onShutdown, or `def close()` method in AutoCloseable interface).
 
-Airframe DI enables isolating the the application logic and service design. This abstraction addresses the common patterns in writing applications, such as:
+One of the advantages of Airframe DI is that it enables isolating application logic and service design. This abstraction addresses the common patterns in writing applications, such as:
 
 - Switching the implementation between production and test/debug code.
 - Minimizing the service implementation for the ease of testing.
@@ -105,7 +105,7 @@ __in-trait injection__:
 ### Constructor Injection
 
 Constructor injection is the most natural form of injection.
-When `design.build[A]` is called, Airframe will find the primary constructor of `A` and its arguments, then creates a new instance of `A` by looking up instances for these constructor arguments defined in the _Design_.
+When `design.build[A]` is called, Airframe will find the primary constructor of `A` and its arguments, then creates a new instance of `A` by looking up instances for the constructor arguments defined in the _Design_.
 
 ```scala
 import wvlet.airframe._
