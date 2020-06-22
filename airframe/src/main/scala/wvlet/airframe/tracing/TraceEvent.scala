@@ -37,6 +37,7 @@ object TraceEvent {
   case class InitInstanceStart(session: Session, s: Surface, injectee: Any) extends TraceEvent
   case class InitInstanceEnd(session: Session, s: Surface, injectee: Any)   extends TraceEvent
   case class StartInstance(session: Session, injectee: Injectee)            extends TraceEvent
+  case class AfterStartInstance(session: Session, injectee: Injectee)       extends TraceEvent
   case class BeforeShutdownInstance(session: Session, injectee: Injectee)   extends TraceEvent
   case class ShutdownInstance(session: Session, injectee: Injectee)         extends TraceEvent
 }

@@ -34,6 +34,7 @@ sealed trait LifeCycleHookType
 case object ON_INIT         extends LifeCycleHookType
 case object ON_INJECT       extends LifeCycleHookType
 case object ON_START        extends LifeCycleHookType
+case object AFTER_START     extends LifeCycleHookType
 case object BEFORE_SHUTDOWN extends LifeCycleHookType
 case object ON_SHUTDOWN     extends LifeCycleHookType
 
@@ -80,10 +81,8 @@ class LifeCycleManager(
   }
 
   def shutdown: Unit = {
-    if (
-      state.compareAndSet(STARTED, STOPPING) || state.compareAndSet(INIT, STOPPING)
-      || state.compareAndSet(STARTING, STOPPING)
-    ) {
+    if (state.compareAndSet(STARTED, STOPPING) || state.compareAndSet(INIT, STOPPING)
+        || state.compareAndSet(STARTING, STOPPING)) {
       tracer.beforeSessionShutdown(session)
       eventHandler.beforeShutdown(this)
       // Run shutdown hooks in the reverse registration order
@@ -97,10 +96,12 @@ class LifeCycleManager(
 
   private[airframe] var initHookHolder        = new LifeCycleHookHolder
   private[airframe] var startHookHolder       = new LifeCycleHookHolder
+  private[airframe] var afterStartHookHolder  = new LifeCycleHookHolder
   private[airframe] var preShutdownHookHolder = new LifeCycleHookHolder
   private[airframe] var shutdownHookHolder    = new LifeCycleHookHolder
 
   def startHooks: Seq[LifeCycleHook]       = startHookHolder.list
+  def afterStartHooks: Seq[LifeCycleHook]  = afterStartHookHolder.list
   def preShutdownHooks: Seq[LifeCycleHook] = preShutdownHookHolder.list
   def shutdownHooks: Seq[LifeCycleHook]    = shutdownHookHolder.list
 
@@ -118,6 +119,7 @@ class LifeCycleManager(
         case ON_INIT         => l.initHookHolder.hasHooksFor(s)
         case ON_INJECT       => false
         case ON_START        => l.startHookHolder.hasHooksFor(s)
+        case AFTER_START     => l.afterStartHookHolder.hasHooksFor(s)
         case BEFORE_SHUTDOWN => l.preShutdownHookHolder.hasHooksFor(s)
         case ON_SHUTDOWN     => l.shutdownHookHolder.hasHooksFor(s)
       }
@@ -137,6 +139,8 @@ class LifeCycleManager(
         addInjectHook(h)
       case ON_START =>
         addStartHook(h)
+      case AFTER_START =>
+        addAfterStartHook(h)
       case BEFORE_SHUTDOWN =>
         addPreShutdownHook(h)
       case ON_SHUTDOWN =>
@@ -172,6 +176,22 @@ class LifeCycleManager(
           if (s == STARTED) {
             // If a session is already started, run the start hook immediately
             tracer.onStartInstance(session, h.injectee)
+            h.execute
+          }
+        }
+      }
+    }
+  }
+
+  def addAfterStartHook(h: LifeCycleHook): Unit = {
+    findLifeCycleManagerFor(h.surface) { l =>
+      l.synchronized {
+        if (l.afterStartHookHolder.registerOnlyOnce(h)) {
+          debug(s"[${l.sessionName}] Add a afterStart hook for ${h.surface}")
+          val s = l.state.get
+          if (s == STARTED) {
+            // If a session is already started, run the start hook immediately
+            tracer.afterStartInstance(session, h.injectee)
             h.execute
           }
         }
@@ -306,6 +326,13 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
     lifeCycleManager.startHooks.map { h =>
       trace(s"Calling start hook: $h")
+      h.execute
+    }
+  }
+
+  override def afterStart(lifeCycleManager: LifeCycleManager): Unit = {
+    lifeCycleManager.afterStartHooks.map { h =>
+      trace(s"Calling afterStart hook: $h")
       h.execute
     }
   }
