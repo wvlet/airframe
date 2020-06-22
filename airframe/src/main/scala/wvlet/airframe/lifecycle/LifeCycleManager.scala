@@ -81,8 +81,10 @@ class LifeCycleManager(
   }
 
   def shutdown: Unit = {
-    if (state.compareAndSet(STARTED, STOPPING) || state.compareAndSet(INIT, STOPPING)
-        || state.compareAndSet(STARTING, STOPPING)) {
+    if (
+      state.compareAndSet(STARTED, STOPPING) || state.compareAndSet(INIT, STOPPING)
+      || state.compareAndSet(STARTING, STOPPING)
+    ) {
       tracer.beforeSessionShutdown(session)
       eventHandler.beforeShutdown(this)
       // Run shutdown hooks in the reverse registration order
