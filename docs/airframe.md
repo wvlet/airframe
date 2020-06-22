@@ -5,13 +5,13 @@ title: airframe-di: Dependency Injection
 ---
 Airframe DI is a new dependency injection library designed for Scala. Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; Instead of manually passing all necessary objects (dependencies) into the constructor argument, DI framework builds the object on your behalf.
 
-Airframe DI has three major features:
+Airframe DI introduces three concepts to your Scala programming:
 
-- **Bind**: Inject necessary objects to your service without hand wiring.
-- **Design**: Allow switching the application implementation at runtime.
-- **Session**: Initialize and terminate injected services with lifecycle management hooks (e.g., onStart, onShutdown).
+- **Bind** for injecting necessary objects to your service through constructor arguments or `bind[X]` syntax.
+- **Design**: for customizing the actual application implementation to use at runtime.
+- **Session**: for managing singleton instances and properly initialize and terminate injected service objects with lifecycle management hooks (e.g., onStart, onShutdown, or `def close()` method in AutoCloseable interface).
 
-Airframe DI enables isolating the the application logic and service design. This abstraction addresses the common patterns in writing applications, such as:
+One of the advantages of Airframe DI is that it enables isolating application logic and service design. This abstraction addresses the common patterns in writing applications, such as:
 
 - Switching the implementation between production and test/debug code.
 - Minimizing the service implementation for the ease of testing.
@@ -22,7 +22,7 @@ Airframe DI enables isolating the the application logic and service design. This
 
 Airframe is available for Scala 2.12, 2.13, and [Scala.js](https://www.scala-js.org/). Airframe also supports JDK11.
 
-In Scala we have various approaches for dependency injection, such as [cake pattern](http://jonasboner.com/real-world-scala-dependency-injection-di/), [Google Guice](https://github.com/google/guice), [Macwire](https://github.com/adamw/macwire), [reader monad](https://softwaremill.com/reader-monad-constructor-dependency-injection-friend-or-foe/), etc. For more detailed comparison, see the following article:
+In Scala, we have various approaches for dependency injection, such as [cake pattern](http://jonasboner.com/real-world-scala-dependency-injection-di/), [Google Guice](https://github.com/google/guice), [Macwire](https://github.com/adamw/macwire), [reader monad](https://softwaremill.com/reader-monad-constructor-dependency-injection-friend-or-foe/), etc. For more detailed comparison, see the following article:
 
 - [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html): Comparing Airframe with Google Guice, Macwire, Dagger2, etc.
 
@@ -105,7 +105,7 @@ __in-trait injection__:
 ### Constructor Injection
 
 Constructor injection is the most natural form of injection.
-When `design.build[A]` is called, Airframe will find the primary constructor of `A` and its arguments, then creates a new instance of `A` by looking up instances for these constructor arguments defined in the _Design_.
+When `design.build[A]` is called, Airframe will find the primary constructor of `A` and its arguments, then creates a new instance of `A` by looking up instances for the constructor arguments defined in the _Design_.
 
 ```scala
 import wvlet.airframe._
@@ -212,7 +212,7 @@ By default all injections generates singleton objects that are alive until closi
 
 ## Design
 
-To configure bindings described in the above, we need to define a `Design` object using the following syntaxes:
+To configure bindings described in the above, we need to define a `Design` object using the following syntax:
 
 ```scala
 import wvlet.airframe._
@@ -236,7 +236,7 @@ val design: Design =
 ```
 
 If you define multiple bindings to the same type (e.g., P), the last binding will be used.
-
+d
 ### Singleton Bindings
 
 If you only need singletons (e.g.,`X`) and how to construct `X` is clear from its definition, no need exists to specify `bind[X].toSingleton` in your design:
@@ -281,9 +281,12 @@ Design supports `+` (add) operator to combine multiple designs at ease:
 
 ```scala
 val newDesign = d1 + d2 // d2 will override the bindings in d1
+
+// or use Design.add(Design) 
+d1.add(d2)
 ```
 
-`+` operator is not commutative because of this override, so `d1 + d2` and `d2 + d1` will be different designs if there are some overlaps.
+`+` (add) operator is not commutative because of this override behavior, so `d1 + d2` and `d2 + d1` will be different designs if there are some overlaps.
 
 ## Session
 
@@ -474,12 +477,12 @@ trait MyService {
 }
 ```
 
-These annotation are not supported in Scala.js, because it has no run-time reflection to read annotations in a class.
+These annotations are not supported in Scala.js, because Scala.js has no run-time reflection to read annotations in a class. For maximum compatibility, we recommend using onStart/onShutdown hooks or implementing AutoCloseable interface.
 
 
 ## Designing Applications with Airframe
 
-When writing an application, these concerns below are often unrelated to the core applcation logic:
+When writing an application, these concerns below are often unrelated to the core application logic:
 
 - How to build service objects.
 - How to configure services.
@@ -673,6 +676,29 @@ Then you will see the log messages that show the object bindings and injection a
 2016-12-29 22:23:17-0800 debug [SessionImpl] Get dependency [example.Example.PlaneType]  - (SessionImpl.scala:60)
 2016-12-29 22:23:17-0800 debug [SessionImpl] Get dependency [example.Example.Metric]  - (SessionImpl.scala:60)
 ```
+
+### Tracing DI with Google Chrome Browser
+
+To visualize the lifecycle of injected objects, enabling `ChromeTracer` is useful:
+
+```scala
+import wvlet.airframe._
+
+val d = newDesign
+  .withTracer(ChromeTracer.newTracer("target/trace.json"))
+
+// DI tracing report will be stored in target/trace.json
+// You can open this file with Google Chrome. Open chrome://tracing, and load the json file.
+d.build[MyApp] { app =>
+  //
+}
+```
+
+After running a session, open `target/trace.json` file using Google Chrome. Open `chome://tracing`, and load the json file. It will
+display the lifecycle of AirframeSession and the injected objects: 
+
+![image](https://wvlet.org/airframe/img/airframe/chrome_tracing.png)
+
 
 ## Use Cases
 
