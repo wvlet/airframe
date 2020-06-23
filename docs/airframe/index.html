@@ -384,12 +384,14 @@ In this case, you can bind Airframe's Session with <code>bind[Session]</code> an
 <span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">MyServerService</span> </span>{
   <span class="hljs-keyword">val</span> design = newDesign
     .bind[<span class="hljs-type">Server</span>]
-    .onInit{x:<span class="hljs-type">Server</span> =&gt; ... }    <span class="hljs-comment">// Called when the object is initialized</span>
-    .onInject{x:<span class="hljs-type">Server</span> =&gt; ... }  <span class="hljs-comment">// Called when the object is injected</span>
-    .onStart{x:<span class="hljs-type">Server</span> =&gt; ... }   <span class="hljs-comment">// Called when session.start is called</span>
-    .beforeShutdown{x:<span class="hljs-type">Server</span> =&gt; ...}  <span class="hljs-comment">// Called right before all shutdown hook is called</span>
+    .onInit{ x:<span class="hljs-type">Server</span> =&gt; ... }        <span class="hljs-comment">// Called when the object is initialized</span>
+    .onInject{ x:<span class="hljs-type">Server</span> =&gt; ... }      <span class="hljs-comment">// Called when the object is injected</span>
+    .onStart{ x:<span class="hljs-type">Server</span> =&gt; ... }       <span class="hljs-comment">// Called when session.start is called</span>
+    .afterStart{ x:<span class="hljs-type">Server</span> =&gt; ... }    <span class="hljs-comment">// Called after onStart lifecycle is finished.</span>
+                                      <span class="hljs-comment">// Use this only when you need to add an extra startup process for testing.</span>
+    .beforeShutdown{ x:<span class="hljs-type">Server</span> =&gt; ...} <span class="hljs-comment">// Called right before all shutdown hook is called</span>
                                       <span class="hljs-comment">// Useful for adding pre-shutdown step</span>
-    .onShutdown{x:<span class="hljs-type">Server</span> =&gt; ... } <span class="hljs-comment">// Called when session.shutdown is called</span>
+    .onShutdown{ x:<span class="hljs-type">Server</span> =&gt; ... }    <span class="hljs-comment">// Called when session.shutdown is called</span>
   )
 }
 </code></pre>
