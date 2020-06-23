@@ -17,7 +17,7 @@ import java.util.UUID
 
 import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.airframe.AirframeMacros._
-import wvlet.airframe.lifecycle.{BEFORE_SHUTDOWN, ON_INIT, ON_INJECT, ON_SHUTDOWN, ON_START}
+import wvlet.airframe.lifecycle.{AFTER_START, BEFORE_SHUTDOWN, ON_INIT, ON_INJECT, ON_SHUTDOWN, ON_START}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
@@ -201,6 +201,9 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
   def onStart(body: A => Unit): DesignWithContext[A] = {
     design.withLifeCycleHook[A](LifeCycleHookDesign(ON_START, from, body.asInstanceOf[Any => Unit]))
   }
+  def afterStart(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(AFTER_START, from, body.asInstanceOf[Any => Unit]))
+  }
   def beforeShutdown(body: A => Unit): DesignWithContext[A] = {
     design.withLifeCycleHook[A](LifeCycleHookDesign(BEFORE_SHUTDOWN, from, body.asInstanceOf[Any => Unit]))
   }
@@ -209,6 +212,10 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
   }
 }
 
+/**
+  * DesignWithContext[A] is a wrapper of Design class for chaining lifecycle hooks for the same type A.
+  * This can be safely cast to just Design
+  */
 class DesignWithContext[A](
     design: Design,
     lastSurface: Surface
@@ -221,6 +228,9 @@ class DesignWithContext[A](
   }
   def onStart(body: A => Unit): DesignWithContext[A] = {
     design.withLifeCycleHook[A](LifeCycleHookDesign(ON_START, lastSurface, body.asInstanceOf[Any => Unit]))
+  }
+  def afterStart(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(AFTER_START, lastSurface, body.asInstanceOf[Any => Unit]))
   }
   def beforeShutdown(body: A => Unit): DesignWithContext[A] = {
     design.withLifeCycleHook[A](LifeCycleHookDesign(BEFORE_SHUTDOWN, lastSurface, body.asInstanceOf[Any => Unit]))

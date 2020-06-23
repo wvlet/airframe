@@ -26,6 +26,7 @@ class DesignTimeLifeCycleHookTest extends AirSpec {
     val initializedTime    = new AtomicInteger(0)
     val injectTime         = new AtomicInteger(0)
     val startTime          = new AtomicInteger(0)
+    val afterStartTime     = new AtomicInteger(0)
     val beforeShutdownTime = new AtomicInteger(0)
     val shutdownTime       = new AtomicInteger(0)
 
@@ -34,6 +35,7 @@ class DesignTimeLifeCycleHookTest extends AirSpec {
       .onInit(x => initializedTime.set(order.getAndIncrement()))
       .onInject(x => injectTime.set(order.getAndIncrement()))
       .onStart(x => startTime.set(order.getAndIncrement()))
+      .afterStart(x => afterStartTime.set(order.getAndIncrement()))
       .beforeShutdown(x => beforeShutdownTime.set(order.getAndIncrement()))
       .onShutdown(x => shutdownTime.set(order.getAndIncrement()))
 
@@ -44,8 +46,9 @@ class DesignTimeLifeCycleHookTest extends AirSpec {
     initializedTime.get shouldBe 1
     injectTime.get shouldBe 2
     startTime.get shouldBe 3
-    beforeShutdownTime.get shouldBe 4
-    shutdownTime.get shouldBe 5
+    afterStartTime.get shouldBe 4
+    beforeShutdownTime.get shouldBe 5
+    shutdownTime.get shouldBe 6
   }
 
   def `add lifecycle only`: Unit = {
@@ -56,14 +59,15 @@ class DesignTimeLifeCycleHookTest extends AirSpec {
     val d2 = d
       .bind[AtomicInteger]
       .onStart { x => x.addAndGet(1) }
-      .onShutdown { x => x.addAndGet(1 << 1) }
-      .beforeShutdown { x => x.addAndGet(1 << 2) }
-      .onInit { x => x.addAndGet(1 << 3) }
-      .onInject { x => x.addAndGet(1 << 4) }
+      .afterStart { x => x.addAndGet(1 << 1) }
+      .onShutdown { x => x.addAndGet(1 << 2) }
+      .beforeShutdown { x => x.addAndGet(1 << 3) }
+      .onInit { x => x.addAndGet(1 << 4) }
+      .onInject { x => x.addAndGet(1 << 5) }
 
     d2.withSession { s => }
 
-    v.get() shouldBe 0x1f
+    v.get() shouldBe 0x3f
   }
 
 }
