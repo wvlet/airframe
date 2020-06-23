@@ -6,6 +6,28 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.6.1
+
+This release introduced URLConnection-based HTTP client for handy http request testing, and improved RPC request handling to support arbitrary number of RPC function arguments.   
+
+-  airframe-di: Add .afterStart lifecycle hook ([#1153](https://github.com/wvlet/airframe/issues/1153)) [[c6defb2](https://github.com/wvlet/airframe/commit/c6defb2)]
+-  airframe-http: [#1131](https://github.com/wvlet/airframe/issues/1131) Add a sync client using URLConnection  ([#1134](https://github.com/wvlet/airframe/issues/1134)) [[b70cdbd](https://github.com/wvlet/airframe/commit/b70cdbd)]
+-  airframe-http: [#1100](https://github.com/wvlet/airframe/issues/1100) Support unary and n-ary functions in RPC  ([#1126](https://github.com/wvlet/airframe/issues/1126)) [[0d2f280](https://github.com/wvlet/airframe/commit/0d2f280)]
+-  airframe-http: Various http client fixes ([#1142](https://github.com/wvlet/airframe/issues/1142)) [[3d78428](https://github.com/wvlet/airframe/commit/3d78428)]
+-  airframe-http: [#1129](https://github.com/wvlet/airframe/issues/1129) Deprecate no-key unary mapping for RPC ([#1143](https://github.com/wvlet/airframe/issues/1143)) [[a2f6b70](https://github.com/wvlet/airframe/commit/a2f6b70)]
+-  airframe-http: [#1128](https://github.com/wvlet/airframe/issues/1128) Add Router.verifyRoutes to check duplicated endpoints ([#1137](https://github.com/wvlet/airframe/issues/1137)) [[c6768ed](https://github.com/wvlet/airframe/commit/c6768ed)]
+-  airframe-http-rx: [#1117](https://github.com/wvlet/airframe/issues/1117) Add RxVar.forceSet and forceUpdate ([#1144](https://github.com/wvlet/airframe/issues/1144)) [[3b8887c](https://github.com/wvlet/airframe/commit/3b8887c)]
+-  airframe-jdbc: Update sqlite-jdbc to 3.32.3 ([#1150](https://github.com/wvlet/airframe/issues/1150)) [[dc00d2c](https://github.com/wvlet/airframe/commit/dc00d2c)]
+
+Internal changes:
+-  Support Metals + Bloop build ([#1141](https://github.com/wvlet/airframe/issues/1141)) [[fa3c458](https://github.com/wvlet/airframe/commit/fa3c458)]
+-  Update presto-main to 336 ([#1140](https://github.com/wvlet/airframe/issues/1140)) [[9dfefc2](https://github.com/wvlet/airframe/commit/9dfefc2)]
+-  Update scalafmt-core to 2.6.0 ([#1139](https://github.com/wvlet/airframe/issues/1139)) [[002e9a1](https://github.com/wvlet/airframe/commit/002e9a1)]
+-  Update spark-sql to 2.4.6 ([#1122](https://github.com/wvlet/airframe/issues/1122)) [[97de722](https://github.com/wvlet/airframe/commit/97de722)]
+-  Update json4s-jackson to 3.6.9 ([#1138](https://github.com/wvlet/airframe/issues/1138)) [[f8be3e1](https://github.com/wvlet/airframe/commit/f8be3e1)]
+-  Update postgresql to 42.2.14 ([#1125](https://github.com/wvlet/airframe/issues/1125)) [[13d89c1](https://github.com/wvlet/airframe/commit/13d89c1)]
+-  Upgrade to sbt 1.3.12 with Scala.js build fixes ([#1124](https://github.com/wvlet/airframe/issues/1124)) [[4e7611f](https://github.com/wvlet/airframe/commit/4e7611f)]
+
 ## 20.6.0
 
 -  airframe-codec: [#1091](https://github.com/wvlet/airframe/issues/1091) Support complex types in AnyCodec ([#1098](https://github.com/wvlet/airframe/issues/1098)) [[d333515](https://github.com/wvlet/airframe/commit/d333515)]
