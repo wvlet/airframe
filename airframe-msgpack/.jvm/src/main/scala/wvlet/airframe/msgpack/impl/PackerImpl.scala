@@ -68,7 +68,7 @@ class PackerImpl(packer: MessagePacker) extends Packer {
     packer.packString(v)
     this
   }
-  override def packTimestamp(epochSecond: Long, nanoAdjustment: Int): PackerImpl.this.type = {
+  override def packTimestamp(epochSecond: Long, nanoAdjustment: Int = 0): PackerImpl.this.type = {
     val extData = PackerImpl.timeStampExtBytes(epochSecond, nanoAdjustment)
     packer.writePayload(extData)
     this
