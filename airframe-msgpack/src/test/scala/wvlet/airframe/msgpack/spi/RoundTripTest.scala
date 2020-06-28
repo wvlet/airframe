@@ -370,7 +370,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
 
     // Corner cases for u
-    // sing uint32 nanoseq (out of int32 range)
+    // sign uint32 nanoseq (out of int32 range)
     for (
       v <- Seq(
         Instant.ofEpochSecond(Instant.now().getEpochSecond, 123456789L),
