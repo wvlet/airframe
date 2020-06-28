@@ -137,7 +137,7 @@ trait MessageCodec[A] extends LogSupport {
     if (v.hasError) {
       throw v.getError.get
     } else if (v.isNull) {
-      throw new MessageCodecException[A](INVALID_DATA, this, s"Invalid JSON data for ${this}:\n${json}")
+      throw new MessageCodecException(INVALID_DATA, this, s"Invalid JSON data for ${this}:\n${json}")
     } else {
       v.getLastValue.asInstanceOf[A]
     }

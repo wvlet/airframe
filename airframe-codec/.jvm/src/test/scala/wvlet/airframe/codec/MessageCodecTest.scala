@@ -59,7 +59,7 @@ class MessageCodecTest extends AirSpec {
   }
 
   def `throw MessageCodecException upon invalid JSON data`: Unit = {
-    val ex = intercept[MessageCodecException[_]] {
+    val ex = intercept[MessageCodecException] {
       val a = MessageCodec.fromJson[ExtractTest]("""{"id":"invalid_id"}""")
     }
     ex.errorCode shouldBe INVALID_DATA

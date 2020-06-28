@@ -12,8 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import java.lang.reflect.InvocationTargetException
-
 import wvlet.airframe.json.JSON
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject, JSONString}
 import wvlet.airframe.surface.Surface
@@ -173,7 +171,31 @@ class ScalaStandardCodecTest extends CodecSpec {
       case JSONArray(Seq(JSON.JSONNull, JSONString(v))) if v == "Hello Either" =>
       // ok
       case _ =>
-        fail("cannot reatch here")
+        fail("cannot reach here")
     }
+  }
+
+  def `read valid JSON input for Either`: Unit = {
+    val codec = MessageCodec.of[Either[Throwable, String]]
+    codec.unpackJson("""[{"exceptionClass":"java.lang.NullPointerException","message":"NPE"}, null]""")
+    codec.unpackJson("""[null, "hello"]""")
+  }
+
+  def `reject invalid JSON input for Either`: Unit = {
+    val codec = MessageCodec.of[Either[Throwable, String]]
+
+    def testInvalid(json: String): Unit = {
+      intercept[MessageCodecException] {
+        codec.unpackJson(json)
+      }
+    }
+
+    testInvalid("""["hello", "hello"]""")
+    testInvalid("""[{"exceptionClass":"java.lang.NullPointerException","message":"NPE"}, "hello"]""")
+    testInvalid("""[null, null]""")
+    testInvalid("""[]""")
+    testInvalid("""["hello"]""")
+    testInvalid("""[null, "hello", null]""")
+    testInvalid("""{"exceptionClass":"java.lang.NullPointerException","message":"NPE"}""")
   }
 }
