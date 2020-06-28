@@ -114,6 +114,7 @@ class ScalaStandardCodecTest extends CodecSpec {
         x.getMethodName.contains("Left") shouldBe true
       case _ =>
         warn(stackTrace.mkString("\n"))
+        fail("should not reach here")
     }
   }
 
