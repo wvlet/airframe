@@ -261,9 +261,12 @@ object ScalaStandardCodec {
               }
             }
           }
-        case _ =>
+        case other =>
           u.skipValue
-          v.setIncompatibleFormatException(this, s"EitherCodec ${this} can read only Array[2] MessagePack value")
+          v.setIncompatibleFormatException(
+            this,
+            s"EitherCodec ${this} can read only Array[2] MessagePack value, but found ${other}"
+          )
       }
     }
   }
