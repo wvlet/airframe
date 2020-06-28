@@ -880,6 +880,16 @@ object PrimitiveCodec {
             pack(p, k)
             pack(p, v)
           }
+        case e: Either[_, _] =>
+          p.packArrayHeader(2)
+          e match {
+            case Left(l) =>
+              pack(p, l)
+              p.packNil
+            case Right(r) =>
+              p.packNil
+              pack(p, r)
+          }
         case v: Throwable =>
           ThrowableCodec.pack(p, v)
         case _ =>
