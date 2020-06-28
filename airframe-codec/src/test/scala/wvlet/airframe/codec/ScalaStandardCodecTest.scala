@@ -108,7 +108,7 @@ class ScalaStandardCodecTest extends CodecSpec {
 
     // Should generate standard stack traces
     val stackTrace = ge.getStackTrace
-    val errorLoc   = stackTrace.find(x => x.getFileName == "ScalaStandardCodecTest.scala")
+    val errorLoc   = stackTrace.find(x => x.getFileName.contains("ScalaStandardCodecTest.scala"))
     errorLoc shouldBe defined
     errorLoc.get.getMethodName.contains("Left") shouldBe true
   }
@@ -129,7 +129,7 @@ class ScalaStandardCodecTest extends CodecSpec {
 
   def `support Either Left with nested exception`: Unit = {
     val codec   = MessageCodec.of[Either[Throwable, String]]
-    val et      = Left(new InvocationTargetException(new NullPointerException("NPE")))
+    val et      = Left(new Exception(new NullPointerException("NPE")))
     val msgpack = codec.pack(et)
     val either  = codec.unpack(msgpack)
 
