@@ -44,11 +44,10 @@ case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageC
 
   protected[codec] def ofSurface(surface: Surface, seen: Set[Surface] = Set.empty): MessageCodec[_] = {
     // TODO Create a fast object codec with code generation (e.g., Scala macros)
-
     if (cache.contains(surface)) {
       cache(surface)
     } else if (seen.contains(surface)) {
-      throw new IllegalArgumentException(s"Codec for recursive types is not supported: ${surface}")
+      LazyCodec(surface, this)
     } else {
       val seenSet = seen + surface
 

@@ -12,6 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
+import java.lang.reflect.InvocationTargetException
+
+import wvlet.airframe.json.JSON
+import wvlet.airframe.json.JSON.{JSONArray, JSONObject, JSONString}
 import wvlet.airframe.surface.Surface
 
 /**
@@ -85,11 +89,86 @@ class ScalaStandardCodecTest extends CodecSpec {
     )
   }
 
-  def `support Either`: Unit = {
+  def `support Either Left`: Unit = {
     val codec   = MessageCodec.of[Either[Throwable, String]]
-    val msgpack = codec.pack(Left(new IllegalArgumentException("test exception")))
+    val et      = Left(new IllegalArgumentException("test exception"))
+    val msgpack = codec.pack(et)
     val either  = codec.unpack(msgpack)
-    info(either)
+    debug(either)
+
+    either.isLeft shouldBe true
+    either.isRight shouldBe false
+
+    val ex = either.left.get
+    ex.getClass shouldBe classOf[GenericException]
+    val ge = ex.asInstanceOf[GenericException]
+    ge.message shouldBe "test exception"
+    ge.exceptionClass shouldBe "java.lang.IllegalArgumentException"
+    ge.cause shouldBe None
+
+    // Should generate standard stack traces
+    val stackTrace = ge.getStackTrace
+    val errorLoc   = stackTrace.find(x => x.getFileName == "ScalaStandardCodecTest.scala")
+    errorLoc shouldBe defined
+    errorLoc.get.getMethodName.contains("Left") shouldBe true
   }
 
+  def `Either Left should produce Array[JSON objects, null]` : Unit = {
+    val codec = MessageCodec.of[Either[Throwable, String]]
+    val et    = Left(new IllegalArgumentException("test exception"))
+    val json  = codec.toJson(et)
+    debug(json)
+    JSON.parse(json) match {
+      case JSONArray(Seq(obj @ JSONObject(v), JSON.JSONNull)) =>
+        (obj / "exceptionClass").toStringValue shouldBe "java.lang.IllegalArgumentException"
+        (obj / "message").toStringValue shouldBe "test exception"
+      case _ =>
+        fail("cannot reach here")
+    }
+  }
+
+  def `support Either Left with nested exception`: Unit = {
+    val codec   = MessageCodec.of[Either[Throwable, String]]
+    val et      = Left(new InvocationTargetException(new NullPointerException("NPE")))
+    val msgpack = codec.pack(et)
+    val either  = codec.unpack(msgpack)
+
+    debug(either)
+    val json = codec.toJson(et)
+    debug(json)
+
+    val ex = either.left.get
+    ex.getCause match {
+      case g @ GenericException("java.lang.NullPointerException", "NPE", stackTrace, None) =>
+        // ok
+        debug(g)
+      case _ =>
+        fail("cannot reach here")
+    }
+  }
+
+  def `support Either Right`: Unit = {
+    val codec   = MessageCodec.of[Either[Throwable, String]]
+    val msgpack = codec.pack(Right("Hello Either"))
+    val either  = codec.unpack(msgpack)
+    debug(either)
+
+    either match {
+      case Left(_) =>
+        fail("should not reach here")
+      case Right(s) =>
+        s shouldBe "Hello Either"
+    }
+  }
+
+  def `Either Right should produce JSONArray[null, JSONValue]` : Unit = {
+    val codec = MessageCodec.of[Either[Throwable, String]]
+    val json  = codec.toJson(Right("Hello Either"))
+    JSON.parse(json) match {
+      case JSONArray(Seq(JSON.JSONNull, JSONString(v))) if v == "Hello Either" =>
+      // ok
+      case _ =>
+        fail("cannot reatch here")
+    }
+  }
 }

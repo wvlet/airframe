@@ -24,7 +24,8 @@ object ThrowableCodec extends MessageCodec[Throwable] {
   private lazy val genericExceptionSurface = Surface.of[GenericException]
   // This needs to be lazy as MessageCodecFactory will load ThrowableCodec
   private lazy val genericExceptionCodec =
-    MessageCodec.ofSurface(genericExceptionSurface).asInstanceOf[MessageCodec[GenericException]]
+    MessageCodecFactory.defaultFactoryForJSON
+      .ofSurface(genericExceptionSurface).asInstanceOf[MessageCodec[GenericException]]
 
   override def pack(p: Packer, v: Throwable): Unit = {
     val m = GenericException.fromThrowable(v)
@@ -45,17 +46,23 @@ object ThrowableCodec extends MessageCodec[Throwable] {
   */
 case class GenericException(
     exceptionClass: String,
-    message: Option[String] = None,
+    message: String,
     stackTrace: Seq[GenericStackTraceElement] = Seq.empty,
     cause: Option[GenericException] = None
-) extends Throwable(message.getOrElse(null), cause.getOrElse(null)) {
+) extends Throwable(message, cause.getOrElse(null)) {
+
+  // Populate the stack trace when the parent Throwable constructor is called
+  override def fillInStackTrace(): Throwable = {
+    setStackTrace(getStackTrace)
+    this
+  }
   override def getStackTrace: Array[StackTraceElement] = stackTrace.map(_.toJavaStackTraceElement).toArray
 }
 
 object GenericException {
   def fromThrowable(e: Throwable, seen: Set[Throwable] = Set.empty): GenericException = {
     val exceptionClass = e.getClass.getName
-    val message        = Option(e.getMessage)
+    val message        = Option(e.getMessage).getOrElse(e.getClass.getSimpleName)
 
     val stackTrace = for (x <- e.getStackTrace) yield {
       GenericStackTraceElement(
@@ -77,7 +84,8 @@ object GenericException {
     GenericException(
       exceptionClass = exceptionClass,
       message = message,
-      stackTrace = stackTrace,
+      // materialize stack trace just in case
+      stackTrace = stackTrace.toIndexedSeq,
       cause = cause
     )
   }
@@ -92,7 +100,12 @@ case class GenericStackTraceElement(
     fileName: Option[String],
     lineNumber: Int
 ) {
+  override def toString: String = {
+    val fileLoc = fileName.map(x => s"(${x}:${lineNumber})").getOrElse("")
+    s"${className}:${methodName}${fileLoc}"
+  }
   def toJavaStackTraceElement: StackTraceElement = {
+
     new StackTraceElement(className, methodName, fileName.getOrElse(null), lineNumber)
   }
 }
