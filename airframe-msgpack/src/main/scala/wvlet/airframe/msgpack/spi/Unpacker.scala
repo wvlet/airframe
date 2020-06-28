@@ -28,6 +28,14 @@ trait Unpacker extends AutoCloseable {
   def skipValue(count: Int): Unit
 
   def unpackNil: Unit
+
+  /**
+    * Peeks a Nil byte and read it if the next byte is actually a Nil value,
+    * read the Nil value (proceed the cursor) and return true.
+    * If the next byte is not Nil, it will return false
+    *
+    * @return true if a nil value is read
+    */
   def tryUnpackNil: Boolean
   def unpackBoolean: Boolean
   def unpackByte: Byte

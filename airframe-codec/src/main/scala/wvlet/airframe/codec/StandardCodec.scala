@@ -13,10 +13,8 @@
  */
 package wvlet.airframe.codec
 
-import java.io.{PrintWriter, StringWriter}
 import java.util.UUID
 
-import wvlet.airframe.msgpack.spi._
 import wvlet.airframe.surface.Surface
 
 /**
@@ -32,42 +30,4 @@ object StandardCodec {
 
   val standardCodec: Map[Surface, MessageCodec[_]] =
     PrimitiveCodec.primitiveCodec ++ PrimitiveCodec.primitiveArrayCodec ++ javaClassCodec
-
-  object ThrowableCodec extends MessageCodec[Throwable] {
-    override def pack(p: Packer, v: Throwable): Unit = {
-      p.packMapHeader(4)
-      // param 1
-      p.packString("type")
-      p.packString(v.getClass.getName)
-
-      // param 2
-      p.packString("message")
-      val msg = v.getMessage
-      if (msg == null) {
-        p.packNil
-      } else {
-        p.packString(msg)
-      }
-
-      // param 3
-      val s = new StringWriter
-      val w = new PrintWriter(s)
-      v.printStackTrace(w)
-      w.flush()
-      w.close()
-      p.packString("stackTrace")
-      p.packString(s.toString)
-
-      // param 4
-      p.packString("cause")
-      val cause = v.getCause
-      if (cause == null || cause == v) {
-        p.packNil
-      } else {
-        ThrowableCodec.pack(p, cause)
-      }
-    }
-    // We do not support deserialization of generic Throwable classes
-    override def unpack(u: Unpacker, v: MessageContext): Unit = ???
-  }
 }

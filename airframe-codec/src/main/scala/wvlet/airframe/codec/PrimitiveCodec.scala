@@ -17,7 +17,6 @@ import java.time.Instant
 import java.util.Base64
 
 import wvlet.airframe.codec.PrimitiveCodec.IntArrayCodec.unpack
-import wvlet.airframe.codec.StandardCodec.ThrowableCodec
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
 import wvlet.airframe.msgpack.spi.Value.ExtensionValue

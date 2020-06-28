@@ -14,6 +14,7 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
+import wvlet.airframe.surface.Zero
 
 /**
   */
@@ -207,6 +208,62 @@ object ScalaStandardCodec {
         } else {
           v.setIncompatibleFormatException(this, s"Tuples of ${numElems} elements is not supported")
         }
+      }
+    }
+  }
+
+  case class EitherCodec[A, B](leftCodec: MessageCodec[A], rightCodec: MessageCodec[B])
+      extends MessageCodec[Either[A, B]] {
+    override def pack(p: Packer, v: Either[A, B]): Unit = {
+      // Encode Either[A, B] as Array[2](left, nil) or Array[2](nil, right)
+      p.packArrayHeader(2)
+      v match {
+        case Left(l) =>
+          leftCodec.pack(p, l)
+          p.packNil
+        case Right(r) =>
+          p.packNil
+          rightCodec.pack(p, r)
+      }
+    }
+
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
+      u.getNextValueType match {
+        case ValueType.ARRAY =>
+          val size = u.unpackArrayHeader
+          if (size != 2) {
+            u.skipValue(size)
+            v.setIncompatibleFormatException(
+              this,
+              s"EitherCodec ${this} expects Array[2] input value, but get Array[${size}]"
+            )
+          } else {
+            // Parse Array[2]
+            if (u.tryUnpackNil) {
+              // (nil, right)
+              rightCodec.unpack(u, v)
+              if (!v.isNull) {
+                v.setObject(Right(v.getLastValue))
+              }
+            } else {
+              // (left, nil)
+              leftCodec.unpack(u, v)
+              if (!v.isNull) {
+                // Check if Right == Nil
+                if (u.tryUnpackNil) {
+                  v.setObject(Left(v.getLastValue))
+                } else {
+                  v.setIncompatibleFormatException(
+                    this,
+                    s"Unexpected input for Either ${this}: (${v.getLastValue}, ${u.unpackValue}"
+                  )
+                }
+              }
+            }
+          }
+        case _ =>
+          u.skipValue
+          v.setIncompatibleFormatException(this, s"EitherCodec ${this} can read only Array[2] MessagePack value")
       }
     }
   }

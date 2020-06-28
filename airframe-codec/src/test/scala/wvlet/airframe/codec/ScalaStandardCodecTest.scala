@@ -84,4 +84,12 @@ class ScalaStandardCodecTest extends CodecSpec {
       (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21)
     )
   }
+
+  def `support Either`: Unit = {
+    val codec   = MessageCodec.of[Either[Throwable, String]]
+    val msgpack = codec.pack(Left(new IllegalArgumentException("test exception")))
+    val either  = codec.unpack(msgpack)
+    info(either)
+  }
+
 }
