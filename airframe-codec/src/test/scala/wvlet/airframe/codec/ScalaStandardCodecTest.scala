@@ -108,7 +108,7 @@ class ScalaStandardCodecTest extends CodecSpec {
 
     // Should generate standard stack traces
     val stackTrace = ge.getStackTrace
-    val errorLoc   = stackTrace.find(x => x.getFileName.contains("ScalaStandardCodecTest.scala"))
+    val errorLoc   = stackTrace.find(x => x.getFileName.contains("ScalaStandardCodecTest"))
     errorLoc shouldBe defined
     errorLoc.get.getMethodName.contains("Left") shouldBe true
   }
