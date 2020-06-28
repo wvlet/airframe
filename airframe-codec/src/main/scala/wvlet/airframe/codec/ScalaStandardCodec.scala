@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
+import wvlet.airframe.msgpack.spi.Value.NilValue
+import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, ValueType}
 import wvlet.airframe.surface.Zero
 
 /**
@@ -239,26 +240,24 @@ object ScalaStandardCodec {
             )
           } else {
             // Parse Array[2]
-            if (u.tryUnpackNil) {
-              // (nil, right)
-              rightCodec.unpack(u, v)
-              if (!v.isNull) {
-                v.setObject(Right(v.getLastValue))
-              }
-            } else {
-              // (left, nil)
-              leftCodec.unpack(u, v)
-              if (!v.isNull) {
-                // Check if Right == Nil
-                if (u.tryUnpackNil) {
+            val left  = u.unpackValue
+            val right = u.unpackValue
+            (left, right) match {
+              case (l, NilValue) =>
+                leftCodec.unpack(MessagePack.newUnpacker(l.toMsgpack), v)
+                if (!v.isNull) {
                   v.setObject(Left(v.getLastValue))
-                } else {
-                  v.setIncompatibleFormatException(
-                    this,
-                    s"Unexpected input for Either ${this}: (${v.getLastValue}, ${u.unpackValue}"
-                  )
                 }
-              }
+              case (NilValue, r) =>
+                rightCodec.unpack(MessagePack.newUnpacker(r.toMsgpack), v)
+                if (!v.isNull) {
+                  v.setObject(Right(v.getLastValue))
+                }
+              case _ =>
+                v.setIncompatibleFormatException(
+                  this,
+                  s"Unexpected input for Either ${this}: Array(${left}, ${right})"
+                )
             }
           }
         case other =>
