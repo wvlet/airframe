@@ -17,7 +17,6 @@ import java.time.Instant
 import java.util.Base64
 
 import wvlet.airframe.codec.PrimitiveCodec.IntArrayCodec.unpack
-import wvlet.airframe.codec.StandardCodec.ThrowableCodec
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
 import wvlet.airframe.msgpack.spi.Value.ExtensionValue
@@ -880,6 +879,16 @@ object PrimitiveCodec {
           for ((k, v) <- m) {
             pack(p, k)
             pack(p, v)
+          }
+        case e: Either[_, _] =>
+          p.packArrayHeader(2)
+          e match {
+            case Left(l) =>
+              pack(p, l)
+              p.packNil
+            case Right(r) =>
+              p.packNil
+              pack(p, r)
           }
         case v: Throwable =>
           ThrowableCodec.pack(p, v)

@@ -13,13 +13,15 @@
  */
 package wvlet.airframe.codec
 
+import scala.language.higherKinds
+
 trait CodecErrorCode
 case object INVALID_DATA      extends CodecErrorCode
 case object MISSING_PARAMETER extends CodecErrorCode
 
 /**
   */
-class MessageCodecException[A](val errorCode: CodecErrorCode, val codec: MessageCodec[A], val message: String)
+class MessageCodecException(val errorCode: CodecErrorCode, val codec: MessageCodec[_], val message: String)
     extends Exception(message) {
   override def getMessage = s"[${errorCode.toString}] ${message} -- codec: ${codec}"
 }

@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
+import wvlet.airframe.json.JSON
+import wvlet.airframe.json.JSON.{JSONArray, JSONObject, JSONString}
 import wvlet.airframe.surface.Surface
 
 /**
@@ -83,5 +85,117 @@ class ScalaStandardCodecTest extends CodecSpec {
         .of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
       (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21)
     )
+  }
+
+  def `support Either Left`: Unit = {
+    val codec   = MessageCodec.of[Either[Throwable, String]]
+    val et      = Left(new IllegalArgumentException("test exception"))
+    val msgpack = codec.pack(et)
+    val either  = codec.unpack(msgpack)
+    debug(either)
+
+    either.isLeft shouldBe true
+    either.isRight shouldBe false
+
+    val ex = either.left.get
+    ex.getClass shouldBe classOf[GenericException]
+    val ge = ex.asInstanceOf[GenericException]
+    ge.message shouldBe "test exception"
+    ge.exceptionClass shouldBe "java.lang.IllegalArgumentException"
+    ge.cause shouldBe None
+
+    // Should generate standard Java stack traces
+    val stackTrace = ge.getStackTrace
+    val errorLoc   = stackTrace.find(x => x.getClassName.contains("ScalaStandardCodecTest"))
+    errorLoc match {
+      case Some(x) =>
+        x.getMethodName.contains("Left") shouldBe true
+      case _ =>
+        warn(stackTrace.mkString("\n"))
+        fail("should not reach here")
+    }
+  }
+
+  def `Either Left should produce Array[JSON objects, null]` : Unit = {
+    val codec = MessageCodec.of[Either[Throwable, String]]
+    val et    = Left(new IllegalArgumentException("test exception"))
+    val json  = codec.toJson(et)
+    debug(json)
+    JSON.parse(json) match {
+      case JSONArray(Seq(obj @ JSONObject(v), JSON.JSONNull)) =>
+        (obj / "exceptionClass").toStringValue shouldBe "java.lang.IllegalArgumentException"
+        (obj / "message").toStringValue shouldBe "test exception"
+      case _ =>
+        fail("cannot reach here")
+    }
+  }
+
+  def `support Either Left with nested exception`: Unit = {
+    val codec   = MessageCodec.of[Either[Throwable, String]]
+    val et      = Left(new Exception(new NullPointerException("NPE")))
+    val msgpack = codec.pack(et)
+    val either  = codec.unpack(msgpack)
+
+    debug(either)
+    val json = codec.toJson(et)
+    debug(json)
+
+    val ex = either.left.get
+    ex.getCause match {
+      case g @ GenericException("java.lang.NullPointerException", "NPE", stackTrace, None) =>
+        // ok
+        debug(g)
+      case _ =>
+        fail("cannot reach here")
+    }
+  }
+
+  def `support Either Right`: Unit = {
+    val codec   = MessageCodec.of[Either[Throwable, String]]
+    val msgpack = codec.pack(Right("Hello Either"))
+    val either  = codec.unpack(msgpack)
+    debug(either)
+
+    either match {
+      case Left(_) =>
+        fail("should not reach here")
+      case Right(s) =>
+        s shouldBe "Hello Either"
+    }
+  }
+
+  def `Either Right should produce JSONArray[null, JSONValue]` : Unit = {
+    val codec = MessageCodec.of[Either[Throwable, String]]
+    val json  = codec.toJson(Right("Hello Either"))
+    JSON.parse(json) match {
+      case JSONArray(Seq(JSON.JSONNull, JSONString(v))) if v == "Hello Either" =>
+      // ok
+      case _ =>
+        fail("cannot reach here")
+    }
+  }
+
+  def `read valid JSON input for Either`: Unit = {
+    val codec = MessageCodec.of[Either[Throwable, String]]
+    codec.unpackJson("""[{"exceptionClass":"java.lang.NullPointerException","message":"NPE"}, null]""")
+    codec.unpackJson("""[null, "hello"]""")
+  }
+
+  def `reject invalid JSON input for Either`: Unit = {
+    val codec = MessageCodec.of[Either[Throwable, String]]
+
+    def testInvalid(json: String): Unit = {
+      intercept[MessageCodecException] {
+        codec.unpackJson(json)
+      }
+    }
+
+    testInvalid("""["hello", "hello"]""")
+    testInvalid("""[{"exceptionClass":"java.lang.NullPointerException","message":"NPE"}, "hello"]""")
+    testInvalid("""[null, null]""")
+    testInvalid("""[]""")
+    testInvalid("""["hello"]""")
+    testInvalid("""[null, "hello", null]""")
+    testInvalid("""{"exceptionClass":"java.lang.NullPointerException","message":"NPE"}""")
   }
 }

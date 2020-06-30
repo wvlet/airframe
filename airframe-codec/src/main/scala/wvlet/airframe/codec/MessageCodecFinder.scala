@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.codec.ScalaStandardCodec.{OptionCodec, TupleCodec}
+import wvlet.airframe.codec.ScalaStandardCodec.{EitherCodec, OptionCodec, TupleCodec}
 import wvlet.airframe.surface.{Alias, EnumSurface, GenericSurface, Surface}
 
 /**
@@ -74,6 +74,8 @@ object MessageCodecFinder {
       case o if o.isOption =>
         val elementSurface = o.typeArgs(0)
         OptionCodec(factory.ofSurface(elementSurface, seenSet))
+      case et: Surface if classOf[Either[_, _]].isAssignableFrom(et.rawType) =>
+        EitherCodec(factory.ofSurface(et.typeArgs(0)), factory.ofSurface(et.typeArgs(1)))
       // Tuple
       case g: GenericSurface
           if classOf[Product].isAssignableFrom(g.rawType) && g.rawType.getName.startsWith("scala.Tuple") =>

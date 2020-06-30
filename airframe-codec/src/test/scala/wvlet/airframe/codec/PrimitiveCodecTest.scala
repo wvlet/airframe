@@ -18,7 +18,8 @@ import java.time.Instant
 
 import org.scalacheck.util.Pretty
 import wvlet.airframe.codec.PrimitiveCodec.LongCodec
-import wvlet.airframe.json.JSON.JSONString
+import wvlet.airframe.json.JSON
+import wvlet.airframe.json.JSON.{JSONArray, JSONObject, JSONString}
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.msgpack.spi.Value.StringValue
 import wvlet.airframe.surface.{ArraySurface, GenericSurface, Surface}
@@ -457,6 +458,25 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     val codec = MessageCodec.of[Seq[Any]]
     val seq   = codec.fromJson("[null, 1]")
     seq shouldBe Seq(null, 1)
+  }
+
+  def `pack Either (Left) in AnyCodec`: Unit = {
+    val codec = MessageCodec.of[Any]
+    val json  = codec.toJson(Left(new NullPointerException("NPE")))
+
+    val eitherCodec = MessageCodec.of[Either[GenericException, String]]
+    val ex          = eitherCodec.fromJson(json).left.get
+    ex.exceptionClass shouldBe "java.lang.NullPointerException"
+    ex.message shouldBe "NPE"
+  }
+
+  def `pack Either (Right) in AnyCodec`: Unit = {
+    val codec = MessageCodec.of[Any]
+    val json  = codec.toJson(Right("hello Either"))
+
+    val eitherCodec = MessageCodec.of[Either[GenericException, String]]
+    val msg         = eitherCodec.fromJson(json).right.get
+    msg shouldBe "hello Either"
   }
 
   case class BinaryData(data: Array[Byte])
