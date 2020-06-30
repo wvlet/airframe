@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen.client
-import java.util.Locale
 
 import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, ClientSourceDef}
 
@@ -45,6 +44,7 @@ object AsyncClient extends HttpClientType {
       s"""${header(src.packageName)}
          |
          |import wvlet.airframe.http._
+         |import scala.language.higherKinds
          |${src.importStatements}
          |
          |${cls}""".stripMargin.stripMargin
@@ -163,6 +163,7 @@ object ScalaJSClient extends HttpClientType {
          |import wvlet.airframe.surface.Surface
          |import wvlet.airframe.http.js.JSHttpClient
          |import wvlet.airframe.http.HttpMessage.Request
+         |
          |${src.importStatements}
          |
          |${cls}""".stripMargin
