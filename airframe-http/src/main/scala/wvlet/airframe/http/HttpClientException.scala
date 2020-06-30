@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
-import java.io.{EOFException, IOException}
+import java.io.EOFException
 import java.lang.reflect.InvocationTargetException
 import java.net._
 import java.nio.channels.ClosedChannelException
@@ -129,38 +129,17 @@ object HttpClientException extends LogSupport {
   /**
     * The default classifier for http client exception
     *
-    * @param e
+    * @param ex
     * @return
     */
-  def classifyHttpClientException(e: Throwable): Failed = {
-    (ioExceptionClassifier orElse
-      executionFailureClassifier).applyOrElse(e, nonRetryable)
-  }
-
-  def ioExceptionClassifier: PartialFunction[Throwable, Failed] = {
-    case ex: IOException =>
-      // Timeout, SSL related exception,
-      // InputStreamResponseListner of Jetty may wrap the error with IOException
-      classifyExecutionFailure(ex)
-    case ex: InvocationTargetException =>
-      classifyExecutionFailure(ex)
-  }
-
   def classifyExecutionFailure(ex: Throwable): Failed = {
     executionFailureClassifier.applyOrElse(ex, nonRetryable)
   }
 
   def executionFailureClassifier: PartialFunction[Throwable, Failed] =
-    timeoutExceptionClassifier orElse
-      connectionExceptionClassifier orElse
+    connectionExceptionClassifier orElse
       sslExceptionClassifier orElse
       invocationTargetExceptionClassifier
-
-  def timeoutExceptionClassifier: PartialFunction[Throwable, Failed] = {
-    case e: TimeoutException =>
-      // Just retry upon timeout
-      retryableFailure(e)
-  }
 
   def connectionExceptionClassifier: PartialFunction[Throwable, Failed] = {
     // Other types of exception that can happen inside HTTP clients (e.g., Jetty)
@@ -172,12 +151,14 @@ object HttpClientException extends LogSupport {
     case e: EOFException           => retryableFailure(e)
     case e: TimeoutException       => retryableFailure(e)
     case e: ClosedChannelException => retryableFailure(e)
+    case e: SocketTimeoutException => retryableFailure(e)
     case e: SocketException =>
       e match {
-        case se: BindException            => retryableFailure(e)
-        case se: ConnectException         => retryableFailure(e)
-        case se: NoRouteToHostException   => retryableFailure(e)
-        case se: PortUnreachableException => retryableFailure(e)
+        case se: BindException                      => retryableFailure(e)
+        case se: ConnectException                   => retryableFailure(e)
+        case se: NoRouteToHostException             => retryableFailure(e)
+        case se: PortUnreachableException           => retryableFailure(e)
+        case se if se.getMessage == "Socket closed" => retryableFailure(e)
         case other =>
           nonRetryableFailure(e)
       }

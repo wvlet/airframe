@@ -1,5 +1,7 @@
 package wvlet.airframe.http.okhttp
 
+import java.time.Duration
+
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.{HttpClientException, HttpClientMaxRetryException, HttpStatus, Router}
 import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig, newFinagleServerDesign}
@@ -75,6 +77,12 @@ trait FinagleClientTestApi extends LogSupport {
   @Endpoint(method = HttpMethod.GET, path = "/forbidden")
   def forbidden: Response = {
     Response(Status.Forbidden)
+  }
+
+  @Endpoint(method = HttpMethod.GET, path = "/readtimeout")
+  def readTimeout: String = {
+    Thread.sleep(3000)
+    "called readTimeout method"
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/response")
@@ -205,6 +213,26 @@ class OkHttpClientTest extends AirSpec {
         warn(cause.getMessage)
         cause.status shouldBe HttpStatus.Forbidden_403
       }
+    }
+  }
+
+  def `read timeout`(server: FinagleServer): Unit = {
+    withResource(
+      OkHttpClient.newClient(
+        s"http://${server.localAddress}",
+        OkHttpClientConfig(timeout = Duration.ofMillis(10)).withMaxRetry(1)
+      )
+    ) { client =>
+      warn("Starting a read timeout test")
+
+      val ex = intercept[HttpClientMaxRetryException] {
+        // sleeps for 3 seconds, which means a timeout happens
+        client.get[String]("/readtimeout")
+      }
+      warn(ex.getMessage)
+      ex.retryContext.retryCount shouldBe 1
+      ex.retryContext.maxRetry shouldBe 1
+      ex.retryContext.lastError.getClass shouldBe classOf[java.net.SocketTimeoutException]
     }
   }
 
