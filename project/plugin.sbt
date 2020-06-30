@@ -14,7 +14,7 @@ libraryDependencies ++= (
 )
 
 // For setting explicit versions for each commit
-addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.1.0")
+addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.1.1")
 
 // Documentation
 addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.2.0")
