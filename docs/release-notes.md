@@ -6,6 +6,15 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.6.2
+
+This is a minor bug fix and improvement release.  
+
+-  airframe-codec: Support Either and Throwable class serde  ([#1163](https://github.com/wvlet/airframe/issues/1163)) [[68998fb](https://github.com/wvlet/airframe/commit/68998fb)]
+-  airframe-http-okhttp: Add SocketTimeoutException as a retryable failure. ([#1170](https://github.com/wvlet/airframe/issues/1170)) [[e5cd4b8](https://github.com/wvlet/airframe/commit/e5cd4b8)]
+-  airframe-http: Fixes [#1158](https://github.com/wvlet/airframe/issues/1158) Import higherKinds for generated AsyncHttpClient ([#1164](https://github.com/wvlet/airframe/issues/1164)) [[008366e](https://github.com/wvlet/airframe/commit/008366e)]
+-  airframe-msgpack: [#1159](https://github.com/wvlet/airframe/issues/1159) Support packTimestamp(unixtime) to use timestamp32 ([#1160](https://github.com/wvlet/airframe/issues/1160)) [[b49a79f](https://github.com/wvlet/airframe/commit/b49a79f)]
+
 ## 20.6.1
 
 This release introduced URLConnection-based HTTP client for handy http request testing, and improved RPC request handling to support arbitrary number of RPC function arguments.   
