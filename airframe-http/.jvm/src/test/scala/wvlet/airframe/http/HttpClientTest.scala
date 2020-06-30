@@ -98,10 +98,12 @@ class HttpClientTest extends AirSpec {
       new ExecutionException(new ConnectException("connect")),
       new ExecutionException(new EOFException("eof")),
       new ExecutionException(new TimeoutException("timeout")),
+      new ExecutionException(new SocketTimeoutException("timeout")),
       new ExecutionException(new BindException("exception")),
       new ExecutionException(new ConnectException("exception")),
       new ExecutionException(new NoRouteToHostException("exception")),
       new ExecutionException(new PortUnreachableException("exception")),
+      new ExecutionException(new SocketException("Socket closed")),
       new InvocationTargetException(new TimeoutException("timeout at reflection call"))
     )
 
