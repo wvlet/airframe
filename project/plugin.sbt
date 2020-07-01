@@ -6,11 +6,11 @@ addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")
 addSbtPlugin("com.eed3si9n"       % "sbt-buildinfo"            % "0.9.0")
 
 // For Scala.js
-val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.1.0")
+val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.1.1")
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % SCALAJS_VERSION)
 
 libraryDependencies ++= (
-  Seq("org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.1.0")
+  Seq("org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.1.1")
 )
 
 // For setting explicit versions for each commit
