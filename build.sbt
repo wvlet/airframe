@@ -248,7 +248,8 @@ lazy val docs =
       moduleName := "airframe-docs",
       publishArtifact := false,
       publish := {},
-      publishLocal := {}
+      publishLocal := {},
+      watchTriggers in mdoc += ((ThisBuild / baseDirectory).value / "docs").toGlob / ** / "*.md"
     )
     .enablePlugins(MdocPlugin, DocusaurusPlugin)
 
