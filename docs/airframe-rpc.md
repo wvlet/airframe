@@ -6,16 +6,18 @@ title: Airframe RPC
 [central-badge]: https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central
 [central-link]: https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
 
+![overview](../img/airframe-rpc/rpc-overview.png)
+
 ## Why Airframe RPC?
+
+Scala is a statically-typed language
 
 Airframe RPC 
 
 
 ## Introduction to Airframe RPC
 
-## Overview
-
-First, define your RPC service using regular Scala functions and case classes. By adding `@RPC` annotation to your class, all public methods will be your RPC endpoints:
+First, define your RPC service interface using regular Scala functions and case classes. By adding `@RPC` annotation to your class, all public methods will be your RPC endpoints:
 
 ```scala
 package hello.api.v1;
@@ -38,7 +40,7 @@ package hello.api.v1
 import wvlet.airframe.http._
 
 class MyServiceImpl extends MyService {
-  def hello(person:Person): String = s"Hello ${person.name} (id=${person.id})!"
+  override def hello(person:Person): String = s"Hello ${person.name} (id=${person.id})!"
 }
 ```
 
@@ -57,7 +59,22 @@ Finagle
   }
 ```
 
-To access the RPC server, we need to generate an RPC client from the RPC interface definition. sbt-airframe plugin  
+To access the RPC server, we need to generate an RPC client from the RPC interface definition. 
+[sbt-airframe](#sbt-airframe-plugin) will generate `hello.api.v1.ServiceSyncClient` class by reading the RPC interface.
+
+```scala
+import hello.api.v1._
+
+// Create an RPC client 
+val client = new ServiceSyncClient(Http.client.newSyncClient("localhost:8080"))
+
+// Your first RPC call!
+client.myService.hello(Person(id=1, name="leo")) // "Hello leo (id=1)!"
+```
+
+## Usage
+
+### sbt-airframe plugin
 
 
 [![maven central][central-badge]][central-link]
@@ -71,21 +88,50 @@ __build.sbt__
 ```scala
 airframeHttpClients := Seq("hello.api.v1:sync")
 ```
-It will generate `hello.api.v1.ServiceSyncClient` class,   
 
+### RPC Logging
+
+
+### RPC Filters
+
+Airframe RPC can chain arbitrary HTTP request filters before processing HTTP requests. 
 
 ```scala
-import hello.api.v1._
+import wvlet.airframe.http._
+import wvlet.ariframe.http.finagle._
 
-val client = new ServiceSyncClient(Http.client.newSyncClient("localhost:8080"))
-client.myService.hello(Person(id=1, name="leo")) // Receives "Hello leo (id=1)!"
+object AuthFilter extends FinagleFilter with LogSupport {
+  def apply(request: Request, context: Context): Future[Response] = {
+    val auth = request.authorization
+    if(isValidAuth(auth)) {
+      // Call the next filter chain
+      context(request)
+    }
+    else {
+      // Reject the request
+      Future.value(Response(Version.Http11, Status.Forbidden))
+    }
+  }
+}
 ```
 
 
-## Protocol
+```scala
+// Router for RPC
+val rpcRouter = Router.add[MyApp] 
+
+// Add a filter before processing RPC requests
+val router = Router
+  .add(AuthFilter)
+  .andThen(rpcRouterr)
+```
 
 
-### HTTP Requests and Responses
+## RPC Internals 
+
+### RPC Protocol
+
+HTTP Requests and Responses
 
 Airframe RPC maps function calls to HTTP POST requests. Let's see how RPC calls will be translted into HTTP requests using the following RPC interface example:
 
@@ -102,13 +148,13 @@ case class HelloResponse(message:String)
 
 - __Method__: POST
 - __Path__: `/(package name).(RPC interface name)/(method name)`
-  - `POST /hello.api.v1.MyService/hello`
+  - ex. `POST /hello.api.v1.MyService/hello`
 - __Content-Type__: `application/json` (default) or `application/x-msgpack`
-- __Request body__: The request data structure for calling a method `def m(p1:T1, p2:T2, ...)` will be `{"p1":(json representation of T1), "p2":(json representation of T2}, ...}`. For example, the request to the above `hello(request:HelloRequest)` method requires the following JSON body:
+- __Request body__: JSON (or MessagePack) representation of the method arguments. Each method parameter names and arguments need to be a key-value pair in the JSON object. 
+  - For an RPC method `def m(p1:T1, p2:T2, ...)`, the request body will have the structrure of `{"p1":(json representation of T1), "p2":(json representation of T2}, ...}`. For example, the request to the above `hello(request:HelloRequest)` method will require the following JSON body:
 ```json
 {"request":{"name":"leo"}}
 ```
-  - If `Content-Type: application/x-msgpack` is used, MessagePack representation of the above json data can be used for efficiency.
 - __Accept__: "application/json" (default) or "application/x-msgpack"
 - __Response body__: JSON (or MessagePack) representation of the method return type: 
 ```json
@@ -130,3 +176,16 @@ Airframe RPC supports almost all commonly used Scala data types:
 - Raw Json, JSONValue, MsgPack values.
 - Enum-like case object class, which has `object X { def unapply(s:String): Option[X] }` definition. String representation of enum-like classes will be used. Scala's native Enumeration classes are not supported.  
 
+### Receiving Raw HTTP Responses
+
+If you need to manage HTTP request specific parameters (e.g., HTTP headers), you can add request parameter.
+
+```scala
+import wvlet.airframe.http._
+import wvlet.airframe.http.HttpMessage.{Request, Respone}
+
+@RPC
+trait MyAPI {
+  def rpc1(p1:String, p2:Int, request:Request): Response
+}
+```
