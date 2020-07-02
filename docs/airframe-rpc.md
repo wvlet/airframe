@@ -12,28 +12,29 @@ Airframe RPC is a framework for building RPC services by using Scala as a unifie
 
 ## Why Airframe RPC?
 
-Airframe RPC enables calling Scala methods running at remote servers. You don't need to worry about how to encode your data into JSON, nor how to define HTTP REST endpoints. Airframe RPC abstracts away these details, and generates code for serializing your data objects and calls appropriate HTTP endpoints. 
+Airframe RPC enables calling Scala methods running at remote servers. You don't need to worry about how to encode your data into JSON, nor how to define HTTP REST endpoints. Airframe RPC abstracts away these details; the framework generates code for serializing your data objects and calls appropriate HTTP endpoints. 
 
-While [gRPC](https://grpc.io/) has been a popular approach for building RPC services, it's built around [Protobuf](https://developers.google.com/protocol-buffers/docs/overview) technology for defining data structures and RPC methods. This means, you and your collaborators need to use Protobuf ecosystem almost for everything to benefit from gRPC. And also, gRPC heavily uses HTTP/2 features, some of them are not supported in web browsers, so if you need to write web applications using gRPC, an additional proxy like [gRPC-Web](https://grpc.io/docs/languages/web/basics/) is required.
+While [gRPC](https://grpc.io/) has been a popular approach for building RPC services, it's built around [Protobuf](https://developers.google.com/protocol-buffers/docs/overview) technology for defining data structures and RPC methods. This means, you and your collaborators need to use Protobuf ecosystem almost for everything to enjoy the benefits of gRPC. And also, gRPC heavily uses HTTP/2 features, some of them are not supported in web browsers, so if you need to write web applications using gRPC, an additional proxy like [gRPC-Web](https://grpc.io/docs/languages/web/basics/) is required.
 
-In 2020, [Scala.js finally became 1.0.0 after 7 years of development](https://www.scala-js.org/news/2020/02/25/announcing-scalajs-1.0.0/), which can compile Scala code into JavScript. This paved a way for using Scala both for server (JVM) and client (JavaScript) implementations. We explored an approach for using Scala's functional interfaces as RPC endpoint definitions, and successfully created Airframe RPC.
+In 2020, [Scala.js finally became 1.0.0 after 7 years of development](https://www.scala-js.org/news/2020/02/25/announcing-scalajs-1.0.0/), which can compile Scala code into JavScript. This has paved a way for using Scala both for server (Scala JVM) and client (Scala.js) implementations. We explored an approach for using Scala's functional interfaces as RPC endpoint definitions, and successfully created Airframe RPC on top of [technology stack of 20+ Airframe modules](index.md).
 
-Although Airframe RPC is a relatively new project started at January 2020 inside [Arm Treasure Data](https://www.treasuredata.com/), this project has proved various advantages, for example:
+Although Airframe RPC is a relatively new project started at January 2020 inside [Arm Treasure Data](https://www.treasuredata.com/), this project has proved various advantages. For example:
 
 - __Good-bye to REST__. We can just use Scala's functional interface for defining servers. [Google's REST API Design Guide](https://cloud.google.com/apis/design) has been useful resources for defining clear API endpoints, but we've found using programming language's native interface is much easier. 
-- __No more web-framework wars__. In Scala, there are many web frameworks, such as [Finatra](https://github.com/twitter/finatra), [Finch](https://github.com/finagle/finch), [Akka HTTP](https://doc.akka.io/docs/akka-http/current/index.html), and our own [airframe-http](airframe-http.md), etc. Each of them has its own pros and cons, and choosing one of them has been a hard choice for us. Now, we can just start from Airframe RPC because the interface is not different from plain Scala. If necessary, we can use airframe-http for adding custom HTTP endpoints.
-- __Seamless integration with Scala.js__. Writing web browser applications in JavaScript that interact with servers is not easy. You may need to learn [React.js](https://https://reactjs.org/), [Vue.js](https://vuejs.org), and a lot of others.    
+- __No more web-framework wars__. In Scala, there are many web frameworks, such as [Finatra](https://github.com/twitter/finatra), [Finch](https://github.com/finagle/finch), [Akka HTTP](https://doc.akka.io/docs/akka-http/current/index.html), and our own [airframe-http](airframe-http.md), etc. Each of them has its own pros and cons, and choosing one of them has been a hard choice for us. Now, we can just start from Airframe RPC using plain Scala interfaces. If necessary, we can use airframe-http for adding custom HTTP endpoints.
+- __Seamless integration with Scala.js__. Writing web browser applications in JavaScript that interact with servers is not easy. You may need to learn about the existing frameworks like [React.js](https://https://reactjs.org/), [Vue.js](https://vuejs.org), and a lot of techniques for using them. By using Scala both for server and client code, an engineer just joined the company could write an RPC application using Scala and Scala.js in a few days.
 
 
-## Introduction to Airframe RPC
+## Airframe RPC: Overview
 
-First, define your RPC service interface using regular Scala functions and case classes. By adding `@RPC` annotation to your class, all public methods will be your RPC endpoints:
+For using Airframe RPC, first, define your RPC service interface using regular Scala functions by adding `@RPC` annotation. 
+ All public methods in this class will be your RPC endpoints. For the method arguments and return types, you can use arbitrary types (See [Object Serialization](#object-serialization) for the list of available types). To pass complex messages, you can use case classes. 
 
 ```scala
 package hello.api.v1;
 import wvlet.airframe.http._
 
-// Model classes
+// A model classe. This will be serialized into JSON or MessagePack 
 case class Person(id:Int, name:String)
 
 // RPC interface definition 
@@ -43,7 +44,7 @@ trait MyService {
 }
 ```
 
-Next, implement the service interface: 
+Next, implement the service interface in Scala:
 
 ```scala
 package hello.api.v1
@@ -54,7 +55,8 @@ class MyServiceImpl extends MyService {
 }
 ```
 
-Start an RPC web server at http://localhost:8080. Airfarme RPC provides Finagle-based web server implementation:
+To start an RPC web server, Airfarme RPC provides Finagle-based web server implementation.
+The following code starts an RPC web server at `http://localhost:8080/`.
 ```scala
 // Create a Router
 val router = Router.add[MyServiceImpl]
@@ -70,8 +72,10 @@ Finagle
 ```
 
 To access the RPC server, we need to generate an RPC client from the RPC interface definition. 
-[sbt-airframe](#sbt-airframe-plugin) will generate `hello.api.v1.ServiceSyncClient` class by reading the RPC interface.
+We can use an RPC client `hello.api.v1.ServiceSyncClient`  generated by [sbt-airframe](#sbt-airframe-plugin), which
+reads an RPC interface code and generates HTTP client code for calling RPC methods. 
 
+Now, you are ready to call remote Scala methods:
 ```scala
 import hello.api.v1._
 
@@ -82,25 +86,126 @@ val client = new ServiceSyncClient(Http.client.newSyncClient("localhost:8080"))
 client.myService.hello(Person(id=1, name="leo")) // "Hello leo (id=1)!"
 ```
 
+That's it! 
+
+If you know how to write Scala, no other knowledge is required for building RPC services. 
+
 ## Usage
 
-### sbt-airframe plugin
+The basic flow of using Airframe RPC is as follows:
 
-sbt-airframe plugins supports generating HTTP clients. This supports generating async, sync, or Scala.js HTTP clients for making 
-RPC calls.   
+1. Define RPC interface with `@RPC` annotation
+1. Implement RPC interface
+1. Generate RPC client code with sbt-airfrme plugin
+
+
+### Basic Project Structure
+
+Here is an example build configurations for using Airframe RPC with Scala and Scala.js. 
 
 [![maven central][central-badge]][central-link]
 
-__plugins.sbt__
+__project/plugins.sbt__
+
+```scala
+// For RPC client generation
+addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % "(version)")
+
+// For Scala.js
+addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "1.1.0")
+addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")
+```
+
+__build.sbt__
+
+```scala
+val AIRFRAME_VERSION="(version)"
+
+// Common build settings
+val buildSettings = Seq( 
+  organization := "(your organization)",
+  scalaVersion := "2.12.10",
+  // Add our own settings
+)
+
+// RPC API definition. This project should contain only RPC interfaces
+lazy val api =
+  crossProject(JSPlatform, JVMPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("myapp-api"))
+    .setttings(
+       buildSettings, 
+       "org.wvlet.airframe" %%% "airframe-http" % AIRFRAME_VERSION
+     )
+
+lazy val apiJVM = api.jvm
+lazy val apiJS = api.js
+
+// RPC server project
+lazy val server =
+  project
+    .in(file("myapp-server"))
+    .settings(
+      buildSettings, 
+      libraryDependencies ++= Seq(
+        "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION
+      )
+    )
+    .dependsOn(apiJVM)
+
+// RPC client project 
+lazy val client =
+  project
+    .in(file("myapp-client"))
+    .enablePlugins(AiframeHttpPlugin)
+    .settings(
+      buildSettings, 
+      // Generates both ServiceSyncClient and ServiceClient (async)
+      airframeHttpClients := Seq("myapp.app.v1:sync", "myapp.app.v1:async"),
+      // Enable debug logging of sbt-airframe
+      airframeHttpGeneratorOption := "-l debug",
+      libraryDependencies ++= Seq(
+        "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION
+      )
+    )
+    .dependsOn(apiJVM)
+
+// Scala.js UI using RPC 
+lazy val ui =
+  project
+    .in(file("myapp-ui"))
+    .enablePlugins(ScalaJSPlugin, AirframeHttpPlugin)
+    .settings(
+      buildSettings
+      // sbt-airframe generates Scala.js HTTP client: ServiceJSClient with this setting:
+      airframeHttpClients := Seq("myapp.app.v1:scalajs"),
+      // Enable debug logging of sbt-airframe
+      airframeHttpGeneratorOption := "-l debug"
+    )
+    .dependsOn(apiJS)
+```
+
+### sbt-airframe plugin
+
+sbt-airframe plugins supports generating HTTP clients for making RPC calls. sbt-airframe supports generating async, sync, or Scala.js HTTP clients.
+
+[![maven central][central-badge]][central-link]
+
+
+Add the following plugin settings:
+
+__project/plugins.sbt__
 ```scala
 addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % "(version)")
 ```
 
-`airframeHttpClients` setting is necessary for specifying which API package to use for generating RPC clients. 
-The format is `<RPC package name>:<client type>(:<target package name>)?`: 
+To generate HTTP clients, add `airframeHttpClients` setting to your `build.sbt`. You need to specify which API package to use for generating RPC clients. The format is `<RPC package name>:<client type>(:<target package name>)?`. For example: 
 
 __build.sbt__
+
 ```scala
+enablePlugins(AiframeHttpPlugin)
+
 airframeHttpClients := Seq("hello.api.v1:sync")
 ```
 
@@ -109,12 +214,12 @@ Supported client types are:
 - __async__: Create an async HTTP client (ServiceClient) for Scala (JVM) using Future abstraction (`F`). The `F` can be `scala.concurrent.Future` or twitter-util's Future. 
 - __scalajs__:  Create an RPC client (ServiceClientJS)
 
-To support other types of clients, see the examples of [HTTP code generators](https://github.com/wvlet/airframe/blob/master/airframe-http/.jvm/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClient.scala). This reads Route definition of RPC interfaces, and generate client code for calling RPC endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would like to add Open API spec generator so that many programming languages can be used with Airframe RPC.
+To support other types of clients, see the examples of [HTTP code generators](https://github.com/wvlet/airframe/blob/master/airframe-http/.jvm/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClient.scala). This code reads a Router definition of RPC interfaces, and generate client code for calling RPC endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would like to add Open API spec generator so that many programming languages can be used with Airframe RPC.
 
 The generated client code can be found in `target/scala-2.12/src_managed/(api package)/` folder. 
 
 
-__sbt-airframe tasks__
+#### sbt-airframe commands
 ```scala
 > airframeHttpReload           # Regenerate the generated client code. Use this if RPC interface has changed   
 > airframeHttpGenerateClients  # Generating RPC clients manually
@@ -124,7 +229,7 @@ __sbt-airframe tasks__
 ### RPC Logging
 
 Airframe RPC stores HTTP access logs to `log/http-access.json` by default. This json logs contains 
-HTTP request related parameters and RPC-specific fields:
+HTTP request related parameters and RPC-specific fields described below:
 
 - __rpc_interface__: RPC interface class name
 - __rpc_class__: The atual RPC implementation class name
@@ -177,9 +282,11 @@ val router = Router
 
 Airframe RPC natively supports [Airframe DI](airframe.md) for dependency injection so that you can inject 
 necessary components for running your web service using `bind[X]` syntax or constructor injection. 
-This is useful when building web applications that requires many components and if you need to decouple 
-component implementation from the service implementation. Airframe DI also supports switching component implementations 
-between production and tests. 
+DI is useful when building web applications requiring many components and if you need to decouple 
+component implementations from the service implementations. Airframe DI also supports switching component implementations 
+between production and tests for the convenience of module tests.
+
+Here is an example of using Airframe DI for starting an RPC server:
 
 ```scala
 import wvlet.airframe._
@@ -204,8 +311,49 @@ design.build[FinagleServer] { server =>
 }
 ```
 
+### Object Serialization
+
+Airframe `@RPC` interface supports almost all commonly used data types in Scala (and Scala.js). Note that some Java-specific classes (e.g., ZonedDateTime) is not supported in Scala.js. 
+
+Here is the list of available data types:
+- case classes whose parameter types (including generic types) are described in this list.  
+- Primitive types (Int, Long, String, Double, Float, Boolean, etc)
+- java.util.UUID 
+- java.time.Instant (recommended because it can be used for Scala.js too)
+  - (JVM only) ZonedDataTime, java.util.Date. These types cannot be used in Scala.js.
+- Collection types: Seq, IndexedSeq, List, Set, Array, Map, Tuple (up to 21 parameters), Option, Either. 
+- Exception, Throwable
+  - Exception types will be serialized as GenericException for safety.
+- [airframe-metrics](airframe-metrics.md) types: ElapsedTime, DataSize, Count, etc.
+- Raw Json, JSONValue, MsgPack values.
+- Enum-like case object class, which has `object X { def unapply(s:String): Option[X] }` definition. String representation of enum-like classes will be used. Scala's native Enumeration classes are not supported.
+
+
+
+Airframe RPC internally uses [schema-on-read functionality of airframe-codec](airframe-codec.md) for serializing messages between server and clients. Even if the data type is slightly different from the target type, for example, if the input data is "100", but the target type is Int, the input String "100" will be translated into an Int value `100` automatically.
+
+
+### Receiving Raw HTTP Responses
+
+If you need to manage HTTP request specific parameters (e.g., HTTP headers), you can add request object to the RPC arguments.
+
+```scala
+import wvlet.airframe.http._
+import wvlet.airframe.http.HttpMessage.{Request, Respone}
+
+@RPC
+trait MyAPI {
+  def rpc1(p1:String, p2:Int, request:Request): Response
+}
+```
+
+### Other Tips 
+
+Airframe RPC is built on top of Airframe HTTP framework. See [Airframe HTTP documentation](airframe-http.md) for the other features and advanced configurations. 
 
 ## RPC Internals 
+
+(_This section describes the internals of Airframe RPC protocol. Just for using Airframe RPC, you can skip this section._)
 
 ### RPC Protocol
 
@@ -239,31 +387,3 @@ case class HelloResponse(message:String)
 {"message":"..."}
 ```
 
-### Object Serialization
-
-Airframe RPC uses [schema-on-read codec of airframe-codec](airframe-codec.md) for object-json serialization. Even if the data type is slightly different from the target type, for example, the input data is "100", but the target type is Int, the input data will be automatically converted to the target type. 
-
-Airframe RPC supports almost all commonly used Scala data types:
-
-- Primitive types (Int, Long, String, Double, Float, Boolean, etc), and UUID. 
-- DateTime representation: java.time.Instant (recommended because it can be used for Scala.js too)
-  - (JVM only) ZonedDataTime, java.util.Date. These types cannot be used in Scala.js.
-- Collection types: Seq, IndexedSeq, List, Set, Array, Map, Tuple (up to 21 parameters), Option, Either. 
-- Exception, Throwable types will be serialized as GenericException.
-- [airframe-metrics](airframe-metrics.md) types: ElapsedTime, DataSize, Count, etc.
-- Raw Json, JSONValue, MsgPack values.
-- Enum-like case object class, which has `object X { def unapply(s:String): Option[X] }` definition. String representation of enum-like classes will be used. Scala's native Enumeration classes are not supported.  
-
-### Receiving Raw HTTP Responses
-
-If you need to manage HTTP request specific parameters (e.g., HTTP headers), you can add request parameter.
-
-```scala
-import wvlet.airframe.http._
-import wvlet.airframe.http.HttpMessage.{Request, Respone}
-
-@RPC
-trait MyAPI {
-  def rpc1(p1:String, p2:Int, request:Request): Response
-}
-```
