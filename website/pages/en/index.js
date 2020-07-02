@@ -120,14 +120,14 @@ class Index extends React.Component {
                     },
                     {
                         content: 'Have you ever used [slf4](http://slf4j.org/) (logging), [Jackson](https://github.com/FasterXML/jackson) (JSON-based serialization), [Guice](https://github.com/google/guice) (dependency injection)? ' +
-                            'Airframe has redesigned these Java-based ecosystem as [airframe-logging](docs/airframe-log.md), [airframe-codec](docs/airframe-codec.md), and [airframe-di](docs/airframe.md) in order to maximize the power of Scala and Scala.js',
+                            'Airframe has redesigned these Java-based ecosystem as [airframe-log](docs/airframe-log), [airframe-codec](docs/airframe-codec), and [airframe-di](docs/airframe) in order to maximize the power of Scala and Scala.js',
                         image: `${baseUrl}img/features/scala-logo-red-spiral-dark.png`,
                         imageAlign: 'top',
                         title: 'Designed for Scala and Scala.js',
                     },
                     {
                         content:
-                            'Airframe uses [MessagePack-based schema-on-read codec](docs/airframe-codec) for fast and compact object serialization. [JSON](docs/airframe-json) serialization is also supported.',
+                            'Airframe uses [MessagePack-based schema-on-read codec](docs/airframe-codec) for fast and compact object serialization. [JSON](docs/airframe-json)-based serialization is also supported.',
                         image: `${baseUrl}img/features/msgpack.png`,
                         imageAlign: 'top',
                         title: 'MessagePack-based Object Serialization',
