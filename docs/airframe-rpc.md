@@ -3,24 +3,21 @@ id: airframe-rpc
 title: Airframe RPC
 ---
 
-[central-badge]: https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central
-[central-link]: https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
-
 Airframe RPC is a framework for building RPC services by using Scala as a unified RPC interface between servers and clients.
 
 ![overview](../img/airframe-rpc/rpc-overview.png)
 
 ## Why Airframe RPC?
 
-Airframe RPC enables calling Scala methods running at remote servers. You don't need to worry about how to encode your data into JSON, nor how to define HTTP REST endpoints. Airframe RPC abstracts away these details; the framework generates code for serializing your data objects and calls appropriate HTTP endpoints. 
+Airframe RPC enables calling Scala methods at remote servers. You don’t need to worry about how to encode your data into JSON, nor how to define HTTP REST endpoints. Airframe RPC abstracts away these details; the framework generates code for serializing your data objects into JSON or MessagePack and calls appropriate HTTP endpoints on your behalf.
 
 While [gRPC](https://grpc.io/) has been a popular approach for building RPC services, it's built around [Protobuf](https://developers.google.com/protocol-buffers/docs/overview) technology for defining data structures and RPC methods. This means, you and your collaborators need to use Protobuf ecosystem almost for everything to enjoy the benefits of gRPC. And also, gRPC heavily uses HTTP/2 features, some of them are not supported in web browsers, so if you need to write web applications using gRPC, an additional proxy like [gRPC-Web](https://grpc.io/docs/languages/web/basics/) is required.
 
-In 2020, [Scala.js finally became 1.0.0 after 7 years of development](https://www.scala-js.org/news/2020/02/25/announcing-scalajs-1.0.0/), which can compile Scala code into JavScript. This has paved a way for using Scala both for server (Scala JVM) and client (Scala.js) implementations. We explored an approach for using Scala's functional interfaces as RPC endpoint definitions, and successfully created Airframe RPC on top of [technology stack of 20+ Airframe modules](index.md).
+In 2020, [Scala.js, which can compile Scala code into JavaScript, finally became 1.0.0 after 7 years of development](https://www.scala-js.org/news/2020/02/25/announcing-scalajs-1.0.0/). This has paved a way for using Scala both for server (Scala JVM) and client (Scala.js) implementations. We explored an approach for using Scala's functional interfaces as RPC endpoint definitions, and successfully created Airframe RPC on top of [technology stack of 20+ Airframe modules](index.md).
 
-Although Airframe RPC is a relatively new project started at January 2020 inside [Arm Treasure Data](https://www.treasuredata.com/), this project has proved various advantages. For example:
+Although Airframe RPC is a relatively new project started at March 2020 inside [Arm Treasure Data](https://www.treasuredata.com/), this project has proved various advantages. For example:
 
-- __Good-bye to REST__. We can just use Scala's functional interface for defining servers. [Google's REST API Design Guide](https://cloud.google.com/apis/design) has been useful resources for defining clear API endpoints, but we've found using programming language's native interface is much easier. 
+- __Free from REST__. We can just use Scala's functional interface for defining servers. [Google's REST API Design Guide](https://cloud.google.com/apis/design) has been useful resources for defining clear REST API endpoints, but we've found using programming language's native interface is much easier. 
 - __No more web-framework wars__. In Scala, there are many web frameworks, such as [Finatra](https://github.com/twitter/finatra), [Finch](https://github.com/finagle/finch), [Akka HTTP](https://doc.akka.io/docs/akka-http/current/index.html), and our own [airframe-http](airframe-http.md), etc. Each of them has its own pros and cons, and choosing one of them has been a hard choice for us. Now, we can just start from Airframe RPC using plain Scala interfaces. If necessary, we can use airframe-http for adding custom HTTP endpoints.
 - __Seamless integration with Scala.js__. Writing web browser applications in JavaScript that interact with servers is not easy. You may need to learn about the existing frameworks like [React.js](https://https://reactjs.org/), [Vue.js](https://vuejs.org), and a lot of techniques for using them. By using Scala both for server and client code, an engineer just joined the company could write an RPC application using Scala and Scala.js in a few days.
 
@@ -44,7 +41,7 @@ trait MyService {
 }
 ```
 
-Next, implement the service interface in Scala:
+Next, implement this service interface in Scala:
 
 ```scala
 package hello.api.v1
@@ -56,7 +53,7 @@ class MyServiceImpl extends MyService {
 ```
 
 To start an RPC web server, Airfarme RPC provides Finagle-based web server implementation.
-The following code starts an RPC web server at `http://localhost:8080/`.
+The following code starts an RPC web server at `http://localhost:8080/`:
 ```scala
 // Create a Router
 val router = Router.add[MyServiceImpl]
@@ -88,7 +85,7 @@ client.myService.hello(Person(id=1, name="leo")) // "Hello leo (id=1)!"
 
 That's it! 
 
-If you know how to write Scala, no other knowledge is required for building RPC services. 
+That’s it! Now you can call remote Scala methods as if they were regular Scala functions. Airframe RPC also supports asynchronous clients using Future.
 
 ## Usage
 
@@ -96,7 +93,7 @@ The basic flow of using Airframe RPC is as follows:
 
 1. Define RPC interfaces with `@RPC` annotation
 1. Implement the RPC interfaces in Scala
-1. Create a Router by adding the RPC interface implementation classes.
+1. Create `wvlet.airframe.http.Router` by adding the RPC interface implementation classes.
 1. Generate RPC client code with sbt-airfrme plugin
 
 
@@ -104,7 +101,8 @@ The basic flow of using Airframe RPC is as follows:
 
 Here is an example build configurations for using Airframe RPC with Scala and Scala.js. 
 
-[![maven central][central-badge]][central-link]
+[![maven central](https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central)](https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
+) 
 
 __project/plugins.sbt__
 
@@ -190,8 +188,8 @@ lazy val ui =
 
 sbt-airframe plugins supports generating HTTP clients for making RPC calls. sbt-airframe supports generating async, sync, or Scala.js HTTP clients.
 
-[![maven central][central-badge]][central-link]
-
+[![maven central](https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central)](https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
+) 
 
 Add the following plugin settings:
 

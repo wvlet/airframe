@@ -120,7 +120,7 @@ class Index extends React.Component {
                     },
                     {
                         content: 'Have you ever used [slf4](http://slf4j.org/) (logging), [Jackson](https://github.com/FasterXML/jackson) (JSON-based serialization), [Guice](https://github.com/google/guice) (dependency injection)? ' +
-                            'Airframe has redesigned these Java-based ecosystem as [airframe-logging](docs/airframe-log.md), [airframe-codec](docs/airframe-codec.md), [airframe-di](docs/airframe.md) in order to maximize the power of Scala. Supporting Scala 2.11, 2.12, 2.13, and Scala.js as well.',
+                            'Airframe has redesigned these Java-based ecosystem as [airframe-logging](docs/airframe-log.md), [airframe-codec](docs/airframe-codec.md), and [airframe-di](docs/airframe.md) in order to maximize the power of Scala and Scala.js',
                         image: `${baseUrl}img/features/scala-logo-red-spiral-dark.png`,
                         imageAlign: 'top',
                         title: 'Designed for Scala and Scala.js',
