@@ -13,19 +13,27 @@
 [central-badge]: https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central
 [central-link]: https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
 
+
 <p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-badge-light.png" alt="logo" width="300px"></p>
 
 Airframe https://wvlet.org/airframe is a collection of [lightweight building blocks](https://wvlet.org/airframe/docs/) for Scala.
 
-<p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px"></p>
-
-- [Airframe Home](https://wvlet.org/airframe/)
-- [AirSpec: A Functional Testing Library](https://wvlet.org/airframe/docs/airspec.html)
-
 ## Resources
 
+- [Airframe Home](https://wvlet.org/airframe/)
 - [Documentation](https://wvlet.org/airframe/docs)
 - [Release Notes](https://wvlet.org/airframe/docs/release-notes.html)
+
+### Framework
+
+- [Airframe DI: A Dependency Injection Library Tailored to Scala](https://wvlet.org/airframe/docs/airframe.html)
+- [AirSpec: A Functional Testing Library](https://wvlet.org/airframe/docs/airspec.html)
+
+- [Airframe RPC: A Framework for Using Scala Both for Frontend and Backend Programming](https://wvlet.org/airframe/docs/airframe-rpc.html)
+<p><img src="https://github.com/wvlet/airframe/raw/master/website/static/img/airframe-rpc/rpc-overview.png" alt="rpc" width="800px"></p>
+
+- [Airframe Modules](https://wvlet.org/airframe/docs/index.html)
+<p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px"></p>
 
 
 ## LICENSE

@@ -6,7 +6,7 @@
       "release-notes",
       "logos"
     ],
-    "Frameworks": [
+    "Framework": [
       "airframe",
       "airframe-rpc",
       "airframe-http",
