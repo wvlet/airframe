@@ -1,9 +1,9 @@
 ---
 id: airframe-http
-title: airframe-http: Web Service IDL
+title: airframe-http: Creating REST Service
 ---
 
-airframe-http is a library for creating HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Finagle as a backend HTTP server.
+airframe-http is a library for creating REST HTTP web servers at ease. airframe-http-finagle is an extension of airframe-http to use Finagle as a backend HTTP server.
 
 - Blog article: [Airframe HTTP: Building Low-Friction Web Services Over Finagle](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
 
