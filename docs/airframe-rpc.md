@@ -94,8 +94,9 @@ If you know how to write Scala, no other knowledge is required for building RPC 
 
 The basic flow of using Airframe RPC is as follows:
 
-1. Define RPC interface with `@RPC` annotation
-1. Implement RPC interface
+1. Define RPC interfaces with `@RPC` annotation
+1. Implement the RPC interfaces in Scala
+1. Create a Router by adding the RPC interface implementation classes.
 1. Generate RPC client code with sbt-airfrme plugin
 
 
