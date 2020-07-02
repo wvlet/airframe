@@ -102,7 +102,7 @@ class Index extends React.Component {
             <Container
                 padding={['bottom', 'top']}
                 background="light"
-                className="twoColumn">
+                className="threeColumn">
                 <div>
                     <img width='200px' src={`${baseUrl}img/logos/airframe-logo-tr.png`} alt="Project Logo"/>
                 </div>
@@ -113,41 +113,24 @@ class Index extends React.Component {
             <Block layout="threeColumn">
                 {[
                     {
-                        content: 'If you need a Scala-version of [slf4](http://slf4j.org/) (logging), [Jackson](https://github.com/FasterXML/jackson) (JSON-based serialization), [Guice](https://github.com/google/guice) (dependency injection), etc., Airframe will be a right choice for you. Airframe has redesigned these Java-based ecosystem in order to maximize the power of Scala, and supports Scala 2.11, 2.12, 2.13, and Scala.js as well.',
+                        content: '[Airframe RPC](docs/airframe-rpc) supports seamless integration of server and clients using Scala as RPC interfaces.',
+                        image: `${baseUrl}img/airframe-rpc/rpc-overview.png`,
+                        imageAlign: 'top',
+                        title: 'RPC Framework',
+                    },
+                    {
+                        content: 'Have you ever used [slf4](http://slf4j.org/) (logging), [Jackson](https://github.com/FasterXML/jackson) (JSON-based serialization), [Guice](https://github.com/google/guice) (dependency injection)? ' +
+                            'Airframe has redesigned these Java-based ecosystem as [airframe-logging](docs/airframe-log.md), [airframe-codec](docs/airframe-codec.md), [airframe-di](docs/airframe.md) in order to maximize the power of Scala. Supporting Scala 2.11, 2.12, 2.13, and Scala.js as well.',
                         image: `${baseUrl}img/features/scala-logo-red-spiral-dark.png`,
                         imageAlign: 'top',
-                        title: 'Designed for Scala',
+                        title: 'Designed for Scala and Scala.js',
                     },
                     {
                         content:
-                            'Airframe uses [MessagePack-based schema-on-read codec](docs/airframe-codec) for fast and compact object serialization. It can be used for efficient HTTP server-client communication and for automatically resolving differences between data types (e.g., integers and strings.) Serialization with [JSON](docs/airframe-json) is also supported.',
+                            'Airframe uses [MessagePack-based schema-on-read codec](docs/airframe-codec) for fast and compact object serialization. [JSON](docs/airframe-json) serialization is also supported.',
                         image: `${baseUrl}img/features/msgpack.png`,
                         imageAlign: 'top',
-                        title: 'MessagePack Serialization',
-                    },
-                    {
-                        content: 'With [dependency injection (DI)](docs/airframe) of Airframe, building services with hundreds of module classes becomes easy and manageable. Airframe DI will build complex objects on your behalf based on the [design](docs/airframe#design) and properly [start and shutdown your services in the FILO order](docs/airframe#life-cycle).',
-                        image: `${baseUrl}img/features/di.png`,
-                        imageAlign: 'top',
-                        title: 'Dependency Injection'
-                    },
-                    {
-                        content: 'Logging is an essential tool for debugging applications. [airframe-log](docs/airframe-log) helps displaying logs in fancy ANSI colors enriched with the source code locations.',
-                        image: `${baseUrl}img/airframe-log/demo.png`,
-                        imageAlign: 'top',
-                        title: 'Colorful Source Code Logging',
-                    },
-                    {
-                        content: '[airframe-config](docs/airframe-config) supports YAML-based application configurations and provides immutable config objects that can be injected through DI. Partially overriding configurations is also supported.',
-                        image: `${baseUrl}img/immutable_config.png`,
-                        imageAlign: 'top',
-                        title: 'Application Config Flow',
-                    },
-                    {
-                        content: 'Need a way to parse command line options? [airframe-launcher](docs/airframe-launcher) will turn your Scala functions into command-line programs which can read complex command-line arguments.',
-                        image: `${baseUrl}/img/features/launcher.png`,
-                        imageAlign: 'top',
-                        title: 'Command-Line Parser'
+                        title: 'MessagePack-based Object Serialization',
                     },
                     {
                         content: '[AirSpec](docs/airspec) is a simple unit testing framework for Scala and Scala.js. You can use public methods in your classes as test cases. No need to remember complex DSLs for writing tests in Scala.',
@@ -156,16 +139,16 @@ class Index extends React.Component {
                         title: 'Simple Testing Framework'
                     },
                     {
+                        content: "[airframe-http](docs/airframe-http) supports building REST web services by using Scala as an IDL (Interface Definition Language). Airframe provides a ready-to use web server implementation based on [Twitter Finagle](https://twitter.github.io/finagle/guide/) and built-in JSON/MessagePack-based REST API call mapping to crate microservice API servers and clients at ease",
+                        image: `${baseUrl}/img/features/finagle.png`,
+                        imageAlign: 'top',
+                        title: 'REST Services'
+                    },
+                    {
                         content: 'Retrying HTTP requests for API calls is an essential technique for connecting microservices. [airframe-control](docs/airframe-control) will provide essential tools for making your requests reliable with exponential backoff retry, jitter, circuit-breaker, rate control, etc.',
                         image: `${baseUrl}/img/features/undraw_process_e90d.svg`,
                         imageAlign: 'top',
                         title: 'Retry, Rate Control'
-                    },
-                    {
-                        content: "[airframe-http](docs/airframe-http) allows building web services by using Scala as an IDL (Interface Definition Language). Airframe provides a ready-to use web server implementation based on [Twitter Finagle](https://twitter.github.io/finagle/guide/) and built-in JSON/MessagePack-based REST API call mapping to crate microservice API servers and clients at ease",
-                        image: `${baseUrl}/img/features/finagle.png`,
-                        imageAlign: 'top',
-                        title: 'Web Service IDL in Scala'
                     },
                     {
                         content: "Web application development often requires mock web servers. With [airframe-http-recorder](docs/airframe-http-recorder), you can record and replay the real server responses for running unit tests even if the servers are offline or unreachable from CI environments.",
@@ -174,16 +157,16 @@ class Index extends React.Component {
                         title: 'HTTP Client and Recorders',
                     },
                     {
-                        content: `[airframe-fluentd](docs/airframe-fluentd) supports logging your metrics to fluentd in a type-safe manner. You just need to send your case classes as metrics for fluentd.`,
-                        image: `${baseUrl}/img/features/Fluentd_square.svg`,
-                        imageAlign: 'top',
-                        title: 'Fluentd Logging',
-                    },
-                    {
                         content: "[airframe-metrics](docs/airframe-metrics) provides human-friendly time range selectors (e.g., -1d, -1w) and data units for measuring elapsed time (e.g., 0.1s, 1.5h) and data sizes (e.g., GB, PB.)",
                         image: `${baseUrl}/img/features//undraw_time_management_30iu.svg`,
                         imageAlign: 'top',
                         title: 'Time Series Data Management',
+                    },
+                    {
+                        content: `[airframe-fluentd](docs/airframe-fluentd) supports logging your metrics to fluentd in a type-safe manner. You just need to send your case classes as metrics for fluentd.`,
+                        image: `${baseUrl}/img/features/Fluentd_square.svg`,
+                        imageAlign: 'top',
+                        title: 'Fluentd Logging',
                     },
                 ]}
             </Block>

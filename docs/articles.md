@@ -12,6 +12,7 @@ title: Articles
 - [Airframe: Lightweight Building-Blocks for Scala @ TD Tech Talk at Tokyo, 2018](https://www.slideshare.net/taroleo/airframe-lightweight-building-blocks-for-scala-td-tech-talk-20181014)
 
 ## Blog Articles
+- [Airframe RPC: A Framework for Using Scala Both for Frontend and Backend Programming](https://medium.com/airframe/airframe-rpc-a-framework-for-using-scala-both-for-frontend-and-backend-programming-79c4b4f38d04)
 - [AirSpec: AirSpec: Writing Tests As Plain Functions In Scala](https://medium.com/airframe/airspec-bbc8d4369157)
 - [Airframe HTTP: Building Low-Friction Web Services Over Finagle](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
   - airframe-http, airframe-http-finagle

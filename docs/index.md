@@ -16,11 +16,13 @@ Airframe is a collection of essential building blocks for writing full-fledged a
 
 Airframe has three core frameworks:
 
-- [airframe-di: Dependency Injection](airframe.md)
-- [airframe-http: Web Service Framework](airframe-http.md)
+- [Airframe DI: Dependency Injection](airframe.md)
+- [Airframe RPC: A framework for using Scala both for Frontend and Backend Programming](airframe-rpc.md)
 - [AirSpec: Testing Framework](airspec.md)
 
-and the other [useful utility modules](#list-of-airframe-modules) like [airframe-codec: Schema-On-Read Serializer](airframe-codec.md), [airframe-config](airframe-config.md), etc.
+Airframe RPC is built on top of [airframe-http](airframe-http.md), a framework for building REST web services.
+
+Airframe also has other [useful utility modules](#list-of-airframe-modules) like [airframe-codec: Schema-On-Read Serializer](airframe-codec.md), [airframe-config](airframe-config.md), etc.
 
 ## build.sbt
 
@@ -161,7 +163,7 @@ MessageCodec.of[Seq[AddressQuery]].fromJson(json)
 //   Seq(AddressQuery(1, Seq("aaa","bbb")), AddressQuery(2, Seq["ccc","ddd"]))
 ``` 
 
-### Web Servers and Clients
+### REST Web Servers and Clients
 
 There are tons of web frameworks for developing web services in Java and Scala. We have designed [airframe-http](airframe-http.md) so that we can minimize the learning cost in developing REST API servers and clients in Scala. 
 
@@ -198,6 +200,13 @@ client.post("/v1/user", User(1, "Ann")) // User(1, "Ann")
 ```
 
 Mapping from HTTP responses to case classes is handled by [airframe-codec](airframe-codec.md).
+
+### RPC 
+
+![rpc](../img/airframe-rpc/rpc-overview.png)
+
+
+[Airframe RPC](airframe-rpc.md) is a framework built on top of [airframe-http](airframe-http.md) for using Scala as a unified RPC interface between servers and clients. You can use plain Scala interfaces for building RPC servers and clients, and it provides seamless RPC communication using schema-on-read codec. Not only Scala JVM, Airframe RPC also supports Scala.js.  
 
 ### Dependency Injection
 
@@ -251,6 +260,14 @@ usage: myapp [options]
  -p [PORT]   port number
  -h, --help  show help messages
 ```
+
+### Application Config Flow
+
+![config](../img/immutable_config.png)
+
+[airframe-config](airframe-config.md) supports YAML-based application configurations and provides 
+immutable config objects that can be injected through DI. Partially overriding configurations is also asupported.
+
 
 
 ## List of Airframe Modules
