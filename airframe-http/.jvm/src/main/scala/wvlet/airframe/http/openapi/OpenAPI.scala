@@ -14,6 +14,7 @@
 package wvlet.airframe.http.openapi
 
 import OpenAPI._
+import wvlet.airframe.surface.Union2
 
 case class OpenAPI(
     openapi: String = "3.0.3",
@@ -43,8 +44,8 @@ object OpenAPI {
       operationId: String,
       parameters: Seq[Parameter] = Seq.empty,
       requestBody: Option[RequestBody] = None,
-      // Status Code -> Response
-      responses: Map[String, ResponseOrRef]
+      // Status Code -> ResponseRef or Response
+      responses: Map[String, Union2[Response, ResponseRef]]
   )
 
   case class Parameter(
@@ -52,8 +53,8 @@ object OpenAPI {
       in: In,
       description: Option[String] = None,
       required: Boolean = false,
-      deprecated: Boolean = false,
-      allowEmptyValue: Boolean = false
+      deprecated: Option[Boolean] = None,
+      allowEmptyValue: Option[Boolean] = None
   )
 
   sealed trait In
@@ -79,8 +80,9 @@ object OpenAPI {
   )
 
   case class MediaType(
-      schema: SchemaOrRef,
-      encoding: Map[String, Encoding] = Map.empty
+      // Scheme or SchemaRef,
+      schema: Any,
+      encoding: Option[Map[String, Encoding]] = None
   )
 
   sealed trait SchemaOrRef
@@ -122,6 +124,8 @@ object OpenAPI {
   case class Header()
 
   case class Components(
-      schemas: Map[String, Schema] = Map.empty
+      schemas: Map[String, Schema] = Map.empty,
+      responses: Map[String, Response] = Map.empty,
+      parameters: Map[String, Parameter] = Map.empty
   )
 }

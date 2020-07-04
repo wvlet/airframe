@@ -16,6 +16,7 @@ import java.util.Locale
 
 import wvlet.airframe.http.{HttpStatus, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 /**
@@ -24,6 +25,9 @@ object OpenAPIGenerator extends LogSupport {
   import OpenAPI._
 
   def fromRouter(name: String, version: String, router: Router): OpenAPI = {
+
+    val returnTypes = Set.newBuilder[Surface]
+
     val paths = for (route <- router.routes) yield {
       val routeAnalysis = RouteAnalyzer.analyzeRoute(route)
       info(routeAnalysis)
@@ -40,14 +44,18 @@ object OpenAPIGenerator extends LogSupport {
           }
         }.mkString("/")
 
-      val method = route.method.toLowerCase(Locale.ENGLISH)
+      returnTypes += route.returnTypeSurface
+
+      val httpMethod = route.method.toLowerCase(Locale.ENGLISH)
+      //val methodName = route.methodSurface.name.replaceAll("\$$", ".")
       val pathItem = PathItem(
         summary = route.methodSurface.name,
-        // TOODO Use @RPC(description = ???) or Scaladoc comment
+        // TODO Use @RPC(description = ???) or Scaladoc comment
         description = route.methodSurface.name,
         operationId = route.methodSurface.name,
         responses = Map(
-          "200" ->
+          // POST Created_201 responset
+          "201" ->
             Response(
               description = s"RPC response",
               content = Map(
@@ -64,7 +72,11 @@ object OpenAPIGenerator extends LogSupport {
           "503" -> ResponseRef("#/components/responses/503")
         )
       )
-      path -> Map(method -> pathItem)
+      path -> Map(httpMethod -> pathItem)
+    }
+
+    val schemas = returnTypes.result().map { r =>
+      r.fullName -> ""
     }
 
     OpenAPI(
@@ -72,7 +84,50 @@ object OpenAPIGenerator extends LogSupport {
         title = name,
         version = version
       ),
-      paths = paths.toMap
+      paths = paths.toMap,
+      components = Some(
+        Components(
+          schemas = Map.empty,
+          responses = Map(
+            "400" -> Response(
+              description = HttpStatus.BadRequest_400.reason,
+              content = Map(
+                "application/json" ->
+                  MediaType(
+                    schema = Schema(
+                      `type` = "object"
+                      //properties = ...
+                    )
+                  )
+              )
+            ),
+            "500" -> Response(
+              description = HttpStatus.InternalServerError_500.reason,
+              content = Map(
+                "application/json" ->
+                  MediaType(
+                    schema = Schema(
+                      `type` = "object"
+                      //properties = ...
+                    )
+                  )
+              )
+            ),
+            "503" -> Response(
+              description = HttpStatus.ServiceUnavailable_503.reason,
+              content = Map(
+                "application/json" ->
+                  MediaType(
+                    schema = Schema(
+                      `type` = "object"
+                      //properties = ...
+                    )
+                  )
+              )
+            )
+          )
+        )
+      )
     )
   }
 }
