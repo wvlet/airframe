@@ -81,45 +81,46 @@ object OpenAPI {
 
   case class MediaType(
       // Scheme or SchemaRef,
-      schema: Any,
+      schema: Union2[Schema, SchemaRef],
       encoding: Option[Map[String, Encoding]] = None
   )
 
-  sealed trait SchemaOrRef
-
   case class SchemaRef(
       `$ref`: String
-  ) extends SchemaOrRef
-  case class Schema(
-      `type`: String,
-      required: Option[Seq[String]] = None,
-      // property name -> property object
-      properties: Map[String, Property] = Map.empty
-  ) extends SchemaOrRef
+  ) extends Union2[Schema, SchemaRef] {
+    override def getElementClass = classOf[SchemaRef]
+  }
 
-  case class Property(
+  case class Schema(
       `type`: String,
       format: Option[String] = None,
       description: Option[String] = None,
+      required: Option[Seq[String]] = None,
+      // property name -> property object
+      properties: Option[Map[String, Schema]] = None,
+      items: Option[Seq[Schema]] = None,
       nullable: Option[Boolean] = None,
-      enum: Option[Seq[String]] = None,
-      items: Option[Seq[Property]] = None
-  )
+      enum: Option[Seq[String]] = None
+  ) extends Union2[Schema, SchemaRef] {
+    override def getElementClass = classOf[Schema]
+  }
 
   case class Encoding()
 
-  sealed trait ResponseOrRef
-
   case class ResponseRef(
       `$ref`: String
-  ) extends ResponseOrRef
+  ) extends Union2[Response, ResponseRef] {
+    def getElementClass = classOf[ResponseRef]
+  }
 
   case class Response(
       description: String,
-      headers: Map[String, Header] = Map.empty,
+      headers: Option[Map[String, Header]] = None,
       // Status code string -> MediaType
       content: Map[String, MediaType] = Map.empty
-  ) extends ResponseOrRef
+  ) extends Union2[Response, ResponseRef] {
+    override def getElementClass = classOf[Response]
+  }
 
   case class Header()
 

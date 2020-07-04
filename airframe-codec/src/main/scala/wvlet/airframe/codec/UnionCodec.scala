@@ -20,10 +20,11 @@ import wvlet.airframe.surface.Union
   */
 object UnionCodec extends MessageCodec[Union] {
   override def pack(p: Packer, v: Union): Unit = {
-    val cl = v.getClass
+    val cl = v.getElementClass
     wvlet.airframe.codec.Compat.codecOfClass(cl) match {
       case Some(codec) =>
-        codec.asInstanceOf[MessageCodec[Any]].pack(p, v)
+        info(codec)
+        codec.asInstanceOf[MessageCodec[Any]].pack(p, cl.cast(v))
       case None =>
         // Pack as a string
         StringCodec.pack(p, v.toString)

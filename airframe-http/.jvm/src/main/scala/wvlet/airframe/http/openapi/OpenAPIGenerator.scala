@@ -16,7 +16,7 @@ import java.util.Locale
 
 import wvlet.airframe.http.{HttpStatus, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.surface.{ArraySurface, GenericSurface, Primitive, Surface}
 import wvlet.log.LogSupport
 
 /**
@@ -76,7 +76,7 @@ object OpenAPIGenerator extends LogSupport {
     }
 
     val schemas = returnTypes.result().map { r =>
-      r.fullName -> ""
+      r.fullName -> getOpenAPISchema(r)
     }
 
     OpenAPI(
@@ -87,7 +87,7 @@ object OpenAPIGenerator extends LogSupport {
       paths = paths.toMap,
       components = Some(
         Components(
-          schemas = Map.empty,
+          schemas = schemas.toMap,
           responses = Map(
             "400" -> Response(
               description = HttpStatus.BadRequest_400.reason,
@@ -130,4 +130,62 @@ object OpenAPIGenerator extends LogSupport {
       )
     )
   }
+
+  def getOpenAPISchema(s: Surface): Schema = {
+    s match {
+      case Primitive.Int =>
+        Schema(
+          `type` = "integer",
+          format = Some("int32")
+        )
+      case Primitive.Long =>
+        Schema(
+          `type` = "integer",
+          format = Some("int64")
+        )
+      case Primitive.Float =>
+        Schema(
+          `type` = "number",
+          format = Some("float")
+        )
+      case Primitive.Double =>
+        Schema(
+          `type` = "number",
+          format = Some("double")
+        )
+      case Primitive.Boolean =>
+        Schema(`type` = "boolean")
+      case Primitive.String =>
+        Schema(`type` = "string")
+      case a: ArraySurface =>
+        Schema(
+          `type` = "array",
+          items = Some(
+            Seq(getOpenAPISchema(a.elementSurface))
+          )
+        )
+      case s: Surface if s.isSeq =>
+        Schema(
+          `type` = "array",
+          items = Some(
+            Seq(getOpenAPISchema(s.typeArgs.head))
+          )
+        )
+      case g: Surface if g.params.length > 0 =>
+        val requiredParams = g.params
+          .filter(p => p.isRequired || !p.surface.isOption)
+          .map(_.name)
+
+        val properties = g.params.map { p =>
+          p.name -> getOpenAPISchema(p.surface)
+        }.toMap
+
+        Schema(
+          `type` = "object",
+          required = if (requiredParams.isEmpty) None else Some(requiredParams),
+          properties = if (properties.isEmpty) None else Some(properties)
+        )
+    }
+  }
+
 }

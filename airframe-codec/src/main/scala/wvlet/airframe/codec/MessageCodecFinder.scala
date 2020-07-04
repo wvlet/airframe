@@ -76,7 +76,7 @@ object MessageCodecFinder {
         OptionCodec(factory.ofSurface(elementSurface, seenSet))
       case et: Surface if classOf[Either[_, _]].isAssignableFrom(et.rawType) =>
         EitherCodec(factory.ofSurface(et.typeArgs(0)), factory.ofSurface(et.typeArgs(1)))
-      case g: GenericSurface if classOf[Union].isAssignableFrom(g.rawType) =>
+      case g: GenericSurface if classOf[Union] == g.rawType =>
         UnionCodec
       // Tuple
       case g: GenericSurface

@@ -16,6 +16,12 @@ package wvlet.airframe.surface
 /**
   * Union types
   */
-trait Union
+trait Union {
+
+  /**
+    * Return the element class
+    */
+  def getElementClass: Class[_]
+}
 trait Union2[A, B]    extends Union
 trait Union3[A, B, C] extends Union
