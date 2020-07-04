@@ -42,7 +42,7 @@ object OpenAPI {
       summary: String,
       description: String,
       operationId: String,
-      parameters: Seq[Parameter] = Seq.empty,
+      parameters: Option[Seq[Parameter]] = None,
       requestBody: Option[RequestBody] = None,
       // Status Code -> ResponseRef or Response
       responses: Map[String, Union2[Response, ResponseRef]]
@@ -127,8 +127,8 @@ object OpenAPI {
   case class Header()
 
   case class Components(
-      schemas: Map[String, Schema] = Map.empty,
-      responses: Map[String, Response] = Map.empty,
-      parameters: Map[String, Parameter] = Map.empty
+      schemas: Option[Map[String, Schema]] = None,
+      responses: Option[Map[String, Response]] = None,
+      parameters: Option[Map[String, Parameter]] = None
   )
 }

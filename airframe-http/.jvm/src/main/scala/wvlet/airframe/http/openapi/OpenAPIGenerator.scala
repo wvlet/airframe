@@ -44,6 +44,19 @@ object OpenAPIGenerator extends LogSupport {
           }
         }.mkString("/")
 
+      val requestBodyContent = Map(
+        "application/json" -> MediaType(
+          schema = Schema(
+            `type` = "object",
+            properties = Some(
+              routeAnalysis.userInputParameters.map { p =>
+                p.name -> getOpenAPISchema(p.surface)
+              }.toMap
+            )
+          )
+        )
+      )
+
       val returnTypeName = route.returnTypeSurface.fullName.replaceAll("\\$", ".")
       returnTypeSchemas += returnTypeName -> getOpenAPISchema(route.returnTypeSurface)
 
@@ -54,8 +67,17 @@ object OpenAPIGenerator extends LogSupport {
         // TODO Use @RPC(description = ???) or Scaladoc comment
         description = route.methodSurface.name,
         operationId = route.methodSurface.name,
+        requestBody =
+          if (requestBodyContent.isEmpty) None
+          else
+            Some(
+              RequestBody(
+                content = requestBodyContent,
+                required = true
+              )
+            ),
         responses = Map(
-          // POST Created_201 responset
+          // POST Created_201 responses
           "201" ->
             Response(
               description = s"RPC response",
@@ -64,7 +86,10 @@ object OpenAPIGenerator extends LogSupport {
                   schema = SchemaRef(s"#/components/schemas/${returnTypeName}")
                 ),
                 "application/x-msgpack" -> MediaType(
-                  schema = SchemaRef(s"#/components/schemas/${returnTypeName}")
+                  schema = Schema(
+                    `type` = "string",
+                    format = Some("msgpack")
+                  )
                 )
               )
             ),
@@ -76,6 +101,8 @@ object OpenAPIGenerator extends LogSupport {
       path -> Map(httpMethod -> pathItem)
     }
 
+    val schemas = returnTypeSchemas.result()
+
     OpenAPI(
       info = Info(
         title = name,
@@ -84,42 +111,44 @@ object OpenAPIGenerator extends LogSupport {
       paths = paths.toMap,
       components = Some(
         Components(
-          schemas = returnTypeSchemas.result(),
-          responses = Map(
-            "400" -> Response(
-              description = HttpStatus.BadRequest_400.reason,
-              content = Map(
-                "application/json" ->
-                  MediaType(
-                    schema = Schema(
-                      `type` = "object"
-                      //properties = ...
+          schemas = if (schemas.isEmpty) None else Some(schemas),
+          responses = Some(
+            Map(
+              "400" -> Response(
+                description = HttpStatus.BadRequest_400.reason,
+                content = Map(
+                  "application/json" ->
+                    MediaType(
+                      schema = Schema(
+                        `type` = "string"
+                        //properties = ...
+                      )
                     )
-                  )
-              )
-            ),
-            "500" -> Response(
-              description = HttpStatus.InternalServerError_500.reason,
-              content = Map(
-                "application/json" ->
-                  MediaType(
-                    schema = Schema(
-                      `type` = "object"
-                      //properties = ...
+                )
+              ),
+              "500" -> Response(
+                description = HttpStatus.InternalServerError_500.reason,
+                content = Map(
+                  "application/json" ->
+                    MediaType(
+                      schema = Schema(
+                        `type` = "string"
+                        //properties = ...
+                      )
                     )
-                  )
-              )
-            ),
-            "503" -> Response(
-              description = HttpStatus.ServiceUnavailable_503.reason,
-              content = Map(
-                "application/json" ->
-                  MediaType(
-                    schema = Schema(
-                      `type` = "object"
-                      //properties = ...
+                )
+              ),
+              "503" -> Response(
+                description = HttpStatus.ServiceUnavailable_503.reason,
+                content = Map(
+                  "application/json" ->
+                    MediaType(
+                      schema = Schema(
+                        `type` = "string"
+                        //properties = ...
+                      )
                     )
-                  )
+                )
               )
             )
           )
