@@ -27,7 +27,7 @@ object RouteAnalyzer {
       pathString: String,
       // User-input parameters for the client method
       userInputParameters: Seq[MethodParameter],
-      private val pathOnlyParameters: Set[MethodParameter]
+      pathOnlyParameters: Set[MethodParameter]
   ) {
     // http client call parameters, except parameters used for generating path strings
     val httpClientCallInputs: Seq[MethodParameter] = (userInputParameters.toSet -- pathOnlyParameters).toIndexedSeq

@@ -42,11 +42,13 @@ object OpenAPI {
       summary: String,
       description: String,
       operationId: String,
-      parameters: Option[Seq[Parameter]] = None,
+      parameters: Option[Seq[ParameterOrRef]] = None,
       requestBody: Option[RequestBody] = None,
       // Status Code -> ResponseRef or Response
       responses: Map[String, Union2[Response, ResponseRef]]
   )
+
+  type ParameterOrRef = Union2[Parameter, ParameterRef]
 
   case class Parameter(
       name: String,
@@ -55,7 +57,15 @@ object OpenAPI {
       required: Boolean = false,
       deprecated: Option[Boolean] = None,
       allowEmptyValue: Option[Boolean] = None
-  )
+  ) extends ParameterOrRef {
+    override def getElementClass = classOf[Parameter]
+  }
+
+  case class ParameterRef(
+      `$ref`: String
+  ) extends ParameterOrRef {
+    override def getElementClass = classOf[ParameterRef]
+  }
 
   sealed trait In
 
@@ -79,9 +89,11 @@ object OpenAPI {
       required: Boolean = false
   )
 
+  type SchemaOrRef = Union2[Schema, SchemaRef]
+
   case class MediaType(
       // Scheme or SchemaRef,
-      schema: Union2[Schema, SchemaRef],
+      schema: SchemaOrRef,
       encoding: Option[Map[String, Encoding]] = None
   )
 
@@ -97,10 +109,10 @@ object OpenAPI {
       description: Option[String] = None,
       required: Option[Seq[String]] = None,
       // property name -> property object
-      properties: Option[Map[String, Schema]] = None,
+      properties: Option[Map[String, SchemaOrRef]] = None,
       // For Map-type values
-      additionalProperties: Option[Schema] = None,
-      items: Option[Seq[Schema]] = None,
+      additionalProperties: Option[SchemaOrRef] = None,
+      items: Option[Seq[SchemaOrRef]] = None,
       nullable: Option[Boolean] = None,
       enum: Option[Seq[String]] = None
   ) extends Union2[Schema, SchemaRef] {
@@ -127,8 +139,8 @@ object OpenAPI {
   case class Header()
 
   case class Components(
-      schemas: Option[Map[String, Schema]] = None,
+      schemas: Option[Map[String, SchemaOrRef]] = None,
       responses: Option[Map[String, Response]] = None,
-      parameters: Option[Map[String, Parameter]] = None
+      parameters: Option[Map[String, ParameterOrRef]] = None
   )
 }

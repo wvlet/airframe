@@ -16,7 +16,7 @@ import java.util.Locale
 
 import wvlet.airframe.http.{HttpStatus, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer
-import wvlet.airframe.surface.{ArraySurface, GenericSurface, Primitive, Surface}
+import wvlet.airframe.surface.{ArraySurface, GenericSurface, Primitive, Surface, Union2}
 import wvlet.log.LogSupport
 
 /**
@@ -24,9 +24,13 @@ import wvlet.log.LogSupport
 object OpenAPIGenerator extends LogSupport {
   import OpenAPI._
 
+  private def sanitizedSurfaceName(s: Surface): String = {
+    s.fullName.replaceAll("\\$", ".")
+  }
+
   def fromRouter(name: String, version: String, router: Router): OpenAPI = {
 
-    val returnTypeSchemas = Map.newBuilder[String, Schema]
+    val referencedSchemas = Map.newBuilder[String, SchemaOrRef]
 
     val paths = for (route <- router.routes) yield {
       val routeAnalysis = RouteAnalyzer.analyzeRoute(route)
@@ -50,23 +54,39 @@ object OpenAPIGenerator extends LogSupport {
             `type` = "object",
             properties = Some(
               routeAnalysis.userInputParameters.map { p =>
-                p.name -> getOpenAPISchema(p.surface)
+                p.name -> getOpenAPISchema(p.surface, useRef = true)
               }.toMap
             )
           )
         )
       )
 
-      val returnTypeName = route.returnTypeSurface.fullName.replaceAll("\\$", ".")
-      returnTypeSchemas += returnTypeName -> getOpenAPISchema(route.returnTypeSurface)
+      routeAnalysis.httpClientCallInputs.foreach { p =>
+        referencedSchemas += sanitizedSurfaceName(p.surface) -> getOpenAPISchema(p.surface, useRef = false)
+      }
+      val returnTypeName = sanitizedSurfaceName(route.returnTypeSurface)
+      referencedSchemas += returnTypeName -> getOpenAPISchema(route.returnTypeSurface, useRef = false)
+
+      val pathParameters: Seq[ParameterOrRef] = routeAnalysis.pathOnlyParameters.toSeq.map { p =>
+        if (p.surface.isPrimitive) {
+          Parameter(
+            name = p.name,
+            in = In.path,
+            required = !p.surface.isOption,
+            allowEmptyValue = if (p.getDefaultValue.nonEmpty) Some(true) else None
+          )
+        } else {
+          ParameterRef(s"#/components/parameters/${sanitizedSurfaceName(p.surface)}")
+        }
+      }
 
       val httpMethod = route.method.toLowerCase(Locale.ENGLISH)
-      //val methodName = route.methodSurface.name.replaceAll("\$$", ".")
       val pathItem = PathItem(
         summary = route.methodSurface.name,
         // TODO Use @RPC(description = ???) or Scaladoc comment
         description = route.methodSurface.name,
         operationId = route.methodSurface.name,
+        parameters = if (pathParameters.isEmpty) None else Some(pathParameters),
         requestBody =
           if (requestBodyContent.isEmpty) None
           else
@@ -101,7 +121,7 @@ object OpenAPIGenerator extends LogSupport {
       path -> Map(httpMethod -> pathItem)
     }
 
-    val schemas = returnTypeSchemas.result()
+    val schemas = referencedSchemas.result()
 
     OpenAPI(
       info = Info(
@@ -157,7 +177,7 @@ object OpenAPIGenerator extends LogSupport {
     )
   }
 
-  def getOpenAPISchema(s: Surface): Schema = {
+  def getOpenAPISchema(s: Surface, useRef: Boolean): SchemaOrRef = {
     s match {
       case Primitive.Int =>
         Schema(
@@ -187,30 +207,32 @@ object OpenAPIGenerator extends LogSupport {
         Schema(
           `type` = "array",
           items = Some(
-            Seq(getOpenAPISchema(a.elementSurface))
+            Seq(getOpenAPISchema(a.elementSurface, useRef))
           )
         )
       case g: Surface if classOf[Map[_, _]].isAssignableFrom(g.rawType) && g.typeArgs(0) == Primitive.String =>
         Schema(
           `type` = "object",
           additionalProperties = Some(
-            getOpenAPISchema(g.typeArgs(1))
+            getOpenAPISchema(g.typeArgs(1), useRef)
           )
         )
       case s: Surface if s.isSeq =>
         Schema(
           `type` = "array",
           items = Some(
-            Seq(getOpenAPISchema(s.typeArgs.head))
+            Seq(getOpenAPISchema(s.typeArgs.head, useRef))
           )
         )
+      case s: Surface if useRef =>
+        SchemaRef(`$ref` = s"#/components/schemas/${sanitizedSurfaceName(s)}")
       case g: Surface if g.params.length > 0 =>
         val requiredParams = g.params
           .filter(p => p.isRequired || !p.surface.isOption)
           .map(_.name)
 
         val properties = g.params.map { p =>
-          p.name -> getOpenAPISchema(p.surface)
+          p.name -> getOpenAPISchema(p.surface, useRef)
         }.toMap
 
         Schema(
