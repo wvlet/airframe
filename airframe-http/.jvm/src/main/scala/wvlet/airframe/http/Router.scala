@@ -56,16 +56,19 @@ case class Router(
 
   override def toString: String = printNode(0)
 
+  private def routerName: String = {
+    surface
+      .orElse(filterSurface)
+      .orElse(filterInstance.map(_.getClass.getSimpleName))
+      .getOrElse(f"${hashCode()}%x")
+      .toString
+  }
+
   private def printNode(indentLevel: Int): String = {
     val s = Seq.newBuilder[String]
 
     val ws = " " * (indentLevel * 2)
-    val name =
-      surface
-        .orElse(filterSurface)
-        .orElse(filterInstance.map(_.getClass.getSimpleName))
-        .getOrElse(f"${hashCode()}%x")
-    s += s"${ws}- Router[${name}]"
+    s += s"${ws}- Router[${routerName}]"
 
     for (r <- localRoutes) {
       s += s"${ws}  + ${r}"

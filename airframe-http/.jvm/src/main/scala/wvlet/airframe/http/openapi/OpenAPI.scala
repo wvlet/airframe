@@ -19,7 +19,7 @@ case class OpenAPI(
     openapi: String = "3.0.3",
     info: Info,
     paths: Map[String, Map[String, PathItem]],
-    components: Components
+    components: Option[Components] = None
 )
 
 /**
@@ -42,8 +42,9 @@ object OpenAPI {
       description: String,
       operationId: String,
       parameters: Seq[Parameter] = Seq.empty,
-      requestBody: Option[RequestBody],
-      responses: Seq[Response]
+      requestBody: Option[RequestBody] = None,
+      // Status Code -> Response
+      responses: Map[String, ResponseOrRef]
   )
 
   case class Parameter(
@@ -105,12 +106,18 @@ object OpenAPI {
 
   case class Encoding()
 
+  sealed trait ResponseOrRef
+
+  case class ResponseRef(
+      `$ref`: String
+  ) extends ResponseOrRef
+
   case class Response(
       description: String,
       headers: Map[String, Header] = Map.empty,
       // Status code string -> MediaType
       content: Map[String, MediaType] = Map.empty
-  )
+  ) extends ResponseOrRef
 
   case class Header()
 
