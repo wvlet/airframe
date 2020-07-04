@@ -26,7 +26,7 @@ object OpenAPIGenerator extends LogSupport {
 
   def fromRouter(name: String, version: String, router: Router): OpenAPI = {
 
-    val returnTypes = Set.newBuilder[Surface]
+    val returnTypeSchemas = Map.newBuilder[String, Schema]
 
     val paths = for (route <- router.routes) yield {
       val routeAnalysis = RouteAnalyzer.analyzeRoute(route)
@@ -44,7 +44,8 @@ object OpenAPIGenerator extends LogSupport {
           }
         }.mkString("/")
 
-      returnTypes += route.returnTypeSurface
+      val returnTypeName = route.returnTypeSurface.fullName.replaceAll("\\$", ".")
+      returnTypeSchemas += returnTypeName -> getOpenAPISchema(route.returnTypeSurface)
 
       val httpMethod = route.method.toLowerCase(Locale.ENGLISH)
       //val methodName = route.methodSurface.name.replaceAll("\$$", ".")
@@ -60,10 +61,10 @@ object OpenAPIGenerator extends LogSupport {
               description = s"RPC response",
               content = Map(
                 "application/json" -> MediaType(
-                  schema = SchemaRef(s"#/components/schemas/${route.methodSurface.returnType.fullName}")
+                  schema = SchemaRef(s"#/components/schemas/${returnTypeName}")
                 ),
                 "application/x-msgpack" -> MediaType(
-                  schema = SchemaRef(s"#/components/schemas/${route.methodSurface.returnType.fullName}")
+                  schema = SchemaRef(s"#/components/schemas/${returnTypeName}")
                 )
               )
             ),
@@ -75,10 +76,6 @@ object OpenAPIGenerator extends LogSupport {
       path -> Map(httpMethod -> pathItem)
     }
 
-    val schemas = returnTypes.result().map { r =>
-      r.fullName -> getOpenAPISchema(r)
-    }
-
     OpenAPI(
       info = Info(
         title = name,
@@ -87,7 +84,7 @@ object OpenAPIGenerator extends LogSupport {
       paths = paths.toMap,
       components = Some(
         Components(
-          schemas = schemas.toMap,
+          schemas = returnTypeSchemas.result(),
           responses = Map(
             "400" -> Response(
               description = HttpStatus.BadRequest_400.reason,
@@ -162,6 +159,13 @@ object OpenAPIGenerator extends LogSupport {
           `type` = "array",
           items = Some(
             Seq(getOpenAPISchema(a.elementSurface))
+          )
+        )
+      case g: Surface if classOf[Map[_, _]].isAssignableFrom(g.rawType) && g.typeArgs(0) == Primitive.String =>
+        Schema(
+          `type` = "object",
+          additionalProperties = Some(
+            getOpenAPISchema(g.typeArgs(1))
           )
         )
       case s: Surface if s.isSeq =>

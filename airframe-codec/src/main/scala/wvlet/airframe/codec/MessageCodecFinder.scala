@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.codec
 import wvlet.airframe.codec.ScalaStandardCodec.{EitherCodec, OptionCodec, TupleCodec}
-import wvlet.airframe.surface.{Alias, EnumSurface, GenericSurface, Surface, Union}
+import wvlet.airframe.surface.{Alias, EnumSurface, GenericSurface, Surface, Union, Union2, Union3}
 
 /**
   */
@@ -76,7 +76,8 @@ object MessageCodecFinder {
         OptionCodec(factory.ofSurface(elementSurface, seenSet))
       case et: Surface if classOf[Either[_, _]].isAssignableFrom(et.rawType) =>
         EitherCodec(factory.ofSurface(et.typeArgs(0)), factory.ofSurface(et.typeArgs(1)))
-      case g: GenericSurface if classOf[Union] == g.rawType =>
+      case g: Surface if classOf[Union2[_, _]] == g.rawType || classOf[Union3[_, _, _]] == g.rawType =>
+        // Resolving UnionCodec a bit ad-hoc way
         UnionCodec
       // Tuple
       case g: GenericSurface

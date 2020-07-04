@@ -23,8 +23,7 @@ object UnionCodec extends MessageCodec[Union] {
     val cl = v.getElementClass
     wvlet.airframe.codec.Compat.codecOfClass(cl) match {
       case Some(codec) =>
-        info(codec)
-        codec.asInstanceOf[MessageCodec[Any]].pack(p, cl.cast(v))
+        codec.asInstanceOf[MessageCodec[Any]].pack(p, v)
       case None =>
         // Pack as a string
         StringCodec.pack(p, v.toString)

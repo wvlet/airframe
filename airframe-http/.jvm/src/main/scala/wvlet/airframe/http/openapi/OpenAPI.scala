@@ -98,6 +98,8 @@ object OpenAPI {
       required: Option[Seq[String]] = None,
       // property name -> property object
       properties: Option[Map[String, Schema]] = None,
+      // For Map-type values
+      additionalProperties: Option[Schema] = None,
       items: Option[Seq[Schema]] = None,
       nullable: Option[Boolean] = None,
       enum: Option[Seq[String]] = None
