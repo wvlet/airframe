@@ -72,7 +72,7 @@ object OpenAPIGenerator extends LogSupport {
           Parameter(
             name = p.name,
             in = In.path,
-            required = !p.surface.isOption,
+            required = p.isRequired,
             allowEmptyValue = if (p.getDefaultValue.nonEmpty) Some(true) else None
           )
         } else {
