@@ -6,13 +6,15 @@ on:
       - '**.scala'
       - '**.java'
       - '**.sbt'
-  push:
-    branches:
-      - master
-    paths:
-      - '**.scala'
-      - '**.java'
-      - '**.sbt'
+      - '.scalafmt.conf'
+push:
+  branches:
+    - master
+  paths:
+    - '**.scala'
+    - '**.java'
+    - '**.sbt'
+    - '.scalafmt.conf'
 
 jobs:
   code_format:

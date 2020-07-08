@@ -33,9 +33,9 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
     with LogSupport {
   private[this] val mapCodecFactory = {
     MessageCodecFactory
-    // Enable JSON support to convert objects into Maps
-    .defaultFactoryForJSON
-    // Add custom codecs
+      // Enable JSON support to convert objects into Maps
+      .defaultFactoryForJSON
+      // Add custom codecs
       .orElse(MessageCodecFactory.newFactory(customCodec))
   }
 
