@@ -35,7 +35,7 @@ package object finagle {
     */
   def finagleBaseDesign: Design =
     Design.newDesign
-    // Define binding here to avoid this will be initialized in a child session
+      // Define binding here to avoid this will be initialized in a child session
       .bind[FinagleServerFactory].toSingleton
       .bind[FinagleService].toProvider { (config: FinagleServerConfig, session: Session) => config.newService(session) }
 

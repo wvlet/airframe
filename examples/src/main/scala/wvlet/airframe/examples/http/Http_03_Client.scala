@@ -42,7 +42,7 @@ object Http_03_Client extends App with LogSupport {
 
   val clietnDesign =
     Finagle.client
-    // Max retry attempts
+      // Max retry attempts
       .withMaxRetry(3)
       // Use backoff (or jittering)
       .withBackOff(1)

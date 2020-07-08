@@ -29,7 +29,7 @@ object DI_21_BindConfig extends App {
   // Load "production" configurations from Yaml files
   val design =
     newDesign
-    // Set an environment to use
+      // Set an environment to use
       .withConfigEnv(env = "production", defaultEnv = "default")
       // Load configs from YAML files
       .bindConfigFromYaml[LogConfig]("access-log.yml")
