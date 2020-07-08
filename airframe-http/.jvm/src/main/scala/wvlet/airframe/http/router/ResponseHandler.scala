@@ -18,5 +18,5 @@ import wvlet.airframe.surface.Surface
 /**
   */
 trait ResponseHandler[Req, Res] {
-  def toHttpResponse[A](request: Req, responseTypeSurface: Surface, a: A): Res
+  def toHttpResponse[A](route: Route, request: Req, responseTypeSurface: Surface, a: A): Res
 }

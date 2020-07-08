@@ -16,8 +16,10 @@ import java.util.Locale
 
 import wvlet.airframe.http.{HttpStatus, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer
-import wvlet.airframe.surface.{ArraySurface, GenericSurface, Primitive, Surface, Union2}
+import wvlet.airframe.surface.{ArraySurface, GenericSurface, OptionSurface, Primitive, Surface, Union2}
 import wvlet.log.LogSupport
+
+import scala.collection.immutable.ListMap
 
 /**
   */
@@ -25,7 +27,12 @@ object OpenAPIGenerator extends LogSupport {
   import OpenAPI._
 
   private def sanitizedSurfaceName(s: Surface): String = {
-    s.fullName.replaceAll("\\$", ".")
+    s match {
+      case o: OptionSurface =>
+        sanitizedSurfaceName(o.elementSurface)
+      case _ =>
+        s.fullName.replaceAll("\\$", ".")
+    }
   }
 
   def fromRouter(name: String, version: String, router: Router): OpenAPI = {
@@ -61,11 +68,28 @@ object OpenAPIGenerator extends LogSupport {
         )
       )
 
+      def isPrimitiveTypeFamily(s: Surface): Boolean = {
+        s match {
+          case s if s.isPrimitive => true
+          case o: OptionSurface   => o.elementSurface.isPrimitive
+          case other              => false
+        }
+      }
+
+      def registerComponent(s: Surface): Unit = {
+        s match {
+          case s if isPrimitiveTypeFamily(s) =>
+          // Do not register schema
+          case _ =>
+            referencedSchemas += sanitizedSurfaceName(s) -> getOpenAPISchema(s, useRef = false)
+        }
+      }
+
       routeAnalysis.httpClientCallInputs.foreach { p =>
-        referencedSchemas += sanitizedSurfaceName(p.surface) -> getOpenAPISchema(p.surface, useRef = false)
+        registerComponent(p.surface)
       }
       val returnTypeName = sanitizedSurfaceName(route.returnTypeSurface)
-      referencedSchemas += returnTypeName -> getOpenAPISchema(route.returnTypeSurface, useRef = false)
+      registerComponent(route.returnTypeSurface)
 
       val pathParameters: Seq[ParameterOrRef] = routeAnalysis.pathOnlyParameters.toSeq.map { p =>
         if (p.surface.isPrimitive) {
@@ -81,6 +105,26 @@ object OpenAPIGenerator extends LogSupport {
       }
 
       val httpMethod = route.method.toLowerCase(Locale.ENGLISH)
+
+      val content: Map[String, MediaType] = if (route.returnTypeSurface == Primitive.Unit) {
+        Map.empty
+      } else {
+        val responseSchema = if (isPrimitiveTypeFamily(route.returnTypeSurface)) {
+          getOpenAPISchema(route.returnTypeSurface, useRef = false)
+        } else {
+          SchemaRef(s"#/components/schemas/${returnTypeName}")
+        }
+
+        Map(
+          "application/json" -> MediaType(
+            schema = responseSchema
+          ),
+          "application/x-msgpack" -> MediaType(
+            schema = responseSchema
+          )
+        )
+      }
+
       val pathItem = PathItem(
         summary = route.methodSurface.name,
         // TODO Use @RPC(description = ???) or Scaladoc comment
@@ -97,21 +141,10 @@ object OpenAPIGenerator extends LogSupport {
               )
             ),
         responses = Map(
-          // POST Created_201 responses
-          "201" ->
+          "200" ->
             Response(
               description = s"RPC response",
-              content = Map(
-                "application/json" -> MediaType(
-                  schema = SchemaRef(s"#/components/schemas/${returnTypeName}")
-                ),
-                "application/x-msgpack" -> MediaType(
-                  schema = Schema(
-                    `type` = "string",
-                    format = Some("msgpack")
-                  )
-                )
-              )
+              content = content
             ),
           "400" -> ResponseRef("#/components/responses/400"),
           "500" -> ResponseRef("#/components/responses/500"),
@@ -179,6 +212,10 @@ object OpenAPIGenerator extends LogSupport {
 
   def getOpenAPISchema(s: Surface, useRef: Boolean): SchemaOrRef = {
     s match {
+      case Primitive.Unit =>
+        Schema(
+          `type` = "string"
+        )
       case Primitive.Int =>
         Schema(
           `type` = "integer",
@@ -203,13 +240,10 @@ object OpenAPIGenerator extends LogSupport {
         Schema(`type` = "boolean")
       case Primitive.String =>
         Schema(`type` = "string")
-      case a: ArraySurface =>
-        Schema(
-          `type` = "array",
-          items = Some(
-            Seq(getOpenAPISchema(a.elementSurface, useRef))
-          )
-        )
+      case a if a == Surface.of[Any] =>
+        Schema(`type` = "string")
+      case o: OptionSurface =>
+        getOpenAPISchema(o.elementSurface, useRef)
       case g: Surface if classOf[Map[_, _]].isAssignableFrom(g.rawType) && g.typeArgs(0) == Primitive.String =>
         Schema(
           `type` = "object",
@@ -217,11 +251,16 @@ object OpenAPIGenerator extends LogSupport {
             getOpenAPISchema(g.typeArgs(1), useRef)
           )
         )
+      case a: ArraySurface =>
+        Schema(
+          `type` = "array",
+          items = Some(getOpenAPISchema(a.elementSurface, useRef))
+        )
       case s: Surface if s.isSeq =>
         Schema(
           `type` = "array",
           items = Some(
-            Seq(getOpenAPISchema(s.typeArgs.head, useRef))
+            getOpenAPISchema(s.typeArgs.head, useRef)
           )
         )
       case s: Surface if useRef =>
@@ -231,9 +270,12 @@ object OpenAPIGenerator extends LogSupport {
           .filter(p => p.isRequired || !p.surface.isOption)
           .map(_.name)
 
-        val properties = g.params.map { p =>
-          p.name -> getOpenAPISchema(p.surface, useRef)
-        }.toMap
+        // Use ListMap for preserving parameter orders
+        val b = ListMap.newBuilder[String, SchemaOrRef]
+        g.params.foreach { p =>
+          b += p.name -> getOpenAPISchema(p.surface, useRef)
+        }
+        val properties = b.result()
 
         Schema(
           `type` = "object",

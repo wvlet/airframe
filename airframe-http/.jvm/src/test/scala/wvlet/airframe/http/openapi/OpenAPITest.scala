@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.openapi
-import example.rpc.RPCTestService
-import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
+import example.openapi.OpenAPIRPCExample
+import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.Router
 import wvlet.airspec.AirSpec
 
@@ -21,7 +21,7 @@ import wvlet.airspec.AirSpec
   */
 class OpenAPITest extends AirSpec {
   test("Generate OpenAPI from Router") {
-    val router = Router.add[RPCTestService]
+    val router = Router.add[OpenAPIRPCExample]
 
     val openapi = OpenAPIGenerator.fromRouter(name = "RPCTest", version = "1.0", router)
     info(openapi)

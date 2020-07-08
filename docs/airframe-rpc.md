@@ -385,4 +385,6 @@ case class HelloResponse(message:String)
 ```json
 {"message":"..."}
 ```
-
+-__Http Status__
+  - 200 (Ok) for successful responses.
+  - 400 (Bad Request) if some request parameters are invalid.

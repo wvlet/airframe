@@ -78,7 +78,7 @@ object OpenAPI {
     private def all = Seq(query, header, path, cookie)
 
     def unapply(s: String): Option[In] = {
-      all.find(x => x == s.toString)
+      all.find(x => x.toString == s)
     }
   }
 
@@ -112,7 +112,7 @@ object OpenAPI {
       properties: Option[Map[String, SchemaOrRef]] = None,
       // For Map-type values
       additionalProperties: Option[SchemaOrRef] = None,
-      items: Option[Seq[SchemaOrRef]] = None,
+      items: Option[SchemaOrRef] = None,
       nullable: Option[Boolean] = None,
       enum: Option[Seq[String]] = None
   ) extends Union2[Schema, SchemaRef] {
@@ -143,4 +143,5 @@ object OpenAPI {
       responses: Option[Map[String, Response]] = None,
       parameters: Option[Map[String, ParameterOrRef]] = None
   )
+
 }

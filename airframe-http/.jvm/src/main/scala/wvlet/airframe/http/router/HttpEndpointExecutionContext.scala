@@ -63,7 +63,7 @@ class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
             // If X is other type, convert X into an HttpResponse
             backend.mapF(
               result.asInstanceOf[F[_]],
-              { x: Any => responseHandler.toHttpResponse(request, futureValueSurface, x) }
+              { x: Any => responseHandler.toHttpResponse(route, request, futureValueSurface, x) }
             )
         }
       case cl: Class[_] if backend.isScalaFutureType(cl) =>
@@ -81,12 +81,12 @@ class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
             // If X is other type, convert X into an HttpResponse
             val scalaFuture = result
               .asInstanceOf[scala.concurrent.Future[_]]
-              .map { x => responseHandler.toHttpResponse(request, futureValueSurface, x) }(ex)
+              .map { x => responseHandler.toHttpResponse(route, request, futureValueSurface, x) }(ex)
             backend.toFuture(scalaFuture, ex)
         }
       case _ =>
         // If the route returns non future value, convert it into Future response
-        backend.toFuture(responseHandler.toHttpResponse(request, route.returnTypeSurface, result))
+        backend.toFuture(responseHandler.toHttpResponse(route, request, route.returnTypeSurface, result))
     }
   }
 }
