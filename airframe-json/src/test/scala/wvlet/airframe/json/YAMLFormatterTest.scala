@@ -13,7 +13,7 @@ class YAMLFormatterTest extends AirSpec {
     Test("""{"a":true}""", """a: true"""),
     Test("""{"a":false}""", """a: false"""),
     Test("""{"a":null}""", """a: null"""),
-    Test("""{"a":1.0}""", """a: 1.0"""),
+    Test("""{"a":1.1}""", """a: 1.1"""),
     Test("""{"a":"hello"}""", """a: hello"""),
     Test("""{"a":"hello world"}""", """a: 'hello world'"""),
     Test(
@@ -29,13 +29,13 @@ class YAMLFormatterTest extends AirSpec {
                |  - false""".stripMargin
     ),
     Test(
-      json = """{"a":[1, true, false, null, 1.0, "hello", "hello world"]}""",
+      json = """{"a":[1, true, false, null, 1.1, "hello", "hello world"]}""",
       yaml = """a:
                |  - 1
                |  - true
                |  - false
                |  - null
-               |  - 1.0
+               |  - 1.1
                |  - hello
                |  - 'hello world'""".stripMargin
     ),
