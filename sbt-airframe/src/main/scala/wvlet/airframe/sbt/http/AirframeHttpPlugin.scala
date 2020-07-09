@@ -25,6 +25,7 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.OS
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil.withResource
+import scala.sys.process._
 
 /**
   * sbt plugin for supporting Airframe HTTP development.
@@ -57,9 +58,15 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     val airframeHttpGeneratorOption = settingKey[String]("airframe-http client-generator options")
     val airframeHttpClean           = taskKey[Unit]("clean artifacts")
     val airframeHttpClasspass       = taskKey[Seq[String]]("class loader for dependent classes")
-    val airframeHttpBinaryDir       = taskKey[File]("Downloaded Airframe HTTP Binary location")
+    val airframeHttpBinaryDir       = taskKey[File]("Download Airframe HTTP binary to this location")
     val airframeHttpVersion         = settingKey[String]("airframe-http version to use")
     val airframeHttpReload          = taskKey[Seq[File]]("refresh generated clients")
+
+    // Keys for OpenAPI spec generator
+    val airframeHttpOpenAPIPackages  = settingKey[Seq[String]]("Target API package names for generating Router")
+    val airframeHttpOpenAPIFormat    = settingKey[String]("Open API spec format types: yaml (default) or json")
+    val airframeHttpOpenAPITargetDir = settingKey[File]("Generated OpenAPI specification file directory")
+    val airframeHttpOpenAPIGenerate  = taskKey[Seq[File]]("Generate OpenAPI spec from RPC definition")
   }
 
   private def dependentProjects: ScopeFilter =
@@ -90,6 +97,8 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       },
       airframeHttpVersion := wvlet.airframe.sbt.BuildInfo.version,
       airframeHttpBinaryDir := {
+        // This task is for downloading airframe-http library to parse Airframe HTTP/RPC interfaces using a forked JVM.
+        // Without forking JVM, sbt's class loader cannot load @RPC and @Endpoint annotations.
         val airframeVersion        = airframeHttpVersion.value
         val airframeHttpPackageDir = airframeHttpWorkDir.value / "local"
 
@@ -181,16 +190,10 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         val result: Seq[File] = if (!cacheFile.exists) {
           debug(s"airframe-http directory: ${binDir}")
           val outDir: String = (Compile / sourceManaged).value.getPath
-          val cmdName = if (OS.isWindows) {
-            "airframe-http-client-generator.bat"
-          } else {
-            "airframe-http-client-generator"
-          }
           val cmd =
-            s"${binDir}/bin/${cmdName} generate ${opts} -cp ${cp} -o ${outDir} -t ${targetDir.getPath} ${airframeHttpClients.value
+            s"${binDir}/bin/${generatorName} generate ${opts} -cp ${cp} -o ${outDir} -t ${targetDir.getPath} ${airframeHttpClients.value
               .mkString(" ")}"
           debug(cmd)
-          import scala.sys.process._
           val json: String = cmd.!!
           debug(s"client generator result: ${json}")
           IO.write(cacheFile, json)
@@ -203,9 +206,39 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         }
         result
       },
+      airframeHttpOpenAPIPackages := Seq.empty,
+      airframeHttpOpenAPIFormat := "yaml",
+      airframeHttpOpenAPITargetDir := target.value,
+      airframeHttpOpenAPIGenerate := {
+        val formatType: String = airframeHttpOpenAPIFormat.value
+        val outFile: File      = airframeHttpOpenAPITargetDir.value / s"openapi.${formatType}"
+        val binDir: File       = airframeHttpBinaryDir.value
+        val cp                 = airframeHttpClasspass.value.mkString(":")
+        val packages           = airframeHttpOpenAPIPackages.value
+
+        if (packages.isEmpty) {
+          Seq.empty
+        } else {
+          val cmd =
+            s"${binDir}/bin/${generatorName} openapi -cp ${cp} -f ${formatType} -o ${outFile} ${packages.mkString(" ")}"
+          cmd.!!
+          Seq(outFile)
+        }
+      },
+      // To automatically generate HTTP clients
       Compile / sourceGenerators += Def.task {
-        airframeHttpGenerateClient.value
+        airframeHttpGenerateClient.value ++ airframeHttpOpenAPIGenerate.value
       }.taskValue
     )
   }
+
+  private def generatorName = {
+    val cmdName = if (OS.isWindows) {
+      "airframe-http-client-generator.bat"
+    } else {
+      "airframe-http-client-generator"
+    }
+    cmdName
+  }
+
 }

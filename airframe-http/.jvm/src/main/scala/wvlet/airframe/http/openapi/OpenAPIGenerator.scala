@@ -41,7 +41,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
 
     val paths = for (route <- router.routes) yield {
       val routeAnalysis = RouteAnalyzer.analyzeRoute(route)
-      info(routeAnalysis)
+      trace(routeAnalysis)
 
       val path = "/" + route.pathComponents
         .map { p =>

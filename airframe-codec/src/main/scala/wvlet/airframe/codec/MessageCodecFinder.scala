@@ -77,7 +77,7 @@ object MessageCodecFinder {
       case et: Surface if classOf[Either[_, _]].isAssignableFrom(et.rawType) =>
         EitherCodec(factory.ofSurface(et.typeArgs(0)), factory.ofSurface(et.typeArgs(1)))
       case g: Surface if classOf[Union2[_, _]] == g.rawType || classOf[Union3[_, _, _]] == g.rawType =>
-        // Resolving UnionCodec a bit ad-hoc way
+        // Resolving classes extending Union2 or Union3 here to avoid infinite loop
         UnionCodec
       // Tuple
       case g: GenericSurface

@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import java.util.concurrent.atomic.AtomicBoolean
 
 import com.twitter.concurrent.AsyncStream
-import com.twitter.finagle.http.{MediaType, Method, Request, Response, Status}
+import com.twitter.finagle.http._
 import com.twitter.io.Buf.ByteArray
 import com.twitter.io.{Buf, Reader}
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
@@ -56,7 +56,7 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
     if (responseSurface == Primitive.Unit) {
       request.method match {
         case Method.Post if route.isRPC =>
-          // For RPC return 200
+          // For RPC, return 200 even for POST
           r.statusCode = HttpStatus.Ok_200.code
         case Method.Post | Method.Put =>
           r.statusCode = HttpStatus.Created_201.code
@@ -87,7 +87,7 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
     a match {
       case null =>
         // Empty response
-        val r = newResponse(request, responseSurface)
+        val r = newResponse(route, request, responseSurface)
         r
       case r: Response =>
         // Return the response as is

@@ -13,8 +13,10 @@
  */
 package wvlet.airframe.http.openapi
 
+import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.openapi.OpenAPI._
+import wvlet.airframe.json.YAMLFormatter
 import wvlet.airframe.surface.Union2
 
 case class OpenAPI(
@@ -31,6 +33,15 @@ case class OpenAPI(
     */
   def withInfo(info: Info): OpenAPI = {
     this.copy(info = info)
+  }
+
+  def toJSON: String = {
+    val codec = MessageCodecFactory.defaultFactoryForJSON.of[OpenAPI]
+    codec.toJson(this)
+  }
+
+  def toYAML: String = {
+    YAMLFormatter.toYaml(toJSON)
   }
 }
 

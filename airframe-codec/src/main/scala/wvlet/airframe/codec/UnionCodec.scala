@@ -17,6 +17,8 @@ import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 import wvlet.airframe.surface.Union
 
 /**
+  * Codec for union classes (e.g., A or B)
+  * This codec is necessary for defining OpenAPI's model classes
   */
 object UnionCodec extends MessageCodec[Union] {
   override def pack(p: Packer, v: Union): Unit = {
