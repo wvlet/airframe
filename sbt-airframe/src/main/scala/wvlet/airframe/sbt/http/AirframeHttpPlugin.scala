@@ -209,6 +209,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         }
         result
       },
+      airframeHttpOpts := "",
       airframeHttpOpenAPIConfig := OpenAPIConfig(
         title = name.value,
         version = version.value
