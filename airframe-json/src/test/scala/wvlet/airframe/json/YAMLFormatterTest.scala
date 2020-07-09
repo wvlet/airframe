@@ -40,6 +40,10 @@ class YAMLFormatterTest extends AirSpec {
                |  - 'hello world'""".stripMargin
     ),
     Test(
+      json = """{"a":{}}""",
+      yaml = """""".stripMargin
+    ),
+    Test(
       json = """{"a":{"b":1}}""",
       yaml = """a:
                |  b: 1""".stripMargin
@@ -75,6 +79,14 @@ class YAMLFormatterTest extends AirSpec {
     Test(
       json = """{"200":"ok"}}""",
       yaml = """'200': ok""".stripMargin
+    ),
+    Test(
+      json = """{"a":[{"b":1, "c":2}, {"b":3, "c":4}]}""",
+      yaml = """a:
+               |  - b: 1
+               |    c: 2
+               |  - b: 3
+               |    c: 4""".stripMargin
     )
   )
 

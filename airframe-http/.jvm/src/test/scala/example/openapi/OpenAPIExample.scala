@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package example.openapi
-import wvlet.airframe.http.RPC
+import wvlet.airframe.http.{Endpoint, HttpMethod, RPC}
 
 /**
   */
@@ -43,4 +43,18 @@ object OpenAPIRPCExample {
       x9: Option[Int] = None
   )
   case class RPCResponse(y1: String, y2: Boolean)
+}
+
+trait OpenAPIEndpointExample {
+  @Endpoint(method = HttpMethod.GET, path = "/v1/get0")
+  def get0(): Unit
+
+  @Endpoint(method = HttpMethod.GET, path = "/v1/get1/:id")
+  def get1(id: Int): Unit
+
+  @Endpoint(method = HttpMethod.GET, path = "/v1/get2/:id/:name")
+  def get2(id: Int, name: String): Unit
+
+  @Endpoint(method = HttpMethod.GET, path = "/v1/get3/:id")
+  def get3(id: Int, p1: String): Unit
 }

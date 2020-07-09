@@ -87,6 +87,7 @@ object OpenAPI {
       in: In,
       description: Option[String] = None,
       required: Boolean = false,
+      schema: Option[SchemaOrRef] = None,
       deprecated: Option[Boolean] = None,
       allowEmptyValue: Option[Boolean] = None
   ) extends ParameterOrRef {

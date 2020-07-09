@@ -14,7 +14,7 @@
 package wvlet.airframe.http.openapi
 import java.util.Locale
 
-import wvlet.airframe.http.{HttpStatus, Router}
+import wvlet.airframe.http.{HttpMethod, HttpStatus, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer
 import wvlet.airframe.surface.{ArraySurface, GenericSurface, OptionSurface, Primitive, Surface, Union2}
 import wvlet.log.LogSupport
@@ -47,9 +47,9 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         .map { p =>
           p match {
             case x if x.startsWith(":") =>
-              s"{${x.substring(1, x.length - 1)}}"
+              s"{${x.substring(1, x.length)}}"
             case x if x.startsWith("*") =>
-              s"{${x.substring(1, x.length - 1)}}"
+              s"{${x.substring(1, x.length)}}"
             case _ =>
               p
           }
@@ -66,10 +66,17 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
           )
         )
       )
-      val requestBodyContent = Map(
-        "application/json"      -> requestMediaType,
-        "application/x-msgpack" -> requestMediaType
-      )
+
+      val requestBodyContent: Map[String, MediaType] = {
+        if (route.method == HttpMethod.GET) {
+          Map.empty
+        } else {
+          Map(
+            "application/json"      -> requestMediaType,
+            "application/x-msgpack" -> requestMediaType
+          )
+        }
+      }
 
       def isPrimitiveTypeFamily(s: Surface): Boolean = {
         s match {
@@ -99,7 +106,13 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
           Parameter(
             name = p.name,
             in = In.path,
-            required = p.isRequired,
+            required = true,
+            schema = if (isPrimitiveTypeFamily(p.surface)) {
+              Some(getOpenAPISchema(p.surface, useRef = false))
+            } else {
+              registerComponent(p.surface)
+              Some(SchemaRef(s"#/components/schemas/${sanitizedSurfaceName(p.surface)}"))
+            },
             allowEmptyValue = if (p.getDefaultValue.nonEmpty) Some(true) else None
           )
         } else {
@@ -134,15 +147,16 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         description = route.methodSurface.name,
         operationId = route.methodSurface.name,
         parameters = if (pathParameters.isEmpty) None else Some(pathParameters),
-        requestBody =
-          if (requestBodyContent.isEmpty) None
-          else
-            Some(
-              RequestBody(
-                content = requestBodyContent,
-                required = true
-              )
-            ),
+        requestBody = if (requestBodyContent.isEmpty) {
+          None
+        } else {
+          Some(
+            RequestBody(
+              content = requestBodyContent,
+              required = true
+            )
+          )
+        },
         responses = Map(
           "200" ->
             Response(

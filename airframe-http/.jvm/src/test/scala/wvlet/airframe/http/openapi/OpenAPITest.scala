@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.openapi
-import example.openapi.OpenAPIRPCExample
+import example.openapi.{OpenAPIEndpointExample, OpenAPIRPCExample}
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.HttpCodeGenerator
 import wvlet.airspec.AirSpec
@@ -20,11 +20,12 @@ import wvlet.airspec.AirSpec
 /**
   */
 class OpenAPITest extends AirSpec {
-  private val router = Router.add[OpenAPIRPCExample]
+  private val rpcRouter      = Router.add[OpenAPIRPCExample]
+  private val endpointRouter = Router.add[OpenAPIEndpointExample]
 
   test("Generate OpenAPI from Router") {
     val openapi = OpenAPI
-      .ofRouter(router)
+      .ofRouter(rpcRouter)
       .withInfo(OpenAPI.Info(title = "RPCTest", version = "1.0"))
     debug(openapi)
 
@@ -168,14 +169,26 @@ class OpenAPITest extends AirSpec {
   }
 
   test(s"Generate OpenAPI spec from command line") {
-    val yaml = HttpCodeGenerator.generateOpenAPI(router, "yaml", title = "My API", version = "1.0")
+    val yaml = HttpCodeGenerator.generateOpenAPI(rpcRouter, "yaml", title = "My API", version = "1.0")
     debug(yaml)
 
-    val json = HttpCodeGenerator.generateOpenAPI(router, "json", title = "My API", version = "1.0")
+    val json = HttpCodeGenerator.generateOpenAPI(rpcRouter, "json", title = "My API", version = "1.0")
     debug(json)
 
     intercept[IllegalArgumentException] {
-      HttpCodeGenerator.generateOpenAPI(router, "invalid", title = "My API", version = "1.0")
+      HttpCodeGenerator.generateOpenAPI(rpcRouter, "invalid", title = "My API", version = "1.0")
     }
+  }
+
+  test("Generate OpenAPI spec from @Endpoint") {
+    val openapi = OpenAPI
+      .ofRouter(endpointRouter)
+      .withInfo(OpenAPI.Info(title = "EndpointTest", version = "1.0"))
+    debug(openapi)
+
+    val json = openapi.toJSON
+    debug(json)
+    val yaml = openapi.toYAML
+    debug(yaml)
   }
 }
