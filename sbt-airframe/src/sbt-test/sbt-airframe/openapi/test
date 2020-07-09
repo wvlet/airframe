@@ -1,2 +1,2 @@
-> compile
+> package
 $ exists target/scala-2.12/resource_managed/openapi.yaml
