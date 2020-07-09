@@ -227,10 +227,30 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           if (packages.isEmpty) {
             Seq.empty
           } else {
-            val cmd =
-              s"${binDir}/bin/${generatorName} openapi ${opts} -cp ${cp} -f ${formatType} -o ${outFile} ${packages.mkString(" ")}"
-            debug(cmd)
-            cmd.!!
+            // Build command line manally because scala.sys.proces cannot parse quoted strings
+            val cmd = Seq.newBuilder[String]
+            cmd += s"${binDir}/bin/${generatorName}"
+            cmd += "openapi"
+            if (opts.nonEmpty) {
+              cmd ++= opts.split("\\s+")
+            }
+            cmd ++= Seq(
+              "-cp",
+              cp,
+              "-f",
+              formatType,
+              "-o",
+              outFile.getPath,
+              "--title",
+              config.title,
+              "--version",
+              config.version
+            )
+            cmd ++= packages
+
+            val cmdline = cmd.result()
+            info(cmdline)
+            Process(cmdline).!!
             Seq(outFile)
           }
         }.dependsOn(Compile / compile).value,

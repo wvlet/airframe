@@ -81,8 +81,8 @@ object HttpCodeGenerator extends LogSupport {
     code
   }
 
-  def generateOpenAPI(router: Router, formatType: String): String = {
-    val openapi = OpenAPI.ofRouter(router)
+  def generateOpenAPI(router: Router, formatType: String, title: String, version: String): String = {
+    val openapi = OpenAPI.ofRouter(router).withInfo(OpenAPI.Info(title = title, version = version))
     val schema = formatType match {
       case "yaml" =>
         openapi.toYAML
@@ -184,13 +184,17 @@ class HttpCodeGenerator(
       outFile: File,
       @option(prefix = "-f", description = "format type: yaml (default) or json")
       formatType: String = "YAML",
+      @option(prefix = "--title", description = "openapi.title")
+      title: String,
+      @option(prefix = "--version", description = "openapi.version")
+      version: String,
       @argument(description = "Target Airframe HTTP/RPC package name")
       packageNames: Seq[String]
   ): Unit = {
     debug(s"classpath: ${classpath}")
     val router = buildRouter(packageNames, newClassLoader(classpath))
     debug(router)
-    val schema = HttpCodeGenerator.generateOpenAPI(router, formatType)
+    val schema = HttpCodeGenerator.generateOpenAPI(router, formatType, title, version)
     debug(schema)
     info(s"Writing OpenAPI spec ${formatType} to ${outFile.getPath}")
     writeFile(outFile, schema)
