@@ -61,6 +61,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     val airframeHttpBinaryDir       = taskKey[File]("Download Airframe HTTP binary to this location")
     val airframeHttpVersion         = settingKey[String]("airframe-http version to use")
     val airframeHttpReload          = taskKey[Seq[File]]("refresh generated clients")
+    val airframeHttpOpts            = settingKey[String]("additional option for airframe-http commands")
 
     // Keys for OpenAPI spec generator
     val airframeHttpOpenAPIPackages  = settingKey[Seq[String]]("Target API package names for generating Router")
@@ -208,26 +209,32 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       },
       airframeHttpOpenAPIPackages := Seq.empty,
       airframeHttpOpenAPIFormat := "yaml",
-      airframeHttpOpenAPITargetDir := target.value,
+      airframeHttpOpenAPITargetDir := (Compile / resourceManaged).value,
       airframeHttpOpenAPIGenerate := {
         val formatType: String = airframeHttpOpenAPIFormat.value
         val outFile: File      = airframeHttpOpenAPITargetDir.value / s"openapi.${formatType}"
         val binDir: File       = airframeHttpBinaryDir.value
         val cp                 = airframeHttpClasspass.value.mkString(":")
         val packages           = airframeHttpOpenAPIPackages.value
+        val opts               = airframeHttpOpts.value
 
         if (packages.isEmpty) {
           Seq.empty
         } else {
           val cmd =
-            s"${binDir}/bin/${generatorName} openapi -cp ${cp} -f ${formatType} -o ${outFile} ${packages.mkString(" ")}"
+            s"${binDir}/bin/${generatorName} openapi ${opts} -cp ${cp} -f ${formatType} -o ${outFile} ${packages.mkString(" ")}"
+          info(cmd)
           cmd.!!
           Seq(outFile)
         }
       },
-      // To automatically generate HTTP clients
+      // Generate HTTP clients before compilation
       Compile / sourceGenerators += Def.task {
-        airframeHttpGenerateClient.value ++ airframeHttpOpenAPIGenerate.value
+        airframeHttpGenerateClient.value
+      }.taskValue,
+      // Generate OpenAPI doc when generating resources
+      Compile / resourceGenerators += Def.task {
+        airframeHttpOpenAPIGenerate.value
       }.taskValue
     )
   }

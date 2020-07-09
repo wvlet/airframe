@@ -176,6 +176,7 @@ class HttpClientGenerator(
     }
   }
 
+  @command(description = "Generate OpenAPI spec")
   def openapi(
       @option(prefix = "-cp", description = "semi-colon separated application classpaths")
       classpath: String = "",

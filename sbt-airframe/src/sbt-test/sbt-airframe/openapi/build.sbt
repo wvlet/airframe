@@ -1,12 +1,7 @@
-import wvlet.airframe.sbt.http.AirframeHttpPlugin
+enablePlugins(AirframeHttpPlugin)
 
-project
-  .enablePlugins(AirframeHttpPlugin)
-  .settings(
-    airframeHttpOpenAPIPackages := Seq(
-      "example.api"
-    ),
-    libraryDependencies ++= Seq(
-      "org.wvlet.airframe" %% "airframe-http" % sys.props("plugin.version")
-    )
-  )
+airframeHttpOpenAPIPackages := Seq("example.api")
+airframeHttpOpts := "-l debug"
+libraryDependencies ++= Seq(
+  "org.wvlet.airframe" %% "airframe-http" % sys.props("plugin.version")
+)
