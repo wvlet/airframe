@@ -35,7 +35,7 @@ class HttpClientGeneratorTest extends AirSpec {
   }
 
   test("generate async client") {
-    val code = HttpClientGenerator.generate(
+    val code = HttpCodeGenerator.generate(
       router,
       HttpClientGeneratorConfig("example.api:async:example.api.client")
     )
@@ -53,7 +53,7 @@ class HttpClientGeneratorTest extends AirSpec {
   }
 
   test("generate sync client") {
-    val code = HttpClientGenerator.generate(
+    val code = HttpCodeGenerator.generate(
       router,
       HttpClientGeneratorConfig("example.api:sync")
     )
@@ -62,7 +62,7 @@ class HttpClientGeneratorTest extends AirSpec {
   }
 
   test("generate Scala.js client") {
-    val code = HttpClientGenerator.generate(
+    val code = HttpCodeGenerator.generate(
       router,
       HttpClientGeneratorConfig("example.api:scalajs:example.api.client.js")
     )

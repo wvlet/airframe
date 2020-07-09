@@ -578,7 +578,7 @@ lazy val http =
 lazy val httpJVM = http.jvm
   .enablePlugins(PackPlugin)
   .settings(
-    packMain := Map("airframe-http-client-generator" -> "wvlet.airframe.http.codegen.HttpClientGenerator"),
+    packMain := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
     packExcludeLibJars := Seq("airspec_2.12"),
     publishPackArchiveTgz
   ).dependsOn(launcher)

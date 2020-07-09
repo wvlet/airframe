@@ -64,9 +64,9 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     val airframeHttpOpts            = settingKey[String]("additional option for airframe-http commands")
 
     // Keys for OpenAPI spec generator
-    val airframeHttpOpenAPIPackages  = settingKey[Seq[String]]("Target API package names for generating Router")
-    val airframeHttpOpenAPIFormat    = settingKey[String]("Open API spec format types: yaml (default) or json")
-    val airframeHttpOpenAPITargetDir = settingKey[File]("Generated OpenAPI specification file directory")
+    val airframeHttpOpenAPIConfig    = settingKey[OpenAPIConfig]("OpenAPI spec generator configuration")
+    val airframeHttpOpenAPIPackages  = settingKey[Seq[String]]("OpenAPI target API package names")
+    val airframeHttpOpenAPITargetDir = settingKey[File]("OpenAPI spec file target folder")
     val airframeHttpOpenAPIGenerate  = taskKey[Seq[File]]("Generate OpenAPI spec from RPC definition")
   }
 
@@ -88,6 +88,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         val classpaths =
           ((Compile / dependencyClasspath).value.files :+ (Compile / classDirectory).value)
             .map { p => p.relativeTo(baseDir).getOrElse(p).getPath }
+
         classpaths
       },
       airframeHttpWorkDir := (Compile / target).value / s"scala-${scalaBinaryVersion.value}" / s"airframe" / airframeHttpVersion.value,
@@ -187,7 +188,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         val cacheFile       = targetDir / cacheFileName
         val binDir          = airframeHttpBinaryDir.value
         val cp              = airframeHttpClasspass.value.mkString(":")
-        val opts            = airframeHttpGeneratorOption.value
+        val opts            = s"${airframeHttpOpts.value} ${airframeHttpGeneratorOption.value}"
 
         val result: Seq[File] = if (!cacheFile.exists) {
           debug(s"airframe-http directory: ${binDir}")
@@ -208,43 +209,45 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         }
         result
       },
+      airframeHttpOpenAPIConfig := OpenAPIConfig(
+        title = name.value,
+        version = version.value
+      ),
+      airframeHttpOpenAPITargetDir := target.value,
       airframeHttpOpenAPIPackages := Seq.empty,
-      airframeHttpOpenAPIFormat := "yaml",
-      airframeHttpOpenAPITargetDir := (Compile / resourceManaged).value,
-      airframeHttpOpenAPIGenerate := {
-        val formatType: String = airframeHttpOpenAPIFormat.value
-        val outFile: File      = airframeHttpOpenAPITargetDir.value / s"openapi.${formatType}"
-        val binDir: File       = airframeHttpBinaryDir.value
-        val cp                 = airframeHttpClasspass.value.mkString(":")
-        val packages           = airframeHttpOpenAPIPackages.value
-        val opts               = airframeHttpOpts.value
-
-        if (packages.isEmpty) {
-          Seq.empty
-        } else {
-          val cmd =
-            s"${binDir}/bin/${generatorName} openapi ${opts} -cp ${cp} -f ${formatType} -o ${outFile} ${packages.mkString(" ")}"
-          debug(cmd)
-          cmd.!!
-          Seq(outFile)
-        }
-      },
+      airframeHttpOpenAPIGenerate := Def
+        .task {
+          val config             = airframeHttpOpenAPIConfig.value
+          val formatType: String = config.format
+          val outFile: File      = airframeHttpOpenAPITargetDir.value / s"${config.filePrefix}.${formatType}"
+          val binDir: File       = airframeHttpBinaryDir.value
+          val cp                 = airframeHttpClasspass.value.mkString(":")
+          val packages           = airframeHttpOpenAPIPackages.value
+          val opts               = airframeHttpOpts.value
+          if (packages.isEmpty) {
+            Seq.empty
+          } else {
+            val cmd =
+              s"${binDir}/bin/${generatorName} openapi ${opts} -cp ${cp} -f ${formatType} -o ${outFile} ${packages.mkString(" ")}"
+            debug(cmd)
+            cmd.!!
+            Seq(outFile)
+          }
+        }.dependsOn(Compile / compile).value,
       // Generate HTTP clients before compilation
       Compile / sourceGenerators += Def.task {
         airframeHttpGenerateClient.value
       }.taskValue,
-      // Generate OpenAPI doc when generating resources
-      Compile / resourceGenerators += Def.task {
-        airframeHttpOpenAPIGenerate.value
-      }.taskValue
+      // Generate OpenAPI doc when generating package
+      Compile / `package` := (Compile / `package`).dependsOn(airframeHttpOpenAPIGenerate).value
     )
   }
 
   private def generatorName = {
     val cmdName = if (OS.isWindows) {
-      "airframe-http-client-generator.bat"
+      "airframe-http-code-generator.bat"
     } else {
-      "airframe-http-client-generator"
+      "airframe-http-code-generator"
     }
     cmdName
   }

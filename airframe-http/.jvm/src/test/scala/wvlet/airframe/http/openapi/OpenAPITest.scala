@@ -14,7 +14,7 @@
 package wvlet.airframe.http.openapi
 import example.openapi.OpenAPIRPCExample
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.codegen.HttpClientGenerator
+import wvlet.airframe.http.codegen.HttpCodeGenerator
 import wvlet.airspec.AirSpec
 
 /**
@@ -39,14 +39,14 @@ class OpenAPITest extends AirSpec {
   }
 
   test(s"Generate OpenAPI spec from command line") {
-    val yaml = HttpClientGenerator.generateOpenAPI(router, "yaml")
+    val yaml = HttpCodeGenerator.generateOpenAPI(router, "yaml")
     debug(yaml)
 
-    val json = HttpClientGenerator.generateOpenAPI(router, "json")
+    val json = HttpCodeGenerator.generateOpenAPI(router, "json")
     debug(json)
 
     intercept[IllegalArgumentException] {
-      HttpClientGenerator.generateOpenAPI(router, "invalid")
+      HttpCodeGenerator.generateOpenAPI(router, "invalid")
     }
   }
 }

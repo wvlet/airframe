@@ -64,7 +64,7 @@ object HttpClientGeneratorConfig {
 /**
   * Generate HTTP client code for Scala, Scala.js targets using a given IR
   */
-object HttpClientGenerator extends LogSupport {
+object HttpCodeGenerator extends LogSupport {
   def generate(
       router: Router,
       config: HttpClientGeneratorConfig
@@ -95,7 +95,7 @@ object HttpClientGenerator extends LogSupport {
   }
 
   def main(args: Array[String]): Unit = {
-    Launcher.of[HttpClientGenerator].execute(args)
+    Launcher.of[HttpCodeGenerator].execute(args)
   }
 
   case class Artifacts(file: Seq[File])
@@ -103,7 +103,7 @@ object HttpClientGenerator extends LogSupport {
 
 import wvlet.airframe.launcher._
 
-class HttpClientGenerator(
+class HttpCodeGenerator(
     @option(prefix = "-h,--help", description = "show help message", isHelp = true)
     isHelp: Boolean = false,
     @option(prefix = "-l,--loglevel", description = "log level")
@@ -160,7 +160,7 @@ class HttpClientGenerator(
         if (!outputFile.exists() || !routerHashFile.exists()) {
           info(f"Router for package ${config.apiPackageName}:\n${routerStr}")
           info(s"Generating a ${config.clientType.name} client code: ${path}")
-          val code = HttpClientGenerator.generate(router, config)
+          val code = HttpCodeGenerator.generate(router, config)
           touch(routerHashFile)
           writeFile(outputFile, code)
         } else {
@@ -190,7 +190,7 @@ class HttpClientGenerator(
     debug(s"classpath: ${classpath}")
     val router = buildRouter(packageNames, newClassLoader(classpath))
     debug(router)
-    val schema = HttpClientGenerator.generateOpenAPI(router, formatType)
+    val schema = HttpCodeGenerator.generateOpenAPI(router, formatType)
     debug(schema)
     info(s"Writing OpenAPI spec ${formatType} to ${outFile.getPath}")
     writeFile(outFile, schema)
