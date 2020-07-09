@@ -22,8 +22,9 @@ import wvlet.log.LogSupport
 import scala.collection.immutable.ListMap
 
 /**
+  * OpenAPI schema generator
   */
-object OpenAPIGenerator extends LogSupport {
+private[openapi] object OpenAPIGenerator extends LogSupport {
   import OpenAPI._
 
   private def sanitizedSurfaceName(s: Surface): String = {
@@ -35,8 +36,7 @@ object OpenAPIGenerator extends LogSupport {
     }
   }
 
-  def fromRouter(name: String, version: String, router: Router): OpenAPI = {
-
+  private[openapi] def generateFromRouter(router: Router): OpenAPI = {
     val referencedSchemas = Map.newBuilder[String, SchemaOrRef]
 
     val paths = for (route <- router.routes) yield {
@@ -55,17 +55,20 @@ object OpenAPIGenerator extends LogSupport {
           }
         }.mkString("/")
 
-      val requestBodyContent = Map(
-        "application/json" -> MediaType(
-          schema = Schema(
-            `type` = "object",
-            properties = Some(
-              routeAnalysis.userInputParameters.map { p =>
-                p.name -> getOpenAPISchema(p.surface, useRef = true)
-              }.toMap
-            )
+      val requestMediaType = MediaType(
+        schema = Schema(
+          `type` = "object",
+          required = requiredParams(routeAnalysis.userInputParameters),
+          properties = Some(
+            routeAnalysis.userInputParameters.map { p =>
+              p.name -> getOpenAPISchema(p.surface, useRef = true)
+            }.toMap
           )
         )
+      )
+      val requestBodyContent = Map(
+        "application/json"      -> requestMediaType,
+        "application/x-msgpack" -> requestMediaType
       )
 
       def isPrimitiveTypeFamily(s: Surface): Boolean = {
@@ -149,7 +152,8 @@ object OpenAPIGenerator extends LogSupport {
           "400" -> ResponseRef("#/components/responses/400"),
           "500" -> ResponseRef("#/components/responses/500"),
           "503" -> ResponseRef("#/components/responses/503")
-        )
+        ),
+        tags = if (route.isRPC) Some(Seq("rpc")) else None
       )
       path -> Map(httpMethod -> pathItem)
     }
@@ -157,10 +161,6 @@ object OpenAPIGenerator extends LogSupport {
     val schemas = referencedSchemas.result()
 
     OpenAPI(
-      info = Info(
-        title = name,
-        version = version
-      ),
       paths = paths.toMap,
       components = Some(
         Components(
@@ -168,40 +168,13 @@ object OpenAPIGenerator extends LogSupport {
           responses = Some(
             Map(
               "400" -> Response(
-                description = HttpStatus.BadRequest_400.reason,
-                content = Map(
-                  "application/json" ->
-                    MediaType(
-                      schema = Schema(
-                        `type` = "string"
-                        //properties = ...
-                      )
-                    )
-                )
+                description = HttpStatus.BadRequest_400.reason
               ),
               "500" -> Response(
-                description = HttpStatus.InternalServerError_500.reason,
-                content = Map(
-                  "application/json" ->
-                    MediaType(
-                      schema = Schema(
-                        `type` = "string"
-                        //properties = ...
-                      )
-                    )
-                )
+                description = HttpStatus.InternalServerError_500.reason
               ),
               "503" -> Response(
-                description = HttpStatus.ServiceUnavailable_503.reason,
-                content = Map(
-                  "application/json" ->
-                    MediaType(
-                      schema = Schema(
-                        `type` = "string"
-                        //properties = ...
-                      )
-                    )
-                )
+                description = HttpStatus.ServiceUnavailable_503.reason
               )
             )
           )
@@ -241,6 +214,8 @@ object OpenAPIGenerator extends LogSupport {
       case Primitive.String =>
         Schema(`type` = "string")
       case a if a == Surface.of[Any] =>
+        // We should use anyOf here, but it will complicate the handling of Map[String, Any] (additionalParameter: {}), so
+        // just use string type:
         Schema(`type` = "string")
       case o: OptionSurface =>
         getOpenAPISchema(o.elementSurface, useRef)
@@ -266,10 +241,6 @@ object OpenAPIGenerator extends LogSupport {
       case s: Surface if useRef =>
         SchemaRef(`$ref` = s"#/components/schemas/${sanitizedSurfaceName(s)}")
       case g: Surface if g.params.length > 0 =>
-        val requiredParams = g.params
-          .filter(p => p.isRequired || !p.surface.isOption)
-          .map(_.name)
-
         // Use ListMap for preserving parameter orders
         val b = ListMap.newBuilder[String, SchemaOrRef]
         g.params.foreach { p =>
@@ -279,10 +250,17 @@ object OpenAPIGenerator extends LogSupport {
 
         Schema(
           `type` = "object",
-          required = if (requiredParams.isEmpty) None else Some(requiredParams),
+          required = requiredParams(g.params),
           properties = if (properties.isEmpty) None else Some(properties)
         )
     }
+  }
+
+  private def requiredParams(params: Seq[wvlet.airframe.surface.Parameter]): Option[Seq[String]] = {
+    val required = params
+      .filter(p => p.isRequired || !p.surface.isOption)
+      .map(_.name)
+    if (required.isEmpty) None else Some(required)
   }
 
 }

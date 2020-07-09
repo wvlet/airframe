@@ -15,6 +15,7 @@ package wvlet.airframe.http.openapi
 import example.openapi.OpenAPIRPCExample
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.Router
+import wvlet.airframe.json.YAMLFormatter
 import wvlet.airspec.AirSpec
 
 /**
@@ -23,11 +24,19 @@ class OpenAPITest extends AirSpec {
   test("Generate OpenAPI from Router") {
     val router = Router.add[OpenAPIRPCExample]
 
-    val openapi = OpenAPIGenerator.fromRouter(name = "RPCTest", version = "1.0", router)
+    val openapi = OpenAPI
+      .ofRouter(router)
+      .withInfo(OpenAPI.Info(title = "RPCTest", version = "1.0"))
     info(openapi)
+
+    openapi.info.title shouldBe "RPCTest"
+    openapi.info.version shouldBe "1.0"
 
     val codec = MessageCodecFactory.defaultFactoryForJSON.of[OpenAPI]
     val json  = codec.toJson(openapi)
     info(s"Open API JSON:\n${json}\n")
+
+    val yaml = YAMLFormatter.toYaml(json)
+    info(s"Open API Yaml:\n${yaml}\n")
   }
 }

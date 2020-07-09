@@ -26,20 +26,21 @@ trait OpenAPIRPCExample {
   def rpcWithComplexParam(p1: RPCRequest): RPCResponse
   def rpcWithMultipleParams(p1: Int, p2: RPCRequest): RPCResponse
   def rpcWithOption(p1: Option[String]): Unit
-  def rpcWithOption(p1: String, p2: Option[String]): Unit
+  def rpcWithPrimitiveAndOption(p1: String, p2: Option[String]): Unit
+  def rpcWithOptionOfComplexType(p1: Option[RPCRequest]): Unit
 }
 
 object OpenAPIRPCExample {
   case class RPCRequest(
-      p1: Int,
-      p2: Long,
-      p3: Boolean,
-      p4: Float,
-      p5: Double,
-      p6: Array[String],
-      p7: Seq[String],
-      p8: Map[String, Any],
-      p9: Option[Int] = None
+      x1: Int,
+      x2: Long,
+      x3: Boolean,
+      x4: Float,
+      x5: Double,
+      x6: Array[String],
+      x7: Seq[String],
+      x8: Map[String, Any],
+      x9: Option[Int] = None
   )
-  case class RPCResponse(p1: String, p2: Boolean)
+  case class RPCResponse(y1: String, y2: Boolean)
 }

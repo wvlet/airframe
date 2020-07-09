@@ -13,20 +13,40 @@
  */
 package wvlet.airframe.http.openapi
 
-import OpenAPI._
+import wvlet.airframe.http.Router
+import wvlet.airframe.http.openapi.OpenAPI._
 import wvlet.airframe.surface.Union2
 
 case class OpenAPI(
     openapi: String = "3.0.3",
-    info: Info,
+    info: Info = Info(title = "API", version = "0.1"),
     paths: Map[String, Map[String, PathItem]],
     components: Option[Components] = None
-)
+) {
+
+  /**
+    * Set the info of the router
+    * @param info
+    * @return
+    */
+  def withInfo(info: Info): OpenAPI = {
+    this.copy(info = info)
+  }
+}
 
 /**
   * A subset of Open API objects necessary for describing Airframe RPC interfaces
   */
 object OpenAPI {
+
+  /**
+    * Generate Open API model class from Airframe HTTP/RPC Router definition
+    * @param router
+    * @return OpenAPI model class
+    */
+  def ofRouter(router: Router): OpenAPI = {
+    OpenAPIGenerator.generateFromRouter(router)
+  }
 
   case class Info(
       title: String,
@@ -45,7 +65,8 @@ object OpenAPI {
       parameters: Option[Seq[ParameterOrRef]] = None,
       requestBody: Option[RequestBody] = None,
       // Status Code -> ResponseRef or Response
-      responses: Map[String, Union2[Response, ResponseRef]]
+      responses: Map[String, Union2[Response, ResponseRef]],
+      tags: Option[Seq[String]] = None
   )
 
   type ParameterOrRef = Union2[Parameter, ParameterRef]
@@ -99,7 +120,7 @@ object OpenAPI {
 
   case class SchemaRef(
       `$ref`: String
-  ) extends Union2[Schema, SchemaRef] {
+  ) extends SchemaOrRef {
     override def getElementClass = classOf[SchemaRef]
   }
 
@@ -115,7 +136,7 @@ object OpenAPI {
       items: Option[SchemaOrRef] = None,
       nullable: Option[Boolean] = None,
       enum: Option[Seq[String]] = None
-  ) extends Union2[Schema, SchemaRef] {
+  ) extends SchemaOrRef {
     override def getElementClass = classOf[Schema]
   }
 
