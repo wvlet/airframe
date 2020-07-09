@@ -16,7 +16,7 @@ import java.util.Locale
 
 import wvlet.airframe.http.{HttpMethod, HttpStatus, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer
-import wvlet.airframe.surface.{ArraySurface, GenericSurface, OptionSurface, Primitive, Surface, Union2}
+import wvlet.airframe.surface.{ArraySurface, GenericSurface, MethodParameter, OptionSurface, Primitive, Surface, Union2}
 import wvlet.log.LogSupport
 
 import scala.collection.immutable.ListMap
@@ -27,6 +27,9 @@ import scala.collection.immutable.ListMap
 private[openapi] object OpenAPIGenerator extends LogSupport {
   import OpenAPI._
 
+  /**
+    * Sanitize the given class name as Open API doesn't support names containing $
+    */
   private def sanitizedSurfaceName(s: Surface): String = {
     s match {
       case o: OptionSurface =>
@@ -36,13 +39,25 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     }
   }
 
-  private[openapi] def generateFromRouter(router: Router): OpenAPI = {
+  /**
+    * Check whether the type is a primitive (no need to use component reference) or not
+    */
+  private def isPrimitiveTypeFamily(s: Surface): Boolean = {
+    s match {
+      case s if s.isPrimitive => true
+      case o: OptionSurface   => o.elementSurface.isPrimitive
+      case other              => false
+    }
+  }
+
+  private[openapi] def buildFromRouter(router: Router): OpenAPI = {
     val referencedSchemas = Map.newBuilder[String, SchemaOrRef]
 
     val paths = for (route <- router.routes) yield {
       val routeAnalysis = RouteAnalyzer.analyzeRoute(route)
       trace(routeAnalysis)
 
+      // Replace path parameters into
       val path = "/" + route.pathComponents
         .map { p =>
           p match {
@@ -55,20 +70,21 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
           }
         }.mkString("/")
 
+      // User HTTP request body
       val requestMediaType = MediaType(
         schema = Schema(
           `type` = "object",
           required = requiredParams(routeAnalysis.userInputParameters),
           properties = Some(
-            routeAnalysis.userInputParameters.map { p =>
+            routeAnalysis.httpClientCallInputs.map { p =>
               p.name -> getOpenAPISchema(p.surface, useRef = true)
             }.toMap
           )
         )
       )
-
       val requestBodyContent: Map[String, MediaType] = {
         if (route.method == HttpMethod.GET) {
+          // GET should have no request body
           Map.empty
         } else {
           Map(
@@ -78,14 +94,9 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         }
       }
 
-      def isPrimitiveTypeFamily(s: Surface): Boolean = {
-        s match {
-          case s if s.isPrimitive => true
-          case o: OptionSurface   => o.elementSurface.isPrimitive
-          case other              => false
-        }
-      }
-
+      /**
+        * Register a component for creating a reference link
+        */
       def registerComponent(s: Surface): Unit = {
         s match {
           case s if isPrimitiveTypeFamily(s) =>
@@ -95,17 +106,18 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         }
       }
 
+      // Http response type
       routeAnalysis.httpClientCallInputs.foreach { p =>
         registerComponent(p.surface)
       }
       val returnTypeName = sanitizedSurfaceName(route.returnTypeSurface)
       registerComponent(route.returnTypeSurface)
 
-      val pathParameters: Seq[ParameterOrRef] = routeAnalysis.pathOnlyParameters.toSeq.map { p =>
+      def toParameter(p: MethodParameter, in: In): ParameterOrRef = {
         if (p.surface.isPrimitive) {
           Parameter(
             name = p.name,
-            in = In.path,
+            in = in,
             required = true,
             schema = if (isPrimitiveTypeFamily(p.surface)) {
               Some(getOpenAPISchema(p.surface, useRef = false))
@@ -119,6 +131,20 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
           ParameterRef(s"#/components/parameters/${sanitizedSurfaceName(p.surface)}")
         }
       }
+
+      // URL path parameters (e.g., /:id/, /*path, etc.)
+      val pathParameters: Seq[ParameterOrRef] = routeAnalysis.pathOnlyParameters.toSeq.map { p =>
+        toParameter(p, In.path)
+      }
+      // URL query string parameters
+      val queryParameters: Seq[ParameterOrRef] = if (route.method == HttpMethod.GET) {
+        routeAnalysis.httpClientCallInputs.map { p =>
+          toParameter(p, In.query)
+        }
+      } else {
+        Seq.empty
+      }
+      val pathAndQueryParameters = pathParameters ++ queryParameters
 
       val httpMethod = route.method.toLowerCase(Locale.ENGLISH)
 
@@ -146,7 +172,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         // TODO Use @RPC(description = ???) or Scaladoc comment
         description = route.methodSurface.name,
         operationId = route.methodSurface.name,
-        parameters = if (pathParameters.isEmpty) None else Some(pathParameters),
+        parameters = if (pathAndQueryParameters.isEmpty) None else Some(pathAndQueryParameters),
         requestBody = if (requestBodyContent.isEmpty) {
           None
         } else {

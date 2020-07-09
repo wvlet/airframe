@@ -56,7 +56,7 @@ object OpenAPI {
     * @return OpenAPI model class
     */
   def ofRouter(router: Router): OpenAPI = {
-    OpenAPIGenerator.generateFromRouter(router)
+    OpenAPIGenerator.buildFromRouter(router)
   }
 
   case class Info(
