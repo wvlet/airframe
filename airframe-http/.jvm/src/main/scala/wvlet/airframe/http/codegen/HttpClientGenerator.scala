@@ -187,6 +187,7 @@ class HttpClientGenerator(
       @argument(description = "Target Airframe HTTP/RPC package name")
       packageNames: Seq[String]
   ): Unit = {
+    debug(s"classpath: ${classpath}")
     val router = buildRouter(packageNames, newClassLoader(classpath))
     debug(router)
     val schema = HttpClientGenerator.generateOpenAPI(router, formatType)
