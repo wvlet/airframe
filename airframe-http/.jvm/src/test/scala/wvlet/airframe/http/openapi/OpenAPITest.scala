@@ -190,5 +190,68 @@ class OpenAPITest extends AirSpec {
     debug(json)
     val yaml = openapi.toYAML
     debug(yaml)
+
+    val fragments = Seq(
+      """info:
+        |  title: EndpointTest
+        |  version: '1.0'""".stripMargin,
+      """  /v1/get0:
+        |    get:
+        |      summary: get0
+        |      description: get0
+        |      operationId: get0
+        |""".stripMargin,
+      """  /v1/get1/{id}:
+        |    get:
+        |      summary: get1
+        |      description: get1
+        |      operationId: get1
+        |      parameters:
+        |        - name: id
+        |          in: path
+        |          required: true
+        |          schema:
+        |            type: integer
+        |            format: int32""".stripMargin,
+      """  /v1/get2/{id}/{name}:
+        |    get:
+        |      summary: get2
+        |      description: get2
+        |      operationId: get2
+        |      parameters:
+        |        - name: id
+        |          in: path
+        |          required: true
+        |          schema:
+        |            type: integer
+        |            format: int32
+        |        - name: name
+        |          in: path
+        |          required: true
+        |          schema:
+        |            type: string""".stripMargin,
+      """  /v1/get3/{id}:
+        |    get:
+        |      summary: get3
+        |      description: get3
+        |      operationId: get3
+        |      parameters:
+        |        - name: id
+        |          in: path
+        |          required: true
+        |          schema:
+        |            type: integer
+        |            format: int32
+        |        - name: p1
+        |          in: query
+        |          required: true
+        |          schema:
+        |            type: string""".stripMargin
+    )
+
+    fragments.foreach { x =>
+      debug(x)
+      yaml.contains(x) shouldBe true
+    }
   }
 }
