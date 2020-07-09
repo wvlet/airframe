@@ -188,6 +188,7 @@ class HttpClientGenerator(
       packageNames: Seq[String]
   ): Unit = {
     val router = buildRouter(packageNames, newClassLoader(classpath))
+    debug(router)
     val schema = HttpClientGenerator.generateOpenAPI(router, formatType)
     debug(schema)
     info(s"Writing OpenAPI spec ${formatType} to ${outFile.getPath}")

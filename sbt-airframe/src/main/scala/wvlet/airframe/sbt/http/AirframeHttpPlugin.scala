@@ -85,8 +85,9 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         (compile in Compile).all(dependentProjects).value
 
         val baseDir = (ThisBuild / baseDirectory).value
-        val classpaths = (dependencyClasspath in Compile).value.files
-          .map { p => p.relativeTo(baseDir).getOrElse(p).getPath }
+        val classpaths =
+          ((Compile / dependencyClasspath).value.files :+ (Compile / classDirectory).value)
+            .map { p => p.relativeTo(baseDir).getOrElse(p).getPath }
         classpaths
       },
       airframeHttpWorkDir := (Compile / target).value / s"scala-${scalaBinaryVersion.value}" / s"airframe" / airframeHttpVersion.value,
@@ -223,7 +224,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         } else {
           val cmd =
             s"${binDir}/bin/${generatorName} openapi ${opts} -cp ${cp} -f ${formatType} -o ${outFile} ${packages.mkString(" ")}"
-          info(cmd)
+          debug(cmd)
           cmd.!!
           Seq(outFile)
         }
