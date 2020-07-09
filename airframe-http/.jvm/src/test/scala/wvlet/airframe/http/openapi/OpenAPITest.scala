@@ -36,17 +36,146 @@ class OpenAPITest extends AirSpec {
 
     val yaml = openapi.toYAML
     debug(s"Open API Yaml:\n${yaml}\n")
+
+    // Naive tests for checking YAML fragments.
+    // We need to refine these fragments if we change OpenAPI format and model classes
+    val fragments = Seq(
+      """openapi: '3.0.3'
+        |info:
+        |  title: RPCTest
+        |  version: '1.0'""".stripMargin,
+      """paths:""",
+      """      requestBody:
+        |        content:
+        |          application/json:
+        |            schema:
+        |              type: object
+        |              required:
+        |                - p1
+        |              properties:
+        |                p1:
+        |                  $ref: '#/components/schemas/example.openapi.OpenAPIRPCExample.RPCRequest'""".stripMargin,
+      """      responses:
+        |        '200':
+        |          description: 'RPC response'
+        |        '400':
+        |          $ref: '#/components/responses/400'
+        |        '500':
+        |          $ref: '#/components/responses/500'
+        |        '503':
+        |          $ref: '#/components/responses/503'
+        |      tags:
+        |        - rpc""".stripMargin,
+      """      responses:
+        |        '200':
+        |          description: 'RPC response'
+        |          content:
+        |            application/json:
+        |              schema:
+        |                $ref: '#/components/schemas/example.openapi.OpenAPIRPCExample.RPCResponse'
+        |            application/x-msgpack:
+        |              schema:
+        |                $ref: '#/components/schemas/example.openapi.OpenAPIRPCExample.RPCResponse'""".stripMargin,
+      """      operationId: rpcWithOption
+        |      requestBody:
+        |        content:
+        |          application/json:
+        |            schema:
+        |              type: object
+        |              properties:
+        |                p1:
+        |                  type: string
+        |          application/x-msgpack:
+        |            schema:
+        |              type: object
+        |              properties:
+        |                p1:
+        |                  type: string
+        |        required: true""".stripMargin,
+      """  /example.openapi.OpenAPIRPCExample/zeroAryRPC:
+        |    post:
+        |      summary: zeroAryRPC
+        |      description: zeroAryRPC
+        |      operationId: zeroAryRPC
+        |      requestBody:
+        |        content:
+        |          application/json:
+        |            schema:
+        |              type: object
+        |          application/x-msgpack:
+        |            schema:
+        |              type: object
+        |        required: true""".stripMargin,
+      """components:
+        |  schemas:
+        |    example.openapi.OpenAPIRPCExample.RPCRequest:
+        |      type: object
+        |      required:
+        |        - x1
+        |        - x2
+        |        - x3
+        |        - x4
+        |        - x5
+        |        - x6
+        |        - x7
+        |        - x8
+        |      properties:
+        |        x1:
+        |          type: integer
+        |          format: int32
+        |        x2:
+        |          type: integer
+        |          format: int64
+        |        x3:
+        |          type: boolean
+        |        x4:
+        |          type: number
+        |          format: float
+        |        x5:
+        |          type: number
+        |          format: double
+        |        x6:
+        |          type: array
+        |          items:
+        |            type: string
+        |        x7:
+        |          type: array
+        |          items:
+        |            type: string
+        |        x8:
+        |          type: object
+        |          additionalProperties:
+        |            type: string
+        |        x9:
+        |          type: integer
+        |          format: int32""".stripMargin,
+      """    example.openapi.OpenAPIRPCExample.RPCResponse:
+        |      type: object
+        |      required:
+        |        - y1
+        |        - y2
+        |      properties:
+        |        y1:
+        |          type: string
+        |        y2:
+        |          type: boolean""".stripMargin
+    )
+
+    fragments.foreach { x =>
+      debug(s"checking ${x}")
+      yaml.contains(x) shouldBe true
+    }
   }
 
   test(s"Generate OpenAPI spec from command line") {
-    val yaml = HttpCodeGenerator.generateOpenAPI(router, "yaml")
+    val yaml = HttpCodeGenerator.generateOpenAPI(router, "yaml", title = "My API", version = "1.0")
     debug(yaml)
 
-    val json = HttpCodeGenerator.generateOpenAPI(router, "json")
+    val json = HttpCodeGenerator.generateOpenAPI(router, "json", title = "My API", version = "1.0")
     debug(json)
 
     intercept[IllegalArgumentException] {
-      HttpCodeGenerator.generateOpenAPI(router, "invalid")
+      HttpCodeGenerator.generateOpenAPI(router, "invalid", title = "My API", version = "1.0")
     }
   }
 }
