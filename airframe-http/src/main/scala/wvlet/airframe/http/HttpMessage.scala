@@ -13,7 +13,9 @@
  */
 package wvlet.airframe.http
 import java.nio.charset.StandardCharsets
+import java.util.Date
 
+import com.twitter.finagle.http.{Message => FinagleMessage}
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, Message, StringMessage}
 import wvlet.airframe.http.impl.HttpMacros
@@ -114,6 +116,7 @@ trait HttpMessage[Raw] {
   def withContentTypeMsgPack: Raw                       = withContentType(HttpHeader.MediaType.ApplicationMsgPack)
   def withContentLength(length: Long): Raw              = withHeader(HttpHeader.ContentLength, length.toString)
   def withDate(date: String): Raw                       = withHeader(HttpHeader.Date, date)
+  def withDate(date: Date): Raw                         = withHeader(HttpHeader.Date, FinagleMessage.httpDateFormat(date))
   def withExpires(expires: String): Raw                 = withHeader(HttpHeader.Expires, expires)
   def withHost(host: String): Raw                       = withHeader(HttpHeader.Host, host)
   def withLastModified(lastModified: String): Raw       = withHeader(HttpHeader.LastModified, lastModified)
