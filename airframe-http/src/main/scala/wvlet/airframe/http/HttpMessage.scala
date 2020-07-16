@@ -121,7 +121,7 @@ trait HttpMessage[Raw] {
   def withHost(host: String): Raw                       = withHeader(HttpHeader.Host, host)
   def withLastModified(lastModified: String): Raw       = withHeader(HttpHeader.LastModified, lastModified)
   def withReferer(referer: String): Raw                 = withHeader(HttpHeader.Referer, referer)
-  def withUserAgent(userAgenet: String): Raw            = withHeader(HttpHeader.UserAgent, userAgenet)
+  def withUserAgent(userAgent: String): Raw             = withHeader(HttpHeader.UserAgent, userAgent)
   def withXForwardedFor(xForwardedFor: String): Raw     = withHeader(HttpHeader.xForwardedFor, xForwardedFor)
   def withXForwardedProto(xForwardedProto: String): Raw = withHeader(HttpHeader.xForwardedProto, xForwardedProto)
 
