@@ -65,6 +65,14 @@ trait MyApi extends LogSupport {
     Future.value(request.toString)
   }
 
+  @Endpoint(path = "/v1/http_header_test")
+  def httpHeaderTest(): HttpMessage.Response = {
+    Http
+      .response(HttpStatus.Ok_200)
+      .withContent("Hello")
+      .withHeader("Server", "Airframe")
+  }
+
   @Endpoint(method = HttpMethod.POST, path = "/v1/raw_string_arg")
   def rawString(body: String): String = {
     body
@@ -118,7 +126,6 @@ trait MyApi extends LogSupport {
   def queryParamPostTest(user_id: String, session_id: Option[String]): HttpMessage.Response = {
     Http.response().withContent(s"${user_id}:${session_id.getOrElse("unknown")}")
   }
-
 }
 
 /**
@@ -177,6 +184,14 @@ class FinagleRouterTest extends AirSpec {
       request.contentString = """{"id":10, "name":"leo"}"""
       val ret = Await.result(client.send(request).map(_.contentString))
       ret shouldBe """RichRequest(10,leo)"""
+    }
+
+    def `return a response header except for Content-Type` {
+      val request = Request("/v1/http_header_test")
+      val ret     = Await.result(client.send(request))
+
+      ret.headerMap.getOrElse("Server", "") shouldBe "Airframe"
+      ret.contentString shouldBe """Hello"""
     }
 
     def `JSON POST request with explicit JSON content type` {
