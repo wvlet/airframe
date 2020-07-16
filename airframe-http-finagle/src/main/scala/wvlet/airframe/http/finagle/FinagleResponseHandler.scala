@@ -111,11 +111,7 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
             throw new IllegalArgumentException(s"Unknown Reader[X] type: ${responseSurface}")
         }
       case r: HttpMessage.Response =>
-        val resp = newResponse(request, responseSurface)
-        resp.statusCode = r.statusCode
-        resp.content = ByteArray.Owned(r.contentBytes)
-        r.contentType.map { c => resp.contentType = c }
-        resp
+        convertToFinagleResponse(r)
       case b: Array[Byte] =>
         val r = newResponse(request, responseSurface)
         r.content = Buf.ByteArray.Owned(b)
