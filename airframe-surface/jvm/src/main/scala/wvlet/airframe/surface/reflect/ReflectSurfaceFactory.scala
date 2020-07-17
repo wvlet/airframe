@@ -306,7 +306,7 @@ object ReflectSurfaceFactory extends LogSupport {
           surfaceCache(fullName)
         } else if (seen.contains(tpe)) {
           // Recursive type
-          LazySurface(resolveClass(tpe), fullName, typeArgsOf(tpe).map(x => surfaceOf(x)))
+          LazySurface(resolveClass(tpe), fullName)
         } else {
           seen += tpe
           val m = surfaceFactories.orElse[ru.Type, Surface] {

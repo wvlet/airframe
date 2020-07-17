@@ -46,6 +46,8 @@ object OpenAPIRPCExample {
 }
 
 trait OpenAPIEndpointExample {
+  import OpenAPIEndpointExample._
+
   @Endpoint(method = HttpMethod.GET, path = "/v1/get0")
   def get0(): Unit
 
@@ -69,4 +71,25 @@ trait OpenAPIEndpointExample {
 
   @Endpoint(method = HttpMethod.POST, path = "/v1/post4/:id")
   def post4(id: Int, p1: String): Unit
+
+  @Endpoint(method = HttpMethod.POST, path = "/v1/post5")
+  def post5(p1: EndpointRequest): EndpointResponse
+
+  @Endpoint(method = HttpMethod.POST, path = "/v1/post6/:id")
+  def post6(id: Int, p1: EndpointRequest): EndpointResponse
+}
+
+object OpenAPIEndpointExample {
+  case class EndpointRequest(
+      x1: Int,
+      x2: Long,
+      x3: Boolean,
+      x4: Float,
+      x5: Double,
+      x6: Array[String],
+      x7: Seq[String],
+      x8: Map[String, Any],
+      x9: Option[Int] = None
+  )
+  case class EndpointResponse(y1: String, y2: Boolean)
 }

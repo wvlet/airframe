@@ -194,9 +194,6 @@ class OpenAPITest extends AirSpec {
 
     val json = openapi.toJSON
     debug(json)
-    val reloaded = OpenAPI.parseJson(json)
-    info(reloaded)
-
     val yaml = openapi.toYAML
     debug(yaml)
 
@@ -304,20 +301,149 @@ class OpenAPITest extends AirSpec {
         |                - p1
         |              properties:
         |                p1:
-        |                  type: string""".stripMargin
+        |                  type: string""".stripMargin,
+      """  /v1/post5:
+        |    post:
+        |      summary: post5
+        |      description: post5
+        |      operationId: post5
+        |      requestBody:
+        |        content:
+        |          application/json:
+        |            schema:
+        |              type: object
+        |              required:
+        |                - p1
+        |              properties:
+        |                p1:
+        |                  $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointRequest'
+        |          application/x-msgpack:
+        |            schema:
+        |              type: object
+        |              required:
+        |                - p1
+        |              properties:
+        |                p1:
+        |                  $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointRequest'
+        |        required: true
+        |      responses:
+        |        '200':
+        |          description: 'RPC response'
+        |          content:
+        |            application/json:
+        |              schema:
+        |                $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointResponse'
+        |            application/x-msgpack:
+        |              schema:
+        |                $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointResponse'""".stripMargin,
+      """  /v1/post6/{id}:
+        |    post:
+        |      summary: post6
+        |      description: post6
+        |      operationId: post6
+        |      parameters:
+        |        - name: id
+        |          in: path
+        |          required: true
+        |          schema:
+        |            type: integer
+        |            format: int32
+        |      requestBody:
+        |        content:
+        |          application/json:
+        |            schema:
+        |              type: object
+        |              required:
+        |                - id
+        |                - p1
+        |              properties:
+        |                p1:
+        |                  $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointRequest'
+        |          application/x-msgpack:
+        |            schema:
+        |              type: object
+        |              required:
+        |                - id
+        |                - p1
+        |              properties:
+        |                p1:
+        |                  $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointRequest'
+        |        required: true
+        |      responses:
+        |        '200':
+        |          description: 'RPC response'
+        |          content:
+        |            application/json:
+        |              schema:
+        |                $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointResponse'
+        |            application/x-msgpack:
+        |              schema:
+        |                $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointResponse'""".stripMargin,
+      """    example.openapi.OpenAPIEndpointExample.EndpointRequest:
+        |      type: object
+        |      required:
+        |        - x1
+        |        - x2
+        |        - x3
+        |        - x4
+        |        - x5
+        |        - x6
+        |        - x7
+        |        - x8
+        |      properties:
+        |        x1:
+        |          type: integer
+        |          format: int32
+        |        x2:
+        |          type: integer
+        |          format: int64
+        |        x3:
+        |          type: boolean
+        |        x4:
+        |          type: number
+        |          format: float
+        |        x5:
+        |          type: number
+        |          format: double
+        |        x6:
+        |          type: array
+        |          items:
+        |            type: string
+        |        x7:
+        |          type: array
+        |          items:
+        |            type: string
+        |        x8:
+        |          type: object
+        |          additionalProperties:
+        |            type: string
+        |        x9:
+        |          type: integer
+        |          format: int32""".stripMargin,
+      """    example.openapi.OpenAPIEndpointExample.EndpointResponse:
+        |      type: object
+        |      required:
+        |        - y1
+        |        - y2
+        |      properties:
+        |        y1:
+        |          type: string
+        |        y2:
+        |          type: boolean""".stripMargin
     )
 
     // For the ease of testing
     java.awt.Toolkit.getDefaultToolkit.getSystemClipboard
       .setContents(new java.awt.datatransfer.StringSelection(yaml), null)
 
-    // Parsing test
-    parseOpenAPI(yaml)
-
     fragments.foreach { x =>
       trace(x)
       yaml.contains(x) shouldBe true
     }
+
+    // Parsing test
+    OpenAPI.parseJson(json)
+    parseOpenAPI(yaml)
   }
 
   private def parseOpenAPI(yamlOrJson: String): io.swagger.v3.oas.models.OpenAPI = {

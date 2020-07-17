@@ -582,8 +582,10 @@ lazy val httpJVM = http.jvm
     packExcludeLibJars := Seq("airspec_2.12"),
     publishPackArchiveTgz,
     libraryDependencies ++= Seq(
-      "io.swagger.parser.v3" % "swagger-parser" % "2.0.20"      % Test,
-      "org.slf4j"            % "slf4j-jdk14"    % SLF4J_VERSION % Test
+      // Use swagger-parser only for validating YAML format in tests
+      "io.swagger.parser.v3" % "swagger-parser" % "2.0.20" % Test,
+      // Swagger includes dependency to SLF4J, so redirect slf4j logs to airframe-log
+      "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION % Test
     )
   ).dependsOn(launcher)
 

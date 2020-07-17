@@ -205,7 +205,8 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     val schemas = referencedSchemas.result()
 
     OpenAPI(
-      paths = paths.toMap,
+      // Use ListMap for preserving the order
+      paths = ListMap.newBuilder.++=(paths).result(),
       components = Some(
         Components(
           schemas = if (schemas.isEmpty) None else Some(schemas),

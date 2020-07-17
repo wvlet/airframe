@@ -20,7 +20,7 @@ import wvlet.airframe.surface.{Surface, Union}
   * Codec for union classes (e.g., A or B)
   * This codec is necessary for defining OpenAPI's model classes
   */
-class UnionCodec(codecs: Seq[MessageCodec[_]]) extends MessageCodec[Union] {
+case class UnionCodec(codecs: Seq[MessageCodec[_]]) extends MessageCodec[Union] {
   override def pack(p: Packer, v: Union): Unit = {
     val cl = v.getElementClass
     wvlet.airframe.codec.Compat.codecOfClass(cl) match {
