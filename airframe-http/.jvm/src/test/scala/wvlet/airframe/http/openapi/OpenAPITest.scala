@@ -101,15 +101,9 @@ class OpenAPITest extends AirSpec {
         |      summary: zeroAryRPC
         |      description: zeroAryRPC
         |      operationId: zeroAryRPC
-        |      requestBody:
-        |        content:
-        |          application/json:
-        |            schema:
-        |              type: object
-        |          application/x-msgpack:
-        |            schema:
-        |              type: object
-        |        required: true""".stripMargin,
+        |      responses:
+        |        '200':
+        |          description: 'RPC response'""".stripMargin,
       """components:
         |  schemas:
         |    example.openapi.OpenAPIRPCExample.RPCRequest:
