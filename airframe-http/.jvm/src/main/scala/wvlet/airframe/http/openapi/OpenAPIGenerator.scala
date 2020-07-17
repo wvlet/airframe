@@ -16,10 +16,26 @@ import java.util.Locale
 
 import wvlet.airframe.http.{HttpMethod, HttpStatus, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer
+import wvlet.airframe.http.openapi.OpenAPI.Response
 import wvlet.airframe.surface.{ArraySurface, GenericSurface, MethodParameter, OptionSurface, Primitive, Surface, Union2}
 import wvlet.log.LogSupport
 
 import scala.collection.immutable.ListMap
+
+case class OpenAPIGeneratorConfig(
+    // status code -> Response
+    commonErrorResponses: Map[String, OpenAPI.Response] = ListMap(
+      "400" -> Response(
+        description = HttpStatus.BadRequest_400.reason
+      ),
+      "500" -> Response(
+        description = HttpStatus.InternalServerError_500.reason
+      ),
+      "503" -> Response(
+        description = HttpStatus.ServiceUnavailable_503.reason
+      )
+    )
+)
 
 /**
   * OpenAPI schema generator
@@ -50,7 +66,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     }
   }
 
-  private[openapi] def buildFromRouter(router: Router): OpenAPI = {
+  private[openapi] def buildFromRouter(router: Router, config: OpenAPIGeneratorConfig): OpenAPI = {
     val referencedSchemas = Map.newBuilder[String, SchemaOrRef]
 
     val paths = for (route <- router.routes) yield {
@@ -192,11 +208,11 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
             Response(
               description = s"RPC response",
               content = content
-            ),
-          "400" -> ResponseRef("#/components/responses/400"),
-          "500" -> ResponseRef("#/components/responses/500"),
-          "503" -> ResponseRef("#/components/responses/503")
-        ),
+            )
+        ) ++ config.commonErrorResponses
+          .map(_._1).map { statusCode =>
+            statusCode -> ResponseRef(s"#/components/responses/${statusCode}")
+          }.toMap,
         tags = if (route.isRPC) Some(Seq("rpc")) else None
       )
       path -> Map(httpMethod -> pathItem)
@@ -210,19 +226,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
       components = Some(
         Components(
           schemas = if (schemas.isEmpty) None else Some(schemas),
-          responses = Some(
-            Map(
-              "400" -> Response(
-                description = HttpStatus.BadRequest_400.reason
-              ),
-              "500" -> Response(
-                description = HttpStatus.InternalServerError_500.reason
-              ),
-              "503" -> Response(
-                description = HttpStatus.ServiceUnavailable_503.reason
-              )
-            )
-          )
+          responses = if (config.commonErrorResponses.isEmpty) None else Some(config.commonErrorResponses)
         )
       )
     )

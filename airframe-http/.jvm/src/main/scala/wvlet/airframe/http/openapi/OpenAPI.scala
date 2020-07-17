@@ -59,8 +59,8 @@ object OpenAPI {
     * @param router
     * @return OpenAPI model class
     */
-  def ofRouter(router: Router): OpenAPI = {
-    OpenAPIGenerator.buildFromRouter(router)
+  def ofRouter(router: Router, config: OpenAPIGeneratorConfig = OpenAPIGeneratorConfig()): OpenAPI = {
+    OpenAPIGenerator.buildFromRouter(router, config)
   }
 
   case class Info(
