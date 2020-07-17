@@ -87,10 +87,14 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
           // GET should have no request body
           Map.empty
         } else {
-          Map(
-            "application/json"      -> requestMediaType,
-            "application/x-msgpack" -> requestMediaType
-          )
+          if (routeAnalysis.userInputParameters.isEmpty) {
+            Map.empty
+          } else {
+            Map(
+              "application/json"      -> requestMediaType,
+              "application/x-msgpack" -> requestMediaType
+            )
+          }
         }
       }
 

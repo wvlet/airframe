@@ -14,13 +14,13 @@
 package wvlet.airframe.codec
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
-import wvlet.airframe.surface.Union
+import wvlet.airframe.surface.{Surface, Union}
 
 /**
   * Codec for union classes (e.g., A or B)
   * This codec is necessary for defining OpenAPI's model classes
   */
-object UnionCodec extends MessageCodec[Union] {
+class UnionCodec(codecs: Seq[MessageCodec[_]]) extends MessageCodec[Union] {
   override def pack(p: Packer, v: Union): Unit = {
     val cl = v.getElementClass
     wvlet.airframe.codec.Compat.codecOfClass(cl) match {
@@ -32,6 +32,22 @@ object UnionCodec extends MessageCodec[Union] {
     }
   }
   override def unpack(u: Unpacker, v: MessageContext): Unit = {
-    ???
+    // Read the value first
+    val msgPack = u.unpackValue.toMsgpack
+    // Try each codec
+    val found = codecs.find { x =>
+      x.unpackMsgPack(msgPack).map { a: Any =>
+          v.setObject(a)
+        }.isDefined
+    }.isDefined
+    if (!found) {
+      v.setError(
+        new MessageCodecException(
+          INVALID_DATA,
+          this,
+          s"No corresponding type is found for data: ${JSONCodec.fromMsgPack(msgPack)}"
+        )
+      )
+    }
   }
 }

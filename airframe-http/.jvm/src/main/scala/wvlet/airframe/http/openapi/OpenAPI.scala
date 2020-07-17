@@ -36,7 +36,6 @@ case class OpenAPI(
   }
 
   def toJSON: String = {
-    val codec = MessageCodecFactory.defaultFactoryForJSON.of[OpenAPI]
     codec.toJson(this)
   }
 
@@ -49,6 +48,11 @@ case class OpenAPI(
   * A subset of Open API objects necessary for describing Airframe RPC interfaces
   */
 object OpenAPI {
+  private val codec = MessageCodecFactory.defaultFactoryForJSON.of[OpenAPI]
+
+  def parseJson(json: String): OpenAPI = codec.fromJson(json)
+  // TODO: Create airframe-yaml https://github.com/wvlet/airframe/issues/1185
+  // def parseYaml(yaml: String): OpenAPI = ???
 
   /**
     * Generate Open API model class from Airframe HTTP/RPC Router definition

@@ -57,4 +57,16 @@ trait OpenAPIEndpointExample {
 
   @Endpoint(method = HttpMethod.GET, path = "/v1/get3/:id")
   def get3(id: Int, p1: String): Unit
+
+  @Endpoint(method = HttpMethod.POST, path = "/v1/post1")
+  def post1(): Unit
+
+  @Endpoint(method = HttpMethod.POST, path = "/v1/post2/:id")
+  def post2(id: Int): Unit
+
+  @Endpoint(method = HttpMethod.POST, path = "/v1/post3/:id/:name")
+  def post3(id: Int, name: String): Unit
+
+  @Endpoint(method = HttpMethod.POST, path = "/v1/post4/:id")
+  def post4(id: Int, p1: String): Unit
 }

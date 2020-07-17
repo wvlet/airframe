@@ -580,7 +580,11 @@ lazy val httpJVM = http.jvm
   .settings(
     packMain := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
     packExcludeLibJars := Seq("airspec_2.12"),
-    publishPackArchiveTgz
+    publishPackArchiveTgz,
+    libraryDependencies ++= Seq(
+      "io.swagger.parser.v3" % "swagger-parser" % "2.0.20"      % Test,
+      "org.slf4j"            % "slf4j-jdk14"    % SLF4J_VERSION % Test
+    )
   ).dependsOn(launcher)
 
 lazy val httpJS = http.js

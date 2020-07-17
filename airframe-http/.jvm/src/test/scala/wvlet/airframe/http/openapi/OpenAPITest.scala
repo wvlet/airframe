@@ -13,9 +13,11 @@
  */
 package wvlet.airframe.http.openapi
 import example.openapi.{OpenAPIEndpointExample, OpenAPIRPCExample}
+import io.swagger.v3.parser.OpenAPIV3Parser
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.HttpCodeGenerator
 import wvlet.airspec.AirSpec
+import scala.jdk.CollectionConverters._
 
 /**
   */
@@ -34,9 +36,11 @@ class OpenAPITest extends AirSpec {
 
     val json = openapi.toJSON
     debug(s"Open API JSON:\n${json}\n")
+    parseOpenAPI(json)
 
     val yaml = openapi.toYAML
     debug(s"Open API Yaml:\n${yaml}\n")
+    parseOpenAPI(yaml)
 
     // Naive tests for checking YAML fragments.
     // We need to refine these fragments if we change OpenAPI format and model classes
@@ -171,9 +175,11 @@ class OpenAPITest extends AirSpec {
   test(s"Generate OpenAPI spec from command line") {
     val yaml = HttpCodeGenerator.generateOpenAPI(rpcRouter, "yaml", title = "My API", version = "1.0")
     debug(yaml)
+    parseOpenAPI(yaml)
 
     val json = HttpCodeGenerator.generateOpenAPI(rpcRouter, "json", title = "My API", version = "1.0")
     debug(json)
+    parseOpenAPI(json)
 
     intercept[IllegalArgumentException] {
       HttpCodeGenerator.generateOpenAPI(rpcRouter, "invalid", title = "My API", version = "1.0")
@@ -188,6 +194,9 @@ class OpenAPITest extends AirSpec {
 
     val json = openapi.toJSON
     debug(json)
+    val reloaded = OpenAPI.parseJson(json)
+    info(reloaded)
+
     val yaml = openapi.toYAML
     debug(yaml)
 
@@ -246,12 +255,72 @@ class OpenAPITest extends AirSpec {
         |          in: query
         |          required: true
         |          schema:
-        |            type: string""".stripMargin
+        |            type: string""".stripMargin,
+      """  /v1/post1:
+        |    post:
+        |      summary: post1
+        |      description: post1
+        |      operationId: post1
+        |      responses:
+        |""".stripMargin,
+      """  /v1/post2/{id}:
+        |    post:
+        |      summary: post2
+        |      description: post2
+        |      operationId: post2
+        |      parameters:
+        |        - name: id
+        |          in: path
+        |          required: true
+        |          schema:
+        |            type: integer
+        |            format: int32
+        |      requestBody:
+        |        content:
+        |          application/json:
+        |            schema:
+        |              type: object
+        |              required:
+        |                - id""".stripMargin,
+      """  /v1/post4/{id}:
+        |    post:
+        |      summary: post4
+        |      description: post4
+        |      operationId: post4
+        |      parameters:
+        |        - name: id
+        |          in: path
+        |          required: true
+        |          schema:
+        |            type: integer
+        |            format: int32
+        |      requestBody:
+        |        content:
+        |          application/json:
+        |            schema:
+        |              type: object
+        |              required:
+        |                - id
+        |                - p1
+        |              properties:
+        |                p1:
+        |                  type: string""".stripMargin
     )
 
+    // For the ease of testing
+    java.awt.Toolkit.getDefaultToolkit.getSystemClipboard
+      .setContents(new java.awt.datatransfer.StringSelection(yaml), null)
+
+    // Parsing test
+    parseOpenAPI(yaml)
+
     fragments.foreach { x =>
-      debug(x)
+      trace(x)
       yaml.contains(x) shouldBe true
     }
+  }
+
+  private def parseOpenAPI(yamlOrJson: String): io.swagger.v3.oas.models.OpenAPI = {
+    new OpenAPIV3Parser().readContents(yamlOrJson).getOpenAPI
   }
 }
