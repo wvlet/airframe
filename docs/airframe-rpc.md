@@ -83,8 +83,6 @@ val client = new ServiceSyncClient(Http.client.newSyncClient("localhost:8080"))
 client.myService.hello(Person(id=1, name="leo")) // "Hello leo (id=1)!"
 ```
 
-That's it! 
-
 That’s it! Now you can call remote Scala methods as if they were regular Scala functions. Airframe RPC also supports asynchronous clients using Future.
 
 ## Usage

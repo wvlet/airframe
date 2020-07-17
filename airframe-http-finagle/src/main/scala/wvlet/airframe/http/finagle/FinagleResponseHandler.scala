@@ -33,9 +33,9 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
     with LogSupport {
   private[this] val mapCodecFactory = {
     MessageCodecFactory
-    // Enable JSON support to convert objects into Maps
-    .defaultFactoryForJSON
-    // Add custom codecs
+      // Enable JSON support to convert objects into Maps
+      .defaultFactoryForJSON
+      // Add custom codecs
       .orElse(MessageCodecFactory.newFactory(customCodec))
   }
 
@@ -114,11 +114,7 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
             throw new IllegalArgumentException(s"Unknown Reader[X] type: ${responseSurface}")
         }
       case r: HttpMessage.Response =>
-        val resp = newResponse(route, request, responseSurface)
-        resp.statusCode = r.statusCode
-        resp.content = ByteArray.Owned(r.contentBytes)
-        r.contentType.map { c => resp.contentType = c }
-        resp
+        convertToFinagleResponse(r)
       case b: Array[Byte] =>
         val r = newResponse(route, request, responseSurface)
         r.content = Buf.ByteArray.Owned(b)

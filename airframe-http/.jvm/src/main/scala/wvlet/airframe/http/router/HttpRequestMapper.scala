@@ -123,7 +123,7 @@ object HttpRequestMapper extends LogSupport {
 
     def setValue(arg: MethodParameter, v: Option[Any]): Unit = {
       methodArgs(arg.index) = v
-      // Use the method default argument value if exists
+        // Use the method default argument value if exists
         .orElse(arg.getMethodArgDefaultValue(controller))
         // If no mapping is available, use the zero value
         // TODO: Throw an error here when strict validation is enabled
