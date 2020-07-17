@@ -17,7 +17,6 @@ import io.swagger.v3.parser.OpenAPIV3Parser
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.HttpCodeGenerator
 import wvlet.airspec.AirSpec
-import scala.jdk.CollectionConverters._
 
 /**
   */
@@ -201,6 +200,13 @@ class OpenAPITest extends AirSpec {
       """info:
         |  title: EndpointTest
         |  version: '1.0'""".stripMargin,
+      """  responses:
+        |    '400':
+        |      description: 'Bad Request'
+        |    '500':
+        |      description: 'Internal Server Error'
+        |    '503':
+        |      description: 'Service Unavailable'""".stripMargin,
       """  /v1/get0:
         |    get:
         |      summary: get0
@@ -259,7 +265,14 @@ class OpenAPITest extends AirSpec {
         |      description: post1
         |      operationId: post1
         |      responses:
-        |""".stripMargin,
+        |        '200':
+        |          description: 'RPC response'
+        |        '400':
+        |          $ref: '#/components/responses/400'
+        |        '500':
+        |          $ref: '#/components/responses/500'
+        |        '503':
+        |          $ref: '#/components/responses/503'""".stripMargin,
       """  /v1/post2/{id}:
         |    post:
         |      summary: post2
@@ -429,12 +442,42 @@ class OpenAPITest extends AirSpec {
         |        y1:
         |          type: string
         |        y2:
-        |          type: boolean""".stripMargin
+        |          type: boolean""".stripMargin,
+      """  /v1/put1:
+        |    put:
+        |      summary: put1
+        |      description: put1
+        |      operationId: put1""".stripMargin,
+      """  /v1/delete1:
+        |    delete:
+        |      summary: delete1
+        |      description: delete1
+        |      operationId: delete1""".stripMargin,
+      """  /v1/patch1:
+        |    patch:
+        |      summary: patch1
+        |      description: patch1
+        |      operationId: patch1""".stripMargin,
+      """  /v1/head1:
+        |    head:
+        |      summary: head1
+        |      description: head1
+        |      operationId: head1""".stripMargin,
+      """  /v1/options1:
+        |    options:
+        |      summary: options1
+        |      description: options1
+        |      operationId: options1""".stripMargin,
+      """  /v1/trace1:
+        |    trace:
+        |      summary: trace1
+        |      description: trace1
+        |      operationId: trace1""".stripMargin
     )
 
-    // For the ease of testing
-    java.awt.Toolkit.getDefaultToolkit.getSystemClipboard
-      .setContents(new java.awt.datatransfer.StringSelection(yaml), null)
+    // For the ease of testing at https://editor.swagger.io/
+    //java.awt.Toolkit.getDefaultToolkit.getSystemClipboard
+    //      .setContents(new java.awt.datatransfer.StringSelection(yaml), null)
 
     fragments.foreach { x =>
       trace(x)

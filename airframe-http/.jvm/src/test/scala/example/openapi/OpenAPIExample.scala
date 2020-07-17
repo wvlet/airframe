@@ -77,6 +77,25 @@ trait OpenAPIEndpointExample {
 
   @Endpoint(method = HttpMethod.POST, path = "/v1/post6/:id")
   def post6(id: Int, p1: EndpointRequest): EndpointResponse
+
+  @Endpoint(method = HttpMethod.PUT, path = "/v1/put1")
+  def put1(): Unit
+
+  @Endpoint(method = HttpMethod.DELETE, path = "/v1/delete1")
+  def delete1(): Unit
+
+  @Endpoint(method = HttpMethod.PATCH, path = "/v1/patch1")
+  def patch1(): Unit
+
+  @Endpoint(method = HttpMethod.HEAD, path = "/v1/head1")
+  def head1(): Unit
+
+  @Endpoint(method = HttpMethod.OPTIONS, path = "/v1/options1")
+  def options1(): Unit
+
+  @Endpoint(method = HttpMethod.TRACE, path = "/v1/trace1")
+  def trace1(): Unit
+
 }
 
 object OpenAPIEndpointExample {
