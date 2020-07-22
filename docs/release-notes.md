@@ -6,6 +6,23 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.7.0
+
+This release supports generating Open API schema from Aiframe HTTP/RPC interfaces by using sbt-airframe plugin. 
+
+Changes:
+-  airframe-http: Generate Open API schema from Endpoint/RPC interfaces ([#1178](https://github.com/wvlet/airframe/issues/1178)) [[8a55a5f](https://github.com/wvlet/airframe/commit/8a55a5f)]
+-  airframe-http: Fix the issue that HTTP response headers except for Content-Type are ignored ([#1183](https://github.com/wvlet/airframe/issues/1183)) [[3f3ff3d](https://github.com/wvlet/airframe/commit/3f3ff3d)]
+-  airframe-fluentd: Add convenient factories for initializing fluentd/td loggers ([#1190](https://github.com/wvlet/airframe/issues/1190)) [[60882c2](https://github.com/wvlet/airframe/commit/60882c2)]
+-  Update sbt-scalajs, scalajs-compiler, ... to 1.1.1 ([#1173](https://github.com/wvlet/airframe/issues/1173)) [[c509dca](https://github.com/wvlet/airframe/commit/c509dca)]
+-  Add Airframe RPC documentation ([#1174](https://github.com/wvlet/airframe/issues/1174)) [[d027772](https://github.com/wvlet/airframe/commit/d027772)]
+
+Internal changes:
+-  Update presto-main to 339 ([#1189](https://github.com/wvlet/airframe/issues/1189)) [[7a8a59f](https://github.com/wvlet/airframe/commit/7a8a59f)]
+-  Update scalafmt-core to 2.6.3 ([#1181](https://github.com/wvlet/airframe/issues/1181)) [[5c5338a](https://github.com/wvlet/airframe/commit/5c5338a)]
+-  Update sbt-sonatype to 3.9.4 ([#1177](https://github.com/wvlet/airframe/issues/1177)) [[d7e9f97](https://github.com/wvlet/airframe/commit/d7e9f97)]
+-  Update sbt-dynver to 4.1.1 ([#1172](https://github.com/wvlet/airframe/issues/1172)) [[bcc7f12](https://github.com/wvlet/airframe/commit/bcc7f12)]
+
 ## 20.6.2
 
 This is a minor bug fix and improvement release.  
