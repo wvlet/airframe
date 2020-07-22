@@ -103,5 +103,4 @@ class MetricLoggerFactory(
   override def close(): Unit = {
     shutdown
   }
-
 }

@@ -21,7 +21,9 @@ package object fluentd {
   type TDLogger = MetricLogger
 
   /**
-    * A MetricLogger design for sending metrics to Fluentd
+    * A MetricLogger design for sending metrics to Fluentd.
+    *
+    * @deprecated Use Fluentd.client.newFluentdLogger instead
     */
   def withFluentdLogger(
       host: String = "127.0.0.1",
@@ -62,6 +64,8 @@ package object fluentd {
 
   /**
     * A MetricLogger design for sending metrics to TD
+    *
+    * @deprecated Use Fluentd.client.newTDLogger instead
     */
   def withTDLogger(
       apikey: String,
