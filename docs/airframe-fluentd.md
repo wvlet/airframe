@@ -34,9 +34,9 @@ case class MyMetric(a:Int, b:String) extends TaggedMetric {
 
 // Creating a logger to use the local fluentd (host="localhost", port=24224)
 // [optional] tagPrefix: common tag prefix for all metrics  
-val config = Fluentd.client.withTagPrefix("data")
-
-val loggerFactory = config.newFluentdLoggerFactory()
+val loggerFactory = Fluentd.client
+  .withTagPrefix("data")
+  .newFluentdLoggerFactory()
    
 // Create a metric logger for MyMetric class
 val l = loggerFactory.getTypedLogger[MyMetric]
@@ -78,12 +78,10 @@ loggerFactory.close()
 ### Using Non-Typed Logger
 
 ```scala
-val d = fluentd.withFluendLogger()
+val loggerFactory = Flutentd.client.newFluentdLoggerFactory()
 
-d.build[MetricLoggerFactory] { f =>
-   val l = f.getLogger
-   l.emit("data.my_metric", Map("a"->1, "b"->"hello"))
-}
+val l = loggerFactory.getLogger
+l.emit("data.my_metric", Map("a"->1, "b"->"hello"))
 ```
 
 ## Debugging Metrics
