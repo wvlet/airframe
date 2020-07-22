@@ -116,7 +116,8 @@ object Fluentd {
   def client: FluentdClientConfig = FluentdClientConfig()
 
   /**
-    * Create a new Fluency-backed FluentdClient
+    * Create a new Fluency-backed FluentdClient.
+    * @deprecated Use Fluentd.client.newFluentdLogger instead
     */
   def newFluentdLogger(
       host: String = "127.0.0.1",
@@ -150,6 +151,9 @@ object Fluentd {
     ).newFluentdLogger(host, port)
   }
 
+  /**
+    * @deprecated Use Fluentd.client.newTDLogger instead
+    */
   def newTDLogger(
       apikey: String,
       host: String = "api.treasuredata.com",
