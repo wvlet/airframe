@@ -66,7 +66,6 @@ package object fluentd {
   def withTDLogger(
       apikey: String,
       host: String = "api.treasuredata.com",
-      port: Int = 443,
       tagPrefix: String = "",
       maxBufferSize: Long = 512 * 1024 * 1024,
       flushIntervalMillis: Int = 600,
@@ -84,7 +83,6 @@ package object fluentd {
         Fluentd.newTDLogger(
           apikey,
           host,
-          port,
           tagPrefix,
           maxBufferSize,
           flushIntervalMillis,
