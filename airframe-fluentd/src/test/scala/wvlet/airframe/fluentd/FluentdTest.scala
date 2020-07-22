@@ -96,6 +96,15 @@ object FluentdTest extends AirSpec {
     td.close()
   }
 
+  test("create debug console logger") {
+    val f = Fluentd.client.newConsoleLoggerFactory()
+    val l = f.getLogger
+    l.emit("test_tag", Map("message" -> "hello"))
+    val l2 = f.getTypedLogger[MyMetric]
+    l2.emit(MyMetric(1, "leo"))
+    f.close()
+  }
+
   case class MyMetric(id: Int, name: String) extends TaggedMetric {
     override def metricTag: String = "airframe_metric_test"
   }

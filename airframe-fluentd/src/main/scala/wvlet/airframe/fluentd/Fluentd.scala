@@ -88,6 +88,10 @@ case class FluentdClientConfig(
     new ConsoleLogger(tagPrefix, logLevel = logLevel)
   }
 
+  def newConsoleLoggerFactory(logLevel: LogLevel = LogLevel.INFO): MetricLoggerFactory = {
+    new MetricLoggerFactory(fluentdClient = newConsoleLogger(logLevel))
+  }
+
   def withTagPrefix(tagPrefix: String): FluentdClientConfig    = this.copy(tagPrefix = Some(tagPrefix))
   def withExtendedEventTime: FluentdClientConfig               = this.copy(useExtendedEventTime = true)
   def noExtendedEventTime: FluentdClientConfig                 = this.copy(useExtendedEventTime = false)
