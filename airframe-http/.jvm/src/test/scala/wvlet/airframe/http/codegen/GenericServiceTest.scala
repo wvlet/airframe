@@ -27,7 +27,7 @@ class GenericServiceTest extends AirSpec {
   test("support F and Future return values in async clients") {
     debug(router)
 
-    val code = HttpClientGenerator.generate(router, HttpClientGeneratorConfig("example.generic:async"))
+    val code = HttpCodeGenerator.generate(router, HttpClientGeneratorConfig("example.generic:async"))
     code.contains(": F[String]") shouldBe true
     code.contains(": F[Int]") shouldBe true
     code.contains("import wvlet.airframe.http.HttpMessage.Response")
@@ -36,7 +36,7 @@ class GenericServiceTest extends AirSpec {
   test("support F and Future return values in sync clients") {
     debug(router)
 
-    val code = HttpClientGenerator.generate(router, HttpClientGeneratorConfig("example.generic:sync"))
+    val code = HttpCodeGenerator.generate(router, HttpClientGeneratorConfig("example.generic:sync"))
     code.contains(": String = {") shouldBe true
     code.contains(": Int = {") shouldBe true
     code.contains("import wvlet.airframe.http.HttpMessage.Response")
@@ -45,7 +45,7 @@ class GenericServiceTest extends AirSpec {
   test("support F and Future return values in Scala.js clients") {
     debug(router)
 
-    val code = HttpClientGenerator.generate(router, HttpClientGeneratorConfig("example.generic:scalajs"))
+    val code = HttpCodeGenerator.generate(router, HttpClientGeneratorConfig("example.generic:scalajs"))
     code.contains(": Future[String] = {") shouldBe true
     code.contains("Surface.of[String]") shouldBe true
     code.contains(": Future[Int] = {") shouldBe true
@@ -58,6 +58,6 @@ class GenericServiceTest extends AirSpec {
     pending("Not sure using backend specific request/response in IDL is a good idea")
     val r = RouteScanner.buildRouter(Seq(classOf[GenericRequestService[Future, Request, Response]]))
     debug(r)
-    val code = HttpClientGenerator.generate(r, HttpClientGeneratorConfig("example.generic.GenericRequestService:async"))
+    val code = HttpCodeGenerator.generate(r, HttpClientGeneratorConfig("example.generic.GenericRequestService:async"))
   }
 }

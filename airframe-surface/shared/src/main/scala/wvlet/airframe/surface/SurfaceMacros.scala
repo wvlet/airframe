@@ -628,8 +628,7 @@ private[surface] object SurfaceMacros {
         if (memo.contains(t)) {
           memo(t)
         } else {
-          val typeArgs = typeArgsOf(t).map(surfaceOf(_))
-          q"wvlet.airframe.surface.LazySurface(classOf[${t}], ${fullTypeNameOf(t)}, IndexedSeq(..$typeArgs))"
+          q"wvlet.airframe.surface.LazySurface(classOf[${t}], ${fullTypeNameOf(t)})"
         }
       } else {
         seen += t

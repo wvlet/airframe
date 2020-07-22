@@ -19,6 +19,7 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Control
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.client.{AsyncClient, HttpClientType}
+import wvlet.airframe.http.openapi.OpenAPI
 import wvlet.airframe.launcher.Launcher
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
@@ -63,12 +64,11 @@ object HttpClientGeneratorConfig {
 /**
   * Generate HTTP client code for Scala, Scala.js targets using a given IR
   */
-object HttpClientGenerator extends LogSupport {
+object HttpCodeGenerator extends LogSupport {
   def generate(
       router: Router,
       config: HttpClientGeneratorConfig
   ): String = {
-
     val ir   = HttpClientIR.buildIR(router, config)
     val code = config.clientType.generate(ir)
     debug(code)
@@ -81,8 +81,21 @@ object HttpClientGenerator extends LogSupport {
     code
   }
 
+  def generateOpenAPI(router: Router, formatType: String, title: String, version: String): String = {
+    val openapi = OpenAPI.ofRouter(router).withInfo(OpenAPI.Info(title = title, version = version))
+    val schema = formatType match {
+      case "yaml" =>
+        openapi.toYAML
+      case "json" =>
+        openapi.toJSON
+      case other =>
+        throw new IllegalArgumentException(s"Unknown file format type: ${other}. Required yaml or json")
+    }
+    schema
+  }
+
   def main(args: Array[String]): Unit = {
-    Launcher.of[HttpClientGenerator].execute(args)
+    Launcher.of[HttpCodeGenerator].execute(args)
   }
 
   case class Artifacts(file: Seq[File])
@@ -90,7 +103,7 @@ object HttpClientGenerator extends LogSupport {
 
 import wvlet.airframe.launcher._
 
-class HttpClientGenerator(
+class HttpCodeGenerator(
     @option(prefix = "-h,--help", description = "show help message", isHelp = true)
     isHelp: Boolean = false,
     @option(prefix = "-l,--loglevel", description = "log level")
@@ -98,11 +111,24 @@ class HttpClientGenerator(
 ) extends LogSupport {
   Logger.init
 
-  logLevel.foreach { x => Logger("wvlet.airframe.http").setLogLevel(x) }
+  logLevel.foreach { x =>
+    Logger("wvlet.airframe.http").setLogLevel(x)
+  }
 
   @command(isDefault = true)
   def default = {
     info(s"Type --help for the available options")
+  }
+
+  private def newClassLoader(classpath: String): URLClassLoader = {
+    val cp = classpath.split(":").map(x => new File(x).toURI.toURL).toArray
+    new URLClassLoader(cp)
+  }
+
+  private def buildRouter(apiPackageNames: Seq[String], classLoader: URLClassLoader): Router = {
+    info(s"Target API packages: ${apiPackageNames.mkString(", ")}")
+    val router = RouteScanner.buildRouter(apiPackageNames, classLoader)
+    router
   }
 
   @command(description = "Generate HTTP client codes")
@@ -117,8 +143,7 @@ class HttpClientGenerator(
       targets: Seq[String] = Seq.empty
   ): Unit = {
     try {
-      val cp = classpath.split(":").map(x => new File(x).toURI.toURL).toArray
-      val cl = new URLClassLoader(cp)
+      val cl = newClassLoader(classpath)
       val artifacts = for (x <- targets) yield {
         val config = HttpClientGeneratorConfig(x)
         debug(config)
@@ -128,15 +153,14 @@ class HttpClientGenerator(
         val path       = s"${config.targetPackageName.replaceAll("\\.", "/")}/${config.fileName}"
         val outputFile = new File(outDir, path)
 
-        val router         = RouteScanner.buildRouter(Seq(config.apiPackageName), cl)
+        val router         = buildRouter(Seq(config.apiPackageName), cl)
         val routerStr      = router.toString
         val routerHash     = routerStr.hashCode
         val routerHashFile = new File(targetDir, f"router-${config.clientType.name}-${routerHash}%07x.update")
         if (!outputFile.exists() || !routerHashFile.exists()) {
-          outputFile.getParentFile.mkdirs()
           info(f"Router for package ${config.apiPackageName}:\n${routerStr}")
           info(s"Generating a ${config.clientType.name} client code: ${path}")
-          val code = HttpClientGenerator.generate(router, config)
+          val code = HttpCodeGenerator.generate(router, config)
           touch(routerHashFile)
           writeFile(outputFile, code)
         } else {
@@ -152,6 +176,30 @@ class HttpClientGenerator(
     }
   }
 
+  @command(description = "Generate OpenAPI spec")
+  def openapi(
+      @option(prefix = "-cp", description = "semi-colon separated application classpaths")
+      classpath: String = "",
+      @option(prefix = "-o", description = "output file")
+      outFile: File,
+      @option(prefix = "-f", description = "format type: yaml (default) or json")
+      formatType: String = "YAML",
+      @option(prefix = "--title", description = "openapi.title")
+      title: String,
+      @option(prefix = "--version", description = "openapi.version")
+      version: String,
+      @argument(description = "Target Airframe HTTP/RPC package name")
+      packageNames: Seq[String]
+  ): Unit = {
+    debug(s"classpath: ${classpath}")
+    val router = buildRouter(packageNames, newClassLoader(classpath))
+    debug(router)
+    val schema = HttpCodeGenerator.generateOpenAPI(router, formatType, title, version)
+    debug(schema)
+    info(s"Writing OpenAPI spec ${formatType} to ${outFile.getPath}")
+    writeFile(outFile, schema)
+  }
+
   private def touch(f: File): Unit = {
     if (!f.createNewFile()) {
       f.setLastModified(System.currentTimeMillis())
@@ -159,7 +207,10 @@ class HttpClientGenerator(
   }
 
   private def writeFile(outputFile: File, data: String): Unit = {
-    Control.withResource(new FileWriter(outputFile)) { out => out.write(data); out.flush() }
+    outputFile.getParentFile.mkdirs()
+    Control.withResource(new FileWriter(outputFile)) { out =>
+      out.write(data); out.flush()
+    }
   }
 
 }

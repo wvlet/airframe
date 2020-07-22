@@ -18,7 +18,7 @@ import wvlet.airframe.http.router.Route
 import wvlet.airframe.surface.{CName, MethodParameter}
 
 /**
-  * Analyze a given HTTP Ruote, and build URL path strings, user-input arguments, and http client call arguments.
+  * Analyze a given HTTP Route, and build URL path strings, user-input arguments, and http client call arguments.
   */
 object RouteAnalyzer {
 
@@ -27,7 +27,7 @@ object RouteAnalyzer {
       pathString: String,
       // User-input parameters for the client method
       userInputParameters: Seq[MethodParameter],
-      private val pathOnlyParameters: Set[MethodParameter]
+      pathOnlyParameters: Set[MethodParameter]
   ) {
     // http client call parameters, except parameters used for generating path strings
     val httpClientCallInputs: Seq[MethodParameter] = (userInputParameters.toSet -- pathOnlyParameters).toIndexedSeq

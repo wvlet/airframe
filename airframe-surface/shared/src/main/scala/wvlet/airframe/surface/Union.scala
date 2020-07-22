@@ -11,12 +11,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.router
-
-import wvlet.airframe.surface.Surface
+package wvlet.airframe.surface
 
 /**
+  * Union types
   */
-trait ResponseHandler[Req, Res] {
-  def toHttpResponse[A](route: Route, request: Req, responseTypeSurface: Surface, a: A): Res
+trait Union {
+
+  /**
+    * Return the element class
+    */
+  def getElementClass: Class[_]
 }
+trait Union2[A, B]    extends Union
+trait Union3[A, B, C] extends Union

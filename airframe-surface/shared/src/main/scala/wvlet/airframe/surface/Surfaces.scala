@@ -237,7 +237,7 @@ class GenericSurface(
   * Surface placeholder for supporting recursive types
   * @param rawType
   */
-case class LazySurface(rawType: Class[_], fullName: String, typeArgs: Seq[Surface]) extends Surface {
+case class LazySurface(rawType: Class[_], fullName: String) extends Surface {
   // Resolved the final type from the full surface name
   protected def ref: Surface = wvlet.airframe.surface.getCached(fullName)
 
@@ -251,6 +251,7 @@ case class LazySurface(rawType: Class[_], fullName: String, typeArgs: Seq[Surfac
 
   override def toString: String                     = name
   override def params                               = ref.params
+  override def typeArgs: Seq[Surface]               = ref.typeArgs
   override def isOption                             = ref.isOption
   override def isAlias                              = ref.isAlias
   override def isPrimitive                          = ref.isPrimitive

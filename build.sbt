@@ -578,9 +578,15 @@ lazy val http =
 lazy val httpJVM = http.jvm
   .enablePlugins(PackPlugin)
   .settings(
-    packMain := Map("airframe-http-client-generator" -> "wvlet.airframe.http.codegen.HttpClientGenerator"),
+    packMain := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
     packExcludeLibJars := Seq("airspec_2.12"),
-    publishPackArchiveTgz
+    publishPackArchiveTgz,
+    libraryDependencies ++= Seq(
+      // Use swagger-parser only for validating YAML format in tests
+      "io.swagger.parser.v3" % "swagger-parser" % "2.0.20" % Test,
+      // Swagger includes dependency to SLF4J, so redirect slf4j logs to airframe-log
+      "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION % Test
+    )
   ).dependsOn(launcher)
 
 lazy val httpJS = http.js

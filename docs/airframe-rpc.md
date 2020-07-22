@@ -223,6 +223,32 @@ The generated client code can be found in `target/scala-2.12/src_managed/(api pa
 > airframeHttpClean            # Clean the generated code
 ```
 
+### Open API
+
+sbt-airframe plugin also supports generating [Open API](http://spec.openapis.org/oas/v3.0.3) specification from Airframe RPC interfaces.
+To generate OpenAPI spec from RPC definition, add `airframeHttpOpenAPIPackages` configuration to your build.sbt:
+
+```scala
+// [Required] RPC packages to use for generating Open API specification
+airframeHttpOpenAPIPackages := Seq("hello.api")
+// [Optional] Specify target directory to generate openapi.yaml. The default is target directory
+airframeHttpOpenAPITargetDir := target.value
+// [Optional] Additional configurations (e.g., title, version, etc.)
+airframeHttpOpenAPIConfig := OpenAPIConfig(
+  title = "My API",      // default is project name
+  version = "1.0.0",     // default is project version,
+  format = "yaml",       // yaml (default) or json
+  filePrefix = "openapi" // Output file name: (filePrefix).(format)  
+)
+```
+
+With this configuration, Open API spec will be generated when running `package` task:
+```scala
+> package
+```
+
+It will generate `target/openapi.yaml` file.
+
 ### RPC Logging
 
 Airframe RPC stores HTTP access logs to `log/http-access.json` by default. This json logs contains 
@@ -383,4 +409,6 @@ case class HelloResponse(message:String)
 ```json
 {"message":"..."}
 ```
-
+-__Http Status__
+  - 200 (Ok) for successful responses.
+  - 400 (Bad Request) if some request parameters are invalid.

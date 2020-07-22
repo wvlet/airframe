@@ -17,8 +17,11 @@ import wvlet.airframe.json.JSON._
 
 trait JSONVisitor {
   def visitObject(o: JSONObject): Unit = {}
+  def leaveObject(o: JSONObject): Unit = {}
   def visitKeyValue(k: String, v: JSONValue): Unit = {}
+  def leaveKeyValue(k: String, v: JSONValue): Unit = {}
   def visitArray(a: JSONArray): Unit = {}
+  def leaveArray(a: JSONArray): Unit = {}
   def visitString(v: JSONString): Unit = {}
   def visitNumber(n: JSONNumber): Unit = {}
   def visitBoolean(n: JSONBoolean): Unit = {}
@@ -28,6 +31,10 @@ trait JSONVisitor {
 /**
   */
 object JSONTraverser {
+  def traverse(json: String, visitor: JSONVisitor): Unit = {
+    traverse(JSON.parse(json), visitor)
+  }
+
   def traverse(json: JSONValue, visitor: JSONVisitor): Unit = {
     json match {
       case o: JSONObject =>
@@ -35,10 +42,13 @@ object JSONTraverser {
         for ((jk, jv) <- o.v) {
           visitor.visitKeyValue(jk, jv)
           traverse(jv, visitor)
+          visitor.leaveKeyValue(jk, jv)
         }
+        visitor.leaveObject(o)
       case a: JSONArray =>
         visitor.visitArray(a)
         a.v.foreach(traverse(_, visitor))
+        visitor.leaveArray(a)
       case v: JSONString =>
         visitor.visitString(v)
       case v: JSONNumber =>

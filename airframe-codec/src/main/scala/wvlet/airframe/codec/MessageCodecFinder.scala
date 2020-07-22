@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.codec
 import wvlet.airframe.codec.ScalaStandardCodec.{EitherCodec, OptionCodec, TupleCodec}
-import wvlet.airframe.surface.{Alias, EnumSurface, GenericSurface, Surface}
+import wvlet.airframe.surface.{Alias, EnumSurface, GenericSurface, Surface, Union, Union2, Union3}
+import wvlet.log.LogSupport
 
 /**
   */
@@ -26,7 +27,7 @@ trait MessageCodecFinder {
   def orElse(other: MessageCodecFinder): MessageCodecFinder = MessageCodecFinder.OrElse(this, other)
 }
 
-object MessageCodecFinder {
+object MessageCodecFinder extends LogSupport {
   object empty extends MessageCodecFinder {
     override def findCodec(
         factory: MessageCodecFactory,
@@ -76,6 +77,10 @@ object MessageCodecFinder {
         OptionCodec(factory.ofSurface(elementSurface, seenSet))
       case et: Surface if classOf[Either[_, _]].isAssignableFrom(et.rawType) =>
         EitherCodec(factory.ofSurface(et.typeArgs(0)), factory.ofSurface(et.typeArgs(1)))
+      // Union Type
+      case g: Surface if classOf[Union2[_, _]] == g.rawType || classOf[Union3[_, _, _]] == g.rawType =>
+        // Resolving classes extending Union2 or Union3 here to avoid infinite loop
+        UnionCodec(g.typeArgs.map(x => factory.ofSurface(x, seenSet)))
       // Tuple
       case g: GenericSurface
           if classOf[Product].isAssignableFrom(g.rawType) && g.rawType.getName.startsWith("scala.Tuple") =>

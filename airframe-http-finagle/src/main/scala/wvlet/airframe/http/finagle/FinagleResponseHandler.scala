@@ -20,7 +20,7 @@ import com.twitter.finagle.http._
 import com.twitter.io.Buf.ByteArray
 import com.twitter.io.{Buf, Reader}
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
-import wvlet.airframe.http.router.ResponseHandler
+import wvlet.airframe.http.router.{ResponseHandler, Route}
 import wvlet.airframe.http.{HttpMessage, HttpStatus}
 import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
@@ -51,10 +51,13 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
     )
   }
 
-  private def newResponse(request: Request, responseSurface: Surface): Response = {
+  private def newResponse(route: Route, request: Request, responseSurface: Surface): Response = {
     val r = Response(request)
     if (responseSurface == Primitive.Unit) {
       request.method match {
+        case Method.Post if route.isRPC =>
+          // For RPC, return 200 even for POST
+          r.statusCode = HttpStatus.Ok_200.code
         case Method.Post | Method.Put =>
           r.statusCode = HttpStatus.Created_201.code
         case Method.Delete =>
@@ -80,11 +83,11 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
   }
 
   // TODO: Extract this logic into airframe-http
-  def toHttpResponse[A](request: Request, responseSurface: Surface, a: A): Response = {
+  def toHttpResponse[A](route: Route, request: Request, responseSurface: Surface, a: A): Response = {
     a match {
       case null =>
         // Empty response
-        val r = newResponse(request, responseSurface)
+        val r = newResponse(route, request, responseSurface)
         r
       case r: Response =>
         // Return the response as is
@@ -113,11 +116,11 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
       case r: HttpMessage.Response =>
         convertToFinagleResponse(r)
       case b: Array[Byte] =>
-        val r = newResponse(request, responseSurface)
+        val r = newResponse(route, request, responseSurface)
         r.content = Buf.ByteArray.Owned(b)
         r
       case s: String =>
-        val r = newResponse(request, responseSurface)
+        val r = newResponse(route, request, responseSurface)
         r.contentString = s
         r
       case _ =>
@@ -134,7 +137,7 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
 
         // Return application/x-msgpack content type
         if (isMsgPackRequest(request)) {
-          val res = newResponse(request, responseSurface)
+          val res = newResponse(route, request, responseSurface)
           res.contentType = xMsgPack
           res.content = ByteArray.Owned(msgpack)
           res
@@ -142,7 +145,7 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
           val json = JSONCodec.unpackMsgPack(msgpack)
           json match {
             case Some(j) =>
-              val res = newResponse(request, responseSurface)
+              val res = newResponse(route, request, responseSurface)
               res.setContentTypeJson()
               res.setContentString(json.get)
               res

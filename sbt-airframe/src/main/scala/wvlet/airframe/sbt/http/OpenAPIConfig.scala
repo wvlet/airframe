@@ -11,12 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.router
-
-import wvlet.airframe.surface.Surface
+package wvlet.airframe.sbt.http
 
 /**
   */
-trait ResponseHandler[Req, Res] {
-  def toHttpResponse[A](route: Route, request: Req, responseTypeSurface: Surface, a: A): Res
-}
+case class OpenAPIConfig(
+    title: String,
+    version: String,
+    format: String = "yaml",
+    filePrefix: String = "openapi"
+)

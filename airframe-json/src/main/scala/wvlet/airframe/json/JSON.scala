@@ -104,7 +104,8 @@ object JSON extends LogSupport {
   }
 
   final case class JSONObject(v: Seq[(String, JSONValue)]) extends JSONValue {
-    def size: Int = v.size
+    def isEmpty: Boolean = v.isEmpty
+    def size: Int        = v.size
     override def toJSON: String = {
       val s = new StringBuilder
       s.append("{")
