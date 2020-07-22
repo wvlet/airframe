@@ -28,9 +28,13 @@ class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: 
     debug("Starting Fluency")
   }
 
+  override def flush(): Unit = {
+    fluency.flush()
+  }
+
   override def close(): Unit = {
     debug(s"Stopping Fluency")
-    fluency.flush()
+    flush()
     fluency.close()
   }
 
