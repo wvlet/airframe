@@ -87,15 +87,18 @@ libraryDependencies +=  <span class="hljs-string">"org.komamitsu"</span> % <span
 
 <span class="hljs-comment">// Creating a logger to use the local fluentd (host="localhost", port=24224)</span>
 <span class="hljs-comment">// [optional] tagPrefix: common tag prefix for all metrics  </span>
-<span class="hljs-keyword">val</span> d = fluentd.withFluendLogger(tagPrefix = <span class="hljs-string">"data"</span>)
+<span class="hljs-keyword">val</span> loggerFactory = <span class="hljs-type">Fluentd</span>.client
+  .withTagPrefix(<span class="hljs-string">"data"</span>)
+  .newFluentdLoggerFactory()
+   
+<span class="hljs-comment">// Create a metric logger for MyMetric class</span>
+<span class="hljs-keyword">val</span> l = loggerFactory.getTypedLogger[<span class="hljs-type">MyMetric</span>]
 
-d.build[<span class="hljs-type">MetricLoggerFactory</span>] { f =&gt;
-   <span class="hljs-comment">// Create a metric logger for MyMetric class</span>
-   <span class="hljs-keyword">val</span> l = f.getTypedLogger[<span class="hljs-type">MyMetric</span>]
+l.emit(<span class="hljs-type">MyMetric</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"hello"</span>))   <span class="hljs-comment">// data.my_metric {"a":1, "b":"hello"}</span>
+l.emit(<span class="hljs-type">MyMetric</span>(<span class="hljs-number">2</span>, <span class="hljs-string">"fluentd"</span>)) <span class="hljs-comment">// data.my_metric {"a":2, "b":"fluentd"}</span>
 
-   l.emit(<span class="hljs-type">MyMetric</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"hello"</span>))   <span class="hljs-comment">// data.my_metric {"a":1, "b":"hello"}</span>
-   l.emit(<span class="hljs-type">MyMetric</span>(<span class="hljs-number">2</span>, <span class="hljs-string">"fluentd"</span>)) <span class="hljs-comment">// data.my_metric {"a":2, "b":"fluentd"}</span>
-}
+<span class="hljs-comment">// Close the factory (and underlying loggers)</span>
+f.close()
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="sending-data-to-treasure-data"></a><a href="#sending-data-to-treasure-data" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Sending Data to Treasure Data</h3>
 <pre><code class="hljs css language-Scala"><span class="hljs-keyword">import</span> wvlet.airframe.fluentd._
@@ -107,26 +110,25 @@ d.build[<span class="hljs-type">MetricLoggerFactory</span>] { f =&gt;
 }
 
 <span class="hljs-comment">// Creating a logger to send log data to Treasure Data Stream Import API:</span>
-<span class="hljs-keyword">val</span> d = fluentd.withTDLogger(apikey = <span class="hljs-string">"(Your TD API key)"</span>,
-  tagPrefix = <span class="hljs-string">"(database name to store logs)"</span>
-)
+<span class="hljs-keyword">val</span> loggerFactory = <span class="hljs-type">Fluentd</span>.client
+  .withTagPrefix(<span class="hljs-string">"(database name to store logs)"</span>)
+  .newTDLoggerFactory(apikey = <span class="hljs-string">"(Your TD API key)"</span>)
 
-d.build[<span class="hljs-type">MetricLoggerFactory</span>] { f =&gt;
-   <span class="hljs-comment">// Create a metric logger for MyMetric class</span>
-   <span class="hljs-keyword">val</span> l = f.getTypedLogger[<span class="hljs-type">MyMetric</span>]
+<span class="hljs-comment">// Create a metric logger for MyMetric class</span>
+<span class="hljs-keyword">val</span> l = loggerFactory.getTypedLogger[<span class="hljs-type">MyMetric</span>]
 
-   <span class="hljs-comment">// Metrics will be stored in data.my_mertric table</span>
-   l.emit(<span class="hljs-type">MyMetric</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"hello"</span>))   <span class="hljs-comment">// data.my_metric {"a":1, "b":"hello"}</span>
-   l.emit(<span class="hljs-type">MyMetric</span>(<span class="hljs-number">2</span>, <span class="hljs-string">"fluentd"</span>)) <span class="hljs-comment">// data.my_metric {"a":2, "b":"fluentd"}</span>
-}
+<span class="hljs-comment">// Metrics will be stored in data.my_mertric table</span>
+l.emit(<span class="hljs-type">MyMetric</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"hello"</span>))   <span class="hljs-comment">// data.my_metric {"a":1, "b":"hello"}</span>
+l.emit(<span class="hljs-type">MyMetric</span>(<span class="hljs-number">2</span>, <span class="hljs-string">"fluentd"</span>)) <span class="hljs-comment">// data.my_metric {"a":2, "b":"fluentd"}</span>
+
+<span class="hljs-comment">// Make sure closing the logger factory to flush out the logged metrics</span>
+loggerFactory.close()
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="using-non-typed-logger"></a><a href="#using-non-typed-logger" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using Non-Typed Logger</h3>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> d = fluentd.withFluendLogger()
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> loggerFactory = <span class="hljs-type">Flutentd</span>.client.newFluentdLoggerFactory()
 
-d.build[<span class="hljs-type">MetricLoggerFactory</span>] { f =&gt;
-   <span class="hljs-keyword">val</span> l = f.getLogger
-   l.emit(<span class="hljs-string">"data.my_metric"</span>, <span class="hljs-type">Map</span>(<span class="hljs-string">"a"</span>-&gt;<span class="hljs-number">1</span>, <span class="hljs-string">"b"</span>-&gt;<span class="hljs-string">"hello"</span>))
-}
+<span class="hljs-keyword">val</span> l = loggerFactory.getLogger
+l.emit(<span class="hljs-string">"data.my_metric"</span>, <span class="hljs-type">Map</span>(<span class="hljs-string">"a"</span>-&gt;<span class="hljs-number">1</span>, <span class="hljs-string">"b"</span>-&gt;<span class="hljs-string">"hello"</span>))
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="debugging-metrics"></a><a href="#debugging-metrics" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Debugging Metrics</h2>
 <p>For debugging purpose, use <code>fluentd.withConsoleLogging</code> design:</p>
