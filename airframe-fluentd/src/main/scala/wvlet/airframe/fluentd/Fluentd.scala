@@ -56,7 +56,7 @@ case class FluentdClientConfig(
     new FluentdLogger(tagPrefix, useExtendedEventTime, builder.build(host, port))
   }
 
-  def newFluentdMetricLoggerFactory(host: String = "127.0.0.1", port: Int = 24224): MetricLoggerFactory = {
+  def newFluentdLoggerFactory(host: String = "127.0.0.1", port: Int = 24224): MetricLoggerFactory = {
     new MetricLoggerFactory(fluentdClient = newFluentdLogger(host = host, port = port), codecFactory = codecFactory)
   }
 
@@ -70,11 +70,12 @@ case class FluentdClientConfig(
     )
   }
 
-  def newTDMetricLoggerFactory(apikey: String,
-                               host: String = "api.treasuredata.com",
-                               port: Int = 443): MetricLoggerFactory = {
-    new MetricLoggerFactory(fluentdClient = newTDLogger(apikey = apikey, host = host),
-                            codecFactory = codecFactory)
+  def newTDLoggerFactory(
+      apikey: String,
+      host: String = "api.treasuredata.com",
+      port: Int = 443
+  ): MetricLoggerFactory = {
+    new MetricLoggerFactory(fluentdClient = newTDLogger(apikey = apikey, host = host), codecFactory = codecFactory)
   }
 
   /**

@@ -34,15 +34,18 @@ case class MyMetric(a:Int, b:String) extends TaggedMetric {
 
 // Creating a logger to use the local fluentd (host="localhost", port=24224)
 // [optional] tagPrefix: common tag prefix for all metrics  
-val d = fluentd.withFluendLogger(tagPrefix = "data")
+val config = Fluentd.client.withTagPrefix("data")
 
-d.build[MetricLoggerFactory] { f =>
-   // Create a metric logger for MyMetric class
-   val l = f.getTypedLogger[MyMetric]
+val loggerFactory = config.newFluentdLoggerFactory()
+   
+// Create a metric logger for MyMetric class
+val l = loggerFactory.getTypedLogger[MyMetric]
 
-   l.emit(MyMetric(1, "hello"))   // data.my_metric {"a":1, "b":"hello"}
-   l.emit(MyMetric(2, "fluentd")) // data.my_metric {"a":2, "b":"fluentd"}
-}
+l.emit(MyMetric(1, "hello"))   // data.my_metric {"a":1, "b":"hello"}
+l.emit(MyMetric(2, "fluentd")) // data.my_metric {"a":2, "b":"fluentd"}
+
+// Close the factory (and underlying loggers)
+f.close()
 ```
 
 ### Sending Data to Treasure Data
@@ -57,18 +60,19 @@ case class MyMetric(a:Int, b:String) extends TaggedMetric {
 }
 
 // Creating a logger to send log data to Treasure Data Stream Import API:
-val d = fluentd.withTDLogger(apikey = "(Your TD API key)",
-  tagPrefix = "(database name to store logs)"
-)
+val loggerFactory = Fluentd.client
+  .withTagPrefix("(database name to store logs)")
+  .newTDLoggerFactory(apikey = "(Your TD API key)")
 
-d.build[MetricLoggerFactory] { f =>
-   // Create a metric logger for MyMetric class
-   val l = f.getTypedLogger[MyMetric]
+// Create a metric logger for MyMetric class
+val l = loggerFactory.getTypedLogger[MyMetric]
 
-   // Metrics will be stored in data.my_mertric table
-   l.emit(MyMetric(1, "hello"))   // data.my_metric {"a":1, "b":"hello"}
-   l.emit(MyMetric(2, "fluentd")) // data.my_metric {"a":2, "b":"fluentd"}
-}
+// Metrics will be stored in data.my_mertric table
+l.emit(MyMetric(1, "hello"))   // data.my_metric {"a":1, "b":"hello"}
+l.emit(MyMetric(2, "fluentd")) // data.my_metric {"a":2, "b":"fluentd"}
+
+// Make sure closing the logger factory to flush out the logged metrics
+loggerFactory.close()
 ```
 
 ### Using Non-Typed Logger
