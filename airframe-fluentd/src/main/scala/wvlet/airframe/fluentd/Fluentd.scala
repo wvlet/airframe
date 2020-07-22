@@ -26,10 +26,12 @@ case class FluentdClientConfig(
     useExtendedEventTime: Boolean = false,
     maxBufferSize: Long = 512 * 1024 * 1024,
     flushIntervalMillis: Int = 600,
-    bufferChunkRetentionSize: Int = 4 * 1024 * 1024,
+    bufferChunkRetentionSize: Int = 8 * 1024 * 1024,
     bufferChunkRetentionTimeMillis: Int = 1000,
     jvmHeapBufferMode: Boolean = true,
+    // fluentd-specific config. No effect for TDLogger
     ackResponseMode: Boolean = true,
+    // fluentd-specific config. No effect for TDLogger (always use SSL)
     sslEnabled: Boolean = false,
     fileBackupDir: String = null,
     errorHandler: ErrorHandler = null,
@@ -72,8 +74,7 @@ case class FluentdClientConfig(
 
   def newTDLoggerFactory(
       apikey: String,
-      host: String = "api.treasuredata.com",
-      port: Int = 443
+      host: String = "api.treasuredata.com"
   ): MetricLoggerFactory = {
     new MetricLoggerFactory(fluentdClient = newTDLogger(apikey = apikey, host = host), codecFactory = codecFactory)
   }
@@ -128,7 +129,7 @@ object Fluentd {
       useExtendedEventTime: Boolean = false,
       maxBufferSize: Long = 512 * 1024 * 1024,
       flushIntervalMillis: Int = 600,
-      bufferChunkRetentionSize: Int = 4 * 1024 * 1024,
+      bufferChunkRetentionSize: Int = 8 * 1024 * 1024,
       bufferChunkRetentionTimeMillis: Int = 1000,
       jvmHeapBufferMode: Boolean = true,
       ackResponseMode: Boolean = true,

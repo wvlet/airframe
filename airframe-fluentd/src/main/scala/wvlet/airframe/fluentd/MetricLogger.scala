@@ -45,6 +45,7 @@ abstract class MetricLogger extends AutoCloseable {
   @PostConstruct
   def start(): Unit = {}
 
+  def flush(): Unit = {}
   override def close(): Unit
 }
 
