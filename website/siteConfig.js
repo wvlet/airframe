@@ -36,8 +36,8 @@ const users = [
 
 const siteConfig = {
     algolia: {
-      apiKey: '71b7e81be03c97dcd37b7a0efc8d6b76',
-      indexName: 'airframe'
+        apiKey: '71b7e81be03c97dcd37b7a0efc8d6b76',
+        indexName: 'airframe'
     },
     title: 'Airframe', // Title for your website.
     tagline: 'Essential Building Blocks For Scala',
@@ -57,6 +57,7 @@ const siteConfig = {
     // For no header links in the top nav bar -> headerLinks: [],
     headerLinks: [
         {href: '/airframe/docs/', label: 'Docs'},
+        {blog: true, label: 'Blog'},
         {href: '/airframe/docs/release-notes', label: 'Release Notes'},
         {href: 'https://github.com/wvlet/airframe/', label: 'GitHub'},
     ],
@@ -109,6 +110,10 @@ const siteConfig = {
     // Open Graph and Twitter card images.
     ogImage: 'img/poster.png',
     twitterImage: 'img/poster.png',
+
+    blogSidebarTitle: {default: 'Recent posts', all: 'All blog posts'},
+    //blogSidebarCount: 'ALL',
+    twitter: true,
 
     // For sites with a sizable amount of content, set collapsible to true.
     // Expand/collapse the links and subcategories under categories.

@@ -62,8 +62,8 @@ class HomeSplash extends React.Component {
                     <PromoSection>
                         <Button href='./docs'>Get Started</Button>
                         <Button href="https://github.com/wvlet/airframe/">GitHub</Button>
-
-                        <a className="github-button" href="https://github.com/wvlet/airframe"
+                        <a className="github-button"
+                           href="https://github.com/wvlet/airframe"
                            data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large"
                            data-show-count="true" aria-label="Star wvlet/airframe on GitHub">Star</a>
                     </PromoSection>
