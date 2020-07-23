@@ -114,6 +114,7 @@ const siteConfig = {
     blogSidebarTitle: {default: 'Recent posts', all: 'All blog posts'},
     //blogSidebarCount: 'ALL',
     twitter: true,
+    facebookAppId: '3112325918843547',
 
     // For sites with a sizable amount of content, set collapsible to true.
     // Expand/collapse the links and subcategories under categories.
