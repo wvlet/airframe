@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://wvlet.org/airframe/blog</id>
+    <title>Airframe Blog</title>
+    <updated>2020-07-23T06:00:00.000Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://wvlet.org/airframe/blog"/>
+    <subtitle>The best place to stay up-to-date with the latest Airframe news and events.</subtitle>
+    <logo>https://wvlet.org/airframe/img/favicon.ico</logo>
+    <rights>Copyright © 2020 wvlet.org</rights>
+    <entry>
+        <title type="html"><![CDATA[Airframe Blog]]></title>
+        <id>https://wvlet.org/airframe/blog/2020/07/23/blog.html</id>
+        <link href="https://wvlet.org/airframe/blog/2020/07/23/blog.html"/>
+        <updated>2020-07-23T06:00:00.000Z</updated>
+        <summary type="html"><![CDATA[<p>Recent highlights of Airframe will be posted here.</p> ]]></summary>
+        <author>
+            <name>Taro L. Saito</name>
+            <uri>https://github.com/xerial</uri>
+        </author>
+    </entry>
+</feed>

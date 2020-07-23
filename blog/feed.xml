@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>Airframe Blog</title>
+        <link>https://wvlet.org/airframe/blog</link>
+        <description>The best place to stay up-to-date with the latest Airframe news and events.</description>
+        <lastBuildDate>Thu, 23 Jul 2020 06:00:00 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <image>
+            <title>Airframe Blog</title>
+            <url>https://wvlet.org/airframe/img/favicon.ico</url>
+            <link>https://wvlet.org/airframe/blog</link>
+        </image>
+        <copyright>Copyright © 2020 wvlet.org</copyright>
+        <item>
+            <title><![CDATA[Airframe Blog]]></title>
+            <link>https://wvlet.org/airframe/blog/2020/07/23/blog.html</link>
+            <guid>https://wvlet.org/airframe/blog/2020/07/23/blog.html</guid>
+            <pubDate>Thu, 23 Jul 2020 06:00:00 GMT</pubDate>
+            <description><![CDATA[<p>Recent highlights of Airframe will be posted here.</p> ]]></description>
+        </item>
+    </channel>
+</rss>
