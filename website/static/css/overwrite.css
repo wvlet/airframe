@@ -76,6 +76,10 @@ article p img {
     max-width: unset;
 }
 
+.postHeader .postHeaderTitle a {
+    color: #494949;
+}
+
 .imageAlignTop .blockImage {
     max-width: 350px;
     vertical-align: center;
