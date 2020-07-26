@@ -32,9 +32,10 @@ case class GrpcServerConfig(
   def withRouter(router: Router): GrpcServerConfig = this.copy(router = router)
 
   def newServer(session: Session): GrpcServer = {
+    val service = GrpcService.buildService(name, router, session)
     val server = ServerBuilder
       .forPort(port)
-      //.addService()
+      .addService(service).asInstanceOf[ServerBuilder[_]]
       .build()
 
     new GrpcServer(this, server)

@@ -19,10 +19,14 @@ import wvlet.airframe.http.Router
 /**
   */
 object GrpcService {
-  def newServerServiceDefinition(serviceName: String, router: Router, session: Session): ServerServiceDefinition = {
-    ServerServiceDefinition
+  def buildService(serviceName: String, router: Router, session: Session): BindableService = {
+    val serviceDef = ServerServiceDefinition
       .builder(serviceName)
       //.addMethod()
       .build()
+
+    new BindableService {
+      override def bindService(): io.grpc.ServerServiceDefinition = serviceDef
+    }
   }
 }
