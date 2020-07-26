@@ -13,7 +13,10 @@
  */
 package wvlet.airframe.http.grpc
 
-import io.grpc.stub.{AbstractBlockingStub, AbstractStub, ClientCalls}
+import java.io.{ByteArrayInputStream, InputStream}
+
+import io.grpc.MethodDescriptor.{Marshaller, MethodType}
+import io.grpc.stub.{AbstractBlockingStub, AbstractStub, ClientCalls, ServerCalls, StreamObserver}
 import io.grpc.{
   CallOptions,
   Channel,
@@ -29,21 +32,60 @@ import io.grpc.{
   ServerServiceDefinition
 }
 import wvlet.airframe.Design
+import wvlet.airframe.codec.{INVALID_DATA, MessageCodecException, MessageContext}
+import wvlet.airframe.codec.PrimitiveCodec.StringCodec
+import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
+import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
-object MyService {
-  def helloMethod: MethodDescriptor[String, String] = ???
+object MyService extends LogSupport {
+
+  object StringMarshaller extends Marshaller[String] with LogSupport {
+    override def stream(value: String): InputStream = {
+      new ByteArrayInputStream(StringCodec.toMsgPack(value))
+    }
+    override def parse(stream: InputStream): String = {
+      val unpacker = MessagePack.newUnpacker(stream)
+      val v        = MessageContext()
+      StringCodec.unpack(unpacker, v)
+      if (!v.isNull) {
+        v.getString
+      } else {
+        v.getError match {
+          case Some(e) => throw new RuntimeException(e)
+          case None    => throw new MessageCodecException(INVALID_DATA, StringCodec, "invalid input")
+        }
+      }
+    }
+  }
+
+  def helloMethod: MethodDescriptor[String, String] =
+    MethodDescriptor
+      .newBuilder[String, String](StringMarshaller, StringMarshaller)
+      .setFullMethodName(MethodDescriptor.generateFullMethodName("my-service", "hello"))
+      .setType(MethodType.UNARY)
+      .build()
 
   def helloMethodDef: ServerMethodDefinition[String, String] = {
     ServerMethodDefinition.create[String, String](
       helloMethod,
-      new HelloCallHandler()
+      ServerCalls.asyncUnaryCall(
+        new MethodHandlers()
+      )
     )
   }
 
-  class HelloCallHandler extends ServerCallHandler[String, String] {
-    override def startCall(call: ServerCall[String, String], headers: Metadata): ServerCall.Listener[String] = ???
+  class MethodHandlers extends ServerCalls.UnaryMethod[String, String] {
+    override def invoke(request: String, responseObserver: StreamObserver[String]): Unit = {
+      helloImpl(request, responseObserver)
+    }
+  }
+
+  def helloImpl(request: String, responseObserver: StreamObserver[String]): Unit = {
+    info(s"Hello ${request}")
+    responseObserver.onNext("world")
+    responseObserver.onCompleted()
   }
 
   class MyServiceBlockingStub(channel: Channel, callOptions: CallOptions)
@@ -55,6 +97,10 @@ object MyService {
     def hello(message: String): String = {
       ClientCalls.blockingUnaryCall(getChannel, MyService.helloMethod, getCallOptions, message)
     }
+  }
+
+  def newBlockingStub(channel: Channel): MyServiceBlockingStub = {
+    new MyServiceBlockingStub(channel, CallOptions.DEFAULT)
   }
 }
 
@@ -70,7 +116,7 @@ object GrpcTest extends AirSpec {
 
   private val port = IOUtil.randomPort
 
-  override def design =
+  override protected def design =
     Design.newDesign
       .bind[Server].toInstance(
         ServerBuilder.forPort(port).addService(service).build()
@@ -89,5 +135,11 @@ object GrpcTest extends AirSpec {
         channel.shutdownNow()
       }
 
-  test("run server") { server: Server => }
+  test("run server") { (server: Server, channel: ManagedChannel) =>
+    val client = MyService.newBlockingStub(channel)
+    for (i <- 0 to 10) {
+      val ret = client.hello("airframe-grpc")
+      info(ret)
+    }
+  }
 }
