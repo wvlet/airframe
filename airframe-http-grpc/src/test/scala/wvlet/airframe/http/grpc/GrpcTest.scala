@@ -27,28 +27,6 @@ import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 object MyService extends LogSupport {
-
-  object StringMarshaller extends Marshaller[String] with LogSupport {
-    override def stream(value: String): InputStream = {
-      new ByteArrayInputStream(StringCodec.toMsgPack(value))
-    }
-    override def parse(stream: InputStream): String = {
-      val unpacker = MessagePack.newUnpacker(stream)
-      val v        = MessageContext()
-
-      StringCodec.unpack(unpacker, v)
-      if (!v.isNull) {
-        val s = v.getString
-        s
-      } else {
-        v.getError match {
-          case Some(e) => throw new RuntimeException(e)
-          case None    => throw new MessageCodecException(INVALID_DATA, StringCodec, "invalid input")
-        }
-      }
-    }
-  }
-
   def helloMethod: MethodDescriptor[String, String] =
     MethodDescriptor
       .newBuilder[String, String](StringMarshaller, StringMarshaller)

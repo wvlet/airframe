@@ -19,10 +19,14 @@ import io.grpc.stub.{ServerCalls, StreamObserver}
 import io.grpc.stub.ServerCalls.UnaryMethod
 import io.grpc.{BindableService, MethodDescriptor, ServerServiceDefinition}
 import wvlet.airframe.Session
+import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.IO
 import wvlet.airframe.http.Router
+import wvlet.airframe.http.router.ControllerProvider
 import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.airframe.surface.MethodSurface
+import wvlet.log.LogSupport
 
 /**
   */
@@ -33,26 +37,30 @@ object GrpcServiceBuilder {
       codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
   ): Seq[ServerServiceDefinition] = {
     val services = for ((serviceName, routes) <- router.routes.groupBy(_.serviceName)) yield {
-      val methods = for (route <- routes) yield {
+      val routeAndMethods = for (route <- routes) yield {
         val b = MethodDescriptor.newBuilder[MsgPack, Any]()
         // TODO setIdempotent, setSafe, sampling, etc.
-        b.setType(MethodDescriptor.MethodType.UNARY)
-          .setFullMethodName(s"${serviceName}/${route.methodSurface.name}")
-          .setRequestMarshaller(RPCRequestMarshaller)
-          .setResponseMarshaller(
-            new RPCResponseMarshaller[Any](
-              codecFactory.of(route.returnTypeSurface).asInstanceOf[MessageCodec[Any]]
+        (
+          route,
+          b.setType(MethodDescriptor.MethodType.UNARY)
+            .setFullMethodName(s"${serviceName}/${route.methodSurface.name}")
+            .setRequestMarshaller(RPCRequestMarshaller)
+            .setResponseMarshaller(
+              new RPCResponseMarshaller[Any](
+                codecFactory.of(route.returnTypeSurface).asInstanceOf[MessageCodec[Any]]
+              )
             )
-          )
-          .build()
+            .build()
+        )
       }
 
       val serviceBuilder = ServerServiceDefinition
         .builder(serviceName)
 
-      for (m <- methods) {
+      for ((r, m) <- routeAndMethods) {
         // TODO Support Client/Server Streams
-        serviceBuilder.addMethod(m, ServerCalls.asyncUnaryCall(new RPCRequestHandler[Any]()))
+        val controller = session.getInstanceOf(r.controllerSurface)
+        serviceBuilder.addMethod(m, ServerCalls.asyncUnaryCall(new RPCRequestHandler[Any](controller, r.methodSurface)))
       }
       val serviceDef = serviceBuilder.build()
       serviceDef
@@ -79,7 +87,16 @@ object GrpcServiceBuilder {
     }
   }
 
-  class RPCRequestHandler[A]() extends UnaryMethod[MsgPack, A] {
-    override def invoke(request: MsgPack, responseObserver: StreamObserver[A]): Unit = {}
+  class RPCRequestHandler[A](controller: Any, methodSurface: MethodSurface)
+      extends UnaryMethod[MsgPack, A]
+      with LogSupport {
+    override def invoke(request: MsgPack, responseObserver: StreamObserver[A]): Unit = {
+      // Build method arguments from MsgPack
+      val requestValue = ValueCodec.unpack(request)
+      info(requestValue)
+
+      //methodSurface.call(controller, )
+      responseObserver.onCompleted()
+    }
   }
 }
