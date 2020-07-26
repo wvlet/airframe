@@ -16,24 +16,11 @@ package wvlet.airframe.http.grpc
 import java.io.{ByteArrayInputStream, InputStream}
 
 import io.grpc.MethodDescriptor.{Marshaller, MethodType}
-import io.grpc.stub.{AbstractBlockingStub, AbstractStub, ClientCalls, ServerCalls, StreamObserver}
-import io.grpc.{
-  CallOptions,
-  Channel,
-  ManagedChannel,
-  ManagedChannelBuilder,
-  Metadata,
-  MethodDescriptor,
-  Server,
-  ServerBuilder,
-  ServerCall,
-  ServerCallHandler,
-  ServerMethodDefinition,
-  ServerServiceDefinition
-}
+import io.grpc.stub.{AbstractBlockingStub, ClientCalls, ServerCalls, StreamObserver}
+import io.grpc._
 import wvlet.airframe.Design
-import wvlet.airframe.codec.{INVALID_DATA, MessageCodecException, MessageContext}
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
+import wvlet.airframe.codec.{INVALID_DATA, MessageCodecException, MessageContext}
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
@@ -48,9 +35,11 @@ object MyService extends LogSupport {
     override def parse(stream: InputStream): String = {
       val unpacker = MessagePack.newUnpacker(stream)
       val v        = MessageContext()
+
       StringCodec.unpack(unpacker, v)
       if (!v.isNull) {
-        v.getString
+        val s = v.getString
+        s
       } else {
         v.getError match {
           case Some(e) => throw new RuntimeException(e)
@@ -83,8 +72,7 @@ object MyService extends LogSupport {
   }
 
   def helloImpl(request: String, responseObserver: StreamObserver[String]): Unit = {
-    info(s"Hello ${request}")
-    responseObserver.onNext("world")
+    responseObserver.onNext(s"Hello ${request}")
     responseObserver.onCompleted()
   }
 
@@ -138,8 +126,9 @@ object GrpcTest extends AirSpec {
   test("run server") { (server: Server, channel: ManagedChannel) =>
     val client = MyService.newBlockingStub(channel)
     for (i <- 0 to 10) {
-      val ret = client.hello("airframe-grpc")
-      info(ret)
+      val ret = client.hello(s"airframe-grpc ${i}")
+      debug(ret)
+      ret shouldBe s"Hello airframe-grpc ${i}"
     }
   }
 }
