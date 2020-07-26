@@ -155,6 +155,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   codecJVM,
   msgpackJVM,
   httpJVM,
+  grpc,
   jsonJVM,
   rxJVM,
   airspecJVM
@@ -605,7 +606,7 @@ lazy val grpc =
         "org.apache.tomcat" % "annotations-api"   % "6.0.53"      % Provided,
         "org.slf4j"         % "slf4j-jdk14"       % SLF4J_VERSION % Test
       )
-    ).dependsOn(httpJVM, airspecRefJVM % Test)
+    ).dependsOn(httpJVM, airframeMacrosJVMRef, airspecRefJVM % Test)
 
 lazy val finagle =
   project
