@@ -17,6 +17,7 @@ import wvlet.airframe.{Design, Session}
 import wvlet.airframe.http.Router
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
+import scala.language.existentials
 
 /**
   */
@@ -32,13 +33,12 @@ case class GrpcServerConfig(
   def withRouter(router: Router): GrpcServerConfig = this.copy(router = router)
 
   def newServer(session: Session): GrpcServer = {
-    val service = GrpcService.buildService(name, router, session)
-    val server = ServerBuilder
-      .forPort(port)
-      .addService(service).asInstanceOf[ServerBuilder[_]]
-      .build()
-
-    new GrpcServer(this, server)
+    val services      = GrpcServiceBuilder.buildService(router, session)
+    val serverBuilder = ServerBuilder.forPort(port)
+    for (service <- services) {
+      serverBuilder.addService(service)
+    }
+    new GrpcServer(this, serverBuilder.build())
   }
 
   def design: Design = {
@@ -63,6 +63,7 @@ class GrpcServer(grpcServerConfig: GrpcServerConfig, server: Server) extends Aut
   }
 
   override def close(): Unit = {
+    info(s"Closing gRPC server ${grpcServerConfig.name} at ${localAddress}")
     server.shutdownNow()
   }
 }
