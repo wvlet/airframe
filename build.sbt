@@ -602,7 +602,8 @@ lazy val grpc =
       libraryDependencies ++= Seq(
         "io.grpc"           % "grpc-netty-shaded" % GRPC_VERSION,
         "io.grpc"           % "grpc-stub"         % GRPC_VERSION,
-        "org.apache.tomcat" % "annotations-api"   % "6.0.53" % Provided
+        "org.apache.tomcat" % "annotations-api"   % "6.0.53"      % Provided,
+        "org.slf4j"         % "slf4j-jdk14"       % SLF4J_VERSION % Test
       )
     ).dependsOn(httpJVM, airspecRefJVM % Test)
 
