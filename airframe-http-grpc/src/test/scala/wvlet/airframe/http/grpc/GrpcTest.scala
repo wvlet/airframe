@@ -13,15 +13,10 @@
  */
 package wvlet.airframe.http.grpc
 
-import java.io.{ByteArrayInputStream, InputStream}
-
-import io.grpc.MethodDescriptor.{Marshaller, MethodType}
-import io.grpc.stub.{AbstractBlockingStub, ClientCalls, ServerCalls, StreamObserver}
+import io.grpc.MethodDescriptor.MethodType
 import io.grpc._
+import io.grpc.stub.{AbstractBlockingStub, ClientCalls, ServerCalls, StreamObserver}
 import wvlet.airframe.Design
-import wvlet.airframe.codec.PrimitiveCodec.StringCodec
-import wvlet.airframe.codec.{INVALID_DATA, MessageCodecException, MessageContext}
-import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil

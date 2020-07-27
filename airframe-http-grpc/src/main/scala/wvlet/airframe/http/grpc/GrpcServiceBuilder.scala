@@ -49,12 +49,10 @@ object GrpcServiceBuilder {
   ): Seq[ServerServiceDefinition] = {
     val services = for ((serviceName, routes) <- router.routes.groupBy(_.serviceName)) yield {
       val routeAndMethods = for (route <- routes) yield {
-
         (route, buildMethodDescriptor(route, codecFactory))
       }
 
-      val serviceBuilder = ServerServiceDefinition
-        .builder(serviceName)
+      val serviceBuilder = ServerServiceDefinition.builder(serviceName)
 
       for ((r, m) <- routeAndMethods) {
         // TODO Support Client/Server Streams
