@@ -87,16 +87,4 @@ object GrpcServiceBuilder {
     }
   }
 
-  class RPCRequestHandler[A](controller: Any, methodSurface: MethodSurface)
-      extends UnaryMethod[MsgPack, A]
-      with LogSupport {
-    override def invoke(request: MsgPack, responseObserver: StreamObserver[A]): Unit = {
-      // Build method arguments from MsgPack
-      val requestValue = ValueCodec.unpack(request)
-      info(requestValue)
-
-      //methodSurface.call(controller, )
-      responseObserver.onCompleted()
-    }
-  }
 }

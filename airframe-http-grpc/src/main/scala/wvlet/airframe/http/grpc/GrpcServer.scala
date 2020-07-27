@@ -25,7 +25,7 @@ case class GrpcServerConfig(
     name: String = "default",
     private val serverPort: Option[Int] = None,
     router: Router = Router.empty
-) {
+) extends LogSupport {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
   def withName(name: String): GrpcServerConfig     = this.copy(name = name)
@@ -33,7 +33,8 @@ case class GrpcServerConfig(
   def withRouter(router: Router): GrpcServerConfig = this.copy(router = router)
 
   def newServer(session: Session): GrpcServer = {
-    val services      = GrpcServiceBuilder.buildService(router, session)
+    val services = GrpcServiceBuilder.buildService(router, session)
+    debug(s"service:\n${services.map(_.getServiceDescriptor).mkString("\n")}")
     val serverBuilder = ServerBuilder.forPort(port)
     for (service <- services) {
       serverBuilder.addService(service)

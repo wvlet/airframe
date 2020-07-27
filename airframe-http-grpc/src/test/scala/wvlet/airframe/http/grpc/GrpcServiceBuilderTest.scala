@@ -57,14 +57,7 @@ object GrpcServiceBuilderTest extends AirSpec {
   }
 
   private val router = Router.add[MyApi]
-  info(router)
-
-  test("generate a service definition from Router") {
-    Design.newDesign.withSession { session =>
-      val services = GrpcServiceBuilder.buildService(router, session)
-      info(services.map(_.getServiceDescriptor).mkString("\n"))
-    }
-  }
+  debug(router)
 
   test(
     "create gRPC client",
