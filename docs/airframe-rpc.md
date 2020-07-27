@@ -384,7 +384,7 @@ Airframe gRPC is a gRPC and HTTP2-based implementation of Airframe RPC, which ca
 - No Protobuf definition is required. You can use plain Scala and case classes to define gRPC service.
 - Roadmap
   - [x] Create a gRPC server from Airframe RPC router
-  - [ ] Generate gRPC client stub wiht sbt-airframe plugin.
+  - [ ] Generate gRPC client stub with sbt-airframe plugin.
   - [ ] Support client, server-side, and bidirectional streaming
   - [ ] Add a gRPC server proxy with airframe-http-finagle for supporting HTTP1
 
