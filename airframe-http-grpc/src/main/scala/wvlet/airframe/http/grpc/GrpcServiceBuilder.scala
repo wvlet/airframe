@@ -60,7 +60,10 @@ object GrpcServiceBuilder {
       for ((r, m) <- routeAndMethods) {
         // TODO Support Client/Server Streams
         val controller = session.getInstanceOf(r.controllerSurface)
-        serviceBuilder.addMethod(m, ServerCalls.asyncUnaryCall(new RPCRequestHandler[Any](controller, r.methodSurface)))
+        serviceBuilder.addMethod(
+          m,
+          ServerCalls.asyncUnaryCall(new RPCRequestHandler[Any](controller, r.methodSurface, codecFactory))
+        )
       }
       val serviceDef = serviceBuilder.build()
       serviceDef

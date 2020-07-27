@@ -12,11 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
-import io.grpc.MethodDescriptor.{Marshaller, MethodType}
+import io.grpc.MethodDescriptor.MethodType
 import io.grpc.stub.{AbstractBlockingStub, ClientCalls}
-import io.grpc.{CallOptions, Channel, ManagedChannel, ManagedChannelBuilder, MethodDescriptor, Server}
+import io.grpc._
 import wvlet.airframe.Design
-import wvlet.airframe.codec.CollectionCodec.MapCodec
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.http.grpc.GrpcServiceBuilder.{RPCRequestMarshaller, RPCResponseMarshaller}
@@ -49,9 +48,10 @@ object GrpcServiceBuilderTest extends AirSpec {
         .setType(MethodType.UNARY)
         .build()
 
+    private val codec = MessageCodec.of[Map[String, String]]
+
     def hello(name: String): String = {
-      val m     = Map("name" -> name)
-      val codec = MessageCodec.of[Map[String, String]]
+      val m = Map("name" -> name)
       ClientCalls.blockingUnaryCall(getChannel, helloMethodDescriptor, getCallOptions, codec.toMsgPack(m))
     }
   }
@@ -74,7 +74,9 @@ object GrpcServiceBuilderTest extends AirSpec {
     }
   ) { (server: GrpcServer, channel: ManagedChannel) =>
     val stub = new MyApiStub(channel)
-    val ret  = stub.hello("world")
-    info(ret)
+    for (i <- 0 to 100) {
+      val ret = stub.hello("world")
+      ret shouldBe "Hello world!"
+    }
   }
 }

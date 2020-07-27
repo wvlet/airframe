@@ -244,7 +244,7 @@ object HttpRequestMapper extends LogSupport {
   /**
     * Convert MapValue to use CName as keys to support case-insensitive match
     */
-  private def toCanonicalKeyNameMap(m: MapValue): Map[String, Value] = {
+  private[http] def toCanonicalKeyNameMap(m: MapValue): Map[String, Value] = {
     m.entries.map { kv =>
       CName.toCanonicalName(kv._1.toString) -> kv._2
     }.toMap
