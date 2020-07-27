@@ -74,7 +74,7 @@ object GrpcServiceBuilderTest extends AirSpec {
   test(
     "create gRPC client",
     design = {
-      Grpc.server
+      wvlet.airframe.http.grpc.Grpc.server
         .withRouter(router)
         .design
         .bind[ManagedChannel].toProvider { server: GrpcServer =>
