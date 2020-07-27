@@ -374,6 +374,46 @@ trait MyAPI {
 
 Airframe RPC is built on top of Airframe HTTP framework. See [Airframe HTTP documentation](airframe-http.md) for the other features and advanced configurations. 
 
+
+## Airframe gRPC
+
+_(This is an experimental feature available since Airframe 20.8.0)_
+
+Airframe gRPC is a gRPC and HTTP2-based implementation of Airframe RPC, which can make thousands of RPC calls per second. With Airframe gRPC:   
+
+- No Protobuf definition is required. You can use plain Scala and case classes to define gRPC service.
+- Roadmap
+  - [x] Create a gRPC server from Airframe RPC router
+  - [ ] Generate gRPC client stub wiht sbt-airframe plugin.
+  - [ ] Support client, server-side, and bidirectional streaming
+  - [ ] Add a gRPC server proxy with airframe-http-finagle for supporting HTTP1
+
+__build.sbt__
+
+```scala
+"org.wvlet.airframe" %% "airframe-http-grpc" % AIRFRAME_VERSION
+```
+
+### Starting Airframe gRPC Server
+
+```scala
+import wvlet.airframe.http.Router
+import wvlet.airframe.http.grpc.Grpc
+
+// Create a Router definition in the same manner with Airframe RPC
+val router = Router.add[MyApiImpl]
+
+val grpcServerDesign = Grpc.server
+  .withRouter(router)
+  .withPort(8080)
+  .design
+
+grpcServerDesign.build[GrpcServer] { server =>
+  // gRPC server (based on Netty) starts at localhost:8080
+}
+```
+
+
 ## RPC Internals 
 
 (_This section describes the internals of Airframe RPC protocol. Just for using Airframe RPC, you can skip this section._)
