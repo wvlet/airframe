@@ -12,15 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
-import io.grpc.MethodDescriptor.MethodType
-import io.grpc.stub.{AbstractBlockingStub, ClientCalls}
 import io.grpc._
+import io.grpc.stub.{AbstractBlockingStub, ClientCalls}
 import wvlet.airframe.Design
-import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.codec.PrimitiveCodec.StringCodec
-import wvlet.airframe.http.grpc.GrpcServiceBuilder.{RPCRequestMarshaller, RPCResponseMarshaller}
+import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{RPC, Router}
-import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airspec.AirSpec
 
 /**
@@ -32,32 +29,47 @@ object GrpcServiceBuilderTest extends AirSpec {
     def hello(name: String): String = {
       s"Hello ${name}!"
     }
-  }
 
-  // TODO: Generate this stub using sbt-airframe
-  class MyApiStub(channel: Channel, callOptions: CallOptions = CallOptions.DEFAULT)
-      extends AbstractBlockingStub[MyApiStub](channel, callOptions) {
-    override def build(channel: Channel, callOptions: CallOptions): MyApiStub = {
-      new MyApiStub(channel, callOptions)
-    }
-
-    private val helloMethodDescriptor =
-      MethodDescriptor
-        .newBuilder[MsgPack, String](RPCRequestMarshaller, new RPCResponseMarshaller(StringCodec))
-        .setFullMethodName("wvlet.airframe.http.grpc.GrpcServiceBuilderTest.MyApi/hello")
-        .setType(MethodType.UNARY)
-        .build()
-
-    private val codec = MessageCodec.of[Map[String, String]]
-
-    def hello(name: String): String = {
-      val m = Map("name" -> name)
-      ClientCalls.blockingUnaryCall(getChannel, helloMethodDescriptor, getCallOptions, codec.toMsgPack(m))
+    def hello2(name: String, id: Int): String = {
+      s"Hello ${name}! (id:${id})"
     }
   }
 
   private val router = Router.add[MyApi]
   debug(router)
+
+  private def getRoute(name: String): Route = {
+    router.routes.find(_.methodSurface.name == name).getOrElse {
+      throw new IllegalArgumentException(s"Route is not found :${name}")
+    }
+  }
+
+  // TODO: Generate this stub using sbt-airframe
+  class MyApiStub(
+      channel: Channel,
+      callOptions: CallOptions = CallOptions.DEFAULT,
+      codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
+  ) extends AbstractBlockingStub[MyApiStub](channel, callOptions) {
+    override def build(channel: Channel, callOptions: CallOptions): MyApiStub = {
+      new MyApiStub(channel, callOptions)
+    }
+    private val codec = codecFactory.of[Map[String, Any]]
+    private val helloMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("hello"), codecFactory)
+    private val hello2MethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("hello2"), codecFactory)
+
+    def hello(name: String): String = {
+      val m = Map("name" -> name)
+      ClientCalls
+        .blockingUnaryCall(getChannel, helloMethodDescriptor, getCallOptions, codec.toMsgPack(m)).asInstanceOf[String]
+    }
+    def hello2(name: String, id: Int): String = {
+      val m = Map("name" -> name, "id" -> id)
+      ClientCalls
+        .blockingUnaryCall(getChannel, hello2MethodDescriptor, getCallOptions, codec.toMsgPack(m)).asInstanceOf[String]
+    }
+  }
 
   test(
     "create gRPC client",
@@ -77,6 +89,9 @@ object GrpcServiceBuilderTest extends AirSpec {
     for (i <- 0 to 100) {
       val ret = stub.hello("world")
       ret shouldBe "Hello world!"
+
+      val ret2 = stub.hello2("world", i)
+      ret2 shouldBe s"Hello world! (id:${i})"
     }
   }
 }

@@ -15,22 +15,33 @@ package wvlet.airframe.http.grpc
 import java.io.{ByteArrayInputStream, InputStream}
 
 import io.grpc.MethodDescriptor.Marshaller
-import io.grpc.stub.{ServerCalls, StreamObserver}
-import io.grpc.stub.ServerCalls.UnaryMethod
-import io.grpc.{BindableService, MethodDescriptor, ServerServiceDefinition}
+import io.grpc.stub.ServerCalls
+import io.grpc.{MethodDescriptor, ServerServiceDefinition}
 import wvlet.airframe.Session
-import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.IO
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.router.ControllerProvider
+import wvlet.airframe.http.router.Route
 import wvlet.airframe.msgpack.spi.MsgPack
-import wvlet.airframe.surface.MethodSurface
-import wvlet.log.LogSupport
 
 /**
   */
 object GrpcServiceBuilder {
+
+  def buildMethodDescriptor(r: Route, codecFactory: MessageCodecFactory): MethodDescriptor[MsgPack, Any] = {
+    val b = MethodDescriptor.newBuilder[MsgPack, Any]()
+    // TODO setIdempotent, setSafe, sampling, etc.
+    b.setType(MethodDescriptor.MethodType.UNARY)
+      .setFullMethodName(s"${r.serviceName}/${r.methodSurface.name}")
+      .setRequestMarshaller(RPCRequestMarshaller)
+      .setResponseMarshaller(
+        new RPCResponseMarshaller[Any](
+          codecFactory.of(r.returnTypeSurface).asInstanceOf[MessageCodec[Any]]
+        )
+      )
+      .build()
+  }
+
   def buildService(
       router: Router,
       session: Session,
@@ -38,20 +49,8 @@ object GrpcServiceBuilder {
   ): Seq[ServerServiceDefinition] = {
     val services = for ((serviceName, routes) <- router.routes.groupBy(_.serviceName)) yield {
       val routeAndMethods = for (route <- routes) yield {
-        val b = MethodDescriptor.newBuilder[MsgPack, Any]()
-        // TODO setIdempotent, setSafe, sampling, etc.
-        (
-          route,
-          b.setType(MethodDescriptor.MethodType.UNARY)
-            .setFullMethodName(s"${serviceName}/${route.methodSurface.name}")
-            .setRequestMarshaller(RPCRequestMarshaller)
-            .setResponseMarshaller(
-              new RPCResponseMarshaller[Any](
-                codecFactory.of(route.returnTypeSurface).asInstanceOf[MessageCodec[Any]]
-              )
-            )
-            .build()
-        )
+
+        (route, buildMethodDescriptor(route, codecFactory))
       }
 
       val serviceBuilder = ServerServiceDefinition

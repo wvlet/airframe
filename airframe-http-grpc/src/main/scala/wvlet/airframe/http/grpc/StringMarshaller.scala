@@ -21,8 +21,9 @@ import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.log.LogSupport
 
 /**
+  * Marshalling String as MessagePack
   */
-object StringMarshaller extends Marshaller[String] with LogSupport {
+private[grpc] object StringMarshaller extends Marshaller[String] with LogSupport {
   override def stream(value: String): InputStream = {
     new ByteArrayInputStream(StringCodec.toMsgPack(value))
   }
