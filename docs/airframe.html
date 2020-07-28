@@ -89,37 +89,37 @@
 <pre><code class="hljs css language-scala">libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe"</span> % <span class="hljs-string">"(version)"</span>
 </code></pre>
 <p>And import <code>wvlet.airframe._</code> in your Scala code:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
+<pre><code class="hljs css language-scala"><span class="hljs-selector-tag">import</span> <span class="hljs-selector-tag">wvlet</span><span class="hljs-selector-class">.airframe</span><span class="hljs-selector-class">._</span>
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="scalafmtconf"></a><a href="#scalafmtconf" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>.scalafmt.conf</h3>
 <p>If you are using <a href="https://scalameta.org/scalafmt/">scalafmt</a> for code formatting, add the following option to your <code>.scalafmt.conf</code>:</p>
-<pre><code class="hljs css language-scala">optIn.breaksInsideChains = <span class="hljs-literal">true</span>
+<pre><code class="hljs css language-scala"><span class="hljs-attr">optIn.breaksInsideChains</span> = <span class="hljs-literal">true</span>
 </code></pre>
 <p>This option allows writing each binding in a single line:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> d = newDesign
-  .bind[<span class="hljs-type">X</span>].toInstance(...)
-  .bind[<span class="hljs-type">Y</span>].to[<span class="hljs-type">YImpl</span>]
+<pre><code class="hljs css language-scala">val d = newDesign
+  .<span class="hljs-built_in">bind</span>[X].toInstance(...)
+  .<span class="hljs-built_in">bind</span>[Y].to[YImpl]
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="basic-usage"></a><a href="#basic-usage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Basic Usage</h3>
 <p>First, <strong>bind</strong> objects to your code with <code>bind[X]</code>:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">App</span> </span>{
-  <span class="hljs-keyword">val</span> x = bind[<span class="hljs-type">X</span>]
-  <span class="hljs-keyword">val</span> y = bind[<span class="hljs-type">Y</span>]
-  <span class="hljs-keyword">val</span> z = bind[<span class="hljs-type">Z</span>]
+  <span class="hljs-keyword">val</span> x = bind[X]
+  <span class="hljs-keyword">val</span> y = bind[Y]
+  <span class="hljs-keyword">val</span> z = bind[Z]
   <span class="hljs-comment">// Do something with x, y, and z</span>
 }
 </code></pre>
 <p>Next, <strong>design</strong> the object bindings:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> design: <span class="hljs-type">Design</span> =
+<pre><code class="hljs css language-scala">val design: Design =
   newDesign
-    .bind[<span class="hljs-type">X</span>].toInstance(<span class="hljs-keyword">new</span> <span class="hljs-type">X</span>)  <span class="hljs-comment">// Bind type X to a concrete instance</span>
-    .bind[<span class="hljs-type">Y</span>].toSingleton        <span class="hljs-comment">// Bind type Y to a singleton object</span>
-    .bind[<span class="hljs-type">Z</span>].to[<span class="hljs-type">ZImpl</span>]          <span class="hljs-comment">// Bind type Z to a singleton of ZImpl instance</span>
+    .bind[X].toInstance(<span class="hljs-keyword">new</span> X)  <span class="hljs-comment">// Bind type X to a concrete instance</span>
+    .bind[Y].toSingleton        <span class="hljs-comment">// Bind type Y to a singleton object</span>
+    .bind[Z].to[ZImpl]          <span class="hljs-comment">// Bind type Z to a singleton of ZImpl instance</span>
 </code></pre>
 <p>Then <strong>build</strong> an instance and use it:</p>
-<pre><code class="hljs css language-scala">design.build[<span class="hljs-type">App</span>]{ app =&gt;
+<pre><code class="hljs css language-scala">design.build[App]{ <span class="hljs-function"><span class="hljs-params">app</span> =&gt;</span>
   <span class="hljs-comment">// Do something with App</span>
 }
 </code></pre>
@@ -134,16 +134,16 @@
 When <code>design.build[A]</code> is called, Airframe will find the primary constructor of <code>A</code> and its arguments, then creates a new instance of <code>A</code> by looking up instances for the constructor arguments defined in the <em>Design</em>.</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AppConfig</span>(<span class="hljs-params">appName:<span class="hljs-type">String</span></span>)</span>
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyApp</span>(<span class="hljs-params">val config:<span class="hljs-type">AppConfig</span></span>)</span>
+case <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AppConfig</span></span>(appName:String)
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyApp</span></span>(<span class="hljs-keyword">val</span> config:AppConfig)
 
 <span class="hljs-comment">// Define a design</span>
 <span class="hljs-keyword">val</span> d = newDesign
-  .bind[<span class="hljs-type">AppConfig</span>].toInstance(<span class="hljs-type">AppConfig</span>(<span class="hljs-string">"Hello Airframe!"</span>))
+  .bind[AppConfig].toInstance(AppConfig(<span class="hljs-string">"Hello Airframe!"</span>))
 
 <span class="hljs-comment">// Create MyApp. AppConfig instance defined in the design will be used.</span>
 <span class="hljs-comment">// d.build[MyApp] will call new MyApp(AppConfig("Hello Airframe!")) to build a MyApp instance</span>
-d.build[<span class="hljs-type">MyApp</span>]{ app: <span class="hljs-type">MyApp</span> =&gt;
+d.build[MyApp]{ app: MyApp =&gt;
   <span class="hljs-comment">// Do something with app</span>
   ...
 }
@@ -153,18 +153,18 @@ d.build[<span class="hljs-type">MyApp</span>]{ app: <span class="hljs-type">MyAp
 <p>If you need to bind dependencies within Scala traits, use in-trait injection with <code>bind[X]</code> syntax:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AppConfig</span>(<span class="hljs-params">appName:<span class="hljs-type">String</span></span>)</span>
+case <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AppConfig</span></span>(appName:String)
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyApp</span> </span>{
   <span class="hljs-comment">// In-trait injection</span>
-  <span class="hljs-keyword">val</span> config = bind[<span class="hljs-type">AppConfig</span>]
+  <span class="hljs-keyword">val</span> config = bind[AppConfig]
 }
 
 <span class="hljs-keyword">val</span> d = newDesign
-  .bind[<span class="hljs-type">AppConfig</span>].toInstance(<span class="hljs-type">AppConfig</span>(<span class="hljs-string">"Hello Airframe!"</span>))
+  .bind[AppConfig].toInstance(AppConfig(<span class="hljs-string">"Hello Airframe!"</span>))
 
 <span class="hljs-comment">// Creates a new MyApp</span>
-d.build[<span class="hljs-type">MyApp</span>] { app: <span class="hljs-type">MyApp</span> =&gt;
+d.build[MyApp] { app: MyApp =&gt;
    <span class="hljs-comment">// Do something with app</span>
 }
 <span class="hljs-comment">// Session will be closed here</span>
@@ -174,12 +174,12 @@ d.build[<span class="hljs-type">MyApp</span>] { app: <span class="hljs-type">MyA
 
 <span class="hljs-comment">// [DON'T DO THIS] You can't use bind[X] inside classes:</span>
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">A</span> </span>{
-  <span class="hljs-keyword">val</span> a = bind[<span class="hljs-type">B</span>] <span class="hljs-comment">// [Error] class A can't find the current session</span>
+  <span class="hljs-keyword">val</span> a = bind[B] <span class="hljs-comment">// [Error] class A can't find the current session</span>
 }
 
 <span class="hljs-comment">// To use bind[X] inside classes, extends wvlet.airframe.DISupport</span>
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">A</span>(<span class="hljs-params">val session:<span class="hljs-type">Session</span></span>) <span class="hljs-keyword">extends</span> <span class="hljs-title">DISupport</span> </span>{
-  <span class="hljs-keyword">val</span> a = bind[<span class="hljs-type">B</span>] <span class="hljs-comment">// OK</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">A</span></span>(<span class="hljs-keyword">val</span> session:Session) extends DISupport {
+  <span class="hljs-keyword">val</span> a = bind[B] <span class="hljs-comment">// OK</span>
 }
 
 </code></pre>
@@ -197,27 +197,27 @@ d.build[<span class="hljs-type">MyApp</span>] { app: <span class="hljs-type">MyA
 </ul>
 <p>The lifecycle (including calling onInject, onStart, onShutdown hooks) of the injected instances will be managed by the session of Airframe. To properly release the resources injected by bindings, define these lifecycle hooks in the design or implement <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/AutoCloseable.html">AutoCloseable</a> interface. If the injected instance implements AutoCloseable, <code>def close(): Unit</code> method of AutoCloseable will be called when the session terminates. See also <a href="#design">Design</a> and <a href="#life-cycle">Life Cycle</a> seections for more details.</p>
 <p>Here are several examples of in-trait binding types:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> <span class="hljs-type">BindingExample</span>._
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> BindingExample._
 
 <span class="hljs-comment">// Basic binding</span>
-<span class="hljs-keyword">val</span> a = bind[<span class="hljs-type">A</span>]          <span class="hljs-comment">// Inject A as a singleton</span>
+val a = bind[A]          <span class="hljs-comment">// Inject A as a singleton</span>
 
 <span class="hljs-comment">// Default constructor binding</span>
-<span class="hljs-keyword">val</span> pc: <span class="hljs-type">P</span> = bind[<span class="hljs-type">P</span>] <span class="hljs-comment">// Inject a singleton of P(D1, D2, D3)</span>
+val pc: P = bind[P] <span class="hljs-comment">// Inject a singleton of P(D1, D2, D3)</span>
                     <span class="hljs-comment">// This will also inject D1, D2 and D3 to P.</span>
 
 <span class="hljs-comment">// Local binding for creating a new instance using the given code block</span>
-<span class="hljs-keyword">val</span> l1: <span class="hljs-type">P</span> = bindLocal{ <span class="hljs-keyword">new</span> <span class="hljs-type">P</span>() }
-<span class="hljs-keyword">val</span> l2: <span class="hljs-type">P</span> = bindLocal{ d1:<span class="hljs-type">D1</span> =&gt; <span class="hljs-keyword">new</span> <span class="hljs-type">P</span>(d1) }
+val l1: P = bindLocal{ <span class="hljs-keyword">new</span> P() }
+val l2: P = bindLocal{ d1:<span class="hljs-function"><span class="hljs-params">D1</span> =&gt;</span> <span class="hljs-keyword">new</span> P(d1) }
 
 <span class="hljs-comment">// Factory bindings for partially overriding dependencies</span>
-<span class="hljs-keyword">val</span> f1: <span class="hljs-type">D1</span> =&gt; <span class="hljs-type">P</span> = bindFactory[<span class="hljs-type">D1</span> =&gt; <span class="hljs-type">P</span>] <span class="hljs-comment">// A factory to use a given D1 to generate P</span>
-<span class="hljs-keyword">val</span> f2: (<span class="hljs-type">D1</span>, <span class="hljs-type">D2</span>) =&gt; <span class="hljs-type">P</span> = bindFactory2[(<span class="hljs-type">D1</span>, <span class="hljs-type">D2</span>) =&gt; <span class="hljs-type">P</span>] <span class="hljs-comment">// A factory to use given D1 and D2</span>
+val f1: <span class="hljs-function"><span class="hljs-params">D1</span> =&gt;</span> P = bindFactory[<span class="hljs-function"><span class="hljs-params">D1</span> =&gt;</span> P] <span class="hljs-comment">// A factory to use a given D1 to generate P</span>
+val f2: <span class="hljs-function">(<span class="hljs-params">D1, D2</span>) =&gt;</span> P = bindFactory2[<span class="hljs-function">(<span class="hljs-params">D1, D2</span>) =&gt;</span> P] <span class="hljs-comment">// A factory to use given D1 and D2</span>
 ...
 
-<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">BindingExample</span> </span>{
-  <span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">P</span>(<span class="hljs-params">d1:<span class="hljs-type">D1</span> = <span class="hljs-type">D1</span>(</span>), <span class="hljs-title">d2</span></span>:<span class="hljs-type">D2</span> = <span class="hljs-type">D2</span>(), d3:<span class="hljs-type">D3</span> = <span class="hljs-type">D3</span>())
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">provider</span></span>(d1:<span class="hljs-type">D1</span>, d2:<span class="hljs-type">D2</span>, d3:<span class="hljs-type">D3</span>) : <span class="hljs-type">P</span> = <span class="hljs-type">P</span>(d1, d2, d3)
+object BindingExample {
+  <span class="hljs-keyword">case</span> <span class="hljs-keyword">class</span> P(d1:D1 = D1(), d2:D2 = D2(), d3:D3 = D3())
+  def provider(d1:D1, d2:D2, d3:D3) : P = P(d1, d2, d3)
 }
 </code></pre>
 <p>By default all injections generates singleton objects that are alive until closing the current session. These singleton objects are managed inside the current session object.</p>
@@ -226,21 +226,21 @@ d.build[<span class="hljs-type">MyApp</span>] { app: <span class="hljs-type">MyA
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
 <span class="hljs-comment">// If you define multiple bindings to the same type, the last one will be used.</span>
-<span class="hljs-keyword">val</span> design: <span class="hljs-type">Design</span> =
+val design: Design =
   newDesign                      <span class="hljs-comment">// Create an empty design</span>
-  .bind[<span class="hljs-type">A</span>].to[<span class="hljs-type">AImpl</span>]             <span class="hljs-comment">// Bind a class AImpl to A (Singleton)</span>
-  .bind[<span class="hljs-type">A</span>].toInstanceOf[<span class="hljs-type">AImpl</span>]   <span class="hljs-comment">// Bind a class AImpl to A (Create a new instance each time)</span>
-  .bind[<span class="hljs-type">B</span>].toInstance(<span class="hljs-keyword">new</span> <span class="hljs-type">B</span>(<span class="hljs-number">1</span>))  <span class="hljs-comment">// Bind a concrete instance to B (This instance will be a singleton)</span>
-  .bind[<span class="hljs-type">S</span>].toSingleton           <span class="hljs-comment">// S will be a singleton within the session</span>
-  .bind[<span class="hljs-type">ES</span>].toEagerSingleton     <span class="hljs-comment">// ES will be initialized as a singleton at session start time</span>
-  .bind[<span class="hljs-type">D1</span>].toInstance(<span class="hljs-type">D1</span>(<span class="hljs-number">1</span>))    <span class="hljs-comment">// Bind D1 to a concrete instance D1(1)</span>
-  .bind[<span class="hljs-type">D2</span>].toInstance(<span class="hljs-type">D2</span>(<span class="hljs-number">2</span>))    <span class="hljs-comment">// Bind D2 to a concrete instance D2(2)</span>
-  .bind[<span class="hljs-type">D3</span>].toInstance(<span class="hljs-type">D3</span>(<span class="hljs-number">3</span>))    <span class="hljs-comment">// Bind D3 to a concrete instance D3(3)</span>
-  .bind[<span class="hljs-type">P</span>].toProvider{ d1:<span class="hljs-type">D1</span> =&gt; <span class="hljs-type">P</span>(d1) } <span class="hljs-comment">// Create a singleton P by resolving D1 from the design</span>
-  .bind[<span class="hljs-type">P</span>].toProvider{ (d1:<span class="hljs-type">D1</span>, d2:<span class="hljs-type">D2</span>) =&gt; <span class="hljs-type">P</span>(d1, d2) }  <span class="hljs-comment">// Resolve D1 and D2</span>
-  .bind[<span class="hljs-type">P</span>].toProvider{ provider _ }                   <span class="hljs-comment">// Use the given function as a provider</span>
-  .bind[<span class="hljs-type">P</span>].toInstanceProvider{ d1:<span class="hljs-type">D1</span> =&gt; <span class="hljs-type">P</span>(d1) }       <span class="hljs-comment">// Create a new instance using the provider function</span>
-  .bind[<span class="hljs-type">P</span>].toEagerSingletonProvider{ d1:<span class="hljs-type">D1</span> =&gt; <span class="hljs-type">P</span>(d1) } <span class="hljs-comment">// Create an eager singleton using the provider function</span>
+  .bind[A].to[AImpl]             <span class="hljs-comment">// Bind a class AImpl to A (Singleton)</span>
+  .bind[A].toInstanceOf[AImpl]   <span class="hljs-comment">// Bind a class AImpl to A (Create a new instance each time)</span>
+  .bind[B].toInstance(<span class="hljs-keyword">new</span> B(<span class="hljs-number">1</span>))  <span class="hljs-comment">// Bind a concrete instance to B (This instance will be a singleton)</span>
+  .bind[S].toSingleton           <span class="hljs-comment">// S will be a singleton within the session</span>
+  .bind[ES].toEagerSingleton     <span class="hljs-comment">// ES will be initialized as a singleton at session start time</span>
+  .bind[D1].toInstance(D1(<span class="hljs-number">1</span>))    <span class="hljs-comment">// Bind D1 to a concrete instance D1(1)</span>
+  .bind[D2].toInstance(D2(<span class="hljs-number">2</span>))    <span class="hljs-comment">// Bind D2 to a concrete instance D2(2)</span>
+  .bind[D3].toInstance(D3(<span class="hljs-number">3</span>))    <span class="hljs-comment">// Bind D3 to a concrete instance D3(3)</span>
+  .bind[P].toProvider{ d1:<span class="hljs-function"><span class="hljs-params">D1</span> =&gt;</span> P(d1) } <span class="hljs-comment">// Create a singleton P by resolving D1 from the design</span>
+  .bind[P].toProvider{ <span class="hljs-function">(<span class="hljs-params">d1:D1, d2:D2</span>) =&gt;</span> P(d1, d2) }  <span class="hljs-comment">// Resolve D1 and D2</span>
+  .bind[P].toProvider{ provider _ }                   <span class="hljs-comment">// Use the given function as a provider</span>
+  .bind[P].toInstanceProvider{ d1:<span class="hljs-function"><span class="hljs-params">D1</span> =&gt;</span> P(d1) }       <span class="hljs-comment">// Create a new instance using the provider function</span>
+  .bind[P].toEagerSingletonProvider{ d1:<span class="hljs-function"><span class="hljs-params">D1</span> =&gt;</span> P(d1) } <span class="hljs-comment">// Create an eager singleton using the provider function</span>
 </code></pre>
 <p>If you define multiple bindings to the same type (e.g., P), the last binding will be used.
 d</p>
@@ -249,49 +249,49 @@ d</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">X</span> </span>{
-  <span class="hljs-keyword">val</span> y = bind[<span class="hljs-type">Y</span>]
+  <span class="hljs-keyword">val</span> y = bind[Y]
 }
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Y</span> </span>{
-  <span class="hljs-keyword">val</span> z = bind[<span class="hljs-type">Z</span>]
+  <span class="hljs-keyword">val</span> z = bind[Z]
 }
-<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Z</span>(<span class="hljs-params">port:<span class="hljs-type">Int</span></span>)</span>
+case <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Z</span></span>(port:<span class="hljs-built_in">Int</span>)
 
-<span class="hljs-keyword">val</span> design: <span class="hljs-type">Design</span> =
+<span class="hljs-keyword">val</span> design: Design =
   newDesign
     <span class="hljs-comment">// Binding X and Y toSingleton is unnecessary as singleton binding is the default behavior.</span>
     <span class="hljs-comment">//.bind[X].toSingleton</span>
     <span class="hljs-comment">//.bind[Y].toSingleton</span>
-    .bind[<span class="hljs-type">Z</span>].toInstance(port = <span class="hljs-number">8080</span>)  <span class="hljs-comment">// Z has no default instance, so we should bind it manually.</span>
+    .bind[Z].toInstance(port = <span class="hljs-number">8080</span>)  <span class="hljs-comment">// Z has no default instance, so we should bind it manually.</span>
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="design-is-immutable"></a><a href="#design-is-immutable" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Design is Immutable</h3>
 <p>Design objects are immutable, so you can safely override bindings without modifying the original design:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-keyword">val</span> design: <span class="hljs-type">Design</span> =
-  newDesign.bind[<span class="hljs-type">A</span>].to[<span class="hljs-type">B</span>] <span class="hljs-comment">// bind A to B</span>
+val design: Design =
+  newDesign.bind[A].to[B] <span class="hljs-comment">// bind A to B</span>
 
-<span class="hljs-keyword">val</span> newDesign: <span class="hljs-type">Design</span> =
-  design.bind[<span class="hljs-type">A</span>].to[<span class="hljs-type">C</span>] <span class="hljs-comment">// Override binding for A</span>
+val newDesign: Design =
+  design.bind[A].to[C] <span class="hljs-comment">// Override binding for A</span>
 
-design.build[<span class="hljs-type">A</span>] { x =&gt; ... } <span class="hljs-comment">// -&gt; x will be B</span>
-newDesign.build[<span class="hljs-type">A</span>] { x =&gt; ... } <span class="hljs-comment">// -&gt; x will be C</span>
+design.build[A] { <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> ... } <span class="hljs-comment">// -&gt; x will be B</span>
+newDesign.build[A] { <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> ... } <span class="hljs-comment">// -&gt; x will be C</span>
 </code></pre>
 <p>Design supports <code>+</code> (add) operator to combine multiple designs at ease:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> newDesign = d1 + d2 <span class="hljs-comment">// d2 will override the bindings in d1</span>
+<pre><code class="hljs css language-scala">val newDesign = d1 + d2 <span class="hljs-comment">// d2 will override the bindings in d1</span>
 
 <span class="hljs-comment">// or use Design.add(Design) </span>
-d1.add(d2)
+d1.<span class="hljs-keyword">add</span>(d2)
 </code></pre>
 <p><code>+</code> (add) operator is not commutative because of this override behavior, so <code>d1 + d2</code> and <code>d2 + d1</code> will be different designs if there are some overlaps.</p>
 <h2><a class="anchor" aria-hidden="true" id="session"></a><a href="#session" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Session</h2>
 <p>To create instances, you need to create a <code>Session</code> from you Design:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> session = design.newSession
-<span class="hljs-keyword">val</span> a = session.build[<span class="hljs-type">A</span>] {
+<span class="hljs-keyword">val</span> a = session.build[A] {
   <span class="hljs-comment">// Do something with a</span>
 }
 </code></pre>
 <p>If you need a typed-return value, you can use <code>design.run[A, B](f: A=&gt;B)</code>:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> ret: <span class="hljs-type">Int</span> = design.run { a: <span class="hljs-type">A</span> =&gt;
+<pre><code class="hljs css language-scala">val ret: Int = design.run { <span class="hljs-attr">a</span>: <span class="hljs-function"><span class="hljs-params">A</span> =&gt;</span>
   <span class="hljs-comment">// Do something with a and return a value</span>
   <span class="hljs-number">1</span>
 }
@@ -302,7 +302,7 @@ d1.add(d2)
 <span class="hljs-keyword">val</span> session = design.newSession
 <span class="hljs-keyword">try</span> {
   session.start
-  <span class="hljs-keyword">val</span> p = session.build[<span class="hljs-type">P</span>]
+  <span class="hljs-keyword">val</span> p = session.build[P]
   <span class="hljs-comment">// do something with P</span>
 }
 <span class="hljs-keyword">finally</span> {
@@ -310,7 +310,7 @@ d1.add(d2)
 }
 </code></pre>
 <p>To simplify this session management, you can use <code>Design.build[A]</code> to start and shutdown a session automatically:</p>
-<pre><code class="hljs css language-scala">design.build[<span class="hljs-type">P</span>]{ p:<span class="hljs-type">P</span> =&gt; <span class="hljs-comment">// session.start will be called, and a new instance of P will be created</span>
+<pre><code class="hljs css language-scala">design.build[P]{ <span class="hljs-attr">p</span>:<span class="hljs-function"><span class="hljs-params">P</span> =&gt;</span> <span class="hljs-comment">// session.start will be called, and a new instance of P will be created</span>
   <span class="hljs-comment">// do something with P</span>
 }
 <span class="hljs-comment">// session.shutdown will be called here</span>
@@ -321,18 +321,18 @@ d1.add(d2)
 <p><strong><em>Usage Example</em></strong></p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyServer</span> </span>{
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> session = bind[<span class="hljs-type">Session</span>]   <span class="hljs-comment">// Bind the current session</span>
+trait MyServer {
+  <span class="hljs-keyword">private</span> val session = bind[Session]   <span class="hljs-comment">// Bind the current session</span>
 
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">handleInChildSession</span> </span>= {
+  def handleInChildSession = {
     <span class="hljs-comment">// Define a child session specific design</span>
-    <span class="hljs-keyword">val</span> childDesign =
+    val childDesign =
       newDesign
-        .bind[<span class="hljs-type">X</span>].toSingleton
+        .bind[X].toSingleton
 
     <span class="hljs-comment">// Creates a new child session</span>
-    session.withChildSession(childDesign) { childSession =&gt;
-      childSession.build[<span class="hljs-type">X</span>] { x =&gt;
+    session.withChildSession(childDesign) { <span class="hljs-function"><span class="hljs-params">childSession</span> =&gt;</span>
+      childSession.build[X] { <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span>
          ...
       }
     }
@@ -340,7 +340,7 @@ d1.add(d2)
 }
 
 <span class="hljs-comment">// Creates a parent session</span>
-newDesign.build[<span class="hljs-type">MyServer</span>] { server =&gt;
+newDesign.build[MyServer] { <span class="hljs-function"><span class="hljs-params">server</span> =&gt;</span>
    <span class="hljs-comment">// Creates a short-lifecycle child session</span>
    server.handleInChildSession
 }
@@ -359,16 +359,16 @@ For example, if <code>X</code> is already started (onStart is called) in the par
 In this case, you can bind Airframe's Session with <code>bind[Session]</code> and register newly created instances to the session:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyDB</span>(<span class="hljs-params">name:<span class="hljs-type">String</span></span>) </span>{
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyDB</span></span>(name:String) {
   <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> conn = newConnection(name)
     .onShutdown{ x =&gt; x.close() }
 }
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyApp</span> </span>{
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> session = bind[<span class="hljs-type">Session</span>]
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> session = bind[Session]
 
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">openDB</span></span>(name:<span class="hljs-type">String</span>): <span class="hljs-type">MyDB</span> = {
-    <span class="hljs-keyword">val</span> db = <span class="hljs-keyword">new</span> <span class="hljs-type">MyDB</span>(name)
+  def openDB(name:String): MyDB = {
+    <span class="hljs-keyword">val</span> db = new MyDB(name)
      <span class="hljs-comment">// Adding MyDB instance to the current session so that</span>
      <span class="hljs-comment">// MyDB connection can be closed when the session terminates.</span>
     session.register(db)
@@ -381,17 +381,17 @@ In this case, you can bind Airframe's Session with <code>bind[Session]</code> an
 <p>Server side application often requires resource management (e.g., network connection, threads, etc.). Airframe has a built-in object life cycle manager to implement these hooks:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">MyServerService</span> </span>{
-  <span class="hljs-keyword">val</span> design = newDesign
-    .bind[<span class="hljs-type">Server</span>]
-    .onInit{ x:<span class="hljs-type">Server</span> =&gt; ... }        <span class="hljs-comment">// Called when the object is initialized</span>
-    .onInject{ x:<span class="hljs-type">Server</span> =&gt; ... }      <span class="hljs-comment">// Called when the object is injected</span>
-    .onStart{ x:<span class="hljs-type">Server</span> =&gt; ... }       <span class="hljs-comment">// Called when session.start is called</span>
-    .afterStart{ x:<span class="hljs-type">Server</span> =&gt; ... }    <span class="hljs-comment">// Called after onStart lifecycle is finished.</span>
+object MyServerService {
+  val design = newDesign
+    .bind[Server]
+    .onInit{ <span class="hljs-attr">x</span>:<span class="hljs-function"><span class="hljs-params">Server</span> =&gt;</span> ... }        <span class="hljs-comment">// Called when the object is initialized</span>
+    .onInject{ <span class="hljs-attr">x</span>:<span class="hljs-function"><span class="hljs-params">Server</span> =&gt;</span> ... }      <span class="hljs-comment">// Called when the object is injected</span>
+    .onStart{ <span class="hljs-attr">x</span>:<span class="hljs-function"><span class="hljs-params">Server</span> =&gt;</span> ... }       <span class="hljs-comment">// Called when session.start is called</span>
+    .afterStart{ <span class="hljs-attr">x</span>:<span class="hljs-function"><span class="hljs-params">Server</span> =&gt;</span> ... }    <span class="hljs-comment">// Called after onStart lifecycle is finished.</span>
                                       <span class="hljs-comment">// Use this only when you need to add an extra startup process for testing.</span>
-    .beforeShutdown{ x:<span class="hljs-type">Server</span> =&gt; ...} <span class="hljs-comment">// Called right before all shutdown hook is called</span>
+    .beforeShutdown{ <span class="hljs-attr">x</span>:<span class="hljs-function"><span class="hljs-params">Server</span> =&gt;</span> ...} <span class="hljs-comment">// Called right before all shutdown hook is called</span>
                                       <span class="hljs-comment">// Useful for adding pre-shutdown step</span>
-    .onShutdown{ x:<span class="hljs-type">Server</span> =&gt; ... }    <span class="hljs-comment">// Called when session.shutdown is called</span>
+    .onShutdown{ <span class="hljs-attr">x</span>:<span class="hljs-function"><span class="hljs-params">Server</span> =&gt;</span> ... }    <span class="hljs-comment">// Called when session.shutdown is called</span>
   )
 }
 </code></pre>
@@ -401,7 +401,7 @@ In this case, you can bind Airframe's Session with <code>bind[Session]</code> an
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// All singletons defined in the design will be initialized (i.e., onInit/onInject/onStart hooks will be called)</span>
 design
   .withProductionMode
-  .build[<span class="hljs-type">X</span>]{ x =&gt;
+  .build[X]{ <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span>
     <span class="hljs-comment">// Do something with X</span>
   }
 </code></pre>
@@ -410,21 +410,21 @@ design
 <p>If you don't need to show Session start/terminate logs, use <code>Design.noLifeCycleLogging</code>:</p>
 <pre><code class="hljs css language-scala">design
   .noLifeCycleLogging
-  .build[<span class="hljs-type">X</span>]{ x =&gt; ... }
+  .build[X]{ <span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> ... }
 </code></pre>
 <p>This will show lifecycle event logs only in debug level logs.</p>
 <h3><a class="anchor" aria-hidden="true" id="annotation-based-life-cycle-hooks"></a><a href="#annotation-based-life-cycle-hooks" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Annotation-based life cycle hooks</h3>
 <p>Airframe also supports <a href="https://en.wikipedia.org/wiki/JSR_250">JSR-250</a> style shutdown hooks via <code>@PostConstruct</code> and <code>@PreDestroy</code> annotations:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> javax.annotation.{<span class="hljs-type">PostConstruct</span>, <span class="hljs-type">PreDestroy</span>}
+<pre><code class="hljs css language-scala"><span class="hljs-selector-tag">import</span> <span class="hljs-selector-tag">javax</span><span class="hljs-selector-class">.annotation</span>.{<span class="hljs-selector-tag">PostConstruct</span>, <span class="hljs-selector-tag">PreDestroy</span>}
 
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyService</span> </span>{
-  <span class="hljs-meta">@PostConstruct</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">init</span> </span>{
+<span class="hljs-selector-tag">trait</span> <span class="hljs-selector-tag">MyService</span> {
+  <span class="hljs-variable">@PostConstruct</span>
+  def init {
     <span class="hljs-comment">// Called when the object is initialized. The same behavior with onInit</span>
   }
 
-  <span class="hljs-meta">@PreDestroy</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">stop</span> </span>{
+  <span class="hljs-variable">@PreDestroy</span>
+  def stop {
     <span class="hljs-comment">// Called when session.shutdown is called. The same with onShutdown.</span>
   }
 }
@@ -445,36 +445,36 @@ design
 <h3><a class="anchor" aria-hidden="true" id="generic-type-binding"></a><a href="#generic-type-binding" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Generic Type Binding</h3>
 <p>Airframe can bind objects to generics types. Traditional DI libraries for Java (e.g., <a href="https://github.com/google/guice">Guice</a>, etc.) cannot
 distinguish generic classes that have different type parameters (e.g., <code>Seq[Int]</code>, <code>Seq[String]</code>) because Java compiler applies <a href="https://docs.oracle.com/javase/tutorial/java/generics/erasure.html">type erasure</a>, and converts them to the same <code>Seq[Object]</code> type. In Airframe, generic types with different type parameters will be treated differently. For example, all of the following bindings can be assigned to different objects:</p>
-<pre><code class="hljs css language-scala">bind[<span class="hljs-type">Seq</span>[_]]
-bind[<span class="hljs-type">Seq</span>[<span class="hljs-type">Int</span>]]
-bind[<span class="hljs-type">Seq</span>[<span class="hljs-type">String</span>]]
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">bind</span>[Se<span class="hljs-string">q[_]</span>]
+<span class="hljs-keyword">bind</span>[Se<span class="hljs-string">q[Int]</span>]
+<span class="hljs-keyword">bind</span>[Se<span class="hljs-string">q[String]</span>]
 
-bind[<span class="hljs-type">Map</span>[<span class="hljs-type">Int</span>,<span class="hljs-type">String</span>]]
-bind[<span class="hljs-type">Map</span>[_,_]]
+<span class="hljs-keyword">bind</span>[Map[Int,String]]
+<span class="hljs-keyword">bind</span>[Map[<span class="hljs-number">_</span>,<span class="hljs-number">_</span>]]
 </code></pre>
 <p>Behind the scene, Airframe uses <a href="https://github.com/wvlet/airframe/surface/">Surface</a> as identifier of types so that we can extract these types identifiers at compile time.</p>
 <h3><a class="anchor" aria-hidden="true" id="type-alias-binding"></a><a href="#type-alias-binding" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Type Alias Binding</h3>
 <p>If you need to bind different objects to the same data type, use type aliases of Scala. For example,</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Fruit</span>(<span class="hljs-params">name: <span class="hljs-type">String</span></span>)</span>
+<pre><code class="hljs css language-scala">case class Fruit(name: <span class="hljs-built_in">String</span>)
 
-<span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">Apple</span> </span>= <span class="hljs-type">Fruit</span>
-<span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">Banana</span> </span>= <span class="hljs-type">Fruit</span>
+<span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">Apple</span></span> = Fruit
+<span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">Banana</span></span> = Fruit
 
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">TaggedBinding</span> </span>{
-  <span class="hljs-keyword">val</span> apple  = bind[<span class="hljs-type">Apple</span>]
-  <span class="hljs-keyword">val</span> banana = bind[<span class="hljs-type">Banana</span>]
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">TaggedBinding</span></span> {
+  val apple  = bind[Apple]
+  val banana = bind[Banana]
 }
 </code></pre>
 <p>Alias binding is useful to inject primitive type values:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">Env</span> </span>= <span class="hljs-type">String</span>
+type Env = String
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyService</span> </span>{
   <span class="hljs-comment">// Conditional binding</span>
-  <span class="hljs-keyword">lazy</span> <span class="hljs-keyword">val</span> threadManager = bind[<span class="hljs-type">Env</span>] <span class="hljs-keyword">match</span> {
-     <span class="hljs-keyword">case</span> <span class="hljs-string">"test"</span> =&gt; bind[<span class="hljs-type">TestingThreadManager</span>] <span class="hljs-comment">// prepare a testing thread manager</span>
-     <span class="hljs-keyword">case</span> <span class="hljs-string">"production"</span> =&gt; bind[<span class="hljs-type">ThreadManager</span>] <span class="hljs-comment">// prepare a thread manager for production</span>
+  lazy <span class="hljs-keyword">val</span> threadManager = bind[Env] match {
+     case <span class="hljs-string">"test"</span> =&gt; bind[TestingThreadManager] <span class="hljs-comment">// prepare a testing thread manager</span>
+     case <span class="hljs-string">"production"</span> =&gt; bind[ThreadManager] <span class="hljs-comment">// prepare a thread manager for production</span>
   }
 }
 
@@ -482,38 +482,38 @@ bind[<span class="hljs-type">Map</span>[_,_]]
 
 <span class="hljs-keyword">val</span> testingDesign =
   coreDesign.
-    bind[<span class="hljs-type">Env</span>].toInstance(<span class="hljs-string">"test"</span>)
+    bind[Env].toInstance(<span class="hljs-string">"test"</span>)
 
 <span class="hljs-keyword">val</span> productionDesign =
   coreDesign
-    .bind[<span class="hljs-type">Env</span>].toInstance(<span class="hljs-string">"production"</span>)
+    .bind[Env].toInstance(<span class="hljs-string">"production"</span>)
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="multi-binding"></a><a href="#multi-binding" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Multi-Binding</h3>
 <p>If you want to switch a service to be called depending on the user input, you can just use Scala's functionality + Airframe binding.</p>
 <p>To illustrate this, consider building an web application that receives a request and returns a string message.
 <code>Dispatcher</code> class receives an URL path and choose an appropriate <code>Handler</code> to use:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
+<pre><code class="hljs css language-scala">import wvlet.airframe._
 
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Handler</span> </span>{
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">handle</span></span>(request:<span class="hljs-type">Request</span>): <span class="hljs-type">String</span>
+trait <span class="hljs-keyword">Handler</span> {
+  <span class="hljs-keyword">def</span> handle(request:Request): <span class="hljs-keyword">String</span>
 }
 
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">DefaultHandler</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Handler</span> </span>{
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">handle</span></span>(request:<span class="hljs-type">Request</span>): <span class="hljs-type">String</span> = <span class="hljs-string">"hello"</span>
+trait DefaultHandler extends <span class="hljs-keyword">Handler</span> {
+  <span class="hljs-keyword">def</span> handle(request:Request): <span class="hljs-keyword">String</span> = <span class="hljs-string">"hello"</span>
 }
 
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">InfoHandler</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Handler</span> </span>{
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">handle</span></span>(rquest:<span class="hljs-type">Request</span>): <span class="hljs-type">String</span> = <span class="hljs-string">"info"</span>
+trait InfoHandler extends <span class="hljs-keyword">Handler</span> {
+  <span class="hljs-keyword">def</span> handle(rquest:Request): <span class="hljs-keyword">String</span> = <span class="hljs-string">"info"</span>
 }
 
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Dispatcher</span> </span>{
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> dispatcher: <span class="hljs-type">String</span> =&gt; <span class="hljs-type">Handler</span> = {
-    <span class="hljs-keyword">case</span> <span class="hljs-string">"info"</span> =&gt; bind[<span class="hljs-type">InfoHandler</span>]
-    <span class="hljs-keyword">case</span> _ =&gt; bind[<span class="hljs-type">DefaultHandler</span>]
+trait Dispatcher {
+  <span class="hljs-keyword">private</span> val dispatcher: <span class="hljs-keyword">String</span> =&gt; <span class="hljs-keyword">Handler</span> = {
+    <span class="hljs-keyword">case</span> <span class="hljs-string">"info"</span> =&gt; bind[InfoHandler]
+    <span class="hljs-keyword">case</span> _ =&gt; bind[DefaultHandler]
   }
 
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">dispatch</span></span>(path:<span class="hljs-type">String</span>, request:<span class="hljs-type">Request</span>): <span class="hljs-type">String</span> =  {
-     dispatcher(path).handle(request)
+  <span class="hljs-keyword">def</span> dispatch(<span class="hljs-keyword">path</span>:<span class="hljs-keyword">String</span>, request:Request): <span class="hljs-keyword">String</span> =  {
+     dispatcher(<span class="hljs-keyword">path</span>).handle(request)
   }
 }
 </code></pre>
@@ -528,8 +528,8 @@ In Airframe, we just need to write a Scala code that uses <code>bind[X]</code>.<
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Id</span></span>
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">A</span> </span>{
-  <span class="hljs-keyword">val</span> name = bind[<span class="hljs-type">String</span> @@ <span class="hljs-type">Name</span>]
-  <span class="hljs-keyword">val</span> id = bind[<span class="hljs-type">Int</span> @@ <span class="hljs-type">Id</span>]
+  <span class="hljs-keyword">val</span> name = bind[String @@ Name]
+  <span class="hljs-keyword">val</span> id = bind[<span class="hljs-built_in">Int</span> @@ Id]
 }
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="known-issues"></a><a href="#known-issues" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Known Issues</h2>
@@ -538,22 +538,22 @@ In Airframe, we just need to write a Scala code that uses <code>bind[X]</code>.<
 initialize Scala's global ExecutionContext with a class loader isolated from the application classloader.</p>
 <p>To avoid this issue, we need to explicitly prepare an executor for the Future inside the application,
 instead of using <code>scala.concurrent.ExecutionContext.Implicits.global</code></p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> java.util.concurrent.<span class="hljs-type">Executors</span>
-<span class="hljs-keyword">import</span> scala.concurrent.{<span class="hljs-type">Await</span>, <span class="hljs-type">ExecutionContext</span>, <span class="hljs-type">Future</span>}
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> java.util.concurrent.Executors
+<span class="hljs-keyword">import</span> scala.concurrent.{Await, ExecutionContext, Future}
 <span class="hljs-keyword">import</span> wvlet.airframe._
 
 <span class="hljs-comment">// Do not import scala.concurrent.ExecutionContext.Implicits.global</span>
-<span class="hljs-keyword">val</span> threadPool              = <span class="hljs-type">Executors</span>.newCachedThreadPool()
-<span class="hljs-keyword">implicit</span> <span class="hljs-keyword">val</span> futureExecutor = <span class="hljs-type">ExecutionContext</span>.fromExecutor(threadPool)
+val threadPool              = <span class="hljs-type">Executors</span>.newCachedThreadPool()
+implicit val futureExecutor = <span class="hljs-type">ExecutionContext</span>.fromExecutor(threadPool)
 
-<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyConfig</span>(<span class="hljs-params">port: <span class="hljs-type">Int</span> = 8080</span>)</span>
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyConfig</span>(<span class="hljs-title">port</span>: <span class="hljs-title">Int</span> = 8080)
 
-<span class="hljs-type">Future</span> {
-  newDesign.build[<span class="hljs-type">MyConfig</span>] { config =&gt; println(config) }
+<span class="hljs-title">Future</span> </span>{
+  newDesign.build[<span class="hljs-type">MyConfig</span>] { config =&gt; <span class="hljs-built_in">println</span>(config) }
 }
 </code></pre>
 <p>Another workaround is setting <code>fork in run := true</code> or <code>fork in test := test</code> to your <code>build.sbt</code>, or using <code>Flat</code> classloader layering strategy:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-type">Test</span> / classLoaderLayeringStrategy := <span class="hljs-type">ClassLoaderLayeringStrategy</span>.<span class="hljs-type">Flat</span>
+<pre><code class="hljs css language-scala">Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="debugging-di"></a><a href="#debugging-di" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Debugging DI</h2>
 <p>To check the runtime behavior of Airframe's dependency injection, set the log level of <code>wvlet.airframe</code> to <code>debug</code> or <code>trace</code>:</p>
@@ -566,32 +566,32 @@ instead of using <code>scala.concurrent.ExecutionContext.Implicits.global</code>
 </code></pre>
 <p>See <a href="https://github.com/wvlet/airframe/blob/master/log/README.md#configuring-log-levels">airframe-log configuration</a> for the details of log level configurations.</p>
 <p>Then you will see the log messages that show the object bindings and injection activities:</p>
-<pre><code class="hljs"><span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [Design] Add binding: ProviderBinding(DependencyFactory(PlaneType,List(),wvlet.airframe.<span class="hljs-symbol">LazyF0@</span><span class="hljs-number">442</span>b0f),<span class="hljs-literal">true</span>,<span class="hljs-literal">true</span>)  - (Design.scala:<span class="hljs-number">43</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [Design] Add binding: ProviderBinding(DependencyFactory(Metric,List(),wvlet.airframe.<span class="hljs-symbol">LazyF0@</span><span class="hljs-number">1595</span>a8db),<span class="hljs-literal">true</span>,<span class="hljs-literal">true</span>)  - (Design.scala:<span class="hljs-number">43</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [Design] Add binding: ClassBinding(Engine,GasolineEngine)  - (Design.scala:<span class="hljs-number">43</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [Design] Add binding: ProviderBinding(DependencyFactory(PlaneType,List(),wvlet.airframe.<span class="hljs-symbol">LazyF0@</span>b24c12d8),<span class="hljs-literal">true</span>,<span class="hljs-literal">true</span>)  - (Design.scala:<span class="hljs-number">43</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [Design] Add binding: ClassBinding(Engine,SolarHybridEngine)  - (Design.scala:<span class="hljs-number">43</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [SessionBuilder] Creating a new session: session:<span class="hljs-number">7</span>bf38868  - (SessionBuilder.scala:<span class="hljs-number">48</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [SessionImpl] [session:<span class="hljs-number">7</span>bf38868] Initializing  - (SessionImpl.scala:<span class="hljs-number">48</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [SessionImpl] [session:<span class="hljs-number">7</span>bf38868] Completed the initialization  - (SessionImpl.scala:<span class="hljs-number">55</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [SessionImpl] Get <span class="hljs-keyword">or</span> update dependency [AirPlane]  - (SessionImpl.scala:<span class="hljs-number">80</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [SessionImpl] Get dependency [wvlet.obj.tag.@@[example.Example.Wing,example.Example.Left]]  - (SessionImpl.scala:<span class="hljs-number">60</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [SessionImpl] Get dependency [wvlet.obj.tag.@@[example.Example.Wing,example.Example.Right]]  - (SessionImpl.scala:<span class="hljs-number">60</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [SessionImpl] Get dependency [example.Example.Engine]  - (SessionImpl.scala:<span class="hljs-number">60</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [SessionImpl] Get <span class="hljs-keyword">or</span> update dependency [Fuel]  - (SessionImpl.scala:<span class="hljs-number">80</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [SessionImpl] Get dependency [example.Example.PlaneType]  - (SessionImpl.scala:<span class="hljs-number">60</span>)
-<span class="hljs-number">2016</span><span class="hljs-number">-12</span><span class="hljs-number">-29</span> <span class="hljs-number">22</span>:<span class="hljs-number">23</span>:<span class="hljs-number">17</span><span class="hljs-number">-0800</span> debug [SessionImpl] Get dependency [example.Example.Metric]  - (SessionImpl.scala:<span class="hljs-number">60</span>)
+<pre><code class="hljs"><span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[Design]</span> <span class="hljs-selector-tag">Add</span> <span class="hljs-selector-tag">binding</span>: <span class="hljs-selector-tag">ProviderBinding</span>(DependencyFactory(PlaneType,List(),wvlet.airframe.LazyF0<span class="hljs-variable">@442b0f</span>),true,true)  <span class="hljs-selector-tag">-</span> (Design.<span class="hljs-attribute">scala</span>:<span class="hljs-number">43</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[Design]</span> <span class="hljs-selector-tag">Add</span> <span class="hljs-selector-tag">binding</span>: <span class="hljs-selector-tag">ProviderBinding</span>(DependencyFactory(Metric,List(),wvlet.airframe.LazyF0<span class="hljs-variable">@1595a8db</span>),true,true)  <span class="hljs-selector-tag">-</span> (Design.<span class="hljs-attribute">scala</span>:<span class="hljs-number">43</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[Design]</span> <span class="hljs-selector-tag">Add</span> <span class="hljs-selector-tag">binding</span>: <span class="hljs-selector-tag">ClassBinding</span>(Engine,GasolineEngine)  <span class="hljs-selector-tag">-</span> (Design.<span class="hljs-attribute">scala</span>:<span class="hljs-number">43</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[Design]</span> <span class="hljs-selector-tag">Add</span> <span class="hljs-selector-tag">binding</span>: <span class="hljs-selector-tag">ProviderBinding</span>(DependencyFactory(PlaneType,List(),wvlet.airframe.LazyF0<span class="hljs-variable">@b24c12d8</span>),true,true)  <span class="hljs-selector-tag">-</span> (Design.<span class="hljs-attribute">scala</span>:<span class="hljs-number">43</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[Design]</span> <span class="hljs-selector-tag">Add</span> <span class="hljs-selector-tag">binding</span>: <span class="hljs-selector-tag">ClassBinding</span>(Engine,SolarHybridEngine)  <span class="hljs-selector-tag">-</span> (Design.<span class="hljs-attribute">scala</span>:<span class="hljs-number">43</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[SessionBuilder]</span> <span class="hljs-selector-tag">Creating</span> <span class="hljs-selector-tag">a</span> <span class="hljs-selector-tag">new</span> <span class="hljs-selector-tag">session</span>: <span class="hljs-selector-tag">session</span><span class="hljs-selector-pseudo">:7bf38868</span>  <span class="hljs-selector-tag">-</span> (SessionBuilder.<span class="hljs-attribute">scala</span>:<span class="hljs-number">48</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[SessionImpl]</span> <span class="hljs-selector-attr">[session:7bf38868]</span> <span class="hljs-selector-tag">Initializing</span>  <span class="hljs-selector-tag">-</span> (SessionImpl.<span class="hljs-attribute">scala</span>:<span class="hljs-number">48</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[SessionImpl]</span> <span class="hljs-selector-attr">[session:7bf38868]</span> <span class="hljs-selector-tag">Completed</span> <span class="hljs-selector-tag">the</span> <span class="hljs-selector-tag">initialization</span>  <span class="hljs-selector-tag">-</span> (SessionImpl.<span class="hljs-attribute">scala</span>:<span class="hljs-number">55</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[SessionImpl]</span> <span class="hljs-selector-tag">Get</span> <span class="hljs-selector-tag">or</span> <span class="hljs-selector-tag">update</span> <span class="hljs-selector-tag">dependency</span> <span class="hljs-selector-attr">[AirPlane]</span>  <span class="hljs-selector-tag">-</span> (SessionImpl.<span class="hljs-attribute">scala</span>:<span class="hljs-number">80</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[SessionImpl]</span> <span class="hljs-selector-tag">Get</span> <span class="hljs-selector-tag">dependency</span> <span class="hljs-selector-attr">[wvlet.obj.tag.@@[example.Example.Wing,example.Example.Left]</span>]  <span class="hljs-selector-tag">-</span> (SessionImpl.<span class="hljs-attribute">scala</span>:<span class="hljs-number">60</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[SessionImpl]</span> <span class="hljs-selector-tag">Get</span> <span class="hljs-selector-tag">dependency</span> <span class="hljs-selector-attr">[wvlet.obj.tag.@@[example.Example.Wing,example.Example.Right]</span>]  <span class="hljs-selector-tag">-</span> (SessionImpl.<span class="hljs-attribute">scala</span>:<span class="hljs-number">60</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[SessionImpl]</span> <span class="hljs-selector-tag">Get</span> <span class="hljs-selector-tag">dependency</span> <span class="hljs-selector-attr">[example.Example.Engine]</span>  <span class="hljs-selector-tag">-</span> (SessionImpl.<span class="hljs-attribute">scala</span>:<span class="hljs-number">60</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[SessionImpl]</span> <span class="hljs-selector-tag">Get</span> <span class="hljs-selector-tag">or</span> <span class="hljs-selector-tag">update</span> <span class="hljs-selector-tag">dependency</span> <span class="hljs-selector-attr">[Fuel]</span>  <span class="hljs-selector-tag">-</span> (SessionImpl.<span class="hljs-attribute">scala</span>:<span class="hljs-number">80</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[SessionImpl]</span> <span class="hljs-selector-tag">Get</span> <span class="hljs-selector-tag">dependency</span> <span class="hljs-selector-attr">[example.Example.PlaneType]</span>  <span class="hljs-selector-tag">-</span> (SessionImpl.<span class="hljs-attribute">scala</span>:<span class="hljs-number">60</span>)
+<span class="hljs-selector-tag">2016-12-29</span> <span class="hljs-selector-tag">22</span><span class="hljs-selector-pseudo">:23</span><span class="hljs-selector-pseudo">:17-0800</span> <span class="hljs-selector-tag">debug</span> <span class="hljs-selector-attr">[SessionImpl]</span> <span class="hljs-selector-tag">Get</span> <span class="hljs-selector-tag">dependency</span> <span class="hljs-selector-attr">[example.Example.Metric]</span>  <span class="hljs-selector-tag">-</span> (SessionImpl.<span class="hljs-attribute">scala</span>:<span class="hljs-number">60</span>)
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="tracing-di-with-google-chrome-browser"></a><a href="#tracing-di-with-google-chrome-browser" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Tracing DI with Google Chrome Browser</h3>
 <p>To visualize the lifecycle of injected objects, enabling <code>ChromeTracer</code> is useful:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-keyword">val</span> d = newDesign
-  .withTracer(<span class="hljs-type">ChromeTracer</span>.newTracer(<span class="hljs-string">"target/trace.json"</span>))
+val d = newDesign
+  .withTracer(ChromeTracer.newTracer(<span class="hljs-string">"target/trace.json"</span>))
 
 <span class="hljs-comment">// DI tracing report will be stored in target/trace.json</span>
 <span class="hljs-comment">// You can open this file with Google Chrome. Open chrome://tracing, and load the json file.</span>
-d.build[<span class="hljs-type">MyApp</span>] { app =&gt;
+d.build[MyApp] { <span class="hljs-function"><span class="hljs-params">app</span> =&gt;</span>
   <span class="hljs-comment">//</span>
 }
 </code></pre>
@@ -611,14 +611,14 @@ display the lifecycle of AirframeSession and the injected objects:</p>
 <p>Configuring applications is cumbersome because you need to think about how to pass configurations to your classes. With Airframe this process becomes much simpler; Just binding configuration objects to your class:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Config</span>(<span class="hljs-params">host:<span class="hljs-type">String</span>, port:<span class="hljs-type">Int</span></span>)</span>
+case <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Config</span></span>(host:String, port:<span class="hljs-built_in">Int</span>)
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">App</span> </span>{
   <span class="hljs-comment">// bind configurations</span>
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> config = bind[<span class="hljs-type">Config</span>]
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> server = bind[<span class="hljs-type">Server</span>]
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> config = bind[Config]
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> server = bind[Server]
 
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">run</span> </span>{
+  def run {
     sever.launch(config.host, config.port)
   }
 }
@@ -626,19 +626,19 @@ display the lifecycle of AirframeSession and the injected objects:</p>
 <span class="hljs-comment">// Create a new design and add configuration</span>
 <span class="hljs-keyword">val</span> d =
   newDesign
-  .bind[<span class="hljs-type">Server</span>].to[<span class="hljs-type">YourServer</span>]
-  .bind[<span class="hljs-type">Config</span>].toInstance(<span class="hljs-keyword">new</span> <span class="hljs-type">Config</span>(<span class="hljs-string">"localhost"</span>, <span class="hljs-number">8080</span>))
+  .bind[Server].to[YourServer]
+  .bind[Config].toInstance(new Config(<span class="hljs-string">"localhost"</span>, <span class="hljs-number">8080</span>))
 
 <span class="hljs-comment">// Start the application</span>
 d.withSession { session =&gt;
-  <span class="hljs-keyword">val</span> app = session.build[<span class="hljs-type">App</span>]
+  <span class="hljs-keyword">val</span> app = session.build[App]
   app.run
 }
 </code></pre>
 <p>To change the configuration, you only need to add another binding because bindings to the same type object can be overwritten:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// You can override Config in your test code</span>
-<span class="hljs-keyword">val</span> testDesign =
-  d.bind[<span class="hljs-type">Config</span>].toInstance(<span class="hljs-keyword">new</span> <span class="hljs-type">Config</span>(<span class="hljs-string">"localhost"</span>, randomPort))
+val testDesign =
+  d.bind[Config].toInstance(<span class="hljs-keyword">new</span> Config(<span class="hljs-string">"localhost"</span>, randomPort))
 </code></pre>
 <p>Airframe has a submodule called <a href="/airframe/docs/airframe-config">airframe-config</a>, which is useful for
 configuring your applications with YAML files.</p>
@@ -647,15 +647,15 @@ configuring your applications with YAML files.</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">DBService</span> </span>{
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> dbConfig = bind[<span class="hljs-type">DBConfig</span>]
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> connection = bind[<span class="hljs-type">DBConnection</span>]
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> dbConfig = bind[DBConfig]
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> connection = bind[DBConnection]
     .onInit { c =&gt; c.connect(dbConfig.url, dbConfig.user, ... ) }
     .onShutdown {
       <span class="hljs-comment">// This will be executed when session.shutdown is called</span>
       c =&gt; c.close
     }
 
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">query</span></span>(sql:<span class="hljs-type">String</span>) = {
+  def query(sql:String) = {
     connection.query(sql)
   }
 }
@@ -663,19 +663,19 @@ configuring your applications with YAML files.</p>
 <span class="hljs-comment">// Using DBService. This class has no need to care about closing DB</span>
 <span class="hljs-comment">// connection resources because DBService will take care of it.</span>
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">App</span> </span>{
-  <span class="hljs-keyword">val</span> dbService = bind[<span class="hljs-type">DBService</span>]
+  <span class="hljs-keyword">val</span> dbService = bind[DBService]
 
   dbService.query(<span class="hljs-string">"select * from tbl"</span>)
 }
 
 <span class="hljs-comment">// Your application launcher code</span>
 <span class="hljs-keyword">val</span> d = newDesign
-  .bind[<span class="hljs-type">DBService</span>].toSingleton <span class="hljs-comment">// To share the connection between classes</span>
-  .bind[<span class="hljs-type">DBConfig</span>].toInstance(<span class="hljs-type">DBConfig</span>(<span class="hljs-string">"jdbc://..."</span>, <span class="hljs-string">"user name"</span>, ...))
+  .bind[DBService].toSingleton <span class="hljs-comment">// To share the connection between classes</span>
+  .bind[DBConfig].toInstance(DBConfig(<span class="hljs-string">"jdbc://..."</span>, <span class="hljs-string">"user name"</span>, ...))
 
 d.withSession { session =&gt;
   <span class="hljs-comment">// db connection will be established here</span>
-  <span class="hljs-keyword">val</span> app = session.build[<span class="hljs-type">App</span>]
+  <span class="hljs-keyword">val</span> app = session.build[App]
 }
 <span class="hljs-comment">// database connection will be closed automatically</span>
 
@@ -684,25 +684,25 @@ d.withSession { session =&gt;
 <p>If you need to configure a service (e.g., port number of an web client), but you need to provide other dependencies from Airframe,
 <code>bindFactory[I =&gt; A]</code> can be used.</p>
 <pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyClient</span> </span>{
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> port = bind[<span class="hljs-type">Int</span>] <span class="hljs-comment">// This will be overwritten by the factory</span>
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> httpClientConfig = bind[<span class="hljs-type">HttpClientConfig</span>] <span class="hljs-comment">// Use the shared instance</span>
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> httpClient = <span class="hljs-keyword">new</span> <span class="hljs-type">HttpClient</span>(port, httpClientConfig)
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> port = bind[<span class="hljs-built_in">Int</span>] <span class="hljs-comment">// This will be overwritten by the factory</span>
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> httpClientConfig = bind[HttpClientConfig] <span class="hljs-comment">// Use the shared instance</span>
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> httpClient = new HttpClient(port, httpClientConfig)
 
   <span class="hljs-meta">@PreDestroy</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">stop</span></span>: <span class="hljs-type">Unit</span> = {
+  def stop: <span class="hljs-built_in">Unit</span> = {
     httpClient.close()
   }
 }
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyService</span> </span>{
   <span class="hljs-comment">// Create a factory Int =&gt; MyClient, which will override Int binding using a given parameter.</span>
-  <span class="hljs-keyword">val</span> clientFactory = bindFactory[<span class="hljs-type">Int</span> =&gt; <span class="hljs-type">MyClient</span>]
+  <span class="hljs-keyword">val</span> clientFactory = bindFactory[<span class="hljs-built_in">Int</span> =&gt; MyClient]
 }
 
 
 newDesign
-  .bind[<span class="hljs-type">HttpClientConfig</span>].toInstance(<span class="hljs-type">HttpClientConfig</span>(useSSL=<span class="hljs-literal">true</span>, timeoutSec=<span class="hljs-number">60</span>))
-  .build[<span class="hljs-type">MyService</span>] { s =&gt;
+  .bind[HttpClientConfig].toInstance(HttpClientConfig(useSSL=<span class="hljs-literal">true</span>, timeoutSec=<span class="hljs-number">60</span>))
+  .build[MyService] { s =&gt;
     <span class="hljs-keyword">val</span> client1 = s.clientFactory(<span class="hljs-number">8080</span>)
     <span class="hljs-keyword">val</span> client2 = s.clientFactory(<span class="hljs-number">8081</span>)
   }
@@ -713,15 +713,15 @@ HttpClientConfig instance can be shared between generated clients.
 You can also define lifecycle hooks to MyClient, which will be added for each generated instance of MyClient.</p>
 <h3><a class="anchor" aria-hidden="true" id="service-mix-in"></a><a href="#service-mix-in" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Service Mix-In</h3>
 <p>A traditional way of building applications is passing necessary services to a main class:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">YourService</span>(<span class="hljs-params">threadPool:<span class="hljs-type">ThreadPool</span>, s1:<span class="hljs-type">Service1</span>, s2:<span class="hljs-type">Service2</span>, ...</span>) </span>{
+<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">YourService</span></span>(threadPool:ThreadPool, s1:Service1, s2:Service2, ...) {
   ...
 }
 
-<span class="hljs-keyword">val</span> t = <span class="hljs-keyword">new</span> <span class="hljs-type">ThreadPool</span>
-<span class="hljs-keyword">val</span> s1 = <span class="hljs-keyword">new</span> <span class="hljs-type">Service1</span>(...)
-<span class="hljs-keyword">val</span> s2 = <span class="hljs-keyword">new</span> <span class="hljs-type">Service2</span>(...)
+<span class="hljs-keyword">val</span> t = new ThreadPool
+<span class="hljs-keyword">val</span> s1 = new Service1(...)
+<span class="hljs-keyword">val</span> s2 = new Service2(...)
 ...
-<span class="hljs-keyword">val</span> service = <span class="hljs-keyword">new</span> <span class="hljs-type">YourService</span>(t, s1, s2, ...)
+<span class="hljs-keyword">val</span> service = new YourService(t, s1, s2, ...)
 </code></pre>
 <p>However, this approach is not scalable if you need to use more services in your class or if you need to implement applications that require different subsets of services.</p>
 <p>If you write such services as <a href="http://docs.scala-lang.org/tutorials/tour/traits.html">traits</a> in Scala, it will be quite easy to compose applications that depends on many services. Here is an example of defining services using Airframe and Scala traits:</p>
@@ -729,12 +729,12 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
 
 <span class="hljs-comment">// Define a thread pool functionality</span>
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">ThreadPool</span> </span>{
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> executorService = bind[<span class="hljs-type">ExecutorService</span>]
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> executorService = bind[ExecutorService]
     .onShutdown{ _.shutdown }
 
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">submit</span></span>[<span class="hljs-type">U</span>](body: =&gt; <span class="hljs-type">U</span>) {
-    executorService.submit(<span class="hljs-keyword">new</span> <span class="hljs-type">Runnable</span> {
-      <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">run</span> </span>{ body }
+  def submit[U](body: =&gt; U) {
+    executorService.submit(new Runnable {
+      def run { body }
     }
   }
 }
@@ -742,80 +742,80 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
 <span class="hljs-comment">// Instead of using constructor arguments,</span>
 <span class="hljs-comment">// create a service trait that binds necessary service objects</span>
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">ThreadPoolService</span> </span>{
-  <span class="hljs-keyword">val</span> threadPool = bindSingleton[<span class="hljs-type">ThreadPool</span>]
+  <span class="hljs-keyword">val</span> threadPool = bindSingleton[ThreadPool]
 }
 
 <span class="hljs-comment">// Another service</span>
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MonitorService</span> </span>{
-  <span class="hljs-keyword">val</span> monitor = bind[<span class="hljs-type">Monitor</span>]
+  <span class="hljs-keyword">val</span> monitor = bind[Monitor]
 }
 
 <span class="hljs-comment">// Mix-in services</span>
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">App1</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ThreadPoolService</span> <span class="hljs-keyword">with</span> <span class="hljs-title">MonitorService</span> </span>{
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">App1</span> <span class="hljs-title">extends</span> <span class="hljs-title">ThreadPoolService</span> <span class="hljs-title">with</span> <span class="hljs-title">MonitorService</span> </span>{
   monitor.log(<span class="hljs-string">"starting app"</span>)
   threadPool.submit( ... )
 }
 
 <span class="hljs-comment">// Reuse singleton ThreadPool in another application</span>
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">App2</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">ThreadPoolService</span> </span>{
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">App2</span> <span class="hljs-title">extends</span> <span class="hljs-title">ThreadPoolService</span> </span>{
   threadPool.submit( ... )
 }
 </code></pre>
 <p>In general, you can create your application with Service mix-ins as below:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">YourApp</span></span>
- <span class="hljs-keyword">extends</span> <span class="hljs-type">AService</span>
-    <span class="hljs-keyword">with</span> <span class="hljs-type">BService</span>
-    <span class="hljs-keyword">with</span> <span class="hljs-type">CDService</span>
+ extends AService
+    with BService
+    with CDService
     ...
-    <span class="hljs-keyword">with</span> <span class="hljs-type">ZService</span>
+    with ZService
 {
   <span class="hljs-comment">// use a, b, c, d, .., z here</span>
 }
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">AService</span> </span>{
-  <span class="hljs-keyword">val</span> a = bind[<span class="hljs-type">A</span>]
+  <span class="hljs-keyword">val</span> a = bind[A]
 }
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">BService</span> </span>{
-  <span class="hljs-keyword">val</span> b = bind[<span class="hljs-type">B</span>]
+  <span class="hljs-keyword">val</span> b = bind[B]
 }
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">CDService</span> </span>{
-  <span class="hljs-keyword">val</span> c = bind[<span class="hljs-type">C</span>]
-  <span class="hljs-keyword">val</span> d = bind[<span class="hljs-type">D</span>]
+  <span class="hljs-keyword">val</span> c = bind[C]
+  <span class="hljs-keyword">val</span> d = bind[D]
 }
 ...
 
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="override-bindings"></a><a href="#override-bindings" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Override Bindings</h3>
 <p>It is also possible to manually inject an instance implementation. This is useful for changing the behavior of objects for testing:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">CustomApp</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">App1</span> </span>{
+<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">CustomApp</span> <span class="hljs-title">extends</span> <span class="hljs-title">App1</span> </span>{
   <span class="hljs-comment">// Manually inject an instance</span>
-  <span class="hljs-keyword">override</span> <span class="hljs-keyword">val</span> monitor = <span class="hljs-keyword">new</span> <span class="hljs-type">MockMonitor</span> { ... }
+  <span class="hljs-keyword">override</span> <span class="hljs-keyword">val</span> monitor = new MockMonitor { ... }
 }
 </code></pre>
 <p>If you are using <a href="http://scalamock.org/">ScalaMock</a> or <a href="http://site.mockito.org/">Mockito</a>, you may overwrite a service with a mock (empty) implementation:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MockApp</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">App1</span> </span>{
-  <span class="hljs-keyword">override</span> <span class="hljs-keyword">val</span> monitor = mock[<span class="hljs-type">Monitor</span>]
+<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MockApp</span> <span class="hljs-title">extends</span> <span class="hljs-title">App1</span> </span>{
+  <span class="hljs-keyword">override</span> <span class="hljs-keyword">val</span> monitor = mock[Monitor]
 }
 </code></pre>
 <p>Or you can use mock instance binding by extending the design:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> coreDesign =
+<pre><code class="hljs css language-scala">val coreDesign =
   newDesign
-  .bind[<span class="hljs-type">Monitor</span>].to[<span class="hljs-type">MonitorImpl</span>]
+  .<span class="hljs-built_in">bind</span>[Monitor].to[MonitorImpl]
 
-<span class="hljs-keyword">val</span> testDesign =
+val testDesign =
   coreDesign
-  .bind[<span class="hljs-type">Monitor</span>].toInstance(mock[<span class="hljs-type">Monitor</span>])
+  .<span class="hljs-built_in">bind</span>[Monitor].toInstance(mock[Monitor])
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="airframe-internals"></a><a href="#airframe-internals" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Airframe Internals</h2>
 <p>This page describes the internals of Airframe for developers who are interested in extending Airframe.</p>
 <h3><a class="anchor" aria-hidden="true" id="session-1"></a><a href="#session-1" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Session</h3>
 <p>A Session in Airframe is a holder of instances and binding rules. Airframe is designed to simplify the instantiation of complex objects like:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">new</span> <span class="hljs-type">App</span>(a = <span class="hljs-keyword">new</span> <span class="hljs-type">A</span>(b = <span class="hljs-keyword">new</span> <span class="hljs-type">B</span>), ...)
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">new</span> App(a = <span class="hljs-keyword">new</span> A(b = <span class="hljs-keyword">new</span> B), ...)
 </code></pre>
 <p>into this form:</p>
-<pre><code class="hljs css language-scala">session.build[<span class="hljs-type">App</span>]
+<pre><code class="hljs css language-scala"><span class="hljs-selector-tag">session</span><span class="hljs-selector-class">.build</span><span class="hljs-selector-attr">[App]</span>
 </code></pre>
 <p>In this code Airframe DI will take care of the object instantiation by automatically finding how to build <code>App</code>, and its dependencies <code>A</code>, <code>B</code>, etc.</p>
 <h3><a class="anchor" aria-hidden="true" id="example"></a><a href="#example" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Example</h3>
@@ -823,45 +823,45 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">App</span> </span>{
-  <span class="hljs-keyword">val</span> a = bind[<span class="hljs-type">A</span>]
+  <span class="hljs-keyword">val</span> a = bind[A]
 }
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">A</span> </span>{
-  <span class="hljs-keyword">val</span> b = bind[<span class="hljs-type">B</span>]
+  <span class="hljs-keyword">val</span> b = bind[B]
 }
 
 <span class="hljs-keyword">val</span> session =
   newDesign
-  .bind[<span class="hljs-type">B</span>].toInstance(<span class="hljs-keyword">new</span> <span class="hljs-type">B</span>(...))
+  .bind[B].toInstance(new B(...))
   .newSesion <span class="hljs-comment">// Creates a session thats holds the above instance of B</span>
 
-<span class="hljs-keyword">val</span> app = session.build[<span class="hljs-type">App</span>]
+<span class="hljs-keyword">val</span> app = session.build[App]
 </code></pre>
 <p>This code builds an instance of <code>App</code> using a concrete instance of <code>B</code> stored in the session.</p>
 <h3><a class="anchor" aria-hidden="true" id="injecting-session"></a><a href="#injecting-session" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Injecting Session</h3>
 <p>To create instances of <code>A</code> and <code>B</code> inside <code>App</code>, we need to pass the concrete instance of B though the session instance. But trait definitions of <code>App</code> and <code>A</code> don't know anything about the session, so we need a way to resolve the instance of <code>B</code>.</p>
 <p>To do so, Airframe will pass a reference to the Session while building <code>App</code>, <code>A</code>, and <code>B</code>. A trick is inside the implementation of <code>build</code> and <code>bind</code>. Let's look at how <code>session.build[App]</code> will work when creating an instance of <code>App</code>.</p>
 <p>Here is the code for building an App:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> app = session.build[<span class="hljs-type">App</span>]
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> app = session.build[App]
 </code></pre>
 <p>Airframe expands this code into this form at compile-time:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> app: <span class="hljs-type">App</span> =
-{ ss: <span class="hljs-type">Session</span> =&gt;
+<pre><code class="hljs css language-scala">val app: App =
+{ ss: <span class="hljs-function"><span class="hljs-params">Session</span> =&gt;</span>
   <span class="hljs-comment">// Extends DISupport to pass Session object</span>
-  <span class="hljs-keyword">new</span> <span class="hljs-type">App</span> <span class="hljs-keyword">extends</span> <span class="hljs-type">DISupport</span> {
+  <span class="hljs-keyword">new</span> App <span class="hljs-keyword">extends</span> DISupport {
     <span class="hljs-comment">// Inject a reference to the current session</span>
-    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">session</span> </span>= ss
+    def session = ss
 
     <span class="hljs-comment">// val a = bind[A] (original code inside App)</span>
     <span class="hljs-comment">// If type A is instantiatable trait (non abstract type)</span>
-    <span class="hljs-keyword">val</span> a: <span class="hljs-type">A</span> = {
+    val a: A = {
       <span class="hljs-comment">// Trying to find a session (using DISupport.session).</span>
       <span class="hljs-comment">// If no session is found, MISSING_SESSION exception will be thrown</span>
-      <span class="hljs-keyword">val</span> ss1 = wvlet.airframe.<span class="hljs-type">Session</span>.findSession(<span class="hljs-keyword">this</span>)
-      <span class="hljs-keyword">val</span> binder: <span class="hljs-type">Session</span> =&gt; <span class="hljs-type">A</span> = (ss2: <span class="hljs-type">Session</span> =&gt;
+      val ss1 = wvlet.airframe.Session.findSession(<span class="hljs-keyword">this</span>)
+      val binder: <span class="hljs-function"><span class="hljs-params">Session</span> =&gt;</span> A = (ss2: <span class="hljs-function"><span class="hljs-params">Session</span> =&gt;</span>
         <span class="hljs-comment">// Register a code for instantiating A</span>
-        ss2.getOrElseUpdate(<span class="hljs-type">Surface</span>.of[<span class="hljs-type">A</span>],
-      (<span class="hljs-keyword">new</span> <span class="hljs-type">A</span> <span class="hljs-keyword">with</span> <span class="hljs-type">DISupport</span> { <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">session</span> </span>= ss1 }).asInstanceOf[<span class="hljs-type">A</span>]
+        ss2.getOrElseUpdate(Surface.of[A],
+      (<span class="hljs-keyword">new</span> A <span class="hljs-keyword">with</span> DISupport { def session = ss1 }).asInstanceOf[A]
         )
       )
       <span class="hljs-comment">// Create an instance of A by injecting the current session</span>
@@ -872,17 +872,17 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
 </code></pre>
 <p>To generate the above code, Airframe is using <a href="http://docs.scala-lang.org/overviews/macros/overview.html">Scala Macros</a>. You can find the actual macro definitions in <a href="https://github.com/wvlet/airframe/blob/master/airframe-macros/shared/src/main/scala/wvlet/airframe/AirframeMacros.scala">AirframeMacros.scala</a></p>
 <p>When <code>bind[X]</code> is called, the active session must be found. So if you try to instantiate A without using <code>session.build[A]</code>, <code>MISSING_SESSION</code> runtime-error will be thrown:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> a1 = <span class="hljs-keyword">new</span> <span class="hljs-type">A</span> <span class="hljs-comment">// MISSING_SESSION error will be thrown at run-time</span>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> a1 = new A <span class="hljs-comment">// MISSING_SESSION error will be thrown at run-time</span>
 
-<span class="hljs-keyword">val</span> a2 = session.build[<span class="hljs-type">A</span>] <span class="hljs-comment">// This is OK</span>
+<span class="hljs-keyword">val</span> a2 = session.build[A] <span class="hljs-comment">// This is OK</span>
 </code></pre>
 <p>In the above code, <code>A</code> will be instantiated with DISupport trait, which has <code>session</code> definition. <code>bind[B]</code> inside trait <code>A</code> will be expanded liks this similarly:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">new</span> <span class="hljs-type">A</span> <span class="hljs-keyword">extends</span> <span class="hljs-type">DISupport</span> {
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">new</span> A <span class="hljs-keyword">extends</span> DISupport {
   <span class="hljs-comment">// (original code) val b = bind[B]</span>
-  <span class="hljs-keyword">val</span> b: <span class="hljs-type">B</span> = { ss: <span class="hljs-type">Session</span> =&gt;
-    <span class="hljs-keyword">val</span> ss = findSession(<span class="hljs-keyword">this</span>)
+  val b: B = { ss: <span class="hljs-function"><span class="hljs-params">Session</span> =&gt;</span>
+    val ss = findSession(<span class="hljs-keyword">this</span>)
     <span class="hljs-comment">// If the session already has an instance of B, return it. Otherwise, craete a new instance of B</span>
-    ss.getOrElse(<span class="hljs-type">Surface</span>.of[<span class="hljs-type">B</span>], (session:<span class="hljs-type">Session</span> =&gt; <span class="hljs-keyword">new</span> <span class="hljs-type">B</span> <span class="hljs-keyword">with</span> <span class="hljs-type">DISupport</span> { ... } ))
+    ss.getOrElse(Surface.of[B], (session:<span class="hljs-function"><span class="hljs-params">Session</span> =&gt;</span> <span class="hljs-keyword">new</span> B <span class="hljs-keyword">with</span> DISupport { ... } ))
   }
   <span class="hljs-comment">// Inject the current session to build B</span>
   .apply(session)
@@ -893,29 +893,29 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
 However, if you write similar code by yourself, you will end up doing almost the same thing with Session.</p>
 <p>For example, consider building <code>App</code> trait using a custom <code>B</code> instance:</p>
 <pre><code class="hljs css language-scala">{
-  <span class="hljs-keyword">val</span> myB = <span class="hljs-keyword">new</span> <span class="hljs-type">B</span> {}
-  <span class="hljs-keyword">val</span> myA = <span class="hljs-keyword">new</span> <span class="hljs-type">A</span>(b = myB) {}
-  <span class="hljs-keyword">new</span> <span class="hljs-type">App</span>(a = myA)
+  val myB = <span class="hljs-keyword">new</span> B {}
+  val myA = <span class="hljs-keyword">new</span> A(b = myB) {}
+  <span class="hljs-keyword">new</span> App(a = myA)
 }
 <span class="hljs-comment">// How can we find myA and myB after exiting the scope?</span>
 <span class="hljs-comment">// What if a and b hold resources (e.g., network connection, database connection, etc.), that need to be released later?</span>
 </code></pre>
 <p>To manage life cycle of A and B, you eventually needs to store the object references somewhere like this:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// Assume storing objects in a Map-backed session</span>
-<span class="hljs-keyword">val</span> session = <span class="hljs-type">Map</span>[<span class="hljs-type">Class</span>[_], <span class="hljs-type">AnyRef</span>]()
+val session = <span class="hljs-built_in">Map</span>[Class[_], AnyRef]()
 
-session += classOf[<span class="hljs-type">B</span>] -&gt; <span class="hljs-keyword">new</span> <span class="hljs-type">B</span> {}
-session += classOf[<span class="hljs-type">A</span>] -&gt; <span class="hljs-keyword">new</span> <span class="hljs-type">A</span>(b=session.get(classOf[<span class="hljs-type">B</span>])) {}
+session += classOf[B] -&gt; <span class="hljs-keyword">new</span> B {}
+session += classOf[A] -&gt; <span class="hljs-keyword">new</span> A(b=session.get(classOf[B])) {}
 
-<span class="hljs-keyword">val</span> app = <span class="hljs-keyword">new</span> <span class="hljs-type">App</span>(a = session.get(classOf[<span class="hljs-type">A</span>])) {}
-session += classOf[<span class="hljs-type">App</span>] -&gt; app
+val app = <span class="hljs-keyword">new</span> App(a = session.get(classOf[A])) {}
+session += classOf[App] -&gt; app
 
 <span class="hljs-comment">// At shutdown phase</span>
 session.objects.foreach { x=&gt;
-  x <span class="hljs-keyword">match</span> {
-    <span class="hljs-keyword">case</span> a:<span class="hljs-type">A</span> =&gt; <span class="hljs-comment">// release A</span>
-    <span class="hljs-keyword">case</span> b:<span class="hljs-type">B</span> =&gt; <span class="hljs-comment">// release B ...</span>
-    <span class="hljs-keyword">case</span> _ =&gt; ...
+  x match {
+    <span class="hljs-keyword">case</span> a:<span class="hljs-function"><span class="hljs-params">A</span> =&gt;</span> <span class="hljs-comment">// release A</span>
+    <span class="hljs-keyword">case</span> b:<span class="hljs-function"><span class="hljs-params">B</span> =&gt;</span> <span class="hljs-comment">// release B ...</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-function"><span class="hljs-params">_</span> =&gt;</span> ...
   }
 }
 
@@ -930,7 +930,7 @@ manually writing such object management functions will be cumbersome. Airframe h
 </ul>
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// case class X(a:A, b:B, ..)</span>
 
-<span class="hljs-keyword">val</span> surface = <span class="hljs-type">Surface</span>.of[<span class="hljs-type">X</span>]
+<span class="hljs-keyword">val</span> surface = Surface.of[X]
 <span class="hljs-comment">// build instances of a, b, ...</span>
 <span class="hljs-keyword">val</span> args = surface.params.map(p -&gt; session.getInstance(p.surface))
 surface.objectFactory.newInstance(p)
@@ -938,21 +938,21 @@ surface.objectFactory.newInstance(p)
 <ul>
 <li>If <code>X</code> is an abstract class or trait, <code>X</code> needs to be found in X because <code>X</code> cannot be instantiated automatically:</li>
 </ul>
-<pre><code class="hljs css language-scala">session.get(<span class="hljs-type">Surface</span>.of[<span class="hljs-type">X</span>])
+<pre><code class="hljs css language-scala"><span class="hljs-selector-tag">session</span><span class="hljs-selector-class">.get</span>(<span class="hljs-selector-tag">Surface</span><span class="hljs-selector-class">.of</span><span class="hljs-selector-attr">[X]</span>)
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="surface"></a><a href="#surface" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Surface</h3>
 <p>Airframe uses <code>Surface.of[X]</code> as identifiers of object types. <a href="https://github.com/wvlet/airframe/tree/master/surface">Surface</a> is an object type inspection library.</p>
 <p>Here are some examples of Surface:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.surface
+<pre><code class="hljs css language-scala">import wvlet.surface
 
-<span class="hljs-type">Surface</span>.of[<span class="hljs-type">A</span>] <span class="hljs-comment">// A</span>
-<span class="hljs-type">Surface</span>.of[<span class="hljs-type">Seq</span>[<span class="hljs-type">Int</span>]] <span class="hljs-comment">// Seq[Int]</span>
-<span class="hljs-type">Surface</span>.of[<span class="hljs-type">Seq</span>[_]] <span class="hljs-comment">// Seq[_]</span>
-<span class="hljs-comment">// Seq[Int] and Seq[_] are different types as Surface</span>
+Surface.of[A] // A
+Surface.of[Se<span class="hljs-string">q[Int]</span>] // Se<span class="hljs-string">q[Int]</span>
+Surface.of[Se<span class="hljs-string">q[_]</span>] // Se<span class="hljs-string">q[_]</span>
+// Se<span class="hljs-string">q[Int]</span> <span class="hljs-keyword">and</span> Se<span class="hljs-string">q[_]</span> are different types as Surface
 
-<span class="hljs-comment">// Type alias</span>
-<span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">MyInt</span> </span>= <span class="hljs-type">Int</span>
-<span class="hljs-type">Surface</span>.of[<span class="hljs-type">MyInt</span>] <span class="hljs-comment">// MyInt:=Int</span>
+// Type alias
+type MyInt = Int
+Surface.of[MyInt] // MyInt:=Int
 </code></pre>
 <p>Surface treats type aliases (e.g., MyInt) and Int as different types. This provides flexibilities in binding different objects to the same type. For example, you can define MyInt1, MyInt2, ... Google Guice doesn's support this kind of bindings to the same types.</p>
 <p>Scala is a JVM language, so at the byte-code level, all of generics type parameters will be removed because of type erasure.
@@ -968,10 +968,10 @@ information so that bindings using type names can be convenient for the users.</
 Surface uses Scala macros to embed compile-time type information into the runtime objects.</p>
 <h3><a class="anchor" aria-hidden="true" id="surface-parameters"></a><a href="#surface-parameters" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Surface Parameters</h3>
 <p>Surface also holds object parameters, so that we can find objects necessary for building <code>A</code>:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">A</span>(<span class="hljs-params">b:<span class="hljs-type">B</span>, c:<span class="hljs-type">C</span></span>)</span>
+<pre><code class="hljs css language-scala"><span class="hljs-function"><span class="hljs-keyword">case</span> class <span class="hljs-title">A</span>(<span class="hljs-params">b:B, c:C</span>)
 
 <span class="hljs-comment">// B and C will be necessary to build A</span>
-<span class="hljs-type">Surface</span>.of[<span class="hljs-type">A</span>] =&gt; <span class="hljs-type">Surface</span>(<span class="hljs-string">"A"</span>, params:<span class="hljs-type">Seq</span>(<span class="hljs-string">"b"</span> -&gt; <span class="hljs-type">Surface</span>.of[<span class="hljs-type">B</span>], <span class="hljs-string">"c"</span> -&gt; <span class="hljs-type">Surface</span>.of[<span class="hljs-type">C</span>]))
+Surface.of[A]</span> =&gt; Surface(<span class="hljs-string">"A"</span>, <span class="hljs-keyword">params</span>:Seq(<span class="hljs-string">"b"</span> -&gt; Surface.of[B], <span class="hljs-string">"c"</span> -&gt; Surface.of[C]))
 </code></pre>
 </span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/logos"><span class="arrow-prev">← </span><span>Logos</span></a><a class="docs-next button" href="/airframe/docs/airframe-rpc"><span>Airframe RPC</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#quick-start">Quick Start</a><ul class="toc-headings"><li><a href="#scalafmtconf">.scalafmt.conf</a></li><li><a href="#basic-usage">Basic Usage</a></li></ul></li><li><a href="#bind">Bind</a><ul class="toc-headings"><li><a href="#constructor-injection">Constructor Injection</a></li><li><a href="#in-trait-injection">In-Trait Injection</a></li><li><a href="#binding-types">Binding Types</a></li></ul></li><li><a href="#design">Design</a><ul class="toc-headings"><li><a href="#singleton-bindings">Singleton Bindings</a></li><li><a href="#design-is-immutable">Design is Immutable</a></li></ul></li><li><a href="#session">Session</a><ul class="toc-headings"><li><a href="#child-sessions">Child Sessions</a></li><li><a href="#finding-the-current-session">Finding The Current Session</a></li></ul></li><li><a href="#life-cycle">Life Cycle</a><ul class="toc-headings"><li><a href="#eager-initialization-of-singletons-for-production">Eager Initialization of Singletons for Production</a></li><li><a href="#suppress-life-cycle-logging">Suppress Life Cycle Logging</a></li><li><a href="#annotation-based-life-cycle-hooks">Annotation-based life cycle hooks</a></li></ul></li><li><a href="#designing-applications-with-airframe">Designing Applications with Airframe</a></li><li><a href="#advanced-binding-types">Advanced Binding Types</a><ul class="toc-headings"><li><a href="#generic-type-binding">Generic Type Binding</a></li><li><a href="#type-alias-binding">Type Alias Binding</a></li><li><a href="#multi-binding">Multi-Binding</a></li><li><a href="#tagged-type-binding">Tagged Type Binding</a></li></ul></li><li><a href="#known-issues">Known Issues</a><ul class="toc-headings"><li><a href="#running-designbuildx-inside-future-causes-classnotfoundexception-in-sbt-13x">Running <code>design.build[X]</code> inside Future causes ClassNotFoundException in sbt 1.3.x</a></li></ul></li><li><a href="#debugging-di">Debugging DI</a><ul class="toc-headings"><li><a href="#tracing-di-with-google-chrome-browser">Tracing DI with Google Chrome Browser</a></li></ul></li><li><a href="#use-cases">Use Cases</a><ul class="toc-headings"><li><a href="#configuring-applications">Configuring Applications</a></li><li><a href="#managing-resources">Managing Resources</a></li><li><a href="#factory-binding">Factory Binding</a></li><li><a href="#service-mix-in">Service Mix-In</a></li><li><a href="#override-bindings">Override Bindings</a></li></ul></li><li><a href="#airframe-internals">Airframe Internals</a><ul class="toc-headings"><li><a href="#session-1">Session</a></li><li><a href="#example">Example</a></li><li><a href="#injecting-session">Injecting Session</a></li><li><a href="#comparison-with-a-naive-approach">Comparison with a naive approach</a></li><li><a href="#instantiation-methods">Instantiation Methods</a></li><li><a href="#surface">Surface</a></li><li><a href="#surface-parameters">Surface Parameters</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2020 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
                 </script><script>window.twttr=(function(d,s, id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return t;js=d.createElement(s);js.id=id;js.src='https://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js, fjs);t._e = [];t.ready = function(f) {t._e.push(f);};return t;}(document, 'script', 'twitter-wjs'));</script><script>

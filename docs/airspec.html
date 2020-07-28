@@ -103,12 +103,12 @@ For providing better testing experience, we are planning to add more features (e
 <p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airspec_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airspec_2.12/badge.svg" alt="Maven Central"></a></p>
 <p><strong>build.sbt</strong></p>
 <pre><code class="hljs css language-scala">libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airspec"</span> % <span class="hljs-string">"(version)"</span> % <span class="hljs-string">"test"</span>
-testFrameworks += <span class="hljs-keyword">new</span> <span class="hljs-type">TestFramework</span>(<span class="hljs-string">"wvlet.airspec.Framework"</span>)
+testFrameworks += new TestFramework(<span class="hljs-string">"wvlet.airspec.Framework"</span>)
 </code></pre>
 <p>If you have multiple sub projects, add the above <code>testFramework</code> setting to each sub project.</p>
 <p>For Scala.js, use <code>%%%</code>:</p>
 <pre><code class="hljs css language-scala">libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airspec"</span> % <span class="hljs-string">"(version)"</span> % <span class="hljs-string">"test"</span>
-testFrameworks += <span class="hljs-keyword">new</span> <span class="hljs-type">TestFramework</span>(<span class="hljs-string">"wvlet.airspec.Framework"</span>)
+testFrameworks += new TestFramework(<span class="hljs-string">"wvlet.airspec.Framework"</span>)
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="writing-unit-tests"></a><a href="#writing-unit-tests" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Writing Unit Tests</h2>
 <p>In AirSpec test cases are defined as functions in a class (or an object) extending <code>AirSpec</code>.
@@ -117,14 +117,14 @@ All <strong>public methods</strong> in the class will be executed as test cases:
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyTest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
   <span class="hljs-comment">// Basic assertion</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">emptySeqSizeShouldBe0</span></span>: <span class="hljs-type">Unit</span> = {
-    assert(<span class="hljs-type">Seq</span>.empty.size == <span class="hljs-number">0</span>)
+  def emptySeqSizeShouldBe0: Unit = {
+    <span class="hljs-keyword">assert</span>(Seq.empty.size == <span class="hljs-number">0</span>)
   }
 
   <span class="hljs-comment">// Catch an exception</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">emptySeqHeadShouldFail</span></span>: <span class="hljs-type">Unit</span> = {
-    intercept[<span class="hljs-type">NoSuchElementException</span>] {
-      <span class="hljs-type">Seq</span>.empty.head
+  def emptySeqHeadShouldFail: Unit = {
+    intercept[NoSuchElementException] {
+      Seq.empty.head
     }
   }
 }
@@ -135,12 +135,12 @@ All <strong>public methods</strong> in the class will be executed as test cases:
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyTest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
   test(<span class="hljs-string">"empty Seq size should be 0"</span>) {
-    assert(<span class="hljs-type">Seq</span>.empty.size == <span class="hljs-number">0</span>)
+    <span class="hljs-keyword">assert</span>(Seq.empty.size == <span class="hljs-number">0</span>)
   }
 
   test(<span class="hljs-string">"Seq.empty.head should fail"</span>) {
-    intercept[<span class="hljs-type">NoSuchElementException</span>] {
-      <span class="hljs-type">Seq</span>.empty.head
+    intercept[NoSuchElementException] {
+      Seq.empty.head
     }
   }
 }
@@ -154,34 +154,34 @@ All <strong>public methods</strong> in the class will be executed as test cases:
   <span class="hljs-comment">// This is necessary to find test methods in Scala.js</span>
   scalaJsSupport
 
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">myTest</span></span>: <span class="hljs-type">Unit</span> = assert(<span class="hljs-number">1</span> == <span class="hljs-number">1</span>)
+  def myTest: Unit = <span class="hljs-keyword">assert</span>(<span class="hljs-number">1</span> == <span class="hljs-number">1</span>)
 }
 </code></pre>
 <p>This is because Scala.js has no runtime reflection to find methods in AirSpec classes, so we need to provide method data by calling <code>scalaJsSupport</code>.
 Internally this will generate <code>MethodSurface</code>s (airframe-surface), so that AirSpec can find test methods at runtime. Calling <code>scalaJsSupport</code> has no effect in Scala JVM platform, so you can use the same test spec both for Scala and Scala.js.</p>
 <h2><a class="anchor" aria-hidden="true" id="writing-specs-in-natural-languages"></a><a href="#writing-specs-in-natural-languages" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Writing Specs In Natural Languages</h2>
 <p>If you prefer natural language descriptions for your test cases, use symbols (back-quoted strings) for function names:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airspec._
+<pre><code class="hljs css language-scala">import wvlet.airspec._
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SeqSpec</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
-  <span class="hljs-function"><span class="hljs-keyword">def</span> `<span class="hljs-title">the</span> <span class="hljs-title">size</span> <span class="hljs-title">of</span> <span class="hljs-title">empty</span> <span class="hljs-title">Seq</span> <span class="hljs-title">should</span> <span class="hljs-title">be</span> 0`</span>: <span class="hljs-type">Unit</span> = {
-    assert(<span class="hljs-type">Seq</span>.empty.size == <span class="hljs-number">0</span>)
+  def `the size of <span class="hljs-keyword">empty</span> Seq should be <span class="hljs-number">0</span>`: Unit = {
+    assert(Seq.<span class="hljs-keyword">empty</span>.size == <span class="hljs-number">0</span>)
   }
 
   <span class="hljs-comment">// Catch an exception</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> `<span class="hljs-title">throw</span> <span class="hljs-title">NoSuchElementException</span> <span class="hljs-title">when</span> <span class="hljs-title">taking</span> <span class="hljs-title">the</span> <span class="hljs-title">head</span> <span class="hljs-title">of</span> <span class="hljs-title">an</span> <span class="hljs-title">empty</span> <span class="hljs-title">Set</span>`</span>: <span class="hljs-type">Unit</span> = {
-    intercept[<span class="hljs-type">NoSuchElementException</span>] {
-      <span class="hljs-type">Seq</span>.empty.head
+  def `<span class="hljs-keyword">throw</span> NoSuchElementException when taking the head of an <span class="hljs-keyword">empty</span> Set`: Unit = {
+    intercept[NoSuchElementException] {
+      Seq.<span class="hljs-keyword">empty</span>.head
     }
   }
 }
 </code></pre>
 <p>It is also possible to use symbols for test class names:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airspec._
+<pre><code class="hljs css language-scala">import wvlet.airspec._
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> `<span class="hljs-title">Test</span> <span class="hljs-title">properties</span> <span class="hljs-title">of</span> <span class="hljs-title">Seq</span>[<span class="hljs-type">X</span>]` <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
-  <span class="hljs-function"><span class="hljs-keyword">def</span> `<span class="hljs-title">the</span> <span class="hljs-title">size</span> <span class="hljs-title">of</span> <span class="hljs-title">empty</span> <span class="hljs-title">Seq</span> <span class="hljs-title">should</span> <span class="hljs-title">be</span> 0`</span>: <span class="hljs-type">Unit</span> = {
-    assert(<span class="hljs-type">Seq</span>.empty.size == <span class="hljs-number">0</span>)
+<span class="hljs-class"><span class="hljs-keyword">class</span> `<span class="hljs-title">Test</span> <span class="hljs-title">properties</span> <span class="hljs-title">of</span> <span class="hljs-title">Seq</span>[<span class="hljs-title">X</span>]` <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
+  def `the size of <span class="hljs-keyword">empty</span> Seq should be <span class="hljs-number">0</span>`: Unit = {
+    assert(Seq.<span class="hljs-keyword">empty</span>.size == <span class="hljs-number">0</span>)
   }
 }
 </code></pre>
@@ -213,38 +213,38 @@ Internally this will generate <code>MethodSurface</code>s (airframe-surface), so
 <p>Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.</p>
 <h3><a class="anchor" aria-hidden="true" id="examples"></a><a href="#examples" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Examples</h3>
 <p>Here are examples of using <code>shouldBe</code> matchers:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airspec._
+<pre><code class="hljs css language-scala">import wvlet.airspec.<span class="hljs-number">_</span>
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyTest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">test</span></span>: <span class="hljs-type">Unit</span> = {
-    <span class="hljs-comment">// checking the value equality with shouldBe, shouldNotBe:</span>
+class MyTest extends AirSpec {
+  def test: Unit = {
+    <span class="hljs-regexp">//</span> checking the value equality with shouldBe, shouldNotBe:
     <span class="hljs-number">1</span> shouldBe <span class="hljs-number">1</span>
     <span class="hljs-number">1</span> shouldNotBe <span class="hljs-number">2</span>
-    <span class="hljs-type">List</span>().isEmpty shouldBe <span class="hljs-literal">true</span>
+    List().isEmpty shouldBe true
 
-    <span class="hljs-comment">// For optional values, shouldBe defined (or empty) can be used:</span>
-    <span class="hljs-type">Option</span>(<span class="hljs-string">"hello"</span>) shouldBe defined
-    <span class="hljs-type">Option</span>(<span class="hljs-literal">null</span>) shouldBe empty
-    <span class="hljs-type">None</span> shouldNotBe defined
+    // For optional <span class="hljs-keyword">values</span>, shouldBe <span class="hljs-keyword">defined</span> (<span class="hljs-keyword">or</span> empty) can be used:
+    Option(<span class="hljs-string">"hello"</span>) shouldBe <span class="hljs-keyword">defined</span>
+    Option(null) shouldBe empty
+    None shouldNotBe <span class="hljs-keyword">defined</span>
 
-    <span class="hljs-comment">// null check</span>
-    <span class="hljs-keyword">val</span> s:<span class="hljs-type">String</span> = <span class="hljs-literal">null</span>
-    s shouldBe <span class="hljs-literal">null</span>
-    <span class="hljs-string">"s"</span> shouldNotBe <span class="hljs-literal">null</span>
+    // null check
+    val <span class="hljs-keyword">s</span>:String = null
+    <span class="hljs-keyword">s</span> shouldBe null
+    <span class="hljs-string">"s"</span> shouldNotBe null
 
-    <span class="hljs-comment">// For Arrays, shouldBe checks the equality with deep equals</span>
-    <span class="hljs-type">Array</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>) shouldBe <span class="hljs-type">Array</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)
+    // For Arrays, shouldBe checks the equality with deep equals
+    Array(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>) shouldBe Array(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)
 
-    <span class="hljs-comment">// Collection checker</span>
-    <span class="hljs-type">Seq</span>(<span class="hljs-number">1</span>) shouldBe defined
-    <span class="hljs-type">Seq</span>(<span class="hljs-number">1</span>) shouldNotBe empty
-    <span class="hljs-type">Seq</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>) shouldBe <span class="hljs-type">Seq</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)
-    (<span class="hljs-number">1</span>, 'a') shouldBe (<span class="hljs-number">1</span>, 'a')
+    // Collection checker
+    Se<span class="hljs-string">q(1)</span> shouldBe <span class="hljs-keyword">defined</span>
+    Se<span class="hljs-string">q(1)</span> shouldNotBe empty
+    Se<span class="hljs-string">q(1, 2)</span> shouldBe Se<span class="hljs-string">q(1, 2)</span>
+    (<span class="hljs-number">1</span>, <span class="hljs-string">'a'</span>) shouldBe (<span class="hljs-number">1</span>, <span class="hljs-string">'a'</span>)
 
-    <span class="hljs-comment">// Object equality checker</span>
-    <span class="hljs-keyword">val</span> a = <span class="hljs-type">List</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)
-    <span class="hljs-keyword">val</span> a1 = a
-    <span class="hljs-keyword">val</span> b = <span class="hljs-type">List</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)
+    // Object equality checker
+    val a = List(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)
+    val a1 = a
+    val b = List(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)
     a shouldBe a1
     a shouldBeTheSameInstanceAs a1
     a shouldBe b
@@ -256,13 +256,13 @@ Internally this will generate <code>MethodSurface</code>s (airframe-surface), so
 <p>AirSpec supports pattern matching for running only specific tests:</p>
 <pre><code class="hljs css language-scala">$ sbt
 
-&gt; test                                   # <span class="hljs-type">Run</span> all tests
-&gt; testOnly -- (pattern)                  # <span class="hljs-type">Run</span> all test matching the pattern (<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">name</span> <span class="hljs-title">or</span> <span class="hljs-title">test</span> <span class="hljs-title">name</span>)</span>
-&gt; testOnly -- (<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">pattern</span>)<span class="hljs-title">*</span>(<span class="hljs-params">pattern</span>)  <span class="hljs-title">#</span> <span class="hljs-title">Search</span> <span class="hljs-title">both</span> <span class="hljs-title">class</span> <span class="hljs-title">and</span> <span class="hljs-title">test</span> <span class="hljs-title">names</span></span>
+&gt; test                                   <span class="hljs-comment"># Run all tests</span>
+&gt; testOnly -- (pattern)                  <span class="hljs-comment"># Run all test matching the pattern (class name or test name)</span>
+&gt; testOnly -- (<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">pattern</span>)*(<span class="hljs-title">pattern</span>)  <span class="hljs-comment"># Search both class and test names</span></span>
 
-# sbt<span class="hljs-symbol">'s</span> <span class="hljs-keyword">default</span> test functionalities:
-&gt; testQuick                              # <span class="hljs-type">Run</span> only previously failed test specs
-&gt; testOnly (<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">name</span>)                  <span class="hljs-title">#</span> <span class="hljs-title">Run</span> <span class="hljs-title">tests</span> <span class="hljs-title">only</span> <span class="hljs-title">in</span> <span class="hljs-title">specific</span> <span class="hljs-title">classes</span> <span class="hljs-title">matching</span> <span class="hljs-title">a</span> <span class="hljs-title">pattern</span> (<span class="hljs-params">wildcard is supported</span>)</span>
+<span class="hljs-comment"># sbt's default test functionalities:</span>
+&gt; testQuick                              <span class="hljs-comment"># Run only previously failed test specs</span>
+&gt; testOnly (<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">name</span>)                  <span class="hljs-comment"># Run tests only in specific classes matching a pattern (wildcard is supported)</span></span>
 </code></pre>
 <p><code>pattern</code> is used for partial matching with test names. It also supports wildcard (<code>*</code>) and regular expressions (experimental).
 Basically AirSpec will find matches from the list of all <code>(test class full name):(test function name)</code> strings.
@@ -271,18 +271,18 @@ Cases of test names will be ignored in the search.</p>
 <h3><a class="anchor" aria-hidden="true" id="disable-parallel-test-execution"></a><a href="#disable-parallel-test-execution" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Disable Parallel Test Execution</h3>
 <p>sbt 1.x or higher runs tests in parallel. This is fast, but it messes up console log messages.
 If you prefer sequential test execution, set <code>parallelExecution in Test</code> to false:</p>
-<pre><code class="hljs css language-scala">parallelExecution in <span class="hljs-type">Test</span> := <span class="hljs-literal">false</span>
+<pre><code class="hljs css language-scala">parallelExecution in Test := <span class="hljs-literal">false</span>
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="logging-your-tests"></a><a href="#logging-your-tests" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Logging Your Tests</h2>
 <p>To debug your tests, showing console logs with <code>info</code>, <code>debug</code>, <code>trace</code>, <code>warn</code>, <code>error</code> functions will be useful. AirSpec is integrated with <a href="https://wvlet.org/airframe/docs/airframe-log.html">airframe-log</a> to support handly logging messages with these functions.</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airspec._
 
-<span class="hljs-keyword">package</span> org.mydomain.myapp
+package org.mydomain.myapp
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyTest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
-  info(<span class="hljs-string">s"info log"</span>)
-  debug(<span class="hljs-string">s"debug log"</span>) <span class="hljs-comment">// Will not be shown by default</span>
-  trace(<span class="hljs-string">s"trace log"</span>) <span class="hljs-comment">// To show this level of log, trace log level must be set</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyTest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> {</span>
+  info(s<span class="hljs-string">"info log"</span>)
+  debug(s<span class="hljs-string">"debug log"</span>) <span class="hljs-regexp">//</span> Will <span class="hljs-keyword">not</span> be shown <span class="hljs-keyword">by</span> <span class="hljs-keyword">default</span>
+  trace(s<span class="hljs-string">"trace log"</span>) <span class="hljs-regexp">//</span> To show <span class="hljs-keyword">this</span> level <span class="hljs-keyword">of</span> log, trace log level must be set
 }
 </code></pre>
 <p>Similarly, if you include <code>wvlet.log.LogSupport</code> to your application classes, you can add log messages to these classes.</p>
@@ -342,48 +342,48 @@ override <code>protected def design:Design</code> or <code>protected def localDe
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airspec._
 <span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServiceConfig</span>(<span class="hljs-params">port:<span class="hljs-type">Int</span></span>)</span>
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Service</span>(<span class="hljs-params">val config:<span class="hljs-type">ServiceConfig</span></span>)</span>
+case <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServiceConfig</span></span>(port:<span class="hljs-built_in">Int</span>)
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Service</span></span>(<span class="hljs-keyword">val</span> config:ServiceConfig)
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServiceSpec</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
-  <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">design</span></span>: <span class="hljs-type">Design</span> = {
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServiceSpec</span> <span class="hljs-title">extends</span> <span class="hljs-title">AirSpec</span> </span>{
+  <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> def design: Design = {
     newDesign
-      .bind[<span class="hljs-type">ServiceConfig</span>].toInstance(<span class="hljs-type">ServiceConfig</span>(port=<span class="hljs-number">8080</span>))
-      .bind[<span class="hljs-type">Service</span>].toSingleton
-      .onStart{x =&gt; info(<span class="hljs-string">s"Starting a server at <span class="hljs-subst">${x.config.port}</span>"</span>)}
-      .onShutdown{x =&gt; info(<span class="hljs-string">s"Stopping the server at <span class="hljs-subst">${x.config.port}</span>"</span>)}
+      .bind[ServiceConfig].toInstance(ServiceConfig(port=<span class="hljs-number">8080</span>))
+      .bind[Service].toSingleton
+      .onStart{x =&gt; info(s<span class="hljs-string">"Starting a server at <span class="hljs-subst">${x.config.port}</span>"</span>)}
+      .onShutdown{x =&gt; info(s<span class="hljs-string">"Stopping the server at <span class="hljs-subst">${x.config.port}</span>"</span>)}
   }
 
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">test1</span></span>(service:<span class="hljs-type">Service</span>): <span class="hljs-type">Unit</span> = {
-     info(<span class="hljs-string">s"server id: <span class="hljs-subst">${service.hashCode}</span>"</span>)
+  def test1(service:Service): <span class="hljs-built_in">Unit</span> = {
+     info(s<span class="hljs-string">"server id: <span class="hljs-subst">${service.hashCode}</span>"</span>)
   }
 
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">test2</span></span>(service:<span class="hljs-type">Service</span>): <span class="hljs-type">Unit</span> = {
-     info(<span class="hljs-string">s"server id: <span class="hljs-subst">${service.hashCode}</span>"</span>)
+  def test2(service:Service): <span class="hljs-built_in">Unit</span> = {
+     info(s<span class="hljs-string">"server id: <span class="hljs-subst">${service.hashCode}</span>"</span>)
   }
 }
 </code></pre>
 <p>This test shares the same Service instance between two test methods <code>test1</code> and <code>test2</code>, and properly start and closes the service before and after running tests.</p>
-<pre><code class="hljs css language-scala">&gt; testOnly -- <span class="hljs-type">ServiceSpec</span>
-<span class="hljs-number">2019</span><span class="hljs-number">-08</span><span class="hljs-number">-09</span> <span class="hljs-number">17</span>:<span class="hljs-number">24</span>:<span class="hljs-number">37.184</span><span class="hljs-number">-0700</span>  info [<span class="hljs-type">ServiceSpec</span>] <span class="hljs-type">Starting</span> a server at <span class="hljs-number">8080</span>  - (<span class="hljs-type">ServiceSpec</span>.scala:<span class="hljs-number">33</span>)
-<span class="hljs-number">2019</span><span class="hljs-number">-08</span><span class="hljs-number">-09</span> <span class="hljs-number">17</span>:<span class="hljs-number">24</span>:<span class="hljs-number">37.188</span><span class="hljs-number">-0700</span>  info [<span class="hljs-type">ServiceSpec</span>] test1: server id: <span class="hljs-number">588474577</span>  - (<span class="hljs-type">ServiceSpec</span>.scala:<span class="hljs-number">42</span>)
-<span class="hljs-number">2019</span><span class="hljs-number">-08</span><span class="hljs-number">-09</span> <span class="hljs-number">17</span>:<span class="hljs-number">24</span>:<span class="hljs-number">37.193</span><span class="hljs-number">-0700</span>  info [<span class="hljs-type">ServiceSpec</span>] test2: server id: <span class="hljs-number">588474577</span>  - (<span class="hljs-type">ServiceSpec</span>.scala:<span class="hljs-number">46</span>)
-<span class="hljs-number">2019</span><span class="hljs-number">-08</span><span class="hljs-number">-09</span> <span class="hljs-number">17</span>:<span class="hljs-number">24</span>:<span class="hljs-number">37.194</span><span class="hljs-number">-0700</span>  info [<span class="hljs-type">ServiceSpec</span>] <span class="hljs-type">Stopping</span> the server at <span class="hljs-number">8080</span>  - (<span class="hljs-type">ServiceSpec</span>.scala:<span class="hljs-number">34</span>)
-[info] <span class="hljs-type">ServiceSpec</span>:
-[info]  - test1 <span class="hljs-number">13.94</span>ms
-[info]  - test2 <span class="hljs-number">403.41</span>us
-[info] <span class="hljs-type">Passed</span>: <span class="hljs-type">Total</span> <span class="hljs-number">2</span>, <span class="hljs-type">Failed</span> <span class="hljs-number">0</span>, <span class="hljs-type">Errors</span> <span class="hljs-number">0</span>, <span class="hljs-type">Passed</span> <span class="hljs-number">2</span>
+<pre><code class="hljs css language-scala"><span class="hljs-string">&gt;</span> <span class="hljs-string">testOnly</span> <span class="hljs-string">--</span> <span class="hljs-string">ServiceSpec</span>
+<span class="hljs-number">2019</span><span class="hljs-number">-08</span><span class="hljs-number">-09</span> <span class="hljs-number">17</span><span class="hljs-string">:24:37.184-0700</span>  <span class="hljs-string">info</span> <span class="hljs-string">[ServiceSpec]</span> <span class="hljs-string">Starting</span> <span class="hljs-string">a</span> <span class="hljs-string">server</span> <span class="hljs-string">at</span> <span class="hljs-number">8080</span>  <span class="hljs-bullet">-</span> <span class="hljs-string">(ServiceSpec.scala:33)</span>
+<span class="hljs-number">2019</span><span class="hljs-number">-08</span><span class="hljs-number">-09</span> <span class="hljs-number">17</span><span class="hljs-string">:24:37.188-0700</span>  <span class="hljs-string">info</span> <span class="hljs-string">[ServiceSpec]</span> <span class="hljs-attr">test1: server id:</span> <span class="hljs-number">588474577</span>  <span class="hljs-bullet">-</span> <span class="hljs-string">(ServiceSpec.scala:42)</span>
+<span class="hljs-number">2019</span><span class="hljs-number">-08</span><span class="hljs-number">-09</span> <span class="hljs-number">17</span><span class="hljs-string">:24:37.193-0700</span>  <span class="hljs-string">info</span> <span class="hljs-string">[ServiceSpec]</span> <span class="hljs-attr">test2: server id:</span> <span class="hljs-number">588474577</span>  <span class="hljs-bullet">-</span> <span class="hljs-string">(ServiceSpec.scala:46)</span>
+<span class="hljs-number">2019</span><span class="hljs-number">-08</span><span class="hljs-number">-09</span> <span class="hljs-number">17</span><span class="hljs-string">:24:37.194-0700</span>  <span class="hljs-string">info</span> <span class="hljs-string">[ServiceSpec]</span> <span class="hljs-string">Stopping</span> <span class="hljs-string">the</span> <span class="hljs-string">server</span> <span class="hljs-string">at</span> <span class="hljs-number">8080</span>  <span class="hljs-bullet">-</span> <span class="hljs-string">(ServiceSpec.scala:34)</span>
+<span class="hljs-string">[info]</span> <span class="hljs-attr">ServiceSpec:</span>
+<span class="hljs-string">[info]</span>  <span class="hljs-bullet">-</span> <span class="hljs-string">test1</span> <span class="hljs-number">13.</span><span class="hljs-string">94ms</span>
+<span class="hljs-string">[info]</span>  <span class="hljs-bullet">-</span> <span class="hljs-string">test2</span> <span class="hljs-number">403.</span><span class="hljs-string">41us</span>
+<span class="hljs-string">[info]</span> <span class="hljs-attr">Passed:</span> <span class="hljs-string">Total</span> <span class="hljs-number">2</span><span class="hljs-string">,</span> <span class="hljs-string">Failed</span> <span class="hljs-number">0</span><span class="hljs-string">,</span> <span class="hljs-string">Errors</span> <span class="hljs-number">0</span><span class="hljs-string">,</span> <span class="hljs-string">Passed</span> <span class="hljs-number">2</span>
 </code></pre>
 <p>It is also possible to reuse the same injected instance by nesting <code>test</code> methods:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServiceSpec</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
-  <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">design</span></span>: <span class="hljs-type">Design</span> = ...
-  test(<span class="hljs-string">"server test"</span>) { service:<span class="hljs-type">Service</span> =&gt;
+  override protected def design: Design = ...
+  test(<span class="hljs-string">"server test"</span>) { <span class="hljs-attr">service</span>:<span class="hljs-function"><span class="hljs-params">Service</span> =&gt;</span>
     test(<span class="hljs-string">"test 1"</span>) {
-      info(<span class="hljs-string">s"server id: <span class="hljs-subst">${service.hashCode}</span>"</span>)
+      info(s<span class="hljs-string">"server id: ${service.hashCode}"</span>)
     }
 
     test(<span class="hljs-string">"test 2"</span>) {
-     info(<span class="hljs-string">s"server id: <span class="hljs-subst">${service.hashCode}</span>"</span>)
+     info(s<span class="hljs-string">"server id: ${service.hashCode}"</span>)
     }
   }
 }
@@ -396,20 +396,20 @@ override <code>protected def design:Design</code> or <code>protected def localDe
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">OverrideTest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
 
-  <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">design</span></span>: <span class="hljs-type">Design</span> = {
+  override protected def design: Design = {
     newDesign
-      .bind[<span class="hljs-type">String</span>].toInstance(<span class="hljs-string">"hello"</span>)
+      .bind[<span class="hljs-built_in">String</span>].toInstance(<span class="hljs-string">"hello"</span>)
   }
 
   <span class="hljs-comment">// Pass Session to override the design</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> `<span class="hljs-title">before</span> <span class="hljs-title">overriding</span> <span class="hljs-title">the</span> <span class="hljs-title">design</span>`</span>(s:<span class="hljs-type">String</span>): <span class="hljs-type">Unit</span> = {
+  def <span class="hljs-string">`before overriding the design`</span>(s:<span class="hljs-built_in">String</span>): Unit = {
     s shouldBe <span class="hljs-string">"hello"</span>
 
     <span class="hljs-comment">// Override a design</span>
-    <span class="hljs-keyword">val</span> childDesign = newDesign
-      .bind[<span class="hljs-type">String</span>].toInstance(<span class="hljs-string">"hello child"</span>)
+    val childDesign = newDesign
+      .bind[<span class="hljs-built_in">String</span>].toInstance(<span class="hljs-string">"hello child"</span>)
 
-    test(<span class="hljs-string">"override the design"</span>, design = childDesign) { cs: <span class="hljs-type">String</span> =&gt;
+    test(<span class="hljs-string">"override the design"</span>, design = childDesign) { <span class="hljs-attr">cs</span>: <span class="hljs-function"><span class="hljs-params">String</span> =&gt;</span>
       cs shouldBe <span class="hljs-string">"hello child"</span>
     }
   }
@@ -420,33 +420,33 @@ override <code>protected def design:Design</code> or <code>protected def localDe
 If you need to switch some implementations or configurations for your tests, override your design as shown below:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">AppModule</span> </span>{
+object AppModule {
   <span class="hljs-comment">// Define your application design</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">serviceDesign</span></span>: <span class="hljs-type">Design</span> = {
+  def serviceDesign: Design = {
     newDesign
-        .bind[<span class="hljs-type">Service</span>].to[<span class="hljs-type">ServiceImpl</span>]
-        .bind[<span class="hljs-type">ServiceConfig</span>].toInstance(<span class="hljs-keyword">new</span> <span class="hljs-type">ServiceConfig</span>(...))
+        .bind[Service].to[ServiceImpl]
+        .bind[ServiceConfig].toInstance(<span class="hljs-keyword">new</span> ServiceConfig(...))
   }
 
   <span class="hljs-comment">// Define designs of other compoments as you need</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">componentDesign</span></span>: <span class="hljs-type">Design</span> = ...
+  def componentDesign: Design = ...
 }
 
 <span class="hljs-comment">// Design for testing</span>
-<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">AppTestModule</span> </span>{
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">serviceDesignForTests</span></span>: <span class="hljs-type">Design</span> = {
-    <span class="hljs-type">AppModule</span>.serviceDesign  <span class="hljs-comment">// Reuse your application design for tests</span>
-     .bind[<span class="hljs-type">ServiceConfig</span>].toInstnce(<span class="hljs-keyword">new</span> <span class="hljs-type">ServiceConfig</span>(...)) <span class="hljs-comment">// Override the config for tests</span>
+object AppTestModule {
+  def serviceDesignForTests: Design = {
+    AppModule.serviceDesign  <span class="hljs-comment">// Reuse your application design for tests</span>
+     .bind[ServiceConfig].toInstnce(<span class="hljs-keyword">new</span> ServiceConfig(...)) <span class="hljs-comment">// Override the config for tests</span>
   }
 }
 
 <span class="hljs-keyword">import</span> wvlet.airspec._
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AppTest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
   <span class="hljs-comment">// Use the testing design</span>
-  <span class="hljs-keyword">protected</span> <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">design</span> </span>= <span class="hljs-type">AppTestModule</span>.serviceDesignForTests
+  <span class="hljs-keyword">protected</span> override def design = AppTestModule.serviceDesignForTests
 
   <span class="hljs-comment">// Inject a Service object initialized with a test configuration</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> `<span class="hljs-title">start</span> <span class="hljs-title">up</span> <span class="hljs-title">test</span>`</span>(service:<span class="hljs-type">Service</span>): <span class="hljs-type">Unit</span> = {
+  def `start up test`(service:Service): Unit = {
      <span class="hljs-comment">// test your service here</span>
   }
 }
@@ -458,24 +458,24 @@ This is generally a good practice to minimize the scope of tests only for specif
 AirSpec. Then call AirSpecContext.run(AirSpec instance), which can be injected to test method arguments:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airspec._
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MySpec</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MySpec</span> <span class="hljs-title">extends</span> <span class="hljs-title">AirSpec</span> </span>{
   <span class="hljs-comment">// A template for reusable test cases</span>
-  <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Fixture</span>[<span class="hljs-type">A</span>](<span class="hljs-params">data: <span class="hljs-type">Seq</span>[<span class="hljs-type">A</span>]</span>) <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
-    <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">beforeAll</span></span>: <span class="hljs-type">Unit</span> = {
-      info(<span class="hljs-string">s"Run tests for <span class="hljs-subst">${data}</span>"</span>)
+  <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Fixture</span>[<span class="hljs-title">A</span>]</span>(<span class="hljs-keyword">data</span>: Seq[A]) extends AirSpec {
+    <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> def beforeAll: <span class="hljs-built_in">Unit</span> = {
+      info(s<span class="hljs-string">"Run tests for <span class="hljs-subst">${data}</span>"</span>)
     }
-    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">emptyTest</span></span>: <span class="hljs-type">Unit</span> = {
-      data shouldNotBe empty
+    def emptyTest: <span class="hljs-built_in">Unit</span> = {
+      <span class="hljs-keyword">data</span> shouldNotBe empty
     }
-    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">sizeTest</span></span>: <span class="hljs-type">Unit</span> = {
-      data.length shouldBe data.size
+    def sizeTest: <span class="hljs-built_in">Unit</span> = {
+      <span class="hljs-keyword">data</span>.length shouldBe <span class="hljs-keyword">data</span>.size
     }
   }
 
   <span class="hljs-comment">// Inject AirSpecContext using DI</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">test</span></span>(context: <span class="hljs-type">AirSpecContext</span>): <span class="hljs-type">Unit</span> = {
-    context.run(<span class="hljs-keyword">new</span> <span class="hljs-type">Fixture</span>(<span class="hljs-type">Seq</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)))
-    context.run(<span class="hljs-keyword">new</span> <span class="hljs-type">Fixture</span>(<span class="hljs-type">Seq</span>(<span class="hljs-string">"A"</span>, <span class="hljs-string">"B"</span>, <span class="hljs-string">"C"</span>)))
+  def test(context: AirSpecContext): <span class="hljs-built_in">Unit</span> = {
+    context.run(new Fixture(Seq(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)))
+    context.run(new Fixture(Seq(<span class="hljs-string">"A"</span>, <span class="hljs-string">"B"</span>, <span class="hljs-string">"C"</span>)))
   }
 }
 </code></pre>
@@ -489,21 +489,21 @@ Add <code>wvlet.airspec.spi.PropertyCheck</code> trait to your spec, and use <co
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// Use %%% for Scala.js</span>
 libraryDependencies += <span class="hljs-string">"org.scalacheck"</span> %% <span class="hljs-string">"scalacheck"</span> % <span class="hljs-string">"1.14.1"</span> % <span class="hljs-string">"test"</span>
 </code></pre>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airspec._
+<pre><code class="hljs css language-scala">import wvlet.airspec._
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PropertyBasedTest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> <span class="hljs-keyword">with</span> <span class="hljs-title">PropertyCheck</span> </span>{
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">testAllInt</span></span>: <span class="hljs-type">Unit</span> = {
-    forAll{ i:<span class="hljs-type">Int</span> =&gt; i.isValidInt shouldBe <span class="hljs-literal">true</span> }
+class PropertyBasedTest extends AirSpec <span class="hljs-keyword">with</span> PropertyCheck {
+  <span class="hljs-keyword">def</span> testAllInt: Unit = {
+    <span class="hljs-keyword">forAll</span>{ i:<span class="hljs-built_in">Int</span> =&gt; i.isValidInt shouldBe <span class="hljs-literal">true</span> }
   }
 
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">testCommutativity</span></span>: <span class="hljs-type">Unit</span> = {
-    forAll{ (x:<span class="hljs-type">Int</span>, y:<span class="hljs-type">Int</span>) =&gt; x+y == y+x }
+  <span class="hljs-keyword">def</span> testCommutativity: Unit = {
+    <span class="hljs-keyword">forAll</span>{ (x:<span class="hljs-built_in">Int</span>, y:<span class="hljs-built_in">Int</span>) =&gt; x+y == y+x }
   }
 
-  <span class="hljs-comment">// Using custom genrators of ScalaCheck</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">useGenerator</span></span>: <span class="hljs-type">Unit</span> = {
-    <span class="hljs-keyword">import</span> org.scalacheck.<span class="hljs-type">Gen</span>
-    forAll(<span class="hljs-type">Gen</span>.posNum[<span class="hljs-type">Long</span>]){ x: <span class="hljs-type">Long</span> =&gt; x &gt; <span class="hljs-number">0</span> shouldBe <span class="hljs-literal">true</span> }
+  // <span class="hljs-keyword">Using</span> custom genrators <span class="hljs-keyword">of</span> ScalaCheck
+  <span class="hljs-keyword">def</span> useGenerator: Unit = {
+    <span class="hljs-keyword">import</span> org.scalacheck.Gen
+    <span class="hljs-keyword">forAll</span>(Gen.posNum[<span class="hljs-keyword">Long</span>]){ x: <span class="hljs-keyword">Long</span> =&gt; x &gt; <span class="hljs-number">0</span> shouldBe <span class="hljs-literal">true</span> }
   }
 }
 </code></pre>

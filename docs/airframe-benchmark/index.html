@@ -76,74 +76,74 @@ by comparing them with the standard msgpack/json processing libraries.</li>
 <li>Move to the unpacked folder, then run <code>./bin/airframe-benchmark bench (msgpack or json)</code></li>
 </ul>
 <h3><a class="anchor" aria-hidden="true" id="running-the-benchmark"></a><a href="#running-the-benchmark" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Running the benchmark</h3>
-<pre><code class="hljs">$ cd airframe-benchmark
+<pre><code class="hljs"><span class="hljs-string">$</span> <span class="hljs-string">cd</span> <span class="hljs-string">airframe-benchmark</span>
 
-# Run benchmark quickly
-$ ./bin/airframe-benchmark bench-quick (msgpack <span class="hljs-keyword">or</span> json)
+<span class="hljs-comment"># Run benchmark quickly</span>
+<span class="hljs-string">$</span> <span class="hljs-string">./bin/airframe-benchmark</span> <span class="hljs-string">bench-quick</span> <span class="hljs-string">(msgpack</span> <span class="hljs-string">or</span> <span class="hljs-string">json)</span>
 
-# Run MessagePack benchmark
-$ ./bin/airframe-benchmark bench msgpack
+<span class="hljs-comment"># Run MessagePack benchmark</span>
+<span class="hljs-string">$</span> <span class="hljs-string">./bin/airframe-benchmark</span> <span class="hljs-string">bench</span> <span class="hljs-string">msgpack</span>
 
-# Run JSON benchmark
-$ ./bin/airframe-benchmark bench json
+<span class="hljs-comment"># Run JSON benchmark</span>
+<span class="hljs-string">$</span> <span class="hljs-string">./bin/airframe-benchmark</span> <span class="hljs-string">bench</span> <span class="hljs-string">json</span>
 
-# Run MessagePack benchmaark <span class="hljs-keyword">and</span> write the results to a json file
-# Run MessagePack benchmark
-$ ./bin/airframe-benchmark bench msgpack -f json
-...
+<span class="hljs-comment"># Run MessagePack benchmaark and write the results to a json file</span>
+<span class="hljs-comment"># Run MessagePack benchmark</span>
+<span class="hljs-string">$</span> <span class="hljs-string">./bin/airframe-benchmark</span> <span class="hljs-string">bench</span> <span class="hljs-string">msgpack</span> <span class="hljs-string">-f</span> <span class="hljs-string">json</span>
+<span class="hljs-string">...</span>
 
-# Run complete. Total time: <span class="hljs-number">00</span>:<span class="hljs-number">00</span>:<span class="hljs-number">31</span>
+<span class="hljs-comment"># Run complete. Total time: 00:00:31</span>
 
-REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
-why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
-experiments, perform baseline <span class="hljs-keyword">and</span> negative tests that provide experimental control, make sure
-the benchmarking environment <span class="hljs-keyword">is</span> safe on JVM/OS/HW level, ask <span class="hljs-keyword">for</span> reviews <span class="hljs-keyword">from</span> the domain experts.
-Do <span class="hljs-keyword">not</span> assume the numbers tell you what you want them to tell.
+<span class="hljs-attr">REMEMBER:</span> <span class="hljs-string">The</span> <span class="hljs-string">numbers</span> <span class="hljs-string">below</span> <span class="hljs-string">are</span> <span class="hljs-string">just</span> <span class="hljs-string">data.</span> <span class="hljs-string">To</span> <span class="hljs-string">gain</span> <span class="hljs-string">reusable</span> <span class="hljs-string">insights,</span> <span class="hljs-string">you</span> <span class="hljs-string">need</span> <span class="hljs-string">to</span> <span class="hljs-string">follow</span> <span class="hljs-string">up</span> <span class="hljs-string">on</span>
+<span class="hljs-string">why</span> <span class="hljs-string">the</span> <span class="hljs-string">numbers</span> <span class="hljs-string">are</span> <span class="hljs-string">the</span> <span class="hljs-string">way</span> <span class="hljs-string">they</span> <span class="hljs-string">are.</span> <span class="hljs-string">Use</span> <span class="hljs-string">profilers</span> <span class="hljs-string">(see</span> <span class="hljs-string">-prof,</span> <span class="hljs-string">-lprof),</span> <span class="hljs-string">design</span> <span class="hljs-string">factorial</span>
+<span class="hljs-string">experiments,</span> <span class="hljs-string">perform</span> <span class="hljs-string">baseline</span> <span class="hljs-string">and</span> <span class="hljs-string">negative</span> <span class="hljs-string">tests</span> <span class="hljs-string">that</span> <span class="hljs-string">provide</span> <span class="hljs-string">experimental</span> <span class="hljs-string">control,</span> <span class="hljs-string">make</span> <span class="hljs-string">sure</span>
+<span class="hljs-string">the</span> <span class="hljs-string">benchmarking</span> <span class="hljs-string">environment</span> <span class="hljs-string">is</span> <span class="hljs-string">safe</span> <span class="hljs-string">on</span> <span class="hljs-string">JVM/OS/HW</span> <span class="hljs-string">level,</span> <span class="hljs-string">ask</span> <span class="hljs-string">for</span> <span class="hljs-string">reviews</span> <span class="hljs-string">from</span> <span class="hljs-string">the</span> <span class="hljs-string">domain</span> <span class="hljs-string">experts.</span>
+<span class="hljs-string">Do</span> <span class="hljs-string">not</span> <span class="hljs-string">assume</span> <span class="hljs-string">the</span> <span class="hljs-string">numbers</span> <span class="hljs-string">tell</span> <span class="hljs-string">you</span> <span class="hljs-string">what</span> <span class="hljs-string">you</span> <span class="hljs-string">want</span> <span class="hljs-string">them</span> <span class="hljs-string">to</span> <span class="hljs-string">tell.</span>
 
-Benchmark                             Mode  Cnt       Score       Error  Units
-AirframeMsgpack.unpack               thrpt   <span class="hljs-number">50</span>  <span class="hljs-number">379603.260</span> ± <span class="hljs-number">13352.047</span>  ops/s
-AirframeMsgpack.unpack:<span class="hljs-built_in">bool</span>eanArray  thrpt   <span class="hljs-number">50</span>  <span class="hljs-number">171991.362</span> ±  <span class="hljs-number">6673.264</span>  ops/s
-AirframeMsgpack.unpack:<span class="hljs-built_in">float</span>Array    thrpt   <span class="hljs-number">50</span>  <span class="hljs-number">134988.640</span> ±  <span class="hljs-number">3069.660</span>  ops/s
-AirframeMsgpack.unpack:<span class="hljs-built_in">int</span>Array      thrpt   <span class="hljs-number">50</span>   <span class="hljs-number">72623.258</span> ±  <span class="hljs-number">7732.559</span>  ops/s
-MessagePackJava.unpack               thrpt   <span class="hljs-number">50</span>  <span class="hljs-number">463493.986</span> ± <span class="hljs-number">15380.526</span>  ops/s
-MessagePackJava.unpack:<span class="hljs-built_in">bool</span>eanArray  thrpt   <span class="hljs-number">50</span>  <span class="hljs-number">166202.338</span> ± <span class="hljs-number">13253.571</span>  ops/s
-MessagePackJava.unpack:<span class="hljs-built_in">float</span>Array    thrpt   <span class="hljs-number">50</span>  <span class="hljs-number">176145.186</span> ±  <span class="hljs-number">4517.170</span>  ops/s
-MessagePackJava.unpack:<span class="hljs-built_in">int</span>Array      thrpt   <span class="hljs-number">50</span>  <span class="hljs-number">121146.462</span> ±  <span class="hljs-number">3870.203</span>  ops/s
-PackBenchmark.packInt                thrpt   <span class="hljs-number">50</span>  <span class="hljs-number">105945.238</span> ±  <span class="hljs-number">2251.499</span>  ops/s
+<span class="hljs-string">Benchmark</span>                             <span class="hljs-string">Mode</span>  <span class="hljs-string">Cnt</span>       <span class="hljs-string">Score</span>       <span class="hljs-string">Error</span>  <span class="hljs-string">Units</span>
+<span class="hljs-string">AirframeMsgpack.unpack</span>               <span class="hljs-string">thrpt</span>   <span class="hljs-number">50</span>  <span class="hljs-number">379603.260</span> <span class="hljs-string">±</span> <span class="hljs-number">13352.047</span>  <span class="hljs-string">ops/s</span>
+<span class="hljs-string">AirframeMsgpack.unpack:booleanArray</span>  <span class="hljs-string">thrpt</span>   <span class="hljs-number">50</span>  <span class="hljs-number">171991.362</span> <span class="hljs-string">±</span>  <span class="hljs-number">6673.264</span>  <span class="hljs-string">ops/s</span>
+<span class="hljs-string">AirframeMsgpack.unpack:floatArray</span>    <span class="hljs-string">thrpt</span>   <span class="hljs-number">50</span>  <span class="hljs-number">134988.640</span> <span class="hljs-string">±</span>  <span class="hljs-number">3069.660</span>  <span class="hljs-string">ops/s</span>
+<span class="hljs-string">AirframeMsgpack.unpack:intArray</span>      <span class="hljs-string">thrpt</span>   <span class="hljs-number">50</span>   <span class="hljs-number">72623.258</span> <span class="hljs-string">±</span>  <span class="hljs-number">7732.559</span>  <span class="hljs-string">ops/s</span>
+<span class="hljs-string">MessagePackJava.unpack</span>               <span class="hljs-string">thrpt</span>   <span class="hljs-number">50</span>  <span class="hljs-number">463493.986</span> <span class="hljs-string">±</span> <span class="hljs-number">15380.526</span>  <span class="hljs-string">ops/s</span>
+<span class="hljs-string">MessagePackJava.unpack:booleanArray</span>  <span class="hljs-string">thrpt</span>   <span class="hljs-number">50</span>  <span class="hljs-number">166202.338</span> <span class="hljs-string">±</span> <span class="hljs-number">13253.571</span>  <span class="hljs-string">ops/s</span>
+<span class="hljs-string">MessagePackJava.unpack:floatArray</span>    <span class="hljs-string">thrpt</span>   <span class="hljs-number">50</span>  <span class="hljs-number">176145.186</span> <span class="hljs-string">±</span>  <span class="hljs-number">4517.170</span>  <span class="hljs-string">ops/s</span>
+<span class="hljs-string">MessagePackJava.unpack:intArray</span>      <span class="hljs-string">thrpt</span>   <span class="hljs-number">50</span>  <span class="hljs-number">121146.462</span> <span class="hljs-string">±</span>  <span class="hljs-number">3870.203</span>  <span class="hljs-string">ops/s</span>
+<span class="hljs-string">PackBenchmark.packInt</span>                <span class="hljs-string">thrpt</span>   <span class="hljs-number">50</span>  <span class="hljs-number">105945.238</span> <span class="hljs-string">±</span>  <span class="hljs-number">2251.499</span>  <span class="hljs-string">ops/s</span>
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="general-usage"></a><a href="#general-usage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>General Usage</h3>
 <pre><code class="hljs">$ airframe-benchmark bench <span class="hljs-comment">--help</span>
-<span class="hljs-keyword">usage</span>: bench [targetPackage]
+usage: bench [targetPackage]
   Run a benchmark
 
-[<span class="hljs-keyword">global</span> <span class="hljs-keyword">options</span>]
+[global options]
  -h, <span class="hljs-comment">--help         display help message</span>
- -f [RESULTFORMAT]  Result <span class="hljs-keyword">format</span>: <span class="hljs-type">text</span>, csv, scsv, <span class="hljs-type">json</span>, latex
- -o [RESULTOUTPUT]  Result output file <span class="hljs-type">name</span>
- -wt:[WARMUPTIME]   warmup <span class="hljs-type">time</span> (<span class="hljs-keyword">default</span>: <span class="hljs-number">0.1</span>s)
-[<span class="hljs-keyword">options</span>]
+ -f [RESULTFORMAT]  Result <span class="hljs-built_in">format</span>: text, csv, scsv, json, latex
+ -o [RESULTOUTPUT]  Result <span class="hljs-built_in">output</span> file name
+ -wt:[WARMUPTIME]   warmup <span class="hljs-built_in">time</span> (default: <span class="hljs-number">0.1</span>s)
+[options]
  -i, <span class="hljs-comment">--iteration:[ITERATION]     The number of iteration (default: 10)</span>
  -w, <span class="hljs-comment">--warmup:[WARMUPITERATION]  The number of warm-up iteration (default: 3)</span>
- -mt:[MEASUREMENTTIME]           measurement <span class="hljs-type">time</span> (<span class="hljs-keyword">default</span>: <span class="hljs-number">1</span>s)
+ -mt:[MEASUREMENTTIME]           measurement <span class="hljs-built_in">time</span> (default: <span class="hljs-number">1</span>s)
 </code></pre>
 <h1><a class="anchor" aria-hidden="true" id="for-developers"></a><a href="#for-developers" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>For Developers</h1>
 <h2><a class="anchor" aria-hidden="true" id="running-the-benchmark-while-developing-airframe"></a><a href="#running-the-benchmark-while-developing-airframe" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Running THe Benchmark While Developing Airframe</h2>
-<pre><code class="hljs">$ ./sbt
-
-<span class="hljs-comment"># Run JSON benchmark:</span>
-&gt; benchmark/<span class="hljs-keyword">run</span><span class="bash"> bench-quick json</span>
-
-<span class="hljs-comment"># Run JSON-MsgPack conversion benchmark:</span>
-&gt; benchmark/<span class="hljs-keyword">run</span><span class="bash"> bench-quick json_stream</span>
-
-<span class="hljs-comment"># Run benchmark for measuring JSON parse time:</span>
-&gt; benchmark/<span class="hljs-keyword">run</span><span class="bash"> json-perf</span>
-
-<span class="hljs-comment"># Run Msgpack benchmark:</span>
-&gt; benchmark/<span class="hljs-keyword">run</span><span class="bash"> bench-quick msgpack</span>
-
-<span class="hljs-comment"># Run all JMH benchmarks:</span>
-&gt; benchmark/<span class="hljs-keyword">run</span><span class="bash"> bench-quick</span>
+<pre><code class="hljs"><span class="hljs-meta">$</span><span class="bash"> ./sbt</span>
+<span class="hljs-meta">
+#</span><span class="bash"> Run JSON benchmark:</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> benchmark/run bench-quick json</span>
+<span class="hljs-meta">
+#</span><span class="bash"> Run JSON-MsgPack conversion benchmark:</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> benchmark/run bench-quick json_stream</span>
+<span class="hljs-meta">
+#</span><span class="bash"> Run benchmark <span class="hljs-keyword">for</span> measuring JSON parse time:</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> benchmark/run json-perf</span>
+<span class="hljs-meta">
+#</span><span class="bash"> Run Msgpack benchmark:</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> benchmark/run bench-quick msgpack</span>
+<span class="hljs-meta">
+#</span><span class="bash"> Run all JMH benchmarks:</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> benchmark/run bench-quick</span>
 </code></pre>
 <p>To see more stable performance characteristics, use <code>bench</code> command, instead of <code>bench-quick</code>.</p>
 <h2><a class="anchor" aria-hidden="true" id="building-the-benchmark-runner"></a><a href="#building-the-benchmark-runner" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Building The Benchmark Runner</h2>
