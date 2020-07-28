@@ -99,6 +99,12 @@ object HttpClientIR extends LogSupport {
       val methodName = httpMethod.toString.toLowerCase(Locale.ENGLISH)
       if (isOpsRequest) s"${methodName}Ops" else methodName
     }
+    def requestModelClassType: String = {
+      requestModelClassDef match {
+        case Some(m) => m.name
+        case None    => "Map[String, Any]"
+      }
+    }
 
   }
 

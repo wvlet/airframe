@@ -53,8 +53,29 @@ object GrpcSyncClient extends HttpClientType {
         .map { svc =>
           s"""object ${svc.serviceName} {
              |  import io.grpc.stub.ClientCalls
+             |  import wvlet.airframe.msgpack.spi.MsgPack
+             |
+             |${indent(methodDescriptors(svc))}
+             |
              |${indent(serviceBody(svc))}
              |}""".stripMargin
+        }.mkString("\n")
+    }
+
+    def methodDescriptors(svc: ClientServiceDef): String = {
+      svc.methods
+        .map { m =>
+          s"""private val ${m.name}Descriptor = {
+           |  io.grpc.MethodDescriptor.newBuilder[MsgPack, Any]()
+           |    .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+           |    .setFullMethodName("${src.packageName}.${svc.serviceName}/${m.name}")
+           |    .setRequestMarshaller(wvlet.airframe.http.grpc.GrpcServiceBuilder.RPCRequestMarshaller)
+           |    .setResponseMarshaller(new wvlet.airframe.http.grpc.GrpcServiceBuilder.RPCResponseMarshaller[Any](
+           |      codecFactory.of(wvlet.airframe.surface.Surface.of[${m.returnType.fullName.replaceAll("\\$", ".")}])
+           |      .asInstanceOf[wvlet.airframe.codec.MessageCodec[Any]]
+           |    )
+           |    .build()
+           |}""".stripMargin
         }.mkString("\n")
     }
 
@@ -73,11 +94,7 @@ object GrpcSyncClient extends HttpClientType {
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType} = {"
           lines += s"  val __m = ${requestObject}"
 
-          val requestModelClass = m.requestModelClassDef match {
-            case Some(model) => model.name
-            case None        => "Map[String, Any]"
-          }
-          lines += s"  val codec = codecFactory.of[${requestModelClass}]"
+          lines += s"  val codec = codecFactory.of[${m.requestModelClassType}]"
           lines += s"  ClientCalls.blockingUnaryCall(getChannel, ${m.name}Descriptor, getCallOptions, codec.toMsgPack(__m))"
 //          lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
           lines += s"}"
