@@ -24,13 +24,16 @@ import scala.language.existentials
 case class GrpcServerConfig(
     name: String = "default",
     private val serverPort: Option[Int] = None,
-    router: Router = Router.empty
+    router: Router = Router.empty,
+    serverInitializer: ServerBuilder[_] => ServerBuilder[_] = identity
 ) extends LogSupport {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
   def withName(name: String): GrpcServerConfig     = this.copy(name = name)
   def withPort(port: Int): GrpcServerConfig        = this.copy(serverPort = Some(port))
   def withRouter(router: Router): GrpcServerConfig = this.copy(router = router)
+  def withServerInitializer(serverInitializer: ServerBuilder[_] => ServerBuilder[_]) =
+    this.copy(serverInitializer = serverInitializer)
 
   def newServer(session: Session): GrpcServer = {
     val services = GrpcServiceBuilder.buildService(router, session)
@@ -39,9 +42,25 @@ case class GrpcServerConfig(
     for (service <- services) {
       serverBuilder.addService(service)
     }
-    new GrpcServer(this, serverBuilder.build())
+    val customServerBuilder = serverInitializer(serverBuilder)
+    new GrpcServer(this, customServerBuilder.build())
   }
 
+  /**
+    * Start a standalone gRPC server and execute the given code block.
+    * After exiting the code block, it will stop the gRPC server.
+    *
+    * If you want to keep running the server inside the code block, call server.awaitTermination.
+    */
+  def start[U](body: GrpcServer => U): U = {
+    design.run[GrpcServer, U] { server =>
+      body(server)
+    }
+  }
+
+  /**
+    * Create a GrpcServer design for Airframe DI
+    */
   def design: Design = {
     Design.newDesign
       .bind[GrpcServerConfig].toInstance(this)

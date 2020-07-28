@@ -71,6 +71,12 @@ object GrpcServiceBuilderTest extends AirSpec {
     }
   }
 
+  test("create a standalone gRPC server") {
+    Grpc.server.withRouter(router).start { server =>
+      // sanity test for launching gRPC server
+    }
+  }
+
   test(
     "create gRPC client",
     design = {

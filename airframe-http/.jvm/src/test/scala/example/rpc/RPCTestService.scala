@@ -26,3 +26,32 @@ object RPCTestService {
   case class CreateUserRequest(id: String, name: String)
   case class User(id: String, name: String)
 }
+
+@RPC
+trait RPCExample {
+  import RPCExample._
+
+  def zeroAryRPC: Unit
+  def rpcWithPrimitive(p1: Int): Int
+  def rpcWithMultiplePrimitives(p1: Int, p2: String): Int
+  def rpcWithComplexParam(p1: RPCRequest): RPCResponse
+  def rpcWithMultipleParams(p1: Int, p2: RPCRequest): RPCResponse
+  def rpcWithOption(p1: Option[String]): Unit
+  def rpcWithPrimitiveAndOption(p1: String, p2: Option[String]): Unit
+  def rpcWithOptionOfComplexType(p1: Option[RPCRequest]): Unit
+}
+
+object RPCExample {
+  case class RPCRequest(
+      x1: Int,
+      x2: Long,
+      x3: Boolean,
+      x4: Float,
+      x5: Double,
+      x6: Array[String],
+      x7: Seq[String],
+      x8: Map[String, Any],
+      x9: Option[Int] = None
+  )
+  case class RPCResponse(y1: String, y2: Boolean)
+}
