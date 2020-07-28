@@ -585,7 +585,7 @@ lazy val httpJVM = http.jvm
     publishPackArchiveTgz,
     libraryDependencies ++= Seq(
       // Use swagger-parser only for validating YAML format in tests
-      "io.swagger.parser.v3" % "swagger-parser" % "2.0.20" % Test,
+      "io.swagger.parser.v3" % "swagger-parser" % "2.0.21" % Test,
       // Swagger includes dependency to SLF4J, so redirect slf4j logs to airframe-log
       "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION % Test
     )
