@@ -20,6 +20,7 @@ val JS_JAVA_TIME_VERSION            = "1.0.0"
 val FINAGLE_VERSION                 = "20.4.1"
 val FLUENCY_VERSION                 = "2.4.1"
 val SCALAJS_DOM_VERSION             = "1.0.0"
+val GRPC_VERSION                    = "1.30.2"
 
 val airSpecFramework = new TestFramework("wvlet.airspec.Framework")
 
@@ -154,6 +155,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   codecJVM,
   msgpackJVM,
   httpJVM,
+  grpc,
   jsonJVM,
   rxJVM,
   airspecJVM
@@ -590,6 +592,21 @@ lazy val httpJVM = http.jvm
   ).dependsOn(launcher)
 
 lazy val httpJS = http.js
+
+lazy val grpc =
+  project
+    .in(file("airframe-http-grpc"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-http-grpc",
+      description := "Airframe HTTP gRPC backend",
+      libraryDependencies ++= Seq(
+        "io.grpc"           % "grpc-netty-shaded" % GRPC_VERSION,
+        "io.grpc"           % "grpc-stub"         % GRPC_VERSION,
+        "org.apache.tomcat" % "annotations-api"   % "6.0.53"      % Provided,
+        "org.slf4j"         % "slf4j-jdk14"       % SLF4J_VERSION % Test
+      )
+    ).dependsOn(httpJVM, airframeMacrosJVMRef, airspecRefJVM % Test)
 
 lazy val finagle =
   project

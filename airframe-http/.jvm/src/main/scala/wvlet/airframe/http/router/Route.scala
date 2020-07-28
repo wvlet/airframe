@@ -28,6 +28,8 @@ import scala.language.higherKinds
 trait Route {
   def method: String
   def methodSurface: MethodSurface
+
+  def serviceName: String
   def path: String
   val pathComponents: IndexedSeq[String] = {
     path
@@ -87,6 +89,10 @@ case class ControllerRoute(
   override def toString =
     s"${method} ${path} -> ${methodSurface.name}(${methodSurface.args
       .map(x => s"${x.name}:${x.surface}").mkString(", ")}): ${methodSurface.returnType}"
+
+  override lazy val serviceName: String = {
+    rpcInterfaceCls.getName.replaceAll("\\$anon\\$", "").replaceAll("\\$", ".")
+  }
 
   override def returnTypeSurface: Surface = methodSurface.returnType
 
