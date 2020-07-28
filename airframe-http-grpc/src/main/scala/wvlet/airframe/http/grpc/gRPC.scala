@@ -15,6 +15,6 @@ package wvlet.airframe.http.grpc
 
 /**
   */
-object Grpc {
+object gRPC {
   def server: GrpcServerConfig = GrpcServerConfig()
 }

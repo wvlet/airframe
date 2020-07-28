@@ -398,12 +398,12 @@ __build.sbt__
 
 ```scala
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.grpc.Grpc
+import wvlet.airframe.http.grpc.gRPC
 
 // Create a Router definition in the same manner with Airframe RPC
 val router = Router.add[MyApiImpl]
 
-val grpcServerDesign = Grpc.server
+val grpcServerDesign = gRPC.server
   .withRouter(router)
   .withPort(8080)
   .design
