@@ -128,10 +128,8 @@ object HttpClientIR extends LogSupport {
     }
 
     def buildService(controllerSurface: Surface, routes: Seq[Route]): ClientServiceDef = {
-      // Use a lowercase word for the accessor objects
-      val controllerName =
-        controllerSurface.name.substring(0, 1).toLowerCase(Locale.ENGLISH) + controllerSurface.name.substring(1)
-
+      // Use a API class name as is for the accessor objects
+      val controllerName = controllerSurface.name
       ClientServiceDef(serviceName = controllerName, routes.map(buildClientCall))
     }
 
