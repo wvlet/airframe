@@ -54,6 +54,8 @@ object GrpcSyncClient extends HttpClientType {
           s"""object ${svc.serviceName} {
              |  import io.grpc.stub.ClientCalls
              |  import wvlet.airframe.msgpack.spi.MsgPack
+             |  import wvlet.airframe.codec.MessageCodec
+             |  import wvlet.airframe.http.grpc.GrpcServiceBuilder.{RPCRequestMarshaller, RPCResponseMarshaller}
              |
              |${indent(methodDescriptors(svc))}
              |
@@ -63,20 +65,24 @@ object GrpcSyncClient extends HttpClientType {
     }
 
     def methodDescriptors(svc: ClientServiceDef): String = {
-      svc.methods
+      val md = svc.methods
         .map { m =>
-          s"""private val ${m.name}Descriptor = {
-           |  io.grpc.MethodDescriptor.newBuilder[MsgPack, Any]()
-           |    .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-           |    .setFullMethodName("${src.packageName}.${svc.serviceName}/${m.name}")
-           |    .setRequestMarshaller(wvlet.airframe.http.grpc.GrpcServiceBuilder.RPCRequestMarshaller)
-           |    .setResponseMarshaller(new wvlet.airframe.http.grpc.GrpcServiceBuilder.RPCResponseMarshaller[Any](
-           |      codecFactory.of(wvlet.airframe.surface.Surface.of[${m.returnType.fullName.replaceAll("\\$", ".")}])
-           |      .asInstanceOf[wvlet.airframe.codec.MessageCodec[Any]]
-           |    )
-           |    .build()
+          s"""private val ___${m.name}Descriptor = {
+           |    newBuilder("${src.packageName}.${svc.serviceName}/${m.name}")
+           |      .setResponseMarshaller(new RPCResponseMarshaller[Any](
+           |        codecFactory.of[${m.returnType.fullName.replaceAll("\\$", ".")}].asInstanceOf[MessageCodec[Any]]
+           |      ).build()
            |}""".stripMargin
         }.mkString("\n")
+
+      s"""private def newBuilder(fullMethodName:String): io.grpc.MethodDescriptor.Builder[MsgPack, Any] = {
+         |  io.grpc.MethodDescriptor.newBuilder[MsgPack, Any]()
+         |    .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+         |    .setFullMethodName(fullMethodName)
+         |    .setRequestMarshaller(RPCRequestMarshaller)
+         |}
+         |
+         |${md}""".stripMargin
     }
 
     def serviceBody(svc: ClientServiceDef): String = {
@@ -95,8 +101,9 @@ object GrpcSyncClient extends HttpClientType {
           lines += s"  val __m = ${requestObject}"
 
           lines += s"  val codec = codecFactory.of[${m.requestModelClassType}]"
-          lines += s"  ClientCalls.blockingUnaryCall(getChannel, ${m.name}Descriptor, getCallOptions, codec.toMsgPack(__m))"
-//          lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
+          lines += s"  ClientCalls"
+          lines += s"    .blockingUnaryCall(getChannel, ___${m.name}Descriptor, getCallOptions, codec.toMsgPack(__m))"
+          lines += s"    .asInstanceOf[${m.returnType}]"
           lines += s"}"
           lines.result().mkString("\n")
         }.mkString("\n")
