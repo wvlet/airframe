@@ -37,9 +37,14 @@ object GrpcSyncClient extends HttpClientType {
          |  val channel: io.grpc.Channel,
          |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
          |  codecFactory: wvlet.airframe.codec.MessageCodecFactory = wvlet.airframe.codec.MessageCodecFactory.defaultFactoryForJSON
-         |) extends io.grpc.stub.AbstractBlockingStub(channel, callOptions) with java.lang.AutoCloseable {
+         |) extends io.grpc.stub.AbstractBlockingStub[${src.classDef.clsName}](channel, callOptions) with java.lang.AutoCloseable {
+         |
+         |  override def build(channel: io.grpc.Channel, callOptions: io.grpc.CallOptions): ${src.classDef.clsName} = {
+         |    new ${src.classDef.clsName}(channel, callOptions)
+         |  }
+         |
          |  override def close(): Unit = {
-         |    client match {
+         |    channel match {
          |      case m: io.grpc.ManagedChannel => m.shutdownNow()
          |      case _ =>
          |    }
@@ -67,12 +72,12 @@ object GrpcSyncClient extends HttpClientType {
     def methodDescriptors(svc: ClientServiceDef): String = {
       val md = svc.methods
         .map { m =>
-          s"""private val ___${m.name}Descriptor = {
-           |    newBuilder("${src.packageName}.${svc.serviceName}/${m.name}")
-           |      .setResponseMarshaller(new RPCResponseMarshaller[Any](
-           |        codecFactory.of[${m.returnType.fullName.replaceAll("\\$", ".")}].asInstanceOf[MessageCodec[Any]]
-           |      ).build()
-           |}""".stripMargin
+          s"""private val ___${m.name}Descriptor: io.grpc.MethodDescriptor[MsgPack, Any] = {
+             |  newBuilder("${src.packageName}.${svc.serviceName}/${m.name}")
+             |    .setResponseMarshaller(new RPCResponseMarshaller[Any](
+             |      codecFactory.of[${m.returnType.fullName.replaceAll("\\$", ".")}].asInstanceOf[MessageCodec[Any]]
+             |    )).build()
+             |}""".stripMargin
         }.mkString("\n")
 
       s"""private def newBuilder(fullMethodName:String): io.grpc.MethodDescriptor.Builder[MsgPack, Any] = {
