@@ -104,7 +104,6 @@ object GrpcSyncClient extends HttpClientType {
           }
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType} = {"
           lines += s"  val __m = ${requestObject}"
-
           lines += s"  val codec = codecFactory.of[${m.requestModelClassType}]"
           lines += s"  ClientCalls"
           lines += s"    .blockingUnaryCall(getChannel, ___${m.name}Descriptor, getCallOptions, codec.toMsgPack(__m))"

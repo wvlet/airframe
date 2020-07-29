@@ -12,11 +12,13 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc.{Server, ServerBuilder}
 import wvlet.airframe.{Design, Session}
 import wvlet.airframe.http.Router
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
+
 import scala.language.existentials
 
 /**
@@ -38,7 +40,8 @@ case class GrpcServerConfig(
   def newServer(session: Session): GrpcServer = {
     val services = GrpcServiceBuilder.buildService(router, session)
     debug(s"service:\n${services.map(_.getServiceDescriptor).mkString("\n")}")
-    val serverBuilder = ServerBuilder.forPort(port)
+    // We need to use NettyServerBuilder explicitly when NettyServerBuilder cannot be found from the classpath (e.g., onejar)
+    val serverBuilder = NettyServerBuilder.forPort(port)
     for (service <- services) {
       serverBuilder.addService(service)
     }
