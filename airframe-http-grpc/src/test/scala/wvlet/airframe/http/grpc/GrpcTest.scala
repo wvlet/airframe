@@ -66,8 +66,8 @@ object MyService extends LogSupport {
 }
 
 /**
+  * Test for running gRPC server and client for checking the basic data flow of grpc-java
   */
-
 object GrpcTest extends AirSpec {
   private val service: ServerServiceDefinition =
     ServerServiceDefinition

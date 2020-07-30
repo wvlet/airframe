@@ -12,11 +12,13 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc.{Server, ServerBuilder}
 import wvlet.airframe.{Design, Session}
 import wvlet.airframe.http.Router
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
+
 import scala.language.existentials
 
 /**
@@ -24,24 +26,44 @@ import scala.language.existentials
 case class GrpcServerConfig(
     name: String = "default",
     private val serverPort: Option[Int] = None,
-    router: Router = Router.empty
+    router: Router = Router.empty,
+    serverInitializer: ServerBuilder[_] => ServerBuilder[_] = identity
 ) extends LogSupport {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
   def withName(name: String): GrpcServerConfig     = this.copy(name = name)
   def withPort(port: Int): GrpcServerConfig        = this.copy(serverPort = Some(port))
   def withRouter(router: Router): GrpcServerConfig = this.copy(router = router)
+  def withServerInitializer(serverInitializer: ServerBuilder[_] => ServerBuilder[_]) =
+    this.copy(serverInitializer = serverInitializer)
 
   def newServer(session: Session): GrpcServer = {
     val services = GrpcServiceBuilder.buildService(router, session)
     debug(s"service:\n${services.map(_.getServiceDescriptor).mkString("\n")}")
-    val serverBuilder = ServerBuilder.forPort(port)
+    // We need to use NettyServerBuilder explicitly when NettyServerBuilder cannot be found from the classpath (e.g., onejar)
+    val serverBuilder = NettyServerBuilder.forPort(port)
     for (service <- services) {
       serverBuilder.addService(service)
     }
-    new GrpcServer(this, serverBuilder.build())
+    val customServerBuilder = serverInitializer(serverBuilder)
+    new GrpcServer(this, customServerBuilder.build())
   }
 
+  /**
+    * Start a standalone gRPC server and execute the given code block.
+    * After exiting the code block, it will stop the gRPC server.
+    *
+    * If you want to keep running the server inside the code block, call server.awaitTermination.
+    */
+  def start[U](body: GrpcServer => U): U = {
+    design.run[GrpcServer, U] { server =>
+      body(server)
+    }
+  }
+
+  /**
+    * Create a GrpcServer design for Airframe DI
+    */
   def design: Design = {
     Design.newDesign
       .bind[GrpcServerConfig].toInstance(this)

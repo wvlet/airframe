@@ -1075,6 +1075,8 @@ lazy val sbtAirframe =
         scriptedDependencies.value
         publishLocal.in(httpJVM, packArchiveTgz).value
         publishLocal.all(ScopeFilter(inDependencies(finagle))).value
+        publishLocal.all(ScopeFilter(inDependencies(grpc))).value
+        publishLocal.all(ScopeFilter(inDependencies(airspecJVM))).value
         publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
       },
       scriptedBufferLog := false

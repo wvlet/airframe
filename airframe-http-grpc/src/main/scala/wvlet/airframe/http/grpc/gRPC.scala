@@ -14,7 +14,11 @@
 package wvlet.airframe.http.grpc
 
 /**
+  * The entrypoint to start creating gRPC servers.
+  *
+  * We use gRPC object name (instead of Grpc) to avoid the conflict with io.grpc.Grpc.
+  * Scala 2.13 often complains about such naming conflicts
   */
-object Grpc {
+object gRPC {
   def server: GrpcServerConfig = GrpcServerConfig()
 }

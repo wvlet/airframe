@@ -210,6 +210,7 @@ Supported client types are:
 - __sync__: Create a sync HTTP client (ServiceSyncClient) for Scala (JVM)
 - __async__: Create an async HTTP client (ServiceClient) for Scala (JVM) using Future abstraction (`F`). The `F` can be `scala.concurrent.Future` or twitter-util's Future. 
 - __scalajs__:  Create an RPC client (ServiceClientJS)
+- __grpc-sync__: Create a gRPC blocking client (ServiceGrpcSyncClient)
 
 To support other types of clients, see the examples of [HTTP code generators](https://github.com/wvlet/airframe/blob/master/airframe-http/.jvm/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClient.scala). This code reads a Router definition of RPC interfaces, and generate client code for calling RPC endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would like to add Open API spec generator so that many programming languages can be used with Airframe RPC.
 
@@ -384,7 +385,7 @@ Airframe gRPC is a gRPC and HTTP2-based implementation of Airframe RPC, which ca
 - No Protobuf definition is required. You can use plain Scala and case classes to define gRPC service.
 - Roadmap
   - [x] Create a gRPC server from Airframe RPC router
-  - [ ] Generate gRPC client stub with sbt-airframe plugin.
+  - [x] Generate gRPC client stub with sbt-airframe plugin.
   - [ ] Support client, server-side, and bidirectional streaming
   - [ ] Add a gRPC server proxy with airframe-http-finagle for supporting HTTP1
 
@@ -394,23 +395,60 @@ __build.sbt__
 "org.wvlet.airframe" %% "airframe-http-grpc" % AIRFRAME_VERSION
 ```
 
+
+### Defining gRPC API
+
+```scala
+package example.api
+
+import wvlet.airframe.http.RPC
+
+@RPC
+trait GreeterApi {
+  def sayHello(message: String): String
+}
+```
+
+### Generating gRPC client
+
+Add a following build setting to genreate a gRPC client by using sbt-airframe plugin:
+
+```scala
+airframeHttpClients := Seq("example.api:grpc-sync")
+```
+
+With this setting, a gRPC blocking client (ServiceGrpcSyncClient.scala) will be genreated.
+
 ### Starting Airframe gRPC Server
+
 
 ```scala
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.grpc.Grpc
+import wvlet.airframe.http.grpc.gRPC
+
+// API implementation
+class GreeterApiImpl extends example.api.GreeterApi {
+  def sayHello(message: String): String = s"Hello ${message}!"
+}
 
 // Create a Router definition in the same manner with Airframe RPC
-val router = Router.add[MyApiImpl]
+val router = Router.add[GreeterApiImpl]
 
-val grpcServerDesign = Grpc.server
+gRPC.server
   .withRouter(router)
   .withPort(8080)
-  .design
+  .start { server =>
+    // gRPC server (based on Netty) starts at localhost:8080
 
-grpcServerDesign.build[GrpcServer] { server =>
-  // gRPC server (based on Netty) starts at localhost:8080
-}
+    // Create a client channel
+    val channel = ManagedChannel.forTaget(server.localAddress).usePlaintext().build()
+
+    // Call gRPC server
+    val client = new ServiceGrpcSyncClient(channel)
+    val ret = client.GreeterApi.sayHello("Airframe gRPC") // Hello Airframe gRPC!     
+     
+    client.close()    
+  }
 ```
 
 

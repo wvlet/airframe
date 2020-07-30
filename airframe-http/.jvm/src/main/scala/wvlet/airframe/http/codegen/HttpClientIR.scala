@@ -55,6 +55,7 @@ object HttpClientIR extends LogSupport {
           importPackageName == "java.lang" ||
           importPackageName == "scala.collection" ||
           importPackageName == "wvlet.airframe.http" ||
+          surface.isOption ||
           surface.isPrimitive ||
           // Within the same package
           importPackageName == packageName)
@@ -74,6 +75,13 @@ object HttpClientIR extends LogSupport {
   }
   case class ClientClassDef(clsName: String, services: Seq[ClientServiceDef])     extends ClientCodeIR
   case class ClientServiceDef(serviceName: String, methods: Seq[ClientMethodDef]) extends ClientCodeIR
+  case class ClientRequestModelClassDef(name: String, parameter: Seq[Parameter]) {
+    def code =
+      s"private case class ${name}(${parameter
+        .map { p =>
+          s"${p.name}: ${p.surface.name}"
+        }.mkString(", ")})"
+  }
   case class ClientMethodDef(
       httpMethod: String,
       isOpsRequest: Boolean,
@@ -84,12 +92,18 @@ object HttpClientIR extends LogSupport {
       returnType: Surface,
       path: String,
       // A case class definition for wrapping HTTP request parameters
-      requestModelClassDef: Option[String] = None
+      requestModelClassDef: Option[ClientRequestModelClassDef] = None
   ) extends ClientCodeIR {
     def typeArgString = typeArgs.map(_.name).mkString(", ")
     def clientMethodName = {
       val methodName = httpMethod.toString.toLowerCase(Locale.ENGLISH)
       if (isOpsRequest) s"${methodName}Ops" else methodName
+    }
+    def requestModelClassType: String = {
+      requestModelClassDef match {
+        case Some(m) => m.name
+        case None    => "Map[String, Any]"
+      }
     }
 
   }
@@ -114,10 +128,8 @@ object HttpClientIR extends LogSupport {
     }
 
     def buildService(controllerSurface: Surface, routes: Seq[Route]): ClientServiceDef = {
-      // Use a lowercase word for the accessor objects
-      val controllerName =
-        controllerSurface.name.substring(0, 1).toLowerCase(Locale.ENGLISH) + controllerSurface.name.substring(1)
-
+      // Use a API class name as is for the accessor objects
+      val controllerName = controllerSurface.name
       ClientServiceDef(serviceName = controllerName, routes.map(buildClientCall))
     }
 
@@ -135,8 +147,8 @@ object HttpClientIR extends LogSupport {
       val primitiveOnlyInputs =
         httpClientCallInputs.nonEmpty && httpClientCallInputs.forall(x => isPrimitive(x.surface))
 
-      val clientCallParams                     = Seq.newBuilder[String]
-      var requestModelClassDef: Option[String] = None
+      val clientCallParams                                         = Seq.newBuilder[String]
+      var requestModelClassDef: Option[ClientRequestModelClassDef] = None
 
       if (httpClientCallInputs.isEmpty) {
         if (route.method == HttpMethod.POST) {
@@ -177,10 +189,7 @@ object HttpClientIR extends LogSupport {
             override def getDefaultValue: Option[Any] = p.getDefaultValue
           }
         }
-        requestModelClassDef = Some(s"private case class ${requestModelClassName}(${requestModelClassParamSurfaces
-          .map { p =>
-            s"${p.name}: ${p.surface.name}"
-          }.mkString(", ")})")
+        requestModelClassDef = Some(ClientRequestModelClassDef(requestModelClassName, requestModelClassParamSurfaces))
         clientCallParams += s"${requestModelClassName}(${requestModelClassParamSurfaces
           .map { p =>
             s"${p.name} = ${p.name}"

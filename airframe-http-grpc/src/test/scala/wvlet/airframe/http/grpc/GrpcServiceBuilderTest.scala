@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
-import io.grpc._
+import io.grpc.{CallOptions, Channel, ManagedChannel, ManagedChannelBuilder}
 import io.grpc.stub.{AbstractBlockingStub, ClientCalls}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
@@ -71,10 +71,16 @@ object GrpcServiceBuilderTest extends AirSpec {
     }
   }
 
+  test("create a standalone gRPC server") {
+    gRPC.server.withRouter(router).start { server =>
+      // sanity test for launching gRPC server
+    }
+  }
+
   test(
     "create gRPC client",
     design = {
-      wvlet.airframe.http.grpc.Grpc.server
+      wvlet.airframe.http.grpc.gRPC.server
         .withRouter(router)
         .design
         .bind[ManagedChannel].toProvider { server: GrpcServer =>
