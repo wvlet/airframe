@@ -242,7 +242,7 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
     convert[OperationResponse](send(r, requestFilter))
   }
 
-  def close(): Unit = {
+  override def close(): Unit = {
     client.dispatcher().executorService().shutdown()
     client.connectionPool().evictAll()
   }
