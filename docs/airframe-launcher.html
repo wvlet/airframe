@@ -74,35 +74,35 @@
 <li>Create a class <code>A</code> with constructor arguments annotated with <code>@option</code> or <code>@argument</code></li>
 <li>Call <code>Launcher.of[A].execute(&quot;command line&quot;)</code></li>
 </ol>
-<pre><code class="hljs css language-scala"><span class="hljs-selector-tag">import</span> <span class="hljs-selector-tag">wvlet</span><span class="hljs-selector-class">.airframe</span><span class="hljs-selector-class">.launcher</span><span class="hljs-selector-class">._</span>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.launcher._
 
-<span class="hljs-selector-tag">class</span> <span class="hljs-selector-tag">MyApp</span>(<span class="hljs-variable">@option</span>(prefix = <span class="hljs-string">"-h,--help"</span>, description = <span class="hljs-string">"display help messages"</span>, isHelp = true) 
-            <span class="hljs-attribute">help</span>: Boolean = false,
-            <span class="hljs-variable">@option</span>(prefix = <span class="hljs-string">"-p"</span>, description = <span class="hljs-string">"port number"</span>) 
-            <span class="hljs-attribute">port</span>: Int = <span class="hljs-number">8080</span>) {
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyApp</span>(<span class="hljs-params">@option(prefix = "-h,--help", description = "display help messages", isHelp = true</span>) </span>
+            help: <span class="hljs-type">Boolean</span> = <span class="hljs-literal">false</span>,
+            <span class="hljs-meta">@option</span>(prefix = <span class="hljs-string">"-p"</span>, description = <span class="hljs-string">"port number"</span>) 
+            port: <span class="hljs-type">Int</span> = <span class="hljs-number">8080</span>) {
 
-   <span class="hljs-variable">@command</span>(isDefault = true)
-   def <span class="hljs-attribute">default</span>: Unit = {
-     <span class="hljs-selector-tag">println</span>(s<span class="hljs-string">"Hello airframe. port:${port}"</span>)
+   <span class="hljs-meta">@command</span>(isDefault = <span class="hljs-literal">true</span>)
+   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">default</span></span>: <span class="hljs-type">Unit</span> = {
+     println(<span class="hljs-string">s"Hello airframe. port:<span class="hljs-subst">${port}</span>"</span>)
    }
 }
 </code></pre>
 <p>A function annotated with <code>@defaultCommand</code> will be executed.</p>
-<pre><code class="hljs css language-scala">Launcher.execute[<span class="hljs-string">MyApp</span>](<span class="hljs-link">"-p 10010"</span>)
-// Hello airframe. port:10010
+<pre><code class="hljs css language-scala"><span class="hljs-type">Launcher</span>.execute[<span class="hljs-type">MyApp</span>](<span class="hljs-string">"-p 10010"</span>)
+<span class="hljs-comment">// Hello airframe. port:10010</span>
 
-Launcher.execute[<span class="hljs-string">MyApp</span>](<span class="hljs-link">""</span>)
-// Hello airframe. port:8080
+<span class="hljs-type">Launcher</span>.execute[<span class="hljs-type">MyApp</span>](<span class="hljs-string">""</span>)
+<span class="hljs-comment">// Hello airframe. port:8080</span>
 </code></pre>
 <p>If there is a <em>help</em> option (<code>isHelp = true</code>), command line help messages can be generated automatically.</p>
 <p>For example, enable the help option like this:</p>
-<pre><code class="hljs css language-scala">Launcher.execute[<span class="hljs-string">MyApp</span>](<span class="hljs-link">"--help"</span>)
+<pre><code class="hljs css language-scala"><span class="hljs-type">Launcher</span>.execute[<span class="hljs-type">MyApp</span>](<span class="hljs-string">"--help"</span>)
 </code></pre>
 <p>Then it will show the following help message:</p>
 <pre><code class="hljs"><span class="hljs-attribute">usage</span>: myapp [options]
 
-<span class="scss"><span class="hljs-selector-attr">[options]</span>
- -<span class="hljs-selector-tag">p</span> <span class="hljs-selector-attr">[PORT]</span>   port number
+<span class="routeros">[options]
+ -p [PORT]  <span class="hljs-built_in"> port </span>number
  -h, --help  show help messages
 </span></code></pre>
 <h3><a class="anchor" aria-hidden="true" id="available-annotations"></a><a href="#available-annotations" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Available Annotations</h3>
@@ -125,71 +125,71 @@ Launcher.execute[<span class="hljs-string">MyApp</span>](<span class="hljs-link"
 <p>You can define a command module (= a set of sub commands) using functions in a class.</p>
 <p>Add <code>@command</code> annotation to functions in order to define sub commands:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.launcher._
-<span class="hljs-keyword">import</span> wvlet.log.LogSupport
+<span class="hljs-keyword">import</span> wvlet.log.<span class="hljs-type">LogSupport</span>
 
 <span class="hljs-comment">// Define a global option</span>
-case <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">GlobalOption</span></span>(
-  <span class="hljs-meta">@option(prefix = <span class="hljs-meta-string">"-h,--help"</span>, description = <span class="hljs-meta-string">"display help messages"</span>, isHelp = true)</span> 
-  help: <span class="hljs-built_in">Boolean</span> = <span class="hljs-literal">false</span>,
-  <span class="hljs-meta">@option(prefix = <span class="hljs-meta-string">"-l,--loglevel"</span>, description = <span class="hljs-meta-string">"log level"</span>)</span> 
-  loglevel: Option[LogLevel] = None
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">GlobalOption</span>(<span class="hljs-params">
+  @option(prefix = "-h,--help", description = "display help messages", isHelp = true</span>) </span>
+  help: <span class="hljs-type">Boolean</span> = <span class="hljs-literal">false</span>,
+  <span class="hljs-meta">@option</span>(prefix = <span class="hljs-string">"-l,--loglevel"</span>, description = <span class="hljs-string">"log level"</span>) 
+  loglevel: <span class="hljs-type">Option</span>[<span class="hljs-type">LogLevel</span>] = <span class="hljs-type">None</span>
 )
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyApp</span></span>(g:GlobalOption) extends LogSupport {
-  Logger.setDefaultLogLevel(g.loglevel)
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyApp</span>(<span class="hljs-params">g:<span class="hljs-type">GlobalOption</span></span>) <span class="hljs-keyword">extends</span> <span class="hljs-title">LogSupport</span> </span>{
+  <span class="hljs-type">Logger</span>.setDefaultLogLevel(g.loglevel)
 
-  <span class="hljs-meta">@command(isDefault = true)</span>
-  def <span class="hljs-keyword">default</span> {
+  <span class="hljs-meta">@command</span>(isDefault = <span class="hljs-literal">true</span>)
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">default</span> </span>{
     println(<span class="hljs-string">"Type --help to display the list of commands"</span>)
   }
 
-  <span class="hljs-meta">@command(description = <span class="hljs-meta-string">"say hello"</span>)</span>
-  def hello = {
+  <span class="hljs-meta">@command</span>(description = <span class="hljs-string">"say hello"</span>)
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">hello</span> </span>= {
     println(<span class="hljs-string">"hello"</span>)
   }
 
-  <span class="hljs-meta">@command(description = <span class="hljs-meta-string">"say world"</span>)</span>
-  def world(<span class="hljs-meta">@argument</span> message: String) {
-    println(s<span class="hljs-string">"world <span class="hljs-subst">${message}</span>"</span>)
+  <span class="hljs-meta">@command</span>(description = <span class="hljs-string">"say world"</span>)
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">world</span></span>(<span class="hljs-meta">@argument</span> message: <span class="hljs-type">String</span>) {
+    println(<span class="hljs-string">s"world <span class="hljs-subst">${message}</span>"</span>)
   }
   
-  <span class="hljs-meta">@command(description = <span class="hljs-meta-string">"start a server"</span>)</span>
-  def start(
-    <span class="hljs-meta">@option(prefix=<span class="hljs-meta-string">"-p,--port"</span>, description = <span class="hljs-meta-string">"port number"</span>)</span>
-    port:<span class="hljs-built_in">Int</span> = <span class="hljs-number">8080</span>,
-    <span class="hljs-meta">@option(prefix=<span class="hljs-meta-string">"--host"</span>,description = <span class="hljs-meta-string">"server address"</span>)</span>
-    host:Option[String] = None
+  <span class="hljs-meta">@command</span>(description = <span class="hljs-string">"start a server"</span>)
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">start</span></span>(
+    <span class="hljs-meta">@option</span>(prefix=<span class="hljs-string">"-p,--port"</span>, description = <span class="hljs-string">"port number"</span>)
+    port:<span class="hljs-type">Int</span> = <span class="hljs-number">8080</span>,
+    <span class="hljs-meta">@option</span>(prefix=<span class="hljs-string">"--host"</span>,description = <span class="hljs-string">"server address"</span>)
+    host:<span class="hljs-type">Option</span>[<span class="hljs-type">String</span>] = <span class="hljs-type">None</span>
   ) {
     <span class="hljs-keyword">val</span> addr = host.getOrElse(<span class="hljs-string">"localhost"</span>)
-    println(s<span class="hljs-string">"Starting server at <span class="hljs-subst">${addr}</span>:<span class="hljs-subst">${port}</span>"</span>)
+    println(<span class="hljs-string">s"Starting server at <span class="hljs-subst">${addr}</span>:<span class="hljs-subst">${port}</span>"</span>)
   }
 }
 </code></pre>
 <p>You can call sub commands by specifying the name of the function.
 The sub command name will be matched in a canonical form (ignoring case and removing any symbols like '_', '-')</p>
-<pre><code class="hljs css language-scala">Launcher.execute[<span class="hljs-string">MyApp</span>](<span class="hljs-link">"hello"</span>)
-// hello
+<pre><code class="hljs css language-scala"><span class="hljs-type">Launcher</span>.execute[<span class="hljs-type">MyApp</span>](<span class="hljs-string">"hello"</span>)
+<span class="hljs-comment">// hello</span>
 
-Launcher.execute[<span class="hljs-string">MyApp</span>](<span class="hljs-link">"start --host localhost -p 10000"</span>)
-// Straing server at localhost:10000
+<span class="hljs-type">Launcher</span>.execute[<span class="hljs-type">MyApp</span>](<span class="hljs-string">"start --host localhost -p 10000"</span>)
+<span class="hljs-comment">// Straing server at localhost:10000</span>
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="nesting-sub-commands"></a><a href="#nesting-sub-commands" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Nesting Sub Commands</h2>
 <p>With <code>addModule</code>, you can add nested command set</p>
-<pre><code class="hljs css language-scala">// Add sub commands <span class="hljs-code">`command1`</span> and <span class="hljs-code">`command2`</span>:
-val l = Launcher.of[A]
-  .addModule[<span class="hljs-string">B</span>](<span class="hljs-link">name="command1", description="nested command set"</span>)
-  .addModule[<span class="hljs-string">C</span>](<span class="hljs-link">name="command2", description="..."</span>)
+<pre><code class="hljs css language-scala"><span class="hljs-comment">// Add sub commands `command1` and `command2`:</span>
+<span class="hljs-keyword">val</span> l = <span class="hljs-type">Launcher</span>.of[<span class="hljs-type">A</span>]
+  .addModule[<span class="hljs-type">B</span>](name=<span class="hljs-string">"command1"</span>, description=<span class="hljs-string">"nested command set"</span>)
+  .addModule[<span class="hljs-type">C</span>](name=<span class="hljs-string">"command2"</span>, description=<span class="hljs-string">"..."</span>)
 
-// Launch B
-l.execute("command1")
+<span class="hljs-comment">// Launch B</span>
+l.execute(<span class="hljs-string">"command1"</span>)
 
-// Launch C
-l.execute("command2")
+<span class="hljs-comment">// Launch C</span>
+l.execute(<span class="hljs-string">"command2"</span>)
 </code></pre>
 <p>It is also possible to nest Launcher(s):</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> subModule = Launcher.of[A]
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> subModule = <span class="hljs-type">Launcher</span>.of[<span class="hljs-type">A</span>]
 
-<span class="hljs-keyword">val</span> l = Launcher.of[Main]
+<span class="hljs-keyword">val</span> l = <span class="hljs-type">Launcher</span>.of[<span class="hljs-type">Main</span>]
   .add(subModule, name=<span class="hljs-string">"cmd-a"</span>, description=<span class="hljs-string">"sub command set"</span>)
 
 <span class="hljs-comment">// Launch A in subModule</span>
@@ -197,10 +197,10 @@ l.exucute(<span class="hljs-string">"cmd-a"</span>)
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="packaging-with-sbt-pack"></a><a href="#packaging-with-sbt-pack" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Packaging with sbt-pack</h3>
 <p>If you use <a href="https://github.com/xerial/sbt-pack">sbt-pack</a> plugin, you can create a stand-alone Scala program with a command-line interface:</p>
-<pre><code class="hljs css language-scala">enablePlugins(PackPlugin)
+<pre><code class="hljs css language-scala">enablePlugins(<span class="hljs-type">PackPlugin</span>)
 
-// This example creates <span class="hljs-string">`myapp`</span> command (target/<span class="hljs-keyword">pack</span>/bin/hello) that calls org.mydomain.MyApp<span class="hljs-comment">#main(Array[String]) </span>
-packMain := Map(<span class="hljs-string">"myapp"</span> -&gt; <span class="hljs-string">"org.mydomain.MyApp"</span>)
+<span class="hljs-comment">// This example creates `myapp` command (target/pack/bin/hello) that calls org.mydomain.MyApp#main(Array[String]) </span>
+packMain := <span class="hljs-type">Map</span>(<span class="hljs-string">"myapp"</span> -&gt; <span class="hljs-string">"org.mydomain.MyApp"</span>)
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="run-the-program"></a><a href="#run-the-program" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Run the program</h3>
 <pre><code class="hljs css language-sh">$ sbt pack

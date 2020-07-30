@@ -81,9 +81,9 @@ jdbc connection pool for Scala.</p>
 
 
 <span class="hljs-comment">// Create a new connection pool. The created pool will be closed when closing this factory.</span>
-<span class="hljs-keyword">val</span> factory = ConnectionPool.newFactory
+<span class="hljs-keyword">val</span> factory = <span class="hljs-type">ConnectionPool</span>.newFactory
 
-<span class="hljs-keyword">val</span> dbConfig = DbConfig.ofSQLite(path = <span class="hljs-string">"mydb.sqlite"</span>)
+<span class="hljs-keyword">val</span> dbConfig = <span class="hljs-type">DbConfig</span>.ofSQLite(path = <span class="hljs-string">"mydb.sqlite"</span>)
 <span class="hljs-keyword">val</span> connectionPool = factory.newConnectionPool(dbConfig)
 
 <span class="hljs-comment">// Create a new database</span>
@@ -100,7 +100,7 @@ connectionPool.executeQuery(<span class="hljs-string">"select * from test"</span
   <span class="hljs-keyword">while</span> (rs.next()) {
     <span class="hljs-keyword">val</span> id   = rs.getInt(<span class="hljs-string">"id"</span>)
     <span class="hljs-keyword">val</span> name = rs.getString(<span class="hljs-string">"name"</span>)
-    println(s<span class="hljs-string">"read (<span class="hljs-subst">${id}</span>, <span class="hljs-subst">${name}</span>)"</span>)
+    println(<span class="hljs-string">s"read (<span class="hljs-subst">${id}</span>, <span class="hljs-subst">${name}</span>)"</span>)
   }
 }
 
@@ -110,38 +110,38 @@ factory.close()
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="using-postgresql"></a><a href="#using-postgresql" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using PostgreSQL</h3>
 <p>For using RDS, configure DbConfig as follows:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-selector-tag">DbConfig</span><span class="hljs-selector-class">.ofPostgreSQL</span>(
+<pre><code class="hljs css language-scala"><span class="hljs-type">DbConfig</span>.ofPostgreSQL(
   host=<span class="hljs-string">"(your RDS address, e.g., mypostgres.xxxxxx.us-east-1.rds.amazonaws.com)"</span>,
   database=<span class="hljs-string">"mydatabase"</span>
 )
-<span class="hljs-selector-class">.withUser</span>(<span class="hljs-string">"postgres"</span>)
-<span class="hljs-selector-class">.withPassword</span>(<span class="hljs-string">"xxxxx"</span>)
+.withUser(<span class="hljs-string">"postgres"</span>)
+.withPassword(<span class="hljs-string">"xxxxx"</span>)
 </code></pre>
 <p>For accessing a local PostgreSQL without SSL support, disable SSL access like this:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-selector-tag">DbConfig</span><span class="hljs-selector-class">.ofPostgreSQL</span>(
+<pre><code class="hljs css language-scala"><span class="hljs-type">DbConfig</span>.ofPostgreSQL(
   host=<span class="hljs-string">"(your RDS address, e.g., mypostgres.xxxxxx.us-east-1.rds.amazonaws.com)"</span>,
   database=<span class="hljs-string">"mydatabase"</span>
 )
-<span class="hljs-selector-class">.withUser</span>(<span class="hljs-string">"postgres"</span>)
-<span class="hljs-selector-class">.withPassword</span>(<span class="hljs-string">"xxxxx"</span>),
-<span class="hljs-selector-class">.withPostgreSQLConfig</span>(PostgreSQLConfig(useSSL=false))
+.withUser(<span class="hljs-string">"postgres"</span>)
+.withPassword(<span class="hljs-string">"xxxxx"</span>),
+.withPostgreSQLConfig(<span class="hljs-type">PostgreSQLConfig</span>(useSSL=<span class="hljs-literal">false</span>))
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="configure-hikaricp-connection-pool"></a><a href="#configure-hikaricp-connection-pool" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Configure HikariCP Connection Pool</h3>
 <p>To add more configurations to the connection pool, use `withHikariConfig(...):</p>
-<pre><code class="hljs css language-scala"><span class="hljs-selector-tag">DbConfig</span>()<span class="hljs-selector-class">.withHikariConfig</span> { <span class="hljs-attribute">c</span>: HikariConfig =&gt;
-  // Add your configurations for HikariConfig 
-  c.<span class="hljs-built_in">setIdleTimeout</span>(...)
+<pre><code class="hljs css language-scala"><span class="hljs-type">DbConfig</span>().withHikariConfig { c: <span class="hljs-type">HikariConfig</span> =&gt;
+  <span class="hljs-comment">// Add your configurations for HikariConfig </span>
+  c.setIdleTimeout(...)
   c
 }
 </code></pre>
 <p>The basic configurations (e.g., jdbc driver name, host, port, user, password, etc.) are already set, so you don't need to add them in withHikariConfig.</p>
 <h2><a class="anchor" aria-hidden="true" id="using-with-airframe-di"></a><a href="#using-with-airframe-di" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using with Airframe DI</h2>
 <pre><code class="hljs css language-scala">
-val d = newDesign
-  .bind[DbConfig].toInstance(DbConfig(...))
-  .bind[ConnectionPool].toProvider { <span class="hljs-function">(<span class="hljs-params">f:ConnectionPoolFactory, dbConfig:DbConfig</span>) =&gt;</span> f.newConnectionPool(dbConfig) }
+<span class="hljs-keyword">val</span> d = newDesign
+  .bind[<span class="hljs-type">DbConfig</span>].toInstance(<span class="hljs-type">DbConfig</span>(...))
+  .bind[<span class="hljs-type">ConnectionPool</span>].toProvider { (f:<span class="hljs-type">ConnectionPoolFactory</span>, dbConfig:<span class="hljs-type">DbConfig</span>) =&gt; f.newConnectionPool(dbConfig) }
 
-d.build[ConnectionPool] { <span class="hljs-function"><span class="hljs-params">connectionPool</span> =&gt;</span>
+d.build[<span class="hljs-type">ConnectionPool</span>] { connectionPool =&gt;
   <span class="hljs-comment">// You can make queries using the connection pool</span>
   connectionPool.executeQuery(<span class="hljs-string">"select ..."</span>)
 }
@@ -153,19 +153,19 @@ d.build[ConnectionPool] { <span class="hljs-function"><span class="hljs-params">
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 <span class="hljs-keyword">import</span> wvlet.airframe.jdbc._
 
-object <span class="hljs-type">MultipleConnection</span> {
-  type <span class="hljs-type">MyDb1Config</span> = <span class="hljs-type">DbConfig</span>
-  type <span class="hljs-type">MyDb2Config</span> = <span class="hljs-type">DbConfig</span> 
+<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">MultipleConnection</span> </span>{
+  <span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">MyDb1Config</span> </span>= <span class="hljs-type">DbConfig</span>
+  <span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">MyDb2Config</span> </span>= <span class="hljs-type">DbConfig</span> 
 }
 
-<span class="hljs-keyword">import</span> MultipleConnection._
+<span class="hljs-keyword">import</span> <span class="hljs-type">MultipleConnection</span>._
 
-trait <span class="hljs-type">MultipleConnection</span> {
-  val pool1 = bind{ (p: <span class="hljs-type">ConnectionPoolFactory</span>, <span class="hljs-built_in">c</span>:<span class="hljs-type">MyDB1Config</span>) =&gt; p.newConnectionPool(<span class="hljs-built_in">c</span>) }
-  val pool2 = bind{ (p: <span class="hljs-type">ConnectionPoolFactory</span>, <span class="hljs-built_in">c</span>:<span class="hljs-type">MyDB2Config</span>) =&gt; p.newConnectionPool(<span class="hljs-built_in">c</span>) }
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MultipleConnection</span> </span>{
+  <span class="hljs-keyword">val</span> pool1 = bind{ (p: <span class="hljs-type">ConnectionPoolFactory</span>, c:<span class="hljs-type">MyDB1Config</span>) =&gt; p.newConnectionPool(c) }
+  <span class="hljs-keyword">val</span> pool2 = bind{ (p: <span class="hljs-type">ConnectionPoolFactory</span>, c:<span class="hljs-type">MyDB2Config</span>) =&gt; p.newConnectionPool(c) }
 }
 
-val d = newDesign
+<span class="hljs-keyword">val</span> d = newDesign
   .bind[<span class="hljs-type">MyDb1Config</span>].toInstance(<span class="hljs-type">DbConfig</span>.ofSQLite(path=<span class="hljs-string">"mydb.sqlite"</span>))
   .bind[<span class="hljs-type">MyDb2Config</span>].toInstance(<span class="hljs-type">DbConfig</span>.ofPostgreSQL(database=<span class="hljs-string">"mydatabase"</span>))
 </code></pre>

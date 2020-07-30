@@ -70,11 +70,11 @@
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="datasize"></a><a href="#datasize" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>DataSize</h2>
 <p>Human-readable byte-size representation (e.g., 10GB, 1TB, etc.)</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.metrics.DataSize
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.metrics.<span class="hljs-type">DataSize</span>
 
 <span class="hljs-comment">// Returns the most succinct representation of the data size</span>
-<span class="hljs-type">DataSize</span>.succinct(<span class="hljs-number">1024</span>).<span class="hljs-built_in">toString</span> <span class="hljs-comment">// 1kB</span>
-<span class="hljs-type">DataSize</span>.succinct(<span class="hljs-number">3</span> * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span>).<span class="hljs-built_in">toString</span> <span class="hljs-comment">// 3MB</span>
+<span class="hljs-type">DataSize</span>.succinct(<span class="hljs-number">1024</span>).toString <span class="hljs-comment">// 1kB</span>
+<span class="hljs-type">DataSize</span>.succinct(<span class="hljs-number">3</span> * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span>).toString <span class="hljs-comment">// 3MB</span>
 
 <span class="hljs-comment">// Parse the datasize strings</span>
 <span class="hljs-type">DataSize</span>(<span class="hljs-string">"5GB"</span>) <span class="hljs-comment">// DataSize(5.0, GIGABYTE)</span>
@@ -82,55 +82,55 @@
 <h2><a class="anchor" aria-hidden="true" id="elapsedtime"></a><a href="#elapsedtime" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>ElapsedTime</h2>
 <p>Human-readable time representation (e.g., 1ns, 1 us, 1ms, 1s, 1m, 1h, 1d, etc.) useful for
 measuring elapsed times.</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.metrics.ElapsedTime
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.metrics.<span class="hljs-type">ElapsedTime</span>
 
 <span class="hljs-comment">// Returns the most succinct</span>
-ElapsedTime.succinctMillis(<span class="hljs-number">3</span> * <span class="hljs-number">1000</span>) <span class="hljs-comment">// ElapsedTime(3.0, SECONDS)</span>
-ElapsedTime.succinctMillis(<span class="hljs-number">60</span> * <span class="hljs-number">1000</span>) <span class="hljs-comment">// ElapsedTime(1.0, MINUTES)</span>
+<span class="hljs-type">ElapsedTime</span>.succinctMillis(<span class="hljs-number">3</span> * <span class="hljs-number">1000</span>) <span class="hljs-comment">// ElapsedTime(3.0, SECONDS)</span>
+<span class="hljs-type">ElapsedTime</span>.succinctMillis(<span class="hljs-number">60</span> * <span class="hljs-number">1000</span>) <span class="hljs-comment">// ElapsedTime(1.0, MINUTES)</span>
 
 <span class="hljs-comment">// Parse the elapsed time strings</span>
-<span class="hljs-keyword">val</span> e = ElapsedTime(<span class="hljs-string">"1h"</span>) <span class="hljs-comment">// ElapsedTime(1.0, HOURS)</span>
+<span class="hljs-keyword">val</span> e = <span class="hljs-type">ElapsedTime</span>(<span class="hljs-string">"1h"</span>) <span class="hljs-comment">// ElapsedTime(1.0, HOURS)</span>
 e.toMillis <span class="hljs-comment">// 3600000</span>
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="count"></a><a href="#count" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Count</h2>
 <p>Human-readable integer representation for Long (signed 64-bit integer) values.</p>
-<pre><code class="hljs css language-scala"><span class="hljs-selector-tag">import</span> <span class="hljs-selector-tag">wvlet</span><span class="hljs-selector-class">.airframe</span><span class="hljs-selector-class">.metrics</span><span class="hljs-selector-class">.Count</span>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.metrics.<span class="hljs-type">Count</span>
 
-<span class="hljs-selector-tag">Count</span><span class="hljs-selector-class">.succinct</span>(<span class="hljs-number">123</span>L)<span class="hljs-selector-class">.toString</span> <span class="hljs-comment">// 123</span>
-<span class="hljs-selector-tag">Count</span><span class="hljs-selector-class">.succinct</span>(<span class="hljs-number">1234</span>L)<span class="hljs-selector-class">.toString</span> <span class="hljs-comment">// 1.23K</span>
-<span class="hljs-selector-tag">Count</span><span class="hljs-selector-class">.succinct</span>(<span class="hljs-number">1234567</span>L)<span class="hljs-selector-class">.toString</span> <span class="hljs-comment">// 1.23M</span>
+<span class="hljs-type">Count</span>.succinct(<span class="hljs-number">123</span>L).toString <span class="hljs-comment">// 123</span>
+<span class="hljs-type">Count</span>.succinct(<span class="hljs-number">1234</span>L).toString <span class="hljs-comment">// 1.23K</span>
+<span class="hljs-type">Count</span>.succinct(<span class="hljs-number">1234567</span>L).toString <span class="hljs-comment">// 1.23M</span>
 
-<span class="hljs-selector-tag">Count</span>(<span class="hljs-string">"1.23M"</span>) <span class="hljs-comment">// Count(1230000L, Count.MILLION)</span>
-<span class="hljs-selector-tag">Count</span>(<span class="hljs-string">"1,234"</span>) <span class="hljs-comment">// Count(1234, Count.ONE)</span>
+<span class="hljs-type">Count</span>(<span class="hljs-string">"1.23M"</span>) <span class="hljs-comment">// Count(1230000L, Count.MILLION)</span>
+<span class="hljs-type">Count</span>(<span class="hljs-string">"1,234"</span>) <span class="hljs-comment">// Count(1234, Count.ONE)</span>
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="relative-time-windows"></a><a href="#relative-time-windows" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Relative Time Windows</h2>
 <p>When writing data processing programs of time-series data, we usually don't care about the exact date. Rather we use <em>relative</em> time windows from the current time, such as today, last 7 days, last 6 hours, last month, etc.
 <code>TimeWindow</code> class in airframe-metrics enables specifying such time windows using a human-friendly string format.</p>
 <h3><a class="anchor" aria-hidden="true" id="code-example"></a><a href="#code-example" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Code Example</h3>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.metrics.TimeWindow
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.metrics.<span class="hljs-type">TimeWindow</span>
 
-val w =
+<span class="hljs-keyword">val</span> w =
   <span class="hljs-type">TimeWindow</span>
   .withTimeZone(<span class="hljs-string">"PDT"</span>)  <span class="hljs-comment">// Set a time zone (you can also use withSystemTimeZone, withUTC, etc.)</span>
   .withOffset(<span class="hljs-string">"2016-06-26 01:23:45-0700"</span>) <span class="hljs-comment">// Specify the context time. The default is the current time.</span>
 
 <span class="hljs-comment">// last 7 days</span>
-<span class="hljs-built_in">println</span>(w.parse(<span class="hljs-string">"-7d"</span>))     <span class="hljs-comment">// [2016-06-19 00:00:00-0700,2016-06-26 00:00:00-0700)</span>
+println(w.parse(<span class="hljs-string">"-7d"</span>))     <span class="hljs-comment">// [2016-06-19 00:00:00-0700,2016-06-26 00:00:00-0700)</span>
 
 <span class="hljs-comment">// last 7 days to now</span>
-<span class="hljs-built_in">println</span>(w.parse(<span class="hljs-string">"-7d/now"</span>)) <span class="hljs-comment">// [2016-06-19 00:00:00-0700,2016-06-26 01:23:45-0700)</span>
+println(w.parse(<span class="hljs-string">"-7d/now"</span>)) <span class="hljs-comment">// [2016-06-19 00:00:00-0700,2016-06-26 01:23:45-0700)</span>
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="time-window-string-representation"></a><a href="#time-window-string-representation" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Time Window String Representation</h2>
 <p>To specify time ranges at ease, airframe-metrics uses the following string representation of time windows, such as <code>-1d</code>, <code>-30m</code>, <code>+7d</code>, etc.
 Values with (or without)<code>-</code> sign means the <em>last</em> time range, and values with <code>+</code> sign means the next time range from the context time.</p>
 <h3><a class="anchor" aria-hidden="true" id="format"></a><a href="#format" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Format</h3>
-<pre><code class="hljs">DURATION := (+ | -)?(INTEGER)(UNIT)
-<span class="hljs-comment">// seconds, minutes, hours, days, weeks, (M)onths, quarters, years</span>
-UNIT     := s | m | h | d | w | M | q | y
+<pre><code class="hljs">DURATION := (+ | <span class="hljs-type">-)?(INTEGER</span>)(UNIT)
+// seconds, minutes, hours, days, weeks, (M)onths, quarters, years
+UNIT     := s | <span class="hljs-type">m</span> | <span class="hljs-type">h</span> | <span class="hljs-type">d</span> | <span class="hljs-type">w</span> | <span class="hljs-type">M</span> | <span class="hljs-type">q</span> | <span class="hljs-type">y</span>
 
-OFFSET   := DURATION | DATE_TIME
+OFFSET   := DURATION | <span class="hljs-type">DATE_TIME</span>
 RANGE    := (OFFSET) (/ (OFFSET))*
-DATE_TIME := yyyy-MM-dd( HH:mm:ss(.ZZZ|<span class="hljs-string">' '</span> z)?)?
+DATE_TIME := yyyy-MM-dd( HH:mm:ss(.ZZZ|<span class="hljs-type">' ' z</span>)?)?
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="examples"></a><a href="#examples" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Examples</h3>
 <p>Here are several examples of relative time window strings when the current time is <code>2016-06-26 01:23:45-0700</code>:</p>

@@ -82,36 +82,36 @@
 <p>Airframe is a collection of essential libraries. Add necessary modules for your applications to your <code>libraryDependencies</code> setting in <strong>build.sbt</strong> file.</p>
 <p><a href="https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22"><img src="https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central" alt="maven central"></a> <a href="https://index.scala-lang.org/wvlet/airframe"><img src="https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange" alt="airframe"></a></p>
 <p><strong>build.sbt</strong></p>
-<pre><code class="hljs css language-scala">val AIRFRAME_VERSION=<span class="hljs-string">"(version)"</span>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> <span class="hljs-type">AIRFRAME_VERSION</span>=<span class="hljs-string">"(version)"</span>
 
-<span class="hljs-comment"># For Scala 2.12, and 2.13</span>
-libraryDependencies ++= Seq(
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe"               %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Dependency injection
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-codec"         %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> MessagePack-based schema-on-read codec
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-config"        %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> YAML-based configuration
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-control"       %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Library <span class="hljs-keyword">for</span> retryable execution
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-http"          %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> HTTP REST API
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-http-finagle"  %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> HTTP server (Finagle backend)
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-http-recorder" %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> HTTP recorder <span class="hljs-keyword">and</span> replayer
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-jmx"           %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> JMX monitoring
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-jdbc"          %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> JDBC connection pool
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-json"          %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Pure Scala JSON parser
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-launcher"      %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Command-line program launcher
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-log"           %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Logging
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-metrics"       %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Metrics units
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-msgpack"       %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Pure-Scala MessagePack
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%% "airframe-surface"       %</span> AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Object surface inspector
+# <span class="hljs-type">For</span> <span class="hljs-type">Scala</span> <span class="hljs-number">2.12</span>, and <span class="hljs-number">2.13</span>
+libraryDependencies ++= <span class="hljs-type">Seq</span>(
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe"</span>               % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Dependency injection</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-codec"</span>         % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// MessagePack-based schema-on-read codec</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-config"</span>        % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// YAML-based configuration</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-control"</span>       % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Library for retryable execution</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http"</span>          % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// HTTP REST API</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-finagle"</span>  % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// HTTP server (Finagle backend)</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-recorder"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// HTTP recorder and replayer</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-jmx"</span>           % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// JMX monitoring</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-jdbc"</span>          % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// JDBC connection pool</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-json"</span>          % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Pure Scala JSON parser</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-launcher"</span>      % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Command-line program launcher</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-log"</span>           % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Logging</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-metrics"</span>       % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Metrics units</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-msgpack"</span>       % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Pure-Scala MessagePack</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-surface"</span>       % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Object surface inspector</span>
 )
 
-<span class="hljs-comment"># For Scala.js, the following libraries can be used:</span>
-libraryDependencies ++= Seq(
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%%%</span> <span class="hljs-string">"airframe"</span>         % AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Dependency injection
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%%%</span> <span class="hljs-string">"airframe-codec"</span>   % AIRFRAME_VERSION, <span class="hljs-regexp">//</span> MessagePack-based schema-on-read codec
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%%%</span> <span class="hljs-string">"airframe-json"</span>    % AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Pure Scala JSON parser
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%%%</span> <span class="hljs-string">"airframe-log"</span>     % AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Logging
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%%%</span> <span class="hljs-string">"airframe-msgpack"</span> % AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Pure-Scala MessagePack
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%%%</span> <span class="hljs-string">"airframe-metrics"</span> % AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Metrics units
-  <span class="hljs-string">"org.wvlet.airframe"</span> <span class="hljs-string">%%%</span> <span class="hljs-string">"airframe-surface"</span> % AIRFRAME_VERSION, <span class="hljs-regexp">//</span> Object surface inspector
+# <span class="hljs-type">For</span> <span class="hljs-type">Scala</span>.js, the following libraries can be used:
+libraryDependencies ++= <span class="hljs-type">Seq</span>(
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe"</span>         % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Dependency injection</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-codec"</span>   % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// MessagePack-based schema-on-read codec</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-json"</span>    % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Pure Scala JSON parser</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-log"</span>     % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Logging</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-msgpack"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Pure-Scala MessagePack</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-metrics"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Metrics units</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-surface"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Object surface inspector</span>
 )
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="usage-guides"></a><a href="#usage-guides" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Usage Guides</h2>
@@ -122,12 +122,12 @@ libraryDependencies ++= Seq(
 <p>For adding application logging, use <a href="/airframe/docs/airframe-log">airframe-log</a> library.</p>
 <p>slf4j and log4j are commonly used logging libraries in Java, but they are not fully utilizing the strength of Scala for enhancing log messages. <a href="/airframe/docs/airframe-log">airframe-log</a> is a new logging library designed for Scala, which is programatically configurable and supports showing the source code locations. Seeing the line number where the debug message is produced will significantly save your time for debugging your applications.</p>
 <p>To start logging with airframe-log, just extend <code>wvlet.log.LogSupport</code> and use <code>trace/debug/info/warn/error</code> logging methods. airframe-log uses Scala Macros to remove the performance overhead for generating debug log messages unless you set <code>Logger.setDefaultLogLevel(LogLevel.DEBUG)</code>:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.log.LogSupport
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.log.<span class="hljs-type">LogSupport</span>
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyApp</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">LogSupport</span> {</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyApp</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">LogSupport</span> </span>{
   info(<span class="hljs-string">"Hello airframe-log!"</span>)
   
-  <span class="hljs-regexp">//</span> If the log level <span class="hljs-keyword">is</span> INFO, <span class="hljs-keyword">this</span> will produce <span class="hljs-literal">no</span> message <span class="hljs-keyword">and</span> has <span class="hljs-literal">no</span> performance overhead.
+  <span class="hljs-comment">// If the log level is INFO, this will produce no message and has no performance overhead.</span>
   debug(<span class="hljs-string">"debug log message"</span>)
 }
 </code></pre>
@@ -136,13 +136,13 @@ libraryDependencies ++= Seq(
 <p>If you need to store object data to disks, or send them to remote machines (e.g., Spark applications), use <a href="/airframe/docs/airframe-codec">airframe-codec</a>, which is a <a href="https://msgpack.org">MessagePack</a>-based schema-on-read data serialization library.</p>
 <p><a href="https://github.com/FasterXML/jackson">Jackson</a> is a JSON-based data serialization library and supports mapping between JSON and classes. To control the mapping to objects, you need to add <code>@JSONProperty</code> annotation and configure ObjectMapper.</p>
 <p><a href="/airframe/docs/airframe-codec">airframe-codec</a> simplifies this process so that you can use case classes in Scala without any annotations. For producing compact binaries of your data, it also supports <a href="https://msgpack.org">MessagePack</a> format as well as JSON.</p>
-<pre><code class="hljs css language-scala">case <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Person</span></span>(id:<span class="hljs-built_in">Int</span>, name:String)
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Person</span>(<span class="hljs-params">id:<span class="hljs-type">Int</span>, name:<span class="hljs-type">String</span></span>)</span>
 
 <span class="hljs-comment">// Create a codec for serializing your model classes</span>
-<span class="hljs-keyword">val</span> codec = MessageCodec.of[Person]
+<span class="hljs-keyword">val</span> codec = <span class="hljs-type">MessageCodec</span>.of[<span class="hljs-type">Person</span>]
 
 <span class="hljs-comment">// Serialize in JSON or MessagePack</span>
-<span class="hljs-keyword">val</span> a = Person(<span class="hljs-number">1</span>, <span class="hljs-string">"Ann"</span>)
+<span class="hljs-keyword">val</span> a = <span class="hljs-type">Person</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"Ann"</span>)
 <span class="hljs-keyword">val</span> json = codec.toJson()       <span class="hljs-comment">// {"id":1,"name":"Ann"}</span>
 <span class="hljs-keyword">val</span> msgpack = codec.toMsgPack() <span class="hljs-comment">// MessagePack ArrayValue: [1,"name"]</span>
 
@@ -154,10 +154,10 @@ codec.fromMsgPack(msgpack) <span class="hljs-comment">// Person(1, "Ann")</span>
 <h4><a class="anchor" aria-hidden="true" id="schema-on-read-conversion"></a><a href="#schema-on-read-conversion" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Schema-On-Read Conversion</h4>
 <p><a href="/airframe/docs/airframe-codec">airframe-codec</a> adjusts input data types according to the target object types.
 This schema-on-read data conversion is quite powerful for mapping various types of input data (e.g., CSV, JSON, etc.) into Scala case classes.</p>
-<pre><code class="hljs css language-scala">val json = <span class="hljs-string">"""{"id":"2", "name":"Bob"}"""</span>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> json = <span class="hljs-string">""</span><span class="hljs-string">"{"</span><span class="hljs-string">id":"</span><span class="hljs-number">2</span><span class="hljs-string">", "</span><span class="hljs-string">name":"</span><span class="hljs-type">Bob</span><span class="hljs-string">"}"</span><span class="hljs-string">""</span>
 
-// <span class="hljs-string">"2"</span> (String) value will be converted to <span class="hljs-number">2</span> (Int)   
-codec.fromJson(json) // Person(<span class="hljs-number">2</span>, <span class="hljs-string">"Bob"</span>) 
+<span class="hljs-comment">// "2" (String) value will be converted to 2 (Int)   </span>
+codec.fromJson(json) <span class="hljs-comment">// Person(2, "Bob") </span>
 </code></pre>
 <p>Mapping between MessagePack and objects can be performed by combining codecs for individual parameter types:</p>
 <p><img src="../img/airframe-codec/schema-on-read.png" alt="schema"></p>
@@ -170,37 +170,37 @@ codec.fromJson(json) // Person(<span class="hljs-number">2</span>, <span class="
 </code></pre>
 <p>You can extract only the ids and the addresses from this JSON by defining a case class matching
 a pattern you want to extract:</p>
-<pre><code class="hljs css language-scala">case class AddressQuery(id:Int, address:Se<span class="hljs-string">q[String]</span>)
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AddressQuery</span>(<span class="hljs-params">id:<span class="hljs-type">Int</span>, address:<span class="hljs-type">Seq</span>[<span class="hljs-type">String</span>]</span>)</span>
 
-MessageCodec.of[Se<span class="hljs-string">q[AddressQuery]</span>].fromJson(json)
-// This code extracts:
-<span class="hljs-regexp">//</span>   Se<span class="hljs-string">q(AddressQuery(1, Seq("aaa","bbb")</span>), AddressQuery(<span class="hljs-number">2</span>, Se<span class="hljs-string">q["ccc","ddd"]</span>))
+<span class="hljs-type">MessageCodec</span>.of[<span class="hljs-type">Seq</span>[<span class="hljs-type">AddressQuery</span>]].fromJson(json)
+<span class="hljs-comment">// This code extracts:</span>
+<span class="hljs-comment">//   Seq(AddressQuery(1, Seq("aaa","bbb")), AddressQuery(2, Seq["ccc","ddd"]))</span>
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="rest-web-servers-and-clients"></a><a href="#rest-web-servers-and-clients" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>REST Web Servers and Clients</h3>
 <p>There are tons of web frameworks for developing web services in Java and Scala. We have designed <a href="/airframe/docs/airframe-http">airframe-http</a> so that we can minimize the learning cost in developing REST API servers and clients in Scala.</p>
 <p>airframe-http defines REST API by using regular Scala functions with <code>@Endpoint</code> annotation for specifying HTTP method types and request paths. Mapping from HTTP requests with JSON (or MessagePack) body contents into Scala functions are automatically handled in the framework, so you don't need to worry about manipulating JSON requests and respones.</p>
 <p>Here is an example REST API definition written in airframe-http:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// Model classes</span>
-<span class="hljs-selector-tag">case</span> <span class="hljs-selector-tag">class</span> <span class="hljs-selector-tag">ServerInfo</span>(<span class="hljs-attribute">version</span>:String)
-<span class="hljs-selector-tag">case</span> <span class="hljs-selector-tag">class</span> <span class="hljs-selector-tag">User</span>(<span class="hljs-attribute">id</span>:String, <span class="hljs-attribute">name</span>:String)
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServerInfo</span>(<span class="hljs-params">version:<span class="hljs-type">String</span></span>)</span>
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">User</span>(<span class="hljs-params">id:<span class="hljs-type">String</span>, name:<span class="hljs-type">String</span></span>)</span>
 
 <span class="hljs-comment">// Web server definition</span>
-<span class="hljs-selector-tag">trait</span> <span class="hljs-selector-tag">MyApp</span> {
-  <span class="hljs-variable">@Endpoint</span>(method = HttpMethod.GET, path = <span class="hljs-string">"/v1/info"</span>)
-  def <span class="hljs-attribute">serverInfo</span>: ServerInfo = ServerInfo(version = <span class="hljs-string">"1.0"</span>)
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyApp</span> </span>{
+  <span class="hljs-meta">@Endpoint</span>(method = <span class="hljs-type">HttpMethod</span>.<span class="hljs-type">GET</span>, path = <span class="hljs-string">"/v1/info"</span>)
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">serverInfo</span></span>: <span class="hljs-type">ServerInfo</span> = <span class="hljs-type">ServerInfo</span>(version = <span class="hljs-string">"1.0"</span>)
 
-  <span class="hljs-variable">@Endpoint</span>(method = HttpMethod.POST, path = <span class="hljs-string">"/v1/user"</span>)
-  def addUser(<span class="hljs-attribute">user</span>:User): User = {
+  <span class="hljs-meta">@Endpoint</span>(method = <span class="hljs-type">HttpMethod</span>.<span class="hljs-type">POST</span>, path = <span class="hljs-string">"/v1/user"</span>)
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">addUser</span></span>(user:<span class="hljs-type">User</span>): <span class="hljs-type">User</span> = {
      <span class="hljs-comment">// Add the given user to a database</span>
-     <span class="hljs-selector-tag">user</span>
+     user
   }
 }
 </code></pre>
 <p>Other than <code>@Endpoint</code> annotations, this is the same with regular Scala class definition.</p>
 <p>A client code to access this API is also simple like this:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// Accessing the server using an http client</span>
-<span class="hljs-selector-tag">client</span><span class="hljs-selector-class">.get</span><span class="hljs-selector-attr">[ServerInfo]</span>(<span class="hljs-string">"/v1/info"</span>)      <span class="hljs-comment">// ServerInfo("1.0")</span>
-<span class="hljs-selector-tag">client</span><span class="hljs-selector-class">.post</span>(<span class="hljs-string">"/v1/user"</span>, User(<span class="hljs-number">1</span>, <span class="hljs-string">"Ann"</span>)) <span class="hljs-comment">// User(1, "Ann")</span>
+client.get[<span class="hljs-type">ServerInfo</span>](<span class="hljs-string">"/v1/info"</span>)      <span class="hljs-comment">// ServerInfo("1.0")</span>
+client.post(<span class="hljs-string">"/v1/user"</span>, <span class="hljs-type">User</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"Ann"</span>)) <span class="hljs-comment">// User(1, "Ann")</span>
 </code></pre>
 <p>Mapping from HTTP responses to case classes is handled by <a href="/airframe/docs/airframe-codec">airframe-codec</a>.</p>
 <h3><a class="anchor" aria-hidden="true" id="rpc"></a><a href="#rpc" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>RPC</h3>
@@ -219,27 +219,27 @@ MessageCodec.of[Se<span class="hljs-string">q[AddressQuery]</span>].fromJson(jso
 <h3><a class="anchor" aria-hidden="true" id="command-line-parser"></a><a href="#command-line-parser" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Command-Line Parser</h3>
 <p>Handling command-line options is not trivial when you need to support a lot of options, nested commands, data type conversions (e.g., string to Int/Double/Boolean conversions, accepting <code>Option[_]</code> types for missing parameters), etc.</p>
 <p><a href="/airframe/docs/airframe-launcher">airframe-launcher</a> is a command line parser library that can instanciate command classes with <code>@option</code> and <code>@command</code> annotaions:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-selector-tag">class</span> <span class="hljs-selector-tag">MyApp</span>(<span class="hljs-variable">@option</span>(prefix = <span class="hljs-string">"-h,--help"</span>, description = <span class="hljs-string">"display help messages"</span>, isHelp = true) 
-            <span class="hljs-attribute">help</span>: Boolean = false,
-            <span class="hljs-variable">@option</span>(prefix = <span class="hljs-string">"-p"</span>, description = <span class="hljs-string">"port number"</span>) 
-            <span class="hljs-attribute">port</span>: Int = <span class="hljs-number">8080</span>) {
+<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyApp</span>(<span class="hljs-params">@option(prefix = "-h,--help", description = "display help messages", isHelp = true</span>) </span>
+            help: <span class="hljs-type">Boolean</span> = <span class="hljs-literal">false</span>,
+            <span class="hljs-meta">@option</span>(prefix = <span class="hljs-string">"-p"</span>, description = <span class="hljs-string">"port number"</span>) 
+            port: <span class="hljs-type">Int</span> = <span class="hljs-number">8080</span>) {
 
-   <span class="hljs-variable">@command</span>(isDefault = true)
-   def <span class="hljs-attribute">default</span>: Unit = {
-     <span class="hljs-selector-tag">println</span>(s<span class="hljs-string">"Hello airframe. port:${port}"</span>)
+   <span class="hljs-meta">@command</span>(isDefault = <span class="hljs-literal">true</span>)
+   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">default</span></span>: <span class="hljs-type">Unit</span> = {
+     println(<span class="hljs-string">s"Hello airframe. port:<span class="hljs-subst">${port}</span>"</span>)
    }
 }
 
-<span class="hljs-selector-tag">Launcher</span><span class="hljs-selector-class">.execute</span><span class="hljs-selector-attr">[MyApp]</span>(<span class="hljs-string">"-p 1000"</span>)
+<span class="hljs-type">Launcher</span>.execute[<span class="hljs-type">MyApp</span>](<span class="hljs-string">"-p 1000"</span>)
 </code></pre>
 <p>This also helps generating help message of your applications:</p>
-<pre><code class="hljs css language-scala">Launcher.execute[<span class="hljs-string">MyApp</span>](<span class="hljs-link">"--help"</span>)
+<pre><code class="hljs css language-scala"><span class="hljs-type">Launcher</span>.execute[<span class="hljs-type">MyApp</span>](<span class="hljs-string">"--help"</span>)
 </code></pre>
 <p>This command will show:</p>
 <pre><code class="hljs"><span class="hljs-attribute">usage</span>: myapp [options]
 
-<span class="scss"><span class="hljs-selector-attr">[options]</span>
- -<span class="hljs-selector-tag">p</span> <span class="hljs-selector-attr">[PORT]</span>   port number
+<span class="routeros">[options]
+ -p [PORT]  <span class="hljs-built_in"> port </span>number
  -h, --help  show help messages
 </span></code></pre>
 <h3><a class="anchor" aria-hidden="true" id="application-config-flow"></a><a href="#application-config-flow" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Application Config Flow</h3>

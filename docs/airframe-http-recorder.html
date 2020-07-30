@@ -86,54 +86,54 @@ This is useful for testing HTTP server interactions in an environment with limit
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="record--replay"></a><a href="#record--replay" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Record &amp; Replay</h3>
 <pre><code class="hljs css language-scala">
-<span class="hljs-keyword">import</span> wvlet.airframe.control.Control._
-<span class="hljs-keyword">import</span> wvlet.airframe.http.recorder.{HttpRecorder,HttpRecorderConfig}
-<span class="hljs-keyword">import</span> wvlet.airframe.http.finagle.FinagleClient
-<span class="hljs-keyword">import</span> com.twitter.finagle.http.Status
-<span class="hljs-keyword">import</span> com.twitter.finagle.http.{Request,Response}
+<span class="hljs-keyword">import</span> wvlet.airframe.control.<span class="hljs-type">Control</span>._
+<span class="hljs-keyword">import</span> wvlet.airframe.http.recorder.{<span class="hljs-type">HttpRecorder</span>,<span class="hljs-type">HttpRecorderConfig</span>}
+<span class="hljs-keyword">import</span> wvlet.airframe.http.finagle.<span class="hljs-type">FinagleClient</span>
+<span class="hljs-keyword">import</span> com.twitter.finagle.http.<span class="hljs-type">Status</span>
+<span class="hljs-keyword">import</span> com.twitter.finagle.http.{<span class="hljs-type">Request</span>,<span class="hljs-type">Response</span>}
 
 <span class="hljs-comment">// Create a proxy server that will record responses for matching requests,</span>
 <span class="hljs-comment">// and make actual requests the destination for non-recorded requests.</span>
-val recorderConfig = HttpRecorderConfig(destUri = <span class="hljs-string">"https://www.google.com"</span>)
-withResource(HttpRecorder.createRecorderProxy(recorderConfig)) { <span class="hljs-function"><span class="hljs-params">server</span> =&gt;</span>
+<span class="hljs-keyword">val</span> recorderConfig = <span class="hljs-type">HttpRecorderConfig</span>(destUri = <span class="hljs-string">"https://www.google.com"</span>)
+withResource(<span class="hljs-type">HttpRecorder</span>.createRecorderProxy(recorderConfig)) { server =&gt;
 
   <span class="hljs-comment">// Create an HTTP client. This example uses Finagle's http client implementation</span>
-  val client = FinagleClient.newSyncClient(server.localAddress)  <span class="hljs-comment">// "localhost:(port number)"</span>
+  <span class="hljs-keyword">val</span> client = <span class="hljs-type">FinagleClient</span>.newSyncClient(server.localAddress)  <span class="hljs-comment">// "localhost:(port number)"</span>
 
   <span class="hljs-comment">// Requests to the local server will be recorded</span>
-  val response = client.send(Request(<span class="hljs-string">"/"</span>))
+  <span class="hljs-keyword">val</span> response = client.send(<span class="hljs-type">Request</span>(<span class="hljs-string">"/"</span>))
 
   <span class="hljs-comment">// You can record your own dummy responses</span>
-  server.record(Request(<span class="hljs-string">"/dummy"</span>), Response(Status.NotFound))
+  server.record(<span class="hljs-type">Request</span>(<span class="hljs-string">"/dummy"</span>), <span class="hljs-type">Response</span>(<span class="hljs-type">Status</span>.<span class="hljs-type">NotFound</span>))
 }
 
 
 <span class="hljs-comment">// Create a proxy server only for recording server responses</span>
-withResource(HttpRecorder.createRecordOnlyServer(recorderConfig)) { <span class="hljs-function"><span class="hljs-params">server</span> =&gt;</span>
-  val addr = server.localAddress <span class="hljs-comment">// "localhost:(port number)"</span>
+withResource(<span class="hljs-type">HttpRecorder</span>.createRecordOnlyServer(recorderConfig)) { server =&gt;
+  <span class="hljs-keyword">val</span> addr = server.localAddress <span class="hljs-comment">// "localhost:(port number)"</span>
   <span class="hljs-comment">// Requests to the local server will be recorded</span>
 
   <span class="hljs-comment">// If necessary, add custom request-response pairs</span>
-  server.recordIfNotExists(Request(<span class="hljs-string">"/dummy"</span>), Response(Status.Ok))
+  server.recordIfNotExists(<span class="hljs-type">Request</span>(<span class="hljs-string">"/dummy"</span>), <span class="hljs-type">Response</span>(<span class="hljs-type">Status</span>.<span class="hljs-type">Ok</span>))
 }
 
 <span class="hljs-comment">// Create a replay server that returns recorded responses for matching requests </span>
-withResource(HttpRecorder.createReplayOnlyServer(recorderConfig)) { <span class="hljs-function"><span class="hljs-params">server</span> =&gt;</span>
-  val addr = server.localAddress <span class="hljs-comment">// "localhost:(port number)"</span>
+withResource(<span class="hljs-type">HttpRecorder</span>.createReplayOnlyServer(recorderConfig)) { server =&gt;
+  <span class="hljs-keyword">val</span> addr = server.localAddress <span class="hljs-comment">// "localhost:(port number)"</span>
   <span class="hljs-comment">// Requests to the local server will return the recorded responses</span>
 }
 
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="programmable-httprecorderserver"></a><a href="#programmable-httprecorderserver" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Programmable HttpRecorderServer</h3>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.recorder._
-<span class="hljs-keyword">import</span> wvlet.airframe.control.Control._
-<span class="hljs-keyword">import</span> com.twitter.finagle.http.{Request,Response}
+<span class="hljs-keyword">import</span> wvlet.airframe.control.<span class="hljs-type">Control</span>._
+<span class="hljs-keyword">import</span> com.twitter.finagle.http.{<span class="hljs-type">Request</span>,<span class="hljs-type">Response</span>}
 
-<span class="hljs-keyword">val</span> recorderConfig = HttpRecorderConfig(sessionName=<span class="hljs-string">"my-recording"</span>)
-<span class="hljs-keyword">val</span> response = withResource(HttpRecorder.createProgrammableServer(recorderConfig)) { server =&gt;
+<span class="hljs-keyword">val</span> recorderConfig = <span class="hljs-type">HttpRecorderConfig</span>(sessionName=<span class="hljs-string">"my-recording"</span>)
+<span class="hljs-keyword">val</span> response = withResource(<span class="hljs-type">HttpRecorder</span>.createProgrammableServer(recorderConfig)) { server =&gt;
   <span class="hljs-comment">// Add custom server responses</span>
-  <span class="hljs-keyword">val</span> request = Request(<span class="hljs-string">"/index.html"</span>)
-  <span class="hljs-keyword">val</span> response = Response()
+  <span class="hljs-keyword">val</span> request = <span class="hljs-type">Request</span>(<span class="hljs-string">"/index.html"</span>)
+  <span class="hljs-keyword">val</span> response = <span class="hljs-type">Response</span>()
   response.setContentString(<span class="hljs-string">"Hello World!"</span>)
   server.record(request, response)
 
@@ -148,9 +148,9 @@ discarded after closing the server.</p>
 <p>By default, http-recorder finds records that have the same method type (e.g., GET, POST, etc.), path, query string, request body, and HTTP headers. Some unstable HTTP headers like Date, User-Agent, etc. (defined in <code>defaultExcludeHeaderPrefixes</code>) will not be used for matching.</p>
 <p>If this matching is too strict, we can use <code>PathOnlyMatcher</code> (checks only method types and uri) or your own implementation to compute hash values for matching requests:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.recorder._
-<span class="hljs-keyword">import</span> wvlet.airframe.control.Control._
+<span class="hljs-keyword">import</span> wvlet.airframe.control.<span class="hljs-type">Control</span>._
 
-val config = <span class="hljs-type">HttpRecorderConfig</span>(requestMatcher = <span class="hljs-type">HttpRequestMatcher</span>.<span class="hljs-type">PathOnlyMatcher</span>)
+<span class="hljs-keyword">val</span> config = <span class="hljs-type">HttpRecorderConfig</span>(requestMatcher = <span class="hljs-type">HttpRequestMatcher</span>.<span class="hljs-type">PathOnlyMatcher</span>)
 withResource(<span class="hljs-type">HttpRecorder</span>.createInMemoryServer(config)) { server =&gt;
   <span class="hljs-comment">// </span>
 }

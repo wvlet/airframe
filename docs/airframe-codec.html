@@ -86,16 +86,16 @@ airframe-codec can convert it into integers if the target schema (e.g., objects)
 <p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-codec_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-codec_2.12/badge.svg" alt="Maven Central"></a></p>
 <pre><code class="hljs css language-scala">libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-codec"</span> % <span class="hljs-string">"(version)"</span>
 </code></pre>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.codec.MessageCodec
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.codec.<span class="hljs-type">MessageCodec</span>
 
 
-case <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">A</span></span>(id:<span class="hljs-built_in">Int</span>, name:String)
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">A</span>(<span class="hljs-params">id:<span class="hljs-type">Int</span>, name:<span class="hljs-type">String</span></span>)</span>
 
 <span class="hljs-comment">// Automatically generate a codec (MessagePack-based reader/writer) for A</span>
-<span class="hljs-keyword">val</span> codec = MessageCodec.of[A]
+<span class="hljs-keyword">val</span> codec = <span class="hljs-type">MessageCodec</span>.of[<span class="hljs-type">A</span>]
 
 <span class="hljs-comment">// Convert an object into msgpack binary</span>
-<span class="hljs-keyword">val</span> a = A(<span class="hljs-number">1</span>, <span class="hljs-string">"leo"</span>)
+<span class="hljs-keyword">val</span> a = <span class="hljs-type">A</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"leo"</span>)
 <span class="hljs-keyword">val</span> msgpack = codec.toMsgPack(a)
 
 <span class="hljs-comment">// Read MsgPack data as object (exception-free)</span>
@@ -116,13 +116,13 @@ codec.fromJson(json) <span class="hljs-comment">// A(1, "leo")</span>
 <ul>
 <li>To create a custom codec, use MessageCodecFactory.</li>
 </ul>
-<pre><code class="hljs css language-scala">case <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Person</span></span>(id:<span class="hljs-built_in">Int</span>, name:String)
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Person</span>(<span class="hljs-params">id:<span class="hljs-type">Int</span>, name:<span class="hljs-type">String</span></span>)</span>
 
 <span class="hljs-comment">// Create a codec for serializing your model classes</span>
-<span class="hljs-keyword">val</span> codec = MessageCodec.of[Person]
+<span class="hljs-keyword">val</span> codec = <span class="hljs-type">MessageCodec</span>.of[<span class="hljs-type">Person</span>]
 
 <span class="hljs-comment">// Serialize in JSON or MessagePack</span>
-<span class="hljs-keyword">val</span> a = Person(<span class="hljs-number">1</span>, <span class="hljs-string">"Ann"</span>)
+<span class="hljs-keyword">val</span> a = <span class="hljs-type">Person</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"Ann"</span>)
 <span class="hljs-keyword">val</span> json = codec.toJson()       <span class="hljs-comment">// {"id":1,"name":"Ann"}</span>
 <span class="hljs-keyword">val</span> msgpack = codec.toMsgPack() <span class="hljs-comment">// MessagePack ArrayValue: [1,"name"]</span>
 
@@ -134,10 +134,10 @@ codec.fromMsgPack(msgpack) <span class="hljs-comment">// Person(1, "Ann")</span>
 <h2><a class="anchor" aria-hidden="true" id="schema-on-read-conversion"></a><a href="#schema-on-read-conversion" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Schema-On-Read Conversion</h2>
 <p><a href="/airframe/docs/airframe-codec">airframe-codec</a> adjusts input data types according to the target object types.
 This schema-on-read data conversion is quite powerful for mapping various types of input data (e.g., CSV, JSON, etc.) into Scala case classes.</p>
-<pre><code class="hljs css language-scala">val json = <span class="hljs-string">"""{"id":"2", "name":"Bob"}"""</span>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> json = <span class="hljs-string">""</span><span class="hljs-string">"{"</span><span class="hljs-string">id":"</span><span class="hljs-number">2</span><span class="hljs-string">", "</span><span class="hljs-string">name":"</span><span class="hljs-type">Bob</span><span class="hljs-string">"}"</span><span class="hljs-string">""</span>
 
-// <span class="hljs-string">"2"</span> (String) value will be converted to <span class="hljs-number">2</span> (Int)   
-codec.fromJson(json) // Person(<span class="hljs-number">2</span>, <span class="hljs-string">"Bob"</span>) 
+<span class="hljs-comment">// "2" (String) value will be converted to 2 (Int)   </span>
+codec.fromJson(json) <span class="hljs-comment">// Person(2, "Bob") </span>
 </code></pre>
 <p>Mapping between MessagePack and objects can be performed by combining codecs for individual parameter types:</p>
 <p><img src="../img/airframe-codec/schema-on-read.png" alt="schema"></p>
@@ -150,11 +150,11 @@ codec.fromJson(json) // Person(<span class="hljs-number">2</span>, <span class="
 </code></pre>
 <p>You can extract only the ids and the addresses from this JSON by defining a case class matching
 a pattern you want to extract:</p>
-<pre><code class="hljs css language-scala">case class AddressQuery(id:Int, address:Se<span class="hljs-string">q[String]</span>)
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AddressQuery</span>(<span class="hljs-params">id:<span class="hljs-type">Int</span>, address:<span class="hljs-type">Seq</span>[<span class="hljs-type">String</span>]</span>)</span>
 
-MessageCodec.of[Se<span class="hljs-string">q[AddressQuery]</span>].fromJson(json)
-// This code extracts:
-<span class="hljs-regexp">//</span>   Se<span class="hljs-string">q(AddressQuery(1, Seq("aaa","bbb")</span>), AddressQuery(<span class="hljs-number">2</span>, Se<span class="hljs-string">q["ccc","ddd"]</span>))
+<span class="hljs-type">MessageCodec</span>.of[<span class="hljs-type">Seq</span>[<span class="hljs-type">AddressQuery</span>]].fromJson(json)
+<span class="hljs-comment">// This code extracts:</span>
+<span class="hljs-comment">//   Seq(AddressQuery(1, Seq("aaa","bbb")), AddressQuery(2, Seq["ccc","ddd"]))</span>
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="zero-default-values"></a><a href="#zero-default-values" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Zero: Default Values</h2>
 <p>When mapping data into objects, some parameter values might be missing in the input data. In this case, airframe-codec will try to populate these missing parameters with the default values of the target types, called <code>Zero</code>. This default parameter mapping is defined in <code>Zero.zeroOf[X]</code>. For example, if the target type is Int, <code>zeroOf[Int]</code> will be 0, and for String <code>zeroOf[String]</code> is <code>&quot;&quot;</code> (empty string).</p>
@@ -179,14 +179,14 @@ MessageCodec.of[Se<span class="hljs-string">q[AddressQuery]</span>].fromJson(jso
 </table>
 <h2><a class="anchor" aria-hidden="true" id="strict-mapping-annotation"></a><a href="#strict-mapping-annotation" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Strict Mapping Annotation</h2>
 <p>If you need to ensure the presence of some parameter values, add <code>@requried</code> annotation to the target object parameters. If some necessary parameter is missing, MessageCodecException will be thrown:</p>
-<pre><code class="hljs css language-scals"><span class="hljs-keyword">import</span> wvlet.airframe.surface.required
+<pre><code class="hljs css language-scals">import wvlet.airframe.surface.required
 
-<span class="hljs-keyword">case</span> <span class="hljs-keyword">class</span> Person(<span class="hljs-meta">@required</span> id:<span class="hljs-built_in">String</span>, <span class="hljs-meta">@requried</span> name:<span class="hljs-built_in">String</span>)
+case <span class="hljs-keyword">class</span> <span class="hljs-constructor">Person(@<span class="hljs-params">required</span> <span class="hljs-params">id</span>:String, @<span class="hljs-params">requried</span> <span class="hljs-params">name</span>:String)</span>
 
-val codec = MessageCodec.of[Person]
+<span class="hljs-keyword">val</span> codec = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">MessageCodec</span>.</span></span><span class="hljs-keyword">of</span><span class="hljs-literal">[P<span class="hljs-identifier">erson</span>]</span>
 
 <span class="hljs-comment">// Throws MessageCodecException (MISSING_PARAMETER) exception as id value is not found</span>
-codec.fromJson(<span class="hljs-string">""</span><span class="hljs-string">"{"</span>name<span class="hljs-string">":"</span>Peter<span class="hljs-string">"}"</span><span class="hljs-string">""</span>)
+codec.from<span class="hljs-constructor">Json(<span class="hljs-string">""</span><span class="hljs-string">"{"</span><span class="hljs-params">name</span><span class="hljs-string">":"</span>Peter<span class="hljs-string">"}"</span><span class="hljs-string">""</span>)</span>
 
 </code></pre>
 </span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airspec"><span class="arrow-prev">← </span><span class="function-name-prevnext">AirSpec: Testing Framework</span></a><a class="docs-next button" href="/airframe/docs/airframe-config"><span>airframe-config: Application Config Flow</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#usage">Usage</a></li><li><a href="#schema-on-read-conversion">Schema-On-Read Conversion</a></li><li><a href="#querying-json-and-messagepack-data">Querying JSON and MessagePack Data</a></li><li><a href="#zero-default-values">Zero: Default Values</a></li><li><a href="#strict-mapping-annotation">Strict Mapping Annotation</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2020 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));

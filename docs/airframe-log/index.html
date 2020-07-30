@@ -73,7 +73,7 @@
 <p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/badge.svg" alt="Maven Central"></a></p>
 <pre><code class="hljs css language-scala">libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-log"</span> % <span class="hljs-string">"(version)"</span>
 
-// For Scala.js (Since airframe-log 1.2)
+<span class="hljs-comment">// For Scala.js (Since airframe-log 1.2)</span>
 libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-log"</span> % <span class="hljs-string">"(version)"</span>
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="features"></a><a href="#features" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Features</h2>
@@ -106,53 +106,53 @@ libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %%%
 </ul>
 <h3><a class="anchor" aria-hidden="true" id="using-logsupport-trait"></a><a href="#using-logsupport-trait" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using LogSupport trait</h3>
 <p>The most convenient way to use airframe-log is adding <code>LogSupport</code> to your class:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.<span class="hljs-built_in">log</span>.LogSupport
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.log.<span class="hljs-type">LogSupport</span>
 
-object MyApp extends LogSupport  {
+<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">MyApp</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">LogSupport</span>  </span>{
    info(<span class="hljs-string">"info log"</span>)
    debug(<span class="hljs-string">"debug log"</span>)
 }
 </code></pre>
 <p>The logger name will be determined from your class name (e.g., <code>MyApp</code>).</p>
 <p>Alternatively you can load <code>Logger</code> instance manually:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.<span class="hljs-built_in">log</span>.Logger
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.log.<span class="hljs-type">Logger</span>
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">YourApp</span> {</span>
-   <span class="hljs-keyword">private</span> val logger = Logger.of[YourApp]
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">YourApp</span> </span>{
+   <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> logger = <span class="hljs-type">Logger</span>.of[<span class="hljs-type">YourApp</span>]
 }
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="using-the-default-configuration"></a><a href="#using-the-default-configuration" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using the default configuration</h3>
 <p>If your project involves dependencies that set their own java.util.logging configurations,
 you can force using the default configuration of airframe-log by calling <code>Logger.init</code>:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.<span class="hljs-built_in">log</span>.Logger
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.log.<span class="hljs-type">Logger</span>
 
 <span class="hljs-comment">// Initialize with INFO level and SourceCodeLogFormatter</span>
-Logger.init
+<span class="hljs-type">Logger</span>.init
 
 <span class="hljs-comment">// For terminals not supporting ANSI colors</span>
-wvlet.airframe.<span class="hljs-built_in">log</span>.initNoColor
+wvlet.airframe.log.initNoColor
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="configuring-log-levels"></a><a href="#configuring-log-levels" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Configuring log levels</h3>
 <p>To configure log levels, use <code>Logger.setDefaultLogLevel(...)</code> or <code>Logger.setLogLevel(...)</code>:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// Set the root logger's log level</span>
-<span class="hljs-selector-tag">Logger</span><span class="hljs-selector-class">.setDefaultLogLevel</span>(LogLevel.DEBUG)
+<span class="hljs-type">Logger</span>.setDefaultLogLevel(<span class="hljs-type">LogLevel</span>.<span class="hljs-type">DEBUG</span>)
 
 <span class="hljs-comment">// Configure log level for each package or logger</span>
-<span class="hljs-selector-tag">Logger</span>(<span class="hljs-string">"(your logger package or name)"</span>)<span class="hljs-selector-class">.setLogLevel</span>(LogLevel.DEBUG)
+<span class="hljs-type">Logger</span>(<span class="hljs-string">"(your logger package or name)"</span>).setLogLevel(<span class="hljs-type">LogLevel</span>.<span class="hljs-type">DEBUG</span>)
 </code></pre>
 <p>(Note: The scheduled log level scan is not available in Scala.js)</p>
 <p>If <code>Logger.scheduleLogLevelScan</code> is called, airframe-log periodically scans log-level properties file (default every 1 minute) to configure logger levels:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-selector-tag">import</span> <span class="hljs-selector-tag">wvlet</span><span class="hljs-selector-class">.log</span><span class="hljs-selector-class">.Logger</span>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.log.<span class="hljs-type">Logger</span>
 
-## <span class="hljs-selector-tag">Scan</span> <span class="hljs-selector-tag">log</span> <span class="hljs-selector-tag">files</span> (<span class="hljs-selector-tag">not</span> <span class="hljs-selector-tag">available</span> <span class="hljs-selector-tag">for</span> <span class="hljs-selector-tag">Scala</span><span class="hljs-selector-class">.js</span>)
-<span class="hljs-selector-tag">Logger</span><span class="hljs-selector-class">.scheduleLogLevelScan</span>
+## <span class="hljs-type">Scan</span> log files (not available <span class="hljs-keyword">for</span> <span class="hljs-type">Scala</span>.js)
+<span class="hljs-type">Logger</span>.scheduleLogLevelScan
 </code></pre>
 <p><strong><em>log.properties</em></strong> example:</p>
-<pre><code class="hljs"><span class="hljs-comment"># You can use all, trace, debug, info, warn, error, info, all as log level</span>
-<span class="hljs-attr">wvlet.airframe</span>=debug
-<span class="hljs-attr">org.eclipse.jetty</span>=info
-<span class="hljs-attr">org.apache.http</span>=info
-<span class="hljs-attr">com.amazonaws</span>=info
+<pre><code class="hljs"># You can use <span class="hljs-keyword">all</span>, trace, <span class="hljs-keyword">debug</span>, <span class="hljs-keyword">info</span>, warn, error, <span class="hljs-keyword">info</span>, <span class="hljs-keyword">all</span> <span class="hljs-keyword">as</span> <span class="hljs-keyword">log</span> <span class="hljs-keyword">level</span>
+wvlet.airframe=<span class="hljs-keyword">debug</span>
+org.eclipse.jetty=<span class="hljs-keyword">info</span>
+org.apache.http=<span class="hljs-keyword">info</span>
+com.amazonaws=<span class="hljs-keyword">info</span>
 </code></pre>
 <p>The format follows <a href="https://docs.oracle.com/javase/7/docs/api/java/util/Properties.html#load(java.io.Reader)">Java Properties file format</a>.</p>
 <p>In default, loglevel file will be found in this order:</p>
@@ -166,28 +166,28 @@ call <code>Logger.scheduleLogLevelScan</code> before running test cases. This is
 <h3><a class="anchor" aria-hidden="true" id="using-loglevelscanner-with-scalatest"></a><a href="#using-loglevelscanner-with-scalatest" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using LoglevelScanner with ScalaTest</h3>
 <p>To scan log level properties periodically with <a href="http://www.scalatest.org/">ScalaTest</a>, define the base trait as follows:</p>
 <p><strong><a href="https://github.com/wvlet/log/blob/master/src/test/scala/wvlet/log/Spec.scala">Spec.scala</a></strong></p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpec, _}
-<span class="hljs-keyword">import</span> wvlet.log.LogFormatter.SourceCodeLogFormatter
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> org.scalatest.{<span class="hljs-type">BeforeAndAfter</span>, <span class="hljs-type">BeforeAndAfterAll</span>, <span class="hljs-type">WordSpec</span>, _}
+<span class="hljs-keyword">import</span> wvlet.log.<span class="hljs-type">LogFormatter</span>.<span class="hljs-type">SourceCodeLogFormatter</span>
 
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Spec</span> <span class="hljs-title">extends</span> <span class="hljs-title">WordSpec</span> <span class="hljs-title">with</span> <span class="hljs-title">Matchers</span> <span class="hljs-title">with</span> <span class="hljs-title">BeforeAndAfterAll</span> <span class="hljs-title">with</span> <span class="hljs-title">LogSupport</span> </span>{
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Spec</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">WordSpec</span> <span class="hljs-keyword">with</span> <span class="hljs-title">Matchers</span> <span class="hljs-keyword">with</span> <span class="hljs-title">BeforeAndAfterAll</span> <span class="hljs-keyword">with</span> <span class="hljs-title">LogSupport</span> </span>{
   <span class="hljs-comment">// Set the default log formatter</span>
-  Logger.setDefaultFormatter(SourceCodeLogFormatter)
+  <span class="hljs-type">Logger</span>.setDefaultFormatter(<span class="hljs-type">SourceCodeLogFormatter</span>)
 
-  <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> def beforeAll(): <span class="hljs-built_in">Unit</span> = {
+  <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">beforeAll</span></span>(): <span class="hljs-type">Unit</span> = {
     <span class="hljs-comment">// Run LogLevel scanner (log-test.properties or log.properties in classpath) every 1 minute</span>
-    Logger.scheduleLogLevelScan
+    <span class="hljs-type">Logger</span>.scheduleLogLevelScan
     <span class="hljs-keyword">super</span>.beforeAll()
   }
 
-  <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> def afterAll(): <span class="hljs-built_in">Unit</span> = {
-    Logger.stopScheduledLogLevelScan
+  <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">afterAll</span></span>(): <span class="hljs-type">Unit</span> = {
+    <span class="hljs-type">Logger</span>.stopScheduledLogLevelScan
     <span class="hljs-keyword">super</span>.afterAll()
   }
 }
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">YourSpec</span> <span class="hljs-title">extends</span> <span class="hljs-title">Spec</span> </span>{
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">YourSpec</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Spec</span> </span>{
    <span class="hljs-string">"my application"</span> should {
-      <span class="hljs-string">"run correctly"</span> <span class="hljs-keyword">in</span> {
+      <span class="hljs-string">"run correctly"</span> in {
          <span class="hljs-comment">// show a log message</span>
          debug(<span class="hljs-string">"this is debug log"</span>)
       }
@@ -196,15 +196,15 @@ call <code>Logger.scheduleLogLevelScan</code> before running test cases. This is
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="customizing-log-format"></a><a href="#customizing-log-format" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Customizing log format</h3>
 <p>You can show the source code location where the log message is generated:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.<span class="hljs-built_in">log</span>._
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.log._
 
-object MyApp with LogSupport {
-   Logger.setDefaultFormatter(LogFormatter.SourceCodeLogFormatter)
+<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">MyApp</span> <span class="hljs-keyword">with</span> <span class="hljs-title">LogSupport</span> </span>{
+   <span class="hljs-type">Logger</span>.setDefaultFormatter(<span class="hljs-type">LogFormatter</span>.<span class="hljs-type">SourceCodeLogFormatter</span>)
    info(<span class="hljs-string">"log with source code"</span>)
 }
 </code></pre>
 <p>This code will show:</p>
-<pre><code class="hljs"><span class="hljs-selector-attr">[MyApp$]</span> <span class="hljs-selector-tag">log</span> <span class="hljs-selector-tag">with</span> <span class="hljs-selector-tag">source</span> <span class="hljs-selector-tag">code</span> <span class="hljs-selector-tag">-</span> (<span class="hljs-selector-tag">MyApp</span><span class="hljs-selector-class">.scala</span><span class="hljs-selector-pseudo">:6)</span>
+<pre><code class="hljs">[MyApp$] <span class="hljs-built_in">log</span> <span class="hljs-keyword">with</span> source code - (MyApp.scala:<span class="hljs-number">6</span>)
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="pre-defined-log-formatters"></a><a href="#pre-defined-log-formatters" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Pre-defined log formatters:</h3>
 <p>Here is the list of pre-defined log formatters.</p>
@@ -219,15 +219,15 @@ object MyApp with LogSupport {
 </ul>
 <h3><a class="anchor" aria-hidden="true" id="customising-logformatter"></a><a href="#customising-logformatter" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Customising LogFormatter</h3>
 <p>You can also define your own LogFormatter:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.<span class="hljs-built_in">log</span>.LogFormatter._
-object CustomLogFormatter extends LogFormatter {
-  <span class="hljs-function"><span class="hljs-keyword">override</span> def <span class="hljs-title">formatLog</span><span class="hljs-params">(r: LogRecord)</span>: String </span>= {
-    val <span class="hljs-built_in">log</span> = s<span class="hljs-string">"[${highlightLog(r.level, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"</span>
-    appendStackTrace(<span class="hljs-built_in">log</span>, r)
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.log.<span class="hljs-type">LogFormatter</span>._
+<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">CustomLogFormatter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">LogFormatter</span> </span>{
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">formatLog</span></span>(r: <span class="hljs-type">LogRecord</span>): <span class="hljs-type">String</span> = {
+    <span class="hljs-keyword">val</span> log = <span class="hljs-string">s"[<span class="hljs-subst">${highlightLog(r.level, r.leafLoggerName)}</span>] <span class="hljs-subst">${highlightLog(r.level, r.getMessage)}</span>"</span>
+    appendStackTrace(log, r)
   }
 }
 
-Logger.setDefaultFormatter(CustomLogFormatter)
+<span class="hljs-type">Logger</span>.setDefaultFormatter(<span class="hljs-type">CustomLogFormatter</span>)
 </code></pre>
 <p>See also the examples in <a href="https://github.com/wvlet/airframe/blob/master/airframe-log/shared/src/main/scala/wvlet/log/LogFormat.scala">LogFormat.scala</a>:</p>
 <h3><a class="anchor" aria-hidden="true" id="using-airframe-log-in-scalajs"></a><a href="#using-airframe-log-in-scalajs" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using airframe-log in Scala.js</h3>
@@ -261,7 +261,7 @@ log4j-jul binder:</p>
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="writing-and-rotating-logs-with-files"></a><a href="#writing-and-rotating-logs-with-files" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Writing and rotating logs with files</h3>
 <p>To write and rotate your logs, use <code>LogRotationHandler</code>:</p>
-<pre><code class="hljs">logger.resetHandler(<span class="hljs-keyword">new</span> LogRotationHandler(
+<pre><code class="hljs">logger.resetHandler(new LogRotationHandler(
     fileName = <span class="hljs-string">"your-app.log"</span>,
     maxNumberOfFiles = <span class="hljs-number">100</span>, <span class="hljs-comment">// rotate up to 100 log files</span>
     maxSizeInBytes = <span class="hljs-number">100</span> * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span> <span class="hljs-comment">// 100MB</span>
@@ -269,15 +269,15 @@ log4j-jul binder:</p>
 ))
 </code></pre>
 <p>If you simply need to output logs to a single file without any rotation, use <code>FileHandler</code>:</p>
-<pre><code class="hljs css language-scala">logger.resetHandler(<span class="hljs-keyword">new</span> FileHandler(
+<pre><code class="hljs css language-scala">logger.resetHandler(<span class="hljs-keyword">new</span> <span class="hljs-type">FileHandler</span>(
     fileName = <span class="hljs-string">"your-app.log"</span>, <span class="hljs-comment">// Log file name</span>
-    formatter = AppLogFormatter <span class="hljs-comment">// Any log formatter you like</span>
+    formatter = <span class="hljs-type">AppLogFormatter</span> <span class="hljs-comment">// Any log formatter you like</span>
 ))
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="asynchronous-logging"></a><a href="#asynchronous-logging" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Asynchronous logging</h3>
 <p>If you know your LogHandler is a heavy process (e.g., writing to network or slow disks), you can use
 <code>AsyncHandler</code> to do the logging in a background thread:</p>
-<pre><code class="hljs css language-scala">val asyncHandler = <span class="hljs-keyword">new</span> AsyncHandler(a heavy <span class="hljs-keyword">parent</span> log handler)
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> asyncHandler = <span class="hljs-keyword">new</span> <span class="hljs-type">AsyncHandler</span>(a heavy parent log handler)
 <span class="hljs-keyword">try</span> {
   logger.resetHandler(asyncHandler)
 }
@@ -290,10 +290,10 @@ We recommend to use AsyncHandler only if you know the overhead of the log writin
 LogRotationHandler is already optimized for writing logs to files, so you usually don't need to use AsyncHandler with LogRotationHandler.</p>
 <h3><a class="anchor" aria-hidden="true" id="clear-existing-logger-configurations"></a><a href="#clear-existing-logger-configurations" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Clear Existing Logger Configurations</h3>
 <p>To remove all previous configurations of the logger (e.g., configurations set by third-party libraries), use:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-selector-tag">Logger</span><span class="hljs-selector-class">.clearAllHandlers</span>
+<pre><code class="hljs css language-scala"><span class="hljs-type">Logger</span>.clearAllHandlers
 
 <span class="hljs-comment">// Then set your logger configurations</span>
-<span class="hljs-selector-tag">Logger</span><span class="hljs-selector-class">.setDefaultFormatter</span>(LogFormatter.SourceCodeLogFormatter)
+<span class="hljs-type">Logger</span>.setDefaultFormatter(<span class="hljs-type">LogFormatter</span>.<span class="hljs-type">SourceCodeLogFormatter</span>)
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="changing-log-levels-using-jmx"></a><a href="#changing-log-levels-using-jmx" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Changing Log Levels using JMX</h3>
 <p>To change the log levels outside the JVM process, you can use the JMX interface of <code>wvlet.log.Logger</code>.</p>
@@ -303,11 +303,11 @@ LogRotationHandler is already optimized for writing logs to files, so you usuall
 <h3><a class="anchor" aria-hidden="true" id="scala-macro-based-logging-code-generation"></a><a href="#scala-macro-based-logging-code-generation" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Scala macro based logging code generation</h3>
 <p>airframe-log is efficient since it generate the log message objects only when necessary.
 For example, this logging code:</p>
-<pre><code class="hljs css language-scala">debug(s<span class="hljs-string">"heavy debug log generation <span class="hljs-variable">${obj.toString}</span>"</span>)
+<pre><code class="hljs css language-scala">debug(<span class="hljs-string">s"heavy debug log generation <span class="hljs-subst">${obj.toString}</span>"</span>)
 </code></pre>
 <p>will be translated into the following efficient one with Scala macros:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-selector-tag">if</span>(logger.isDebugEnabled) {
-   <span class="hljs-selector-tag">debug</span>(s<span class="hljs-string">"heavy debug log generation ${obj.toString}"</span>)
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">if</span>(logger.isDebugEnabled) {
+   debug(<span class="hljs-string">s"heavy debug log generation <span class="hljs-subst">${obj.toString}</span>"</span>)
 }
 </code></pre>
 <p>Log message String generation will not happen unless the debug log is effective.

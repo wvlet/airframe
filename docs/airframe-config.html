@@ -94,13 +94,13 @@
 </ol>
 <h2><a class="anchor" aria-hidden="true" id="example"></a><a href="#example" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Example</h2>
 <p><strong>config/access-log.yml</strong>:</p>
-<pre><code class="hljs"><span class="hljs-attr">default:</span>
-  <span class="hljs-attr">file:</span> <span class="hljs-string">log/access.log</span>
-  <span class="hljs-attr">max_files:</span> <span class="hljs-number">50</span>
+<pre><code class="hljs"><span class="hljs-keyword">default</span>:
+  <span class="hljs-keyword">file</span>: <span class="hljs-built_in">log</span>/<span class="hljs-keyword">access</span>.<span class="hljs-built_in">log</span>
+  max_files: <span class="hljs-number">50</span>
 </code></pre>
 <p><strong>config/db-log.yml</strong>:</p>
 <pre><code class="hljs"><span class="hljs-keyword">default</span>:
-  file: <span class="hljs-built_in">log</span>/db.<span class="hljs-built_in">log</span>
+  <span class="hljs-keyword">file</span>: <span class="hljs-built_in">log</span>/db.<span class="hljs-built_in">log</span>
 </code></pre>
 <p><strong>config/server.yml</strong></p>
 <pre><code class="hljs"><span class="hljs-attr">default:</span> <span class="hljs-meta">&amp;default</span>
@@ -113,80 +113,80 @@
   <span class="hljs-attr">port:</span> <span class="hljs-number">9000</span>
 </code></pre>
 <p><strong>config.properties</strong>:</p>
-<pre><code class="hljs"># [prefix](@[tag])?.[param]=(value)
-<span class="hljs-built_in">log</span>@access.file=/<span class="hljs-built_in">path</span>/to/access.<span class="hljs-built_in">log</span>
-<span class="hljs-built_in">log</span>@db.file=/<span class="hljs-built_in">path</span>/to/db.<span class="hljs-built_in">log</span>
-<span class="hljs-built_in">log</span>@db.<span class="hljs-built_in">log</span>.max_files=<span class="hljs-number">250</span>
-server.host=mydomain.com
-server.password=xxxxxyyyyyy
+<pre><code class="hljs"># [prefix](@[tag])?.[param]=(<span class="hljs-keyword">value</span>)
+<span class="hljs-keyword">log</span>@<span class="hljs-keyword">access</span>.file=/<span class="hljs-type">path</span>/<span class="hljs-keyword">to</span>/<span class="hljs-keyword">access</span>.<span class="hljs-keyword">log</span>
+<span class="hljs-keyword">log</span>@db.file=/<span class="hljs-type">path</span>/<span class="hljs-keyword">to</span>/db.<span class="hljs-keyword">log</span>
+<span class="hljs-keyword">log</span>@db.<span class="hljs-keyword">log</span>.max_files=<span class="hljs-number">250</span>
+<span class="hljs-keyword">server</span>.host=mydomain.com
+<span class="hljs-keyword">server</span>.<span class="hljs-keyword">password</span>=xxxxxyyyyyy
 </code></pre>
 <p><strong>Scala code</strong>:</p>
-<pre><code class="hljs css language-scala">import wvlet.airframe.config.Config
-import wvlet.airframe.surface.tag.@@
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.config.<span class="hljs-type">Config</span>
+<span class="hljs-keyword">import</span> wvlet.airframe.surface.tag.@@
 
-// Configuration classes can have default <span class="hljs-keyword">values</span>
-// Configuration <span class="hljs-keyword">class</span> <span class="hljs-keyword">name</span> convention: xxxxConfig (xxxx will be the prefix <span class="hljs-keyword">for</span> properties <span class="hljs-keyword">file</span>)
-<span class="hljs-keyword">case</span> <span class="hljs-keyword">class</span> LogConfig(<span class="hljs-keyword">file</span>:<span class="hljs-keyword">String</span>, maxFiles:<span class="hljs-built_in">Int</span>=<span class="hljs-number">100</span>, <span class="hljs-keyword">maxSize</span>:<span class="hljs-built_in">Int</span>=<span class="hljs-number">10485760</span>)
-<span class="hljs-keyword">case</span> <span class="hljs-keyword">class</span> ServerConfig(host:<span class="hljs-keyword">String</span>, port:<span class="hljs-built_in">Int</span>, <span class="hljs-keyword">password</span>:<span class="hljs-keyword">String</span>)
+<span class="hljs-comment">// Configuration classes can have default values</span>
+<span class="hljs-comment">// Configuration class name convention: xxxxConfig (xxxx will be the prefix for properties file)</span>
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LogConfig</span>(<span class="hljs-params">file:<span class="hljs-type">String</span>, maxFiles:<span class="hljs-type">Int</span>=100, maxSize:<span class="hljs-type">Int</span>=10485760</span>)</span>
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServerConfig</span>(<span class="hljs-params">host:<span class="hljs-type">String</span>, port:<span class="hljs-type">Int</span>, password:<span class="hljs-type">String</span></span>)</span>
 
-// <span class="hljs-keyword">To</span> <span class="hljs-keyword">use</span> the same configuration <span class="hljs-keyword">class</span> <span class="hljs-keyword">for</span> different purposes, <span class="hljs-keyword">use</span> <span class="hljs-keyword">type</span> tag (@@ Tag)
-trait <span class="hljs-keyword">Access</span>
-trait Db
+<span class="hljs-comment">// To use the same configuration class for different purposes, use type tag (@@ Tag)</span>
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Access</span></span>
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Db</span></span>
 
-val config = 
-  Config(env=<span class="hljs-string">"development"</span>, configPaths=Seq(<span class="hljs-string">"./config"</span>))
-    .registerFromYaml[LogConfig @@ <span class="hljs-keyword">Access</span>](<span class="hljs-string">"access-log.yml"</span>)
-    .registerFromYaml[LogConfig @@ Db](<span class="hljs-string">"db-log.yml"</span>)
-    .registerFromYaml[ServerConfig](<span class="hljs-string">"server.yml"</span>)
+<span class="hljs-keyword">val</span> config = 
+  <span class="hljs-type">Config</span>(env=<span class="hljs-string">"development"</span>, configPaths=<span class="hljs-type">Seq</span>(<span class="hljs-string">"./config"</span>))
+    .registerFromYaml[<span class="hljs-type">LogConfig</span> @@ <span class="hljs-type">Access</span>](<span class="hljs-string">"access-log.yml"</span>)
+    .registerFromYaml[<span class="hljs-type">LogConfig</span> @@ <span class="hljs-type">Db</span>](<span class="hljs-string">"db-log.yml"</span>)
+    .registerFromYaml[<span class="hljs-type">ServerConfig</span>](<span class="hljs-string">"server.yml"</span>)
     .overrideWithPropertiesFile(<span class="hljs-string">"config.properties"</span>)
     
-val accessLogConfig = config.of[LogConfig @@ <span class="hljs-keyword">Access</span>]
-// LogConfig(<span class="hljs-string">"/path/to/access.log"</span>,<span class="hljs-number">50</span>,<span class="hljs-number">104857600</span>)
+<span class="hljs-keyword">val</span> accessLogConfig = config.of[<span class="hljs-type">LogConfig</span> @@ <span class="hljs-type">Access</span>]
+<span class="hljs-comment">// LogConfig("/path/to/access.log",50,104857600)</span>
 
-val dbLogConfig = config.of[LogConfig @@ Db]
-// LogConfig(<span class="hljs-string">"/path/to/db.log"</span>,<span class="hljs-number">250</span>,<span class="hljs-number">104857600</span>)
+<span class="hljs-keyword">val</span> dbLogConfig = config.of[<span class="hljs-type">LogConfig</span> @@ <span class="hljs-type">Db</span>]
+<span class="hljs-comment">// LogConfig("/path/to/db.log",250,104857600)</span>
 
-val serverConfig = config.of[ServerConfig]
-// ServerConfig(host=<span class="hljs-string">"mydomain.com"</span>,port=<span class="hljs-number">9000</span>,<span class="hljs-keyword">password</span>=<span class="hljs-string">"xxxxxyyyyyy"</span>)
+<span class="hljs-keyword">val</span> serverConfig = config.of[<span class="hljs-type">ServerConfig</span>]
+<span class="hljs-comment">// ServerConfig(host="mydomain.com",port=9000,password="xxxxxyyyyyy")</span>
 
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="show-configuration-changes"></a><a href="#show-configuration-changes" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Show configuration changes</h3>
 <p>To see the effective configurations, use <code>Config.getConfigChanges</code> method:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">for</span>(change &lt;- config.getConfigChanges) {
-  println(s<span class="hljs-string">"[<span class="hljs-variable">${change.key}</span>] default:<span class="hljs-variable">${change.default}</span>, current:<span class="hljs-variable">${change.current}</span>"</span>)
+  println(<span class="hljs-string">s"[<span class="hljs-subst">${change.key}</span>] default:<span class="hljs-subst">${change.default}</span>, current:<span class="hljs-subst">${change.current}</span>"</span>)
 }
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="using-with-airframe"></a><a href="#using-with-airframe" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using with Airframe</h2>
 <p>Since Airframe 0.65, binding configurations to design becomes easier.
 By importing <code>wvlet.airframe.config._</code>, you can bind configurations to design objects.</p>
 <p>Example:</p>
-<pre><code class="hljs css language-scala">import wvlet.airframe._
-// Import config._ to <span class="hljs-keyword">use</span> bindConfigXXX methods
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
+<span class="hljs-comment">// Import config._ to use bindConfigXXX methods</span>
 <span class="hljs-keyword">import</span> wvlet.airframe.config._
 
-// <span class="hljs-keyword">Load</span> <span class="hljs-string">"production"</span> configurations <span class="hljs-keyword">from</span> Yaml files
-val design = 
+<span class="hljs-comment">// Load "production" configurations from Yaml files</span>
+<span class="hljs-keyword">val</span> design = 
   newDesign
-    // <span class="hljs-keyword">Set</span> an environment <span class="hljs-keyword">to</span> <span class="hljs-keyword">use</span>
+    <span class="hljs-comment">// Set an environment to use</span>
     .withConfigEnv(env = <span class="hljs-string">"production"</span>, defaultEnv = <span class="hljs-string">"default"</span>)
-    // <span class="hljs-keyword">Load</span> configs <span class="hljs-keyword">from</span> YAML files
-    .bindConfigFromYaml[LogConfig](<span class="hljs-string">"access-log.yml"</span>)  
-    .bindConfigFromYaml[ServerConfig](<span class="hljs-string">"server.yml"</span>)
-    // Bind other designs
-    .bind[X].toInstance(...)
-    .bind[Y].toProvider{ ... }
+    <span class="hljs-comment">// Load configs from YAML files</span>
+    .bindConfigFromYaml[<span class="hljs-type">LogConfig</span>](<span class="hljs-string">"access-log.yml"</span>)  
+    .bindConfigFromYaml[<span class="hljs-type">ServerConfig</span>](<span class="hljs-string">"server.yml"</span>)
+    <span class="hljs-comment">// Bind other designs</span>
+    .bind[<span class="hljs-type">X</span>].toInstance(...)
+    .bind[<span class="hljs-type">Y</span>].toProvider{ ... }
 
-// <span class="hljs-keyword">If</span> you need <span class="hljs-keyword">to</span> override <span class="hljs-keyword">some</span> config <span class="hljs-keyword">parameters</span>, <span class="hljs-keyword">prepare</span> <span class="hljs-keyword">Map</span>[<span class="hljs-keyword">String</span>, <span class="hljs-keyword">Any</span>] objects:
-val properties = <span class="hljs-keyword">Map</span>(
+<span class="hljs-comment">// If you need to override some config parameters, prepare Map[String, Any] objects:</span>
+<span class="hljs-keyword">val</span> properties = <span class="hljs-type">Map</span>(
   <span class="hljs-string">"server.host"</span> -&gt; <span class="hljs-string">"xxx.xxx.xxx"</span> 
 )
 
-// Override config <span class="hljs-keyword">with</span> property <span class="hljs-keyword">values</span>
-val finalDesign = 
+<span class="hljs-comment">// Override config with property values</span>
+<span class="hljs-keyword">val</span> finalDesign = 
   design.overrideConfigParams(properties) 
 
-finalDesign.build[X] { x =&gt;
-  // ... <span class="hljs-keyword">start</span> the application 
+finalDesign.build[<span class="hljs-type">X</span>] { x =&gt;
+  <span class="hljs-comment">// ... start the application </span>
 }
 </code></pre>
 </span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-codec"><span class="arrow-prev">← </span><span>airframe-codec: Schema-On-Read Object Serializer</span></a><a class="docs-next button" href="/airframe/docs/airframe-control"><span>airframe-control: Retry/Rate Control</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#detailed-application-configuration-flow">Detailed application configuration flow</a></li><li><a href="#example">Example</a><ul class="toc-headings"><li><a href="#show-configuration-changes">Show configuration changes</a></li></ul></li><li><a href="#using-with-airframe">Using with Airframe</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2020 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
