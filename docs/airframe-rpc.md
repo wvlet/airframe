@@ -31,10 +31,10 @@ For using Airframe RPC, first, define your RPC service interface using regular S
 package hello.api.v1;
 import wvlet.airframe.http._
 
-// A model classe. This will be serialized into JSON or MessagePack 
+// A model class. This will be serialized into JSON or MessagePack
 case class Person(id:Int, name:String)
 
-// RPC interface definition 
+// RPC interface definition
 @RPC
 trait MyService { 
   def hello(person:Person): String 
