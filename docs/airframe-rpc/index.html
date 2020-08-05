@@ -80,10 +80,10 @@ All public methods in this class will be your RPC endpoints. For the method argu
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">package</span> hello.api.v1;
 <span class="hljs-keyword">import</span> wvlet.airframe.http._
 
-<span class="hljs-comment">// A model classe. This will be serialized into JSON or MessagePack </span>
+<span class="hljs-comment">// A model class. This will be serialized into JSON or MessagePack</span>
 <span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Person</span>(<span class="hljs-params">id:<span class="hljs-type">Int</span>, name:<span class="hljs-type">String</span></span>)</span>
 
-<span class="hljs-comment">// RPC interface definition </span>
+<span class="hljs-comment">// RPC interface definition</span>
 <span class="hljs-meta">@RPC</span>
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyService</span> </span>{ 
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">hello</span></span>(person:<span class="hljs-type">Person</span>): <span class="hljs-type">String</span> 
