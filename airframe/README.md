@@ -180,7 +180,7 @@ Airframe DI supports three types of in-trait bindings: `bind[X]`, `bindLocal{...
 - `bindLocal{ new X(...) }` will inject a new instance of X using the given code block. Use `bindLocal` only when you need to locally define object initializtiaon code. This is a good practice for ensuring [RIIA (Resource Initialization Is Acquisition)](https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization) by writing the resource initialization code to the closest place where the resource will be used.
   - bindLocal will override bindings for `X` defiened in `Design` in favor of the local initialization code block.
   - If you need to build an instance of `X` based on the other dependencies, use a provider fucntion like `bindLocal{ (d1:D1, d2:D2, ...) => new X(d1, d2, ...)}`. Dependenies of D1, D2, ... will be injected from the design.
-- `bidFactory[D1=>X]` will create a factory method to generate X from a given instance of D1. This is usedf for partially overriding the design (e.g., `D1`) for building `X`.
+- `bindFactory[D1=>X]` will create a factory method to generate X from a given instance of D1. This is used for partially overriding the design (e.g., `D1`) for building `X`.
 
 The lifecycle (including calling onInject, onStart, onShutdown hooks) of the injected instances will be managed by the session of Airframe. To properly release the resources injected by bindings, define these lifecycle hooks in the design or implement [AutoCloseable](https://docs.oracle.com/javase/8/docs/api/java/lang/AutoCloseable.html) interface. If the injected instance implements AutoCloseable, `def close(): Unit` method of AutoCloseable will be called when the session terminates. See also [Design](#design) and [Life Cycle](#life-cycle) seections for more details.
 
