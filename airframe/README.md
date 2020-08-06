@@ -182,7 +182,7 @@ Airframe DI supports three types of in-trait bindings: `bind[X]`, `bindLocal{...
   - If you need to build an instance of `X` based on the other dependencies, use a provider fucntion like `bindLocal{ (d1:D1, d2:D2, ...) => new X(d1, d2, ...)}`. Dependenies of D1, D2, ... will be injected from the design.
 - `bindFactory[D1=>X]` will create a factory method to generate X from a given instance of D1. This is used for partially overriding the design (e.g., `D1`) for building `X`.
 
-The lifecycle (including calling onInject, onStart, onShutdown hooks) of the injected instances will be managed by the session of Airframe. To properly release the resources injected by bindings, define these lifecycle hooks in the design or implement [AutoCloseable](https://docs.oracle.com/javase/8/docs/api/java/lang/AutoCloseable.html) interface. If the injected instance implements AutoCloseable, `def close(): Unit` method of AutoCloseable will be called when the session terminates. See also [Design](#design) and [Life Cycle](#life-cycle) seections for more details.
+The lifecycle (including calling onInject, onStart, onShutdown hooks) of the injected instances will be managed by the session of Airframe. To properly release the resources injected by bindings, define these lifecycle hooks in the design or implement [AutoCloseable](https://docs.oracle.com/javase/8/docs/api/java/lang/AutoCloseable.html) interface. If the injected instance implements AutoCloseable, `def close(): Unit` method of AutoCloseable will be called when the session terminates. See also [Design](#design) and [Life Cycle](#life-cycle) sections for more details.
 
 Here are several examples of in-trait binding types:
 
@@ -290,7 +290,7 @@ val newDesign = d1 + d2 // d2 will override the bindings in d1
 
 ## Session
 
-To create instances, you need to create a `Session` from you Design:
+To create instances, you need to create a `Session` from your Design:
 
 ```scala
 val session = design.newSession
