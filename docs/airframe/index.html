@@ -193,7 +193,7 @@ d.build[<span class="hljs-type">MyApp</span>] { app: <span class="hljs-type">MyA
 <li>bindLocal will override bindings for <code>X</code> defiened in <code>Design</code> in favor of the local initialization code block.</li>
 <li>If you need to build an instance of <code>X</code> based on the other dependencies, use a provider fucntion like <code>bindLocal{ (d1:D1, d2:D2, ...) =&gt; new X(d1, d2, ...)}</code>. Dependenies of D1, D2, ... will be injected from the design.</li>
 </ul></li>
-<li><code>bidFactory[D1=&gt;X]</code> will create a factory method to generate X from a given instance of D1. This is usedf for partially overriding the design (e.g., <code>D1</code>) for building <code>X</code>.</li>
+<li><code>bindFactory[D1=&gt;X]</code> will create a factory method to generate X from a given instance of D1. This is used for partially overriding the design (e.g., <code>D1</code>) for building <code>X</code>.</li>
 </ul>
 <p>The lifecycle (including calling onInject, onStart, onShutdown hooks) of the injected instances will be managed by the session of Airframe. To properly release the resources injected by bindings, define these lifecycle hooks in the design or implement <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/AutoCloseable.html">AutoCloseable</a> interface. If the injected instance implements AutoCloseable, <code>def close(): Unit</code> method of AutoCloseable will be called when the session terminates. See also <a href="#design">Design</a> and <a href="#life-cycle">Life Cycle</a> seections for more details.</p>
 <p>Here are several examples of in-trait binding types:</p>
