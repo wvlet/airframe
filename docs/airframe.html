@@ -195,7 +195,7 @@ d.build[<span class="hljs-type">MyApp</span>] { app: <span class="hljs-type">MyA
 </ul></li>
 <li><code>bindFactory[D1=&gt;X]</code> will create a factory method to generate X from a given instance of D1. This is used for partially overriding the design (e.g., <code>D1</code>) for building <code>X</code>.</li>
 </ul>
-<p>The lifecycle (including calling onInject, onStart, onShutdown hooks) of the injected instances will be managed by the session of Airframe. To properly release the resources injected by bindings, define these lifecycle hooks in the design or implement <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/AutoCloseable.html">AutoCloseable</a> interface. If the injected instance implements AutoCloseable, <code>def close(): Unit</code> method of AutoCloseable will be called when the session terminates. See also <a href="#design">Design</a> and <a href="#life-cycle">Life Cycle</a> seections for more details.</p>
+<p>The lifecycle (including calling onInject, onStart, onShutdown hooks) of the injected instances will be managed by the session of Airframe. To properly release the resources injected by bindings, define these lifecycle hooks in the design or implement <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/AutoCloseable.html">AutoCloseable</a> interface. If the injected instance implements AutoCloseable, <code>def close(): Unit</code> method of AutoCloseable will be called when the session terminates. See also <a href="#design">Design</a> and <a href="#life-cycle">Life Cycle</a> sections for more details.</p>
 <p>Here are several examples of in-trait binding types:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> <span class="hljs-type">BindingExample</span>._
 
@@ -242,8 +242,7 @@ d.build[<span class="hljs-type">MyApp</span>] { app: <span class="hljs-type">MyA
   .bind[<span class="hljs-type">P</span>].toInstanceProvider{ d1:<span class="hljs-type">D1</span> =&gt; <span class="hljs-type">P</span>(d1) }       <span class="hljs-comment">// Create a new instance using the provider function</span>
   .bind[<span class="hljs-type">P</span>].toEagerSingletonProvider{ d1:<span class="hljs-type">D1</span> =&gt; <span class="hljs-type">P</span>(d1) } <span class="hljs-comment">// Create an eager singleton using the provider function</span>
 </code></pre>
-<p>If you define multiple bindings to the same type (e.g., P), the last binding will be used.
-d</p>
+<p>If you define multiple bindings to the same type (e.g., P), the last binding will be used.</p>
 <h3><a class="anchor" aria-hidden="true" id="singleton-bindings"></a><a href="#singleton-bindings" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Singleton Bindings</h3>
 <p>If you only need singletons (e.g.,<code>X</code>) and how to construct <code>X</code> is clear from its definition, no need exists to specify <code>bind[X].toSingleton</code> in your design:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
@@ -284,7 +283,7 @@ d1.add(d2)
 </code></pre>
 <p><code>+</code> (add) operator is not commutative because of this override behavior, so <code>d1 + d2</code> and <code>d2 + d1</code> will be different designs if there are some overlaps.</p>
 <h2><a class="anchor" aria-hidden="true" id="session"></a><a href="#session" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Session</h2>
-<p>To create instances, you need to create a <code>Session</code> from you Design:</p>
+<p>To create instances, you need to create a <code>Session</code> from your Design:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> session = design.newSession
 <span class="hljs-keyword">val</span> a = session.build[<span class="hljs-type">A</span>] {
   <span class="hljs-comment">// Do something with a</span>
