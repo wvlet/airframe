@@ -15,7 +15,6 @@ package wvlet.airframe.http.rx
 
 import wvlet.log.LogSupport
 
-import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
@@ -137,45 +136,4 @@ object Rx extends LogSupport {
     override def toString: String = s"${name}:${input}"
   }
 
-  class RxVar[A](protected var currentValue: A) extends RxBase[A] {
-    override def toString: String    = s"RxVar(${currentValue})"
-    override def parents: Seq[Rx[_]] = Seq.empty
-
-    private var subscribers: ArrayBuffer[Subscriber[A]] = ArrayBuffer.empty
-
-    def get: A = currentValue
-    def foreach[U](f: A => U): Cancelable = {
-      val s = Subscriber(f)
-      // Register a subscriber for propagating future changes
-      subscribers += s
-      f(currentValue)
-      Cancelable { () =>
-        // Unsubscribe if cancelled
-        subscribers -= s
-      }
-    }
-
-    def :=(newValue: A): Unit  = set(newValue)
-    def set(newValue: A): Unit = update { x: A => newValue }
-
-    def forceSet(newValue: A): Unit = update({ x: A => newValue }, force = true)
-
-    /**
-      * Updates the variable and trigger the recalculation of the subscribers
-      * currentValue => newValue
-      */
-    def update(updater: A => A, force: Boolean = false): Unit = {
-      val newValue = updater(currentValue)
-      if (force || currentValue != newValue) {
-        currentValue = newValue
-        subscribers.map { s => s(newValue) }
-      }
-    }
-
-    /**
-      * Update the variable and force notification to subscribers
-      * @param updater
-      */
-    def forceUpdate(updater: A => A): Unit = update(updater, force = true)
-  }
 }
