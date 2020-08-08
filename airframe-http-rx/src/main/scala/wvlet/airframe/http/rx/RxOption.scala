@@ -1,6 +1,6 @@
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use this fi
  * You may obtain a copy of the License at
  *
  *    http://www.apache.org/licenses/LICENSE-2.0
@@ -12,12 +12,13 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.rx
-import wvlet.airframe.http.rx.Rx.{FlatMapOp, MapOp}
+import wvlet.airframe.http.rx.Rx.{FilterOp, FlatMapOp, MapOp}
 
 /**
   */
 case class RxOption[+A](in: Rx[Option[A]]) extends Rx[A] {
-  override def parents: Seq[Rx[_]] = Seq(in)
+  override def parents: Seq[Rx[_]]                 = Seq(in)
+  override def withName(name: String): RxOption[A] = RxOption(in.withName(name))
 
   override def map[B](f: A => B): RxOption[B] = {
     RxOption(MapOp(in, { x: Option[A] => x.map(f) }))
@@ -37,4 +38,15 @@ case class RxOption[+A](in: Rx[Option[A]]) extends Rx[A] {
       )
     )
   }
+
+  override def filter(f: A => Boolean): RxOption[A] = {
+    RxOption(
+      in.map {
+        case Some(x) if f(x) => Some(x)
+        case _               => None
+      }
+    )
+  }
+
+  override def withFilter(f: A => Boolean): RxOption[A] = filter(f)
 }

@@ -23,14 +23,13 @@ import scala.concurrent.{ExecutionContext, Future}
 trait Rx[+A] extends LogSupport {
   import Rx._
 
+  def parents: Seq[Rx[_]]
+  def withName(name: String): Rx[A] = NamedOp(this, name)
+
   def map[B](f: A => B): Rx[B]           = MapOp[A, B](this, f)
   def flatMap[B](f: A => Rx[B]): Rx[B]   = FlatMapOp(this, f)
   def filter(f: A => Boolean): Rx[A]     = FilterOp(this, f)
   def withFilter(f: A => Boolean): Rx[A] = FilterOp(this, f)
-
-  def withName(name: String): Rx[A] = NamedOp(this, name)
-
-  def parents: Seq[Rx[_]]
 
   /**
     * Subscribe any change in the upstream, and if a change is detected,
@@ -103,6 +102,12 @@ object Rx extends LogSupport {
           if (cond.asInstanceOf[A => Boolean](x)) {
             effect(x)
           }
+        }
+      case RxOption(in) =>
+        run(in) {
+          case Some(v) => effect(v)
+          case None    =>
+          // Do nothing
         }
       case NamedOp(input, name) =>
         run(input)(effect)
