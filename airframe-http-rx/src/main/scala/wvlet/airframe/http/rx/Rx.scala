@@ -50,7 +50,7 @@ object Rx extends LogSupport {
   def apply[A](v: A): RxVar[A]    = new RxVar(v)
   def variable[A](v: A): RxVar[A] = Rx.apply(v)
   def optionVariable[A](v: Option[A]): RxOptionVar[A] = {
-    new RxOptionVar(v.getOrElse(null.asInstanceOf[A]))
+    new RxOptionVar(v)
   }
 
   def option[A](v: A): RxOption[A] = {

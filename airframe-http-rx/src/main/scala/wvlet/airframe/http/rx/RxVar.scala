@@ -18,13 +18,14 @@ import scala.collection.mutable.ArrayBuffer
 /**
   * A reactive variable supporting update and propagation of the updated value to the chained operators
   */
-class RxVar[A](protected var currentValue: A) extends Rx[A] {
+class RxVar[A](protected var currentValue: A) extends Rx[A] with RxVarOps[A] {
   override def toString: String                       = s"RxVar(${currentValue})"
   override def parents: Seq[Rx[_]]                    = Seq.empty
   private var subscribers: ArrayBuffer[Subscriber[A]] = ArrayBuffer.empty
 
-  def get: A = currentValue
-  def foreach[U](f: A => U): Cancelable = {
+  override def get: A = currentValue
+
+  override def foreach[U](f: A => U): Cancelable = {
     val s = Subscriber(f)
     // Register a subscriber for propagating future changes
     subscribers += s
@@ -35,6 +36,25 @@ class RxVar[A](protected var currentValue: A) extends Rx[A] {
     }
   }
 
+  /**
+    * Updates the variable and trigger the recalculation of the subscribers
+    * currentValue => newValue
+    */
+  override def update(updater: A => A, force: Boolean = false): Unit = {
+    val newValue = updater(currentValue)
+    if (force || currentValue != newValue) {
+      currentValue = newValue
+      subscribers.map { s =>
+        // The subscriber instance might be null if it is cleaned up in JS
+        Option(s).foreach(_.apply(newValue))
+      }
+    }
+  }
+}
+
+trait RxVarOps[A] {
+  def get: A
+  def foreach[U](f: A => U): Cancelable
   def :=(newValue: A): Unit       = set(newValue)
   def set(newValue: A): Unit      = update { x: A => newValue }
   def forceSet(newValue: A): Unit = update({ x: A => newValue }, force = true)
@@ -49,14 +69,5 @@ class RxVar[A](protected var currentValue: A) extends Rx[A] {
     * Updates the variable and trigger the recalculation of the subscribers
     * currentValue => newValue
     */
-  def update(updater: A => A, force: Boolean = false): Unit = {
-    val newValue = updater(currentValue)
-    if (force || currentValue != newValue) {
-      currentValue = newValue
-      subscribers.map { s =>
-        // The subscriber instance might be null if it is cleaned up in JS
-        Option(s).foreach(_.apply(newValue))
-      }
-    }
-  }
+  def update(updater: A => A, force: Boolean = false): Unit
 }

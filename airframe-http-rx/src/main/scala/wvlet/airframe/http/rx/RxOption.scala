@@ -55,26 +55,16 @@ private[rx] trait RxOptionOps[+A] extends Rx[A] {
 
 case class RxOption[+A](in: Rx[Option[A]]) extends RxOptionOps[A]
 
-class RxOptionVar[A](initValue: A) extends RxOptionOps[A] {
-  private val variable                     = new RxVar(Option(initValue))
+class RxOptionVar[A](initValue: Option[A]) extends RxOptionOps[A] with RxVarOps[Option[A]] {
+  override def toString: String            = s"RxOptionVar(${variable.get})"
+  private val variable                     = new RxVar(initValue)
   override protected def in: Rx[Option[A]] = variable
 
-  def foreach[U](f: Option[A] => U): Cancelable = {
+  override def get: Option[A] = variable.get
+  override def foreach[U](f: Option[A] => U): Cancelable = {
     variable.foreach(f)
   }
-
-  def get: Option[A]                      = variable.get
-  def :=(newValue: Option[A]): Unit       = set(newValue)
-  def set(newValue: Option[A]): Unit      = update { x: Option[A] => newValue }
-  def forceSet(newValue: Option[A]): Unit = update({ x: Option[A] => newValue }, force = true)
-
-  /**
-    * Update the variable and force notification to subscribers
-    * @param updater
-    */
-  def forceUpdate(updater: Option[A] => Option[A]): Unit = update(updater, force = true)
-
-  def update(updater: Option[A] => Option[A], force: Boolean = false): Unit = {
+  override def update(updater: Option[A] => Option[A], force: Boolean = false): Unit = {
     variable.update(updater, force)
   }
 }
