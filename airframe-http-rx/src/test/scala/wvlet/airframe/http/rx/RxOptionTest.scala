@@ -43,13 +43,26 @@ class RxOptionTest extends AirSpec {
 
   test("add name") {
     val r = Rx.option("hello").withName("opt test")
-    info(r)
+    debug(r)
   }
 
   test("wrap null") {
     val opt = Rx.option[String](null)
     val x   = opt.map(x => x)
     x.run(_ => fail("should not reach here"))
+  }
+
+  test("flatMap") {
+    val opt = Rx.option("hello")
+    val v   = opt.flatMap(x => Rx.const(s"hello ${x}"))
+    v.run(x => x shouldBe "hello hello")
+  }
+
+  test("for-comprehension") {
+    val a = for (x <- Rx.option("hello")) yield {
+      x + " world"
+    }
+    a.run(_ shouldBe "hello world")
   }
 
 }
