@@ -65,4 +65,23 @@ class RxOptionTest extends AirSpec {
     a.run(_ shouldBe "hello world")
   }
 
+  test("option variable") {
+    val v = Rx.optionVariable(Some("hello"))
+    val o = v.map { x => s"${x} world" }
+    o.run(_ shouldBe "hello world")
+  }
+
+  test("eval option variable") {
+    val v = Rx.optionVariable(Some("hello"))
+    v.run(_ shouldBe "hello")
+  }
+
+  test("set option variable") {
+    val v = Rx.optionVariable(Some("hello"))
+    val o = v.map { x => s"${x} world" }
+
+    v.set(Some("good morning"))
+    o.run(_ shouldBe "good morning world")
+  }
+
 }

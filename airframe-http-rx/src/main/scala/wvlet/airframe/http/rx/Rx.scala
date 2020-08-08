@@ -49,6 +49,9 @@ object Rx extends LogSupport {
 
   def apply[A](v: A): RxVar[A]    = new RxVar(v)
   def variable[A](v: A): RxVar[A] = Rx.apply(v)
+  def optionVariable[A](v: Option[A]): RxOptionVar[A] = {
+    new RxOptionVar(v.getOrElse(null.asInstanceOf[A]))
+  }
 
   def option[A](v: A): RxOption[A] = {
     v match {
@@ -113,19 +116,23 @@ object Rx extends LogSupport {
       case SingleOp(v) =>
         effect(v)
         Cancelable.empty
+      case o: RxOptionVar[_] =>
+        o.asInstanceOf[RxOptionVar[A]].foreach {
+          case Some(v) => effect(v)
+          case None    =>
+          // Do nothing
+        }
       case v: RxVar[_] =>
         v.asInstanceOf[RxVar[A]].foreach(effect)
     }
   }
 
-  private[rx] abstract class RxBase[A] extends Rx[A] {}
-
-  abstract class UnaryRx[I, A] extends RxBase[A] {
+  abstract class UnaryRx[I, A] extends Rx[A] {
     def input: Rx[I]
     override def parents: Seq[Rx[_]] = Seq(input)
   }
 
-  case class SingleOp[A](v: A) extends RxBase[A] {
+  case class SingleOp[A](v: A) extends Rx[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
 

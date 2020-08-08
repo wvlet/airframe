@@ -12,17 +12,15 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.rx
-import wvlet.airframe.http.rx.Rx.RxBase
 
 import scala.collection.mutable.ArrayBuffer
 
 /**
   * A reactive variable supporting update and propagation of the updated value to the chained operators
   */
-class RxVar[A](protected var currentValue: A) extends RxBase[A] {
-  override def toString: String    = s"RxVar(${currentValue})"
-  override def parents: Seq[Rx[_]] = Seq.empty
-
+class RxVar[A](protected var currentValue: A) extends Rx[A] {
+  override def toString: String                       = s"RxVar(${currentValue})"
+  override def parents: Seq[Rx[_]]                    = Seq.empty
   private var subscribers: ArrayBuffer[Subscriber[A]] = ArrayBuffer.empty
 
   def get: A = currentValue
@@ -37,10 +35,15 @@ class RxVar[A](protected var currentValue: A) extends RxBase[A] {
     }
   }
 
-  def :=(newValue: A): Unit  = set(newValue)
-  def set(newValue: A): Unit = update { x: A => newValue }
-
+  def :=(newValue: A): Unit       = set(newValue)
+  def set(newValue: A): Unit      = update { x: A => newValue }
   def forceSet(newValue: A): Unit = update({ x: A => newValue }, force = true)
+
+  /**
+    * Update the variable and force notification to subscribers
+    * @param updater
+    */
+  def forceUpdate(updater: A => A): Unit = update(updater, force = true)
 
   /**
     * Updates the variable and trigger the recalculation of the subscribers
@@ -56,10 +59,4 @@ class RxVar[A](protected var currentValue: A) extends RxBase[A] {
       }
     }
   }
-
-  /**
-    * Update the variable and force notification to subscribers
-    * @param updater
-    */
-  def forceUpdate(updater: A => A): Unit = update(updater, force = true)
 }

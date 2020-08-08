@@ -16,7 +16,9 @@ import wvlet.airframe.http.rx.Rx.{FilterOp, FlatMapOp, MapOp}
 
 /**
   */
-case class RxOption[+A](in: Rx[Option[A]]) extends Rx[A] {
+private[rx] trait RxOptionOps[+A] extends Rx[A] {
+  protected def in: Rx[Option[A]]
+
   override def parents: Seq[Rx[_]]                 = Seq(in)
   override def withName(name: String): RxOption[A] = RxOption(in.withName(name))
 
@@ -49,4 +51,30 @@ case class RxOption[+A](in: Rx[Option[A]]) extends Rx[A] {
   }
 
   override def withFilter(f: A => Boolean): RxOption[A] = filter(f)
+}
+
+case class RxOption[+A](in: Rx[Option[A]]) extends RxOptionOps[A]
+
+class RxOptionVar[A](initValue: A) extends RxOptionOps[A] {
+  private val variable                     = new RxVar(Option(initValue))
+  override protected def in: Rx[Option[A]] = variable
+
+  def foreach[U](f: Option[A] => U): Cancelable = {
+    variable.foreach(f)
+  }
+
+  def get: Option[A]                      = variable.get
+  def :=(newValue: Option[A]): Unit       = set(newValue)
+  def set(newValue: Option[A]): Unit      = update { x: Option[A] => newValue }
+  def forceSet(newValue: Option[A]): Unit = update({ x: Option[A] => newValue }, force = true)
+
+  /**
+    * Update the variable and force notification to subscribers
+    * @param updater
+    */
+  def forceUpdate(updater: Option[A] => Option[A]): Unit = update(updater, force = true)
+
+  def update(updater: Option[A] => Option[A], force: Boolean = false): Unit = {
+    variable.update(updater, force)
+  }
 }
