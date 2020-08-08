@@ -17,13 +17,13 @@ import wvlet.airspec.AirSpec
 /**
   */
 class RxOptionTest extends AirSpec {
-  test("eval RxOption") {
+  test("eval") {
     val opt = Rx.option("world")
     val v   = opt.map(x => s"hello ${x}")
     v.run(x => x shouldBe "hello world")
   }
 
-  test("support none") {
+  test("none") {
     val opt = Rx.none
     val v   = opt.map(x => s"hello ${x}")
     v.run(x => fail("should not reach here"))
@@ -40,4 +40,16 @@ class RxOptionTest extends AirSpec {
     val v   = opt.filter(_.startsWith("xxx")).map(x => s"hello ${x}")
     v.run(x => fail("should not reach here"))
   }
+
+  test("add name") {
+    val r = Rx.option("hello").withName("opt test")
+    info(r)
+  }
+
+  test("wrap null") {
+    val opt = Rx.option[String](null)
+    val x   = opt.map(x => x)
+    x.run(_ => fail("should not reach here"))
+  }
+
 }
