@@ -11,22 +11,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.codegen
-import example.rpc.RPCExample
-import wvlet.airframe.http.RPC
-import wvlet.airspec.AirSpec
+package wvlet.airframe.http.rx
+import wvlet.airframe.http.rx.Rx.{FlatMapOp, MapOp}
 
 /**
   */
-class GrpcClientGeneratorTest extends AirSpec {
-  private val router =
-    RouteScanner.buildRouter(Seq(classOf[RPCExample]))
+case class RxOption[+A](in: Rx[Option[A]]) extends Rx[A] {
+  override def parents: Seq[Rx[_]] = Seq(in)
 
-  test("generate sync gRPC client") {
-    val code = HttpCodeGenerator.generate(
-      router,
-      HttpClientGeneratorConfig("example.api:grpc-sync:example.api.client")
+  override def map[B](f: A => B): RxOption[B] = {
+    RxOption(MapOp(in, { x: Option[A] => x.map(f) }))
+  }
+  override def flatMap[B](f: A => Rx[B]): RxOption[B] = {
+    RxOption[B](
+      FlatMapOp(
+        in,
+        { x: Option[A] =>
+          x match {
+            case Some(v) =>
+              f(v).map(Some(_))
+            case None =>
+              Rx.none
+          }
+        }
+      )
     )
-    debug(code)
   }
 }

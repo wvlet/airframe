@@ -20,7 +20,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 /**
   */
-trait Rx[A] extends LogSupport {
+trait Rx[+A] extends LogSupport {
   import Rx._
 
   def map[B](f: A => B): Rx[B]           = MapOp[A, B](this, f)
@@ -44,13 +44,20 @@ trait Rx[A] extends LogSupport {
     Rx.run(this)(subscriber)
   }
   def run(effect: A => Unit): Cancelable = Rx.run(this)(effect)
-
 }
 
 object Rx extends LogSupport {
   def const[A](v: A): Rx[A]       = SingleOp(v)
   def variable[A](v: A): RxVar[A] = Rx.apply(v)
-  def apply[A](v: A): RxVar[A]    = new RxVar(v)
+  def option[A](v: A): RxOption[A] = {
+    v match {
+      case null => none
+      case _    => RxOption(Rx.const(Some(v)))
+    }
+  }
+  val none: RxOption[Nothing] = RxOption(Rx.const(None.asInstanceOf[Option[Nothing]]))
+
+  def apply[A](v: A): RxVar[A] = new RxVar(v)
 
   /**
     * Mapping a Scala Future into Rx
@@ -101,8 +108,8 @@ object Rx extends LogSupport {
       case SingleOp(v) =>
         effect(v)
         Cancelable.empty
-      case v @ RxVar(currentValue) =>
-        v.foreach(effect)
+      case v: RxVar[_] =>
+        v.asInstanceOf[RxVar[A]].foreach(effect)
     }
   }
 
@@ -116,6 +123,7 @@ object Rx extends LogSupport {
   case class SingleOp[A](v: A) extends RxBase[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
+
   case class MapOp[A, B](input: Rx[A], f: A => B)          extends UnaryRx[A, B]
   case class FlatMapOp[A, B](input: Rx[A], f: A => Rx[B])  extends UnaryRx[A, B]
   case class FilterOp[A](input: Rx[A], cond: A => Boolean) extends UnaryRx[A, A]
@@ -123,7 +131,7 @@ object Rx extends LogSupport {
     override def toString: String = s"${name}:${input}"
   }
 
-  case class RxVar[A](private var currentValue: A) extends RxBase[A] {
+  class RxVar[A](protected var currentValue: A) extends RxBase[A] {
     override def toString: String    = s"RxVar(${currentValue})"
     override def parents: Seq[Rx[_]] = Seq.empty
 
