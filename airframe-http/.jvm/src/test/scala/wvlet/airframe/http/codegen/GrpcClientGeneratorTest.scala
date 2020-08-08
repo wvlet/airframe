@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.http.codegen
 import example.rpc.RPCExample
-import wvlet.airframe.http.RPC
 import wvlet.airspec.AirSpec
 
 /**
