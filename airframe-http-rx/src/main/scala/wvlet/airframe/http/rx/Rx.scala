@@ -47,19 +47,11 @@ trait Rx[+A] extends LogSupport {
 object Rx extends LogSupport {
   def const[A](v: A): Rx[A] = SingleOp(v)
 
-  def apply[A](v: A): RxVar[A]    = new RxVar(v)
-  def variable[A](v: A): RxVar[A] = Rx.apply(v)
-  def optionVariable[A](v: Option[A]): RxOptionVar[A] = {
-    new RxOptionVar(v)
-  }
-
-  def option[A](v: A): RxOption[A] = {
-    v match {
-      case null => none
-      case _    => RxOption(Rx.const(Some(v)))
-    }
-  }
-  val none: RxOption[Nothing] = RxOption(Rx.const(None))
+  def apply[A](v: A): RxVar[A]                        = new RxVar(v)
+  def variable[A](v: A): RxVar[A]                     = Rx.apply(v)
+  def optionVariable[A](v: Option[A]): RxOptionVar[A] = new RxOptionVar(v)
+  def option[A](v: A): RxOption[A]                    = RxOption(Rx.const(Option(v)))
+  val none: RxOption[Nothing]                         = RxOption(Rx.const(None))
 
   /**
     * Mapping a Scala Future into Rx

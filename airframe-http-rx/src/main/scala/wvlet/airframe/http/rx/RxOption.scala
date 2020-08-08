@@ -15,6 +15,7 @@ package wvlet.airframe.http.rx
 import wvlet.airframe.http.rx.Rx.{FilterOp, FlatMapOp, MapOp}
 
 /**
+  * An wrapper of Rx[A] for Option[A] type values
   */
 private[rx] trait RxOptionOps[+A] extends Rx[A] {
   protected def in: Rx[Option[A]]
@@ -55,6 +56,11 @@ private[rx] trait RxOptionOps[+A] extends Rx[A] {
 
 case class RxOption[+A](in: Rx[Option[A]]) extends RxOptionOps[A]
 
+/**
+  * RxVar implementation for Option[A] type values
+  * @param initValue
+  * @tparam A
+  */
 class RxOptionVar[A](initValue: Option[A]) extends RxOptionOps[A] with RxVarOps[Option[A]] {
   override def toString: String            = s"RxOptionVar(${variable.get})"
   private val variable                     = new RxVar(initValue)
