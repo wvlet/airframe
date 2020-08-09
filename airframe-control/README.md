@@ -145,3 +145,10 @@ You can monitor metrics of parallel execution via JMX using [airframe-jmx](https
 JMXAgent.defaultAgent.register[Parallel.ParallelExecutionStats](Parallel.jmxStats)
 ```
 
+## ULID 
+
+ULID is a lexicographically sortable UUID https://github.com/ulid/spec
+
+```scala
+ULID.generate
+```
