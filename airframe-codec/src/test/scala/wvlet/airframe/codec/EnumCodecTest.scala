@@ -49,10 +49,9 @@ object EnumCodecTest extends AirSpec {
 
   test("detect invalid Strings for the enum") {
     val codec = MessageCodec.of[Status]
-    val e = intercept[MessageCodecException] {
+    val e = intercept[IllegalArgumentException] {
       codec.fromString("unknown")
     }
-    e.errorCode shouldBe INVALID_DATA
   }
 
   test("read enum in case class") {
@@ -60,10 +59,9 @@ object EnumCodecTest extends AirSpec {
     val r1    = codec.fromJson("""{"status":"SUCCESS"}"""")
     r1 shouldBe Resp(Status.SUCCESS)
 
-    val e = intercept[MessageCodecException] {
+    val e = intercept[IllegalArgumentException] {
       val r2 = codec.fromJson("""{"status":"invalid-value"}""")
     }
-    e.errorCode shouldBe INVALID_DATA
   }
 
 }

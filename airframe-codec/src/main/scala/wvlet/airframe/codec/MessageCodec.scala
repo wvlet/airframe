@@ -52,11 +52,7 @@ trait MessageCodec[A] extends LogSupport {
   }
 
   private def unpackError(e: Throwable): Throwable = {
-    e match {
-      case e: MessageCodecException => e
-      case other =>
-        new IllegalArgumentException(s"Failed to read the input msgpack data with codec: ${this}", e)
-    }
+    new IllegalArgumentException(s"Failed to read the input msgpack data with codec: ${this}", e)
   }
 
   def pack(p: Packer, v: A): Unit
@@ -139,9 +135,9 @@ trait MessageCodec[A] extends LogSupport {
     val v        = new MessageContext
     unpack(unpacker, v)
     if (v.hasError) {
-      throw v.getError.get
+      throw unpackError(v.getError.get)
     } else if (v.isNull) {
-      throw new MessageCodecException(INVALID_DATA, this, s"Invalid JSON data for ${this}:\n${json}")
+      throw new IllegalArgumentException(s"Invalid JSON data for ${this}:\n${json}")
     } else {
       v.getLastValue.asInstanceOf[A]
     }

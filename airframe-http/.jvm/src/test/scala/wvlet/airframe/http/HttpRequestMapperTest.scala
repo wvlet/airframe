@@ -111,7 +111,7 @@ object HttpRequestMapperTest extends AirSpec {
     args shouldBe Seq("hello", 2020)
   }
 
-  test("throw an exception when reading incomptible primitive arguments") {
+  test("throw an exception when reading incompatible primitive arguments") {
     val r = findRoute("rpc2")
     intercept[IllegalArgumentException] {
       mapArgs(r, _.withJson("""{"p1":"hello","p2":"abc"}"""))

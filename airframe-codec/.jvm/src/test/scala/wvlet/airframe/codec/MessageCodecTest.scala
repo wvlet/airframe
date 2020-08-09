@@ -34,12 +34,11 @@ class MessageCodecTest extends AirSpec {
     }
   }
 
-  def `throw an MessageCodecException for invalid input`: Unit = {
+  def `throw an Exception for invalid input`: Unit = {
     val s = MessageCodec.of[Seq[String]]
-    val e = intercept[MessageCodecException] {
+    intercept[IllegalArgumentException] {
       s.unpack(JSONCodec.toMsgPack("{}"))
     }
-    e.errorCode shouldBe INVALID_DATA
   }
 
   def `unpack empty json`: Unit = {
@@ -60,10 +59,13 @@ class MessageCodecTest extends AirSpec {
   }
 
   def `throw MessageCodecException upon invalid JSON data`: Unit = {
-    val ex = intercept[MessageCodecException] {
+    val ex = intercept[IllegalArgumentException] {
       val a = MessageCodec.fromJson[ExtractTest]("""{"id":"invalid_id"}""")
     }
-    ex.errorCode shouldBe INVALID_DATA
+    ex.getCause match {
+      case e: MessageCodecException => e.errorCode shouldBe INVALID_DATA
+      case _                        => fail("should not reach here")
+    }
   }
 
   def `convert Scala object to JSON`: Unit = {
