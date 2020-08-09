@@ -28,6 +28,18 @@ trait Rx[A] extends LogSupport {
   def filter(f: A => Boolean): Rx[A]     = FilterOp(this, f)
   def withFilter(f: A => Boolean): Rx[A] = FilterOp(this, f)
 
+  /**
+    * Combine two Rx objects to form a pair. If one of the objects is updated,
+    * it will yield a new pair.
+    *
+    * This method is useful when you need to monitor multiple Rx objects.
+    *
+    * Using Zip will be more intuitive than nesting multiple Rx operators
+    * like Rx[A].map { x => ... Rx[B].map { ...} }.
+    */
+  def zip[B](other: Rx[B]): Rx[(A, B)]             = ZipOp(this, other)
+  def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Zip3Op(this, b, c)
+
   def withName(name: String): Rx[A] = NamedOp(this, name)
 
   def parents: Seq[Rx[_]]
@@ -96,6 +108,51 @@ object Rx extends LogSupport {
             effect(x)
           }
         }
+      case ZipOp(left, right) =>
+        var allReady: Boolean = false
+        var v1: Any           = null
+        var v2: Any           = null
+        val c1 = run(left) { x =>
+          v1 = x
+          if (allReady) {
+            effect((v1, v2).asInstanceOf[A])
+          }
+        }
+        val c2 = run(right) { x =>
+          v2 = x
+          if (allReady) {
+            effect((v1, v2).asInstanceOf[A])
+          }
+        }
+        allReady = true
+        effect((v1, v2).asInstanceOf[A])
+        Cancelable { () => c1.cancel; c2.cancel }
+      case Zip3Op(r1, r2, r3) =>
+        var allReady: Boolean = false
+        var v1: Any           = null
+        var v2: Any           = null
+        var v3: Any           = null
+        val c1 = run(r1) { x =>
+          v1 = x
+          if (allReady) {
+            effect((v1, v2, v3).asInstanceOf[A])
+          }
+        }
+        val c2 = run(r2) { x =>
+          v2 = x
+          if (allReady) {
+            effect((v1, v2, v3).asInstanceOf[A])
+          }
+        }
+        val c3 = run(r3) { x =>
+          v3 = x
+          if (allReady) {
+            effect((v1, v2, v3).asInstanceOf[A])
+          }
+        }
+        allReady = true
+        effect((v1, v2, v3).asInstanceOf[A])
+        Cancelable { () => c1.cancel; c2.cancel }
       case NamedOp(input, name) =>
         run(input)(effect)
       case SingleOp(v) =>
@@ -119,6 +176,12 @@ object Rx extends LogSupport {
   case class MapOp[A, B](input: Rx[A], f: A => B)          extends UnaryRx[A, B]
   case class FlatMapOp[A, B](input: Rx[A], f: A => Rx[B])  extends UnaryRx[A, B]
   case class FilterOp[A](input: Rx[A], cond: A => Boolean) extends UnaryRx[A, A]
+  case class ZipOp[A, B](left: Rx[A], right: Rx[B]) extends Rx[(A, B)] {
+    override def parents: Seq[Rx[_]] = Seq(left, right)
+  }
+  case class Zip3Op[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]) extends Rx[(A, B, C)] {
+    override def parents: Seq[Rx[_]] = Seq(a, b, c)
+  }
   case class NamedOp[A](input: Rx[A], name: String) extends UnaryRx[A, A] {
     override def toString: String = s"${name}:${input}"
   }
