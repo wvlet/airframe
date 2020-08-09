@@ -26,7 +26,8 @@ class EnumCodec[A](enumSurface: EnumSurface) extends MessageCodec[A] {
     val s = u.unpackString
     enumSurface.stringExtractor(enumSurface.rawType, s) match {
       case Some(x) => v.setObject(x)
-      case None    => v.setNull
+      case None =>
+        v.setIncompatibleFormatException(this, s"invalid string ${s} for enum: ${enumSurface}")
     }
   }
 }
