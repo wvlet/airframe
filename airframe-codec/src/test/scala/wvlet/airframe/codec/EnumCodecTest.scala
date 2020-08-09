@@ -37,9 +37,9 @@ object EnumCodecTest extends AirSpec {
     codec.unpackMsgPack(StringCodec.toMsgPack("Green")) shouldBe empty
   }
 
-  test("find unapply(String) from the object") {
-    import enumtest._
+  import enumtest._
 
+  test("find unapply(String) from the object") {
     val codec = MessageCodec.of[Status]
     debug(codec)
     codec.unpackMsgPack(codec.toMsgPack(Status.SUCCESS)) shouldBe Some(Status.SUCCESS)
@@ -48,11 +48,22 @@ object EnumCodecTest extends AirSpec {
   }
 
   test("detect invalid Strings for the enum") {
-    import enumtest._
     val codec = MessageCodec.of[Status]
-    intercept[IllegalArgumentException] {
+    val e = intercept[MessageCodecException] {
       codec.fromString("unknown")
     }
+    e.errorCode shouldBe INVALID_DATA
+  }
+
+  test("read enum in case class") {
+    val codec = MessageCodec.of[Resp]
+    val r1    = codec.fromJson("""{"status":"SUCCESS"}"""")
+    r1 shouldBe Resp(Status.SUCCESS)
+
+    val e = intercept[MessageCodecException] {
+      val r2 = codec.fromJson("""{"status":"invalid-value"}""")
+    }
+    e.errorCode shouldBe INVALID_DATA
   }
 
 }
@@ -70,4 +81,6 @@ package enumtest {
       Status.values.find(_.toString == s)
     }
   }
+
+  case class Resp(status: Status)
 }

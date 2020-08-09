@@ -34,11 +34,12 @@ class MessageCodecTest extends AirSpec {
     }
   }
 
-  def `throw an IllegalArgumentException for invalid input`: Unit = {
+  def `throw an MessageCodecException for invalid input`: Unit = {
     val s = MessageCodec.of[Seq[String]]
-    intercept[IllegalArgumentException] {
+    val e = intercept[MessageCodecException] {
       s.unpack(JSONCodec.toMsgPack("{}"))
     }
+    e.errorCode shouldBe INVALID_DATA
   }
 
   def `unpack empty json`: Unit = {
