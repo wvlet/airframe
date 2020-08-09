@@ -16,7 +16,12 @@ import wvlet.airframe.control.ULID.extractEpochMillis
 
 import scala.util.Random
 
-final case class ULID(ulid: String) {
+final case class ULID(private val ulid: String) {
+
+  /**
+    * Return the string representation of this ULID
+    * @return
+    */
   override def toString: String = ulid
   def epochMillis: Long = {
     extractEpochMillis(ulid).getOrElse {
@@ -25,6 +30,9 @@ final case class ULID(ulid: String) {
   }
 }
 
+/**
+  * ULID generator implementation based on https://github.com/petitviolet/ulid4s
+  */
 object ULID {
   private val defaultGenerator = {
     val timeSource = () => System.currentTimeMillis()
