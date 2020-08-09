@@ -54,7 +54,7 @@ private[rx] trait RxOption[+A] extends Rx[A] {
   override def withFilter(f: A => Boolean): RxOption[A] = filter(f)
 }
 
-case class RxOptionOp[+A](in: Rx[Option[A]]) extends RxOption[A]
+case class RxOptionOp[+A](override protected val in: Rx[Option[A]]) extends RxOption[A]
 
 /**
   * RxVar implementation for Option[A] type values
