@@ -19,8 +19,10 @@ import wvlet.airframe.json.JSONParseException
 import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, ValueType}
 import wvlet.airframe.surface.{Surface, Zero}
 
+import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
+import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
 
 object CollectionCodec {
@@ -165,19 +167,24 @@ object CollectionCodec {
     }
   }
 
-  case class MapCodec[A, B](keyCodec: MessageCodec[A], valueCodec: MessageCodec[B]) extends MessageCodec[Map[A, B]] {
-    override def pack(p: Packer, m: Map[A, B]): Unit = {
+  abstract class MapCodecBase[A, B, MapType[A, B]](keyCodec: MessageCodec[A], valueCodec: MessageCodec[B])
+      extends MessageCodec[MapType[A, B]] {
+    protected def packMap(p: Packer, m: Map[A, B]): Unit = {
       p.packMapHeader(m.size)
       for ((k, v) <- m) {
         keyCodec.pack(p, k)
         valueCodec.pack(p, v)
       }
     }
-    override def unpack(u: Unpacker, v: MessageContext): Unit = {
+
+    protected def newMapBuilder: mutable.Builder[(Any, Any), Map[Any, Any]]
+    protected def castResult(v: Any): MapType[A, B]
+
+    protected def unpackMap(u: Unpacker, v: MessageContext): Unit = {
       u.getNextFormat.getValueType match {
         case ValueType.MAP =>
           val len = u.unpackMapHeader
-          val b   = Map.newBuilder[Any, Any]
+          val b   = newMapBuilder
           b.sizeHint(len)
           for (i <- 0 until len) {
             keyCodec.unpack(u, v)
@@ -186,7 +193,7 @@ object CollectionCodec {
             val value = v.getLastValue
             b += (key -> value)
           }
-          v.setObject(b.result())
+          v.setObject(castResult(b.result()))
         case ValueType.STRING =>
           // Assume it's a JSON map value
           val json = u.unpackString
@@ -204,44 +211,31 @@ object CollectionCodec {
     }
   }
 
+  case class MapCodec[A, B](keyCodec: MessageCodec[A], valueCodec: MessageCodec[B])
+      extends MapCodecBase[A, B, Map](keyCodec, valueCodec) {
+    override protected def newMapBuilder: mutable.Builder[(Any, Any), Map[Any, Any]] = Map.newBuilder[Any, Any]
+    override protected def castResult(v: Any): Map[A, B]                             = v.asInstanceOf[Map[A, B]]
+    override def pack(p: Packer, m: Map[A, B]): Unit                                 = packMap(p, m)
+    override def unpack(u: Unpacker, v: MessageContext): Unit                        = unpackMap(u, v)
+  }
+
+  case class ListMapCodec[A, B](keyCodec: MessageCodec[A], valueCodec: MessageCodec[B])
+      extends MapCodecBase[A, B, ListMap](keyCodec, valueCodec) {
+    override protected def newMapBuilder: mutable.Builder[(Any, Any), Map[Any, Any]] = ListMap.newBuilder[Any, Any]
+    override protected def castResult(v: Any): ListMap[A, B]                         = v.asInstanceOf[ListMap[A, B]]
+    override def pack(p: Packer, m: ListMap[A, B]): Unit                             = packMap(p, m)
+    override def unpack(u: Unpacker, v: MessageContext): Unit                        = unpackMap(u, v)
+  }
+
   // TODO Just use MapCodec for Scala and adapt the result type
   case class JavaMapCodec[A, B](keyCodec: MessageCodec[A], valueCodec: MessageCodec[B])
-      extends MessageCodec[java.util.Map[A, B]] {
-    override def pack(p: Packer, m: util.Map[A, B]): Unit = {
-      p.packMapHeader(m.size)
-      for ((k, v) <- m.asScala) {
-        keyCodec.pack(p, k)
-        valueCodec.pack(p, v)
-      }
-    }
-    override def unpack(u: Unpacker, v: MessageContext): Unit = {
-      u.getNextValueType match {
-        case ValueType.MAP =>
-          val len = u.unpackMapHeader
-          val b   = Map.newBuilder[Any, Any]
-          b.sizeHint(len)
-          for (i <- 0 until len) {
-            keyCodec.unpack(u, v)
-            val key = v.getLastValue
-            valueCodec.unpack(u, v)
-            val value = v.getLastValue
-            b += (key -> value)
-          }
-          v.setObject(b.result().asJava)
-        case ValueType.STRING =>
-          // Assume it's a JSON map value
-          val json = u.unpackString
-          try {
-            val msgpack = JSONCodec.toMsgPack(json)
-            this.unpackMsgPack(msgpack).map { x => v.setObject(x) }
-          } catch {
-            case e: JSONParseException =>
-              v.setError(e)
-          }
-        case _ =>
-          val x = u.unpackValue
-          v.setError(new MessageCodecException(INVALID_DATA, this, s"Not a map value: ${x}"))
-      }
-    }
+      extends MapCodecBase[A, B, java.util.Map](keyCodec, valueCodec) {
+
+    override protected def newMapBuilder: mutable.Builder[(Any, Any), Map[Any, Any]] = Map.newBuilder[Any, Any]
+    override protected def castResult(v: Any): util.Map[A, B]                        = v.asInstanceOf[Map[A, B]].asJava
+
+    override def pack(p: Packer, m: util.Map[A, B]): Unit     = packMap(p, m.asScala.toMap)
+    override def unpack(u: Unpacker, v: MessageContext): Unit = unpackMap(u, v)
   }
+
 }

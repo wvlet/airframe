@@ -16,6 +16,8 @@ import wvlet.airframe.codec.ScalaStandardCodec.{EitherCodec, OptionCodec, TupleC
 import wvlet.airframe.surface.{Alias, EnumSurface, GenericSurface, Surface, Union, Union2, Union3}
 import wvlet.log.LogSupport
 
+import scala.collection.immutable.ListMap
+
 /**
   */
 trait MessageCodecFinder {
@@ -101,10 +103,17 @@ object MessageCodecFinder extends LogSupport {
         }
       // Map[A, B]
       case g: GenericSurface if classOf[Map[_, _]].isAssignableFrom(g.rawType) =>
-        CollectionCodec.MapCodec(
-          factory.ofSurface(g.typeArgs(0), seenSet),
-          factory.ofSurface(g.typeArgs(1), seenSet)
-        )
+        if (classOf[ListMap[_, _]].isAssignableFrom(g.rawType)) {
+          CollectionCodec.ListMapCodec(
+            factory.ofSurface(g.typeArgs(0), seenSet),
+            factory.ofSurface(g.typeArgs(1), seenSet)
+          )
+        } else {
+          CollectionCodec.MapCodec(
+            factory.ofSurface(g.typeArgs(0), seenSet),
+            factory.ofSurface(g.typeArgs(1), seenSet)
+          )
+        }
       // Java collections (e.g., ArrayList[A], List[A], Queue[A], Set[A])
       case g: GenericSurface if classOf[java.util.Collection[_]].isAssignableFrom(g.rawType) =>
         val elementSurface = factory.ofSurface(g.typeArgs(0), seenSet)
