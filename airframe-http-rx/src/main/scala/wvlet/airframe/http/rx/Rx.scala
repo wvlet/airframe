@@ -16,6 +16,7 @@ package wvlet.airframe.http.rx
 import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.higherKinds
 
 /**
   */
@@ -25,10 +26,11 @@ trait Rx[+A] extends LogSupport {
   def parents: Seq[Rx[_]]
   def withName(name: String): Rx[A] = NamedOp(this, name)
 
-  def map[B](f: A => B): Rx[B]           = MapOp[A, B](this, f)
-  def flatMap[B](f: A => Rx[B]): Rx[B]   = FlatMapOp(this, f)
-  def filter(f: A => Boolean): Rx[A]     = FilterOp(this, f)
-  def withFilter(f: A => Boolean): Rx[A] = FilterOp(this, f)
+  def map[B](f: A => B): Rx[B]                                         = MapOp[A, B](this, f)
+  def flatMap[B](f: A => Rx[B]): Rx[B]                                 = FlatMapOp(this, f)
+  def filter(f: A => Boolean): Rx[A]                                   = FilterOp(this, f)
+  def withFilter(f: A => Boolean): Rx[A]                               = FilterOp(this, f)
+  def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(this.asInstanceOf[Rx[Option[X]]])
 
   /**
     * Subscribe any change in the upstream, and if a change is detected,
@@ -47,11 +49,11 @@ trait Rx[+A] extends LogSupport {
 object Rx extends LogSupport {
   def const[A](v: A): Rx[A] = SingleOp(v)
 
-  def apply[A](v: A): RxVar[A]                        = new RxVar(v)
-  def variable[A](v: A): RxVar[A]                     = Rx.apply(v)
-  def optionVariable[A](v: Option[A]): RxOptionVar[A] = new RxOptionVar(v)
-  def option[A](v: A): RxOption[A]                    = RxOption(Rx.const(Option(v)))
-  val none: RxOption[Nothing]                         = RxOption(Rx.const(None))
+  def apply[A](v: A): RxVar[A]                        = variable(v)
+  def variable[A](v: A): RxVar[A]                     = new RxVar(v)
+  def optionVariable[A](v: Option[A]): RxOptionVar[A] = new RxOptionVar(Rx.variable(v))
+  def option[A](v: Option[A]): RxOption[A]            = RxOptionOp(Rx.const(v))
+  val none: RxOption[Nothing]                         = RxOptionOp(Rx.const(None))
 
   /**
     * Mapping a Scala Future into Rx
@@ -97,7 +99,7 @@ object Rx extends LogSupport {
             effect(x)
           }
         }
-      case RxOption(in) =>
+      case RxOptionOp(in) =>
         run(in) {
           case Some(v) => effect(v)
           case None    =>

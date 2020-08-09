@@ -14,6 +14,7 @@
 package wvlet.airframe.http.rx
 
 import scala.collection.mutable.ArrayBuffer
+import scala.language.higherKinds
 
 /**
   * A reactive variable supporting update and propagation of the updated value to the chained operators
@@ -22,6 +23,9 @@ class RxVar[A](protected var currentValue: A) extends Rx[A] with RxVarOps[A] {
   override def toString: String                       = s"RxVar(${currentValue})"
   override def parents: Seq[Rx[_]]                    = Seq.empty
   private var subscribers: ArrayBuffer[Subscriber[A]] = ArrayBuffer.empty
+
+  override def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOptionVar[X] =
+    new RxOptionVar(this.asInstanceOf[RxVar[Option[X]]])
 
   override def get: A = currentValue
 

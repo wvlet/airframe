@@ -18,7 +18,7 @@ import wvlet.airspec.AirSpec
   */
 class RxOptionTest extends AirSpec {
   test("eval") {
-    val opt = Rx.option("world")
+    val opt = Rx.option(Some("world"))
     val v   = opt.map(x => s"hello ${x}")
     v.run(x => x shouldBe "hello world")
   }
@@ -30,39 +30,40 @@ class RxOptionTest extends AirSpec {
   }
 
   test("filter true") {
-    val opt = Rx.option("world")
+    val opt = Rx.option(Some("world"))
     val v   = opt.filter(_.startsWith("world")).map(x => s"hello ${x}")
     v.run(x => x shouldBe "hello world")
   }
 
   test("filter false") {
-    val opt = Rx.option("world")
+    val opt = Rx.option(Some("world"))
     val v   = opt.filter(_.startsWith("xxx")).map(x => s"hello ${x}")
     v.run(x => fail("should not reach here"))
   }
 
   test("add name") {
-    val r = Rx.option("hello").withName("opt test")
+    val r = Rx.option(Some("hello")).withName("opt test")
     debug(r)
   }
 
-  test("wrap null") {
-    val opt = Rx.option[String](null)
-    val x   = opt.map(x => x)
-    x.run(_ => fail("should not reach here"))
-  }
-
   test("flatMap") {
-    val opt = Rx.option("hello")
+    val opt = Rx.option(Some("hello"))
     val v   = opt.flatMap(x => Rx.const(s"hello ${x}"))
     v.run(x => x shouldBe "hello hello")
   }
 
   test("for-comprehension") {
-    val a = for (x <- Rx.option("hello")) yield {
+    val a = for (x <- Rx.option(Some("hello"))) yield {
       x + " world"
     }
     a.run(_ shouldBe "hello world")
+  }
+
+  test("toOption") {
+    val opt = Rx.const(Some("hello")).toOption
+    val a   = opt.map(x => s"${x} option")
+
+    a.run(_ shouldBe "hello option")
   }
 
   test("option variable") {

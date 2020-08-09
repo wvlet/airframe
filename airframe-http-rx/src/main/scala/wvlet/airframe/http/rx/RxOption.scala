@@ -17,17 +17,17 @@ import wvlet.airframe.http.rx.Rx.{FilterOp, FlatMapOp, MapOp}
 /**
   * An wrapper of Rx[A] for Option[A] type values
   */
-private[rx] trait RxOptionOps[+A] extends Rx[A] {
+private[rx] trait RxOption[+A] extends Rx[A] {
   protected def in: Rx[Option[A]]
 
   override def parents: Seq[Rx[_]]                 = Seq(in)
-  override def withName(name: String): RxOption[A] = RxOption(in.withName(name))
+  override def withName(name: String): RxOption[A] = RxOptionOp(in.withName(name))
 
   override def map[B](f: A => B): RxOption[B] = {
-    RxOption(MapOp(in, { x: Option[A] => x.map(f) }))
+    RxOptionOp(MapOp(in, { x: Option[A] => x.map(f) }))
   }
   override def flatMap[B](f: A => Rx[B]): RxOption[B] = {
-    RxOption[B](
+    RxOptionOp[B](
       FlatMapOp(
         in,
         { x: Option[A] =>
@@ -43,7 +43,7 @@ private[rx] trait RxOptionOps[+A] extends Rx[A] {
   }
 
   override def filter(f: A => Boolean): RxOption[A] = {
-    RxOption(
+    RxOptionOp(
       in.map {
         case Some(x) if f(x) => Some(x)
         case _               => None
@@ -54,16 +54,14 @@ private[rx] trait RxOptionOps[+A] extends Rx[A] {
   override def withFilter(f: A => Boolean): RxOption[A] = filter(f)
 }
 
-case class RxOption[+A](in: Rx[Option[A]]) extends RxOptionOps[A]
+case class RxOptionOp[+A](in: Rx[Option[A]]) extends RxOption[A]
 
 /**
   * RxVar implementation for Option[A] type values
-  * @param initValue
   * @tparam A
   */
-class RxOptionVar[A](initValue: Option[A]) extends RxOptionOps[A] with RxVarOps[Option[A]] {
+class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarOps[Option[A]] {
   override def toString: String            = s"RxOptionVar(${variable.get})"
-  private val variable                     = new RxVar(initValue)
   override protected def in: Rx[Option[A]] = variable
 
   override def get: Option[A] = variable.get
