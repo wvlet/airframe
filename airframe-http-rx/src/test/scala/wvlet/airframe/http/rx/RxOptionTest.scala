@@ -83,16 +83,23 @@ class RxOptionTest extends AirSpec {
 
     v.set(Some("good morning"))
     o.run(_ shouldBe "good morning world")
+      // We need to cancel the run to unregister the subscription
+      .cancel
+
+    v.set(None)
+    o.run(x => fail("should not reach here"))
   }
 
   test("convert RxVar to RxOptionVar") {
     val v = Rx(Some("hello")).toOption
     val o = v.map { x => s"${x} world" }
-
-    o.run(_ shouldBe "hello world")
+    o.run(_ shouldBe "hello world").cancel
 
     v := None
-    o.run(_ shouldBe None)
+    o.run(x => fail("should not reach here")).cancel
+
+    v := Some("good morning")
+    o.run(_ shouldBe "good morning world").cancel
   }
 
 }
