@@ -47,7 +47,9 @@ object GrpcClient extends HttpClientType {
          |
          |${indent(modelClasses)}
          |
-         |${indent(cls)}
+         |${indent(syncClientClass)}
+         |
+         |${indent(asyncClientClass)}
          |}""".stripMargin
 
     def descriptorBuilder: String = {
@@ -71,7 +73,7 @@ object GrpcClient extends HttpClientType {
     def methodDescriptors(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
-          s"""val ___${m.name}Descriptor: io.grpc.MethodDescriptor[MsgPack, Any] = {
+          s"""val ${m.name}Descriptor: io.grpc.MethodDescriptor[MsgPack, Any] = {
              |  newDescriptorBuilder("${src.packageName}.${svc.serviceName}/${m.name}")
              |    .setResponseMarshaller(new RPCResponseMarshaller[Any](
              |      codecFactory.of[${m.returnType.fullName.replaceAll("\\$", ".")}].asInstanceOf[MessageCodec[Any]]
@@ -96,7 +98,7 @@ object GrpcClient extends HttpClientType {
         }.mkString("\n")
     }
 
-    def cls: String =
+    def syncClientClass: String =
       s"""def newSyncClient(
          |  channel: io.grpc.Channel,
          |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
@@ -109,7 +111,7 @@ object GrpcClient extends HttpClientType {
          |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
          |) extends io.grpc.stub.AbstractBlockingStub[SyncClient](channel, callOptions) with java.lang.AutoCloseable {
          |
-         |  override def build(channel: io.grpc.Channel, callOptions: io.grpc.CallOptions): SyncClient = {
+         |  override protected def build(channel: io.grpc.Channel, callOptions: io.grpc.CallOptions): SyncClient = {
          |    new SyncClient(channel, callOptions, codecFactory)
          |  }
          |
@@ -120,26 +122,25 @@ object GrpcClient extends HttpClientType {
          |    }
          |  }
          |
-         |${indent(clientStub)}
+         |${indent(syncClientStub)}
          |}
          |""".stripMargin
 
-    def clientStub: String = {
+    def syncClientStub: String = {
       src.classDef.services
         .map { svc =>
           s"""object ${svc.serviceName} {
              |  private val descriptors = new ${svc.serviceName}Descriptors(codecFactory)
              |
              |  import io.grpc.stub.ClientCalls
-             |  import descriptors._
              |  import ${svc.serviceName}Models._
              |
-             |${indent(clientBody(svc))}
+             |${indent(syncClientBody(svc))}
              |}""".stripMargin
         }.mkString("\n")
     }
 
-    def clientBody(svc: ClientServiceDef): String = {
+    def syncClientBody(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
           val inputArgs =
@@ -151,8 +152,74 @@ object GrpcClient extends HttpClientType {
           lines += s"  val __m = ${requestObject}"
           lines += s"  val codec = codecFactory.of[${m.requestModelClassType}]"
           lines += s"  ClientCalls"
-          lines += s"    .blockingUnaryCall(getChannel, ___${m.name}Descriptor, getCallOptions, codec.toMsgPack(__m))"
+          lines += s"    .blockingUnaryCall(getChannel, descriptors.${m.name}Descriptor, getCallOptions, codec.toMsgPack(__m))"
           lines += s"    .asInstanceOf[${m.returnType}]"
+          lines += s"}"
+          lines.result().mkString("\n")
+        }.mkString("\n")
+    }
+
+    def asyncClientClass: String =
+      s"""def newAsyncClient(
+         |  channel: io.grpc.Channel,
+         |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
+         |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
+         |): AsyncClient = new AsyncClient(channel, callOptions, codecFactory)
+         |
+         |class AsyncClient(
+         |  val channel: io.grpc.Channel,
+         |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
+         |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
+         |) extends io.grpc.stub.AbstractAsyncStub[AsyncClient](channel, callOptions) with java.lang.AutoCloseable {
+         |
+         |  override protected def build(channel: io.grpc.Channel, callOptions: io.grpc.CallOptions): AsyncClient = {
+         |    new AsyncClient(channel, callOptions, codecFactory)
+         |  }
+         |
+         |  override def close(): Unit = {
+         |    channel match {
+         |      case m: io.grpc.ManagedChannel => m.shutdownNow()
+         |      case _ =>
+         |    }
+         |  }
+         |
+         |${indent(asyncClientStub)}
+         |}
+         |
+         |""".stripMargin
+
+    def asyncClientStub: String = {
+      src.classDef.services
+        .map { svc =>
+          s"""object ${svc.serviceName} {
+             |  private val descriptors = new ${svc.serviceName}Descriptors(codecFactory)
+             |
+             |  import io.grpc.stub.ClientCalls
+             |  import ${svc.serviceName}Models._
+             |
+             |${indent(asyncClientBody(svc))}
+             |}""".stripMargin
+        }.mkString("\n")
+    }
+
+    def asyncClientBody(svc: ClientServiceDef): String = {
+      svc.methods
+        .map { m =>
+          val inputArgs =
+            m.inputParameters.map(x => s"${x.name}: ${x.surface.name}")
+
+          val requestObject = m.clientCallParameters.headOption.getOrElse("Map.empty")
+          val lines         = Seq.newBuilder[String]
+          val clientArgs    = inputArgs :+ s"responseObserver: io.grpc.stub.StreamObserver[${m.returnType}]"
+          lines += s"def ${m.name}(${clientArgs.mkString(", ")}): Unit = {"
+          lines += s"  val __m = ${requestObject}"
+          lines += s"  val codec = codecFactory.of[${m.requestModelClassType}]"
+          lines += s"  ClientCalls"
+          lines += s"    .asyncUnaryCall[MsgPack, Any]("
+          lines += s"     getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),"
+          lines += s"     codec.toMsgPack(__m),"
+          lines += s"     responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]"
+          lines += s"  )"
           lines += s"}"
           lines.result().mkString("\n")
         }.mkString("\n")

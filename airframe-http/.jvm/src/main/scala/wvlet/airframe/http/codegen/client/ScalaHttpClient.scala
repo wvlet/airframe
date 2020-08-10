@@ -28,7 +28,14 @@ object ScalaHttpClient {
 
   def indent(body: String, level: Int = 1): String = {
     body
-      .split("\n").map { x => s"${"  " * level}${x}" }
+      .split("\n")
+      .map { x =>
+        if (x.trim.isEmpty) {
+          ""
+        } else {
+          s"${"  " * level}${x}"
+        }
+      }
       .mkString("\n")
   }
 }
