@@ -227,7 +227,7 @@ airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-stri
 <li><strong>sync</strong>: Create a sync HTTP client (ServiceSyncClient) for Scala (JVM)</li>
 <li><strong>async</strong>: Create an async HTTP client (ServiceClient) for Scala (JVM) using Future abstraction (<code>F</code>). The <code>F</code> can be <code>scala.concurrent.Future</code> or twitter-util's Future.</li>
 <li><strong>scalajs</strong>:  Create an RPC client (ServiceClientJS)</li>
-<li><strong>grpc-sync</strong>: Create a gRPC blocking client (ServiceGrpcSyncClient)</li>
+<li><strong>grpc</strong>: Create a gRPC client (ServiceGrpcClient)</li>
 </ul>
 <p>To support other types of clients, see the examples of <a href="https://github.com/wvlet/airframe/blob/master/airframe-http/.jvm/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClient.scala">HTTP code generators</a>. This code reads a Router definition of RPC interfaces, and generate client code for calling RPC endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would like to add Open API spec generator so that many programming languages can be used with Airframe RPC.</p>
 <p>The generated client code can be found in <code>target/scala-2.12/src_managed/(api package)/</code> folder.</p>
@@ -403,16 +403,46 @@ gRPC.server
   .withPort(<span class="hljs-number">8080</span>)
   .start { server =&gt;
     <span class="hljs-comment">// gRPC server (based on Netty) starts at localhost:8080</span>
-
-    <span class="hljs-comment">// Create a client channel</span>
-    <span class="hljs-keyword">val</span> channel = <span class="hljs-type">ManagedChannel</span>.forTaget(server.localAddress).usePlaintext().build()
-
-    <span class="hljs-comment">// Call gRPC server</span>
-    <span class="hljs-keyword">val</span> client = <span class="hljs-keyword">new</span> <span class="hljs-type">ServiceGrpcSyncClient</span>(channel)
-    <span class="hljs-keyword">val</span> ret = client.<span class="hljs-type">GreeterApi</span>.sayHello(<span class="hljs-string">"Airframe gRPC"</span>) <span class="hljs-comment">// Hello Airframe gRPC!     </span>
-     
-    client.close()    
+    server.awaitTermination
   }
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="grpc-client"></a><a href="#grpc-client" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>gRPC Client</h3>
+<p>sbt-airframe generates ServiceGrpcClient class to the target API package. You can create sync (blocking) or async (non-blocking) gRPC clients using this class.</p>
+<h4><a class="anchor" aria-hidden="true" id="grpc-sync-client"></a><a href="#grpc-sync-client" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>gRPC Sync Client</h4>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> example.api.<span class="hljs-type">ServiceClient</span>
+
+<span class="hljs-comment">// Create a client channel</span>
+<span class="hljs-keyword">val</span> channel = <span class="hljs-type">ManagedChannel</span>.forTaget(<span class="hljs-string">"localhost:8080"</span>).usePlaintext().build()
+
+<span class="hljs-comment">// Create a gRPC blocking client (SyncClient)</span>
+<span class="hljs-keyword">val</span> client = <span class="hljs-type">ServiceGrpcClient</span>.newSyncClient(channel)
+<span class="hljs-keyword">try</span> {
+  <span class="hljs-comment">// Call gRPC server</span>
+  <span class="hljs-keyword">val</span> ret = client.<span class="hljs-type">GreeterApi</span>.sayHello(<span class="hljs-string">"Airframe gRPC"</span>) <span class="hljs-comment">// Hello Airframe gRPC!     </span>
+}
+<span class="hljs-keyword">finally</span> {
+  client.close()    
+}
+</code></pre>
+<h4><a class="anchor" aria-hidden="true" id="grpc-async-client"></a><a href="#grpc-async-client" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>gRPC Async Client</h4>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> example.api.<span class="hljs-type">ServiceClient</span>
+<span class="hljs-keyword">import</span> io.grpc.stub.<span class="hljs-type">StreamObserver</span>
+
+<span class="hljs-comment">// Create an async gRPC client</span>
+<span class="hljs-keyword">val</span> client = <span class="hljs-type">ServiceGrpcClient</span>.newAsyncClient(channel)
+
+<span class="hljs-comment">// Call gRPC server</span>
+client.<span class="hljs-type">GreeterApi</span>.sayHello(<span class="hljs-string">"Airframe gRPC"</span>, <span class="hljs-keyword">new</span> <span class="hljs-type">StreamObserver</span>[<span class="hljs-type">String</span>] { 
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onNext</span></span>(v: <span class="hljs-type">String</span>): <span class="hljs-type">Unit</span> = {
+    <span class="hljs-comment">// v == Hello Airframe gRPC!        </span>
+  }
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onError</span></span>(t: <span class="hljs-type">Throwable</span>): <span class="hljs-type">Unit</span> = {
+    <span class="hljs-comment">// report the error</span>
+  }
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onCompleted</span></span>(): <span class="hljs-type">Unit</span> = {
+    <span class="hljs-comment">// RPC call completion </span>
+  }
+})
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="rpc-internals"></a><a href="#rpc-internals" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>RPC Internals</h2>
 <p>(<em>This section describes the internals of Airframe RPC protocol. Just for using Airframe RPC, you can skip this section.</em>)</p>
@@ -453,7 +483,7 @@ gRPC.server
 <li>200 (Ok) for successful responses.</li>
 <li>400 (Bad Request) if some request parameters are invalid.</li>
 </ul>
-</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe"><span class="arrow-prev">← </span><span>airframe-di: Dependency Injection</span></a><a class="docs-next button" href="/airframe/docs/airframe-http"><span>airframe-http: Creating REST Service</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#why-airframe-rpc">Why Airframe RPC?</a></li><li><a href="#airframe-rpc-overview">Airframe RPC: Overview</a></li><li><a href="#usage">Usage</a><ul class="toc-headings"><li><a href="#basic-project-structure">Basic Project Structure</a></li><li><a href="#sbt-airframe-plugin">sbt-airframe plugin</a></li><li><a href="#open-api">Open API</a></li><li><a href="#rpc-logging">RPC Logging</a></li><li><a href="#rpc-filters">RPC Filters</a></li><li><a href="#di-integration">DI Integration</a></li><li><a href="#object-serialization">Object Serialization</a></li><li><a href="#receiving-raw-http-responses">Receiving Raw HTTP Responses</a></li><li><a href="#other-tips">Other Tips</a></li></ul></li><li><a href="#airframe-grpc">Airframe gRPC</a><ul class="toc-headings"><li><a href="#defining-grpc-api">Defining gRPC API</a></li><li><a href="#generating-grpc-client">Generating gRPC client</a></li><li><a href="#starting-airframe-grpc-server">Starting Airframe gRPC Server</a></li></ul></li><li><a href="#rpc-internals">RPC Internals</a><ul class="toc-headings"><li><a href="#rpc-protocol">RPC Protocol</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2020 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe"><span class="arrow-prev">← </span><span>airframe-di: Dependency Injection</span></a><a class="docs-next button" href="/airframe/docs/airframe-http"><span>airframe-http: Creating REST Service</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#why-airframe-rpc">Why Airframe RPC?</a></li><li><a href="#airframe-rpc-overview">Airframe RPC: Overview</a></li><li><a href="#usage">Usage</a><ul class="toc-headings"><li><a href="#basic-project-structure">Basic Project Structure</a></li><li><a href="#sbt-airframe-plugin">sbt-airframe plugin</a></li><li><a href="#open-api">Open API</a></li><li><a href="#rpc-logging">RPC Logging</a></li><li><a href="#rpc-filters">RPC Filters</a></li><li><a href="#di-integration">DI Integration</a></li><li><a href="#object-serialization">Object Serialization</a></li><li><a href="#receiving-raw-http-responses">Receiving Raw HTTP Responses</a></li><li><a href="#other-tips">Other Tips</a></li></ul></li><li><a href="#airframe-grpc">Airframe gRPC</a><ul class="toc-headings"><li><a href="#defining-grpc-api">Defining gRPC API</a></li><li><a href="#generating-grpc-client">Generating gRPC client</a></li><li><a href="#starting-airframe-grpc-server">Starting Airframe gRPC Server</a></li><li><a href="#grpc-client">gRPC Client</a></li></ul></li><li><a href="#rpc-internals">RPC Internals</a><ul class="toc-headings"><li><a href="#rpc-protocol">RPC Protocol</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2020 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
                 </script><script>window.twttr=(function(d,s, id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return t;js=d.createElement(s);js.id=id;js.src='https://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js, fjs);t._e = [];t.ready = function(f) {t._e.push(f);};return t;}(document, 'script', 'twitter-wjs'));</script><script>
                 document.addEventListener('keyup', function(e) {
                   if (e.target !== document.body) {
