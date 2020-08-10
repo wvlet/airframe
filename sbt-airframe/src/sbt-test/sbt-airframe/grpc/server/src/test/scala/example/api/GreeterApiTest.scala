@@ -15,7 +15,7 @@ object GreeterApiTest extends AirSpec {
   test("test grpc server") {
     gRPC.server.withRouter(router).start { server =>
       val channel = ManagedChannelBuilder.forTarget(server.localAddress).usePlaintext().build()
-      val client  = new ServiceGrpcSyncClient(channel)
+      val client  = ServiceGrpcClient.newSyncClient(channel)
 
       val ret = client.GreeterApi.sayHello("Airframe gRPC")
       info(ret)

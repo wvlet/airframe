@@ -49,8 +49,7 @@ object GrpcClient extends HttpClientType {
          |}""".stripMargin
 
     def descriptorBuilder: String = {
-      s"""private def newDescriptorBuilder(fullMethodName:String)
-         |  : io.grpc.MethodDescriptor.Builder[MsgPack, Any] = {
+      s"""private def newDescriptorBuilder(fullMethodName:String) : io.grpc.MethodDescriptor.Builder[MsgPack, Any] = {
          |  io.grpc.MethodDescriptor.newBuilder[MsgPack, Any]()
          |    .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
          |    .setFullMethodName(fullMethodName)
@@ -61,7 +60,7 @@ object GrpcClient extends HttpClientType {
     def descriptorBody: String = {
       src.classDef.services
         .map { svc =>
-          s"""object ${svc.serviceName}Descriptors {
+          s"""class ${svc.serviceName}Descriptors(codecFactory: MessageCodecFactory) {
              |${indent(methodDescriptors(svc))}
              |}""".stripMargin
         }.mkString("\n")
@@ -84,16 +83,16 @@ object GrpcClient extends HttpClientType {
          |  channel: io.grpc.Channel,
          |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
          |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
-         |): SynClient = new SyncClient(channel, callOptions, codecFactory)
+         |): SyncClient = new SyncClient(channel, callOptions, codecFactory)
          |
          |class SyncClient(
          |  val channel: io.grpc.Channel,
          |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
          |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
-         |) extends io.grpc.stub.AbstractBlockingStub[${src.classDef.clsName}](channel, callOptions) with java.lang.AutoCloseable {
+         |) extends io.grpc.stub.AbstractBlockingStub[SyncClient](channel, callOptions) with java.lang.AutoCloseable {
          |
-         |  override def build(channel: io.grpc.Channel, callOptions: io.grpc.CallOptions): ${src.classDef.clsName} = {
-         |    new ${src.classDef.clsName}(channel, callOptions, codecFactory)
+         |  override def build(channel: io.grpc.Channel, callOptions: io.grpc.CallOptions): SyncClient = {
+         |    new SyncClient(channel, callOptions, codecFactory)
          |  }
          |
          |  override def close(): Unit = {
@@ -111,8 +110,10 @@ object GrpcClient extends HttpClientType {
       src.classDef.services
         .map { svc =>
           s"""object ${svc.serviceName} {
-             |  import ${svc.serviceName}Descriptors._
              |  import io.grpc.stub.ClientCalls
+             |
+             |  private val descriptors = new ${svc.serviceName}Descriptors(codecFactory)
+             |  import descriptors._
              |
              |${indent(clientBody(svc))}
              |}""".stripMargin

@@ -210,7 +210,7 @@ Supported client types are:
 - __sync__: Create a sync HTTP client (ServiceSyncClient) for Scala (JVM)
 - __async__: Create an async HTTP client (ServiceClient) for Scala (JVM) using Future abstraction (`F`). The `F` can be `scala.concurrent.Future` or twitter-util's Future. 
 - __scalajs__:  Create an RPC client (ServiceClientJS)
-- __grpc__: Create a gRPC blocking client (ServiceGrpcClient)
+- __grpc__: Create a gRPC client (ServiceGrpcClient)
 
 To support other types of clients, see the examples of [HTTP code generators](https://github.com/wvlet/airframe/blob/master/airframe-http/.jvm/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClient.scala). This code reads a Router definition of RPC interfaces, and generate client code for calling RPC endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would like to add Open API spec generator so that many programming languages can be used with Airframe RPC.
 
@@ -439,16 +439,27 @@ gRPC.server
   .withPort(8080)
   .start { server =>
     // gRPC server (based on Netty) starts at localhost:8080
-
-    // Create a client channel
-    val channel = ManagedChannel.forTaget(server.localAddress).usePlaintext().build()
-
-    // Call gRPC server
-    val client = new ServiceGrpcSyncClient(channel)
-    val ret = client.GreeterApi.sayHello("Airframe gRPC") // Hello Airframe gRPC!     
-     
-    client.close()    
+    server.awaitTermination
   }
+```
+
+### gRPC Client
+
+```scala
+import example.api.ServiceClient
+
+// Create a client channel
+val channel = ManagedChannel.forTaget("localhost:8080").usePlaintext().build()
+
+// Create a gRPC blocking client (SyncClient)
+val client = ServiceGrpcClient.newSyncClient(channel)
+try {
+  // Call gRPC server
+  val ret = client.GreeterApi.sayHello("Airframe gRPC") // Hello Airframe gRPC!     
+}
+finally {
+  client.close()    
+}
 ```
 
 
