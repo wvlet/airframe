@@ -28,7 +28,14 @@ object ScalaHttpClient {
 
   def indent(body: String, level: Int = 1): String = {
     body
-      .split("\n").map { x => s"${"  " * level}${x}" }
+      .split("\n")
+      .map { x =>
+        if (x.trim.isEmpty) {
+          ""
+        } else {
+          s"${"  " * level}${x}"
+        }
+      }
       .mkString("\n")
   }
 }
@@ -79,7 +86,7 @@ object AsyncClient extends HttpClientType {
 
           val lines = Seq.newBuilder[String]
           m.requestModelClassDef.foreach { x =>
-            lines += x.code
+            lines += x.code()
           }
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType}] = {"
           lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
@@ -135,7 +142,7 @@ object SyncClient extends HttpClientType {
 
           val lines = Seq.newBuilder[String]
           m.requestModelClassDef.foreach { x =>
-            lines += x.code
+            lines += x.code()
           }
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType} = {"
           lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
@@ -201,7 +208,7 @@ object ScalaJSClient extends HttpClientType {
 
           val lines = Seq.newBuilder[String]
           m.requestModelClassDef.foreach { x =>
-            lines += x.code
+            lines += x.code()
           }
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType}] = {"
           lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
