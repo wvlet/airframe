@@ -21,7 +21,6 @@ import wvlet.airspec.AirSpec
 class GrpcClientGeneratorTest extends AirSpec {
 
   test("generate sync gRPC client") {
-    pending()
     val code = HttpCodeGenerator.generate(
       RouteScanner.buildRouter(Seq(classOf[RPCExample])),
       HttpClientGeneratorConfig("example.api:grpc:example.api.client")

@@ -45,6 +45,8 @@ object GrpcClient extends HttpClientType {
          |
          |${indent(descriptorBody)}
          |
+         |${indent(modelClasses)}
+         |
          |${indent(cls)}
          |}""".stripMargin
 
@@ -75,6 +77,22 @@ object GrpcClient extends HttpClientType {
              |      codecFactory.of[${m.returnType.fullName.replaceAll("\\$", ".")}].asInstanceOf[MessageCodec[Any]]
              |    )).build()
              |}""".stripMargin
+        }.mkString("\n")
+    }
+
+    def modelClasses: String = {
+      src.classDef.services
+        .map { svc =>
+          s"""object ${svc.serviceName}Models {
+           |${indent(
+            svc.methods
+              .filter { x =>
+                x.requestModelClassDef.isDefined
+              }
+              .map(_.requestModelClassDef.get.code(isPrivate = false))
+              .mkString("\n")
+          )}
+           |}""".stripMargin
         }.mkString("\n")
     }
 
@@ -110,10 +128,11 @@ object GrpcClient extends HttpClientType {
       src.classDef.services
         .map { svc =>
           s"""object ${svc.serviceName} {
-             |  import io.grpc.stub.ClientCalls
-             |
              |  private val descriptors = new ${svc.serviceName}Descriptors(codecFactory)
+             |
+             |  import io.grpc.stub.ClientCalls
              |  import descriptors._
+             |  import ${svc.serviceName}Models._
              |
              |${indent(clientBody(svc))}
              |}""".stripMargin
@@ -127,11 +146,7 @@ object GrpcClient extends HttpClientType {
             m.inputParameters.map(x => s"${x.name}: ${x.surface.name}")
 
           val requestObject = m.clientCallParameters.headOption.getOrElse("Map.empty")
-
-          val lines = Seq.newBuilder[String]
-          m.requestModelClassDef.foreach { x =>
-            lines += x.code
-          }
+          val lines         = Seq.newBuilder[String]
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType} = {"
           lines += s"  val __m = ${requestObject}"
           lines += s"  val codec = codecFactory.of[${m.requestModelClassType}]"
