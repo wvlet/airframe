@@ -445,6 +445,10 @@ gRPC.server
 
 ### gRPC Client
 
+sbt-airframe generates ServiceGrpcClient class to the target API package. You can create sync (blocking) or async (non-blocking) gRPC clients using this class. 
+
+
+#### gRPC Sync Client
 ```scala
 import example.api.ServiceClient
 
@@ -462,6 +466,27 @@ finally {
 }
 ```
 
+#### gRPC Async Client
+```scala
+import example.api.ServiceClient
+import io.grpc.stub.StreamObserver
+
+// Create an async gRPC client
+val client = ServiceGrpcClient.newAsyncClient(channel)
+
+// Call gRPC server
+client.GreeterApi.sayHello("Airframe gRPC", new StreamObserver[String] { 
+  def onNext(v: String): Unit = {
+    // v == Hello Airframe gRPC!        
+  }
+  def onError(t: Throwable): Unit = {
+    // report the error
+  }
+  def onCompleted(): Unit = {
+    // RPC call completion 
+  }
+})
+```
 
 ## RPC Internals 
 
