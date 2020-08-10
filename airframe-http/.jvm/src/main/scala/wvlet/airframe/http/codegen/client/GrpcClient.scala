@@ -17,12 +17,14 @@ import wvlet.airframe.http.codegen.HttpClientIR.ClientServiceDef
 import wvlet.airframe.http.codegen.client.ScalaHttpClient.{header, indent}
 
 /**
+  * Generate gRPC client stubs
   */
-object GrpcSyncClient extends HttpClientType {
+object GrpcClient extends HttpClientType {
 
-  override def name: String             = "grpc-sync"
-  override def defaultFileName: String  = "ServiceGrpcSyncClient.scala"
-  override def defaultClassName: String = "ServiceGrpcSyncClient"
+  override def name: String             = "grpc"
+  override def defaultFileName: String  = "ServiceGrpcClient.scala"
+  override def defaultClassName: String = "ServiceGrpcClient"
+
   override def generate(src: HttpClientIR.ClientSourceDef): String = {
     def code =
       s"""${header(src.packageName)}
@@ -30,17 +32,68 @@ object GrpcSyncClient extends HttpClientType {
          |import wvlet.airframe.http._
          |${src.importStatements}
          |
-         |${cls}""".stripMargin
+         |${companionObject}
+         |""".stripMargin
+
+    def companionObject: String =
+      s"""object ${src.classDef.clsName} {
+         |  import wvlet.airframe.msgpack.spi.MsgPack
+         |  import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
+         |  import wvlet.airframe.http.grpc.GrpcServiceBuilder.{RPCRequestMarshaller, RPCResponseMarshaller}
+         |
+         |${indent(descriptorBuilder)}
+         |
+         |${indent(descriptorBody)}
+         |
+         |${indent(cls)}
+         |}""".stripMargin
+
+    def descriptorBuilder: String = {
+      s"""private def newDescriptorBuilder(fullMethodName:String)
+         |  : io.grpc.MethodDescriptor.Builder[MsgPack, Any] = {
+         |  io.grpc.MethodDescriptor.newBuilder[MsgPack, Any]()
+         |    .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+         |    .setFullMethodName(fullMethodName)
+         |    .setRequestMarshaller(RPCRequestMarshaller)
+         |}""".stripMargin
+    }
+
+    def descriptorBody: String = {
+      src.classDef.services
+        .map { svc =>
+          s"""object ${svc.serviceName}Descriptors {
+             |${indent(methodDescriptors(svc))}
+             |}""".stripMargin
+        }.mkString("\n")
+    }
+
+    def methodDescriptors(svc: ClientServiceDef): String = {
+      svc.methods
+        .map { m =>
+          s"""val ___${m.name}Descriptor: io.grpc.MethodDescriptor[MsgPack, Any] = {
+             |  newDescriptorBuilder("${src.packageName}.${svc.serviceName}/${m.name}")
+             |    .setResponseMarshaller(new RPCResponseMarshaller[Any](
+             |      codecFactory.of[${m.returnType.fullName.replaceAll("\\$", ".")}].asInstanceOf[MessageCodec[Any]]
+             |    )).build()
+             |}""".stripMargin
+        }.mkString("\n")
+    }
 
     def cls: String =
-      s"""class ${src.classDef.clsName}(
+      s"""def newSyncClient(
+         |  channel: io.grpc.Channel,
+         |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
+         |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
+         |): SynClient = new SyncClient(channel, callOptions, codecFactory)
+         |
+         |class SyncClient(
          |  val channel: io.grpc.Channel,
          |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
-         |  codecFactory: wvlet.airframe.codec.MessageCodecFactory = wvlet.airframe.codec.MessageCodecFactory.defaultFactoryForJSON
+         |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
          |) extends io.grpc.stub.AbstractBlockingStub[${src.classDef.clsName}](channel, callOptions) with java.lang.AutoCloseable {
          |
          |  override def build(channel: io.grpc.Channel, callOptions: io.grpc.CallOptions): ${src.classDef.clsName} = {
-         |    new ${src.classDef.clsName}(channel, callOptions)
+         |    new ${src.classDef.clsName}(channel, callOptions, codecFactory)
          |  }
          |
          |  override def close(): Unit = {
@@ -49,48 +102,24 @@ object GrpcSyncClient extends HttpClientType {
          |      case _ =>
          |    }
          |  }
-         |${indent(clsBody)}
+         |
+         |${indent(clientStub)}
          |}
          |""".stripMargin
 
-    def clsBody: String = {
+    def clientStub: String = {
       src.classDef.services
         .map { svc =>
           s"""object ${svc.serviceName} {
+             |  import ${svc.serviceName}Descriptors._
              |  import io.grpc.stub.ClientCalls
-             |  import wvlet.airframe.msgpack.spi.MsgPack
-             |  import wvlet.airframe.codec.MessageCodec
-             |  import wvlet.airframe.http.grpc.GrpcServiceBuilder.{RPCRequestMarshaller, RPCResponseMarshaller}
              |
-             |${indent(methodDescriptors(svc))}
-             |
-             |${indent(serviceBody(svc))}
+             |${indent(clientBody(svc))}
              |}""".stripMargin
         }.mkString("\n")
     }
 
-    def methodDescriptors(svc: ClientServiceDef): String = {
-      val md = svc.methods
-        .map { m =>
-          s"""private val ___${m.name}Descriptor: io.grpc.MethodDescriptor[MsgPack, Any] = {
-             |  newBuilder("${src.packageName}.${svc.serviceName}/${m.name}")
-             |    .setResponseMarshaller(new RPCResponseMarshaller[Any](
-             |      codecFactory.of[${m.returnType.fullName.replaceAll("\\$", ".")}].asInstanceOf[MessageCodec[Any]]
-             |    )).build()
-             |}""".stripMargin
-        }.mkString("\n")
-
-      s"""private def newBuilder(fullMethodName:String): io.grpc.MethodDescriptor.Builder[MsgPack, Any] = {
-         |  io.grpc.MethodDescriptor.newBuilder[MsgPack, Any]()
-         |    .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-         |    .setFullMethodName(fullMethodName)
-         |    .setRequestMarshaller(RPCRequestMarshaller)
-         |}
-         |
-         |${md}""".stripMargin
-    }
-
-    def serviceBody(svc: ClientServiceDef): String = {
+    def clientBody(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
           val inputArgs =

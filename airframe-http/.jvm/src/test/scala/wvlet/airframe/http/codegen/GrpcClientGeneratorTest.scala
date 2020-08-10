@@ -12,20 +12,29 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
+import example.grpc.Greeter
 import example.rpc.RPCExample
 import wvlet.airspec.AirSpec
 
 /**
   */
 class GrpcClientGeneratorTest extends AirSpec {
-  private val router =
-    RouteScanner.buildRouter(Seq(classOf[RPCExample]))
 
   test("generate sync gRPC client") {
+    pending()
     val code = HttpCodeGenerator.generate(
-      router,
-      HttpClientGeneratorConfig("example.api:grpc-sync:example.api.client")
+      RouteScanner.buildRouter(Seq(classOf[RPCExample])),
+      HttpClientGeneratorConfig("example.api:grpc:example.api.client")
     )
     debug(code)
   }
+
+  test("generate gRPC client") {
+    val code = HttpCodeGenerator.generate(
+      RouteScanner.buildRouter(Seq(classOf[Greeter])),
+      HttpClientGeneratorConfig("example.grpc:grpc")
+    )
+    debug(code)
+  }
+
 }
