@@ -76,8 +76,8 @@ object HttpClientIR extends LogSupport {
   case class ClientClassDef(clsName: String, services: Seq[ClientServiceDef])     extends ClientCodeIR
   case class ClientServiceDef(serviceName: String, methods: Seq[ClientMethodDef]) extends ClientCodeIR
   case class ClientRequestModelClassDef(name: String, parameter: Seq[Parameter]) {
-    def code =
-      s"private case class ${name}(${parameter
+    def code(isPrivate: Boolean = true) =
+      s"${if (isPrivate) "private " else ""}case class ${name}(${parameter
         .map { p =>
           s"${p.name}: ${p.surface.name}"
         }.mkString(", ")})"

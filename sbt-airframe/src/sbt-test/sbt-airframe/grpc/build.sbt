@@ -27,7 +27,7 @@ lazy val server =
       fork in Test := true,
       airframeHttpGeneratorOption := "-l trace",
       airframeHttpClients := Seq(
-        "example.api:grpc-sync"
+        "example.api:grpc"
       ),
       libraryDependencies ++= Seq(
         "org.wvlet.airframe" %% "airframe-http-grpc" % sys.props("plugin.version")
