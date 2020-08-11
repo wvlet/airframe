@@ -15,22 +15,22 @@ package wvlet.airframe.http.rx
 
 import wvlet.log.LogSupport
 
-import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.higherKinds
 
 /**
   */
-trait Rx[A] extends LogSupport {
+trait Rx[+A] extends LogSupport {
   import Rx._
 
-  def map[B](f: A => B): Rx[B]           = MapOp[A, B](this, f)
-  def flatMap[B](f: A => Rx[B]): Rx[B]   = FlatMapOp(this, f)
-  def filter(f: A => Boolean): Rx[A]     = FilterOp(this, f)
-  def withFilter(f: A => Boolean): Rx[A] = FilterOp(this, f)
-
+  def parents: Seq[Rx[_]]
   def withName(name: String): Rx[A] = NamedOp(this, name)
 
-  def parents: Seq[Rx[_]]
+  def map[B](f: A => B): Rx[B]                                         = MapOp[A, B](this, f)
+  def flatMap[B](f: A => Rx[B]): Rx[B]                                 = FlatMapOp(this, f)
+  def filter(f: A => Boolean): Rx[A]                                   = FilterOp(this, f)
+  def withFilter(f: A => Boolean): Rx[A]                               = FilterOp(this, f)
+  def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(this.asInstanceOf[Rx[Option[X]]])
 
   /**
     * Subscribe any change in the upstream, and if a change is detected,
@@ -44,13 +44,16 @@ trait Rx[A] extends LogSupport {
     Rx.run(this)(subscriber)
   }
   def run(effect: A => Unit): Cancelable = Rx.run(this)(effect)
-
 }
 
 object Rx extends LogSupport {
-  def const[A](v: A): Rx[A]       = SingleOp(v)
-  def variable[A](v: A): RxVar[A] = Rx.apply(v)
-  def apply[A](v: A): RxVar[A]    = new RxVar(v)
+  def const[A](v: A): Rx[A] = SingleOp(v)
+
+  def apply[A](v: A): RxVar[A]                        = variable(v)
+  def variable[A](v: A): RxVar[A]                     = new RxVar(v)
+  def optionVariable[A](v: Option[A]): RxOptionVar[A] = variable(v).toOption
+  def option[A](v: Option[A]): RxOption[A]            = RxOptionOp(Rx.const(v))
+  val none: RxOption[Nothing]                         = RxOptionOp(Rx.const(None))
 
   /**
     * Mapping a Scala Future into Rx
@@ -96,26 +99,37 @@ object Rx extends LogSupport {
             effect(x)
           }
         }
+      case RxOptionOp(in) =>
+        run(in) {
+          case Some(v) => effect(v)
+          case None    =>
+          // Do nothing
+        }
       case NamedOp(input, name) =>
         run(input)(effect)
       case SingleOp(v) =>
         effect(v)
         Cancelable.empty
-      case v @ RxVar(currentValue) =>
-        v.foreach(effect)
+      case o: RxOptionVar[_] =>
+        o.asInstanceOf[RxOptionVar[A]].foreach {
+          case Some(v) => effect(v)
+          case None    =>
+          // Do nothing
+        }
+      case v: RxVar[_] =>
+        v.asInstanceOf[RxVar[A]].foreach(effect)
     }
   }
 
-  private[rx] abstract class RxBase[A] extends Rx[A] {}
-
-  abstract class UnaryRx[I, A] extends RxBase[A] {
+  abstract class UnaryRx[I, A] extends Rx[A] {
     def input: Rx[I]
     override def parents: Seq[Rx[_]] = Seq(input)
   }
 
-  case class SingleOp[A](v: A) extends RxBase[A] {
+  case class SingleOp[A](v: A) extends Rx[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
+
   case class MapOp[A, B](input: Rx[A], f: A => B)          extends UnaryRx[A, B]
   case class FlatMapOp[A, B](input: Rx[A], f: A => Rx[B])  extends UnaryRx[A, B]
   case class FilterOp[A](input: Rx[A], cond: A => Boolean) extends UnaryRx[A, A]
@@ -123,45 +137,4 @@ object Rx extends LogSupport {
     override def toString: String = s"${name}:${input}"
   }
 
-  case class RxVar[A](private var currentValue: A) extends RxBase[A] {
-    override def toString: String    = s"RxVar(${currentValue})"
-    override def parents: Seq[Rx[_]] = Seq.empty
-
-    private var subscribers: ArrayBuffer[Subscriber[A]] = ArrayBuffer.empty
-
-    def get: A = currentValue
-    def foreach[U](f: A => U): Cancelable = {
-      val s = Subscriber(f)
-      // Register a subscriber for propagating future changes
-      subscribers += s
-      f(currentValue)
-      Cancelable { () =>
-        // Unsubscribe if cancelled
-        subscribers -= s
-      }
-    }
-
-    def :=(newValue: A): Unit  = set(newValue)
-    def set(newValue: A): Unit = update { x: A => newValue }
-
-    def forceSet(newValue: A): Unit = update({ x: A => newValue }, force = true)
-
-    /**
-      * Updates the variable and trigger the recalculation of the subscribers
-      * currentValue => newValue
-      */
-    def update(updater: A => A, force: Boolean = false): Unit = {
-      val newValue = updater(currentValue)
-      if (force || currentValue != newValue) {
-        currentValue = newValue
-        subscribers.map { s => s(newValue) }
-      }
-    }
-
-    /**
-      * Update the variable and force notification to subscribers
-      * @param updater
-      */
-    def forceUpdate(updater: A => A): Unit = update(updater, force = true)
-  }
 }
