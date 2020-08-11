@@ -26,10 +26,11 @@ trait Rx[+A] extends LogSupport {
   def parents: Seq[Rx[_]]
   def withName(name: String): Rx[A] = NamedOp(this, name)
 
-  def map[B](f: A => B): Rx[B]                                         = MapOp[A, B](this, f)
-  def flatMap[B](f: A => Rx[B]): Rx[B]                                 = FlatMapOp(this, f)
-  def filter(f: A => Boolean): Rx[A]                                   = FilterOp(this, f)
-  def withFilter(f: A => Boolean): Rx[A]                               = FilterOp(this, f)
+  def map[B](f: A => B): Rx[B]           = MapOp[A, B](this, f)
+  def flatMap[B](f: A => Rx[B]): Rx[B]   = FlatMapOp(this, f)
+  def filter(f: A => Boolean): Rx[A]     = FilterOp(this, f)
+  def withFilter(f: A => Boolean): Rx[A] = FilterOp(this, f)
+
   /**
     * Combine two Rx objects to form a pair. If one of the objects is updated,
     * it will yield a new pair.
@@ -41,7 +42,7 @@ trait Rx[+A] extends LogSupport {
     */
   def zip[B](other: Rx[B]): Rx[(A, B)]             = ZipOp(this, other)
   def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Zip3Op(this, b, c)
-  
+
   def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(this.asInstanceOf[Rx[Option[X]]])
 
   /**
