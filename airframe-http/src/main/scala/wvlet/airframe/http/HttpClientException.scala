@@ -19,7 +19,7 @@ import java.nio.channels.ClosedChannelException
 import java.util.concurrent.{ExecutionException, TimeoutException}
 
 import javax.net.ssl.{SSLException, SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
-import wvlet.airframe.control.ResultClass
+import wvlet.airframe.control.{ResultClass, Retry}
 import wvlet.airframe.control.ResultClass.{Failed, Succeeded, nonRetryableFailure, retryableFailure}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.log.LogSupport
@@ -96,6 +96,9 @@ object HttpClientException extends LogSupport {
         s match {
           case HttpStatus.BadRequest_400 if isRetryable400ErrorMessage(adapter.contentStringOf(response)) =>
             // Some 400 errors can be caused by a client side error
+            retryableFailure(requestFailure(response))
+          case HttpStatus.RequestTimeout_408 =>
+            // #1171: Client side timeout should be retryable
             retryableFailure(requestFailure(response))
           case HttpStatus.Gone_410 =>
             // e.g., Server might have failed to process the request
