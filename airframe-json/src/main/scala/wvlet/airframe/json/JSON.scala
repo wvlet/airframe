@@ -65,6 +65,48 @@ object JSON extends LogSupport {
     JSONScanner.scanAny(s, b)
   }
 
+  /**
+    * Format JSON value
+    */
+  def format(v: JSONValue): String = {
+    def formatInternal(v: JSONValue, level: Int = 0): String = {
+      val s = new StringBuilder()
+      v match {
+        case x: JSONObject =>
+          s.append("{\n")
+          s.append {
+            x.v
+              .map {
+                case (k, v: JSONValue) =>
+                  val ss = new StringBuilder
+                  ss.append("  " * (level + 1))
+                  ss.append("\"")
+                  ss.append(quoteJSONString(k))
+                  ss.append("\": ")
+                  ss.append(formatInternal(v, level + 1))
+                  ss.result()
+              }.mkString("", ",\n", "\n")
+          }
+          s.append("  " * level)
+          s.append("}")
+        case x: JSONArray =>
+          s.append("[\n")
+          s.append(
+            x.v
+              .map { x =>
+                ("  " * (level + 1)) + formatInternal(x, level + 1)
+              }.mkString("", ",\n", "\n")
+          )
+          s.append("  " * level)
+          s.append("]")
+        case x => s.append(x.toJSON)
+      }
+      s.result()
+    }
+
+    formatInternal(v, 0)
+  }
+
   sealed trait JSONValue {
     override def toString = toJSON
     def toJSON: String

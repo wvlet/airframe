@@ -78,4 +78,22 @@ class JSONTest extends AirSpec {
 
     values.map(_.toStringValue) shouldBe Seq("a", "b")
   }
+
+  def `format JSON value`: Unit = {
+    val json = JSON.parse("""{"user": [{ "values": {"value": "a"} }, { "values": {"value": "b"} }]}""")
+    JSON.format(json) shouldBe """{
+                                 |  "user": [
+                                 |    {
+                                 |      "values": {
+                                 |        "value": "a"
+                                 |      }
+                                 |    },
+                                 |    {
+                                 |      "values": {
+                                 |        "value": "b"
+                                 |      }
+                                 |    }
+                                 |  ]
+                                 |}""".stripMargin
+  }
 }
