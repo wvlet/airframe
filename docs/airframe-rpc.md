@@ -414,13 +414,12 @@ trait GreeterApi {
 Add a following build setting to genreate a gRPC client by using sbt-airframe plugin:
 
 ```scala
-airframeHttpClients := Seq("example.api:grpc-sync")
+airframeHttpClients := Seq("example.api:grpc")
 ```
 
-With this setting, a gRPC blocking client (ServiceGrpcSyncClient.scala) will be genreated.
+With this setting, a gRPC blocking client factory (ServiceGrpcClient.scala) will be generated under `example.api` package. 
 
-### Starting Airframe gRPC Server
-
+### Starting An Airframe gRPC Server
 
 ```scala
 import wvlet.airframe.http.Router
@@ -448,18 +447,26 @@ gRPC.server
 sbt-airframe generates ServiceGrpcClient class to the target API package. You can create sync (blocking) or async (non-blocking) gRPC clients using this class. 
 
 
-#### gRPC Sync Client
+To create a gRPC client, you need to create a ManagedChannel first: 
 ```scala
-import example.api.ServiceClient
-
 // Create a client channel
 val channel = ManagedChannel.forTaget("localhost:8080").usePlaintext().build()
+
+```
+
+#### gRPC Sync Client
+
+SyncClient is a blocking gRPC client implementation: 
+
+```scala
+import example.api.ServiceGrpcClient
 
 // Create a gRPC blocking client (SyncClient)
 val client = ServiceGrpcClient.newSyncClient(channel)
 try {
   // Call gRPC server
-  val ret = client.GreeterApi.sayHello("Airframe gRPC") // Hello Airframe gRPC!     
+  val ret = client.GreeterApi.sayHello("Airframe gRPC") 
+  // ret == "Hello Airframe gRPC!"     
 }
 finally {
   client.close()    
@@ -467,8 +474,11 @@ finally {
 ```
 
 #### gRPC Async Client
+
+To make non-blocking asynchrnous RPC calls, you can create a gRPC AsyncClient:
+
 ```scala
-import example.api.ServiceClient
+import example.api.ServiceGrpcClient
 import io.grpc.stub.StreamObserver
 
 // Create an async gRPC client
@@ -477,7 +487,7 @@ val client = ServiceGrpcClient.newAsyncClient(channel)
 // Call gRPC server
 client.GreeterApi.sayHello("Airframe gRPC", new StreamObserver[String] { 
   def onNext(v: String): Unit = {
-    // v == Hello Airframe gRPC!        
+    // v == "Hello Airframe gRPC!"        
   }
   def onError(t: Throwable): Unit = {
     // report the error
