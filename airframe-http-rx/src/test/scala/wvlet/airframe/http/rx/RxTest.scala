@@ -146,6 +146,63 @@ object RxTest extends AirSpec {
     n.run(x => fail("cannot reach here"))
   }
 
+  test("zip") {
+    val a = Rx.variable(1)
+    val b = Rx.variable("a")
+
+    val x     = a.zip(b)
+    var count = 0
+
+    val c = x.run { v =>
+      count match {
+        case 0 =>
+          v shouldBe (1, "a")
+        case 1 =>
+          v shouldBe (2, "a")
+        case 2 =>
+          v shouldBe (2, "b")
+        case _ =>
+      }
+    }
+
+    count += 1
+    a := 2
+    count += 1
+    b := "b"
+    c.cancel
+  }
+
+  test("zip3") {
+    val a = Rx.variable(1)
+    val b = Rx.variable("a")
+    val c = Rx.variable(true)
+
+    val x     = a.zip(b, c)
+    var count = 0
+
+    val e = x.run { v =>
+      count match {
+        case 0 =>
+          v shouldBe (1, "a", true)
+        case 1 =>
+          v shouldBe (2, "a", true)
+        case 2 =>
+          v shouldBe (2, "b", true)
+        case 3 =>
+          v shouldBe (2, "b", false)
+        case _ =>
+      }
+    }
+
+    count += 1
+    a := 2
+    count += 1
+    b := "b"
+    count += 1
+    c := false
+    e.cancel
+  }
+
   test("embedded") {
     val em = Embedded("text")
     intercept[Throwable] {
