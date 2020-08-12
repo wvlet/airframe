@@ -17,6 +17,7 @@ import java.util.Locale
 import wvlet.airframe.http.{HttpMethod, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.router.Route
+import wvlet.airframe.http.rx.RxStream
 import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface}
 import wvlet.log.LogSupport
 
@@ -105,7 +106,23 @@ object HttpClientIR extends LogSupport {
         case None    => "Map[String, Any]"
       }
     }
-
+    def getServerStreamingResponseType: Option[Surface] = {
+      if (classOf[RxStream[_]].isAssignableFrom(returnType.rawType)) {
+        returnType.typeArgs.headOption
+      } else {
+        None
+      }
+    }
+    def getClientStreamingRequestType: Option[Surface] = {
+      inputParameters
+        .find(x => classOf[RxStream[_]].isAssignableFrom(x.surface.rawType))
+        .flatMap(_.surface.typeArgs.headOption)
+    }
+    def isServerStreaming: Boolean = getServerStreamingResponseType.nonEmpty
+    def isClientStreaming: Boolean = getClientStreamingRequestType.nonEmpty
+    def isBidirectionalStreaming: Boolean = {
+      isServerStreaming && isClientStreaming
+    }
   }
 
   private case class PathVariableParam(name: String, param: MethodParameter)

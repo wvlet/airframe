@@ -17,6 +17,7 @@ import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
+import scala.util.Try
 
 /**
   */
@@ -44,6 +45,10 @@ trait Rx[+A] extends LogSupport {
   def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Zip3Op(this, b, c)
 
   def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(this.asInstanceOf[Rx[Option[X]]])
+
+  def lastOption[U](f: Option[A] => U): Rx[U] = ???
+
+  //def onComplete[U](f: Try[A] => U): Rx[A] = ???
 
   /**
     * Subscribe any change in the upstream, and if a change is detected,

@@ -17,6 +17,7 @@ import io.grpc.stub.StreamObserver
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.http.router.HttpRequestMapper
+import wvlet.airframe.http.rx.{Cancelable, RxStream}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
 import wvlet.airframe.surface.{CName, MethodSurface}
@@ -65,10 +66,38 @@ class RPCRequestHandler[A](controller: Any, methodSurface: MethodSurface, codecF
     }
     result match {
       case Success(v) =>
-        responseObserver.onNext(v.asInstanceOf[A])
+        v match {
+          case stream: RxStream[_] =>
+            // Server-side streaming
+            val rx = stream
+              .map { x =>
+                // TODO: How can we catch a failure within subscription?
+                val e = x.asInstanceOf[A]
+                responseObserver.onNext(e)
+                e
+              }
+              .lastOption { x =>
+                responseObserver.onCompleted()
+              }
+            var c = Cancelable.empty
+            try {
+              c = rx.run { x =>
+                // do nothing
+              }
+            } catch {
+              case e: Throwable =>
+                responseObserver.onError(e)
+            } finally {
+              c.cancel
+            }
+          case other =>
+            // Unary response
+            responseObserver.onNext(v.asInstanceOf[A])
+            responseObserver.onCompleted()
+        }
       case Failure(e) =>
         responseObserver.onError(e)
     }
-    responseObserver.onCompleted()
+
   }
 }
