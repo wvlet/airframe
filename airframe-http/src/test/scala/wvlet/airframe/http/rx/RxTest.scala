@@ -12,15 +12,14 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.rx
-
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 
-import wvlet.airframe.Design
-import wvlet.airframe.http.rx.html.Embedded
-import wvlet.airspec._
+import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future
 
+/**
+  */
 object RxTest extends AirSpec {
 
   test("create a new Rx variable") {
@@ -201,14 +200,6 @@ object RxTest extends AirSpec {
     count += 1
     c := false
     e.cancel
-  }
-
-  test("embedded") {
-    val em = Embedded("text")
-    intercept[Throwable] {
-      // No implementation
-      em.render
-    }
   }
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global

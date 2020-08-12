@@ -767,7 +767,7 @@ lazy val rx =
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
-    .dependsOn(log, surface, airspecRef % Test)
+    .dependsOn(log, http, surface, airspecRef % Test)
 
 lazy val rxJVM = rx.jvm
 lazy val rxJS  = rx.js
