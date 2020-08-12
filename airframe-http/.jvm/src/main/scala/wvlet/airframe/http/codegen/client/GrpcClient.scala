@@ -22,8 +22,8 @@ import wvlet.airframe.http.codegen.client.ScalaHttpClient.{header, indent}
 object GrpcClient extends HttpClientType {
 
   override def name: String             = "grpc"
-  override def defaultFileName: String  = "ServiceGrpc.scala"
-  override def defaultClassName: String = "ServiceGrpc"
+  override def defaultFileName: String  = "ServiceGrpcClient.scala"
+  override def defaultClassName: String = "ServiceGrpcClient"
 
   override def generate(src: HttpClientIR.ClientSourceDef): String = {
     def code =
@@ -50,8 +50,6 @@ object GrpcClient extends HttpClientType {
          |${indent(syncClientClass)}
          |
          |${indent(asyncClientClass)}
-         |
-         |${indent(serverStub)}
          |}""".stripMargin
 
     def descriptorBuilder: String = {
@@ -227,11 +225,6 @@ object GrpcClient extends HttpClientType {
         }.mkString("\n")
     }
 
-    def serverStub =
-      s"""
-         |""".stripMargin
-
     code
   }
-
 }
