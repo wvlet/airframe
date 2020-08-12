@@ -52,4 +52,12 @@ class RxElementTest extends AirSpec {
 
   }
 
+  test("embedded") {
+    val em = Embedded("text")
+    intercept[Throwable] {
+      // No implementation
+      em.render
+    }
+  }
+
 }
