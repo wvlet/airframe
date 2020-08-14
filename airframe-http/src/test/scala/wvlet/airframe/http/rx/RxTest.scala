@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger, AtomicReferenc
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 /**
   */
@@ -208,7 +209,7 @@ object RxTest extends AirSpec {
     val f  = Future.successful(1)
     val rx = f.toRx
 
-    pending("requries async test")
+    pending("requires async test")
     rx.run(x => x shouldBe Some(1))
   }
 
@@ -227,13 +228,22 @@ object RxTest extends AirSpec {
   }
 
   test("lastOption") {
-    val rx      = Rx.single(1).lastOption
+    val rx      = Rx.sequence(1, 2, 3).lastOption
     var counter = 0
     rx.run { x =>
       counter += 1
-      x shouldBe 1
+      x shouldBe 3
     }
     counter shouldBe 1
+  }
+
+  test("lastOption empty") {
+    val rx      = Rx.empty[Int].lastOption
+    var counter = 0
+    rx.run { x =>
+      counter += 1
+    }
+    counter shouldBe 0
   }
 
   test("concat") {
@@ -246,9 +256,56 @@ object RxTest extends AirSpec {
   }
 
   test("sequence") {
-    val rx = Rx.sequence(Seq(1, 2, 3)).map(_ * 2)
+    val rx = Rx.fromSeq(Seq(1, 2, 3)).map(_ * 2)
     val b  = Seq.newBuilder[Int]
     rx.run(b += _)
     b.result() shouldBe Seq(2, 4, 6)
   }
+
+  test("empty") {
+    val rx = Rx.empty[Int].map(_ * 2)
+    val b  = Seq.newBuilder[Int]
+    rx.run(b += _)
+    b.result() shouldBe Seq.empty
+  }
+
+  test("recover from an error") {
+    def recoveryFunction: PartialFunction[Throwable, Any] = {
+      case e: IllegalArgumentException => 0
+    }
+
+    def newTests(rx: Rx[Int]): Seq[(Rx[Any], Any)] =
+      Seq(
+        (rx, 1),
+        (rx.map(x => x * 2), 2),
+        (rx.flatMap(x => Rx.single(3)), 3),
+        (rx.filter(_ => true), 1),
+        (rx.zip(Rx.single(1)), (1, 1))
+      ).map { x =>
+        (x._1.recover(recoveryFunction), x._2)
+      }
+
+    test("normal behavior") {
+      for ((t, expected) <- newTests(Rx.single(1))) {
+        var executed = false
+        t.run { x =>
+          executed = true
+          x shouldBe expected
+        }
+        executed shouldBe true
+      }
+    }
+
+    test("failure recovery") {
+      for ((t, expected) <- newTests(Rx.single(throw new IllegalArgumentException("test failure")))) {
+        var executed = false
+        t.run { x =>
+          executed = true
+          x shouldBe 0
+        }
+        executed shouldBe true
+      }
+    }
+  }
+
 }

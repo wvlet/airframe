@@ -13,10 +13,12 @@
  */
 package wvlet.airframe.http.rx
 
+import wvlet.airframe.LazyF0
 import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
+import scala.util.Try
 
 /**
   */
@@ -49,6 +51,14 @@ trait Rx[+A] extends LogSupport {
   def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(this.asInstanceOf[Rx[Option[X]]])
 
   /**
+    * Recover a known error to
+    * @param f
+    * @tparam U
+    * @return
+    */
+  def recover[U](f: PartialFunction[Throwable, U]): Rx[U] = RecoverOp(this, f)
+
+  /**
     * Subscribe any change in the upstream, and if a change is detected,
     *  the given subscriber code will be executed.
     *
@@ -66,19 +76,25 @@ trait Rx[+A] extends LogSupport {
       // do nothing
     }
 
-  private def runInternal[U](effect: RxEvent => U): Cancelable = {
+  private[rx] def runInternal[U](effect: RxEvent => U): Cancelable = {
     RxRunner.runInternal(this)(effect)
   }
 }
 
 object Rx extends LogSupport {
-  def const[A](v: A): Rx[A]  = single(v)
-  def single[A](v: A): Rx[A] = SingleOp(v)
+  def const[A](v: => A): Rx[A]  = single(v)
+  def single[A](v: => A): Rx[A] = SingleOp(LazyF0(v))
 
   /**
-    * Create a sequence of events
+    * Create a sequence of values from Seq[A]
     */
-  def sequence[A](lst: Seq[A]): Rx[A] = SeqOp(lst)
+  def fromSeq[A](lst: Seq[A]): Rx[A] = SeqOp(LazyF0(lst))
+
+  /**
+    * Create a sequence of values
+    */
+  def sequence[A](values: A*): Rx[A] = fromSeq(values)
+  def empty[A]: Rx[A]                = fromSeq(Seq.empty)
 
   def apply[A](v: A): RxVar[A]                        = variable(v)
   def variable[A](v: A): RxVar[A]                     = new RxVar(v)
@@ -104,10 +120,10 @@ object Rx extends LogSupport {
     override def parents: Seq[Rx[_]] = Seq(input)
   }
 
-  case class SingleOp[A](v: A) extends Rx[A] {
+  case class SingleOp[A](v: LazyF0[A]) extends Rx[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
-  case class SeqOp[A](lst: Seq[A]) extends Rx[A] {
+  case class SeqOp[A](lst: LazyF0[Seq[A]]) extends Rx[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
 
@@ -129,5 +145,5 @@ object Rx extends LogSupport {
   case class NamedOp[A](input: Rx[A], name: String) extends UnaryRx[A, A] {
     override def toString: String = s"${name}:${input}"
   }
-
+  case class RecoverOp[A, U](input: Rx[A], f: PartialFunction[Throwable, U]) extends UnaryRx[A, U]
 }

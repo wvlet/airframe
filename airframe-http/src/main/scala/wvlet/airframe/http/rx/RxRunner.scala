@@ -1,14 +1,31 @@
 package wvlet.airframe.http.rx
 
+import java.util.concurrent.atomic.AtomicBoolean
+
+import wvlet.airframe.control.MultipleExceptions
+import wvlet.log.LogSupport
+
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
-sealed trait RxEvent
-case class OnNext(v: Any)        extends RxEvent
-case class OnError(e: Throwable) extends RxEvent
-case object OnCompletion         extends RxEvent
+sealed trait RxEvent {
+  def isLastEvent: Boolean
+  def isError: Boolean
+}
+case class OnNext(v: Any) extends RxEvent {
+  override def isLastEvent: Boolean = false
+  override def isError: Boolean     = false
+}
+case class OnError(e: Throwable) extends RxEvent {
+  override def isLastEvent: Boolean = true
+  override def isError: Boolean     = true
+}
+case object OnCompletion extends RxEvent {
+  override def isLastEvent: Boolean = true
+  override def isError: Boolean     = false
+}
 
-private[rx] object RxRunner {
+private[rx] object RxRunner extends LogSupport {
   import Rx._
 
   /**
@@ -89,64 +106,10 @@ private[rx] object RxRunner {
               case Failure(e) => effect(OnError(e))
             }
         }
-      case ZipOp(left, right) =>
-        var allReady: Boolean = false
-        var v1: Any           = null
-        var v2: Any           = null
-        val c1 = runInternal(left) {
-          case OnNext(x) =>
-            v1 = x
-            if (allReady) {
-              effect(OnNext((v1, v2).asInstanceOf[A]))
-            }
-          case other =>
-            effect(other)
-        }
-        val c2 = runInternal(right) {
-          case OnNext(x) =>
-            v2 = x
-            if (allReady) {
-              effect(OnNext((v1, v2).asInstanceOf[A]))
-            }
-          case other =>
-            effect(other)
-        }
-        allReady = true
-        effect(OnNext((v1, v2).asInstanceOf[A]))
-        Cancelable { () => c1.cancel; c2.cancel }
-      case Zip3Op(r1, r2, r3) =>
-        var allReady: Boolean = false
-        var v1: Any           = null
-        var v2: Any           = null
-        var v3: Any           = null
-        val c1 = runInternal(r1) {
-          case OnNext(x) =>
-            v1 = x
-            if (allReady) {
-              effect(OnNext((v1, v2, v3).asInstanceOf[A]))
-            }
-          case other => effect(other)
-        }
-        val c2 = runInternal(r2) {
-          case OnNext(x) =>
-            v2 = x
-            if (allReady) {
-              effect(OnNext((v1, v2, v3).asInstanceOf[A]))
-            }
-          case other => effect(other)
-        }
-        val c3 = runInternal(r3) {
-          case OnNext(x) =>
-            v3 = x
-            if (allReady) {
-              effect(OnNext((v1, v2, v3).asInstanceOf[A]))
-            }
-          case other =>
-            effect(other)
-        }
-        allReady = true
-        effect(OnNext((v1, v2, v3).asInstanceOf[A]))
-        Cancelable { () => c1.cancel; c2.cancel; c3.cancel }
+      case z @ ZipOp(left, right) =>
+        zip(z)(effect)
+      case z @ Zip3Op(r1, r2, r3) =>
+        zip(z)(effect)
       case RxOptionOp(in) =>
         runInternal(in) {
           case OnNext(Some(v)) => effect(OnNext(v))
@@ -157,7 +120,7 @@ private[rx] object RxRunner {
       case NamedOp(input, name) =>
         runInternal(input)(effect)
       case SingleOp(v) =>
-        Try(effect(OnNext(v))) match {
+        Try(effect(OnNext(v.eval))) match {
           case Success(c) => effect(OnCompletion)
           case Failure(e) => effect(OnError(e))
         }
@@ -178,7 +141,7 @@ private[rx] object RxRunner {
             }
           }
         }
-        loop(inputList.toList)
+        loop(inputList.eval.toList)
         // Stop reading the next element if cancelled
         Cancelable { () =>
           toContinue = false
@@ -191,6 +154,67 @@ private[rx] object RxRunner {
         }
       case v: RxVar[_] =>
         v.asInstanceOf[RxVar[A]].foreach { x => effect(OnNext(x)) }
+      case RecoverOp(in, f) =>
+        runInternal(in) {
+          case OnCompletion =>
+          case OnError(e) if f.isDefinedAt(e) =>
+            effect(OnNext(f(e)))
+          case other =>
+            effect(other)
+        }
     }
   }
+
+  private def zip[A, U](input: Rx[A])(effect: RxEvent => U): Cancelable = {
+    val size                               = input.parents.size
+    val lastValues: Array[Option[A]]       = Array.fill(size)(None)
+    val lastEvents: Array[Option[RxEvent]] = Array.fill(size)(None)
+    val c: Array[Cancelable]               = Array.fill(size)(Cancelable.empty)
+
+    def emit: Unit = {
+      // Emit the tuple result. This code is a bit ad-hoc because there is no way to produce tuples from Seq[X]
+      lastValues match {
+        case Array(Some(v1), Some(v2)) =>
+          // For zip2
+          effect(OnNext((v1, v2).asInstanceOf[A]))
+        case Array(Some(v1), Some(v2), Some(v3)) =>
+          // For zip3
+          effect(OnNext((v1, v2, v3).asInstanceOf[A]))
+        case _ =>
+      }
+    }
+    val completed = new AtomicBoolean(false)
+
+    // Scan the last events and emit the next value or a completion event
+    def processEvents = {
+      val errors = lastEvents.collect { case Some(e @ OnError(ex)) => ex }
+      if (errors.isEmpty) {
+        emit
+      } else {
+        // Report the completion event only once
+        if (completed.compareAndSet(false, true)) {
+          if (errors.size == 1) {
+            effect(OnError(errors(0)))
+          } else {
+            effect(OnError(MultipleExceptions(errors.toSeq)))
+          }
+        }
+      }
+    }
+
+    for (i <- 0 until size) {
+      c(i) = runInternal(input.parents(i)) { e =>
+        lastEvents(i) = Some(e)
+        e match {
+          case OnNext(v) => lastValues(i) = Some(v.asInstanceOf[A])
+          case _         =>
+        }
+        processEvents
+      }
+    }
+
+    processEvents
+    Cancelable { () => c.foreach(_.cancel) }
+  }
+
 }
