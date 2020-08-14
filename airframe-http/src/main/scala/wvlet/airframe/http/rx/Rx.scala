@@ -87,7 +87,7 @@ trait Rx[+A] extends LogSupport {
     }
 
   private[rx] def runInternal[U](effect: RxEvent => U): Cancelable = {
-    RxRunner.runInternal(this)(effect)
+    RxRunner.run(this)(effect)
   }
 }
 

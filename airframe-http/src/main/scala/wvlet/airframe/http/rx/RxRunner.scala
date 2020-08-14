@@ -8,9 +8,21 @@ import wvlet.log.LogSupport
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
 import scala.util.{Failure, Success, Try}
+import Rx._
 
 private[rx] object RxRunner extends LogSupport {
-  import Rx._
+
+  val defaultRunner = new RxRunner(continuous = false)
+  // Used for continuous RxVar evaluation (e.g., RxVar -> DOM rendering)
+  val continuousRunner = new RxRunner(continuous = true)
+
+  private[rx] def run[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable = defaultRunner.run(rx)(effect)
+}
+
+private[rx] class RxRunner(
+    // If this value is true, evaluating Rx keeps reporting events after OnError or OnCompletion is observed
+    continuous: Boolean
+) extends LogSupport {
 
   /**
     * Build an executable chain of Rx operators. The resulting chain
@@ -22,14 +34,58 @@ private[rx] object RxRunner extends LogSupport {
     * @tparam A
     * @tparam U
     */
-  private[rx] def runInternal[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable = {
+  def run[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable = {
     rx match {
-      case m @ MapOp(in, f) =>
-        map(m)(effect)
+      case MapOp(in, f) =>
+        var toContinue = true
+        run(in) { ev =>
+          if (continuous || toContinue) {
+            ev match {
+              case OnNext(v) =>
+                Try(f.asInstanceOf[Any => A](v)) match {
+                  case Success(x) => effect(OnNext(x))
+                  case Failure(e) =>
+                    toContinue = false
+                    effect(OnError(e))
+                }
+              case other =>
+                toContinue = false
+                effect(other)
+            }
+          }
+        }
       case fm @ FlatMapOp(in, f) =>
-        flatMap(fm)(effect)
+        var toContinue = true
+        // This var is a placeholder to remember the preceding Cancelable operator, which will be updated later
+        var c1 = Cancelable.empty
+        val c2 = run(fm.input) { ev =>
+          if (continuous || toContinue) {
+            ev match {
+              case OnNext(x) =>
+                Try(fm.f.asInstanceOf[Any => Rx[A]](x)) match {
+                  case Success(rxb) =>
+                    // This code is necessary to properly cancel the effect if this operator is evaluated before
+                    c1.cancel
+                    c1 = run(rxb.asInstanceOf[Rx[A]]) {
+                      case n @ OnNext(x) => effect(n)
+                      case OnCompletion  => // skip the end of flatMap body stream
+                      case ev @ OnError(e) =>
+                        toContinue = false
+                        effect(ev)
+                    }
+                  case Failure(e) =>
+                    toContinue = false
+                    effect(OnError(e))
+                }
+              case other =>
+                toContinue = false
+                effect(other)
+            }
+          }
+        }
+        Cancelable { () => c1.cancel; c2.cancel }
       case FilterOp(in, cond) =>
-        runInternal(in) {
+        run(in) {
           case OnNext(x) =>
             Try(cond.asInstanceOf[A => Boolean](x.asInstanceOf[A])) match {
               case Success(true) =>
@@ -44,11 +100,11 @@ private[rx] object RxRunner extends LogSupport {
         }
       case ConcatOp(first, next) =>
         var c1 = Cancelable.empty
-        val c2 = runInternal(first) {
+        val c2 = run(first) {
           case OnCompletion =>
             // Properly cancel the effect if this operator is evaluated before
             c1.cancel
-            c1 = runInternal(next)(effect)
+            c1 = run(next)(effect)
             c1
           case other =>
             effect(other)
@@ -56,7 +112,7 @@ private[rx] object RxRunner extends LogSupport {
         Cancelable { () => c1.cancel; c2.cancel }
       case LastOp(in) =>
         var last: Option[A] = None
-        runInternal(in) {
+        run(in) {
           case OnNext(v) =>
             last = Some(v.asInstanceOf[A])
           case err @ OnError(e) =>
@@ -72,14 +128,14 @@ private[rx] object RxRunner extends LogSupport {
       case z @ Zip3Op(r1, r2, r3) =>
         zip(z)(effect)
       case RxOptionOp(in) =>
-        runInternal(in) {
+        run(in) {
           case OnNext(Some(v)) => effect(OnNext(v))
           case OnNext(None)    =>
           // do nothing for empty values
           case other => effect(other)
         }
       case NamedOp(input, name) =>
-        runInternal(input)(effect)
+        run(input)(effect)
       case SingleOp(v) =>
         Try(effect(OnNext(v.eval))) match {
           case Success(c) => effect(OnCompletion)
@@ -90,7 +146,7 @@ private[rx] object RxRunner extends LogSupport {
         var toContinue = true
         @tailrec
         def loop(lst: List[A]): Unit = {
-          if (toContinue) {
+          if (continuous || toContinue) {
             lst match {
               case Nil =>
                 effect(OnCompletion)
@@ -125,7 +181,7 @@ private[rx] object RxRunner extends LogSupport {
       case v: RxVar[_] =>
         v.asInstanceOf[RxVar[A]].foreach { x => effect(OnNext(x)) }
       case RecoverOp(in, f) =>
-        runInternal(in) {
+        run(in) {
           case OnError(e) if f.isDefinedAt(e) =>
             Try(effect(OnNext(f(e)))) match {
               case Success(x) => effect(OnCompletion)
@@ -137,12 +193,12 @@ private[rx] object RxRunner extends LogSupport {
       case RecoverWithOp(in, f) =>
         var completed = false
         var c1        = Cancelable.empty
-        val c2 = runInternal(in) {
+        val c2 = run(in) {
           case OnError(e) if f.isDefinedAt(e) =>
             c1.cancel
             Try(f(e)) match {
               case Success(recoverySource) =>
-                c1 = runInternal(recoverySource)(effect)
+                c1 = run(recoverySource)(effect)
               case Failure(e) =>
                 completed = true
                 effect(OnError(e))
@@ -154,58 +210,6 @@ private[rx] object RxRunner extends LogSupport {
         }
         Cancelable { () => c1.cancel; c2.cancel }
     }
-  }
-
-  private def map[A, B](in: MapOp[A, B])(effect: RxEvent => A): Cancelable = {
-    var toContinue = true
-    runInternal(in.input) { ev =>
-      if (toContinue) {
-        ev match {
-          case OnNext(v) =>
-            Try(in.f.asInstanceOf[Any => A](v)) match {
-              case Success(x) => effect(OnNext(x))
-              case Failure(e) =>
-                toContinue = false
-                effect(OnError(e))
-            }
-          case other =>
-            toContinue = false
-            effect(other)
-        }
-      }
-    }
-  }
-
-  private def flatMap[A, B](fm: FlatMapOp[A, B])(effect: RxEvent => A): Cancelable = {
-    // This var is a placeholder to remember the preceding Cancelable operator, which will be updated later
-    var toContinue = true
-    var c1         = Cancelable.empty
-    val c2 = runInternal(fm.input) { ev =>
-      if (toContinue) {
-        ev match {
-          case OnNext(x) =>
-            Try(fm.f.asInstanceOf[Any => Rx[A]](x)) match {
-              case Success(rxb) =>
-                // This code is necessary to properly cancel the effect if this operator is evaluated before
-                c1.cancel
-                c1 = runInternal(rxb.asInstanceOf[Rx[A]]) {
-                  case n @ OnNext(x) => effect(n)
-                  case OnCompletion  => // skip the end of flatMap body stream
-                  case ev @ OnError(e) =>
-                    toContinue = false
-                    effect(ev)
-                }
-              case Failure(e) =>
-                toContinue = false
-                effect(OnError(e))
-            }
-          case other =>
-            toContinue = false
-            effect(other)
-        }
-      }
-    }
-    Cancelable { () => c1.cancel; c2.cancel }
   }
 
   private def zip[A, U](input: Rx[A])(effect: RxEvent => U): Cancelable = {
@@ -245,14 +249,14 @@ private[rx] object RxRunner extends LogSupport {
         if (doEmit) {
           emit
         } else {
-          if (lastEvent.forall(_.isDefined) && completed.compareAndSet(false, true)) {
+          if (!continuous && lastEvent.forall(_.isDefined) && completed.compareAndSet(false, true)) {
             trace(s"emit OnCompletion")
             effect(OnCompletion)
           }
         }
       } else {
         // Report the completion event only once
-        if (completed.compareAndSet(false, true)) {
+        if (continuous || completed.compareAndSet(false, true)) {
           if (errors.size == 1) {
             effect(OnError(errors(0)))
           } else {
@@ -263,7 +267,7 @@ private[rx] object RxRunner extends LogSupport {
     }
 
     for (i <- 0 until size) {
-      c(i) = runInternal(input.parents(i)) { e =>
+      c(i) = run(input.parents(i)) { e =>
         lastEvent(i) = Some(e)
         trace(s"c(${i}) ${e}")
         e match {
