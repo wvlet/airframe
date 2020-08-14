@@ -172,6 +172,16 @@ object RxTest extends AirSpec {
     c.cancel
   }
 
+  test("zip sequences") {
+    val a = Rx.sequence(1, 2, 3)
+    val b = Rx.sequence("a", "b")
+
+    val r = Seq.newBuilder[(Int, String)]
+    a.zip(b).run(r += _)
+
+    r.result shouldBe Seq((1, "a"), (2, "b"))
+  }
+
   test("zip3") {
     val a = Rx.variable(1)
     val b = Rx.variable("a")

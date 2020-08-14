@@ -6,6 +6,7 @@ import wvlet.airframe.control.MultipleExceptions
 import wvlet.log.LogSupport
 
 import scala.annotation.tailrec
+import scala.collection.immutable.Queue
 import scala.util.{Failure, Success, Try}
 
 sealed trait RxEvent {
@@ -182,34 +183,43 @@ private[rx] object RxRunner extends LogSupport {
   }
 
   private def zip[A, U](input: Rx[A])(effect: RxEvent => U): Cancelable = {
-    val size                               = input.parents.size
-    val lastValues: Array[Option[A]]       = Array.fill(size)(None)
-    val lastEvents: Array[Option[RxEvent]] = Array.fill(size)(None)
-    val c: Array[Cancelable]               = Array.fill(size)(Cancelable.empty)
+    val size                              = input.parents.size
+    val lastValueBuffer: Array[Queue[A]]  = Array.fill(size)(Queue.empty[A])
+    val lastEvent: Array[Option[RxEvent]] = Array.fill(size)(None)
+    val c: Array[Cancelable]              = Array.fill(size)(Cancelable.empty)
 
     val completed: AtomicBoolean = new AtomicBoolean(false)
     def emit: Unit = {
-      // Emit the tuple result. This code is a bit ad-hoc because there is no way to produce tuples from Seq[X]
-      lastValues match {
-        case Array(Some(v1), Some(v2)) =>
-          // For zip2
-          trace(s"emit :${lastValues.mkString(", ")}")
-          effect(OnNext((v1, v2).asInstanceOf[A]))
-        case Array(Some(v1), Some(v2), Some(v3)) =>
-          // For zip3
-          effect(OnNext((v1, v2, v3).asInstanceOf[A]))
-        case _ =>
+      // Emit the tuple result.
+      if (lastValueBuffer.forall(_.nonEmpty)) {
+        val values = for (i <- 0 until lastValueBuffer.size) yield {
+          val (v, newQueue) = lastValueBuffer(i).dequeue
+          lastValueBuffer(i) = newQueue
+          v
+        }
+        // Generate tuples from last values.
+        // This code is a bit ad-hoc because there is no way to produce tuples from Seq[X] of lastValues
+        lastValueBuffer.size match {
+          case 2 =>
+            // For zip2
+            trace(s"emit :${lastValueBuffer.mkString(", ")}")
+            effect(OnNext((values(0), values(1)).asInstanceOf[A]))
+          case 3 =>
+            // For zip3
+            effect(OnNext((values(0), values(1), values(2)).asInstanceOf[A]))
+          case _ => ???
+        }
       }
     }
 
     // Scan the last events and emit the next value or a completion event
     def processEvents(doEmit: Boolean) = {
-      val errors = lastEvents.collect { case Some(e @ OnError(ex)) => ex }
+      val errors = lastEvent.collect { case Some(e @ OnError(ex)) => ex }
       if (errors.isEmpty) {
         if (doEmit) {
           emit
         } else {
-          if (lastEvents.forall(_.isDefined) && completed.compareAndSet(false, true)) {
+          if (lastEvent.forall(_.isDefined) && completed.compareAndSet(false, true)) {
             trace(s"emit OnCompletion")
             effect(OnCompletion)
           }
@@ -228,11 +238,11 @@ private[rx] object RxRunner extends LogSupport {
 
     for (i <- 0 until size) {
       c(i) = runInternal(input.parents(i)) { e =>
-        lastEvents(i) = Some(e)
+        lastEvent(i) = Some(e)
         trace(s"c(${i}) ${e}")
         e match {
           case OnNext(v) =>
-            lastValues(i) = Some(v.asInstanceOf[A])
+            lastValueBuffer(i) = lastValueBuffer(i).enqueue(v.asInstanceOf[A])
             processEvents(true)
           case _ =>
             processEvents(false)
