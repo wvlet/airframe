@@ -10,16 +10,17 @@ import scala.collection.immutable.Queue
 import scala.util.{Failure, Success, Try}
 import Rx._
 
-private[rx] object RxRunner extends LogSupport {
+object RxRunner extends LogSupport {
 
-  val defaultRunner = new RxRunner(continuous = false)
+  private val defaultRunner = new RxRunner(continuous = false)
   // Used for continuous RxVar evaluation (e.g., RxVar -> DOM rendering)
-  val continuousRunner = new RxRunner(continuous = true)
+  private val continuousRunner = new RxRunner(continuous = true)
 
-  private[rx] def run[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable = defaultRunner.run(rx)(effect)
+  def run[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable             = defaultRunner.run(rx)(effect)
+  def runContinuously[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable = continuousRunner.run(rx)(effect)
 }
 
-private[rx] class RxRunner(
+class RxRunner(
     // If this value is true, evaluating Rx keeps reporting events after OnError or OnCompletion is observed
     continuous: Boolean
 ) extends LogSupport {

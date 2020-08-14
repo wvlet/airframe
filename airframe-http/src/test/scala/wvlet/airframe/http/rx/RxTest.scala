@@ -25,7 +25,7 @@ object RxTest extends AirSpec {
 
   private def eval[A](rx: Rx[A]): Seq[RxEvent] = {
     val b = Seq.newBuilder[RxEvent]
-    rx.runInternal(b += _)
+    RxRunner.run(rx)(b += _)
     val events = b.result()
     debug(events.mkString(", "))
     events
@@ -435,5 +435,38 @@ object RxTest extends AirSpec {
         OnCompletion
       )
     }
+  }
+
+  test("continuous runner") {
+    test("map") {
+      val ex = new IllegalArgumentException(s"3")
+
+      val v = Rx.variable(1)
+      val rx = v.map { x =>
+        if (x == 3) {
+          throw ex
+        } else {
+          x * 2
+        }
+      }
+
+      val b = Seq.newBuilder[RxEvent]
+      val c = RxRunner.runContinuously(rx)(b += _)
+      v := 2
+      v := 3
+      v := 4
+      v := 5
+
+      b.result() shouldBe Seq(
+        OnNext(2),
+        OnNext(4),
+        OnError(ex),
+        OnNext(8), // Should keep reading the next update
+        OnNext(10)
+      )
+
+      c.cancel
+    }
+
   }
 }

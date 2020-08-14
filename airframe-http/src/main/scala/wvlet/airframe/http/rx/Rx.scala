@@ -68,16 +68,18 @@ trait Rx[+A] extends LogSupport {
     * @tparam U
     * @return
     */
-  def subscribe[U](subscriber: A => U): Cancelable = run(subscriber)
+  def subscribe[U](subscriber: A => U): Cancelable = runContinuously(subscriber)
 
   /**
-    * Evaluate this Rx[A] and apply the given effect function
+    * Evaluate this Rx[A] and apply the given effect function. Once OnError(e) or OnCompletion is observed,
+    * it will stop the evaluation.
+    *
     * @param effect
     * @tparam U
     * @return
     */
-  def run[U](effect: A => U): Cancelable =
-    runInternal {
+  def run[U](effect: A => U): Cancelable = {
+    RxRunner.run(this) {
       case OnNext(v) =>
         effect(v.asInstanceOf[A])
       case OnError(e) =>
@@ -85,9 +87,21 @@ trait Rx[+A] extends LogSupport {
       case OnCompletion =>
       // do nothing
     }
+  }
 
-  private[rx] def runInternal[U](effect: RxEvent => U): Cancelable = {
-    RxRunner.run(this)(effect)
+  /**
+    * Keep evaluating Rx[A] even if OnError(e) or OnCompletion is reported.
+    * This is useful for keep processing streams.
+    */
+  def runContinuously[U](effect: A => U): Cancelable = {
+    RxRunner.runContinuously(this) {
+      case OnNext(v) =>
+        effect(v.asInstanceOf[A])
+      case OnError(e) =>
+        throw e
+      case OnCompletion =>
+      // do nothing
+    }
   }
 }
 

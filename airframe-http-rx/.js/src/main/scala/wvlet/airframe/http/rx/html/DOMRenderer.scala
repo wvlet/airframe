@@ -14,10 +14,11 @@
 package wvlet.airframe.http.rx.html
 
 import org.scalajs.dom
-import wvlet.airframe.http.rx.{Cancelable, Rx}
+import wvlet.airframe.http.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.log.LogSupport
 
 import scala.scalajs.js
+import scala.util.Try
 
 /**
   * Convert HtmlNodes into DOM elements for Scala.js
@@ -87,7 +88,7 @@ object DOMRenderer extends LogSupport {
             c1.cancel
             c1 = traverse(value, Some(start))
           }
-          Cancelable.merge(c1, c2)
+          Cancelable { () => Try(c1.cancel); Try(c2.cancel) }
         case a: HtmlAttribute =>
           addAttribute(node, a)
         case n: dom.Node =>
@@ -100,7 +101,7 @@ object DOMRenderer extends LogSupport {
           val elem = node.lastChild
           val c2   = rx.traverseModifiers(m => renderTo(elem, m))
           node.mountHere(elem, anchor)
-          Cancelable.merge(c1, c2)
+          Cancelable { () => Try(c1.cancel); Try(c2.cancel) }
         case s: String =>
           val textNode = newTextNode(s)
           node.mountHere(textNode, anchor)
