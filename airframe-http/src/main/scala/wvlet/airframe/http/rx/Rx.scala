@@ -88,7 +88,7 @@ object Rx extends LogSupport {
   /**
     * Create a sequence of values from Seq[A]
     */
-  def fromSeq[A](lst: Seq[A]): Rx[A] = SeqOp(LazyF0(lst))
+  def fromSeq[A](lst: => Seq[A]): Rx[A] = SeqOp(LazyF0(lst))
 
   /**
     * Create a sequence of values

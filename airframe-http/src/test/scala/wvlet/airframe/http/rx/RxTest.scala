@@ -274,36 +274,45 @@ object RxTest extends AirSpec {
       case e: IllegalArgumentException => 0
     }
 
-    def newTests(rx: Rx[Int]): Seq[(Rx[Any], Any)] =
+    // (test name, input, expected value on success)
+    def newTests(rx: Rx[Int]): Seq[(String, Rx[Any], Any)] =
       Seq(
-        (rx, 1),
-        (rx.map(x => x * 2), 2),
-        (rx.flatMap(x => Rx.single(3)), 3),
-        (rx.filter(_ => true), 1),
-        (rx.zip(Rx.single(1)), (1, 1))
+        ("single", rx, Seq(1)),
+        ("map", rx.map(x => x * 2), Seq(2)),
+        ("flatMap", rx.flatMap(x => Rx.single(3)), Seq(3)),
+        ("filter", rx.filter(_ => true), Seq(1)),
+        ("zip", rx.zip(Rx.single(2)), Seq((1, 2))),
+        ("zip3", rx.zip(Rx.single(2), Rx.single(3)), Seq((1, 2, 3))),
+        ("concat", rx.concat(Rx.single(2)), Seq(1, 2))
       ).map { x =>
-        (x._1.recover(recoveryFunction), x._2)
+        (x._1, x._2.recover(recoveryFunction), x._3)
       }
 
     test("normal behavior") {
-      for ((t, expected) <- newTests(Rx.single(1))) {
-        var executed = false
-        t.run { x =>
-          executed = true
-          x shouldBe expected
+      for ((name, t, expected) <- newTests(Rx.single(1))) {
+        test(name) {
+          var executed = false
+          val b        = Seq.newBuilder[Any]
+          t.run { x =>
+            executed = true
+            b += x
+          }
+          b.result shouldBe expected
+          executed shouldBe true
         }
-        executed shouldBe true
       }
     }
 
     test("failure recovery") {
-      for ((t, expected) <- newTests(Rx.single(throw new IllegalArgumentException("test failure")))) {
-        var executed = false
-        t.run { x =>
-          executed = true
-          x shouldBe 0
+      for ((name, t, expected) <- newTests(Rx.single(throw new IllegalArgumentException("test failure")))) {
+        test(name) {
+          var executed = false
+          t.run { x =>
+            executed = true
+            x shouldBe 0
+          }
+          executed shouldBe true
         }
-        executed shouldBe true
       }
     }
   }

@@ -171,11 +171,13 @@ private[rx] object RxRunner extends LogSupport {
     val lastEvents: Array[Option[RxEvent]] = Array.fill(size)(None)
     val c: Array[Cancelable]               = Array.fill(size)(Cancelable.empty)
 
+    val completed: AtomicBoolean = new AtomicBoolean(false)
     def emit: Unit = {
       // Emit the tuple result. This code is a bit ad-hoc because there is no way to produce tuples from Seq[X]
       lastValues match {
         case Array(Some(v1), Some(v2)) =>
           // For zip2
+          info(s"emit :${lastValues.mkString(", ")}")
           effect(OnNext((v1, v2).asInstanceOf[A]))
         case Array(Some(v1), Some(v2), Some(v3)) =>
           // For zip3
@@ -183,13 +185,19 @@ private[rx] object RxRunner extends LogSupport {
         case _ =>
       }
     }
-    val completed = new AtomicBoolean(false)
 
     // Scan the last events and emit the next value or a completion event
-    def processEvents = {
+    def processEvents(doEmit: Boolean) = {
       val errors = lastEvents.collect { case Some(e @ OnError(ex)) => ex }
       if (errors.isEmpty) {
-        emit
+        if (doEmit) {
+          emit
+        } else {
+          if (lastEvents.forall(_.isDefined) && completed.compareAndSet(false, true)) {
+            info(s"emit OnCompletion")
+            effect(OnCompletion)
+          }
+        }
       } else {
         // Report the completion event only once
         if (completed.compareAndSet(false, true)) {
@@ -205,15 +213,18 @@ private[rx] object RxRunner extends LogSupport {
     for (i <- 0 until size) {
       c(i) = runInternal(input.parents(i)) { e =>
         lastEvents(i) = Some(e)
+        info(s"c(${i}) ${e}")
         e match {
-          case OnNext(v) => lastValues(i) = Some(v.asInstanceOf[A])
-          case _         =>
+          case OnNext(v) =>
+            lastValues(i) = Some(v.asInstanceOf[A])
+            processEvents(true)
+          case _ =>
+            processEvents(false)
         }
-        processEvents
       }
     }
 
-    processEvents
+    processEvents(false)
     Cancelable { () => c.foreach(_.cancel) }
   }
 
