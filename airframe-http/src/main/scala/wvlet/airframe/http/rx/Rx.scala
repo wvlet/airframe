@@ -43,6 +43,8 @@ trait Rx[+A] extends LogSupport {
   def zip[B](other: Rx[B]): Rx[(A, B)]             = ZipOp(this, other)
   def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Zip3Op(this, b, c)
 
+  def lastOption: RxOption[A] = LastOp(this).toOption
+
   def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(this.asInstanceOf[Rx[Option[X]]])
 
   /**
@@ -53,10 +55,19 @@ trait Rx[+A] extends LogSupport {
     * @tparam U
     * @return
     */
-  def subscribe[U](subscriber: A => U): Cancelable = {
-    RxRunner.run(this)(subscriber)
+  def subscribe[U](subscriber: A => U): Cancelable = run(subscriber)
+
+  def run[U](effect: A => U): Cancelable =
+    runInternal {
+      case OnNext(v)    => effect(v.asInstanceOf[A])
+      case OnError(e)   => throw e
+      case OnCompletion =>
+      // do nothing
+    }
+
+  def runInternal[U](effect: RxEvent => U): Cancelable = {
+    RxRunner.runInternal(this)(effect)
   }
-  def run(effect: A => Unit): Cancelable = RxRunner.run(this)(effect)
 }
 
 object Rx extends LogSupport {
@@ -98,6 +109,9 @@ object Rx extends LogSupport {
   }
   case class Zip3Op[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]) extends Rx[(A, B, C)] {
     override def parents: Seq[Rx[_]] = Seq(a, b, c)
+  }
+  case class LastOp[A](input: Rx[A]) extends Rx[Option[A]] {
+    override def parents: Seq[Rx[_]] = Seq(input)
   }
   case class NamedOp[A](input: Rx[A], name: String) extends UnaryRx[A, A] {
     override def toString: String = s"${name}:${input}"

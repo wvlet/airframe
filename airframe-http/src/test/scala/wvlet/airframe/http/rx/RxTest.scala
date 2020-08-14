@@ -226,4 +226,11 @@ object RxTest extends AirSpec {
     }
   }
 
+  test("lastOption") {
+    val rx = Rx.const(1).lastOption
+    rx.run { x =>
+      info(s"last: ${x}")
+    }
+  }
+
 }

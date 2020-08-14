@@ -1,6 +1,15 @@
 package wvlet.airframe.http.rx
 
-object RxRunner {
+import scala.util.Try
+import scala.util.{Success, Failure}
+
+sealed trait RxEvent
+case class OnNext(v: Any)        extends RxEvent
+case class OnError(e: Throwable) extends RxEvent
+case object OnCompletion         extends RxEvent
+
+private[rx] object RxRunner {
+  import Rx._
 
   /**
     * Build a executable chain of Rx operators, and the resulting chain
@@ -13,91 +22,143 @@ object RxRunner {
     * @tparam U
     * @return
     */
-  private[rx] def run[A, U](rx: Rx[A])(effect: A => U): Cancelable = {
+  private[rx] def runInternal[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable = {
     rx match {
       case MapOp(in, f) =>
-        run(in)(x => effect(f.asInstanceOf[Any => A](x)))
+        runInternal(in) {
+          case OnNext(v) =>
+            Try(f.asInstanceOf[Any => A](v)) match {
+              case Success(x) => effect(OnNext(x))
+              case Failure(e) => effect(OnError(e))
+            }
+          case other =>
+            effect(other)
+        }
       case FlatMapOp(in, f) =>
         // This var is a placeholder to remember the preceding Cancelable operator, which will be updated later
         var c1 = Cancelable.empty
-        val c2 = run(in) { x =>
-          val rxb = f.asInstanceOf[Any => Rx[A]](x)
-          // This code is necessary to properly cancel the effect if this operator is evaluated before
-          c1.cancel
-          c1 = run(rxb)(effect)
+        val c2 = runInternal(in) {
+          case OnNext(x) =>
+            Try(f.asInstanceOf[Any => Rx[A]](x)) match {
+              case Success(rxb) =>
+                // This code is necessary to properly cancel the effect if this operator is evaluated before
+                c1.cancel
+                c1 = runInternal(rxb.asInstanceOf[Rx[A]])(effect)
+              case Failure(e) =>
+                effect(OnError(e))
+            }
+          case other =>
+            effect(other)
         }
         Cancelable { () => c1.cancel; c2.cancel }
       case FilterOp(in, cond) =>
-        run(in) { x =>
-          if (cond.asInstanceOf[A => Boolean](x)) {
-            effect(x)
-          }
+        runInternal(in) {
+          case OnNext(x) =>
+            Try(cond.asInstanceOf[A => Boolean](x.asInstanceOf[A])) match {
+              case Success(true) =>
+                effect(OnNext(x))
+              case Success(false) =>
+              // Skip unmatched element
+              case Failure(e) =>
+                effect(OnError(e))
+            }
+          case other =>
+            effect(other)
+        }
+      case LastOp(in) =>
+        var last: Option[A] = None
+        runInternal(in) {
+          case OnNext(v) =>
+            last = Some(v.asInstanceOf[A])
+          case err @ OnError(e) =>
+            effect(err)
+          case OnCompletion =>
+            Try(effect(OnNext(last))) match {
+              case Success(v) => effect(OnCompletion)
+              case Failure(e) => effect(OnError(e))
+            }
         }
       case ZipOp(left, right) =>
         var allReady: Boolean = false
         var v1: Any           = null
         var v2: Any           = null
-        val c1 = run(left) { x =>
-          v1 = x
-          if (allReady) {
-            effect((v1, v2).asInstanceOf[A])
-          }
+        val c1 = runInternal(left) {
+          case OnNext(x) =>
+            v1 = x
+            if (allReady) {
+              effect(OnNext((v1, v2).asInstanceOf[A]))
+            }
+          case other =>
+            effect(other)
         }
-        val c2 = run(right) { x =>
-          v2 = x
-          if (allReady) {
-            effect((v1, v2).asInstanceOf[A])
-          }
+        val c2 = runInternal(right) {
+          case OnNext(x) =>
+            v2 = x
+            if (allReady) {
+              effect(OnNext((v1, v2).asInstanceOf[A]))
+            }
+          case other =>
+            effect(other)
         }
         allReady = true
-        effect((v1, v2).asInstanceOf[A])
+        effect(OnNext((v1, v2).asInstanceOf[A]))
         Cancelable { () => c1.cancel; c2.cancel }
       case Zip3Op(r1, r2, r3) =>
         var allReady: Boolean = false
         var v1: Any           = null
         var v2: Any           = null
         var v3: Any           = null
-        val c1 = run(r1) { x =>
-          v1 = x
-          if (allReady) {
-            effect((v1, v2, v3).asInstanceOf[A])
-          }
+        val c1 = runInternal(r1) {
+          case OnNext(x) =>
+            v1 = x
+            if (allReady) {
+              effect(OnNext((v1, v2, v3).asInstanceOf[A]))
+            }
+          case other => effect(other)
         }
-        val c2 = run(r2) { x =>
-          v2 = x
-          if (allReady) {
-            effect((v1, v2, v3).asInstanceOf[A])
-          }
+        val c2 = runInternal(r2) {
+          case OnNext(x) =>
+            v2 = x
+            if (allReady) {
+              effect(OnNext((v1, v2, v3).asInstanceOf[A]))
+            }
+          case other => effect(other)
         }
-        val c3 = run(r3) { x =>
-          v3 = x
-          if (allReady) {
-            effect((v1, v2, v3).asInstanceOf[A])
-          }
+        val c3 = runInternal(r3) {
+          case OnNext(x) =>
+            v3 = x
+            if (allReady) {
+              effect(OnNext((v1, v2, v3).asInstanceOf[A]))
+            }
+          case other =>
+            effect(other)
         }
         allReady = true
-        effect((v1, v2, v3).asInstanceOf[A])
-        Cancelable { () => c1.cancel; c2.cancel }
+        effect(OnNext((v1, v2, v3).asInstanceOf[A]))
+        Cancelable { () => c1.cancel; c2.cancel; c3.cancel }
       case RxOptionOp(in) =>
-        run(in) {
-          case Some(v) => effect(v)
-          case None    =>
-          // Do nothing
+        runInternal(in) {
+          case OnNext(Some(v)) => effect(OnNext(v))
+          case OnNext(None)    =>
+          // do nothing for empty values
+          case other => effect(other)
         }
       case NamedOp(input, name) =>
-        run(input)(effect)
+        runInternal(input)(effect)
       case SingleOp(v) =>
-        effect(v)
+        Try(effect(OnNext(v))) match {
+          case Success(value) => effect(OnCompletion)
+          case Failure(e)     => effect(OnError(e))
+        }
         Cancelable.empty
       case o: RxOptionVar[_] =>
         o.asInstanceOf[RxOptionVar[A]].foreach {
-          case Some(v) => effect(v)
+          case Some(v) => effect(OnNext(v))
           case None    =>
           // Do nothing
         }
       case v: RxVar[_] =>
-        v.asInstanceOf[RxVar[A]].foreach(effect)
+        v.asInstanceOf[RxVar[A]].foreach { x => effect(OnNext(x)) }
     }
   }
-
 }
