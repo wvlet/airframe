@@ -23,6 +23,14 @@ import scala.util.{Failure, Success}
   */
 object RxTest extends AirSpec {
 
+  private def eval[A](rx: Rx[A]): Seq[RxEvent] = {
+    val b = Seq.newBuilder[RxEvent]
+    rx.runInternal(b += _)
+    val events = b.result()
+    debug(events.mkString(", "))
+    events
+  }
+
   test("create a new Rx variable") {
     val v = Rx(1)
     v.toString
@@ -298,7 +306,9 @@ object RxTest extends AirSpec {
         ("zip", rx.zip(Rx.single(2)), Seq((1, 2))),
         ("zip3", rx.zip(Rx.single(2), Rx.single(3)), Seq((1, 2, 3))),
         ("concat", rx.concat(Rx.single(2)), Seq(1, 2)),
-        ("lastOption", rx.lastOption, Seq(1))
+        ("lastOption", rx.lastOption, Seq(1)),
+        ("option Some(x)", rx.map(Some(_)).toOption, Seq(1)),
+        ("option None", rx.map(x => None).toOption, Seq())
       ).map { x =>
         (x._1, x._2.recover(recoveryFunction), x._3)
       }
@@ -309,11 +319,9 @@ object RxTest extends AirSpec {
           var executed = false
           val b        = Seq.newBuilder[Any]
           t.run { x =>
-            executed = true
             b += x
           }
           b.result shouldBe expected
-          executed shouldBe true
         }
       }
     }
@@ -332,4 +340,100 @@ object RxTest extends AirSpec {
     }
   }
 
+  test("Rx.exception") {
+    val ex = new IllegalArgumentException("test error")
+
+    val rx: Rx[Int] = Rx
+      .sequence(1, 2).map {
+        case 1 => 1
+        case 2 => throw ex
+      }.recoverWith {
+        case e: IllegalArgumentException => Rx.exception(e)
+      }
+
+    eval(rx) shouldBe Seq(
+      OnNext(1),
+      OnError(ex)
+    )
+  }
+
+  test("Rx.exception run") {
+    val ex = new IllegalArgumentException("test")
+    eval(Rx.exception(ex)) shouldBe Seq(OnError(ex))
+  }
+
+  test("event sequences") {
+
+    test("single") {
+      eval(Rx.single(1)) shouldBe Seq(OnNext(1), OnCompletion)
+    }
+    test("sequence") {
+      eval(Rx.sequence(1, 2)) shouldBe Seq(
+        OnNext(1),
+        OnNext(2),
+        OnCompletion
+      )
+    }
+    test("fromSeq") {
+      eval(Rx.fromSeq(Seq(1, 2))) shouldBe Seq(
+        OnNext(1),
+        OnNext(2),
+        OnCompletion
+      )
+    }
+    test("map") {
+      eval(Rx.sequence(1, 2).map(_ * 2)) shouldBe Seq(
+        OnNext(2),
+        OnNext(4),
+        OnCompletion
+      )
+    }
+
+    test("map with exception") {
+      val ex = new IllegalArgumentException("test")
+      eval(Rx.sequence(1, 2, 3).map { x =>
+        x match {
+          case 1 => 1
+          case 2 => throw ex
+          case 3 => 3
+        }
+      }) shouldBe Seq(
+        OnNext(1),
+        OnError(ex)
+      )
+    }
+
+    test("flatMap") {
+      eval(Rx.sequence(1, 2, 3).flatMap(x => Rx.fromSeq((0 until x).map(_ => x)))) shouldBe Seq(
+        OnNext(1),
+        OnNext(2),
+        OnNext(2),
+        OnNext(3),
+        OnNext(3),
+        OnNext(3),
+        OnCompletion
+      )
+    }
+
+    test("flatMap with an error") {
+      val ex = new IllegalArgumentException("test")
+      eval(Rx.sequence(1, 2, 3).flatMap {
+        case 1 => Rx.single("a")
+        case 2 => Rx.exception(ex)
+        case _ => Rx.single("b")
+      }) shouldBe Seq(
+        OnNext("a"),
+        OnError(ex)
+      )
+    }
+
+    test("concat") {
+      eval(Rx.sequence(1, 2).concat(Rx.sequence(3))) shouldBe Seq(
+        OnNext(1),
+        OnNext(2),
+        OnNext(3),
+        OnCompletion
+      )
+    }
+  }
 }

@@ -18,7 +18,7 @@ import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
-import scala.util.Try
+import scala.util.{Failure, Try}
 
 /**
   */
@@ -58,7 +58,7 @@ trait Rx[+A] extends LogSupport {
   /**
     * Recover from a known error and emit replacement values from a given Rx
     */
-  def recoverWith[U](f: PartialFunction[Throwable, Rx[U]]): Rx[U] = RecoverWithOp(this, f)
+  def recoverWith[A](f: PartialFunction[Throwable, Rx[A]]): Rx[A] = RecoverWithOp(this, f)
 
   /**
     * Subscribe any change in the upstream, and if a change is detected,
@@ -70,10 +70,18 @@ trait Rx[+A] extends LogSupport {
     */
   def subscribe[U](subscriber: A => U): Cancelable = run(subscriber)
 
+  /**
+    * Evaluate this Rx[A] and apply the given effect function
+    * @param effect
+    * @tparam U
+    * @return
+    */
   def run[U](effect: A => U): Cancelable =
     runInternal {
-      case OnNext(v)    => effect(v.asInstanceOf[A])
-      case OnError(e)   => throw e
+      case OnNext(v) =>
+        effect(v.asInstanceOf[A])
+      case OnError(e) =>
+        throw e
       case OnCompletion =>
       // do nothing
     }
@@ -84,8 +92,9 @@ trait Rx[+A] extends LogSupport {
 }
 
 object Rx extends LogSupport {
-  def const[A](v: => A): Rx[A]  = single(v)
-  def single[A](v: => A): Rx[A] = SingleOp(LazyF0(v))
+  def const[A](v: => A): Rx[A]          = single(v)
+  def single[A](v: => A): Rx[A]         = SingleOp(LazyF0(v))
+  def exception[A](e: Throwable): Rx[A] = TryOp(Failure[A](e))
 
   /**
     * Create a sequence of values from Seq[A]
@@ -101,7 +110,7 @@ object Rx extends LogSupport {
   def apply[A](v: A): RxVar[A]                        = variable(v)
   def variable[A](v: A): RxVar[A]                     = new RxVar(v)
   def optionVariable[A](v: Option[A]): RxOptionVar[A] = variable(v).toOption
-  def option[A](v: Option[A]): RxOption[A]            = RxOptionOp(single(v))
+  def option[A](v: => Option[A]): RxOption[A]         = RxOptionOp(single(v))
   val none: RxOption[Nothing]                         = RxOptionOp(single(None))
 
   /**
@@ -126,6 +135,9 @@ object Rx extends LogSupport {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
   case class SeqOp[A](lst: LazyF0[Seq[A]]) extends Rx[A] {
+    override def parents: Seq[Rx[_]] = Seq.empty
+  }
+  case class TryOp[A](v: Try[A]) extends Rx[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
 

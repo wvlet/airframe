@@ -9,23 +9,6 @@ import scala.annotation.tailrec
 import scala.collection.immutable.Queue
 import scala.util.{Failure, Success, Try}
 
-sealed trait RxEvent {
-  def isLastEvent: Boolean
-  def isError: Boolean
-}
-case class OnNext(v: Any) extends RxEvent {
-  override def isLastEvent: Boolean = false
-  override def isError: Boolean     = false
-}
-case class OnError(e: Throwable) extends RxEvent {
-  override def isLastEvent: Boolean = true
-  override def isError: Boolean     = true
-}
-case object OnCompletion extends RxEvent {
-  override def isLastEvent: Boolean = true
-  override def isError: Boolean     = false
-}
-
 private[rx] object RxRunner extends LogSupport {
   import Rx._
 
@@ -41,33 +24,10 @@ private[rx] object RxRunner extends LogSupport {
     */
   private[rx] def runInternal[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable = {
     rx match {
-      case MapOp(in, f) =>
-        runInternal(in) {
-          case OnNext(v) =>
-            Try(f.asInstanceOf[Any => A](v)) match {
-              case Success(x) => effect(OnNext(x))
-              case Failure(e) => effect(OnError(e))
-            }
-          case other =>
-            effect(other)
-        }
-      case FlatMapOp(in, f) =>
-        // This var is a placeholder to remember the preceding Cancelable operator, which will be updated later
-        var c1 = Cancelable.empty
-        val c2 = runInternal(in) {
-          case OnNext(x) =>
-            Try(f.asInstanceOf[Any => Rx[A]](x)) match {
-              case Success(rxb) =>
-                // This code is necessary to properly cancel the effect if this operator is evaluated before
-                c1.cancel
-                c1 = runInternal(rxb.asInstanceOf[Rx[A]])(effect)
-              case Failure(e) =>
-                effect(OnError(e))
-            }
-          case other =>
-            effect(other)
-        }
-        Cancelable { () => c1.cancel; c2.cancel }
+      case m @ MapOp(in, f) =>
+        map(m)(effect)
+      case fm @ FlatMapOp(in, f) =>
+        flatMap(fm)(effect)
       case FilterOp(in, cond) =>
         runInternal(in) {
           case OnNext(x) =>
@@ -137,7 +97,8 @@ private[rx] object RxRunner extends LogSupport {
               case head :: tail =>
                 Try(effect(OnNext(head))) match {
                   case Success(x) => loop(tail)
-                  case Failure(e) => effect(OnError(e))
+                  case Failure(e) =>
+                    effect(OnError(e))
                 }
             }
           }
@@ -147,6 +108,14 @@ private[rx] object RxRunner extends LogSupport {
         Cancelable { () =>
           toContinue = false
         }
+      case TryOp(e) =>
+        e match {
+          case Success(x) =>
+            effect(OnNext(x))
+          case Failure(e) =>
+            effect(OnError(e))
+        }
+        Cancelable.empty
       case o: RxOptionVar[_] =>
         o.asInstanceOf[RxOptionVar[A]].foreach {
           case Some(v) => effect(OnNext(v))
@@ -157,29 +126,86 @@ private[rx] object RxRunner extends LogSupport {
         v.asInstanceOf[RxVar[A]].foreach { x => effect(OnNext(x)) }
       case RecoverOp(in, f) =>
         runInternal(in) {
-          case OnCompletion =>
           case OnError(e) if f.isDefinedAt(e) =>
-            effect(OnNext(f(e)))
+            Try(effect(OnNext(f(e)))) match {
+              case Success(x) => effect(OnCompletion)
+              case Failure(e) => effect(OnError(e))
+            }
           case other =>
             effect(other)
         }
       case RecoverWithOp(in, f) =>
-        var c1 = Cancelable.empty
+        var completed = false
+        var c1        = Cancelable.empty
         val c2 = runInternal(in) {
-          case OnCompletion =>
           case OnError(e) if f.isDefinedAt(e) =>
             c1.cancel
             Try(f(e)) match {
-              case Success(rxb) =>
-                c1 = runInternal(rxb)(effect)
+              case Success(recoverySource) =>
+                c1 = runInternal(recoverySource)(effect)
               case Failure(e) =>
+                completed = true
                 effect(OnError(e))
             }
+          case e if e.isLastEvent && completed =>
+          // Skip reporting the completion event
           case other =>
             effect(other)
         }
         Cancelable { () => c1.cancel; c2.cancel }
     }
+  }
+
+  private def map[A, B](in: MapOp[A, B])(effect: RxEvent => A): Cancelable = {
+    var toContinue = true
+    runInternal(in.input) { ev =>
+      if (toContinue) {
+        ev match {
+          case OnNext(v) =>
+            Try(in.f.asInstanceOf[Any => A](v)) match {
+              case Success(x) => effect(OnNext(x))
+              case Failure(e) =>
+                toContinue = false
+                effect(OnError(e))
+            }
+          case other =>
+            toContinue = false
+            effect(other)
+        }
+      }
+    }
+  }
+
+  private def flatMap[A, B](fm: FlatMapOp[A, B])(effect: RxEvent => A): Cancelable = {
+    // This var is a placeholder to remember the preceding Cancelable operator, which will be updated later
+    var toContinue = true
+    var c1         = Cancelable.empty
+    val c2 = runInternal(fm.input) { ev =>
+      if (toContinue) {
+        ev match {
+          case OnNext(x) =>
+            Try(fm.f.asInstanceOf[Any => Rx[A]](x)) match {
+              case Success(rxb) =>
+                // This code is necessary to properly cancel the effect if this operator is evaluated before
+                c1.cancel
+                c1 = runInternal(rxb.asInstanceOf[Rx[A]]) {
+                  case n @ OnNext(x) => effect(n)
+                  case OnCompletion  => // skip the end of flatMap body stream
+                  case ev @ OnError(e) =>
+                    toContinue = false
+                    effect(ev)
+                }
+              case Failure(e) =>
+                toContinue = false
+                effect(OnError(e))
+            }
+          case other =>
+            toContinue = false
+            effect(other)
+        }
+      }
+    }
+    Cancelable { () => c1.cancel; c2.cancel }
   }
 
   private def zip[A, U](input: Rx[A])(effect: RxEvent => U): Cancelable = {
