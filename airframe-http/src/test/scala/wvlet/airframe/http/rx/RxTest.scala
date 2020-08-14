@@ -283,7 +283,8 @@ object RxTest extends AirSpec {
         ("filter", rx.filter(_ => true), Seq(1)),
         ("zip", rx.zip(Rx.single(2)), Seq((1, 2))),
         ("zip3", rx.zip(Rx.single(2), Rx.single(3)), Seq((1, 2, 3))),
-        ("concat", rx.concat(Rx.single(2)), Seq(1, 2))
+        ("concat", rx.concat(Rx.single(2)), Seq(1, 2)),
+        ("lastOption", rx.lastOption, Seq(1))
       ).map { x =>
         (x._1, x._2.recover(recoveryFunction), x._3)
       }

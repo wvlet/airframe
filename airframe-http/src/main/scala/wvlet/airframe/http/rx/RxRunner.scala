@@ -162,6 +162,22 @@ private[rx] object RxRunner extends LogSupport {
           case other =>
             effect(other)
         }
+      case RecoverWithOp(in, f) =>
+        var c1 = Cancelable.empty
+        val c2 = runInternal(in) {
+          case OnCompletion =>
+          case OnError(e) if f.isDefinedAt(e) =>
+            c1.cancel
+            Try(f(e)) match {
+              case Success(rxb) =>
+                c1 = runInternal(rxb)(effect)
+              case Failure(e) =>
+                effect(OnError(e))
+            }
+          case other =>
+            effect(other)
+        }
+        Cancelable { () => c1.cancel; c2.cancel }
     }
   }
 
@@ -177,7 +193,7 @@ private[rx] object RxRunner extends LogSupport {
       lastValues match {
         case Array(Some(v1), Some(v2)) =>
           // For zip2
-          info(s"emit :${lastValues.mkString(", ")}")
+          trace(s"emit :${lastValues.mkString(", ")}")
           effect(OnNext((v1, v2).asInstanceOf[A]))
         case Array(Some(v1), Some(v2), Some(v3)) =>
           // For zip3
@@ -194,7 +210,7 @@ private[rx] object RxRunner extends LogSupport {
           emit
         } else {
           if (lastEvents.forall(_.isDefined) && completed.compareAndSet(false, true)) {
-            info(s"emit OnCompletion")
+            trace(s"emit OnCompletion")
             effect(OnCompletion)
           }
         }
@@ -213,7 +229,7 @@ private[rx] object RxRunner extends LogSupport {
     for (i <- 0 until size) {
       c(i) = runInternal(input.parents(i)) { e =>
         lastEvents(i) = Some(e)
-        info(s"c(${i}) ${e}")
+        trace(s"c(${i}) ${e}")
         e match {
           case OnNext(v) =>
             lastValues(i) = Some(v.asInstanceOf[A])

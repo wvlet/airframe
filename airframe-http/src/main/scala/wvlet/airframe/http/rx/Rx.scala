@@ -51,12 +51,14 @@ trait Rx[+A] extends LogSupport {
   def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(this.asInstanceOf[Rx[Option[X]]])
 
   /**
-    * Recover a known error to
-    * @param f
-    * @tparam U
-    * @return
+    * Recover from a known error and emit a replacement value
     */
   def recover[U](f: PartialFunction[Throwable, U]): Rx[U] = RecoverOp(this, f)
+
+  /**
+    * Recover from a known error and emit replacement values from a given Rx
+    */
+  def recoverWith[U](f: PartialFunction[Throwable, Rx[U]]): Rx[U] = RecoverWithOp(this, f)
 
   /**
     * Subscribe any change in the upstream, and if a change is detected,
@@ -145,5 +147,6 @@ object Rx extends LogSupport {
   case class NamedOp[A](input: Rx[A], name: String) extends UnaryRx[A, A] {
     override def toString: String = s"${name}:${input}"
   }
-  case class RecoverOp[A, U](input: Rx[A], f: PartialFunction[Throwable, U]) extends UnaryRx[A, U]
+  case class RecoverOp[A, U](input: Rx[A], f: PartialFunction[Throwable, U])         extends UnaryRx[A, U]
+  case class RecoverWithOp[A, U](input: Rx[A], f: PartialFunction[Throwable, Rx[U]]) extends UnaryRx[A, U]
 }
