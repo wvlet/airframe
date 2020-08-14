@@ -43,7 +43,8 @@ trait Rx[+A] extends LogSupport {
   def zip[B](other: Rx[B]): Rx[(A, B)]             = ZipOp(this, other)
   def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Zip3Op(this, b, c)
 
-  def lastOption: RxOption[A] = LastOp(this).toOption
+  def concat[A1 >: A](other: Rx[A1]): Rx[A1] = ConcatOp(this, other)
+  def lastOption: RxOption[A]                = LastOp(this).toOption
 
   def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(this.asInstanceOf[Rx[Option[X]]])
 
@@ -65,19 +66,25 @@ trait Rx[+A] extends LogSupport {
       // do nothing
     }
 
-  def runInternal[U](effect: RxEvent => U): Cancelable = {
+  private def runInternal[U](effect: RxEvent => U): Cancelable = {
     RxRunner.runInternal(this)(effect)
   }
 }
 
 object Rx extends LogSupport {
-  def const[A](v: A): Rx[A] = SingleOp(v)
+  def const[A](v: A): Rx[A]  = single(v)
+  def single[A](v: A): Rx[A] = SingleOp(v)
+
+  /**
+    * Create a sequence of events
+    */
+  def sequence[A](lst: Seq[A]): Rx[A] = SeqOp(lst)
 
   def apply[A](v: A): RxVar[A]                        = variable(v)
   def variable[A](v: A): RxVar[A]                     = new RxVar(v)
   def optionVariable[A](v: Option[A]): RxOptionVar[A] = variable(v).toOption
-  def option[A](v: Option[A]): RxOption[A]            = RxOptionOp(Rx.const(v))
-  val none: RxOption[Nothing]                         = RxOptionOp(Rx.const(None))
+  def option[A](v: Option[A]): RxOption[A]            = RxOptionOp(single(v))
+  val none: RxOption[Nothing]                         = RxOptionOp(single(None))
 
   /**
     * Mapping a Scala Future into Rx
@@ -100,6 +107,9 @@ object Rx extends LogSupport {
   case class SingleOp[A](v: A) extends Rx[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
+  case class SeqOp[A](lst: Seq[A]) extends Rx[A] {
+    override def parents: Seq[Rx[_]] = Seq.empty
+  }
 
   case class MapOp[A, B](input: Rx[A], f: A => B)          extends UnaryRx[A, B]
   case class FlatMapOp[A, B](input: Rx[A], f: A => Rx[B])  extends UnaryRx[A, B]
@@ -109,6 +119,9 @@ object Rx extends LogSupport {
   }
   case class Zip3Op[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]) extends Rx[(A, B, C)] {
     override def parents: Seq[Rx[_]] = Seq(a, b, c)
+  }
+  case class ConcatOp[A](first: Rx[A], next: Rx[A]) extends Rx[A] {
+    override def parents: Seq[Rx[_]] = Seq(first, next)
   }
   case class LastOp[A](input: Rx[A]) extends Rx[Option[A]] {
     override def parents: Seq[Rx[_]] = Seq(input)

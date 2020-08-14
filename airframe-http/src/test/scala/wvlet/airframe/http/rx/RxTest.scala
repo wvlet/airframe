@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.rx
-import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger, AtomicReference}
 
 import wvlet.airspec.AirSpec
 
@@ -227,10 +227,28 @@ object RxTest extends AirSpec {
   }
 
   test("lastOption") {
-    val rx = Rx.const(1).lastOption
+    val rx      = Rx.single(1).lastOption
+    var counter = 0
     rx.run { x =>
-      info(s"last: ${x}")
+      counter += 1
+      x shouldBe 1
     }
+    counter shouldBe 1
   }
 
+  test("concat") {
+    val rx = Rx.single(1).concat(Rx.single(2)).map(_ * 2)
+    val b  = Seq.newBuilder[Int]
+    rx.run {
+      b += _
+    }
+    b.result() shouldBe Seq(2, 4)
+  }
+
+  test("sequence") {
+    val rx = Rx.sequence(Seq(1, 2, 3)).map(_ * 2)
+    val b  = Seq.newBuilder[Int]
+    rx.run(b += _)
+    b.result() shouldBe Seq(2, 4, 6)
+  }
 }

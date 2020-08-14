@@ -1,7 +1,7 @@
 package wvlet.airframe.http.rx
 
-import scala.util.Try
-import scala.util.{Success, Failure}
+import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
 
 sealed trait RxEvent
 case class OnNext(v: Any)        extends RxEvent
@@ -12,15 +12,14 @@ private[rx] object RxRunner {
   import Rx._
 
   /**
-    * Build a executable chain of Rx operators, and the resulting chain
-    * will be registered to the root node (e.g. RxVar). If the root value changes,
+    * Build an executable chain of Rx operators. The resulting chain
+    * will be registered as a subscriber to the root node (see RxVar.foreach). If the root value changes,
     * the effect code block will be executed.
     *
     * @param rx
     * @param effect
     * @tparam A
     * @tparam U
-    * @return
     */
   private[rx] def runInternal[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable = {
     rx match {
@@ -65,6 +64,18 @@ private[rx] object RxRunner {
           case other =>
             effect(other)
         }
+      case ConcatOp(first, next) =>
+        var c1 = Cancelable.empty
+        val c2 = runInternal(first) {
+          case OnCompletion =>
+            // Properly cancel the effect if this operator is evaluated before
+            c1.cancel
+            c1 = runInternal(next)(effect)
+            c1
+          case other =>
+            effect(other)
+        }
+        Cancelable { () => c1.cancel; c2.cancel }
       case LastOp(in) =>
         var last: Option[A] = None
         runInternal(in) {
@@ -147,10 +158,31 @@ private[rx] object RxRunner {
         runInternal(input)(effect)
       case SingleOp(v) =>
         Try(effect(OnNext(v))) match {
-          case Success(value) => effect(OnCompletion)
-          case Failure(e)     => effect(OnError(e))
+          case Success(c) => effect(OnCompletion)
+          case Failure(e) => effect(OnError(e))
         }
         Cancelable.empty
+      case SeqOp(inputList) =>
+        var toContinue = true
+        @tailrec
+        def loop(lst: List[A]): Unit = {
+          if (toContinue) {
+            lst match {
+              case Nil =>
+                effect(OnCompletion)
+              case head :: tail =>
+                Try(effect(OnNext(head))) match {
+                  case Success(x) => loop(tail)
+                  case Failure(e) => effect(OnError(e))
+                }
+            }
+          }
+        }
+        loop(inputList.toList)
+        // Stop reading the next element if cancelled
+        Cancelable { () =>
+          toContinue = false
+        }
       case o: RxOptionVar[_] =>
         o.asInstanceOf[RxOptionVar[A]].foreach {
           case Some(v) => effect(OnNext(v))
