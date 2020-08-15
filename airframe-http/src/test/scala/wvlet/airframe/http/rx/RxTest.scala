@@ -12,15 +12,24 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.rx
-import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger, AtomicReference}
 
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 /**
   */
 object RxTest extends AirSpec {
+
+  private def eval[A](rx: Rx[A]): Seq[RxEvent] = {
+    val b = Seq.newBuilder[RxEvent]
+    RxRunner.run(rx)(b += _)
+    val events = b.result()
+    debug(events.mkString(", "))
+    events
+  }
 
   test("create a new Rx variable") {
     val v = Rx(1)
@@ -157,18 +166,30 @@ object RxTest extends AirSpec {
         case 0 =>
           v shouldBe (1, "a")
         case 1 =>
-          v shouldBe (2, "a")
-        case 2 =>
           v shouldBe (2, "b")
         case _ =>
+          fail(s"unexpected value ${v}")
       }
     }
 
     count += 1
     a := 2
-    count += 1
     b := "b"
     c.cancel
+  }
+
+  test("zip sequences") {
+    val a = Rx.sequence(1, 2, 3)
+    val b = Rx.sequence("a", "b")
+
+    val r = Seq.newBuilder[(Int, String)]
+    a.zip(b).run(r += _)
+
+    r.result shouldBe Seq((1, "a"), (2, "b"))
+
+    val r2 = Seq.newBuilder[(String, Int)]
+    b.zip(a).run(r2 += _)
+    r2.result shouldBe Seq(("a", 1), ("b", 2))
   }
 
   test("zip3") {
@@ -184,22 +205,98 @@ object RxTest extends AirSpec {
         case 0 =>
           v shouldBe (1, "a", true)
         case 1 =>
-          v shouldBe (2, "a", true)
-        case 2 =>
-          v shouldBe (2, "b", true)
-        case 3 =>
           v shouldBe (2, "b", false)
         case _ =>
+          fail(s"unexpected value: ${v}")
       }
     }
 
     count += 1
     a := 2
-    count += 1
     b := "b"
-    count += 1
     c := false
     e.cancel
+  }
+
+  test("join") {
+    val x  = Rx.variable(1)
+    val y  = Rx.variable("a")
+    val rx = x.join(y)
+
+    val b = Seq.newBuilder[RxEvent]
+    RxRunner.run(rx)(b += _)
+
+    y := "b"
+    y := "c"
+    x := 2
+    y := "d"
+
+    val events = b.result()
+    debug(events)
+    events shouldBe Seq(
+      OnNext(1, "a"),
+      OnNext(1, "b"),
+      OnNext(1, "c"),
+      OnNext(2, "c"),
+      OnNext(2, "d")
+    )
+  }
+
+  test("join3") {
+    val x  = Rx.variable(1)
+    val y  = Rx.variable("a")
+    val z  = Rx.variable(true)
+    val rx = x.join(y, z)
+
+    val b = Seq.newBuilder[RxEvent]
+    RxRunner.run(rx)(b += _)
+
+    y := "b"
+    y := "c"
+    z := false
+    x := 2
+    y := "d"
+
+    val events = b.result()
+    debug(events)
+    events shouldBe Seq(
+      OnNext(1, "a", true),
+      OnNext(1, "b", true),
+      OnNext(1, "c", true),
+      OnNext(1, "c", false),
+      OnNext(2, "c", false),
+      OnNext(2, "d", false)
+    )
+  }
+
+  test("join4") {
+    val x  = Rx.variable(1)
+    val y  = Rx.variable("a")
+    val z  = Rx.variable(true)
+    val w  = Rx.variable(10)
+    val rx = x.join(y, z, w)
+
+    val b = Seq.newBuilder[RxEvent]
+    RxRunner.run(rx)(b += _)
+
+    y := "b"
+    y := "c"
+    w := 20
+    z := false
+    x := 2
+    y := "d"
+
+    val events = b.result()
+    debug(events)
+    events shouldBe Seq(
+      OnNext(1, "a", true, 10),
+      OnNext(1, "b", true, 10),
+      OnNext(1, "c", true, 10),
+      OnNext(1, "c", true, 20),
+      OnNext(1, "c", false, 20),
+      OnNext(2, "c", false, 20),
+      OnNext(2, "d", false, 20)
+    )
   }
 
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
@@ -208,7 +305,7 @@ object RxTest extends AirSpec {
     val f  = Future.successful(1)
     val rx = f.toRx
 
-    pending("requries async test")
+    pending("requires async test")
     rx.run(x => x shouldBe Some(1))
   }
 
@@ -226,4 +323,351 @@ object RxTest extends AirSpec {
     }
   }
 
+  test("lastOption") {
+    val rx      = Rx.sequence(1, 2, 3).lastOption
+    var counter = 0
+    rx.run { x =>
+      counter += 1
+      x shouldBe 3
+    }
+    counter shouldBe 1
+  }
+
+  test("lastOption empty") {
+    val rx      = Rx.empty[Int].lastOption
+    var counter = 0
+    rx.run { x =>
+      counter += 1
+    }
+    counter shouldBe 0
+  }
+
+  test("concat") {
+    val rx = Rx.single(1).concat(Rx.single(2)).map(_ * 2)
+    val b  = Seq.newBuilder[Int]
+    rx.run {
+      b += _
+    }
+    b.result() shouldBe Seq(2, 4)
+  }
+
+  test("sequence") {
+    val rx = Rx.fromSeq(Seq(1, 2, 3)).map(_ * 2)
+    val b  = Seq.newBuilder[Int]
+    rx.run(b += _)
+    b.result() shouldBe Seq(2, 4, 6)
+  }
+
+  test("empty") {
+    val rx = Rx.empty[Int].map(_ * 2)
+    val b  = Seq.newBuilder[Int]
+    rx.run(b += _)
+    b.result() shouldBe Seq.empty
+  }
+
+  test("recover from an error") {
+    def recoveryFunction: PartialFunction[Throwable, Any] = {
+      case e: IllegalArgumentException => 0
+    }
+
+    // (test name, input, expected value on success)
+    def newTests(rx: Rx[Int]): Seq[(String, Rx[Any], Any)] =
+      Seq(
+        ("single", rx, Seq(1)),
+        ("map", rx.map(x => x * 2), Seq(2)),
+        ("flatMap", rx.flatMap(x => Rx.single(3)), Seq(3)),
+        ("filter", rx.filter(_ => true), Seq(1)),
+        ("zip", rx.zip(Rx.single(2)), Seq((1, 2))),
+        ("zip3", rx.zip(Rx.single(2), Rx.single(3)), Seq((1, 2, 3))),
+        ("concat", rx.concat(Rx.single(2)), Seq(1, 2)),
+        ("lastOption", rx.lastOption, Seq(1)),
+        ("option Some(x)", rx.map(Some(_)).toOption, Seq(1)),
+        ("option None", rx.map(x => None).toOption, Seq())
+      ).map { x =>
+        (x._1, x._2.recover(recoveryFunction), x._3)
+      }
+
+    test("normal behavior") {
+      for ((name, t, expected) <- newTests(Rx.single(1))) {
+        test(name) {
+          var executed = false
+          val b        = Seq.newBuilder[Any]
+          t.run { x =>
+            b += x
+          }
+          b.result shouldBe expected
+        }
+      }
+    }
+
+    test("failure recovery") {
+      for ((name, t, expected) <- newTests(Rx.single(throw new IllegalArgumentException("test failure")))) {
+        test(name) {
+          var executed = false
+          t.run { x =>
+            executed = true
+            x shouldBe 0
+          }
+          executed shouldBe true
+        }
+      }
+    }
+  }
+
+  test("recover in the middle") {
+    val rx = Rx
+      .sequence(1, 2, 3)
+      .map {
+        case 2     => throw new IllegalArgumentException("test error")
+        case other => other
+      }
+      .recover {
+        case e: IllegalArgumentException => -1
+      }
+    debug(rx)
+    eval(rx) shouldBe Seq(
+      OnNext(1),
+      OnNext(-1),
+      OnNext(3),
+      OnCompletion
+    )
+  }
+
+  test("recover in the middle failed") {
+    val ex = new IllegalArgumentException("test error")
+    val rx = Rx
+      .sequence(1, 2, 3)
+      .map {
+        case 2     => throw ex
+        case other => other
+      }
+      .recover {
+        case e: IllegalStateException => -1
+      }
+    debug(rx)
+    eval(rx) shouldBe Seq(
+      OnNext(1),
+      OnError(ex)
+    )
+  }
+
+  test("Rx.exception") {
+    val ex = new IllegalArgumentException("test error")
+
+    val rx: Rx[Int] = Rx
+      .sequence(1, 2).map {
+        case 1 => 1
+        case 2 => throw ex
+      }.recoverWith {
+        case e: IllegalArgumentException => Rx.exception(e)
+      }
+
+    eval(rx) shouldBe Seq(
+      OnNext(1),
+      OnError(ex)
+    )
+  }
+
+  test("Rx.exception run") {
+    val ex = new IllegalArgumentException("test")
+    eval(Rx.exception(ex)) shouldBe Seq(OnError(ex))
+  }
+
+  test("event sequences") {
+
+    test("single") {
+      eval(Rx.single(1)) shouldBe Seq(OnNext(1), OnCompletion)
+    }
+    test("sequence") {
+      eval(Rx.sequence(1, 2)) shouldBe Seq(
+        OnNext(1),
+        OnNext(2),
+        OnCompletion
+      )
+    }
+    test("fromSeq") {
+      eval(Rx.fromSeq(Seq(1, 2))) shouldBe Seq(
+        OnNext(1),
+        OnNext(2),
+        OnCompletion
+      )
+    }
+    test("map") {
+      eval(Rx.sequence(1, 2).map(_ * 2)) shouldBe Seq(
+        OnNext(2),
+        OnNext(4),
+        OnCompletion
+      )
+    }
+
+    test("map with exception") {
+      val ex = new IllegalArgumentException("test")
+      eval(Rx.sequence(1, 2, 3).map { x =>
+        x match {
+          case 1 => 1
+          case 2 => throw ex
+          case 3 => 3
+        }
+      }) shouldBe Seq(
+        OnNext(1),
+        OnError(ex)
+      )
+    }
+
+    test("flatMap") {
+      eval(Rx.sequence(1, 2, 3).flatMap(x => Rx.fromSeq((0 until x).map(_ => x)))) shouldBe Seq(
+        OnNext(1),
+        OnNext(2),
+        OnNext(2),
+        OnNext(3),
+        OnNext(3),
+        OnNext(3),
+        OnCompletion
+      )
+    }
+
+    test("flatMap with an error") {
+      val ex = new IllegalArgumentException("test")
+      eval(Rx.sequence(1, 2, 3).flatMap {
+        case 1 => Rx.single("a")
+        case 2 => Rx.exception(ex)
+        case _ => Rx.single("b")
+      }) shouldBe Seq(
+        OnNext("a"),
+        OnError(ex)
+      )
+    }
+
+    test("filter") {
+      eval(Rx.sequence(1, 2, 3).filter(_ % 2 == 1)) shouldBe Seq(
+        OnNext(1),
+        OnNext(3),
+        OnCompletion
+      )
+    }
+
+    test("filter with error") {
+      val ex = new IllegalArgumentException("test")
+      eval(Rx.sequence(1, 2, 3).filter(x => if (x == 2) throw ex else x % 2 == 1)) shouldBe Seq(
+        OnNext(1),
+        OnError(ex)
+      )
+    }
+
+    test("concat") {
+      eval(Rx.sequence(1, 2).concat(Rx.sequence(3))) shouldBe Seq(
+        OnNext(1),
+        OnNext(2),
+        OnNext(3),
+        OnCompletion
+      )
+    }
+  }
+
+  test("continuous stream") {
+    test("map") {
+      val ex = new IllegalArgumentException(s"3")
+
+      val v = Rx.variable(1)
+      val rx = v.map { x =>
+        if (x == 3) {
+          throw ex
+        } else {
+          x * 2
+        }
+      }
+
+      val b = Seq.newBuilder[RxEvent]
+      val c = RxRunner.runContinuously(rx)(b += _)
+      v := 2
+      v := 3
+      v := 4
+      v := 5
+
+      val events = b.result()
+      debug(events)
+      events shouldBe Seq(
+        OnNext(2),
+        OnNext(4),
+        OnError(ex),
+        OnNext(8), // Should keep reading the next update
+        OnNext(10)
+      )
+
+      c.cancel
+    }
+
+    test("flatMap") {
+      val ex = new IllegalArgumentException(s"3")
+
+      val v = Rx.variable(1)
+      val rx = v.flatMap { x =>
+        if (x == 3) {
+          throw ex
+        } else {
+          Rx.single(x * 2)
+        }
+      }
+
+      val b = Seq.newBuilder[RxEvent]
+      val c = RxRunner.runContinuously(rx)(b += _)
+      v := 2
+      v := 3
+      v := 4
+      v := 5
+
+      val events = b.result()
+      debug(events)
+      events shouldBe Seq(
+        OnNext(2),
+        OnNext(4),
+        OnError(ex),
+        OnNext(8), // Should keep reading the next update
+        OnNext(10)
+      )
+
+      c.cancel
+    }
+
+    test("filter") {
+      val ex = new IllegalArgumentException("test")
+      val v  = Rx.variable(1)
+      val rx = v.filter(x => if (x == 2) throw ex else x % 2 == 1)
+
+      val b = Seq.newBuilder[RxEvent]
+      RxRunner.runContinuously(rx)(b += _)
+
+      (1 to 5).foreach(v := _)
+
+      val events = b.result()
+      debug(events)
+      events shouldBe Seq(
+        OnNext(1),
+        OnError(ex),
+        OnNext(3),
+        OnNext(5)
+      )
+    }
+
+    test("zip") {
+      val ex = new IllegalArgumentException("test")
+      val x  = Rx.variable(1)
+      val y  = Rx.variable("a")
+      val rx = x.zip(y)
+      val b  = Seq.newBuilder[RxEvent]
+      RxRunner.runContinuously(rx)(b += _)
+
+      x := 2
+      y := "b"
+      y := "c"
+      x := 3
+      val events = b.result()
+      debug(events)
+      events shouldBe Seq(
+        OnNext((1, "a")),
+        OnNext((2, "b")),
+        OnNext((3, "c"))
+      )
+    }
+  }
 }
