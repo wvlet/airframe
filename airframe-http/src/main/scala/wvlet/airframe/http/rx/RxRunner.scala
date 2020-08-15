@@ -86,18 +86,25 @@ class RxRunner(
         }
         Cancelable { () => c1.cancel; c2.cancel }
       case FilterOp(in, cond) =>
-        run(in) {
-          case OnNext(x) =>
-            Try(cond.asInstanceOf[A => Boolean](x.asInstanceOf[A])) match {
-              case Success(true) =>
-                effect(OnNext(x))
-              case Success(false) =>
-              // Skip unmatched element
-              case Failure(e) =>
-                effect(OnError(e))
+        var toContinue = true
+        run(in) { ev =>
+          if (continuous || toContinue) {
+            ev match {
+              case OnNext(x) =>
+                Try(cond.asInstanceOf[A => Boolean](x.asInstanceOf[A])) match {
+                  case Success(true) =>
+                    effect(OnNext(x))
+                  case Success(false) =>
+                  // Skip unmatched element
+                  case Failure(e) =>
+                    toContinue = false
+                    effect(OnError(e))
+                }
+              case other =>
+                toContinue = false
+                effect(other)
             }
-          case other =>
-            effect(other)
+          }
         }
       case ConcatOp(first, next) =>
         var c1 = Cancelable.empty

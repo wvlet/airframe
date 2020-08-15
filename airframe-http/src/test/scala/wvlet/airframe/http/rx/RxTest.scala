@@ -427,6 +427,22 @@ object RxTest extends AirSpec {
       )
     }
 
+    test("filter") {
+      eval(Rx.sequence(1, 2, 3).filter(_ % 2 == 1)) shouldBe Seq(
+        OnNext(1),
+        OnNext(3),
+        OnCompletion
+      )
+    }
+
+    test("filter with error") {
+      val ex = new IllegalArgumentException("test")
+      eval(Rx.sequence(1, 2, 3).filter(x => if (x == 2) throw ex else x % 2 == 1)) shouldBe Seq(
+        OnNext(1),
+        OnError(ex)
+      )
+    }
+
     test("concat") {
       eval(Rx.sequence(1, 2).concat(Rx.sequence(3))) shouldBe Seq(
         OnNext(1),
@@ -457,7 +473,9 @@ object RxTest extends AirSpec {
       v := 4
       v := 5
 
-      b.result() shouldBe Seq(
+      val events = b.result()
+      debug(events)
+      events shouldBe Seq(
         OnNext(2),
         OnNext(4),
         OnError(ex),
@@ -468,5 +486,55 @@ object RxTest extends AirSpec {
       c.cancel
     }
 
+    test("flatMap") {
+      val ex = new IllegalArgumentException(s"3")
+
+      val v = Rx.variable(1)
+      val rx = v.flatMap { x =>
+        if (x == 3) {
+          throw ex
+        } else {
+          Rx.single(x * 2)
+        }
+      }
+
+      val b = Seq.newBuilder[RxEvent]
+      val c = RxRunner.runContinuously(rx)(b += _)
+      v := 2
+      v := 3
+      v := 4
+      v := 5
+
+      val events = b.result()
+      debug(events)
+      events shouldBe Seq(
+        OnNext(2),
+        OnNext(4),
+        OnError(ex),
+        OnNext(8), // Should keep reading the next update
+        OnNext(10)
+      )
+
+      c.cancel
+    }
+
+    test("filter") {
+      val ex = new IllegalArgumentException("test")
+      val v  = Rx.variable(1)
+      val b  = Seq.newBuilder[RxEvent]
+      val rx = v.filter(x => if (x == 2) throw ex else x % 2 == 1)
+      RxRunner.runContinuously(rx)(b += _)
+
+      (1 to 5).foreach(v := _)
+
+      val events = b.result()
+      debug(events)
+      events shouldBe Seq(
+        OnNext(1),
+        OnError(ex),
+        OnNext(3),
+        OnNext(5)
+      )
+    }
   }
 }
