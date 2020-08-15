@@ -11,8 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.rx
-import wvlet.airframe.http.rx.Rx.{FlatMapOp, MapOp}
+package wvlet.airframe.rx
+import wvlet.airframe.rx.Rx.{FlatMapOp, MapOp}
 
 /**
   * An wrapper of Rx[A] for Option[A] type values

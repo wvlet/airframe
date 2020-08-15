@@ -11,20 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.rx
+package wvlet.airframe
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   */
-trait Subscriber[A] {
-  def apply(v: A): Unit
-}
-
-object Subscriber {
-
-  def apply[A, U](subscriber: A => U): Subscriber[A] =
-    new Subscriber[A] {
-      override def apply(v: A): Unit = {
-        subscriber(v)
-      }
-    }
+package object rx {
+  implicit class FutureConverter[A](val f: Future[A]) extends AnyVal {
+    def toRx(implicit ec: ExecutionContext): Rx[Option[A]] = Rx.fromFuture(f)(ec)
+  }
 }

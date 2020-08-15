@@ -1,8 +1,7 @@
-package wvlet.airframe.http.rx
+package wvlet.airframe.rx
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import wvlet.airframe.control.MultipleExceptions
 import wvlet.log.LogSupport
 
 import scala.annotation.tailrec
@@ -312,11 +311,9 @@ class RxRunner(
         } else {
           // Report the completion event only once
           if (continuous || completed.compareAndSet(false, true)) {
-            if (errors.size == 1) {
-              effect(OnError(errors(0)))
-            } else {
-              effect(OnError(MultipleExceptions(errors.toSeq)))
-            }
+            // If there are multiple exceptions, add them to the suppressed list
+            val ex: Throwable = errors.reduce { (e1, e2) => e1.addSuppressed(e2); e1 }
+            effect(OnError(ex))
           } else {
             true
           }

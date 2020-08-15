@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.rx.html
 
-import wvlet.airframe.http.rx.Rx
+import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 import wvlet.airframe.http.rx.html.all._
 
