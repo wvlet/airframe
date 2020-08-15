@@ -166,16 +166,14 @@ object RxTest extends AirSpec {
         case 0 =>
           v shouldBe (1, "a")
         case 1 =>
-          v shouldBe (2, "a")
-        case 2 =>
           v shouldBe (2, "b")
         case _ =>
+          fail(s"unexpected value ${v}")
       }
     }
 
     count += 1
     a := 2
-    count += 1
     b := "b"
     c.cancel
   }
@@ -203,24 +201,20 @@ object RxTest extends AirSpec {
     var count = 0
 
     val e = x.run { v =>
+      info(s"${v}, count:${count}")
       count match {
         case 0 =>
           v shouldBe (1, "a", true)
         case 1 =>
-          v shouldBe (2, "a", true)
-        case 2 =>
-          v shouldBe (2, "b", true)
-        case 3 =>
           v shouldBe (2, "b", false)
         case _ =>
+          fail(s"unexpected value: ${v}")
       }
     }
 
     count += 1
     a := 2
-    count += 1
     b := "b"
-    count += 1
     c := false
     e.cancel
   }
@@ -453,7 +447,7 @@ object RxTest extends AirSpec {
     }
   }
 
-  test("continuous runner") {
+  test("continuous stream") {
     test("map") {
       val ex = new IllegalArgumentException(s"3")
 
@@ -521,8 +515,9 @@ object RxTest extends AirSpec {
     test("filter") {
       val ex = new IllegalArgumentException("test")
       val v  = Rx.variable(1)
-      val b  = Seq.newBuilder[RxEvent]
       val rx = v.filter(x => if (x == 2) throw ex else x % 2 == 1)
+
+      val b = Seq.newBuilder[RxEvent]
       RxRunner.runContinuously(rx)(b += _)
 
       (1 to 5).foreach(v := _)
@@ -534,6 +529,27 @@ object RxTest extends AirSpec {
         OnError(ex),
         OnNext(3),
         OnNext(5)
+      )
+    }
+
+    test("zip") {
+      val ex = new IllegalArgumentException("test")
+      val x  = Rx.variable(1)
+      val y  = Rx.variable("a")
+      val rx = x.zip(y)
+      val b  = Seq.newBuilder[RxEvent]
+      RxRunner.runContinuously(rx)(b += _)
+
+      x := 2
+      y := "b"
+      y := "c"
+      x := 3
+      val events = b.result()
+      debug(events)
+      events shouldBe Seq(
+        OnNext((1, "a")),
+        OnNext((2, "b")),
+        OnNext((3, "c"))
       )
     }
   }

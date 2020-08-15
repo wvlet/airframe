@@ -240,7 +240,7 @@ class RxRunner(
         lastValueBuffer.size match {
           case 2 =>
             // For zip2
-            trace(s"emit :${lastValueBuffer.mkString(", ")}")
+            trace(s"emit :${lastValueBuffer.map(_.headOption).mkString(", ")}")
             effect(OnNext((values(0), values(1)).asInstanceOf[A]))
           case 3 =>
             // For zip3
@@ -288,7 +288,7 @@ class RxRunner(
       }
     }
 
-    processEvents(false)
+    processEvents(true)
     Cancelable { () => c.foreach(_.cancel) }
   }
 
