@@ -414,6 +414,43 @@ object RxTest extends AirSpec {
     }
   }
 
+  test("recover in the middle") {
+    val rx = Rx
+      .sequence(1, 2, 3)
+      .map {
+        case 2     => throw new IllegalArgumentException("test error")
+        case other => other
+      }
+      .recover {
+        case e: IllegalArgumentException => -1
+      }
+    debug(rx)
+    eval(rx) shouldBe Seq(
+      OnNext(1),
+      OnNext(-1),
+      OnNext(3),
+      OnCompletion
+    )
+  }
+
+  test("recover in the middle failed") {
+    val ex = new IllegalArgumentException("test error")
+    val rx = Rx
+      .sequence(1, 2, 3)
+      .map {
+        case 2     => throw ex
+        case other => other
+      }
+      .recover {
+        case e: IllegalStateException => -1
+      }
+    debug(rx)
+    eval(rx) shouldBe Seq(
+      OnNext(1),
+      OnError(ex)
+    )
+  }
+
   test("Rx.exception") {
     val ex = new IllegalArgumentException("test error")
 
