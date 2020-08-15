@@ -52,7 +52,8 @@ class RxRunner(
     * the effect code block will be executed.
     *
     * @param rx
-    * @param effect toContinue
+    * @param effect a function to process the generated RxEvent. This function must return true when the downstream operator can
+    *               receive further events (OnNext). If the leaf sink operator issued OnError or OnCompletion event, this must return false.
     * @tparam A
     */
   def run[A](rx: Rx[A])(effect: RxEvent => Boolean): Cancelable = {
