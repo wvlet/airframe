@@ -34,16 +34,22 @@ trait Rx[+A] extends LogSupport {
   def withFilter(f: A => Boolean): Rx[A] = FilterOp(this, f)
 
   /**
-    * Combine two Rx objects to form a pair. If one of the objects is updated,
-    * it will yield a new pair.
-    *
-    * This method is useful when you need to monitor multiple Rx objects.
-    *
-    * Using Zip will be more intuitive than nesting multiple Rx operators
-    * like Rx[A].map { x => ... Rx[B].map { ...} }.
+    * Combine two Rx streams to form a sequence of pairs.
+    * This will emit a new pair when both of the streams are updated.
     */
   def zip[B](other: Rx[B]): Rx[(A, B)]             = ZipOp(this, other)
   def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Zip3Op(this, b, c)
+
+  /**
+    * Emit a new output if one of Rx[A] or Rx[B] is changed.
+    *
+    * This method is useful when you need to monitor multiple Rx objects.
+    *
+    * Using joins will be more intuitive than nesting multiple Rx operators
+    * like Rx[A].map { x => ... Rx[B].map { ...} }.
+    */
+  def join[B](other: Rx[B]): Rx[(A, B)]             = JoinOp(this, other)
+  def join[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Join3Op(this, b, c)
 
   def concat[A1 >: A](other: Rx[A1]): Rx[A1] = ConcatOp(this, other)
   def lastOption: RxOption[A]                = LastOp(this).toOption
@@ -158,12 +164,19 @@ object Rx extends LogSupport {
   case class MapOp[A, B](input: Rx[A], f: A => B)          extends UnaryRx[A, B]
   case class FlatMapOp[A, B](input: Rx[A], f: A => Rx[B])  extends UnaryRx[A, B]
   case class FilterOp[A](input: Rx[A], cond: A => Boolean) extends UnaryRx[A, A]
-  case class ZipOp[A, B](left: Rx[A], right: Rx[B]) extends Rx[(A, B)] {
-    override def parents: Seq[Rx[_]] = Seq(left, right)
+  case class ZipOp[A, B](a: Rx[A], b: Rx[B]) extends Rx[(A, B)] {
+    override def parents: Seq[Rx[_]] = Seq(a, b)
   }
   case class Zip3Op[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]) extends Rx[(A, B, C)] {
     override def parents: Seq[Rx[_]] = Seq(a, b, c)
   }
+  case class JoinOp[A, B](a: Rx[A], b: Rx[B]) extends Rx[(A, B)] {
+    override def parents: Seq[Rx[_]] = Seq(a, b)
+  }
+  case class Join3Op[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]) extends Rx[(A, B, C)] {
+    override def parents: Seq[Rx[_]] = Seq(a, b, c)
+  }
+
   case class ConcatOp[A](first: Rx[A], next: Rx[A]) extends Rx[A] {
     override def parents: Seq[Rx[_]] = Seq(first, next)
   }

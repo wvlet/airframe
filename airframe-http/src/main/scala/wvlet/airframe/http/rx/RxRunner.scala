@@ -131,10 +131,14 @@ class RxRunner(
               case Failure(e) => effect(OnError(e))
             }
         }
-      case z @ ZipOp(left, right) =>
+      case z @ ZipOp(r1, r2) =>
         zip(z)(effect)
       case z @ Zip3Op(r1, r2, r3) =>
         zip(z)(effect)
+      case j @ JoinOp(r1, r2) =>
+        join(j)(effect)
+      case j @ Join3Op(r1, r2, r3) =>
+        join(j)(effect)
       case RxOptionOp(in) =>
         run(in) {
           case OnNext(Some(v)) => effect(OnNext(v))
@@ -288,7 +292,81 @@ class RxRunner(
       }
     }
 
-    processEvents(true)
+    processEvents(false)
+    Cancelable { () => c.foreach(_.cancel) }
+  }
+
+  private def join[A, U](input: Rx[A])(effect: RxEvent => U): Cancelable = {
+    val size                              = input.parents.size
+    val lastValue: Array[Option[A]]       = Array.fill(size)(None)
+    val lastEvent: Array[Option[RxEvent]] = Array.fill(size)(None)
+    val c: Array[Cancelable]              = Array.fill(size)(Cancelable.empty)
+
+    val completed: AtomicBoolean = new AtomicBoolean(false)
+    def emit: Unit = {
+      // Emit the tuple result.
+      if (lastValue.forall(_.nonEmpty)) {
+        val values = for (i <- 0 until lastValue.size) yield {
+          lastValue(i).get
+        }
+        // Generate tuples from last values.
+        // This code is a bit ad-hoc because there is no way to produce tuples from Seq[X] of lastValues
+        lastValue.size match {
+          case 2 =>
+            // For join2
+            trace(s"emit :${lastValue.mkString(", ")}")
+            effect(OnNext((values(0), values(1)).asInstanceOf[A]))
+          case 3 =>
+            // For join3
+            effect(OnNext((values(0), values(1), values(2)).asInstanceOf[A]))
+          case _ => ???
+        }
+      }
+    }
+
+    def hasNoMoreData: Boolean = {
+      !continuous && lastEvent.forall(x => x.isDefined && x.get == OnCompletion)
+    }
+
+    // Scan the last events and emit the next value or a completion event
+    def processEvents(doEmit: Boolean) = {
+      val errors = lastEvent.collect { case Some(e @ OnError(ex)) => ex }
+      if (errors.isEmpty) {
+        if (doEmit) {
+          emit
+        } else {
+          if (hasNoMoreData && completed.compareAndSet(false, true)) {
+            trace(s"emit OnCompletion")
+            effect(OnCompletion)
+          }
+        }
+      } else {
+        // Report the completion event only once
+        if (continuous || completed.compareAndSet(false, true)) {
+          if (errors.size == 1) {
+            effect(OnError(errors(0)))
+          } else {
+            effect(OnError(MultipleExceptions(errors.toSeq)))
+          }
+        }
+      }
+    }
+
+    for (i <- 0 until size) {
+      c(i) = run(input.parents(i)) { e =>
+        lastEvent(i) = Some(e)
+        trace(s"c(${i}) ${e}")
+        e match {
+          case OnNext(v) =>
+            lastValue(i) = Some(v.asInstanceOf[A])
+            processEvents(true)
+          case _ =>
+            processEvents(false)
+        }
+      }
+    }
+
+    processEvents(false)
     Cancelable { () => c.foreach(_.cancel) }
   }
 
