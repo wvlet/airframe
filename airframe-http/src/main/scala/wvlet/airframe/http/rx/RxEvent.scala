@@ -14,20 +14,10 @@
 package wvlet.airframe.http.rx
 
 /**
+  * Observable event types. http://reactivex.io/documentation/observable.html
   */
-sealed trait RxEvent {
-  def isLastEvent: Boolean
-  def isError: Boolean
-}
-case class OnNext(v: Any) extends RxEvent {
-  override def isLastEvent: Boolean = false
-  override def isError: Boolean     = false
-}
-case class OnError(e: Throwable) extends RxEvent {
-  override def isLastEvent: Boolean = true
-  override def isError: Boolean     = true
-}
-case object OnCompletion extends RxEvent {
-  override def isLastEvent: Boolean = true
-  override def isError: Boolean     = false
-}
+sealed trait RxEvent
+
+case class OnNext(v: Any)        extends RxEvent
+case class OnError(e: Throwable) extends RxEvent
+case object OnCompletion         extends RxEvent
