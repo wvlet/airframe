@@ -270,6 +270,36 @@ object RxTest extends AirSpec {
     )
   }
 
+  test("join4") {
+    val x  = Rx.variable(1)
+    val y  = Rx.variable("a")
+    val z  = Rx.variable(true)
+    val w  = Rx.variable(10)
+    val rx = x.join(y, z, w)
+
+    val b = Seq.newBuilder[RxEvent]
+    RxRunner.run(rx)(b += _)
+
+    y := "b"
+    y := "c"
+    w := 20
+    z := false
+    x := 2
+    y := "d"
+
+    val events = b.result()
+    debug(events)
+    events shouldBe Seq(
+      OnNext(1, "a", true, 10),
+      OnNext(1, "b", true, 10),
+      OnNext(1, "c", true, 10),
+      OnNext(1, "c", true, 20),
+      OnNext(1, "c", false, 20),
+      OnNext(2, "c", false, 20),
+      OnNext(2, "d", false, 20)
+    )
+  }
+
   implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
   test("from Future[X]") {

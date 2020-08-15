@@ -48,8 +48,9 @@ trait Rx[+A] extends LogSupport {
     * Using joins will be more intuitive than nesting multiple Rx operators
     * like Rx[A].map { x => ... Rx[B].map { ...} }.
     */
-  def join[B](other: Rx[B]): Rx[(A, B)]             = JoinOp(this, other)
-  def join[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Join3Op(this, b, c)
+  def join[B](other: Rx[B]): Rx[(A, B)]                             = JoinOp(this, other)
+  def join[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Join3Op(this, b, c)
+  def join[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Join4Op(this, b, c, d)
 
   def concat[A1 >: A](other: Rx[A1]): Rx[A1] = ConcatOp(this, other)
   def lastOption: RxOption[A]                = LastOp(this).toOption
@@ -175,6 +176,9 @@ object Rx extends LogSupport {
   }
   case class Join3Op[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]) extends Rx[(A, B, C)] {
     override def parents: Seq[Rx[_]] = Seq(a, b, c)
+  }
+  case class Join4Op[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]) extends Rx[(A, B, C, D)] {
+    override def parents: Seq[Rx[_]] = Seq(a, b, c, d)
   }
 
   case class ConcatOp[A](first: Rx[A], next: Rx[A]) extends Rx[A] {
