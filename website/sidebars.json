@@ -10,6 +10,7 @@
       "airframe",
       "airframe-rpc",
       "airframe-http",
+      "airframe-rx",
       "airspec"
     ],
     "Core Modules": [

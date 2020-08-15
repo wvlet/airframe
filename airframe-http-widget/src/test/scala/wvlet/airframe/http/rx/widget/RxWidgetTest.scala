@@ -14,7 +14,7 @@
 package wvlet.airframe.http.rx.widget
 
 import org.scalajs.dom
-import wvlet.airframe.http.rx.Rx
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.http.rx.html.all._
 import wvlet.airframe.http.rx.html.{DOMRenderer, Embedded, RxComponent, RxElement}
 import wvlet.airframe.http.rx.widget.ui.Layout

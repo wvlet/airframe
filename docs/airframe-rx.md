@@ -3,10 +3,10 @@ id: airframe-rx
 title: airframe-rx: ReactiveX interface
 ---
 
-airframe-rx is a [ReactiveX](http://reactivex.io/) implementation for Scala and Scala.js. 
+airframe-rx is a [ReactiveX](http://reactivex.io/) implementation for Scala and Scala.js.
 
 airframe-rx is also used for
-- Client/Server streaming for [Airframe gRPC](airframe-grpc) 
+- Client/Server streaming for [Airframe gRPC](airframe-grpc.md)
 - Interactive [rendering of DOM objects](https://github.com/wvlet/airframe/blob/master/airframe-http-rx/.js/src/main/scala/wvlet/airframe/http/rx/html/DOMRenderer.scala) (airframe-http-rx)
 
 ## Usage
