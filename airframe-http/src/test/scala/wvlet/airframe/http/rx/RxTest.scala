@@ -201,7 +201,6 @@ object RxTest extends AirSpec {
     var count = 0
 
     val e = x.run { v =>
-      info(s"${v}, count:${count}")
       count match {
         case 0 =>
           v shouldBe (1, "a", true)
