@@ -594,7 +594,7 @@ lazy val http =
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
-    .dependsOn(airframe, airframeMacrosRef, control, surface, json, codec, airspecRef % Test)
+    .dependsOn(airframe, airframeMacrosRef, rx, control, surface, json, codec, airspecRef % Test)
 
 lazy val httpJVM = http.jvm
   .enablePlugins(PackPlugin)

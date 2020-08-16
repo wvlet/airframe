@@ -3,7 +3,7 @@ id: airframe-rx
 title: airframe-rx: ReactiveX interface
 ---
 
-airframe-rx is a [ReactiveX](http://reactivex.io/) implementation for Scala and Scala.js, which is used for:
+airframe-rx is a lightweight [ReactiveX](http://reactivex.io/) implementation for Scala and Scala.js, which can be used for:
 - Streaming support of [Airframe gRPC](airframe-grpc.md)
 - [Interactive rendering of DOM objects](https://github.com/wvlet/airframe/blob/master/airframe-http-rx/.js/src/main/scala/wvlet/airframe/http/rx/html/DOMRenderer.scala) (airframe-http-rx)
 
@@ -11,6 +11,8 @@ airframe-rx is a [ReactiveX](http://reactivex.io/) implementation for Scala and 
 ## Why Reactive Programming?
 
 Reactive programming is a model of event-based processing. For example, if you want to keep monitoring an event and write a chain of actions after observing some changes of the event, reactive programming is the right choice for you. 
+
+### Frontend Programming
 
 For example, when writing an Web UI, we usually need to change DOM elements based on the state of some variable. This example will update the contents of DOM if `counter` variable is updated: 
 
@@ -33,9 +35,11 @@ counter := 2
 // <div>count: 2</div>
 ``` 
 
-`Rx[A]` represents a reactive component which will be updated if there is any change in its upstream operators. In this example, we are chaining an action (map operator) based on the current state of `counter` variable. These actions are observing the state of the variable, and if the `counter` variable is updated, the registered actions will be triggered. 
+`Rx[A]` represents a reactive component which will be updated if there is any change in its upstream operators. In this example, we are chaining an action (map operator) based on the current state of `counter` variable. These actions are observing the state of the variable, and if the `counter` variable is updated, the registered actions will be triggered. [airframe-http-rx](airframe-http-rx.md) uses this pattern a lot to build flexible UI code in [Scala.js](https://www.scala-js.org), which will be compiled to JavaScripts so that we can use Scala for web browsers.
 
-As an example of server-side programming, [gRPC](https://grpc.io/), which supports client/server-side streaming as well as bi-directional streaming, is a good example of reactive programming. By using [Airframe RPC](airframe-rpc.md), you can create a gRPC server, which returns multiple String messages as a stream:
+### Backend Programming
+
+As an example of server-side programming, [gRPC](https://grpc.io/), which supports client/server-side streaming as well as bi-directional streaming, is a good example of reactive programming. By using [Airframe gRPC](airframe-rpc.md), you can create a gRPC server, which returns multiple String messages as a stream:
 ```scala
 import wvlet.airframe.http.RPC
 import wvlet.airframe.rx.Rx
@@ -60,30 +64,31 @@ rpcClient.MyApi.serverStreaming("RPC").map { message =>
 // prints "See You RPC!"
 ```
 
-The above two examples show non-blocking code, which means that the subsequent code can be processed while we are waiting for updates of the observed events. If you use reactive components like `Rx[A]`, writing interactive UIs or RPC clients and servers becomes much easier than managing threads and event update signals by yourself. 
+----
 
-For interested readers, visit [ReactiveX](http://reactivex.io/) page. You can find various types of event-based processing patterns. You will notice that the most of these operators are quite similar to [Scala collection library operators](https://docs.scala-lang.org/overviews/collections/trait-traversable.html), such as map, flatMap, filter, zip, etc. If you are alrady familiar to Scala, learning reactive programming is not so difficult. 
+The above two examples are non-blocking, which means that the subsequent code can be processed while we are waiting for updates of the observed events. If you use reactive components like `Rx[A]`, writing interactive UIs and RPC clients/servers becomes much easier than managing threads and event update signals by yourself. 
 
+For more interested readers, visit [ReactiveX](http://reactivex.io/) web page. You can find various types of event-based processing patterns. You will notice that these stream processing operators are quite similar to [Scala collection library operators](https://docs.scala-lang.org/overviews/collections/trait-traversable.html), such as map, flatMap, filter, zip, etc. If you are already familiar to Scala, you are ready to learn reactive programming! 
 
 ## Why Airframe Rx?
 
+We built Airframe Rx with the following designs in our mind: 
 
-In Scala, _Future[A]_ can be used for writing asynchronous and reactive programming. `Future[A]` represents a value of type _A_ that will be available in future and encapsulates operators for producing the value. We can use Future with [scala.concurrent.Future](https://docs.scala-lang.org/overviews/core/futures.html) or [Twitter's Future](https://twitter.github.io/finagle/guide/Futures.html), etc. Future is good for writing asynchronous data processing. Users can concatenate a sequence of operators for processing data without blocking the code execution. So, while waiting the data from remote sources, other tasks can be processed in parallel.
+- Isolating operators `Rx[A]` and their execution
+- Supporting cancellation of the event subscription
+- Supporting Scala.js for Web UI programming
+- Minimizing the learning cost 
+- Minimizing extra library dependencies
 
-One of the drawbacks of _Future_ is that cancelling already started tasks is not straightforward. [Monix](https://monix.io) has implemented a cancelable task abstraction, denoted _Task[A]_, which is similar to Future, but isolates operators and their executions so that we can have more control over the stream processing flows. 
+Airframe Rx is a tiny library that supports Scala 2.11, 2.12, 2.13, and Scala.js. It only has a dependency to [airframe-log](airframe-log.md) for the debug logging purpose, so there is no difficulty in using it in Scala.js, which cannot compile some Java-based libraries. `Rx[A]` interface itself has no execution code, and it uses `RxRunner` for processing Rx operators, so adding your own custom executor for evaluating `Rx[A]` is also possible. The event processing methods of `Rx[A]` is almost the same with Scala collection library and ReactiveX operators (e.g., map, flatMap, filter, etc.), so nothing much to learn to start using Airframe Rx.
 
-Two essential parts of reactive programming are: 
-- Isolating operators and their execution
-- Cancelable tasks
+In Scala, there are several libraries for asynchronous programming. _Future[A]_ can be used for writing asynchronous code. `Future[A]` represents a value of type _A_ that will be available in future and encapsulates operators for producing the value. We can use Future with [scala.concurrent.Future](https://docs.scala-lang.org/overviews/core/futures.html) or [Twitter's Future](https://twitter.github.io/finagle/guide/Futures.html), etc. Future is good for writing asynchronous data processing. Users can concatenate a sequence of operators for processing data without blocking the code execution. So, while waiting the data from remote sources, other tasks can be processed in parallel.
 
-While Monix is targeting for high-performance asynchronous event-based programming, reactive programming is also useful for writing user interfaces (UI) with DOM and Scala.js. This Rx implementation was originally created by following monadic-html https://github.com/OlivierBlanvillain/monadic-html, but this has no error handling and error propagation to the upstream operators, so reporting OnError(exception) or OnCompletion event was difficult in monadic-html. Knowing the end of streams is important to support gRPC, which needs to terminate RPC connection at some point, and also for combining multiple streams (e.g., concat, join, zip, etc.)
-
-Rx[A] is a chain of operators that will be applied to the stream of objects A and it's used for dynamically updating a part of DOM elements in airframe-http-rx. See DOMRenderer code for more details.
+One of the drawbacks of Future is that cancelling already started tasks is not straightforward. To overcome this problem, [Monix](https://monix.io) has implemented a cancelable task abstraction, denoted _Task[A]_, which is similar to Future, but isolates operators and their executions so that we can have more control over the stream processing flows. Monix is targeting high-performant asynchronous event-based programming, and it has added many useful features over time. In our use cases, however, Monix and even its submodule monix-reactive was overkill just for introducing reactive programming interface.  
 
 
-With this PR, adding more ReactiveX methods will also be possible (e.g., Rx.buffer, Rx.retry, etc.). And Rx operator case classes are independent from RxRunner, so it is also possible to add different RxRunners for supporting concurrent programming if we want.
+as we saw in the introduction reactive programming is also useful for writing user interfaces (UI) with DOM and Scala.js. Airframe Rx implementation was originally following `Rx` interface of [monadic-html](https://github.com/OlivierBlanvillain/monadic-html), but it has no support for error handling nor error propagation to the upstream operators, so reporting errors (with `OnError` event) or telling the end of streams (with `OnCompletion` event) was difficult in monadic-html. Knowing the end of streams is important to support gRPC, which needs to terminate RPC connection at some point, and also for combining multiple streams (e.g., concat, join, zip, etc.)
 
-For our use cases, we only need reactive DOM rendering (RxElement) and gRPC streaming. After merging this PR, I'd like to extract this code as airframe-rx module under wvlet.airframe.rx package to maintain this code as a thin reactive interface with less dependencies.
 
 
 
@@ -125,3 +130,37 @@ v := "Rx"
 c.cancel
 ```
 
+## Rx Operators
+
+### Creating Rx 
+
+- Rx.single
+- Rx.sequence
+- Rx.variable
+- Rx.optionVariable
+
+### Transforming Rx
+
+- map
+- flatMap
+
+### Filtering Rx
+
+- filter
+- lastOption
+
+## Combining Rx 
+
+- concat
+- zip
+- join
+
+### Error Handling Operators
+
+- recover
+- recoverWith
+
+### Utility Operators
+
+- subscribe
+- run
