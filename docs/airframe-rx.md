@@ -15,7 +15,7 @@ Reactive programming is a model of event-based processing. If you want to keep m
 
 ### Frontend Programming
 
-For example, when writing an Web UI, we usually need to change DOM elements based on the state of some variable. This example will update the contents of DOM if `counter` variable is updated: 
+When writing an Web UI, we usually need to change DOM elements based on the state of some variable. This example will update the contents of DOM if `counter` variable is updated: 
 
 ```scala
 import wvlet.airframe.rx.Rx
@@ -36,7 +36,7 @@ counter := 2
 // <div>count: 2</div>
 ``` 
 
-`Rx[A]` represents a reactive component which will be updated if there is any change in its upstream operators. In this example, we are chaining an action (map operator) based on the current state of `counter` variable. These actions are observing the state of the variable, and if the `counter` variable is updated, the registered actions will be triggered. [airframe-http-rx](airframe-http-rx.md) uses this pattern a lot to build flexible UI code in [Scala.js](https://www.scala-js.org), which will be compiled to JavaScripts so that we can use Scala for web browsers.
+`Rx[A]` represents a reactive component which will be updated if there is any change in its upstream operators. In this example, we are chaining actions (map operator, etc.) based on the current state of `counter` variable. These actions are observing the state of the variable, and if the `counter` variable is updated, the registered actions will be triggered. [airframe-http-rx](airframe-http-rx.md) uses this pattern a lot to build flexible UI code in [Scala.js](https://www.scala-js.org), which will be compiled to JavaScripts so that we can use Scala for web browsers.
 
 ### Backend Programming
 
@@ -67,7 +67,7 @@ rpcClient.MyApi.serverStreaming("RPC").map { message =>
 
 ----
 
-The above two examples are non-blocking code, which means that the subsequent code can be processed while we are waiting for updates of the observed events. If you use reactive components like `Rx[A]`, writing interactive UIs and RPC clients/servers becomes much easier than managing threads and event update signals by yourself. 
+These two examples are non-blocking code, which means that the subsequent code can be processed while we are waiting for updates of the observed events. If you use reactive components like `Rx[A]`, writing interactive UIs and RPC clients/servers becomes much easier than managing threads and event update signals by yourself. 
 
 For more interested readers, visit [ReactiveX](http://reactivex.io/) web page. You can find various types of event-based processing patterns. You will notice that these stream processing operators are quite similar to [Scala collection library operators](https://docs.scala-lang.org/overviews/collections/trait-traversable.html), such as map, flatMap, filter, zip, etc. If you are already familiar to Scala, it would be easy to learn reactive programming as well.
 
@@ -106,7 +106,7 @@ val c = rx.subscribe { x => println(x) }
 v := "Rx"  
 // prints "Hello Rx!"
 
-// Call cancel to stop the suscription
+// Call cancel to stop the subscription
 c.cancel
 ```
 
