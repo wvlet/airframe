@@ -11,9 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.rx
+package wvlet.airframe.rx
 
-import wvlet.airframe.LazyF0
 import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Future}

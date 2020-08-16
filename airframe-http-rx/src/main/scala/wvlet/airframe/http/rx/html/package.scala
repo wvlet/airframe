@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.rx
 
+import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import scala.annotation.implicitNotFound

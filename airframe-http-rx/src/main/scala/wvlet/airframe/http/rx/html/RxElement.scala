@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.rx.html
 
-import wvlet.airframe.http.rx.{Cancelable, Rx}
+import wvlet.airframe.rx.{Cancelable, Rx}
 import wvlet.log.LogSupport
 
 /**

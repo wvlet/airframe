@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.rx
+package wvlet.airframe.rx
 
 /**
   * Observable event types. http://reactivex.io/documentation/observable.html

@@ -14,7 +14,7 @@
 package wvlet.airframe.http.rx.html
 
 import org.scalajs.dom
-import wvlet.airframe.http.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxRunner}
+import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.log.LogSupport
 
 import scala.scalajs.js

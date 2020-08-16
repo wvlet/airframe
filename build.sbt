@@ -154,10 +154,11 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   metricsJVM,
   codecJVM,
   msgpackJVM,
+  rxJVM,
   httpJVM,
   grpc,
   jsonJVM,
-  rxJVM,
+  httpRxJVM,
   airspecJVM
 )
 
@@ -189,8 +190,9 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   jsonJS,
   msgpackJS,
   codecJS,
-  httpJS,
   rxJS,
+  httpJS,
+  httpRxJS,
   widgetJS
 )
 
@@ -559,6 +561,23 @@ lazy val jdbc =
     )
     .dependsOn(airframeJVM, airframeMacrosJVMRef, controlJVM, config, airspecRefJVM % Test)
 
+lazy val rx =
+  crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airframe-rx"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-rx",
+      description := "Reactive stream (Rx) interface"
+    )
+    .jsSettings(
+      jsBuildSettings
+    )
+    .dependsOn(log, airspecRef % Test)
+
+lazy val rxJVM = rx.jvm
+lazy val rxJS  = rx.js
+
 lazy val http =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
@@ -575,7 +594,7 @@ lazy val http =
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
-    .dependsOn(airframe, airframeMacrosRef, control, surface, json, codec, airspecRef % Test)
+    .dependsOn(airframe, airframeMacrosRef, rx, control, surface, json, codec, airspecRef % Test)
 
 lazy val httpJVM = http.jvm
   .enablePlugins(PackPlugin)
@@ -606,7 +625,7 @@ lazy val grpc =
         "org.apache.tomcat" % "annotations-api"   % "6.0.53"      % Provided,
         "org.slf4j"         % "slf4j-jdk14"       % SLF4J_VERSION % Test
       )
-    ).dependsOn(httpJVM, airframeMacrosJVMRef, airspecRefJVM % Test)
+    ).dependsOn(httpJVM, rxJVM, airframeMacrosJVMRef, airspecRefJVM % Test)
 
 lazy val finagle =
   project
@@ -750,7 +769,7 @@ lazy val sql =
     )
     .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecRefJVM % Test)
 
-lazy val rx =
+lazy val httpRx =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-http-rx"))
@@ -767,10 +786,10 @@ lazy val rx =
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
-    .dependsOn(log, http, surface, airspecRef % Test)
+    .dependsOn(log, http, rx, surface, airspecRef % Test)
 
-lazy val rxJVM = rx.jvm
-lazy val rxJS  = rx.js
+lazy val httpRxJVM = httpRx.jvm
+lazy val httpRxJS  = httpRx.js
 
 lazy val widget =
   crossProject(JSPlatform)
@@ -787,7 +806,7 @@ lazy val widget =
       jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
 //      npmDependencies in Test += "node" -> "12.14.1"
     )
-    .dependsOn(log, rx, airspecRef % Test)
+    .dependsOn(log, httpRx, airspecRef % Test)
 
 lazy val widgetJS = widget.js
 
