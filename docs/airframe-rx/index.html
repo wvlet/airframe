@@ -1,0 +1,213 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>airframe-rx: ReactiveX interface · Airframe</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="airframe-rx is a lightweight [ReactiveX](http://reactivex.io/) implementation for Scala and Scala.js, which can be used for:"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="airframe-rx: ReactiveX interface · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="airframe-rx is a lightweight [ReactiveX](http://reactivex.io/) implementation for Scala and Scala.js, which can be used for:"/><meta property="og:image" content="https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.css"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><link rel="alternate" type="application/atom+xml" href="https://wvlet.org/airframe/blog/atom.xml" title="Airframe Blog ATOM Feed"/><link rel="alternate" type="application/rss+xml" href="https://wvlet.org/airframe/blog/feed.xml" title="Airframe Blog RSS Feed"/><script>
+              (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+              (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+              m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+              })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+              ga('create', 'UA-98364158-1', 'auto');
+              ga('send', 'pageview');
+            </script><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><script src="/airframe/js/scrollSpy.js"></script><link rel="stylesheet" href="/airframe/css/main.css"/><script src="/airframe/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/airframe/"><img class="logo" src="/airframe/img/favicon.ico" alt="Airframe"/><h2 class="headerTitleWithLogo">Airframe</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class=""><a href="/airframe/docs/" target="_self">Docs</a></li><li class=""><a href="/airframe/blog/" target="_self">Blog</a></li><li class=""><a href="/airframe/docs/release-notes" target="_self">Release Notes</a></li><li class=""><a href="https://github.com/wvlet/airframe/" target="_self">GitHub</a></li><li class="navSearchWrapper reactNavSearchWrapper"><input type="text" id="search_input_react" placeholder="Search" title="Search"/></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><div class="hamburger-menu"><div class="line1"></div><div class="line2"></div><div class="line3"></div></div></div><h2><i>›</i><span>Framework</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">Resources</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/">Overview</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/articles">Articles</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/release-notes">Release Notes</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/logos">Logos</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Framework</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe">airframe-di: Dependency Injection</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-rpc">Airframe RPC</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-http">airframe-http: Creating REST Service</a></li><li class="navListItem navListItemActive"><a class="navItem" href="/airframe/docs/airframe-rx">airframe-rx: ReactiveX interface</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airspec">AirSpec: Testing Framework</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Core Modules</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-codec">airframe-codec: Schema-On-Read Object Serializer</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-config">airframe-config: Application Config Flow</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-control">airframe-control: Retry/Rate Control</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-log">airframe-log: Application Logger</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-metrics">airframe-metrics: Human-Friendly Measures for Time and Data Size</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-surface">airframe-surface: Object Shape Inspector</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Utilities</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-benchmark">airframe-benchmark: JMH Benchmark</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-canvas">airframe-canvas: Off-Heap Memory Manager</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-fluentd">airframe-fluentd: Fluentd Logger</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-http-recorder">airframe-http-recorder: Web Request/Response Recorder</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-jdbc">airframe-jdbc: JDBC Connection Pool</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-jmx">airframe-jmx: JMX Application Monitor</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-json">airframe-json: Pure-Scala JSON Parser</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-launcher">airframe-launcher: Command-Line Program Launcher</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-msgpack">airframe-msgpack: Pure-Scala MessagePack Parser</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-sql">airframe-sql: SQL Parser</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
+
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              var headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                var el = event.target;
+                while(el !== headings){
+                  if (el.tagName === 'A') {
+                    document.body.classList.remove('tocActive');
+                    break;
+                  } else{
+                    el = el.parentNode;
+                  }
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">airframe-rx: ReactiveX interface</h1></header><article><div><span><p>airframe-rx is a lightweight <a href="http://reactivex.io/">ReactiveX</a> implementation for Scala and Scala.js, which can be used for:</p>
+<ul>
+<li>Streaming support of <a href="airframe-grpc.md">Airframe gRPC</a></li>
+<li><a href="https://github.com/wvlet/airframe/blob/master/airframe-http-rx/.js/src/main/scala/wvlet/airframe/http/rx/html/DOMRenderer.scala">Interactive rendering of DOM objects</a> (airframe-http-rx)</li>
+<li>etc.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="why-reactive-programming"></a><a href="#why-reactive-programming" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Why Reactive Programming?</h2>
+<p>Reactive programming is a model of event-based processing. If you want to keep monitoring an event and write a chain of actions after observing some changes of the event, reactive programming is the right choice for you.</p>
+<h3><a class="anchor" aria-hidden="true" id="frontend-programming"></a><a href="#frontend-programming" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Frontend Programming</h3>
+<p>For example, when writing an Web UI, we usually need to change DOM elements based on the state of some variable. This example will update the contents of DOM if <code>counter</code> variable is updated:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.rx.<span class="hljs-type">Rx</span>
+
+<span class="hljs-keyword">val</span> counter: <span class="hljs-type">RxVar</span>[<span class="hljs-type">Int</span>] = <span class="hljs-type">Rx</span>.variable(<span class="hljs-number">1</span>)
+
+<span class="hljs-keyword">val</span> rx: <span class="hljs-type">Rx</span>[<span class="hljs-type">RxElement</span>] = counter.map { x =&gt;
+  div(<span class="hljs-string">s"count: <span class="hljs-subst">${x}</span>"</span>)
+}
+
+<span class="hljs-comment">// This will render:</span>
+<span class="hljs-comment">// &lt;div&gt;count: 1&lt;/div&gt;</span>
+<span class="hljs-type">DOMRenderer</span>.render(rx)
+
+<span class="hljs-comment">// Update the counter variable</span>
+counter := <span class="hljs-number">2</span>
+<span class="hljs-comment">// Then, the above DOM will be rewritten to:</span>
+<span class="hljs-comment">// &lt;div&gt;count: 2&lt;/div&gt;</span>
+</code></pre>
+<p><code>Rx[A]</code> represents a reactive component which will be updated if there is any change in its upstream operators. In this example, we are chaining an action (map operator) based on the current state of <code>counter</code> variable. These actions are observing the state of the variable, and if the <code>counter</code> variable is updated, the registered actions will be triggered. <a href="airframe-http-rx.md">airframe-http-rx</a> uses this pattern a lot to build flexible UI code in <a href="https://www.scala-js.org">Scala.js</a>, which will be compiled to JavaScripts so that we can use Scala for web browsers.</p>
+<h3><a class="anchor" aria-hidden="true" id="backend-programming"></a><a href="#backend-programming" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Backend Programming</h3>
+<p>As an example of server-side programming, <a href="https://grpc.io/">gRPC</a>, which supports client and server-side streaming, is a good example of reactive programming. By using <a href="/airframe/docs/airframe-rpc">Airframe gRPC</a>, you can create a gRPC server, which returns multiple String messages as a stream:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.<span class="hljs-type">RPC</span>
+<span class="hljs-keyword">import</span> wvlet.airframe.rx.<span class="hljs-type">Rx</span>
+
+<span class="hljs-meta">@RPC</span>
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyApi</span> </span>{
+  <span class="hljs-comment">// Sending multiple String messages from the server as a stream</span>
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">serverStreaming</span></span>(name:<span class="hljs-type">String</span>): <span class="hljs-type">Rx</span>[<span class="hljs-type">String</span>] = {
+     <span class="hljs-type">Rx</span>.sequence(<span class="hljs-string">"Hello"</span>, <span class="hljs-string">"See You"</span>).map(msg =&gt; <span class="hljs-string">s"<span class="hljs-subst">${msg}</span> <span class="hljs-subst">${name}</span>!"</span>)
+  }
+}
+</code></pre>
+<p>A gRPC client can receive a sequence of String messages from the server, and do some action as it receives a new message:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-comment">// As we receive a new message from the server, print the received message:</span>
+rpcClient.<span class="hljs-type">MyApi</span>.serverStreaming(<span class="hljs-string">"RPC"</span>).map { message =&gt; 
+  println(message)
+}
+<span class="hljs-comment">// prints "Hello RPC!"</span>
+<span class="hljs-comment">// prints "See You RPC!"</span>
+</code></pre>
+<hr>
+<p>The above two examples are non-blocking code, which means that the subsequent code can be processed while we are waiting for updates of the observed events. If you use reactive components like <code>Rx[A]</code>, writing interactive UIs and RPC clients/servers becomes much easier than managing threads and event update signals by yourself.</p>
+<p>For more interested readers, visit <a href="http://reactivex.io/">ReactiveX</a> web page. You can find various types of event-based processing patterns. You will notice that these stream processing operators are quite similar to <a href="https://docs.scala-lang.org/overviews/collections/trait-traversable.html">Scala collection library operators</a>, such as map, flatMap, filter, zip, etc. If you are already familiar to Scala, it would be easy to learn reactive programming as well.</p>
+<h2><a class="anchor" aria-hidden="true" id="usage"></a><a href="#usage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Usage</h2>
+<p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-rx_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-rx_2.12/badge.svg" alt="Maven Central"></a></p>
+<p><strong>build.sbt</strong></p>
+<pre><code class="hljs css language-scala">libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-rx"</span> % <span class="hljs-string">"(version)"</span>
+</code></pre>
+<p>For Scala.js, use <code>%%%</code>:</p>
+<pre><code class="hljs css language-scala">libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-rx"</span> % <span class="hljs-string">"(version)"</span>
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="subscribing-variable-changes"></a><a href="#subscribing-variable-changes" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Subscribing Variable Changes</h3>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.rx.<span class="hljs-type">Rx</span>
+
+<span class="hljs-comment">// Create a new variable</span>
+<span class="hljs-keyword">val</span> v = <span class="hljs-type">Rx</span>.variable(<span class="hljs-string">"World"</span>)
+ 
+<span class="hljs-comment">// Chain reactive operators </span>
+<span class="hljs-keyword">val</span> rx = v.map { x =&gt; <span class="hljs-string">s"Hello <span class="hljs-subst">${x}</span>!"</span> }
+
+<span class="hljs-comment">// Start subscribing changes of the Rx variable</span>
+<span class="hljs-keyword">val</span> c = rx.subscribe { x =&gt; println(x) }
+<span class="hljs-comment">// prints "Hello World!" </span>
+
+<span class="hljs-comment">// Setting a new value to the variable </span>
+v := <span class="hljs-string">"Rx"</span>  
+<span class="hljs-comment">// prints "Hello Rx!"</span>
+
+<span class="hljs-comment">// Call cancel to stop the suscription</span>
+c.cancel
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="rx-operators"></a><a href="#rx-operators" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Rx Operators</h2>
+<h3><a class="anchor" aria-hidden="true" id="creating-rx"></a><a href="#creating-rx" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Creating Rx</h3>
+<ul>
+<li>Rx.single</li>
+<li>Rx.sequence</li>
+<li>Rx.variable</li>
+<li>Rx.optionVariable</li>
+</ul>
+<h3><a class="anchor" aria-hidden="true" id="transforming-rx"></a><a href="#transforming-rx" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Transforming Rx</h3>
+<ul>
+<li>map</li>
+<li>flatMap</li>
+</ul>
+<h3><a class="anchor" aria-hidden="true" id="filtering-rx"></a><a href="#filtering-rx" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Filtering Rx</h3>
+<ul>
+<li>filter</li>
+<li>lastOption</li>
+</ul>
+<h3><a class="anchor" aria-hidden="true" id="combining-rx"></a><a href="#combining-rx" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Combining Rx</h3>
+<ul>
+<li>concat</li>
+<li>zip</li>
+<li>join</li>
+</ul>
+<h3><a class="anchor" aria-hidden="true" id="error-handling-operators"></a><a href="#error-handling-operators" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Error Handling Operators</h3>
+<ul>
+<li>recover</li>
+<li>recoverWith</li>
+</ul>
+<h3><a class="anchor" aria-hidden="true" id="utility-operators"></a><a href="#utility-operators" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Utility Operators</h3>
+<ul>
+<li>subscribe</li>
+<li>run</li>
+<li>toOption</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="design-of-airframe-rx"></a><a href="#design-of-airframe-rx" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Design of Airframe Rx</h2>
+<p>We built Airframe Rx with the following designs in our mind:</p>
+<ul>
+<li>Isolating operators <code>Rx[A]</code> and their execution</li>
+<li>Supporting cancellation of the event subscription</li>
+<li>Supporting Scala.js for Web UI programming</li>
+<li>Minimizing the learning cost</li>
+<li>Minimizing extra library dependencies</li>
+</ul>
+<p>Airframe Rx is a tiny library that supports Scala 2.11, 2.12, 2.13, and Scala.js. It only has a dependency to <a href="/airframe/docs/airframe-log">airframe-log</a> for the debug logging purpose, so there is no difficulty in using it in Scala.js, which cannot compile some Java-based libraries. <code>Rx[A]</code> interface itself has no execution code, and it uses <code>RxRunner</code> for processing Rx operators, so adding your own custom executor for evaluating <code>Rx[A]</code> is also possible. The event processing methods of <code>Rx[A]</code> is almost the same with Scala collection library (e.g., map, flatMap, filter, etc.), so there is nothing much to learn to start using Airframe Rx.</p>
+<p>In Scala <code>Future[A]</code>, which represents a value of type <em>A</em> that will be available in future, can be used for writing asynchronous code. By using the existing Future libraries, such as <a href="https://docs.scala-lang.org/overviews/core/futures.html">scala.concurrent.Future</a> or <a href="https://twitter.github.io/finagle/guide/Futures.html">Twitter's Future</a>, etc., users can concatenate a sequence of operators for processing data without blocking the code execution. So, while waiting the data from remote sources, other tasks can be processed in parallel.</p>
+<p>One of the drawbacks of Future is that cancelling already started execution is not straightforward. Cancelling execution is important if we neet to stop feeding streams or stop updating DOM elements when the user moves to a different page. <a href="https://monix.io">Monix</a> has implemented a cancelable task abstraction, denoted <em>Task[A]</em>, which is similar to Future, but isolates operators and their executions so that we can have more control over the stream processing flows. Monix is targeting high-performant asynchronous event-based programming, and it has added many useful features over time.</p>
+<p>In our use cases, however, requiring Monix or even its small submodule monix-reactive was overkill and incurs additional learning cost about Monix itself. In addition, there was a concern that it would cause dependency problems to Airframe RPC and Rx users. Implementing <code>Rx</code> interface was not a big deal as it is just a set of operator definitions similar to Scala's collection library, so we decided to provide our own reactive interface with cancellation support to minimize extra dependencies.</p>
+<p>As we saw in the introduction, reactive programming is also useful for writing user interfaces (UI) with DOM and Scala.js. Airframe Rx was inspired by <a href="https://github.com/OlivierBlanvillain/monadic-html">monadic-html</a>, which also provides <code>Rx</code> interface. We extended monadic-html to support error propagation (with <code>OnError</code> event) and reporting the end of streams (with <code>OnCompletion</code> event) so that we can support gRPC, which needs to terminate RPC connection at some point. With this extension, we can also support combining multiple streams (e.g., concat, join, zip, etc.)</p>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-http"><span class="arrow-prev">← </span><span>airframe-http: Creating REST Service</span></a><a class="docs-next button" href="/airframe/docs/airspec"><span class="function-name-prevnext">AirSpec: Testing Framework</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#why-reactive-programming">Why Reactive Programming?</a><ul class="toc-headings"><li><a href="#frontend-programming">Frontend Programming</a></li><li><a href="#backend-programming">Backend Programming</a></li></ul></li><li><a href="#usage">Usage</a><ul class="toc-headings"><li><a href="#subscribing-variable-changes">Subscribing Variable Changes</a></li></ul></li><li><a href="#rx-operators">Rx Operators</a><ul class="toc-headings"><li><a href="#creating-rx">Creating Rx</a></li><li><a href="#transforming-rx">Transforming Rx</a></li><li><a href="#filtering-rx">Filtering Rx</a></li><li><a href="#combining-rx">Combining Rx</a></li><li><a href="#error-handling-operators">Error Handling Operators</a></li><li><a href="#utility-operators">Utility Operators</a></li></ul></li><li><a href="#design-of-airframe-rx">Design of Airframe Rx</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2020 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
+                </script><script>window.twttr=(function(d,s, id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return t;js=d.createElement(s);js.id=id;js.src='https://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js, fjs);t._e = [];t.ready = function(f) {t._e.push(f);};return t;}(document, 'script', 'twitter-wjs'));</script><script>
+                document.addEventListener('keyup', function(e) {
+                  if (e.target !== document.body) {
+                    return;
+                  }
+                  // keyCode for '/' (slash)
+                  if (e.keyCode === 191) {
+                    const search = document.getElementById('search_input_react');
+                    search && search.focus();
+                  }
+                });
+              </script><script>
+              var search = docsearch({
+                
+                apiKey: '71b7e81be03c97dcd37b7a0efc8d6b76',
+                indexName: 'airframe',
+                inputSelector: '#search_input_react'
+              });
+            </script></body></html>
