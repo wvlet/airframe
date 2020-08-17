@@ -12,16 +12,14 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
-import io.grpc.Context.CancellableContext
-import io.grpc.Metadata
 import io.grpc.stub.ServerCalls.{ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
-import io.grpc.stub.{ServerCalls, StreamObserver}
+import io.grpc.stub.StreamObserver
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.http.router.HttpRequestMapper
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
-import wvlet.airframe.rx.{Cancelable, Rx, RxOptionVar, RxVar}
+import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.airframe.surface.{CName, MethodSurface, Surface}
 import wvlet.log.LogSupport
 
@@ -130,18 +128,18 @@ class RPCServerStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler)
         v match {
           case rx: Rx[_] =>
             var c = Cancelable.empty
-            try {
-              c = rx.subscribe { value =>
+            c = RxRunner.run(rx) {
+              case OnNext(value) =>
                 responseObserver.onNext(value)
-              }
-            } finally {
-              c.cancel
+              case OnError(e) =>
+                responseObserver.onError(e)
+              case OnCompletion =>
+                responseObserver.onCompleted()
             }
           case other =>
             responseObserver.onNext(v)
+            responseObserver.onCompleted()
         }
-        // TODO use Rx.onComplete(...)
-        responseObserver.onCompleted()
       case Failure(e) =>
         responseObserver.onError(e)
     }
