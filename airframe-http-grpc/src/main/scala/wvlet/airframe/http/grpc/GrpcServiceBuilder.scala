@@ -102,8 +102,12 @@ object GrpcServiceBuilder {
             ServerCalls.asyncClientStreamingCall(
               new RPCClientStreamingMethodHandler(requestHandler, r.methodSurface.clientStreamingRequestType)
             )
+          case MethodDescriptor.MethodType.BIDI_STREAMING =>
+            ServerCalls.asyncBidiStreamingCall(
+              new RPCBidiStreamingMethodHandler(requestHandler, r.methodSurface.clientStreamingRequestType)
+            )
           case other =>
-            throw new UnsupportedOperationException(s"${other.toString} is not yet supported")
+            throw new UnsupportedOperationException(s"${other.toString} is not supported")
         }
         serviceBuilder.addMethod(m, serverCall)
       }

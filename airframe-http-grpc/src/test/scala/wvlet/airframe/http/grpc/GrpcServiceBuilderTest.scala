@@ -19,7 +19,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{RPC, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
-import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
+import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner}
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.Await
@@ -45,6 +45,10 @@ object GrpcServiceBuilderTest extends AirSpec {
 
     def helloClientStreaming(input: Rx[String]): String = {
       input.toSeq.mkString(", ")
+    }
+
+    def helloBidiStreaming(input: Rx[String]): Rx[String] = {
+      input.map(x => s"Hello ${x}!")
     }
   }
 
@@ -75,6 +79,8 @@ object GrpcServiceBuilderTest extends AirSpec {
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloStreaming"), codecFactory)
     private val helloClientStreamingMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloClientStreaming"), codecFactory)
+    private val helloBidiStreamingMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloBidiStreaming"), codecFactory)
 
     def hello(name: String): String = {
       val m = Map("name" -> name)
@@ -99,7 +105,7 @@ object GrpcServiceBuilderTest extends AirSpec {
       it.map(_.asInstanceOf[String]).toSeq
     }
     def helloClientStreaming(input: Rx[String]): String = {
-      val responseObserver = GrpcClient.newSingleResponseObserver
+      val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
       val requestObserver: ClientCallStreamObserver[MsgPack] = ClientCalls
         .asyncClientStreamingCall[MsgPack, Any](
           getChannel.newCall(
@@ -109,22 +115,23 @@ object GrpcServiceBuilderTest extends AirSpec {
           responseObserver
         ).asInstanceOf[ClientCallStreamObserver[MsgPack]]
 
-      val argCodec = codecFactory.of[String]
+      val c = GrpcClientCalls.readClientRequestStream(input, codecFactory.of[String], requestObserver)
+      responseObserver.rx.toSeq.head
+    }
 
-      // TODO: Create a helper method
-      val c = RxRunner.run(input) {
-        case OnNext(x) => {
-          val msgPack = argCodec.toMsgPack(x.asInstanceOf[String])
-          requestObserver.onNext(msgPack)
-        }
-        case OnError(e) => requestObserver.onError(e)
-        case OnCompletion => {
-          requestObserver.onCompleted()
-        }
-      }
+    def helloBidiStreaming(input: Rx[String]): Rx[String] = {
+      val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
+      val requestObserver: ClientCallStreamObserver[MsgPack] = ClientCalls
+        .asyncBidiStreamingCall[MsgPack, Any](
+          getChannel.newCall(
+            helloBidiStreamingMethodDescriptor,
+            getCallOptions
+          ),
+          responseObserver
+        ).asInstanceOf[ClientCallStreamObserver[MsgPack]]
 
-      val f = responseObserver.promise.future
-      Await.result(f, Duration.Inf).asInstanceOf[String]
+      val c = GrpcClientCalls.readClientRequestStream(input, codecFactory.of[String], requestObserver)
+      responseObserver.rx
     }
   }
 
@@ -172,6 +179,11 @@ object GrpcServiceBuilderTest extends AirSpec {
     test("client streaming") {
       val result = stub.helloClientStreaming(Rx.sequence("Apple", "Banana"))
       result shouldBe "Apple, Banana"
+    }
+
+    test("bidi streaming") {
+      val result = stub.helloBidiStreaming(Rx.sequence("Apple", "Banana")).toSeq
+      result shouldBe Seq("Hello Apple!", "Hello Banana!")
     }
   }
 }

@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
-import io.grpc.stub.ServerCalls.{ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
+import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
 import io.grpc.stub.StreamObserver
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
@@ -99,6 +99,55 @@ class RPCRequestHandler(controller: Any, methodSurface: MethodSurface, codecFact
     }
     requestObserver
   }
+
+  def invokeBidiStreamingMethod(
+      responseObserver: StreamObserver[Any],
+      clientStreamingType: Surface
+  ): StreamObserver[MsgPack] = {
+
+    val codec = codecFactory.of(clientStreamingType)
+    // TODO Use streaming interface
+    val b = Seq.newBuilder[Any]
+
+    val requestObserver = new StreamObserver[MsgPack] {
+      private var isStarted = false
+
+      override def onNext(value: MsgPack): Unit = {
+        b += codec.fromMsgPack(value)
+      }
+      override def onError(t: Throwable): Unit = {
+        responseObserver.onError(t)
+      }
+      override def onCompleted(): Unit = {
+        val rx = Rx.fromSeq(b.result())
+
+        // TODO: Call the server method right after the first onNext or onCompleted call
+        Try(methodSurface.call(controller, rx)) match {
+          case Success(v) =>
+            v match {
+              case rx: Rx[_] =>
+                var c = Cancelable.empty
+                c = RxRunner.run(rx) {
+                  case OnNext(value) =>
+                    logger.info(s"next value: ${value}")
+                    responseObserver.onNext(value)
+                  case OnError(e) =>
+                    responseObserver.onError(e)
+                  case OnCompletion =>
+                    responseObserver.onCompleted()
+                }
+              case other =>
+                responseObserver.onNext(v)
+                responseObserver.onCompleted()
+            }
+          case Failure(e) =>
+            responseObserver.onError(e)
+        }
+      }
+    }
+    requestObserver
+  }
+
 }
 
 class RPCUnaryMethodHandler(rpcRequestHandler: RPCRequestHandler) extends UnaryMethod[MsgPack, Any] {
@@ -153,6 +202,16 @@ class RPCClientStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler, clie
       responseObserver: StreamObserver[Any]
   ): StreamObserver[MsgPack] = {
     val requestObserver = rpcRequestHandler.invokeClientStreamingMethod(responseObserver, clientStreamingType)
+    requestObserver
+  }
+}
+
+class RPCBidiStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler, clientStreamingType: Surface)
+    extends BidiStreamingMethod[MsgPack, Any] {
+  override def invoke(
+      responseObserver: StreamObserver[Any]
+  ): StreamObserver[MsgPack] = {
+    val requestObserver = rpcRequestHandler.invokeBidiStreamingMethod(responseObserver, clientStreamingType)
     requestObserver
   }
 }

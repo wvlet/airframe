@@ -11,15 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.grpc
-import io.grpc.stub.StreamObserver
-import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.msgpack.spi.MsgPack
-import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxRunner}
-
-import scala.concurrent.Promise
-import scala.util.Success
+package wvlet.airframe.rx
 
 /**
   */
-object GrpcClient {}
+trait RxSource[A] extends Rx[A] {
+  def add(ev: RxEvent): Unit
+  def next: RxEvent
+}
