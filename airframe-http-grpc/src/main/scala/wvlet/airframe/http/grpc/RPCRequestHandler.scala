@@ -12,13 +12,15 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
-import io.grpc.stub.ServerCalls.UnaryMethod
+import io.grpc.Context.CancellableContext
+import io.grpc.stub.ServerCalls.{ServerStreamingMethod, UnaryMethod}
 import io.grpc.stub.StreamObserver
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.http.router.HttpRequestMapper
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
+import wvlet.airframe.rx.{Cancelable, Rx}
 import wvlet.airframe.surface.{CName, MethodSurface}
 import wvlet.log.LogSupport
 
@@ -27,13 +29,12 @@ import scala.util.{Failure, Success, Try}
 /**
   * Receives MessagePack Map value for the RPC request, and call the controller method
   */
-class RPCRequestHandler[A](controller: Any, methodSurface: MethodSurface, codecFactory: MessageCodecFactory)
-    extends UnaryMethod[MsgPack, A]
-    with LogSupport {
+class RPCRequestHandler(controller: Any, methodSurface: MethodSurface, codecFactory: MessageCodecFactory)
+    extends LogSupport {
 
   private val argCodecs = methodSurface.args.map(a => codecFactory.of(a.surface))
 
-  override def invoke(request: MsgPack, responseObserver: StreamObserver[A]): Unit = {
+  def invokeMethod(request: MsgPack): Try[Any] = {
     // Build method arguments from MsgPack
     val requestValue = ValueCodec.unpack(request)
     trace(requestValue)
@@ -63,12 +64,52 @@ class RPCRequestHandler[A](controller: Any, methodSurface: MethodSurface, codecF
           throw new IllegalArgumentException(s"Invalid argument: ${requestValue}")
       }
     }
-    result match {
+    result
+  }
+}
+
+class RPCUnaryMethodHandler(rpcRequestHandler: RPCRequestHandler) extends UnaryMethod[MsgPack, Any] {
+  override def invoke(
+      request: MsgPack,
+      responseObserver: StreamObserver[Any]
+  ): Unit = {
+    rpcRequestHandler.invokeMethod(request) match {
       case Success(v) =>
-        responseObserver.onNext(v.asInstanceOf[A])
+        responseObserver.onNext(v)
+        responseObserver.onCompleted()
       case Failure(e) =>
         responseObserver.onError(e)
     }
-    responseObserver.onCompleted()
+  }
+}
+
+class RPCServerStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler)
+    extends ServerStreamingMethod[MsgPack, Any]
+    with LogSupport {
+  override def invoke(
+      request: MsgPack,
+      responseObserver: StreamObserver[Any]
+  ): Unit = {
+    rpcRequestHandler.invokeMethod(request) match {
+      case Success(v) =>
+        v match {
+          case rx: Rx[_] =>
+            var c = Cancelable.empty
+            try {
+              c = rx.subscribe { value =>
+                info(s"read: ${value}")
+                responseObserver.onNext(value)
+              }
+            } finally {
+              c.cancel
+            }
+          case other =>
+            responseObserver.onNext(v)
+        }
+        // TODO use Rx.onComplete(...)
+        responseObserver.onCompleted()
+      case Failure(e) =>
+        responseObserver.onError(e)
+    }
   }
 }

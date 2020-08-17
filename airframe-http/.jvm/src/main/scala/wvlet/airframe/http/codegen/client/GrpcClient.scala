@@ -231,9 +231,9 @@ object GrpcClient extends HttpClientType {
           lines += s"  val codec = codecFactory.of[${m.requestModelClassType}]"
           lines += s"  ClientCalls"
           lines += s"    .asyncUnaryCall[MsgPack, Any]("
-          lines += s"     getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),"
-          lines += s"     codec.toMsgPack(__m),"
-          lines += s"     responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]"
+          lines += s"       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),"
+          lines += s"       codec.toMsgPack(__m),"
+          lines += s"       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]"
           lines += s"    )"
           lines += s"}"
           lines.result().mkString("\n")

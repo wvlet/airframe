@@ -22,7 +22,7 @@ import scala.collection.immutable.Queue
 object GrpcClient {
 
   class RxObserver[A] extends StreamObserver[A] {
-    private var eventQueue = Queue.empty[A]
+    private var eventQueue = Queue.empty[RxEvent]
 
     def toRx: Rx[A] = ???
 

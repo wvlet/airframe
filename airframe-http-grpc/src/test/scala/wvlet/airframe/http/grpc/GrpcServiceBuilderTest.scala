@@ -13,11 +13,12 @@
  */
 package wvlet.airframe.http.grpc
 import io.grpc.{CallOptions, Channel, ManagedChannel, ManagedChannelBuilder}
-import io.grpc.stub.{AbstractBlockingStub, ClientCalls}
+import io.grpc.stub.{AbstractBlockingStub, ClientCalls, StreamObserver}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{RPC, Router}
+import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 
 /**
@@ -32,6 +33,10 @@ object GrpcServiceBuilderTest extends AirSpec {
 
     def hello2(name: String, id: Int): String = {
       s"Hello ${name}! (id:${id})"
+    }
+
+    def helloStreaming(name: String): Rx[String] = {
+      Rx.sequence("Hello", "Bye").map(x => s"${x} ${name}!")
     }
   }
 
@@ -58,6 +63,8 @@ object GrpcServiceBuilderTest extends AirSpec {
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("hello"), codecFactory)
     private val hello2MethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("hello2"), codecFactory)
+    private val helloStreamingMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloStreaming"), codecFactory)
 
     def hello(name: String): String = {
       val m = Map("name" -> name)
@@ -68,6 +75,18 @@ object GrpcServiceBuilderTest extends AirSpec {
       val m = Map("name" -> name, "id" -> id)
       ClientCalls
         .blockingUnaryCall(getChannel, hello2MethodDescriptor, getCallOptions, codec.toMsgPack(m)).asInstanceOf[String]
+    }
+    def helloStreaming(name: String): Seq[String] = {
+      val m = Map("name" -> name)
+      import scala.jdk.CollectionConverters._
+      val it = ClientCalls
+        .blockingServerStreamingCall(
+          getChannel,
+          helloStreamingMethodDescriptor,
+          getCallOptions,
+          codec.toMsgPack(m)
+        ).asScala
+      it.map(_.asInstanceOf[String]).toSeq
     }
   }
 
@@ -99,5 +118,8 @@ object GrpcServiceBuilderTest extends AirSpec {
       val ret2 = stub.hello2("world", i)
       ret2 shouldBe s"Hello world! (id:${i})"
     }
+
+    val streamingResults = stub.helloStreaming("RPC").toIndexedSeq
+    streamingResults shouldBe Seq("Hello RPC!", "Bye RPC!")
   }
 }

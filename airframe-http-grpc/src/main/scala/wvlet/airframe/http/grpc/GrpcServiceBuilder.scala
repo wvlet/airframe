@@ -23,20 +23,44 @@ import wvlet.airframe.control.IO
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.airframe.rx.Rx
+import wvlet.airframe.surface.MethodSurface
 
 /**
   */
 object GrpcServiceBuilder {
 
+  private implicit class RichMethod(val m: MethodSurface) extends AnyVal {
+    def grpcMethodType: MethodDescriptor.MethodType = {
+      val serverStreaming = classOf[Rx[_]].isAssignableFrom(m.returnType.rawType)
+      val clientStreaming = m.args.exists(x => classOf[Rx[_]].isAssignableFrom(x.surface.rawType))
+      (clientStreaming, serverStreaming) match {
+        case (false, false) =>
+          MethodDescriptor.MethodType.UNARY
+        case (true, false) =>
+          MethodDescriptor.MethodType.CLIENT_STREAMING
+        case (false, true) =>
+          MethodDescriptor.MethodType.SERVER_STREAMING
+        case (true, true) =>
+          MethodDescriptor.MethodType.BIDI_STREAMING
+      }
+    }
+  }
+
   def buildMethodDescriptor(r: Route, codecFactory: MessageCodecFactory): MethodDescriptor[MsgPack, Any] = {
     val b = MethodDescriptor.newBuilder[MsgPack, Any]()
     // TODO setIdempotent, setSafe, sampling, etc.
-    b.setType(MethodDescriptor.MethodType.UNARY)
+    b.setType(r.methodSurface.grpcMethodType)
       .setFullMethodName(s"${r.serviceName}/${r.methodSurface.name}")
       .setRequestMarshaller(RPCRequestMarshaller)
       .setResponseMarshaller(
         new RPCResponseMarshaller[Any](
-          codecFactory.of(r.returnTypeSurface).asInstanceOf[MessageCodec[Any]]
+          r.returnTypeSurface match {
+            case rx if classOf[Rx[_]].isAssignableFrom(rx.rawType) =>
+              codecFactory.of(r.returnTypeSurface.typeArgs(0)).asInstanceOf[MessageCodec[Any]]
+            case _ =>
+              codecFactory.of(r.returnTypeSurface).asInstanceOf[MessageCodec[Any]]
+          }
         )
       )
       .build()
@@ -56,11 +80,17 @@ object GrpcServiceBuilder {
 
       for ((r, m) <- routeAndMethods) {
         // TODO Support Client/Server Streams
-        val controller = session.getInstanceOf(r.controllerSurface)
-        serviceBuilder.addMethod(
-          m,
-          ServerCalls.asyncUnaryCall(new RPCRequestHandler[Any](controller, r.methodSurface, codecFactory))
-        )
+        val controller     = session.getInstanceOf(r.controllerSurface)
+        val requestHandler = new RPCRequestHandler(controller, r.methodSurface, codecFactory)
+        val serverCall = r.methodSurface.grpcMethodType match {
+          case MethodDescriptor.MethodType.UNARY =>
+            ServerCalls.asyncUnaryCall(new RPCUnaryMethodHandler(requestHandler))
+          case MethodDescriptor.MethodType.SERVER_STREAMING =>
+            ServerCalls.asyncServerStreamingCall(new RPCServerStreamingMethodHandler(requestHandler))
+          case other =>
+            throw new UnsupportedOperationException(s"${other.toString} is not yet supported")
+        }
+        serviceBuilder.addMethod(m, serverCall)
       }
       val serviceDef = serviceBuilder.build()
       serviceDef
