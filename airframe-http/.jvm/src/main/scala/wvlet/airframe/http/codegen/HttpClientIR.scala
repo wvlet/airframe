@@ -17,6 +17,7 @@ import java.util.Locale
 import wvlet.airframe.http.{HttpMethod, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.router.Route
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface}
 import wvlet.log.LogSupport
 
@@ -106,6 +107,46 @@ object HttpClientIR extends LogSupport {
       }
     }
 
+    def grpcReturnType: Surface = {
+      returnType.rawType match {
+        case cl if cl == classOf[Rx[_]] =>
+          returnType.typeArgs(0)
+        case _ => returnType
+      }
+    }
+
+    def grpcMethodType: GrpcMethodType = {
+      val isClientStreaming: Boolean = inputParameters.exists(x => classOf[Rx[_]].isAssignableFrom(x.surface.rawType))
+      if (classOf[Rx[_]].isAssignableFrom(returnType.rawType)) {
+        if (isClientStreaming)
+          GrpcMethodType.BIDI_STREAMING
+        else
+          GrpcMethodType.SERVER_STREAMING
+      } else {
+        if (isClientStreaming)
+          GrpcMethodType.CLIENT_STREAMING
+        else
+          GrpcMethodType.UNARY
+      }
+    }
+  }
+
+  sealed trait GrpcMethodType {
+    def code: String
+  }
+  object GrpcMethodType {
+    case object UNARY extends GrpcMethodType {
+      override def code: String = s"io.grpc.MethodDescriptor.MethodType.UNARY"
+    }
+    case object SERVER_STREAMING extends GrpcMethodType {
+      override def code: String = s"io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING"
+    }
+    case object CLIENT_STREAMING extends GrpcMethodType {
+      override def code: String = s"io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING"
+    }
+    case object BIDI_STREAMING extends GrpcMethodType {
+      override def code: String = s"io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING"
+    }
   }
 
   private case class PathVariableParam(name: String, param: MethodParameter)

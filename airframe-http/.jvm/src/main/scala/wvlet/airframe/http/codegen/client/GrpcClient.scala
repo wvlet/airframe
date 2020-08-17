@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.codegen.client
 import wvlet.airframe.http.codegen.HttpClientIR
-import wvlet.airframe.http.codegen.HttpClientIR.ClientServiceDef
+import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, GrpcMethodType}
 import wvlet.airframe.http.codegen.client.ScalaHttpClient.{header, indent}
 
 /**
@@ -53,9 +53,12 @@ object GrpcClient extends HttpClientType {
          |}""".stripMargin
 
     def descriptorBuilder: String = {
-      s"""private def newDescriptorBuilder(fullMethodName:String) : io.grpc.MethodDescriptor.Builder[MsgPack, Any] = {
+      s"""private def newDescriptorBuilder(
+         |  fullMethodName:String,
+         |  methodType:io.grpc.MethodDescriptor.MethodType
+         |) : io.grpc.MethodDescriptor.Builder[MsgPack, Any] = {
          |  io.grpc.MethodDescriptor.newBuilder[MsgPack, Any]()
-         |    .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+         |    .setType(methodType)
          |    .setFullMethodName(fullMethodName)
          |    .setRequestMarshaller(RPCRequestMarshaller)
          |}""".stripMargin
@@ -74,9 +77,9 @@ object GrpcClient extends HttpClientType {
       svc.methods
         .map { m =>
           s"""val ${m.name}Descriptor: io.grpc.MethodDescriptor[MsgPack, Any] = {
-             |  newDescriptorBuilder("${src.packageName}.${svc.serviceName}/${m.name}")
+             |  newDescriptorBuilder("${src.packageName}.${svc.serviceName}/${m.name}", ${m.grpcMethodType.code})
              |    .setResponseMarshaller(new RPCResponseMarshaller[Any](
-             |      codecFactory.of[${m.returnType.fullName.replaceAll("\\$", ".")}].asInstanceOf[MessageCodec[Any]]
+             |      codecFactory.of[${m.grpcReturnType.fullName.replaceAll("\\$", ".")}].asInstanceOf[MessageCodec[Any]]
              |    )).build()
              |}""".stripMargin
         }.mkString("\n")
@@ -151,9 +154,21 @@ object GrpcClient extends HttpClientType {
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType} = {"
           lines += s"  val __m = ${requestObject}"
           lines += s"  val codec = codecFactory.of[${m.requestModelClassType}]"
-          lines += s"  ClientCalls"
-          lines += s"    .blockingUnaryCall(getChannel, descriptors.${m.name}Descriptor, getCallOptions, codec.toMsgPack(__m))"
-          lines += s"    .asInstanceOf[${m.returnType}]"
+          m.grpcMethodType match {
+            case GrpcMethodType.UNARY =>
+              lines += s"  ClientCalls"
+              lines += s"    .blockingUnaryCall(getChannel, descriptors.${m.name}Descriptor, getCallOptions, codec.toMsgPack(__m))"
+              lines += s"    .asInstanceOf[${m.returnType}]"
+            case GrpcMethodType.SERVER_STREAMING =>
+              lines += s"  val responseObserver = new wvlet.airframe.http.grpc.GrpcClient.RxObserver[${m.grpcReturnType}]"
+              lines += s"  ClientCalls"
+              lines += s"    .asyncServerStreamingCall[MsgPack, Any]("
+              lines += s"       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),"
+              lines += s"       codec.toMsgPack(__m),"
+              lines += s"       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]"
+              lines += s"    )"
+              lines += s"  responseObserver.toRx"
+          }
           lines += s"}"
           lines.result().mkString("\n")
         }.mkString("\n")
@@ -219,7 +234,7 @@ object GrpcClient extends HttpClientType {
           lines += s"     getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),"
           lines += s"     codec.toMsgPack(__m),"
           lines += s"     responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]"
-          lines += s"  )"
+          lines += s"    )"
           lines += s"}"
           lines.result().mkString("\n")
         }.mkString("\n")
