@@ -13,14 +13,14 @@
  */
 package wvlet.airframe.http.grpc
 import io.grpc.Context.CancellableContext
-import io.grpc.stub.ServerCalls.{ServerStreamingMethod, UnaryMethod}
+import io.grpc.stub.ServerCalls.{ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
 import io.grpc.stub.StreamObserver
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.http.router.HttpRequestMapper
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
-import wvlet.airframe.rx.{Cancelable, Rx}
+import wvlet.airframe.rx.{Cancelable, Rx, RxVar}
 import wvlet.airframe.surface.{CName, MethodSurface}
 import wvlet.log.LogSupport
 
@@ -66,6 +66,23 @@ class RPCRequestHandler(controller: Any, methodSurface: MethodSurface, codecFact
     }
     result
   }
+
+  def invokeClientStreamingMethod: (StreamObserver[MsgPack], Try[Any]) = {
+    val rx: Rx[Any] = Rx.sequence("dummy", "dummy2")
+
+    logger.info("creating client streaming")
+    val requestObserver = new StreamObserver[MsgPack] {
+      override def onNext(value: MsgPack): Unit = {
+        logger.info(s"read from client: ${value}")
+      }
+      override def onError(t: Throwable): Unit = ???
+      override def onCompleted(): Unit = {}
+    }
+    // requestObserver -> Rx
+
+    val result = Try(methodSurface.call(controller, rx))
+    (requestObserver, result)
+  }
 }
 
 class RPCUnaryMethodHandler(rpcRequestHandler: RPCRequestHandler) extends UnaryMethod[MsgPack, Any] {
@@ -97,7 +114,6 @@ class RPCServerStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler)
             var c = Cancelable.empty
             try {
               c = rx.subscribe { value =>
-                info(s"read: ${value}")
                 responseObserver.onNext(value)
               }
             } finally {
@@ -111,5 +127,23 @@ class RPCServerStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler)
       case Failure(e) =>
         responseObserver.onError(e)
     }
+  }
+}
+
+class RPCClientStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler)
+    extends ClientStreamingMethod[MsgPack, Any] {
+
+  override def invoke(
+      responseObserver: StreamObserver[Any]
+  ): StreamObserver[MsgPack] = {
+    val (requestObserver, result) = rpcRequestHandler.invokeClientStreamingMethod
+    result match {
+      case Success(v) =>
+        responseObserver.onNext(v)
+        responseObserver.onCompleted()
+      case Failure(e) =>
+        responseObserver.onError(e)
+    }
+    requestObserver
   }
 }

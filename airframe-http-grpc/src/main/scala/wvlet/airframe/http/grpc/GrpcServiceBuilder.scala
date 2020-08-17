@@ -87,6 +87,8 @@ object GrpcServiceBuilder {
             ServerCalls.asyncUnaryCall(new RPCUnaryMethodHandler(requestHandler))
           case MethodDescriptor.MethodType.SERVER_STREAMING =>
             ServerCalls.asyncServerStreamingCall(new RPCServerStreamingMethodHandler(requestHandler))
+          case MethodDescriptor.MethodType.CLIENT_STREAMING =>
+            ServerCalls.asyncClientStreamingCall(new RPCClientStreamingMethodHandler(requestHandler))
           case other =>
             throw new UnsupportedOperationException(s"${other.toString} is not yet supported")
         }

@@ -18,7 +18,8 @@ import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{RPC, Router}
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.airspec.AirSpec
 
 /**
@@ -37,6 +38,10 @@ object GrpcServiceBuilderTest extends AirSpec {
 
     def helloStreaming(name: String): Rx[String] = {
       Rx.sequence("Hello", "Bye").map(x => s"${x} ${name}!")
+    }
+
+    def helloClientStreaming(input: Rx[String]): String = {
+      input.toSeq.mkString(", ")
     }
   }
 
@@ -65,6 +70,8 @@ object GrpcServiceBuilderTest extends AirSpec {
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("hello2"), codecFactory)
     private val helloStreamingMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloStreaming"), codecFactory)
+    private val helloClientStreamingMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloClientStreaming"), codecFactory)
 
     def hello(name: String): String = {
       val m = Map("name" -> name)
@@ -87,6 +94,36 @@ object GrpcServiceBuilderTest extends AirSpec {
           codec.toMsgPack(m)
         ).asScala
       it.map(_.asInstanceOf[String]).toSeq
+    }
+    def helloClientStreaming(input: Rx[String]): String = {
+
+      val responseObserver = new StreamObserver[Any] {
+        override def onNext(value: Any): Unit = {
+          logger.warn(s"Received: ${value}")
+        }
+        override def onError(t: Throwable): Unit = ???
+        override def onCompleted(): Unit = {}
+      }
+      val requestObserver: StreamObserver[MsgPack] = ClientCalls
+        .asyncClientStreamingCall[MsgPack, Any](
+          getChannel.newCall(
+            helloClientStreamingMethodDescriptor,
+            getCallOptions
+          ),
+          responseObserver
+        )
+
+      val argCodec = codecFactory.of[String]
+      val c = RxRunner.run(input) {
+        case OnNext(x) => {
+          logger.warn(s"read: ${x}")
+          requestObserver.onNext(argCodec.toMsgPack(x.asInstanceOf[String]))
+        }
+        case OnError(e)   => requestObserver.onError(e)
+        case OnCompletion => requestObserver.onCompleted()
+      }
+
+      "N/A"
     }
   }
 
@@ -111,15 +148,29 @@ object GrpcServiceBuilderTest extends AirSpec {
     }
   ) { (server: GrpcServer, channel: ManagedChannel) =>
     val stub = new MyApiStub(channel)
-    for (i <- 0 to 100) {
-      val ret = stub.hello("world")
-      ret shouldBe "Hello world!"
 
-      val ret2 = stub.hello2("world", i)
-      ret2 shouldBe s"Hello world! (id:${i})"
+    test("unary") {
+      for (i <- 0 to 100) {
+        val ret = stub.hello("world")
+        ret shouldBe "Hello world!"
+      }
     }
 
-    val streamingResults = stub.helloStreaming("RPC").toIndexedSeq
-    streamingResults shouldBe Seq("Hello RPC!", "Bye RPC!")
+    test("n-ary") {
+      for (i <- 0 to 100) {
+        val ret2 = stub.hello2("world", i)
+        ret2 shouldBe s"Hello world! (id:${i})"
+      }
+    }
+
+    test("server streaming") {
+      val streamingResults = stub.helloStreaming("RPC").toIndexedSeq
+      streamingResults shouldBe Seq("Hello RPC!", "Bye RPC!")
+    }
+
+    test("client streaming") {
+      val result = stub.helloClientStreaming(Rx.sequence("Apple", "Banana"))
+      result shouldBe "Apple, Banana"
+    }
   }
 }
