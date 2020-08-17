@@ -24,16 +24,22 @@ import wvlet.airframe.http.Router
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.Rx
-import wvlet.airframe.surface.MethodSurface
+import wvlet.airframe.surface.{MethodParameter, MethodSurface, Surface}
+import wvlet.log.LogSupport
 
 /**
   */
 object GrpcServiceBuilder {
 
   private implicit class RichMethod(val m: MethodSurface) extends AnyVal {
+
+    private def findClientStreamingArg: Option[MethodParameter] = {
+      m.args.find(x => classOf[Rx[_]].isAssignableFrom(x.surface.rawType))
+    }
+
     def grpcMethodType: MethodDescriptor.MethodType = {
       val serverStreaming = classOf[Rx[_]].isAssignableFrom(m.returnType.rawType)
-      val clientStreaming = m.args.exists(x => classOf[Rx[_]].isAssignableFrom(x.surface.rawType))
+      val clientStreaming = findClientStreamingArg.isDefined
       (clientStreaming, serverStreaming) match {
         case (false, false) =>
           MethodDescriptor.MethodType.UNARY
@@ -43,6 +49,11 @@ object GrpcServiceBuilder {
           MethodDescriptor.MethodType.SERVER_STREAMING
         case (true, true) =>
           MethodDescriptor.MethodType.BIDI_STREAMING
+      }
+    }
+    def clientStreamingRequestType: Surface = {
+      findClientStreamingArg.map(_.surface.typeArgs(0)).getOrElse {
+        throw new IllegalStateException("unexpected")
       }
     }
   }
@@ -88,7 +99,9 @@ object GrpcServiceBuilder {
           case MethodDescriptor.MethodType.SERVER_STREAMING =>
             ServerCalls.asyncServerStreamingCall(new RPCServerStreamingMethodHandler(requestHandler))
           case MethodDescriptor.MethodType.CLIENT_STREAMING =>
-            ServerCalls.asyncClientStreamingCall(new RPCClientStreamingMethodHandler(requestHandler))
+            ServerCalls.asyncClientStreamingCall(
+              new RPCClientStreamingMethodHandler(requestHandler, r.methodSurface.clientStreamingRequestType)
+            )
           case other =>
             throw new UnsupportedOperationException(s"${other.toString} is not yet supported")
         }
@@ -101,12 +114,13 @@ object GrpcServiceBuilder {
     services.toSeq
   }
 
-  object RPCRequestMarshaller extends Marshaller[MsgPack] {
+  object RPCRequestMarshaller extends Marshaller[MsgPack] with LogSupport {
     override def stream(value: MsgPack): InputStream = {
       new ByteArrayInputStream(value)
     }
     override def parse(stream: InputStream): MsgPack = {
-      IO.readFully(stream)
+      val bytes = IO.readFully(stream)
+      bytes
     }
   }
 

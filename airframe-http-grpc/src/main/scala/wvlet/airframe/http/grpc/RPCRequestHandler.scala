@@ -13,15 +13,16 @@
  */
 package wvlet.airframe.http.grpc
 import io.grpc.Context.CancellableContext
+import io.grpc.Metadata
 import io.grpc.stub.ServerCalls.{ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
-import io.grpc.stub.StreamObserver
+import io.grpc.stub.{ServerCalls, StreamObserver}
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.http.router.HttpRequestMapper
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
-import wvlet.airframe.rx.{Cancelable, Rx, RxVar}
-import wvlet.airframe.surface.{CName, MethodSurface}
+import wvlet.airframe.rx.{Cancelable, Rx, RxOptionVar, RxVar}
+import wvlet.airframe.surface.{CName, MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
@@ -67,21 +68,38 @@ class RPCRequestHandler(controller: Any, methodSurface: MethodSurface, codecFact
     result
   }
 
-  def invokeClientStreamingMethod: (StreamObserver[MsgPack], Try[Any]) = {
-    val rx: Rx[Any] = Rx.sequence("dummy", "dummy2")
+  def invokeClientStreamingMethod(
+      responseObserver: StreamObserver[Any],
+      clientStreamingType: Surface
+  ): StreamObserver[MsgPack] = {
 
-    logger.info("creating client streaming")
+    val codec = codecFactory.of(clientStreamingType)
+    // TODO Use streaming interface
+    val b = Seq.newBuilder[Any]
+
     val requestObserver = new StreamObserver[MsgPack] {
-      override def onNext(value: MsgPack): Unit = {
-        logger.info(s"read from client: ${value}")
-      }
-      override def onError(t: Throwable): Unit = ???
-      override def onCompleted(): Unit = {}
-    }
-    // requestObserver -> Rx
+      private var isStarted = false
 
-    val result = Try(methodSurface.call(controller, rx))
-    (requestObserver, result)
+      override def onNext(value: MsgPack): Unit = {
+        b += codec.fromMsgPack(value)
+      }
+      override def onError(t: Throwable): Unit = {
+        responseObserver.onError(t)
+      }
+      override def onCompleted(): Unit = {
+        val rx = Rx.fromSeq(b.result())
+
+        // TODO: Call the server method right after the first onNext or onCompleted call
+        Try(methodSurface.call(controller, rx)) match {
+          case Success(v) =>
+            responseObserver.onNext(v)
+            responseObserver.onCompleted()
+          case Failure(e) =>
+            responseObserver.onError(e)
+        }
+      }
+    }
+    requestObserver
   }
 }
 
@@ -130,20 +148,13 @@ class RPCServerStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler)
   }
 }
 
-class RPCClientStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler)
+class RPCClientStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler, clientStreamingType: Surface)
     extends ClientStreamingMethod[MsgPack, Any] {
 
   override def invoke(
       responseObserver: StreamObserver[Any]
   ): StreamObserver[MsgPack] = {
-    val (requestObserver, result) = rpcRequestHandler.invokeClientStreamingMethod
-    result match {
-      case Success(v) =>
-        responseObserver.onNext(v)
-        responseObserver.onCompleted()
-      case Failure(e) =>
-        responseObserver.onError(e)
-    }
+    val requestObserver = rpcRequestHandler.invokeClientStreamingMethod(responseObserver, clientStreamingType)
     requestObserver
   }
 }

@@ -16,6 +16,8 @@ import io.grpc.stub.StreamObserver
 import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxEvent, RxVar}
 
 import scala.collection.immutable.Queue
+import scala.concurrent.Promise
+import scala.util.Success
 
 /**
   */
@@ -40,4 +42,21 @@ object GrpcClient {
       eventQueue = eventQueue.enqueue(OnCompletion)
     }
   }
+
+  trait BlockingStreamObserver extends StreamObserver[Any] {
+    def promise: Promise[Any]
+  }
+
+  private[grpc] def newSingleResponseObserver: BlockingStreamObserver =
+    new BlockingStreamObserver {
+      val promise: Promise[Any] = Promise[Any]()
+      override def onNext(value: Any): Unit = {
+        promise.complete(Success(value))
+      }
+      override def onError(t: Throwable): Unit = {
+        promise.failure(t)
+      }
+      override def onCompleted(): Unit = {}
+    }
+
 }

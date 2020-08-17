@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.grpc
 import io.grpc.{CallOptions, Channel, ManagedChannel, ManagedChannelBuilder}
-import io.grpc.stub.{AbstractBlockingStub, ClientCalls, StreamObserver}
+import io.grpc.stub.{AbstractBlockingStub, ClientCallStreamObserver, ClientCalls, StreamObserver}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.router.Route
@@ -21,6 +21,9 @@ import wvlet.airframe.http.{RPC, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.airspec.AirSpec
+
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 /**
   */
@@ -96,34 +99,32 @@ object GrpcServiceBuilderTest extends AirSpec {
       it.map(_.asInstanceOf[String]).toSeq
     }
     def helloClientStreaming(input: Rx[String]): String = {
-
-      val responseObserver = new StreamObserver[Any] {
-        override def onNext(value: Any): Unit = {
-          logger.warn(s"Received: ${value}")
-        }
-        override def onError(t: Throwable): Unit = ???
-        override def onCompleted(): Unit = {}
-      }
-      val requestObserver: StreamObserver[MsgPack] = ClientCalls
+      val responseObserver = GrpcClient.newSingleResponseObserver
+      val requestObserver: ClientCallStreamObserver[MsgPack] = ClientCalls
         .asyncClientStreamingCall[MsgPack, Any](
           getChannel.newCall(
             helloClientStreamingMethodDescriptor,
             getCallOptions
           ),
           responseObserver
-        )
+        ).asInstanceOf[ClientCallStreamObserver[MsgPack]]
 
       val argCodec = codecFactory.of[String]
+
+      // TODO: Create a helper method
       val c = RxRunner.run(input) {
         case OnNext(x) => {
-          logger.warn(s"read: ${x}")
-          requestObserver.onNext(argCodec.toMsgPack(x.asInstanceOf[String]))
+          val msgPack = argCodec.toMsgPack(x.asInstanceOf[String])
+          requestObserver.onNext(msgPack)
         }
-        case OnError(e)   => requestObserver.onError(e)
-        case OnCompletion => requestObserver.onCompleted()
+        case OnError(e) => requestObserver.onError(e)
+        case OnCompletion => {
+          requestObserver.onCompleted()
+        }
       }
 
-      "N/A"
+      val f = responseObserver.promise.future
+      Await.result(f, Duration.Inf).asInstanceOf[String]
     }
   }
 
