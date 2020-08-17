@@ -158,7 +158,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   httpJVM,
   grpc,
   jsonJVM,
-  httpRxJVM,
+  rxHtmlJVM,
   airspecJVM
 )
 
@@ -192,7 +192,7 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   codecJS,
   rxJS,
   httpJS,
-  httpRxJS,
+  rxHtmlJS,
   widgetJS
 )
 
@@ -769,13 +769,13 @@ lazy val sql =
     )
     .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecRefJVM % Test)
 
-lazy val httpRx =
+lazy val rxHtml =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
-    .in(file("airframe-http-rx"))
+    .in(file("airframe-rx-html"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-http-rx",
+      name := "airframe-rx-html",
       description := "Reactive HTML elements for Scala and Scala.js",
       libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided
     )
@@ -788,17 +788,17 @@ lazy val httpRx =
     )
     .dependsOn(log, http, rx, surface, airspecRef % Test)
 
-lazy val httpRxJVM = httpRx.jvm
-lazy val httpRxJS  = httpRx.js
+lazy val rxHtmlJVM = rxHtml.jvm
+lazy val rxHtmlJS  = rxHtml.js
 
 lazy val widget =
   crossProject(JSPlatform)
     .crossType(CrossType.Pure)
-    .in(file("airframe-http-widget"))
+    .in(file("airframe-rx-widget"))
     //    .enablePlugins(ScalaJSBundlerPlugin)
     .settings(buildSettings)
     .settings(
-      name := "airframe-http-widget",
+      name := "airframe-rx-widget",
       description := "Reactive Widget library for Scala.js"
     )
     .jsSettings(
@@ -806,7 +806,7 @@ lazy val widget =
       jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
 //      npmDependencies in Test += "node" -> "12.14.1"
     )
-    .dependsOn(log, httpRx, airspecRef % Test)
+    .dependsOn(log, rxHtml, airspecRef % Test)
 
 lazy val widgetJS = widget.js
 
