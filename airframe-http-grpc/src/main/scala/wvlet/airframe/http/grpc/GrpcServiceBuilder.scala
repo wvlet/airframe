@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.grpc
 import java.io.{ByteArrayInputStream, InputStream}
+import java.util.concurrent.ExecutorService
 
 import io.grpc.MethodDescriptor.Marshaller
 import io.grpc.stub.ServerCalls
@@ -30,6 +31,8 @@ import wvlet.log.LogSupport
 /**
   */
 object GrpcServiceBuilder {
+
+  type GrpcServiceThreadExecutor = ExecutorService
 
   private implicit class RichMethod(val m: MethodSurface) extends AnyVal {
 
@@ -92,7 +95,8 @@ object GrpcServiceBuilder {
       for ((r, m) <- routeAndMethods) {
         // TODO Support Client/Server Streams
         val controller     = session.getInstanceOf(r.controllerSurface)
-        val requestHandler = new RPCRequestHandler(controller, r.methodSurface, codecFactory)
+        val threadManager  = session.build[GrpcServiceThreadExecutor]
+        val requestHandler = new RPCRequestHandler(controller, r.methodSurface, codecFactory, threadManager)
         val serverCall = r.methodSurface.grpcMethodType match {
           case MethodDescriptor.MethodType.UNARY =>
             ServerCalls.asyncUnaryCall(new RPCUnaryMethodHandler(requestHandler))

@@ -93,16 +93,17 @@ object GrpcServiceBuilderTest extends AirSpec {
         .blockingUnaryCall(getChannel, hello2MethodDescriptor, getCallOptions, codec.toMsgPack(m)).asInstanceOf[String]
     }
     def helloStreaming(name: String): Seq[String] = {
-      val m = Map("name" -> name)
-      import scala.jdk.CollectionConverters._
-      val it = ClientCalls
-        .blockingServerStreamingCall(
-          getChannel,
+      val m                = Map("name" -> name)
+      val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
+      ClientCalls.asyncServerStreamingCall(
+        getChannel.newCall(
           helloStreamingMethodDescriptor,
-          getCallOptions,
-          codec.toMsgPack(m)
-        ).asScala
-      it.map(_.asInstanceOf[String]).toSeq
+          getCallOptions
+        ),
+        codec.toMsgPack(m),
+        responseObserver
+      )
+      responseObserver.rx.toSeq
     }
     def helloClientStreaming(input: Rx[String]): String = {
       val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
@@ -177,13 +178,17 @@ object GrpcServiceBuilderTest extends AirSpec {
     }
 
     test("client streaming") {
-      val result = stub.helloClientStreaming(Rx.sequence("Apple", "Banana"))
-      result shouldBe "Apple, Banana"
+      for (i <- 0 to 100) {
+        val result = stub.helloClientStreaming(Rx.sequence("Apple", "Banana"))
+        result shouldBe "Apple, Banana"
+      }
     }
 
     test("bidi streaming") {
-      val result = stub.helloBidiStreaming(Rx.sequence("Apple", "Banana")).toSeq
-      result shouldBe Seq("Hello Apple!", "Hello Banana!")
+      for (i <- 0 to 100) {
+        val result = stub.helloBidiStreaming(Rx.sequence("Apple", "Banana")).toSeq
+        result shouldBe Seq("Hello Apple!", "Hello Banana!")
+      }
     }
   }
 }

@@ -12,10 +12,13 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
+import java.util.concurrent.Executors
+
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc.{Server, ServerBuilder}
-import wvlet.airframe.{Design, Session}
 import wvlet.airframe.http.Router
+import wvlet.airframe.http.grpc.GrpcServiceBuilder.GrpcServiceThreadExecutor
+import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
@@ -69,6 +72,12 @@ case class GrpcServerConfig(
       .bind[GrpcServerConfig].toInstance(this)
       .bind[GrpcServer].toProvider { (config: GrpcServerConfig, session: Session) => config.newServer(session) }
       .onStart { _.start }
+      .bind[GrpcServiceThreadExecutor].toInstance {
+        Executors.newCachedThreadPool()
+      }
+      .onShutdown {
+        _.shutdownNow()
+      }
   }
 }
 

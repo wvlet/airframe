@@ -12,6 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.{Callable, ExecutorService}
+
 import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
 import io.grpc.stub.StreamObserver
 import wvlet.airframe.codec.MessageCodecFactory
@@ -19,17 +22,22 @@ import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.http.router.HttpRequestMapper
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
-import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxRunner}
+import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner}
 import wvlet.airframe.surface.{CName, MethodSurface, Surface}
 import wvlet.log.LogSupport
 
+import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
 
 /**
   * Receives MessagePack Map value for the RPC request, and call the controller method
   */
-class RPCRequestHandler(controller: Any, methodSurface: MethodSurface, codecFactory: MessageCodecFactory)
-    extends LogSupport {
+class RPCRequestHandler(
+    controller: Any,
+    methodSurface: MethodSurface,
+    codecFactory: MessageCodecFactory,
+    executorService: ExecutorService
+) extends LogSupport {
 
   private val argCodecs = methodSurface.args.map(a => codecFactory.of(a.surface))
 
@@ -70,31 +78,51 @@ class RPCRequestHandler(controller: Any, methodSurface: MethodSurface, codecFact
       responseObserver: StreamObserver[Any],
       clientStreamingType: Surface
   ): StreamObserver[MsgPack] = {
-
     val codec = codecFactory.of(clientStreamingType)
-    // TODO Use streaming interface
-    val b = Seq.newBuilder[Any]
-
+    // Receives streaming messages from the client
     val requestObserver = new StreamObserver[MsgPack] {
-      private var isStarted = false
+      private val isStarted             = new AtomicBoolean(false)
+      private val rx                    = new RxBlockingQueue[Any]
+      private val promise: Promise[Any] = Promise()
+
+      private def invokeServerMethod: Unit = {
+        // Avoid duplicated execution
+        if (isStarted.compareAndSet(false, true)) {
+          // We need to run the server RPC method in another thread as rx implementation is blocking
+          executorService.submit(new Callable[Unit] {
+            override def call(): Unit = {
+              Try(methodSurface.call(controller, rx)) match {
+                case Success(value) => promise.success(value)
+                case Failure(e)     => promise.failure(e)
+              }
+            }
+          })
+        }
+      }
 
       override def onNext(value: MsgPack): Unit = {
-        b += codec.fromMsgPack(value)
+        invokeServerMethod
+        Try(codec.fromMsgPack(value)) match {
+          case Success(v) =>
+            rx.add(OnNext(v))
+          case Failure(e) =>
+            rx.add(OnError(e))
+        }
       }
       override def onError(t: Throwable): Unit = {
+        rx.add(OnError(t))
         responseObserver.onError(t)
       }
       override def onCompleted(): Unit = {
-        val rx = Rx.fromSeq(b.result())
-
-        // TODO: Call the server method right after the first onNext or onCompleted call
-        Try(methodSurface.call(controller, rx)) match {
+        invokeServerMethod
+        rx.add(OnCompletion)
+        promise.future.onComplete {
           case Success(v) =>
             responseObserver.onNext(v)
             responseObserver.onCompleted()
           case Failure(e) =>
             responseObserver.onError(e)
-        }
+        }(ExecutionContext.fromExecutor(executorService))
       }
     }
     requestObserver
@@ -106,30 +134,48 @@ class RPCRequestHandler(controller: Any, methodSurface: MethodSurface, codecFact
   ): StreamObserver[MsgPack] = {
 
     val codec = codecFactory.of(clientStreamingType)
-    // TODO Use streaming interface
-    val b = Seq.newBuilder[Any]
 
     val requestObserver = new StreamObserver[MsgPack] {
-      private var isStarted = false
+      private val isStarted             = new AtomicBoolean(false)
+      private val rx                    = new RxBlockingQueue[Any]
+      private val promise: Promise[Any] = Promise()
+
+      private def invokeServerMethod: Unit = {
+        // Avoid duplicated execution
+        if (isStarted.compareAndSet(false, true)) {
+          // We need to run the server RPC method in another thread as rx implementation is blocking
+          executorService.submit(new Callable[Unit] {
+            override def call(): Unit = {
+              Try(methodSurface.call(controller, rx)) match {
+                case Success(value) => promise.success(value)
+                case Failure(e)     => promise.failure(e)
+              }
+            }
+          })
+        }
+      }
 
       override def onNext(value: MsgPack): Unit = {
-        b += codec.fromMsgPack(value)
+        invokeServerMethod
+        Try(codec.fromMsgPack(value)) match {
+          case Success(v) => rx.add(OnNext(v))
+          case Failure(e) => rx.add(OnError(e))
+        }
       }
       override def onError(t: Throwable): Unit = {
+        rx.add(OnError(t))
         responseObserver.onError(t)
       }
       override def onCompleted(): Unit = {
-        val rx = Rx.fromSeq(b.result())
-
-        // TODO: Call the server method right after the first onNext or onCompleted call
-        Try(methodSurface.call(controller, rx)) match {
+        invokeServerMethod
+        rx.add(OnCompletion)
+        promise.future.onComplete {
           case Success(v) =>
             v match {
               case rx: Rx[_] =>
                 var c = Cancelable.empty
                 c = RxRunner.run(rx) {
                   case OnNext(value) =>
-                    logger.info(s"next value: ${value}")
                     responseObserver.onNext(value)
                   case OnError(e) =>
                     responseObserver.onError(e)
@@ -142,9 +188,10 @@ class RPCRequestHandler(controller: Any, methodSurface: MethodSurface, codecFact
             }
           case Failure(e) =>
             responseObserver.onError(e)
-        }
+        }(ExecutionContext.fromExecutor(executorService))
       }
     }
+
     requestObserver
   }
 
