@@ -74,7 +74,7 @@ object RouteScanner extends LogSupport {
       import wvlet.airframe.surface.reflect._
       lazy val s       = ReflectSurfaceFactory.ofClass(cl)
       lazy val methods = ReflectSurfaceFactory.methodsOfClass(cl)
-      val hasRPC       = findAnnotationFromClass[RPC](cl).isDefined
+      val hasRPC       = findDeclaredAnnotation[RPC](cl).isDefined
       if (hasRPC) {
         debug(s"Found an Airframe RPC interface: ${s.fullName}")
         router = router.addInternal(s, methods)

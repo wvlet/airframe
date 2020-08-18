@@ -71,6 +71,10 @@ package object reflect {
     findAnnotation[T](annot)
   }
 
+  def findDeclaredAnnotation[T <: jl.annotation.Annotation: ClassTag](cls: Class[_]): Option[T] = {
+    findAnnotation[T](cls.getDeclaredAnnotations)
+  }
+
   implicit class ToRuntimeSurfaceParameter(p: Parameter) {
     def annotations: Array[Array[jl.annotation.Annotation]] = {
       p match {
