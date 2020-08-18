@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Airframe RPC · Airframe</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="Airframe RPC is a framework for building RPC services by using Scala as a unified RPC interface between servers and clients."/><meta name="docsearch:language" content="en"/><meta property="og:title" content="Airframe RPC · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="Airframe RPC is a framework for building RPC services by using Scala as a unified RPC interface between servers and clients."/><meta property="og:image" content="https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.css"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><link rel="alternate" type="application/atom+xml" href="https://wvlet.org/airframe/blog/atom.xml" title="Airframe Blog ATOM Feed"/><link rel="alternate" type="application/rss+xml" href="https://wvlet.org/airframe/blog/feed.xml" title="Airframe Blog RSS Feed"/><script>
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Airframe RPC · Airframe</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="Airframe RPC is a framework for building RPC services by using Scala as a unified interface between servers and clients."/><meta name="docsearch:language" content="en"/><meta property="og:title" content="Airframe RPC · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="Airframe RPC is a framework for building RPC services by using Scala as a unified interface between servers and clients."/><meta property="og:image" content="https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.css"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><link rel="alternate" type="application/atom+xml" href="https://wvlet.org/airframe/blog/atom.xml" title="Airframe Blog ATOM Feed"/><link rel="alternate" type="application/rss+xml" href="https://wvlet.org/airframe/blog/feed.xml" title="Airframe Blog RSS Feed"/><script>
               (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
               (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
               m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -62,22 +62,19 @@
                 };
               }
             });
-        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">Airframe RPC</h1></header><article><div><span><p>Airframe RPC is a framework for building RPC services by using Scala as a unified RPC interface between servers and clients.</p>
+        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">Airframe RPC</h1></header><article><div><span><p>Airframe RPC is a framework for building RPC services by using Scala as a unified interface between servers and clients.</p>
 <p><img src="../img/airframe-rpc/rpc-overview.png" alt="overview"></p>
-<p>With Airframe RPC, you can:</p>
+<p>Airframe RPC Features:</p>
 <ul>
-<li>Build full-fledged RPC services with Scala:
-<ul>
-<li><a href="https://twitter.github.io/finagle/">Finagle</a> (HTTP/1) backend or <a href="https://grpc.io/">gRPC</a> (HTTP/2) are supported.</li>
-<li>RPC clients can be generated from Scala interfaces, so no need to make HTTP requests by yourself.</li>
-</ul></li>
-<li>Add RPC support to <a href="https://www.scala-js.org/">Scala.js</a> for building interactive web applications.</li>
-<li>Generate <a href="https://www.openapis.org/">Open API</a> schema from RPC definitions written in Scala</li>
+<li>Making plain Scala functions as RPC endpoints.</li>
+<li>Support <a href="https://twitter.github.io/finagle/">Finagle</a> (HTTP/1) or <a href="https://grpc.io/">gRPC</a> (HTTP/2) backends.</li>
+<li><a href="#sbt-airframe-plugin">sbt-airframe</a> plugin to generate RPC clients. No need to make HTTP requests by yourself.</li>
+<li><a href="https://www.scala-js.org/">Scala.js</a> support for building interactive web browser applications.</li>
+<li><a href="https://www.openapis.org/">Open API</a> schema generation.</li>
 </ul>
 <h2><a class="anchor" aria-hidden="true" id="why-airframe-rpc"></a><a href="#why-airframe-rpc" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Why Airframe RPC?</h2>
 <p>Airframe RPC enables calling Scala methods at remote servers. You don’t need to worry about how to encode your data into JSON, nor how to define HTTP REST endpoints. Airframe RPC abstracts away these details; the framework generates the code for serializing your data objects into JSON or <a href="https://msgpack.org/">MessagePack</a> and calls appropriate HTTP endpoints on your behalf.</p>
-<p>For defining RPC services, what we need are definitions of functions and data structures of HTTP requests and responses.
-Airframe RPC leverages the nature of Scala as a functional and object-oriented programming language. You can use plain Scala functions as RPC endpoints and <a href="https://docs.scala-lang.org/tour/case-classes.html">case classes</a> for modeling complex data:</p>
+<p>For defining RPC services, what we need are definitions of functions and data structures for representing HTTP requests and responses. Airframe RPC leverages the nature of Scala as a functional and object-oriented programming language. You can use plain Scala functions as RPC endpoints and <a href="https://docs.scala-lang.org/tour/case-classes.html">case classes</a> for modeling complex data:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// An example RPC definition using Airframe RPC</span>
 <span class="hljs-meta">@RPC</span>
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Greeter</span> </span>{
@@ -89,9 +86,9 @@ Airframe RPC leverages the nature of Scala as a functional and object-oriented p
 <span class="hljs-comment">// This will be encoded into JSON {"message":"...."} or its MessagePack representation</span>
 <span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">GreeterResponse</span>(<span class="hljs-params">message:<span class="hljs-type">String</span></span>)</span>
 </code></pre>
-<p>While <a href="https://grpc.io/">gRPC</a> has been a popular approach for building RPC services, its ecosystem often uses <a href="https://developers.google.com/protocol-buffers/docs/overview">ProtocolBuffers</a> for defining data structures and RPC methods. To start using gRPC in Scala, we need to bridge the gap between ProtocolBuffers and Scala (e.g., <a href="https://scalapb.github.io/">ScalaPB</a>). gRPC itself, however, is a data-format agnostic framework. So, in order to use Scala naturally for RPC, we extended gRPC to support JSON (plain text) or MessagePack (a compact binary alternative of JSON) so that we can create RPC services without introducing ProtocolBuffers.</p>
+<p>While <a href="https://grpc.io/">gRPC</a> has been a popular approach for building RPC services, its ecosystem often uses <a href="https://developers.google.com/protocol-buffers/docs/overview">ProtocolBuffers</a> for defining data structures and RPC methods. To start using gRPC in Scala, we need to bridge the gap between ProtocolBuffers and Scala (e.g., <a href="https://scalapb.github.io/">ScalaPB</a>). gRPC itself, however, is a data-format agnostic framework. So, in order to use Scala naturally for gRPC, we extended gRPC to support  MessagePack (a compact binary alternative of JSON) and <a href="/airframe/docs/airframe-codec">airframe-codec</a> so that we can create RPC services without introducing ProtocolBuffers.</p>
 <p>Airframe RPC also supports building HTTP/1 services backed by <a href="https://twitter.github.io/finagle/">Finagle</a> as well as efficient HTTP/2-based streaming services with <a href="https://grpc.io/">gRPC</a>. Supporting both HTTP/1 and HTTP/2 is important because gRPC heavily uses HTTP/2 features, but HTTP/1-based web clients including web browsers still don't fully support HTTP/2.</p>
-<p>In 2020, Scala.js, which can compile Scala code into JavaScript, finally <a href="https://www.scala-js.org/news/2020/02/25/announcing-scalajs-1.0.0/">became 1.0.0 after 7 years of development</a>. This also has paved a way for using Scala both for servers (Scala JVM) and clients (Scala.js). We explored the approach for using Scala's functional interfaces as RPC endpoint definitions, and successfully created Airframe RPC, which works both for Scala JVM and Scala.js, on top of <a href="/airframe/docs/">technology stack of 20+ Airframe modules</a>.</p>
+<p>In 2020, Scala.js, which can compile Scala code into JavaScript, finally <a href="https://www.scala-js.org/news/2020/02/25/announcing-scalajs-1.0.0/">became 1.0.0 after 7 years of development</a>. This also has paved a way for using Scala both for servers (Scala JVM) and clients (Scala.js with Ajax call with HTTP/1). We explored the approach for using Scala's functional interfaces as RPC endpoint definitions, and successfully created Airframe RPC, which works both for Scala JVM and Scala.js, on top of <a href="/airframe/docs/">technology stack of 20+ Airframe modules</a>.</p>
 <p>Although Airframe RPC is a relatively new project started at March 2020 inside <a href="https://www.treasuredata.com/">Arm Treasure Data</a>, this project has proved various advantages. For example:</p>
 <ul>
 <li><strong>Free from REST</strong>. We can just use Scala's functional interface for defining servers. <a href="https://cloud.google.com/apis/design">Google's REST API Design Guide</a> has been useful resources for defining clear REST API endpoints, but we've found using programming language's native interface is much easier.</li>
@@ -255,7 +252,7 @@ airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-stri
 <li><strong>sync</strong>: Create a sync HTTP client (ServiceSyncClient) for Scala (JVM)</li>
 <li><strong>async</strong>: Create an async HTTP client (ServiceClient) for Scala (JVM) using Future abstraction (<code>F</code>). The <code>F</code> can be <code>scala.concurrent.Future</code> or twitter-util's Future.</li>
 <li><strong>scalajs</strong>:  Create an RPC client (ServiceClientJS)</li>
-<li><strong>grpc</strong>: Create a gRPC client (ServiceGrpc)</li>
+<li><strong>grpc</strong>: Create gRPC client stubs (ServiceGrpc: SyncClient, AsyncClient)</li>
 </ul>
 <p>To support other types of clients, see the examples of <a href="https://github.com/wvlet/airframe/blob/master/airframe-http/.jvm/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClient.scala">HTTP code generators</a>. This code reads a Router definition of RPC interfaces, and generate client code for calling RPC endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would like to add Open API spec generator so that many programming languages can be used with Airframe RPC.</p>
 <p>The generated client code can be found in <code>target/scala-2.12/src_managed/(api package)/</code> folder.</p>
@@ -410,7 +407,7 @@ design.build[<span class="hljs-type">FinagleServer</span>] { server =&gt;
 }
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="generating-grpc-client"></a><a href="#generating-grpc-client" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Generating gRPC client</h3>
-<p>Add a following build setting to genreate a gRPC client by using sbt-airframe plugin:</p>
+<p>Add a following build setting to generate a gRPC client by using sbt-airframe plugin:</p>
 <pre><code class="hljs css language-scala">airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"example.api:grpc-sync"</span>)
 </code></pre>
 <p>With this setting, gRPC client stubs example.api.ServiceGrpc.SyncClient or example.api.ServiceGrpc.AsyncClient will be generated.</p>
@@ -453,16 +450,16 @@ gRPC.server
 }
 </code></pre>
 <h4><a class="anchor" aria-hidden="true" id="grpc-async-client"></a><a href="#grpc-async-client" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>gRPC Async Client</h4>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> example.api.<span class="hljs-type">ServiceClient</span>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> example.api.<span class="hljs-type">ServiceGrpc</span>
 <span class="hljs-keyword">import</span> io.grpc.stub.<span class="hljs-type">StreamObserver</span>
 
 <span class="hljs-comment">// Create an async gRPC client</span>
-<span class="hljs-keyword">val</span> client = <span class="hljs-type">ServiceGrpcClient</span>.newAsyncClient(channel)
+<span class="hljs-keyword">val</span> client = <span class="hljs-type">ServiceGrpc</span>.newAsyncClient(channel)
 
 <span class="hljs-comment">// Call gRPC server</span>
 client.<span class="hljs-type">GreeterApi</span>.sayHello(<span class="hljs-string">"Airframe gRPC"</span>, <span class="hljs-keyword">new</span> <span class="hljs-type">StreamObserver</span>[<span class="hljs-type">String</span>] { 
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onNext</span></span>(v: <span class="hljs-type">String</span>): <span class="hljs-type">Unit</span> = {
-    <span class="hljs-comment">// v == Hello Airframe gRPC!        </span>
+    <span class="hljs-comment">// v == Hello Airframe gRPC!</span>
   }
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">onError</span></span>(t: <span class="hljs-type">Throwable</span>): <span class="hljs-type">Unit</span> = {
     <span class="hljs-comment">// report the error</span>
