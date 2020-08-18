@@ -116,7 +116,7 @@ object HttpClientIR extends LogSupport {
     }
 
     def grpcClientStreamingArg: Option[MethodParameter] = {
-      inputParameters.find(x => classOf[Rx[_]].isAssignableFrom(x.surface.rawType))
+      findGrpcClientStreamingArg(inputParameters)
     }
 
     def grpcMethodType: GrpcMethodType = {
@@ -133,6 +133,10 @@ object HttpClientIR extends LogSupport {
           GrpcMethodType.UNARY
       }
     }
+  }
+
+  private def findGrpcClientStreamingArg(inputParameters: Seq[MethodParameter]): Option[MethodParameter] = {
+    inputParameters.find(x => classOf[Rx[_]].isAssignableFrom(x.surface.rawType))
   }
 
   sealed trait GrpcMethodType {
@@ -234,7 +238,11 @@ object HttpClientIR extends LogSupport {
             override def getDefaultValue: Option[Any] = p.getDefaultValue
           }
         }
-        requestModelClassDef = Some(ClientRequestModelClassDef(requestModelClassName, requestModelClassParamSurfaces))
+
+        if (findGrpcClientStreamingArg(route.methodSurface.args).isEmpty) {
+          requestModelClassDef = Some(ClientRequestModelClassDef(requestModelClassName, requestModelClassParamSurfaces))
+        }
+
         clientCallParams += s"${requestModelClassName}(${requestModelClassParamSurfaces
           .map { p =>
             s"${p.name} = ${p.name}"
