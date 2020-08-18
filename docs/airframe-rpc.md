@@ -386,7 +386,7 @@ Airframe gRPC is a gRPC and HTTP2-based implementation of Airframe RPC, which ca
 - Roadmap
   - [x] Create a gRPC server from Airframe RPC router
   - [x] Generate gRPC client stub with sbt-airframe plugin.
-  - [ ] Support client, server-side, and bidirectional streaming
+  - [x] Support client, server-side, and bidirectional streaming
   - [ ] Add a gRPC server proxy with airframe-http-finagle for supporting HTTP1
 
 __build.sbt__
@@ -523,6 +523,6 @@ case class HelloResponse(message:String)
 ```json
 {"message":"..."}
 ```
--__Http Status__
+- __Http Status__
   - 200 (Ok) for successful responses.
   - 400 (Bad Request) if some request parameters are invalid.
