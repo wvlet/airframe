@@ -48,6 +48,8 @@ object GrpcClient extends HttpClientType {
          |${indent(modelClasses)}
          |
          |${indent(syncClientClass)}
+         |
+         |${indent(asyncClientClass)}
          |}""".stripMargin
 
     def descriptorBuilder: String = {
@@ -160,7 +162,7 @@ object GrpcClient extends HttpClientType {
             case GrpcMethodType.SERVER_STREAMING =>
               lines += s"  val __m = ${requestObject}"
               lines += s"  val codec = codecFactory.of[${m.requestModelClassType}]"
-              lines += s"  val responseObserver = new wvlet.airframe.http.grpc.GrpcClientCalls.blockingResponseObserver[${m.grpcReturnType}]"
+              lines += s"  val responseObserver = wvlet.airframe.http.grpc.GrpcClientCalls.blockingResponseObserver[${m.grpcReturnType}]"
               lines += s"  ClientCalls"
               lines += s"    .asyncServerStreamingCall("
               lines += s"       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),"
@@ -169,7 +171,7 @@ object GrpcClient extends HttpClientType {
               lines += s"    )"
               lines += s"  responseObserver.toRx"
             case GrpcMethodType.CLIENT_STREAMING =>
-              lines += s"  val responseObserver = new wvlet.airframe.http.grpc.GrpcClientCalls.blockingResponseObserver[${m.grpcReturnType}]"
+              lines += s"  val responseObserver = wvlet.airframe.http.grpc.GrpcClientCalls.blockingResponseObserver[${m.grpcReturnType}]"
               lines += s"  val requestObserver = ClientCalls"
               lines += s"    .asyncClientStreamingCall("
               lines += s"       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),"
@@ -182,7 +184,7 @@ object GrpcClient extends HttpClientType {
               lines += s"  )"
               lines += s"  responseObserver.toRx.toSeq.head"
             case GrpcMethodType.BIDI_STREAMING =>
-              lines += s"  val responseObserver = new wvlet.airframe.http.grpc.GrpcClientCalls.blockingResponseObserver[${m.grpcReturnType}]"
+              lines += s"  val responseObserver = wvlet.airframe.http.grpc.GrpcClientCalls.blockingResponseObserver[${m.grpcReturnType}]"
               lines += s"  val requestObserver = ClientCalls"
               lines += s"    .asyncBidiStreamingCall("
               lines += s"       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),"
