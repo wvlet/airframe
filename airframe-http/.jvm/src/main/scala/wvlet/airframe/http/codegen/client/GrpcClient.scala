@@ -48,8 +48,6 @@ object GrpcClient extends HttpClientType {
          |${indent(modelClasses)}
          |
          |${indent(syncClientClass)}
-         |
-         |${indent(asyncClientClass)}
          |}""".stripMargin
 
     def descriptorBuilder: String = {

@@ -32,34 +32,35 @@ object GreeterApiTest extends AirSpec {
         ManagedChannelBuilder.forTarget(server.localAddress).usePlaintext().build()
       }
       .onShutdown(_.shutdownNow)
+      .bind[ServiceGrpcClient].toProvider { channel: ManagedChannel => ServiceGrpcClient.newSyncClient(channel) }
   }
 
-  test("test grpc server") { channel: ManagedChannel =>
-    val syncClient = ServiceGrpcClient.newSyncClient(channel)
-    val ret        = syncClient.GreeterApi.sayHello("Airframe gRPC")
+  test("test unary RPC") { syncClient: ServiceGrpcClient =>
+    val ret = syncClient.GreeterApi.sayHello("Airframe gRPC")
     info(s"sync response: ${ret}")
     ret shouldBe "Hello Airframe gRPC!"
-
-    val asyncClient = ServiceGrpcClient.newAsyncClient(channel)
-    asyncClient.GreeterApi.sayHello(
-      "Airframe gRPC",
-      new StreamObserver[String] {
-        def onNext(v: String): Unit = {
-          logger.info(s"async response: ${v}")
-        }
-        def onError(t: Throwable): Unit = {
-          logger.error(t)
-        }
-        def onCompleted(): Unit = {
-          logger.info("completed")
-        }
-      }
-    )
   }
 
-  test("test streaming") { channel: ManagedChannel =>
-    val syncClient = ServiceGrpcClient.newSyncClient(channel)
-    val r1         = syncClient.GreeterApi.serverStreaming("gRPC")
+//  test("test async RPC") { channel: ManagedChannel =>
+//    val asyncClient = ServiceGrpcClient.newAsyncClient(channel)
+//    asyncClient.GreeterApi.sayHello(
+//      "Airframe gRPC",
+//      new StreamObserver[String] {
+//        def onNext(v: String): Unit = {
+//          logger.info(s"async response: ${v}")
+//        }
+//        def onError(t: Throwable): Unit = {
+//          logger.error(t)
+//        }
+//        def onCompleted(): Unit = {
+//          logger.info("completed")
+//        }
+//      }
+//    )
+// }
+
+  test("test streaming") { syncClient: ServiceGrpcClient =>
+    val r1 = syncClient.GreeterApi.serverStreaming("gRPC")
     r1.toSeq shouldBe Seq("Hello gRPC!", "See you gRPC!")
 
     val r2 = syncClient.GreeterApi.clientStreaming(Rx.sequence("airframe", "rpc"))
