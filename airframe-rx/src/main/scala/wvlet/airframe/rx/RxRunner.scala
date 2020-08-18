@@ -249,6 +249,27 @@ class RxRunner(
         Cancelable { () =>
           toContinue = false
         }
+      case source: RxSource[_] =>
+        var toContinue = true
+        @tailrec
+        def loop: Unit = {
+          if (continuous || toContinue) {
+            val ev = source.next
+            ev match {
+              case OnNext(_) =>
+                effect(ev)
+                loop
+              case other =>
+                toContinue = false
+                effect(other)
+            }
+          }
+        }
+        loop
+        Cancelable { () =>
+          toContinue = false
+          source.add(OnError(new InterruptedException("cancelled")))
+        }
     }
   }
 

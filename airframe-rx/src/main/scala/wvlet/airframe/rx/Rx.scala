@@ -67,6 +67,22 @@ trait Rx[+A] extends LogSupport {
   def recoverWith[A](f: PartialFunction[Throwable, Rx[A]]): Rx[A] = RecoverWithOp(this, f)
 
   /**
+    * Materialize the streaming results as Seq
+    * @return
+    */
+  def toSeq: Seq[A] = {
+    val b = Seq.newBuilder[A]
+    RxRunner.run(this) {
+      case OnNext(v) =>
+        b += v.asInstanceOf[A]
+      case OnError(e) =>
+        throw e
+      case OnCompletion =>
+    }
+    b.result()
+  }
+
+  /**
     * Subscribe any change in the upstream, and if a change is detected,
     *  the given subscriber code will be executed.
     *
