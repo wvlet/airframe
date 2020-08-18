@@ -64,4 +64,19 @@ object GrpcClientCalls extends LogSupport {
     }
   }
 
+  def translate[A, B](observer: StreamObserver[A], f: B => A): StreamObserver[B] =
+    new StreamObserver[B] {
+      override def onNext(value: B): Unit = {
+        Try(f(value)) match {
+          case Success(a) => observer.onNext(a)
+          case Failure(e) => observer.onError(e)
+        }
+      }
+      override def onError(t: Throwable): Unit = {
+        observer.onError(t)
+      }
+      override def onCompleted(): Unit = {
+        observer.onCompleted()
+      }
+    }
 }

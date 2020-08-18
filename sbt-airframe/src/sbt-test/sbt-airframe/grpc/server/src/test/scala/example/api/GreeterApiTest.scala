@@ -35,6 +35,9 @@ object GreeterApiTest extends AirSpec {
       .bind[ServiceGrpc.SyncClient].toProvider { channel: ManagedChannel =>
         ServiceGrpc.newSyncClient(channel)
       }
+      .bind[ServiceGrpc.AsyncClient].toProvider { channel: ManagedChannel =>
+        ServiceGrpc.newAsyncClient(channel)
+      }
   }
 
   test("test unary RPC") { syncClient: ServiceGrpc.SyncClient =>
@@ -43,23 +46,77 @@ object GreeterApiTest extends AirSpec {
     ret shouldBe "Hello Airframe gRPC!"
   }
 
-//  test("test async RPC") { channel: ManagedChannel =>
-//    val asyncClient = ServiceGrpcClient.newAsyncClient(channel)
-//    asyncClient.GreeterApi.sayHello(
-//      "Airframe gRPC",
-//      new StreamObserver[String] {
-//        def onNext(v: String): Unit = {
-//          logger.info(s"async response: ${v}")
-//        }
-//        def onError(t: Throwable): Unit = {
-//          logger.error(t)
-//        }
-//        def onCompleted(): Unit = {
-//          logger.info("completed")
-//        }
-//      }
-//    )
-// }
+  test("test async unary RPC") { asyncClient: ServiceGrpc.AsyncClient =>
+    asyncClient.GreeterApi.sayHello(
+      "Airframe gRPC",
+      new StreamObserver[String] {
+        def onNext(v: String): Unit = {
+          logger.info(s"async response: ${v}")
+        }
+        def onError(t: Throwable): Unit = {
+          logger.error(t)
+        }
+        def onCompleted(): Unit = {
+          logger.info("completed")
+        }
+      }
+    )
+  }
+
+  test("test async server-streaming RPC") { asyncClient: ServiceGrpc.AsyncClient =>
+    asyncClient.GreeterApi.serverStreaming(
+      "Airframe gRPC",
+      new StreamObserver[String] {
+        def onNext(v: String): Unit = {
+          logger.info(s"async response: ${v}")
+        }
+        def onError(t: Throwable): Unit = {
+          logger.error(t)
+        }
+        def onCompleted(): Unit = {
+          logger.info("completed")
+        }
+      }
+    )
+  }
+
+  test("test async client-streaming RPC") { asyncClient: ServiceGrpc.AsyncClient =>
+    val requestObserver = asyncClient.GreeterApi.clientStreaming(
+      new StreamObserver[String] {
+        def onNext(v: String): Unit = {
+          logger.info(s"async response: ${v}")
+        }
+        def onError(t: Throwable): Unit = {
+          logger.error(t)
+        }
+        def onCompleted(): Unit = {
+          logger.info("completed")
+        }
+      }
+    )
+    requestObserver.onNext("airframe")
+    requestObserver.onNext("rpc")
+    requestObserver.onCompleted()
+  }
+
+  test("test async bidi-streaming RPC") { asyncClient: ServiceGrpc.AsyncClient =>
+    val requestObserver = asyncClient.GreeterApi.bidiStreaming(
+      new StreamObserver[String] {
+        def onNext(v: String): Unit = {
+          logger.info(s"async response: ${v}")
+        }
+        def onError(t: Throwable): Unit = {
+          logger.error(t)
+        }
+        def onCompleted(): Unit = {
+          logger.info("completed")
+        }
+      }
+    )
+    requestObserver.onNext("airframe")
+    requestObserver.onNext("rpc")
+    requestObserver.onCompleted()
+  }
 
   test("test streaming") { syncClient: ServiceGrpc.SyncClient =>
     val r1 = syncClient.GreeterApi.serverStreaming("gRPC")
