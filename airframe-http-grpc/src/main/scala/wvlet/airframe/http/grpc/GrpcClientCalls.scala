@@ -18,6 +18,8 @@ import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner}
 import wvlet.log.LogSupport
 
+import scala.util.{Failure, Success, Try}
+
 /**
   * Helper methods for making gRPC calls
   */
@@ -48,8 +50,12 @@ object GrpcClientCalls extends LogSupport {
   ): Cancelable = {
     RxRunner.run(input) {
       case OnNext(x) => {
-        val msgPack = codec.toMsgPack(x.asInstanceOf[A])
-        requestObserver.onNext(msgPack)
+        Try(codec.toMsgPack(x.asInstanceOf[A])) match {
+          case Success(msgpack) =>
+            requestObserver.onNext(msgpack)
+          case Failure(e) =>
+            requestObserver.onError(e)
+        }
       }
       case OnError(e) => requestObserver.onError(e)
       case OnCompletion => {
