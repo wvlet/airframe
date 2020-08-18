@@ -442,12 +442,13 @@ trait GreeterApi {
 Add a following build setting to generate a gRPC client by using sbt-airframe plugin:
 
 ```scala
-airframeHttpClients := Seq("example.api:grpc-sync")
+airframeHttpClients := Seq("example.api:grpc")
 ```
 
-With this setting, gRPC client stubs example.api.ServiceGrpc.SyncClient or example.api.ServiceGrpc.AsyncClient will be generated.
+With this setting, gRPC client stubs example.api.ServiceGrpc will be generated. 
+You can create a new sync or async client with ServiceGrpc.newSyncClient or newAsyncClient methods.
 
-### Starting Airframe gRPC Server
+### Starting An Airframe gRPC Server
 
 
 ```scala
@@ -495,6 +496,7 @@ finally {
 ```
 
 #### gRPC Async Client
+
 ```scala
 import example.api.ServiceGrpc
 import io.grpc.stub.StreamObserver
@@ -515,6 +517,37 @@ client.GreeterApi.sayHello("Airframe gRPC", new StreamObserver[String] {
   }
 })
 ```
+
+### gRPC Streaming
+
+To implement server/client/bi-directional streaming, define RPC endpoints with `Rx[A]` argument or return types of [airframe-rx](airframe-rx.md). `Rx[A]` describes reactive-streaming data from client or server-side, and it basically the same with `Seq[A]` other than the chained operators of `Rx[A]` such as map, flatMap, etc. will be evaluated as a new streaming input of `A` arrives (i.e., reactive evaluation). 
+
+```scala
+import wvlet.airframe.http.RPC
+import wvlet.airframe.rx.Rx
+
+@RPC
+trait GreeterStreaming {
+  // Server streaming returns Rx[X] value
+  def serverStreaming(name: String): Rx[String] = {
+    Rx.sequence("Hello", "See you").map { x => s"${x} ${name}!"}
+  }
+
+  // Client streaming receives only one Rx[X] argument
+  def clientStreaming(names: Rx[String]): String = {
+    names
+      .map{ x => s"Hello ${x}!"}
+      .toSeq // Rx[X].toSeq materialize the streaming inputs as a concrete Seq[X] 
+      .mkString(", ")
+  }
+
+  // Bidirectional streaming receives only one Rx[X] argument and returns Rx[Y] response 
+  def bidirectionalStreaming(names: Rx[String]): Rx[String] = {
+    names.map{x => s"Hello ${x}!"}
+  }
+}
+```
+
 
 ## RPC Internals 
 
