@@ -115,8 +115,12 @@ object HttpClientIR extends LogSupport {
       }
     }
 
+    def grpcClientStreamingArg: Option[MethodParameter] = {
+      inputParameters.find(x => classOf[Rx[_]].isAssignableFrom(x.surface.rawType))
+    }
+
     def grpcMethodType: GrpcMethodType = {
-      val isClientStreaming: Boolean = inputParameters.exists(x => classOf[Rx[_]].isAssignableFrom(x.surface.rawType))
+      val isClientStreaming: Boolean = grpcClientStreamingArg.isDefined
       if (classOf[Rx[_]].isAssignableFrom(returnType.rawType)) {
         if (isClientStreaming)
           GrpcMethodType.BIDI_STREAMING
