@@ -280,6 +280,8 @@ It will generate `target/openapi.yaml` file.
 
 ### RPC Logging
 
+(This feature is not yet available for gRPC backend)
+
 Airframe RPC stores HTTP access logs to `log/http-access.json` by default. This json logs contains 
 HTTP request related parameters and RPC-specific fields described below:
 
@@ -295,6 +297,8 @@ See also [airframe-http: Access Logs](airframe-http.md#access-logs) for more det
 
 
 ### RPC Filters
+
+(This feature is not available for gRPC backend)
 
 Airframe RPC can chain arbitrary HTTP request filters before processing HTTP requests.
 Most typical use cases would be adding an authentication filter for RPC calls:
@@ -555,9 +559,9 @@ trait GreeterStreaming {
 
 ### RPC Protocol
 
-HTTP Requests and Responses
+HTTP Requests and Responses.
 
-Airframe RPC maps function calls to HTTP POST requests. Let's see how RPC calls will be translted into HTTP requests using the following RPC interface example:
+Airframe RPC maps function calls to HTTP POST requests. Let's see how RPC calls will be translated into HTTP requests using the following RPC interface example:
 
 ```scala
 package hello.api.v1
@@ -573,7 +577,7 @@ case class HelloResponse(message:String)
 - __Method__: POST
 - __Path__: `/(package name).(RPC interface name)/(method name)`
   - ex. `POST /hello.api.v1.MyService/hello`
-- __Content-Type__: `application/json` (default) or `application/x-msgpack`
+- __Content-Type__: `application/json` (default), `application/x-msgpack` or `application/grpc` 
 - __Request body__: JSON (or MessagePack) representation of the method arguments. Each method parameter names and arguments need to be a key-value pair in the JSON object. 
   - For an RPC method `def m(p1:T1, p2:T2, ...)`, the request body will have the structrure of `{"p1":(json representation of T1), "p2":(json representation of T2}, ...}`. For example, the request to the above `hello(request:HelloRequest)` method will require the following JSON body:
 ```json
@@ -584,6 +588,10 @@ case class HelloResponse(message:String)
 ```json
 {"message":"..."}
 ```
+
 - __Http Status__
   - 200 (Ok) for successful responses.
   - 400 (Bad Request) if some request parameters are invalid.
+
+For gRPC backend, see also [gRPC over HTTP2](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md) protocol for the other HTTP headers.
+
