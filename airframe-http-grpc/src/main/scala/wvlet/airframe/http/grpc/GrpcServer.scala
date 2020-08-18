@@ -15,7 +15,7 @@ package wvlet.airframe.http.grpc
 import java.util.concurrent.Executors
 
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
-import io.grpc.{Server, ServerBuilder}
+import io.grpc.{Channel, ManagedChannel, ManagedChannelBuilder, Server, ServerBuilder, ServerInterceptor}
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.grpc.GrpcServiceBuilder.GrpcServiceThreadExecutor
 import wvlet.airframe.{Design, Session}
@@ -30,6 +30,7 @@ case class GrpcServerConfig(
     name: String = "default",
     private val serverPort: Option[Int] = None,
     router: Router = Router.empty,
+    interceptors: Seq[ServerInterceptor] = Seq.empty,
     serverInitializer: ServerBuilder[_] => ServerBuilder[_] = identity
 ) extends LogSupport {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
@@ -39,6 +40,9 @@ case class GrpcServerConfig(
   def withRouter(router: Router): GrpcServerConfig = this.copy(router = router)
   def withServerInitializer(serverInitializer: ServerBuilder[_] => ServerBuilder[_]) =
     this.copy(serverInitializer = serverInitializer)
+  def withInterceptor(interceptor: ServerInterceptor): GrpcServerConfig =
+    this.copy(interceptors = interceptors :+ interceptor)
+  def noInterceptor: GrpcServerConfig = this.copy(interceptors = Seq.empty)
 
   def newServer(session: Session): GrpcServer = {
     val services = GrpcServiceBuilder.buildService(router, session)
@@ -47,6 +51,9 @@ case class GrpcServerConfig(
     val serverBuilder = NettyServerBuilder.forPort(port)
     for (service <- services) {
       serverBuilder.addService(service)
+    }
+    for (interceptor <- interceptors) {
+      serverBuilder.intercept(interceptor)
     }
     val customServerBuilder = serverInitializer(serverBuilder)
     new GrpcServer(this, customServerBuilder.build())
@@ -72,11 +79,22 @@ case class GrpcServerConfig(
       .bind[GrpcServerConfig].toInstance(this)
       .bind[GrpcServer].toProvider { (config: GrpcServerConfig, session: Session) => config.newServer(session) }
       .onStart { _.start }
-      .bind[GrpcServiceThreadExecutor].toInstance {
-        Executors.newCachedThreadPool()
+      .bind[GrpcServiceThreadExecutor].toInstance(Executors.newCachedThreadPool())
+      .onShutdown(_.shutdownNow())
+  }
+
+  /**
+    * Create a design for GrpcServer and ManagedChannel. Useful for testing purpsoe
+    * @return
+    */
+  def designWithChannel: Design = {
+    design
+      .bind[Channel].toProvider { server: GrpcServer =>
+        ManagedChannelBuilder.forTarget(server.localAddress).usePlaintext().build()
       }
       .onShutdown {
-        _.shutdownNow()
+        case m: ManagedChannel => m.shutdownNow()
+        case _                 =>
       }
   }
 }
