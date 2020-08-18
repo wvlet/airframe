@@ -19,7 +19,7 @@ object GreeterApiTest extends AirSpec {
     def clientStreaming(message: Rx[String]): String = {
       message.map { x => s"Hello ${x}!" }.toSeq.mkString(", ")
     }
-    def bidiStreaming(messaage: Rx[String]): Rx[String] = {
+    def bidiStreaming(message: Rx[String]): Rx[String] = {
       message.map { x => s"Hello ${x}!" }
     }
   }
@@ -32,10 +32,12 @@ object GreeterApiTest extends AirSpec {
         ManagedChannelBuilder.forTarget(server.localAddress).usePlaintext().build()
       }
       .onShutdown(_.shutdownNow)
-      .bind[ServiceGrpcClient].toProvider { channel: ManagedChannel => ServiceGrpcClient.newSyncClient(channel) }
+      .bind[ServiceGrpc.SyncClient].toProvider { channel: ManagedChannel =>
+        ServiceGrpc.newSyncClient(channel)
+      }
   }
 
-  test("test unary RPC") { syncClient: ServiceGrpcClient =>
+  test("test unary RPC") { syncClient: ServiceGrpc.SyncClient =>
     val ret = syncClient.GreeterApi.sayHello("Airframe gRPC")
     info(s"sync response: ${ret}")
     ret shouldBe "Hello Airframe gRPC!"
@@ -59,7 +61,7 @@ object GreeterApiTest extends AirSpec {
 //    )
 // }
 
-  test("test streaming") { syncClient: ServiceGrpcClient =>
+  test("test streaming") { syncClient: ServiceGrpc.SyncClient =>
     val r1 = syncClient.GreeterApi.serverStreaming("gRPC")
     r1.toSeq shouldBe Seq("Hello gRPC!", "See you gRPC!")
 

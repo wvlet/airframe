@@ -119,6 +119,10 @@ object HttpClientIR extends LogSupport {
       findGrpcClientStreamingArg(inputParameters)
     }
 
+    def grpcClientStreamingRequestType: Surface = {
+      grpcClientStreamingArg.get.surface.typeArgs(0)
+    }
+
     def grpcMethodType: GrpcMethodType = {
       val isClientStreaming: Boolean = grpcClientStreamingArg.isDefined
       if (classOf[Rx[_]].isAssignableFrom(returnType.rawType)) {

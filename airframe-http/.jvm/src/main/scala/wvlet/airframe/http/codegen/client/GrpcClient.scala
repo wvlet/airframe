@@ -22,8 +22,8 @@ import wvlet.airframe.http.codegen.client.ScalaHttpClient.{header, indent}
 object GrpcClient extends HttpClientType {
 
   override def name: String             = "grpc"
-  override def defaultFileName: String  = "ServiceGrpcClient.scala"
-  override def defaultClassName: String = "ServiceGrpcClient"
+  override def defaultFileName: String  = "ServiceGrpc.scala"
+  override def defaultClassName: String = "ServiceGrpc"
 
   override def generate(src: HttpClientIR.ClientSourceDef): String = {
     def code =
@@ -177,7 +177,7 @@ object GrpcClient extends HttpClientType {
               lines += s"    )"
               lines += s"  wvlet.airframe.http.grpc.GrpcClientCalls.readClientRequestStream("
               lines += s"    ${m.inputParameters.head.name},"
-              lines += s"    codecFactory.of[${m.grpcClientStreamingArg.get.surface}],"
+              lines += s"    codecFactory.of[${m.grpcClientStreamingRequestType}],"
               lines += s"    requestObserver"
               lines += s"  )"
               lines += s"  responseObserver.toRx.toSeq.head"
@@ -190,7 +190,7 @@ object GrpcClient extends HttpClientType {
               lines += s"    )"
               lines += s"  wvlet.airframe.http.grpc.GrpcClientCalls.readClientRequestStream("
               lines += s"    ${m.inputParameters.head.name},"
-              lines += s"    codecFactory.of[${m.grpcClientStreamingArg.get.surface}],"
+              lines += s"    codecFactory.of[${m.grpcClientStreamingRequestType}],"
               lines += s"    requestObserver"
               lines += s"  )"
               lines += s"  responseObserver.toRx"
