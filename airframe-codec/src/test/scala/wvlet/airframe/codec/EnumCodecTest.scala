@@ -37,16 +37,33 @@ object EnumCodecTest extends AirSpec {
     codec.unpackMsgPack(StringCodec.toMsgPack("Green")) shouldBe empty
   }
 
-  test("find unapply(String) from package object methods") {
-    pending("We need to find how to find package object in Scala Macros")
-    import enumtest._
+  import enumtest._
 
+  test("find unapply(String) from the object") {
     val codec = MessageCodec.of[Status]
-    info(codec)
+    debug(codec)
     codec.unpackMsgPack(codec.toMsgPack(Status.SUCCESS)) shouldBe Some(Status.SUCCESS)
     codec.unpackMsgPack(codec.toMsgPack(Status.FAILURE)) shouldBe Some(Status.FAILURE)
     codec.unpackMsgPack(StringCodec.toMsgPack("unknown")) shouldBe empty
   }
+
+  test("detect invalid Strings for the enum") {
+    val codec = MessageCodec.of[Status]
+    val e = intercept[IllegalArgumentException] {
+      codec.fromString("unknown")
+    }
+  }
+
+  test("read enum in case class") {
+    val codec = MessageCodec.of[Resp]
+    val r1    = codec.fromJson("""{"status":"SUCCESS"}"""")
+    r1 shouldBe Resp(Status.SUCCESS)
+
+    val e = intercept[IllegalArgumentException] {
+      val r2 = codec.fromJson("""{"status":"invalid-value"}""")
+    }
+  }
+
 }
 
 package enumtest {
@@ -57,11 +74,11 @@ package enumtest {
     def values = Seq(SUCCESS, FAILURE)
     case object SUCCESS extends Status
     case object FAILURE extends Status
-  }
 
-  package object enumtest {
     def unapply(s: String): Option[Status] = {
       Status.values.find(_.toString == s)
     }
   }
+
+  case class Resp(status: Status)
 }

@@ -185,7 +185,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     val codec = MessageCodec.of[Either[Throwable, String]]
 
     def testInvalid(json: String): Unit = {
-      intercept[MessageCodecException] {
+      intercept[IllegalArgumentException] {
         codec.unpackJson(json)
       }
     }
