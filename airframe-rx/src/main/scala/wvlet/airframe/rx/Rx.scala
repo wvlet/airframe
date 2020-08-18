@@ -67,7 +67,7 @@ trait Rx[+A] extends LogSupport {
   def recoverWith[A](f: PartialFunction[Throwable, Rx[A]]): Rx[A] = RecoverWithOp(this, f)
 
   /**
-    * Materialize the streaming results
+    * Materialize the streaming results as Seq
     * @return
     */
   def toSeq: Seq[A] = {

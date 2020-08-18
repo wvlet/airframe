@@ -24,20 +24,20 @@ import wvlet.log.LogSupport
 object GrpcClientCalls extends LogSupport {
 
   trait BlockingStreamObserver[A] extends StreamObserver[Any] {
-    def rx: Rx[A]
+    def toRx: Rx[A]
   }
 
   def blockingResponseObserver[A]: BlockingStreamObserver[A] =
     new BlockingStreamObserver[A] {
-      val rx: RxBlockingQueue[A] = new RxBlockingQueue[A]
+      val toRx: RxBlockingQueue[A] = new RxBlockingQueue[A]
       override def onNext(value: Any): Unit = {
-        rx.add(OnNext(value))
+        toRx.add(OnNext(value))
       }
       override def onError(t: Throwable): Unit = {
-        rx.add(OnError(t))
+        toRx.add(OnError(t))
       }
       override def onCompleted(): Unit = {
-        rx.add(OnCompletion)
+        toRx.add(OnCompletion)
       }
     }
 

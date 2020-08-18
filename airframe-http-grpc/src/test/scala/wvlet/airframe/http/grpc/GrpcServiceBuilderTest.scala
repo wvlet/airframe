@@ -103,7 +103,7 @@ object GrpcServiceBuilderTest extends AirSpec {
         codec.toMsgPack(m),
         responseObserver
       )
-      responseObserver.rx.toSeq
+      responseObserver.toRx.toSeq
     }
     def helloClientStreaming(input: Rx[String]): String = {
       val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
@@ -117,7 +117,7 @@ object GrpcServiceBuilderTest extends AirSpec {
         ).asInstanceOf[ClientCallStreamObserver[MsgPack]]
 
       val c = GrpcClientCalls.readClientRequestStream(input, codecFactory.of[String], requestObserver)
-      responseObserver.rx.toSeq.head
+      responseObserver.toRx.toSeq.head
     }
 
     def helloBidiStreaming(input: Rx[String]): Rx[String] = {
@@ -132,7 +132,7 @@ object GrpcServiceBuilderTest extends AirSpec {
         ).asInstanceOf[ClientCallStreamObserver[MsgPack]]
 
       val c = GrpcClientCalls.readClientRequestStream(input, codecFactory.of[String], requestObserver)
-      responseObserver.rx
+      responseObserver.toRx
     }
   }
 
