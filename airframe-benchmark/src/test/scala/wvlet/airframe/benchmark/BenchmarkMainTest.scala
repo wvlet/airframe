@@ -48,6 +48,6 @@ class BenchmarkMainTest extends AirSpec {
   }
 
   def `run http benchmark`: Unit = {
-    BenchmarkMain.main("bench-quick -F 0 -mt 2s http")
+    BenchmarkMain.main("bench-quick -F 0 -mt 1s http")
   }
 }

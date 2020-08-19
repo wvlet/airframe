@@ -15,18 +15,22 @@ package wvlet.airframe.benchmark.http
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.twitter.finagle.http.{Request, Response}
+import com.twitter.util.Future
 import io.grpc.Channel
+import io.grpc.stub.StreamObserver
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
 import wvlet.airframe.http.finagle.{Finagle, FinagleClient, FinagleServer, FinagleSyncClient}
 import wvlet.airframe.http.grpc.gRPC
 import wvlet.log.LogSupport
-import com.twitter.finagle.http.{Request, Response}
-import com.twitter.util.{Await, Future}
-import io.grpc.stub.StreamObserver
-import wvlet.airframe._
-import wvlet.log.io.IOUtil
+
+object HttpBenchmark {
+  final val asyncIteration = 100
+}
+
+import wvlet.airframe.benchmark.http.HttpBenchmark._
 
 /**
   */
@@ -35,10 +39,8 @@ import wvlet.log.io.IOUtil
 @OutputTimeUnit(TimeUnit.SECONDS)
 class FinagleBenchmark extends LogSupport {
 
-  private val port = IOUtil.randomPort
   private val design =
     Finagle.server
-      .withPort(port)
       .withRouter(Greeter.router)
       .designWithSyncClient
       .bind[FinagleClient].toProvider { server: FinagleServer =>
@@ -68,12 +70,17 @@ class FinagleBenchmark extends LogSupport {
     blackhole.consume(client.Greeter.hello("RPC"))
   }
   @Benchmark
-  @OperationsPerInvocation(100)
+  @OperationsPerInvocation(asyncIteration)
   def rpcAsync(blackhole: Blackhole): Unit = {
-    val futures = for (i <- 0 until 100) yield {
-      asyncClient.Greeter.hello("RPC")
+    val counter = new AtomicInteger(0)
+    val futures = for (i <- 0 until asyncIteration) yield {
+      asyncClient.Greeter.hello("RPC").onSuccess { x =>
+        counter.incrementAndGet()
+      }
     }
-    Await.result(Future.join(futures))
+    while (counter.get() != asyncIteration) {
+      Thread.`yield`()
+    }
   }
 }
 
@@ -109,10 +116,10 @@ class GrpcBenchmark extends LogSupport {
   }
 
   @Benchmark
-  @OperationsPerInvocation(100)
+  @OperationsPerInvocation(asyncIteration)
   def rpcAsync(blackhole: Blackhole): Unit = {
     val counter = new AtomicInteger(0)
-    for (i <- 0 until 100) {
+    for (i <- 0 until asyncIteration) {
       asyncClient.Greeter.hello(
         "RPC",
         new StreamObserver[String] {
@@ -126,7 +133,7 @@ class GrpcBenchmark extends LogSupport {
         }
       )
     }
-    while (counter.get() != 100) {
+    while (counter.get() != asyncIteration) {
       Thread.`yield`()
     }
   }
