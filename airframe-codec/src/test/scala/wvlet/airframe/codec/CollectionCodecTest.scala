@@ -17,6 +17,7 @@ import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.Surface
 
+import scala.collection.immutable.ListMap
 import scala.jdk.CollectionConverters._
 
 /**
@@ -27,6 +28,11 @@ class CollectionCodecTest extends CodecSpec {
   def `support Map type`: Unit = {
     val v = Map("id" -> 1)
     roundtrip(Surface.of[Map[String, Int]], v, DataType.ANY)
+  }
+
+  def `support ListMap type`: Unit = {
+    val v = ListMap("z" -> 1, "y" -> 2)
+    roundtrip(Surface.of[ListMap[String, Int]], v, DataType.ANY)
   }
 
   def `support Java Map type`: Unit = {
