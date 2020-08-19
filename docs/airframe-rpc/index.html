@@ -66,7 +66,7 @@
 <p><img src="../img/airframe-rpc/rpc-overview.png" alt="overview"></p>
 <p>Airframe RPC Features:</p>
 <ul>
-<li>Making plain Scala functions as RPC endpoints.</li>
+<li>Use plain Scala functions as RPC endpoints.</li>
 <li>Support <a href="https://twitter.github.io/finagle/">Finagle</a> (HTTP/1) or <a href="https://grpc.io/">gRPC</a> (HTTP/2) backends.</li>
 <li><a href="#sbt-airframe-plugin">sbt-airframe</a> plugin to generate RPC clients. No need to make HTTP requests by yourself.</li>
 <li><a href="https://www.scala-js.org/">Scala.js</a> support for building interactive web browser applications.</li>
@@ -74,7 +74,7 @@
 </ul>
 <h2><a class="anchor" aria-hidden="true" id="why-airframe-rpc"></a><a href="#why-airframe-rpc" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Why Airframe RPC?</h2>
 <p>Airframe RPC enables calling Scala methods at remote servers. You don’t need to worry about how to encode your data into JSON, nor how to define HTTP REST endpoints. Airframe RPC abstracts away these details; the framework generates the code for serializing your data objects into JSON or <a href="https://msgpack.org/">MessagePack</a> and calls appropriate HTTP endpoints on your behalf.</p>
-<p>For defining RPC services, what we need are definitions of functions and data structures for representing HTTP requests and responses. Airframe RPC leverages the nature of Scala as a functional and object-oriented programming language. You can use plain Scala functions as RPC endpoints and <a href="https://docs.scala-lang.org/tour/case-classes.html">case classes</a> for modeling complex data:</p>
+<p>For defining RPC services, we need to define functions and data structures for representing HTTP requests and responses. Airframe RPC leverages the nature of Scala as a functional and object-oriented programming language; You can use plain Scala functions as RPC endpoints and <a href="https://docs.scala-lang.org/tour/case-classes.html">case classes</a> for modeling complex data. Here is an example of Airframe RPC interface:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// An example RPC definition using Airframe RPC</span>
 <span class="hljs-meta">@RPC</span>
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Greeter</span> </span>{
@@ -86,8 +86,8 @@
 <span class="hljs-comment">// This will be encoded into JSON {"message":"...."} or its MessagePack representation</span>
 <span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">GreeterResponse</span>(<span class="hljs-params">message:<span class="hljs-type">String</span></span>)</span>
 </code></pre>
-<p>While <a href="https://grpc.io/">gRPC</a> has been a popular approach for building RPC services, its ecosystem often uses <a href="https://developers.google.com/protocol-buffers/docs/overview">ProtocolBuffers</a> for defining data structures and RPC methods. To start using gRPC in Scala, we need to bridge the gap between ProtocolBuffers and Scala (e.g., <a href="https://scalapb.github.io/">ScalaPB</a>). gRPC itself, however, is a data-format agnostic framework. So, in order to use Scala naturally for gRPC, we extended gRPC to support  MessagePack (a compact binary alternative of JSON) and <a href="/airframe/docs/airframe-codec">airframe-codec</a> so that we can create RPC services without introducing ProtocolBuffers.</p>
-<p>Airframe RPC also supports building HTTP/1 services backed by <a href="https://twitter.github.io/finagle/">Finagle</a> as well as efficient HTTP/2-based streaming services with <a href="https://grpc.io/">gRPC</a>. Supporting both HTTP/1 and HTTP/2 is important because gRPC heavily uses HTTP/2 features, but HTTP/1-based web clients including web browsers still don't fully support HTTP/2.</p>
+<p>While <a href="https://grpc.io/">gRPC</a> has been a popular approach for building RPC services, its ecosystem often uses <a href="https://developers.google.com/protocol-buffers/docs/overview">ProtocolBuffers</a> for defining data structures and RPC methods. To start using gRPC in Scala, we need to bridge the gap between ProtocolBuffers and Scala (e.g., <a href="https://scalapb.github.io/">ScalaPB</a>). gRPC itself, however, is a data-format agnostic framework. So, in order to naturally use Scala for gRPC, we extended gRPC to support MessagePack (a compact binary alternative of JSON) and used <a href="/airframe/docs/airframe-codec">airframe-codec</a> for message serialization so that we can create RPC services without introducing ProtocolBuffers.</p>
+<p>Airframe RPC also supports building HTTP/1 services backed by <a href="https://twitter.github.io/finagle/">Finagle</a>. Supporting both HTTP/1 and HTTP/2 is important because gRPC heavily uses HTTP/2 features, but HTTP/1-based web clients including web browsers still don't fully support HTTP/2.</p>
 <p>In 2020, Scala.js, which can compile Scala code into JavaScript, finally <a href="https://www.scala-js.org/news/2020/02/25/announcing-scalajs-1.0.0/">became 1.0.0 after 7 years of development</a>. This also has paved a way for using Scala both for servers (Scala JVM) and clients (Scala.js with Ajax call with HTTP/1). We explored the approach for using Scala's functional interfaces as RPC endpoint definitions, and successfully created Airframe RPC, which works both for Scala JVM and Scala.js, on top of <a href="/airframe/docs/">technology stack of 20+ Airframe modules</a>.</p>
 <p>Although Airframe RPC is a relatively new project started at March 2020 inside <a href="https://www.treasuredata.com/">Arm Treasure Data</a>, this project has proved various advantages. For example:</p>
 <ul>
@@ -518,8 +518,8 @@ client.<span class="hljs-type">GreeterApi</span>.sayHello(<span class="hljs-stri
 <ul>
 <li>ex. <code>POST /hello.api.v1.MyService/hello</code></li>
 </ul></li>
-<li><strong>Content-Type</strong>: <code>application/json</code> (default), <code>application/x-msgpack</code> or <code>application/grpc</code></li>
-<li><strong>Request body</strong>: JSON (or MessagePack) representation of the method arguments. Each method parameter names and arguments need to be a key-value pair in the JSON object.
+<li><strong>Content-Type</strong>: <code>application/json</code>, <code>application/x-msgpack</code> (default) or <code>application/grpc</code></li>
+<li><strong>Request body</strong>: JSON or MessagePack (default) representation of the method arguments. Each method parameter names and arguments need to be a key-value pair in the JSON object.
 <ul>
 <li>For an RPC method <code>def m(p1:T1, p2:T2, ...)</code>, the request body will have the structrure of <code>{&quot;p1&quot;:(json representation of T1), &quot;p2&quot;:(json representation of T2}, ...}</code>. For example, the request to the above <code>hello(request:HelloRequest)</code> method will require the following JSON body:</li>
 </ul></li>
@@ -527,8 +527,8 @@ client.<span class="hljs-type">GreeterApi</span>.sayHello(<span class="hljs-stri
 <pre><code class="hljs css language-json">{<span class="hljs-attr">"request"</span>:{<span class="hljs-attr">"name"</span>:<span class="hljs-string">"leo"</span>}}
 </code></pre>
 <ul>
-<li><strong>Accept</strong>: &quot;application/json&quot; (default) or &quot;application/x-msgpack&quot;</li>
-<li><strong>Response body</strong>: JSON (or MessagePack) representation of the method return type:</li>
+<li><strong>Accept</strong>: &quot;application/json&quot; or &quot;application/x-msgpack&quot; (default)</li>
+<li><strong>Response body</strong>: JSON or MessagePack (default) representation of the method return type:</li>
 </ul>
 <pre><code class="hljs css language-json">{<span class="hljs-attr">"message"</span>:<span class="hljs-string">"..."</span>}
 </code></pre>
