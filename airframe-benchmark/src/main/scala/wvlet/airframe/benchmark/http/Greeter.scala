@@ -28,6 +28,8 @@ object Greeter {
 
   def finagleClient =
     HttpCodeGenerator.generate(router, HttpClientGeneratorConfig("wvlet.airframe.benchmark.http:sync"))
+  def finagleAsyncClient =
+    HttpCodeGenerator.generate(router, HttpClientGeneratorConfig("wvlet.airframe.benchmark.http:async"))
   def grpcClient =
     HttpCodeGenerator.generate(router, HttpClientGeneratorConfig("wvlet.airframe.benchmark.http:grpc"))
 }
