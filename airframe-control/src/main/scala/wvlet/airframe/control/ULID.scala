@@ -23,7 +23,7 @@ final case class ULID(private val ulid: String) {
     * @return
     */
   override def toString: String = ulid
-  def epochMillis: Long = {
+  lazy val epochMillis: Long = {
     extractEpochMillis(ulid).getOrElse {
       throw new IllegalArgumentException(s"Invalid ULID")
     }
@@ -36,7 +36,9 @@ final case class ULID(private val ulid: String) {
 object ULID {
   private val defaultGenerator = {
     val timeSource = () => System.currentTimeMillis()
-    val randGen = { () => Random.nextDouble() }
+    val randGen = { () =>
+      Random.nextDouble()
+    }
     new ULIDGenerator(timeSource, randGen)
   }
 
