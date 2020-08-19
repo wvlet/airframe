@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
+import wvlet.airframe.control.ULID
 import wvlet.airframe.json.JSON
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject, JSONString}
 import wvlet.airframe.surface.Surface
@@ -197,5 +198,13 @@ class ScalaStandardCodecTest extends CodecSpec {
     testInvalid("""["hello"]""")
     testInvalid("""[null, "hello", null]""")
     testInvalid("""{"exceptionClass":"java.lang.NullPointerException","message":"NPE"}""")
+  }
+
+  def `support ULID`: Unit = {
+    val codec   = MessageCodec.of[ULID]
+    val ulid    = ULID.newULID
+    val msgpack = codec.toMsgPack(ulid)
+    val ulid1   = codec.fromMsgPack(msgpack)
+    ulid shouldBe ulid1
   }
 }

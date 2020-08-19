@@ -13,23 +13,31 @@
  */
 package wvlet.airframe.codec
 
-import java.util.UUID
-
 import wvlet.airframe.control.ULID
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
 
 /**
-  * Standard codec collection
   */
-object StandardCodec {
-  val javaClassCodec = Map(
-    Surface.of[Throwable]         -> ThrowableCodec,
-    Surface.of[Exception]         -> ThrowableCodec,
-    Surface.of[java.time.Instant] -> JavaInstantTimeCodec,
-    Surface.of[UUID]              -> UUIDCodec,
-    Surface.of[ULID]              -> ULIDCodec
-  )
-
-  val standardCodec: Map[Surface, MessageCodec[_]] =
-    PrimitiveCodec.primitiveCodec ++ PrimitiveCodec.primitiveArrayCodec ++ javaClassCodec
+object ULIDCodec extends MessageCodec[ULID] {
+  override def pack(p: Packer, v: ULID): Unit = {
+    p.packString(v.toString)
+  }
+  override def unpack(
+      u: Unpacker,
+      v: MessageContext
+  ): Unit = {
+    u.getNextValueType match {
+      case ValueType.STRING =>
+        val s = u.unpackString
+        try {
+          v.setObject(ULID.fromString(s))
+        } catch {
+          case e: IllegalArgumentException =>
+            v.setError(e)
+        }
+      case _ =>
+        u.skipValue
+        v.setNull
+    }
+  }
 }
