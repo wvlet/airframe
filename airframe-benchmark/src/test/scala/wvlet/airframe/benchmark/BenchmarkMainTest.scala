@@ -46,4 +46,8 @@ class BenchmarkMainTest extends AirSpec {
   def `run json perf benchmark`: Unit = {
     BenchmarkMain.main(s"json-perf -n ${iteration} -b ${iteration}")
   }
+
+  def `run http benchmark`: Unit = {
+    BenchmarkMain.main("bench-quick -F 0 -mt 1s http")
+  }
 }
