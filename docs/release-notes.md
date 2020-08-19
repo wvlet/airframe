@@ -6,6 +6,57 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.8.0
+
+### Major And Breaking Changes
+
+- Airframe RPC now supports HTTP/2 based gRPC backend: [airframe-grpc](https://wvlet.org/airframe/docs/airframe-rpc#airframe-grpc). Our initial benchmark result showed [3x faster rpc/sec](https://github.com/wvlet/airframe/pull/1247) over Finagle backend.  
+   -  airframe-grpc: Support gRPC backend ([#1192](https://github.com/wvlet/airframe/issues/1192)) [[3670cc7](https://github.com/wvlet/airframe/commit/3670cc7)]
+- [airframe-rx](https://wvlet.org/airframe/docs/airframe-rx) becomes an independent module (`wvlet.airframe.rx.Rx[X]`) for providing ReactiveX streaming interface. This module is used for gRPC-streaming and interctive DOM rendering (airframe-rx-html)
+   - The package `wvlet.airframe.http.rx` has been renamed to `wvlet.airframe.rx` ([#1237](https://github.com/wvlet/airframe/issues/1237)) [[99c54b2](https://github.com/wvlet/airframe/commit/99c54b2)]
+- airframe-http-rx, airframe-http-widgets are renamed to airframe-rx-http and airframe-rx-widgets respectively ([#1238](https://github.com/wvlet/airframe/issues/1238)) [[b58d40a](https://github.com/wvlet/airframe/commit/b58d40a)]
+
+### New Features
+
+-  airframe-control: Support ULID. [Universally Unique Lexicographically Sortable Identifier](https://github.com/ulid/spec) ([#1223](https://github.com/wvlet/airframe/issues/1223)) [[6e7e7df](https://github.com/wvlet/airframe/commit/6e7e7df)]
+-  airframe-codec: Support ListMap codec ([#1217](https://github.com/wvlet/airframe/issues/1217)) [[e96341a](https://github.com/wvlet/airframe/commit/e96341a)]
+-  airframe-rx: Represent Rx values with OnNext, OnError, and OnCompletion ([#1235](https://github.com/wvlet/airframe/issues/1235)) [[39a2a92](https://github.com/wvlet/airframe/commit/39a2a92)]
+-  airframe-rx: Add RxOption[A]  ([#1214](https://github.com/wvlet/airframe/issues/1214)) [[d08ea45](https://github.com/wvlet/airframe/commit/d08ea45)]
+-  airframe-rx: Add Rx.zip(...), Rx.join(...) for merging multiple stream events ([#1216](https://github.com/wvlet/airframe/issues/1216)) [[37196a8](https://github.com/wvlet/airframe/commit/37196a8)]
+-  airframe-json: Add JSON.format for pretty printing ([#1225](https://github.com/wvlet/airframe/issues/1225)) [[d01c772](https://github.com/wvlet/airframe/commit/d01c772)]
+-  sbt-airframe: Support generating gRPC clients ([#1194](https://github.com/wvlet/airframe/issues/1194)) [[2890331](https://github.com/wvlet/airframe/commit/2890331)]
+
+### Bug fixes
+
+-  sbt-airframe: Limit the scope of finding @RPC/@Endpoint annotaitons ([#1244](https://github.com/wvlet/airframe/issues/1244)) [[202f94b](https://github.com/wvlet/airframe/commit/202f94b)]
+-  airfame-codec: Throw an exception for invalid enum strings ([#1220](https://github.com/wvlet/airframe/issues/1220)) [[a55cb68](https://github.com/wvlet/airframe/commit/a55cb68)]
+-  airframe-okhttp: Replace the request body content to a byte array in memory. ([#1233](https://github.com/wvlet/airframe/issues/1233)) [[242d3c0](https://github.com/wvlet/airframe/commit/242d3c0)]
+-  airframe-okhttp: Shutdown OkHttpClient explicitly ([#1196](https://github.com/wvlet/airframe/issues/1196)) [[5917804](https://github.com/wvlet/airframe/commit/5917804)]
+-  airframe-http: Retry on 408 request timeout ([#1218](https://github.com/wvlet/airframe/issues/1218)) [[ceea5b1](https://github.com/wvlet/airframe/commit/ceea5b1)]
+
+### Other changes 
+
+-  Upgrade to Scala 2.12.12, 2.13.3 ([#1199](https://github.com/wvlet/airframe/issues/1199)) [[b07b7ac](https://github.com/wvlet/airframe/commit/b07b7ac)]
+-  airframe-http-okhttp: Update okhttp to 3.14.9 ([#1096](https://github.com/wvlet/airframe/issues/1096)) [[372f98d](https://github.com/wvlet/airframe/commit/372f98d)]
+-  airframe-grpc: Add a simple finagle/grpc benchmark ([#1247](https://github.com/wvlet/airframe/issues/1247)) [[ba85551](https://github.com/wvlet/airframe/commit/ba85551)]
+-  airframe-grpc: Support gRPC server interceptors ([#1246](https://github.com/wvlet/airframe/issues/1246)) [[53db2e0](https://github.com/wvlet/airframe/commit/53db2e0)]
+-  airframe-grpc: Add async grpc client for streaming ([#1241](https://github.com/wvlet/airframe/issues/1241)) [[a1660cd](https://github.com/wvlet/airframe/commit/a1660cd)]
+-  airframe-grpc: Support client, server, and bidirectional streaming ([#1239](https://github.com/wvlet/airframe/issues/1239)) [[bbfef41](https://github.com/wvlet/airframe/commit/bbfef41)]
+-  airframe-grpc: Update grpc-netty-shaded, grpc-stub to 1.31.1 ([#1230](https://github.com/wvlet/airframe/issues/1230)) [[ede91c5](https://github.com/wvlet/airframe/commit/ede91c5)]
+-  airframe-grpc: Generate both sync and async clients inside the same class ([#1224](https://github.com/wvlet/airframe/issues/1224)) [[a9bb18b](https://github.com/wvlet/airframe/commit/a9bb18b)]
+
+### Internal Changes
+
+-  airframe-grpc: Update grpc-netty-shaded, grpc-stub to 1.31.0 ([#1197](https://github.com/wvlet/airframe/issues/1197)) [[30eb3b9](https://github.com/wvlet/airframe/commit/30eb3b9)]
+-  internal: Update presto-main to 340 ([#1219](https://github.com/wvlet/airframe/issues/1219)) [[9671111](https://github.com/wvlet/airframe/commit/9671111)]
+-  Update jmh-core, jmh-generator-bytecode, ... to 1.25 ([#1231](https://github.com/wvlet/airframe/issues/1231)) [[7794143](https://github.com/wvlet/airframe/commit/7794143)]
+-  airframe-http: Update swagger-parser to 2.0.21 ([#1193](https://github.com/wvlet/airframe/issues/1193)) [[f9fd30b](https://github.com/wvlet/airframe/commit/f9fd30b)]
+-  Update sbt-scalafmt to 2.4.2 ([#1198](https://github.com/wvlet/airframe/issues/1198)) [[3a8660f](https://github.com/wvlet/airframe/commit/3a8660f)]
+-  airframe-jdbc: Update postgresql to 42.2.15 ([#1236](https://github.com/wvlet/airframe/issues/1236)) [[3a1bc66](https://github.com/wvlet/airframe/commit/3a1bc66)]
+-  airframe-jdbc: Update sqlite-jdbc to 3.32.3.2 ([#1195](https://github.com/wvlet/airframe/issues/1195)) [[07f42e1](https://github.com/wvlet/airframe/commit/07f42e1)]
+-  Update scalajs-dom to 1.1.0 ([#1215](https://github.com/wvlet/airframe/issues/1215)) [[d0866a5](https://github.com/wvlet/airframe/commit/d0866a5)]
+-  internal: Update sbt-buildinfo to 0.10.0 ([#1222](https://github.com/wvlet/airframe/issues/1222)) [[96e78f3](https://github.com/wvlet/airframe/commit/96e78f3)]
+
 ## 20.7.0
 
 This release supports generating Open API schema from Aiframe HTTP/RPC interfaces by using sbt-airframe plugin. 
