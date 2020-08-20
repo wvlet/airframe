@@ -440,7 +440,7 @@ gRPC.server
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> example.api.<span class="hljs-type">ServiceGrpc</span>
 
 <span class="hljs-comment">// Create a client channel</span>
-<span class="hljs-keyword">val</span> channel = <span class="hljs-type">ManagedChannel</span>.forTaget(<span class="hljs-string">"localhost:8080"</span>).usePlaintext().build()
+<span class="hljs-keyword">val</span> channel = <span class="hljs-type">ManagedChannelBuilder</span>.forTaget(<span class="hljs-string">"localhost:8080"</span>).usePlaintext().build()
 
 <span class="hljs-comment">// Create a gRPC blocking client (SyncClient)</span>
 <span class="hljs-keyword">val</span> client = <span class="hljs-type">ServiceGrpc</span>.newSyncClient(channel)
