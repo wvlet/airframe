@@ -15,9 +15,8 @@ package greeter
 
 import greeter.api.{GreeterApi, ServiceGrpc, ServiceSyncClient}
 import io.grpc.{ManagedChannel, ManagedChannelBuilder}
-import wvlet.airframe.control.Control
 import wvlet.airframe.control.Control.withResource
-import wvlet.airframe.http.{Router, compat}
+import wvlet.airframe.http.Router
 import wvlet.airframe.http.finagle.Finagle
 import wvlet.airframe.http.grpc.gRPC
 import wvlet.airframe.launcher.{Launcher, command, option}
@@ -40,6 +39,11 @@ class GreeterMain(
   Logger.init
 
   private def router = Router.of[GreeterApi]
+
+  @command(isDefault = true)
+  def default: Unit = {
+    info(s"Type --help to see the list of commands")
+  }
 
   @command(description = "Start a Finagle server")
   def finagleServer: Unit = {
