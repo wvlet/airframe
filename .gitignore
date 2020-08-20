@@ -30,7 +30,6 @@ website/yarn.lock
 website/node_modules
 website/i18n/*
 
-log/*
-airframe-benchmark/log/*
+**/log/*json*
 .vscode/launch.json
 project/metals.sbt

@@ -486,7 +486,7 @@ sbt-airframe generates ServiceGrpc.scala file to the target API package. You can
 import example.api.ServiceGrpc
 
 // Create a client channel
-val channel = ManagedChannel.forTaget("localhost:8080").usePlaintext().build()
+val channel = ManagedChannelBuilder.forTaget("localhost:8080").usePlaintext().build()
 
 // Create a gRPC blocking client (SyncClient)
 val client = ServiceGrpc.newSyncClient(channel)
