@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "wvlet.airframe.benchmark.http.proto";
+
+package proto;
+
+// The greeting service definition.
+service Greeter {
+  rpc Hello (HelloRequest) returns (HelloReply) {}
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloReply {
+  string message = 1;
+}
