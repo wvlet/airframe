@@ -15,6 +15,7 @@ package wvlet.airframe.benchmark.http
 import java.util.concurrent.{Executors, TimeUnit}
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
@@ -25,7 +26,7 @@ import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
 import wvlet.airframe.benchmark.http.proto.greeter.GreeterGrpc.{GreeterBlockingStub, GreeterStub}
 import wvlet.airframe.benchmark.http.proto.greeter.{GreeterGrpc, HelloRequest}
-import wvlet.airframe.benchmark.http.protojava.ProtoJavaGreeter
+import wvlet.airframe.benchmark.http.protojava.{HelloReply, ProtoJavaGreeter}
 import wvlet.airframe.http.finagle.{Finagle, FinagleClient, FinagleServer, FinagleSyncClient}
 import wvlet.airframe.http.grpc.gRPC
 import wvlet.log.LogSupport
@@ -199,9 +200,11 @@ class ScalaPB extends LogSupport {
 @OutputTimeUnit(TimeUnit.SECONDS)
 class GrpcJava extends LogSupport {
 
-  private val port                                              = IOUtil.randomPort
-  private var client: protojava.GreeterGrpc.GreeterBlockingStub = null
-  private var asyncClient: protojava.GreeterGrpc.GreeterStub    = null
+  private val port                                                       = IOUtil.randomPort
+  private var client: protojava.GreeterGrpc.GreeterBlockingStub          = null
+  private var asyncClient: protojava.GreeterGrpc.GreeterStub             = null
+  private val executor                                                   = Executors.newCachedThreadPool()
+  private var futureAsyncClient: protojava.GreeterGrpc.GreeterFutureStub = null
   private val server =
     NettyServerBuilder.forPort(port).addService(new ProtoJavaGreeter).build()
   private val channel = ManagedChannelBuilder.forTarget(s"localhost:${port}").usePlaintext().build()
@@ -211,17 +214,42 @@ class GrpcJava extends LogSupport {
     server.start
     client = protojava.GreeterGrpc.newBlockingStub(channel)
     asyncClient = protojava.GreeterGrpc.newStub(channel)
+    futureAsyncClient = protojava.GreeterGrpc.newFutureStub(channel)
   }
 
   @TearDown
   def teardown: Unit = {
     server.shutdown
     channel.shutdownNow
+    executor.shutdownNow()
   }
 
   @Benchmark
   def rpcSync(blackhole: Blackhole): Unit = {
     blackhole.consume(client.sayHello(protojava.HelloRequest.newBuilder().setName("RPC").build()))
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(asyncIteration)
+  def rpcFutureAsync(blackhole: Blackhole): Unit = {
+    val counter = new AtomicInteger(0)
+    for (i <- 0 until asyncIteration) yield {
+      val future = futureAsyncClient.sayHello(protojava.HelloRequest.newBuilder().setName("RPC").build())
+      Futures.addCallback(
+        future,
+        new FutureCallback[protojava.HelloReply] {
+          override def onSuccess(result: protojava.HelloReply): Unit = {
+            blackhole.consume(result.getMessage)
+            counter.incrementAndGet()
+          }
+          override def onFailure(t: Throwable): Unit = ???
+        },
+        executor
+      )
+    }
+    while (counter.get() != asyncIteration) {
+      Thread.sleep(0)
+    }
   }
 
   @Benchmark
