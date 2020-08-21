@@ -44,7 +44,7 @@ import wvlet.airframe.benchmark.http.HttpBenchmark._
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
-class FinagleBenchmark extends LogSupport {
+class AirframeFinagle extends LogSupport {
 
   private val design =
     Finagle.server
@@ -86,7 +86,7 @@ class FinagleBenchmark extends LogSupport {
       }
     }
     while (counter.get() != asyncIteration) {
-      Thread.`yield`()
+      Thread.sleep(0)
     }
   }
 }
@@ -94,7 +94,7 @@ class FinagleBenchmark extends LogSupport {
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
-class GrpcBenchmark extends LogSupport {
+class AirframeGrpc extends LogSupport {
 
   private val design =
     gRPC.server.withRouter(Greeter.router).designWithChannel.withProductionMode
@@ -141,7 +141,7 @@ class GrpcBenchmark extends LogSupport {
       )
     }
     while (counter.get() != asyncIteration) {
-      Thread.`yield`()
+      Thread.sleep(0)
     }
   }
 }
@@ -149,7 +149,7 @@ class GrpcBenchmark extends LogSupport {
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
-class ScalaPBBenchmark extends LogSupport {
+class ScalaPB extends LogSupport {
 
   private val port                        = IOUtil.randomPort
   private var client: GreeterBlockingStub = null
@@ -189,7 +189,7 @@ class ScalaPBBenchmark extends LogSupport {
       f
     }
     while (counter.get() != asyncIteration) {
-      Thread.`yield`()
+      Thread.sleep(0)
     }
   }
 }
@@ -197,7 +197,7 @@ class ScalaPBBenchmark extends LogSupport {
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
-class GrpcJavaBenchmark extends LogSupport {
+class GrpcJava extends LogSupport {
 
   private val port                                              = IOUtil.randomPort
   private var client: protojava.GreeterGrpc.GreeterBlockingStub = null
@@ -243,7 +243,7 @@ class GrpcJavaBenchmark extends LogSupport {
       )
     }
     while (counter.get() != asyncIteration) {
-      Thread.`yield`()
+      Thread.sleep(0)
     }
   }
 }
