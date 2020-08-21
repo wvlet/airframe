@@ -698,8 +698,7 @@ lazy val benchmark =
   project
     .in(file("airframe-benchmark"))
     // Necessary for generating /META-INF/BenchmarkList
-    .enablePlugins(JmhPlugin)
-    .enablePlugins(PackPlugin)
+    .enablePlugins(JmhPlugin, PackPlugin)
     .settings(buildSettings)
     .settings(
       name := "airframe-benchmark",
@@ -721,8 +720,12 @@ lazy val benchmark =
         "org.openjdk.jmh" % "jmh-generator-bytecode"   % JMH_VERSION,
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION,
         // Used only for json benchmark
-        "org.json4s" %% "json4s-jackson" % "3.6.9",
-        "io.circe"   %% "circe-parser"   % "0.11.2"
+        "org.json4s"           %% "json4s-jackson"       % "3.6.9",
+        "io.circe"             %% "circe-parser"         % "0.11.2",
+        "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+      ),
+      PB.targets in Compile := Seq(
+        scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
       ),
       publishPackArchiveTgz
     )

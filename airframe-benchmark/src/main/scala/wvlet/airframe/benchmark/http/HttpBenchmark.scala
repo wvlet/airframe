@@ -12,19 +12,25 @@
  * limitations under the License.
  */
 package wvlet.airframe.benchmark.http
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{Executors, TimeUnit}
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
-import io.grpc.Channel
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc.stub.StreamObserver
+import io.grpc.{Channel, ManagedChannelBuilder, ServerBuilder}
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
+import wvlet.airframe.benchmark.http.proto.greeter.GreeterGrpc.{GreeterBlockingStub, GreeterStub}
+import wvlet.airframe.benchmark.http.proto.greeter.{GreeterGrpc, HelloRequest}
 import wvlet.airframe.http.finagle.{Finagle, FinagleClient, FinagleServer, FinagleSyncClient}
 import wvlet.airframe.http.grpc.gRPC
 import wvlet.log.LogSupport
+import wvlet.log.io.IOUtil
+
+import scala.concurrent.ExecutionContext
 
 object HttpBenchmark {
   final val asyncIteration = 100
@@ -137,5 +143,52 @@ class GrpcBenchmark extends LogSupport {
       Thread.`yield`()
     }
   }
+}
 
+@State(Scope.Benchmark)
+@BenchmarkMode(Array(Mode.Throughput))
+@OutputTimeUnit(TimeUnit.SECONDS)
+class ScalaPBBenchmark extends LogSupport {
+
+  private val port                        = IOUtil.randomPort
+  private var client: GreeterBlockingStub = null
+  private var asyncClient: GreeterStub    = null
+  private val executionContext            = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
+  private val server =
+    NettyServerBuilder.forPort(port).addService(GreeterGrpc.bindService(new ScalaPBGreeter(), executionContext)).build()
+  private val channel = ManagedChannelBuilder.forTarget(s"localhost:${port}").usePlaintext().build()
+
+  @Setup
+  def setup: Unit = {
+    server.start
+    client = new GreeterBlockingStub(channel)
+    asyncClient = new GreeterStub(channel)
+  }
+
+  @TearDown
+  def teardown: Unit = {
+    server.shutdown
+    channel.shutdownNow
+    executionContext.shutdownNow()
+  }
+
+  @Benchmark
+  def rpcSync(blackhole: Blackhole): Unit = {
+    blackhole.consume(client.hello(HelloRequest("RPC")))
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(asyncIteration)
+  def rpcAsync(blackhole: Blackhole): Unit = {
+    val counter = new AtomicInteger(0)
+    val futures = for (i <- 0 until asyncIteration) yield {
+      val f = asyncClient
+        .hello(HelloRequest("RPC"))
+      f.onComplete(x => counter.incrementAndGet())(executionContext)
+      f
+    }
+    while (counter.get() != asyncIteration) {
+      Thread.`yield`()
+    }
+  }
 }
