@@ -25,6 +25,7 @@ import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
 import wvlet.airframe.benchmark.http.proto.greeter.GreeterGrpc.{GreeterBlockingStub, GreeterStub}
 import wvlet.airframe.benchmark.http.proto.greeter.{GreeterGrpc, HelloRequest}
+import wvlet.airframe.benchmark.http.protojava.ProtoJavaGreeter
 import wvlet.airframe.http.finagle.{Finagle, FinagleClient, FinagleServer, FinagleSyncClient}
 import wvlet.airframe.http.grpc.gRPC
 import wvlet.log.LogSupport
@@ -186,6 +187,60 @@ class ScalaPBBenchmark extends LogSupport {
         .hello(HelloRequest("RPC"))
       f.onComplete(x => counter.incrementAndGet())(executionContext)
       f
+    }
+    while (counter.get() != asyncIteration) {
+      Thread.`yield`()
+    }
+  }
+}
+
+@State(Scope.Benchmark)
+@BenchmarkMode(Array(Mode.Throughput))
+@OutputTimeUnit(TimeUnit.SECONDS)
+class GrpcJavaBenchmark extends LogSupport {
+
+  private val port                                              = IOUtil.randomPort
+  private var client: protojava.GreeterGrpc.GreeterBlockingStub = null
+  private var asyncClient: protojava.GreeterGrpc.GreeterStub    = null
+  private val server =
+    NettyServerBuilder.forPort(port).addService(new ProtoJavaGreeter).build()
+  private val channel = ManagedChannelBuilder.forTarget(s"localhost:${port}").usePlaintext().build()
+
+  @Setup
+  def setup: Unit = {
+    server.start
+    client = protojava.GreeterGrpc.newBlockingStub(channel)
+    asyncClient = protojava.GreeterGrpc.newStub(channel)
+  }
+
+  @TearDown
+  def teardown: Unit = {
+    server.shutdown
+    channel.shutdownNow
+  }
+
+  @Benchmark
+  def rpcSync(blackhole: Blackhole): Unit = {
+    blackhole.consume(client.sayHello(protojava.HelloRequest.newBuilder().setName("RPC").build()))
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(asyncIteration)
+  def rpcAsync(blackhole: Blackhole): Unit = {
+    val counter = new AtomicInteger(0)
+    for (i <- 0 until asyncIteration) yield {
+      asyncClient.sayHello(
+        protojava.HelloRequest.newBuilder().setName("RPC").build(),
+        new StreamObserver[protojava.HelloReply] {
+          override def onNext(v: protojava.HelloReply): Unit = {
+            blackhole.consume(v.getMessage)
+          }
+          override def onError(t: Throwable): Unit = {}
+          override def onCompleted(): Unit = {
+            counter.incrementAndGet()
+          }
+        }
+      )
     }
     while (counter.get() != asyncIteration) {
       Thread.`yield`()
