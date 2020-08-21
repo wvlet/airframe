@@ -13,18 +13,21 @@
  */
 package wvlet.airframe.benchmark.http
 
+import wvlet.airframe.benchmark.http.Greeter.GreeterResponse
 import wvlet.airframe.http.codegen.{HttpClientGeneratorConfig, HttpCodeGenerator}
-import wvlet.airframe.http.{HttpClientConfig, RPC, Router}
+import wvlet.airframe.http.{RPC, Router}
 
 /**
   */
 @RPC
 class Greeter {
-  def hello(name: String) = s"Hello ${name}!"
+  def hello(name: String) = GreeterResponse(s"Hello ${name}!")
 }
 
 object Greeter {
   def router = Router.of[Greeter]
+
+  case class GreeterResponse(message: String)
 
   def finagleClient =
     HttpCodeGenerator.generate(router, HttpClientGeneratorConfig("wvlet.airframe.benchmark.http:sync"))
