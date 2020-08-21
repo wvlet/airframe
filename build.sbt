@@ -720,13 +720,16 @@ lazy val benchmark =
         "org.openjdk.jmh" % "jmh-generator-bytecode"   % JMH_VERSION,
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION,
         // Used only for json benchmark
-        "org.json4s"           %% "json4s-jackson"       % "3.6.9",
-        "io.circe"             %% "circe-parser"         % "0.11.2",
-        "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+        "org.json4s" %% "json4s-jackson" % "3.6.9",
+        "io.circe"   %% "circe-parser"   % "0.11.2",
+        // For ScalaPB
+        // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+        // For grpc-java
+        "io.grpc" % "grpc-protobuf" % GRPC_VERSION
       ),
-      PB.targets in Compile := Seq(
-        scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
-      ),
+//      PB.targets in Compile := Seq(
+//        scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
+//      ),
       publishPackArchiveTgz
     )
     .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, finagle, grpc, airframeMacrosJVMRef, airspecRefJVM % Test)

@@ -12,17 +12,17 @@
  * limitations under the License.
  */
 package wvlet.airframe.benchmark.http
-import wvlet.airframe.benchmark.http.proto.greeter.{GreeterGrpc, HelloReply, HelloRequest}
 
-import scala.concurrent.Future
+//import wvlet.airframe.benchmark.http.proto.greeter.{GreeterGrpc, HelloReply, HelloRequest}
+//import scala.concurrent.Future
 
 /**
   */
-class ScalaPBGreeter extends GreeterGrpc.Greeter {
-
-  override def hello(
-      request: HelloRequest
-  ): Future[HelloReply] = {
-    Future.successful(HelloReply(s"Hello ${request.name}!"))
-  }
-}
+//class ScalaPBGreeter extends GreeterGrpc.Greeter {
+//
+//  override def hello(
+//      request: HelloRequest
+//  ): Future[HelloReply] = {
+//    Future.successful(HelloReply(s"Hello ${request.name}!"))
+//  }
+//}
