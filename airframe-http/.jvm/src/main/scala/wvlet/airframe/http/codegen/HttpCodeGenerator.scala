@@ -18,7 +18,7 @@ import java.net.URLClassLoader
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Control
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.codegen.client.{AsyncClient, HttpClientType}
+import wvlet.airframe.http.codegen.client.{AsyncClientGenerator, HttpClientGenerator}
 import wvlet.airframe.http.openapi.OpenAPI
 import wvlet.airframe.launcher.Launcher
 import wvlet.log.{LogLevel, LogSupport, Logger}
@@ -27,7 +27,7 @@ case class HttpClientGeneratorConfig(
     // A package name to search for airframe-http interfaces
     apiPackageName: String,
     // scala-async, scala-sync, scala-js, etc.
-    clientType: HttpClientType = AsyncClient,
+    clientType: HttpClientGenerator = AsyncClientGenerator,
     // [optional] Which package to use for the generating client code?
     targetPackageName: String
 ) {
@@ -53,7 +53,7 @@ object HttpClientGeneratorConfig {
 
     HttpClientGeneratorConfig(
       apiPackageName = packageName,
-      clientType = HttpClientType.findClient(tpe).getOrElse {
+      clientType = HttpClientGenerator.findClient(tpe).getOrElse {
         throw new IllegalArgumentException(s"Unknown client type: ${tpe}")
       },
       targetPackageName = targetPackage

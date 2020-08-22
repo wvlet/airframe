@@ -14,12 +14,12 @@
 package wvlet.airframe.http.codegen.client
 import wvlet.airframe.http.codegen.HttpClientIR
 import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, GrpcMethodType}
-import wvlet.airframe.http.codegen.client.ScalaHttpClient.{header, indent}
+import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.{header, indent}
 
 /**
   * Generate gRPC client stubs
   */
-object GrpcClient extends HttpClientType {
+object GrpcClientGenerator extends HttpClientGenerator {
 
   override def name: String             = "grpc"
   override def defaultFileName: String  = "ServiceGrpc.scala"
