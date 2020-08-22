@@ -16,24 +16,24 @@ import wvlet.airframe.http.codegen.HttpClientIR.ClientSourceDef
 
 /**
   */
-trait HttpClientType {
+trait HttpClientGenerator {
   def name: String
   def defaultFileName: String
   def defaultClassName: String
   def generate(src: ClientSourceDef): String
 }
 
-object HttpClientType {
+object HttpClientGenerator {
 
-  def predefinedClients: Seq[HttpClientType] =
+  def predefinedClients: Seq[HttpClientGenerator] =
     Seq(
-      AsyncClient,
-      SyncClient,
-      ScalaJSClient,
-      GrpcClient
+      AsyncClientGenerator,
+      SyncClientGenerator,
+      ScalaJSClientGenerator,
+      GrpcClientGenerator
     )
 
-  def findClient(name: String): Option[HttpClientType] = {
+  def findClient(name: String): Option[HttpClientGenerator] = {
     predefinedClients.find(_.name == name)
   }
 }

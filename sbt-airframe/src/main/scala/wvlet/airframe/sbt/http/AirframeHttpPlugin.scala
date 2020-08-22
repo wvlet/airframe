@@ -87,7 +87,9 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         val baseDir = (ThisBuild / baseDirectory).value
         val classpaths =
           ((Compile / dependencyClasspath).value.files :+ (Compile / classDirectory).value)
-            .map { p => p.relativeTo(baseDir).getOrElse(p).getPath }
+            .map { p =>
+              p.relativeTo(baseDir).getOrElse(p).getPath
+            }
 
         classpaths
       },
@@ -107,7 +109,9 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
 
         val versionFile = airframeHttpPackageDir / "VERSION"
         val needsUpdate = !versionFile.exists() ||
-          !IO.readLines(versionFile).exists { line => line.contains(s"version:=${airframeVersion}") }
+          !IO.readLines(versionFile).exists { line =>
+            line.contains(s"version:=${airframeVersion}")
+          }
 
         if (needsUpdate) {
           // Download airframe-http.tgz with coursier
@@ -225,7 +229,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           if (packages.isEmpty) {
             Seq.empty
           } else {
-            // Build command line manally because scala.sys.proces cannot parse quoted strings
+            // Build command line manually because scala.sys.process cannot parse quoted strings
             val cmd = Seq.newBuilder[String]
             cmd += s"${binDir}/bin/${generatorName}"
             cmd += "openapi"
@@ -253,9 +257,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           }
         }.dependsOn(Compile / compile).value,
       // Generate HTTP clients before compilation
-      Compile / sourceGenerators += Def.task {
-        airframeHttpGenerateClient.value
-      }.taskValue,
+      Compile / sourceGenerators += airframeHttpGenerateClient,
       // Generate OpenAPI doc when generating package
       Compile / `package` := (Compile / `package`).dependsOn(airframeHttpOpenAPIGenerate).value
     )
