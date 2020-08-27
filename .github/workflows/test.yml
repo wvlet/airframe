@@ -85,10 +85,9 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: ~/.cache
-          key: ${{ runner.os }}-scala-js-${{ hashFiles('**/*.sbt') }}
-          restore-keys: ${{ runner.os }}-scala-js-
+          key: ${{ runner.os }}-scalajs_2.12-${{ hashFiles('**/*.sbt') }}
+          restore-keys: ${{ runner.os }}-scalajs_2.12-
       - name: Scala.js test
-        # A workaround for Scala.js linker error
         run: ./sbt "; projectJS/test"
   test_js_2_13:
     name: Scala.js / Scala 2.13
@@ -106,8 +105,8 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: ~/.cache
-          key: ${{ runner.os }}-scala-js_2.13-${{ hashFiles('**/*.sbt') }}
-          restore-keys: ${{ runner.os }}-scala-js_2.13-
+          key: ${{ runner.os }}-scalajs_2.13-${{ hashFiles('**/*.sbt') }}
+          restore-keys: ${{ runner.os }}-scalajs_2.13-
       - name: Scala.js test
         run: ./sbt ++2.13.3 "; projectJS/test"
   test_sbt_plugin:
