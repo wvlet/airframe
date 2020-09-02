@@ -139,6 +139,6 @@ jobs:
           key: ${{ runner.os }}-package-${{ hashFiles('**/*.sbt') }}
           restore-keys: ${{ runner.os }}-package-
       - name: Publish Local Scala JVM
-        run: ./sbt "+ projectJVM2_13/publishLocal; + projectJVM2_12/publishLocal; sbtAirframe/publishLocal;"
+        run: ./sbt publishJVMLocal
       - name: Publish Local Scala.js
-        run: ./sbt "+ projectJS/publishLocal;"
+        run: ./sbt publishJSLocal
