@@ -14,6 +14,7 @@
 package wvlet.airframe.rx
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 
+import wvlet.airframe.Design
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future
@@ -73,6 +74,10 @@ object RxTest extends AirSpec {
     v.get shouldBe 2
   }
 
+  test("bind rx", design = Design.newDesign.bind[RxVar[String]].toInstance(Rx("Hello"))) { v: RxVar[String] =>
+    v.get shouldBe "Hello"
+  }
+
   test("force update RxVar") {
 
     val v     = Rx.variable(1)
@@ -121,28 +126,44 @@ object RxTest extends AirSpec {
     op.toString
 
     // Run chain
-    val c1 = v.run { v => v shouldBe 2 }
+    val c1 = v.run { v =>
+      v shouldBe 2
+    }
     c1.cancel
-    val c2 = v1.run { v => v shouldBe 3 }
+    val c2 = v1.run { v =>
+      v shouldBe 3
+    }
     c2.cancel
-    val c3 = v2.run { v => v shouldBe 6 }
+    val c3 = v2.run { v =>
+      v shouldBe 6
+    }
     c3.cancel
-    val c4 = op.run { v => v shouldBe 6 }
+    val c4 = op.run { v =>
+      v shouldBe 6
+    }
     c4.cancel
   }
 
   test("filter") {
     val v = Rx.const(1)
-    v.filter(_ == 1).run { v => v shouldBe 1 }
-    v.filter(_ != 1).run { v => fail("cannot reach here") }
+    v.filter(_ == 1).run { v =>
+      v shouldBe 1
+    }
+    v.filter(_ != 1).run { v =>
+      fail("cannot reach here")
+    }
   }
 
   test("filter with Option[X]") {
     val v = Rx.const(Some(10))
-    v.filter(_.isDefined).map(_.get).run { x => x shouldBe 10 }
+    v.filter(_.isDefined).map(_.get).run { x =>
+      x shouldBe 10
+    }
 
     val n = Rx.const[Option[Int]](None)
-    n.filter(_.isDefined).map(_.get).run { x => fail("cannot reach here") }
+    n.filter(_.isDefined).map(_.get).run { x =>
+      fail("cannot reach here")
+    }
   }
 
   test("for-comprehension") {
