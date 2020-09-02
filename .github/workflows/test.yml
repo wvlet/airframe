@@ -125,3 +125,20 @@ jobs:
           restore-keys: ${{ runner.os }}-sbt-airframe-
       - name: sbt-airframe test
         run: ./sbt sbtAirframe/scripted
+  test_packaging:
+    name: Packaging Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: olafurpg/setup-scala@v5
+        with:
+          java-version: adopt@1.11
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-package-${{ hashFiles('**/*.sbt') }}
+          restore-keys: ${{ runner.os }}-package-
+      - name: Publish Local Scala JVM
+        run: ./sbt "+ projectJVM2_13/publishLocal; + projectJVM2_12/publishLocal; sbtAirframe/publishLocal;"
+      - name: Publish Local Scala.js
+        run: ./sbt "+ projectJS/publishLocal;"
