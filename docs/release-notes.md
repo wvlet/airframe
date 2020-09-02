@@ -6,6 +6,20 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.9.0
+
+This version is a minor bug fix release. 
+
+-  airframe-rx: Fix the compilation error when binding RxVar ([#1263](https://github.com/wvlet/airframe/issues/1263)) [[b6c8e0f](https://github.com/wvlet/airframe/commit/b6c8e0f)]
+-  airframe-http: Client generator clieanup ([#1254](https://github.com/wvlet/airframe/issues/1254)) [[0b312f2](https://github.com/wvlet/airframe/commit/0b312f2)]
+-  airframe-jdbc: Update postgresql to 42.2.16 ([#1252](https://github.com/wvlet/airframe/issues/1252)) [[2e6f9ff](https://github.com/wvlet/airframe/commit/2e6f9ff)]
+-  airframe-grpc: Add benchmark for grpc-java ([#1251](https://github.com/wvlet/airframe/issues/1251)) [[8ddf320](https://github.com/wvlet/airframe/commit/8ddf320)]
+-  airframe-rpc: Add an RPC project example ([#1250](https://github.com/wvlet/airframe/issues/1250)) [[942f11e](https://github.com/wvlet/airframe/commit/942f11e)]
+-  internal: Update sbt-jmh to 0.4.0 ([#1260](https://github.com/wvlet/airframe/issues/1260)) [[d690eb8](https://github.com/wvlet/airframe/commit/d690eb8)]
+-  internal: Fix Scala.js CI and upgrade scala-js-dom to 1.1.0  ([#1261](https://github.com/wvlet/airframe/issues/1261)) [[5259c64](https://github.com/wvlet/airframe/commit/5259c64)]
+-  internal: Update sbt script ([#1259](https://github.com/wvlet/airframe/issues/1259)) [[b999f14](https://github.com/wvlet/airframe/commit/b999f14)]
+-  internal: Update jmh-core, jmh-generator-bytecode, ... to 1.25.1 ([#1256](https://github.com/wvlet/airframe/issues/1256)) [[589a16c](https://github.com/wvlet/airframe/commit/589a16c)]
+
 ## 20.8.0
 
 ### Major And Breaking Changes
