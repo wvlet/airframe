@@ -23,7 +23,7 @@ addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.2.0")
 addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.2")
 
 // For JMH benchmark
-addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.3.7")
+addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.4.0")
 addSbtPlugin("org.xerial.sbt"     % "sbt-pack" % "0.12")
 
 // For sbt-airframe-http
