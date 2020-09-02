@@ -7,6 +7,7 @@ on:
       - '**.java'
       - '**.sbt'
       - '.scalafmt.conf'
+      - '.github/workflows/test.yml'
   push:
     branches:
       - master
@@ -77,11 +78,11 @@ jobs:
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2-beta
         with:
           node-version: '12.x'
       - name: Node.js setup
-        run: npm install jsdom@16.0.0
+        run: npm install jsdom@16.4.0
       - uses: actions/cache@v1
         with:
           path: ~/.cache
@@ -97,11 +98,11 @@ jobs:
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2-beta
         with:
           node-version: '12.x'
       - name: Node.js setup
-        run: npm install jsdom@16.0.0
+        run: npm install jsdom@16.4.0
       - uses: actions/cache@v1
         with:
           path: ~/.cache
