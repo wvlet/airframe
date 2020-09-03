@@ -31,7 +31,7 @@ addCommandAlias(
 )
 addCommandAlias(
   "publishJVMLocal",
-  s"; ++ ${SCALA_2_12}; projectJVM2_13/publishLocal; projectJVM2_12/publishLocal; projectJS/publishLocal; sbtAirframe/publishLocal;"
+  s"; ++ ${SCALA_2_12}; projectJVM2_13/publishLocal; projectJVM2_12/publishLocal; sbtAirframe/publishLocal;"
 )
 
 // A workaround for https://github.com/sbt/sbt/issues/5586
