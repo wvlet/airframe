@@ -28,7 +28,7 @@ jobs:
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           gpg --quiet --batch --yes --decrypt --passphrase="$PGP_PASSPHRASE" \
           --output $HOME/airframe-doc-deploy-key $GITHUB_WORKSPACE/.github/secrets/airframe-doc-deploy-key.gpg
-          export GIT_DEPLOY_KEY="$(cat $HOME/airframe-doc-deploy-key)"
+          export GITHUB_DEPLOY_KEY="$(cat $HOME/airframe-doc-deploy-key)"
       - uses: actions/cache@v1
         with:
           path: ~/.cache
