@@ -29,6 +29,10 @@ addCommandAlias(
   "publishSnapshots",
   s"; ++ ${SCALA_2_12}; projectJVM2_13/publish; projectJVM2_12/publish; projectJS/publish; sbtAirframe/publish;"
 )
+addCommandAlias(
+  "publishJVMLocal",
+  s"; ++ ${SCALA_2_12}; projectJVM2_13/publishLocal; projectJVM2_12/publishLocal; sbtAirframe/publishLocal;"
+)
 
 // A workaround for https://github.com/sbt/sbt/issues/5586
 //
@@ -37,6 +41,10 @@ addCommandAlias(
 addCommandAlias(
   "publishJSSigned",
   s"; ++ ${SCALA_2_12}; projectJS/publishSigned; ++ ${SCALA_2_13}; projectJS/publishSigned;"
+)
+addCommandAlias(
+  "publishJSLocal",
+  s"; ++ ${SCALA_2_12}; projectJS/publishLocal; ++ ${SCALA_2_13}; projectJS/publishLocal;"
 )
 
 // Allow using Ctrl+C in sbt without exiting the prompt
@@ -725,7 +733,8 @@ lazy val benchmark =
         // For ScalaPB
         // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
         // For grpc-java
-        "io.grpc" % "grpc-protobuf" % GRPC_VERSION
+        "io.grpc"             % "grpc-protobuf" % GRPC_VERSION,
+        "com.google.protobuf" % "protobuf-java" % "3.11.0"
       ),
 //      PB.targets in Compile := Seq(
 //        scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
