@@ -21,14 +21,9 @@ jobs:
           git config --global user.name "Taro L. Saito"
           git config --global push.default simple
       - name: Setup Deploy
-        env:
-          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan github.com >> ~/.ssh/known_hosts
-          gpg --quiet --batch --yes --decrypt --passphrase="$PGP_PASSPHRASE" \
-          --output $HOME/airframe-doc-deploy-key $GITHUB_WORKSPACE/.github/secrets/airframe-doc-deploy-key.gpg
-          export GITHUB_DEPLOY_KEY="$(cat $HOME/airframe-doc-deploy-key)"
       - uses: actions/cache@v1
         with:
           path: ~/.cache
@@ -37,4 +32,6 @@ jobs:
             ${{ runner.os }}-mdocs-${{ hashFiles('docs/**') }}-
             ${{ runner.os }}-mdocs-
       - name: Publish doc
+        env:
+          GIT_DEPLOY_KEY: ${{ secrets.GIT_DEPLOY_KEY }}
         run: ./sbt docs/docusaurusPublishGhpages
