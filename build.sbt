@@ -692,7 +692,7 @@ lazy val json =
 lazy val jsonJVM = json.jvm
 lazy val jsonJS  = json.js
 
-val JMH_VERSION = "1.25.1"
+val JMH_VERSION = "1.25.2"
 
 lazy val benchmark =
   project
