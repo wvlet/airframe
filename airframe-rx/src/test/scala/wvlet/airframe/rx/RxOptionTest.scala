@@ -68,7 +68,9 @@ class RxOptionTest extends AirSpec {
 
   test("option variable") {
     val v = Rx.optionVariable(Some("hello"))
-    val o = v.map { x => s"${x} world" }
+    val o = v.map { x =>
+      s"${x} world"
+    }
     o.run(_ shouldBe "hello world")
   }
 
@@ -79,7 +81,9 @@ class RxOptionTest extends AirSpec {
 
   test("set option variable") {
     val v = Rx.optionVariable(Some("hello"))
-    val o = v.map { x => s"${x} world" }
+    val o = v.map { x =>
+      s"${x} world"
+    }
 
     v.set(Some("good morning"))
     o.run(_ shouldBe "good morning world")
@@ -92,7 +96,9 @@ class RxOptionTest extends AirSpec {
 
   test("convert RxVar to RxOptionVar") {
     val v = Rx(Some("hello")).toOption
-    val o = v.map { x => s"${x} world" }
+    val o = v.map { x =>
+      s"${x} world"
+    }
     o.run(_ shouldBe "hello world").cancel
 
     v := None
@@ -102,4 +108,23 @@ class RxOptionTest extends AirSpec {
     o.run(_ shouldBe "good morning world").cancel
   }
 
+  test("getOrElse") {
+    val opt = Rx.option(Some("hello"))
+    opt.getOrElse("world").run(_ shouldBe "hello")
+  }
+
+  test("getOrElse None") {
+    val opt = Rx.none
+    opt.getOrElse("world").run(_ shouldBe "world")
+  }
+
+  test("orElse") {
+    val opt = Rx.option(Some("hello"))
+    opt.orElse(Some("world")).run(_ shouldBe "hello")
+  }
+
+  test("orElse None") {
+    val opt = Rx.none
+    opt.orElse(Some("world")).run(_ shouldBe "world")
+  }
 }
