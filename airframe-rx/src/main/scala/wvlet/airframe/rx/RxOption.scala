@@ -24,7 +24,14 @@ private[rx] trait RxOption[+A] extends Rx[A] {
   override def withName(name: String): RxOption[A] = RxOptionOp(in.withName(name))
 
   override def map[B](f: A => B): RxOption[B] = {
-    RxOptionOp(MapOp(in, { x: Option[A] => x.map(f) }))
+    RxOptionOp(
+      MapOp(
+        in,
+        { x: Option[A] =>
+          x.map(f)
+        }
+      )
+    )
   }
   override def flatMap[B](f: A => Rx[B]): RxOption[B] = {
     RxOptionOp[B](
@@ -40,6 +47,37 @@ private[rx] trait RxOption[+A] extends Rx[A] {
         }
       )
     )
+  }
+
+  def transform[B](f: Option[A] => B): Rx[B] = {
+    MapOp(
+      in,
+      { x: Option[A] =>
+        f(x)
+      }
+    )
+  }
+
+  def transformOption[B](f: Option[A] => Option[B]): RxOption[B] = {
+    RxOptionOp[B](
+      MapOp(
+        in,
+        { x: Option[A] =>
+          f(x)
+        }
+      )
+    )
+  }
+
+  def getOrElse[A1 >: A](default: => A1): Rx[A1] = {
+    transform {
+      case Some(v) => v
+      case None    => default
+    }
+  }
+
+  def orElse[A1 >: A](default: => Option[A1]): RxOption[A1] = {
+    transformOption(_.orElse(default))
   }
 
   override def filter(f: A => Boolean): RxOption[A] = {
