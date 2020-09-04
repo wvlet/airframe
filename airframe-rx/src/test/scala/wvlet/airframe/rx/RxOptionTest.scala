@@ -127,4 +127,43 @@ class RxOptionTest extends AirSpec {
     val opt = Rx.none
     opt.orElse(Some("world")).run(_ shouldBe "world")
   }
+
+  test("transform") {
+    val opt = Rx.option(Some("hello"))
+    opt
+      .transform {
+        case Some(x) => x
+        case None    => "world"
+      }.run(_ shouldBe "hello")
+  }
+
+  test("transform None") {
+    val opt = Rx.none
+    opt
+      .transform {
+        case Some(x) => x
+        case None    => "world"
+      }.run(_ shouldBe "world")
+  }
+
+  test("transformOption") {
+    val opt = Rx.option(Some("hello"))
+    opt
+      .transformOption {
+        case Some(x) => Some(x)
+        case None    => Some("world")
+      }
+      .run(_ shouldBe "hello")
+  }
+
+  test("transformOption None") {
+    val opt = Rx.none
+    opt
+      .transformOption {
+        case Some(x) => Some(x)
+        case None    => Some("world")
+      }
+      .run(_ shouldBe "world")
+  }
+
 }

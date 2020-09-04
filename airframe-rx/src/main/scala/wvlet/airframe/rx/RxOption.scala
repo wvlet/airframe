@@ -49,24 +49,35 @@ private[rx] trait RxOption[+A] extends Rx[A] {
     )
   }
 
-  def getOrElse[A1 >: A](default: => A1): Rx[A1] = {
+  def transform[B](f: Option[A] => B): Rx[B] = {
     MapOp(
       in,
       { x: Option[A] =>
-        x.getOrElse(default)
+        f(x)
       }
     )
   }
 
-  def orElse[A1 >: A](default: => Option[A1]): RxOption[A1] = {
-    RxOptionOp[A1](
+  def transformOption[B](f: Option[A] => Option[B]): RxOption[B] = {
+    RxOptionOp[B](
       MapOp(
         in,
         { x: Option[A] =>
-          x.orElse(default)
+          f(x)
         }
       )
     )
+  }
+
+  def getOrElse[A1 >: A](default: => A1): Rx[A1] = {
+    transform {
+      case Some(v) => v
+      case None    => default
+    }
+  }
+
+  def orElse[A1 >: A](default: => Option[A1]): RxOption[A1] = {
+    transformOption(_.orElse(default))
   }
 
   override def filter(f: A => Boolean): RxOption[A] = {
