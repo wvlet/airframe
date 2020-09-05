@@ -27,7 +27,6 @@ class IntervalTest extends AirSpec {
       .interval(3, TimeUnit.MILLISECONDS)
       .take(3)
       .map { interval =>
-        counter.incrementAndGet()
         info(s"schedule: ${counter.get}")
         interval
       }
@@ -35,6 +34,7 @@ class IntervalTest extends AirSpec {
     val s = Seq.newBuilder[Long]
     val c = rx.run { x =>
       s += x
+      counter.incrementAndGet()
     }
     try {
       if (isScalaJS) {
