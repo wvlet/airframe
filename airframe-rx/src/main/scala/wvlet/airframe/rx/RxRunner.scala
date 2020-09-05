@@ -160,8 +160,8 @@ class RxRunner(
               effect(OnNext(v.asInstanceOf[A]))
             } else {
               effect(OnCompletion)
+              false
             }
-            true
           case err @ OnError(e) =>
             effect(err)
           case OnCompletion =>
@@ -171,7 +171,10 @@ class RxRunner(
         val intervalMillis = TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
         val timer: Timer   = compat.newTimer
         timer.schedule(intervalMillis) { interval =>
-          effect(OnNext(interval))
+          val canContinue = effect(OnNext(interval))
+          if (!canContinue) {
+            timer.cancel
+          }
         }
         Cancelable { () =>
           timer.cancel

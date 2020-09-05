@@ -27,7 +27,7 @@ class IntervalTest extends AirSpec {
       .interval(3, TimeUnit.MILLISECONDS)
       .take(3)
       .map { interval =>
-        info(s"schedule: ${counter.get}")
+        debug(s"schedule: ${counter.get}")
         interval
       }
 
@@ -44,7 +44,7 @@ class IntervalTest extends AirSpec {
           // wait with a busy loop because Scala.js doesn't support Thread.sleep
         }
         val result = s.result()
-        info(result)
+        debug(result)
         result.size shouldBe 3
       }
     } finally {
