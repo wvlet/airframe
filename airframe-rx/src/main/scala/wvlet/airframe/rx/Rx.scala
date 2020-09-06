@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.rx
 
+import java.util.concurrent.TimeUnit
+
 import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,6 +56,12 @@ trait Rx[+A] extends LogSupport {
   def concat[A1 >: A](other: Rx[A1]): Rx[A1] = ConcatOp(this, other)
   def lastOption: RxOption[A]                = LastOp(this).toOption
 
+  /**
+    * Take an event up to <i>n</i> elements. This may receive fewer events than n if the upstream operator
+    * completes before generating <i>n</i> elements.
+    */
+  def take(n: Long): Rx[A] = TakeOp(this, n)
+
   def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(this.asInstanceOf[Rx[Option[X]]])
 
   /**
@@ -72,12 +80,15 @@ trait Rx[+A] extends LogSupport {
     */
   def toSeq: Seq[A] = {
     val b = Seq.newBuilder[A]
-    RxRunner.run(this) {
+    var c = Cancelable.empty
+    c = RxRunner.run(this) {
       case OnNext(v) =>
         b += v.asInstanceOf[A]
       case OnError(e) =>
+        c.cancel
         throw e
       case OnCompletion =>
+        c.cancel
     }
     b.result()
   }
@@ -150,6 +161,17 @@ object Rx extends LogSupport {
   val none: RxOption[Nothing]                         = RxOptionOp(single(None))
 
   /**
+    * Periodically trigger an event and report the interval millis.
+    * After running Rx with an interval, the cancel method must be called to stop the timer:
+    * <code>
+    *   val c = Rx.interval(...).run { x => ... }
+    *   c.cancel
+    * </code>
+    */
+  def interval(interval: Long, unit: TimeUnit): Rx[Long] = IntervalOp(interval, unit)
+  def intervalMillis(intervalMillis: Long): Rx[Long]     = interval(intervalMillis, TimeUnit.MILLISECONDS)
+
+  /**
     * Mapping a Scala Future into Rx
     * @param f
     * @param ec
@@ -158,7 +180,9 @@ object Rx extends LogSupport {
     */
   def fromFuture[A](f: Future[A])(implicit ec: ExecutionContext): Rx[Option[A]] = {
     val v = Rx.variable[Option[A]](None)
-    f.foreach { x => v := Some(x) }
+    f.foreach { x =>
+      v := Some(x)
+    }
     v
   }
 
@@ -207,4 +231,11 @@ object Rx extends LogSupport {
   }
   case class RecoverOp[A, U](input: Rx[A], f: PartialFunction[Throwable, U])         extends UnaryRx[A, U]
   case class RecoverWithOp[A, U](input: Rx[A], f: PartialFunction[Throwable, Rx[U]]) extends UnaryRx[A, U]
+
+  case class IntervalOp(interval: Long, unit: TimeUnit) extends Rx[Long] {
+    override def parents: Seq[Rx[_]] = Seq.empty
+  }
+  case class TakeOp[A](input: Rx[A], n: Long) extends Rx[A] {
+    override def parents: Seq[Rx[_]] = Seq(input)
+  }
 }

@@ -118,16 +118,19 @@ c.cancel
 - Rx.sequence
 - Rx.variable
 - Rx.optionVariable
+- Rx.interval
 
 ### Transforming Rx
 
 - map
 - flatMap
+- transform (for RxOption)
 
 ### Filtering Rx
 
 - filter
 - lastOption
+- take(n)
 
 ### Combining Rx
 

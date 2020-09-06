@@ -1,5 +1,6 @@
 package wvlet.airframe.rx
 
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 import wvlet.log.LogSupport
@@ -97,7 +98,9 @@ class RxRunner(
           case other =>
             effect(other)
         }
-        Cancelable { () => c1.cancel; c2.cancel }
+        Cancelable { () =>
+          c1.cancel; c2.cancel
+        }
       case FilterOp(in, cond) =>
         var toContinue = true
         run(in) { ev =>
@@ -131,7 +134,9 @@ class RxRunner(
           case other =>
             effect(other)
         }
-        Cancelable { () => c1.cancel; c2.cancel }
+        Cancelable { () =>
+          c1.cancel; c2.cancel
+        }
       case LastOp(in) =>
         var last: Option[A] = None
         run(in) {
@@ -145,6 +150,34 @@ class RxRunner(
               case Success(v) => effect(OnCompletion)
               case Failure(e) => effect(OnError(e))
             }
+        }
+      case TakeOp(in, n) =>
+        var count = 0
+        run(in) {
+          case OnNext(v) =>
+            if (count < n) {
+              count += 1
+              effect(OnNext(v.asInstanceOf[A]))
+            } else {
+              effect(OnCompletion)
+              false
+            }
+          case err @ OnError(e) =>
+            effect(err)
+          case OnCompletion =>
+            effect(OnCompletion)
+        }
+      case IntervalOp(interval, unit) =>
+        val intervalMillis = TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
+        val timer: Timer   = compat.newTimer
+        timer.schedule(intervalMillis) { interval =>
+          val canContinue = effect(OnNext(interval))
+          if (!canContinue) {
+            timer.cancel
+          }
+        }
+        Cancelable { () =>
+          timer.cancel
         }
       case z @ ZipOp(r1, r2) =>
         zip(z)(effect)
@@ -184,7 +217,9 @@ class RxRunner(
           // Do nothing
         }
       case v: RxVar[_] =>
-        v.asInstanceOf[RxVar[A]].foreach { x => effect(OnNext(x)) }
+        v.asInstanceOf[RxVar[A]].foreach { x =>
+          effect(OnNext(x))
+        }
       case RecoverOp(in, f) =>
         run(in) { ev =>
           ev match {
@@ -223,7 +258,9 @@ class RxRunner(
               effect(other)
           }
         }
-        Cancelable { () => c1.cancel; c2.cancel }
+        Cancelable { () =>
+          c1.cancel; c2.cancel
+        }
       case SingleOp(v) =>
         Try(effect(OnNext(v.eval))) match {
           case Success(c) => effect(OnCompletion)
@@ -333,7 +370,9 @@ class RxRunner(
           // Report the completion event only once
           if (continuous || completed.compareAndSet(false, true)) {
             // If there are multiple exceptions, add them to the suppressed list
-            val ex: Throwable = errors.reduce { (e1, e2) => e1.addSuppressed(e2); e1 }
+            val ex: Throwable = errors.reduce { (e1, e2) =>
+              e1.addSuppressed(e2); e1
+            }
             effect(OnError(ex))
           } else {
             true
@@ -356,7 +395,9 @@ class RxRunner(
       }
 
       processEvents(false)
-      Cancelable { () => c.foreach(_.cancel) }
+      Cancelable { () =>
+        c.foreach(_.cancel)
+      }
     }
   }
 

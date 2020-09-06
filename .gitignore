@@ -32,4 +32,5 @@ website/i18n/*
 
 **/log/*json*
 .vscode/launch.json
-project/metals.sbt
+**/metals.sbt
+settings.json

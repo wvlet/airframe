@@ -12,20 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx
-import java.util.concurrent.LinkedBlockingQueue
 
 /**
-  * Blocking queue implementation for supporting gRPC streaming with Rx
   */
-class RxBlockingQueue[A] extends RxSource[A] {
-  override def parents: Seq[Rx[_]] = Seq.empty
-
-  private val blockingQueue = new LinkedBlockingQueue[RxEvent]()
-
-  def add(event: RxEvent): Unit = {
-    blockingQueue.add(event)
-  }
-  override def next: RxEvent = {
-    blockingQueue.take()
-  }
+private[rx] trait Timer {
+  def schedule[U](millis: Long)(body: Long => U): Unit
+  def cancel: Unit
 }
