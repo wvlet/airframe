@@ -37,8 +37,8 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
   private def pp(v: Any): String = {
     val printer = defaultPrinter
       .orElse(wvlet.airspec.compat.platformSpecificPrinter)
-      .orElse[Any, String] {
-        case _ => v.toString
+      .orElse[Any, String] { case _ =>
+        v.toString
       }
 
     printer(v)
@@ -99,9 +99,8 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     private def test(expected: Any): TestResult = {
       arrayDeepEqualMatcher
         .orElse(wvlet.airspec.compat.platformSpecificMatcher)
-        .orElse[(Any, Any), TestResult] {
-          case _ =>
-            check(value == expected)
+        .orElse[(Any, Any), TestResult] { case _ =>
+          check(value == expected)
         }
         .apply(value, expected)
     }

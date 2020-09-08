@@ -24,9 +24,8 @@ object Control_02_Jitter extends App {
 
   Retry
     .withJitter(maxRetry = 3) // It will wait nextWaitMillis * rand() upon retry
-    .retryOn {
-      case e: TimeoutException =>
-        Retry.retryableFailure(e)
+    .retryOn { case e: TimeoutException =>
+      Retry.retryableFailure(e)
     }
     .run {
       // body

@@ -148,9 +148,8 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
 
   override def sendSafe(req: Request, requestFilter: Request => Request = identity): Future[Response] = {
     try {
-      send(req, requestFilter).rescue {
-        case e: HttpClientException =>
-          Future.value(toRawUnsafe(e.response))
+      send(req, requestFilter).rescue { case e: HttpClientException =>
+        Future.value(toRawUnsafe(e.response))
       }
     } catch {
       case e: HttpClientException =>

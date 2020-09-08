@@ -76,15 +76,14 @@ object JSON extends LogSupport {
           s.append("{\n")
           s.append {
             x.v
-              .map {
-                case (k, v: JSONValue) =>
-                  val ss = new StringBuilder
-                  ss.append("  " * (level + 1))
-                  ss.append("\"")
-                  ss.append(quoteJSONString(k))
-                  ss.append("\": ")
-                  ss.append(formatInternal(v, level + 1))
-                  ss.result()
+              .map { case (k, v: JSONValue) =>
+                val ss = new StringBuilder
+                ss.append("  " * (level + 1))
+                ss.append("\"")
+                ss.append(quoteJSONString(k))
+                ss.append("\": ")
+                ss.append(formatInternal(v, level + 1))
+                ss.result()
               }.mkString("", ",\n", "\n")
           }
           s.append("  " * level)
@@ -152,14 +151,13 @@ object JSON extends LogSupport {
       val s = new StringBuilder
       s.append("{")
       s.append {
-        v.map {
-          case (k, v: JSONValue) =>
-            val ss = new StringBuilder
-            ss.append("\"")
-            ss.append(quoteJSONString(k))
-            ss.append("\":")
-            ss.append(v.toJSON)
-            ss.result()
+        v.map { case (k, v: JSONValue) =>
+          val ss = new StringBuilder
+          ss.append("\"")
+          ss.append(quoteJSONString(k))
+          ss.append("\":")
+          ss.append(v.toJSON)
+          ss.result()
         }.mkString(",")
       }
       s.append("}")

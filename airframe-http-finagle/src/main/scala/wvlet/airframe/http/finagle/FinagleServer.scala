@@ -238,20 +238,19 @@ object FinagleServer extends LogSupport {
   def defaultErrorFilter: SimpleFilter[Request, Response] =
     new SimpleFilter[Request, Response] {
       override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
-        service(request).rescue {
-          case e: Throwable =>
-            val ex = findCause(e)
-            FinagleBackend.setThreadLocal(HttpBackend.TLS_KEY_SERVER_EXCEPTION, ex)
-            ex match {
-              case e: HttpServerException =>
-                logger.warn(s"${request} failed: ${e.getMessage}", findCause(e.getCause))
-                // HttpServerException is a properly handled exception, so convert it to an error response
-                Future.value(convertToFinagleResponse(e.toResponse))
-              case other =>
-                logger.warn(s"${request} failed: ${other}", other)
-                // Just return internal server failure with 500 response code
-                Future.value(Response(Status.InternalServerError))
-            }
+        service(request).rescue { case e: Throwable =>
+          val ex = findCause(e)
+          FinagleBackend.setThreadLocal(HttpBackend.TLS_KEY_SERVER_EXCEPTION, ex)
+          ex match {
+            case e: HttpServerException =>
+              logger.warn(s"${request} failed: ${e.getMessage}", findCause(e.getCause))
+              // HttpServerException is a properly handled exception, so convert it to an error response
+              Future.value(convertToFinagleResponse(e.toResponse))
+            case other =>
+              logger.warn(s"${request} failed: ${other}", other)
+              // Just return internal server failure with 500 response code
+              Future.value(Response(Status.InternalServerError))
+          }
         }
       }
     }

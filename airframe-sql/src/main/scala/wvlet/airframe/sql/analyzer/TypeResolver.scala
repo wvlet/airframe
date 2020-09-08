@@ -33,15 +33,14 @@ object TypeResolver extends LogSupport {
   /**
     * Resolve TableRefs with concrete TableScans using the table schema in the catalog.
     */
-  def resolveTableRef(context: AnalyzerContext): PlanRewriter = {
-    case plan @ LogicalPlan.TableRef(qname) =>
-      context.catalog.findFromQName(context.database, qname) match {
-        case Some(dbTable) =>
-          trace(s"Found ${dbTable}")
-          TableScan(qname, dbTable, dbTable.schema.columns.map(_.name))
-        case None =>
-          throw TableNotFound(qname.toString)
-      }
+  def resolveTableRef(context: AnalyzerContext): PlanRewriter = { case plan @ LogicalPlan.TableRef(qname) =>
+    context.catalog.findFromQName(context.database, qname) match {
+      case Some(dbTable) =>
+        trace(s"Found ${dbTable}")
+        TableScan(qname, dbTable, dbTable.schema.columns.map(_.name))
+      case None =>
+        throw TableNotFound(qname.toString)
+    }
   }
 
   def resolveRelation(context: AnalyzerContext): PlanRewriter = {
@@ -51,28 +50,27 @@ object TypeResolver extends LogSupport {
       r.transformExpressions { case x: Expression => resolveExpression(x, r.inputAttributes) }
   }
 
-  def resolveColumns(context: AnalyzerContext): PlanRewriter = {
-    case p @ Project(child, columns) =>
-      val inputAttributes = child.outputAttributes
-      val resolvedColumns = Seq.newBuilder[Attribute]
-      columns.map {
-        case a: AllColumns =>
-          // TODO check (prefix).* to resolve attributes
-          resolvedColumns ++= inputAttributes
-        case SingleColumn(expr, alias) =>
-          resolveExpression(expr, inputAttributes) match {
-            case r: ResolvedAttribute if alias.isEmpty =>
-              resolvedColumns += r
-            case r: ResolvedAttribute if alias.nonEmpty =>
-              resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType)
-            case expr =>
-              resolvedColumns += SingleColumn(expr, alias)
-          }
-        case other =>
-          resolvedColumns += other
-      }
+  def resolveColumns(context: AnalyzerContext): PlanRewriter = { case p @ Project(child, columns) =>
+    val inputAttributes = child.outputAttributes
+    val resolvedColumns = Seq.newBuilder[Attribute]
+    columns.map {
+      case a: AllColumns =>
+        // TODO check (prefix).* to resolve attributes
+        resolvedColumns ++= inputAttributes
+      case SingleColumn(expr, alias) =>
+        resolveExpression(expr, inputAttributes) match {
+          case r: ResolvedAttribute if alias.isEmpty =>
+            resolvedColumns += r
+          case r: ResolvedAttribute if alias.nonEmpty =>
+            resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType)
+          case expr =>
+            resolvedColumns += SingleColumn(expr, alias)
+        }
+      case other =>
+        resolvedColumns += other
+    }
 
-      Project(child, resolvedColumns.result())
+    Project(child, resolvedColumns.result())
   }
 
   /**

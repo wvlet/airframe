@@ -391,8 +391,8 @@ object RxTest extends AirSpec {
   }
 
   test("recover from an error") {
-    def recoveryFunction: PartialFunction[Throwable, Any] = {
-      case e: IllegalArgumentException => 0
+    def recoveryFunction: PartialFunction[Throwable, Any] = { case e: IllegalArgumentException =>
+      0
     }
 
     // (test name, input, expected value on success)
@@ -446,8 +446,8 @@ object RxTest extends AirSpec {
         case 2     => throw new IllegalArgumentException("test error")
         case other => other
       }
-      .recover {
-        case e: IllegalArgumentException => -1
+      .recover { case e: IllegalArgumentException =>
+        -1
       }
     debug(rx)
     eval(rx) shouldBe Seq(
@@ -466,8 +466,8 @@ object RxTest extends AirSpec {
         case 2     => throw ex
         case other => other
       }
-      .recover {
-        case e: IllegalStateException => -1
+      .recover { case e: IllegalStateException =>
+        -1
       }
     debug(rx)
     eval(rx) shouldBe Seq(
@@ -483,8 +483,8 @@ object RxTest extends AirSpec {
       .sequence(1, 2).map {
         case 1 => 1
         case 2 => throw ex
-      }.recoverWith {
-        case e: IllegalArgumentException => Rx.exception(e)
+      }.recoverWith { case e: IllegalArgumentException =>
+        Rx.exception(e)
       }
 
     eval(rx) shouldBe Seq(

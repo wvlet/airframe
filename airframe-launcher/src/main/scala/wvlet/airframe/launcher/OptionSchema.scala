@@ -25,11 +25,10 @@ sealed trait OptionSchema extends LogSupport {
 
   protected lazy val symbolTable = {
     var h = Map[String, CLOption]()
-    options.foreach {
-      case opt: CLOption =>
-        for (p <- opt.prefixes) {
-          h += p -> opt
-        }
+    options.foreach { case opt: CLOption =>
+      for (p <- opt.prefixes) {
+        h += p -> opt
+      }
     }
     h
   }

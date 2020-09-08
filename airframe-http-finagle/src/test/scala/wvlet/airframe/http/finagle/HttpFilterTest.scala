@@ -84,11 +84,10 @@ object BadRequestFilter extends FinagleFilter {
 
 class ExceptionHandleFilter extends FinagleFilter with LogSupport {
   override def apply(request: Request, context: FinagleContext): Future[Response] = {
-    context(request).rescue {
-      case e: Throwable =>
-        val r = Response(Status.BadRequest)
-        r.contentString = e.getMessage
-        Future.value(r)
+    context(request).rescue { case e: Throwable =>
+      val r = Response(Status.BadRequest)
+      r.contentString = e.getMessage
+      Future.value(r)
     }
   }
 }

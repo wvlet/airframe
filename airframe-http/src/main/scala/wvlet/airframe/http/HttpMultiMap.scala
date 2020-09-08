@@ -112,9 +112,8 @@ case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
   }
 
   def ++(m: Map[String, String]): HttpMultiMap = {
-    m.foldLeft(this) {
-      case (mm, entry) =>
-        mm.add(entry._1, entry._2)
+    m.foldLeft(this) { case (mm, entry) =>
+      mm.add(entry._1, entry._2)
     }
   }
 

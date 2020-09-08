@@ -208,10 +208,9 @@ private[airframe] class AirframeSession(
     }
 
     // Start the lifecycle of the object (injectee)
-    Try(lifeCycleManager.onInit(tpe, injectee.asInstanceOf[AnyRef])).recover {
-      case e: Throwable =>
-        error(s"Error occurred while executing onInit(${tpe}, ${injectee})", e)
-        throw e
+    Try(lifeCycleManager.onInit(tpe, injectee.asInstanceOf[AnyRef])).recover { case e: Throwable =>
+      error(s"Error occurred while executing onInit(${tpe}, ${injectee})", e)
+      throw e
     }
 
     /**

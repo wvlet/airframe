@@ -63,9 +63,8 @@ object Zero extends LogSupport {
       preregisteredZeroInstance(t)
   }
 
-  private def zeroOfArray: ZeroValueFactory = {
-    case ArraySurface(cl, elementSurface) =>
-      ClassTag(elementSurface.rawType).newArray(0)
+  private def zeroOfArray: ZeroValueFactory = { case ArraySurface(cl, elementSurface) =>
+    ClassTag(elementSurface.rawType).newArray(0)
   }
 
   private def zeroOfSpecialType: ZeroValueFactory = {
@@ -89,20 +88,19 @@ object Zero extends LogSupport {
         Set.empty
     }
 
-  private def zeroOfTuple: ZeroValueFactory = {
-    case t: TupleSurface =>
-      val args = t.typeArgs.map(s => zeroOf(s)).toIndexedSeq
-      t.typeArgs.size match {
-        case 1 => ()
-        case 2 => (args(0), args(1))
-        case 3 => (args(0), args(1), args(2))
-        case 4 => (args(0), args(1), args(2), args(3))
-        case 5 => (args(0), args(1), args(2), args(3), args(4))
-        case 6 => (args(0), args(1), args(2), args(3), args(4), args(5))
-        case 7 => (args(0), args(1), args(2), args(3), args(4), args(5), args(6))
-        case other =>
-          new UnsupportedOperationException(s"Zero.of[Tuple${other}] is not supported")
-      }
+  private def zeroOfTuple: ZeroValueFactory = { case t: TupleSurface =>
+    val args = t.typeArgs.map(s => zeroOf(s)).toIndexedSeq
+    t.typeArgs.size match {
+      case 1 => ()
+      case 2 => (args(0), args(1))
+      case 3 => (args(0), args(1), args(2))
+      case 4 => (args(0), args(1), args(2), args(3))
+      case 5 => (args(0), args(1), args(2), args(3), args(4))
+      case 6 => (args(0), args(1), args(2), args(3), args(4), args(5))
+      case 7 => (args(0), args(1), args(2), args(3), args(4), args(5), args(6))
+      case other =>
+        new UnsupportedOperationException(s"Zero.of[Tuple${other}] is not supported")
+    }
   }
 
   private def zeroOfInstantiatable: ZeroValueFactory = {
@@ -112,8 +110,8 @@ object Zero extends LogSupport {
       factory.newInstance(args)
   }
 
-  private def fallBack: ZeroValueFactory = {
-    case _ => null
+  private def fallBack: ZeroValueFactory = { case _ =>
+    null
   }
 
   private val factory: ZeroValueFactory =

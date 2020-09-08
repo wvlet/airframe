@@ -124,8 +124,8 @@ object Automaton {
       s += tokenTable.map(x => s"${x._2}: ${x._1}").mkString("\n")
       s += "\n[edges]"
       s += transitionTable
-        .map {
-          case ((state, token), next) => s"${state}: ${tokenIdTable(token)} -> ${next.nodeId}: ${next.node}"
+        .map { case ((state, token), next) =>
+          s"${state}: ${tokenIdTable(token)} -> ${next.nodeId}: ${next.node}"
         }.mkString(
           "\n"
         )

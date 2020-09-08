@@ -228,9 +228,8 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
   }
 
   private def adjustOffset(offset: ZonedDateTime, adjustments: Seq[TimeVector]): ZonedDateTime = {
-    adjustments.foldLeft(offset) {
-      case (offset, duration) =>
-        duration.unit.increment(offset, duration.x)
+    adjustments.foldLeft(offset) { case (offset, duration) =>
+      duration.unit.increment(offset, duration.x)
     }
   }
 
