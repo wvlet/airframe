@@ -53,9 +53,8 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
   }
 
   override def sendSafe(req: Request.Builder, requestFilter: Request.Builder => Request.Builder): Response = {
-    Try(send(req, requestFilter)).recover {
-      case e: HttpClientException =>
-        e.response.asInstanceOf[HttpResponse[Response]].toRaw
+    Try(send(req, requestFilter)).recover { case e: HttpClientException =>
+      e.response.asInstanceOf[HttpResponse[Response]].toRaw
     }.get
   }
 

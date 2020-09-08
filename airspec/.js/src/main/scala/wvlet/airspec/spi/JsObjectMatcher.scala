@@ -21,9 +21,8 @@ private[airspec] object JsObjectMatcher {
 
   import Asserts._
 
-  def matcher: PartialFunction[(Any, Any), TestResult] = {
-    case (a: js.Object, b: js.Object) =>
-      check(jsObjEquals(a, b))
+  def matcher: PartialFunction[(Any, Any), TestResult] = { case (a: js.Object, b: js.Object) =>
+    check(jsObjEquals(a, b))
   }
 
   def jsObjEquals(v1: js.Object, v2: js.Object): Boolean = {

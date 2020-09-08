@@ -84,10 +84,9 @@ class RetryTest extends AirSpec {
     val e = intercept[MaxRetryException] {
       Retry
         .withBackOff(maxRetry = 3)
-        .retryOn {
-          case e: IllegalStateException =>
-            warn(e.getMessage)
-            ResultClass.retryableFailure(e)
+        .retryOn { case e: IllegalStateException =>
+          warn(e.getMessage)
+          ResultClass.retryableFailure(e)
         }
         .run {
           logger.info("hello retry")
@@ -139,9 +138,8 @@ class RetryTest extends AirSpec {
       Retry
         .withBackOff(initialIntervalMillis = 10)
         .withMaxRetry(1)
-        .withErrorClassifier {
-          case e: TimeoutException =>
-            ResultClass.retryableFailure(e).withExtraWaitMillis(100)
+        .withErrorClassifier { case e: TimeoutException =>
+          ResultClass.retryableFailure(e).withExtraWaitMillis(100)
         }
         .beforeRetry { ctx: RetryContext =>
           debug(s"${ctx.retryCount} ${ctx.nextWaitMillis}")
@@ -158,9 +156,8 @@ class RetryTest extends AirSpec {
       Retry
         .withBackOff(initialIntervalMillis = 10)
         .withMaxRetry(1)
-        .withErrorClassifier {
-          case e: TimeoutException =>
-            ResultClass.retryableFailure(e).withExtraWaitFactor(0.2)
+        .withErrorClassifier { case e: TimeoutException =>
+          ResultClass.retryableFailure(e).withExtraWaitFactor(0.2)
         }
         .beforeRetry { ctx: RetryContext =>
           debug(s"${ctx.retryCount} ${ctx.nextWaitMillis}")

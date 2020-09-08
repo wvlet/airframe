@@ -176,17 +176,16 @@ object HttpClientException extends LogSupport {
     "com.twitter.finagle.WriteTimedOutException"
   )
 
-  def sslExceptionClassifier: PartialFunction[Throwable, Failed] = {
-    case e: SSLException =>
-      e match {
-        // Deterministic SSL exceptions are not retryable
-        case se: SSLHandshakeException      => nonRetryableFailure(e)
-        case se: SSLKeyException            => nonRetryableFailure(e)
-        case s3: SSLPeerUnverifiedException => nonRetryableFailure(e)
-        case other                          =>
-          // SSLProtocolException and uncategorized SSL exceptions (SSLException) such as unexpected_message may be retryable
-          retryableFailure(e)
-      }
+  def sslExceptionClassifier: PartialFunction[Throwable, Failed] = { case e: SSLException =>
+    e match {
+      // Deterministic SSL exceptions are not retryable
+      case se: SSLHandshakeException      => nonRetryableFailure(e)
+      case se: SSLKeyException            => nonRetryableFailure(e)
+      case s3: SSLPeerUnverifiedException => nonRetryableFailure(e)
+      case other                          =>
+        // SSLProtocolException and uncategorized SSL exceptions (SSLException) such as unexpected_message may be retryable
+        retryableFailure(e)
+    }
   }
 
   def invocationTargetExceptionClassifier: PartialFunction[Throwable, Failed] = {
@@ -199,9 +198,8 @@ object HttpClientException extends LogSupport {
       classifyExecutionFailure(e.getCause)
   }
 
-  def nonRetryable: Throwable => Failed = {
-    case e =>
-      // We canot retry when an unknown exception is thrown
-      nonRetryableFailure(e)
+  def nonRetryable: Throwable => Failed = { case e =>
+    // We canot retry when an unknown exception is thrown
+    nonRetryableFailure(e)
   }
 }

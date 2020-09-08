@@ -68,9 +68,8 @@ object SQLGenerator extends LogSupport {
 
   private def collectFilterExpression(stack: List[Relation]): Seq[Expression] = {
     // We need to terminate traversal at Project/Aggregate node because these will create another SELECT statement.
-    stack.reverse.collect {
-      case f @ Filter(in, filterExpr) =>
-        filterExpr
+    stack.reverse.collect { case f @ Filter(in, filterExpr) =>
+      filterExpr
     }
   }
 

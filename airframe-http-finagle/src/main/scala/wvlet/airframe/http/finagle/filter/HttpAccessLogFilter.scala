@@ -121,9 +121,8 @@ case class HttpAccessLogFilter(
         .map { response =>
           report(resp = Some(response))
           response
-        }.rescue {
-          case NonFatal(e: Throwable) =>
-            reportError(e)
+        }.rescue { case NonFatal(e: Throwable) =>
+          reportError(e)
         }
     } catch {
       // When an unknown internal error happens

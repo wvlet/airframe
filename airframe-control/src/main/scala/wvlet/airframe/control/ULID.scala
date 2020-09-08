@@ -70,10 +70,9 @@ object ULID {
     */
   def extractEpochMillis(ulid: String): Option[Long] = {
     if (isValid(ulid)) {
-      val result = ulid.take(10).reverse.zipWithIndex.foldLeft(0L) {
-        case (acc, (c, index)) =>
-          val idx = constants.ENCODING_CHARS.indexOf(c)
-          acc + (idx * Math.pow(constants.ENCODING_LENGTH, index)).toLong
+      val result = ulid.take(10).reverse.zipWithIndex.foldLeft(0L) { case (acc, (c, index)) =>
+        val idx = constants.ENCODING_CHARS.indexOf(c)
+        acc + (idx * Math.pow(constants.ENCODING_LENGTH, index)).toLong
       }
       Option(result)
     } else None

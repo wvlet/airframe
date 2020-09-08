@@ -309,10 +309,9 @@ object ReflectSurfaceFactory extends LogSupport {
           LazySurface(resolveClass(tpe), fullName)
         } else {
           seen += tpe
-          val m = surfaceFactories.orElse[ru.Type, Surface] {
-            case _ =>
-              trace(f"Resolving the unknown type $tpe into AnyRef")
-              new GenericSurface(resolveClass(tpe))
+          val m = surfaceFactories.orElse[ru.Type, Surface] { case _ =>
+            trace(f"Resolving the unknown type $tpe into AnyRef")
+            new GenericSurface(resolveClass(tpe))
           }
           val surface = m(tpe)
           // Cache if not yet cached
@@ -530,9 +529,8 @@ object ReflectSurfaceFactory extends LogSupport {
       surfaceParams.toIndexedSeq
     }
 
-    private def existentialTypeFactory: SurfaceMatcher = {
-      case t @ ru.ExistentialType(quantified, underlying) =>
-        surfaceOf(underlying)
+    private def existentialTypeFactory: SurfaceMatcher = { case t @ ru.ExistentialType(quantified, underlying) =>
+      surfaceOf(underlying)
     }
 
     private def genericSurfaceWithConstructorFactory: SurfaceMatcher =

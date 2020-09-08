@@ -22,9 +22,8 @@ object Control_01_Retry extends App {
 
   Retry
     .withBackOff(maxRetry = 3)
-    .retryOn {
-      case e: TimeoutException =>
-        Retry.retryableFailure(e)
+    .retryOn { case e: TimeoutException =>
+      Retry.retryableFailure(e)
     }
     .run {
       // body

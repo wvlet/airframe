@@ -116,9 +116,8 @@ private[surface] object SurfaceMacros {
          Some({ (x: Any, args: Seq[Any]) =>  x.asInstanceOf[${t}].${methodName} })
             """
         } else {
-          val argList = methodArgs.zipWithIndex.map {
-            case (x, i) =>
-              q"args(${i}).asInstanceOf[${x.tpe}]"
+          val argList = methodArgs.zipWithIndex.map { case (x, i) =>
+            q"args(${i}).asInstanceOf[${x.tpe}]"
           }
           q"""
          Some({ (x: Any, args: Seq[Any]) =>  x.asInstanceOf[${t}].${methodName}(..${argList}) })
@@ -544,9 +543,8 @@ private[surface] object SurfaceMacros {
       }
     }
 
-    private val existentialTypeFactory: SurfaceFactory = {
-      case t @ ExistentialType(quantified, underlying) =>
-        surfaceOf(underlying)
+    private val existentialTypeFactory: SurfaceFactory = { case t @ ExistentialType(quantified, underlying) =>
+      surfaceOf(underlying)
     }
 
     private def finalTypeOf(t: c.Type): c.Type = {

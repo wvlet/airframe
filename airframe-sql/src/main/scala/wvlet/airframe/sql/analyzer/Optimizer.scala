@@ -27,9 +27,8 @@ object Optimizer extends LogSupport {
   }
 
   def extractInputs(expressions: Seq[Expression]): Set[Attribute] = {
-    val newAttributes: Seq[Attribute] = expressions.collect {
-      case s: Attribute =>
-        s
+    val newAttributes: Seq[Attribute] = expressions.collect { case s: Attribute =>
+      s
     }
     newAttributes.toSet
   }

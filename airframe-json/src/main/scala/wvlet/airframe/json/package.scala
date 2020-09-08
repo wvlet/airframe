@@ -42,9 +42,8 @@ package object json {
               value
           }
         case jsonArray: JSONArray =>
-          jsonArray.v.flatMap {
-            case value =>
-              value / name
+          jsonArray.v.flatMap { case value =>
+            value / name
           }
         case _ => Nil
       }
