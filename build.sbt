@@ -105,7 +105,10 @@ val jsBuildSettings = Seq[Setting[_]](
 val noPublish = Seq(
   publishArtifact := false,
   publish := {},
-  publishLocal := {}
+  publishLocal := {},
+  // Explicitely skip the doc task because protobuf related Java files causes no type found error
+  Compile / doc / sources := Seq.empty,
+  Compile / packageDoc / publishArtifact := false
 )
 
 lazy val root =
@@ -708,6 +711,7 @@ lazy val benchmark =
     // Necessary for generating /META-INF/BenchmarkList
     .enablePlugins(JmhPlugin, PackPlugin)
     .settings(buildSettings)
+    .settings(noPublish)
     .settings(
       name := "airframe-benchmark",
       packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
@@ -734,12 +738,13 @@ lazy val benchmark =
         // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
         // For grpc-java
         "io.grpc"             % "grpc-protobuf" % GRPC_VERSION,
-        "com.google.protobuf" % "protobuf-java" % "3.13.0"
-      ),
+        "com.google.protobuf" % "protobuf-java" % "3.12.0"
+      )
 //      PB.targets in Compile := Seq(
 //        scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
 //      ),
-      publishPackArchiveTgz
+      // publishing .tgz
+      // publishPackArchiveTgz
     )
     .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, finagle, grpc, airframeMacrosJVMRef, airspecRefJVM % Test)
 
