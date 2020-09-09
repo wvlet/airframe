@@ -6,6 +6,23 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.9.1
+
+This release is for enhancing the usability of airframe-rx. 
+
+-  airframe-rx: Make RxOption public and add Rx.join/zip/concat helper methods ([#1275](https://github.com/wvlet/airframe/issues/1275)) [[a13006d](https://github.com/wvlet/airframe/commit/a13006d)]
+-  airframe-rx: Add Rx.take(n) and Rx.interval ([#1269](https://github.com/wvlet/airframe/issues/1269)) [[febba6d](https://github.com/wvlet/airframe/commit/febba6d)]
+-  airframe-rx: Add RxOption.getOrElse/orElse/transform ([#1268](https://github.com/wvlet/airframe/issues/1268)) [[670f11a](https://github.com/wvlet/airframe/commit/670f11a)]
+-  internal: Update presto-main to 341 ([#1274](https://github.com/wvlet/airframe/issues/1274)) [[327bede](https://github.com/wvlet/airframe/commit/327bede)]
+-  internal: Upgrade to scalafmt 2.7.0 ([#1271](https://github.com/wvlet/airframe/issues/1271)) [[b4c707c](https://github.com/wvlet/airframe/commit/b4c707c)]
+-  internal: Update protobuf-java to 3.13.0 ([#1267](https://github.com/wvlet/airframe/issues/1267)) [[470b69e](https://github.com/wvlet/airframe/commit/470b69e)]
+-  internal: Update sbt-mdoc to 2.2.6 ([#1262](https://github.com/wvlet/airframe/issues/1262)) [[a578830](https://github.com/wvlet/airframe/commit/a578830)]
+-  internal: Use GIT_DEPLOY_KEY env [[afc49f7](https://github.com/wvlet/airframe/commit/afc49f7)]
+-  internal: Fix env var name [[e476dec](https://github.com/wvlet/airframe/commit/e476dec)]
+-  internal: Update to sbt-mdoc 2.2.6 and use GIT_DEPLOY_KEY env for doc deployment [[236f6ba](https://github.com/wvlet/airframe/commit/236f6ba)]
+-  internal: Add packaging test ([#1264](https://github.com/wvlet/airframe/issues/1264)) [[8ac4707](https://github.com/wvlet/airframe/commit/8ac4707)]
+-  internal: Update jmh-core, jmh-generator-bytecode, ... to 1.25.2 ([#1265](https://github.com/wvlet/airframe/issues/1265)) [[35c970a](https://github.com/wvlet/airframe/commit/35c970a)]
+
 ## 20.9.0
 
 This version is a minor bug fix release. 
