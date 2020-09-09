@@ -53,7 +53,7 @@ trait Rx[+A] extends LogSupport {
   def join[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Rx.join(this, b, c)
   def join[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Rx.join(this, b, c, d)
 
-  def concat[A1 >: A](other: Rx[A1]): Rx[A1] = ConcatOp(this, other)
+  def concat[A1 >: A](other: Rx[A1]): Rx[A1] = Rx.concat(this, other)
   def lastOption: RxOption[A]                = LastOp(this).toOption
 
   /**
