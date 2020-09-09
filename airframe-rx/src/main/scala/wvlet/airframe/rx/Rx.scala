@@ -38,8 +38,8 @@ trait Rx[+A] extends LogSupport {
     * Combine two Rx streams to form a sequence of pairs.
     * This will emit a new pair when both of the streams are updated.
     */
-  def zip[B](other: Rx[B]): Rx[(A, B)]             = ZipOp(this, other)
-  def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Zip3Op(this, b, c)
+  def zip[B](other: Rx[B]): Rx[(A, B)]             = Rx.zip(this, other)
+  def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Rx.zip(this, b, c)
 
   /**
     * Emit a new output if one of Rx[A] or Rx[B] is changed.
@@ -49,9 +49,9 @@ trait Rx[+A] extends LogSupport {
     * Using joins will be more intuitive than nesting multiple Rx operators
     * like Rx[A].map { x => ... Rx[B].map { ...} }.
     */
-  def join[B](other: Rx[B]): Rx[(A, B)]                             = JoinOp(this, other)
-  def join[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Join3Op(this, b, c)
-  def join[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Join4Op(this, b, c, d)
+  def join[B](other: Rx[B]): Rx[(A, B)]                             = Rx.join(this, other)
+  def join[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Rx.join(this, b, c)
+  def join[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Rx.join(this, b, c, d)
 
   def concat[A1 >: A](other: Rx[A1]): Rx[A1] = ConcatOp(this, other)
   def lastOption: RxOption[A]                = LastOp(this).toOption
