@@ -24,7 +24,7 @@ jobs:
           path: ~/.cache
           key: ${{ runner.os }}-package-${{ hashFiles('**/*.sbt') }}
           restore-keys: ${{ runner.os }}-package-
-      - name: Doc generation for Scala JVM
-        run: ./sbt "+ projectJVM/doc"
-      - name: Doc generation for Scala.js
-        run: ./sbt "+ projectJS/doc"
+      - name: Packaging test for Scala JVM
+        run: ./sbt publishJVMLocal
+      - name: Packaging test for Scala.js
+        run: ./sbt publishJSLocal
