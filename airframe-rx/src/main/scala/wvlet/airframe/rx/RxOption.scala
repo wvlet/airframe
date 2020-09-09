@@ -26,7 +26,8 @@ trait RxOption[+A] extends Rx[A] {
   override def map[B](f: A => B): RxOption[B] = {
     RxOptionOp(
       MapOp(
-        in, { x: Option[A] =>
+        in,
+        { x: Option[A] =>
           x.map(f)
         }
       )
@@ -35,7 +36,8 @@ trait RxOption[+A] extends Rx[A] {
   override def flatMap[B](f: A => Rx[B]): RxOption[B] = {
     RxOptionOp[B](
       FlatMapOp(
-        in, { x: Option[A] =>
+        in,
+        { x: Option[A] =>
           x match {
             case Some(v) =>
               f(v).map(Some(_))
@@ -49,7 +51,8 @@ trait RxOption[+A] extends Rx[A] {
 
   def transform[B](f: Option[A] => B): Rx[B] = {
     MapOp(
-      in, { x: Option[A] =>
+      in,
+      { x: Option[A] =>
         f(x)
       }
     )
@@ -58,7 +61,8 @@ trait RxOption[+A] extends Rx[A] {
   def transformOption[B](f: Option[A] => Option[B]): RxOption[B] = {
     RxOptionOp[B](
       MapOp(
-        in, { x: Option[A] =>
+        in,
+        { x: Option[A] =>
           f(x)
         }
       )
