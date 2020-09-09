@@ -38,8 +38,8 @@ trait Rx[+A] extends LogSupport {
     * Combine two Rx streams to form a sequence of pairs.
     * This will emit a new pair when both of the streams are updated.
     */
-  def zip[B](other: Rx[B]): Rx[(A, B)]             = ZipOp(this, other)
-  def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Zip3Op(this, b, c)
+  def zip[B](other: Rx[B]): Rx[(A, B)]             = Rx.zip(this, other)
+  def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Rx.zip(this, b, c)
 
   /**
     * Emit a new output if one of Rx[A] or Rx[B] is changed.
@@ -49,11 +49,11 @@ trait Rx[+A] extends LogSupport {
     * Using joins will be more intuitive than nesting multiple Rx operators
     * like Rx[A].map { x => ... Rx[B].map { ...} }.
     */
-  def join[B](other: Rx[B]): Rx[(A, B)]                             = JoinOp(this, other)
-  def join[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Join3Op(this, b, c)
-  def join[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Join4Op(this, b, c, d)
+  def join[B](other: Rx[B]): Rx[(A, B)]                             = Rx.join(this, other)
+  def join[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Rx.join(this, b, c)
+  def join[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Rx.join(this, b, c, d)
 
-  def concat[A1 >: A](other: Rx[A1]): Rx[A1] = ConcatOp(this, other)
+  def concat[A1 >: A](other: Rx[A1]): Rx[A1] = Rx.concat(this, other)
   def lastOption: RxOption[A]                = LastOp(this).toOption
 
   /**
@@ -159,6 +159,15 @@ object Rx extends LogSupport {
   def optionVariable[A](v: Option[A]): RxOptionVar[A] = variable(v).toOption
   def option[A](v: => Option[A]): RxOption[A]         = RxOptionOp(single(v))
   val none: RxOption[Nothing]                         = RxOptionOp(single(None))
+
+  def join[A, B](a: Rx[A], b: Rx[B]): Rx[(A, B)]                                 = JoinOp(a, b)
+  def join[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Join3Op(a, b, c)
+  def join[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Join4Op(a, b, c, d)
+
+  def zip[A, B](a: Rx[A], b: Rx[B]): Rx[(A, B)]                 = ZipOp(a, b)
+  def zip[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Zip3Op(a, b, c)
+
+  def concat[A, A1 >: A](a: Rx[A], b: Rx[A1]): Rx[A1] = ConcatOp(a, b)
 
   /**
     * Periodically trigger an event and report the interval millis.

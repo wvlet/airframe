@@ -17,7 +17,7 @@ import wvlet.airframe.rx.Rx.{FlatMapOp, MapOp}
 /**
   * An wrapper of Rx[A] for Option[A] type values
   */
-private[rx] trait RxOption[+A] extends Rx[A] {
+trait RxOption[+A] extends Rx[A] {
   protected def in: Rx[Option[A]]
 
   override def parents: Seq[Rx[_]]                 = Seq(in)
