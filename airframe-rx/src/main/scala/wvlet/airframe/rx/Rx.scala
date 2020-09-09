@@ -160,6 +160,15 @@ object Rx extends LogSupport {
   def option[A](v: => Option[A]): RxOption[A]         = RxOptionOp(single(v))
   val none: RxOption[Nothing]                         = RxOptionOp(single(None))
 
+  def join[A, B](a: Rx[A], b: Rx[B]): Rx[(A, B)]                                 = JoinOp(a, b)
+  def join[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Join3Op(a, b, c)
+  def join[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Join4Op(a, b, c, d)
+
+  def zip[A, B](a: Rx[A], b: Rx[B]): Rx[(A, B)]                 = ZipOp(a, b)
+  def zip[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]): Rx[(A, B, C)] = Zip3Op(a, b, c)
+
+  def concat[A, A1 >: A](a: Rx[A], b: Rx[A1]): Rx[A1] = ConcatOp(a, b)
+
   /**
     * Periodically trigger an event and report the interval millis.
     * After running Rx with an interval, the cancel method must be called to stop the timer:
