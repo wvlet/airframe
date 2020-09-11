@@ -130,12 +130,12 @@ package object html {
 
   implicit def embedAsNode[A: EmbeddableNode](v: A): RxElement = Embedded(v)
 
-  private[rx] case class RxCode(rxElement: RxElement, sourceCode: String)
+  private[rx] case class RxCode(rxElements: Seq[RxElement], sourceCode: String)
 
   /**
     * Extracting the source code of rxElement for demoing purpose
-    * @param rxElement
+    * @param rxElements
     * @return
     */
-  private[rx] def extractCode(rxElement: RxElement): RxCode = macro RxHtmlMacros.code
+  private[rx] def extractCode(rxElements: RxElement*): RxCode = macro RxHtmlMacros.code
 }

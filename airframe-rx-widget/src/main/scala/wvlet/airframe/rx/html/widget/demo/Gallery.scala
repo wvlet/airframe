@@ -12,14 +12,33 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.html.widget.demo
+
 import org.scalajs.dom
 import org.scalajs.dom.document
 import wvlet.airframe.rx.Rx
-import wvlet.airframe.rx.html.all.{style, _}
+import wvlet.airframe.rx.html.all._
 import wvlet.airframe.rx.html.widget.ui.{Browser, Canvas, Layout}
-import wvlet.airframe.rx.html.widget.ui.bootstrap.{Alert, Button, Modal, NavBar, bootstrap}
-import wvlet.airframe.rx.html.widget.ui.bootstrap.bootstrap.{RichRxComponent, col, containerFluid, row}
-import wvlet.airframe.rx.html.{DOMRenderer, RxCode, RxComponent, RxElement, extractCode, tags}
+import wvlet.airframe.rx.html.widget.ui.bootstrap.{
+  Alert,
+  Button,
+  Modal,
+  NavBar,
+  bootstrap
+}
+import wvlet.airframe.rx.html.widget.ui.bootstrap.bootstrap.{
+  RichRxComponent,
+  col,
+  containerFluid,
+  row
+}
+import wvlet.airframe.rx.html.{
+  DOMRenderer,
+  RxCode,
+  RxComponent,
+  RxElement,
+  extractCode,
+  tags
+}
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
@@ -44,383 +63,229 @@ object Gallery extends LogSupport {
         document.body.appendChild(elem)
       case other => other
     }
-    val content: RxElement = galleryFrame(gallery: _*)
-    DOMRenderer.renderTo(main, content)
+    DOMRenderer.renderTo(main, galleryFrame)
   }
 
   def galleryFrame =
-    RxComponent { content =>
+    div(
+      cls -> "container",
       div(
-        NavBar
-          .fixedTop("Airframe") {
-            NavBar.navList(
-              NavBar.navItemActive("Home"),
-              NavBar.navItem("Link"),
-              NavBar.navItemDisabled("Disabled")
-            )
-          },
-        containerFluid(
-          row(
-            NavBar.sideBarSticky(
-              NavBar.navItemActive(
-                a(_class -> "nav-link active", href -> "#", "Components ", span(_class -> "sr-only"), "(current)")
-              ),
-              NavBar.navItem(a(_class -> "nav-link", href -> "#", "Layout")),
-              NavBar.navItem(a(_class -> "nav-link", href -> "#", "Gallery")),
-              NavBar.navItem(a(_class -> "nav-link", href -> "#", "Reactive")),
-              NavBar.navItem(
-                button(
-                  "Click Me!",
-                  cls -> "btn btn-primary",
-                  onclick -> { () =>
-                    logger.info("Clicked")
-                  }
+        cls -> "row",
+        div(
+          cls -> "col-3",
+          div(
+            cls -> "sticky-top",
+            h6(
+              cls -> "dropdown-header",
+              "Airframe Gallery"
+            ),
+            gallery2.map { e =>
+              a(
+                cls -> "dropdown-item",
+                href -> s"#${e.description}",
+                e.description
+              )
+            }
+          )
+        ),
+        div(
+          cls -> "col-9",
+          tags.main(
+            role -> "main",
+            gallery2.map { e =>
+              div(
+                cls -> "container-fluid",
+                a(id -> s"${e.description}"),
+                div(
+                  cls -> "row my-1",
+                  h4(e.description)
+                ),
+                div(cls -> "row my-1", e.code.rxElements),
+                div(
+                  cls -> "row my-1",
+                  pre(cls -> "w-100",
+                      code(cls -> "language-scala rounded", e.code.sourceCode))
                 )
               )
-            ),
-            tags.main(
-              role -> "main",
-              cls  -> "col-md-10 ml-md-auto",
-              h2("Airframe RxWidget Gallery"),
-              gallery2.map { e =>
-                div(
-                  cls -> "container-fluid w-100",
-                  div(cls -> "row my-1", h4(e.description)),
-                  div(cls -> "row my-1", e.code.rxElement),
-                  div(
-                    cls -> "row my-1",
-                    Layout.scalaCode(
-                      e.code.sourceCode
-                    )(cls += "w-100")
-                  )
-                )
-              },
-              content
-            )
+            }
           )
         )
       )
-    }
-
-  def gallery: Seq[RxElement] =
-    Seq(
-      componentGallery,
-      elementGallery,
-      reactiveTest,
-      canvasGallery,
-      svgGallery,
-      browserGallery,
-      buttonGallery,
-      buttonDisabledGallery,
-      alertGallery,
-//    modalGallery,
-      gridGallery
     )
 
   case class Example(description: String, code: RxCode)
 
   def gallery2: Seq[Example] = Seq(
+    elementGallery,
+    customElementGallery,
+    componentGallery,
     buttonDemo,
-    buttonSmallDemo
+    buttonSmallDemo,
+    alertsDemo,
+    rxTest,
+    browserDemo,
+    canvasDemo,
+    svgDemo
   )
 
   def buttonDemo: Example = Example(
     "Buttons",
-    extractCode {
-      import wvlet.airframe.rx.html.all._
-      div(
-        button(tpe -> "button", cls -> "btn btn-primary", "primary"),
-        button(tpe -> "button", cls -> "btn btn-secondary", "secondary"),
-        button(tpe -> "button", cls -> "btn btn-success", "success"),
-        button(tpe -> "button", cls -> "btn btn-danger", "danger"),
-        button(tpe -> "button", cls -> "btn btn-info", "info"),
-        button(tpe -> "button", cls -> "btn btn-warning", "warning"),
-        button(tpe -> "button", cls -> "btn btn-light", "light"),
-        button(tpe -> "button", cls -> "btn btn-dark", "dark")
-      )
-    }
+    extractCode(
+      button(tpe -> "button", cls -> "btn btn-primary", "primary"),
+      button(tpe -> "button", cls -> "btn btn-secondary", "secondary"),
+      button(tpe -> "button", cls -> "btn btn-success", "success"),
+      button(tpe -> "button", cls -> "btn btn-danger", "danger"),
+      button(tpe -> "button", cls -> "btn btn-info", "info"),
+      button(tpe -> "button", cls -> "btn btn-warning", "warning"),
+      button(tpe -> "button", cls -> "btn btn-light", "light"),
+      button(tpe -> "button", cls -> "btn btn-dark", "dark")
+    )
   )
 
   def buttonSmallDemo: Example = Example(
-    "Buttons",
+    "Small buttons",
     extractCode {
       import wvlet.airframe.rx.html.all._
 
-      def smallButton(style: String) = button(tpe -> "button", cls -> s"btn btn-${style}", style)
+      def smallButton(style: String) =
+        button(tpe -> "button", cls -> s"btn btn-sm btn-${style}", style)
+
       div(
         smallButton("primary"),
         smallButton("secondary"),
-        button(tpe -> "button", cls -> "btn btn-secondary", "secondary"),
-        button(tpe -> "button", cls -> "btn btn-success", "success"),
-        button(tpe -> "button", cls -> "btn btn-danger", "danger"),
-        button(tpe -> "button", cls -> "btn btn-info", "info"),
-        button(tpe -> "button", cls -> "btn btn-warning", "warning"),
-        button(tpe -> "button", cls -> "btn btn-light", "light"),
-        button(tpe -> "button", cls -> "btn btn-dark", "dark")
+        smallButton("success"),
+        smallButton("danger"),
+        smallButton("info"),
+        smallButton("warn"),
+        smallButton("light"),
+        smallButton("dark")
       )
     }
   )
 
-  def componentGallery = {
-    div(
-      h4("RxComponent"),
-      p("RxComponent is the unit of a reactive widget that can enclose other components or elements."),
-      Layout.scalaCode(
-        code(
-          s"""import wvlet.airframe.rx.html._
-           |import wvlet.airframe.rx.html.all._
-           |
-           |class MyComponent extends RxComponent {
-           |  def render(content: RxElement): RxElement =
-           |    div(cls -> "main", h2("Hello Airframe Rx Widget!"), content)
-           |}
-           |""".stripMargin
-        )
-      ),
-      p("Here is a handy-syntax to define a new component:"),
-      Layout.scalaCode(
-        """// Short-hand notation for defining a new RxComponent at ease
-          |RxComponent { content =>
-          |  div(cls -> "main", h2("Hello Airframe Rx Widget!"), content)
-          |}
-          |""".stripMargin
+  def alertsDemo = Example(
+    "Alerts",
+    extractCode(
+      div(cls -> "alert alert-primary", role -> "alert", "alert!"),
+      div(cls -> "alert alert-secondary", role -> "alert", "alert!"),
+      div(cls -> "alert alert-success", role -> "alert", "alert!"),
+      div(cls -> "alert alert-danger", role -> "alert", "alert!"),
+      div(cls -> "alert alert-info", role -> "alert", "alert!"),
+      div(cls -> "alert alert-warn", role -> "alert", "alert!"),
+      div(cls -> "alert alert-light", role -> "alert", "alert!"),
+      div(cls -> "alert alert-dark", role -> "alert", "alert!")
+    )
+  )
+
+  def rxTest = Example(
+    "Rx.variable",
+    extractCode {
+      // Define a reactive variable
+      val v = Rx.variable(1)
+      div(
+        button(
+          cls -> "btn btn-primary",
+          onclick { e: dom.Event =>
+            v.update(_ + 1)
+          },
+          "Increment"
+        ),
+        // This code will be triggered when the variable is updated
+        v.map(x => span(cls -> "mx-1", s"count: ${x}"))
       )
-    )
-  }
+    }
+  )
 
-  def elementGallery = {
-    div(
-      h4("RxElement"),
-      Layout.scalaCode(
-        s"""import wvlet.airframe.rx.html._
-           |import wvlet.airframe.rx.html.all._
-           |
-           |class MyButton(name:String) extends RxElement {
-           |  def render: RxElement = button(cls -> "button", name)
-           |}
-           |
-           |// Short-hand notation
-           |def newButton(name:String): RxElement =
-           |  RxElement(button(cls -> "button", name))
-           |""".stripMargin
-      )
-    )
-  }
+  def canvasDemo = Example(
+    "Canvas",
+    extractCode {
+      import wvlet.airframe.rx.html.widget.ui.Canvas
 
-  def demo(title: String, main: RxElement, code: String): RxElement = {
-    containerFluid(
-      h4(title),
-      row(
-        bootstrap.col(main),
-        bootstrap.col(Layout.scalaCode(code)).withRoundedCorner
-      ).withBorder
-    )
-  }
+      // Creating a new canvas
+      val c = Canvas.newCanvas(50, 50)
+      import c._
+      context.fillStyle = "#99CCFF"
+      context.fillRect(0, 0, c.canvas.width, c.canvas.height)
+      context.strokeStyle = "#336699"
+      context.beginPath()
+      context.arc(25, 25, 15, 0, 2 * math.Pi)
+      context.stroke()
+      c
+    }
+  )
 
-  def buttons: Seq[Button] =
-    Seq(
-      Button.primary("Primary"),
-      Button.secondary("Secondary"),
-      Button.success("Success"),
-      Button.danger("Danger"),
-      Button.warning("warning"),
-      Button.info("Info"),
-      Button.light("Light"),
-      Button.dark("Dark"),
-      Button.link("Link")
-    )
+  def svgDemo = Example(
+    "SVG",
+    extractCode {
+      import wvlet.airframe.rx.html.svgTags._
+      import wvlet.airframe.rx.html.svgAttrs._
 
-  def buttonGallery = {
-    demo(
-      "Buttons",
-      Layout.of(buttons),
-      """import wvlet.airframe.rx.widget.ui.bootstrap._
-        |
-        |Button.primary("Primary")
-        |Button.secondary("Secondary")
-        |Button.success("Success")
-        |Button.danger("Danger")
-        |Button.warning("warning")
-        |Button.info("Info")
-        |Button.light("Light")
-        |Button.dark("Dark")
-        |Button.link("Link")""".stripMargin
-    )
-  }
+      val circleColor = Rx.variable("white")
 
-  def buttonDisabledGallery = {
-    val disabledButtons = buttons.map(_.disable)
-    demo(
-      "Buttons (disabled)",
-      Layout.of(disabledButtons),
-      """import wvlet.airframe.rx.widget.ui.bootstrap._
-        |
-        |Button.primary("Primary").disable
-        |Button.secondary("Secondary").disable
-        |Button.success("Success").disable
-        |Button.danger("Danger").disable
-        |Button.warning("warning").disable
-        |Button.info("Info").disable
-        |Button.light("Light").disable
-        |Button.dark("Dark").disable
-        |Button.link("Link").disable""".stripMargin
-    )
-  }
-
-  def alertGallery =
-    demo(
-      "Alerts",
-      Layout.of(
-        Alert.primary("A simple alert!"),
-        Alert.secondary("A simple alert!"),
-        Alert.success("A simple alert!"),
-        Alert.danger("A simple alert!"),
-        Alert.warning("A simple alert!"),
-        Alert.info("A simple alert!"),
-        Alert.light("A simple alert!"),
-        Alert.dark("A simple alert!")
-      ),
-      """import wvlet.airframe.rx.widget.ui.bootstrap._
-        |
-        |Alert.primary("A simple alert!")
-        |Alert.secondary("A simple alert!")
-        |Alert.success("A simple alert!")
-        |Alert.danger("A simple alert!")
-        |Alert.warning("A simple alert!")
-        |Alert.info("A simple alert!")
-        |Alert.light("A simple alert!")
-        |Alert.dark("A simple alert!")
-        |""".stripMargin
-    )
-
-  def modalGallery =
-    demo(
-      "Modal",
-      Modal
-        .default(title = "ModalDemo")
-        .withFooter(
-          div(
-            Button.secondary("Close").addModifier(data("dismiss") -> "modal", "Close"),
-            Button.primary("Save changes")
-          )
-        )
-        .apply(style -> "display: block; position: relative", b("Modal body text goes here")),
-      """Modal
-      |  .default(title = "ModalDemo")
-      |  .addStyle("display: block")
-      |  .addStyle("position: relative") {
-      |  .withFooter(
-      |    <div>
-      |      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      |      <button type="button" class="btn btn-primary">Save changes</button>
-      |    </div>
-      |  ).apply(
-      |    <b>Modal body text goes here</b>
-      |  )
-      |""".stripMargin
-    )
-
-  def gridGallery =
-    demo(
-      "Grid",
-      row(
-        col("One of three columns"),
-        col("One of three columns"),
-        col("One of three columns")
-      ),
-      """row(
-        |  col("One of three columns"),
-        |  col("One of three columns"),
-        |  col("One of three columns")
-        |)""".stripMargin
-    )
-
-  def browserGallery =
-    demo(
-      "Browser Info",
-      p(s"browser url: ${Browser.url}"),
-      """p(s"browser url: ${Browser.url}")""".stripMargin
-    )
-
-  def canvasGallery =
-    demo(
-      "Canvas", {
-        val c = Canvas.newCanvas(150, 50)
-        import c._
-        context.fillStyle = "#336699"
-        context.fillRect(0, 0, c.canvas.width, c.canvas.height)
-        context.strokeStyle = "#CCCCFF"
-        context.beginPath()
-        context.arc(25, 25, 15, 0, 2 * math.Pi)
-        context.stroke()
-        c
-      },
-      """val c = Canvas.newCanvas(150, 50)
-      |import c._
-      |context.fillStyle = "#99ccff"
-      |context.fillRect(0, 0, c.canvas.width, c.canvas.height)
-      |
-      |context.strokeStyle = "#CCCCFF"
-      |context.beginPath()
-      |context.arc(25, 25, 15, 0, 2 * math.Pi)
-      |context.stroke()
-      |""".stripMargin
-    )
-
-  def svgGallery = {
-    import wvlet.airframe.rx.html.svgTags._
-    import wvlet.airframe.rx.html.svgAttrs._
-    val circleColor = Rx.variable("white")
-    demo(
-      "SVG",
       svg(
-        viewBox -> "0 0 10 10",
-        rect(x -> 0, y -> 0, width -> "100%", height -> "100%", fill -> "#336699"),
+        width -> 50,
+        height -> 50,
+        rect(x -> 0, y -> 0, width -> 50, height -> 50, fill -> "#336699"),
         circle(
-          cx   -> "50%",
-          cy   -> "50%",
-          r    -> 4,
+          cx -> "50%",
+          cy -> "50%",
+          r -> "30%",
           fill -> circleColor,
-          onmouseover { () =>
+          onmouseover -> { () =>
             circleColor.set("#99CCFF")
           },
-          onmouseout { () =>
+          onmouseout -> { () =>
             circleColor.set("white")
           }
         )
-      ),
-      """import wvlet.airframe.rx.html.svg._
-      |svg(
-      |  viewBox -> "0 0 10 10",
-      |  rect(x -> 0, y -> 0, width -> "100%", height -> "100%", fill -> "#336699"),
-      |  circle(cx -> "50%", cy -> "50%", r -> 4, fill -> "white")
-      |)
-      |""".stripMargin
-    )
-  }
+      )
+    }
+  )
 
-  def reactiveTest = {
-    val v = Rx.variable(1)
-    demo(
-      "Rx",
-      p(
-        button(
-          cls -> "btn btn-primary",
-          "Add",
-          onclick { e: dom.Event =>
-            v.update(_ + 1)
-          }
-        ),
-        v.map(x => s" count: ${x}")
-      ),
-      """val v = Rx(1)
-        |
-        |p(
-        |  button(cls -> "btn btn-primary", "Add"
-        |    onclick{ e: dom.Event => v.update(_ + 1) }),
-        |  v.map(x => s"count: ${x}"),
-        |)
-        |""".stripMargin
-    )
-  }
+  def browserDemo = Example(
+    "Browser info",
+    extractCode {
+      p(s"Browser url: ${Browser.url}")
+    }
+  )
+
+  def elementGallery = Example(
+    "RxElement",
+    extractCode {
+      import wvlet.airframe.rx.html.all._
+
+      class MyButton(name: String) extends RxElement {
+        def render: RxElement = button(cls -> "btn btn-outline-primary", name)
+      }
+
+      new MyButton("Button")
+    }
+  )
+
+  def customElementGallery = Example(
+    "Customize RxElement",
+    extractCode {
+      import wvlet.airframe.rx.html.all._
+
+      def myButton = button(cls -> "btn btn-outline-primary")
+
+      // Appending a new style and child elements is suppoted with RxElement.apply(...)
+      myButton(cls += "btn-sm", "Custom Button")
+    }
+  )
+
+  def componentGallery = Example(
+    "RxComponent",
+    extractCode {
+      import wvlet.airframe.rx.html.all._
+
+      // RxComponent is the unit of a reactive widget that can enclose other components or elements.
+      class MyComponent extends RxComponent {
+        def render(content: RxElement): RxElement =
+          div(cls -> "main", div(cls -> "alert alert-info", content))
+      }
+
+      new MyComponent().render("Hello airframe-rx-html!!")
+    }
+  )
 }

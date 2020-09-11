@@ -19,24 +19,29 @@ import scala.reflect.macros.{blackbox => sm}
 /**
   */
 private[html] object RxHtmlMacros {
-  def code(c: sm.Context)(rxElement: c.Tree): c.Tree = {
+  def code(c: sm.Context)(rxElements: c.Tree*): c.Tree = {
     import c.universe._
-    val pos        = rxElement.pos
-    val src        = pos.source
-    val lineBlocks = src.content.slice(pos.start, pos.`end`).mkString.replaceAll("^\\{\\n", "").replaceAll("\\}$", "")
 
-    val lines = lineBlocks.split("\n")
-    val columnOffsetInLine = lines.headOption
-      .map { firstLine =>
-        firstLine.size - firstLine.stripLeading().size
-      }.getOrElse(0)
+    val codes = for (rxElement <- rxElements) yield {
+      val pos        = rxElement.pos
+      val src        = pos.source
+      val lineBlocks = src.content.slice(pos.start, pos.`end`).mkString.replaceAll("^\\{\\n", "").replaceAll("\\}$", "")
 
-    val trimmedSource = lines
-      .map { line =>
-        line.replaceFirst(s"^\\s{0,${columnOffsetInLine}}", "")
-      }.mkString("\n")
+      val lines = lineBlocks.split("\n")
+      val columnOffsetInLine = lines.headOption
+        .map { firstLine =>
+          firstLine.size - firstLine.stripLeading().size
+        }.getOrElse(0)
 
-    q"wvlet.airframe.rx.html.RxCode(${rxElement}, ${trimmedSource})"
+      val trimmedSource = lines
+        .map { line =>
+          line.replaceFirst(s"^\\s{0,${columnOffsetInLine}}", "")
+        }.mkString("\n")
+      (rxElement, trimmedSource)
+    }
+    val elems  = codes.map(_._1).toSeq
+    val source = codes.map(_._2).mkString("\n")
+    q"wvlet.airframe.rx.html.RxCode(Seq(${elems:_*}), ${source})"
   }
 
 }
