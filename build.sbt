@@ -400,7 +400,7 @@ lazy val config =
       name := "airframe-config",
       description := "airframe configuration module",
       libraryDependencies ++= Seq(
-        "org.yaml" % "snakeyaml" % "1.26"
+        "org.yaml" % "snakeyaml" % "1.27"
       )
     )
     .dependsOn(airframeJVM, airframeMacrosJVMRef, codecJVM, airspecRefJVM % Test)
