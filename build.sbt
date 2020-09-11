@@ -87,7 +87,7 @@ val buildSettings = Seq[Setting[_]](
   scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
   testFrameworks += airSpecFramework,
   libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.6"
+    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.2.0"
   )
 )
 
