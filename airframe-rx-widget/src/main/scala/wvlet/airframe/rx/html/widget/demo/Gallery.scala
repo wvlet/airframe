@@ -19,7 +19,7 @@ import wvlet.airframe.rx.html.all.{style, _}
 import wvlet.airframe.rx.html.widget.ui.{Browser, Canvas, Layout}
 import wvlet.airframe.rx.html.widget.ui.bootstrap.{Alert, Button, Modal, NavBar, bootstrap}
 import wvlet.airframe.rx.html.widget.ui.bootstrap.bootstrap.{RichRxComponent, col, containerFluid, row}
-import wvlet.airframe.rx.html.{DOMRenderer, RxComponent, RxElement, tags}
+import wvlet.airframe.rx.html.{DOMRenderer, RxCode, RxComponent, RxElement, extractCode, tags}
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
@@ -78,7 +78,25 @@ object Gallery extends LogSupport {
                 )
               )
             ),
-            tags.main(role -> "main", _class -> "col-md-10 ml-md-auto", h2("Airframe RxWidget Gallery"), content)
+            tags.main(
+              role -> "main",
+              cls  -> "col-md-10 ml-md-auto",
+              h2("Airframe RxWidget Gallery"),
+              gallery2.map { e =>
+                div(
+                  cls -> "container-fluid w-100",
+                  div(cls -> "row my-1", h4(e.description)),
+                  div(cls -> "row my-1", e.code.rxElement),
+                  div(
+                    cls -> "row my-1",
+                    Layout.scalaCode(
+                      e.code.sourceCode
+                    )(cls += "w-100")
+                  )
+                )
+              },
+              content
+            )
           )
         )
       )
@@ -98,6 +116,50 @@ object Gallery extends LogSupport {
 //    modalGallery,
       gridGallery
     )
+
+  case class Example(description: String, code: RxCode)
+
+  def gallery2: Seq[Example] = Seq(
+    buttonDemo,
+    buttonSmallDemo
+  )
+
+  def buttonDemo: Example = Example(
+    "Buttons",
+    extractCode {
+      import wvlet.airframe.rx.html.all._
+      div(
+        button(tpe -> "button", cls -> "btn btn-primary", "primary"),
+        button(tpe -> "button", cls -> "btn btn-secondary", "secondary"),
+        button(tpe -> "button", cls -> "btn btn-success", "success"),
+        button(tpe -> "button", cls -> "btn btn-danger", "danger"),
+        button(tpe -> "button", cls -> "btn btn-info", "info"),
+        button(tpe -> "button", cls -> "btn btn-warning", "warning"),
+        button(tpe -> "button", cls -> "btn btn-light", "light"),
+        button(tpe -> "button", cls -> "btn btn-dark", "dark")
+      )
+    }
+  )
+
+  def buttonSmallDemo: Example = Example(
+    "Buttons",
+    extractCode {
+      import wvlet.airframe.rx.html.all._
+
+      def smallButton(style: String) = button(tpe -> "button", cls -> s"btn btn-${style}", style)
+      div(
+        smallButton("primary"),
+        smallButton("secondary"),
+        button(tpe -> "button", cls -> "btn btn-secondary", "secondary"),
+        button(tpe -> "button", cls -> "btn btn-success", "success"),
+        button(tpe -> "button", cls -> "btn btn-danger", "danger"),
+        button(tpe -> "button", cls -> "btn btn-info", "info"),
+        button(tpe -> "button", cls -> "btn btn-warning", "warning"),
+        button(tpe -> "button", cls -> "btn btn-light", "light"),
+        button(tpe -> "button", cls -> "btn btn-dark", "dark")
+      )
+    }
+  )
 
   def componentGallery = {
     div(

@@ -89,7 +89,9 @@ val buildSettings = Seq[Setting[_]](
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   scalacOptions ++= Seq(
     "-feature",
-    "-deprecation"
+    "-deprecation",
+    // Necessary for tracking source code range in airframe-rx demo
+    "-Yrangepos"
   ), // ,"-Ytyper-debug"),
   testFrameworks += airSpecFramework,
   libraryDependencies ++= Seq(
