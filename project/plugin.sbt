@@ -20,7 +20,7 @@ addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.1.1")
 addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.2.8")
 
 // For generating Lexer/Parser from ANTLR4 grammar (.g4)
-addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.2")
+addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.3")
 
 // For JMH benchmark
 addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.4.0")
