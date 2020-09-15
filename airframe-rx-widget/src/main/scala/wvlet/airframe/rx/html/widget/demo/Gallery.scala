@@ -17,20 +17,7 @@ import org.scalajs.dom
 import org.scalajs.dom.document
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html.all._
-import wvlet.airframe.rx.html.widget.ui.{Browser, Canvas, Layout}
-import wvlet.airframe.rx.html.widget.ui.bootstrap.{
-  Alert,
-  Button,
-  Modal,
-  NavBar,
-  bootstrap
-}
-import wvlet.airframe.rx.html.widget.ui.bootstrap.bootstrap.{
-  RichRxComponent,
-  col,
-  containerFluid,
-  row
-}
+import wvlet.airframe.rx.html.widget.ui.Browser
 import wvlet.airframe.rx.html.{
   DOMRenderer,
   RxCode,
@@ -217,8 +204,8 @@ object Gallery extends LogSupport {
   def svgDemo = Example(
     "SVG",
     extractCode {
-      import wvlet.airframe.rx.html.svgTags._
       import wvlet.airframe.rx.html.svgAttrs._
+      import wvlet.airframe.rx.html.svgTags._
 
       val circleColor = Rx.variable("white")
 
