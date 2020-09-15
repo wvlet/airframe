@@ -9,6 +9,7 @@ import scala.annotation.tailrec
 import scala.collection.immutable.Queue
 import scala.util.{Failure, Success, Try}
 import Rx._
+import wvlet.airframe.rx.RxRunner.continuousRunner
 
 object RxRunner extends LogSupport {
 
@@ -178,6 +179,54 @@ class RxRunner(
         }
         Cancelable { () =>
           timer.cancel
+        }
+      case ThrottleFirstOp(in, interval, unit) =>
+        var lastUpdateTimeNanos = -interval
+        run(in) {
+          case next @ OnNext(v) =>
+            val currentTimeNanos = System.nanoTime()
+            val elapsed          = unit.convert(currentTimeNanos - lastUpdateTimeNanos, TimeUnit.NANOSECONDS)
+            if (elapsed >= interval) {
+              lastUpdateTimeNanos = currentTimeNanos
+              effect(next)
+            } else {
+              // Do not emit the value, but continue the subscription
+              true
+            }
+          case other =>
+            effect(other)
+        }
+      case ThrottleLastOp(in, interval, unit) =>
+        val intervalMillis          = TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
+        var lastItem: Option[A]     = None
+        var lastReported: Option[A] = None
+        val timer: Timer            = compat.newTimer
+        var canContinue             = true
+        timer.schedule(intervalMillis) { interval =>
+          lastItem match {
+            case Some(x) =>
+              lastItem = Some(x.asInstanceOf[A])
+              if (lastReported != lastItem) {
+                lastReported = lastItem
+                canContinue = effect(OnNext(x))
+                if (!canContinue) {
+                  timer.cancel
+                }
+              }
+            case None =>
+            // Do nothing
+          }
+        }
+        val c = run(in) {
+          case OnNext(v) =>
+            lastItem = Some(v.asInstanceOf[A])
+            canContinue
+          case other =>
+            canContinue & effect(other)
+        }
+        Cancelable { () =>
+          timer.cancel
+          c.cancel
         }
       case z @ ZipOp(r1, r2) =>
         zip(z)(effect)
