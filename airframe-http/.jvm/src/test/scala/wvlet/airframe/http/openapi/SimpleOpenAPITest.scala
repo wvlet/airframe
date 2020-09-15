@@ -28,7 +28,6 @@ object SimpleOpenAPITest extends AirSpec {
   test("yaml") {
     val r    = Router.of[MyService]
     val yaml = OpenAPI.ofRouter(r).toYAML
-    info(yaml)
+    debug(yaml)
   }
-
 }
