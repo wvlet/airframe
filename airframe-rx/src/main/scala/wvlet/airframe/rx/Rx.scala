@@ -25,6 +25,7 @@ import scala.util.{Failure, Try}
 trait Rx[+A] {
 
   def parents: Seq[Rx[_]]
+  def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(this.asInstanceOf[Rx[Option[X]]])
 
   /**
     * Recover from a known error and emit a replacement value
@@ -124,6 +125,25 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     * completes before generating <i>n</i> elements.
     */
   def take(n: Long): RxStream[A] = TakeOp(this, n)
+  
+  /**
+    * Emit the first item of the source within each sampling period.
+    * This is useful, for example, to prevent double-clicks of buttons.
+    */
+  def throttleFirst(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): Rx[A] =
+    ThrottleFirstOp[A](this, timeWindow, unit)
+
+  /**
+    * Emit the most recent item of the source within periodic time intervals.
+    */
+  def throttleLast(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): Rx[A] =
+    ThrottleLastOp[A](this, timeWindow, unit)
+
+  /**
+    * Emit the most recent item of the source within periodic time intervals.
+    */
+  def sample(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): Rx[A] =
+    ThrottleLastOp[A](this, timeWindow, unit)
 }
 
 object Rx extends LogSupport {
@@ -238,4 +258,6 @@ object Rx extends LogSupport {
   case class TakeOp[A](input: Rx[A], n: Long) extends RxStream[A] {
     override def parents: Seq[Rx[_]] = Seq(input)
   }
+  case class ThrottleFirstOp[A](input: Rx[A], interval: Long, unit: TimeUnit) extends UnaryRx[A, A]
+  case class ThrottleLastOp[A](input: Rx[A], interval: Long, unit: TimeUnit)  extends UnaryRx[A, A]
 }
