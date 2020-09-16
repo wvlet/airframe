@@ -17,7 +17,7 @@ import java.util.Locale
 import wvlet.airframe.http.{HttpMethod, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.router.Route
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface}
 import wvlet.log.LogSupport
 
@@ -109,7 +109,7 @@ object HttpClientIR extends LogSupport {
 
     def grpcReturnType: Surface = {
       returnType.rawType match {
-        case cl if cl == classOf[Rx[_]] =>
+        case cl if classOf[Rx[_]].isAssignableFrom(cl) =>
           returnType.typeArgs(0)
         case _ => returnType
       }

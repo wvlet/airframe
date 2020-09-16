@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.rx
 import java.util.TimerTask
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
   */
@@ -41,4 +42,21 @@ object compat {
         t.cancel()
       }
     }
+
+  def toSeq[A](rx: Rx[A]): Seq[A] = {
+    val ready = new AtomicBoolean(true)
+    val s     = Seq.newBuilder[A]
+    var c     = Cancelable.empty
+    c = RxRunner.run(rx) {
+      case OnNext(v) => s += v.asInstanceOf[A]
+      case OnError(e) =>
+        c.cancel
+        throw e
+      case OnCompletion =>
+        c.cancel
+        ready.set(true)
+    }
+    while (!ready.get()) {}
+    s.result()
+  }
 }

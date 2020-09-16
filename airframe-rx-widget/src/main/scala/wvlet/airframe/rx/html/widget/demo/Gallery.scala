@@ -69,7 +69,13 @@ object Gallery extends LogSupport {
               NavBar.navItem(a(_class -> "nav-link", href -> "#", "Gallery")),
               NavBar.navItem(a(_class -> "nav-link", href -> "#", "Reactive")),
               NavBar.navItem(
-                button("Click Me!", cls -> "btn btn-primary", onclick -> { () => logger.info("Clicked") })
+                button(
+                  "Click Me!",
+                  cls -> "btn btn-primary",
+                  onclick -> { () =>
+                    logger.info("Clicked")
+                  }
+                )
               )
             ),
             tags.main(role -> "main", _class -> "col-md-10 ml-md-auto", h2("Airframe RxWidget Gallery"), content)
@@ -302,7 +308,7 @@ object Gallery extends LogSupport {
   def svgGallery = {
     import wvlet.airframe.rx.html.svgTags._
     import wvlet.airframe.rx.html.svgAttrs._
-    val circleColor = Rx("white")
+    val circleColor = Rx.variable("white")
     demo(
       "SVG",
       svg(
@@ -313,8 +319,12 @@ object Gallery extends LogSupport {
           cy   -> "50%",
           r    -> 4,
           fill -> circleColor,
-          onmouseover { () => circleColor.set("#99CCFF") },
-          onmouseout { () => circleColor.set("white") }
+          onmouseover { () =>
+            circleColor.set("#99CCFF")
+          },
+          onmouseout { () =>
+            circleColor.set("white")
+          }
         )
       ),
       """import wvlet.airframe.rx.html.svg._
@@ -332,7 +342,13 @@ object Gallery extends LogSupport {
     demo(
       "Rx",
       p(
-        button(cls -> "btn btn-primary", "Add", onclick { e: dom.Event => v.update(_ + 1) }),
+        button(
+          cls -> "btn btn-primary",
+          "Add",
+          onclick { e: dom.Event =>
+            v.update(_ + 1)
+          }
+        ),
         v.map(x => s" count: ${x}")
       ),
       """val v = Rx(1)

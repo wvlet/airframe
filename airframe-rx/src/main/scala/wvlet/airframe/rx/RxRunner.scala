@@ -232,6 +232,8 @@ class RxRunner(
         zip(z)(effect)
       case z @ Zip3Op(r1, r2, r3) =>
         zip(z)(effect)
+      case z @ Zip4Op(r1, r2, r3, r4) =>
+        zip(z)(effect)
       case j @ JoinOp(r1, r2) =>
         join(j)(effect)
       case j @ Join3Op(r1, r2, r3) =>
@@ -240,11 +242,8 @@ class RxRunner(
         join(j)(effect)
       case RxOptionOp(in) =>
         run(in) {
-          case OnNext(Some(v)) =>
-            effect(OnNext(v))
-          case OnNext(None) =>
-            // do nothing for empty values
-            true
+          case e @ OnNext(v) =>
+            effect(e)
           case other =>
             effect(other)
         }
@@ -259,11 +258,8 @@ class RxRunner(
         }
         Cancelable.empty
       case o: RxOptionVar[_] =>
-        o.asInstanceOf[RxOptionVar[A]].foreach {
-          case Some(v) =>
-            effect(OnNext(v))
-          case None =>
-          // Do nothing
+        o.asInstanceOf[RxOptionVar[A]].foreach { v =>
+          effect(OnNext(v))
         }
       case v: RxVar[_] =>
         v.asInstanceOf[RxVar[A]].foreach { x =>

@@ -12,50 +12,46 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx
-import wvlet.airframe.rx.Rx.{FlatMapOp, MapOp}
+import wvlet.airframe.rx.Rx.{FlatMapOp, MapOp, RecoverOp, RecoverWithOp}
 
 /**
-  * An wrapper of Rx[A] for Option[A] type values
   */
-trait RxOption[+A] extends Rx[A] {
-  protected def in: Rx[Option[A]]
+trait RxOption[+A] extends Rx[Option[A]] {
+  protected def in: RxStream[Option[A]]
 
-  override def parents: Seq[Rx[_]]                 = Seq(in)
-  override def withName(name: String): RxOption[A] = RxOptionOp(in.withName(name))
-
-  override def map[B](f: A => B): RxOption[B] = {
-    RxOptionOp(
-      MapOp(
-        in,
-        { x: Option[A] =>
-          x.map(f)
-        }
-      )
-    )
+  override def toRxStream: RxStream[Option[A]] = transform {
+    case Some(x) => Some(x)
+    case None    => None
   }
-  override def flatMap[B](f: A => Rx[B]): RxOption[B] = {
+
+  def map[B](f: A => B): RxOption[B] = {
+    transformOption {
+      case Some(x) => Some(f(x))
+      case None    => None
+    }
+  }
+
+  def flatMap[B](f: A => Rx[B]): RxOption[B] = {
     RxOptionOp[B](
-      FlatMapOp(
-        in,
-        { x: Option[A] =>
-          x match {
-            case Some(v) =>
-              f(v).map(Some(_))
-            case None =>
-              Rx.none
-          }
-        }
-      )
+      transformRx {
+        case Some(x) =>
+          f(x).toRxStream.map(Option(_))
+        case None => Rx.none
+      }
     )
   }
 
-  def transform[B](f: Option[A] => B): Rx[B] = {
+  def transform[B](f: Option[A] => B): RxStream[B] = {
     MapOp(
       in,
       { x: Option[A] =>
         f(x)
       }
     )
+  }
+
+  def transformRx[B](f: Option[A] => Rx[B]): RxStream[B] = {
+    in.flatMap(f)
   }
 
   def transformOption[B](f: Option[A] => Option[B]): RxOption[B] = {
@@ -69,9 +65,16 @@ trait RxOption[+A] extends Rx[A] {
     )
   }
 
-  def getOrElse[A1 >: A](default: => A1): Rx[A1] = {
+  def getOrElse[A1 >: A](default: => A1): RxStream[A1] = {
     transform {
       case Some(v) => v
+      case None    => default
+    }
+  }
+
+  def getOrElseRx[A1 >: A](default: => Rx[A1]): RxStream[A1] = {
+    transformRx {
+      case Some(v) => Rx.single(v.asInstanceOf[A1])
       case None    => default
     }
   }
@@ -80,27 +83,22 @@ trait RxOption[+A] extends Rx[A] {
     transformOption(_.orElse(default))
   }
 
-  override def filter(f: A => Boolean): RxOption[A] = {
-    RxOptionOp(
-      in.map {
-        case Some(x) if f(x) => Some(x)
-        case _               => None
-      }
-    )
-  }
-
-  override def withFilter(f: A => Boolean): RxOption[A] = filter(f)
+  def filter(f: A => Boolean): RxOption[A]     = transformOption(_.filter(f))
+  def withFilter(f: A => Boolean): RxOption[A] = filter(f)
 }
 
-case class RxOptionOp[+A](override protected val in: Rx[Option[A]]) extends RxOption[A]
+case class RxOptionOp[+A](override protected val in: RxStream[Option[A]]) extends RxOption[A] {
+  override def parents: Seq[Rx[_]] = Seq(in)
+}
 
 /**
   * RxVar implementation for Option[A] type values
   * @tparam A
   */
 class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarOps[Option[A]] {
-  override def toString: String            = s"RxOptionVar(${variable.get})"
-  override protected def in: Rx[Option[A]] = variable
+  override def toString: String                  = s"RxOptionVar(${variable.get})"
+  override protected def in: RxStream[Option[A]] = variable
+  override def parents: Seq[Rx[_]]               = Seq(in)
 
   override def get: Option[A] = variable.get
   override def foreach[U](f: Option[A] => U): Cancelable = {
@@ -109,4 +107,5 @@ class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarO
   override def update(updater: Option[A] => Option[A], force: Boolean = false): Unit = {
     variable.update(updater, force)
   }
+
 }

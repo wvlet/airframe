@@ -20,50 +20,45 @@ class RxOptionTest extends AirSpec {
   test("eval") {
     val opt = Rx.option(Some("world"))
     val v   = opt.map(x => s"hello ${x}")
-    v.run(x => x shouldBe "hello world")
+    v.run(x => x shouldBe Some("hello world"))
   }
 
   test("none") {
     val opt = Rx.none
     val v   = opt.map(x => s"hello ${x}")
-    v.run(x => fail("should not reach here"))
+    v.run(x => x shouldBe empty)
   }
 
   test("filter true") {
     val opt = Rx.option(Some("world"))
     val v   = opt.filter(_.startsWith("world")).map(x => s"hello ${x}")
-    v.run(x => x shouldBe "hello world")
+    v.run(x => x shouldBe Some("hello world"))
   }
 
   test("filter false") {
     val opt = Rx.option(Some("world"))
     val v   = opt.filter(_.startsWith("xxx")).map(x => s"hello ${x}")
-    v.run(x => fail("should not reach here"))
-  }
-
-  test("add name") {
-    val r = Rx.option(Some("hello")).withName("opt test")
-    debug(r)
+    v.run(_ shouldBe empty)
   }
 
   test("flatMap") {
     val opt = Rx.option(Some("hello"))
     val v   = opt.flatMap(x => Rx.const(s"hello ${x}"))
-    v.run(x => x shouldBe "hello hello")
+    v.run(_ shouldBe Some("hello hello"))
   }
 
   test("for-comprehension") {
     val a = for (x <- Rx.option(Some("hello"))) yield {
       x + " world"
     }
-    a.run(_ shouldBe "hello world")
+    a.run(_ shouldBe Some("hello world"))
   }
 
   test("toOption") {
     val opt = Rx.const(Some("hello")).toOption
     val a   = opt.map(x => s"${x} option")
 
-    a.run(_ shouldBe "hello option")
+    a.run(_ shouldBe Some("hello option"))
   }
 
   test("option variable") {
@@ -71,12 +66,12 @@ class RxOptionTest extends AirSpec {
     val o = v.map { x =>
       s"${x} world"
     }
-    o.run(_ shouldBe "hello world")
+    o.run(_ shouldBe Some("hello world"))
   }
 
   test("eval option variable") {
     val v = Rx.optionVariable(Some("hello"))
-    v.run(_ shouldBe "hello")
+    v.run(_ shouldBe Some("hello"))
   }
 
   test("set option variable") {
@@ -86,26 +81,26 @@ class RxOptionTest extends AirSpec {
     }
 
     v.set(Some("good morning"))
-    o.run(_ shouldBe "good morning world")
+    o.run(_ shouldBe Some("good morning world"))
       // We need to cancel the run to unregister the subscription
       .cancel
 
     v.set(None)
-    o.run(x => fail("should not reach here"))
+    o.run(_ shouldBe empty)
   }
 
   test("convert RxVar to RxOptionVar") {
-    val v = Rx(Some("hello")).toOption
+    val v = Rx.variable(Some("hello")).toOption
     val o = v.map { x =>
       s"${x} world"
     }
-    o.run(_ shouldBe "hello world").cancel
+    o.run(_ shouldBe Some("hello world")).cancel
 
     v := None
-    o.run(x => fail("should not reach here")).cancel
+    o.run(_ shouldBe empty).cancel
 
     v := Some("good morning")
-    o.run(_ shouldBe "good morning world").cancel
+    o.run(_ shouldBe Some("good morning world")).cancel
   }
 
   test("getOrElse") {
@@ -120,12 +115,12 @@ class RxOptionTest extends AirSpec {
 
   test("orElse") {
     val opt = Rx.option(Some("hello"))
-    opt.orElse(Some("world")).run(_ shouldBe "hello")
+    opt.orElse(Some("world")).run(_ shouldBe Some("hello"))
   }
 
   test("orElse None") {
     val opt = Rx.none
-    opt.orElse(Some("world")).run(_ shouldBe "world")
+    opt.orElse(Some("world")).run(_ shouldBe Some("world"))
   }
 
   test("transform") {
@@ -153,7 +148,7 @@ class RxOptionTest extends AirSpec {
         case Some(x) => Some(x)
         case None    => Some("world")
       }
-      .run(_ shouldBe "hello")
+      .run(_ shouldBe Some("hello"))
   }
 
   test("transformOption None") {
@@ -163,7 +158,7 @@ class RxOptionTest extends AirSpec {
         case Some(x) => Some(x)
         case None    => Some("world")
       }
-      .run(_ shouldBe "world")
+      .run(_ shouldBe Some("world"))
   }
 
 }

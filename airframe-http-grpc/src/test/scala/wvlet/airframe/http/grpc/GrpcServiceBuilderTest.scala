@@ -12,18 +12,15 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
+import io.grpc.stub.{AbstractBlockingStub, ClientCallStreamObserver, ClientCalls}
 import io.grpc.{CallOptions, Channel, ManagedChannel, ManagedChannelBuilder}
-import io.grpc.stub.{AbstractBlockingStub, ClientCallStreamObserver, ClientCalls, StreamObserver}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{RPC, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
-import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner}
+import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airspec.AirSpec
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 
 /**
   */
@@ -39,15 +36,15 @@ object GrpcServiceBuilderTest extends AirSpec {
       s"Hello ${name}! (id:${id})"
     }
 
-    def helloStreaming(name: String): Rx[String] = {
+    def helloStreaming(name: String): RxStream[String] = {
       Rx.sequence("Hello", "Bye").map(x => s"${x} ${name}!")
     }
 
-    def helloClientStreaming(input: Rx[String]): String = {
+    def helloClientStreaming(input: RxStream[String]): String = {
       input.toSeq.mkString(", ")
     }
 
-    def helloBidiStreaming(input: Rx[String]): Rx[String] = {
+    def helloBidiStreaming(input: RxStream[String]): RxStream[String] = {
       input.map(x => s"Hello ${x}!")
     }
   }

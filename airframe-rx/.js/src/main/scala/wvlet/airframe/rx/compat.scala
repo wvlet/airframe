@@ -37,4 +37,8 @@ object compat {
         }
       }
     }
+
+  def toSeq[A](rx: Rx[A]): Seq[A] = {
+    throw new UnsupportedOperationException("Rx.toSeq is unsupported in Scala.js")
+  }
 }
