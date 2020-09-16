@@ -19,7 +19,7 @@ import wvlet.airframe.rx.Rx.{FlatMapOp, MapOp, RecoverOp, RecoverWithOp}
 trait RxOption[+A] extends Rx[Option[A]] {
   protected def in: RxStream[Option[A]]
 
-  override def toRx: Rx[Option[A]] = transform {
+  override def toRxStream: RxStream[Option[A]] = transform {
     case Some(x) => Some(x)
     case None    => None
   }
@@ -31,14 +31,17 @@ trait RxOption[+A] extends Rx[Option[A]] {
     }
   }
 
-  def flatMap[B](f: A => RxStream[B]): RxOption[B] = {
-    transformRx[B] {
-      case Some(x) => f(x).map(Some(_))
-      case None    => Rx.single(None)
-    }
+  def flatMap[B](f: A => Rx[B]): RxOption[B] = {
+    RxOptionOp[B](
+      transformRx {
+        case Some(x) =>
+          f(x).toRxStream.map(Option(_))
+        case None => Rx.none
+      }
+    )
   }
 
-  def transform[B](f: Option[A] => B): Rx[B] = {
+  def transform[B](f: Option[A] => B): RxStream[B] = {
     MapOp(
       in,
       { x: Option[A] =>
@@ -47,15 +50,8 @@ trait RxOption[+A] extends Rx[Option[A]] {
     )
   }
 
-  def transformRx[B](f: Option[A] => Rx[Option[B]]): RxOption[B] = {
-    RxOptionOp[B](
-      FlatMapOp(
-        in,
-        { x: Option[A] =>
-          f(x)
-        }
-      )
-    )
+  def transformRx[B](f: Option[A] => Rx[B]): RxStream[B] = {
+    in.flatMap(f)
   }
 
   def transformOption[B](f: Option[A] => Option[B]): RxOption[B] = {
@@ -69,9 +65,16 @@ trait RxOption[+A] extends Rx[Option[A]] {
     )
   }
 
-  def getOrElse[A1 >: A](default: => A1): Rx[A1] = {
+  def getOrElse[A1 >: A](default: => A1): RxStream[A1] = {
     transform {
       case Some(v) => v
+      case None    => default
+    }
+  }
+
+  def getOrElseRx[A1 >: A](default: => Rx[A1]): RxStream[A1] = {
+    transformRx {
+      case Some(v) => Rx.single(v.asInstanceOf[A1])
       case None    => default
     }
   }
@@ -80,15 +83,7 @@ trait RxOption[+A] extends Rx[Option[A]] {
     transformOption(_.orElse(default))
   }
 
-  def filter(f: A => Boolean): RxOption[A] = {
-    RxOptionOp(
-      in.map {
-        case Some(x) if f(x) => Some(x)
-        case _               => None
-      }
-    )
-  }
-
+  def filter(f: A => Boolean): RxOption[A]     = transformOption(_.filter(f))
   def withFilter(f: A => Boolean): RxOption[A] = filter(f)
 }
 

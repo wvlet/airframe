@@ -28,14 +28,14 @@ trait Rx[+A] {
   /**
     * Recover from a known error and emit a replacement value
     */
-  def recover[U](f: PartialFunction[Throwable, U]): Rx[U] = RecoverOp(this.toRx, f)
+  def recover[U](f: PartialFunction[Throwable, U]): RxStream[U] = RecoverOp(this, f)
 
   /**
     * Recover from a known error and emit replacement values from a given Rx
     */
-  def recoverWith[A](f: PartialFunction[Throwable, Rx[A]]): Rx[A] = RecoverWithOp(this.toRx, f)
+  def recoverWith[A](f: PartialFunction[Throwable, Rx[A]]): RxStream[A] = RecoverWithOp(this, f)
 
-  def toRx: Rx[_]
+  def toRxStream: RxStream[A]
 
   def subscribe[U](subscriber: A => U): Cancelable = runContinuously(subscriber)
 
@@ -73,6 +73,9 @@ trait Rx[+A] {
     }
   }
 
+  /**
+    * Materialize the stream as Seq[A]. This works only for the finite stream and for Scala JVM.
+    */
   def toSeq: Seq[A] = {
     compat.toSeq(this)
   }
@@ -83,7 +86,7 @@ trait Rx[+A] {
 trait RxStream[+A] extends Rx[A] with LogSupport {
   import Rx._
 
-  override def toRx: Rx[A] = this
+  override def toRxStream: RxStream[A] = this
   def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(
     this.asInstanceOf[RxStream[Option[X]]]
   )
@@ -128,19 +131,19 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     * Emit the first item of the source within each sampling period.
     * This is useful, for example, to prevent double-clicks of buttons.
     */
-  def throttleFirst(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): Rx[A] =
+  def throttleFirst(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): RxStream[A] =
     ThrottleFirstOp[A](this, timeWindow, unit)
 
   /**
     * Emit the most recent item of the source within periodic time intervals.
     */
-  def throttleLast(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): Rx[A] =
+  def throttleLast(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): RxStream[A] =
     ThrottleLastOp[A](this, timeWindow, unit)
 
   /**
     * Emit the most recent item of the source within periodic time intervals.
     */
-  def sample(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): Rx[A] =
+  def sample(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): RxStream[A] =
     ThrottleLastOp[A](this, timeWindow, unit)
 }
 
