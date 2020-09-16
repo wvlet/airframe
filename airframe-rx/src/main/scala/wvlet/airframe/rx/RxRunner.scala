@@ -9,7 +9,31 @@ import scala.annotation.tailrec
 import scala.collection.immutable.Queue
 import scala.util.{Failure, Success, Try}
 import Rx._
-import wvlet.airframe.rx.RxRunner.continuousRunner
+
+/**
+  * States for propagating the result of the downstream operators.
+  *
+  * TODO: Add a state for telling how many elements can be received in downstream operators for implementing back-pressure
+  */
+sealed trait RxResult {
+  def toContinue: Boolean
+  def &&(other: RxResult): RxResult = {
+    if (this.toContinue && other.toContinue) {
+      RxResult.Continue
+    } else {
+      RxResult.Stop
+    }
+  }
+}
+
+object RxResult {
+  object Continue extends RxResult {
+    override def toContinue: Boolean = true
+  }
+  object Stop extends RxResult {
+    override def toContinue: Boolean = false
+  }
+}
 
 object RxRunner extends LogSupport {
 
@@ -22,10 +46,10 @@ object RxRunner extends LogSupport {
       ev match {
         case v @ OnNext(_) =>
           effect(v)
-          true
+          RxResult.Continue
         case other =>
           effect(other)
-          false
+          RxResult.Stop
       }
     }
 
@@ -34,10 +58,10 @@ object RxRunner extends LogSupport {
       ev match {
         case v @ OnNext(_) =>
           effect(v)
-          true
+          RxResult.Continue
         case other =>
           effect(other)
-          false
+          RxResult.Stop
       }
     }
 }
@@ -53,11 +77,11 @@ class RxRunner(
     * the effect code block will be executed.
     *
     * @param rx
-    * @param effect a function to process the generated RxEvent. This function must return true when the downstream operator can
-    *               receive further events (OnNext). If the leaf sink operator issued OnError or OnCompletion event, this must return false.
+    * @param effect a function to process the generated RxEvent. This function must return [[RxResult.Continue]] when the downstream operator can
+    *               receive further events (OnNext). If the leaf sink operator issued OnError or OnCompletion event, this must return [[RxResult.Stop]].
     * @tparam A
     */
-  def run[A](rx: Rx[A])(effect: RxEvent => Boolean): Cancelable = {
+  def run[A](rx: Rx[A])(effect: RxEvent => RxResult): Cancelable = {
     rx match {
       case MapOp(in, f) =>
         run(in) {
@@ -76,7 +100,7 @@ class RxRunner(
         var c1 = Cancelable.empty
         val c2 = run(fm.input) {
           case OnNext(x) =>
-            var toContinue = true
+            var toContinue: RxResult = RxResult.Continue
             Try(fm.f(x)) match {
               case Success(rxb) =>
                 // This code is necessary to properly cancel the effect if this operator is evaluated before
@@ -87,7 +111,7 @@ class RxRunner(
                     toContinue
                   case OnCompletion =>
                     // skip the end of the nested flatMap body stream
-                    true
+                    RxResult.Continue
                   case ev @ OnError(e) =>
                     toContinue = effect(ev)
                     toContinue
@@ -103,7 +127,6 @@ class RxRunner(
           c1.cancel; c2.cancel
         }
       case FilterOp(in, cond) =>
-        var toContinue = true
         run(in) { ev =>
           ev match {
             case OnNext(x) =>
@@ -112,7 +135,7 @@ class RxRunner(
                   effect(OnNext(x))
                 case Success(false) =>
                   // Skip unmatched element
-                  true
+                  RxResult.Continue
                 case Failure(e) =>
                   effect(OnError(e))
               }
@@ -124,7 +147,7 @@ class RxRunner(
         var c1 = Cancelable.empty
         val c2 = run(first) {
           case OnCompletion =>
-            var toContinue = true
+            var toContinue: RxResult = RxResult.Continue
             // Properly cancel the effect if this operator is evaluated before
             c1.cancel
             c1 = run(next) { ev =>
@@ -143,7 +166,7 @@ class RxRunner(
         run(in) {
           case OnNext(v) =>
             last = Some(v.asInstanceOf[A])
-            true
+            RxResult.Continue
           case err @ OnError(e) =>
             effect(err)
           case OnCompletion =>
@@ -161,7 +184,7 @@ class RxRunner(
               effect(OnNext(v.asInstanceOf[A]))
             } else {
               effect(OnCompletion)
-              false
+              RxResult.Stop
             }
           case err @ OnError(e) =>
             effect(err)
@@ -173,7 +196,7 @@ class RxRunner(
         val timer: Timer   = compat.newTimer
         timer.schedule(intervalMillis) { interval =>
           val canContinue = effect(OnNext(interval))
-          if (!canContinue) {
+          if (!canContinue.toContinue) {
             timer.cancel
           }
         }
@@ -191,7 +214,7 @@ class RxRunner(
               effect(next)
             } else {
               // Do not emit the value, but continue the subscription
-              true
+              RxResult.Continue
             }
           case other =>
             effect(other)
@@ -201,7 +224,7 @@ class RxRunner(
         var lastItem: Option[A]     = None
         var lastReported: Option[A] = None
         val timer: Timer            = compat.newTimer
-        var canContinue             = true
+        var canContinue: RxResult   = RxResult.Continue
         timer.schedule(intervalMillis) { interval =>
           lastItem match {
             case Some(x) =>
@@ -209,7 +232,7 @@ class RxRunner(
               if (lastReported != lastItem) {
                 lastReported = lastItem
                 canContinue = effect(OnNext(x))
-                if (!canContinue) {
+                if (!canContinue.toContinue) {
                   timer.cancel
                 }
               }
@@ -222,7 +245,7 @@ class RxRunner(
             lastItem = Some(v.asInstanceOf[A])
             canContinue
           case other =>
-            canContinue & effect(other)
+            canContinue && effect(other)
         }
         Cancelable { () =>
           timer.cancel
@@ -274,7 +297,7 @@ class RxRunner(
               Try(effect(OnNext(f(e)))) match {
                 case Success(x) =>
                   // recovery succeeded
-                  true
+                  RxResult.Continue
                 case Failure(e) =>
                   effect(OnError(e))
               }
@@ -283,8 +306,8 @@ class RxRunner(
           }
         }
       case RecoverWithOp(in, f) =>
-        var toContinue = true
-        var c1         = Cancelable.empty
+        var toContinue: RxResult = RxResult.Continue
+        var c1                   = Cancelable.empty
         val c2 = run(in) { ev =>
           ev match {
             case OnError(e) if f.isDefinedAt(e) =>
@@ -313,15 +336,15 @@ class RxRunner(
         }
         Cancelable.empty
       case SeqOp(inputList) =>
-        var toContinue = true
+        var lastResult: RxResult = RxResult.Continue
         @tailrec
         def loop(lst: List[A]): Unit = {
-          if (continuous || toContinue) {
+          if (continuous || lastResult.toContinue) {
             lst match {
               case Nil =>
-                toContinue = effect(OnCompletion)
+                lastResult = effect(OnCompletion)
               case head :: tail =>
-                toContinue = effect(OnNext(head))
+                lastResult = effect(OnNext(head))
                 loop(tail)
             }
           }
@@ -329,7 +352,7 @@ class RxRunner(
         loop(inputList.eval.toList)
         // Stop reading the next element if cancelled
         Cancelable { () =>
-          toContinue = false
+          lastResult = RxResult.Stop
         }
       case source: RxSource[_] =>
         var toContinue = true
@@ -373,13 +396,13 @@ class RxRunner(
 
     protected def isCompleted: Boolean
 
-    def run(effect: RxEvent => Boolean): Cancelable = {
-      def emit: Boolean = {
+    def run(effect: RxEvent => RxResult): Cancelable = {
+      def emit: RxResult = {
         // Emit the tuple result.
         val toContinue = nextValue match {
           case None =>
             // Nothing to emit
-            true
+            RxResult.Continue
           case Some(values) =>
             // Generate tuples from last values.
             // This code is a bit ad-hoc because there is no way to produce tuples from Seq[X] of lastValues
@@ -398,7 +421,7 @@ class RxRunner(
       }
 
       // Scan the last events and emit the next value or a completion event
-      def processEvents(doEmit: Boolean): Boolean = {
+      def processEvents(doEmit: Boolean): RxResult = {
         val errors = lastEvent.collect { case Some(e @ OnError(ex)) => ex }
         if (errors.isEmpty) {
           if (doEmit) {
@@ -408,7 +431,7 @@ class RxRunner(
               trace(s"emit OnCompletion")
               effect(OnCompletion)
             } else {
-              true
+              RxResult.Continue
             }
           }
         } else {
@@ -420,7 +443,7 @@ class RxRunner(
             }
             effect(OnError(ex))
           } else {
-            true
+            RxResult.Continue
           }
         }
       }
@@ -471,7 +494,7 @@ class RxRunner(
     }
   }
 
-  private def zip[A](input: Rx[A])(effect: RxEvent => Boolean): Cancelable = {
+  private def zip[A](input: Rx[A])(effect: RxEvent => RxResult): Cancelable = {
     new ZipStream(input).run(effect)
   }
 
@@ -498,7 +521,7 @@ class RxRunner(
     }
   }
 
-  private def join[A](input: Rx[A])(effect: RxEvent => Boolean): Cancelable = {
+  private def join[A](input: Rx[A])(effect: RxEvent => RxResult): Cancelable = {
     new JoinStream(input).run(effect)
   }
 
