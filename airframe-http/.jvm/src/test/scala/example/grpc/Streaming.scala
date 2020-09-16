@@ -19,10 +19,10 @@ import wvlet.airframe.rx.{Rx, RxStream}
   */
 @RPC
 trait Streaming {
-  def serverStreaming(name: String): Rx[String] = {
+  def serverStreaming(name: String): RxStream[String] = {
     Rx.sequence("Hello", "See You").map(x => s"${x} ${name}!")
   }
-  def clientStreaming(input: Rx[String]): String = {
+  def clientStreaming(input: RxStream[String]): String = {
     input.toSeq.mkString(", ")
   }
   def bidiStreaming(input: RxStream[String]): RxStream[String] = {

@@ -23,9 +23,7 @@ import scala.language.higherKinds
 import scala.util.{Failure, Try}
 
 trait Rx[+A] {
-
   def parents: Seq[Rx[_]]
-  def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(this.asInstanceOf[Rx[Option[X]]])
 
   /**
     * Recover from a known error and emit a replacement value
@@ -38,9 +36,6 @@ trait Rx[+A] {
   def recoverWith[A](f: PartialFunction[Throwable, Rx[A]]): Rx[A] = RecoverWithOp(this.toRx, f)
 
   def toRx: Rx[_]
-  def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(
-    this.asInstanceOf[RxStream[Option[X]]]
-  )
 
   def subscribe[U](subscriber: A => U): Cancelable = runContinuously(subscriber)
 
@@ -89,6 +84,9 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
   import Rx._
 
   override def toRx: Rx[A] = this
+  def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(
+    this.asInstanceOf[RxStream[Option[X]]]
+  )
 
   def withName(name: String): RxStream[A] = NamedOp(this, name)
 
@@ -125,7 +123,7 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     * completes before generating <i>n</i> elements.
     */
   def take(n: Long): RxStream[A] = TakeOp(this, n)
-  
+
   /**
     * Emit the first item of the source within each sampling period.
     * This is useful, for example, to prevent double-clicks of buttons.
