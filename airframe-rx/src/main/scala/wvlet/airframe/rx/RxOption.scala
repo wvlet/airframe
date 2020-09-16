@@ -58,6 +58,15 @@ trait RxOption[+A] extends Rx[A] {
     )
   }
 
+  def transformRx[B](f: Option[A] => Rx[B]): Rx[B] = {
+    FlatMapOp(
+      in,
+      { x: Option[A] =>
+        f(x)
+      }
+    )
+  }
+
   def transformOption[B](f: Option[A] => Option[B]): RxOption[B] = {
     RxOptionOp[B](
       MapOp(

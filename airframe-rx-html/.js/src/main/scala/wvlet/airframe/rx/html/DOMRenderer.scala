@@ -42,7 +42,6 @@ object DOMRenderer extends LogSupport {
   }
 
   def render(e: RxElement): (dom.Node, Cancelable) = {
-
     def traverse(v: Any): (dom.Node, Cancelable) = {
       v match {
         case h: HtmlElement =>
@@ -61,6 +60,7 @@ object DOMRenderer extends LogSupport {
           throw new IllegalArgumentException(s"unsupported top level element: ${other}. Use renderTo")
       }
     }
+
     traverse(e)
   }
 
@@ -87,7 +87,9 @@ object DOMRenderer extends LogSupport {
             c1.cancel
             c1 = traverse(value, Some(start))
           }
-          Cancelable { () => Try(c1.cancel); Try(c2.cancel) }
+          Cancelable { () =>
+            Try(c1.cancel); Try(c2.cancel)
+          }
         case a: HtmlAttribute =>
           addAttribute(node, a)
         case n: dom.Node =>
@@ -100,7 +102,9 @@ object DOMRenderer extends LogSupport {
           val elem = node.lastChild
           val c2   = rx.traverseModifiers(m => renderTo(elem, m))
           node.mountHere(elem, anchor)
-          Cancelable { () => Try(c1.cancel); Try(c2.cancel) }
+          Cancelable { () =>
+            Try(c1.cancel); Try(c2.cancel)
+          }
         case s: String =>
           val textNode = newTextNode(s)
           node.mountHere(textNode, anchor)
@@ -151,10 +155,10 @@ object DOMRenderer extends LogSupport {
         case Some(x) =>
           traverse(x, anchor)
         case s: Iterable[_] =>
-          val cancelables = for (el <- s) yield {
+          val cancellables = for (el <- s) yield {
             traverse(el, anchor)
           }
-          Cancelable.merge(cancelables)
+          Cancelable.merge(cancellables)
         case other =>
           throw new IllegalArgumentException(s"unsupported class ${other}")
       }
