@@ -12,41 +12,30 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx
-import wvlet.airframe.rx.Rx.{FlatMapOp, MapOp}
+import wvlet.airframe.rx.Rx.{FlatMapOp, MapOp, RecoverOp, RecoverWithOp}
 
 /**
-  * An wrapper of Rx[A] for Option[A] type values
   */
-trait RxOption[+A] extends Rx[A] {
+trait RxOption[+A] extends RxBase[Option[A]] {
   protected def in: Rx[Option[A]]
 
-  override def parents: Seq[Rx[_]]                 = Seq(in)
-  override def withName(name: String): RxOption[A] = RxOptionOp(in.withName(name))
-
-  override def map[B](f: A => B): RxOption[B] = {
-    RxOptionOp(
-      MapOp(
-        in,
-        { x: Option[A] =>
-          x.map(f)
-        }
-      )
-    )
+  override def toRx: Rx[Option[A]] = transform {
+    case Some(x) => Some(x)
+    case None    => None
   }
-  override def flatMap[B](f: A => Rx[B]): RxOption[B] = {
-    RxOptionOp[B](
-      FlatMapOp(
-        in,
-        { x: Option[A] =>
-          x match {
-            case Some(v) =>
-              f(v).map(Some(_))
-            case None =>
-              Rx.none
-          }
-        }
-      )
-    )
+
+  def map[B](f: A => B): RxOption[B] = {
+    transformOption {
+      case Some(x) => Some(f(x))
+      case None    => None
+    }
+  }
+
+  def flatMap[B](f: A => Rx[B]): RxOption[B] = {
+    transformRx[B] {
+      case Some(x) => f(x).map(Some(_))
+      case None    => Rx.single(None)
+    }
   }
 
   def transform[B](f: Option[A] => B): Rx[B] = {
@@ -58,12 +47,14 @@ trait RxOption[+A] extends Rx[A] {
     )
   }
 
-  def transformRx[B](f: Option[A] => Rx[B]): Rx[B] = {
-    FlatMapOp(
-      in,
-      { x: Option[A] =>
-        f(x)
-      }
+  def transformRx[B](f: Option[A] => Rx[Option[B]]): RxOption[B] = {
+    RxOptionOp[B](
+      FlatMapOp(
+        in,
+        { x: Option[A] =>
+          f(x)
+        }
+      )
     )
   }
 
@@ -89,7 +80,7 @@ trait RxOption[+A] extends Rx[A] {
     transformOption(_.orElse(default))
   }
 
-  override def filter(f: A => Boolean): RxOption[A] = {
+  def filter(f: A => Boolean): RxOption[A] = {
     RxOptionOp(
       in.map {
         case Some(x) if f(x) => Some(x)
@@ -98,7 +89,7 @@ trait RxOption[+A] extends Rx[A] {
     )
   }
 
-  override def withFilter(f: A => Boolean): RxOption[A] = filter(f)
+  def withFilter(f: A => Boolean): RxOption[A] = filter(f)
 }
 
 case class RxOptionOp[+A](override protected val in: Rx[Option[A]]) extends RxOption[A]

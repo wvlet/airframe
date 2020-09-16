@@ -15,16 +15,69 @@ package wvlet.airframe.rx
 
 import java.util.concurrent.TimeUnit
 
+import wvlet.airframe.rx.Rx.{RecoverOp, RecoverWithOp}
 import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
 import scala.util.{Failure, Try}
 
+trait RxBase[+A] {
+
+  /**
+    * Recover from a known error and emit a replacement value
+    */
+  def recover[U](f: PartialFunction[Throwable, U]): Rx[U] = RecoverOp(this.toRx, f)
+
+  /**
+    * Recover from a known error and emit replacement values from a given Rx
+    */
+  def recoverWith[A](f: PartialFunction[Throwable, Rx[A]]): Rx[A] = RecoverWithOp(this.toRx, f)
+
+  def toRx: Rx[_]
+  def subscribe[U](subscriber: A => U): Cancelable = runContinuously(subscriber)
+
+  /**
+    * Evaluate this Rx[A] and apply the given effect function. Once OnError(e) or OnCompletion is observed,
+    * it will stop the evaluation.
+    *
+    * @param effect
+    * @tparam U
+    * @return
+    */
+  def run[U](effect: A => U): Cancelable = {
+    RxRunner.run(this) {
+      case OnNext(v) =>
+        effect(v.asInstanceOf[A])
+      case OnError(e) =>
+        throw e
+      case OnCompletion =>
+      // do nothing
+    }
+  }
+
+  /**
+    * Keep evaluating Rx[A] even if OnError(e) or OnCompletion is reported.
+    * This is useful for keep processing streams.
+    */
+  def runContinuously[U](effect: A => U): Cancelable = {
+    RxRunner.runContinuously(this) {
+      case OnNext(v) =>
+        effect(v.asInstanceOf[A])
+      case OnError(e) =>
+        throw e
+      case OnCompletion =>
+      // do nothing
+    }
+  }
+}
+
 /**
   */
-trait Rx[+A] extends LogSupport {
+trait Rx[+A] extends RxBase[A] with LogSupport {
   import Rx._
+
+  override def toRx: Rx[A] = this
 
   def parents: Seq[Rx[_]]
   def withName(name: String): Rx[A] = NamedOp(this, name)
@@ -65,16 +118,6 @@ trait Rx[+A] extends LogSupport {
   def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(this.asInstanceOf[Rx[Option[X]]])
 
   /**
-    * Recover from a known error and emit a replacement value
-    */
-  def recover[U](f: PartialFunction[Throwable, U]): Rx[U] = RecoverOp(this, f)
-
-  /**
-    * Recover from a known error and emit replacement values from a given Rx
-    */
-  def recoverWith[A](f: PartialFunction[Throwable, Rx[A]]): Rx[A] = RecoverWithOp(this, f)
-
-  /**
     * Materialize the streaming results as Seq
     * @return
     */
@@ -93,49 +136,6 @@ trait Rx[+A] extends LogSupport {
     b.result()
   }
 
-  /**
-    * Subscribe any change in the upstream, and if a change is detected,
-    *  the given subscriber code will be executed.
-    *
-    * @param subscriber
-    * @tparam U
-    * @return
-    */
-  def subscribe[U](subscriber: A => U): Cancelable = runContinuously(subscriber)
-
-  /**
-    * Evaluate this Rx[A] and apply the given effect function. Once OnError(e) or OnCompletion is observed,
-    * it will stop the evaluation.
-    *
-    * @param effect
-    * @tparam U
-    * @return
-    */
-  def run[U](effect: A => U): Cancelable = {
-    RxRunner.run(this) {
-      case OnNext(v) =>
-        effect(v.asInstanceOf[A])
-      case OnError(e) =>
-        throw e
-      case OnCompletion =>
-      // do nothing
-    }
-  }
-
-  /**
-    * Keep evaluating Rx[A] even if OnError(e) or OnCompletion is reported.
-    * This is useful for keep processing streams.
-    */
-  def runContinuously[U](effect: A => U): Cancelable = {
-    RxRunner.runContinuously(this) {
-      case OnNext(v) =>
-        effect(v.asInstanceOf[A])
-      case OnError(e) =>
-        throw e
-      case OnCompletion =>
-      // do nothing
-    }
-  }
 }
 
 object Rx extends LogSupport {

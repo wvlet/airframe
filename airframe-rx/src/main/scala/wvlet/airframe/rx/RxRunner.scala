@@ -16,7 +16,7 @@ object RxRunner extends LogSupport {
   // Used for continuous RxVar evaluation (e.g., RxVar -> DOM rendering)
   private val continuousRunner = new RxRunner(continuous = true)
 
-  def run[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable =
+  def run[A, U](rx: RxBase[A])(effect: RxEvent => U): Cancelable =
     defaultRunner.run(rx) { ev =>
       ev match {
         case v @ OnNext(_) =>
@@ -28,7 +28,7 @@ object RxRunner extends LogSupport {
       }
     }
 
-  def runContinuously[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable =
+  def runContinuously[A, U](rx: RxBase[A])(effect: RxEvent => U): Cancelable =
     continuousRunner.run(rx) { ev =>
       ev match {
         case v @ OnNext(_) =>
@@ -56,7 +56,7 @@ class RxRunner(
     *               receive further events (OnNext). If the leaf sink operator issued OnError or OnCompletion event, this must return false.
     * @tparam A
     */
-  def run[A](rx: Rx[A])(effect: RxEvent => Boolean): Cancelable = {
+  def run[A](rx: RxBase[A])(effect: RxEvent => Boolean): Cancelable = {
     rx match {
       case MapOp(in, f) =>
         run(in) {
@@ -191,11 +191,8 @@ class RxRunner(
         join(j)(effect)
       case RxOptionOp(in) =>
         run(in) {
-          case OnNext(Some(v)) =>
-            effect(OnNext(v))
-          case OnNext(None) =>
-            // do nothing for empty values
-            true
+          case e @ OnNext(v) =>
+            effect(e)
           case other =>
             effect(other)
         }
@@ -212,8 +209,9 @@ class RxRunner(
       case o: RxOptionVar[_] =>
         o.asInstanceOf[RxOptionVar[A]].foreach {
           case Some(v) =>
-            effect(OnNext(v))
+            effect(OnNext(Some(v)))
           case None =>
+            effect(OnNext(None))
           // Do nothing
         }
       case v: RxVar[_] =>
