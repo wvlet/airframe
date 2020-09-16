@@ -22,10 +22,10 @@ trait Streaming {
   def serverStreaming(name: String): Rx[String] = {
     Rx.sequence("Hello", "See You").map(x => s"${x} ${name}!")
   }
-  def clientStreaming(input: RxStream[String]): String = {
+  def clientStreaming(input: Rx[String]): String = {
     input.toSeq.mkString(", ")
   }
-  def bidiStreaming(input: RxStream[String]): Rx[String] = {
+  def bidiStreaming(input: RxStream[String]): RxStream[String] = {
     input.map(x => s"Hello ${x}!")
   }
 }

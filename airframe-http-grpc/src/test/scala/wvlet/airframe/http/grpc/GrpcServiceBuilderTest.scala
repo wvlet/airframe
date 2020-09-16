@@ -44,7 +44,7 @@ object GrpcServiceBuilderTest extends AirSpec {
       input.toSeq.mkString(", ")
     }
 
-    def helloBidiStreaming(input: RxStream[String]): Rx[String] = {
+    def helloBidiStreaming(input: RxStream[String]): RxStream[String] = {
       input.map(x => s"Hello ${x}!")
     }
   }
@@ -100,7 +100,7 @@ object GrpcServiceBuilderTest extends AirSpec {
         codec.toMsgPack(m),
         responseObserver
       )
-      responseObserver.toRxStream.toSeq
+      responseObserver.toRx.toSeq
     }
     def helloClientStreaming(input: Rx[String]): String = {
       val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
@@ -114,10 +114,10 @@ object GrpcServiceBuilderTest extends AirSpec {
         ).asInstanceOf[ClientCallStreamObserver[MsgPack]]
 
       val c = GrpcClientCalls.readClientRequestStream(input, codecFactory.of[String], requestObserver)
-      responseObserver.toRxStream.toSeq.head
+      responseObserver.toRx.toSeq.head
     }
 
-    def helloBidiStreaming(input: Rx[String]): RxStream[String] = {
+    def helloBidiStreaming(input: Rx[String]): Rx[String] = {
       val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
       val requestObserver: ClientCallStreamObserver[MsgPack] = ClientCalls
         .asyncBidiStreamingCall[MsgPack, Any](
@@ -129,7 +129,7 @@ object GrpcServiceBuilderTest extends AirSpec {
         ).asInstanceOf[ClientCallStreamObserver[MsgPack]]
 
       val c = GrpcClientCalls.readClientRequestStream(input, codecFactory.of[String], requestObserver)
-      responseObserver.toRxStream
+      responseObserver.toRx
     }
   }
 

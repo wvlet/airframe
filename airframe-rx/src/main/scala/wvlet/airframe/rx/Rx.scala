@@ -76,6 +76,10 @@ trait Rx[+A] {
       // do nothing
     }
   }
+
+  def toSeq: Seq[A] = {
+    compat.toSeq(this)
+  }
 }
 
 /**
@@ -120,10 +124,6 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     * completes before generating <i>n</i> elements.
     */
   def take(n: Long): RxStream[A] = TakeOp(this, n)
-
-  def toSeq: Seq[A] = {
-    compat.toSeq(this)
-  }
 }
 
 object Rx extends LogSupport {

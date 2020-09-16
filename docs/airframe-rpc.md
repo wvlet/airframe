@@ -528,7 +528,7 @@ To implement server/client/bi-directional streaming, define RPC endpoints with `
 
 ```scala
 import wvlet.airframe.http.RPC
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.{Rx,RxStream}
 
 @RPC
 trait GreeterStreaming {
@@ -537,7 +537,7 @@ trait GreeterStreaming {
     Rx.sequence("Hello", "See you").map { x => s"${x} ${name}!"}
   }
 
-  // Client streaming receives only one Rx[X] argument
+  // Client streaming receives only one RxStream[X] argument
   def clientStreaming(names: RxStream[String]): String = {
     names
       .map{ x => s"Hello ${x}!"}
@@ -545,7 +545,7 @@ trait GreeterStreaming {
       .mkString(", ")
   }
 
-  // Bidirectional streaming receives only one Rx[X] argument and returns Rx[Y] response
+  // Bidirectional streaming receives only one RxStream[X] argument and returns RxStream[Y] response
   def bidirectionalStreaming(names: RxStream[String]): RxStream[String] = {
     names.map{x => s"Hello ${x}!"}
   }

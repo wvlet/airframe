@@ -26,20 +26,20 @@ import scala.util.{Failure, Success, Try}
 object GrpcClientCalls extends LogSupport {
 
   trait BlockingStreamObserver[A] extends StreamObserver[Any] {
-    def toRxStream: RxStream[A]
+    def toRx: RxStream[A]
   }
 
   def blockingResponseObserver[A]: BlockingStreamObserver[A] =
     new BlockingStreamObserver[A] {
-      val toRxStream: RxBlockingQueue[A] = new RxBlockingQueue[A]
+      val toRx: RxBlockingQueue[A] = new RxBlockingQueue[A]
       override def onNext(value: Any): Unit = {
-        toRxStream.add(OnNext(value))
+        toRx.add(OnNext(value))
       }
       override def onError(t: Throwable): Unit = {
-        toRxStream.add(OnError(t))
+        toRx.add(OnError(t))
       }
       override def onCompleted(): Unit = {
-        toRxStream.add(OnCompletion)
+        toRx.add(OnCompletion)
       }
     }
 
