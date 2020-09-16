@@ -205,7 +205,7 @@ class RxRunner(
         timer.schedule(intervalMillis) { interval =>
           lastItem match {
             case Some(x) =>
-              lastItem = Some(x.asInstanceOf[A])
+              lastItem = Some(x)
               if (lastReported != lastItem) {
                 lastReported = lastItem
                 canContinue = effect(OnNext(x))
