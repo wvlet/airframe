@@ -365,7 +365,11 @@ object RxTest extends AirSpec {
 
   test("take") {
     val rx = Rx.sequence(1, 2, 3, 4, 5).take(3)
-    rx.toSeq shouldBe Seq(1, 2, 3)
+    val b  = Seq.newBuilder[Int]
+    rx.run {
+      b += _
+    }
+    b.result() shouldBe Seq(1, 2, 3)
   }
 
   test("concat") {

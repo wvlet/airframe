@@ -16,7 +16,7 @@ package wvlet.airframe.rx
 /**
   * Rx implementation where the data is provided from an external process.
   */
-trait RxSource[A] extends Rx[A] {
+trait RxSource[A] extends RxStream[A] {
   def add(ev: RxEvent): Unit
   def next: RxEvent
 }

@@ -120,26 +120,6 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     * completes before generating <i>n</i> elements.
     */
   def take(n: Long): RxStream[A] = TakeOp(this, n)
-
-  /**
-    * Materialize the streaming results as Seq
-    * @return
-    */
-  def toSeq: Seq[A] = {
-    val b = Seq.newBuilder[A]
-    var c = Cancelable.empty
-    c = RxRunner.run(this) {
-      case OnNext(v) =>
-        b += v.asInstanceOf[A]
-      case OnError(e) =>
-        c.cancel
-        throw e
-      case OnCompletion =>
-        c.cancel
-    }
-    b.result()
-  }
-
 }
 
 object Rx extends LogSupport {
