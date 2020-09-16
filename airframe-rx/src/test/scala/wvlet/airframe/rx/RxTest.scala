@@ -348,7 +348,7 @@ object RxTest extends AirSpec {
     var counter = 0
     rx.run { x =>
       counter += 1
-      x shouldBe 3
+      x shouldBe Some(3)
     }
     counter shouldBe 1
   }
@@ -358,8 +358,9 @@ object RxTest extends AirSpec {
     var counter = 0
     rx.run { x =>
       counter += 1
+      x shouldBe empty
     }
-    counter shouldBe 0
+    counter shouldBe 1
   }
 
   test("take") {
@@ -405,9 +406,9 @@ object RxTest extends AirSpec {
         ("zip", rx.zip(Rx.single(2)), Seq((1, 2))),
         ("zip3", rx.zip(Rx.single(2), Rx.single(3)), Seq((1, 2, 3))),
         ("concat", rx.concat(Rx.single(2)), Seq(1, 2)),
-        ("lastOption", rx.lastOption, Seq(1)),
-        ("option Some(x)", rx.map(Some(_)).toOption, Seq(1)),
-        ("option None", rx.map(x => None).toOption, Seq())
+        ("lastOption", rx.lastOption, Seq(Some(1))),
+        ("option Some(x)", rx.map(Some(_)).toOption, Seq(Some(1))),
+        ("option None", rx.map(x => None).toOption, Seq(None))
       ).map { x =>
         (x._1, x._2.recover(recoveryFunction), x._3)
       }
