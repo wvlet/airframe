@@ -163,6 +163,10 @@ object Rx extends LogSupport {
   def sequence[A](values: A*): RxStream[A] = fromSeq(values)
   def empty[A]: RxStream[A]                = fromSeq(Seq.empty)
 
+  /**
+    * @deprecated(description = "Use Rx.variable instead", since = "20.9.2")
+    */
+  def apply[A](v: A): RxVar[A]                        = variable(v)
   def variable[A](v: A): RxVar[A]                     = new RxVar(v)
   def optionVariable[A](v: Option[A]): RxOptionVar[A] = variable(v).toOption
   def option[A](v: => Option[A]): RxOption[A]         = RxOptionOp(single(v))
