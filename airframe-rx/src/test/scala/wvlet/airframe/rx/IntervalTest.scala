@@ -51,4 +51,42 @@ class IntervalTest extends AirSpec {
       c.cancel
     }
   }
+
+  test("throttleFirst") {
+    if (isScalaJS) {
+      pending("Async test is required")
+    }
+    val rx = Rx
+      .sequence(1, 2, 3, 4, 5, 6)
+      .throttleFirst(10000, TimeUnit.MILLISECONDS)
+
+    val counter = new AtomicInteger(0)
+    val s       = Seq.newBuilder[Long]
+    val c = rx.run { x =>
+      counter.incrementAndGet()
+      s += x
+    }
+    while (counter.get() != 1) {}
+    c.cancel
+    s shouldBe Seq(1)
+  }
+
+  test("throttleLast") {
+    if (isScalaJS) {
+      pending("Async test is required")
+    }
+
+    val rx =
+      Rx.sequence(1, 2, 3)
+        .throttleLast(500, TimeUnit.MILLISECONDS)
+    val counter = new AtomicInteger(0)
+    val s       = Seq.newBuilder[Long]
+    val c = rx.run { x =>
+      counter.incrementAndGet()
+      s += x
+    }
+    while (counter.get() != 1) {}
+    c.cancel
+    s shouldBe Seq(3)
+  }
 }
