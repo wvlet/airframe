@@ -258,12 +258,8 @@ class RxRunner(
         }
         Cancelable.empty
       case o: RxOptionVar[_] =>
-        o.asInstanceOf[RxOptionVar[A]].foreach {
-          case Some(v) =>
-            effect(OnNext(Some(v)))
-          case None =>
-            effect(OnNext(None))
-          // Do nothing
+        o.asInstanceOf[RxOptionVar[A]].foreach { v =>
+          effect(OnNext(v))
         }
       case v: RxVar[_] =>
         v.asInstanceOf[RxVar[A]].foreach { x =>
