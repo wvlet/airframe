@@ -6,7 +6,7 @@ import wvlet.airframe.rx.Rx
 @RPC
 trait GreeterApi {
   def sayHello(message: String): String
-  def serverStreaming(message: String): Rx[String]
-  def clientStreaming(message: Rx[String]): String
-  def bidiStreaming(message: Rx[String]): Rx[String]
+  def serverStreaming(message: String): RxStream[String]
+  def clientStreaming(message: RxStream[String]): String
+  def bidiStreaming(message: RxStream[String]): RxStream[String]
 }

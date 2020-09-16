@@ -15,7 +15,7 @@ package wvlet.airframe.http.grpc
 import io.grpc.stub.StreamObserver
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.msgpack.spi.MsgPack
-import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner}
+import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner, RxStream}
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
@@ -26,20 +26,20 @@ import scala.util.{Failure, Success, Try}
 object GrpcClientCalls extends LogSupport {
 
   trait BlockingStreamObserver[A] extends StreamObserver[Any] {
-    def toRx: Rx[A]
+    def toRxStream: RxStream[A]
   }
 
   def blockingResponseObserver[A]: BlockingStreamObserver[A] =
     new BlockingStreamObserver[A] {
-      val toRx: RxBlockingQueue[A] = new RxBlockingQueue[A]
+      val toRxStream: RxBlockingQueue[A] = new RxBlockingQueue[A]
       override def onNext(value: Any): Unit = {
-        toRx.add(OnNext(value))
+        toRxStream.add(OnNext(value))
       }
       override def onError(t: Throwable): Unit = {
-        toRx.add(OnError(t))
+        toRxStream.add(OnError(t))
       }
       override def onCompleted(): Unit = {
-        toRx.add(OnCompletion)
+        toRxStream.add(OnCompletion)
       }
     }
 

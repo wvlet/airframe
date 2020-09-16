@@ -2,7 +2,7 @@ package example.api
 
 import wvlet.airspec._
 import wvlet.airframe._
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.RxStreasm
 import wvlet.airframe.http._
 import wvlet.airframe.http.grpc.gRPC
 import wvlet.airframe.http.grpc.GrpcServer
@@ -13,13 +13,13 @@ import io.grpc.stub.StreamObserver
 object GreeterApiTest extends AirSpec {
   class GreeterApiImpl extends GreeterApi {
     def sayHello(message: String): String = s"Hello ${message}!"
-    def serverStreaming(message: String): Rx[String] = {
+    def serverStreaming(message: String): RxStream[String] = {
       Rx.sequence("Hello", "See you").map { x => s"${x} ${message}!" }
     }
-    def clientStreaming(message: Rx[String]): String = {
+    def clientStreaming(message: RxStream[String]): String = {
       message.map { x => s"Hello ${x}!" }.toSeq.mkString(", ")
     }
-    def bidiStreaming(message: Rx[String]): Rx[String] = {
+    def bidiStreaming(message: RxStream[String]): RxStream[String] = {
       message.map { x => s"Hello ${x}!" }
     }
   }
