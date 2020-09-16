@@ -200,12 +200,12 @@ object Rx extends LogSupport {
     * @tparam A
     * @return
     */
-  def fromFuture[A](f: Future[A])(implicit ec: ExecutionContext): RxStream[Option[A]] = {
+  def fromFuture[A](f: Future[A])(implicit ec: ExecutionContext): RxOption[A] = {
     val v = Rx.variable[Option[A]](None)
     f.foreach { x =>
       v := Some(x)
     }
-    v
+    v.toOption
   }
 
   abstract class UnaryRx[I, A] extends RxStream[A] {
