@@ -1,7 +1,7 @@
 package example.api
 
 import wvlet.airframe.http.RPC
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.RxStream
 
 @RPC
 trait GreeterApi {
