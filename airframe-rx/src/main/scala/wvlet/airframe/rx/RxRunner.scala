@@ -16,7 +16,7 @@ object RxRunner extends LogSupport {
   // Used for continuous RxVar evaluation (e.g., RxVar -> DOM rendering)
   private val continuousRunner = new RxRunner(continuous = true)
 
-  def run[A, U](rx: RxBase[A])(effect: RxEvent => U): Cancelable =
+  def run[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable =
     defaultRunner.run(rx) { ev =>
       ev match {
         case v @ OnNext(_) =>
@@ -28,7 +28,7 @@ object RxRunner extends LogSupport {
       }
     }
 
-  def runContinuously[A, U](rx: RxBase[A])(effect: RxEvent => U): Cancelable =
+  def runContinuously[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable =
     continuousRunner.run(rx) { ev =>
       ev match {
         case v @ OnNext(_) =>
@@ -56,7 +56,7 @@ class RxRunner(
     *               receive further events (OnNext). If the leaf sink operator issued OnError or OnCompletion event, this must return false.
     * @tparam A
     */
-  def run[A](rx: RxBase[A])(effect: RxEvent => Boolean): Cancelable = {
+  def run[A](rx: Rx[A])(effect: RxEvent => Boolean): Cancelable = {
     rx match {
       case MapOp(in, f) =>
         run(in) {
@@ -182,6 +182,8 @@ class RxRunner(
       case z @ ZipOp(r1, r2) =>
         zip(z)(effect)
       case z @ Zip3Op(r1, r2, r3) =>
+        zip(z)(effect)
+      case z @ Zip4Op(r1, r2, r3, r4) =>
         zip(z)(effect)
       case j @ JoinOp(r1, r2) =>
         join(j)(effect)

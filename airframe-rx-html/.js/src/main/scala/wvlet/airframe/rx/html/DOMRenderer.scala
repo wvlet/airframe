@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.rx.html
 import org.scalajs.dom
-import wvlet.airframe.rx.{Cancelable, Rx, RxBase}
+import wvlet.airframe.rx.{Cancelable, Rx, RxStream}
 import wvlet.log.LogSupport
 
 import scala.scalajs.js
@@ -77,7 +77,7 @@ object DOMRenderer extends LogSupport {
           val c    = e.traverseModifiers(m => renderTo(elem, m))
           node.mountHere(elem, anchor)
           c
-        case rx: RxBase[_] =>
+        case rx: Rx[_] =>
           val (start, end) = node.createMountSection()
           var c1           = Cancelable.empty
           val c2 = rx.subscribe { value =>

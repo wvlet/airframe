@@ -90,7 +90,7 @@ class RxOptionTest extends AirSpec {
   }
 
   test("convert RxVar to RxOptionVar") {
-    val v = Rx(Some("hello")).toOption
+    val v = Rx.variable(Some("hello")).toOption
     val o = v.map { x =>
       s"${x} world"
     }

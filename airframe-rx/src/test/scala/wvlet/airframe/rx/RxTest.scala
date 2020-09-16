@@ -32,7 +32,7 @@ object RxTest extends AirSpec {
   }
 
   test("create a new Rx variable") {
-    val v = Rx(1)
+    val v = Rx.variable(1)
     v.toString
     v.get shouldBe 1
 
@@ -74,7 +74,7 @@ object RxTest extends AirSpec {
     v.get shouldBe 2
   }
 
-  test("bind rx", design = Design.newDesign.bind[RxVar[String]].toInstance(Rx("Hello"))) { v: RxVar[String] =>
+  test("bind rx", design = Design.newDesign.bind[RxVar[String]].toInstance(Rx.variable("Hello"))) { v: RxVar[String] =>
     v.get shouldBe "Hello"
   }
 
@@ -110,7 +110,7 @@ object RxTest extends AirSpec {
   test("chain Rx operators") {
     val v  = Rx.const(2)
     val v1 = v.map(_ + 1)
-    val v2 = v1.flatMap(i => Rx(i * 2))
+    val v2 = v1.flatMap(i => Rx.const(i * 2))
     val op = v2.withName("multiply")
 
     // Parents
@@ -397,7 +397,7 @@ object RxTest extends AirSpec {
     }
 
     // (test name, input, expected value on success)
-    def newTests(rx: Rx[Int]): Seq[(String, Rx[Any], Any)] =
+    def newTests(rx: RxStream[Int]): Seq[(String, Rx[Any], Any)] =
       Seq(
         ("single", rx, Seq(1)),
         ("map", rx.map(x => x * 2), Seq(2)),

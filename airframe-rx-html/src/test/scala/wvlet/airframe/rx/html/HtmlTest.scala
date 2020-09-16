@@ -37,7 +37,7 @@ class HtmlTest extends AirSpec {
       1.0,
       Some(1),
       None,
-      Rx(1),
+      Rx.variable(1),
       Iterable("a", "b", "c"),
       (cls -> "main").when(1 == 1),
       (cls -> "main2").unless(1 == 1),
@@ -48,18 +48,22 @@ class HtmlTest extends AirSpec {
 
   test("embedding attributes") {
     div(
-      cls     -> 1,
-      cls     -> true,
-      cls     -> 10L,
-      cls     -> "hello",
-      cls     -> 1.0f,
-      cls     -> 1.0,
-      cls     -> Some(1),
-      cls     -> None,
-      cls     -> Rx(1),
-      cls     -> Iterable(1, 2, 3),
-      onclick -> { () => "hello" },
-      onclick -> { event: Any => "hello" }
+      cls -> 1,
+      cls -> true,
+      cls -> 10L,
+      cls -> "hello",
+      cls -> 1.0f,
+      cls -> 1.0,
+      cls -> Some(1),
+      cls -> None,
+      cls -> Rx.variable(1),
+      cls -> Iterable(1, 2, 3),
+      onclick -> { () =>
+        "hello"
+      },
+      onclick -> { event: Any =>
+        "hello"
+      }
     )
   }
 

@@ -38,7 +38,7 @@ class RxElementTest extends AirSpec {
 
   test("embed Rx") {
     val e = RxElement { div() }
-    val r = RxElement(Rx(e))
+    val r = RxElement(Rx.const(e))
 
     val x = r.render
     x.render
@@ -48,7 +48,9 @@ class RxElementTest extends AirSpec {
     val r = RxElement {
       div()
     }
-    r(cls -> "main").traverseModifiers { m => Cancelable.empty }
+    r(cls -> "main").traverseModifiers { m =>
+      Cancelable.empty
+    }
 
   }
 

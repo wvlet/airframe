@@ -16,8 +16,8 @@ import wvlet.airframe.rx.Rx.{FlatMapOp, MapOp, RecoverOp, RecoverWithOp}
 
 /**
   */
-trait RxOption[+A] extends RxBase[Option[A]] {
-  protected def in: Rx[Option[A]]
+trait RxOption[+A] extends Rx[Option[A]] {
+  protected def in: RxStream[Option[A]]
 
   override def toRx: Rx[Option[A]] = transform {
     case Some(x) => Some(x)
@@ -31,7 +31,7 @@ trait RxOption[+A] extends RxBase[Option[A]] {
     }
   }
 
-  def flatMap[B](f: A => Rx[B]): RxOption[B] = {
+  def flatMap[B](f: A => RxStream[B]): RxOption[B] = {
     transformRx[B] {
       case Some(x) => f(x).map(Some(_))
       case None    => Rx.single(None)
@@ -92,15 +92,18 @@ trait RxOption[+A] extends RxBase[Option[A]] {
   def withFilter(f: A => Boolean): RxOption[A] = filter(f)
 }
 
-case class RxOptionOp[+A](override protected val in: Rx[Option[A]]) extends RxOption[A]
+case class RxOptionOp[+A](override protected val in: RxStream[Option[A]]) extends RxOption[A] {
+  override def parents: Seq[Rx[_]] = Seq(in)
+}
 
 /**
   * RxVar implementation for Option[A] type values
   * @tparam A
   */
 class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarOps[Option[A]] {
-  override def toString: String            = s"RxOptionVar(${variable.get})"
-  override protected def in: Rx[Option[A]] = variable
+  override def toString: String                  = s"RxOptionVar(${variable.get})"
+  override protected def in: RxStream[Option[A]] = variable
+  override def parents: Seq[Rx[_]]               = Seq(in)
 
   override def get: Option[A] = variable.get
   override def foreach[U](f: Option[A] => U): Cancelable = {
@@ -109,4 +112,5 @@ class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarO
   override def update(updater: Option[A] => Option[A], force: Boolean = false): Unit = {
     variable.update(updater, force)
   }
+
 }

@@ -19,7 +19,7 @@ import scala.language.higherKinds
 /**
   * A reactive variable supporting update and propagation of the updated value to the chained operators
   */
-class RxVar[A](private var currentValue: A) extends Rx[A] with RxVarOps[A] {
+class RxVar[A](private var currentValue: A) extends RxStream[A] with RxVarOps[A] {
   override def toString: String                       = s"RxVar(${currentValue})"
   override def parents: Seq[Rx[_]]                    = Seq.empty
   private var subscribers: ArrayBuffer[Subscriber[A]] = ArrayBuffer.empty
