@@ -6,6 +6,24 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.9.2
+
+This version upgrades Scala.js to 1.2.0 and includes RxOption rendering bug fixes. 
+
+-  Upgraded Scala.js version to 1.2.0 ([#1272](https://github.com/wvlet/airframe/issues/1272)) [[627a4a8](https://github.com/wvlet/airframe/commit/627a4a8)]
+-  airframe-rx: Interface hierarchy change: Rx[A], RxOption[A], and RxStream[A] ([#1292](https://github.com/wvlet/airframe/issues/1292)) [[10d9e29](https://github.com/wvlet/airframe/commit/10d9e29)]
+-  airframe-rx: Add throttleFirst/Last(sample) ([#1291](https://github.com/wvlet/airframe/issues/1291)) [[4fb0dce](https://github.com/wvlet/airframe/commit/4fb0dce)]
+-  airframe-rx: internal: Add RxResult for propergating downstream operator states ([#1294](https://github.com/wvlet/airframe/issues/1294)) [[835dbaf](https://github.com/wvlet/airframe/commit/835dbaf)]
+-  airframe-msgpack: Update msgpack-core to 0.8.21 ([#1285](https://github.com/wvlet/airframe/issues/1285)) [[5768da4](https://github.com/wvlet/airframe/commit/5768da4)]
+-  airframe-config: Update snakeyaml to 1.27 ([#1282](https://github.com/wvlet/airframe/issues/1282)) [[639162a](https://github.com/wvlet/airframe/commit/639162a)]
+-  ariframe-grpc: Update grpc-netty-shaded, grpc-protobuf, ... to 1.32.1 ([#1278](https://github.com/wvlet/airframe/issues/1278)) [[2610ad3](https://github.com/wvlet/airframe/commit/2610ad3)]
+-  internal: Update scalafmt-core to 2.7.1 ([#1288](https://github.com/wvlet/airframe/issues/1288)) [[09edd54](https://github.com/wvlet/airframe/commit/09edd54)]
+-  internal: Update sbt-antlr4 to 0.8.3 ([#1287](https://github.com/wvlet/airframe/issues/1287)) [[8df7e70](https://github.com/wvlet/airframe/commit/8df7e70)]
+-  internal: Update spark-sql to 2.4.7 ([#1286](https://github.com/wvlet/airframe/issues/1286)) [[e66f981](https://github.com/wvlet/airframe/commit/e66f981)]
+-  internal: Update scala-collection-compat to 2.2.0 ([#1280](https://github.com/wvlet/airframe/issues/1280)) [[b08b195](https://github.com/wvlet/airframe/commit/b08b195)]
+-  internal: Update protobuf-java to 3.12.4 ([#1277](https://github.com/wvlet/airframe/issues/1277)) [[48c958c](https://github.com/wvlet/airframe/commit/48c958c)]
+-  internal: Exclude airframe-benchmark from artifacts to resolve protobuf scaladoc generation errors ([#1276](https://github.com/wvlet/airframe/issues/1276)) [[547c1e2](https://github.com/wvlet/airframe/commit/547c1e2)]
+
 ## 20.9.1
 
 This release is for enhancing the usability of airframe-rx. 
