@@ -13,9 +13,10 @@
  */
 package wvlet.airframe.http
 import java.nio.charset.StandardCharsets
-import java.util.Date
+import java.time.format.DateTimeFormatter
+import java.time.{Instant, ZoneId, ZoneOffset}
+import java.util.Locale
 
-import com.twitter.finagle.http.{Message => FinagleMessage}
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, Message, StringMessage}
 import wvlet.airframe.http.impl.HttpMacros
@@ -116,7 +117,7 @@ trait HttpMessage[Raw] {
   def withContentTypeMsgPack: Raw                       = withContentType(HttpHeader.MediaType.ApplicationMsgPack)
   def withContentLength(length: Long): Raw              = withHeader(HttpHeader.ContentLength, length.toString)
   def withDate(date: String): Raw                       = withHeader(HttpHeader.Date, date)
-  def withDate(date: Date): Raw                         = withHeader(HttpHeader.Date, FinagleMessage.httpDateFormat(date))
+  def withDate(date: Instant)                           = withHeader(HttpHeader.Date, formatInstant(date))
   def withExpires(expires: String): Raw                 = withHeader(HttpHeader.Expires, expires)
   def withHost(host: String): Raw                       = withHeader(HttpHeader.Host, host)
   def withLastModified(lastModified: String): Raw       = withHeader(HttpHeader.LastModified, lastModified)
@@ -124,6 +125,16 @@ trait HttpMessage[Raw] {
   def withUserAgent(userAgent: String): Raw             = withHeader(HttpHeader.UserAgent, userAgent)
   def withXForwardedFor(xForwardedFor: String): Raw     = withHeader(HttpHeader.xForwardedFor, xForwardedFor)
   def withXForwardedProto(xForwardedProto: String): Raw = withHeader(HttpHeader.xForwardedProto, xForwardedProto)
+
+  private def formatInstant(date: Instant) : String = {
+    val HttpDateFormat: DateTimeFormatter =
+      DateTimeFormatter
+        .ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
+        .withLocale(Locale.ENGLISH)
+        .withZone(ZoneId.of("GMT"))
+
+    date.atOffset(ZoneOffset.UTC).format(HttpDateFormat)
+  }
 
   def isContentTypeJson: Boolean = {
     contentType.exists(_.startsWith("application/json"))

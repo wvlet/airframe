@@ -564,10 +564,7 @@ lazy val http =
     .settings(buildSettings)
     .settings(
       name := "airframe-http",
-      description := "REST API Framework",
-      libraryDependencies ++= Seq(
-        "com.twitter" %% "finagle-base-http"   % FINAGLE_VERSION,
-      )
+      description := "REST API Framework"
     )
     .jsSettings(
       jsBuildSettings,
