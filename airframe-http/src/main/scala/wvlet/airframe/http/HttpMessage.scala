@@ -126,7 +126,7 @@ trait HttpMessage[Raw] {
   def withXForwardedFor(xForwardedFor: String): Raw     = withHeader(HttpHeader.xForwardedFor, xForwardedFor)
   def withXForwardedProto(xForwardedProto: String): Raw = withHeader(HttpHeader.xForwardedProto, xForwardedProto)
 
-  private def formatInstant(date: Instant) : String = {
+  private def formatInstant(date: Instant): String = {
     val HttpDateFormat: DateTimeFormatter =
       DateTimeFormatter
         .ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
