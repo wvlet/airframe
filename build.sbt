@@ -55,6 +55,9 @@ addCommandAlias(
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
+// Since sbt-1.4.0-RC2
+ThisBuild / usePipelining := true
+
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := SCALA_2_12
 organization in ThisBuild := "org.wvlet.airframe"
@@ -65,7 +68,6 @@ dynverSonatypeSnapshots in ThisBuild := true
 dynverSeparator in ThisBuild := "-"
 
 val buildSettings = Seq[Setting[_]](
-  sonatypeProfileName := "org.wvlet",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://wvlet.org/airframe")),
   scmInfo := Some(
@@ -84,7 +86,10 @@ val buildSettings = Seq[Setting[_]](
   crossPaths := true,
   publishMavenStyle := true,
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
-  scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
+  scalacOptions ++= Seq(
+    "-feature",
+    "-deprecation"
+  ), // ,"-Ytyper-debug"),
   testFrameworks += airSpecFramework,
   libraryDependencies ++= Seq(
     "org.scala-lang.modules" %%% "scala-collection-compat" % "2.2.0"
@@ -111,13 +116,16 @@ val noPublish = Seq(
   Compile / packageDoc / publishArtifact := false
 )
 
+Global / excludeLintKeys ++= Set(sonatypeProfileName, sonatypeSessionName)
+
 lazy val root =
   project
     .in(file("."))
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
-    .settings {
+    .settings(
+      sonatypeProfileName := "org.wvlet",
       sonatypeSessionName := {
         if (sys.env.isDefinedAt("SCALAJS_VERSION")) {
           // Use a different session for Scala.js projects
@@ -126,7 +134,7 @@ lazy val root =
           sonatypeSessionName.value
         }
       }
-    }
+    )
     //    .aggregate(scaladoc)
     .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects ++ sbtProjects): _*)
 
@@ -347,7 +355,9 @@ lazy val airframeMacros =
       description := "Macros for Airframe",
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value
-      )
+      ),
+      // As a workaround for build-pipelining failure at sbt 1.4.0-RC2
+      exportPipelining := false
     )
     .jsSettings(jsBuildSettings)
 
@@ -718,6 +728,7 @@ lazy val benchmark =
       // Turbo mode didn't work with this error:
       // java.lang.RuntimeException: ERROR: Unable to find the resource: /META-INF/BenchmarkList
       turbo := false,
+      exportPipelining := false,
       // Generate JMH benchmark cord before packaging and testing
       pack := pack.dependsOn(compile in Test).value,
       sourceDirectory in Jmh := (sourceDirectory in Compile).value,
@@ -1100,7 +1111,7 @@ lazy val sbtAirframe =
       name := "sbt-airframe",
       description := "sbt plugin for helping programming with Airframe",
       scalaVersion := SCALA_2_12,
-      crossSbtVersions := Vector("1.3.12"),
+//      crossSbtVersions := Vector("1.3.12"),
       libraryDependencies ++= Seq(
         "io.get-coursier"   %% "coursier"         % "2.0.0-RC5-6",
         "org.apache.commons" % "commons-compress" % "1.20"
@@ -1111,12 +1122,12 @@ lazy val sbtAirframe =
       },
       scriptedDependencies := {
         // Publish all dependencies necessary for running the scripted tests
-        scriptedDependencies.value
-        publishLocal.in(httpJVM, packArchiveTgz).value
-        publishLocal.all(ScopeFilter(inDependencies(finagle))).value
-        publishLocal.all(ScopeFilter(inDependencies(grpc))).value
-        publishLocal.all(ScopeFilter(inDependencies(airspecJVM))).value
-        publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
+        val depPublish = scriptedDependencies.value
+        val p1         = publishLocal.in(httpJVM, packArchiveTgz).value
+        val p2         = publishLocal.all(ScopeFilter(inDependencies(finagle))).value
+        val p3         = publishLocal.all(ScopeFilter(inDependencies(grpc))).value
+        val p4         = publishLocal.all(ScopeFilter(inDependencies(airspecJVM))).value
+        val p5         = publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
       },
       scriptedBufferLog := false
     )
