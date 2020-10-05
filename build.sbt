@@ -55,8 +55,8 @@ addCommandAlias(
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-// Since sbt-1.4.0-RC2
-ThisBuild / usePipelining := true
+// Disable pipelining available since sbt-1.4.0, it causes compilation failure
+ThisBuild / usePipelining := false
 
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := SCALA_2_12
@@ -1111,7 +1111,7 @@ lazy val sbtAirframe =
       name := "sbt-airframe",
       description := "sbt plugin for helping programming with Airframe",
       scalaVersion := SCALA_2_12,
-//      crossSbtVersions := Vector("1.3.12"),
+      crossSbtVersions := Vector("1.3.13"),
       libraryDependencies ++= Seq(
         "io.get-coursier"   %% "coursier"         % "2.0.0-RC5-6",
         "org.apache.commons" % "commons-compress" % "1.20"
