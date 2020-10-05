@@ -17,10 +17,11 @@ val SQLITE_JDBC_VERSION             = "3.32.3.2"
 val SLF4J_VERSION                   = "1.7.30"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
+val SCALAJS_DOM_VERSION             = "1.1.0"
 val FINAGLE_VERSION                 = "20.4.1"
 val FLUENCY_VERSION                 = "2.4.1"
-val SCALAJS_DOM_VERSION             = "1.1.0"
 val GRPC_VERSION                    = "1.32.1"
+val JMH_VERSION                     = "1.25.2"
 
 val airSpecFramework = new TestFramework("wvlet.airspec.Framework")
 
@@ -55,7 +56,7 @@ addCommandAlias(
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-// Disable pipelining available since sbt-1.4.0, it causes compilation failure
+// Disable the pipelining available since sbt-1.4.0. It caused compilation failure
 ThisBuild / usePipelining := false
 
 // For using Scala 2.12 in sbt
@@ -499,8 +500,7 @@ lazy val metrics =
     .settings(buildSettings)
     .settings(
       name := "airframe-metrics",
-      description := "Basit metric representations, including duration, size, time window, etc.",
-      libraryDependencies ++= Seq()
+      description := "Basit metric representations, including duration, size, time window, etc."
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log, surface, airspecRef % Test)
@@ -713,8 +713,6 @@ lazy val json =
 lazy val jsonJVM = json.jvm
 lazy val jsonJS  = json.js
 
-val JMH_VERSION = "1.25.2"
-
 lazy val benchmark =
   project
     .in(file("airframe-benchmark"))
@@ -728,7 +726,6 @@ lazy val benchmark =
       // Turbo mode didn't work with this error:
       // java.lang.RuntimeException: ERROR: Unable to find the resource: /META-INF/BenchmarkList
       turbo := false,
-      exportPipelining := false,
       // Generate JMH benchmark cord before packaging and testing
       pack := pack.dependsOn(compile in Test).value,
       sourceDirectory in Jmh := (sourceDirectory in Compile).value,
@@ -774,7 +771,7 @@ lazy val fluentd =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, airframeJVM % Compile, airframeMacrosJVMRef, airspecRefJVM % Test)
+    .dependsOn(codecJVM, airframeJVM, airframeMacrosJVMRef, airspecRefJVM % Test)
 
 lazy val sql =
   project
@@ -1111,7 +1108,8 @@ lazy val sbtAirframe =
       name := "sbt-airframe",
       description := "sbt plugin for helping programming with Airframe",
       scalaVersion := SCALA_2_12,
-      crossSbtVersions := Vector("1.3.13"),
+      // This setting might be unnecessary?
+      //crossSbtVersions := Vector("1.3.13"),
       libraryDependencies ++= Seq(
         "io.get-coursier"   %% "coursier"         % "2.0.0-RC5-6",
         "org.apache.commons" % "commons-compress" % "1.20"
