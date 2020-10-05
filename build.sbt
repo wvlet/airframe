@@ -17,10 +17,11 @@ val SQLITE_JDBC_VERSION             = "3.32.3.2"
 val SLF4J_VERSION                   = "1.7.30"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
-val FINAGLE_VERSION                 = "20.9.0"
-val FLUENCY_VERSION                 = "2.4.1"
 val SCALAJS_DOM_VERSION             = "1.1.0"
+val FINAGLE_VERSION                 = "20.4.1"
+val FLUENCY_VERSION                 = "2.4.1"
 val GRPC_VERSION                    = "1.32.1"
+val JMH_VERSION                     = "1.25.2"
 
 val airSpecFramework = new TestFramework("wvlet.airspec.Framework")
 
@@ -55,6 +56,9 @@ addCommandAlias(
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
+// Disable the pipelining available since sbt-1.4.0. It caused compilation failure
+ThisBuild / usePipelining := false
+
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := SCALA_2_12
 organization in ThisBuild := "org.wvlet.airframe"
@@ -65,7 +69,6 @@ dynverSonatypeSnapshots in ThisBuild := true
 dynverSeparator in ThisBuild := "-"
 
 val buildSettings = Seq[Setting[_]](
-  sonatypeProfileName := "org.wvlet",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://wvlet.org/airframe")),
   scmInfo := Some(
@@ -84,7 +87,10 @@ val buildSettings = Seq[Setting[_]](
   crossPaths := true,
   publishMavenStyle := true,
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
-  scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
+  scalacOptions ++= Seq(
+    "-feature",
+    "-deprecation"
+  ), // ,"-Ytyper-debug"),
   testFrameworks += airSpecFramework,
   libraryDependencies ++= Seq(
     "org.scala-lang.modules" %%% "scala-collection-compat" % "2.2.0"
@@ -111,13 +117,16 @@ val noPublish = Seq(
   Compile / packageDoc / publishArtifact := false
 )
 
+Global / excludeLintKeys ++= Set(sonatypeProfileName, sonatypeSessionName)
+
 lazy val root =
   project
     .in(file("."))
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
-    .settings {
+    .settings(
+      sonatypeProfileName := "org.wvlet",
       sonatypeSessionName := {
         if (sys.env.isDefinedAt("SCALAJS_VERSION")) {
           // Use a different session for Scala.js projects
@@ -126,7 +135,7 @@ lazy val root =
           sonatypeSessionName.value
         }
       }
-    }
+    )
     //    .aggregate(scaladoc)
     .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects ++ sbtProjects): _*)
 
@@ -347,7 +356,9 @@ lazy val airframeMacros =
       description := "Macros for Airframe",
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value
-      )
+      ),
+      // As a workaround for build-pipelining failure at sbt 1.4.0-RC2
+      exportPipelining := false
     )
     .jsSettings(jsBuildSettings)
 
@@ -489,8 +500,7 @@ lazy val metrics =
     .settings(buildSettings)
     .settings(
       name := "airframe-metrics",
-      description := "Basit metric representations, including duration, size, time window, etc.",
-      libraryDependencies ++= Seq()
+      description := "Basit metric representations, including duration, size, time window, etc."
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log, surface, airspecRef % Test)
@@ -615,7 +625,7 @@ lazy val httpJVM = http.jvm
     publishPackArchiveTgz,
     libraryDependencies ++= Seq(
       // Use swagger-parser only for validating YAML format in tests
-      "io.swagger.parser.v3" % "swagger-parser" % "2.0.21" % Test,
+      "io.swagger.parser.v3" % "swagger-parser" % "2.0.22" % Test,
       // Swagger includes dependency to SLF4J, so redirect slf4j logs to airframe-log
       "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION % Test
     )
@@ -703,8 +713,6 @@ lazy val json =
 lazy val jsonJVM = json.jvm
 lazy val jsonJS  = json.js
 
-val JMH_VERSION = "1.25.2"
-
 lazy val benchmark =
   project
     .in(file("airframe-benchmark"))
@@ -732,7 +740,7 @@ lazy val benchmark =
         "org.openjdk.jmh" % "jmh-generator-bytecode"   % JMH_VERSION,
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION,
         // Used only for json benchmark
-        "org.json4s" %% "json4s-jackson" % "3.6.9",
+        "org.json4s" %% "json4s-jackson" % "3.6.10",
         "io.circe"   %% "circe-parser"   % "0.11.2",
         // For ScalaPB
         // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
@@ -763,7 +771,7 @@ lazy val fluentd =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, airframeJVM % Compile, airframeMacrosJVMRef, airspecRefJVM % Test)
+    .dependsOn(codecJVM, airframeJVM, airframeMacrosJVMRef, airspecRefJVM % Test)
 
 lazy val sql =
   project
@@ -784,7 +792,7 @@ lazy val sql =
         // Include Spark just as a reference implementation
         "org.apache.spark" %% "spark-sql" % "2.4.7" % Test,
         // Include Presto as a reference implementation
-        "io.prestosql" % "presto-main" % "341" % Test
+        "io.prestosql" % "presto-main" % "343" % Test
       )
     )
     .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecRefJVM % Test)
@@ -1100,7 +1108,8 @@ lazy val sbtAirframe =
       name := "sbt-airframe",
       description := "sbt plugin for helping programming with Airframe",
       scalaVersion := SCALA_2_12,
-      crossSbtVersions := Vector("1.3.12"),
+      // This setting might be unnecessary?
+      //crossSbtVersions := Vector("1.3.13"),
       libraryDependencies ++= Seq(
         "io.get-coursier"   %% "coursier"         % "2.0.0-RC5-6",
         "org.apache.commons" % "commons-compress" % "1.20"
@@ -1111,12 +1120,12 @@ lazy val sbtAirframe =
       },
       scriptedDependencies := {
         // Publish all dependencies necessary for running the scripted tests
-        scriptedDependencies.value
-        publishLocal.in(httpJVM, packArchiveTgz).value
-        publishLocal.all(ScopeFilter(inDependencies(finagle))).value
-        publishLocal.all(ScopeFilter(inDependencies(grpc))).value
-        publishLocal.all(ScopeFilter(inDependencies(airspecJVM))).value
-        publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
+        val depPublish = scriptedDependencies.value
+        val p1         = publishLocal.in(httpJVM, packArchiveTgz).value
+        val p2         = publishLocal.all(ScopeFilter(inDependencies(finagle))).value
+        val p3         = publishLocal.all(ScopeFilter(inDependencies(grpc))).value
+        val p4         = publishLocal.all(ScopeFilter(inDependencies(airspecJVM))).value
+        val p5         = publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
       },
       scriptedBufferLog := false
     )
