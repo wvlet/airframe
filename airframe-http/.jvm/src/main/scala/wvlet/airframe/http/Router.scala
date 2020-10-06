@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.http.router._
-import wvlet.airframe.surface.{HigherKindedTypeSurface, MethodSurface, Surface}
+import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 import scala.annotation.tailrec
@@ -150,17 +150,18 @@ case class Router(
             .map { m =>
               (m, m.findAnnotationOf[Endpoint])
             }
-            .collect { case (m: ReflectMethodSurface, Some(endPoint)) =>
-              val endpointInterfaceCls =
-                controllerSurface.findAnnotationOwnerOf[Endpoint].getOrElse(controllerSurface.rawType)
-              ControllerRoute(
-                endpointInterfaceCls,
-                controllerSurface,
-                endPoint.method(),
-                prefixPath + endPoint.path(),
-                m,
-                isRPC = false
-              )
+            .collect {
+              case (m: ReflectMethodSurface, Some(endPoint)) =>
+                val endpointInterfaceCls =
+                  controllerSurface.findAnnotationOwnerOf[Endpoint].getOrElse(controllerSurface.rawType)
+                ControllerRoute(
+                  endpointInterfaceCls,
+                  controllerSurface,
+                  endPoint.method(),
+                  prefixPath + endPoint.path(),
+                  m,
+                  isRPC = false
+                )
             }
         case (None, Some(rpc)) =>
           // We need to find the owner class of the RPC interface because the controller might be extending the RPC interface (e.g., RPCImpl)
@@ -242,6 +243,17 @@ object Router extends LogSupport {
 
   def add(filter: HttpFilterType) = {
     new Router(filterInstance = Some(filter))
+  }
+
+  private[http] def isHttpResponse(s: Surface): Boolean = {
+    s match {
+      case r: GenericSurface if r.rawType == classOf[HttpMessage.Response] =>
+        true
+      case r: GenericSurface if r.fullName == "com.twitter.http.Response" =>
+        true
+      case other =>
+        false
+    }
   }
 
   private[http] def isFuture(s: Surface): Boolean = {

@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package example.openapi
+import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.{Endpoint, HttpMethod, RPC}
 
 import scala.concurrent.Future
@@ -31,6 +32,7 @@ trait OpenAPIRPCExample {
   def rpcWithPrimitiveAndOption(p1: String, p2: Option[String]): Unit
   def rpcWithOptionOfComplexType(p1: Option[RPCRequest]): Unit
   def rpcWithFutureResponse: Future[String]
+  def rpcWithRawResponse: Response
 }
 
 object OpenAPIRPCExample {
