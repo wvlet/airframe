@@ -71,6 +71,8 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
       case r: Surface if Router.isHttpResponse(r) =>
         // HTTP raw response (without explicit type)
         true
+      case s: Surface if s.isSeq =>
+        isPrimitiveTypeFamily(s.typeArgs.head)
       case other => false
     }
   }
