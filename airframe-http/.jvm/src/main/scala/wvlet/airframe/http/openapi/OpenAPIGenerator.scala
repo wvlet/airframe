@@ -310,7 +310,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
           properties = if (properties.isEmpty) None else Some(properties)
         )
       case other =>
-        warn(s"Unknown type ${other}. Use string instead")
+        warn(s"Unknown type ${other.fullName}. Use string instead")
         Schema(`type` = "string")
     }
   }
