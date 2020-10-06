@@ -257,7 +257,7 @@ object Router extends LogSupport {
 
   private[http] def isFinagleReader(s: Surface): Boolean = {
     s match {
-      case s: Surface if s.rawType.getName == "com.twitter.io.Reader" =>
+      case s: Surface if s.fullName.startsWith("com.twitter.io.Reader[") =>
         true
       case other =>
         false
