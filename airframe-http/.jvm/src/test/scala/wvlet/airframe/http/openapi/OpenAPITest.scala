@@ -104,6 +104,19 @@ class OpenAPITest extends AirSpec {
         |      responses:
         |        '200':
         |          description: 'RPC response'""".stripMargin,
+      """  /example.openapi.OpenAPIRPCExample/rpcWithFutureResponse:
+        |    post:
+        |      summary: rpcWithFutureResponse
+        |      description: rpcWithFutureResponse
+        |      operationId: rpcWithFutureResponse
+        |      responses:
+        |        '200':
+        |          description: 'RPC response'
+        |          content:
+        |            application/json:
+        |              schema:
+        |                type: string
+        |""".stripMargin,
       """components:
         |  schemas:
         |    example.openapi.OpenAPIRPCExample.RPCRequest:

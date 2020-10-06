@@ -50,8 +50,8 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     s match {
       case o: OptionSurface =>
         sanitizedSurfaceName(o.elementSurface)
-      case _ =>
-        s.fullName.replaceAll("\\$", ".")
+      case other =>
+        Router.unwrapFuture(other).fullName.replaceAll("\\$", ".")
     }
   }
 
@@ -62,7 +62,9 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     s match {
       case s if s.isPrimitive => true
       case o: OptionSurface   => o.elementSurface.isPrimitive
-      case other              => false
+      case f: Surface if Router.isFuture(f) =>
+        isPrimitiveTypeFamily(Router.unwrapFuture(f))
+      case other => false
     }
   }
 
@@ -268,6 +270,8 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         Schema(`type` = "string")
       case o: OptionSurface =>
         getOpenAPISchema(o.elementSurface, useRef)
+      case f: Surface if f.rawType.getName.endsWith(".Future") && f.typeArgs.size == 1 =>
+        getOpenAPISchema(f.typeArgs(0), useRef)
       case g: Surface if classOf[Map[_, _]].isAssignableFrom(g.rawType) && g.typeArgs(0) == Primitive.String =>
         Schema(
           `type` = "object",

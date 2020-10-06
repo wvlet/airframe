@@ -21,6 +21,8 @@ import wvlet.airframe.http.router.{ControllerProvider, RouteMatcher}
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
+import scala.concurrent.Future
+
 /**
   */
 class RouterTest extends AirSpec {
@@ -189,5 +191,10 @@ class RouterTest extends AirSpec {
     val r   = Router.add[ControllerExample]
     val dfa = RouteMatcher.buildPathDFA(r.routes)
     debug(dfa.toString)
+  }
+
+  def `unwrap Future`: Unit = {
+    Router.isFuture(Surface.of[Future[Int]]) shouldBe true
+    Router.isFuture(Surface.of[Int]) shouldBe false
   }
 }

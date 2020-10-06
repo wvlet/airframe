@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.http.router._
-import wvlet.airframe.surface.{MethodSurface, Surface}
+import wvlet.airframe.surface.{HigherKindedTypeSurface, MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 import scala.annotation.tailrec
@@ -147,18 +147,21 @@ case class Router(
           val prefixPath = endpointOpt.map(_.path()).getOrElse("")
           // Add methods annotated with @Endpoint
           controllerMethodSurfaces
-            .map { m => (m, m.findAnnotationOf[Endpoint]) }
-            .collect { case (m: ReflectMethodSurface, Some(endPoint)) =>
-              val endpointInterfaceCls =
-                controllerSurface.findAnnotationOwnerOf[Endpoint].getOrElse(controllerSurface.rawType)
-              ControllerRoute(
-                endpointInterfaceCls,
-                controllerSurface,
-                endPoint.method(),
-                prefixPath + endPoint.path(),
-                m,
-                isRPC = false
-              )
+            .map { m =>
+              (m, m.findAnnotationOf[Endpoint])
+            }
+            .collect {
+              case (m: ReflectMethodSurface, Some(endPoint)) =>
+                val endpointInterfaceCls =
+                  controllerSurface.findAnnotationOwnerOf[Endpoint].getOrElse(controllerSurface.rawType)
+                ControllerRoute(
+                  endpointInterfaceCls,
+                  controllerSurface,
+                  endPoint.method(),
+                  prefixPath + endPoint.path(),
+                  m,
+                  isRPC = false
+                )
             }
         case (None, Some(rpc)) =>
           // We need to find the owner class of the RPC interface because the controller might be extending the RPC interface (e.g., RPCImpl)
@@ -171,7 +174,9 @@ case class Router(
           }
           val routes = controllerMethodSurfaces
             .filter(_.isPublic)
-            .map { m => (m, m.findAnnotationOf[RPC]) }
+            .map { m =>
+              (m, m.findAnnotationOf[RPC])
+            }
             .collect {
               case (m: ReflectMethodSurface, Some(rpc)) =>
                 val path = if (rpc.path().nonEmpty) rpc.path() else s"/${m.name}"
@@ -239,4 +244,31 @@ object Router extends LogSupport {
   def add(filter: HttpFilterType) = {
     new Router(filterInstance = Some(filter))
   }
+
+  private[http] def isFuture(s: Surface): Boolean = {
+    s match {
+      case h: HigherKindedTypeSurface
+          if h.typeArgs.size == 1 && h.name == "F" => // Only support 'F' for tagless-final pattern
+        true
+      case s: Surface
+          if s.rawType == classOf[scala.concurrent.Future[_]] || s.rawType.getName == "com.twitter.util.Future" =>
+        true
+      case _ =>
+        false
+    }
+  }
+
+  private[http] def unwrapFuture(s: Surface): Surface = {
+    s match {
+      case h: HigherKindedTypeSurface
+          if h.typeArgs.size == 1 && h.name == "F" => // Only support 'F' for tagless-final pattern
+        h.typeArgs.head
+      case s: Surface
+          if s.rawType == classOf[scala.concurrent.Future[_]] || s.rawType.getName == "com.twitter.util.Future" =>
+        s.typeArgs.head
+      case _ =>
+        s
+    }
+  }
+
 }

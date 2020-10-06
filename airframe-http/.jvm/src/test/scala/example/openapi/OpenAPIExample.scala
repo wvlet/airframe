@@ -14,6 +14,8 @@
 package example.openapi
 import wvlet.airframe.http.{Endpoint, HttpMethod, RPC}
 
+import scala.concurrent.Future
+
 /**
   */
 @RPC
@@ -28,6 +30,7 @@ trait OpenAPIRPCExample {
   def rpcWithOption(p1: Option[String]): Unit
   def rpcWithPrimitiveAndOption(p1: String, p2: Option[String]): Unit
   def rpcWithOptionOfComplexType(p1: Option[RPCRequest]): Unit
+  def rpcWithFutureResponse: Future[String]
 }
 
 object OpenAPIRPCExample {
