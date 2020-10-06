@@ -52,8 +52,10 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         sanitizedSurfaceName(o.elementSurface)
       case r: Surface if Router.isFinagleReader(r) =>
         sanitizedSurfaceName(r.typeArgs(0))
+      case s: Surface if Router.isFuture(s) =>
+        sanitizedSurfaceName(Router.unwrapFuture(s))
       case other =>
-        Router.unwrapFuture(other).fullName.replaceAll("\\$", ".")
+        other.fullName.replaceAll("\\$", ".")
     }
   }
 
