@@ -251,7 +251,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
             cmd ++= packages
 
             val cmdline = cmd.result()
-            info(cmdline)
+            debug(cmdline)
             Process(cmdline).!!
             Seq(outFile)
           }

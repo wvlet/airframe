@@ -50,8 +50,12 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     s match {
       case o: OptionSurface =>
         sanitizedSurfaceName(o.elementSurface)
-      case _ =>
-        s.fullName.replaceAll("\\$", ".")
+      case r: Surface if Router.isFinagleReader(r) =>
+        sanitizedSurfaceName(r.typeArgs(0))
+      case s: Surface if Router.isFuture(s) =>
+        sanitizedSurfaceName(Router.unwrapFuture(s))
+      case other =>
+        other.fullName.replaceAll("\\$", ".")
     }
   }
 
@@ -62,7 +66,14 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     s match {
       case s if s.isPrimitive => true
       case o: OptionSurface   => o.elementSurface.isPrimitive
-      case other              => false
+      case f: Surface if Router.isFuture(f) =>
+        isPrimitiveTypeFamily(Router.unwrapFuture(f))
+      case r: Surface if Router.isHttpResponse(r) =>
+        // HTTP raw response (without explicit type)
+        true
+      case s: Surface if s.isSeq =>
+        isPrimitiveTypeFamily(s.typeArgs.head)
+      case other => false
     }
   }
 
@@ -268,6 +279,13 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         Schema(`type` = "string")
       case o: OptionSurface =>
         getOpenAPISchema(o.elementSurface, useRef)
+      case s: Surface if Router.isFuture(s) =>
+        getOpenAPISchema(Router.unwrapFuture(s), useRef)
+      case s: Surface if Router.isFinagleReader(s) =>
+        getOpenAPISchema(s.typeArgs(0), useRef)
+      case r: Surface if Router.isHttpResponse(r) =>
+        // Use just string if the response type is not given
+        Schema(`type` = "string")
       case g: Surface if classOf[Map[_, _]].isAssignableFrom(g.rawType) && g.typeArgs(0) == Primitive.String =>
         Schema(
           `type` = "object",
@@ -302,6 +320,9 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
           required = requiredParams(g.params),
           properties = if (properties.isEmpty) None else Some(properties)
         )
+      case other =>
+        warn(s"Unknown type ${other.fullName}. Use string instead")
+        Schema(`type` = "string")
     }
   }
 

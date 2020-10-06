@@ -14,6 +14,7 @@
 package wvlet.airframe.http.codegen
 import java.util.Locale
 
+import wvlet.airframe.http.Router.unwrapFuture
 import wvlet.airframe.http.{HttpMethod, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.router.Route
@@ -288,18 +289,4 @@ object HttpClientIR extends LogSupport {
       classDef = buildClassDef
     )
   }
-
-  private def unwrapFuture(s: Surface): Surface = {
-    s match {
-      case h: HigherKindedTypeSurface
-          if h.typeArgs.size == 1 && h.name == "F" => // Only support 'F' for tagless-final pattern
-        h.typeArgs.head
-      case s: Surface
-          if s.rawType == classOf[scala.concurrent.Future[_]] || s.rawType.getName == "com.twitter.util.Future" =>
-        s.typeArgs.head
-      case _ =>
-        s
-    }
-  }
-
 }

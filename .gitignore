@@ -34,3 +34,5 @@ website/i18n/*
 .vscode/launch.json
 **/metals.sbt
 settings.json
+
+.bsp
