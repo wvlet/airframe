@@ -270,8 +270,8 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         Schema(`type` = "string")
       case o: OptionSurface =>
         getOpenAPISchema(o.elementSurface, useRef)
-      case f: Surface if f.rawType.getName.endsWith(".Future") && f.typeArgs.size == 1 =>
-        getOpenAPISchema(f.typeArgs(0), useRef)
+      case s: Surface if Router.isFuture(s) || Router.isFinagleReader(s) =>
+        getOpenAPISchema(s.typeArgs(0), useRef)
       case r: Surface if Router.isHttpResponse(r) =>
         // Use just string if the response type is not given
         Schema(`type` = "string")
