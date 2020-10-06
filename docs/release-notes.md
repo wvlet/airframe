@@ -6,6 +6,20 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.10.0
+
+This is a minor maintainance release. Mostly for intenral library upgrades.  
+
+-  sbt-airframe: Support Future/Response response type in OpenAPI generator ([#1308](https://github.com/wvlet/airframe/issues/1308)) [[3ea1e9c](https://github.com/wvlet/airframe/commit/3ea1e9c)]
+-  internal: Upgrade to sbt 1.4.0 ([#1306](https://github.com/wvlet/airframe/issues/1306)) [[8b5f373](https://github.com/wvlet/airframe/commit/8b5f373)]
+-  internal: Update scalafmt-core to 2.7.3 ([#1302](https://github.com/wvlet/airframe/issues/1302)) [[4618206](https://github.com/wvlet/airframe/commit/4618206)]
+-  internal: sbt-airframe: Update swagger-parser to 2.0.22 ([#1304](https://github.com/wvlet/airframe/issues/1304)) [[d6815c1](https://github.com/wvlet/airframe/commit/d6815c1)]
+-  internal: Update json4s-jackson to 3.6.10 ([#1301](https://github.com/wvlet/airframe/issues/1301)) [[a0b6360](https://github.com/wvlet/airframe/commit/a0b6360)]
+-  internal: Update presto-main to 343 ([#1300](https://github.com/wvlet/airframe/issues/1300)) [[b7b1dfa](https://github.com/wvlet/airframe/commit/b7b1dfa)]
+-  internal: Update sbt-pack to 0.13 ([#1297](https://github.com/wvlet/airframe/issues/1297)) [[93a1735](https://github.com/wvlet/airframe/commit/93a1735)]
+-  internal: Update scalafmt-core to 2.7.2 ([#1296](https://github.com/wvlet/airframe/issues/1296)) [[53e52cb](https://github.com/wvlet/airframe/commit/53e52cb)]
+-  internal: Update sbt-mdoc to 2.2.9 ([#1295](https://github.com/wvlet/airframe/issues/1295)) [[8ee9a6e](https://github.com/wvlet/airframe/commit/8ee9a6e)]
+
 ## 20.9.2
 
 This version upgrades Scala.js to 1.2.0 and includes RxOption rendering bug fixes. 
