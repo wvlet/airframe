@@ -150,18 +150,17 @@ case class Router(
             .map { m =>
               (m, m.findAnnotationOf[Endpoint])
             }
-            .collect {
-              case (m: ReflectMethodSurface, Some(endPoint)) =>
-                val endpointInterfaceCls =
-                  controllerSurface.findAnnotationOwnerOf[Endpoint].getOrElse(controllerSurface.rawType)
-                ControllerRoute(
-                  endpointInterfaceCls,
-                  controllerSurface,
-                  endPoint.method(),
-                  prefixPath + endPoint.path(),
-                  m,
-                  isRPC = false
-                )
+            .collect { case (m: ReflectMethodSurface, Some(endPoint)) =>
+              val endpointInterfaceCls =
+                controllerSurface.findAnnotationOwnerOf[Endpoint].getOrElse(controllerSurface.rawType)
+              ControllerRoute(
+                endpointInterfaceCls,
+                controllerSurface,
+                endPoint.method(),
+                prefixPath + endPoint.path(),
+                m,
+                isRPC = false
+              )
             }
         case (None, Some(rpc)) =>
           // We need to find the owner class of the RPC interface because the controller might be extending the RPC interface (e.g., RPCImpl)
@@ -258,7 +257,7 @@ object Router extends LogSupport {
 
   private[http] def isFinagleReader(s: Surface): Boolean = {
     s match {
-      case r: GenericSurface if r.rawType.getName == "com.twitter.io.Reader" =>
+      case s: Surface if s.rawType.getName == "com.twitter.io.Reader" =>
         true
       case other =>
         false
