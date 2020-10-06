@@ -8,7 +8,7 @@ Airframe uses YY.MM.patch versioning scheme, so the version numbers match with t
 
 ## 20.10.0
 
-This is a minor maintainance release. Mostly for intenral library upgrades.  
+This is a minor maintenance release. Mostly for intenral library upgrades.  
 
 -  sbt-airframe: Support Future/Response response type in OpenAPI generator ([#1308](https://github.com/wvlet/airframe/issues/1308)) [[3ea1e9c](https://github.com/wvlet/airframe/commit/3ea1e9c)]
 -  internal: Upgrade to sbt 1.4.0 ([#1306](https://github.com/wvlet/airframe/issues/1306)) [[8b5f373](https://github.com/wvlet/airframe/commit/8b5f373)]
