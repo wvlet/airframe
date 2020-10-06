@@ -31,7 +31,8 @@ object RouteAnalyzer {
       pathOnlyParameters: Set[MethodParameter]
   ) {
     // http client call parameters, except parameters used for generating path strings
-    val httpClientCallInputs: Seq[MethodParameter] = (userInputParameters.toSet -- pathOnlyParameters).toIndexedSeq
+    val httpClientCallInputs: Seq[MethodParameter] =
+      (userInputParameters.toSet -- pathOnlyParameters).toIndexedSeq
   }
 
   /**
@@ -41,7 +42,8 @@ object RouteAnalyzer {
   private def isClientSideArg(x: MethodParameter): Boolean = {
     !classOf[HttpMessage.Request].isAssignableFrom(x.surface.rawType) &&
     !classOf[HttpRequest[_]].isAssignableFrom(x.surface.rawType) &&
-    !classOf[HttpContext[_, _, F] forSome { type F[_] }].isAssignableFrom(x.surface.rawType) &&
+    !classOf[HttpContext[_, _, F] forSome { type F[_] }]
+      .isAssignableFrom(x.surface.rawType) &&
     x.surface.fullName != "com.twitter.finagle.http.Request"
   }
 
@@ -71,10 +73,13 @@ object RouteAnalyzer {
               // Find the path variable in the nested parameters
               clientSideArgs
                 .map { arg =>
-                  (arg, arg.surface.params.find(nestedParam => CName(nestedParam.name) == varName))
+                  (arg,
+                   arg.surface.params.find(nestedParam =>
+                     CName(nestedParam.name) == varName))
                 }
-                .collectFirst { case (arg, Some(nestedParam)) =>
-                  pathBuilder += s"$${${arg.name}.${nestedParam.name}}"
+                .collectFirst {
+                  case (arg, Some(nestedParam)) =>
+                    pathBuilder += s"$${${arg.name}.${nestedParam.name}}"
                 }
                 .getOrElse {
                   // If the request argument has no path variable, add it to the function interface
