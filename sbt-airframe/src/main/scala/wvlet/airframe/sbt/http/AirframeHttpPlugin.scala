@@ -140,39 +140,36 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           // Unpack .tgz file
           val packageDir = airframeHttpPackageDir.getAbsoluteFile
           airframeHttpPackageDir.mkdirs()
-          files.headOption.map {
-            tgz =>
-              // Extract tar.gz archive using commons-compress library
-              info(s"Extracting airframe-http ${airframeVersion} package to ${airframeHttpPackageDir}")
-              withResource(new GZIPInputStream(new FileInputStream(tgz))) {
-                in =>
-                  val tgzInput = new TarArchiveInputStream(in)
-                  Iterator
-                    .continually(tgzInput.getNextTarEntry)
-                    .takeWhile(entry => entry != null)
-                    .filter(tgzInput.canReadEntryData(_))
-                    .foreach {
-                      entry =>
-                        val fileName     = entry.getName
-                        val mode         = entry.getMode
-                        val isExecutable = (mode & (1 << 6)) != 0
+          files.headOption.map { tgz =>
+            // Extract tar.gz archive using commons-compress library
+            info(s"Extracting airframe-http ${airframeVersion} package to ${airframeHttpPackageDir}")
+            withResource(new GZIPInputStream(new FileInputStream(tgz))) { in =>
+              val tgzInput = new TarArchiveInputStream(in)
+              Iterator
+                .continually(tgzInput.getNextTarEntry)
+                .takeWhile(entry => entry != null)
+                .filter(tgzInput.canReadEntryData(_))
+                .foreach { entry =>
+                  val fileName     = entry.getName
+                  val mode         = entry.getMode
+                  val isExecutable = (mode & (1 << 6)) != 0
 
-                        // Strip the first path component
-                        val path       = fileName.split("/").tail.mkString("/")
-                        val outputFile = new File(packageDir, path)
-                        if (entry.isDirectory) {
-                          debug(s"Creating dir : ${path}")
-                          outputFile.mkdirs()
-                        } else {
-                          withResource(Files.newOutputStream(outputFile.toPath)) { out =>
-                            debug(s"Creating file: ${path}")
-                            IOUtils.copy(tgzInput, out)
-                          }
-                          // Set +x for executables
-                          outputFile.setExecutable(isExecutable)
-                        }
+                  // Strip the first path component
+                  val path       = fileName.split("/").tail.mkString("/")
+                  val outputFile = new File(packageDir, path)
+                  if (entry.isDirectory) {
+                    debug(s"Creating dir : ${path}")
+                    outputFile.mkdirs()
+                  } else {
+                    withResource(Files.newOutputStream(outputFile.toPath)) { out =>
+                      debug(s"Creating file: ${path}")
+                      IOUtils.copy(tgzInput, out)
                     }
-              }
+                    // Set +x for executables
+                    outputFile.setExecutable(isExecutable)
+                  }
+                }
+            }
           }
         }
         airframeHttpPackageDir
