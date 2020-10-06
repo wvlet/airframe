@@ -50,6 +50,8 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     s match {
       case o: OptionSurface =>
         sanitizedSurfaceName(o.elementSurface)
+      case r: Surface if Router.isFinagleReader(r) =>
+        sanitizedSurfaceName(r.typeArgs(0))
       case other =>
         Router.unwrapFuture(other).fullName.replaceAll("\\$", ".")
     }
@@ -64,6 +66,9 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
       case o: OptionSurface   => o.elementSurface.isPrimitive
       case f: Surface if Router.isFuture(f) =>
         isPrimitiveTypeFamily(Router.unwrapFuture(f))
+      case r: Surface if Router.isHttpResponse(r) =>
+        // HTTP raw response (without explicit type)
+        true
       case other => false
     }
   }
