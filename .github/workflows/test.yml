@@ -1,21 +1,13 @@
 name: CI
 
 on:
-  pull_request:
+  [pull_request,push]:
     paths:
       - '**.scala'
       - '**.java'
       - '**.sbt'
       - '.scalafmt.conf'
       - '.github/workflows/test.yml'
-  push:
-    branches:
-      - master
-    paths:
-      - '**.scala'
-      - '**.java'
-      - '**.sbt'
-      - '.scalafmt.conf'
 
 jobs:
   code_format:
