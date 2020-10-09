@@ -21,7 +21,7 @@ val SCALAJS_DOM_VERSION             = "1.1.0"
 val FINAGLE_VERSION                 = "20.4.1"
 val FLUENCY_VERSION                 = "2.4.1"
 val GRPC_VERSION                    = "1.32.1"
-val JMH_VERSION                     = "1.25.2"
+val JMH_VERSION                     = "1.26"
 
 val airSpecFramework = new TestFramework("wvlet.airspec.Framework")
 
