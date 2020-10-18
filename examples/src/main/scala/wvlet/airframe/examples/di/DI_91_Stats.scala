@@ -40,7 +40,8 @@ object DI_91_Stats extends App {
 
   val report = stats.coverageReportFor(d)
 
-  /** *
+  /**
+    * *
     * Show the design coverage and access stats.
     *
     * [coverage]
