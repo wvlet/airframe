@@ -6,6 +6,16 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.10.1
+
+-  airframe-http, rx: Update sbt-scalajs, scalajs-compiler, ... to 1.3.0 ([#1316](https://github.com/wvlet/airframe/issues/1316)) [[73a7129](https://github.com/wvlet/airframe/commit/73a7129)]
+-  airframe-finagle: Support raw-string and MsgPack responses [[1828afb](https://github.com/wvlet/airframe/commit/1828afb)]
+-  airframe-finagle: Update finagle-core, finagle-http, ... to 20.9.0 ([#1298](https://github.com/wvlet/airframe/issues/1298)) [[bf8b1e6](https://github.com/wvlet/airframe/commit/bf8b1e6)]
+-  airframe-grpc: Update grpc-netty-shaded, grpc-protobuf, ... to 1.32.2 ([#1314](https://github.com/wvlet/airframe/issues/1314)) [[7e55229](https://github.com/wvlet/airframe/commit/7e55229)]
+-  airframe-jdbc: Update postgresql to 42.2.18 ([#1317](https://github.com/wvlet/airframe/issues/1317)) [[f61c3e5](https://github.com/wvlet/airframe/commit/f61c3e5)]
+-  internal: Update presto-main to 344 ([#1313](https://github.com/wvlet/airframe/issues/1313)) [[6efd9f5](https://github.com/wvlet/airframe/commit/6efd9f5)]
+-  internal: Update jmh-core, jmh-generator-bytecode, ... to 1.26 ([#1311](https://github.com/wvlet/airframe/issues/1311)) [[b59c129](https://github.com/wvlet/airframe/commit/b59c129)]
+
 ## 20.10.0
 
 This is a minor maintenance release. Mostly for intenral library upgrades.  
