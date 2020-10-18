@@ -17,7 +17,7 @@ import wvlet.airframe.http.HttpMessage.{Request, Response}
 import scala.concurrent.Future
 import scala.language.higherKinds
 
-/** *
+/**
   * Used for passing the subsequent actions to HttpFilter and for defining the leaf action of request processing chain.
   */
 trait HttpContext[Req, Resp, F[_]] {
