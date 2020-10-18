@@ -37,6 +37,7 @@ lazy val ui =
     .enablePlugins(ScalaJSPlugin, AirframeHttpPlugin)
     .in(file("ui"))
     .settings(
+      airframeHttpOpenAPIPackages := Seq("example.api"),
       scalaJSUseMainModuleInitializer := true,
       airframeHttpClients := Seq("example.api:scalajs"),
       libraryDependencies ++= Seq(

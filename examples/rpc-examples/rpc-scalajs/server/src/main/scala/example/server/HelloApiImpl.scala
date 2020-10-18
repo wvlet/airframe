@@ -14,6 +14,7 @@
 package example.server
 
 import example.api.HelloApi
+import example.api.HelloApi.TableData
 
 /**
   *
@@ -21,5 +22,16 @@ import example.api.HelloApi
 class HelloApiImpl extends HelloApi {
   override def hello(message: String): String = {
     s"Hello ${message}!!"
+  }
+
+  override def getTable: HelloApi.TableData = {
+    TableData(
+      columnNames = Seq("id", "name"),
+      rows = Seq(
+        Seq("1", "leo"),
+        Seq("2", "aina"),
+        Seq("3", "yui"),
+      )
+    )
   }
 }

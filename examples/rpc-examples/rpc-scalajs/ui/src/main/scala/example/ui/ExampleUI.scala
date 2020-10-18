@@ -13,18 +13,15 @@
  */
 package example.ui
 
-import example.api.ServiceJSClient
+import example.api.HelloApi.TableData
 import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.{Rx, RxOption}
 import wvlet.airframe.rx.html.{DOMRenderer, RxElement}
 
 import scala.scalajs.js.annotation.JSExport
 import wvlet.airframe.rx.html.all._
 import wvlet.log.{LogLevel, LogSupport, Logger}
-
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
 /**
   */
@@ -63,34 +60,36 @@ class MainUI extends RxElement with RPCService {
       message.map { x =>
         div(s"Message: ${x}")
       },
-      div(
-        cls -> "container",
-        new Table
-      )
+      new Table
     )
   }
 }
 
 class Table extends RxElement with RPCService {
 
-  override def render: RxElement = table(
-    cls -> "table table-striped",
-    thead(
-      cls -> "thead-dark",
-      tr(
-        th(
-          "col1"
-        ),
-        th(
-          "col2"
+  private val tableData = Rx.optionVariable[TableData](None)
+
+  rpc(_.HelloApi.getTable()).foreach { tbl =>
+    tableData := Some(tbl)
+  }
+
+  override def render: RxElement = {
+    div(
+      cls -> "container",
+      tableData.map { tbl: TableData =>
+        table(
+          cls -> "table table-striped",
+          thead(
+            cls -> "thead-dark",
+            tr(tbl.columnNames.map(x => th(x))),
+            tbl.rows.map { rows =>
+              tr(
+                rows.map(cell => td(cell.toString))
+              )
+            }
+          )
         )
-      )
-    ),
-    tr(
-      td("row1")
-    ),
-    tr(
-      td("row2")
+      }
     )
-  )
+  }
 }
