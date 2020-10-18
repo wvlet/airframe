@@ -16,7 +16,9 @@ import com.twitter.finagle.http
 import com.twitter.finagle.http.Method
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
+import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airspec.AirSpec
 
 case class SampleResponse(id: Int, name: String)
@@ -29,6 +31,15 @@ trait TestMessagePackApi {
 
   @Endpoint(method = HttpMethod.DELETE, path = "/v1/resource/:id")
   def delete(id: Int): Unit = {}
+
+  @Endpoint(path = "/v1/hello_string")
+  def helloStr: String = {
+    "hello"
+  }
+  @Endpoint(path = "/v1/hello_msgpack")
+  def helloMsgPack: MsgPack = {
+    MessageCodec.of[Seq[String]].toMsgPack(Seq("hello", "msgpack"))
+  }
 }
 
 /**
@@ -52,6 +63,32 @@ class MessagePackResponseTest extends AirSpec {
     val decoded = MessageCodec.of[SampleResponse].fromMsgPack(msgpack)
     debug(decoded)
     decoded shouldBe SampleResponse(1, "leo")
+  }
+
+  def `support raw String response with application/x-msgpack`(client: FinagleSyncClient): Unit = {
+    val req = http.Request("/v1/hello_string")
+    req.accept = "application/x-msgpack"
+    val resp    = client.send(req)
+    val c       = resp.content
+    val msgpack = new Array[Byte](c.length)
+    c.write(msgpack, 0)
+
+    val decoded = StringCodec.fromMsgPack(msgpack)
+    debug(decoded)
+    decoded shouldBe "hello"
+  }
+
+  def `support raw MsgPack response with application/x-msgpack`(client: FinagleSyncClient): Unit = {
+    val req = http.Request("/v1/hello_msgpack")
+    req.accept = "application/x-msgpack"
+    val resp    = client.send(req)
+    val c       = resp.content
+    val msgpack = new Array[Byte](c.length)
+    c.write(msgpack, 0)
+
+    val decoded = MessageCodec.of[Seq[String]].fromMsgPack(msgpack)
+    debug(decoded)
+    decoded shouldBe Seq("hello", "msgpack")
   }
 
   def `DELETE response should have no content body`(client: FinagleSyncClient): Unit = {

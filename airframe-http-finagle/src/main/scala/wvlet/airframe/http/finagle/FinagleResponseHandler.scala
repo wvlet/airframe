@@ -22,6 +22,7 @@ import com.twitter.io.{Buf, Reader}
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.router.{ResponseHandler, Route}
 import wvlet.airframe.http.{HttpMessage, HttpStatus}
+import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
 
@@ -115,11 +116,16 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
         }
       case r: HttpMessage.Response =>
         convertToFinagleResponse(r)
-      case b: Array[Byte] =>
+      case b: Array[Byte] if !isMsgPackRequest(request) =>
         val r = newResponse(route, request, responseSurface)
         r.content = Buf.ByteArray.Owned(b)
         r
-      case s: String =>
+      case b: MsgPack if isMsgPackRequest(request) =>
+        val r = newResponse(route, request, responseSurface)
+        r.contentType = xMsgPack
+        r.content = Buf.ByteArray.Owned(b)
+        r
+      case s: String if !isMsgPackRequest(request) =>
         val r = newResponse(route, request, responseSurface)
         r.contentString = s
         r
