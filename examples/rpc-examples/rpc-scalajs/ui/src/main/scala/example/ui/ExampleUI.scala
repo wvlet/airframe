@@ -18,8 +18,6 @@ import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html.{DOMRenderer, RxElement}
-import wvlet.airframe.http.js.JSHttpClient
-import wvlet.airframe.http.js.JSHttpClient.MessageEncoding
 
 import scala.scalajs.js.annotation.JSExport
 import wvlet.airframe.rx.html.all._
@@ -36,6 +34,7 @@ object ExampleUI extends LogSupport {
   def main(args: Array[String]): Unit = {
     Logger.setDefaultLogLevel(LogLevel.DEBUG)
     info("Starting UI")
+    debug("debug log")
 
     val main = dom.document.getElementById("main")
 
@@ -43,48 +42,55 @@ object ExampleUI extends LogSupport {
   }
 }
 
-trait RPCService extends LogSupport {
-  protected implicit val queue = scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-
-  protected val client = new ServiceJSClient()
-
-  def rpc[U](body: ServiceJSClient => Future[U]): Future[U] = {
-    val future = body(client)
-    future.onComplete {
-      case Success(v) =>
-      case Failure(e) =>
-        warn(e)
-    }
-    future
-  }
-
-}
-
 class MainUI extends RxElement with RPCService {
-
   private val message = Rx.variable("N/A")
 
+  private def myButton = button(cls -> "btn btn-primary")
+
   override def render: RxElement = {
-    div(s"Counter: ", Rx.intervalMillis(100))
-//
-//    div(
-//      button(
-//        onclick -> { e: MouseEvent =>
-//          info(s"Clicked")
-//          rpc(_.HelloApi.hello("RPC"))
-//            .foreach { resp =>
-//              info(s"RPC result: ${resp}")
-//              message := resp.message
-//            }
-//        },
-//        "Click Me!"
-//      ),
-//      message.map { x =>
-//        div(s"Message: ${x}")
-//      },
-//      div(
-//        "counter:",
-//      )
-//    )
+    div(
+      myButton(
+        onclick -> { e: MouseEvent =>
+          info(s"Clicked")
+          rpc(_.HelloApi.hello("RPC"))
+            .foreach { resp =>
+              info(s"RPC result: ${resp}")
+              message := resp
+            }
+        },
+        "Click Me!"
+      ),
+      message.map { x =>
+        div(s"Message: ${x}")
+      },
+      div(
+        cls -> "container",
+        new Table
+      )
+    )
   }
+}
+
+class Table extends RxElement with RPCService {
+
+  override def render: RxElement = table(
+    cls -> "table table-striped",
+    thead(
+      cls -> "thead-dark",
+      tr(
+        th(
+          "col1"
+        ),
+        th(
+          "col2"
+        )
+      )
+    ),
+    tr(
+      td("row1")
+    ),
+    tr(
+      td("row2")
+    )
+  )
 }

@@ -13,14 +13,8 @@ t * See the License for the specific language governing permissions and
  */
 package example.api
 
-import example.api.HelloApi.HelloResponse
 import wvlet.airframe.http.RPC
-
-object HelloApi {
-  case class HelloResponse(message: String)
-}
-
 @RPC
 trait HelloApi {
-  def hello(message: String): HelloResponse
+  def hello(message: String): String
 }

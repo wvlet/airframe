@@ -11,15 +11,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package example.server
+package example.ui
 
-import example.api.HelloApi
+import example.api.ServiceJSClient
+import wvlet.log.LogSupport
+
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 /**
   *
   */
-class HelloApiImpl extends HelloApi {
-  override def hello(message: String): String = {
-    s"Hello ${message}!!"
+trait RPCService extends LogSupport {
+  protected implicit val queue = scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+
+  protected val client = new ServiceJSClient()
+
+  def rpc[U](body: ServiceJSClient => Future[U]): Future[U] = {
+    val future = body(client)
+    future.onComplete {
+      case Success(v) =>
+      case Failure(e) =>
+        warn(e)
+    }
+    future
   }
+
 }
