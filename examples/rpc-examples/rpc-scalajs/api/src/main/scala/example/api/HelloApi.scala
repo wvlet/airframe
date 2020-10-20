@@ -14,17 +14,8 @@ t * See the License for the specific language governing permissions and
 package example.api
 
 import wvlet.airframe.http.RPC
+
 @RPC
 trait HelloApi {
-  import HelloApi._
-
   def hello(message: String): String
-  def getTable: TableData
-}
-
-object HelloApi {
-  case class TableData(
-      columnNames: Seq[String],
-      rows: Seq[Seq[Any]]
-  )
 }

@@ -59,36 +59,6 @@ class MainUI extends RxElement with RPCService {
       ),
       message.map { x =>
         div(s"Message: ${x}")
-      },
-      new Table
-    )
-  }
-}
-
-class Table extends RxElement with RPCService {
-
-  private val tableData = Rx.optionVariable[TableData](None)
-
-  rpc(_.HelloApi.getTable()).foreach { tbl =>
-    tableData := Some(tbl)
-  }
-
-  override def render: RxElement = {
-    div(
-      cls -> "container",
-      tableData.map { tbl: TableData =>
-        table(
-          cls -> "table table-striped",
-          thead(
-            cls -> "thead-dark",
-            tr(tbl.columnNames.map(x => th(x))),
-            tbl.rows.map { rows =>
-              tr(
-                rows.map(cell => td(cell.toString))
-              )
-            }
-          )
-        )
       }
     )
   }
