@@ -44,7 +44,8 @@ class Logger(
   }
 
   def error(message: Any): Unit = macro errorLogMethod
-  def error(message: Any, cause: Throwable): Unit = macro errorLogMethodWithCause
+  def error(message: Any, cause: Throwable): Unit =
+    macro errorLogMethodWithCause
 
   def warn(message: Any): Unit = macro warnLogMethod
   def warn(message: Any, cause: Throwable): Unit = macro warnLogMethodWithCause
@@ -53,10 +54,12 @@ class Logger(
   def info(message: Any, cause: Throwable): Unit = macro infoLogMethodWithCause
 
   def debug(message: Any): Unit = macro debugLogMethod
-  def debug(message: Any, cause: Throwable): Unit = macro debugLogMethodWithCause
+  def debug(message: Any, cause: Throwable): Unit =
+    macro debugLogMethodWithCause
 
   def trace(message: Any): Unit = macro traceLogMethod
-  def trace(message: Any, cause: Throwable): Unit = macro traceLogMethodWithCause
+  def trace(message: Any, cause: Throwable): Unit =
+    macro traceLogMethodWithCause
 
   def getName = name
 
@@ -152,7 +155,10 @@ class Logger(
     log(wvlet.log.LogRecord(level, source, formatLog(message)))
   }
 
-  def logWithCause(level: LogLevel, source: LogSource, message: Any, cause: Throwable): Unit = {
+  def logWithCause(level: LogLevel,
+                   source: LogSource,
+                   message: Any,
+                   cause: Throwable): Unit = {
     log(wvlet.log.LogRecord(level, source, formatLog(message), cause))
   }
 
@@ -196,7 +202,13 @@ object Logger {
 
   private lazy val loggerCache = new ConcurrentHashMap[String, Logger].asScala
 
-  lazy val rootLogger = initLogger(name = "", handlers = Seq(LogEnv.defaultHandler))
+  lazy val rootLogger = {
+    val l = initLogger(name = "", handlers = Seq(LogEnv.defaultHandler))
+    if (LogEnv.isScalaJS) {
+      l.setLogLevel(LogLevel.INFO)
+    }
+    l
+  }
 
   /**
     * Create a new java.util.logging.Logger
@@ -232,7 +244,9 @@ object Logger {
   }
 
   def apply(loggerName: String): Logger = {
-    loggerCache.getOrElseUpdate(loggerName, new Logger(loggerName, jl.Logger.getLogger(loggerName)))
+    loggerCache.getOrElseUpdate(
+      loggerName,
+      new Logger(loggerName, jl.Logger.getLogger(loggerName)))
   }
 
   def getDefaultLogLevel: LogLevel = rootLogger.getLogLevel
@@ -276,7 +290,8 @@ object Logger {
         case Some(lv) =>
           Logger(loggerName).setLogLevel(lv)
         case None =>
-          Console.err.println(s"Unknown loglevel ${level} is specified for ${loggerName}")
+          Console.err.println(
+            s"Unknown loglevel ${level} is specified for ${loggerName}")
       }
     }
   }
@@ -294,5 +309,7 @@ object Logger {
     *
     * @param loglevelFileCandidates
     */
-  def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = { LogEnv.scanLogLevels(loglevelFileCandidates) }
+  def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = {
+    LogEnv.scanLogLevels(loglevelFileCandidates)
+  }
 }
