@@ -75,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v5
+      - uses: olafurpg/setup-scala@v10
         with:
           java-version: adopt@1.11
       - uses: actions/setup-node@v2-beta
@@ -83,10 +83,10 @@ jobs:
           node-version: '12.x'
       - name: Node.js setup
         run: npm install jsdom@16.4.0
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.cache
-          key: ${{ runner.os }}-scalajs_2.12-${{ hashFiles('**/*.sbt') }}
+          key: ${{ runner.os }}-scalajs_2.12-0${{ hashFiles('**/*.sbt') }}
           restore-keys: ${{ runner.os }}-scalajs_2.12-
       - name: Scala.js test
         run: ./sbt "; projectJS/test"
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v5
+      - uses: olafurpg/setup-scala@v10
         with:
           java-version: adopt@1.11
       - uses: actions/setup-node@v2-beta
@@ -103,10 +103,10 @@ jobs:
           node-version: '12.x'
       - name: Node.js setup
         run: npm install jsdom@16.4.0
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.cache
-          key: ${{ runner.os }}-scalajs_2.13-${{ hashFiles('**/*.sbt') }}
+          key: ${{ runner.os }}-scalajs_2.13-0${{ hashFiles('**/*.sbt') }}
           restore-keys: ${{ runner.os }}-scalajs_2.13-
       - name: Scala.js test
         run: ./sbt ++2.13.3 "; projectJS/test"

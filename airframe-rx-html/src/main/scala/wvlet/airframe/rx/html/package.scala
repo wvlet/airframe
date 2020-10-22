@@ -17,6 +17,7 @@ import wvlet.log.LogSupport
 import scala.annotation.implicitNotFound
 import scala.language.higherKinds
 import scala.language.implicitConversions
+import scala.language.experimental.macros
 
 /**
   */
@@ -128,4 +129,13 @@ package object html {
   }
 
   implicit def embedAsNode[A: EmbeddableNode](v: A): RxElement = Embedded(v)
+
+  private[rx] case class RxCode(rxElements: Seq[RxElement], sourceCode: String)
+
+  /**
+    * Extracting the source code of rxElement for demoing purpose
+    * @param rxElements
+    * @return
+    */
+  private[rx] def extractCode(rxElements: RxElement*): RxCode = macro RxHtmlMacros.code
 }
