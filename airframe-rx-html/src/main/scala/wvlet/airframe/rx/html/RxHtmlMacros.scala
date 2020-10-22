@@ -23,25 +23,31 @@ private[html] object RxHtmlMacros {
     import c.universe._
 
     val codes = for (rxElement <- rxElements) yield {
-      val pos        = rxElement.pos
-      val src        = pos.source
-      val lineBlocks = src.content.slice(pos.start, pos.`end`).mkString.replaceAll("^\\{\\n", "").replaceAll("\\}$", "")
+      val pos = rxElement.pos
+      val src = pos.source
+      val lineBlocks = src.content
+        .slice(pos.start, pos.`end`)
+        .mkString
+        .replaceAll("^\\{\\n", "")
+        .replaceAll("\\}$", "")
 
       val lines = lineBlocks.split("\n")
       val columnOffsetInLine = lines.headOption
         .map { firstLine =>
           firstLine.size - firstLine.stripLeading().size
-        }.getOrElse(0)
+        }
+        .getOrElse(0)
 
       val trimmedSource = lines
         .map { line =>
           line.replaceFirst(s"^\\s{0,${columnOffsetInLine}}", "")
-        }.mkString("\n")
+        }
+        .mkString("\n")
       (rxElement, trimmedSource)
     }
-    val elems  = codes.map(_._1).toSeq
+    val elems  = codes.map(_._1)
     val source = codes.map(_._2).mkString("\n")
-    q"wvlet.airframe.rx.html.RxCode(Seq(${elems:_*}), ${source})"
+    q"wvlet.airframe.rx.html.RxCode(Seq(...${elems}), ${source})"
   }
 
 }
