@@ -18,14 +18,7 @@ import org.scalajs.dom.document
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html.all._
 import wvlet.airframe.rx.html.widget.ui.Browser
-import wvlet.airframe.rx.html.{
-  DOMRenderer,
-  RxCode,
-  RxComponent,
-  RxElement,
-  extractCode,
-  tags
-}
+import wvlet.airframe.rx.html.{DOMRenderer, RxCode, RxComponent, RxElement, extractCode, tags}
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
@@ -68,7 +61,7 @@ object Gallery extends LogSupport {
             ),
             gallery2.map { e =>
               a(
-                cls -> "dropdown-item",
+                cls  -> "dropdown-item",
                 href -> s"#${e.description}",
                 e.description
               )
@@ -90,8 +83,7 @@ object Gallery extends LogSupport {
                 div(cls -> "row my-1", e.code.rxElements),
                 div(
                   cls -> "row my-1",
-                  pre(cls -> "w-100",
-                      code(cls -> "language-scala rounded", e.code.sourceCode))
+                  pre(cls -> "w-100", code(cls -> "language-scala rounded", e.code.sourceCode))
                 )
               )
             }
@@ -154,14 +146,14 @@ object Gallery extends LogSupport {
   def alertsDemo = Example(
     "Alerts",
     extractCode(
-      div(cls -> "alert alert-primary", role -> "alert", "alert!"),
+      div(cls -> "alert alert-primary", role   -> "alert", "alert!"),
       div(cls -> "alert alert-secondary", role -> "alert", "alert!"),
-      div(cls -> "alert alert-success", role -> "alert", "alert!"),
-      div(cls -> "alert alert-danger", role -> "alert", "alert!"),
-      div(cls -> "alert alert-info", role -> "alert", "alert!"),
-      div(cls -> "alert alert-warn", role -> "alert", "alert!"),
-      div(cls -> "alert alert-light", role -> "alert", "alert!"),
-      div(cls -> "alert alert-dark", role -> "alert", "alert!")
+      div(cls -> "alert alert-success", role   -> "alert", "alert!"),
+      div(cls -> "alert alert-danger", role    -> "alert", "alert!"),
+      div(cls -> "alert alert-info", role      -> "alert", "alert!"),
+      div(cls -> "alert alert-warn", role      -> "alert", "alert!"),
+      div(cls -> "alert alert-light", role     -> "alert", "alert!"),
+      div(cls -> "alert alert-dark", role      -> "alert", "alert!")
     )
   )
 
@@ -211,13 +203,13 @@ object Gallery extends LogSupport {
       val circleColor = Rx.variable("white")
 
       svg(
-        width -> 50,
+        width  -> 50,
         height -> 50,
         rect(x -> 0, y -> 0, width -> 50, height -> 50, fill -> "#336699"),
         circle(
-          cx -> "50%",
-          cy -> "50%",
-          r -> "30%",
+          cx   -> "50%",
+          cy   -> "50%",
+          r    -> "30%",
           fill -> circleColor,
           onmouseover -> { () =>
             circleColor.set("#99CCFF")
