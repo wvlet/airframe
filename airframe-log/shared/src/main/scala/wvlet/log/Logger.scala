@@ -44,7 +44,8 @@ class Logger(
   }
 
   def error(message: Any): Unit = macro errorLogMethod
-  def error(message: Any, cause: Throwable): Unit = macro errorLogMethodWithCause
+  def error(message: Any, cause: Throwable): Unit =
+    macro errorLogMethodWithCause
 
   def warn(message: Any): Unit = macro warnLogMethod
   def warn(message: Any, cause: Throwable): Unit = macro warnLogMethodWithCause
@@ -53,10 +54,12 @@ class Logger(
   def info(message: Any, cause: Throwable): Unit = macro infoLogMethodWithCause
 
   def debug(message: Any): Unit = macro debugLogMethod
-  def debug(message: Any, cause: Throwable): Unit = macro debugLogMethodWithCause
+  def debug(message: Any, cause: Throwable): Unit =
+    macro debugLogMethodWithCause
 
   def trace(message: Any): Unit = macro traceLogMethod
-  def trace(message: Any, cause: Throwable): Unit = macro traceLogMethodWithCause
+  def trace(message: Any, cause: Throwable): Unit =
+    macro traceLogMethodWithCause
 
   def getName = name
 
@@ -196,7 +199,13 @@ object Logger {
 
   private lazy val loggerCache = new ConcurrentHashMap[String, Logger].asScala
 
-  lazy val rootLogger = initLogger(name = "", handlers = Seq(LogEnv.defaultHandler))
+  lazy val rootLogger = {
+    val l = initLogger(name = "", handlers = Seq(LogEnv.defaultHandler))
+    if (LogEnv.isScalaJS) {
+      l.setLogLevel(LogLevel.INFO)
+    }
+    l
+  }
 
   /**
     * Create a new java.util.logging.Logger
@@ -294,5 +303,7 @@ object Logger {
     *
     * @param loglevelFileCandidates
     */
-  def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = { LogEnv.scanLogLevels(loglevelFileCandidates) }
+  def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = {
+    LogEnv.scanLogLevels(loglevelFileCandidates)
+  }
 }
