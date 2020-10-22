@@ -17,19 +17,20 @@ import scala.scalajs.js.timers.SetIntervalHandle
 /**
   */
 object compat {
-  def newTimer: Timer =
+  def newTimer: Timer = {
     new Timer {
       private var intervalHandle: Option[SetIntervalHandle] = None
-      private var lastTimeMillis                            = System.currentTimeMillis()
+      private var lastTimeMillis = System.currentTimeMillis()
       override def schedule[U](millis: Long)(body: Long => U): Unit = {
-        intervalHandle = Some(scala.scalajs.js.timers.setInterval(millis) { () =>
+        val handle = scala.scalajs.js.timers.setInterval(millis) {
           val currentTimeMillis = System.currentTimeMillis()
           try {
             body(currentTimeMillis - lastTimeMillis)
           } finally {
             lastTimeMillis = currentTimeMillis
           }
-        })
+        }
+        intervalHandle = Some(handle)
       }
       override def cancel: Unit = {
         intervalHandle.foreach { handle =>
@@ -37,8 +38,10 @@ object compat {
         }
       }
     }
+  }
 
   def toSeq[A](rx: Rx[A]): Seq[A] = {
-    throw new UnsupportedOperationException("Rx.toSeq is unsupported in Scala.js")
+    throw new UnsupportedOperationException(
+      "Rx.toSeq is unsupported in Scala.js")
   }
 }

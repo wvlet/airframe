@@ -192,8 +192,9 @@ class RxRunner(
             effect(OnCompletion)
         }
       case IntervalOp(interval, unit) =>
-        val intervalMillis = TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
-        val timer: Timer   = compat.newTimer
+        val intervalMillis =
+          TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
+        val timer: Timer = compat.newTimer
         timer.schedule(intervalMillis) { interval =>
           val canContinue = effect(OnNext(interval))
           if (!canContinue.toContinue) {
@@ -208,7 +209,8 @@ class RxRunner(
         run(in) {
           case next @ OnNext(v) =>
             val currentTimeNanos = System.nanoTime()
-            val elapsed          = unit.convert(currentTimeNanos - lastUpdateTimeNanos, TimeUnit.NANOSECONDS)
+            val elapsed = unit.convert(currentTimeNanos - lastUpdateTimeNanos,
+                                       TimeUnit.NANOSECONDS)
             if (elapsed >= interval) {
               lastUpdateTimeNanos = currentTimeNanos
               effect(next)
@@ -220,11 +222,12 @@ class RxRunner(
             effect(other)
         }
       case ThrottleLastOp(in, interval, unit) =>
-        val intervalMillis          = TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
-        var lastItem: Option[A]     = None
+        val intervalMillis =
+          TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
+        var lastItem: Option[A] = None
         var lastReported: Option[A] = None
-        val timer: Timer            = compat.newTimer
-        var canContinue: RxResult   = RxResult.Continue
+        val timer: Timer = compat.newTimer
+        var canContinue: RxResult = RxResult.Continue
         timer.schedule(intervalMillis) { interval =>
           lastItem match {
             case Some(x) =>
@@ -307,7 +310,7 @@ class RxRunner(
         }
       case RecoverWithOp(in, f) =>
         var toContinue: RxResult = RxResult.Continue
-        var c1                   = Cancelable.empty
+        var c1 = Cancelable.empty
         val c2 = run(in) { ev =>
           ev match {
             case OnError(e) if f.isDefinedAt(e) =>
@@ -383,12 +386,13 @@ class RxRunner(
     * @param input
     * @tparam A
     */
-  private[rx] abstract class CombinedStream[A](input: Rx[A]) extends LogSupport {
+  private[rx] abstract class CombinedStream[A](input: Rx[A])
+      extends LogSupport {
     protected val size = input.parents.size
 
     protected val lastEvent: Array[Option[RxEvent]] = Array.fill(size)(None)
-    private val c: Array[Cancelable]                = Array.fill(size)(Cancelable.empty)
-    private val completed: AtomicBoolean            = new AtomicBoolean(false)
+    private val c: Array[Cancelable] = Array.fill(size)(Cancelable.empty)
+    private val completed: AtomicBoolean = new AtomicBoolean(false)
 
     protected def nextValue: Option[Seq[Any]]
 
@@ -410,9 +414,11 @@ class RxRunner(
               case 2 =>
                 effect(OnNext((values(0), values(1)).asInstanceOf[A]))
               case 3 =>
-                effect(OnNext((values(0), values(1), values(2)).asInstanceOf[A]))
+                effect(
+                  OnNext((values(0), values(1), values(2)).asInstanceOf[A]))
               case 4 =>
-                effect(OnNext((values(0), values(1), values(2), values(3)).asInstanceOf[A]))
+                effect(OnNext(
+                  (values(0), values(1), values(2), values(3)).asInstanceOf[A]))
               case _ =>
                 ???
             }
@@ -470,7 +476,8 @@ class RxRunner(
   }
 
   private class ZipStream[A](input: Rx[A]) extends CombinedStream(input) {
-    private val lastValueBuffer: Array[Queue[A]] = Array.fill(size)(Queue.empty[A])
+    private val lastValueBuffer: Array[Queue[A]] =
+      Array.fill(size)(Queue.empty[A])
 
     override protected def nextValue: Option[Seq[Any]] = {
       if (lastValueBuffer.forall(_.nonEmpty)) {
