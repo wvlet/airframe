@@ -41,7 +41,8 @@ object GrpcServiceBuilder {
     }
 
     def grpcMethodType: MethodDescriptor.MethodType = {
-      val serverStreaming = classOf[Rx[_]].isAssignableFrom(m.returnType.rawType)
+      val serverStreaming =
+        classOf[Rx[_]].isAssignableFrom(m.returnType.rawType)
       val clientStreaming = findClientStreamingArg.isDefined
       (clientStreaming, serverStreaming) match {
         case (false, false) =>
@@ -71,9 +72,13 @@ object GrpcServiceBuilder {
         new RPCResponseMarshaller[Any](
           r.returnTypeSurface match {
             case rx if classOf[Rx[_]].isAssignableFrom(rx.rawType) =>
-              codecFactory.of(r.returnTypeSurface.typeArgs(0)).asInstanceOf[MessageCodec[Any]]
+              codecFactory
+                .of(r.returnTypeSurface.typeArgs(0))
+                .asInstanceOf[MessageCodec[Any]]
             case _ =>
-              codecFactory.of(r.returnTypeSurface).asInstanceOf[MessageCodec[Any]]
+              codecFactory
+                .of(r.returnTypeSurface)
+                .asInstanceOf[MessageCodec[Any]]
           }
         )
       )
@@ -85,39 +90,41 @@ object GrpcServiceBuilder {
       session: Session,
       codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
   ): Seq[ServerServiceDefinition] = {
-    val services = for ((serviceName, routes) <- router.routes.groupBy(_.serviceName)) yield {
-      val routeAndMethods = for (route <- routes) yield {
-        (route, buildMethodDescriptor(route, codecFactory))
-      }
+    val services =
+      for ((serviceName, routes) <- router.routes.groupBy(_.serviceName))
+        yield {
+          val routeAndMethods = for (route <- routes) yield {
+            (route, buildMethodDescriptor(route, codecFactory))
+          }
 
-      val serviceBuilder = ServerServiceDefinition.builder(serviceName)
+          val serviceBuilder = ServerServiceDefinition.builder(serviceName)
 
-      for ((r, m) <- routeAndMethods) {
-        // TODO Support Client/Server Streams
-        val controller     = session.getInstanceOf(r.controllerSurface)
-        val threadManager  = session.build[GrpcServiceThreadExecutor]
-        val requestHandler = new RPCRequestHandler(controller, r.methodSurface, codecFactory, threadManager)
-        val serverCall = r.methodSurface.grpcMethodType match {
-          case MethodDescriptor.MethodType.UNARY =>
-            ServerCalls.asyncUnaryCall(new RPCUnaryMethodHandler(requestHandler))
-          case MethodDescriptor.MethodType.SERVER_STREAMING =>
-            ServerCalls.asyncServerStreamingCall(new RPCServerStreamingMethodHandler(requestHandler))
-          case MethodDescriptor.MethodType.CLIENT_STREAMING =>
-            ServerCalls.asyncClientStreamingCall(
-              new RPCClientStreamingMethodHandler(requestHandler, r.methodSurface.clientStreamingRequestType)
-            )
-          case MethodDescriptor.MethodType.BIDI_STREAMING =>
-            ServerCalls.asyncBidiStreamingCall(
-              new RPCBidiStreamingMethodHandler(requestHandler, r.methodSurface.clientStreamingRequestType)
-            )
-          case other =>
-            throw new UnsupportedOperationException(s"${other.toString} is not supported")
+          for ((r, m) <- routeAndMethods) {
+            // TODO Support Client/Server Streams
+            val controller     = session.getInstanceOf(r.controllerSurface)
+            val threadManager  = session.build[GrpcServiceThreadExecutor]
+            val requestHandler = new RPCRequestHandler(controller, r.methodSurface, codecFactory, threadManager)
+            val serverCall = r.methodSurface.grpcMethodType match {
+              case MethodDescriptor.MethodType.UNARY =>
+                ServerCalls.asyncUnaryCall(new RPCUnaryMethodHandler(requestHandler))
+              case MethodDescriptor.MethodType.SERVER_STREAMING =>
+                ServerCalls.asyncServerStreamingCall(new RPCServerStreamingMethodHandler(requestHandler))
+              case MethodDescriptor.MethodType.CLIENT_STREAMING =>
+                ServerCalls.asyncClientStreamingCall(
+                  new RPCClientStreamingMethodHandler(requestHandler, r.methodSurface.clientStreamingRequestType)
+                )
+              case MethodDescriptor.MethodType.BIDI_STREAMING =>
+                ServerCalls.asyncBidiStreamingCall(
+                  new RPCBidiStreamingMethodHandler(requestHandler, r.methodSurface.clientStreamingRequestType)
+                )
+              case other =>
+                throw new UnsupportedOperationException(s"${other.toString} is not supported")
+            }
+            serviceBuilder.addMethod(m, serverCall)
+          }
+          val serviceDef = serviceBuilder.build()
+          serviceDef
         }
-        serviceBuilder.addMethod(m, serverCall)
-      }
-      val serviceDef = serviceBuilder.build()
-      serviceDef
-    }
 
     services.toSeq
   }
@@ -137,7 +144,8 @@ object GrpcServiceBuilder {
       new ByteArrayInputStream(codec.toMsgPack(value))
     }
     override def parse(stream: InputStream): A = {
-      codec.fromMsgPack(stream.readAllBytes())
+      val bytes = IO.readFully(stream)
+      codec.fromMsgPack(bytes)
     }
   }
 
