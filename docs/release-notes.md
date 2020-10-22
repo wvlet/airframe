@@ -6,6 +6,22 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.10.2
+
+This version is a bug fix and small maintenance release.
+
+-  airframe-grpc: Fixes [#1329](https://github.com/wvlet/airframe/issues/1329). Use jdk8 compatible stream reader ([#1330](https://github.com/wvlet/airframe/issues/1330)) [[810bda8](https://github.com/wvlet/airframe/commit/810bda8)]
+-  airframe-grpc: Update grpc-netty-shaded, grpc-protobuf, ... to 1.33.0 ([#1326](https://github.com/wvlet/airframe/issues/1326)) [[2749d9e](https://github.com/wvlet/airframe/commit/2749d9e)]
+-  airframe-rx: Fix Rx.interval ([#1328](https://github.com/wvlet/airframe/issues/1328)) [[91a501d](https://github.com/wvlet/airframe/commit/91a501d)]
+-  airframe-rx-html: Add a demo code for airframe-rx-html ([#1283](https://github.com/wvlet/airframe/issues/1283)) [[70dda74](https://github.com/wvlet/airframe/commit/70dda74)]
+-  airframe-log: Fixes [#1321](https://github.com/wvlet/airframe/issues/1321). Set the default log level for Scala.js ([#1327](https://github.com/wvlet/airframe/issues/1327)) [[d27748d](https://github.com/wvlet/airframe/commit/d27748d)]
+-  airframe-http: Support a Date instance as an argument for withDate method ([#1184](https://github.com/wvlet/airframe/issues/1184)) [[89347f3](https://github.com/wvlet/airframe/commit/89347f3)]
+-  airframe-rpc: Add an RPC demo code using Scala + Scala.js ([#1322](https://github.com/wvlet/airframe/issues/1322)) [[e407847](https://github.com/wvlet/airframe/commit/e407847)]
+-  internal: Update antlr4, antlr4-runtime to 4.8-1 ([#1325](https://github.com/wvlet/airframe/issues/1325)) [[b89453a](https://github.com/wvlet/airframe/commit/b89453a)]
+-  internal: Update sbt-mdoc to 2.2.10 ([#1320](https://github.com/wvlet/airframe/issues/1320)) [[2f69780](https://github.com/wvlet/airframe/commit/2f69780)]
+-  Internal: Update sbt, sbt-dependency-tree, ... to 1.4.1 ([#1324](https://github.com/wvlet/airframe/issues/1324)) [[521202d](https://github.com/wvlet/airframe/commit/521202d)]
+-  internal: Update scalafmt-core to 2.7.5 ([#1323](https://github.com/wvlet/airframe/issues/1323)) [[22e4ac8](https://github.com/wvlet/airframe/commit/22e4ac8)]
+
 ## 20.10.1
 
 -  airframe-http, rx: Update sbt-scalajs, scalajs-compiler, ... to 1.3.0 ([#1316](https://github.com/wvlet/airframe/issues/1316)) [[73a7129](https://github.com/wvlet/airframe/commit/73a7129)]
