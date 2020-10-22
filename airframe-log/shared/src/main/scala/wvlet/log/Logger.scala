@@ -155,10 +155,7 @@ class Logger(
     log(wvlet.log.LogRecord(level, source, formatLog(message)))
   }
 
-  def logWithCause(level: LogLevel,
-                   source: LogSource,
-                   message: Any,
-                   cause: Throwable): Unit = {
+  def logWithCause(level: LogLevel, source: LogSource, message: Any, cause: Throwable): Unit = {
     log(wvlet.log.LogRecord(level, source, formatLog(message), cause))
   }
 
@@ -244,9 +241,7 @@ object Logger {
   }
 
   def apply(loggerName: String): Logger = {
-    loggerCache.getOrElseUpdate(
-      loggerName,
-      new Logger(loggerName, jl.Logger.getLogger(loggerName)))
+    loggerCache.getOrElseUpdate(loggerName, new Logger(loggerName, jl.Logger.getLogger(loggerName)))
   }
 
   def getDefaultLogLevel: LogLevel = rootLogger.getLogLevel
@@ -290,8 +285,7 @@ object Logger {
         case Some(lv) =>
           Logger(loggerName).setLogLevel(lv)
         case None =>
-          Console.err.println(
-            s"Unknown loglevel ${level} is specified for ${loggerName}")
+          Console.err.println(s"Unknown loglevel ${level} is specified for ${loggerName}")
       }
     }
   }
