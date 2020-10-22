@@ -29,8 +29,7 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 object Gallery extends LogSupport {
   @JSExport
   def main(): Unit = {
-    //Logger.setDefaultLogLevel(LogLevel.DEBUG)
-    info(s"started")
+    Logger.setDefaultLogLevel(LogLevel.DEBUG)
     debug(s"started")
     initializeUI
   }
