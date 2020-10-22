@@ -104,7 +104,8 @@ object Gallery extends LogSupport {
     rxTest,
     browserDemo,
     canvasDemo,
-    svgDemo
+    svgDemo,
+    timer
   )
 
   def buttonDemo: Example = Example(
@@ -265,6 +266,20 @@ object Gallery extends LogSupport {
       }
 
       new MyComponent().render("Hello airframe-rx-html!!")
+    }
+  )
+
+  def timer = Example(
+    "Timer",
+    extractCode {
+      import wvlet.airframe.rx.html.all._
+      var i = 0
+
+      // Run the code every 1 second (1000 milliseconds)
+      Rx.intervalMillis(1000).map { t =>
+        i += 1
+        p(s"Counter: ${i}")
+      }
     }
   )
 }

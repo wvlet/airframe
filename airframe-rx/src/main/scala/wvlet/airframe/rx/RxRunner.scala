@@ -192,8 +192,9 @@ class RxRunner(
             effect(OnCompletion)
         }
       case IntervalOp(interval, unit) =>
-        val intervalMillis = TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
-        val timer: Timer   = compat.newTimer
+        val intervalMillis =
+          TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
+        val timer: Timer = compat.newTimer
         timer.schedule(intervalMillis) { interval =>
           val canContinue = effect(OnNext(interval))
           if (!canContinue.toContinue) {
@@ -220,7 +221,8 @@ class RxRunner(
             effect(other)
         }
       case ThrottleLastOp(in, interval, unit) =>
-        val intervalMillis          = TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
+        val intervalMillis =
+          TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
         var lastItem: Option[A]     = None
         var lastReported: Option[A] = None
         val timer: Timer            = compat.newTimer
@@ -470,7 +472,8 @@ class RxRunner(
   }
 
   private class ZipStream[A](input: Rx[A]) extends CombinedStream(input) {
-    private val lastValueBuffer: Array[Queue[A]] = Array.fill(size)(Queue.empty[A])
+    private val lastValueBuffer: Array[Queue[A]] =
+      Array.fill(size)(Queue.empty[A])
 
     override protected def nextValue: Option[Seq[Any]] = {
       if (lastValueBuffer.forall(_.nonEmpty)) {
