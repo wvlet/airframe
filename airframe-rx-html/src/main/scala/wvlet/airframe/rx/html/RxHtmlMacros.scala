@@ -47,7 +47,7 @@ private[html] object RxHtmlMacros {
     }
     val elems  = codes.map(_._1)
     val source = codes.map(_._2).mkString("\n")
-    q"wvlet.airframe.rx.html.RxCode(Seq(...${elems}), ${source})"
+    q"wvlet.airframe.rx.html.RxCode(Seq(..${elems}), ${source})"
   }
 
 }
