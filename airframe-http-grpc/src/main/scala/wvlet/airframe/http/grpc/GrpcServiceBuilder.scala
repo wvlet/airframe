@@ -62,9 +62,7 @@ object GrpcServiceBuilder {
     }
   }
 
-  def buildMethodDescriptor(
-      r: Route,
-      codecFactory: MessageCodecFactory): MethodDescriptor[MsgPack, Any] = {
+  def buildMethodDescriptor(r: Route, codecFactory: MessageCodecFactory): MethodDescriptor[MsgPack, Any] = {
     val b = MethodDescriptor.newBuilder[MsgPack, Any]()
     // TODO setIdempotent, setSafe, sampling, etc.
     b.setType(r.methodSurface.grpcMethodType)
@@ -90,8 +88,7 @@ object GrpcServiceBuilder {
   def buildService(
       router: Router,
       session: Session,
-      codecFactory: MessageCodecFactory =
-        MessageCodecFactory.defaultFactoryForJSON
+      codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
   ): Seq[ServerServiceDefinition] = {
     val services =
       for ((serviceName, routes) <- router.routes.groupBy(_.serviceName))
@@ -104,34 +101,24 @@ object GrpcServiceBuilder {
 
           for ((r, m) <- routeAndMethods) {
             // TODO Support Client/Server Streams
-            val controller = session.getInstanceOf(r.controllerSurface)
-            val threadManager = session.build[GrpcServiceThreadExecutor]
-            val requestHandler = new RPCRequestHandler(controller,
-                                                       r.methodSurface,
-                                                       codecFactory,
-                                                       threadManager)
+            val controller     = session.getInstanceOf(r.controllerSurface)
+            val threadManager  = session.build[GrpcServiceThreadExecutor]
+            val requestHandler = new RPCRequestHandler(controller, r.methodSurface, codecFactory, threadManager)
             val serverCall = r.methodSurface.grpcMethodType match {
               case MethodDescriptor.MethodType.UNARY =>
-                ServerCalls.asyncUnaryCall(
-                  new RPCUnaryMethodHandler(requestHandler))
+                ServerCalls.asyncUnaryCall(new RPCUnaryMethodHandler(requestHandler))
               case MethodDescriptor.MethodType.SERVER_STREAMING =>
-                ServerCalls.asyncServerStreamingCall(
-                  new RPCServerStreamingMethodHandler(requestHandler))
+                ServerCalls.asyncServerStreamingCall(new RPCServerStreamingMethodHandler(requestHandler))
               case MethodDescriptor.MethodType.CLIENT_STREAMING =>
                 ServerCalls.asyncClientStreamingCall(
-                  new RPCClientStreamingMethodHandler(
-                    requestHandler,
-                    r.methodSurface.clientStreamingRequestType)
+                  new RPCClientStreamingMethodHandler(requestHandler, r.methodSurface.clientStreamingRequestType)
                 )
               case MethodDescriptor.MethodType.BIDI_STREAMING =>
                 ServerCalls.asyncBidiStreamingCall(
-                  new RPCBidiStreamingMethodHandler(
-                    requestHandler,
-                    r.methodSurface.clientStreamingRequestType)
+                  new RPCBidiStreamingMethodHandler(requestHandler, r.methodSurface.clientStreamingRequestType)
                 )
               case other =>
-                throw new UnsupportedOperationException(
-                  s"${other.toString} is not supported")
+                throw new UnsupportedOperationException(s"${other.toString} is not supported")
             }
             serviceBuilder.addMethod(m, serverCall)
           }
