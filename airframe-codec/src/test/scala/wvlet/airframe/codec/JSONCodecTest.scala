@@ -16,6 +16,8 @@ package wvlet.airframe.codec
 import wvlet.airframe.codec.JSONCodecTest.WithRawJSON
 import wvlet.airframe.json.{JSON, Json}
 import wvlet.airspec.AirSpec
+import java.time.Instant
+import wvlet.airframe.msgpack.spi.Value
 
 /**
   */
@@ -79,8 +81,20 @@ class JSONCodecTest extends AirSpec {
     val msgpack = codec.toMsgPack(v)
     codec.unpackMsgPack(msgpack) shouldBe Some(v)
   }
+
+  def `support Instant`: Unit = {
+    import JSONCodecTest._
+    val codec        = MessageCodec.of[WithTimestamp]
+    val v            = WithTimestamp(Instant.ofEpochMilli(1500000000000L))
+    val jsonObj      = codec.toJSONObject(v)
+    val expectedJson = """{"createdAt":"2017-07-14T02:40:00Z"}"""
+    jsonObj.toJSON shouldBe expectedJson
+    val json = codec.toJson(v)
+    json shouldBe expectedJson
+  }
 }
 
 object JSONCodecTest {
   case class WithRawJSON(json: Json)
+  case class WithTimestamp(createdAt: Instant)
 }

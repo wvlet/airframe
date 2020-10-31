@@ -19,6 +19,7 @@ import java.util
 import java.util.Base64
 
 import wvlet.airframe.msgpack.spi.MessageException._
+import wvlet.log.LogSupport
 
 /**
   */
@@ -208,8 +209,11 @@ object Value {
 
   case class TimestampValue(v: Instant) extends Value {
     override def toJson: String = {
-      v.toString
+      val b = new StringBuilder
+      appendJsonString(b, toRawString)
+      b.result
     }
+    def toRawString                   = v.toString
     override def valueType: ValueType = ValueType.EXTENSION // ValueType.TIMESTAMP
     override def writeTo(packer: Packer): Unit = {
       packer.packTimestamp(v)
@@ -230,7 +234,7 @@ object Value {
     }
   }
 
-  case class MapValue(entries: Map[Value, Value]) extends Value {
+  case class MapValue(entries: Map[Value, Value]) extends Value with LogSupport {
     def apply(key: Value): Value       = entries.apply(key)
     def get(key: Value): Option[Value] = entries.get(key)
     def size: Int                      = entries.size

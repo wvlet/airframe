@@ -16,6 +16,8 @@ package wvlet.airframe.codec
 import wvlet.airframe.json.{JSON, Json}
 import wvlet.airframe.json.JSON._
 import wvlet.airframe.msgpack.spi._
+import wvlet.log.LogSupport
+import wvlet.airframe.msgpack.spi.Value.TimestampValue
 
 /**
   * Codec for JSON String
@@ -88,7 +90,7 @@ object RawJsonCodec extends MessageCodec[Json] {
 /**
   * Codec for JSONValue
   */
-object JSONValueCodec extends MessageCodec[JSONValue] {
+object JSONValueCodec extends MessageCodec[JSONValue] with LogSupport {
   override def pack(p: Packer, v: JSONValue): Unit = {
     JSONCodec.packJsonValue(p, v)
   }
@@ -107,7 +109,12 @@ object JSONValueCodec extends MessageCodec[JSONValue] {
       case ValueType.BOOLEAN =>
         JSONBoolean(u.unpackBoolean)
       case ValueType.EXTENSION =>
-        JSONString(u.unpackValue.toString)
+        u.unpackValue match {
+          case v: TimestampValue =>
+            JSONString(v.toRawString)
+          case other =>
+            JSONString(other.toString)
+        }
       case ValueType.BINARY =>
         JSONString(u.unpackValue.toJson)
       case ValueType.ARRAY =>
