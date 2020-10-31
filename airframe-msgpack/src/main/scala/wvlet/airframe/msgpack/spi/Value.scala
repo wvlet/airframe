@@ -19,7 +19,6 @@ import java.util
 import java.util.Base64
 
 import wvlet.airframe.msgpack.spi.MessageException._
-import wvlet.log.LogSupport
 
 /**
   */
@@ -234,7 +233,7 @@ object Value {
     }
   }
 
-  case class MapValue(entries: Map[Value, Value]) extends Value with LogSupport {
+  case class MapValue(entries: Map[Value, Value]) extends Value {
     def apply(key: Value): Value       = entries.apply(key)
     def get(key: Value): Option[Value] = entries.get(key)
     def size: Int                      = entries.size
