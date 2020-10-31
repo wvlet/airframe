@@ -142,7 +142,17 @@ object HttpRequestMapper extends LogSupport {
             Some(contentBytes)
           case Some("application/json") =>
             // JSON -> msgpack
-            Some(MessagePack.fromJSON(contentBytes))
+            try {
+              Some(MessagePack.fromJSON(contentBytes))
+            } catch {
+              case e: Throwable =>
+                val invalidJson = new String(contentBytes)
+                warn(s"Failed to parse the request body as JSON: ${invalidJson}")
+                throw new HttpServerException(
+                  Http.response(HttpStatus.BadRequest_400).withContent(s"Invalid json body: ${invalidJson}"),
+                  e
+                )
+            }
           case Some("application/octet-stream") =>
             // Do not read binary contents (e.g., uploaded file)
             None

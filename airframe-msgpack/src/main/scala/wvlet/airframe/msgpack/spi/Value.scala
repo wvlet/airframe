@@ -208,8 +208,11 @@ object Value {
 
   case class TimestampValue(v: Instant) extends Value {
     override def toJson: String = {
-      v.toString
+      val b = new StringBuilder
+      appendJsonString(b, toRawString)
+      b.result
     }
+    def toRawString                   = v.toString
     override def valueType: ValueType = ValueType.EXTENSION // ValueType.TIMESTAMP
     override def writeTo(packer: Packer): Unit = {
       packer.packTimestamp(v)
