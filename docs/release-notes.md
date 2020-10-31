@@ -6,6 +6,14 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.10.3
+
+-  airframe-http: Return 400 when invalid JSON data is passed and fix Timestamp json formatting ([#1336](https://github.com/wvlet/airframe/issues/1336)) [[831b71c](https://github.com/wvlet/airframe/commit/831b71c)]
+-  airframe-rpc: Update grpc-netty-shaded, grpc-protobuf, ... to 1.33.1 ([#1334](https://github.com/wvlet/airframe/issues/1334)) [[58f4589](https://github.com/wvlet/airframe/commit/58f4589)]
+-  airframe-finagle: Update finagle-core to 20.10.0 ([#1333](https://github.com/wvlet/airframe/issues/1333)) [[5cd901b](https://github.com/wvlet/airframe/commit/5cd901b)]
+-  internal: Use Airframe 20.10.2 in the demo code [[8938c54](https://github.com/wvlet/airframe/commit/8938c54)]
+-  internal: Update presto-main to 345 ([#1331](https://github.com/wvlet/airframe/issues/1331)) [[ddb0c52](https://github.com/wvlet/airframe/commit/ddb0c52)]
+
 ## 20.10.2
 
 This version is a bug fix and small maintenance release.
