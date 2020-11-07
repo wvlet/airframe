@@ -40,8 +40,8 @@ measuring elapsed times.
 import wvlet.airframe.metrics.ElapsedTime
 
 // Returns the most succinct
-ElapsedTime.succinctMillis(3 * 1000) // ElapsedTime(3.0, SECONDS)
-ElapsedTime.succinctMillis(60 * 1000) // ElapsedTime(1.0, MINUTES)
+ElapsedTime.succinctMillis(3 * 1000) // 3.00s
+ElapsedTime.succinctMillis(60 * 1000) // 1.00m
 
 // Parse the elapsed time strings
 val e = ElapsedTime("1h") // ElapsedTime(1.0, HOURS)
