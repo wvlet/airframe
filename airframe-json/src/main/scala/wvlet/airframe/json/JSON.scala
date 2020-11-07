@@ -73,31 +73,39 @@ object JSON extends LogSupport {
       val s = new StringBuilder()
       v match {
         case x: JSONObject =>
-          s.append("{\n")
-          s.append {
-            x.v
-              .map { case (k, v: JSONValue) =>
-                val ss = new StringBuilder
-                ss.append("  " * (level + 1))
-                ss.append("\"")
-                ss.append(quoteJSONString(k))
-                ss.append("\": ")
-                ss.append(formatInternal(v, level + 1))
-                ss.result()
-              }.mkString("", ",\n", "\n")
+          if (x.v.isEmpty) {
+            s.append("{}")
+          } else {
+            s.append("{\n")
+            s.append {
+              x.v
+                .map { case (k, v: JSONValue) =>
+                  val ss = new StringBuilder
+                  ss.append("  " * (level + 1))
+                  ss.append("\"")
+                  ss.append(quoteJSONString(k))
+                  ss.append("\": ")
+                  ss.append(formatInternal(v, level + 1))
+                  ss.result()
+                }.mkString("", ",\n", "\n")
+            }
+            s.append("  " * level)
+            s.append("}")
           }
-          s.append("  " * level)
-          s.append("}")
         case x: JSONArray =>
-          s.append("[\n")
-          s.append(
-            x.v
-              .map { x =>
-                ("  " * (level + 1)) + formatInternal(x, level + 1)
-              }.mkString("", ",\n", "\n")
-          )
-          s.append("  " * level)
-          s.append("]")
+          if (x.v.isEmpty) {
+            s.append("[]")
+          } else {
+            s.append("[\n")
+            s.append(
+              x.v
+                .map { x =>
+                  ("  " * (level + 1)) + formatInternal(x, level + 1)
+                }.mkString("", ",\n", "\n")
+            )
+            s.append("  " * level)
+            s.append("]")
+          }
         case x => s.append(x.toJSON)
       }
       s.result()

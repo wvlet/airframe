@@ -80,7 +80,9 @@ class JSONTest extends AirSpec {
   }
 
   def `format JSON value`: Unit = {
-    val json = JSON.parse("""{"user": [{ "values": {"value": "a"} }, { "values": {"value": "b"} }]}""")
+    val json = JSON.parse(
+      """{"user": [{ "values": {"value": "a"} }, { "values": {"value": "b"} }, {"values": []}, {"values": {}}]}"""
+    )
     JSON.format(json) shouldBe """{
                                  |  "user": [
                                  |    {
@@ -92,6 +94,12 @@ class JSONTest extends AirSpec {
                                  |      "values": {
                                  |        "value": "b"
                                  |      }
+                                 |    },
+                                 |    {
+                                 |      "values": []
+                                 |    },
+                                 |    {
+                                 |      "values": {}
                                  |    }
                                  |  ]
                                  |}""".stripMargin
