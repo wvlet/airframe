@@ -1,13 +1,10 @@
 import sbtcrossproject.{CrossType, crossProject}
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
-val SCALA_2_11 = "2.11.12"
 val SCALA_2_12 = "2.12.12"
 val SCALA_2_13 = "2.13.3"
 
-val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
-val targetScalaVersions = SCALA_2_13 :: untilScala2_12
-val exceptScala2_11     = SCALA_2_13 :: SCALA_2_12 :: Nil
+val targetScalaVersions = SCALA_2_13 :: SCALA_2_12 :: Nil
 
 val SCALATEST_VERSION               = "3.0.8"
 val SCALACHECK_VERSION              = "1.14.3"
@@ -28,24 +25,20 @@ val airSpecFramework = new TestFramework("wvlet.airspec.Framework")
 // Publish only Scala 2.12 projects for snapshot releases
 addCommandAlias(
   "publishSnapshots",
-  s"; ++ ${SCALA_2_12}; projectJVM2_13/publish; projectJVM2_12/publish; projectJS/publish; sbtAirframe/publish;"
+  s"; ++ ${SCALA_2_12}; projectJVM/publish; projectJS/publish; sbtAirframe/publish;"
 )
 addCommandAlias(
   "publishJVMLocal",
-  s"; ++ ${SCALA_2_12}; projectJVM2_13/publishLocal; projectJVM2_12/publishLocal; sbtAirframe/publishLocal;"
+  s"; ++ ${SCALA_2_12}; projectJVM/publishLocal; sbtAirframe/publishLocal;"
 )
 
-// A workaround for https://github.com/sbt/sbt/issues/5586
-//
-// sbt "+ projectJS/publishSigned" tries to build projects for Scala 2.11, but we don't want to support
-// Scala.js + Scala 2.11 anymore, so we need to explicitly specify a Scala version to use.
 addCommandAlias(
   "publishJSSigned",
-  s"; ++ ${SCALA_2_12}; projectJS/publishSigned; ++ ${SCALA_2_13}; projectJS/publishSigned;"
+  s"; + projectJS/publishSigned;"
 )
 addCommandAlias(
   "publishJSLocal",
-  s"; ++ ${SCALA_2_12}; projectJS/publishLocal; ++ ${SCALA_2_13}; projectJS/publishLocal;"
+  s"; + projectJS/publishLocal; "
 )
 
 // Allow using Ctrl+C in sbt without exiting the prompt
@@ -106,7 +99,7 @@ val runTestSequentially = Seq[Setting[_]](parallelExecution in Test := false)
 publishTo in ThisBuild := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
-  crossScalaVersions := exceptScala2_11,
+  crossScalaVersions := targetScalaVersions,
   coverageEnabled := false
 )
 
@@ -138,29 +131,7 @@ lazy val root =
         }
       }
     )
-    //    .aggregate(scaladoc)
-    .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects ++ sbtProjects): _*)
-
-// Removed as running scaladoc hits https://github.com/sbt/zinc/issues/622
-//lazy val scaladoc =
-//  project
-//    .enablePlugins(ScalaUnidocPlugin)
-//    .in(file("airframe-scaladoc"))
-//    .settings(
-//      buildSettings,
-//      crossScalaVersions := targetScalaVersions,
-//      name := "airframe-scaladoc",
-//      // Need to exclude JS project explicitly to avoid '<type> is already defined' errors
-//      unidocProjectFilter in (ScalaUnidoc, unidoc) :=
-//        inAnyProject --
-//          inProjects(jvmProjects2_12: _*) --
-//          inProjects(airframeMacrosJS) --
-//          inProjects(jsProjects: _*) --
-//          inProjects(airspecProjects: _*),
-//      // compile projects first
-//      Defaults.packageTaskSettings(packageDoc in Compile, (unidoc in Compile).map(_.flatMap(Path.allSubpaths)))
-//    )
-//    .aggregate(jvmProjects: _*)
+    .aggregate((jvmProjects ++ jsProjects ++ sbtProjects): _*)
 
 // JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12.
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
@@ -184,18 +155,14 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   airspecJVM
 )
 
-// JVM projects supporting Scala 2.11 - Scala 2.13
+// Other JVM projects supporting Scala 2.12 - Scala 2.13
 lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[ProjectReference](
   jdbc,
   fluentd,
   airspecLight,
   finagle,
   okhttp,
-  httpRecorder
-)
-
-// JVM projects excluded from Scala 2.13 build
-lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
+  httpRecorder,
   sql,
   benchmark,
   examples
@@ -236,33 +203,13 @@ lazy val projectJVM =
       noPublish,
       crossScalaVersions := targetScalaVersions
     )
-    .aggregate(jvmProjects ++ jvmProjects2_12: _*)
-
-// For Scala 2.13 (excluding projects supporting only upto Scala 2.12)
-lazy val projectJVM2_13 =
-  project
-    .settings(
-      noPublish,
-      crossScalaVersions := targetScalaVersions
-    )
-    // Generates unidoc
-    //.aggregate(scaladoc)
     .aggregate(jvmProjects: _*)
-
-// For projects only upto Scala 2.12
-lazy val projectJVM2_12 =
-  project
-    .settings(
-      noPublish,
-      crossScalaVersions := untilScala2_12
-    )
-    .aggregate(jvmProjects2_12: _*)
 
 lazy val projectJS =
   project
     .settings(
       noPublish,
-      crossScalaVersions := exceptScala2_11
+      crossScalaVersions := targetScalaVersions
     )
     .aggregate(jsProjects: _*)
 
@@ -735,7 +682,6 @@ lazy val benchmark =
       compile in Test := ((compile in Test).dependsOn(compile in Jmh)).value,
       // Need to fork JVM so that sbt can set the classpass properly for running JMH
       fork in run := true,
-      crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
         "org.msgpack"     % "msgpack-core"             % MSGPACK_VERSION,
         "org.openjdk.jmh" % "jmh-core"                 % JMH_VERSION,
@@ -787,7 +733,6 @@ lazy val sql =
       antlr4PackageName in Antlr4 := Some("wvlet.airframe.sql.parser"),
       antlr4GenListener in Antlr4 := true,
       antlr4GenVisitor in Antlr4 := true,
-      crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
         // For parsing DataType strings
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
@@ -848,7 +793,6 @@ lazy val examples =
     .settings(
       name := "airframe-examples",
       description := "Airframe examples",
-      crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
       )
     )
