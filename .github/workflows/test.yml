@@ -54,22 +54,7 @@ jobs:
           key: ${{ runner.os }}-scala-2.13-${{ hashFiles('**/*.sbt') }}
           restore-keys: ${{ runner.os }}-scala-2.13-
       - name: Scala 2.13 test
-        run: ./sbt ++2.13.2 projectJVM2_13/test
-  test_2_11:
-    name: Scala 2.11
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v5
-        with:
-          java-version: adopt@1.11
-      - uses: actions/cache@v1
-        with:
-          path: ~/.cache
-          key: ${{ runner.os }}-scala-2.11-${{ hashFiles('**/*.sbt') }}
-          restore-keys: ${{ runner.os }}-scala-2.11-
-      - name: Scala 2.11 test
-        run: ./sbt ++2.11.12 projectJVM/test
+        run: ./sbt ++2.13.3 projectJVM/test
   test_js:
     name: Scala.js / Scala 2.12
     runs-on: ubuntu-latest

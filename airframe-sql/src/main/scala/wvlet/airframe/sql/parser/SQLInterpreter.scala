@@ -80,7 +80,12 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   override def visitNamedQuery(ctx: NamedQueryContext): WithQuery = {
     val name = visitIdentifier(ctx.name)
     val columnAliases = Option(ctx.columnAliases()).map { x =>
-      x.identifier().asScala.map { i => visitIdentifier(i) }.toSeq
+      x.identifier()
+        .asScala
+        .map { i =>
+          visitIdentifier(i)
+        }
+        .toSeq
     }
     WithQuery(name, visitQuery(ctx.query()), columnAliases)
   }
@@ -90,16 +95,19 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   }
 
   override def visitInlineTable(ctx: InlineTableContext): LogicalPlan = {
-    Values(ctx.expression().asScala.map(expression _))
+    Values(ctx.expression().asScala.map(expression _).toSeq)
   }
 
   override def visitRowConstructor(ctx: RowConstructorContext): RowConstructor = {
-    RowConstructor(ctx.expression().asScala.map(expression _))
+    RowConstructor(ctx.expression().asScala.map(expression _).toSeq)
   }
 
   override def visitSetOperation(ctx: SetOperationContext): LogicalPlan = {
-    val children   = Seq(ctx.left, ctx.right).map(x => visit(x).asInstanceOf[Relation]).toSeq
-    val isDistinct = Option(ctx.setQuantifier()).map(visitSetQuantifier(_).isDistinct).getOrElse(true)
+    val children =
+      Seq(ctx.left, ctx.right).map(x => visit(x).asInstanceOf[Relation]).toSeq
+    val isDistinct = Option(ctx.setQuantifier())
+      .map(visitSetQuantifier(_).isDistinct)
+      .getOrElse(true)
     val base = if (ctx.INTERSECT() != null) {
       Intersect(children)
     } else if (ctx.UNION() != null) {
@@ -127,7 +135,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
       val sortKeys = ctx
         .sortItem()
         .asScala
-        .map { x => visitSortItem(x) }
+        .map { x =>
+          visitSortItem(x)
+        }
         .toSeq
       Sort(inputRelation, sortKeys)
     }
@@ -195,14 +205,21 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
     }
 
     val selectItem: Seq[Attribute] = ctx
-      .selectItem().asScala.map { x => visit(x).asInstanceOf[Attribute] }.toSeq
+      .selectItem()
+      .asScala
+      .map { x =>
+        visit(x).asInstanceOf[Attribute]
+      }
+      .toSeq
 
     val withAggregation = {
       if (ctx.groupBy() == null) {
         // No aggregation
         // TODO distinct check
-        val p        = Project(inputRelation, selectItem)
-        val distinct = Option(ctx.setQuantifier()).map(visitSetQuantifier(_).isDistinct).getOrElse(false)
+        val p = Project(inputRelation, selectItem)
+        val distinct = Option(ctx.setQuantifier())
+          .map(visitSetQuantifier(_).isDistinct)
+          .getOrElse(false)
         if (distinct) {
           Distinct(p)
         } else {
@@ -218,7 +235,12 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
 
         // group by
         val groupByKeys =
-          gb.expression().asScala.map { x => GroupingKey(expression(x)) }.toSeq
+          gb.expression()
+            .asScala
+            .map { x =>
+              GroupingKey(expression(x))
+            }
+            .toSeq
 
         // having
         val having = Option(ctx.having).map(expression(_))
@@ -251,9 +273,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
 
   override def visitLateralView(ctx: LateralViewContext): Relation = {
     val left          = visit(ctx.left).asInstanceOf[Relation]
-    val exprs         = ctx.expression().asScala.map(expression)
+    val exprs         = ctx.expression().asScala.map(expression).toSeq
     val tableAlias    = visitIdentifier(ctx.tableAlias)
-    val columnAliases = ctx.identifier().asScala.tail.map(visitIdentifier)
+    val columnAliases = ctx.identifier().asScala.tail.map(visitIdentifier).toSeq
     LateralView(left, exprs, tableAlias, columnAliases)
   }
 
@@ -263,7 +285,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
         ParenthesizedRelation(visit(p.relation()).asInstanceOf[Relation])
       case u: UnnestContext =>
         val ord = Option(u.ORDINALITY()).map(x => true).getOrElse(false)
-        Unnest(u.expression().asScala.map(x => expression(x)), withOrdinality = ord)
+        Unnest(u.expression().asScala.toSeq.map(x => expression(x)), withOrdinality = ord)
       case s: SubqueryRelationContext =>
         visitQuery(s.query())
       case l: LateralContext =>
@@ -294,7 +316,11 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
 
     val (joinType, joinCriteria, right) = Option(ctx.joinCriteria()) match {
       case Some(c) if c.USING() != null =>
-        (tmpJoinType.getOrElse(InnerJoin), JoinUsing(c.identifier().asScala.map(visitIdentifier)), ctx.rightRelation)
+        (
+          tmpJoinType.getOrElse(InnerJoin),
+          JoinUsing(c.identifier().asScala.toSeq.map(visitIdentifier)),
+          ctx.rightRelation
+        )
       case Some(c) if c.booleanExpression() != null =>
         (tmpJoinType.getOrElse(InnerJoin), JoinOn(expression(c.booleanExpression())), ctx.rightRelation)
       case _ =>
@@ -458,7 +484,8 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
           Between(e, expression(b.lower), expression(b.upper))
         case i: InSubqueryContext =>
           val subQuery = visitQuery(i.query())
-          if (i.NOT() == null) InSubQuery(e, subQuery) else NotInSubQuery(e, subQuery)
+          if (i.NOT() == null) InSubQuery(e, subQuery)
+          else NotInSubQuery(e, subQuery)
         case i: InListContext =>
           val inList = i.expression().asScala.map(x => expression(x)).toSeq
           if (i.NOT() == null) In(e, inList) else NotIn(e, inList)
@@ -468,7 +495,8 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
           if (l.NOT() == null) Like(e, likeExpr) else NotLike(e, likeExpr)
         case d: DistinctFromContext =>
           val distinctExpr = expression(d.valueExpression())
-          if (d.NOT() == null) DistinctFrom(e, distinctExpr) else NotDistinctFrom(e, distinctExpr)
+          if (d.NOT() == null) DistinctFrom(e, distinctExpr)
+          else NotDistinctFrom(e, distinctExpr)
         case other =>
           // TODO
           warn(s"unhandled predicate ${ctx.predicate().getClass}:\n${print(ctx.predicate())}")
@@ -577,9 +605,15 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   override def visitOver(ctx: OverContext): Window = {
     // PARTITION BY
     val partition = Option(ctx.PARTITION())
-      .map { p => ctx.partition.asScala.map(expression(_)).toSeq }.getOrElse(Seq.empty)
+      .map { p =>
+        ctx.partition.asScala.map(expression(_)).toSeq
+      }
+      .getOrElse(Seq.empty)
     val orderBy = Option(ctx.ORDER())
-      .map { o => ctx.sortItem().asScala.map(visitSortItem(_)).toSeq }.getOrElse(Seq.empty)
+      .map { o =>
+        ctx.sortItem().asScala.map(visitSortItem(_)).toSeq
+      }
+      .getOrElse(Seq.empty)
     val windowFrame = Option(ctx.windowFrame()).map(visitWindowFrame(_))
 
     Window(partition, orderBy, windowFrame)
@@ -587,7 +621,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
 
   override def visitWindowFrame(ctx: WindowFrameContext): WindowFrame = {
     val s = visitFrameBound(ctx.start)
-    val e = Option(ctx.BETWEEN()).map { x => visitFrameBound(ctx.end) }
+    val e = Option(ctx.BETWEEN()).map { x =>
+      visitFrameBound(ctx.end)
+    }
     if (ctx.RANGE() != null) {
       WindowFrame(RangeFrame, s, e)
     } else {
@@ -629,11 +665,17 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   }
 
   override def visitFunctionCall(ctx: FunctionCallContext): FunctionCall = {
-    val name                       = ctx.qualifiedName().getText
-    val filter: Option[Expression] = Option(ctx.filter()).map { f: FilterContext => expression(f.booleanExpression()) }
-    val over: Option[Window]       = Option(ctx.over()).map { o: OverContext => visitOver(o) }
+    val name = ctx.qualifiedName().getText
+    val filter: Option[Expression] = Option(ctx.filter()).map { f: FilterContext =>
+      expression(f.booleanExpression())
+    }
+    val over: Option[Window] = Option(ctx.over()).map { o: OverContext =>
+      visitOver(o)
+    }
 
-    val isDistinct = Option(ctx.setQuantifier()).map(x => visitSetQuantifier(x).isDistinct).getOrElse(false)
+    val isDistinct = Option(ctx.setQuantifier())
+      .map(x => visitSetQuantifier(x).isDistinct)
+      .getOrElse(false)
 
     if (ctx.ASTERISK() != null) {
       FunctionCall(name, Seq(AllColumns(None)), isDistinct, filter, over)
@@ -718,17 +760,19 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   }
 
   override def visitCreateTable(ctx: CreateTableContext): LogicalPlan = {
-    val ifNotExists   = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
-    val tableName     = visitQualifiedName(ctx.qualifiedName())
-    val tableElements = ctx.tableElement().asScala.map(x => visitTableElement(x))
+    val ifNotExists = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
+    val tableName   = visitQualifiedName(ctx.qualifiedName())
+    val tableElements =
+      ctx.tableElement().asScala.toSeq.map(x => visitTableElement(x))
     CreateTable(tableName, ifNotExists, tableElements)
   }
 
   override def visitCreateTableAsSelect(ctx: CreateTableAsSelectContext): LogicalPlan = {
-    val ifNotExists   = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
-    val tableName     = visitQualifiedName(ctx.qualifiedName())
-    val columnAliases = Option(ctx.columnAliases()).map(_.identifier().asScala.map(visitIdentifier(_)))
-    val q             = visitQuery(ctx.query())
+    val ifNotExists = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
+    val tableName   = visitQualifiedName(ctx.qualifiedName())
+    val columnAliases = Option(ctx.columnAliases())
+      .map(_.identifier().asScala.toSeq.map(visitIdentifier(_)))
+    val q = visitQuery(ctx.query())
     CreateTableAs(tableName, ifNotExists, columnAliases, q)
   }
 
@@ -736,9 +780,10 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
     Option(ctx.columnDefinition())
       .map(x => visitColumnDefinition(x))
       .getOrElse {
-        val l              = ctx.likeClause()
-        val tableName      = visitQualifiedName(l.qualifiedName())
-        val includingProps = Option(l.EXCLUDING()).map(x => false).getOrElse(true)
+        val l         = ctx.likeClause()
+        val tableName = visitQualifiedName(l.qualifiedName())
+        val includingProps =
+          Option(l.EXCLUDING()).map(x => false).getOrElse(true)
         ColumnDefLike(tableName, includingProps)
       }
   }
@@ -762,7 +807,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   override def visitInsertInto(ctx: InsertIntoContext): LogicalPlan = {
     val table = visitQualifiedName(ctx.qualifiedName())
     val aliases = Option(ctx.columnAliases())
-      .map(x => x.identifier().asScala)
+      .map(x => x.identifier().asScala.toSeq)
       .map(x => x.map(visitIdentifier(_)))
     val query = visitQuery(ctx.query())
     InsertInto(table, aliases, query)
@@ -770,7 +815,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
 
   override def visitDelete(ctx: DeleteContext): LogicalPlan = {
     val table = visitQualifiedName(ctx.qualifiedName())
-    val cond  = Option(ctx.booleanExpression()).map { x => expression(x) }
+    val cond = Option(ctx.booleanExpression()).map { x =>
+      expression(x)
+    }
     Delete(table, cond)
   }
 

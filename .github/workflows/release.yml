@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - v*
+  workflow_dispatch:
 
 jobs:
   publish_jvm:
@@ -32,7 +33,7 @@ jobs:
       - name: Build bundle
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
-        run: ./sbt "; + projectJVM2_13/publishSigned; + projectJVM2_12/publishSigned; sbtAirframe/publishSigned;"
+        run: ./sbt "; + projectJVM/publishSigned; sbtAirframe/publishSigned;"
       - name: Release to Sonatype
         env:
           SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
