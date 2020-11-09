@@ -4,6 +4,7 @@ import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 val SCALA_2_12 = "2.12.12"
 val SCALA_2_13 = "2.13.3"
 
+val untilScala2_12      = SCALA_2_12 :: Nil
 val targetScalaVersions = SCALA_2_13 :: SCALA_2_12 :: Nil
 
 val SCALATEST_VERSION               = "3.0.8"
@@ -164,7 +165,6 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
   okhttp,
   httpRecorder,
   sql,
-  benchmark,
   examples
 )
 
@@ -689,7 +689,7 @@ lazy val benchmark =
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION,
         // Used only for json benchmark
         "org.json4s" %% "json4s-jackson" % "3.6.10",
-        "io.circe"   %% "circe-parser"   % "0.11.2",
+        "io.circe"   %% "circe-parser"   % "0.13.0",
         // For ScalaPB
         // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
         // For grpc-java
@@ -721,6 +721,19 @@ lazy val fluentd =
     )
     .dependsOn(codecJVM, airframeJVM, airframeMacrosJVMRef, airspecRefJVM % Test)
 
+def sqlRefLib = { scalaVersion: String =>
+  if (scalaVersion.startsWith("2.12")) {
+    Seq(
+      // Include Spark just as a reference implementation
+      "org.apache.spark" %% "spark-sql" % "3.0.1" % Test,
+      // Include Presto as a reference implementation
+      "io.prestosql" % "presto-main" % "345" % Test
+    )
+  } else {
+    Seq.empty
+  }
+}
+
 lazy val sql =
   project
     .enablePlugins(Antlr4Plugin)
@@ -735,12 +748,8 @@ lazy val sql =
       antlr4GenVisitor in Antlr4 := true,
       libraryDependencies ++= Seq(
         // For parsing DataType strings
-        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-        // Include Spark just as a reference implementation
-        "org.apache.spark" %% "spark-sql" % "2.4.7" % Test,
-        // Include Presto as a reference implementation
-        "io.prestosql" % "presto-main" % "345" % Test
-      )
+        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
+      ) ++ sqlRefLib(scalaVersion.value)
     )
     .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecRefJVM % Test)
 
