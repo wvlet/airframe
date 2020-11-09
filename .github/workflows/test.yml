@@ -54,7 +54,7 @@ jobs:
           key: ${{ runner.os }}-scala-2.13-${{ hashFiles('**/*.sbt') }}
           restore-keys: ${{ runner.os }}-scala-2.13-
       - name: Scala 2.13 test
-        run: ./sbt ++2.13.2 projectJVM2_13/test
+        run: ./sbt ++2.13.3 projectJVM/test
   test_js:
     name: Scala.js / Scala 2.12
     runs-on: ubuntu-latest
