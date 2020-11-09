@@ -4,7 +4,6 @@ import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 val SCALA_2_12 = "2.12.12"
 val SCALA_2_13 = "2.13.3"
 
-val untilScala2_12      = SCALA_2_12 :: Nil
 val targetScalaVersions = SCALA_2_13 :: SCALA_2_12 :: Nil
 
 val SCALATEST_VERSION               = "3.0.8"
@@ -164,6 +163,7 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
   finagle,
   okhttp,
   httpRecorder,
+  benchmark,
   sql,
   examples
 )
