@@ -66,7 +66,7 @@ trait HttpBackend[Req, Resp, F[_]] { self =>
   def withThreadLocalStore(request: => F[Resp]): F[Resp]
 
   // Set a thread-local context parameter value for a pre-defined key
-  def setThreadLocalToServerException[A](value: A): Unit = setThreadLocal(HttpBackend.TLS_KEY_SERVER_EXCEPTION, value)
+  def setThreadLocalServerException[A](value: A): Unit = setThreadLocal(HttpBackend.TLS_KEY_SERVER_EXCEPTION, value)
 
   // Set a thread-local context parameter value
   def setThreadLocal[A](key: String, value: A): Unit
