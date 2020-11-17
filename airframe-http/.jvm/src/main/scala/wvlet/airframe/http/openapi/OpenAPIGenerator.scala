@@ -296,7 +296,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
       schemaCache.getOrElseUpdate(
         s, {
           debug(s"Find Open API Schema of ${s}")
-          s.dealias match {
+          s match {
             case Primitive.Unit =>
               Schema(
                 `type` = "string"
@@ -401,6 +401,8 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
                 required = requiredParams(g.params),
                 properties = if (properties.isEmpty) None else Some(properties)
               )
+            case s if s.isAlias =>
+              getOpenAPISchema(s.dealias, seen + s)
             case other =>
               warn(s"Unknown type ${other.fullName}. Use string instead")
               Schema(`type` = "string")
