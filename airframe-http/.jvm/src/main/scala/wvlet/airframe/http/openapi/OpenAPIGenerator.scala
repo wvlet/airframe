@@ -140,20 +140,19 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         .distinct
         .toSet
 
-      info(s"components: ${componentTypes.mkString("\n")}")
-
       // Register a component for creating a reference link
       def registerComponent(s: Surface): Unit = {
         s match {
           case s if isPrimitiveTypeFamily(s) =>
           // Do not register schema
           case _ =>
+            trace(s"Register a component: ${s}")
             referencedSchemas += sanitizedSurfaceName(s) -> getOpenAPISchema(s, Set.empty)
         }
       }
       componentTypes.map(s => registerComponent(s))
 
-      // User HTTP request body
+      // Generate schema for the user HTTP request body
       val requestMediaType = MediaType(
         schema = Schema(
           `type` = "object",
@@ -297,7 +296,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
       schemaCache.getOrElseUpdate(
         s, {
           debug(s"Find Open API Schema of ${s}")
-          s match {
+          s.dealias match {
             case Primitive.Unit =>
               Schema(
                 `type` = "string"
