@@ -31,7 +31,8 @@ object RouteAnalyzer {
       pathOnlyParameters: Set[MethodParameter]
   ) {
     // http client call parameters, except parameters used for generating path strings
-    val httpClientCallInputs: Seq[MethodParameter] = (userInputParameters.toSet -- pathOnlyParameters).toIndexedSeq
+    val httpClientCallInputs: Seq[MethodParameter] =
+      (userInputParameters.toSet -- pathOnlyParameters).toIndexedSeq
   }
 
   /**
@@ -41,7 +42,8 @@ object RouteAnalyzer {
   private def isClientSideArg(x: MethodParameter): Boolean = {
     !classOf[HttpMessage.Request].isAssignableFrom(x.surface.rawType) &&
     !classOf[HttpRequest[_]].isAssignableFrom(x.surface.rawType) &&
-    !classOf[HttpContext[_, _, F] forSome { type F[_] }].isAssignableFrom(x.surface.rawType) &&
+    !classOf[HttpContext[_, _, F] forSome { type F[_] }]
+      .isAssignableFrom(x.surface.rawType) &&
     x.surface.fullName != "com.twitter.finagle.http.Request"
   }
 

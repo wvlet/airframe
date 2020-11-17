@@ -30,4 +30,49 @@ object SimpleOpenAPITest extends AirSpec {
     val yaml = OpenAPI.ofRouter(r).toYAML
     debug(yaml)
   }
+
+  case class Stat(childStats: Seq[Stat], prop: Map[String, Stat])
+
+  @RPC
+  trait RecursiveTypeApi {
+    def getStat: Stat
+  }
+
+  test("recursive type") {
+    val r    = Router.of[RecursiveTypeApi]
+    val yaml = OpenAPI.ofRouter(r).toYAML
+    debug(yaml)
+
+    yaml.contains(
+      s"""wvlet.airframe.http.openapi.SimpleOpenAPITest.Stat:
+         |      type: object
+         |      required:
+         |        - childStats
+         |        - prop
+         |      properties:
+         |        childStats:
+         |          type: array
+         |          items:
+         |            $$ref: '#/components/schemas/wvlet.airframe.http.openapi.SimpleOpenAPITest.Stat'
+         |        prop:
+         |          type: object
+         |          additionalProperties:
+         |            $$ref: '#/components/schemas/wvlet.airframe.http.openapi.SimpleOpenAPITest.Stat'""".stripMargin
+    ) shouldBe true
+  }
+
+  case class MyObj(p1: String)
+
+  @RPC
+  trait CollectionApi {
+    def getSeq: Seq[MyObj]
+    def getEither: Either[Throwable, MyObj]
+  }
+
+  test("collection parameter") {
+    val r    = Router.of[CollectionApi]
+    val yaml = OpenAPI.ofRouter(r).toYAML
+    debug(yaml)
+  }
+
 }

@@ -17,7 +17,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.openapi.OpenAPI._
 import wvlet.airframe.json.YAMLFormatter
-import wvlet.airframe.surface.Union2
+import wvlet.airframe.surface.{Union2, Union3}
 
 case class OpenAPI(
     openapi: String = "3.0.3",
@@ -71,7 +71,8 @@ object OpenAPI {
   )
 
   case class License(name: String, url: Option[String] = None)
-  def APL2 = License("Apache 2.0", Some("https://www.apache.org/licenses/LICENSE-2.0.html"))
+  def APL2 =
+    License("Apache 2.0", Some("https://www.apache.org/licenses/LICENSE-2.0.html"))
 
   case class PathItem(
       summary: String,
@@ -126,13 +127,18 @@ object OpenAPI {
       required: Boolean = false
   )
 
-  type SchemaOrRef = Union2[Schema, SchemaRef]
+  type SchemaOrRef = Union3[Schema, SchemaRef, OneOf]
 
   case class MediaType(
       // Scheme or SchemaRef,
       schema: SchemaOrRef,
       encoding: Option[Map[String, Encoding]] = None
   )
+  case class OneOf(
+      oneOf: Seq[SchemaOrRef]
+  ) extends SchemaOrRef {
+    override def getElementClass = classOf[OneOf]
+  }
 
   case class SchemaRef(
       `$ref`: String

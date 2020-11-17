@@ -48,7 +48,8 @@ case class Router(
   def isLeafFilter = children.isEmpty && localRoutes.isEmpty
 
   // If this node has no operation (endspoints, filter, etc.)
-  def hasNoOperation = surface.isEmpty && filterSurface.isEmpty && localRoutes.isEmpty && filterInstance.isEmpty
+  def hasNoOperation =
+    surface.isEmpty && filterSurface.isEmpty && localRoutes.isEmpty && filterInstance.isEmpty
 
   def routes: Seq[Route] = {
     localRoutes ++ children.flatMap(_.routes)
@@ -82,8 +83,9 @@ case class Router(
   /**
     * A request filter that will be applied before routing the request to the target method
     */
-  private lazy val routeMatcher                                            = RouteMatcher.build(routes)
-  def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch] = routeMatcher.findRoute(request)
+  private lazy val routeMatcher = RouteMatcher.build(routes)
+  def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch] =
+    routeMatcher.findRoute(request)
 
   /**
     * Call this method to verify duplicated routes in an early phase
@@ -98,7 +100,8 @@ case class Router(
     */
   def add[Controller]: Router = macro RouterMacros.add[Controller]
 
-  def andThen(filter: HttpFilterType): Router = andThen(Router(filterInstance = Some(filter)))
+  def andThen(filter: HttpFilterType): Router =
+    andThen(Router(filterInstance = Some(filter)))
 
   def andThen(next: Router): Router = {
     this.children.size match {
@@ -152,7 +155,9 @@ case class Router(
             }
             .collect { case (m: ReflectMethodSurface, Some(endPoint)) =>
               val endpointInterfaceCls =
-                controllerSurface.findAnnotationOwnerOf[Endpoint].getOrElse(controllerSurface.rawType)
+                controllerSurface
+                  .findAnnotationOwnerOf[Endpoint]
+                  .getOrElse(controllerSurface.rawType)
               ControllerRoute(
                 endpointInterfaceCls,
                 controllerSurface,
@@ -164,8 +169,12 @@ case class Router(
             }
         case (None, Some(rpc)) =>
           // We need to find the owner class of the RPC interface because the controller might be extending the RPC interface (e.g., RPCImpl)
-          val rpcInterfaceCls = controllerSurface.findAnnotationOwnerOf[RPC].getOrElse(controllerSurface.rawType)
-          val serviceFullName = rpcInterfaceCls.getName.replaceAll("\\$anon\\$", "").replaceAll("\\$", ".")
+          val rpcInterfaceCls = controllerSurface
+            .findAnnotationOwnerOf[RPC]
+            .getOrElse(controllerSurface.rawType)
+          val serviceFullName = rpcInterfaceCls.getName
+            .replaceAll("\\$anon\\$", "")
+            .replaceAll("\\$", ".")
           val prefixPath = if (rpc.path().isEmpty) {
             s"/${serviceFullName}"
           } else {
@@ -178,7 +187,8 @@ case class Router(
             }
             .collect {
               case (m: ReflectMethodSurface, Some(rpc)) =>
-                val path = if (rpc.path().nonEmpty) rpc.path() else s"/${m.name}"
+                val path =
+                  if (rpc.path().nonEmpty) rpc.path() else s"/${m.name}"
                 ControllerRoute(rpcInterfaceCls, controllerSurface, HttpMethod.POST, prefixPath + path, m, isRPC = true)
               case (m: ReflectMethodSurface, None) =>
                 ControllerRoute(
@@ -194,7 +204,8 @@ case class Router(
       }
     }
 
-    val newRouter = new Router(surface = Some(controllerSurface), localRoutes = newRoutes)
+    val newRouter =
+      new Router(surface = Some(controllerSurface), localRoutes = newRoutes)
     if (this.isEmpty) {
       newRouter
     } else {
