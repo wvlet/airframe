@@ -6,6 +6,26 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.11.0
+
+From this release, we no longer support Scala 2.11. This is because Spark, the last major libarary using Scala 2.11, has updated to use Scala 2.12 since Spark 3.0.x. 
+
+-  Remove support for Scala 2.11 ([#1347](https://github.com/wvlet/airframe/issues/1347)) [[484587a](https://github.com/wvlet/airframe/commit/484587a)]
+-  sbt-airframe: Various fixes of Open API generator ([#1357](https://github.com/wvlet/airframe/issues/1357)) [[f227e1e](https://github.com/wvlet/airframe/commit/f227e1e)]
+-  airframe-fluentd: Update fluency-core, fluency-fluentd, ... to 2.5.0 ([#1353](https://github.com/wvlet/airframe/issues/1353)) [[88cf476](https://github.com/wvlet/airframe/commit/88cf476)]
+-  airframe-http: Add a method for storing server exceptions to TLS: TLS_KEY_SERVER_EXCEPTION ([#1351](https://github.com/wvlet/airframe/issues/1351)) [[f35b64e](https://github.com/wvlet/airframe/commit/f35b64e)]
+-  airframe-jdbc: Remove duplicated close message ([#1343](https://github.com/wvlet/airframe/issues/1343)) [[bb06ec9](https://github.com/wvlet/airframe/commit/bb06ec9)]
+-  airframe-json: Improve empty JSON array and object formatting ([#1345](https://github.com/wvlet/airframe/issues/1345)) [[c1de7ed](https://github.com/wvlet/airframe/commit/c1de7ed)]
+-  internal: Update coursier to 2.0.7 ([#1360](https://github.com/wvlet/airframe/issues/1360)) [[9a116c1](https://github.com/wvlet/airframe/commit/9a116c1)]
+-  internal: Upgrade to setup-scala@v10 ([#1361](https://github.com/wvlet/airframe/issues/1361)) [[91ec6a0](https://github.com/wvlet/airframe/commit/91ec6a0)]
+-  internal: Update sbt, sbt-dependency-tree, ... to 1.4.3 ([#1359](https://github.com/wvlet/airframe/issues/1359)) [[568e945](https://github.com/wvlet/airframe/commit/568e945)]
+-  internal: Update sbt-scalajs, scalajs-compiler, ... to 1.3.1 ([#1358](https://github.com/wvlet/airframe/issues/1358)) [[2b8787f](https://github.com/wvlet/airframe/commit/2b8787f)]
+-  internal: Update protobuf-java to 3.14.0 ([#1356](https://github.com/wvlet/airframe/issues/1356)) [[06c602e](https://github.com/wvlet/airframe/commit/06c602e)]
+-  internal: Update presto-main to 346 ([#1350](https://github.com/wvlet/airframe/issues/1350)) [[2a9979e](https://github.com/wvlet/airframe/commit/2a9979e)]
+-  internal: Update sbt-mdoc to 2.2.12 ([#1349](https://github.com/wvlet/airframe/issues/1349)) [[549e5a5](https://github.com/wvlet/airframe/commit/549e5a5)]
+-  internal: Update swagger-parser to 2.0.23 ([#1338](https://github.com/wvlet/airframe/issues/1338)) [[1c6c191](https://github.com/wvlet/airframe/commit/1c6c191)]
+-  internal: Update sbt-sonatype to 3.9.5 ([#1339](https://github.com/wvlet/airframe/issues/1339)) [[2951d0c](https://github.com/wvlet/airframe/commit/2951d0c)]
+
 ## 20.10.3
 
 -  airframe-http: Return 400 when invalid JSON data is passed and fix Timestamp json formatting ([#1336](https://github.com/wvlet/airframe/issues/1336)) [[831b71c](https://github.com/wvlet/airframe/commit/831b71c)]
