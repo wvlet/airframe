@@ -107,8 +107,10 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
       // Generic collection types
       case s: Surface if s.typeArgs.length > 0 =>
         s.typeArgs.flatMap(t => extractNonPrimitiveSurfaces(t, seen))
+      // Object type
       case s: Surface if s.params.length > 0 =>
-        s.params.flatMap(p => extractNonPrimitiveSurfaces(p.surface, seen + s))
+        Seq(s) ++ s.params.flatMap(p =>
+          extractNonPrimitiveSurfaces(p.surface, seen + s))
       case other =>
         Seq(s)
     }
