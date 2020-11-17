@@ -73,9 +73,7 @@ object RouteAnalyzer {
               // Find the path variable in the nested parameters
               clientSideArgs
                 .map { arg =>
-                  (arg,
-                   arg.surface.params.find(nestedParam =>
-                     CName(nestedParam.name) == varName))
+                  (arg, arg.surface.params.find(nestedParam => CName(nestedParam.name) == varName))
                 }
                 .collectFirst { case (arg, Some(nestedParam)) =>
                   pathBuilder += s"$${${arg.name}.${nestedParam.name}}"

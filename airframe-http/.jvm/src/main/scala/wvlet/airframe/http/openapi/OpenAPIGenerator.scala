@@ -17,15 +17,7 @@ import java.util.Locale
 import wvlet.airframe.http.{HttpMethod, HttpStatus, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer
 import wvlet.airframe.http.openapi.OpenAPI.Response
-import wvlet.airframe.surface.{
-  ArraySurface,
-  GenericSurface,
-  MethodParameter,
-  OptionSurface,
-  Primitive,
-  Surface,
-  Union2
-}
+import wvlet.airframe.surface.{ArraySurface, GenericSurface, MethodParameter, OptionSurface, Primitive, Surface, Union2}
 import wvlet.log.LogSupport
 
 import scala.collection.immutable.ListMap
@@ -85,9 +77,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     }
   }
 
-  private[openapi] def buildFromRouter(
-      router: Router,
-      config: OpenAPIGeneratorConfig): OpenAPI = {
+  private[openapi] def buildFromRouter(router: Router, config: OpenAPIGeneratorConfig): OpenAPI = {
     val referencedSchemas = Map.newBuilder[String, SchemaOrRef]
 
     val paths = for (route <- router.routes) yield {
@@ -129,7 +119,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
             Map.empty
           } else {
             Map(
-              "application/json" -> requestMediaType,
+              "application/json"      -> requestMediaType,
               "application/x-msgpack" -> requestMediaType
             )
           }
@@ -144,9 +134,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
           case s if isPrimitiveTypeFamily(s) =>
           // Do not register schema
           case _ =>
-            referencedSchemas += sanitizedSurfaceName(s) -> getOpenAPISchema(
-              s,
-              useRef = false)
+            referencedSchemas += sanitizedSurfaceName(s) -> getOpenAPISchema(s, useRef = false)
         }
       }
 
@@ -167,16 +155,12 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
               Some(getOpenAPISchema(p.surface, useRef = false))
             } else {
               registerComponent(p.surface)
-              Some(
-                SchemaRef(
-                  s"#/components/schemas/${sanitizedSurfaceName(p.surface)}"))
+              Some(SchemaRef(s"#/components/schemas/${sanitizedSurfaceName(p.surface)}"))
             },
-            allowEmptyValue =
-              if (p.getDefaultValue.nonEmpty) Some(true) else None
+            allowEmptyValue = if (p.getDefaultValue.nonEmpty) Some(true) else None
           )
         } else {
-          ParameterRef(
-            s"#/components/parameters/${sanitizedSurfaceName(p.surface)}")
+          ParameterRef(s"#/components/parameters/${sanitizedSurfaceName(p.surface)}")
         }
       }
 
@@ -355,8 +339,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     }
   }
 
-  private def requiredParams(
-      params: Seq[wvlet.airframe.surface.Parameter]): Option[Seq[String]] = {
+  private def requiredParams(params: Seq[wvlet.airframe.surface.Parameter]): Option[Seq[String]] = {
     val required = params
       .filter(p => p.isRequired || !p.surface.isOption)
       .map(_.name)
