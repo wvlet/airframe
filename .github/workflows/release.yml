@@ -17,7 +17,7 @@ jobs:
       # Fetch all tags so that sbt-dynver can find the previous release version
       - run: git fetch --tags -f
       # Install OpenJDK 11
-      - uses: olafurpg/setup-scala@v5
+      - uses: olafurpg/setup-scala@v10
         with:
           java-version: adopt@1.11
       - uses: olafurpg/setup-gpg@v2 # Necessary for using GPG1
