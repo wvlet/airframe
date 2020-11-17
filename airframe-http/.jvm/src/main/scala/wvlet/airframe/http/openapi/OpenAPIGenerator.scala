@@ -14,7 +14,7 @@
 package wvlet.airframe.http.openapi
 import java.time.Instant
 import java.util.Locale
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 
 import wvlet.airframe.codec.GenericException
 import wvlet.airframe.http.{HttpMethod, HttpStatus, Router}
@@ -330,6 +330,8 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
               // just use string type:
               Schema(`type` = "string")
             case s if s == Surface.of[Instant] =>
+              Schema(`type` = "string")
+            case s if s == Surface.of[TimeUnit] =>
               Schema(`type` = "string")
             // Airframe specific types
             case s if s == Surface.of[Json] =>
