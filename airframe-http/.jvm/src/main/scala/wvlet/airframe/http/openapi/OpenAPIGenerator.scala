@@ -264,7 +264,9 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
             statusCode -> ResponseRef(s"#/components/responses/${statusCode}")
           }
           .toMap,
-        tags = if (route.isRPC) Some(Seq("rpc")) else None
+        tags = {
+          Some(Seq(route.serviceName))
+        }
       )
       path -> Map(httpMethod -> pathItem)
     }
