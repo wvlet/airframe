@@ -727,7 +727,7 @@ def sqlRefLib = { scalaVersion: String =>
       // Include Spark just as a reference implementation
       "org.apache.spark" %% "spark-sql" % "3.0.1" % Test,
       // Include Presto as a reference implementation
-      "io.prestosql" % "presto-main" % "346" % Test
+      "io.prestosql" % "presto-main" % "347" % Test
     )
   } else {
     Seq.empty
