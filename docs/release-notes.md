@@ -6,6 +6,23 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.12.0
+
+This is a minor dependency update release. 
+
+-  airframe-grpc: Update grpc-netty-shaded, grpc-protobuf, ... to 1.34.0 ([#1371](https://github.com/wvlet/airframe/issues/1371)) [[65cd466](https://github.com/wvlet/airframe/commit/65cd466)]
+-  sbt-airframe: Embed the service name to OpenAPI tag ([#1362](https://github.com/wvlet/airframe/issues/1362)) [[306bf81](https://github.com/wvlet/airframe/commit/306bf81)]
+-  Update scala-collection-compat to 2.3.1 ([#1366](https://github.com/wvlet/airframe/issues/1366)) [[d7392c0](https://github.com/wvlet/airframe/commit/d7392c0)]
+-  internal: Update sbt-pgp to 2.0.2 ([#1370](https://github.com/wvlet/airframe/issues/1370)) [[ba279f2](https://github.com/wvlet/airframe/commit/ba279f2)]
+-  internal: Update presto-main to 347 ([#1368](https://github.com/wvlet/airframe/issues/1368)) [[3a19419](https://github.com/wvlet/airframe/commit/3a19419)]
+-  internal: Update antlr4, antlr4-runtime to 4.9 ([#1365](https://github.com/wvlet/airframe/issues/1365)) [[44fe2db](https://github.com/wvlet/airframe/commit/44fe2db)]
+-  internal: Update sbt-mdoc to 2.2.13 ([#1367](https://github.com/wvlet/airframe/issues/1367)) [[c3aecb4](https://github.com/wvlet/airframe/commit/c3aecb4)]
+-  internal: Update sbt, sbt-dependency-tree, ... to 1.4.4 ([#1364](https://github.com/wvlet/airframe/issues/1364)) [[9c7adde](https://github.com/wvlet/airframe/commit/9c7adde)]
+-  internal: Update scala-collection-compat to 2.3.0 ([#1363](https://github.com/wvlet/airframe/issues/1363)) [[0fd99c8](https://github.com/wvlet/airframe/commit/0fd99c8)]
+-  internal: Add a GitHub Action for creating release note links [[927a99c](https://github.com/wvlet/airframe/commit/927a99c)]
+-  internal: Update sbt-pgp to 2.1.1 ([#1373](https://github.com/wvlet/airframe/issues/1373)) [[060ff7a](https://github.com/wvlet/airframe/commit/060ff7a)]
+-  internal: sbt-pgp 2.1.1 no longer requires gpg 1.x [[f022394](https://github.com/wvlet/airframe/commit/f022394)]
+
 ## 20.11.0
 
 From this release, we no longer support Scala 2.11. This is because Spark, the last major libarary using Scala 2.11, has updated to use Scala 2.12 since Spark 3.0.x. 
