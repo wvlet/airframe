@@ -440,7 +440,6 @@ lazy val log: sbtcrossproject.CrossProject =
     )
     .jvmSettings(
       libraryDependencies ++= logJVMDependencies,
-      crossScalaVersions := withDotty,
       runTestSequentially
     )
     .jsSettings(
