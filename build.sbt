@@ -1,10 +1,11 @@
 import sbtcrossproject.{CrossType, crossProject}
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
-val SCALA_2_12 = "2.12.12"
-val SCALA_2_13 = "2.13.4"
-
+val SCALA_2_12          = "2.12.12"
+val SCALA_2_13          = "2.13.4"
+val SCALA_3_0           = "3.0.0-M2"
 val targetScalaVersions = SCALA_2_13 :: SCALA_2_12 :: Nil
+val withDotty           = SCALA_3_0 :: targetScalaVersions
 
 val SCALATEST_VERSION               = "3.0.8"
 val SCALACHECK_VERSION              = "1.15.1"
@@ -19,6 +20,7 @@ val FINAGLE_VERSION                 = "20.10.0"
 val FLUENCY_VERSION                 = "2.5.0"
 val GRPC_VERSION                    = "1.34.0"
 val JMH_VERSION                     = "1.26"
+val AIRSPEC_VERSION                 = "20.12.0"
 
 val airSpecFramework = new TestFramework("wvlet.airspec.Framework")
 
@@ -53,7 +55,8 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 ThisBuild / usePipelining := false
 
 // For using Scala 2.12 in sbt
-scalaVersion in ThisBuild := SCALA_2_12
+val IS_DOTTY = sys.env.isDefinedAt("DOTTY")
+scalaVersion in ThisBuild := { if (IS_DOTTY) SCALA_3_0 else SCALA_2_12 }
 organization in ThisBuild := "org.wvlet.airframe"
 
 // Use dynamic snapshot version strings for non tagged versions
@@ -85,11 +88,14 @@ val buildSettings = Seq[Setting[_]](
     "-deprecation",
     // Necessary for tracking source code range in airframe-rx demo
     "-Yrangepos"
-  ), // ,"-Ytyper-debug"),
+  ) ++ (if (IS_DOTTY) Seq("-Ytasty-reader") else Seq.empty),
   testFrameworks += airSpecFramework,
-  libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.3.1"
-  )
+  libraryDependencies ++= {
+    if (IS_DOTTY)
+      Seq.empty
+    else
+      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.3.1")
+  }
 )
 
 // Do not run tests concurrently to avoid JMX registration failures
@@ -410,10 +416,14 @@ lazy val launcher =
     .dependsOn(surfaceJVM, controlJVM, codecJVM, airspecRefJVM % Test)
 
 val logDependencies = { scalaVersion: String =>
-  Seq(
-    "org.scala-lang" % "scala-reflect" % scalaVersion % Provided
-  )
+  scalaVersion match {
+    case s if IS_DOTTY =>
+      Seq.empty
+    case _ =>
+      Seq("org.scala-lang" % "scala-reflect" % scalaVersion % Provided)
+  }
 }
+
 val logJVMDependencies = Seq(
   "ch.qos.logback" % "logback-core" % "1.2.3"
 )
@@ -430,6 +440,7 @@ lazy val log: sbtcrossproject.CrossProject =
     )
     .jvmSettings(
       libraryDependencies ++= logJVMDependencies,
+      crossScalaVersions := withDotty,
       runTestSequentially
     )
     .jsSettings(
@@ -1040,9 +1051,9 @@ lazy val airspecRef =
       //airspecBuildSettings,
       name := "airspec-ref",
       description := "A project for referencing airspec for internal testing",
-      libraryDependencies ++= Seq(
-        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION
-      )
+      libraryDependencies ++= {
+        Seq("org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION)
+      }
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(airspec, airspecDeps)

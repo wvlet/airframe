@@ -1,9 +1,11 @@
-addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.9.5")
-addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.1.1")
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.6.1")
-addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.2")
+addSbtPlugin("org.xerial.sbt"     % "sbt-sonatype"             % "3.9.5")
+addSbtPlugin("com.jsuereth"       % "sbt-pgp"                  % "2.1.1")
+addSbtPlugin("org.scoverage"      % "sbt-scoverage"            % "1.6.1")
+addSbtPlugin("org.scalameta"      % "sbt-scalafmt"             % "2.4.2")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")
-addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.10.0")
+addSbtPlugin("com.eed3si9n"       % "sbt-buildinfo"            % "0.10.0")
+
+addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.4.3")
 
 addDependencyTreePlugin
 
@@ -25,8 +27,8 @@ addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.2.13")
 addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.3")
 
 // For JMH benchmark
-addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.4.0")
-addSbtPlugin("org.xerial.sbt" % "sbt-pack" % "0.13")
+addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.4.0")
+addSbtPlugin("org.xerial.sbt"     % "sbt-pack" % "0.13")
 
 // For sbt-airframe-http
 libraryDependencies += "org.scala-sbt" %% "scripted-plugin" % sbtVersion.value
