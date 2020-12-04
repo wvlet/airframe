@@ -19,7 +19,6 @@ jobs:
       - uses: olafurpg/setup-scala@v10
         with:
           java-version: adopt@1.11
-      - uses: olafurpg/setup-gpg@v3 # Necessary for using GPG1
       - name: Setup GPG
         env:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
