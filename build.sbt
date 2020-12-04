@@ -123,7 +123,7 @@ lazy val root =
     .settings(
       sonatypeProfileName := "org.wvlet",
       sonatypeSessionName := {
-        if (sys.env.isDefinedAt("SCALAJS_VERSION")) {
+        if (sys.env.isDefinedAt("SCALAJS")) {
           // Use a different session for Scala.js projects
           s"${sonatypeSessionName.value} for Scala.js"
         } else {
