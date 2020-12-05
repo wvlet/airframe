@@ -55,6 +55,21 @@ jobs:
           restore-keys: ${{ runner.os }}-scala-2.13-
       - name: Scala 2.13 test
         run: ./sbt ++2.13.4 projectJVM/test
+  test_3:
+    name: Scala 3.x (Dotty)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: olafurpg/setup-scala@v10
+        with:
+          java-version: adopt@1.11
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-scala-3-${{ hashFiles('**/*.sbt') }}
+          restore-keys: ${{ runner.os }}-scala-3-
+      - name: Scala 3.x test
+        run: DOTTY=true ./sbt dottyTest/run
   test_js:
     name: Scala.js / Scala 2.12
     runs-on: ubuntu-latest
