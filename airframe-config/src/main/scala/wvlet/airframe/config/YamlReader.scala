@@ -32,8 +32,7 @@ object YamlReader extends LogSupport {
   def load[A: ru.TypeTag](resourcePath: String, env: String): A = {
     val map = loadMapOf[A](resourcePath)
     if (!map.contains(env)) {
-      throw new IllegalArgumentException(
-        s"Env $env is not found in $resourcePath")
+      throw new IllegalArgumentException(s"Env $env is not found in $resourcePath")
     }
     map(env)
   }
@@ -42,11 +41,9 @@ object YamlReader extends LogSupport {
     val yaml = loadYaml(resourcePath)
     trace(s"yaml data: ${yaml.mkString(", ")}")
     val surface: Surface = wvlet.airframe.surface.Surface.of[A]
-    val map = ListMap.newBuilder[String, A]
+    val map              = ListMap.newBuilder[String, A]
     for ((k, v) <- yaml) yield {
-      map += k.toString -> bindMap[A](
-        surface,
-        v.asInstanceOf[ju.Map[AnyRef, AnyRef]].asScala.toMap)
+      map += k.toString -> bindMap[A](surface, v.asInstanceOf[ju.Map[AnyRef, AnyRef]].asScala.toMap)
     }
     map.result
   }
@@ -83,8 +80,8 @@ object YamlReader extends LogSupport {
 
   def bindMap[A: ru.TypeTag](surface: Surface, prop: Map[AnyRef, AnyRef]): A = {
     val yamlMsgpack = toMsgPack(prop)
-    val surface = Surface.of[A]
-    val codec = MessageCodec.of[A]
+    val surface     = Surface.of[A]
+    val codec       = MessageCodec.of[A]
     val result =
       codec.unpackMsgPack(yamlMsgpack).getOrElse(Zero.zeroOf(surface))
     trace(result)

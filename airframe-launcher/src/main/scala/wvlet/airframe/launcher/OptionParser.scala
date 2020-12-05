@@ -23,12 +23,7 @@ package wvlet.airframe.launcher
 import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.launcher.StringTree.{Leaf, SeqLeaf}
 import wvlet.airframe.surface._
-import wvlet.airframe.surface.reflect.{
-  GenericBuilder,
-  ObjectBuilder,
-  Path,
-  ReflectSurfaceFactory
-}
+import wvlet.airframe.surface.reflect.{GenericBuilder, ObjectBuilder, Path, ReflectSurfaceFactory}
 import wvlet.log.{LogSupport, Logger}
 
 import scala.collection.mutable.ArrayBuffer
@@ -54,13 +49,11 @@ object OptionParser extends LogSupport {
     new OptionParser(schema)
   }
 
-  def parse[A <: AnyRef](args: Array[String])(
-      implicit m: ClassTag[A]): OptionParserResult = {
+  def parse[A <: AnyRef](args: Array[String])(implicit m: ClassTag[A]): OptionParserResult = {
     of[A].parse(args)
   }
 
-  def parse[A <: AnyRef](argLine: String)(
-      implicit m: ClassTag[A]): OptionParserResult = {
+  def parse[A <: AnyRef](argLine: String)(implicit m: ClassTag[A]): OptionParserResult = {
     parse(tokenize(argLine))
   }
 
@@ -69,8 +62,7 @@ object OptionParser extends LogSupport {
       if (p.startsWith("--") || p.startsWith("-")) {
         p
       } else {
-        throw new IllegalArgumentException(
-          s"Invalid prefix ${prefix} (not beginning with - or --)")
+        throw new IllegalArgumentException(s"Invalid prefix ${prefix} (not beginning with - or --)")
       }
     }
   }
@@ -87,15 +79,13 @@ object OptionParser extends LogSupport {
   case class OptMapping(opt: CLOption, value: String) extends OptionMapping {
     def path = opt.path -> Leaf(value)
   }
-  case class OptMappingMultiple(opt: CLOption, value: Seq[String])
-      extends OptionMapping {
+  case class OptMappingMultiple(opt: CLOption, value: Seq[String]) extends OptionMapping {
     def path = opt.path -> SeqLeaf(value.map(Leaf(_)))
   }
   case class ArgMapping(opt: CLArgItem, value: String) extends OptionMapping {
     def path = opt.path -> Leaf(value)
   }
-  case class ArgMappingMultiple(opt: CLArgument, value: Seq[String])
-      extends OptionMapping {
+  case class ArgMappingMultiple(opt: CLArgument, value: Seq[String]) extends OptionMapping {
     def path = opt.path -> SeqLeaf(value.map(Leaf(_)))
   }
 
@@ -104,7 +94,7 @@ object OptionParser extends LogSupport {
     */
   sealed trait CLOptionItem {
     def path: Path
-    def takesArgument: Boolean = false
+    def takesArgument: Boolean          = false
     def takesMultipleArguments: Boolean = false
   }
 
@@ -128,8 +118,7 @@ object OptionParser extends LogSupport {
     * @param annot
     * @param param
     */
-  case class CLOption(path: Path, annot: option, override val param: Parameter)
-      extends CLOptionItemBase(param) {
+  case class CLOption(path: Path, annot: option, override val param: Parameter) extends CLOptionItemBase(param) {
     // validate prefixes
     val prefixes: Seq[String] = splitPrefixes(annot.prefix())
     override def takesArgument: Boolean = {
@@ -150,10 +139,7 @@ object OptionParser extends LogSupport {
     * @param arg
     * @param param
     */
-  case class CLArgument(path: Path,
-                        arg: argument,
-                        argIndex: Int,
-                        override val param: Parameter)
+  case class CLArgument(path: Path, arg: argument, argIndex: Int, override val param: Parameter)
       extends CLOptionItemBase(param)
       with CLArgItem {
     def name: String =
@@ -164,9 +150,7 @@ object OptionParser extends LogSupport {
       }
   }
 
-  case class OptionParserResult(parseTree: StringTree,
-                                unusedArgument: Array[String],
-                                val showHelp: Boolean)
+  case class OptionParserResult(parseTree: StringTree, unusedArgument: Array[String], val showHelp: Boolean)
       extends LogSupport {
     override def toString: String = {
       s"OptionParserResult(${parseTree}, unused:[${unusedArgument.mkString(",")}], showHelp:${showHelp})"
@@ -177,8 +161,7 @@ object OptionParser extends LogSupport {
       build(b).build
     }
 
-    def buildObjectWithFilter[A](surface: Surface,
-                                 filter: String => Boolean): Any = {
+    def buildObjectWithFilter[A](surface: Surface, filter: String => Boolean): Any = {
       val b = ObjectBuilder(surface)
       trace(s"build from parse tree: ${parseTree}")
       for ((path, value) <- parseTree.dfs if filter(path.last)) {
@@ -241,13 +224,12 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
 
       def unapply(s: List[String]): Option[WithArg] = {
         findMatch(pattern, s.head) flatMap { m =>
-          val symbol = m.group(1)
+          val symbol       = m.group(1)
           val immediateArg = group(m, 3)
           schema.findOptionNeedsArg(symbol) map { opt =>
             if (immediateArg.isEmpty) {
               if (s.tail.isEmpty) {
-                throw new IllegalArgumentException(
-                  "Option %s needs an argument" format opt)
+                throw new IllegalArgumentException("Option %s needs an argument" format opt)
               } else {
                 val remaining = s.tail
                 WithArg(opt, remaining.head, remaining.tail)
@@ -278,7 +260,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
       }
 
       // Process command line arguments
-      var continue = true
+      var continue  = true
       var remaining = l
       while (continue && !remaining.isEmpty) {
         val next = remaining match {
