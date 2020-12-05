@@ -233,7 +233,7 @@ lazy val projectDotty =
       noPublish,
       crossScalaVersions := Seq(SCALA_3_0)
     )
-    .aggregate(logJVM, surfaceJVM)
+    .aggregate(logJVM)
 
 lazy val docs =
   project
