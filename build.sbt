@@ -535,8 +535,9 @@ lazy val rx =
       description := "Reactive stream (Rx) interface"
     )
     .jvmSettings(
-      // For adding PreDestroy, PostConstruct annotations to Java9
-      libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION
+      libraryDependencies ++= Seq(
+        "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION % Test
+      )
     )
     .jsSettings(
       jsBuildSettings
