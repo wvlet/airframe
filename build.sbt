@@ -894,7 +894,8 @@ val airspecBuildSettings = Seq[Setting[_]](
     val sourceDirs = for (m <- airspecDependsOn.value) yield {
       Seq(
         file(s"${baseDir}/${m}/src/main/scala"),
-        file(s"${baseDir}/${m}/shared/src/main/scala")
+        file(s"${baseDir}/${m}/shared/src/main/scala"),
+        file(s"${baseDir}/${m}/shared/src/main/scala-2")
       )
     }
     sourceDirs.flatten
