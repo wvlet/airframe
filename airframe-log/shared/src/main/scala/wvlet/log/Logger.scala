@@ -180,7 +180,7 @@ object Logger {
 
   private lazy val loggerCache = new ConcurrentHashMap[String, Logger].asScala
 
-  lazy val rootLogger = {
+  val rootLogger = {
     val l = initLogger(name = "", handlers = Seq(LogEnv.defaultHandler))
     if (LogEnv.isScalaJS) {
       l.setLogLevel(LogLevel.INFO)

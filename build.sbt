@@ -866,6 +866,19 @@ lazy val sbtAirframe =
     )
     .dependsOn(controlJVM, codecJVM, logJVM, httpJVM % Test)
 
+// Dotty test project
+lazy val dottyTest =
+  project
+    .in(file("airframe-dotty-test"))
+    .settings(buildSettings)
+    .settings(noPublish)
+    .settings(
+      name := "airframe-dotty-test",
+      description := "test for dotty",
+      crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions }
+    )
+    .dependsOn(logJVM)
+
 /**
   * AirSpec build definitions.
   *
