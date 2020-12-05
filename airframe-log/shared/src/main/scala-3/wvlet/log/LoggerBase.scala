@@ -29,6 +29,25 @@ trait LoggerBase {
   def debug(message: Any, cause: Throwable): Unit = ???
   def trace(message: Any): Unit                   = ???
   def trace(message: Any, cause: Throwable): Unit = ???
+
+  def isEnabled(level: LogLevel): Boolean
+  def log(level: LogLevel, source: LogSource, message:Any): Unit
+
+  import scala.quoted._
+  private def logImpl(level: Expr[wvlet.log.LogLevel], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
+    import q.reflect._
+    val pos = Position.ofMacroExpansion
+    val line: Int = pos.startLine
+    val column : Int = pos.endColumn
+    val src = pos.sourceFile
+    val path: java.nio.file.Path = src.jpath
+    val l: Logger = this.asInstanceOf[Logger]
+
+    //'{ if(${Expr(l)}.isEnabled(${level})) ${Expr(l)}.log(${level}, wvlet.log.LogSource(${Expr(path.toFile().getPath())}, ${Expr(path.getFileName().toString)}, ${Expr(line)}, ${Expr(column)}), $message) }
+    '{ println(wvlet.log.LogSource(${Expr(path.toFile().getPath())}, ${Expr(path.getFileName().toString)}, ${Expr(line)}, ${Expr(column)})) }
+
+  }
+
 }
 
 /**
@@ -48,15 +67,7 @@ trait LoggingMethods extends Serializable {
   protected def logAt(logLevel: LogLevel, message: Any): Unit = ???
 }
 
-import scala.language.experimental.macros
-
 object LogMacros {
-  import scala.quoted._
 
-  def logImpl(message:Expr[Any])(using q: Quotes): Expr[Unit] = {
-    val pos = q.reflect.PositionMethods
-    val line = pos.startLine
-    val sourceCode = pos.sourceCode
-    '{ () }
-  }
+
 }

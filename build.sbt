@@ -442,13 +442,11 @@ lazy val log: sbtcrossproject.CrossProject =
         scalaBinaryVersion.value match {
           case v if v.startsWith("2.") =>
             Seq(
-              baseDirectory.value / "src" / "main" / "scala-2.x",
-              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-2.x"
+              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-2"
             )
           case v if v.startsWith("3.") =>
             Seq(
-              baseDirectory.value / "src" / "main" / "scala-3.x",
-              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-3.x"
+              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-3"
             )
           case _ =>
             Seq.empty
