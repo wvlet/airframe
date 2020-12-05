@@ -112,7 +112,12 @@ object Resource {
     * @return
     */
   def find(absoluteResourcePath: String): Option[URL] =
-    find("", if (absoluteResourcePath.startsWith("/")) absoluteResourcePath.substring(1) else absoluteResourcePath)
+    find(
+      "",
+      if (absoluteResourcePath.startsWith("/"))
+        absoluteResourcePath.substring(1)
+      else absoluteResourcePath
+    )
 
   /**
     * Finds the java.net.URL of the resource
@@ -133,7 +138,7 @@ object Resource {
           urlClassLoader.getResource(resourcePath) match {
             case path: URL =>
               Some(path)
-            case _ =>
+            case null =>
               loop(urlClassLoader.getParent)
           }
         case None => None
@@ -291,7 +296,7 @@ object Resource {
       throw new UnsupportedOperationException("resources other than file or jar are not supported: " + resourceURL)
     }
 
-    fileList.result
+    fileList.result()
   }
 
   /**
@@ -301,7 +306,12 @@ object Resource {
     * @return
     */
   def listResources(packageName: String): Seq[VirtualFile] =
-    listResources(packageName, { f: String => true })
+    listResources(
+      packageName,
+      { (f: String) =>
+        true
+      }
+    )
 
   /**
     * Collect resources under the given package
@@ -320,7 +330,7 @@ object Resource {
     for (u <- findResourceURLs(classLoader, packageName)) {
       b ++= listResources(u, packageName, resourceFilter)
     }
-    b.result
+    b.result()
   }
 
   /**
@@ -350,7 +360,7 @@ object Resource {
     }
 
     loop(currentClassLoader)
-    b.result
+    b.result()
   }
 
   def findClasses[A](
@@ -358,7 +368,13 @@ object Resource {
       toSearch: Class[A],
       classLoader: ClassLoader = Thread.currentThread.getContextClassLoader
   ): Seq[Class[A]] = {
-    val classFileList = listResources(packageName, { f: String => f.endsWith(".class") }, classLoader)
+    val classFileList = listResources(
+      packageName,
+      { (f: String) =>
+        f.endsWith(".class")
+      },
+      classLoader
+    )
 
     def componentName(path: String): Option[String] = {
       val dot: Int = path.lastIndexOf(".")
@@ -384,7 +400,7 @@ object Resource {
         }
       }
     }
-    b.result
+    b.result()
   }
 
   def findClasses[A](searchPath: Package, toSearch: Class[A], classLoader: ClassLoader): Seq[Class[A]] = {

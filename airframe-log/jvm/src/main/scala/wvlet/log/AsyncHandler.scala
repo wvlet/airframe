@@ -51,7 +51,7 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
       }
     }
 
-    records.result.map(parent.publish _)
+    records.result().map(parent.publish _)
     parent.flush()
   }
 

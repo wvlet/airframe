@@ -32,7 +32,9 @@ jobs:
       - name: Build bundle
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
-        run: ./sbt "; + projectJVM/publishSigned; sbtAirframe/publishSigned;"
+        run: |
+          ./sbt "; + projectJVM/publishSigned; sbtAirframe/publishSigned;"
+          DOTTY=true ./sbt projectDotty/publishSigned
       - name: Release to Sonatype
         env:
           SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'

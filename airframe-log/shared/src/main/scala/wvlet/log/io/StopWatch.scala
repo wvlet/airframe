@@ -199,7 +199,7 @@ trait TimeReport extends Ordered[TimeReport] {
     for (i <- 0 until repeat) {
       s.resume
       try {
-        body
+        body()
       } finally {
         val intervalTime = s.stop
         timeReport += intervalTime
@@ -227,7 +227,7 @@ trait TimeReport extends Ordered[TimeReport] {
   }
 
   def median: Double = {
-    val r = timeReport.result
+    val r = timeReport.result()
     r.length
     r.sorted.apply(r.length / 2)
   }
@@ -279,7 +279,7 @@ trait TimeReport extends Ordered[TimeReport] {
       lines += indent(1, v.genReportLine)
     }
 
-    lines.result.mkString("\n")
+    lines.result().mkString("\n")
   }
 
   override def toString: String = report
@@ -290,7 +290,7 @@ class StopWatch {
     val RUNNING, STOPPED = Value
   }
 
-  private var lastSystemTime: Double         = System.nanoTime
+  private var lastSystemTime: Double         = System.nanoTime().toDouble
   private var elapsedTimeAccumulated: Double = 0L
   private var state                          = State.RUNNING
 
@@ -303,7 +303,7 @@ class StopWatch {
     */
   def getElapsedTime: Double = {
     if (state == State.RUNNING) {
-      val now  = System.nanoTime()
+      val now  = System.nanoTime().toDouble
       val diff = now - lastSystemTime
       (elapsedTimeAccumulated + diff) / NANO_UNIT
     } else {
@@ -317,7 +317,7 @@ class StopWatch {
     * beginning from this method call.
     */
   def reset: Unit = {
-    lastSystemTime = System.nanoTime()
+    lastSystemTime = System.nanoTime().toDouble
     elapsedTimeAccumulated = 0L
   }
 
@@ -332,7 +332,7 @@ class StopWatch {
     }
 
     // elapsed time
-    val now  = System.nanoTime()
+    val now  = System.nanoTime().toDouble
     val diff = now - lastSystemTime
     elapsedTimeAccumulated += diff
     lastSystemTime = now
@@ -349,7 +349,7 @@ class StopWatch {
       return
     }
 
-    lastSystemTime = System.nanoTime()
+    lastSystemTime = System.nanoTime().toDouble
     state = State.RUNNING
   }
 

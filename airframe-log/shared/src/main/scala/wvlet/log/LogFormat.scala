@@ -41,7 +41,9 @@ object LogFormatter {
 
   private val testFrameworkFilter =
     Pattern.compile("""\s+at (sbt\.|org\.scalatest\.|wvlet\.airspec\.).*""")
-  val DEFAULT_STACKTRACE_FILTER: String => Boolean = { line: String => !testFrameworkFilter.matcher(line).matches() }
+  val DEFAULT_STACKTRACE_FILTER: String => Boolean = { (line: String) =>
+    !testFrameworkFilter.matcher(line).matches()
+  }
   private var stackTraceFilter: String => Boolean = DEFAULT_STACKTRACE_FILTER
 
   /**
@@ -123,7 +125,8 @@ object LogFormatter {
     */
   object SimpleLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
-      val log = s"[${highlightLog(r.level, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
+      val log =
+        s"[${highlightLog(r.level, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
       appendStackTrace(log, r)
     }
   }
@@ -186,7 +189,8 @@ object LogFormatter {
           .map(source => s" ${withColor(Console.BLUE, s"- ${r.getLoggerName}(${source.fileLoc})")}")
           .getOrElse("")
 
-      val log = s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)}$loc"
+      val log =
+        s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)}$loc"
       appendStackTrace(log, r)
     }
   }

@@ -52,9 +52,10 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 // Disable the pipelining available since sbt-1.4.0. It caused compilation failure
 ThisBuild / usePipelining := false
 
+// A build configuration switch for working on Dotty migration. This needs to be removed eventually
+val DOTTY = sys.env.isDefinedAt("DOTTY")
 // For using Scala 2.12 in sbt
-val IS_DOTTY = sys.env.isDefinedAt("DOTTY")
-scalaVersion in ThisBuild := { if (IS_DOTTY) SCALA_3_0 else SCALA_2_12 }
+scalaVersion in ThisBuild := { if (DOTTY) SCALA_3_0 else SCALA_2_12 }
 organization in ThisBuild := "org.wvlet.airframe"
 
 // Use dynamic snapshot version strings for non tagged versions
@@ -83,16 +84,23 @@ val buildSettings = Seq[Setting[_]](
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   scalacOptions ++= Seq(
     "-feature",
-    "-deprecation",
-    // Necessary for tracking source code range in airframe-rx demo
-    "-Yrangepos"
-  ) ++ (if (IS_DOTTY) Seq("-Ytasty-reader") else Seq.empty),
+    "-deprecation"
+  ) ++ {
+    if (DOTTY) {
+      Seq.empty
+    } else {
+      Seq(
+        // Necessary for tracking source code range in airframe-rx demo
+        "-Yrangepos"
+      )
+    }
+  },
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(
-    "org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test,
-    "org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Test
+    ("org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test).withDottyCompat(scalaVersion.value),
+    ("org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Test).withDottyCompat(scalaVersion.value)
   ) ++ {
-    if (IS_DOTTY)
+    if (DOTTY)
       Seq.empty
     else
       Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.3.1")
@@ -217,6 +225,15 @@ lazy val projectJS =
       crossScalaVersions := targetScalaVersions
     )
     .aggregate(jsProjects: _*)
+
+// For Dotty (Scala 3)
+lazy val projectDotty =
+  project
+    .settings(
+      noPublish,
+      crossScalaVersions := Seq(SCALA_3_0)
+    )
+    .aggregate(logJVM)
 
 lazy val docs =
   project
@@ -415,7 +432,7 @@ lazy val launcher =
 
 val logDependencies = { scalaVersion: String =>
   scalaVersion match {
-    case s if IS_DOTTY =>
+    case s if DOTTY =>
       Seq.empty
     case _ =>
       Seq("org.scala-lang" % "scala-reflect" % scalaVersion % Provided)
@@ -434,7 +451,23 @@ lazy val log: sbtcrossproject.CrossProject =
     .settings(
       name := "airframe-log",
       description := "Fancy logger for Scala",
-      libraryDependencies ++= logDependencies(scalaVersion.value)
+      scalacOptions ++= { if (isDotty.value) Seq("-source:3.0-migration") else Nil },
+      libraryDependencies ++= logDependencies(scalaVersion.value),
+      crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions },
+      unmanagedSourceDirectories in Compile ++= {
+        scalaBinaryVersion.value match {
+          case v if v.startsWith("2.") =>
+            Seq(
+              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-2"
+            )
+          case v if v.startsWith("3.") =>
+            Seq(
+              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-3"
+            )
+          case _ =>
+            Seq.empty
+        }
+      }
     )
     .jvmSettings(
       libraryDependencies ++= logJVMDependencies,
@@ -849,6 +882,19 @@ lazy val sbtAirframe =
     )
     .dependsOn(controlJVM, codecJVM, logJVM, httpJVM % Test)
 
+// Dotty test project
+lazy val dottyTest =
+  project
+    .in(file("airframe-dotty-test"))
+    .settings(buildSettings)
+    .settings(noPublish)
+    .settings(
+      name := "airframe-dotty-test",
+      description := "test for dotty",
+      crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions }
+    )
+    .dependsOn(logJVM)
+
 /**
   * AirSpec build definitions.
   *
@@ -877,7 +923,8 @@ val airspecBuildSettings = Seq[Setting[_]](
     val sourceDirs = for (m <- airspecDependsOn.value) yield {
       Seq(
         file(s"${baseDir}/${m}/src/main/scala"),
-        file(s"${baseDir}/${m}/shared/src/main/scala")
+        file(s"${baseDir}/${m}/shared/src/main/scala"),
+        file(s"${baseDir}/${m}/shared/src/main/scala-2")
       )
     }
     sourceDirs.flatten
