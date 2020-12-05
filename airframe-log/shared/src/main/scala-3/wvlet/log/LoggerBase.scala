@@ -46,17 +46,20 @@ trait LoggerBase { self: Logger =>
 /**
   */
 trait LoggingMethods extends Serializable {
-  protected def error(message: Any): Unit                     = ???
-  protected def error(message: Any, cause: Throwable): Unit   = ???
-  protected def warn(message: Any): Unit                      = ???
-  protected def warn(message: Any, cause: Throwable): Unit    = ???
-  protected def info(message: Any): Unit                      = ???
-  protected def info(message: Any, cause: Throwable): Unit    = ???
-  protected def debug(message: Any): Unit                     = ???
-  protected def debug(message: Any, cause: Throwable): Unit   = ???
-  protected def trace(message: Any): Unit                     = ???
-  protected def trace(message: Any, cause: Throwable): Unit   = ???
-  protected def logAt(logLevel: LogLevel, message: Any): Unit = ???
+  protected def logger: Logger
+
+  inline protected def error(inline message: Any): Unit = ${ LoggerMacros.errorImpl('logger, 'message) }
+  inline protected def warn(inline message: Any): Unit  = ${ LoggerMacros.warnImpl('logger, 'message) }
+  inline protected def info(inline message: Any): Unit  = ${ LoggerMacros.infoImpl('logger, 'message) }
+  inline protected def debug(inline message: Any): Unit = ${ LoggerMacros.debugImpl('logger, 'message) }
+  inline protected def trace(inline message: Any): Unit = ${ LoggerMacros.traceImpl('logger, 'message) }
+  inline protected def logAt(inline logLevel: LogLevel, inline message: Any): Unit = ${ LoggerMacros.logImpl('logger, 'logLevel, 'message) }
+
+  inline protected def error(inline message: Any, inline cause: Throwable): Unit   = ${ LoggerMacros.errorWithCauseImpl('logger, 'message, 'cause) }
+  inline protected def warn(inline message: Any, inline cause: Throwable): Unit    = ${ LoggerMacros.warnWithCauseImpl('logger, 'message, 'cause) }
+  inline protected def info(inline message: Any, inline cause: Throwable): Unit    = ${ LoggerMacros.infoWithCauseImpl('logger, 'message, 'cause) }
+  inline protected def debug(inline message: Any, inline cause: Throwable): Unit   = ${ LoggerMacros.debugWithCauseImpl('logger, 'message, 'cause) }
+  inline protected def trace(inline message: Any, inline cause: Throwable): Unit   = ${ LoggerMacros.traceWithCauseImpl('logger, 'message, 'cause) }
 }
 
 private[log] object LoggerMacros {
@@ -72,6 +75,14 @@ private[log] object LoggerMacros {
     val path = Expr(srcPath.toFile.getPath)
     val fileName = Expr(srcPath.getFileName().toString)
     '{ wvlet.log.LogSource(${path}, ${fileName}, ${line}, ${column}) }
+  }
+
+  def logImpl(logger: Expr[Logger], logLevel: Expr[LogLevel], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
+    '{
+      if(${logger}.isEnabled(${logLevel})) {
+        ${logger}.log(${logLevel}, ${sourcePos}, ${message})
+      }
+    }
   }
 
   def errorImpl(logger: Expr[Logger], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
