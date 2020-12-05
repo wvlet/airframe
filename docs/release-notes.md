@@ -6,6 +6,18 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.12.1
+
+This version has added an experimental support for Dotty (Scala 3.0.0-M2) for airframe-log. 
+
+-  airframe-log: Dotty support ([#1381](https://github.com/wvlet/airframe/issues/1381)) [[c6cea28](https://github.com/wvlet/airframe/commit/c6cea28)]
+-  Upgrade to Scala 2.13.4 ([#1376](https://github.com/wvlet/airframe/issues/1376)) [[bd13085](https://github.com/wvlet/airframe/commit/bd13085)]
+-  Upgrade scalacheck to 1.15.1 ([#1374](https://github.com/wvlet/airframe/issues/1374)) [[93d2fc0](https://github.com/wvlet/airframe/commit/93d2fc0)]
+-  internal: Update sbt-dotty to 0.4.6 ([#1378](https://github.com/wvlet/airframe/issues/1378)) [[cb49d7b](https://github.com/wvlet/airframe/commit/cb49d7b)]
+-  internal: Separate AirSpec build  ([#1380](https://github.com/wvlet/airframe/issues/1380)) [[1b39ece](https://github.com/wvlet/airframe/commit/1b39ece)]
+-  internal: Add configuration for testing Scala 3 (Dotty) ([#1377](https://github.com/wvlet/airframe/issues/1377)) [[64feb58](https://github.com/wvlet/airframe/commit/64feb58)]
+-  iinternal: Use a different sonatype session name for Scala.js release [[9bac053](https://github.com/wvlet/airframe/commit/9bac053)]
+
 ## 20.12.0
 
 This is a minor dependency update release. 
