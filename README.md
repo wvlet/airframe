@@ -36,6 +36,18 @@ Airframe https://wvlet.org/airframe is a collection of [lightweight building blo
 <p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px"></p>
 
 
+## Build
+
+### Dotty (Scala 3.0) 
+
+For developing with Dotty, use DOTTY=true environment variable:
+```
+$ DOTTY=true ./sbt
+> logJVM/test
+```
+
+Here is the list of milestones for Dotty support: [#1077](https://github.com/wvlet/airframe/issues/1077)
+
 ## LICENSE
 
 [Apache v2](https://github.com/wvlet/airframe/blob/master/LICENSE)

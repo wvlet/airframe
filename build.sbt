@@ -52,9 +52,10 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 // Disable the pipelining available since sbt-1.4.0. It caused compilation failure
 ThisBuild / usePipelining := false
 
+// A build configuration switch for working on Dotty migration. This needs to be removed eventually
+val DOTTY = sys.env.isDefinedAt("DOTTY")
 // For using Scala 2.12 in sbt
-val IS_DOTTY = sys.env.isDefinedAt("DOTTY")
-scalaVersion in ThisBuild := { if (IS_DOTTY) SCALA_3_0 else SCALA_2_12 }
+scalaVersion in ThisBuild := { if (DOTTY) SCALA_3_0 else SCALA_2_12 }
 organization in ThisBuild := "org.wvlet.airframe"
 
 // Use dynamic snapshot version strings for non tagged versions
@@ -86,13 +87,13 @@ val buildSettings = Seq[Setting[_]](
     "-deprecation",
     // Necessary for tracking source code range in airframe-rx demo
     "-Yrangepos"
-  ) ++ (if (IS_DOTTY) Seq("-Ytasty-reader") else Seq.empty),
+  ) ++ (if (DOTTY) Seq("-Ytasty-reader") else Seq.empty),
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(
     ("org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test).withDottyCompat(scalaVersion.value),
     ("org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Test).withDottyCompat(scalaVersion.value)
   ) ++ {
-    if (IS_DOTTY)
+    if (DOTTY)
       Seq.empty
     else
       Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.3.1")
@@ -415,7 +416,7 @@ lazy val launcher =
 
 val logDependencies = { scalaVersion: String =>
   scalaVersion match {
-    case s if IS_DOTTY =>
+    case s if DOTTY =>
       Seq.empty
     case _ =>
       Seq("org.scala-lang" % "scala-reflect" % scalaVersion % Provided)
@@ -436,7 +437,7 @@ lazy val log: sbtcrossproject.CrossProject =
       description := "Fancy logger for Scala",
       scalacOptions ++= { if (isDotty.value) Seq("-source:3.0-migration") else Nil },
       libraryDependencies ++= logDependencies(scalaVersion.value),
-      crossScalaVersions := { if (IS_DOTTY) withDotty else targetScalaVersions }
+      crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions }
     )
     .jvmSettings(
       libraryDependencies ++= logJVMDependencies,
