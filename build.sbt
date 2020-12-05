@@ -226,6 +226,15 @@ lazy val projectJS =
     )
     .aggregate(jsProjects: _*)
 
+// For Dotty (Scala 3)
+lazy val projectDotty =
+  project
+    .settings(
+      noPublish,
+      crossScalaVersions := Seq(SCALA_3_0)
+    )
+    .aggregate(logJVM)
+
 lazy val docs =
   project
     .in(file("airframe-docs"))
