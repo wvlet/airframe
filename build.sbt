@@ -7,7 +7,7 @@ val SCALA_3_0           = "3.0.0-M2"
 val targetScalaVersions = SCALA_2_13 :: SCALA_2_12 :: Nil
 val withDotty           = SCALA_3_0 :: targetScalaVersions
 
-val AIRSPEC_VERSION                 = "20.12.0"
+val AIRSPEC_VERSION                 = "20.12.1"
 val SCALACHECK_VERSION              = "1.15.1"
 val MSGPACK_VERSION                 = "0.8.21"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
