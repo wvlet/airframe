@@ -37,14 +37,15 @@ trait LoggerBase {
   private def logImpl(level: Expr[wvlet.log.LogLevel], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
     import q.reflect._
     val pos = Position.ofMacroExpansion
-    val line: Int = pos.startLine
-    val column : Int = pos.endColumn
+    val line = Expr(pos.startLine)
+    val column = Expr(pos.endColumn)
     val src = pos.sourceFile
-    val path: java.nio.file.Path = src.jpath
-    val l: Logger = this.asInstanceOf[Logger]
+    val srcPath: java.nio.file.Path = src.jpath
+    val path = Expr(srcPath.toFile.getPath)
+    val fileName = Expr(srcPath.getFileName().toString)
 
     //'{ if(${Expr(l)}.isEnabled(${level})) ${Expr(l)}.log(${level}, wvlet.log.LogSource(${Expr(path.toFile().getPath())}, ${Expr(path.getFileName().toString)}, ${Expr(line)}, ${Expr(column)}), $message) }
-    '{ println(wvlet.log.LogSource(${Expr(path.toFile().getPath())}, ${Expr(path.getFileName().toString)}, ${Expr(line)}, ${Expr(column)})) }
+    '{ println(wvlet.log.LogSource(${path}, ${fileName}, ${line}, ${column})) }
 
   }
 
