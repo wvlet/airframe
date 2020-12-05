@@ -437,7 +437,23 @@ lazy val log: sbtcrossproject.CrossProject =
       description := "Fancy logger for Scala",
       scalacOptions ++= { if (isDotty.value) Seq("-source:3.0-migration") else Nil },
       libraryDependencies ++= logDependencies(scalaVersion.value),
-      crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions }
+      crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions },
+      unmanagedSourceDirectories in Compile ++= {
+        scalaBinaryVersion.value match {
+          case v if v.startsWith("2.") =>
+            Seq(
+              baseDirectory.value / "src" / "main" / "scala-2.x",
+              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-2.x"
+            )
+          case v if v.startsWith("3.") =>
+            Seq(
+              baseDirectory.value / "src" / "main" / "scala-3.x",
+              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-3.x"
+            )
+          case _ =>
+            Seq.empty
+        }
+      }
     )
     .jvmSettings(
       libraryDependencies ++= logJVMDependencies,

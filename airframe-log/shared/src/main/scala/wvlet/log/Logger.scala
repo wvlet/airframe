@@ -14,7 +14,6 @@
 package wvlet.log
 
 import java.util.concurrent.ConcurrentHashMap
-import java.util.logging._
 import java.util.{Properties, logging => jl}
 
 import scala.annotation.tailrec
@@ -33,8 +32,8 @@ class Logger(
       * If wrapped is null, _log method will find or create the logger instance.
       */
     @transient private[log] var wrapped: jl.Logger
-) extends Serializable {
-  import LogMacros._
+) extends LoggerBase
+    with Serializable {
 
   private def _log = {
     if (wrapped == null) {
@@ -42,24 +41,6 @@ class Logger(
     }
     wrapped
   }
-
-  def error(message: Any): Unit = macro errorLogMethod
-  def error(message: Any, cause: Throwable): Unit =
-    macro errorLogMethodWithCause
-
-  def warn(message: Any): Unit = macro warnLogMethod
-  def warn(message: Any, cause: Throwable): Unit = macro warnLogMethodWithCause
-
-  def info(message: Any): Unit = macro infoLogMethod
-  def info(message: Any, cause: Throwable): Unit = macro infoLogMethodWithCause
-
-  def debug(message: Any): Unit = macro debugLogMethod
-  def debug(message: Any, cause: Throwable): Unit =
-    macro debugLogMethodWithCause
-
-  def trace(message: Any): Unit = macro traceLogMethod
-  def trace(message: Any, cause: Throwable): Unit =
-    macro traceLogMethodWithCause
 
   def getName = name
 
@@ -88,7 +69,7 @@ class Logger(
     resetHandler(new ConsoleLogHandler(formatter))
   }
 
-  def resetHandler(h: Handler): Unit = {
+  def resetHandler(h: jl.Handler): Unit = {
     clearHandlers
     _log.addHandler(h)
     setUseParentHandlers(false)
@@ -98,7 +79,7 @@ class Logger(
     Option(wrapped.getParent).map(x => Logger(x.getName))
   }
 
-  def addHandler(h: Handler): Unit = {
+  def addHandler(h: jl.Handler): Unit = {
     _log.addHandler(h)
   }
 
@@ -134,7 +115,7 @@ class Logger(
     }
   }
 
-  def getHandlers: Seq[Handler] = {
+  def getHandlers: Seq[jl.Handler] = {
     wrapped.getHandlers.toSeq
   }
 
@@ -155,7 +136,10 @@ class Logger(
     log(wvlet.log.LogRecord(level, source, formatLog(message)))
   }
 
-  def logWithCause(level: LogLevel, source: LogSource, message: Any, cause: Throwable): Unit = {
+  def logWithCause(level: LogLevel,
+                   source: LogSource,
+                   message: Any,
+                   cause: Throwable): Unit = {
     log(wvlet.log.LogRecord(level, source, formatLog(message), cause))
   }
 
@@ -219,7 +203,7 @@ object Logger {
   private[log] def initLogger(
       name: String,
       level: Option[LogLevel] = None,
-      handlers: Seq[Handler] = Seq.empty,
+      handlers: Seq[jl.Handler] = Seq.empty,
       useParents: Boolean = true
   ): Logger = {
     val logger = Logger.apply(name)
@@ -241,7 +225,9 @@ object Logger {
   }
 
   def apply(loggerName: String): Logger = {
-    loggerCache.getOrElseUpdate(loggerName, new Logger(loggerName, jl.Logger.getLogger(loggerName)))
+    loggerCache.getOrElseUpdate(
+      loggerName,
+      new Logger(loggerName, jl.Logger.getLogger(loggerName)))
   }
 
   def getDefaultLogLevel: LogLevel = rootLogger.getLogLevel
@@ -285,7 +271,8 @@ object Logger {
         case Some(lv) =>
           Logger(loggerName).setLogLevel(lv)
         case None =>
-          Console.err.println(s"Unknown loglevel ${level} is specified for ${loggerName}")
+          Console.err.println(
+            s"Unknown loglevel ${level} is specified for ${loggerName}")
       }
     }
   }
