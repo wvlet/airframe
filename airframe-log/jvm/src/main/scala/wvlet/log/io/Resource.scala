@@ -51,13 +51,10 @@ object Resource {
     * @param body             code block
     * @tparam U
     */
-  def open[U](referenceClass: Class[_], resourceFileName: String)(
-      body: BufferedInputStream => U): U = {
+  def open[U](referenceClass: Class[_], resourceFileName: String)(body: BufferedInputStream => U): U = {
     val u = find(referenceClass, resourceFileName)
     if (u.isEmpty) {
-      sys.error(
-        "Resource %s (in %s) not found".format(resourceFileName,
-                                               referenceClass.getSimpleName))
+      sys.error("Resource %s (in %s) not found".format(resourceFileName, referenceClass.getSimpleName))
     }
 
     val s = new BufferedInputStream(u.get.openStream())
@@ -83,8 +80,7 @@ object Resource {
   /**
     * Return a URLClassLoader if the given ClassLoader or its parent has the URLClassLoader
     */
-  private def findNextURLClassLoader(
-      cl: ClassLoader): Option[URLClassLoader] = {
+  private def findNextURLClassLoader(cl: ClassLoader): Option[URLClassLoader] = {
     cl match {
       case u: URLClassLoader => Some(u)
       case null              => None
@@ -92,8 +88,7 @@ object Resource {
     }
   }
 
-  private def resolveResourcePath(packageName: String,
-                                  resourceFileName: String) = {
+  private def resolveResourcePath(packageName: String, resourceFileName: String) = {
     val path: String = packagePath(packageName)
     prependSlash(path + resourceFileName)
   }
@@ -150,8 +145,7 @@ object Resource {
       }
     }
 
-    loop(currentClassLoader) orElse Option(
-      this.getClass.getResource(resourcePath))
+    loop(currentClassLoader) orElse Option(this.getClass.getResource(resourcePath))
   }
 
   /**
@@ -195,8 +189,7 @@ object Resource {
     *
     * @author leo
     */
-  case class SystemFile(file: java.io.File, logicalPath: String)
-      extends VirtualFile {
+  case class SystemFile(file: java.io.File, logicalPath: String) extends VirtualFile {
     def url: URL = file.toURI.toURL
 
     def isDirectory: Boolean = file.isDirectory
@@ -207,10 +200,7 @@ object Resource {
     *
     * @author leo
     */
-  case class FileInJar(resourceURL: URL,
-                       logicalPath: String,
-                       isDirectory: Boolean)
-      extends VirtualFile {
+  case class FileInJar(resourceURL: URL, logicalPath: String, isDirectory: Boolean) extends VirtualFile {
     if (resourceURL == null) {
       sys.error("resource URL cannot be null: " + logicalPath)
     }
@@ -218,9 +208,8 @@ object Resource {
     def url = resourceURL
   }
 
-  private def extractLogicalName(packagePath: String,
-                                 resourcePath: String): String = {
-    val p = if (!packagePath.endsWith("/")) packagePath + "/" else packagePath
+  private def extractLogicalName(packagePath: String, resourcePath: String): String = {
+    val p        = if (!packagePath.endsWith("/")) packagePath + "/" else packagePath
     val pos: Int = resourcePath.indexOf(p)
     if (pos < 0) return null
     val logicalName: String = resourcePath.substring(pos + p.length)
@@ -234,11 +223,10 @@ object Resource {
   ): Seq[VirtualFile] = {
     val logicalName = extractLogicalName(packagePath, resourceURLString)
     if (logicalName == null) {
-      throw new IllegalArgumentException(
-        "packagePath=" + packagePath + ", resourceURL=" + resourceURLString)
+      throw new IllegalArgumentException("packagePath=" + packagePath + ", resourceURL=" + resourceURLString)
     }
 
-    val b = Seq.newBuilder[VirtualFile]
+    val b          = Seq.newBuilder[VirtualFile]
     val file: File = new File(new URL(resourceURLString).toURI)
     if (resourceFilter(file.getPath)) {
       b += SystemFile(file, logicalName)
@@ -247,9 +235,7 @@ object Resource {
       for (childFile <- file.listFiles) {
         val childResourceURL =
           resourceURLString + (if (resourceURLString.endsWith("/")) "" else "/") + childFile.getName
-        b ++= collectFileResources(childResourceURL,
-                                   packagePath,
-                                   resourceFilter)
+        b ++= collectFileResources(childResourceURL, packagePath, resourceFilter)
       }
     }
     b.result()
@@ -270,7 +256,7 @@ object Resource {
       packageName: String,
       resourceFilter: String => Boolean
   ): Seq[VirtualFile] = {
-    val pkgPath = packagePath(packageName)
+    val pkgPath  = packagePath(packageName)
     val fileList = Seq.newBuilder[VirtualFile]
     if (resourceURL == null) {
       return Seq.empty
@@ -279,15 +265,12 @@ object Resource {
     val protocol = resourceURL.getProtocol
     if (protocol == "file") {
       val resourceURLString = resourceURL.toString
-      fileList ++= collectFileResources(resourceURLString,
-                                        pkgPath,
-                                        resourceFilter)
+      fileList ++= collectFileResources(resourceURLString, pkgPath, resourceFilter)
     } else if (protocol == "jar") {
       val path: String = resourceURL.getPath
-      val pos: Int = path.indexOf("!")
+      val pos: Int     = path.indexOf("!")
       if (pos < 0) {
-        throw new IllegalArgumentException(
-          "invalid resource URL: " + resourceURL)
+        throw new IllegalArgumentException("invalid resource URL: " + resourceURL)
       }
 
       val jarPath = path.substring(0, pos).replaceAll("%20", " ")
@@ -298,20 +281,19 @@ object Resource {
           .replaceAll("%25", "%") // %25 => %
           .replace("file:", "")
       val jarURLString = "jar:" + jarPath
-      val jf: JarFile = new JarFile(filePath)
-      val entryEnum = jf.entries
+      val jf: JarFile  = new JarFile(filePath)
+      val entryEnum    = jf.entries
       while (entryEnum.hasMoreElements) {
-        val jarEntry = entryEnum.nextElement
+        val jarEntry    = entryEnum.nextElement
         val physicalURL = jarURLString + "!/" + jarEntry.getName
-        val jarFileURL = new URL(physicalURL)
+        val jarFileURL  = new URL(physicalURL)
         val logicalName = extractLogicalName(pkgPath, jarEntry.getName)
         if (logicalName != null && resourceFilter(logicalName)) {
           fileList += FileInJar(jarFileURL, logicalName, jarEntry.isDirectory)
         }
       }
     } else {
-      throw new UnsupportedOperationException(
-        "resources other than file or jar are not supported: " + resourceURL)
+      throw new UnsupportedOperationException("resources other than file or jar are not supported: " + resourceURL)
     }
 
     fileList.result()
@@ -325,7 +307,8 @@ object Resource {
     */
   def listResources(packageName: String): Seq[VirtualFile] =
     listResources(
-      packageName, { (f: String) =>
+      packageName,
+      { (f: String) =>
         true
       }
     )
@@ -359,7 +342,7 @@ object Resource {
     */
   def findResourceURLs(cl: ClassLoader, name: String): Seq[URL] = {
     val path = packagePath(name)
-    val b = Seq.newBuilder[URL]
+    val b    = Seq.newBuilder[URL]
 
     @tailrec
     def loop(cl: ClassLoader): Unit = {
@@ -386,7 +369,8 @@ object Resource {
       classLoader: ClassLoader = Thread.currentThread.getContextClassLoader
   ): Seq[Class[A]] = {
     val classFileList = listResources(
-      packageName, { (f: String) =>
+      packageName,
+      { (f: String) =>
         f.endsWith(".class")
       },
       classLoader
@@ -411,8 +395,7 @@ object Resource {
     for (vf <- classFileList; cn <- componentName(vf.logicalPath)) {
       val className: String = packageName + "." + cn
       for (cl <- findClass(className)) {
-        if (!Modifier.isAbstract(cl.getModifiers) && toSearch.isAssignableFrom(
-              cl)) {
+        if (!Modifier.isAbstract(cl.getModifiers) && toSearch.isAssignableFrom(cl)) {
           b += cl.asInstanceOf[Class[A]]
         }
       }
@@ -420,9 +403,7 @@ object Resource {
     b.result()
   }
 
-  def findClasses[A](searchPath: Package,
-                     toSearch: Class[A],
-                     classLoader: ClassLoader): Seq[Class[A]] = {
+  def findClasses[A](searchPath: Package, toSearch: Class[A], classLoader: ClassLoader): Seq[Class[A]] = {
     findClasses(searchPath.getName, toSearch, classLoader)
   }
 }
