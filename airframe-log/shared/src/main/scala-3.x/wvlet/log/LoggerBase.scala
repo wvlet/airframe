@@ -30,3 +30,33 @@ trait LoggerBase {
   def trace(message: Any): Unit                   = ???
   def trace(message: Any, cause: Throwable): Unit = ???
 }
+
+/**
+  */
+trait LoggingMethods extends Serializable {
+
+  protected def error(message: Any): Unit                     = ???
+  protected def error(message: Any, cause: Throwable): Unit   = ???
+  protected def warn(message: Any): Unit                      = ???
+  protected def warn(message: Any, cause: Throwable): Unit    = ???
+  protected def info(message: Any): Unit                      = ???
+  protected def info(message: Any, cause: Throwable): Unit    = ???
+  protected def debug(message: Any): Unit                     = ???
+  protected def debug(message: Any, cause: Throwable): Unit   = ???
+  protected def trace(message: Any): Unit                     = ???
+  protected def trace(message: Any, cause: Throwable): Unit   = ???
+  protected def logAt(logLevel: LogLevel, message: Any): Unit = ???
+}
+
+import scala.language.experimental.macros
+
+object LogMacros {
+  import scala.quoted._
+
+  def logImpl(message:Expr[Any])(using q: Quotes): Expr[Unit] = {
+    val pos = q.reflect.PositionMethods
+    val line = pos.startLine
+    val sourceCode = pos.sourceCode
+    '{ () }
+  }
+}
