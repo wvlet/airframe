@@ -9,7 +9,11 @@ import java.util.{logging => jl}
 /**
   * Logging using background thread
   */
-class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCloseable with Flushable {
+class AsyncHandler(parent: jl.Handler)
+    extends jl.Handler
+    with Guard
+    with AutoCloseable
+    with Flushable {
   private val executor = {
     Executors.newCachedThreadPool(
       new ThreadFactory {
@@ -22,9 +26,9 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
     )
   }
 
-  private val queue      = new util.ArrayDeque[jl.LogRecord]
+  private val queue = new util.ArrayDeque[jl.LogRecord]
   private val isNotEmpty = newCondition
-  private val closed     = new AtomicBoolean(false)
+  private val closed = new AtomicBoolean(false)
 
   // Start a poller thread
   executor.submit(new Runnable {
@@ -51,7 +55,7 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
       }
     }
 
-    records.result.map(parent.publish _)
+    records.result().map(parent.publish _)
     parent.flush()
   }
 
