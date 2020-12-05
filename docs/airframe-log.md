@@ -15,11 +15,7 @@ airframe-log also supports [Scala.js](https://www.scala-js.org/) to see the logs
 - Blog post: [Airframe Log: A Modern Logging Library for Scala](https://medium.com/@taroleo/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc)
 
 
-[![maven central][central-badge]][central-link]
-
-[central-badge]: https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central
-[central-link]: https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
-
+[![maven central](https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg)](https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22)
 
 ```scala
 libraryDependencies += "org.wvlet.airframe" %% "airframe-log" % "(version)"
