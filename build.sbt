@@ -90,7 +90,7 @@ val buildSettings = Seq[Setting[_]](
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(
     "org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test,
-    "org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Provided
+    "org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Test
   ) ++ {
     if (IS_DOTTY)
       Seq.empty
