@@ -143,7 +143,7 @@ object Resource {
           urlClassLoader.getResource(resourcePath) match {
             case path: URL =>
               Some(path)
-            case _ =>
+            case null =>
               loop(urlClassLoader.getParent)
           }
         case None => None
