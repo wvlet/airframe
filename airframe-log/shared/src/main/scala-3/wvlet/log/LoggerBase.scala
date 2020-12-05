@@ -15,46 +15,37 @@ package wvlet.log
 
 /**
   */
-trait LoggerBase {
+trait LoggerBase { self: Logger =>
 
-  def error(message: Any): Unit                   = ???
-  def error(message: Any, cause: Throwable): Unit = ???
-  def warn(message: Any): Unit                    = ???
-  def warn(message: Any, cause: Throwable): Unit  = ???
+  inline def error(inline message: Any): Unit = ${ LoggerMacros.errorImpl('this, 'message) }
+  inline def warn(inline message: Any): Unit  = ${ LoggerMacros.warnImpl('this, 'message) }
+  inline def info(inline message: Any): Unit  = ${ LoggerMacros.infoImpl('this, 'message) }
+  inline def debug(inline message: Any): Unit = ${ LoggerMacros.debugImpl('this, 'message) }
+  inline def trace(inline message: Any): Unit = ${ LoggerMacros.traceImpl('this, 'message) }
 
-  def info(message: Any): Unit                   = ???
-  def info(message: Any, cause: Throwable): Unit = ???
-
-  def debug(message: Any): Unit                   = ???
-  def debug(message: Any, cause: Throwable): Unit = ???
-  def trace(message: Any): Unit                   = ???
-  def trace(message: Any, cause: Throwable): Unit = ???
-
-  def isEnabled(level: LogLevel): Boolean
-  def log(level: LogLevel, source: LogSource, message:Any): Unit
-
-  import scala.quoted._
-  private def logImpl(level: Expr[wvlet.log.LogLevel], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
-    import q.reflect._
-    val pos = Position.ofMacroExpansion
-    val line = Expr(pos.startLine)
-    val column = Expr(pos.endColumn)
-    val src = pos.sourceFile
-    val srcPath: java.nio.file.Path = src.jpath
-    val path = Expr(srcPath.toFile.getPath)
-    val fileName = Expr(srcPath.getFileName().toString)
-
-    //'{ if(${Expr(l)}.isEnabled(${level})) ${Expr(l)}.log(${level}, wvlet.log.LogSource(${Expr(path.toFile().getPath())}, ${Expr(path.getFileName().toString)}, ${Expr(line)}, ${Expr(column)}), $message) }
-    '{ println(wvlet.log.LogSource(${path}, ${fileName}, ${line}, ${column})) }
-
+  inline def error(inline message: Any, inline cause: Throwable): Unit = ${
+    LoggerMacros.errorWithCauseImpl('this, 'message, 'cause)
+  }
+  inline def warn(inline message: Any, inline cause: Throwable): Unit  = ${
+    LoggerMacros.warnWithCauseImpl('this, 'message, 'cause)
   }
 
+  inline def info(inline message: Any, inline cause: Throwable): Unit = ${
+    LoggerMacros.infoWithCauseImpl('this, 'message, 'cause)
+  }
+
+  inline def debug(inline message: Any, inline cause: Throwable): Unit = ${
+    LoggerMacros.debugWithCauseImpl('this, 'message, 'cause)
+  }
+
+  inline def trace(inline message: Any, inline cause: Throwable): Unit = ${
+    LoggerMacros.traceWithCauseImpl('this, 'message, 'cause)
+  }
 }
 
 /**
   */
 trait LoggingMethods extends Serializable {
-
   protected def error(message: Any): Unit                     = ???
   protected def error(message: Any, cause: Throwable): Unit   = ???
   protected def warn(message: Any): Unit                      = ???
@@ -68,7 +59,100 @@ trait LoggingMethods extends Serializable {
   protected def logAt(logLevel: LogLevel, message: Any): Unit = ???
 }
 
-object LogMacros {
+private[log] object LoggerMacros {
+  import scala.quoted._
 
+  private def sourcePos(using q: Quotes): Expr[wvlet.log.LogSource] = {
+    import q.reflect._
+    val pos = Position.ofMacroExpansion
+    val line = Expr(pos.startLine)
+    val column = Expr(pos.endColumn)
+    val src = pos.sourceFile
+    val srcPath: java.nio.file.Path = src.jpath
+    val path = Expr(srcPath.toFile.getPath)
+    val fileName = Expr(srcPath.getFileName().toString)
+    '{ wvlet.log.LogSource(${path}, ${fileName}, ${line}, ${column}) }
+  }
 
+  def errorImpl(logger: Expr[Logger], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
+    '{
+      if(${logger}.isEnabled(wvlet.log.LogLevel.ERROR)) {
+        ${logger}.log(wvlet.log.LogLevel.ERROR, ${sourcePos}, ${message})
+      }
+    }
+  }
+
+  def warnImpl(logger: Expr[Logger], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
+    '{
+      if(${logger}.isEnabled(wvlet.log.LogLevel.WARN)) {
+        ${logger}.log(wvlet.log.LogLevel.WARN, ${sourcePos}, ${message})
+      }
+    }
+  }
+
+  def infoImpl(logger: Expr[Logger], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
+    '{
+      if(${logger}.isEnabled(wvlet.log.LogLevel.INFO)) {
+        ${logger}.log(wvlet.log.LogLevel.INFO, ${sourcePos}, ${message})
+      }
+    }
+  }
+
+  def debugImpl(logger: Expr[Logger], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
+    '{
+      if(${logger}.isEnabled(wvlet.log.LogLevel.DEBUG)) {
+        ${logger}.log(wvlet.log.LogLevel.DEBUG, ${sourcePos}, ${message})
+      }
+    }
+  }
+
+  def traceImpl(logger: Expr[Logger], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
+    '{
+      if(${logger}.isEnabled(wvlet.log.LogLevel.TRACE)) {
+        ${logger}.log(wvlet.log.LogLevel.TRACE, ${sourcePos}, ${message})
+      }
+    }
+  }
+
+  def errorWithCauseImpl(logger: Expr[Logger], message:Expr[Any], cause: Expr[Throwable])(using q: Quotes): Expr[Unit] = {
+    '{
+      if(${logger}.isEnabled(wvlet.log.LogLevel.ERROR)) {
+        ${logger}.logWithCause(wvlet.log.LogLevel.ERROR, ${sourcePos}, ${message}, ${cause})
+      }
+    }
+  }
+
+  def warnWithCauseImpl(logger: Expr[Logger], message:Expr[Any], cause: Expr[Throwable])(using q: Quotes): Expr[Unit] = {
+    '{
+      if(${logger}.isEnabled(wvlet.log.LogLevel.WARN)) {
+        ${logger}.logWithCause(wvlet.log.LogLevel.WARN, ${sourcePos}, ${message}, ${cause})
+      }
+    }
+  }
+
+  def infoWithCauseImpl(logger: Expr[Logger], message:Expr[Any], cause: Expr[Throwable])(using q: Quotes): Expr[Unit] = {
+    '{
+      if(${logger}.isEnabled(wvlet.log.LogLevel.INFO)) {
+        ${logger}.logWithCause(wvlet.log.LogLevel.INFO, ${sourcePos}, ${message}, ${cause})
+      }
+    }
+  }
+
+  def debugWithCauseImpl(logger: Expr[Logger], message:Expr[Any], cause: Expr[Throwable])(using q: Quotes): Expr[Unit] = {
+    '{
+      if(${logger}.isEnabled(wvlet.log.LogLevel.DEBUG)) {
+        ${logger}.logWithCause(wvlet.log.LogLevel.DEBUG, ${sourcePos}, ${message}, ${cause})
+      }
+    }
+  }
+
+  def traceWithCauseImpl(logger: Expr[Logger], message:Expr[Any], cause: Expr[Throwable])(using q: Quotes): Expr[Unit] = {
+    '{
+      if(${logger}.isEnabled(wvlet.log.LogLevel.TRACE)) {
+        ${logger}.logWithCause(wvlet.log.LogLevel.TRACE, ${sourcePos}, ${message}, ${cause})
+      }
+    }
+  }
 }
+
+
