@@ -233,7 +233,7 @@ lazy val projectDotty =
       noPublish,
       crossScalaVersions := Seq(SCALA_3_0)
     )
-    .aggregate(logJVM)
+    .aggregate(logJVM, surfaceJVM)
 
 lazy val docs =
   project
@@ -355,7 +355,22 @@ lazy val surface =
     .settings(
       name := "airframe-surface",
       description := "A library for extracting object structure surface",
-      libraryDependencies ++= surfaceDependencies(scalaVersion.value)
+      libraryDependencies ++= surfaceDependencies(scalaVersion.value),
+      crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions },
+      unmanagedSourceDirectories in Compile ++= {
+        scalaBinaryVersion.value match {
+          case v if v.startsWith("2.") =>
+            Seq(
+              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-2"
+            )
+          case v if v.startsWith("3.") =>
+            Seq(
+              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-3"
+            )
+          case _ =>
+            Seq.empty
+        }
+      }
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log)
