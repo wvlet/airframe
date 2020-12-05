@@ -138,9 +138,7 @@ object LogFormatter {
     override def formatLog(r: LogRecord): String = {
       val logTag = highlightLog(r.level, r.level.name)
       val log =
-        f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(
-          Console.WHITE,
-          r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
+        f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(Console.WHITE, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
       appendStackTrace(log, r)
     }
   }
@@ -152,8 +150,7 @@ object LogFormatter {
     override def formatLog(r: LogRecord): String = {
       val loc =
         r.source
-          .map(source =>
-            s" ${withColor(Console.BLUE, s"- (${source.fileLoc})")}")
+          .map(source => s" ${withColor(Console.BLUE, s"- (${source.fileLoc})")}")
           .getOrElse("")
 
       val logTag = highlightLog(r.level, r.level.name)
@@ -189,9 +186,7 @@ object LogFormatter {
     override def formatLog(r: LogRecord): String = {
       val loc =
         r.source
-          .map(source =>
-            s" ${withColor(Console.BLUE,
-                           s"- ${r.getLoggerName}(${source.fileLoc})")}")
+          .map(source => s" ${withColor(Console.BLUE, s"- ${r.getLoggerName}(${source.fileLoc})")}")
           .getOrElse("")
 
       val log =
