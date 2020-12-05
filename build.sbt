@@ -340,11 +340,15 @@ lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
 lazy val airframeMacrosRef    = airframeMacros    % Optional
 
 val surfaceDependencies = { scalaVersion: String =>
+  val reflectVersion = scalaVersion match {
+    case s if s.startsWith("3.") => SCALA_2_13
+    case _                       => scalaVersion
+  }
   Seq(
     // For ading PreDestroy, PostConstruct annotations to Java9
     "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION,
-    "org.scala-lang"   % "scala-reflect"        % scalaVersion,
-    "org.scala-lang"   % "scala-compiler"       % scalaVersion % Provided
+    ("org.scala-lang"  % "scala-reflect"        % reflectVersion).withDottyCompat(scalaVersion),
+    ("org.scala-lang"  % "scala-compiler"       % reflectVersion % Provided).withDottyCompat(scalaVersion)
   )
 }
 
@@ -908,7 +912,7 @@ lazy val dottyTest =
       description := "test for dotty",
       crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions }
     )
-    .dependsOn(logJVM)
+    .dependsOn(logJVM, surfaceJVM)
 
 /**
   * AirSpec build definitions.
