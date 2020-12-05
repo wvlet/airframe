@@ -89,8 +89,8 @@ val buildSettings = Seq[Setting[_]](
   ) ++ (if (IS_DOTTY) Seq("-Ytasty-reader") else Seq.empty),
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(
-    "org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test,
-    "org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Test
+    ("org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test).withDottyCompat(scalaVersion.value),
+    ("org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Test).withDottyCompat(scalaVersion.value)
   ) ++ {
     if (IS_DOTTY)
       Seq.empty
@@ -434,7 +434,9 @@ lazy val log: sbtcrossproject.CrossProject =
     .settings(
       name := "airframe-log",
       description := "Fancy logger for Scala",
-      libraryDependencies ++= logDependencies(scalaVersion.value)
+      scalacOptions ++= { if (isDotty.value) Seq("-source:3.0-migration") else Nil },
+      libraryDependencies ++= logDependencies(scalaVersion.value),
+      crossScalaVersions := { if (IS_DOTTY) withDotty else targetScalaVersions }
     )
     .jvmSettings(
       libraryDependencies ++= logJVMDependencies,
