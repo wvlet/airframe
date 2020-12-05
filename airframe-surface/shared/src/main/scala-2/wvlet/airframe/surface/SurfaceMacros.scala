@@ -17,7 +17,7 @@ import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
 
 /**
-  * Surface genration Macros for Scala.js.
+  * Surface generation Macros for Scala.js.
   *
   * This code needs to be almost the same with ReflectSurfaceFactory
   */
