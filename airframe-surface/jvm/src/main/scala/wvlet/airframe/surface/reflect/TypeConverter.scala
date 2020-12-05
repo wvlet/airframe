@@ -38,10 +38,12 @@ object TypeConverter extends LogSupport {
       if (targetType.isPrimitive) {
         convertToPrimitive(value, targetType)
       } else if (targetType.isOption) {
-        if (/** StartMarker */
-            isOptionCls
-            /** EndMarker */
-            (cls(value))) {
+        if (
+          /** StartMarker */
+          isOptionCls
+          /** EndMarker */
+          (cls(value))
+        ) {
           Option(value)
         } else {
           Option(convert(value, targetType.typeArgs(0)))
@@ -55,9 +57,9 @@ object TypeConverter extends LogSupport {
           Some(value)
         } else if (isBuffer(s)) {
           trace(s"convert buffer $value into $targetType")
-          val buf = value.asInstanceOf[mutable.Buffer[_]]
+          val buf              = value.asInstanceOf[mutable.Buffer[_]]
           val gt: Seq[Surface] = targetType.typeArgs
-          val e = gt(0).rawType
+          val e                = gt(0).rawType
           if (isArray(targetType)) {
             val arr = ClassTag(e).newArray(buf.length).asInstanceOf[Array[Any]]
             buf.copyToArray(arr)

@@ -42,7 +42,7 @@ object ReflectTypeUtil extends LogSupport {
       } else {
         Class.forName(clName + "$")
       }
-      val module = companionCls.getField("MODULE$")
+      val module       = companionCls.getField("MODULE$")
       val companionObj = module.get(null)
       Some(companionObj)
     } catch {
@@ -53,8 +53,7 @@ object ReflectTypeUtil extends LogSupport {
     }
   }
 
-  private[reflect] def access[A <: jr.AccessibleObject, B](f: A)(
-      body: => B): B = {
+  private[reflect] def access[A <: jr.AccessibleObject, B](f: A)(body: => B): B = {
     synchronized {
       val accessible = f.isAccessible
       try {
@@ -82,7 +81,7 @@ object ReflectTypeUtil extends LogSupport {
     isPrimitive(s) || hasStringUnapplyConstructor(s)
 
   def isPrimitive(s: Surface): Boolean = s.isPrimitive
-  def isArray(s: Surface): Boolean = s.isInstanceOf[ArraySurface]
+  def isArray(s: Surface): Boolean     = s.isInstanceOf[ArraySurface]
   def isArrayCls[T](cl: Class[T]): Boolean = {
     cl.isArray || cl.getSimpleName == "Array"
   }
@@ -111,7 +110,7 @@ object ReflectTypeUtil extends LogSupport {
           }
           def returnOptionOfT = {
             val rt = p.getGenericReturnType
-            val t = getTypeParameters(rt)
+            val t  = getTypeParameters(rt)
             isOptionCls(p.getReturnType) && t.length == 1 && t(0) == cl
           }
           p.getName == "unapply" && acceptString && returnOptionOfT
@@ -157,8 +156,7 @@ object ReflectTypeUtil extends LogSupport {
   }
 
   def isTuple[T](cl: Class[T]): Boolean = {
-    classOf[Product].isAssignableFrom(cl) && cl.getName.startsWith(
-      "scala.Tuple")
+    classOf[Product].isAssignableFrom(cl) && cl.getName.startsWith("scala.Tuple")
   }
 
   def isList[T](cl: Class[T]): Boolean = {

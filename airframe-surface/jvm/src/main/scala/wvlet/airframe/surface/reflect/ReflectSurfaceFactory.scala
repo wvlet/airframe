@@ -39,8 +39,7 @@ object ReflectSurfaceFactory extends LogSupport {
     t match {
       case ru.TypeRef(prefix, _, _) =>
         val scalaDefaultPackages = Seq("scala.", "scala.Predef.", "scala.util.")
-        scalaDefaultPackages.exists(p =>
-          prefix.dealias.typeSymbol.fullName.startsWith(p))
+        scalaDefaultPackages.exists(p => prefix.dealias.typeSymbol.fullName.startsWith(p))
       case _ => false
     }
   }
@@ -51,7 +50,7 @@ object ReflectSurfaceFactory extends LogSupport {
     apply(tpe)
   }
   def ofClass(cls: Class[_]): Surface = {
-    val cs = mirror.classSymbol(cls)
+    val cs  = mirror.classSymbol(cls)
     val tpe = cs.toType
     ofType(tpe) match {
       // Workaround for sbt's layered class loader, which cannot find the original classes using the reflect mirror
@@ -70,8 +69,7 @@ object ReflectSurfaceFactory extends LogSupport {
     }
   }
 
-  private def getFirstParamTypeOfPrimaryConstructor(
-      cls: Class[_]): Option[Class[_]] = {
+  private def getFirstParamTypeOfPrimaryConstructor(cls: Class[_]): Option[Class[_]] = {
     getPrimaryConstructorOf(cls).flatMap { constructor =>
       val constructorParamTypes = constructor.getParameterTypes
       if (constructorParamTypes.size == 0) {
@@ -101,9 +99,7 @@ object ReflectSurfaceFactory extends LogSupport {
   def findTypeOf(s: Surface): Option[ru.Type] = typeMap.get(s)
 
   def get(name: String): Surface = {
-    surfaceCache.getOrElse(name,
-                           throw new IllegalArgumentException(
-                             s"Surface ${name} is not found in cache"))
+    surfaceCache.getOrElse(name, throw new IllegalArgumentException(s"Surface ${name} is not found in cache"))
   }
 
   private def typeNameOf(t: ru.Type): String = {
@@ -122,7 +118,7 @@ object ReflectSurfaceFactory extends LogSupport {
           if symbol.isType &&
             symbol.asType.isAliasType &&
             !belongsToScalaDefault(alias) =>
-        val name = symbol.asType.name.decodedName.toString
+        val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         fullName
       case TypeRef(prefix, typeSymbol, args) if args.isEmpty =>
@@ -135,8 +131,7 @@ object ReflectSurfaceFactory extends LogSupport {
   }
 
   def apply(tpe: ru.Type): Surface = {
-    surfaceCache.getOrElseUpdate(fullTypeNameOf(tpe),
-                                 new SurfaceFinder().surfaceOf(tpe))
+    surfaceCache.getOrElseUpdate(fullTypeNameOf(tpe), new SurfaceFinder().surfaceOf(tpe))
   }
 
   def methodsOf(s: Surface): Seq[MethodSurface] = {
@@ -150,8 +145,7 @@ object ReflectSurfaceFactory extends LogSupport {
   def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] =
     methodsOfType(implicitly[ru.WeakTypeTag[A]].tpe)
 
-  def methodsOfType(tpe: ru.Type,
-                    cls: Option[Class[_]] = None): Seq[MethodSurface] = {
+  def methodsOfType(tpe: ru.Type, cls: Option[Class[_]] = None): Seq[MethodSurface] = {
     val name = fullTypeNameOf(tpe)
     methodSurfaceCache.getOrElseUpdate(
       name, {
@@ -165,12 +159,12 @@ object ReflectSurfaceFactory extends LogSupport {
     methodsOfType(tpe, Some(cls))
   }
 
-  private val rootMirror = ru.runtimeMirror(this.getClass.getClassLoader)
+  private val rootMirror  = ru.runtimeMirror(this.getClass.getClassLoader)
   private val mirrorCache = new ConcurrentHashMap[ClassLoader, Mirror]().asScala
 
   private[surface] def mirror = {
     val cl = Thread.currentThread.getContextClassLoader
-    val m = mirrorCache.getOrElseUpdate(cl, ru.runtimeMirror(cl))
+    val m  = mirrorCache.getOrElseUpdate(cl, ru.runtimeMirror(cl))
     m
   }
 
@@ -206,7 +200,7 @@ object ReflectSurfaceFactory extends LogSupport {
 //  }
 
   private class SurfaceFinder extends LogSupport {
-    private val seen = scala.collection.mutable.Set[ru.Type]()
+    private val seen       = scala.collection.mutable.Set[ru.Type]()
     private val methodSeen = scala.collection.mutable.Set[ru.Type]()
 
     private def allMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
@@ -253,15 +247,12 @@ object ReflectSurfaceFactory extends LogSupport {
         .exists(_ == m.owner)
     }
 
-    def createMethodSurfaceOf(
-        targetType: ru.Type,
-        cls: Option[Class[_]] = None): Seq[MethodSurface] = {
+    def createMethodSurfaceOf(targetType: ru.Type, cls: Option[Class[_]] = None): Seq[MethodSurface] = {
       val name = fullTypeNameOf(targetType)
       if (methodSurfaceCache.contains(name)) {
         methodSurfaceCache(name)
       } else if (methodSeen.contains(targetType)) {
-        throw new IllegalArgumentException(
-          s"recursive type in method: ${targetType.typeSymbol.fullName}")
+        throw new IllegalArgumentException(s"recursive type in method: ${targetType.typeSymbol.fullName}")
       } else {
         methodSeen += targetType
         val methodSurfaces = {
@@ -277,16 +268,12 @@ object ReflectSurfaceFactory extends LogSupport {
           val lst = IndexedSeq.newBuilder[MethodSurface]
           for (m <- localMethods) {
             try {
-              val mod = modifierBitMaskOf(m)
+              val mod   = modifierBitMaskOf(m)
               val owner = cls.map(ofClass(_)).getOrElse(surfaceOf(targetType))
-              val name = m.name.decodedName.toString
-              val ret = surfaceOf(m.returnType)
-              val args = methodParametersOf(targetType, m)
-              lst += ReflectMethodSurface(mod,
-                                          owner,
-                                          name,
-                                          ret,
-                                          args.toIndexedSeq)
+              val name  = m.name.decodedName.toString
+              val ret   = surfaceOf(m.returnType)
+              val args  = methodParametersOf(targetType, m)
+              lst += ReflectMethodSurface(mod, owner, name, ret, args.toIndexedSeq)
             } catch {
               case e: Throwable =>
                 warn(s"Failed to create MethodSurface for ${m}", e)
@@ -332,17 +319,15 @@ object ReflectSurfaceFactory extends LogSupport {
           LazySurface(resolveClass(tpe), fullName)
         } else {
           seen += tpe
-          val m = surfaceFactories.orElse[ru.Type, Surface] {
-            case _ =>
-              trace(f"Resolving the unknown type $tpe into AnyRef")
-              new GenericSurface(resolveClass(tpe))
+          val m = surfaceFactories.orElse[ru.Type, Surface] { case _ =>
+            trace(f"Resolving the unknown type $tpe into AnyRef")
+            new GenericSurface(resolveClass(tpe))
           }
           val surface = m(tpe)
           // Cache if not yet cached
           surfaceCache.getOrElseUpdate(fullName, surface)
           typeMap.getOrElseUpdate(surface, tpe)
-          trace(
-            s"surfaceOf(${tpe}) Surface: ${surface}, Surace class:${surface.getClass}, tpe: ${showRaw(tpe)}")
+          trace(s"surfaceOf(${tpe}) Surface: ${surface}, Surace class:${surface.getClass}, tpe: ${showRaw(tpe)}")
           surface
         }
       } catch {
@@ -394,28 +379,21 @@ object ReflectSurfaceFactory extends LogSupport {
     }
 
     private def higherKindedTypeFactory: SurfaceMatcher = {
-      case t @ TypeRef(prefix, symbol, args)
-          if t.typeArgs.isEmpty && t.takesTypeArgs =>
+      case t @ TypeRef(prefix, symbol, args) if t.typeArgs.isEmpty && t.takesTypeArgs =>
         // When higher-kinded types (e.g., Option[X], Future[X]) is passed as Option, Future without type arguments
-        val inner = surfaceOf(t.erasure)
-        val name = symbol.asType.name.decodedName.toString
+        val inner    = surfaceOf(t.erasure)
+        val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         HigherKindedTypeSurface(name, fullName, inner, inner.typeArgs)
-      case t @ TypeRef(NoPrefix, tpe, List())
-          if tpe.name.decodedName.toString.contains("$") =>
+      case t @ TypeRef(NoPrefix, tpe, List()) if tpe.name.decodedName.toString.contains("$") =>
         wvlet.airframe.surface.ExistentialType
       case t @ TypeRef(NoPrefix, tpe, args) if !t.typeSymbol.isClass =>
         val name = tpe.name.decodedName.toString
-        HigherKindedTypeSurface(name,
-                                name,
-                                surfaceOf(t.erasure),
-                                args.map(ta => surfaceOf(ta)))
+        HigherKindedTypeSurface(name, name, surfaceOf(t.erasure), args.map(ta => surfaceOf(ta)))
     }
 
     private def taggedTypeFactory: SurfaceMatcher = {
-      case t
-          if t.typeArgs.length == 2 && typeNameOf(t).startsWith(
-            "wvlet.airframe.surface.tag.") =>
+      case t if t.typeArgs.length == 2 && typeNameOf(t).startsWith("wvlet.airframe.surface.tag.") =>
         TaggedSurface(surfaceOf(t.typeArgs(0)), surfaceOf(t.typeArgs(1)))
     }
 
@@ -434,9 +412,9 @@ object ReflectSurfaceFactory extends LogSupport {
           surfaceOf(alias.erasure)
         }
 
-        val name = symbol.asType.name.decodedName.toString
+        val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
-        val a = Alias(name, fullName, inner)
+        val a        = Alias(name, fullName, inner)
         a
     }
 
@@ -451,9 +429,7 @@ object ReflectSurfaceFactory extends LogSupport {
     }
 
     private def tupleFactory: SurfaceMatcher = {
-      case t
-          if t <:< typeOf[Product] && t.typeSymbol.fullName.startsWith(
-            "scala.Tuple") =>
+      case t if t <:< typeOf[Product] && t.typeSymbol.fullName.startsWith("scala.Tuple") =>
         val paramType = typeArgsOf(t).map(x => surfaceOf(x))
         TupleSurface(resolveClass(t), paramType.toIndexedSeq)
     }
@@ -508,7 +484,7 @@ object ReflectSurfaceFactory extends LogSupport {
     }
 
     case class MethodArg(paramName: Symbol, tpe: ru.Type) {
-      def name: String = paramName.name.decodedName.toString
+      def name: String         = paramName.name.decodedName.toString
       def typeSurface: Surface = surfaceOf(tpe)
     }
 
@@ -519,9 +495,7 @@ object ReflectSurfaceFactory extends LogSupport {
       }
     }
 
-    private def methodArgsOf(
-        targetType: ru.Type,
-        constructor: MethodSymbol): List[List[MethodArg]] = {
+    private def methodArgsOf(targetType: ru.Type, constructor: MethodSymbol): List[List[MethodArg]] = {
       val classTypeParams = if (targetType.typeSymbol.isClass) {
         targetType.typeSymbol.asClass.typeParams
       } else {
@@ -531,8 +505,7 @@ object ReflectSurfaceFactory extends LogSupport {
       for (params <- constructor.paramLists) yield {
         val concreteArgTypes = params.map { p =>
           try {
-            p.typeSignature.substituteTypes(classTypeParams,
-                                            targetType.typeArgs)
+            p.typeSignature.substituteTypes(classTypeParams, targetType.typeArgs)
           } catch {
             case e: Throwable =>
               p.typeSignature
@@ -546,17 +519,12 @@ object ReflectSurfaceFactory extends LogSupport {
       }
     }
 
-    def methodParametersOf(
-        targetType: ru.Type,
-        method: MethodSymbol): Seq[RuntimeMethodParameter] = {
+    def methodParametersOf(targetType: ru.Type, method: MethodSymbol): Seq[RuntimeMethodParameter] = {
       val args = methodArgsOf(targetType, method).flatten
       val argTypes = args.map { (x: MethodArg) =>
         resolveClass(x.tpe)
       }.toSeq
-      val ref = MethodRef(resolveClass(targetType),
-                          method.name.decodedName.toString,
-                          argTypes,
-                          method.isConstructor)
+      val ref = MethodRef(resolveClass(targetType), method.name.decodedName.toString, argTypes, method.isConstructor)
 
       var index = 0
       val surfaceParams = args.map { arg =>
@@ -575,21 +543,19 @@ object ReflectSurfaceFactory extends LogSupport {
       surfaceParams.toIndexedSeq
     }
 
-    private def existentialTypeFactory: SurfaceMatcher = {
-      case t @ ru.ExistentialType(quantified, underlying) =>
-        surfaceOf(underlying)
+    private def existentialTypeFactory: SurfaceMatcher = { case t @ ru.ExistentialType(quantified, underlying) =>
+      surfaceOf(underlying)
     }
 
     private def genericSurfaceWithConstructorFactory: SurfaceMatcher =
       new SurfaceMatcher with LogSupport {
         override def isDefinedAt(t: ru.Type): Boolean = {
-          !isAbstract(t) && findPrimaryConstructorOf(t).exists(
-            !_.paramLists.isEmpty)
+          !isAbstract(t) && findPrimaryConstructorOf(t).exists(!_.paramLists.isEmpty)
         }
         override def apply(t: ru.Type): Surface = {
           val primaryConstructor = findPrimaryConstructorOf(t).get
-          val typeArgs = typeArgsOf(t).map(surfaceOf(_)).toIndexedSeq
-          val methodParams = methodParametersOf(t, primaryConstructor)
+          val typeArgs           = typeArgsOf(t).map(surfaceOf(_)).toIndexedSeq
+          val methodParams       = methodParametersOf(t, primaryConstructor)
 
           val s = new RuntimeGenericSurface(
             resolveClass(t),
@@ -606,7 +572,7 @@ object ReflectSurfaceFactory extends LogSupport {
           // Find unapply(String): Option[X]
           companion.member(TermName("unapply")) match {
             case s: Symbol if s.isMethod && s.asMethod.paramLists.size == 1 =>
-              val m = s.asMethod
+              val m    = s.asMethod
               val args = m.paramLists.head
               args.size == 1 &&
               args.head.typeSignature =:= typeOf[String] &&
@@ -625,10 +591,9 @@ object ReflectSurfaceFactory extends LogSupport {
         new GenericSurface(resolveClass(t), typeArgs = typeArgs)
       case t @ TypeRef(NoPrefix, symbol, args) if !t.typeSymbol.isClass =>
         wvlet.airframe.surface.ExistentialType
-      case t @ TypeRef(prefix, symbol, args)
-          if resolveClass(t) == classOf[AnyRef] && !(t =:= typeOf[AnyRef]) =>
+      case t @ TypeRef(prefix, symbol, args) if resolveClass(t) == classOf[AnyRef] && !(t =:= typeOf[AnyRef]) =>
         // For example, trait MyTag, which has no implementation will be just an java.lang.Object
-        val name = t.typeSymbol.name.decodedName.toString
+        val name     = t.typeSymbol.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         Alias(name, fullName, AnyRefSurface)
       case t @ RefinedType(List(_, baseType), decl) =>
@@ -637,7 +602,8 @@ object ReflectSurfaceFactory extends LogSupport {
       case t if hasStringUnapply(t) =>
         // Surface that can be constructed with unapply(String)
         EnumSurface(
-          resolveClass(t), { (cl: Class[_], s: String) =>
+          resolveClass(t),
+          { (cl: Class[_], s: String) =>
             TypeConverter.convertToCls(s, cl)
           }
         )
@@ -677,7 +643,8 @@ object ReflectSurfaceFactory extends LogSupport {
             val contextClass = getFirstParamTypeOfPrimaryConstructor(rawType)
             val msg = contextClass
               .map(x =>
-                s" Call Surface.of[${rawType.getSimpleName}] or bind[${rawType.getSimpleName}].toXXX where `this` points to an instance of ${x}")
+                s" Call Surface.of[${rawType.getSimpleName}] or bind[${rawType.getSimpleName}].toXXX where `this` points to an instance of ${x}"
+              )
               .getOrElse(
                 ""
               )
@@ -705,18 +672,15 @@ object ReflectSurfaceFactory extends LogSupport {
               argList ++= args.map(_.asInstanceOf[AnyRef])
               val a = argList.result()
               if (a.isEmpty) {
-                logger.trace(
-                  s"build ${rawType.getName} using the default constructor")
+                logger.trace(s"build ${rawType.getName} using the default constructor")
                 primaryConstructor.newInstance()
               } else {
-                logger.trace(
-                  s"build ${rawType.getName} with args: ${a.mkString(", ")}")
+                logger.trace(s"build ${rawType.getName} with args: ${a.mkString(", ")}")
                 primaryConstructor.newInstance(a: _*)
               }
             }
             .getOrElse {
-              throw new IllegalStateException(
-                s"No primary constructor is found for ${rawType}")
+              throw new IllegalStateException(s"No primary constructor is found for ${rawType}")
             }
         } catch {
           case e: InvocationTargetException =>

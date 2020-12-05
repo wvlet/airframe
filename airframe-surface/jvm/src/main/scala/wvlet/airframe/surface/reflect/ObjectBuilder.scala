@@ -46,10 +46,9 @@ object ObjectBuilder extends LogSupport {
   }
 
   sealed trait BuilderElement
-  case class Holder(holder: ObjectBuilder) extends BuilderElement
-  case class Value(value: Any) extends BuilderElement
-  case class ArrayHolder(holder: mutable.ArrayBuffer[Any])
-      extends BuilderElement
+  case class Holder(holder: ObjectBuilder)                 extends BuilderElement
+  case class Value(value: Any)                             extends BuilderElement
+  case class ArrayHolder(holder: mutable.ArrayBuffer[Any]) extends BuilderElement
 }
 
 trait GenericBuilder {
@@ -128,7 +127,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
       // do nothing
     } else {
       val name = path.head.canonicalName
-      val p = findParameter(name)
+      val p    = findParameter(name)
       if (p.isEmpty) {
         error(s"no parameter is found for path $path")
       } else {
@@ -136,8 +135,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
         if (path.isLeaf) {
           val targetType = p.get.surface
           trace(
-            s"update value holder name:$name, valueType:$targetType (isArray:${isArray(
-              targetType)}) with value:$value (${value.getClass})"
+            s"update value holder name:$name, valueType:$targetType (isArray:${isArray(targetType)}) with value:$value (${value.getClass})"
           )
           if (canBuildFromBuffer(targetType)) {
             val arr = getArrayHolder(name)
@@ -167,7 +165,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
                   case m if isMap(m.getClass) => m.asInstanceOf[Map[_, _]]
                   case other                  => Seq(other)
                 }
-                val keyType = targetType.typeArgs(0)
+                val keyType   = targetType.typeArgs(0)
                 val valueType = targetType.typeArgs(1)
                 val tupleSurface =
                   TupleSurface(classOf[Tuple2[_, _]], Seq(keyType, valueType))
@@ -189,15 +187,15 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
         } else {
           // nested object
           val paramName = path.head.canonicalName
-          val h = holder.getOrElseUpdate(paramName,
-                                         Holder(ObjectBuilder(p.get.surface)))
+          val h         = holder.getOrElseUpdate(paramName, Holder(ObjectBuilder(p.get.surface)))
           h match {
             case Holder(b) => b.set(path.tailPath, value)
             case other     =>
               // overwrite the existing holder
               throw new IllegalStateException(
                 "invalid path:%s, value:%s, holder:%s"
-                  .format(path, value, other))
+                  .format(path, value, other)
+              )
           }
         }
       }
@@ -218,12 +216,8 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
   }
 }
 
-class SimpleObjectBuilder(surface: Surface)
-    extends ObjectBuilder
-    with StandardBuilder
-    with LogSupport {
-  require(surface.objectFactory.isDefined,
-          s"No object factory is found for ${surface}")
+class SimpleObjectBuilder(surface: Surface) extends ObjectBuilder with StandardBuilder with LogSupport {
+  require(surface.objectFactory.isDefined, s"No object factory is found for ${surface}")
 
   protected def findParameter(name: String) = {
     assert(surface != null)
