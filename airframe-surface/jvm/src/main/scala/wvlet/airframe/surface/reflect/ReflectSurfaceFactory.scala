@@ -29,9 +29,11 @@ object ReflectSurfaceFactory extends LogSupport {
 
   private type TypeName = String
 
-  private[surface] val surfaceCache       = new ConcurrentHashMap[TypeName, Surface].asScala
-  private[surface] val methodSurfaceCache = new ConcurrentHashMap[TypeName, Seq[MethodSurface]].asScala
-  private[surface] val typeMap            = new ConcurrentHashMap[Surface, ru.Type].asScala
+  private[surface] val surfaceCache =
+    new ConcurrentHashMap[TypeName, Surface].asScala
+  private[surface] val methodSurfaceCache =
+    new ConcurrentHashMap[TypeName, Seq[MethodSurface]].asScala
+  private[surface] val typeMap = new ConcurrentHashMap[Surface, ru.Type].asScala
 
   private def belongsToScalaDefault(t: ru.Type) = {
     t match {
@@ -119,7 +121,8 @@ object ReflectSurfaceFactory extends LogSupport {
         val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         fullName
-      case TypeRef(prefix, typeSymbol, args) if args.isEmpty => typeSymbol.fullName
+      case TypeRef(prefix, typeSymbol, args) if args.isEmpty =>
+        typeSymbol.fullName
       case TypeRef(prefix, typeSymbol, args) if !args.isEmpty =>
         val typeArgs = args.map(fullTypeNameOf(_)).mkString(",")
         s"${typeSymbol.fullName}[${typeArgs}]"
@@ -133,11 +136,14 @@ object ReflectSurfaceFactory extends LogSupport {
 
   def methodsOf(s: Surface): Seq[MethodSurface] = {
     findTypeOf(s)
-      .map { tpe => methodsOfType(tpe) }
+      .map { tpe =>
+        methodsOfType(tpe)
+      }
       .getOrElse(Seq.empty)
   }
 
-  def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = methodsOfType(implicitly[ru.WeakTypeTag[A]].tpe)
+  def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] =
+    methodsOfType(implicitly[ru.WeakTypeTag[A]].tpe)
 
   def methodsOfType(tpe: ru.Type, cls: Option[Class[_]] = None): Seq[MethodSurface] = {
     val name = fullTypeNameOf(tpe)
@@ -222,7 +228,9 @@ object ReflectSurfaceFactory extends LogSupport {
 
     def localMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
       allMethodsOf(t)
-        .filter { m => isOwnedByTargetClass(m, t) }
+        .filter { m =>
+          isOwnedByTargetClass(m, t)
+        }
     }
 
     private def nonObject(x: ru.Symbol): Boolean = {
@@ -234,7 +242,9 @@ object ReflectSurfaceFactory extends LogSupport {
     }
 
     private def isOwnedByTargetClass(m: MethodSymbol, t: ru.Type): Boolean = {
-      m.owner == t.typeSymbol || t.baseClasses.filter(nonObject).exists(_ == m.owner)
+      m.owner == t.typeSymbol || t.baseClasses
+        .filter(nonObject)
+        .exists(_ == m.owner)
     }
 
     def createMethodSurfaceOf(targetType: ru.Type, cls: Option[Class[_]] = None): Seq[MethodSurface] = {
@@ -462,7 +472,9 @@ object ReflectSurfaceFactory extends LogSupport {
 
     def publicConstructorsOf(t: ru.Type): Iterable[MethodSymbol] = {
       t.members
-        .filter(m => m.isMethod && m.asMethod.isConstructor && m.isPublic).filterNot(isPhantomConstructor).map(
+        .filter(m => m.isMethod && m.asMethod.isConstructor && m.isPublic)
+        .filterNot(isPhantomConstructor)
+        .map(
           _.asMethod
         )
     }
@@ -508,9 +520,11 @@ object ReflectSurfaceFactory extends LogSupport {
     }
 
     def methodParametersOf(targetType: ru.Type, method: MethodSymbol): Seq[RuntimeMethodParameter] = {
-      val args     = methodArgsOf(targetType, method).flatten
-      val argTypes = args.map { x: MethodArg => resolveClass(x.tpe) }.toSeq
-      val ref      = MethodRef(resolveClass(targetType), method.name.decodedName.toString, argTypes, method.isConstructor)
+      val args = methodArgsOf(targetType, method).flatten
+      val argTypes = args.map { (x: MethodArg) =>
+        resolveClass(x.tpe)
+      }.toSeq
+      val ref = MethodRef(resolveClass(targetType), method.name.decodedName.toString, argTypes, method.isConstructor)
 
       var index = 0
       val surfaceParams = args.map { arg =>
@@ -587,7 +601,12 @@ object ReflectSurfaceFactory extends LogSupport {
         new GenericSurface(resolveClass(baseType))
       case t if hasStringUnapply(t) =>
         // Surface that can be constructed with unapply(String)
-        EnumSurface(resolveClass(t), { (cl: Class[_], s: String) => TypeConverter.convert(s, cl) })
+        EnumSurface(
+          resolveClass(t),
+          { (cl: Class[_], s: String) =>
+            TypeConverter.convertToCls(s, cl)
+          }
+        )
       case t =>
         new GenericSurface(resolveClass(t))
     }
@@ -625,7 +644,8 @@ object ReflectSurfaceFactory extends LogSupport {
             val msg = contextClass
               .map(x =>
                 s" Call Surface.of[${rawType.getSimpleName}] or bind[${rawType.getSimpleName}].toXXX where `this` points to an instance of ${x}"
-              ).getOrElse(
+              )
+              .getOrElse(
                 ""
               )
             throw new IllegalStateException(
@@ -645,7 +665,9 @@ object ReflectSurfaceFactory extends LogSupport {
               val argList = Seq.newBuilder[AnyRef]
               if (!isStatic) {
                 // Add a reference to the context instance if this surface represents an inner class
-                outerInstance.foreach { x => argList += x }
+                outerInstance.foreach { x =>
+                  argList += x
+                }
               }
               argList ++= args.map(_.asInstanceOf[AnyRef])
               val a = argList.result()
@@ -669,7 +691,8 @@ object ReflectSurfaceFactory extends LogSupport {
             throw e.getTargetException
           case e: Throwable =>
             logger.warn(
-              s"Failed to instantiate ${self}: [${e.getClass.getName}] ${e.getMessage}\nargs:[${args.mkString(", ")}]"
+              s"Failed to instantiate ${self}: [${e.getClass.getName}] ${e.getMessage}\nargs:[${args
+                .mkString(", ")}]"
             )
             throw e
         }

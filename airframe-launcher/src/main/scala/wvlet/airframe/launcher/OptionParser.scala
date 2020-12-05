@@ -36,7 +36,8 @@ import scala.util.matching.Regex.Match
   * Creates option parsers
   */
 object OptionParser extends LogSupport {
-  def tokenize(line: String): Array[String] = CommandLineTokenizer.tokenize(line)
+  def tokenize(line: String): Array[String] =
+    CommandLineTokenizer.tokenize(line)
 
   def of[A: ru.WeakTypeTag]: OptionParser = {
     apply(ReflectSurfaceFactory.of[A])
@@ -101,7 +102,7 @@ object OptionParser extends LogSupport {
     override def takesMultipleArguments: Boolean = {
       import wvlet.airframe.surface.reflect.ReflectTypeUtil._
       val t: Class[_] = param.surface.rawType
-      isArray(t) || isSeq(t)
+      isArrayCls(t) || isSeq(t)
     }
   }
 
@@ -242,7 +243,8 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
     }
 
     // Hold mapping, option -> args ...
-    val optionValues    = collection.mutable.Map[CLOptionItem, ArrayBuffer[String]]()
+    val optionValues =
+      collection.mutable.Map[CLOptionItem, ArrayBuffer[String]]()
     val unusedArguments = new ArrayBuffer[String]
 
     val logger = Logger("traverse")
@@ -315,7 +317,9 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
 
     val holder = StringTree(for (m <- mapping) yield m.path)
     trace(s"parse tree: $holder")
-    val showHelp = mapping.collectFirst { case c @ OptSetFlag(o) if o.annot.isHelp => c }.isDefined
+    val showHelp = mapping.collectFirst {
+      case c @ OptSetFlag(o) if o.annot.isHelp => c
+    }.isDefined
     new OptionParserResult(holder, unusedArguments.toArray, showHelp)
   }
 

@@ -26,7 +26,7 @@ class StringUnapplyCodec[A](codec: Surface) extends MessageCodec[A] with LogSupp
   }
   override def unpack(u: Unpacker, v: MessageContext): Unit = {
     val s = u.unpackString
-    TypeConverter.convert(s, codec.rawType) match {
+    TypeConverter.convertToCls(s, codec.rawType) match {
       case Some(x) =>
         v.setObject(x)
       case None =>

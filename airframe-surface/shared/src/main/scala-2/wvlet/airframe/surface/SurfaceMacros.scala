@@ -17,7 +17,7 @@ import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
 
 /**
-  * Surface genration Macros for Scala.js.
+  * Surface generation Macros for Scala.js.
   *
   * This code needs to be almost the same with ReflectSurfaceFactory
   */
@@ -105,7 +105,9 @@ private[surface] object SurfaceMacros {
     }
 
     private def isOwnedByTargetClass(m: MethodSymbol, t: c.Type): Boolean = {
-      m.owner == t.typeSymbol || t.baseClasses.filter(nonObject).exists(_ == m.owner)
+      m.owner == t.typeSymbol || t.baseClasses
+        .filter(nonObject)
+        .exists(_ == m.owner)
     }
 
     private def createMethodCaller(t: c.Type, m: MethodSymbol, methodArgs: Seq[MethodArg]): c.Tree = {
@@ -154,7 +156,8 @@ private[surface] object SurfaceMacros {
               val name       = m.name.decodedName.toString
               val ret        = surfaceOf(m.returnType)
               val methodArgs = methodArgsOf(targetType, m).flatten
-              val args       = methodParametersOf(m.owner.typeSignature, m, methodArgs)
+              val args =
+                methodParametersOf(m.owner.typeSignature, m, methodArgs)
               // Generate code for supporting ClassMethodSurface.call(instance, args)
               val methodCaller = createMethodCaller(targetType, m, methodArgs)
               lst += q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${methodCaller})"
@@ -167,14 +170,18 @@ private[surface] object SurfaceMacros {
         }
 
         val fullName = fullTypeNameOf(targetType.dealias)
-        val expr     = q"wvlet.airframe.surface.methodSurfaceCache.getOrElseUpdate(${fullName}, ${result})"
+        val expr =
+          q"wvlet.airframe.surface.methodSurfaceCache.getOrElseUpdate(${fullName}, ${result})"
         methodMemo += targetType -> expr
         expr
       }
     }
 
     private def isEnum(t: c.Type): Boolean = {
-      t.baseClasses.exists(x => x.isJava && x.isType && x.asType.name.decodedName.toString.startsWith("java.lang.Enum"))
+      t.baseClasses.exists(x =>
+        x.isJava && x.isType && x.asType.name.decodedName.toString
+          .startsWith("java.lang.Enum")
+      )
     }
 
     private def typeArgsOf(t: c.Type): List[c.Type] =
@@ -242,17 +249,21 @@ private[surface] object SurfaceMacros {
     }
 
     private val primitiveFactory: SurfaceFactory = {
-      case t if t == typeOf[Short]            => q"wvlet.airframe.surface.Primitive.Short"
-      case t if t == typeOf[Boolean]          => q"wvlet.airframe.surface.Primitive.Boolean"
-      case t if t == typeOf[Byte]             => q"wvlet.airframe.surface.Primitive.Byte"
-      case t if t == typeOf[Char]             => q"wvlet.airframe.surface.Primitive.Char"
-      case t if t == typeOf[Int]              => q"wvlet.airframe.surface.Primitive.Int"
-      case t if t == typeOf[Float]            => q"wvlet.airframe.surface.Primitive.Float"
-      case t if t == typeOf[Long]             => q"wvlet.airframe.surface.Primitive.Long"
-      case t if t == typeOf[Double]           => q"wvlet.airframe.surface.Primitive.Double"
-      case t if t == typeOf[String]           => q"wvlet.airframe.surface.Primitive.String"
-      case t if t == typeOf[java.lang.String] => q"wvlet.airframe.surface.Primitive.String"
-      case t if t == typeOf[Unit]             => q"wvlet.airframe.surface.Primitive.Unit"
+      case t if t == typeOf[Short] => q"wvlet.airframe.surface.Primitive.Short"
+      case t if t == typeOf[Boolean] =>
+        q"wvlet.airframe.surface.Primitive.Boolean"
+      case t if t == typeOf[Byte]  => q"wvlet.airframe.surface.Primitive.Byte"
+      case t if t == typeOf[Char]  => q"wvlet.airframe.surface.Primitive.Char"
+      case t if t == typeOf[Int]   => q"wvlet.airframe.surface.Primitive.Int"
+      case t if t == typeOf[Float] => q"wvlet.airframe.surface.Primitive.Float"
+      case t if t == typeOf[Long]  => q"wvlet.airframe.surface.Primitive.Long"
+      case t if t == typeOf[Double] =>
+        q"wvlet.airframe.surface.Primitive.Double"
+      case t if t == typeOf[String] =>
+        q"wvlet.airframe.surface.Primitive.String"
+      case t if t == typeOf[java.lang.String] =>
+        q"wvlet.airframe.surface.Primitive.String"
+      case t if t == typeOf[Unit] => q"wvlet.airframe.surface.Primitive.Unit"
     }
 
     private val arrayFactory: SurfaceFactory = {
@@ -287,7 +298,8 @@ private[surface] object SurfaceMacros {
     private def belongsToScalaDefault(t: c.Type) = {
       t match {
         case TypeRef(prefix, _, _) =>
-          val scalaDefaultPackages = Seq("scala.", "scala.Predef.", "scala.util.")
+          val scalaDefaultPackages =
+            Seq("scala.", "scala.Predef.", "scala.util.")
           scalaDefaultPackages.exists(p => prefix.dealias.typeSymbol.fullName.startsWith(p))
         case _ => false
       }
@@ -298,7 +310,9 @@ private[surface] object SurfaceMacros {
 
     def publicConstructorsOf(t: c.Type): Iterable[MethodSymbol] = {
       t.members
-        .filter(m => m.isMethod && m.asMethod.isConstructor && m.isPublic).filterNot(isPhantomConstructor).map(
+        .filter(m => m.isMethod && m.asMethod.isConstructor && m.isPublic)
+        .filterNot(isPhantomConstructor)
+        .map(
           _.asMethod
         )
     }
@@ -348,15 +362,24 @@ private[surface] object SurfaceMacros {
             t.typeArgs.size match {
               // TODO We may need to expand Select(Ident(x.y.z....), TermName("a")) =>
               // Select(Select(Select(Ident(TermName("x")), TermName("y")), ....
-              case 0     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}].${paramNameTerm}})"
-              case 1     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_]].${paramNameTerm}})"
-              case 2     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _]].${paramNameTerm}})"
-              case 3     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _]].${paramNameTerm}})"
-              case 4     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _]].${paramNameTerm}})"
-              case 5     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _]].${paramNameTerm}})"
-              case 6     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _]].${paramNameTerm}})"
-              case 7     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _]].${paramNameTerm}})"
-              case 8     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _, _]].${paramNameTerm}})"
+              case 0 =>
+                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}].${paramNameTerm}})"
+              case 1 =>
+                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_]].${paramNameTerm}})"
+              case 2 =>
+                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _]].${paramNameTerm}})"
+              case 3 =>
+                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _]].${paramNameTerm}})"
+              case 4 =>
+                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _]].${paramNameTerm}})"
+              case 5 =>
+                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _]].${paramNameTerm}})"
+              case 6 =>
+                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _]].${paramNameTerm}})"
+              case 7 =>
+                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _]].${paramNameTerm}})"
+              case 8 =>
+                q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _, _]].${paramNameTerm}})"
               case other => q"None"
             }
           }
@@ -392,7 +415,9 @@ private[surface] object SurfaceMacros {
 
       // Exclude implicit ClassTag arguments
       val filteredParamLists = constructor.paramLists.map { params =>
-        params.filter { x => !x.typeSignature.toString.startsWith("scala.reflect.ClassTag[") }
+        params.filter { x =>
+          !x.typeSignature.toString.startsWith("scala.reflect.ClassTag[")
+        }
       }
 
       val ret = for (params <- filteredParamLists) yield {
@@ -407,7 +432,9 @@ private[surface] object SurfaceMacros {
                 findMethod(x, "apply$default$" + index)
                   .orElse(findMethod(x, "$lessinit$greater$default$" + index))
               // TODO: This doesn't work for local case class with default parameter values in Scala.js
-              defaultValueGetter.map { method => q"${method}" }
+              defaultValueGetter.map { method =>
+                q"${method}"
+              }
             }
 
           val isRequired = p.annotations.exists(_.tree.tpe == typeOf[required])
@@ -445,7 +472,7 @@ private[surface] object SurfaceMacros {
     }
 
     def methodParametersOf(targetType: c.Type, method: MethodSymbol, args: Seq[MethodArg]): c.Tree = {
-      val argTypes = args.map { x: MethodArg =>
+      val argTypes = args.map { (x: MethodArg) =>
         // #913 dealias is necessary to resolve the actual type and type parameter
         val cls = toClassOf(x.tpe.dealias)
         cls
@@ -497,7 +524,8 @@ private[surface] object SurfaceMacros {
           val argExtractor: List[List[c.Tree]] =
             for (arg <- argsList) yield {
               for (a <- arg) yield {
-                val param = Apply(Ident(TermName("args")), List(Literal(Constant(index))))
+                val param =
+                  Apply(Ident(TermName("args")), List(Literal(Constant(index))))
                 index += 1
                 // TODO natural type conversion (e.g., Int -> Long, etc.)
                 q"${param}.asInstanceOf[${a.tpe}]"
@@ -520,28 +548,29 @@ private[surface] object SurfaceMacros {
       }
     }
 
-    private val genericSurfaceWithConstructorFactory: SurfaceFactory = new SurfaceFactory {
-      override def isDefinedAt(t: c.Type): Boolean = {
-        !isAbstract(t) && findPrimaryConstructorOf(t).exists(!_.paramLists.isEmpty)
-      }
-      override def apply(t: c.Type): c.Tree = {
-        val primaryConstructor = findPrimaryConstructorOf(t).get
-        val typeArgs           = typeArgsOf(t).map(surfaceOf(_))
-        val factory = createObjectFactoryOf(t) match {
-          case Some(x) => q"Some($x)"
-          case None    => q"None"
+    private val genericSurfaceWithConstructorFactory: SurfaceFactory =
+      new SurfaceFactory {
+        override def isDefinedAt(t: c.Type): Boolean = {
+          !isAbstract(t) && findPrimaryConstructorOf(t).exists(!_.paramLists.isEmpty)
         }
+        override def apply(t: c.Type): c.Tree = {
+          val primaryConstructor = findPrimaryConstructorOf(t).get
+          val typeArgs           = typeArgsOf(t).map(surfaceOf(_))
+          val factory = createObjectFactoryOf(t) match {
+            case Some(x) => q"Some($x)"
+            case None    => q"None"
+          }
 
-        val expr = q"""
+          val expr = q"""
           new wvlet.airframe.surface.GenericSurface(
             classOf[$t],
             IndexedSeq(..$typeArgs),
             params = ${methodParametersOf(t, primaryConstructor)},
             objectFactory=${factory}
         )"""
-        expr
+          expr
+        }
       }
-    }
 
     private val existentialTypeFactory: SurfaceFactory = { case t @ ExistentialType(quantified, underlying) =>
       surfaceOf(underlying)
@@ -557,7 +586,8 @@ private[surface] object SurfaceMacros {
     }
 
     private def newGenericSurfaceOf(t: c.Type): c.Tree = {
-      val expr = q"new wvlet.airframe.surface.GenericSurface(classOf[${finalTypeOf(t)}])"
+      val expr =
+        q"new wvlet.airframe.surface.GenericSurface(classOf[${finalTypeOf(t)}])"
       expr
     }
 
@@ -595,7 +625,8 @@ private[surface] object SurfaceMacros {
             val ex = tl.foldLeft[Tree](Ident(TermName(p1))) { (z, n) =>
               Select(z, TermName(n))
             }
-            val expr = q"""wvlet.airframe.surface.EnumSurface(classOf[${finalTypeOf(t)}], { (cl: Class[_], s: String) =>
+            val expr =
+              q"""wvlet.airframe.surface.EnumSurface(classOf[${finalTypeOf(t)}], { (cl: Class[_], s: String) =>
                 ${ex}.unapply(s).asInstanceOf[Option[Any]]
               }
             )"""
@@ -650,7 +681,8 @@ private[surface] object SurfaceMacros {
       */
     private def fullTypeNameOf(typeEv: c.Type): String = {
       typeEv match {
-        case TypeRef(prefix, typeSymbol, args) if args.isEmpty => typeSymbol.fullName
+        case TypeRef(prefix, typeSymbol, args) if args.isEmpty =>
+          typeSymbol.fullName
         case TypeRef(prefix, typeSymbol, args) if !args.isEmpty =>
           val typeArgs = args.map(fullTypeNameOf(_)).mkString(",")
           s"${typeSymbol.fullName}[${typeArgs}]"

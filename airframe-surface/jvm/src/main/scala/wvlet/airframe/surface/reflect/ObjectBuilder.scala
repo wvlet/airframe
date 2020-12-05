@@ -86,7 +86,8 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
       case p if canBuildFromBuffer(p.surface)      => Value(value)
       case p if canBuildFromStringValue(p.surface) => Value(value)
 
-      case p if p.surface.objectFactory.isEmpty => Value(value) // When no constructor to build p is found
+      case p if p.surface.objectFactory.isEmpty =>
+        Value(value) // When no constructor to build p is found
       case p => {
         // nested object
         val b = new SimpleObjectBuilder(p.surface)
@@ -116,7 +117,9 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
         holder.remove(name)
       case _ => // do nothing
     }
-    holder.getOrElseUpdate(name, ArrayHolder(new ArrayBuffer[Any])).asInstanceOf[ArrayHolder]
+    holder
+      .getOrElseUpdate(name, ArrayHolder(new ArrayBuffer[Any]))
+      .asInstanceOf[ArrayHolder]
   }
 
   def set(path: Path, value: Any): Unit = {
@@ -141,7 +144,8 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
                 // Append array elements to the buffer
                 val elementType = targetType.typeArgs(0)
                 val lst = value match {
-                  case a if isArray(value.getClass) => a.asInstanceOf[Array[_]].toIndexedSeq
+                  case a if isArrayCls(value.getClass) =>
+                    a.asInstanceOf[Array[_]].toIndexedSeq
                   case a if isJavaColleciton(value.getClass) =>
                     a.asInstanceOf[java.util.Collection[_]].asScala.toIndexedSeq
                   case s if isSeq(value.getClass) => s.asInstanceOf[Seq[_]]
@@ -149,26 +153,34 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
                     Seq(other)
                 }
                 lst
-                  .flatMap { x => TypeConverter.convert(x, elementType) }
+                  .flatMap { x =>
+                    TypeConverter.convert(x, elementType)
+                  }
                   .foreach { arr.holder += _ }
               case 2 =>
                 // Append map elements to the buffer
                 val lst = value match {
-                  case m if isJavaMap(value.getClass) => m.asInstanceOf[java.util.Map[_, _]].asScala.toMap
-                  case m if isMap(m.getClass)         => m.asInstanceOf[Map[_, _]]
-                  case other                          => Seq(other)
+                  case m if isJavaMap(value.getClass) =>
+                    m.asInstanceOf[java.util.Map[_, _]].asScala.toMap
+                  case m if isMap(m.getClass) => m.asInstanceOf[Map[_, _]]
+                  case other                  => Seq(other)
                 }
-                val keyType      = targetType.typeArgs(0)
-                val valueType    = targetType.typeArgs(1)
-                val tupleSurface = TupleSurface(classOf[Tuple2[_, _]], Seq(keyType, valueType))
+                val keyType   = targetType.typeArgs(0)
+                val valueType = targetType.typeArgs(1)
+                val tupleSurface =
+                  TupleSurface(classOf[Tuple2[_, _]], Seq(keyType, valueType))
                 lst
-                  .flatMap { x => TypeConverter.convert(x, tupleSurface) }
+                  .flatMap { x =>
+                    TypeConverter.convert(x, tupleSurface)
+                  }
                   .foreach { arr.holder += _ }
               case other =>
                 error(s"Cannot convert ${value} to ${targetType}")
             }
           } else if (canBuildFromStringValue(targetType)) {
-            TypeConverter.convert(value, targetType).map { v => holder += name -> Value(v) }
+            TypeConverter.convert(value, targetType).map { v =>
+              holder += name -> Value(v)
+            }
           } else {
             holder += name -> Value(value)
           }
@@ -180,7 +192,10 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
             case Holder(b) => b.set(path.tailPath, value)
             case other     =>
               // overwrite the existing holder
-              throw new IllegalStateException("invalid path:%s, value:%s, holder:%s".format(path, value, other))
+              throw new IllegalStateException(
+                "invalid path:%s, value:%s, holder:%s"
+                  .format(path, value, other)
+              )
           }
         }
       }

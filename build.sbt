@@ -340,11 +340,15 @@ lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
 lazy val airframeMacrosRef    = airframeMacros    % Optional
 
 val surfaceDependencies = { scalaVersion: String =>
+  val reflectVersion = scalaVersion match {
+    case s if s.startsWith("3.") => SCALA_2_13
+    case _                       => scalaVersion
+  }
   Seq(
     // For ading PreDestroy, PostConstruct annotations to Java9
     "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION,
-    "org.scala-lang"   % "scala-reflect"        % scalaVersion,
-    "org.scala-lang"   % "scala-compiler"       % scalaVersion % Provided
+    ("org.scala-lang"  % "scala-reflect"        % reflectVersion).withDottyCompat(scalaVersion),
+    ("org.scala-lang"  % "scala-compiler"       % reflectVersion % Provided).withDottyCompat(scalaVersion)
   )
 }
 
@@ -355,7 +359,22 @@ lazy val surface =
     .settings(
       name := "airframe-surface",
       description := "A library for extracting object structure surface",
-      libraryDependencies ++= surfaceDependencies(scalaVersion.value)
+      libraryDependencies ++= surfaceDependencies(scalaVersion.value),
+      crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions },
+      unmanagedSourceDirectories in Compile ++= {
+        scalaBinaryVersion.value match {
+          case v if v.startsWith("2.") =>
+            Seq(
+              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-2"
+            )
+          case v if v.startsWith("3.") =>
+            Seq(
+              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-3"
+            )
+          case _ =>
+            Seq.empty
+        }
+      }
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log)

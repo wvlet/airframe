@@ -49,17 +49,29 @@ object YamlReader extends LogSupport {
   }
 
   def loadYaml(resourcePath: String): Map[AnyRef, AnyRef] = {
-    new Yaml().load(readAsString(resourcePath)).asInstanceOf[ju.Map[AnyRef, AnyRef]].asScala.toMap
+    new Yaml()
+      .load(readAsString(resourcePath))
+      .asInstanceOf[ju.Map[AnyRef, AnyRef]]
+      .asScala
+      .toMap
   }
 
   def loadYamlList(resourcePath: String): Seq[Map[AnyRef, AnyRef]] = {
     new Yaml()
-      .load(readAsString(resourcePath)).asInstanceOf[ju.List[ju.Map[AnyRef, AnyRef]]].asScala.map(_.asScala.toMap).toSeq
+      .load(readAsString(resourcePath))
+      .asInstanceOf[ju.List[ju.Map[AnyRef, AnyRef]]]
+      .asScala
+      .map(_.asScala.toMap)
+      .toSeq
   }
 
   def loadYamlList(resourceUrl: URL): Seq[Map[AnyRef, AnyRef]] = {
     new Yaml()
-      .load(readAsString(resourceUrl)).asInstanceOf[ju.List[ju.Map[AnyRef, AnyRef]]].asScala.map(_.asScala.toMap).toSeq
+      .load(readAsString(resourceUrl))
+      .asInstanceOf[ju.List[ju.Map[AnyRef, AnyRef]]]
+      .asScala
+      .map(_.asScala.toMap)
+      .toSeq
   }
 
   def bind[A: ru.TypeTag](prop: Map[AnyRef, AnyRef]): A = {
@@ -70,7 +82,8 @@ object YamlReader extends LogSupport {
     val yamlMsgpack = toMsgPack(prop)
     val surface     = Surface.of[A]
     val codec       = MessageCodec.of[A]
-    val result      = codec.unpackMsgPack(yamlMsgpack).getOrElse(Zero.zeroOf(surface))
+    val result =
+      codec.unpackMsgPack(yamlMsgpack).getOrElse(Zero.zeroOf(surface))
     trace(result)
     result.asInstanceOf[A]
   }
@@ -120,7 +133,7 @@ class YamlReader(map: Map[AnyRef, AnyRef]) extends LogSupport {
           packer.packByte(b)
         case c: jl.Character =>
           packer.packInt(c.toInt)
-        case a if ReflectTypeUtil.isArray(a.getClass) =>
+        case a if ReflectTypeUtil.isArrayCls(a.getClass) =>
           val ar = a.asInstanceOf[Array[_]]
           trace(s"pack array (${ar.size})")
           packer.packArrayHeader(ar.length)

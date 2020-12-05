@@ -15,6 +15,83 @@ package wvlet.airframe.surface
 
 import scala.language.existentials
 
+sealed trait ParameterBase extends Serializable {
+  def name: String
+  def surface: Surface
+
+  def call(obj: Any, x: Any*): Any
+}
+
+trait Parameter extends ParameterBase {
+  def index: Int
+  def name: String
+
+  /**
+    * Surface for representing this parameter type
+    */
+  def surface: Surface
+
+  /**
+    * Returns true if this parameter has @required annotation
+    */
+  def isRequired: Boolean
+
+  /**
+    * Returns true if this parameter has @required annotation
+    */
+  def isSecret: Boolean
+
+  /**
+    * Get this parameter value from a given object x
+    */
+  def get(x: Any): Any
+
+  override def call(obj: Any, x: Any*): Any = get(obj)
+
+  /**
+    * Get the default value of this parameter.
+    * For example the default value of x in class A(x:Int = 10) is 10
+    *
+    * @return
+    */
+  def getDefaultValue: Option[Any]
+}
+
+/**
+  */
+trait ObjectFactory extends Serializable {
+  def newInstance(args: Seq[Any]): Any
+}
+
+case class MethodRef(owner: Class[_], name: String, paramTypes: Seq[Class[_]], isConstructor: Boolean)
+
+trait MethodParameter extends Parameter {
+  def method: MethodRef
+
+  /**
+    * Method owner instance is necessary to find by-name parameter default values
+    * @param methodOwner
+    * @return
+    */
+  def getMethodArgDefaultValue(methodOwner: Any): Option[Any] = getDefaultValue
+}
+
+trait MethodSurface extends ParameterBase {
+  def mod: Int
+  def owner: Surface
+  def name: String
+  def args: Seq[MethodParameter]
+  def surface: Surface = returnType
+  def returnType: Surface
+
+  def isPublic: Boolean    = (mod & MethodModifier.PUBLIC) != 0
+  def isPrivate: Boolean   = (mod & MethodModifier.PRIVATE) != 0
+  def isProtected: Boolean = (mod & MethodModifier.PROTECTED) != 0
+  def isStatic: Boolean    = (mod & MethodModifier.STATIC) != 0
+  def isFinal: Boolean     = (mod & MethodModifier.FINAL) != 0
+  def isAbstract: Boolean  = (mod & MethodModifier.ABSTRACT) != 0
+}
+
 /**
   * Parameters of a Surface
   */
@@ -267,10 +344,13 @@ case class ClassMethodSurface(
     methodCaller: Option[(Any, Seq[Any]) => Any]
 ) extends MethodSurface {
   override def call(obj: Any, x: Any*) = {
-    def unsupported = throw new UnsupportedOperationException(s"Calling method ${name} is not supported: ${this}")
+    def unsupported =
+      throw new UnsupportedOperationException(s"Calling method ${name} is not supported: ${this}")
 
     methodCaller
-      .map { caller => caller(obj, x.toSeq) }
+      .map { caller =>
+        caller(obj, x.toSeq)
+      }
       .getOrElse {
         unsupported
       }

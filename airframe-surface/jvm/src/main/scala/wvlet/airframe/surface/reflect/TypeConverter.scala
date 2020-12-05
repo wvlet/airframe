@@ -35,16 +35,20 @@ object TypeConverter extends LogSupport {
     if (value == null) {
       Some(Zero.zeroOf(targetType))
     } else {
-      trace(s"convert ${value} (${value.getClass}) to ${targetType}")
       if (targetType.isPrimitive) {
         convertToPrimitive(value, targetType)
       } else if (targetType.isOption) {
-        if (isOption(cls(value))) {
+        if (
+          /** StartMarker */
+          isOptionCls
+          /** EndMarker */
+          (cls(value))
+        ) {
           Option(value)
         } else {
           Option(convert(value, targetType.typeArgs(0)))
         }
-      } else if (isArray(targetType) && isArray(cls(value))) {
+      } else if (isArray(targetType) && isArrayCls(cls(value))) {
         Option(value)
       } else {
         val t: Class[_] = targetType.rawType
@@ -75,7 +79,7 @@ object TypeConverter extends LogSupport {
             None
           }
         } else {
-          convert(value, targetType.rawType)
+          convertToCls(value, targetType.rawType)
         }
       }
     }
@@ -84,7 +88,7 @@ object TypeConverter extends LogSupport {
   /**
     * Convert the input value into the target type
     */
-  def convert[A](value: Any, targetType: Class[A]): Option[A] = {
+  def convertToCls[A](value: Any, targetType: Class[A]): Option[A] = {
     val cl: Class[_] = cls(value)
     if (targetType.isAssignableFrom(cl)) {
       Some(value.asInstanceOf[A])
@@ -127,7 +131,8 @@ object TypeConverter extends LogSupport {
         case Primitive.Byte                    => s.toByte
         case Primitive.Char if (s.length == 1) => s(0).toChar
         case t if t.rawType == classOf[File]   => new File(s)
-        case t if t.rawType == classOf[Date]   => DateFormat.getDateInstance().parse(s)
+        case t if t.rawType == classOf[Date] =>
+          DateFormat.getDateInstance().parse(s)
         case _ =>
           warn(s"""Failed to convert "$s" to ${targetType.toString}""")
           None
