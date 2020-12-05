@@ -84,10 +84,17 @@ val buildSettings = Seq[Setting[_]](
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   scalacOptions ++= Seq(
     "-feature",
-    "-deprecation",
-    // Necessary for tracking source code range in airframe-rx demo
-    "-Yrangepos"
-  ) ++ (if (DOTTY) Seq("-Ytasty-reader") else Seq.empty),
+    "-deprecation"
+  ) ++ {
+    if (DOTTY) {
+      Seq.empty
+    } else {
+      Seq(
+        // Necessary for tracking source code range in airframe-rx demo
+        "-Yrangepos"
+      )
+    }
+  },
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(
     ("org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test).withDottyCompat(scalaVersion.value),
