@@ -20,13 +20,15 @@ import wvlet.log.LogSupport
 /**
   * A codec for Enum-like case objects that can be instantiated with unapply(String)
   */
-class StringUnapplyCodec[A](codec: Surface) extends MessageCodec[A] with LogSupport {
+class StringUnapplyCodec[A](codec: Surface)
+    extends MessageCodec[A]
+    with LogSupport {
   override def pack(p: Packer, v: A): Unit = {
     p.packString(v.toString)
   }
   override def unpack(u: Unpacker, v: MessageContext): Unit = {
     val s = u.unpackString
-    TypeConverter.convert(s, codec.rawType) match {
+    TypeConverter.convertToCls(s, codec.rawType) match {
       case Some(x) =>
         v.setObject(x)
       case None =>

@@ -46,9 +46,10 @@ object ObjectBuilder extends LogSupport {
   }
 
   sealed trait BuilderElement
-  case class Holder(holder: ObjectBuilder)                 extends BuilderElement
-  case class Value(value: Any)                             extends BuilderElement
-  case class ArrayHolder(holder: mutable.ArrayBuffer[Any]) extends BuilderElement
+  case class Holder(holder: ObjectBuilder) extends BuilderElement
+  case class Value(value: Any) extends BuilderElement
+  case class ArrayHolder(holder: mutable.ArrayBuffer[Any])
+      extends BuilderElement
 }
 
 trait GenericBuilder {
@@ -86,7 +87,8 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
       case p if canBuildFromBuffer(p.surface)      => Value(value)
       case p if canBuildFromStringValue(p.surface) => Value(value)
 
-      case p if p.surface.objectFactory.isEmpty => Value(value) // When no constructor to build p is found
+      case p if p.surface.objectFactory.isEmpty =>
+        Value(value) // When no constructor to build p is found
       case p => {
         // nested object
         val b = new SimpleObjectBuilder(p.surface)
@@ -116,7 +118,9 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
         holder.remove(name)
       case _ => // do nothing
     }
-    holder.getOrElseUpdate(name, ArrayHolder(new ArrayBuffer[Any])).asInstanceOf[ArrayHolder]
+    holder
+      .getOrElseUpdate(name, ArrayHolder(new ArrayBuffer[Any]))
+      .asInstanceOf[ArrayHolder]
   }
 
   def set(path: Path, value: Any): Unit = {
@@ -124,7 +128,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
       // do nothing
     } else {
       val name = path.head.canonicalName
-      val p    = findParameter(name)
+      val p = findParameter(name)
       if (p.isEmpty) {
         error(s"no parameter is found for path $path")
       } else {
@@ -132,7 +136,8 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
         if (path.isLeaf) {
           val targetType = p.get.surface
           trace(
-            s"update value holder name:$name, valueType:$targetType (isArray:${isArray(targetType)}) with value:$value (${value.getClass})"
+            s"update value holder name:$name, valueType:$targetType (isArray:${isArray(
+              targetType)}) with value:$value (${value.getClass})"
           )
           if (canBuildFromBuffer(targetType)) {
             val arr = getArrayHolder(name)
@@ -141,7 +146,8 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
                 // Append array elements to the buffer
                 val elementType = targetType.typeArgs(0)
                 val lst = value match {
-                  case a if isArray(value.getClass) => a.asInstanceOf[Array[_]].toIndexedSeq
+                  case a if isArrayCls(value.getClass) =>
+                    a.asInstanceOf[Array[_]].toIndexedSeq
                   case a if isJavaColleciton(value.getClass) =>
                     a.asInstanceOf[java.util.Collection[_]].asScala.toIndexedSeq
                   case s if isSeq(value.getClass) => s.asInstanceOf[Seq[_]]
@@ -149,38 +155,49 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
                     Seq(other)
                 }
                 lst
-                  .flatMap { x => TypeConverter.convert(x, elementType) }
+                  .flatMap { x =>
+                    TypeConverter.convert(x, elementType)
+                  }
                   .foreach { arr.holder += _ }
               case 2 =>
                 // Append map elements to the buffer
                 val lst = value match {
-                  case m if isJavaMap(value.getClass) => m.asInstanceOf[java.util.Map[_, _]].asScala.toMap
-                  case m if isMap(m.getClass)         => m.asInstanceOf[Map[_, _]]
-                  case other                          => Seq(other)
+                  case m if isJavaMap(value.getClass) =>
+                    m.asInstanceOf[java.util.Map[_, _]].asScala.toMap
+                  case m if isMap(m.getClass) => m.asInstanceOf[Map[_, _]]
+                  case other                  => Seq(other)
                 }
-                val keyType      = targetType.typeArgs(0)
-                val valueType    = targetType.typeArgs(1)
-                val tupleSurface = TupleSurface(classOf[Tuple2[_, _]], Seq(keyType, valueType))
+                val keyType = targetType.typeArgs(0)
+                val valueType = targetType.typeArgs(1)
+                val tupleSurface =
+                  TupleSurface(classOf[Tuple2[_, _]], Seq(keyType, valueType))
                 lst
-                  .flatMap { x => TypeConverter.convert(x, tupleSurface) }
+                  .flatMap { x =>
+                    TypeConverter.convert(x, tupleSurface)
+                  }
                   .foreach { arr.holder += _ }
               case other =>
                 error(s"Cannot convert ${value} to ${targetType}")
             }
           } else if (canBuildFromStringValue(targetType)) {
-            TypeConverter.convert(value, targetType).map { v => holder += name -> Value(v) }
+            TypeConverter.convert(value, targetType).map { v =>
+              holder += name -> Value(v)
+            }
           } else {
             holder += name -> Value(value)
           }
         } else {
           // nested object
           val paramName = path.head.canonicalName
-          val h         = holder.getOrElseUpdate(paramName, Holder(ObjectBuilder(p.get.surface)))
+          val h = holder.getOrElseUpdate(paramName,
+                                         Holder(ObjectBuilder(p.get.surface)))
           h match {
             case Holder(b) => b.set(path.tailPath, value)
             case other     =>
               // overwrite the existing holder
-              throw new IllegalStateException("invalid path:%s, value:%s, holder:%s".format(path, value, other))
+              throw new IllegalStateException(
+                "invalid path:%s, value:%s, holder:%s"
+                  .format(path, value, other))
           }
         }
       }
@@ -201,8 +218,12 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
   }
 }
 
-class SimpleObjectBuilder(surface: Surface) extends ObjectBuilder with StandardBuilder with LogSupport {
-  require(surface.objectFactory.isDefined, s"No object factory is found for ${surface}")
+class SimpleObjectBuilder(surface: Surface)
+    extends ObjectBuilder
+    with StandardBuilder
+    with LogSupport {
+  require(surface.objectFactory.isDefined,
+          s"No object factory is found for ${surface}")
 
   protected def findParameter(name: String) = {
     assert(surface != null)

@@ -42,7 +42,7 @@ object ReflectTypeUtil extends LogSupport {
       } else {
         Class.forName(clName + "$")
       }
-      val module       = companionCls.getField("MODULE$")
+      val module = companionCls.getField("MODULE$")
       val companionObj = module.get(null)
       Some(companionObj)
     } catch {
@@ -53,7 +53,8 @@ object ReflectTypeUtil extends LogSupport {
     }
   }
 
-  private[reflect] def access[A <: jr.AccessibleObject, B](f: A)(body: => B): B = {
+  private[reflect] def access[A <: jr.AccessibleObject, B](f: A)(
+      body: => B): B = {
     synchronized {
       val accessible = f.isAccessible
       try {
@@ -75,12 +76,14 @@ object ReflectTypeUtil extends LogSupport {
     }
   }
 
-  def canBuildFromBuffer(s: Surface): Boolean = isArray(s) || isSeq(s.rawType) || isMap(s.rawType) || isSet(s.rawType)
-  def canBuildFromString(s: Surface): Boolean = isPrimitive(s) || hasStringUnapplyConstructor(s)
+  def canBuildFromBuffer(s: Surface): Boolean =
+    isArray(s) || isSeq(s.rawType) || isMap(s.rawType) || isSet(s.rawType)
+  def canBuildFromString(s: Surface): Boolean =
+    isPrimitive(s) || hasStringUnapplyConstructor(s)
 
   def isPrimitive(s: Surface): Boolean = s.isPrimitive
-  def isArray(s: Surface): Boolean     = s.isInstanceOf[ArraySurface]
-  def isArray[T](cl: Class[T]): Boolean = {
+  def isArray(s: Surface): Boolean = s.isInstanceOf[ArraySurface]
+  def isArrayCls[T](cl: Class[T]): Boolean = {
     cl.isArray || cl.getSimpleName == "Array"
   }
 
@@ -108,8 +111,8 @@ object ReflectTypeUtil extends LogSupport {
           }
           def returnOptionOfT = {
             val rt = p.getGenericReturnType
-            val t  = getTypeParameters(rt)
-            isOption(p.getReturnType) && t.length == 1 && t(0) == cl
+            val t = getTypeParameters(rt)
+            isOptionCls(p.getReturnType) && t.length == 1 && t(0) == cl
           }
           p.getName == "unapply" && acceptString && returnOptionOfT
         }.isDefined
@@ -118,7 +121,7 @@ object ReflectTypeUtil extends LogSupport {
   }
 
   def isOption(s: Surface): Boolean = s.isOption
-  def isOption[T](cl: Class[T]): Boolean = {
+  def isOptionCls[T](cl: Class[T]): Boolean = {
     val name = cl.getSimpleName
     // Option None is an object ($)
     name == "Option" || name == "Some" || name == "None$"
@@ -138,7 +141,7 @@ object ReflectTypeUtil extends LogSupport {
 //  }
 
   def isIndexedSeq[T](cl: Class[T]): Boolean = {
-    classOf[IndexedSeq[_]].isAssignableFrom(cl) || isArray(cl)
+    classOf[IndexedSeq[_]].isAssignableFrom(cl) || isArrayCls(cl)
   }
 
   def isMap[T](cl: Class[T]): Boolean = {
@@ -154,7 +157,8 @@ object ReflectTypeUtil extends LogSupport {
   }
 
   def isTuple[T](cl: Class[T]): Boolean = {
-    classOf[Product].isAssignableFrom(cl) && cl.getName.startsWith("scala.Tuple")
+    classOf[Product].isAssignableFrom(cl) && cl.getName.startsWith(
+      "scala.Tuple")
   }
 
   def isList[T](cl: Class[T]): Boolean = {

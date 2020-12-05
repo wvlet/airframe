@@ -636,9 +636,11 @@ object ReflectSurfaceFactory extends LogSupport {
         new GenericSurface(resolveClass(baseType))
       case t if hasStringUnapply(t) =>
         // Surface that can be constructed with unapply(String)
-        EnumSurface(resolveClass(t), { (cl: Class[_], s: String) =>
-          TypeConverter.convert(s, cl)
-        })
+        EnumSurface(
+          resolveClass(t), { (cl: Class[_], s: String) =>
+            TypeConverter.convertToCls(s, cl)
+          }
+        )
       case t =>
         new GenericSurface(resolveClass(t))
     }

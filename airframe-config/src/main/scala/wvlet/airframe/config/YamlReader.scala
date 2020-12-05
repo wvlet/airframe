@@ -32,7 +32,8 @@ object YamlReader extends LogSupport {
   def load[A: ru.TypeTag](resourcePath: String, env: String): A = {
     val map = loadMapOf[A](resourcePath)
     if (!map.contains(env)) {
-      throw new IllegalArgumentException(s"Env $env is not found in $resourcePath")
+      throw new IllegalArgumentException(
+        s"Env $env is not found in $resourcePath")
     }
     map(env)
   }
@@ -41,25 +42,39 @@ object YamlReader extends LogSupport {
     val yaml = loadYaml(resourcePath)
     trace(s"yaml data: ${yaml.mkString(", ")}")
     val surface: Surface = wvlet.airframe.surface.Surface.of[A]
-    val map              = ListMap.newBuilder[String, A]
+    val map = ListMap.newBuilder[String, A]
     for ((k, v) <- yaml) yield {
-      map += k.toString -> bindMap[A](surface, v.asInstanceOf[ju.Map[AnyRef, AnyRef]].asScala.toMap)
+      map += k.toString -> bindMap[A](
+        surface,
+        v.asInstanceOf[ju.Map[AnyRef, AnyRef]].asScala.toMap)
     }
     map.result
   }
 
   def loadYaml(resourcePath: String): Map[AnyRef, AnyRef] = {
-    new Yaml().load(readAsString(resourcePath)).asInstanceOf[ju.Map[AnyRef, AnyRef]].asScala.toMap
+    new Yaml()
+      .load(readAsString(resourcePath))
+      .asInstanceOf[ju.Map[AnyRef, AnyRef]]
+      .asScala
+      .toMap
   }
 
   def loadYamlList(resourcePath: String): Seq[Map[AnyRef, AnyRef]] = {
     new Yaml()
-      .load(readAsString(resourcePath)).asInstanceOf[ju.List[ju.Map[AnyRef, AnyRef]]].asScala.map(_.asScala.toMap).toSeq
+      .load(readAsString(resourcePath))
+      .asInstanceOf[ju.List[ju.Map[AnyRef, AnyRef]]]
+      .asScala
+      .map(_.asScala.toMap)
+      .toSeq
   }
 
   def loadYamlList(resourceUrl: URL): Seq[Map[AnyRef, AnyRef]] = {
     new Yaml()
-      .load(readAsString(resourceUrl)).asInstanceOf[ju.List[ju.Map[AnyRef, AnyRef]]].asScala.map(_.asScala.toMap).toSeq
+      .load(readAsString(resourceUrl))
+      .asInstanceOf[ju.List[ju.Map[AnyRef, AnyRef]]]
+      .asScala
+      .map(_.asScala.toMap)
+      .toSeq
   }
 
   def bind[A: ru.TypeTag](prop: Map[AnyRef, AnyRef]): A = {
@@ -68,9 +83,10 @@ object YamlReader extends LogSupport {
 
   def bindMap[A: ru.TypeTag](surface: Surface, prop: Map[AnyRef, AnyRef]): A = {
     val yamlMsgpack = toMsgPack(prop)
-    val surface     = Surface.of[A]
-    val codec       = MessageCodec.of[A]
-    val result      = codec.unpackMsgPack(yamlMsgpack).getOrElse(Zero.zeroOf(surface))
+    val surface = Surface.of[A]
+    val codec = MessageCodec.of[A]
+    val result =
+      codec.unpackMsgPack(yamlMsgpack).getOrElse(Zero.zeroOf(surface))
     trace(result)
     result.asInstanceOf[A]
   }
@@ -120,7 +136,7 @@ class YamlReader(map: Map[AnyRef, AnyRef]) extends LogSupport {
           packer.packByte(b)
         case c: jl.Character =>
           packer.packInt(c.toInt)
-        case a if ReflectTypeUtil.isArray(a.getClass) =>
+        case a if ReflectTypeUtil.isArrayCls(a.getClass) =>
           val ar = a.asInstanceOf[Array[_]]
           trace(s"pack array (${ar.size})")
           packer.packArrayHeader(ar.length)
