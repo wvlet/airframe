@@ -89,7 +89,7 @@ val buildSettings = Seq[Setting[_]](
   ) ++ (if (IS_DOTTY) Seq("-Ytasty-reader") else Seq.empty),
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(
-    "org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION,
+    "org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test,
     "org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Provided
   ) ++ {
     if (IS_DOTTY)
