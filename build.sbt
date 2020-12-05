@@ -76,7 +76,7 @@ val buildSettings = Seq[Setting[_]](
   ),
   // Exclude compile-time only projects. This is a workaround for bloop,
   // which cannot resolve Optional dependencies nor compile-internal dependencie.
-  pomPostProcess := excludePomDependency(Seq("airframe-di-macros")),
+  pomPostProcess := excludePomDependency(Seq("airframe-di-macros", "airspec_2.12", "airspec_2.13")),
   crossScalaVersions := targetScalaVersions,
   crossPaths := true,
   publishMavenStyle := true,
@@ -1012,16 +1012,15 @@ lazy val airspec =
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % Optional
       ),
       // A workaround for bloop, which cannot resolve Optional dependencies
-      pomPostProcess := excludePomDependency(Seq("airspec-deps"))
+      pomPostProcess := excludePomDependency(Seq("airspec-deps", "airspec_2.12", "airspec_2.13"))
     )
     .jvmSettings(
       // Embed dependent project codes to make airspec a single jar
       mappings in (Compile, packageBin) ++= mappings.in(airspecDepsJVM, Compile, packageBin).value,
       mappings in (Compile, packageSrc) ++= mappings.in(airspecDepsJVM, Compile, packageSrc).value,
       libraryDependencies ++= Seq(
-        "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION,
-        "org.scala-lang"   % "scala-reflect"        % scalaVersion.value,
-        "org.scala-sbt"    % "test-interface"       % "1.0"
+        "org.scala-lang" % "scala-reflect"  % scalaVersion.value,
+        "org.scala-sbt"  % "test-interface" % "1.0"
       )
     )
     .jsSettings(
