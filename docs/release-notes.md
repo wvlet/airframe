@@ -11,9 +11,11 @@ Airframe uses YY.MM.patch versioning scheme, so the version numbers match with t
 This version has added an experimental support for Dotty (Scala 3.0.0-M2) for airframe-log. 
 
 -  airframe-log: Dotty support ([#1381](https://github.com/wvlet/airframe/issues/1381)) [[c6cea28](https://github.com/wvlet/airframe/commit/c6cea28)]
-  - Changed to eagerly initialize the root logger to use `SourceCodeLogFormatter`. This is a workaround for the Scala3's [new lazy val initialzation logic](https://dotty.epfl.ch/docs/reference/changed-features/lazy-vals-init.html). 
+   - Changed to eagerly initialize the root logger to use `SourceCodeLogFormatter`. This is a workaround for the Scala3's [new lazy val initialzation logic](https://dotty.epfl.ch/docs/reference/changed-features/lazy-vals-init.html). 
 -  Upgrade to Scala 2.13.4 ([#1376](https://github.com/wvlet/airframe/issues/1376)) [[bd13085](https://github.com/wvlet/airframe/commit/bd13085)]
 -  Upgrade scalacheck to 1.15.1 ([#1374](https://github.com/wvlet/airframe/issues/1374)) [[93d2fc0](https://github.com/wvlet/airframe/commit/93d2fc0)]
+
+### Internal Changes
 -  internal: Update sbt-dotty to 0.4.6 ([#1378](https://github.com/wvlet/airframe/issues/1378)) [[cb49d7b](https://github.com/wvlet/airframe/commit/cb49d7b)]
 -  internal: Separate AirSpec build  ([#1380](https://github.com/wvlet/airframe/issues/1380)) [[1b39ece](https://github.com/wvlet/airframe/commit/1b39ece)]
 -  internal: Add configuration for testing Scala 3 (Dotty) ([#1377](https://github.com/wvlet/airframe/issues/1377)) [[64feb58](https://github.com/wvlet/airframe/commit/64feb58)]
