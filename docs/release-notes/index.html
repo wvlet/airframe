@@ -67,6 +67,7 @@
 <p>This version has added an experimental support for Dotty (Scala 3.0.0-M2) for airframe-log.</p>
 <ul>
 <li>airframe-log: Dotty support (<a href="https://github.com/wvlet/airframe/issues/1381">#1381</a>) [<a href="https://github.com/wvlet/airframe/commit/c6cea28">c6cea28</a>]</li>
+<li>Changed to eagerly initialize the root logger to use <code>SourceCodeLogFormatter</code>. This is a workaround for the Scala3's <a href="https://dotty.epfl.ch/docs/reference/changed-features/lazy-vals-init.html">new lazy val initialzation logic</a>.</li>
 <li>Upgrade to Scala 2.13.4 (<a href="https://github.com/wvlet/airframe/issues/1376">#1376</a>) [<a href="https://github.com/wvlet/airframe/commit/bd13085">bd13085</a>]</li>
 <li>Upgrade scalacheck to 1.15.1 (<a href="https://github.com/wvlet/airframe/issues/1374">#1374</a>) [<a href="https://github.com/wvlet/airframe/commit/93d2fc0">93d2fc0</a>]</li>
 <li>internal: Update sbt-dotty to 0.4.6 (<a href="https://github.com/wvlet/airframe/issues/1378">#1378</a>) [<a href="https://github.com/wvlet/airframe/commit/cb49d7b">cb49d7b</a>]</li>
