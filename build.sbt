@@ -19,7 +19,7 @@ val SCALAJS_DOM_VERSION             = "1.1.0"
 val FINAGLE_VERSION                 = "20.10.0"
 val FLUENCY_VERSION                 = "2.5.0"
 val GRPC_VERSION                    = "1.34.0"
-val JMH_VERSION                     = "1.26"
+val JMH_VERSION                     = "1.27"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 
 // Publish only Scala 2.12 projects for snapshot releases
