@@ -53,8 +53,8 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 ThisBuild / usePipelining := false
 
 // A build configuration switch for working on Dotty migration. This needs to be removed eventually
-//val DOTTY = sys.env.isDefinedAt("DOTTY")
-val DOTTY = true
+val DOTTY = sys.env.isDefinedAt("DOTTY")
+//val DOTTY = true
 
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := { if (DOTTY) SCALA_3_0 else SCALA_2_12 }
