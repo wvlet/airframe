@@ -938,15 +938,19 @@ val airspecDependencies     = Seq("airframe", "airframe-metrics")
 // Setting keys for AirSpec
 val airspecDependsOn = settingKey[Seq[String]]("Dependent module names of airspec projects")
 
+def crossBuildSources(scalaBinaryVersion:String, baseDir:String): Seq[sbt.File] = {
+  val scalaMajorVersion = scalaBinaryVersion.split("\\.").head
+  for(suffix <- Seq("", s"-${scalaBinaryVersion}", s"-${scalaMajorVersion}")) yield {
+    file(s"${baseDir}/src/main/scala${suffix}")
+  }
+}
+
 val airspecBuildSettings = Seq[Setting[_]](
   unmanagedSourceDirectories in Compile ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
-    val sourceDirs = for (m <- airspecDependsOn.value) yield {
-      Seq(
-        file(s"${baseDir}/${m}/src/main/scala"),
-        file(s"${baseDir}/${m}/shared/src/main/scala"),
-        file(s"${baseDir}/${m}/shared/src/main/scala-2")
-      )
+    val sv = scalaBinaryVersion.value
+    val sourceDirs = for (m <- airspecDependsOn.value; infix <- Seq("", "/shared")) yield {
+      crossBuildSources(sv, s"${baseDir}/${m}${infix}")
     }
     sourceDirs.flatten
   }
@@ -955,14 +959,9 @@ val airspecBuildSettings = Seq[Setting[_]](
 val airspecJVMBuildSettings = Seq[Setting[_]](
   unmanagedSourceDirectories in Compile ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
-    val sv      = scalaBinaryVersion.value
-    val sourceDirs = for (m <- airspecDependsOn.value) yield {
-      Seq(
-        file(s"${baseDir}/${m}/.jvm/src/main/scala"),
-        file(s"${baseDir}/${m}/.jvm/src/main/scala-${sv}"),
-        file(s"${baseDir}/${m}/jvm/src/main/scala"),
-        file(s"${baseDir}/${m}/jvm/src/main/scala-${sv}")
-      )
+    val sv = scalaBinaryVersion.value
+    val sourceDirs = for(m <- airspecDependsOn.value; folder <- Seq(".jvm", "jvm")) yield {
+      crossBuildSources(sv, s"${baseDir}/${m}/${folder}")
     }
     sourceDirs.flatten
   }
@@ -972,13 +971,8 @@ val airspecJSBuildSettings = Seq[Setting[_]](
   unmanagedSourceDirectories in Compile ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
-    val sourceDirs = for (m <- airspecDependsOn.value) yield {
-      Seq(
-        file(s"${baseDir}/${m}/.js/src/main/scala"),
-        file(s"${baseDir}/${m}/.js/src/main/scala-${sv}"),
-        file(s"${baseDir}/${m}/js/src/main/scala"),
-        file(s"${baseDir}/${m}/js/src/main/scala-${sv}")
-      )
+    val sourceDirs = for (m <- airspecDependsOn.value; folder <- Seq(".js", "js")) yield {
+      crossBuildSources(sv, s"${baseDir}/${m}/${folder}")
     }
     sourceDirs.flatten
   }
