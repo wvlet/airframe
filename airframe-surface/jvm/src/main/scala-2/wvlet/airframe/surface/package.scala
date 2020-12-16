@@ -41,7 +41,7 @@ package object reflect {
       val c = implicitly[ClassTag[T]]
 
       def loop(cl: Class[_]): Option[Class[_]] = {
-        cl match {
+        cl match {SurfaceFa
           case null => None
           case _ =>
             if (cl.getDeclaredAnnotations.exists(a => c.runtimeClass.isAssignableFrom(a.annotationType()))) {
