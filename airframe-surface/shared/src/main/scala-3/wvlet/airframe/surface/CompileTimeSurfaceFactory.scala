@@ -10,9 +10,8 @@ object CompileTimeSurfaceFactory {
     import quotes._
     import quotes.reflect._
 
-    def fullTypeNameOf[A : Type]: String = {
-      val tpe = implicitly[Type[A]]
-      val tree = TypeRepr.of[A]
+    def fullTypeNameOf(t: Type[_]): String = {
+      val tree = TypeRepr.of(using t)
       println(tree)
       println(tree.getClass)
       tree match {
@@ -26,6 +25,9 @@ object CompileTimeSurfaceFactory {
           tree.toString
       }
     }
+    val ex = Expr(classOf[Int])
+    println(Term.of(ex))
+    //ex.show(using Printer.TreeCode)
 
 
     val nullFactory: Expr[Surface] = '{null}
@@ -36,7 +38,7 @@ object CompileTimeSurfaceFactory {
        t
     }
 
-    println(fullTypeNameOf[A])
+    println(fullTypeNameOf(tpe))
 
     tpe match {
       case '[String] => '{ Primitive.String }
@@ -52,14 +54,14 @@ object CompileTimeSurfaceFactory {
       case '[Seq[elementType]] => 
       { 
           val t = implicitly[Type[elementType]]
-          val tt = TypeRepr.of(using t)
+          val tt = TypeRepr.of(using tpe)
           //val cl = ClassOfConstant(tt)
           val ts = tt.classSymbol.get
           val cl = Constant.ClassOf(tt)
-          println(cl)
-          //val expr = '{ classOf[t.Underlying] }
+          //println(cl)
           //println(expr.show)
-          val e = '{ new GenericSurface(classOf[Unit]) }
+          //val clTree = TypeApply(ref(defn.Predef_classOf.termRef), List(TypeTree(tt)))
+          val e: Expr[Surface] = '{ new GenericSurface(classOf[Int]) }
           e
       }
       case _ => nullFactory
