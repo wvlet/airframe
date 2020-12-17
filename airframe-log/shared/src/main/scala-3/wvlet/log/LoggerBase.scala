@@ -80,7 +80,7 @@ private[log] object LoggerMacros {
   def logImpl(logger: Expr[Logger], logLevel: Expr[LogLevel], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
     '{
       if(${logger}.isEnabled(${logLevel})) {
-        ${logger}.log(${logLevel}, ${sourcePos}, ${message})
+        ${logger}.log(${logLevel}, ${sourcePos(using q)}, ${message})
       }
     }
   }
@@ -88,7 +88,7 @@ private[log] object LoggerMacros {
   def errorImpl(logger: Expr[Logger], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
     '{
       if(${logger}.isEnabled(wvlet.log.LogLevel.ERROR)) {
-        ${logger}.log(wvlet.log.LogLevel.ERROR, ${sourcePos}, ${message})
+        ${logger}.log(wvlet.log.LogLevel.ERROR, ${sourcePos(using q)}, ${message})
       }
     }
   }
@@ -96,7 +96,7 @@ private[log] object LoggerMacros {
   def warnImpl(logger: Expr[Logger], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
     '{
       if(${logger}.isEnabled(wvlet.log.LogLevel.WARN)) {
-        ${logger}.log(wvlet.log.LogLevel.WARN, ${sourcePos}, ${message})
+        ${logger}.log(wvlet.log.LogLevel.WARN, ${sourcePos(using q)}, ${message})
       }
     }
   }
@@ -104,7 +104,7 @@ private[log] object LoggerMacros {
   def infoImpl(logger: Expr[Logger], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
     '{
       if(${logger}.isEnabled(wvlet.log.LogLevel.INFO)) {
-        ${logger}.log(wvlet.log.LogLevel.INFO, ${sourcePos}, ${message})
+        ${logger}.log(wvlet.log.LogLevel.INFO, ${sourcePos(using q)}, ${message})
       }
     }
   }
@@ -112,7 +112,7 @@ private[log] object LoggerMacros {
   def debugImpl(logger: Expr[Logger], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
     '{
       if(${logger}.isEnabled(wvlet.log.LogLevel.DEBUG)) {
-        ${logger}.log(wvlet.log.LogLevel.DEBUG, ${sourcePos}, ${message})
+        ${logger}.log(wvlet.log.LogLevel.DEBUG, ${sourcePos(using q)}, ${message})
       }
     }
   }
@@ -120,7 +120,7 @@ private[log] object LoggerMacros {
   def traceImpl(logger: Expr[Logger], message:Expr[Any])(using q: Quotes): Expr[Unit] = {
     '{
       if(${logger}.isEnabled(wvlet.log.LogLevel.TRACE)) {
-        ${logger}.log(wvlet.log.LogLevel.TRACE, ${sourcePos}, ${message})
+        ${logger}.log(wvlet.log.LogLevel.TRACE, ${sourcePos(using q)}, ${message})
       }
     }
   }
@@ -128,7 +128,7 @@ private[log] object LoggerMacros {
   def errorWithCauseImpl(logger: Expr[Logger], message:Expr[Any], cause: Expr[Throwable])(using q: Quotes): Expr[Unit] = {
     '{
       if(${logger}.isEnabled(wvlet.log.LogLevel.ERROR)) {
-        ${logger}.logWithCause(wvlet.log.LogLevel.ERROR, ${sourcePos}, ${message}, ${cause})
+        ${logger}.logWithCause(wvlet.log.LogLevel.ERROR, ${sourcePos(using q)}, ${message}, ${cause})
       }
     }
   }
@@ -136,7 +136,7 @@ private[log] object LoggerMacros {
   def warnWithCauseImpl(logger: Expr[Logger], message:Expr[Any], cause: Expr[Throwable])(using q: Quotes): Expr[Unit] = {
     '{
       if(${logger}.isEnabled(wvlet.log.LogLevel.WARN)) {
-        ${logger}.logWithCause(wvlet.log.LogLevel.WARN, ${sourcePos}, ${message}, ${cause})
+        ${logger}.logWithCause(wvlet.log.LogLevel.WARN, ${sourcePos(using q)}, ${message}, ${cause})
       }
     }
   }
@@ -144,7 +144,7 @@ private[log] object LoggerMacros {
   def infoWithCauseImpl(logger: Expr[Logger], message:Expr[Any], cause: Expr[Throwable])(using q: Quotes): Expr[Unit] = {
     '{
       if(${logger}.isEnabled(wvlet.log.LogLevel.INFO)) {
-        ${logger}.logWithCause(wvlet.log.LogLevel.INFO, ${sourcePos}, ${message}, ${cause})
+        ${logger}.logWithCause(wvlet.log.LogLevel.INFO, ${sourcePos(using q)}, ${message}, ${cause})
       }
     }
   }
@@ -152,7 +152,7 @@ private[log] object LoggerMacros {
   def debugWithCauseImpl(logger: Expr[Logger], message:Expr[Any], cause: Expr[Throwable])(using q: Quotes): Expr[Unit] = {
     '{
       if(${logger}.isEnabled(wvlet.log.LogLevel.DEBUG)) {
-        ${logger}.logWithCause(wvlet.log.LogLevel.DEBUG, ${sourcePos}, ${message}, ${cause})
+        ${logger}.logWithCause(wvlet.log.LogLevel.DEBUG, ${sourcePos(using q)}, ${message}, ${cause})
       }
     }
   }
@@ -160,7 +160,7 @@ private[log] object LoggerMacros {
   def traceWithCauseImpl(logger: Expr[Logger], message:Expr[Any], cause: Expr[Throwable])(using q: Quotes): Expr[Unit] = {
     '{
       if(${logger}.isEnabled(wvlet.log.LogLevel.TRACE)) {
-        ${logger}.logWithCause(wvlet.log.LogLevel.TRACE, ${sourcePos}, ${message}, ${cause})
+        ${logger}.logWithCause(wvlet.log.LogLevel.TRACE, ${sourcePos(using q)}, ${message}, ${cause})
       }
     }
   }

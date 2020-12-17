@@ -3,7 +3,7 @@ import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
 val SCALA_2_12          = "2.12.12"
 val SCALA_2_13          = "2.13.4"
-val SCALA_3_0           = "3.0.0-M2"
+val SCALA_3_0           = "3.0.0-M3"
 val targetScalaVersions = SCALA_2_13 :: SCALA_2_12 :: Nil
 val withDotty           = SCALA_3_0 :: targetScalaVersions
 
