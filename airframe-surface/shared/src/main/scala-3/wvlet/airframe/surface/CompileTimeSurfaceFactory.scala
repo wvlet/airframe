@@ -2,7 +2,7 @@ package wvlet.airframe.surface
 import scala.quoted._
 
 object CompileTimeSurfaceFactory {
-    
+
   type SurfaceMatcher = PartialFunction[Type[_], Expr[Surface]]
 
   def surfaceOf[A](using tpe: Type[A], quotes: Quotes): Expr[Surface] = {
@@ -10,9 +10,12 @@ object CompileTimeSurfaceFactory {
     import quotes.reflect._
 
     val nullFactory: Expr[Surface] = '{null}
-    println(Type.show[A])
-    println(TypeTree.of(using tpe))
+    //println(Type.show[A])
+    //println(TypeTree.of(using tpe))
 
+    def lift[T](using t:Type[T]): Type[T] = {
+       t
+    }
 
     tpe match {
       case '[String] => '{ Primitive.String }
@@ -25,11 +28,21 @@ object CompileTimeSurfaceFactory {
       case '[Byte] => '{ Primitive.Byte }
       case '[Char] => '{ Primitive.Char }
       case '[Unit] => '{ Primitive.Unit }
-      case '[Seq[et]] => '{ new GenericSurface(classOf[Unit]) }
+      case '[Seq[elementType]] => 
+      { 
+          val t = implicitly[Type[elementType]]
+          val tt = TypeRepr.of(using t)
+          //val cl = ClassOfConstant(tt)
+          val ts = tt.classSymbol.get
+          val cl = Constant.ClassOf(tt)
+          println(cl)
+          //val expr = '{ classOf[t.Underlying] }
+          //println(expr.show)
+          val e = '{ new GenericSurface(classOf[Unit]) }
+          e
+      }
       case _ => nullFactory
     }
   }
-
-
 
 }
