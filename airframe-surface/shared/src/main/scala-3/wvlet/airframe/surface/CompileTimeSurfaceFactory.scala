@@ -5,9 +5,28 @@ object CompileTimeSurfaceFactory {
 
   type SurfaceMatcher = PartialFunction[Type[_], Expr[Surface]]
 
+
   def surfaceOf[A](using tpe: Type[A], quotes: Quotes): Expr[Surface] = {
     import quotes._
     import quotes.reflect._
+
+    def fullTypeNameOf[A : Type]: String = {
+      val tpe = implicitly[Type[A]]
+      val tree = TypeRepr.of[A]
+      println(tree)
+      println(tree.getClass)
+      tree match {
+        case TypeRef(typeRepr, typeStr) =>
+          typeStr
+        case AppliedType(typeRepr, lstType) =>
+          typeRepr.toString
+      //case TypeRef(prefix, typeSymbol, args) => 
+//        typeSymbol.toString
+        case other => 
+          tree.toString
+      }
+    }
+
 
     val nullFactory: Expr[Surface] = '{null}
     //println(Type.show[A])
@@ -16,6 +35,8 @@ object CompileTimeSurfaceFactory {
     def lift[T](using t:Type[T]): Type[T] = {
        t
     }
+
+    println(fullTypeNameOf[A])
 
     tpe match {
       case '[String] => '{ Primitive.String }
