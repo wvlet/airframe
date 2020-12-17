@@ -5,31 +5,31 @@ object CompileTimeSurfaceFactory {
     
   type SurfaceMatcher = PartialFunction[Type[_], Expr[Surface]]
 
-  def surfaceOf[A](using tpe: Type[A], quoted: Quotes): Expr[Surface] = {
-    import quoted._
-
-
-    def primitiveFactory: SurfaceMatcher = {
-      case t if t == Type.of[String] => '{ Primitive.String }
-      case t if t == Type.of[Boolean] => '{ Primitive.Boolean }
-      case t if t == Type.of[Int] => '{ Primitive.Int }
-      case t if t == Type.of[Long] => '{ Primitive.Long }
-      case t if t == Type.of[Float] => '{ Primitive.Float }
-      case t if t == Type.of[Double] => '{ Primitive.Double }
-      case t if t == Type.of[Short] => '{ Primitive.Short }
-      case t if t == Type.of[Byte] => '{ Primitive.Byte }
-      case t if t == Type.of[Char] => '{ Primitive.Char }
-      case t if t == Type.of[Unit] => '{ Primitive.Unit }
-    }
-
-    
-
+  def surfaceOf[A](using tpe: Type[A], quotes: Quotes): Expr[Surface] = {
+    import quotes._
+    import quotes.reflect._
 
     val nullFactory: Expr[Surface] = '{null}
+    println(Type.show[A])
+    println(TypeTree.of(using tpe))
 
-    primitiveFactory.applyOrElse(tpe, { t => nullFactory })
+
+    tpe match {
+      case '[String] => '{ Primitive.String }
+      case '[Boolean] => '{ Primitive.Boolean }
+      case '[Int] => '{ Primitive.Int }
+      case '[Long] => '{ Primitive.Long }
+      case '[Float] => '{ Primitive.Float }
+      case '[Double] => '{ Primitive.Double }
+      case '[Short] => '{ Primitive.Short }
+      case '[Byte] => '{ Primitive.Byte }
+      case '[Char] => '{ Primitive.Char }
+      case '[Unit] => '{ Primitive.Unit }
+      case '[Seq[et]] => '{ new GenericSurface(classOf[Unit]) }
+      case _ => nullFactory
+    }
   }
 
 
-    
+
 }
