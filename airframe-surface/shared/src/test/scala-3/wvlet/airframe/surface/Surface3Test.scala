@@ -1,26 +1,35 @@
 package test
 
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
-object Surface3Test {
+object Surface3Test extends LogSupport {
   import scala.quoted._
 
 
-  inline def test(s:Surface): Unit = {
-    println(s"surface: ${s}")
+  inline def test(s:Surface, expected: String): Unit = {
+    s match {
+      case null =>
+        warn(s"Surface: expected: ${expected}, but null")
+      case _ =>
+        val str = s.toString
+        if(str != expected) {
+          warn(s"Surface: expected: ${expected}, but ${str}")
+        }
+    }
   }
 
   case class Person(id:Int, name:String)
 
 
   def main(args: Array[String]): Unit = {
-    test(Surface.of[Int])
-    test(Surface.of[Long])
-    test(Surface.of[String])
-    test(Surface.of[Seq[Int]])
-    test(Surface.of[Person])
-    //  abcddddwddddd
+    test(Surface.of[Int], "Int")
+    test(Surface.of[Long], "Long")
+    test(Surface.of[String], "String")
+    test(Surface.of[Seq[Int]], "Seq[Int]")
+    test(Surface.of[Map[String, Int]], "Map[String,Int]")
+    test(Surface.of[Person], "Person")
   }
-  // ddddddddddddd
+  // ddddd
 
 }

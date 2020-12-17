@@ -10,85 +10,86 @@ object CompileTimeSurfaceFactory {
     import quotes._
     import quotes.reflect._
 
-    def fullTypeNameOf(t: Type[_]): String = {
-      val tree = TypeRepr.of(using t)
-      //println(tree)
-      //println(tree.getClass)
-      tree match {
-        case TypeRef(typeRepr, typeStr) =>
-          typeStr
-        case a@AppliedType(typeRepr, lstType) =>
-          typeRepr.toString
-      //case TypeRef(prefix, typeSymbol, args) => 
-//        typeSymbol.toString
-        case other => 
-          tree.toString
-      }
-    }
+    val f = new CompileTimeSurfaceFactory(using quotes)
+    f.surfaceOf(tpe)
 
-    val r = TypeRepr.of(using tpe)
-    println(r.show)
-    r match {
-      case a @ AppliedType(repr, lstType) =>
-        println(a.typeSymbol.members)
-      case _ =>
-        
-    }
+    // def findPrimaryConstructorOf(t: Type[_]): Option[Symbol] = {
+    //    val r = TypeRepr.of(using t)
+    //    val pc = r.typeSymbol.primaryConstructor
+    //    if(pc.exists) {
+    //     println(pc.paramSymss.mkString(", "))
+    //    }
+    //    None
+    //    //.filter(m => m.isClassConstructor && m.isPublic).map(_.asMethod)
+    // }
 
-
-    def findPrimaryConstructorOf(t: Type[_]): Option[Symbol] = {
-       val r = TypeRepr.of(using t)
-       val pc = r.typeSymbol.primaryConstructor
-       if(pc.exists) {
-        println(pc.paramSymss.mkString(", "))
-       }
-       None
-       //.filter(m => m.isClassConstructor && m.isPublic).map(_.asMethod)
-    }
-
-     val pc = findPrimaryConstructorOf(tpe)
+    // val pc = findPrimaryConstructorOf(tpe)
     // println
     //val ex = Expr(classOf[Int])
     //println(Term.of(ex))
     //ex.show(using Printer.TreeCode)
 
-
-    val nullFactory: Expr[Surface] = '{null}
-    //println(Type.show[A])
-    //println(TypeTree.of(using tpe))
-
-    def lift[T](using t:Type[T]): Type[T] = {
-       t
-    }
-
-    println(fullTypeNameOf(tpe))
-
-    tpe match {
-      case '[String] => '{ Primitive.String }
-      case '[Boolean] => '{ Primitive.Boolean }
-      case '[Int] => '{ Primitive.Int }
-      case '[Long] => '{ Primitive.Long }
-      case '[Float] => '{ Primitive.Float }
-      case '[Double] => '{ Primitive.Double }
-      case '[Short] => '{ Primitive.Short }
-      case '[Byte] => '{ Primitive.Byte }
-      case '[Char] => '{ Primitive.Char }
-      case '[Unit] => '{ Primitive.Unit }
-      case '[Seq[elementType]] => 
-      { 
-          val t = implicitly[Type[elementType]]
-          val tt = TypeRepr.of(using tpe)
-          //val cl = ClassOfConstant(tt)
-          val ts = tt.classSymbol.get
-          val cl = Constant.ClassOf(tt)
-          //println(cl)
-          //println(expr.show)
-          //val clTree = TypeApply(ref(defn.Predef_classOf.termRef), List(TypeTree(tt)))
-          val e: Expr[Surface] = '{ new GenericSurface(classOf[Int]) }
-          e
-      }
-      case _ => nullFactory
-    }
+    //   case '[Seq[elementType]] => 
+    //   { 
+    //       val tt = TypeTree.of[A]
+    //       val clsOf = Literal(ClassOfConstant(tt.tpe)).asExpr.asInstanceOf[Expr[Class[A]]]
+    //       '{ new GenericSurface(${clsOf}) }
+    //   }
+    //   case _ => nullFactory
+    // }
   }
 
+}
+
+class CompileTimeSurfaceFactory(using quotes:Quotes) {
+  import quotes._
+  import quotes.reflect._
+
+  private def fullTypeNameOf(t:Type[_]): String = {
+      def sanitize(symbol:Symbol): String = {
+        val fullName = symbol.fullName
+        fullName.split("\\.").toList match {
+          case "scala" :: "Predef$" :: tail =>
+            tail.mkString(".")
+          case "scala" :: "collection" :: "immutable" :: tail =>
+            tail.mkString(".")
+          case "scala" :: nme :: Nil =>
+            nme
+          case _ => 
+            fullName.replaceAll("\\$", "")
+        }
+      }
+      val tt = TypeTree.of(using t)
+      tt.tpe match {
+        case a:AppliedType if a.args.nonEmpty =>
+          s"${sanitize(a.typeSymbol)}[${a.args.map(pt => fullTypeNameOf(pt.asType)).mkString(",")}]"
+        case other => 
+          sanitize(other.typeSymbol)
+      }
+  }
+  private type Factory = PartialFunction[TypeRepr, Expr[Surface]]
+
+  def surfaceOf(tpe: Type[_]): Expr[Surface] = {
+    surfaceOf(TypeRepr.of(using tpe))
+  }
+
+  private def surfaceOf(tr: TypeRepr): Expr[Surface] = {
+    val nullFactory: Expr[Surface] = '{null}
+    primitiveTypeFactory.applyOrElse(tr, { x => nullFactory } )
+  }
+
+  private def primitiveTypeFactory: Factory = {
+    case t if t =:= TypeRepr.of[String] => '{ Primitive.String }
+    case t if t =:= TypeRepr.of[Boolean] => '{ Primitive.Boolean }
+    case t if t =:= TypeRepr.of[Int] => '{ Primitive.Int }
+    case t if t =:= TypeRepr.of[Long] => '{ Primitive.Long }
+    case t if t =:= TypeRepr.of[Float] => '{ Primitive.Float }
+    case t if t =:= TypeRepr.of[Double] => '{ Primitive.Double }
+    case t if t =:= TypeRepr.of[Short] => '{ Primitive.Short }
+    case t if t =:= TypeRepr.of[Byte] => '{ Primitive.Byte }
+    case t if t =:= TypeRepr.of[Char] => '{ Primitive.Char }
+    case t if t =:= TypeRepr.of[Unit] => '{ Primitive.Unit }
+  }
+
+  
 }
