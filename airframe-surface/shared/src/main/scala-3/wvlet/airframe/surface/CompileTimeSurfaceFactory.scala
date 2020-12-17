@@ -12,12 +12,12 @@ object CompileTimeSurfaceFactory {
 
     def fullTypeNameOf(t: Type[_]): String = {
       val tree = TypeRepr.of(using t)
-      println(tree)
-      println(tree.getClass)
+      //println(tree)
+      //println(tree.getClass)
       tree match {
         case TypeRef(typeRepr, typeStr) =>
           typeStr
-        case AppliedType(typeRepr, lstType) =>
+        case a@AppliedType(typeRepr, lstType) =>
           typeRepr.toString
       //case TypeRef(prefix, typeSymbol, args) => 
 //        typeSymbol.toString
@@ -25,8 +25,31 @@ object CompileTimeSurfaceFactory {
           tree.toString
       }
     }
-    val ex = Expr(classOf[Int])
-    println(Term.of(ex))
+
+    val r = TypeRepr.of(using tpe)
+    println(r.show)
+    r match {
+      case a @ AppliedType(repr, lstType) =>
+        println(a.typeSymbol.members)
+      case _ =>
+        
+    }
+
+
+    def findPrimaryConstructorOf(t: Type[_]): Option[Symbol] = {
+       val r = TypeRepr.of(using t)
+       val pc = r.typeSymbol.primaryConstructor
+       if(pc.exists) {
+        println(pc.paramSymss.mkString(", "))
+       }
+       None
+       //.filter(m => m.isClassConstructor && m.isPublic).map(_.asMethod)
+    }
+
+     val pc = findPrimaryConstructorOf(tpe)
+    // println
+    //val ex = Expr(classOf[Int])
+    //println(Term.of(ex))
     //ex.show(using Printer.TreeCode)
 
 
