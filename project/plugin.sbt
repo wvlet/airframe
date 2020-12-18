@@ -5,7 +5,7 @@ addSbtPlugin("org.scalameta"      % "sbt-scalafmt"             % "2.4.2")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")
 addSbtPlugin("com.eed3si9n"       % "sbt-buildinfo"            % "0.10.0")
 
-addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.5.0")
+addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.5.1")
 
 addDependencyTreePlugin
 
