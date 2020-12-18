@@ -94,6 +94,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     tupleFactory orElse
     javaUtilFactory orElse
     javaEnumFactory orElse
+    exisitentialTypeFactory orElse
     genericTypeFactory
   }
 
@@ -187,6 +188,12 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
   private def javaEnumFactory: Factory = {
     case t if isEnum(t) =>
       '{ JavaEnumSurface(${clsOf(t)}) }
+  }
+
+  private def exisitentialTypeFactory: Factory = {
+     case t : TypeBounds if t.hi =:= TypeRepr.of[Any] =>
+      // TODO Represent low/hi bounds
+      '{ ExistentialType }  
   }
 
   private def clsOf(t:TypeRepr): Expr[Class[_]] = {
