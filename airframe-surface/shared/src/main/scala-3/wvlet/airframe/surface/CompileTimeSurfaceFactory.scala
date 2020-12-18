@@ -114,6 +114,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     javaUtilFactory orElse
     javaEnumFactory orElse
     exisitentialTypeFactory orElse
+    caseClassFactory orElse
     genericTypeFactory
   }
 
@@ -234,6 +235,18 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
 
   private def newGenericSurfaceOf(t:TypeRepr): Expr[Surface] = {
     '{ new GenericSurface(${clsOf(t)}) }
+  }
+
+  private def caseClassFactory: Factory = {
+    case t if t.typeSymbol.caseFields.nonEmpty =>
+      println(s"=== ${t.typeSymbol.caseFields}")
+      val typeArgs = typeArgsOf(t).map(surfaceOf(_))
+      '{ new GenericSurface(
+           ${clsOf(t)}, 
+           ${Expr.ofSeq(typeArgs)}.toIndexedSeq,
+           params = Seq.empty
+         )
+      }
   }
 
   private def genericTypeFactory: Factory = {

@@ -63,6 +63,10 @@ object Surface3Test extends LogSupport {
     test(Surface.of[Holder[Task]], "Holder[Task]")
 
     test(Surface.of[Label], "Label")
+
+
+    val s = Surface.of[Person]
+    info(s.params.mkString(", "))
   }
 
 
