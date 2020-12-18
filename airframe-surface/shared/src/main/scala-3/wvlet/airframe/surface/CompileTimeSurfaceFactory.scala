@@ -91,6 +91,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     primitiveTypeFactory orElse
     arrayFactory orElse
     optionFactory orElse
+    tupleFactory orElse
     genericTypeFactory
   }
 
@@ -162,6 +163,12 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
   private def optionFactory: Factory = {
     case t if typeNameOf(t) == "scala.Option" =>
       '{ OptionSurface(${clsOf(t)}, ${elementTypeSurfaceOf(t)})}
+  }
+
+  private def tupleFactory: Factory = {
+    case t if t <:< TypeRepr.of[Product] && typeNameOf(t).startsWith("scala.Tuple") =>
+      val paramTypes = typeArgsOf(t).map(surfaceOf(_))
+      '{ new TupleSurface(${clsOf(t)}, ${Expr.ofSeq(paramTypes)}.toIndexedSeq) }
   }
 
   private def clsOf(t:TypeRepr): Expr[Class[_]] = {

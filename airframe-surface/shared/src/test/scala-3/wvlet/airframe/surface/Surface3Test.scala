@@ -28,7 +28,13 @@ object Surface3Test extends LogSupport {
 
   def main(args: Array[String]): Unit = {
     test(Surface.of[Int], "Int")
+    test(Surface.of[Boolean], "Boolean")
     test(Surface.of[Long], "Long")
+    test(Surface.of[Float], "Float")
+    test(Surface.of[Double], "Double")
+    test(Surface.of[Short], "Short")
+    test(Surface.of[Char], "Char")
+    test(Surface.of[Unit], "Unit")
     test(Surface.of[String], "String")
     test(Surface.of[Seq[Int]], "Seq[Int]")
     test(Surface.of[Map[String, Int]], "Map[String,Int]")
@@ -38,6 +44,8 @@ object Surface3Test extends LogSupport {
     test(Surface.of[Array[Int]], "Array[Int]")
     test(Surface.of[Array[Person]], "Array[Person]")
     test(Surface.of[Option[String]], "Option[String]")
+    test(Surface.of[(Int, String)], "Tuple2[Int,String]")
+    test(Surface.of[(Int, String, Float)], "Tuple3[Int,String,Float]")
   }
   // ddddd
 
