@@ -259,27 +259,33 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
       newGenericSurfaceOf(t)
   }
 
+  private def methodArgsOf(method:Symbol): List[Symbol] = {
+    method.paramSymss.flatten
+  }
+
   private def caseParametersOf(t: TypeRepr): Expr[Seq[MethodParameter]] = {
     val cstr = t.typeSymbol.primaryConstructor
     val constructorName = cstr.name
+    val argClasses = methodArgsOf(cstr).map(_.tree).collect { 
+      case v:ValDef =>
+        println(s"${v.name}: ${v}")
+        clsOf(v.tpt.tpe.dealias)
+    }
     val constructorRef = '{
-      MethodRef(owner = ${clsOf(t)}, name = ${Expr(constructorName)}, paramTypes = Seq.empty, isConstructor =true)
+      MethodRef(owner = ${clsOf(t)}, name = ${Expr(constructorName)}, paramTypes = ${Expr.ofSeq(argClasses)}, isConstructor =true)
     }
 
     val paramExprs = for{ 
-      ((field, v:ValDef), i) <- t.typeSymbol.caseFields.map(f => (f, f.tree)).zipWithIndex
+      (field, v:ValDef, i) <- t.typeSymbol.caseFields.zipWithIndex.map((f, i) => (f, f.tree, i))
     } yield {
       val paramType = v.tpt.tpe
       val paramName = field.name
       //println(s"${paramName}: ${paramType}")
-   
       '{
-        StdMethodParameter(
+        wvlet.airframe.surface.reflect.RuntimeMethodParameter(
           method = ${constructorRef},
           index = ${Expr(i)},
           name = ${Expr(paramName)},
-          isRequired = false,
-          isSecret = false,
           surface = ${surfaceOf(paramType)}
         )
       }

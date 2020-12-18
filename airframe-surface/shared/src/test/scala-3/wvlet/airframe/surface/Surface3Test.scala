@@ -21,7 +21,7 @@ object Surface3Test extends LogSupport {
     }
   }
 
-  case class Person(id:Int, name:String)
+  case class Person(id:Int = -1, name:String)
 
   trait Label 
   type MyString = String
@@ -67,6 +67,11 @@ object Surface3Test extends LogSupport {
 
     val s = Surface.of[Person]
     info(s.params.mkString(", "))
+    val p = Person(1, "leo")
+    val p0 = s.params(0)
+    info(p0.name)
+    info(p0.getDefaultValue)
+    info(p0.get(p))
   }
 
 

@@ -64,7 +64,7 @@ package object reflect {
       cl match {
         case null => Seq.empty
         case _ =>
-          cl.getDeclaredAnnotations ++ cl.getInterfaces.flatMap(loop)
+          cl.getDeclaredAnnotations.toIndexedSeq ++ cl.getInterfaces.flatMap(loop)
       }
     }
     val annot = loop(cls)
@@ -72,7 +72,7 @@ package object reflect {
   }
 
   def findDeclaredAnnotation[T <: jl.annotation.Annotation: ClassTag](cls: Class[_]): Option[T] = {
-    findAnnotation[T](cls.getDeclaredAnnotations)
+    findAnnotation[T](cls.getDeclaredAnnotations.toIndexedSeq)
   }
 
   implicit class ToRuntimeSurfaceParameter(p: Parameter) {
@@ -104,7 +104,7 @@ package object reflect {
     def findAnnotationOf[T <: jl.annotation.Annotation: ClassTag]: Option[T] = {
       val annots = annotations
       if (p.index < annots.length) {
-        findAnnotation[T](annots(p.index))
+        findAnnotation[T](annots(p.index).toIndexedSeq)
       } else {
         None
       }
@@ -122,7 +122,7 @@ package object reflect {
             case other =>
               Try(cl.getMethod(m.name, methodArgTypes: _*)) match {
                 case Success(mt) =>
-                  mt.getDeclaredAnnotations ++
+                  mt.getDeclaredAnnotations.toIndexedSeq ++
                     cl.getInterfaces.flatMap(parent => loop(parent))
                 case _ =>
                   Seq.empty
