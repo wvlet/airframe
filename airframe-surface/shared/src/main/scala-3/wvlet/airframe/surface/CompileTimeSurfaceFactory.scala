@@ -88,6 +88,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
   private def factory: Factory = {
     taggedTypeFactory orElse
     aliasFactory orElse
+    higherKindedTypeFactory orElse
     primitiveTypeFactory orElse
     arrayFactory orElse
     optionFactory orElse
@@ -97,6 +98,17 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     exisitentialTypeFactory orElse
     genericTypeFactory
   }
+
+  private def higherKindedTypeFactory: Factory = {
+    case h: TypeLambda => 
+      println(s"========== ${h.typeSymbol.fullName}[${h.paramNames.mkString(",")}]")
+      val len = h.paramNames.size
+      val params = (0 until len).map{ i => h.param(i).toString }
+      println(s"======== ${params.mkString(", ")}")
+      // TOOD 
+      '{ ExistentialType }
+  }
+
 
   private def primitiveTypeFactory: Factory = {
     case t if t =:= TypeRepr.of[String] => '{ Primitive.String }

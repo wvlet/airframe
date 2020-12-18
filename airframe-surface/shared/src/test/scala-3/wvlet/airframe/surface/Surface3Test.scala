@@ -26,6 +26,12 @@ object Surface3Test extends LogSupport {
   trait Label 
   type MyString = String
 
+  trait Holder[M[_]] {
+    def hello = "hello"
+  }
+
+  trait Task[A]
+
   def main(args: Array[String]): Unit = {
     test(Surface.of[Int], "Int")
     test(Surface.of[Boolean], "Boolean")
@@ -51,9 +57,11 @@ object Surface3Test extends LogSupport {
     test(Surface.of[java.time.temporal.Temporal], "Temporal")
     test(Surface.of[MyEnum], "MyEnum")
     test(Surface.of[Seq[_]], "Seq[_]")
+    // TODO　bounded type support
     test(Surface.of[Seq[_ <: String]], "Seq[_]")
     test(Surface.of[Seq[_ >: String]], "Seq[_]")
+    test(Surface.of[Holder[Task]], "Holder[Task[A]]")
   }
-  // ddddd
+
 
 }
