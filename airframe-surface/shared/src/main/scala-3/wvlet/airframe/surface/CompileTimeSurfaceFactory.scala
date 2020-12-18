@@ -89,6 +89,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     taggedTypeFactory orElse
     aliasFactory orElse
     primitiveTypeFactory orElse
+    arrayFactory orElse
     genericTypeFactory
   }
 
@@ -139,6 +140,23 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
       '{ Alias(${name}, ${fullName}, ${inner}) } 
   }
 
+  private def typeArgsOf(t: TypeRepr): List[TypeRepr] = {
+    t match {
+      case a: AppliedType =>
+        a.args
+      case other =>
+        List.empty
+    }
+  }
+
+  private def elementTypeSurfaceOf(t: TypeRepr): Expr[Surface] = {
+    typeArgsOf(t).map(surfaceOf(_)).head
+  }
+
+  private def arrayFactory: Factory = {
+    case t if typeNameOf(t) == "scala.Array" =>
+      '{ ArraySurface(${clsOf(t)}, ${elementTypeSurfaceOf(t)}) }
+  }
 
   private def clsOf(t:TypeRepr): Expr[Class[_]] = {
     Literal(ClassOfConstant(t)).asExpr.asInstanceOf[Expr[Class[_]]]

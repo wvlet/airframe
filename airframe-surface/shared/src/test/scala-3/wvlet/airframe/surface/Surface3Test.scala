@@ -34,6 +34,7 @@ object Surface3Test extends LogSupport {
     test(Surface.of[Person], "Person")
     test(Surface.of[String @@ Label], "String@@Label")
     test(Surface.of[MyString], "MyString:=String")
+    test(Surface.of[Array[Int]], "Array[Int]")
   }
   // ddddd
 
