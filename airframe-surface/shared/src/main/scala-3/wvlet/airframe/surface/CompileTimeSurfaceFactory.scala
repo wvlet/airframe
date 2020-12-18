@@ -244,7 +244,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
       '{ new GenericSurface(
            ${clsOf(t)}, 
            ${Expr.ofSeq(typeArgs)}.toIndexedSeq,
-           params = ${params}
+           params = ${params}.toIndexedSeq
          )
       }
   }
@@ -268,7 +268,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     val constructorName = cstr.name
     val argClasses = methodArgsOf(cstr).map(_.tree).collect { 
       case v:ValDef =>
-        println(s"${v.name}: ${v}")
+        //println(s"${v.name}: ${v}")
         clsOf(v.tpt.tpe.dealias)
     }
     val constructorRef = '{
