@@ -14,6 +14,7 @@ object Surface3Test extends LogSupport {
         warn(s"Surface: expected: ${expected}, but null")
       case _ =>
         val str = s.toString
+        info(s)
         if(str != expected) {
           warn(s"Surface: expected: ${expected}, but ${str}")
         }
@@ -35,6 +36,8 @@ object Surface3Test extends LogSupport {
     test(Surface.of[String @@ Label], "String@@Label")
     test(Surface.of[MyString], "MyString:=String")
     test(Surface.of[Array[Int]], "Array[Int]")
+    test(Surface.of[Array[Person]], "Array[Person]")
+    test(Surface.of[Option[String]], "Option[String]")
   }
   // ddddd
 

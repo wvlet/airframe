@@ -90,6 +90,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     aliasFactory orElse
     primitiveTypeFactory orElse
     arrayFactory orElse
+    optionFactory orElse
     genericTypeFactory
   }
 
@@ -156,6 +157,11 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
   private def arrayFactory: Factory = {
     case t if typeNameOf(t) == "scala.Array" =>
       '{ ArraySurface(${clsOf(t)}, ${elementTypeSurfaceOf(t)}) }
+  }
+
+  private def optionFactory: Factory = {
+    case t if typeNameOf(t) == "scala.Option" =>
+      '{ OptionSurface(${clsOf(t)}, ${elementTypeSurfaceOf(t)})}
   }
 
   private def clsOf(t:TypeRepr): Expr[Class[_]] = {
