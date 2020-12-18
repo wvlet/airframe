@@ -92,7 +92,8 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     }
     else {
       seen += t
-      println(s"[${typeNameOf(t)}]\n  ${t}")
+      // For debugging
+      // println(s"[${typeNameOf(t)}]\n  ${t}")
       val generator = factory.andThen { expr =>
         '{ wvlet.airframe.surface.surfaceCache.getOrElseUpdate(${Expr(fullTypeNameOf(t))}, ${expr}) }
       }
@@ -165,12 +166,14 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
 
   private def higherKindedTypeFactory: Factory = {
     case h: TypeLambda => 
-      println(s"========== ${h.typeSymbol.fullName}[${h.paramNames.mkString(",")}]")
+      val name = h.typeSymbol.name
+      val fullName = fullTypeNameOf(h)
+      val inner = surfaceOf(h.resType)
+
       val len = h.paramNames.size
-      val params = (0 until len).map{ i => h.param(i).toString }
-      println(s"======== ${params.mkString(", ")}")
-      // TOOD 
-      '{ ExistentialType }
+      val params = (0 until len).map{ i => h.param(i) }
+      val args = params.map(surfaceOf(_))
+      '{ HigherKindedTypeSurface(${Expr(name)}, ${Expr(fullName)}, ${inner}, ${Expr.ofSeq(args)} ) }
   }
 
   private def typeArgsOf(t: TypeRepr): List[TypeRepr] = {

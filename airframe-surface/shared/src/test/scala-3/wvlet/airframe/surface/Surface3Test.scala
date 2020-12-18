@@ -60,7 +60,7 @@ object Surface3Test extends LogSupport {
     // TODO　bounded type support
     test(Surface.of[Seq[_ <: String]], "Seq[_]")
     test(Surface.of[Seq[_ >: String]], "Seq[_]")
-    test(Surface.of[Holder[Task]], "Holder[Task[A]]")
+    test(Surface.of[Holder[Task]], "Holder[Task]")
 
     test(Surface.of[Label], "Label")
   }
