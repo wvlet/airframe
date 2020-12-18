@@ -14,7 +14,7 @@ object Surface3Test extends LogSupport {
         warn(s"Surface: expected: ${expected}, but null")
       case _ =>
         val str = s.toString
-        info(s)
+        info(s"${s}: ${s.getClass}")
         if(str != expected) {
           warn(s"Surface: expected: ${expected}, but ${str}")
         }
@@ -61,6 +61,8 @@ object Surface3Test extends LogSupport {
     test(Surface.of[Seq[_ <: String]], "Seq[_]")
     test(Surface.of[Seq[_ >: String]], "Seq[_]")
     test(Surface.of[Holder[Task]], "Holder[Task[A]]")
+
+    test(Surface.of[Label], "Label")
   }
 
 

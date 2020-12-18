@@ -78,11 +78,28 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     surfaceOf(TypeRepr.of(using tpe))
   }
 
-  private def surfaceOf(tr: TypeRepr): Expr[Surface] = {
-    val nullFactory: Expr[Surface] = '{null}
-    
-    println(s"${typeNameOf(tr)}: ${tr}")
-    factory.applyOrElse(tr, { x => nullFactory } )
+  private val seen = scala.collection.mutable.Set[TypeRepr]()
+  private val memo = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
+  
+  private def surfaceOf(t: TypeRepr): Expr[Surface] = {
+    if(seen.contains(t)) {
+      if(memo.contains(t)) {
+        memo(t)
+      }
+      else {
+        '{ LazySurface(${clsOf(t)}, ${Expr(fullTypeNameOf(t))}) }
+      }
+    }
+    else {
+      seen += t
+      println(s"[${typeNameOf(t)}]\n  ${t}")
+      val generator = factory.andThen { expr =>
+        '{ wvlet.airframe.surface.surfaceCache.getOrElseUpdate(${Expr(fullTypeNameOf(t))}, ${expr}) }
+      }
+      val surface = generator(t)
+      memo += (t -> surface)
+      surface
+    }
   }
 
   private def factory: Factory = {
@@ -98,17 +115,6 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     exisitentialTypeFactory orElse
     genericTypeFactory
   }
-
-  private def higherKindedTypeFactory: Factory = {
-    case h: TypeLambda => 
-      println(s"========== ${h.typeSymbol.fullName}[${h.paramNames.mkString(",")}]")
-      val len = h.paramNames.size
-      val params = (0 until len).map{ i => h.param(i).toString }
-      println(s"======== ${params.mkString(", ")}")
-      // TOOD 
-      '{ ExistentialType }
-  }
-
 
   private def primitiveTypeFactory: Factory = {
     case t if t =:= TypeRepr.of[String] => '{ Primitive.String }
@@ -157,6 +163,16 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
       '{ Alias(${name}, ${fullName}, ${inner}) } 
   }
 
+  private def higherKindedTypeFactory: Factory = {
+    case h: TypeLambda => 
+      println(s"========== ${h.typeSymbol.fullName}[${h.paramNames.mkString(",")}]")
+      val len = h.paramNames.size
+      val params = (0 until len).map{ i => h.param(i).toString }
+      println(s"======== ${params.mkString(", ")}")
+      // TOOD 
+      '{ ExistentialType }
+  }
+
   private def typeArgsOf(t: TypeRepr): List[TypeRepr] = {
     t match {
       case a: AppliedType =>
@@ -187,6 +203,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
   }
 
   private def javaUtilFactory: Factory = {
+    // For common Java classes, stop with this rule so as not to extract internal parameters
     case t if t =:= TypeRepr.of[java.io.File] || 
       t =:= TypeRepr.of[java.util.Date] || 
       t =:= TypeRepr.of[java.time.temporal.Temporal] =>
