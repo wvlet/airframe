@@ -46,6 +46,10 @@ object Surface3Test extends LogSupport {
     test(Surface.of[Option[String]], "Option[String]")
     test(Surface.of[(Int, String)], "Tuple2[Int,String]")
     test(Surface.of[(Int, String, Float)], "Tuple3[Int,String,Float]")
+    test(Surface.of[java.io.File], "File")
+    test(Surface.of[java.util.Date], "Date")
+    test(Surface.of[java.time.temporal.Temporal], "Temporal")
+    
   }
   // ddddd
 

@@ -92,6 +92,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     arrayFactory orElse
     optionFactory orElse
     tupleFactory orElse
+    javaUtilFactory orElse
     genericTypeFactory
   }
 
@@ -169,6 +170,13 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     case t if t <:< TypeRepr.of[Product] && typeNameOf(t).startsWith("scala.Tuple") =>
       val paramTypes = typeArgsOf(t).map(surfaceOf(_))
       '{ new TupleSurface(${clsOf(t)}, ${Expr.ofSeq(paramTypes)}.toIndexedSeq) }
+  }
+
+  private def javaUtilFactory: Factory = {
+    case t if t =:= TypeRepr.of[java.io.File] || 
+      t =:= TypeRepr.of[java.util.Date] || 
+      t =:= TypeRepr.of[java.time.temporal.Temporal] =>
+     newGenericSurfaceOf(t) 
   }
 
   private def clsOf(t:TypeRepr): Expr[Class[_]] = {
