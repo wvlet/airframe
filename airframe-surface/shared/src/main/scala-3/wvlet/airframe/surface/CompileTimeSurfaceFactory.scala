@@ -212,12 +212,14 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
   private def caseClassFactory: Factory = {
     case t if t.typeSymbol.caseFields.nonEmpty =>
       val typeArgs = typeArgsOf(t).map(surfaceOf(_))
-      val params = caseParametersOf(t)
-      '{ new GenericSurface(
-           ${clsOf(t)}, 
-           ${Expr.ofSeq(typeArgs)}.toIndexedSeq,
-           params = ${params}.toIndexedSeq
-         )
+      val methodParams = caseParametersOf(t)
+
+      '{
+        new wvlet.airframe.surface.reflect.RuntimeGenericSurface(
+          ${clsOf(t)},
+          ${Expr.ofSeq(typeArgs)}.toIndexedSeq,
+          params = ${methodParams}
+        )
       }
   }
 
@@ -236,19 +238,24 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
   }
 
   private def caseParametersOf(t: TypeRepr): Expr[Seq[MethodParameter]] = {
-    val cstr = t.typeSymbol.primaryConstructor
-    val constructorName = cstr.name
-    val argClasses = methodArgsOf(cstr).map(_.tree).collect { 
+    methodParametersOf(t, t.typeSymbol.primaryConstructor)
+  }
+
+  private def methodParametersOf(t: TypeRepr, method:Symbol): Expr[Seq[MethodParameter]] = {
+    val methodName = method.name
+    val methodArgs = methodArgsOf(method)
+    val argClasses = methodArgs.map(_.tree).collect { 
       case v:ValDef =>
         //println(s"${v.name}: ${v}")
         clsOf(v.tpt.tpe.dealias)
     }
+    val isConstructor = t.typeSymbol.primaryConstructor == method
     val constructorRef = '{
-      MethodRef(owner = ${clsOf(t)}, name = ${Expr(constructorName)}, paramTypes = ${Expr.ofSeq(argClasses)}, isConstructor =true)
+      MethodRef(owner = ${clsOf(t)}, name = ${Expr(methodName)}, paramTypes = ${Expr.ofSeq(argClasses)}, isConstructor = ${Expr(isConstructor)})
     }
 
     val paramExprs = for{ 
-      (field, v:ValDef, i) <- t.typeSymbol.caseFields.zipWithIndex.map((f, i) => (f, f.tree, i))
+      (field, v:ValDef, i) <- methodArgs.zipWithIndex.map((f, i) => (f, f.tree, i))
     } yield {
       val paramType = v.tpt.tpe
       val paramName = field.name
@@ -266,5 +273,72 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     Expr.ofSeq(paramExprs)
   }
 
+  private def getTree(e:Expr[_]): Tree = {
+    val f = e.getClass().getDeclaredField("tree")
+    f.setAccessible(true)
+    val tree = f.get(e)
+    tree.asInstanceOf[Tree]
+  }
+
+  private def createObjectFactoryOf(t:TypeRepr): Option[Expr[ObjectFactory]] = {
+    val ts = t.typeSymbol
+    if(ts.isAbstractType) {
+      None
+    }
+    else {
+      val pc = ts.primaryConstructor
+      if(pc.isNoSymbol) {
+        None
+      }
+      else {
+        None
+
+        // for((arg, index) <- argsList.zipWithIndex) yield {
+        //   val v = arg.tree.asInstanceOf[ValDef]
+        //   val paramType = v.tpt.tpe
+        //   val e = '{ { (args: Seq[Any]) => args(${Expr(index)}).asExprOf(using paramType)}) } }
+        //   println(e.asTerm)
+        //   //Apply(Select.unique(Ident(Names.termName("args")), "apply"), List(Literal(IntConstant(index))))
+        // }
+
+      //   val argExtractor: List[Expr[_]] = 
+      // 
+      //     // val expr: Expr[_] = e.asTerm match {
+      //     //   case Inlined(_, _, Block(List(DefDef(_, _, _, _, Some(Block(_, body)))), _)) => 
+      //     //     body
+      //     //   case _ =>
+      //     //    '{ 1 }
+      //     // }
+      //     // expr
+      //     // // Apply(Select(Ident(args),apply), List(Literal(IntConstant(index)))
+
+      //     //List(Literal(IntConstant(index)))
+      //     //Select.unique(Expr("args").asTerm, "apply")
+
+      //     //println(Printer.TreeStructure.show(getTree(e)))
+      //     //val expr = Apply(TermRef(TypeRepr.of[Seq[Any]], "args"), List(Literal(Constant(index))))
+      //     //val param = Apply(Ident(Term("args")), List(Literal(Constant(index))))
+      //     //Apply(Term, List[Term])
+      //     //Select.unique(TermName("args"), "apply")
+      //     //val selector = Apply(Select(' {args }.asTerm, "apply"), List(Literal(IntConstant(index))))
+      //   }
+      // }
+        //Select.unique(Select.unique(Symbol.spliceOwner, "args"), "apply")
+        
+        // val m1: Symbol = Symbol.newMethod(
+        //   Symbol.spliceOwner,
+        //   "newInstance",
+        //   MethodType()
+        // )
+
+        //  val expr: Expr[ObjectFactory] ='{ 
+        //   new wvlet.airframe.surface.ObjectFactory{ 
+        //     def newInstance(args: Seq[Any]): ${Type.of[Strint]} = { null }
+        //   } 
+        // }
+        //None
+      }
+    }
+  }
 
 }

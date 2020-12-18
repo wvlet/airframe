@@ -79,7 +79,7 @@ object Surface3Test extends LogSupport {
     assert(p0.getDefaultValue, Some(-1))
     assert(p0.get(p), 1)
     val px = s.objectFactory.map(_.newInstance(Seq(2, "yui")))
-    assert(px, Some(Person(2, "Yui")))
+    assert(px, Some(Person(2, "yui")))
   }
 
 
