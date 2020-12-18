@@ -93,6 +93,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     optionFactory orElse
     tupleFactory orElse
     javaUtilFactory orElse
+    javaEnumFactory orElse
     genericTypeFactory
   }
 
@@ -177,6 +178,15 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
       t =:= TypeRepr.of[java.util.Date] || 
       t =:= TypeRepr.of[java.time.temporal.Temporal] =>
      newGenericSurfaceOf(t) 
+  }
+
+  private def isEnum(t:TypeRepr): Boolean = {
+    t.baseClasses.exists(x => x.fullName.startsWith("java.lang.Enum"))
+  }
+
+  private def javaEnumFactory: Factory = {
+    case t if isEnum(t) =>
+      '{ JavaEnumSurface(${clsOf(t)}) }
   }
 
   private def clsOf(t:TypeRepr): Expr[Class[_]] = {

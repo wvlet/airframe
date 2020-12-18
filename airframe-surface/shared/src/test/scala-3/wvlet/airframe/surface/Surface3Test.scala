@@ -49,6 +49,7 @@ object Surface3Test extends LogSupport {
     test(Surface.of[java.io.File], "File")
     test(Surface.of[java.util.Date], "Date")
     test(Surface.of[java.time.temporal.Temporal], "Temporal")
+    test(Surface.of[MyEnum], "MyEnum")
   }
   // ddddd
 
