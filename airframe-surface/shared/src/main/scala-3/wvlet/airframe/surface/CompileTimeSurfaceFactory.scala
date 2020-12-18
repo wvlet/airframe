@@ -5,46 +5,18 @@ object CompileTimeSurfaceFactory {
 
   type SurfaceMatcher = PartialFunction[Type[_], Expr[Surface]]
 
-
   def surfaceOf[A](using tpe: Type[A], quotes: Quotes): Expr[Surface] = {
     import quotes._
     import quotes.reflect._
 
     val f = new CompileTimeSurfaceFactory(using quotes)
     f.surfaceOf(tpe)
-
-    // def findPrimaryConstructorOf(t: Type[_]): Option[Symbol] = {
-    //    val r = TypeRepr.of(using t)
-    //    val pc = r.typeSymbol.primaryConstructor
-    //    if(pc.exists) {
-    //     println(pc.paramSymss.mkString(", "))
-    //    }
-    //    None
-    //    //.filter(m => m.isClassConstructor && m.isPublic).map(_.asMethod)
-    // }
-
-    // val pc = findPrimaryConstructorOf(tpe)
-    // println
-    //val ex = Expr(classOf[Int])
-    //println(Term.of(ex))
-    //ex.show(using Printer.TreeCode)
-
-    //   case '[Seq[elementType]] => 
-    //   { 
-    //       val tt = TypeTree.of[A]
-    //       val clsOf = Literal(ClassOfConstant(tt.tpe)).asExpr.asInstanceOf[Expr[Class[A]]]
-    //       '{ new GenericSurface(${clsOf}) }
-    //   }
-    //   case _ => nullFactory
-    // }
   }
-
 }
 
 class CompileTimeSurfaceFactory(using quotes:Quotes) {
   import quotes._
   import quotes.reflect._
-
 
   private def fullTypeNameOf(t:Type[_]): String = {
      fullTypeNameOf(TypeRepr.of(using t))
@@ -281,6 +253,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
       val paramType = v.tpt.tpe
       val paramName = field.name
       //println(s"${paramName}: ${paramType}")
+      // TODO: Use StdMethodParameter when supportin Scala.js in Scala 3
       '{
         wvlet.airframe.surface.reflect.RuntimeMethodParameter(
           method = ${constructorRef},

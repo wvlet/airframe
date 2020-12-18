@@ -21,6 +21,12 @@ object Surface3Test extends LogSupport {
     }
   }
 
+  inline def assert(v: Any, expected: Any): Unit = {
+    if(v != expected) {
+      warn(s"Expected: ${expected}, but ${v}")
+    }
+  }
+
   case class Person(id:Int = -1, name:String)
 
   trait Label 
@@ -64,14 +70,16 @@ object Surface3Test extends LogSupport {
 
     test(Surface.of[Label], "Label")
 
-
+    // Case class surface tests
     val s = Surface.of[Person]
-    info(s.params.mkString(", "))
+    assert(s.params.mkString(","), "id:Int,name:String")
     val p = Person(1, "leo")
     val p0 = s.params(0)
-    info(p0.name)
-    info(p0.getDefaultValue)
-    info(p0.get(p))
+    assert(p0.name, "id")
+    assert(p0.getDefaultValue, Some(-1))
+    assert(p0.get(p), 1)
+    val px = s.objectFactory.map(_.newInstance(Seq(2, "yui")))
+    assert(px, Some(Person(2, "Yui")))
   }
 
 
