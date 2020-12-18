@@ -239,12 +239,12 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
 
   private def caseClassFactory: Factory = {
     case t if t.typeSymbol.caseFields.nonEmpty =>
-      println(s"=== ${t.typeSymbol.caseFields}")
       val typeArgs = typeArgsOf(t).map(surfaceOf(_))
+      val params = caseParametersOf(t)
       '{ new GenericSurface(
            ${clsOf(t)}, 
            ${Expr.ofSeq(typeArgs)}.toIndexedSeq,
-           params = Seq.empty
+           params = ${params}
          )
       }
   }
@@ -258,5 +258,34 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     case t =>
       newGenericSurfaceOf(t)
   }
+
+  private def caseParametersOf(t: TypeRepr): Expr[Seq[MethodParameter]] = {
+    val cstr = t.typeSymbol.primaryConstructor
+    val constructorName = cstr.name
+    val constructorRef = '{
+      MethodRef(owner = ${clsOf(t)}, name = ${Expr(constructorName)}, paramTypes = Seq.empty, isConstructor =true)
+    }
+
+    val paramExprs = for{ 
+      ((field, v:ValDef), i) <- t.typeSymbol.caseFields.map(f => (f, f.tree)).zipWithIndex
+    } yield {
+      val paramType = v.tpt.tpe
+      val paramName = field.name
+      //println(s"${paramName}: ${paramType}")
+   
+      '{
+        StdMethodParameter(
+          method = ${constructorRef},
+          index = ${Expr(i)},
+          name = ${Expr(paramName)},
+          isRequired = false,
+          isSecret = false,
+          surface = ${surfaceOf(paramType)}
+        )
+      }
+    }
+    Expr.ofSeq(paramExprs)
+  }
+
 
 }
