@@ -39,6 +39,8 @@ object Surface3Test extends LogSupport {
 
   class Hello {
     def hello(msg:String): String = "hello"
+        private def hiddemMethod: Int = 1
+    protected def hiddenMethod2: Option[Int] = None
   }
 
   def run:Unit = {

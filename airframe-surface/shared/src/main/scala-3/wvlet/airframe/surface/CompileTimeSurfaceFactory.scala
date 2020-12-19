@@ -291,11 +291,21 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
   }
 
   private def methodsOf(t:TypeRepr): Expr[Seq[MethodSurface]] = {
+    val localMethods = localMethodsOf(t).distinct
+    println(localMethods)
 
-    val mt = localMethodsOf(t).distinct
-    println(mt)
-
-    '{ Seq.empty }
+    val lst = IndexedSeq.newBuilder[Expr[MethodSurface]]
+    for(m <- localMethods) {
+      val mod = Expr(modifierBitMaskOf(m))
+      val owner = surfaceOf(t)
+      val name = Expr(m.name)
+      // TODO Remove cast
+      val df = m.tree.asInstanceOf[DefDef] 
+      val ret = surfaceOf(df.returnTpt.tpe)
+      val args = methodParametersOf(t, m)
+      lst += '{ wvlet.airframe.surface.reflect.ReflectMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq) }
+    }
+    Expr.ofSeq(lst.result())
   }
 
   private def localMethodsOf(t:TypeRepr): Seq[Symbol] = {
@@ -333,6 +343,30 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
 
   private def isOwnedByTargetClass(m:Symbol, t:TypeRepr): Boolean = {
     m.owner == t.typeSymbol || t.baseClasses.filter(nonObject).exists(_ == m.owner)
+  }
+
+  private def modifierBitMaskOf(m: Symbol): Int = {
+    var mod = 0
+    
+    if (!m.flags.is(Flags.Private) && !m.flags.is(Flags.Protected) && !m.flags.is(Flags.PrivateLocal)) {
+      mod |= MethodModifier.PUBLIC
+    }
+    if (m.flags.is(Flags.Private)) {
+      mod |= MethodModifier.PRIVATE
+    }
+    if (m.flags.is(Flags.Protected)) {
+      mod |= MethodModifier.PROTECTED
+    }
+    if (m.flags.is(Flags.Static)) {
+      mod |= MethodModifier.STATIC
+    }
+    if (m.flags.is(Flags.Final)) {
+      mod |= MethodModifier.FINAL
+    }
+    if (m.flags.is(Flags.Abstract)) {
+      mod |= MethodModifier.ABSTRACT
+    }
+    mod
   }
 
 }
