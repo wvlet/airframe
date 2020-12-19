@@ -294,18 +294,16 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
     val localMethods = localMethodsOf(t).distinct
     println(localMethods)
 
-    val lst = IndexedSeq.newBuilder[Expr[MethodSurface]]
-    for(m <- localMethods) {
-      val mod = Expr(modifierBitMaskOf(m))
-      val owner = surfaceOf(t)
-      val name = Expr(m.name)
-      // TODO Remove cast
-      val df = m.tree.asInstanceOf[DefDef] 
-      val ret = surfaceOf(df.returnTpt.tpe)
-      val args = methodParametersOf(t, m)
-      lst += '{ wvlet.airframe.surface.reflect.ReflectMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq) }
+    val methodSurfaces = localMethods.map(m => (m, m.tree)).collect {
+      case (m, df:DefDef) =>
+        val mod = Expr(modifierBitMaskOf(m))
+        val owner = surfaceOf(t)
+        val name = Expr(m.name)
+         val ret = surfaceOf(df.returnTpt.tpe)
+        val args = methodParametersOf(t, m)
+        '{ wvlet.airframe.surface.reflect.ReflectMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq) }
     }
-    Expr.ofSeq(lst.result())
+    Expr.ofSeq(methodSurfaces)
   }
 
   private def localMethodsOf(t:TypeRepr): Seq[Symbol] = {
