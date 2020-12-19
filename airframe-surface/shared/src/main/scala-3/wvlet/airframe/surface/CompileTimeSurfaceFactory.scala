@@ -292,7 +292,6 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
 
   private def methodsOf(t:TypeRepr): Expr[Seq[MethodSurface]] = {
     val localMethods = localMethodsOf(t).distinct
-    println(localMethods)
 
     val methodSurfaces = localMethods.map(m => (m, m.tree)).collect {
       case (m, df:DefDef) =>

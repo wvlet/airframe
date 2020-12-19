@@ -38,9 +38,13 @@ object Surface3Test extends LogSupport {
   trait Task[A]
 
   class Hello {
-    def hello(msg:String): String = "hello"
-        private def hiddemMethod: Int = 1
+    def hello(msg:String): String = msg
+    private def hiddemMethod: Int = 1
     protected def hiddenMethod2: Option[Int] = None
+  }
+
+  class HelloExt extends Hello {
+    def hello2: String = "hello2"
   }
 
   def run:Unit = {
@@ -87,7 +91,17 @@ object Surface3Test extends LogSupport {
     assert(px, Some(Person(2, "yui")))
 
     val ms = Surface.methodsOf[Hello]
-    info(ms)
+    debug(ms)
+    val h = new Hello
+    val res = ms(0).call(h, "hello surface")
+    assert(res, "hello surface")
+
+    val ms2 = Surface.methodsOf[HelloExt]
+    debug(ms2)
+    val res2 = ms2.find(_.name == "hello2").map { x =>
+      x.call(new HelloExt)
+    }
+    assert(res2, Some("hello2"))
   }
 
 
