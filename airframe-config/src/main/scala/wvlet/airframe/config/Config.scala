@@ -17,6 +17,7 @@ import java.io.{File, FileNotFoundException, StringReader}
 import java.util.Properties
 
 import wvlet.airframe.Design
+import wvlet.airframe.DesignOptions
 import wvlet.airframe.config.PropertiesConfig.ConfigKey
 import wvlet.airframe.config.YamlReader.loadMapOf
 import wvlet.airframe.surface.{Surface, Zero}
@@ -87,7 +88,7 @@ import wvlet.airframe.config.Config._
 
 case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHolder])
     extends Iterable[ConfigHolder]
-    with Design.AdditiveDesignOption[Config]
+    with DesignOptions.AdditiveDesignOption[Config]
     with LogSupport {
   override def toString: String = printConfig
 
