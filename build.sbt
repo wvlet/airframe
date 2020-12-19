@@ -316,6 +316,40 @@ lazy val airframe =
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS  = airframe.js
 
+
+def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: String = "main"): Seq[sbt.File] = {
+  val scalaMajorVersion = scalaBinaryVersion.split("\\.").head
+  for (suffix <- Seq("", s"-${scalaBinaryVersion}", s"-${scalaMajorVersion}")) yield {
+    file(s"${baseDir}/src/${srcType}/scala${suffix}")
+  }
+}
+
+def dottyCrossBuildSettings(prefix:String): Seq[Setting[_]] = {
+  Seq(
+    crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions },
+    unmanagedSourceDirectories in Compile ++= crossBuildSources(
+      scalaBinaryVersion.value,
+      (baseDirectory.value.getParentFile / prefix).toString
+    ),
+    unmanagedSourceDirectories in Test := {
+      scalaBinaryVersion.value match {
+        case v if v.startsWith("3.") =>
+          Seq[sbt.File](file(s"${(baseDirectory.value.getParentFile / prefix).toString}/src/test/scala-3"))
+        case _ =>
+          (Test / unmanagedSourceDirectories).value
+      }
+    },
+    libraryDependencies ++= {
+      scalaBinaryVersion.value match {
+        case v if v.startsWith("3.") => 
+          Seq.empty
+        case _ =>
+          Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value)
+      }
+    }
+  )
+} 
+
 // Airframe DI needs to call macro methods, so we needed to split the project into DI and DI macros.
 // This project sources and classes will be embedded to airframe.jar, so we don't publish airframe-di-macros
 lazy val airframeMacros =
@@ -324,12 +358,10 @@ lazy val airframeMacros =
     .in(file("airframe-di-macros"))
     .settings(buildSettings)
     .settings(noPublish)
+    .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe-di-macros",
       description := "Macros for Airframe",
-      libraryDependencies ++= Seq(
-        "org.scala-lang" % "scala-reflect" % scalaVersion.value
-      ),
       // As a workaround for build-pipelining failure at sbt 1.4.0-RC2
       exportPipelining := false
     )
@@ -343,22 +375,19 @@ lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
 lazy val airframeMacrosRef    = airframeMacros    % Optional
 
 val surfaceDependencies = { scalaVersion: String =>
-  val reflectVersion = scalaVersion match {
-    case s if s.startsWith("3.") => SCALA_2_13
-    case _                       => scalaVersion
-  }
-  Seq(
-    // For ading PreDestroy, PostConstruct annotations to Java9
-    "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION,
-    ("org.scala-lang"  % "scala-reflect"        % reflectVersion).withDottyCompat(scalaVersion),
-    ("org.scala-lang"  % "scala-compiler"       % reflectVersion % Provided).withDottyCompat(scalaVersion)
-  )
-}
-
-def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: String = "main"): Seq[sbt.File] = {
-  val scalaMajorVersion = scalaBinaryVersion.split("\\.").head
-  for (suffix <- Seq("", s"-${scalaBinaryVersion}", s"-${scalaMajorVersion}")) yield {
-    file(s"${baseDir}/src/${srcType}/scala${suffix}")
+  scalaVersion match {
+    case s if s.startsWith("3.") => 
+      Seq(
+        // For ading PreDestroy, PostConstruct annotations to Java9
+        "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION,
+      )
+    case _                       => 
+      Seq(
+        // For ading PreDestroy, PostConstruct annotations to Java9
+        "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION,
+        ("org.scala-lang"  % "scala-reflect"        % scalaVersion),
+        ("org.scala-lang"  % "scala-compiler"       % scalaVersion % Provided)
+      )
   }
 }
 
@@ -366,23 +395,11 @@ lazy val surface =
   crossProject(JVMPlatform, JSPlatform)
     .in(file("airframe-surface"))
     .settings(buildSettings)
+    .settings(dottyCrossBuildSettings("shared"))
     .settings(
       name := "airframe-surface",
       description := "A library for extracting object structure surface",
-      libraryDependencies ++= surfaceDependencies(scalaVersion.value),
-      crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions },
-      unmanagedSourceDirectories in Compile ++= crossBuildSources(
-        scalaBinaryVersion.value,
-        (baseDirectory.value.getParentFile / "shared").toString
-      ),
-      unmanagedSourceDirectories in Test := {
-        scalaBinaryVersion.value match {
-          case v if v.startsWith("3.") =>
-            Seq[sbt.File](file(s"${baseDirectory.value.getParentFile}/shared/src/test/scala-3"))
-          case _ =>
-            (Test / unmanagedSourceDirectories).value
-        }
-      }
+      libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log)
