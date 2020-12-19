@@ -283,6 +283,7 @@ lazy val airframe =
     .crossType(CrossType.Pure)
     .in(file("airframe"))
     .settings(buildSettings)
+    .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe",
       description := "Dependency injection library tailored to Scala",

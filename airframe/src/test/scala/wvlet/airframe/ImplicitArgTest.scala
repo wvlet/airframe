@@ -32,7 +32,7 @@ class ImplicitArgTest extends AirSpec {
       .bind[String].toInstance("hello")
       .bind[Int].toInstance(10)
       .bind[ImplB].toSingleton
-      .bind.toProvider((a: String, b: Int) => ImplA(a)(b))
+      .bind[ImplA].toProvider((a: String, b: Int) => ImplA(a)(b))
       .noLifeCycleLogging
 
     d.build[ImplA] { a =>

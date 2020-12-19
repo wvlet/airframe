@@ -14,83 +14,13 @@
 package wvlet.airframe
 
 import wvlet.airframe.Binder.Binding
-import wvlet.airframe.Design.AdditiveDesignOption
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.{DIStats, Tracer}
 import wvlet.log.LogSupport
 
-import scala.language.experimental.macros
 import Design._
+import DesignOptions._
 import wvlet.airframe.lifecycle.LifeCycleHookType
-
-/**
-  * Design configs
-  */
-case class DesignOptions(
-    enabledLifeCycleLogging: Option[Boolean] = None,
-    stage: Option[Stage] = None,
-    defaultInstanceInjection: Option[Boolean] = None,
-    options: Map[String, Any] = Map.empty
-) extends Serializable {
-  def +(other: DesignOptions): DesignOptions = {
-    // configs will be overwritten
-    new DesignOptions(
-      other.enabledLifeCycleLogging.orElse(this.enabledLifeCycleLogging),
-      other.stage.orElse(this.stage),
-      other.defaultInstanceInjection.orElse(this.defaultInstanceInjection),
-      defaultOptionMerger(options, other.options)
-    )
-  }
-
-  private def defaultOptionMerger(a: Map[String, Any], b: Map[String, Any]): Map[String, Any] = {
-    a.foldLeft(b) { (m, keyValue) =>
-      val (key, value) = keyValue
-      (m.get(key), value) match {
-        case (Some(v1: AdditiveDesignOption[_]), v2: AdditiveDesignOption[_]) =>
-          m + (key -> v1.addAsDesignOption(v2))
-        case _ =>
-          m + keyValue
-      }
-    }
-  }
-
-  def withLifeCycleLogging: DesignOptions = {
-    this.copy(enabledLifeCycleLogging = Some(true))
-  }
-
-  def noLifecycleLogging: DesignOptions = {
-    this.copy(enabledLifeCycleLogging = Some(false))
-  }
-
-  def withProductionMode: DesignOptions = {
-    this.copy(stage = Some(Stage.PRODUCTION))
-  }
-
-  def withLazyMode: DesignOptions = {
-    this.copy(stage = Some(Stage.DEVELOPMENT))
-  }
-
-  def noDefaultInstanceInjection: DesignOptions = {
-    this.copy(defaultInstanceInjection = Some(false))
-  }
-
-  private[airframe] def withOption[A](key: String, value: A): DesignOptions = {
-    this.copy(options = this.options + (key -> value))
-  }
-
-  private[airframe] def noOption[A](key: String): DesignOptions = {
-    this.copy(options = this.options - key)
-  }
-
-  private[airframe] def getOption[A](key: String): Option[A] = {
-    options.get(key).map(_.asInstanceOf[A])
-  }
-}
-
-case class LifeCycleHookDesign(lifeCycleHookType: LifeCycleHookType, surface: Surface, hook: Any => Unit) {
-  // Override toString to protect calling the hook accidentally
-  override def toString: String = s"LifeCycleHookDesign[${lifeCycleHookType}](${surface})"
-}
 
 /**
   * Immutable airframe design.
@@ -101,7 +31,7 @@ class Design private[airframe] (
     private[airframe] val designOptions: DesignOptions,
     private[airframe] val binding: Vector[Binding],
     private[airframe] val hooks: Vector[LifeCycleHookDesign]
-) extends LogSupport {
+) extends LogSupport with DesignImpl {
   private[airframe] def getDesignConfig: DesignOptions = designOptions
 
   /**
@@ -164,8 +94,6 @@ class Design private[airframe] (
 
   def +(other: Design): Design = add(other)
 
-  def bind[A]: Binder[A] = macro AirframeMacros.designBindImpl[A]
-
   def bind(t: Surface)(implicit sourceCode: SourceCode): Binder[Any] = {
     trace(s"bind($t) ${t.isAlias}")
     val b = new Binder[Any](this, t, sourceCode)
@@ -181,8 +109,6 @@ class Design private[airframe] (
     trace(s"withLifeCycleHook: ${hook}")
     new DesignWithContext[A](new Design(designOptions, binding, hooks = hooks :+ hook), hook.surface)
   }
-
-  def remove[A]: Design = macro AirframeMacros.designRemoveImpl[A]
 
   def remove(t: Surface): Design = {
     new Design(designOptions, binding.filterNot(_.from == t), hooks)
@@ -250,22 +176,6 @@ class Design private[airframe] (
   }
 
   /**
-    * A helper method of creating a new session and an instance of A.
-    * This method is useful when you only need to use A as an entry point of your program.
-    * After executing the body, the sesion will be closed.
-    *
-    * @param body
-    * @tparam A
-    * @return
-    */
-  def build[A](body: A => Any): Any = macro AirframeMacros.buildWithSession[A]
-
-  /**
-    * Execute a given code block by building A using this design, and return B
-    */
-  def run[A, B](body: A => B): B = macro AirframeMacros.runWithSession[A, B]
-
-  /**
     * Method for configuring the session in details
     */
   def newSessionBuilder: SessionBuilder = {
@@ -325,10 +235,4 @@ object Design {
   // Create a new Design without lifecycle logging
   def newSilentDesign: Design = blanc.noLifeCycleLogging
 
-  private[airframe] trait AdditiveDesignOption[+A] {
-    private[airframe] def addAsDesignOption[A1 >: A](other: A1): A1
-  }
-
-  private[airframe] def tracerOptionKey = "tracer"
-  private[airframe] def statsOptionKey  = "stats"
 }
