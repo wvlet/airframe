@@ -1,7 +1,7 @@
 package wvlet.airframe.surface
 import scala.quoted._
 
-object CompileTimeSurfaceFactory {
+private[surface] object CompileTimeSurfaceFactory {
 
   type SurfaceMatcher = PartialFunction[Type[_], Expr[Surface]]
 
@@ -14,7 +14,7 @@ object CompileTimeSurfaceFactory {
   }
 }
 
-class CompileTimeSurfaceFactory(using quotes:Quotes) {
+private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
   import quotes._
   import quotes.reflect._
 
