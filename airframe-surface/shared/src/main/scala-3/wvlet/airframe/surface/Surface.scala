@@ -31,7 +31,13 @@ trait Surface extends Serializable {
   def objectFactory: Option[ObjectFactory] = None
 }
 
+
+/**
+  * Scala 3 implementation of Surface
+  */
 object Surface {
-  def of[A]: Surface                   = ???
+  import scala.quoted._
+
+  inline def of[A]: Surface = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
   def methodsOf[A]: Seq[MethodSurface] = ???
 }
