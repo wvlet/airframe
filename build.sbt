@@ -773,7 +773,7 @@ lazy val fluentd =
       libraryDependencies ++= Seq(
         "org.komamitsu" % "fluency-core"         % FLUENCY_VERSION,
         "org.komamitsu" % "fluency-fluentd"      % FLUENCY_VERSION,
-        "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION % Provided,
+        "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION,
         // Redirecting slf4j log from Fluency to aiframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
