@@ -1,4 +1,4 @@
-package test
+package dotty.test
 
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -6,7 +6,6 @@ import wvlet.airframe.surface.tag._
 
 object Surface3Test extends LogSupport {
   import scala.quoted._
-
 
   inline def test(s:Surface, expected: String): Unit = {
     s match {
@@ -38,7 +37,7 @@ object Surface3Test extends LogSupport {
 
   trait Task[A]
 
-  def main(args: Array[String]): Unit = {
+  def run:Unit = {
     test(Surface.of[Int], "Int")
     test(Surface.of[Boolean], "Boolean")
     test(Surface.of[Long], "Long")

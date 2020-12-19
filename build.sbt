@@ -54,7 +54,8 @@ ThisBuild / usePipelining := false
 
 // A build configuration switch for working on Dotty migration. This needs to be removed eventually
 val DOTTY = sys.env.isDefinedAt("DOTTY")
-//val DOTTY = true
+// For debugging 
+// val DOTTY = true
 
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := { if (DOTTY) SCALA_3_0 else SCALA_2_12 }
@@ -235,7 +236,7 @@ lazy val projectDotty =
       noPublish,
       crossScalaVersions := Seq(SCALA_3_0)
     )
-    .aggregate(logJVM)
+    .aggregate(logJVM, surfaceJVM)
 
 lazy val docs =
   project
@@ -919,7 +920,7 @@ lazy val dottyTest =
       description := "test for dotty",
       crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions }
     )
-    .dependsOn(logJVM)
+    .dependsOn(logJVM, surfaceJVM)
 
 /**
   * AirSpec build definitions.

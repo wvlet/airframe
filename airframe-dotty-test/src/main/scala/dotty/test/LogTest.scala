@@ -4,7 +4,7 @@ import wvlet.log.{LogFormatter, LogLevel, LogSupport, Logger}
 
 object LogTest extends LogSupport {
 
-  def main(args: Array[String]): Unit = {
+  def run: Unit = {
     //Logger.setDefaultFormatter(LogFormatter.SourceCodeLogFormatter)
     info("Hello airframe-log")
     debug("Hello airframe-log")

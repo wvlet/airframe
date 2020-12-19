@@ -1,5 +1,4 @@
-package test;
-
+package dotty.test;
 
 public enum MyEnum {
     Red,
