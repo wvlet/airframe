@@ -86,7 +86,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     javaUtilFactory orElse
     javaEnumFactory orElse
     exisitentialTypeFactory orElse
-    caseClassFactory orElse
+    genericTypeWithConstructorFactory orElse
     genericTypeFactory
   }
 
@@ -209,10 +209,10 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     '{ new GenericSurface(${clsOf(t)}) }
   }
 
-  private def caseClassFactory: Factory = {
-    case t if t.typeSymbol.caseFields.nonEmpty =>
+  private def genericTypeWithConstructorFactory: Factory = {
+    case t if Option(t.typeSymbol.primaryConstructor).exists(p => p.exists && p.paramSymss.flatten.nonEmpty) =>
       val typeArgs = typeArgsOf(t).map(surfaceOf(_))
-      val methodParams = caseParametersOf(t)
+      val methodParams = constructorParametersOf(t)
       val isStatic = !t.typeSymbol.flags.is(Flags.Local)
       '{
         new wvlet.airframe.surface.reflect.RuntimeGenericSurface(
@@ -238,7 +238,7 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     method.paramSymss.flatten
   }
 
-  private def caseParametersOf(t: TypeRepr): Expr[Seq[MethodParameter]] = {
+  private def constructorParametersOf(t: TypeRepr): Expr[Seq[MethodParameter]] = {
     methodParametersOf(t, t.typeSymbol.primaryConstructor)
   }
 
