@@ -213,12 +213,13 @@ class CompileTimeSurfaceFactory(using quotes:Quotes) {
     case t if t.typeSymbol.caseFields.nonEmpty =>
       val typeArgs = typeArgsOf(t).map(surfaceOf(_))
       val methodParams = caseParametersOf(t)
-
+      val isStatic = !t.typeSymbol.flags.is(Flags.Local)
       '{
         new wvlet.airframe.surface.reflect.RuntimeGenericSurface(
           ${clsOf(t)},
           ${Expr.ofSeq(typeArgs)}.toIndexedSeq,
-          params = ${methodParams}
+          params = ${methodParams},
+          isStatic = ${Expr(isStatic)}
         )
       }
   }

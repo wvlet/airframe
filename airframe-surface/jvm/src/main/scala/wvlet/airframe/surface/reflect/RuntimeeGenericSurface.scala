@@ -17,7 +17,7 @@ class RuntimeGenericSurface(
     override val typeArgs: Seq[Surface] = Seq.empty,
     override val params: Seq[Parameter] = Seq.empty,
     outer: Option[AnyRef] = None,
-    isStatic: Boolean = true
+    isStatic: Boolean
 ) extends GenericSurface(rawType, typeArgs, params, None)
     with LogSupport {
   self =>
