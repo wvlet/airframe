@@ -13,7 +13,6 @@
  */
 package wvlet.airframe
 
-
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.{DIStats, Tracer}
 import wvlet.log.LogSupport
@@ -28,7 +27,7 @@ case class DesignOptions(
     stage: Option[Stage] = None,
     defaultInstanceInjection: Option[Boolean] = None,
     options: Map[String, Any] = Map.empty
-) extends Serializable { 
+) extends Serializable {
 
   import DesignOptions._
 

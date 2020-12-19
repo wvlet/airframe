@@ -15,7 +15,7 @@ import wvlet.airframe.lifecycle.LifeCycleHookType
   *
   * Design instance does not hold any duplicate bindings for the same Surface.
   */
-private[airframe] trait DesignImpl extends LogSupport { 
+private[airframe] trait DesignImpl extends LogSupport {
   def bind[A]: Binder[A] = macro AirframeMacros.designBindImpl[A]
   def remove[A]: Design = macro AirframeMacros.designRemoveImpl[A]
 

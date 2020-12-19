@@ -31,7 +31,8 @@ class Design private[airframe] (
     private[airframe] val designOptions: DesignOptions,
     private[airframe] val binding: Vector[Binding],
     private[airframe] val hooks: Vector[LifeCycleHookDesign]
-) extends LogSupport with DesignImpl {
+) extends LogSupport
+    with DesignImpl {
   private[airframe] def getDesignConfig: DesignOptions = designOptions
 
   /**

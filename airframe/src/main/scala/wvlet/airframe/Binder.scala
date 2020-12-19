@@ -97,6 +97,7 @@ import wvlet.airframe.Binder._
 /**
   */
 class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCode) extends BinderImpl[A] {
+
   /**
     * Bind the type to a given instance. The instance will be instantiated as an eager singleton when creating a session.
     * Note that as you create a new session, new instance will be generated.
