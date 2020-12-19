@@ -12,6 +12,11 @@ private[surface] object CompileTimeSurfaceFactory {
     val f = new CompileTimeSurfaceFactory(using quotes)
     f.surfaceOf(tpe)
   }
+
+  def methodsOf[A](using tpe: Type[A], quotes: Quotes): Expr[Seq[MethodSurface]] = {
+    val f = new CompileTimeSurfaceFactory(using quotes)
+    f.methodsOf(tpe)
+  }
 }
 
 private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
@@ -281,65 +286,84 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
     tree.asInstanceOf[Tree]
   }
 
-  private def createObjectFactoryOf(t:TypeRepr): Option[Expr[ObjectFactory]] = {
-    val ts = t.typeSymbol
-    if(ts.isAbstractType) {
-      None
+  def methodsOf(t:Type[_]): Expr[Seq[MethodSurface]] = {
+    methodsOf(TypeRepr.of(using t))
+  }
+
+  private def methodsOf(t:TypeRepr): Expr[Seq[MethodSurface]] = {
+    val localMethods = localMethodsOf(t).distinct
+
+    val methodSurfaces = localMethods.map(m => (m, m.tree)).collect {
+      case (m, df:DefDef) =>
+        val mod = Expr(modifierBitMaskOf(m))
+        val owner = surfaceOf(t)
+        val name = Expr(m.name)
+         val ret = surfaceOf(df.returnTpt.tpe)
+        val args = methodParametersOf(t, m)
+        '{ wvlet.airframe.surface.reflect.ReflectMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq) }
     }
-    else {
-      val pc = ts.primaryConstructor
-      if(pc.isNoSymbol) {
-        None
+    Expr.ofSeq(methodSurfaces)
+  }
+
+  private def localMethodsOf(t:TypeRepr): Seq[Symbol] = {
+    def allMethods = {
+      t.typeSymbol.memberMethods.filter{ x =>
+        nonObject(x.owner) &&
+         x.isDefDef && 
+         //x.isPublic &&
+         ! x.flags.is(Flags.Private) &&
+         ! x.flags.is(Flags.Protected) && 
+         ! x.flags.is(Flags.PrivateLocal) &&
+         ! x.isClassConstructor &&
+         ! x.flags.is(Flags.Artifact) &&
+         ! x.flags.is(Flags.Synthetic) &&
+         ! x.flags.is(Flags.Macro) &&
+         ! x.flags.is(Flags.Implicit) &&
+         ! x.flags.is(Flags.FieldAccessor)
       }
-      else {
-        None
-
-        // for((arg, index) <- argsList.zipWithIndex) yield {
-        //   val v = arg.tree.asInstanceOf[ValDef]
-        //   val paramType = v.tpt.tpe
-        //   val e = '{ { (args: Seq[Any]) => args(${Expr(index)}).asExprOf(using paramType)}) } }
-        //   println(e.asTerm)
-        //   //Apply(Select.unique(Ident(Names.termName("args")), "apply"), List(Literal(IntConstant(index))))
-        // }
-
-      //   val argExtractor: List[Expr[_]] = 
-      // 
-      //     // val expr: Expr[_] = e.asTerm match {
-      //     //   case Inlined(_, _, Block(List(DefDef(_, _, _, _, Some(Block(_, body)))), _)) => 
-      //     //     body
-      //     //   case _ =>
-      //     //    '{ 1 }
-      //     // }
-      //     // expr
-      //     // // Apply(Select(Ident(args),apply), List(Literal(IntConstant(index)))
-
-      //     //List(Literal(IntConstant(index)))
-      //     //Select.unique(Expr("args").asTerm, "apply")
-
-      //     //println(Printer.TreeStructure.show(getTree(e)))
-      //     //val expr = Apply(TermRef(TypeRepr.of[Seq[Any]], "args"), List(Literal(Constant(index))))
-      //     //val param = Apply(Ident(Term("args")), List(Literal(Constant(index))))
-      //     //Apply(Term, List[Term])
-      //     //Select.unique(TermName("args"), "apply")
-      //     //val selector = Apply(Select(' {args }.asTerm, "apply"), List(Literal(IntConstant(index))))
-      //   }
-      // }
-        //Select.unique(Select.unique(Symbol.spliceOwner, "args"), "apply")
-        
-        // val m1: Symbol = Symbol.newMethod(
-        //   Symbol.spliceOwner,
-        //   "newInstance",
-        //   MethodType()
-        // )
-
-        //  val expr: Expr[ObjectFactory] ='{ 
-        //   new wvlet.airframe.surface.ObjectFactory{ 
-        //     def newInstance(args: Seq[Any]): ${Type.of[Strint]} = { null }
-        //   } 
-        // }
-        //None
+      .filter { x =>
+        val name = x.name
+        !name.startsWith("$") && 
+        name != "<init>"
       }
     }
+
+    allMethods.filter(m => isOwnedByTargetClass(m, t))
+  }
+
+  private def nonObject(x: Symbol): Boolean = {
+    ! x.flags.is(Flags.Synthetic) &&
+    ! x.flags.is(Flags.Artifact) &&
+    x.fullName != "scala.Any" &&
+    x.fullName != "java.lang.Object"
+  }
+
+  private def isOwnedByTargetClass(m:Symbol, t:TypeRepr): Boolean = {
+    m.owner == t.typeSymbol || t.baseClasses.filter(nonObject).exists(_ == m.owner)
+  }
+
+  private def modifierBitMaskOf(m: Symbol): Int = {
+    var mod = 0
+    
+    if (!m.flags.is(Flags.Private) && !m.flags.is(Flags.Protected) && !m.flags.is(Flags.PrivateLocal)) {
+      mod |= MethodModifier.PUBLIC
+    }
+    if (m.flags.is(Flags.Private)) {
+      mod |= MethodModifier.PRIVATE
+    }
+    if (m.flags.is(Flags.Protected)) {
+      mod |= MethodModifier.PROTECTED
+    }
+    if (m.flags.is(Flags.Static)) {
+      mod |= MethodModifier.STATIC
+    }
+    if (m.flags.is(Flags.Final)) {
+      mod |= MethodModifier.FINAL
+    }
+    if (m.flags.is(Flags.Abstract)) {
+      mod |= MethodModifier.ABSTRACT
+    }
+    mod
   }
 
 }
