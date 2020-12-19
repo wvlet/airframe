@@ -18,14 +18,13 @@ import wvlet.airframe.lifecycle.LifeCycleManager
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
-import scala.language.experimental.macros
 import scala.util.Try
 import scala.reflect.runtime.{universe => ru}
 
 /**
   * Session manages injected objects (e.g., Singleton)
   */
-trait Session extends AutoCloseable {
+trait Session extends SessionImpl with AutoCloseable {
 
   /**
     * Name of the session (default: object hash code)
@@ -41,16 +40,6 @@ trait Session extends AutoCloseable {
     * Reference to the design used for creating this session.
     */
   def design: Design
-
-  /**
-    * Build an instance of A. In general this method is necessary only when creating an entry
-    * point of your application. When feasible avoid using this method so that Airframe can
-    * inject objects where bind[X] is used.
-    *
-    * @tparam A
-    * @return object
-    */
-  def build[A]: A = macro AirframeMacros.buildImpl[A]
 
   /**
     * Internal method for building an instance of type A. This method does not inject the

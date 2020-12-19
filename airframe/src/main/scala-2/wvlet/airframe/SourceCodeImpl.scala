@@ -12,14 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe
+import scala.language.experimental.macros
 
-/**
-  * A hack to embed source code location where DI is used
-  */
-case class SourceCode(filePath: String, fileName: String, line: Int, col: Int) {
-  override def toString = s"${fileName}:${line}"
-}
-
-object SourceCode extends SourceCodeImpl {
-  def apply()(implicit code: SourceCode) = code
+trait SourceCodeImpl {
+  implicit def generate: SourceCode = macro AirframeMacros.sourceCode
 }
