@@ -13,7 +13,7 @@ object Surface3Test extends LogSupport {
         warn(s"Surface: expected: ${expected}, but null")
       case _ =>
         val str = s.toString
-        info(s"${s}: ${s.getClass}")
+        // info(s"${s}: ${s.getClass}")
         if(str != expected) {
           warn(s"Surface: expected: ${expected}, but ${str}")
         }
@@ -36,6 +36,10 @@ object Surface3Test extends LogSupport {
   }
 
   trait Task[A]
+
+  class Hello {
+    def hello(msg:String): String = "hello"
+  }
 
   def run:Unit = {
     test(Surface.of[Int], "Int")
@@ -79,6 +83,9 @@ object Surface3Test extends LogSupport {
     assert(p0.get(p), 1)
     val px = s.objectFactory.map(_.newInstance(Seq(2, "yui")))
     assert(px, Some(Person(2, "yui")))
+
+    val ms = Surface.methodsOf[Hello]
+    info(ms)
   }
 
 

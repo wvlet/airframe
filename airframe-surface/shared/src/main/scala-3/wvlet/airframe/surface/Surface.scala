@@ -39,5 +39,5 @@ object Surface {
   import scala.quoted._
 
   inline def of[A]: Surface = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
-  def methodsOf[A]: Seq[MethodSurface] = ???
+  inline def methodsOf[A]: Seq[MethodSurface] = ${ CompileTimeSurfaceFactory.methodsOf[A] }
 }
