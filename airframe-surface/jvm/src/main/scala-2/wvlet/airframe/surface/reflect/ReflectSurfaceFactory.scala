@@ -556,7 +556,7 @@ object ReflectSurfaceFactory extends LogSupport {
           val primaryConstructor = findPrimaryConstructorOf(t).get
           val typeArgs           = typeArgsOf(t).map(surfaceOf(_)).toIndexedSeq
           val methodParams       = methodParametersOf(t, primaryConstructor)
-          
+
           val s = new RuntimeGenericSurface(
             resolveClass(t),
             typeArgs,
