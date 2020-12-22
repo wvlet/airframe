@@ -24,7 +24,6 @@ import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 import scala.util.Try
-import scala.reflect.runtime.{universe => ru}
 
 /**
   */
@@ -35,7 +34,7 @@ private[airframe] class AirframeSession(
     stage: Stage,
     val lifeCycleManager: LifeCycleManager,
     private val singletonHolder: collection.mutable.Map[Surface, Any] = new ConcurrentHashMap[Surface, Any]().asScala
-) extends Session
+) extends Session with AirframeSessionImpl
     with LogSupport {
   self =>
 
@@ -180,12 +179,6 @@ private[airframe] class AirframeSession(
   private[airframe] def createNewInstanceOf[A](surface: Surface, factory: => A)(implicit sourceCode: SourceCode): A = {
     debug(s"[${name}] Create dependency [${surface}] (with factory) at ${sourceCode}")
     getInstance(surface, surface, sourceCode, this, create = true, List.empty, Some(() => factory)).asInstanceOf[A]
-  }
-
-  def register[A: ru.TypeTag](instance: A): Unit = {
-    val surface = Surface.of[A]
-    val owner   = findOwnerSessionOf(surface).getOrElse(this)
-    owner.registerInjectee(surface, surface, instance)
   }
 
   /**

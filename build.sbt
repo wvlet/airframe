@@ -287,9 +287,6 @@ lazy val airframe =
     .settings(
       name := "airframe",
       description := "Dependency injection library tailored to Scala",
-      libraryDependencies ++= Seq(
-        "org.scala-lang" % "scala-reflect" % scalaVersion.value
-      )
     )
     .jvmSettings(
       // Workaround for https://github.com/scala/scala/pull/7624 in Scala 2.13, and also

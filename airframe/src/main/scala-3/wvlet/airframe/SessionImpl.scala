@@ -7,7 +7,6 @@ import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
 import scala.util.Try
-import scala.reflect.runtime.{universe => ru}
 
 private[airframe] trait SessionImpl { self: Session =>
 
@@ -19,10 +18,10 @@ private[airframe] trait SessionImpl { self: Session =>
     * @tparam A
     * @return object
     */
-  def build[A]: A = macro AirframeMacros.buildImpl[A]
+  def build[A]: A = ???
 
-    /**
-    * Register an instance to the session to control the life cycle of the object under this session.
-    */
-  def register[A: ru.TypeTag](instance: A): Unit
+ /**
+   * Register an instance to the session to control the life cycle of the object under this session.
+   */
+  //abstract def register[A](instance: A): Unit = ???
 }
