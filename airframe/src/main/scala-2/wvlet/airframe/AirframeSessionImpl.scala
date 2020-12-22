@@ -24,10 +24,10 @@ import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 import scala.util.Try
-import scala.reflect.runtime.{universe=>ru}
+import scala.reflect.runtime.{universe => ru}
 
 private[airframe] trait AirframeSessionImpl { self: AirframeSession =>
-   def register[A: ru.TypeTag](instance: A): Unit = {
+  def register[A: ru.TypeTag](instance: A): Unit = {
     val surface = Surface.of[A]
     val owner   = findOwnerSessionOf(surface).getOrElse(this)
     owner.registerInjectee(surface, surface, instance)

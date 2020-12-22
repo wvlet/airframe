@@ -34,7 +34,8 @@ private[airframe] class AirframeSession(
     stage: Stage,
     val lifeCycleManager: LifeCycleManager,
     private val singletonHolder: collection.mutable.Map[Surface, Any] = new ConcurrentHashMap[Surface, Any]().asScala
-) extends Session with AirframeSessionImpl
+) extends Session
+    with AirframeSessionImpl
     with LogSupport {
   self =>
 
