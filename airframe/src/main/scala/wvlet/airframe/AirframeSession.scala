@@ -185,7 +185,7 @@ private[airframe] class AirframeSession(
     * Called when injecting an instance of the surface for the first time.
     * The other hooks (e.g., onStart, onShutdown) will be called in a separate step after the object is injected.
     */
-  private def registerInjectee(bindTarget: Surface, tpe: Surface, injectee: Any): AnyRef = {
+  private[airframe] def registerInjectee(bindTarget: Surface, tpe: Surface, injectee: Any): AnyRef = {
     debug(s"[${name}] Init [${bindTarget} -> ${tpe}]: ${injectee}")
 
     stats.incrementInitCount(this, tpe)

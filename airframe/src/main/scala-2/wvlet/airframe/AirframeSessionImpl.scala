@@ -26,7 +26,7 @@ import scala.jdk.CollectionConverters._
 import scala.util.Try
 import scala.reflect.runtime.{universe=>ru}
 
-private[airframe] trait AirframeSessionImpl {
+private[airframe] trait AirframeSessionImpl { self: AirframeSession =>
    def register[A: ru.TypeTag](instance: A): Unit = {
     val surface = Surface.of[A]
     val owner   = findOwnerSessionOf(surface).getOrElse(this)

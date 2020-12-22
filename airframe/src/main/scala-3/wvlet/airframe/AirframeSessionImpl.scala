@@ -25,7 +25,7 @@ import wvlet.log.LogSupport
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 
-private[airframe] trait AirframeSessionImpl { self: Session =>
+private[airframe] trait AirframeSessionImpl { self: AirframeSession =>
    def register[A](instance: A): Unit = ???
 /*   
     val surface = Surface.of[A]
