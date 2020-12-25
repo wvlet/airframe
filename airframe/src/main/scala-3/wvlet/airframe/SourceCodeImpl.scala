@@ -12,8 +12,22 @@
  * limitations under the License.
  */
 package wvlet.airframe
-import scala.language.experimental.macros
+import scala.quoted._
 
 trait SourceCodeImpl {
-  implicit def generate: SourceCode = ???
+  implicit inline def generate: SourceCode = ??? //${ SourceCodeImpl.generateImpl }
+}
+
+object SourceCodeImpl {
+  def generateImpl(using q: Quotes): Expr[SourceCode] = {
+    import q.reflect._
+    val pos = Position.ofMacroExpansion
+    val line = Expr(pos.startLine)
+    val column = Expr(pos.endColumn)
+    val src = pos.sourceFile
+    val srcPath: java.nio.file.Path = src.jpath
+    val path = Expr(srcPath.toFile.getPath)
+    val fileName = Expr(srcPath.getFileName().toString)
+    '{ SourceCode(${path}, ${fileName}, ${line} + 1, ${column}) }
+  }
 }

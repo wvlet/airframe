@@ -935,7 +935,7 @@ lazy val dottyTest =
       description := "test for dotty",
       crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions }
     )
-    .dependsOn(logJVM, surfaceJVM)
+    .dependsOn(logJVM, surfaceJVM, airframeJVM)
 
 /**
   * AirSpec build definitions.

@@ -8,14 +8,24 @@ import wvlet.log.LogSupport
 import Design._
 import DesignOptions._
 import wvlet.airframe.lifecycle.LifeCycleHookType
+import AirframeDIMacros._
 
 /**
   * Immutable airframe design.
   *
   * Design instance does not hold any duplicate bindings for the same Surface.
   */
-private[airframe] trait DesignImpl extends LogSupport {
-  def bind[A]: Binder[A] = ???
+private[airframe] trait DesignImpl extends LogSupport { self: Design =>
+
+  inline def bind[A]: Binder[A] = {
+    val __surface = Surface.of[A]
+    
+    wvlet.airframe.getOrElseUpdateTraitFactoryCache(__surface, { (ss: Session) => 
+        new DISupport { def session = ss }.asInstanceOf[Any]
+    })
+    //new Binder(self.this, __surface, ${sourceCode(c)})
+    new Binder(this, __surface, null.asInstanceOf[SourceCode])
+  }
   def remove[A]: Design = ???
 
   /**

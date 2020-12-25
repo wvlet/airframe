@@ -6,9 +6,11 @@ object TestMain {
     args match {
       case Array("log") => LogTest.run
       case Array("surface") => Surface3Test.run
+      case Array("di") => DITest.run
       case _ => 
         LogTest.run
         Surface3Test.run
+        DITest.run
     }
   }
 
