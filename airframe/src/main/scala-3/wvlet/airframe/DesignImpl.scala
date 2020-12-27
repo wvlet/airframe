@@ -20,7 +20,12 @@ trait DesignImpl extends LogSupport { self: Design =>
   
   inline def bind[A]: Binder[A] = ${ DesignMacros.designBind[A]('self) }
 
-  def remove[A]: Design = ???
+  inline def remove[A]: Design = {
+    {
+      val target = Surface.of[A]
+      new Design(self.designOptions, self.binding.filterNot(_.from == target), self.hooks)
+    }
+  }
 
   /**
     * A helper method of creating a new session and an instance of A.
@@ -31,14 +36,27 @@ trait DesignImpl extends LogSupport { self: Design =>
     * @tparam A
     * @return
     */
-  def build[A](body: A => Any): Any = ???
+  inline def build[A](body: A => Any): Any = {
+    {
+      self.withSession { session =>
+        val a = session.build[A]
+        body(a)
+      }
+    }
+  }
 
   /**
     * Execute a given code block by building A using this design, and return B
     */
-  def run[A, B](body: A => B): B = ???
+  inline def run[A, B](body: A => B): B = {
+    {
+      self.withSession { session =>
+        val a = session.build[A]
+        body(a)
+      }
+    }.asInstanceOf[B]
+  }
 }
-
 
 private[airframe] object DesignMacros {
   def shouldGenerateTraitOf[A](using quotes:Quotes, tpe: Type[A]): Boolean = {
