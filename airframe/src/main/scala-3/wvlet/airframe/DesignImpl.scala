@@ -23,8 +23,7 @@ private[airframe] trait DesignImpl extends LogSupport { self: Design =>
     wvlet.airframe.getOrElseUpdateTraitFactoryCache(__surface, { (ss: Session) => 
         new DISupport { def session = ss }.asInstanceOf[Any]
     })
-    //new Binder(self.this, __surface, ${sourceCode(c)})
-    new Binder(this, __surface, null.asInstanceOf[SourceCode])
+    new Binder(this, __surface, SourceCode())
   }
   def remove[A]: Design = ???
 

@@ -12,13 +12,22 @@
  * limitations under the License.
  */
 package wvlet.airframe
-import scala.quoted._
 
-trait SourceCodeImpl {
-  implicit inline def generate: SourceCode = ??? //${ SourceCodeImpl.generateImpl }
+
+/**
+  * A hack to embed source code location where DI is used
+  */
+case class SourceCode(filePath: String, fileName: String, line: Int, col: Int) {
+  override def toString = s"${fileName}:${line}"
 }
 
-object SourceCodeImpl {
+object SourceCode {
+  def apply()(implicit code: SourceCode) = code
+
+  import scala.quoted._
+
+  inline implicit def generate: SourceCode = ${ generateImpl }
+
   def generateImpl(using q: Quotes): Expr[SourceCode] = {
     import q.reflect._
     val pos = Position.ofMacroExpansion

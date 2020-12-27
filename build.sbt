@@ -292,23 +292,14 @@ lazy val airframe =
       // Workaround for https://github.com/scala/scala/pull/7624 in Scala 2.13, and also
       // testing shutdown hooks requires consistent application lifecycle between sbt and JVM https://github.com/sbt/sbt/issues/4794
       fork in Test := scalaBinaryVersion.value == "2.13",
-      // include the macro classes and resources in the main jar
-      mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJVM, Compile, packageBin).value,
-      // include the macro sources in the main source jar
-      mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJVM, Compile, packageSrc).value
     )
     .jsSettings(
       jsBuildSettings,
       // Copy macro classes into the main jar
-      mappings in (Compile, packageBin) ++= mappings
-        .in(airframeMacrosJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
-      // include the macro sources in the main source jar
-      mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
     )
     .dependsOn(
       surface,
-      // Include airframe-di-macros as provided (for bloop) and remove it from pom.xml
-      airframeMacros % Provided
+      airframeMacros
     )
 
 lazy val airframeJVM = airframe.jvm
