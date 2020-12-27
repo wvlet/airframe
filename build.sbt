@@ -356,6 +356,7 @@ lazy val airframeMacros =
       exportPipelining := false
     )
     .jsSettings(jsBuildSettings)
+    .dependsOn(log, surface)
 
 lazy val airframeMacrosJVM = airframeMacros.jvm
 lazy val airframeMacrosJS  = airframeMacros.js
