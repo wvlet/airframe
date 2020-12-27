@@ -28,7 +28,7 @@ object SourceCode {
 
   inline implicit def generate: SourceCode = ${ generateImpl }
 
-  def generateImpl(using q: Quotes): Expr[SourceCode] = {
+  private def generateImpl(using q: Quotes): Expr[SourceCode] = {
     import q.reflect._
     val pos = Position.ofMacroExpansion
     val line = Expr(pos.startLine)

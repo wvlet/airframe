@@ -25,6 +25,7 @@ private[airframe] trait DesignImpl extends LogSupport { self: Design =>
     })
     new Binder(this, __surface, SourceCode())
   }
+
   def remove[A]: Design = ???
 
   /**
