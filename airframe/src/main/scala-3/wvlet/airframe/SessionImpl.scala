@@ -5,8 +5,8 @@ import wvlet.airframe.lifecycle.LifeCycleManager
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
-import scala.language.experimental.macros
 import scala.util.Try
+import scala.quoted._
 
 private[airframe] trait SessionImpl { self: Session =>
 
@@ -18,10 +18,45 @@ private[airframe] trait SessionImpl { self: Session =>
     * @tparam A
     * @return object
     */
-  def build[A]: A = ???
+  inline def build[A]: A = ${ SessionMacros.buildImpl[A]('self) }
 
  /**
    * Register an instance to the session to control the life cycle of the object under this session.
    */
   //abstract def register[A](instance: A): Unit = ???
+}
+
+private[airframe] object SessionMacros {
+  def buildImpl[A](s: Expr[Session])(using Quotes, Type[A]): Expr[A] = {
+    '{
+      ${newInstanceBinderOf[A]}.apply($s)
+    }
+  }
+
+
+  private def newInstanceBinderOf[A](using quotes:Quotes, t: Type[A]): Expr[Session => A] = {
+    import AirframeDIMacros.shouldGenerateTraitOf
+
+    if(shouldGenerateTraitOf[A]) {
+      import quotes.reflect._
+      val tr = TypeRepr.of[A](using t)
+      val c = tr.classSymbol.get
+
+      '{
+        { (s: Session) => s.get[A](Surface.of[A]) }
+      }
+      // '{
+      //   { (s: Session) => 
+      //     s.getOrElse(Surface.of[A], 
+      //       new '{t} with DISupport { def session = s }).asInstanceOf[A]
+      //   }
+      // }
+    }
+    else {
+      '{
+        { (s: Session) => s.get[A](Surface.of[A]) }
+      }
+    }
+  }
+
 }
