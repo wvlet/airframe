@@ -28,17 +28,4 @@ private[wvlet] object AirframeDIMacros {
 
     true
   }
-
-  // def designBind[A](using quotes:Quotes, tpe: Type[A]): Expr[Binder[Any]] = {
-  //   if(shouldGenerateTraitOf[A]) {
-  //       '{
-  //           val __surface = Surface.of[A]
-  //           new wvlet.airframe.Binder(Design.this, __surface, ${sourceCode(c)})
-  //       }
-        
-  //   }
-  //   else {
-
-  //   }
-  // }
 }
