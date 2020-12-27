@@ -27,6 +27,7 @@ trait SessionImpl { self: Session =>
 }
 
 object SessionImpl {
+
   def buildImpl[A](s: Expr[Session])(using Quotes, Type[A]): Expr[A] = {
     '{
       ${newInstanceBinderOf[A]}.apply($s)
@@ -38,47 +39,25 @@ object SessionImpl {
 
     if(shouldGenerateTraitOf[A]) {
       import quotes.reflect._
-      val tr = TypeRepr.of[A](using t)
-      val tt = TypeTree.of(using t)
-      // val expr = '{
-      //   new A {}
-      // }
-      // println(expr.show)
-      // println(expr.asTerm)
-      
-      /*
-      Apply(
-        Select(
-          New(
-            TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class java)),module lang),Object)]
-          ),
-          <init>
-        ),
-        List()
-      ), 
-        Ident(B)
-      ),ValDef(_,EmptyTree,EmptyTree),List()))),Typed(Typed(Apply(Select(New(Ident($anon)),<init>),List()),TypeTree[TypeRef(NoPrefix,trait B)]),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class java)),module lang),Object)]))))
-      *
-      * 
-      Apply(
-        Select(
-          New(
-            TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class java)),module lang),Object)]
-          ),
-          <init>
-        ),
-        List()
-      ), Ident(B), Ident(DISupport)),ValDef(_,EmptyTree,EmptyTree),List()))),Typed(Typed(Apply(Select(New(Ident($anon)),<init>),List()),TypeTree[AndType(TypeRef(NoPrefix,trait B),TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class wvlet)),module airframe),DISupport))]),TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class wvlet)),module airframe),DISupport)]))))
-      */
+      val ds = TypeRepr.of[DISupport]
+      val expr = '{ (s: Session) => new LogSupport with DISupport { def session = s } }
+      val newExpr: Term = expr.asTerm match {
+        case Inlined(tree, lst, Block(List(d @ DefDef(sym, tpdef, valdef, tpt, term)), expr)) => 
+          val interfaceType = TypeTree.of[A with DISupport]
+          val newDef = DefDef.copy(d)(sym, tpdef, valdef, interfaceType, term)
+          Inlined(tree, lst, Block(List(newDef), expr))
+        case _ =>
+          report.error("Unexpected error")
+          '{0}.asTerm
+      }
+      println(newExpr)
       /*
       New(
         TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class java)),module lang),Object)]
       ),<init>),List()), Ident(E), Ident(DISupport)),
       */
       // TODO Create a new A with DISupport
-      '{
-        { (s: Session) => s.get[A](Surface.of[A]) }
-      }
+      newExpr.asExprOf[Session => A]
       // '{
       //   { (s: Session) => s.getOrElse[A](Surface.of[A], 
       //       new ${tr} with DISupport { def session = s  }.asInsatnceOf[A])

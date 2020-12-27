@@ -16,7 +16,7 @@ object DITest extends LogSupport {
     .bind[Int].toInstance(1)
     //   .bind[String].toInstance("hello")
 
-    d.build[Int] { i => }
+    d.build[A] { i => }
 
     info(d)
   }
