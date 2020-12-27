@@ -346,7 +346,6 @@ lazy val airframeMacros =
     .crossType(CrossType.Pure)
     .in(file("airframe-di-macros"))
     .settings(buildSettings)
-    .settings(noPublish)
     .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe-di-macros",
