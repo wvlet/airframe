@@ -162,12 +162,12 @@ private[airframe] class AirframeSession(
     debug(s"[${name}] Completed the initialization")
   }
 
-  private[airframe] def get[A](surface: Surface)(implicit sourceCode: SourceCode): A = {
+  def get[A](surface: Surface)(implicit sourceCode: SourceCode): A = {
     debug(s"[${name}] Get dependency [${surface}] at ${sourceCode}")
     getInstance(surface, surface, sourceCode, this, create = false, List.empty).asInstanceOf[A]
   }
 
-  private[airframe] def getOrElse[A](surface: Surface, objectFactory: => A)(implicit sourceCode: SourceCode): A = {
+  def getOrElse[A](surface: Surface, objectFactory: => A)(implicit sourceCode: SourceCode): A = {
     debug(s"[${name}] Get dependency [${surface}] (or create with factory) at ${sourceCode}")
     getInstance(surface, surface, sourceCode, this, create = false, List.empty, Some(() => objectFactory))
       .asInstanceOf[A]

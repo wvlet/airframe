@@ -121,7 +121,7 @@ private[wvlet] object AirframeMacros {
       }
     }
 
-    def surfaceOf(t: c.Type): c.Tree = {
+    def surfaceOf(t: c.Type): c.Tree = {W
       q"wvlet.airframe.surface.Surface.of[$t]"
     }
 

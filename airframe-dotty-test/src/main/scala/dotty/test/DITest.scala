@@ -6,6 +6,8 @@ import wvlet.airframe.surface.Surface
 
 object DITest extends LogSupport {
 
+  trait A
+
   def run: Unit = {
     info("DI test")
     val s= Surface.of[DesignOptions]
@@ -14,6 +16,7 @@ object DITest extends LogSupport {
     .bind[Int].toInstance(1)
     //   .bind[String].toInstance("hello")
 
+    d.build[Int] { i => }
 
     info(d)
   }
