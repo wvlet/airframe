@@ -21,6 +21,8 @@ case class SourceCode(filePath: String, fileName: String, line: Int, col: Int) {
 }
 
 object SourceCode {
+  import scala.language.experimental.macros
+
   implicit def generate: SourceCode = macro AirframeMacros.sourceCode
   def apply()(implicit code: SourceCode) = code
 }
