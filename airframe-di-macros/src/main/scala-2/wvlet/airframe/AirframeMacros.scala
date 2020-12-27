@@ -121,7 +121,7 @@ private[wvlet] object AirframeMacros {
       }
     }
 
-    def surfaceOf(t: c.Type): c.Tree = {W
+    def surfaceOf(t: c.Type): c.Tree = {
       q"wvlet.airframe.surface.Surface.of[$t]"
     }
 
@@ -521,7 +521,8 @@ private[wvlet] object AirframeMacros {
     q"""{
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
-         session.lifeCycleManager.addInjectHook(wvlet.airframe.lifecycle.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
+         session.lifeCycleManager.addInjectHook(wvlet.airframe.lifecycle.EventHookHolder(${h
+      .surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -534,7 +535,8 @@ private[wvlet] object AirframeMacros {
     q"""{
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
-         session.lifeCycleManager.addStartHook(wvlet.airframe.lifecycle.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
+         session.lifeCycleManager.addStartHook(wvlet.airframe.lifecycle.EventHookHolder(${h
+      .surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -549,7 +551,8 @@ private[wvlet] object AirframeMacros {
     q"""{
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
-         session.lifeCycleManager.addStartHook(wvlet.airframe.lifecycle.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
+         session.lifeCycleManager.addStartHook(wvlet.airframe.lifecycle.EventHookHolder(${h
+      .surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -562,7 +565,8 @@ private[wvlet] object AirframeMacros {
     q"""{
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
-         session.lifeCycleManager.addPreShutdownHook(wvlet.airframe.lifecycle.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
+         session.lifeCycleManager.addPreShutdownHook(wvlet.airframe.lifecycle.EventHookHolder(${h
+      .surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -575,7 +579,8 @@ private[wvlet] object AirframeMacros {
     q"""{
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
-         session.lifeCycleManager.addShutdownHook(wvlet.airframe.lifecycle.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
+         session.lifeCycleManager.addShutdownHook(wvlet.airframe.lifecycle.EventHookHolder(${h
+      .surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -838,11 +843,12 @@ private[wvlet] object AirframeMacros {
 
     import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[I1, A]
-    val i1 = t.typeArgs(0) // I1
-    val a  = t.typeArgs(1) // A
+    val i1 = t.typeArgs(0)                    // I1
+    val a  = t.typeArgs(1)                    // A
     val h  = new BindHelper[c.type](c)
     q"""{ i1: ${i1} =>
-          val session = ${h.findSession}.newSharedChildSession(wvlet.airframe.newDesign.bind(${h.surfaceOf(i1)}).toLazyInstance(i1))
+          val session = ${h.findSession}.newSharedChildSession(wvlet.airframe.newDesign.bind(${h
+      .surfaceOf(i1)}).toLazyInstance(i1))
           ${h.createNewInstanceOf(a)}(session)
         }
       """
@@ -853,9 +859,9 @@ private[wvlet] object AirframeMacros {
 
     import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2), A]
-    val i1 = t.typeArgs(0) // I1
-    val i2 = t.typeArgs(1) // I2
-    val a  = t.typeArgs(2) // A
+    val i1 = t.typeArgs(0)                    // I1
+    val i2 = t.typeArgs(1)                    // I2
+    val a  = t.typeArgs(2)                    // A
     val h  = new BindHelper[c.type](c)
     q"""{ (i1: ${i1}, i2: ${i2}) =>
          val session = ${h.findSession}.newSharedChildSession(
@@ -873,10 +879,10 @@ private[wvlet] object AirframeMacros {
 
     import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2, I3), A]
-    val i1 = t.typeArgs(0) // I1
-    val i2 = t.typeArgs(1) // I2
-    val i3 = t.typeArgs(2) // I3
-    val a  = t.typeArgs(3) // A
+    val i1 = t.typeArgs(0)                    // I1
+    val i2 = t.typeArgs(1)                    // I2
+    val i3 = t.typeArgs(2)                    // I3
+    val a  = t.typeArgs(3)                    // A
     val h  = new BindHelper[c.type](c)
     q"""{ (i1: ${i1}, i2: ${i2}, i3:${i3}) =>
          val session = ${h.findSession}.newSharedChildSession(
@@ -895,11 +901,11 @@ private[wvlet] object AirframeMacros {
 
     import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2, I3, I4), A]
-    val i1 = t.typeArgs(0) // I1
-    val i2 = t.typeArgs(1) // I2
-    val i3 = t.typeArgs(2) // I3
-    val i4 = t.typeArgs(3) // I4
-    val a  = t.typeArgs(4) // A
+    val i1 = t.typeArgs(0)                    // I1
+    val i2 = t.typeArgs(1)                    // I2
+    val i3 = t.typeArgs(2)                    // I3
+    val i4 = t.typeArgs(3)                    // I4
+    val a  = t.typeArgs(4)                    // A
     val h  = new BindHelper[c.type](c)
     q"""{ (i1: ${i1}, i2: ${i2}, i3:${i3}, i4:${i4}) =>
          val session = ${h.findSession}.newSharedChildSession(
@@ -919,12 +925,12 @@ private[wvlet] object AirframeMacros {
 
     import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2, I3, I4, I4), A]
-    val i1 = t.typeArgs(0) // I1
-    val i2 = t.typeArgs(1) // I2
-    val i3 = t.typeArgs(2) // I3
-    val i4 = t.typeArgs(3) // I4
-    val i5 = t.typeArgs(4) // I5
-    val a  = t.typeArgs(5) // A
+    val i1 = t.typeArgs(0)                    // I1
+    val i2 = t.typeArgs(1)                    // I2
+    val i3 = t.typeArgs(2)                    // I3
+    val i4 = t.typeArgs(3)                    // I4
+    val i5 = t.typeArgs(4)                    // I5
+    val a  = t.typeArgs(5)                    // A
     val h  = new BindHelper[c.type](c)
     q"""{ (i1: ${i1}, i2: ${i2}, i3:${i3}, i4:${i4}, i5:${i5}) =>
          val session = ${h.findSession}.newSharedChildSession(

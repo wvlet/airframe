@@ -153,6 +153,7 @@ lazy val root =
 
 // JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12.
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
+  airframeMacrosJVM,
   airframeJVM,
   surfaceJVM,
   logJVM,
@@ -188,6 +189,7 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
 lazy val jsProjects: Seq[ProjectReference] = Seq(
   logJS,
   surfaceJS,
+  airframeMacrosJS,
   airframeJS,
   metricsJS,
   controlJS,
@@ -349,7 +351,7 @@ lazy val airframeMacros =
     .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe-di-macros",
-      description := "Macros for Airframe",
+      description := "Macros for Airframe Di",
       // As a workaround for build-pipelining failure at sbt 1.4.0-RC2
       exportPipelining := false
     )
@@ -358,9 +360,9 @@ lazy val airframeMacros =
 lazy val airframeMacrosJVM = airframeMacros.jvm
 lazy val airframeMacrosJS  = airframeMacros.js
 
-// To use airframe in other airframe modules, we need to reference airframeMacros project
-lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
-lazy val airframeMacrosRef    = airframeMacros    % Optional
+// // To use airframe in other airframe modules, we need to reference airframeMacros project
+// lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
+// lazy val airframeMacrosRef    = airframeMacros    % Optional
 
 val surfaceDependencies = { scalaVersion: String =>
   scalaVersion match {
@@ -416,7 +418,7 @@ lazy val config =
         "org.yaml" % "snakeyaml" % "1.27"
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, codecJVM)
+    .dependsOn(airframeJVM, codecJVM)
 
 lazy val control =
   crossProject(JVMPlatform, JSPlatform)
@@ -588,7 +590,7 @@ lazy val jdbc =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, controlJVM, config)
+    .dependsOn(airframeJVM, controlJVM, config)
 
 lazy val rx =
   crossProject(JVMPlatform, JSPlatform)
@@ -628,7 +630,7 @@ lazy val http =
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
-    .dependsOn(airframe, airframeMacrosRef, rx, control, surface, json, codec)
+    .dependsOn(airframe, rx, control, surface, json, codec)
 
 lazy val httpJVM = http.jvm
   .enablePlugins(PackPlugin)
@@ -659,7 +661,7 @@ lazy val grpc =
         "org.apache.tomcat" % "annotations-api"   % "6.0.53"      % Provided,
         "org.slf4j"         % "slf4j-jdk14"       % SLF4J_VERSION % Test
       )
-    ).dependsOn(httpJVM, rxJVM, airframeMacrosJVMRef)
+    ).dependsOn(httpJVM, rxJVM)
 
 lazy val finagle =
   project
@@ -678,7 +680,7 @@ lazy val finagle =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(httpJVM, airframeMacrosJVMRef)
+    .dependsOn(httpJVM)
 
 lazy val okhttp =
   project
@@ -691,7 +693,7 @@ lazy val okhttp =
         "com.squareup.okhttp3" % "okhttp" % "3.14.9"
       )
     )
-    .dependsOn(httpJVM, airframeMacrosJVMRef, finagle % Test)
+    .dependsOn(httpJVM, finagle % Test)
 
 lazy val httpRecorder =
   project
@@ -709,7 +711,7 @@ lazy val httpRecorder =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, metricsJVM, controlJVM, finagle, jdbc, airframeMacrosJVMRef)
+    .dependsOn(codecJVM, metricsJVM, controlJVM, finagle, jdbc)
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)
@@ -766,7 +768,7 @@ lazy val benchmark =
       // publishing .tgz
       // publishPackArchiveTgz
     )
-    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, finagle, grpc, airframeMacrosJVMRef)
+    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, finagle, grpc)
 
 lazy val fluentd =
   project
@@ -783,7 +785,7 @@ lazy val fluentd =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, airframeJVM, airframeMacrosJVMRef)
+    .dependsOn(codecJVM, airframeJVM)
 
 def sqlRefLib = { scalaVersion: String =>
   if (scalaVersion.startsWith("2.12")) {
@@ -1125,4 +1127,4 @@ lazy val airspecLight =
         "org.scalacheck" %%% "scalacheck"     % SCALACHECK_VERSION % Provided
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, metricsJVM)
+    .dependsOn(airframeJVM, metricsJVM)
