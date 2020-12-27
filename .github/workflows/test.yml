@@ -78,9 +78,9 @@ jobs:
       - uses: olafurpg/setup-scala@v10
         with:
           java-version: adopt@1.11
-      - uses: actions/setup-node@v2-beta
+      - uses: actions/setup-node@v2
         with:
-          node-version: '12.x'
+          node-version: '12'
       - name: Node.js setup
         run: npm install jsdom@16.4.0
       - uses: actions/cache@v2
@@ -98,9 +98,9 @@ jobs:
       - uses: olafurpg/setup-scala@v10
         with:
           java-version: adopt@1.11
-      - uses: actions/setup-node@v2-beta
+      - uses: actions/setup-node@v2
         with:
-          node-version: '12.x'
+          node-version: '12'
       - name: Node.js setup
         run: npm install jsdom@16.4.0
       - uses: actions/cache@v2
