@@ -20,4 +20,9 @@ private[airframe] trait SessionImpl { self: Session =>
     * @return object
     */
   def build[A]: A = macro AirframeMacros.buildImpl[A]
+
+  /**
+    * Register an instance to the session to control the life cycle of the object under this session.
+    */
+  def register[A: ru.TypeTag](instance: A): Unit
 }

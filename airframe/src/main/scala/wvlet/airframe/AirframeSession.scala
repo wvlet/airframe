@@ -24,7 +24,6 @@ import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 import scala.util.Try
-import scala.reflect.runtime.{universe => ru}
 
 /**
   */
@@ -36,6 +35,7 @@ private[airframe] class AirframeSession(
     val lifeCycleManager: LifeCycleManager,
     private val singletonHolder: collection.mutable.Map[Surface, Any] = new ConcurrentHashMap[Surface, Any]().asScala
 ) extends Session
+    with AirframeSessionImpl
     with LogSupport {
   self =>
 
@@ -162,12 +162,12 @@ private[airframe] class AirframeSession(
     debug(s"[${name}] Completed the initialization")
   }
 
-  private[airframe] def get[A](surface: Surface)(implicit sourceCode: SourceCode): A = {
+  def get[A](surface: Surface)(implicit sourceCode: SourceCode): A = {
     debug(s"[${name}] Get dependency [${surface}] at ${sourceCode}")
     getInstance(surface, surface, sourceCode, this, create = false, List.empty).asInstanceOf[A]
   }
 
-  private[airframe] def getOrElse[A](surface: Surface, objectFactory: => A)(implicit sourceCode: SourceCode): A = {
+  def getOrElse[A](surface: Surface, objectFactory: => A)(implicit sourceCode: SourceCode): A = {
     debug(s"[${name}] Get dependency [${surface}] (or create with factory) at ${sourceCode}")
     getInstance(surface, surface, sourceCode, this, create = false, List.empty, Some(() => objectFactory))
       .asInstanceOf[A]
@@ -182,17 +182,11 @@ private[airframe] class AirframeSession(
     getInstance(surface, surface, sourceCode, this, create = true, List.empty, Some(() => factory)).asInstanceOf[A]
   }
 
-  def register[A: ru.TypeTag](instance: A): Unit = {
-    val surface = Surface.of[A]
-    val owner   = findOwnerSessionOf(surface).getOrElse(this)
-    owner.registerInjectee(surface, surface, instance)
-  }
-
   /**
     * Called when injecting an instance of the surface for the first time.
     * The other hooks (e.g., onStart, onShutdown) will be called in a separate step after the object is injected.
     */
-  private def registerInjectee(bindTarget: Surface, tpe: Surface, injectee: Any): AnyRef = {
+  private[airframe] def registerInjectee(bindTarget: Surface, tpe: Surface, injectee: Any): AnyRef = {
     debug(s"[${name}] Init [${bindTarget} -> ${tpe}]: ${injectee}")
 
     stats.incrementInitCount(this, tpe)

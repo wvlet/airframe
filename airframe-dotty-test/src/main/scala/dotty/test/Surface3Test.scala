@@ -47,6 +47,8 @@ object Surface3Test extends LogSupport {
     def hello2: String = "hello2"
   }
 
+  case class MyOpt(a:Option[String])
+
   def run:Unit = {
     test(Surface.of[Int], "Int")
     test(Surface.of[Boolean], "Boolean")
@@ -102,6 +104,9 @@ object Surface3Test extends LogSupport {
       x.call(new HelloExt)
     }
     assert(res2, Some("hello2"))
+
+    val sc = Surface.of[MyOpt]
+    info(sc.params)
   }
 
 

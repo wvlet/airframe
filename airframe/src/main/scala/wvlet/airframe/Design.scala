@@ -27,7 +27,7 @@ import wvlet.airframe.lifecycle.LifeCycleHookType
   *
   * Design instance does not hold any duplicate bindings for the same Surface.
   */
-class Design private[airframe] (
+class Design(
     private[airframe] val designOptions: DesignOptions,
     private[airframe] val binding: Vector[Binding],
     private[airframe] val hooks: Vector[LifeCycleHookDesign]

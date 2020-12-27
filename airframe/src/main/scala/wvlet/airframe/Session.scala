@@ -19,7 +19,6 @@ import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 import scala.util.Try
-import scala.reflect.runtime.{universe => ru}
 
 /**
   * Session manages injected objects (e.g., Singleton)
@@ -48,7 +47,7 @@ trait Session extends SessionImpl with AutoCloseable {
     * @tparam A
     * @return
     */
-  private[airframe] def get[A](surface: Surface)(implicit sourceCode: SourceCode): A
+  def get[A](surface: Surface)(implicit sourceCode: SourceCode): A
 
   /**
     * Internal method for building an instance of type A, or if no binding is found, use the given trait instance factory
@@ -56,7 +55,7 @@ trait Session extends SessionImpl with AutoCloseable {
     * @tparam A
     * @return
     */
-  private[airframe] def getOrElse[A](surface: Surface, traitInstanceFactory: => A)(implicit sourceCode: SourceCode): A
+  def getOrElse[A](surface: Surface, traitInstanceFactory: => A)(implicit sourceCode: SourceCode): A
 
   private[airframe] def createNewInstanceOf[A](surface: Surface)(implicit sourceCode: SourceCode): A
   private[airframe] def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A)(implicit
@@ -64,11 +63,6 @@ trait Session extends SessionImpl with AutoCloseable {
   ): A
 
   def getInstanceOf(surface: Surface)(implicit sourceCode: SourceCode): Any
-
-  /**
-    * Register an instance to the session to control the life cycle of the object under this session.
-    */
-  def register[A: ru.TypeTag](instance: A): Unit
 
   /**
     * Create a child session with an additional design.
@@ -171,7 +165,7 @@ object Session extends LogSupport {
 
     def findEmbeddedSession: Option[AnyRef => Session] = {
       if (classOf[DISupport] isAssignableFrom (cl)) {
-        Some({ obj: AnyRef => obj.asInstanceOf[DISupport].session })
+        Some({ (obj: AnyRef) => obj.asInstanceOf[DISupport].session })
       } else {
         None
       }

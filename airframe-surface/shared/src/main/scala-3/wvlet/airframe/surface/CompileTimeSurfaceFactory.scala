@@ -74,6 +74,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       val generator = factory.andThen { expr =>
         '{ wvlet.airframe.surface.surfaceCache.getOrElseUpdate(${Expr(fullTypeNameOf(t))}, ${expr}) }
       }
+      //println(s"--- surfaceOf(${t})")
       val surface = generator(t)
       memo += (t -> surface)
       surface
@@ -260,12 +261,14 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       MethodRef(owner = ${clsOf(t)}, name = ${Expr(methodName)}, paramTypes = ${Expr.ofSeq(argClasses)}, isConstructor = ${Expr(isConstructor)})
     }
 
+    //println(s"======= ${t.typeSymbol.memberMethods}")
+
     val paramExprs = for{ 
       (field, v:ValDef, i) <- methodArgs.zipWithIndex.map((f, i) => (f, f.tree, i))
     } yield {
       val paramType = v.tpt.tpe
       val paramName = field.name
-      //println(s"${paramName}: ${paramType}")
+      // println(s"${paramName}: ${v.tpt.show} ${TypeRepr.of[Option[String]].show}")
       // TODO: Use StdMethodParameter when supportin Scala.js in Scala 3
       '{
         wvlet.airframe.surface.reflect.RuntimeMethodParameter(
