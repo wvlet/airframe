@@ -39,6 +39,28 @@ object SessionImpl {
 
     if(shouldGenerateTraitOf[A]) {
       import quotes.reflect._
+
+      class MyTraverser extends TreeTraverser {
+        override def traverseTree(tree: Tree)(owner: Symbol): Unit = {}
+      }
+
+      val buff = new StringBuilder
+      val traverser = new TreeTraverser {
+        override def traverseTree(tree: Tree)(owner: Symbol): Unit = tree match {
+          case tree: TypeBoundsTree =>
+            buff.append(tree.tpe.show(using Printer.TypeReprStructure))
+            buff.append("\n\n")
+            traverseTreeChildren(tree)(owner)
+          case tree: TypeTree =>
+            buff.append(tree.tpe.show(using Printer.TypeReprStructure))
+            buff.append("\n\n")
+            traverseTreeChildren(tree)(owner)
+          case _ =>
+            super.traverseTree(tree)(owner)
+        }
+      }
+
+
       val ds = TypeRepr.of[DISupport]
 
       // Create this expression:
@@ -51,11 +73,18 @@ object SessionImpl {
         case Inlined(tree, lst, Block(List(d @ DefDef(sym, tpdef, valdef, tpt, Some(term))), expr)) => 
           val interfaceType = TypeTree.of[A with DISupport]
           
-          //printTree(term)
+          traverser.traverseTree(term)(Symbol.spliceOwner)
+          println(buff.result)
 
           val newBlock: Term = term match {
             case Block(l, TypeApply(fun @ Select(Block(List(b1), b2 @ Typed(anonTerm, anonTT)), str), _)) =>
               printTree(b1)
+              b1 match {
+                case td : TypeDef =>
+                  println("-==========")
+                case _ =>
+                  println(s"---------- ${b1.getClass}")
+              }
 
               val sel = Select.copy(fun)(Block(List(b1), Typed(anonTerm, interfaceType)), str)
               Block(l, TypeApply(sel, List(TypeTree.of[A])))
