@@ -40,17 +40,35 @@ object SessionImpl {
     if(shouldGenerateTraitOf[A]) {
       import quotes.reflect._
       val ds = TypeRepr.of[DISupport]
-      val expr = '{ (s: Session) => new LogSupport with DISupport { def session = s } }
+
+      // Create this expression:
+      // '{
+      //   { (s: Session) => s.getOrElse[A](Surface.of[A], new A with DISupport { def session = s }.asInsatnceOf[A]) }
+      // }
+      val expr = '{ (s: Session) => new LogSupport with DISupport { def session = s }.asInstanceOf[LogSupport] }
+      //println(expr.asTerm)
       val newExpr: Term = expr.asTerm match {
-        case Inlined(tree, lst, Block(List(d @ DefDef(sym, tpdef, valdef, tpt, term)), expr)) => 
+        case Inlined(tree, lst, Block(List(d @ DefDef(sym, tpdef, valdef, tpt, Some(term))), expr)) => 
           val interfaceType = TypeTree.of[A with DISupport]
-          val newDef = DefDef.copy(d)(sym, tpdef, valdef, interfaceType, term)
+          
+          //printTree(term)
+
+          val newBlock: Term = term match {
+            case Block(l, TypeApply(fun @ Select(Block(List(b1), b2 @ Typed(anonTerm, anonTT)), str), _)) =>
+              printTree(b1)
+
+              val sel = Select.copy(fun)(Block(List(b1), Typed(anonTerm, interfaceType)), str)
+              Block(l, TypeApply(sel, List(TypeTree.of[A])))
+            case _ => null.asInstanceOf[Term]
+          }
+          //printTree(newBlock)
+          val newDef = DefDef.copy(d)(sym, tpdef, valdef, interfaceType, Some(newBlock))
           Inlined(tree, lst, Block(List(newDef), expr))
         case _ =>
           report.error("Unexpected error")
           '{0}.asTerm
       }
-      println(newExpr)
+      //println(newExpr)
       /*
       New(
         TypeTree[TypeRef(TermRef(ThisType(TypeRef(NoPrefix,module class java)),module lang),Object)]
@@ -58,17 +76,32 @@ object SessionImpl {
       */
       // TODO Create a new A with DISupport
       newExpr.asExprOf[Session => A]
-      // '{
-      //   { (s: Session) => s.getOrElse[A](Surface.of[A], 
-      //       new ${tr} with DISupport { def session = s  }.asInsatnceOf[A])
-      //   }
-      // }
     }
     else {
       '{
         { (s: Session) => s.get[A](Surface.of[A]) }
       }
     }
+  }
+
+  private def printTree(t: Any): Unit = {
+    val s = new StringBuilder()
+    var level = 0
+    for(c <- t.toString) {
+      c match {
+        case '(' => 
+          level += 1
+          s append s"(\n${"  " * level}"
+        case ')' =>
+          level -= 1
+          s append s"\n${"  " * level})"
+        case ',' =>
+          s append s",\n${"  " * level}"
+        case other =>
+          s += other
+      }
+    }
+    println(s.result())
   }
 
 }
