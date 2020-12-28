@@ -40,12 +40,15 @@ object SessionImpl {
     if(shouldGenerateTraitOf[A]) {
       import quotes.reflect._
 
-      class MyTraverser extends TreeTraverser {
-        override def traverseTree(tree: Tree)(owner: Symbol): Unit = {}
-      }
+      //val e0 = '{ trait T; new T {} }
+      //printTree(e0.asTerm)
 
       val interfaceType = TypeTree.of[A with DISupport]
       val tm = new TreeMap {
+        override def transformTree(tree: Tree)(owner: Symbol): Tree = {
+          println(s"Visit tree: ${tree.getClass}")
+          super.transformTree(tree)(owner)
+        }
         override def transformTerm(tree: Term)(owner: Symbol): Term = {
           println(s"Visit: ${tree.getClass}")
           tree match {
@@ -68,6 +71,8 @@ object SessionImpl {
             case tree if tree.getClass.getName == "dotty.tools.dotc.ast.Trees$TypeDef" =>
               val td = tree.asInstanceOf[TypeDef]
               println(s"=====${td}\n-->${td.rhs}\n${td.rhs.getClass}")
+              val tmpl = td.rhs.asInsatnceOf[Template]
+
               super.transformStatement(tree)(owner)
             case other =>
               super.transformStatement(tree)(owner)
@@ -95,7 +100,7 @@ object SessionImpl {
       // }
       val expr = '{ (s: Session) => new LogSupport { def session = s }.asInstanceOf[LogSupport] }
       val newTree = tm.transformTerm(expr.asTerm)(Symbol.spliceOwner)
-      printTree(newTree)
+      //printTree(newTree)
 
       //println(expr.asTerm)
       val newExpr: Term = expr.asTerm match {
