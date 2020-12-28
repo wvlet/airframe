@@ -44,48 +44,66 @@ object SessionImpl {
         override def traverseTree(tree: Tree)(owner: Symbol): Unit = {}
       }
 
-      val buff = new StringBuilder
-      val traverser = new TreeTraverser {
-        override def traverseTree(tree: Tree)(owner: Symbol): Unit = tree match {
-          case tree: TypeBoundsTree =>
-            buff.append(tree.tpe.show(using Printer.TypeReprStructure))
-            buff.append("\n\n")
-            traverseTreeChildren(tree)(owner)
-          case tree: TypeTree =>
-            buff.append(tree.tpe.show(using Printer.TypeReprStructure))
-            buff.append("\n\n")
-            traverseTreeChildren(tree)(owner)
-          case _ =>
-            super.traverseTree(tree)(owner)
+      val interfaceType = TypeTree.of[A with DISupport]
+      val tm = new TreeMap {
+        override def transformTerm(tree: Term)(owner: Symbol): Term = {
+          println(s"Visit: ${tree.getClass}")
+          tree match {
+            case Ident(name) => 
+              println(s"*** ${tree}")
+              tree
+            case tree: TypeApply =>
+              println(s"==*** ${tree}")
+              super.transformTerm(tree)(owner)
+            case _ =>
+              super.transformTerm(tree)(owner)
+          }
         }
+        override def transformStatement(tree: Statement)(owner: Symbol): Statement = {
+          println(s"Visit statement: ${tree.getClass}")
+          tree match {
+            case tree: DefDef =>
+              println(s"=> ${tree}")
+              super.transformStatement(tree)(owner)
+            case tree if tree.getClass.getName == "dotty.tools.dotc.ast.Trees$TypeDef" =>
+              val td = tree.asInstanceOf[TypeDef]
+              println(s"=====${td}\n-->${td.rhs}\n${td.rhs.getClass}")
+              super.transformStatement(tree)(owner)
+            case other =>
+              super.transformStatement(tree)(owner)
+          }
+        }
+        override def transformTypeTree(tree: TypeTree)(owner: Symbol): TypeTree = {
+          tree match
+            case i: TypeIdent if i.name == "LogSupport" => //=> if tree.tpe =:= TypeRepr.of[LogSupport] =>
+              println(s"===: ${t} ${i.name}")
+              TypeTree.of[A]
+            case tree: TypeTree if tree.tpe =:= TypeRepr.of[LogSupport] => 
+              println(s"-->: ${tree}, ${tree.getClass}")
+              interfaceType
+            case tree => 
+              println(s"---: ${tree}, ${tree.getClass}")
+              super.transformTypeTree(tree)(owner)
+          }
       }
-
-
+      
       val ds = TypeRepr.of[DISupport]
 
       // Create this expression:
       // '{
       //   { (s: Session) => s.getOrElse[A](Surface.of[A], new A with DISupport { def session = s }.asInsatnceOf[A]) }
       // }
-      val expr = '{ (s: Session) => new LogSupport with DISupport { def session = s }.asInstanceOf[LogSupport] }
+      val expr = '{ (s: Session) => new LogSupport { def session = s }.asInstanceOf[LogSupport] }
+      val newTree = tm.transformTerm(expr.asTerm)(Symbol.spliceOwner)
+      printTree(newTree)
+
       //println(expr.asTerm)
       val newExpr: Term = expr.asTerm match {
         case Inlined(tree, lst, Block(List(d @ DefDef(sym, tpdef, valdef, tpt, Some(term))), expr)) => 
-          val interfaceType = TypeTree.of[A with DISupport]
-          
-          traverser.traverseTree(term)(Symbol.spliceOwner)
-          println(buff.result)
 
+                    
           val newBlock: Term = term match {
             case Block(l, TypeApply(fun @ Select(Block(List(b1), b2 @ Typed(anonTerm, anonTT)), str), _)) =>
-              printTree(b1)
-              b1 match {
-                case td : TypeDef =>
-                  println("-==========")
-                case _ =>
-                  println(s"---------- ${b1.getClass}")
-              }
-
               val sel = Select.copy(fun)(Block(List(b1), Typed(anonTerm, interfaceType)), str)
               Block(l, TypeApply(sel, List(TypeTree.of[A])))
             case _ => null.asInstanceOf[Term]
@@ -104,7 +122,7 @@ object SessionImpl {
       ),<init>),List()), Ident(E), Ident(DISupport)),
       */
       // TODO Create a new A with DISupport
-      newExpr.asExprOf[Session => A]
+      newTree.asExprOf[Session => A]
     }
     else {
       '{
