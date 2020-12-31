@@ -6,6 +6,37 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.12.2
+
+### Scala 3 support (experimenal)
+
+airframe-log, airframe-surface are experimentally supporting Scala 3.0.0-M3. We are now working on Scala 3 support for Airframe DI. The progress can be tracked at [#1077](https://github.com/wvlet/airframe/issues/1077). We have found one blocking issue that needs a fix at Scala 3 side (#10931)[https://github.com/lampepfl/dotty/issues/10931]. After this issue is resolved, porting other Airframe modules, including AirSpec, to Scala 3 would not be so difficult for us.  
+
+-  airframe-log: Upgrade to Scala 3.0.0-M3 ([#1398](https://github.com/wvlet/airframe/issues/1398)) [[3b2c795](https://github.com/wvlet/airframe/commit/3b2c795)]
+-  airframe-surface: Surface.methodsOf[X] for Scala 3 ([#1403](https://github.com/wvlet/airframe/issues/1403)) [[f26d216](https://github.com/wvlet/airframe/commit/f26d216)]
+-  airframe-surface: Support Surface.of[X] for Scala 3 (Dotty) ([#1385](https://github.com/wvlet/airframe/issues/1385)) [[91ecac5](https://github.com/wvlet/airframe/commit/91ecac5)]
+-  airframe-di: Split Scala 2 and Scala 3 source folders ([#1405](https://github.com/wvlet/airframe/issues/1405)) [[02ae40e](https://github.com/wvlet/airframe/commit/02ae40e)]
+-  airframe-di: Add Scala3 impl base ([#1407](https://github.com/wvlet/airframe/issues/1407)) [[f37f807](https://github.com/wvlet/airframe/commit/f37f807)]
+-  Update sbt-dotty to 0.5.1 ([#1399](https://github.com/wvlet/airframe/issues/1399)) [[87dd372](https://github.com/wvlet/airframe/commit/87dd372)]
+
+Other updates:
+
+-  airframe-rpc: Update grpc-netty-shaded, grpc-protobuf, ... to 1.34.1 ([#1394](https://github.com/wvlet/airframe/issues/1394)) [[01615b9](https://github.com/wvlet/airframe/commit/01615b9)]
+-  airframe-http-finagle: Update finagle-core, finagle-http, ... to 20.12.0 ([#1389](https://github.com/wvlet/airframe/issues/1389)) [[e4108bd](https://github.com/wvlet/airframe/commit/e4108bd)]
+-  airframe-fluentd: Add fluency-treasuredata to the library dependency ([#1404](https://github.com/wvlet/airframe/issues/1404)) [[e5ee9ba](https://github.com/wvlet/airframe/commit/e5ee9ba)]
+-  airframe-jdbc: Update sqlite-jdbc to 3.34.0 ([#1390](https://github.com/wvlet/airframe/issues/1390)) [[2849c01](https://github.com/wvlet/airframe/commit/2849c01)]
+-  airframe-sql: Update presto-main to 350 ([#1414](https://github.com/wvlet/airframe/issues/1414)) [[d7e2973](https://github.com/wvlet/airframe/commit/d7e2973)]
+-  airspec: Update scalacheck to 1.15.2 ([#1397](https://github.com/wvlet/airframe/issues/1397)) [[8056d84](https://github.com/wvlet/airframe/commit/8056d84)]
+-  airframe-msgpack: Update msgpack-core to 0.8.22 ([#1401](https://github.com/wvlet/airframe/issues/1401)) [[0b4f744](https://github.com/wvlet/airframe/commit/0b4f744)]
+-  Update scala-collection-compat to 2.3.2 ([#1406](https://github.com/wvlet/airframe/issues/1406)) [[ec83785](https://github.com/wvlet/airframe/commit/ec83785)]
+-  internal: Upgrade setup-node to v2 ([#1411](https://github.com/wvlet/airframe/issues/1411)) [[fc9373f](https://github.com/wvlet/airframe/commit/fc9373f)]
+-  internal: Update coursier to 2.0.8 ([#1408](https://github.com/wvlet/airframe/issues/1408)) [[919c47b](https://github.com/wvlet/airframe/commit/919c47b)]
+-  internal: Update sbt, sbt-dependency-tree, ... to 1.4.6 ([#1409](https://github.com/wvlet/airframe/issues/1409)) [[6a575d3](https://github.com/wvlet/airframe/commit/6a575d3)]
+-  internal: Update sbt-mdoc to 2.2.14 ([#1396](https://github.com/wvlet/airframe/issues/1396)) [[9232d8a](https://github.com/wvlet/airframe/commit/9232d8a)]
+-  internal: Update sbt script for Apple Silicion ([#1395](https://github.com/wvlet/airframe/issues/1395)) [[63d3bae](https://github.com/wvlet/airframe/commit/63d3bae)]
+-  internal: Update jmh-core, jmh-generator-bytecode, ... to 1.27 ([#1388](https://github.com/wvlet/airframe/issues/1388)) [[4d65de2](https://github.com/wvlet/airframe/commit/4d65de2)]
+-  internal: Update swagger-parser to 2.0.24 ([#1382](https://github.com/wvlet/airframe/issues/1382)) [[b32368d](https://github.com/wvlet/airframe/commit/b32368d)]
+
 ## 20.12.1
 
 This version has added an experimental support for Dotty (Scala 3.0.0-M2) for airframe-log. 
