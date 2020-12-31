@@ -10,7 +10,7 @@ Airframe uses YY.MM.patch versioning scheme, so the version numbers match with t
 
 ### Scala 3 support (experimenal)
 
-airframe-log, airframe-surface are experimentally supporting Scala 3.0.0-M3. We are now working on Scala 3 support for Airframe DI. The progress can be tracked at [#1077](https://github.com/wvlet/airframe/issues/1077). We have found one blocking issue that needs a fix at Scala 3 side (#10931)[https://github.com/lampepfl/dotty/issues/10931]. After this issue is resolved, porting other Airframe modules, including AirSpec, to Scala 3 would not be so difficult for us.  
+airframe-log, airframe-surface are experimentally supporting Scala 3.0.0-M3. We are now working on Scala 3 support for Airframe DI. The progress can be tracked at [#1077](https://github.com/wvlet/airframe/issues/1077). We have found one blocking issue that needs a fix at Scala 3 side [#10931](https://github.com/lampepfl/dotty/issues/10931). After this issue is resolved, porting other Airframe modules, including AirSpec, to Scala 3 would not be so difficult for us.  
 
 -  airframe-log: Upgrade to Scala 3.0.0-M3 ([#1398](https://github.com/wvlet/airframe/issues/1398)) [[3b2c795](https://github.com/wvlet/airframe/commit/3b2c795)]
 -  airframe-surface: Surface.methodsOf[X] for Scala 3 ([#1403](https://github.com/wvlet/airframe/issues/1403)) [[f26d216](https://github.com/wvlet/airframe/commit/f26d216)]
