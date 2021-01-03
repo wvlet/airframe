@@ -80,7 +80,7 @@ val buildSettings = Seq[Setting[_]](
   ),
   // Exclude compile-time only projects. This is a workaround for bloop,
   // which cannot resolve Optional dependencies nor compile-internal dependencie.
-  pomPostProcess := excludePomDependency(Seq("airframe-di-macros", "airspec_2.12", "airspec_2.13")),
+  pomPostProcess := excludePomDependency(Seq("airspec_2.12", "airspec_2.13")),
   crossScalaVersions := targetScalaVersions,
   crossPaths := true,
   publishMavenStyle := true,
@@ -352,8 +352,6 @@ lazy val airframeMacros =
     .settings(
       name := "airframe-di-macros",
       description := "Macros for Airframe Di",
-      // As a workaround for build-pipelining failure at sbt 1.4.0-RC2
-      exportPipelining := false
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log, surface)
