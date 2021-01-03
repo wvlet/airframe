@@ -6,6 +6,11 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.1.0
+
+This release fixes a missing dependency issue in 20.12.2:
+-  [#1417](https://github.com/wvlet/airframe/issues/1417): Fixes a missing dependency to airframe-di-macros ([#1418](https://github.com/wvlet/airframe/issues/1418)) [[7025fb8](https://github.com/wvlet/airframe/commit/7025fb8)]
+
 ## 20.12.2
 
 ### Scala 3 support (experimenal)
