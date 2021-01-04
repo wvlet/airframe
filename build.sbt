@@ -54,11 +54,14 @@ ThisBuild / usePipelining := false
 
 // A build configuration switch for working on Dotty migration. This needs to be removed eventually
 val DOTTY = sys.env.isDefinedAt("DOTTY")
-// For debugging 
+// For debugging
 // val DOTTY = true
 
 // For using Scala 2.12 in sbt
-scalaVersion in ThisBuild := { if (DOTTY) SCALA_3_0 else SCALA_2_12 }
+scalaVersion in ThisBuild := {
+  if (DOTTY) SCALA_3_0
+  else SCALA_2_12
+}
 organization in ThisBuild := "org.wvlet.airframe"
 
 // Use dynamic snapshot version strings for non tagged versions
@@ -262,11 +265,15 @@ def parallelCollection(scalaVersion: String) = {
 }
 
 // https://stackoverflow.com/questions/41670018/how-to-prevent-sbt-to-include-test-dependencies-into-the-pom
+
 import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, _}
 import scala.xml.transform.{RewriteRule, RuleTransformer}
+
 def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   def isExcludeTarget(artifactId: String): Boolean = excludes.exists(artifactId.startsWith(_))
-  def artifactId(e: Elem): Option[String]          = e.child.find(_.label == "artifactId").map(_.text.trim())
+
+  def artifactId(e: Elem): Option[String] = e.child.find(_.label == "artifactId").map(_.text.trim())
+
   new RuleTransformer(new RewriteRule {
     override def transform(node: XmlNode): XmlNodeSeq =
       node match {
@@ -288,15 +295,15 @@ lazy val airframe =
     .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe",
-      description := "Dependency injection library tailored to Scala",
+      description := "Dependency injection library tailored to Scala"
     )
     .jvmSettings(
       // Workaround for https://github.com/scala/scala/pull/7624 in Scala 2.13, and also
       // testing shutdown hooks requires consistent application lifecycle between sbt and JVM https://github.com/sbt/sbt/issues/4794
-      fork in Test := scalaBinaryVersion.value == "2.13",
+      fork in Test := scalaBinaryVersion.value == "2.13"
     )
     .jsSettings(
-      jsBuildSettings,
+      jsBuildSettings
       // Copy macro classes into the main jar
     )
     .dependsOn(
@@ -307,7 +314,6 @@ lazy val airframe =
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS  = airframe.js
 
-
 def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: String = "main"): Seq[sbt.File] = {
   val scalaMajorVersion = scalaBinaryVersion.split("\\.").head
   for (suffix <- Seq("", s"-${scalaBinaryVersion}", s"-${scalaMajorVersion}")) yield {
@@ -315,9 +321,12 @@ def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: Stri
   }
 }
 
-def dottyCrossBuildSettings(prefix:String): Seq[Setting[_]] = {
+def dottyCrossBuildSettings(prefix: String): Seq[Setting[_]] = {
   Seq(
-    crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions },
+    crossScalaVersions := {
+      if (DOTTY) withDotty
+      else targetScalaVersions
+    },
     unmanagedSourceDirectories in Compile ++= crossBuildSources(
       scalaBinaryVersion.value,
       (baseDirectory.value.getParentFile / prefix).toString
@@ -332,14 +341,14 @@ def dottyCrossBuildSettings(prefix:String): Seq[Setting[_]] = {
     },
     libraryDependencies ++= {
       scalaBinaryVersion.value match {
-        case v if v.startsWith("3.") => 
+        case v if v.startsWith("3.") =>
           Seq.empty
         case _ =>
           Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value)
       }
     }
   )
-} 
+}
 
 // Airframe DI needs to call macro methods, so we needed to split the project into DI and DI macros.
 // This project sources and classes will be embedded to airframe.jar, so we don't publish airframe-di-macros
@@ -351,7 +360,7 @@ lazy val airframeMacros =
     .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe-di-macros",
-      description := "Macros for Airframe Di",
+      description := "Macros for Airframe Di"
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log, surface)
@@ -365,12 +374,12 @@ lazy val airframeMacrosJS  = airframeMacros.js
 
 val surfaceDependencies = { scalaVersion: String =>
   scalaVersion match {
-    case s if s.startsWith("3.") => 
+    case s if s.startsWith("3.") =>
       Seq(
         // For ading PreDestroy, PostConstruct annotations to Java9
-        "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION,
+        "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION
       )
-    case _                       => 
+    case _ =>
       Seq(
         // For ading PreDestroy, PostConstruct annotations to Java9
         "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION,
@@ -484,9 +493,15 @@ lazy val log: sbtcrossproject.CrossProject =
     .settings(
       name := "airframe-log",
       description := "Fancy logger for Scala",
-      scalacOptions ++= { if (isDotty.value) Seq("-source:3.0-migration") else Nil },
+      scalacOptions ++= {
+        if (isDotty.value) Seq("-source:3.0-migration")
+        else Nil
+      },
       libraryDependencies ++= logDependencies(scalaVersion.value),
-      crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions },
+      crossScalaVersions := {
+        if (DOTTY) withDotty
+        else targetScalaVersions
+      },
       unmanagedSourceDirectories in Compile ++= {
         scalaBinaryVersion.value match {
           case v if v.startsWith("2.") =>
@@ -761,9 +776,9 @@ lazy val benchmark =
         "io.grpc"             % "grpc-protobuf" % GRPC_VERSION,
         "com.google.protobuf" % "protobuf-java" % "3.14.0"
       )
-//      PB.targets in Compile := Seq(
-//        scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
-//      ),
+      //      PB.targets in Compile := Seq(
+      //        scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
+      //      ),
       // publishing .tgz
       // publishPackArchiveTgz
     )
@@ -791,8 +806,8 @@ def sqlRefLib = { scalaVersion: String =>
     Seq(
       // Include Spark just as a reference implementation
       "org.apache.spark" %% "spark-sql" % "3.0.1" % Test,
-      // Include Presto as a reference implementation
-      "io.prestosql" % "presto-main" % "350" % Test
+      // Include Trino as a reference implementation
+      "io.trino" % "trino-main" % "351" % Test
     )
   } else {
     Seq.empty
@@ -853,7 +868,7 @@ lazy val widget =
     .jsSettings(
       jsBuildSettings,
       jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
-//      npmDependencies in Test += "node" -> "12.14.1"
+      //      npmDependencies in Test += "node" -> "12.14.1"
     )
     .dependsOn(log, rxHtml)
 
@@ -924,7 +939,10 @@ lazy val dottyTest =
     .settings(
       name := "airframe-dotty-test",
       description := "test for dotty",
-      crossScalaVersions := { if (DOTTY) withDotty else targetScalaVersions }
+      crossScalaVersions := {
+        if (DOTTY) withDotty
+        else targetScalaVersions
+      }
     )
     .dependsOn(logJVM, surfaceJVM, airframeJVM)
 
