@@ -258,7 +258,7 @@ object GrpcClientGenerator extends HttpClientGenerator {
             m.inputParameters.map(x => s"${x.name}: ${x.surface.name}")
 
           val requestObject =
-            m.clientCallParameters.headOption.getOrElse("Map.empty")
+            m.clientCallParameters.headOption.getOrElse("Map.empty[String, Any]")
           val clientArgs = inputArgs :+ s"responseObserver: io.grpc.stub.StreamObserver[${m.grpcReturnType}]"
           val lines = m.grpcMethodType match {
             case GrpcMethodType.UNARY =>
