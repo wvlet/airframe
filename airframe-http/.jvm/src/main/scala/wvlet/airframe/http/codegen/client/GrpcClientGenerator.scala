@@ -13,22 +13,16 @@
  */
 package wvlet.airframe.http.codegen.client
 import wvlet.airframe.http.codegen.HttpClientIR
-import wvlet.airframe.http.codegen.HttpClientIR.{
-  ClientServiceDef,
-  GrpcMethodType
-}
-import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.{
-  header,
-  indent
-}
+import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, GrpcMethodType}
+import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.{header, indent}
 
 /**
   * Generate gRPC client stubs
   */
 object GrpcClientGenerator extends HttpClientGenerator {
 
-  override def name: String = "grpc"
-  override def defaultFileName: String = "ServiceGrpc.scala"
+  override def name: String             = "grpc"
+  override def defaultFileName: String  = "ServiceGrpc.scala"
   override def defaultClassName: String = "ServiceGrpc"
 
   override def generate(src: HttpClientIR.ClientSourceDef): String = {
@@ -86,9 +80,7 @@ object GrpcClientGenerator extends HttpClientGenerator {
           s"""val ${m.name}Descriptor: io.grpc.MethodDescriptor[MsgPack, Any] = {
              |  newDescriptorBuilder("${src.packageName}.${svc.serviceName}/${m.name}", ${m.grpcMethodType.code})
              |    .setResponseMarshaller(new RPCResponseMarshaller[Any](
-             |      codecFactory.of[${m.grpcReturnType.fullName.replaceAll(
-               "\\$",
-               ".")}].asInstanceOf[MessageCodec[Any]]
+             |      codecFactory.of[${m.grpcReturnType.fullName.replaceAll("\\$", ".")}].asInstanceOf[MessageCodec[Any]]
              |    )).build()
              |}""".stripMargin
         }
@@ -100,13 +92,13 @@ object GrpcClientGenerator extends HttpClientGenerator {
         .map { svc =>
           s"""object ${svc.serviceName}Models {
            |${indent(
-               svc.methods
-                 .filter { x =>
-                   x.requestModelClassDef.isDefined
-                 }
-                 .map(_.requestModelClassDef.get.code(isPrivate = false))
-                 .mkString("\n")
-             )}
+            svc.methods
+              .filter { x =>
+                x.requestModelClassDef.isDefined
+              }
+              .map(_.requestModelClassDef.get.code(isPrivate = false))
+              .mkString("\n")
+          )}
            |}""".stripMargin
         }
         .mkString("\n")
@@ -161,9 +153,8 @@ object GrpcClientGenerator extends HttpClientGenerator {
           val inputArgs =
             m.inputParameters.map(x => s"${x.name}: ${x.surface.name}")
 
-          val requestObject = m.clientCallParameters.headOption.getOrElse(
-            "Map.empty[String, Any]")
-          val lines = Seq.newBuilder[String]
+          val requestObject = m.clientCallParameters.headOption.getOrElse("Map.empty[String, Any]")
+          val lines         = Seq.newBuilder[String]
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType} = {"
           m.grpcMethodType match {
             case GrpcMethodType.UNARY =>
