@@ -43,7 +43,8 @@ object HttpClientIR extends LogSupport {
           case c: ClientClassDef   => c.services.flatMap(loop)
           case x: ClientServiceDef => x.methods.flatMap(loop)
           case m: ClientMethodDef =>
-            loop(m.returnType) ++ m.typeArgs.flatMap(loop) ++ m.inputParameters.flatMap(loop)
+            loop(m.returnType) ++ m.typeArgs.flatMap(loop) ++ m.inputParameters
+              .flatMap(loop)
           case _ =>
             Seq.empty
         }
@@ -51,7 +52,10 @@ object HttpClientIR extends LogSupport {
 
       def requireImports(surface: Surface): Boolean = {
         val importPackageName =
-          resolveObjectName(surface.rawType.getName).split("\\.").dropRight(1).mkString(".")
+          resolveObjectName(surface.rawType.getName)
+            .split("\\.")
+            .dropRight(1)
+            .mkString(".")
         // Primitive Scala collections can be found in scala.Predef. No need to include them
         !(importPackageName.isEmpty ||
           importPackageName == "java.lang" ||
@@ -71,7 +75,9 @@ object HttpClientIR extends LogSupport {
     }
 
     def importStatements: String = {
-      imports.map(x => s"import ${resolveObjectName(x.rawType.getName)}").mkString("\n")
+      imports
+        .map(x => s"import ${resolveObjectName(x.rawType.getName)}")
+        .mkString("\n")
     }
 
   }
@@ -82,7 +88,8 @@ object HttpClientIR extends LogSupport {
       s"${if (isPrivate) "private " else ""}case class ${name}(${parameter
         .map { p =>
           s"${p.name}: ${p.surface.name}"
-        }.mkString(", ")})"
+        }
+        .mkString(", ")})"
   }
   case class ClientMethodDef(
       httpMethod: String,
@@ -152,13 +159,16 @@ object HttpClientIR extends LogSupport {
       override def code: String = s"io.grpc.MethodDescriptor.MethodType.UNARY"
     }
     case object SERVER_STREAMING extends GrpcMethodType {
-      override def code: String = s"io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING"
+      override def code: String =
+        s"io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING"
     }
     case object CLIENT_STREAMING extends GrpcMethodType {
-      override def code: String = s"io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING"
+      override def code: String =
+        s"io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING"
     }
     case object BIDI_STREAMING extends GrpcMethodType {
-      override def code: String = s"io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING"
+      override def code: String =
+        s"io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING"
     }
   }
 
@@ -196,7 +206,8 @@ object HttpClientIR extends LogSupport {
 
       val typeArgBuilder = Seq.newBuilder[Surface]
 
-      def isPrimitive(s: Surface): Boolean = s.isPrimitive || (s.isOption && s.typeArgs.forall(_.isPrimitive))
+      def isPrimitive(s: Surface): Boolean =
+        s.isPrimitive || (s.isOption && s.typeArgs.forall(_.isPrimitive))
 
       val primitiveOnlyInputs =
         httpClientCallInputs.nonEmpty && httpClientCallInputs.forall(x => isPrimitive(x.surface))
@@ -207,7 +218,7 @@ object HttpClientIR extends LogSupport {
       if (httpClientCallInputs.isEmpty) {
         if (route.method == HttpMethod.POST) {
           // For RPC calls without any input, embed an empty json
-          clientCallParams += "Map.empty"
+          clientCallParams += "Map.empty[String, Any]"
           typeArgBuilder += Surface.of[Map[String, Any]]
         } else {
           // Do not add any parameters for empty requests
@@ -232,17 +243,18 @@ object HttpClientIR extends LogSupport {
         // the complex object at compile-time in Scala.js.
         val requestModelClassName = s"__${name}_request"
         // Create Parameter objects for the model class surface
-        val requestModelClassParamSurfaces: Seq[Parameter] = for ((p, i) <- httpClientCallInputs.zipWithIndex) yield {
-          new Parameter {
-            override def index: Int                   = p.index
-            override def name: String                 = p.name
-            override def surface: Surface             = p.surface
-            override def isRequired: Boolean          = p.isRequired
-            override def isSecret: Boolean            = p.isSecret
-            override def get(x: Any): Any             = p.get(x)
-            override def getDefaultValue: Option[Any] = p.getDefaultValue
+        val requestModelClassParamSurfaces: Seq[Parameter] =
+          for ((p, i) <- httpClientCallInputs.zipWithIndex) yield {
+            new Parameter {
+              override def index: Int                   = p.index
+              override def name: String                 = p.name
+              override def surface: Surface             = p.surface
+              override def isRequired: Boolean          = p.isRequired
+              override def isSecret: Boolean            = p.isSecret
+              override def get(x: Any): Any             = p.get(x)
+              override def getDefaultValue: Option[Any] = p.getDefaultValue
+            }
           }
-        }
 
         if (findGrpcClientStreamingArg(route.methodSurface.args).isEmpty) {
           requestModelClassDef = Some(ClientRequestModelClassDef(requestModelClassName, requestModelClassParamSurfaces))
@@ -251,7 +263,8 @@ object HttpClientIR extends LogSupport {
         clientCallParams += s"${requestModelClassName}(${requestModelClassParamSurfaces
           .map { p =>
             s"${p.name} = ${p.name}"
-          }.mkString(", ")})"
+          }
+          .mkString(", ")})"
 
         // Create a model class surface for defining http request object parameter
         val requestModelClassSurface =
