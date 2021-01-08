@@ -13,16 +13,22 @@
  */
 package wvlet.airframe.http.codegen.client
 import wvlet.airframe.http.codegen.HttpClientIR
-import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, GrpcMethodType}
-import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.{header, indent}
+import wvlet.airframe.http.codegen.HttpClientIR.{
+  ClientServiceDef,
+  GrpcMethodType
+}
+import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.{
+  header,
+  indent
+}
 
 /**
   * Generate gRPC client stubs
   */
 object GrpcClientGenerator extends HttpClientGenerator {
 
-  override def name: String             = "grpc"
-  override def defaultFileName: String  = "ServiceGrpc.scala"
+  override def name: String = "grpc"
+  override def defaultFileName: String = "ServiceGrpc.scala"
   override def defaultClassName: String = "ServiceGrpc"
 
   override def generate(src: HttpClientIR.ClientSourceDef): String = {
@@ -70,7 +76,8 @@ object GrpcClientGenerator extends HttpClientGenerator {
           s"""class ${svc.serviceName}Descriptors(codecFactory: MessageCodecFactory) {
              |${indent(methodDescriptors(svc))}
              |}""".stripMargin
-        }.mkString("\n")
+        }
+        .mkString("\n")
     }
 
     def methodDescriptors(svc: ClientServiceDef): String = {
@@ -79,10 +86,13 @@ object GrpcClientGenerator extends HttpClientGenerator {
           s"""val ${m.name}Descriptor: io.grpc.MethodDescriptor[MsgPack, Any] = {
              |  newDescriptorBuilder("${src.packageName}.${svc.serviceName}/${m.name}", ${m.grpcMethodType.code})
              |    .setResponseMarshaller(new RPCResponseMarshaller[Any](
-             |      codecFactory.of[${m.grpcReturnType.fullName.replaceAll("\\$", ".")}].asInstanceOf[MessageCodec[Any]]
+             |      codecFactory.of[${m.grpcReturnType.fullName.replaceAll(
+               "\\$",
+               ".")}].asInstanceOf[MessageCodec[Any]]
              |    )).build()
              |}""".stripMargin
-        }.mkString("\n")
+        }
+        .mkString("\n")
     }
 
     def modelClasses: String = {
@@ -90,15 +100,16 @@ object GrpcClientGenerator extends HttpClientGenerator {
         .map { svc =>
           s"""object ${svc.serviceName}Models {
            |${indent(
-            svc.methods
-              .filter { x =>
-                x.requestModelClassDef.isDefined
-              }
-              .map(_.requestModelClassDef.get.code(isPrivate = false))
-              .mkString("\n")
-          )}
+               svc.methods
+                 .filter { x =>
+                   x.requestModelClassDef.isDefined
+                 }
+                 .map(_.requestModelClassDef.get.code(isPrivate = false))
+                 .mkString("\n")
+             )}
            |}""".stripMargin
-        }.mkString("\n")
+        }
+        .mkString("\n")
     }
 
     def syncClientClass: String =
@@ -140,7 +151,8 @@ object GrpcClientGenerator extends HttpClientGenerator {
              |
              |${indent(syncClientBody(svc))}
              |}""".stripMargin
-        }.mkString("\n")
+        }
+        .mkString("\n")
     }
 
     def syncClientBody(svc: ClientServiceDef): String = {
@@ -149,8 +161,9 @@ object GrpcClientGenerator extends HttpClientGenerator {
           val inputArgs =
             m.inputParameters.map(x => s"${x.name}: ${x.surface.name}")
 
-          val requestObject = m.clientCallParameters.headOption.getOrElse("Map.empty")
-          val lines         = Seq.newBuilder[String]
+          val requestObject = m.clientCallParameters.headOption.getOrElse(
+            "Map.empty[String, Any]")
+          val lines = Seq.newBuilder[String]
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType} = {"
           m.grpcMethodType match {
             case GrpcMethodType.UNARY =>
@@ -199,7 +212,8 @@ object GrpcClientGenerator extends HttpClientGenerator {
           }
           lines += s"}"
           lines.result().mkString("\n")
-        }.mkString("\n")
+        }
+        .mkString("\n")
     }
 
     def asyncClientClass: String =
@@ -242,7 +256,8 @@ object GrpcClientGenerator extends HttpClientGenerator {
              |
              |${indent(asyncClientBody(svc))}
              |}""".stripMargin
-        }.mkString("\n")
+        }
+        .mkString("\n")
     }
 
     def asyncClientBody(svc: ClientServiceDef): String = {
@@ -251,8 +266,9 @@ object GrpcClientGenerator extends HttpClientGenerator {
           val inputArgs =
             m.inputParameters.map(x => s"${x.name}: ${x.surface.name}")
 
-          val requestObject = m.clientCallParameters.headOption.getOrElse("Map.empty")
-          val clientArgs    = inputArgs :+ s"responseObserver: io.grpc.stub.StreamObserver[${m.grpcReturnType}]"
+          val requestObject =
+            m.clientCallParameters.headOption.getOrElse("Map.empty")
+          val clientArgs = inputArgs :+ s"responseObserver: io.grpc.stub.StreamObserver[${m.grpcReturnType}]"
           val lines = m.grpcMethodType match {
             case GrpcMethodType.UNARY =>
               s"""def ${m.name}(${clientArgs.mkString(", ")}): Unit = {
@@ -306,7 +322,8 @@ object GrpcClientGenerator extends HttpClientGenerator {
                  |}""".stripMargin
           }
           lines
-        }.mkString("\n")
+        }
+        .mkString("\n")
     }
 
     code
