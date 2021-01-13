@@ -18,7 +18,7 @@ val JS_JAVA_TIME_VERSION            = "1.0.0"
 val SCALAJS_DOM_VERSION             = "1.1.0"
 val FINAGLE_VERSION                 = "20.12.0"
 val FLUENCY_VERSION                 = "2.5.0"
-val GRPC_VERSION                    = "1.34.1"
+val GRPC_VERSION                    = "1.35.0"
 val JMH_VERSION                     = "1.27"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 
