@@ -6,6 +6,16 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.1.1
+
+This is a minor bug fix release of airframe-grpc for Scala 2.13
+
+-  airframe-grpc: Update grpc-netty-shaded, grpc-protobuf, ... to 1.35.0 ([#1427](https://github.com/wvlet/airframe/issues/1427)) [[feed252](https://github.com/wvlet/airframe/commit/feed252)]
+-  sbt-airframe: Fix code gRPC client generator for Scala 2.13 ([#1426](https://github.com/wvlet/airframe/issues/1426)) [[f458180](https://github.com/wvlet/airframe/commit/f458180)]
+-  internal: Update antlr4, antlr4-runtime to 4.9.1 ([#1424](https://github.com/wvlet/airframe/issues/1424)) [[3a72a5a](https://github.com/wvlet/airframe/commit/3a72a5a)]
+-  internal: Update spark-sql to 3.1.0 ([#1423](https://github.com/wvlet/airframe/issues/1423)) [[a9bd431](https://github.com/wvlet/airframe/commit/a9bd431)]
+-  internal: airframe-sql: Migrate from Presto to Trino ([#1421](https://github.com/wvlet/airframe/issues/1421)) [[8d4f7d6](https://github.com/wvlet/airframe/commit/8d4f7d6)]
+
 ## 21.1.0
 
 This release fixes a missing dependency issue in 20.12.2:
