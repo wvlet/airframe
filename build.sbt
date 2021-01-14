@@ -29,7 +29,7 @@ addCommandAlias(
 )
 addCommandAlias(
   "publishJVMLocal",
-  s"; ++ ${SCALA_2_12}; projectJVM/publishLocal; sbtAirframe/publishLocal;"
+  s"; + projectJVM/publishLocal; ++ ${SCALA_2_12} sbtAirframe/publishLocal"
 )
 
 addCommandAlias(

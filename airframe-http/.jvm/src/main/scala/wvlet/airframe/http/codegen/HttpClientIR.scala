@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
+
 import java.util.Locale
 
 import wvlet.airframe.http.Router.unwrapFuture
@@ -19,7 +20,13 @@ import wvlet.airframe.http.{HttpMethod, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.rx.{Rx, RxStream}
-import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface}
+import wvlet.airframe.surface.{
+  GenericSurface,
+  HigherKindedTypeSurface,
+  MethodParameter,
+  Parameter,
+  Surface
+}
 import wvlet.log.LogSupport
 
 /**
@@ -31,7 +38,9 @@ object HttpClientIR extends LogSupport {
 
   // Intermediate representation (IR) of HTTP client code
   sealed trait ClientCodeIR
-  case class ClientSourceDef(packageName: String, classDef: ClientClassDef) extends ClientCodeIR {
+
+  case class ClientSourceDef(packageName: String, classDef: ClientClassDef)
+      extends ClientCodeIR {
     private def imports: Seq[Surface] = {
       // Collect all Surfaces used in the generated code
       def loop(s: Any): Seq[Surface] = {
@@ -60,6 +69,7 @@ object HttpClientIR extends LogSupport {
         !(importPackageName.isEmpty ||
           importPackageName == "java.lang" ||
           importPackageName == "scala.collection" ||
+          importPackageName == "scala.collection.immutable" ||
           importPackageName == "wvlet.airframe.http" ||
           surface.isOption ||
           surface.isPrimitive ||
@@ -81,16 +91,59 @@ object HttpClientIR extends LogSupport {
     }
 
   }
-  case class ClientClassDef(clsName: String, services: Seq[ClientServiceDef])     extends ClientCodeIR
-  case class ClientServiceDef(serviceName: String, methods: Seq[ClientMethodDef]) extends ClientCodeIR
-  case class ClientRequestModelClassDef(name: String, parameter: Seq[Parameter]) {
+
+  case class ClientServicePackages(
+      packageLeafName: String,
+      services: Seq[ClientServiceDef],
+      children: Seq[ClientServicePackages]
+  ) {
+    def withChildren(
+        newChildren: Seq[ClientServicePackages]): ClientServicePackages =
+      ClientServicePackages(packageLeafName, services, newChildren)
+  }
+
+  case class ClientClassDef(clsName: String, services: Seq[ClientServiceDef])
+      extends ClientCodeIR {
+    def toNestedPackages: ClientServicePackages = {
+
+      def iter(
+          packagePrefix: String,
+          lst: Seq[(List[String], ClientServiceDef)]
+      ): ClientServicePackages = {
+        val (leafServices, remaining) = lst.partition(_._1.isEmpty)
+        val node = ClientServicePackages(packagePrefix,
+                                         leafServices.map(_._2),
+                                         Seq.empty)
+        val children = for ((prefix, lst) <- remaining.groupBy(_._1.head))
+          yield {
+            iter(prefix, lst.map(x => (x._1.tail, x._2)))
+          }
+        node.withChildren(children.toSeq)
+      }
+
+      iter("", services.map(x => (x.packages, x)))
+    }
+  }
+
+  case class ClientServiceDef(packagePrefix: Option[String],
+                              serviceName: String,
+                              methods: Seq[ClientMethodDef])
+      extends ClientCodeIR {
+    def packages: List[String] =
+      packagePrefix.map(_.split("\\.").toList).getOrElse(List.empty)
+  }
+
+  case class ClientRequestModelClassDef(name: String,
+                                        parameter: Seq[Parameter]) {
     def code(isPrivate: Boolean = true) =
-      s"${if (isPrivate) "private " else ""}case class ${name}(${parameter
+      s"${if (isPrivate) "private "
+      else ""}case class ${name}(${parameter
         .map { p =>
           s"${p.name}: ${p.surface.name}"
         }
         .mkString(", ")})"
   }
+
   case class ClientMethodDef(
       httpMethod: String,
       isOpsRequest: Boolean,
@@ -106,7 +159,8 @@ object HttpClientIR extends LogSupport {
     def typeArgString = typeArgs.map(_.name).mkString(", ")
     def clientMethodName = {
       val methodName = httpMethod.toString.toLowerCase(Locale.ENGLISH)
-      if (isOpsRequest) s"${methodName}Ops" else methodName
+      if (isOpsRequest) s"${methodName}Ops"
+      else methodName
     }
     def requestModelClassType: String = {
       requestModelClassDef match {
@@ -147,29 +201,37 @@ object HttpClientIR extends LogSupport {
     }
   }
 
-  private def findGrpcClientStreamingArg(inputParameters: Seq[MethodParameter]): Option[MethodParameter] = {
-    inputParameters.find(x => classOf[Rx[_]].isAssignableFrom(x.surface.rawType))
+  private def findGrpcClientStreamingArg(
+      inputParameters: Seq[MethodParameter]): Option[MethodParameter] = {
+    inputParameters.find(x =>
+      classOf[Rx[_]].isAssignableFrom(x.surface.rawType))
   }
 
   sealed trait GrpcMethodType {
     def code: String
   }
+
   object GrpcMethodType {
+
     case object UNARY extends GrpcMethodType {
       override def code: String = s"io.grpc.MethodDescriptor.MethodType.UNARY"
     }
+
     case object SERVER_STREAMING extends GrpcMethodType {
       override def code: String =
         s"io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING"
     }
+
     case object CLIENT_STREAMING extends GrpcMethodType {
       override def code: String =
         s"io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING"
     }
+
     case object BIDI_STREAMING extends GrpcMethodType {
       override def code: String =
         s"io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING"
     }
+
   }
 
   private case class PathVariableParam(name: String, param: MethodParameter)
@@ -177,11 +239,13 @@ object HttpClientIR extends LogSupport {
   /**
     * Building an intermediate representation of the client code
     */
-  def buildIR(router: Router, config: HttpClientGeneratorConfig): ClientSourceDef = {
+  def buildIR(router: Router,
+              config: HttpClientGeneratorConfig): ClientSourceDef = {
 
     // Build service clients for controllers
     def buildClassDef: ClientClassDef = {
-      val services = for ((controllerSurface, routes) <- router.routes.groupBy(_.controllerSurface)) yield {
+      val services = for ((controllerSurface, routes) <- router.routes.groupBy(
+                            _.controllerSurface)) yield {
         buildService(controllerSurface, routes)
       }
 
@@ -191,10 +255,20 @@ object HttpClientIR extends LogSupport {
       )
     }
 
-    def buildService(controllerSurface: Surface, routes: Seq[Route]): ClientServiceDef = {
+    def buildService(controllerSurface: Surface,
+                     routes: Seq[Route]): ClientServiceDef = {
       // Use a API class name as is for the accessor objects
       val controllerName = controllerSurface.name
-      ClientServiceDef(serviceName = controllerName, routes.map(buildClientCall))
+      val packagePrefix = controllerSurface.rawType.getPackageName
+        .stripPrefix(s"${config.apiPackageName}.")
+
+      ClientServiceDef(
+        packagePrefix =
+          if (packagePrefix.isEmpty) None
+          else Some(packagePrefix),
+        serviceName = controllerName,
+        routes.map(buildClientCall)
+      )
     }
 
     // Create a method definition for each endpoint (Route)
@@ -202,7 +276,7 @@ object HttpClientIR extends LogSupport {
       val analysis: RouteAnalysisResult = RouteAnalyzer.analyzeRoute(route)
 
       val httpClientCallInputs = analysis.httpClientCallInputs
-      val name                 = route.methodSurface.name
+      val name = route.methodSurface.name
 
       val typeArgBuilder = Seq.newBuilder[Surface]
 
@@ -210,9 +284,10 @@ object HttpClientIR extends LogSupport {
         s.isPrimitive || (s.isOption && s.typeArgs.forall(_.isPrimitive))
 
       val primitiveOnlyInputs =
-        httpClientCallInputs.nonEmpty && httpClientCallInputs.forall(x => isPrimitive(x.surface))
+        httpClientCallInputs.nonEmpty && httpClientCallInputs.forall(x =>
+          isPrimitive(x.surface))
 
-      val clientCallParams                                         = Seq.newBuilder[String]
+      val clientCallParams = Seq.newBuilder[String]
       var requestModelClassDef: Option[ClientRequestModelClassDef] = None
 
       if (httpClientCallInputs.isEmpty) {
@@ -246,18 +321,20 @@ object HttpClientIR extends LogSupport {
         val requestModelClassParamSurfaces: Seq[Parameter] =
           for ((p, i) <- httpClientCallInputs.zipWithIndex) yield {
             new Parameter {
-              override def index: Int                   = p.index
-              override def name: String                 = p.name
-              override def surface: Surface             = p.surface
-              override def isRequired: Boolean          = p.isRequired
-              override def isSecret: Boolean            = p.isSecret
-              override def get(x: Any): Any             = p.get(x)
+              override def index: Int = p.index
+              override def name: String = p.name
+              override def surface: Surface = p.surface
+              override def isRequired: Boolean = p.isRequired
+              override def isSecret: Boolean = p.isSecret
+              override def get(x: Any): Any = p.get(x)
               override def getDefaultValue: Option[Any] = p.getDefaultValue
             }
           }
 
         if (findGrpcClientStreamingArg(route.methodSurface.args).isEmpty) {
-          requestModelClassDef = Some(ClientRequestModelClassDef(requestModelClassName, requestModelClassParamSurfaces))
+          requestModelClassDef = Some(
+            ClientRequestModelClassDef(requestModelClassName,
+                                       requestModelClassParamSurfaces))
         }
 
         clientCallParams += s"${requestModelClassName}(${requestModelClassParamSurfaces
@@ -269,14 +346,14 @@ object HttpClientIR extends LogSupport {
         // Create a model class surface for defining http request object parameter
         val requestModelClassSurface =
           new Surface {
-            override def rawType: Class[_]      = classOf[Any]
+            override def rawType: Class[_] = classOf[Any]
             override def typeArgs: Seq[Surface] = Seq.empty
             override def params: Seq[Parameter] = requestModelClassParamSurfaces
-            override def name: String           = requestModelClassName
-            override def fullName: String       = ???
-            override def isOption: Boolean      = false
-            override def isAlias: Boolean       = false
-            override def isPrimitive: Boolean   = false
+            override def name: String = requestModelClassName
+            override def fullName: String = ???
+            override def isOption: Boolean = false
+            override def isAlias: Boolean = false
+            override def isPrimitive: Boolean = false
           }
         typeArgBuilder += requestModelClassSurface
       }

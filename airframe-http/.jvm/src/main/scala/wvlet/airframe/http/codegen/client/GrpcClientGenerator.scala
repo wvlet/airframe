@@ -12,17 +12,26 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen.client
+
 import wvlet.airframe.http.codegen.HttpClientIR
-import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, GrpcMethodType}
-import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.{header, indent}
+import wvlet.airframe.http.codegen.HttpClientIR.{
+  ClientServiceDef,
+  ClientServicePackages,
+  GrpcMethodType
+}
+import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.{
+  header,
+  indent
+}
+import wvlet.log.LogSupport
 
 /**
   * Generate gRPC client stubs
   */
-object GrpcClientGenerator extends HttpClientGenerator {
+object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
 
-  override def name: String             = "grpc"
-  override def defaultFileName: String  = "ServiceGrpc.scala"
+  override def name: String = "grpc"
+  override def defaultFileName: String = "ServiceGrpc.scala"
   override def defaultClassName: String = "ServiceGrpc"
 
   override def generate(src: HttpClientIR.ClientSourceDef): String = {
@@ -43,9 +52,7 @@ object GrpcClientGenerator extends HttpClientGenerator {
          |
          |${indent(descriptorBuilder)}
          |
-         |${indent(descriptorBody)}
-         |
-         |${indent(modelClasses)}
+         |${indent(descriptorModules)}
          |
          |${indent(syncClientClass)}
          |
@@ -64,85 +71,101 @@ object GrpcClientGenerator extends HttpClientGenerator {
          |}""".stripMargin
     }
 
-    def descriptorBody: String = {
-      src.classDef.services
-        .map { svc =>
-          s"""class ${svc.serviceName}Descriptors(codecFactory: MessageCodecFactory) {
-             |${indent(methodDescriptors(svc))}
-             |}""".stripMargin
-        }
-        .mkString("\n")
-    }
-
-    def methodDescriptors(svc: ClientServiceDef): String = {
-      svc.methods
-        .map { m =>
-          s"""val ${m.name}Descriptor: io.grpc.MethodDescriptor[MsgPack, Any] = {
-             |  newDescriptorBuilder("${src.packageName}.${svc.serviceName}/${m.name}", ${m.grpcMethodType.code})
-             |    .setResponseMarshaller(new RPCResponseMarshaller[Any](
-             |      codecFactory.of[${m.grpcReturnType.fullName.replaceAll("\\$", ".")}].asInstanceOf[MessageCodec[Any]]
-             |    )).build()
-             |}""".stripMargin
-        }
-        .mkString("\n")
-    }
-
-    def modelClasses: String = {
-      src.classDef.services
-        .map { svc =>
-          s"""object ${svc.serviceName}Models {
-           |${indent(
-            svc.methods
-              .filter { x =>
-                x.requestModelClassDef.isDefined
-              }
-              .map(_.requestModelClassDef.get.code(isPrivate = false))
-              .mkString("\n")
-          )}
+    def descriptorModules: String = {
+      def descriptorBody(svc: ClientServiceDef): String = {
+        s"""class ${svc.serviceName}Descriptors(codecFactory: MessageCodecFactory) {
+           |${indent(methodDescriptors(svc))}
            |}""".stripMargin
+      }
+
+      def methodDescriptors(svc: ClientServiceDef): String = {
+        svc.methods
+          .map { m =>
+            s"""val ${m.name}Descriptor: io.grpc.MethodDescriptor[MsgPack, Any] = {
+               |  newDescriptorBuilder("${src.packageName}.${svc.serviceName}/${m.name}", ${m.grpcMethodType.code})
+               |    .setResponseMarshaller(new RPCResponseMarshaller[Any](
+               |      codecFactory.of[${m.grpcReturnType.fullName
+                 .replaceAll("\\$", ".")}].asInstanceOf[MessageCodec[Any]]
+               |    )).build()
+               |}""".stripMargin
+          }
+          .mkString("\n")
+      }
+
+      def modelClasses(svc: ClientServiceDef): String = {
+        s"""object ${svc.serviceName}Models {
+           |${indent(
+             svc.methods
+               .filter { x =>
+                 x.requestModelClassDef.isDefined
+               }
+               .map(_.requestModelClassDef.get.code(isPrivate = false))
+               .mkString("\n")
+           )}
+           |}""".stripMargin
+      }
+
+      def traverse(current: ClientServicePackages): String = {
+        val serviceBody = current.services.map(descriptorBody(_)).mkString("\n")
+        val modelClassesBody =
+          current.services.map(modelClasses(_)).mkString("\n")
+        val body =
+          s"""${serviceBody}
+             |${modelClassesBody}
+             |${current.children
+               .map(traverse(_))
+               .mkString("\n")}""".stripMargin.trim
+        if (current.packageLeafName.isEmpty) {
+          body
+        } else {
+          s"""object ${current.packageLeafName} {
+             |${indent(body)}
+             |}""".stripMargin
         }
-        .mkString("\n")
+      }
+
+      traverse(src.classDef.toNestedPackages)
     }
 
     def syncClientClass: String =
       s"""def newSyncClient(
-         |  channel: io.grpc.Channel,
-         |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
-         |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
-         |): SyncClient = new SyncClient(channel, callOptions, codecFactory)
-         |
-         |class SyncClient(
-         |  val channel: io.grpc.Channel,
-         |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
-         |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
-         |) extends io.grpc.stub.AbstractBlockingStub[SyncClient](channel, callOptions) with java.lang.AutoCloseable {
-         |
-         |  override protected def build(channel: io.grpc.Channel, callOptions: io.grpc.CallOptions): SyncClient = {
-         |    new SyncClient(channel, callOptions, codecFactory)
-         |  }
-         |
-         |  override def close(): Unit = {
-         |    channel match {
-         |      case m: io.grpc.ManagedChannel => m.shutdownNow()
-         |      case _ =>
-         |    }
-         |  }
-         |
-         |${indent(syncClientStub)}
-         |}
-         |""".stripMargin
+       |  channel: io.grpc.Channel,
+       |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
+       |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
+       |): SyncClient = new SyncClient(channel, callOptions, codecFactory)
+       |
+       |class SyncClient(
+       |  val channel: io.grpc.Channel,
+       |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
+       |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
+       |) extends io.grpc.stub.AbstractBlockingStub[SyncClient](channel, callOptions) with java.lang.AutoCloseable {
+       |
+       |  override protected def build(channel: io.grpc.Channel, callOptions: io.grpc.CallOptions): SyncClient = {
+       |    new SyncClient(channel, callOptions, codecFactory)
+       |  }
+       |
+       |  override def close(): Unit = {
+       |    channel match {
+       |      case m: io.grpc.ManagedChannel => m.shutdownNow()
+       |      case _ =>
+       |    }
+       |  }
+       |
+       |${indent(syncClientStub)}
+       |}
+       |""".stripMargin
 
     def syncClientStub: String = {
       src.classDef.services
         .map { svc =>
           s"""object ${svc.serviceName} {
-             |  private val descriptors = new ${svc.serviceName}Descriptors(codecFactory)
-             |
-             |  import io.grpc.stub.ClientCalls
-             |  import ${svc.serviceName}Models._
-             |
-             |${indent(syncClientBody(svc))}
-             |}""".stripMargin
+           |  private val descriptors = new ${svc.serviceName}Descriptors(codecFactory)
+           |
+           |  import io.grpc.stub.ClientCalls
+           |  import ${svc.serviceName}Models._
+           |
+           |${indent(syncClientBody(svc))}
+           |}""".stripMargin
         }
         .mkString("\n")
     }
@@ -153,8 +176,9 @@ object GrpcClientGenerator extends HttpClientGenerator {
           val inputArgs =
             m.inputParameters.map(x => s"${x.name}: ${x.surface.name}")
 
-          val requestObject = m.clientCallParameters.headOption.getOrElse("Map.empty[String, Any]")
-          val lines         = Seq.newBuilder[String]
+          val requestObject = m.clientCallParameters.headOption.getOrElse(
+            "Map.empty[String, Any]")
+          val lines = Seq.newBuilder[String]
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType} = {"
           m.grpcMethodType match {
             case GrpcMethodType.UNARY =>
@@ -209,44 +233,44 @@ object GrpcClientGenerator extends HttpClientGenerator {
 
     def asyncClientClass: String =
       s"""def newAsyncClient(
-         |  channel: io.grpc.Channel,
-         |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
-         |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
-         |): AsyncClient = new AsyncClient(channel, callOptions, codecFactory)
-         |
-         |class AsyncClient(
-         |  val channel: io.grpc.Channel,
-         |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
-         |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
-         |) extends io.grpc.stub.AbstractAsyncStub[AsyncClient](channel, callOptions) with java.lang.AutoCloseable {
-         |
-         |  override protected def build(channel: io.grpc.Channel, callOptions: io.grpc.CallOptions): AsyncClient = {
-         |    new AsyncClient(channel, callOptions, codecFactory)
-         |  }
-         |
-         |  override def close(): Unit = {
-         |    channel match {
-         |      case m: io.grpc.ManagedChannel => m.shutdownNow()
-         |      case _ =>
-         |    }
-         |  }
-         |
-         |${indent(asyncClientStub)}
-         |}
-         |
-         |""".stripMargin
+       |  channel: io.grpc.Channel,
+       |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
+       |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
+       |): AsyncClient = new AsyncClient(channel, callOptions, codecFactory)
+       |
+       |class AsyncClient(
+       |  val channel: io.grpc.Channel,
+       |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
+       |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
+       |) extends io.grpc.stub.AbstractAsyncStub[AsyncClient](channel, callOptions) with java.lang.AutoCloseable {
+       |
+       |  override protected def build(channel: io.grpc.Channel, callOptions: io.grpc.CallOptions): AsyncClient = {
+       |    new AsyncClient(channel, callOptions, codecFactory)
+       |  }
+       |
+       |  override def close(): Unit = {
+       |    channel match {
+       |      case m: io.grpc.ManagedChannel => m.shutdownNow()
+       |      case _ =>
+       |    }
+       |  }
+       |
+       |${indent(asyncClientStub)}
+       |}
+       |
+       |""".stripMargin
 
     def asyncClientStub: String = {
       src.classDef.services
         .map { svc =>
           s"""object ${svc.serviceName} {
-             |  private val descriptors = new ${svc.serviceName}Descriptors(codecFactory)
-             |
-             |  import io.grpc.stub.ClientCalls
-             |  import ${svc.serviceName}Models._
-             |
-             |${indent(asyncClientBody(svc))}
-             |}""".stripMargin
+           |  private val descriptors = new ${svc.serviceName}Descriptors(codecFactory)
+           |
+           |  import io.grpc.stub.ClientCalls
+           |  import ${svc.serviceName}Models._
+           |
+           |${indent(asyncClientBody(svc))}
+           |}""".stripMargin
         }
         .mkString("\n")
     }
@@ -258,59 +282,60 @@ object GrpcClientGenerator extends HttpClientGenerator {
             m.inputParameters.map(x => s"${x.name}: ${x.surface.name}")
 
           val requestObject =
-            m.clientCallParameters.headOption.getOrElse("Map.empty[String, Any]")
+            m.clientCallParameters.headOption.getOrElse(
+              "Map.empty[String, Any]")
           val clientArgs = inputArgs :+ s"responseObserver: io.grpc.stub.StreamObserver[${m.grpcReturnType}]"
           val lines = m.grpcMethodType match {
             case GrpcMethodType.UNARY =>
               s"""def ${m.name}(${clientArgs.mkString(", ")}): Unit = {
-                 |  val __m = ${requestObject}
-                 |  val codec = codecFactory.of[${m.requestModelClassType}]
-                 |  ClientCalls
-                 |    .asyncUnaryCall[MsgPack, Any](
-                 |       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),
-                 |       codec.toMsgPack(__m),
-                 |       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]
-                 |    )
-                 |}""".stripMargin
+               |  val __m = ${requestObject}
+               |  val codec = codecFactory.of[${m.requestModelClassType}]
+               |  ClientCalls
+               |    .asyncUnaryCall[MsgPack, Any](
+               |       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),
+               |       codec.toMsgPack(__m),
+               |       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]
+               |    )
+               |}""".stripMargin
             case GrpcMethodType.SERVER_STREAMING =>
               s"""def ${m.name}(${clientArgs.mkString(", ")}): Unit = {
-                 |  val __m = ${requestObject}
-                 |  val codec = codecFactory.of[${m.requestModelClassType}]
-                 |  ClientCalls
-                 |    .asyncServerStreamingCall[MsgPack, Any](
-                 |       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),
-                 |       codec.toMsgPack(__m),
-                 |       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]
-                 |    )
-                 |}""".stripMargin
+               |  val __m = ${requestObject}
+               |  val codec = codecFactory.of[${m.requestModelClassType}]
+               |  ClientCalls
+               |    .asyncServerStreamingCall[MsgPack, Any](
+               |       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),
+               |       codec.toMsgPack(__m),
+               |       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]
+               |    )
+               |}""".stripMargin
             case GrpcMethodType.CLIENT_STREAMING =>
               s"""def ${m.name}(responseObserver: io.grpc.stub.StreamObserver[${m.grpcReturnType}])
-                 |  : io.grpc.stub.StreamObserver[${m.grpcClientStreamingRequestType}] = {
-                 |  val codec = codecFactory.of[${m.grpcClientStreamingRequestType}]
-                 |  val requestObserver = ClientCalls
-                 |    .asyncClientStreamingCall[MsgPack, Any](
-                 |       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),
-                 |       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]
-                 |    )
-                 |  wvlet.airframe.http.grpc.GrpcClientCalls.translate[MsgPack, ${m.grpcClientStreamingRequestType}](
-                 |    requestObserver,
-                 |    codec.toMsgPack(_)
-                 |  )
-                 |}""".stripMargin
+               |  : io.grpc.stub.StreamObserver[${m.grpcClientStreamingRequestType}] = {
+               |  val codec = codecFactory.of[${m.grpcClientStreamingRequestType}]
+               |  val requestObserver = ClientCalls
+               |    .asyncClientStreamingCall[MsgPack, Any](
+               |       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),
+               |       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]
+               |    )
+               |  wvlet.airframe.http.grpc.GrpcClientCalls.translate[MsgPack, ${m.grpcClientStreamingRequestType}](
+               |    requestObserver,
+               |    codec.toMsgPack(_)
+               |  )
+               |}""".stripMargin
             case GrpcMethodType.BIDI_STREAMING =>
               s"""def ${m.name}(responseObserver: io.grpc.stub.StreamObserver[${m.grpcReturnType}])
-                 |  : io.grpc.stub.StreamObserver[${m.grpcClientStreamingRequestType}] = {
-                 |  val codec = codecFactory.of[${m.grpcClientStreamingRequestType}]
-                 |  val requestObserver = ClientCalls
-                 |    .asyncBidiStreamingCall[MsgPack, Any](
-                 |       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),
-                 |       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]
-                 |    )
-                 |  wvlet.airframe.http.grpc.GrpcClientCalls.translate[MsgPack, ${m.grpcClientStreamingRequestType}](
-                 |    requestObserver,
-                 |    codec.toMsgPack(_)
-                 |  )
-                 |}""".stripMargin
+               |  : io.grpc.stub.StreamObserver[${m.grpcClientStreamingRequestType}] = {
+               |  val codec = codecFactory.of[${m.grpcClientStreamingRequestType}]
+               |  val requestObserver = ClientCalls
+               |    .asyncBidiStreamingCall[MsgPack, Any](
+               |       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),
+               |       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]
+               |    )
+               |  wvlet.airframe.http.grpc.GrpcClientCalls.translate[MsgPack, ${m.grpcClientStreamingRequestType}](
+               |    requestObserver,
+               |    codec.toMsgPack(_)
+               |  )
+               |}""".stripMargin
           }
           lines
         }
@@ -319,4 +344,5 @@ object GrpcClientGenerator extends HttpClientGenerator {
 
     code
   }
+
 }

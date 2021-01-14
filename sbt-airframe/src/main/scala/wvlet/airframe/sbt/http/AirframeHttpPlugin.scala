@@ -45,7 +45,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   import autoImport._
 
   override def requires: Plugins = sbt.plugins.JvmPlugin
-  override def trigger           = noTrigger
+  override def trigger = noTrigger
 
   override def projectSettings = httpProjectSettings
 
@@ -53,27 +53,38 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     val airframeHttpClients = settingKey[Seq[String]](
       "HTTP client generator targets, <api package name>(:<client type>(:<target package name>)?)?"
     )
-    val airframeHttpWorkDir         = settingKey[File]("working directory for airframe-http")
-    val airframeHttpGenerateClient  = taskKey[Seq[File]]("Generate the client code")
-    val airframeHttpGeneratorOption = settingKey[String]("airframe-http client-generator options")
-    val airframeHttpClean           = taskKey[Unit]("clean artifacts")
-    val airframeHttpClasspass       = taskKey[Seq[String]]("class loader for dependent classes")
-    val airframeHttpBinaryDir       = taskKey[File]("Download Airframe HTTP binary to this location")
-    val airframeHttpVersion         = settingKey[String]("airframe-http version to use")
-    val airframeHttpReload          = taskKey[Seq[File]]("refresh generated clients")
-    val airframeHttpOpts            = settingKey[String]("additional option for airframe-http commands")
+    val airframeHttpWorkDir =
+      settingKey[File]("working directory for airframe-http")
+    val airframeHttpGenerateClient =
+      taskKey[Seq[File]]("Generate the client code")
+    val airframeHttpGeneratorOption =
+      settingKey[String]("airframe-http client-generator options")
+    val airframeHttpClean = taskKey[Unit]("clean artifacts")
+    val airframeHttpClasspass =
+      taskKey[Seq[String]]("class loader for dependent classes")
+    val airframeHttpBinaryDir =
+      taskKey[File]("Download Airframe HTTP binary to this location")
+    val airframeHttpVersion = settingKey[String]("airframe-http version to use")
+    val airframeHttpReload = taskKey[Seq[File]]("refresh generated clients")
+    val airframeHttpOpts =
+      settingKey[String]("additional option for airframe-http commands")
 
     // Keys for OpenAPI spec generator
-    val airframeHttpOpenAPIConfig    = settingKey[OpenAPIConfig]("OpenAPI spec generator configuration")
-    val airframeHttpOpenAPIPackages  = settingKey[Seq[String]]("OpenAPI target API package names")
-    val airframeHttpOpenAPITargetDir = settingKey[File]("OpenAPI spec file target folder")
-    val airframeHttpOpenAPIGenerate  = taskKey[Seq[File]]("Generate OpenAPI spec from RPC definition")
+    val airframeHttpOpenAPIConfig =
+      settingKey[OpenAPIConfig]("OpenAPI spec generator configuration")
+    val airframeHttpOpenAPIPackages =
+      settingKey[Seq[String]]("OpenAPI target API package names")
+    val airframeHttpOpenAPITargetDir =
+      settingKey[File]("OpenAPI spec file target folder")
+    val airframeHttpOpenAPIGenerate =
+      taskKey[Seq[File]]("Generate OpenAPI spec from RPC definition")
   }
 
   private def dependentProjects: ScopeFilter =
-    ScopeFilter(inDependencies(ThisProject, transitive = true, includeRoot = false))
+    ScopeFilter(
+      inDependencies(ThisProject, transitive = true, includeRoot = false))
 
-  private val seqFileCodec  = MessageCodec.of[Seq[File]]
+  private val seqFileCodec = MessageCodec.of[Seq[File]]
   private val cacheFileName = "generated.cache"
 
   def httpProjectSettings = {
@@ -104,7 +115,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       airframeHttpBinaryDir := {
         // This task is for downloading airframe-http library to parse Airframe HTTP/RPC interfaces using a forked JVM.
         // Without forking JVM, sbt's class loader cannot load @RPC and @Endpoint annotations.
-        val airframeVersion        = airframeHttpVersion.value
+        val airframeVersion = airframeHttpVersion.value
         val airframeHttpPackageDir = airframeHttpWorkDir.value / "local"
 
         val versionFile = airframeHttpPackageDir / "VERSION"
@@ -125,7 +136,10 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
             version = airframeHttpVersion.value,
             configuration = coursier.core.Configuration.empty,
             exclusions = Set.empty,
-            publication = Publication("", Type("arch"), Extension("tar.gz"), coursier.Classifier.empty),
+            publication = Publication("",
+                                      Type("arch"),
+                                      Extension("tar.gz"),
+                                      coursier.Classifier.empty),
             optional = false,
             transitive = false
           )
@@ -140,36 +154,41 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           // Unpack .tgz file
           val packageDir = airframeHttpPackageDir.getAbsoluteFile
           airframeHttpPackageDir.mkdirs()
-          files.headOption.map { tgz =>
-            // Extract tar.gz archive using commons-compress library
-            info(s"Extracting airframe-http ${airframeVersion} package to ${airframeHttpPackageDir}")
-            withResource(new GZIPInputStream(new FileInputStream(tgz))) { in =>
-              val tgzInput = new TarArchiveInputStream(in)
-              Iterator
-                .continually(tgzInput.getNextTarEntry)
-                .takeWhile(entry => entry != null)
-                .filter(tgzInput.canReadEntryData(_))
-                .foreach { entry =>
-                  val fileName     = entry.getName
-                  val mode         = entry.getMode
-                  val isExecutable = (mode & (1 << 6)) != 0
+          files.headOption.map {
+            tgz =>
+              // Extract tar.gz archive using commons-compress library
+              info(
+                s"Extracting airframe-http ${airframeVersion} package to ${airframeHttpPackageDir}")
+              withResource(new GZIPInputStream(new FileInputStream(tgz))) {
+                in =>
+                  val tgzInput = new TarArchiveInputStream(in)
+                  Iterator
+                    .continually(tgzInput.getNextTarEntry)
+                    .takeWhile(entry => entry != null)
+                    .filter(tgzInput.canReadEntryData(_))
+                    .foreach {
+                      entry =>
+                        val fileName = entry.getName
+                        val mode = entry.getMode
+                        val isExecutable = (mode & (1 << 6)) != 0
 
-                  // Strip the first path component
-                  val path       = fileName.split("/").tail.mkString("/")
-                  val outputFile = new File(packageDir, path)
-                  if (entry.isDirectory) {
-                    debug(s"Creating dir : ${path}")
-                    outputFile.mkdirs()
-                  } else {
-                    withResource(Files.newOutputStream(outputFile.toPath)) { out =>
-                      debug(s"Creating file: ${path}")
-                      IOUtils.copy(tgzInput, out)
+                        // Strip the first path component
+                        val path = fileName.split("/").tail.mkString("/")
+                        val outputFile = new File(packageDir, path)
+                        if (entry.isDirectory) {
+                          debug(s"Creating dir : ${path}")
+                          outputFile.mkdirs()
+                        } else {
+                          withResource(Files.newOutputStream(outputFile.toPath)) {
+                            out =>
+                              debug(s"Creating file: ${path}")
+                              IOUtils.copy(tgzInput, out)
+                          }
+                          // Set +x for executables
+                          outputFile.setExecutable(isExecutable)
+                        }
                     }
-                    // Set +x for executables
-                    outputFile.setExecutable(isExecutable)
-                  }
-                }
-            }
+              }
           }
         }
         airframeHttpPackageDir
@@ -178,18 +197,22 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       airframeHttpReload := Def
         .sequential(
           Def.task {
+            // Need to run the clean task first to avoid ClassNotFound error when using Scala 2.13 with sbt (running in Scala 2.12)
+            val cleanTask = clean.value
             val targetDir: File = airframeHttpWorkDir.value
-            val cacheFile       = targetDir / cacheFileName
+            val cacheFile = targetDir / cacheFileName
             IO.delete(cacheFile)
           },
           airframeHttpGenerateClient
-        ).value,
+        )
+        .value,
       airframeHttpGenerateClient := {
         val targetDir: File = airframeHttpWorkDir.value
-        val cacheFile       = targetDir / cacheFileName
-        val binDir          = airframeHttpBinaryDir.value
-        val cp              = airframeHttpClasspass.value.mkString(":")
-        val opts            = s"${airframeHttpOpts.value} ${airframeHttpGeneratorOption.value}"
+        val cacheFile = targetDir / cacheFileName
+        val binDir = airframeHttpBinaryDir.value
+        val cp = airframeHttpClasspass.value.mkString(":")
+        val opts =
+          s"${airframeHttpOpts.value} ${airframeHttpGeneratorOption.value}"
 
         val result: Seq[File] = if (!cacheFile.exists) {
           debug(s"airframe-http directory: ${binDir}")
@@ -219,13 +242,14 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       airframeHttpOpenAPIPackages := Seq.empty,
       airframeHttpOpenAPIGenerate := Def
         .task {
-          val config             = airframeHttpOpenAPIConfig.value
+          val config = airframeHttpOpenAPIConfig.value
           val formatType: String = config.format
-          val outFile: File      = airframeHttpOpenAPITargetDir.value / s"${config.filePrefix}.${formatType}"
-          val binDir: File       = airframeHttpBinaryDir.value
-          val cp                 = airframeHttpClasspass.value.mkString(":")
-          val packages           = airframeHttpOpenAPIPackages.value
-          val opts               = airframeHttpOpts.value
+          val outFile
+            : File = airframeHttpOpenAPITargetDir.value / s"${config.filePrefix}.${formatType}"
+          val binDir: File = airframeHttpBinaryDir.value
+          val cp = airframeHttpClasspass.value.mkString(":")
+          val packages = airframeHttpOpenAPIPackages.value
+          val opts = airframeHttpOpts.value
           if (packages.isEmpty) {
             Seq.empty
           } else {
@@ -255,11 +279,15 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
             Process(cmdline).!!
             Seq(outFile)
           }
-        }.dependsOn(Compile / compile).value,
+        }
+        .dependsOn(Compile / compile)
+        .value,
       // Generate HTTP clients before compilation
       Compile / sourceGenerators += airframeHttpGenerateClient,
       // Generate OpenAPI doc when generating package
-      Compile / `package` := (Compile / `package`).dependsOn(airframeHttpOpenAPIGenerate).value
+      Compile / `package` := (Compile / `package`)
+        .dependsOn(airframeHttpOpenAPIGenerate)
+        .value
     )
   }
 
