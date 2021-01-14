@@ -13,7 +13,10 @@
  */
 package wvlet.airframe.http.codegen.client
 
-import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, ClientSourceDef}
+import wvlet.airframe.http.codegen.HttpClientIR.{
+  ClientServiceDef,
+  ClientSourceDef
+}
 
 /**
   */
@@ -43,12 +46,12 @@ object ScalaHttpClientGenerator {
 import ScalaHttpClientGenerator._
 
 object AsyncClientGenerator extends HttpClientGenerator {
-  override def name: String             = "async"
-  override def defaultFileName: String  = "ServiceClient.scala"
+  override def name: String = "async"
+  override def defaultFileName: String = "ServiceClient.scala"
   override def defaultClassName: String = "ServiceClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
-      s"""${header(src.packageName)}
+      s"""${header(src.targetPackageName)}
          |
          |import wvlet.airframe.http._
          |import scala.language.higherKinds
@@ -70,14 +73,16 @@ object AsyncClientGenerator extends HttpClientGenerator {
           s"""object ${svc.serviceName} {
              |${indent(serviceBody(svc))}
              |}""".stripMargin
-        }.mkString("\n")
+        }
+        .mkString("\n")
     }
 
     def serviceBody(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
           val inputArgs =
-            m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++ Seq("requestFilter: Req => Req = identity")
+            m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++ Seq(
+              "requestFilter: Req => Req = identity")
 
           val sendRequestArgs = Seq.newBuilder[String]
           sendRequestArgs += s"""resourcePath = s"${m.path}""""
@@ -92,7 +97,8 @@ object AsyncClientGenerator extends HttpClientGenerator {
           lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
           lines += s"}"
           lines.result().mkString("\n")
-        }.mkString("\n")
+        }
+        .mkString("\n")
     }
 
     code
@@ -100,12 +106,12 @@ object AsyncClientGenerator extends HttpClientGenerator {
 }
 
 object SyncClientGenerator extends HttpClientGenerator {
-  override def name: String             = "sync"
-  override def defaultFileName: String  = "ServiceSyncClient.scala"
+  override def name: String = "sync"
+  override def defaultFileName: String = "ServiceSyncClient.scala"
   override def defaultClassName: String = "ServiceSyncClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
-      s"""${header(src.packageName)}
+      s"""${header(src.targetPackageName)}
          |
          |import wvlet.airframe.http._
          |${src.importStatements}
@@ -126,14 +132,16 @@ object SyncClientGenerator extends HttpClientGenerator {
           s"""object ${svc.serviceName} {
              |${indent(serviceBody(svc))}
              |}""".stripMargin
-        }.mkString("\n")
+        }
+        .mkString("\n")
     }
 
     def serviceBody(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
           val inputArgs =
-            m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++ Seq("requestFilter: Req => Req = identity")
+            m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++ Seq(
+              "requestFilter: Req => Req = identity")
 
           val sendRequestArgs = Seq.newBuilder[String]
           sendRequestArgs += s"""resourcePath = s"${m.path}""""
@@ -148,7 +156,8 @@ object SyncClientGenerator extends HttpClientGenerator {
           lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
           lines += s"}"
           lines.result().mkString("\n")
-        }.mkString("\n")
+        }
+        .mkString("\n")
     }
 
     code
@@ -159,12 +168,12 @@ object SyncClientGenerator extends HttpClientGenerator {
 /**
   */
 object ScalaJSClientGenerator extends HttpClientGenerator {
-  override def name: String             = "scalajs"
-  override def defaultFileName: String  = "ServiceJSClient.scala"
+  override def name: String = "scalajs"
+  override def defaultFileName: String = "ServiceJSClient.scala"
   override def defaultClassName: String = "ServiceJSClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
-      s"""${header(src.packageName)}
+      s"""${header(src.targetPackageName)}
          |
          |import scala.concurrent.Future
          |import wvlet.airframe.surface.Surface
@@ -189,7 +198,8 @@ object ScalaJSClientGenerator extends HttpClientGenerator {
           s"""object ${svc.serviceName} {
              |${indent(serviceBody(svc))}
              |}""".stripMargin
-        }.mkString("\n")
+        }
+        .mkString("\n")
     }
 
     def serviceBody(svc: ClientServiceDef): String = {
@@ -214,7 +224,8 @@ object ScalaJSClientGenerator extends HttpClientGenerator {
           lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
           lines += s"}"
           lines.result().mkString("\n")
-        }.mkString("\n")
+        }
+        .mkString("\n")
     }
 
     code

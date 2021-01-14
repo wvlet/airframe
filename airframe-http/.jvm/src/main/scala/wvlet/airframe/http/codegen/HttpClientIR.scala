@@ -39,7 +39,8 @@ object HttpClientIR extends LogSupport {
   // Intermediate representation (IR) of HTTP client code
   sealed trait ClientCodeIR
 
-  case class ClientSourceDef(packageName: String, classDef: ClientClassDef)
+  case class ClientSourceDef(targetPackageName: String,
+                             classDef: ClientClassDef)
       extends ClientCodeIR {
     private def imports: Seq[Surface] = {
       // Collect all Surfaces used in the generated code
@@ -74,7 +75,7 @@ object HttpClientIR extends LogSupport {
           surface.isOption ||
           surface.isPrimitive ||
           // Within the same package
-          importPackageName == packageName)
+          importPackageName == targetPackageName)
       }
 
       loop(classDef).filter(requireImports).distinct.sortBy(_.name)
@@ -92,6 +93,12 @@ object HttpClientIR extends LogSupport {
 
   }
 
+  /**
+    * Represents hierarchical API structures
+    * @param packageLeafName
+    * @param services
+    * @param children
+    */
   case class ClientServicePackages(
       packageLeafName: String,
       services: Seq[ClientServiceDef],
@@ -105,7 +112,6 @@ object HttpClientIR extends LogSupport {
   case class ClientClassDef(clsName: String, services: Seq[ClientServiceDef])
       extends ClientCodeIR {
     def toNestedPackages: ClientServicePackages = {
-
       def iter(
           packagePrefix: String,
           lst: Seq[(List[String], ClientServiceDef)]
@@ -114,23 +120,30 @@ object HttpClientIR extends LogSupport {
         val node = ClientServicePackages(packagePrefix,
                                          leafServices.map(_._2),
                                          Seq.empty)
-        val children = for ((prefix, lst) <- remaining.groupBy(_._1.head))
-          yield {
-            iter(prefix, lst.map(x => (x._1.tail, x._2)))
-          }
+        val children =
+          for ((prefix, lst) <- remaining.groupBy(_._1.head))
+            yield {
+              iter(prefix, lst.map(x => (x._1.tail, x._2)))
+            }
         node.withChildren(children.toSeq)
       }
 
-      iter("", services.map(x => (x.packages, x)))
+      iter("", services.map(x => (x.relativePackages, x)))
     }
   }
 
-  case class ClientServiceDef(packagePrefix: Option[String],
-                              serviceName: String,
-                              methods: Seq[ClientMethodDef])
-      extends ClientCodeIR {
-    def packages: List[String] =
-      packagePrefix.map(_.split("\\.").toList).getOrElse(List.empty)
+  case class ClientServiceDef(
+      basePackageName: String,
+      fullPackageName: String,
+      serviceName: String,
+      methods: Seq[ClientMethodDef]
+  ) extends ClientCodeIR {
+    def fullServiceName: String = s"${internalPackageName}.${serviceName}"
+    def internalPackageName: String = s"internal.${relativePackageName}"
+
+    def relativePackageName: String =
+      fullPackageName.stripPrefix(s"${basePackageName}.")
+    def relativePackages: List[String] = relativePackageName.split("\\.").toList
   }
 
   case class ClientRequestModelClassDef(name: String,
@@ -259,13 +272,9 @@ object HttpClientIR extends LogSupport {
                      routes: Seq[Route]): ClientServiceDef = {
       // Use a API class name as is for the accessor objects
       val controllerName = controllerSurface.name
-      val packagePrefix = controllerSurface.rawType.getPackageName
-        .stripPrefix(s"${config.apiPackageName}.")
-
       ClientServiceDef(
-        packagePrefix =
-          if (packagePrefix.isEmpty) None
-          else Some(packagePrefix),
+        basePackageName = config.apiPackageName,
+        fullPackageName = controllerSurface.rawType.getPackageName,
         serviceName = controllerName,
         routes.map(buildClientCall)
       )
@@ -375,7 +384,7 @@ object HttpClientIR extends LogSupport {
     }
 
     ClientSourceDef(
-      packageName = config.targetPackageName,
+      targetPackageName = config.targetPackageName,
       classDef = buildClassDef
     )
   }
