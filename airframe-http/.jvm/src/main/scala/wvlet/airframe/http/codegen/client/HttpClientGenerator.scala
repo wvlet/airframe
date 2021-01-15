@@ -13,7 +13,11 @@
  */
 package wvlet.airframe.http.codegen.client
 
-import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, ClientServicePackages, ClientSourceDef}
+import wvlet.airframe.http.codegen.HttpClientIR.{
+  ClientServiceDef,
+  ClientServicePackages,
+  ClientSourceDef
+}
 import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.indent
 import wvlet.airframe.surface.Surface
 
@@ -30,9 +34,10 @@ object HttpClientGenerator {
 
   private[codegen] def fullTypeNameOf(s: Surface): String = {
     s match {
-      case p if p.isPrimitive                                        => p.name
-      case c if c.fullName.startsWith("scala.collection.immutable.") => c.name
-      case _                                                         => s.fullName.replaceAll("\\$", ".")
+      case p if p.isPrimitive =>
+        p.name
+      case _ =>
+        s.fullName.replaceAll("\\$", ".")
     }
   }
 
@@ -52,7 +57,8 @@ object HttpClientGenerator {
     predefinedClients.find(_.name == name)
   }
 
-  private[client] def generateNestedStub(src: ClientSourceDef)(serviceStub: ClientServiceDef => String): String = {
+  private[client] def generateNestedStub(src: ClientSourceDef)(
+      serviceStub: ClientServiceDef => String): String = {
     // Traverse nested packages
     def traverse(p: ClientServicePackages): String = {
       val serviceStubBody =
