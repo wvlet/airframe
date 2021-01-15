@@ -42,6 +42,13 @@ case class FinagleClientConfig(
   def withRetryContext(retryContext: RetryContext): FinagleClientConfig = {
     this.copy(retryContext = retryContext)
   }
+
+  /**
+    * Customize the retry policy
+    */
+  def withRetry(retryContextFilter: RetryContext => RetryContext): FinagleClientConfig = {
+    this.copy(retryContext = retryContextFilter(retryContext))
+  }
   def withTimeout(timeout: Duration): FinagleClientConfig = {
     this.copy(timeout = timeout)
   }
@@ -62,7 +69,10 @@ case class FinagleClientConfig(
       maxIntervalMillis: Int = 15000,
       multiplier: Double = 1.5
   ): FinagleClientConfig = {
-    withRetryContext(retryContext.withBackOff(initialIntervalMillis, maxIntervalMillis, multiplier))
+    withRetry(retryContext =>
+      retryContext
+        .withBackOff(initialIntervalMillis, maxIntervalMillis, multiplier)
+    )
   }
 
   def withJitter(
@@ -70,8 +80,9 @@ case class FinagleClientConfig(
       maxIntervalMillis: Int = 15000,
       multiplier: Double = 1.5
   ): FinagleClientConfig = {
-    withRetryContext(
-      retryContext.withJitter(initialIntervalMillis, maxIntervalMillis, multiplier)
+    withRetry(retryContext =>
+      retryContext
+        .withJitter(initialIntervalMillis, maxIntervalMillis, multiplier)
     )
   }
 
@@ -81,12 +92,18 @@ case class FinagleClientConfig(
 
   def asyncClientDesign: Design = {
     Design.newDesign
-      .bind[FinagleClient].toProvider { server: FinagleServer => this.newClient(server.localAddress) }
+      .bind[FinagleClient]
+      .toProvider { server: FinagleServer =>
+        this.newClient(server.localAddress)
+      }
   }
 
   def syncClientDesign: Design = {
     Design.newDesign
-      .bind[FinagleSyncClient].toProvider { server: FinagleServer => this.newSyncClient(server.localAddress) }
+      .bind[FinagleSyncClient]
+      .toProvider { server: FinagleServer =>
+        this.newSyncClient(server.localAddress)
+      }
   }
 
   def newClient(hostAndPort: String): FinagleClient = {
@@ -198,7 +215,8 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
             codec.unpack(msgpack)
           } catch {
             case NonFatal(e) =>
-              val msg = s"Failed to parse the response body ${r}: ${r.contentString}"
+              val msg =
+                s"Failed to parse the response body ${r}: ${r.contentString}"
               warn(msg)
               throw new HttpClientException(
                 r,
@@ -353,7 +371,9 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
 /**
   */
 object FinagleClient extends LogSupport {
-  def defaultInitClient: Http.Client => Http.Client = { x: Http.Client => x.withSessionQualifier.noFailureAccrual }
+  def defaultInitClient: Http.Client => Http.Client = { x: Http.Client =>
+    x.withSessionQualifier.noFailureAccrual
+  }
   def defaultRetryContext: RetryContext = {
     HttpClient.defaultHttpClientRetry[http.Request, http.Response]
   }
