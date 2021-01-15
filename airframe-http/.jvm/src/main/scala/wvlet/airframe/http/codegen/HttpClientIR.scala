@@ -152,7 +152,7 @@ object HttpClientIR extends LogSupport {
       s"${if (isPrivate) "private "
       else ""}case class ${name}(${parameter
         .map { p =>
-          s"${p.name}: ${p.surface.name}"
+          s"${p.name}: ${p.surface.fullName.replaceAll("\\$", ".")}"
         }
         .mkString(", ")})"
   }
