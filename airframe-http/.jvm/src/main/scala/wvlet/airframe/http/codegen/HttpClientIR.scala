@@ -12,11 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
-import java.util.Locale
 
+import java.util.Locale
 import wvlet.airframe.http.Router.unwrapFuture
 import wvlet.airframe.http.{HttpMethod, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
+import wvlet.airframe.http.codegen.client.HttpClientGenerator
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface}
@@ -31,7 +32,8 @@ object HttpClientIR extends LogSupport {
 
   // Intermediate representation (IR) of HTTP client code
   sealed trait ClientCodeIR
-  case class ClientSourceDef(packageName: String, classDef: ClientClassDef) extends ClientCodeIR {
+
+  case class ClientSourceDef(destPackageName: String, classDef: ClientClassDef) extends ClientCodeIR {
     private def imports: Seq[Surface] = {
       // Collect all Surfaces used in the generated code
       def loop(s: Any): Seq[Surface] = {
@@ -60,11 +62,12 @@ object HttpClientIR extends LogSupport {
         !(importPackageName.isEmpty ||
           importPackageName == "java.lang" ||
           importPackageName == "scala.collection" ||
+          importPackageName == "scala.collection.immutable" ||
           importPackageName == "wvlet.airframe.http" ||
           surface.isOption ||
           surface.isPrimitive ||
           // Within the same package
-          importPackageName == packageName)
+          importPackageName == destPackageName)
       }
 
       loop(classDef).filter(requireImports).distinct.sortBy(_.name)
@@ -81,16 +84,77 @@ object HttpClientIR extends LogSupport {
     }
 
   }
-  case class ClientClassDef(clsName: String, services: Seq[ClientServiceDef])     extends ClientCodeIR
-  case class ClientServiceDef(serviceName: String, methods: Seq[ClientMethodDef]) extends ClientCodeIR
+
+  /**
+    * Represents hierarchical API structures
+    * @param packageLeafName
+    * @param services
+    * @param children
+    */
+  case class ClientServicePackages(
+      packageLeafName: String,
+      services: Seq[ClientServiceDef],
+      children: Seq[ClientServicePackages]
+  ) {
+    def withChildren(newChildren: Seq[ClientServicePackages]): ClientServicePackages =
+      ClientServicePackages(packageLeafName, services, newChildren)
+  }
+
+  case class ClientClassDef(clsName: String, services: Seq[ClientServiceDef]) extends ClientCodeIR {
+    def toNestedPackages: ClientServicePackages = {
+      def iter(
+          packagePrefix: String,
+          lst: Seq[(List[String], ClientServiceDef)]
+      ): ClientServicePackages = {
+        val (leafServices, remaining) = lst.partition(_._1.isEmpty)
+        val node                      = ClientServicePackages(packagePrefix, leafServices.map(_._2), Seq.empty)
+        val children =
+          for ((prefix, lst) <- remaining.groupBy(_._1.head))
+            yield {
+              iter(prefix, lst.map(x => (x._1.tail, x._2)))
+            }
+        node.withChildren(children.toSeq)
+      }
+
+      iter("", services.map(x => (x.relativePackages, x)))
+    }
+  }
+
+  case class ClientServiceDef(
+      basePackageName: String,
+      fullPackageName: String,
+      serviceName: String,
+      methods: Seq[ClientMethodDef]
+  ) extends ClientCodeIR {
+    def fullServiceName: String = s"${internalPackageName}.${serviceName}"
+    def internalPackageName: String = {
+      if (relativePackageName.isEmpty) {
+        "internal"
+      } else {
+        s"internal.${relativePackageName}"
+      }
+    }
+
+    def relativePackageName: String = {
+      if (fullPackageName == basePackageName) {
+        ""
+      } else {
+        fullPackageName.stripPrefix(s"${basePackageName}.")
+      }
+    }
+    def relativePackages: List[String] = relativePackageName.split("\\.").toList
+  }
+
   case class ClientRequestModelClassDef(name: String, parameter: Seq[Parameter]) {
     def code(isPrivate: Boolean = true) =
-      s"${if (isPrivate) "private " else ""}case class ${name}(${parameter
+      s"${if (isPrivate) "private "
+      else ""}case class ${name}(${parameter
         .map { p =>
-          s"${p.name}: ${p.surface.name}"
+          s"${p.name}: ${p.surface.fullName.replaceAll("\\$", ".")}"
         }
         .mkString(", ")})"
   }
+
   case class ClientMethodDef(
       httpMethod: String,
       isOpsRequest: Boolean,
@@ -103,10 +167,14 @@ object HttpClientIR extends LogSupport {
       // A case class definition for wrapping HTTP request parameters
       requestModelClassDef: Option[ClientRequestModelClassDef] = None
   ) extends ClientCodeIR {
-    def typeArgString = typeArgs.map(_.name).mkString(", ")
+    def typeArgString =
+      typeArgs
+        .map(arg => HttpClientGenerator.fullTypeNameOf(arg))
+        .mkString(", ")
     def clientMethodName = {
       val methodName = httpMethod.toString.toLowerCase(Locale.ENGLISH)
-      if (isOpsRequest) s"${methodName}Ops" else methodName
+      if (isOpsRequest) s"${methodName}Ops"
+      else methodName
     }
     def requestModelClassType: String = {
       requestModelClassDef match {
@@ -154,22 +222,28 @@ object HttpClientIR extends LogSupport {
   sealed trait GrpcMethodType {
     def code: String
   }
+
   object GrpcMethodType {
+
     case object UNARY extends GrpcMethodType {
       override def code: String = s"io.grpc.MethodDescriptor.MethodType.UNARY"
     }
+
     case object SERVER_STREAMING extends GrpcMethodType {
       override def code: String =
         s"io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING"
     }
+
     case object CLIENT_STREAMING extends GrpcMethodType {
       override def code: String =
         s"io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING"
     }
+
     case object BIDI_STREAMING extends GrpcMethodType {
       override def code: String =
         s"io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING"
     }
+
   }
 
   private case class PathVariableParam(name: String, param: MethodParameter)
@@ -194,7 +268,12 @@ object HttpClientIR extends LogSupport {
     def buildService(controllerSurface: Surface, routes: Seq[Route]): ClientServiceDef = {
       // Use a API class name as is for the accessor objects
       val controllerName = controllerSurface.name
-      ClientServiceDef(serviceName = controllerName, routes.map(buildClientCall))
+      ClientServiceDef(
+        basePackageName = config.apiPackageName,
+        fullPackageName = controllerSurface.rawType.getPackageName,
+        serviceName = controllerName,
+        routes.map(buildClientCall)
+      )
     }
 
     // Create a method definition for each endpoint (Route)
@@ -273,7 +352,7 @@ object HttpClientIR extends LogSupport {
             override def typeArgs: Seq[Surface] = Seq.empty
             override def params: Seq[Parameter] = requestModelClassParamSurfaces
             override def name: String           = requestModelClassName
-            override def fullName: String       = ???
+            override def fullName: String       = requestModelClassName
             override def isOption: Boolean      = false
             override def isAlias: Boolean       = false
             override def isPrimitive: Boolean   = false
@@ -298,7 +377,7 @@ object HttpClientIR extends LogSupport {
     }
 
     ClientSourceDef(
-      packageName = config.targetPackageName,
+      destPackageName = config.targetPackageName,
       classDef = buildClassDef
     )
   }

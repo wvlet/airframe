@@ -53,21 +53,31 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     val airframeHttpClients = settingKey[Seq[String]](
       "HTTP client generator targets, <api package name>(:<client type>(:<target package name>)?)?"
     )
-    val airframeHttpWorkDir         = settingKey[File]("working directory for airframe-http")
-    val airframeHttpGenerateClient  = taskKey[Seq[File]]("Generate the client code")
-    val airframeHttpGeneratorOption = settingKey[String]("airframe-http client-generator options")
-    val airframeHttpClean           = taskKey[Unit]("clean artifacts")
-    val airframeHttpClasspass       = taskKey[Seq[String]]("class loader for dependent classes")
-    val airframeHttpBinaryDir       = taskKey[File]("Download Airframe HTTP binary to this location")
-    val airframeHttpVersion         = settingKey[String]("airframe-http version to use")
-    val airframeHttpReload          = taskKey[Seq[File]]("refresh generated clients")
-    val airframeHttpOpts            = settingKey[String]("additional option for airframe-http commands")
+    val airframeHttpWorkDir =
+      settingKey[File]("working directory for airframe-http")
+    val airframeHttpGenerateClient =
+      taskKey[Seq[File]]("Generate the client code")
+    val airframeHttpGeneratorOption =
+      settingKey[String]("airframe-http client-generator options")
+    val airframeHttpClean = taskKey[Unit]("clean artifacts")
+    val airframeHttpClasspass =
+      taskKey[Seq[String]]("class loader for dependent classes")
+    val airframeHttpBinaryDir =
+      taskKey[File]("Download Airframe HTTP binary to this location")
+    val airframeHttpVersion = settingKey[String]("airframe-http version to use")
+    val airframeHttpReload  = taskKey[Seq[File]]("refresh generated clients")
+    val airframeHttpOpts =
+      settingKey[String]("additional option for airframe-http commands")
 
     // Keys for OpenAPI spec generator
-    val airframeHttpOpenAPIConfig    = settingKey[OpenAPIConfig]("OpenAPI spec generator configuration")
-    val airframeHttpOpenAPIPackages  = settingKey[Seq[String]]("OpenAPI target API package names")
-    val airframeHttpOpenAPITargetDir = settingKey[File]("OpenAPI spec file target folder")
-    val airframeHttpOpenAPIGenerate  = taskKey[Seq[File]]("Generate OpenAPI spec from RPC definition")
+    val airframeHttpOpenAPIConfig =
+      settingKey[OpenAPIConfig]("OpenAPI spec generator configuration")
+    val airframeHttpOpenAPIPackages =
+      settingKey[Seq[String]]("OpenAPI target API package names")
+    val airframeHttpOpenAPITargetDir =
+      settingKey[File]("OpenAPI spec file target folder")
+    val airframeHttpOpenAPIGenerate =
+      taskKey[Seq[File]]("Generate OpenAPI spec from RPC definition")
   }
 
   private def dependentProjects: ScopeFilter =
@@ -178,18 +188,22 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       airframeHttpReload := Def
         .sequential(
           Def.task {
+            // Need to run the clean task first to avoid ClassNotFound error when using Scala 2.13 with sbt (running in Scala 2.12)
+            val cleanTask       = clean.value
             val targetDir: File = airframeHttpWorkDir.value
             val cacheFile       = targetDir / cacheFileName
             IO.delete(cacheFile)
           },
           airframeHttpGenerateClient
-        ).value,
+        )
+        .value,
       airframeHttpGenerateClient := {
         val targetDir: File = airframeHttpWorkDir.value
         val cacheFile       = targetDir / cacheFileName
         val binDir          = airframeHttpBinaryDir.value
         val cp              = airframeHttpClasspass.value.mkString(":")
-        val opts            = s"${airframeHttpOpts.value} ${airframeHttpGeneratorOption.value}"
+        val opts =
+          s"${airframeHttpOpts.value} ${airframeHttpGeneratorOption.value}"
 
         val result: Seq[File] = if (!cacheFile.exists) {
           debug(s"airframe-http directory: ${binDir}")
@@ -255,11 +269,15 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
             Process(cmdline).!!
             Seq(outFile)
           }
-        }.dependsOn(Compile / compile).value,
+        }
+        .dependsOn(Compile / compile)
+        .value,
       // Generate HTTP clients before compilation
       Compile / sourceGenerators += airframeHttpGenerateClient,
       // Generate OpenAPI doc when generating package
-      Compile / `package` := (Compile / `package`).dependsOn(airframeHttpOpenAPIGenerate).value
+      Compile / `package` := (Compile / `package`)
+        .dependsOn(airframeHttpOpenAPIGenerate)
+        .value
     )
   }
 
