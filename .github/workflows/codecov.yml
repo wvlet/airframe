@@ -22,7 +22,7 @@ jobs:
           java-version: adopt@1.11
       - name: Scala 2.12 test with coverage report
         run: ./sbt "; coverage; projectJVM/test; projectJVM/coverageReport; projectJVM/coverageAggregate"
-      - uses: codecov/codecov-action@v1.0.7
+      - uses: codecov/codecov-action@v1
         with:
           name: airframe-coverage
           file: ./projectJVM/target/scala-2.12/scoverage-report/scoverage.xml
