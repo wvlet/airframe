@@ -21,7 +21,7 @@ import wvlet.airframe.http.RPC
 @RPC
 trait MyApi {
   def hello(request: HelloRequest): HelloResponse = HelloResponse("hello v1")
-  def helloMsg: Seq[Message] = Seq.empty
+  def helloMsg: Seq[Message]                      = Seq.empty
 }
 
 object MyApi {

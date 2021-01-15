@@ -13,11 +13,7 @@
  */
 package wvlet.airframe.http.codegen.client
 
-import wvlet.airframe.http.codegen.HttpClientIR.{
-  ClientServiceDef,
-  ClientServicePackages,
-  ClientSourceDef
-}
+import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, ClientServicePackages, ClientSourceDef}
 import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.indent
 import wvlet.airframe.surface.Surface
 
@@ -57,8 +53,7 @@ object HttpClientGenerator {
     predefinedClients.find(_.name == name)
   }
 
-  private[client] def generateNestedStub(src: ClientSourceDef)(
-      serviceStub: ClientServiceDef => String): String = {
+  private[client] def generateNestedStub(src: ClientSourceDef)(serviceStub: ClientServiceDef => String): String = {
     // Traverse nested packages
     def traverse(p: ClientServicePackages): String = {
       val serviceStubBody =
