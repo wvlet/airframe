@@ -146,7 +146,7 @@ val AIRFRAME_VERSION="(version)"
 val buildSettings = Seq(
   organization := "(your organization)",
   scalaVersion := "2.12.10"
-  // Add our own settings here
+  // Add your own settings here
 )
 
 // RPC API definition. This project should contain only RPC interfaces
@@ -552,19 +552,46 @@ trait GreeterStreaming {
 }
 ```
 
+### Launching Multiple gRPC Servers
+
+To launch multiple gRPC serves, use `GrpcServerFactory`:
+
+```scala
+import wlvet.airframe._
+import wvlet.airframe.http.grpc.{gRPC, GrpcServerFactory}
+
+val d = Design.newDesign
+
+d.build { f: GrpcServerFactory =>
+  val s1 = f.newGrpcServer(gRPC.server.withName("grpc1").withPort(8080).withRouter(...))
+  val s2 = f.newGrpcServer(gRPC.server.withName("grpc2").withPort(8081).withRouter(...)
+
+  // Wait until all servers terminate
+  // f.awaitTermination
+}
+```
+
+All gRPC servers created by the factory will be closed when the factory is closed.
+
 
 ## RPC Internals
 
 (_This section describes the internals of Airframe RPC protocol. Just for using Airframe RPC, you can skip this section._)
 
+Airframe RPC uses MessagePack (or JSON) for data transfer. All requests must use HTTP POST method and the URL path matching to `/(RPC interface package name).(RPC interface name)/(method name)`. The request message body of an RPC request is a MessagePack Map representation of a sequence of key-value pairs of `(method argument name)` -> `(method argument value)`.
+
+When gRPC backend is used, the client must use HTTP/2 and the message body must be encoded as [Length-Prefixed-Message](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md#requests) defined in gRPC protocol.
+
 ### RPC Protocol
 
-HTTP Requests and Responses.
+Airframe RPC maps function calls to HTTP POST requests.
 
-Airframe RPC maps function calls to HTTP POST requests. Let's see how RPC calls will be translated into HTTP requests using the following RPC interface example:
+Let's see how RPC calls will be translated into HTTP requests using the following RPC interface example:
 
 ```scala
 package hello.api.v1
+import wvlet.airframe.http.RPC
+
 @RPC
 trait MyService {
   def hello(request:HelloRequest): HelloResponse
@@ -577,7 +604,7 @@ case class HelloResponse(message:String)
 - __Method__: POST
 - __Path__: `/(package name).(RPC interface name)/(method name)`
   - ex. `POST /hello.api.v1.MyService/hello`
-- __Content-Type__: `application/json`, `application/x-msgpack` (default) or `application/grpc`
+- __Content-Type__: `application/x-msgpack` (default), `application/json`,  or `application/grpc` (gRPC backend with HTTP/2)
 - __Request body__: JSON or MessagePack (default) representation of the method arguments. Each method parameter names and arguments need to be a key-value pair in the JSON object.
   - For an RPC method `def m(p1:T1, p2:T2, ...)`, the request body will have the structrure of `{"p1":(json representation of T1), "p2":(json representation of T2}, ...}`. For example, the request to the above `hello(request:HelloRequest)` method will require the following JSON body:
 ```json
@@ -593,5 +620,22 @@ case class HelloResponse(message:String)
   - 200 (Ok) for successful responses.
   - 400 (Bad Request) if some request parameters are invalid.
 
+
+### RPC Protocol (HTTP/2 for gRPC)
+
 For gRPC backend, see also [gRPC over HTTP2](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md) protocol for the other HTTP headers.
 
+
+```aidl
+// Save Length-Prefixed-Message representation of MessagePack Map value of {"name":"hello"}
+// The first byte (0x00) means no compression
+// The next 4 bytes (0x00 0x00 0x00 0x0c) represents the message body size = 12 bytes
+// Then, followed by MessagePack binary value
+$ echo -n $'\x00\x00\x00\x00\x0c\x81\xa4\x6e\x61\x6d\x65\xa5\x68\x65\x6c\x6c\x6f' > hello.mspack
+```
+
+An example of calling Airframe gRPC method with Curl:
+
+```
+$ curl -v --raw --http2-prior-knowledge -X POST  -H "content-type: application/grpc" -H "TE: trailers" --data-binary @hello.mspack --output - http://localhost:8080/greeter.api.GreeterApi/hello
+```

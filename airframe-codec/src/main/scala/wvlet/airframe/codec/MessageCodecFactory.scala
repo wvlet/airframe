@@ -81,8 +81,9 @@ case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageC
 }
 
 object MessageCodecFactory {
-  val defaultFactory: MessageCodecFactory        = new MessageCodecFactory()
-  def defaultFactoryForJSON: MessageCodecFactory = defaultFactory.withMapOutput
+  val defaultFactory: MessageCodecFactory             = new MessageCodecFactory()
+  def defaultFactoryForJSON: MessageCodecFactory      = defaultFactory.withMapOutput
+  def defaultFactoryForMapOutput: MessageCodecFactory = defaultFactoryForJSON
 
   /**
     * Create a custom MessageCodecFactory from a partial mapping
