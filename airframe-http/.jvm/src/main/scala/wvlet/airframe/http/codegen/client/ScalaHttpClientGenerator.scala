@@ -67,7 +67,11 @@ object AsyncClientGenerator extends HttpClientGenerator {
          |""".stripMargin
 
     def clsBody: String = {
-      generateNestedStub(src)(serviceBody)
+      generateNestedStub(src) { svc =>
+        s"""object ${svc.serviceName} {
+           |${indent(serviceBody(svc))}
+           |}""".stripMargin
+      }
     }
 
     def serviceBody(svc: ClientServiceDef): String = {
@@ -122,7 +126,11 @@ object SyncClientGenerator extends HttpClientGenerator {
          |""".stripMargin
 
     def clsBody: String = {
-      generateNestedStub(src)(serviceBody)
+      generateNestedStub(src) { svc =>
+        s"""object ${svc.serviceName} {
+           |${indent(serviceBody(svc))}
+           |}""".stripMargin
+      }
     }
 
     def serviceBody(svc: ClientServiceDef): String = {
@@ -183,7 +191,11 @@ object ScalaJSClientGenerator extends HttpClientGenerator {
          |""".stripMargin
 
     def clsBody: String = {
-      generateNestedStub(src)(serviceBody)
+      generateNestedStub(src) { svc =>
+        s"""object ${svc.serviceName} {
+           |${indent(serviceBody(svc))}
+           |}""".stripMargin
+      }
     }
 
     def serviceBody(svc: ClientServiceDef): String = {

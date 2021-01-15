@@ -14,10 +14,10 @@
 package wvlet.airframe.http.codegen
 
 import java.util.Locale
-
 import wvlet.airframe.http.Router.unwrapFuture
 import wvlet.airframe.http.{HttpMethod, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
+import wvlet.airframe.http.codegen.client.HttpClientGenerator
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface}
@@ -168,7 +168,9 @@ object HttpClientIR extends LogSupport {
       requestModelClassDef: Option[ClientRequestModelClassDef] = None
   ) extends ClientCodeIR {
     def typeArgString =
-      typeArgs.map(_.fullName.replaceAll("\\$", ".")).mkString(", ")
+      typeArgs
+        .map(arg => HttpClientGenerator.fullTypeNameOf(arg))
+        .mkString(", ")
     def clientMethodName = {
       val methodName = httpMethod.toString.toLowerCase(Locale.ENGLISH)
       if (isOpsRequest) s"${methodName}Ops"

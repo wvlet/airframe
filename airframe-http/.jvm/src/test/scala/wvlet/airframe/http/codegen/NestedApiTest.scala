@@ -47,7 +47,7 @@ class NestedApiTest extends AirSpec {
       RouteScanner.buildRouter(Seq(classOf[example.nested.v1.MyApi], classOf[example.nested.v2.MyApi])),
       HttpClientGeneratorConfig("example.nested:scalajs")
     )
-    info(code)
+    debug(code)
   }
 
 }

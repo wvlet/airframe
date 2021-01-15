@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen.client
+
 import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, ClientServicePackages, ClientSourceDef}
 import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.indent
 import wvlet.airframe.surface.Surface
@@ -27,8 +28,16 @@ trait HttpClientGenerator {
 
 object HttpClientGenerator {
 
+  private[codegen] def fullTypeNameOf(s: Surface): String = {
+    s match {
+      case p if p.isPrimitive                                        => p.name
+      case c if c.fullName.startsWith("scala.collection.immutable.") => c.name
+      case _                                                         => s.fullName.replaceAll("\\$", ".")
+    }
+  }
+
   private[client] implicit class RichSurface(val s: Surface) extends AnyVal {
-    def fullTypeName: String = s.fullName.replaceAll("\\$", ".")
+    def fullTypeName: String = fullTypeNameOf(s)
   }
 
   def predefinedClients: Seq[HttpClientGenerator] =
