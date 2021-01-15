@@ -13,16 +13,18 @@
  */
 package wvlet.airframe.http
 
-import scala.concurrent.ExecutionContext
+import java.util.concurrent.Executors
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
 import scala.util.control.NonFatal
 
 /**
   * A base interface to implement http-server specific implementation
   */
-trait HttpBackend[Req, Resp, F[_]] { self =>
+trait HttpBackend[Req, Resp, F[_]] {
+  self =>
 
-  type Filter  = HttpFilter[Req, Resp, F]
+  type Filter = HttpFilter[Req, Resp, F]
   type Context = HttpContext[Req, Resp, F]
 
   protected implicit val httpRequestAdapter: HttpRequestAdapter[Req]
@@ -60,13 +62,15 @@ trait HttpBackend[Req, Resp, F[_]] { self =>
   def defaultFilter: Filter = HttpFilter.defaultFilter(self)
 
   // Create a new default context that process the given request
-  def newContext(body: Req => F[Resp]): Context = HttpContext.newContext[Req, Resp, F](self, body)
+  def newContext(body: Req => F[Resp]): Context =
+    HttpContext.newContext[Req, Resp, F](self, body)
 
   // Prepare a thread-local holder for passing parameter values
   def withThreadLocalStore(request: => F[Resp]): F[Resp]
 
   // Set a thread-local context parameter value for a pre-defined key
-  def setThreadLocalServerException[A](value: A): Unit = setThreadLocal(HttpBackend.TLS_KEY_SERVER_EXCEPTION, value)
+  def setThreadLocalServerException[A](value: A): Unit =
+    setThreadLocal(HttpBackend.TLS_KEY_SERVER_EXCEPTION, value)
 
   // Set a thread-local context parameter value
   def setThreadLocal[A](key: String, value: A): Unit
@@ -77,6 +81,41 @@ trait HttpBackend[Req, Resp, F[_]] { self =>
 
 object HttpBackend {
   // Pre-defined keys for the thread-local storage
-  private[http] val TLS_KEY_RPC              = "rpc"
+  private[http] val TLS_KEY_RPC = "rpc"
   private[http] val TLS_KEY_SERVER_EXCEPTION = "server_exception"
+
+  object DefaultBackend
+      extends HttpBackend[HttpMessage.Request,
+                          HttpMessage.Response,
+                          scala.concurrent.Future] {
+    private[http] implicit lazy val executionContext =
+      ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
+
+    override protected implicit val httpRequestAdapter
+      : HttpRequestAdapter[HttpMessage.Request] =
+      HttpMessage.HttpMessageRequestAdapter
+    override def newResponse(status: HttpStatus,
+                             content: String): HttpMessage.Response = {
+      Http.response(status).withContent(content)
+    }
+    override def toFuture[A](a: A): Future[A] = Future(a)
+    override def toFuture[A](a: Future[A], e: ExecutionContext): Future[A] = a
+    override def toScalaFuture[A](a: Future[A]): Future[A] = a
+    override def wrapException(e: Throwable): Future[HttpMessage.Response] =
+      Future.failed(e)
+    override def isFutureType(x: Class[_]): Boolean = {
+      classOf[Future[_]].isAssignableFrom(x)
+    }
+    override def isRawResponseType(x: Class[_]): Boolean = {
+      classOf[HttpMessage.Response].isAssignableFrom(x)
+    }
+    override def mapF[A, B](f: Future[A], body: A => B): Future[B] = {
+      f.map(body)
+    }
+    override def withThreadLocalStore(request: => Future[HttpMessage.Response])
+      : Future[HttpMessage.Response] = ???
+    override def setThreadLocal[A](key: String, value: A): Unit = ???
+    override def getThreadLocal[A](key: String): Option[A] = ???
+  }
+
 }
