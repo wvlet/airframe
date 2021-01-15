@@ -56,12 +56,14 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
     // Apply the default filter first and then the given custom filter
     val request = requestFilter(config.requestFilter(req))
 
-    val url = s"${address.uri}${request.uri}"
+    val url = s"${address.uri}${if (request.uri.startsWith("/")) request.uri
+    else s"/${request.uri}"}"
 
     // Send the request with retry support. Setting the context request is necessary to properly show
     // the request path upon errors
     config.retryContext.runWithContext(request) {
-      val conn0: HttpURLConnection = new java.net.URL(url).openConnection().asInstanceOf[HttpURLConnection]
+      val conn0: HttpURLConnection =
+        new java.net.URL(url).openConnection().asInstanceOf[HttpURLConnection]
       conn0.setRequestMethod(request.method)
       for (e <- request.header.entries) {
         conn0.setRequestProperty(e.key, e.value)
@@ -75,6 +77,7 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
           0
         }
       }
+
       conn0.setReadTimeout(timeoutMillis(config.readTimeout))
       conn0.setConnectTimeout(timeoutMillis(config.connectTimeout))
       conn0.setInstanceFollowRedirects(config.followRedirect)
@@ -141,7 +144,10 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
   private val responseCodec = new HttpResponseCodec[Response]
 
   private def convert[A: TypeTag](response: Response): A = {
-    if (implicitly[TypeTag[A]] == scala.reflect.runtime.universe.typeTag[Response]) {
+    if (
+      implicitly[TypeTag[A]] == scala.reflect.runtime.universe
+        .typeTag[Response]
+    ) {
       // Can return the response as is
       response.asInstanceOf[A]
     } else {
@@ -179,7 +185,8 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       requestFilter: Request => Request
   ): Resource = {
     // Read resource as JSON
-    val resourceRequestJsonValue = config.codecFactory.of[ResourceRequest].toJSONObject(resourceRequest)
+    val resourceRequestJsonValue =
+      config.codecFactory.of[ResourceRequest].toJSONObject(resourceRequest)
     val queryParams: Seq[String] =
       resourceRequestJsonValue.v.map {
         case (k, j @ JSONArray(_)) =>
@@ -258,7 +265,8 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
-  ): Response = putOps[Resource, Response](resourcePath, resource, requestFilter)
+  ): Response =
+    putOps[Resource, Response](resourcePath, resource, requestFilter)
 
   override def putOps[
       Resource: TypeTag,
@@ -303,7 +311,10 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resource: Resource,
       requestFilter: Request => Request
   ): Resource = {
-    val r = Http.POST(resourcePath).withHeader("X-HTTP-Method-Override", "PATCH").withJson(toJson(resource))
+    val r = Http
+      .POST(resourcePath)
+      .withHeader("X-HTTP-Method-Override", "PATCH")
+      .withJson(toJson(resource))
     convert[Resource](send(r, requestFilter))
   }
 
@@ -311,7 +322,8 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
-  ): Response = patchOps[Resource, Response](resourcePath, resource, requestFilter)
+  ): Response =
+    patchOps[Resource, Response](resourcePath, resource, requestFilter)
   override def patchOps[
       Resource: TypeTag,
       OperationResponse: TypeTag
@@ -322,7 +334,10 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
   ): OperationResponse = {
     // Workaround: URLConnection doesn't support PATCH
     //https://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch
-    val r = Http.POST(resourcePath).withHeader("X-HTTP-Method-Override", "PATCH").withJson(toJson(resource))
+    val r = Http
+      .POST(resourcePath)
+      .withHeader("X-HTTP-Method-Override", "PATCH")
+      .withJson(toJson(resource))
     convert[OperationResponse](send(r, requestFilter))
   }
 
