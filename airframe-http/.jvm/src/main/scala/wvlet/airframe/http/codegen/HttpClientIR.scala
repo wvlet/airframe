@@ -167,7 +167,8 @@ object HttpClientIR extends LogSupport {
       // A case class definition for wrapping HTTP request parameters
       requestModelClassDef: Option[ClientRequestModelClassDef] = None
   ) extends ClientCodeIR {
-    def typeArgString = typeArgs.map(_.name).mkString(", ")
+    def typeArgString =
+      typeArgs.map(_.fullName.replaceAll("\\$", ".")).mkString(", ")
     def clientMethodName = {
       val methodName = httpMethod.toString.toLowerCase(Locale.ENGLISH)
       if (isOpsRequest) s"${methodName}Ops"
@@ -349,7 +350,7 @@ object HttpClientIR extends LogSupport {
             override def typeArgs: Seq[Surface] = Seq.empty
             override def params: Seq[Parameter] = requestModelClassParamSurfaces
             override def name: String           = requestModelClassName
-            override def fullName: String       = ???
+            override def fullName: String       = requestModelClassName
             override def isOption: Boolean      = false
             override def isAlias: Boolean       = false
             override def isPrimitive: Boolean   = false

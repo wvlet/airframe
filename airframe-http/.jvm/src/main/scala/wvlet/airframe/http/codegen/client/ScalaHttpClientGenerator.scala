@@ -13,10 +13,7 @@
  */
 package wvlet.airframe.http.codegen.client
 
-import wvlet.airframe.http.codegen.HttpClientIR.{
-  ClientServiceDef,
-  ClientSourceDef
-}
+import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, ClientSourceDef}
 
 /**
   */
@@ -46,8 +43,11 @@ object ScalaHttpClientGenerator {
 import ScalaHttpClientGenerator._
 
 object AsyncClientGenerator extends HttpClientGenerator {
-  override def name: String = "async"
-  override def defaultFileName: String = "ServiceClient.scala"
+
+  import HttpClientGenerator._
+
+  override def name: String             = "async"
+  override def defaultFileName: String  = "ServiceClient.scala"
   override def defaultClassName: String = "ServiceClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
@@ -55,7 +55,6 @@ object AsyncClientGenerator extends HttpClientGenerator {
          |
          |import wvlet.airframe.http._
          |import scala.language.higherKinds
-         |${src.importStatements}
          |
          |${cls}""".stripMargin.stripMargin
 
@@ -68,21 +67,15 @@ object AsyncClientGenerator extends HttpClientGenerator {
          |""".stripMargin
 
     def clsBody: String = {
-      src.classDef.services
-        .map { svc =>
-          s"""object ${svc.serviceName} {
-             |${indent(serviceBody(svc))}
-             |}""".stripMargin
-        }
-        .mkString("\n")
+      generateNestedStub(src)(serviceBody)
     }
 
     def serviceBody(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
           val inputArgs =
-            m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++ Seq(
-              "requestFilter: Req => Req = identity")
+            m.inputParameters
+              .map(x => s"${x.name}: ${x.surface.fullTypeName}") ++ Seq("requestFilter: Req => Req = identity")
 
           val sendRequestArgs = Seq.newBuilder[String]
           sendRequestArgs += s"""resourcePath = s"${m.path}""""
@@ -93,7 +86,7 @@ object AsyncClientGenerator extends HttpClientGenerator {
           m.requestModelClassDef.foreach { x =>
             lines += x.code()
           }
-          lines += s"def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType}] = {"
+          lines += s"def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType.fullTypeName}] = {"
           lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
           lines += s"}"
           lines.result().mkString("\n")
@@ -106,15 +99,17 @@ object AsyncClientGenerator extends HttpClientGenerator {
 }
 
 object SyncClientGenerator extends HttpClientGenerator {
-  override def name: String = "sync"
-  override def defaultFileName: String = "ServiceSyncClient.scala"
+
+  import HttpClientGenerator._
+
+  override def name: String             = "sync"
+  override def defaultFileName: String  = "ServiceSyncClient.scala"
   override def defaultClassName: String = "ServiceSyncClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
       s"""${header(src.destPackageName)}
          |
          |import wvlet.airframe.http._
-         |${src.importStatements}
          |
          |${cls}""".stripMargin
 
@@ -127,21 +122,15 @@ object SyncClientGenerator extends HttpClientGenerator {
          |""".stripMargin
 
     def clsBody: String = {
-      src.classDef.services
-        .map { svc =>
-          s"""object ${svc.serviceName} {
-             |${indent(serviceBody(svc))}
-             |}""".stripMargin
-        }
-        .mkString("\n")
+      generateNestedStub(src)(serviceBody)
     }
 
     def serviceBody(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
           val inputArgs =
-            m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++ Seq(
-              "requestFilter: Req => Req = identity")
+            m.inputParameters
+              .map(x => s"${x.name}: ${x.surface.fullTypeName}") ++ Seq("requestFilter: Req => Req = identity")
 
           val sendRequestArgs = Seq.newBuilder[String]
           sendRequestArgs += s"""resourcePath = s"${m.path}""""
@@ -152,7 +141,7 @@ object SyncClientGenerator extends HttpClientGenerator {
           m.requestModelClassDef.foreach { x =>
             lines += x.code()
           }
-          lines += s"def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType} = {"
+          lines += s"def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType.fullTypeName} = {"
           lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
           lines += s"}"
           lines.result().mkString("\n")
@@ -168,8 +157,11 @@ object SyncClientGenerator extends HttpClientGenerator {
 /**
   */
 object ScalaJSClientGenerator extends HttpClientGenerator {
-  override def name: String = "scalajs"
-  override def defaultFileName: String = "ServiceJSClient.scala"
+
+  import HttpClientGenerator._
+
+  override def name: String             = "scalajs"
+  override def defaultFileName: String  = "ServiceJSClient.scala"
   override def defaultClassName: String = "ServiceJSClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
@@ -179,8 +171,6 @@ object ScalaJSClientGenerator extends HttpClientGenerator {
          |import wvlet.airframe.surface.Surface
          |import wvlet.airframe.http.js.JSHttpClient
          |import wvlet.airframe.http.HttpMessage.Request
-         |
-         |${src.importStatements}
          |
          |${cls}""".stripMargin
 
@@ -193,34 +183,28 @@ object ScalaJSClientGenerator extends HttpClientGenerator {
          |""".stripMargin
 
     def clsBody: String = {
-      src.classDef.services
-        .map { svc =>
-          s"""object ${svc.serviceName} {
-             |${indent(serviceBody(svc))}
-             |}""".stripMargin
-        }
-        .mkString("\n")
+      generateNestedStub(src)(serviceBody)
     }
 
     def serviceBody(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
           val inputArgs = {
-            m.inputParameters.map(x => s"${x.name}: ${x.surface.name}") ++
+            m.inputParameters.map(x => s"${x.name}: ${x.surface.fullTypeName}") ++
               Seq("requestFilter: Request => Request = identity")
           }
 
           val sendRequestArgs = Seq.newBuilder[String]
           sendRequestArgs += s"""resourcePath = s"${m.path}""""
           sendRequestArgs ++= m.clientCallParameters
-          sendRequestArgs ++= m.typeArgs.map(s => s"Surface.of[${s.name}]")
+          sendRequestArgs ++= m.typeArgs.map(s => s"Surface.of[${s.fullTypeName}]")
           sendRequestArgs += "requestFilter = requestFilter"
 
           val lines = Seq.newBuilder[String]
           m.requestModelClassDef.foreach { x =>
             lines += x.code()
           }
-          lines += s"def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType}] = {"
+          lines += s"def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType.fullTypeName}] = {"
           lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
           lines += s"}"
           lines.result().mkString("\n")

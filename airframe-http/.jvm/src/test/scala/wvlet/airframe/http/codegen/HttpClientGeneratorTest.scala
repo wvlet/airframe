@@ -40,7 +40,7 @@ class HttpClientGeneratorTest extends AirSpec {
       HttpClientGeneratorConfig("example.api:async:example.api.client")
     )
     code.contains("package example.api.client") shouldBe true
-    code.contains("import example.api.Query") shouldBe true
+    code.contains("import example.api.Query") shouldBe false
     code.contains("class ServiceClient[F[_], Req, Resp]") shouldBe true
     code.contains("import scala.collection.Seq") shouldBe false
     code.contains("import scala.language.higherKinds") shouldBe true
@@ -84,8 +84,9 @@ class HttpClientGeneratorTest extends AirSpec {
         "file:/Users/leo/.coursier/cache/v1/https/repo1.maven.org/maven2/org/wvlet/airframe/airframe-json_2.12/20.2.1/airframe-json_2.12-20.2.1.jar"
       )
     )
-    val cl      = new URLClassLoader(urls)
-    val classes = ClassScanner.scanClasses(cl, Seq("example", "wvlet.airframe.json"))
+    val cl = new URLClassLoader(urls)
+    val classes =
+      ClassScanner.scanClasses(cl, Seq("example", "wvlet.airframe.json"))
     debug(classes)
   }
 

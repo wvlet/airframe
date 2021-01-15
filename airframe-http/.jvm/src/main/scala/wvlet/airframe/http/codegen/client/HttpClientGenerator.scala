@@ -12,7 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen.client
-import wvlet.airframe.http.codegen.HttpClientIR.ClientSourceDef
+import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, ClientServicePackages, ClientSourceDef}
+import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.indent
+import wvlet.airframe.surface.Surface
 
 /**
   */
@@ -25,6 +27,10 @@ trait HttpClientGenerator {
 
 object HttpClientGenerator {
 
+  private[client] implicit class RichSurface(val s: Surface) extends AnyVal {
+    def fullTypeName: String = s.fullName.replaceAll("\\$", ".")
+  }
+
   def predefinedClients: Seq[HttpClientGenerator] =
     Seq(
       AsyncClientGenerator,
@@ -35,5 +41,27 @@ object HttpClientGenerator {
 
   def findClient(name: String): Option[HttpClientGenerator] = {
     predefinedClients.find(_.name == name)
+  }
+
+  private[client] def generateNestedStub(src: ClientSourceDef)(serviceStub: ClientServiceDef => String): String = {
+    // Traverse nested packages
+    def traverse(p: ClientServicePackages): String = {
+      val serviceStubBody =
+        p.services.map(svc => serviceStub(svc)).mkString("\n")
+      val childServiceStubBody = p.children.map(traverse(_)).mkString("\n")
+
+      val body =
+        s"""${serviceStubBody}
+           |${childServiceStubBody}""".stripMargin.trim
+      if (p.packageLeafName.isEmpty) {
+        body
+      } else {
+        s"""object ${p.packageLeafName} {
+           |${indent(body)}
+           |}""".stripMargin
+      }
+    }
+
+    traverse(src.classDef.toNestedPackages)
   }
 }

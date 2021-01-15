@@ -20,10 +20,7 @@ import wvlet.airframe.http.codegen.HttpClientIR.{
   ClientSourceDef,
   GrpcMethodType
 }
-import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.{
-  header,
-  indent
-}
+import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.{header, indent}
 import wvlet.airframe.surface.{MethodParameter, Surface}
 import wvlet.log.LogSupport
 
@@ -32,13 +29,11 @@ import wvlet.log.LogSupport
   */
 object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
 
-  override def name: String = "grpc"
-  override def defaultFileName: String = "ServiceGrpc.scala"
-  override def defaultClassName: String = "ServiceGrpc"
+  import HttpClientGenerator._
 
-  private implicit class RichSurface(val s: Surface) extends AnyVal {
-    def fullTypeName: String = s.fullName.replaceAll("\\$", ".")
-  }
+  override def name: String             = "grpc"
+  override def defaultFileName: String  = "ServiceGrpc.scala"
+  override def defaultClassName: String = "ServiceGrpc"
 
   override def generate(src: HttpClientIR.ClientSourceDef): String = {
     def code =
@@ -99,13 +94,13 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
       def modelClasses(svc: ClientServiceDef): String = {
         s"""object ${svc.serviceName}Models {
            |${indent(
-             svc.methods
-               .filter { x =>
-                 x.requestModelClassDef.isDefined
-               }
-               .map(_.requestModelClassDef.get.code(isPrivate = false))
-               .mkString("\n")
-           )}
+          svc.methods
+            .filter { x =>
+              x.requestModelClassDef.isDefined
+            }
+            .map(_.requestModelClassDef.get.code(isPrivate = false))
+            .mkString("\n")
+        )}
            |}""".stripMargin
       }
 
@@ -117,8 +112,8 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
           s"""${serviceBody}
              |${modelClassesBody}
              |${current.children
-               .map(traverse(_))
-               .mkString("\n")}""".stripMargin.trim
+            .map(traverse(_))
+            .mkString("\n")}""".stripMargin.trim
         if (current.packageLeafName.isEmpty) {
           body
         } else {
@@ -134,8 +129,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
          |""".stripMargin
     }
 
-    def generateStub(s: ClientSourceDef)(
-        stubBodyGenerator: ClientServiceDef => String): String = {
+    def generateStub(s: ClientSourceDef)(stubBodyGenerator: ClientServiceDef => String): String = {
       def serviceStub(svc: ClientServiceDef): String = {
         s"""object ${svc.serviceName} {
            |  private val descriptors = new ${svc.fullServiceName}Descriptors(codecFactory)
@@ -146,26 +140,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
            |${indent(stubBodyGenerator(svc))}
            |}""".stripMargin
       }
-
-      // Traverse nested packages
-      def traverse(p: ClientServicePackages): String = {
-        val serviceStubBody =
-          p.services.map(svc => serviceStub(svc)).mkString("\n")
-        val childServiceStubBody = p.children.map(traverse(_)).mkString("\n")
-
-        val body =
-          s"""${serviceStubBody}
-             |${childServiceStubBody}""".stripMargin.trim
-        if (p.packageLeafName.isEmpty) {
-          body
-        } else {
-          s"""object ${p.packageLeafName} {
-             |${indent(body)}
-             |}""".stripMargin
-        }
-      }
-
-      traverse(s.classDef.toNestedPackages)
+      generateNestedStub(s)(serviceStub)
     }
 
     def syncClientClass: String =
@@ -209,9 +184,8 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
           val inputArgs =
             m.inputParameters.map(inputParameterArg)
 
-          val requestObject = m.clientCallParameters.headOption.getOrElse(
-            "Map.empty[String, Any]")
-          val lines = Seq.newBuilder[String]
+          val requestObject = m.clientCallParameters.headOption.getOrElse("Map.empty[String, Any]")
+          val lines         = Seq.newBuilder[String]
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType.fullTypeName} = {"
           m.grpcMethodType match {
             case GrpcMethodType.UNARY =>
@@ -302,8 +276,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
             m.inputParameters.map(inputParameterArg)
 
           val requestObject =
-            m.clientCallParameters.headOption.getOrElse(
-              "Map.empty[String, Any]")
+            m.clientCallParameters.headOption.getOrElse("Map.empty[String, Any]")
           val clientArgs =
             inputArgs :+ s"responseObserver: io.grpc.stub.StreamObserver[${m.grpcReturnType.fullTypeName}]"
           val lines = m.grpcMethodType match {
