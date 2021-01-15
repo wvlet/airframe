@@ -30,9 +30,10 @@ object HttpClientGenerator {
 
   private[codegen] def fullTypeNameOf(s: Surface): String = {
     s match {
-      case p if p.isPrimitive                                        => p.name
-      case c if c.fullName.startsWith("scala.collection.immutable.") => c.name
-      case _                                                         => s.fullName.replaceAll("\\$", ".")
+      case p if p.isPrimitive =>
+        p.name
+      case _ =>
+        s.fullName.replaceAll("\\$", ".")
     }
   }
 

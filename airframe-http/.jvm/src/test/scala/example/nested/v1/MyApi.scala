@@ -13,7 +13,7 @@
  */
 package example.nested.v1
 
-import example.nested.v1.MyApi.{HelloRequest, HelloResponse}
+import example.nested.v1.MyApi.{HelloRequest, HelloResponse, Message}
 import wvlet.airframe.http.RPC
 
 /**
@@ -21,9 +21,11 @@ import wvlet.airframe.http.RPC
 @RPC
 trait MyApi {
   def hello(request: HelloRequest): HelloResponse = HelloResponse("hello v1")
+  def helloMsg: Seq[Message]                      = Seq.empty
 }
 
 object MyApi {
+  case class Message(msg: String)
   case class HelloRequest(name: String)
   case class HelloResponse(message: String)
 }
