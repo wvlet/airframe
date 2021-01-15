@@ -30,9 +30,16 @@ object Http {
   def client: HttpClientConfig = HttpClientConfig()
 
   /**
+    * Create the default HTTP sync client for the target server address
+    */
+  def clientFor(serverAddress: String): SyncClient =
+    client.newSyncClient(serverAddress)
+
+  /**
     * Create a new request
     */
-  def request(method: String, uri: String) = HttpMessage.Request.empty.withMethod(method).withUri(uri)
+  def request(method: String, uri: String) =
+    HttpMessage.Request.empty.withMethod(method).withUri(uri)
 
   /**
     * Create a new request
@@ -101,7 +108,9 @@ object Http {
     macro HttpMacros.newServerExceptionWithCodecFactory[A]
 
   private[http] def parseAcceptHeader(value: Option[String]): Seq[String] = {
-    value.map(_.split(",").map(_.trim).filter(_.nonEmpty).toSeq).getOrElse(Seq.empty)
+    value
+      .map(_.split(",").map(_.trim).filter(_.nonEmpty).toSeq)
+      .getOrElse(Seq.empty)
   }
 }
 
@@ -121,8 +130,10 @@ trait HttpRequest[Req] {
   def contentType: Option[String]  = adapter.contentTypeOf(toRaw)
   def contentBytes: Array[Byte]    = adapter.contentBytesOf(toRaw)
   def contentString: String        = adapter.contentStringOf(toRaw)
-  def accept: Seq[String]          = Http.parseAcceptHeader(header.get(HttpHeader.Accept))
-  def acceptsMsgPack: Boolean      = accept.contains(HttpHeader.MediaType.ApplicationMsgPack)
+  def accept: Seq[String] =
+    Http.parseAcceptHeader(header.get(HttpHeader.Accept))
+  def acceptsMsgPack: Boolean =
+    accept.contains(HttpHeader.MediaType.ApplicationMsgPack)
 }
 
 /**
@@ -166,8 +177,9 @@ trait HttpRequestAdapter[Req] {
   def queryOf(request: Req): HttpMultiMap
   def headerOf(request: Req): HttpMultiMap
   def messageOf(request: Req): HttpMessage.Message
-  def contentStringOf(request: Req): String     = messageOf(request).toContentString
-  def contentBytesOf(request: Req): Array[Byte] = messageOf(request).toContentBytes
+  def contentStringOf(request: Req): String = messageOf(request).toContentString
+  def contentBytesOf(request: Req): Array[Byte] =
+    messageOf(request).toContentBytes
   def contentTypeOf(request: Req): Option[String]
   def pathComponentsOf(request: Req): IndexedSeq[String] = {
     pathOf(request).replaceFirst("/", "").split("/").toIndexedSeq

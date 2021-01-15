@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.client
+
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Retry.MaxRetryException
@@ -23,15 +24,22 @@ import wvlet.airspec.AirSpec
 /**
   */
 object URLConnectionClientTest extends AirSpec {
-  override protected def design: Design =
+
+  // Use a public REST test server
+  private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
+
+  override protected def design: Design = {
     Design.newDesign
-      .bind[SyncClient].toInstance(
+      .bind[SyncClient]
+      .toInstance(
         Http.client
           .withRetryContext(_.withMaxRetry(1))
-          .newSyncClient("https://httpbin.org/") // Using a public REST test server
+          .newSyncClient(PUBLIC_REST_SERVICE)
       )
+  }
 
   case class Person(id: Int, name: String)
+
   val p     = Person(1, "leo")
   val pJson = MessageCodec.of[Person].toJson(p)
 
@@ -45,6 +53,13 @@ object URLConnectionClientTest extends AirSpec {
     m("json") shouldBe Map("id" -> 1, "name" -> "leo")
   }
 
+  test("create a new sync client") {
+    val m = Http
+      .clientFor(PUBLIC_REST_SERVICE)
+      .getOps[Person, Map[String, Any]]("/get", p)
+    m("args") shouldBe Map("id" -> "1", "name" -> "leo")
+  }
+
   test("sync client") { client: SyncClient =>
     test("Read content with 200") {
       val resp = client.sendSafe(Http.GET("/get"))
@@ -54,7 +69,8 @@ object URLConnectionClientTest extends AirSpec {
     }
 
     test("user-agent") {
-      val resp = client.get[Map[String, String]]("/user-agent", _.withUserAgent("airframe-http"))
+      val resp =
+        client.get[Map[String, String]]("/user-agent", _.withUserAgent("airframe-http"))
       resp.get("user-agent") shouldBe Some("airframe-http")
     }
 
