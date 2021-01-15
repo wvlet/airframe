@@ -25,13 +25,13 @@ val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
   "publishSnapshots",
-  s"+ projectJVM/publish; + projectJS/publish; ++ ${SCALA_2_12} sbtAirframe/publish;"
+  s"+ projectJVM/publish; ++ ${SCALA_2_12} sbtAirframe/publish; + projectJS/publish"
 )
 
 // [Development purpose] publish all artifacts to the local repo
 addCommandAlias(
   "publishAllLocal",
-  s"+ projectJVM/publishLocal; + projectJS/publishLocal; ++ ${SCALA_2_12} sbtAirframe/publishLocal"
+  s"+ projectJVM/publishLocal; ++ ${SCALA_2_12} sbtAirframe/publishLocal; + projectJS/publishLocal;"
 )
 
 addCommandAlias(
