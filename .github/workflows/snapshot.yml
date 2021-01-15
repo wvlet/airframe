@@ -24,11 +24,6 @@ jobs:
       - uses: olafurpg/setup-scala@v10
         with:
           java-version: adopt@1.11
-      - uses: actions/cache@v1
-        with:
-          path: ~/.cache
-          key: ${{ runner.os }}-snapshot-${{ hashFiles('**/*.sbt') }}
-          restore-keys: ${{ runner.os }}-snapshot-
       - name: Publish snapshots
         env:
           SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
