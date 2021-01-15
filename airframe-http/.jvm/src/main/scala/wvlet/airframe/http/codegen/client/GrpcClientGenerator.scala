@@ -17,6 +17,7 @@ import wvlet.airframe.http.codegen.HttpClientIR
 import wvlet.airframe.http.codegen.HttpClientIR.{
   ClientServiceDef,
   ClientServicePackages,
+  ClientSourceDef,
   GrpcMethodType
 }
 import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.{
@@ -41,7 +42,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
 
   override def generate(src: HttpClientIR.ClientSourceDef): String = {
     def code =
-      s"""${header(src.targetPackageName)}
+      s"""${header(src.destPackageName)}
          |
          |import wvlet.airframe.http._
          |
@@ -133,6 +134,40 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
          |""".stripMargin
     }
 
+    def generateStub(s: ClientSourceDef)(
+        stubBodyGenerator: ClientServiceDef => String): String = {
+      def serviceStub(svc: ClientServiceDef): String = {
+        s"""object ${svc.serviceName} {
+           |  private val descriptors = new ${svc.fullServiceName}Descriptors(codecFactory)
+           |
+           |  import io.grpc.stub.ClientCalls
+           |  import ${svc.fullServiceName}Models._
+           |
+           |${indent(stubBodyGenerator(svc))}
+           |}""".stripMargin
+      }
+
+      // Traverse nested packages
+      def traverse(p: ClientServicePackages): String = {
+        val serviceStubBody =
+          p.services.map(svc => serviceStub(svc)).mkString("\n")
+        val childServiceStubBody = p.children.map(traverse(_)).mkString("\n")
+
+        val body =
+          s"""${serviceStubBody}
+             |${childServiceStubBody}""".stripMargin.trim
+        if (p.packageLeafName.isEmpty) {
+          body
+        } else {
+          s"""object ${p.packageLeafName} {
+             |${indent(body)}
+             |}""".stripMargin
+        }
+      }
+
+      traverse(s.classDef.toNestedPackages)
+    }
+
     def syncClientClass: String =
       s"""def newSyncClient(
          |  channel: io.grpc.Channel,
@@ -161,20 +196,8 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
          |}
          |""".stripMargin
 
-    def syncClientStub: String = {
-      src.classDef.services
-        .map { svc =>
-          s"""object ${svc.serviceName} {
-             |  private val descriptors = new ${svc.fullServiceName}Descriptors(codecFactory)
-             |
-             |  import io.grpc.stub.ClientCalls
-             |  import ${svc.fullServiceName}Models._
-             |
-             |${indent(syncClientBody(svc))}
-             |}""".stripMargin
-        }
-        .mkString("\n")
-    }
+    def syncClientStub: String =
+      generateStub(src)(syncClientBody)
 
     def inputParameterArg(p: MethodParameter): String = {
       s"${p.name}: ${p.surface.fullTypeName}"
@@ -270,38 +293,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
          |
          |""".stripMargin
 
-    def asyncClientStub: String = {
-
-      def serviceStub(svc: ClientServiceDef): String = {
-        s"""object ${svc.serviceName} {
-           |  private val descriptors = new ${svc.fullServiceName}Descriptors(codecFactory)
-           |
-           |  import io.grpc.stub.ClientCalls
-           |  import ${svc.fullServiceName}Models._
-           |
-           |${indent(asyncClientBody(svc))}
-           |}""".stripMargin
-      }
-
-      def traverse(p: ClientServicePackages): String = {
-        val serviceStubBody =
-          p.services.map(svc => serviceStub(svc)).mkString("\n")
-        val childServiceStubBody = p.children.map(traverse(_)).mkString("\n")
-
-        val body =
-          s"""${serviceStubBody}
-             |${childServiceStubBody}""".stripMargin.trim
-        if (p.packageLeafName.isEmpty) {
-          body
-        } else {
-          s"""object ${p.packageLeafName} {
-             |${indent(body)}
-             |}""".stripMargin
-        }
-      }
-
-      traverse(src.classDef.toNestedPackages)
-    }
+    def asyncClientStub: String = generateStub(src)(asyncClientBody)
 
     def asyncClientBody(svc: ClientServiceDef): String = {
       svc.methods

@@ -39,8 +39,7 @@ object HttpClientIR extends LogSupport {
   // Intermediate representation (IR) of HTTP client code
   sealed trait ClientCodeIR
 
-  case class ClientSourceDef(targetPackageName: String,
-                             classDef: ClientClassDef)
+  case class ClientSourceDef(destPackageName: String, classDef: ClientClassDef)
       extends ClientCodeIR {
     private def imports: Seq[Surface] = {
       // Collect all Surfaces used in the generated code
@@ -75,7 +74,7 @@ object HttpClientIR extends LogSupport {
           surface.isOption ||
           surface.isPrimitive ||
           // Within the same package
-          importPackageName == targetPackageName)
+          importPackageName == destPackageName)
       }
 
       loop(classDef).filter(requireImports).distinct.sortBy(_.name)
@@ -384,7 +383,7 @@ object HttpClientIR extends LogSupport {
     }
 
     ClientSourceDef(
-      targetPackageName = config.targetPackageName,
+      destPackageName = config.targetPackageName,
       classDef = buildClassDef
     )
   }

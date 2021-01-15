@@ -51,7 +51,7 @@ object AsyncClientGenerator extends HttpClientGenerator {
   override def defaultClassName: String = "ServiceClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
-      s"""${header(src.targetPackageName)}
+      s"""${header(src.destPackageName)}
          |
          |import wvlet.airframe.http._
          |import scala.language.higherKinds
@@ -111,7 +111,7 @@ object SyncClientGenerator extends HttpClientGenerator {
   override def defaultClassName: String = "ServiceSyncClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
-      s"""${header(src.targetPackageName)}
+      s"""${header(src.destPackageName)}
          |
          |import wvlet.airframe.http._
          |${src.importStatements}
@@ -173,7 +173,7 @@ object ScalaJSClientGenerator extends HttpClientGenerator {
   override def defaultClassName: String = "ServiceJSClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
-      s"""${header(src.targetPackageName)}
+      s"""${header(src.destPackageName)}
          |
          |import scala.concurrent.Future
          |import wvlet.airframe.surface.Surface
