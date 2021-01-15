@@ -23,11 +23,6 @@ jobs:
         env:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
         run: echo $PGP_SECRET | base64 --decode | gpg --import --batch --yes
-      - uses: actions/cache@v1
-        with:
-          path: ~/.cache
-          key: ${{ runner.os }}-release-js-${{ hashFiles('**/*.sbt') }}
-          restore-keys: ${{ runner.os }}-release-js-
       - name: Build for Scala.js 1.0.x
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}

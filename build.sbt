@@ -1,35 +1,37 @@
 import sbtcrossproject.{CrossType, crossProject}
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
-val SCALA_2_12 = "2.12.12"
-val SCALA_2_13 = "2.13.4"
-val SCALA_3_0 = "3.0.0-M3"
+val SCALA_2_12          = "2.12.12"
+val SCALA_2_13          = "2.13.4"
+val SCALA_3_0           = "3.0.0-M3"
 val targetScalaVersions = SCALA_2_13 :: SCALA_2_12 :: Nil
-val withDotty = SCALA_3_0 :: targetScalaVersions
+val withDotty           = SCALA_3_0 :: targetScalaVersions
 
-val AIRSPEC_VERSION = "21.1.0"
-val SCALACHECK_VERSION = "1.15.2"
-val MSGPACK_VERSION = "0.8.22"
+val AIRSPEC_VERSION                 = "21.1.0"
+val SCALACHECK_VERSION              = "1.15.2"
+val MSGPACK_VERSION                 = "0.8.22"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
-val SQLITE_JDBC_VERSION = "3.34.0"
-val SLF4J_VERSION = "1.7.30"
-val JS_JAVA_LOGGING_VERSION = "1.0.0"
-val JS_JAVA_TIME_VERSION = "1.0.0"
-val SCALAJS_DOM_VERSION = "1.1.0"
-val FINAGLE_VERSION = "20.12.0"
-val FLUENCY_VERSION = "2.5.0"
-val GRPC_VERSION = "1.35.0"
-val JMH_VERSION = "1.27"
-val JAVAX_ANNOTATION_API_VERSION = "1.3.2"
+val SQLITE_JDBC_VERSION             = "3.34.0"
+val SLF4J_VERSION                   = "1.7.30"
+val JS_JAVA_LOGGING_VERSION         = "1.0.0"
+val JS_JAVA_TIME_VERSION            = "1.0.0"
+val SCALAJS_DOM_VERSION             = "1.1.0"
+val FINAGLE_VERSION                 = "20.12.0"
+val FLUENCY_VERSION                 = "2.5.0"
+val GRPC_VERSION                    = "1.35.0"
+val JMH_VERSION                     = "1.27"
+val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 
-// Publish only Scala 2.12 projects for snapshot releases
+// A short cut for publishing snapshots to Sonatype
 addCommandAlias(
   "publishSnapshots",
-  s"; ++ ${SCALA_2_12}; projectJVM/publish; projectJS/publish; sbtAirframe/publish;"
+  s"+ projectJVM/publish; ++ ${SCALA_2_12} sbtAirframe/publish; + projectJS/publish"
 )
+
+// [Development purpose] publish all artifacts to the local repo
 addCommandAlias(
-  "publishJVMLocal",
-  s"; + projectJVM/publishLocal; ++ ${SCALA_2_12} sbtAirframe/publishLocal"
+  "publishAllLocal",
+  s"+ projectJVM/publishLocal; ++ ${SCALA_2_12} sbtAirframe/publishLocal; + projectJS/publishLocal;"
 )
 
 addCommandAlias(
@@ -70,8 +72,7 @@ dynverSonatypeSnapshots in ThisBuild := true
 dynverSeparator in ThisBuild := "-"
 
 val buildSettings = Seq[Setting[_]](
-  licenses += ("Apache-2.0", url(
-    "https://www.apache.org/licenses/LICENSE-2.0.html")),
+  licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://wvlet.org/airframe")),
   scmInfo := Some(
     ScmInfo(
@@ -80,10 +81,7 @@ val buildSettings = Seq[Setting[_]](
     )
   ),
   developers := List(
-    Developer(id = "leo",
-              name = "Taro L. Saito",
-              email = "leo@xerial.org",
-              url = url("http://xerial.org/leo"))
+    Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
   // Exclude compile-time only projects. This is a workaround for bloop,
   // which cannot resolve Optional dependencies nor compile-internal dependencie.
@@ -183,8 +181,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
 )
 
 // Other JVM projects supporting Scala 2.12 - Scala 2.13
-lazy val jvmProjects
-  : Seq[ProjectReference] = communityBuildProjects ++ Seq[ProjectReference](
+lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[ProjectReference](
   jdbc,
   fluentd,
   finagle,
@@ -289,8 +286,7 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
         case e: Elem
             if e.label == "dependency"
               && artifactId(e).exists(id => isExcludeTarget(id)) =>
-          Comment(
-            s"Excluded compile-time only dependency: ${artifactId(e).getOrElse("")}")
+          Comment(s"Excluded compile-time only dependency: ${artifactId(e).getOrElse("")}")
         case _ =>
           node
       }
@@ -322,11 +318,9 @@ lazy val airframe =
     )
 
 lazy val airframeJVM = airframe.jvm
-lazy val airframeJS = airframe.js
+lazy val airframeJS  = airframe.js
 
-def crossBuildSources(scalaBinaryVersion: String,
-                      baseDir: String,
-                      srcType: String = "main"): Seq[sbt.File] = {
+def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: String = "main"): Seq[sbt.File] = {
   val scalaMajorVersion = scalaBinaryVersion.split("\\.").head
   for (suffix <- Seq("", s"-${scalaBinaryVersion}", s"-${scalaMajorVersion}"))
     yield {
@@ -347,8 +341,7 @@ def dottyCrossBuildSettings(prefix: String): Seq[Setting[_]] = {
     unmanagedSourceDirectories in Test := {
       scalaBinaryVersion.value match {
         case v if v.startsWith("3.") =>
-          Seq[sbt.File](file(
-            s"${(baseDirectory.value.getParentFile / prefix).toString}/src/test/scala-3"))
+          Seq[sbt.File](file(s"${(baseDirectory.value.getParentFile / prefix).toString}/src/test/scala-3"))
         case _ =>
           (Test / unmanagedSourceDirectories).value
       }
@@ -380,7 +373,7 @@ lazy val airframeMacros =
     .dependsOn(log, surface)
 
 lazy val airframeMacrosJVM = airframeMacros.jvm
-lazy val airframeMacrosJS = airframeMacros.js
+lazy val airframeMacrosJS  = airframeMacros.js
 
 // // To use airframe in other airframe modules, we need to reference airframeMacros project
 // lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
@@ -397,8 +390,8 @@ val surfaceDependencies = { scalaVersion: String =>
       Seq(
         // For ading PreDestroy, PostConstruct annotations to Java9
         "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION,
-        ("org.scala-lang" % "scala-reflect" % scalaVersion),
-        ("org.scala-lang" % "scala-compiler" % scalaVersion % Provided)
+        ("org.scala-lang"  % "scala-reflect"        % scalaVersion),
+        ("org.scala-lang"  % "scala-compiler"       % scalaVersion % Provided)
       )
   }
 }
@@ -417,7 +410,7 @@ lazy val surface =
     .dependsOn(log)
 
 lazy val surfaceJVM = surface.jvm
-lazy val surfaceJS = surface.js
+lazy val surfaceJS  = surface.js
 
 lazy val canvas =
   project
@@ -459,7 +452,7 @@ lazy val control =
     .dependsOn(log)
 
 lazy val controlJVM = control.jvm
-lazy val controlJS = control.js
+lazy val controlJS  = control.js
 
 lazy val jmx =
   project
@@ -543,7 +536,7 @@ lazy val log: sbtcrossproject.CrossProject =
     )
 
 lazy val logJVM = log.jvm
-lazy val logJS = log.js
+lazy val logJS  = log.js
 
 lazy val metrics =
   crossProject(JVMPlatform, JSPlatform)
@@ -557,7 +550,7 @@ lazy val metrics =
     .dependsOn(log, surface)
 
 lazy val metricsJVM = metrics.jvm
-lazy val metricsJS = metrics.js
+lazy val metricsJS  = metrics.js
 
 lazy val msgpack =
   crossProject(JVMPlatform, JSPlatform)
@@ -578,7 +571,7 @@ lazy val msgpack =
     .dependsOn(log, json)
 
 lazy val msgpackJVM = msgpack.jvm
-lazy val msgpackJS = msgpack.js
+lazy val msgpackJS  = msgpack.js
 
 lazy val codec =
   crossProject(JVMPlatform, JSPlatform)
@@ -601,7 +594,7 @@ lazy val codec =
     .dependsOn(log, surface, msgpack, metrics, json, control)
 
 lazy val codecJVM = codec.jvm
-lazy val codecJS = codec.js
+lazy val codecJS  = codec.js
 
 lazy val jdbc =
   project
@@ -611,9 +604,9 @@ lazy val jdbc =
       name := "airframe-jdbc",
       description := "JDBC connection pool service",
       libraryDependencies ++= Seq(
-        "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
-        "org.postgresql" % "postgresql" % "42.2.18",
-        "com.zaxxer" % "HikariCP" % "3.4.5",
+        "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
+        "org.postgresql" % "postgresql"  % "42.2.18",
+        "com.zaxxer"     % "HikariCP"    % "3.4.5",
         // For routing slf4j log to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
@@ -640,7 +633,7 @@ lazy val rx =
     .dependsOn(log)
 
 lazy val rxJVM = rx.jvm
-lazy val rxJS = rx.js
+lazy val rxJS  = rx.js
 
 lazy val http =
   crossProject(JVMPlatform, JSPlatform)
@@ -657,8 +650,7 @@ lazy val http =
           case Some((2, major)) if major <= 12 =>
             Seq()
           case _ =>
-            Seq(
-              "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.0")
+            Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.0")
         }
       }
     )
@@ -674,8 +666,7 @@ lazy val http =
 lazy val httpJVM = http.jvm
   .enablePlugins(PackPlugin)
   .settings(
-    packMain := Map(
-      "airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
+    packMain := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
     packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13"),
     publishPackArchiveTgz,
     libraryDependencies ++= Seq(
@@ -697,10 +688,10 @@ lazy val grpc =
       name := "airframe-http-grpc",
       description := "Airframe HTTP gRPC backend",
       libraryDependencies ++= Seq(
-        "io.grpc" % "grpc-netty-shaded" % GRPC_VERSION,
-        "io.grpc" % "grpc-stub" % GRPC_VERSION,
-        "org.apache.tomcat" % "annotations-api" % "6.0.53" % Provided,
-        "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION % Test
+        "io.grpc"           % "grpc-netty-shaded" % GRPC_VERSION,
+        "io.grpc"           % "grpc-stub"         % GRPC_VERSION,
+        "org.apache.tomcat" % "annotations-api"   % "6.0.53"      % Provided,
+        "org.slf4j"         % "slf4j-jdk14"       % SLF4J_VERSION % Test
       )
     )
     .dependsOn(httpJVM, rxJVM)
@@ -714,10 +705,10 @@ lazy val finagle =
       description := "REST API binding for Finagle",
       // Finagle doesn't support Scala 2.13 yet
       libraryDependencies ++= Seq(
-        "com.twitter" %% "finagle-http" % FINAGLE_VERSION,
+        "com.twitter" %% "finagle-http"        % FINAGLE_VERSION,
         "com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION,
-        "com.twitter" %% "finagle-netty4" % FINAGLE_VERSION,
-        "com.twitter" %% "finagle-core" % FINAGLE_VERSION,
+        "com.twitter" %% "finagle-netty4"      % FINAGLE_VERSION,
+        "com.twitter" %% "finagle-core"        % FINAGLE_VERSION,
         // Redirecting slf4j log in Finagle to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
@@ -747,8 +738,8 @@ lazy val httpRecorder =
       // Finagle doesn't support Scala 2.13 yet
       libraryDependencies ++= Seq(
         "com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION,
-        "com.twitter" %% "finagle-netty4" % FINAGLE_VERSION,
-        "com.twitter" %% "finagle-core" % FINAGLE_VERSION,
+        "com.twitter" %% "finagle-netty4"      % FINAGLE_VERSION,
+        "com.twitter" %% "finagle-core"        % FINAGLE_VERSION,
         // Redirecting slf4j log in Finagle to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
@@ -768,7 +759,7 @@ lazy val json =
     .dependsOn(log)
 
 lazy val jsonJVM = json.jvm
-lazy val jsonJS = json.js
+lazy val jsonJS  = json.js
 
 lazy val benchmark =
   project
@@ -779,8 +770,7 @@ lazy val benchmark =
     .settings(noPublish)
     .settings(
       name := "airframe-benchmark",
-      packMain := Map(
-        "airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
+      packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
       // Turbo mode didn't work with this error:
       // java.lang.RuntimeException: ERROR: Unable to find the resource: /META-INF/BenchmarkList
       turbo := false,
@@ -792,17 +782,17 @@ lazy val benchmark =
       // Need to fork JVM so that sbt can set the classpass properly for running JMH
       fork in run := true,
       libraryDependencies ++= Seq(
-        "org.msgpack" % "msgpack-core" % MSGPACK_VERSION,
-        "org.openjdk.jmh" % "jmh-core" % JMH_VERSION,
-        "org.openjdk.jmh" % "jmh-generator-bytecode" % JMH_VERSION,
+        "org.msgpack"     % "msgpack-core"             % MSGPACK_VERSION,
+        "org.openjdk.jmh" % "jmh-core"                 % JMH_VERSION,
+        "org.openjdk.jmh" % "jmh-generator-bytecode"   % JMH_VERSION,
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION,
         // Used only for json benchmark
         "org.json4s" %% "json4s-jackson" % "3.6.10",
-        "io.circe" %% "circe-parser" % "0.13.0",
+        "io.circe"   %% "circe-parser"   % "0.13.0",
         // For ScalaPB
         // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
         // For grpc-java
-        "io.grpc" % "grpc-protobuf" % GRPC_VERSION,
+        "io.grpc"             % "grpc-protobuf" % GRPC_VERSION,
         "com.google.protobuf" % "protobuf-java" % "3.14.0"
       )
       //      PB.targets in Compile := Seq(
@@ -821,8 +811,8 @@ lazy val fluentd =
       name := "airframe-fluentd",
       description := "Fluentd logger",
       libraryDependencies ++= Seq(
-        "org.komamitsu" % "fluency-core" % FLUENCY_VERSION,
-        "org.komamitsu" % "fluency-fluentd" % FLUENCY_VERSION,
+        "org.komamitsu" % "fluency-core"         % FLUENCY_VERSION,
+        "org.komamitsu" % "fluency-fluentd"      % FLUENCY_VERSION,
         "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION,
         // Redirecting slf4j log from Fluency to aiframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
@@ -882,7 +872,7 @@ lazy val rxHtml =
     .dependsOn(log, rx, surface)
 
 lazy val rxHtmlJVM = rxHtml.jvm
-lazy val rxHtmlJS = rxHtml.js
+lazy val rxHtmlJS  = rxHtml.js
 
 lazy val widget =
   crossProject(JSPlatform)
@@ -912,7 +902,7 @@ lazy val examples =
       name := "airframe-examples",
       description := "Airframe examples",
       libraryDependencies ++= Seq(
-        )
+      )
     )
     .dependsOn(
       codecJVM,
@@ -932,10 +922,7 @@ lazy val sbtAirframe =
     .enablePlugins(SbtPlugin, BuildInfoPlugin)
     .settings(
       buildSettings,
-      buildInfoKeys := Seq[BuildInfoKey](name,
-                                         version,
-                                         scalaVersion,
-                                         sbtVersion),
+      buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
       buildInfoPackage := "wvlet.airframe.sbt",
       name := "sbt-airframe",
       description := "sbt plugin for helping programming with Airframe",
@@ -943,7 +930,7 @@ lazy val sbtAirframe =
       // This setting might be unnecessary?
       //crossSbtVersions := Vector("1.3.13"),
       libraryDependencies ++= Seq(
-        "io.get-coursier" %% "coursier" % "2.0.8",
+        "io.get-coursier"   %% "coursier"         % "2.0.8",
         "org.apache.commons" % "commons-compress" % "1.20"
       ),
       scriptedLaunchOpts := {
@@ -953,10 +940,10 @@ lazy val sbtAirframe =
       scriptedDependencies := {
         // Publish all dependencies necessary for running the scripted tests
         val depPublish = scriptedDependencies.value
-        val p1 = publishLocal.in(httpJVM, packArchiveTgz).value
-        val p2 = publishLocal.all(ScopeFilter(inDependencies(finagle))).value
-        val p3 = publishLocal.all(ScopeFilter(inDependencies(grpc))).value
-        val p4 = publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
+        val p1         = publishLocal.in(httpJVM, packArchiveTgz).value
+        val p2         = publishLocal.all(ScopeFilter(inDependencies(finagle))).value
+        val p3         = publishLocal.all(ScopeFilter(inDependencies(grpc))).value
+        val p4         = publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
       },
       scriptedBufferLog := false
     )
@@ -993,9 +980,9 @@ lazy val dottyTest =
   *
   * airspec.jar will be an all-in-one jar with airframe-log, di, surface, metrics, etc.
   */
-val airspecLogDependencies = Seq("airframe-log")
+val airspecLogDependencies  = Seq("airframe-log")
 val airspecCoreDependencies = Seq("airframe-di-macros", "airframe-surface")
-val airspecDependencies = Seq("airframe", "airframe-metrics")
+val airspecDependencies     = Seq("airframe", "airframe-metrics")
 
 // Setting keys for AirSpec
 val airspecDependsOn =
@@ -1004,7 +991,7 @@ val airspecDependsOn =
 val airspecBuildSettings = Seq[Setting[_]](
   unmanagedSourceDirectories in Compile ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
-    val sv = scalaBinaryVersion.value
+    val sv      = scalaBinaryVersion.value
     val sourceDirs =
       for (m <- airspecDependsOn.value; infix <- Seq("", "/shared")) yield {
         crossBuildSources(sv, s"${baseDir}/${m}${infix}")
@@ -1016,7 +1003,7 @@ val airspecBuildSettings = Seq[Setting[_]](
 val airspecJVMBuildSettings = Seq[Setting[_]](
   unmanagedSourceDirectories in Compile ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
-    val sv = scalaBinaryVersion.value
+    val sv      = scalaBinaryVersion.value
     val sourceDirs =
       for (m <- airspecDependsOn.value; folder <- Seq(".jvm", "jvm")) yield {
         crossBuildSources(sv, s"${baseDir}/${m}/${folder}")
@@ -1028,7 +1015,7 @@ val airspecJVMBuildSettings = Seq[Setting[_]](
 val airspecJSBuildSettings = Seq[Setting[_]](
   unmanagedSourceDirectories in Compile ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
-    val sv = scalaBinaryVersion.value
+    val sv      = scalaBinaryVersion.value
     val sourceDirs =
       for (m <- airspecDependsOn.value; folder <- Seq(".js", "js")) yield {
         crossBuildSources(sv, s"${baseDir}/${m}/${folder}")
@@ -1062,7 +1049,7 @@ lazy val airspecLog =
     )
 
 lazy val airspecLogJVM = airspecLog.jvm
-lazy val airspecLogJS = airspecLog.js
+lazy val airspecLogJS  = airspecLog.js
 
 lazy val airspecCore =
   crossProject(JSPlatform, JVMPlatform)
@@ -1099,7 +1086,7 @@ lazy val airspecCore =
     .dependsOn(airspecLog)
 
 lazy val airspecCoreJVM = airspecCore.jvm
-lazy val airspecCoreJS = airspecCore.js
+lazy val airspecCoreJS  = airspecCore.js
 
 lazy val airspecDeps =
   crossProject(JSPlatform, JVMPlatform)
@@ -1135,7 +1122,7 @@ lazy val airspecDeps =
     .dependsOn(airspecCore)
 
 lazy val airspecDepsJVM = airspecDeps.jvm
-lazy val airspecDepsJS = airspecDeps.js
+lazy val airspecDepsJS  = airspecDeps.js
 
 lazy val airspec =
   crossProject(JSPlatform, JVMPlatform)
@@ -1149,8 +1136,7 @@ lazy val airspec =
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % Optional
       ),
       // A workaround for bloop, which cannot resolve Optional dependencies
-      pomPostProcess := excludePomDependency(
-        Seq("airspec-deps", "airspec_2.12", "airspec_2.13"))
+      pomPostProcess := excludePomDependency(Seq("airspec-deps", "airspec_2.12", "airspec_2.13"))
     )
     .jvmSettings(
       // Embed dependent project codes to make airspec a single jar
@@ -1161,8 +1147,8 @@ lazy val airspec =
         .in(airspecDepsJVM, Compile, packageSrc)
         .value,
       libraryDependencies ++= Seq(
-        "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-        "org.scala-sbt" % "test-interface" % "1.0"
+        "org.scala-lang" % "scala-reflect"  % scalaVersion.value,
+        "org.scala-sbt"  % "test-interface" % "1.0"
       )
     )
     .jsSettings(
@@ -1174,14 +1160,14 @@ lazy val airspec =
         .in(airspecDepsJS, Compile, packageSrc)
         .value,
       libraryDependencies ++= Seq(
-        "org.scala-js" %% "scalajs-test-interface" % scalaJSVersion,
+        "org.scala-js"        %% "scalajs-test-interface" % scalaJSVersion,
         "org.portable-scala" %%% "portable-scala-reflect" % "1.0.0"
       )
     )
     .dependsOn(airspecDeps % Provided) // Use Provided dependency for bloop, and remove it later with pomPostProcess
 
 lazy val airspecJVM = airspec.jvm
-lazy val airspecJS = airspec.js
+lazy val airspecJS  = airspec.js
 
 def isAirSpecClass(mapping: (File, String)): Boolean =
   mapping._2.startsWith("wvlet/airspec/")
@@ -1208,8 +1194,8 @@ lazy val airspecLight =
         .value
         .filter(isAirSpecClass),
       libraryDependencies ++= Seq(
-        "org.scala-sbt" % "test-interface" % "1.0" % Provided,
-        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % Provided
+        "org.scala-sbt"    % "test-interface" % "1.0"              % Provided,
+        "org.scalacheck" %%% "scalacheck"     % SCALACHECK_VERSION % Provided
       )
     )
     .dependsOn(airframeJVM, metricsJVM)
