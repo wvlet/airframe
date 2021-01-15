@@ -13,16 +13,17 @@
  */
 package example.nested.v2
 
-import example.nested.v2.MyApi.HelloResponse
+import example.nested.v2.MyApi.{HelloRequest, HelloResponse}
 import wvlet.airframe.http.RPC
 
 /**
   */
 @RPC
 trait MyApi {
-  def hello: HelloResponse = HelloResponse("hello v2")
+  def hello(request: HelloRequest): HelloResponse = HelloResponse("hello v2")
 }
 
 object MyApi {
+  case class HelloRequest(name: String)
   case class HelloResponse(message: String, version: String = "v2")
 }

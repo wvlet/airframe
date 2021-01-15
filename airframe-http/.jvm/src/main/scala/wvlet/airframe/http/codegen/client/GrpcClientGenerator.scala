@@ -264,18 +264,36 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
          |""".stripMargin
 
     def asyncClientStub: String = {
-      src.classDef.services
-        .map { svc =>
-          s"""object ${svc.serviceName} {
-             |  private val descriptors = new ${svc.fullServiceName}Descriptors(codecFactory)
-             |
-             |  import io.grpc.stub.ClientCalls
-             |  import ${svc.fullServiceName}Models._
-             |
-             |${indent(asyncClientBody(svc))}
+
+      def serviceStub(svc: ClientServiceDef): String = {
+        s"""object ${svc.serviceName} {
+           |  private val descriptors = new ${svc.fullServiceName}Descriptors(codecFactory)
+           |
+           |  import io.grpc.stub.ClientCalls
+           |  import ${svc.fullServiceName}Models._
+           |
+           |${indent(asyncClientBody(svc))}
+           |}""".stripMargin
+      }
+
+      def traverse(p: ClientServicePackages): String = {
+        val serviceStubBody =
+          p.services.map(svc => serviceStub(svc)).mkString("\n")
+        val childServiceStubBody = p.children.map(traverse(_)).mkString("\n")
+
+        val body =
+          s"""${serviceStubBody}
+             |${childServiceStubBody}""".stripMargin.trim
+        if (p.packageLeafName.isEmpty) {
+          body
+        } else {
+          s"""object ${p.packageLeafName} {
+             |${indent(body)}
              |}""".stripMargin
         }
-        .mkString("\n")
+      }
+
+      traverse(src.classDef.toNestedPackages)
     }
 
     def asyncClientBody(svc: ClientServiceDef): String = {
