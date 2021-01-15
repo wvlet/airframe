@@ -328,6 +328,13 @@ trait FinagleServerFactory extends AutoCloseable with LogSupport {
     )
   }
 
+  /**
+    * Block until all servers created by this factory terminate
+    */
+  def awaitTermination: Unit = {
+    createdServers.par.foreach(_.waitServerTermination)
+  }
+
   override def close(): Unit = {
     debug(s"Closing FinagleServerFactory")
     val ex = Seq.newBuilder[Throwable]

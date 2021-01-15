@@ -12,28 +12,24 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
-import java.io.{ByteArrayInputStream, InputStream}
-import java.util.concurrent.ExecutorService
-
 import io.grpc.MethodDescriptor.Marshaller
 import io.grpc.stub.ServerCalls
 import io.grpc.{MethodDescriptor, ServerServiceDefinition}
 import wvlet.airframe.Session
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.IO
-import wvlet.airframe.http.Router
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.{MethodParameter, MethodSurface, Surface}
 import wvlet.log.LogSupport
 
+import java.io.{ByteArrayInputStream, InputStream}
+import java.util.concurrent.ExecutorService
+
 /**
   */
 object GrpcServiceBuilder {
-
-  type GrpcServiceThreadExecutor = ExecutorService
-
   private implicit class RichMethod(val m: MethodSurface) extends AnyVal {
 
     private def findClientStreamingArg: Option[MethodParameter] = {
@@ -86,24 +82,22 @@ object GrpcServiceBuilder {
   }
 
   def buildService(
-      router: Router,
-      session: Session,
-      codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
-  ): Seq[ServerServiceDefinition] = {
+      config: GrpcServerConfig,
+      session: Session
+  ): GrpcService = {
+    val threadManager: ExecutorService = config.executorProvider(config)
     val services =
-      for ((serviceName, routes) <- router.routes.groupBy(_.serviceName))
+      for ((serviceName, routes) <- config.router.routes.groupBy(_.serviceName))
         yield {
           val routeAndMethods = for (route <- routes) yield {
-            (route, buildMethodDescriptor(route, codecFactory))
+            (route, buildMethodDescriptor(route, config.codecFactory))
           }
 
           val serviceBuilder = ServerServiceDefinition.builder(serviceName)
 
           for ((r, m) <- routeAndMethods) {
-            // TODO Support Client/Server Streams
             val controller     = session.getInstanceOf(r.controllerSurface)
-            val threadManager  = session.build[GrpcServiceThreadExecutor]
-            val requestHandler = new RPCRequestHandler(controller, r.methodSurface, codecFactory, threadManager)
+            val requestHandler = new RPCRequestHandler(controller, r.methodSurface, config.codecFactory, threadManager)
             val serverCall = r.methodSurface.grpcMethodType match {
               case MethodDescriptor.MethodType.UNARY =>
                 ServerCalls.asyncUnaryCall(new RPCUnaryMethodHandler(requestHandler))
@@ -126,7 +120,7 @@ object GrpcServiceBuilder {
           serviceDef
         }
 
-    services.toSeq
+    GrpcService(config, threadManager, services.toSeq)
   }
 
   object RPCRequestMarshaller extends Marshaller[MsgPack] with LogSupport {
