@@ -13,12 +13,12 @@
  */
 package wvlet.airframe.http.finagle
 import java.lang.reflect.InvocationTargetException
-
 import com.twitter.finagle._
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.stats.StatsReceiver
 import com.twitter.finagle.tracing.Tracer
 import com.twitter.util.{Await, Future}
+
 import javax.annotation.PostConstruct
 import wvlet.airframe._
 import wvlet.airframe.codec.MessageCodec
@@ -32,6 +32,7 @@ import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 import scala.annotation.tailrec
+import scala.collection.parallel.immutable.ParVector
 import scala.concurrent.ExecutionException
 import scala.util.control.NonFatal
 
@@ -332,7 +333,9 @@ trait FinagleServerFactory extends AutoCloseable with LogSupport {
     * Block until all servers created by this factory terminate
     */
   def awaitTermination: Unit = {
-    createdServers.par.foreach(_.waitServerTermination)
+    val b = ParVector.newBuilder[FinagleServer]
+    b ++= createdServers
+    b.result().foreach(_.waitServerTermination)
   }
 
   override def close(): Unit = {

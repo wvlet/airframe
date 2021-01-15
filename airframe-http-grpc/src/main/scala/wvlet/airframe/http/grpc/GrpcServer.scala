@@ -22,6 +22,7 @@ import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 import java.util.concurrent.{ExecutorService, Executors}
+import scala.collection.parallel.immutable.ParVector
 import scala.language.existentials
 import scala.util.control.NonFatal
 
@@ -180,7 +181,11 @@ class GrpcServerFactory(session: Session) extends AutoCloseable with LogSupport 
   }
 
   def awaitTermination: Unit = {
-    createdServers.par.foreach(_.awaitTermination)
+    // Workaround for `.par` in Scala 2.13, which requires import scala.collection.parallel.CollectionConverters._
+    // But this import doesn't work in Scala 2.12
+    val b = ParVector.newBuilder[GrpcServer]
+    b ++= createdServers
+    b.result().foreach(_.awaitTermination)
   }
 
   override def close(): Unit = {
