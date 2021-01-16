@@ -22,6 +22,7 @@ import wvlet.log.LogSupport
 import scala.concurrent.Future
 
 object StandardFilterTest extends AirSpec {
+
   object MyFilter extends Http.Filter with LogSupport {
     override def apply(request: HttpMessage.Request, context: Context): Future[HttpMessage.Response] = {
       debug(s"request: ${request}")
@@ -36,7 +37,12 @@ object StandardFilterTest extends AirSpec {
 
   trait MyAPI {
     @Endpoint(path = "/")
-    def hello(name: String = "Finagle", request: HttpMessage.Request, context: FinagleContext): String = {
+    def hello(
+        name: String = "Finagle",
+        request: HttpMessage.Request,
+        // TODO: Support Http.Context
+        context: FinagleContext
+    ): String = {
       val requestId = context.getThreadLocal("request-id").getOrElse("yyyy")
       s"[${requestId}] Hello ${request.header.getOrElse("X-App", "unknown")}"
     }
