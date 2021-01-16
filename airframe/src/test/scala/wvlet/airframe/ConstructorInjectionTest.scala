@@ -21,15 +21,14 @@ import scala.util.Random
   */
 object ConstructorInjectionTest extends AirSpec {
 
-  case class D(x: Int = 1)
+  case class D(x: Int = Random.nextInt(1000))
 
   case class C(d1: D, d2: D)
 
   test("constructor injection should bind singleton instances") {
-    val d = newDesign
+    val d = newSilentDesign
     d.build[C] { c =>
       c.d1 shouldBeTheSameInstanceAs c.d2
     }
   }
-
 }
