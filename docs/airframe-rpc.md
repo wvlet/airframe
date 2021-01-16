@@ -415,11 +415,6 @@ _(This is an experimental feature available since Airframe 20.8.0)_
 Airframe gRPC is a gRPC and HTTP2-based implementation of Airframe RPC, which can make thousands of RPC calls per second. With Airframe gRPC:
 
 - No Protobuf definition is required. You can use plain Scala and case classes to define gRPC service.
-- Roadmap
-  - [x] Create a gRPC server from Airframe RPC router
-  - [x] Generate gRPC client stub with sbt-airframe plugin.
-  - [x] Support client, server-side, and bidirectional streaming
-  - [ ] Add a gRPC server proxy with airframe-http-finagle for supporting HTTP1
 
 __build.sbt__
 
@@ -470,6 +465,10 @@ val router = Router.add[GreeterApiImpl]
 gRPC.server
   .withRouter(router)
   .withPort(8080)
+  // [optional] You can add gRPC interceptors here
+  //.withInterceptor(...)
+  // [optional] you can customize gRPC server here
+  //.withServerInitializer{ x: ServerBuilder => x.addMethod(...); x }
   .start { server =>
     // gRPC server (based on Netty) starts at localhost:8080
     server.awaitTermination
