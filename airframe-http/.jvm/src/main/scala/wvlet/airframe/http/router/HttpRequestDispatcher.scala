@@ -15,6 +15,7 @@ package wvlet.airframe.http.router
 
 import wvlet.airframe.Session
 import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.http.HttpBackend.DefaultBackend
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
 
@@ -44,14 +45,15 @@ object HttpRequestDispatcher extends LogSupport {
       responseHandler: ResponseHandler[Req, Resp],
       codecFactory: MessageCodecFactory
   ): HttpFilter[Req, Resp, F] = {
-    // A table for Route -> matching HttpFilter
-    val routingTable = buildRoutingTable(session, router, backend.defaultFilter, controllerProvider)
+    // Generate a table for Route -> matching HttpFilter
+    val routingTable = buildRoutingTable(backend, session, router, backend.defaultFilter, controllerProvider)
 
     backend.newFilter { (request: Req, context: HttpContext[Req, Resp, F]) =>
       router.findRoute(request) match {
         case Some(routeMatch) =>
           // Find a filter for the matched route
           val routeFilter = routingTable.findFilter(routeMatch.route)
+
           // Create a new context for processing the matched route with the controller
           val context =
             new HttpEndpointExecutionContext(backend, routeMatch, responseHandler, routeFilter.controller, codecFactory)
@@ -73,12 +75,12 @@ object HttpRequestDispatcher extends LogSupport {
     * Traverse the Router tree and build mappings from local routes to HttpFilters
     */
   private[http] def buildRoutingTable[Req, Resp, F[_]](
+      backend: HttpBackend[Req, Resp, F],
       session: Session,
       rootRouter: Router,
       baseFilter: HttpFilter[Req, Resp, F],
       controllerProvider: ControllerProvider
   ): RoutingTable[Req, Resp, F] = {
-
     val leafFilters = Seq.newBuilder[HttpFilter[Req, Resp, F]]
 
     def buildMappingsFromRouteToFilter(
@@ -90,16 +92,25 @@ object HttpRequestDispatcher extends LogSupport {
           .map(fs => controllerProvider.findController(session, fs))
           .filter(_.isDefined)
           .map(_.get.asInstanceOf[HttpFilter[Req, Resp, F]])
-          .orElse(router.filterInstance.asInstanceOf[Option[HttpFilter[Req, Resp, F]]])
+          .orElse {
+            router.filterInstance
+              .asInstanceOf[Option[HttpFilter[Req, Resp, F]]]
+          }
+          .map { filter =>
+            backend.filterAdapter(filter)
+          }
 
       val currentFilter: HttpFilter[Req, Resp, F] =
         localFilterOpt
-          .map { l => parentFilter.andThen(l) }
+          .map { l =>
+            parentFilter.andThen(l)
+          }
           .getOrElse(parentFilter)
 
       val m = Map.newBuilder[Route, RouteFilter[Req, Resp, F]]
       for (route <- router.localRoutes) {
-        val controllerOpt = controllerProvider.findController(session, route.controllerSurface)
+        val controllerOpt =
+          controllerProvider.findController(session, route.controllerSurface)
         if (controllerOpt.isEmpty) {
           throw new IllegalStateException(s"Missing controller. Add ${route.controllerSurface} to the design")
         }

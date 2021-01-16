@@ -14,22 +14,24 @@
 package wvlet.airframe.http.finagle
 
 import java.util.concurrent.atomic.AtomicReference
-
 import com.twitter.finagle.Service
 import com.twitter.finagle.context.Contexts
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.util.{Future, Promise, Return, Throw}
-import wvlet.airframe.http.{HttpBackend, HttpRequestAdapter, HttpStatus}
+import wvlet.airframe.http.{HttpBackend, HttpFilter, HttpRequestAdapter, HttpStatus}
 import wvlet.log.LogSupport
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 import scala.{concurrent => sc}
+import scala.language.higherKinds
 
 /**
   * Finagle-based implementation of HttpBackend
   */
-object FinagleBackend extends HttpBackend[Request, Response, Future] {
+object FinagleBackend extends HttpBackend[Request, Response, Future] with LogSupport {
+  override def name: String = HttpBackend.BACKEND_FINAGLE
+
   override protected implicit val httpRequestAdapter: HttpRequestAdapter[Request] = FinagleHttpRequestAdapter
 
   override def wrapException(e: Throwable): Future[Response] = {
@@ -44,8 +46,21 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
   def wrapFilter(filter: com.twitter.finagle.Filter[Request, Response, Request, Response]): FinagleFilter = {
     new FinagleFilter with LogSupport {
       override def apply(request: Request, context: Context): Future[Response] = {
-        filter(request, Service.mk { req: Request => context(req) })
+        filter(
+          request,
+          Service.mk { req: Request =>
+            context(req)
+          }
+        )
       }
+    }
+  }
+
+  override def filterAdapter[M[_]](filter: HttpFilter[_, _, M]): Filter = {
+    filter.backendName match {
+      case HttpBackend.BACKEND_FINAGLE => filter.asInstanceOf[Filter]
+      case HttpBackend.BACKEND_DEFAULT =>
+        new FinagleFilterAdapter(filter.asInstanceOf[wvlet.airframe.http.Http.Filter])
     }
   }
 
@@ -77,7 +92,8 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
     f.map(body)
   }
 
-  private val contextParamHolderKey = new Contexts.local.Key[AtomicReference[collection.mutable.Map[String, Any]]]
+  private val contextParamHolderKey =
+    new Contexts.local.Key[AtomicReference[collection.mutable.Map[String, Any]]]
 
   override def withThreadLocalStore(body: => Future[Response]): Future[Response] = {
     val newParamHolder = collection.mutable.Map.empty[String, Any]
@@ -88,10 +104,14 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
   }
 
   override def setThreadLocal[A](key: String, value: A): Unit = {
-    Contexts.local.get(contextParamHolderKey).foreach { ref => ref.get().put(key, value) }
+    Contexts.local.get(contextParamHolderKey).foreach { ref =>
+      ref.get().put(key, value)
+    }
   }
 
   override def getThreadLocal[A](key: String): Option[A] = {
-    Contexts.local.get(contextParamHolderKey).flatMap { ref => ref.get.get(key).asInstanceOf[Option[A]] }
+    Contexts.local.get(contextParamHolderKey).flatMap { ref =>
+      ref.get.get(key).asInstanceOf[Option[A]]
+    }
   }
 }

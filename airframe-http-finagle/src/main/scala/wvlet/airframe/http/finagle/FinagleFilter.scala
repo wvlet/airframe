@@ -18,8 +18,8 @@ import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
 import wvlet.airframe.Session
 import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.http.{HttpBackend, HttpFilter}
 import wvlet.airframe.http.router.HttpRequestDispatcher
+import wvlet.airframe.http._
 
 /**
   * An wrapper of HttpFilter for Finagle backend implementation
@@ -41,6 +41,50 @@ class FinagleRouter(session: Session, private[finagle] val config: FinagleServer
     )
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
-    dispatcher.apply(request, FinagleBackend.newContext { request: Request => service(request) })
+    dispatcher.apply(
+      request,
+      FinagleBackend.newContext { request: Request =>
+        service(request)
+      }
+    )
+  }
+}
+
+/**
+  * Adapter for chaining Http.Filter and FinagleFilter
+  */
+class FinagleFilterAdapter(filter: Http.Filter) extends FinagleFilter {
+  override def apply(request: Request, context: Context): Future[Response] = {
+    implicit val ec = HttpBackend.DefaultBackend.executionContext
+    val sf: scala.concurrent.Future[Response] =
+      filter
+        .apply(request.toHttpRequest, new FinagleContextAdapter(context))
+        .map(resp => convertToFinagleResponse(resp))
+
+    FinagleBackend.toFuture(sf, ec)
+  }
+}
+
+/**
+  * Adapter for running FinagleContext from Http.Filter implementation
+  *
+  * @param finagleContext
+  */
+class FinagleContextAdapter(finagleContext: FinagleBackend.Context) extends Http.Context {
+
+  override def apply(request: HttpMessage.Request): concurrent.Future[HttpMessage.Response] = {
+    val finagleRequest = finagle.convertToFinagleRequest(request)
+    val futureResponse = finagleContext(finagleRequest).map { resp =>
+      FinagleHttpResponseWrapper(resp).toHttpResponse
+    }
+    FinagleBackend.toScalaFuture(futureResponse)
+  }
+
+  override def setThreadLocal[A](key: String, value: A): Unit = {
+    FinagleBackend.setThreadLocal[A](key, value)
+  }
+
+  override def getThreadLocal[A](key: String): Option[A] = {
+    FinagleBackend.getThreadLocal[A](key)
   }
 }

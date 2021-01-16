@@ -24,14 +24,18 @@ import scala.language.higherKinds
 object Http {
 
   // Aliases for http clients using standard HttpMessage.Request/Response
-  type SyncClient = HttpSyncClient[Request, Response]
+  type SyncClient  = HttpSyncClient[Request, Response]
   type AsyncClient = HttpClient[Future, Request, Response]
 
-  // Backend-independent HttpFilter
+  // Standard HttpFilter
   abstract class Filter extends HttpFilter[Request, Response, Future] {
     protected implicit val executorContext = DefaultBackend.executionContext
-
-    override def backend: HttpBackend[Request, Response, Future] =
+    override protected def backend: HttpBackend[Request, Response, Future] =
+      HttpBackend.DefaultBackend
+  }
+  // Standard HttpContext
+  abstract class Context extends HttpContext[Request, Response, Future] {
+    override protected def backend: HttpBackend[Request, Response, Future] =
       HttpBackend.DefaultBackend
   }
 
@@ -56,11 +60,11 @@ object Http {
     * Create a new request
     */
   def request(uri: String): HttpMessage.Request = request(HttpMethod.GET, uri)
-  def GET(uri: String) = request(HttpMethod.GET, uri)
-  def POST(uri: String) = request(HttpMethod.POST, uri)
-  def DELETE(uri: String) = request(HttpMethod.DELETE, uri)
-  def PUT(uri: String) = request(HttpMethod.PUT, uri)
-  def PATCH(uri: String) = request(HttpMethod.PATCH, uri)
+  def GET(uri: String)                          = request(HttpMethod.GET, uri)
+  def POST(uri: String)                         = request(HttpMethod.POST, uri)
+  def DELETE(uri: String)                       = request(HttpMethod.DELETE, uri)
+  def PUT(uri: String)                          = request(HttpMethod.PUT, uri)
+  def PATCH(uri: String)                        = request(HttpMethod.PATCH, uri)
 
   def response(status: HttpStatus = HttpStatus.Ok_200): HttpMessage.Response = {
     HttpMessage.Response.empty.withStatus(status)
@@ -94,8 +98,7 @@ object Http {
   /**
     * Create a new server exception with an explicit cause
     */
-  def serverException(status: HttpStatus,
-                      cause: Throwable): HttpServerException = {
+  def serverException(status: HttpStatus, cause: Throwable): HttpServerException = {
     new HttpServerException(status, cause.getMessage, cause)
   }
 
@@ -105,9 +108,7 @@ object Http {
     * Create a new HttpServerException with a custom content-body in JSON or MsgPack format.
     * The content type will be determined by the Accept header in the request
     */
-  def serverException[A](request: HttpRequest[_],
-                         status: HttpStatus,
-                         content: A): HttpServerException =
+  def serverException[A](request: HttpRequest[_], status: HttpStatus, content: A): HttpServerException =
     macro HttpMacros.newServerException[A]
 
   /**
@@ -143,9 +144,9 @@ trait HttpRequest[Req] {
   def header: HttpMultiMap = adapter.headerOf(toRaw)
 
   def message: HttpMessage.Message = adapter.messageOf(toRaw)
-  def contentType: Option[String] = adapter.contentTypeOf(toRaw)
-  def contentBytes: Array[Byte] = adapter.contentBytesOf(toRaw)
-  def contentString: String = adapter.contentStringOf(toRaw)
+  def contentType: Option[String]  = adapter.contentTypeOf(toRaw)
+  def contentBytes: Array[Byte]    = adapter.contentBytesOf(toRaw)
+  def contentString: String        = adapter.contentStringOf(toRaw)
   def accept: Seq[String] =
     Http.parseAcceptHeader(header.get(HttpHeader.Accept))
   def acceptsMsgPack: Boolean =
@@ -163,13 +164,13 @@ trait HttpResponse[Resp] {
   def toRaw: Resp
   def toHttpResponse: HttpMessage.Response = adapter.httpResponseOf(toRaw)
 
-  def status: HttpStatus = adapter.statusOf(toRaw)
+  def status: HttpStatus   = adapter.statusOf(toRaw)
   def header: HttpMultiMap = adapter.headerOf(toRaw)
 
   def message: HttpMessage.Message = adapter.messageOf(toRaw)
-  def contentType: Option[String] = adapter.contentTypeOf(toRaw)
-  def contentBytes: Array[Byte] = adapter.contentBytesOf(toRaw)
-  def contentString: String = adapter.contentStringOf(toRaw)
+  def contentType: Option[String]  = adapter.contentTypeOf(toRaw)
+  def contentBytes: Array[Byte]    = adapter.contentBytesOf(toRaw)
+  def contentString: String        = adapter.contentStringOf(toRaw)
 }
 
 /**
@@ -219,7 +220,7 @@ trait HttpResponseAdapter[Resp] {
   def statusCodeOf(resp: Resp): Int
 
   def messageOf(resp: Resp): HttpMessage.Message
-  def contentStringOf(resp: Resp): String = messageOf(resp).toContentString
+  def contentStringOf(resp: Resp): String     = messageOf(resp).toContentString
   def contentBytesOf(resp: Resp): Array[Byte] = messageOf(resp).toContentBytes
   def contentTypeOf(resp: Resp): Option[String]
   def headerOf(resp: Resp): HttpMultiMap

@@ -14,27 +14,20 @@
 package wvlet.airframe.http.finagle.filter
 
 import wvlet.airframe.Design
-import wvlet.airframe.http.finagle.{Finagle, FinagleServer}
-import wvlet.airframe.http.{
-  Endpoint,
-  Http,
-  HttpBackend,
-  HttpMessage,
-  HttpStatus,
-  Router
-}
+import wvlet.airframe.http.finagle.{Finagle, FinagleContext, FinagleServer}
+import wvlet.airframe.http.{Endpoint, Http, HttpContext, HttpMessage, Router}
 import wvlet.airspec.AirSpec
+import wvlet.log.LogSupport
 
 import scala.concurrent.Future
 
-/**
-  */
 object StandardFilterTest extends AirSpec {
-
-  object MyFilter extends Http.Filter {
-    override def apply(request: HttpMessage.Request,
-                       context: Context): Future[HttpMessage.Response] = {
-      context(request).map { resp =>
+  object MyFilter extends Http.Filter with LogSupport {
+    override def apply(request: HttpMessage.Request, context: Context): Future[HttpMessage.Response] = {
+      debug(s"request: ${request}")
+      context.setThreadLocal("request-id", "xxxx")
+      context(request.withHeader("X-App", "myapp")).map { resp =>
+        debug(s"response: ${resp}")
         val msg = resp.contentString
         resp.withContent(s"[Filtered] ${msg}!")
       }
@@ -43,7 +36,10 @@ object StandardFilterTest extends AirSpec {
 
   trait MyAPI {
     @Endpoint(path = "/")
-    def hello: String = "Hello"
+    def hello(name: String = "Finagle", request: HttpMessage.Request, context: FinagleContext): String = {
+      val requestId = context.getThreadLocal("request-id").getOrElse("yyyy")
+      s"[${requestId}] Hello ${request.header.getOrElse("X-App", "unknown")}"
+    }
   }
 
   private val router = Router.add(MyFilter).andThen[MyAPI]
@@ -60,8 +56,7 @@ object StandardFilterTest extends AirSpec {
 
   test("use standard filter") { client: Http.SyncClient =>
     val resp = client.send(Http.request("/"))
-    info(resp)
-    resp.contentString shouldBe "[xxx] Hello!"
+    resp.contentString shouldBe "[Filtered] [xxxx] Hello myapp!"
   }
 
 }
