@@ -75,7 +75,7 @@ class FinagleContextAdapter(finagleContext: FinagleBackend.Context) extends Http
   override def apply(request: HttpMessage.Request): concurrent.Future[HttpMessage.Response] = {
     val finagleRequest = finagle.convertToFinagleRequest(request)
     val futureResponse = finagleContext(finagleRequest).map { resp =>
-      FinagleHttpResponseWrapper(resp).toHttpResponse
+      resp.toHttpResponse
     }
     FinagleBackend.toScalaFuture(futureResponse)
   }

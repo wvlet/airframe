@@ -66,7 +66,7 @@ object HttpFilter {
   def defaultFilter[Req, Resp, F[_]](backend: HttpBackend[Req, Resp, F]) =
     new SafeFilter(backend)
 
-  private case class AndThen[Req, Resp, F[_]](
+  private class AndThen[Req, Resp, F[_]](
       protected val backend: HttpBackend[Req, Resp, F],
       prev: HttpFilter[Req, Resp, F],
       next: HttpFilter[Req, Resp, F]
@@ -78,7 +78,7 @@ object HttpFilter {
     }
   }
 
-  private[http] case class SafeFilter[Req, Resp, F[_]](protected val backend: HttpBackend[Req, Resp, F])
+  private[http] class SafeFilter[Req, Resp, F[_]](protected val backend: HttpBackend[Req, Resp, F])
       extends HttpFilter[Req, Resp, F] {
     override def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp] = {
       backend.rescue {
