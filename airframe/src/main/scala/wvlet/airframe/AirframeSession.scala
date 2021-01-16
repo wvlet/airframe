@@ -33,7 +33,8 @@ private[airframe] class AirframeSession(
     val design: Design,
     stage: Stage,
     val lifeCycleManager: LifeCycleManager,
-    private val singletonHolder: collection.mutable.Map[Surface, Any] = new ConcurrentHashMap[Surface, Any]().asScala
+    private
+    val singletonHolder: collection.mutable.Map[Surface, Any] = new ConcurrentHashMap[Surface, Any]().asScala
 ) extends Session
     with AirframeSessionImpl
     with LogSupport {
@@ -325,12 +326,14 @@ private[airframe] class AirframeSession(
                 )
               case p @ ProviderBinding(factory, provideSingleton, eager, sourceCode) =>
                 trace(s"[${name}] Found a provider for ${p.from}: ${p}, defined at ${sourceCode}")
+
                 def buildWithProvider: Any = {
                   val dependencies = for (d <- factory.dependencyTypes) yield {
                     contextSession.getInstance(d, d, sourceCode, contextSession, false, tpe :: seen)
                   }
                   factory.create(dependencies)
                 }
+
                 if (provideSingleton) {
                   singletonHolder.getOrElseUpdate(p.from, registerInjectee(p.from, p.from, buildWithProvider))
                 } else {
@@ -424,7 +427,8 @@ private[airframe] class AirframeSession(
               p.surface,
               sourceCode,
               contextSession,
-              create = true,
+              // If the default value for the parameter is given, do not register the instance as a singleton
+              create = p.getDefaultValue.nonEmpty,
               seen,
               p.getDefaultValue.map(x => () => x)
             )
