@@ -17,18 +17,31 @@ import wvlet.airspec.AirSpec
 
 import scala.util.Random
 
+object ConstructorInjectionTest {
+
+  case class Dep1(x: Int = Random.nextInt(1000))
+
+  case class Rep(d1: Dep1, d2: Dep1)
+
+  case class Config(port: Int = 8080, timeoutMillis: Int = 100000)
+
+}
+
 /**
   */
-object ConstructorInjectionTest extends AirSpec {
+class ConstructorInjectionTest extends AirSpec {
 
-  case class D(x: Int = Random.nextInt(1000))
+  import ConstructorInjectionTest._
 
-  case class C(d1: D, d2: D)
+  test("constructor injection should bind singleton to the same type") {
+    newSilentDesign.build[Rep] { r =>
+      r.d1 shouldBeTheSameInstanceAs r.d2
+    }
+  }
 
-  test("constructor injection should bind singleton instances") {
-    val d = newSilentDesign
-    d.build[C] { c =>
-      c.d1 shouldBeTheSameInstanceAs c.d2
+  test("properly populate default values") {
+    newSilentDesign.build[Config] { config =>
+      config shouldBe Config()
     }
   }
 }
