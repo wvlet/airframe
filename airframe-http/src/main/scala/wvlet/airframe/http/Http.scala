@@ -12,17 +12,32 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+
 import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.http.HttpBackend.DefaultBackend
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.impl.HttpMacros
 
 import scala.concurrent.Future
+import scala.language.higherKinds
 
 object Http {
 
   // Aliases for http clients using standard HttpMessage.Request/Response
   type SyncClient  = HttpSyncClient[Request, Response]
   type AsyncClient = HttpClient[Future, Request, Response]
+
+  // Standard HttpFilter
+  abstract class Filter extends HttpFilter[Request, Response, Future] {
+    protected implicit val executorContext = DefaultBackend.executionContext
+    override protected def backend: HttpBackend[Request, Response, Future] =
+      HttpBackend.DefaultBackend
+  }
+  // Standard HttpContext
+  abstract class Context extends HttpContext[Request, Response, Future] {
+    override protected def backend: HttpBackend[Request, Response, Future] =
+      HttpBackend.DefaultBackend
+  }
 
   /**
     * An entry point for building a new HttpClient
@@ -61,6 +76,7 @@ object Http {
 
   /**
     * Create an exception to redirect (status code = 302) the request to the target locationUrl
+    *
     * @param locationUrl
     * @param status
     * @return
@@ -117,6 +133,7 @@ object Http {
 /**
   * HttpRequest[Req] wraps native request classes (e.g., okhttp's Response, finagle Response, etc.) so that we can
   * implement common logic for various backends.
+  *
   * @tparam Req
   */
 trait HttpRequest[Req] {

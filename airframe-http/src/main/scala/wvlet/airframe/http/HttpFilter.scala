@@ -22,18 +22,24 @@ trait HttpFilterType
   *
   * Implementations of HttpFilter must wrap an exception occurred in the filter.apply(request, context) with F[_]
   */
-trait HttpFilter[Req, Resp, F[_]] extends HttpFilterType { self =>
+trait HttpFilter[Req, Resp, F[_]] extends HttpFilterType {
+  self =>
   type Filter  = HttpFilter[Req, Resp, F]
   type Context = HttpContext[Req, Resp, F]
 
   protected def backend: HttpBackend[Req, Resp, F]
   protected def toFuture[A](v: A): F[A] = backend.toFuture(v)
 
+  private[http] def backendName: String = backend.name
+
+  private[http] def filterAdapter: Filter = backend.filterAdapter(this)
+
   // Implementation to process the request. If this filter doesn't return any response, pass the request to the context(request)
   def apply(request: Req, context: Context): F[Resp]
 
   // Add another filter
-  def andThen(nextFilter: Filter): Filter = new HttpFilter.AndThen[Req, Resp, F](backend, this, nextFilter)
+  def andThen(nextFilter: Filter): Filter =
+    new HttpFilter.AndThen[Req, Resp, F](backend, this, nextFilter)
 
   // End the filter chain with the given HttpContext
   def andThen(context: Context): Context = {
@@ -57,7 +63,8 @@ object HttpFilter {
     }
 
   // Create a new default filter just for processing preceding filters
-  def defaultFilter[Req, Resp, F[_]](backend: HttpBackend[Req, Resp, F]) = new SafeFilter(backend)
+  def defaultFilter[Req, Resp, F[_]](backend: HttpBackend[Req, Resp, F]) =
+    new SafeFilter(backend)
 
   private class AndThen[Req, Resp, F[_]](
       protected val backend: HttpBackend[Req, Resp, F],
@@ -79,4 +86,5 @@ object HttpFilter {
       }
     }
   }
+
 }

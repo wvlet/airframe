@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 
 import scala.concurrent.Future
@@ -22,6 +23,7 @@ import scala.language.higherKinds
   */
 trait HttpContext[Req, Resp, F[_]] {
   protected def backend: HttpBackend[Req, Resp, F]
+  private[http] def backendName: String = backend.name
 
   /**
     * Process the preceding filters and get the resulting Future[Response]
