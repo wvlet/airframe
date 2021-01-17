@@ -131,6 +131,10 @@ case class GrpcService(
     for (service <- serviceDefinitions) {
       serverBuilder.addService(service)
     }
+
+    // Add an interceptor for remembering GrpcContext
+    serverBuilder.intercept(GrpcContext.ContextTrackInterceptor)
+
     for (interceptor <- config.interceptors) {
       serverBuilder.intercept(interceptor)
     }

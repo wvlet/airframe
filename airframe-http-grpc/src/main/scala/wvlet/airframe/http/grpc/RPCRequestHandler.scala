@@ -30,10 +30,12 @@ import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Receives MessagePack Map value for the RPC request, and call the controller method
+  * RPCRequestHandler receives a MessagePack Map value for an RPC request, and call the controller method
   */
 class RPCRequestHandler(
+    // Controller instance
     controller: Any,
+    // Controller method to call for RPC
     methodSurface: MethodSurface,
     codecFactory: MessageCodecFactory,
     executorService: ExecutorService

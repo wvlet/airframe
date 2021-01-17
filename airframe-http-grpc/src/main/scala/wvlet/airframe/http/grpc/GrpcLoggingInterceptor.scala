@@ -18,7 +18,7 @@ import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.log.LogSupport
 
 /**
-  * TODO: An exmple implementation of gRPC logging.
+  * TODO: An example implementation of gRPC logging.
   * We should write logs to files HttpAccessLogFilter
   */
 class GrpcLoggingInterceptor extends ServerInterceptor with LogSupport {
