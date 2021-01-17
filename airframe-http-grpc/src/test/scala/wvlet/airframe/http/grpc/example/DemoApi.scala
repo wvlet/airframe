@@ -26,7 +26,6 @@ import wvlet.log.LogSupport
 trait DemoApi extends LogSupport {
   def getContext: String = {
     val ctx = GrpcContext.current
-    info(ctx)
     "Ok"
   }
 }

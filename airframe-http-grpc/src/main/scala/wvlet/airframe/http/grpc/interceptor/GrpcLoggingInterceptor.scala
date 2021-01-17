@@ -11,7 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.grpc
+package wvlet.airframe.http.grpc.interceptor
+
 import io.grpc._
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.msgpack.spi.MsgPack

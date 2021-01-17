@@ -14,6 +14,7 @@
 package wvlet.airframe.http.grpc
 import wvlet.airframe.http.grpc.example.Greeter
 import wvlet.airframe.http.grpc.example.Greeter.GreeterStub
+import wvlet.airframe.http.grpc.interceptor.GrpcLoggingInterceptor
 import wvlet.airspec.AirSpec
 
 /**

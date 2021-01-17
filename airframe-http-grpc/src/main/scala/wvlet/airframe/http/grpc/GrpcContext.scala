@@ -23,13 +23,15 @@ object GrpcContext {
 
   private[grpc] object ContextTrackInterceptor extends ServerInterceptor with LogSupport {
     override def interceptCall[ReqT, RespT](call: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): ServerCall.Listener[ReqT] = {
-      val context = Context.current().withValue(contextKey, GrpcContext(headers))
-      val listenerWithContext = Contexts.interceptCall(context, call , headers, next)
+      // Create a new context that conveys GrpcContext object
+      val newContext = Context.current().withValue(contextKey, GrpcContext(Option(call.getAuthority), call.getAttributes, headers, call.getMethodDescriptor))
+      val listenerWithContext = Contexts.interceptCall(newContext, call , headers, next)
       val listener = new ForwardingServerCallListener.SimpleForwardingServerCallListener[ReqT](listenerWithContext){}
       listener
     }
   }
 }
 
-case class GrpcContext(metadata:Metadata)
+case class GrpcContext(authority:Option[String], attributes: Attributes, metadata:Metadata, descriptor: MethodDescriptor[_, _])
+
 
