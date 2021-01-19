@@ -156,7 +156,7 @@ lazy val api =
     .in(file("myapp-api"))
     .settings(
        buildSettings,
-       "org.wvlet.airframe" %%% "airframe-http" % AIRFRAME_VERSION
+       libraryDependencies += "org.wvlet.airframe" %%% "airframe-http" % AIRFRAME_VERSION
      )
 
 lazy val apiJVM = api.jvm
