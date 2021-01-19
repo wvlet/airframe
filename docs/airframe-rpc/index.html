@@ -179,9 +179,9 @@ addSbtPlugin(<span class="hljs-string">"org.portable-scala"</span> % <span class
   crossProject(<span class="hljs-type">JSPlatform</span>, <span class="hljs-type">JVMPlatform</span>)
     .crossType(<span class="hljs-type">CrossType</span>.<span class="hljs-type">Pure</span>)
     .in(file(<span class="hljs-string">"myapp-api"</span>))
-    .setttings(
+    .settings(
        buildSettings,
-       <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-http"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>
+       libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-http"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>
      )
 
 <span class="hljs-keyword">lazy</span> <span class="hljs-keyword">val</span> apiJVM = api.jvm
@@ -194,7 +194,7 @@ addSbtPlugin(<span class="hljs-string">"org.portable-scala"</span> % <span class
     .settings(
       buildSettings,
       libraryDependencies ++= <span class="hljs-type">Seq</span>(
-        <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-finagle"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>
+        <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-finagle"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>,
         <span class="hljs-comment">// Add this for using gRPC</span>
         <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-grpc"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>
       )
@@ -205,7 +205,7 @@ addSbtPlugin(<span class="hljs-string">"org.portable-scala"</span> % <span class
 <span class="hljs-keyword">lazy</span> <span class="hljs-keyword">val</span> client =
   project
     .in(file(<span class="hljs-string">"myapp-client"</span>))
-    .enablePlugins(<span class="hljs-type">AiframeHttpPlugin</span>)
+    .enablePlugins(<span class="hljs-type">AirframeHttpPlugin</span>)
     .settings(
       buildSettings,
       <span class="hljs-comment">// Generates both ServiceSyncClient and ServiceClient (async)</span>
@@ -226,7 +226,7 @@ addSbtPlugin(<span class="hljs-string">"org.portable-scala"</span> % <span class
     .in(file(<span class="hljs-string">"myapp-ui"</span>))
     .enablePlugins(<span class="hljs-type">ScalaJSPlugin</span>, <span class="hljs-type">AirframeHttpPlugin</span>)
     .settings(
-      buildSettings
+      buildSettings,
       <span class="hljs-comment">// sbt-airframe generates Scala.js HTTP client: ServiceJSClient with this setting:</span>
       airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"myapp.app.v1:scalajs"</span>),
       <span class="hljs-comment">// Enable debug logging of sbt-airframe</span>
@@ -243,7 +243,7 @@ addSbtPlugin(<span class="hljs-string">"org.portable-scala"</span> % <span class
 </code></pre>
 <p>To generate HTTP clients, add <code>airframeHttpClients</code> setting to your <code>build.sbt</code>. You need to specify which API package to use for generating RPC clients. The format is <code>&lt;RPC package name&gt;:&lt;client type&gt;(:&lt;target package name&gt;)?</code>. For example:</p>
 <p><strong>build.sbt</strong></p>
-<pre><code class="hljs css language-scala">enablePlugins(<span class="hljs-type">AiframeHttpPlugin</span>)
+<pre><code class="hljs css language-scala">enablePlugins(<span class="hljs-type">AirframeHttpPlugin</span>)
 
 airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"hello.api.v1:sync"</span>)
 </code></pre>
