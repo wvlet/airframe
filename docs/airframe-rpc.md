@@ -154,9 +154,9 @@ lazy val api =
   crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
     .in(file("myapp-api"))
-    .setttings(
+    .settings(
        buildSettings,
-       "org.wvlet.airframe" %%% "airframe-http" % AIRFRAME_VERSION
+       libraryDependencies += "org.wvlet.airframe" %%% "airframe-http" % AIRFRAME_VERSION
      )
 
 lazy val apiJVM = api.jvm
@@ -169,7 +169,7 @@ lazy val server =
     .settings(
       buildSettings,
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION
+        "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION,
         // Add this for using gRPC
         "org.wvlet.airframe" %% "airframe-http-grpc" % AIRFRAME_VERSION
       )
@@ -180,7 +180,7 @@ lazy val server =
 lazy val client =
   project
     .in(file("myapp-client"))
-    .enablePlugins(AiframeHttpPlugin)
+    .enablePlugins(AirframeHttpPlugin)
     .settings(
       buildSettings,
       // Generates both ServiceSyncClient and ServiceClient (async)
@@ -201,7 +201,7 @@ lazy val ui =
     .in(file("myapp-ui"))
     .enablePlugins(ScalaJSPlugin, AirframeHttpPlugin)
     .settings(
-      buildSettings
+      buildSettings,
       // sbt-airframe generates Scala.js HTTP client: ServiceJSClient with this setting:
       airframeHttpClients := Seq("myapp.app.v1:scalajs"),
       // Enable debug logging of sbt-airframe
@@ -229,7 +229,7 @@ To generate HTTP clients, add `airframeHttpClients` setting to your `build.sbt`.
 __build.sbt__
 
 ```scala
-enablePlugins(AiframeHttpPlugin)
+enablePlugins(AirframeHttpPlugin)
 
 airframeHttpClients := Seq("hello.api.v1:sync")
 ```
