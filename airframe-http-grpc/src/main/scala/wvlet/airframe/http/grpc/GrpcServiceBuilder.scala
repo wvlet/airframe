@@ -100,7 +100,7 @@ object GrpcServiceBuilder {
             val controller      = session.getInstanceOf(r.controllerSurface)
             val rpcInterfaceCls = Router.findRPCInterfaceCls(r.controllerSurface)
             val requestHandler =
-              new RPCRequestHandler(
+              new GrpcRequestHandler(
                 rpcInterfaceCls,
                 controller,
                 r.methodSurface,

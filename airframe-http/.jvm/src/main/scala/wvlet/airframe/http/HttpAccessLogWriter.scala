@@ -33,7 +33,7 @@ case class HttpAccessLogConfig(
 
 /**
   */
-trait HttpAccessLogWriter {
+trait HttpAccessLogWriter extends AutoCloseable {
   def write(log: Map[String, Any]): Unit
 }
 
@@ -80,6 +80,10 @@ object HttpAccessLogWriter {
       val json = mapCodec.toJson(log)
       asyncLogHandler.publish(new java.util.logging.LogRecord(Level.INFO, json))
     }
+
+    override def close(): Unit = {
+      asyncLogHandler.close()
+    }
   }
 
   /**
@@ -98,6 +102,10 @@ object HttpAccessLogWriter {
       synchronized {
         logs += log
       }
+    }
+
+    override def close(): Unit = {
+      // no-op
     }
   }
 

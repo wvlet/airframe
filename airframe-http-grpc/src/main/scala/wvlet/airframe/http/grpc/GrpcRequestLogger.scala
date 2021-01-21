@@ -20,7 +20,7 @@ import wvlet.log.LogSupport
 
 import scala.collection.immutable.ListMap
 
-trait GrpcRequestLogger {
+trait GrpcRequestLogger extends AutoCloseable {
   def logRPC(rpcCallContext: RPCCallContext): Unit
   def logError(e: Throwable, rpcCallContext: RPCCallContext): Unit
 }
@@ -45,12 +45,21 @@ class DefaultGrpcRequestLogger(logWriter: HttpAccessLogWriter) extends GrpcReque
       HttpAccessLogWriter.rpcLog(rpcCallContext)
     m
   }
+
+  override def close(): Unit = {
+    logWriter.close()
+  }
 }
 
 object GrpcRequestLogger {
 
   def apply(writer: HttpAccessLogWriter) = new DefaultGrpcRequestLogger(writer)
-  def default: GrpcRequestLogger         = apply(HttpAccessLogWriter.default)
+
+  lazy val default: GrpcRequestLogger = {
+    // Using lazy val to avoid creating duplicate loggers to the same file
+    apply(HttpAccessLogWriter.default)
+  }
+
   // Logger for discarding all logs
   def nullLogger: GrpcRequestLogger = EmptyGrpcRequestLogger
 
@@ -59,6 +68,10 @@ object GrpcRequestLogger {
       // no-op
     }
     override def logError(e: Throwable, RPCCallContext: RPCCallContext): Unit = {
+      // no-op
+    }
+
+    override def close(): Unit = {
       // no-op
     }
   }

@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 import java.util.concurrent.{Callable, ExecutorService}
 import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
 import io.grpc.stub.StreamObserver
@@ -29,9 +29,9 @@ import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
 
 /**
-  * RPCRequestHandler receives a MessagePack Map value for an RPC request, and call the controller method
+  * This handler receives a MessagePack Map value for an RPC request, and call the corresponding controller method
   */
-class RPCRequestHandler(
+class GrpcRequestHandler(
     rpcInterfaceCls: Class[_],
     // Controller instance
     controller: Any,
@@ -75,7 +75,7 @@ class RPCRequestHandler(
             ret
           } catch {
             case e: Throwable =>
-              requestLogger.logError(e, rpcContext)
+              requestLogger.logError(e, rpcContext.withRPCArgs(args))
               throw e
           }
         case _ =>
@@ -221,7 +221,7 @@ class RPCRequestHandler(
 
 }
 
-class RPCUnaryMethodHandler(rpcRequestHandler: RPCRequestHandler) extends UnaryMethod[MsgPack, Any] {
+private[grpc] class RPCUnaryMethodHandler(rpcRequestHandler: GrpcRequestHandler) extends UnaryMethod[MsgPack, Any] {
   override def invoke(
       request: MsgPack,
       responseObserver: StreamObserver[Any]
@@ -236,7 +236,7 @@ class RPCUnaryMethodHandler(rpcRequestHandler: RPCRequestHandler) extends UnaryM
   }
 }
 
-class RPCServerStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler)
+private[grpc] class RPCServerStreamingMethodHandler(rpcRequestHandler: GrpcRequestHandler)
     extends ServerStreamingMethod[MsgPack, Any]
     with LogSupport {
   override def invoke(
@@ -266,7 +266,7 @@ class RPCServerStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler)
   }
 }
 
-class RPCClientStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler, clientStreamingType: Surface)
+private[grpc] class RPCClientStreamingMethodHandler(rpcRequestHandler: GrpcRequestHandler, clientStreamingType: Surface)
     extends ClientStreamingMethod[MsgPack, Any] {
 
   override def invoke(
@@ -277,7 +277,7 @@ class RPCClientStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler, clie
   }
 }
 
-class RPCBidiStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler, clientStreamingType: Surface)
+private[grpc] class RPCBidiStreamingMethodHandler(rpcRequestHandler: GrpcRequestHandler, clientStreamingType: Surface)
     extends BidiStreamingMethod[MsgPack, Any] {
   override def invoke(
       responseObserver: StreamObserver[Any]

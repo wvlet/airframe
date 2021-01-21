@@ -14,7 +14,7 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
     Executors.newCachedThreadPool(
       new ThreadFactory {
         override def newThread(r: Runnable): Thread = {
-          val t = new Thread(r, "WvletLogAsyncHandler")
+          val t = new Thread(r, "AirframeLogAsyncHandler")
           t.setDaemon(true)
           t
         }
