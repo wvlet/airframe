@@ -35,6 +35,10 @@ object GrpcErrorLogTest extends AirSpec {
     override def helloClientStreaming(input: RxStream[String]): String = {
       throw new UnsupportedOperationException(s"N/A")
     }
+
+    override def helloBidiStreaming(input: RxStream[String]): RxStream[String] = {
+      throw new UnsupportedOperationException(s"N/A")
+    }
   }
 
   protected override def design = {
@@ -95,6 +99,30 @@ object GrpcErrorLogTest extends AirSpec {
       log.contains("time") shouldBe true
       log.contains("event_time") shouldBe true
       log("grpc_method_type") shouldBe "CLIENT_STREAMING"
+
+      log.contains("local_addr") shouldBe true
+      log.contains("remote_addr") shouldBe true
+
+      log("exception").getClass shouldBe classOf[UnsupportedOperationException]
+      log("exception_message") shouldBe "N/A"
+    }
+
+    test("bidi-streaming method error log") {
+      val logs = captureAll {
+        val result = client.helloBidiStreaming(Rx.sequence("A", "B")).toSeq
+      }
+      logs.size shouldBe 1
+
+      val log = logs(0)
+      log("path") shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/helloBidiStreaming"
+      log("content_type") shouldBe "application/grpc"
+      log("rpc_interface") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
+      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.GrpcErrorLogTest$DemoApiDebug"
+      log("rpc_method") shouldBe "helloBidiStreaming"
+      log.get("rpc_args") shouldBe empty
+      log.contains("time") shouldBe true
+      log.contains("event_time") shouldBe true
+      log("grpc_method_type") shouldBe "BIDI_STREAMING"
 
       log.contains("local_addr") shouldBe true
       log.contains("remote_addr") shouldBe true
