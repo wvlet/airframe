@@ -46,6 +46,7 @@ class AirframeFinagle extends LogSupport {
   private val design =
     Finagle.server
       .withRouter(Greeter.router)
+      .noLoggingFilter
       .designWithSyncClient
       .bind[FinagleClient].toProvider { server: FinagleServer =>
         Finagle.client.newClient(server.localAddress)
@@ -94,7 +95,11 @@ class AirframeFinagle extends LogSupport {
 class AirframeGrpc extends LogSupport {
 
   private val design =
-    gRPC.server.withRouter(Greeter.router).designWithChannel.withProductionMode
+    gRPC.server
+      .withRouter(Greeter.router)
+      .noRequestLogging
+      .designWithChannel
+      .withProductionMode
   private var session: Option[Session]             = None
   private var client: ServiceGrpc.SyncClient       = null
   private var asyncClient: ServiceGrpc.AsyncClient = null
