@@ -27,6 +27,9 @@ $ ./bin/airframe-benchmark bench msgpack
 # Run JSON benchmark
 $ ./bin/airframe-benchmark bench json
 
+# Run Airframe HTTP/RPC benchmark
+$ ./bin/airframe-benchmark bench http
+
 # Run MessagePack benchmaark and write the results to a json file
 # Run MessagePack benchmark
 $ ./bin/airframe-benchmark bench msgpack -f json
