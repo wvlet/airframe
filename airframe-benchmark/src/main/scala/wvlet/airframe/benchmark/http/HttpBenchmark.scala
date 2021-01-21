@@ -225,7 +225,7 @@ class GrpcJava extends LogSupport {
     blackhole.consume(client.sayHello(protojava.HelloRequest.newBuilder().setName("RPC").build()))
   }
 
-  @Benchmark
+  //@Benchmark
   @OperationsPerInvocation(asyncIteration)
   def rpcFutureAsync(blackhole: Blackhole): Unit = {
     val counter = new AtomicInteger(0)
