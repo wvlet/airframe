@@ -13,12 +13,11 @@
  */
 package wvlet.airframe.http.grpc.example
 import io.grpc.stub.{AbstractBlockingStub, ClientCalls}
-import io.grpc.{CallOptions, Channel, ManagedChannel, ManagedChannelBuilder}
-import wvlet.airframe.Design
+import io.grpc.{CallOptions, Channel}
 import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.http.{RPC, Router}
-import wvlet.airframe.http.grpc.{GrpcServer, GrpcServiceBuilder}
+import wvlet.airframe.http.grpc.GrpcServiceBuilder
 import wvlet.airframe.http.router.Route
+import wvlet.airframe.http.{RPC, Router}
 
 /**
   */
@@ -29,7 +28,7 @@ trait Greeter {
 
 object Greeter {
 
-  val router = Router.add[Greeter]
+  def router = Router.add[Greeter]
 
   // TODO: Generate this stub using sbt-airframe
   class GreeterStub(

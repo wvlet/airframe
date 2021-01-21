@@ -13,13 +13,11 @@
  */
 package wvlet.airframe.http.grpc
 
-import io.grpc.{Channel, ManagedChannel}
-import wvlet.airframe.Design
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.grpc.example.DemoApi
 import wvlet.airframe.http.grpc.example.DemoApi.DemoApiClient
-import wvlet.airspec.AirSpec
 import wvlet.airframe.rx.Rx
+import wvlet.airspec.AirSpec
 
 /**
   */

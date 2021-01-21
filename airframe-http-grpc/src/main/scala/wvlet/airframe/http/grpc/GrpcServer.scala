@@ -163,7 +163,7 @@ class GrpcServer(grpcService: GrpcService, server: Server) extends AutoCloseable
   def localAddress: String = s"localhost:${port}"
 
   def start: Unit = {
-    info(s"Starting gRPC server: (${grpcService.config.name}) at ${localAddress}")
+    info(s"Starting gRPC server [${grpcService.config.name}] at ${localAddress}")
     server.start()
   }
 
@@ -172,7 +172,7 @@ class GrpcServer(grpcService: GrpcService, server: Server) extends AutoCloseable
   }
 
   override def close(): Unit = {
-    info(s"Closing gRPC server (${grpcService.config.name}) at ${localAddress}")
+    info(s"Closing gRPC server [${grpcService.config.name}] at ${localAddress}")
     server.shutdownNow()
     grpcService.close()
   }
