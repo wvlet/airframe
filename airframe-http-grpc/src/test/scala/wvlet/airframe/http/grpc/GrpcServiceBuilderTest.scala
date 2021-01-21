@@ -30,14 +30,10 @@ object GrpcServiceBuilderTest extends AirSpec {
 
   protected override def design = gRPC.server.withRouter(router).designWithChannel
 
-  test("Create a standalone gRPC server") { server: GrpcServer =>
-    gRPC.server.withRouter(router).start { server =>
-      // sanity test for launching gRPC server
-    }
-
-    test("Test gRPC client methods") { (channel: Channel) =>
-      val stub = new DemoApiClient(channel)
-      val N    = 10
+  // launching a gRPC server first
+  test("Launch a standalone gRPC server") { server: GrpcServer =>
+    test("Test gRPC client methods") { stub: DemoApiClient =>
+      val N = 10
 
       test("unary") {
         for (i <- 0 to N) {
