@@ -119,11 +119,8 @@ class RPCRequestHandler(
         invokeServerMethod
         Try(codec.fromMsgPack(value)) match {
           case Success(v) =>
-            // Add a log for each client-side stream message
-            requestLogger.logRPC(rpcContext.withRPCArgs(Seq(v)))
             rx.add(OnNext(v))
           case Failure(e) =>
-            requestLogger.logError(e, rpcContext)
             rx.add(OnError(e))
         }
       }
@@ -134,13 +131,13 @@ class RPCRequestHandler(
       }
       override def onCompleted(): Unit = {
         invokeServerMethod
+        requestLogger.logRPC(rpcContext)
         rx.add(OnCompletion)
         promise.future.onComplete {
           case Success(v) =>
             responseObserver.onNext(v)
             responseObserver.onCompleted()
           case Failure(e) =>
-            requestLogger.logError(e, rpcContext)
             responseObserver.onError(e)
         }(ExecutionContext.fromExecutor(executorService))
       }
@@ -180,7 +177,6 @@ class RPCRequestHandler(
         Try(codec.fromMsgPack(value)) match {
           case Success(v) =>
             // Add a log for each client-side stream message
-            requestLogger.logRPC(rpcContext.withRPCArgs(Seq(v)))
             rx.add(OnNext(v))
           case Failure(e) =>
             requestLogger.logError(e, rpcContext)
@@ -194,6 +190,7 @@ class RPCRequestHandler(
       }
       override def onCompleted(): Unit = {
         invokeServerMethod
+        requestLogger.logRPC(rpcContext)
         rx.add(OnCompletion)
         promise.future.onComplete {
           case Success(v) =>

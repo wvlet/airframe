@@ -64,7 +64,9 @@ object GrpcRequestLogger {
   }
 
   private[grpc] def logGrpcContext(context: GrpcContext): Map[String, Any] = {
-    logMethodDescriptor(context.descriptor) ++ logMetadata(context.metadata) ++ logAttributes(context.attributes)
+    logMethodDescriptor(context.descriptor) ++
+      logMetadata(context.metadata) ++
+      logAttributes(context.attributes)
   }
 
   import scala.jdk.CollectionConverters._
