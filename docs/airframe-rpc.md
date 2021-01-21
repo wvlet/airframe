@@ -205,12 +205,12 @@ val buildSettings = Seq(
 lazy
 val api =
   crossProject(JSPlatform, JVMPlatform)
-          .crossType(CrossType.Pure)
-          .in(file("myapp-api"))
-          .setttings(
-            buildSettings,
-            "org.wvlet.airframe" %%% "airframe-http" % AIRFRAME_VERSION
-          )
+    .crossType(CrossType.Pure)
+    .in(file("myapp-api"))
+    .settings(
+       buildSettings,
+       libraryDependencies += "org.wvlet.airframe" %%% "airframe-http" % AIRFRAME_VERSION
+     )
 
 lazy val apiJVM = api.jvm
 lazy val apiJS = api.js
@@ -219,51 +219,51 @@ lazy val apiJS = api.js
 lazy
 val server =
   project
-          .in(file("myapp-server"))
-          .settings(
-            buildSettings,
-            libraryDependencies ++= Seq(
-              "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION
-// Add this for using gRPC
-"org.wvlet.airframe" %% "airframe-http-grpc" % AIRFRAME_VERSION
-)
-)
-.dependsOn(apiJVM)
+    .in(file("myapp-server"))
+    .settings(
+      buildSettings,
+      libraryDependencies ++= Seq(
+        "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION,
+        // Add this for using gRPC
+        "org.wvlet.airframe" %% "airframe-http-grpc" % AIRFRAME_VERSION
+      )
+    )
+    .dependsOn(apiJVM)
 
 // RPC client project
 lazy
 val client =
   project
-          .in(file("myapp-client"))
-          .enablePlugins(AiframeHttpPlugin)
-          .settings(
-            buildSettings,
-            // Generates both ServiceSyncClient and ServiceClient (async)
-            airframeHttpClients := Seq("myapp.app.v1:sync", "myapp.app.v1:async"),
-            // Enable debug logging of sbt-airframe
-            airframeHttpGeneratorOption := "-l debug",
-            libraryDependencies ++= Seq(
-              "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION
-// Add this for using gRPC
-"org.wvlet.airframe" %% "airframe-http-grpc" % AIRFRAME_VERSION
-)
-)
-.dependsOn(apiJVM)
+    .in(file("myapp-client"))
+    .enablePlugins(AirframeHttpPlugin)
+    .settings(
+      buildSettings,
+      // Generates both ServiceSyncClient and ServiceClient (async)
+      airframeHttpClients := Seq("myapp.app.v1:sync", "myapp.app.v1:async"),
+      // Enable debug logging of sbt-airframe
+      airframeHttpGeneratorOption := "-l debug",
+      libraryDependencies ++= Seq(
+        "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION
+        // Add this for using gRPC
+        "org.wvlet.airframe" %% "airframe-http-grpc" % AIRFRAME_VERSION
+      )
+    )
+    .dependsOn(apiJVM)
 
 // Scala.js UI using RPC
 lazy
 val ui =
   project
-          .in(file("myapp-ui"))
-          .enablePlugins(ScalaJSPlugin, AirframeHttpPlugin)
-          .settings(
-            buildSettings
-                    // sbt-airframe generates Scala.js HTTP client: ServiceJSClient with this setting:
-                    airframeHttpClients := Seq ("myapp.app.v1:scalajs"),
-            // Enable debug logging of sbt-airframe
-            airframeHttpGeneratorOption := "-l debug"
-          )
-          .dependsOn(apiJS)
+    .in(file("myapp-ui"))
+    .enablePlugins(ScalaJSPlugin, AirframeHttpPlugin)
+    .settings(
+      buildSettings,
+      // sbt-airframe generates Scala.js HTTP client: ServiceJSClient with this setting:
+      airframeHttpClients := Seq("myapp.app.v1:scalajs"),
+      // Enable debug logging of sbt-airframe
+      airframeHttpGeneratorOption := "-l debug"
+    )
+    .dependsOn(apiJS)
 ```
 
 ### sbt-airframe plugin
@@ -289,7 +289,7 @@ is `<RPC package name>:<client type>(:<target package name>)?`. For example:
 __build.sbt__
 
 ```scala
-enablePlugins(AiframeHttpPlugin)
+enablePlugins(AirframeHttpPlugin)
 
 airframeHttpClients := Seq("hello.api.v1:sync")
 ```
