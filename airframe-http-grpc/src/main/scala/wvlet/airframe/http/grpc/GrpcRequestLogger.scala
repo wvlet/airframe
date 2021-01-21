@@ -21,27 +21,32 @@ import wvlet.log.LogSupport
 import scala.collection.immutable.ListMap
 
 trait GrpcRequestLogger extends AutoCloseable {
-  def logRPC(grpcContext: GrpcContext, rpcCallContext: RPCCallContext): Unit
-  def logError(e: Throwable, grpcContext: GrpcContext, rpcCallContext: RPCCallContext): Unit
+  def logRPC(grpcContext: Option[GrpcContext], rpcCallContext: RPCCallContext): Unit
+  def logError(e: Throwable, grpcContext: Option[GrpcContext], rpcCallContext: RPCCallContext): Unit
 }
 
 /**
   */
-class DefaultGrpcRequestLogger(logWriter: HttpAccessLogWriter) extends GrpcRequestLogger with LogSupport {
-  def logRPC(grpcContext: GrpcContext, rpcCallContext: RPCCallContext): Unit = {
+class DefaultGrpcRequestLogger(serverName: String, logWriter: HttpAccessLogWriter)
+    extends GrpcRequestLogger
+    with LogSupport {
+  def logRPC(grpcContext: Option[GrpcContext], rpcCallContext: RPCCallContext): Unit = {
     val m = logDefault(grpcContext, rpcCallContext)
     logWriter.write(m)
 
   }
-  def logError(e: Throwable, grpcContext: GrpcContext, rpcCallContext: RPCCallContext): Unit = {
+  def logError(e: Throwable, grpcContext: Option[GrpcContext], rpcCallContext: RPCCallContext): Unit = {
     val m = logDefault(grpcContext, rpcCallContext) ++ HttpAccessLogWriter.errorLog(e)
     logWriter.write(m)
   }
 
-  private def logDefault(grpcContext: GrpcContext, rpcCallContext: RPCCallContext): Map[String, Any] = {
-    val m = HttpAccessLogWriter.logUnixTime ++
-      GrpcRequestLogger.logGrpcContext(grpcContext) ++
-      HttpAccessLogWriter.rpcLog(rpcCallContext)
+  private def logDefault(grpcContext: Option[GrpcContext], rpcCallContext: RPCCallContext): Map[String, Any] = {
+    val m = {
+      ListMap("server_name" -> serverName) ++
+        HttpAccessLogWriter.logUnixTime ++
+        GrpcRequestLogger.logGrpcContext(grpcContext) ++
+        HttpAccessLogWriter.rpcLog(rpcCallContext)
+    }
     m
   }
 
@@ -52,21 +57,17 @@ class DefaultGrpcRequestLogger(logWriter: HttpAccessLogWriter) extends GrpcReque
 
 object GrpcRequestLogger extends LogSupport {
 
-  def apply(writer: HttpAccessLogWriter) = new DefaultGrpcRequestLogger(writer)
-
-  lazy val default: GrpcRequestLogger = {
-    // Using lazy val to avoid creating duplicate loggers to the same file
-    apply(HttpAccessLogWriter.default)
-  }
+  def newLogger(serverName: String)                              = new DefaultGrpcRequestLogger(serverName, HttpAccessLogWriter.default)
+  def newLogger(serverName: String, writer: HttpAccessLogWriter) = new DefaultGrpcRequestLogger(serverName, writer)
 
   // Logger for discarding all logs
   def nullLogger: GrpcRequestLogger = EmptyGrpcRequestLogger
 
   private[grpc] object EmptyGrpcRequestLogger extends GrpcRequestLogger {
-    override def logRPC(grpcContext: GrpcContext, rpcCallContext: RPCCallContext): Unit = {
+    override def logRPC(grpcContext: Option[GrpcContext], rpcCallContext: RPCCallContext): Unit = {
       // no-op
     }
-    override def logError(e: Throwable, grpcContext: GrpcContext, RPCCallContext: RPCCallContext): Unit = {
+    override def logError(e: Throwable, grpcContext: Option[GrpcContext], RPCCallContext: RPCCallContext): Unit = {
       // no-op
     }
 
@@ -75,8 +76,8 @@ object GrpcRequestLogger extends LogSupport {
     }
   }
 
-  private[grpc] def logGrpcContext(context: GrpcContext): Map[String, Any] = {
-    Option(context)
+  private[grpc] def logGrpcContext(context: Option[GrpcContext]): Map[String, Any] = {
+    context
       .map { ctx =>
         logMethodDescriptor(ctx.descriptor) ++
           logMetadata(ctx.metadata) ++

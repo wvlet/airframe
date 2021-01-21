@@ -87,6 +87,7 @@ object GrpcServiceBuilder {
       session: Session
   ): GrpcService = {
     val threadManager: ExecutorService = config.executorProvider(config)
+    val requestLogger                  = config.requestLoggerProvider(config)
     val services =
       for ((serviceName, routes) <- config.router.routes.groupBy(_.serviceName))
         yield {
@@ -106,7 +107,7 @@ object GrpcServiceBuilder {
                 r.methodSurface,
                 config.codecFactory,
                 threadManager,
-                config.rpcLogger
+                requestLogger
               )
             val serverCall = r.methodSurface.grpcMethodType match {
               case MethodDescriptor.MethodType.UNARY =>
@@ -130,7 +131,7 @@ object GrpcServiceBuilder {
           serviceDef
         }
 
-    GrpcService(config, threadManager, services.toSeq)
+    GrpcService(config, threadManager, requestLogger, services.toSeq)
   }
 
   object RPCRequestMarshaller extends Marshaller[MsgPack] with LogSupport {

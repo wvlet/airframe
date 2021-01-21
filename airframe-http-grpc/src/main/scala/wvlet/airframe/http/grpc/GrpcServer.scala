@@ -30,6 +30,7 @@ import scala.util.control.NonFatal
 /**
   */
 case class GrpcServerConfig(
+    // The server name
     name: String = "default",
     private val serverPort: Option[Int] = None,
     router: Router = Router.empty,
@@ -39,7 +40,10 @@ case class GrpcServerConfig(
       Executors.newCachedThreadPool()
     },
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForMapOutput,
-    rpcLogger: GrpcRequestLogger = GrpcRequestLogger.default
+    requestLoggerProvider: GrpcServerConfig => GrpcRequestLogger = { config: GrpcServerConfig =>
+      GrpcRequestLogger
+        .newLogger(config.name)
+    }
 ) extends LogSupport {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -74,9 +78,10 @@ case class GrpcServerConfig(
 
   def withCodecFactory(newCodecFactory: MessageCodecFactory) = this.copy(codecFactory = newCodecFactory)
 
-  def withRequestLogger(rpcLogger: GrpcRequestLogger) = this.copy(rpcLogger = rpcLogger)
+  def withRequestLoggerProvider(provider: GrpcServerConfig => GrpcRequestLogger) = this
+    .copy(requestLoggerProvider = provider)
   // Disable RPC logging
-  def noRequestLogging = this.copy(rpcLogger = GrpcRequestLogger.nullLogger)
+  def noRequestLogging = this.copy(requestLoggerProvider = { config: GrpcServerConfig => GrpcRequestLogger.nullLogger })
 
   /**
     * Create and start a new server based on this config.
@@ -130,6 +135,7 @@ case class GrpcServerConfig(
 case class GrpcService(
     config: GrpcServerConfig,
     executorService: ExecutorService,
+    requestLogger: GrpcRequestLogger,
     serviceDefinitions: Seq[ServerServiceDefinition]
 ) extends AutoCloseable
     with LogSupport {
@@ -154,6 +160,7 @@ case class GrpcService(
   }
 
   override def close(): Unit = {
+    requestLogger.close()
     executorService.shutdownNow()
   }
 }

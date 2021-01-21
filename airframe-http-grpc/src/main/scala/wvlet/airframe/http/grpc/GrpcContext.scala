@@ -19,7 +19,11 @@ import wvlet.log.LogSupport
 object GrpcContext {
   private val contextKey = Context.key[GrpcContext]("grpc_context")
 
-  def current: GrpcContext = contextKey.get()
+  /**
+    * Get the current GrpcContext. If it returns None, it means this method is called outside gRPC's local thread for processing the request
+    * @return
+    */
+  def current: Option[GrpcContext] = Option(contextKey.get())
 
   private[grpc] object ContextTrackInterceptor extends ServerInterceptor with LogSupport {
     override def interceptCall[ReqT, RespT](

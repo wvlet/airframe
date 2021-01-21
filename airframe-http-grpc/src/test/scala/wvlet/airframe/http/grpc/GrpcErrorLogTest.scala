@@ -43,8 +43,12 @@ object GrpcErrorLogTest extends AirSpec {
 
   protected override def design = {
     gRPC.server
+      .withName("demo-api-debug")
       .withRouter(Router.add[DemoApiDebug])
-      .withRequestLogger(GrpcRequestLogger(inMemoryLogWriter))
+      .withRequestLoggerProvider { config: GrpcServerConfig =>
+        GrpcRequestLogger
+          .newLogger(config.name, inMemoryLogWriter)
+      }
       .designWithChannel
   }
 
@@ -66,6 +70,7 @@ object GrpcErrorLogTest extends AirSpec {
       logs.size shouldBe 1
 
       val log = logs(0)
+      log("server_name") shouldBe "demo-api-debug"
       log("path") shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/hello"
       log("content_type") shouldBe "application/grpc"
       log("rpc_interface") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
@@ -90,6 +95,7 @@ object GrpcErrorLogTest extends AirSpec {
       logs.size shouldBe 1
 
       val log = logs(0)
+      log("server_name") shouldBe "demo-api-debug"
       log("path") shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/helloClientStreaming"
       log("content_type") shouldBe "application/grpc"
       log("rpc_interface") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
@@ -114,6 +120,7 @@ object GrpcErrorLogTest extends AirSpec {
       logs.size shouldBe 1
 
       val log = logs(0)
+      log("server_name") shouldBe "demo-api-debug"
       log("path") shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/helloBidiStreaming"
       log("content_type") shouldBe "application/grpc"
       log("rpc_interface") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
