@@ -1,5 +1,6 @@
 ---
-id: airframe-rpc title: Airframe RPC
+id: airframe-rpc
+title: Airframe RPC
 ---
 
 Airframe RPC is a framework for building RPC services by using Scala as a unified interface between
@@ -7,11 +8,10 @@ servers and clients.
 
 ![overview](../img/airframe-rpc/rpc-overview.png)
 
-Airframe RPC Features:
+**Airframe RPC Features**:
 
 - Use plain Scala functions as RPC endpoints.
-- Support [Finagle](https://twitter.github.io/finagle/) (HTTP/1) or [gRPC](https://grpc.io/) (
-  HTTP/2) backends.
+- Support [Finagle](https://twitter.github.io/finagle/) (HTTP/1) or [gRPC](https://grpc.io/) (HTTP/2) backends.
 - [sbt-airframe](#sbt-airframe-plugin) plugin to generate RPC clients. No need to make HTTP requests
   by yourself.
 - [Scala.js](https://www.scala-js.org/) support for building interactive web browser applications.
@@ -97,8 +97,6 @@ messages, you can use case classes.
 ```scala
 package hello.api.v1
 
-;
-
 import wvlet.airframe.http._
 
 // A model class. This will be serialized into JSON or MessagePack
@@ -110,6 +108,7 @@ class Person(id: Int, name: String)
 trait MyService {
   def hello(person: Person): String
 }
+
 ```
 
 Next, implement this service interface in Scala:
@@ -122,7 +121,6 @@ import wvlet.airframe.http._
 class MyServiceImpl extends MyService {
   override def hello(person: Person): String = s"Hello ${person.name} (id=${person.id})!"
 }
-
 ```
 
 To start an RPC web server, Airfarme RPC provides Finagle-based web server implementation. The
@@ -134,12 +132,12 @@ val router = Router.add[MyServiceImpl]
 
 // Starting a new RPC server.
 Finagle
-        .server
-        .withRouter(router)
-        .withPort(8080)
-        .start { server =>
-          server.waitForTermination
-        }
+  .server
+  .withRouter(router)
+  .withPort(8080)
+  .start { server =>
+     server.waitForTermination
+  }
 ```
 
 To access the RPC server, we need to generate an RPC client from the RPC interface definition. We
@@ -184,7 +182,7 @@ __project/plugins.sbt__
 // For RPC client generation
 addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % "(version)")
 
-// For Scala.js
+// [optional] For Scala.js
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.1.0")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")
 ```
@@ -202,22 +200,20 @@ val buildSettings = Seq(
 )
 
 // RPC API definition. This project should contain only RPC interfaces
-lazy
-val api =
+lazy val api =
   crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
     .in(file("myapp-api"))
     .settings(
        buildSettings,
        libraryDependencies += "org.wvlet.airframe" %%% "airframe-http" % AIRFRAME_VERSION
-     )
+    )
 
 lazy val apiJVM = api.jvm
 lazy val apiJS = api.js
 
 // RPC server project
-lazy
-val server =
+lazy val server =
   project
     .in(file("myapp-server"))
     .settings(
@@ -231,8 +227,7 @@ val server =
     .dependsOn(apiJVM)
 
 // RPC client project
-lazy
-val client =
+lazy val client =
   project
     .in(file("myapp-client"))
     .enablePlugins(AirframeHttpPlugin)
@@ -243,16 +238,14 @@ val client =
       // Enable debug logging of sbt-airframe
       airframeHttpGeneratorOption := "-l debug",
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION
+        "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION,
         // Add this for using gRPC
         "org.wvlet.airframe" %% "airframe-http-grpc" % AIRFRAME_VERSION
-      )
-    )
-    .dependsOn(apiJVM)
+   )
+   .dependsOn(apiJVM)
 
-// Scala.js UI using RPC
-lazy
-val ui =
+// [optional] Scala.js UI using RPC
+lazy val ui =
   project
     .in(file("myapp-ui"))
     .enablePlugins(ScalaJSPlugin, AirframeHttpPlugin)
@@ -314,9 +307,12 @@ The generated client code can be found in `target/scala-2.12/src_managed/(api pa
 #### sbt-airframe commands
 
 ```scala
-> airframeHttpReload#Regenerate the generated client code.Use this if RPC interface has changed
-        > airframeHttpGenerateClients#Generating RPC clients manually
-        > airframeHttpClean#Clean the generated code
+# Regenerate the generated client code.Use this if RPC interface has changed
+> airframeHttpReload
+# Generating RPC clients manually
+> airframeHttpGenerateClients
+# Clean the generated code
+> airframeHttpClean
 ```
 
 ### Open API
@@ -348,8 +344,6 @@ With this configuration, Open API spec will be generated when running `package` 
 It will generate `target/openapi.yaml` file.
 
 ### RPC Logging
-
-(This feature is not yet available for gRPC backend)
 
 Airframe RPC stores HTTP access logs to `log/http-access.json` by default. This json logs contains
 HTTP request related parameters and RPC-specific fields described below:
@@ -514,6 +508,7 @@ import wvlet.airframe.http.RPC
 trait GreeterApi {
   def sayHello(message: String): String
 }
+
 ```
 
 ### Generating gRPC client
@@ -542,18 +537,18 @@ class GreeterApiImpl extends example.api.GreeterApi {
 val router = Router.add[GreeterApiImpl]
 
 gRPC.server
-        .withRouter(router)
-        .withPort(8080)
-        // [optional] You can add gRPC interceptors here
-        //.withInterceptor(...)
-        // [optional] you can customize gRPC server here
-        //.withServerInitializer{ x: ServerBuilder => x.addMethod(...); x }
-        // [optional] Disable the default logging to log/http-access.json file
-        //.noRequestLogging
-        .start { server =>
-          // gRPC server (based on Netty) starts at localhost:8080
-          server.awaitTermination
-        }
+  .withRouter(router)
+  .withPort(8080)
+  // [optional] You can add gRPC interceptors here
+  //.withInterceptor(...)
+  // [optional] you can customize gRPC server here
+  //.withServerInitializer{ x: ServerBuilder => x.addMethod(...); x }
+  // [optional] Disable the default logging to log/http-access.json file
+  //.noRequestLogging
+  .start { server =>
+    // gRPC server (based on Netty) starts at localhost:8080
+    server.awaitTermination
+  }
 ```
 
 ### gRPC Client
@@ -672,13 +667,14 @@ import wvlet.airframe.http.grpc.GrpcContext
 @RPC
 trait MyApi {
   def hello: String = {
-    // Get the current context 
+    // Get the current context
     val ctx: Option[GrpcContext] = GrpcContext.current
     // Read gRPC Metadata
-    ctx.map(_.metadata) // Option[Metadata] 
+    ctx.map(_.metadata) // Option[Metadata]
     // ...
   }
 }
+
 ```
 
 ## RPC Internals
@@ -715,6 +711,7 @@ trait MyService {
 case class HelloRequest(name: String)
 
 case class HelloResponse(message: String)
+
 ```
 
 - __Method__: POST
