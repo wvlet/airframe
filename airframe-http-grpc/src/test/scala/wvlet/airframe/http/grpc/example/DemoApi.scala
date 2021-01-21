@@ -26,19 +26,18 @@ import wvlet.log.LogSupport
 trait DemoApi extends LogSupport {
   def getContext: String = {
     val ctx = GrpcContext.current
-    info(ctx)
+    debug(ctx)
     "Ok"
   }
 }
 
 object DemoApi {
 
-  def design: Design = gRPC
-          .server
-          .withRouter(router)
-          .withName("DemoApi")
-          .designWithChannel
-          .bind[DemoApiClient].toProvider{ channel: Channel => new DemoApiClient(channel) }
+  def design: Design = gRPC.server
+    .withRouter(router)
+    .withName("DemoApi")
+    .designWithChannel
+    .bind[DemoApiClient].toProvider { channel: Channel => new DemoApiClient(channel) }
 
   def router = Router.add[DemoApi]
 
@@ -49,9 +48,9 @@ object DemoApi {
   }
 
   class DemoApiClient(
-          channel: Channel,
-          callOptions: CallOptions = CallOptions.DEFAULT,
-          codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
+      channel: Channel,
+      callOptions: CallOptions = CallOptions.DEFAULT,
+      codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
   ) extends AbstractBlockingStub[DemoApiClient](channel, callOptions) {
     override def build(channel: Channel, callOptions: CallOptions): DemoApiClient = {
       new DemoApiClient(channel, callOptions)
@@ -63,7 +62,9 @@ object DemoApi {
     def getContext: String = {
       val m = Map.empty[String, Any]
       ClientCalls
-              .blockingUnaryCall(getChannel, getContextMethodDescriptor, getCallOptions, codec.toMsgPack(m)).asInstanceOf[String]
+        .blockingUnaryCall(getChannel, getContextMethodDescriptor, getCallOptions, codec.toMsgPack(m)).asInstanceOf[
+          String
+        ]
     }
   }
 

@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
+
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc._
 import wvlet.airframe.codec.MessageCodecFactory
@@ -37,7 +38,8 @@ case class GrpcServerConfig(
     executorProvider: GrpcServerConfig => ExecutorService = { config: GrpcServerConfig =>
       Executors.newCachedThreadPool()
     },
-    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForMapOutput
+    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForMapOutput,
+    rpcLogger: GrpcRequestLogger = GrpcRequestLogger.default
 ) extends LogSupport {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -47,6 +49,7 @@ case class GrpcServerConfig(
 
   /**
     * Use this method to customize gRPC server, e.g., setting tracer, add transport filter, etc.
+    *
     * @param serverInitializer
     * @return
     */
@@ -55,6 +58,7 @@ case class GrpcServerConfig(
 
   /**
     * Add an gRPC interceptor
+    *
     * @param interceptor
     * @return
     */
@@ -69,6 +73,10 @@ case class GrpcServerConfig(
     this.copy(executorProvider = provider)
 
   def withCodecFactory(newCodecFactory: MessageCodecFactory) = this.copy(codecFactory = newCodecFactory)
+
+  def withRPCLogger(rpcLogger: GrpcRequestLogger) = this.copy(rpcLogger = rpcLogger)
+  // Disable RPC logging
+  def noRPCLogger = this.copy(rpcLogger = GrpcRequestLogger.nullLogger)
 
   /**
     * Create and start a new server based on this config.
@@ -85,7 +93,7 @@ case class GrpcServerConfig(
     * If you want to keep running the server inside the code block, call server.awaitTermination.
     */
   def start[U](body: GrpcServer => U): U = {
-    design.run[GrpcServer, U] { server =>
+    design.noLifeCycleLogging.run[GrpcServer, U] { server =>
       body(server)
     }
   }
@@ -101,6 +109,7 @@ case class GrpcServerConfig(
 
   /**
     * Create a design for GrpcServer and ManagedChannel. Useful for testing purpose
+    *
     * @return
     */
   def designWithChannel: Design = {
@@ -171,6 +180,7 @@ class GrpcServer(grpcService: GrpcService, server: Server) extends AutoCloseable
 
 /**
   * GrpcServerFactory manages
+  *
   * @param session
   */
 class GrpcServerFactory(session: Session) extends AutoCloseable with LogSupport {

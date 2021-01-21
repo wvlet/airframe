@@ -14,12 +14,11 @@
 package wvlet.airframe.http.grpc
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{Callable, ExecutorService}
-
 import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
 import io.grpc.stub.StreamObserver
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
-import wvlet.airframe.http.router.HttpRequestMapper
+import wvlet.airframe.http.router.{HttpRequestMapper, RPCCallContext}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
 import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner}
@@ -33,21 +32,24 @@ import scala.util.{Failure, Success, Try}
   * RPCRequestHandler receives a MessagePack Map value for an RPC request, and call the controller method
   */
 class RPCRequestHandler(
+    rpcInterfaceCls: Class[_],
     // Controller instance
     controller: Any,
     // Controller method to call for RPC
     methodSurface: MethodSurface,
     codecFactory: MessageCodecFactory,
-    executorService: ExecutorService
+    executorService: ExecutorService,
+    requestLogger: GrpcRequestLogger
 ) extends LogSupport {
 
   private val argCodecs = methodSurface.args.map(a => codecFactory.of(a.surface))
+
+  private val rpcContext = RPCCallContext(rpcInterfaceCls, methodSurface, Seq.empty)
 
   def invokeMethod(request: MsgPack): Try[Any] = {
     // Build method arguments from MsgPack
     val requestValue = ValueCodec.unpack(request)
     trace(requestValue)
-
     val result = Try {
       requestValue match {
         case m: MapValue =>
@@ -66,11 +68,20 @@ class RPCRequestHandler(
               throw new IllegalArgumentException(s"No key for ${arg.name} is found in ${m}")
             }
           }
-
           trace(s"RPC call ${methodSurface.name}(${args.mkString(", ")})")
-          methodSurface.call(controller, args: _*)
+          try {
+            val ret = methodSurface.call(controller, args: _*)
+            requestLogger.logRPC(rpcContext.withRPCArgs(args))
+            ret
+          } catch {
+            case e: Throwable =>
+              requestLogger.logError(e, rpcContext)
+              throw e
+          }
         case _ =>
-          throw new IllegalArgumentException(s"Invalid argument: ${requestValue}")
+          val e = new IllegalArgumentException(s"Invalid argument: ${requestValue}")
+          requestLogger.logError(e, rpcContext)
+          throw e
       }
     }
     result
@@ -94,8 +105,10 @@ class RPCRequestHandler(
           executorService.submit(new Callable[Unit] {
             override def call(): Unit = {
               Try(methodSurface.call(controller, rx)) match {
-                case Success(value) => promise.success(value)
-                case Failure(e)     => promise.failure(e)
+                case Success(value) =>
+                  promise.success(value)
+                case Failure(e) =>
+                  promise.failure(e)
               }
             }
           })
@@ -106,12 +119,16 @@ class RPCRequestHandler(
         invokeServerMethod
         Try(codec.fromMsgPack(value)) match {
           case Success(v) =>
+            // Add a log for each client-side stream message
+            requestLogger.logRPC(rpcContext.withRPCArgs(Seq(v)))
             rx.add(OnNext(v))
           case Failure(e) =>
+            requestLogger.logError(e, rpcContext)
             rx.add(OnError(e))
         }
       }
       override def onError(t: Throwable): Unit = {
+        requestLogger.logError(t, rpcContext)
         rx.add(OnError(t))
         responseObserver.onError(t)
       }
@@ -123,6 +140,7 @@ class RPCRequestHandler(
             responseObserver.onNext(v)
             responseObserver.onCompleted()
           case Failure(e) =>
+            requestLogger.logError(e, rpcContext)
             responseObserver.onError(e)
         }(ExecutionContext.fromExecutor(executorService))
       }
@@ -160,11 +178,17 @@ class RPCRequestHandler(
       override def onNext(value: MsgPack): Unit = {
         invokeServerMethod
         Try(codec.fromMsgPack(value)) match {
-          case Success(v) => rx.add(OnNext(v))
-          case Failure(e) => rx.add(OnError(e))
+          case Success(v) =>
+            // Add a log for each client-side stream message
+            requestLogger.logRPC(rpcContext.withRPCArgs(Seq(v)))
+            rx.add(OnNext(v))
+          case Failure(e) =>
+            requestLogger.logError(e, rpcContext)
+            rx.add(OnError(e))
         }
       }
       override def onError(t: Throwable): Unit = {
+        requestLogger.logError(t, rpcContext)
         rx.add(OnError(t))
         responseObserver.onError(t)
       }
@@ -189,6 +213,7 @@ class RPCRequestHandler(
                 responseObserver.onCompleted()
             }
           case Failure(e) =>
+            requestLogger.logError(e, rpcContext)
             responseObserver.onError(e)
         }(ExecutionContext.fromExecutor(executorService))
       }

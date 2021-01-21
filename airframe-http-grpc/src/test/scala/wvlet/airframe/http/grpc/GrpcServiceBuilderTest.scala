@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
+
 import io.grpc.stub.{AbstractBlockingStub, ClientCallStreamObserver, ClientCalls}
 import io.grpc.{CallOptions, Channel, ManagedChannel, ManagedChannelBuilder}
 import wvlet.airframe.Design
@@ -154,16 +155,17 @@ object GrpcServiceBuilderTest extends AirSpec {
     }
   ) { (server: GrpcServer, channel: ManagedChannel) =>
     val stub = new MyApiStub(channel)
+    val N    = 10
 
     test("unary") {
-      for (i <- 0 to 100) {
+      for (i <- 0 to N) {
         val ret = stub.hello("world")
         ret shouldBe "Hello world!"
       }
     }
 
     test("n-ary") {
-      for (i <- 0 to 100) {
+      for (i <- 0 to N) {
         val ret2 = stub.hello2("world", i)
         ret2 shouldBe s"Hello world! (id:${i})"
       }
@@ -175,14 +177,14 @@ object GrpcServiceBuilderTest extends AirSpec {
     }
 
     test("client streaming") {
-      for (i <- 0 to 100) {
+      for (i <- 0 to N) {
         val result = stub.helloClientStreaming(Rx.sequence("Apple", "Banana"))
         result shouldBe "Apple, Banana"
       }
     }
 
     test("bidi streaming") {
-      for (i <- 0 to 100) {
+      for (i <- 0 to N) {
         val result = stub.helloBidiStreaming(Rx.sequence("Apple", "Banana")).toSeq
         result shouldBe Seq("Hello Apple!", "Hello Banana!")
       }

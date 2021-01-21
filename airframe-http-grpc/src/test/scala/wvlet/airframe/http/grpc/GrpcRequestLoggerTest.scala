@@ -12,19 +12,18 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
+
 import wvlet.airframe.http.grpc.example.Greeter
 import wvlet.airframe.http.grpc.example.Greeter.GreeterStub
-import wvlet.airframe.http.grpc.interceptor.GrpcLoggingInterceptor
 import wvlet.airspec.AirSpec
 
 /**
   */
-class GrpcLoggingInterceptorTest extends AirSpec {
+class GrpcRequestLoggerTest extends AirSpec {
 
   protected override def design = {
     gRPC.server
       .withRouter(Greeter.router)
-      .withInterceptor(new GrpcLoggingInterceptor)
       .designWithChannel
       .bind[GreeterStub].toSingleton
   }
