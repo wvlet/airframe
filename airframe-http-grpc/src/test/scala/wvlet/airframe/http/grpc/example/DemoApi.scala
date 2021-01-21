@@ -14,13 +14,15 @@
 package wvlet.airframe.http.grpc.example
 
 import io.grpc.{CallOptions, Channel}
-import io.grpc.stub.{AbstractBlockingStub, ClientCalls}
+import io.grpc.stub.{AbstractBlockingStub, ClientCallStreamObserver, ClientCalls}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.http.grpc.{GrpcContext, GrpcServiceBuilder, gRPC}
+import wvlet.airframe.http.grpc.{GrpcClientCalls, GrpcContext, GrpcServiceBuilder, gRPC}
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{RPC, Router}
+import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.log.LogSupport
+import wvlet.airframe.rx.{Rx, RxStream}
 
 @RPC
 trait DemoApi extends LogSupport {
@@ -28,6 +30,26 @@ trait DemoApi extends LogSupport {
     val ctx = GrpcContext.current
     debug(ctx)
     "Ok"
+  }
+
+  def hello(name: String): String = {
+    s"Hello ${name}!"
+  }
+
+  def hello2(name: String, id: Int): String = {
+    s"Hello ${name}! (id:${id})"
+  }
+
+  def helloStreaming(name: String): RxStream[String] = {
+    Rx.sequence("Hello", "Bye").map(x => s"${x} ${name}!")
+  }
+
+  def helloClientStreaming(input: RxStream[String]): String = {
+    input.toSeq.mkString(", ")
+  }
+
+  def helloBidiStreaming(input: RxStream[String]): RxStream[String] = {
+    input.map(x => s"Hello ${x}!")
   }
 }
 
@@ -58,6 +80,16 @@ object DemoApi {
     private val codec = codecFactory.of[Map[String, Any]]
     private val getContextMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("getContext"), codecFactory)
+    private val helloMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("hello"), codecFactory)
+    private val hello2MethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("hello2"), codecFactory)
+    private val helloStreamingMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloStreaming"), codecFactory)
+    private val helloClientStreamingMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloClientStreaming"), codecFactory)
+    private val helloBidiStreamingMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloBidiStreaming"), codecFactory)
 
     def getContext: String = {
       val m = Map.empty[String, Any]
@@ -65,6 +97,58 @@ object DemoApi {
         .blockingUnaryCall(getChannel, getContextMethodDescriptor, getCallOptions, codec.toMsgPack(m)).asInstanceOf[
           String
         ]
+    }
+    def hello(name: String): String = {
+      val m = Map("name" -> name)
+      ClientCalls
+        .blockingUnaryCall(getChannel, helloMethodDescriptor, getCallOptions, codec.toMsgPack(m)).asInstanceOf[String]
+    }
+    def hello2(name: String, id: Int): String = {
+      val m = Map("name" -> name, "id" -> id)
+      ClientCalls
+        .blockingUnaryCall(getChannel, hello2MethodDescriptor, getCallOptions, codec.toMsgPack(m)).asInstanceOf[String]
+    }
+    def helloStreaming(name: String): Seq[String] = {
+      val m                = Map("name" -> name)
+      val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
+      ClientCalls.asyncServerStreamingCall(
+        getChannel.newCall(
+          helloStreamingMethodDescriptor,
+          getCallOptions
+        ),
+        codec.toMsgPack(m),
+        responseObserver
+      )
+      responseObserver.toRx.toSeq
+    }
+    def helloClientStreaming(input: Rx[String]): String = {
+      val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
+      val requestObserver: ClientCallStreamObserver[MsgPack] = ClientCalls
+        .asyncClientStreamingCall[MsgPack, Any](
+          getChannel.newCall(
+            helloClientStreamingMethodDescriptor,
+            getCallOptions
+          ),
+          responseObserver
+        ).asInstanceOf[ClientCallStreamObserver[MsgPack]]
+
+      val c = GrpcClientCalls.readClientRequestStream(input, codecFactory.of[String], requestObserver)
+      responseObserver.toRx.toSeq.head
+    }
+
+    def helloBidiStreaming(input: Rx[String]): Rx[String] = {
+      val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
+      val requestObserver: ClientCallStreamObserver[MsgPack] = ClientCalls
+        .asyncBidiStreamingCall[MsgPack, Any](
+          getChannel.newCall(
+            helloBidiStreamingMethodDescriptor,
+            getCallOptions
+          ),
+          responseObserver
+        ).asInstanceOf[ClientCallStreamObserver[MsgPack]]
+
+      val c = GrpcClientCalls.readClientRequestStream(input, codecFactory.of[String], requestObserver)
+      responseObserver.toRx
     }
   }
 

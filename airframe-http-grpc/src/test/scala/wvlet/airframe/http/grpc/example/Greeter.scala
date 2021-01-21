@@ -18,7 +18,6 @@ import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.{RPC, Router}
 import wvlet.airframe.http.grpc.{GrpcServer, GrpcServiceBuilder}
-import wvlet.airframe.http.grpc.GrpcServiceBuilderTest.{MyApi, MyApiStub, debug, getRoute, router}
 import wvlet.airframe.http.router.Route
 
 /**
@@ -30,16 +29,16 @@ trait Greeter {
 
 object Greeter {
 
-  val router = Router.add[MyApi]
+  val router = Router.add[Greeter]
 
   // TODO: Generate this stub using sbt-airframe
   class GreeterStub(
       channel: Channel,
       callOptions: CallOptions = CallOptions.DEFAULT,
       codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
-  ) extends AbstractBlockingStub[MyApiStub](channel, callOptions) {
-    override def build(channel: Channel, callOptions: CallOptions): MyApiStub = {
-      new MyApiStub(channel, callOptions)
+  ) extends AbstractBlockingStub[GreeterStub](channel, callOptions) {
+    override def build(channel: Channel, callOptions: CallOptions): GreeterStub = {
+      new GreeterStub(channel, callOptions)
     }
     private val codec = codecFactory.of[Map[String, Any]]
     private val helloMethodDescriptor =
