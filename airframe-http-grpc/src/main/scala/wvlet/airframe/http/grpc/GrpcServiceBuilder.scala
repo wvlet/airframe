@@ -18,6 +18,7 @@ import io.grpc.{MethodDescriptor, ServerServiceDefinition}
 import wvlet.airframe.Session
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.IO
+import wvlet.airframe.http.Router
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.Rx
@@ -86,6 +87,7 @@ object GrpcServiceBuilder {
       session: Session
   ): GrpcService = {
     val threadManager: ExecutorService = config.executorProvider(config)
+    val requestLogger                  = config.requestLoggerProvider(config)
     val services =
       for ((serviceName, routes) <- config.router.routes.groupBy(_.serviceName))
         yield {
@@ -96,8 +98,17 @@ object GrpcServiceBuilder {
           val serviceBuilder = ServerServiceDefinition.builder(serviceName)
 
           for ((r, m) <- routeAndMethods) {
-            val controller     = session.getInstanceOf(r.controllerSurface)
-            val requestHandler = new RPCRequestHandler(controller, r.methodSurface, config.codecFactory, threadManager)
+            val controller      = session.getInstanceOf(r.controllerSurface)
+            val rpcInterfaceCls = Router.findRPCInterfaceCls(r.controllerSurface)
+            val requestHandler =
+              new GrpcRequestHandler(
+                rpcInterfaceCls,
+                controller,
+                r.methodSurface,
+                config.codecFactory,
+                threadManager,
+                requestLogger
+              )
             val serverCall = r.methodSurface.grpcMethodType match {
               case MethodDescriptor.MethodType.UNARY =>
                 ServerCalls.asyncUnaryCall(new RPCUnaryMethodHandler(requestHandler))
@@ -120,7 +131,7 @@ object GrpcServiceBuilder {
           serviceDef
         }
 
-    GrpcService(config, threadManager, services.toSeq)
+    GrpcService(config, threadManager, requestLogger, services.toSeq)
   }
 
   object RPCRequestMarshaller extends Marshaller[MsgPack] with LogSupport {

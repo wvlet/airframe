@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.{Callable, ExecutorService}
 
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
+import java.util.concurrent.{Callable, ExecutorService}
 import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
 import io.grpc.stub.StreamObserver
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
-import wvlet.airframe.http.router.HttpRequestMapper
+import wvlet.airframe.http.router.{HttpRequestMapper, RPCCallContext}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
 import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner}
@@ -30,22 +30,29 @@ import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Receives MessagePack Map value for the RPC request, and call the controller method
+  * This handler receives a MessagePack Map value for an RPC request, and call the corresponding controller method
   */
-class RPCRequestHandler(
+class GrpcRequestHandler(
+    rpcInterfaceCls: Class[_],
+    // Controller instance
     controller: Any,
+    // Controller method to call for RPC
     methodSurface: MethodSurface,
     codecFactory: MessageCodecFactory,
-    executorService: ExecutorService
+    executorService: ExecutorService,
+    requestLogger: GrpcRequestLogger
 ) extends LogSupport {
 
   private val argCodecs = methodSurface.args.map(a => codecFactory.of(a.surface))
+
+  private val rpcContext = RPCCallContext(rpcInterfaceCls, methodSurface, Seq.empty)
 
   def invokeMethod(request: MsgPack): Try[Any] = {
     // Build method arguments from MsgPack
     val requestValue = ValueCodec.unpack(request)
     trace(requestValue)
 
+    val grpcContext = GrpcContext.current
     val result = Try {
       requestValue match {
         case m: MapValue =>
@@ -64,11 +71,20 @@ class RPCRequestHandler(
               throw new IllegalArgumentException(s"No key for ${arg.name} is found in ${m}")
             }
           }
-
           trace(s"RPC call ${methodSurface.name}(${args.mkString(", ")})")
-          methodSurface.call(controller, args: _*)
+          try {
+            val ret = methodSurface.call(controller, args: _*)
+            requestLogger.logRPC(grpcContext, rpcContext.withRPCArgs(args))
+            ret
+          } catch {
+            case e: Throwable =>
+              requestLogger.logError(e, grpcContext, rpcContext.withRPCArgs(args))
+              throw e
+          }
         case _ =>
-          throw new IllegalArgumentException(s"Invalid argument: ${requestValue}")
+          val e = new IllegalArgumentException(s"Invalid argument: ${requestValue}")
+          requestLogger.logError(e, grpcContext, rpcContext)
+          throw e
       }
     }
     result
@@ -79,9 +95,11 @@ class RPCRequestHandler(
       clientStreamingType: Surface
   ): StreamObserver[MsgPack] = {
     val codec = codecFactory.of(clientStreamingType)
-    // Receives streaming messages from the client
+    // An observer that receives streaming messages from the client
+    val grpcContext = GrpcContext.current
     val requestObserver = new StreamObserver[MsgPack] {
-      private val isStarted             = new AtomicBoolean(false)
+      private val isStarted = new AtomicBoolean(false)
+      // A queue for passing incoming messages to the application through Rx interface
       private val rx                    = new RxBlockingQueue[Any]
       private val promise: Promise[Any] = Promise()
 
@@ -92,8 +110,10 @@ class RPCRequestHandler(
           executorService.submit(new Callable[Unit] {
             override def call(): Unit = {
               Try(methodSurface.call(controller, rx)) match {
-                case Success(value) => promise.success(value)
-                case Failure(e)     => promise.failure(e)
+                case Success(value) =>
+                  promise.success(value)
+                case Failure(e) =>
+                  promise.failure(e)
               }
             }
           })
@@ -110,6 +130,7 @@ class RPCRequestHandler(
         }
       }
       override def onError(t: Throwable): Unit = {
+        requestLogger.logError(t, grpcContext, rpcContext)
         rx.add(OnError(t))
         responseObserver.onError(t)
       }
@@ -117,10 +138,12 @@ class RPCRequestHandler(
         invokeServerMethod
         rx.add(OnCompletion)
         promise.future.onComplete {
-          case Success(v) =>
-            responseObserver.onNext(v)
+          case Success(value) =>
+            requestLogger.logRPC(grpcContext, rpcContext)
+            responseObserver.onNext(value)
             responseObserver.onCompleted()
           case Failure(e) =>
+            requestLogger.logError(e, grpcContext, rpcContext)
             responseObserver.onError(e)
         }(ExecutionContext.fromExecutor(executorService))
       }
@@ -135,6 +158,7 @@ class RPCRequestHandler(
 
     val codec = codecFactory.of(clientStreamingType)
 
+    val grpcContext = GrpcContext.current
     val requestObserver = new StreamObserver[MsgPack] {
       private val isStarted             = new AtomicBoolean(false)
       private val rx                    = new RxBlockingQueue[Any]
@@ -158,8 +182,11 @@ class RPCRequestHandler(
       override def onNext(value: MsgPack): Unit = {
         invokeServerMethod
         Try(codec.fromMsgPack(value)) match {
-          case Success(v) => rx.add(OnNext(v))
-          case Failure(e) => rx.add(OnError(e))
+          case Success(v) =>
+            // Add a log for each client-side stream message
+            rx.add(OnNext(v))
+          case Failure(e) =>
+            rx.add(OnError(e))
         }
       }
       override def onError(t: Throwable): Unit = {
@@ -178,15 +205,19 @@ class RPCRequestHandler(
                   case OnNext(value) =>
                     responseObserver.onNext(value)
                   case OnError(e) =>
+                    requestLogger.logError(e, grpcContext, rpcContext)
                     responseObserver.onError(e)
                   case OnCompletion =>
+                    requestLogger.logRPC(grpcContext, rpcContext)
                     responseObserver.onCompleted()
                 }
               case other =>
+                requestLogger.logRPC(grpcContext, rpcContext)
                 responseObserver.onNext(v)
                 responseObserver.onCompleted()
             }
           case Failure(e) =>
+            requestLogger.logError(e, grpcContext, rpcContext)
             responseObserver.onError(e)
         }(ExecutionContext.fromExecutor(executorService))
       }
@@ -197,7 +228,7 @@ class RPCRequestHandler(
 
 }
 
-class RPCUnaryMethodHandler(rpcRequestHandler: RPCRequestHandler) extends UnaryMethod[MsgPack, Any] {
+private[grpc] class RPCUnaryMethodHandler(rpcRequestHandler: GrpcRequestHandler) extends UnaryMethod[MsgPack, Any] {
   override def invoke(
       request: MsgPack,
       responseObserver: StreamObserver[Any]
@@ -212,7 +243,7 @@ class RPCUnaryMethodHandler(rpcRequestHandler: RPCRequestHandler) extends UnaryM
   }
 }
 
-class RPCServerStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler)
+private[grpc] class RPCServerStreamingMethodHandler(rpcRequestHandler: GrpcRequestHandler)
     extends ServerStreamingMethod[MsgPack, Any]
     with LogSupport {
   override def invoke(
@@ -242,7 +273,7 @@ class RPCServerStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler)
   }
 }
 
-class RPCClientStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler, clientStreamingType: Surface)
+private[grpc] class RPCClientStreamingMethodHandler(rpcRequestHandler: GrpcRequestHandler, clientStreamingType: Surface)
     extends ClientStreamingMethod[MsgPack, Any] {
 
   override def invoke(
@@ -253,7 +284,7 @@ class RPCClientStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler, clie
   }
 }
 
-class RPCBidiStreamingMethodHandler(rpcRequestHandler: RPCRequestHandler, clientStreamingType: Surface)
+private[grpc] class RPCBidiStreamingMethodHandler(rpcRequestHandler: GrpcRequestHandler, clientStreamingType: Surface)
     extends BidiStreamingMethod[MsgPack, Any] {
   override def invoke(
       responseObserver: StreamObserver[Any]

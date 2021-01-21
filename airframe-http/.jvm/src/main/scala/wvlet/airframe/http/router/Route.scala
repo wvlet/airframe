@@ -40,6 +40,7 @@ trait Route {
   }
 
   def controllerSurface: Surface
+
   def returnTypeSurface: Surface
 
   /**
@@ -68,7 +69,9 @@ trait Route {
   ): Option[Any]
 }
 
-case class RPCCallContext(rpcInterfaceCls: Class[_], rpcMethodSurface: MethodSurface, rpcArgs: Seq[Any])
+case class RPCCallContext(rpcInterfaceCls: Class[_], rpcMethodSurface: MethodSurface, rpcArgs: Seq[Any]) {
+  def withRPCArgs(rpcArgs: Seq[Any]): RPCCallContext = this.copy(rpcArgs = rpcArgs)
+}
 
 /**
   * Define mappings from an HTTP request to a controller method which has the Endpoint annotation

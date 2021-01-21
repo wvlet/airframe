@@ -14,7 +14,6 @@
 package wvlet.airframe.http.finagle.filter
 import java.util.Locale
 import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
-
 import com.twitter.finagle.http.{HeaderMap, Request, Response}
 import com.twitter.finagle.{Service, SimpleFilter, http}
 import com.twitter.util.Future
@@ -22,7 +21,15 @@ import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.findCause
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter._
 import wvlet.airframe.http.finagle.{FinagleBackend, FinagleServer}
-import wvlet.airframe.http.{HttpBackend, HttpContext, HttpHeader, HttpMessage, HttpServerException, HttpStatus}
+import wvlet.airframe.http.{
+  HttpAccessLogWriter,
+  HttpBackend,
+  HttpContext,
+  HttpHeader,
+  HttpMessage,
+  HttpServerException,
+  HttpStatus
+}
 import wvlet.airframe.http.router.RPCCallContext
 import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogTimestampFormatter
@@ -60,7 +67,7 @@ case class HttpAccessLogFilter(
     this.copy(excludeHeaders = excludeHeaders ++ excludes)
   }
 
-  private val sanitizedExcludeHeaders = excludeHeaders.map(sanitizeHeader)
+  private val sanitizedExcludeHeaders = excludeHeaders.map(HttpAccessLogWriter.sanitizeHeader)
 
   private def emit(m: Map[String, Any]) = {
     val filtered = m.filterNot(x => sanitizedExcludeHeaders.contains(x._1))
@@ -159,21 +166,13 @@ object HttpAccessLogFilter {
 
   def defaultContextLoggers: Seq[HttpContextLogger] = Seq(rpcLogger)
 
-  def unixTimeLogger(request: Request): Map[String, Any] = {
-    val currentTimeMillis = System.currentTimeMillis()
-    // Unix time
-    ListMap(
-      "time" -> (currentTimeMillis / 1000L),
-      // timestamp with ms resolution and zone offset
-      "event_time" -> LogTimestampFormatter.formatTimestampWithNoSpaace(currentTimeMillis)
-    )
-  }
+  def unixTimeLogger(request: Request): Map[String, Any] = HttpAccessLogWriter.logUnixTime
 
   def basicRequestLogger(request: Request): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     m += "method" -> request.method.toString
     m += "path"   -> request.path
-    m += "uri"    -> sanitize(request.uri)
+    m += "uri"    -> HttpAccessLogWriter.sanitize(request.uri)
     val queryString = extractQueryString(request.uri)
     if (queryString.nonEmpty) {
       m += "query_string" -> queryString
@@ -192,7 +191,7 @@ object HttpAccessLogFilter {
     val m = ListMap.newBuilder[String, Any]
     for ((key, value) <- headerMap) {
       val v = headerMap.getAll(key).mkString(";")
-      m += sanitizeHeader(s"${prefix.getOrElse("")}${key}") -> v
+      m += HttpAccessLogWriter.sanitizeHeader(s"${prefix.getOrElse("")}${key}") -> v
     }
     m.result()
   }
@@ -212,70 +211,17 @@ object HttpAccessLogFilter {
 
   def responseHeaderLogger(response: Response) = headerLogger(response.headerMap, Some("response_"))
 
-  def errorLogger(request: Request, e: Throwable): Map[String, Any] = {
-    val m = ListMap.newBuilder[String, Any]
-    // Resolve the cause of the exception
-    findCause(e) match {
-      case null =>
-      // no-op
-      case se @ HttpServerException(_, cause) =>
-        // If the cause is provided, record it. Otherwise, recording the status_code is sufficient.
-        if (cause != null) {
-          val rootCause = findCause(cause)
-          m += "exception"         -> rootCause
-          m += "exception_message" -> rootCause.getMessage
-        }
-      case other =>
-        m += "exception"         -> other
-        m += "exception_message" -> other.getMessage
-    }
-    m.result
-  }
-
+  def errorLogger(request: Request, e: Throwable): Map[String, Any] = HttpAccessLogWriter.errorLog(e)
   def rpcLogger(request: Request): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     FinagleBackend.getThreadLocal(HttpBackend.TLS_KEY_RPC).foreach { x: Any =>
       x match {
-        case RPCCallContext(rpcInterface, methodSurface, args) =>
-          m += "rpc_interface" -> rpcInterface.getName.stripSuffix("$")
-          m += "rpc_class"     -> methodSurface.owner.fullName
-          m += "rpc_method"    -> methodSurface.name
-
-          val rpcArgsBuilder = ListMap.newBuilder[String, Any]
-          // Exclude request context objects, which will be duplicates of request parameter logs
-          for ((p, arg) <- methodSurface.args.zip(args)) {
-            arg match {
-              case r: HttpMessage.Request  =>
-              case r: http.Request         =>
-              case c: HttpContext[_, _, _] =>
-              case _ =>
-                rpcArgsBuilder += p.name -> arg
-            }
-          }
-          val rpcArgs = rpcArgsBuilder.result()
-          if (rpcArgs.nonEmpty) {
-            m += "rpc_args" -> rpcArgs
-          }
+        case c @ RPCCallContext(rpcInterface, methodSurface, args) =>
+          m ++= HttpAccessLogWriter.rpcLog(c)
         case _ =>
       }
     }
     m.result()
-  }
-
-  import scala.jdk.CollectionConverters._
-  private val headerSanitizeCache = new ConcurrentHashMap[String, String]().asScala
-
-  def sanitizeHeader(h: String): String = {
-    headerSanitizeCache.getOrElseUpdate(h, h.replaceAll("-", "_").toLowerCase(Locale.ENGLISH))
-  }
-
-  def sanitize(s: String): String = {
-    s.map {
-      case '\n' => "\\n"
-      case '\r' => "\\r"
-      case '\t' => "\\t"
-      case c    => c
-    }.mkString
   }
 
   def extractQueryString(uri: String): String = {

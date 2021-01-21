@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
+
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc._
 import wvlet.airframe.codec.MessageCodecFactory
@@ -29,6 +30,7 @@ import scala.util.control.NonFatal
 /**
   */
 case class GrpcServerConfig(
+    // The server name
     name: String = "default",
     private val serverPort: Option[Int] = None,
     router: Router = Router.empty,
@@ -37,7 +39,11 @@ case class GrpcServerConfig(
     executorProvider: GrpcServerConfig => ExecutorService = { config: GrpcServerConfig =>
       Executors.newCachedThreadPool()
     },
-    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForMapOutput
+    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForMapOutput,
+    requestLoggerProvider: GrpcServerConfig => GrpcRequestLogger = { config: GrpcServerConfig =>
+      GrpcRequestLogger
+        .newLogger(config.name)
+    }
 ) extends LogSupport {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -47,6 +53,7 @@ case class GrpcServerConfig(
 
   /**
     * Use this method to customize gRPC server, e.g., setting tracer, add transport filter, etc.
+    *
     * @param serverInitializer
     * @return
     */
@@ -55,6 +62,7 @@ case class GrpcServerConfig(
 
   /**
     * Add an gRPC interceptor
+    *
     * @param interceptor
     * @return
     */
@@ -69,6 +77,11 @@ case class GrpcServerConfig(
     this.copy(executorProvider = provider)
 
   def withCodecFactory(newCodecFactory: MessageCodecFactory) = this.copy(codecFactory = newCodecFactory)
+
+  def withRequestLoggerProvider(provider: GrpcServerConfig => GrpcRequestLogger) = this
+    .copy(requestLoggerProvider = provider)
+  // Disable RPC logging
+  def noRequestLogging = this.copy(requestLoggerProvider = { config: GrpcServerConfig => GrpcRequestLogger.nullLogger })
 
   /**
     * Create and start a new server based on this config.
@@ -85,7 +98,7 @@ case class GrpcServerConfig(
     * If you want to keep running the server inside the code block, call server.awaitTermination.
     */
   def start[U](body: GrpcServer => U): U = {
-    design.run[GrpcServer, U] { server =>
+    design.noLifeCycleLogging.run[GrpcServer, U] { server =>
       body(server)
     }
   }
@@ -101,6 +114,7 @@ case class GrpcServerConfig(
 
   /**
     * Create a design for GrpcServer and ManagedChannel. Useful for testing purpose
+    *
     * @return
     */
   def designWithChannel: Design = {
@@ -121,6 +135,7 @@ case class GrpcServerConfig(
 case class GrpcService(
     config: GrpcServerConfig,
     executorService: ExecutorService,
+    requestLogger: GrpcRequestLogger,
     serviceDefinitions: Seq[ServerServiceDefinition]
 ) extends AutoCloseable
     with LogSupport {
@@ -131,6 +146,10 @@ case class GrpcService(
     for (service <- serviceDefinitions) {
       serverBuilder.addService(service)
     }
+
+    // Add an interceptor for remembering GrpcContext
+    serverBuilder.intercept(GrpcContext.ContextTrackInterceptor)
+
     for (interceptor <- config.interceptors) {
       serverBuilder.intercept(interceptor)
     }
@@ -141,6 +160,7 @@ case class GrpcService(
   }
 
   override def close(): Unit = {
+    requestLogger.close()
     executorService.shutdownNow()
   }
 }
@@ -150,7 +170,7 @@ class GrpcServer(grpcService: GrpcService, server: Server) extends AutoCloseable
   def localAddress: String = s"localhost:${port}"
 
   def start: Unit = {
-    info(s"Starting gRPC server: (${grpcService.config.name}) at ${localAddress}")
+    info(s"Starting gRPC server [${grpcService.config.name}] at ${localAddress}")
     server.start()
   }
 
@@ -159,7 +179,7 @@ class GrpcServer(grpcService: GrpcService, server: Server) extends AutoCloseable
   }
 
   override def close(): Unit = {
-    info(s"Closing gRPC server (${grpcService.config.name}) at ${localAddress}")
+    info(s"Closing gRPC server [${grpcService.config.name}] at ${localAddress}")
     server.shutdownNow()
     grpcService.close()
   }
@@ -167,6 +187,7 @@ class GrpcServer(grpcService: GrpcService, server: Server) extends AutoCloseable
 
 /**
   * GrpcServerFactory manages
+  *
   * @param session
   */
 class GrpcServerFactory(session: Session) extends AutoCloseable with LogSupport {

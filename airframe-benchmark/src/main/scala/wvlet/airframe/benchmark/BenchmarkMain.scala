@@ -46,8 +46,8 @@ class BenchmarkMain(
     resultFormat: Option[String] = None,
     @option(prefix = "-o", description = "Result output file name")
     resultOutput: Option[String] = None,
-    @option(prefix = "-wt", description = "warmup time (default: 0.1s)")
-    warmupTime: ElapsedTime = ElapsedTime.parse("0.1s")
+    @option(prefix = "-wt", description = "warmup time (default: 1s)")
+    warmupTime: ElapsedTime = ElapsedTime.parse("1s")
 ) extends LogSupport {
   @command(isDefault = true)
   def default: Unit = {
@@ -79,8 +79,8 @@ class BenchmarkMain(
       @option(prefix = "-i,--iteration", description = "The number of iteration (default: 10)")
       iteration: Int = 10,
       @option(prefix = "-w,--warmup", description = "The number of warm-up iteration (default: 5)")
-      warmupIteration: Int = 3,
-      @option(prefix = "-mt", description = "measurement time (default: 1s)")
+      warmupIteration: Int = 5,
+      @option(prefix = "-mt", description = "measurement time (default: 0.5s)")
       measurementTime: ElapsedTime = ElapsedTime.parse("0.5s"),
       @option(prefix = "-F,--fork-count", description = "Fork Count (default: 1)")
       forkCount: Int = 1,

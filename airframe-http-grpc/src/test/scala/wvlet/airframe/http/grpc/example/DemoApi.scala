@@ -11,46 +11,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.grpc
+package wvlet.airframe.http.grpc.example
+
+import io.grpc.{CallOptions, Channel}
 import io.grpc.stub.{AbstractBlockingStub, ClientCallStreamObserver, ClientCalls}
-import io.grpc.{CallOptions, Channel, ManagedChannel, ManagedChannelBuilder}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.http.grpc.{GrpcClientCalls, GrpcContext, GrpcServiceBuilder, gRPC}
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{RPC, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.log.LogSupport
 import wvlet.airframe.rx.{Rx, RxStream}
-import wvlet.airspec.AirSpec
 
-/**
-  */
-object GrpcServiceBuilderTest extends AirSpec {
-
-  @RPC
-  trait MyApi {
-    def hello(name: String): String = {
-      s"Hello ${name}!"
-    }
-
-    def hello2(name: String, id: Int): String = {
-      s"Hello ${name}! (id:${id})"
-    }
-
-    def helloStreaming(name: String): RxStream[String] = {
-      Rx.sequence("Hello", "Bye").map(x => s"${x} ${name}!")
-    }
-
-    def helloClientStreaming(input: RxStream[String]): String = {
-      input.toSeq.mkString(", ")
-    }
-
-    def helloBidiStreaming(input: RxStream[String]): RxStream[String] = {
-      input.map(x => s"Hello ${x}!")
-    }
+@RPC
+trait DemoApi extends LogSupport {
+  def getContext: String = {
+    val ctx = GrpcContext.current
+    debug(ctx)
+    "Ok"
   }
 
-  private val router = Router.add[MyApi]
-  debug(router)
+  def hello(name: String): String = {
+    s"Hello ${name}!"
+  }
+
+  def hello2(name: String, id: Int): String = {
+    s"Hello ${name}! (id:${id})"
+  }
+
+  def helloStreaming(name: String): RxStream[String] = {
+    Rx.sequence("Hello", "Bye").map(x => s"${x} ${name}!")
+  }
+
+  def helloClientStreaming(input: RxStream[String]): String = {
+    input.toSeq.mkString(", ")
+  }
+
+  def helloBidiStreaming(input: RxStream[String]): RxStream[String] = {
+    input.map(x => s"Hello ${x}!")
+  }
+}
+
+object DemoApi {
+
+  def design: Design = gRPC.server
+    .withRouter(router)
+    .withName("DemoApi")
+    .designWithChannel
+    .bind[DemoApiClient].toProvider { channel: Channel => new DemoApiClient(channel) }
+
+  def router = Router.add[DemoApi]
 
   private def getRoute(name: String): Route = {
     router.routes.find(_.methodSurface.name == name).getOrElse {
@@ -58,16 +69,17 @@ object GrpcServiceBuilderTest extends AirSpec {
     }
   }
 
-  // TODO: Generate this stub using sbt-airframe
-  class MyApiStub(
+  class DemoApiClient(
       channel: Channel,
       callOptions: CallOptions = CallOptions.DEFAULT,
       codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
-  ) extends AbstractBlockingStub[MyApiStub](channel, callOptions) {
-    override def build(channel: Channel, callOptions: CallOptions): MyApiStub = {
-      new MyApiStub(channel, callOptions)
+  ) extends AbstractBlockingStub[DemoApiClient](channel, callOptions) {
+    override def build(channel: Channel, callOptions: CallOptions): DemoApiClient = {
+      new DemoApiClient(channel, callOptions)
     }
     private val codec = codecFactory.of[Map[String, Any]]
+    private val getContextMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("getContext"), codecFactory)
     private val helloMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("hello"), codecFactory)
     private val hello2MethodDescriptor =
@@ -79,6 +91,13 @@ object GrpcServiceBuilderTest extends AirSpec {
     private val helloBidiStreamingMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloBidiStreaming"), codecFactory)
 
+    def getContext: String = {
+      val m = Map.empty[String, Any]
+      ClientCalls
+        .blockingUnaryCall(getChannel, getContextMethodDescriptor, getCallOptions, codec.toMsgPack(m)).asInstanceOf[
+          String
+        ]
+    }
     def hello(name: String): String = {
       val m = Map("name" -> name)
       ClientCalls
@@ -133,59 +152,4 @@ object GrpcServiceBuilderTest extends AirSpec {
     }
   }
 
-  test("create a standalone gRPC server") {
-    gRPC.server.withRouter(router).start { server =>
-      // sanity test for launching gRPC server
-    }
-  }
-
-  test(
-    "create gRPC client",
-    design = {
-      wvlet.airframe.http.grpc.gRPC.server
-        .withRouter(router)
-        .design
-        .bind[ManagedChannel].toProvider { server: GrpcServer =>
-          ManagedChannelBuilder.forTarget(server.localAddress).usePlaintext().build()
-        }
-        .onShutdown { channel =>
-          channel.shutdownNow()
-        }
-    }
-  ) { (server: GrpcServer, channel: ManagedChannel) =>
-    val stub = new MyApiStub(channel)
-
-    test("unary") {
-      for (i <- 0 to 100) {
-        val ret = stub.hello("world")
-        ret shouldBe "Hello world!"
-      }
-    }
-
-    test("n-ary") {
-      for (i <- 0 to 100) {
-        val ret2 = stub.hello2("world", i)
-        ret2 shouldBe s"Hello world! (id:${i})"
-      }
-    }
-
-    test("server streaming") {
-      val streamingResults = stub.helloStreaming("RPC").toIndexedSeq
-      streamingResults shouldBe Seq("Hello RPC!", "Bye RPC!")
-    }
-
-    test("client streaming") {
-      for (i <- 0 to 100) {
-        val result = stub.helloClientStreaming(Rx.sequence("Apple", "Banana"))
-        result shouldBe "Apple, Banana"
-      }
-    }
-
-    test("bidi streaming") {
-      for (i <- 0 to 100) {
-        val result = stub.helloBidiStreaming(Rx.sequence("Apple", "Banana")).toSeq
-        result shouldBe Seq("Hello Apple!", "Hello Banana!")
-      }
-    }
-  }
 }

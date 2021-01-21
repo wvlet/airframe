@@ -168,10 +168,7 @@ case class Router(
               )
             }
         case (None, Some(rpc)) =>
-          // We need to find the owner class of the RPC interface because the controller might be extending the RPC interface (e.g., RPCImpl)
-          val rpcInterfaceCls = controllerSurface
-            .findAnnotationOwnerOf[RPC]
-            .getOrElse(controllerSurface.rawType)
+          val rpcInterfaceCls = Router.findRPCInterfaceCls(controllerSurface)
           val serviceFullName = rpcInterfaceCls.getName
             .replaceAll("\\$anon\\$", "")
             .replaceAll("\\$", ".")
@@ -301,4 +298,15 @@ object Router extends LogSupport {
     }
   }
 
+  private[http] def findRPCInterfaceCls(controllerSurface: Surface): Class[_] = {
+    // Import ReflectSurface to find RPC annotation
+    import wvlet.airframe.surface.reflect._
+
+    // We need to find the owner class of the RPC interface because the controller might be extending the RPC interface (e.g., RPCImpl)
+    val rpcInterfaceCls = controllerSurface
+      .findAnnotationOwnerOf[RPC]
+      .getOrElse(controllerSurface.rawType)
+
+    rpcInterfaceCls
+  }
 }
