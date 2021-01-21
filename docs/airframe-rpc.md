@@ -412,9 +412,10 @@ Airframe RPC is built on top of Airframe HTTP framework. See [Airframe HTTP docu
 
 _(This is an experimental feature available since Airframe 20.8.0)_
 
-Airframe gRPC is a gRPC and HTTP2-based implementation of Airframe RPC, which can make thousands of RPC calls per second. With Airframe gRPC:
+Airframe gRPC is a gRPC and HTTP2-based implementation of Airframe RPC, which can make thousands of RPC calls per second. Airframe gRPC requires no Protobuf definitions. You can use plain Scala interface and case classes to define gRPC services.
 
-- No Protobuf definition is required. You can use plain Scala and case classes to define gRPC service.
+Example gRPC projects can be found from [here](https://github.com/wvlet/airframe/tree/master/examples/rpc-examples). 
+
 
 __build.sbt__
 
@@ -424,6 +425,8 @@ __build.sbt__
 
 
 ### Defining gRPC API
+
+As in Airframe RPC, just use Scala trait annotated with `@RPC`. All public methods in this trait will be RPC endpoints:
 
 ```scala
 package example.api
@@ -444,7 +447,7 @@ Add a following build setting to generate a gRPC client by using sbt-airframe pl
 airframeHttpClients := Seq("example.api:grpc")
 ```
 
-With this setting, gRPC client stubs example.api.ServiceGrpc will be generated.
+With this setting, gRPC client stubs `example.api.ServiceGrpc` will be generated.
 You can create a new sync or async client with ServiceGrpc.newSyncClient or newAsyncClient methods.
 
 ### Starting An Airframe gRPC Server
@@ -469,6 +472,8 @@ gRPC.server
   //.withInterceptor(...)
   // [optional] you can customize gRPC server here
   //.withServerInitializer{ x: ServerBuilder => x.addMethod(...); x }
+  // [optional] Disable the default logging to log/http-access.json file
+  //.noRequestLogging
   .start { server =>
     // gRPC server (based on Netty) starts at localhost:8080
     server.awaitTermination
@@ -563,14 +568,34 @@ val d = Design.newDesign
 
 d.build { f: GrpcServerFactory =>
   val s1 = f.newGrpcServer(gRPC.server.withName("grpc1").withPort(8080).withRouter(...))
-  val s2 = f.newGrpcServer(gRPC.server.withName("grpc2").withPort(8081).withRouter(...)
+  val s2 = f.newGrpcServer(gRPC.server.withName("grpc2").withPort(8081).withRouter(...))
 
   // Wait until all servers terminate
-  // f.awaitTermination
+  f.awaitTermination
 }
 ```
 
 All gRPC servers created by the factory will be closed when the factory is closed.
+
+### Reading gRPC Metadata
+
+To access gRPC Metadata containing HTTP2 headers, use `GrpcContext.current` method:
+
+```scala
+import wvlet.airframe.http.RPC
+import wvlet.airframe.http.grpc.GrpcContext
+
+@RPC
+trait MyApi {
+  def hello: String = {
+    // Get the current context 
+    val ctx = GrpcContext.current
+    // Read gRPC Metadata
+    val metadata = ctx.metadata
+    // ...
+  }
+}
+```
 
 
 ## RPC Internals

@@ -74,9 +74,9 @@ case class GrpcServerConfig(
 
   def withCodecFactory(newCodecFactory: MessageCodecFactory) = this.copy(codecFactory = newCodecFactory)
 
-  def withRPCLogger(rpcLogger: GrpcRequestLogger) = this.copy(rpcLogger = rpcLogger)
+  def withRequestLogger(rpcLogger: GrpcRequestLogger) = this.copy(rpcLogger = rpcLogger)
   // Disable RPC logging
-  def noRPCLogger = this.copy(rpcLogger = GrpcRequestLogger.nullLogger)
+  def noRequestLogging = this.copy(rpcLogger = GrpcRequestLogger.nullLogger)
 
   /**
     * Create and start a new server based on this config.
