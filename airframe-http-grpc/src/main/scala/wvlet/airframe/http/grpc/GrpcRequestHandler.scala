@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
+
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 import java.util.concurrent.{Callable, ExecutorService}
 import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
@@ -50,6 +51,8 @@ class GrpcRequestHandler(
     // Build method arguments from MsgPack
     val requestValue = ValueCodec.unpack(request)
     trace(requestValue)
+
+    val grpcContext = GrpcContext.current
     val result = Try {
       requestValue match {
         case m: MapValue =>
@@ -71,16 +74,16 @@ class GrpcRequestHandler(
           trace(s"RPC call ${methodSurface.name}(${args.mkString(", ")})")
           try {
             val ret = methodSurface.call(controller, args: _*)
-            requestLogger.logRPC(rpcContext.withRPCArgs(args))
+            requestLogger.logRPC(grpcContext, rpcContext.withRPCArgs(args))
             ret
           } catch {
             case e: Throwable =>
-              requestLogger.logError(e, rpcContext.withRPCArgs(args))
+              requestLogger.logError(e, grpcContext, rpcContext.withRPCArgs(args))
               throw e
           }
         case _ =>
           val e = new IllegalArgumentException(s"Invalid argument: ${requestValue}")
-          requestLogger.logError(e, rpcContext)
+          requestLogger.logError(e, grpcContext, rpcContext)
           throw e
       }
     }
@@ -92,9 +95,11 @@ class GrpcRequestHandler(
       clientStreamingType: Surface
   ): StreamObserver[MsgPack] = {
     val codec = codecFactory.of(clientStreamingType)
-    // Receives streaming messages from the client
+    // An observer that receives streaming messages from the client
+    val grpcContext = GrpcContext.current
     val requestObserver = new StreamObserver[MsgPack] {
-      private val isStarted             = new AtomicBoolean(false)
+      private val isStarted = new AtomicBoolean(false)
+      // A queue for passing incoming messages to the application through Rx interface
       private val rx                    = new RxBlockingQueue[Any]
       private val promise: Promise[Any] = Promise()
 
@@ -125,19 +130,20 @@ class GrpcRequestHandler(
         }
       }
       override def onError(t: Throwable): Unit = {
-        requestLogger.logError(t, rpcContext)
+        requestLogger.logError(t, grpcContext, rpcContext)
         rx.add(OnError(t))
         responseObserver.onError(t)
       }
       override def onCompleted(): Unit = {
         invokeServerMethod
-        requestLogger.logRPC(rpcContext)
         rx.add(OnCompletion)
         promise.future.onComplete {
-          case Success(v) =>
-            responseObserver.onNext(v)
+          case Success(value) =>
+            requestLogger.logRPC(grpcContext, rpcContext)
+            responseObserver.onNext(value)
             responseObserver.onCompleted()
           case Failure(e) =>
+            requestLogger.logError(e, grpcContext, rpcContext)
             responseObserver.onError(e)
         }(ExecutionContext.fromExecutor(executorService))
       }
@@ -152,6 +158,7 @@ class GrpcRequestHandler(
 
     val codec = codecFactory.of(clientStreamingType)
 
+    val grpcContext = GrpcContext.current
     val requestObserver = new StreamObserver[MsgPack] {
       private val isStarted             = new AtomicBoolean(false)
       private val rx                    = new RxBlockingQueue[Any]
@@ -179,18 +186,15 @@ class GrpcRequestHandler(
             // Add a log for each client-side stream message
             rx.add(OnNext(v))
           case Failure(e) =>
-            requestLogger.logError(e, rpcContext)
             rx.add(OnError(e))
         }
       }
       override def onError(t: Throwable): Unit = {
-        requestLogger.logError(t, rpcContext)
         rx.add(OnError(t))
         responseObserver.onError(t)
       }
       override def onCompleted(): Unit = {
         invokeServerMethod
-        requestLogger.logRPC(rpcContext)
         rx.add(OnCompletion)
         promise.future.onComplete {
           case Success(v) =>
@@ -201,16 +205,19 @@ class GrpcRequestHandler(
                   case OnNext(value) =>
                     responseObserver.onNext(value)
                   case OnError(e) =>
+                    requestLogger.logError(e, grpcContext, rpcContext)
                     responseObserver.onError(e)
                   case OnCompletion =>
+                    requestLogger.logRPC(grpcContext, rpcContext)
                     responseObserver.onCompleted()
                 }
               case other =>
+                requestLogger.logRPC(grpcContext, rpcContext)
                 responseObserver.onNext(v)
                 responseObserver.onCompleted()
             }
           case Failure(e) =>
-            requestLogger.logError(e, rpcContext)
+            requestLogger.logError(e, grpcContext, rpcContext)
             responseObserver.onError(e)
         }(ExecutionContext.fromExecutor(executorService))
       }

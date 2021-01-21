@@ -21,7 +21,7 @@ import wvlet.airspec.AirSpec
 
 /**
   */
-object GrpcServiceBuilderTest extends AirSpec {
+object GrpcStreamingTest extends AirSpec {
 
   private def router = Router.add[DemoApi]
   debug(router)

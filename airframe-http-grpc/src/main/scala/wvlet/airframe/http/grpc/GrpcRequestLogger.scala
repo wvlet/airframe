@@ -21,27 +21,26 @@ import wvlet.log.LogSupport
 import scala.collection.immutable.ListMap
 
 trait GrpcRequestLogger extends AutoCloseable {
-  def logRPC(rpcCallContext: RPCCallContext): Unit
-  def logError(e: Throwable, rpcCallContext: RPCCallContext): Unit
+  def logRPC(grpcContext: GrpcContext, rpcCallContext: RPCCallContext): Unit
+  def logError(e: Throwable, grpcContext: GrpcContext, rpcCallContext: RPCCallContext): Unit
 }
 
 /**
   */
 class DefaultGrpcRequestLogger(logWriter: HttpAccessLogWriter) extends GrpcRequestLogger with LogSupport {
-  def logRPC(rpcCallContext: RPCCallContext): Unit = {
-    val m = logDefault(rpcCallContext)
+  def logRPC(grpcContext: GrpcContext, rpcCallContext: RPCCallContext): Unit = {
+    val m = logDefault(grpcContext, rpcCallContext)
     logWriter.write(m)
 
   }
-  def logError(e: Throwable, rpcCallContext: RPCCallContext): Unit = {
-    val m = logDefault(rpcCallContext) ++
-      HttpAccessLogWriter.errorLog(e)
+  def logError(e: Throwable, grpcContext: GrpcContext, rpcCallContext: RPCCallContext): Unit = {
+    val m = logDefault(grpcContext, rpcCallContext) ++ HttpAccessLogWriter.errorLog(e)
     logWriter.write(m)
   }
 
-  private def logDefault(rpcCallContext: RPCCallContext): Map[String, Any] = {
+  private def logDefault(grpcContext: GrpcContext, rpcCallContext: RPCCallContext): Map[String, Any] = {
     val m = HttpAccessLogWriter.logUnixTime ++
-      GrpcRequestLogger.logGrpcContext(GrpcContext.current) ++
+      GrpcRequestLogger.logGrpcContext(grpcContext) ++
       HttpAccessLogWriter.rpcLog(rpcCallContext)
     m
   }
@@ -51,7 +50,7 @@ class DefaultGrpcRequestLogger(logWriter: HttpAccessLogWriter) extends GrpcReque
   }
 }
 
-object GrpcRequestLogger {
+object GrpcRequestLogger extends LogSupport {
 
   def apply(writer: HttpAccessLogWriter) = new DefaultGrpcRequestLogger(writer)
 
@@ -64,10 +63,10 @@ object GrpcRequestLogger {
   def nullLogger: GrpcRequestLogger = EmptyGrpcRequestLogger
 
   private[grpc] object EmptyGrpcRequestLogger extends GrpcRequestLogger {
-    override def logRPC(rpcCallContext: RPCCallContext): Unit = {
+    override def logRPC(grpcContext: GrpcContext, rpcCallContext: RPCCallContext): Unit = {
       // no-op
     }
-    override def logError(e: Throwable, RPCCallContext: RPCCallContext): Unit = {
+    override def logError(e: Throwable, grpcContext: GrpcContext, RPCCallContext: RPCCallContext): Unit = {
       // no-op
     }
 
@@ -77,9 +76,12 @@ object GrpcRequestLogger {
   }
 
   private[grpc] def logGrpcContext(context: GrpcContext): Map[String, Any] = {
-    logMethodDescriptor(context.descriptor) ++
-      logMetadata(context.metadata) ++
-      logAttributes(context.attributes)
+    Option(context)
+      .map { ctx =>
+        logMethodDescriptor(ctx.descriptor) ++
+          logMetadata(ctx.metadata) ++
+          logAttributes(ctx.attributes)
+      }.getOrElse(Map.empty)
   }
 
   import scala.jdk.CollectionConverters._
