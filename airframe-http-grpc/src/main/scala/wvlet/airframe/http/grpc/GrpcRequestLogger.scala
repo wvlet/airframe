@@ -49,8 +49,8 @@ class DefaultGrpcRequestLogger(logWriter: HttpAccessLogWriter) extends GrpcReque
 
 object GrpcRequestLogger {
 
-  def apply(writer:HttpAccessLogWriter) = new DefaultGrpcRequestLogger(writer)
-  def default: GrpcRequestLogger    = apply(HttpAccessLogWriter.default)
+  def apply(writer: HttpAccessLogWriter) = new DefaultGrpcRequestLogger(writer)
+  def default: GrpcRequestLogger         = apply(HttpAccessLogWriter.default)
   // Logger for discarding all logs
   def nullLogger: GrpcRequestLogger = EmptyGrpcRequestLogger
 
@@ -84,7 +84,7 @@ object GrpcRequestLogger {
 
   private def logMethodDescriptor(d: MethodDescriptor[_, _]): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
-    m += "path"        -> s"/${d.getFullMethodName}"
+    m += "path"             -> s"/${d.getFullMethodName}"
     m += "grpc_method_type" -> d.getType.toString
     m.result()
   }
