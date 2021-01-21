@@ -40,8 +40,7 @@ trait Greeter {
 
 // A model class defined with case class.
 // This will be encoded into JSON {"message":"...."} or its MessagePack representation
-case
-class GreeterResponse(message: String)
+case class GreeterResponse(message: String)
 
 ```
 
@@ -309,8 +308,10 @@ The generated client code can be found in `target/scala-2.12/src_managed/(api pa
 ```scala
 # Regenerate the generated client code.Use this if RPC interface has changed
 > airframeHttpReload
+
 # Generating RPC clients manually
 > airframeHttpGenerateClients
+
 # Clean the generated code
 > airframeHttpClean
 ```
@@ -420,8 +421,8 @@ val router = Router.add[MyAPIImpl]
 
 // Define the component implementation to use
 val design = newDesign
-        .bind[MyService].toInstance(new MyServiceImpl(...) )
-.add(Finagle.server.withRouter(router).design)
+  .bind[MyService].toInstance(new MyServiceImpl(...))
+  .add(Finagle.server.withRouter(router).design)
 
 // Launch a Finagle Server
 design.build[FinagleServer] { server =>
@@ -620,9 +621,9 @@ trait GreeterStreaming {
   // Client streaming receives only one RxStream[X] argument
   def clientStreaming(names: RxStream[String]): String = {
     names
-            .map { x => s"Hello ${x}!" }
-            .toSeq // Rx[X].toSeq materialize the streaming inputs as a concrete Seq[X]
-            .mkString(", ")
+      .map { x => s"Hello ${x}!" }
+      .toSeq // Rx[X].toSeq materialize the streaming inputs as a concrete Seq[X]
+      .mkString(", ")
   }
 
   // Bidirectional streaming receives only one RxStream[X] argument and returns RxStream[Y] response
@@ -644,10 +645,12 @@ import wvlet.airframe.http.grpc.{gRPC, GrpcServerFactory}
 val d = Design.newDesign
 
 d.build { f: GrpcServerFactory =>
-  val s1 = f.newGrpcServer(gRPC.server.withName("grpc1").withPort(8080).withRouter(..
-  .) )
-  val s2 = f.newGrpcServer(gRPC.server.withName("grpc2").withPort(8081).withRouter(..
-  .) )
+  val s1 = f.newGrpcServer(
+    gRPC.server.withName("grpc1").withPort(8080).withRouter(...)
+  )
+  val s2 = f.newGrpcServer(
+    gRPC.server.withName("grpc2").withPort(8081).withRouter(...)
+  )
 
   // Wait until all servers terminate
   f.awaitTermination
