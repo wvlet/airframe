@@ -12,13 +12,14 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
-import java.io.{ByteArrayInputStream, InputStream}
 
 import io.grpc.MethodDescriptor.Marshaller
-import wvlet.airframe.codec.{INVALID_DATA, MessageCodecException, MessageContext}
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
+import wvlet.airframe.codec.{INVALID_DATA, MessageCodecException, MessageContext}
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.log.LogSupport
+
+import java.io.{ByteArrayInputStream, InputStream}
 
 /**
   * Marshalling String as MessagePack

@@ -14,38 +14,52 @@
 package wvlet.airframe.http.grpc
 
 import io.grpc._
-import wvlet.log.LogSupport
 
 object GrpcContext {
-  private val contextKey = Context.key[GrpcContext]("grpc_context")
+  private[grpc] val contextKey = Context.key[GrpcContext]("grpc_context")
 
   /**
     * Get the current GrpcContext. If it returns None, it means this method is called outside gRPC's local thread for processing the request
+    *
     * @return
     */
-  def current: Option[GrpcContext] = Option(contextKey.get())
+  def current: Option[GrpcContext]  = Option(contextKey.get())
+  private[grpc] def currentEncoding = current.map(_.encoding).getOrElse(GrpcEncoding.MsgPack)
 
-  private[grpc] object ContextTrackInterceptor extends ServerInterceptor with LogSupport {
-    override def interceptCall[ReqT, RespT](
-        call: ServerCall[ReqT, RespT],
-        headers: Metadata,
-        next: ServerCallHandler[ReqT, RespT]
-    ): ServerCall.Listener[ReqT] = {
-      // Create a new context that conveys GrpcContext object.
-      val newContext = Context
-        .current().withValue(
-          contextKey,
-          GrpcContext(Option(call.getAuthority), call.getAttributes, headers, call.getMethodDescriptor)
-        )
-      Contexts.interceptCall(newContext, call, headers, next)
+  private[grpc] val KEY_ACCEPT       = Metadata.Key.of("accept", Metadata.ASCII_STRING_MARSHALLER)
+  private[grpc] val KEY_CONTENT_TYPE = Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)
+
+  private[grpc] implicit class RichMetadata(val m: Metadata) extends AnyVal {
+    def accept: String = Option(m.get(KEY_ACCEPT)).getOrElse(GrpcEncoding.ApplicationMsgPack)
+    def setAccept(s: String): Unit = {
+      m.removeAll(KEY_ACCEPT)
+      m.put(KEY_ACCEPT, s)
+    }
+    def setContentType(s: String): Unit = {
+      m.removeAll(KEY_CONTENT_TYPE)
+      m.put(KEY_CONTENT_TYPE, s)
     }
   }
 
 }
+
+import GrpcContext._
 
 case class GrpcContext(
     authority: Option[String],
     attributes: Attributes,
     metadata: Metadata,
     descriptor: MethodDescriptor[_, _]
-)
+) {
+  // Return the accept header
+  def accept: String = metadata.accept
+  def encoding: GrpcEncoding = accept match {
+    case GrpcEncoding.ApplicationJson =>
+      // Json input
+      GrpcEncoding.JSON
+    case _ =>
+      // Use msgpack by default
+      GrpcEncoding.MsgPack
+  }
+
+}

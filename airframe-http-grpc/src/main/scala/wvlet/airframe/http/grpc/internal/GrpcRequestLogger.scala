@@ -11,10 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.grpc
+package wvlet.airframe.http.grpc.internal
 
 import io.grpc.{Attributes, Metadata, MethodDescriptor}
-import wvlet.airframe.http.HttpAccessLogWriter
+import wvlet.airframe.http.{BuildInfo, HttpAccessLogWriter}
+import wvlet.airframe.http.grpc.GrpcContext
 import wvlet.airframe.http.router.RPCCallContext
 import wvlet.log.LogSupport
 
@@ -42,8 +43,8 @@ class DefaultGrpcRequestLogger(serverName: String, logWriter: HttpAccessLogWrite
 
   private def logDefault(grpcContext: Option[GrpcContext], rpcCallContext: RPCCallContext): Map[String, Any] = {
     val m = {
-      ListMap("server_name" -> serverName) ++
-        HttpAccessLogWriter.logUnixTime ++
+      HttpAccessLogWriter.logUnixTime ++
+        ListMap("server_name" -> serverName, "x_airframe_server_version" -> BuildInfo.version) ++
         GrpcRequestLogger.logGrpcContext(grpcContext) ++
         HttpAccessLogWriter.rpcLog(rpcCallContext)
     }

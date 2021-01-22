@@ -18,7 +18,7 @@ import scala.collection.immutable.Map
 object ServiceGrpc {
   import wvlet.airframe.msgpack.spi.MsgPack
   import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
-  import wvlet.airframe.http.grpc.GrpcServiceBuilder.{RPCRequestMarshaller, RPCResponseMarshaller}
+  import wvlet.airframe.http.grpc.{GrpcRequestMarshaller, GrpcResponseMarshaller}
 
   private def newDescriptorBuilder(
       fullMethodName: String,
@@ -28,14 +28,14 @@ object ServiceGrpc {
       .newBuilder[MsgPack, Any]()
       .setType(methodType)
       .setFullMethodName(fullMethodName)
-      .setRequestMarshaller(RPCRequestMarshaller)
+      .setRequestMarshaller(GrpcRequestMarshaller)
   }
 
   class GreeterDescriptors(codecFactory: MessageCodecFactory) {
     val helloDescriptor: io.grpc.MethodDescriptor[MsgPack, Any] = {
       newDescriptorBuilder("wvlet.airframe.benchmark.http.Greeter/hello", io.grpc.MethodDescriptor.MethodType.UNARY)
         .setResponseMarshaller(
-          new RPCResponseMarshaller[Any](
+          new GrpcResponseMarshaller[Any](
             codecFactory.of[java.lang.String].asInstanceOf[MessageCodec[Any]]
           )
         ).build()

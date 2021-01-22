@@ -11,21 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.grpc
+package wvlet.airframe.http.grpc.internal
 
-import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
-import java.util.concurrent.{Callable, ExecutorService}
 import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
 import io.grpc.stub.StreamObserver
-import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
+import wvlet.airframe.codec.{MessageCodec, MessageCodecException, MessageCodecFactory}
+import wvlet.airframe.http.grpc.{GrpcContext, GrpcEncoding, GrpcResponse}
 import wvlet.airframe.http.router.{HttpRequestMapper, RPCCallContext}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
-import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner}
 import wvlet.airframe.surface.{CName, MethodSurface, Surface}
 import wvlet.log.LogSupport
+import wvlet.airframe.rx._
 
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.{Callable, ExecutorService}
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
 
@@ -47,43 +47,78 @@ class GrpcRequestHandler(
 
   private val rpcContext = RPCCallContext(rpcInterfaceCls, methodSurface, Seq.empty)
 
-  def invokeMethod(request: MsgPack): Try[Any] = {
-    // Build method arguments from MsgPack
-    val requestValue = ValueCodec.unpack(request)
-    trace(requestValue)
+  /**
+    * Read the input value (MessagePack or Json) and convert to MessagePack Value
+    *
+    * @param grpcContext
+    * @param request
+    * @return
+    */
+  private def readRequestAsValue(grpcContext: Option[GrpcContext], request: MsgPack): MapValue = {
+    try {
+      val value = if (GrpcEncoding.isJsonObjectMessage(request)) {
+        // The input is a JSON message
+        GrpcEncoding.JSON.unpackValue(request)
+      } else {
+        // Check the message type using the accept header:
+        val encoding = grpcContext.map(_.encoding).getOrElse(GrpcEncoding.MsgPack)
+        encoding.unpackValue(request)
+      }
 
-    val grpcContext = GrpcContext.current
-    val result = Try {
-      requestValue match {
+      value match {
         case m: MapValue =>
-          val mapValue = HttpRequestMapper.toCanonicalKeyNameMap(m)
-          val args = for ((arg, i) <- methodSurface.args.zipWithIndex) yield {
-            val argOpt = mapValue.get(CName.toCanonicalName(arg.name)) match {
-              case Some(paramValue) =>
-                Option(argCodecs(i).fromMsgPack(paramValue.toMsgpack)).orElse {
-                  throw new IllegalArgumentException(s"Failed to parse ${paramValue} for ${arg}")
-                }
-              case None =>
-                // If no value is found, use the method parameter's default argument
-                arg.getMethodArgDefaultValue(controller)
-            }
-            argOpt.getOrElse {
-              throw new IllegalArgumentException(s"No key for ${arg.name} is found in ${m}")
-            }
-          }
-          trace(s"RPC call ${methodSurface.name}(${args.mkString(", ")})")
-          try {
-            val ret = methodSurface.call(controller, args: _*)
-            requestLogger.logRPC(grpcContext, rpcContext.withRPCArgs(args))
-            ret
-          } catch {
-            case e: Throwable =>
-              requestLogger.logError(e, grpcContext, rpcContext.withRPCArgs(args))
-              throw e
-          }
+          m
         case _ =>
-          val e = new IllegalArgumentException(s"Invalid argument: ${requestValue}")
+          val e = new IllegalArgumentException(s"Request data is not a MapValue: ${value}")
           requestLogger.logError(e, grpcContext, rpcContext)
+          throw e
+      }
+    } catch {
+      case e: MessageCodecException =>
+        requestLogger.logError(e, grpcContext, rpcContext)
+        throw e
+    }
+  }
+
+  private def readStreamingInput[A](grpcContext: Option[GrpcContext], codec: MessageCodec[A], request: MsgPack): A = {
+    val encoding = grpcContext.map(_.encoding).getOrElse(GrpcEncoding.MsgPack)
+    encoding match {
+      case GrpcEncoding.MsgPack =>
+        codec.fromMsgPack(request)
+      case GrpcEncoding.JSON =>
+        codec.fromJson(request)
+    }
+  }
+
+  def invokeMethod(request: MsgPack): Try[Any] = {
+    val grpcContext = GrpcContext.current
+
+    // Build method arguments from MsgPack
+    val result = Try {
+      val m: MapValue = readRequestAsValue(grpcContext, request)
+      val mapValue    = HttpRequestMapper.toCanonicalKeyNameMap(m)
+      val args = for ((arg, i) <- methodSurface.args.zipWithIndex) yield {
+        val argOpt = mapValue.get(CName.toCanonicalName(arg.name)) match {
+          case Some(paramValue) =>
+            Option(argCodecs(i).fromMsgPack(paramValue.toMsgpack)).orElse {
+              throw new IllegalArgumentException(s"Failed to parse ${paramValue} for ${arg}")
+            }
+          case None =>
+            // If no value is found, use the method parameter's default argument
+            arg.getMethodArgDefaultValue(controller)
+        }
+        argOpt.getOrElse {
+          throw new IllegalArgumentException(s"No key for ${arg.name} is found in ${m}")
+        }
+      }
+      trace(s"RPC call ${methodSurface.name}(${args.mkString(", ")})")
+      try {
+        val ret = methodSurface.call(controller, args: _*)
+        requestLogger.logRPC(grpcContext, rpcContext.withRPCArgs(args))
+        ret
+      } catch {
+        case e: Throwable =>
+          requestLogger.logError(e, grpcContext, rpcContext.withRPCArgs(args))
           throw e
       }
     }
@@ -97,6 +132,7 @@ class GrpcRequestHandler(
     val codec = codecFactory.of(clientStreamingType)
     // An observer that receives streaming messages from the client
     val grpcContext = GrpcContext.current
+    val encoding    = GrpcContext.currentEncoding
     val requestObserver = new StreamObserver[MsgPack] {
       private val isStarted = new AtomicBoolean(false)
       // A queue for passing incoming messages to the application through Rx interface
@@ -122,7 +158,7 @@ class GrpcRequestHandler(
 
       override def onNext(value: MsgPack): Unit = {
         invokeServerMethod
-        Try(codec.fromMsgPack(value)) match {
+        Try(readStreamingInput(grpcContext, codec, value)) match {
           case Success(v) =>
             rx.add(OnNext(v))
           case Failure(e) =>
@@ -132,7 +168,7 @@ class GrpcRequestHandler(
       override def onError(t: Throwable): Unit = {
         requestLogger.logError(t, grpcContext, rpcContext)
         rx.add(OnError(t))
-        responseObserver.onError(t)
+        responseObserver.onError(GrpcException.wrap(t))
       }
       override def onCompleted(): Unit = {
         invokeServerMethod
@@ -140,11 +176,11 @@ class GrpcRequestHandler(
         promise.future.onComplete {
           case Success(value) =>
             requestLogger.logRPC(grpcContext, rpcContext)
-            responseObserver.onNext(value)
+            responseObserver.onNext(GrpcResponse(value, encoding))
             responseObserver.onCompleted()
           case Failure(e) =>
             requestLogger.logError(e, grpcContext, rpcContext)
-            responseObserver.onError(e)
+            responseObserver.onError(GrpcException.wrap(e))
         }(ExecutionContext.fromExecutor(executorService))
       }
     }
@@ -156,9 +192,10 @@ class GrpcRequestHandler(
       clientStreamingType: Surface
   ): StreamObserver[MsgPack] = {
 
-    val codec = codecFactory.of(clientStreamingType)
-
+    val codec       = codecFactory.of(clientStreamingType)
     val grpcContext = GrpcContext.current
+    val encoding    = GrpcContext.currentEncoding
+
     val requestObserver = new StreamObserver[MsgPack] {
       private val isStarted             = new AtomicBoolean(false)
       private val rx                    = new RxBlockingQueue[Any]
@@ -181,7 +218,7 @@ class GrpcRequestHandler(
 
       override def onNext(value: MsgPack): Unit = {
         invokeServerMethod
-        Try(codec.fromMsgPack(value)) match {
+        Try(readStreamingInput(grpcContext, codec, value)) match {
           case Success(v) =>
             // Add a log for each client-side stream message
             rx.add(OnNext(v))
@@ -203,22 +240,22 @@ class GrpcRequestHandler(
                 var c = Cancelable.empty
                 c = RxRunner.run(rx) {
                   case OnNext(value) =>
-                    responseObserver.onNext(value)
+                    responseObserver.onNext(GrpcResponse(value, encoding))
                   case OnError(e) =>
                     requestLogger.logError(e, grpcContext, rpcContext)
-                    responseObserver.onError(e)
+                    responseObserver.onError(GrpcException.wrap(e))
                   case OnCompletion =>
                     requestLogger.logRPC(grpcContext, rpcContext)
                     responseObserver.onCompleted()
                 }
               case other =>
                 requestLogger.logRPC(grpcContext, rpcContext)
-                responseObserver.onNext(v)
+                responseObserver.onNext(GrpcResponse(v, encoding))
                 responseObserver.onCompleted()
             }
           case Failure(e) =>
             requestLogger.logError(e, grpcContext, rpcContext)
-            responseObserver.onError(e)
+            responseObserver.onError(GrpcException.wrap(e))
         }(ExecutionContext.fromExecutor(executorService))
       }
     }
@@ -233,12 +270,13 @@ private[grpc] class RPCUnaryMethodHandler(rpcRequestHandler: GrpcRequestHandler)
       request: MsgPack,
       responseObserver: StreamObserver[Any]
   ): Unit = {
+    val encoding = GrpcContext.currentEncoding
     rpcRequestHandler.invokeMethod(request) match {
       case Success(v) =>
-        responseObserver.onNext(v)
+        responseObserver.onNext(GrpcResponse(v, encoding))
         responseObserver.onCompleted()
       case Failure(e) =>
-        responseObserver.onError(e)
+        responseObserver.onError(GrpcException.wrap(e))
     }
   }
 }
@@ -250,6 +288,7 @@ private[grpc] class RPCServerStreamingMethodHandler(rpcRequestHandler: GrpcReque
       request: MsgPack,
       responseObserver: StreamObserver[Any]
   ): Unit = {
+    val encoding = GrpcContext.currentEncoding
     rpcRequestHandler.invokeMethod(request) match {
       case Success(v) =>
         v match {
@@ -257,18 +296,18 @@ private[grpc] class RPCServerStreamingMethodHandler(rpcRequestHandler: GrpcReque
             var c = Cancelable.empty
             c = RxRunner.run(rx) {
               case OnNext(value) =>
-                responseObserver.onNext(value)
+                responseObserver.onNext(GrpcResponse(value, encoding))
               case OnError(e) =>
-                responseObserver.onError(e)
+                responseObserver.onError(GrpcException.wrap(e))
               case OnCompletion =>
                 responseObserver.onCompleted()
             }
           case other =>
-            responseObserver.onNext(v)
+            responseObserver.onNext(GrpcResponse(v, encoding))
             responseObserver.onCompleted()
         }
       case Failure(e) =>
-        responseObserver.onError(e)
+        responseObserver.onError(GrpcException.wrap(e))
     }
   }
 }

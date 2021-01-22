@@ -638,11 +638,14 @@ lazy val rxJS  = rx.js
 lazy val http =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
+    .enablePlugins(BuildInfoPlugin)
     .in(file("airframe-http"))
     .settings(buildSettings)
     .settings(
       name := "airframe-http",
-      description := "REST API Framework"
+      description := "REST and RPC Framework",
+      buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+      buildInfoPackage := "wvlet.airframe.http"
     )
     .jvmSettings(
       libraryDependencies ++= {

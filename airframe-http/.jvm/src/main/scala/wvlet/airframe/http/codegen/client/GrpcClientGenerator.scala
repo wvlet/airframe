@@ -48,7 +48,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
       s"""object ${src.classDef.clsName} {
          |  import wvlet.airframe.msgpack.spi.MsgPack
          |  import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
-         |  import wvlet.airframe.http.grpc.GrpcServiceBuilder.{RPCRequestMarshaller, RPCResponseMarshaller}
+         |  import wvlet.airframe.http.grpc.{GrpcRequestMarshaller, GrpcResponseMarshaller}
          |
          |${indent(descriptorBuilder)}
          |
@@ -67,7 +67,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
          |  io.grpc.MethodDescriptor.newBuilder[MsgPack, Any]()
          |    .setType(methodType)
          |    .setFullMethodName(fullMethodName)
-         |    .setRequestMarshaller(RPCRequestMarshaller)
+         |    .setRequestMarshaller(GrpcRequestMarshaller)
          |}""".stripMargin
     }
 
@@ -83,7 +83,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
           .map { m =>
             s"""val ${m.name}Descriptor: io.grpc.MethodDescriptor[MsgPack, Any] = {
                |  newDescriptorBuilder("${svc.fullPackageName}.${svc.serviceName}/${m.name}", ${m.grpcMethodType.code})
-               |    .setResponseMarshaller(new RPCResponseMarshaller[Any](
+               |    .setResponseMarshaller(new GrpcResponseMarshaller[Any](
                |      codecFactory.of[${m.grpcReturnType.fullTypeName}].asInstanceOf[MessageCodec[Any]]
                |    )).build()
                |}""".stripMargin
@@ -154,7 +154,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
          |  val channel: io.grpc.Channel,
          |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
          |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
-         |) extends io.grpc.stub.AbstractBlockingStub[SyncClient](channel, callOptions) with java.lang.AutoCloseable {
+         |) extends io.grpc.stub.AbstractBlockingStub[SyncClient](wvlet.airframe.http.grpc.GrpcClientInterceptor.wrap(channel), callOptions) with java.lang.AutoCloseable {
          |
          |  override protected def build(channel: io.grpc.Channel, callOptions: io.grpc.CallOptions): SyncClient = {
          |    new SyncClient(channel, callOptions, codecFactory)
@@ -249,7 +249,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
          |  val channel: io.grpc.Channel,
          |  callOptions: io.grpc.CallOptions = io.grpc.CallOptions.DEFAULT,
          |  codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
-         |) extends io.grpc.stub.AbstractAsyncStub[AsyncClient](channel, callOptions) with java.lang.AutoCloseable {
+         |) extends io.grpc.stub.AbstractAsyncStub[AsyncClient](wvlet.airframe.http.grpc.GrpcClientInterceptor.wrap(channel), callOptions) with java.lang.AutoCloseable {
          |
          |  override protected def build(channel: io.grpc.Channel, callOptions: io.grpc.CallOptions): AsyncClient = {
          |    new AsyncClient(channel, callOptions, codecFactory)

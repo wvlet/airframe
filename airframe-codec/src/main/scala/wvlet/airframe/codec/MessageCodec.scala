@@ -143,6 +143,20 @@ trait MessageCodec[A] extends LogSupport {
     }
   }
 
+  def fromJson(json: Array[Byte]): A = {
+    val msgpack  = MessagePack.fromJSON(json)
+    val unpacker = MessagePack.newUnpacker(msgpack)
+    val v        = new MessageContext
+    unpack(unpacker, v)
+    if (v.hasError) {
+      throw unpackError(v.getError.get)
+    } else if (v.isNull) {
+      throw new IllegalArgumentException(s"Invalid JSON data for ${this}:\n${json}")
+    } else {
+      v.getLastValue.asInstanceOf[A]
+    }
+  }
+
   def fromMap(m: Map[String, Any]): A = {
     // We cannot call MessageCodec.of[Map[String, Any]] as this macro is defined in this project, so using
     // MessageCodec.ofSurface instead.
