@@ -18,7 +18,7 @@ import scala.collection.immutable.Map
 object ServiceGrpc {
   import wvlet.airframe.msgpack.spi.MsgPack
   import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
-  import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder.{GrpcRequestMarshaller, GrpcResponseMarshaller}
+  import wvlet.airframe.http.grpc.{GrpcRequestMarshaller, GrpcResponseMarshaller}
 
   private def newDescriptorBuilder(
       fullMethodName: String,
