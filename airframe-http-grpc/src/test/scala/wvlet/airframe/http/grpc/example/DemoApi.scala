@@ -103,7 +103,7 @@ object DemoApi {
       encoding.encodeWithCodec(map, codec)
     }
 
-    private lazy val _channel = GrpcClientInterceptor.wrapChannel(getChannel, encoding)
+    private lazy val _channel = GrpcClientInterceptor.wrap(getChannel, encoding)
 
     def getContext: String = {
       val m = Map.empty[String, Any]

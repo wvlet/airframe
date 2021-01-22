@@ -17,7 +17,7 @@ import io.grpc.stub.MetadataUtils
 import io.grpc.{Channel, ClientInterceptors, Metadata}
 
 object GrpcClientInterceptor {
-  def wrapChannel(c: Channel, encoding: GrpcEncoding): Channel = {
+  def wrap(c: Channel, encoding: GrpcEncoding = GrpcEncoding.MsgPack): Channel = {
     import GrpcContext._
     val newHeaders = new Metadata()
     newHeaders.put(
