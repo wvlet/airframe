@@ -28,7 +28,7 @@ sealed trait GrpcEncoding {
 }
 
 object GrpcEncoding {
-
+  val ContentTypeDefault     = "application/grpc"
   val ContentTypeGrpcMsgPack = "application/grpc+msgpack"
   val ContentTypeGrpcJson    = "application/grpc+json"
 

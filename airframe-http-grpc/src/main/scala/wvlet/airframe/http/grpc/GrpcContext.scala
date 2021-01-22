@@ -14,32 +14,15 @@
 package wvlet.airframe.http.grpc
 
 import io.grpc._
-import wvlet.log.LogSupport
 
 object GrpcContext {
-  private val contextKey = Context.key[GrpcContext]("grpc_context")
+  private[grpc] val contextKey = Context.key[GrpcContext]("grpc_context")
 
   /**
     * Get the current GrpcContext. If it returns None, it means this method is called outside gRPC's local thread for processing the request
     * @return
     */
   def current: Option[GrpcContext] = Option(contextKey.get())
-
-  private[grpc] object ContextTrackInterceptor extends ServerInterceptor with LogSupport {
-    override def interceptCall[ReqT, RespT](
-        call: ServerCall[ReqT, RespT],
-        headers: Metadata,
-        next: ServerCallHandler[ReqT, RespT]
-    ): ServerCall.Listener[ReqT] = {
-      // Create a new context that conveys GrpcContext object.
-      val newContext = Context
-        .current().withValue(
-          contextKey,
-          GrpcContext(Option(call.getAuthority), call.getAttributes, headers, call.getMethodDescriptor)
-        )
-      Contexts.interceptCall(newContext, call, headers, next)
-    }
-  }
 
   private val KEY_CONTENT_TYPE = Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)
 }

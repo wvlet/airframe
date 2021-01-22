@@ -18,7 +18,7 @@ import io.grpc._
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.grpc.internal.{GrpcRequestLogger, GrpcServiceBuilder}
+import wvlet.airframe.http.grpc.internal.{ContextTrackInterceptor, GrpcRequestLogger, GrpcServiceBuilder}
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -149,7 +149,7 @@ case class GrpcService(
     }
 
     // Add an interceptor for remembering GrpcContext
-    serverBuilder.intercept(GrpcContext.ContextTrackInterceptor)
+    serverBuilder.intercept(ContextTrackInterceptor)
 
     for (interceptor <- config.interceptors) {
       serverBuilder.intercept(interceptor)
