@@ -48,7 +48,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
       s"""object ${src.classDef.clsName} {
          |  import wvlet.airframe.msgpack.spi.MsgPack
          |  import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
-         |  import wvlet.airframe.http.grpc.GrpcServiceBuilder.{RPCRequestMarshaller, RPCResponseMarshaller}
+         |  import wvlet.airframe.http.grpc.{GrpcRequestMarshaller, GrpcResponseMarshaller}
          |
          |${indent(descriptorBuilder)}
          |
@@ -67,7 +67,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
          |  io.grpc.MethodDescriptor.newBuilder[MsgPack, Any]()
          |    .setType(methodType)
          |    .setFullMethodName(fullMethodName)
-         |    .setRequestMarshaller(RPCRequestMarshaller)
+         |    .setRequestMarshaller(GrpcRequestMarshaller)
          |}""".stripMargin
     }
 
@@ -83,7 +83,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
           .map { m =>
             s"""val ${m.name}Descriptor: io.grpc.MethodDescriptor[MsgPack, Any] = {
                |  newDescriptorBuilder("${svc.fullPackageName}.${svc.serviceName}/${m.name}", ${m.grpcMethodType.code})
-               |    .setResponseMarshaller(new RPCResponseMarshaller[Any](
+               |    .setResponseMarshaller(new GrpcResponseMarshaller[Any](
                |      codecFactory.of[${m.grpcReturnType.fullTypeName}].asInstanceOf[MessageCodec[Any]]
                |    )).build()
                |}""".stripMargin
