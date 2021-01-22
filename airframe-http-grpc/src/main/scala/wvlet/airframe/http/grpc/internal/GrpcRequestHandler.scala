@@ -92,9 +92,8 @@ class GrpcRequestHandler(
 
   def invokeMethod(request: MsgPack): Try[Any] = {
     val grpcContext = GrpcContext.current
-    val encoding    = GrpcContext.currentEncoding
-    // Build method arguments from MsgPack
 
+    // Build method arguments from MsgPack
     val result = Try {
       val m: MapValue = readRequestAsValue(grpcContext, request)
       val mapValue    = HttpRequestMapper.toCanonicalKeyNameMap(m)
@@ -169,7 +168,7 @@ class GrpcRequestHandler(
       override def onError(t: Throwable): Unit = {
         requestLogger.logError(t, grpcContext, rpcContext)
         rx.add(OnError(t))
-        responseObserver.onError(t)
+        responseObserver.onError(GrpcException.wrap(t))
       }
       override def onCompleted(): Unit = {
         invokeServerMethod
@@ -177,12 +176,11 @@ class GrpcRequestHandler(
         promise.future.onComplete {
           case Success(value) =>
             requestLogger.logRPC(grpcContext, rpcContext)
-            logger.warn(s"${grpcContext.map(_.accept)}")
             responseObserver.onNext(GrpcResponse(value, encoding))
             responseObserver.onCompleted()
           case Failure(e) =>
             requestLogger.logError(e, grpcContext, rpcContext)
-            responseObserver.onError(e)
+            responseObserver.onError(GrpcException.wrap(e))
         }(ExecutionContext.fromExecutor(executorService))
       }
     }
@@ -245,7 +243,7 @@ class GrpcRequestHandler(
                     responseObserver.onNext(GrpcResponse(value, encoding))
                   case OnError(e) =>
                     requestLogger.logError(e, grpcContext, rpcContext)
-                    responseObserver.onError(e)
+                    responseObserver.onError(GrpcException.wrap(e))
                   case OnCompletion =>
                     requestLogger.logRPC(grpcContext, rpcContext)
                     responseObserver.onCompleted()
@@ -257,7 +255,7 @@ class GrpcRequestHandler(
             }
           case Failure(e) =>
             requestLogger.logError(e, grpcContext, rpcContext)
-            responseObserver.onError(e)
+            responseObserver.onError(GrpcException.wrap(e))
         }(ExecutionContext.fromExecutor(executorService))
       }
     }

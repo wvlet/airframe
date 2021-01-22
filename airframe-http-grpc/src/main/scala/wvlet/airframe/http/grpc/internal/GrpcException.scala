@@ -16,6 +16,7 @@ package wvlet.airframe.http.grpc.internal
 import io.grpc.{StatusException, StatusRuntimeException}
 import wvlet.airframe.codec.MessageCodecException
 import wvlet.airframe.http.{HttpServerException, HttpStatus}
+import wvlet.log.LogSupport
 
 import java.lang.reflect.InvocationTargetException
 import scala.annotation.tailrec
@@ -23,7 +24,7 @@ import scala.concurrent.ExecutionException
 
 /**
   */
-object GrpcException {
+object GrpcException extends LogSupport {
 
   /**
     * Convert an exception to gRPC-specific exception types
@@ -60,6 +61,10 @@ object GrpcException {
           .asRuntimeException()
       case e: IllegalArgumentException =>
         io.grpc.Status.INVALID_ARGUMENT
+          .withCause(e)
+          .asRuntimeException()
+      case e: UnsupportedOperationException =>
+        io.grpc.Status.UNIMPLEMENTED
           .withCause(e)
           .asRuntimeException()
       case e: HttpServerException =>
