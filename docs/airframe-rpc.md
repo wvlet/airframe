@@ -758,7 +758,7 @@ the other HTTP headers.
 ```aidl
 // Save Length-Prefixed-Message representation of MessagePack Map value of {"name":"hello"}
 // The first byte (0x00) means no compression
-// The next 4 bytes (0x00 0x00 0x00 0x0c) represents the message body size = 12 bytes
+// The next 4 bytes (0x00 0x00 0x00 0x0c) represents the message body size = 12 bytes in big-endian
 // Then, followed by MessagePack binary value
 $ echo -n $'\x00\x00\x00\x00\x0c\x81\xa4\x6e\x61\x6d\x65\xa5\x68\x65\x6c\x6c\x6f' > hello.mspack
 ```
@@ -768,3 +768,5 @@ An example of calling Airframe gRPC method with Curl:
 ```
 $ curl -v --raw --http2-prior-knowledge -X POST  -H "content-type: application/grpc" -H "TE: trailers" --data-binary @hello.mspack --output - http://localhost:8080/greeter.api.GreeterApi/hello
 ```
+
+With `accept: application/json` header, JSON string can be passed instead of MessagePack. In this case, the response message format will be `{"response":(RPC result)}`.
