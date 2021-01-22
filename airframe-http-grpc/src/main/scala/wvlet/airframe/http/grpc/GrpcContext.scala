@@ -28,8 +28,11 @@ object GrpcContext {
   private[grpc] val KEY_CONTENT_TYPE = Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)
 
   private[grpc] implicit class RichMetadata(val m: Metadata) extends AnyVal {
-    def contentType: String             = Option(m.get(KEY_CONTENT_TYPE)).getOrElse(GrpcEncoding.ContentTypeDefault)
-    def setContentType(s: String): Unit = m.put(KEY_CONTENT_TYPE, s)
+    def contentType: String = Option(m.get(KEY_CONTENT_TYPE)).getOrElse(GrpcEncoding.ContentTypeDefault)
+    def setContentType(s: String): Unit = {
+      m.removeAll(KEY_CONTENT_TYPE)
+      m.put(KEY_CONTENT_TYPE, s)
+    }
   }
 
 }

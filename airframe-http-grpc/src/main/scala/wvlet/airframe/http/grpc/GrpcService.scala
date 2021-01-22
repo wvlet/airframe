@@ -15,7 +15,7 @@ package wvlet.airframe.http.grpc
 
 import io.grpc.ServerServiceDefinition
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
-import wvlet.airframe.http.grpc.internal.{ContentTypeInterceptor, ContextTrackInterceptor, GrpcRequestLogger}
+import wvlet.airframe.http.grpc.internal.{GrpcContentTypeInterceptor, ContextTrackInterceptor, GrpcRequestLogger}
 import wvlet.log.LogSupport
 
 import java.util.concurrent.ExecutorService
@@ -42,7 +42,7 @@ case class GrpcService(
     // Add an interceptor for remembering GrpcContext
     serverBuilder.intercept(ContextTrackInterceptor)
     // Add an interceptor for setting content-type response header
-    serverBuilder.intercept(ContentTypeInterceptor)
+    serverBuilder.intercept(GrpcContentTypeInterceptor)
 
     for (interceptor <- config.interceptors) {
       serverBuilder.intercept(interceptor)

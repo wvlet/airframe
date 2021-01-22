@@ -20,6 +20,7 @@ import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.log.LogSupport
 
 import java.io.{ByteArrayInputStream, InputStream}
+import java.nio.charset.StandardCharsets
 
 /**
   */
@@ -33,12 +34,28 @@ object GrpcRequestMarshaller extends Marshaller[MsgPack] with LogSupport {
   }
 }
 
-class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[A] {
+class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[A] with LogSupport {
   override def stream(value: A): InputStream = {
-    new ByteArrayInputStream(codec.toMsgPack(value))
+    val contentType =
+      GrpcContext.current.map(_.contentType).getOrElse(GrpcEncoding.ContentTypeGrpcMsgPack)
+
+    info(contentType)
+    contentType match {
+      case GrpcEncoding.ContentTypeGrpcJson =>
+        val json = codec.toJson(value)
+        info(json)
+        new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))
+      case _ =>
+        new ByteArrayInputStream(codec.toMsgPack(value))
+    }
   }
+
   override def parse(stream: InputStream): A = {
     val bytes = IO.readFully(stream)
-    codec.fromMsgPack(bytes)
+    if (bytes.length > 0 && bytes.head == '{' && bytes.last == '}') {
+      codec.fromJson(bytes)
+    } else {
+      codec.fromMsgPack(bytes)
+    }
   }
 }

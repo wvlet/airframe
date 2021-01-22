@@ -18,7 +18,7 @@ import io.grpc.stub.{AbstractBlockingStub, ClientCallStreamObserver, ClientCalls
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
-import wvlet.airframe.http.grpc.{GrpcClientCalls, GrpcContext, GrpcEncoding, gRPC}
+import wvlet.airframe.http.grpc.{GrpcClientCalls, GrpcClientInterceptor, GrpcContext, GrpcEncoding, gRPC}
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{HttpHeader, RPC, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
@@ -103,28 +103,30 @@ object DemoApi {
       encoding.encodeWithCodec(map, codec)
     }
 
+    private lazy val _channel = GrpcClientInterceptor.wrapChannel(getChannel, encoding)
+
     def getContext: String = {
       val m = Map.empty[String, Any]
       ClientCalls
-        .blockingUnaryCall(getChannel, getContextMethodDescriptor, getCallOptions, encode(m)).asInstanceOf[
+        .blockingUnaryCall(_channel, getContextMethodDescriptor, getCallOptions, encode(m)).asInstanceOf[
           String
         ]
     }
     def hello(name: String): String = {
       val m = Map("name" -> name)
       ClientCalls
-        .blockingUnaryCall(getChannel, helloMethodDescriptor, getCallOptions, encode(m)).asInstanceOf[String]
+        .blockingUnaryCall(_channel, helloMethodDescriptor, getCallOptions, encode(m)).asInstanceOf[String]
     }
     def hello2(name: String, id: Int): String = {
       val m = Map("name" -> name, "id" -> id)
       ClientCalls
-        .blockingUnaryCall(getChannel, hello2MethodDescriptor, getCallOptions, encode(m)).asInstanceOf[String]
+        .blockingUnaryCall(_channel, hello2MethodDescriptor, getCallOptions, encode(m)).asInstanceOf[String]
     }
     def helloStreaming(name: String): Seq[String] = {
       val m                = Map("name" -> name)
       val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
       ClientCalls.asyncServerStreamingCall(
-        getChannel.newCall(
+        _channel.newCall(
           helloStreamingMethodDescriptor,
           getCallOptions
         ),
@@ -137,7 +139,7 @@ object DemoApi {
       val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
       val requestObserver: ClientCallStreamObserver[MsgPack] = ClientCalls
         .asyncClientStreamingCall[MsgPack, Any](
-          getChannel.newCall(
+          _channel.newCall(
             helloClientStreamingMethodDescriptor,
             getCallOptions
           ),
@@ -152,7 +154,7 @@ object DemoApi {
       val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
       val requestObserver: ClientCallStreamObserver[MsgPack] = ClientCalls
         .asyncBidiStreamingCall[MsgPack, Any](
-          getChannel.newCall(
+          _channel.newCall(
             helloBidiStreamingMethodDescriptor,
             getCallOptions
           ),
