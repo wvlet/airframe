@@ -38,21 +38,25 @@ object GrpcRequestMarshaller extends Marshaller[MsgPack] with LogSupport {
   }
 }
 
-class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[A] with LogSupport {
-  override def stream(value: A): InputStream = {
-    val accept =
-      GrpcContext.current.map(_.accept).getOrElse(GrpcEncoding.ApplicationMsgPack)
+case class GrpcResponse(value: Any, encoding: GrpcEncoding)
 
-    warn(s"${accept}")
+class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[Any] with LogSupport {
+  override def stream(response: Any): InputStream = {
+    warn(s"${response}")
     try {
-      accept match {
-        case GrpcEncoding.ApplicationJson =>
-          // Wrap JSON with a response object for the ease of parsing
-          val json = s"""{"response":${codec.toJson(value)}}"""
-          warn(s"resp: ${json}")
-          new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))
+      response match {
+        case GrpcResponse(v, encoding) =>
+          encoding match {
+            case GrpcEncoding.JSON =>
+              // Wrap JSON with a response object for the ease of parsing
+              val json = s"""{"response":${codec.toJson(v.asInstanceOf[A])}}"""
+              warn(s"resp: ${json}")
+              new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))
+            case _ =>
+              new ByteArrayInputStream(codec.toMsgPack(v.asInstanceOf[A]))
+          }
         case _ =>
-          new ByteArrayInputStream(codec.toMsgPack(value))
+          new ByteArrayInputStream(codec.toMsgPack(response.asInstanceOf[A]))
       }
     } catch {
       case e: Throwable =>
@@ -60,7 +64,7 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[A] wi
     }
   }
 
-  override def parse(stream: InputStream): A = {
+  override def parse(stream: InputStream): Any = {
     val bytes = IO.readFully(stream)
 
     try {

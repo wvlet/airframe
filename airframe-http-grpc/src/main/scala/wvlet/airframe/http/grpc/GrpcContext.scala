@@ -23,7 +23,8 @@ object GrpcContext {
     *
     * @return
     */
-  def current: Option[GrpcContext] = Option(contextKey.get())
+  def current: Option[GrpcContext]  = Option(contextKey.get())
+  private[grpc] def currentEncoding = current.map(_.encoding).getOrElse(GrpcEncoding.MsgPack)
 
   private[grpc] val KEY_ACCEPT = Metadata.Key.of("accept", Metadata.ASCII_STRING_MARSHALLER)
 

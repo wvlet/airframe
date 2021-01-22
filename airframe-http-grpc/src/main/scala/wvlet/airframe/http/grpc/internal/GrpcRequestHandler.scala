@@ -16,7 +16,7 @@ package wvlet.airframe.http.grpc.internal
 import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
 import io.grpc.stub.StreamObserver
 import wvlet.airframe.codec.{MessageCodec, MessageCodecException, MessageCodecFactory}
-import wvlet.airframe.http.grpc.{GrpcContext, GrpcEncoding}
+import wvlet.airframe.http.grpc.{GrpcContext, GrpcEncoding, GrpcResponse}
 import wvlet.airframe.http.router.{HttpRequestMapper, RPCCallContext}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
@@ -92,7 +92,7 @@ class GrpcRequestHandler(
 
   def invokeMethod(request: MsgPack): Try[Any] = {
     val grpcContext = GrpcContext.current
-
+    val encoding    = GrpcContext.currentEncoding
     // Build method arguments from MsgPack
 
     val result = Try {
@@ -133,6 +133,7 @@ class GrpcRequestHandler(
     val codec = codecFactory.of(clientStreamingType)
     // An observer that receives streaming messages from the client
     val grpcContext = GrpcContext.current
+    val encoding    = GrpcContext.currentEncoding
     val requestObserver = new StreamObserver[MsgPack] {
       private val isStarted = new AtomicBoolean(false)
       // A queue for passing incoming messages to the application through Rx interface
@@ -177,7 +178,7 @@ class GrpcRequestHandler(
           case Success(value) =>
             requestLogger.logRPC(grpcContext, rpcContext)
             logger.warn(s"${grpcContext.map(_.accept)}")
-            responseObserver.onNext(value)
+            responseObserver.onNext(GrpcResponse(value, encoding))
             responseObserver.onCompleted()
           case Failure(e) =>
             requestLogger.logError(e, grpcContext, rpcContext)
@@ -193,9 +194,10 @@ class GrpcRequestHandler(
       clientStreamingType: Surface
   ): StreamObserver[MsgPack] = {
 
-    val codec = codecFactory.of(clientStreamingType)
-
+    val codec       = codecFactory.of(clientStreamingType)
     val grpcContext = GrpcContext.current
+    val encoding    = GrpcContext.currentEncoding
+
     val requestObserver = new StreamObserver[MsgPack] {
       private val isStarted             = new AtomicBoolean(false)
       private val rx                    = new RxBlockingQueue[Any]
@@ -240,7 +242,7 @@ class GrpcRequestHandler(
                 var c = Cancelable.empty
                 c = RxRunner.run(rx) {
                   case OnNext(value) =>
-                    responseObserver.onNext(value)
+                    responseObserver.onNext(GrpcResponse(value, encoding))
                   case OnError(e) =>
                     requestLogger.logError(e, grpcContext, rpcContext)
                     responseObserver.onError(e)
@@ -250,7 +252,7 @@ class GrpcRequestHandler(
                 }
               case other =>
                 requestLogger.logRPC(grpcContext, rpcContext)
-                responseObserver.onNext(v)
+                responseObserver.onNext(GrpcResponse(v, encoding))
                 responseObserver.onCompleted()
             }
           case Failure(e) =>
@@ -270,9 +272,10 @@ private[grpc] class RPCUnaryMethodHandler(rpcRequestHandler: GrpcRequestHandler)
       request: MsgPack,
       responseObserver: StreamObserver[Any]
   ): Unit = {
+    val encoding = GrpcContext.currentEncoding
     rpcRequestHandler.invokeMethod(request) match {
       case Success(v) =>
-        responseObserver.onNext(v)
+        responseObserver.onNext(GrpcResponse(v, encoding))
         responseObserver.onCompleted()
       case Failure(e) =>
         responseObserver.onError(GrpcException.wrap(e))
@@ -287,6 +290,7 @@ private[grpc] class RPCServerStreamingMethodHandler(rpcRequestHandler: GrpcReque
       request: MsgPack,
       responseObserver: StreamObserver[Any]
   ): Unit = {
+    val encoding = GrpcContext.currentEncoding
     rpcRequestHandler.invokeMethod(request) match {
       case Success(v) =>
         v match {
@@ -294,14 +298,14 @@ private[grpc] class RPCServerStreamingMethodHandler(rpcRequestHandler: GrpcReque
             var c = Cancelable.empty
             c = RxRunner.run(rx) {
               case OnNext(value) =>
-                responseObserver.onNext(value)
+                responseObserver.onNext(GrpcResponse(value, encoding))
               case OnError(e) =>
                 responseObserver.onError(GrpcException.wrap(e))
               case OnCompletion =>
                 responseObserver.onCompleted()
             }
           case other =>
-            responseObserver.onNext(v)
+            responseObserver.onNext(GrpcResponse(v, encoding))
             responseObserver.onCompleted()
         }
       case Failure(e) =>

@@ -13,12 +13,12 @@
  */
 package wvlet.airframe.http.grpc.example
 
-import io.grpc.{CallOptions, Channel}
-import io.grpc.stub.{AbstractBlockingStub, ClientCallStreamObserver, ClientCalls}
+import io.grpc.{CallOptions, Channel, MethodDescriptor}
+import io.grpc.stub.{AbstractBlockingStub, ClientCallStreamObserver, ClientCalls, StreamObserver}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
-import wvlet.airframe.http.grpc.{GrpcClientCalls, GrpcClientInterceptor, GrpcContext, GrpcEncoding, gRPC}
+import wvlet.airframe.http.grpc.{GrpcClientCalls, GrpcClientInterceptor, GrpcContext, GrpcEncoding, GrpcResponse, gRPC}
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{HttpHeader, RPC, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
@@ -107,20 +107,21 @@ object DemoApi {
 
     def getContext: String = {
       val m = Map.empty[String, Any]
-      ClientCalls
-        .blockingUnaryCall(_channel, getContextMethodDescriptor, getCallOptions, encode(m)).asInstanceOf[
-          String
-        ]
+      val resp = ClientCalls
+        .blockingUnaryCall(_channel, getContextMethodDescriptor, getCallOptions, encode(m))
+      resp.asInstanceOf[String]
     }
     def hello(name: String): String = {
       val m = Map("name" -> name)
-      ClientCalls
-        .blockingUnaryCall(_channel, helloMethodDescriptor, getCallOptions, encode(m)).asInstanceOf[String]
+      val resp = ClientCalls
+        .blockingUnaryCall(_channel, helloMethodDescriptor, getCallOptions, encode(m))
+      resp.asInstanceOf[String]
     }
     def hello2(name: String, id: Int): String = {
       val m = Map("name" -> name, "id" -> id)
-      ClientCalls
-        .blockingUnaryCall(_channel, hello2MethodDescriptor, getCallOptions, encode(m)).asInstanceOf[String]
+      val resp = ClientCalls
+        .blockingUnaryCall(_channel, hello2MethodDescriptor, getCallOptions, encode(m))
+      resp.asInstanceOf[String]
     }
     def helloStreaming(name: String): Seq[String] = {
       val m                = Map("name" -> name)
@@ -138,7 +139,7 @@ object DemoApi {
     def helloClientStreaming(input: Rx[String]): String = {
       val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
       val requestObserver: ClientCallStreamObserver[MsgPack] = ClientCalls
-        .asyncClientStreamingCall[MsgPack, Any](
+        .asyncClientStreamingCall(
           _channel.newCall(
             helloClientStreamingMethodDescriptor,
             getCallOptions
@@ -153,7 +154,7 @@ object DemoApi {
     def helloBidiStreaming(input: Rx[String]): Rx[String] = {
       val responseObserver = GrpcClientCalls.blockingResponseObserver[String]
       val requestObserver: ClientCallStreamObserver[MsgPack] = ClientCalls
-        .asyncBidiStreamingCall[MsgPack, Any](
+        .asyncBidiStreamingCall(
           _channel.newCall(
             helloBidiStreamingMethodDescriptor,
             getCallOptions
