@@ -40,11 +40,11 @@ object GrpcRequestMarshaller extends Marshaller[MsgPack] with LogSupport {
 class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[A] with LogSupport {
   override def stream(value: A): InputStream = {
     val accept =
-      GrpcContext.current.map(_.accept).getOrElse(GrpcEncoding.ContentTypeMsgPack)
+      GrpcContext.current.map(_.accept).getOrElse(GrpcEncoding.ApplicationMsgPack)
 
     try {
       accept match {
-        case GrpcEncoding.ContentTypeJson =>
+        case GrpcEncoding.ApplicationJson =>
           // Wrap JSON with a response object for the ease of parsing
           val json = s"""{"response":${codec.toJson(value)}}"""
           new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))
@@ -72,7 +72,7 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[A] wi
     val bytes = IO.readFully(stream)
 
     try {
-      if (isJsonBytes(bytes)) {
+      if (GrpcEncoding.isJsonObjectMessage(bytes)) {
         // Parse {"response": ....}
         ValueCodec.fromJson(bytes) match {
           case m: MapValue =>
@@ -109,7 +109,4 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[A] wi
     }
   }
 
-  private def isJsonBytes(bytes: Array[Byte]): Boolean = {
-    bytes.length >= 2 && bytes.head == '{' && bytes.last == '}'
-  }
 }

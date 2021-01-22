@@ -47,10 +47,6 @@ class GrpcRequestHandler(
 
   private val rpcContext = RPCCallContext(rpcInterfaceCls, methodSurface, Seq.empty)
 
-  private def isJsonObjectMessage(request: MsgPack): Boolean = {
-    request.size > 0 && request.head == '{' && request.last == '}'
-  }
-
   /**
     * Read the input value (MessagePack or Json) and convert to MessagePack Value
     *
@@ -59,14 +55,14 @@ class GrpcRequestHandler(
     * @return
     */
   def readRequestAsValue(grpcContext: Option[GrpcContext], request: MsgPack): MapValue = {
-    val value = if (isJsonObjectMessage(request)) {
+    val value = if (GrpcEncoding.isJsonObjectMessage(request)) {
       // The input is a JSON message
       GrpcEncoding.JSON.unpackValue(request)
     } else {
-      // Check the message type using content-type header:
-      val contentType = grpcContext.map(_.accept)
-      contentType match {
-        case Some(GrpcEncoding.ContentTypeJson) =>
+      // Check the message type using the accept header:
+      val accept = grpcContext.map(_.accept)
+      accept match {
+        case Some(GrpcEncoding.ApplicationJson) =>
           // Json input
           GrpcEncoding.MsgPack.unpackValue(request)
         case _ =>

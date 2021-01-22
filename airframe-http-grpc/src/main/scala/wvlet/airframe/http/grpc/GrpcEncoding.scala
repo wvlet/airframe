@@ -22,17 +22,17 @@ import java.nio.charset.StandardCharsets
 /**
   */
 sealed trait GrpcEncoding {
-  def contentType: String
+  def applicationType: String
   def encodeWithCodec[A](v: A, codec: MessageCodec[A]): Array[Byte]
   def unpackValue(bytes: Array[Byte]): Value
 }
 
 object GrpcEncoding {
-  val ContentTypeMsgPack = "application/msgpack"
-  val ContentTypeJson    = "application/json"
+  val ApplicationMsgPack = "application/msgpack"
+  val ApplicationJson    = "application/json"
 
   case object MsgPack extends GrpcEncoding {
-    override def contentType: String = ContentTypeMsgPack
+    override def applicationType: String = ApplicationMsgPack
     override def encodeWithCodec[A](v: A, codec: MessageCodec[A]): Array[Byte] = {
       codec.toMsgPack(v)
     }
@@ -42,12 +42,16 @@ object GrpcEncoding {
   }
 
   case object JSON extends GrpcEncoding {
-    override def contentType: String = ContentTypeJson
+    override def applicationType: String = ApplicationJson
     override def encodeWithCodec[A](v: A, codec: MessageCodec[A]): Array[Byte] = {
       codec.toJson(v).getBytes(StandardCharsets.UTF_8)
     }
     override def unpackValue(bytes: Array[Byte]): Value = {
       ValueCodec.fromJson(new String(bytes, StandardCharsets.UTF_8))
     }
+  }
+
+  private[grpc] def isJsonObjectMessage(bytes: Array[Byte]): Boolean = {
+    bytes.length >= 2 && bytes.head == '{' && bytes.last == '}'
   }
 }

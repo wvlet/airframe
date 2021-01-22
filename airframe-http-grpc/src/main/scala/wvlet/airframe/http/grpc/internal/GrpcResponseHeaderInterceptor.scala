@@ -31,10 +31,10 @@ private[grpc] object GrpcResponseHeaderInterceptor extends ServerInterceptor {
         override def sendHeaders(responseHeaders: Metadata): Unit = {
           import GrpcContext._
           requestHeaders.accept match {
-            case GrpcEncoding.ContentTypeJson =>
-              responseHeaders.setAccept(GrpcEncoding.ContentTypeJson)
+            case GrpcEncoding.ApplicationJson =>
+              responseHeaders.setAccept(GrpcEncoding.ApplicationJson)
             case _ =>
-              responseHeaders.setAccept(GrpcEncoding.ContentTypeMsgPack)
+              responseHeaders.setAccept(GrpcEncoding.ApplicationMsgPack)
           }
           super.sendHeaders(responseHeaders);
         }
