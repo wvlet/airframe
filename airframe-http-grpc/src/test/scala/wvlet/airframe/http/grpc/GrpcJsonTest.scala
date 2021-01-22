@@ -17,6 +17,7 @@ import wvlet.airframe.http.Router
 import wvlet.airframe.http.grpc.example.DemoApi
 import wvlet.airframe.http.grpc.example.DemoApi.DemoApiClient
 import wvlet.airspec.AirSpec
+import wvlet.airframe.rx._
 
 /**
   */
@@ -28,7 +29,15 @@ class GrpcJsonTest extends AirSpec {
 
   test("json encoding") { c: DemoApiClient =>
     val client = c.withEncoding(GrpcEncoding.JSON)
-    val ret    = client.hello("gRPC with JSON")
-    ret shouldBe "Hello gRPC with JSON!"
+
+    test("unary") {
+      val ret = client.hello("gRPC with JSON")
+      ret shouldBe "Hello gRPC with JSON!"
+    }
+
+    test("client-streaming") {
+      val ret = client.helloClientStreaming(Rx.sequence("A", "B"))
+      ret shouldBe "A, B"
+    }
   }
 }

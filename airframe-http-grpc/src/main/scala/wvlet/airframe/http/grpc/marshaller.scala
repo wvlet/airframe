@@ -18,6 +18,7 @@ import io.grpc.{Status, StatusException, StatusRuntimeException}
 import wvlet.airframe.codec.{MessageCodec, MessageCodecException, ParamListCodec}
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.control.IO
+import wvlet.airframe.http.grpc.internal.GrpcException
 import wvlet.airframe.msgpack.spi.{MsgPack, ValueFactory}
 import wvlet.airframe.msgpack.spi.Value.MapValue
 import wvlet.log.LogSupport
@@ -42,29 +43,20 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[A] wi
     val accept =
       GrpcContext.current.map(_.accept).getOrElse(GrpcEncoding.ApplicationMsgPack)
 
+    warn(s"${accept}")
     try {
       accept match {
         case GrpcEncoding.ApplicationJson =>
           // Wrap JSON with a response object for the ease of parsing
           val json = s"""{"response":${codec.toJson(value)}}"""
+          warn(s"resp: ${json}")
           new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))
         case _ =>
           new ByteArrayInputStream(codec.toMsgPack(value))
       }
     } catch {
-      case e: MessageCodecException =>
-        throw Status.INTERNAL
-          .withDescription(s"Failed to encode the response: ${value}")
-          .withCause(e)
-          .asRuntimeException()
-      case e: StatusRuntimeException =>
-        throw e
-      case e: StatusException =>
-        throw e
       case e: Throwable =>
-        throw Status.INTERNAL
-          .withCause(e)
-          .asRuntimeException()
+        throw GrpcException.wrap(e)
     }
   }
 
@@ -73,6 +65,7 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[A] wi
 
     try {
       if (GrpcEncoding.isJsonObjectMessage(bytes)) {
+        warn(s"--- here: ${new String(bytes)}")
         // Parse {"response": ....}
         ValueCodec.fromJson(bytes) match {
           case m: MapValue =>
@@ -93,19 +86,8 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[A] wi
         codec.fromMsgPack(bytes)
       }
     } catch {
-      case e: MessageCodecException =>
-        throw Status.INTERNAL
-          .withDescription("Failed to decode the response")
-          .withCause(e)
-          .asRuntimeException()
-      case e: StatusRuntimeException =>
-        throw e
-      case e: StatusException =>
-        throw e
       case e: Throwable =>
-        throw Status.INTERNAL
-          .withCause(e)
-          .asRuntimeException()
+        throw GrpcException.wrap(e)
     }
   }
 

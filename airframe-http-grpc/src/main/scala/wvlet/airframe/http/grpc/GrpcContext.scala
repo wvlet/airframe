@@ -47,4 +47,13 @@ case class GrpcContext(
 ) {
   // Return the accept header
   def accept: String = metadata.accept
+  def encoding: GrpcEncoding = accept match {
+    case GrpcEncoding.ApplicationJson =>
+      // Json input
+      GrpcEncoding.JSON
+    case _ =>
+      // Use msgpack by default
+      GrpcEncoding.MsgPack
+  }
+
 }
