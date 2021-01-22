@@ -28,12 +28,11 @@ sealed trait GrpcEncoding {
 }
 
 object GrpcEncoding {
-  val ContentTypeDefault     = "application/grpc"
-  val ContentTypeGrpcMsgPack = "application/grpc+msgpack"
-  val ContentTypeGrpcJson    = "application/grpc+json"
+  val ContentTypeMsgPack = "application/msgpack"
+  val ContentTypeJson    = "application/json"
 
   case object MsgPack extends GrpcEncoding {
-    override def contentType: String = ContentTypeGrpcMsgPack
+    override def contentType: String = ContentTypeMsgPack
     override def encodeWithCodec[A](v: A, codec: MessageCodec[A]): Array[Byte] = {
       codec.toMsgPack(v)
     }
@@ -43,7 +42,7 @@ object GrpcEncoding {
   }
 
   case object JSON extends GrpcEncoding {
-    override def contentType: String = ContentTypeGrpcJson
+    override def contentType: String = ContentTypeJson
     override def encodeWithCodec[A](v: A, codec: MessageCodec[A]): Array[Byte] = {
       codec.toJson(v).getBytes(StandardCharsets.UTF_8)
     }

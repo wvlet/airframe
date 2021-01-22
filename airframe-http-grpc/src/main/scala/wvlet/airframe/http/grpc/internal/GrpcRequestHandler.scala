@@ -64,9 +64,9 @@ class GrpcRequestHandler(
       GrpcEncoding.JSON.unpackValue(request)
     } else {
       // Check the message type using content-type header:
-      val contentType = grpcContext.map(_.contentType)
+      val contentType = grpcContext.map(_.accept)
       contentType match {
-        case Some(GrpcEncoding.ContentTypeGrpcJson) =>
+        case Some(GrpcEncoding.ContentTypeJson) =>
           // Json input
           GrpcEncoding.MsgPack.unpackValue(request)
         case _ =>

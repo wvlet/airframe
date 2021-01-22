@@ -18,9 +18,9 @@ import io.grpc.{Contexts, Metadata, ServerCall, ServerCallHandler, ServerInterce
 import wvlet.airframe.http.grpc.{GrpcContext, GrpcEncoding}
 
 /**
-  * An interceptor for setting the response content-type header based on the encoding used for RPC
+  * An interceptor for setting the response headers based on the encoding used for RPC
   */
-private[grpc] object GrpcContentTypeInterceptor extends ServerInterceptor {
+private[grpc] object GrpcResponseHeaderInterceptor extends ServerInterceptor {
   override def interceptCall[ReqT, RespT](
       call: ServerCall[ReqT, RespT],
       requestHeaders: Metadata,
@@ -30,11 +30,11 @@ private[grpc] object GrpcContentTypeInterceptor extends ServerInterceptor {
       new SimpleForwardingServerCall[ReqT, RespT](call) {
         override def sendHeaders(responseHeaders: Metadata): Unit = {
           import GrpcContext._
-          requestHeaders.contentType match {
-            case GrpcEncoding.ContentTypeGrpcJson =>
-              responseHeaders.setContentType(GrpcEncoding.ContentTypeGrpcJson)
+          requestHeaders.accept match {
+            case GrpcEncoding.ContentTypeJson =>
+              responseHeaders.setAccept(GrpcEncoding.ContentTypeJson)
             case _ =>
-              responseHeaders.setContentType(GrpcEncoding.ContentTypeGrpcMsgPack)
+              responseHeaders.setAccept(GrpcEncoding.ContentTypeMsgPack)
           }
           super.sendHeaders(responseHeaders);
         }

@@ -14,9 +14,12 @@
 package wvlet.airframe.http.grpc
 
 import io.grpc.MethodDescriptor.Marshaller
-import wvlet.airframe.codec.MessageCodec
+import io.grpc.{Status, StatusException, StatusRuntimeException}
+import wvlet.airframe.codec.{MessageCodec, MessageCodecException, ParamListCodec}
+import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.control.IO
-import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.airframe.msgpack.spi.{MsgPack, ValueFactory}
+import wvlet.airframe.msgpack.spi.Value.MapValue
 import wvlet.log.LogSupport
 
 import java.io.{ByteArrayInputStream, InputStream}
@@ -36,26 +39,77 @@ object GrpcRequestMarshaller extends Marshaller[MsgPack] with LogSupport {
 
 class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[A] with LogSupport {
   override def stream(value: A): InputStream = {
-    val contentType =
-      GrpcContext.current.map(_.contentType).getOrElse(GrpcEncoding.ContentTypeGrpcMsgPack)
+    val accept =
+      GrpcContext.current.map(_.accept).getOrElse(GrpcEncoding.ContentTypeMsgPack)
 
-    info(contentType)
-    contentType match {
-      case GrpcEncoding.ContentTypeGrpcJson =>
-        val json = codec.toJson(value)
-        info(json)
-        new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))
-      case _ =>
-        new ByteArrayInputStream(codec.toMsgPack(value))
+    try {
+      accept match {
+        case GrpcEncoding.ContentTypeJson =>
+          // Wrap JSON with a response object for the ease of parsing
+          val json = s"""{"response":${codec.toJson(value)}}"""
+          new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))
+        case _ =>
+          new ByteArrayInputStream(codec.toMsgPack(value))
+      }
+    } catch {
+      case e: MessageCodecException =>
+        throw Status.INTERNAL
+          .withDescription(s"Failed to encode the response: ${value}")
+          .withCause(e)
+          .asRuntimeException()
+      case e: StatusRuntimeException =>
+        throw e
+      case e: StatusException =>
+        throw e
+      case e: Throwable =>
+        throw Status.INTERNAL
+          .withCause(e)
+          .asRuntimeException()
     }
   }
 
   override def parse(stream: InputStream): A = {
     val bytes = IO.readFully(stream)
-    if (bytes.length > 0 && bytes.head == '{' && bytes.last == '}') {
-      codec.fromJson(bytes)
-    } else {
-      codec.fromMsgPack(bytes)
+
+    try {
+      if (isJsonBytes(bytes)) {
+        // Parse {"response": ....}
+        ValueCodec.fromJson(bytes) match {
+          case m: MapValue =>
+            m.get(ValueFactory.newString("response")) match {
+              case Some(v) =>
+                codec.fromMsgPack(v.toMsgpack)
+              case other =>
+                throw Status.INTERNAL
+                  .withDescription(s"Missing response value: ${other}")
+                  .asRuntimeException()
+            }
+          case other =>
+            throw Status.INTERNAL
+              .withDescription(s"Invalid response: ${other}")
+              .asRuntimeException()
+        }
+      } else {
+        codec.fromMsgPack(bytes)
+      }
+    } catch {
+      case e: MessageCodecException =>
+        throw Status.INTERNAL
+          .withDescription("Failed to decode the response")
+          .withCause(e)
+          .asRuntimeException()
+      case e: StatusRuntimeException =>
+        throw e
+      case e: StatusException =>
+        throw e
+      case e: Throwable =>
+        throw Status.INTERNAL
+          .withCause(e)
+          .asRuntimeException()
     }
+  }
+
+  private def isJsonBytes(bytes: Array[Byte]): Boolean = {
+    bytes.length >= 2 && bytes.head == '{' && bytes.last == '}'
   }
 }

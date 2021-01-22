@@ -25,13 +25,13 @@ object GrpcContext {
     */
   def current: Option[GrpcContext] = Option(contextKey.get())
 
-  private[grpc] val KEY_CONTENT_TYPE = Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)
+  private[grpc] val KEY_ACCEPT = Metadata.Key.of("accept", Metadata.ASCII_STRING_MARSHALLER)
 
   private[grpc] implicit class RichMetadata(val m: Metadata) extends AnyVal {
-    def contentType: String = Option(m.get(KEY_CONTENT_TYPE)).getOrElse(GrpcEncoding.ContentTypeDefault)
-    def setContentType(s: String): Unit = {
-      m.removeAll(KEY_CONTENT_TYPE)
-      m.put(KEY_CONTENT_TYPE, s)
+    def accept: String = Option(m.get(KEY_ACCEPT)).getOrElse(GrpcEncoding.ContentTypeMsgPack)
+    def setAccept(s: String): Unit = {
+      m.removeAll(KEY_ACCEPT)
+      m.put(KEY_ACCEPT, s)
     }
   }
 
@@ -45,5 +45,6 @@ case class GrpcContext(
     metadata: Metadata,
     descriptor: MethodDescriptor[_, _]
 ) {
-  def contentType: String = metadata.contentType
+  // Return the accept header
+  def accept: String = metadata.accept
 }
