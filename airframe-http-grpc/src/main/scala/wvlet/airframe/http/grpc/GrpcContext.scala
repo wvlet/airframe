@@ -20,19 +20,27 @@ object GrpcContext {
 
   /**
     * Get the current GrpcContext. If it returns None, it means this method is called outside gRPC's local thread for processing the request
+    *
     * @return
     */
   def current: Option[GrpcContext] = Option(contextKey.get())
 
-  private val KEY_CONTENT_TYPE = Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)
+  private[grpc] val KEY_CONTENT_TYPE = Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)
+
+  private[grpc] implicit class RichMetadata(val m: Metadata) extends AnyVal {
+    def contentType: String             = Option(m.get(KEY_CONTENT_TYPE)).getOrElse(GrpcEncoding.ContentTypeDefault)
+    def setContentType(s: String): Unit = m.put(KEY_CONTENT_TYPE, s)
+  }
+
 }
 
 import GrpcContext._
+
 case class GrpcContext(
     authority: Option[String],
     attributes: Attributes,
     metadata: Metadata,
     descriptor: MethodDescriptor[_, _]
 ) {
-  def contentType: String = Option(metadata.get(KEY_CONTENT_TYPE)).getOrElse(GrpcEncoding.ContentTypeGrpcMsgPack)
+  def contentType: String = metadata.contentType
 }

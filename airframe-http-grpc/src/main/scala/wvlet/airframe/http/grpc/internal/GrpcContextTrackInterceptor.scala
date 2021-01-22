@@ -13,12 +13,12 @@
  */
 package wvlet.airframe.http.grpc.internal
 
-import io.grpc.{Context, Contexts, Metadata, ServerCall, ServerCallHandler, ServerInterceptor}
+import io.grpc._
 import wvlet.airframe.http.grpc.GrpcContext
-import wvlet.airframe.http.grpc.GrpcContext.contextKey
 import wvlet.log.LogSupport
 
 /**
+  * A server request interceptor to set GrpcContext to the thread-local storage
   */
 private[grpc] object ContextTrackInterceptor extends ServerInterceptor with LogSupport {
   override def interceptCall[ReqT, RespT](
