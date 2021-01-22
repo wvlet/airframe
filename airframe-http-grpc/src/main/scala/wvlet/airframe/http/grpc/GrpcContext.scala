@@ -41,11 +41,15 @@ object GrpcContext {
     }
   }
 
+  private val KEY_CONTENT_TYPE = Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)
 }
 
+import GrpcContext._
 case class GrpcContext(
     authority: Option[String],
     attributes: Attributes,
     metadata: Metadata,
     descriptor: MethodDescriptor[_, _]
-)
+) {
+  def contentType: String = Option(metadata.get(KEY_CONTENT_TYPE)).getOrElse(GrpcEncoding.ContentTypeGrpcMsgPack)
+}

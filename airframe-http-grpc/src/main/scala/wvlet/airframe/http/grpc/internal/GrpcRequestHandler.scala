@@ -11,21 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.grpc
+package wvlet.airframe.http.grpc.internal
 
-import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
-import java.util.concurrent.{Callable, ExecutorService}
 import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
 import io.grpc.stub.StreamObserver
 import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
+import wvlet.airframe.http.grpc.{GrpcContext, GrpcEncoding}
 import wvlet.airframe.http.router.{HttpRequestMapper, RPCCallContext}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
-import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner}
 import wvlet.airframe.surface.{CName, MethodSurface, Surface}
 import wvlet.log.LogSupport
+import wvlet.airframe.rx._
 
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.{Callable, ExecutorService}
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
 
@@ -47,43 +47,74 @@ class GrpcRequestHandler(
 
   private val rpcContext = RPCCallContext(rpcInterfaceCls, methodSurface, Seq.empty)
 
-  def invokeMethod(request: MsgPack): Try[Any] = {
-    // Build method arguments from MsgPack
-    val requestValue = ValueCodec.unpack(request)
-    trace(requestValue)
+  private def isJsonObjectMessage(request: MsgPack): Boolean = {
+    request.size > 0 && request.head == '{' && request.last == '}'
+  }
 
-    val grpcContext = GrpcContext.current
-    val result = Try {
-      requestValue match {
-        case m: MapValue =>
-          val mapValue = HttpRequestMapper.toCanonicalKeyNameMap(m)
-          val args = for ((arg, i) <- methodSurface.args.zipWithIndex) yield {
-            val argOpt = mapValue.get(CName.toCanonicalName(arg.name)) match {
-              case Some(paramValue) =>
-                Option(argCodecs(i).fromMsgPack(paramValue.toMsgpack)).orElse {
-                  throw new IllegalArgumentException(s"Failed to parse ${paramValue} for ${arg}")
-                }
-              case None =>
-                // If no value is found, use the method parameter's default argument
-                arg.getMethodArgDefaultValue(controller)
-            }
-            argOpt.getOrElse {
-              throw new IllegalArgumentException(s"No key for ${arg.name} is found in ${m}")
-            }
-          }
-          trace(s"RPC call ${methodSurface.name}(${args.mkString(", ")})")
-          try {
-            val ret = methodSurface.call(controller, args: _*)
-            requestLogger.logRPC(grpcContext, rpcContext.withRPCArgs(args))
-            ret
-          } catch {
-            case e: Throwable =>
-              requestLogger.logError(e, grpcContext, rpcContext.withRPCArgs(args))
-              throw e
-          }
+  /**
+    * Read the input value (MessagePack or Json) and convert to MessagePack Value
+    *
+    * @param grpcContext
+    * @param request
+    * @return
+    */
+  def readRequestAsValue(grpcContext: Option[GrpcContext], request: MsgPack): MapValue = {
+    val value = if (isJsonObjectMessage(request)) {
+      // The input is a JSON message
+      GrpcEncoding.JSON.unpackValue(request)
+    } else {
+      // Check the message type using content-type header:
+      val contentType = grpcContext.map(_.contentType)
+      contentType match {
+        case Some(GrpcEncoding.ContentTypeGrpcJson) =>
+          // Json input
+          GrpcEncoding.MsgPack.unpackValue(request)
         case _ =>
-          val e = new IllegalArgumentException(s"Invalid argument: ${requestValue}")
-          requestLogger.logError(e, grpcContext, rpcContext)
+          // Use msgpack by default
+          GrpcEncoding.MsgPack.unpackValue(request)
+      }
+    }
+
+    value match {
+      case m: MapValue =>
+        m
+      case _ =>
+        val e = new IllegalArgumentException(s"Invalid argument: ${value}")
+        requestLogger.logError(e, grpcContext, rpcContext)
+        throw e
+    }
+  }
+
+  def invokeMethod(request: MsgPack): Try[Any] = {
+    val grpcContext = GrpcContext.current
+
+    // Build method arguments from MsgPack
+
+    val result = Try {
+      val m: MapValue = readRequestAsValue(grpcContext, request)
+      val mapValue    = HttpRequestMapper.toCanonicalKeyNameMap(m)
+      val args = for ((arg, i) <- methodSurface.args.zipWithIndex) yield {
+        val argOpt = mapValue.get(CName.toCanonicalName(arg.name)) match {
+          case Some(paramValue) =>
+            Option(argCodecs(i).fromMsgPack(paramValue.toMsgpack)).orElse {
+              throw new IllegalArgumentException(s"Failed to parse ${paramValue} for ${arg}")
+            }
+          case None =>
+            // If no value is found, use the method parameter's default argument
+            arg.getMethodArgDefaultValue(controller)
+        }
+        argOpt.getOrElse {
+          throw new IllegalArgumentException(s"No key for ${arg.name} is found in ${m}")
+        }
+      }
+      trace(s"RPC call ${methodSurface.name}(${args.mkString(", ")})")
+      try {
+        val ret = methodSurface.call(controller, args: _*)
+        requestLogger.logRPC(grpcContext, rpcContext.withRPCArgs(args))
+        ret
+      } catch {
+        case e: Throwable =>
+          requestLogger.logError(e, grpcContext, rpcContext.withRPCArgs(args))
           throw e
       }
     }

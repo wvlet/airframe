@@ -11,7 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.grpc
+package wvlet.airframe.http.grpc.internal
+
 import io.grpc.MethodDescriptor.Marshaller
 import io.grpc.stub.ServerCalls
 import io.grpc.{MethodDescriptor, ServerServiceDefinition}
@@ -19,11 +20,12 @@ import wvlet.airframe.Session
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.IO
 import wvlet.airframe.http.Router
+import wvlet.airframe.http.grpc.{GrpcServerConfig, GrpcService}
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.msgpack.spi.MsgPack
-import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.{MethodParameter, MethodSurface, Surface}
 import wvlet.log.LogSupport
+import wvlet.airframe.rx._
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.util.concurrent.ExecutorService

@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.grpc
-import io.grpc.stub.StreamObserver
+import io.grpc.stub.{MetadataUtils, StreamObserver}
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner, RxStream}
@@ -46,11 +46,12 @@ object GrpcClientCalls extends LogSupport {
   def readClientRequestStream[A](
       input: Rx[A],
       codec: MessageCodec[A],
-      requestObserver: StreamObserver[MsgPack]
+      requestObserver: StreamObserver[MsgPack],
+      encoding: GrpcEncoding = GrpcEncoding.MsgPack
   ): Cancelable = {
     RxRunner.run(input) {
       case OnNext(x) => {
-        Try(codec.toMsgPack(x.asInstanceOf[A])) match {
+        Try(encoding.encodeWithCodec(x.asInstanceOf[A], codec)) match {
           case Success(msgpack) =>
             requestObserver.onNext(msgpack)
           case Failure(e) =>
@@ -64,7 +65,7 @@ object GrpcClientCalls extends LogSupport {
     }
   }
 
-  def translate[A, B](observer: StreamObserver[A], f: B => A): StreamObserver[B] =
+  def translate[A, B](observer: StreamObserver[A], f: B => A): StreamObserver[B] = {
     new StreamObserver[B] {
       override def onNext(value: B): Unit = {
         Try(f(value)) match {
@@ -79,4 +80,5 @@ object GrpcClientCalls extends LogSupport {
         observer.onCompleted()
       }
     }
+  }
 }

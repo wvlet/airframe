@@ -18,6 +18,7 @@ import io.grpc._
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.Router
+import wvlet.airframe.http.grpc.internal.{GrpcRequestLogger, GrpcServiceBuilder}
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil

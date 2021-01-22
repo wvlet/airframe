@@ -15,7 +15,7 @@ package wvlet.airframe.http.grpc.example
 import io.grpc.stub.{AbstractBlockingStub, ClientCalls}
 import io.grpc.{CallOptions, Channel}
 import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.http.grpc.GrpcServiceBuilder
+import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{RPC, Router}
 
