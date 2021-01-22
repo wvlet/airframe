@@ -38,11 +38,13 @@ object GrpcRequestMarshaller extends Marshaller[MsgPack] with LogSupport {
   }
 }
 
+/**
+  * This class wraps the response value with encoding method information
+  */
 case class GrpcResponse(value: Any, encoding: GrpcEncoding)
 
 class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[Any] with LogSupport {
   override def stream(response: Any): InputStream = {
-    warn(s"${response}")
     try {
       response match {
         case GrpcResponse(v, encoding) =>
@@ -50,7 +52,6 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[Any] 
             case GrpcEncoding.JSON =>
               // Wrap JSON with a response object for the ease of parsing
               val json = s"""{"response":${codec.toJson(v.asInstanceOf[A])}}"""
-              warn(s"resp: ${json}")
               new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))
             case _ =>
               new ByteArrayInputStream(codec.toMsgPack(v.asInstanceOf[A]))
@@ -69,7 +70,6 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[Any] 
 
     try {
       if (GrpcEncoding.isJsonObjectMessage(bytes)) {
-        warn(s"--- here: ${new String(bytes)}")
         // Parse {"response": ....}
         ValueCodec.fromJson(bytes) match {
           case m: MapValue =>
