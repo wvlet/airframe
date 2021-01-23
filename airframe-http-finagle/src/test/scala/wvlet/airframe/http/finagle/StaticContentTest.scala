@@ -95,6 +95,7 @@ class StaticContentTest extends AirSpec {
 
     check("/html/index.html", "text/html")
     check("/html/asset/style.css", "text/css")
+    check("/html/asset/bootstrap.min.css", "text/css")
     check("/html/data/sample.json", "application/json")
     check("/html/asset/test.js", "application/javascript")
     check("/html/asset/airframe_icon_small.png", "image/png")
