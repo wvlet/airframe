@@ -267,7 +267,6 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
             trace(s"OpenAPI schema generator option:\n${optJson}")
             IO.write(optFile, optJson)
 
-            // Build command line manually because scala.sys.process cannot parse quoted strings
             val cmd = s"${binDir}/bin/${generatorName} openapiFromJson ${opts} ${optFile}"
             debug(cmd)
             Process(cmd).!!
