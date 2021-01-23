@@ -69,7 +69,7 @@ object StaticContent extends LogSupport {
   private def findContentType(filePath: String): String = {
     val leaf = filePath.split("/").lastOption.getOrElse("")
     val ext = {
-      val pos = leaf.indexOf(".")
+      val pos = leaf.lastIndexOf(".")
       if (pos > 0) {
         leaf.substring(pos + 1)
       } else {
