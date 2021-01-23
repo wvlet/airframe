@@ -106,10 +106,29 @@ object HttpCodeGenerator extends LogSupport {
 import wvlet.airframe.launcher._
 
 case class HttpCodeGeneratorOption(
-    classpath: Seq[String],
+    @option(prefix = "-cp", description = "application classpaths")
+    classpath: Seq[String] = Seq.empty,
+    @option(prefix = "-o", description = "output base directory")
     outDir: File,
+    @option(prefix = "-t", description = "target directory")
     targetDir: File,
-    targets: Seq[String]
+    @argument(description = "client code generation targets: (package):(type)(:(targetPackage))?")
+    targets: Seq[String] = Seq.empty
+)
+
+case class OpenAPIGeneratorOption(
+    @option(prefix = "-cp", description = "application classpaths")
+    classpath: Seq[String] = Seq.empty,
+    @option(prefix = "-o", description = "output file")
+    outFile: File,
+    @option(prefix = "-f", description = "format type: yaml (default) or json")
+    formatType: String = "YAML",
+    @option(prefix = "--title", description = "openapi.title")
+    title: String,
+    @option(prefix = "--version", description = "openapi.version")
+    version: String,
+    @argument(description = "Target Airframe HTTP/RPC package name")
+    packageNames: Seq[String]
 )
 
 class HttpCodeGenerator(
@@ -140,47 +159,33 @@ class HttpCodeGenerator(
     router
   }
 
-  @command(description = "Generate HTTP client code by reading a JSON")
+  @command(description = "Generate HTTP client code using a JSON configuration file")
   def generateFromJson(
       @argument(description = "HttpCodeGeneratorOption in JSON file")
       jsonFilePath: String
   ): Unit = {
     info(s"Reading JSON option file: ${jsonFilePath}")
     val option = MessageCodec.of[HttpCodeGeneratorOption].fromJson(IOUtil.readAsString(jsonFilePath))
-    generate(
-      classpath = option.classpath.mkString(":"),
-      outDir = option.outDir,
-      targetDir = option.targetDir,
-      targets = option.targets
-    )
+    generate(option)
   }
 
   @command(description = "Generate HTTP client codes")
-  def generate(
-      @option(prefix = "-cp", description = "semi-colon separated application classpaths")
-      classpath: String = "",
-      @option(prefix = "-o", description = "output base directory")
-      outDir: File,
-      @option(prefix = "-t", description = "target directory")
-      targetDir: File,
-      @argument(description = "client code generation targets: (package):(type)(:(targetPackage))?")
-      targets: Seq[String] = Seq.empty
-  ): Unit = {
+  def generate(option: HttpCodeGeneratorOption): Unit = {
     try {
-      val cl = newClassLoader(classpath)
-      val artifacts = for (x <- targets) yield {
+      val cl = newClassLoader(option.classpath.mkString(":"))
+      val artifacts = for (x <- option.targets) yield {
         val config = HttpClientGeneratorConfig(x)
         debug(config)
-        if (!targetDir.exists()) {
-          targetDir.mkdirs()
+        if (!option.targetDir.exists()) {
+          option.targetDir.mkdirs()
         }
         val path       = s"${config.targetPackageName.replaceAll("\\.", "/")}/${config.fileName}"
-        val outputFile = new File(outDir, path)
+        val outputFile = new File(option.outDir, path)
 
         val router         = buildRouter(Seq(config.apiPackageName), cl)
         val routerStr      = router.toString
         val routerHash     = routerStr.hashCode
-        val routerHashFile = new File(targetDir, f"router-${config.clientType.name}-${routerHash}%07x.update")
+        val routerHashFile = new File(option.targetDir, f"router-${config.clientType.name}-${routerHash}%07x.update")
         if (!outputFile.exists() || !routerHashFile.exists()) {
           info(f"Router for package ${config.apiPackageName}:\n${routerStr}")
           info(s"Generating a ${config.clientType.name} client code: ${path}")
@@ -200,28 +205,26 @@ class HttpCodeGenerator(
     }
   }
 
+  @command(description = "Generate OpenAPI spec using a JSON configuration file")
+  def openapiFromJson(
+      @argument(description = "HttpCodeGeneratorOpenAPIOption in JSON file")
+      jsonFilePath: String
+  ): Unit = {
+    val option = MessageCodec.of[OpenAPIGeneratorOption].fromJson(IOUtil.readAsString(jsonFilePath))
+    openapi(option)
+  }
+
   @command(description = "Generate OpenAPI spec")
   def openapi(
-      @option(prefix = "-cp", description = "semi-colon separated application classpaths")
-      classpath: String = "",
-      @option(prefix = "-o", description = "output file")
-      outFile: File,
-      @option(prefix = "-f", description = "format type: yaml (default) or json")
-      formatType: String = "YAML",
-      @option(prefix = "--title", description = "openapi.title")
-      title: String,
-      @option(prefix = "--version", description = "openapi.version")
-      version: String,
-      @argument(description = "Target Airframe HTTP/RPC package name")
-      packageNames: Seq[String]
+      option: OpenAPIGeneratorOption
   ): Unit = {
-    debug(s"classpath: ${classpath}")
-    val router = buildRouter(packageNames, newClassLoader(classpath))
+    trace(s"classpath: ${option.classpath.mkString(":")}")
+    val router = buildRouter(option.packageNames, newClassLoader(option.classpath.mkString(":")))
     debug(router)
-    val schema = HttpCodeGenerator.generateOpenAPI(router, formatType, title, version)
+    val schema = HttpCodeGenerator.generateOpenAPI(router, option.formatType, option.title, option.version)
     debug(schema)
-    info(s"Writing OpenAPI spec ${formatType} to ${outFile.getPath}")
-    writeFile(outFile, schema)
+    info(s"Writing OpenAPI spec ${option.formatType} to ${option.outFile.getPath}")
+    writeFile(option.outFile, schema)
   }
 
   private def touch(f: File): Unit = {
