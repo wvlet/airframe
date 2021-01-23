@@ -13,10 +13,9 @@
  */
 package wvlet.airframe.sbt.http
 
-import java.io.FileInputStream
+import java.io.{File, FileInputStream}
 import java.nio.file.Files
 import java.util.zip.GZIPInputStream
-
 import coursier.core.{Extension, Publication}
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.utils.IOUtils
@@ -25,6 +24,7 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.OS
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil.withResource
+
 import scala.sys.process._
 
 /**
@@ -42,6 +42,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   wvlet.airframe.log.init
 
   object autoImport extends Keys
+
   import autoImport._
 
   override def requires: Plugins = sbt.plugins.JvmPlugin
@@ -92,7 +93,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       airframeHttpClients := Seq.empty,
       airframeHttpClasspass := {
         // Compile all dependent projects
-        (compile in Compile).all(dependentProjects).value
+        val compileResults = (compile in Compile).all(dependentProjects).value
 
         val baseDir = (ThisBuild / baseDirectory).value
         val classpaths =
@@ -198,19 +199,26 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         )
         .value,
       airframeHttpGenerateClient := {
-        val targetDir: File = airframeHttpWorkDir.value
-        val cacheFile       = targetDir / cacheFileName
-        val binDir          = airframeHttpBinaryDir.value
-        val cp              = airframeHttpClasspass.value.mkString(":")
+        val targetDir = airframeHttpWorkDir.value
+        val baseDir   = targetDir.relativeTo(file(".")).getOrElse(targetDir)
+        val cacheFile = baseDir / cacheFileName
+        val binDir    = airframeHttpBinaryDir.value
         val opts =
           s"${airframeHttpOpts.value} ${airframeHttpGeneratorOption.value}"
+        val commandLineOpts = HttpCodeGeneratorOption(
+          classpath = airframeHttpClasspass.value,
+          outDir = (Compile / sourceManaged).value,
+          targetDir = targetDir,
+          targets = airframeHttpClients.value
+        )
 
         val result: Seq[File] = if (!cacheFile.exists) {
           debug(s"airframe-http directory: ${binDir}")
-          val outDir: String = (Compile / sourceManaged).value.getPath
-          val cmd =
-            s"${binDir}/bin/${generatorName} generate ${opts} -cp ${cp} -o ${outDir} -t ${targetDir.getPath} ${airframeHttpClients.value
-              .mkString(" ")}"
+          val commandLineOptsJson = MessageCodec.of[HttpCodeGeneratorOption].toJson(commandLineOpts)
+          trace(s"airframe-http code-generator option:\n${commandLineOptsJson}")
+          val optFile = baseDir / "gen-client-opts.json"
+          IO.write(optFile, commandLineOptsJson)
+          val cmd = s"${binDir}/bin/${generatorName} generateFromJson ${opts} ${optFile}"
           debug(cmd)
           val json: String = cmd.!!
           debug(s"client generator result: ${json}")
@@ -234,39 +242,34 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       airframeHttpOpenAPIGenerate := Def
         .task {
           val config             = airframeHttpOpenAPIConfig.value
+          val workDir            = airframeHttpWorkDir.value
+          val baseDir            = workDir.relativeTo(file(".")).getOrElse(workDir)
           val formatType: String = config.format
           val outFile: File      = airframeHttpOpenAPITargetDir.value / s"${config.filePrefix}.${formatType}"
           val binDir: File       = airframeHttpBinaryDir.value
-          val cp                 = airframeHttpClasspass.value.mkString(":")
+          val cp                 = airframeHttpClasspass.value
           val packages           = airframeHttpOpenAPIPackages.value
           val opts               = airframeHttpOpts.value
+
+          val cmdOpts = OpenAPIGeneratorOption(
+            classpath = cp,
+            outFile = outFile,
+            formatType = formatType,
+            title = config.title,
+            version = config.version,
+            packageNames = packages
+          )
+          val optFile = baseDir / "openapi-opts.json"
           if (packages.isEmpty) {
             Seq.empty
           } else {
-            // Build command line manually because scala.sys.process cannot parse quoted strings
-            val cmd = Seq.newBuilder[String]
-            cmd += s"${binDir}/bin/${generatorName}"
-            cmd += "openapi"
-            if (opts.nonEmpty) {
-              cmd ++= opts.split("\\s+")
-            }
-            cmd ++= Seq(
-              "-cp",
-              cp,
-              "-f",
-              formatType,
-              "-o",
-              outFile.getPath,
-              "--title",
-              config.title,
-              "--version",
-              config.version
-            )
-            cmd ++= packages
+            val optJson = MessageCodec.of[OpenAPIGeneratorOption].toJson(cmdOpts)
+            trace(s"OpenAPI schema generator option:\n${optJson}")
+            IO.write(optFile, optJson)
 
-            val cmdline = cmd.result()
-            debug(cmdline)
-            Process(cmdline).!!
+            val cmd = s"${binDir}/bin/${generatorName} openapiFromJson ${opts} ${optFile}"
+            debug(cmd)
+            Process(cmd).!!
             Seq(outFile)
           }
         }
@@ -289,5 +292,22 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
     }
     cmdName
   }
+
+  // Copied from airframe-http
+  case class HttpCodeGeneratorOption(
+      classpath: Seq[String],
+      outDir: File,
+      targetDir: File,
+      targets: Seq[String]
+  )
+  // Copied from airframe-http
+  case class OpenAPIGeneratorOption(
+      classpath: Seq[String] = Seq.empty,
+      outFile: File,
+      formatType: String = "YAML",
+      title: String,
+      version: String,
+      packageNames: Seq[String]
+  )
 
 }
