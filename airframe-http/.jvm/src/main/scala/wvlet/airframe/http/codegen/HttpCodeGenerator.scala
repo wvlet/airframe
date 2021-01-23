@@ -12,15 +12,16 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
+
 import java.io.{File, FileWriter}
 import java.net.URLClassLoader
-
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Control
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.client.{AsyncClientGenerator, HttpClientGenerator}
 import wvlet.airframe.http.openapi.OpenAPI
 import wvlet.airframe.launcher.Launcher
+import wvlet.log.io.IOUtil
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 case class HttpClientGeneratorConfig(
@@ -99,9 +100,17 @@ object HttpCodeGenerator extends LogSupport {
   }
 
   case class Artifacts(file: Seq[File])
+
 }
 
 import wvlet.airframe.launcher._
+
+case class HttpCodeGeneratorOption(
+    classpath: Seq[String],
+    outDir: File,
+    targetDir: File,
+    targets: Seq[String]
+)
 
 class HttpCodeGenerator(
     @option(prefix = "-h,--help", description = "show help message", isHelp = true)
@@ -129,6 +138,21 @@ class HttpCodeGenerator(
     info(s"Target API packages: ${apiPackageNames.mkString(", ")}")
     val router = RouteScanner.buildRouter(apiPackageNames, classLoader)
     router
+  }
+
+  @command(description = "Generate HTTP client code by reading a JSON")
+  def generateFromJson(
+      @argument(description = "HttpCodeGeneratorOption in JSON file")
+      jsonFilePath: String
+  ): Unit = {
+    info(s"Reading JSON option file: ${jsonFilePath}")
+    val option = MessageCodec.of[HttpCodeGeneratorOption].fromJson(IOUtil.readAsString(jsonFilePath))
+    generate(
+      classpath = option.classpath.mkString(":"),
+      outDir = option.outDir,
+      targetDir = option.targetDir,
+      targets = option.targets
+    )
   }
 
   @command(description = "Generate HTTP client codes")
