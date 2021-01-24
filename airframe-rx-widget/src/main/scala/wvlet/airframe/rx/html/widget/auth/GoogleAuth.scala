@@ -15,12 +15,12 @@ package wvlet.airframe.rx.html.widget.auth
 
 /**
   */
+
 import org.scalajs.dom
-import wvlet.airframe.rx.{Rx, RxOptionVar, RxVar}
-import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx._
 import wvlet.log.LogSupport
 
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.Promise
 import scala.scalajs.js
 import scala.scalajs.js.timers
 
@@ -39,63 +39,76 @@ case class GoogleAuthConfig(
     tokenRefreshIntervalMillis: Long = 45 * 60 * 1000
 )
 
-object GoogleAuth extends LogSupport {
-  val currentUser: RxOptionVar[GoogleAuthProfile] = Rx.optionVariable(None)
-  private[auth] val loading                       = Rx.variable(true)
+/**
+  */
+class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
 
   /**
-    * Initialize GoogleAPI Auth2, and return a Future, which will be set to true
+    * The information of the signed-in user
+    */
+  val currentUser: RxOptionVar[GoogleAuthProfile] = Rx.optionVariable(None)
+
+  /**
+    * True while initializing GoogleAuth
+    */
+  val isLoading = Rx.variable(true)
+
+  private val isInitialized = Promise[Boolean]()
+
+  /**
+    * Initialize GoogleAPI Auth2, and return an Rx, which will be set to true
     * after the initialization completed.
     */
-  def init(config: GoogleAuthConfig): Future[Boolean] = {
-    val isInitialized = Promise[Boolean]()
-    js.Dynamic.global.gapi.load(
-      "auth2",
-      () => {
-        val auth2 = js.Dynamic.global.gapi.auth2
-          .init(
-            js.Dynamic
-              .literal(
-                client_id = config.clientId,
-                fetch_basic_profile = true
-              )
-          )
+  def init: RxOption[Boolean] = {
+    if (!isInitialized.isCompleted) {
+      js.Dynamic.global.gapi.load(
+        "auth2",
+        () => {
+          val auth2 = js.Dynamic.global.gapi.auth2
+            .init(
+              js.Dynamic
+                .literal(
+                  client_id = config.clientId,
+                  fetch_basic_profile = true
+                )
+            )
 
-        auth2.isSignedIn.listen((isSignedIn: Boolean) => {
-          debug(s"isSignedIn: ${isSignedIn}")
-          if (isSignedIn) {
-            updateUser
-          } else {
-            GoogleAuth.currentUser := None
-          }
-        })
+          auth2.isSignedIn.listen((isSignedIn: Boolean) => {
+            debug(s"isSignedIn: ${isSignedIn}")
+            if (isSignedIn) {
+              updateUser
+            } else {
+              currentUser := None
+            }
+          })
 
-        auth2.`then`({ () =>
-          debug(s"gapi.auth2 is initialized")
-          // Show the login button
-          loading := false
-          isInitialized.success(true)
-        })
+          auth2.`then`({ () =>
+            debug(s"gapi.auth2 is initialized")
+            // Show the login button
+            isLoading := false
+            isInitialized.success(true)
+          })
+        }
+      )
+
+      // Refresh auth token
+      timers.setInterval(config.tokenRefreshIntervalMillis) {
+        refreshAuth
       }
-    )
-
-    // Refresh auth token
-    timers.setInterval(config.tokenRefreshIntervalMillis) {
-      refreshAuth
     }
-
-    isInitialized.future
+    import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+    Rx.fromFuture(isInitialized.future)
   }
 
-  private[auth] def signOut: Unit = {
+  def signOut: Unit = {
     val auth2 = js.Dynamic.global.gapi.auth2.getAuthInstance()
     auth2.signOut()
-    GoogleAuth.currentUser := None
+    currentUser := None
     debug(s"Signed out")
     dom.document.location.reload()
   }
 
-  private def refreshAuth: Unit = {
+  def refreshAuth: Unit = {
     debug(s"Refreshing oauth2 token")
     val user = js.Dynamic.global.gapi.auth2.getAuthInstance().currentUser.get()
     user.reloadAuthResponse().`then` { () =>
@@ -107,7 +120,7 @@ object GoogleAuth extends LogSupport {
     val googleUser = js.Dynamic.global.gapi.auth2.getAuthInstance().currentUser.get()
     val token      = googleUser.getAuthResponse().id_token
     val profile    = googleUser.getBasicProfile()
-    GoogleAuth.currentUser := Some(
+    currentUser := Some(
       GoogleAuthProfile(
         name = s"${profile.getName()}",
         email = s"${profile.getEmail()}",

@@ -23,10 +23,12 @@ import wvlet.log.LogSupport
 
 /**
   */
-class GoogleAuthButton extends RxElement with LogSupport {
+class GoogleAuthButton(auth: GoogleAuth) extends RxElement with LogSupport {
+
+  auth.init
 
   override def render: RxElement = {
-    GoogleAuth.currentUser.transform {
+    auth.currentUser.transform {
       case Some(u) =>
         div(
           cls -> "dropdown",
@@ -58,7 +60,7 @@ class GoogleAuthButton extends RxElement with LogSupport {
                 href -> "#",
                 "Sign out",
                 onclick -> { e: MouseEvent =>
-                  GoogleAuth.signOut
+                  auth.signOut
                 }
               )
             )
@@ -68,7 +70,7 @@ class GoogleAuthButton extends RxElement with LogSupport {
         span(
           cls -> "g-signin2",
           // Hide this tag while initializing Google API
-          style -> GoogleAuth.loading.map { x =>
+          style -> auth.isLoading.map { x =>
             s"display: ${if (x) "none" else "inline"};"
           },
           data("theme") -> "dark"
