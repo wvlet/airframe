@@ -40,6 +40,10 @@ case class GoogleAuthConfig(
 )
 
 /**
+  * Add Google API https://github.com/google/google-api-javascript-client to use this component
+  * <code>
+  *    <script src="https://apis.google.com/js/api.js"></script>
+  * </code>
   */
 class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
 
