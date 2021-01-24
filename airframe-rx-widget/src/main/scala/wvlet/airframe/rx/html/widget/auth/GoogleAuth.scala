@@ -92,7 +92,7 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
       )
 
       // Refresh auth token
-      timers.setInterval(config.tokenRefreshIntervalMillis) {
+      timers.setInterval(config.tokenRefreshIntervalMillis.toDouble) {
         refreshAuth
       }
     }
