@@ -15,6 +15,7 @@ package wvlet.airframe.rx.html.widget.auth
 
 /**
   */
+
 import wvlet.airframe.rx._
 import wvlet.log.LogSupport
 
@@ -88,9 +89,13 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
           })
 
           auth2.`then`({ () =>
+            // Checking the sigh-in status here is necessary to properly wait
+            // authentication completion at the initial attempt. Without this,
+            // currentUser := None will be visible even though the user is already signed-in.
             val signedIn = isSignedIn
             debug(s"gapi.auth2 is initialized. signedIn: ${signedIn}")
-            // Show the login button
+
+            // Unblock the promise
             isInitialized.success(signedIn)
           })
         }
@@ -99,9 +104,16 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
       timers.setInterval(config.tokenRefreshIntervalMillis.toDouble) {
         refreshAuth
       }
+
+      import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+      Rx.fromFuture(isInitialized.future).transformOption {
+        case Some(isSignedIn) => currentUser.get
+        case None             => None
+      }
+    } else {
+      // Just return the current user if gauth2 is already initialized
+      currentUser
     }
-    import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-    Rx.fromFuture(isInitialized.future).flatMap(currentUser)
   }
 
   private def getAuthInstance: js.Dynamic = {
@@ -109,7 +121,7 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
   }
 
   def isSignedIn: Boolean = {
-    getAuthInstance.isSignedIn.get()
+    getAuthInstance.isSignedIn.get().asInstanceOf[Boolean]
   }
 
   def signIn: Unit = {
