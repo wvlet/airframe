@@ -106,7 +106,7 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
     Rx.fromFuture(isInitialized.future)
   }
 
-  private def getAuthInstance: Dynamic = {
+  private def getAuthInstance: js.Dynamic = {
     js.Dynamic.global.gapi.auth2.getAuthInstance()
   }
 
