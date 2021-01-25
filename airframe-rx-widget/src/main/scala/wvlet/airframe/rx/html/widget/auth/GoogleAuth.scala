@@ -63,18 +63,15 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
     */
   private val currentUser: RxOptionVar[GoogleAuthProfile] = Rx.optionVariable(None)
 
-  private val isInitialized = Promise[Boolean]()
+  private val initialSignInState = Promise[Boolean]()
+
+  def getCurrentUser: RxOption[GoogelAuthProfile] = currentUser
 
   /**
-    * Get the current signed-in user profile
-    */
-  def getCurrentUser: RxOption[GoogleAuthProfile] = currentUser
-
-  /**
-    * Initialize GoogleAPI Auth2 and return true if the initialization finished
+    * Initialize GoogleAPI Auth2 and return true if the user is already authenticated
     */
   def init: RxOption[Boolean] = {
-    if (!isInitialized.isCompleted) {
+    if (!initialSignInState.isCompleted) {
       js.Dynamic.global.gapi.load(
         "auth2",
         () => {
@@ -88,9 +85,8 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
             )
 
           auth2.isSignedIn.listen((isSignedIn: Boolean) => {
-            if (isSignedIn) {
-              updateUser
-            } else {
+            if (!isSignedIn) {
+              // If logged out somewhere, unset the current user
               currentUser := None
             }
           })
@@ -101,9 +97,12 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
             // currentUser := None will be visible even though the user is already signed-in.
             val signedIn = isSignedIn
             debug(s"gapi.auth2 is initialized. signedIn: ${signedIn}")
+            if (signedIn) {
+              updateUser
+            }
 
             // Unblock the promise
-            isInitialized.success(signedIn)
+            initialSignInState.success(signedIn)
           })
         }
       )
@@ -114,7 +113,7 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
     }
 
     import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-    Rx.fromFuture(isInitialized.future)
+    Rx.fromFuture(initialSignInState.future)
   }
 
   private def getAuthInstance: js.Dynamic = {
@@ -127,6 +126,7 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
 
   def signIn: Unit = {
     getAuthInstance.signIn()
+    updateUser
   }
 
   def signOut: Unit = {
@@ -144,16 +144,18 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
   }
 
   private def updateUser: Unit = {
+    currentUser := Some(readCurrentUser)
+  }
+
+  private def readCurrentUser: GoogleAuthProfile = {
     val googleUser = getAuthInstance.currentUser.get()
     val token      = googleUser.getAuthResponse().id_token
     val profile    = googleUser.getBasicProfile()
-    currentUser := Some(
-      GoogleAuthProfile(
-        name = s"${profile.getName()}",
-        email = s"${profile.getEmail()}",
-        imageUrl = s"${profile.getImageUrl()}",
-        id_token = token.toString
-      )
+    GoogleAuthProfile(
+      name = s"${profile.getName()}",
+      email = s"${profile.getEmail()}",
+      imageUrl = s"${profile.getImageUrl()}",
+      id_token = token.toString
     )
   }
 }
