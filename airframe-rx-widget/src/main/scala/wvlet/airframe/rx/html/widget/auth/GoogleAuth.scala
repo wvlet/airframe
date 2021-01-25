@@ -106,9 +106,9 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
       }
 
       import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-      Rx.fromFuture(isInitialized.future).transformOption {
-        case Some(isSignedIn) => currentUser.get
-        case None             => None
+      Rx.fromFuture(isInitialized.future).transformRxOption { initialState =>
+        // Return the RxVar so that the user can refresh the ui
+        currentUser
       }
     } else {
       // Just return the current user if gauth2 is already initialized
