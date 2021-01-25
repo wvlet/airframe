@@ -15,8 +15,6 @@ package wvlet.airframe.rx.html.widget.auth
 
 /**
   */
-
-import org.scalajs.dom
 import wvlet.airframe.rx._
 import wvlet.log.LogSupport
 
@@ -40,30 +38,34 @@ case class GoogleAuthConfig(
 )
 
 /**
-  * Add Google API https://github.com/google/google-api-javascript-client to use this component
-  * <code>
-  *    <script src="https://apis.google.com/js/platform.js"></script>
-  * </code>
+  * Load the Google API https://github.com/google/google-api-javascript-client to use this component:
+  *
+  * {{{
+  * <script src="https://apis.google.com/js/platform.js"></script>
+  * }}}
+  *
+  * Usage:
+  * {{{
+  * val auth = new GoogleAuth(GoogleAuthConfig(clientId = "......"))
+  * auth.getCurrentUser.transform {
+  *   case Some(user) => ...
+  *   case None => ...
+  * }
+  * }}}
   */
 class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
 
   /**
     * The information of the signed-in user
     */
-  val currentUser: RxOptionVar[GoogleAuthProfile] = Rx.optionVariable(None)
-
-  /**
-    * True while initializing GoogleAuth
-    */
-  val isLoading = Rx.variable(true)
+  private val currentUser: RxOptionVar[GoogleAuthProfile] = Rx.optionVariable(None)
 
   private val isInitialized = Promise[Boolean]()
 
   /**
-    * Initialize GoogleAPI Auth2, and return an Rx, which will be set to true
-    * after the initialization completed.
+    * Initialize GoogleAPI Auth2 and return the authenticated user profile if the user is already signed-in.
     */
-  def init: RxOption[Boolean] = {
+  def getCurrentUser: RxOption[GoogleAuthProfile] = {
     if (!isInitialized.isCompleted) {
       js.Dynamic.global.gapi.load(
         "auth2",
@@ -78,7 +80,6 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
             )
 
           auth2.isSignedIn.listen((isSignedIn: Boolean) => {
-            debug(s"isSignedIn: ${isSignedIn}")
             if (isSignedIn) {
               updateUser
             } else {
@@ -87,51 +88,50 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
           })
 
           auth2.`then`({ () =>
-            val ai       = getAuthInstance
-            val signedIn = ai.isSignedIn.get()
-            debug(s"gapi.auth2 is initialized: signedIn: ${signedIn}")
+            val signedIn = isSignedIn
+            debug(s"gapi.auth2 is initialized. signedIn: ${signedIn}")
             // Show the login button
-            isLoading := false
-            isInitialized.success(true)
+            isInitialized.success(signedIn)
           })
         }
       )
-
       // Refresh auth token
       timers.setInterval(config.tokenRefreshIntervalMillis.toDouble) {
         refreshAuth
       }
     }
     import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-    Rx.fromFuture(isInitialized.future)
+    Rx.fromFuture(isInitialized.future).flatMap(currentUser)
   }
 
   private def getAuthInstance: js.Dynamic = {
     js.Dynamic.global.gapi.auth2.getAuthInstance()
   }
 
+  def isSignedIn: Boolean = {
+    getAuthInstance.isSignedIn.get()
+  }
+
   def signIn: Unit = {
-    val auth2 = getAuthInstance
-    auth2.signIn()
+    getAuthInstance.signIn()
   }
 
   def signOut: Unit = {
-    val auth2 = getAuthInstance
-    auth2.signOut()
+    getAuthInstance.signOut
     currentUser := None
     debug(s"Signed out")
   }
 
   def refreshAuth: Unit = {
     debug(s"Refreshing oauth2 token")
-    val user = js.Dynamic.global.gapi.auth2.getAuthInstance().currentUser.get()
+    val user = getAuthInstance.currentUser.get()
     user.reloadAuthResponse().`then` { () =>
       updateUser
     }
   }
 
   private def updateUser: Unit = {
-    val googleUser = js.Dynamic.global.gapi.auth2.getAuthInstance().currentUser.get()
+    val googleUser = getAuthInstance.currentUser.get()
     val token      = googleUser.getAuthResponse().id_token
     val profile    = googleUser.getBasicProfile()
     currentUser := Some(
