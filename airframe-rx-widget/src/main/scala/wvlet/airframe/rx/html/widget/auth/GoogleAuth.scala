@@ -42,7 +42,7 @@ case class GoogleAuthConfig(
 /**
   * Add Google API https://github.com/google/google-api-javascript-client to use this component
   * <code>
-  *    <script src="https://apis.google.com/js/api.js"></script>
+  *    <script src="https://apis.google.com/js/platform.js"></script>
   * </code>
   */
 class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
@@ -87,7 +87,9 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
           })
 
           auth2.`then`({ () =>
-            debug(s"gapi.auth2 is initialized")
+            val ai       = getAuthInstance
+            val signedIn = ai.isSignedIn.get()
+            debug(s"gapi.auth2 is initialized: signedIn: ${signedIn}")
             // Show the login button
             isLoading := false
             isInitialized.success(true)
@@ -104,12 +106,20 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
     Rx.fromFuture(isInitialized.future)
   }
 
+  private def getAuthInstance: Dynamic = {
+    js.Dynamic.global.gapi.auth2.getAuthInstance()
+  }
+
+  def signIn: Unit = {
+    val auth2 = getAuthInstance
+    auth2.signIn()
+  }
+
   def signOut: Unit = {
-    val auth2 = js.Dynamic.global.gapi.auth2.getAuthInstance()
+    val auth2 = getAuthInstance
     auth2.signOut()
     currentUser := None
     debug(s"Signed out")
-    dom.document.location.reload()
   }
 
   def refreshAuth: Unit = {
