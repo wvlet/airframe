@@ -48,11 +48,14 @@ case class GoogleAuthConfig(
   * Usage:
   * {{{
   * val auth = new GoogleAuth(GoogleAuthConfig(clientId = "......"))
-  * auth.init.flatMap { initialized =>
-  *   auth.getCurrentUser.transform {
-  *     case Some(userProfile) => ...
-  *     case None => ...
-  *   }
+  * auth.init.transform {
+  *   case None =>
+  *     div("Loading ...")
+  *   case _ =>
+  *     auth.getCurrentUser.transform {
+  *       case Some(userProfile) => ...
+  *       case None => ...
+  *     }
   * }
   * }}}
   */
@@ -65,7 +68,7 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
 
   private val initialSignInState = Promise[Boolean]()
 
-  def getCurrentUser: RxOption[GoogelAuthProfile] = currentUser
+  def getCurrentUser: RxOption[GoogleAuthProfile] = currentUser
 
   /**
     * Initialize GoogleAPI Auth2 and return true if the user is already authenticated
