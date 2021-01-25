@@ -48,9 +48,11 @@ case class GoogleAuthConfig(
   * Usage:
   * {{{
   * val auth = new GoogleAuth(GoogleAuthConfig(clientId = "......"))
-  * auth.getCurrentUser.transform {
-  *   case Some(user) => ...
-  *   case None => ...
+  * auth.init.flatMap { initialized =>
+  *   auth.getCurrentUser.transform {
+  *     case Some(userProfile) => ...
+  *     case None => ...
+  *   }
   * }
   * }}}
   */
@@ -64,9 +66,14 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
   private val isInitialized = Promise[Boolean]()
 
   /**
-    * Initialize GoogleAPI Auth2 and return the authenticated user profile if the user is already signed-in.
+    * Get the current signed-in user profile
     */
-  def getCurrentUser: RxOption[GoogleAuthProfile] = {
+  def getCurrentUser: RxOption[GoogleAuthProfile] = currentUser
+
+  /**
+    * Initialize GoogleAPI Auth2 and return true if the initialization finished
+    */
+  def init: RxOption[Boolean] = {
     if (!isInitialized.isCompleted) {
       js.Dynamic.global.gapi.load(
         "auth2",
@@ -104,16 +111,10 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
       timers.setInterval(config.tokenRefreshIntervalMillis.toDouble) {
         refreshAuth
       }
-
-      import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-      Rx.fromFuture(isInitialized.future).transformRxOption { initialState =>
-        // Return the RxVar so that the user can refresh the ui
-        currentUser
-      }
-    } else {
-      // Just return the current user if gauth2 is already initialized
-      currentUser
     }
+
+    import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+    Rx.fromFuture(isInitialized.future)
   }
 
   private def getAuthInstance: js.Dynamic = {
@@ -129,7 +130,7 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
   }
 
   def signOut: Unit = {
-    getAuthInstance.signOut
+    getAuthInstance.signOut()
     currentUser := None
     debug(s"Signed out")
   }
