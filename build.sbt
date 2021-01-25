@@ -206,7 +206,7 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   rxJS,
   httpJS,
   rxHtmlJS,
-  widgetJS,
+  widget,
   airspecJS
 )
 
@@ -878,23 +878,19 @@ lazy val rxHtmlJVM = rxHtml.jvm
 lazy val rxHtmlJS  = rxHtml.js
 
 lazy val widget =
-  crossProject(JSPlatform)
-    .crossType(CrossType.Pure)
+  project
+    .enablePlugins(ScalaJSPlugin)
     .in(file("airframe-rx-widget"))
     //    .enablePlugins(ScalaJSBundlerPlugin)
     .settings(buildSettings)
     .settings(
-      name := "airframe-rx-widget",
-      description := "Reactive Widget library for Scala.js"
-    )
-    .jsSettings(
       jsBuildSettings,
+      name := "airframe-rx-widget",
+      description := "Reactive Widget library for Scala.js",
       jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
       //      npmDependencies in Test += "node" -> "12.14.1"
     )
-    .dependsOn(log, rxHtml)
-
-lazy val widgetJS = widget.js
+    .dependsOn(logJS, rxHtmlJS)
 
 lazy val examples =
   project
