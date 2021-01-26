@@ -12,14 +12,15 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.html.widget.ui.bootstrap
+
 import wvlet.airframe.rx.html.{RxElement, tags}
 import wvlet.airframe.rx.html.all._
-import wvlet.airframe.rx.html.widget.ui.Layout.divOf
 
 /**
   * Twitter Bootstrap extensions
   */
 package object bootstrap {
+
   implicit class RichRxComponent(val x: RxElement) extends AnyVal {
     def withBorder        = x(_class += "border")
     def withRoundedCorner = x(_class += "rounded")
@@ -42,6 +43,8 @@ package object bootstrap {
 
     def screenReadersOnly = x(_class += "sr-only")
   }
+
+  private def divOf(name: String) = div(cls -> name)
 
   def row: RxElement   = divOf("row")
   def col: RxElement   = divOf("col")

@@ -17,7 +17,6 @@ import org.scalajs.dom
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html.all._
 import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxComponent, RxElement}
-import wvlet.airframe.rx.html.widget.ui.Layout
 import wvlet.airframe.rx.html.widget.ui.bootstrap._
 import wvlet.airspec._
 
@@ -43,9 +42,9 @@ class RxWidgetTest extends AirSpec {
   }
 
   test("render nested components") {
-    val elem = Layout.of(
+    val elem = div(
       div(
-        Button.primary("click me")
+        div(cls -> "btn btn-primary", "click me")
       )
     )
     val html = render(elem)
