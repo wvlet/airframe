@@ -19,7 +19,7 @@ MONACO_D_TS="$TS_IMPORTER_DIR/monaco.d.ts"
 MONACO_SCALA="$ROOT_DIR/${PROJECT_DIR}/src/main/scala/${TARGET_PACKAGE_DIR}/Monaco.scala"
 
 if [[ ! -e "$NPM_MONACO_D_TS" ]]; then
-  (cd "$ROOT_DIR" && sbt -batch clean js/compile:npmUpdate)
+  (cd "$ROOT_DIR" && sbt -batch clean widgetJS/compile:npmUpdate)
 fi
 
 SCALAJS_TS_IMPORTER=https://github.com/sjrd/scala-js-ts-importer.git
