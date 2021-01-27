@@ -98,22 +98,26 @@ class ScalaStandardCodecTest extends CodecSpec {
     either.isLeft shouldBe true
     either.isRight shouldBe false
 
-    val ex = either.left.get
-    ex.getClass shouldBe classOf[GenericException]
-    val ge = ex.asInstanceOf[GenericException]
-    ge.message shouldBe "test exception"
-    ge.exceptionClass shouldBe "java.lang.IllegalArgumentException"
-    ge.cause shouldBe None
+    either match {
+      case Right(_) =>
+        fail("Cannot reach here")
+      case Left(ex) =>
+        ex.getClass shouldBe classOf[GenericException]
+        val ge = ex.asInstanceOf[GenericException]
+        ge.message shouldBe "test exception"
+        ge.exceptionClass shouldBe "java.lang.IllegalArgumentException"
+        ge.cause shouldBe None
 
-    // Should generate standard Java stack traces
-    val stackTrace = ge.getStackTrace
-    val errorLoc   = stackTrace.find(x => x.getClassName.contains("ScalaStandardCodecTest"))
-    errorLoc match {
-      case Some(x) =>
-        x.getMethodName.contains("Left") shouldBe true
-      case _ =>
-        warn(stackTrace.mkString("\n"))
-        fail("should not reach here")
+        // Should generate standard Java stack traces
+        val stackTrace = ge.getStackTrace
+        val errorLoc   = stackTrace.find(x => x.getClassName.contains("ScalaStandardCodecTest"))
+        errorLoc match {
+          case Some(x) =>
+            x.getMethodName.contains("Left") shouldBe true
+          case _ =>
+            warn(stackTrace.mkString("\n"))
+            fail("should not reach here")
+        }
     }
   }
 
@@ -141,13 +145,17 @@ class ScalaStandardCodecTest extends CodecSpec {
     val json = codec.toJson(et)
     debug(json)
 
-    val ex = either.left.get
-    ex.getCause match {
-      case g @ GenericException("java.lang.NullPointerException", "NPE", stackTrace, None) =>
-        // ok
-        debug(g)
+    either match {
+      case Left(ex) =>
+        ex.getCause match {
+          case g @ GenericException("java.lang.NullPointerException", "NPE", stackTrace, None) =>
+            // ok
+            debug(g)
+          case _ =>
+            fail("cannot reach here")
+        }
       case _ =>
-        fail("cannot reach here")
+        fail("Cannot reach here")
     }
   }
 

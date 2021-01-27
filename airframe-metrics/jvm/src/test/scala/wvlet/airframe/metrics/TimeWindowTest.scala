@@ -29,11 +29,11 @@ class TimeWindowTest extends AirSpec {
 
   val defaultTimeZone = TimeZone.getDefault
 
-  override protected def beforeAll(): Unit = {
+  override protected def beforeAll: Unit = {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
   }
 
-  override protected def afterAll(): Unit = {
+  override protected def afterAll: Unit = {
     TimeZone.setDefault(defaultTimeZone)
   }
 

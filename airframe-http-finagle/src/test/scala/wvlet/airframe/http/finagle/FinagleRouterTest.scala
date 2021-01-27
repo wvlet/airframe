@@ -171,14 +171,14 @@ class FinagleRouterTest extends AirSpec {
       Await.result(client.send(Request("/v1/future")).map { response => response.contentString }) shouldBe "hello"
     }
 
-    def `support JSON response` = {
+    def `support JSON response`: Unit = {
       // JSON response
       val json = Await.result(client.send(Request("/v1/rich_info_future")).map { response => response.contentString })
 
       json shouldBe """{"version":"0.1","name":"MyApi","details":{"serverType":"test-server"}}"""
     }
 
-    def `support JSON POST request` {
+    def `support JSON POST request`: Unit = {
       val request = Request("/v1/json_api")
       request.method = Method.Post
       request.contentString = """{"id":10, "name":"leo"}"""
@@ -186,7 +186,7 @@ class FinagleRouterTest extends AirSpec {
       ret shouldBe """RichRequest(10,leo)"""
     }
 
-    def `return a response header except for Content-Type` {
+    def `return a response header except for Content-Type`: Unit = {
       val request = Request("/v1/http_header_test")
       val ret     = Await.result(client.send(request))
 
@@ -194,7 +194,7 @@ class FinagleRouterTest extends AirSpec {
       ret.contentString shouldBe """Hello"""
     }
 
-    def `JSON POST request with explicit JSON content type` {
+    def `JSON POST request with explicit JSON content type`: Unit = {
       val request = Request("/v1/json_api")
       request.method = Method.Post
       request.contentString = """{"id":10, "name":"leo"}"""
@@ -203,7 +203,7 @@ class FinagleRouterTest extends AirSpec {
       ret shouldBe """RichRequest(10,leo)"""
     }
 
-    def `test parameter mappings` {
+    def `test parameter mappings`: Unit = {
       // Use the default argument
       {
         val request = Request("/v1/json_api_default")
@@ -230,7 +230,7 @@ class FinagleRouterTest extends AirSpec {
       }
     }
 
-    def `test error response` = {
+    def `test error response`: Unit = {
       warn("Exception response test")
       val l  = Logger.of[FinagleServer]
       val lv = l.getLogLevel
@@ -244,7 +244,7 @@ class FinagleRouterTest extends AirSpec {
       }
     }
 
-    def `MsgPack response` = {
+    def `MsgPack response`: Unit = {
       // MessagePack request
       {
         val request = Request("/v1/json_api")
@@ -269,7 +269,7 @@ class FinagleRouterTest extends AirSpec {
       }
     }
 
-    def `Raw string request` {
+    def `Raw string request`: Unit = {
       // Raw string arg
       val request = Request("/v1/raw_string_arg")
       request.method = Method.Post
@@ -277,7 +277,7 @@ class FinagleRouterTest extends AirSpec {
       Await.result(client.send(request).map(_.contentString)) shouldBe "1.0"
     }
 
-    def `Finagle Reader[Buf] response` {
+    def `Finagle Reader[Buf] response`: Unit = {
       val request = Request("/v1/reader")
       request.method = Method.Get
       val json  = Await.result(client.send(request).map(_.contentString))
@@ -318,7 +318,7 @@ class FinagleRouterTest extends AirSpec {
       }
     }
 
-    def `return 204 for Unit response` = {
+    def `return 204 for Unit response`: Unit = {
       val result = Await.result(client.send(Request(Method.Delete, "/v1/delete")))
       result.statusCode shouldBe HttpStatus.NoContent_204.code
     }

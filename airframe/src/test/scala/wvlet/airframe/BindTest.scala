@@ -21,7 +21,7 @@ object BindTest {
   }
 
   trait Bind {
-    val x = bind[X] { new X }.onShutdown { _.close }
+    val x = bind[X] { new X }.onShutdown { _.close() }
   }
 }
 

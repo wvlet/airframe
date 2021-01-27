@@ -19,7 +19,7 @@ import wvlet.airspec.AirSpec
   */
 class RPCClientGeneratorTest extends AirSpec {
   test("avoid duplicate route entries") {
-    val router = RouteScanner.buildRouter(Array(classOf[RPCTestService]))
+    val router = RouteScanner.buildRouter(Seq(classOf[RPCTestService]))
     val r      = router.toString
     r.contains("/example.rpc.RPCTestService/addUser") shouldBe true
     r.contains("addUser(request:CreateUserRequest): User") shouldBe true

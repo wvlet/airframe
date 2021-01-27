@@ -205,11 +205,11 @@ object RxTest extends AirSpec {
     val r = Seq.newBuilder[(Int, String)]
     a.zip(b).run(r += _)
 
-    r.result shouldBe Seq((1, "a"), (2, "b"))
+    r.result() shouldBe Seq((1, "a"), (2, "b"))
 
     val r2 = Seq.newBuilder[(String, Int)]
     b.zip(a).run(r2 += _)
-    r2.result shouldBe Seq(("a", 1), ("b", 2))
+    r2.result() shouldBe Seq(("a", 1), ("b", 2))
   }
 
   test("zip3") {
@@ -425,7 +425,7 @@ object RxTest extends AirSpec {
           t.run { x =>
             b += x
           }
-          b.result shouldBe expected
+          b.result() shouldBe expected
         }
       }
     }
