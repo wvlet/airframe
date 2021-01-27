@@ -62,7 +62,7 @@ val DOTTY = sys.env.isDefinedAt("DOTTY")
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := {
   if (DOTTY) SCALA_3_0
-  else SCALA_2_12
+  else SCALA_2_13
 }
 organization in ThisBuild := "org.wvlet.airframe"
 

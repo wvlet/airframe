@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong, AtomicReference}
 import wvlet.log.LogSupport
 
 import scala.reflect.ClassTag
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.control.{ControlThrowable, NonFatal}
 
 /**
