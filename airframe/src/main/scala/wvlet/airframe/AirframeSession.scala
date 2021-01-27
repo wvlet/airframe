@@ -87,7 +87,7 @@ private[airframe] class AirframeSession(
 
     // Add user-defined bindings
     design.binding.foreach(x => b += (x.from -> x))
-    b.result.toMap[Surface, Binding]
+    b.result().toMap[Surface, Binding]
   }
 
   private[airframe] def getSingletonOf(t: Surface): Option[Any] = {
@@ -339,6 +339,8 @@ private[airframe] class AirframeSession(
                 } else {
                   registerInjectee(p.from, p.from, buildWithProvider)
                 }
+              case other =>
+                throw new IllegalStateException(s"Unexpected binding: ${other}")
             }
           Some(result)
       }

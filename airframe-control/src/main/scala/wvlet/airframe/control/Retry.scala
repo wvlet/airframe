@@ -282,7 +282,7 @@ object Retry extends LogSupport {
             retryContext = retryContext.withExtraWait(extraWait).nextRetry(cause)
             // Wait until the next retry
             Compat.sleep(retryContext.nextWaitMillis)
-          case ResultClass.Failed(isRetryable, cause, _) if !isRetryable =>
+          case ResultClass.Failed(_, cause, _) =>
             // Non-retryable error. Exit the loop by throwing the exception
             throw cause
         }

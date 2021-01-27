@@ -70,7 +70,7 @@ object ClassScanner extends LogSupport {
           }
         case f: File if f.getPath.endsWith(".class") =>
           val className = f.getPath
-            .stripSuffix(".class").replaceAllLiterally(baseDir.getPath, "").replaceFirst("\\/", "")
+            .stripSuffix(".class").replace(baseDir.getPath, "").replaceFirst("\\/", "")
             .replaceAll("\\/", ".")
 
           classes += className

@@ -195,7 +195,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
         b += ConfigChange(c.tpe, k, defaultValue.v, current.v)
       }
     }
-    b.result
+    b.result()
   }
 
   private def find[A](tpe: Surface): Option[Any] = {

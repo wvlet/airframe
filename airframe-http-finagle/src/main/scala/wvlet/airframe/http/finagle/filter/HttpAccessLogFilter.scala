@@ -182,7 +182,7 @@ object HttpAccessLogFilter {
     m += "remote_host" -> request.remoteAddress.getHostAddress
     m += "remote_port" -> request.remotePort
 
-    m.result
+    m.result()
   }
 
   def requestHeaderLogger(request: Request): Map[String, Any] = headerLogger(request.headerMap, None)
@@ -206,7 +206,7 @@ object HttpAccessLogFilter {
     } else {
       m += "response_size" -> response.content.length
     }
-    m.result
+    m.result()
   }
 
   def responseHeaderLogger(response: Response) = headerLogger(response.headerMap, Some("response_"))

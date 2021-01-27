@@ -93,7 +93,7 @@ object PropertiesConfig extends LogSupport {
         val p   = ConfigProperty(key, v)
         b += p
       }
-      b.result
+      b.result()
     }
 
     val unusedProperties = Seq.newBuilder[ConfigProperty]
@@ -121,7 +121,7 @@ object PropertiesConfig extends LogSupport {
       tpe -> ConfigHolder(tpe, configBuilder.build)
     }
 
-    val unused = unusedProperties.result
+    val unused = unusedProperties.result()
     if (unused.size > 0) {
       val unusedProps = new Properties
       unused.map(p => unusedProps.put(p.key.toString, p.v.asInstanceOf[AnyRef]))

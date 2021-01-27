@@ -89,7 +89,7 @@ object RouteMatcher extends LogSupport {
       // Traverse the path components and transit the DFA state
       while (toContinue && pathIndex < pc.length) {
 
-        def loop(token: String) {
+        def loop(token: String): Unit = {
           pathIndex += 1
           dfa.nextNode(currentState, token) match {
             case Some(NextNode(actions, nextStateId)) =>

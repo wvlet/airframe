@@ -26,8 +26,8 @@ import scala.jdk.CollectionConverters._
   * Launch UNIX (or cygwin) commands from Scala
   */
 object Shell extends LogSupport {
-  private def withAccessTo[U](f: Field)(body: => U): U = {
-    val a = f.isAccessible
+  private def withAccessTo[U](f: Field, obj: Any)(body: => U): U = {
+    val a = f.canAccess(obj)
     try {
       if (!a)
         f.setAccessible(true)
@@ -62,7 +62,7 @@ object Shell extends LogSupport {
 
     // retrieve child processes
     val pb = prepareProcessBuilder(s"ps -o pid -p $pid | sed 1d", inheritIO = true)
-    for (line <- Process(pb).lineStream_!) {
+    for (line <- Process(pb).lineStream) {
       val childPID = line.trim.toInt
       killTree(childPID, signal)
     }
@@ -84,7 +84,7 @@ object Shell extends LogSupport {
       cursor = m.end
     }
     b append s.substring(cursor)
-    b.result
+    b.result()
   }
 
   def unescape(s: String): String = {
@@ -97,7 +97,7 @@ object Shell extends LogSupport {
       cursor = m.end
     }
     b append s.substring(cursor)
-    b.result
+    b.result()
   }
 
   /**
@@ -132,7 +132,7 @@ object Shell extends LogSupport {
       // If the current OS is *Nix, the class of p is UNIXProcess and its pid can be obtained
       // from pid field by using reflection.
       val f = p.getClass().getDeclaredField("pid")
-      val pid: Int = withAccessTo(f) {
+      val pid: Int = withAccessTo(f, p) {
         f.get(p).asInstanceOf[Int]
       }
       pid
@@ -206,7 +206,7 @@ object Shell extends LogSupport {
   def launchCmdExe(cmdLine: String) = {
     val c = "%s /c \"%s\"".format(Shell.getCommand("cmd"), cmdLine)
     debug(s"exec command: $c")
-    Process(CommandLineTokenizer.tokenize(c), None, getEnv.toSeq: _*).run
+    Process(CommandLineTokenizer.tokenize(c), None, getEnv.toSeq: _*).run()
   }
 
   // command name -> path

@@ -465,9 +465,13 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     val json  = codec.toJson(Left(new NullPointerException("NPE")))
 
     val eitherCodec = MessageCodec.of[Either[GenericException, String]]
-    val ex          = eitherCodec.fromJson(json).left.get
-    ex.exceptionClass shouldBe "java.lang.NullPointerException"
-    ex.message shouldBe "NPE"
+    eitherCodec.fromJson(json) match {
+      case Left(ex) =>
+        ex.exceptionClass shouldBe "java.lang.NullPointerException"
+        ex.message shouldBe "NPE"
+      case _ =>
+        fail("cannot reach here")
+    }
   }
 
   def `pack Either (Right) in AnyCodec`: Unit = {
@@ -475,8 +479,12 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     val json  = codec.toJson(Right("hello Either"))
 
     val eitherCodec = MessageCodec.of[Either[GenericException, String]]
-    val msg         = eitherCodec.fromJson(json).right.get
-    msg shouldBe "hello Either"
+    eitherCodec.fromJson(json) match {
+      case Right(msg) =>
+        msg shouldBe "hello Either"
+      case _ =>
+        fail("cannot reach here")
+    }
   }
 
   case class BinaryData(data: Array[Byte])

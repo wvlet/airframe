@@ -83,7 +83,7 @@ object ClassOptionSchema extends LogSupport {
         argCount += nested.args.length
       }
     }
-    new ClassOptionSchema(surface, o.result.toSeq, a.result().toSeq.sortBy(x => x.argIndex))
+    new ClassOptionSchema(surface, o.result().toSeq, a.result().toSeq.sortBy(x => x.argIndex))
   }
 }
 

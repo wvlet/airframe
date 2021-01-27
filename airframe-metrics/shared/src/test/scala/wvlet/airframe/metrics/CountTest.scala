@@ -19,7 +19,7 @@ import wvlet.airspec.AirSpec
   */
 class CountTest extends AirSpec {
 
-  private def check(s: String, expected: Count, expectedString: String) {
+  private def check(s: String, expected: Count, expectedString: String): Unit = {
     val c = Count(s)
     debug(c)
     c shouldBe expected

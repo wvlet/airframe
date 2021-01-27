@@ -196,7 +196,7 @@ class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleS
     synchronized {
       if (server.isDefined) {
         info(s"Stopping ${finagleConfig.name} server at http://localhost:${port}")
-        server.map(x => Await.result(x.close))
+        server.map(x => Await.result(x.close()))
         server = None
       } else {
         None

@@ -45,7 +45,7 @@ object YamlReader extends LogSupport {
     for ((k, v) <- yaml) yield {
       map += k.toString -> bindMap[A](surface, v.asInstanceOf[ju.Map[AnyRef, AnyRef]].asScala.toMap)
     }
-    map.result
+    map.result()
   }
 
   def loadYaml(resourcePath: String): Map[AnyRef, AnyRef] = {

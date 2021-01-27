@@ -26,3 +26,5 @@ package wvlet.airframe.benchmark.http
 //    Future.successful(HelloReply(s"Hello ${request.name}!"))
 //  }
 //}
+
+object ScalaPBGreeter

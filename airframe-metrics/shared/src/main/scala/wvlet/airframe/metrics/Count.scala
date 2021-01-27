@@ -25,9 +25,6 @@ import scala.util.{Failure, Success, Try}
   * @param unit
   */
 case class Count(value: Long, unit: CountUnit) extends Comparable[Count] {
-  require(!value.isInfinity, s"Infinite count")
-  require(!value.isNaN, s"size is not a number")
-
   override def toString: String = {
     if (unit == Count.ONE) {
       f"${value}%,d"

@@ -314,7 +314,7 @@ object HttpClientIR extends LogSupport {
         httpClientCallInputs.foreach { x =>
           params += s""""${x.name}" -> ${x.name}"""
         }
-        clientCallParams += s"Map(${params.result.mkString(", ")})"
+        clientCallParams += s"Map(${params.result().mkString(", ")})"
         typeArgBuilder += Surface.of[Map[String, Any]]
       } else {
         // For complex request arguments, create a type-safe model class to wrap the request parameters.

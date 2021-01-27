@@ -49,14 +49,14 @@ object DI_12_ReusingService extends App {
   trait DBService {
     val db = bind[DB]
       .onStart(_.connect)
-      .onShutdown(_.close)
+      .onShutdown(_.close())
   }
 
   trait HttpClientService {
     // Binding will inject a singleton by default
     val httpClient = bind[HttpClient]
       .onStart(_.connect)
-      .onShutdown(_.close)
+      .onShutdown(_.close())
   }
 
   trait C1 extends DBService with HttpClientService {

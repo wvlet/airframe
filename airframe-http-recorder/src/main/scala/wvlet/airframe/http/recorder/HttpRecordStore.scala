@@ -45,7 +45,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     connectionPool.executeUpdate("create table if not exists recorder_info(format_version integer primary key)")
   }
 
-  protected def init {
+  protected def init: Unit = {
     // Support recorder version migration for persistent records
     createRecorderInfoTable
     val lastVersion: Option[Int] = connectionPool.executeQuery("select format_version from recorder_info limit 1") {

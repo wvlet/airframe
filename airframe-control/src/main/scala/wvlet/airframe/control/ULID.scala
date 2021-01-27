@@ -136,7 +136,7 @@ private[control] class ULIDGenerator(timeSource: () => Long, random: () => Doubl
         case TIMESTAMP_LENGTH => out
         case _ =>
           val mod = (time % ENCODING_LENGTH).toInt
-          run((time - mod) / ENCODING_LENGTH, ENCODING_CHARS(mod) + out, count + 1)
+          run((time - mod) / ENCODING_LENGTH, s"${ENCODING_CHARS(mod)}${out}", count + 1)
       }
     }
 
@@ -159,7 +159,7 @@ private[control] class ULIDGenerator(timeSource: () => Long, random: () => Doubl
             throw new IllegalArgumentException(s"random must not under 0.0 or over 1.0. random value = $rand")
           }
           val index = Math.floor((ENCODING_LENGTH - 1) * rand).toInt
-          run(ENCODING_CHARS(index) + out, count + 1)
+          run(s"${ENCODING_CHARS(index)}${out}", count + 1)
       }
     }
     run()

@@ -59,7 +59,7 @@ val DOTTY = sys.env.isDefinedAt("DOTTY")
 // For debugging
 // val DOTTY = true
 
-// For using Scala 2.12 in sbt
+// We MUST use Scala 2.12 for building sbt-airframe
 scalaVersion in ThisBuild := {
   if (DOTTY) SCALA_3_0
   else SCALA_2_12
