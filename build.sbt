@@ -206,7 +206,7 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   rxJS,
   httpJS,
   rxHtmlJS,
-  widget,
+  widgetJS,
   airspecJS
 )
 
@@ -877,17 +877,18 @@ lazy val rxHtml =
 lazy val rxHtmlJVM = rxHtml.jvm
 lazy val rxHtmlJS  = rxHtml.js
 
-lazy val widget =
+lazy val widgetJS =
   project
-    .enablePlugins(ScalaJSPlugin)
+    .enablePlugins(ScalaJSPlugin) //, ScalaJSBundlerPlugin)
     .in(file("airframe-rx-widget"))
-    //    .enablePlugins(ScalaJSBundlerPlugin)
     .settings(buildSettings)
     .settings(
-      jsBuildSettings,
       name := "airframe-rx-widget",
       description := "Reactive Widget library for Scala.js",
+      jsBuildSettings,
       jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
+      // npmDependencies in Compile += "monaco-editor" -> "0.21.3",
+      // useYarn := true
       //      npmDependencies in Test += "node" -> "12.14.1"
     )
     .dependsOn(logJS, rxHtmlJS)

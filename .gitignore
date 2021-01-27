@@ -36,3 +36,4 @@ website/i18n/*
 settings.json
 
 .bsp
+/airframe-rx-widget/yarn.lock
