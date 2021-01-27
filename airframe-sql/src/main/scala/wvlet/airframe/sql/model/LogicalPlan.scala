@@ -128,8 +128,8 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
         case l: LogicalPlan => l.traverseExpressions(rule)
         case Some(x)        => recursiveTraverse(x)
         case s: Seq[_]      => s.foreach(recursiveTraverse _)
-        case other: AnyRef  => Nil
-        case null           => Nil
+        case other: AnyRef  =>
+        case null           =>
       }
 
     productIterator.foreach(recursiveTraverse)

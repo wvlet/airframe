@@ -91,7 +91,7 @@ object AsyncClientGenerator extends HttpClientGenerator {
             lines += x.code()
           }
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): F[${m.returnType.fullTypeName}] = {"
-          lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
+          lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result().mkString(", ")})"
           lines += s"}"
           lines.result().mkString("\n")
         }
@@ -150,7 +150,7 @@ object SyncClientGenerator extends HttpClientGenerator {
             lines += x.code()
           }
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType.fullTypeName} = {"
-          lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
+          lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result().mkString(", ")})"
           lines += s"}"
           lines.result().mkString("\n")
         }
@@ -217,7 +217,7 @@ object ScalaJSClientGenerator extends HttpClientGenerator {
             lines += x.code()
           }
           lines += s"def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType.fullTypeName}] = {"
-          lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result.mkString(", ")})"
+          lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result().mkString(", ")})"
           lines += s"}"
           lines.result().mkString("\n")
         }

@@ -63,11 +63,11 @@ object ElapsedTime {
   private val PATTERN = Pattern.compile("^\\s*(\\d+(?:\\.\\d+)?)\\s*([a-zA-Z]+)\\s*$")
 
   def nanosSince(start: Long): ElapsedTime    = succinctNanos(System.nanoTime - start)
-  def succinctNanos(nanos: Long): ElapsedTime = succinctDuration(nanos, NANOSECONDS)
+  def succinctNanos(nanos: Long): ElapsedTime = succinctDuration(nanos.toDouble, NANOSECONDS)
   def succinctDuration(value: Double, unit: TimeUnit): ElapsedTime =
     ElapsedTime(value, unit).convertToMostSuccinctTimeUnit
   def succinctMillis(milliSeconds: Long): ElapsedTime =
-    ElapsedTime(milliSeconds, MILLISECONDS).convertToMostSuccinctTimeUnit
+    ElapsedTime(milliSeconds.toDouble, MILLISECONDS).convertToMostSuccinctTimeUnit
 
   def apply(elapsedTimeStr: String): ElapsedTime = parse(elapsedTimeStr)
 

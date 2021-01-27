@@ -108,9 +108,9 @@ object DataSize {
   val units             = List(BYTE, KILOBYTE, MEGABYTE, GIGABYTE, TERABYTE, PETABYTE)
   private val unitTable = units.map(x => x.unitString -> x).toMap[String, DataSizeUnit]
 
-  def succinct(bytes: Long): DataSize = DataSize(bytes, BYTE).mostSuccinctDataSize
+  def succinct(bytes: Long): DataSize = DataSize(bytes.toDouble, BYTE).mostSuccinctDataSize
 
-  def apply(bytes: Long): DataSize = DataSize(bytes, BYTE)
+  def apply(bytes: Long): DataSize = DataSize(bytes.toDouble, BYTE)
 
   def apply(dataSizeStr: String): DataSize = {
     dataSizePattern.findFirstMatchIn(dataSizeStr) match {

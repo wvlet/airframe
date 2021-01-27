@@ -234,7 +234,7 @@ class SimpleObjectBuilder(surface: Surface) extends ObjectBuilder with StandardB
       trace(s"set default parameter $p to $v")
       prop += p.name.canonicalName -> v
     }
-    val r = prop.result
+    val r = prop.result()
     trace(s"surface ${surface}. values to set: $r")
     r
   }

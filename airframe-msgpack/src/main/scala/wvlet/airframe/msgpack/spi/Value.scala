@@ -137,7 +137,7 @@ object Value {
     override def toJson = {
       val b = new StringBuilder
       appendJsonString(b, toRawString)
-      b.result
+      b.result()
     }
     protected def toRawString: String
   }
@@ -210,7 +210,7 @@ object Value {
     override def toJson: String = {
       val b = new StringBuilder
       appendJsonString(b, toRawString)
-      b.result
+      b.result()
     }
     def toRawString                   = v.toString
     override def valueType: ValueType = ValueType.EXTENSION // ValueType.TIMESTAMP

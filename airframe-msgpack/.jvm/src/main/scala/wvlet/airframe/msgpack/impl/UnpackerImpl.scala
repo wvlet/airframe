@@ -186,7 +186,7 @@ object UnpackerImpl {
       val f2 = MessageFormat.of(b.toByte)
       m += f1 -> f2
     }
-    m.result
+    m.result()
   }
 
   import org.msgpack.{value => v8}

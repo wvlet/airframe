@@ -53,9 +53,9 @@ object ReflectTypeUtil extends LogSupport {
     }
   }
 
-  private[reflect] def access[A <: jr.AccessibleObject, B](f: A)(body: => B): B = {
+  private[reflect] def access[A <: jr.AccessibleObject, B](f: A, obj: Any)(body: => B): B = {
     synchronized {
-      val accessible = f.isAccessible
+      val accessible = f.canAccess(obj)
       try {
         if (!accessible) {
           f.setAccessible(true)
@@ -70,7 +70,7 @@ object ReflectTypeUtil extends LogSupport {
   }
 
   def readField(obj: Any, f: jr.Field): Any = {
-    access(f) {
+    access(f, obj) {
       f.get(obj)
     }
   }

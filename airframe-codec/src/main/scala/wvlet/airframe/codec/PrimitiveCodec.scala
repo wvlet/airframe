@@ -370,8 +370,6 @@ object PrimitiveCodec {
             v.setBoolean(e.getBigInteger.doubleValue() != 0.0)
           case e: IllegalArgumentException =>
             v.setIncompatibleFormatException(this, e.getMessage)
-          case e: NumberFormatException =>
-            v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
 
@@ -412,8 +410,6 @@ object PrimitiveCodec {
             v.setFloat(e.getBigInteger.floatValue())
           case e: IllegalArgumentException =>
             v.setIncompatibleFormatException(this, e.getMessage)
-          case e: NumberFormatException =>
-            v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
       u.getNextFormat.getValueType match {
@@ -450,8 +446,6 @@ object PrimitiveCodec {
           case e: IntegerOverflowException =>
             v.setDouble(e.getBigInteger.doubleValue())
           case e: IllegalArgumentException =>
-            v.setIncompatibleFormatException(this, e.getMessage)
-          case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
         }
       }

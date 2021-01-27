@@ -68,8 +68,8 @@ sealed trait Expression extends TreeNode[Expression] with Product {
         case l: LogicalPlan => l.traverseExpressions(rule)
         case Some(x)        => recursiveTraverse(x)
         case s: Seq[_]      => s.foreach(recursiveTraverse _)
-        case other: AnyRef  => Nil
-        case null           => Nil
+        case other: AnyRef  =>
+        case null           =>
       }
 
     if (rule.isDefinedAt(this)) {

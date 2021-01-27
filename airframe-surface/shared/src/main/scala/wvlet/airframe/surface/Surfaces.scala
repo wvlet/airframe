@@ -133,7 +133,7 @@ object Primitive {
     b += classOf[Double]       -> Double
     b += classOf[jl.String]    -> String
     b += classOf[String]       -> String
-    b.result
+    b.result()
   }
 
   def apply(cl: Class[_]): PrimitiveSurface = primitiveTable(cl)

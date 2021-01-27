@@ -91,14 +91,14 @@ object JDBCCodec extends LogSupport {
     /**
       * Create an interator for reading ResultSet as a sequence of MsgPack Map values
       */
-    def mapMsgPackMapRows[U](f: Array[Byte] => U): IterableOnce[U] = {
+    def mapMsgPackMapRows[U](f: Array[Byte] => U): Iterator[U] = {
       new RStoMsgPackIterator[U](f, packer = packRowAsMap(_))
     }
 
     /**
       * Create an interator for reading ResultSet as a sequence of MsgPack array values
       */
-    def mapMsgPackArrayRows[U](f: Array[Byte] => U): IterableOnce[U] = {
+    def mapMsgPackArrayRows[U](f: Array[Byte] => U): Iterator[U] = {
       new RStoMsgPackIterator[U](f, packer = packRowAsArray(_))
     }
 

@@ -142,7 +142,7 @@ object HttpAccessLogWriter {
         m += "exception"         -> other
         m += "exception_message" -> other.getMessage
     }
-    m.result
+    m.result()
   }
 
   private[http] def rpcLog(rpcContext: RPCCallContext): ListMap[String, Any] = {

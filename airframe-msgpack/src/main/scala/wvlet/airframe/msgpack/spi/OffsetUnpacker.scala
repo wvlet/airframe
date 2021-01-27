@@ -149,7 +149,7 @@ object OffsetUnpacker {
           map += (key -> value)
           i += 1
         }
-        MapValue(map.result)
+        MapValue(map.result())
     }
   }
 
