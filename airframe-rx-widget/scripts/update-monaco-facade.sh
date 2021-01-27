@@ -11,8 +11,8 @@ set -x
 
 ROOT_DIR="$(git rev-parse --show-toplevel)"
 PROJECT_DIR=airframe-rx-widget
-TARGET_PACKAGE_DIR=wvlet/airframe/rx/widget/editor
-TS_IMPORTER_DIR="$ROOT_DIR/project/ts-importer"
+TARGET_PACKAGE_DIR=wvlet/airframe/rx/html/widget/editor
+TS_IMPORTER_DIR="$ROOT_DIR/${PROJECT_DIR}/target/project/ts-importer"
 NODE_MODULES_DIR="$ROOT_DIR/${PROJECT_DIR}/target/scala-2.12/scalajs-bundler/main/node_modules"
 NPM_MONACO_D_TS="$ROOT_DIR/${PROJECT_DIR}/target/scala-2.12/scalajs-bundler/main/node_modules/monaco-editor/monaco.d.ts"
 MONACO_D_TS="$TS_IMPORTER_DIR/monaco.d.ts"
@@ -39,8 +39,10 @@ sed \
    -e 's/Latest = ESNext,/Latest = 99,/' \
    -e '/findRenameLocations(fileName: string, /d' \
    -e 's/IEditorOption<EditorOption.\w+,/IEditorOption<Int,/' \
-   -e 's/Readonly<Required<\(.*\)>>/\1/ \
+   -e 's/Readonly<Required<\(.*\)>>/\1/' \
    < "$NPM_MONACO_D_TS" \
    > "$MONACO_D_TS"
 
 (cd "$TS_IMPORTER_DIR" && sbt -batch "run $MONACO_D_TS $MONACO_SCALA")
+
+
