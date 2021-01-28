@@ -119,7 +119,10 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
     Rx.fromFuture(initialSignInState.future)
   }
 
-  private def getAuthInstance: js.Dynamic = {
+  /**
+    * Get the current Google Auth2 instance
+    */
+  def getAuthInstance: js.Dynamic = {
     js.Dynamic.global.gapi.auth2.getAuthInstance()
   }
 
@@ -127,9 +130,19 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
     getAuthInstance.isSignedIn.get().asInstanceOf[Boolean]
   }
 
-  def signIn: Unit = {
-    getAuthInstance.signIn()
-    updateUser
+  /**
+    * @param uxMode "popup" or "redirect"
+    */
+  def signIn(uxMode: String = "popup"): Unit = {
+    val signInOptions = js.Dynamic.literal(
+      ux_mode = uxMode
+    )
+    getAuthInstance
+      .signIn(signInOptions).`then`({ () =>
+        if (isSignedIn) {
+          updateUser
+        }
+      })
   }
 
   def signOut: Unit = {
