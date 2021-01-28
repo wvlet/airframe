@@ -145,6 +145,9 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           val files =
             Fetch()
               .addDependencies(d)
+              .addRepositories(
+                Repositories.sonatype("snapshots")
+              )
               .allArtifactTypes() // This line is necessary to choose a specific publication (arch, tar.gz)
               .run()
 
