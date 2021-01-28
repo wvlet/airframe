@@ -129,11 +129,12 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
 
   /**
     *
-    * @param ux_mode "popup" or "redirect"
+    * @param uxMode "popup" or "redirect"
     */
-  def signIn(ux_mode:String = "popup"): Unit = {
-    val signInOptions = js.Dynamic.global.gapi.auth2.SignInOptionsBuilder()
-    signInOptions.setUxMode(ux_mode)
+  def signIn(uxMode:String = "popup"): Unit = {
+    val signInOptions = js.Dynamic.literal(
+      ux_mode = uxMode
+    )
     getAuthInstance.signIn(signInOptions).`then`({ () =>
       if(isSignedIn) {
         updateUser
