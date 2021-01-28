@@ -35,7 +35,7 @@ case class GoogleAuthProfile(
 case class GoogleAuthConfig(
     clientId: String,
     // Refresh OAuth token every 45 minutes
-    tokenRefreshIntervalMillis: Long = 45 * 60 * 1000
+    tokenRefreshIntervalMillis: Long = 45 * 60 * 1000,
 )
 
 /**
@@ -127,9 +127,18 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
     getAuthInstance.isSignedIn.get().asInstanceOf[Boolean]
   }
 
-  def signIn: Unit = {
-    getAuthInstance.signIn()
-    updateUser
+  /**
+    *
+    * @param ux_mode "popup" or "redirect"
+    */
+  def signIn(ux_mode:String = "popup"): Unit = {
+    val signInOptions = js.Dynamic.global.gapi.auth2.SignInOptionsBuilder()
+    signInOptions.setUxMode(ux_mode)
+    getAuthInstance.signIn(signInOptions).`then`({ () =>
+      if(isSignedIn) {
+        updateUser
+      }
+    })
   }
 
   def signOut: Unit = {
