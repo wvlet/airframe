@@ -6,6 +6,59 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.2.0
+
+### New Features
+
+Airframe 21.2.0 enhances support for gRPC with logging, multiple server factory, and JSON messaging. sbt-airframe has also been updated to support nested API package 
+strucutres so that you can build HTTP servers and clients for complex services. airframe-rx-widget added a support for Google Auth and rich text editor of Visual Studio Code (Monaco Editor)
+for Scala.js. Since this version, Scala.js 1.5.0 is required for JS projects. 
+
+- Update sbt-scalajs, scalajs-compiler, ... to 1.5.0 ([#1471](https://github.com/wvlet/airframe/issues/1471)) [[84cdbbab0](https://github.com/wvlet/airframe/commit/84cdbbab0)]
+- sbt-airframe: Support nested API packages for HTTP client generation ([#1429](https://github.com/wvlet/airframe/issues/1429)) [[07df5a405](https://github.com/wvlet/airframe/commit/07df5a405)]
+
+airframe-grpc:
+- airframe-http-grpc: Add gRPC logging ([#1444](https://github.com/wvlet/airframe/issues/1444)) [[7991d6ca0](https://github.com/wvlet/airframe/commit/7991d6ca0)]
+- airframe-http-grpc: Add GrpcServerFactory ([#1430](https://github.com/wvlet/airframe/issues/1430)) [[b1d1e4310](https://github.com/wvlet/airframe/commit/b1d1e4310)]
+- airframe-http-grpc: Support JSON request/response ([#1445](https://github.com/wvlet/airframe/issues/1445)) [[851487aec](https://github.com/wvlet/airframe/commit/851487aec)]
+
+airframe-http:
+- airframe-http: Add a standard filter for HttpMessage.Request/Response ([#1438](https://github.com/wvlet/airframe/issues/1438)) [[270341450](https://github.com/wvlet/airframe/commit/270341450)]
+- airframe-http: [#1354](https://github.com/wvlet/airframe/issues/1354) Fix missing slash in Http.client requests ([#1437](https://github.com/wvlet/airframe/issues/1437)) [[245d83000](https://github.com/wvlet/airframe/commit/245d83000)]
+- airframe-http: [#1355](https://github.com/wvlet/airframe/issues/1355) Add Http.clientFor(serverAddress) ([#1436](https://github.com/wvlet/airframe/issues/1436)) [[79d761bce](https://github.com/wvlet/airframe/commit/79d761bce)]
+- airframe-http: [#1135](https://github.com/wvlet/airframe/issues/1135) Support modifying retryContext ([#1435](https://github.com/wvlet/airframe/issues/1435)) [[8d9a77fca](https://github.com/wvlet/airframe/commit/8d9a77fca)]
+- airframe-http: Update finagle-core, finagle-http, ... to 21.2.0 ([#1470](https://github.com/wvlet/airframe/issues/1470)) [[b8acccdc2](https://github.com/wvlet/airframe/commit/b8acccdc2)]
+
+airframe-rx-widget:
+- airframe-rx-widget: Add Monaco editor facade ([#1459](https://github.com/wvlet/airframe/issues/1459)) [[ab458acbe](https://github.com/wvlet/airframe/commit/ab458acbe)]
+- airframe-rx-widget: Add Google Auth support ([#1450](https://github.com/wvlet/airframe/issues/1450)) [[68c65eb5f](https://github.com/wvlet/airframe/commit/68c65eb5f)]
+- airframe-rx-widget: Deprecated bootstrap specific modules ([#1454](https://github.com/wvlet/airframe/issues/1454)) [[dc4d159c7](https://github.com/wvlet/airframe/commit/dc4d159c7)]
+
+### Bug Fixes
+- airframe-di: [#586](https://github.com/wvlet/airframe/issues/586) Fixes constructor injection to use Singleton  ([#1439](https://github.com/wvlet/airframe/issues/1439)) [[b98fb9f9a](https://github.com/wvlet/airframe/commit/b98fb9f9a)]
+- sbt-airframe: [#1457](https://github.com/wvlet/airframe/issues/1457) Support downloading airframe-http from Sonatype snapshot repo ([#1462](https://github.com/wvlet/airframe/issues/1462)) [[c07bdc4a0](https://github.com/wvlet/airframe/commit/c07bdc4a0)]
+- sbt-airframe: Fixes [#1447](https://github.com/wvlet/airframe/issues/1447) Use JSON command line arguments ([#1449](https://github.com/wvlet/airframe/issues/1449)) [[6d4e059ec](https://github.com/wvlet/airframe/commit/6d4e059ec)]
+- sbt-airframe: Fix full type name resolution ([#1434](https://github.com/wvlet/airframe/issues/1434)) [[93c3a9f1c](https://github.com/wvlet/airframe/commit/93c3a9f1c)]
+- airframe-http: Fixes [#1446](https://github.com/wvlet/airframe/issues/1446). Resolve MIME type of file names with multiple dots ([#1448](https://github.com/wvlet/airframe/issues/1448)) [[9db4128ac](https://github.com/wvlet/airframe/commit/9db4128ac)]
+- airframe-rx-widget: Fix GAuth sign-in flow ([#1461](https://github.com/wvlet/airframe/issues/1461)) [[26d32baa6](https://github.com/wvlet/airframe/commit/26d32baa6)]
+
+### Other updates
+- internal: Fix the release script to support longer git hash values ([#1477](https://github.com/wvlet/airframe/issues/1477)) [[d8ee440ce](https://github.com/wvlet/airframe/commit/d8ee440ce)]
+- Update sbt-pgp to 2.1.2 ([#1476](https://github.com/wvlet/airframe/issues/1476)) [[35d7f62d3](https://github.com/wvlet/airframe/commit/35d7f62d3)]
+- Update coursier to 2.0.11 ([#1473](https://github.com/wvlet/airframe/issues/1473)) [[47ff2c9d4](https://github.com/wvlet/airframe/commit/47ff2c9d4)]
+- Update HikariCP to 4.0.2 ([#1474](https://github.com/wvlet/airframe/issues/1474)) [[cde6b16c1](https://github.com/wvlet/airframe/commit/cde6b16c1)]
+- Update fluency-core, fluency-fluentd, ... to 2.5.1 ([#1475](https://github.com/wvlet/airframe/issues/1475)) [[cfc65cd90](https://github.com/wvlet/airframe/commit/cfc65cd90)]
+- Update trino-main to 352 ([#1469](https://github.com/wvlet/airframe/issues/1469)) [[330f5e336](https://github.com/wvlet/airframe/commit/330f5e336)]
+- Update sbt-mdoc to 2.2.17 ([#1467](https://github.com/wvlet/airframe/issues/1467)) [[3997cfe10](https://github.com/wvlet/airframe/commit/3997cfe10)]
+- Update scala-collection-compat to 2.4.1 ([#1464](https://github.com/wvlet/airframe/issues/1464)) [[ef6028a90](https://github.com/wvlet/airframe/commit/ef6028a90)]
+- Update sbt, sbt-dependency-tree, ... to 1.4.7 ([#1465](https://github.com/wvlet/airframe/issues/1465)) [[0cf9ad8b5](https://github.com/wvlet/airframe/commit/0cf9ad8b5)]
+- internal: Fix Scala 2.13 related warnings ([#1460](https://github.com/wvlet/airframe/issues/1460)) [[a08011d16](https://github.com/wvlet/airframe/commit/a08011d16)]
+- internal: Update sbt-dotty to 0.5.2 ([#1455](https://github.com/wvlet/airframe/issues/1455)) [[f719e2014](https://github.com/wvlet/airframe/commit/f719e2014)]
+- internal: Update portable-scala-reflect to 1.1.0 ([#1453](https://github.com/wvlet/airframe/issues/1453)) [[758ed820a](https://github.com/wvlet/airframe/commit/758ed820a)]
+- internal: Update airspec to 21.1.1 ([#1428](https://github.com/wvlet/airframe/issues/1428)) [[f57345fad](https://github.com/wvlet/airframe/commit/f57345fad)]
+- internal: Upgrade codecov action to v1 ([#1432](https://github.com/wvlet/airframe/issues/1432)) [[65fdc9afb](https://github.com/wvlet/airframe/commit/65fdc9afb)]
+- internal: Remove cache from CI ([#1431](https://github.com/wvlet/airframe/issues/1431)) [[5e7b6a3bb](https://github.com/wvlet/airframe/commit/5e7b6a3bb)]
+
 ## 21.1.1
 
 This is a minor bug fix release of airframe-grpc for Scala 2.13
