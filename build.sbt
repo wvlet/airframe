@@ -113,7 +113,7 @@ val buildSettings = Seq[Setting[_]](
     if (DOTTY)
       Seq.empty
     else
-      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.4.1")
+      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.4.2")
   }
 )
 
