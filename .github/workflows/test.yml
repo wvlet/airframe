@@ -44,7 +44,7 @@ jobs:
         with:
           java-version: adopt@1.11
       - name: Scala 2.13 test
-        run: ./sbt ++2.13.4 projectJVM/test
+        run: ./sbt ++2.13.5 projectJVM/test
   test_3:
     name: Scala 3.x (Dotty)
     runs-on: ubuntu-latest
@@ -84,7 +84,7 @@ jobs:
       - name: Node.js setup
         run: npm install jsdom@16.4.0
       - name: Scala.js test
-        run: JVM_OPTS=-Xmx4g ./sbt ++2.13.4 "; projectJS/test"
+        run: JVM_OPTS=-Xmx4g ./sbt ++2.13.5 "; projectJS/test"
   test_sbt_plugin:
     name: sbt-airframe
     runs-on: ubuntu-latest
