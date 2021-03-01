@@ -19,7 +19,7 @@ val SCALAJS_DOM_VERSION             = "1.1.0"
 val FINAGLE_VERSION                 = "21.2.0"
 val FLUENCY_VERSION                 = "2.5.1"
 val GRPC_VERSION                    = "1.36.0"
-val JMH_VERSION                     = "1.27"
+val JMH_VERSION                     = "1.28"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 
 // A short cut for publishing snapshots to Sonatype
