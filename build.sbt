@@ -1,3 +1,4 @@
+import sbt.Keys.libraryDependencies
 import sbtcrossproject.{CrossType, crossProject}
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
@@ -293,6 +294,10 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
+def airframeDIDependencies = Seq(
+  "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION
+)
+
 lazy val airframe =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
@@ -301,14 +306,14 @@ lazy val airframe =
     .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe",
-      description := "Dependency injection library tailored to Scala"
+      description := "Dependency injection library tailored to Scala",
+      // For PreDestroy, PostConstruct annotations
+      libraryDependencies ++= airframeDIDependencies
     )
     .jvmSettings(
       // Workaround for https://github.com/scala/scala/pull/7624 in Scala 2.13, and also
       // testing shutdown hooks requires consistent application lifecycle between sbt and JVM https://github.com/sbt/sbt/issues/4794
-      fork in Test := scalaBinaryVersion.value == "2.13",
-      // For PreDestry, PostConstruct annotations
-      libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION
+      fork in Test := scalaBinaryVersion.value == "2.13"
     )
     .jsSettings(
       jsBuildSettings
@@ -1102,7 +1107,7 @@ lazy val airspecDeps =
     )
     .jvmSettings(
       airspecJVMBuildSettings,
-      libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION,
+      libraryDependencies ++= airframeDIDependencies,
       mappings in (Compile, packageBin) ++= mappings
         .in(airspecCoreJVM, Compile, packageBin)
         .value,
