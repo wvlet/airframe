@@ -1102,6 +1102,7 @@ lazy val airspecDeps =
     )
     .jvmSettings(
       airspecJVMBuildSettings,
+      libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION,
       mappings in (Compile, packageBin) ++= mappings
         .in(airspecCoreJVM, Compile, packageBin)
         .value,
