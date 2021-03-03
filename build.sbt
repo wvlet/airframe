@@ -306,7 +306,9 @@ lazy val airframe =
     .jvmSettings(
       // Workaround for https://github.com/scala/scala/pull/7624 in Scala 2.13, and also
       // testing shutdown hooks requires consistent application lifecycle between sbt and JVM https://github.com/sbt/sbt/issues/4794
-      fork in Test := scalaBinaryVersion.value == "2.13"
+      fork in Test := scalaBinaryVersion.value == "2.13",
+      // For PreDestry, PostConstruct annotations
+      libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION
     )
     .jsSettings(
       jsBuildSettings
@@ -378,20 +380,14 @@ lazy val airframeMacrosJS  = airframeMacros.js
 // // To use airframe in other airframe modules, we need to reference airframeMacros project
 // lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
 // lazy val airframeMacrosRef    = airframeMacros    % Optional
-
 val surfaceDependencies = { scalaVersion: String =>
   scalaVersion match {
     case s if s.startsWith("3.") =>
-      Seq(
-        // For ading PreDestroy, PostConstruct annotations to Java9
-        "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION
-      )
+      Seq()
     case _ =>
       Seq(
-        // For ading PreDestroy, PostConstruct annotations to Java9
-        "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION,
-        ("org.scala-lang"  % "scala-reflect"        % scalaVersion),
-        ("org.scala-lang"  % "scala-compiler"       % scalaVersion % Provided)
+        ("org.scala-lang" % "scala-reflect"  % scalaVersion),
+        ("org.scala-lang" % "scala-compiler" % scalaVersion % Provided)
       )
   }
 }
@@ -405,6 +401,10 @@ lazy val surface =
       name := "airframe-surface",
       description := "A library for extracting object structure surface",
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
+    )
+    .jvmSettings(
+      // For adding PreDestroy, PostConstruct annotations to Java9
+      libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION % Test
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log)
@@ -504,7 +504,6 @@ lazy val log: sbtcrossproject.CrossProject =
         if (isDotty.value) Seq("-source:3.0-migration")
         else Nil
       },
-      libraryDependencies ++= logDependencies(scalaVersion.value),
       crossScalaVersions := {
         if (DOTTY) withDotty
         else targetScalaVersions
@@ -522,7 +521,8 @@ lazy val log: sbtcrossproject.CrossProject =
           case _ =>
             Seq.empty
         }
-      }
+      },
+      libraryDependencies ++= logDependencies(scalaVersion.value)
     )
     .jvmSettings(
       libraryDependencies ++= logJVMDependencies,
