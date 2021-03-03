@@ -24,7 +24,7 @@ import wvlet.log.{LogLevel, LogSupport, Logger}
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 /**
-  */
+ */
 @JSExportTopLevel("Gallery")
 object Gallery extends LogSupport {
   @JSExport
