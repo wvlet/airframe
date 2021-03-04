@@ -1,3 +1,4 @@
+import sbt.Keys.libraryDependencies
 import sbtcrossproject.{CrossType, crossProject}
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
@@ -293,6 +294,10 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
+def airframeDIDependencies = Seq(
+  "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION
+)
+
 lazy val airframe =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
@@ -301,7 +306,9 @@ lazy val airframe =
     .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe",
-      description := "Dependency injection library tailored to Scala"
+      description := "Dependency injection library tailored to Scala",
+      // For PreDestroy, PostConstruct annotations
+      libraryDependencies ++= airframeDIDependencies
     )
     .jvmSettings(
       // Workaround for https://github.com/scala/scala/pull/7624 in Scala 2.13, and also
@@ -378,20 +385,14 @@ lazy val airframeMacrosJS  = airframeMacros.js
 // // To use airframe in other airframe modules, we need to reference airframeMacros project
 // lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
 // lazy val airframeMacrosRef    = airframeMacros    % Optional
-
 val surfaceDependencies = { scalaVersion: String =>
   scalaVersion match {
     case s if s.startsWith("3.") =>
-      Seq(
-        // For ading PreDestroy, PostConstruct annotations to Java9
-        "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION
-      )
+      Seq()
     case _ =>
       Seq(
-        // For ading PreDestroy, PostConstruct annotations to Java9
-        "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION,
-        ("org.scala-lang"  % "scala-reflect"        % scalaVersion),
-        ("org.scala-lang"  % "scala-compiler"       % scalaVersion % Provided)
+        ("org.scala-lang" % "scala-reflect"  % scalaVersion),
+        ("org.scala-lang" % "scala-compiler" % scalaVersion % Provided)
       )
   }
 }
@@ -405,6 +406,10 @@ lazy val surface =
       name := "airframe-surface",
       description := "A library for extracting object structure surface",
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
+    )
+    .jvmSettings(
+      // For adding PreDestroy, PostConstruct annotations to Java9
+      libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION % Test
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log)
@@ -504,7 +509,6 @@ lazy val log: sbtcrossproject.CrossProject =
         if (isDotty.value) Seq("-source:3.0-migration")
         else Nil
       },
-      libraryDependencies ++= logDependencies(scalaVersion.value),
       crossScalaVersions := {
         if (DOTTY) withDotty
         else targetScalaVersions
@@ -522,7 +526,8 @@ lazy val log: sbtcrossproject.CrossProject =
           case _ =>
             Seq.empty
         }
-      }
+      },
+      libraryDependencies ++= logDependencies(scalaVersion.value)
     )
     .jvmSettings(
       libraryDependencies ++= logJVMDependencies,
@@ -1102,6 +1107,7 @@ lazy val airspecDeps =
     )
     .jvmSettings(
       airspecJVMBuildSettings,
+      libraryDependencies ++= airframeDIDependencies,
       mappings in (Compile, packageBin) ++= mappings
         .in(airspecCoreJVM, Compile, packageBin)
         .value,
