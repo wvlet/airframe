@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
-import example.grpc.Greeter
+import example.grpc.{AliasTest, Greeter}
 import example.rpc.RPCExample
 import wvlet.airspec.AirSpec
 
@@ -36,4 +36,13 @@ class GrpcClientGeneratorTest extends AirSpec {
     debug(code)
   }
 
+  test("resolve alias types") {
+    val code = HttpCodeGenerator.generate(
+      RouteScanner.buildRouter(Seq(classOf[AliasTest])),
+      HttpClientGeneratorConfig("example.grpc:grpc")
+    )
+    debug(code)
+    code.contains("example.grpc.AliasTest.UserID") shouldBe true
+    code.contains("example.grpc.AliasTest.StatusCode") shouldBe true
+  }
 }
