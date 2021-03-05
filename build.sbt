@@ -1167,7 +1167,7 @@ lazy val airspec =
         .value,
       libraryDependencies ++= Seq(
         "org.scala-js"        %% "scalajs-test-interface" % scalaJSVersion,
-        "org.portable-scala" %%% "portable-scala-reflect" % "1.1.0"
+        "org.portable-scala" %%% "portable-scala-reflect" % "1.1.1"
       )
     )
     .dependsOn(airspecDeps % Provided) // Use Provided dependency for bloop, and remove it later with pomPostProcess
