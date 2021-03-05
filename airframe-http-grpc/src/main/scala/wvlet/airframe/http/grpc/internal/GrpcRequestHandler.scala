@@ -108,7 +108,14 @@ class GrpcRequestHandler(
             arg.getMethodArgDefaultValue(controller)
         }
         argOpt.getOrElse {
-          throw new IllegalArgumentException(s"No key for ${arg.name} is found in ${m}")
+          if (arg.surface.isOption) {
+            // If the argument is an option type, we can use None for the missing value
+            None
+          } else {
+            val msg = s"No key for ${arg.name} is found in ${m} for calling ${methodSurface}"
+            error(msg)
+            throw new IllegalArgumentException(msg)
+          }
         }
       }
       trace(s"RPC call ${methodSurface.name}(${args.mkString(", ")})")

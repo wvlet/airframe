@@ -54,6 +54,10 @@ trait DemoApi extends LogSupport {
   def helloBidiStreaming(input: RxStream[String]): RxStream[String] = {
     input.map(x => s"Hello ${x}!")
   }
+
+  def helloOpt(opt: Option[String]): String = {
+    s"Hello ${opt.getOrElse("unknown")}!"
+  }
 }
 
 object DemoApi {
@@ -94,6 +98,8 @@ object DemoApi {
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloClientStreaming"), codecFactory)
     private val helloBidiStreamingMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloBidiStreaming"), codecFactory)
+    private val helloOptMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloOpt"), codecFactory)
 
     def withEncoding(encoding: GrpcEncoding): DemoApiClient = {
       this.copy(encoding = encoding)
@@ -164,6 +170,12 @@ object DemoApi {
 
       val c = GrpcClientCalls.readClientRequestStream(input, codecFactory.of[String], requestObserver, encoding)
       responseObserver.toRx
+    }
+    def helloOpt(opt: Option[String]): String = {
+      val m = opt.map(x => Map("opt" -> opt)).getOrElse(Map.empty)
+      val resp = ClientCalls
+        .blockingUnaryCall(_channel, helloOptMethodDescriptor, getCallOptions, encode(m))
+      resp.asInstanceOf[String]
     }
   }
 

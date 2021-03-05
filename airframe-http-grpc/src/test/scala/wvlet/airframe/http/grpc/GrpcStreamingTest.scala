@@ -65,6 +65,11 @@ object GrpcStreamingTest extends AirSpec {
           result shouldBe Seq("Hello Apple!", "Hello Banana!")
         }
       }
+
+      test("opt arg") {
+        stub.helloOpt(Some("opt-arg")) shouldBe "Hello opt-arg!"
+        stub.helloOpt(None) shouldBe "Hello unknown!"
+      }
     }
   }
 }
