@@ -143,6 +143,15 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
       generateNestedStub(s)(serviceStub)
     }
 
+    def channelClose: String =
+      s"""override def close(): Unit = {
+         |  channel match {
+         |    case m: io.grpc.ManagedChannel =>
+         |      m.shutdownNow().awaitTermination(1, java.util.concurrent.TimeUnit.SECONDS)
+         |    case _ =>
+         |  }
+         |}""".stripMargin
+
     def syncClientClass: String =
       s"""def newSyncClient(
          |  channel: io.grpc.Channel,
@@ -160,12 +169,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
          |    new SyncClient(channel, callOptions, codecFactory)
          |  }
          |
-         |  override def close(): Unit = {
-         |    channel match {
-         |      case m: io.grpc.ManagedChannel => m.shutdownNow()
-         |      case _ =>
-         |    }
-         |  }
+         |${indent(channelClose)}
          |
          |${indent(syncClientStub)}
          |}
@@ -255,12 +259,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
          |    new AsyncClient(channel, callOptions, codecFactory)
          |  }
          |
-         |  override def close(): Unit = {
-         |    channel match {
-         |      case m: io.grpc.ManagedChannel => m.shutdownNow()
-         |      case _ =>
-         |    }
-         |  }
+         |${indent(channelClose)}
          |
          |${indent(asyncClientStub)}
          |}
