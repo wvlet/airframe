@@ -15,6 +15,7 @@ package wvlet.airframe.http
 
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.router.RPCCallContext
+import wvlet.airframe.surface.{MethodSurface, Parameter, Surface}
 import wvlet.log.{AsyncHandler, LogFormatter, LogRecord, LogRotationHandler, LogTimestampFormatter}
 
 import java.lang.reflect.InvocationTargetException
@@ -24,6 +25,7 @@ import java.util.logging.Level
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.concurrent.ExecutionException
+import scala.util.Try
 
 case class HttpAccessLogConfig(
     fileName: String = "log/http_access.json",
@@ -151,22 +153,47 @@ object HttpAccessLogWriter {
     m += "rpc_class"     -> rpcContext.rpcMethodSurface.owner.fullName
     m += "rpc_method"    -> rpcContext.rpcMethodSurface.name
 
-    val rpcArgsBuilder = ListMap.newBuilder[String, Any]
-    // Exclude request context objects, which will be duplicates of request parameter logs
-    for ((p, arg) <- rpcContext.rpcMethodSurface.args.zip(rpcContext.rpcArgs)) {
-      arg match {
-        case r: HttpMessage.Request                                        =>
-        case r if p.surface.fullName == "com.twitter.finagle.http.Request" =>
-        case c: HttpContext[_, _, _]                                       =>
-        case _ =>
-          rpcArgsBuilder += p.name -> arg
-      }
-    }
-    val rpcArgs = rpcArgsBuilder.result()
+    val rpcArgs = extractRpcArgLog(rpcContext)
     if (rpcArgs.nonEmpty) {
       m += "rpc_args" -> rpcArgs
     }
     m.result()
+  }
+
+  private[http] def extractRpcArgLog(rpcContext: RPCCallContext): ListMap[String, Any] = {
+
+    def traverseObject(s: Surface, arg: Any): ListMap[String, Any] = {
+      val builder = ListMap.newBuilder[String, Any]
+      s.params
+        .foreach { p =>
+          Try(builder ++= traverseParam(p, p.get(arg)))
+        }
+      builder.result()
+    }
+
+    def traverseParam(p: Parameter, arg: Any): ListMap[String, Any] = {
+      arg match {
+        case r: HttpMessage.Request =>
+          ListMap.empty
+        case r if p.surface.fullName == "com.twitter.finagle.http.Request" =>
+          ListMap.empty
+        case c: HttpContext[_, _, _] =>
+          ListMap.empty
+        case _ if p.isSecret =>
+          ListMap.empty
+        case _ if p.surface.params.length > 0 =>
+          ListMap(p.name -> traverseObject(p.surface, arg))
+        case _ =>
+          ListMap(p.name -> arg)
+      }
+    }
+
+    val rpcArgsBuilder = ListMap.newBuilder[String, Any]
+    // Exclude request context objects, which will be duplicates of request parameter logs
+    for ((p, arg) <- rpcContext.rpcMethodSurface.args.zip(rpcContext.rpcArgs)) {
+      rpcArgsBuilder ++= traverseParam(p, arg)
+    }
+    rpcArgsBuilder.result()
   }
 
   import scala.jdk.CollectionConverters._
