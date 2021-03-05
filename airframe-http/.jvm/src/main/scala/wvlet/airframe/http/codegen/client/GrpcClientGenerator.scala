@@ -149,6 +149,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
          |    case m: io.grpc.ManagedChannel =>
          |      m.shutdownNow().awaitTermination(1, java.util.concurrent.TimeUnit.SECONDS)
          |    case _ =>
+         |  }
          |}""".stripMargin
 
     def syncClientClass: String =
