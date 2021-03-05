@@ -20,6 +20,7 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.HttpAccessLogWriter.JSONHttpAccessLogWriter
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.http._
+import wvlet.airframe.surface.secret
 import wvlet.airspec.AirSpec
 import wvlet.log.Logger
 import wvlet.log.io.IOUtil
@@ -57,7 +58,12 @@ object HttpAccessLogTest extends AirSpec {
     ): String = {
       "test"
     }
+
+    @Endpoint(method = HttpMethod.POST, path = "/test-secret")
+    def secretArg(@secret password: String, userData: UserData): String = "test"
   }
+
+  case class UserData(id: Int, @secret pii: String)
 
   trait AddExtraHeaderFilter extends FinagleFilter {
     override def apply(
@@ -181,6 +187,19 @@ object HttpAccessLogTest extends AirSpec {
         args.get("req2") shouldBe empty
         args.get("context") shouldBe empty
         args.get("p1") shouldBe Some("hello")
+      }
+
+      test("Hide @secret args") {
+        inMemoryLogWriter.clear()
+        val req = Request(Method.Post, "/test-secret")
+        req.setContentString("""{"password":"(user password)", "userData":{"id":1,"pii":"(confidential data)"}}""")
+        val resp                  = client.sendSafe(req)
+        val log: Map[String, Any] = inMemoryLogWriter.getLogs.head
+        debug(log)
+
+        val args = log("rpc_args").asInstanceOf[Map[String, Any]]
+        args.contains("password") shouldBe false
+        args("userData").asInstanceOf[Map[String, Any]].contains("pii") shouldBe false
       }
     }
   }
