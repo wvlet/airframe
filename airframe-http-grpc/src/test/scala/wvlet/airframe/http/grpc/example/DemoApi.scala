@@ -13,19 +13,17 @@
  */
 package wvlet.airframe.http.grpc.example
 
-import io.grpc.{CallOptions, Channel, MethodDescriptor}
-import io.grpc.stub.{AbstractBlockingStub, ClientCallStreamObserver, ClientCalls, StreamObserver}
+import io.grpc.stub.{AbstractBlockingStub, ClientCallStreamObserver, ClientCalls}
+import io.grpc.{CallOptions, Channel}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
-import wvlet.airframe.http.grpc.{GrpcClientCalls, GrpcClientInterceptor, GrpcContext, GrpcEncoding, GrpcResponse, gRPC}
+import wvlet.airframe.http.grpc._
 import wvlet.airframe.http.router.Route
-import wvlet.airframe.http.{HttpHeader, RPC, Router}
+import wvlet.airframe.http.{RPC, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
-import wvlet.log.LogSupport
 import wvlet.airframe.rx.{Rx, RxStream}
-
-import java.nio.charset.StandardCharsets
+import wvlet.log.LogSupport
 
 @RPC
 trait DemoApi extends LogSupport {
@@ -57,6 +55,11 @@ trait DemoApi extends LogSupport {
 
   def helloOpt(opt: Option[String]): String = {
     s"Hello ${opt.getOrElse("unknown")}!"
+  }
+
+  def returnUnit(name: String): Unit = {
+    // do nothing
+    debug(s"hello ${name}")
   }
 }
 
@@ -100,6 +103,8 @@ object DemoApi {
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloBidiStreaming"), codecFactory)
     private val helloOptMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloOpt"), codecFactory)
+    private val returnUnitMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("returnUnit"), codecFactory)
 
     def withEncoding(encoding: GrpcEncoding): DemoApiClient = {
       this.copy(encoding = encoding)
@@ -176,6 +181,13 @@ object DemoApi {
       val resp = ClientCalls
         .blockingUnaryCall(_channel, helloOptMethodDescriptor, getCallOptions, encode(m))
       resp.asInstanceOf[String]
+    }
+
+    def returnUnit(name: String): Unit = {
+      val m = Map("name" -> name)
+      val resp = ClientCalls
+        .blockingUnaryCall(_channel, returnUnitMethodDescriptor, getCallOptions, encode(m))
+      resp.asInstanceOf[Unit]
     }
   }
 

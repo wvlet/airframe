@@ -70,6 +70,10 @@ object GrpcStreamingTest extends AirSpec {
         stub.helloOpt(Some("opt-arg")) shouldBe "Hello opt-arg!"
         stub.helloOpt(None) shouldBe "Hello unknown!"
       }
+
+      test("unit return type") {
+        stub.returnUnit("grpc")
+      }
     }
   }
 }
