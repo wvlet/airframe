@@ -16,10 +16,10 @@ package wvlet.airframe.http.grpc
 import io.grpc.MethodDescriptor.Marshaller
 import io.grpc.{Status, StatusException, StatusRuntimeException}
 import wvlet.airframe.codec.{MessageCodec, MessageCodecException, ParamListCodec}
-import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
+import wvlet.airframe.codec.PrimitiveCodec.{UnitCodec, ValueCodec}
 import wvlet.airframe.control.IO
 import wvlet.airframe.http.grpc.internal.GrpcException
-import wvlet.airframe.msgpack.spi.{MsgPack, ValueFactory}
+import wvlet.airframe.msgpack.spi.{Code, MessagePack, MsgPack, OffsetPacker, ValueFactory}
 import wvlet.airframe.msgpack.spi.Value.MapValue
 import wvlet.log.LogSupport
 
@@ -44,6 +44,11 @@ object GrpcRequestMarshaller extends Marshaller[MsgPack] with LogSupport {
 case class GrpcResponse(value: Any, encoding: GrpcEncoding)
 
 class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[Any] with LogSupport {
+
+  private def newResponseStream(v: A): ByteArrayInputStream = {
+    new ByteArrayInputStream(codec.toMsgPack(v))
+  }
+
   override def stream(response: Any): InputStream = {
     try {
       response match {
@@ -54,10 +59,10 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[Any] 
               val json = s"""{"response":${codec.toJson(v.asInstanceOf[A])}}"""
               new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))
             case _ =>
-              new ByteArrayInputStream(codec.toMsgPack(v.asInstanceOf[A]))
+              newResponseStream(v.asInstanceOf[A])
           }
         case _ =>
-          new ByteArrayInputStream(codec.toMsgPack(response.asInstanceOf[A]))
+          newResponseStream(response.asInstanceOf[A])
       }
     } catch {
       case e: Throwable =>
@@ -87,7 +92,12 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[Any] 
               .asRuntimeException()
         }
       } else {
-        codec.fromMsgPack(bytes)
+        if (codec == UnitCodec) {
+          // grpc requires returning non-null value, so return 0 as a dummy value
+          0.asInstanceOf[Unit]
+        } else {
+          codec.fromMsgPack(bytes)
+        }
       }
     } catch {
       case e: Throwable =>
