@@ -118,6 +118,21 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
   def join[B, C](b: Rx[B], c: Rx[C]): RxStream[(A, B, C)]                 = Rx.join(this, b, c)
   def join[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): RxStream[(A, B, C, D)] = Rx.join(this, b, c, d)
 
+  /**
+    * Combine Rx stream and Future operators.
+    *
+    * This method is useful when you need to call RPC multiple times and
+    * chain the next operation after receiving the response.
+    * <code>
+    * Rx.intervalMillis(1000)
+    *   .andThen { i => callRpc(...) } // Returns Future
+    *   .map { (rpcReturnValue) => ... } // Use the Future response
+    * </code>
+    */
+  def andThen[B](f: A => Future[B])(implicit ex: ExecutionContext): RxStream[B] = {
+    this.flatMap(a => Rx.future(f(a)))
+  }
+
   def concat[A1 >: A](other: Rx[A1]): RxStream[A1] = Rx.concat(this, other)
   def lastOption: RxOption[A]                      = LastOp(this).toOption
 
@@ -193,19 +208,31 @@ object Rx extends LogSupport {
   def interval(interval: Long, unit: TimeUnit): RxStream[Long] = IntervalOp(interval, unit)
   def intervalMillis(intervalMillis: Long): RxStream[Long]     = interval(intervalMillis, TimeUnit.MILLISECONDS)
 
-  /**
-    * Mapping a Scala Future into Rx
-    * @param f
-    * @param ec
-    * @tparam A
-    * @return
-    */
-  def fromFuture[A](f: Future[A])(implicit ec: ExecutionContext): RxOption[A] = {
+  private def futureToRx[A](f: Future[A])(implicit ec: ExecutionContext): RxVar[Option[A]] = {
     val v = Rx.variable[Option[A]](None)
     f.foreach { x =>
       v := Some(x)
     }
-    v.toOption
+    v
+  }
+
+  /**
+    * Mapping a Scala Future into Rx. While the future response is unavailable, it emits Rx.none.
+    * When the future is complete, Rx.some(A) will be returned.
+    *
+    * The difference from Rx.future is that this method can observe the waiting state of the Future response.
+    *  For example, while this returns None, you can render an icon that represents loading state.
+    */
+  def fromFuture[A](f: Future[A])(implicit ec: ExecutionContext): RxOption[A] = {
+    futureToRx(f)(ec).toOption
+  }
+
+  /**
+    * Mapping a Scala Future into Rx that emits a value when the future is completed.
+    */
+  def future[A](f: Future[A])(implicit ec: ExecutionContext): RxStream[A] = {
+    val v = futureToRx(f)(ec)
+    v.filter(_.isDefined).map(_.get)
   }
 
   abstract class UnaryRx[I, A] extends RxStream[A] {

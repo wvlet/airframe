@@ -13,11 +13,11 @@
  */
 package wvlet.airframe.rx
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
-
 import wvlet.airframe.Design
 import wvlet.airspec.AirSpec
 
-import scala.concurrent.Future
+import scala.concurrent.{Future, Promise}
+import scala.util.Try
 
 /**
   */
@@ -341,6 +341,20 @@ object RxTest extends AirSpec {
         case _    => fail()
       }
     }
+  }
+
+  test("Future response") {
+    val p  = Promise[Int]()
+    val rx = Rx.future(p.future).map { x => x * 2 }
+    p.complete(Try(10))
+    rx.run(x => x shouldBe 20)
+  }
+
+  test("andThen(Future[X])") {
+    val p  = Promise[Int]()
+    val rx = Rx.const(1).andThen(x => p.future).map(_ * 2)
+    p.complete(Try(10))
+    rx.run(x => x shouldBe 20)
   }
 
   test("lastOption") {
