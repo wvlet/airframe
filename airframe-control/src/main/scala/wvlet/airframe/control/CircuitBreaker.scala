@@ -55,10 +55,14 @@ object CircuitBreaker extends LogSupport {
   }
 
   /**
-    * Create a CircuitBreaker that will be open if the number of consecutive failrues excceeds the given threshold.
+    * Create a CircuitBreaker that will be open if the number of consecutive failures exceeds the given threshold.
     */
   def withConsecutiveFailures(numFailures: Int): CircuitBreaker = {
     default.withHealthCheckPolicy(HealthCheckPolicy.markDeadOnConsecutiveFailures(numFailures))
+  }
+
+  def alwaysClosed: CircuitBreaker = {
+    default.withHealthCheckPolicy(HealthCheckPolicy.alwaysHealthy)
   }
 
   private[control] def throwOpenException: CircuitBreakerContext => Unit = { ctx: CircuitBreakerContext =>

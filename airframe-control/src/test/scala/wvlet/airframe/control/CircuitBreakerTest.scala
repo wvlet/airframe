@@ -124,4 +124,13 @@ class CircuitBreakerTest extends AirSpec {
       cb.run {}
     }
   }
+
+  def `disable circuit breaker`: Unit = {
+    val cb = CircuitBreaker.alwaysClosed
+    val e  = new TimeoutException()
+    for (i <- 0 to 10) {
+      cb.recordFailure(e)
+      cb.isConnected shouldBe true
+    }
+  }
 }
