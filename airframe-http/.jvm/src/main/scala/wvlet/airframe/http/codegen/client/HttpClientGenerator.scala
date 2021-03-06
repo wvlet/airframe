@@ -30,7 +30,7 @@ object HttpClientGenerator {
 
   private[codegen] def fullTypeNameOf(s: Surface): String = {
     s match {
-      case p if p.isPrimitive =>
+      case p if p.isPrimitive && !p.isAlias =>
         p.name
       case _ =>
         s.fullName.replaceAll("\\$", ".")
