@@ -106,8 +106,8 @@ case class JSHttpClientConfig(
 case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) extends LogSupport {
   import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
-  private val codecFactory   = config.codecFactory.withMapOutput
-  private val circuitBreaker = config.circuitBreaker
+  private def codecFactory   = config.codecFactory.withMapOutput
+  private def circuitBreaker = config.circuitBreaker
 
   /**
     * Modify the configuration based on the current configuration
