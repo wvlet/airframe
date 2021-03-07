@@ -26,6 +26,23 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
     */
   def render: RxElement
 
+  /**
+    * Called right before rendering this RxElement begins.
+    *
+    * Override this method to define a custom event hook before rendering.
+    */
+  def beforeRender: Unit = {}
+
+  /**
+    * Called right before unmounting (deleting) this RxElement from DOM.
+    *
+    * This is a good place to remove any background process or
+    * manually added event listeners.
+    */
+  def beforeUnmount: Unit = {}
+
+  def onRender: Rx[Unit] = { Rx.const(Unit) }
+
   def apply(xs: HtmlNode*): RxElement = {
     if (xs.isEmpty) {
       this
@@ -34,10 +51,12 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
     }
   }
 
-  def add(xs: HtmlNode*): RxElement =
+  def add(xs: HtmlNode*): RxElement = {
     new RxElement(xs :: modifiers) {
       override def render = self.render
     }
+  }
+
   def addModifier(xs: HtmlNode*): RxElement = add(xs: _*)
 
   private[html] def traverseModifiers(f: HtmlNode => Cancelable): Cancelable = {

@@ -61,5 +61,4 @@ class RxElementTest extends AirSpec {
       em.render
     }
   }
-
 }

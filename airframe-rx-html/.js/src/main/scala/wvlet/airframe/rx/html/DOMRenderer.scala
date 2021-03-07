@@ -20,7 +20,12 @@ import scala.scalajs.js
 import scala.util.Try
 
 /**
-  * Convert HtmlNodes into DOM elements for Scala.js
+  * Convert HtmlNodes into DOM elements for Scala.js.
+  *
+  * An important functionality of this renderer is composing Cancelable objects so that
+  * resources allocated along with the rendered DOM objects will be properly discarded.
+  *
+  * Resources include event listeners, Rx subscribers, etc.
   */
 object DOMRenderer extends LogSupport {
 
@@ -61,7 +66,9 @@ object DOMRenderer extends LogSupport {
       }
     }
 
-    traverse(e)
+    e.beforeRender
+    val (n, c) = traverse(e)
+    (n, Cancelable.merge(Cancelable(() => e.beforeUnmount), c))
   }
 
   private def newTextNode(s: String): dom.Text = dom.document.createTextNode(s)
@@ -87,9 +94,7 @@ object DOMRenderer extends LogSupport {
             c1.cancel
             c1 = traverse(value, Some(start))
           }
-          Cancelable { () =>
-            Try(c1.cancel); Try(c2.cancel)
-          }
+          Cancelable.merge(c1, c2)
         case a: HtmlAttribute =>
           addAttribute(node, a)
         case n: dom.Node =>
@@ -98,13 +103,12 @@ object DOMRenderer extends LogSupport {
         case e: Embedded =>
           traverse(e.v, anchor)
         case rx: RxElement =>
+          rx.beforeRender
           val c1   = renderTo(node, rx.render)
           val elem = node.lastChild
           val c2   = rx.traverseModifiers(m => renderTo(elem, m))
           node.mountHere(elem, anchor)
-          Cancelable { () =>
-            Try(c1.cancel); Try(c2.cancel)
-          }
+          Cancelable.merge(Cancelable(() => rx.beforeUnmount), Cancelable.merge(c1, c2))
         case s: String =>
           val textNode = newTextNode(s)
           node.mountHere(textNode, anchor)
@@ -185,6 +189,9 @@ object DOMRenderer extends LogSupport {
             c1 = traverse(value)
           }
           Cancelable.merge(c1, c2)
+        // TODO: Add RxElement rendering
+        // case r: RxElement =>
+        //
         case f: Function0[_] =>
           node.setEventListener(a.name, (_: dom.Event) => f())
         case f: Function1[dom.Node @unchecked, _] =>
