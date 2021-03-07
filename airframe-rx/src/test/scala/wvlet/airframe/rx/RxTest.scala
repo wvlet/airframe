@@ -732,10 +732,12 @@ object RxTest extends AirSpec {
     val events2 = Seq.newBuilder[RxEvent]
     v := 3
     val c2 = RxRunner.runContinuously(rx)(events2 += _)
+    v := 4
     c2.cancel
     events2.result() shouldBe Seq(
       OnNext(20),
-      OnNext(30)
+      OnNext(30),
+      OnNext(40)
     )
   }
 }

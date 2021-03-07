@@ -181,7 +181,7 @@ class RxRunner(
             effect(OnNext(v))
           case None =>
         }
-        run(in) { 
+        run(in) {
           case OnNext(v) =>
             cache.asInstanceOf[CacheOp[A]].lastValue = Some(v.asInstanceOf[A])
             effect(OnNext(v))

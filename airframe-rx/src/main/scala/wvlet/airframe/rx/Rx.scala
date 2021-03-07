@@ -136,6 +136,18 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
   def concat[A1 >: A](other: Rx[A1]): RxStream[A1] = Rx.concat(this, other)
   def lastOption: RxOption[A]                      = LastOp(this).toOption
 
+  /**
+    * Cache the last item, and emit the cached value if available.
+    *
+    * The cached value will be preserved to the operatror itself even after cancelling the subscription.
+    * Re-subscription of this opreator will immediately return the cached
+    * value to the downstream operators.
+    *
+    * This operator is useful if we need to involve time-consuming operator, and want to reuse the last result:
+    * <code>
+    * Rx.intervalMillis(1000).map(i => (heavy process)).cache
+    * </code>
+    */
   def cache: RxStream[A] = CacheOp(this)
 
   /**
