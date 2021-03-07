@@ -175,6 +175,19 @@ class RxRunner(
               case Failure(e) => effect(OnError(e))
             }
         }
+      case cache @ CacheOp(in, _) =>
+        cache.lastValue match {
+          case Some(v) =>
+            effect(OnNext(v))
+          case None =>
+        }
+        run(in) { 
+          case OnNext(v) =>
+            cache.asInstanceOf[CacheOp[A]].lastValue = Some(v.asInstanceOf[A])
+            effect(OnNext(v))
+          case other =>
+            effect(other)
+        }
       case TakeOp(in, n) =>
         var count = 0
         run(in) {

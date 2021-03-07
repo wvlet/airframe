@@ -136,6 +136,8 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
   def concat[A1 >: A](other: Rx[A1]): RxStream[A1] = Rx.concat(this, other)
   def lastOption: RxOption[A]                      = LastOp(this).toOption
 
+  def cache: RxStream[A] = CacheOp(this)
+
   /**
     * Take an event up to <i>n</i> elements. This may receive fewer events than n if the upstream operator
     * completes before generating <i>n</i> elements.
@@ -292,4 +294,6 @@ object Rx extends LogSupport {
   }
   case class ThrottleFirstOp[A](input: Rx[A], interval: Long, unit: TimeUnit) extends UnaryRx[A, A]
   case class ThrottleLastOp[A](input: Rx[A], interval: Long, unit: TimeUnit)  extends UnaryRx[A, A]
+
+  case class CacheOp[A](input: Rx[A], private[rx] var lastValue: Option[A] = None) extends UnaryRx[A, A]
 }
