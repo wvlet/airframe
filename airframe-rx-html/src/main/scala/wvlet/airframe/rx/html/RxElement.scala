@@ -41,8 +41,6 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
     */
   def beforeUnmount: Unit = {}
 
-  def onRender: Rx[Unit] = { Rx.const(Unit) }
-
   def apply(xs: HtmlNode*): RxElement = {
     if (xs.isEmpty) {
       this
