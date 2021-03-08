@@ -27,7 +27,9 @@ import scala.jdk.CollectionConverters._
   */
 object Shell extends LogSupport {
   private def withAccessTo[U](f: Field, obj: Any)(body: => U): U = {
-    val a = f.canAccess(obj)
+    // Use isAccessible() for JDK8 compatibility for a while.
+    // For JDK9 or later, we need to use f.canAccess(obj)
+    val a = f.isAccessible()
     try {
       if (!a)
         f.setAccessible(true)

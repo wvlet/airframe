@@ -55,7 +55,9 @@ object ReflectTypeUtil extends LogSupport {
 
   private[reflect] def access[A <: jr.AccessibleObject, B](f: A, obj: Any)(body: => B): B = {
     synchronized {
-      val accessible = f.canAccess(obj)
+      // Use isAccessible() for JDK8 compatibility for a while.
+      // For JDK9 or later, we need to use f.canAccess(obj)
+      val accessible = f.isAccessible
       try {
         if (!accessible) {
           f.setAccessible(true)

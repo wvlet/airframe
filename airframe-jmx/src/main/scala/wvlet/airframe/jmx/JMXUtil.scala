@@ -36,7 +36,9 @@ object JMXUtil extends LogSupport {
 
     def getStaticField[R](name: String): Option[R] = {
       Class.forName(className).getDeclaredFields.find(_.getName == name).flatMap { field =>
-        val isAccessible = field.canAccess(null)
+        // Use isAccessible() for JDK8 compatibility for a while.
+        // For JDK9 or later, we need to use f.canAccess(obj)
+        val isAccessible = field.isAccessible()
         try {
           field.setAccessible(true)
           Option(field.get(null).asInstanceOf[R])
