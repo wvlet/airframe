@@ -13,13 +13,12 @@
  */
 package wvlet.airframe.http.js
 import java.nio.ByteBuffer
-
 import org.scalajs.dom
 import org.scalajs.dom.ext.Ajax.InputData
 import org.scalajs.dom.window
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
-import wvlet.airframe.control.{ResultClass, Retry}
+import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException, ResultClass, Retry}
 import wvlet.airframe.http.HttpClient.defaultBeforeRetryAction
 import wvlet.airframe.http.HttpMessage._
 import wvlet.airframe.http._
@@ -70,7 +69,9 @@ case class JSHttpClientConfig(
     requestEncoding: MessageEncoding = MessageEncoding.MessagePackEncoding,
     requestFilter: Request => Request = identity,
     retryContext: RetryContext = JSHttpClient.defaultHttpClientRetryer,
-    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
+    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
+    // The default circuit breaker, which will be open after 5 consecutive failures
+    circuitBreaker: CircuitBreaker = CircuitBreaker.withConsecutiveFailures(5)
 ) {
   def withServerAddress(newServerAddress: ServerAddress): JSHttpClientConfig = {
     this.copy(serverAddress = Some(newServerAddress))
@@ -80,10 +81,20 @@ case class JSHttpClientConfig(
   }
   def withRequestFilter(newRequestFilter: Request => Request): JSHttpClientConfig =
     this.copy(requestFilter = newRequestFilter)
+
+  def withRetry(f: RetryContext => RetryContext): JSHttpClientConfig = {
+    this.copy(retryContext = f(retryContext))
+  }
   def noRetry: JSHttpClientConfig = this.copy(retryContext = retryContext.noRetry)
 
   def withCodecFactory(newCodecFactory: MessageCodecFactory): JSHttpClientConfig = {
     this.copy(codecFactory = newCodecFactory)
+  }
+  def withCircuitBreaker(f: CircuitBreaker => CircuitBreaker): JSHttpClientConfig = {
+    this.copy(circuitBreaker = f(circuitBreaker))
+  }
+  def noCircuitBreaker: JSHttpClientConfig = {
+    this.copy(circuitBreaker = CircuitBreaker.alwaysClosed)
   }
 }
 
@@ -95,7 +106,8 @@ case class JSHttpClientConfig(
 case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) extends LogSupport {
   import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
-  private val codecFactory = config.codecFactory.withMapOutput
+  private def codecFactory   = config.codecFactory.withMapOutput
+  private def circuitBreaker = config.circuitBreaker
 
   /**
     * Modify the configuration based on the current configuration
@@ -113,6 +125,17 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
     * @return
     */
   private def dispatch(retryContext: RetryContext, request: Request): Future[Response] = {
+    try {
+      // This will throw CircuitBreakerException if the circuit is open
+      circuitBreaker.verifyConnection
+      dispatchInternal(retryContext, request)
+    } catch {
+      case e: CircuitBreakerOpenException =>
+        Future.failed(e)
+    }
+  }
+
+  private def dispatchInternal(retryContext: RetryContext, request: Request): Future[Response] = {
     val xhr = new dom.XMLHttpRequest()
     val uri = config.serverAddress.map(address => s"${address.uri}${request.uri}").getOrElse(request.uri)
     trace(s"Sending request: ${request}")
@@ -167,17 +190,21 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
 
         retryContext.resultClassifier(resp) match {
           case ResultClass.Succeeded =>
+            circuitBreaker.recordSuccess
             //if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304)
             promise.success(resp)
           case ResultClass.Failed(isRetryable, cause, extraWait) =>
+            circuitBreaker.recordFailure(cause)
             if (!retryContext.canContinue) {
               promise.failure(HttpClientMaxRetryException(resp, retryContext, cause))
             } else if (!isRetryable) {
               promise.failure(cause)
             } else {
               dispatch(retryContext.nextRetry(cause), request).onComplete {
-                case Success(resp) => promise.success(resp)
-                case Failure(e)    => promise.failure(e)
+                case Success(resp) =>
+                  promise.success(resp)
+                case Failure(e) =>
+                  promise.failure(e)
               }
             }
         }

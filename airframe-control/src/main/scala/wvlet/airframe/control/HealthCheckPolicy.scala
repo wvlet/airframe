@@ -43,6 +43,16 @@ trait HealthCheckPolicy {
 object HealthCheckPolicy extends LogSupport {
 
   /**
+    * A special health check policy used for disabling circuit breaker
+    */
+  def alwaysHealthy: HealthCheckPolicy = new HealthCheckPolicy {
+    override def isMarkedDead: Boolean = false
+    override def recordSuccess: Unit = {}
+    override def recordFailure: Unit = {}
+    override def recovered: Unit = {}
+  }
+
+  /**
     * A policy for marking the service dead upon consecutive failures
     */
   def markDeadOnConsecutiveFailures(numFailures: Int): HealthCheckPolicy =

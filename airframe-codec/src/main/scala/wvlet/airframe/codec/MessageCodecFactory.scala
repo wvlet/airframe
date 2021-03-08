@@ -17,7 +17,11 @@ case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageC
 
   // Generate a codec that outputs objects as Map type. This should be enabled for generating JSON data
   def withMapOutput: MessageCodecFactory = {
-    this.copy(mapOutput = true)
+    if (mapOutput == true) {
+      this
+    } else {
+      this.copy(mapOutput = true)
+    }
   }
   def noMapOutput: MessageCodecFactory = {
     this.copy(mapOutput = false)
