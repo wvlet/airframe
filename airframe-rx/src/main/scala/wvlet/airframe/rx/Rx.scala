@@ -137,6 +137,20 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
   def lastOption: RxOption[A]                      = LastOp(this).toOption
 
   /**
+    * Cache the last item, and emit the cached value if available.
+    *
+    * The cached value will be preserved to the operatror itself even after cancelling the subscription.
+    * Re-subscription of this opreator will immediately return the cached
+    * value to the downstream operators.
+    *
+    * This operator is useful if we need to involve time-consuming operator, and want to reuse the last result:
+    * <code>
+    * Rx.intervalMillis(1000).map(i => (heavy process)).cache
+    * </code>
+    */
+  def cache: RxStream[A] = CacheOp(this)
+
+  /**
     * Take an event up to <i>n</i> elements. This may receive fewer events than n if the upstream operator
     * completes before generating <i>n</i> elements.
     */
@@ -292,4 +306,6 @@ object Rx extends LogSupport {
   }
   case class ThrottleFirstOp[A](input: Rx[A], interval: Long, unit: TimeUnit) extends UnaryRx[A, A]
   case class ThrottleLastOp[A](input: Rx[A], interval: Long, unit: TimeUnit)  extends UnaryRx[A, A]
+
+  case class CacheOp[A](input: Rx[A], private[rx] var lastValue: Option[A] = None) extends UnaryRx[A, A]
 }

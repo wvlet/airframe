@@ -714,4 +714,30 @@ object RxTest extends AirSpec {
       )
     }
   }
+
+  test("cache") {
+    val v           = Rx.variable(1)
+    val rx: Rx[Int] = v.map(x => x * 10).cache
+    val c0          = RxRunner.runContinuously(rx) { e => e shouldBe OnNext(10) }
+    c0.cancel
+
+    val events = Seq.newBuilder[RxEvent]
+    v := 2
+    val c1 = RxRunner.runContinuously(rx)(events += _)
+    c1.cancel
+    events.result() shouldBe Seq(
+      OnNext(10),
+      OnNext(20)
+    )
+    val events2 = Seq.newBuilder[RxEvent]
+    v := 3
+    val c2 = RxRunner.runContinuously(rx)(events2 += _)
+    v := 4
+    c2.cancel
+    events2.result() shouldBe Seq(
+      OnNext(20),
+      OnNext(30),
+      OnNext(40)
+    )
+  }
 }
