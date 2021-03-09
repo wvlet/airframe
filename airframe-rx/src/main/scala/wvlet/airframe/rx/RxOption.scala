@@ -12,7 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx
-import wvlet.airframe.rx.Rx.{FlatMapOp, MapOp, RecoverOp, RecoverWithOp}
+import wvlet.airframe.rx.Rx.{CacheOp, FlatMapOp, MapOp, RecoverOp, RecoverWithOp}
+
+import java.util.concurrent.TimeUnit
 
 /**
   */
@@ -96,6 +98,13 @@ trait RxOption[+A] extends Rx[Option[A]] {
 
   def filter(f: A => Boolean): RxOption[A]     = transformOption(_.filter(f))
   def withFilter(f: A => Boolean): RxOption[A] = filter(f)
+
+  def cache[A1 >: A]: RxOptionCache[A1] = RxOptionCacheOp(CacheOp(this))
+}
+
+trait RxOptionCache[A] extends RxOption[A] {
+  def expireAfterWrite(value: Long, unit: TimeUnit): RxOptionCache[A]
+  private[rx] def tick: Unit
 }
 
 case class RxOptionOp[+A](override protected val in: RxStream[Option[A]]) extends RxOption[A] {
@@ -119,4 +128,14 @@ class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarO
     variable.update(updater, force)
   }
 
+}
+
+case class RxOptionCacheOp[A](input: RxStreamCache[Option[A]]) extends RxOptionCache[A] {
+  override protected def in: RxStream[Option[A]] = input.toRxStream
+  override def parents: Seq[Rx[_]]               = input.parents
+
+  override def expireAfterWrite(value: Long, unit: TimeUnit): RxOptionCache[A] =
+    this.copy(input = input.expireAfterWrite(value, unit))
+
+  override private[rx] def tick: Unit = input.tick
 }
