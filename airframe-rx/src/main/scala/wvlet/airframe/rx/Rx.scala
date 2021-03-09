@@ -150,7 +150,7 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     * v.map { x => ... }
     * </code>
     */
-  def cache[A1 >: A]: CacheOp[A1] = CacheOp(this)
+  def cache[A1 >: A]: RxStreamCache[A1] = CacheOp(this)
 
   /**
     * Take an event up to <i>n</i> elements. This may receive fewer events than n if the upstream operator
@@ -176,6 +176,11 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     */
   def sample(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): RxStream[A] =
     ThrottleLastOp[A](this, timeWindow, unit)
+}
+
+trait RxStreamCache[A] extends RxStream[A] {
+  def expireAfterWrite(value: Long, unit: TimeUnit): RxStreamCache[A]
+  private[rx] def tick: Unit
 }
 
 object Rx extends LogSupport {
@@ -313,13 +318,15 @@ object Rx extends LogSupport {
       input: Rx[A],
       private[rx] var lastValue: Option[A] = None,
       private[rx] var lastUpdatedMillis: Long = System.currentTimeMillis(),
-      private[rx] val expirationAfterWrite: Option[Int] = None
-  ) extends UnaryRx[A, A] {
-    def expireAfterWrite(millis: Int): CacheOp[A] = this.copy(expirationAfterWrite = Some(millis))
+      private[rx] val expirationAfterWriteMillis: Option[Long] = None
+  ) extends UnaryRx[A, A]
+      with RxStreamCache[A] {
+    override def expireAfterWrite(value: Long, unit: TimeUnit): RxStreamCache[A] =
+      this.copy(expirationAfterWriteMillis = Some(unit.toMillis(value)))
 
-    private[rx] def tick: Unit = {
+    override private[rx] def tick: Unit = {
       // [Only for testing]: Shift the time to expire the cache
-      lastUpdatedMillis -= expirationAfterWrite.getOrElse(0)
+      lastUpdatedMillis -= expirationAfterWriteMillis.getOrElse(0L)
     }
   }
 }

@@ -179,7 +179,7 @@ class RxRunner(
         lastValue match {
           case Some(v) =>
             val isExpired =
-              cache.expirationAfterWrite
+              cache.expirationAfterWriteMillis
                 .map(expireMillis => expireMillis <= (System.currentTimeMillis() - lastUpdatedMillis))
                 .getOrElse(false)
             if (!isExpired) {
@@ -292,6 +292,8 @@ class RxRunner(
           case other =>
             effect(other)
         }
+      case RxOptionCacheOp(input) =>
+        run(input)(effect)
       case NamedOp(input, name) =>
         run(input)(effect)
       case TryOp(e) =>

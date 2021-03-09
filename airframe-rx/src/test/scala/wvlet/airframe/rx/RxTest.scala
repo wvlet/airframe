@@ -17,6 +17,7 @@ import wvlet.airframe.Design
 import wvlet.airframe.rx.Rx.CacheOp
 import wvlet.airspec.AirSpec
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.{Future, Promise}
 import scala.util.Try
 
@@ -756,8 +757,8 @@ object RxTest extends AirSpec {
   }
 
   test("cache.expireAfterWrite") {
-    val v                = Rx.variable(1)
-    val rx: CacheOp[Int] = v.map(x => x * 10).cache.expireAfterWrite(1000000)
+    val v  = Rx.variable(1)
+    val rx = v.map(x => x * 10).cache.expireAfterWrite(1000000, TimeUnit.MILLISECONDS)
     val c0 = RxRunner.runContinuously(rx) { e =>
       e shouldBe OnNext(10)
     }
@@ -782,4 +783,38 @@ object RxTest extends AirSpec {
       OnNext(30)
     )
   }
+
+  test("cache for option") {
+    val v  = Rx.optionVariable(Some(1))
+    val rx = v.cache
+    val c1 = RxRunner.runContinuously(rx) { _ shouldBe OnNext(Some(1)) }
+    c1.cancel
+
+    v := Some(2)
+    val events = Seq.newBuilder[RxEvent]
+    val c2     = RxRunner.runContinuously(rx)(events += _)
+    events.result() shouldBe Seq(
+      OnNext(Some(1)),
+      OnNext(Some(2))
+    )
+    c2.cancel
+  }
+
+  test("cache expiration for option") {
+    val v  = Rx.optionVariable(Some(1))
+    val rx = v.cache.expireAfterWrite(1000000, TimeUnit.MILLISECONDS)
+    val c1 = RxRunner.runContinuously(rx) { _ shouldBe OnNext(Some(1)) }
+    c1.cancel
+
+    v := Some(2)
+    // Force expiration of the cache
+    rx.tick
+    val events = Seq.newBuilder[RxEvent]
+    val c2     = RxRunner.runContinuously(rx)(events += _)
+    events.result() shouldBe Seq(
+      OnNext(Some(2))
+    )
+    c2.cancel
+  }
+
 }
