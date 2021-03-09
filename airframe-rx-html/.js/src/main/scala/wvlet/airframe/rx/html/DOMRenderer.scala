@@ -58,7 +58,9 @@ object DOMRenderer extends LogSupport {
         case Embedded(v) =>
           traverse(v)
         case r: RxElement =>
-          traverse(r.render)
+          r.beforeRender
+          val (n, c) = traverse(r.render)
+          (n, Cancelable.merge(Cancelable(() => r.beforeUnmount), c))
         case d: dom.Node =>
           (d, Cancelable.empty)
         case other =>
@@ -66,9 +68,7 @@ object DOMRenderer extends LogSupport {
       }
     }
 
-    e.beforeRender
-    val (n, c) = traverse(e)
-    (n, Cancelable.merge(Cancelable(() => e.beforeUnmount), c))
+    traverse(e)
   }
 
   private def newTextNode(s: String): dom.Text = dom.document.createTextNode(s)

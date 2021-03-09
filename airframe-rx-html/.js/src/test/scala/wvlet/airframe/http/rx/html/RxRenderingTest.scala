@@ -98,6 +98,41 @@ object RxRenderingTest extends AirSpec {
     b shouldBe 1
   }
 
+  test("beforeRender/beforeUnmount for RxElement(...)") {
+    var a = 0
+    var b = 0
+
+    val v = Rx.variable(1)
+    val r = new RxElement {
+      override def beforeRender: Unit = {
+        a += 1
+      }
+      override def beforeUnmount: Unit = {
+        b += 1
+      }
+      override def render: RxElement = span(v.map { x => s"hello ${x}" })
+    }
+
+    a shouldBe 0
+
+    val rw     = RxElement(r)
+    val (n, c) = render(rw)
+    n.outerHTML shouldBe "<span>hello 1</span>"
+    a shouldBe 1
+    b shouldBe 0
+
+    // Updating inner element should not trigger on render
+    v := 2
+    a shouldBe 1
+    b shouldBe 0
+    n.outerHTML shouldBe "<span>hello 2</span>"
+
+    // unmounting
+    c.cancel
+    a shouldBe 1
+    b shouldBe 1
+  }
+
   test("nested beforeRender/beforeUnmount") {
     var a = false
     var b = false
@@ -134,5 +169,4 @@ object RxRenderingTest extends AirSpec {
     b shouldBe true
     b1 shouldBe true
   }
-
 }
