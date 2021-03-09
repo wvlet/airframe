@@ -14,6 +14,7 @@
 package wvlet.airframe.rx
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import wvlet.airframe.Design
+import wvlet.airframe.rx.Rx.CacheOp
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.{Future, Promise}
@@ -319,7 +320,8 @@ object RxTest extends AirSpec {
     )
   }
 
-  implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+  implicit val ec: scala.concurrent.ExecutionContext =
+    scala.concurrent.ExecutionContext.global
 
   test("from Future[X]") {
     val f  = Future.successful(1)
@@ -344,8 +346,10 @@ object RxTest extends AirSpec {
   }
 
   test("Future response") {
-    val p  = Promise[Int]()
-    val rx = Rx.future(p.future).map { x => x * 2 }
+    val p = Promise[Int]()
+    val rx = Rx.future(p.future).map { x =>
+      x * 2
+    }
     p.complete(Try(10))
     rx.run(x => x shouldBe 20)
   }
@@ -499,10 +503,12 @@ object RxTest extends AirSpec {
     val ex = new IllegalArgumentException("test error")
 
     val rx: Rx[Int] = Rx
-      .sequence(1, 2).map {
+      .sequence(1, 2)
+      .map {
         case 1 => 1
         case 2 => throw ex
-      }.recoverWith { case e: IllegalArgumentException =>
+      }
+      .recoverWith { case e: IllegalArgumentException =>
         Rx.exception(e)
       }
 
@@ -559,7 +565,10 @@ object RxTest extends AirSpec {
     }
 
     test("flatMap") {
-      eval(Rx.sequence(1, 2, 3).flatMap(x => Rx.fromSeq((0 until x).map(_ => x)))) shouldBe Seq(
+      eval(
+        Rx.sequence(1, 2, 3)
+          .flatMap(x => Rx.fromSeq((0 until x).map(_ => x)))
+      ) shouldBe Seq(
         OnNext(1),
         OnNext(2),
         OnNext(2),
@@ -592,7 +601,10 @@ object RxTest extends AirSpec {
 
     test("filter with error") {
       val ex = new IllegalArgumentException("test")
-      eval(Rx.sequence(1, 2, 3).filter(x => if (x == 2) throw ex else x % 2 == 1)) shouldBe Seq(
+      eval(
+        Rx.sequence(1, 2, 3)
+          .filter(x => if (x == 2) throw ex else x % 2 == 1)
+      ) shouldBe Seq(
         OnNext(1),
         OnError(ex)
       )
@@ -718,7 +730,9 @@ object RxTest extends AirSpec {
   test("cache") {
     val v           = Rx.variable(1)
     val rx: Rx[Int] = v.map(x => x * 10).cache
-    val c0          = RxRunner.runContinuously(rx) { e => e shouldBe OnNext(10) }
+    val c0 = RxRunner.runContinuously(rx) { e =>
+      e shouldBe OnNext(10)
+    }
     c0.cancel
 
     val events = Seq.newBuilder[RxEvent]
@@ -738,6 +752,34 @@ object RxTest extends AirSpec {
       OnNext(20),
       OnNext(30),
       OnNext(40)
+    )
+  }
+
+  test("cache.expireAfterWrite") {
+    val v                = Rx.variable(1)
+    val rx: CacheOp[Int] = v.map(x => x * 10).cache.expireAfterWrite(1000000)
+    val c0 = RxRunner.runContinuously(rx) { e =>
+      e shouldBe OnNext(10)
+    }
+    c0.cancel
+    val events = Seq.newBuilder[RxEvent]
+    v := 2
+
+    val c1 = RxRunner.runContinuously(rx)(events += _)
+    c1.cancel
+    events.result() shouldBe Seq(
+      OnNext(10),
+      OnNext(20)
+    )
+
+    events.clear()
+    v := 3
+    // Force expiration of the cache
+    rx.tick
+    val c2 = RxRunner.runContinuously(rx)(events += _)
+    c2.cancel
+    events.result() shouldBe Seq(
+      OnNext(30)
     )
   }
 }
