@@ -65,4 +65,108 @@ object RxRenderingTest extends AirSpec {
     n.outerHTML shouldBe """<div>menu:</div>"""
   }
 
+  test("beforeRender/beforeUnmount") {
+    var a = 0
+    var b = 0
+
+    val v = Rx.variable(1)
+    val r = new RxElement {
+      override def beforeRender: Unit = {
+        a += 1
+      }
+      override def beforeUnmount: Unit = {
+        b += 1
+      }
+      override def render: RxElement = span(v.map { x => s"hello ${x}" })
+    }
+
+    a shouldBe 0
+    val (n, c) = render(r)
+    n.outerHTML shouldBe "<span>hello 1</span>"
+    a shouldBe 1
+    b shouldBe 0
+
+    // Updating inner element should not trigger on render
+    v := 2
+    a shouldBe 1
+    b shouldBe 0
+    n.outerHTML shouldBe "<span>hello 2</span>"
+
+    // unmounting
+    c.cancel
+    a shouldBe 1
+    b shouldBe 1
+  }
+
+  test("beforeRender/beforeUnmount for RxElement(...)") {
+    var a = 0
+    var b = 0
+
+    val v = Rx.variable(1)
+    val r = new RxElement {
+      override def beforeRender: Unit = {
+        a += 1
+      }
+      override def beforeUnmount: Unit = {
+        b += 1
+      }
+      override def render: RxElement = span(v.map { x => s"hello ${x}" })
+    }
+
+    a shouldBe 0
+
+    val rw     = RxElement(r)
+    val (n, c) = render(rw)
+    n.outerHTML shouldBe "<span>hello 1</span>"
+    a shouldBe 1
+    b shouldBe 0
+
+    // Updating inner element should not trigger on render
+    v := 2
+    a shouldBe 1
+    b shouldBe 0
+    n.outerHTML shouldBe "<span>hello 2</span>"
+
+    // unmounting
+    c.cancel
+    a shouldBe 1
+    b shouldBe 1
+  }
+
+  test("nested beforeRender/beforeUnmount") {
+    var a = false
+    var b = false
+
+    var a1 = false
+    var b1 = false
+
+    val nested = new RxElement {
+      override def beforeRender: Unit = {
+        a1 = true
+      }
+      override def beforeUnmount: Unit = {
+        b1 = true
+      }
+      override def render: RxElement = span("nested")
+    }
+
+    val r = new RxElement {
+      override def beforeRender: Unit = {
+        a = true
+      }
+      override def beforeUnmount: Unit = {
+        b = true
+      }
+      override def render: RxElement = span(nested)
+    }
+
+    val (n, c) = render(r)
+    a shouldBe true
+    b shouldBe false
+    a1 shouldBe true
+    b1 shouldBe false
+    c.cancel
+    b shouldBe true
+    b1 shouldBe true
+  }
 }
