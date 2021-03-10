@@ -175,12 +175,12 @@ class RxRunner(
               case Failure(e) => effect(OnError(e))
             }
         }
-      case cache @ CacheOp(in, lastValue, lastUpdatedMillis, _) =>
+      case cache @ CacheOp(in, lastValue, lastUpdatedNanos, _, _, ticker) =>
         lastValue match {
           case Some(v) =>
             val isExpired =
-              cache.expirationAfterWriteMillis
-                .map(expireMillis => expireMillis <= (System.currentTimeMillis() - lastUpdatedMillis))
+              cache.expirationAfterWriteNanos
+                .map(expireNanos => expireNanos <= (ticker.read - lastUpdatedNanos))
                 .getOrElse(false)
             if (!isExpired) {
               effect(OnNext(v))
@@ -190,7 +190,7 @@ class RxRunner(
         run(in) {
           case OnNext(v) =>
             cache.asInstanceOf[CacheOp[A]].lastValue = Some(v.asInstanceOf[A])
-            cache.lastUpdatedMillis = System.currentTimeMillis()
+            cache.lastUpdatedNanos = ticker.read
             effect(OnNext(v))
           case other =>
             effect(other)
