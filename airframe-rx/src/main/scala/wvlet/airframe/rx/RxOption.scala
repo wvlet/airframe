@@ -108,7 +108,6 @@ trait RxOption[+A] extends Rx[Option[A]] {
   */
 trait RxOptionCache[A] extends RxOption[A] {
   def expireAfterWrite(time: Long, unit: TimeUnit): RxOptionCache[A]
-  def refreshAfterWrite(time: Long, unit: TimeUnit): RxOptionCache[A]
   def withTicker(ticker: Ticker): RxOptionCache[A]
 }
 
@@ -141,10 +140,6 @@ case class RxOptionCacheOp[A](input: RxStreamCache[Option[A]]) extends RxOptionC
 
   override def expireAfterWrite(time: Long, unit: TimeUnit): RxOptionCache[A] =
     this.copy(input = input.expireAfterWrite(time, unit))
-
-  override def refreshAfterWrite(time: Long, unit: TimeUnit): RxOptionCache[A] = {
-    this.copy(input = input.refreshAfterWrite(time, unit))
-  }
 
   override def withTicker(ticker: Ticker): RxOptionCache[A] = {
     this.copy(input = input.withTicker(ticker))

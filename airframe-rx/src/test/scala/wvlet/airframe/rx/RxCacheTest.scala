@@ -51,7 +51,7 @@ class RxCacheTest extends AirSpec {
   test("cache.expireAfterWrite") {
     val ticker = Ticker.manualTicker
     val v      = Rx.variable(1)
-    val rx     = v.map(x => x * 10).cache.expireAfterWrite(1, TimeUnit.HOURS).withTicker(ticker)
+    val rx     = v.map(x => x * 10).cache.expireAfterWrite(1, TimeUnit.MINUTES).withTicker(ticker)
     evalStream(rx) shouldBe Seq(OnNext(10))
 
     v := 2
@@ -62,22 +62,10 @@ class RxCacheTest extends AirSpec {
 
     v := 3
     // Force expiration of the cache
-    ticker.advance(1, TimeUnit.HOURS)
+    ticker.advance(1, TimeUnit.MINUTES)
     evalStream(rx) shouldBe Seq(
       OnNext(30)
     )
-  }
-
-  test("cache.refreshAfterWrite") {
-    val ticker = Ticker.manualTicker
-    val v      = Rx.variable(1)
-    val rx     = v.cache.refreshAfterWrite(1, TimeUnit.HOURS).withTicker(ticker)
-
-    evalStream(rx) shouldBe Seq(OnNext(1))
-    ticker.advance(1, TimeUnit.HOURS)
-    evalStream(rx) shouldBe Seq(OnNext(1))
-    v := 2
-    evalStream(rx) shouldBe Seq(OnNext(1), OnNext(2))
   }
 
   test("cache for option") {
@@ -95,13 +83,13 @@ class RxCacheTest extends AirSpec {
   test("cache expiration for option") {
     val ticker = Ticker.manualTicker
     val v      = Rx.optionVariable(Some(1))
-    val rx     = v.cache.expireAfterWrite(1, TimeUnit.HOURS).withTicker(ticker)
+    val rx     = v.cache.expireAfterWrite(1, TimeUnit.MINUTES).withTicker(ticker)
 
     evalStream(rx) shouldBe Seq(OnNext(Some(1)))
 
     v := Some(2)
     // Force expiration of the cache
-    ticker.advance(1, TimeUnit.HOURS)
+    ticker.advance(1, TimeUnit.MINUTES)
     evalStream(rx) shouldBe Seq(
       OnNext(Some(2))
     )

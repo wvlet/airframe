@@ -20,8 +20,8 @@ import java.util.concurrent.atomic.AtomicLong
   * Ticker is for measuring the elapsed time.
   */
 trait Ticker {
-  // Return the number of nanoseconds elapsed
-  def read: Long
+  // Return the current nanoseconds time
+  def currentNanos: Long
 }
 
 /**
@@ -57,7 +57,7 @@ case class ManualTicker(nanos: AtomicLong = new AtomicLong(0), autoIncrementStep
   def advance(nanoseconds: Long): ManualTicker = {
     advance(nanoseconds, TimeUnit.NANOSECONDS)
   }
-  def read: Long = {
+  def currentNanos: Long = {
     nanos.getAndAdd(autoIncrementStepNanos)
   }
 }
@@ -66,7 +66,7 @@ object Ticker {
   // A ticker that reads the current time using System.nanoTime()
   def systemTicker: Ticker = {
     new Ticker {
-      override def read: Long = System.nanoTime()
+      override def currentNanos: Long = System.nanoTime()
     }
   }
 

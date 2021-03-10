@@ -190,12 +190,6 @@ trait RxStreamCache[A] extends RxStream[A] {
   def expireAfterWrite(time: Long, unit: TimeUnit): RxStreamCache[A]
 
   /**
-    * Refresh the cache content after the given duration.
-    * Until getting a new value from the upstream operator, this keeps holding the previous value.
-    */
-  def refreshAfterWrite(time: Long, unit: TimeUnit): RxStreamCache[A]
-
-  /**
     * Set a custom ticker. Use this only for testing purpose
     */
   def withTicker(ticker: Ticker): RxStreamCache[A]
@@ -337,20 +331,11 @@ object Rx extends LogSupport {
       var lastValue: Option[A] = None,
       var lastUpdatedNanos: Long = System.nanoTime(),
       expirationAfterWriteNanos: Option[Long] = None,
-      refreshAfterWriteNanos: Option[Long] = None,
       ticker: Ticker = Ticker.systemTicker
   ) extends UnaryRx[A, A]
       with RxStreamCache[A] {
     override def expireAfterWrite(time: Long, unit: TimeUnit): RxStreamCache[A] = {
       this.copy(expirationAfterWriteNanos = Some(unit.toNanos(time)))
-    }
-
-    /**
-      * Refresh the cache content after the given duration.
-      * Until getting a new value from the upstream operator, this keeps holding the previous value.
-      */
-    override def refreshAfterWrite(time: Long, unit: TimeUnit): RxStreamCache[A] = {
-      this.copy(refreshAfterWriteNanos = Some(unit.toNanos(time)))
     }
 
     /**
