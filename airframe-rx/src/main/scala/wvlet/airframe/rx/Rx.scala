@@ -178,9 +178,27 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     ThrottleLastOp[A](this, timeWindow, unit)
 }
 
+/**
+  * RxStream[A] with a caching capability
+  * @tparam A
+  */
 trait RxStreamCache[A] extends RxStream[A] {
-  def expireAfterWrite(value: Long, unit: TimeUnit): RxStreamCache[A]
-  private[rx] def tick: Unit
+
+  /**
+    * Discard the cached value after the given duration.
+    */
+  def expireAfterWrite(time: Long, unit: TimeUnit): RxStreamCache[A]
+
+  /**
+    * Refresh the cache content after the given duration.
+    * Until getting a new value from the upstream operator, this keeps holding the previous value.
+    */
+  def refreshAfterWrite(time: Long, unit: TimeUnit): RxStreamCache[A]
+
+  /**
+    * Set a custom ticker. Use this only for testing purpose
+    */
+  def withTicker(ticker: Ticker): RxStreamCache[A]
 }
 
 object Rx extends LogSupport {
@@ -316,17 +334,30 @@ object Rx extends LogSupport {
 
   case class CacheOp[A](
       input: Rx[A],
-      private[rx] var lastValue: Option[A] = None,
-      private[rx] var lastUpdatedMillis: Long = System.currentTimeMillis(),
-      private[rx] val expirationAfterWriteMillis: Option[Long] = None
+      var lastValue: Option[A] = None,
+      var lastUpdatedNanos: Long = System.nanoTime(),
+      expirationAfterWriteNanos: Option[Long] = None,
+      refreshAfterWriteNanos: Option[Long] = None,
+      ticker: Ticker = Ticker.systemTicker
   ) extends UnaryRx[A, A]
       with RxStreamCache[A] {
-    override def expireAfterWrite(value: Long, unit: TimeUnit): RxStreamCache[A] =
-      this.copy(expirationAfterWriteMillis = Some(unit.toMillis(value)))
+    override def expireAfterWrite(time: Long, unit: TimeUnit): RxStreamCache[A] = {
+      this.copy(expirationAfterWriteNanos = Some(unit.toNanos(time)))
+    }
 
-    override private[rx] def tick: Unit = {
-      // [Only for testing]: Shift the time to expire the cache
-      lastUpdatedMillis -= expirationAfterWriteMillis.getOrElse(0L)
+    /**
+      * Refresh the cache content after the given duration.
+      * Until getting a new value from the upstream operator, this keeps holding the previous value.
+      */
+    override def refreshAfterWrite(time: Long, unit: TimeUnit): RxStreamCache[A] = {
+      this.copy(refreshAfterWriteNanos = Some(unit.toNanos(time)))
+    }
+
+    /**
+      * Set a custom ticker. Use this only for testing purpose
+      */
+    override def withTicker(ticker: Ticker): RxStreamCache[A] = {
+      this.copy(ticker = ticker)
     }
   }
 }
