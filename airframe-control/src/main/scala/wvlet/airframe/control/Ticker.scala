@@ -22,7 +22,7 @@ trait Ticker {
 }
 
 /**
-  * A Ticker implementation thta can be incremanted for test
+  * A Ticker implementation that can be incremented for test
   */
 class ManualTicker(private var counter: Long = 0) extends Ticker {
   def tick(n: Long): Unit = counter += n

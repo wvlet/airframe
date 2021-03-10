@@ -102,9 +102,13 @@ trait RxOption[+A] extends Rx[Option[A]] {
   def cache[A1 >: A]: RxOptionCache[A1] = RxOptionCacheOp(CacheOp(this))
 }
 
+/**
+  * An interface for enriching RxOption[A] with caching capability
+  * @tparam A
+  */
 trait RxOptionCache[A] extends RxOption[A] {
-  def expireAfterWrite(value: Long, unit: TimeUnit): RxOptionCache[A]
-  private[rx] def tick: Unit
+  def expireAfterWrite(time: Long, unit: TimeUnit): RxOptionCache[A]
+  def withTicker(ticker: Ticker): RxOptionCache[A]
 }
 
 case class RxOptionOp[+A](override protected val in: RxStream[Option[A]]) extends RxOption[A] {
@@ -134,8 +138,10 @@ case class RxOptionCacheOp[A](input: RxStreamCache[Option[A]]) extends RxOptionC
   override protected def in: RxStream[Option[A]] = input.toRxStream
   override def parents: Seq[Rx[_]]               = input.parents
 
-  override def expireAfterWrite(value: Long, unit: TimeUnit): RxOptionCache[A] =
-    this.copy(input = input.expireAfterWrite(value, unit))
+  override def expireAfterWrite(time: Long, unit: TimeUnit): RxOptionCache[A] =
+    this.copy(input = input.expireAfterWrite(time, unit))
 
-  override private[rx] def tick: Unit = input.tick
+  override def withTicker(ticker: Ticker): RxOptionCache[A] = {
+    this.copy(input = input.withTicker(ticker))
+  }
 }
