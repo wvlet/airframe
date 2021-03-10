@@ -6,6 +6,55 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.3.0
+
+This version enhances airframe-rx with convenient operators: Rx.cache, Rx.andThen(Future). This version also includes various bug fixes for gRPC support.   
+
+Since this version, airframe-log and airframe-surface support Scala 3.0.0-RC1. We dropped support for Scala 3.0.0-M3.
+
+### Enhancement
+
+- airframe-rx: Add Rx.cache ([#1525](https://github.com/wvlet/airframe/issues/1525)) [[799628e5](https://github.com/wvlet/airframe/commit/799628e5)]
+- airframe-rx: Cache.expireAfterWrite(...) ([#1529](https://github.com/wvlet/airframe/issues/1529)) [[73dfe139](https://github.com/wvlet/airframe/commit/73dfe139)]
+- airframe-rx: Add Ticker for RxCache ([#1532](https://github.com/wvlet/airframe/issues/1532)) [[49c6a8aa](https://github.com/wvlet/airframe/commit/49c6a8aa)]
+- airframe-rx: [#1505](https://github.com/wvlet/airframe/issues/1505) Add Rx.andThen(Future[X]) and Rx.future[X] ([#1520](https://github.com/wvlet/airframe/issues/1520)) [[b77f0208](https://github.com/wvlet/airframe/commit/b77f0208)]
+- airframe-rx-html: Add beforeRender/beforeUnmount event handler ([#1524](https://github.com/wvlet/airframe/issues/1524)) [[00736358](https://github.com/wvlet/airframe/commit/00736358)]
+- airframe-http: Add a default CircuitBreaker for js HTTP client ([#1521](https://github.com/wvlet/airframe/issues/1521)) [[36594388](https://github.com/wvlet/airframe/commit/36594388)]
+- Upgrade to Scala 3.0.0-RC1 ([#1487](https://github.com/wvlet/airframe/issues/1487)) [[190bf81b](https://github.com/wvlet/airframe/commit/190bf81b)]
+- Upgrade to Scala 2.13.5 ([#1492](https://github.com/wvlet/airframe/issues/1492)) [[f9ed386f](https://github.com/wvlet/airframe/commit/f9ed386f)]
+
+### Bug Fixes
+
+- airframe-http: Fix [#1508](https://github.com/wvlet/airframe/issues/1508) Hide secret RPC parameters from logs ([#1519](https://github.com/wvlet/airframe/issues/1519)) [[7580b4c2](https://github.com/wvlet/airframe/commit/7580b4c2)]
+- airframe-surface: Use jdk8 comptible reflection method ([#1527](https://github.com/wvlet/airframe/issues/1527)) [[71c80abb](https://github.com/wvlet/airframe/commit/71c80abb)]
+- airframe-http: Fixes [#1509](https://github.com/wvlet/airframe/issues/1509). Resolve full package paths for Alias in generated clients ([#1518](https://github.com/wvlet/airframe/issues/1518)) [[bbe33a89](https://github.com/wvlet/airframe/commit/bbe33a89)]
+- airframe-grpc: Fixes [#1494](https://github.com/wvlet/airframe/issues/1494). Support Unit return type ([#1517](https://github.com/wvlet/airframe/issues/1517)) [[e3f00664](https://github.com/wvlet/airframe/commit/e3f00664)]
+- airframe-grpc: Fixes [#1511](https://github.com/wvlet/airframe/issues/1511). Option[X] can be None if missing in the arg ([#1515](https://github.com/wvlet/airframe/issues/1515)) [[2b4ebcad](https://github.com/wvlet/airframe/commit/2b4ebcad)]
+- airframe-grpc: [#1513](https://github.com/wvlet/airframe/issues/1513) Add awaitTermination for closing channels ([#1516](https://github.com/wvlet/airframe/issues/1516)) [[cb43c300](https://github.com/wvlet/airframe/commit/cb43c300)]
+- Remove demo from airframe-rx-widget ([#1501](https://github.com/wvlet/airframe/issues/1501)) [[feaf98f7](https://github.com/wvlet/airframe/commit/feaf98f7)]
+- airframe-surface: javax-annotation dependency is unnecessary ([#1502](https://github.com/wvlet/airframe/issues/1502)) [[aa986c13](https://github.com/wvlet/airframe/commit/aa986c13)]
+
+### Dependency Updates
+
+- Update portable-scala-reflect to 1.1.1 ([#1512](https://github.com/wvlet/airframe/issues/1512)) [[10dc4154](https://github.com/wvlet/airframe/commit/10dc4154)]
+- Update trino-main to 353 ([#1522](https://github.com/wvlet/airframe/issues/1522)) [[9d06e89a](https://github.com/wvlet/airframe/commit/9d06e89a)]
+- Update protobuf-java to 3.15.5 ([#1510](https://github.com/wvlet/airframe/issues/1510)) [[ec7e65be](https://github.com/wvlet/airframe/commit/ec7e65be)]
+- Update scala-parallel-collections to 1.0.1 ([#1507](https://github.com/wvlet/airframe/issues/1507)) [[e03d668f](https://github.com/wvlet/airframe/commit/e03d668f)]
+- Update HikariCP to 4.0.3 ([#1503](https://github.com/wvlet/airframe/issues/1503)) [[0607344e](https://github.com/wvlet/airframe/commit/0607344e)]
+- Update spark-sql to 3.1.1 ([#1499](https://github.com/wvlet/airframe/issues/1499)) [[cf4ed0a5](https://github.com/wvlet/airframe/commit/cf4ed0a5)]
+- Update json4s-jackson to 3.6.11 ([#1498](https://github.com/wvlet/airframe/issues/1498)) [[2a995eef](https://github.com/wvlet/airframe/commit/2a995eef)]
+- Update jmh-core, jmh-generator-bytecode, ... to 1.28 ([#1496](https://github.com/wvlet/airframe/issues/1496)) [[cdf42947](https://github.com/wvlet/airframe/commit/cdf42947)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.36.0 ([#1490](https://github.com/wvlet/airframe/issues/1490)) [[4fffbc66](https://github.com/wvlet/airframe/commit/4fffbc66)]
+- Update snakeyaml to 1.28 ([#1489](https://github.com/wvlet/airframe/issues/1489)) [[076d502e](https://github.com/wvlet/airframe/commit/076d502e)]
+- Update protobuf-java to 3.15.1 ([#1488](https://github.com/wvlet/airframe/issues/1488)) [[a05095cb](https://github.com/wvlet/airframe/commit/a05095cb)]
+- Update scalacheck to 1.15.3 ([#1481](https://github.com/wvlet/airframe/issues/1481)) [[ed34ed0c](https://github.com/wvlet/airframe/commit/ed34ed0c)]
+- Update sbt-dotty to 0.5.3 ([#1480](https://github.com/wvlet/airframe/issues/1480)) [[d166a5ad](https://github.com/wvlet/airframe/commit/d166a5ad)]
+- Update postgresql to 42.2.19 ([#1485](https://github.com/wvlet/airframe/issues/1485)) [[1e4711fe](https://github.com/wvlet/airframe/commit/1e4711fe)]
+- Update sbt-mdoc to 2.2.18 ([#1484](https://github.com/wvlet/airframe/issues/1484)) [[64a51960](https://github.com/wvlet/airframe/commit/64a51960)]
+- Update scala-collection-compat to 2.4.2 ([#1482](https://github.com/wvlet/airframe/issues/1482)) [[cf27d819](https://github.com/wvlet/airframe/commit/cf27d819)]
+- Update airspec to 21.2.0 ([#1479](https://github.com/wvlet/airframe/issues/1479)) [[12d4843b](https://github.com/wvlet/airframe/commit/12d4843b)]
+- Update coursier to 2.0.12 ([#1478](https://github.com/wvlet/airframe/issues/1478)) [[540611f3](https://github.com/wvlet/airframe/commit/540611f3)]
+
 ## 21.2.0
 
 ### New Features
