@@ -33,8 +33,9 @@ new_release_notes <<= "\#\# #{next_version}\n\n"
 new_release_notes <<= logs.split(/\n/)
   .reject{|line| line.include?("#{last_version} release notes")}
   .map{|x|
-    rev = x[0..8]
-    "- #{x[10..-1]} [[#{rev}](#{PREFIX}/commit/#{rev})]\n"
+    m = x.match(/(^[0-9a-f]+)\s+(.*)/)
+    rev = m[1]
+    "- #{m[2]} [[#{rev}](#{PREFIX}/commit/#{rev})]\n"
   }
 
 TMP_RELEASE_NOTES_FILE = "target/release_notes_#{next_version}.md"
