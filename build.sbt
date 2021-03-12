@@ -849,7 +849,7 @@ lazy val sql =
     .settings(
       name := "airframe-sql",
       description := "SQL parser & analyzer",
-      antlr4Version in Antlr4 := "4.9.1",
+      antlr4Version in Antlr4 := "4.9.2",
       antlr4PackageName in Antlr4 := Some("wvlet.airframe.sql.parser"),
       antlr4GenListener in Antlr4 := true,
       antlr4GenVisitor in Antlr4 := true,
