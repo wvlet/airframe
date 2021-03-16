@@ -101,6 +101,11 @@ trait OpenAPIEndpointExample {
   @Endpoint(method = HttpMethod.TRACE, path = "/v1/trace1")
   def trace1(): Unit
 
+  @Endpoint(method = HttpMethod.POST, path = "/v1/multi_method")
+  def multi1(): Unit
+
+  @Endpoint(method = HttpMethod.OPTIONS, path = "/v1/multi_method")
+  def multi2(): Unit
 }
 
 object OpenAPIEndpointExample {

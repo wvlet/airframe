@@ -479,7 +479,62 @@ class OpenAPITest extends AirSpec {
         |    trace:
         |      summary: trace1
         |      description: trace1
-        |      operationId: trace1""".stripMargin
+        |      operationId: trace1""".stripMargin,
+//      """  /v1/multi_method:
+//        |    post:
+//        |      summary: multi1
+//        |      description: multi1
+//        |      operationId: multi1
+//        |      responses:
+//        |        '200':
+//        |          description: 'RPC response'
+//        |        '400':
+//        |          $ref: '#/components/responses/400'
+//        |        '500':
+//        |          $ref: '#/components/responses/500'
+//        |        '503':
+//        |          $ref: '#/components/responses/503'""".stripMargin,
+//      """  /v1/multi_method:
+//        |    options:
+//        |      summary: multi2
+//        |      description: multi2
+//        |      operationId: multi2
+//        |      responses:
+//        |        '200':
+//        |          description: 'RPC response'
+//        |        '400':
+//        |          $ref: '#/components/responses/400'
+//        |        '500':
+//        |          $ref: '#/components/responses/500'
+//        |        '503':
+//        |          $ref: '#/components/responses/503'""".stripMargin,
+      """  /v1/multi_method:
+        |    post:
+        |      summary: multi1
+        |      description: multi1
+        |      operationId: multi1
+        |      responses:
+        |        '200':
+        |          description: 'RPC response'
+        |        '400':
+        |          $ref: '#/components/responses/400'
+        |        '500':
+        |          $ref: '#/components/responses/500'
+        |        '503':
+        |          $ref: '#/components/responses/503'
+        |    options:
+        |      summary: multi2
+        |      description: multi2
+        |      operationId: multi2
+        |      responses:
+        |        '200':
+        |          description: 'RPC response'
+        |        '400':
+        |          $ref: '#/components/responses/400'
+        |        '500':
+        |          $ref: '#/components/responses/500'
+        |        '503':
+        |          $ref: '#/components/responses/503'""".stripMargin,
     )
 
     // For the ease of testing at https://editor.swagger.io/
