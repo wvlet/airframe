@@ -122,7 +122,7 @@ case class OpenAPIGeneratorOption(
     @option(prefix = "-o", description = "output file")
     outFile: File,
     @option(prefix = "-f", description = "format type: yaml (default) or json")
-    formatType: String = "YAML",
+    formatType: String = "yaml",
     @option(prefix = "--title", description = "openapi.title")
     title: String,
     @option(prefix = "--version", description = "openapi.version")
