@@ -114,7 +114,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
   private[openapi] def buildFromRouter(router: Router, config: OpenAPIGeneratorConfig): OpenAPI = {
     val referencedSchemas = Map.newBuilder[String, SchemaOrRef]
 
-    val paths = for (route <- router.routes) yield {
+    val paths: Seq[(String, Map[String, PathItem])] = for (route <- router.routes) yield {
       val routeAnalysis = RouteAnalyzer.analyzeRoute(route)
       trace(routeAnalysis)
 
@@ -273,9 +273,11 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
 
     val schemas = referencedSchemas.result()
 
+    val mergedPaths = mergePaths(paths)
+
     OpenAPI(
       // Use ListMap for preserving the order
-      paths = ListMap.newBuilder.++=(paths).result(),
+      paths = ListMap.newBuilder.++=(mergedPaths).result(),
       components = Some(
         Components(
           schemas = if (schemas.isEmpty) None else Some(schemas),
@@ -285,6 +287,22 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         )
       )
     )
+  }
+
+  /**
+    * Merge PathItems in the same path
+    */
+  private def mergePaths(paths: Seq[(String, Map[String, PathItem])]): Seq[(String, Map[String, PathItem])] = {
+    val b = Seq.newBuilder[(String, Map[String, PathItem])]
+    for ((path, lst) <- paths.groupBy(_._1)) {
+      val pathItems = lst.map(_._2)
+      if (pathItems.size == 0) {
+        b += path -> pathItems.head
+      } else {
+        b += path -> pathItems.reduce(_ ++ _)
+      }
+    }
+    b.result()
   }
 
   import scala.jdk.CollectionConverters._
