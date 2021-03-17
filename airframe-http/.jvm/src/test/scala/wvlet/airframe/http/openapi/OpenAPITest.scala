@@ -480,61 +480,15 @@ class OpenAPITest extends AirSpec {
         |      summary: trace1
         |      description: trace1
         |      operationId: trace1""".stripMargin,
-//      """  /v1/multi_method:
-//        |    post:
-//        |      summary: multi1
-//        |      description: multi1
-//        |      operationId: multi1
-//        |      responses:
-//        |        '200':
-//        |          description: 'RPC response'
-//        |        '400':
-//        |          $ref: '#/components/responses/400'
-//        |        '500':
-//        |          $ref: '#/components/responses/500'
-//        |        '503':
-//        |          $ref: '#/components/responses/503'""".stripMargin,
-//      """  /v1/multi_method:
-//        |    options:
-//        |      summary: multi2
-//        |      description: multi2
-//        |      operationId: multi2
-//        |      responses:
-//        |        '200':
-//        |          description: 'RPC response'
-//        |        '400':
-//        |          $ref: '#/components/responses/400'
-//        |        '500':
-//        |          $ref: '#/components/responses/500'
-//        |        '503':
-//        |          $ref: '#/components/responses/503'""".stripMargin,
-      """  /v1/multi_method:
-        |    post:
+      """  /v1/multi_method:""".stripMargin,
+      """    post:
         |      summary: multi1
         |      description: multi1
-        |      operationId: multi1
-        |      responses:
-        |        '200':
-        |          description: 'RPC response'
-        |        '400':
-        |          $ref: '#/components/responses/400'
-        |        '500':
-        |          $ref: '#/components/responses/500'
-        |        '503':
-        |          $ref: '#/components/responses/503'
-        |    options:
+        |      operationId: multi1""".stripMargin,
+      """    options:
         |      summary: multi2
         |      description: multi2
-        |      operationId: multi2
-        |      responses:
-        |        '200':
-        |          description: 'RPC response'
-        |        '400':
-        |          $ref: '#/components/responses/400'
-        |        '500':
-        |          $ref: '#/components/responses/500'
-        |        '503':
-        |          $ref: '#/components/responses/503'""".stripMargin,
+        |      operationId: multi2""".stripMargin
     )
 
     // For the ease of testing at https://editor.swagger.io/
@@ -542,13 +496,18 @@ class OpenAPITest extends AirSpec {
     //      .setContents(new java.awt.datatransfer.StringSelection(yaml), null)
 
     fragments.foreach { x =>
-      trace(x)
       yaml.contains(x) shouldBe true
     }
 
     // Parsing test
     OpenAPI.parseJson(json)
-    parseOpenAPI(yaml)
+    val oa = parseOpenAPI(yaml)
+
+    test("generate overloaded methods") {
+      val mm = oa.getPaths.get("/v1/multi_method")
+      mm.getOptions shouldNotBe null
+      mm.getPost shouldNotBe null
+    }
   }
 
   private def parseOpenAPI(yamlOrJson: String): io.swagger.v3.oas.models.OpenAPI = {
