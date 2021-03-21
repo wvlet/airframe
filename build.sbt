@@ -935,7 +935,7 @@ lazy val sbtAirframe =
       // This setting might be unnecessary?
       //crossSbtVersions := Vector("1.3.13"),
       libraryDependencies ++= Seq(
-        "io.get-coursier"   %% "coursier"         % "2.0.14",
+        "io.get-coursier"   %% "coursier"         % "2.0.15",
         "org.apache.commons" % "commons-compress" % "1.20"
       ),
       scriptedLaunchOpts := {
