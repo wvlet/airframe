@@ -26,6 +26,15 @@ object Automaton {
   class Automaton[Node, Token](val nodes: Set[Node], val edges: Set[Edge[Node, Token]]) {
     type NodeSet = Set[Node]
 
+    override def toString: String = {
+      s"""[nodes]
+         |${nodes.mkString("\n")}
+         |
+         |[edges]
+         |${edges.mkString("\n")}
+         |""".stripMargin
+    }
+
     def addNode(n: Node): Automaton[Node, Token] = {
       new Automaton(nodes + n, edges)
     }

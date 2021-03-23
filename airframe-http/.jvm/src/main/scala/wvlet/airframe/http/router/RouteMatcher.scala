@@ -71,7 +71,7 @@ object RouteMatcher extends LogSupport {
       .map(_._1).foreach(state =>
         if (state.size > 1 && state.forall(_.isTerminal)) {
           throw new IllegalArgumentException(
-            s"Found multiple matching routes: ${state.map(_.route).flatten.map(p => s"${p.path}").mkString(", ")} "
+            s"Found multiple matching routes: ${state.map(_.matchedRoute).flatten.map(p => s"${p.path}").mkString(", ")} "
           )
         }
       )
@@ -103,7 +103,7 @@ object RouteMatcher extends LogSupport {
                 toContinue = false
                 actions
                   .find(_.isTerminal)
-                  .map { matchedAction => foundRoute = matchedAction.route }
+                  .map { matchedAction => foundRoute = matchedAction.matchedRoute }
                   .getOrElse {
                     // Try empty token shift
                     loop("")
@@ -131,35 +131,53 @@ object RouteMatcher extends LogSupport {
     */
   sealed trait PathMapping {
     // Matched route
-    def route: Option[Route]
-    def isTerminal: Boolean                                                             = route.isDefined
+    def matchedRoute: Option[Route]
+    // Path prefix
+    def pathPrefix: String
+    def isTerminal: Boolean                                                             = matchedRoute.isDefined
     def isRepeat: Boolean                                                               = false
     def updateMatch(m: Map[String, String], pathComponent: String): Map[String, String] = m
   }
+
+  /**
+    * Initial state
+    */
   case object Init extends PathMapping {
-    override def route: Option[Route] = None
+    override def matchedRoute: Option[Route] = None
+    override def pathPrefix: String          = ""
   }
-  case class VariableMapping(index: Int, varName: String, route: Option[Route]) extends PathMapping {
+
+  /**
+    * Mapping a variable in the path. For example, /v1/user/:id has a variable 'id'.
+    */
+  case class VariableMapping(pathPrefix: String, index: Int, varName: String, matchedRoute: Option[Route])
+      extends PathMapping {
     override def toString: String = {
-      val t = s"[${index}]/$$${varName}"
+      val t = s"${pathPrefix}/$$${varName}"
       if (isTerminal) s"!${t}" else t
     }
     override def updateMatch(m: Map[String, String], pathComponent: String): Map[String, String] = {
       m + (varName -> pathComponent)
     }
   }
-  case class ConstantPathMapping(index: Int, name: String, route: Option[Route]) extends PathMapping {
+
+  /**
+    * Mapping an exact path component name to Routes.
+    */
+  case class ConstantPathMapping(pathPrefix: String, index: Int, name: String, matchedRoute: Option[Route])
+      extends PathMapping {
     override def toString: String = {
-      val t = s"[${index}]/${name}"
+      val t = s"${pathPrefix}/${name}"
       if (isTerminal) s"!${t}" else t
     }
   }
 
   /**
-    * Matching the tail of path components to a single variable
+    * *(varname) syntax. Matching the tail of path components to a single variable.
     */
-  case class PathSequenceMapping(index: Int, varName: String, route: Option[Route]) extends PathMapping {
-    override def toString: String    = s"![${index}]/*${varName}"
+  case class PathSequenceMapping(pathPrefix: String, index: Int, varName: String, matchedRoute: Option[Route])
+      extends PathMapping {
+    override def toString: String    = s"!${pathPrefix}/*${varName}"
     override def isTerminal: Boolean = true
     override def isRepeat: Boolean   = true
     override def updateMatch(m: Map[String, String], pathComponent: String): Map[String, String] = {
@@ -175,7 +193,7 @@ object RouteMatcher extends LogSupport {
 
   private[http] def buildPathDFA(routes: Seq[Route]): DFA[Set[PathMapping], String] = {
     // Convert http path patterns (Route) to mapping operations (List[PathMapping])
-    def toPathMapping(r: Route, pathIndex: Int): List[PathMapping] = {
+    def toPathMapping(r: Route, pathIndex: Int, prefix: String): List[PathMapping] = {
       if (pathIndex >= r.pathComponents.length) {
         Nil
       } else {
@@ -183,18 +201,27 @@ object RouteMatcher extends LogSupport {
         r.pathComponents(pathIndex) match {
           case x if x.startsWith(":") =>
             val varName = x.substring(1)
-            VariableMapping(pathIndex, varName, if (isTerminal) Some(r) else None) :: toPathMapping(
+            VariableMapping(prefix, pathIndex, varName, if (isTerminal) Some(r) else None) :: toPathMapping(
               r,
-              pathIndex + 1
+              pathIndex + 1,
+              s"${prefix}/${x}"
             )
           case x if x.startsWith("*") =>
             if (!isTerminal) {
               throw new IllegalArgumentException(s"${r.path} cannot have '*' in the middle of the path")
             }
             val varName = x.substring(1)
-            PathSequenceMapping(pathIndex, varName, Some(r)) :: toPathMapping(r, pathIndex + 1)
+            PathSequenceMapping(prefix, pathIndex, varName, Some(r)) :: toPathMapping(
+              r,
+              pathIndex + 1,
+              s"${prefix}/${x}"
+            )
           case x =>
-            ConstantPathMapping(pathIndex, x, if (isTerminal) Some(r) else None) :: toPathMapping(r, pathIndex + 1)
+            ConstantPathMapping(prefix, pathIndex, x, if (isTerminal) Some(r) else None) :: toPathMapping(
+              r,
+              pathIndex + 1,
+              s"${prefix}/${x}"
+            )
         }
       }
     }
@@ -202,14 +229,15 @@ object RouteMatcher extends LogSupport {
     // Build an NFA of path patterns
     var g = Automaton.empty[PathMapping, String]
     for (r <- routes) {
-      val pathMappings = Init :: toPathMapping(r, 0)
+      val pathMappings = Init :: toPathMapping(r, 0, "")
+      trace(pathMappings)
       for (it <- pathMappings.sliding(2)) {
         val pair   = it.toIndexedSeq
         val (a, b) = (pair(0), pair(1))
         b match {
-          case ConstantPathMapping(_, token, _) =>
+          case ConstantPathMapping(_, _, token, _) =>
             g = g.addEdge(a, token, b)
-          case PathSequenceMapping(_, _, _) =>
+          case PathSequenceMapping(_, _, _, _) =>
             g = g.addEdge(a, anyToken, b)
             // Add self-cycle edge for keep reading as sequence of paths
             g = g.addEdge(b, anyToken, b)
@@ -218,6 +246,8 @@ object RouteMatcher extends LogSupport {
         }
       }
     }
+
+    trace(s"NFA:\n${g}")
     // Convert the NFA into DFA to uniquely determine the next state in the automation.
     g.toDFA(Init, defaultToken = anyToken)
   }
