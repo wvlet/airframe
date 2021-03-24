@@ -98,3 +98,14 @@ trait PrefixExample {
     "hello"
   }
 }
+
+trait NextedPathsExample {
+  @Endpoint(path = "/v1/hello/world")
+  def hello: String = {
+    "hello"
+  }
+  @Endpoint(path = "/v2/hello/world")
+  def helloV1: String = {
+    "hello"
+  }
+}

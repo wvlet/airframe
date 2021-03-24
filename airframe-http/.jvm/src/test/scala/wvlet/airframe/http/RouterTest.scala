@@ -59,6 +59,17 @@ class RouterTest extends AirSpec {
     r.routes.find(_.path == "/v1/hello") shouldBe defined
   }
 
+  def `support nested prefixed paths`: Unit = {
+    val r = Router
+      .add[NextedPathsExample]
+
+    val r1 = r.findRoute(Http.GET("/v1/hello/world"))
+    r1 shouldBe defined
+
+    val r2 = r.findRoute(Http.GET("/v2/hello/world"))
+    r2 shouldBe defined
+  }
+
   trait RouteA
   trait RouteB
   trait RouteC
