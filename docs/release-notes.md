@@ -6,6 +6,26 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.3.1
+
+This is a bug fix release of airframe-http. 
+
+- airframe-http: Fixes [#1546](https://github.com/wvlet/airframe/issues/1546) by adding path prefixes to disambiguate NFA nodes ([#1547](https://github.com/wvlet/airframe/issues/1547)) [[910e20324](https://github.com/wvlet/airframe/commit/910e20324)]
+- airframe-http: Fix OpenAPI generator to merge PathItems in the same path ([#1541](https://github.com/wvlet/airframe/issues/1541)) [[f079f8c1d](https://github.com/wvlet/airframe/commit/f079f8c1d)]
+- grpc: Update grpc-netty-shaded, grpc-protobuf, ... to 1.36.1 ([#1550](https://github.com/wvlet/airframe/issues/1550)) [[426d27e89](https://github.com/wvlet/airframe/commit/426d27e89)]
+
+### Internal Updates
+- Update jmh-core, jmh-generator-bytecode, ... to 1.29 ([#1549](https://github.com/wvlet/airframe/issues/1549)) [[21ddee73d](https://github.com/wvlet/airframe/commit/21ddee73d)]
+- Update coursier to 2.0.16 ([#1548](https://github.com/wvlet/airframe/issues/1548)) [[ff1fdea48](https://github.com/wvlet/airframe/commit/ff1fdea48)]
+- Update trino-main to 354 ([#1544](https://github.com/wvlet/airframe/issues/1544)) [[454d3cdec](https://github.com/wvlet/airframe/commit/454d3cdec)]
+- Update coursier to 2.0.14 ([#1542](https://github.com/wvlet/airframe/issues/1542)) [[f09add84d](https://github.com/wvlet/airframe/commit/f09add84d)]
+- Change the default value for the formatType parameter ([#1540](https://github.com/wvlet/airframe/issues/1540)) [[33e076c36](https://github.com/wvlet/airframe/commit/33e076c36)]
+- Update sbt-sonatype to 3.9.7 ([#1538](https://github.com/wvlet/airframe/issues/1538)) [[ebb9aad02](https://github.com/wvlet/airframe/commit/ebb9aad02)]
+- Update antlr4, antlr4-runtime to 4.9.2 ([#1537](https://github.com/wvlet/airframe/issues/1537)) [[111759b5f](https://github.com/wvlet/airframe/commit/111759b5f)]
+- Update protobuf-java to 3.15.6 ([#1536](https://github.com/wvlet/airframe/issues/1536)) [[1c6135ccc](https://github.com/wvlet/airframe/commit/1c6135ccc)]
+- Update sbt-sonatype to 3.9.6 ([#1534](https://github.com/wvlet/airframe/issues/1534)) [[b36e55bfd](https://github.com/wvlet/airframe/commit/b36e55bfd)]
+- Update airspec to 21.3.0 ([#1533](https://github.com/wvlet/airframe/issues/1533)) [[22f1feb7c](https://github.com/wvlet/airframe/commit/22f1feb7c)]
+
 ## 21.3.0
 
 This version enhances airframe-rx with convenient operators: Rx.cache, Rx.andThen(Future). This version also includes various bug fixes for gRPC support.   
