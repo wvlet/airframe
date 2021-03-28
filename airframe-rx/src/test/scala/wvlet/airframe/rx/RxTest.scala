@@ -346,13 +346,27 @@ object RxTest extends AirSpec {
     }
   }
 
+  test("handle exception in Future[X]") {
+    val p = Promise[Int]()
+    val rx = Rx
+      .future(p.future)
+      .map(_ * 2)
+      .recover { case e: IllegalArgumentException => -1 }
+    rx.run { x =>
+      x shouldBe -1
+    }
+    p.failure(new IllegalArgumentException)
+  }
+
   test("Future response") {
     val p = Promise[Int]()
     val rx = Rx.future(p.future).map { x =>
       x * 2
     }
     p.complete(Try(10))
-    rx.run(x => x shouldBe 20)
+    rx.run { x =>
+      x shouldBe 20
+    }
   }
 
   test("andThen(Future[X])") {
