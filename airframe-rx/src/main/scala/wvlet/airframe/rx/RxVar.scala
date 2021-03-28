@@ -15,6 +15,7 @@ package wvlet.airframe.rx
 
 import scala.collection.mutable.ArrayBuffer
 import scala.language.higherKinds
+import scala.util.Try
 
 /**
   * A reactive variable supporting update and propagation of the updated value to the chained operators
@@ -34,8 +35,9 @@ class RxVar[A](private var currentValue: A) extends RxStream[A] with RxVarOps[A]
       ev match {
         case OnNext(v) =>
           f(v.asInstanceOf[A])
+        case OnError(e) =>
+          throw e
         case _ =>
-
       }
     }
     foreachEvent(s)
@@ -66,7 +68,7 @@ class RxVar[A](private var currentValue: A) extends RxStream[A] with RxVarOps[A]
   private def propagateEvent(e: RxEvent): Unit = {
     subscribers.foreach { s =>
       // The subscriber instance might be null if it is cleaned up in JS
-      Option(s).foreach(subscriber => subscriber(e))
+      Option(s).foreach(subscriber => Try(subscriber(e)))
     }
   }
 

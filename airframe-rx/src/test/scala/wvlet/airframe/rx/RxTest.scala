@@ -12,12 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx
-import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import wvlet.airframe.Design
-import wvlet.airframe.rx.Rx.CacheOp
 import wvlet.airspec.AirSpec
 
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import scala.concurrent.{Future, Promise}
 import scala.util.Try
 
