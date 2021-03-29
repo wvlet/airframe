@@ -153,7 +153,7 @@ class GrpcServer(grpcService: GrpcService, server: Server) extends AutoCloseable
   }
 }
 
-object GrpcServer extends LogSupport {
+object GrpcServer {
   private[grpc] def newAsyncExecutorFactory(config: GrpcServerConfig): ExecutorService = {
     new ForkJoinPool(
       // The number of threads
@@ -163,7 +163,6 @@ object GrpcServer extends LogSupport {
         override def newThread(pool: ForkJoinPool): ForkJoinWorkerThread = {
           val thread = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool)
           val name   = s"grpc-${config.name}-${threadCount.getAndIncrement()}"
-          logger.warn(s"Created ${name}")
           thread.setDaemon(true)
           thread.setName(name)
           thread
