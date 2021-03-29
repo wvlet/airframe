@@ -21,7 +21,9 @@ import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
-import java.util.concurrent.{ExecutorService, Executors}
+import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{ExecutorService, ForkJoinPool, ForkJoinWorkerThread}
 import scala.language.existentials
 
 /**
@@ -33,9 +35,8 @@ case class GrpcServerConfig(
     router: Router = Router.empty,
     interceptors: Seq[ServerInterceptor] = Seq.empty,
     serverInitializer: ServerBuilder[_] => ServerBuilder[_] = identity,
-    executorProvider: GrpcServerConfig => ExecutorService = { config: GrpcServerConfig =>
-      Executors.newCachedThreadPool()
-    },
+    executorProvider: GrpcServerConfig => ExecutorService = GrpcServer.newAsyncExecutorFactory,
+    maxThreads: Int = (Runtime.getRuntime.availableProcessors() * 2).max(2),
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForMapOutput,
     requestLoggerProvider: GrpcServerConfig => GrpcRequestLogger = { config: GrpcServerConfig =>
       GrpcRequestLogger
@@ -72,6 +73,12 @@ case class GrpcServerConfig(
     */
   def withExecutorServiceProvider(provider: GrpcServerConfig => ExecutorService) =
     this.copy(executorProvider = provider)
+
+  /**
+    * Set the maximum number of grpc server threads. The default is max(the number of CPU x 2, 2).
+    * If you are using a custom ExecutorService, this setting might not be effective.
+    */
+  def withMaxThreads(numThreads: Int) = this.copy(maxThreads = numThreads)
 
   def withCodecFactory(newCodecFactory: MessageCodecFactory) = this.copy(codecFactory = newCodecFactory)
 
@@ -143,5 +150,27 @@ class GrpcServer(grpcService: GrpcService, server: Server) extends AutoCloseable
     info(s"Closing gRPC server [${grpcService.config.name}] at ${localAddress}")
     server.shutdownNow()
     grpcService.close()
+  }
+}
+
+object GrpcServer extends LogSupport {
+  private[grpc] def newAsyncExecutorFactory(config: GrpcServerConfig): ExecutorService = {
+    new ForkJoinPool(
+      // The number of threads
+      config.maxThreads,
+      new ForkJoinWorkerThreadFactory() {
+        private val threadCount = new AtomicInteger()
+        override def newThread(pool: ForkJoinPool): ForkJoinWorkerThread = {
+          val thread = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool)
+          val name   = s"grpc-${config.name}-${threadCount.getAndIncrement()}"
+          logger.warn(s"Created ${name}")
+          thread.setDaemon(true)
+          thread.setName(name)
+          thread
+        }
+      },
+      null, // Use the default behavior for unrecoverable exceptions
+      true  // Enable asyncMode as grpc server will never join
+    );
   }
 }
