@@ -307,12 +307,12 @@ class RxRunner(
         }
         Cancelable.empty
       case o: RxOptionVar[_] =>
-        o.asInstanceOf[RxOptionVar[A]].foreach { v =>
-          effect(OnNext(v))
+        o.asInstanceOf[RxOptionVar[A]].foreachEvent { ev =>
+          effect(ev)
         }
       case v: RxVar[_] =>
-        v.asInstanceOf[RxVar[A]].foreach { x =>
-          effect(OnNext(x))
+        v.asInstanceOf[RxVar[A]].foreachEvent { ev =>
+          effect(ev)
         }
       case RecoverOp(in, f) =>
         run(in) { ev =>

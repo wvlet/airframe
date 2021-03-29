@@ -15,14 +15,15 @@ package wvlet.airframe.rx
 
 import scala.collection.mutable.ArrayBuffer
 import scala.language.higherKinds
+import scala.util.Try
 
 /**
   * A reactive variable supporting update and propagation of the updated value to the chained operators
   */
 class RxVar[A](private var currentValue: A) extends RxStream[A] with RxVarOps[A] {
-  override def toString: String                       = s"RxVar(${currentValue})"
-  override def parents: Seq[Rx[_]]                    = Seq.empty
-  private var subscribers: ArrayBuffer[Subscriber[A]] = ArrayBuffer.empty
+  override def toString: String                        = s"RxVar(${currentValue})"
+  override def parents: Seq[Rx[_]]                     = Seq.empty
+  private var subscribers: ArrayBuffer[RxEvent => Any] = ArrayBuffer.empty
 
   override def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOptionVar[X] =
     new RxOptionVar(this.asInstanceOf[RxVar[Option[X]]])
@@ -30,13 +31,25 @@ class RxVar[A](private var currentValue: A) extends RxStream[A] with RxVarOps[A]
   override def get: A = currentValue
 
   override def foreach[U](f: A => U): Cancelable = {
-    val s = Subscriber(f)
+    val s = { ev: RxEvent =>
+      ev match {
+        case OnNext(v) =>
+          f(v.asInstanceOf[A])
+        case OnError(e) =>
+          throw e
+        case _ =>
+      }
+    }
+    foreachEvent(s)
+  }
+
+  override def foreachEvent[U](effect: RxEvent => U): Cancelable = {
     // Register a subscriber for propagating future changes
-    subscribers += s
-    f(currentValue)
+    subscribers += effect
+    effect(OnNext(currentValue))
     Cancelable { () =>
       // Unsubscribe if cancelled
-      subscribers -= s
+      subscribers -= effect
     }
   }
 
@@ -48,13 +61,23 @@ class RxVar[A](private var currentValue: A) extends RxStream[A] with RxVarOps[A]
     val newValue = updater(currentValue)
     if (force || currentValue != newValue) {
       currentValue = newValue
-      subscribers.map { s =>
-        // The subscriber instance might be null if it is cleaned up in JS
-        Option(s).foreach(_.apply(newValue))
-      }
+      propagateEvent(OnNext(newValue))
     }
   }
+
+  private def propagateEvent(e: RxEvent): Unit = {
+    subscribers.foreach { s =>
+      // The subscriber instance might be null if it is cleaned up in JS
+      Option(s).foreach(subscriber => Try(subscriber(e)))
+    }
+  }
+
+  override def setException(e: Throwable): Unit = {
+    propagateEvent(OnError(e))
+  }
 }
+
+object RxVar {}
 
 trait RxVarOps[A] {
   def get: A
@@ -83,4 +106,12 @@ trait RxVarOps[A] {
     * currentValue => newValue
     */
   def update(updater: A => A, force: Boolean = false): Unit
+
+  /**
+    * Propagate an error to the subscribers
+    */
+  def setException(e: Throwable): Unit
+
+  def foreachEvent[U](effect: RxEvent => U): Cancelable
+
 }

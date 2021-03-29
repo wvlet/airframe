@@ -128,10 +128,16 @@ class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarO
   override def foreach[U](f: Option[A] => U): Cancelable = {
     variable.foreach(f)
   }
+  override def foreachEvent[U](effect: RxEvent => U): Cancelable = {
+    variable.foreachEvent(effect)
+  }
   override def update(updater: Option[A] => Option[A], force: Boolean = false): Unit = {
     variable.update(updater, force)
   }
 
+  override def setException(e: Throwable): Unit = {
+    variable.setException(e)
+  }
 }
 
 case class RxOptionCacheOp[A](input: RxStreamCache[Option[A]]) extends RxOptionCache[A] {

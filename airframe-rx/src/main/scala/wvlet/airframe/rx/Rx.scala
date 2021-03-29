@@ -14,13 +14,12 @@
 package wvlet.airframe.rx
 
 import java.util.concurrent.TimeUnit
-
 import wvlet.airframe.rx.Rx.{RecoverOp, RecoverWithOp}
 import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
-import scala.util.{Failure, Try}
+import scala.util.{Failure, Success, Try}
 
 trait Rx[+A] {
   def parents: Seq[Rx[_]]
@@ -245,6 +244,11 @@ object Rx extends LogSupport {
     val v = Rx.variable[Option[A]](None)
     f.foreach { x =>
       v := Some(x)
+    }
+    f.onComplete {
+      case Success(_) =>
+      case Failure(e) =>
+        v.setException(e)
     }
     v
   }
