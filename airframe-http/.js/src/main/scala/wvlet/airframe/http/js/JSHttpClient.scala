@@ -200,11 +200,16 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
             } else if (!isRetryable) {
               promise.failure(cause)
             } else {
-              dispatch(retryContext.nextRetry(cause), request).onComplete {
-                case Success(resp) =>
-                  promise.success(resp)
-                case Failure(e) =>
-                  promise.failure(e)
+              val nextRetry  = retryContext.nextRetry(cause)
+              val waitMillis = retryContext.nextWaitMillis
+              // Wait before the next request
+              scalajs.js.timers.setTimeout(waitMillis) {
+                dispatch(nextRetry, request).onComplete {
+                  case Success(resp) =>
+                    promise.success(resp)
+                  case Failure(e) =>
+                    promise.failure(e)
+                }
               }
             }
         }
