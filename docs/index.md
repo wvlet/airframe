@@ -119,8 +119,8 @@ val codec = MessageCodec.of[Person]
 
 // Serialize in JSON or MessagePack
 val a = Person(1, "Ann")
-val json = codec.toJson()       // {"id":1,"name":"Ann"}
-val msgpack = codec.toMsgPack() // MessagePack ArrayValue: [1,"name"]
+val json = codec.toJson(a)       // {"id":1,"name":"Ann"}
+val msgpack = codec.toMsgPack(a) // MessagePack ArrayValue: [1,"name"]
 
 // Deserialize from JSON or MessagePack
 codec.fromJson(json)       // Person(1, "Ann")
@@ -325,4 +325,3 @@ We also have developed sbt plugins for packaging and publishing your projects:
 - [sbt-sonatype](https://github.com/xerial/sbt-sonatype)
   - A sbt plugin for publishing Scala/Java projects to the Maven central.
   - Enables [a single command release](https://github.com/xerial/sbt-sonatype#using-with-sbt-release-plugin) of your project.
-
