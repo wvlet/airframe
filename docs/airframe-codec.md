@@ -73,8 +73,8 @@ val codec = MessageCodec.of[Person]
 
 // Serialize in JSON or MessagePack
 val a = Person(1, "Ann")
-val json = codec.toJson()       // {"id":1,"name":"Ann"}
-val msgpack = codec.toMsgPack() // MessagePack ArrayValue: [1,"name"]
+val json = codec.toJson(a)       // {"id":1,"name":"Ann"}
+val msgpack = codec.toMsgPack(a) // MessagePack ArrayValue: [1,"name"]
 
 // Deserialize from JSON or MessagePack
 codec.fromJson(json)       // Person(1, "Ann")
