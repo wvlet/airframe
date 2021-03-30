@@ -148,8 +148,8 @@ libraryDependencies ++= <span class="hljs-type">Seq</span>(
 
 <span class="hljs-comment">// Serialize in JSON or MessagePack</span>
 <span class="hljs-keyword">val</span> a = <span class="hljs-type">Person</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"Ann"</span>)
-<span class="hljs-keyword">val</span> json = codec.toJson()       <span class="hljs-comment">// {"id":1,"name":"Ann"}</span>
-<span class="hljs-keyword">val</span> msgpack = codec.toMsgPack() <span class="hljs-comment">// MessagePack ArrayValue: [1,"name"]</span>
+<span class="hljs-keyword">val</span> json = codec.toJson(a)       <span class="hljs-comment">// {"id":1,"name":"Ann"}</span>
+<span class="hljs-keyword">val</span> msgpack = codec.toMsgPack(a) <span class="hljs-comment">// MessagePack ArrayValue: [1,"name"]</span>
 
 <span class="hljs-comment">// Deserialize from JSON or MessagePack</span>
 codec.fromJson(json)       <span class="hljs-comment">// Person(1, "Ann")</span>
