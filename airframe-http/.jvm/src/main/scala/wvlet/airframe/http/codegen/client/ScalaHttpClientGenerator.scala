@@ -179,6 +179,7 @@ object ScalaJSClientGenerator extends HttpClientGenerator {
          |import wvlet.airframe.surface.Surface
          |import wvlet.airframe.http.js.JSHttpClient
          |import wvlet.airframe.http.HttpMessage.Request
+         |import wvlet.airframe.rx.RxStream
          |
          |${jsClientCls}
          |
@@ -206,8 +207,8 @@ object ScalaJSClientGenerator extends HttpClientGenerator {
          |  /**
          |    * Override this method to add a common error handling
          |    */
-         |  protected def toRx[A](future:Future[A]): wvlet.airframe.rx.RxStream[A] = {
-         |    client.config.rxConverter(future).asInstanceOf[wvlet.airframe.rx.RxStream[A]]
+         |  protected def toRx[A](future:Future[A]): RxStream[A] = {
+         |    client.config.rxConverter(future).asInstanceOf[RxStream[A]]
          |  }
          |
          |${indent(rpcClientBody)}
