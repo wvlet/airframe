@@ -10,7 +10,7 @@ addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.5.4")
 addDependencyTreePlugin
 
 // For Scala.js
-val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.5.0")
+val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.5.1")
 addSbtPlugin("org.scala-js"  % "sbt-scalajs"         % SCALAJS_VERSION)
 addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.20.0")
 libraryDependencies ++= (
