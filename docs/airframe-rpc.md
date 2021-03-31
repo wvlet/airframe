@@ -250,7 +250,7 @@ lazy val ui =
     .enablePlugins(ScalaJSPlugin, AirframeHttpPlugin)
     .settings(
       buildSettings,
-      // sbt-airframe generates Scala.js HTTP client: ServiceJSClient with this setting:
+      // sbt-airframe generates Scala.js HTTP client: ServiceJSClient(Rx) with this setting:
       airframeHttpClients := Seq("myapp.app.v1:scalajs"),
       // Enable debug logging of sbt-airframe
       airframeHttpGeneratorOption := "-l debug"

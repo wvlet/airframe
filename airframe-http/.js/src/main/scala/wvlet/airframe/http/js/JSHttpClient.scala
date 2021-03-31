@@ -23,6 +23,7 @@ import wvlet.airframe.http.HttpClient.defaultBeforeRetryAction
 import wvlet.airframe.http.HttpMessage._
 import wvlet.airframe.http._
 import wvlet.airframe.http.js.JSHttpClient.MessageEncoding
+import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
 
@@ -71,7 +72,10 @@ case class JSHttpClientConfig(
     retryContext: RetryContext = JSHttpClient.defaultHttpClientRetryer,
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
     // The default circuit breaker, which will be open after 5 consecutive failures
-    circuitBreaker: CircuitBreaker = CircuitBreaker.withConsecutiveFailures(5)
+    circuitBreaker: CircuitBreaker = CircuitBreaker.withConsecutiveFailures(5),
+    rxConverter: Future[_] => RxStream[_] = { f: Future[_] =>
+      Rx.future(f)(scala.scalajs.concurrent.JSExecutionContext.queue)
+    }
 ) {
   def withServerAddress(newServerAddress: ServerAddress): JSHttpClientConfig = {
     this.copy(serverAddress = Some(newServerAddress))
@@ -95,6 +99,14 @@ case class JSHttpClientConfig(
   }
   def noCircuitBreaker: JSHttpClientConfig = {
     this.copy(circuitBreaker = CircuitBreaker.alwaysClosed)
+  }
+
+  /**
+    * Converter Future[A] to Rx[A].
+    * Use this method when you need to add a common error handler (e.g., with Rx.recover)
+    */
+  def withRxConverter(f: Future[_] => RxStream[_]): JSHttpClientConfig = {
+    this.copy(rxConverter = f)
   }
 }
 

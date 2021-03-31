@@ -74,6 +74,11 @@ class HttpClientGeneratorTest extends AirSpec {
       code.contains("""Map("limit" -> limit, "sort" -> sort)""") shouldBe true
     }
     code.contains("import java.lang.Object") shouldBe false
+
+    test("generate ServiceJSClientRx") {
+      code.contains("class ServiceJSClientRx") shouldBe true
+      code.contains(": RxStream[scala.collection.Seq[example.Book]] = ")
+    }
   }
 
   test("scan classes") {
