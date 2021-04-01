@@ -177,6 +177,16 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     */
   def sample(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): RxStream[A] =
     ThrottleLastOp[A](this, timeWindow, unit)
+
+  /**
+    * Emit the given item first before returning the items from the source.
+    */
+  def startWith[A1 >: A](a: A1): RxStream[A1] = Rx.concat(Rx.single(a), this)
+
+  /**
+    * Emit the given items first before returning the items from the source.
+    */
+  def startWith[A1 >: A](lst: Seq[A1]): RxStream[A1] = Rx.concat(Rx.fromSeq(lst), this)
 }
 
 /**
