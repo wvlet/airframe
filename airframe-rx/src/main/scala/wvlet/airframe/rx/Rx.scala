@@ -81,6 +81,8 @@ trait Rx[+A] {
 }
 
 /**
+  * The base reactive stream interface that can receive events from upstream operators and chain
+  * next actions using Scala-collection like operators (e.g., map, filter, etc.)
   */
 trait RxStream[+A] extends Rx[A] with LogSupport {
   import Rx._

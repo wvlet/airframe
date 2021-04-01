@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.codegen.client
 
-import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, ClientSourceDef}
+import wvlet.airframe.http.codegen.HttpClientIR.{ClientMethodDef, ClientServiceDef, ClientSourceDef}
 
 /**
   */
@@ -172,52 +172,95 @@ object ScalaJSClientGenerator extends HttpClientGenerator {
   override def defaultFileName: String  = "ServiceJSClient.scala"
   override def defaultClassName: String = "ServiceJSClient"
   override def generate(src: ClientSourceDef): String = {
-    def code =
+    def code: String =
       s"""${header(src.destPackageName)}
          |
          |import scala.concurrent.Future
          |import wvlet.airframe.surface.Surface
          |import wvlet.airframe.http.js.JSHttpClient
          |import wvlet.airframe.http.HttpMessage.Request
+         |import wvlet.airframe.rx.RxStream
          |
-         |${cls}""".stripMargin
+         |${jsClientCls}
+         |
+         |${rpcClientCls}""".stripMargin
 
-    def cls: String =
+    def jsClientCls: String =
       s"""class ${src.classDef.clsName}(private val client: JSHttpClient = JSHttpClient.defaultClient) {
          |  def getClient: JSHttpClient = client
          |
          |${indent(clsBody)}
-         |}
-         |""".stripMargin
+         |}""".stripMargin
 
     def clsBody: String = {
       generateNestedStub(src) { svc =>
         s"""object ${svc.serviceName} {
-           |${indent(serviceBody(svc))}
+           |${indent(serviceBodyForFuture(svc))}
            |}""".stripMargin
       }
     }
 
-    def serviceBody(svc: ClientServiceDef): String = {
+    def rpcClientCls: String =
+      s"""class ${src.classDef.clsName}Rx(private val client: JSHttpClient = JSHttpClient.defaultClient) {
+         |  def getClient: JSHttpClient = client
+         |
+         |  /**
+         |    * Override this method to add a common error handling
+         |    */
+         |  protected def toRx[A](future:Future[A]): RxStream[A] = {
+         |    client.config.rxConverter(future).asInstanceOf[RxStream[A]]
+         |  }
+         |
+         |${indent(rpcClientBody)}
+         |}""".stripMargin
+
+    def rpcClientBody: String = {
+      generateNestedStub(src) { svc =>
+        s"""object ${svc.serviceName} {
+           |${indent(serviceBodyForRPC(svc))}
+           |}""".stripMargin
+      }
+    }
+
+    def inputArgs(m: ClientMethodDef): String = {
+      val args = m.inputParameters.map(x => s"${x.name}: ${x.surface.fullTypeName}") ++
+        Seq("requestFilter: Request => Request = identity")
+      args.mkString(", ")
+    }
+
+    def sendRequestArgs(m: ClientMethodDef): String = {
+      val args = Seq.newBuilder[String]
+      args += s"""resourcePath = s"${m.path}""""
+      args ++= m.clientCallParameters
+      args ++= m.typeArgs.map(s => s"Surface.of[${s.fullTypeName}]")
+      args += "requestFilter = requestFilter"
+      args.result().mkString(", ")
+    }
+
+    def serviceBodyForFuture(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
-          val inputArgs = {
-            m.inputParameters.map(x => s"${x.name}: ${x.surface.fullTypeName}") ++
-              Seq("requestFilter: Request => Request = identity")
-          }
-
-          val sendRequestArgs = Seq.newBuilder[String]
-          sendRequestArgs += s"""resourcePath = s"${m.path}""""
-          sendRequestArgs ++= m.clientCallParameters
-          sendRequestArgs ++= m.typeArgs.map(s => s"Surface.of[${s.fullTypeName}]")
-          sendRequestArgs += "requestFilter = requestFilter"
-
           val lines = Seq.newBuilder[String]
           m.requestModelClassDef.foreach { x =>
             lines += x.code()
           }
-          lines += s"def ${m.name}(${inputArgs.mkString(", ")}): Future[${m.returnType.fullTypeName}] = {"
-          lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs.result().mkString(", ")})"
+          lines += s"def ${m.name}(${inputArgs(m)}): Future[${m.returnType.fullTypeName}] = {"
+          lines += s"  client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs(m)})"
+          lines += s"}"
+          lines.result().mkString("\n")
+        }
+        .mkString("\n")
+    }
+
+    def serviceBodyForRPC(svc: ClientServiceDef): String = {
+      svc.methods
+        .map { m =>
+          val lines = Seq.newBuilder[String]
+          m.requestModelClassDef.foreach { x =>
+            lines += x.code()
+          }
+          lines += s"def ${m.name}(${inputArgs(m)}): RxStream[${m.returnType.fullTypeName}] = {"
+          lines += s"  toRx(client.${m.clientMethodName}[${m.typeArgString}](${sendRequestArgs(m)}))"
           lines += s"}"
           lines.result().mkString("\n")
         }
