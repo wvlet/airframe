@@ -274,7 +274,7 @@ addSbtPlugin(<span class="hljs-string">"org.portable-scala"</span> % <span class
     .enablePlugins(<span class="hljs-type">ScalaJSPlugin</span>, <span class="hljs-type">AirframeHttpPlugin</span>)
     .settings(
       buildSettings,
-      <span class="hljs-comment">// sbt-airframe generates Scala.js HTTP client: ServiceJSClient with this setting:</span>
+      <span class="hljs-comment">// sbt-airframe generates Scala.js HTTP client: ServiceJSClient(Rx) with this setting:</span>
       airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"myapp.app.v1:scalajs"</span>),
       <span class="hljs-comment">// Enable debug logging of sbt-airframe</span>
       airframeHttpGeneratorOption := <span class="hljs-string">"-l debug"</span>
