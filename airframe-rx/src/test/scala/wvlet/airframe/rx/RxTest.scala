@@ -412,6 +412,16 @@ object RxTest extends AirSpec {
     b.result() shouldBe Seq(2, 4)
   }
 
+  test("startWith(single)") {
+    val rx = Rx.single(1).startWith(0)
+    eval(rx) shouldBe Seq(OnNext(0), OnNext(1), OnCompletion)
+  }
+
+  test("startWith(Seq)") {
+    val rx = Rx.single(1).startWith(Seq(0, 0))
+    eval(rx) shouldBe Seq(OnNext(0), OnNext(0), OnNext(1), OnCompletion)
+  }
+
   test("sequence") {
     val rx = Rx.fromSeq(Seq(1, 2, 3)).map(_ * 2)
     val b  = Seq.newBuilder[Int]
