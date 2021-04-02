@@ -196,6 +196,11 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
 trait RxStreamCache[A] extends RxStream[A] {
 
   /**
+    * Get the current cached value if exists
+    */
+  def getCurrent: Option[A]
+
+  /**
     * Discard the cached value after the given duration.
     */
   def expireAfterWrite(time: Long, unit: TimeUnit): RxStreamCache[A]
@@ -350,6 +355,7 @@ object Rx extends LogSupport {
       ticker: Ticker = Ticker.systemTicker
   ) extends UnaryRx[A, A]
       with RxStreamCache[A] {
+    override def getCurrent: Option[A] = lastValue
     override def expireAfterWrite(time: Long, unit: TimeUnit): RxStreamCache[A] = {
       this.copy(expirationAfterWriteNanos = Some(unit.toNanos(time)))
     }

@@ -107,6 +107,7 @@ trait RxOption[+A] extends Rx[Option[A]] {
   * @tparam A
   */
 trait RxOptionCache[A] extends RxOption[A] {
+  def getCurrent: Option[A]
   def expireAfterWrite(time: Long, unit: TimeUnit): RxOptionCache[A]
   def withTicker(ticker: Ticker): RxOptionCache[A]
 }
@@ -141,6 +142,7 @@ class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarO
 }
 
 case class RxOptionCacheOp[A](input: RxStreamCache[Option[A]]) extends RxOptionCache[A] {
+  override def getCurrent: Option[A]             = input.getCurrent.flatten
   override protected def in: RxStream[Option[A]] = input.toRxStream
   override def parents: Seq[Rx[_]]               = input.parents
 
