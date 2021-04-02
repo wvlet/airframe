@@ -43,15 +43,15 @@ trait MyApi {
   @Endpoint(method = HttpMethod.POST, path = "/user")
   def createNewUser(request:NewUserRequest): User = User(request.name)
 
-  // To read http request headers, add a method argument of HttpRequest[Request] type
+  // To read http request headers, add a method argument of HttpMessage.Request type
   @Endpoint(method = HttpMethod.GET, path = "/info")
-  def getInfo(request: HttpRequest[Request]): ServerInfo = {
-    ServerInfo("1.0", request.toRaw.userAgent)
+  def getInfo(request: HttpMessage.Request): ServerInfo = {
+    ServerInfo("1.0", request.userAgent)
   }
 
   // It is also possible to receive backend server specific Request type
   @Endpoint(method = HttpMethod.GET, path = "/info2")
-  def getInfo(request: Request): ServerInfo = {
+  def getInfo(request: com.twitter.finagle.http.Request): ServerInfo = {
     ServerInfo("1.0", request.userAgent)
   }
 
@@ -244,7 +244,7 @@ You can also add multiple resource paths or local directories to the search path
 val sc = StaticContent
   .fromResource("/resource/path1")
   .fromResource("/resource/path2")
-  .fromDirecotry("/path/to/directory")
+  .fromDirectory("/path/to/directory")
 
 sc(path) // Create an HTTP response
 ```
@@ -362,7 +362,7 @@ Using local variables inside filters will not work because the request processin
 
 ## Access Logs
 
-airframe-http stores HTTP access logs at `log/http-access.json` by default in JSON format. When the log file becomes large, it will be compressed with gz and rotated automatically. 
+airframe-http stores HTTP access logs at `log/http-access.json` by default in JSON format. When the log file becomes large, it will be compressed with gz and rotated automatically.
 
 The default logger will record request parameters, request headers (except Authorization headers), response parameters, and response headers.
 
@@ -372,7 +372,7 @@ Example JSON logs:
 {"time":1589319681,"event_time":"2020-05-12T14:41:21.573-0700","method":"GET","path":"/user/info","uri":"/user/info?id=2&name=kai","query_string":"id=2&name=kai","request_size":0,"remote_host":"127.0.0.1","remote_port":52786,"host":"localhost:52785","connection":"Keep-Alive","user_agent":"okhttp/3.12.11","x_request_id":"10","content_length":"0","accept_encoding":"gzip","response_time_ms":921,"status_code":200,"status_code_name":"OK","response_content_type":"application/json;charset=utf-8"}
 ```
 
-For most of the cases, using the default logger is sufficient. If necessary, you can customize the logging by using your own request/response loggers: 
+For most of the cases, using the default logger is sufficient. If necessary, you can customize the logging by using your own request/response loggers:
 
 ```scala
 import wvlet.airframe.http.finagle._
@@ -400,7 +400,7 @@ The generated HTTP access log files can be processed in Fluentd. For example, if
   # Your log file location and position file
   path     /var/log/http_access.json
   pos_file /var/log/td-agent/http_access.json.pos
-  # [Optional] Append tags to the log (For using td-agent)  
+  # [Optional] Append tags to the log (For using td-agent)
   tag      td.(your database name).http_access
   format   json
   time_key time
@@ -410,16 +410,16 @@ The generated HTTP access log files can be processed in Fluentd. For example, if
 
 # HTTP Clients
 
-airframe-http has several HTTP client implementations (FinagleClient, OkHttp client, URLConnection client, etc.).    
+airframe-http has several HTTP client implementations (FinagleClient, OkHttp client, URLConnection client, etc.).
 
-## Simple Http Client (No extra dependency) 
+## Simple Http Client (No extra dependency)
 
 ```scala
-import wvlet.airframe.http.Http 
+import wvlet.airframe.http.Http
 
-// Creating a URLConnection based client 
+// Creating a URLConnection based client
 val client = Http.client.newSyncClient("http://localhost:8080")
-val response = client.sendSafe(Http.request("/v1/info")) 
+val response = client.sendSafe(Http.request("/v1/info"))
 // Use client.send(Request) for throwing HttpClientException upon 4xx, 5xx errors
 ```
 
@@ -430,11 +430,11 @@ Note: URLConnection-based client cannot send PATCH requests due to [a bug of JDK
 ```scala
 import wvlet.airframe.http.finagle.Finagle
 
-// Asynchronous HTTP client backed by Finagle (Using twitter-util Future) 
+// Asynchronous HTTP client backed by Finagle (Using twitter-util Future)
 Finagle.client.newClient("http://localhost:8080")
 
-// a Finagle-based sync client 
-Finagle.client.newSyncClient(host_name)   
+// a Finagle-based sync client
+Finagle.client.newSyncClient(host_name)
 ```
 
 ## OkHttp Client
