@@ -97,15 +97,15 @@
   <span class="hljs-meta">@Endpoint</span>(method = <span class="hljs-type">HttpMethod</span>.<span class="hljs-type">POST</span>, path = <span class="hljs-string">"/user"</span>)
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">createNewUser</span></span>(request:<span class="hljs-type">NewUserRequest</span>): <span class="hljs-type">User</span> = <span class="hljs-type">User</span>(request.name)
 
-  <span class="hljs-comment">// To read http request headers, add a method argument of HttpRequest[Request] type</span>
+  <span class="hljs-comment">// To read http request headers, add a method argument of HttpMessage.Request type</span>
   <span class="hljs-meta">@Endpoint</span>(method = <span class="hljs-type">HttpMethod</span>.<span class="hljs-type">GET</span>, path = <span class="hljs-string">"/info"</span>)
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getInfo</span></span>(request: <span class="hljs-type">HttpRequest</span>[<span class="hljs-type">Request</span>]): <span class="hljs-type">ServerInfo</span> = {
-    <span class="hljs-type">ServerInfo</span>(<span class="hljs-string">"1.0"</span>, request.toRaw.userAgent)
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getInfo</span></span>(request: <span class="hljs-type">HttpMessage</span>.<span class="hljs-type">Request</span>): <span class="hljs-type">ServerInfo</span> = {
+    <span class="hljs-type">ServerInfo</span>(<span class="hljs-string">"1.0"</span>, request.userAgent)
   }
 
   <span class="hljs-comment">// It is also possible to receive backend server specific Request type</span>
   <span class="hljs-meta">@Endpoint</span>(method = <span class="hljs-type">HttpMethod</span>.<span class="hljs-type">GET</span>, path = <span class="hljs-string">"/info2"</span>)
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getInfo</span></span>(request: <span class="hljs-type">Request</span>): <span class="hljs-type">ServerInfo</span> = {
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">getInfo</span></span>(request: com.twitter.finagle.http.<span class="hljs-type">Request</span>): <span class="hljs-type">ServerInfo</span> = {
     <span class="hljs-type">ServerInfo</span>(<span class="hljs-string">"1.0"</span>, request.userAgent)
   }
 
@@ -267,7 +267,7 @@ finagleBaseDesign.build[<span class="hljs-type">FinagleServerFactory</span>] { f
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> sc = <span class="hljs-type">StaticContent</span>
   .fromResource(<span class="hljs-string">"/resource/path1"</span>)
   .fromResource(<span class="hljs-string">"/resource/path2"</span>)
-  .fromDirecotry(<span class="hljs-string">"/path/to/directory"</span>)
+  .fromDirectory(<span class="hljs-string">"/path/to/directory"</span>)
 
 sc(path) <span class="hljs-comment">// Create an HTTP response</span>
 </code></pre>
@@ -386,7 +386,7 @@ sc(path) <span class="hljs-comment">// Create an HTTP response</span>
   # Your <span class="hljs-keyword">log</span> file <span class="hljs-keyword">location</span> <span class="hljs-keyword">and</span> position file
   <span class="hljs-type">path</span>     /var/<span class="hljs-keyword">log</span>/http_access.json
   pos_file /var/<span class="hljs-keyword">log</span>/td-agent/http_access.json.pos
-  # [Optional] Append tags <span class="hljs-keyword">to</span> the log (<span class="hljs-keyword">For</span> <span class="hljs-keyword">using</span> td-agent)  
+  # [Optional] Append tags <span class="hljs-keyword">to</span> the log (<span class="hljs-keyword">For</span> <span class="hljs-keyword">using</span> td-agent)
   tag      td.(your <span class="hljs-keyword">database</span> <span class="hljs-type">name</span>).http_access
   <span class="hljs-keyword">format   json</span>
   time_key <span class="hljs-type">time</span>
@@ -395,22 +395,22 @@ sc(path) <span class="hljs-comment">// Create an HTTP response</span>
 <h1><a class="anchor" aria-hidden="true" id="http-clients"></a><a href="#http-clients" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>HTTP Clients</h1>
 <p>airframe-http has several HTTP client implementations (FinagleClient, OkHttp client, URLConnection client, etc.).</p>
 <h2><a class="anchor" aria-hidden="true" id="simple-http-client-no-extra-dependency"></a><a href="#simple-http-client-no-extra-dependency" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Simple Http Client (No extra dependency)</h2>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.<span class="hljs-type">Http</span> 
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.<span class="hljs-type">Http</span>
 
-<span class="hljs-comment">// Creating a URLConnection based client </span>
+<span class="hljs-comment">// Creating a URLConnection based client</span>
 <span class="hljs-keyword">val</span> client = <span class="hljs-type">Http</span>.client.newSyncClient(<span class="hljs-string">"http://localhost:8080"</span>)
-<span class="hljs-keyword">val</span> response = client.sendSafe(<span class="hljs-type">Http</span>.request(<span class="hljs-string">"/v1/info"</span>)) 
+<span class="hljs-keyword">val</span> response = client.sendSafe(<span class="hljs-type">Http</span>.request(<span class="hljs-string">"/v1/info"</span>))
 <span class="hljs-comment">// Use client.send(Request) for throwing HttpClientException upon 4xx, 5xx errors</span>
 </code></pre>
 <p>Note: URLConnection-based client cannot send PATCH requests due to <a href="https://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch">a bug of JDK</a></p>
 <h2><a class="anchor" aria-hidden="true" id="finagle-http-client"></a><a href="#finagle-http-client" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Finagle Http Client</h2>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http.finagle.<span class="hljs-type">Finagle</span>
 
-<span class="hljs-comment">// Asynchronous HTTP client backed by Finagle (Using twitter-util Future) </span>
+<span class="hljs-comment">// Asynchronous HTTP client backed by Finagle (Using twitter-util Future)</span>
 <span class="hljs-type">Finagle</span>.client.newClient(<span class="hljs-string">"http://localhost:8080"</span>)
 
-<span class="hljs-comment">// a Finagle-based sync client </span>
-<span class="hljs-type">Finagle</span>.client.newSyncClient(host_name)   
+<span class="hljs-comment">// a Finagle-based sync client</span>
+<span class="hljs-type">Finagle</span>.client.newSyncClient(host_name)
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="okhttp-client"></a><a href="#okhttp-client" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>OkHttp Client</h2>
 <pre><code class="hljs css language-scala">libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-okhttp"</span> % (version)
