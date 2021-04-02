@@ -169,4 +169,52 @@ object RxRenderingTest extends AirSpec {
     b shouldBe true
     b1 shouldBe true
   }
+
+  test("rendering attributes with Rx") {
+    val a = Rx.variable("primary")
+    val e = new RxElement {
+      override def render: RxElement = div(
+        cls -> a
+      )
+    }
+    val (n, c) = render(e)
+    n.outerHTML shouldBe """<div class="primary"></div>"""
+
+    a := "secondary"
+    n.outerHTML shouldBe """<div class="secondary"></div>"""
+    c.cancel
+  }
+
+  test("rendering whole attributes with Rx") {
+    val a = Rx.variable("primary")
+    val e = new RxElement {
+      override def render: RxElement = div(
+        a.map { x => cls -> x }
+      )
+    }
+    val (n, c) = render(e)
+    n.outerHTML shouldBe """<div class="primary"></div>"""
+
+    a := "secondary"
+    n.outerHTML shouldBe """<div class="secondary"></div>"""
+    c.cancel
+  }
+
+  test("rendering attribute value with Rx") {
+    val color = Rx.variable("white")
+
+    val e = new RxElement {
+      override def render: RxElement = div(
+        // This needs to be updated when color variable is changed
+        style -> color.map { x => s"color: ${x};" },
+        "message"
+      )
+    }
+
+    val (n, c) = render(e)
+    n.outerHTML shouldBe """<div style="color: white;">message</div>"""
+    color := "black"
+    n.outerHTML shouldBe """<div style="color: black;">message</div>"""
+    c.cancel
+  }
 }
