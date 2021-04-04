@@ -68,7 +68,8 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
 
   private val initialSignInState = Promise[Boolean]()
 
-  def getCurrentUser: RxOption[GoogleAuthProfile] = currentUser
+  def getCurrentUserRx: RxOption[GoogleAuthProfile] = currentUser
+  def getCurrentUser: Option[GoogleAuthProfile]     = currentUser.get
 
   /**
     * Initialize GoogleAPI Auth2 and return true if the user is already authenticated
