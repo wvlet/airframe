@@ -21,7 +21,12 @@ import wvlet.airspec.AirSpec
 /**
   */
 class IntervalTest extends AirSpec {
+  private def pendingScalaJS = if (isScalaJS) {
+    pending("Async test is required")
+  }
   test("timeIntervalMillis") {
+    pendingScalaJS
+
     val counter = new AtomicInteger(0)
     val rx = Rx
       .interval(3, TimeUnit.MILLISECONDS)
@@ -48,6 +53,7 @@ class IntervalTest extends AirSpec {
   }
 
   test("timer/delay") {
+    pendingScalaJS
     val counter = new AtomicInteger(0)
     val rx = Rx
       .delay(1, TimeUnit.MILLISECONDS)
@@ -72,9 +78,7 @@ class IntervalTest extends AirSpec {
   }
 
   test("throttleFirst") {
-    if (isScalaJS) {
-      pending("Async test is required")
-    }
+    pendingScalaJS
     val rx = Rx
       .sequence(1, 2, 3, 4, 5, 6)
       .throttleFirst(10000, TimeUnit.MILLISECONDS)
@@ -91,9 +95,7 @@ class IntervalTest extends AirSpec {
   }
 
   test("throttleLast") {
-    if (isScalaJS) {
-      pending("Async test is required")
-    }
+    pendingScalaJS
 
     val rx =
       Rx.sequence(1, 2, 3)
