@@ -49,7 +49,7 @@ object compat {
     val schedule = thread.schedule(
       new Runnable {
         override def run(): Unit = {
-          body()
+          body
         }
       },
       delayMills,
