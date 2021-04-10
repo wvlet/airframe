@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.rx
 import scala.scalajs.js.timers.SetIntervalHandle
+import scala.util.Try
 
 /**
   */
@@ -34,8 +35,17 @@ object compat {
       }
       override def cancel: Unit = {
         intervalHandle.foreach { handle =>
-          scala.scalajs.js.timers.clearInterval(handle)
+          Try(scala.scalajs.js.timers.clearInterval(handle))
         }
+      }
+    }
+  }
+
+  def scheduleOnce[U](delayMills: Long)(body: => U): Cancelable = {
+    val timeoutHandle = scala.scalajs.js.timers.setTimeout(delayMills)(body)
+    Cancelable { () =>
+      Option(timeoutHandle).foreach { handle =>
+        scala.scalajs.js.timers.clearTimeout(handle)
       }
     }
   }

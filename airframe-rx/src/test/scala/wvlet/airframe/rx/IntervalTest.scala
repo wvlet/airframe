@@ -37,12 +37,7 @@ class IntervalTest extends AirSpec {
       counter.incrementAndGet()
     }
     try {
-      if (isScalaJS) {
-        pending("Need asynchronous test support")
-      } else {
-        while (counter.get() != 3) {
-          // wait with a busy loop because Scala.js doesn't support Thread.sleep
-        }
+      compat.scheduleOnce(200) {
         val result = s.result()
         debug(result)
         result.size shouldBe 3
@@ -50,6 +45,30 @@ class IntervalTest extends AirSpec {
     } finally {
       c.cancel
     }
+  }
+
+  test("timer/delay") {
+    val counter = new AtomicInteger(0)
+    val rx = Rx
+      .delay(1, TimeUnit.MILLISECONDS)
+      .map { interval =>
+        interval
+      }
+
+    val s = Seq.newBuilder[Long]
+    val c = rx.run { x =>
+      s += x
+      counter.incrementAndGet()
+    }
+    try {
+      compat.scheduleOnce(200) {
+        val result = s.result()
+        result.size shouldBe 1
+      }
+    } finally {
+      c.cancel
+    }
+
   }
 
   test("throttleFirst") {

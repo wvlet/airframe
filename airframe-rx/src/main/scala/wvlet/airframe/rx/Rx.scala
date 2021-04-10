@@ -257,6 +257,16 @@ object Rx extends LogSupport {
   def interval(interval: Long, unit: TimeUnit): RxStream[Long] = IntervalOp(interval, unit)
   def intervalMillis(intervalMillis: Long): RxStream[Long]     = interval(intervalMillis, TimeUnit.MILLISECONDS)
 
+  /**
+    * Emits 0 once after the give delay period.
+    */
+  def timer(interval: Long, unit: TimeUnit): RxStream[Long] = TimerOp(interval, unit)
+
+  /**
+    * Emits 0 once after the give delay period.
+    */
+  def delay(interval: Long, unit: TimeUnit): RxStream[Long] = timer(interval, unit)
+
   private def futureToRx[A](f: Future[A])(implicit ec: ExecutionContext): RxVar[Option[A]] = {
     val v = Rx.variable[Option[A]](None)
     f.foreach { x =>
@@ -341,6 +351,10 @@ object Rx extends LogSupport {
   case class IntervalOp(interval: Long, unit: TimeUnit) extends RxStream[Long] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
+  case class TimerOp(interval: Long, unit: TimeUnit) extends RxStream[Long] {
+    override def parents: Seq[Rx[_]] = Seq.empty
+  }
+
   case class TakeOp[A](input: Rx[A], n: Long) extends RxStream[A] {
     override def parents: Seq[Rx[_]] = Seq(input)
   }

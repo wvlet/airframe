@@ -226,6 +226,16 @@ class RxRunner(
         Cancelable { () =>
           timer.cancel
         }
+      case TimerOp(interval, unit) =>
+        val delayMillis = TimeUnit.MILLISECONDS.convert(interval, unit).max(1)
+        compat.scheduleOnce(delayMillis) {
+          Try(effect(OnNext(0L))) match {
+            case Success(c) =>
+              effect(OnCompletion)
+            case Failure(e) =>
+              effect(OnError(e))
+          }
+        }
       case ThrottleFirstOp(in, interval, unit) =>
         var lastUpdateTimeNanos = -interval
         run(in) {

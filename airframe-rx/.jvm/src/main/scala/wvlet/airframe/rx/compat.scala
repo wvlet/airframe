@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.rx
 import java.util.TimerTask
+import java.util.concurrent.{ExecutorService, Executors, TimeUnit}
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -20,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 object compat {
   def newTimer: Timer =
     new Timer {
-      private val t = new java.util.Timer()
+      private val t = new java.util.Timer(true)
       override def schedule[U](millis: Long)(body: Long => U): Unit = {
         t.schedule(
           new TimerTask {
@@ -42,6 +43,28 @@ object compat {
         t.cancel()
       }
     }
+
+  def scheduleOnce[U](delayMills: Long)(body: => U): Cancelable = {
+    val thread = Executors.newScheduledThreadPool(1)
+    val schedule = thread.schedule(
+      new Runnable {
+        override def run(): Unit = {
+          body()
+        }
+      },
+      delayMills,
+      TimeUnit.MILLISECONDS
+    )
+    // Immediately start the thread pool shutdown to avoid thread leak
+    thread.shutdown()
+    Cancelable { () =>
+      try {
+        schedule.cancel(false)
+      } finally {
+        thread.shutdown()
+      }
+    }
+  }
 
   def toSeq[A](rx: Rx[A]): Seq[A] = {
     val ready = new AtomicBoolean(true)
