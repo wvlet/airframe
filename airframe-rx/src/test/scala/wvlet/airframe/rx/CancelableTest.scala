@@ -42,6 +42,21 @@ class CancelableTest extends AirSpec {
     a shouldBe 1
   }
 
+  test("Merge cancelable in var") {
+    var x  = 0
+    var y  = 0
+    var c1 = Cancelable.empty
+    val c2 = Cancelable { () => y += 1 }
+
+    // c1 should be evaluated lazily
+    val cm = Cancelable.merge(c1, c2)
+
+    c1 = Cancelable { () => x += 1 }
+    cm.cancel
+    x shouldBe 1
+    y shouldBe 1
+  }
+
   test("Merge sequence of Cancelables") {
     val m0 = Cancelable.merge(Seq.empty)
     m0.cancel

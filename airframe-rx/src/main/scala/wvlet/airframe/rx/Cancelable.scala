@@ -29,18 +29,12 @@ object Cancelable {
       override def cancel: Unit = canceller()
     }
 
-  def merge(c1: Cancelable, c2: Cancelable): Cancelable = {
-    if (c1 == Cancelable.empty) {
-      c2
-    } else if (c2 == Cancelable.empty) {
-      c1
-    } else {
-      Cancelable { () =>
-        try {
-          c1.cancel
-        } finally {
-          c2.cancel
-        }
+  def merge(c1: => Cancelable, c2: => Cancelable): Cancelable = {
+    Cancelable { () =>
+      try {
+        c1.cancel
+      } finally {
+        c2.cancel
       }
     }
   }
