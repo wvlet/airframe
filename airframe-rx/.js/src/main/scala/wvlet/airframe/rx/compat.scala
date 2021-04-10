@@ -45,7 +45,7 @@ object compat {
     val timeoutHandle = scala.scalajs.js.timers.setTimeout(delayMills)(body)
     Cancelable { () =>
       Option(timeoutHandle).foreach { handle =>
-        scala.scalajs.js.timers.clearTimeout(handle)
+        Try(scala.scalajs.js.timers.clearTimeout(handle))
       }
     }
   }
