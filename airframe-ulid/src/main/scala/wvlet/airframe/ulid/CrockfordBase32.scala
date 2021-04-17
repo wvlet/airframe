@@ -75,6 +75,7 @@ object CrockfordBase32 {
     var i = 0
     var h = hi
     var l = low
+    // encode from lower 5-bit
     while (i < 26) {
       s += encode((l & 0x1fL).toInt)
       val carry = (h & 0x1fL) << (64 - 5)
@@ -86,46 +87,18 @@ object CrockfordBase32 {
     s.reverseContents().toString()
   }
 
-  def encodeLong(l: Long, len: Int): String = {
-    val max = if (len > 12) Long.MaxValue else 1L << (len * 5)
-    if (l > max) {
-      throw new IllegalArgumentException(f"Cannot encode ${l}%,d with ${len} characters.")
-    }
-    val s      = new StringBuilder
-    var cursor = len
-    while (cursor > 12) {
-      s += encode(0)
-      cursor -= 1
-    }
-    while (cursor >= 0) {
-      val mask = 0x1fL << (cursor * 5)
-      val v    = (l & mask) >>> (cursor * 5)
-      s += encode(v.toInt)
-      cursor -= 1
-    }
-    s.result()
-  }
-
-  def decodeAsLong(s: String): Long = {
+  def decode48bits(s: String): Long = {
     val len = s.length
-    if (len > 13) {
-
-      throw new IllegalArgumentException(
-        s"Cannot decode Base32 string longer than 12 characters with 64-bit Long: ${s}"
-      )
+    if (len != 10) {
+      throw new IllegalArgumentException(s"String size must be 10: ${s} (length:${len})")
     }
-
-    if (len == 0) {
-      0L
-    } else {
-      var l: Long = decode(s.charAt(0))
-      var i       = 1
-      while (i < len) {
-        l <<= 5
-        l |= decode(s.charAt(i))
-        i += 1
-      }
-      l
+    var l: Long = decode(s.charAt(0))
+    var i       = 1
+    while (i < len) {
+      l <<= 5
+      l |= decode(s.charAt(i))
+      i += 1
     }
+    l
   }
 }

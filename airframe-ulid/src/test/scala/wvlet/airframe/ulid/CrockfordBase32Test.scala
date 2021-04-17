@@ -23,8 +23,6 @@ class CrockfordBase32Test extends AirSpec with PropertyCheck {
     forAll { (hi: Long, low: Long) =>
       val encoded       = CrockfordBase32.encode128bits(hi, low)
       val (hi_d, low_d) = CrockfordBase32.decode128bits(encoded)
-
-      info(s"${hi}, ${low}, ${encoded}, ${hi_d}, ${low_d}")
       (hi, low) shouldBe (hi_d, low_d)
     }
   }
