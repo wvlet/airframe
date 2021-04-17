@@ -12,10 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.control.ULID
 import wvlet.airframe.json.JSON
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject, JSONString}
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.ulid.ULID
 
 /**
   */

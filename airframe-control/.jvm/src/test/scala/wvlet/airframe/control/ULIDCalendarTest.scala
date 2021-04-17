@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.control
 import java.util.Calendar
-
 import wvlet.airspec.AirSpec
 import wvlet.airspec.spi.PropertyCheck
 

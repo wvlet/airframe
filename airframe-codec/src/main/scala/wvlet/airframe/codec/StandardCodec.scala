@@ -14,9 +14,8 @@
 package wvlet.airframe.codec
 
 import java.util.UUID
-
-import wvlet.airframe.control.ULID
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.ulid.ULID
 
 /**
   * Standard codec collection

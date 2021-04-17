@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.control.ULID
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
+import wvlet.airframe.ulid.ULID
 
 /**
   */
