@@ -73,4 +73,12 @@ class ULIDTest extends AirSpec with PropertyCheck {
       }
     }
   }
+
+  test("encode timestamp") {
+    val ulid      = ULID.newULID
+    val ts        = ulid.epochMillis
+    val tsString  = ulid.toString.substring(0, 10)
+    val decodedTs = CrockfordBase32.decodeAsLong(tsString)
+    info(s"${ts}, ${tsString}, ${decodedTs}")
+  }
 }

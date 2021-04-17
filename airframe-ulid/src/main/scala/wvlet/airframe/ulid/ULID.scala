@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.ulid
+import java.time.Instant
 import scala.util.Random
 
 final case class ULID(private val ulid: String) {
@@ -25,6 +26,10 @@ final case class ULID(private val ulid: String) {
     ULID.extractEpochMillis(ulid).getOrElse {
       throw new IllegalArgumentException(s"Invalid ULID")
     }
+  }
+
+  def toInstant: Instant = {
+    Instant.ofEpochMilli(epochMillis)
   }
 }
 

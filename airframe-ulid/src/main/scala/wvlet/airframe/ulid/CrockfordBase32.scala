@@ -40,7 +40,26 @@ object CrockfordBase32 {
     29, 30, 31                      // 120
   )
 
-  def decode(ch: Char): Byte = DECODING_CHARS(ch)
-  def encode(i: Int): Char   = ENCODING_CHARS(i)
-  def indexOf(ch: Char): Int = ENCODING_CHARS.indexOf(ch)
+  @inline def decode(ch: Char): Byte = DECODING_CHARS(ch & 0x7f)
+  def encode(i: Int): Char           = ENCODING_CHARS(i)
+  def indexOf(ch: Char): Int         = ENCODING_CHARS.indexOf(ch)
+
+  def decodeAsLong(s: String): Long = {
+    val len = s.length
+    if (len > 12) {
+      throw new IllegalArgumentException(s"Cannot decode String longer than 12 characters as Long: ${s}")
+    }
+    if (len == 0) {
+      0L
+    } else {
+      var l: Long = decode(s.charAt(0))
+      var i       = 1
+      while (i < len) {
+        l <<= 5
+        l |= decode(s.charAt(i))
+        i += 1
+      }
+      l
+    }
+  }
 }
