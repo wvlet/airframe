@@ -19,7 +19,7 @@ import wvlet.airspec.spi.PropertyCheck
 /**
   */
 class CrockfordBase32Test extends AirSpec with PropertyCheck {
-  test("Encode long") {
+  test("Encode long pairs") {
     forAll { (hi: Long, low: Long) =>
       val encoded       = CrockfordBase32.encode128bits(hi, low)
       val (hi_d, low_d) = CrockfordBase32.decode128bits(encoded)

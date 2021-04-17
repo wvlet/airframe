@@ -30,11 +30,11 @@ class ULIDCalendarTest extends AirSpec with PropertyCheck {
     import org.scalacheck.Gen
     forAll(Gen.calendar) { cal: Calendar =>
       if (
-        cal.getTimeInMillis > ULID.MIN_TIME
-        && cal.getTimeInMillis < ULID.MAX_TIME
+        cal.getTimeInMillis > ULID.MinTime
+        && cal.getTimeInMillis < ULID.MaxTime
       ) {
-        val result = ULID.extractEpochMillis(ulid(cal.getTimeInMillis, 0.0d).generate)
-        result.get shouldBe cal.getTimeInMillis
+        val u = ULID(ulid(cal.getTimeInMillis, 0.0d).generate)
+        u.epochMillis shouldBe cal.getTimeInMillis
       }
     }
   }

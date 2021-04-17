@@ -14,6 +14,7 @@
 package wvlet.airframe.ulid
 
 /**
+  * Base 32 encoding by Douglas Crockford: https://www.crockford.com/base32.html
   */
 object CrockfordBase32 {
   private val ENCODING_CHARS: Array[Char] = Array(
@@ -42,13 +43,18 @@ object CrockfordBase32 {
 
   @inline def decode(ch: Char): Byte = DECODING_CHARS(ch & 0x7f)
   @inline def encode(i: Int): Char   = ENCODING_CHARS(i & 0x1f)
-  def indexOf(ch: Char): Int         = ENCODING_CHARS.indexOf(ch)
 
+  /**
+    * Decode a string representation of 128 bit value (26 characters) as a pair of
+    * (Long, Long) (128 bits)
+    *
+    * Note that technically 26 characters x 5 bite can represent 130-bit values.
+    * This method will discard the top 2 bits from the string as ULID only uses 128 bits.
+    */
   def decode128bits(s: String): (Long, Long) = {
 
     /**
       * |      hi (64-bits)     |    low (64-bits)    |
-      * |--|                  |----|                  |
       */
     val len = s.length
     if (len != 26) {
@@ -70,6 +76,9 @@ object CrockfordBase32 {
     (hi, low)
   }
 
+  /**
+    * Encode 128-bit values (Long, Long) with Crockford Base32
+    */
   def encode128bits(hi: Long, low: Long): String = {
     val s = new StringBuilder(26)
     var i = 0
@@ -87,6 +96,10 @@ object CrockfordBase32 {
     s.reverseContents().toString()
   }
 
+  /**
+    * Decode 10-character Crockford Base32 as a 48-bit unsigned value.
+    * This is used for decoding ULID timestamp (48-bit value)
+    */
   def decode48bits(s: String): Long = {
     val len = s.length
     if (len != 10) {
@@ -100,5 +113,9 @@ object CrockfordBase32 {
       i += 1
     }
     l
+  }
+
+  def isValidBase32(s: String): Boolean = {
+    s.forall { decode(_) != -1 }
   }
 }
