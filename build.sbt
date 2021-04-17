@@ -168,6 +168,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   canvas,
   config,
   controlJVM,
+  ulidJVM,
   jmx,
   launcher,
   metricsJVM,
@@ -201,6 +202,7 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   airframeJS,
   metricsJS,
   controlJS,
+  ulidJS,
   jsonJS,
   msgpackJS,
   codecJS,
@@ -459,6 +461,20 @@ lazy val control =
 lazy val controlJVM = control.jvm
 lazy val controlJS  = control.js
 
+lazy val ulid =
+  crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airframe-ulid"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-ulid",
+      description := "ULID: Universally Unique Lexicographically Sortable Identifier"
+    )
+    .dependsOn(log % Test)
+
+lazy val ulidJVM = ulid.jvm
+lazy val ulidJS  = ulid.js
+
 lazy val jmx =
   project
     .in(file("airframe-jmx"))
@@ -596,7 +612,7 @@ lazy val codec =
     .jsSettings(
       jsBuildSettings
     )
-    .dependsOn(log, surface, msgpack, metrics, json, control)
+    .dependsOn(log, surface, msgpack, metrics, json, control, ulid)
 
 lazy val codecJVM = codec.jvm
 lazy val codecJS  = codec.js

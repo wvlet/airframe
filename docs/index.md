@@ -46,6 +46,7 @@ libraryDependencies ++= Seq(
   "org.wvlet.airframe" %% "airframe-control"       % AIRFRAME_VERSION, // Library for retryable execution
   "org.wvlet.airframe" %% "airframe-http"          % AIRFRAME_VERSION, // HTTP RPC/REST API
   "org.wvlet.airframe" %% "airframe-http-finagle"  % AIRFRAME_VERSION, // HTTP server (Finagle backend)
+  "org.wvlet.airframe" %% "airframe-http-grpc"     % AIRFRAME_VERSION, // HTTP/2 server (gRPC backend)
   "org.wvlet.airframe" %% "airframe-http-recorder" % AIRFRAME_VERSION, // HTTP recorder and replayer
   "org.wvlet.airframe" %% "airframe-jmx"           % AIRFRAME_VERSION, // JMX monitoring
   "org.wvlet.airframe" %% "airframe-jdbc"          % AIRFRAME_VERSION, // JDBC connection pool
@@ -56,6 +57,7 @@ libraryDependencies ++= Seq(
   "org.wvlet.airframe" %% "airframe-msgpack"       % AIRFRAME_VERSION, // Pure-Scala MessagePack
   "org.wvlet.airframe" %% "airframe-rx"            % AIRFRAME_VERSION, // ReactiveX interface
   "org.wvlet.airframe" %% "airframe-surface"       % AIRFRAME_VERSION, // Object surface inspector
+  "org.wvlet.airframe" %% "airframe-ulid"          % AIRFRAME_VERSION, // ULID generator
 )
 
 # For Scala.js, the following libraries can be used:
@@ -70,6 +72,7 @@ libraryDependencies ++= Seq(
   "org.wvlet.airframe" %%% "airframe-metrics" % AIRFRAME_VERSION, // Metrics units
   "org.wvlet.airframe" %%% "airframe-rx"      % AIRFRAME_VERSION, // ReactiveX interface
   "org.wvlet.airframe" %%% "airframe-surface" % AIRFRAME_VERSION, // Object surface inspector
+  "org.wvlet.airframe" %%% "airframe-ulid"    % AIRFRAME_VERSION, // ULID generator
 )
 ```
 
@@ -313,6 +316,8 @@ Airframe has several modules for kick starting your application development in S
   - Object shape inspector. What parameters are defined in an object? Surface gives you an answer for that. 
 - [airframe-sql](airframe-sql.md)
   - SQL parser
+- [airframe-ulid](airframe-ulid.md)
+  - ULID (Universally Unique Lexicographically Sortable Identifier) generator
 
 ## Companion sbt plugins
 

@@ -11,9 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.control
-import wvlet.airframe.control.ULID.extractEpochMillis
-
+package wvlet.airframe.ulid
 import scala.util.Random
 
 final case class ULID(private val ulid: String) {
@@ -24,7 +22,7 @@ final case class ULID(private val ulid: String) {
     */
   override def toString: String = ulid
   lazy val epochMillis: Long = {
-    extractEpochMillis(ulid).getOrElse {
+    ULID.extractEpochMillis(ulid).getOrElse {
       throw new IllegalArgumentException(s"Invalid ULID")
     }
   }
@@ -78,7 +76,7 @@ object ULID {
     } else None
   }
 
-  private[control] object constants {
+  private[ulid] object constants {
     val ENCODING_CHARS: Array[Char] = Array(
       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P',
       'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z'
@@ -120,7 +118,7 @@ object ULID {
   * @param timeSource a function returns the current time in milliseconds (e.g. java.lang.System.currentTimeMillis())
   * @param random a function returns a random value (e.g. scala.util.Random.nextDouble())
   */
-private[control] class ULIDGenerator(timeSource: () => Long, random: () => Double) {
+private[ulid] class ULIDGenerator(timeSource: () => Long, random: () => Double) {
   import ULID.constants._
 
   /**
