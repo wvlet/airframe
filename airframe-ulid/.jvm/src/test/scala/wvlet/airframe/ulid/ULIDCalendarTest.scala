@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.ulid
 
+import wvlet.airframe.ulid.ULID.ULIDGenerator
+
 import java.util.Calendar
 import wvlet.airspec.AirSpec
 import wvlet.airspec.spi.PropertyCheck
@@ -28,8 +30,8 @@ class ULIDCalendarTest extends AirSpec with PropertyCheck {
     import org.scalacheck.Gen
     forAll(Gen.calendar) { cal: Calendar =>
       if (
-        cal.getTimeInMillis > ULID.constants.MIN_TIME
-        && cal.getTimeInMillis < ULID.constants.MAX_TIME
+        cal.getTimeInMillis > ULID.MIN_TIME
+        && cal.getTimeInMillis < ULID.MAX_TIME
       ) {
         val result = ULID.extractEpochMillis(ulid(cal.getTimeInMillis, 0.0d).generate)
         result.get shouldBe cal.getTimeInMillis

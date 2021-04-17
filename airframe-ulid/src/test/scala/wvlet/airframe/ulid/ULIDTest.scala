@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.ulid
 
+import wvlet.airframe.ulid.ULID.ULIDGenerator
 import wvlet.airspec.AirSpec
 import wvlet.airspec.spi.PropertyCheck
 
@@ -40,9 +41,9 @@ class ULIDTest extends AirSpec with PropertyCheck {
   }
 
   test("generate") {
-    ulid(ULID.constants.MIN_TIME, 0.0d).generate shouldBe "00000000000000000000000000"
+    ulid(ULID.MIN_TIME, 0.0d).generate shouldBe "00000000000000000000000000"
     ulid(1L, 0.0d).generate shouldBe "00000000010000000000000000"
-    ulid(ULID.constants.MAX_TIME, 0.0d).generate shouldBe "7ZZZZZZZZZ0000000000000000"
+    ulid(ULID.MAX_TIME, 0.0d).generate shouldBe "7ZZZZZZZZZ0000000000000000"
 
     ulid(0L, 0.5d).generate shouldBe "0000000000FFFFFFFFFFFFFFFF"
     ulid(0L, 1.0d).generate shouldBe "0000000000ZZZZZZZZZZZZZZZZ"
@@ -50,10 +51,10 @@ class ULIDTest extends AirSpec with PropertyCheck {
 
   test("generation failures") {
     intercept[IllegalArgumentException] {
-      ulid(ULID.constants.MIN_TIME - 1L, 0.0d).generate
+      ulid(ULID.MIN_TIME - 1L, 0.0d).generate
     }
     intercept[IllegalArgumentException] {
-      ulid(ULID.constants.MAX_TIME + 1L, 0.0d).generate
+      ulid(ULID.MAX_TIME + 1L, 0.0d).generate
     }
 
     intercept[IllegalArgumentException] {
@@ -66,7 +67,7 @@ class ULIDTest extends AirSpec with PropertyCheck {
 
   test("invalid timestamp check") {
     forAll { str: String =>
-      if (str.length != ULID.constants.ULID_LENGTH) {
+      if (str.length != ULID.ULID_LENGTH) {
         val result = ULID.extractEpochMillis(str)
         result shouldBe empty
       }
