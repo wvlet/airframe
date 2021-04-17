@@ -41,14 +41,80 @@ object CrockfordBase32 {
   )
 
   @inline def decode(ch: Char): Byte = DECODING_CHARS(ch & 0x7f)
-  def encode(i: Int): Char           = ENCODING_CHARS(i)
+  @inline def encode(i: Int): Char   = ENCODING_CHARS(i & 0x1f)
   def indexOf(ch: Char): Int         = ENCODING_CHARS.indexOf(ch)
+
+  def decode128bits(s: String): (Long, Long) = {
+
+    /**
+      * |      hi (64-bits)     |    low (64-bits)    |
+      * |--|                  |----|                  |
+      */
+    val len = s.length
+    if (len != 26) {
+      throw new IllegalArgumentException(s"String length must be 26: ${s} (length: ${len})")
+    }
+    var i         = 0
+    var hi        = 0L
+    var low       = 0L
+    val carryMask = ~(~0L >>> 5)
+    while (i < 26) {
+      val v     = decode(s.charAt(i))
+      val carry = (low & carryMask) >>> (64 - 5)
+      low <<= 5
+      low |= v
+      hi <<= 5
+      hi |= carry
+      i += 1
+    }
+    (hi, low)
+  }
+
+  def encode128bits(hi: Long, low: Long): String = {
+    val s = new StringBuilder(26)
+    var i = 0
+    var h = hi
+    var l = low
+    while (i < 26) {
+      s += encode((l & 0x1fL).toInt)
+      val carry = (h & 0x1fL) << (64 - 5)
+      l >>>= 5
+      l |= carry
+      h >>>= 5
+      i += 1
+    }
+    s.reverseContents().toString()
+  }
+
+  def encodeLong(l: Long, len: Int): String = {
+    val max = if (len > 12) Long.MaxValue else 1L << (len * 5)
+    if (l > max) {
+      throw new IllegalArgumentException(f"Cannot encode ${l}%,d with ${len} characters.")
+    }
+    val s      = new StringBuilder
+    var cursor = len
+    while (cursor > 12) {
+      s += encode(0)
+      cursor -= 1
+    }
+    while (cursor >= 0) {
+      val mask = 0x1fL << (cursor * 5)
+      val v    = (l & mask) >>> (cursor * 5)
+      s += encode(v.toInt)
+      cursor -= 1
+    }
+    s.result()
+  }
 
   def decodeAsLong(s: String): Long = {
     val len = s.length
-    if (len > 12) {
-      throw new IllegalArgumentException(s"Cannot decode String longer than 12 characters as Long: ${s}")
+    if (len > 13) {
+
+      throw new IllegalArgumentException(
+        s"Cannot decode Base32 string longer than 12 characters with 64-bit Long: ${s}"
+      )
     }
+
     if (len == 0) {
       0L
     } else {
