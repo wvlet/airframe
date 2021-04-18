@@ -82,12 +82,13 @@ Uses Crockford's base32 for better efficiency and readability (5 bits per charac
 # <span class="hljs-type">For</span> <span class="hljs-type">Scala</span>.js
 libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-ulid"</span> % <span class="hljs-string">"(version)"</span>
 </code></pre>
+<p>ULID can be generated with <code>ULID.newULID</code> method:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.ulid.<span class="hljs-type">ULID</span>
 
 <span class="hljs-comment">// Generate a new ULID</span>
-<span class="hljs-keyword">val</span> ulid = <span class="hljs-type">ULID</span>.newULID
+<span class="hljs-keyword">val</span> ulid: <span class="hljs-type">ULID</span> = <span class="hljs-type">ULID</span>.newULID
 
-# <span class="hljs-type">ULID</span>.toString produces the <span class="hljs-type">String</span> representation of <span class="hljs-type">ULID</span>
+<span class="hljs-comment">// ULID.toString produces the String representation of ULID</span>
 println(ulid)             <span class="hljs-comment">// 01F3J0G1M4WQRBHGZ6HCF6JA0K</span>
 println(ulid.epochMillis) <span class="hljs-comment">// 1618733434500</span>
 
@@ -107,7 +108,7 @@ ulid2.epochMillis <span class="hljs-comment">// 1618733434509</span>
 <span class="hljs-number">01</span>F3HZ9V4BHVHJMMETE0MFBQKK
 <span class="hljs-number">01</span>F3HZ9V4BHVHJMMETE0MFBQKM
 <span class="hljs-number">01</span>F3HZ9V4BHVHJMMETE0MFBQKN
-<span class="hljs-number">01</span>F3HZ9V4C8SWD21A4SCM4NMD8
+<span class="hljs-number">01</span>F3HZ9V4C8SWD21A4SCM4NMD8 <span class="hljs-comment">// &lt;- milliseconds changed</span>
 ...
 </code></pre>
 <p>ULID can be serialized and deserialized with <a href="/airframe/docs/airframe-codec">airframe-codec</a>:</p>
