@@ -31,7 +31,8 @@
       "airframe-json",
       "airframe-launcher",
       "airframe-msgpack",
-      "airframe-sql"
+      "airframe-sql",
+      "airframe-ulid"
     ]
   }
 }

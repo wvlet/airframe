@@ -34,6 +34,19 @@ final case class ULID(private val ulid: String) extends Ordered[ULID] {
     CrockfordBase32.decode48bits(ulid.substring(0, 10))
   }
 
+  /**
+    * Return 48-bit UNIX-time of this ULID in milliseconds
+    */
+  def timestamp: Long = epochMillis
+
+  /**
+    * Return 80-bits randomness value of this ULID using a pair of (Long (16-bit), Long (64-bit))
+    */
+  def randomness: (Long, Long) = {
+    val (hi, low) = CrockfordBase32.decode128bits(ulid)
+    (hi & 0xffffL, low)
+  }
+
   def toInstant: Instant = {
     Instant.ofEpochMilli(epochMillis)
   }
@@ -185,8 +198,15 @@ object ULID {
     /**
       * Generate ULID string.
       *
-      * Tips for optimizing performance.
-      * 1. Reduce the number of Random number generation. SecureRandom is quite slow, so if within the same milliseconds, just incrementing the value is better.
+      * Tips for optimizing performance:
+      *
+      * 1. Reduce the number of Random number generation. SecureRandom is quite slow, so within the same milliseconds, just incrementing the randomness part will provide
+      * better performance.
+      * 2. Generate random in Array[Byte] (10 bytes = 80 bits). Regular Random uses 48-bit seed, so calling Random.nextInt (32 bits) x 3 is faster, but
+      * SecureRandom has optimization for Array[Byte] generation, which is much faster than calling nextInt three times.
+      * 3. ULIDs are often used in the string value form (e.g., transaction IDs, object IDs which can be embedded to URLs, etc.). Generating ULID String from the beginning
+      * is ideal.
+      * 4. In base32 encoding/decoding, use bit-shift operators as much as possible to utilize CPU registers and memory cache.
       */
     def generate: String = {
       val unixTimeMillis: Long = currentTimeInMillis
