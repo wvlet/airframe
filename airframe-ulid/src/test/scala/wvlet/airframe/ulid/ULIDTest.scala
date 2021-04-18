@@ -51,34 +51,18 @@ class ULIDTest extends AirSpec with PropertyCheck {
     ULID.of(ULID.MinTime, 0, 0) shouldBe ULID("00000000000000000000000000")
     ULID.of(1L, 0, 0) shouldBe ULID("00000000010000000000000000")
     ULID.of(ULID.MaxTime, 0, 0) shouldBe ULID("7ZZZZZZZZZ0000000000000000")
-    //ULID.of(0L, 0, ~0L) shouldBe ULID("0000000000FFFFFFFFFFFFFFFF")
+    ULID.of(0L, 0, ~0L) shouldBe ULID("0000000000000FZZZZZZZZZZZZ")
     ULID.of(0L, ~0L, ~0L) shouldBe ULID("0000000000ZZZZZZZZZZZZZZZZ")
   }
-//
-//  test("generation failures") {
-//    intercept[IllegalArgumentException] {
-//      ulid(ULID.MinTime - 1L, 0.0d).generate
-//    }
-//    intercept[IllegalArgumentException] {
-//      ulid(ULID.MaxTime + 1L, 0.0d).generate
-//    }
-//
-//    intercept[IllegalArgumentException] {
-//      ulid(0L, -0.1d).generate
-//    }
-//    intercept[IllegalArgumentException] {
-//      ulid(0L, 1.1d).generate
-//    }
-//  }
 
-//  test("invalid timestamp check") {
-//    forAll { str: String =>
-//      if (str.length != ULID.Length) {
-//        val result = ULID.extractEpochMillis(str)
-//        result shouldBe empty
-//      }
-//    }
-//  }
+  test("generation failures") {
+    intercept[IllegalArgumentException] {
+      ULID.of(ULID.MinTime - 1L, 0, 0)
+    }
+    intercept[IllegalArgumentException] {
+      ULID.of(ULID.MaxTime + 1L, 0, 0)
+    }
+  }
 
   test("encode timestamp") {
     val ulid      = ULID.newULID

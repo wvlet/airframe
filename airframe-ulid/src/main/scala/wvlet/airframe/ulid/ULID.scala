@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicLong
 
 /**
   * ULID string, consisting of 26 characters.
-  * @param ulid
   */
 final case class ULID(private val ulid: String) extends Ordered[ULID] {
 
@@ -101,6 +100,9 @@ object ULID {
     * @return
     */
   def of(unixTimeMillis: Long, randHi: Long, randLow: Long): ULID = {
+    if (unixTimeMillis < 0L || unixTimeMillis > MaxTime) {
+      throw new IllegalArgumentException(f"unixtime must be between 0 to ${MaxTime}%,d: ${unixTimeMillis}%,d")
+    }
     val hi: Long  = (unixTimeMillis << (64 - 48)) | (randHi & 0xffff)
     val low: Long = randLow
     new ULID(CrockfordBase32.encode128bits(hi, low))
@@ -162,7 +164,7 @@ object ULID {
     private val lastLow = new AtomicLong(0L)
 
     private def currentTimeInMillis: Long = {
-      // Avoid unexpected rollback of the sytem clock
+      // Avoid unexpected rollback of the system clock
       baseSystemTimeMillis + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - baseNanoTime)
     }
 
