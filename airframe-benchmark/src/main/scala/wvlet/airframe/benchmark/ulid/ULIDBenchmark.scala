@@ -20,12 +20,12 @@ import com.chatwork.scala.ulid.{ULID => ChatworkULID}
 import java.util.concurrent.TimeUnit
 
 abstract class ULIDBenchmark {
-  protected def newULIDString: String
+  protected def newMonotonicULIDString: String
 
   @Benchmark
-  @Group("ulid_string")
-  def generate(blackhole: Blackhole): Unit = {
-    blackhole.consume(newULIDString)
+  @Group("generateMonotonic")
+  def generateMonotonic(blackhole: Blackhole): Unit = {
+    blackhole.consume(newMonotonicULIDString)
   }
 }
 
@@ -33,7 +33,7 @@ abstract class ULIDBenchmark {
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class Airframe extends ULIDBenchmark {
-  override protected def newULIDString: String = {
+  override protected def newMonotonicULIDString: String = {
     AirframeULID.newULID.toString
   }
 }
@@ -42,7 +42,28 @@ class Airframe extends ULIDBenchmark {
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class Chatwork extends ULIDBenchmark {
-  override protected def newULIDString: String = {
-    ChatworkULID.generate().asString
+  private var lastValue: ChatworkULID = ChatworkULID.generate()
+
+  override protected def newMonotonicULIDString: String = {
+    val newValue = ChatworkULID.generateMonotonic(lastValue)
+    lastValue = newValue
+    newValue.asString
+  }
+
+  @Benchmark
+  @Group("generate")
+  protected def generateNewULIDString(blackhole: Blackhole): Unit = {
+    blackhole.consume(ChatworkULID.generate().toString)
+  }
+}
+
+@State(Scope.Thread)
+@BenchmarkMode(Array(Mode.Throughput))
+@OutputTimeUnit(TimeUnit.SECONDS)
+class UUID {
+  @Benchmark
+  @Group("generate")
+  def generate(blackhole: Blackhole): Unit = {
+    blackhole.consume(java.util.UUID.randomUUID().toString)
   }
 }
