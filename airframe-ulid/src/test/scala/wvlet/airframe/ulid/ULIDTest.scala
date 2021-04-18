@@ -41,8 +41,10 @@ class ULIDTest extends AirSpec with PropertyCheck {
       ULID.fromString(ulid.toString) shouldBe ulid
       ULID.fromBytes(ulid.toBytes) shouldBe ulid
 
-      // Condition
+      // Basic conditions
       ulid.epochMillis shouldBe unixTime
+      ulid.timestamp shouldBe unixTime
+      ulid.randomness shouldBe (rh & 0xffffL, rl)
       ULID.isValid(ulid.toString) shouldBe true
     }
   }

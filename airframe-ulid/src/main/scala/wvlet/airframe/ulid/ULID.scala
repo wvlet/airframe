@@ -34,6 +34,19 @@ final case class ULID(private val ulid: String) extends Ordered[ULID] {
     CrockfordBase32.decode48bits(ulid.substring(0, 10))
   }
 
+  /**
+    * Return 48-bit UNIX-time in milliseconds of this ULID
+    */
+  def timestamp: Long = epochMillis
+
+  /**
+    * Return 80-bits randomness value of this ULID using a pair of (Long (16-bit), Long (64-bit))
+    */
+  def randomness: (Long, Long) = {
+    val (hi, low) = CrockfordBase32.decode128bits(ulid)
+    (hi & 0xffffL, low)
+  }
+
   def toInstant: Instant = {
     Instant.ofEpochMilli(epochMillis)
   }
