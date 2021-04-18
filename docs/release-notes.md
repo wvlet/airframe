@@ -6,6 +6,51 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.4.0
+
+### New Features 
+
+- [airframe-ulid](https://wvlet.org/airframe/docs/airframe-ulid) (ULID generator for Scala) is now an independent module that can be used as a standalone library for Scala and Scala.js. With our optimizaiton effort, airframe-ulid becomes the fastest ULID generator for Scala and can produce more than 5 million ULIDs per second.
+
+
+- airframe-ulid: Performance optimization ([#1586](https://github.com/wvlet/airframe/issues/1586)) [[28a763371](https://github.com/wvlet/airframe/commit/28a763371)]
+- airframe-ulid: Extract ULID as a new module ([#1585](https://github.com/wvlet/airframe/issues/1585)) [[1c8574610](https://github.com/wvlet/airframe/commit/1c8574610)]
+- airframe-rx: Add Rx.timer/delay ([#1583](https://github.com/wvlet/airframe/issues/1583)) [[49158a183](https://github.com/wvlet/airframe/commit/49158a183)]
+- airframe-rx-widget: Add GoogleAuth.getCurrentUser: Option[GoogleAuthProfile] ([#1576](https://github.com/wvlet/airframe/issues/1576)) [[dfa27cb91](https://github.com/wvlet/airframe/commit/dfa27cb91)]
+- airframe-rx: Add Rx.cache.getCurrent ([#1572](https://github.com/wvlet/airframe/issues/1572)) [[6fa646866](https://github.com/wvlet/airframe/commit/6fa646866)]
+- airframe-rx: Add Rx.startWith ([#1571](https://github.com/wvlet/airframe/issues/1571)) [[b46be2a94](https://github.com/wvlet/airframe/commit/b46be2a94)]
+- airframe-rx: Add RxVar.setException(Throwable) ([#1556](https://github.com/wvlet/airframe/issues/1556)) [[7b360c70d](https://github.com/wvlet/airframe/commit/7b360c70d)]
+- airframe-grpc: Use ForkJoinPool with nCPU x 2 max threads by default to handle concurrent requests ([#1557](https://github.com/wvlet/airframe/issues/1557)) [[bc86c269d](https://github.com/wvlet/airframe/commit/bc86c269d)]
+- airframe-http: Discourage using HttpRequest[x] adapter in the endpoint definitions [[a015acc87](https://github.com/wvlet/airframe/commit/a015acc87)]
+- sbt-airframe: Generate ServiceJSClientRx for Scala.js + RPC + Rx ([#1570](https://github.com/wvlet/airframe/issues/1570)) [[093be4948](https://github.com/wvlet/airframe/commit/093be4948)]
+
+
+### Dependency Updates
+
+- Update sbt-scalajs, scalajs-compiler, ... to 1.5.1 ([#1569](https://github.com/wvlet/airframe/issues/1569)) [[af51f916a](https://github.com/wvlet/airframe/commit/af51f916a)]
+- Update finagle-core, finagle-http, ... to 21.3.0 ([#1562](https://github.com/wvlet/airframe/issues/1562)) [[1b5634a5c](https://github.com/wvlet/airframe/commit/1b5634a5c)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.37.0 ([#1579](https://github.com/wvlet/airframe/issues/1579)) [[e740578a1](https://github.com/wvlet/airframe/commit/e740578a1)]
+- Update protobuf-java to 3.15.8 ([#1580](https://github.com/wvlet/airframe/issues/1580)) [[e20a4ea26](https://github.com/wvlet/airframe/commit/e20a4ea26)]
+- Update scala-collection-compat to 2.4.3 ([#1563](https://github.com/wvlet/airframe/issues/1563)) [[bb8ba8092](https://github.com/wvlet/airframe/commit/bb8ba8092)]
+- Update scala-parallel-collections to 1.0.2 ([#1564](https://github.com/wvlet/airframe/issues/1564)) [[0c92f2b51](https://github.com/wvlet/airframe/commit/0c92f2b51)]
+
+### Bug Fixes
+
+- airframe-http: Add a proper retry wait to JSHttpClient ([#1561](https://github.com/wvlet/airframe/issues/1561)) [[0e0c27690](https://github.com/wvlet/airframe/commit/0e0c27690)]
+- airframe-rx: Lazily evaluate Cancelable.merge ([#1582](https://github.com/wvlet/airframe/issues/1582)) [[d4ba91b53](https://github.com/wvlet/airframe/commit/d4ba91b53)]
+
+### Internal Updates
+
+- Update trino-main to 355 ([#1581](https://github.com/wvlet/airframe/issues/1581)) [[cd5ef09f2](https://github.com/wvlet/airframe/commit/cd5ef09f2)]
+- Update swagger-parser to 2.0.25 ([#1578](https://github.com/wvlet/airframe/issues/1578)) [[0a5b08027](https://github.com/wvlet/airframe/commit/0a5b08027)]
+- rx-html: Add multiple attribute update tests ([#1574](https://github.com/wvlet/airframe/issues/1574)) [[b432ce8f5](https://github.com/wvlet/airframe/commit/b432ce8f5)]
+- rx-html: Add tests for attribute updates [#1341](https://github.com/wvlet/airframe/issues/1341) ([#1573](https://github.com/wvlet/airframe/issues/1573)) [[fe26b2b43](https://github.com/wvlet/airframe/commit/fe26b2b43)]
+- Update sbt-dotty to 0.5.4 ([#1566](https://github.com/wvlet/airframe/issues/1566)) [[b3c0b5111](https://github.com/wvlet/airframe/commit/b3c0b5111)]
+- Add missing args in airframe-codec docs ([#1565](https://github.com/wvlet/airframe/issues/1565)) [[dbc21dfb9](https://github.com/wvlet/airframe/commit/dbc21dfb9)]
+- Update sbt-mdoc to 2.2.19 ([#1560](https://github.com/wvlet/airframe/issues/1560)) [[b7582c5ee](https://github.com/wvlet/airframe/commit/b7582c5ee)]
+- rx-html: Add an example for avoiding RxStream[Object] resolution ([#1558](https://github.com/wvlet/airframe/issues/1558)) [[8b3e1bdd3](https://github.com/wvlet/airframe/commit/8b3e1bdd3)]
+- Update airspec to 21.3.1 ([#1553](https://github.com/wvlet/airframe/issues/1553)) [[31ad55fe9](https://github.com/wvlet/airframe/commit/31ad55fe9)]
+
 ## 21.3.1
 
 This is a bug fix release of airframe-http. 
