@@ -38,6 +38,21 @@ final case class ULID(private val ulid: String) extends Ordered[ULID] {
     Instant.ofEpochMilli(epochMillis)
   }
 
+  /**
+    * Get a 128-bit (16 byte) binary representation of this ULID.
+    */
+  def toBytes: Array[Byte] = {
+    val (hi, low) = CrockfordBase32.decode128bits(ulid)
+    val b         = new Array[Byte](16)
+    for (i <- 0 until 8) {
+      b(i) = ((hi >>> (64 - i * 8)) & 0xffL).toByte
+    }
+    for (i <- 0 until 8) {
+      b(i + 8) = ((low >>> (64 - i * 8)) & 0xffL).toByte
+    }
+    b
+  }
+
   override def compare(that: ULID): Int = {
     this.ulid.compareTo(that.ulid)
   }
@@ -117,7 +132,7 @@ object ULID {
     * Create a ne ULID from a byte sequence (16-bytes)
     */
   def fromBytes(bytes: Array[Byte], offset: Int): ULID = {
-    require(offset + 16 < bytes.length, s"ULID needs 16 bytes. offset:${offset}, size:${bytes.length}")
+    require(offset + 16 <= bytes.length, s"ULID needs 16 bytes. offset:${offset}, size:${bytes.length}")
     var i  = 0
     var hi = 0L
     while (i < 8) {

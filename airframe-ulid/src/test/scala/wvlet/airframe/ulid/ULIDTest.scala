@@ -32,10 +32,26 @@ class ULIDTest extends AirSpec with PropertyCheck {
     }
   }
 
+  test("toString/toBytes") {
+    val lst = (0 to 10000).map { i => ULID.newULID }
+    lst.forall { x =>
+      // Identity
+      ULID.fromString(x.toString) shouldBe x
+      //ULID.fromBytes(x.toBytes) shouldBe x
+    }
+  }
+
   test("generate monotonically increasing ULIDs") {
-    val lst = (0 to 1000).map { i => ULID.newULID }
+    val start = System.currentTimeMillis() - 1
+    val lst   = (0 to 10000).map { i => ULID.newULID }
+    val end   = System.currentTimeMillis()
+    lst.forall { x =>
+      start <= x.epochMillis && x.epochMillis <= end shouldBe true
+    }
+
     lst.sliding(2).forall { pair =>
-      pair(0) < pair(1) && pair(0).epochMillis <= pair(1).epochMillis
+      pair(0) < pair(1) &&
+      pair(0).epochMillis <= pair(1).epochMillis
     }
   }
 
