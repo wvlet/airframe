@@ -27,4 +27,8 @@ object compat {
         Random
     }
   }
+
+  def sleep(millis: Int): Unit = {
+    Thread.sleep(millis)
+  }
 }

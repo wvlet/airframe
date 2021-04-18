@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.ulid
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicLong
 
 final case class ULID(private val ulid: String) extends Ordered[ULID] {
 
@@ -137,8 +138,15 @@ object ULID {
     * @param random a function returns a random value (e.g. scala.util.Random.nextDouble())
     */
   private[ulid] class ULIDGenerator(timeSource: () => Long, random: () => Array[Byte]) {
+
+    private val lastUnixTimeMillis = new AtomicLong(-1L)
+    private val lastHi             = new AtomicLong(0L)
+    private val lastLow            = new AtomicLong(0L)
+
     private def generateFrom(unixTimeMillis: Long, rand: Array[Byte]): String = {
-      // We need a 80-bit random value.
+      // We need a 80-bit random value here.
+      require(rand.length == 10)
+
       val hi: Long = (unixTimeMillis << (64 - 48)) |
         (rand(0) & 0xffL << 8)
       (rand(1) & 0xffL)
@@ -150,7 +158,14 @@ object ULID {
           ((rand(6) & 0xffL) << 24) |
           ((rand(7) & 0xffL) << 16) |
           ((rand(8) & 0xffL) << 8) |
-          ((rand(9) & 0xffL))
+          (rand(9) & 0xffL)
+
+      generateFrom(hi, low)
+    }
+
+    private def generateFrom(hi: Long, low: Long): String = {
+      lastHi.set(hi)
+      lastLow.set(low)
       CrockfordBase32.encode128bits(hi, low)
     }
 
@@ -160,8 +175,31 @@ object ULID {
       */
     def generate: String = {
       val unixTimeMillis: Long = timeSource()
-      val rand                 = random()
-      generateFrom(unixTimeMillis, rand)
+      if (unixTimeMillis > MaxTime) {
+        throw new IllegalStateException(f"unixtime should be less than: ${MaxTime}%,d: ${unixTimeMillis}%,d")
+      }
+      if (lastUnixTimeMillis.get() == unixTimeMillis) {
+        val hi  = lastHi.get
+        val low = lastLow.get
+        // do increment
+        if (low != ~0L) {
+          generateFrom(hi, low + 1L)
+        } else {
+          var nextHi = (hi & ~(~0L << 16)) + 1
+          if ((nextHi & (~0L << 16)) != 0) {
+            // overflow. Wait one millisecond
+            compat.sleep(1)
+            generate
+          } else {
+            nextHi |= unixTimeMillis << (64 - 48)
+            generateFrom(nextHi, 0)
+          }
+        }
+      } else {
+        lastUnixTimeMillis.set(unixTimeMillis)
+        val rand = random()
+        generateFrom(unixTimeMillis, rand)
+      }
     }
   }
 

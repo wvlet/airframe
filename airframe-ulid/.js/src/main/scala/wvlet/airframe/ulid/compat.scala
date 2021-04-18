@@ -19,4 +19,8 @@ import scala.util.Random
   */
 object compat {
   val random: Random = scala.util.Random
+
+  def sleep(millis: Int): Unit = {
+    // no-op as Scala.js has no sleep
+  }
 }
