@@ -20,22 +20,20 @@ import com.chatwork.scala.ulid.{ULID => ChatworkULID}
 import java.util.concurrent.TimeUnit
 
 abstract class ULIDBenchmark {
-
-  protected def newULID: String
+  protected def newULIDString: String
 
   @Benchmark
-  @Group("generate")
+  @Group("ulid_string")
   def generate(blackhole: Blackhole): Unit = {
-    blackhole.consume(newULID)
+    blackhole.consume(newULIDString)
   }
-
 }
 
 @State(Scope.Thread)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class Airframe extends ULIDBenchmark {
-  override protected def newULID: String = {
+  override protected def newULIDString: String = {
     AirframeULID.newULID.toString
   }
 }
@@ -44,7 +42,7 @@ class Airframe extends ULIDBenchmark {
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class Chatwork extends ULIDBenchmark {
-  override protected def newULID: String = {
+  override protected def newULIDString: String = {
     ChatworkULID.generate().asString
   }
 }
