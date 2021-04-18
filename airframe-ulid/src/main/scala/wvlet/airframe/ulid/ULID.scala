@@ -71,12 +71,12 @@ object ULID {
   /**
     * Create a new ULID
     */
-  def newULID: ULID = defaultGenerator.generate
+  def newULID: ULID = new ULID(defaultGenerator.generate)
 
   /**
     * Create a new ULID string
     */
-  def newULIDString: String = defaultGenerator.generate.toString
+  def newULIDString: String = defaultGenerator.generate
 
   /**
     * Create a new ULID from a given string of size 26
@@ -160,8 +160,9 @@ object ULID {
     private val baseSystemTimeMillis = System.currentTimeMillis()
     private val baseNanoTime         = System.nanoTime()
 
-    private val lastHi  = new AtomicLong(0L)
-    private val lastLow = new AtomicLong(0L)
+    private val lastUnixTime = new AtomicLong(0L)
+    private val lastHi       = new AtomicLong(0L)
+    private val lastLow      = new AtomicLong(0L)
 
     private def currentTimeInMillis: Long = {
       // Avoid unexpected rollback of the system clock
@@ -171,17 +172,14 @@ object ULID {
     /**
       * Generate ULID string
       */
-    def generate: ULID = {
+    def generate: String = {
       val unixTimeMillis: Long = currentTimeInMillis
       if (unixTimeMillis > MaxTime) {
         throw new IllegalStateException(f"unixtime should be less than: ${MaxTime}%,d: ${unixTimeMillis}%,d")
       }
-      val hi                 = lastHi.get
-      val lastUnixTimeMillis = (hi >> (64 - 48)) & 0xffffffL
-      if (lastUnixTimeMillis != unixTimeMillis) {
-        // No conflict at millisecond level. We can generate a new ULID safely
-        generateFrom(unixTimeMillis, random())
-      } else {
+
+      if (lastUnixTime.get() == unixTimeMillis) {
+        val hi  = lastHi.get
         val low = lastLow.get
         // do increment
         if (low != ~0L) {
@@ -197,10 +195,14 @@ object ULID {
             generateFrom(nextHi, 0)
           }
         }
+      } else {
+        // No conflict at millisecond level. We can generate a new ULID safely
+        lastUnixTime.set(unixTimeMillis)
+        generateFrom(unixTimeMillis, random())
       }
     }
 
-    private def generateFrom(unixTimeMillis: Long, rand: Array[Byte]): ULID = {
+    private def generateFrom(unixTimeMillis: Long, rand: Array[Byte]): String = {
       // We need a 80-bit random value here.
       require(rand.length == 10, s"random value array must have length 10, but ${rand.length}")
 
@@ -218,10 +220,10 @@ object ULID {
       generateFrom(hi, low)
     }
 
-    private def generateFrom(hi: Long, low: Long): ULID = {
+    private def generateFrom(hi: Long, low: Long): String = {
       lastHi.set(hi)
       lastLow.set(low)
-      new ULID(CrockfordBase32.encode128bits(hi, low))
+      CrockfordBase32.encode128bits(hi, low)
     }
   }
 
