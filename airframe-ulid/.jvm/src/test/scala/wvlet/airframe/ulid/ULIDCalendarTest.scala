@@ -22,7 +22,7 @@ import wvlet.airspec.spi.PropertyCheck
 /**
   */
 class ULIDCalendarTest extends AirSpec with PropertyCheck {
-  private def ulid(timestamp: => Long, random: => Double) = {
+  private def ulid(timestamp: => Long, random: => Int) = {
     new ULIDGenerator(() => timestamp, () => random)
   }
 
@@ -33,7 +33,7 @@ class ULIDCalendarTest extends AirSpec with PropertyCheck {
         cal.getTimeInMillis > ULID.MinTime
         && cal.getTimeInMillis < ULID.MaxTime
       ) {
-        val u = ULID(ulid(cal.getTimeInMillis, 0.0d).generate)
+        val u = ULID(ulid(cal.getTimeInMillis, 0).generate)
         u.epochMillis shouldBe cal.getTimeInMillis
       }
     }
