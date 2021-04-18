@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.ulid
 import java.time.Instant
-import scala.util.Random
 
 final case class ULID(private val ulid: String) extends Ordered[ULID] {
 
@@ -65,17 +64,40 @@ object ULID {
     new ULIDGenerator(timeSource, randGen)
   }
 
-  def newULID: ULID         = new ULID(defaultGenerator.generate)
+  /**
+    * Create a new ULID
+    */
+  def newULID: ULID = new ULID(defaultGenerator.generate)
+
+  /**
+    * Create a new ULID string
+    */
   def newULIDString: String = defaultGenerator.generate
 
+  /**
+    * Create a new ULID from a given string of size 26
+    */
   def apply(ulidString: String): ULID = fromString(ulidString)
+
+  /**
+    * Create a new ULID from a given string of size 26
+    */
   def fromString(ulid: String): ULID = {
     require(ulid.length == 26, s"ULID must have 26 characters: ${ulid} (length: ${ulid.length})")
     require(CrockfordBase32.isValidBase32(ulid), s"Invalid Base32 character is found in ${ulid}")
     new ULID(ulid)
   }
+
+  /**
+    * Create a ne ULID from a byte sequence (16-bytes)
+    */
+  def fromBytes(bytes: Array[Byte]): ULID = fromBytes(bytes, 0)
+
+  /**
+    * Create a ne ULID from a byte sequence (16-bytes)
+    */
   def fromBytes(bytes: Array[Byte], offset: Int): ULID = {
-    require(offset + 16 < bytes.length, s"ULID needs 16 bytes: ${offset + 16}")
+    require(offset + 16 < bytes.length, s"ULID needs 16 bytes. offset:${offset}, size:${bytes.length}")
     var i  = 0
     var hi = 0L
     while (i < 8) {
@@ -109,29 +131,28 @@ object ULID {
     ulid.length == 26 && CrockfordBase32.isValidBase32(ulid)
   }
 
-  private def generateFrom(unixTimeMillis: Long, rand: Array[Byte]): String = {
-    // We need a 80-bit random value.
-    val hi: Long = (unixTimeMillis << (64 - 48)) |
-      (rand(0) & 0xffL << 8)
-    (rand(1) & 0xffL)
-    val low: Long =
-      ((rand(2) & 0xffL) << 56) |
-        ((rand(3) & 0xffL) << 48) |
-        ((rand(4) & 0xffL) << 40) |
-        ((rand(5) & 0xffL) << 32) |
-        ((rand(6) & 0xffL) << 24) |
-        ((rand(7) & 0xffL) << 16) |
-        ((rand(8) & 0xffL) << 8) |
-        ((rand(9) & 0xffL))
-    CrockfordBase32.encode128bits(hi, low)
-  }
-
   /**
     * ULID generator
     * @param timeSource a function returns the current time in milliseconds (e.g. java.lang.System.currentTimeMillis())
     * @param random a function returns a random value (e.g. scala.util.Random.nextDouble())
     */
   private[ulid] class ULIDGenerator(timeSource: () => Long, random: () => Array[Byte]) {
+    private def generateFrom(unixTimeMillis: Long, rand: Array[Byte]): String = {
+      // We need a 80-bit random value.
+      val hi: Long = (unixTimeMillis << (64 - 48)) |
+        (rand(0) & 0xffL << 8)
+      (rand(1) & 0xffL)
+      val low: Long =
+        ((rand(2) & 0xffL) << 56) |
+          ((rand(3) & 0xffL) << 48) |
+          ((rand(4) & 0xffL) << 40) |
+          ((rand(5) & 0xffL) << 32) |
+          ((rand(6) & 0xffL) << 24) |
+          ((rand(7) & 0xffL) << 16) |
+          ((rand(8) & 0xffL) << 8) |
+          ((rand(9) & 0xffL))
+      CrockfordBase32.encode128bits(hi, low)
+    }
 
     /**
       * generate ULID string
