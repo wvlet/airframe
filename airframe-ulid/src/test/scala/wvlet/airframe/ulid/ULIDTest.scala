@@ -21,7 +21,7 @@ import wvlet.airspec.spi.PropertyCheck
   */
 class ULIDTest extends AirSpec with PropertyCheck {
 
-  private def ulid(timestamp: => Long, random: => Int) = {
+  private def ulid(timestamp: => Long, random: => Array[Byte]) = {
     new ULIDGenerator(() => timestamp, () => random)
   }
 

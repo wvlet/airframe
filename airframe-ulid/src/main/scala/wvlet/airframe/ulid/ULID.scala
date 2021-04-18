@@ -53,9 +53,15 @@ object ULID {
   private[ulid] val MinTime = 0L
   private[ulid] val MaxTime = (~0L) >>> (64 - 48) // Timestamp uses 48-bit range
 
+  private val random: scala.util.Random = compat.random
+
   private val defaultGenerator = {
     val timeSource = () => System.currentTimeMillis()
-    val randGen = { () => Random.nextInt() }
+    val randGen = { () =>
+      val r = new Array[Byte](10)
+      random.nextBytes(r)
+      r
+    }
     new ULIDGenerator(timeSource, randGen)
   }
 
@@ -103,11 +109,20 @@ object ULID {
     ulid.length == 26 && CrockfordBase32.isValidBase32(ulid)
   }
 
-  private def generateFrom(unixTimeMillis: Long, rand1: Int, rand2: Int, rand3: Int): String = {
-    // We need a 80-bit random value. Use 32-bit * 3 = 96 bits
-    val hi: Long  = (unixTimeMillis << (64 - 48)) | (rand1 & 0xffffL)
-    val low: Long = (rand2.toLong << 32) | (rand3 & 0xffffffffL)
-
+  private def generateFrom(unixTimeMillis: Long, rand: Array[Byte]): String = {
+    // We need a 80-bit random value.
+    val hi: Long = (unixTimeMillis << (64 - 48)) |
+      (rand(0) & 0xffL << 8)
+    (rand(1) & 0xffL)
+    val low: Long =
+      ((rand(2) & 0xffL) << 56) |
+        ((rand(3) & 0xffL) << 48) |
+        ((rand(4) & 0xffL) << 40) |
+        ((rand(5) & 0xffL) << 32) |
+        ((rand(6) & 0xffL) << 24) |
+        ((rand(7) & 0xffL) << 16) |
+        ((rand(8) & 0xffL) << 8) |
+        ((rand(9) & 0xffL))
     CrockfordBase32.encode128bits(hi, low)
   }
 
@@ -116,7 +131,7 @@ object ULID {
     * @param timeSource a function returns the current time in milliseconds (e.g. java.lang.System.currentTimeMillis())
     * @param random a function returns a random value (e.g. scala.util.Random.nextDouble())
     */
-  private[ulid] class ULIDGenerator(timeSource: () => Long, random: () => Int) {
+  private[ulid] class ULIDGenerator(timeSource: () => Long, random: () => Array[Byte]) {
 
     /**
       * generate ULID string
@@ -124,10 +139,8 @@ object ULID {
       */
     def generate: String = {
       val unixTimeMillis: Long = timeSource()
-      val r1                   = random()
-      val r2                   = random()
-      val r3                   = random()
-      generateFrom(unixTimeMillis, r1, r2, r3)
+      val rand                 = random()
+      generateFrom(unixTimeMillis, rand)
     }
   }
 

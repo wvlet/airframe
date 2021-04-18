@@ -13,19 +13,18 @@
  */
 package wvlet.airframe.ulid
 
-import wvlet.airspec.AirSpec
-import wvlet.airspec.spi.PropertyCheck
+import java.security.{NoSuchAlgorithmException, SecureRandom}
+import scala.util.Random
 
 /**
   */
-class CrockfordBase32Test extends AirSpec with PropertyCheck {
-  test("Encode long pairs") {
-    forAll { (hi: Long, low: Long) =>
-      val encoded       = CrockfordBase32.encode128bits(hi, low)
-      val (hi_d, low_d) = CrockfordBase32.decode128bits(encoded)
-      info(s"${hi}, ${low}, ${encoded}, ${hi_d}, ${low_d}")
-      (hi, low) shouldBe (hi_d, low_d)
+object compat {
+  val random: Random = {
+    try {
+      SecureRandom.getInstanceStrong
+    } catch {
+      case _: NoSuchAlgorithmException =>
+        Random
     }
   }
-
 }
