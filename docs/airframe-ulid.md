@@ -29,13 +29,15 @@ libraryDependencies += "org.wvlet.airframe" %%% "airframe-ulid" % "(version)"
 ```
 
 
+ULID can be generated with `ULID.newULID` method:
+
 ```scala
 import wvlet.airframe.ulid.ULID
 
 // Generate a new ULID
-val ulid = ULID.newULID
+val ulid: ULID = ULID.newULID
 
-# ULID.toString produces the String representation of ULID
+// ULID.toString produces the String representation of ULID
 println(ulid)             // 01F3J0G1M4WQRBHGZ6HCF6JA0K
 println(ulid.epochMillis) // 1618733434500
 
@@ -59,7 +61,7 @@ ULID.newULID will produce [monotonically increasing ULIDs](https://github.com/ul
 01F3HZ9V4BHVHJMMETE0MFBQKK
 01F3HZ9V4BHVHJMMETE0MFBQKM
 01F3HZ9V4BHVHJMMETE0MFBQKN
-01F3HZ9V4C8SWD21A4SCM4NMD8
+01F3HZ9V4C8SWD21A4SCM4NMD8 // <- milliseconds changed
 ...
 ```
 
