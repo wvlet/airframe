@@ -12,42 +12,148 @@
  * limitations under the License.
  */
 package wvlet.airframe.ulid
-import scala.util.Random
+import java.time.Instant
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 
-final case class ULID(private val ulid: String) {
+/**
+  * ULID string, consisting of 26 characters.
+  */
+final case class ULID(private val ulid: String) extends Ordered[ULID] {
 
   /**
     * Return the string representation of this ULID
     * @return
     */
   override def toString: String = ulid
+
+  /**
+    * Get the epoch milliseconds (milliseconds from 1970-01-01 UTC) of this ULID.
+    */
   lazy val epochMillis: Long = {
-    ULID.extractEpochMillis(ulid).getOrElse {
-      throw new IllegalArgumentException(s"Invalid ULID")
+    CrockfordBase32.decode48bits(ulid.substring(0, 10))
+  }
+
+  def toInstant: Instant = {
+    Instant.ofEpochMilli(epochMillis)
+  }
+
+  /**
+    * Get a 128-bit (16 byte) binary representation of this ULID.
+    */
+  def toBytes: Array[Byte] = {
+    val (hi, low) = CrockfordBase32.decode128bits(ulid)
+    val b         = new Array[Byte](16)
+    for (i <- 0 until 8) {
+      b(i) = ((hi >>> (64 - (i + 1) * 8)) & 0xffL).toByte
     }
+    for (i <- 0 until 8) {
+      b(i + 8) = ((low >>> (64 - (i + 1) * 8)) & 0xffL).toByte
+    }
+    b
+  }
+
+  override def compare(that: ULID): Int = {
+    this.ulid.compareTo(that.ulid)
   }
 }
 
 /**
   * ULID generator implementation based on https://github.com/petitviolet/ulid4s
+  *
+  * ULID has 128 bit value:
+  * |-- Unix timestamp milliseconds (48-bit) ---- | -----  random value (80 bits) ------ |
+  *
+  * The string representation of ULID uses 26 characters in Crockford Base 32 representation,
+  * each character of which represents 5-bit value (0-31).
   */
 object ULID {
+  val MaxValue: ULID        = ULID("7ZZZZZZZZZZZZZZZZZZZZZZZZZ")
+  private[ulid] val MinTime = 0L
+  private[ulid] val MaxTime = (~0L) >>> (64 - 48) // Timestamp uses 48-bit range
+
+  private val random: scala.util.Random = compat.random
+
   private val defaultGenerator = {
-    val timeSource = () => System.currentTimeMillis()
     val randGen = { () =>
-      Random.nextDouble()
+      val r = new Array[Byte](10)
+      random.nextBytes(r)
+      r
     }
-    new ULIDGenerator(timeSource, randGen)
+    new ULIDGenerator(randGen)
   }
 
-  def newULID: ULID         = new ULID(defaultGenerator.generate)
+  /**
+    * Create a new ULID
+    */
+  def newULID: ULID = new ULID(defaultGenerator.generate)
+
+  /**
+    * Create a new ULID string
+    */
   def newULIDString: String = defaultGenerator.generate
 
+  /**
+    * Create a new ULID from a given string of size 26
+    */
+  def apply(ulidString: String): ULID = fromString(ulidString)
+
+  /**
+    * Create a new ULID from a given string of size 26
+    */
   def fromString(ulid: String): ULID = {
-    if (isValid(ulid)) {
-      new ULID(ulid)
+    require(ulid.length == 26, s"ULID must have 26 characters: ${ulid} (length: ${ulid.length})")
+    require(CrockfordBase32.isValidBase32(ulid), s"Invalid Base32 character is found in ${ulid}")
+    new ULID(ulid)
+  }
+
+  /**
+    * Create an ULID from a given timestamp (48-bit) and a random value (80-bit)
+    * @param unixTimeMillis 48-bit unix time millis
+    * @param randHi  16-bit hi-part of 80-bit random value
+    * @param randLow 64-bit low-part of 80-bit random value
+    * @return
+    */
+  def of(unixTimeMillis: Long, randHi: Long, randLow: Long): ULID = {
+    if (unixTimeMillis < 0L || unixTimeMillis > MaxTime) {
+      throw new IllegalArgumentException(f"unixtime must be between 0 to ${MaxTime}%,d: ${unixTimeMillis}%,d")
+    }
+    val hi: Long  = (unixTimeMillis << (64 - 48)) | (randHi & 0xffff)
+    val low: Long = randLow
+    new ULID(CrockfordBase32.encode128bits(hi, low))
+  }
+
+  /**
+    * Create a ne ULID from a byte sequence (16-bytes)
+    */
+  def fromBytes(bytes: Array[Byte]): ULID = fromBytes(bytes, 0)
+
+  /**
+    * Create a ne ULID from a byte sequence (16-bytes)
+    */
+  def fromBytes(bytes: Array[Byte], offset: Int): ULID = {
+    require(offset + 16 <= bytes.length, s"ULID needs 16 bytes. offset:${offset}, size:${bytes.length}")
+    var i  = 0
+    var hi = 0L
+    while (i < 8) {
+      hi <<= 8
+      hi |= bytes(offset + i) & 0xffL
+      i += 1
+    }
+    var low = 0L
+    while (i < 16) {
+      low <<= 8
+      low |= bytes(offset + i) & 0xffL
+      i += 1
+    }
+    new ULID(CrockfordBase32.encode128bits(hi, low))
+  }
+
+  def unapply(ulidString: String): Option[ULID] = {
+    if (isValid(ulidString)) {
+      Some(new ULID(ulidString))
     } else {
-      throw new IllegalArgumentException(s"Invalid string for ULID: ${ulid}")
+      None
     }
   }
 
@@ -57,109 +163,85 @@ object ULID {
     * @return
     */
   def isValid(ulid: String): Boolean = {
-    if (ulid.length != constants.ULID_LENGTH) false
-    else ulid.forall { constants.DECODING_CHARS(_) != -1 }
+    ulid.length == 26 && CrockfordBase32.isValidBase32(ulid)
   }
 
   /**
-    * Extract epoch milliseconds (milliseconds from 1970-01-01 UTC) from the given ULID string
-    * @param ulid ULID string
-    * @return Some(timestamp) when given string is valid ULID, otherwise None
+    * ULID generator.
+    * @param timeSource a function that returns the current time in milliseconds (e.g. java.lang.System.currentTimeMillis())
+    * @param random a function that returns a 80-bit random values in Array[Byte] (size:10)
     */
-  def extractEpochMillis(ulid: String): Option[Long] = {
-    if (isValid(ulid)) {
-      val result = ulid.take(10).reverse.zipWithIndex.foldLeft(0L) { case (acc, (c, index)) =>
-        val idx = constants.ENCODING_CHARS.indexOf(c)
-        acc + (idx * Math.pow(constants.ENCODING_LENGTH, index)).toLong
-      }
-      Option(result)
-    } else None
-  }
+  private class ULIDGenerator(random: () => Array[Byte]) {
+    private val baseSystemTimeMillis = System.currentTimeMillis()
+    private val baseNanoTime         = System.nanoTime()
 
-  private[ulid] object constants {
-    val ENCODING_CHARS: Array[Char] = Array(
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P',
-      'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z'
-    )
+    private val lastValue = new AtomicReference((0L, 0L))
 
-    val DECODING_CHARS: Array[Byte] = Array[Byte](
-      -1, -1, -1, -1, -1, -1, -1, -1, // 0
-      -1, -1, -1, -1, -1, -1, -1, -1, // 8
-      -1, -1, -1, -1, -1, -1, -1, -1, // 16
-      -1, -1, -1, -1, -1, -1, -1, -1, // 24
-      -1, -1, -1, -1, -1, -1, -1, -1, // 32
-      -1, -1, -1, -1, -1, -1, -1, -1, // 40
-      0, 1, 2, 3, 4, 5, 6, 7,         // 48
-      8, 9, -1, -1, -1, -1, -1, -1,   // 56
-      -1, 10, 11, 12, 13, 14, 15, 16, // 64
-      17, 1, 18, 19, 1, 20, 21, 0,    // 72
-      22, 23, 24, 25, 26, -1, 27, 28, // 80
-      29, 30, 31, -1, -1, -1, -1, -1, // 88
-      -1, 10, 11, 12, 13, 14, 15, 16, // 96
-      17, 1, 18, 19, 1, 20, 21, 0,    // 104
-      22, 23, 24, 25, 26, -1, 27, 28, // 112
-      29, 30, 31                      // 120
-    )
-
-    val ENCODING_LENGTH = 32
-
-    val TIMESTAMP_LENGTH = 10
-    val RANDOM_LENGTH    = 16
-    val ULID_LENGTH: Int = TIMESTAMP_LENGTH + RANDOM_LENGTH
-
-    val MIN_TIME = 0x0L
-    val MAX_TIME = 0x0000ffffffffffffL
-
-  }
-}
-
-/**
-  * ULID generator
-  * @param timeSource a function returns the current time in milliseconds (e.g. java.lang.System.currentTimeMillis())
-  * @param random a function returns a random value (e.g. scala.util.Random.nextDouble())
-  */
-private[ulid] class ULIDGenerator(timeSource: () => Long, random: () => Double) {
-  import ULID.constants._
-
-  /**
-    * generate ULID string
-    * @return
-    */
-  def generate: String = encodeTime() + encodeRandom()
-
-  private def encodeTime(): String = {
-    @annotation.tailrec
-    def run(time: Long, out: String = "", count: Int = 0): String = {
-      count match {
-        case TIMESTAMP_LENGTH => out
-        case _ =>
-          val mod = (time % ENCODING_LENGTH).toInt
-          run((time - mod) / ENCODING_LENGTH, s"${ENCODING_CHARS(mod)}${out}", count + 1)
-      }
+    private def currentTimeInMillis: Long = {
+      // Avoid unexpected rollback of the system clock
+      baseSystemTimeMillis + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - baseNanoTime)
     }
 
-    timeSource() match {
-      case time if (time < MIN_TIME) || (MAX_TIME < time) =>
-        throw new IllegalArgumentException(s"cannot generate ULID string. Time($time) is invalid");
-      case time =>
-        run(time)
-    }
-  }
+    /**
+      * Generate ULID string.
+      *
+      * Tips for optimizing performance.
+      * 1. Reduce the number of Random number generation. SecureRandom is quite slow, so if within the same milliseconds, just incrementing the value is better.
+      */
+    def generate: String = {
+      val unixTimeMillis: Long = currentTimeInMillis
+      if (unixTimeMillis > MaxTime) {
+        throw new IllegalStateException(f"unixtime should be less than: ${MaxTime}%,d: ${unixTimeMillis}%,d")
+      }
 
-  private def encodeRandom(): String = {
-    @annotation.tailrec
-    def run(out: String = "", count: Int = 0): String = {
-      count match {
-        case RANDOM_LENGTH => out
-        case _ =>
-          val rand = random()
-          if (rand < 0.0d || 1.0d < rand) {
-            throw new IllegalArgumentException(s"random must not under 0.0 or over 1.0. random value = $rand")
+      // Add a guard so that only a single-thread can generate ULID based on the previous value
+      synchronized {
+        val (hi, low)    = lastValue.get()
+        val lastUnixTime = (hi >>> 16) & 0xffffffffffffL
+        if (lastUnixTime == unixTimeMillis) {
+          // do increment
+          if (low != ~0L) {
+            generateFrom(hi, low + 1L)
+          } else {
+            var nextHi = (hi & ~(~0L << 16)) + 1
+            if ((nextHi & (~0L << 16)) != 0) {
+              // Random number overflow. Wait for one millisecond and retry
+              compat.sleep(1)
+              generate
+            } else {
+              nextHi |= unixTimeMillis << (64 - 48)
+              generateFrom(nextHi, 0)
+            }
           }
-          val index = Math.floor((ENCODING_LENGTH - 1) * rand).toInt
-          run(s"${ENCODING_CHARS(index)}${out}", count + 1)
+        } else {
+          // No conflict at millisecond level. We can generate a new ULID safely
+          generateFrom(unixTimeMillis, random())
+        }
       }
     }
-    run()
+
+    private def generateFrom(unixTimeMillis: Long, rand: Array[Byte]): String = {
+      // We need a 80-bit random value here.
+      require(rand.length == 10, s"random value array must have length 10, but ${rand.length}")
+
+      val hi = ((unixTimeMillis & 0xffffffffffffL) << (64 - 48)) |
+        (rand(0) & 0xffL) << 8 | (rand(1) & 0xffL)
+      val low: Long =
+        ((rand(2) & 0xffL) << 56) |
+          ((rand(3) & 0xffL) << 48) |
+          ((rand(4) & 0xffL) << 40) |
+          ((rand(5) & 0xffL) << 32) |
+          ((rand(6) & 0xffL) << 24) |
+          ((rand(7) & 0xffL) << 16) |
+          ((rand(8) & 0xffL) << 8) |
+          (rand(9) & 0xffL)
+      generateFrom(hi, low)
+    }
+
+    private def generateFrom(hi: Long, low: Long): String = {
+      lastValue.set((hi, low))
+      CrockfordBase32.encode128bits(hi, low)
+    }
   }
+
 }

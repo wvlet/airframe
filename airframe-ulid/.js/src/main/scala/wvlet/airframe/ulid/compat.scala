@@ -13,25 +13,14 @@
  */
 package wvlet.airframe.ulid
 
-import wvlet.airspec.AirSpec
-import wvlet.airspec.spi.PropertyCheck
-
-import java.util.Calendar
 import scala.util.Random
 
 /**
   */
-class ULIDCalendarTest extends AirSpec with PropertyCheck {
-  test("timestamp valid") {
-    import org.scalacheck.Gen
-    forAll(Gen.calendar) { cal: Calendar =>
-      if (
-        cal.getTimeInMillis > ULID.MinTime
-        && cal.getTimeInMillis < ULID.MaxTime
-      ) {
-        val u = ULID.of(cal.getTimeInMillis, Random.nextLong(), Random.nextLong())
-        u.epochMillis shouldBe cal.getTimeInMillis
-      }
-    }
+object compat {
+  val random: Random = scala.util.Random
+
+  def sleep(millis: Int): Unit = {
+    // no-op as Scala.js has no sleep
   }
 }

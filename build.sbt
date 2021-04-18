@@ -817,7 +817,8 @@ lazy val benchmark =
         // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
         // For grpc-java
         "io.grpc"             % "grpc-protobuf" % GRPC_VERSION,
-        "com.google.protobuf" % "protobuf-java" % "3.15.8"
+        "com.google.protobuf" % "protobuf-java" % "3.15.8",
+        "com.chatwork"       %% "scala-ulid"    % "1.0.2"
       )
       //      PB.targets in Compile := Seq(
       //        scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
@@ -825,7 +826,7 @@ lazy val benchmark =
       // publishing .tgz
       // publishPackArchiveTgz
     )
-    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, finagle, grpc)
+    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, finagle, grpc, ulidJVM)
 
 lazy val fluentd =
   project
