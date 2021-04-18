@@ -1,11 +1,11 @@
 ---
 id: airframe-ulid
-title: airframe-ulid: Lexicographically Sortable Identifier
+title: airframe-ulid: ULID Generator
 ---
 
-airframe-ulid is an [ULID](https://github.com/ulid/spec) generator for Scala and Scala.js.
+airframe-ulid is an [ULID](https://github.com/ulid/spec) generator for Scala and Scala.js. 
 
-ULID has the following good characteristics:
+ULID (Universally Unique Lexicographically Sortable Identifier) has the following good characteristics:
 
 - 128-bit compatibility with UUID
 - 1.21e+24 unique ULIDs per millisecond
@@ -16,6 +16,35 @@ Uses Crockford's base32 for better efficiency and readability (5 bits per charac
 - No special characters (URL safe)
 - Monotonic sort order (correctly detects and handles the same millisecond)
 
+[Source code of airframe-ulid at GitHub](https://github.com/wvlet/airframe/tree/master/airframe-ulid)
+
+## ULID Format
+
+The ULID is a 26-character string encoded with [Crockford's Base32](https://www.crockford.com/base32.html), which excludes letters like I, L, O, and U to avoid confusion.
+
+```
+ 01AN4Z07BY      79KA1307SR9X4MV3
+
+|----------|    |----------------|
+ Timestamp          Randomness
+   48bits             80bits
+```
+
+### Timestamp
+
+- 48-bit integer
+- UNIX-time in milliseconds
+- Won't run out of space until the year 10889 AD.
+
+### Randomness
+
+- 80 bits
+- Cryptographically secure random value.
+
+### Binary Format
+
+ULIDs can be encoded as 128-bit values, using network-byte order (big-endian, MSB first). In JVM, it can be two 64-bit Long values, or a byte array of size 16. Technically, 26 characters of Crockford's Base32 can represent 130-bit values, but ULID strictly uses 128 bits, so the largest ULID string is `7ZZZZZZZZZZZZZZZZZZZZZZZZZ`, the unix time of which is 281474976710655.
+
 ## Usage
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-ulid_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-ulid_2.12/)
@@ -24,7 +53,7 @@ __build.sbt__
 ```scala
 libraryDependencies += "org.wvlet.airframe" %% "airframe-ulid" % "(version)"
 
-# For Scala.js
+// For Scala.js
 libraryDependencies += "org.wvlet.airframe" %%% "airframe-ulid" % "(version)"
 ```
 
@@ -53,18 +82,24 @@ ULID.of(unixTimeMillis, randHi, randLow)
 ```
 
 
-ULID.newULID will produce [monotonically increasing ULIDs](https://github.com/ulid/spec#monotonicity) in a thread-safe manner:
+ULID.newULID will produce [monotonically increasing ULIDs](https://github.com/ulid/spec#monotonicity) in a thread-safe manner. If ULIDs are generated within the same millisecond, airframe-ulid will increment the random part of ULID by 1 to enforce the ordering:
 
 ```
 01F3HZ9V4BHVHJMMETE0MFBQKH
-01F3HZ9V4BHVHJMMETE0MFBQKJ
-01F3HZ9V4BHVHJMMETE0MFBQKK
-01F3HZ9V4BHVHJMMETE0MFBQKM
-01F3HZ9V4BHVHJMMETE0MFBQKN
-01F3HZ9V4C8SWD21A4SCM4NMD8 // <- milliseconds changed
+01F3HZ9V4BHVHJMMETE0MFBQKJ // <- random part was incremented by 1
+01F3HZ9V4BHVHJMMETE0MFBQKK // <- random part was incremented by 1
+01F3HZ9V4BHVHJMMETE0MFBQKM // <- random part was incremented by 1
+01F3HZ9V4BHVHJMMETE0MFBQKN // <- random part was incremented by 1
+01F3HZ9V4C8SWD21A4SCM4NMD8 // <- millisecond is changed
 ...
 ```
 
+Empirically, generating monotonically increasing ULIDs will reduce the probability of having ULID conflicts than using completely random ULIDs, according to [this report](https://medium.com/zendesk-engineering/how-probable-are-collisions-with-ulids-monotonic-option-d604d3ed2de).
+
+If you use multiple machines, however, there is no guarantee that generated ULIDs will be monotonically increasing values. We recommend having a single coordinator to generate ULIDs if you need strict ordering.
+
+
+### Serialization
 
 ULID can be serialized and deserialized with [airframe-codec](airframe-codec.md): 
 ```scala
@@ -83,8 +118,6 @@ val txx = codec.fromJson(json)
 
 airframe-ulid can produce 5 million ULIDs / sec. As of April 2021, airframe-ulid is the fastest ULID generator in Scala: 
 
-- [scala-ulid (by Chatwork)](https://github.com/chatwork/scala-ulid)
-
 ```scala
 $ ./sbt
 > benchmark/run bench ulid
@@ -96,5 +129,8 @@ Chatwork.generateMonotonic  thrpt   10  4715112.355 ± 680190.587  ops/s
 UUID.generate               thrpt   10  3056452.879 ± 121768.161  ops/s
 ```
 
+Comparison targets:
+- [scala-ulid (by Chatwork)](https://github.com/chatwork/scala-ulid)
+- Java's UUID.randomUUID()
 
-- [Source Code at GitHub](https://github.com/wvlet/airframe/tree/master/airframe-ulid)
+[Benchmark code](https://github.com/wvlet/airframe/blob/master/airframe-benchmark/src/main/scala/wvlet/airframe/benchmark/ulid/ULIDBenchmark.scala) using JMH.
