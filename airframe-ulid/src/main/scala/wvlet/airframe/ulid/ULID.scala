@@ -160,9 +160,8 @@ object ULID {
     private val baseSystemTimeMillis = System.currentTimeMillis()
     private val baseNanoTime         = System.nanoTime()
 
-    private val lastUnixTime = new AtomicLong(0L)
-    private val lastHi       = new AtomicLong(0L)
-    private val lastLow      = new AtomicLong(0L)
+    private val lastHi  = new AtomicLong(0L)
+    private val lastLow = new AtomicLong(0L)
 
     private def currentTimeInMillis: Long = {
       // Avoid unexpected rollback of the system clock
@@ -178,8 +177,9 @@ object ULID {
         throw new IllegalStateException(f"unixtime should be less than: ${MaxTime}%,d: ${unixTimeMillis}%,d")
       }
 
-      if (lastUnixTime.get() == unixTimeMillis) {
-        val hi  = lastHi.get
+      val hi           = lastHi.get
+      val lastUnixTime = (hi >>> 16) & 0xffffffffffffL
+      if (lastUnixTime == unixTimeMillis) {
         val low = lastLow.get
         // do increment
         if (low != ~0L) {
@@ -197,7 +197,7 @@ object ULID {
         }
       } else {
         // No conflict at millisecond level. We can generate a new ULID safely
-        lastUnixTime.set(unixTimeMillis)
+        //lastUnixTime.set(unixTimeMillis)
         generateFrom(unixTimeMillis, random())
       }
     }
@@ -206,7 +206,7 @@ object ULID {
       // We need a 80-bit random value here.
       require(rand.length == 10, s"random value array must have length 10, but ${rand.length}")
 
-      val hi = ((unixTimeMillis & 0xffffffL) << (64 - 48)) |
+      val hi = ((unixTimeMillis & 0xffffffffffffL) << (64 - 48)) |
         (rand(0) & 0xffL) << 8 | (rand(1) & 0xffL)
       val low: Long =
         ((rand(2) & 0xffL) << 56) |
