@@ -45,10 +45,10 @@ final case class ULID(private val ulid: String) extends Ordered[ULID] {
     val (hi, low) = CrockfordBase32.decode128bits(ulid)
     val b         = new Array[Byte](16)
     for (i <- 0 until 8) {
-      b(i) = ((hi >>> (64 - i * 8)) & 0xffL).toByte
+      b(i) = ((hi >>> (64 - (i + 1) * 8)) & 0xffL).toByte
     }
     for (i <- 0 until 8) {
-      b(i + 8) = ((low >>> (64 - i * 8)) & 0xffL).toByte
+      b(i + 8) = ((low >>> (64 - (i + 1) * 8)) & 0xffL).toByte
     }
     b
   }

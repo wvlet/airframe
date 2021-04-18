@@ -33,11 +33,17 @@ class ULIDTest extends AirSpec with PropertyCheck {
   }
 
   test("toString/toBytes") {
-    val lst = (0 to 10000).map { i => ULID.newULID }
-    lst.forall { x =>
+    forAll { (a: Long, rh: Long, rl: Long) =>
+      val unixTime = a & ((~0L) >>> (64 - 48))
+      val ulid     = ULID.of(unixTime, rh, rl)
       // Identity
-      ULID.fromString(x.toString) shouldBe x
-      //ULID.fromBytes(x.toBytes) shouldBe x
+      ulid.compareTo(ulid) shouldBe 0
+      ULID.fromString(ulid.toString) shouldBe ulid
+      ULID.fromBytes(ulid.toBytes) shouldBe ulid
+
+      // Condition
+      ulid.epochMillis shouldBe unixTime
+      ULID.isValid(ulid.toString) shouldBe true
     }
   }
 
