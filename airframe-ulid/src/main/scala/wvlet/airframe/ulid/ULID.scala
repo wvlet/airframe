@@ -13,8 +13,13 @@
  */
 package wvlet.airframe.ulid
 import java.time.Instant
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
+/**
+  * ULID string, consisting of 26 characters.
+  * @param ulid
+  */
 final case class ULID(private val ulid: String) extends Ordered[ULID] {
 
   /**
@@ -56,24 +61,23 @@ object ULID {
   private val random: scala.util.Random = compat.random
 
   private val defaultGenerator = {
-    val timeSource = () => System.currentTimeMillis()
     val randGen = { () =>
       val r = new Array[Byte](10)
       random.nextBytes(r)
       r
     }
-    new ULIDGenerator(timeSource, randGen)
+    new ULIDGenerator(randGen)
   }
 
   /**
     * Create a new ULID
     */
-  def newULID: ULID = new ULID(defaultGenerator.generate)
+  def newULID: ULID = defaultGenerator.generate
 
   /**
     * Create a new ULID string
     */
-  def newULIDString: String = defaultGenerator.generate
+  def newULIDString: String = defaultGenerator.generate.toString
 
   /**
     * Create a new ULID from a given string of size 26
@@ -87,6 +91,19 @@ object ULID {
     require(ulid.length == 26, s"ULID must have 26 characters: ${ulid} (length: ${ulid.length})")
     require(CrockfordBase32.isValidBase32(ulid), s"Invalid Base32 character is found in ${ulid}")
     new ULID(ulid)
+  }
+
+  /**
+    * Create an ULID from a given timestamp (48-bit) and a random value (80-bit)
+    * @param unixTimeMillis 48-bit unix time millis
+    * @param randHi  16-bit hi-part of 80-bit random value
+    * @param randLow 64-bit low-part of 80-bit random value
+    * @return
+    */
+  def of(unixTimeMillis: Long, randHi: Long, randLow: Long): ULID = {
+    val hi: Long  = (unixTimeMillis << (64 - 48)) | (randHi & 0xffff)
+    val low: Long = randLow
+    new ULID(CrockfordBase32.encode128bits(hi, low))
   }
 
   /**
@@ -134,22 +151,59 @@ object ULID {
 
   /**
     * ULID generator
-    * @param timeSource a function returns the current time in milliseconds (e.g. java.lang.System.currentTimeMillis())
-    * @param random a function returns a random value (e.g. scala.util.Random.nextDouble())
+    * @param timeSource a function that returns the current time in milliseconds (e.g. java.lang.System.currentTimeMillis())
+    * @param random a function that returns a 80-bit random values in Array[Byte] (size:10)
     */
-  private[ulid] class ULIDGenerator(timeSource: () => Long, random: () => Array[Byte]) {
+  private class ULIDGenerator(random: () => Array[Byte]) {
+    private val baseSystemTimeMillis = System.currentTimeMillis()
+    private val baseNanoTime         = System.nanoTime()
 
-    private val lastUnixTimeMillis = new AtomicLong(-1L)
-    private val lastHi             = new AtomicLong(0L)
-    private val lastLow            = new AtomicLong(0L)
+    private val lastHi  = new AtomicLong(0L)
+    private val lastLow = new AtomicLong(0L)
 
-    private def generateFrom(unixTimeMillis: Long, rand: Array[Byte]): String = {
+    private def currentTimeInMillis: Long = {
+      // Avoid unexpected rollback of the sytem clock
+      baseSystemTimeMillis + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - baseNanoTime)
+    }
+
+    /**
+      * Generate ULID string
+      */
+    def generate: ULID = {
+      val unixTimeMillis: Long = currentTimeInMillis
+      if (unixTimeMillis > MaxTime) {
+        throw new IllegalStateException(f"unixtime should be less than: ${MaxTime}%,d: ${unixTimeMillis}%,d")
+      }
+      val hi                 = lastHi.get
+      val lastUnixTimeMillis = (hi >> (64 - 48)) & 0xffffffL
+      if (lastUnixTimeMillis != unixTimeMillis) {
+        // No conflict at millisecond level. We can generate a new ULID safely
+        generateFrom(unixTimeMillis, random())
+      } else {
+        val low = lastLow.get
+        // do increment
+        if (low != ~0L) {
+          generateFrom(hi, low + 1L)
+        } else {
+          var nextHi = (hi & ~(~0L << 16)) + 1
+          if ((nextHi & (~0L << 16)) != 0) {
+            // Random number overflow. Wait for one millisecond and retry
+            compat.sleep(1)
+            generate
+          } else {
+            nextHi |= unixTimeMillis << (64 - 48)
+            generateFrom(nextHi, 0)
+          }
+        }
+      }
+    }
+
+    private def generateFrom(unixTimeMillis: Long, rand: Array[Byte]): ULID = {
       // We need a 80-bit random value here.
-      require(rand.length == 10)
+      require(rand.length == 10, s"random value array must have length 10, but ${rand.length}")
 
-      val hi: Long = (unixTimeMillis << (64 - 48)) |
-        (rand(0) & 0xffL << 8)
-      (rand(1) & 0xffL)
+      val hi = ((unixTimeMillis & 0xffffffL) << (64 - 48)) |
+        (rand(0) & 0xffL) << 8 | (rand(1) & 0xffL)
       val low: Long =
         ((rand(2) & 0xffL) << 56) |
           ((rand(3) & 0xffL) << 48) |
@@ -159,47 +213,13 @@ object ULID {
           ((rand(7) & 0xffL) << 16) |
           ((rand(8) & 0xffL) << 8) |
           (rand(9) & 0xffL)
-
       generateFrom(hi, low)
     }
 
-    private def generateFrom(hi: Long, low: Long): String = {
+    private def generateFrom(hi: Long, low: Long): ULID = {
       lastHi.set(hi)
       lastLow.set(low)
-      CrockfordBase32.encode128bits(hi, low)
-    }
-
-    /**
-      * generate ULID string
-      * @return
-      */
-    def generate: String = {
-      val unixTimeMillis: Long = timeSource()
-      if (unixTimeMillis > MaxTime) {
-        throw new IllegalStateException(f"unixtime should be less than: ${MaxTime}%,d: ${unixTimeMillis}%,d")
-      }
-      if (lastUnixTimeMillis.get() == unixTimeMillis) {
-        val hi  = lastHi.get
-        val low = lastLow.get
-        // do increment
-        if (low != ~0L) {
-          generateFrom(hi, low + 1L)
-        } else {
-          var nextHi = (hi & ~(~0L << 16)) + 1
-          if ((nextHi & (~0L << 16)) != 0) {
-            // overflow. Wait one millisecond
-            compat.sleep(1)
-            generate
-          } else {
-            nextHi |= unixTimeMillis << (64 - 48)
-            generateFrom(nextHi, 0)
-          }
-        }
-      } else {
-        lastUnixTimeMillis.set(unixTimeMillis)
-        val rand = random()
-        generateFrom(unixTimeMillis, rand)
-      }
+      new ULID(CrockfordBase32.encode128bits(hi, low))
     }
   }
 

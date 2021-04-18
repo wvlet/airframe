@@ -13,17 +13,12 @@
  */
 package wvlet.airframe.ulid
 
-import wvlet.airframe.ulid.ULID.{ULIDGenerator}
 import wvlet.airspec.AirSpec
 import wvlet.airspec.spi.PropertyCheck
 
 /**
   */
 class ULIDTest extends AirSpec with PropertyCheck {
-
-  private def ulid(timestamp: => Long, random: => Array[Byte]) = {
-    new ULIDGenerator(() => timestamp, () => random)
-  }
 
   test("generate ULID") {
     for (i <- 0 to 10) {
@@ -44,18 +39,21 @@ class ULIDTest extends AirSpec with PropertyCheck {
     }
   }
 
-//  test("valid") {
-//    ULID.isValid(ulid(System.currentTimeMillis(), 0.0d).generate) shouldBe true
-//  }
-//
-//  test("generate") {
-//    ulid(ULID.MinTime, 0.0d).generate shouldBe "00000000000000000000000000"
-//    ulid(1L, 0.0d).generate shouldBe "00000000010000000000000000"
-//    ulid(ULID.MaxTime, 0.0d).generate shouldBe "7ZZZZZZZZZ0000000000000000"
-//
-//    ulid(0L, 0.5d).generate shouldBe "0000000000FFFFFFFFFFFFFFFF"
-//    ulid(0L, 1.0d).generate shouldBe "0000000000ZZZZZZZZZZZZZZZZ"
-//  }
+  test("valid") {
+    forAll { (timeMillis: Long) =>
+      val unixtime = timeMillis & 0xffffffffffffL
+      val ulid     = ULID.of(unixtime, 0, 0)
+      ulid.epochMillis shouldBe unixtime
+    }
+  }
+
+  test("generate") {
+    ULID.of(ULID.MinTime, 0, 0) shouldBe ULID("00000000000000000000000000")
+    ULID.of(1L, 0, 0) shouldBe ULID("00000000010000000000000000")
+    ULID.of(ULID.MaxTime, 0, 0) shouldBe ULID("7ZZZZZZZZZ0000000000000000")
+    //ULID.of(0L, 0, ~0L) shouldBe ULID("0000000000FFFFFFFFFFFFFFFF")
+    ULID.of(0L, ~0L, ~0L) shouldBe ULID("0000000000ZZZZZZZZZZZZZZZZ")
+  }
 //
 //  test("generation failures") {
 //    intercept[IllegalArgumentException] {
@@ -87,6 +85,6 @@ class ULIDTest extends AirSpec with PropertyCheck {
     val ts        = ulid.epochMillis
     val tsString  = ulid.toString.substring(0, 10)
     val decodedTs = CrockfordBase32.decode48bits(tsString)
-    debug(s"${ts}, ${tsString}, ${decodedTs}")
+    ts shouldBe decodedTs
   }
 }
