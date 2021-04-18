@@ -14,7 +14,7 @@
 package wvlet.airframe.ulid
 import java.time.Instant
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 
 /**
   * ULID string, consisting of 26 characters.
@@ -152,7 +152,7 @@ object ULID {
   }
 
   /**
-    * ULID generator
+    * ULID generator.
     * @param timeSource a function that returns the current time in milliseconds (e.g. java.lang.System.currentTimeMillis())
     * @param random a function that returns a 80-bit random values in Array[Byte] (size:10)
     */
@@ -160,8 +160,7 @@ object ULID {
     private val baseSystemTimeMillis = System.currentTimeMillis()
     private val baseNanoTime         = System.nanoTime()
 
-    private val lastHi  = new AtomicLong(0L)
-    private val lastLow = new AtomicLong(0L)
+    private val lastValue = new AtomicReference((0L, 0L))
 
     private def currentTimeInMillis: Long = {
       // Avoid unexpected rollback of the system clock
@@ -169,7 +168,10 @@ object ULID {
     }
 
     /**
-      * Generate ULID string
+      * Generate ULID string.
+      *
+      * Tips for optimizing performance.
+      * 1. Reduce the number of Random number generation. SecureRandom is quite slow, so if within the same milliseconds, just incrementing the value is better.
       */
     def generate: String = {
       val unixTimeMillis: Long = currentTimeInMillis
@@ -177,28 +179,29 @@ object ULID {
         throw new IllegalStateException(f"unixtime should be less than: ${MaxTime}%,d: ${unixTimeMillis}%,d")
       }
 
-      val hi           = lastHi.get
-      val lastUnixTime = (hi >>> 16) & 0xffffffffffffL
-      if (lastUnixTime == unixTimeMillis) {
-        val low = lastLow.get
-        // do increment
-        if (low != ~0L) {
-          generateFrom(hi, low + 1L)
-        } else {
-          var nextHi = (hi & ~(~0L << 16)) + 1
-          if ((nextHi & (~0L << 16)) != 0) {
-            // Random number overflow. Wait for one millisecond and retry
-            compat.sleep(1)
-            generate
+      // Add a guard so that only a single-thread can generate ULID based on the previous value
+      synchronized {
+        val (hi, low)    = lastValue.get()
+        val lastUnixTime = (hi >>> 16) & 0xffffffffffffL
+        if (lastUnixTime == unixTimeMillis) {
+          // do increment
+          if (low != ~0L) {
+            generateFrom(hi, low + 1L)
           } else {
-            nextHi |= unixTimeMillis << (64 - 48)
-            generateFrom(nextHi, 0)
+            var nextHi = (hi & ~(~0L << 16)) + 1
+            if ((nextHi & (~0L << 16)) != 0) {
+              // Random number overflow. Wait for one millisecond and retry
+              compat.sleep(1)
+              generate
+            } else {
+              nextHi |= unixTimeMillis << (64 - 48)
+              generateFrom(nextHi, 0)
+            }
           }
+        } else {
+          // No conflict at millisecond level. We can generate a new ULID safely
+          generateFrom(unixTimeMillis, random())
         }
-      } else {
-        // No conflict at millisecond level. We can generate a new ULID safely
-        //lastUnixTime.set(unixTimeMillis)
-        generateFrom(unixTimeMillis, random())
       }
     }
 
@@ -221,8 +224,7 @@ object ULID {
     }
 
     private def generateFrom(hi: Long, low: Long): String = {
-      lastHi.set(hi)
-      lastLow.set(low)
+      lastValue.set((hi, low))
       CrockfordBase32.encode128bits(hi, low)
     }
   }
