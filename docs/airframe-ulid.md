@@ -1,9 +1,20 @@
 ---
 id: airframe-ulid
-title: airframe-ulid: Lexicographically sortable UUID
+title: airframe-ulid: Lexicographically Sortable Identifier
 ---
 
 airframe-ulid is an [ULID](https://github.com/ulid/spec) generator for Scala and Scala.js.
+
+ULID has the following good characteristics:
+
+- 128-bit compatibility with UUID
+- 1.21e+24 unique ULIDs per millisecond
+- Lexicographically sortable
+- Canonically encoded as a 26 character string, as opposed to the 36 character UUID
+Uses Crockford's base32 for better efficiency and readability (5 bits per character)
+- Case insensitive
+- No special characters (URL safe)
+- Monotonic sort order (correctly detects and handles the same millisecond)
 
 ## Usage
 
