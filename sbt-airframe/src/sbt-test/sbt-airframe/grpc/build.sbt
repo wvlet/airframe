@@ -24,7 +24,7 @@ lazy val server =
     .enablePlugins(AirframeHttpPlugin)
     .settings(buildSettings)
     .settings(
-      fork in Test := true,
+      Test / fork := true,
       airframeHttpGeneratorOption := "-l trace",
       airframeHttpClients := Seq(
         "example.api:grpc"

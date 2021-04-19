@@ -45,7 +45,7 @@ addCommandAlias(
 )
 
 // Allow using Ctrl+C in sbt without exiting the prompt
-// cancelable in Global := true
+// Global / cancelable := true
 
 //ThisBuild / turbo := true
 
@@ -61,16 +61,16 @@ val DOTTY = sys.env.isDefinedAt("DOTTY")
 // val DOTTY = true
 
 // We MUST use Scala 2.12 for building sbt-airframe
-scalaVersion in ThisBuild := {
+ThisBuild / scalaVersion := {
   if (DOTTY) SCALA_3_0
   else SCALA_2_12
 }
-organization in ThisBuild := "org.wvlet.airframe"
+ThisBuild / organization := "org.wvlet.airframe"
 
 // Use dynamic snapshot version strings for non tagged versions
-dynverSonatypeSnapshots in ThisBuild := true
+ThisBuild / dynverSonatypeSnapshots := true
 // Use coursier friendly version separator
-dynverSeparator in ThisBuild := "-"
+ThisBuild / dynverSeparator := "-"
 
 val buildSettings = Seq[Setting[_]](
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
@@ -106,10 +106,8 @@ val buildSettings = Seq[Setting[_]](
   },
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(
-    ("org.wvlet.airframe" %%% "airspec" % AIRSPEC_VERSION % Test)
-      .withDottyCompat(scalaVersion.value),
-    ("org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % Test)
-      .withDottyCompat(scalaVersion.value)
+    ("org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test).cross(CrossVersion.for3Use2_13),
+    ("org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Test).cross(CrossVersion.for3Use2_13)
   ) ++ {
     if (DOTTY)
       Seq.empty
@@ -119,10 +117,10 @@ val buildSettings = Seq[Setting[_]](
 )
 
 // Do not run tests concurrently to avoid JMX registration failures
-val runTestSequentially = Seq[Setting[_]](parallelExecution in Test := false)
+val runTestSequentially = Seq[Setting[_]](Test / parallelExecution := false)
 
 // We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
-publishTo in ThisBuild := sonatypePublishToBundle.value
+ThisBuild / publishTo := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
   crossScalaVersions := targetScalaVersions,
@@ -259,7 +257,7 @@ lazy val docs =
       publishArtifact := false,
       publish := {},
       publishLocal := {},
-      watchTriggers in mdoc += ((ThisBuild / baseDirectory).value / "docs").toGlob / ** / "*.md"
+      mdoc / watchTriggers += ((ThisBuild / baseDirectory).value / "docs").toGlob / ** / "*.md"
     )
     .enablePlugins(MdocPlugin, DocusaurusPlugin)
 
@@ -315,7 +313,7 @@ lazy val airframe =
     .jvmSettings(
       // Workaround for https://github.com/scala/scala/pull/7624 in Scala 2.13, and also
       // testing shutdown hooks requires consistent application lifecycle between sbt and JVM https://github.com/sbt/sbt/issues/4794
-      fork in Test := scalaBinaryVersion.value == "2.13"
+      Test / fork := scalaBinaryVersion.value == "2.13"
     )
     .jsSettings(
       jsBuildSettings
@@ -343,11 +341,11 @@ def dottyCrossBuildSettings(prefix: String): Seq[Setting[_]] = {
       if (DOTTY) withDotty
       else targetScalaVersions
     },
-    unmanagedSourceDirectories in Compile ++= crossBuildSources(
+    Compile / unmanagedSourceDirectories ++= crossBuildSources(
       scalaBinaryVersion.value,
       (baseDirectory.value.getParentFile / prefix).toString
     ),
-    unmanagedSourceDirectories in Test := {
+    Test / unmanagedSourceDirectories := {
       scalaBinaryVersion.value match {
         case v if v.startsWith("3.") =>
           Seq[sbt.File](file(s"${(baseDirectory.value.getParentFile / prefix).toString}/src/test/scala-3"))
@@ -522,14 +520,14 @@ lazy val log: sbtcrossproject.CrossProject =
       name := "airframe-log",
       description := "Fancy logger for Scala",
       scalacOptions ++= {
-        if (isDotty.value) Seq("-source:3.0-migration")
+        if (DOTTY) Seq("-source:3.0-migration")
         else Nil
       },
       crossScalaVersions := {
         if (DOTTY) withDotty
         else targetScalaVersions
       },
-      unmanagedSourceDirectories in Compile ++= {
+      Compile / unmanagedSourceDirectories ++= {
         scalaBinaryVersion.value match {
           case v if v.startsWith("2.") =>
             Seq(
@@ -680,7 +678,7 @@ lazy val http =
     )
     .jsSettings(
       jsBuildSettings,
-      jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+      Test / jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
       libraryDependencies ++= Seq(
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
@@ -799,12 +797,12 @@ lazy val benchmark =
       // java.lang.RuntimeException: ERROR: Unable to find the resource: /META-INF/BenchmarkList
       turbo := false,
       // Generate JMH benchmark cord before packaging and testing
-      pack := pack.dependsOn(compile in Test).value,
-      sourceDirectory in Jmh := (sourceDirectory in Compile).value,
-      compile in Jmh := (compile in Jmh).triggeredBy(compile in Compile).value,
-      compile in Test := ((compile in Test).dependsOn(compile in Jmh)).value,
+      pack := pack.dependsOn(Test / compile).value,
+      Jmh / sourceDirectory := (Compile / sourceDirectory).value,
+      Jmh / compile := (Jmh / compile).triggeredBy(Compile / compile).value,
+      Test / compile := ((Test / compile).dependsOn(Jmh / compile)).value,
       // Need to fork JVM so that sbt can set the classpass properly for running JMH
-      fork in run := true,
+      run / fork := true,
       libraryDependencies ++= Seq(
         "org.msgpack"     % "msgpack-core"             % MSGPACK_VERSION,
         "org.openjdk.jmh" % "jmh-core"                 % JMH_VERSION,
@@ -820,7 +818,7 @@ lazy val benchmark =
         "com.google.protobuf" % "protobuf-java" % "3.15.8",
         "com.chatwork"       %% "scala-ulid"    % "1.0.2"
       )
-      //      PB.targets in Compile := Seq(
+      //      Compile / PB.targets := Seq(
       //        scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
       //      ),
       // publishing .tgz
@@ -866,10 +864,10 @@ lazy val sql =
     .settings(
       name := "airframe-sql",
       description := "SQL parser & analyzer",
-      antlr4Version in Antlr4 := "4.9.2",
-      antlr4PackageName in Antlr4 := Some("wvlet.airframe.sql.parser"),
-      antlr4GenListener in Antlr4 := true,
-      antlr4GenVisitor in Antlr4 := true,
+      Antlr4 / antlr4Version := "4.9.2",
+      Antlr4 / antlr4PackageName := Some("wvlet.airframe.sql.parser"),
+      Antlr4 / antlr4GenListener := true,
+      Antlr4 / antlr4GenVisitor := true,
       libraryDependencies ++= Seq(
         // For parsing DataType strings
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
@@ -889,7 +887,7 @@ lazy val rxHtml =
     )
     .jsSettings(
       jsBuildSettings,
-      jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+      Test / jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
       libraryDependencies ++= Seq(
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
@@ -908,7 +906,7 @@ lazy val widgetJS =
       name := "airframe-rx-widget",
       description := "Reactive Widget library for Scala.js",
       jsBuildSettings,
-      jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
+      Test / jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
       // npmDependencies in Compile += "monaco-editor" -> "0.21.3",
       // useYarn := true
       //      npmDependencies in Test += "node" -> "12.14.1"
@@ -962,7 +960,7 @@ lazy val sbtAirframe =
       scriptedDependencies := {
         // Publish all dependencies necessary for running the scripted tests
         val depPublish = scriptedDependencies.value
-        val p1         = publishLocal.in(httpJVM, packArchiveTgz).value
+        val p1         = (httpJVM / packArchiveTgz / publishLocal).value
         val p2         = publishLocal.all(ScopeFilter(inDependencies(finagle))).value
         val p3         = publishLocal.all(ScopeFilter(inDependencies(grpc))).value
         val p4         = publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
@@ -1011,7 +1009,7 @@ val airspecDependsOn =
   settingKey[Seq[String]]("Dependent module names of airspec projects")
 
 val airspecBuildSettings = Seq[Setting[_]](
-  unmanagedSourceDirectories in Compile ++= {
+  Compile / unmanagedSourceDirectories ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
     val sourceDirs =
@@ -1023,7 +1021,7 @@ val airspecBuildSettings = Seq[Setting[_]](
 )
 
 val airspecJVMBuildSettings = Seq[Setting[_]](
-  unmanagedSourceDirectories in Compile ++= {
+  Compile / unmanagedSourceDirectories ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
     val sourceDirs =
@@ -1035,7 +1033,7 @@ val airspecJVMBuildSettings = Seq[Setting[_]](
 )
 
 val airspecJSBuildSettings = Seq[Setting[_]](
-  unmanagedSourceDirectories in Compile ++= {
+  Compile / unmanagedSourceDirectories ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
     val sourceDirs =
@@ -1088,22 +1086,14 @@ lazy val airspecCore =
     )
     .jvmSettings(
       airspecJVMBuildSettings,
-      mappings in (Compile, packageBin) ++= mappings
-        .in(airspecLogJVM, Compile, packageBin)
-        .value,
-      mappings in (Compile, packageSrc) ++= mappings
-        .in(airspecLogJVM, Compile, packageSrc)
-        .value
+      Compile / packageBin / mappings ++= (airspecLogJVM / Compile / packageBin / mappings).value,
+      Compile / packageSrc / mappings ++= (airspecLogJVM / Compile / packageSrc / mappings).value
     )
     .jsSettings(
       airspecJSBuildSettings,
-      mappings in (Compile, packageBin) ++= mappings
-        .in(airspecLogJS, Compile, packageBin)
-        .value
+      Compile / packageBin / mappings ++= (airspecLogJS / Compile / packageBin / mappings).value
         .filter(x => x._2 != "JS_DEPENDENCIES"),
-      mappings in (Compile, packageSrc) ++= mappings
-        .in(airspecLogJS, Compile, packageSrc)
-        .value
+      Compile / packageSrc / mappings ++= (airspecLogJS / Compile / packageSrc / mappings).value
     )
     .dependsOn(airspecLog)
 
@@ -1125,22 +1115,14 @@ lazy val airspecDeps =
     .jvmSettings(
       airspecJVMBuildSettings,
       libraryDependencies ++= airframeDIDependencies,
-      mappings in (Compile, packageBin) ++= mappings
-        .in(airspecCoreJVM, Compile, packageBin)
-        .value,
-      mappings in (Compile, packageSrc) ++= mappings
-        .in(airspecCoreJVM, Compile, packageSrc)
-        .value
+      Compile / packageBin / mappings ++= (airspecCoreJVM / Compile / packageBin / mappings).value,
+      Compile / packageSrc / mappings ++= (airspecCoreJVM / Compile / packageSrc / mappings).value
     )
     .jsSettings(
       airspecJSBuildSettings,
-      mappings in (Compile, packageBin) ++= mappings
-        .in(airspecCoreJS, Compile, packageBin)
-        .value
+      Compile / packageBin / mappings ++= (airspecCoreJS / Compile / packageBin / mappings).value
         .filter(x => x._2 != "JS_DEPENDENCIES"),
-      mappings in (Compile, packageSrc) ++= mappings
-        .in(airspecCoreJS, Compile, packageSrc)
-        .value
+      Compile / packageSrc / mappings ++= (airspecCoreJS / Compile / packageSrc / mappings).value
     )
     .dependsOn(airspecCore)
 
@@ -1163,25 +1145,17 @@ lazy val airspec =
     )
     .jvmSettings(
       // Embed dependent project codes to make airspec a single jar
-      mappings in (Compile, packageBin) ++= mappings
-        .in(airspecDepsJVM, Compile, packageBin)
-        .value,
-      mappings in (Compile, packageSrc) ++= mappings
-        .in(airspecDepsJVM, Compile, packageSrc)
-        .value,
+      Compile / packageBin / mappings ++= (airspecDepsJVM / Compile / packageBin / mappings).value,
+      Compile / packageSrc / mappings ++= (airspecDepsJVM / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect"  % scalaVersion.value,
         "org.scala-sbt"  % "test-interface" % "1.0"
       )
     )
     .jsSettings(
-      mappings in (Compile, packageBin) ++= mappings
-        .in(airspecDepsJS, Compile, packageBin)
-        .value
+      Compile / packageBin / mappings ++= (airspecDepsJS / Compile / packageBin / mappings).value
         .filter(x => x._2 != "JS_DEPENDENCIES"),
-      mappings in (Compile, packageSrc) ++= mappings
-        .in(airspecDepsJS, Compile, packageSrc)
-        .value,
+      Compile / packageSrc / mappings ++= (airspecDepsJS / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
         "org.scala-js"        %% "scalajs-test-interface" % scalaJSVersion,
         "org.portable-scala" %%% "portable-scala-reflect" % "1.1.1"
@@ -1208,13 +1182,9 @@ lazy val airspecLight =
       airspecBuildSettings,
       airspecJVMBuildSettings,
       // Extract only wvlet.airspec packages
-      mappings in (Compile, packageBin) := mappings
-        .in(Compile, packageBin)
-        .value
+      Compile / packageBin / mappings := (Compile / packageBin / mappings).value
         .filter(isAirSpecClass),
-      mappings in (Compile, packageSrc) := mappings
-        .in(Compile, packageSrc)
-        .value
+      Compile / packageSrc / mappings := (Compile / packageSrc / mappings).value
         .filter(isAirSpecClass),
       libraryDependencies ++= Seq(
         "org.scala-sbt"    % "test-interface" % "1.0"              % Provided,
