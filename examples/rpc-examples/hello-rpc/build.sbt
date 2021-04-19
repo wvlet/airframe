@@ -1,5 +1,5 @@
 val AIRFRAME_VERSION = "20.10.2"
-scalaVersion in ThisBuild := "2.12.12"
+ThisBuild / scalaVersion := "2.12.12"
 
 // RPC API definition. This project should contain only RPC interfaces
 lazy val api =
