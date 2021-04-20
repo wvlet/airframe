@@ -54,7 +54,8 @@ jobs:
         with:
           java-version: adopt@1.11
       - name: Scala 3.x test
-        run: DOTTY=true ./sbt dottyTest/run
+        # Only use a limited number of tests until AirSpec and DI can support Scala 3
+        run: DOTTY=true ./sbt "projectDotty/compile; dottyTest/run"
   test_js:
     name: Scala.js / Scala 2.12
     runs-on: ubuntu-latest
