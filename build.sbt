@@ -251,6 +251,7 @@ lazy val projectDotty =
       surfaceJVM,
       canvas,
       controlJVM,
+      // codec uses Scala reflection
       //codecJVM,
       //fluentd,
       //httpJVM,
@@ -264,7 +265,8 @@ lazy val projectDotty =
       msgpackJVM,
       jsonJVM,
       rxJVM,
-      rxHtmlJVM,
+      // rx-html uses Scala Macros
+      //rxHtmlJVM,
       //sql,
       ulidJVM
     )
@@ -903,7 +905,12 @@ lazy val rxHtml =
     .settings(
       name := "airframe-rx-html",
       description := "Reactive HTML elements for Scala and Scala.js",
-      libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided
+      libraryDependencies ++= {
+        if (DOTTY)
+          Seq.empty
+        else
+          Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided)
+      }
     )
     .jsSettings(
       jsBuildSettings,
