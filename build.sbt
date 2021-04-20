@@ -251,12 +251,14 @@ lazy val projectDotty =
       surfaceJVM,
       canvas,
       controlJVM,
-      httpJVM,
-      grpc,
+      //codecJVM,
+      //httpJVM,
+      //grpc,
       jdbc,
       //jmx,
+      msgpackJVM,
       jsonJVM,
-      launcher,
+      //launcher,
       rxJVM,
       rxHtmlJVM,
       sql,
@@ -483,7 +485,6 @@ lazy val ulid =
       name := "airframe-ulid",
       description := "ULID: Universally Unique Lexicographically Sortable Identifier"
     )
-    .dependsOn(log % Test)
 
 lazy val ulidJVM = ulid.jvm
 lazy val ulidJS  = ulid.js

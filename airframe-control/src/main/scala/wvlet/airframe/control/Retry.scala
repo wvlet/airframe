@@ -261,7 +261,10 @@ object Retry extends LogSupport {
       var result: Option[A]          = None
       var retryContext: RetryContext = init(context)
 
-      do {
+      var isFirst: Boolean = true
+
+      while (isFirst || (result.isEmpty && retryContext.canContinue)) {
+        isFirst = false
         val ret = Try(body)
         val resultClass = ret match {
           case Success(x) =>
@@ -286,7 +289,7 @@ object Retry extends LogSupport {
             // Non-retryable error. Exit the loop by throwing the exception
             throw cause
         }
-      } while (result.isEmpty && retryContext.canContinue)
+      }
 
       result match {
         case Some(a) =>
