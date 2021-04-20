@@ -246,7 +246,22 @@ lazy val projectDotty =
       noPublish,
       crossScalaVersions := Seq(SCALA_3_0)
     )
-    .aggregate(logJVM, surfaceJVM)
+    .aggregate(
+      logJVM,
+      surfaceJVM,
+      canvas,
+      controlJVM,
+      httpJVM,
+      grpc,
+      jdbc,
+      jmx,
+      jsonJVM,
+      launcher,
+      rxJVM,
+      rxHtmlJVM,
+      sql,
+      ulidJVM
+    )
 
 lazy val docs =
   project
