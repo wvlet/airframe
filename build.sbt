@@ -11,7 +11,7 @@ val withDotty           = SCALA_3_0 :: targetScalaVersions
 val AIRSPEC_VERSION                 = "21.4.0"
 val SCALACHECK_VERSION              = "1.15.3"
 val MSGPACK_VERSION                 = "0.8.22"
-val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
+val SCALA_PARSER_COMBINATOR_VERSION = "1.2.0-RC2"
 val SQLITE_JDBC_VERSION             = "3.34.0"
 val SLF4J_VERSION                   = "1.7.30"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
@@ -254,7 +254,7 @@ lazy val projectDotty =
       httpJVM,
       grpc,
       jdbc,
-      jmx,
+      //jmx,
       jsonJVM,
       launcher,
       rxJVM,

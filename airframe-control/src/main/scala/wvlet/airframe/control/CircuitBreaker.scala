@@ -65,11 +65,11 @@ object CircuitBreaker extends LogSupport {
     default.withHealthCheckPolicy(HealthCheckPolicy.alwaysHealthy)
   }
 
-  private[control] def throwOpenException: CircuitBreakerContext => Unit = { ctx: CircuitBreakerContext =>
+  private[control] def throwOpenException: CircuitBreakerContext => Unit = { (ctx: CircuitBreakerContext) =>
     throw CircuitBreakerOpenException(ctx)
   }
 
-  private[control] def reportStateChange = { ctx: CircuitBreakerContext =>
+  private[control] def reportStateChange = { (ctx: CircuitBreakerContext) =>
     info(s"CircuitBreaker(name:${ctx.name}) is changed to ${ctx.state}")
   }
 }
@@ -284,15 +284,18 @@ case class CircuitBreaker(
     recoveryPolicy.recordSuccess
     val isDead = healthCheckPolicy.isMarkedDead
     currentState.get() match {
-      case HALF_OPEN if (recoveryPolicy.canRecover) =>
+      case HALF_OPEN if (recoveryPolicy.canRecover) => {
         // Probe request succeeds, so move to CLOSED state
         healthCheckPolicy.recovered
         close
-      case CLOSED if isDead =>
+      }
+      case CLOSED if isDead => {
         open
-      case OPEN if !isDead =>
+      }
+      case OPEN if !isDead => {
         // Service is not marked dead, so try proving at HALF_OPEN state
         halfOpen
+      }
       case _ =>
     }
   }

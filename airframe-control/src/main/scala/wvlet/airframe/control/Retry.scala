@@ -96,13 +96,13 @@ object Retry extends LogSupport {
 
   case object NOT_STARTED extends Exception("Code is not executed")
 
-  private def REPORT_RETRY_COUNT: RetryContext => Unit = { ctx: RetryContext =>
+  private def REPORT_RETRY_COUNT: RetryContext => Unit = { (ctx: RetryContext) =>
     warn(
       f"[${ctx.retryCount}/${ctx.maxRetry}] Execution failed: ${ctx.lastError.getMessage}. Retrying in ${ctx.nextWaitMillis / 1000.0}%.2f sec."
     )
   }
 
-  private def RETHROW_ALL: Throwable => ResultClass.Failed = { e: Throwable => throw e }
+  private def RETHROW_ALL: Throwable => ResultClass.Failed = { (e: Throwable) => throw e }
 
   private[control] val noExtraWait = ExtraWait()
 
@@ -236,7 +236,7 @@ object Retry extends LogSupport {
       * Clear the default beforeRetry action
       */
     def noRetryLogging: RetryContext = {
-      this.copy(beforeRetryAction = { x: RetryContext => })
+      this.copy(beforeRetryAction = { (x: RetryContext) => })
     }
 
     /**
@@ -246,7 +246,7 @@ object Retry extends LogSupport {
       * @return
       */
     def retryOn(errorClassifier: PartialFunction[Throwable, ResultClass.Failed]): RetryContext = {
-      this.copy(errorClassifier = { e: Throwable => errorClassifier.applyOrElse(e, RETHROW_ALL) })
+      this.copy(errorClassifier = { (e: Throwable) => errorClassifier.applyOrElse(e, RETHROW_ALL) })
     }
 
     def run[A](body: => A): A = {

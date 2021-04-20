@@ -159,7 +159,7 @@ object Shell extends LogSupport {
     */
   def exec(cmdLine: String): Int = {
     val pb       = prepareProcessBuilder(cmdLine, inheritIO = true)
-    val exitCode = Process(pb).!(ProcessLogger { out: String => info(out) })
+    val exitCode = Process(pb).!(ProcessLogger { (out: String) => info(out) })
     debug(s"exec command $cmdLine with exitCode:$exitCode")
     exitCode
   }
@@ -173,7 +173,7 @@ object Shell extends LogSupport {
 
   def execRemote(hostname: String, cmdLine: String): Int = {
     val pb       = prepareProcessBuilderFromSeq(Seq("ssh", hostname, quote(cmdLine)), inheritIO = true)
-    val exitCode = Process(pb).!(ProcessLogger { out: String => info(out) })
+    val exitCode = Process(pb).!(ProcessLogger { (out: String) => info(out) })
     debug(s"exec command $cmdLine with exitCode:$exitCode")
     exitCode
   }

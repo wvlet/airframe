@@ -46,7 +46,7 @@ trait RxOption[+A] extends Rx[Option[A]] {
   def transform[B](f: Option[A] => B): RxStream[B] = {
     MapOp(
       in,
-      { x: Option[A] =>
+      { (x: Option[A]) =>
         f(x)
       }
     )
@@ -60,7 +60,7 @@ trait RxOption[+A] extends Rx[Option[A]] {
     RxOptionOp[B](
       FlatMapOp(
         in,
-        { x: Option[A] =>
+        { (x: Option[A]) =>
           f(x)
         }
       )
@@ -71,7 +71,7 @@ trait RxOption[+A] extends Rx[Option[A]] {
     RxOptionOp[B](
       MapOp(
         in,
-        { x: Option[A] =>
+        { (x: Option[A]) =>
           f(x)
         }
       )
