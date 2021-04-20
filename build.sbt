@@ -254,7 +254,7 @@ lazy val projectDotty =
       //codecJVM,
       //httpJVM,
       //grpc,
-      jdbc,
+      //jdbc,
       //jmx,
       msgpackJVM,
       jsonJVM,
