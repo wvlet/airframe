@@ -491,6 +491,10 @@ lazy val ulid =
       name := "airframe-ulid",
       description := "ULID: Universally Unique Lexicographically Sortable Identifier"
     )
+    .jsSettings(
+      jsBuildSettings
+    )
+    .dependsOn(log % Test)
 
 lazy val ulidJVM = ulid.jvm
 lazy val ulidJS  = ulid.js
