@@ -261,7 +261,7 @@ lazy val projectDotty =
       //launcher,
       rxJVM,
       rxHtmlJVM,
-      sql,
+      //sql,
       ulidJVM
     )
 
