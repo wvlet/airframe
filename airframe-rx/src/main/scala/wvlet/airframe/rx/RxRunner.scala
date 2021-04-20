@@ -101,7 +101,7 @@ class RxRunner(
         val c2 = run(fm.input) {
           case OnNext(x) =>
             var toContinue: RxResult = RxResult.Continue
-            Try(fm.f(x)) match {
+            Try(fm.f.asInstanceOf[Function[Any, Rx[_]]](x)) match {
               case Success(rxb) =>
                 // This code is necessary to properly cancel the effect if this operator is evaluated before
                 c1.cancel

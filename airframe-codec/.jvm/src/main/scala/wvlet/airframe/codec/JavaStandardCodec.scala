@@ -56,7 +56,7 @@ object JavaStandardCodec {
     override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val name = u.unpackString
       enumTable.get(CName.toCanonicalName(name)) match {
-        case Some(enum) => v.setObject(enum)
+        case Some(javaEnum) => v.setObject(javaEnum)
         case _ =>
           v.setIncompatibleFormatException(this, s"${name} is not a value of ${enumType}")
       }

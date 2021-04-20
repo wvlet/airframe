@@ -31,7 +31,7 @@ class RxVar[A](private var currentValue: A) extends RxStream[A] with RxVarOps[A]
   override def get: A = currentValue
 
   override def foreach[U](f: A => U): Cancelable = {
-    val s = { ev: RxEvent =>
+    val s = { (ev: RxEvent) =>
       ev match {
         case OnNext(v) =>
           f(v.asInstanceOf[A])
@@ -84,12 +84,12 @@ trait RxVarOps[A] {
   def foreach[U](f: A => U): Cancelable
   def :=(newValue: A): Unit = set(newValue)
   def set(newValue: A): Unit =
-    update { x: A =>
+    update { (x: A) =>
       newValue
     }
   def forceSet(newValue: A): Unit =
     update(
-      { x: A =>
+      { (x: A) =>
         newValue
       },
       force = true

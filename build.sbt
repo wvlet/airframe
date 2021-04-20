@@ -11,7 +11,7 @@ val withDotty           = SCALA_3_0 :: targetScalaVersions
 val AIRSPEC_VERSION                 = "21.4.0"
 val SCALACHECK_VERSION              = "1.15.3"
 val MSGPACK_VERSION                 = "0.8.22"
-val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
+val SCALA_PARSER_COMBINATOR_VERSION = "1.2.0-RC2"
 val SQLITE_JDBC_VERSION             = "3.34.0"
 val SLF4J_VERSION                   = "1.7.30"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
@@ -246,7 +246,30 @@ lazy val projectDotty =
       noPublish,
       crossScalaVersions := Seq(SCALA_3_0)
     )
-    .aggregate(logJVM, surfaceJVM)
+    .aggregate(
+      logJVM,
+      surfaceJVM,
+      canvas,
+      controlJVM,
+      // codec uses Scala reflection
+      //codecJVM,
+      //fluentd,
+      //httpJVM,
+      //// Finagle isn't supporting Scala 3
+      //httpFinagle,
+      //grpc,
+      //jdbc,
+      //jmx,
+      //launcher,
+      metricsJVM,
+      msgpackJVM,
+      jsonJVM,
+      rxJVM,
+      // rx-html uses Scala Macros
+      //rxHtmlJVM,
+      //sql,
+      ulidJVM
+    )
 
 lazy val docs =
   project
@@ -467,6 +490,9 @@ lazy val ulid =
     .settings(
       name := "airframe-ulid",
       description := "ULID: Universally Unique Lexicographically Sortable Identifier"
+    )
+    .jsSettings(
+      jsBuildSettings
     )
     .dependsOn(log % Test)
 
@@ -883,7 +909,12 @@ lazy val rxHtml =
     .settings(
       name := "airframe-rx-html",
       description := "Reactive HTML elements for Scala and Scala.js",
-      libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided
+      libraryDependencies ++= {
+        if (DOTTY)
+          Seq.empty
+        else
+          Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided)
+      }
     )
     .jsSettings(
       jsBuildSettings,
