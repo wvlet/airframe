@@ -6,6 +6,30 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.4.1
+
+Added Scala 3.0.0-RC3 support. This version has no functional difference with 21.4.0.
+
+Now, the following 9 modules support Scala 3.0.0-RC3:
+- airfarme-log
+- airframe-surface
+- airframe-canvas
+- airframe-control
+- airframe-metrics
+- airframe-msgpack
+- airframe-json
+- airframe-rx
+- airframe-ulid
+
+Changes:
+- Add more modules with Scala 3.0.0-RC3 support ([#1591](https://github.com/wvlet/airframe/issues/1591)) [[ca6c1fcd0](https://github.com/wvlet/airframe/commit/ca6c1fcd0)]
+- Upgrade to Scala 3.0.0-RC3 ([#1590](https://github.com/wvlet/airframe/issues/1590)) [[ea7fc5600](https://github.com/wvlet/airframe/commit/ea7fc5600)]
+
+Internal changes:
+- Deprecate sbt 0.13 syntax ([#1589](https://github.com/wvlet/airframe/issues/1589)) [[c68c40675](https://github.com/wvlet/airframe/commit/c68c40675)]
+- Update sbt, sbt-dependency-tree, ... to 1.5.0 ([#1577](https://github.com/wvlet/airframe/issues/1577)) [[2331a5294](https://github.com/wvlet/airframe/commit/2331a5294)]
+- Update airspec to 21.4.0 ([#1588](https://github.com/wvlet/airframe/issues/1588)) [[5579dad3b](https://github.com/wvlet/airframe/commit/5579dad3b)]
+
 ## 21.4.0
 
 ### New Features 
