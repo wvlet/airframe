@@ -353,7 +353,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   }
 
   override def visitSelectSingle(ctx: SelectSingleContext): Attribute = {
-    val alias = Option(ctx.AS()).map(x => expression(ctx.identifier()))
+    val alias = Option(ctx.AS())
+      .map(x => expression(ctx.identifier()))
+      .orElse(Option(ctx.identifier()).map(expression(_)))
     SingleColumn(expression(ctx.expression()), alias)
   }
 

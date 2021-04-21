@@ -186,3 +186,7 @@
       select 1 union all select 2
 - sql: |
       select 1 union select 2
+- sql: |
+      select count(1) c1
+- sql: |
+      select 1 as c1
