@@ -11,17 +11,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.parquet.io
+package wvlet.airframe.parquet
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import org.apache.parquet.column.ParquetProperties
 import org.apache.parquet.hadoop.{ParquetFileWriter, ParquetWriter}
 import org.apache.parquet.hadoop.api.WriteSupport
+import org.apache.parquet.hadoop.api.WriteSupport.WriteContext
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.apache.parquet.hadoop.util.HadoopOutputFile
 import org.apache.parquet.io.OutputFile
 import org.apache.parquet.io.api.RecordConsumer
+import org.apache.parquet.schema.MessageType
 import wvlet.airframe.surface.Surface
 
 import scala.reflect.runtime.{universe => ru}
@@ -29,7 +30,7 @@ import scala.reflect.runtime.{universe => ru}
 /**
   */
 
-object AirframeParquetWriter {
+private[parquet] object AirframeParquetWriter {
   //def newWriter[A: ru.TypeTag]: Builder[A] = Builder[A](surface = Surface.of[A])
 
   def builder[A: ru.TypeTag](path: String): Builder[A] = {
@@ -37,7 +38,10 @@ object AirframeParquetWriter {
     val fsPath = new Path(path)
     val conf   = new Configuration()
     val file   = HadoopOutputFile.fromPath(fsPath, conf)
-    new Builder[A](s, file)
+    val b      = new Builder[A](s, file)
+    // Use snappy by default
+    b.withCompressionCodec(CompressionCodecName.SNAPPY)
+      .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
   }
 
   class Builder[A](val surface: Surface, file: OutputFile)
@@ -52,8 +56,12 @@ object AirframeParquetWriter {
 class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] {
   private var recordConsumer: RecordConsumer = null
 
+  import scala.jdk.CollectionConverters._
+
   override def init(configuration: Configuration): WriteSupport.WriteContext = {
-    ???
+    val schema: MessageType                = Parquet.toParquetSchema(surface)
+    val extraMetadata: Map[String, String] = Map.empty
+    new WriteContext(schema, extraMetadata.asJava)
   }
 
   override def prepareForWrite(recordConsumer: RecordConsumer): Unit = {
