@@ -99,8 +99,8 @@ mapReader.close()
 <span class="hljs-comment">// Reading records as Json</span>
 <span class="hljs-keyword">import</span> wvlet.airframe.json.<span class="hljs-type">Json</span>
 <span class="hljs-keyword">val</span> jsonReader = <span class="hljs-type">Parquet</span>.newReader[<span class="hljs-type">Json</span>](path = <span class="hljs-string">"data.parquet"</span>)
-<span class="hljs-keyword">val</span> j1 = mapReader.read() <span class="hljs-comment">// {"id":1,"name":"leo"}</span>
-<span class="hljs-keyword">val</span> j2 = mapReader.read() <span class="hljs-comment">// {"id":2,"name":"yui"} </span>
+<span class="hljs-keyword">val</span> j1 = jsonReader.read() <span class="hljs-comment">// {"id":1,"name":"leo"}</span>
+<span class="hljs-keyword">val</span> j2 = jsonReader.read() <span class="hljs-comment">// {"id":2,"name":"yui"} </span>
 jsonReader.read() <span class="hljs-comment">// null</span>
 jsonReader.close()
 </code></pre>
