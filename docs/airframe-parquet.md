@@ -53,3 +53,27 @@ val j2 = jsonReader.read() // {"id":2,"name":"yui"}
 jsonReader.read() // null
 jsonReader.close()
 ```
+
+## Applying Row Group Filter
+
+Parquet can skip reading records by using row group filters.
+You can use [FilterAPI of parquet-mr](https://github.com/justcodeforfun/parquet-mr/blob/master/parquet-column/src/main/java/org/apache/parquet/filter2/predicate/FilterApi.java) to build such a filter:
+
+```scala
+import org.apache.parquet.filter2.compat.FilterCompat
+import org.apache.parquet.filter2.predicate.FilterApi
+
+// Describing filter condition using parquet-mr FilterApi
+val filter = FilterCompat.get(
+  FilterApi.eq(
+    FilterApi.intColumn("id"),
+    Integer.valueOf(100) // Need to use Java primitive values
+  )
+)
+
+val reader = Parquet.newReader[MyEntry](
+  path = "data.parquet",
+  // Set your filter here
+  config = _.withFilter(filter)
+)
+```
