@@ -13,6 +13,9 @@
  */
 package wvlet.airframe.parquet
 
+import org.apache.parquet.filter2.compat.FilterCompat
+import org.apache.parquet.filter2.predicate.FilterApi
+import org.apache.parquet.hadoop.ParquetFileWriter
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.{JSON, Json}
@@ -35,7 +38,9 @@ object ParquetTest extends AirSpec {
 
     IOUtil.withTempFile("target/tmp", ".parquet") { file =>
       debug(s"Writing to ${file}")
-      withResource(Parquet.newWriter[MyEntry](path = file.getPath)) { writer =>
+      withResource(
+        Parquet.newWriter[MyEntry](path = file.getPath, config = _.withWriteMode(ParquetFileWriter.Mode.OVERWRITE))
+      ) { writer =>
         writer.write(e1)
         writer.write(e2)
       }
@@ -106,5 +111,27 @@ object ParquetTest extends AirSpec {
       }
     }
 
+  }
+
+  test("row group filter") {
+
+    IOUtil.withTempFile("target/tmp", ".parquet") { file =>
+      debug(s"Writing to ${file}")
+      withResource(Parquet.newWriter[MyEntry](path = file.getPath)) { writer =>
+        writer.write(e1)
+        writer.write(e2)
+      }
+
+      val filter = FilterCompat.get(FilterApi.eq(FilterApi.intColumn("id"), Integer.valueOf(100)))
+      withResource(Parquet.newReader[MyEntry](path = file.getPath, config = _.withFilter(filter))) { reader =>
+        reader.read() shouldBe null
+      }
+
+      val filter2 = FilterCompat.get(FilterApi.eq(FilterApi.intColumn("id"), Integer.valueOf(2)))
+      withResource(Parquet.newReader[MyEntry](path = file.getPath, config = _.withFilter(filter2))) { reader =>
+        reader.read() shouldBe e2
+        reader.read() shouldBe null
+      }
+    }
   }
 }

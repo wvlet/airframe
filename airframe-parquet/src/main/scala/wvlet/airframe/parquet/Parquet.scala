@@ -23,8 +23,7 @@ object Parquet {
 
   def newReader[A: ru.TypeTag](
       path: String,
-      config: AirframeParquetReader.Builder[A] => AirframeParquetReader.Builder[A] =
-        identity[AirframeParquetReader.Builder[A]](_)
+      config: ParquetReader.Builder[A] => ParquetReader.Builder[A] = identity[ParquetReader.Builder[A]](_)
   ): ParquetReader[A] = {
     val b = AirframeParquetReader.builder[A](path)
     config(b).build()
