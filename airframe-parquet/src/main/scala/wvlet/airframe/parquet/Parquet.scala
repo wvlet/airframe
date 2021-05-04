@@ -11,7 +11,7 @@ import scala.reflect.runtime.{universe => ru}
 
 object Parquet {
 
-  def writer[A: ru.TypeTag](
+  def newWriter[A: ru.TypeTag](
       path: String,
       config: AirframeParquetWriter.Builder[A] => AirframeParquetWriter.Builder[A] =
         identity[AirframeParquetWriter.Builder[A]](_)
@@ -21,7 +21,7 @@ object Parquet {
     builder.build()
   }
 
-  def reader[A: ru.TypeTag](
+  def newReader[A: ru.TypeTag](
       path: String,
       config: AirframeParquetReader.Builder[A] => AirframeParquetReader.Builder[A] =
         identity[AirframeParquetReader.Builder[A]](_)

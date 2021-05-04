@@ -119,7 +119,8 @@ object ParquetRecordConverter {
 }
 
 class ParquetRecordConverter[A](surface: Surface, parquetSchema: MessageType) extends GroupConverter with LogSupport {
-  private var recordHolder = Map.newBuilder[String, Any]
+  private val codec        = MessageCodec.ofSurface(surface)
+  private val recordHolder = Map.newBuilder[String, Any]
 
   import ParquetRecordConverter._
 
@@ -144,8 +145,8 @@ class ParquetRecordConverter[A](surface: Surface, parquetSchema: MessageType) ex
 
   def currentRecord: A = {
     val m = recordHolder.result()
-    info(m)
-    MessageCodec.ofSurface(surface).fromMap(m).asInstanceOf[A]
+    trace(m)
+    codec.fromMap(m).asInstanceOf[A]
   }
 
   override def getConverter(fieldIndex: Int): Converter = converters(fieldIndex)
