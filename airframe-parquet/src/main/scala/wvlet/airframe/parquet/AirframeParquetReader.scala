@@ -34,7 +34,7 @@ import scala.collection.generic.Growable
 import scala.jdk.CollectionConverters._
 import scala.reflect.runtime.{universe => ru}
 
-private[parquet] object AirframeParquetReader {
+object AirframeParquetReader {
 
   def builder[A: ru.TypeTag](path: String): Builder[A] = {
     val conf   = new Configuration()

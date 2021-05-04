@@ -3,8 +3,8 @@ package wvlet.airframe.parquet
 import org.apache.parquet.hadoop.{ParquetReader, ParquetWriter}
 import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
-import org.apache.parquet.schema.{ConversionPatterns, MessageType, PrimitiveType, Type, Types}
-import wvlet.airframe.surface.{ArraySurface, OptionSurface, Parameter, Primitive, Surface}
+import org.apache.parquet.schema.{MessageType, Type, Types}
+import wvlet.airframe.surface.{OptionSurface, Parameter, Primitive, Surface}
 
 import scala.jdk.CollectionConverters._
 import scala.reflect.runtime.{universe => ru}
@@ -63,5 +63,4 @@ object Parquet {
       surface.params.map(p => toType(p)).toList.asJava
     )
   }
-
 }

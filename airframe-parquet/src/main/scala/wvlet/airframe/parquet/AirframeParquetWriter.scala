@@ -38,9 +38,7 @@ import scala.jdk.CollectionConverters._
 /**
   */
 
-private[parquet] object AirframeParquetWriter {
-  //def newWriter[A: ru.TypeTag]: Builder[A] = Builder[A](surface = Surface.of[A])
-
+object AirframeParquetWriter {
   def builder[A: ru.TypeTag](path: String): Builder[A] = {
     val s      = Surface.of[A]
     val fsPath = new Path(path)
@@ -172,5 +170,3 @@ class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] w
     }
   }
 }
-
-private[parquet] object ParquetCodec {}
