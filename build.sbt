@@ -1,5 +1,4 @@
 import sbt.Keys.libraryDependencies
-import sbtcrossproject.{CrossType, crossProject}
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
 val SCALA_2_12          = "2.12.13"
@@ -22,6 +21,7 @@ val FLUENCY_VERSION                 = "2.5.1"
 val GRPC_VERSION                    = "1.37.0"
 val JMH_VERSION                     = "1.29"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
+val PARQUET_VERSION                 = "1.12.0"
 
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
@@ -177,6 +177,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   grpc,
   jsonJVM,
   rxHtmlJVM,
+  parquet,
   airspecJVM
 )
 
@@ -881,6 +882,22 @@ def sqlRefLib = { scalaVersion: String =>
     Seq.empty
   }
 }
+
+lazy val parquet =
+  project
+    .in(file("airframe-parquet"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-parquet",
+      description := "Parquet columnar format reader/writer support",
+      libraryDependencies ++= Seq(
+        "org.apache.parquet" % "parquet-hadoop" % PARQUET_VERSION,
+        "org.apache.hadoop"  % "hadoop-client"  % "3.3.0"         % Provided,
+        "org.slf4j"          % "slf4j-jdk14"    % SLF4J_VERSION   % Optional,
+        "org.apache.parquet" % "parquet-avro"   % PARQUET_VERSION % Test
+      )
+    )
+    .dependsOn(codecJVM)
 
 lazy val sql =
   project
