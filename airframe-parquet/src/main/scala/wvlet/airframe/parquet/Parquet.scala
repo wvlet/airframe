@@ -1,6 +1,7 @@
 package wvlet.airframe.parquet
 
 import org.apache.parquet.hadoop.ParquetWriter
+import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.{ConversionPatterns, MessageType, PrimitiveType, Type, Types}
 import wvlet.airframe.surface.{ArraySurface, OptionSurface, Parameter, Primitive, Surface}
@@ -33,7 +34,7 @@ object Parquet {
         case Primitive.Double =>
           Types.primitive(PrimitiveTypeName.DOUBLE, repetition).named(name)
         case Primitive.String =>
-          Types.primitive(PrimitiveTypeName.BINARY, repetition).named(name)
+          Types.primitive(PrimitiveTypeName.BINARY, repetition).as(stringType).named(name)
         case Primitive.Boolean =>
           Types.primitive(PrimitiveTypeName.BOOLEAN, repetition).named(name)
         case o: OptionSurface =>

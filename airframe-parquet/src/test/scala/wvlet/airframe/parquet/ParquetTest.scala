@@ -24,9 +24,11 @@ object ParquetTest extends AirSpec {
 
   test("write Parquet") {
     IOUtil.withTempFile("target/tmp", ".parquet") { file =>
+      info(s"Writing to ${file}")
       val writer = Parquet.writer[MyEntry](path = file.getPath)
       writer.write(MyEntry(1, "leo"))
       writer.write(MyEntry(2, "yui"))
+      writer.close()
     }
   }
 }
