@@ -48,8 +48,8 @@ mapReader.close()
 // Reading records as Json
 import wvlet.airframe.json.Json
 val jsonReader = Parquet.newReader[Json](path = "data.parquet")
-val j1 = mapReader.read() // {"id":1,"name":"leo"}
-val j2 = mapReader.read() // {"id":2,"name":"yui"} 
+val j1 = jsonReader.read() // {"id":1,"name":"leo"}
+val j2 = jsonReader.read() // {"id":2,"name":"yui"} 
 jsonReader.read() // null
 jsonReader.close()
 ```
