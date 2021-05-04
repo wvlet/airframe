@@ -156,11 +156,16 @@ class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] w
 
   override def write(record: A): Unit = {
     require(recordConsumer != null)
-    trace(s"write: ${record}")
     try {
       recordConsumer.startMessage()
       parquetCodec.foreach { case (param, pc) =>
-        pc.write(recordConsumer, param.get(record))
+        val v = param.get(record)
+        v match {
+          case None if param.surface.isOption =>
+          // Skip writing Optional parameter
+          case _ =>
+            pc.write(recordConsumer, v)
+        }
       }
     } finally {
       recordConsumer.endMessage()

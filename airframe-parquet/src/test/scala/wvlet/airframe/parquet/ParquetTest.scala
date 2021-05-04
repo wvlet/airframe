@@ -21,6 +21,7 @@ import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
 
 import java.time.Instant
+import java.util.UUID
 
 /**
   */
@@ -77,8 +78,14 @@ object ParquetTest extends AirSpec {
       jsonValue: JSONValue = JSON.parse("""{"id":1,"param":"json param"}"""),
       seqValue: Seq[String] = Seq("s1", "s2"),
       mapValue: Map[String, Any] = Map("param1" -> "hello", "feature1" -> true),
-      id: ULID = ULID.newULID,
-      createdAt: Instant = Instant.now()
+      ulid: ULID = ULID.newULID,
+      uuid: UUID = UUID.randomUUID(),
+      optNone: Option[String] = None,
+      optSome: Option[String] = Some("hello option"),
+      createdAt: Instant = Instant.now(),
+      updatedAt: Option[Instant] = Some(Instant.now().plusMillis(1000)),
+      finishedAt: Option[Instant] = None,
+      nested: Seq[MyEntry] = Seq(e1, e2)
   )
   val d1 = MyData()
   val d2 = MyData()
