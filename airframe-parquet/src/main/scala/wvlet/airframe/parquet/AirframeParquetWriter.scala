@@ -22,9 +22,10 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.apache.parquet.hadoop.util.HadoopOutputFile
 import org.apache.parquet.io.OutputFile
 import org.apache.parquet.io.api.{Binary, RecordConsumer}
+import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.{MessageType, Type}
-import wvlet.airframe.codec.PrimitiveCodec.{BooleanCodec, DoubleCodec, FloatCodec, IntCodec, LongCodec}
+import wvlet.airframe.codec.PrimitiveCodec.{BooleanCodec, DoubleCodec, FloatCodec, IntCodec, LongCodec, StringCodec}
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.parquet.AirframeParquetWriter.ParquetCodec
@@ -51,14 +52,19 @@ private[parquet] object AirframeParquetWriter {
       .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
   }
 
-  class Builder[A](val surface: Surface, file: OutputFile)
-      extends ParquetWriter.Builder[A, Builder[A]](file: OutputFile) {
+  class Builder[A](surface: Surface, file: OutputFile) extends ParquetWriter.Builder[A, Builder[A]](file: OutputFile) {
     override def self(): Builder[A] = this
     override def getWriteSupport(conf: Configuration): WriteSupport[A] = {
       new AirframeParquetWriteSupport[A](surface)
     }
   }
 
+  /**
+    * Convert object --[MessageCodec]--> msgpack --[MessageCodec]--> Parquet type --> RecordConsumer
+    * @param tpe
+    * @param index
+    * @param codec
+    */
   abstract class ParquetCodec(tpe: Type, index: Int, codec: MessageCodec[_]) {
     protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit
 
@@ -103,7 +109,13 @@ private[parquet] object AirframeParquetWriter {
               recordConsumer.addDouble(DoubleCodec.fromMsgPack(msgpack))
             }
           }
-        case PrimitiveTypeName.BINARY =>
+        case PrimitiveTypeName.BINARY if tpe.getLogicalTypeAnnotation == stringType =>
+          new ParquetCodec(tpe, index, codec) {
+            override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
+              recordConsumer.addBinary(Binary.fromString(StringCodec.fromMsgPack(msgpack)))
+            }
+          }
+        case _ =>
           new ParquetCodec(tpe, index, codec) {
             override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
               recordConsumer.addBinary(Binary.fromConstantByteArray(msgpack))
@@ -133,7 +145,7 @@ class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] w
   import scala.jdk.CollectionConverters._
 
   override def init(configuration: Configuration): WriteSupport.WriteContext = {
-    info(s"schema: ${schema}")
+    trace(s"schema: ${schema}")
     val extraMetadata: Map[String, String] = Map.empty
     new WriteContext(schema, extraMetadata.asJava)
   }
@@ -144,7 +156,7 @@ class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] w
 
   override def write(record: A): Unit = {
     require(recordConsumer != null)
-    info(s"write: ${record}")
+    trace(s"write: ${record}")
     try {
       recordConsumer.startMessage()
       parquetCodec.foreach { case (param, pc) =>

@@ -1,6 +1,6 @@
 package wvlet.airframe.parquet
 
-import org.apache.parquet.hadoop.ParquetWriter
+import org.apache.parquet.hadoop.{ParquetReader, ParquetWriter}
 import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.{ConversionPatterns, MessageType, PrimitiveType, Type, Types}
@@ -19,6 +19,15 @@ object Parquet {
     val b       = AirframeParquetWriter.builder[A](path)
     val builder = config(b)
     builder.build()
+  }
+
+  def reader[A: ru.TypeTag](
+      path: String,
+      config: AirframeParquetReader.Builder[A] => AirframeParquetReader.Builder[A] =
+        identity[AirframeParquetReader.Builder[A]](_)
+  ): ParquetReader[A] = {
+    val b = AirframeParquetReader.builder[A](path)
+    config(b).build()
   }
 
   def toParquetSchema(surface: Surface): MessageType = {

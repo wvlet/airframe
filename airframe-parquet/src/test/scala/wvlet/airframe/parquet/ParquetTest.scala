@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.parquet
 
+import wvlet.airframe.control.Control.withResource
 import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
 
@@ -25,10 +26,18 @@ object ParquetTest extends AirSpec {
   test("write Parquet") {
     IOUtil.withTempFile("target/tmp", ".parquet") { file =>
       info(s"Writing to ${file}")
-      val writer = Parquet.writer[MyEntry](path = file.getPath)
-      writer.write(MyEntry(1, "leo"))
-      writer.write(MyEntry(2, "yui"))
-      writer.close()
+      withResource(Parquet.writer[MyEntry](path = file.getPath)) { writer =>
+        writer.write(MyEntry(1, "leo"))
+        writer.write(MyEntry(2, "yui"))
+      }
+
+      withResource(Parquet.reader[MyEntry](path = file.getPath)) { reader =>
+        val e1 = reader.read()
+        info(e1)
+        val e2 = reader.read()
+        info(e2)
+        reader.read() shouldBe null
+      }
     }
   }
 }
