@@ -893,6 +893,7 @@ lazy val parquet =
       libraryDependencies ++= Seq(
         "org.apache.parquet" % "parquet-hadoop" % PARQUET_VERSION,
         "org.apache.hadoop"  % "hadoop-client"  % "3.3.0"         % Provided,
+        "org.slf4j"          % "slf4j-jdk14"    % SLF4J_VERSION   % Optional,
         "org.apache.parquet" % "parquet-avro"   % PARQUET_VERSION % Test
       )
     )
