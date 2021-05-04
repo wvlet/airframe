@@ -14,9 +14,13 @@
 package wvlet.airframe.parquet
 
 import wvlet.airframe.control.Control.withResource
+import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.{JSON, Json}
+import wvlet.airframe.ulid.ULID
 import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
+
+import java.time.Instant
 
 /**
   */
@@ -29,7 +33,7 @@ object ParquetTest extends AirSpec {
   test("write Parquet") {
 
     IOUtil.withTempFile("target/tmp", ".parquet") { file =>
-      info(s"Writing to ${file}")
+      debug(s"Writing to ${file}")
       withResource(Parquet.newWriter[MyEntry](path = file.getPath)) { writer =>
         writer.write(e1)
         writer.write(e2)
@@ -58,5 +62,40 @@ object ParquetTest extends AirSpec {
       }
 
     }
+  }
+
+  case class MyData(
+      p1: Int = 1,
+      p2: Short = 2,
+      p3: Long = 3L,
+      p4: Float = 4.0f,
+      p5: Double = 5.0,
+      p6: String = "6",
+      p7: Boolean = true,
+      p8: Boolean = false,
+      json: Json = """{"id":1,"param":"json param"}""",
+      jsonValue: JSONValue = JSON.parse("""{"id":1,"param":"json param"}"""),
+      id: ULID = ULID.newULID,
+      createdAt: Instant = Instant.now()
+  )
+  val d1 = MyData()
+  val d2 = MyData()
+
+  test("write various data types") {
+    IOUtil.withTempFile("target/tmp", ".parquet") { file =>
+      withResource(Parquet.newWriter[MyData](path = file.getPath)) { writer =>
+        writer.write(d1)
+        writer.write(d2)
+      }
+
+      withResource(Parquet.newReader[MyData](path = file.getPath)) { reader =>
+        val r1 = reader.read()
+        r1 shouldBe d1
+        val r2 = reader.read()
+        r2 shouldBe d2
+        reader.read() shouldBe null
+      }
+    }
+
   }
 }
