@@ -124,8 +124,8 @@ class ParquetRecordConverter[A](surface: Surface, parquetSchema: MessageType) ex
 
   import ParquetRecordConverter._
 
-  private val converters: Seq[Converter] = parquetSchema.getFields.asScala.zipWithIndex.map { case (f, i) =>
-    f match {
+  private val converters: Seq[Converter] = parquetSchema.getFields.asScala.map { f =>
+    val cv: Converter = f match {
       case p if p.isPrimitive =>
         p.asPrimitiveType().getPrimitiveTypeName match {
           case PrimitiveTypeName.INT32   => new IntConverter(f.getName, recordHolder)
@@ -139,9 +139,12 @@ class ParquetRecordConverter[A](surface: Surface, parquetSchema: MessageType) ex
             new MsgPackConverter(f.getName, recordHolder)
           case _ => ???
         }
-      case _ => ???
+      case _ =>
+        // TODO Support nested types
+        ???
     }
-  }
+    cv
+  }.toIndexedSeq
 
   def currentRecord: A = {
     val m = recordHolder.result()
