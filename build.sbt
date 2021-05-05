@@ -897,7 +897,7 @@ lazy val parquet =
         "org.apache.parquet" % "parquet-avro"   % PARQUET_VERSION % Test
       )
     )
-    .dependsOn(codecJVM)
+    .dependsOn(codecJVM, sql)
 
 lazy val sql =
   project

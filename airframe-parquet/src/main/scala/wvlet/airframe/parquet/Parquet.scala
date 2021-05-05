@@ -29,6 +29,16 @@ object Parquet {
     config(b).build()
   }
 
+  def query[A: ru.TypeTag](
+      path: String,
+      sql: String,
+      config: ParquetReader.Builder[A] => ParquetReader.Builder[A] = identity[ParquetReader.Builder[A]](_)
+  ): ParquetReader[A] = {
+    val b    = AirframeParquetReader.builder[A](path)
+    val plan = ParquetQueryPlanner.parse(sql)
+    config(b).build()
+  }
+
   def toParquetSchema(surface: Surface): MessageType = {
     def toParquetType(s: Surface, name: String, rep: Option[Type.Repetition] = None): Type = {
       val repetition = rep.getOrElse(Type.Repetition.OPTIONAL)
