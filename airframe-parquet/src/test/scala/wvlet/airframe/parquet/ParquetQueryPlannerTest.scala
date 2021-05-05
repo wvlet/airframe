@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.parquet
 
+import wvlet.airframe.sql.model.Expression._
 import wvlet.airspec.AirSpec
 
 /**
@@ -20,22 +21,37 @@ import wvlet.airspec.AirSpec
 class ParquetQueryPlannerTest extends AirSpec {
   test("select *") {
     val p = ParquetQueryPlanner.parse("select * from _")
-    info(p)
     p.projectedColumns shouldBe empty
     p.condition shouldBe empty
   }
 
   test("select a, b from _") {
     val p = ParquetQueryPlanner.parse("select a, b from _")
-    info(p)
     p.projectedColumns shouldBe Seq("a", "b")
     p.condition shouldBe empty
   }
 
   test("select * from a > 10") {
     val p = ParquetQueryPlanner.parse("select * from _ where a > 10")
-    info(p)
     p.projectedColumns shouldBe empty
-    p.condition shouldBe defined
+    p.condition match {
+      case Some(GreaterThan(id: Identifier, LongLiteral(10))) if id.value == "a" =>
+      // OK
+      case other =>
+        fail(s"unexpected condition: ${other}")
+    }
   }
+
+  test("select * from a > 1 and a <= 5") {
+    val p = ParquetQueryPlanner.parse("select * from _ where a > 1 and a <= 5")
+    p.projectedColumns shouldBe empty
+    p.condition match {
+      case Some(And(GreaterThan(id: Identifier, LongLiteral(1)), LessThanOrEq(id2: Identifier, LongLiteral(5))))
+          if id.value == "a" && id2.value == "a" =>
+      // OK
+      case other =>
+        fail(s"unexpected condition: ${other}")
+    }
+  }
+
 }

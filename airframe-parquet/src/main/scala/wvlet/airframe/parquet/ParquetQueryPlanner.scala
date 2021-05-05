@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.parquet
 
+import org.apache.parquet.filter2.predicate.FilterApi
 import wvlet.airframe.sql.model.LogicalPlan.{Relation, TableRef}
 import wvlet.airframe.sql.model.{Expression, LogicalPlan}
 import wvlet.airframe.sql.parser.SQLParser
@@ -26,11 +27,11 @@ object ParquetQueryPlanner extends LogSupport {
       sql: String,
       // projection target columns. If empty, select all columns (*)
       projectedColumns: Seq[String] = Seq.empty,
-      condition: Map[String, Expression] = Map.empty
+      condition: Option[Expression] = None
   ) {
-    def selectAllColumns                         = this.copy(projectedColumns = Seq.empty)
-    def selectColumns(columns: Seq[String])      = this.copy(projectedColumns = columns)
-    def addCondition(cond: (String, Expression)) = this.copy(condition = condition + cond)
+    def selectAllColumns                    = this.copy(projectedColumns = Seq.empty)
+    def selectColumns(columns: Seq[String]) = this.copy(projectedColumns = columns)
+    def addCondition(cond: Expression)      = this.copy(condition = Some(cond))
   }
 
   import LogicalPlan._
@@ -43,7 +44,7 @@ object ParquetQueryPlanner extends LogSupport {
 
     logicalPlan match {
       case Project(input, Seq(AllColumns(None))) =>
-        parseRelation(queryPlan, input).selectAllColumns
+        parseRelation(input, queryPlan).selectAllColumns
       case Project(input, selectItems) =>
         val columns = selectItems.map {
           case SingleColumn(id: Identifier, _) =>
@@ -51,18 +52,80 @@ object ParquetQueryPlanner extends LogSupport {
           case other =>
             throw new IllegalArgumentException(s"Invalid select item: ${other}")
         }
-        parseRelation(queryPlan, input).selectColumns(columns)
+        parseRelation(input, queryPlan).selectColumns(columns)
       case _ =>
         throw new IllegalArgumentException(s"Unsupported SQL expression: ${sql}")
     }
   }
 
-  private def parseRelation(currentPlan: QueryPlan, relation: Relation): QueryPlan = {
+  private def parseRelation(relation: Relation, currentPlan: QueryPlan): QueryPlan = {
     relation match {
       case TableRef(QName(Seq("_"))) =>
         currentPlan
       case Filter(input, expr) =>
-        parseRelation(currentPlan, input)
+        verifyCondition(expr)
+        parseRelation(input, currentPlan).addCondition(expr)
+    }
+  }
+
+  private def verifyCondition(expr: Expression): Unit = {
+    expr match {
+      case UnquotedIdentifier(_) =>
+      // ok
+      case BackQuotedIdentifier(_) =>
+      // ok
+      case QuotedIdentifier(_) =>
+      // ok
+      case NullLiteral | TrueLiteral | FalseLiteral =>
+      // ok
+      case StringLiteral(_) =>
+      // ok
+      case LongLiteral(_) =>
+      // ok
+      case DoubleLiteral(_) =>
+      // ok
+      case Not(a) =>
+        verifyCondition(a)
+      case Eq(a, b) =>
+        verifyCondition(a)
+        verifyCondition(b)
+      case NotEq(a, b) =>
+        verifyCondition(a)
+        verifyCondition(b)
+      case And(a, b) =>
+        verifyCondition(a)
+        verifyCondition(b)
+      case Or(a, b) =>
+        verifyCondition(a)
+        verifyCondition(b)
+      case LessThan(a, b) =>
+        verifyCondition(a)
+        verifyCondition(b)
+      case LessThanOrEq(a, b) =>
+        verifyCondition(a)
+        verifyCondition(b)
+      case GreaterThan(a, b) =>
+        verifyCondition(a)
+        verifyCondition(b)
+      case GreaterThanOrEq(a, b) =>
+        verifyCondition(a)
+        verifyCondition(b)
+      case Between(a, b, c) =>
+        verifyCondition(a)
+        verifyCondition(b)
+        verifyCondition(c)
+      case IsNull(a) =>
+        verifyCondition(a)
+      case IsNotNull(a) =>
+        verifyCondition(a)
+//      case In(a, lst) =>
+//        verifyCondition(a)
+//        lst.foreach(verifyCondition(_))
+//      case NotIn(a, lst) =>
+//        verifyCondition(a)
+//        lst.foreach(verifyCondition(_))
+      case other =>
+        throw new IllegalArgumentException(s"Unsupported operator: ${other}")
     }
   }
 
