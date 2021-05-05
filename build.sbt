@@ -19,7 +19,7 @@ val SCALAJS_DOM_VERSION             = "1.1.0"
 val FINAGLE_VERSION                 = "21.4.0"
 val FLUENCY_VERSION                 = "2.5.1"
 val GRPC_VERSION                    = "1.37.0"
-val JMH_VERSION                     = "1.29"
+val JMH_VERSION                     = "1.30"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 val PARQUET_VERSION                 = "1.12.0"
 
