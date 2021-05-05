@@ -22,36 +22,25 @@ class ParquetQueryPlannerTest extends AirSpec {
   test("select *") {
     val p = ParquetQueryPlanner.parse("select * from _")
     p.projectedColumns shouldBe empty
-    p.condition shouldBe empty
+    p.predicate shouldBe empty
   }
 
   test("select a, b from _") {
     val p = ParquetQueryPlanner.parse("select a, b from _")
     p.projectedColumns shouldBe Seq("a", "b")
-    p.condition shouldBe empty
+    p.predicate shouldBe empty
   }
 
   test("select * from a > 10") {
     val p = ParquetQueryPlanner.parse("select * from _ where a > 10")
     p.projectedColumns shouldBe empty
-    p.condition match {
-      case Some(GreaterThan(id: Identifier, LongLiteral(10))) if id.value == "a" =>
-      // OK
-      case other =>
-        fail(s"unexpected condition: ${other}")
-    }
+    p.predicate shouldBe defined
   }
 
   test("select * from a > 1 and a <= 5") {
     val p = ParquetQueryPlanner.parse("select * from _ where a > 1 and a <= 5")
     p.projectedColumns shouldBe empty
-    p.condition match {
-      case Some(And(GreaterThan(id: Identifier, LongLiteral(1)), LessThanOrEq(id2: Identifier, LongLiteral(5))))
-          if id.value == "a" && id2.value == "a" =>
-      // OK
-      case other =>
-        fail(s"unexpected condition: ${other}")
-    }
+    p.predicate shouldBe defined
   }
 
 }

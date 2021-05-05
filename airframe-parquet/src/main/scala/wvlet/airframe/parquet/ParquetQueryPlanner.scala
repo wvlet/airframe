@@ -13,25 +13,21 @@
  */
 package wvlet.airframe.parquet
 
-import org.apache.parquet.filter2.predicate.Operators.Column
 import org.apache.parquet.filter2.predicate.{FilterApi, FilterPredicate}
 import org.apache.parquet.io.api.Binary
-import wvlet.airframe.sql.model.LogicalPlan.{Relation, TableRef}
 import wvlet.airframe.sql.model.{Expression, LogicalPlan}
 import wvlet.airframe.sql.parser.SQLParser
-import wvlet.airframe.surface.Primitive
-import wvlet.airframe.surface.Primitive.PrimitiveSurface
 import wvlet.log.LogSupport
 
 case class ParquetQueryPlan(
     sql: String,
     // projection target columns. If empty, select all columns (*)
     projectedColumns: Seq[String] = Seq.empty,
-    condition: Option[Expression] = None
+    predicate: Option[FilterPredicate] = None
 ) {
   def selectAllColumns                    = this.copy(projectedColumns = Seq.empty)
   def selectColumns(columns: Seq[String]) = this.copy(projectedColumns = columns)
-  def addCondition(cond: Expression)      = this.copy(condition = Some(cond))
+  def predicate(pred: FilterPredicate)    = this.copy(predicate = Some(pred))
 }
 
 /**
@@ -67,46 +63,8 @@ object ParquetQueryPlanner extends LogSupport {
       case TableRef(QName(Seq("_"))) =>
         currentPlan
       case Filter(input, expr) =>
-        buildCondition(expr)
-        parseRelation(input, currentPlan).addCondition(expr)
-    }
-  }
-
-//  case UnquotedIdentifier(_) =>
-//  // ok
-//  case BackQuotedIdentifier(_) =>
-//  // ok
-//  case QuotedIdentifier(_) =>
-//  // ok
-
-  private def inferType(e: Expression): PrimitiveSurface = {
-    e match {
-      case TrueLiteral => Primitive.Boolean
-      case FalseLiteral =>
-        Primitive.Boolean
-      case StringLiteral(s) =>
-        Primitive.String
-      case LongLiteral(l) =>
-        Primitive.Long
-      case DoubleLiteral(d) =>
-        Primitive.Double
-      case other =>
-        throw new IllegalArgumentException(s"Unsupported literal: ${other}")
-    }
-  }
-
-  implicit class RichSurface(val p: PrimitiveSurface) extends AnyVal {
-    def toParquetColumn(columnName: String): Column[_] = p match {
-      case Primitive.String =>
-        FilterApi.binaryColumn(columnName)
-      case Primitive.Double =>
-        FilterApi.doubleColumn(columnName)
-      case Primitive.Long =>
-        FilterApi.longColumn(columnName)
-      case Primitive.Boolean =>
-        FilterApi.booleanColumn(columnName)
-      case _ =>
-        throw new IllegalArgumentException(s"Unsupported column type: ${p}")
+        val pred = buildCondition(expr)
+        parseRelation(input, currentPlan).predicate(pred)
     }
   }
 

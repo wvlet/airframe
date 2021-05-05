@@ -1,5 +1,6 @@
 package wvlet.airframe.parquet
 
+import org.apache.parquet.filter2.compat.FilterCompat
 import org.apache.parquet.hadoop.{ParquetReader, ParquetWriter}
 import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
@@ -37,7 +38,15 @@ object Parquet extends LogSupport {
   ): ParquetReader[A] = {
     val plan = ParquetQueryPlanner.parse(sql)
     val b    = AirframeParquetReader.builder[A](path, plan = Some(plan))
-    config(b).build()
+
+    val conf = plan.predicate match {
+      case Some(pred) =>
+        // Set Parquet filter
+        config(b).withFilter(FilterCompat.get(pred))
+      case _ =>
+        config(b)
+    }
+    conf.build()
   }
 
   def toParquetSchema(surface: Surface): MessageType = {
