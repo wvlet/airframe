@@ -19,28 +19,28 @@ import wvlet.airframe.sql.model.{Expression, LogicalPlan}
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.log.LogSupport
 
+case class ParquetQueryPlan(
+    sql: String,
+    // projection target columns. If empty, select all columns (*)
+    projectedColumns: Seq[String] = Seq.empty,
+    condition: Option[Expression] = None
+) {
+  def selectAllColumns                    = this.copy(projectedColumns = Seq.empty)
+  def selectColumns(columns: Seq[String]) = this.copy(projectedColumns = columns)
+  def addCondition(cond: Expression)      = this.copy(condition = Some(cond))
+}
+
 /**
   */
 object ParquetQueryPlanner extends LogSupport {
 
-  case class QueryPlan(
-      sql: String,
-      // projection target columns. If empty, select all columns (*)
-      projectedColumns: Seq[String] = Seq.empty,
-      condition: Option[Expression] = None
-  ) {
-    def selectAllColumns                    = this.copy(projectedColumns = Seq.empty)
-    def selectColumns(columns: Seq[String]) = this.copy(projectedColumns = columns)
-    def addCondition(cond: Expression)      = this.copy(condition = Some(cond))
-  }
-
   import LogicalPlan._
   import wvlet.airframe.sql.model.Expression._
 
-  def parse(sql: String): QueryPlan = {
+  def parse(sql: String): ParquetQueryPlan = {
     val logicalPlan = SQLParser.parse(sql)
 
-    val queryPlan = QueryPlan(sql)
+    val queryPlan = ParquetQueryPlan(sql)
 
     logicalPlan match {
       case Project(input, Seq(AllColumns(None))) =>
@@ -58,7 +58,7 @@ object ParquetQueryPlanner extends LogSupport {
     }
   }
 
-  private def parseRelation(relation: Relation, currentPlan: QueryPlan): QueryPlan = {
+  private def parseRelation(relation: Relation, currentPlan: ParquetQueryPlan): ParquetQueryPlan = {
     relation match {
       case TableRef(QName(Seq("_"))) =>
         currentPlan

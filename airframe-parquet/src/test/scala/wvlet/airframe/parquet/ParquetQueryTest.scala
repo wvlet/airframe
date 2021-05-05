@@ -14,6 +14,7 @@
 package wvlet.airframe.parquet
 
 import wvlet.airframe.control.Control.withResource
+import wvlet.airframe.ulid.ULID
 import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
 
@@ -21,7 +22,7 @@ import wvlet.log.io.IOUtil
   */
 class ParquetQueryTest extends AirSpec {
 
-  case class Record(id: Int, name: String)
+  case class Record(id: Int, name: String, createdAt: ULID = ULID.newULID)
   private val r1            = Record(1, "leo")
   private val r2            = Record(2, "yui")
   private def sampleRecords = Seq(r1, r2)
@@ -37,12 +38,27 @@ class ParquetQueryTest extends AirSpec {
     }
   }
 
-  test("select *") {
+  test("SQL over Parquet") {
     withSampleParquetFile { path =>
-      val reader = Parquet.query[Map[String, Any]](path, "select * from _")
-      reader.read() shouldBe Map("id" -> r1.id, "name" -> r1.name)
-      reader.read() shouldBe Map("id" -> r2.id, "name" -> r2.name)
-      reader.read() shouldBe null
+      test("read all columns") {
+        val reader = Parquet.query[Map[String, Any]](path, "select * from _")
+        reader.read() shouldBe Map("id" -> r1.id, "name" -> r1.name, "createdAt" -> r1.createdAt.toString)
+        reader.read() shouldBe Map("id" -> r2.id, "name" -> r2.name, "createdAt" -> r2.createdAt.toString)
+        reader.read() shouldBe null
+      }
+
+      test("read single column") {
+        val reader = Parquet.query[Map[String, Any]](path, "select id from _")
+        reader.read() shouldBe Map("id" -> r1.id)
+        reader.read() shouldBe Map("id" -> r2.id)
+        reader.read() shouldBe null
+      }
+      test("read multiple columns") {
+        val reader = Parquet.query[Map[String, Any]](path, "select id, createdAt from _")
+        reader.read() shouldBe Map("id" -> r1.id, "createdAt" -> r1.createdAt.toString)
+        reader.read() shouldBe Map("id" -> r2.id, "createdAt" -> r2.createdAt.toString)
+        reader.read() shouldBe null
+      }
     }
   }
 }

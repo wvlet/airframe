@@ -5,11 +5,12 @@ import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.{MessageType, Type, Types}
 import wvlet.airframe.surface.{OptionSurface, Parameter, Primitive, Surface}
+import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 import scala.reflect.runtime.{universe => ru}
 
-object Parquet {
+object Parquet extends LogSupport {
 
   def newWriter[A: ru.TypeTag](
       path: String,
@@ -34,8 +35,8 @@ object Parquet {
       sql: String,
       config: ParquetReader.Builder[A] => ParquetReader.Builder[A] = identity[ParquetReader.Builder[A]](_)
   ): ParquetReader[A] = {
-    val b    = AirframeParquetReader.builder[A](path)
     val plan = ParquetQueryPlanner.parse(sql)
+    val b    = AirframeParquetReader.builder[A](path, plan = Some(plan))
     config(b).build()
   }
 
