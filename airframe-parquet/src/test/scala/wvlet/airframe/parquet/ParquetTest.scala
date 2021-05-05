@@ -134,4 +134,25 @@ object ParquetTest extends AirSpec {
       }
     }
   }
+
+  case class SampleRecord(p1: Int, p2: String, p3: Long)
+  private val r1 = SampleRecord(0, "a", 1L)
+  private val r2 = SampleRecord(1, "b", 2L)
+  case class SampleRecordProjection(p1: Int, p3: Long)
+
+  test("column pruning") {
+    IOUtil.withTempFile("target/tmp-column", ".parquet") { file =>
+      withResource(Parquet.newWriter[SampleRecord](path = file.getPath)) { writer =>
+        writer.write(r1)
+        writer.write(r2)
+      }
+
+      withResource(Parquet.newReader[SampleRecordProjection](path = file.getPath)) { reader =>
+        reader.read() shouldBe SampleRecordProjection(r1.p1, r1.p3)
+        reader.read() shouldBe SampleRecordProjection(r2.p1, r2.p3)
+        reader.read() shouldBe null
+      }
+    }
+  }
+
 }
