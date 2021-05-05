@@ -350,14 +350,18 @@ object Expression {
     override def sqlExpr: String  = "NULL"
     override def toString: String = "Literal(NULL)"
   }
-  sealed trait BooleanLiteral extends Literal
+  sealed trait BooleanLiteral extends Literal {
+    def booleanValue: Boolean
+  }
   case object TrueLiteral extends BooleanLiteral with LeafExpression {
-    override def sqlExpr: String  = "TRUE"
-    override def toString: String = "Literal(TRUE)"
+    override def sqlExpr: String       = "TRUE"
+    override def toString: String      = "Literal(TRUE)"
+    override def booleanValue: Boolean = true
   }
   case object FalseLiteral extends BooleanLiteral with LeafExpression {
-    override def sqlExpr: String  = "FALSE"
-    override def toString: String = "Literal(FALSE)"
+    override def sqlExpr: String       = "FALSE"
+    override def toString: String      = "Literal(FALSE)"
+    override def booleanValue: Boolean = false
   }
   case class StringLiteral(value: String) extends Literal with LeafExpression {
     override def sqlExpr: String = s"'${value}'"

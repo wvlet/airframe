@@ -59,6 +59,12 @@ class ParquetQueryTest extends AirSpec {
         reader.read() shouldBe Map("id" -> r2.id, "createdAt" -> r2.createdAt.toString)
         reader.read() shouldBe null
       }
+
+      test("filter rows") {
+        val reader = Parquet.query[Map[String, Any]](path, "select id, name from _ where id = 2")
+        reader.read() shouldBe Map("id" -> r2.id, "name" -> r2.name)
+        reader.read() shouldBe null
+      }
     }
   }
 }
