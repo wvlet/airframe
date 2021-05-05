@@ -54,6 +54,26 @@ jsonReader.read() // null
 jsonReader.close()
 ```
 
+## Column Projection
+
+If you need to read only a subset of columns, use a model class that has fewer parameters from the original model class. The Parquet reader will access only to the column blocks of the specified column in the model class parameters:
+
+```scala
+case class MyRecord(p1:Int, p2: String, p3:Boolean)
+
+val writer = Parquet.newWriter[MyRecord](path = "record.parquet")
+writer.write(...)
+writer.close()
+
+case class MyRecordProjection(p1:Int, p3:Boolean)
+val reader = Parquet.newReader[MyRecordProjection](path = "record.parquet")
+
+// Only p1 and p3 columns will be read from the Parquet file
+reader.read() // MyRecordProjection(p1, p3)
+reader.close()
+```
+
+
 ## Applying Row Group Filter
 
 Parquet can skip reading records by using row group filters.

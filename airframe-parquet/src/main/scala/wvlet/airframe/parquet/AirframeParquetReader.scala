@@ -26,7 +26,7 @@ import org.apache.parquet.schema.MessageType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.surface.{CName, Surface}
 import wvlet.log.LogSupport
 
 import java.util
@@ -51,11 +51,19 @@ object AirframeParquetReader {
 }
 
 class AirframeParquetReadSupport[A](surface: Surface) extends ReadSupport[A] {
-  private val schema = Parquet.toParquetSchema(surface)
-
   override def init(context: InitContext): ReadSupport.ReadContext = {
-    // do nothing
-    new ReadContext(context.getFileSchema)
+    val parquetFileSchema = context.getFileSchema
+    val targetColumns     = surface.params.map(p => CName(p.name).canonicalName).toSet
+    if (targetColumns.isEmpty) {
+      // e.g., Json, Map where all parameters need to be extracted
+      new ReadContext(parquetFileSchema)
+    } else {
+      // Pruning columns
+      val projectedColumns =
+        parquetFileSchema.getFields.asScala.filter(f => targetColumns.contains(CName(f.getName).canonicalName))
+      val resultSchema = new MessageType(surface.fullName, projectedColumns.asJava)
+      new ReadContext(resultSchema)
+    }
   }
 
   override def prepareForRead(
@@ -68,8 +76,9 @@ class AirframeParquetReadSupport[A](surface: Surface) extends ReadSupport[A] {
   }
 }
 
-class AirframeParquetRecordMaterializer[A](surface: Surface, parquetSchema: MessageType) extends RecordMaterializer[A] {
-  private val recordConverter = new ParquetRecordConverter[A](surface, parquetSchema)
+class AirframeParquetRecordMaterializer[A](surface: Surface, projectedSchema: MessageType)
+    extends RecordMaterializer[A] {
+  private val recordConverter = new ParquetRecordConverter[A](surface, projectedSchema)
 
   override def getCurrentRecord: A = recordConverter.currentRecord
 
@@ -118,13 +127,13 @@ object ParquetRecordConverter {
 
 }
 
-class ParquetRecordConverter[A](surface: Surface, parquetSchema: MessageType) extends GroupConverter with LogSupport {
+class ParquetRecordConverter[A](surface: Surface, projectedSchema: MessageType) extends GroupConverter with LogSupport {
   private val codec        = MessageCodec.ofSurface(surface)
   private val recordHolder = Map.newBuilder[String, Any]
 
   import ParquetRecordConverter._
 
-  private val converters: Seq[Converter] = parquetSchema.getFields.asScala.map { f =>
+  private val converters: Seq[Converter] = projectedSchema.getFields.asScala.map { f =>
     val cv: Converter = f match {
       case p if p.isPrimitive =>
         p.asPrimitiveType().getPrimitiveTypeName match {
