@@ -13,32 +13,37 @@
  */
 package wvlet.airframe.parquet
 
-import wvlet.airframe.sql.model.Expression._
+import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 /**
   */
-class ParquetQueryPlannerTest extends AirSpec {
+object ParquetQueryPlannerTest extends AirSpec {
+
+  case class Record(a: Int, b: String)
+
+  private val schema = Parquet.toParquetSchema(Surface.of[Record])
+
   test("select *") {
-    val p = ParquetQueryPlanner.parse("select * from _")
+    val p = ParquetQueryPlanner.parse("select * from _", schema)
     p.projectedColumns shouldBe empty
     p.predicate shouldBe empty
   }
 
   test("select a, b from _") {
-    val p = ParquetQueryPlanner.parse("select a, b from _")
+    val p = ParquetQueryPlanner.parse("select a, b from _", schema)
     p.projectedColumns shouldBe Seq("a", "b")
     p.predicate shouldBe empty
   }
 
   test("select * from a > 10") {
-    val p = ParquetQueryPlanner.parse("select * from _ where a > 10")
+    val p = ParquetQueryPlanner.parse("select * from _ where a > 10", schema)
     p.projectedColumns shouldBe empty
     p.predicate shouldBe defined
   }
 
   test("select * from a > 1 and a <= 5") {
-    val p = ParquetQueryPlanner.parse("select * from _ where a > 1 and a <= 5")
+    val p = ParquetQueryPlanner.parse("select * from _ where a > 1 and a <= 5", schema)
     p.projectedColumns shouldBe empty
     p.predicate shouldBe defined
   }

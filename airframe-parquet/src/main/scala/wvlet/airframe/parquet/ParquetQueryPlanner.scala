@@ -17,10 +17,8 @@ import org.apache.parquet.filter2.predicate.{FilterApi, FilterPredicate}
 import org.apache.parquet.io.api.Binary
 import org.apache.parquet.schema.MessageType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
-import wvlet.airframe.json.Json
 import wvlet.airframe.sql.model.{Expression, LogicalPlan}
 import wvlet.airframe.sql.parser.SQLParser
-import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
 
 case class ParquetQueryPlan(
@@ -41,7 +39,7 @@ object ParquetQueryPlanner extends LogSupport {
   import LogicalPlan._
   import wvlet.airframe.sql.model.Expression._
 
-  def parse(sql: String, schema: MessageType = new MessageType("dummy")): ParquetQueryPlan = {
+  def parse(sql: String, schema: MessageType): ParquetQueryPlan = {
     new PlanBuilder(schema).parse(sql)
   }
 
@@ -85,6 +83,8 @@ object ParquetQueryPlanner extends LogSupport {
 
     private def buildCondition(expr: Expression): FilterPredicate = {
       expr match {
+        case ParenthesizedExpression(a) =>
+          buildCondition(a)
         case Not(a) =>
           FilterApi.not(buildCondition(a))
         case And(a, b) =>
@@ -93,122 +93,117 @@ object ParquetQueryPlanner extends LogSupport {
           FilterApi.or(buildCondition(a), buildCondition(b))
         // Parquet's FilterApi requires resolving value type when building operators, so we need to enumerate all possible patterns here
         // Eq
-        case Eq(a: Identifier, b: BooleanLiteral) =>
-          FilterApi.eq(FilterApi.booleanColumn(a.value), java.lang.Boolean.valueOf(b.booleanValue))
-        case Eq(a: Identifier, StringLiteral(s)) =>
-          FilterApi.eq(FilterApi.binaryColumn(a.value), Binary.fromString(s))
-        case Eq(a: Identifier, LongLiteral(s)) =>
-          // If we know, the actual target type, use it as FilterApi requires distinguishing Int and Long
+        case op @ Eq(a: Identifier, l: Literal) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
-              FilterApi.eq(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(s.toInt))
-            case _ =>
-              FilterApi.eq(FilterApi.longColumn(a.value), java.lang.Long.valueOf(s))
-          }
-        case Eq(a: Identifier, DoubleLiteral(s)) =>
-          findParameterType(a.value) match {
+              FilterApi.eq(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.INT64) =>
+              FilterApi.eq(FilterApi.longColumn(a.value), java.lang.Long.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.BOOLEAN) =>
+              FilterApi.eq(FilterApi.booleanColumn(a.value), java.lang.Boolean.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.BINARY) =>
+              FilterApi.eq(FilterApi.binaryColumn(a.value), Binary.fromString(l.stringValue))
             case Some(PrimitiveTypeName.FLOAT) =>
-              FilterApi.eq(FilterApi.floatColumn(a.value), java.lang.Float.valueOf(s.toFloat))
+              FilterApi.eq(FilterApi.floatColumn(a.value), java.lang.Float.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.DOUBLE) =>
+              FilterApi.eq(FilterApi.doubleColumn(a.value), java.lang.Double.valueOf(l.stringValue))
+            case Some(other) =>
+              throw new IllegalArgumentException(s"Unsupported type ${other}: ${op}")
             case _ =>
-              FilterApi.eq(FilterApi.doubleColumn(a.value), java.lang.Double.valueOf(s))
+              throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
-        // NotEq
-        case NotEq(a: Identifier, b: BooleanLiteral) =>
-          FilterApi.notEq(FilterApi.booleanColumn(a.value), java.lang.Boolean.valueOf(b.booleanValue))
-        case NotEq(a: Identifier, StringLiteral(s)) =>
-          FilterApi.notEq(FilterApi.binaryColumn(a.value), Binary.fromString(s))
-        case NotEq(a: Identifier, LongLiteral(s)) =>
+        case op @ NotEq(a: Identifier, l: Literal) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
-              FilterApi.notEq(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(s.toInt))
-            case _ =>
-              FilterApi.notEq(FilterApi.longColumn(a.value), java.lang.Long.valueOf(s))
-          }
-        case NotEq(a: Identifier, DoubleLiteral(s)) =>
-          findParameterType(a.value) match {
+              FilterApi.notEq(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.INT64) =>
+              FilterApi.notEq(FilterApi.longColumn(a.value), java.lang.Long.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.BOOLEAN) =>
+              FilterApi.notEq(FilterApi.booleanColumn(a.value), java.lang.Boolean.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.BINARY) =>
+              FilterApi.notEq(FilterApi.binaryColumn(a.value), Binary.fromString(l.stringValue))
             case Some(PrimitiveTypeName.FLOAT) =>
-              FilterApi.notEq(FilterApi.floatColumn(a.value), java.lang.Float.valueOf(s.toFloat))
+              FilterApi.notEq(FilterApi.floatColumn(a.value), java.lang.Float.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.DOUBLE) =>
+              FilterApi.notEq(FilterApi.doubleColumn(a.value), java.lang.Double.valueOf(l.stringValue))
+            case Some(other) =>
+              throw new IllegalArgumentException(s"Unsupported type ${other}: ${op}")
             case _ =>
-              FilterApi.notEq(FilterApi.doubleColumn(a.value), java.lang.Double.valueOf(s))
+              throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
-        // LessThan
-        case LessThan(a: Identifier, StringLiteral(s)) =>
-          FilterApi.lt(FilterApi.binaryColumn(a.value), Binary.fromString(s))
-        case LessThan(a: Identifier, LongLiteral(s)) =>
+        case op @ LessThan(a: Identifier, l: Literal) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
-              FilterApi.lt(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(s.toInt))
-            case _ =>
-              FilterApi.lt(FilterApi.longColumn(a.value), java.lang.Long.valueOf(s))
-          }
-        case LessThan(a: Identifier, DoubleLiteral(s)) =>
-          findParameterType(a.value) match {
+              FilterApi.lt(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.INT64) =>
+              FilterApi.lt(FilterApi.longColumn(a.value), java.lang.Long.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.BINARY) =>
+              FilterApi.lt(FilterApi.binaryColumn(a.value), Binary.fromString(l.stringValue))
             case Some(PrimitiveTypeName.FLOAT) =>
-              FilterApi.lt(FilterApi.floatColumn(a.value), java.lang.Float.valueOf(s.toFloat))
+              FilterApi.lt(FilterApi.floatColumn(a.value), java.lang.Float.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.DOUBLE) =>
+              FilterApi.lt(FilterApi.doubleColumn(a.value), java.lang.Double.valueOf(l.stringValue))
+            case Some(other) =>
+              throw new IllegalArgumentException(s"Unsupported type ${other}: ${op}")
             case _ =>
-              FilterApi.lt(FilterApi.doubleColumn(a.value), java.lang.Double.valueOf(s))
+              throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
-        // LessThanOrEq
-        case LessThanOrEq(a: Identifier, StringLiteral(s)) =>
-          FilterApi.ltEq(FilterApi.binaryColumn(a.value), Binary.fromString(s))
-        case LessThanOrEq(a: Identifier, LongLiteral(s)) =>
+        case op @ LessThanOrEq(a: Identifier, l: Literal) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
-              FilterApi.ltEq(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(s.toInt))
-            case _ =>
-              FilterApi.ltEq(FilterApi.longColumn(a.value), java.lang.Long.valueOf(s))
-          }
-        case LessThanOrEq(a: Identifier, DoubleLiteral(s)) =>
-          findParameterType(a.value) match {
+              FilterApi.ltEq(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.INT64) =>
+              FilterApi.ltEq(FilterApi.longColumn(a.value), java.lang.Long.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.BINARY) =>
+              FilterApi.ltEq(FilterApi.binaryColumn(a.value), Binary.fromString(l.stringValue))
             case Some(PrimitiveTypeName.FLOAT) =>
-              FilterApi.ltEq(FilterApi.floatColumn(a.value), java.lang.Float.valueOf(s.toFloat))
+              FilterApi.ltEq(FilterApi.floatColumn(a.value), java.lang.Float.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.DOUBLE) =>
+              FilterApi.ltEq(FilterApi.doubleColumn(a.value), java.lang.Double.valueOf(l.stringValue))
+            case Some(other) =>
+              throw new IllegalArgumentException(s"Unsupported type ${other}: ${op}")
             case _ =>
-              FilterApi.ltEq(FilterApi.doubleColumn(a.value), java.lang.Double.valueOf(s))
+              throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
-        // GreaterThan
-        case GreaterThan(a: Identifier, StringLiteral(s)) =>
-          FilterApi.gt(FilterApi.binaryColumn(a.value), Binary.fromString(s))
-        case GreaterThan(a: Identifier, LongLiteral(s)) =>
+        case op @ GreaterThan(a: Identifier, l: Literal) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
-              FilterApi.gt(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(s.toInt))
-            case _ =>
-              FilterApi.gt(FilterApi.longColumn(a.value), java.lang.Long.valueOf(s))
-          }
-        case GreaterThan(a: Identifier, DoubleLiteral(s)) =>
-          findParameterType(a.value) match {
+              FilterApi.gt(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.INT64) =>
+              FilterApi.gt(FilterApi.longColumn(a.value), java.lang.Long.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.BINARY) =>
+              FilterApi.gt(FilterApi.binaryColumn(a.value), Binary.fromString(l.stringValue))
             case Some(PrimitiveTypeName.FLOAT) =>
-              FilterApi.gt(FilterApi.floatColumn(a.value), java.lang.Float.valueOf(s.toFloat))
+              FilterApi.gt(FilterApi.floatColumn(a.value), java.lang.Float.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.DOUBLE) =>
+              FilterApi.gt(FilterApi.doubleColumn(a.value), java.lang.Double.valueOf(l.stringValue))
+            case Some(other) =>
+              throw new IllegalArgumentException(s"Unsupported type ${other}: ${op}")
             case _ =>
-              FilterApi.gt(FilterApi.doubleColumn(a.value), java.lang.Double.valueOf(s))
+              throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
-        // GreaterThanOrEq
-        case GreaterThanOrEq(a: Identifier, StringLiteral(s)) =>
-          FilterApi.gtEq(FilterApi.binaryColumn(a.value), Binary.fromString(s))
-        case GreaterThanOrEq(a: Identifier, LongLiteral(s)) =>
+        case op @ GreaterThanOrEq(a: Identifier, l: Literal) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
-              FilterApi.gtEq(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(s.toInt))
-            case _ =>
-              FilterApi.gtEq(FilterApi.longColumn(a.value), java.lang.Long.valueOf(s))
-          }
-        case GreaterThanOrEq(a: Identifier, DoubleLiteral(s)) =>
-          findParameterType(a.value) match {
+              FilterApi.gtEq(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.INT64) =>
+              FilterApi.gtEq(FilterApi.longColumn(a.value), java.lang.Long.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.BINARY) =>
+              FilterApi.gtEq(FilterApi.binaryColumn(a.value), Binary.fromString(l.stringValue))
             case Some(PrimitiveTypeName.FLOAT) =>
-              FilterApi.gtEq(FilterApi.floatColumn(a.value), java.lang.Float.valueOf(s.toFloat))
+              FilterApi.gtEq(FilterApi.floatColumn(a.value), java.lang.Float.valueOf(l.stringValue))
+            case Some(PrimitiveTypeName.DOUBLE) =>
+              FilterApi.gtEq(FilterApi.doubleColumn(a.value), java.lang.Double.valueOf(l.stringValue))
+            case Some(other) =>
+              throw new IllegalArgumentException(s"Unsupported type ${other}: ${op}")
             case _ =>
-              FilterApi.gtEq(FilterApi.doubleColumn(a.value), java.lang.Double.valueOf(s))
+              throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
         case Between(a: Identifier, b, c) =>
           buildCondition(And(GreaterThanOrEq(a, b), LessThanOrEq(a, c)))
+        // TODO: Support is null
         //case IsNull(a) =>
         //case IsNotNull(a) =>
-        //      case In(a, lst) =>
-        //        verifyCondition(a)
-        //        lst.foreach(verifyCondition(_))
-        //      case NotIn(a, lst) =>
-        //        verifyCondition(a)
-        //        lst.foreach(verifyCondition(_))
         case other =>
           throw new IllegalArgumentException(s"Unsupported operator: ${other}")
       }
