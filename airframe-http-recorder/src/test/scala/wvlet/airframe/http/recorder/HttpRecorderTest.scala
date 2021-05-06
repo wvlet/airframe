@@ -17,12 +17,15 @@ import com.twitter.finagle.Http
 import com.twitter.finagle.http.{MediaType, Request, Response, Status}
 import com.twitter.io.Buf
 import com.twitter.util.Await
+import org.yaml.snakeyaml.Yaml
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airframe.http.recorder.HttpRequestMatcher.PathOnlyMatcher
+import wvlet.airframe.json._
 import wvlet.airspec.AirSpec
 
 import scala.util.Random
+import scala.collection.JavaConverters._
 
 /**
   */
@@ -207,6 +210,47 @@ class HttpRecorderTest extends AirSpec {
         val r = Await.result(client(request))
         r.contentString shouldBe "hello airframe"
       }
+    }
+  }
+
+  def `dump http record store`: Unit = {
+    val config = HttpRecorderConfig(requestMatcher = PathOnlyMatcher)
+    withResource(HttpRecorder.createInMemoryServer(config)) { server =>
+      val request1 = Request("/airframe")
+      request1.accept = "application/v1+json"
+      val response1 = Response()
+      response1.contentString = "hello airframe"
+      server.record(request1, response1)
+
+      val binaryRequestData = new Array[Byte](512)
+      Random.nextBytes(binaryRequestData)
+      val binaryResponseData = new Array[Byte](1024)
+      Random.nextBytes(binaryResponseData)
+      val response2 = Response()
+      response2.contentType = MediaType.OctetStream
+      response2.content = Buf.ByteArray.Owned(binaryResponseData)
+      response2.contentLength = binaryResponseData.length
+
+      val request2 = Request("/test")
+      request2.content = Buf.ByteArray.Owned(binaryRequestData)
+      request2.contentType = MediaType.OctetStream
+      server.record(request2, response2)
+
+      val yaml = new Yaml().load[java.util.List[java.util.Map[String, AnyRef]]](server.dumpSessionAsYaml)
+      yaml.get(0).get("path") shouldBe "/airframe"
+      yaml.get(0).get("responseBody") shouldBe "hello airframe"
+
+      yaml.get(1).get("path") shouldBe "/test"
+      yaml.get(1).get("responseBody") shouldBe HttpRecordStore.encodeToBase64(Buf.ByteArray.Owned(binaryResponseData))
+
+      val jsonLines = server.dumpSessionAsJson.split("\n").map(JSON.parse)
+      (jsonLines(0) / "path").toStringValue shouldBe "/airframe"
+      (jsonLines(0) / "responseBody").toStringValue shouldBe "hello airframe"
+
+      (jsonLines(1) / "path").toStringValue shouldBe "/test"
+      (jsonLines(1) / "responseBody").toStringValue shouldBe HttpRecordStore.encodeToBase64(
+        Buf.ByteArray.Owned(binaryResponseData)
+      )
     }
   }
 }

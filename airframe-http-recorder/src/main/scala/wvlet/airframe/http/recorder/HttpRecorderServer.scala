@@ -39,6 +39,22 @@ class HttpRecorderServer(recordStore: HttpRecordStore, finagleService: FinagleSe
     recordStore.record(request, response)
   }
 
+  def dumpSessionAsJson: String = {
+    recordStore.dumpSessionAsJson
+  }
+
+  def dumpAllSessionsAsJson: String = {
+    recordStore.dumpAllSessionsAsJson
+  }
+
+  def dumpSessionAsYaml: String = {
+    recordStore.dumpSessionAsYaml
+  }
+
+  def dumpAllSessionsAsYaml: String = {
+    recordStore.dumpAllSessionsAsYaml
+  }
+
   def recordIfNotExists(request: Request, response: Response): Unit = {
     // Do not increment the request hit counter to replay the recorded responses
     recordStore
