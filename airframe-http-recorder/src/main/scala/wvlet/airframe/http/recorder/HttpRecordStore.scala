@@ -15,13 +15,19 @@ package wvlet.airframe.http.recorder
 
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.{Base64, Locale}
-
-import com.twitter.finagle.http.{Request, Response}
+import java.util.Base64
+import com.twitter.finagle.http.{MediaType, Request, Response}
 import com.twitter.io.Buf
+import org.yaml.snakeyaml.{DumperOptions, Yaml}
+import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.jdbc.{DbConfig, SQLiteConnectionPool}
 import wvlet.airframe.metrics.TimeWindow
 import wvlet.log.LogSupport
+
+import java.nio.charset.StandardCharsets
+import java.sql.ResultSet
+
+import scala.collection.JavaConverters._
 
 /**
   * Recorder for HTTP server responses
@@ -180,6 +186,87 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
 
   override def close(): Unit = {
     connectionPool.stop
+  }
+
+  def dumpSessionAsJson: String = {
+    dumpSession(dumpRecordAsJson _)
+  }
+
+  def dumpAllSessionsAsJson: String = {
+    dumpAllSessions(dumpRecordAsJson _)
+  }
+
+  def dumpSessionAsYaml: String = {
+    dumpSession(dumpRecordAsYaml _)
+  }
+
+  def dumpAllSessionsAsYaml: String = {
+    dumpAllSessions(dumpRecordAsYaml _)
+  }
+
+  private def dumpSession(dumper: ResultSet => String): String = {
+    connectionPool.queryWith(
+      s"select * from ${recordTableName} where session = ? order by createdAt"
+    ) { prepare =>
+      prepare.setString(1, recorderConfig.sessionName)
+    }(dumper)
+  }
+
+  private def dumpAllSessions(dumper: ResultSet => String): String = {
+    connectionPool.executeQuery(
+      // Get the next request matching the requestHash
+      s"select * from ${recordTableName} order by createdAt"
+    )(dumper)
+  }
+
+  private def dumpRecordAsJson(rs: ResultSet): String = {
+    val records = HttpRecord.read(rs).map { record =>
+      record.copy(
+        requestBody = decodeBody(record.requestBody, record.requestHeader),
+        responseBody = decodeBody(record.responseBody, record.responseHeader)
+      )
+    }
+
+    val recordCodec = MessageCodec.of[HttpRecord]
+    records
+      .map { record =>
+        recordCodec.toJson(record)
+      }.mkString("\n")
+  }
+
+  private def dumpRecordAsYaml(rs: ResultSet): String = {
+    val records = HttpRecord
+      .read(rs).map { record =>
+        Map(
+          "session"        -> record.session,
+          "requestHash"    -> record.requestHash,
+          "method"         -> record.method,
+          "destHost"       -> record.destHost,
+          "path"           -> record.path,
+          "requestHeader"  -> record.requestHeader.toMap.asJava,
+          "requestBody"    -> decodeBody(record.requestBody, record.requestHeader),
+          "responseCode"   -> record.responseCode,
+          "responseHeader" -> record.responseHeader.toMap.asJava,
+          "responseBody"   -> decodeBody(record.responseBody, record.responseHeader),
+          "createdAt"      -> record.createdAt.toString
+        ).asJava
+      }.asJava
+    val options = new DumperOptions()
+    options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK)
+    options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN)
+    new Yaml(options).dump(records)
+  }
+
+  private def decodeBody(base64Encoded: String, headers: Seq[(String, String)]): String = {
+    val contentType = headers.collectFirst {
+      case (name, value) if name == "Content-Type" =>
+        value
+    }
+    if (contentType.contains(MediaType.OctetStream)) {
+      base64Encoded
+    } else {
+      new String(HttpRecordStore.decodeFromBase64(base64Encoded), StandardCharsets.UTF_8)
+    }
   }
 }
 
