@@ -201,9 +201,44 @@ object ParquetQueryPlanner extends LogSupport {
           }
         case Between(a: Identifier, b, c) =>
           buildCondition(And(GreaterThanOrEq(a, b), LessThanOrEq(a, c)))
-        // TODO: Support is null
-        //case IsNull(a) =>
-        //case IsNotNull(a) =>
+        case op @ IsNull(a: Identifier) =>
+          findParameterType(a.value) match {
+            case Some(PrimitiveTypeName.INT32) =>
+              FilterApi.eq(FilterApi.intColumn(a.value), null.asInstanceOf[java.lang.Integer])
+            case Some(PrimitiveTypeName.INT64) =>
+              FilterApi.eq(FilterApi.longColumn(a.value), null.asInstanceOf[java.lang.Long])
+            case Some(PrimitiveTypeName.BOOLEAN) =>
+              FilterApi.eq(FilterApi.booleanColumn(a.value), null.asInstanceOf[java.lang.Boolean])
+            case Some(PrimitiveTypeName.BINARY) =>
+              FilterApi.eq(FilterApi.binaryColumn(a.value), null.asInstanceOf[Binary])
+            case Some(PrimitiveTypeName.FLOAT) =>
+              FilterApi.eq(FilterApi.floatColumn(a.value), null.asInstanceOf[java.lang.Float])
+            case Some(PrimitiveTypeName.DOUBLE) =>
+              FilterApi.eq(FilterApi.doubleColumn(a.value), null.asInstanceOf[java.lang.Double])
+            case Some(other) =>
+              throw new IllegalArgumentException(s"Unsupported type ${other}: ${op}")
+            case _ =>
+              throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
+          }
+        case op @ IsNotNull(a: Identifier) =>
+          findParameterType(a.value) match {
+            case Some(PrimitiveTypeName.INT32) =>
+              FilterApi.notEq(FilterApi.intColumn(a.value), null.asInstanceOf[java.lang.Integer])
+            case Some(PrimitiveTypeName.INT64) =>
+              FilterApi.notEq(FilterApi.longColumn(a.value), null.asInstanceOf[java.lang.Long])
+            case Some(PrimitiveTypeName.BOOLEAN) =>
+              FilterApi.notEq(FilterApi.booleanColumn(a.value), null.asInstanceOf[java.lang.Boolean])
+            case Some(PrimitiveTypeName.BINARY) =>
+              FilterApi.notEq(FilterApi.binaryColumn(a.value), null.asInstanceOf[Binary])
+            case Some(PrimitiveTypeName.FLOAT) =>
+              FilterApi.notEq(FilterApi.floatColumn(a.value), null.asInstanceOf[java.lang.Float])
+            case Some(PrimitiveTypeName.DOUBLE) =>
+              FilterApi.notEq(FilterApi.doubleColumn(a.value), null.asInstanceOf[java.lang.Double])
+            case Some(other) =>
+              throw new IllegalArgumentException(s"Unsupported type ${other}: ${op}")
+            case _ =>
+              throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
+          }
         case other =>
           throw new IllegalArgumentException(s"Unsupported operator: ${other}")
       }
