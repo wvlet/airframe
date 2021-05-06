@@ -345,55 +345,68 @@ object Expression {
   }
 
   // Literal
-  sealed trait Literal extends Expression
+  sealed trait Literal extends Expression {
+    def stringValue: String
+  }
   case object NullLiteral extends Literal with LeafExpression {
-    override def sqlExpr: String  = "NULL"
-    override def toString: String = "Literal(NULL)"
+    override def stringValue: String = "null"
+    override def sqlExpr: String     = "NULL"
+    override def toString: String    = "Literal(NULL)"
   }
   sealed trait BooleanLiteral extends Literal {
     def booleanValue: Boolean
   }
   case object TrueLiteral extends BooleanLiteral with LeafExpression {
+    override def stringValue: String   = "true"
     override def sqlExpr: String       = "TRUE"
     override def toString: String      = "Literal(TRUE)"
     override def booleanValue: Boolean = true
   }
   case object FalseLiteral extends BooleanLiteral with LeafExpression {
+    override def stringValue: String   = "false"
     override def sqlExpr: String       = "FALSE"
     override def toString: String      = "Literal(FALSE)"
     override def booleanValue: Boolean = false
   }
   case class StringLiteral(value: String) extends Literal with LeafExpression {
-    override def sqlExpr: String = s"'${value}'"
-    override def toString        = s"Literal('${value}')"
+    override def stringValue: String = value
+    override def sqlExpr: String     = s"'${value}'"
+    override def toString            = s"Literal('${value}')"
   }
   case class TimeLiteral(value: String) extends Literal with LeafExpression {
-    override def sqlExpr  = s"TIME '${value}'"
-    override def toString = s"Literal(TIME '${value}')"
+    override def stringValue: String = value
+    override def sqlExpr             = s"TIME '${value}'"
+    override def toString            = s"Literal(TIME '${value}')"
   }
   case class TimestampLiteral(value: String) extends Literal with LeafExpression {
-    override def sqlExpr  = s"TIMESTAMP '${value}'"
-    override def toString = s"Literal(TIMESTAMP '${value}')"
+    override def stringValue: String = value
+    override def sqlExpr             = s"TIMESTAMP '${value}'"
+    override def toString            = s"Literal(TIMESTAMP '${value}')"
   }
   case class DecimalLiteral(value: String) extends Literal with LeafExpression {
-    override def sqlExpr  = s"DECIMAL '${value}'"
-    override def toString = s"Literal(DECIMAL '${value}')"
+    override def stringValue: String = value
+    override def sqlExpr             = s"DECIMAL '${value}'"
+    override def toString            = s"Literal(DECIMAL '${value}')"
   }
   case class CharLiteral(value: String) extends Literal with LeafExpression {
-    override def sqlExpr  = s"CHAR '${value}'"
-    override def toString = s"Literal(CHAR '${value}')"
+    override def stringValue: String = value
+    override def sqlExpr             = s"CHAR '${value}'"
+    override def toString            = s"Literal(CHAR '${value}')"
   }
   case class DoubleLiteral(value: Double) extends Literal with LeafExpression {
-    override def sqlExpr  = value.toString
-    override def toString = s"Literal(${value.toString})"
+    override def stringValue: String = value.toString
+    override def sqlExpr             = value.toString
+    override def toString            = s"Literal(${value.toString})"
   }
   case class LongLiteral(value: Long) extends Literal with LeafExpression {
-    override def sqlExpr  = value.toString
-    override def toString = s"Literal(${value.toString})"
+    override def stringValue: String = value.toString
+    override def sqlExpr             = value.toString
+    override def toString            = s"Literal(${value.toString})"
   }
   case class IntervalLiteral(value: String, sign: Sign, startField: IntervalField, end: Option[IntervalField])
       extends Literal {
     override def children: Seq[Expression] = Seq(startField) ++ end.toSeq
+    override def stringValue: String       = s"${sign.symbol} '${value}' ${startField}"
 
     override def sqlExpr: String = {
       s"INTERVAL ${sign.symbol} '${value}' ${startField}"
@@ -404,10 +417,14 @@ object Expression {
   }
 
   case class GenericLiteral(tpe: String, value: String) extends Literal with LeafExpression {
+    override def stringValue: String = value
+
     override def sqlExpr  = s"${tpe} '${value}'"
     override def toString = s"Literal(${tpe} '${value}')"
   }
-  case class BinaryLiteral(binary: String) extends Literal with LeafExpression
+  case class BinaryLiteral(binary: String) extends Literal with LeafExpression {
+    override def stringValue: String = binary
+  }
 
   sealed trait IntervalField extends LeafExpression
   case object Year           extends IntervalField

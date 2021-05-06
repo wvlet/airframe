@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.parquet
 
-import wvlet.airframe.sql.model.Expression._
 import wvlet.airspec.AirSpec
 
 /**

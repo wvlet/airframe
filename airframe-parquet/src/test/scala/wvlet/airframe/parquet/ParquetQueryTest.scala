@@ -22,9 +22,9 @@ import wvlet.log.io.IOUtil
   */
 object ParquetQueryTest extends AirSpec {
 
-  case class Record(id: Int, name: String, createdAt: ULID = ULID.newULID)
-  private val r1            = Record(1, "leo")
-  private val r2            = Record(2, "yui")
+  case class Record(id: Int, name: String, b: Boolean, l: Long = -1L, f: Float = -1.0f, d: Double = -1.0)
+  private val r1            = Record(1, "leo", true, 10L, 1.0f, 1000.0)
+  private val r2            = Record(2, "yui", false, 20L, 2.0f, 2000.0)
   private def sampleRecords = Seq(r1, r2)
 
   private def withSampleParquetFile[U](body: String => U): U = {
@@ -43,9 +43,9 @@ object ParquetQueryTest extends AirSpec {
   test("SQL over Parquet") {
     withSampleParquetFile { path =>
       test("read all columns") {
-        val reader = Parquet.query[Map[String, Any]](path, "select * from _")
-        reader.read() shouldBe Map("id" -> r1.id, "name" -> r1.name, "createdAt" -> r1.createdAt.toString)
-        reader.read() shouldBe Map("id" -> r2.id, "name" -> r2.name, "createdAt" -> r2.createdAt.toString)
+        val reader = Parquet.query[Record](path, "select * from _")
+        reader.read() shouldBe r1
+        reader.read() shouldBe r2
         reader.read() shouldBe null
       }
 
@@ -56,65 +56,90 @@ object ParquetQueryTest extends AirSpec {
         reader.read() shouldBe null
       }
       test("read multiple columns") {
-        val reader = Parquet.query[Map[String, Any]](path, "select id, createdAt from _")
-        reader.read() shouldBe Map("id" -> r1.id, "createdAt" -> r1.createdAt.toString)
-        reader.read() shouldBe Map("id" -> r2.id, "createdAt" -> r2.createdAt.toString)
+        val reader = Parquet.query[Map[String, Any]](path, "select id, b from _")
+        reader.read() shouldBe Map("id" -> r1.id, "b" -> r1.b)
+        reader.read() shouldBe Map("id" -> r2.id, "b" -> r2.b)
         reader.read() shouldBe null
       }
 
       test("filter rows with =") {
         test("int") {
-          val reader = Parquet.query[RecordProjection](path, "select id, name from _ where id = 2")
-          reader.read() shouldBe RecordProjection(id = r2.id, name = r2.name)
+          val reader = Parquet.query[Record](path, "select * from _ where id = 2")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("long") {
+          val reader = Parquet.query[Record](path, "select * from _ where l = 10")
+          reader.read() shouldBe r1
           reader.read() shouldBe null
         }
         test("string") {
-          val reader = Parquet.query[RecordProjection](path, "select id, name from _ where name = 'yui'")
-          reader.read() shouldBe RecordProjection(id = r2.id, name = r2.name)
+          val reader = Parquet.query[Record](path, "select * from _ where name = 'yui'")
+          reader.read() shouldBe r2
           reader.read() shouldBe null
         }
-      }
-
-      test("filter rows with >") {
-        test("int") {
-          val reader = Parquet.query[RecordProjection](path, "select id, name from _ where id > 1")
-          reader.read() shouldBe RecordProjection(id = r2.id, name = r2.name)
+        test("boolean true") {
+          val reader = Parquet.query[Record](path, "select * from _ where b = true")
+          reader.read() shouldBe r1
           reader.read() shouldBe null
         }
-        test("string") {
-          val reader = Parquet.query[RecordProjection](path, "select id, name from _ where name > 'leo'")
-          reader.read() shouldBe RecordProjection(id = r2.id, name = r2.name)
+        test("boolean false") {
+          val reader = Parquet.query[Record](path, "select * from _ where b = false")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("float") {
+          val reader = Parquet.query[Record](path, "select * from _ where f = REAL '2.0'")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("double") {
+          val reader = Parquet.query[Record](path, "select * from _ where d = DOUBLE '2000.0'")
+          reader.read() shouldBe r2
           reader.read() shouldBe null
         }
       }
 
       test("filter rows with !=") {
         test("int") {
-          val reader = Parquet.query[RecordProjection](path, "select id, name from _ where id != 1")
-          reader.read() shouldBe RecordProjection(id = r2.id, name = r2.name)
+          val reader = Parquet.query[Record](path, "select * from _ where id != 2")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("long") {
+          val reader = Parquet.query[Record](path, "select * from _ where l != 10")
+          reader.read() shouldBe r2
           reader.read() shouldBe null
         }
         test("string") {
-          val reader = Parquet.query[RecordProjection](path, "select id, name from _ where name != 'leo'")
-          reader.read() shouldBe RecordProjection(id = r2.id, name = r2.name)
+          val reader = Parquet.query[Record](path, "select * from _ where name != 'yui'")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("boolean true") {
+          val reader = Parquet.query[Record](path, "select * from _ where b != true")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("boolean false") {
+          val reader = Parquet.query[Record](path, "select * from _ where b != false")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("float") {
+          val reader = Parquet.query[Record](path, "select * from _ where f != REAL '2.0'")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("double") {
+          val reader = Parquet.query[Record](path, "select * from _ where d != 2000.0")
+          reader.read() shouldBe r1
           reader.read() shouldBe null
         }
       }
 
-      test("filter rows with >=") {
-        val reader = Parquet.query[RecordProjection](path, "select id, name from _ where id >= 2")
-        reader.read() shouldBe RecordProjection(id = r2.id, name = r2.name)
-        reader.read() shouldBe null
-      }
-
-      test("filter rows with <=") {
-        val reader = Parquet.query[RecordProjection](path, "select id, name from _ where id <= 1")
-        reader.read() shouldBe RecordProjection(id = r1.id, name = r1.name)
-        reader.read() shouldBe null
-      }
-
       test("filter row group") {
-        val reader = Parquet.query[RecordProjection](path, "select id, name from _ where id > 3")
+        val reader = Parquet.query[Record](path, "select * from _ where id > 3")
         reader.read() shouldBe null
       }
     }
