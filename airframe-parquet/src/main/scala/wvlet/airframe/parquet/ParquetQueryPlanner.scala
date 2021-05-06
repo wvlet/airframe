@@ -41,7 +41,7 @@ object ParquetQueryPlanner extends LogSupport {
   import LogicalPlan._
   import wvlet.airframe.sql.model.Expression._
 
-  def parse(sql: String, schema: MessageType = new MessageType("dummy")): ParquetQueryPlan = {
+  def parse(sql: String, schema: MessageType): ParquetQueryPlan = {
     new PlanBuilder(schema).parse(sql)
   }
 
