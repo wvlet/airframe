@@ -89,12 +89,12 @@ object ParquetQueryTest extends AirSpec {
           reader.read() shouldBe null
         }
         test("float") {
-          val reader = Parquet.query[Record](path, "select * from _ where f = REAL '2.0'")
+          val reader = Parquet.query[Record](path, "select * from _ where f = 2.0")
           reader.read() shouldBe r2
           reader.read() shouldBe null
         }
         test("double") {
-          val reader = Parquet.query[Record](path, "select * from _ where d = DOUBLE '2000.0'")
+          val reader = Parquet.query[Record](path, "select * from _ where d = 2000.0")
           reader.read() shouldBe r2
           reader.read() shouldBe null
         }
@@ -127,12 +127,176 @@ object ParquetQueryTest extends AirSpec {
           reader.read() shouldBe null
         }
         test("float") {
-          val reader = Parquet.query[Record](path, "select * from _ where f != REAL '2.0'")
+          val reader = Parquet.query[Record](path, "select * from _ where f != 2.0")
           reader.read() shouldBe r1
           reader.read() shouldBe null
         }
         test("double") {
           val reader = Parquet.query[Record](path, "select * from _ where d != 2000.0")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+      }
+
+      test("filter rows with >") {
+        test("int") {
+          val reader = Parquet.query[Record](path, "select * from _ where id > 1")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("long") {
+          val reader = Parquet.query[Record](path, "select * from _ where l > 10")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("string") {
+          val reader = Parquet.query[Record](path, "select * from _ where name > 'leo'")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("float") {
+          val reader = Parquet.query[Record](path, "select * from _ where f > 1.1")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("double") {
+          val reader = Parquet.query[Record](path, "select * from _ where d > 1000.0")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+      }
+
+      test("filter rows with >=") {
+        test("int") {
+          val reader = Parquet.query[Record](path, "select * from _ where id >= 2")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("long") {
+          val reader = Parquet.query[Record](path, "select * from _ where l >= 11")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("string") {
+          val reader = Parquet.query[Record](path, "select * from _ where name >= 'leoo'")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("float") {
+          val reader = Parquet.query[Record](path, "select * from _ where f >= 1.1")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("double") {
+          val reader = Parquet.query[Record](path, "select * from _ where d >= 1001.0")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+      }
+
+      test("filter rows with <") {
+        test("int") {
+          val reader = Parquet.query[Record](path, "select * from _ where id < 2")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("long") {
+          val reader = Parquet.query[Record](path, "select * from _ where l < 20")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("string") {
+          val reader = Parquet.query[Record](path, "select * from _ where name < 'yui'")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("float") {
+          val reader = Parquet.query[Record](path, "select * from _ where f < 1.1")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("double") {
+          val reader = Parquet.query[Record](path, "select * from _ where d < 1100.0")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+      }
+
+      test("filter rows with <=") {
+        test("int") {
+          val reader = Parquet.query[Record](path, "select * from _ where id <= 1")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("long") {
+          val reader = Parquet.query[Record](path, "select * from _ where l <= 15")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("string") {
+          val reader = Parquet.query[Record](path, "select * from _ where name <= 'yu'")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("float") {
+          val reader = Parquet.query[Record](path, "select * from _ where f <= 1.1")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("double") {
+          val reader = Parquet.query[Record](path, "select * from _ where d <= 1100.0")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+      }
+
+      test("filter rows with BETWEEN") {
+        test("int") {
+          val reader = Parquet.query[Record](path, "select * from _ where id between 0 and 1")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("long") {
+          val reader = Parquet.query[Record](path, "select * from _ where l between 1 and 15")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("string") {
+          val reader = Parquet.query[Record](path, "select * from _ where name between 'le' and 'yu'")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("float") {
+          val reader = Parquet.query[Record](path, "select * from _ where f between 0.0 and 1.1")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("double") {
+          val reader = Parquet.query[Record](path, "select * from _ where d between 1000.0 and 1100.0")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+      }
+
+      test("filter rows with concatenated conditions") {
+        test("AND") {
+          val reader = Parquet.query[Record](path, "select * from _ where id = 1 and b = true")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("NOT") {
+          val reader = Parquet.query[Record](path, "select * from _ where not (id = 1 and b = true)")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+
+        test("OR") {
+          val reader = Parquet.query[Record](path, "select * from _ where id = 1 or b = true")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+        test("AND/OR") {
+          val reader = Parquet.query[Record](path, "select * from _ where (id = 1 and b = true) or (name = 'leo')")
           reader.read() shouldBe r1
           reader.read() shouldBe null
         }

@@ -56,7 +56,7 @@ jsonReader.close()
 
 ## Querying Parquet with A Simple SQL
 
-To apply column projection and predicate filtering, you can use SQL statements. The syntax of SQL is `select column1, column2, ... from _ where (column condition)`. The input table name must be just `_` (underscore). The where clause condition supports only a limited set of predicates, `=`, `!=`, `<`, `>`, `<=`, `>=`, `OR`, `AND`, etc.
+To apply column projection and predicate filtering, you can use SQL statements. The syntax of SQL is `select column1, column2, ... from _ where (column condition)`. The input table name must be just `_` (underscore). The where clause condition supports only a limited set of predicates, `=`, `!=`, `<`, `>`, `<=`, `>=`, `BETWEEN`, OR`, `AND`, etc., where the left operator is a column name. 
 
 Projecting columns:
 ```scala

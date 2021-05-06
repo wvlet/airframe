@@ -17,10 +17,8 @@ import org.apache.parquet.filter2.predicate.{FilterApi, FilterPredicate}
 import org.apache.parquet.io.api.Binary
 import org.apache.parquet.schema.MessageType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
-import wvlet.airframe.json.Json
 import wvlet.airframe.sql.model.{Expression, LogicalPlan}
 import wvlet.airframe.sql.parser.SQLParser
-import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
 
 case class ParquetQueryPlan(
@@ -85,6 +83,8 @@ object ParquetQueryPlanner extends LogSupport {
 
     private def buildCondition(expr: Expression): FilterPredicate = {
       expr match {
+        case ParenthesizedExpression(a) =>
+          buildCondition(a)
         case Not(a) =>
           FilterApi.not(buildCondition(a))
         case And(a, b) =>
@@ -201,14 +201,9 @@ object ParquetQueryPlanner extends LogSupport {
           }
         case Between(a: Identifier, b, c) =>
           buildCondition(And(GreaterThanOrEq(a, b), LessThanOrEq(a, c)))
+        // TODO: Support is null
         //case IsNull(a) =>
         //case IsNotNull(a) =>
-        //      case In(a, lst) =>
-        //        verifyCondition(a)
-        //        lst.foreach(verifyCondition(_))
-        //      case NotIn(a, lst) =>
-        //        verifyCondition(a)
-        //        lst.foreach(verifyCondition(_))
         case other =>
           throw new IllegalArgumentException(s"Unsupported operator: ${other}")
       }

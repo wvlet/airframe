@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.parquet
 
-import org.apache.parquet.schema.MessageType
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
