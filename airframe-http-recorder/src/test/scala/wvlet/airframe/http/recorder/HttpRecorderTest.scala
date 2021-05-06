@@ -244,11 +244,11 @@ class HttpRecorderTest extends AirSpec {
       yaml.get(1).get("responseBody") shouldBe HttpRecordStore.encodeToBase64(Buf.ByteArray.Owned(binaryResponseData))
 
       val jsonLines = server.dumpSessionAsJson.split("\n").map(JSON.parse)
-      (jsonLines(0) / "path" toStringValue) shouldBe "/airframe"
-      (jsonLines(0) / "responseBody" toStringValue) shouldBe "hello airframe"
+      (jsonLines(0) / "path").toStringValue shouldBe "/airframe"
+      (jsonLines(0) / "responseBody").toStringValue shouldBe "hello airframe"
 
-      (jsonLines(1) / "path" toStringValue) shouldBe "/test"
-      (jsonLines(1) / "responseBody" toStringValue) shouldBe HttpRecordStore.encodeToBase64(
+      (jsonLines(1) / "path").toStringValue shouldBe "/test"
+      (jsonLines(1) / "responseBody").toStringValue shouldBe HttpRecordStore.encodeToBase64(
         Buf.ByteArray.Owned(binaryResponseData)
       )
     }
