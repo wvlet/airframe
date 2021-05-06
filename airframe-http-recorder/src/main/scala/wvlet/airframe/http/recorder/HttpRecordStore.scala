@@ -27,7 +27,7 @@ import wvlet.log.LogSupport
 import java.nio.charset.StandardCharsets
 import java.sql.ResultSet
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * Recorder for HTTP server responses
