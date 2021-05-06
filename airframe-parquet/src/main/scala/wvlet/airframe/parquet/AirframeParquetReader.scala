@@ -36,24 +36,30 @@ import scala.reflect.runtime.{universe => ru}
 
 object AirframeParquetReader {
 
-  def builder[A: ru.TypeTag](path: String): Builder[A] = {
+  def builder[A: ru.TypeTag](path: String, plan: Option[ParquetQueryPlan] = None): Builder[A] = {
     val conf   = new Configuration()
     val fsPath = new Path(path)
     val file   = HadoopInputFile.fromPath(fsPath, conf)
-    new Builder[A](Surface.of[A], file)
+    new Builder[A](Surface.of[A], file, plan)
   }
 
-  class Builder[A](surface: Surface, inputFile: InputFile) extends ParquetReader.Builder[A](inputFile) {
+  class Builder[A](surface: Surface, inputFile: InputFile, plan: Option[ParquetQueryPlan])
+      extends ParquetReader.Builder[A](inputFile) {
     override def getReadSupport(): ReadSupport[A] = {
-      new AirframeParquetReadSupport[A](surface)
+      new AirframeParquetReadSupport[A](surface, plan)
     }
   }
 }
 
-class AirframeParquetReadSupport[A](surface: Surface) extends ReadSupport[A] {
+class AirframeParquetReadSupport[A](surface: Surface, plan: Option[ParquetQueryPlan]) extends ReadSupport[A] {
   override def init(context: InitContext): ReadSupport.ReadContext = {
     val parquetFileSchema = context.getFileSchema
-    val targetColumns     = surface.params.map(p => CName(p.name).canonicalName).toSet
+    val targetColumns = plan match {
+      case Some(p) if p.projectedColumns.nonEmpty =>
+        p.projectedColumns.map(c => CName(c).canonicalName).toSet
+      case _ =>
+        surface.params.map(p => CName(p.name).canonicalName).toSet
+    }
     if (targetColumns.isEmpty) {
       // e.g., Json, Map where all parameters need to be extracted
       new ReadContext(parquetFileSchema)

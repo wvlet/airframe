@@ -54,7 +54,28 @@ jsonReader.read() // null
 jsonReader.close()
 ```
 
-## Column Projection
+## Querying Parquet with A Simple SQL
+
+To apply column projection and predicate filtering, you can use SQL statements. The syntax of SQL is `select column1, column2, ... from _ where (column condition)`. The input table name must be just `_` (underscore). The where clause condition supports only a limited set of predicates, `=`, `!=`, `<`, `>`, `<=`, `>=`, `OR`, `AND`, etc.
+
+Projecting columns:
+```scala
+// Selecting a subset of columns with SQL
+val reader = Parquet.query[Json](path = "data.parquet", sql = "select id from _")
+reader.read() // {"id":1}
+reader.read() // {"id":2}
+reader.read() // null
+```
+
+Filtering records:
+```scala
+// Selecting a subset of columns with SQL
+val reader = Parquet.query[Json](path = "data.parquet", sql = "select * from _ where id = 2")
+reader.read() // {"id":2}
+reader.read() // null
+```
+
+## Column Projection with Model Classes
 
 If you need to read only a subset of columns, use a model class that has fewer parameters from the original model class. The Parquet reader will access only to the column blocks of the specified column in the model class parameters:
 
@@ -74,7 +95,7 @@ reader.close()
 ```
 
 
-## Applying Row Group Filter
+## Applying Row Group Filter with Parquet FilterApi
 
 Parquet can skip reading records by using row group filters.
 You can use [FilterAPI of parquet-mr](https://github.com/justcodeforfun/parquet-mr/blob/master/parquet-column/src/main/java/org/apache/parquet/filter2/predicate/FilterApi.java) to build such a filter:

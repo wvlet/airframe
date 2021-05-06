@@ -1,15 +1,22 @@
 package wvlet.airframe.parquet
 
-import org.apache.parquet.hadoop.{ParquetReader, ParquetWriter}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
+import org.apache.parquet.filter2.compat.FilterCompat
+import org.apache.parquet.hadoop.util.HadoopInputFile
+import org.apache.parquet.hadoop.{ParquetFileReader, ParquetReader, ParquetWriter}
 import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.{MessageType, Type, Types}
+import wvlet.airframe.control.Control.withResource
+import wvlet.airframe.json.Json
 import wvlet.airframe.surface.{OptionSurface, Parameter, Primitive, Surface}
+import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 import scala.reflect.runtime.{universe => ru}
 
-object Parquet {
+object Parquet extends LogSupport {
 
   def newWriter[A: ru.TypeTag](
       path: String,
@@ -27,6 +34,34 @@ object Parquet {
   ): ParquetReader[A] = {
     val b = AirframeParquetReader.builder[A](path)
     config(b).build()
+  }
+
+  def query[A: ru.TypeTag](
+      path: String,
+      sql: String,
+      config: ParquetReader.Builder[A] => ParquetReader.Builder[A] = identity[ParquetReader.Builder[A]](_)
+  ): ParquetReader[A] = {
+    // Read Parquet schema for resolving column types
+    val schema = readSchema(path)
+    val plan   = ParquetQueryPlanner.parse(sql, schema)
+    val b      = AirframeParquetReader.builder[A](path, plan = Some(plan))
+
+    val conf = plan.predicate match {
+      case Some(pred) =>
+        // Set Parquet filter
+        config(b).withFilter(FilterCompat.get(pred))
+      case _ =>
+        config(b)
+    }
+    conf.build()
+  }
+
+  def readSchema(path: String): MessageType = {
+    val conf  = new Configuration()
+    val input = HadoopInputFile.fromPath(new Path(path), conf)
+    withResource(ParquetFileReader.open(input)) { reader =>
+      reader.getFooter.getFileMetaData.getSchema
+    }
   }
 
   def toParquetSchema(surface: Surface): MessageType = {
