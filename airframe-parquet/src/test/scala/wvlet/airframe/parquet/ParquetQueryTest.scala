@@ -21,9 +21,17 @@ import wvlet.log.io.IOUtil
   */
 object ParquetQueryTest extends AirSpec {
 
-  case class Record(id: Int, name: String, b: Boolean, l: Long = -1L, f: Float = -1.0f, d: Double = -1.0)
-  private val r1            = Record(1, "leo", true, 10L, 1.0f, 1000.0)
-  private val r2            = Record(2, "yui", false, 20L, 2.0f, 2000.0)
+  case class Record(
+      id: Int,
+      name: String,
+      b: Boolean,
+      l: Long = -1L,
+      f: Float = -1.0f,
+      d: Double = -1.0,
+      opt: Option[String]
+  )
+  private val r1            = Record(1, "leo", true, 10L, 1.0f, 1000.0, None)
+  private val r2            = Record(2, "yui", false, 20L, 2.0f, 2000.0, Some("opt"))
   private def sampleRecords = Seq(r1, r2)
 
   private def withSampleParquetFile[U](body: String => U): U = {
@@ -308,6 +316,82 @@ object ParquetQueryTest extends AirSpec {
         }
       }
 
+      test("is null") {
+        test("int") {
+          val reader = Parquet.query[Record](path, "select * from _ where id is null")
+          reader.read() shouldBe null
+        }
+        test("long") {
+          val reader = Parquet.query[Record](path, "select * from _ where l is null")
+          reader.read() shouldBe null
+        }
+        test("boolean") {
+          val reader = Parquet.query[Record](path, "select * from _ where b is null")
+          reader.read() shouldBe null
+        }
+        test("string") {
+          val reader = Parquet.query[Record](path, "select * from _ where name is null")
+          reader.read() shouldBe null
+        }
+        test("float") {
+          val reader = Parquet.query[Record](path, "select * from _ where f is null")
+          reader.read() shouldBe null
+        }
+        test("double") {
+          val reader = Parquet.query[Record](path, "select * from _ where d is null")
+          reader.read() shouldBe null
+        }
+        test("Option[String]") {
+          val reader = Parquet.query[Record](path, "select * from _ where opt is null")
+          reader.read() shouldBe r1
+          reader.read() shouldBe null
+        }
+      }
+
+      test("is not null") {
+        test("int") {
+          val reader = Parquet.query[Record](path, "select * from _ where id is not null")
+          reader.read() shouldBe r1
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("long") {
+          val reader = Parquet.query[Record](path, "select * from _ where l is not null")
+          reader.read() shouldBe r1
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("boolean") {
+          val reader = Parquet.query[Record](path, "select * from _ where b is not null")
+          reader.read() shouldBe r1
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("string") {
+          val reader = Parquet.query[Record](path, "select * from _ where name is not null")
+          reader.read() shouldBe r1
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("float") {
+          val reader = Parquet.query[Record](path, "select * from _ where f is not null")
+          reader.read() shouldBe r1
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("double") {
+          val reader = Parquet.query[Record](path, "select * from _ where d is not null")
+          reader.read() shouldBe r1
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+        test("Option[String]") {
+          val reader = Parquet.query[Record](path, "select * from _ where opt is not null")
+          reader.read() shouldBe r2
+          reader.read() shouldBe null
+        }
+      }
+
       test("filter row group") {
         val reader = Parquet.query[Record](path, "select * from _ where id > 3")
         reader.read() shouldBe null
@@ -332,6 +416,12 @@ object ParquetQueryTest extends AirSpec {
         intercept[IllegalArgumentException] {
           Parquet.query[Record](path, "select * from _ where idx <= 3")
         }
+        intercept[IllegalArgumentException] {
+          Parquet.query[Record](path, "select * from _ where idx is null")
+        }
+        intercept[IllegalArgumentException] {
+          Parquet.query[Record](path, "select * from _ where idx is not null")
+        }
       }
 
       test("catch unsupported syntax") {
@@ -339,7 +429,6 @@ object ParquetQueryTest extends AirSpec {
           Parquet.query[Record](path, "select * from _ where id >= pow(2, 10)")
         }
       }
-
     }
   }
 }
