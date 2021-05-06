@@ -14,7 +14,6 @@
 package wvlet.airframe.parquet
 
 import wvlet.airframe.control.Control.withResource
-import wvlet.airframe.ulid.ULID
 import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
 
@@ -38,7 +37,7 @@ object ParquetQueryTest extends AirSpec {
     }
   }
 
-  case class RecordProjection(id: Int, name: String)
+  case class RecordProjection(id: Int, b: Boolean)
 
   test("SQL over Parquet") {
     withSampleParquetFile { path =>
@@ -59,6 +58,13 @@ object ParquetQueryTest extends AirSpec {
         val reader = Parquet.query[Map[String, Any]](path, "select id, b from _")
         reader.read() shouldBe Map("id" -> r1.id, "b" -> r1.b)
         reader.read() shouldBe Map("id" -> r2.id, "b" -> r2.b)
+        reader.read() shouldBe null
+      }
+
+      test("read multiple columns with case class") {
+        val reader = Parquet.query[RecordProjection](path, "select id, b from _")
+        reader.read() shouldBe RecordProjection(r1.id, r1.b)
+        reader.read() shouldBe RecordProjection(r2.id, r2.b)
         reader.read() shouldBe null
       }
 
@@ -306,6 +312,34 @@ object ParquetQueryTest extends AirSpec {
         val reader = Parquet.query[Record](path, "select * from _ where id > 3")
         reader.read() shouldBe null
       }
+
+      test("catch unknown columns") {
+        intercept[IllegalArgumentException] {
+          Parquet.query[Record](path, "select * from _ where idx =  3")
+        }
+        intercept[IllegalArgumentException] {
+          Parquet.query[Record](path, "select * from _ where idx != 3")
+        }
+        intercept[IllegalArgumentException] {
+          Parquet.query[Record](path, "select * from _ where idx > 3")
+        }
+        intercept[IllegalArgumentException] {
+          Parquet.query[Record](path, "select * from _ where idx >= 3")
+        }
+        intercept[IllegalArgumentException] {
+          Parquet.query[Record](path, "select * from _ where idx < 3")
+        }
+        intercept[IllegalArgumentException] {
+          Parquet.query[Record](path, "select * from _ where idx <= 3")
+        }
+      }
+
+      test("catch unsupported syntax") {
+        intercept[IllegalArgumentException] {
+          Parquet.query[Record](path, "select * from _ where id >= pow(2, 10)")
+        }
+      }
+
     }
   }
 }
