@@ -17,15 +17,13 @@ import java.util.UUID
 
 import wvlet.airframe.codec.JavaStandardCodec.JavaEnumCodec
 import wvlet.airframe.metrics.TimeParser
-import wvlet.airframe.surface.reflect.{ReflectSurfaceFactory, ReflectTypeUtil}
-import wvlet.airframe.surface.{GenericSurface, JavaEnumSurface, Surface}
+import wvlet.airframe.surface.{JavaEnumSurface, Surface}
 
-import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
 
 /**
   */
-object Compat {
+object Compat extends CompatBase {
   def messageCodecFinder: MessageCodecFinder = {
     MessageCodecFinder.defaultMessageCodecFinder orElse
       JVMMessageCodecFinder
@@ -38,7 +36,7 @@ object Compat {
     ): PartialFunction[Surface, MessageCodec[_]] = {
       case JavaEnumSurface(cl) =>
         JavaEnumCodec(cl)
-      case s if ReflectTypeUtil.hasStringUnapplyConstructor(s) =>
+      case s if hasStringUnapplyConstructor(s) =>
         new StringUnapplyCodec(s)
     }
   }
@@ -46,13 +44,12 @@ object Compat {
   def platformSpecificCodecs: Map[Surface, MessageCodec[_]] =
     JavaTimeCodec.javaTimeCodecs ++ JavaStandardCodec.javaStandardCodecs
 
-  def codecOf[A: ru.TypeTag]: MessageCodec[A] = MessageCodecFactory.defaultFactory.of[A]
   def codecOfClass(
       cl: Class[_],
       codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
   ): Option[MessageCodec[_]] = {
     // Finding the surface using reflection
-    val surface = ReflectSurfaceFactory.ofClass(cl)
+    val surface = surfaceOfClass(cl)
     codecFactory.of(surface) match {
       case o: ObjectCodecBase if o.paramCodec.isEmpty =>
         // If the codec is an ObjectCodec without any parameters,

@@ -13,12 +13,9 @@
  */
 package wvlet.airframe.codec
 import java.sql.{ResultSet, Time, Timestamp, Types}
-
 import wvlet.airframe.codec.PrimitiveCodec._
 import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, ValueType}
 import wvlet.log.LogSupport
-
-import scala.collection.compat._
 
 /**
   */
@@ -45,7 +42,7 @@ object JDBCCodec extends LogSupport {
     /**
       * Encode the all ResultSet rows as JSON object values
       */
-    def toJsonSeq: IterableOnce[String] = {
+    def toJsonSeq: Iterator[String] = {
       mapMsgPackMapRows { msgpack => JSONCodec.toJson(msgpack) }
     }
 
