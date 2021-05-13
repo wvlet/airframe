@@ -33,7 +33,7 @@ object ScalaCompat {
   }
 
   trait MessageCodecFactoryBase { self: MessageCodecFactory =>
-    def of[A: TypeTag]: MessageCodec[A]       = ofSurface(Surface.of[A]).asInstanceOf[MessageCodec[A]]
+    def of[A: TypeTag]: MessageCodec[A] = ofSurface(Surface.of[A]).asInstanceOf[MessageCodec[A]]
     def fromJson[A: TypeTag](json: String): A = {
       val codec = of[A]
       codec.fromJson(json)

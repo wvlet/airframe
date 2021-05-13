@@ -15,6 +15,17 @@ package wvlet.airframe.codec
 import wvlet.airframe.surface.Surface
 
 trait CompatBase {
-  def codecOf[A]: MessageCodec[A] = ???
+  inline def codecOf[A]: MessageCodec[A] = ${ CompatBase.codecOf[A] }
+  // TODO Implementation
   def surfaceOfClass(cl:Class[_]): Surface = ???
+}
+
+private[codec] object CompatBase {
+  import scala.quoted._
+
+  def codecOf[A](using t: Type[A], quotes: Quotes): Expr[MessageCodec[A]] = {
+    import quotes._
+    '{ MessageCodecFactory.defaultFactory.of[A] }
+  }
+
 }
