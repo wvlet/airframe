@@ -356,9 +356,8 @@ trait MyServer {
 
     // Creates a new child session
     session.withChildSession(childDesign) { childSession =>
-      childSession.build[X] { x =>
-         ...
-      }
+      val x = childSession.build[X]
+      ...
     }
   }
 }
