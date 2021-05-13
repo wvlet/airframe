@@ -5,7 +5,7 @@ import wvlet.airframe.surface.Surface
 object ScalaCompat {
 
   trait MessageCodecBase {
-    def of[A]: MessageCodec[A] = ???
+    inline def of[A]: MessageCodec[A] = ${ codecOf[A] }
     def fromJson[A](json: String): A = ???
     def toJson[A](obj: A): String = ???
   }
@@ -16,4 +16,16 @@ object ScalaCompat {
     def fromJson[A](json: String): A = ???
     def toJson[A](obj: A): String = ???
   }
+
+  import scala.quoted._
+
+  private[codec] def codecOf[A](using t: Type[A], quotes: Quotes): Expr[MessageCodec[A]] = {
+    import quotes._
+    import quotes.reflect._
+
+    '{ MessageCodec.ofSurface(Surface.of[A]).asInstanceOf[MessageCodec[A]] }
+  }
+
+
 }
+

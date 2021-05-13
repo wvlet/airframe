@@ -1032,7 +1032,7 @@ lazy val dottyTest =
         else targetScalaVersions
       }
     )
-    .dependsOn(logJVM, surfaceJVM, airframeJVM)
+    .dependsOn(logJVM, surfaceJVM, airframeJVM, codecJVM)
 
 /**
   * AirSpec build definitions.

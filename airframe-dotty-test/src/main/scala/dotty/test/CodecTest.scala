@@ -11,10 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.codec
-import wvlet.airframe.surface.Surface
+package dotty.test
 
-trait CompatBase {
-  def codecOf[A]: MessageCodec[A] = ???
-  def surfaceOfClass(cl:Class[_]): Surface = ???
+import wvlet.airframe.codec.MessageCodec
+import wvlet.log.LogSupport
+
+/**
+  */
+object CodecTest extends LogSupport {
+
+  case class A(id: Int, name: String)
+
+  def run: Unit = {
+
+    val codec = MessageCodec.of[A]
+    val json  = codec.toJson(A(1, "leo"))
+    info(json)
+  }
 }

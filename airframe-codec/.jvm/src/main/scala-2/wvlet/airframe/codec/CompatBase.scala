@@ -14,14 +14,13 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.surface.Surface
-import wvlet.airframe.surface.reflect.{ReflectSurfaceFactory, ReflectTypeUtil}
+import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 
 import scala.reflect.runtime.universe._
 
 /**
   */
 trait CompatBase {
-  def codecOf[A: TypeTag]: MessageCodec[A]             = MessageCodecFactory.defaultFactory.of[A]
-  def hasStringUnapplyConstructor(s: Surface): Boolean = ReflectTypeUtil.hasStringUnapplyConstructor(s)
-  def surfaceOfClass(cl: Class[_]): Surface            = ReflectSurfaceFactory.ofClass(cl)
+  def codecOf[A: TypeTag]: MessageCodec[A]  = MessageCodecFactory.defaultFactory.of[A]
+  def surfaceOfClass(cl: Class[_]): Surface = ReflectSurfaceFactory.ofClass(cl)
 }

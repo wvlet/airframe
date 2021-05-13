@@ -14,9 +14,9 @@
 package wvlet.airframe.codec
 import java.time.Instant
 import java.util.UUID
-
 import wvlet.airframe.codec.JavaStandardCodec.JavaEnumCodec
 import wvlet.airframe.metrics.TimeParser
+import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.airframe.surface.{JavaEnumSurface, Surface}
 
 import scala.util.Try
@@ -36,7 +36,7 @@ object Compat extends CompatBase {
     ): PartialFunction[Surface, MessageCodec[_]] = {
       case JavaEnumSurface(cl) =>
         JavaEnumCodec(cl)
-      case s if hasStringUnapplyConstructor(s) =>
+      case s if ReflectTypeUtil.hasStringUnapplyConstructor(s) =>
         new StringUnapplyCodec(s)
     }
   }
