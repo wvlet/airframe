@@ -148,7 +148,7 @@ case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
 
   def getAll(key: String): Seq[String] = {
     caseInsensitiveSearch(key)
-      .map { v: Any =>
+      .map { (v: Any) =>
         v match {
           case s: String                   => Seq(s)
           case lst: Seq[String @unchecked] => lst

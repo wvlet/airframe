@@ -689,6 +689,7 @@ lazy val http =
     .enablePlugins(BuildInfoPlugin)
     .in(file("airframe-http"))
     .settings(buildSettings)
+    .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe-http",
       description := "REST and RPC Framework",
@@ -859,7 +860,7 @@ lazy val benchmark =
       // publishing .tgz
       // publishPackArchiveTgz
     )
-    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, finagle, grpc, ulidJVM)
+    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, httpCodeGen, finagle, grpc, ulidJVM)
 
 lazy val fluentd =
   project
