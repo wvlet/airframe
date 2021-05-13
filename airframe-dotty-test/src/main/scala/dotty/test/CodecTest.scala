@@ -13,7 +13,7 @@
  */
 package dotty.test
 
-import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.log.LogSupport
 
 /**
@@ -23,9 +23,23 @@ object CodecTest extends LogSupport {
   case class A(id: Int, name: String)
 
   def run: Unit = {
+    {
+      val codec = MessageCodec.of[A]
+      val json  = codec.toJson(A(1, "leo"))
+      debug(json)
+      val a = MessageCodec.fromJson[A](json)
+      debug(a)
+      val json2 = MessageCodec.toJson(a)
+      debug(json2)
+    }
 
-    val codec = MessageCodec.of[A]
-    val json  = codec.toJson(A(1, "leo"))
-    info(json)
+    {
+      val f     = MessageCodecFactory.defaultFactory
+      val codec = f.of[A]
+      val json  = f.toJson(A(1, "leo"))
+      debug(json)
+      val a = f.fromJson[A](json)
+      debug(a)
+    }
   }
 }

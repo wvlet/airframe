@@ -45,7 +45,9 @@ case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageC
       }
   }
 
-  protected[codec] def ofSurface(surface: Surface, seen: Set[Surface] = Set.empty): MessageCodec[_] = {
+  def of(surface: Surface): MessageCodec[_] = ofSurface(surface)
+
+  def ofSurface(surface: Surface, seen: Set[Surface] = Set.empty): MessageCodec[_] = {
     // TODO Create a fast object codec with code generation (e.g., Scala macros)
     if (cache.contains(surface)) {
       cache(surface)
