@@ -132,7 +132,7 @@ case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
   }
 
   def get(key: String): Option[String] = {
-    caseInsensitiveSearch(key).flatMap { v: Any =>
+    caseInsensitiveSearch(key).flatMap { (v: Any) =>
       v match {
         case s: String                   => Some(s)
         case lst: Seq[String @unchecked] => Option(lst.head)

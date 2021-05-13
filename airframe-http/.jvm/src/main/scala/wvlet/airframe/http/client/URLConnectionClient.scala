@@ -86,21 +86,21 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
       val content = req.contentBytes
       if (content.nonEmpty) {
         conn.setDoOutput(true)
-        Control.withResource(conn.getOutputStream()) { out: OutputStream =>
+        Control.withResource(conn.getOutputStream()) { (out: OutputStream) =>
           out.write(content)
           out.flush()
         }
       }
 
       try {
-        Control.withResource(conn.getInputStream()) { in: InputStream =>
+        Control.withResource(conn.getInputStream()) { (in: InputStream) =>
           readResponse(conn, in)
         }
       } catch {
         case e: IOException if conn.getResponseCode != -1 =>
           // When the request fails, but the server still returns meaningful responses
           // (e.g., 404 NotFound throws FileNotFoundException)
-          Control.withResource(conn.getErrorStream()) { err: InputStream =>
+          Control.withResource(conn.getErrorStream()) { (err: InputStream) =>
             readResponse(conn, err)
           }
       }
