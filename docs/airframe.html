@@ -331,9 +331,8 @@ d1.add(d2)
 
     <span class="hljs-comment">// Creates a new child session</span>
     session.withChildSession(childDesign) { childSession =&gt;
-      childSession.build[<span class="hljs-type">X</span>] { x =&gt;
-         ...
-      }
+      <span class="hljs-keyword">val</span> x = childSession.build[<span class="hljs-type">X</span>]
+      ...
     }
   }
 }
