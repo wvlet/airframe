@@ -60,8 +60,8 @@ object JSONCodec extends MessageCodec[String] {
         p.packDouble(v)
       case JSONLong(l) =>
         p.packLong(l)
-      case other =>
-        throw new IllegalArgumentException(s"Unexpected json type: ${other}")
+      case null =>
+        throw new IllegalArgumentException(s"Unexpected json input: null")
     }
   }
 

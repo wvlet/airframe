@@ -16,12 +16,11 @@ package wvlet.airframe.codec
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.json.JSON.{JSONObject, JSONValue}
 import wvlet.airframe.json.UnexpectedEOF
-import wvlet.airframe.msgpack.spi._
+import wvlet.airframe.msgpack.spi.{InsufficientBufferException, MsgPack, Packer, Unpacker, Value}
+import wvlet.airframe.msgpack.{spi => am}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
-import scala.language.experimental.macros
-import scala.reflect.runtime.universe._
 import scala.util.{Failure, Success, Try}
 
 trait MessageCodec[A] extends LogSupport {
@@ -36,7 +35,7 @@ trait MessageCodec[A] extends LogSupport {
     * throw an IllegalArgumentException
     */
   def unpack(msgpack: MsgPack): A = {
-    val unpacker = MessagePack.newUnpacker(msgpack)
+    val unpacker = am.MessagePack.newUnpacker(msgpack)
     val v        = new MessageContext
     try {
       unpack(unpacker, v)
@@ -62,7 +61,7 @@ trait MessageCodec[A] extends LogSupport {
   // def unpackInt(u:MessageUnpacker) : Int
 
   def toMsgPack(v: A): Array[Byte] = {
-    val packer = MessagePack.newBufferPacker
+    val packer = am.MessagePack.newBufferPacker
     this match {
       case c: PackAsMapSupport[_] =>
         c.asInstanceOf[PackAsMapSupport[A]].packAsMap(packer, v)
@@ -73,7 +72,7 @@ trait MessageCodec[A] extends LogSupport {
   }
 
   private def toMsgpackMap(v: A): MsgPack = {
-    val packer = MessagePack.newBufferPacker
+    val packer = am.MessagePack.newBufferPacker
     this match {
       case c: PackAsMapSupport[_] =>
         c.asInstanceOf[PackAsMapSupport[A]].packAsMap(packer, v)
@@ -102,7 +101,7 @@ trait MessageCodec[A] extends LogSupport {
 
   def unpackMsgPack(msgpack: Array[Byte]): Option[A] = unpackMsgPack(msgpack, 0, msgpack.length)
   def unpackMsgPack(msgpack: Array[Byte], offset: Int, len: Int): Option[A] = {
-    val unpacker = MessagePack.newUnpacker(msgpack, offset, len)
+    val unpacker = am.MessagePack.newUnpacker(msgpack, offset, len)
     val v        = new MessageContext
     try {
       unpack(unpacker, v)
@@ -130,8 +129,8 @@ trait MessageCodec[A] extends LogSupport {
   }
 
   def fromJson(json: String): A = {
-    val msgpack  = MessagePack.fromJSON(json)
-    val unpacker = MessagePack.newUnpacker(msgpack)
+    val msgpack  = am.MessagePack.fromJSON(json)
+    val unpacker = am.MessagePack.newUnpacker(msgpack)
     val v        = new MessageContext
     unpack(unpacker, v)
     if (v.hasError) {
@@ -144,8 +143,8 @@ trait MessageCodec[A] extends LogSupport {
   }
 
   def fromJson(json: Array[Byte]): A = {
-    val msgpack  = MessagePack.fromJSON(json)
-    val unpacker = MessagePack.newUnpacker(msgpack)
+    val msgpack  = am.MessagePack.fromJSON(json)
+    val unpacker = am.MessagePack.newUnpacker(msgpack)
     val v        = new MessageContext
     unpack(unpacker, v)
     if (v.hasError) {
@@ -194,15 +193,6 @@ trait MessageValueCodec[A] extends MessageCodec[A] {
   }
 }
 
-object MessageCodec {
-  def of[A]: MessageCodec[A] = macro CodecMacros.codecOf[A]
+object MessageCodec extends ScalaCompat.MessageCodecBase {
   def ofSurface(s: Surface): MessageCodec[_] = MessageCodecFactory.defaultFactory.ofSurface(s)
-
-  def fromJson[A: TypeTag](json: String): A = {
-    MessageCodecFactory.defaultFactory.fromJson[A](json)
-  }
-
-  def toJson[A: TypeTag](obj: A): String = {
-    MessageCodecFactory.defaultFactory.toJson[A](obj)
-  }
 }

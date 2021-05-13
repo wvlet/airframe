@@ -36,7 +36,7 @@ case class UnionCodec(codecs: Seq[MessageCodec[_]]) extends MessageCodec[Union] 
     val msgPack = u.unpackValue.toMsgpack
     // Try each codec
     val found = codecs.find { x =>
-      x.unpackMsgPack(msgPack).map { a: Any =>
+      x.unpackMsgPack(msgPack).map { (a: Any) =>
           v.setObject(a)
         }.isDefined
     }.isDefined

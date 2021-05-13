@@ -624,6 +624,7 @@ lazy val codec =
     .crossType(CrossType.Pure)
     .in(file("airframe-codec"))
     .settings(buildSettings)
+    .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe-codec",
       description := "Airframe MessagePack-based codec"
@@ -1031,7 +1032,7 @@ lazy val dottyTest =
         else targetScalaVersions
       }
     )
-    .dependsOn(logJVM, surfaceJVM, airframeJVM)
+    .dependsOn(logJVM, surfaceJVM, airframeJVM, codecJVM)
 
 /**
   * AirSpec build definitions.
