@@ -16,14 +16,6 @@ private[di] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     */
   def to[B <: A]: DesignWithContext[B] = macro binderToSingletonOfImpl[B]
 
-  /**
-    * Bind an instance of B to A
-    *
-    * @tparam B
-    * @return
-    */
-  def toInstanceOf[B <: A]: DesignWithContext[B] = macro binderToImpl[B]
-
   def toEagerSingletonOf[B <: A]: DesignWithContext[B] = macro binderToEagerSingletonOfImpl[B]
 
   def toProvider[D1](factory: D1 => A): DesignWithContext[A] = macro bindToSingletonProvider1[A, D1]

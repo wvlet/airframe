@@ -14,20 +14,11 @@
 package wvlet.airframe.di
 
 import wvlet.airframe.di.Binder.Binding
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.di.DesignOptions._
+import wvlet.airframe.di.lifecycle.LifeCycleHookType
 import wvlet.airframe.di.tracing.{DIStats, Tracer}
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
-import Design._
-import DesignOptions._
-import wvlet.airframe.di.lifecycle.{
-  AFTER_START,
-  BEFORE_SHUTDOWN,
-  LifeCycleHookType,
-  ON_INIT,
-  ON_INJECT,
-  ON_SHUTDOWN,
-  ON_START
-}
 
 /**
   * Immutable airframe design.

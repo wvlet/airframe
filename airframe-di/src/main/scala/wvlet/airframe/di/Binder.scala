@@ -13,11 +13,10 @@
  */
 package wvlet.airframe.di
 
-import java.util.UUID
-
 import wvlet.airframe.di.DIException.CYCLIC_DEPENDENCY
 import wvlet.airframe.di.lifecycle.{AFTER_START, BEFORE_SHUTDOWN, ON_INIT, ON_INJECT, ON_SHUTDOWN, ON_START}
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.ulid.ULID
 
 object Binder {
   sealed trait Binding extends Serializable {
@@ -43,15 +42,15 @@ object Binder {
     def from: Surface                  = factory.from
     override def forSingleton: Boolean = provideSingleton
 
-    private val uuid: UUID = UUID.randomUUID()
+    private val ulid: ULID = ULID.newULID
 
-    override def hashCode(): Int = { uuid.hashCode() }
+    override def hashCode(): Int = { ulid.hashCode() }
     override def equals(other: Any): Boolean = {
       other match {
         case that: ProviderBinding =>
-          // Scala 2.12 generates Lambda for Function0, and the class might be generated every time, so
-          // comparing functionClasses doesn't work
-          (that canEqual this) && this.uuid == that.uuid
+          // Scala 2.12 generates Lambda for Function0, which generates the class every time.
+          // So instead of comparing functionClasses, compare the ULID.
+          (that canEqual this) && this.ulid == that.ulid
         case _ => false
       }
     }
@@ -118,21 +117,44 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
     design.addBinding[A](SingletonBinding(from, from, true, sourceCode))
   }
 
+  /**
+    * Called when the object is initialized for the first time
+    */
   def onInit(body: A => Unit): DesignWithContext[A] = {
     design.withLifeCycleHook[A](LifeCycleHookDesign(ON_INIT, from, body.asInstanceOf[Any => Unit]))
   }
+
+  /**
+    * Called when the object is injected
+    */
   def onInject(body: A => Unit): DesignWithContext[A] = {
     design.withLifeCycleHook[A](LifeCycleHookDesign(ON_INJECT, from, body.asInstanceOf[Any => Unit]))
   }
+
+  /**
+    * Called when a session using A has started
+    */
   def onStart(body: A => Unit): DesignWithContext[A] = {
     design.withLifeCycleHook[A](LifeCycleHookDesign(ON_START, from, body.asInstanceOf[Any => Unit]))
   }
+
+  /**
+    * Called right after the session start process has completed
+    */
   def afterStart(body: A => Unit): DesignWithContext[A] = {
     design.withLifeCycleHook[A](LifeCycleHookDesign(AFTER_START, from, body.asInstanceOf[Any => Unit]))
   }
+
+  /**
+    * Called right before the session will shutdown
+    */
   def beforeShutdown(body: A => Unit): DesignWithContext[A] = {
     design.withLifeCycleHook[A](LifeCycleHookDesign(BEFORE_SHUTDOWN, from, body.asInstanceOf[Any => Unit]))
   }
+
+  /**
+    * Called when the session shutdown process has started
+    */
   def onShutdown(body: A => Unit): DesignWithContext[A] = {
     design.withLifeCycleHook[A](LifeCycleHookDesign(ON_SHUTDOWN, from, body.asInstanceOf[Any => Unit]))
   }
