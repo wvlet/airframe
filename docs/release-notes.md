@@ -11,7 +11,9 @@ Airframe uses YY.MM.patch versioning scheme, so the version numbers match with t
 ### New Features
 
 - Added [airframe-parquet](https://wvlet.org/airframe/docs/airframe-parquet), Parquet columnar file reader and writer. So that you can read and write Scala objects at ease in columnar format.
-- Scala 3.0.0 support (Dropped 3.0.0-RC3) support. airframe-codec now supports Scala 3.0.0. [Milestone: Scala 3 Support](https://github.com/wvlet/airframe/issues/1077)   
+- Scala 3.0.0 support (Dropped 3.0.0-RC3 support).
+  - Now airframe-codec also supports Scala 3.0.0.
+  - See [Milestone: Scala 3 Support](https://github.com/wvlet/airframe/issues/1077) for the other Scala 3 migraiton work in progress
 
 
 - airframe-parquet: [#1621](https://github.com/wvlet/airframe/issues/1621) Support is null and is not null ([#1624](https://github.com/wvlet/airframe/issues/1624)) [[a0b4fbd28](https://github.com/wvlet/airframe/commit/a0b4fbd28)]
