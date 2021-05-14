@@ -17,7 +17,8 @@ import com.twitter.finagle.http.{Method, Request, Response}
 import com.twitter.util.Future
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http.HttpAccessLogWriter.JSONHttpAccessLogWriter
+import wvlet.airframe.http.router.{HttpAccessLogWriter, HttpAccessLogConfig}
+import wvlet.airframe.http.router.HttpAccessLogWriter.JSONHttpAccessLogWriter
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.http._
 import wvlet.airframe.surface.secret
