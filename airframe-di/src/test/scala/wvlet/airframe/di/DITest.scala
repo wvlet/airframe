@@ -16,7 +16,7 @@ import scala.util.Random
   */
 object DITest extends AirSpec {
 
-  test("Use wvlet.airframe.Design to define a new design") {
+  test("Use wvlet.airframe.di.Design to define a new design") {
     val d = Design.newDesign
 
     // For test coverage

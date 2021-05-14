@@ -161,6 +161,8 @@ lazy val root =
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   airframeMacrosJVM,
   airframeJVM,
+  diBaseJVM,
+  diJVM,
   surfaceJVM,
   logJVM,
   canvas,
@@ -201,6 +203,8 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   surfaceJS,
   airframeMacrosJS,
   airframeJS,
+  diBaseJS,
+  diJS,
   metricsJS,
   controlJS,
   ulidJS,
