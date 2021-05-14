@@ -14,6 +14,8 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.http.HttpFilterType
+
+import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
 
 /**

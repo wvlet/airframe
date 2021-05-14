@@ -127,7 +127,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         if (needsUpdate) {
           // Download airframe-http.tgz with coursier
           import coursier._
-          val moduleName = s"airframe-http_${scalaBinaryVersion.value}"
+          val moduleName = s"airframe-http-codegen_${scalaBinaryVersion.value}"
           val d = new Dependency(
             module = Module(
               Organization("org.wvlet.airframe"),

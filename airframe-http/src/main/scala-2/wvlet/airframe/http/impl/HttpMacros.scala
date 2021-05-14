@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.impl
 
+import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
 
 /**

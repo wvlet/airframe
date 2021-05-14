@@ -63,7 +63,7 @@ class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
             // If X is other type, convert X into an HttpResponse
             backend.mapF(
               result.asInstanceOf[F[_]],
-              { x: Any => responseHandler.toHttpResponse(route, request, futureValueSurface, x) }
+              { (x: Any) => responseHandler.toHttpResponse(route, request, futureValueSurface, x) }
             )
         }
       case cl: Class[_] if backend.isScalaFutureType(cl) =>

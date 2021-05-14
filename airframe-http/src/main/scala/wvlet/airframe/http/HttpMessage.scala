@@ -19,12 +19,11 @@ import java.util.Locale
 
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, Message, StringMessage}
-import wvlet.airframe.http.impl.HttpMacros
 import wvlet.airframe.msgpack.spi.MsgPack
 
 import scala.language.experimental.macros
 
-trait HttpMessage[Raw] {
+trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
   def header: HttpMultiMap
 
   // Accessors
@@ -83,20 +82,6 @@ trait HttpMessage[Raw] {
   def withMsgPack(msgPack: MsgPack): Raw = {
     copyWith(HttpMessage.byteArrayMessage(msgPack)).asInstanceOf[HttpMessage[Raw]].withContentTypeMsgPack
   }
-  def withJsonOf[A](a: A): Raw = macro HttpMacros.toJson[A]
-  def withJsonOf[A](a: A, codecFactory: MessageCodecFactory): Raw = macro HttpMacros.toJsonWithCodecFactory[A]
-  def withMsgPackOf[A](a: A): Raw = macro HttpMacros.toMsgPack[A]
-  def withMsgPackOf[A](a: A, codecFactory: MessageCodecFactory): Raw = macro HttpMacros.toMsgPackWithCodecFactory[A]
-
-  /**
-    * Set the content body using a given object. Encoding can be JSON or MsgPack based on Content-Type header.
-    */
-  def withContentOf[A](a: A): Raw = macro HttpMacros.toContentOf[A]
-
-  /**
-    * Set the content body using a given object and codec factory. Encoding can be JSON or MsgPack based on Content-Type header.
-    */
-  def withContentOf[A](a: A, codecFactory: MessageCodecFactory): Raw = macro HttpMacros.toContentWithCodecFactory[A]
 
   // Content reader
   def contentString: String = {

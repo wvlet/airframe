@@ -174,6 +174,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   msgpackJVM,
   rxJVM,
   httpJVM,
+  httpCodeGen,
   grpc,
   jsonJVM,
   rxHtmlJVM,
@@ -680,6 +681,7 @@ lazy val http =
     .enablePlugins(BuildInfoPlugin)
     .in(file("airframe-http"))
     .settings(buildSettings)
+    .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe-http",
       description := "REST and RPC Framework",
@@ -706,21 +708,27 @@ lazy val http =
     .dependsOn(airframe, rx, control, surface, json, codec)
 
 lazy val httpJVM = http.jvm
-  .enablePlugins(PackPlugin)
-  .settings(
-    packMain := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
-    packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13"),
-    publishPackArchiveTgz,
-    libraryDependencies ++= Seq(
-      // Use swagger-parser only for validating YAML format in tests
-      "io.swagger.parser.v3" % "swagger-parser" % "2.0.25" % Test,
-      // Swagger includes dependency to SLF4J, so redirect slf4j logs to airframe-log
-      "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION % Test
-    )
-  )
-  .dependsOn(launcher)
+lazy val httpJS  = http.js
 
-lazy val httpJS = http.js
+lazy val httpCodeGen =
+  project
+    .in(file("airframe-http-codegen"))
+    .enablePlugins(PackPlugin)
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-http-codegen",
+      description := "REST and RPC code generator",
+      packMain := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
+      packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13"),
+      libraryDependencies ++= Seq(
+        // Use swagger-parser only for validating YAML format in tests
+        "io.swagger.parser.v3" % "swagger-parser" % "2.0.25" % Test,
+        // Swagger includes dependency to SLF4J, so redirect slf4j logs to airframe-log
+        "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION % Test
+      ),
+      publishPackArchiveTgz
+    )
+    .dependsOn(httpJVM, launcher)
 
 lazy val grpc =
   project
@@ -847,7 +855,7 @@ lazy val benchmark =
       // publishing .tgz
       // publishPackArchiveTgz
     )
-    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, finagle, grpc, ulidJVM)
+    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, httpCodeGen, finagle, grpc, ulidJVM)
 
 lazy val fluentd =
   project
@@ -1004,14 +1012,14 @@ lazy val sbtAirframe =
       scriptedDependencies := {
         // Publish all dependencies necessary for running the scripted tests
         val depPublish = scriptedDependencies.value
-        val p1         = (httpJVM / packArchiveTgz / publishLocal).value
+        val p1         = (httpCodeGen / packArchiveTgz / publishLocal).value
         val p2         = publishLocal.all(ScopeFilter(inDependencies(finagle))).value
         val p3         = publishLocal.all(ScopeFilter(inDependencies(grpc))).value
         val p4         = publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
       },
       scriptedBufferLog := false
     )
-    .dependsOn(controlJVM, codecJVM, logJVM, httpJVM % Test)
+    .dependsOn(controlJVM, codecJVM, logJVM, httpCodeGen % Test)
 
 // Dotty test project
 lazy val dottyTest =
