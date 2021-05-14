@@ -383,8 +383,9 @@ lazy val di =
       jsBuildSettings
     )
     .dependsOn(
+      diBase,
       surface,
-      diBase
+      ulid
     )
 
 lazy val diJVM = di.jvm

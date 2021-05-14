@@ -15,7 +15,7 @@ package wvlet.airframe.di.lifecycle
 
 import java.util.concurrent.atomic.AtomicReference
 
-import wvlet.airframe.di.AirframeException.{MULTIPLE_SHUTDOWN_FAILURES, SHUTDOWN_FAILURE}
+import wvlet.airframe.di.DIException.{MULTIPLE_SHUTDOWN_FAILURES, SHUTDOWN_FAILURE}
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.di.tracing.Tracer
 import wvlet.airframe.di.{AirframeSession, Session}

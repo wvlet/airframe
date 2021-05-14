@@ -17,10 +17,17 @@ import wvlet.airframe.di.Binder.Binding
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.di.tracing.{DIStats, Tracer}
 import wvlet.log.LogSupport
-
 import Design._
 import DesignOptions._
-import wvlet.airframe.di.lifecycle.LifeCycleHookType
+import wvlet.airframe.di.lifecycle.{
+  AFTER_START,
+  BEFORE_SHUTDOWN,
+  LifeCycleHookType,
+  ON_INIT,
+  ON_INJECT,
+  ON_SHUTDOWN,
+  ON_START
+}
 
 /**
   * Immutable airframe design.
@@ -28,12 +35,12 @@ import wvlet.airframe.di.lifecycle.LifeCycleHookType
   * Design instance does not hold any duplicate bindings for the same Surface.
   */
 class Design(
-    private[airframe] val designOptions: DesignOptions,
-    private[airframe] val binding: Vector[Binding],
-    private[airframe] val hooks: Vector[LifeCycleHookDesign]
+    private[di] val designOptions: DesignOptions,
+    private[di] val binding: Vector[Binding],
+    private[di] val hooks: Vector[LifeCycleHookDesign]
 ) extends LogSupport
     with DesignImpl {
-  private[airframe] def getDesignConfig: DesignOptions = designOptions
+  private[di] def getDesignConfig: DesignOptions = designOptions
 
   /**
     * Used for casting itself as Design if returning DesignWithContext type is cumbersome
@@ -63,15 +70,15 @@ class Design(
     * @return
     */
   def minimize: Design = {
-    var seenBindingSurrace   = Set.empty[Surface]
+    var seenBindingSurface   = Set.empty[Surface]
     var minimizedBindingList = List.empty[Binding]
 
     // Later binding has higher precedence, so traverse bindings from the tail
     for (b <- binding.reverseIterator) {
       val surface = b.from
-      if (!seenBindingSurrace.contains(surface)) {
+      if (!seenBindingSurface.contains(surface)) {
         minimizedBindingList = b :: minimizedBindingList
-        seenBindingSurrace += surface
+        seenBindingSurface += surface
       }
     }
 
@@ -106,7 +113,7 @@ class Design(
     new DesignWithContext[A](new Design(designOptions, binding :+ b, hooks), b.from)
   }
 
-  private[airframe] def withLifeCycleHook[A](hook: LifeCycleHookDesign): DesignWithContext[A] = {
+  private[di] def withLifeCycleHook[A](hook: LifeCycleHookDesign): DesignWithContext[A] = {
     trace(s"withLifeCycleHook: ${hook}")
     new DesignWithContext[A](new Design(designOptions, binding, hooks = hooks :+ hook), hook.surface)
   }
@@ -123,6 +130,9 @@ class Design(
     new Design(designOptions.noLifecycleLogging, binding, hooks)
   }
 
+  /**
+    * Do not create default instances (i.e., binding must be defined for injecting objects)
+    */
   def noDefaultInstanceInjection: Design = {
     new Design(designOptions.noDefaultInstanceInjection, binding, hooks)
   }
@@ -135,7 +145,7 @@ class Design(
   }
 
   /**
-    * Do not initialize singletons for debugging
+    * Do not initialize singletons for debugging purpose
     */
   def withLazyMode: Design = {
     new Design(designOptions.withLazyMode, binding, hooks)
@@ -160,19 +170,19 @@ class Design(
     noOption(statsOptionKey)
   }
 
-  private[airframe] def withOption[A](key: String, value: A): Design = {
+  private[di] def withOption[A](key: String, value: A): Design = {
     new Design(designOptions.withOption(key, value), binding, hooks)
   }
 
-  private[airframe] def noOption[A](key: String): Design = {
+  private[di] def noOption[A](key: String): Design = {
     new Design(designOptions.noOption(key), binding, hooks)
   }
 
-  private[airframe] def getTracer: Option[Tracer] = {
+  private[di] def getTracer: Option[Tracer] = {
     designOptions.getOption[Tracer](tracerOptionKey)
   }
 
-  private[airframe] def getStats: Option[DIStats] = {
+  private[di] def getStats: Option[DIStats] = {
     designOptions.getOption[DIStats](statsOptionKey)
   }
 
@@ -225,7 +235,7 @@ object Design {
     * Empty design.
     * Using Vector as a binding holder for performance and serialization reason
     */
-  private[airframe] val blanc: Design = new Design(new DesignOptions(), Vector.empty, Vector.empty)
+  private[di] val blanc: Design = new Design(new DesignOptions(), Vector.empty, Vector.empty)
 
   // Empty design
   def empty: Design = blanc

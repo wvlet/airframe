@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.di.lifecycle
 
-import wvlet.log.AirframeLogManager
-
 import scala.collection.mutable
 import scala.sys.ShutdownHookThread
 

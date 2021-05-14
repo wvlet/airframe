@@ -17,7 +17,7 @@ import wvlet.airframe.surface.Surface
 
 import scala.language.existentials
 
-trait AirframeException extends Exception { self =>
+trait DIException extends Exception { self =>
 
   /**
     * Returns the exception type
@@ -26,25 +26,21 @@ trait AirframeException extends Exception { self =>
   override def toString: String = getMessage
 }
 
-object AirframeException {
-  case class MISSING_SESSION(cl: Class[_]) extends AirframeException {
-    override def getMessage: String =
-      s"[$getCode] Session is not found inside ${cl}. You may need to define ${cl} as a trait or implement DISupport to inject the current Session."
-  }
-  case class CYCLIC_DEPENDENCY(deps: List[Surface], sourceCode: SourceCode) extends AirframeException {
+object DIException {
+  case class CYCLIC_DEPENDENCY(deps: List[Surface], sourceCode: SourceCode) extends DIException {
     override def getMessage: String = s"[$getCode] ${deps.reverse.mkString(" -> ")} at ${sourceCode}"
   }
-  case class MISSING_DEPENDENCY(stack: List[Surface], sourceCode: SourceCode) extends AirframeException {
+  case class MISSING_DEPENDENCY(stack: List[Surface], sourceCode: SourceCode) extends DIException {
     override def getMessage: String =
       s"[$getCode] Binding for ${stack.head} at ${sourceCode} is not found: ${stack.mkString(" <- ")}"
   }
 
-  case class SHUTDOWN_FAILURE(cause: Throwable) extends AirframeException {
+  case class SHUTDOWN_FAILURE(cause: Throwable) extends DIException {
     override def getMessage: String = {
       s"[${getCode}] Failure at session shutdown: ${cause.getMessage}"
     }
   }
-  case class MULTIPLE_SHUTDOWN_FAILURES(causes: List[Throwable]) extends AirframeException {
+  case class MULTIPLE_SHUTDOWN_FAILURES(causes: List[Throwable]) extends DIException {
     override def getMessage: String = {
       s"[${getCode}] Multiple failures occurred during session shutdown:\n${causes.map(x => s"  - ${x.getMessage}").mkString("\n")}"
     }

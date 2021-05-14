@@ -13,12 +13,9 @@
  */
 package wvlet.airframe.di
 
-import wvlet.airframe.di.AirframeException.MISSING_SESSION
 import wvlet.airframe.di.lifecycle.LifeCycleManager
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
-
-import scala.util.Try
 
 /**
   * Session manages injected objects (e.g., Singleton)
@@ -31,7 +28,7 @@ trait Session extends SessionImpl with AutoCloseable {
   def name: String
 
   /**
-    * Id of the sesion (= object hash id)
+    * Id of the session (= object hash id)
     */
   def sessionId: Long
 
@@ -57,12 +54,23 @@ trait Session extends SessionImpl with AutoCloseable {
     */
   def getOrElse[A](surface: Surface, traitInstanceFactory: => A)(implicit sourceCode: SourceCode): A
 
-  private[airframe] def createNewInstanceOf[A](surface: Surface)(implicit sourceCode: SourceCode): A
-  private[airframe] def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A)(implicit
-      sourceCode: SourceCode
-  ): A
+  private[di] def createNewInstanceOf[A](surface: Surface)(implicit sourceCode: SourceCode): A
 
   def getInstanceOf(surface: Surface)(implicit sourceCode: SourceCode): Any
+
+  /**
+    * Create a child session with an additional design.
+    * The created session has its own singleton holder and a lifecycle manager.
+    *
+    * - Child sessions tries to delegate the object binding to the parent (or ancestor) session if no corresponding binding is defined in the child design.
+    * - If the parent and ancestors have no binding for a given type, it will creates a new object in the child session.
+    * - If the parent or an ancestor session already initialized a target binding, lifecycle hooks for that binding will not be called in the child session.
+    *
+    * @param d Additional design for child session
+    *          @param inheritParentDesignOptions if true (default) use the same design options (e.g., production mode, life cycle logging) with the parent design
+    * @return
+    */
+  def newChildSession(d: Design = Design.empty, inheritParentDesignOptions: Boolean = true): Session
 
   /**
     * Create a child session with an additional design.
@@ -71,29 +79,17 @@ trait Session extends SessionImpl with AutoCloseable {
   def newSharedChildSession(d: Design): Session
 
   /**
-    * Create a child session with an additional design.
-    * The created session has its own singleton holder and a lifecycle manager.
-    *
-    * - Child sessions tries to delegate the object binding to the parent (or ancestor) session if no corresponding binding is defined in the child design.
-    * - If the parent and ancestors ve no binding for a given type, it will creates a new object in the child session.
-    * - If the parent or an ancestor session already initialized a target binding, lifecycle hooks for that binding will not be called in the child session.
-    *
-    * @param d Additional design for child session
-    *          @param inheritParentDesignOptions if true (default) use the same design options (e.g., production mode, life cycle logging) with the parent design
-    * @return
-    */
-  def newChildSession(d: Design = Design.blanc, inheritParentDesignOptions: Boolean = true): Session
-
-  /**
     * Create a child session and execute the body part.
     * The created session has its own singleton holder and lifecycle manager.
+    *
+    * After exiting the body, the child session will be closed.
     *
     * @param d Additional design for child session.
     * @param body
     * @tparam U
     * @return
     */
-  def withChildSession[U](d: Design = Design.blanc)(body: Session => U): U = {
+  def withChildSession[U](d: Design = Design.empty)(body: Session => U): U = {
     val childSession = newChildSession(d)
     try {
       childSession.start
@@ -137,11 +133,5 @@ object Session extends LogSupport {
       session.getOrElse[A](surface, obj)(sourceCode)
     def createNewInstanceOf[A](surface: Surface)(implicit sourceCode: SourceCode): A =
       session.createNewInstanceOf[A](surface)(sourceCode)
-    def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A)(implicit sourceCode: SourceCode): A =
-      session.createNewInstanceOf[A](surface, traitInstanceFactory)(sourceCode)
-  }
-
-  private def isSessionType(c: Class[_]): Boolean = {
-    classOf[wvlet.airframe.di.Session].isAssignableFrom(c)
   }
 }

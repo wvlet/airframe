@@ -14,7 +14,7 @@
 package wvlet.airframe.di
 
 import java.util.concurrent.ConcurrentHashMap
-import wvlet.airframe.di.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
+import wvlet.airframe.di.DIException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.di.Binder._
 import wvlet.airframe.di.lifecycle.{CloseHook, EventHookHolder, Injectee, LifeCycleManager}
 import wvlet.airframe.di.tracing.{DIStats, DefaultTracer, Tracer}
@@ -51,7 +51,7 @@ private[di] class AirframeSession(
       }
       .getOrElse(new DIStats())
 
-  private[airframe] val tracer: Tracer = {
+  private[di] val tracer: Tracer = {
     // Find a tracer from parent
     parent
       .map(_.tracer)
@@ -89,7 +89,7 @@ private[di] class AirframeSession(
     b.result().toMap[Surface, Binding]
   }
 
-  private[airframe] def getSingletonOf(t: Surface): Option[Any] = {
+  private[di] def getSingletonOf(t: Surface): Option[Any] = {
     singletonHolder.get(t)
   }
 
@@ -145,7 +145,7 @@ private[di] class AirframeSession(
   }
 
   // Initialize eager singleton, pre-defined instances, eager singleton providers
-  private[airframe] def init: Unit = {
+  private[di] def init: Unit = {
     debug(s"[${name}] Initializing. Stage:${stage}")
     val production = stage == Stage.PRODUCTION
     if (production) {
@@ -173,20 +173,16 @@ private[di] class AirframeSession(
       .asInstanceOf[A]
   }
 
-  private[airframe] def createNewInstanceOf[A](surface: Surface)(implicit sourceCode: SourceCode): A = {
+  private[di] def createNewInstanceOf[A](surface: Surface)(implicit sourceCode: SourceCode): A = {
     debug(s"[${name}] Create dependency [${surface}] at ${sourceCode}")
     getInstance(surface, surface, sourceCode, this, create = true, List.empty).asInstanceOf[A]
-  }
-  private[airframe] def createNewInstanceOf[A](surface: Surface, factory: => A)(implicit sourceCode: SourceCode): A = {
-    debug(s"[${name}] Create dependency [${surface}] (with factory) at ${sourceCode}")
-    getInstance(surface, surface, sourceCode, this, create = true, List.empty, Some(() => factory)).asInstanceOf[A]
   }
 
   /**
     * Called when injecting an instance of the surface for the first time.
     * The other hooks (e.g., onStart, onShutdown) will be called in a separate step after the object is injected.
     */
-  private[airframe] def registerInjectee(bindTarget: Surface, tpe: Surface, injectee: Any): AnyRef = {
+  private[di] def registerInjectee(bindTarget: Surface, tpe: Surface, injectee: Any): AnyRef = {
     debug(s"[${name}] Init [${bindTarget} -> ${tpe}]: ${injectee}")
 
     stats.incrementInitCount(this, tpe)
@@ -241,12 +237,12 @@ private[di] class AirframeSession(
   }
 
   // type -> firstObservedTimeMillis
-  private[airframe] val observedTypes = new ConcurrentHashMap[Surface, Long]().asScala
+  private[di] val observedTypes = new ConcurrentHashMap[Surface, Long]().asScala
 
   /**
     * Find a session (including parent and ancestor parents) that owns t, that is, a session that can build t or has ever built t.
     */
-  private[airframe] def findOwnerSessionOf(t: Surface): Option[AirframeSession] = {
+  private[di] def findOwnerSessionOf(t: Surface): Option[AirframeSession] = {
     if (bindingTable.contains(t) || observedTypes.contains(t)) {
       Some(this)
     } else {
@@ -254,7 +250,7 @@ private[di] class AirframeSession(
     }
   }
 
-  private[airframe] def getInstance(
+  private[di] def getInstance(
       bindTarget: Surface,
       tpe: Surface,
       sourceCode: SourceCode,
@@ -378,7 +374,7 @@ private[di] class AirframeSession(
     result.asInstanceOf[AnyRef]
   }
 
-  private[airframe] def buildInstance(
+  private[di] def buildInstance(
       tpe: Surface,
       sourceCode: SourceCode,
       contextSession: AirframeSession,

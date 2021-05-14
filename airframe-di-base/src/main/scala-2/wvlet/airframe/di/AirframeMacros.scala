@@ -21,79 +21,16 @@ private[wvlet] object AirframeMacros {
   private[wvlet] class BindHelper[C <: Context](val c: C) {
     import c.universe._
 
-    def shouldGenerateTrait(t: c.Type): Boolean = {
-      val a = t.typeSymbol
-
-      // Find the public default constructor that has no arguments
-      val hasPublicDefaultConstructor = t.members
-        .find(_.isConstructor)
-        .map(_.asMethod).exists { m => m.isPublic && m.paramLists.size == 1 && m.paramLists(0).size == 0 }
-
-      val hasAbstractMethods = t.members.exists(x => x.isMethod && x.isAbstract && !x.isAbstractOverride)
-
-      val isTaggedType = t.typeSymbol.fullName.startsWith("wvlet.airframe.surface.tag.")
-
-      val isSealedType = t.typeSymbol.isClass && t.typeSymbol.asClass.isSealed
-
-      val shouldInstantiateTrait = if (!a.isStatic) {
-        // = Non static type
-        // If X is non static type (= local class or trait),
-        // we need to instantiate it first in order to populate its $outer variables
-
-        // We cannot instantiate path-dependent types
-        if (t.toString.contains("#")) {
-          false
-        } else {
-          hasPublicDefaultConstructor
-        }
-      } else if (a.isAbstract) {
-        // = Abstract type
-        // We cannot build abstract type X that has abstract methods, so bind[X].to[ConcreteType]
-        // needs to be found in the design
-
-        // If there is no abstract methods, it might be a trait without any method
-        !hasAbstractMethods
-      } else {
-        // We cannot instantiate any trait or class without the default constructor
-        // So binding needs to be found in the Design.
-        hasPublicDefaultConstructor
-      }
-
-      // Tagged type or sealed class binding should be found in Design
-      !isTaggedType && !isSealedType && shouldInstantiateTrait
-    }
-
     def bind(session: c.Tree, t: c.Type): c.Tree = {
-      q"""{
-            val session = ${session}
-            ${newInstanceBinder(t)}(session)
-          }"""
+      q"""{ ${newInstanceBinder(t)}(${session}) }"""
     }
 
     def newInstanceBinder(t: c.Type): c.Tree = {
-      if (shouldGenerateTrait(t)) {
-        q"""{
-             ss : wvlet.airframe.di.Session =>
-             ss.getOrElse(${surfaceOf(t)},
-              (new $t with wvlet.airframe.di.DISupport { def session = ss }).asInstanceOf[$t]
-             )
-            }"""
-      } else {
-        q"""{ session : wvlet.airframe.di.Session => session.get[$t](${surfaceOf(t)}) }"""
-      }
+      q"""{ session : wvlet.airframe.di.Session => session.get[$t](${surfaceOf(t)}) }"""
     }
 
     def createNewInstanceOf(t: c.Type): c.Tree = {
-      if (shouldGenerateTrait(t)) {
-        q"""{
-             ss : wvlet.airframe.di.Session =>
-             ss.createNewInstanceOf(${surfaceOf(t)},
-              (new $t with wvlet.airframe.di.DISupport { def session = ss }).asInstanceOf[$t]
-             )
-            }"""
-      } else {
-        q"""{ session : wvlet.airframe.di.Session => session.createNewInstanceOf[$t](${surfaceOf(t)}) }"""
-      }
+      q"""{ session : wvlet.airframe.di.Session => session.createNewInstanceOf[$t](${surfaceOf(t)}) }"""
     }
 
     def surfaceOf(t: c.Type): c.Tree = {
