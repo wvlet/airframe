@@ -14,7 +14,7 @@
 package wvlet.airframe.http.grpc
 
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.router.HttpAccessLogWriter
+import wvlet.airframe.http.HttpAccessLogWriter
 import wvlet.airframe.http.grpc.example.DemoApi
 import wvlet.airframe.http.grpc.example.DemoApi.DemoApiClient
 import wvlet.airframe.http.grpc.internal.GrpcRequestLogger

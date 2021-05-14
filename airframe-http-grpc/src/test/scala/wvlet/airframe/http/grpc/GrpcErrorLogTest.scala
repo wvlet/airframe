@@ -17,7 +17,7 @@ import wvlet.airframe.http.grpc.example.DemoApi
 import wvlet.airframe.http.grpc.example.DemoApi.DemoApiClient
 import wvlet.airframe.http.grpc.internal.GrpcRequestLogger
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.router.HttpAccessLogWriter
+import wvlet.airframe.http.HttpAccessLogWriter
 import wvlet.airspec.AirSpec
 import wvlet.airframe.rx.{Rx, RxStream}
 

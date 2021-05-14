@@ -21,8 +21,16 @@ import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.findCause
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter._
 import wvlet.airframe.http.finagle.{FinagleBackend, FinagleServer}
-import wvlet.airframe.http.{HttpBackend, HttpContext, HttpHeader, HttpMessage, HttpServerException, HttpStatus}
-import wvlet.airframe.http.router.{HttpAccessLogWriter, RPCCallContext}
+import wvlet.airframe.http.{
+  HttpAccessLogWriter,
+  HttpBackend,
+  HttpContext,
+  HttpHeader,
+  HttpMessage,
+  HttpServerException,
+  HttpStatus
+}
+import wvlet.airframe.http.router.RPCCallContext
 import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogTimestampFormatter
 

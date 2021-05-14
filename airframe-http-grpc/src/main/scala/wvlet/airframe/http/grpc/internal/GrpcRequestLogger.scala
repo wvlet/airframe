@@ -15,8 +15,9 @@ package wvlet.airframe.http.grpc.internal
 
 import io.grpc.{Attributes, Metadata, MethodDescriptor}
 import wvlet.airframe.http.BuildInfo
-import wvlet.airframe.http.router.{HttpAccessLogWriter, RPCCallContext}
+import wvlet.airframe.http.HttpAccessLogWriter
 import wvlet.airframe.http.grpc.GrpcContext
+import wvlet.airframe.http.router.RPCCallContext
 import wvlet.log.LogSupport
 
 import scala.collection.immutable.ListMap
