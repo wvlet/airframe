@@ -42,7 +42,8 @@ case class Router(
     localRoutes: Seq[Route] = Seq.empty,
     filterSurface: Option[Surface] = None,
     filterInstance: Option[HttpFilterType] = None
-) extends LogSupport {
+) extends router.RouterBase
+    with LogSupport {
   def isEmpty = this eq Router.empty
 
   def isLeafFilter = children.isEmpty && localRoutes.isEmpty
@@ -95,11 +96,6 @@ case class Router(
     routeMatcher
   }
 
-  /**
-    * Add methods annotated with @Endpoint to the routing table
-    */
-  def add[Controller]: Router = macro RouterMacros.add[Controller]
-
   def andThen(filter: HttpFilterType): Router =
     andThen(Router(filterInstance = Some(filter)))
 
@@ -113,8 +109,6 @@ case class Router(
         throw new IllegalStateException(s"The router ${this.toString} already has multiple child routers")
     }
   }
-
-  def andThen[Controller]: Router = macro RouterMacros.andThen[Controller]
 
   /**
     * Add a child and and return a new Router with this child node
