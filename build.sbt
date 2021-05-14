@@ -377,7 +377,8 @@ lazy val di =
     .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe-di",
-      description := "Dependency injection library tailored to Scala"
+      description := "Dependency injection library tailored to Scala",
+      libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION % Test
     )
     .jsSettings(
       jsBuildSettings

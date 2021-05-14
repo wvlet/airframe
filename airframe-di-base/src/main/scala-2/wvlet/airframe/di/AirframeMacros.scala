@@ -201,7 +201,7 @@ private[wvlet] object AirframeMacros {
       val to = ${h.surfaceOf(t)}
       if(self.from == to) {
          wvlet.log.Logger("wvlet.airframe.di.Binder").warn("Binding to the same type is not allowed: " + to.toString)
-         throw new wvlet.airframe.di.AirframeException.CYCLIC_DEPENDENCY(List(to), ${sourceCode(c)})
+         throw new wvlet.airframe.di.DIException.CYCLIC_DEPENDENCY(List(to), ${sourceCode(c)})
       }
       self.design.addBinding[${t}](wvlet.airframe.di.Binder.SingletonBinding(self.from, to, false, self.sourceCode))
     }"""
@@ -216,7 +216,7 @@ private[wvlet] object AirframeMacros {
       val to = ${h.surfaceOf(t)}
       if(self.from == to) {
          wvlet.log.Logger("wvlet.airframe.di.Binder").warn("Binding to the same type is not allowed: " + to.toString)
-         throw new wvlet.airframe.di.AirframeException.CYCLIC_DEPENDENCY(List(to), ${sourceCode(c)})
+         throw new wvlet.airframe.di.DIException.CYCLIC_DEPENDENCY(List(to), ${sourceCode(c)})
       }
       self.design.addBinding[${t}](wvlet.airframe.di.Binder.SingletonBinding(self.from, to, true, self.sourceCode))
     }"""
