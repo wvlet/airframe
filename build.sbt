@@ -174,6 +174,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   msgpackJVM,
   rxJVM,
   httpJVM,
+  httpRouter,
   httpCodeGen,
   grpc,
   jsonJVM,
@@ -710,6 +711,16 @@ lazy val http =
 lazy val httpJVM = http.jvm
 lazy val httpJS  = http.js
 
+lazy val httpRouter =
+  project
+    .in(file("airframe-http-router"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-http-router",
+      description := "Request routing library"
+    )
+    .dependsOn(httpJVM)
+
 lazy val httpCodeGen =
   project
     .in(file("airframe-http-codegen"))
@@ -728,7 +739,7 @@ lazy val httpCodeGen =
       ),
       publishPackArchiveTgz
     )
-    .dependsOn(httpJVM, launcher)
+    .dependsOn(httpRouter, launcher)
 
 lazy val grpc =
   project
