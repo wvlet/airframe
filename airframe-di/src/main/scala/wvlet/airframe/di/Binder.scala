@@ -109,6 +109,19 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
     design.addBinding[A](binding)
   }
 
+  /**
+    * Bind an instance lazily (no singleton). This is used internally for implementing bindFactory[I1 => A]
+    *
+    * @param any
+    * @return
+    */
+  def toLazyInstance(any: => A): DesignWithContext[A] = {
+    trace(s"binder toLazyInstance: ${from}")
+    design.addBinding[A](
+      ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), false, false, sourceCode)
+    )
+  }
+
   def toSingleton: DesignWithContext[A] = {
     design.addBinding[A](SingletonBinding(from, from, false, sourceCode))
   }
