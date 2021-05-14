@@ -8,6 +8,7 @@ on:
       - '**.scala'
       - '**.java'
       - '**.sbt'
+      - '.github/workflows/snapshot.yml'
     tag:
       - '!v*'
 
@@ -28,4 +29,6 @@ jobs:
         env:
           SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
           SONATYPE_PASSWORD: '${{ secrets.SONATYPE_PASS }}'
-        run: ./sbt publishSnapshots
+        run: |
+          ./sbt publishSnapshots
+          DOTTY=true ./sbt projectDotty/publish
