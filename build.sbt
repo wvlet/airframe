@@ -690,6 +690,7 @@ lazy val http =
       buildInfoPackage := "wvlet.airframe.http"
     )
     .jvmSettings(
+      libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION % Test,
       libraryDependencies ++= {
         CrossVersion.partialVersion(scalaVersion.value) match {
           case Some((2, major)) if major <= 12 =>
@@ -706,7 +707,7 @@ lazy val http =
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
-    .dependsOn(airframe, rx, control, surface, json, codec)
+    .dependsOn(rx, control, surface, json, codec)
 
 lazy val httpJVM = http.jvm
 lazy val httpJS  = http.js
@@ -719,7 +720,7 @@ lazy val httpRouter =
       name := "airframe-http-router",
       description := "Request routing library"
     )
-    .dependsOn(httpJVM)
+    .dependsOn(airframeJVM, httpJVM)
 
 lazy val httpCodeGen =
   project
