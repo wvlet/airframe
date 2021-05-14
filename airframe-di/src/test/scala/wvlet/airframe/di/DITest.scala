@@ -207,4 +207,159 @@ object DITest extends AirSpec {
     }
   }
 
+  class Nested(val nested1: Nested1)
+  class Nested1(val nested2: Nested2)
+  class Nested2()
+
+  test("support nested constructor injection") {
+    val n2 = new Nested2()
+    newSilentDesign
+      .bind[Nested2].toInstance(n2)
+      .build[Nested] { n =>
+        n.nested1.nested2 shouldBeTheSameInstanceAs n2
+      }
+  }
+
+  trait AbstractModule {
+    def hello: String
+  }
+
+  class ConcreteModule extends AbstractModule with LogSupport {
+    override def hello: String = "hello"
+  }
+
+  test("build abstract type that has concrete binding") {
+    val d = newSilentDesign
+      .bind[AbstractModule].to[ConcreteModule]
+    d.build[AbstractModule] { m =>
+      m.hello shouldBe "hello"
+    }
+  }
+
+  class NestedAbstractModule(val a: AbstractModule)
+
+  test("build nested abstract type that has concrete binding") {
+    val d = newSilentDesign
+      .bind[AbstractModule].to[ConcreteModule]
+
+    d.build[NestedAbstractModule] { n =>
+      n.a.hello shouldBe "hello"
+    }
+  }
+
+  test("build a trait bound to an instance") {
+    val d = newSilentDesign
+      .bind[AbstractModule].toInstance(new ConcreteModule())
+
+    d.build[AbstractModule] { n =>
+      n.hello shouldBe "hello"
+    }
+  }
+
+  trait NonAbstractTrait {}
+
+  test("report error when building a trait with no binding") {
+    val e = intercept[MISSING_DEPENDENCY] {
+      newSilentDesign.build[NonAbstractTrait] { m => }
+    }
+    e.stack.contains(Surface.of[NonAbstractTrait]) shouldBe true
+  }
+
+  object SingletonOfNonAbstractTrait extends NonAbstractTrait with LogSupport {
+    debug("Hello singleton")
+  }
+
+  test("build a trait to singleton") {
+    val d =
+      newSilentDesign
+        .bind[NonAbstractTrait].toInstance(SingletonOfNonAbstractTrait)
+
+    d.build[NonAbstractTrait] { m =>
+      m shouldBeTheSameInstanceAs SingletonOfNonAbstractTrait
+    }
+  }
+
+  class EagerSingletonWithInject(heavy: HeavyObject) extends LogSupport {
+    debug("initialized")
+    val initializedTime = System.nanoTime()
+  }
+
+  test("create single with inject eagerly") {
+    val start = System.nanoTime()
+    val d = newSilentDesign
+      .bind[EagerSingletonWithInject].toEagerSingleton
+    val s       = d.newSession.build[EagerSingletonWithInject]
+    val current = System.nanoTime()
+    s.initializedTime >= start shouldBe true
+    s.initializedTime <= current shouldBe true
+  }
+
+  class MyModule extends LogSupport {
+    val initCount  = new AtomicInteger(0)
+    val startCount = new AtomicInteger(0)
+    var closeCount = new AtomicInteger(0)
+
+    def init: Unit = {
+      debug("initialized")
+      initCount.incrementAndGet()
+    }
+    def start: Unit = {
+      debug("started")
+      startCount.incrementAndGet()
+    }
+
+    def close: Unit = {
+      debug("closed")
+      closeCount.incrementAndGet()
+    }
+  }
+
+  class LifeCycleExample(val module: MyModule)
+
+  class BindLifeCycleExample2(val module: MyModule) {}
+
+  test("support onInit and onShutdown") {
+    val d = newSilentDesign
+      .bind[MyModule].onInit(_.init).onShutdown(_.close)
+
+    val session = d.newSession
+    val e       = session.build[LifeCycleExample]
+    e.module.initCount.get() shouldBe 1
+    session.start
+    session.shutdown
+    e.module.closeCount.get() shouldBe 1
+  }
+
+  test("bind lifecycle") {
+    val session = newSilentDesign
+      .bind[MyModule]
+      .onInit(_.init)
+      .onStart(_.start)
+      .onShutdown(_.close)
+      .newSession
+
+    val e = session.build[BindLifeCycleExample2]
+    e.module.initCount.get() shouldBe 1
+
+    session.start
+    e.module.startCount.get() shouldBe 1
+
+    session.shutdown
+    e.module.closeCount.get() shouldBe 1
+  }
+
+  test("extend Design") {
+    val d1 = Design.newDesign
+      .bind[HeavyObject].toSingleton
+
+    val d2 = Design.newDesign
+      .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+
+    val d = d1 + d2
+
+    val session = d.noLifeCycleLogging.newSession
+    session.build[HeavyObject]
+    session.build[ConsoleConfig]
+  }
+
 }
