@@ -24,7 +24,7 @@ import wvlet.airframe.control.{Control, IO}
 import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
-import wvlet.airframe.http.router.HttpResponseCodec
+import wvlet.airframe.http.HttpResponseCodec
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 
 import scala.concurrent.duration.Duration

@@ -11,10 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.router
 
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http.router.RPCCallContext
 import wvlet.airframe.surface.{MethodSurface, Parameter, Surface}
 import wvlet.log.{AsyncHandler, LogFormatter, LogRecord, LogRotationHandler, LogTimestampFormatter}
 

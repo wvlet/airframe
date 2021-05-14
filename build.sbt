@@ -755,7 +755,7 @@ lazy val grpc =
         "org.slf4j"         % "slf4j-jdk14"       % SLF4J_VERSION % Test
       )
     )
-    .dependsOn(httpJVM, rxJVM)
+    .dependsOn(httpRouter, rxJVM)
 
 // Workaround for com.twitter:util-core_2.12:21.4.0 (depends on 1.1.2)
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-parser-combinators" % "always"
@@ -777,7 +777,7 @@ lazy val finagle =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(httpJVM)
+    .dependsOn(httpRouter)
 
 lazy val okhttp =
   project
