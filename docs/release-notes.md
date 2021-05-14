@@ -6,6 +6,42 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.5.0
+
+### New Features
+
+- Added [airframe-parquet](https://wvlet.org/airframe/docs/airframe-parquet), Parquet columnar file reader and writer. So that you can read and write Scala objects at ease in columnar format.
+- Scala 3.0.0 support (Dropped 3.0.0-RC3) support. airframe-codec now supports Scala 3.0.0. [Milestone: Scala 3 Support](https://github.com/wvlet/airframe/issues/1077)   
+
+
+- airframe-parquet: [#1621](https://github.com/wvlet/airframe/issues/1621) Support is null and is not null ([#1624](https://github.com/wvlet/airframe/issues/1624)) [[a0b4fbd28](https://github.com/wvlet/airframe/commit/a0b4fbd28)]
+- airframe-parquet: SQL query support ([#1620](https://github.com/wvlet/airframe/issues/1620)) [[87f79c128](https://github.com/wvlet/airframe/commit/87f79c128)]
+- airframe-parquet: Support column projection ([#1617](https://github.com/wvlet/airframe/issues/1617)) [[15878d24a](https://github.com/wvlet/airframe/commit/15878d24a)]
+- airframe-parquet: Support for row-group filter ([#1615](https://github.com/wvlet/airframe/issues/1615)) [[8381f44ae](https://github.com/wvlet/airframe/commit/8381f44ae)]
+- airframe-parquet: Add Parquet format reader and writer ([#1613](https://github.com/wvlet/airframe/issues/1613)) [[1fb076162](https://github.com/wvlet/airframe/commit/1fb076162)]
+- Upgrade to Scala 3.0.0 ([#1639](https://github.com/wvlet/airframe/issues/1639)) [[2e27fd3da](https://github.com/wvlet/airframe/commit/2e27fd3da)]
+- airframe-codec: Scala 3 support ([#1640](https://github.com/wvlet/airframe/issues/1640)) [[038fcc9b6](https://github.com/wvlet/airframe/commit/038fcc9b6)]
+- airframe-http-recorder: Add methods to dump HttpRecordStore as JSON and YAML ([#1622](https://github.com/wvlet/airframe/issues/1622)) [[9ed313c89](https://github.com/wvlet/airframe/commit/9ed313c89)]
+- airframe-http-finagle: Update finagle-core, finagle-http, ... to 21.4.0 ([#1603](https://github.com/wvlet/airframe/issues/1603)) [[9b5c59670](https://github.com/wvlet/airframe/commit/9b5c59670)]
+
+### Dependency Updates
+
+- Update scala-collection-compat to 2.4.4 ([#1645](https://github.com/wvlet/airframe/issues/1645)) [[c8559e99d](https://github.com/wvlet/airframe/commit/c8559e99d)]
+- Update scala-parallel-collections to 1.0.3 ([#1646](https://github.com/wvlet/airframe/issues/1646)) [[6612d15e5](https://github.com/wvlet/airframe/commit/6612d15e5)]
+- Update msgpack-core to 0.8.23 ([#1632](https://github.com/wvlet/airframe/issues/1632)) [[8bf5d1405](https://github.com/wvlet/airframe/commit/8bf5d1405)]
+- Update protobuf-java to 3.17.0 ([#1636](https://github.com/wvlet/airframe/issues/1636)) [[13e626854](https://github.com/wvlet/airframe/commit/13e626854)]
+- Update sbt-jmh to 0.4.2 ([#1637](https://github.com/wvlet/airframe/issues/1637)) [[8b66ea7f4](https://github.com/wvlet/airframe/commit/8b66ea7f4)]
+- Update jmh-core, jmh-generator-bytecode, ... to 1.31 ([#1634](https://github.com/wvlet/airframe/issues/1634)) [[716de222b](https://github.com/wvlet/airframe/commit/716de222b)]
+- Update sbt-scoverage to 1.8.0 ([#1629](https://github.com/wvlet/airframe/issues/1629)) [[93a818fed](https://github.com/wvlet/airframe/commit/93a818fed)]
+- Update sbt, sbt-dependency-tree, ... to 1.5.2 ([#1628](https://github.com/wvlet/airframe/issues/1628)) [[4e33b8046](https://github.com/wvlet/airframe/commit/4e33b8046)]
+- Update scalacheck to 1.15.4 ([#1611](https://github.com/wvlet/airframe/issues/1611)) [[ff35edc01](https://github.com/wvlet/airframe/commit/ff35edc01)]
+- Update trino-main to 356 ([#1605](https://github.com/wvlet/airframe/issues/1605)) [[a0f8fdd9c](https://github.com/wvlet/airframe/commit/a0f8fdd9c)]
+- Update scala-ulid to 1.0.7 ([#1600](https://github.com/wvlet/airframe/issues/1600)) [[f226d4448](https://github.com/wvlet/airframe/commit/f226d4448)]
+- Upgrade to Scala 2.12.13 ([#1495](https://github.com/wvlet/airframe/issues/1495)) [[f98b6b404](https://github.com/wvlet/airframe/commit/f98b6b404)]
+- Update postgresql to 42.2.20 ([#1597](https://github.com/wvlet/airframe/issues/1597)) [[8b3d7a187](https://github.com/wvlet/airframe/commit/8b3d7a187)]
+- Update sbt-mdoc to 2.2.20 ([#1593](https://github.com/wvlet/airframe/issues/1593)) [[ad79c2e78](https://github.com/wvlet/airframe/commit/ad79c2e78)]
+- Update airspec to 21.4.1 ([#1592](https://github.com/wvlet/airframe/issues/1592)) [[f124b10bc](https://github.com/wvlet/airframe/commit/f124b10bc)]
+
 ## 21.4.1
 
 Added Scala 3.0.0-RC3 support. This version has no functional difference with 21.4.0.
