@@ -32,16 +32,15 @@ object TaggedBindingTest extends AirSpec {
   )
 
   test("support tagged binding") {
-    pending("Tagged type within constructor doesn't work well in Scala.js")
+    val apple = Surface.of[Fruit @@ Apple]
+    debug(s"apple: ${apple}, alias:${apple.isAlias}")
 
-//    val apple = Surface.of[Fruit @@ Apple]
-//    debug(s"apple: ${apple}, alias:${apple.isAlias}")
-//
-//    val d = Design.newDesign
-//      .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
-//      .bind[Fruit @@ Banana].toInstance(Fruit("banana"))
-//      .bind[Fruit @@ Lemon].toProvider { (apple: Fruit @@ Apple) => Fruit(s"lemon+${apple.name}") }
-//
+    val d = Design.newDesign
+      .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
+      .bind[Fruit @@ Banana].toInstance(Fruit("banana"))
+      .bind[Fruit @@ Lemon].toProvider { (apple: Fruit @@ Apple) => Fruit(s"lemon+${apple.name}") }
+
+    pending("Tagged type within constructor doesn't work in Scala.js")
 //    d.build[TaggedBinding] { tagged: TaggedBinding =>
 //      tagged.apple.name shouldBe "apple"
 //      tagged.banana.name shouldBe "banana"
