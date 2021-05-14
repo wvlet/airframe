@@ -3,14 +3,14 @@ import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
 val SCALA_2_12          = "2.12.13"
 val SCALA_2_13          = "2.13.5"
-val SCALA_3_0           = "3.0.0-RC3"
+val SCALA_3_0           = "3.0.0"
 val targetScalaVersions = SCALA_2_13 :: SCALA_2_12 :: Nil
 val withDotty           = SCALA_3_0 :: targetScalaVersions
 
 val AIRSPEC_VERSION                 = "21.4.1"
 val SCALACHECK_VERSION              = "1.15.4"
 val MSGPACK_VERSION                 = "0.8.23"
-val SCALA_PARSER_COMBINATOR_VERSION = "1.2.0-RC2"
+val SCALA_PARSER_COMBINATOR_VERSION = "2.0.0"
 val SQLITE_JDBC_VERSION             = "3.34.0"
 val SLF4J_VERSION                   = "1.7.30"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
@@ -376,14 +376,6 @@ def dottyCrossBuildSettings(prefix: String): Seq[Setting[_]] = {
         case _ =>
           (Test / unmanagedSourceDirectories).value
       }
-    },
-    libraryDependencies ++= {
-      scalaBinaryVersion.value match {
-        case v if v.startsWith("3.") =>
-          Seq.empty
-        case _ =>
-          Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value)
-      }
     }
   )
 }
@@ -745,6 +737,9 @@ lazy val grpc =
       )
     )
     .dependsOn(httpJVM, rxJVM)
+
+// Workaround for com.twitter:util-core_2.12:21.4.0 (depends on 1.1.2)
+ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-parser-combinators" % "always"
 
 lazy val finagle =
   project
