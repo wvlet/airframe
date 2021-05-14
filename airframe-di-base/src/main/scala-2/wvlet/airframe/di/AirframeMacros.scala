@@ -17,8 +17,8 @@ import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
 import scala.reflect.macros.{blackbox => sm}
 
-private[wvlet] object AirframeMacros {
-  private[wvlet] class BindHelper[C <: Context](val c: C) {
+private[airframe] object AirframeMacros {
+  private[airframe] class BindHelper[C <: Context](val c: C) {
     import c.universe._
 
     def bind(session: c.Tree, t: c.Type): c.Tree = {
