@@ -7,7 +7,7 @@ import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http._
-import wvlet.airframe.http.router.HttpResponseCodec
+import wvlet.airframe.http.HttpResponseCodec
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.log.LogSupport
 
