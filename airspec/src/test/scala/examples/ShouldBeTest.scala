@@ -95,7 +95,7 @@ class ShouldBeTest extends AirSpec {
     }
   }
 
-  def `support defined/empty for Seq[A]` : Unit = {
+  test("support defined/empty for Seq[A]") {
     Seq() shouldBe empty
     Seq() shouldNotBe defined
 

@@ -71,7 +71,7 @@ class SingletonTest extends AirSpec {
     newDesign
       .bind[TraitCounter].toInstance(new AtomicInteger(0))
 
-  def `bind singleton with bind[X]` : Unit = {
+  test("bind singleton with bind[X]") {
     val session = d.newSession
 
     val a = session.build[A]

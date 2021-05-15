@@ -136,7 +136,7 @@ class RouterTest extends AirSpec {
     r6 shouldNotBe defined
   }
 
-  def `call registered methods`(session: Session): Unit = {
+  test("call registered methods") { (session: Session) =>
     val router = Router.of[ControllerExample]
 
     val s = new ControllerExample {}

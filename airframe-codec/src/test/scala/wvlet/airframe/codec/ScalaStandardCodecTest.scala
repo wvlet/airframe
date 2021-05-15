@@ -22,7 +22,7 @@ import wvlet.airframe.ulid.ULID
 class ScalaStandardCodecTest extends CodecSpec {
   scalaJsSupport
 
-  def `support Option[A]` : Unit = {
+  test("support Option[A]") {
     val v = Some("hello")
     roundtrip(Surface.of[Option[String]], Some("hello"))
     roundtrip[Option[String]](Surface.of[Option[String]], None)
@@ -121,7 +121,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     }
   }
 
-  def `Either Left should produce Array[JSON objects, null]` : Unit = {
+  test("Either Left should produce Array[JSON objects, null]") {
     val codec = MessageCodec.of[Either[Throwable, String]]
     val et    = Left(new IllegalArgumentException("test exception"))
     val json  = codec.toJson(et)
@@ -173,7 +173,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     }
   }
 
-  def `Either Right should produce JSONArray[null, JSONValue]` : Unit = {
+  test("Either Right should produce JSONArray[null, JSONValue]") {
     val codec = MessageCodec.of[Either[Throwable, String]]
     val json  = codec.toJson(Right("Hello Either"))
     JSON.parse(json) match {

@@ -53,7 +53,7 @@ class CollectionCodecTest extends CodecSpec {
     codec.unpackMsgPack(msgpack) shouldBe Some(Seq(1, 2, 3))
   }
 
-  def `support mapping a single string for Seq[X]` : Unit = {
+  test("support mapping a single string for Seq[X]") {
     val codec   = MessageCodec.of[Seq[Int]]
     val msgpack = StringCodec.toMsgPack("1")
     codec.fromMsgPack(msgpack) shouldBe Seq(1)
@@ -100,7 +100,7 @@ class CollectionCodecTest extends CodecSpec {
     )
   }
 
-  def `support JSON to Array[Any]` : Unit = {
+  test("support JSON to Array[Any]") {
     val codec    = MessageCodec.of[Array[Any]]
     val arr      = codec.fromJson("""[1, "a", true]""")
     val expected = Array(1, "a", true)

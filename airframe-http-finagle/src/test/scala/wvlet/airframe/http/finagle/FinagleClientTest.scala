@@ -113,7 +113,7 @@ class FinagleClientTest extends AirSpec {
       .withRouter(r)
       .designWithSyncClient
 
-  def `convert HTTP responses into objects`(client: FinagleSyncClient): Unit = {
+  test("convert HTTP responses into objects") { (client: FinagleSyncClient) =>
     def addRequestId(request: Request): Request = {
       request.headerMap.put("X-Request-Id", "10")
       request
@@ -202,7 +202,7 @@ class FinagleClientTest extends AirSpec {
     client.deleteRaw("/user/1", addRequestId).contentString shouldBe """{"id":1,"name":"xxx","requestId":"10"}"""
   }
 
-  def `fail request`(server: FinagleServer): Unit = {
+  test("fail request") { (server: FinagleServer) =>
     withResource(
       Finagle.client
         .withMaxRetry(3)

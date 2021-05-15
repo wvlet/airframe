@@ -74,7 +74,7 @@ class CorsFilterTest extends AirSpec {
       .add(finagleSyncClientDesign)
   }
 
-  def `support CORS filter`(client: FinagleSyncClient): Unit = {
+  test("support CORS filter") { (client: FinagleSyncClient) =>
     val resp = client.get[String]("/")
     debug(resp)
   }

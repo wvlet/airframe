@@ -45,7 +45,7 @@ class MetricsCodecTest extends AirSpec {
     }
   }
 
-  def `support Zero.of[DataSize]` : Unit = {
+  test("support Zero.of[DataSize]") {
     val z = Zero.zeroOf(Surface.of[DataSize])
     z shouldBe DataSize(0)
   }
@@ -74,7 +74,7 @@ class MetricsCodecTest extends AirSpec {
     }
   }
 
-  def `support Zero.of[ElapsedTime]` : Unit = {
+  test("support Zero.of[ElapsedTime]") {
     val z = Zero.zeroOf(Surface.of[ElapsedTime])
     z shouldBe ElapsedTime.succinctMillis(0)
   }
@@ -103,7 +103,7 @@ class MetricsCodecTest extends AirSpec {
     }
   }
 
-  def `support Zero.of[Count]` : Unit = {
+  test("support Zero.of[Count]") {
     val z = Zero.zeroOf(Surface.of[Count])
     z shouldBe Count(0)
   }

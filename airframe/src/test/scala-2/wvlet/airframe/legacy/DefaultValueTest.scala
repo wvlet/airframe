@@ -28,7 +28,7 @@ class DefaultValueTest extends AirSpec {
   scalaJsSupport
 
   import DefaultValueTest._
-  def `populate default values`(b: B): Unit = {
+  test("populate default values") { (b: B) =>
     b.a shouldBe A()
   }
 }

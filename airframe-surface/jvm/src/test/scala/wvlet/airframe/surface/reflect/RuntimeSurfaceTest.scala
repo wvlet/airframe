@@ -70,7 +70,7 @@ class RuntimeSurfaceTest extends SurfaceSpec {
     m.findAnnotationOf[secret] shouldBe defined
   }
 
-  def `Find surface from Class[_]` : Unit = {
+  test("Find surface from Class[_]") {
     checkPrimitive(RuntimeSurface.of[Boolean], "Boolean")
     checkPrimitive(RuntimeSurface.of[Byte], "Byte")
     checkPrimitive(RuntimeSurface.of[Short], "Short")

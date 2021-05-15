@@ -68,7 +68,7 @@ class ParallelTest extends AirSpec {
     assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
-  def `handle errors in run()` : Unit = {
+  test("handle errors in run()") {
     Parallel.stats.startedTasks.set(0)
     Parallel.stats.finishedTasks.set(0)
 
@@ -91,7 +91,7 @@ class ParallelTest extends AirSpec {
     assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
-  def `handle errors in iterate()` : Unit = {
+  test("handle errors in iterate()") {
     Parallel.stats.startedTasks.set(0)
     Parallel.stats.finishedTasks.set(0)
 
@@ -145,7 +145,7 @@ class ParallelTest extends AirSpec {
     assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
-  def `breaking execution in run()` : Unit = {
+  test("breaking execution in run()") {
     Parallel.stats.startedTasks.set(0)
     Parallel.stats.finishedTasks.set(0)
 
@@ -161,7 +161,7 @@ class ParallelTest extends AirSpec {
     assert(Parallel.stats.finishedTasks.get() == 2)
   }
 
-  def `breaking execution in iterate()` : Unit = {
+  test("breaking execution in iterate()") {
     Parallel.stats.startedTasks.set(0)
     Parallel.stats.finishedTasks.set(0)
 

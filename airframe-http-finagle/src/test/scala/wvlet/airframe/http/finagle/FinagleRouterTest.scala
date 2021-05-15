@@ -138,17 +138,17 @@ class FinagleRouterTest extends AirSpec {
       .bind[FinagleClient].toProvider { server: FinagleServer => Finagle.client.noRetry.newClient(server.localAddress) }
   }
 
-  def `support Router.of[X] and Router.add[X]` : Unit = {
+  test("support Router.of[X] and Router.add[X]") {
     // sanity test
     val r1 = Router.add[MyApi]
     val r2 = Router.of[MyApi]
   }
 
-  def `support production mode`(server: FinagleServer): Unit = {
+  test("support production mode") { (server: FinagleServer) =>
     // #432: Just need to check the startup of finagle without MISSING_DEPENDENCY error
   }
 
-  def `test various responses`(context: AirSpecContext): Unit = {
+  test("test various responses") { (context: AirSpecContext) =>
     context.test[ResponseTest]
   }
 
@@ -323,13 +323,13 @@ class FinagleRouterTest extends AirSpec {
       result.statusCode shouldBe HttpStatus.NoContent_204.code
     }
 
-    def `support scala.concurrent.Future[X]` : Unit = {
+    test("support scala.concurrent.Future[X]") {
       val result = Await.result(client.send(Request(Method.Get, "/v1/scala-future")))
       result.statusCode shouldBe HttpStatus.Ok_200.code
       result.contentString shouldBe "Hello Scala Future"
     }
 
-    def `support scala.concurrent.Future[Response]` : Unit = {
+    test("support scala.concurrent.Future[Response]") {
       val result = Await.result(client.send(Request(Method.Get, "/v1/scala-future2")))
       result.statusCode shouldBe HttpStatus.Ok_200.code
       result.contentString shouldBe "Hello Scala Future"

@@ -506,7 +506,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     v shouldBe null
   }
 
-  def `fromString(str)` : Unit = {
+  test("fromString(str)") {
     LongCodec.fromString("1234") shouldBe 1234L
   }
 }

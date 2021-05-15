@@ -34,7 +34,7 @@ class HttpParamTest extends AirSpec {
     Finagle.server.withRouter(r).designWithSyncClient
   }
 
-  def `support Option[Int]`(client: FinagleSyncClient): Unit = {
+  test("support Option[Int]") { (client: FinagleSyncClient) =>
     val result = client.get[Option[Int]]("/api/get")
     result shouldBe empty
   }

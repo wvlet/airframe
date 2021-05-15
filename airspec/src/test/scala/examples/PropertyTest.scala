@@ -23,18 +23,18 @@ class PropertyTest extends AirSpec with PropertyCheck {
 
   test("hello") {}
 
-  def `forAll(Int)` : Unit = {
+  test("forAll(Int)") {
     forAll { i: Int => i.isValidInt shouldBe true }
   }
 
-  def `forAll(Int, String)` : Unit = {
+  test("forAll(Int, String)") {
     forAll { (i: Int, s: String) =>
       i.isValidInt shouldBe true
       s != null shouldBe true
     }
   }
 
-  def `forAll(Int, Float, String)` : Unit = {
+  test("forAll(Int, Float, String)") {
     forAll { (i: Int, f: Float, s: String) =>
       i.isValidInt shouldBe true
       s != null shouldBe true

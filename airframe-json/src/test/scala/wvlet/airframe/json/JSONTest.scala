@@ -25,7 +25,7 @@ class JSONTest extends AirSpec {
     json.toJSONValue shouldBe JSON.parse(json)
   }
 
-  def `JSONObject.get() and JSONArray.apply()` : Unit = {
+  test("JSONObject.get() and JSONArray.apply()") {
     val json: Json = """{"user": [{ "id": 1 }, { "id": 2 }]}"""
     val jsonValue  = JSON.parse(json)
 

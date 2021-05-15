@@ -43,7 +43,7 @@ class SQLAnalyzerTest extends AirSpec {
     plan.outputAttributes.mkString(",") shouldBe "id:long,name:string"
   }
 
-  def `resolve select *` : Unit = {
+  test("resolve select *") {
     val plan = SQLAnalyzer.analyze("select * from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.mkString(",") shouldBe "id:long,name:string,address:string"

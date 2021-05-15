@@ -73,7 +73,7 @@ class MessageCodecTest extends AirSpec {
     assert(json == """{"id":1,"name":"leo","flag":true,"number":0.01,"arr":[0,1,2],"nil":null}""")
   }
 
-  def `support aliased Seq[Int]` : Unit = {
+  test("support aliased Seq[Int]") {
     val codec = MessageCodec.of[MessageCodecTest.SeqInt]
     val json  = codec.toJson(Seq(1, 2, 3))
     json shouldBe "[1,2,3]"

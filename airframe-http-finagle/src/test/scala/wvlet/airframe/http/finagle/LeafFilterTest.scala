@@ -38,7 +38,7 @@ class LeafFilterTest extends AirSpec {
       .add(finagleSyncClientDesign)
   }
 
-  def `support leaf filters`(client: FinagleSyncClient): Unit = {
+  test("support leaf filters") { (client: FinagleSyncClient) =>
     client.get[String]("/") shouldBe "leaf filter"
   }
 
