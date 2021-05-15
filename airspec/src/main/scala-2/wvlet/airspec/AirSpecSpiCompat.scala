@@ -17,16 +17,12 @@ private[airspec] trait AirSpecSpiCompat {
     * explicitly create Seq[MethodSurface] at compile-time.
     * This method is a helper method to populate methodSurfaces automatically.
     */
-  protected def scalaJsSupport: Unit = macro AirSpecSpiCompat.scalaJsSupportImpl
-}
-
-private[airspec] object AirSpecSpiCompat {
-  def scalaJsSupportImpl(c: sm.Context): c.Tree = {
-    import c.universe._
-    val t = c.prefix.actualType.typeSymbol
-    q"if(wvlet.airspec.compat.isScalaJs) { ${c.prefix}._methodSurfaces = wvlet.airframe.surface.Surface.methodsOf[${t}] }"
+  protected def scalaJsSupport: Unit = {
+    wvlet.log
+      .Logger("wvlet.airspec").warn(
+        s"""scalaJsSupport is deprecated. Use test("...") syntax: ${this.getClass.getName}"""
+      )
   }
-
 }
 
 class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design) extends wvlet.log.LogSupport {
@@ -76,19 +72,4 @@ object AirSpecTestBuilder extends wvlet.log.LogSupport {
       v.spec.addLocalTestDef(AirSpecDefF5(v.name, v.design, d1, d2, d3, d4, d5, r, body))
     }
   }
-}
-
-trait AirSpecContextCompat {
-
-  /**
-    * Build an instance of type A using Airframe DI, and run the test method within A.
-    * @return the generated instance of A
-    */
-  def test[A <: AirSpecBase]: A = macro AirSpecMacros.buildAndRunImpl[A]
-
-  /**
-    * Run the test methods in a given AirSpec instance
-    */
-  def run[A <: AirSpecBase](spec: A): A = macro AirSpecMacros.runSpecImpl[A]
-
 }

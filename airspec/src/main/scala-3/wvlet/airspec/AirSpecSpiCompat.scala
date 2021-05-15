@@ -14,24 +14,8 @@ private[airspec] trait AirSpecSpiCompat { self: AirSpecSpi =>
     * explicitly create Seq[MethodSurface] at compile-time.
     * This method is a helper method to populate methodSurfaces automatically.
     */
-  protected def scalaJsSupport: Unit = ???
+  //protected def scalaJsSupport: Unit = ???
 }
-
-private[airspec] object AirSpecSpiCompat {
-  import scala.quoted._
-
-//  def scalaJsSupportImpl(self: Expr[AirSpecSpi])(using Quotes): Expr[Unit] = {
-//    '{ if(${self}.isScalaJs) {
-//        ${self}._methodSurfaces = Surface.methodsOf[A]
-//      }
-//    }
-//    import c.universe._
-//    val t = c.prefix.actualType.typeSymbol
-//    q"if(wvlet.airspec.compat.isScalaJs) { ${c.prefix}._methodSurfaces = wvlet.airframe.surface.Surface.methodsOf[${t}] }"
-//  }
-//
-}
-
 
 class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design) extends wvlet.log.LogSupport {
   inline def apply[R](body: => R): Unit = ${ AirSpecMacros.test0Impl[R]('this, 'body) }
@@ -81,21 +65,6 @@ object AirSpecTestBuilder extends wvlet.log.LogSupport {
   }
 }
 
-
-trait AirSpecContextCompat {
-
-  /**
-    * Build an instance of type A using Airframe DI, and run the test method within A.
-    * @return the generated instance of A
-    */
-  def test[A <: AirSpecBase]: A = ???
-
-  /**
-    * Run the test methods in a given AirSpec instance
-    */
-  def run[A <: AirSpecBase](spec: A): A = ???
-
-}
 
 private[airspec] object AirSpecMacros {
   import scala.quoted._

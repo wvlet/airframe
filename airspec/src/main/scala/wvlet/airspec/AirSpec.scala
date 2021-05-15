@@ -61,25 +61,8 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
   protected def test(name: String, design: Design = Design.empty): AirSpecTestBuilder =
     new AirSpecTestBuilder(this, name, design)
 
-  /*
-   * Design note: Ideally we should list test methods just by using the name of classes implementing AirSpecSpi without
-   * instantiating test instances. However, this was impossible in Scala.js, which has only limited reflection support.
-   * So we are using scalaJsSupport method.
-   *
-   * If we don't need to support Scala.js, we will just use RuntimeSurface to get a list of test methods.
-   */
-  protected var _methodSurfaces: Seq[MethodSurface] = compat.methodSurfacesOf(this.getClass)
   private[airspec] def testDefinitions: Seq[AirSpecDef] = {
-    val functionTestMethods = AirSpecSpi.collectTestMethods(_methodSurfaces)
-    if (functionTestMethods.nonEmpty) {
-      val l = wvlet.log.Logger("wvlet.airspec")
-      functionTestMethods.collect { case m: MethodAirSpecDef =>
-        l.warn(
-          s"""Using public functions as tests is deprecated since AirSpec 21.5.1. Use test("...") syntax instead: def ${m.methodSurface.name} in ${m.methodSurface.owner}"""
-        )
-      }
-    }
-    functionTestMethods ++ _localTestDefs.reverse
+    _localTestDefs.reverse
   }
 
   private[airspec] var specName: String = {
@@ -122,9 +105,6 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
 }
 
 private[airspec] object AirSpecSpi {
-  private[airspec] def collectTestMethods(methodSurfaces: Seq[MethodSurface]): Seq[AirSpecDef] = {
-    methodSurfaces.filter(m => m.isPublic).map(x => MethodAirSpecDef(x))
-  }
 
   /**
     * This wrapper is used for accessing protected methods in AirSpec
