@@ -195,6 +195,8 @@ class ValueTest extends AirSpec with PropertyCheck {
     intercept[IntegerOverflowException] {
       newInteger(Integer.MIN_VALUE - 1.toLong).asInt
     }
+    // Workaround for https://github.com/wvlet/airframe/issues/1661
+    true
   }
 
   test("escape special characters") {

@@ -61,5 +61,7 @@ class JSONParserTest extends AirSpec {
     intercept[IntegerOverflow] {
       JSON.parseAny("-9223372036854775809")
     }
+    // Workaround for "Referring to non-existent method constructor java.math.BigInteger.<init>([byte,int,int)void error"
+    true
   }
 }

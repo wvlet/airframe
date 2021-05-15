@@ -58,6 +58,11 @@ object Zero extends LogSupport {
       case Primitive.Char    => 0.toChar
     }
 
+  private def zeroOfJavaPrimitives: ZeroValueFactory = {
+    case s if s.rawType == classOf[BigInt]               => BigInt(0)
+    case s if s.rawType == classOf[java.math.BigInteger] => java.math.BigInteger.ZERO
+  }
+
   private def zeroOfRegisteredTypes: ZeroValueFactory = {
     case t if preregisteredZeroInstance.contains(t) =>
       preregisteredZeroInstance(t)
@@ -116,6 +121,7 @@ object Zero extends LogSupport {
 
   private val factory: ZeroValueFactory =
     zeroOfPrimitives orElse
+      zeroOfJavaPrimitives orElse
       zeroOfRegisteredTypes orElse
       zeroOfArray orElse
       zeroOfTuple orElse

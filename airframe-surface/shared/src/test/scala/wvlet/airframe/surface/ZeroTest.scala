@@ -16,6 +16,8 @@ package wvlet.airframe.surface
 
 import wvlet.airframe.surface.tag.@@
 
+import java.math.BigInteger
+
 /**
   */
 class ZeroTest extends SurfaceSpec {
@@ -45,6 +47,11 @@ class ZeroTest extends SurfaceSpec {
     zeroCheck(Surface.of[Float], 0f)
     zeroCheck(Surface.of[Double], 0.0)
     zeroCheck(Surface.of[String], "")
+
+    // TODO: Surface.of these types fail in Scala.js
+    //zeroCheck(Surface.of[BigInt], BigInt(0))
+    //zeroCheck(Surface.of[BigInteger], BigInteger.ZERO)
+    true
   }
 
   test("support arrays") {
@@ -65,6 +72,7 @@ class ZeroTest extends SurfaceSpec {
     zeroCheck(Surface.of[AnyRef], null)
     zeroCheck(Surface.of[Any], null)
     zeroCheck(Surface.of[Option[String]], None)
+    true
   }
 
   test("support case classes") {
