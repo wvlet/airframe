@@ -45,7 +45,7 @@ class FinagleDesignTest extends AirSpec {
       }
   }
 
-  def `no-server design` = {
+  test("no-server design") {
     val config = newConfig
     finagleBaseDesign
       .bind[FinagleServerConfig].toInstance(config)
@@ -60,7 +60,7 @@ class FinagleDesignTest extends AirSpec {
       }
   }
 
-  def `build a server from factory` = {
+  test("build a server from factory") {
     finagleBaseDesign.noLifeCycleLogging.build[FinagleServerFactory] { factory =>
       val s1 = factory.newFinagleServer(newConfig)
       Control.withResource(FinagleClient.newSyncClient(s1.localAddress)) { client =>

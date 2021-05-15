@@ -148,29 +148,25 @@ class FinagleRouterTest extends AirSpec {
     // #432: Just need to check the startup of finagle without MISSING_DEPENDENCY error
   }
 
-  test("test various responses") { (context: AirSpecContext) =>
-    context.test[ResponseTest]
-  }
+  test("future responses") { (client: FinagleClient) =>
+    val f1 = client.send(Request("/v1/info")).map { response => debug(response.contentString) }
+    val f2 = client.send(Request("/v1/rich_info")).map { r => debug(r.contentString) }
 
-  class ResponseTest(client: FinagleClient) extends AirSpec {
-    test("Support future responses") {
-      val f1 = client.send(Request("/v1/info")).map { response => debug(response.contentString) }
-      val f2 = client.send(Request("/v1/rich_info")).map { r => debug(r.contentString) }
+    Await.result(f1.join(f2))
 
-      Await.result(f1.join(f2))
-
-      // making many requests
-      val futures = (0 until 5).map { x =>
-        client.send(Request("/v1/rich_info")).map { response => response.contentString }
-      }
-
-      val result = Await.result(Future.collect(futures))
-      debug(result.mkString(", "))
-
-      // Future response
-      Await.result(client.send(Request("/v1/future")).map { response => response.contentString }) shouldBe "hello"
+    // making many requests
+    val futures = (0 until 5).map { x =>
+      client.send(Request("/v1/rich_info")).map { response => response.contentString }
     }
 
+    val result = Await.result(Future.collect(futures))
+    debug(result.mkString(", "))
+
+    // Future response
+    Await.result(client.send(Request("/v1/future")).map { response => response.contentString }) shouldBe "hello"
+  }
+
+  test("test various responses") { (client: FinagleClient) =>
     test("support JSON response") {
       // JSON response
       val json = Await.result(client.send(Request("/v1/rich_info_future")).map { response => response.contentString })
