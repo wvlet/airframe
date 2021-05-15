@@ -258,8 +258,6 @@ lazy val projectDotty =
       controlJVM,
       // codec uses Scala reflection
       codecJVM,
-      //diJVM,
-      //diBaseJVM,
       //fluentd,
       //httpJVM,
       //// Finagle isn't supporting Scala 3
@@ -355,45 +353,6 @@ lazy val airframe =
 
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS  = airframe.js
-
-//// Airframe DI needs to call macro methods, so we needed to split the project into DI and DI macros.
-//lazy val diBase =
-//  crossProject(JVMPlatform, JSPlatform)
-//    .crossType(CrossType.Pure)
-//    .in(file("airframe-di-base"))
-//    .settings(buildSettings)
-//    .settings(dottyCrossBuildSettings("."))
-//    .settings(
-//      name := "airframe-di-base",
-//      description := "Macros for Airframe DI"
-//    )
-//    .jsSettings(jsBuildSettings)
-//    .dependsOn(log, surface)
-//
-//lazy val diBaseJVM = diBase.jvm
-//lazy val diBaseJS  = diBase.js
-//
-//lazy val di =
-//  crossProject(JVMPlatform, JSPlatform)
-//    .crossType(CrossType.Pure)
-//    .in(file("airframe-di"))
-//    .settings(buildSettings)
-//    .settings(dottyCrossBuildSettings("."))
-//    .settings(
-//      name := "airframe-di",
-//      description := "Dependency injection library tailored to Scala",
-//      libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION % Test
-//    )
-//    .jsSettings(
-//      jsBuildSettings
-//    )
-//    .dependsOn(
-//      diBase,
-//      ulid
-//    )
-//
-//lazy val diJVM = di.jvm
-//lazy val diJS  = di.js
 
 def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: String = "main"): Seq[sbt.File] = {
   val scalaMajorVersion = scalaBinaryVersion.split("\\.").head
