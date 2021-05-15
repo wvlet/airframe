@@ -1,5 +1,6 @@
 package wvlet.airframe.di
 
+import wvlet.airframe.surface.Surface
 
 private[di] trait SessionImpl { self: Session =>
 
@@ -11,10 +12,19 @@ private[di] trait SessionImpl { self: Session =>
     * @tparam A
     * @return object
     */
-  def build[A]: A = ???
+  inline def build[A]: A = ${ SessionImpl.buildImpl[A]('self) }
 
   /**
     * Register an instance to the session to control the life cycle of the object under this session.
     */
-  def register[A](instance: A): Unit = ???
+  def register[A](instance: A): Unit
+}
+
+
+private[di] object SessionImpl {
+  import scala.quoted._
+
+  def buildImpl[A](session: Expr[Session])(using Quotes, Type[A]): Expr[A] = {
+    '{ ${session}.get[A](Surface.of[A]) }
+  }
 }

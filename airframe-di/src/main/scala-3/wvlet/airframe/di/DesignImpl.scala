@@ -2,14 +2,22 @@ package wvlet.airframe.di
 
 import wvlet.log.LogSupport
 
+import wvlet.airframe.surface.Surface
+
 /**
   * Immutable airframe design.
   *
   * Design instance does not hold any duplicate bindings for the same Surface.
   */
-private[di] trait DesignImpl extends LogSupport {
-  def bind[A]: Binder[A] = ???
-  def remove[A]: Design = ???
+private[di] trait DesignImpl extends LogSupport { self: Design =>
+  inline def bind[A]: Binder[A] = ${ DesignMacros.designBind[A]('self) }
+
+  inline def remove[A]: Design = {
+    {
+      val target = Surface.of[A]
+      new Design(self.designOptions, self.binding.filterNot(_.from == target), self.hooks)
+    }
+  }
 
   /**
     * A helper method of creating a new session and an instance of A.
@@ -20,10 +28,35 @@ private[di] trait DesignImpl extends LogSupport {
     * @tparam A
     * @return
     */
-  def build[A](body: A => Any): Any = ???
+  inline def build[A](body: A => Any): Any = {
+    {
+      self.withSession { session =>
+        val a = session.build[A]
+        body(a)
+      }
+    }
+  }
 
   /**
     * Execute a given code block by building A using this design, and return B
     */
-  def run[A, B](body: A => B): B = ???
+  inline def run[A, B](body: A => B): B = {
+    {
+      self.withSession { session =>
+        val a = session.build[A]
+        body(a)
+      }
+    }.asInstanceOf[B]
+  }
+
+}
+
+private[airframe] object DesignMacros {
+  import scala.quoted._
+
+  def designBind[A](design:Expr[Design])(using quotes:Quotes, tpe: Type[A]): Expr[Binder[A]] = {
+    '{
+      new Binder(${design}, Surface.of[A], SourceCode()).asInstanceOf[Binder[A]]
+    }
+  }
 }

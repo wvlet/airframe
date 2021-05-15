@@ -16,11 +16,21 @@ package wvlet.airframe.di
 import wvlet.airframe.surface.Surface
 
 private[di] trait AirframeSessionImpl { self: AirframeSession =>
-  override def register[A](instance: A): Unit = ???
+  inline override def register[A](instance: A): Unit = ${ AirframeSessionImpl.registerImpl[A]('self, 'instance) }
+}
 
-//  {
-//    val surface = Surface.of[A]
-//    val owner   = findOwnerSessionOf(surface).getOrElse(this)
-//    owner.registerInjectee(surface, surface, instance)
-//  }
+private[di] object AirframeSessionImpl {
+  import scala.quoted._
+
+  def registerImpl[A](session: Expr[AirframeSession], instance:Expr[A])(using Type[A], Quotes): Expr[Unit] = {
+    '{
+        {
+          val surface = Surface.of[A]
+          val ss = ${session}
+          val owner = ss.findOwnerSessionOf(surface).getOrElse(ss)
+          owner.registerInjectee(surface, surface, ${instance})
+          ()
+        }
+    }
+  }
 }
