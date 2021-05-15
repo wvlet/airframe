@@ -6,6 +6,28 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.5.1
+
+### Major Changes
+
+- From this version, Airframe DI for Scala 3.0.0 is available. For Scala 3, Airframe DI only supports constructor injection. We will deprecate in-trait injection support in upcoming versions. For more details, see also [airframe-di migraiton plan](https://github.com/wvlet/airframe/issues/1649).
+- AirSpec deprecates function-style test specs and only uses `test("...") { ... }` syntax. This version shows warning messages if you are still using public functions as test cases. This test support will be removed from the next version of AirSpec. This is [a necessary step toward supporting Scala 3](https://github.com/wvlet/airframe/issues/1659).
+
+- airframe-di: Scala 3 support (Phase 3) ([#1655](https://github.com/wvlet/airframe/issues/1655)) [[235025063](https://github.com/wvlet/airframe/commit/235025063)]
+- airframe-di: Next generation DI ([#1653](https://github.com/wvlet/airframe/issues/1653)) [[1a5725800](https://github.com/wvlet/airframe/commit/1a5725800)]
+- AirSpec: Show deprecation warning message to function spec ([#1662](https://github.com/wvlet/airframe/issues/1662)) [[92193db48](https://github.com/wvlet/airframe/commit/92193db48)]
+ 
+### Internal Changes
+
+- AirSpec: Remove function test syntax ([#1660](https://github.com/wvlet/airframe/issues/1660)) [[3353fb3e6](https://github.com/wvlet/airframe/commit/3353fb3e6)]
+- Prepare Scala3 compat layer for AirSpec ([#1658](https://github.com/wvlet/airframe/issues/1658)) [[69ceb7ec2](https://github.com/wvlet/airframe/commit/69ceb7ec2)]
+- Update sbt-mdoc to 2.2.21 ([#1650](https://github.com/wvlet/airframe/issues/1650)) [[ca402a6ad](https://github.com/wvlet/airframe/commit/ca402a6ad)]
+- Update airspec to 21.5.0 ([#1651](https://github.com/wvlet/airframe/issues/1651)) [[b7bb400bd](https://github.com/wvlet/airframe/commit/b7bb400bd)]
+- airframe-http: Remove dependency to airframe-di (Scala 3 support phase 3) ([#1648](https://github.com/wvlet/airframe/issues/1648)) [[8aa6f9c21](https://github.com/wvlet/airframe/commit/8aa6f9c21)]
+- airframe-http: Split router as a separate module (Scala 3 support phase 2) ([#1647](https://github.com/wvlet/airframe/issues/1647)) [[cb5e79d85](https://github.com/wvlet/airframe/commit/cb5e79d85)]
+- Publish Scala 3 artifact snapshots at CI [[a4080d981](https://github.com/wvlet/airframe/commit/a4080d981)]
+- airframe-http: Scala 3 support (phase 1) ([#1643](https://github.com/wvlet/airframe/issues/1643)) [[cf2b37129](https://github.com/wvlet/airframe/commit/cf2b37129)]
+
 ## 21.5.0
 
 ### New Features
