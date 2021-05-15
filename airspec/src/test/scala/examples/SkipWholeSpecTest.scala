@@ -20,7 +20,7 @@ import wvlet.airspec.AirSpec
 class SkipWholeSpecTest extends AirSpec {
   skip("Test skipping the whole spec")
 
-  def `hello`: Unit = {
+  test("hello") {
     fail("should not reach here")
   }
 }

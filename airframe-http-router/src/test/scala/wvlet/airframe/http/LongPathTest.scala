@@ -19,7 +19,7 @@ import wvlet.airspec.AirSpec
 /**
   */
 class LongPathTest extends AirSpec {
-  def `match long paths`: Unit = {
+  test("match long paths") {
     val r = Router.add[LongPathExample]
 
     {

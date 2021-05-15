@@ -28,7 +28,7 @@ import wvlet.log.{LogLevel, LogSupport, Logger}
 
 class LauncherTest extends AirSpec {
   import LauncherTest._
-  def `populate arguments in constructor`: Unit = {
+  test("populate arguments in constructor") {
     capture {
       val l = Launcher.execute[GlobalOption]("-h -l debug")
       l.help shouldBe true
@@ -37,14 +37,14 @@ class LauncherTest extends AirSpec {
     }
   }
 
-  def `populate arguments in constructor even when no parameter is given`: Unit = {
+  test("populate arguments in constructor even when no parameter is given") {
     val l = Launcher.execute[GlobalOption]("")
     l.help shouldBe false
     l.loglevel shouldBe None
     l.started shouldBe true
   }
 
-  def `display help message`: Unit = {
+  test("display help message") {
     val help = capture {
       val l = Launcher.execute[GlobalOption]("-h -l debug")
       l.started shouldBe true
@@ -56,7 +56,7 @@ class LauncherTest extends AirSpec {
     help.contains("--loglevel") shouldBe true
   }
 
-  def `display full options in help`: Unit = {
+  test("display full options in help") {
     capture {
       Launcher.execute[MyCommand]("--help")
     }.contains("--help") shouldBe true
@@ -65,7 +65,7 @@ class LauncherTest extends AirSpec {
     }.contains("--help") shouldBe true
   }
 
-  def `parse double hyphen options`: Unit = {
+  test("parse double hyphen options") {
     capture {
       val l = Launcher.execute[GlobalOption]("--help --loglevel debug")
       l.help shouldBe true
@@ -73,7 +73,7 @@ class LauncherTest extends AirSpec {
     }
   }
 
-  def `populate nested options`: Unit = {
+  test("populate nested options") {
     capture {
       val l = Launcher.execute[NestedOption]("-h -l debug")
       l.g.help shouldBe true
@@ -82,7 +82,7 @@ class LauncherTest extends AirSpec {
     }
   }
 
-  def `display help message of nested option`: Unit = {
+  test("display help message of nested option") {
     val help = capture {
       Launcher.execute[NestedOption]("-h -l debug")
     }
@@ -92,7 +92,7 @@ class LauncherTest extends AirSpec {
     help.contains("--loglevel") shouldBe true
   }
 
-  def `populate nested options even when no parameter is given`: Unit = {
+  test("populate nested options even when no parameter is given") {
     val l = Launcher.execute[NestedOption]("")
     l.g != null shouldBe true
     l.g.help shouldBe false
@@ -100,12 +100,12 @@ class LauncherTest extends AirSpec {
     l.g.started shouldBe true
   }
 
-  def `find commands`: Unit = {
+  test("find commands") {
     val c = Launcher.execute[SimpleCommandSet]("hello")
     c.helloIsExecuted shouldBe true
   }
 
-  def `display command list`: Unit = {
+  test("display command list") {
     val help = capture {
       Launcher.of[SimpleCommandSet].printHelp
     }
@@ -117,7 +117,7 @@ class LauncherTest extends AirSpec {
     help.contains("default") shouldNotBe true
   }
 
-  def `run default command`: Unit = {
+  test("run default command") {
     val help = capture {
       Launcher.execute[SimpleCommandSet]("")
     }
@@ -125,7 +125,7 @@ class LauncherTest extends AirSpec {
     help.contains(DEFAULT_MESSAGE) shouldBe true
   }
 
-  def `create command modules`: Unit = {
+  test("create command modules") {
     val c = myCommandModule
 
     capture {
@@ -136,7 +136,7 @@ class LauncherTest extends AirSpec {
     }
   }
 
-  def `display command module help`: Unit = {
+  test("display command module help") {
     val help = capture {
       myCommandModule.execute("-h")
     }
@@ -147,7 +147,7 @@ class LauncherTest extends AirSpec {
     help.contains("command set") shouldBe true
   }
 
-  def `display individual command help`: Unit = {
+  test("display individual command help") {
     val help = capture {
       val result = myCommandModule.execute("box --help")
       val m      = result.getRootInstance.asInstanceOf[MyCommandModule]
@@ -158,7 +158,7 @@ class LauncherTest extends AirSpec {
     help.contains("world") shouldBe true
   }
 
-  def `display sub-command help`: Unit = {
+  test("display sub-command help") {
     val help = capture {
       val result = myCommandModule.execute("box world --help")
       val m      = result.getRootInstance.asInstanceOf[MyCommandModule]
@@ -171,7 +171,7 @@ class LauncherTest extends AirSpec {
     help.contains("say world") shouldBe true
   }
 
-  def `display invalid command error`: Unit = {
+  test("display invalid command error") {
     val msg = capture {
       intercept[IllegalArgumentException] {
         myCommandModule.execute("unknown-command")
@@ -180,7 +180,7 @@ class LauncherTest extends AirSpec {
     trace(msg)
   }
 
-  def `unwrap InvocationTargetException`: Unit = {
+  test("unwrap InvocationTargetException") {
     val msg = capture {
       intercept[IllegalArgumentException] {
         myCommandModule.execute("errorTest")
@@ -189,14 +189,14 @@ class LauncherTest extends AirSpec {
     trace(msg)
   }
 
-  def `handle private parameters in constructors`: Unit = {
+  test("handle private parameters in constructors") {
     capture {
       val l = Launcher.execute[CommandWithPrivateField]("-h")
       l.started shouldBe true
     }
   }
 
-  def `run test command`: Unit = {
+  test("run test command") {
     val message = capture {
       Launcher.execute[MyCommand]("hello -r 3") // hello x 3
     }
@@ -204,12 +204,12 @@ class LauncherTest extends AirSpec {
     message.contains("hello!hello!hello!") shouldBe true
   }
 
-  def `accept array type arguments`: Unit = {
+  test("accept array type arguments") {
     val f = Launcher.execute[ArrayOpt]("file1 file2 file3")
     f.files shouldBe Array("file1", "file2", "file3")
   }
 
-  def `accept array type arguments with default values`: Unit = {
+  test("accept array type arguments with default values") {
     val f = Launcher.execute[ArrayOptWithDefault]("")
     f.files shouldBe Array("sample")
 
@@ -217,12 +217,12 @@ class LauncherTest extends AirSpec {
     f2.files shouldBe Array("sampleA", "sampleB")
   }
 
-  def `accept list type arguments`: Unit = {
+  test("accept list type arguments") {
     val f = Launcher.execute[ListOpt]("-f file1 -f file2 -f file3")
     f.files shouldBe List("file1", "file2", "file3")
   }
 
-  def `accept Option arguments`: Unit = {
+  test("accept Option arguments") {
     val f = Launcher.execute[OptArg]("")
     f.arg shouldBe None
 

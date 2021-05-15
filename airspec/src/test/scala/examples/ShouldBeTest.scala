@@ -21,15 +21,15 @@ import wvlet.airspec.AirSpec
 class ShouldBeTest extends AirSpec {
   scalaJsSupport
 
-  def `support shouldBe matcher`: Unit = {
+  test("support shouldBe matcher") {
     1 shouldBe 1
   }
 
-  def `support shouldNotBe matcher`: Unit = {
+  test("support shouldNotBe matcher") {
     1 shouldNotBe 2
   }
 
-  def `throw an assertion error for invalid matches`: Unit = {
+  test("throw an assertion error for invalid matches") {
     intercept[AssertionFailure] {
       1 shouldBe 3
     }
@@ -47,14 +47,14 @@ class ShouldBeTest extends AirSpec {
     }
   }
 
-  def `support collection matchers`: Unit = {
+  test("support collection matchers") {
     Seq.empty shouldBe Seq.empty
     Seq.empty shouldBe empty
     Seq(1) shouldBe List(1)
     Map(1 -> "apple", 2 -> "banana") shouldBe Map(1 -> "apple", 2 -> "banana")
   }
 
-  def `support array matchers`: Unit = {
+  test("support array matchers") {
     Array(1, 2, 3) shouldBe Array(1, 2, 3)
     Array(1, 2, 3) shouldBe defined
     Array(1, 2, 3) shouldNotBe empty
@@ -68,7 +68,7 @@ class ShouldBeTest extends AirSpec {
     Array("hello") shouldBe Array("hello")
   }
 
-  def `throw assertion failures for invalid array matches`: Unit = {
+  test("throw assertion failures for invalid array matches") {
     intercept[AssertionFailure] {
       Array(1, 2, 3) shouldBe Array(1, 2, 4)
     }
@@ -78,7 +78,7 @@ class ShouldBeTest extends AirSpec {
     }
   }
 
-  def `support Option matchers`: Unit = {
+  test("support Option matchers") {
     Some(1) shouldBe defined
     Some(1) shouldNotBe empty
     None shouldBe empty
@@ -115,7 +115,7 @@ class ShouldBeTest extends AirSpec {
     (2, 'a') shouldNotBe (2, 'b')
   }
 
-  def `support array deepEqual`: Unit = {
+  test("support array deepEqual") {
     val a: AnyRef = Array(1.0f)
     val b: AnyRef = Array(1.0f)
 
@@ -128,7 +128,7 @@ class ShouldBeTest extends AirSpec {
 
   case class MyObj(id: Int, name: String)
 
-  def `support equality check`: Unit = {
+  test("support equality check") {
     val a1 = MyObj(1, "name")
     val a2 = a1
     val a3 = MyObj(1, "name")
@@ -153,7 +153,7 @@ class ShouldBeTest extends AirSpec {
     }
   }
 
-  def `exhaustive check`: Unit = {
+  test("exhaustive check") {
     checkEqual(1, 1)
     checkNotEqual(1, 2)
 
@@ -200,7 +200,7 @@ class ShouldBeTest extends AirSpec {
     }
   }
 
-  def `support shouldBe null`: Unit = {
+  test("support shouldBe null") {
     val a: String = null
     a shouldBe null
     "a" shouldNotBe null

@@ -153,7 +153,7 @@ class FinagleRouterTest extends AirSpec {
   }
 
   class ResponseTest(client: FinagleClient) extends AirSpec {
-    def `Support future responses`: Unit = {
+    test("Support future responses") {
       val f1 = client.send(Request("/v1/info")).map { response => debug(response.contentString) }
       val f2 = client.send(Request("/v1/rich_info")).map { r => debug(r.contentString) }
 
@@ -171,14 +171,14 @@ class FinagleRouterTest extends AirSpec {
       Await.result(client.send(Request("/v1/future")).map { response => response.contentString }) shouldBe "hello"
     }
 
-    def `support JSON response`: Unit = {
+    test("support JSON response") {
       // JSON response
       val json = Await.result(client.send(Request("/v1/rich_info_future")).map { response => response.contentString })
 
       json shouldBe """{"version":"0.1","name":"MyApi","details":{"serverType":"test-server"}}"""
     }
 
-    def `support JSON POST request`: Unit = {
+    test("support JSON POST request") {
       val request = Request("/v1/json_api")
       request.method = Method.Post
       request.contentString = """{"id":10, "name":"leo"}"""
@@ -186,7 +186,7 @@ class FinagleRouterTest extends AirSpec {
       ret shouldBe """RichRequest(10,leo)"""
     }
 
-    def `return a response header except for Content-Type`: Unit = {
+    test("return a response header except for Content-Type") {
       val request = Request("/v1/http_header_test")
       val ret     = Await.result(client.send(request))
 
@@ -194,7 +194,7 @@ class FinagleRouterTest extends AirSpec {
       ret.contentString shouldBe """Hello"""
     }
 
-    def `JSON POST request with explicit JSON content type`: Unit = {
+    test("JSON POST request with explicit JSON content type") {
       val request = Request("/v1/json_api")
       request.method = Method.Post
       request.contentString = """{"id":10, "name":"leo"}"""
@@ -203,7 +203,7 @@ class FinagleRouterTest extends AirSpec {
       ret shouldBe """RichRequest(10,leo)"""
     }
 
-    def `test parameter mappings`: Unit = {
+    test("test parameter mappings") {
       // Use the default argument
       {
         val request = Request("/v1/json_api_default")
@@ -230,7 +230,7 @@ class FinagleRouterTest extends AirSpec {
       }
     }
 
-    def `test error response`: Unit = {
+    test("test error response") {
       warn("Exception response test")
       val l  = Logger.of[FinagleServer]
       val lv = l.getLogLevel
@@ -244,7 +244,7 @@ class FinagleRouterTest extends AirSpec {
       }
     }
 
-    def `MsgPack response`: Unit = {
+    test("MsgPack response") {
       // MessagePack request
       {
         val request = Request("/v1/json_api")
@@ -269,7 +269,7 @@ class FinagleRouterTest extends AirSpec {
       }
     }
 
-    def `Raw string request`: Unit = {
+    test("Raw string request") {
       // Raw string arg
       val request = Request("/v1/raw_string_arg")
       request.method = Method.Post
@@ -277,7 +277,7 @@ class FinagleRouterTest extends AirSpec {
       Await.result(client.send(request).map(_.contentString)) shouldBe "1.0"
     }
 
-    def `Finagle Reader[Buf] response`: Unit = {
+    test("Finagle Reader[Buf] response") {
       val request = Request("/v1/reader")
       request.method = Method.Get
       val json  = Await.result(client.send(request).map(_.contentString))
@@ -287,7 +287,7 @@ class FinagleRouterTest extends AirSpec {
 
     val richInfo = RichInfo("0.1", "MyApi", RichNestedInfo("test-server"))
 
-    def `convert Reader[X] response to JSON stream`: Unit = {
+    test("convert Reader[X] response to JSON stream") {
       val request = Request("/v1/reader-seq")
       request.method = Method.Get
       val json = Await.result(client.send(request).map(_.contentString))
@@ -296,7 +296,7 @@ class FinagleRouterTest extends AirSpec {
       codec.fromJson(json) shouldBe Seq(richInfo, richInfo)
     }
 
-    def `Convert Reader[X] response to MsgPack stream`: Unit = {
+    test("Convert Reader[X] response to MsgPack stream") {
       val request = Request("/v1/reader-seq")
       request.method = Method.Get
       request.accept = "application/x-msgpack"
@@ -318,7 +318,7 @@ class FinagleRouterTest extends AirSpec {
       }
     }
 
-    def `return 204 for Unit response`: Unit = {
+    test("return 204 for Unit response") {
       val result = Await.result(client.send(Request(Method.Delete, "/v1/delete")))
       result.statusCode shouldBe HttpStatus.NoContent_204.code
     }
@@ -335,19 +335,19 @@ class FinagleRouterTest extends AirSpec {
       result.contentString shouldBe "Hello Scala Future"
     }
 
-    def `support query parameter mapping`: Unit = {
+    test("support query parameter mapping") {
       val result = Await.result(client.send(Request(Method.Get, "/v1/user/1/profile?session_id=xyz")))
       result.statusCode shouldBe HttpStatus.Ok_200.code
       result.contentString shouldBe "1:xyz"
     }
 
-    def `support missing query parameter mapping`: Unit = {
+    test("support missing query parameter mapping") {
       val result = Await.result(client.send(Request(Method.Get, "/v1/user/1/profile")))
       result.statusCode shouldBe HttpStatus.Ok_200.code
       result.contentString shouldBe "1:unknown"
     }
 
-    def `support query parameter mapping for POST`: Unit = {
+    test("support query parameter mapping for POST") {
       val r = Request(Method.Post, "/v1/user/1/profile?session_id=xyz")
       r.contentString = "hello"
       val result = Await.result(client.send(r))
@@ -355,7 +355,7 @@ class FinagleRouterTest extends AirSpec {
       result.contentString shouldBe "1:xyz"
     }
 
-    def `support option parameter mapping for POST`: Unit = {
+    test("support option parameter mapping for POST") {
       val r = Request(Method.Post, "/v1/user/1/profile")
       r.contentString = "hello"
       val result = Await.result(client.send(r))
@@ -363,7 +363,7 @@ class FinagleRouterTest extends AirSpec {
       result.contentString shouldBe "1:hello"
     }
 
-    def `skip content body mapping for application/octet-stream requests`: Unit = {
+    test("skip content body mapping for application/octet-stream requests") {
       val r = Request(Method.Post, "/v1/user/1/profile")
       r.contentString = "hello" // This content should not be used for RPC binding
       r.contentType = MediaType.OctetStream

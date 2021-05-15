@@ -23,7 +23,7 @@ import wvlet.airspec.AirSpec
 /**
   */
 class FinagleServerFactoryTest extends AirSpec {
-  def `start multiple FinagleServers`: Unit = {
+  test("start multiple FinagleServers") {
     val router1 = Router.add[MyApi]
     val router2 = Router.add[MyApi]
 
@@ -48,7 +48,7 @@ class FinagleServerFactoryTest extends AirSpec {
     }
   }
 
-  def `allow customize services`: Unit = {
+  test("allow customize services") {
     val d = Finagle.server.withFallbackService {
       new Service[Request, Response] {
         override def apply(request: Request): Future[Response] = {
@@ -66,7 +66,7 @@ class FinagleServerFactoryTest extends AirSpec {
     }
   }
 
-  def `allow customize Finagle Http Server`: Unit = {
+  test("allow customize Finagle Http Server") {
     Finagle.server
       .withTracer(ConsoleTracer)
       .withFallbackService(

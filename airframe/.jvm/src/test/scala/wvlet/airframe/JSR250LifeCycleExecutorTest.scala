@@ -49,7 +49,7 @@ class HookOverrideTest extends JSR250Test {
 /**
   */
 class JSR250LifeCycleExecutorTest extends AirSpec {
-  def `support JSR250 event`: Unit = {
+  test("support JSR250 event") {
     val s = newSilentDesign.newSession
 
     val t = s.build[JSR250Test]
@@ -60,7 +60,7 @@ class JSR250LifeCycleExecutorTest extends AirSpec {
     t.stopped shouldBe true
   }
 
-  def `support inherited JSR250 annotations`: Unit = {
+  test("support inherited JSR250 annotations") {
     val s = newSilentDesign.newSession
 
     val t = s.build[InheritedHookTest]
@@ -71,7 +71,7 @@ class JSR250LifeCycleExecutorTest extends AirSpec {
     t.stopped shouldBe true
   }
 
-  def `do not call overwritten hooks`: Unit = {
+  test("do not call overwritten hooks") {
     val s = newSilentDesign.newSession
 
     val t = s.build[HookOverrideTest]

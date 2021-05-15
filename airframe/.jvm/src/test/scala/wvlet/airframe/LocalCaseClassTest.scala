@@ -24,7 +24,7 @@ class LocalCaseClassTest extends AirSpec {
   case class LocalConfigA()
   case class LocalConfigB(param1: Int = 5, param2: Int = 4)
 
-  def `should not cause any compilation error`: Unit = {
+  test("should not cause any compilation error") {
     Surface.of[LocalConfigA]
     Surface.of[LocalConfigB]
     val d = newDesign

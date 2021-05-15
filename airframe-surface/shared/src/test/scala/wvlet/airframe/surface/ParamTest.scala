@@ -27,7 +27,7 @@ object ParamTest {
 class ParamTest extends SurfaceSpec {
   scalaJsSupport
 
-  def `have default value`: Unit = {
+  test("have default value") {
     val s = Surface.of[ParamTest.A]
     val p = s.params.head
     assert(p.getDefaultValue == Option(-1))
@@ -35,7 +35,7 @@ class ParamTest extends SurfaceSpec {
     assert(p1.getDefaultValue == Option(20))
   }
 
-  def `private field access`: Unit = {
+  test("private field access") {
     if (isScalaJS) {
       pendingUntil("Find a way to access private fields in Scala.js")
     }

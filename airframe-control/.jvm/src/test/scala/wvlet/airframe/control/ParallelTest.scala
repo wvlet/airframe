@@ -21,7 +21,7 @@ import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
 class ParallelTest extends AirSpec {
-  def `run() in parallel with Seq`: Unit = {
+  test("run() in parallel with Seq") {
     Parallel.stats.startedTasks.set(0)
     Parallel.stats.finishedTasks.set(0)
 
@@ -45,7 +45,7 @@ class ParallelTest extends AirSpec {
     assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
-  def `iterate() in parallel with Iterator`: Unit = {
+  test("iterate() in parallel with Iterator") {
     Parallel.stats.startedTasks.set(0)
     Parallel.stats.finishedTasks.set(0)
 
@@ -114,7 +114,7 @@ class ParallelTest extends AirSpec {
     assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
-  def `be run for Seq using syntax sugar`: Unit = {
+  test("be run for Seq using syntax sugar") {
     import wvlet.airframe.control.parallel._
 
     Parallel.stats.startedTasks.set(0)
@@ -129,7 +129,7 @@ class ParallelTest extends AirSpec {
     assert(Parallel.stats.finishedTasks.get() == 3)
   }
 
-  def `be run for Iterator using syntax sugar`: Unit = {
+  test("be run for Iterator using syntax sugar") {
     import wvlet.airframe.control.parallel._
 
     Parallel.stats.startedTasks.set(0)
@@ -179,7 +179,7 @@ class ParallelTest extends AirSpec {
     assert(Parallel.stats.startedTasks.get() == 2)
     assert(Parallel.stats.finishedTasks.get() == 2)
   }
-//    def `repeat() and stop`: Unit =  {
+//    test("repeat() and stop")  {
 //      val source  = Seq(0)
 //
 //      val ticker  = Ticker.manualTicker

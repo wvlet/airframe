@@ -20,12 +20,12 @@ import wvlet.log.Spec
 /**
   */
 class IOUtilTest extends Spec {
-  def `find unused port`: Unit = {
+  test("find unused port") {
     val port = IOUtil.unusedPort
     assert(port > 0)
   }
 
-  def `find a file`: Unit = {
+  test("find a file") {
     val buildSbt = IOUtil.findPath("build.sbt")
     assert(buildSbt.isDefined)
     assert(buildSbt.get.getPath == "build.sbt")
@@ -34,12 +34,12 @@ class IOUtilTest extends Spec {
     assert(notFound.isEmpty)
   }
 
-  def `read file as a String`: Unit = {
+  test("read file as a String") {
     val str = IOUtil.readAsString("build.sbt")
     assert(str.length > 0)
   }
 
-  def `throw FileNotFoundException if file is not found`: Unit = {
+  test("throw FileNotFoundException if file is not found") {
     intercept[FileNotFoundException] {
       IOUtil.readAsString("non-existing-file-path.txt.tmp")
     }

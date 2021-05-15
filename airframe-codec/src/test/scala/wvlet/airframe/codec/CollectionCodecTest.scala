@@ -25,29 +25,29 @@ import scala.jdk.CollectionConverters._
 class CollectionCodecTest extends CodecSpec {
   scalaJsSupport
 
-  def `support Map type`: Unit = {
+  test("support Map type") {
     val v = Map("id" -> 1)
     roundtrip(Surface.of[Map[String, Int]], v, DataType.ANY)
   }
 
-  def `support ListMap type`: Unit = {
+  test("support ListMap type") {
     val v = ListMap("z" -> 1, "y" -> 2)
     roundtrip(Surface.of[ListMap[String, Int]], v, DataType.ANY)
   }
 
-  def `support Java Map type`: Unit = {
+  test("support Java Map type") {
     if (isScalaJS)
       skip("Scala.js do not support Java Map")
     val v = Map("id" -> 1).asJava
     roundtrip(Surface.of[java.util.Map[String, Int]], v, DataType.ANY)
   }
 
-  def `support Seq/List type`: Unit = {
+  test("support Seq/List type") {
     roundtrip(Surface.of[Seq[Int]], Seq(1, 2, 3), DataType.ANY)
     roundtrip(Surface.of[List[Int]], List(1, 2, 3), DataType.ANY)
   }
 
-  def `support JSON Array`: Unit = {
+  test("support JSON Array") {
     val codec   = MessageCodec.of[Seq[Int]]
     val msgpack = MessagePack.newBufferPacker.packString("[1, 2, 3]").toByteArray
     codec.unpackMsgPack(msgpack) shouldBe Some(Seq(1, 2, 3))
@@ -59,13 +59,13 @@ class CollectionCodecTest extends CodecSpec {
     codec.fromMsgPack(msgpack) shouldBe Seq(1)
   }
 
-  def `support JSON Map`: Unit = {
+  test("support JSON Map") {
     val codec   = MessageCodec.of[Map[String, Int]]
     val msgpack = MessagePack.newBufferPacker.packString("""{"leo":1, "yui":2}""").toByteArray
     codec.unpackMsgPack(msgpack) shouldBe Some(Map("leo" -> 1, "yui" -> 2))
   }
 
-  def `support JSON Map to java.util.Map`: Unit = {
+  test("support JSON Map to java.util.Map") {
     if (isScalaJS)
       skip("Scala.js doesn't support Java Map")
     val codec   = MessageCodec.of[java.util.Map[String, Int]]
@@ -73,7 +73,7 @@ class CollectionCodecTest extends CodecSpec {
     codec.unpackMsgPack(msgpack) shouldBe Some(Map("leo" -> 1, "yui" -> 2).asJava)
   }
 
-  def `support JSON to primitive arrays`: Unit = {
+  test("support JSON to primitive arrays") {
     MessageCodec.of[Array[Int]].fromMsgPack(StringCodec.toMsgPack("[1, 2, 3]")) shouldBe Array(1, 2, 3)
     MessageCodec.of[Array[Short]].fromMsgPack(StringCodec.toMsgPack("[1, 2, 3]")) shouldBe Array(
       1.toShort,

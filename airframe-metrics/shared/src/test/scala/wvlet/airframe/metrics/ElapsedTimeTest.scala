@@ -95,15 +95,15 @@ class ElapsedTimeTest extends AirSpec {
   )
   import ElapsedTime._
 
-  def `parse time`: Unit = {
+  test("parse time") {
     examples.foreach { x => ElapsedTime(x.str) shouldBe ElapsedTime(x.value, x.unit) }
   }
 
-  def `print string`: Unit = {
+  test("print string") {
     examples.foreach { x => ElapsedTime(x.str).toString shouldBe f"${x.value}%.2f${timeUnitToString(x.unit)}" }
   }
 
-  def `throw exception for invalid inputs`: Unit = {
+  test("throw exception for invalid inputs") {
     val list = Seq("-1", "1.23g", "1x4")
 
     list.foreach { x =>
@@ -113,7 +113,7 @@ class ElapsedTimeTest extends AirSpec {
     }
   }
 
-  def `validate invalid input`: Unit = {
+  test("validate invalid input") {
     val in = Seq(
       (-1d, SECONDS),
       (Double.PositiveInfinity, SECONDS),
@@ -128,7 +128,7 @@ class ElapsedTimeTest extends AirSpec {
     }
   }
 
-  def `convert from nanos`: Unit = {
+  test("convert from nanos") {
     succinctNanos(123).toString shouldBe ElapsedTime(123, NANOSECONDS).toString
     succinctNanos(123456).toString shouldBe ElapsedTime(123.456, MICROSECONDS).toString
     succinctNanos(SECONDS.toNanos(300)).toString shouldBe ElapsedTime(5, MINUTES).toString
@@ -138,7 +138,7 @@ class ElapsedTimeTest extends AirSpec {
     succinctDuration(300, SECONDS).toString shouldBe ElapsedTime(5, MINUTES).toString
   }
 
-  def `extract values in given time units`: Unit = {
+  test("extract values in given time units") {
     val millis   = 12346789.0d
     var duration = ElapsedTime(millis, MILLISECONDS)
     duration.valueIn(MILLISECONDS) shouldBe millis
@@ -156,11 +156,11 @@ class ElapsedTimeTest extends AirSpec {
     assertEquals(duration.valueIn(MILLISECONDS), days * 24 * 60 * 60 * 1000, 0.001)
   }
 
-  def `support toMillis`: Unit = {
+  test("support toMillis") {
     examples.map(x => parse(x.str)).foreach { x => assertEquals(x.toMillis, x.roundTo(MILLISECONDS), 0.001) }
   }
 
-  def `convert units`: Unit = {
+  test("convert units") {
     for (c <- conversionExamples) {
       val duration = ElapsedTime(1, c.inputUnit).convertTo(c.targetUnit)
       duration.unit shouldBe c.targetUnit
@@ -169,7 +169,7 @@ class ElapsedTimeTest extends AirSpec {
     }
   }
 
-  def `convert to succinct units`: Unit = {
+  test("convert to succinct units") {
     for (c <- conversionExamples) {
       val duration = ElapsedTime(c.factor, c.targetUnit)
       val actual   = duration.convertToMostSuccinctTimeUnit
@@ -181,10 +181,10 @@ class ElapsedTimeTest extends AirSpec {
     }
   }
 
-  def `be comparable`: Unit = {
+  test("be comparable") {
     assert(parse("1d").compareTo(parse("1.1d")) <= 0)
     assert(parse("1h").compareTo(parse("1d")) <= 0)
   }
 
-  def `support rounding`: Unit = {}
+  test("support rounding") {}
 }

@@ -33,19 +33,19 @@ import wvlet.airframe.codec.ValueCodecTest._
 class ValueCodecTest extends CodecSpec {
   scalaJsSupport
 
-  def `support MessagePack values`: Unit = {
+  test("support MessagePack values") {
     roundtrip(ValueCodec, ValueFactory.newInteger(1), DataType.ANY)
     roundtrip(ValueCodec, ValueFactory.newString("hello msgpack"), DataType.ANY)
     roundtrip(ValueCodec, ValueFactory.newBoolean(true), DataType.ANY)
     roundtrip(ValueCodec, ValueFactory.newFloat(0.1234d), DataType.ANY)
   }
 
-  def `accept value`: Unit = {
+  test("accept value") {
     val codec = MessageCodec.of[ValueTest]
     codec.unpackJson("""{"v":"hello msgpack"}""") shouldBe Some(ValueTest(StringValue("hello msgpack")))
   }
 
-  def `support string to Array[Byte] conversion`: Unit = {
+  test("support string to Array[Byte] conversion") {
     val codec = MessageCodec.of[RawByteArrayTest]
     codec.unpackJson("""{"rawByteArray":"hello msgpack"}""") match {
       case Some(x) =>
@@ -55,7 +55,7 @@ class ValueCodecTest extends CodecSpec {
     }
   }
 
-  def `support BASE64-encoded string to Array[Byte] conversion`: Unit = {
+  test("support BASE64-encoded string to Array[Byte] conversion") {
     val base64 = Base64.getEncoder.encodeToString("hello msgpack".getBytes(StandardCharsets.UTF_8))
     val codec  = MessageCodec.of[RawByteArrayTest]
     codec.unpackJson(s"""{"rawByteArray":"${base64}"}""") match {
@@ -66,7 +66,7 @@ class ValueCodecTest extends CodecSpec {
     }
   }
 
-  def `accept MsgPack type`: Unit = {
+  test("accept MsgPack type") {
     val codec = MessageCodec.of[RawMsgpackTest2]
     codec.unpackJson("""{"msgpack":"hello msgpack"}""") match {
       case Some(x) =>

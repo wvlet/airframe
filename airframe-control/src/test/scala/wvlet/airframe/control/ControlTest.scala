@@ -29,7 +29,7 @@ object ControlTest {
 class ControlTest extends AirSpec {
   scalaJsSupport
 
-  def `have loan pattern`: Unit = {
+  test("have loan pattern") {
     val out = new ControlTest.A
     out.closed shouldBe false
     Control.withResource(out) { o =>
@@ -37,7 +37,7 @@ class ControlTest extends AirSpec {
     }
     out.closed shouldBe true
   }
-  def `have loan pattern for two resources`: Unit = {
+  test("have loan pattern for two resources") {
     val in  = new ControlTest.A
     val out = new ControlTest.A
     out.closed shouldBe false
@@ -47,7 +47,7 @@ class ControlTest extends AirSpec {
     in.closed shouldBe true
     out.closed shouldBe true
   }
-  def `not cause error for null resource`: Unit = {
+  test("not cause error for null resource") {
     Control.withResource(null) { o =>
       // do nothing
     }
@@ -55,7 +55,7 @@ class ControlTest extends AirSpec {
       // do nothing
     }
   }
-  def `report resource closing errors`: Unit = {
+  test("report resource closing errors") {
     class FirstException  extends RuntimeException
     class SecondException extends RuntimeException
 

@@ -29,7 +29,7 @@ object OptionBuilderTest {
 class OptionBuilderTest extends AirSpec {
   import OptionBuilderTest._
 
-  def `read default value`: Unit = {
+  test("read default value") {
     val l   = Launcher.of[Main1]
     val m   = l.execute("")
     val opt = m.getRootInstance.asInstanceOf[Main1].opt

@@ -63,13 +63,13 @@ class JSONToMessagePackConverterTest extends AirSpec {
     }
   }
 
-  def `convert JSON to msgpack`: Unit = {
+  test("convert JSON to msgpack") {
     val json    = "[0, 1, 2]"
     val msgpack = MessagePack.fromJSON(json)
     msgpackToJson(msgpack) shouldBe JSON.parse(json)
   }
 
-  def `convert twitter-single.json to MsgPack`: Unit = {
+  test("convert twitter-single.json to MsgPack") {
     val json      = IOUtil.readAsString("airframe-benchmark/src/main/resources/twitter-single.json")
     val jsonValue = JSON.parse(json)
     val msgpack   = MessagePack.fromJSON(json)
@@ -79,7 +79,7 @@ class JSONToMessagePackConverterTest extends AirSpec {
     deepEqual(result, jsonValue)
   }
 
-  def `convert twitter.json to MsgPack`: Unit = {
+  test("convert twitter.json to MsgPack") {
     val json      = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
     val jsonValue = JSON.parse(json)
     val msgpack   = MessagePack.fromJSON(json)

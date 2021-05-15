@@ -72,7 +72,7 @@ class FactoryBindingTest extends AirSpec {
     .bind[MyConfig2].toInstance(c2)
     .bind[D1].toInstance(d1)
 
-  def `create factories to override partial binding`: Unit = {
+  test("create factories to override partial binding") {
     d.build[FactoryExample] { f =>
       val m1 = f.factory(MyConfig(15))
       m1.config shouldBe MyConfig(15)
@@ -84,7 +84,7 @@ class FactoryBindingTest extends AirSpec {
     }
   }
 
-  def `create constructor binding factories`: Unit = {
+  test("create constructor binding factories") {
     d.build[FactoryExample2] { f =>
       val j1 = f.factory(MyConfig(17))
       j1.config shouldBe MyConfig(17)
@@ -96,7 +96,7 @@ class FactoryBindingTest extends AirSpec {
     }
   }
 
-  def `create factory of many args`: Unit = {
+  test("create factory of many args") {
     d.build[FactorySetExample] { f =>
       {
         val j = f.f2(MyConfig(2), MyConfig2(3))

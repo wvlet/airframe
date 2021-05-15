@@ -21,7 +21,7 @@ import wvlet.airspec.AirSpec
 /**
   */
 class ProviderSerializationTest extends AirSpec {
-  def `serialize design with provider`: Unit = {
+  test("serialize design with provider") {
     val testBinderDesign =
       providerDesign.bind[App].toProvider(provider5 _)
 
@@ -32,7 +32,7 @@ class ProviderSerializationTest extends AirSpec {
     app shouldBe App(d1, d2, d3, d4, d5)
   }
 
-  def `serialize design with provider1`: Unit = {
+  test("serialize design with provider1") {
     val testBinderDesign =
       providerDesign.bind[App].toProvider(provider1 _)
 

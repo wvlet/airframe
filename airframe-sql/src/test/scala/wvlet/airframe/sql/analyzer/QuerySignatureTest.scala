@@ -22,21 +22,21 @@ import wvlet.airspec.AirSpec
 /**
   */
 class QuerySignatureTest extends AirSpec {
-  def `Find input/output tables`: Unit = {
+  test("Find input/output tables") {
     SQLBenchmark.allQueries.foreach { sql =>
       val g = TableGraph.of(sql.sql)
       debug(g)
     }
   }
 
-  def `Generate signature`: Unit = {
+  test("Generate signature") {
     SQLBenchmark.allQueries.foreach { sql =>
       val s = QuerySignature.of(sql.sql)
       debug(s)
     }
   }
 
-  def `parse q72.sql`: Unit = {
+  test("parse q72.sql") {
     val sql = SQLBenchmark.tpcDS_("q72")
     debug(sql)
     val p = SQLParser.parse(sql.sql)
@@ -46,14 +46,14 @@ class QuerySignatureTest extends AirSpec {
   }
 
   val embedTableNames = QuerySignatureConfig(embedTableNames = true)
-  def `embed table names`: Unit = {
+  test("embed table names") {
     val plan = SQLParser.parse("select * from tbl")
 
     plan.sig(embedTableNames) shouldBe "P[*](tbl)"
     plan.sig(QuerySignatureConfig(embedTableNames = false)) shouldBe "P[*](T)"
   }
 
-  def `embed table names to CTAS`: Unit = {
+  test("embed table names to CTAS") {
     SQLParser.parse("insert into tbl select * from a").sig(embedTableNames) shouldBe "I(tbl,P[*](a))"
     SQLParser.parse("drop table tbl").sig(embedTableNames) shouldBe "DT(tbl)"
     SQLParser.parse("create table tbl (id int)").sig(embedTableNames) shouldBe "CT(tbl)"
@@ -63,7 +63,7 @@ class QuerySignatureTest extends AirSpec {
     SQLParser.parse("create table tbl (id int)").sig() shouldBe "CT(T)"
   }
 
-  def `embed table names for all queries`: Unit = {
+  test("embed table names for all queries") {
     SQLBenchmark.allQueries.foreach { x =>
       val plan = SQLParser.parse(x.sql)
       val sig  = plan.sig(QuerySignatureConfig(embedTableNames = true))

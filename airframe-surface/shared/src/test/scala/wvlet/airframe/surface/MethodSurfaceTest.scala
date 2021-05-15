@@ -51,7 +51,7 @@ import wvlet.airframe.surface.MethodExamples._
 class MethodSurfaceTest extends SurfaceSpec {
   scalaJsSupport
 
-  def `list methods`: Unit = {
+  test("list methods") {
     val m = Surface.methodsOf[A]
     debug(m.mkString("\n"))
 
@@ -87,17 +87,17 @@ class MethodSurfaceTest extends SurfaceSpec {
     debug(m2)
   }
 
-  def `inherit parent methods`: Unit = {
+  test("inherit parent methods") {
     val m = Surface.methodsOf[B]
     m.find(_.name == "helloParent") shouldBe defined
   }
 
-  def `support generic methods`: Unit = {
+  test("support generic methods") {
     val m = Surface.methodsOf[C]
     m.find(_.name == "generic") shouldBe defined
   }
 
-  def `find method default parameter`: Unit = {
+  test("find method default parameter") {
     val ms = Surface.methodsOf[D]
     val m  = ms.find(_.name == "hello").get
     m.args.headOption shouldBe defined

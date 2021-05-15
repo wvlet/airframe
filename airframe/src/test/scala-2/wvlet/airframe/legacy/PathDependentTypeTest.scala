@@ -21,7 +21,7 @@ import wvlet.airframe._
 class PathDependentTypeTest extends AirSpec {
   scalaJsSupport
 
-  def `pass dependent types`: Unit = {
+  test("pass dependent types") {
     import PathDependentType._
     val s = Surface.of[JdbcProfile#Backend#Database]
 

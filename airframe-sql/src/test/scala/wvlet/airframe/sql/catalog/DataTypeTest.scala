@@ -25,7 +25,7 @@ class DataTypeTest extends AirSpec {
     parsed shouldBe Some(expected)
   }
 
-  def `parse DataType names`: Unit = {
+  test("parse DataType names") {
     parse("byte", LongType)
     parse("char", LongType)
     parse("short", LongType)
@@ -58,7 +58,7 @@ class DataTypeTest extends AirSpec {
     )
   }
 
-  def `return any type for unknwon types`: Unit = {
+  test("return any type for unknwon types") {
     parse("unknown", AnyType)
     parse("map[bit,long]", MapType(AnyType, LongType))
   }

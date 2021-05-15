@@ -18,7 +18,7 @@ import wvlet.airspec.AirSpec
 class CNameTest extends AirSpec {
   scalaJsSupport
 
-  def `convert to snakeCase`: Unit = {
+  test("convert to snakeCase") {
     assert(CName("AirframeSurface").snakeCase == "airframe_surface")
     assert(CName("airframe_surface").snakeCase == "airframe_surface")
     assert(CName("airframe-surface").snakeCase == "airframe_surface")
@@ -26,7 +26,7 @@ class CNameTest extends AirSpec {
     assert(CName("Airframe Surface").snakeCase == "airframe_surface")
   }
 
-  def `convert to dashCase`: Unit = {
+  test("convert to dashCase") {
     assert(CName("AirframeSurface").dashCase == "airframe-surface")
     assert(CName("airframe_surface").dashCase == "airframe-surface")
     assert(CName("airframe-surface").dashCase == "airframe-surface")
@@ -34,7 +34,7 @@ class CNameTest extends AirSpec {
     assert(CName("Airframe Surface").dashCase == "airframe-surface")
   }
 
-  def `convert to .upperCamelCase`: Unit = {
+  test("convert to .upperCamelCase") {
     assert(CName("AirframeSurface").upperCamelCase == "AirframeSurface")
     assert(CName("airframe_surface").upperCamelCase == "AirframeSurface")
     assert(CName("airframe-surface").upperCamelCase == "AirframeSurface")
@@ -42,7 +42,7 @@ class CNameTest extends AirSpec {
     assert(CName("Airframe Surface").upperCamelCase == "AirframeSurface")
   }
 
-  def `convert to lowerCamelCase`: Unit = {
+  test("convert to lowerCamelCase") {
     assert(CName("AirframeSurface").lowerCamelCase == "airframeSurface")
     assert(CName("airframe_surface").lowerCamelCase == "airframeSurface")
     assert(CName("airframe-surface").lowerCamelCase == "airframeSurface")
@@ -50,13 +50,13 @@ class CNameTest extends AirSpec {
     assert(CName("Airframe Surface").lowerCamelCase == "airframeSurface")
   }
 
-  def `null values`: Unit = {
+  test("null values") {
     val nullName = CName(null)
     nullName.canonicalName shouldBe ""
     nullName.naturalName shouldBe ""
   }
 
-  def `comparison`: Unit = {
+  test("comparison") {
     val a = CName("Apple")
     val b = CName("Banana")
     a.compareTo(b) < 0 shouldBe true

@@ -33,19 +33,19 @@ object PathSequenceTest extends AirSpec {
 
   private val r = Router.of[MyService]
 
-  def `handle empty path`: Unit = {
+  test("handle empty path") {
     val m = r.findRoute(Http.GET("/html/"))
     m shouldBe defined
     m.get.params("path") shouldBe ""
   }
 
-  def `handle long paths`: Unit = {
+  test("handle long paths") {
     val m = r.findRoute(Http.GET("/html/long/path"))
     m shouldBe defined
     m.get.params("path") shouldBe "long/path"
   }
 
-  def `handle the root path for path sequence`: Unit = {
+  test("handle the root path for path sequence") {
     val r2 = Router.of[MyHTTPService]
     val m  = r2.findRoute(Http.GET("/"))
     m shouldBe defined

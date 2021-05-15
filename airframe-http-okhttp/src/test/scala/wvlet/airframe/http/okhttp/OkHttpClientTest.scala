@@ -236,7 +236,7 @@ class OkHttpClientTest extends AirSpec {
     }
   }
 
-  def `support https request`: Unit = {
+  test("support https request") {
     withResource(OkHttpClient.newClient("https://wvlet.org")) { client =>
       val page = client.get[String]("/airframe/")
       trace(page)

@@ -28,7 +28,7 @@ class DISupportTest extends AirSpec {
     def getString = s
   }
 
-  def `support in-class bind`: Unit = {
+  test("support in-class bind") {
     val d = newSilentDesign
       .bind[String].toInstance("hello")
 

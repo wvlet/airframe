@@ -30,7 +30,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     roundtrip[Option[Seq[Int]]](Surface.of[Option[Seq[Int]]], Some(Seq(1, 2, 3)))
   }
 
-  def `support tuple`: Unit = {
+  test("support tuple") {
     roundtrip[Tuple1[String]](Surface.of[Tuple1[String]], Tuple1("hello"))
     roundtrip(Surface.of[(Int, Int)], (1, 2))
     roundtrip(Surface.of[(Int, Int, Int)], (1, 2, 3))
@@ -88,7 +88,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     )
   }
 
-  def `support Either Left`: Unit = {
+  test("support Either Left") {
     val codec   = MessageCodec.of[Either[Throwable, String]]
     val et      = Left(new IllegalArgumentException("test exception"))
     val msgpack = codec.pack(et)
@@ -135,7 +135,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     }
   }
 
-  def `support Either Left with nested exception`: Unit = {
+  test("support Either Left with nested exception") {
     val codec   = MessageCodec.of[Either[Throwable, String]]
     val et      = Left(new Exception(new NullPointerException("NPE")))
     val msgpack = codec.pack(et)
@@ -159,7 +159,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     }
   }
 
-  def `support Either Right`: Unit = {
+  test("support Either Right") {
     val codec   = MessageCodec.of[Either[Throwable, String]]
     val msgpack = codec.pack(Right("Hello Either"))
     val either  = codec.unpack(msgpack)
@@ -184,13 +184,13 @@ class ScalaStandardCodecTest extends CodecSpec {
     }
   }
 
-  def `read valid JSON input for Either`: Unit = {
+  test("read valid JSON input for Either") {
     val codec = MessageCodec.of[Either[Throwable, String]]
     codec.unpackJson("""[{"exceptionClass":"java.lang.NullPointerException","message":"NPE"}, null]""")
     codec.unpackJson("""[null, "hello"]""")
   }
 
-  def `reject invalid JSON input for Either`: Unit = {
+  test("reject invalid JSON input for Either") {
     val codec = MessageCodec.of[Either[Throwable, String]]
 
     def testInvalid(json: String): Unit = {
@@ -208,7 +208,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     testInvalid("""{"exceptionClass":"java.lang.NullPointerException","message":"NPE"}""")
   }
 
-  def `support ULID`: Unit = {
+  test("support ULID") {
     val codec   = MessageCodec.of[ULID]
     val ulid    = ULID.newULID
     val msgpack = codec.toMsgPack(ulid)

@@ -34,7 +34,8 @@ class ZeroTest extends SurfaceSpec {
     z
   }
 
-  def `support primitives`: Unit = {
+  test("support primitives") {
+    zeroCheck(Surface.of[Unit], null)
     zeroCheck(Surface.of[Int], 0)
     zeroCheck(Surface.of[Long], 0L)
     zeroCheck(Surface.of[Char], 0.toChar)
@@ -44,30 +45,29 @@ class ZeroTest extends SurfaceSpec {
     zeroCheck(Surface.of[Float], 0f)
     zeroCheck(Surface.of[Double], 0.0)
     zeroCheck(Surface.of[String], "")
-    zeroCheck(Surface.of[Unit], null)
   }
 
-  def `support arrays`: Unit = {
+  test("support arrays") {
     zeroCheck(Surface.of[Array[Int]], Array.empty[Int])
     zeroCheck(Surface.of[Array[Long]], Array.empty[Long])
     zeroCheck(Surface.of[Array[String]], Array.empty[String])
   }
 
-  def `support Tuple`: Unit = {
+  test("support Tuple") {
     zeroCheck(Surface.of[(Int, String)], (0, ""))
     zeroCheck(Surface.of[(Int, String, Seq[Int])], (0, "", Seq.empty))
   }
 
-  def `special types`: Unit = {
-    zeroCheck(Surface.of[Option[String]], None)
+  test("special types") {
     zeroCheck(Surface.of[MyA], "")
     zeroCheck(Surface.of[Int @@ MyTag], 0)
     zeroCheck(Surface.of[Nothing], null)
     zeroCheck(Surface.of[AnyRef], null)
     zeroCheck(Surface.of[Any], null)
+    zeroCheck(Surface.of[Option[String]], None)
   }
 
-  def `support case classes`: Unit = {
+  test("support case classes") {
     val s = Surface.of[ZeroA]
     zeroCheck(Surface.of[ZeroA], ZeroA(0, "", ZeroB(0.0f, 0.0)))
     // Read the default parameter values.
@@ -76,7 +76,7 @@ class ZeroTest extends SurfaceSpec {
     // zeroCheck(Surface.of[C], C(10, "Hello", 123.4f, B(0.0f, 0.0)))
   }
 
-  def `support Scala collections`: Unit = {
+  test("support Scala collections") {
     zeroCheck(Surface.of[Seq[Int]], Seq.empty[Int])
     zeroCheck(Surface.of[IndexedSeq[Int]], IndexedSeq.empty[Int])
     zeroCheck(Surface.of[Map[Int, String]], Map.empty[Int, String])

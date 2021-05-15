@@ -117,7 +117,7 @@ trait PS5 {
 class ProviderTest extends AirSpec {
   scalaJsSupport
 
-  def `build singletons with provider`: Unit = {
+  test("build singletons with provider") {
     val p = providerDesign.newSession.build[ProviderExample]
 
     val firstSingleton = App(d1, d2, d3, d4, d5)
@@ -138,7 +138,7 @@ class ProviderTest extends AirSpec {
     p.pp5 shouldBe firstSingleton
   }
 
-  def `build object from instance provider bindings`: Unit = {
+  test("build object from instance provider bindings") {
     val s1 = providerDesign
       .bind[App].toInstanceProvider { d1: D1 => App(d1) }
       .newSession
@@ -177,7 +177,7 @@ class ProviderTest extends AirSpec {
 }
 
 class SingletonProviderTest extends AirSpec {
-  def `build singleton from provider bindings`: Unit = {
+  test("build singleton from provider bindings") {
     val s1 = providerDesign
       .bind[App].toProvider { d1: D1 => App(d1) }
       .newSession
@@ -216,7 +216,7 @@ class SingletonProviderTest extends AirSpec {
 }
 
 class ProviderRefTest extends AirSpec {
-  def `build object from instance provider ref`: Unit = {
+  test("build object from instance provider ref") {
     val s1 = providerDesign
       .bind[App].toInstanceProvider(provider1 _)
       .newSession
@@ -253,7 +253,7 @@ class ProviderRefTest extends AirSpec {
     p5 shouldNotBeTheSameInstanceAs s5.build[App]
   }
 
-  def `eagerly build singleton from provider`: Unit = {
+  test("eagerly build singleton from provider") {
     var p1Initialized = false
     val s1 = providerDesign
       .bind[App].toEagerSingletonProvider { d1: D1 => p1Initialized = true; App(d1) }
@@ -304,7 +304,7 @@ class ProviderRefTest extends AirSpec {
     p5 shouldBeTheSameInstanceAs s5.build[App]
   }
 
-  def `bind singletons`: Unit = {
+  test("bind singletons") {
     val session = providerDesign
       .bind[App].toProvider(provider3 _)
       .newSession
@@ -315,7 +315,7 @@ class ProviderRefTest extends AirSpec {
     p1.ps shouldBe App(d1, d2, d3, z4, z5)
   }
 
-  def `bind singleton with provider`: Unit = {
+  test("bind singleton with provider") {
     providerDesign.newSession.build[PS0].p shouldBe App(z1, z2, z3, z4, z5)
     providerDesign.newSession.build[PS0_S].p shouldBe App(z1, z2, z3, z4, z5)
 

@@ -97,26 +97,26 @@ class ConnectionPoolFactoryTest extends AirSpec {
     .bind[MyDbConfig3].toInstance(DbConfig.ofPostgreSQL(database = "travis_ci_test").withUser(user = "postgres"))
     .noLifeCycleLogging
 
-  def `use multiple SQLite configs`: Unit = {
+  test("use multiple SQLite configs") {
     d.build[TestConnection] { t =>
       t.test(t.pool1)
       t.test(t.pool2)
     }
   }
 
-  def `use PostgreSQL connection pool`: Unit = {
+  test("use PostgreSQL connection pool") {
     if (!inTravisCI) pending
 
     d.build[TestConnection] { t => t.test(t.pgPool) }
   }
 
-  def `report error for unknown db type`: Unit = {
+  test("report error for unknown db type") {
     intercept[IllegalArgumentException] {
       d.build[ConnectionPoolFactory] { f => f.newConnectionPool(DbConfig.of("superdb")) }
     }
   }
 
-  def `report error for missing postgresql host`: Unit = {
+  test("report error for missing postgresql host") {
     intercept[IllegalArgumentException] {
       d.build[ConnectionPoolFactory] { f => f.newConnectionPool(DbConfig.of("postgresql")) }
     }

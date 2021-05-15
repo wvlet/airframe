@@ -35,7 +35,7 @@ object SerializationTest extends LogSupport {
 import DesignSerializationTest._
 
 class SerializationTest extends AirSpec {
-  def `serialize provider`: Unit = {
+  test("serialize provider") {
     import wvlet.airframe.SerializationTest._
     val b  = serialize(d)
     val ds = deserialize(b)
@@ -46,7 +46,7 @@ class SerializationTest extends AirSpec {
     s.build[App] shouldBe App(A1(1))
   }
 
-  def `serialize provider that involves toInstance of local var`: Unit = {
+  test("serialize provider that involves toInstance of local var") {
     import ProviderSerializationExample._
     import ProviderVal._
 

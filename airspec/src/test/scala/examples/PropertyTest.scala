@@ -21,7 +21,7 @@ import wvlet.airspec.AirSpec
 class PropertyTest extends AirSpec with PropertyCheck {
   scalaJsSupport
 
-  def `hello`: Unit = {}
+  test("hello") {}
 
   def `forAll(Int)` : Unit = {
     forAll { i: Int => i.isValidInt shouldBe true }

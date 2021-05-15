@@ -101,7 +101,7 @@ class ExceptionTestFilter extends FinagleFilter {
 /**
   */
 class HttpFilterTest extends AirSpec {
-  def `apply filter before the route`: Unit = {
+  test("apply filter before the route") {
     val router =
       Router
         .add[LogFilterExample]
@@ -151,7 +151,7 @@ class HttpFilterTest extends AirSpec {
     }
   }
 
-  def `handle errors in context`: Unit = {
+  test("handle errors in context") {
     val router =
       Router
         .add[ExceptionHandleFilter]
@@ -168,7 +168,7 @@ class HttpFilterTest extends AirSpec {
     }
   }
 
-  def `handle errors in filter`: Unit = {
+  test("handle errors in filter") {
     val router =
       Router
         .add[ExceptionHandleFilter]

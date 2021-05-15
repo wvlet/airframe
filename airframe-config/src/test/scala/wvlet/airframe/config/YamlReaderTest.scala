@@ -36,14 +36,14 @@ class YamlReaderTest extends AirSpec {
   val listYml: String    = findFile("list.yml")
   val classesYml: String = findFile("classes.yml")
 
-  def `parse yaml file`: Unit = {
+  test("parse yaml file") {
     val m = YamlReader.loadYaml(yml)
     m.contains("default") shouldBe true
     m.contains("staging") shouldBe true
     m.size shouldBe 2
   }
 
-  def `read yaml as objects`: Unit = {
+  test("read yaml as objects") {
     val m = YamlReader.loadMapOf[MyConfig](yml)
     m.contains("default") shouldBe true
     m.contains("staging") shouldBe true
@@ -52,18 +52,18 @@ class YamlReaderTest extends AirSpec {
     m("staging") shouldBe MyConfig(2, "staging-config", 10000)
   }
 
-  def `read an specific env from yaml`: Unit = {
+  test("read an specific env from yaml") {
     val m = YamlReader.load[MyConfig](yml, "staging")
     m shouldBe MyConfig(2, "staging-config", 10000)
   }
 
-  def `throw an exception when the target env is missing`: Unit = {
+  test("throw an exception when the target env is missing") {
     intercept[IllegalArgumentException] {
       YamlReader.load[MyConfig](yml, "production")
     }
   }
 
-  def `parse lists in yaml`: Unit = {
+  test("parse lists in yaml") {
     val m = YamlReader.loadYamlList(listYml)
     m.size shouldBe 2
     m(0)("database") shouldBe "mydb"
@@ -76,7 +76,7 @@ class YamlReaderTest extends AirSpec {
     s(1) shouldBe DB(10, "mydb2", Seq("T1", "T2"))
   }
 
-  def `parse map in yaml`: Unit = {
+  test("parse map in yaml") {
     val m = YamlReader.loadMapOf[ClassConfig](classesYml)
     m.size shouldBe 2
     m("development").classes shouldBe Seq("class1", "class2", "class3")

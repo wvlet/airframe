@@ -27,16 +27,16 @@ class JSONParserTest extends AirSpec {
     v
   }
 
-  def `parser json string`: Unit = {
+  test("parser json string") {
     parse("{}")
     parse("""{"id":1, "name":"leo", "value":0.1, "num":1000}""")
   }
-  def `parse large array of objects`: Unit = {
+  test("parse large array of objects") {
     val json = (for (_ <- 0 to 10000) yield "{}").mkString("[", ",", "]")
     parse(json)
   }
 
-  def `parse any json values`: Unit = {
+  test("parse any json values") {
     val v = JSON.parseAny("null")
     v shouldBe JSONNull
     JSON.parseAny("1") shouldBe JSONLong(1L)
@@ -46,7 +46,7 @@ class JSONParserTest extends AirSpec {
     JSON.parseAny("""{"id":1}""") shouldBe JSONObject(Seq("id" -> JSONLong(1L)))
   }
 
-  def `parse numeric json values`: Unit = {
+  test("parse numeric json values") {
     JSON.parseAny(Long.MaxValue.toString) shouldBe JSONLong(Long.MaxValue)
     JSON.parseAny(Long.MinValue.toString) shouldBe JSONLong(Long.MinValue)
 
@@ -54,7 +54,7 @@ class JSONParserTest extends AirSpec {
     JSON.parseAny(Double.MinValue.toString) shouldBe JSONDouble(Double.MinValue)
   }
 
-  def `throw IntegerOverflowException error`: Unit = {
+  test("throw IntegerOverflowException error") {
     intercept[IntegerOverflow] {
       JSON.parseAny("9223372036854775808")
     }

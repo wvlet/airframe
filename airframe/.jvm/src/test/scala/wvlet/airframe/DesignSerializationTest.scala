@@ -40,13 +40,13 @@ object DesignSerializationTest {
 class DesignSerializationTest extends AirSpec {
   import DesignSerializationTest._
 
-  def `be serializable`: Unit = {
+  test("be serializable") {
     val b   = serialize(d1)
     val d1s = deserialize(b)
     d1s shouldBe (d1)
   }
 
-  def `serialize instance binding`: Unit = {
+  test("serialize instance binding") {
     val d  = Design.blanc.bind[Message].toInstance(Hello("world"))
     val b  = serialize(d)
     val ds = deserialize(b)

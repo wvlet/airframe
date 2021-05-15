@@ -25,12 +25,12 @@ class JSONScannerTest extends AirSpec {
     JSONScanner.scan(JSONSource.fromString(json))
   }
 
-  def `extract string`: Unit = {
+  test("extract string") {
     val s = JSONSource.fromString("""[1, 2, 3]""")
     s.substring(1, 2) shouldBe "1"
   }
 
-  def `parse JSON`: Unit = {
+  test("parse JSON") {
     scan("{}")
     scan("[]")
 
@@ -44,7 +44,7 @@ class JSONScannerTest extends AirSpec {
     scan("""["\\u0fA9\\u0123", "\\u0123"]""")
   }
 
-  def `throw unexpected error`: Unit = {
+  test("throw unexpected error") {
     intercept[UnexpectedToken] {
       scan("{13}")
     }
@@ -74,7 +74,7 @@ class JSONScannerTest extends AirSpec {
     }
   }
 
-  def `throw EOF`: Unit = {
+  test("throw EOF") {
     // workaround: Scala.js throws UndefinedBehaviorError if ArrayIndexOutOfBoundsException is thrown
     intercept[Throwable] {
       scan("{")

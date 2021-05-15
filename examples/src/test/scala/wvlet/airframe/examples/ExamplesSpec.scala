@@ -31,35 +31,35 @@ class ExamplesSpec extends AirSpec {
     }
   }
 
-  def `codec examples`: Unit = {
+  test("codec examples") {
     runAll("codec")
   }
 
-  def `di examples`: Unit = {
+  test("di examples") {
     runAll("di")
   }
 
-  def `control examples`: Unit = {
+  test("control examples") {
     runAll("control")
   }
 
-  def `http examples`: Unit = {
+  test("http examples") {
     runAll("http")
   }
 
-  def `launcher examples`: Unit = {
+  test("launcher examples") {
     runAll("launcher")
   }
 
-  def `log examples`: Unit = {
+  test("log examples") {
     runAll("log")
   }
 
-  def `surface examples`: Unit = {
+  test("surface examples") {
     runAll("surface")
   }
 
-  def `json examples`: Unit = {
+  test("json examples") {
     runAll("json")
   }
 }

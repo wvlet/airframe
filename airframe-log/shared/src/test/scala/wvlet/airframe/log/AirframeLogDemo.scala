@@ -46,7 +46,7 @@ class AirframeLogDemo extends AirSpec {
     }
   }
 
-  def `show logging examples`: Unit = {
+  test("show logging examples") {
     logger.resetHandler(new NoOutputHandler(SourceCodeLogFormatter))
     try {
       logger.setLogLevel(LogLevel.ALL)
@@ -69,7 +69,7 @@ class AirframeLogDemo extends AirSpec {
     }
   }
 
-  def `show log format examples`: Unit = {
+  test("show log format examples") {
     val name = Thread.currentThread().getName
     Thread.currentThread().setName("thread-1")
     try {
@@ -86,7 +86,7 @@ class AirframeLogDemo extends AirSpec {
     }
   }
 
-  def `ANSI color paleter`: Unit = {
+  test("ANSI color paleter") {
     // Just for improving the test coverage
     object MyColor extends AnsiColorPalette {}
   }

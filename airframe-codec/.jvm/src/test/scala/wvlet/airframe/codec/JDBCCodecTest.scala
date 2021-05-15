@@ -36,7 +36,7 @@ class JDBCCodecTest extends AirSpec {
     }
   }
 
-  def `encode all JDBC types`: Unit = {
+  test("encode all JDBC types") {
     withQuery("""
             |select
             |1,
@@ -75,7 +75,7 @@ class JDBCCodecTest extends AirSpec {
     }
   }
 
-  def `encode null`: Unit = {
+  test("encode null") {
     val types = Seq(
       "bit",
       "tinyint",
@@ -124,7 +124,7 @@ class JDBCCodecTest extends AirSpec {
     }
   }
 
-  def `support sql date`: Unit = {
+  test("support sql date") {
     JavaSqlDateCodec.unpackBytes(MessagePack.newBufferPacker.packString("2019-01-23").toByteArray) shouldBe Some(
       java.sql.Date.valueOf("2019-01-23")
     )
@@ -134,7 +134,7 @@ class JDBCCodecTest extends AirSpec {
     JavaSqlDateCodec.unpackBytes(MessagePack.newBufferPacker.packNil.toByteArray) shouldBe None
   }
 
-  def `support sql time`: Unit = {
+  test("support sql time") {
     JavaSqlTimeCodec.unpackBytes(MessagePack.newBufferPacker.packString("01:23:45").toByteArray) shouldBe Some(
       java.sql.Time.valueOf("01:23:45")
     )
@@ -144,7 +144,7 @@ class JDBCCodecTest extends AirSpec {
     JavaSqlTimeCodec.unpackBytes(MessagePack.newBufferPacker.packNil.toByteArray) shouldBe None
   }
 
-  def `support sql timestamp`: Unit = {
+  test("support sql timestamp") {
     JavaSqlTimestampCodec.unpackBytes(
       MessagePack.newBufferPacker.packString("2019-01-23 01:23:45.000").toByteArray
     ) shouldBe Some(
@@ -156,7 +156,7 @@ class JDBCCodecTest extends AirSpec {
     JavaSqlTimestampCodec.unpackBytes(MessagePack.newBufferPacker.packNil.toByteArray) shouldBe None
   }
 
-  def `support java.math.BigDecimal`: Unit = {
+  test("support java.math.BigDecimal") {
     BigDecimalCodec.unpackBytes(MessagePack.newBufferPacker.packString("12345").toByteArray) shouldBe Some(
       new java.math.BigDecimal(12345)
     )
@@ -169,7 +169,7 @@ class JDBCCodecTest extends AirSpec {
     BigDecimalCodec.unpackBytes(MessagePack.newBufferPacker.packNil.toByteArray) shouldBe None
   }
 
-  def `support array types`: Unit = {
+  test("support array types") {
     val p = MessagePack.newBufferPacker
     JavaSqlArrayCodec.pack(p, MockArray(Array("a", "b")))
     JavaSqlArrayCodec.pack(p, MockArray(Array(1, 2)))
@@ -186,7 +186,7 @@ class JDBCCodecTest extends AirSpec {
     }
   }
 
-  def `ResultSet to JSON maps`: Unit = {
+  test("ResultSet to JSON maps") {
     withQuery("""with a(id, name) as
                 |(select * from (values (1, 'leo'), (2, 'yui')))
                 |select * from a order by id asc

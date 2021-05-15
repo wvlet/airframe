@@ -21,7 +21,7 @@ import wvlet.log.io.IOUtil
 class TwitterJSONTest extends AirSpec {
   lazy val twitterJson = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
 
-  def `parser twiter.json as JSONValue`: Unit = {
+  test("parser twiter.json as JSONValue") {
     val j = JSON.parse(twitterJson)
   }
 }

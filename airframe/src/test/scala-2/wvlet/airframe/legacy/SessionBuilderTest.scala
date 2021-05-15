@@ -24,7 +24,7 @@ class SessionBuilderTest extends AirSpec {
 
   val d = newSilentDesign
 
-  def `create a named session`: Unit = {
+  test("create a named session") {
     val session = d.newSessionBuilder
       .withName("MySession")
       .create
@@ -35,7 +35,7 @@ class SessionBuilderTest extends AirSpec {
     session.shutdown
   }
 
-  def `create a session with custom event handler`: Unit = {
+  test("create a session with custom event handler") {
     var counter = 0
     val session = d.newSessionBuilder
       .withEventHandler(new LifeCycleEventHandler {

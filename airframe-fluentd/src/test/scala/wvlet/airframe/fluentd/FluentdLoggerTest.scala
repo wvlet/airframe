@@ -28,7 +28,7 @@ import wvlet.log.io.IOUtil
 /**
   */
 class FluentdLoggerTest extends AirSpec {
-  def `should use Fluency as a Fluentd client`: Unit = {
+  test("should use Fluency as a Fluentd client") {
     val d = fluentd
       .withFluentdLogger()
       .noLifeCycleLogging
@@ -40,14 +40,14 @@ class FluentdLoggerTest extends AirSpec {
     }
   }
 
-  def `should support console logging`: Unit = {
+  test("should support console logging") {
     val d =
       fluentd.withDebugConsoleLogging.noLifeCycleLogging
 
     d.build[MetricLogger] { f => f.emit("data", Map("id" -> 1, "event" -> "GET")) }
   }
 
-  def `generate multiple loggers`: Unit = {
+  test("generate multiple loggers") {
     val d =
       newDesign
         .bind[Logger1].toInstance(new ConsoleLogger(Some("l1"), LogLevel.DEBUG))
@@ -66,7 +66,7 @@ class FluentdLoggerTest extends AirSpec {
     }
   }
 
-  def `fluentd logger`: Unit = {
+  test("fluentd logger") {
     // sanity test
     IOUtil.withResource(Fluentd.newFluentdLogger()) { f =>
       //
@@ -78,7 +78,7 @@ class FluentdLoggerTest extends AirSpec {
     }
   }
 
-  def `td logger`: Unit = {
+  test("td logger") {
     // sanity test
     IOUtil.withResource(Fluentd.newTDLogger(apikey = "xxxxx")) { td =>
       //

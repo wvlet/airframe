@@ -46,7 +46,7 @@ object RuntimeExamples {
 class RuntimeSurfaceTest extends SurfaceSpec {
   import RuntimeExamples._
 
-  def `resolve types`: Unit = {
+  test("resolve types") {
     val a = check(RuntimeSurface.of[A], "A")
     assert(a.isAlias == false)
     assert(a.isOption == false)
@@ -58,7 +58,7 @@ class RuntimeSurfaceTest extends SurfaceSpec {
     assert(b.isPrimitive == false)
   }
 
-  def `resolve trait type`: Unit = {
+  test("resolve trait type") {
     val s = ReflectSurfaceFactory.ofClass(classOf[TraitOnly])
     s.isAlias shouldBe false
     s.rawType shouldBe classOf[TraitOnly]
@@ -83,7 +83,7 @@ class RuntimeSurfaceTest extends SurfaceSpec {
     checkPrimitive(RuntimeSurface.of[java.lang.String], "String")
   }
 
-  def `resolve alias`: Unit = {
+  test("resolve alias") {
     val a1 = check(RuntimeSurface.of[MyA], "MyA:=A")
     assert(a1.isAlias == true)
     assert(a1.isOption == false)
@@ -97,22 +97,22 @@ class RuntimeSurfaceTest extends SurfaceSpec {
     assert(a1.isOption == false)
   }
 
-  def `resolve trait`: Unit = {
+  test("resolve trait") {
     check(RuntimeSurface.of[C], "C")
   }
 
-  def `resolve array types`: Unit = {
+  test("resolve array types") {
     check(RuntimeSurface.of[Array[Int]], "Array[Int]")
     check(RuntimeSurface.of[Array[Byte]], "Array[Byte]")
     check(RuntimeSurface.of[Array[A]], "Array[A]")
   }
 
-  def `resolve option types`: Unit = {
+  test("resolve option types") {
     val opt = check(RuntimeSurface.of[Option[A]], "Option[A]")
     assert(opt.isOption == true)
   }
 
-  def `resolve collection types`: Unit = {
+  test("resolve collection types") {
     check(RuntimeSurface.of[Seq[A]], "Seq[A]")
     check(RuntimeSurface.of[List[A]], "List[A]")
     check(RuntimeSurface.of[Map[String, A]], "Map[String,A]")
@@ -122,40 +122,40 @@ class RuntimeSurfaceTest extends SurfaceSpec {
     check(RuntimeSurface.of[IndexedSeq[A]], "IndexedSeq[A]")
   }
 
-  def `resolve scala util types`: Unit = {
+  test("resolve scala util types") {
     check(RuntimeSurface.of[Either[String, Throwable]], "Either[String,Throwable]")
     check(RuntimeSurface.of[Try[A]], "Try[A]")
   }
 
-  def `resolve mutable Collection types`: Unit = {
+  test("resolve mutable Collection types") {
     check(RuntimeSurface.of[collection.mutable.Seq[String]], "Seq[String]")
     check(RuntimeSurface.of[collection.mutable.Map[Int, String]], "Map[Int,String]")
     check(RuntimeSurface.of[collection.mutable.Set[A]], "Set[A]")
   }
 
-  def `resolve tuples`: Unit = {
+  test("resolve tuples") {
     check(RuntimeSurface.of[Tuple1[Int]], "Tuple1[Int]")
     check(RuntimeSurface.of[(Int, String)], "Tuple2[Int,String]")
     check(RuntimeSurface.of[(Int, String, A, Double)], "Tuple4[Int,String,A,Double]")
   }
 
-  def `resolve java colletion type`: Unit = {
+  test("resolve java colletion type") {
     check(RuntimeSurface.of[java.util.List[String]], "List[String]")
     check(RuntimeSurface.of[java.util.Map[Long, String]], "Map[Long,String]")
     check(RuntimeSurface.of[java.util.Set[A]], "Set[A]")
   }
 
-  def `resolve generic type`: Unit = {
+  test("resolve generic type") {
     val d1 = check(RuntimeSurface.of[D[String]], "D[String]")
     val d2 = check(RuntimeSurface.of[D[A]], "D[A]")
     assert(d1 ne d2)
   }
 
-  def `resolve recursive type`: Unit = {
+  test("resolve recursive type") {
     check(RuntimeSurface.of[Service[Int, String]], "Service[Int,String]")
   }
 
-  def `resolve generic abstract type`: Unit = {
+  test("resolve generic abstract type") {
     val d = check(RuntimeSurface.of[D[_]], "D[_]")
     assert(d.typeArgs.length == 1)
     check(RuntimeSurface.of[Map[_, _]], "Map[_,_]")
@@ -163,7 +163,7 @@ class RuntimeSurfaceTest extends SurfaceSpec {
 
   val a0 = A(true, 0.toByte, 1.toShort, 10, 20L, 0.1f, 0.2, "hello")
 
-  def `generate object factory`: Unit = {
+  test("generate object factory") {
     val a = check(RuntimeSurface.of[A], "A")
     assert(a.objectFactory.isDefined)
 
@@ -178,21 +178,21 @@ class RuntimeSurfaceTest extends SurfaceSpec {
     assert(e1.a == a0)
   }
 
-  def `generate concrete object factory`: Unit = {
+  test("generate concrete object factory") {
     val d  = check(RuntimeSurface.of[D[String]], "D[String]")
     val d0 = d.objectFactory.map { f => f.newInstance(Seq(1, "leo")) }.get
     debug(d0)
     assert(d0 == D(1, "leo"))
   }
 
-  def `find default parameter`: Unit = {
+  test("find default parameter") {
     val f = check(RuntimeSurface.of[F], "F")
     val p = f.params(0)
     assert(p.getDefaultValue.isDefined)
     assert(p.getDefaultValue.get == 10)
   }
 
-  def `access parameters`: Unit = {
+  test("access parameters") {
     val a = RuntimeSurface.of[A]
     assert(a.params(0).get(a0) == true)
     assert(a.params(3).get(a0) == 10)

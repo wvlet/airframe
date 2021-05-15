@@ -122,7 +122,7 @@ class ContextWithDI extends AirSpec {
     import wvlet.airframe._
     private val port = bind[Int]
 
-    def `check binding`: Unit = {
+    test("check binding") {
       port shouldBe 1000
     }
   }

@@ -32,7 +32,7 @@ class TimeParserTest extends AirSpec {
     TimeStampFormatter.formatTimestamp(z.get) shouldBe TimeStampFormatter.formatTimestamp(ans)
   }
 
-  def `parse date time`: Unit = {
+  test("parse date time") {
     // Time with time zone
     parse("2017-01-01 23:01:23-0700", "2017-01-01T23:01:23-07:00")
     parse("2017-01-01 23:01:23-07:00", "2017-01-01T23:01:23-07:00")

@@ -36,7 +36,7 @@ class BindLocalTest extends AirSpec {
     val x       = bindLocal { new LocalX(counter) }
   }
 
-  def `create a new local instance with a provider`: Unit = {
+  test("create a new local instance with a provider") {
     val counter = new AtomicInteger()
     val d = newSilentDesign
       .bind[AtomicInteger].toInstance(counter)
@@ -47,7 +47,7 @@ class BindLocalTest extends AirSpec {
 
   class Y
 
-  def `create different local instances`: Unit = {
+  test("create different local instances") {
     trait App2 {
       val y0     = bind[Y]
       val yLocal = bindLocal { new Y }
@@ -66,7 +66,7 @@ class BindLocalTest extends AirSpec {
     val x5 = bindLocal { (d1: D1, d2: D2, d3: D3, d4: D4, d5: D5) => X(d1 = d1, d2 = d2, d3 = d3, d4 = d4, d5 = d5) }
   }
 
-  def `support bindLocal with dependencies`: Unit = {
+  test("support bindLocal with dependencies") {
     val d = newSilentDesign
       .bind[D1].toInstance(D1(1))
       .bind[D2].toInstance(D2(2))

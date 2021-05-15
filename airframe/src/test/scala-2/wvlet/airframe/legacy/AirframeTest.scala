@@ -253,7 +253,7 @@ import wvlet.airframe.legacy.ServiceMixinExample._
 class AirframeTest extends AirSpec {
   scalaJsSupport
 
-  def `be able to use wvlet.airframe.Design to define a new design`: Unit = {
+  test("be able to use wvlet.airframe.Design to define a new design") {
     val d = Design.newDesign
 
     // For test coverage
@@ -263,13 +263,13 @@ class AirframeTest extends AirSpec {
       }
   }
 
-  def `create a design`: Unit = {
+  test("create a design") {
     // Both should work
     val d  = newDesign.bind[Printer].to[ConsolePrinter]
     val d1 = newDesign.bind[Printer].to[ConsolePrinter]
   }
 
-  def `instantiate class`: Unit = {
+  test("instantiate class") {
     val d = newDesign
       .bind[Printer].to[ConsolePrinter]
       .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
@@ -277,7 +277,7 @@ class AirframeTest extends AirSpec {
     val m = d.newSession.build[FortunePrinterMixin]
   }
 
-  def `create singleton`: Unit = {
+  test("create singleton") {
     val d = newDesign
       .bind[HeavyObject].toSingleton
 
@@ -287,7 +287,7 @@ class AirframeTest extends AirSpec {
     a.heavy shouldBe b.heavy
   }
 
-  def `create singleton eagerly`: Unit = {
+  test("create singleton eagerly") {
     val start = System.nanoTime()
     val session =
       newDesign
@@ -299,7 +299,7 @@ class AirframeTest extends AirSpec {
     s.initializedTime <= current shouldBe true
   }
 
-  def `create eager singleton type`: Unit = {
+  test("create eager singleton type") {
     val d = newDesign
       .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
       .bind[Printer].toEagerSingletonOf[ConsolePrinter]
@@ -312,7 +312,7 @@ class AirframeTest extends AirSpec {
     ho.getClass shouldBe classOf[ConsolePrinter]
   }
 
-  def `forbid binding to the same type`: Unit = {
+  test("forbid binding to the same type") {
     warn("Running cyclic dependency check test")
     val ex = intercept[CYCLIC_DEPENDENCY] {
       val d = newDesign
@@ -332,7 +332,7 @@ class AirframeTest extends AirSpec {
     }.deps.contains(Surface.of[Printer]) shouldBe true
   }
 
-  def `found cyclic dependencies`: Unit = {
+  test("found cyclic dependencies") {
     //
     pendingUntil("Fixing a compilation error in Surface")
     //      val c = newDesign.newSession
@@ -346,7 +346,7 @@ class AirframeTest extends AirSpec {
     //      caught.deps should contain(Surface.of[B])
   }
 
-  def `detect missing dependencies`: Unit = {
+  test("detect missing dependencies") {
     val d = newDesign
     warn("Running missing dependency check")
     val caught = intercept[MISSING_DEPENDENCY] {
@@ -356,7 +356,7 @@ class AirframeTest extends AirSpec {
     caught.stack.contains(Primitive.String) shouldBe true
   }
 
-  def `find a session in parameter`: Unit = {
+  test("find a session in parameter") {
     pending
     val session = newDesign
       .bind[Printer].to[ConsolePrinter]
@@ -365,7 +365,7 @@ class AirframeTest extends AirSpec {
     new ClassWithContext(session)
   }
 
-  def `support binding listener`: Unit = {
+  test("support binding listener") {
     val counter = new AtomicInteger(0)
 
     val design =
@@ -386,7 +386,7 @@ class AirframeTest extends AirSpec {
     counter.get shouldBe 2
   }
 
-  def `support binding via factory`: Unit = {
+  test("support binding via factory") {
     val d = newDesign
       .bind[HelloConfig].toInstance(HelloConfig("Hello Airframe!"))
 
@@ -397,7 +397,7 @@ class AirframeTest extends AirSpec {
 
     debug(f.hello2)
   }
-  def `support type alias`: Unit = {
+  test("support type alias") {
     val apple = Surface.of[Apple]
     debug(s"apple: ${apple}, alias:${apple.isAlias}")
 
@@ -413,11 +413,11 @@ class AirframeTest extends AirSpec {
     tagged.lemon.name shouldBe ("lemon")
   }
 
-  def `support nested context injection`: Unit = {
+  test("support nested context injection") {
     val session = newDesign.newSession
     session.build[Nested]
   }
-  def `support injecting to a class`: Unit = {
+  test("support injecting to a class") {
     val d = newDesign
     val s = d.newSession.build[ClassInjection]
     s.obj != null shouldBe true
@@ -425,7 +425,7 @@ class AirframeTest extends AirSpec {
     d.newSession.build[NestedClassInjection]
   }
 
-  def `build abstract type that has concrete binding`: Unit = {
+  test("build abstract type that has concrete binding") {
     val d = newDesign
       .bind[AbstractModule].to[ConcreteModule]
     val s = d.newSession
@@ -433,7 +433,7 @@ class AirframeTest extends AirSpec {
     m.hello
   }
 
-  def `build nested abstract type that has concrete binding`: Unit = {
+  test("build nested abstract type that has concrete binding") {
     val d = newDesign
       .bind[AbstractModule].to[ConcreteModule]
     val s = d.newSession
@@ -441,7 +441,7 @@ class AirframeTest extends AirSpec {
     m.m.hello
   }
 
-  def `build a trait bound to singleton`: Unit = {
+  test("build a trait bound to singleton") {
     val d = newDesign
       .bind[AbstractModule].toInstance(ConcreteSingleton)
     val s = d.newSession
@@ -449,13 +449,13 @@ class AirframeTest extends AirSpec {
     m.hello
   }
 
-  def `build a trait`: Unit = {
+  test("build a trait") {
     val h = newDesign
     val s = h.newSession
     val m = s.build[NonAbstractModule]
   }
 
-  def `build a trait to singleton`: Unit = {
+  test("build a trait to singleton") {
     val d =
       newDesign
         .bind[NonAbstractModule].toInstance(SingletonOfNonAbstractModules)
@@ -464,7 +464,7 @@ class AirframeTest extends AirSpec {
     m shouldBeTheSameInstanceAs SingletonOfNonAbstractModules
   }
 
-  def `create single with inject eagerly`: Unit = {
+  test("create single with inject eagerly") {
     val start = System.nanoTime()
     val d = newSilentDesign
       .bind[EagerSingletonWithInject].toEagerSingleton
@@ -474,7 +474,7 @@ class AirframeTest extends AirSpec {
     s.initializedTime <= current shouldBe true
   }
 
-  def `support onInit and onShutdown`: Unit = {
+  test("support onInit and onShutdown") {
     val session = newSilentDesign.newSession
     val e       = session.build[LifeCycleExample]
     e.module.initCount.get() shouldBe 1
@@ -483,7 +483,7 @@ class AirframeTest extends AirSpec {
     e.module.closeCount.get() shouldBe 1
   }
 
-  def `bind lifecycle`: Unit = {
+  test("bind lifecycle") {
     val session = newSilentDesign.newSession
     val e       = session.build[BindLifeCycleExample2]
     e.module.initCount.get() shouldBe 1
@@ -495,7 +495,7 @@ class AirframeTest extends AirSpec {
     e.module.closeCount.get() shouldBe 1
   }
 
-  def `extend Design`: Unit = {
+  test("extend Design") {
     val d1 = newDesign
       .bind[HeavyObject].toSingleton
 
@@ -509,7 +509,7 @@ class AirframeTest extends AirSpec {
     session.build[ConsoleConfig]
   }
 
-  def `throw MISSING_SESSION`: Unit = {
+  test("throw MISSING_SESSION") {
     warn("Running MISSING_SESSION test")
     val caught = intercept[MISSING_SESSION] {
       Session.findSession(Surface.of[Test], new Test {})

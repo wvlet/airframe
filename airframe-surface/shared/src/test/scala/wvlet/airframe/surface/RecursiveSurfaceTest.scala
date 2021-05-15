@@ -28,12 +28,12 @@ class RecursiveSurfaceTest extends SurfaceSpec {
 
   import RecursiveSurfaceTest._
 
-  def `find surface from full type name string`: Unit = {
+  test("find surface from full type name string") {
     val s = Surface.of[Leaf]
     assert(surface.getCached("wvlet.airframe.surface.RecursiveSurfaceTest.Leaf") == s)
   }
 
-  def `support recursive type`: Unit = {
+  test("support recursive type") {
     val c: Surface = Surface.of[Cons]
     assert(c.toString == "Cons")
 
@@ -53,7 +53,7 @@ class RecursiveSurfaceTest extends SurfaceSpec {
     assert(lazyC.objectFactory.isDefined)
   }
 
-  def `support generic recursive type`: Unit = {
+  test("support generic recursive type") {
     val c: Surface = Surface.of[TypedCons[String]]
     assert(c.toString == "TypedCons[String]")
 

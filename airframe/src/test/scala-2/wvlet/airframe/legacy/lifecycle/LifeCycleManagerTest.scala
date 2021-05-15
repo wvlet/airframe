@@ -80,12 +80,12 @@ trait LifeCycleOrder {
 class LifeCycleManagerTest extends AirSpec {
   scalaJsSupport
 
-  def `call init hook`: Unit = {
+  test("call init hook") {
     val c = newSilentDesign.bind[CounterService].toSingleton.newSession.build[CounterService]
     c.initCount shouldBe 1
   }
 
-  def `call lifecycle hooks properly for singleton`: Unit = {
+  test("call lifecycle hooks properly for singleton") {
     val session      = newSilentDesign.bind[CounterService].toSingleton.newSession
     val multiCounter = session.build[CounterUser]
     multiCounter.counter1 shouldBeTheSameInstanceAs (multiCounter.counter2)
@@ -108,7 +108,7 @@ class LifeCycleManagerTest extends AirSpec {
     multiCounter.counter1.shutdownCount shouldBe 1
   }
 
-  def `start and shutdown only once for singleton referenced multiple times`: Unit = {
+  test("start and shutdown only once for singleton referenced multiple times") {
     val session = newSilentDesign.bind[Counter].toSingleton.newSession
 
     val u1 = session.build[User1]
@@ -137,7 +137,7 @@ class LifeCycleManagerTest extends AirSpec {
     u2.shutdownCount shouldBe 1
   }
 
-  def `run start hook when the session is already started`: Unit = {
+  test("run start hook when the session is already started") {
     val session = newSilentDesign.newSession
 
     var cs: CounterService = null
@@ -152,7 +152,7 @@ class LifeCycleManagerTest extends AirSpec {
     cs.shutdownCount shouldBe 1
   }
 
-  def `run start hook only once for singleton after session is started`: Unit = {
+  test("run start hook only once for singleton after session is started") {
     val session = newSilentDesign.bind[Counter].toSingleton.newSession
 
     var cs: CounterService  = null
@@ -178,7 +178,7 @@ class LifeCycleManagerTest extends AirSpec {
     cs.counterService shouldBeTheSameInstanceAs (cs2.counterService)
   }
 
-  def `execute beforeShutdown hook`: Unit = {
+  test("execute beforeShutdown hook") {
     val session = newSilentDesign.newSession
     val l       = session.build[LifeCycleOrder]
     session.start {}
@@ -188,7 +188,7 @@ class LifeCycleManagerTest extends AirSpec {
     l.shutdown shouldBe 4
   }
 
-  def `show life cycle log`: Unit = {
+  test("show life cycle log") {
     newDesign.withSession { session =>
       // Just show debug logs
     }
@@ -211,7 +211,7 @@ class LifeCycleManagerTest extends AirSpec {
     }
   }
 
-  def `handle exceptions in shutdown hooks`: Unit = {
+  test("handle exceptions in shutdown hooks") {
     val e = intercept[SHUTDOWN_FAILURE] {
       newSilentDesign.build[CloseExceptionTest] { x => }
     }
@@ -224,7 +224,7 @@ class LifeCycleManagerTest extends AirSpec {
     }
   }
 
-  def `handle multiple exceptions`: Unit = {
+  test("handle multiple exceptions") {
     val e = intercept[MULTIPLE_SHUTDOWN_FAILURES] {
       newSilentDesign
         .bind[CloseExceptionTest].toSingleton // Inner class needs to be defined where the outer context can be found

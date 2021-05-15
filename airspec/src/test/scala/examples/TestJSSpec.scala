@@ -32,7 +32,7 @@ class TestJSSpec extends AirSpec with LogSupport {
     assert(name == "hello Scala.js")
   }
 
-  def `natural method name test`: Unit = {
+  test("natural method name test") {
     debug("hello symbol name tests")
   }
 }
@@ -40,9 +40,9 @@ class TestJSSpec extends AirSpec with LogSupport {
 class FlexWordSpecTest extends AirSpec {
   scalaJsSupport
 
-  def `should support long method names`: Unit = {}
+  test("should support long method names") {}
 }
 
 class NoTestTest extends AirSpec {
-  def `should show warning for Scala.js`: Unit = {}
+  test("should show warning for Scala.js") {}
 }

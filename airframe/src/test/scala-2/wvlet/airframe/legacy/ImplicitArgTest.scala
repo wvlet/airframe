@@ -28,7 +28,7 @@ class ImplicitArgTest extends AirSpec {
 
   import ImplicitArgTest._
 
-  def `support implicit args`: Unit = {
+  test("support implicit args") {
     val d = newDesign
       .bind[String].toInstance("hello")
       .bind[Int].toInstance(10)

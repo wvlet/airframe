@@ -23,7 +23,7 @@ import scala.util.Random
 class MessageFormatTest extends AirSpec with Timer {
   scalaJsSupport
 
-  def `cover all byte codes`: Unit = {
+  test("cover all byte codes") {
     def checkV(b: Byte, tpe: ValueType): Unit = {
       try MessageFormat.of(b).valueType shouldBe tpe
       catch {
@@ -99,7 +99,7 @@ class MessageFormatTest extends AirSpec with Timer {
     }
   }
 
-  def `improve the valueOf performance`: Unit = {
+  test("improve the valueOf performance") {
     val N   = 10000
     val idx = (0 until N).map(x => Random.nextInt(256).toByte).toArray[Byte]
 

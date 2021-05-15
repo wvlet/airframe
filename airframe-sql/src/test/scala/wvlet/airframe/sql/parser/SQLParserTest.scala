@@ -61,27 +61,27 @@ class SQLParserTest extends AirSpec {
     s.foreach { sql => roundtrip(sql) }
   }
 
-  def `parse selection queries`: Unit = {
+  test("parse selection queries") {
     roundtrip(SQLBenchmark.selection)
   }
 
-  def `parse DDL queries`: Unit = {
+  test("parse DDL queries") {
     roundtrip(SQLBenchmark.ddl)
   }
 
-  def `parse TPC-H`: Unit = {
+  test("parse TPC-H") {
     roundtrip(SQLBenchmark.tpcH)
   }
 
-  def `parse TPC-DS`: Unit = {
+  test("parse TPC-DS") {
     roundtrip(SQLBenchmark.tpcDS)
   }
 
-  def `parse hive queries`: Unit = {
+  test("parse hive queries") {
     roundtrip(SQLBenchmark.hive)
   }
 
-  def `parse private queries`: Unit = {
+  test("parse private queries") {
     roundtrip(SQLBenchmark.privateQueries)
   }
 }

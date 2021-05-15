@@ -41,13 +41,13 @@ class SessionTest extends AirSpec {
       .bind[HelloBind].toSingleton
       .noLifeCycleLogging
 
-  def `pre-compile session injection template`: Unit = {
+  test("pre-compile session injection template") {
     val session = newDesign.newSession
     val b       = session.build[BindExample]
     classOf[BindExample].isAssignableFrom(b.getClass) shouldBe true
   }
 
-  def `pre-compile singleton binding`: Unit = {
+  test("pre-compile singleton binding") {
     // HelloBind should be instantiated without using runtime-eval
     val session = newDesign
       .bind[HelloBind].toEagerSingleton
@@ -57,7 +57,7 @@ class SessionTest extends AirSpec {
     classOf[BindExample].isAssignableFrom(b.getClass) shouldBe true
   }
 
-  def `find self session from binding`: Unit = {
+  test("find self session from binding") {
     val session = newDesign
       .bind[HelloBind].toSingleton
       .newSession
@@ -66,7 +66,7 @@ class SessionTest extends AirSpec {
     e.s shouldBeTheSameInstanceAs (session)
   }
 
-  def `should bind an equivalent design`: Unit = {
+  test("should bind an equivalent design") {
     d1.build[DesignBindExample] { e => e.design shouldBe d1.minimize }
   }
 }

@@ -52,7 +52,7 @@ class ValueTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `tell most succinct integer type`: Unit = {
+  test("tell most succinct integer type") {
     forAll { (v: Byte) => checkSuccinctType(OffsetPacker.packByte(_, v), MessageFormat.INT8) }
     forAll { (v: Short) => checkSuccinctType(OffsetPacker.packShort(_, v), MessageFormat.INT16) }
     forAll { (v: Int) => checkSuccinctType(OffsetPacker.packInt(_, v), MessageFormat.INT32) }
@@ -75,28 +75,28 @@ class ValueTest extends AirSpec with PropertyCheck {
     v.valueType shouldBe expectedType
   }
 
-  def `have nil`: Unit = {
+  test("have nil") {
     check(newNil, ValueType.NIL, "null", "null")
   }
 
-  def `have boolean`: Unit = {
+  test("have boolean") {
     check(newBoolean(true), ValueType.BOOLEAN, "true", "true")
     check(newBoolean(false), ValueType.BOOLEAN, "false", "false")
   }
 
-  def `have integer`: Unit = {
+  test("have integer") {
     check(newInteger(3), ValueType.INTEGER, "3", "3")
     check(newInteger(BigInteger.valueOf(1324134134134L)), ValueType.INTEGER, "1324134134134", "1324134134134")
   }
 
-  def `have float`: Unit = {
+  test("have float") {
     check(newFloat(0.1), ValueType.FLOAT, "0.1", "0.1")
     check(newFloat(Double.NaN), ValueType.FLOAT, "null", "null")
     check(newFloat(Double.PositiveInfinity), ValueType.FLOAT, "null", "null")
     check(newFloat(Double.NegativeInfinity), ValueType.FLOAT, "null", "null")
   }
 
-  def `have array`: Unit = {
+  test("have array") {
     val a = newArray(newInteger(0), newString("hello"))
     a.size shouldBe 2
     a(0) shouldBe LongValue(0)
@@ -110,13 +110,13 @@ class ValueTest extends AirSpec with PropertyCheck {
     )
   }
 
-  def `have string`: Unit = {
+  test("have string") {
     // toString is for extracting string values
     // toJson should quote strings
     check(newString("1"), ValueType.STRING, "1", "\"1\"")
   }
 
-  def `have Binary`: Unit = {
+  test("have Binary") {
     val b = newBinary(Array[Byte]('a', 'b', 'c', '\n', '\b', '\r', '\t', '\f', '\\', '"', 'd', 0x01))
     b.valueType shouldBe ValueType.BINARY
     val json = "\"" + Base64.getEncoder.encodeToString(b.v) + "\""
@@ -124,7 +124,7 @@ class ValueTest extends AirSpec with PropertyCheck {
     b.toString shouldBe json
   }
 
-  def `have ext`: Unit = {
+  test("have ext") {
     val e = newExt(-1, Array[Byte]('a', 'b', 'c'))
     e.valueType shouldBe ValueType.EXTENSION
     val json = s"""[-1,"${Base64.getEncoder.encodeToString(e.v)}"]"""
@@ -132,7 +132,7 @@ class ValueTest extends AirSpec with PropertyCheck {
     e.toString shouldBe json
   }
 
-  def `have map`: Unit = {
+  test("have map") {
     // Map value
     val m = newMap(
       newString("id")      -> newInteger(1001),
@@ -166,7 +166,7 @@ class ValueTest extends AirSpec with PropertyCheck {
     sanitize(a) shouldBe sanitize(b)
   }
 
-  def `check appropriate range for integers`: Unit = {
+  test("check appropriate range for integers") {
     import java.lang.{Byte, Short}
 
     import ValueFactory._
@@ -197,7 +197,7 @@ class ValueTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `escape special characters`: Unit = {
+  test("escape special characters") {
     val str = "😏🙌"
     val s   = new StringBuilder
     appendJsonString(s, str)

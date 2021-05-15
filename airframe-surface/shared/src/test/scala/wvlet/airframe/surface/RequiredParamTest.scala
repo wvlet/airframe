@@ -24,7 +24,7 @@ case class ModelWithRequiredParam(@required id: String, name: String) {
 class RequiredParamTest extends AirSpec {
   scalaJsSupport
 
-  def `find required annotation`: Unit = {
+  test("find required annotation") {
     val s      = Surface.of[ModelWithRequiredParam]
     val p_id   = s.params(0)
     val p_name = s.params(1)
@@ -33,7 +33,7 @@ class RequiredParamTest extends AirSpec {
     p_name.isRequired shouldBe false
   }
 
-  def `find required method param annotation`: Unit = {
+  test("find required method param annotation") {
     val ms = Surface.methodsOf[ModelWithRequiredParam]
     val m  = ms.find(_.name == "method").get
 
@@ -43,7 +43,7 @@ class RequiredParamTest extends AirSpec {
 
   case class LocalA(@required id: String, name: String)
 
-  def `find required annotation from local classes`: Unit = {
+  test("find required annotation from local classes") {
     val s    = Surface.of[LocalA]
     val p_id = s.params.find(_.name == "id").get
     p_id.isRequired shouldBe true

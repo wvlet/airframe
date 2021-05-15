@@ -86,7 +86,7 @@ object BindFactory {
 
 class BindFactory extends AirSpec {
   scalaJsSupport
-  def `run`: Unit = {
+  test("run") {
     val b = BindFactory
   }
 }

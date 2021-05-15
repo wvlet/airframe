@@ -102,7 +102,7 @@ object DITest extends AirSpec {
   class CycleB(a: CycleA)
   class CycleA(b: CycleB)
 
-  def `found cyclic dependencies`: Unit = {
+  test("found cyclic dependencies") {
     warn("Running cyclic dependency test: A->B->A")
     val caught = intercept[CYCLIC_DEPENDENCY] {
       newSilentDesign.build[CycleA] { c => }

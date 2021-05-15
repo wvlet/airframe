@@ -38,7 +38,7 @@ class ConfigTest extends AirSpec {
       .registerFromYaml[SampleConfig]("myconfig.yml")
       .registerFromYaml[ClassConfig]("classes.yml")
 
-  def `MapConfig should read map type configuration items`: Unit = {
+  test("MapConfig should read map type configuration items") {
     val config      = loadConfig("development")
     val classConfig = config.of[ClassConfig]
     classConfig.classes.size shouldBe 3
@@ -52,43 +52,43 @@ class ConfigTest extends AirSpec {
     classConfig.classAssignments("suneo") shouldBe "class3"
   }
 
-  def `ConfigEnv should set config paths`: Unit = {
+  test("ConfigEnv should set config paths") {
     val env    = ConfigEnv("debug", "default", Seq.empty)
     val newEnv = env.withConfigPaths(Seq("."))
     newEnv.configPaths.contains(".") shouldBe true
   }
 
-  def `cleanup config paths`: Unit = {
+  test("cleanup config paths") {
     Config.cleanupConfigPaths(Seq("")).contains("") shouldBe false
     Config.cleanupConfigPaths(Seq("")).contains(".") shouldBe true
   }
 
-  def `use current directory for search path`: Unit = {
+  test("use current directory for search path") {
     val c = Config(env = "debug")
     c.env.configPaths.contains(".") shouldBe true
   }
 
-  def `customize env`: Unit = {
+  test("customize env") {
     val config    = Config(env = "staging", defaultEnv = "default")
     val devConfig = config.withEnv("development", "test")
     devConfig.env.env shouldBe "development"
     devConfig.env.defaultEnv shouldBe "test"
   }
 
-  def `customize config paths`: Unit = {
+  test("customize config paths") {
     val config    = Config(env = "staging", defaultEnv = "default", configPaths = Seq.empty)
     val newConfig = config.withConfigPaths(Seq("."))
     newConfig.env.configPaths.contains(".") shouldBe true
   }
 
-  def `throw error on unknown config type`: Unit = {
+  test("throw error on unknown config type") {
     val config = Config(env = "staging", defaultEnv = "default", configPaths = Seq.empty)
     intercept[IllegalArgumentException] {
       config.of[String]
     }
   }
 
-  def `support getOrElse`: Unit = {
+  test("support getOrElse") {
     val config = Config(env = "staging", defaultEnv = "default", configPaths = Seq.empty).register[Int](10)
     val s      = config.getOrElse[String]("hello world")
     s shouldBe "hello world"
@@ -96,14 +96,14 @@ class ConfigTest extends AirSpec {
     config.getOrElse[Int](20) shouldBe 10
   }
 
-  def `support registerFromYamlOrElse`: Unit = {
+  test("support registerFromYamlOrElse") {
     val config = Config(env = "staging", defaultEnv = "default", configPaths = Seq.empty)
       .registerFromYamlOrElse[String]("unknown-yaml-file.yml", "hello world")
     val s = config.of[String]
     s shouldBe "hello world"
   }
 
-  def `map yaml file into a case class`: Unit = {
+  test("map yaml file into a case class") {
     val config = loadConfig("default")
 
     val c1 = config.of[SampleConfig]
@@ -111,7 +111,7 @@ class ConfigTest extends AirSpec {
     c1.fullName shouldBe "default-config"
   }
 
-  def `read different env config`: Unit = {
+  test("read different env config") {
     val config = loadConfig("staging")
 
     val c = config.of[SampleConfig]
@@ -119,7 +119,7 @@ class ConfigTest extends AirSpec {
     c.fullName shouldBe "staging-config"
   }
 
-  def `allow override`: Unit = {
+  test("allow override") {
     val config = Config(env = "staging", configPaths = configPaths)
       .registerFromYaml[SampleConfig]("myconfig.yml").register[SampleConfig](SampleConfig(10, "hello"))
 
@@ -128,7 +128,7 @@ class ConfigTest extends AirSpec {
     c.fullName shouldBe "hello"
   }
 
-  def `create a new config based on existing one`: Unit = {
+  test("create a new config based on existing one") {
     val config = Config(env = "default", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml")
 
     val config2 = Config(env = "production", configPaths = configPaths) + config
@@ -138,7 +138,7 @@ class ConfigTest extends AirSpec {
     c2.fullName shouldBe "default-config"
   }
 
-  def `read tagged type`: Unit = {
+  test("read tagged type") {
     val config = Config(env = "default", configPaths = configPaths)
       .registerFromYaml[SampleConfig @@ AppScope]("myconfig.yml")
       .register[SampleConfig @@ SessionScope](SampleConfig(2, "session").asInstanceOf[SampleConfig @@ SessionScope])
@@ -150,14 +150,14 @@ class ConfigTest extends AirSpec {
     s shouldBe SampleConfig(2, "session")
   }
 
-  def `throw exception on missing environment`: Unit = {
+  test("throw exception on missing environment") {
     intercept[IllegalArgumentException] {
       val config = Config(env = "weird-env", defaultEnv = "unknown", configPaths = configPaths)
         .registerFromYaml[SampleConfig]("myconfig.yml")
     }
   }
 
-  def `register the default objects`: Unit = {
+  test("register the default objects") {
     val config = Config(env = "default").registerDefault[DefaultConfig].registerDefault[SampleConfig]
 
     config.of[DefaultConfig] shouldBe DefaultConfig()
@@ -171,7 +171,7 @@ class ConfigTest extends AirSpec {
     c2 shouldBe DefaultConfig(1, "world")
   }
 
-  def `show the default configuration`: Unit = {
+  test("show the default configuration") {
     val config = Config(env = "default", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml")
 
     val default = config.defaultValueOf[SampleConfig]
@@ -195,7 +195,7 @@ class ConfigTest extends AirSpec {
     fullname.current shouldBe "default-config"
   }
 
-  def `override values with properties`: Unit = {
+  test("override values with properties") {
     val p = new Properties
     p.setProperty("sample.id", "10")
     p.setProperty("sample@appscope.id", "2")
@@ -231,7 +231,7 @@ class ConfigTest extends AirSpec {
     }
   }
 
-  def `parse configuration property keys`: Unit = {
+  test("parse configuration property keys") {
     PropertiesConfig.configKeyOf("tpe.param") shouldBe ConfigKey(Prefix("tpe", None), "param")
     PropertiesConfig.configKeyOf("tpe@tag.param") shouldBe ConfigKey(Prefix("tpe", Some("tag")), "param")
     PropertiesConfig.configKeyOf("tpe@@tag.param") shouldBe ConfigKey(Prefix("tpe", Some("tag")), "param")
@@ -244,7 +244,7 @@ class ConfigTest extends AirSpec {
     }
   }
 
-  def `find unused properties`: Unit = {
+  test("find unused properties") {
     val p = new Properties
     p.setProperty("sample.id", "10")
     p.setProperty("sample@appscope.id", "2")
@@ -261,14 +261,14 @@ class ConfigTest extends AirSpec {
     unused.get.keySet.contains("sample@appscope.message") shouldBe true
   }
 
-  def `report missing Properties file error`: Unit = {
+  test("report missing Properties file error") {
     intercept[FileNotFoundException] {
       val c = Config(env = "default", configPaths = configPaths)
         .overrideWithPropertiesFile("unknown-propertiles-file-path.propertiles")
     }
   }
 
-  def `report error if unused Properties are found`: Unit = {
+  test("report error if unused Properties are found") {
     intercept[IllegalArgumentException] {
       val p = new Properties()
       p.setProperty("sample.idid", "10")
@@ -277,14 +277,14 @@ class ConfigTest extends AirSpec {
     }
   }
 
-  def `report missing YAML file error`: Unit = {
+  test("report missing YAML file error") {
     intercept[FileNotFoundException] {
       val c =
         Config(env = "default", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig-missing.yml")
     }
   }
 
-  def `report missing value error`: Unit = {
+  test("report missing value error") {
     intercept[Exception] {
       val c = Config(env = "unknown-env", defaultEnv = "unknown-default", configPaths = configPaths)
         .registerFromYaml[SampleConfig]("myconfig.yml")

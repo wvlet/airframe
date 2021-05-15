@@ -55,7 +55,7 @@ object FactoryBindingLifecycleTest {
 class FactoryBindingLifecycleTest extends AirSpec {
   import FactoryBindingLifecycleTest._
 
-  def `run shutdown hooks`: Unit = {
+  test("run shutdown hooks") {
     threadCounter.get() shouldBe 0
     newSilentDesign.build[ClientFactory] { f =>
       startCounter shouldBe empty

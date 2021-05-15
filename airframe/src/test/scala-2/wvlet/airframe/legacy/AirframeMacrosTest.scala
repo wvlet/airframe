@@ -47,13 +47,13 @@ class ConcreteClass {
 class AirframeMacrosTest extends AirSpec {
   scalaJsSupport
 
-  def `build trait at compile time`: Unit = {
+  test("build trait at compile time") {
     val session = newDesign.newSession
     session.build[NonAbstractTrait]
     session.build[App1]
   }
 
-  def `build abstract trait`: Unit = {
+  test("build abstract trait") {
     val session = newDesign
       .bind[AbstractTrait].to[ConcreteTrait]
       .newSession
@@ -64,7 +64,7 @@ class AirframeMacrosTest extends AirSpec {
     app.t.abstractMethod
   }
 
-  def `inject Session to concrete class`: Unit = {
+  test("inject Session to concrete class") {
     newDesign.newSession.build[ConcreteClass]
   }
 }

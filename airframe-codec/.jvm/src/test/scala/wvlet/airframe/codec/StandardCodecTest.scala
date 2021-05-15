@@ -21,7 +21,7 @@ import wvlet.airframe.surface.Surface
 /**
   */
 class StandardCodecTest extends CodecSpec {
-  def `support File`: Unit = {
+  test("support File") {
     val codec          = MessageCodec.of[File]
     def check(v: File) = checkCodec(codec, v)
     check(new File("sample.txt"))
@@ -33,7 +33,7 @@ class StandardCodecTest extends CodecSpec {
     check(new File("relative/path.txt"))
   }
 
-  def `support Enum`: Unit = {
+  test("support Enum") {
     for (v <- TestEnum.values()) {
       roundtrip[TestEnum](Surface.of[TestEnum], v)
     }
@@ -45,7 +45,7 @@ class StandardCodecTest extends CodecSpec {
     v shouldBe empty
   }
 
-  def `support case-insensitive enum match`: Unit = {
+  test("support case-insensitive enum match") {
     val p     = MessagePack.newBufferPacker
     val codec = MessageCodec.of[TestEnum]
     p.packString("Running")

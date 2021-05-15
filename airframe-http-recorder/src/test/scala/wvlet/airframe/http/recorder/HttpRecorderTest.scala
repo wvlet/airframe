@@ -44,7 +44,7 @@ class HttpRecorderTest extends AirSpec {
     }
   }
 
-  def `start HTTP recorder`: Unit = {
+  test("start HTTP recorder") {
     val recorderConfig =
       HttpRecorderConfig(recorderName = "wvlet.org", destUri = "https://wvlet.org", sessionName = "airframe")
     val path = "/airframe/"
@@ -90,7 +90,7 @@ class HttpRecorderTest extends AirSpec {
     errorResponse.statusCode shouldBe 404
   }
 
-  def `switch recording/replaying`: Unit = {
+  test("switch recording/replaying") {
     val recorderConfig =
       HttpRecorderConfig(destUri = "https://wvlet.org", sessionName = "airframe-path-through")
 
@@ -119,7 +119,7 @@ class HttpRecorderTest extends AirSpec {
     }
   }
 
-  def `programmable server`: Unit = {
+  test("programmable server") {
     val response = withResource(HttpRecorder.createInMemoryProgrammableServer) { server =>
       server.clearSession
 
@@ -143,7 +143,7 @@ class HttpRecorderTest extends AirSpec {
     response.contentString shouldBe "Hello World!"
   }
 
-  def `delete expired records`: Unit = {
+  test("delete expired records") {
     val recorderConfig = HttpRecorder.config
       .withDestUri("https://wvlet.org")
       .withSessionName("airframe")
@@ -161,7 +161,7 @@ class HttpRecorderTest extends AirSpec {
     withResource(new HttpRecordStore(recorderConfig)) { store => store.numRecordsInSession shouldBe 0 }
   }
 
-  def `support binary contents`: Unit = {
+  test("support binary contents") {
     val storeConfig = HttpRecorderConfig(destUri = "localhost", sessionName = "binary-test")
     val store       = new HttpRecordStore(storeConfig, dropSession = true)
 
@@ -194,7 +194,7 @@ class HttpRecorderTest extends AirSpec {
     }
   }
 
-  def `support simple request matcher`: Unit = {
+  test("support simple request matcher") {
     val config = HttpRecorderConfig(requestMatcher = PathOnlyMatcher)
     withResource(HttpRecorder.createInMemoryServer(config)) { server =>
       val request = Request("/airframe")
@@ -213,7 +213,7 @@ class HttpRecorderTest extends AirSpec {
     }
   }
 
-  def `dump http record store`: Unit = {
+  test("dump http record store") {
     val config = HttpRecorderConfig(requestMatcher = PathOnlyMatcher)
     withResource(HttpRecorder.createInMemoryServer(config)) { server =>
       val request1 = Request("/airframe")

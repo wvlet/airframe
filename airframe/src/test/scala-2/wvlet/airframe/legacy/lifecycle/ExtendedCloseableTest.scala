@@ -35,7 +35,7 @@ class ExtendedCloseableTest extends AirSpec {
 
   import wvlet.airframe._
 
-  def `close only once`: Unit = {
+  test("close only once") {
     val d = newSilentDesign
       .bind[A].to[B]
 

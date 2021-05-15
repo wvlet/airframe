@@ -26,14 +26,14 @@ import scala.concurrent.Future
 /**
   */
 class RouterTest extends AirSpec {
-  def `reject invalid path`: Unit = {
+  test("reject invalid path") {
     val e = intercept[IllegalArgumentException] {
       Router.of[InvalidService]
     }
     trace(e.getMessage)
   }
 
-  def `register functions as routes`: Unit = {
+  test("register functions as routes") {
     val r = Router.of[ControllerExample]
 
     trace(r.routes)
@@ -43,14 +43,14 @@ class RouterTest extends AirSpec {
     post shouldBe defined
   }
 
-  def `support prefixed paths`: Unit = {
+  test("support prefixed paths") {
     val r = Router.of[PrefixExample]
 
     trace(r.routes)
     r.routes.head.path shouldBe "/v1/hello"
   }
 
-  def `combination of multiple controllers`: Unit = {
+  test("combination of multiple controllers") {
     val r = Router
       .add[ControllerExample]
       .add[PrefixExample]
@@ -59,7 +59,7 @@ class RouterTest extends AirSpec {
     r.routes.find(_.path == "/v1/hello") shouldBe defined
   }
 
-  def `support nested prefixed paths`: Unit = {
+  test("support nested prefixed paths") {
     val r = Router
       .add[NextedPathsExample]
 
@@ -74,7 +74,7 @@ class RouterTest extends AirSpec {
   trait RouteB
   trait RouteC
 
-  def `stack Routes`: Unit = {
+  test("stack Routes") {
     val r = Router
       .add[RouteA]
       .add[RouteB]
@@ -86,7 +86,7 @@ class RouterTest extends AirSpec {
   trait FilterA extends HttpFilterType
   trait RouteD
 
-  def `filter Routers`: Unit = {
+  test("filter Routers") {
     val r = Router
       .add[FilterA]
       .andThen(
@@ -103,7 +103,7 @@ class RouterTest extends AirSpec {
     r.children(1).surface shouldBe defined
   }
 
-  def `find target method`: Unit = {
+  test("find target method") {
     val router = Router.of[ControllerExample]
 
     val r = router.findRoute(Http.GET("/user/1"))
@@ -177,7 +177,7 @@ class RouterTest extends AirSpec {
     call(Http.GET("/v1/config/info"), "hello")
   }
 
-  def `find ambiguous path patterns`: Unit = {
+  test("find ambiguous path patterns") {
     val r = Router.add[AmbiguousPathExample]
     warn("Ambiguous HTTP path pattern test")
     val ex = intercept[Throwable] {
@@ -186,7 +186,7 @@ class RouterTest extends AirSpec {
     warn(ex.getMessage)
   }
 
-  def `find methods with the same prefix`: Unit = {
+  test("find methods with the same prefix") {
     val r  = Router.add[SharedPathPrefix]
     val m1 = r.findRoute(Http.GET("/v1/config"))
     m1 shouldBe defined
@@ -197,14 +197,14 @@ class RouterTest extends AirSpec {
     m2.get.route.path shouldBe "/v1/config/app"
   }
 
-  def `build DFA`: Unit = {
+  test("build DFA") {
     // Test DFA builder
     val r   = Router.add[ControllerExample]
     val dfa = RouteMatcher.buildPathDFA(r.routes)
     debug(dfa.toString)
   }
 
-  def `unwrap Future`: Unit = {
+  test("unwrap Future") {
     Router.isFuture(Surface.of[Future[Int]]) shouldBe true
     Router.isFuture(Surface.of[Int]) shouldBe false
   }

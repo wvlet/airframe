@@ -57,7 +57,7 @@ class HttpClientTest extends AirSpec {
     }
   }
 
-  def `retry on failed http requests`: Unit = {
+  test("retry on failed http requests") {
     val retryableResponses: Seq[HttpMessage.Response] = Seq(
       Http.response(HttpStatus.ServiceUnavailable_503),
       Http.response(HttpStatus.RequestTimeout_408),
@@ -76,7 +76,7 @@ class HttpClientTest extends AirSpec {
       }
     }
   }
-  def `never retry on deterministic http request failures`: Unit = {
+  test("never retry on deterministic http request failures") {
     val nonRetryableResponses: Seq[HttpMessage.Response] = Seq(
       Http.response(HttpStatus.BadRequest_400, "bad request"),
       Http.response(HttpStatus.Unauthorized_401, "permission deniend"),
@@ -92,7 +92,7 @@ class HttpClientTest extends AirSpec {
     }
   }
 
-  def `retry on non-deterministic failures`: Unit = {
+  test("retry on non-deterministic failures") {
     val retryableExceptions: Seq[Throwable] = Seq(
       new TimeoutException("timeout"),
       new ExecutionException(new InterruptedException("exception")),
@@ -116,7 +116,7 @@ class HttpClientTest extends AirSpec {
     }
   }
 
-  def `never retry on deterministic failures`: Unit = {
+  test("never retry on deterministic failures") {
     val nonRetryableExceptions: Seq[Throwable] = Seq(
       new ExecutionException(new SSLHandshakeException("exception")),
       new ExecutionException(new SSLKeyException("exception")),

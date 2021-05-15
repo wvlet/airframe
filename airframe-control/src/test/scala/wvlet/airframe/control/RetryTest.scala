@@ -23,7 +23,7 @@ import scala.concurrent.TimeoutException
 class RetryTest extends AirSpec {
   scalaJsSupport
 
-  def `support backoff retry`: Unit = {
+  test("support backoff retry") {
     var count = 0
 
     val r =
@@ -44,7 +44,7 @@ class RetryTest extends AirSpec {
     count shouldBe 3
   }
 
-  def `support bounded backoff retry`: Unit = {
+  test("support bounded backoff retry") {
     val maxWait = 50000
     var r =
       Retry
@@ -60,7 +60,7 @@ class RetryTest extends AirSpec {
     waitTotal <= maxWait shouldBe true
   }
 
-  def `support jitter retry`: Unit = {
+  test("support jitter retry") {
     var count = 0
 
     val r =
@@ -80,7 +80,7 @@ class RetryTest extends AirSpec {
     count shouldBe 2
   }
 
-  def `throw max retry exception`: Unit = {
+  test("throw max retry exception") {
     val e = intercept[MaxRetryException] {
       Retry
         .withBackOff(maxRetry = 3)
@@ -99,7 +99,7 @@ class RetryTest extends AirSpec {
     e.retryContext.lastError.getClass shouldBe classOf[IllegalStateException]
   }
 
-  def `change retry wait strategy`: Unit = {
+  test("change retry wait strategy") {
     val r = Retry
       .withJitter()
       .withBackOff(initialIntervalMillis = 3)
@@ -113,7 +113,7 @@ class RetryTest extends AirSpec {
     m.maxRetry shouldBe 100
   }
 
-  def `pass the execution context`: Unit = {
+  test("pass the execution context") {
     val r = Retry.withBackOff(initialIntervalMillis = 0)
 
     var count   = 0
@@ -133,7 +133,7 @@ class RetryTest extends AirSpec {
     checked shouldBe true
   }
 
-  def `add extra wait`: Unit = {
+  test("add extra wait") {
     intercept[MaxRetryException] {
       Retry
         .withBackOff(initialIntervalMillis = 10)
@@ -151,7 +151,7 @@ class RetryTest extends AirSpec {
     }
   }
 
-  def `add extra wait factor`: Unit = {
+  test("add extra wait factor") {
     intercept[MaxRetryException] {
       Retry
         .withBackOff(initialIntervalMillis = 10)

@@ -23,13 +23,13 @@ object SurfaceJVMTest {
 
 import SurfaceJVMTest._
 class SurfaceJVMTest extends SurfaceSpec {
-  def `resolve ParSeq`: Unit = {
+  test("resolve ParSeq") {
     pendingUntil("ParSeq is not available in Scala 2.13")
     //import scala.collection.parallel.ParSeq
     //check(Surface.of[ParSeq[Int]], "ParSeq[Int]")
   }
 
-  def `resolve java util type`: Unit = {
+  test("resolve java util type") {
     check(Surface.of[File], "File")
     check(Surface.of[java.util.Date], "Date")
     check(Surface.of[java.time.LocalDate], "LocalDate")
@@ -37,7 +37,7 @@ class SurfaceJVMTest extends SurfaceSpec {
     check(Surface.of[java.time.Instant], "Instant")
   }
 
-  def `resolve java enum type`: Unit = {
+  test("resolve java enum type") {
     check(Surface.of[ChronoUnit], "ChronoUnit")
     check(Surface.of[MyChrono], "MyChrono:=ChronoUnit")
   }

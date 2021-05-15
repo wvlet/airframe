@@ -118,7 +118,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `pack/unpack values`: Unit = {
+  test("pack/unpack values") {
     import ValueFactory._
     val list: Seq[Value] = Seq(
       newNil,
@@ -138,13 +138,13 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `report error on too big integer`: Unit = {
+  test("report error on too big integer") {
     intercept[IllegalArgumentException] {
       OffsetPacker.packBigInteger(WriteCursor(buf, 0), BigInteger.valueOf(1).shiftLeft(64))
     }
   }
 
-  def `report overflow errors`: Unit = {
+  test("report overflow errors") {
     val b1 = Seq(BigInteger.valueOf(Byte.MinValue.toLong - 1), BigInteger.valueOf(Byte.MaxValue.toLong + 1))
     val b2 = Seq(BigInteger.valueOf(Short.MinValue.toLong - 1), BigInteger.valueOf(Short.MaxValue.toLong + 1))
     val b3 = Seq(BigInteger.valueOf(Int.MinValue.toLong - 1), BigInteger.valueOf(Int.MaxValue.toLong + 1))
@@ -178,35 +178,36 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `support Nil`: Unit = {
+  test("support Nil") {
     rawRoundtrip(null) { (cursor, v) => OffsetPacker.packNil(cursor) } { cursor =>
       OffsetUnpacker.unpackNil(cursor); null
     }
     rawRoundtrip(null) { (cursor, v) => OffsetPacker.packNil(cursor) } { cursor =>
       OffsetUnpacker.tryUnpackNil(cursor); null
     }
+    true
   }
 
-  def `support Boolean`: Unit = {
+  test("support Boolean") {
     roundtrip(true) { OffsetPacker.packBoolean(_, _) } { OffsetUnpacker.unpackBoolean(_) }
     roundtrip(false) { OffsetPacker.packBoolean(_, _) } { OffsetUnpacker.unpackBoolean(_) }
   }
 
-  def `support Fixnum`: Unit = {
+  test("support Fixnum") {
     forAll(Gen.chooseNum[Byte](-32, 127)) { v: Byte => testByte(v) }
   }
 
-  def `support Byte`: Unit = {
+  test("support Byte") {
     forAll { (v: Byte) => testByte(v) }
   }
 
-  def `support Short`: Unit = {
+  test("support Short") {
     forAll { v: Short => testShort(v) }
     forAll(Gen.chooseNum[Short]((Byte.MaxValue.toShort + 1).toShort, (1 << 8).toShort)) { v: Short => testShort(v) }
     forAll(Gen.chooseNum[Short]((1 << 8).toShort, Short.MaxValue)) { v: Short => testShort(v) }
   }
 
-  def `support Int`: Unit = {
+  test("support Int") {
     forAll { (v: Int) =>
       val packers = Seq[(WriteCursor, Int) => Unit](
         { OffsetPacker.packInt(_, _) },
@@ -237,7 +238,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `support Long`: Unit = {
+  test("support Long") {
     // UINT32
     roundtrip((1L << 31) + 1) { (c, v) => OffsetPacker.packUINT32(c, v.toInt) } { OffsetUnpacker.unpackLong(_) }
 
@@ -267,7 +268,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `support INT8`: Unit = {
+  test("support INT8") {
     // INT8
     roundtrip[Short](-1) { (cursor, v) => OffsetPacker.packShort(cursor, v) } { OffsetUnpacker.unpackShort(_) }
 
@@ -276,7 +277,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     roundtrip(-1.toLong) { (cursor, v) => OffsetPacker.packLong(cursor, v) } { OffsetUnpacker.unpackLong(_) }
   }
 
-  def `support BigInteger`: Unit = {
+  test("support BigInteger") {
     // UINT32
     roundtrip((1L << 31) + 1) { (c, v) => OffsetPacker.packUINT32(c, v.toInt) } {
       OffsetUnpacker.unpackBigInteger(_).longValue()
@@ -287,7 +288,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `support Float`: Unit = {
+  test("support Float") {
     forAll { (v: Float) =>
       val packers = Seq[(WriteCursor, Float) => Unit](
         { OffsetPacker.packFloat(_, _) },
@@ -306,7 +307,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `support Double`: Unit = {
+  test("support Double") {
     forAll { (v: Double) =>
       val packers = Seq[(WriteCursor, Double) => Unit](
         { OffsetPacker.packDouble(_, _) },
@@ -324,13 +325,13 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `support String`: Unit = {
+  test("support String") {
     forAll(arbitrary[String]) { v: String => // Generate unicode strings
       roundtrip(v) { OffsetPacker.packString(_, _) } { OffsetUnpacker.unpackString(_) }
     }
   }
 
-  def `support RawString`: Unit = {
+  test("support RawString") {
     forAll { (s: String) =>
       val b = s.getBytes(StandardCharsets.UTF_8)
       val v = b.slice(0, b.length.min(1024))
@@ -344,7 +345,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `support Binary`: Unit = {
+  test("support Binary") {
     forAll { (v: Array[Byte]) =>
       roundtrip(v) { (cursor, v) =>
         OffsetPacker.packBinaryHeader(cursor, v.length)
@@ -356,7 +357,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `support Timestamp`: Unit = {
+  test("support Timestamp") {
     val posLong = Gen.chooseNum[Long](-31557014167219200L, 31556889864403199L)
     val posInt  = Gen.chooseNum(0, 1000000000 - 1) // NANOS_PER_SECOND
     forAll(posLong, posInt) { (second: Long, nano: Int) =>
@@ -386,7 +387,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
   val headerSizes = Seq(1, 2, 4, 8, 16, 32, 128, 256, 1024, 1 << 16, 1 << 20)
   val sizeGen     = Gen.chooseNum[Int](0, Int.MaxValue)
 
-  def `support ArrayHeader`: Unit = {
+  test("support ArrayHeader") {
     for (size <- headerSizes) {
       roundtrip(size) { OffsetPacker.packArrayHeader(_, _) } { OffsetUnpacker.unpackArrayHeader(_) }
     }
@@ -396,7 +397,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `support MapHeader`: Unit = {
+  test("support MapHeader") {
     for (size <- headerSizes) {
       roundtrip(size) { OffsetPacker.packMapHeader(_, _) } { OffsetUnpacker.unpackMapHeader(_) }
     }
@@ -405,7 +406,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `supprot RawStringHeader`: Unit = {
+  test("supprot RawStringHeader") {
     for (size <- headerSizes) {
       roundtrip(size) { OffsetPacker.packRawStringHeader(_, _) } { OffsetUnpacker.unpackRawStringHeader(_) }
     }
@@ -414,7 +415,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `support BinaryHeader`: Unit = {
+  test("support BinaryHeader") {
     for (size <- headerSizes) {
       roundtrip(size) { OffsetPacker.packBinaryHeader(_, _) } { OffsetUnpacker.unpackBinaryHeader(_) }
     }
@@ -423,7 +424,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `support ExtHeader`: Unit = {
+  test("support ExtHeader") {
     // For FIXEXT1, 2, 4, 8, 16, etc.
     for (i <- headerSizes) {
       roundtrip(ExtTypeHeader(1, i)) { OffsetPacker.packExtTypeHeader(_, _) } {

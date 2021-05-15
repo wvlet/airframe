@@ -22,7 +22,7 @@ import wvlet.airspec.AirSpec
 class MetricsCodecTest extends AirSpec {
   scalaJsSupport
 
-  def `support DataSize`: Unit = {
+  test("support DataSize") {
     val codec = MessageCodec.of[DataSize]
 
     // String
@@ -50,7 +50,7 @@ class MetricsCodecTest extends AirSpec {
     z shouldBe DataSize(0)
   }
 
-  def `support ElapsedTime`: Unit = {
+  test("support ElapsedTime") {
     val codec = MessageCodec.of[ElapsedTime]
 
     // String
@@ -79,7 +79,7 @@ class MetricsCodecTest extends AirSpec {
     z shouldBe ElapsedTime.succinctMillis(0)
   }
 
-  def `support Count`: Unit = {
+  test("support Count") {
     val codec = MessageCodec.of[Count]
 
     // String
