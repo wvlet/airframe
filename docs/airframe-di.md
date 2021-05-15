@@ -3,25 +3,26 @@ id: airframe-di
 layout: docs
 title: airframe-di: Dependency Injection
 ---
-Airframe DI is a dependency-injection library designed for Scala. Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; Instead of manually passing all necessary objects (dependencies) into the constructor argument, DI framework builds the object on your behalf.
+Airframe DI is a dependency-injection library designed for Scala. Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; Instead of manually passing all necessary objects (dependencies) into the constructor argument, DI framework builds the object on behalf of you.
 
-Airframe DI introduces the following two concepts to your Scala programming:
+To start using Airframe DI, you only need to know about *Design* and *Session*:
 
-- **Design**: for customizing the application implementation to use at runtime.
-- **Session**: for managing singleton instances of your application. The session properly initializes and terminates injected service objects with lifecycle management hooks (e.g., onStart, onShutdown, or `def close()` method in AutoCloseable interface).
+- **Design** specifies mappings between types and its implementation.
+- **Session** holds singleton instances of your application, and helps building your application objects. The session will properly manage the lifecycle of objects using user-defined lifecycle hooks (e.g., onStart, onShutdown, or `def close()` method in AutoCloseable interface of Java, etc.).
 
-This abstraction addresses the common patterns in writing applications, such as:
+With Airframe DI, you can solve typical programming patterns, such as:
 
-- Switching the implementation between production and test/debug code.
-- Minimizing the service implementation for the ease of testing.
-- Configuring applications using config objects.
-- Managing resources like database/network connections, threads, etc. .
-- Managing differently configured singletons.
-- etc., ...
+- Switching the implementation between production and test and debug code.
+- Reusing complex object construction patterns (e.g., launching a server application with custom start/shutdown hooks).
+- Minimizing the service implementation classes.
+- Configuring your applications by injecting config objects.
+- Managing resources like database/network connections, threads, etc. in the right order.
+- Managing differently configured singletons of the same type.
+- ..., etc.
 
-Airframe is available for Scala 2.12, 2.13, Scala 3, and [Scala.js](https://www.scala-js.org/). 
+Airframe DI is available for Scala 2.12, 2.13, Scala 3, and [Scala.js](https://www.scala-js.org/). 
 
-In Scala, we have various approaches for dependency injection, such as [cake pattern](http://jonasboner.com/real-world-scala-dependency-injection-di/), [Google Guice](https://github.com/google/guice), [Macwire](https://github.com/adamw/macwire), [reader monad](https://softwaremill.com/reader-monad-constructor-dependency-injection-friend-or-foe/), etc. For more detailed comparison, see also [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html), which is comparing Airframe with Google Guice, Macwire, Dagger2, etc.
+In Scala, we have various approaches for dependency injection, such as [cake pattern](http://jonasboner.com/real-world-scala-dependency-injection-di/), [Google Guice](https://github.com/google/guice), [Macwire](https://github.com/adamw/macwire), [reader monad](https://softwaremill.com/reader-monad-constructor-dependency-injection-friend-or-foe/), etc. For more detailed comparison, see also [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html), which describes pros and cons of various DI frameworks, including Airframe, Google Guice, Macwire, Dagger2, etc.
 
 ## Quick Start
 
@@ -31,6 +32,9 @@ To use Airframe DI, add the following dependency to your **build.sbt**:
 
 ```scala
 libraryDependencies += "org.wvlet.airframe" %% "airframe-di" % "(version)"
+
+// For Scala.js
+libraryDependencies += "org.wvlet.airframe" %% %"airframe-di" % "(version)"
 ```
 
 ### .scalafmt.conf
@@ -86,7 +90,7 @@ This separation of object binding and their design (assembly) will reduce the du
 
 ## Constructor Injection
 
-Airframe DI supports __constructor injection__, which is the most natural form of injection.
+Airframe DI supports only __constructor injection__, which is the most natural form of injection.
 When `design.build[A]` is called, Airframe will find the primary constructor of `A` and its arguments, then creates a new instance of `A` by looking up instances for the constructor arguments defined in the _Design_.
 
 ```scala
@@ -108,10 +112,15 @@ d.build[MyApp]{ app: MyApp =>
 // Session will be closed here
 ```
 
+>> ### Why only supports constructor injection?
+>> 
+>> In the previous version of Airframe DI, we supported in-trait injections. This design, however, introduces the complexity of application design because you need to worry about which type of injections (constructor or in-trait injection?) is appropriate. And also, your application needs to depend on Airframe DI. 
+>> 
+>> If we only use constructor-injection, no Airframe DI dependency is required to your application interface. Only when binding actual implementations to your application, you need to use Airframe DI Design. This achieves a clear separation of application logic and its construction design.
 
 ## Design
 
-To configure bindings described in the above, we need to define a `Design` object using the following syntax:
+To configure injected instances, you need to define a `Design` object using one of the following syntax:
 
 ```scala
 import wvlet.airframe._
@@ -132,7 +141,7 @@ val design: Design =
   .bind[P].toEagerSingletonProvider{ d1:D1 => P(d1) } // Create an eager singleton using the provider function
 ```
 
-If you define multiple bindings to the same type (e.g., P), the last binding will be used.
+If you define multiple bindings to the same type (e.g., P), the last binding will have the highest precedence.
 
 
 ### Design is Immutable
@@ -163,7 +172,7 @@ d1.add(d2)
 
 `+` (add) operator is not commutative because of this override behavior, so `d1 + d2` and `d2 + d1` will be different designs if there are some overlaps.
 
-### Injected Instances Are Singletons
+### Injected Instances Are Always Singletons
 
 If you only need singletons (e.g.,`X`) and how to construct `X` is clear from its definition, no need exists to specify `bind[X].toSingleton` in your design:
 
@@ -182,21 +191,71 @@ val design: Design =
     .bind[Z].toInstance(Z(port = 8080))  // Z has no default instance, so we should bind it manually.
 ```
 
-
 ## Life Cycle
 
-The lifecycle (including calling onInject, onStart, onShutdown hooks) of the injected instances will be managed by the session of Airframe. To properly release the resources injected by bindings, define these lifecycle hooks in the design or implement [AutoCloseable](https://docs.oracle.com/javase/8/docs/api/java/lang/AutoCloseable.html) interface. If the injected instance implements AutoCloseable, `def close(): Unit` method of AutoCloseable will be called when the session terminates. See also [Design](#design) and [Life Cycle](#life-cycle) sections for more details.
+The lifecycle (including calling onInject, onStart, onShutdown hooks) of the injected instances will be managed by the session of Airframe DI. To properly release the resources injected by bindings, define these lifecycle hooks in the design or implement [AutoCloseable](https://docs.oracle.com/javase/8/docs/api/java/lang/AutoCloseable.html) interface. If the injected instance implements AutoCloseable, `def close(): Unit` method of AutoCloseable will be called when the session terminates. To override this behavior, define your own `onShutdown` hooks.
 
-By default all injections generates singleton objects that are alive until closing the current session. These singleton objects are managed inside the current session object.
+By default, all injections generates singleton objects that are alive until closing the current session. These singleton objects are managed inside the current session object.
+
+Server side application often requires resource management (e.g., network connection, threads, etc.). Airframe DI has a built-in object life cycle manager to implement these hooks:
+
+```scala
+import wvlet.airframe._
+
+object MyServerService {
+  val design = newDesign
+    .bind[Server]
+    .onInit{ x:Server => ... }        // Called when the object is initialized
+    .onInject{ x:Server => ... }      // Called when the object is injected
+    .onStart{ x:Server => ... }       // Called when session.start is called
+    .afterStart{ x:Server => ... }    // Called after onStart lifecycle is finished.
+                                      // Use this only when you need to add an extra startup process for testing.
+    .beforeShutdown{ x:Server => ...} // Called right before all shutdown hook is called
+                                      // Useful for adding pre-shutdown step
+    .onShutdown{ x:Server => ... }    // Called when session.shutdown is called
+  )
+}
+```
+
+These life cycle hooks except `onInject` will be called only once.
+
+### Eager Initialization of Singletons for Production
+
+In production, initializing all of the singletons when starting the session is preferred. To use production mode, add `Design.withProductionMode` to your design:
+
+```scala
+// All singletons defined in the design will be initialized (i.e., onInit/onInject/onStart hooks will be called)
+design
+  .bind[X].to[XImpl]
+  .withProductionMode
+  .build[X]{ x =>
+    // Do something with X
+  }
+```
+
+To initialize `X` eagerly, `X` must be found in the design or used in the other dependencies defined in the design.
+
+### Suppress Life Cycle Logging
+
+If you don't need to show Session start/terminate logs, use `Design.noLifeCycleLogging`:
+
+```scala
+design
+  .noLifeCycleLogging
+  .build[X]{ x => ... }
+```
+
+This will show lifecycle event logs only in debug level logs.
+
 
 ## Session
 
-To create instances, you need to create a `Session` from your Design:
+`Session` is a placeholder of your singleton instances created from your Design:
 
 ```scala
 val session = design.newSession
-val a = session.build[A] {
-  // Do something with a
+val a = session.build[A] { obj: A =>
+  // Do something with obj
 }
 ```
 
@@ -211,7 +270,7 @@ val ret: Int = design.run { a: A =>
 
 This will build an instance of A from the design, and return the result.
 
-Session manages the life cycle of your objects and holds instances of singletons. These instances can be discarded after `session.shutdown` is called:
+Session manages the life cycle of your objects and holds instances of singletons. The generated instances can be discarded after `session.shutdown` is called:
 
 ```scala
 // Start a session
@@ -244,10 +303,9 @@ If you need to override a part of the design in a short term, you can use _child
 ___Usage Example___
 
 ```scala
-import wvlet.airframe._
+import wvlet.airframe.di.Session
 
-trait MyServer {
-  private val session = bind[Session]   // Bind the current session
+class MyServer(session: Session) { // Bind the current session
 
   def handleInChildSession = {
     // Define a child session specific design
@@ -306,60 +364,8 @@ trait MyApp {
 }
 ```
 
-## Life Cycle
 
-__Update since version 19.9.0__: If objects injected by DI implements `def close(): Unit` function of `java.lang.AutoCloseable` interface, airframe will call the close method upon the session shutdown. To override this behavior, define your own `onShutdown` hook or use `@PreDestory` annotation.
-
-Server side application often requires resource management (e.g., network connection, threads, etc.). Airframe has a built-in object life cycle manager to implement these hooks:
-
-```scala
-import wvlet.airframe._
-
-object MyServerService {
-  val design = newDesign
-    .bind[Server]
-    .onInit{ x:Server => ... }        // Called when the object is initialized
-    .onInject{ x:Server => ... }      // Called when the object is injected
-    .onStart{ x:Server => ... }       // Called when session.start is called
-    .afterStart{ x:Server => ... }    // Called after onStart lifecycle is finished.
-                                      // Use this only when you need to add an extra startup process for testing.
-    .beforeShutdown{ x:Server => ...} // Called right before all shutdown hook is called
-                                      // Useful for adding pre-shutdown step
-    .onShutdown{ x:Server => ... }    // Called when session.shutdown is called
-  )
-}
-```
-
-These life cycle hooks except `onInject` will be called only once when the binding type is singleton.
-
-### Eager Initialization of Singletons for Production
-
-In production, initializing singletons (by calling onStart) is preferred. To use production mode, use `Design.withProductionMode`:
-
-```scala
-// All singletons defined in the design will be initialized (i.e., onInit/onInject/onStart hooks will be called)
-design
-  .withProductionMode
-  .build[X]{ x =>
-    // Do something with X
-  }
-```
-
-To initialize `X` eagerly, `X` must be found in the design or used in the other dependencies defined in the design.
-
-### Suppress Life Cycle Logging
-
-If you don't need to show Session start/terminate logs, use `Design.noLifeCycleLogging`:
-
-```scala
-design
-  .noLifeCycleLogging
-  .build[X]{ x => ... }
-```
-
-This will show lifecycle event logs only in debug level logs.
-
-## Designing Applications with Airframe
+## Designing Applications with Airframe DI
 
 When writing an application, these concerns below are often unrelated to the core application logic:
 
@@ -371,10 +377,7 @@ Airframe allows separating these concerns into `Design`. For example, when writi
 
 ![image](https://wvlet.org/airframe/img/airframe/build-service-objects.png)
 
-When building objects A and B, we usually need to think about the other indirect dependencies like ConnectionPool, HttpClient, DB, etc. By injecting dependencies using `bind[X]` syntax (left), we can effectively forget about there indirect dependencies (right):
-
-![image](https://wvlet.org/airframe/img/airframe/code-example.png)
-
+When building objects A and B, we usually need to think about the other indirect dependencies like ConnectionPool, HttpClient, DB, etc. While writing `class A(dbClient:DBClient, fluentdLogger:FluentdLogger)`, you don't need to care about its indirect dependencies.
 
 ## Advanced Binding Types
 
@@ -436,9 +439,7 @@ val productionDesign =
 
 ### Multi-Binding
 
-If you want to switch a service to be called depending on the user input, you can just use Scala's functionality + Airframe binding.
-
-To illustrate this, consider building an web application that receives a request and returns a string message.
+If you want to switch a service to be called depending on the user input, you can just use Scala's functionality + Airframe DI. To illustrate this, consider building an web application that receives a request and returns a string message.
 `Dispatcher` class receives an URL path and choose an appropriate `Handler` to use:
 
 ```scala
@@ -448,18 +449,18 @@ trait Handler {
   def handle(request:Request): String
 }
 
-trait DefaultHandler extends Handler {
+class DefaultHandler extends Handler {
   def handle(request:Request): String = "hello"
 }
 
-trait InfoHandler extends Handler {
+class InfoHandler extends Handler {
   def handle(rquest:Request): String = "info"
 }
 
-trait Dispatcher {
+class Dispatcher(infoHandler:InfoHandler, defaultHandler:DefaultHanlder) {
   private val dispatcher: String => Handler = {
-    case "info" => bind[InfoHandler]
-    case _ => bind[DefaultHandler]
+    case "info" => infoHandler
+    case _ => defaultHandler
   }
 
   def dispatch(path:String, request:Request): String =  {
@@ -469,24 +470,8 @@ trait Dispatcher {
 ```
 
 In Google Guice, we need to use a special binder like [Multibinder](https://github.com/google/guice/wiki/Multibindings).
-In Airframe, we just need to write a Scala code that uses `bind[X]`.
+In Airframe, we just need to use a constructor of Scala. 
 
-### Tagged Type Binding
-
-Tagged binding `@@` is also useful to annotate type names:
-
-```scala
-// This import statement is necessary to use tagged type (@@)
-import wvlet.airframe.surface.tag._
-
-trait Name
-trait Id
-
-trait A {
-  val name = bind[String @@ Name]
-  val id = bind[Int @@ Id]
-}
-```
 
 ## Known Issues
 
@@ -522,17 +507,17 @@ Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
 
 ## Debugging DI
 
-To check the runtime behavior of Airframe's dependency injection, set the log level of `wvlet.airframe` to `debug` or `trace`:
+To check the runtime behavior of Airframe's dependency injection, set the log level of `wvlet.airframe.di` to `debug` or `trace`:
 
 **src/main/resources/log.properties**
 ```
-wvlet.airframe=debug
+wvlet.airframe.di=debug
 ```
 
 While debugging the code in your test cases, you can also use `log-test.properties` file:
 **src/test/resources/log-test.properties**
 ```
-wvlet.airframe=debug
+wvlet.airframe.di=debug
 ```
 See [airframe-log configuration](https://github.com/wvlet/airframe/blob/master/log/README.md#configuring-log-levels) for the details of log level configurations.
 
@@ -561,7 +546,7 @@ Then you will see the log messages that show the object bindings and injection a
 To visualize the lifecycle of injected objects, enabling `ChromeTracer` is useful:
 
 ```scala
-import wvlet.airframe._
+import wvlet.airframe.di._
 
 val d = newDesign
   .withTracer(ChromeTracer.newTracer("target/trace.json"))
@@ -598,11 +583,8 @@ import wvlet.airframe._
 
 case class Config(host:String, port:Int)
 
-trait App {
-  // bind configurations
-  private val config = bind[Config]
-  private val server = bind[Server]
-
+// bind configurations
+class App(config: Config, server: Server) {
   def run {
     sever.launch(config.host, config.port)
   }
@@ -615,8 +597,7 @@ val d =
   .bind[Config].toInstance(new Config("localhost", 8080))
 
 // Start the application
-d.withSession { session =>
-  val app = session.build[App]
+d.build[App] { app =>
   app.run
 }
 ```
@@ -638,15 +619,7 @@ Airframe makes easier managing resources (e.g., network or database connections,
 ```scala
 import wvlet.airframe._
 
-trait DBService {
-  private val dbConfig = bind[DBConfig]
-  private val connection = bind[DBConnection]
-    .onInit { c => c.connect(dbConfig.url, dbConfig.user, ... ) }
-    .onShutdown {
-      // This will be executed when session.shutdown is called
-      c => c.close
-    }
-
+class DBService(dbConfig: DBConfig, connection: DBConnection) {
   def query(sql:String) = {
     connection.query(sql)
   }
@@ -654,9 +627,7 @@ trait DBService {
 
 // Using DBService. This class has no need to care about closing DB
 // connection resources because DBService will take care of it.
-trait App {
-  val dbService = bind[DBService]
-
+class App(dbService: DBService) {
   dbService.query("select * from tbl")
 }
 
@@ -664,169 +635,25 @@ trait App {
 val d = newDesign
   .bind[DBService].toSingleton // To share the connection between classes
   .bind[DBConfig].toInstance(DBConfig("jdbc://...", "user name", ...))
+  .bind[DbConnection]
+  .onInit { c => c.connect(dbConfig.url, dbConfig.user, ... ) }
+  .onShutdown {
+    // This will be executed when session.shutdown is called
+    c => c.close
+  }
 
-d.withSession { session =>
+d.build[App] { app =>
   // db connection will be established here
-  val app = session.build[App]
 }
 // database connection will be closed automatically
 
 ```
 
-### Factory Binding
 
-If you need to configure a service (e.g., port number of an web client), but you need to provide other dependencies from Airframe,
-`bindFactory[I => A]` can be used.
-
-```scala
-trait MyClient {
-  private val port = bind[Int] // This will be overwritten by the factory
-  private val httpClientConfig = bind[HttpClientConfig] // Use the shared instance
-  private val httpClient = new HttpClient(port, httpClientConfig)
-
-  @PreDestroy
-  def stop: Unit = {
-    httpClient.close()
-  }
-}
-
-trait MyService {
-  // Create a factory Int => MyClient, which will override Int binding using a given parameter.
-  val clientFactory = bindFactory[Int => MyClient]
-}
-
-
-newDesign
-  .bind[HttpClientConfig].toInstance(HttpClientConfig(useSSL=true, timeoutSec=60))
-  .build[MyService] { s =>
-    val client1 = s.clientFactory(8080)
-    val client2 = s.clientFactory(8081)
-  }
-// clients will be closed here
-```
-In this example, port number (Int) can be provided later when instantiating MyClient.
-HttpClientConfig instance can be shared between generated clients.
-You can also define lifecycle hooks to MyClient, which will be added for each generated instance of MyClient.
-
-
-### Service Mix-In
-
-A traditional way of building applications is passing necessary services to a main class:
-```scala
-class YourService(threadPool:ThreadPool, s1:Service1, s2:Service2, ...) {
-  ...
-}
-
-val t = new ThreadPool
-val s1 = new Service1(...)
-val s2 = new Service2(...)
-...
-val service = new YourService(t, s1, s2, ...)
-```
-
-However, this approach is not scalable if you need to use more services in your class or if you need to implement applications that require different subsets of services.
-
-If you write such services as [traits](http://docs.scala-lang.org/tutorials/tour/traits.html) in Scala, it will be quite easy to compose applications that depends on many services. Here is an example of defining services using Airframe and Scala traits:
-```scala
-import wvlet.airframe._
-
-// Define a thread pool functionality
-trait ThreadPool {
-  private val executorService = bind[ExecutorService]
-    .onShutdown{ _.shutdown }
-
-  def submit[U](body: => U) {
-    executorService.submit(new Runnable {
-      def run { body }
-    }
-  }
-}
-
-// Instead of using constructor arguments,
-// create a service trait that binds necessary service objects
-trait ThreadPoolService {
-  val threadPool = bindSingleton[ThreadPool]
-}
-
-// Another service
-trait MonitorService {
-  val monitor = bind[Monitor]
-}
-
-// Mix-in services
-trait App1 extends ThreadPoolService with MonitorService {
-  monitor.log("starting app")
-  threadPool.submit( ... )
-}
-
-// Reuse singleton ThreadPool in another application
-trait App2 extends ThreadPoolService {
-  threadPool.submit( ... )
-}
-```
-
-In general, you can create your application with Service mix-ins as below:
-
-```scala
-trait YourApp
- extends AService
-    with BService
-    with CDService
-    ...
-    with ZService
-{
-  // use a, b, c, d, .., z here
-}
-
-trait AService {
-  val a = bind[A]
-}
-
-trait BService {
-  val b = bind[B]
-}
-
-trait CDService {
-  val c = bind[C]
-  val d = bind[D]
-}
-...
-
-```
-
-### Override Bindings
-
-It is also possible to manually inject an instance implementation. This is useful for changing the behavior of objects for testing:
-```scala
-trait CustomApp extends App1 {
-  // Manually inject an instance
-  override val monitor = new MockMonitor { ... }
-}
-```
-
-If you are using [ScalaMock](http://scalamock.org/) or [Mockito](http://site.mockito.org/), you may overwrite a service with a mock (empty) implementation:
-
-```scala
-trait MockApp extends App1 {
-  override val monitor = mock[Monitor]
-}
-```
-
-Or you can use mock instance binding by extending the design:
-
-```scala
-val coreDesign =
-  newDesign
-  .bind[Monitor].to[MonitorImpl]
-
-val testDesign =
-  coreDesign
-  .bind[Monitor].toInstance(mock[Monitor])
-```
 
 ## Airframe Internals
 
-This page describes the internals of Airframe for developers who are interested in extending Airframe.
+This page describes the internals of Airframe DI for developers who are interested in extending Airframe DI.
 
 ### Session
 
@@ -841,96 +668,6 @@ session.build[App]
 ```
 
 In this code Airframe DI will take care of the object instantiation by automatically finding how to build `App`, and its dependencies `A`, `B`, etc.
-
-### Example
-
-To explain the role of Session, let's start with a simple code that uses Airframe bindings:
-
-```scala
-import wvlet.airframe._
-
-trait App {
-  val a = bind[A]
-}
-
-trait A {
-  val b = bind[B]
-}
-
-val session =
-  newDesign
-  .bind[B].toInstance(new B(...))
-  .newSesion // Creates a session thats holds the above instance of B
-
-val app = session.build[App]
-```
-This code builds an instance of `App` using a concrete instance of `B` stored in the session.
-
-### Injecting Session
-
-To create instances of `A` and `B` inside `App`, we need to pass the concrete instance of B though the session instance. But trait definitions of `App` and `A` don't know anything about the session, so we need a way to resolve the instance of `B`.
-
-To do so, Airframe will pass a reference to the Session while building `App`, `A`, and `B`. A trick is inside the implementation of `build` and `bind`. Let's look at how `session.build[App]` will work when creating an instance of `App`.
-
-Here is the code for building an App:
-
-```scala
-val app = session.build[App]
-```
-
-Airframe expands this code into this form at compile-time:
-
-```scala
-val app: App =
-{ ss: Session =>
-  // Extends DISupport to pass Session object
-  new App extends DISupport {
-    // Inject a reference to the current session
-    def session = ss
-
-    // val a = bind[A] (original code inside App)
-    // If type A is instantiatable trait (non abstract type)
-    val a: A = {
-      // Trying to find a session (using DISupport.session).
-      // If no session is found, MISSING_SESSION exception will be thrown
-      val ss1 = wvlet.airframe.Session.findSession(this)
-      val binder: Session => A = (ss2: Session =>
-        // Register a code for instantiating A
-        ss2.getOrElseUpdate(Surface.of[A],
-	  (new A with DISupport { def session = ss1 }).asInstanceOf[A]
-        )
-      )
-      // Create an instance of A by injecting the current session
-      binder(ss1)
-    }
-  }
-}.apply(session)
-```
-
-To generate the above code, Airframe is using [Scala Macros](http://docs.scala-lang.org/overviews/macros/overview.html). You can find the actual macro definitions in [AirframeMacros.scala](https://github.com/wvlet/airframe/blob/master/airframe-macros/shared/src/main/scala/wvlet/airframe/AirframeMacros.scala)
-
-When `bind[X]` is called, the active session must be found. So if you try to instantiate A without using `session.build[A]`, `MISSING_SESSION` runtime-error will be thrown:
-
-```scala
-val a1 = new A // MISSING_SESSION error will be thrown at run-time
-
-val a2 = session.build[A] // This is OK
-```
-
-In the above code, `A` will be instantiated with DISupport trait, which has `session` definition. `bind[B]` inside trait `A` will be expanded liks this similarly:
-
-```scala
-new A extends DISupport {
-  // (original code) val b = bind[B]
-  val b: B = { ss: Session =>
-    val ss = findSession(this)
-    // If the session already has an instance of B, return it. Otherwise, craete a new instance of B
-    ss.getOrElse(Surface.of[B], (session:Session => new B with DISupport { ... } ))
-  }
-  // Inject the current session to build B
-  .apply(session)
-}
-```
 
 ### Comparison with a naive approach
 
@@ -949,7 +686,7 @@ For example, consider building `App` trait using a custom `B` instance:
 // What if a and b hold resources (e.g., network connection, database connection, etc.), that need to be released later?
 ```
 
-To manage life cycle of A and B, you eventually needs to store the object references somewhere like this:
+To manage life cycle of A and B, you eventually need to store the object references somewhere like this:
 
 ```scala
 // Assume storing objects in a Map-backed session
@@ -971,8 +708,8 @@ session.objects.foreach { x=>
 }
 
 ```
-As we have seen in the example of [Service Mix-in](#service-mix-in), if we need to manage hundreds of services,
-manually writing such object management functions will be cumbersome. Airframe helps you to oraganize building service objects.
+
+If your need to manage hundreds of services, manually writing such object management functions will be cumbersome. Airframe DI helps you to organize construction of service objects.
 
 
 ### Instantiation Methods
