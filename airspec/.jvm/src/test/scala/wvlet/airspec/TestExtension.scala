@@ -52,16 +52,16 @@ trait CustomSpec extends AirSpec with LogSupport {
 
 class MyServerSpec extends CustomSpec {
   // MyServer will be shared by the all test cases
-  def test1(server: MyServer): Unit = {
+  test("test1") { (server: MyServer) =>
     debug(s"run test1")
     assert(server.config.name == "A")
   }
 
-  def test2(server: MyServer): Unit = {
+  test("test2") { (server: MyServer) =>
     debug(s"run test2")
   }
 
-  def test3(session: Session): Unit = {
+  test("test3") { (session: Session) =>
     debug(s"run test3")
     val server = session.build[MyServer]
   }
@@ -79,12 +79,12 @@ class MyServer2Spec extends CustomSpec {
       .bind[MyServer].toSingleton
   }
 
-  def test4(server: MyServer): Unit = {
+  test("test4") { (server: MyServer) =>
     debug("run test4")
     assert(server.config.name == "B")
   }
 
-  def test5(server: MyServer): Unit = {
+  test("test5") { (server: MyServer) =>
     debug("run test5")
     assert(server.config.name == "B")
   }

@@ -20,22 +20,24 @@ import wvlet.airspec.spi.AirSpecContext
 /**
   */
 class ContextTest extends AirSpec {
+  ignore("Running tests from AirSpecContext will be deprecated after AirSpec 21.5.0")
+
   scalaJsSupport
 
   trait TestFixture extends AirSpec {
     var callCountA = 0
     var callCountB = 0
 
-    def testA(context: AirSpecContext): Unit = {
+    test("testA") { (context: AirSpecContext) =>
       callCountA += 1
       context.testName shouldBe "testA"
     }
-    def testB(context: AirSpecContext): Unit = {
+    test("testB") { (context: AirSpecContext) =>
       callCountB += 1
       context.testName shouldBe "testB"
     }
 
-    def testFixtureName(context: AirSpecContext): Unit = {
+    test("testFixtureName") { (context: AirSpecContext) =>
       if (isScalaJS) {
         pendingUntil("Getting class names in Scala.js is unstable")
       }
@@ -57,7 +59,7 @@ class ContextTest extends AirSpec {
 
     val f = new TestFixture {
       var callCountC = 0
-      def testC: Unit = {
+      test("testC") {
         callCountC += 1
       }
 
@@ -100,7 +102,7 @@ class ContextTest extends AirSpec {
       context.indentLevel shouldBe 1
     }
 
-    def checkClassName(context: AirSpecContext): Unit = {
+    test("checkClassName") { (context: AirSpecContext) =>
       if (isScalaJS) {
         pendingUntil("Getting class names in Scala.js is unstable")
       }

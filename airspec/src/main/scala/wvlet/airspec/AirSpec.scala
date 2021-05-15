@@ -75,7 +75,7 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
       val l = wvlet.log.Logger("wvlet.airspec")
       functionTestMethods.collect { case m: MethodAirSpecDef =>
         l.warn(
-          s"""Using public functions as tests is deprecated. Use test("...") syntax instead: def ${m.methodSurface.name} in ${m.methodSurface.owner}"""
+          s"""Using public functions as tests is deprecated since AirSpec 21.5.1. Use test("...") syntax instead: def ${m.methodSurface.name} in ${m.methodSurface.owner}"""
         )
       }
     }

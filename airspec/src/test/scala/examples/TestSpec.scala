@@ -28,7 +28,7 @@ class TestSpec extends AirSpec with LogSupport {
       .bind[String].toInstance("my message")
   }
 
-  def helloAirSpec(m: String): Unit = {
+  test("helloAirSpec") { (m: String) =>
     trace(m)
     assert(m == "my message")
   }
@@ -58,7 +58,7 @@ class TestSpec extends AirSpec with LogSupport {
     pending("pending reason")
   }
 
-  def interceptTest: Unit = {
+  test("interceptTest") {
     intercept[NoSuchElementException] {
       Seq.empty.head
     }
@@ -68,7 +68,7 @@ class TestSpec extends AirSpec with LogSupport {
 object TestObjSpec extends AirSpec with LogSupport {
   scalaJsSupport
 
-  def supportTestsInObjectMethods: String = {
+  test("supportTestsInObjectMethods") {
     trace("hello companion methods")
     "hello obj"
   }
@@ -77,10 +77,6 @@ object TestObjSpec extends AirSpec with LogSupport {
 class WordSpecTest extends AirSpec {
   scalaJsSupport
 
-  def `should have a natural language description` = {}
+  test("should have a natural language description") {}
   test("should support arbitrary texts") {}
-}
-
-class JvmSpecTest extends AirSpec {
-  def `this method will not be called in Scala.js as scalaJsSupport is not called` = {}
 }

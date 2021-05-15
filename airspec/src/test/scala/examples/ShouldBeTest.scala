@@ -108,7 +108,7 @@ class ShouldBeTest extends AirSpec {
     Array(1) shouldNotBe empty
   }
 
-  def `support tuples` = {
+  test("support tuples") {
     (1, 2, 3) shouldBe (1, 2, 3)
     (1, 2, 3) shouldNotBe (1, 3, 2)
     (1, 'a') shouldBe (1, 'a')

@@ -37,11 +37,11 @@ class ServiceSpec extends AirSpec with LogSupport {
       .bind[ServiceConfig].toInstance(ServiceConfig(port = 8080))
   }
 
-  def test1(service: Service): Unit = {
+  test("test1") { (service: Service) =>
     info(s"test1: server id: ${service.hashCode}")
   }
 
-  def test2(service: Service): Unit = {
+  test("test2") { (service: Service) =>
     info(s"test2: server id: ${service.hashCode}")
   }
 }
