@@ -11,20 +11,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.legacy
 
 import wvlet.airspec.AirSpec
 
 /**
   */
-class DesignBuildTest extends AirSpec {
+class DISupportTest extends AirSpec {
   scalaJsSupport
 
-  def `visible outer variables in code block`: Unit = {
-    val helloDesign = "hello"
-    val d = newSilentDesign
-      .bind[String].toInstance(helloDesign)
+  class A(val session: Session) extends DISupport {
+    private val s = bind[String]
 
-    d.build[String] { x => helloDesign }
+    def getString = s
+  }
+
+  def `support in-class bind`: Unit = {
+    val d = newSilentDesign
+      .bind[String].toInstance("hello")
+
+    d.build[A] { a => a.getString shouldBe "hello" }
   }
 }

@@ -11,25 +11,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.legacy
 
 import wvlet.airspec.AirSpec
 
-/**
-  */
-class DISupportTest extends AirSpec {
-  scalaJsSupport
-
-  class A(val session: Session) extends DISupport {
-    private val s = bind[String]
-
-    def getString = s
+object BindTest {
+  class X {
+    def close(): Unit = {}
   }
 
-  def `support in-class bind`: Unit = {
-    val d = newSilentDesign
-      .bind[String].toInstance("hello")
+  trait Bind {
+    val x = bind[X] { new X }.onShutdown { _.close() }
+  }
+}
 
-    d.build[A] { a => a.getString shouldBe "hello" }
+/**
+  */
+class BindTest extends AirSpec {
+  scalaJsSupport
+
+  import wvlet.airframe.BindTest._
+
+  def `allow provider based initialization`: Unit = {
+    val s = newSilentDesign.build[Bind] { b =>
+      //
+    }
   }
 }

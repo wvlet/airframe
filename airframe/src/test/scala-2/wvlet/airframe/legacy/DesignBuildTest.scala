@@ -11,30 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.legacy
 
 import wvlet.airspec.AirSpec
 
-object BindTest {
-  class X {
-    def close(): Unit = {}
-  }
-
-  trait Bind {
-    val x = bind[X] { new X }.onShutdown { _.close() }
-  }
-}
-
 /**
   */
-class BindTest extends AirSpec {
+class DesignBuildTest extends AirSpec {
   scalaJsSupport
 
-  import wvlet.airframe.BindTest._
+  def `visible outer variables in code block`: Unit = {
+    val helloDesign = "hello"
+    val d = newSilentDesign
+      .bind[String].toInstance(helloDesign)
 
-  def `allow provider based initialization`: Unit = {
-    val s = newSilentDesign.build[Bind] { b =>
-      //
-    }
+    d.build[String] { x => helloDesign }
   }
 }
