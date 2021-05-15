@@ -16,6 +16,7 @@ package wvlet.airframe.legacy
 import wvlet.airspec.AirSpec
 
 import scala.util.Random
+import wvlet.airframe._
 
 object ConstructorInjectionTest {
 

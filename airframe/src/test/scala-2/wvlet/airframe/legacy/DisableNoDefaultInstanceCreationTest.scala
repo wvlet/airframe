@@ -15,6 +15,7 @@ package wvlet.airframe.legacy
 
 import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
 import wvlet.airspec.AirSpec
+import wvlet.airframe._
 
 object DisableNoDefaultInstanceCreationTest {
   case class Component(config: Config)

@@ -413,13 +413,14 @@ def dottyCrossBuildSettings(prefix: String): Seq[Setting[_]] = {
       scalaBinaryVersion.value,
       (baseDirectory.value.getParentFile / prefix).toString
     ),
-    Test / unmanagedSourceDirectories := {
-      scalaBinaryVersion.value match {
-        case v if v.startsWith("3.") =>
-          Seq[sbt.File](file(s"${(baseDirectory.value.getParentFile / prefix).toString}/src/test/scala-3"))
-        case _ =>
-          (Test / unmanagedSourceDirectories).value
-      }
+    Test / unmanagedSourceDirectories ++= {
+      crossBuildSources(scalaBinaryVersion.value, baseDirectory.value.getParentFile.getPath, srcType = "test")
+//      scalaBinaryVersion.value match {
+//        case v if v.startsWith("3.") =>
+//          Seq[sbt.File](file(s"${(baseDirectory.value.getParentFile / prefix).toString}/src/test/scala-3"))
+//        case _ =>
+//          (Test / unmanagedSourceDirectories).value
+//      }
     }
   )
 }

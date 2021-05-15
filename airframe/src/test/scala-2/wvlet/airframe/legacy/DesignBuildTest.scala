@@ -15,6 +15,8 @@ package wvlet.airframe.legacy
 
 import wvlet.airspec.AirSpec
 
+import wvlet.airframe._
+
 /**
   */
 class DesignBuildTest extends AirSpec {

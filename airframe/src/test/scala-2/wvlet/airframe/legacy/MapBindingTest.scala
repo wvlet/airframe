@@ -17,6 +17,8 @@ import wvlet.log.LogSupport
 import wvlet.airframe.surface.tag._
 import wvlet.airspec.AirSpec
 
+import wvlet.airframe._
+
 /**
   */
 class MapBindingTest extends AirSpec {

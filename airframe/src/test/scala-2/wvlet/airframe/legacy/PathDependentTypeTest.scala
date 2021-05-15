@@ -14,6 +14,7 @@
 package wvlet.airframe.legacy
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
+import wvlet.airframe._
 
 /**
   */

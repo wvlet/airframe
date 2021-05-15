@@ -14,6 +14,7 @@
 package wvlet.airframe.legacy
 
 import wvlet.airspec.AirSpec
+import wvlet.airframe._
 
 object ImplicitArgTest {
   case class ImplA(a: String)(implicit val b: Int)

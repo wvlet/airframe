@@ -16,6 +16,8 @@ package wvlet.airframe.legacy
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
+import wvlet.airframe._
+
 trait NonAbstractTrait extends LogSupport {
   debug("hello trait")
 }

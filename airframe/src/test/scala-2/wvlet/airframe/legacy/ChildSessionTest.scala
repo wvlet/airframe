@@ -18,6 +18,7 @@ import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 import scala.util.Random
+import wvlet.airframe._
 
 object ChildSessionTest {
   case class HttpRequest(path: String, userName: String)

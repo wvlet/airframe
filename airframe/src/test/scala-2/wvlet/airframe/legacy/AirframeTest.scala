@@ -24,6 +24,8 @@ import wvlet.airspec.AirSpec
 
 import scala.util.Random
 
+import wvlet.airframe._
+
 case class ExecutorConfig(numThreads: Int)
 
 object ServiceMixinExample {
@@ -244,7 +246,7 @@ object ServiceMixinExample {
   trait Test
 }
 
-import wvlet.airframe.ServiceMixinExample._
+import wvlet.airframe.legacy.ServiceMixinExample._
 
 /**
   */

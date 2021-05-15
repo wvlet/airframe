@@ -12,9 +12,11 @@
  * limitations under the License.
  */
 package wvlet.airframe.legacy
+
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.tag._
 import wvlet.airspec.AirSpec
+import wvlet.airframe._
 
 object TaggedBindingTest {
   case class Fruit(name: String)

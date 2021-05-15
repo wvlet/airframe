@@ -15,6 +15,8 @@ package wvlet.airframe.legacy
 
 import wvlet.airspec.AirSpec
 
+import wvlet.airframe._
+
 object BindTest {
   class X {
     def close(): Unit = {}
@@ -30,7 +32,7 @@ object BindTest {
 class BindTest extends AirSpec {
   scalaJsSupport
 
-  import wvlet.airframe.BindTest._
+  import BindTest._
 
   def `allow provider based initialization`: Unit = {
     val s = newSilentDesign.build[Bind] { b =>
