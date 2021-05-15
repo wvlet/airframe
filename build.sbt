@@ -389,7 +389,6 @@ lazy val di =
     )
     .dependsOn(
       diBase,
-      surface,
       ulid
     )
 
