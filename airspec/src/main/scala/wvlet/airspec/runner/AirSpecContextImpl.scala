@@ -21,8 +21,6 @@ import wvlet.airspec.spi.AirSpecContext
 import wvlet.airspec.{AirSpecDef, AirSpecSpi}
 import wvlet.log.LogSupport
 
-import scala.language.experimental.macros
-
 /**
   */
 private[airspec] class AirSpecContextImpl(

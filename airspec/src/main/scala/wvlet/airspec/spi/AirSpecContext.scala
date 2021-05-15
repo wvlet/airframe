@@ -15,9 +15,7 @@ package wvlet.airspec.spi
 
 import wvlet.airframe.Session
 import wvlet.airframe.surface.{MethodSurface, Surface}
-import wvlet.airspec.{AirSpecBase, AirSpecDef, AirSpecMacros, AirSpecSpi}
-
-import scala.language.experimental.macros
+import wvlet.airspec.{AirSpecBase, AirSpecContextCompat, AirSpecDef, AirSpecMacros, AirSpecSpi}
 
 /**
   * AirSpecContext is an interface to pass the test environment data to individual test methods.
@@ -25,7 +23,7 @@ import scala.language.experimental.macros
   * Spec: global
   *  -
   */
-trait AirSpecContext {
+trait AirSpecContext extends AirSpecContextCompat {
   def hasChildTask: Boolean
 
   def currentSpec: AirSpecSpi
@@ -57,17 +55,6 @@ trait AirSpecContext {
   lazy val indentLevel: Int = {
     parentContext.map(_.indentLevel + 1).getOrElse(0)
   }
-
-  /**
-    * Build an instance of type A using Airframe DI, and run the test method within A.
-    * @return the generated instance of A
-    */
-  def test[A <: AirSpecBase]: A = macro AirSpecMacros.buildAndRunImpl[A]
-
-  /**
-    * Run the test methods in a given AirSpec instance
-    */
-  def run[A <: AirSpecBase](spec: A): A = macro AirSpecMacros.runSpecImpl[A]
 
   protected[airspec] def runInternal(spec: AirSpecSpi, testDefs: Seq[AirSpecDef]): AirSpecSpi
   protected[airspec] def runSingle(testDef: AirSpecDef): Unit
