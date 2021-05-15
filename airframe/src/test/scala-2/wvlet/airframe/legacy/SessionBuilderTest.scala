@@ -16,6 +16,7 @@ package wvlet.airframe.legacy
 import wvlet.airframe.lifecycle.{LifeCycleEventHandler, LifeCycleManager}
 import wvlet.airspec.AirSpec
 import wvlet.airframe._
+
 /**
   */
 class SessionBuilderTest extends AirSpec {

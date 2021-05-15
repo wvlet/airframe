@@ -15,7 +15,6 @@ package wvlet.airframe.legacy
 
 import java.util.concurrent.atomic.AtomicInteger
 
-
 import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 import wvlet.airframe._
@@ -62,6 +61,7 @@ object SingletonTest {
 }
 
 import SingletonTest._
+
 /**
   */
 class SingletonTest extends AirSpec {
