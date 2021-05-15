@@ -11,16 +11,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.legacy
 
-import wvlet.airframe.surface.Surface
+import wvlet.airspec.AirSpec
 
-import scala.reflect.runtime.{universe => ru}
+object DefaultValueTest {
+  // This type of default values often used in configuration classes
+  case class A(a: Long = 10, b: Long = 100, c: Long = 1000)
 
-private[airframe] trait AirframeSessionImpl { self: AirframeSession =>
-  def register[A: ru.TypeTag](instance: A): Unit = {
-    val surface = Surface.of[A]
-    val owner   = findOwnerSessionOf(surface).getOrElse(this)
-    owner.registerInjectee(surface, surface, instance)
+  case class B(a: A)
+}
+
+/**
+  */
+class DefaultValueTest extends AirSpec {
+  scalaJsSupport
+
+  import DefaultValueTest._
+  def `populate default values`(b: B): Unit = {
+    b.a shouldBe A()
   }
 }

@@ -1,38 +1,29 @@
-/*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package wvlet.airframe
-import wvlet.airframe.Alias.{HelloRef, StringHello}
-import wvlet.airframe.surface.Surface
+
+import wvlet.airframe.DesignTest.Alias.{HelloRef, StringHello}
 import wvlet.airframe.tracing.DefaultTracer
+import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
-trait Message
-case class Hello(message: String) extends Message
+/**
+  */
+object DesignTest extends AirSpec {
 
-object Alias {
-  trait Hello[A] {
-    def hello: A
+  trait Message
+  case class Hello(message: String) extends Message
+
+  object Alias {
+    trait Hello[A] {
+      def hello: A
+    }
+
+    class StringHello extends Hello[String] {
+      def hello = "hello world"
+    }
+
+    type HelloRef = Hello[String]
   }
 
-  class StringHello extends Hello[String] {
-    def hello = "hello world"
-  }
-
-  type HelloRef = Hello[String]
-}
-
-object DesignTest {
   type ProductionMessage  = Message
   type DevelopmentMessage = Message
   type ProductionString   = String
@@ -45,29 +36,21 @@ object DesignTest {
       .bind[Message].toSingleton
       .bind[Message].toEagerSingleton
       .bind[Message].toEagerSingletonOf[Hello]
-      .bind[Message].toSingletonOf[Hello]
+      .bind[Message].to[Hello]
       .bind[ProductionMessage].toInstance(Hello("production"))
       .bind[DevelopmentMessage].toInstance(Hello("development"))
       .noLifeCycleLogging
-}
-
-/**
-  */
-class DesignTest extends AirSpec {
-  scalaJsSupport
-
-  import DesignTest._
 
   val o = Hello("override")
 
-  def `be immutable`: Unit = {
+  test("be immutable") {
     d0 shouldBe Design.empty
 
     val d2 = d1.bind[Hello].toInstance(Hello("airframe"))
     d2 shouldNotBe d1
   }
 
-  def `be appendable`: Unit = {
+  test("be appendable") {
     val d2 = d1.bind[Hello].toInstance(o)
 
     val d3 = d1 + d2
@@ -77,14 +60,14 @@ class DesignTest extends AirSpec {
     d4.build[Hello] { h => h shouldBeTheSameInstanceAs o }
   }
 
-  def `display design`: Unit = {
+  test("display design") {
     val s = d1.toString
     // sanity test
     s shouldNotBe empty
     debug(d1.toString)
   }
 
-  def `remove binding`: Unit = {
+  test("remove binding") {
     val dd = d1.remove[Message]
 
     def hasMessage(d: Design): Boolean =
@@ -99,7 +82,7 @@ class DesignTest extends AirSpec {
     hasProductionMessage(dd) shouldBe true
   }
 
-  def `bind providers`: Unit = {
+  test("bind providers") {
     val d = newSilentDesign
       .bind[Hello].toProvider { (m: ProductionString) => Hello(m) }
       .bind[ProductionString].toInstance("hello production")
@@ -107,27 +90,27 @@ class DesignTest extends AirSpec {
     d.build[Hello] { h => h.message shouldBe "hello production" }
   }
 
-  def `bind type aliases`: Unit = {
+  test("bind type aliases") {
     val d = newSilentDesign
       .bind[HelloRef].toInstance(new StringHello)
 
     d.build[HelloRef] { h => h.hello shouldBe "hello world" }
   }
 
-  def `start and stop session`: Unit = {
+  test("start and stop session") {
     // Sanity test
-    newDesign.noLifeCycleLogging
+    Design.newDesign.noLifeCycleLogging
       .withSession { session =>
         // Do nothing
       }
   }
 
-  def `set/unset options`: Unit = {
+  test("set/unset options") {
     val d = Design.newDesign
     d.withTracer(DefaultTracer).noTracer
   }
 
-  def `preserve explicit design options`: Unit = {
+  test("preserve explicit design options") {
     val d1 = Design.newDesign.withProductionMode.noLifeCycleLogging
     val d2 = Design.newDesign
 
@@ -146,7 +129,7 @@ class DesignTest extends AirSpec {
     d3.designOptions.stage shouldBe Some(Stage.PRODUCTION)
   }
 
-  def `override design options`: Unit = {
+  test("override design options") {
     val d1 = Design.newDesign.withProductionMode.noLifeCycleLogging
     val d2 = Design.newDesign.withLazyMode.withLifeCycleLogging
     val d  = d1 + d2
@@ -154,7 +137,7 @@ class DesignTest extends AirSpec {
     d.designOptions.stage shouldBe Some(Stage.DEVELOPMENT)
   }
 
-  def `support run`: Unit = {
+  test("support run") {
     val d = Design.newSilentDesign
       .bind[String].toInstance("hello")
     val ret = d.run { s: String =>
@@ -163,4 +146,13 @@ class DesignTest extends AirSpec {
     }
     ret shouldBe 100
   }
+
+  test("find outer variables in code block") {
+    val helloDesign = "hello"
+    val d = newSilentDesign
+      .bind[String].toInstance(helloDesign)
+
+    d.build[String] { x => helloDesign }
+  }
+
 }

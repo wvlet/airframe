@@ -11,16 +11,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.di
+import example.SealedTrait.Adt
+import wvlet.airframe.Design
+import wvlet.airspec.AirSpec
 
-import wvlet.airframe.surface.Surface
+/**
+  */
+object SealedTraitBindingTest extends AirSpec {
+  // This code compilation may fail when using Mill.
+  case class Service(adt: Adt) {}
 
-import scala.reflect.runtime.{universe => ru}
+  test("compile test") {
+    // Just need to check the compilation failure
+    val design = Design.newSilentDesign
+      .bind[Adt].toInstance(Adt.Foo)
 
-private[airframe] trait AirframeSessionImpl { self: AirframeSession =>
-  def register[A: ru.TypeTag](instance: A): Unit = {
-    val surface = Surface.of[A]
-    val owner   = findOwnerSessionOf(surface).getOrElse(this)
-    owner.registerInjectee(surface, surface, instance)
+    design.build[Service] { s =>
+      s.adt shouldBeTheSameInstanceAs Adt.Foo
+    }
   }
 }

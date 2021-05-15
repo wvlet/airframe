@@ -11,16 +11,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.legacy
 
-import wvlet.airframe.surface.Surface
+import wvlet.airspec.AirSpec
 
-import scala.reflect.runtime.{universe => ru}
+import wvlet.airframe._
 
-private[airframe] trait AirframeSessionImpl { self: AirframeSession =>
-  def register[A: ru.TypeTag](instance: A): Unit = {
-    val surface = Surface.of[A]
-    val owner   = findOwnerSessionOf(surface).getOrElse(this)
-    owner.registerInjectee(surface, surface, instance)
+object BindTest {
+  class X {
+    def close(): Unit = {}
+  }
+
+  trait Bind {
+    val x = bind[X] { new X }.onShutdown { _.close() }
+  }
+}
+
+/**
+  */
+class BindTest extends AirSpec {
+  scalaJsSupport
+
+  import BindTest._
+
+  def `allow provider based initialization`: Unit = {
+    val s = newSilentDesign.build[Bind] { b =>
+      //
+    }
   }
 }

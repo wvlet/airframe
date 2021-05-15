@@ -11,16 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.legacy
 
-import wvlet.airframe.surface.Surface
+import wvlet.airspec.AirSpec
 
-import scala.reflect.runtime.{universe => ru}
+import wvlet.airframe._
 
-private[airframe] trait AirframeSessionImpl { self: AirframeSession =>
-  def register[A: ru.TypeTag](instance: A): Unit = {
-    val surface = Surface.of[A]
-    val owner   = findOwnerSessionOf(surface).getOrElse(this)
-    owner.registerInjectee(surface, surface, instance)
+/**
+  */
+class DesignBuildTest extends AirSpec {
+  scalaJsSupport
+
+  def `visible outer variables in code block`: Unit = {
+    val helloDesign = "hello"
+    val d = newSilentDesign
+      .bind[String].toInstance(helloDesign)
+
+    d.build[String] { x => helloDesign }
   }
 }
