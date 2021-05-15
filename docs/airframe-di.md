@@ -31,10 +31,10 @@ In Scala, we have various approaches for dependency injection, such as [cake pat
 To use Airframe DI, add the following dependency to your **build.sbt**:
 
 ```scala
-libraryDependencies += "org.wvlet.airframe" %% "airframe-di" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %% "airframe" % "(version)"
 
 // For Scala.js
-libraryDependencies += "org.wvlet.airframe" %% %"airframe-di" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %%% "airframe" % "(version)"
 ```
 
 ### .scalafmt.conf
@@ -112,11 +112,12 @@ d.build[MyApp]{ app: MyApp =>
 // Session will be closed here
 ```
 
->> ### Why only supports constructor injection?
->> 
->> In the previous version of Airframe DI, we supported in-trait injections. This design, however, introduces the complexity of application design because you need to worry about which type of injections (constructor or in-trait injection?) is appropriate. And also, your application needs to depend on Airframe DI. 
->> 
->> If we only use constructor-injection, no Airframe DI dependency is required to your application interface. Only when binding actual implementations to your application, you need to use Airframe DI Design. This achieves a clear separation of application logic and its construction design.
+> ### Why only supports constructor injection?
+> 
+> In the previous version of Airframe DI, we supported [in-trait injections](airframe-di-legacy.md). This design, however, introduces the complexity of application design because you need to worry about which type of injections (constructor or in-trait injection?) is appropriate. And also, your application needs to depend on Airframe DI. 
+>
+> If we only use constructor-injection, no Airframe DI dependency is required to your application interface. Only when binding actual implementations to your application, you need to use Airframe DI Design. This achieves a clear separation of application logic and its construction design.
+>
 
 ## Design
 
@@ -246,6 +247,28 @@ design
 ```
 
 This will show lifecycle event logs only in debug level logs.
+
+### Annotation-based life cycle hooks
+
+Airframe also supports [JSR-250](https://en.wikipedia.org/wiki/JSR_250) style shutdown hooks via `@PostConstruct` and `@PreDestroy` annotations:
+
+```scala
+import javax.annotation.{PostConstruct, PreDestroy}
+
+trait MyService {
+  @PostConstruct
+  def init {
+    // Called when the object is initialized. The same behavior with onInit
+  }
+
+  @PreDestroy
+  def stop {
+    // Called when session.shutdown is called. The same with onShutdown.
+  }
+}
+```
+
+These annotations are not supported in Scala.js, because Scala.js has no run-time reflection to read annotations in a class. For maximum compatibility, we recommend using onStart/onShutdown hooks or implementing AutoCloseable interface.
 
 
 ## Session

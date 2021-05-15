@@ -396,7 +396,7 @@ val router = Router
 
 ### DI Integration
 
-Airframe RPC natively supports [Airframe DI](airframe.md) for dependency injection so that you can
+Airframe RPC natively supports [Airframe DI](airframe-di.md) for dependency injection so that you can
 inject necessary components for running your web service using `bind[X]` syntax or constructor
 injection. DI is useful when building web applications requiring many components and if you need to
 decouple component implementations from the service implementations. Airframe DI also supports

@@ -16,7 +16,7 @@ Airframe is a collection of essential building blocks for writing full-fledged a
 
 Airframe has these core frameworks:
 
-- [Airframe DI: Dependency Injection](airframe.md)
+- [Airframe DI: Dependency Injection](airframe-di.md)
 - [Airframe RPC: A framework for using Scala both for Frontend and Backend Programming](airframe-rpc.md)
 - [Airframe Rx: ReactiveX Implementation for Scala](airframe-rx.md)
 - [AirSpec: Testing Framework](airspec.md)
@@ -224,7 +224,7 @@ When developing applications with many module classes and configuration objects,
 
 For more details, see:
 
-- [Airframe DI](airframe.md)
+- [Airframe DI](airframe-di.md)
 - [DI Framework Comparison](comparison.md)
 
 
@@ -282,7 +282,7 @@ immutable config objects that can be injected through DI. Partially overriding c
 
 Airframe has several modules for kick starting your application development in Scala.
 
-- [airframe](airframe.md)
+- [airframe](airframe-di.md)
   - Scala-friendly dependency injection library.
 - [airspec](airspec.md)
   - A functional testing framework for Scala.

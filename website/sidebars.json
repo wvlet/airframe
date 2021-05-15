@@ -7,7 +7,7 @@
       "logos"
     ],
     "Framework": [
-      "airframe",
+      "airframe-di",
       "airframe-rpc",
       "airframe-http",
       "airframe-rx",

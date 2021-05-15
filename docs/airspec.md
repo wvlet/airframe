@@ -19,7 +19,7 @@ AirSpec uses pure Scala functions for writing test cases. This style requires no
 - Support basic assertion syntaxes: `assert(cond)`, `x shouldBe y`, etc.
   - No need to learn other complex DSLs.
 - Nesting and reusing test cases with `test(...)`
-- Lifecycle management with [Airframe DI](airframe.md):
+- Lifecycle management with [Airframe DI](airframe-di.md):
   - DI will inject the arguments of test methods based on your custom Design.
   - The lifecycle (e.g., start and shutdown) of the injected services will be properly managed.
 - Handy keyword search for _sbt_: `> testOnly -- (a pattern for class or method names)`
