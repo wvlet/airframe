@@ -27,7 +27,7 @@ class NestedOverrideTest extends AirSpec {
 
   import NestedOverrideTest._
 
-  def `override nested yaml`: Unit = {
+  test("override nested yaml") {
     val config =
       Config(env = "default", configPaths = configPaths)
         .registerFromYaml[LogConfig]("override.yml")

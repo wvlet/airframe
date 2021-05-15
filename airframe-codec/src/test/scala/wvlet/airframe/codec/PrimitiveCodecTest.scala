@@ -80,7 +80,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     }
   }
 
-  def `support numeric`: Unit = {
+  test("support numeric") {
     roundTripTestWithStr[Int](Surface.of[Int], DataType.INTEGER)
     roundTripTestWithStr[Byte](Surface.of[Byte], DataType.INTEGER)
     roundTripTestWithStr[Short](Surface.of[Short], DataType.INTEGER)
@@ -88,20 +88,20 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     roundTripTestWithStr[Boolean](Surface.of[Boolean], DataType.BOOLEAN)
   }
 
-  def `support char`: Unit = {
+  test("support char") {
     roundTripTest[Char](Surface.of[Char], DataType.INTEGER)
   }
 
-  def `support float`: Unit = {
+  test("support float") {
     roundTripTestWithStr[Float](Surface.of[Float], DataType.FLOAT)
     roundTripTestWithStr[Double](Surface.of[Double], DataType.FLOAT)
   }
 
-  def `support string`: Unit = {
+  test("support string") {
     roundTripTest[String](Surface.of[String], DataType.STRING)
   }
 
-  def `support arrays`: Unit = {
+  test("support arrays") {
     arrayRoundTripTest[Byte](Surface.of[Byte])
     arrayRoundTripTest[Char](Surface.of[Char])
     arrayRoundTripTest[Int](Surface.of[Int])
@@ -116,7 +116,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
   // Value 2^64-1 is the maximum value
   val LARGE_VALUE = BigInteger.valueOf(1).shiftLeft(64).subtract(BigInteger.valueOf(1))
 
-  def `read various types of data as int`: Unit = {
+  test("read various types of data as int") {
     val expected = Seq(10, 12, 13, 0, 1, 13, 12345, 0, 0, 0)
 
     val p = MessagePack.newBufferPacker
@@ -140,7 +140,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     seq.get shouldBe expected
   }
 
-  def `read various types of data as long`: Unit = {
+  test("read various types of data as long") {
     val expected = Seq[Long](10, 12, 13, 0, 1, 13, 12345, 0, 0, 0)
 
     val p = MessagePack.newBufferPacker
@@ -162,7 +162,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     seq.get shouldBe expected
   }
 
-  def `read various types of data as short`: Unit = {
+  test("read various types of data as short") {
     val expected = Seq[Short](10, 12, 13, 0, 1, 13, 1021, 0, 0, 0)
 
     val p = MessagePack.newBufferPacker
@@ -184,7 +184,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     seq.get shouldBe expected
   }
 
-  def `read various types of data as byte`: Unit = {
+  test("read various types of data as byte") {
     val expected = Seq[Byte](10, 12, 13, 0, 1, 13, 123, 0, 0, 0)
 
     val p = MessagePack.newBufferPacker
@@ -206,7 +206,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     seq.get shouldBe expected
   }
 
-  def `read various types of data as char`: Unit = {
+  test("read various types of data as char") {
     val expected = Seq[Char](10, 12, 13, 0, 1, 13, 123, 0, 0, 0)
 
     val p = MessagePack.newBufferPacker
@@ -228,7 +228,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     seq.get shouldBe expected
   }
 
-  def `read various types of data as float`: Unit = {
+  test("read various types of data as float") {
     val expected = Seq[Float](10f, 12f, 13.2f, 0f, 1f, 13.4f, 12345.01f, 0f, 0f, LARGE_VALUE.floatValue())
 
     val p = MessagePack.newBufferPacker
@@ -250,7 +250,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     seq.get shouldBe expected
   }
 
-  def `read various types of data as double`: Unit = {
+  test("read various types of data as double") {
     val expected = Seq[Double](10.0, 12.0, 13.2, 0.0, 1.0, 0.1f, 12345.01, 0.0, 0.0, LARGE_VALUE.doubleValue())
 
     val p = MessagePack.newBufferPacker
@@ -272,7 +272,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     seq.get shouldBe expected
   }
 
-  def `read various types of data as boolean`: Unit = {
+  test("read various types of data as boolean") {
     val expected = Seq(true, true, true, false, true, false, false, true, false, true, true, false, false, true)
 
     val p = MessagePack.newBufferPacker
@@ -298,7 +298,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     seq.get shouldBe expected
   }
 
-  def `read various types of data as string`: Unit = {
+  test("read various types of data as string") {
     val expected = Seq(
       "10",
       "12",
@@ -338,7 +338,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     seq.get shouldBe expected
   }
 
-  def `read Any values`: Unit = {
+  test("read Any values") {
     val input: Seq[Any] = Seq(
       "hello",
       true,
@@ -381,7 +381,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
 
   case class Person(id: Int, name: String)
 
-  def `find the actual codec for Any class`: Unit = {
+  test("find the actual codec for Any class") {
     if (isScalaJS) {
       pending("Scala.js doesn't support runtime reflection")
     }
@@ -397,7 +397,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     def unapply(s: String): Option[Color] = Seq(RED, BLUE).find(_.toString == s)
   }
 
-  def `find the actual codec for Any case objects`: Unit = {
+  test("find the actual codec for Any case objects") {
     val v     = Seq(RED, BLUE)
     val codec = MessageCodec.of[Seq[Any]]
     val json  = codec.toJson(v)
@@ -410,7 +410,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     MessageCodec.of[Seq[Color]].fromJson(json) shouldBe v
   }
 
-  def `read collection of Any values`: Unit = {
+  test("read collection of Any values") {
     val codec = MessageCodec.of[Any]
 
     // Byte array
@@ -448,19 +448,19 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     )
   }
 
-  def `pack throwable object passed as Any`: Unit = {
+  test("pack throwable object passed as Any") {
     val codec = MessageCodec.of[Any]
     val json  = codec.toJson(new IllegalArgumentException("error"))
     json.contains("java.lang.IllegalArgumentException") shouldBe true
   }
 
-  def `unpack null in Any`: Unit = {
+  test("unpack null in Any") {
     val codec = MessageCodec.of[Seq[Any]]
     val seq   = codec.fromJson("[null, 1]")
     seq shouldBe Seq(null, 1)
   }
 
-  def `pack Either (Left) in AnyCodec`: Unit = {
+  test("pack Either (Left) in AnyCodec") {
     val codec = MessageCodec.of[Any]
     val json  = codec.toJson(Left(new NullPointerException("NPE")))
 
@@ -474,7 +474,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     }
   }
 
-  def `pack Either (Right) in AnyCodec`: Unit = {
+  test("pack Either (Right) in AnyCodec") {
     val codec = MessageCodec.of[Any]
     val json  = codec.toJson(Right("hello Either"))
 
@@ -489,7 +489,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
 
   case class BinaryData(data: Array[Byte])
 
-  def `encode binary with BASE64`: Unit = {
+  test("encode binary with BASE64") {
     val data = new Array[Byte](40)
     Random.nextBytes(data)
     val codec = MessageCodec.of[BinaryData]
@@ -498,7 +498,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     x.data shouldBe data
   }
 
-  def `Unit codec should have no value`: Unit = {
+  test("Unit codec should have no value") {
     val c       = PrimitiveCodec.UnitCodec
     val msgpack = c.toMsgPack({})
     msgpack.length shouldBe 0
@@ -506,7 +506,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     v shouldBe null
   }
 
-  def `fromString(str)` : Unit = {
+  test("fromString(str)") {
     LongCodec.fromString("1234") shouldBe 1234L
   }
 }

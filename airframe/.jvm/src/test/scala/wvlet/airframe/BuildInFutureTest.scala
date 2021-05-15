@@ -35,14 +35,14 @@ class BuildInFutureTest extends AirSpec {
     threadPool.shutdownNow()
   }
 
-  def `Building in Future causes MISSING_DEPENDENCY` = {
+  test("Building in Future causes MISSING_DEPENDENCY") {
     val f = Future {
       newSilentDesign.build[Config1] { config => debug(config) }
     }
     Await.result(f, Duration.Inf)
   }
 
-  def `Building in Future causes java.lang.ClassCastException` = {
+  test("Building in Future causes java.lang.ClassCastException") {
     val f = Future {
       newSilentDesign
         .bind[Config2].toInstance(Config2())

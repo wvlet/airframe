@@ -26,7 +26,7 @@ import wvlet.airspec.AirSpec
 /**
   */
 class ConfigProviderTest extends AirSpec {
-  def `provide config objects with Airframe`: Unit = {
+  test("provide config objects with Airframe") {
     pending
     val config =
       Config("staging").registerFromYaml[ConfigA]("airframe-config/src/test/resources/myconfig.yml")

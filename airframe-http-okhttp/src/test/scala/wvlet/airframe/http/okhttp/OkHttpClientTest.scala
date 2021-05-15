@@ -99,7 +99,7 @@ class OkHttpClientTest extends AirSpec {
   override protected def design =
     newFinagleServerDesign(FinagleServerConfig(name = "test-server", router = r))
 
-  def `create client`(server: FinagleServer): Unit = {
+  test("create client") { (server: FinagleServer) =>
     def addRequestId(request: okhttp3.Request.Builder): okhttp3.Request.Builder = {
       request.addHeader("X-Request-Id", "10")
     }
@@ -183,7 +183,7 @@ class OkHttpClientTest extends AirSpec {
     }
   }
 
-  def `fail request`(server: FinagleServer): Unit = {
+  test("fail request") { (server: FinagleServer) =>
     withResource(
       OkHttpClient.newClient(
         // Test for the full URI
@@ -216,7 +216,7 @@ class OkHttpClientTest extends AirSpec {
     }
   }
 
-  def `read timeout`(server: FinagleServer): Unit = {
+  test("read timeout") { (server: FinagleServer) =>
     withResource(
       OkHttpClient.newClient(
         s"http://${server.localAddress}",
@@ -236,7 +236,7 @@ class OkHttpClientTest extends AirSpec {
     }
   }
 
-  def `support https request`: Unit = {
+  test("support https request") {
     withResource(OkHttpClient.newClient("https://wvlet.org")) { client =>
       val page = client.get[String]("/airframe/")
       trace(page)

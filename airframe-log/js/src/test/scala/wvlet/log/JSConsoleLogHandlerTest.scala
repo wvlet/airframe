@@ -5,7 +5,7 @@ package wvlet.log
 class JSConsoleLogHandlerTest extends Spec {
   scalaJsSupport
 
-  def testJSConsoleLogHandler: Unit = {
+  test("testJSConsoleLogHandler") {
     Logger.setDefaultHandler(JSConsoleLogHandler())
 
     error("error message")

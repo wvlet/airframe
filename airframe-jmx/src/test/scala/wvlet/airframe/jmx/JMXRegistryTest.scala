@@ -49,7 +49,7 @@ class JMXRegistryTest extends AirSpec {
     agent.unregisterAll
   }
 
-  def `register a new mbean`: Unit = {
+  test("register a new mbean") {
     val b = new SampleMBean
     agent.register(b)
 
@@ -62,7 +62,7 @@ class JMXRegistryTest extends AirSpec {
     }
   }
 
-  def `support class field`: Unit = {
+  test("support class field") {
     val f = new FieldMBean(1, "apple")
     agent.register(f)
 
@@ -75,7 +75,7 @@ class JMXRegistryTest extends AirSpec {
     }
   }
 
-  def `handle nested JMX MBean`: Unit = {
+  test("handle nested JMX MBean") {
     val n = new NestedMBean
     agent.register(n)
 
@@ -88,13 +88,13 @@ class JMXRegistryTest extends AirSpec {
     }
   }
 
-  def `avoid double registration`: Unit = {
+  test("avoid double registration") {
     val f = new FieldMBean(1, "apple")
     agent.register(f)
     agent.register(f)
   }
 
-  def `support complex trait name`: Unit = {
+  test("support complex trait name") {
     agent.register[MyJMXApp](new MyJMXApp {})
   }
 }

@@ -29,7 +29,7 @@ class LoggerJMXTest extends Spec {
     LogEnv.unregisterJMX
   }
 
-  def `be registered`: Unit = {
+  test("be registered") {
     // Initialize a logger
     val l = Logger.rootLogger
 
@@ -49,7 +49,7 @@ class LoggerJMXTest extends Spec {
     }
   }
 
-  def `support setting log levels through JMX`: Unit = {
+  test("support setting log levels through JMX") {
     // Creating JMX proxy is a bit complicated, so just test LoggerJMX impl here
     val current = LoggerJMX.getLogLevel("wvlet.log")
     try {

@@ -9,7 +9,7 @@ import wvlet.log.io.Timer
 /**
   */
 class AsyncHandlerTest extends Spec with Timer {
-  def `start background thread`: Unit = {
+  test("start background thread") {
     val buf = new BufferedLogHandler(BareFormatter)
     withResource(new AsyncHandler(buf)) { h =>
       val logger = Logger("wvlet.log.asynctest")
@@ -31,7 +31,7 @@ class AsyncHandlerTest extends Spec with Timer {
     }
   }
 
-  def `not block at the logging code`: Unit = {
+  test("not block at the logging code") {
     // We cannot use large N since Twitter's QueueingHandler drops the log requests upon high concurrent logging
     val N  = 10
     val R0 = 5

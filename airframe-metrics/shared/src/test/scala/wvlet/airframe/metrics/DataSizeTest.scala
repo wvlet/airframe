@@ -22,7 +22,7 @@ class DataSizeTest extends AirSpec {
 
   import DataSize._
 
-  def `parse string`: Unit = {
+  test("parse string") {
     DataSize(1234) shouldBe DataSize(1234, DataSize.BYTE)
     "1234".toDataSize shouldBe DataSize(1234, DataSize.BYTE)
     "1234B".toDataSize shouldBe DataSize(1234, DataSize.BYTE)
@@ -40,7 +40,7 @@ class DataSizeTest extends AirSpec {
     "1234.56PB".toDataSize shouldBe DataSize(1234.56, DataSize.PETABYTE)
   }
 
-  def `generate succinct rep`: Unit = {
+  test("generate succinct rep") {
     def checkSuccinctRepOf(bytes: Long, repr: String): Unit = {
       DataSize.succinct(bytes).toString shouldBe repr
     }
@@ -53,7 +53,7 @@ class DataSizeTest extends AirSpec {
     checkSuccinctRepOf(3L * 1024 * 1024 * 1024 * 1024 * 1024, "3PB")
   }
 
-  def `be convertible to another unit`: Unit = {
+  test("be convertible to another unit") {
     val d = "10GB".toDataSize
     d.convertTo(DataSize.BYTE).toString shouldBe "10737418240B"
     d.convertTo(DataSize.KILOBYTE).toString shouldBe "10485760kB"
@@ -63,12 +63,12 @@ class DataSizeTest extends AirSpec {
     d.convertTo(DataSize.PETABYTE).toString shouldBe "0.00PB"
   }
 
-  def `round to smaller unit`: Unit = {
+  test("round to smaller unit") {
     10000.toDataSize.roundTo(KILOBYTE) shouldBe 10
     10000000.toDataSize.roundTo(MEGABYTE) shouldBe 10
   }
 
-  def `be comparable`: Unit = {
+  test("be comparable") {
     val input = Seq(
       "1GB".toDataSize,
       "8kB".toDataSize,
@@ -90,7 +90,7 @@ class DataSizeTest extends AirSpec {
     )
   }
 
-  def `be reprsented as bytes`: Unit = {
+  test("be reprsented as bytes") {
     "1".toDataSize.toBytes shouldBe 1L
     "1B".toDataSize.toBytes shouldBe 1L
     "1kB".toDataSize.toBytes shouldBe 1L * 1024

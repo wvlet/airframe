@@ -47,7 +47,7 @@ class PathOnlyMatcherTest extends AirSpec {
       }
   }
 
-  def `support simple path matcher`(client: FinagleSyncClient): Unit = {
+  test("support simple path matcher") { (client: FinagleSyncClient) =>
     client.get[String]("/hello") shouldBe "hello"
     client.get[String]("/hello-hello") shouldBe "hello-hello"
   }

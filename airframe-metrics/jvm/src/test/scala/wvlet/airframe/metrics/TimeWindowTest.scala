@@ -52,7 +52,7 @@ class TimeWindowTest extends AirSpec {
     w
   }
 
-  def `parse string repl`: Unit = {
+  test("parse string repl") {
     // duration/offset
 
     // DURATION := (+ | -)?(INTEGER)(UNIT)
@@ -159,7 +159,7 @@ class TimeWindowTest extends AirSpec {
     parse("+1d/+1h/+1d/2016-10-01 23:00:00", "[2016-10-03 00:00:00-0700,2016-10-04 00:00:00-0700)")
   }
 
-  def `support human-friendly range`: Unit = {
+  test("support human-friendly range") {
     parse("today", "[2016-06-26 00:00:00-0700,2016-06-27 00:00:00-0700)")
     parse("today/now", "[2016-06-26 00:00:00-0700,2016-06-26 01:23:45-0700)")
     parse("thisHour", "[2016-06-26 01:00:00-0700,2016-06-26 02:00:00-0700)")
@@ -183,7 +183,7 @@ class TimeWindowTest extends AirSpec {
     parse("nextYear", "[2017-01-01 00:00:00-0700,2018-01-01 00:00:00-0700)")
   }
 
-  def `parse exact time ranges`: Unit = {
+  test("parse exact time ranges") {
     // When only a start date is given, use this day (or second) range
     parse("2016-06-26", "[2016-06-26 00:00:00-0700,2016-06-27 00:00:00-0700)")
     parse("2016-06-26 01:23:45", "[2016-06-26 01:23:45-0700,2016-06-26 01:23:46-0700)")
@@ -200,7 +200,7 @@ class TimeWindowTest extends AirSpec {
     parse("2016-05-15 01:23:15/0M", "[2016-05-15 01:23:15-0700,2016-06-01 00:00:00-0700)")
   }
 
-  def `support time diff methods`: Unit = {
+  test("support time diff methods") {
     assert(t.parse("nextYear"))
     assert(t.parse("lastYear"))
     def assert(t: TimeWindow): Unit = {
@@ -217,7 +217,7 @@ class TimeWindowTest extends AirSpec {
     }
   }
 
-  def `split time windows`: Unit = {
+  test("split time windows") {
     val weeks = t.parse("5w").splitIntoWeeks
     debug(weeks.mkString("\n"))
 
@@ -233,7 +233,7 @@ class TimeWindowTest extends AirSpec {
     debug(days.mkString("\n"))
   }
 
-  def `parse timezone`: Unit = {
+  test("parse timezone") {
     // Sanity tests
     TimeWindow.withTimeZone("UTC")
     TimeWindow.withTimeZone("PST")
@@ -245,7 +245,7 @@ class TimeWindowTest extends AirSpec {
     TimeWindow.withTimeZone("MDT")
   }
 
-  def `use proper time zone`: Unit = {
+  test("use proper time zone") {
     val default = TimeZone.getDefault
     try {
       TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
@@ -259,7 +259,7 @@ class TimeWindowTest extends AirSpec {
     }
   }
 
-  def `succinct time selcetor`: Unit = {
+  test("succinct time selcetor") {
     def time(z: ZonedDateTime): String = TimeStampFormatter.formatTimestamp(z)
 
     time(t.now) shouldBe "2016-06-26 01:23:45-0700"

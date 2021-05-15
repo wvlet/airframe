@@ -21,7 +21,7 @@ import wvlet.airspec.AirSpec
 class ValueTypeTest extends AirSpec {
   scalaJsSupport
 
-  def `have name`: Unit = {
+  test("have name") {
     val vt = Seq(
       ValueType.NIL,
       ValueType.BOOLEAN,
@@ -38,7 +38,7 @@ class ValueTypeTest extends AirSpec {
     }
   }
 
-  def `lookup ValueType from a byte value`: Unit = {
+  test("lookup ValueType from a byte value") {
     def check(b: Byte, tpe: ValueType): Unit = {
       MessageFormat.of(b).valueType shouldBe tpe
     }

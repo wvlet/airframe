@@ -31,12 +31,12 @@ object RuntimeTaggedTypeTest {
   */
 import RuntimeTaggedTypeTest._
 class RuntimeTaggedTypeTest extends SurfaceSpec {
-  def `pass sanity check`: Unit = {
+  test("pass sanity check") {
     val e: Person @@ Employee = new Person(1, "leo").taggedWith[Employee]
     val e2: Person @@ Guest   = new Person(2, "yui")
   }
 
-  def `be a reference`: Unit = {
+  test("be a reference") {
     val t = check(RuntimeSurface.of[Person @@ Employee], "Person@@Employee")
     val p = t.dealias
     assert(p.name == "Person")
@@ -57,11 +57,11 @@ class RuntimeTaggedTypeTest extends SurfaceSpec {
     assert(n.objectFactory.isEmpty)
   }
 
-  def `tag tagged type`: Unit = {
+  test("tag tagged type") {
     check(RuntimeSurface.of[Name @@ Person @@ Employee], "Name@@Person@@Employee")
   }
 
-  def `be comparable`: Unit = {
+  test("be comparable") {
     val t1 = check(RuntimeSurface.of[Person @@ Employee], "Person@@Employee")
     val t2 = check(RuntimeSurface.of[Person @@ Customer], "Person@@Customer")
     val t3 = check(RuntimeSurface.of[Person @@ Guest], "Person@@Guest")

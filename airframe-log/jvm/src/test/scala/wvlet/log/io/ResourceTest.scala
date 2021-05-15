@@ -23,13 +23,13 @@ import wvlet.airspec.AirSpec
 //--------------------------------------
 
 class ResourceTest extends AirSpec {
-  def `find files from the current class loader`: Unit = {
+  test("find files from the current class loader") {
     debug("find files from package")
     val l = Resource.listResources("wvlet.log.io", { s: String => s.endsWith(".class") })
     assert(l.size > 0)
   }
 
-  def `find resources from jar files`: Unit = {
+  test("find resources from jar files") {
     info("find files from a jar file")
 
     val l = Resource.listResources("scala.io", { s: String => s.endsWith(".class") })
@@ -40,7 +40,7 @@ class ResourceTest extends AirSpec {
     }
   }
 
-  def `find classes of specific types`: Unit = {
+  test("find classes of specific types") {
     val l = Resource.findClasses("scala.io", classOf[scala.io.Source])
     assert(l.size > 0)
     debug(l)
@@ -50,7 +50,7 @@ class ResourceTest extends AirSpec {
     }
   }
 
-  def `find files using the context class`: Unit = {
+  test("find files using the context class") {
     new ResourceReader {
       open("hello.txt") { f =>
         val lines = IOUtil.readAsString(f).split("\n")

@@ -110,7 +110,7 @@ class ChildSessionTest extends AirSpec {
   scalaJsSupport
 
   import ChildSessionTest._
-  def `support creating a child session`: Unit = {
+  test("support creating a child session") {
     requestCount.get() shouldBe 0
     serverDesign.build[HttpServer] { server =>
       val parentThreadId = server.threadManager.threadId

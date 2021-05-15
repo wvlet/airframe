@@ -52,7 +52,7 @@ class MessagePackResponseTest extends AirSpec {
     Finagle.server.withRouter(router).design +
       Finagle.client.syncClientDesign
 
-  def `support Accept: application/x-msgpack`(client: FinagleSyncClient): Unit = {
+  test("support Accept: application/x-msgpack") { (client: FinagleSyncClient) =>
     val req = http.Request("/v1/hello")
     req.accept = "application/x-msgpack"
     val resp    = client.send(req)
@@ -65,7 +65,7 @@ class MessagePackResponseTest extends AirSpec {
     decoded shouldBe SampleResponse(1, "leo")
   }
 
-  def `support raw String response with application/x-msgpack`(client: FinagleSyncClient): Unit = {
+  test("support raw String response with application/x-msgpack") { (client: FinagleSyncClient) =>
     val req = http.Request("/v1/hello_string")
     req.accept = "application/x-msgpack"
     val resp    = client.send(req)
@@ -78,7 +78,7 @@ class MessagePackResponseTest extends AirSpec {
     decoded shouldBe "hello"
   }
 
-  def `support raw MsgPack response with application/x-msgpack`(client: FinagleSyncClient): Unit = {
+  test("support raw MsgPack response with application/x-msgpack") { (client: FinagleSyncClient) =>
     val req = http.Request("/v1/hello_msgpack")
     req.accept = "application/x-msgpack"
     val resp    = client.send(req)
@@ -91,7 +91,7 @@ class MessagePackResponseTest extends AirSpec {
     decoded shouldBe Seq("hello", "msgpack")
   }
 
-  def `DELETE response should have no content body`(client: FinagleSyncClient): Unit = {
+  test("DELETE response should have no content body") { (client: FinagleSyncClient) =>
     val req = http.Request("/v1/resource/100")
     req.method = Method.Delete
     req.contentType = "application/x-msgpack"

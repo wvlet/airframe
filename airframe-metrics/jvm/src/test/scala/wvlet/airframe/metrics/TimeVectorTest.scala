@@ -18,7 +18,7 @@ import wvlet.airspec.AirSpec
 /**
   */
 class TimeVectorTest extends AirSpec {
-  def `succinct time window unit`: Unit = {
+  test("succinct time window unit") {
     // 2020 have 366 days, so we need to fix the offset
     val t = TimeWindow.withUTC.withOffset("2019-01-02 01:23:45")
 

@@ -20,7 +20,7 @@ import wvlet.airspec.AirSpec
 class ByteArrayBufferTest extends AirSpec {
   scalaJsSupport
 
-  def `have ReadBuffer API`: Unit = {
+  test("have ReadBuffer API") {
     val b = ByteArrayBuffer.newBuffer(1024)
   }
 }

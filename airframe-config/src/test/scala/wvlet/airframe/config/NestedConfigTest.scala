@@ -19,7 +19,7 @@ import wvlet.airspec.AirSpec
   */
 class NestedConfigTest extends AirSpec {
   import NestedConfigTest._
-  def `support nested case classes`: Unit = {
+  test("support nested case classes") {
     val configPaths = Seq("airframe-config/src/test/resources")
 
     val config = Config(env = "default", configPaths = configPaths)

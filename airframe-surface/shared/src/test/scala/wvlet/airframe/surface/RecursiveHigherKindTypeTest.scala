@@ -37,7 +37,7 @@ class RecursiveHigherKindTypeTest extends SurfaceSpec {
   import RecursiveHigherKindTypeTest._
   import Holder.BySkinny
 
-  def `support recursive higher kind types`: Unit = {
+  test("support recursive higher kind types") {
     val s = Surface.of[Holder[BySkinny]]
     s.name shouldBe "Holder[BySkinny]"
     s.typeArgs(0).dealias.name shouldBe "MyTask[A]"

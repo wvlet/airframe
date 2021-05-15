@@ -43,12 +43,12 @@ class ContextTest extends AirSpec {
     }
   }
 
-  def `support passing the test context`(context: AirSpecContext): Unit = {
+  test("support passing the test context") { (context: AirSpecContext) =>
     context.specName shouldBe "ContextTest"
     context.testName shouldBe "support passing the test context"
   }
 
-  def `support running AirSpec instances`(context: AirSpecContext): Unit = {
+  test("support running AirSpec instances") { (context: AirSpecContext) =>
     context.specName shouldBe "ContextTest"
     context.testName shouldBe "support running AirSpec instances"
 
@@ -80,7 +80,7 @@ class ContextTest extends AirSpec {
     f.callCountC shouldBe 1
   }
 
-  def `support running AirSpec from a type`(context: AirSpecContext): Unit = {
+  test("support running AirSpec from a type") { (context: AirSpecContext) =>
     val f = context.test[TestFixture]
 
     f.callCountA shouldBe 1
@@ -94,7 +94,7 @@ class ContextTest extends AirSpec {
   }
 
   class MySpec extends AirSpec {
-    def `check local context`(context: AirSpecContext): Unit = {
+    test("check local context") { (context: AirSpecContext) =>
       context.parentContext shouldBe defined
       context.testName shouldBe "check local context"
       context.indentLevel shouldBe 1
@@ -108,7 +108,7 @@ class ContextTest extends AirSpec {
     }
   }
 
-  def `support passing a context to spec instances`(context: AirSpecContext): Unit = {
+  test("support passing a context to spec instances") { (context: AirSpecContext) =>
     context.indentLevel shouldBe 0
     context.test[MySpec]
     context.run(new MySpec)
@@ -122,7 +122,7 @@ class ContextWithDI extends AirSpec {
     import wvlet.airframe._
     private val port = bind[Int]
 
-    def `check binding`: Unit = {
+    test("check binding") {
       port shouldBe 1000
     }
   }
@@ -132,7 +132,7 @@ class ContextWithDI extends AirSpec {
       .bind[Int].toInstance(1000)
   }
 
-  def `delegate bindings from the global session`(context: AirSpecContext): Unit = {
+  test("delegate bindings from the global session") { (context: AirSpecContext) =>
     context.test[SpecWithDI]
   }
 }

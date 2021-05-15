@@ -28,12 +28,12 @@ import wvlet.airspec.AirSpec
   */
 class ShellTest extends AirSpec {
 
-  def `find JVM`: Unit = {
+  test("find JVM") {
     val j = Shell.findJavaCommand()
     j shouldBe defined
   }
 
-  def `find javaw.exe`: Unit = {
+  test("find javaw.exe") {
     if (OS.isWindows) {
       val cmd = Shell.findJavaCommand("javaw").get
       cmd shouldNotBe null
@@ -41,7 +41,7 @@ class ShellTest extends AirSpec {
     }
   }
 
-  def `detect process IDs`: Unit = {
+  test("detect process IDs") {
     val p   = Shell.launchProcess("echo hello world")
     val pid = Shell.getProcessID(p)
     debug(s"process ID:$pid")
@@ -50,45 +50,45 @@ class ShellTest extends AirSpec {
     }
   }
 
-  def `detect current JVM process ID`: Unit = {
+  test("detect current JVM process ID") {
     val pid = Shell.getProcessIDOfCurrentJVM
     debug(s"JVM process ID:$pid")
     pid shouldNotBe -1
   }
 
-  def `be able to launch Java`: Unit = {
+  test("be able to launch Java") {
     Shell.launchJava("-version -Duser.language=en")
   }
 
-  def `be able to kill processes`: Unit = {
+  test("be able to kill processes") {
     val p        = Shell.launchProcess("cat")
     val pid      = Shell.getProcessID(p)
     val exitCode = Shell.kill(pid)
   }
 
-  def `be able to kill process trees`: Unit = {
+  test("be able to kill process trees") {
     val p   = Shell.launchProcess("cat")
     val pid = Shell.getProcessID(p)
     Shell.killTree(pid)
   }
 
-  def `find sh`: Unit = {
+  test("find sh") {
     val cmd = Shell.findSh
     cmd shouldBe defined
   }
 
-  def `launch command`: Unit = {
+  test("launch command") {
     Shell.launchProcess("echo hello world")
     Shell.launchProcess("echo cygwin env=$CYGWIN")
   }
 
-  def `launch process`: Unit = {
+  test("launch process") {
     if (OS.isWindows) {
       Shell.launchCmdExe("echo hello cmd.exe")
     }
   }
 
-  def `launch a remote process as a daemon`: Unit = {
+  test("launch a remote process as a daemon") {
     pending // disabled because ssh cannot be used in travis CI
     Shell.launchRemoteDaemon("localhost", "sleep 5")
   }

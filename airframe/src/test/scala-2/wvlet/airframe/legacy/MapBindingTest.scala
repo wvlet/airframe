@@ -25,7 +25,7 @@ class MapBindingTest extends AirSpec {
   scalaJsSupport
   import MapBindingTest._
 
-  def `support map binding`: Unit = {
+  test("support map binding") {
     val d = newSilentDesign.bind[Mapper].toSingleton.bind[String @@ InfoHandler].toInstance("info")
 
     d.withSession { session =>

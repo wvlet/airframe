@@ -28,14 +28,14 @@ class RuntimeAnnot(@Resource(name = "param A") a: String, c: Int) {
 /**
   */
 class RuntimeAnnotationTest extends SurfaceSpec {
-  def `find class annotations`: Unit = {
+  test("find class annotations") {
     val r = Surface.of[RuntimeAnnot]
     val a = r.findAnnotationOf[Resource]
     assert(a.isDefined)
     assert(a.get.name() == "annot-test")
   }
 
-  def `find parameter annotations`: Unit = {
+  test("find parameter annotations") {
     val s = Surface.of[RuntimeAnnot]
     val p = s.params.find(_.name == "a").get
     val a = p.findAnnotationOf[Resource]
@@ -46,7 +46,7 @@ class RuntimeAnnotationTest extends SurfaceSpec {
     assert(c.findAnnotationOf[Resource].isEmpty)
   }
 
-  def `find method annotations`: Unit = {
+  test("find method annotations") {
     val m = Surface.methodsOf[RuntimeAnnot].find(_.name == "b").get
     val a = m.findAnnotationOf[PreDestroy]
     assert(a.isDefined)
@@ -59,7 +59,7 @@ class RuntimeAnnotationTest extends SurfaceSpec {
     assert(r.get.name() == "b arg")
   }
 
-  def `pass sanity check`: Unit = {
+  test("pass sanity check") {
     val m = Surface.methodsOf[RuntimeAnnot].find(_.name == "noAnnot").get
     assert(m.annotations.isEmpty)
   }

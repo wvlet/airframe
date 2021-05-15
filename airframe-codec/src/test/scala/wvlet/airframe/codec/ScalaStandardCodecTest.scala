@@ -22,7 +22,7 @@ import wvlet.airframe.ulid.ULID
 class ScalaStandardCodecTest extends CodecSpec {
   scalaJsSupport
 
-  def `support Option[A]` : Unit = {
+  test("support Option[A]") {
     val v = Some("hello")
     roundtrip(Surface.of[Option[String]], Some("hello"))
     roundtrip[Option[String]](Surface.of[Option[String]], None)
@@ -30,7 +30,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     roundtrip[Option[Seq[Int]]](Surface.of[Option[Seq[Int]]], Some(Seq(1, 2, 3)))
   }
 
-  def `support tuple`: Unit = {
+  test("support tuple") {
     roundtrip[Tuple1[String]](Surface.of[Tuple1[String]], Tuple1("hello"))
     roundtrip(Surface.of[(Int, Int)], (1, 2))
     roundtrip(Surface.of[(Int, Int, Int)], (1, 2, 3))
@@ -88,7 +88,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     )
   }
 
-  def `support Either Left`: Unit = {
+  test("support Either Left") {
     val codec   = MessageCodec.of[Either[Throwable, String]]
     val et      = Left(new IllegalArgumentException("test exception"))
     val msgpack = codec.pack(et)
@@ -110,18 +110,21 @@ class ScalaStandardCodecTest extends CodecSpec {
 
         // Should generate standard Java stack traces
         val stackTrace = ge.getStackTrace
-        val errorLoc   = stackTrace.find(x => x.getClassName.contains("ScalaStandardCodecTest"))
-        errorLoc match {
-          case Some(x) =>
-            x.getMethodName.contains("Left") shouldBe true
-          case _ =>
-            warn(stackTrace.mkString("\n"))
-            fail("should not reach here")
+        if (!isScalaJS) {
+          // Stacktrace of Scala.js is not the same with JVM
+          val errorLoc = stackTrace.find(x => x.getFileName.contains("ScalaStandardCodecTest"))
+          errorLoc match {
+            case Some(x) =>
+            //x.getMethodName.contains("Left") shouldBe true
+            case _ =>
+              warn(stackTrace.mkString("\n"))
+              fail("should not reach here")
+          }
         }
     }
   }
 
-  def `Either Left should produce Array[JSON objects, null]` : Unit = {
+  test("Either Left should produce Array[JSON objects, null]") {
     val codec = MessageCodec.of[Either[Throwable, String]]
     val et    = Left(new IllegalArgumentException("test exception"))
     val json  = codec.toJson(et)
@@ -135,7 +138,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     }
   }
 
-  def `support Either Left with nested exception`: Unit = {
+  test("support Either Left with nested exception") {
     val codec   = MessageCodec.of[Either[Throwable, String]]
     val et      = Left(new Exception(new NullPointerException("NPE")))
     val msgpack = codec.pack(et)
@@ -159,7 +162,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     }
   }
 
-  def `support Either Right`: Unit = {
+  test("support Either Right") {
     val codec   = MessageCodec.of[Either[Throwable, String]]
     val msgpack = codec.pack(Right("Hello Either"))
     val either  = codec.unpack(msgpack)
@@ -173,7 +176,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     }
   }
 
-  def `Either Right should produce JSONArray[null, JSONValue]` : Unit = {
+  test("Either Right should produce JSONArray[null, JSONValue]") {
     val codec = MessageCodec.of[Either[Throwable, String]]
     val json  = codec.toJson(Right("Hello Either"))
     JSON.parse(json) match {
@@ -184,13 +187,13 @@ class ScalaStandardCodecTest extends CodecSpec {
     }
   }
 
-  def `read valid JSON input for Either`: Unit = {
+  test("read valid JSON input for Either") {
     val codec = MessageCodec.of[Either[Throwable, String]]
     codec.unpackJson("""[{"exceptionClass":"java.lang.NullPointerException","message":"NPE"}, null]""")
     codec.unpackJson("""[null, "hello"]""")
   }
 
-  def `reject invalid JSON input for Either`: Unit = {
+  test("reject invalid JSON input for Either") {
     val codec = MessageCodec.of[Either[Throwable, String]]
 
     def testInvalid(json: String): Unit = {
@@ -208,7 +211,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     testInvalid("""{"exceptionClass":"java.lang.NullPointerException","message":"NPE"}""")
   }
 
-  def `support ULID`: Unit = {
+  test("support ULID") {
     val codec   = MessageCodec.of[ULID]
     val ulid    = ULID.newULID
     val msgpack = codec.toMsgPack(ulid)

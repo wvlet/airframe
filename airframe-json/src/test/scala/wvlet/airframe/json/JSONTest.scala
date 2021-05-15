@@ -20,12 +20,12 @@ import wvlet.airspec.AirSpec
 class JSONTest extends AirSpec {
   scalaJsSupport
 
-  def `support toJSONValue`: Unit = {
+  test("support toJSONValue") {
     val json: Json = """{"id":1}"""
     json.toJSONValue shouldBe JSON.parse(json)
   }
 
-  def `JSONObject.get() and JSONArray.apply()` : Unit = {
+  test("JSONObject.get() and JSONArray.apply()") {
     val json: Json = """{"user": [{ "id": 1 }, { "id": 2 }]}"""
     val jsonValue  = JSON.parse(json)
 
@@ -38,7 +38,7 @@ class JSONTest extends AirSpec {
     id shouldBe Some(1)
   }
 
-  def `JSON DSL`: Unit = {
+  test("JSON DSL") {
     val json: Json = """{"user": [{ "id": 1, "name": "a", "flag": true }, { "id": 2, "name": "b", "flag": null }]}"""
     val jsonValue  = JSON.parse(json)
 
@@ -72,14 +72,14 @@ class JSONTest extends AirSpec {
     users2(1).toObjectValue shouldBe Map("id" -> JSONLong(2), "name" -> JSONString("b"), "flag" -> JSONNull)
   }
 
-  def `Extract nested properties by JSON DSL`: Unit = {
+  test("Extract nested properties by JSON DSL") {
     val json: Json = """{"user": [{ "values": {"value": "a"} }, { "values": {"value": "b"} }]}"""
     val values     = JSON.parse(json) / "user" / "values" / "value"
 
     values.map(_.toStringValue) shouldBe Seq("a", "b")
   }
 
-  def `format JSON value`: Unit = {
+  test("format JSON value") {
     val json = JSON.parse(
       """{"user": [{ "values": {"value": "a"} }, { "values": {"value": "b"} }, {"values": []}, {"values": {}}]}"""
     )

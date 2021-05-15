@@ -53,7 +53,7 @@ class LazyStartTest extends AirSpec {
     .bind[F1].toInstance(f1)
     .bind[F2].toInstance(f2)
 
-  def `support lazy start`: Unit = {
+  test("support lazy start") {
     (f1.get, f2.get) shouldBe (false, false)
     d.build[MyApp] { app => (f1.get, f2.get) shouldBe (true, false) }
     (f1.get, f2.get) shouldBe (false, false)
@@ -69,7 +69,7 @@ class LazyStartTest extends AirSpec {
     (f1.get, f2.get) shouldBe (false, false)
   }
 
-  def `support eager start`: Unit = {
+  test("support eager start") {
     (f1.get, f2.get) shouldBe (false, false)
     d.withProductionMode.build[MyApp] { app => (f1.get, f2.get) shouldBe (true, true) }
     (f1.get, f2.get) shouldBe (false, false)

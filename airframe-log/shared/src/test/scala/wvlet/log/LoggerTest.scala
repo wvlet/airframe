@@ -67,13 +67,13 @@ class LoggerTest extends Spec {
     Logger("wvlet.log").setLogLevel(LogLevel.INFO)
   }
 
-  def `use leaf logger name`: Unit = {
+  test("use leaf logger name") {
     val l = Logger("leaf")
     assert(l.getName == "leaf")
     l.debug("leaf logger")
   }
 
-  def `have access to root logger`: Unit = {
+  test("have access to root logger") {
     val current = Logger.getDefaultLogLevel
     println(s"current log level: ${current}")
     Logger.resetDefaultLogLevel
@@ -81,46 +81,46 @@ class LoggerTest extends Spec {
     Logger.setDefaultLogLevel(current)
   }
 
-  def `create logger from class`: Unit = {
+  test("create logger from class") {
     val l = Logger.of[MyAppClass]
     assert(l.getName == "wvlet.log.MyAppClass")
   }
 
-  def `display log messages`: Unit = {
+  test("display log messages") {
     debug("logging test")
     new MyAppClass
   }
 
-  def `accept java.util.logging.LogRecord`: Unit = {
+  test("accept java.util.logging.LogRecord") {
     SourceCodeLogFormatter.format(new jul.LogRecord(jul.Level.INFO, "format test"))
   }
 
-  def `support simple log format`: Unit = {
+  test("support simple log format") {
     Logger.setDefaultFormatter(SimpleLogFormatter)
     new MyAppClass
   }
 
-  def `support app log format`: Unit = {
+  test("support app log format") {
     Logger.setDefaultFormatter(AppLogFormatter)
     new MyAppClass
   }
 
-  def `support source code log format`: Unit = {
+  test("support source code log format") {
     Logger.setDefaultFormatter(SourceCodeLogFormatter)
     new MyAppClass
   }
 
-  def `support intellij format`: Unit = {
+  test("support intellij format") {
     Logger.setDefaultFormatter(IntelliJLogFormatter)
     new MyAppClass
   }
 
-  def `support tsv format`: Unit = {
+  test("support tsv format") {
     Logger.setDefaultFormatter(TSVLogFormatter)
     new MyAppClass
   }
 
-  def `can create local logger`: Unit = {
+  test("can create local logger") {
     Logger.setDefaultFormatter(SourceCodeLogFormatter)
     capture {
       val l = Logger("org.sample")
@@ -129,7 +129,7 @@ class LoggerTest extends Spec {
     }
   }
 
-  def `be able to change log levels`: Unit = {
+  test("be able to change log levels") {
     capture {
       val l = Logger("org.sample")
       l.setLogLevel(LogLevel.TRACE)
@@ -139,7 +139,7 @@ class LoggerTest extends Spec {
     }
   }
 
-  def `support logging methods`: Unit = {
+  test("support logging methods") {
     capture {
       val l = Logger("org.sample")
       l.trace("trace log test")
@@ -150,7 +150,7 @@ class LoggerTest extends Spec {
     }
   }
 
-  def `display exception stack traces`: Unit = {
+  test("display exception stack traces") {
     capture {
       val e = new Exception("exception test")
       warn("Running stack trace tests")
@@ -172,13 +172,13 @@ class LoggerTest extends Spec {
     }
   }
 
-  def `support having a concrete logger`: Unit = {
+  test("support having a concrete logger") {
     val t = new LocalLogSupport {
       info("hello")
     }
   }
 
-  def `use succinct name when used with anonymous trait`: Unit = {
+  test("use succinct name when used with anonymous trait") {
     if (LogEnv.isScalaJS) {
       pending
     } else {
@@ -189,12 +189,12 @@ class LoggerTest extends Spec {
     }
   }
 
-  def `Remove $ from object name`: Unit = {
+  test("Remove $ from object name") {
     val o = Sample
     assert(o.loggerName == "wvlet.log.Sample")
   }
 
-  def `clear parent handlers`: Unit = {
+  test("clear parent handlers") {
     try {
       val myHandler = new ConsoleLogHandler(LogFormatter.TSVLogFormatter)
 
@@ -222,7 +222,7 @@ class LoggerTest extends Spec {
     }
   }
 
-  def `support java.util.LogLevel`: Unit = {
+  test("support java.util.LogLevel") {
     for (
       l <- Seq(
         jul.Level.ALL,
@@ -239,7 +239,7 @@ class LoggerTest extends Spec {
     }
   }
 
-  def `parse string log levels`: Unit = {
+  test("parse string log levels") {
     val logLevels = LogLevel.values.map(_.name.toLowerCase())
 
     // string to LogLevel
@@ -257,12 +257,12 @@ class LoggerTest extends Spec {
     assert(l2.isEmpty)
   }
 
-  def `be able to sort LogLevels`: Unit = {
+  test("be able to sort LogLevels") {
     val sorted = LogLevel.values.sorted(LogOrdering)
     sorted.sliding(2).forall(s => s(0) < s(1))
   }
 
-  def `support flush and close`: Unit = {
+  test("support flush and close") {
     val h = new ConsoleLogHandler(SourceCodeLogFormatter)
     h.publish(LogRecord(new jul.LogRecord(jul.Level.FINE, "console log handler test")))
     h.flush()

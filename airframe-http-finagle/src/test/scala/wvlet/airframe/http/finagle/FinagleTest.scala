@@ -25,7 +25,7 @@ import wvlet.airspec.AirSpec
 class FinagleTest extends AirSpec {
   import wvlet.airframe.http.finagle._
 
-  def `provide facade of http requests`: Unit = {
+  test("provide facade of http requests") {
     Seq(
       http.Method.Get,
       http.Method.Post,
@@ -50,7 +50,7 @@ class FinagleTest extends AirSpec {
     }
   }
 
-  def `provide facade of http responses`: Unit = {
+  test("provide facade of http responses") {
     val resp = http.Response(Status.Forbidden)
     resp.setContentString("hello world")
     resp.setContentTypeJson()

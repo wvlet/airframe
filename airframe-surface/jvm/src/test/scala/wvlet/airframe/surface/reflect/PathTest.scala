@@ -20,13 +20,13 @@ import wvlet.airframe.surface.SurfaceSpec
 class PathTest extends SurfaceSpec {
   import Path._
 
-  def `define root`: Unit = {
+  test("define root") {
     val r = Path.root
     assert(r.size == 0)
     assert(r.fullPath == "/")
   }
 
-  def `define absolute paths`: Unit = {
+  test("define absolute paths") {
     val p = Path("/abs/path")
     assert(p.size == 2)
     assert(p.name == "path")
@@ -44,14 +44,14 @@ class PathTest extends SurfaceSpec {
     assert(p3.fullPath == "/abs/path/hello")
   }
 
-  def `define relative path`: Unit = {
+  test("define relative path") {
     val p = Path("hello/world")
     assert(p.fullPath == "hello/world")
     assert(p.isRelative == true)
     assert(p.isAbsolute == false)
   }
 
-  def `be comparable`: Unit = {
+  test("be comparable") {
     assert(Path("/abs/path") == Path("/abs/path"))
     assert(Path("/a") != Path("/b"))
 

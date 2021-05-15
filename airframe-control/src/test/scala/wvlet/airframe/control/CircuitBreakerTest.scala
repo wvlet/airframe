@@ -6,7 +6,7 @@ import java.util.concurrent.TimeoutException
 class CircuitBreakerTest extends AirSpec {
   scalaJsSupport
 
-  def `support changing states`: Unit = {
+  test("support changing states") {
     val cb = CircuitBreaker.default
     cb.state shouldBe CircuitBreaker.CLOSED
     cb.isConnected shouldBe true
@@ -24,7 +24,7 @@ class CircuitBreakerTest extends AirSpec {
     cb.isConnected shouldBe true
   }
 
-  def `support standalone usage`: Unit = {
+  test("support standalone usage") {
     val cb = CircuitBreaker.default
 
     cb.verifyConnection
@@ -42,7 +42,7 @@ class CircuitBreakerTest extends AirSpec {
     }
   }
 
-  def `support failure threshold`: Unit = {
+  test("support failure threshold") {
     val cb = CircuitBreaker.withFailureThreshold(2, 5)
     val e  = new TimeoutException()
     cb.isConnected shouldBe true
@@ -84,7 +84,7 @@ class CircuitBreakerTest extends AirSpec {
     cb.isConnected shouldBe true
   }
 
-  def `support consecutive failure health checker`: Unit = {
+  test("support consecutive failure health checker") {
     val cb = CircuitBreaker.withConsecutiveFailures(2)
     val e  = new TimeoutException()
     cb.isConnected shouldBe true
@@ -109,7 +109,7 @@ class CircuitBreakerTest extends AirSpec {
     cb.isConnected shouldBe true
   }
 
-  def `run code with circuit`: Unit = {
+  test("run code with circuit") {
     val cb = CircuitBreaker.withFailureThreshold(1, 2)
 
     cb.run {}
@@ -125,7 +125,7 @@ class CircuitBreakerTest extends AirSpec {
     }
   }
 
-  def `disable circuit breaker`: Unit = {
+  test("disable circuit breaker") {
     val cb = CircuitBreaker.alwaysClosed
     val e  = new TimeoutException()
     for (i <- 0 to 10) {

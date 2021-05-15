@@ -33,7 +33,7 @@ object DependencyTest1 {
 class DependencyTest extends AirSpec {
   scalaJsSupport
 
-  def `show missing dependencies`: Unit = {
+  test("show missing dependencies") {
     val d = newSilentDesign
     d.withSession { session =>
       val m = intercept[MISSING_DEPENDENCY] {
@@ -44,7 +44,7 @@ class DependencyTest extends AirSpec {
     }
   }
 
-  def `resolve concrete dependencies`: Unit = {
+  test("resolve concrete dependencies") {
     val d = newSilentDesign
       .bind[DependencyTest1.D].to[DependencyTest1.DImpl] // abstract class to a concrete trait
     d.withSession { session =>

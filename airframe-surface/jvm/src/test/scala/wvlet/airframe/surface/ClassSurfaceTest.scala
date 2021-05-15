@@ -26,7 +26,7 @@ object ClassSurfaceTest {
 import wvlet.airframe.surface.ClassSurfaceTest._
 
 class ClassSurfaceTest extends SurfaceSpec {
-  def `support multiple param blocks`: Unit = {
+  test("support multiple param blocks") {
     val a = check(Surface.of[A], "A")
     debug(a.params.mkString(", "))
 
@@ -46,7 +46,7 @@ class ClassSurfaceTest extends SurfaceSpec {
     assert(a0.context == "c")
   }
 
-  def `support tags in constructor args`: Unit = {
+  test("support tags in constructor args") {
     // TODO support this in Scala.js
     check(Surface.of[Int @@ MyTag], "Int@@MyTag")
     val b = check(Surface.of[B], "B")

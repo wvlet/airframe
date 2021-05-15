@@ -22,14 +22,14 @@ import wvlet.airspec.AirSpec
 class ConstructorBindingTest extends AirSpec {
   import ConstructorBindingTest._
 
-  def `build objects using default constructor parameters`: Unit = {
+  test("build objects using default constructor parameters") {
     newSilentDesign.build[CbTest] { a =>
       debug(a)
       a shouldBe CbTest(-1, "leo")
     }
   }
 
-  def `build objects using default param and binding`: Unit = {
+  test("build objects using default param and binding") {
     newSilentDesign
       .bind[MyValue].toInstance("hello")
       .build[CbTest1] { a =>

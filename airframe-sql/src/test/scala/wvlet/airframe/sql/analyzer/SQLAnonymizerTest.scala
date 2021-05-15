@@ -41,19 +41,19 @@ class SQLAnonymizerTest extends AirSpec {
     input.foreach { x => process(x, dict) }
   }
 
-  def `anonymize standard queries`: Unit = {
+  test("anonymize standard queries") {
     processQueries(SQLBenchmark.selection)
   }
 
-  def `anonymize DDL queries`: Unit = {
+  test("anonymize DDL queries") {
     processQueries(SQLBenchmark.ddl)
   }
 
-  def `anonymize TPC-H`: Unit = {
+  test("anonymize TPC-H") {
     processQueries(SQLBenchmark.tpcH)
   }
 
-  def `anonymize TPC-DS`: Unit = {
+  test("anonymize TPC-DS") {
     processQueries(SQLBenchmark.tpcDS)
   }
 }

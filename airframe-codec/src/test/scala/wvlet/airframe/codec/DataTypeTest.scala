@@ -21,7 +21,7 @@ import wvlet.airspec.AirSpec
 class DataTypeTest extends AirSpec {
   scalaJsSupport
 
-  def `have primitive types`: Unit = {
+  test("have primitive types") {
     DataType.primitiveTypes.contains(DataType.NIL) shouldBe true
     DataType.primitiveTypes.contains(DataType.INTEGER) shouldBe true
     DataType.primitiveTypes.contains(DataType.FLOAT) shouldBe true
@@ -39,32 +39,32 @@ class DataTypeTest extends AirSpec {
     }
   }
 
-  def `should have any`: Unit = {
+  test("should have any") {
     val a = DataType.ANY
     a.typeName shouldBe "any"
     a.signature shouldBe "any"
     a.typeArgs shouldBe empty
   }
 
-  def `should have typeName`: Unit = {
+  test("should have typeName") {
     DataType.NIL.typeName shouldBe "nil"
   }
 
-  def `support array types`: Unit = {
+  test("support array types") {
     val a = DataType.ARRAY(DataType.INTEGER)
     a.signature shouldBe "array[integer]"
     a.typeName shouldBe "array"
     a.typeArgs shouldBe Seq(DataType.INTEGER)
   }
 
-  def `support map types`: Unit = {
+  test("support map types") {
     val m = DataType.MAP(DataType.INTEGER, DataType.STRING)
     m.signature shouldBe "map[integer,string]"
     m.typeName shouldBe "map"
     m.typeArgs shouldBe Seq(DataType.INTEGER, DataType.STRING)
   }
 
-  def `support record types`: Unit = {
+  test("support record types") {
     val c1 = Column("c1", DataType.INTEGER)
     val c2 = Column("c2", DataType.FLOAT)
     val r  = DataType.RecordType("MyType", Seq(c1, c2))
@@ -84,13 +84,13 @@ class DataTypeTest extends AirSpec {
     r.columnIndex("c2") shouldBe 1
   }
 
-  def `detect duplicate column names`: Unit = {
+  test("detect duplicate column names") {
     intercept[IllegalArgumentException] {
       DataType.RecordType("A", Seq(Column("c", DataType.INTEGER), Column("c", DataType.STRING)))
     }
   }
 
-  def `support union types`: Unit = {
+  test("support union types") {
     val r1 = DataType.RecordType("A", Seq(Column("c1", DataType.INTEGER), Column("c2", DataType.FLOAT)))
     val r2 = DataType.RecordType(
       "B",

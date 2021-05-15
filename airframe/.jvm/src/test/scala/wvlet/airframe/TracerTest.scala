@@ -49,7 +49,7 @@ object TracerTest extends LogSupport {
 class TracerTest extends AirSpec {
   import TracerTest._
 
-  def `should trace events`: Unit = {
+  test("should trace events") {
     val d = newDesign.noLifeCycleLogging
       .withTracer(ChromeTracer.newTracer("target/trace.json"))
 
@@ -58,7 +58,7 @@ class TracerTest extends AirSpec {
     }
   }
 
-  def `should report design coverage`: Unit = {
+  test("should report design coverage") {
     val stats = new DIStats()
     val d = newDesign.noLifeCycleLogging
       .bind[A].toSingleton

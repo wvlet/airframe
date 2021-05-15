@@ -44,7 +44,7 @@ object AirframeBootstrapTest {
 class AirframeBootstrapTest extends AirSpec {
   import AirframeBootstrapTest._
 
-  def `bind configs`: Unit = {
+  test("bind configs") {
     module1.noLifeCycleLogging.showConfig
       .withSession { session =>
         session.build[AppConfig] shouldBe AppConfig("hello")
@@ -52,7 +52,7 @@ class AirframeBootstrapTest extends AirSpec {
       }
   }
 
-  def `combine modules`: Unit = {
+  test("combine modules") {
     (module1 + module2).noLifeCycleLogging.showConfig
       .withSession { session =>
         session.build[AppConfig] shouldBe AppConfig("hello")
@@ -60,7 +60,7 @@ class AirframeBootstrapTest extends AirSpec {
       }
   }
 
-  def `override config`: Unit = {
+  test("override config") {
     (module1 + module3).noLifeCycleLogging
       .overrideConfigParams(Map("app.name" -> "good morning"))
       .showConfig
@@ -70,7 +70,7 @@ class AirframeBootstrapTest extends AirSpec {
       }
   }
 
-  def `get config`: Unit = {
+  test("get config") {
     module3.noLifeCycleLogging.getConfig match {
       case Some(c) =>
         c.getAll.length shouldBe 1
@@ -81,7 +81,7 @@ class AirframeBootstrapTest extends AirSpec {
     }
   }
 
-  def `hide credentials`: Unit = {
+  test("hide credentials") {
     val x = Credential("leo", "hidden secret password", "some important information", Some("hidden secret key"))
     Design.newSilentDesign
       .bindConfig[Credential](x)

@@ -9,7 +9,7 @@ import wvlet.airspec.AirSpec
 
 class OkHttpTest extends AirSpec {
 
-  def `provide facade of http requests`: Unit = {
+  test("provide facade of http requests") {
     val body = RequestBody.create(ContentTypeJson, "hello okhttp")
     Seq(
       new Request.Builder().get(),
@@ -39,7 +39,7 @@ class OkHttpTest extends AirSpec {
     }
   }
 
-  def `provide facade of http responses`: Unit = {
+  test("provide facade of http responses") {
     val res = new Response.Builder()
       .code(403)
       .body(ResponseBody.create(ContentTypeJson, "hello world"))

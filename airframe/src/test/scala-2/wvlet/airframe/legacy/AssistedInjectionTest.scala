@@ -25,7 +25,7 @@ class AssistedInjectionTest extends AirSpec {
 
   import AssistedInjectionTest._
 
-  def `support assisted injection`: Unit = {
+  test("support assisted injection") {
     newSilentDesign
       .bind[MyService].toInstance("hello")
       .withSession { session =>

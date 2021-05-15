@@ -20,7 +20,7 @@ import wvlet.log.io.IOUtil._
 /**
   */
 class LogRotationHandlerTest extends Spec {
-  def `rotate log files`: Unit = {
+  test("rotate log files") {
     val l = Logger("wvlet.log.rotation")
     withTempFile(name = "log-rotation-test", dir = "target") { f =>
       val h = new LogRotationHandler(f.getPath, 5, 10)
@@ -37,7 +37,7 @@ class LogRotationHandlerTest extends Spec {
     }
   }
 
-  def `rescue orphaned log files`: Unit = {
+  test("rescue orphaned log files") {
     val l   = Logger("wvlet.log.rotation")
     val tmp = new File("target/log-rotation-test.log.tmp")
     if (!tmp.exists()) {
@@ -49,7 +49,7 @@ class LogRotationHandlerTest extends Spec {
     assert(!tmp.exists())
   }
 
-  def `output log to a file`: Unit = {
+  test("output log to a file") {
     val l = Logger("wvlet.log.filehandler")
     withTempFile(name = "log-file-test", dir = "target") { f =>
       val h = new FileHandler(f.getPath)

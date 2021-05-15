@@ -65,7 +65,7 @@ object BindSingleton {
 class BindSingleton extends AirSpec {
   scalaJsSupport
 
-  def `run`: Unit = {
+  test("run") {
     val b = BindSingleton
   }
 }

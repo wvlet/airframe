@@ -20,13 +20,13 @@ import wvlet.airspec.AirSpec
 class InnerClassTest extends AirSpec {
   case class A(id: Int, name: String)
 
-  def `pass inner class context to Surface`: Unit = {
+  test("pass inner class context to Surface") {
     val s = Surface.of[A]
     val a = s.objectFactory.map { x => x.newInstance(Seq(1, "leo")) }
     a shouldBe Some(A(1, "leo"))
   }
 
-  def `throw IllegalStateException when failed to find the outer class instance`: Unit = {
+  test("throw IllegalStateException when failed to find the outer class instance") {
     val e = intercept[IllegalStateException] {
       new {
         val s = Surface.of[A]

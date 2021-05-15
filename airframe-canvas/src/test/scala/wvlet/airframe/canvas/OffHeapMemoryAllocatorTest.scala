@@ -18,7 +18,7 @@ import wvlet.airspec.AirSpec
 /**
   */
 class OffHeapMemoryAllocatorTest extends AirSpec {
-  def `allocate and release memory`: Unit = {
+  test("allocate and release memory") {
     val a  = new OffHeapMemoryAllocator
     val m1 = a.allocate(10)
     a.allocatedMemorySize shouldBe 10

@@ -22,7 +22,7 @@ class InnerClassCodecTest extends AirSpec {
 
   case class A(id: Int, name: String)
 
-  def `support codec for inner classes`: Unit = {
+  test("support codec for inner classes") {
     val codec   = MessageCodec.of[A]
     val a       = A(1, "leo")
     val msgpack = codec.toMsgPack(a)

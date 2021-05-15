@@ -71,7 +71,7 @@ class SingletonTest extends AirSpec {
     newDesign
       .bind[TraitCounter].toInstance(new AtomicInteger(0))
 
-  def `bind singleton with bind[X]` : Unit = {
+  test("bind singleton with bind[X]") {
     val session = d.newSession
 
     val a = session.build[A]
@@ -81,7 +81,7 @@ class SingletonTest extends AirSpec {
     session.build[TraitCounter].get() shouldBe 1
   }
 
-  def `bind singleton with bind[X] as a service`: Unit = {
+  test("bind singleton with bind[X] as a service") {
     val session = d.newSession
 
     val u1 = session.build[U1]
@@ -91,7 +91,7 @@ class SingletonTest extends AirSpec {
     u1.service.counter.get() shouldBe 1
   }
 
-  def `support overriding non-abstract singleton trait`: Unit = {
+  test("support overriding non-abstract singleton trait") {
     val d = newDesign
       .bind[E].toSingleton
       .bind[NonAbstract].toSingletonOf[C]

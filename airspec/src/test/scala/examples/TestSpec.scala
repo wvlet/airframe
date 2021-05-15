@@ -33,28 +33,28 @@ class TestSpec extends AirSpec with LogSupport {
     assert(m == "my message")
   }
 
-  def `support free-style test description`: Unit = {
+  test("support free-style test description") {
     trace("hello")
   }
 
-  def `should support assertion`: Unit = {
+  test("should support assertion") {
     intercept[AirSpecException] {
       assert(false, "failure")
     }
   }
 
-  def `should support skipping`: Unit = {
+  test("should support skipping") {
     skip("unnecessary test")
   }
 
-  def `should support cancel`: Unit = {
+  test("should support cancel") {
     cancel("failed to access a necessary service")
   }
 
-  def `should support pending`: Unit = {
+  test("should support pending") {
     pendingUntil("fixing #012")
   }
-  def `should support pending with a reason`: Unit = {
+  test("should support pending with a reason") {
     pending("pending reason")
   }
 
@@ -78,7 +78,7 @@ class WordSpecTest extends AirSpec {
   scalaJsSupport
 
   def `should have a natural language description` = {}
-  def `should support arbitrary texts`: Unit = {}
+  test("should support arbitrary texts") {}
 }
 
 class JvmSpecTest extends AirSpec {

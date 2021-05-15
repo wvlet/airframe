@@ -28,32 +28,32 @@ class BenchmarkMainTest extends AirSpec {
   // Need to run without forking the JVM process (-F 0) as sbt cannot pass proper classpath and causes
   // "Could not find or load main class org.openjdk.jmh.runner.ForkedMain" error
 
-  def `run msgpack benchmark`: Unit = {
+  test("run msgpack benchmark") {
     BenchmarkMain.main(s"bench-quick -F 0 msgpack")
     warn(s"This is a test run result, and it may not reflect the actual performance")
   }
 
-  def `run json benchmark`: Unit = {
+  test("run json benchmark") {
     BenchmarkMain.main(s"bench-quick -F 0 json")
     warn(s"This is a test run result, and it may not reflect the actual performance")
   }
 
-  def `run json-stream benchmark`: Unit = {
+  test("run json-stream benchmark") {
     BenchmarkMain.main(s"bench-quick -F 0 json_stream")
     warn(s"This is a test run result, and it may not reflect the actual performance")
   }
 
-  def `run json perf benchmark`: Unit = {
+  test("run json perf benchmark") {
     BenchmarkMain.main(s"json-perf -n ${iteration} -b ${iteration}")
     warn(s"This is a test run result, and it may not reflect the actual performance")
   }
 
-  def `run http benchmark`: Unit = {
+  test("run http benchmark") {
     BenchmarkMain.main("bench-quick -F 0 -mt 1s http")
     warn(s"This is a test run result, and it may not reflect the actual performance")
   }
 
-  def `run ulid benchmark`: Unit = {
+  test("run ulid benchmark") {
     BenchmarkMain.main("bench-quick -F 0 ulid")
     warn(s"This is a test run result, and it may not reflect the actual performance")
   }

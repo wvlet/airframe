@@ -91,7 +91,7 @@ class FluencyTest extends AirSpec {
       )
   }
 
-  def `should send metrics to fluentd through Fluency`(f: MetricLoggerFactory): Unit = {
+  test("should send metrics to fluentd through Fluency") { (f: MetricLoggerFactory) =>
     // Use a regular emit method
     f.getLogger.emit("mytag", Map("data" -> "hello"))
 

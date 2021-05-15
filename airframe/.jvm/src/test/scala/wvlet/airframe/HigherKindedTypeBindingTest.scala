@@ -45,7 +45,7 @@ object TaglessFinalExample {
 class HigherKindedTypeBindingTest extends AirSpec {
   import TaglessFinalExample._
 
-  def `support higher-kinded type binding`: Unit = {
+  test("support higher-kinded type binding") {
     warn("TODO: This currently works only for JVM. Need to fix SurfaceMacros for Scala.js")
     val s = Surface.of[WebApp[Future]]
     debug(s)

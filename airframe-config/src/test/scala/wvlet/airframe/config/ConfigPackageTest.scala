@@ -23,7 +23,7 @@ trait AppTag
 class ConfigPackageTest extends AirSpec {
   private val configPaths = Seq("airframe-config/src/test/resources")
 
-  def `bind config with Airframe design`: Unit = {
+  test("bind config with Airframe design") {
     val d = newDesign.noLifeCycleLogging
       .withConfigEnv(env = "development")
       .withConfigPaths(configPaths)

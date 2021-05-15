@@ -10,7 +10,7 @@ object InheritedEndpointTest extends AirSpec {
   }
   trait MyApp extends Base
 
-  def `find inherited endpoints`: Unit = {
+  test("find inherited endpoints") {
     val router = Router.of[MyApp]
     router.routes.find(_.path == "/hello") shouldBe defined
   }

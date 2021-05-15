@@ -61,7 +61,7 @@ class StaticContentTest extends AirSpec {
       .add(Finagle.client.syncClientDesign)
   }
 
-  def `serve static contents from resources in classpath`(client: FinagleSyncClient): Unit = {
+  test("serve static contents from resources in classpath") { (client: FinagleSyncClient) =>
     val res  = client.get[Response]("/html/index.html")
     val html = res.contentString
     debug(html)
@@ -69,7 +69,7 @@ class StaticContentTest extends AirSpec {
     res.contentType shouldBe Some("text/html")
   }
 
-  def `forbid accessing parent resources`(client: FinagleSyncClient): Unit = {
+  test("forbid accessing parent resources") { (client: FinagleSyncClient) =>
     val ex = intercept[HttpClientException] {
       client.get[String]("/html/../hidden/secret.txt")
     }
@@ -81,13 +81,13 @@ class StaticContentTest extends AirSpec {
     ex2.status shouldBe HttpStatus.Forbidden_403
   }
 
-  def `support safe relative paths`(client: FinagleSyncClient): Unit = {
+  test("support safe relative paths") { (client: FinagleSyncClient) =>
     // OK
     val html = client.get[String]("/html/asset/../index.html")
     html.contains("Hello Airframe HTTP!") shouldBe true
   }
 
-  def `set content-type`(client: FinagleSyncClient): Unit = {
+  test("set content-type") { (client: FinagleSyncClient) =>
     def check(path: String, expectedContentType: String): Unit = {
       val r = client.get[Response](path)
       r.contentType shouldBe Some(expectedContentType)
@@ -100,22 +100,22 @@ class StaticContentTest extends AirSpec {
     check("/html/asset/test.js", "application/javascript")
     check("/html/asset/airframe_icon_small.png", "image/png")
 
-    // TODO add more coverage
+  // TODO add more coverage
   }
 
-  def `read binary file`(client: FinagleSyncClient): Unit = {
+  test("read binary file") { (client: FinagleSyncClient) =>
     val resp   = client.get[Response]("/html/asset/airframe_icon_small.png")
     val img    = resp.contentBytes
     val imgUrl = Resource.find("/wvlet/airframe/http/finagle/static/asset/airframe_icon_small.png").get
     Control.withResource(imgUrl.openStream()) { in => IOUtil.readFully(in) { bytes => img shouldBe bytes } }
   }
 
-  def `read from an alternative static content path`(client: FinagleSyncClient): Unit = {
+  test("read from an alternative static content path") { (client: FinagleSyncClient) =>
     val html = client.get[String]("/html2/index2.html")
     html.contains("static2") shouldBe true
   }
 
-  def `read from a directory`(client: FinagleSyncClient): Unit = {
+  test("read from a directory") { (client: FinagleSyncClient) =>
     val html = client.get[String]("/html3/index.html")
     html.contains("Hello Airframe HTTP!") shouldBe true
 

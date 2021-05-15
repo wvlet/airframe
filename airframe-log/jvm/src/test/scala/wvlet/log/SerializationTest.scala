@@ -16,7 +16,7 @@ object SerializationTest {
 class SerializationTest extends Spec {
   import SerializationTest._
 
-  def `logger should be serializable`: Unit = {
+  test("logger should be serializable") {
     val a = new A {}
     val b = new ByteArrayOutputStream()
     IOUtil.withResource(new ObjectOutputStream(b)) { out => out.writeObject(a) }

@@ -36,7 +36,7 @@ class JSONCodecTest extends AirSpec {
     }
   }
 
-  def `serialize json into msgpack`: Unit = {
+  test("serialize json into msgpack") {
     check(
       """{"id":1, "name":"leo", "address":["xxx", "yyy"], "flag":true, "float":1.234, "nil":null, "nested":{"message":"hello"}}"""
     )
@@ -52,7 +52,7 @@ class JSONCodecTest extends AirSpec {
     check("[]")
   }
 
-  def `serialize non-array/object json values`: Unit = {
+  test("serialize non-array/object json values") {
     check("true")
     check("null")
     check("false")
@@ -64,12 +64,12 @@ class JSONCodecTest extends AirSpec {
   val json1      = """{"id":1, "name":"leo", "flag":true, "number":0.01, "arr":[0, 1, 2], "nil":null}"""
   val json1Value = JSON.parse(json1)
 
-  def `support JSONValue mapping`: Unit = {
+  test("support JSONValue mapping") {
     val msgpackOfJson1 = JSONValueCodec.toMsgPack(json1Value)
     JSONValueCodec.unpackMsgPack(msgpackOfJson1) shouldBe Some(json1Value)
   }
 
-  def `support raw json mapping`: Unit = {
+  test("support raw json mapping") {
     val codec = MessageCodec.of[WithRawJSON]
     // JSON -> msgpack -> WithRawJSON
     val obj = codec.unpackJson(s"""{"json":${json1}}""")
@@ -82,7 +82,7 @@ class JSONCodecTest extends AirSpec {
     codec.unpackMsgPack(msgpack) shouldBe Some(v)
   }
 
-  def `support Instant`: Unit = {
+  test("support Instant") {
     import JSONCodecTest._
     val codec        = MessageCodec.of[WithTimestamp]
     val v            = WithTimestamp(Instant.ofEpochMilli(1500000000000L))

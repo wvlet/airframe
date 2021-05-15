@@ -34,7 +34,7 @@ class BindTest extends AirSpec {
 
   import BindTest._
 
-  def `allow provider based initialization`: Unit = {
+  test("allow provider based initialization") {
     val s = newSilentDesign.build[Bind] { b =>
       //
     }

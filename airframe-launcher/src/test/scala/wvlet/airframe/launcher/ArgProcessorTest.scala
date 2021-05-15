@@ -77,20 +77,20 @@ object ArgProcessorTest {
 class ArgProcessorTest extends AirSpec {
   import ArgProcessorTest._
 
-  def `should run the default command`: Unit = {
+  test("should run the default command") {
     val c = capture {
       Launcher.of[Cmd].execute("")
     }
     c.contains("Type --help to show the list of sub commands") shouldBe true
   }
 
-  def `should parse top-level arguments`: Unit = {
+  test("should parse top-level arguments") {
     val l = Launcher.of[Cmd]
     l.execute("")
     l.execute("-h")
   }
 
-  def `should show global options`: Unit = {
+  test("should show global options") {
     val c = capture {
       nestedLauncher.execute("sub -h")
     }
@@ -98,7 +98,7 @@ class ArgProcessorTest extends AirSpec {
     c.contains("port number") shouldBe true
   }
 
-  def `should show sub command options`: Unit = {
+  test("should show sub command options") {
     val c = capture {
       nestedLauncher.execute("sub hello -h")
     }
@@ -106,14 +106,14 @@ class ArgProcessorTest extends AirSpec {
     c.contains("port number") shouldBe true
   }
 
-  def `should execute sub commands`: Unit = {
+  test("should execute sub commands") {
     capture {
       nestedLauncher.execute("sub hello")
       nestedLauncher.execute("sub hello -t 100")
     }
   }
 
-  def `should support more nested commands`: Unit = {
+  test("should support more nested commands") {
     val c = capture {
       moreNestedLauncher.execute("sub nested1 --help")
     }
@@ -134,23 +134,23 @@ class ArgProcessorTest extends AirSpec {
     c3.contains("nested2") shouldBe true
   }
 
-  def `should support function arg`: Unit = {
+  test("should support function arg") {
     Launcher.of[FunctionArg].execute("proxy")
   }
 
-  def `should support argument list`: Unit = {
+  test("should support argument list") {
     // Single element => Seq("apple")
     Launcher.of[SeqArg].execute("apple").getRootInstance shouldBe SeqArg(Seq("apple"))
     // Multiple elements => Seq("apple", "banana")
     Launcher.of[SeqArg].execute("apple banana").getRootInstance shouldBe SeqArg(Seq("apple", "banana"))
   }
 
-  def `should support multiple same-name options`: Unit = {
+  test("should support multiple same-name options") {
     Launcher.of[SeqOption].execute("-p 10").getRootInstance shouldBe SeqOption(Seq(10))
     Launcher.of[SeqOption].execute("-p 10 -p 20 -p 30").getRootInstance shouldBe SeqOption(Seq(10, 20, 30))
   }
 
-  def `should set Option[Boolean] option`: Unit = {
+  test("should set Option[Boolean] option") {
     Launcher.of[BooleanOption].execute("--flag").getRootInstance shouldBe BooleanOption(Some(true))
     Launcher.of[BooleanOption].execute("").getRootInstance shouldBe BooleanOption(None)
   }

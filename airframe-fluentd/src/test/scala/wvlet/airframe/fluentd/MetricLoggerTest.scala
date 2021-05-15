@@ -36,7 +36,7 @@ class MetricLoggerTest extends AirSpec {
     fluentd.withDebugConsoleLogging
   }
 
-  def `generate MetricLogger for case classes`(f: MetricLoggerFactory): Unit = {
+  test("generate MetricLogger for case classes") { (f: MetricLoggerFactory) =>
     val l = f.getTypedLogger[SampleMetric]
     l.emit(SampleMetric(100000, "hello"))
     l.emit(SampleMetric(100001, "fluentd"))
@@ -45,7 +45,7 @@ class MetricLoggerTest extends AirSpec {
     ll.emit(NestedMetric("test nested logs", Seq(1, 2, 3), None, SampleMetric(100002, "I'm happy")))
   }
 
-  def `support nested metrics`(f: MetricLoggerFactory): Unit = {
+  test("support nested metrics") { (f: MetricLoggerFactory) =>
     val l = f.getTypedLogger[NestedMetric]
     l.emit(NestedMetric("test nested logs", Seq(1, 2, 3), None, SampleMetric(100002, "I'm happy")))
     l.emit(
@@ -58,7 +58,7 @@ class MetricLoggerTest extends AirSpec {
     )
   }
 
-  def `support exception stack trace metrics`(f: MetricLoggerFactory): Unit = {
+  test("support exception stack trace metrics") { (f: MetricLoggerFactory) =>
     val l = f.getTypedLogger[ErrorMetric]
     l.emit(ErrorMetric("illegal_argument", new IllegalArgumentException("invalid input")))
     l.emit(ErrorMetric("remote error", new InvocationTargetException(new IllegalStateException("unknown error"))))

@@ -45,7 +45,7 @@ class LogLevelScannerTest extends Spec {
     }
   }
 
-  def `scan log levels only once`: Unit = {
+  test("scan log levels only once") {
     val l = Logger("wvlet.log.test")
     l.setLogLevel(LogLevel.WARN)
     assert(l.getLogLevel == LogLevel.WARN)
@@ -54,7 +54,7 @@ class LogLevelScannerTest extends Spec {
     assert(l.getLogLevel == LogLevel.DEBUG)
   }
 
-  def `scan loglevels`: Unit = {
+  test("scan loglevels") {
     val l = Logger("wvlet.log.test")
     l.setLogLevel(LogLevel.WARN)
     assert(l.getLogLevel == LogLevel.WARN)
@@ -67,7 +67,7 @@ class LogLevelScannerTest extends Spec {
     }
   }
 
-  def `load another loglevel file`: Unit = {
+  test("load another loglevel file") {
     val l = Logger("wvlet.log.test")
     l.setLogLevel(LogLevel.WARN)
     assert(l.getLogLevel == LogLevel.WARN)
@@ -77,7 +77,7 @@ class LogLevelScannerTest extends Spec {
     }
   }
 
-  def `load invalid loglevel file safely`: Unit = {
+  test("load invalid loglevel file safely") {
     val l = Logger("wvlet.log.test")
     l.setLogLevel(LogLevel.TRACE)
 

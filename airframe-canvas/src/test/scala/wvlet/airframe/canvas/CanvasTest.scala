@@ -71,33 +71,33 @@ class CanvasTest extends AirSpec with PropertyCheck {
     Control.withResource(creator) { c => body(c) }
   }
 
-  def `create on-heap canvas`: Unit = {
+  test("create on-heap canvas") {
     withCanvas(Canvas.newCanvas(canvasSize)) { c => checkReadWritePrimitiveValues(c) }
   }
 
-  def `create off-heap canvas`: Unit = {
+  test("create off-heap canvas") {
     withCanvas(Canvas.newOffHeapCanvas(canvasSize)) { c => checkReadWritePrimitiveValues(c) }
   }
 
-  def `create array-wrapped canvas`: Unit = {
+  test("create array-wrapped canvas") {
     withCanvas(Canvas.wrap(Array.ofDim[Byte](canvasSize))) { c => checkReadWritePrimitiveValues(c) }
   }
 
-  def `create sub-array wrapped canvas`: Unit = {
+  test("create sub-array wrapped canvas") {
     val b = Array.ofDim[Byte](canvasSize)
     withCanvas(Canvas.wrap(b, 10, 30)) { c => checkReadWritePrimitiveValues(c) }
   }
 
-  def `create ByteBuffer-based canvas`: Unit = {
+  test("create ByteBuffer-based canvas") {
     withCanvas(Canvas.wrap(ByteBuffer.allocate(canvasSize))) { c => checkReadWritePrimitiveValues(c) }
   }
 
-  def `create DirectByteBuffer-based canvas`: Unit = {
+  test("create DirectByteBuffer-based canvas") {
     val b = ByteBuffer.allocateDirect(canvasSize)
     withCanvas(Canvas.wrap(b)) { c => checkReadWritePrimitiveValues(c) }
   }
 
-  def `create slices`: Unit = {
+  test("create slices") {
     val c = Canvas.newCanvas(100)
     for (i <- 0L until c.size) {
       c.writeByte(i, i.toByte)
@@ -107,7 +107,7 @@ class CanvasTest extends AirSpec with PropertyCheck {
     c1.toByteArray shouldBe c.readBytes(10, 20)
   }
 
-  def `check invalid slice size`: Unit = {
+  test("check invalid slice size") {
     val c = Canvas.newCanvas(10)
     intercept[IllegalArgumentException] {
       c.slice(130, 10)
@@ -118,14 +118,14 @@ class CanvasTest extends AirSpec with PropertyCheck {
     }
   }
 
-  def `check invalid read size`: Unit = {
+  test("check invalid read size") {
     val c = Canvas.newCanvas(10)
     intercept[IllegalArgumentException] {
       c.readBytes(0, Long.MaxValue)
     }
   }
 
-  def `copy between Canvases`: Unit = {
+  test("copy between Canvases") {
     val c1 = Canvas.newCanvas(100)
     val c2 = Canvas.newCanvas(100)
 

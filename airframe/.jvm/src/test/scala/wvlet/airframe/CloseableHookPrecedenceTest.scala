@@ -35,7 +35,7 @@ class CloseableHookPrecedenceTest extends AirSpec {
     }
   }
 
-  def `support closeable`: Unit = {
+  test("support closeable") {
     val a = new A
     val d = newSilentDesign.bind[A].toInstance(a)
     d.build[A] { a => }

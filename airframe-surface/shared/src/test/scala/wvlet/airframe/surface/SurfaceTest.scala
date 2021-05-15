@@ -53,7 +53,7 @@ import wvlet.airframe.surface.Examples._
 class SurfaceTest extends SurfaceSpec {
   scalaJsSupport
 
-  def `resolve types`: Unit = {
+  test("resolve types") {
     val a = check(Surface.of[A], "A")
     assert(a.isAlias == false)
     assert(a.isOption == false)
@@ -65,7 +65,7 @@ class SurfaceTest extends SurfaceSpec {
     assert(b.isPrimitive == false)
   }
 
-  def `resolve primitive types`: Unit = {
+  test("resolve primitive types") {
     checkPrimitive(Surface.of[Boolean], "Boolean")
     checkPrimitive(Surface.of[Byte], "Byte")
     checkPrimitive(Surface.of[Short], "Short")
@@ -78,17 +78,17 @@ class SurfaceTest extends SurfaceSpec {
     checkPrimitive(Surface.of[java.lang.String], "String")
   }
 
-  def `find primitive Surfaces`: Unit = {
+  test("find primitive Surfaces") {
     Primitive(classOf[Int]) shouldBe Primitive.Int
   }
 
-  def `resolve surface from class`: Unit = {
+  test("resolve surface from class") {
     pendingUntil("Scala.js doesn't support reflection")
     val a = Surface.of[A]
     //check(Surface.get(classOf[A]).get, a.toString)
   }
 
-  def `be equal`: Unit = {
+  test("be equal") {
     val a1 = Surface.of[A]
     val a2 = Surface.of[A]
     assert(a1 eq a2)
@@ -112,7 +112,7 @@ class SurfaceTest extends SurfaceSpec {
     assert(c1.equals("hello") == false)
   }
 
-  def `resolve alias`: Unit = {
+  test("resolve alias") {
     val a1 = check(Surface.of[MyA], "MyA:=A")
     assert(a1.isAlias == true)
     assert(a1.isOption == false)
@@ -126,22 +126,22 @@ class SurfaceTest extends SurfaceSpec {
     assert(a1.isOption == false)
   }
 
-  def `resolve trait`: Unit = {
+  test("resolve trait") {
     check(Surface.of[C], "C")
   }
 
-  def `resolve array types`: Unit = {
+  test("resolve array types") {
     check(Surface.of[Array[Int]], "Array[Int]")
     check(Surface.of[Array[Byte]], "Array[Byte]")
     check(Surface.of[Array[A]], "Array[A]")
   }
 
-  def `resolve option types`: Unit = {
+  test("resolve option types") {
     val opt = check(Surface.of[Option[A]], "Option[A]")
     assert(opt.isOption == true)
   }
 
-  def `resolve collection types`: Unit = {
+  test("resolve collection types") {
     check(Surface.of[Seq[A]], "Seq[A]")
     check(Surface.of[List[A]], "List[A]")
     check(Surface.of[Map[String, A]], "Map[String,A]")
@@ -151,40 +151,40 @@ class SurfaceTest extends SurfaceSpec {
     check(Surface.of[IndexedSeq[A]], "IndexedSeq[A]")
   }
 
-  def `resolve scala util types`: Unit = {
+  test("resolve scala util types") {
     check(Surface.of[Either[String, Throwable]], "Either[String,Throwable]")
     check(Surface.of[Try[A]], "Try[A]")
   }
 
-  def `resolve mutable Collection types`: Unit = {
+  test("resolve mutable Collection types") {
     check(Surface.of[collection.mutable.Seq[String]], "Seq[String]")
     check(Surface.of[collection.mutable.Map[Int, String]], "Map[Int,String]")
     check(Surface.of[collection.mutable.Set[A]], "Set[A]")
   }
 
-  def `resolve tuples`: Unit = {
+  test("resolve tuples") {
     check(Surface.of[Tuple1[Int]], "Tuple1[Int]")
     check(Surface.of[(Int, String)], "Tuple2[Int,String]")
     check(Surface.of[(Int, String, A, Double)], "Tuple4[Int,String,A,Double]")
   }
 
-  def `resolve java colletion type`: Unit = {
+  test("resolve java colletion type") {
     check(Surface.of[java.util.List[String]], "List[String]")
     check(Surface.of[java.util.Map[Long, String]], "Map[Long,String]")
     check(Surface.of[java.util.Set[A]], "Set[A]")
   }
 
-  def `resolve generic type`: Unit = {
+  test("resolve generic type") {
     val d1 = check(Surface.of[D[String]], "D[String]")
     val d2 = check(Surface.of[D[A]], "D[A]")
     d1 shouldNotBeTheSameInstanceAs d2
   }
 
-  def `resolve recursive type`: Unit = {
+  test("resolve recursive type") {
     check(Surface.of[Service[Int, String]], "Service[Int,String]")
   }
 
-  def `resolve generic abstract type`: Unit = {
+  test("resolve generic abstract type") {
     val d = check(Surface.of[D[_]], "D[_]")
     d.typeArgs.length shouldBe 1
     check(Surface.of[Map[_, _]], "Map[_,_]")
@@ -192,7 +192,7 @@ class SurfaceTest extends SurfaceSpec {
 
   val a0 = A(true, 0.toByte, 1.toShort, 10, 20L, 0.1f, 0.2, "hello")
 
-  def `generate object factory`: Unit = {
+  test("generate object factory") {
     val a = check(Surface.of[A], "A")
     assert(a.objectFactory.isDefined)
 
@@ -207,21 +207,21 @@ class SurfaceTest extends SurfaceSpec {
     assert(e1.a == a0)
   }
 
-  def `generate concrete object factory`: Unit = {
+  test("generate concrete object factory") {
     val d  = check(Surface.of[D[String]], "D[String]")
     val d0 = d.objectFactory.map { f => f.newInstance(Seq(1, "leo")) }.get
     debug(d0)
     assert(d0 == D(1, "leo"))
   }
 
-  def `find default parameter`: Unit = {
+  test("find default parameter") {
     val f = check(Surface.of[F], "F")
     val p = f.params(0)
     assert(p.getDefaultValue.isDefined)
     assert(p.getDefaultValue.get == 10)
   }
 
-  def `access parameters`: Unit = {
+  test("access parameters") {
     val a = Surface.of[A]
     assert(a.params(0).get(a0) == true)
     assert(a.params(3).get(a0) == 10)
@@ -229,7 +229,7 @@ class SurfaceTest extends SurfaceSpec {
     assert(a.params(7).get(a0) == "hello")
   }
 
-  def `object factory`: Unit = {
+  test("object factory") {
     val s = Surface.of[F]
     s.objectFactory shouldBe defined
     val f = s.objectFactory.map(_.newInstance(Seq(100)))
