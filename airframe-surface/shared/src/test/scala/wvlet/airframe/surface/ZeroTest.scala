@@ -82,6 +82,7 @@ class ZeroTest extends SurfaceSpec {
     zeroCheck(Surface.of[Map[Int, String]], Map.empty[Int, String])
     zeroCheck(Surface.of[Set[Int]], Set.empty[Int])
     zeroCheck(Surface.of[List[Int]], List.empty[Int])
+    true
   }
 }
 
