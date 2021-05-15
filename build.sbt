@@ -1201,6 +1201,8 @@ lazy val airspec =
     .in(file("airspec"))
     .settings(buildSettings)
     .settings(
+      airspecDependsOn := Seq("airspec"),
+      airspecBuildSettings,
       name := "airspec",
       description := "AirSpec: A Functional Testing Framework for Scala",
       libraryDependencies ++= Seq(
@@ -1214,8 +1216,8 @@ lazy val airspec =
       Compile / packageBin / mappings ++= (airspecDepsJVM / Compile / packageBin / mappings).value,
       Compile / packageSrc / mappings ++= (airspecDepsJVM / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
-        "org.scala-lang" % "scala-reflect"  % scalaVersion.value,
-        "org.scala-sbt"  % "test-interface" % "1.0"
+        //"org.scala-lang" % "scala-reflect"  % scalaVersion.value,
+        "org.scala-sbt" % "test-interface" % "1.0"
       )
     )
     .jsSettings(

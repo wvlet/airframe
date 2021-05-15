@@ -13,13 +13,10 @@
  */
 package wvlet.airspec
 
-import sbt.testing.{Fingerprint, TaskDef}
-import wvlet.airspec.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
+import sbt.testing.TaskDef
+import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
 import wvlet.airspec.runner.{AirSpecEventHandler, AirSpecLogger, AirSpecTaskRunner}
 import wvlet.log.LogSupport
-import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
-
-import scala.util.Try
 
 /**
   */
