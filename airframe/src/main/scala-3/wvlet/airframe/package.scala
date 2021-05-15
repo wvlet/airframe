@@ -38,4 +38,12 @@ package object airframe {
     * Create an empty design, which sends life cycle logs to debug log level
     */
   def newSilentDesign: Design = newDesign.noLifeCycleLogging
+
+  import scala.jdk.CollectionConverters._
+  // This will not be used in Scala 3, but left for the compatibility with Scala 2
+  val traitFactoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
+  def getOrElseUpdateTraitFactoryCache(s: Surface, factory: Session => Any): Session => Any = {
+    traitFactoryCache.getOrElseUpdate(s, factory)
+  }
+
 }

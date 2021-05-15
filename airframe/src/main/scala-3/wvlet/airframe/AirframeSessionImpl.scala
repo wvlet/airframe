@@ -19,12 +19,6 @@ import java.util.concurrent.ConcurrentHashMap
 
 private[airframe] trait AirframeSessionImpl { self: AirframeSession =>
    inline override def register[A](instance: A): Unit = ${ AirframeSessionImpl.registerImpl[A]('self, 'instance) }
-
-   import scala.jdk.CollectionConverters._
-   val traitFactoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
-   def getOrElseUpdateTraitFactoryCache(s: Surface, factory: Session => Any): Session => Any = {
-      traitFactoryCache.getOrElseUpdate(s, factory)
-   }
 }
 
 private[airframe] object AirframeSessionImpl {
