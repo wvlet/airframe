@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.di
 
+import wvlet.airframe.{Design, Session}
 import wvlet.airspec.AirSpec
 
 class HelloBind {}

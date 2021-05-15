@@ -1,7 +1,7 @@
 package wvlet.airframe.di
 
-import wvlet.airframe.di.DIException.MISSING_DEPENDENCY
-import wvlet.airframe.di.Design.newSilentDesign
+import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
+import wvlet.airframe.Design
 import wvlet.airspec.AirSpec
 
 /**
@@ -30,7 +30,7 @@ class DependencyTest extends AirSpec {
   }
 
   def `resolve concrete dependencies`: Unit = {
-    val d = newSilentDesign
+    val d = Design.newSilentDesign
       .bind[DependencyTest1.D].to[DependencyTest1.DImpl] // abstract class to a concrete trait
     d.withSession { session =>
       val a = session.build[DependencyTest1.A]

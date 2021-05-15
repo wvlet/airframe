@@ -14,8 +14,8 @@
 package wvlet.airframe.di.lifecycle
 
 import java.util.concurrent.atomic.AtomicInteger
-import wvlet.airframe.di.DIException.{MULTIPLE_SHUTDOWN_FAILURES, SHUTDOWN_FAILURE}
-import wvlet.airframe.di.Design
+import wvlet.airframe.AirframeException.{MULTIPLE_SHUTDOWN_FAILURES, SHUTDOWN_FAILURE}
+import wvlet.airframe.Design
 import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 

@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.di
 
-import wvlet.airframe.di.DIException.MISSING_DEPENDENCY
+import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
+import wvlet.airframe.Design
 import wvlet.airspec.AirSpec
 
 object DisableNoDefaultInstanceCreationTest {

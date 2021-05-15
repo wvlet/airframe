@@ -1,9 +1,8 @@
 package wvlet.airframe.di
 
-import wvlet.airframe.di.DIException.MISSING_DEPENDENCY
-import wvlet.airframe.di.DIException.CYCLIC_DEPENDENCY
-import wvlet.airframe.di.Design.{newDesign, newSilentDesign}
-import wvlet.airframe.di.lifecycle.{LifeCycleEventHandler, LifeCycleManager}
+import wvlet.airframe.AirframeException.{MISSING_DEPENDENCY, CYCLIC_DEPENDENCY}
+import wvlet.airframe.Design
+import wvlet.airframe.lifecycle.{LifeCycleEventHandler, LifeCycleManager}
 import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
@@ -11,6 +10,8 @@ import wvlet.log.LogSupport
 import java.io.PrintStream
 import java.util.concurrent.atomic.AtomicInteger
 import scala.util.Random
+
+import wvlet.airframe._
 
 /**
   */
@@ -257,13 +258,6 @@ object DITest extends AirSpec {
   }
 
   trait NonAbstractTrait {}
-
-  test("report error when building a trait with no binding") {
-    val e = intercept[MISSING_DEPENDENCY] {
-      newSilentDesign.build[NonAbstractTrait] { m => }
-    }
-    e.stack.contains(Surface.of[NonAbstractTrait]) shouldBe true
-  }
 
   object SingletonOfNonAbstractTrait extends NonAbstractTrait with LogSupport {
     debug("Hello singleton")

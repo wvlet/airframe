@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.di
+import wvlet.airframe.Design
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 

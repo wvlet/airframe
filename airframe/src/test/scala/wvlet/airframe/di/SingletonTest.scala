@@ -13,8 +13,9 @@
  */
 package wvlet.airframe.di
 
-import java.util.concurrent.atomic.AtomicInteger
+import wvlet.airframe.Design
 
+import java.util.concurrent.atomic.AtomicInteger
 import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 

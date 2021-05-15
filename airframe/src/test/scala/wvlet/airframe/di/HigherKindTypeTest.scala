@@ -17,6 +17,8 @@ import wvlet.airspec.AirSpec
 
 import scala.language.higherKinds
 
+import wvlet.airframe.Design
+
 object HigherKindTypeTest {
   trait Holder[M[_]] {
     def hello = "hello"

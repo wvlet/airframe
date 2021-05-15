@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.di
 
+import wvlet.airframe.Design
 import wvlet.log.LogSupport
 import wvlet.airspec.AirSpec
 

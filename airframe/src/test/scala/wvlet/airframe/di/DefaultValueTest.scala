@@ -1,5 +1,6 @@
 package wvlet.airframe.di
 
+import wvlet.airframe.Design
 import wvlet.airspec.AirSpec
 
 /**

@@ -11,14 +11,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package example
+package wvlet.airframe.di
+import example.SealedTrait.Adt
+import wvlet.airframe.Design
+import wvlet.airspec.AirSpec
 
 /**
   */
-object SealedTrait {
-  sealed trait Adt
-  object Adt {
-    object Foo extends Adt
-    object Bar extends Adt
+object SealedTraitBindingTest extends AirSpec {
+  // This code compilation may fail when using Mill.
+  case class Service(adt: Adt) {}
+
+  test("compile test") {
+    // Just need to check the compilation failure
+    val design = Design.newSilentDesign
+      .bind[Adt].toInstance(Adt.Foo)
+
+    design.build[Service] { s =>
+      s.adt shouldBeTheSameInstanceAs Adt.Foo
+    }
   }
 }

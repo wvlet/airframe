@@ -13,36 +13,36 @@
  */
 package wvlet.airframe.di
 
+import wvlet.airframe.Design
 import wvlet.airspec.AirSpec
 
-object ImplicitArgTest {
-  case class ImplA(a: String)(implicit val b: Int)
-  case class ImplB(a: String)(implicit val b: Int)
+import scala.util.Random
+
+object ConstructorInjectionTest {
+
+  case class Dep1(x: Int = Random.nextInt(1000))
+
+  case class Rep(d1: Dep1, d2: Dep1)
+
+  case class Config(port: Int = 8080, timeoutMillis: Int = 100000)
+
 }
 
 /**
   */
-class ImplicitArgTest extends AirSpec {
-  scalaJsSupport
+class ConstructorInjectionTest extends AirSpec {
 
-  import ImplicitArgTest._
+  import ConstructorInjectionTest._
 
-  test("support implicit args") {
-    val d = Design.newDesign
-      .bind[String].toInstance("hello")
-      .bind[Int].toInstance(10)
-      .bind[ImplB].toSingleton
-      .bind[ImplA].toProvider((a: String, b: Int) => ImplA(a)(b))
-      .noLifeCycleLogging
-
-    d.build[ImplA] { a =>
-      a.a shouldBe "hello"
-      a.b shouldBe 10
+  test("constructor injection should bind singleton to the same type") {
+    Design.newSilentDesign.build[Rep] { r =>
+      r.d1 shouldBeTheSameInstanceAs r.d2
     }
+  }
 
-    d.build[ImplB] { b =>
-      b.a shouldBe "hello"
-      b.b shouldBe 10
+  test("properly populate default values") {
+    Design.newSilentDesign.build[Config] { config =>
+      config shouldBe Config()
     }
   }
 }

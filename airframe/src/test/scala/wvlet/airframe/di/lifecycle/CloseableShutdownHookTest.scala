@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.di.lifecycle
 
-import wvlet.airframe.di.Design
+import wvlet.airframe.Design
 import java.util.concurrent.atomic.AtomicBoolean
 import wvlet.airspec.AirSpec
 
