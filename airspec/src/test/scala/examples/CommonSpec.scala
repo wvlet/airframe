@@ -20,21 +20,21 @@ import wvlet.airspec.AirSpec
 class CommonSpec extends AirSpec {
   scalaJsSupport
 
-  def hello: Unit = {
+  test("hello") {
     assert(true)
   }
 
-  def failTest: Unit = {
+  test("failTest") {
     ignore()
     fail("test failure")
   }
 
-  def exceptionTest: Unit = {
+  test("exceptionTest").apply[Unit] {
     ignore()
     throw new IllegalArgumentException("invalid argument")
   }
 
-  def ciChecker: Unit = {
+  test("ciChecker") {
     // sanity test
     inTravisCI
     inCircleCI
@@ -46,7 +46,7 @@ class CommonSpec extends AirSpec {
 object ObjSpec extends AirSpec {
   scalaJsSupport
 
-  def hello1: Unit = {
+  test("hello1") {
     assert(true)
   }
 }

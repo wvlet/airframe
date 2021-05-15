@@ -28,11 +28,11 @@ class DITest extends AirSpec {
   protected override def design: Design      = newDesign.bind[String].toInstance("hello airframe")
   protected override def localDesign: Design = newDesign.bind[Int].toInstance(v)
 
-  def globalDesignTest(msg: String): Unit = {
+  test("globalDesignTest") { (msg: String) =>
     msg shouldBe "hello airframe"
   }
 
-  def localDesignTest(intValue: Int): Unit = {
+  test("localDesignTest") { (intValue: Int) =>
     intValue shouldBe v
   }
 }

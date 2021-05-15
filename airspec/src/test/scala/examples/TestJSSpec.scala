@@ -27,7 +27,7 @@ class TestJSSpec extends AirSpec with LogSupport {
       .bind[String].toInstance("hello Scala.js")
   }
 
-  def hello(name: String = "hello"): Unit = {
+  test("hello") { (name: String) =>
     debug(name)
     assert(name == "hello Scala.js")
   }

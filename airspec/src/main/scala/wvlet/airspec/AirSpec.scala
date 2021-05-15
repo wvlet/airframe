@@ -70,7 +70,16 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
    */
   protected var _methodSurfaces: Seq[MethodSurface] = compat.methodSurfacesOf(this.getClass)
   private[airspec] def testDefinitions: Seq[AirSpecDef] = {
-    AirSpecSpi.collectTestMethods(_methodSurfaces) ++ _localTestDefs.reverse
+    val functionTestMethods = AirSpecSpi.collectTestMethods(_methodSurfaces)
+    if (functionTestMethods.nonEmpty) {
+      val l = wvlet.log.Logger("wvlet.airspec")
+      functionTestMethods.collect { case m: MethodAirSpecDef =>
+        l.warn(
+          s"""Using public functions as tests is deprecated since AirSpec 21.5.1. Use test("...") syntax instead: def ${m.methodSurface.name} in ${m.methodSurface.owner}"""
+        )
+      }
+    }
+    functionTestMethods ++ _localTestDefs.reverse
   }
 
   private[airspec] var specName: String = {
