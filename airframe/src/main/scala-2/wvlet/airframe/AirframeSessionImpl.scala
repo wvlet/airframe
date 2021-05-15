@@ -13,17 +13,8 @@
  */
 package wvlet.airframe
 
-import java.util.concurrent.ConcurrentHashMap
-
-import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
-import wvlet.airframe.Binder._
-import wvlet.airframe.lifecycle.{CloseHook, EventHookHolder, Injectee, LifeCycleManager}
 import wvlet.airframe.surface.Surface
-import wvlet.airframe.tracing.{DIStats, DefaultTracer, Tracer}
-import wvlet.log.LogSupport
 
-import scala.jdk.CollectionConverters._
-import scala.util.Try
 import scala.reflect.runtime.{universe => ru}
 
 private[airframe] trait AirframeSessionImpl { self: AirframeSession =>

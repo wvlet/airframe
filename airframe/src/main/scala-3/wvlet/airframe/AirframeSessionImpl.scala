@@ -13,24 +13,32 @@
  */
 package wvlet.airframe
 
+import wvlet.airframe.surface.Surface
+
 import java.util.concurrent.ConcurrentHashMap
 
-import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
-import wvlet.airframe.Binder._
-import wvlet.airframe.lifecycle.{CloseHook, EventHookHolder, Injectee, LifeCycleManager}
-import wvlet.airframe.surface.Surface
-import wvlet.airframe.tracing.{DIStats, DefaultTracer, Tracer}
-import wvlet.log.LogSupport
-
-import scala.jdk.CollectionConverters._
-import scala.util.Try
-
 private[airframe] trait AirframeSessionImpl { self: AirframeSession =>
-   def register[A](instance: A): Unit = ???
-/*   
-    val surface = Surface.of[A]
-    val owner   = findOwnerSessionOf(surface).getOrElse(this)
-    owner.registerInjectee(surface, surface, instance)
-  }
-  */
+   inline override def register[A](instance: A): Unit = ${ AirframeSessionImpl.registerImpl[A]('self, 'instance) }
+
+   import scala.jdk.CollectionConverters._
+   val traitFactoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
+   def getOrElseUpdateTraitFactoryCache(s: Surface, factory: Session => Any): Session => Any = {
+      traitFactoryCache.getOrElseUpdate(s, factory)
+   }
+}
+
+private[airframe] object AirframeSessionImpl {
+   import scala.quoted._
+
+   def registerImpl[A](session: Expr[AirframeSession], instance:Expr[A])(using Type[A], Quotes): Expr[Unit] = {
+      '{
+         {
+            val surface = Surface.of[A]
+            val ss = ${session}
+            val owner = ss.findOwnerSessionOf(surface).getOrElse(ss)
+            owner.registerInjectee(surface, surface, ${instance})
+            ()
+         }
+      }
+   }
 }
