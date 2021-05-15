@@ -260,6 +260,8 @@ lazy val projectDotty =
       controlJVM,
       // codec uses Scala reflection
       codecJVM,
+      diJVM,
+      diBaseJVM,
       //fluentd,
       //httpJVM,
       //// Finagle isn't supporting Scala 3
@@ -1089,7 +1091,7 @@ lazy val dottyTest =
         else targetScalaVersions
       }
     )
-    .dependsOn(logJVM, surfaceJVM, airframeJVM, codecJVM)
+    .dependsOn(logJVM, surfaceJVM, diJVM, codecJVM)
 
 /**
   * AirSpec build definitions.
