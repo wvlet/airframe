@@ -14,12 +14,11 @@ AirSpec uses pure Scala functions for writing test cases. This style requires no
 ## Features
 
 - Simple to use: Just `import wvlet.airspec._` and extend `AirSpec` trait.
-- Tests can be defined with plain Scala methods or `test(...)` functions.
-  - Public methods in a class extending `AirSpec` trait will be your test cases.
-  - No annotation (like ones in [JUnit5](https://junit.org/junit5/docs/current/user-guide/)) is necessary.
+- Tests can be defined with `test(...)` functions.
+  - No annotation is required like ones in [JUnit5](https://junit.org/junit5/docs/current/user-guide/)) is necessary.
 - Support basic assertion syntaxes: `assert(cond)`, `x shouldBe y`, etc.
   - No need to learn other complex DSLs.
-- Nesting and reusing test cases with `test(...)` or `context.run(spec)`
+- Nesting and reusing test cases with `test(...)`
 - Lifecycle management with [Airframe DI](airframe.md):
   - DI will inject the arguments of test methods based on your custom Design.
   - The lifecycle (e.g., start and shutdown) of the injected services will be properly managed.
@@ -59,31 +58,7 @@ testFrameworks += new TestFramework("wvlet.airspec.Framework")
 
 ## Writing Unit Tests
 
-In AirSpec test cases are defined as functions in a class (or an object) extending `AirSpec`.
-All __public methods__ in the class will be executed as test cases:
-
-```scala
-import wvlet.airspec._
-
-class MyTest extends AirSpec {
-  // Basic assertion
-  def emptySeqSizeShouldBe0: Unit = {
-    assert(Seq.empty.size == 0)
-  }
-
-  // Catch an exception
-  def emptySeqHeadShouldFail: Unit = {
-    intercept[NoSuchElementException] {
-      Seq.empty.head
-    }
-  }
-}
-```
-
-If you need to define utility methods in a class, use private or protected scope.
-
-
-AirSpec also suppots `test(...) { ... }` syntax:
+In AirSpec, you can describe test cases with `test(...) { body }` in a class (or an object) extending `AirSpec`.
 
 ```scala
 import wvlet.airspec._
@@ -103,57 +78,6 @@ class MyTest extends AirSpec {
 
 This `test` syntax is useful for writing nested tests or customizing the design of DI for each test.
 
-### Scala.js
-
-`test(...)` function works in Scala.js, however, to run public methods as tests in Scala.js, `scalaJsSupport` must be called inside your spec classes:
-
-```scala
-import wvlet.airspec._
-
-class ScalaJSSpec extends AirSpec {
-  // This is necessary to find test methods in Scala.js
-  scalaJsSupport
-
-  def myTest: Unit = assert(1 == 1)
-}
-```
-
-This is because Scala.js has no runtime reflection to find methods in AirSpec classes, so we need to provide method data by calling `scalaJsSupport`.
-Internally this will generate `MethodSurface`s (airframe-surface), so that AirSpec can find test methods at runtime. Calling `scalaJsSupport` has no effect in Scala JVM platform, so you can use the same test spec both for Scala and Scala.js.
-
-
-## Writing Specs In Natural Languages
-
-If you prefer natural language descriptions for your test cases, use symbols (back-quoted strings) for function names:
-
-```scala
-import wvlet.airspec._
-
-class SeqSpec extends AirSpec {
-  def `the size of empty Seq should be 0`: Unit = {
-    assert(Seq.empty.size == 0)
-  }
-
-  // Catch an exception
-  def `throw NoSuchElementException when taking the head of an empty Set`: Unit = {
-    intercept[NoSuchElementException] {
-      Seq.empty.head
-    }
-  }
-}
-```
-
-It is also possible to use symbols for test class names:
-
-```scala
-import wvlet.airspec._
-
-class `Test properties of Seq[X]` extends AirSpec {
-  def `the size of empty Seq should be 0`: Unit = {
-    assert(Seq.empty.size == 0)
-  }
-}
-```
 
 ## Assertions in AirSpec
 
@@ -188,7 +112,7 @@ Here are examples of using `shouldBe` matchers:
 import wvlet.airspec._
 
 class MyTest extends AirSpec {
-  def test: Unit = {
+  test("assertion examples") {
     // checking the value equality with shouldBe, shouldNotBe:
     1 shouldBe 1
     1 shouldNotBe 2
@@ -345,11 +269,11 @@ class ServiceSpec extends AirSpec {
       .onShutdown{x => info(s"Stopping the server at ${x.config.port}")}
   }
 
-  def test1(service:Service): Unit = {
+  test("test1") { (service:Service) =>
      info(s"server id: ${service.hashCode}")
   }
 
-  def test2(service:Service): Unit = {
+  test("test2") { (service:Service) =>
      info(s"server id: ${service.hashCode}")
   }
 }
@@ -402,7 +326,7 @@ class OverrideTest extends AirSpec {
   }
 
   // Pass Session to override the design
-  def `before overriding the design`(s:String): Unit = {
+  test("before overriding the design") { (s:String) =>
     s shouldBe "hello"
 
     // Override a design
@@ -450,7 +374,7 @@ class AppTest extends AirSpec {
   protected override def design = AppTestModule.serviceDesignForTests
 
   // Inject a Service object initialized with a test configuration
-  def `start up test`(service:Service): Unit = {
+  test("start up test") { (service:Service) =>
      // test your service here
   }
 }
@@ -459,35 +383,6 @@ class AppTest extends AirSpec {
 If you are already familiar to dependency injection using [Airframe DI](https://wvlet.org/airframe/docs/airframe.html) or [Google Guice](https://github.com/google/guice), it would not be so difficult to split your application into some units of testable modules.
  This is generally a good practice to minimize the scope of tests only for specific components.
 
-## Reusing Test Classes
-
-To reuse test cases, create a fixture, which is a class, object, or trait extending
-AirSpec. Then call AirSpecContext.run(AirSpec instance), which can be injected to test method arguments:
-
-```scala
-import wvlet.airspec._
-
-class MySpec extends AirSpec {
-  // A template for reusable test cases
-  class Fixture[A](data: Seq[A]) extends AirSpec {
-    override protected def beforeAll: Unit = {
-      info(s"Run tests for ${data}")
-    }
-    def emptyTest: Unit = {
-      data shouldNotBe empty
-    }
-    def sizeTest: Unit = {
-      data.length shouldBe data.size
-    }
-  }
-
-  // Inject AirSpecContext using DI
-  def test(context: AirSpecContext): Unit = {
-    context.run(new Fixture(Seq(1, 2)))
-    context.run(new Fixture(Seq("A", "B", "C")))
-  }
-}
-```
 
 This code will run the same Fixture two times using different data sets:
 ![image](https://wvlet.org/airframe/img/airspec/nesting.png)
@@ -509,16 +404,16 @@ libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.1" % "test"
 import wvlet.airspec._
 
 class PropertyBasedTest extends AirSpec with PropertyCheck {
-  def testAllInt: Unit = {
+  test("testAllInt") {
     forAll{ i:Int => i.isValidInt shouldBe true }
   }
 
-  def testCommutativity: Unit = {
+  test("testCommutativity") {
     forAll{ (x:Int, y:Int) => x+y == y+x }
   }
 
   // Using custom genrators of ScalaCheck
-  def useGenerator: Unit = {
+  test("useGenerator") {
     import org.scalacheck.Gen
     forAll(Gen.posNum[Long]){ x: Long => x > 0 shouldBe true }
   }
