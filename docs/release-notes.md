@@ -6,6 +6,15 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.5.3
+
+AirSpec, a testing library for Scala, now supports Scala 3.0.0! From this version, AirSpec only supports `test(...) { ... }` syntax, and deprecates using public functions as test cases. See also [AirSpec documentation](https://wvlet.org/airframe/docs/airspec).
+
+
+- AirSpec: Scala 3 support ([#1671](https://github.com/wvlet/airframe/issues/1671)) [[f79c5e5ee](https://github.com/wvlet/airframe/commit/f79c5e5ee)]
+- AirSpec: funspec deprecation ([#1664](https://github.com/wvlet/airframe/issues/1664)) [[93d2a60e8](https://github.com/wvlet/airframe/commit/93d2a60e8)]
+- airframe-surface: Fix BigInt surface resolver ([#1669](https://github.com/wvlet/airframe/issues/1669)) [[0759856d2](https://github.com/wvlet/airframe/commit/0759856d2)]
+
 ## 21.5.2
 
 This is a minor bug fix release for AirSpec and surfce.
