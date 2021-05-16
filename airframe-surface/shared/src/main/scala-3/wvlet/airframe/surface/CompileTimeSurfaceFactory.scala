@@ -37,14 +37,14 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
             tail.mkString(".")
           case "scala" :: nme :: Nil =>
             nme
-          case _ => 
+          case _ =>
             fullName.replaceAll("\\$", "")
         }
       }
       t match {
         case a:AppliedType if a.args.nonEmpty =>
           s"${sanitize(a.typeSymbol)}[${a.args.map(pt => fullTypeNameOf(pt.asType)).mkString(",")}]"
-        case other => 
+        case other =>
           sanitize(other.typeSymbol)
       }
   }
@@ -57,7 +57,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
 
   private val seen = scala.collection.mutable.Set[TypeRepr]()
   private val memo = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
-  
+
   private def surfaceOf(t: TypeRepr): Expr[Surface] = {
     if(seen.contains(t)) {
       if(memo.contains(t)) {
@@ -107,6 +107,8 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
     case t if t =:= TypeRepr.of[Byte] => '{ Primitive.Byte }
     case t if t =:= TypeRepr.of[Char] => '{ Primitive.Char }
     case t if t =:= TypeRepr.of[Unit] => '{ Primitive.Unit }
+    case t if t =:= TypeRepr.of[BigInt] => '{ Primitive.BigInt }
+    case t if t =:= TypeRepr.of[java.math.BigInteger] => '{ Primitive.BigInteger }
   }
 
   private def typeNameOf(t: TypeRepr): String = {
@@ -140,11 +142,11 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       val s = t.typeSymbol
       val name = Expr(s.name)
       val fullName = Expr(fullTypeNameOf(t.asType))
-      '{ Alias(${name}, ${fullName}, ${inner}) } 
+      '{ Alias(${name}, ${fullName}, ${inner}) }
   }
 
   private def higherKindedTypeFactory: Factory = {
-    case h: TypeLambda => 
+    case h: TypeLambda =>
       val name = h.typeSymbol.name
       val fullName = fullTypeNameOf(h)
       val inner = surfaceOf(h.resType)
@@ -186,10 +188,10 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
 
   private def javaUtilFactory: Factory = {
     // For common Java classes, stop with this rule so as not to extract internal parameters
-    case t if t =:= TypeRepr.of[java.io.File] || 
-      t =:= TypeRepr.of[java.util.Date] || 
+    case t if t =:= TypeRepr.of[java.io.File] ||
+      t =:= TypeRepr.of[java.util.Date] ||
       t =:= TypeRepr.of[java.time.temporal.Temporal] =>
-     newGenericSurfaceOf(t) 
+     newGenericSurfaceOf(t)
   }
 
   private def isEnum(t:TypeRepr): Boolean = {
@@ -204,7 +206,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
   private def exisitentialTypeFactory: Factory = {
      case t : TypeBounds if t.hi =:= TypeRepr.of[Any] =>
       // TODO Represent low/hi bounds
-      '{ ExistentialType }  
+      '{ ExistentialType }
   }
 
   private def clsOf(t:TypeRepr): Expr[Class[_]] = {
@@ -251,7 +253,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
   private def methodParametersOf(t: TypeRepr, method:Symbol): Expr[Seq[MethodParameter]] = {
     val methodName = method.name
     val methodArgs = methodArgsOf(method)
-    val argClasses = methodArgs.map(_.tree).collect { 
+    val argClasses = methodArgs.map(_.tree).collect {
       case v:ValDef =>
         //println(s"${v.name}: ${v}")
         clsOf(v.tpt.tpe.dealias)
@@ -263,7 +265,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
 
     //println(s"======= ${t.typeSymbol.memberMethods}")
 
-    val paramExprs = for{ 
+    val paramExprs = for{
       (field, v:ValDef, i) <- methodArgs.zipWithIndex.map((f, i) => (f, f.tree, i))
     } yield {
       val paramType = v.tpt.tpe
@@ -312,10 +314,10 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
     def allMethods = {
       t.typeSymbol.memberMethods.filter{ x =>
         nonObject(x.owner) &&
-         x.isDefDef && 
+         x.isDefDef &&
          //x.isPublic &&
          ! x.flags.is(Flags.Private) &&
-         ! x.flags.is(Flags.Protected) && 
+         ! x.flags.is(Flags.Protected) &&
          ! x.flags.is(Flags.PrivateLocal) &&
          ! x.isClassConstructor &&
          ! x.flags.is(Flags.Artifact) &&
@@ -326,7 +328,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       }
       .filter { x =>
         val name = x.name
-        !name.startsWith("$") && 
+        !name.startsWith("$") &&
         name != "<init>"
       }
     }
@@ -347,7 +349,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
 
   private def modifierBitMaskOf(m: Symbol): Int = {
     var mod = 0
-    
+
     if (!m.flags.is(Flags.Private) && !m.flags.is(Flags.Protected) && !m.flags.is(Flags.PrivateLocal)) {
       mod |= MethodModifier.PUBLIC
     }
