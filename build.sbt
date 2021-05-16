@@ -1215,10 +1215,19 @@ lazy val airspec =
       // Embed dependent project codes to make airspec a single jar
       Compile / packageBin / mappings ++= (airspecDepsJVM / Compile / packageBin / mappings).value,
       Compile / packageSrc / mappings ++= (airspecDepsJVM / Compile / packageSrc / mappings).value,
-      libraryDependencies ++= Seq(
-        //"org.scala-lang" % "scala-reflect"  % scalaVersion.value,
-        "org.scala-sbt" % "test-interface" % "1.0"
-      )
+      libraryDependencies ++= {
+        scalaVersion.value match {
+          case sv if sv.startsWith("3.") =>
+            Seq(
+              "org.scala-sbt" % "test-interface" % "1.0"
+            )
+          case sv =>
+            Seq(
+              "org.scala-lang" % "scala-reflect"  % sv,
+              "org.scala-sbt"  % "test-interface" % "1.0"
+            )
+        }
+      }
     )
     .jsSettings(
       Compile / packageBin / mappings ++= (airspecDepsJS / Compile / packageBin / mappings).value
