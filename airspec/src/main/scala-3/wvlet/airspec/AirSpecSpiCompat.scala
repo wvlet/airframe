@@ -6,14 +6,6 @@ import wvlet.airframe.surface.Surface
 /**
   */
 private[airspec] trait AirSpecSpiCompat { self: AirSpecSpi =>
-
-  /**
-    * This will add Scala.js support to the AirSpec.
-    *
-    * Scala.js does not support runtime reflection, so the user needs to
-    * explicitly create Seq[MethodSurface] at compile-time.
-    * This method is a helper method to populate methodSurfaces automatically.
-    */
   //protected def scalaJsSupport: Unit = ???
 }
 
@@ -69,7 +61,7 @@ object AirSpecTestBuilder extends wvlet.log.LogSupport {
 private[airspec] object AirSpecMacros {
   import scala.quoted._
 
-  def test0Impl[R](self: Expr[AirSpecTestBuilder], body: Expr[ => R])(using Type[R], Quotes): Expr[Unit] = {
+  def test0Impl[R](self: Expr[AirSpecTestBuilder], body: Expr[_])(using Type[R], Quotes): Expr[Unit] = {
     '{
       import AirSpecTestBuilder._
       ${self}.addF0(Surface.of[R], LazyF0(${body}))
@@ -79,35 +71,35 @@ private[airspec] object AirSpecMacros {
   def test1Impl[R, D1](self: Expr[AirSpecTestBuilder], body: Expr[D1 => R])(using Type[R], Type[D1], Quotes): Expr[Unit] = {
     '{
       import AirSpecTestBuilder._
-      ${self}.addF1(Surface.of[D1], Surface.of[R], LazyF0(${body}))
+      ${self}.addF1(Surface.of[D1], Surface.of[R], ${body})
     }
   }
 
   def test2Impl[R, D1, D2](self: Expr[AirSpecTestBuilder], body: Expr[(D1, D2) => R])(using Type[R], Type[D1], Type[D2], Quotes): Expr[Unit] = {
     '{
       import AirSpecTestBuilder._
-      ${self}.addF2(Surface.of[D1], Surface.of[D2], Surface.of[R], LazyF0(${body}))
+      ${self}.addF2(Surface.of[D1], Surface.of[D2], Surface.of[R], ${body})
     }
   }
 
-  def test3Impl[R, D1, D2, D3](self: Expr[AirSpecTestBuilder], body: Expr[(D1, D2, D3) => R])(using Type[R], Type[D1], Type[D2], Quotes): Expr[Unit] = {
+  def test3Impl[R, D1, D2, D3](self: Expr[AirSpecTestBuilder], body: Expr[(D1, D2, D3) => R])(using Type[R], Type[D1], Type[D2], Type[D3], Quotes): Expr[Unit] = {
     '{
       import AirSpecTestBuilder._
-      ${self}.addF3(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[R], LazyF0(${body}))
+      ${self}.addF3(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[R], ${body})
     }
   }
 
-  def test4Impl[R, D1, D2, D3, D4](self: Expr[AirSpecTestBuilder], body: Expr[(D1, D2, D3, D4) => R])(using Type[R], Type[D1], Type[D2], Quotes): Expr[Unit] = {
+  def test4Impl[R, D1, D2, D3, D4](self: Expr[AirSpecTestBuilder], body: Expr[(D1, D2, D3, D4) => R])(using Type[R], Type[D1], Type[D2], Type[D3], Type[D4], Quotes): Expr[Unit] = {
     '{
       import AirSpecTestBuilder._
-      ${self}.addF4(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4], Surface.of[R], LazyF0(${body}))
+      ${self}.addF4(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4], Surface.of[R], ${body})
     }
   }
 
-  def test5Impl[R, D1, D2, D3, D4, D5](self: Expr[AirSpecTestBuilder], body: Expr[(D1, D2, D3, D4, D5) => R])(using Type[R], Type[D1], Type[D2], Quotes): Expr[Unit] = {
+  def test5Impl[R, D1, D2, D3, D4, D5](self: Expr[AirSpecTestBuilder], body: Expr[(D1, D2, D3, D4, D5) => R])(using Type[R], Type[D1], Type[D2], Type[D3], Type[D4], Type[D5], Quotes): Expr[Unit] = {
     '{
       import AirSpecTestBuilder._
-      ${self}.addF4(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4], Surface.of[D5], Surface.of[R], LazyF0(${body}))
+      ${self}.addF5(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4], Surface.of[D5], Surface.of[R], ${body})
     }
   }
 }
