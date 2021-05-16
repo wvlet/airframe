@@ -18,17 +18,17 @@ import wvlet.airspec.AirSpec
 /**
   */
 object AirSpec_01_Basic extends AirSpec {
-  def testWithAssertion: Unit = {
+  test("testWithAssertion") {
     assert(1 == 1)
     assert("hello" == "hello")
   }
 
-  def testWithShouldBe: Unit = {
+  test("testWithShouldBe") {
     Seq().size shouldBe 0
     Seq() shouldBe empty
   }
 
-  def testObjectEquality: Unit = {
+  test("testObjectEquality") {
     val s1 = new String("hello")
     val s2 = s1
     val s3 = new String("hello")

@@ -20,20 +20,20 @@ import wvlet.airspec.AirSpec
   */
 class AirSpec_02_ReuseTests extends AirSpec {
   // A template for reusable test cases
-  class Fixture[A](data: Seq[A]) extends AirSpec {
-    override protected def beforeAll: Unit = {
-      info(s"Run tests for ${data}")
-    }
-    def emptyTest: Unit = {
+
+  private def fixture[A](data: Seq[A]): Unit = {
+    info(s"Run tests for ${data}")
+
+    test("emptyTest") {
       data shouldNotBe empty
     }
-    def sizeTest: Unit = {
+    test("sizeTest") {
       data.length shouldBe data.size
     }
   }
 
-  def test(context: AirSpecContext): Unit = {
-    context.run(new Fixture(Seq(1, 2)))
-    context.run(new Fixture(Seq("A", "B", "C")))
+  test("reuse tests") {
+    fixture(Seq(1, 2)))
+    fixture(Seq("A", "B", "C")))
   }
 }
