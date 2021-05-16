@@ -19,8 +19,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class ShouldBeTest extends AirSpec {
-  scalaJsSupport
-
   test("support shouldBe matcher") {
     1 shouldBe 1
   }

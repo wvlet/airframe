@@ -20,8 +20,6 @@ import wvlet.log.LogSupport
 /**
   */
 class TestJSSpec extends AirSpec with LogSupport {
-  scalaJsSupport
-
   protected override def design: Design = {
     Design.newDesign
       .bind[String].toInstance("hello Scala.js")
@@ -38,8 +36,6 @@ class TestJSSpec extends AirSpec with LogSupport {
 }
 
 class FlexWordSpecTest extends AirSpec {
-  scalaJsSupport
-
   test("should support long method names") {}
 }
 
