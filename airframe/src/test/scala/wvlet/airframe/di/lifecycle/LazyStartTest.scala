@@ -30,7 +30,6 @@ object LazyStartTest {
 /**
   */
 class LazyStartTest extends AirSpec {
-  scalaJsSupport
 
   import LazyStartTest._
 
@@ -41,15 +40,15 @@ class LazyStartTest extends AirSpec {
     .bind[MyApp].toSingleton
     .bind[MyApp2].toSingleton
     .bind[F1].toLazyInstance(f1)
-    .onStart { x: F1 =>
+    .onStart { (x: F1) =>
       x.set(true)
     }
-    .onShutdown { x: F1 => x.set(false) }
+    .onShutdown { (x: F1) => x.set(false) }
     .bind[F2].toLazyInstance(f2)
-    .onStart { x: F2 =>
+    .onStart { (x: F2) =>
       x.set(true)
     }
-    .onShutdown { x: F2 => x.set(false) }
+    .onShutdown { (x: F2) => x.set(false) }
 
   test("support lazy start") {
     (f1.get, f2.get) shouldBe (false, false)

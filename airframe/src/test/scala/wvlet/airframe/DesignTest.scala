@@ -140,7 +140,7 @@ object DesignTest extends AirSpec {
   test("support run") {
     val d = Design.newSilentDesign
       .bind[String].toInstance("hello")
-    val ret = d.run { s: String =>
+    val ret = d.run { (s: String) =>
       s shouldBe "hello"
       100
     }

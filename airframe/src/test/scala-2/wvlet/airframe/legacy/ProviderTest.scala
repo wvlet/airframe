@@ -140,7 +140,7 @@ class ProviderTest extends AirSpec {
 
   test("build object from instance provider bindings") {
     val s1 = providerDesign
-      .bind[App].toInstanceProvider { d1: D1 => App(d1) }
+      .bind[App].toInstanceProvider { (d1: D1) => App(d1) }
       .newSession
     val p1 = s1.build[App]
     p1 shouldBe App(d1, z2, z3, z4, z5)
@@ -256,7 +256,7 @@ class ProviderRefTest extends AirSpec {
   test("eagerly build singleton from provider") {
     var p1Initialized = false
     val s1 = providerDesign
-      .bind[App].toEagerSingletonProvider { d1: D1 => p1Initialized = true; App(d1) }
+      .bind[App].toEagerSingletonProvider { (d1: D1) => p1Initialized = true; App(d1) }
       .newSession
     p1Initialized shouldBe true
     val p1 = s1.build[App]

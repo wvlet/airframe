@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 package wvlet.airframe
-import java.util.concurrent.atomic.AtomicInteger
-
-import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
+
+import java.util.concurrent.atomic.AtomicInteger
+import javax.annotation.{PostConstruct, PreDestroy}
 
 object FactoryBindingLifecycleTest {
   val startCounter  = collection.mutable.Map[Int, AtomicInteger]()
@@ -28,10 +28,7 @@ object FactoryBindingLifecycleTest {
     threadCounter.incrementAndGet()
   }
 
-  trait MyClient extends LogSupport {
-    val port      = bind[Int]
-    val singleton = bind[MyThread]
-
+  class MyClient(val port: Int, val singleton: MyThread) extends LogSupport {
     @PostConstruct
     def start: Unit = {
       debug(s"start client for ${port}")
@@ -45,7 +42,7 @@ object FactoryBindingLifecycleTest {
     }
   }
 
-  trait ClientFactory {
+  class ClientFactory() {
     val factory = bindFactory[Int => MyClient]
   }
 }

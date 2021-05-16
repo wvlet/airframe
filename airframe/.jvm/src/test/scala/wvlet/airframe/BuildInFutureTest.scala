@@ -14,11 +14,10 @@
 package wvlet.airframe
 
 import java.util.concurrent.Executors
-
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor, Future}
 
 case class Config1(port: Int = 8080)
 case class Config2()
@@ -28,8 +27,8 @@ class BuildInFutureTest extends AirSpec {
   // We need to use an executor which can load applicttion classes #918.
   //
   // https://github.com/sbt/sbt/issues/5410
-  private val threadPool              = Executors.newCachedThreadPool()
-  private implicit val futureExecutor = ExecutionContext.fromExecutor(threadPool)
+  private val threadPool                                        = Executors.newCachedThreadPool()
+  private implicit val futureExecutor: ExecutionContextExecutor = ExecutionContext.fromExecutor(threadPool)
 
   override protected def afterAll: Unit = {
     threadPool.shutdownNow()

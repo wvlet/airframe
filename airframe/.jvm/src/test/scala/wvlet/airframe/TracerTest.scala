@@ -17,31 +17,14 @@ import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 object TracerTest extends LogSupport {
-  trait D
-  trait E
-  trait F
-  trait G
+  class D
+  class E
+  class F
+  class G
 
-  trait C {
-    val d = bind[D]
-    val e = bind[E]
-    val g = bind[G]
-  }
-
-  trait B {
-    val c = bind[C]
-    val e = bind[E]
-    val g = bind[G]
-  }
-
-  trait A extends LogSupport {
-    val b = bind[B]
-      .onInject(x => debug("inject"))
-      .onInit(x => debug("init"))
-      .onStart(x => debug("start"))
-      .beforeShutdown(x => debug("befoer shutdown"))
-      .onShutdown(x => debug("shutdown"))
-  }
+  class C(d: D, e: E, g: G)
+  class B(c: C, e: E, g: G)
+  class A(b: B)
 }
 
 /**
@@ -63,6 +46,11 @@ class TracerTest extends AirSpec {
     val d = newDesign.noLifeCycleLogging
       .bind[A].toSingleton
       .bind[B].toSingleton
+      .onInject(x => debug("inject"))
+      .onInit(x => debug("init"))
+      .onStart(x => debug("start"))
+      .beforeShutdown(x => debug("befoer shutdown"))
+      .onShutdown(x => debug("shutdown"))
       .bind[E].toSingleton
       .bind[F].toSingleton
       .bind[G].toLazyInstance(new G {})

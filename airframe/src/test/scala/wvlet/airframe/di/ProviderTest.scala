@@ -59,7 +59,7 @@ import wvlet.airframe.di.ProviderExample._
 class SingletonProviderTest extends AirSpec {
   test("build singleton from provider bindings") {
     val s1 = providerDesign
-      .bind[App].toProvider { d1: D1 => App(d1) }
+      .bind[App].toProvider { (d1: D1) => App(d1) }
       .newSession
     val p1 = s1.build[App]
     p1 shouldBe App(d1, z2, z3, z4, z5)
@@ -99,7 +99,7 @@ class EagerSingletonProviderTest extends AirSpec {
   test("eagerly build singleton from provider") {
     var p1Initialized = false
     val s1 = providerDesign
-      .bind[App].toEagerSingletonProvider { d1: D1 => p1Initialized = true; App(d1) }
+      .bind[App].toEagerSingletonProvider { (d1: D1) => p1Initialized = true; App(d1) }
       .newSession
     p1Initialized shouldBe true
     val p1 = s1.build[App]

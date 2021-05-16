@@ -40,8 +40,6 @@ object LazyStartTest {
 /**
   */
 class LazyStartTest extends AirSpec {
-  scalaJsSupport
-
   import LazyStartTest._
 
   val f1 = new AtomicBoolean(false)
