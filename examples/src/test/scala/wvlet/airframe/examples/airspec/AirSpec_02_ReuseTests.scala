@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.examples.airspec
 
-import wvlet.airspec.spi.AirSpecContext
 import wvlet.airspec.AirSpec
 
 /**
@@ -33,7 +32,7 @@ class AirSpec_02_ReuseTests extends AirSpec {
   }
 
   test("reuse tests") {
-    fixture(Seq(1, 2)))
-    fixture(Seq("A", "B", "C")))
+    fixture(Seq(1, 2))
+    fixture(Seq("A", "B", "C"))
   }
 }
