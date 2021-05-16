@@ -37,20 +37,8 @@ private[airspec] class AirSpecContextImpl(
     childTaskCount.get > 0
   }
 
-  override protected[airspec] def runInternal(spec: AirSpecSpi, testDefs: Seq[AirSpecDef]): AirSpecSpi = {
-    childTaskCount.incrementAndGet()
-    taskExecutor.run(Some(this), spec, testDefs)
-    spec
-  }
   override protected[airspec] def runSingle(testDef: AirSpecDef): Unit = {
     childTaskCount.incrementAndGet()
     taskExecutor.runSingle(Some(this), currentSession, currentSpec, testDef, isLocal = true, design = testDef.design)
-  }
-
-  override protected def newSpec(specSurface: Surface): AirSpecSpi = {
-    val spec: AirSpecSpi = currentSession.get(specSurface)
-    // When the spec instance is an anonymous class, we need to find the real class name from the specSurface
-    spec.setSpecName(specSurface.fullName)
-    spec
   }
 }

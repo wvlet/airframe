@@ -1,7 +1,5 @@
 package wvlet.airspec
 
-import wvlet.airframe.AirframeMacros
-
 import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
 
@@ -20,32 +18,6 @@ private[airspec] object AirSpecMacros {
     q"""
        throw wvlet.airspec.spi.Pending("pending", ${sourceCode(c)})
      """
-  }
-
-  def buildAndRunImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-    q"""{
-           ${new AirframeMacros.BindHelper[c.type](c).registerTraitFactory(t)}
-           import wvlet.airspec.spi.AirSpecContext._
-           val context = ${c.prefix}
-           val surface = wvlet.airframe.surface.Surface.of[${t}]
-           val spec = context.callNewSpec(surface)
-           context.callRunInternal(spec, wvlet.airframe.surface.Surface.methodsOf[${t}])
-           spec.asInstanceOf[${t}]
-        }
-    """
-  }
-
-  def runSpecImpl[A: c.WeakTypeTag](c: sm.Context)(spec: c.Tree): c.Tree = {
-    import c.universe._
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-    q"""{
-        wvlet.airspec.spi.AirSpecContext.AirSpecContextAccess(${c.prefix})
-          .callRunInternal(${spec}, wvlet.airframe.surface.Surface.methodsOf[${t}])
-          .asInstanceOf[${t}]
-        }
-    """
   }
 
   def test0Impl[R: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {

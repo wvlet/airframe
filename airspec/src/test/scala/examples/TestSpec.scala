@@ -21,7 +21,6 @@ import wvlet.log.LogSupport
 /**
   */
 class TestSpec extends AirSpec with LogSupport {
-  scalaJsSupport
 
   protected override def design: Design = {
     Design.newDesign
@@ -66,8 +65,6 @@ class TestSpec extends AirSpec with LogSupport {
 }
 
 object TestObjSpec extends AirSpec with LogSupport {
-  scalaJsSupport
-
   test("supportTestsInObjectMethods") {
     trace("hello companion methods")
     "hello obj"
@@ -75,8 +72,6 @@ object TestObjSpec extends AirSpec with LogSupport {
 }
 
 class WordSpecTest extends AirSpec {
-  scalaJsSupport
-
   test("should have a natural language description") {}
   test("should support arbitrary texts") {}
 }

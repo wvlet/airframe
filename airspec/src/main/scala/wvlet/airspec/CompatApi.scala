@@ -29,8 +29,6 @@ trait CompatApi {
   private[airspec] def withLogScanner[U](block: => U): U
   private[airspec] def findCause(e: Throwable): Throwable
 
-  private[airspec] def methodSurfacesOf(cls: Class[_]): Seq[MethodSurface]
-
   private[airspec] def getSpecName(cls: Class[_]): String
 
   private[airspec] def getContextClassLoader: ClassLoader

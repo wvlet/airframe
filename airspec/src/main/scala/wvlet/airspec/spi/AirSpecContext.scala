@@ -14,8 +14,7 @@
 package wvlet.airspec.spi
 
 import wvlet.airframe.Session
-import wvlet.airframe.surface.{MethodSurface, Surface}
-import wvlet.airspec.{AirSpecBase, AirSpecContextCompat, AirSpecDef, AirSpecMacros, AirSpecSpi}
+import wvlet.airspec.{AirSpecDef, AirSpecSpi}
 
 /**
   * AirSpecContext is an interface to pass the test environment data to individual test methods.
@@ -23,7 +22,7 @@ import wvlet.airspec.{AirSpecBase, AirSpecContextCompat, AirSpecDef, AirSpecMacr
   * Spec: global
   *  -
   */
-trait AirSpecContext extends AirSpecContextCompat {
+trait AirSpecContext {
   def hasChildTask: Boolean
 
   def currentSpec: AirSpecSpi
@@ -56,16 +55,5 @@ trait AirSpecContext extends AirSpecContextCompat {
     parentContext.map(_.indentLevel + 1).getOrElse(0)
   }
 
-  protected[airspec] def runInternal(spec: AirSpecSpi, testDefs: Seq[AirSpecDef]): AirSpecSpi
   protected[airspec] def runSingle(testDef: AirSpecDef): Unit
-  protected def newSpec(specSurface: Surface): AirSpecSpi
-}
-
-object AirSpecContext {
-  implicit class AirSpecContextAccess(val context: AirSpecContext) extends AnyVal {
-    def callRunInternal(spec: AirSpecSpi, specMethods: Seq[MethodSurface]): AirSpecSpi = {
-      context.runInternal(spec, AirSpecSpi.collectTestMethods(specMethods))
-    }
-    def callNewSpec(specSurface: Surface): AirSpecSpi = context.newSpec(specSurface)
-  }
 }

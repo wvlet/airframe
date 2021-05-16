@@ -18,8 +18,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class CommonSpec extends AirSpec {
-  scalaJsSupport
-
   test("hello") {
     assert(true)
   }
@@ -44,8 +42,6 @@ class CommonSpec extends AirSpec {
 }
 
 object ObjSpec extends AirSpec {
-  scalaJsSupport
-
   test("hello1") {
     assert(true)
   }

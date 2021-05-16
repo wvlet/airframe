@@ -70,7 +70,6 @@ private[airspec] object Compat extends CompatApi with LogSupport {
     // Scala.js has no InvocationTargetException
     e
   }
-  override private[airspec] def methodSurfacesOf(cls: Class[_]) = Seq.empty[MethodSurface]
 
   override private[airspec] def getSpecName(cl: Class[_]): String = {
     var name = cl.getName

@@ -21,7 +21,7 @@ import wvlet.log.Logger
 
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
-import wvlet.airframe.surface.reflect.{ReflectSurfaceFactory, ReflectTypeUtil}
+import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.airspec.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
 import wvlet.airspec.spi.{AirSpecException, Asserts}
 
@@ -84,9 +84,6 @@ private[airspec] object Compat extends CompatApi {
       case i: InvocationTargetException => findCause(i.getTargetException)
       case _                            => e
     }
-  }
-  override private[airspec] def methodSurfacesOf(cls: Class[_]) = {
-    ReflectSurfaceFactory.methodsOfClass(cls)
   }
 
   override private[airspec] def getSpecName(cl: Class[_]): String = {
