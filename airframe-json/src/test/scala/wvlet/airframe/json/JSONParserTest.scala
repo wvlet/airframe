@@ -19,7 +19,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class JSONParserTest extends AirSpec {
-  scalaJsSupport
 
   protected def parse(s: String): JSONValue = {
     val v = JSON.parse(JSONSource.fromString(s))

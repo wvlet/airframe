@@ -1,10 +1,13 @@
 package wvlet.airspec
 
-import wvlet.airframe.Design
+import wvlet.airframe.{Design, SourceCode}
 import wvlet.airframe.surface.Surface
+import wvlet.airspec.spi.{AssertionFailure, InterceptException}
 
 import scala.language.experimental.macros
-import scala.reflect.macros.{blackbox => sm}
+import scala.reflect.ClassTag
+
+//private[airspec] trait AssertCompat {}
 
 /**
   */

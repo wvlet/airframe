@@ -18,8 +18,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class JSONScannerTest extends AirSpec {
-  scalaJsSupport
-
   protected def scan(json: String): Unit = {
     debug(s"scan: ${json}")
     JSONScanner.scan(JSONSource.fromString(json))

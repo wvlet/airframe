@@ -18,8 +18,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class JSONTest extends AirSpec {
-  scalaJsSupport
-
   test("support toJSONValue") {
     val json: Json = """{"id":1}"""
     json.toJSONValue shouldBe JSON.parse(json)
@@ -45,7 +43,7 @@ class JSONTest extends AirSpec {
     val ids = (jsonValue / "user" / "id").values
     ids shouldBe Seq(1, 2)
 
-    val id1 = (jsonValue / "user" / "id")(0).value
+    val id1 = (jsonValue / "user" / "id")(0).getValue
     id1 shouldBe 1
 
     val id2 = jsonValue("user")(1)("id").toLongValue
@@ -54,7 +52,7 @@ class JSONTest extends AirSpec {
     val name1 = jsonValue("user")(0)("name").toStringValue
     name1 shouldBe "a"
 
-    val name2 = (jsonValue / "user" / "name")(1).value
+    val name2 = (jsonValue / "user" / "name")(1).getValue
     name2 shouldBe "b"
 
     val flag1 = jsonValue("user")(0)("flag").toBooleanValue
@@ -63,7 +61,7 @@ class JSONTest extends AirSpec {
     val flag2 = jsonValue("user")(1)("flag")
     flag2.isNull shouldBe true
 
-    val users1 = (jsonValue / "user").value
+    val users1 = (jsonValue / "user").getValue
     users1 shouldBe Seq(Map("id" -> 1, "name" -> "a", "flag" -> true), Map("id" -> 2, "name" -> "b", "flag" -> null))
 
     val users2 = (jsonValue / "user").toArrayValue

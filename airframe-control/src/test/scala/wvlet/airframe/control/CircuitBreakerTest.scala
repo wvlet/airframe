@@ -114,7 +114,7 @@ class CircuitBreakerTest extends AirSpec {
     cb.run {}
 
     intercept[TimeoutException] {
-      cb.run {
+      cb.run[Any] {
         throw new TimeoutException()
       }
     }

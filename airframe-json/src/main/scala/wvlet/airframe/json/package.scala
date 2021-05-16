@@ -49,17 +49,20 @@ package object json {
       }
     }
 
-    def value: Any = {
+    def getValue: Any = {
       jsonValue match {
         case JSONNull       => null
         case JSONDouble(x)  => x
         case JSONLong(x)    => x
         case JSONString(x)  => x
         case JSONBoolean(x) => x
-        case JSONArray(x)   => x.map(_.value)
-        case JSONObject(x)  => x.map(x => (x._1, x._2.value)).toMap
+        case JSONArray(x)   => x.map(_.getValue)
+        case JSONObject(x)  => x.map(x => (x._1, x._2.getValue)).toMap
       }
     }
+
+    @deprecated(message = ".value will be ambiguous in Scala 3. Use getValue instead", since = "21.5.3")
+    def value: Any = getValue
 
     def isNull: Boolean = {
       jsonValue == JSONNull
@@ -98,11 +101,16 @@ package object json {
     }
 
     def values: Seq[Any] = {
-      jsonValues.map { jsonValue => jsonValue.value }
+      jsonValues.map { jsonValue => jsonValue.getValue }
     }
 
+    def getValue: Any = {
+      jsonValues.head.getValue
+    }
+
+    @deprecated(message = ".value will be ambiguous in Scala 3. Use getValue instead", since = "21.5.3")
     def value: Any = {
-      jsonValues.head.value
+      jsonValues.head.getValue
     }
 
     def toStringValues: Seq[String] = {
