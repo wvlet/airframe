@@ -26,8 +26,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class ValueTest extends AirSpec with PropertyCheck {
-  scalaJsSupport
-
   private def rankOf(mf: MessageFormat): Int = {
     val order =
       Seq(MessageFormat.INT8, MessageFormat.INT16, MessageFormat.INT32, MessageFormat.INT64, MessageFormat.UINT64)
