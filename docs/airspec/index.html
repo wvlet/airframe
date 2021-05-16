@@ -67,7 +67,7 @@
 <li><a href="https://github.com/wvlet/airframe/tree/master/airspec">GitHub: AirSpec</a></li>
 <li><a href="#background--motivation">Background and Motivation</a></li>
 </ul>
-<p>AirSpec uses pure Scala functions for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are supported optionally.</p>
+<p>AirSpec uses just <code>test(&quot;...&quot;) { ... }</code> syntax for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are supported optionally.</p>
 <h2><a class="anchor" aria-hidden="true" id="features"></a><a href="#features" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Features</h2>
 <ul>
 <li>Simple to use: Just <code>import wvlet.airspec._</code> and extend <code>AirSpec</code> trait.</li>
@@ -87,13 +87,7 @@
 </ul></li>
 <li>Handy keyword search for <em>sbt</em>: <code>&gt; testOnly -- (a pattern for class or method names)</code></li>
 <li>Property-based testing integrated with <a href="https://www.scalacheck.org/">ScalaCheck</a></li>
-<li>Scala 2.11, 2.12, 2.13, and Scala.js support</li>
-</ul>
-<p>AirSpec is already feature complete and ready to use in production. Actually, all modules of Airframe, including AirSpec, are tested by using AirSpec.
-For providing better testing experience, we are planning to add more features (e.g., better reporting, power assertions):</p>
-<ul>
-<li><a href="https://github.com/wvlet/airframe/issues/839">Milestone: Airframe 20</a></li>
-<li><a href="https://github.com/wvlet/airframe/issues/606">Milestone: AirSpec 19</a></li>
+<li>Scala 2.11, 2.12, 2.13, 3.0, and Scala.js support</li>
 </ul>
 <p>To start using AirSpec, read <a href="#quick-start">Quick Start</a>.</p>
 <h2><a class="anchor" aria-hidden="true" id="quick-start"></a><a href="#quick-start" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Quick Start</h2>
@@ -151,7 +145,7 @@ testFrameworks += <span class="hljs-keyword">new</span> <span class="hljs-type">
 <tr><td><code>skip(&quot;reason&quot;)</code></td><td>Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js)</td></tr>
 </tbody>
 </table>
-<p>Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.</p>
+<p>AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.</p>
 <h3><a class="anchor" aria-hidden="true" id="examples"></a><a href="#examples" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Examples</h3>
 <p>Here are examples of using <code>shouldBe</code> matchers:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airspec._
@@ -402,13 +396,13 @@ This is generally a good practice to minimize the scope of tests only for specif
 Add <code>wvlet.airspec.spi.PropertyCheck</code> trait to your spec, and use <code>forAll</code> methods.</p>
 <p><strong>build.sbt</strong></p>
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// Use %%% for Scala.js</span>
-libraryDependencies += <span class="hljs-string">"org.scalacheck"</span> %% <span class="hljs-string">"scalacheck"</span> % <span class="hljs-string">"1.14.1"</span> % <span class="hljs-string">"test"</span>
+libraryDependencies += <span class="hljs-string">"org.scalacheck"</span> %% <span class="hljs-string">"scalacheck"</span> % <span class="hljs-string">"1.15.4"</span> % <span class="hljs-string">"test"</span>
 </code></pre>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airspec._
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PropertyBasedTest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> <span class="hljs-keyword">with</span> <span class="hljs-title">PropertyCheck</span> </span>{
   test(<span class="hljs-string">"testAllInt"</span>) {
-    forAll{ i:<span class="hljs-type">Int</span> =&gt; i.isValidInt shouldBe <span class="hljs-literal">true</span> }
+    forAll{ (i:<span class="hljs-type">Int</span>) =&gt; i.isValidInt shouldBe <span class="hljs-literal">true</span> }
   }
 
   test(<span class="hljs-string">"testCommutativity"</span>) {
