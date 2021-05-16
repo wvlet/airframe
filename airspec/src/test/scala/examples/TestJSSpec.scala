@@ -40,5 +40,5 @@ class FlexWordSpecTest extends AirSpec {
 }
 
 class NoTestTest extends AirSpec {
-  test("should show warning for Scala.js") {}
+  warn(s"Show warning message if no test is defined")
 }
