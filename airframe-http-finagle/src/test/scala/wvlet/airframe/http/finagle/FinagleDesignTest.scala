@@ -31,7 +31,7 @@ class FinagleDesignTest extends AirSpec {
     }
   }
 
-  def newConfig = FinagleServerConfig(router = Router.of[MyTestServer])
+  private def newConfig = FinagleServerConfig(router = Router.of[MyTestServer])
 
   test("start server") {
     finagleDefaultDesign

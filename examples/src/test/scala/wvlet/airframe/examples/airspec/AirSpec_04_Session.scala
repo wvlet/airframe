@@ -23,7 +23,7 @@ class AirSpec_04_Session extends AirSpec {
     newDesign.bind[String].toInstance("hello")
   }
 
-  def overrideDesign(session: Session, s: String): Unit = {
+  test("overrideDesign") { (session: Session, s: String) =>
     s shouldBe "hello"
 
     val d = newDesign

@@ -34,13 +34,13 @@ object AirSpec_03_DI extends AirSpec {
   }
 
   // Injecting a service using DI
-  def test(service: MyService): Unit = {
+  test("test service") { (service: MyService) =>
     info(s"service id: ${service.hashCode()}")
     service.config.port shouldBe 8080
   }
 
   // The same service instance will be passed
-  def test2(service: MyService): Unit = {
+  test("test service2") { (service: MyService) =>
     info(s"service id: ${service.hashCode()}")
     service.config.port shouldBe 8080
   }
