@@ -308,7 +308,7 @@ object PrimitiveCodec {
 
     override def pack(p: Packer, v: BigInt): Unit = {
       if (v.compareTo(BigInt(Long.MaxValue)) <= 0) {
-        p.packLong(v.longValue())
+        p.packLong(v.longValue)
       } else {
         p.packString(v.toString(10))
       }
