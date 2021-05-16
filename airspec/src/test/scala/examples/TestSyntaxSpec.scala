@@ -15,10 +15,10 @@ class TestSyntaxSpec extends AirSpec {
   }
 
   test("test pending") {
-    pending
+    pending("pending reason")
   }
 
-  test("one arg method") { s: String =>
+  test("one arg method") { (s: String) =>
     debug(s"received arg: ${s}")
     s shouldBe "hello"
   }
@@ -48,7 +48,7 @@ class TestSyntaxSpec extends AirSpec {
     m shouldBe "hello 10 true"
   }
 
-  test("local design override", design = newDesign.bind[String].toInstance("world")) { s: String =>
+  test("local design override", design = newDesign.bind[String].toInstance("world")) { (s: String) =>
     debug(s"arg: ${s}")
     s shouldBe "world"
   }

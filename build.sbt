@@ -252,6 +252,7 @@ lazy val projectDotty =
     .aggregate(
       airframeMacrosJVM,
       airframeJVM,
+      airspecJVM,
       logJVM,
       surfaceJVM,
       canvas,

@@ -37,9 +37,9 @@ trait PropertyCheck extends Asserts { this: AirSpecSpi =>
     }
   }
 
-  private def OK: Any => Boolean = { x: Any => true }
+  private def OK: Any => Boolean = { (x: Any) => true }
 
-  private def booleanProp = { x: Boolean => Prop(x) }
+  private def booleanProp = { (x: Boolean) => Prop(x) }
 
   protected def forAll[A1, U](checker: A1 => U)(implicit
       a1: Arbitrary[A1],
