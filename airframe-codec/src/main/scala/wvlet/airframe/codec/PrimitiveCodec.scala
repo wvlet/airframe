@@ -16,7 +16,6 @@ package wvlet.airframe.codec
 import java.time.Instant
 import java.util.Base64
 
-import wvlet.airframe.codec.PrimitiveCodec.IntArrayCodec.unpack
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
 import wvlet.airframe.msgpack.spi.Value.ExtensionValue
@@ -29,16 +28,18 @@ import scala.util.Try
   */
 object PrimitiveCodec {
   val primitiveCodec: Map[Surface, MessageCodec[_]] = Map(
-    Primitive.Int     -> IntCodec,
-    Primitive.Long    -> LongCodec,
-    Primitive.Float   -> FloatCodec,
-    Primitive.Double  -> DoubleCodec,
-    Primitive.Boolean -> BooleanCodec,
-    Primitive.String  -> StringCodec,
-    Primitive.Byte    -> ByteCodec,
-    Primitive.Short   -> ShortCodec,
-    Primitive.Char    -> CharCodec,
-    Primitive.Unit    -> UnitCodec,
+    Primitive.Int        -> IntCodec,
+    Primitive.Long       -> LongCodec,
+    Primitive.Float      -> FloatCodec,
+    Primitive.Double     -> DoubleCodec,
+    Primitive.Boolean    -> BooleanCodec,
+    Primitive.String     -> StringCodec,
+    Primitive.Byte       -> ByteCodec,
+    Primitive.Short      -> ShortCodec,
+    Primitive.Char       -> CharCodec,
+    Primitive.Unit       -> UnitCodec,
+    Primitive.BigInt     -> BigIntCodec,
+    Primitive.BigInteger -> BigIntegerCodec,
     // MessagePack types
     Surface.of[Value]   -> ValueCodec,
     Surface.of[MsgPack] -> RawMsgPackCodec,
@@ -295,6 +296,98 @@ object PrimitiveCodec {
           read(u.unpackBoolean.toInt)
         case ValueType.FLOAT =>
           read(u.unpackDouble.toLong)
+        case _ =>
+          u.skipValue
+          v.setNull
+      }
+    }
+  }
+
+  object BigIntCodec extends PrimitiveCodec[BigInt] {
+    def surface = Primitive.BigInt
+
+    override def pack(p: Packer, v: BigInt): Unit = {
+      if (v.compareTo(BigInt(Long.MaxValue)) <= 0) {
+        p.packLong(v.longValue)
+      } else {
+        p.packString(v.toString(10))
+      }
+    }
+
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
+      def read(body: => BigInt): Unit = {
+        try {
+          v.setObject(body)
+        } catch {
+          case e: IntegerOverflowException =>
+            v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Long value")
+          case e: NumberFormatException =>
+            v.setIncompatibleFormatException(this, e.getMessage)
+        }
+      }
+      val f  = u.getNextFormat
+      val vt = f.getValueType
+      vt match {
+        case ValueType.NIL =>
+          u.unpackNil
+          v.setNull
+        case ValueType.INTEGER =>
+          read(BigInt(u.unpackLong))
+        case ValueType.STRING =>
+          read {
+            val s = u.unpackString
+            Try(BigInt(s, 10)).getOrElse(BigInt(s.toDouble.toLong))
+          }
+        case ValueType.BOOLEAN =>
+          read(BigInt(u.unpackBoolean.toInt))
+        case ValueType.FLOAT =>
+          read(BigInt(u.unpackDouble.toLong))
+        case _ =>
+          u.skipValue
+          v.setNull
+      }
+    }
+  }
+
+  object BigIntegerCodec extends PrimitiveCodec[java.math.BigInteger] {
+    def surface = Primitive.BigInteger
+
+    override def pack(p: Packer, v: java.math.BigInteger): Unit = {
+      if (v.compareTo(java.math.BigInteger.valueOf(Long.MaxValue)) <= 0) {
+        p.packLong(v.longValue())
+      } else {
+        p.packString(v.toString(10))
+      }
+    }
+
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
+      def read(body: => java.math.BigInteger): Unit = {
+        try {
+          v.setObject(body)
+        } catch {
+          case e: IntegerOverflowException =>
+            v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Long value")
+          case e: NumberFormatException =>
+            v.setIncompatibleFormatException(this, e.getMessage)
+        }
+      }
+      val f  = u.getNextFormat
+      val vt = f.getValueType
+      vt match {
+        case ValueType.NIL =>
+          u.unpackNil
+          v.setNull
+        case ValueType.INTEGER =>
+          read(java.math.BigInteger.valueOf(u.unpackLong))
+        case ValueType.STRING =>
+          read {
+            val s = u.unpackString
+            Try(new java.math.BigInteger(s, 10)).getOrElse(java.math.BigInteger.valueOf(s.toDouble.toLong))
+          }
+        case ValueType.BOOLEAN =>
+          read(java.math.BigInteger.valueOf(u.unpackBoolean.toInt))
+        case ValueType.FLOAT =>
+          read(java.math.BigInteger.valueOf(u.unpackDouble.toLong))
         case _ =>
           u.skipValue
           v.setNull

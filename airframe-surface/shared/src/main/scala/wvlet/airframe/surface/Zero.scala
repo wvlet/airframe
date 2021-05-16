@@ -46,22 +46,19 @@ object Zero extends LogSupport {
 
   private def zeroOfPrimitives: ZeroValueFactory =
     isPrimitive andThen {
-      case Primitive.String  => ""
-      case Primitive.Boolean => false
-      case Primitive.Int     => 0
-      case Primitive.Long    => 0L
-      case Primitive.Float   => 0f
-      case Primitive.Double  => 0.0
-      case Primitive.Unit    => null
-      case Primitive.Byte    => 0.toByte
-      case Primitive.Short   => 0.toShort
-      case Primitive.Char    => 0.toChar
+      case Primitive.String     => ""
+      case Primitive.Boolean    => false
+      case Primitive.Int        => 0
+      case Primitive.Long       => 0L
+      case Primitive.Float      => 0f
+      case Primitive.Double     => 0.0
+      case Primitive.Unit       => null
+      case Primitive.Byte       => 0.toByte
+      case Primitive.Short      => 0.toShort
+      case Primitive.Char       => 0.toChar
+      case Primitive.BigInt     => BigInt(java.math.BigInteger.ZERO)
+      case Primitive.BigInteger => java.math.BigInteger.ZERO
     }
-
-  private def zeroOfJavaPrimitives: ZeroValueFactory = {
-    case s if s.rawType == classOf[BigInt]               => BigInt(0)
-    case s if s.rawType == classOf[java.math.BigInteger] => java.math.BigInteger.ZERO
-  }
 
   private def zeroOfRegisteredTypes: ZeroValueFactory = {
     case t if preregisteredZeroInstance.contains(t) =>
@@ -121,7 +118,6 @@ object Zero extends LogSupport {
 
   private val factory: ZeroValueFactory =
     zeroOfPrimitives orElse
-      zeroOfJavaPrimitives orElse
       zeroOfRegisteredTypes orElse
       zeroOfArray orElse
       zeroOfTuple orElse

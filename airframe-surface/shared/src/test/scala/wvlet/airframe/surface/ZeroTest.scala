@@ -47,11 +47,11 @@ class ZeroTest extends SurfaceSpec {
     zeroCheck(Surface.of[Float], 0f)
     zeroCheck(Surface.of[Double], 0.0)
     zeroCheck(Surface.of[String], "")
+  }
 
-    // TODO: Surface.of these types fail in Scala.js
-    //zeroCheck(Surface.of[BigInt], BigInt(0))
-    //zeroCheck(Surface.of[BigInteger], BigInteger.ZERO)
-    true
+  test("bigint") {
+    zeroCheck(Surface.of[BigInt], BigInt(BigInteger.ZERO))
+    zeroCheck(Surface.of[BigInteger], BigInteger.ZERO)
   }
 
   test("support arrays") {

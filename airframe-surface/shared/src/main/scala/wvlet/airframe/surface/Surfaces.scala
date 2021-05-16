@@ -115,24 +115,26 @@ object Primitive {
 
   private[surface] val primitiveTable = {
     val b = Map.newBuilder[Class[_], PrimitiveSurface]
-    b += classOf[jl.Boolean]   -> Boolean
-    b += classOf[Boolean]      -> Boolean
-    b += classOf[jl.Short]     -> Short
-    b += classOf[Short]        -> Short
-    b += classOf[jl.Byte]      -> Byte
-    b += classOf[Byte]         -> Byte
-    b += classOf[jl.Character] -> Char
-    b += classOf[Char]         -> Char
-    b += classOf[jl.Integer]   -> Int
-    b += classOf[Int]          -> Int
-    b += classOf[jl.Float]     -> Float
-    b += classOf[Float]        -> Float
-    b += classOf[jl.Long]      -> Long
-    b += classOf[Long]         -> Long
-    b += classOf[jl.Double]    -> Double
-    b += classOf[Double]       -> Double
-    b += classOf[jl.String]    -> String
-    b += classOf[String]       -> String
+    b += classOf[jl.Boolean]           -> Boolean
+    b += classOf[Boolean]              -> Boolean
+    b += classOf[jl.Short]             -> Short
+    b += classOf[Short]                -> Short
+    b += classOf[jl.Byte]              -> Byte
+    b += classOf[Byte]                 -> Byte
+    b += classOf[jl.Character]         -> Char
+    b += classOf[Char]                 -> Char
+    b += classOf[jl.Integer]           -> Int
+    b += classOf[Int]                  -> Int
+    b += classOf[jl.Float]             -> Float
+    b += classOf[Float]                -> Float
+    b += classOf[jl.Long]              -> Long
+    b += classOf[Long]                 -> Long
+    b += classOf[jl.Double]            -> Double
+    b += classOf[Double]               -> Double
+    b += classOf[jl.String]            -> String
+    b += classOf[String]               -> String
+    b += classOf[BigInt]               -> BigInt
+    b += classOf[java.math.BigInteger] -> BigInteger
     b.result()
   }
 
@@ -180,6 +182,8 @@ object Primitive {
     override def name: String     = "Unit"
     override def fullName: String = "Unit"
   }
+  case object BigInt     extends PrimitiveSurface(classOf[BigInt])
+  case object BigInteger extends PrimitiveSurface(classOf[java.math.BigInteger])
 }
 
 case class Alias(override val name: String, override val fullName: String, ref: Surface)

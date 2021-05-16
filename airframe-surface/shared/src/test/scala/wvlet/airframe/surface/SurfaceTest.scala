@@ -14,6 +14,7 @@
 
 package wvlet.airframe.surface
 
+import java.math.BigInteger
 import scala.concurrent.Future
 import scala.util.Try
 
@@ -234,5 +235,10 @@ class SurfaceTest extends SurfaceSpec {
     s.objectFactory shouldBe defined
     val f = s.objectFactory.map(_.newInstance(Seq(100)))
     f shouldBe Some(F(100))
+  }
+
+  test("bigint") {
+    Surface.of[BigInt]
+    Surface.of[BigInteger]
   }
 }
