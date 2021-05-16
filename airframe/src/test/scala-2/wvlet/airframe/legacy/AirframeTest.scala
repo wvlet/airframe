@@ -251,8 +251,6 @@ import wvlet.airframe.legacy.ServiceMixinExample._
 /**
   */
 class AirframeTest extends AirSpec {
-  scalaJsSupport
-
   test("be able to use wvlet.airframe.Design to define a new design") {
     val d = Design.newDesign
 
@@ -357,7 +355,7 @@ class AirframeTest extends AirSpec {
   }
 
   test("find a session in parameter") {
-    pending
+    pending("todo")
     val session = newDesign
       .bind[Printer].to[ConsolePrinter]
       .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))

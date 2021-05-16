@@ -30,7 +30,6 @@ object SerializationTest extends AirSpec {
   }
 
   test("serialize provider") {
-    import wvlet.airframe.SerializationTest._
 
     val d = newDesign
       .bind[A1].toInstance(A1(1))

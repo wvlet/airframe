@@ -40,7 +40,6 @@ object ObjectCodecTest {
   */
 class ObjectCodecTest extends CodecSpec {
   import wvlet.airframe.codec.ObjectCodecTest._
-  scalaJsSupport
 
   val codec = MessageCodec.of[A1].asInstanceOf[ObjectCodec[A1]]
 
@@ -60,7 +59,7 @@ class ObjectCodecTest extends CodecSpec {
   }
 
   test("populate the default value when missing") {
-    pending
+    pending("TODO")
     val packer = MessagePack.newBufferPacker
     packer.packMapHeader(1)
     packer.packString("i")

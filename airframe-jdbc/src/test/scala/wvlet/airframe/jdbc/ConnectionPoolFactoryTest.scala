@@ -105,7 +105,7 @@ class ConnectionPoolFactoryTest extends AirSpec {
   }
 
   test("use PostgreSQL connection pool") {
-    if (!inTravisCI) pending
+    if (!inTravisCI) pending("TravisCI cannot use PostgreSQL")
 
     d.build[TestConnection] { t => t.test(t.pgPool) }
   }

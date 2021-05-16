@@ -23,7 +23,7 @@ object FactoryBindingLifecycleTest {
   val endCounter    = collection.mutable.Map[Int, AtomicInteger]()
   val threadCounter = new AtomicInteger()
 
-  trait MyThread extends LogSupport {
+  class MyThread extends LogSupport {
     debug("hello MyThread")
     threadCounter.incrementAndGet()
   }
