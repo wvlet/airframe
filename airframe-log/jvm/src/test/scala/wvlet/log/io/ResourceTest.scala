@@ -25,14 +25,14 @@ import wvlet.airspec.AirSpec
 class ResourceTest extends AirSpec {
   test("find files from the current class loader") {
     debug("find files from package")
-    val l = Resource.listResources("wvlet.log.io", { s: String => s.endsWith(".class") })
+    val l = Resource.listResources("wvlet.log.io", { (s: String) => s.endsWith(".class") })
     assert(l.size > 0)
   }
 
   test("find resources from jar files") {
     info("find files from a jar file")
 
-    val l = Resource.listResources("scala.io", { s: String => s.endsWith(".class") })
+    val l = Resource.listResources("scala.io", { (s: String) => s.endsWith(".class") })
     assert(l.size > 0)
     for (each <- l) {
       info(each)

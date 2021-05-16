@@ -57,7 +57,6 @@ object Sample extends LogSupport {
 /**
   */
 class LoggerTest extends Spec {
-  scalaJsSupport
 
   override protected def beforeAll: Unit = {
     Logger("wvlet.log").setLogLevel(LogLevel.TRACE)

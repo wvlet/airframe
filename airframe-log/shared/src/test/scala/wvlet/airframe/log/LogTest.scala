@@ -17,8 +17,6 @@ import wvlet.log.{LogSupport, Spec}
 /**
   */
 class LogTest extends Spec {
-  scalaJsSupport
-
   test("should support initialization") {
     wvlet.airframe.log.init
     debug("hello")

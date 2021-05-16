@@ -22,7 +22,6 @@ import wvlet.log.{LocalLogSupport, LogFormatter, LogLevel, LogSupport, NullHandl
 /**
   */
 class AirframeLogDemo extends AirSpec {
-  scalaJsSupport
 
   class NoOutputHandler(formatter: LogFormatter) extends java.util.logging.Handler {
     override def publish(record: logging.LogRecord): Unit = {
