@@ -263,7 +263,9 @@ private[surface] object SurfaceMacros {
         q"wvlet.airframe.surface.Primitive.String"
       case t if t == typeOf[java.lang.String] =>
         q"wvlet.airframe.surface.Primitive.String"
-      case t if t == typeOf[Unit] => q"wvlet.airframe.surface.Primitive.Unit"
+      case t if t == typeOf[Unit]                 => q"wvlet.airframe.surface.Primitive.Unit"
+      case t if t == typeOf[BigInt]               => q"wvlet.airframe.surface.Primitive.BigInt"
+      case t if t == typeOf[java.math.BigInteger] => q"wvlet.airframe.surface.Primitive.BigInteger"
     }
 
     private val arrayFactory: SurfaceFactory = {
