@@ -50,7 +50,7 @@ class ZeroTest extends SurfaceSpec {
   }
 
   test("bigint") {
-    zeroCheck(Surface.of[BigInt], BigInt(BigInteger.ZERO))
+    zeroCheck(Surface.of[BigInt], BigInt(0))
     zeroCheck(Surface.of[BigInteger], BigInteger.ZERO)
   }
 

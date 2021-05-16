@@ -56,7 +56,7 @@ object Zero extends LogSupport {
       case Primitive.Byte       => 0.toByte
       case Primitive.Short      => 0.toShort
       case Primitive.Char       => 0.toChar
-      case Primitive.BigInt     => BigInt(java.math.BigInteger.ZERO)
+      case Primitive.BigInt     => BigInt(0)
       case Primitive.BigInteger => java.math.BigInteger.ZERO
     }
 
