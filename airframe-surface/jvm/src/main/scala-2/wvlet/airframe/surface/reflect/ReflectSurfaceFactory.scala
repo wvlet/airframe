@@ -352,16 +352,18 @@ object ReflectSurfaceFactory extends LogSupport {
         genericSurfaceFactory
 
     private def primitiveTypeFactory: SurfaceMatcher = {
-      case t if t =:= typeOf[String]  => Primitive.String
-      case t if t =:= typeOf[Boolean] => Primitive.Boolean
-      case t if t =:= typeOf[Int]     => Primitive.Int
-      case t if t =:= typeOf[Long]    => Primitive.Long
-      case t if t =:= typeOf[Float]   => Primitive.Float
-      case t if t =:= typeOf[Double]  => Primitive.Double
-      case t if t =:= typeOf[Short]   => Primitive.Short
-      case t if t =:= typeOf[Byte]    => Primitive.Byte
-      case t if t =:= typeOf[Char]    => Primitive.Char
-      case t if t =:= typeOf[Unit]    => Primitive.Unit
+      case t if t =:= typeOf[String]               => Primitive.String
+      case t if t =:= typeOf[Boolean]              => Primitive.Boolean
+      case t if t =:= typeOf[Int]                  => Primitive.Int
+      case t if t =:= typeOf[Long]                 => Primitive.Long
+      case t if t =:= typeOf[Float]                => Primitive.Float
+      case t if t =:= typeOf[Double]               => Primitive.Double
+      case t if t =:= typeOf[Short]                => Primitive.Short
+      case t if t =:= typeOf[Byte]                 => Primitive.Byte
+      case t if t =:= typeOf[Char]                 => Primitive.Char
+      case t if t =:= typeOf[Unit]                 => Primitive.Unit
+      case t if t =:= typeOf[BigInt]               => Primitive.BigInt
+      case t if t =:= typeOf[java.math.BigInteger] => Primitive.BigInteger
     }
 
     private def typeArgsOf(t: ru.Type): List[ru.Type] =
