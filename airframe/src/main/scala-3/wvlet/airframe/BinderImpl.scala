@@ -62,11 +62,12 @@ private[airframe] object BinderMacros {
         val self = ${binder}
         val d1 = Surface.of[D1]
         self.design.addBinding[A](ProviderBinding(
-          DependencyFactory(self.from, Seq(d1), ${factory}),
+          DependencyFactory(self.from, Seq(null), ${factory}),
           ${Expr.apply(singleton)},
           ${Expr.apply(eager)},
           self.sourceCode)
         )
+        null.asInstanceOf[DesignWithContext[A]]
       }
     }
   }

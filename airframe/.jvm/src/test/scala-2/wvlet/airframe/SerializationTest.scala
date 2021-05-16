@@ -14,36 +14,35 @@
 package wvlet.airframe
 
 import wvlet.airspec.AirSpec
-import wvlet.log.LogSupport
 
-object SerializationTest extends LogSupport {
+/**
+  */
+object SerializationTest extends AirSpec {
   case class A1(v: Int = 0)
-  case class App(a1: A1) extends LogSupport
+  case class MyApp(a1: A1)
 
   val a1 = A1(1)
 
-  def provider1(a1: A1): App = {
-    val app = App(a1)
+  def provider1(a1: A1): MyApp = {
+    val app = MyApp(a1)
     debug(s"Created ${app} from ${a1}")
     app
   }
-  val d = newDesign
-    .bind[A1].toInstance(A1(1))
-    .bind[App].toProvider(provider1 _)
-}
 
-import DesignSerializationTest._
-
-class SerializationTest extends AirSpec {
   test("serialize provider") {
     import wvlet.airframe.SerializationTest._
-    val b  = serialize(d)
-    val ds = deserialize(b)
+
+    val d = newDesign
+      .bind[A1].toInstance(A1(1))
+      .bind[MyApp].toProvider(provider1 _)
+
+    val b  = DesignSerializationTest.serialize(d)
+    val ds = DesignSerializationTest.deserialize(b)
     ds shouldBe d
 
     val s = ds.newSession
     s.build[A1] shouldBe A1(1)
-    s.build[App] shouldBe App(A1(1))
+    s.build[MyApp] shouldBe MyApp(A1(1))
   }
 
   test("serialize provider that involves toInstance of local var") {
@@ -58,8 +57,8 @@ class SerializationTest extends AirSpec {
       .bind[D5].toInstance(d5)
       .bind[App].toProvider(provider5 _)
 
-    val b  = serialize(d)
-    val ds = deserialize(b)
+    val b  = DesignSerializationTest.serialize(d)
+    val ds = DesignSerializationTest.deserialize(b)
     ds shouldBe d
   }
 }

@@ -89,7 +89,7 @@ class ShellTest extends AirSpec {
   }
 
   test("launch a remote process as a daemon") {
-    pending // disabled because ssh cannot be used in travis CI
+    pending("disabled because ssh cannot be used in travis CI")
     Shell.launchRemoteDaemon("localhost", "sleep 5")
   }
 

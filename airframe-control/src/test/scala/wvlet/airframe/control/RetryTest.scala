@@ -21,7 +21,6 @@ import scala.concurrent.TimeoutException
 /**
   */
 class RetryTest extends AirSpec {
-  scalaJsSupport
 
   test("support backoff retry") {
     var count = 0
@@ -118,7 +117,7 @@ class RetryTest extends AirSpec {
 
     var count   = 0
     var checked = false
-    r.beforeRetry { ctx: RetryContext =>
+    r.beforeRetry { (ctx: RetryContext) =>
       ctx.context shouldBe Some("hello world")
       checked = true
     }
@@ -141,7 +140,7 @@ class RetryTest extends AirSpec {
         .withErrorClassifier { case e: TimeoutException =>
           ResultClass.retryableFailure(e).withExtraWaitMillis(100)
         }
-        .beforeRetry { ctx: RetryContext =>
+        .beforeRetry { (ctx: RetryContext) =>
           debug(s"${ctx.retryCount} ${ctx.nextWaitMillis}")
           ctx.nextWaitMillis shouldBe 10 + 100
         }
@@ -159,7 +158,7 @@ class RetryTest extends AirSpec {
         .withErrorClassifier { case e: TimeoutException =>
           ResultClass.retryableFailure(e).withExtraWaitFactor(0.2)
         }
-        .beforeRetry { ctx: RetryContext =>
+        .beforeRetry { (ctx: RetryContext) =>
           debug(s"${ctx.retryCount} ${ctx.nextWaitMillis}")
           ctx.nextWaitMillis shouldBe 10 + 2
         }

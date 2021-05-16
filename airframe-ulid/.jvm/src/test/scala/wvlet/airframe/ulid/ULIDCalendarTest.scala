@@ -24,7 +24,7 @@ import scala.util.Random
 class ULIDCalendarTest extends AirSpec with PropertyCheck {
   test("timestamp valid") {
     import org.scalacheck.Gen
-    forAll(Gen.calendar) { cal: Calendar =>
+    forAll(Gen.calendar) { (cal: Calendar) =>
       if (
         cal.getTimeInMillis > ULID.MinTime
         && cal.getTimeInMillis < ULID.MaxTime

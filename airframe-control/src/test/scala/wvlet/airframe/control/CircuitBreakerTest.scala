@@ -4,7 +4,6 @@ import wvlet.airspec._
 import java.util.concurrent.TimeoutException
 
 class CircuitBreakerTest extends AirSpec {
-  scalaJsSupport
 
   test("support changing states") {
     val cb = CircuitBreaker.default
