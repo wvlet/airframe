@@ -101,6 +101,44 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     roundTripTest[String](Surface.of[String], DataType.STRING)
   }
 
+  test("support bigint") {
+    val codec = MessageCodec.of[BigInt]
+    forAll { (v: Long) =>
+      val bi0     = BigInt(v)
+      val msgpack = codec.toMsgPack(bi0)
+      val bi1     = codec.fromMsgPack(msgpack)
+      bi0 shouldBe bi1
+    }
+
+    test("large bigint") {
+      forAll { (v: Long) =>
+        val bi0     = BigInt(Long.MaxValue) + BigInt(v)
+        val msgpack = codec.toMsgPack(bi0)
+        val bi1     = codec.fromMsgPack(msgpack)
+        bi0 shouldBe bi1
+      }
+    }
+  }
+
+  test("support BigInteger") {
+    val codec = MessageCodec.of[BigInteger]
+    forAll { (v: Long) =>
+      val bi0     = BigInteger.valueOf(v)
+      val msgpack = codec.toMsgPack(bi0)
+      val bi1     = codec.fromMsgPack(msgpack)
+      bi0 shouldBe bi1
+    }
+
+    test("large BigInteger") {
+      forAll { (v: Long) =>
+        val bi0     = BigInteger.valueOf(Long.MaxValue).add(BigInteger.valueOf(v))
+        val msgpack = codec.toMsgPack(bi0)
+        val bi1     = codec.fromMsgPack(msgpack)
+        bi0 shouldBe bi1
+      }
+    }
+  }
+
   test("support arrays") {
     arrayRoundTripTest[Byte](Surface.of[Byte])
     arrayRoundTripTest[Char](Surface.of[Char])
