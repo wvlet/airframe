@@ -9,7 +9,7 @@ title: AirSpec: Testing Framework
 - [GitHub: AirSpec](https://github.com/wvlet/airframe/tree/master/airspec)
 - [Background and Motivation](#background--motivation)
 
-AirSpec uses pure Scala functions for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are supported optionally.
+AirSpec uses just `test("...") { ... }` syntax for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are supported optionally.
 
 ## Features
 
@@ -24,13 +24,7 @@ AirSpec uses pure Scala functions for writing test cases. This style requires no
   - The lifecycle (e.g., start and shutdown) of the injected services will be properly managed.
 - Handy keyword search for _sbt_: `> testOnly -- (a pattern for class or method names)`
 - Property-based testing integrated with [ScalaCheck](https://www.scalacheck.org/)
-- Scala 2.11, 2.12, 2.13, and Scala.js support
-
-AirSpec is already feature complete and ready to use in production. Actually, all modules of Airframe, including AirSpec, are tested by using AirSpec.
-For providing better testing experience, we are planning to add more features (e.g., better reporting, power assertions):
-
-- [Milestone: Airframe 20](https://github.com/wvlet/airframe/issues/839)
-- [Milestone: AirSpec 19](https://github.com/wvlet/airframe/issues/606)
+- Scala 2.11, 2.12, 2.13, 3.0, and Scala.js support
 
 To start using AirSpec, read [Quick Start](#quick-start).
 
@@ -102,7 +96,7 @@ AirSpec supports basic assertions listed below:
 |`pendingUntil("reason")` | pending until fixing some blocking issues|
 |`skip("reason")`         | Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js) |
 
-Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.
+AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.
 
 ### Examples
 
@@ -397,7 +391,7 @@ Add `wvlet.airspec.spi.PropertyCheck` trait to your spec, and use `forAll` metho
 __build.sbt__
 ```scala
 // Use %%% for Scala.js
-libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.1" % "test"
+libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.15.4" % "test"
 ```
 
 ```scala
@@ -405,7 +399,7 @@ import wvlet.airspec._
 
 class PropertyBasedTest extends AirSpec with PropertyCheck {
   test("testAllInt") {
-    forAll{ i:Int => i.isValidInt shouldBe true }
+    forAll{ (i:Int) => i.isValidInt shouldBe true }
   }
 
   test("testCommutativity") {
