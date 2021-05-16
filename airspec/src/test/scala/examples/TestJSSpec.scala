@@ -36,7 +36,9 @@ class TestJSSpec extends AirSpec with LogSupport {
 }
 
 class FlexWordSpecTest extends AirSpec {
-  test("should support long method names") {}
+  test("should support long method names") {
+    true
+  }
 }
 
 class NoTestTest extends AirSpec {

@@ -72,6 +72,10 @@ object TestObjSpec extends AirSpec with LogSupport {
 }
 
 class WordSpecTest extends AirSpec {
-  test("should have a natural language description") {}
-  test("should support arbitrary texts") {}
+  test("should have a natural language description") {
+    true
+  }
+  test("should support arbitrary texts") {
+    true
+  }
 }

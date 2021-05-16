@@ -183,7 +183,7 @@ class ShouldBeTest extends AirSpec {
       (Array(1f), Array(2f)),
       (Array(1.0), Array(2.0)),
       (Array(true, false), Array(false, true)),
-      (Array(1, 1L, "hello"), Array()),
+      (Array(1, 1L, "hello"), Array[Any]()),
       (Array(1, 2, Array(1, 2)), Array(1, 2, Array(1, 3))),
       (MyObj(1, "a"), MyObj(1, "b"))
     )

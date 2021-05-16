@@ -21,9 +21,7 @@ import wvlet.log.LogSupport
 
 case class MyServerConfig(name: String)
 
-trait MyServer extends LogSupport {
-  val config  = bind[MyServerConfig]
-  val counter = bind[AtomicInteger]
+class MyServer(val config: MyServerConfig, val counter: AtomicInteger) extends LogSupport {
 
   @PostConstruct
   def start: Unit = {

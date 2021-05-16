@@ -19,10 +19,9 @@ import wvlet.airspec.AirSpec
 /**
   */
 class PropertyTest extends AirSpec with PropertyCheck {
-  test("hello") {}
 
   test("forAll(Int)") {
-    forAll { i: Int => i.isValidInt shouldBe true }
+    forAll { (i: Int) => i.isValidInt shouldBe true }
   }
 
   test("forAll(Int, String)") {
