@@ -6,6 +6,15 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.5.2
+
+This is a minor bug fix release for AirSpec and surfce.
+
+- airframe-surface, codec: Add BigInt, BigInteger support ([#1666](https://github.com/wvlet/airframe/issues/1666)) [[8f99f5272](https://github.com/wvlet/airframe/commit/8f99f5272)]
+- airframe-surface: Fix bitLength < 2 error ([#1667](https://github.com/wvlet/airframe/issues/1667)) [[d0fe7b1a7](https://github.com/wvlet/airframe/commit/d0fe7b1a7)]
+- AirSpec requires scala-reflect for Scala 2.x ([#1665](https://github.com/wvlet/airframe/issues/1665)) [[58c931e86](https://github.com/wvlet/airframe/commit/58c931e86)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.37.1 ([#1652](https://github.com/wvlet/airframe/issues/1652)) [[8341a575d](https://github.com/wvlet/airframe/commit/8341a575d)]
+
 ## 21.5.1
 
 ### Major Changes
