@@ -11,17 +11,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.log
-import wvlet.log.{LogSupport, Spec}
+package wvlet.airframe
 
-/**
-  */
-class LogTest extends Spec {
-  test("should support initialization") {
-    wvlet.airframe.log.init
-    debug("hello")
-
-    wvlet.airframe.log.initNoColor
-    debug("hello")
-  }
-}

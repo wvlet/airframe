@@ -1,13 +1,33 @@
 package wvlet.airspec
 
-import wvlet.airframe.{Design, LazyF0}
+import wvlet.airframe.{Design, LazyF0, SourceCode}
 import wvlet.airframe.surface.Surface
+import wvlet.airspec.spi.{AssertionFailure, InterceptException}
+
+import scala.reflect.ClassTag
 
 /**
   */
 private[airspec] trait AirSpecSpiCompat { self: AirSpecSpi =>
   //protected def scalaJsSupport: Unit = ???
 }
+
+//private[airspec] trait AssertCompat {
+//  inline protected def intercept[E <: Throwable](block: => Unit)(implicit code: SourceCode): E = {
+//    val tpe = implicitly[ClassTag[E]]
+//
+//    try {
+//      block
+//      val name = tpe.runtimeClass.getName
+//      throw InterceptException(s"Expected a ${name} to be thrown", code)
+//    } catch {
+//      case ex: InterceptException =>
+//        throw new AssertionFailure(ex.message, code)
+//      case ex: Throwable if tpe.runtimeClass.isInstance(ex) =>
+//        ex.asInstanceOf[E]
+//    }
+//  }
+//}
 
 class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design) extends wvlet.log.LogSupport {
   inline def apply[R](body: => R): Unit = ${ AirSpecMacros.test0Impl[R]('this, 'body) }
@@ -60,6 +80,7 @@ object AirSpecTestBuilder extends wvlet.log.LogSupport {
 
 private[airspec] object AirSpecMacros {
   import scala.quoted._
+
 
   def test0Impl[R](self: Expr[AirSpecTestBuilder], body: Expr[_])(using Type[R], Quotes): Expr[Unit] = {
     '{

@@ -57,7 +57,6 @@ object Sample extends LogSupport {
 /**
   */
 class LoggerTest extends Spec {
-  scalaJsSupport
 
   override protected def beforeAll: Unit = {
     Logger("wvlet.log").setLogLevel(LogLevel.TRACE)
@@ -180,7 +179,7 @@ class LoggerTest extends Spec {
 
   test("use succinct name when used with anonymous trait") {
     if (LogEnv.isScalaJS) {
-      pending
+      pending("Scala.js cannot get a logger name")
     } else {
       val l = new Sample with LogSupport {
         self =>

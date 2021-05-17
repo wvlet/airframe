@@ -21,7 +21,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class CloseableShutdownHookTest extends AirSpec {
-  scalaJsSupport
 
   class A extends AutoCloseable {
     val closeIsCalled = new AtomicBoolean(false)

@@ -39,7 +39,9 @@ object TaggedBindingTest extends AirSpec {
     val d = Design.newDesign
       .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
       .bind[Fruit @@ Banana].toInstance(Fruit("banana"))
-      .bind[Fruit @@ Lemon].toProvider { (apple: Fruit @@ Apple) => Fruit(s"lemon+${apple.name}") }
+      .bind[Fruit @@ Lemon].toProvider { (apple: Fruit @@ Apple) =>
+        Fruit(s"lemon+${apple.name}").asInstanceOf[Fruit @@ Lemon]
+      }
 
     pending("Tagged type within constructor doesn't work in Scala.js")
 //    d.build[TaggedBinding] { tagged: TaggedBinding =>

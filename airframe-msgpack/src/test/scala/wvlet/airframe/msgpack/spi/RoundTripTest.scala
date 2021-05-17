@@ -26,8 +26,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class RoundTripTest extends AirSpec with PropertyCheck {
-  scalaJsSupport
-
   val buf = ByteArrayBuffer.newBuffer(1024)
 
   protected def rawRoundtrip[A, B](v: A)(pack: (WriteCursor, A) => Unit)(unpack: ReadCursor => B): B = {
@@ -194,7 +192,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
   }
 
   test("support Fixnum") {
-    forAll(Gen.chooseNum[Byte](-32, 127)) { v: Byte => testByte(v) }
+    forAll(Gen.chooseNum[Byte](-32, 127)) { (v: Byte) => testByte(v) }
   }
 
   test("support Byte") {
@@ -202,9 +200,9 @@ class RoundTripTest extends AirSpec with PropertyCheck {
   }
 
   test("support Short") {
-    forAll { v: Short => testShort(v) }
-    forAll(Gen.chooseNum[Short]((Byte.MaxValue.toShort + 1).toShort, (1 << 8).toShort)) { v: Short => testShort(v) }
-    forAll(Gen.chooseNum[Short]((1 << 8).toShort, Short.MaxValue)) { v: Short => testShort(v) }
+    forAll { (v: Short) => testShort(v) }
+    forAll(Gen.chooseNum[Short]((Byte.MaxValue.toShort + 1).toShort, (1 << 8).toShort)) { (v: Short) => testShort(v) }
+    forAll(Gen.chooseNum[Short]((1 << 8).toShort, Short.MaxValue)) { (v: Short) => testShort(v) }
   }
 
   test("support Int") {
@@ -326,7 +324,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
   }
 
   test("support String") {
-    forAll(arbitrary[String]) { v: String => // Generate unicode strings
+    forAll(arbitrary[String]) { (v: String) => // Generate unicode strings
       roundtrip(v) { OffsetPacker.packString(_, _) } { OffsetUnpacker.unpackString(_) }
     }
   }

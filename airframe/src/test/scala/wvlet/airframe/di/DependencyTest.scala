@@ -16,7 +16,6 @@ object DependencyTest1 {
 }
 
 class DependencyTest extends AirSpec {
-  scalaJsSupport
 
   test("show missing dependencies") {
     val d = Design.newSilentDesign

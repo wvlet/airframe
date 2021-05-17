@@ -27,7 +27,6 @@ object ControlTest {
 /**
   */
 class ControlTest extends AirSpec {
-  scalaJsSupport
 
   test("have loan pattern") {
     val out = new ControlTest.A

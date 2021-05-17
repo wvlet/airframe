@@ -24,7 +24,9 @@ class PathDependentTypeTest extends AirSpec {
     val s = Surface.of[JdbcProfile#Backend#Database]
 
     val d = Design.newSilentDesign
-      .bind[JdbcProfile#Backend#Database].toInstance(new PathDependentType.MyBackend.DatabaseDef)
+      .bind[JdbcProfile#Backend#Database].toInstance(
+        new PathDependentType.MyBackend.DatabaseDef().asInstanceOf[JdbcProfile#Backend#Database]
+      )
 
     d.build[JdbcService] { s => s.p.hello shouldBe "hello jdbc" }
   }

@@ -46,8 +46,6 @@ class LifeCycleOrder(v: Int) {}
 /**
   */
 object LifeCycleManagerTest extends AirSpec {
-  scalaJsSupport
-
   private val counterDesign =
     Design.newSilentDesign
       .bind[CounterService].toSingleton

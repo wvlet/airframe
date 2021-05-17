@@ -44,7 +44,7 @@ object CloseableShutdownHookTest extends AirSpec {
     val x: A1 = Design.newSilentDesign
       .bind[A]
       .onShutdown { x => onShutdownIsCalled.set(true) }
-      .run { a1: A1 => a1 }
+      .run { (a1: A1) => a1 }
 
     onShutdownIsCalled.get shouldBe true
     x.a.closeIsCalled.get shouldBe false

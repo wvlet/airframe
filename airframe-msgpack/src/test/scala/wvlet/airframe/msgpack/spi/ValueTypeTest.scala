@@ -19,7 +19,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class ValueTypeTest extends AirSpec {
-  scalaJsSupport
 
   test("have name") {
     val vt = Seq(

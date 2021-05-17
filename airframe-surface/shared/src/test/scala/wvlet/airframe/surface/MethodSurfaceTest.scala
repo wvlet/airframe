@@ -49,7 +49,6 @@ import wvlet.airframe.surface.MethodExamples._
 /**
   */
 class MethodSurfaceTest extends SurfaceSpec {
-  scalaJsSupport
 
   test("list methods") {
     val m = Surface.methodsOf[A]
