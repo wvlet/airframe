@@ -41,8 +41,6 @@ object HigherKindTypeTest {
 import HigherKindTypeTest._
 
 class HigherKindTypeTest extends AirSpec {
-  scalaJsSupport
-
   val d =
     newSilentDesign
       .bind[HolderInterpreted].toInstance(interpreted)

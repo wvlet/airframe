@@ -11,30 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.legacy
+package wvlet.airframe.surface.reflect
 
-import wvlet.airspec.AirSpec
-
-import wvlet.airframe._
-
-object BindTest {
-  class X {
-    def close(): Unit = {}
-  }
-
-  trait Bind {
-    val x = bind[X] { new X }.onShutdown { _.close() }
-  }
-}
+import wvlet.log.LogSupport
+import wvlet.airframe.surface._
 
 /**
   */
-class BindTest extends AirSpec {
-  import BindTest._
-
-  test("allow provider based initialization") {
-    val s = newSilentDesign.build[Bind] { b =>
-      //
-    }
-  }
+object RuntimeSurface extends LogSupport {
+  def of[A]: Surface = ???
 }

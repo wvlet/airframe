@@ -22,8 +22,6 @@ import wvlet.airframe._
 /**
   */
 class BindLocalTest extends AirSpec {
-  scalaJsSupport
-
   import BindLocalTest._
 
   class LocalX(counter: AtomicInteger) extends AutoCloseable {

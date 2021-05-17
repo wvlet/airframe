@@ -31,8 +31,6 @@ import wvlet.airframe.codec.ValueCodecTest._
 /**
   */
 class ValueCodecTest extends CodecSpec {
-  scalaJsSupport
-
   test("support MessagePack values") {
     roundtrip(ValueCodec, ValueFactory.newInteger(1), DataType.ANY)
     roundtrip(ValueCodec, ValueFactory.newString("hello msgpack"), DataType.ANY)

@@ -39,7 +39,7 @@ object RxTest extends AirSpec {
     val rx: Rx[String] = v.map(x => s"count: ${x}").withName("sample rx")
     val updateCount    = new AtomicInteger(0)
     val value          = new AtomicReference[String]()
-    val subscription = rx.subscribe { x: String =>
+    val subscription = rx.subscribe { (x: String) =>
       updateCount.incrementAndGet()
       value.set(x)
     }
@@ -74,8 +74,9 @@ object RxTest extends AirSpec {
     v.get shouldBe 2
   }
 
-  test("bind rx", design = Design.newDesign.bind[RxVar[String]].toInstance(Rx.variable("Hello"))) { v: RxVar[String] =>
-    v.get shouldBe "Hello"
+  test("bind rx", design = Design.newDesign.bind[RxVar[String]].toInstance(Rx.variable("Hello"))) {
+    (v: RxVar[String]) =>
+      v.get shouldBe "Hello"
   }
 
   test("force update RxVar") {
@@ -336,7 +337,7 @@ object RxTest extends AirSpec {
     val rx = fe.toRx
 
     pending("requires async test")
-    rx.run { x: Option[Exception] =>
+    rx.run { (x: Option[Exception]) =>
       x match {
         case None => // ok
         case _    => fail()

@@ -22,8 +22,6 @@ case class ModelWithRequiredParam(@required id: String, name: String) {
 /**
   */
 class RequiredParamTest extends AirSpec {
-  scalaJsSupport
-
   test("find required annotation") {
     val s      = Surface.of[ModelWithRequiredParam]
     val p_id   = s.params(0)

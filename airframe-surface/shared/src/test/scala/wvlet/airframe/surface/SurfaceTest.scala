@@ -52,8 +52,6 @@ import wvlet.airframe.surface.Examples._
 /**
   */
 class SurfaceTest extends SurfaceSpec {
-  scalaJsSupport
-
   test("resolve types") {
     val a = check(Surface.of[A], "A")
     assert(a.isAlias == false)

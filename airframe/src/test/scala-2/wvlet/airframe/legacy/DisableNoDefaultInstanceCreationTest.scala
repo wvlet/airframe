@@ -24,7 +24,6 @@ object DisableNoDefaultInstanceCreationTest {
 
 class DisableNoDefaultInstanceCreationTest extends AirSpec {
   import DisableNoDefaultInstanceCreationTest._
-  scalaJsSupport
 
   test("disable implicit instance creation") {
     val d = Design.newDesign.bind[Component].toSingleton.noDefaultInstanceInjection

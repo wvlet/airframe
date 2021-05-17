@@ -65,8 +65,6 @@ import SingletonTest._
 /**
   */
 class SingletonTest extends AirSpec {
-  scalaJsSupport
-
   val d =
     newDesign
       .bind[TraitCounter].toInstance(new AtomicInteger(0))

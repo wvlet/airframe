@@ -21,8 +21,6 @@ import java.math.BigInteger
 /**
   */
 class ZeroTest extends SurfaceSpec {
-  scalaJsSupport
-
   import ZeroTest._
 
   protected def zeroCheck[P](surface: Surface, v: P): P = {

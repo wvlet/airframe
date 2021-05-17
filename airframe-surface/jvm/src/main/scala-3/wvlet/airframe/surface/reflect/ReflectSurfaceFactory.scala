@@ -11,5 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.surface.reflect
 
+import wvlet.log.LogSupport
+import wvlet.airframe.surface._
+
+object ReflectSurfaceFactory {
+  def ofClass(cl: Class[_]): Surface = ???
+  def methodsOfClass(cl: Class[_]): Seq[MethodSurface] = ???
+}

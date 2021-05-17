@@ -20,8 +20,6 @@ import wvlet.airframe._
 /**
   */
 class SessionBuilderTest extends AirSpec {
-  scalaJsSupport
-
   val d = newSilentDesign
 
   test("create a named session") {

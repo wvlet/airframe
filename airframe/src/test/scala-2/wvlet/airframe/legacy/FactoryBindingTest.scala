@@ -59,8 +59,6 @@ object FactoryBindingTest {
 /**
   */
 class FactoryBindingTest extends AirSpec {
-  scalaJsSupport
-
   import FactoryBindingTest._
 
   val c1 = MyConfig(10)

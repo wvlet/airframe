@@ -107,8 +107,6 @@ object ChildSessionTest {
 /**
   */
 class ChildSessionTest extends AirSpec {
-  scalaJsSupport
-
   import ChildSessionTest._
   test("support creating a child session") {
     requestCount.get() shouldBe 0

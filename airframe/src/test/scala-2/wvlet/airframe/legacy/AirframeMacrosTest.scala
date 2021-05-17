@@ -45,8 +45,6 @@ class ConcreteClass {
 /**
   */
 class AirframeMacrosTest extends AirSpec {
-  scalaJsSupport
-
   test("build trait at compile time") {
     val session = newDesign.newSession
     session.build[NonAbstractTrait]

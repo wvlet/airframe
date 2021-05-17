@@ -24,8 +24,6 @@ object ImplicitArgTest {
 /**
   */
 class ImplicitArgTest extends AirSpec {
-  scalaJsSupport
-
   import ImplicitArgTest._
 
   test("support implicit args") {

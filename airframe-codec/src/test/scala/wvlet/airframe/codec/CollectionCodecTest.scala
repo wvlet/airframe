@@ -23,8 +23,6 @@ import scala.jdk.CollectionConverters._
 /**
   */
 class CollectionCodecTest extends CodecSpec {
-  scalaJsSupport
-
   test("support Map type") {
     val v = Map("id" -> 1)
     roundtrip(Surface.of[Map[String, Int]], v, DataType.ANY)

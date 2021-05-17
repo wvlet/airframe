@@ -20,8 +20,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class MetricsCodecTest extends AirSpec {
-  scalaJsSupport
-
   test("support DataSize") {
     val codec = MessageCodec.of[DataSize]
 

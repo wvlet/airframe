@@ -22,7 +22,6 @@ import wvlet.airframe._
 /**
   */
 class MapBindingTest extends AirSpec {
-  scalaJsSupport
   import MapBindingTest._
 
   test("support map binding") {

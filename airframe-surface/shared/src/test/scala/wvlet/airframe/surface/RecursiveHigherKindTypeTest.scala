@@ -32,7 +32,6 @@ object RecursiveHigherKindTypeTest {
 /**
   */
 class RecursiveHigherKindTypeTest extends SurfaceSpec {
-  scalaJsSupport
 
   import RecursiveHigherKindTypeTest._
   import Holder.BySkinny
