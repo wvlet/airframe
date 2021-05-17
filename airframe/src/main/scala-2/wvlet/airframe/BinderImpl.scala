@@ -1,11 +1,8 @@
 package wvlet.airframe
 
-import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.airframe.AirframeMacros._
-import wvlet.airframe.lifecycle.{AFTER_START, BEFORE_SHUTDOWN, ON_INIT, ON_INJECT, ON_SHUTDOWN, ON_START}
-import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
-import wvlet.airframe.Binder._
+
 import scala.language.experimental.macros
 
 /**
