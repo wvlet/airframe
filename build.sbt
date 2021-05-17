@@ -106,8 +106,8 @@ val buildSettings = Seq[Setting[_]](
   },
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(
-    "org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test,
-    "org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Test
+    ("org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test).cross(CrossVersion.for3Use2_13),
+    "org.scalacheck"      %%% "scalacheck" % SCALACHECK_VERSION % Test
   ) ++ {
     if (DOTTY)
       Seq.empty
@@ -574,7 +574,7 @@ lazy val log: sbtcrossproject.CrossProject =
     .jsSettings(
       jsBuildSettings,
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION
+        ("org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION).cross(CrossVersion.for3Use2_13)
       )
     )
 
@@ -609,7 +609,8 @@ lazy val msgpack =
     )
     .jsSettings(
       jsBuildSettings,
-      libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % JS_JAVA_TIME_VERSION
+      libraryDependencies +=
+        ("org.scala-js" %%% "scalajs-java-time" % JS_JAVA_TIME_VERSION).cross(CrossVersion.for3Use2_13)
     )
     .dependsOn(log, json)
 
@@ -1131,7 +1132,7 @@ lazy val airspecLog =
     .jsSettings(
       airspecJSBuildSettings,
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION
+        ("org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION).cross(CrossVersion.for3Use2_13)
       )
     )
 
@@ -1235,8 +1236,8 @@ lazy val airspec =
         .filter(x => x._2 != "JS_DEPENDENCIES"),
       Compile / packageSrc / mappings ++= (airspecDepsJS / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
-        "org.scala-js"        %% "scalajs-test-interface" % scalaJSVersion,
-        "org.portable-scala" %%% "portable-scala-reflect" % "1.1.1"
+        ("org.scala-js"        %% "scalajs-test-interface" % scalaJSVersion).cross(CrossVersion.for3Use2_13),
+        ("org.portable-scala" %%% "portable-scala-reflect" % "1.1.1").cross(CrossVersion.for3Use2_13)
       )
     )
     .dependsOn(airspecDeps % Provided) // Use Provided dependency for bloop, and remove it later with pomPostProcess
