@@ -28,8 +28,6 @@ object TaggedTypeTest {
 
 import TaggedTypeTest._
 class TaggedTypeTest extends SurfaceSpec {
-  scalaJsSupport
-
   test("pass sanity check") {
     val e: Person @@ Employee = new Person(1, "leo").taggedWith[Employee]
     val e2: Person @@ Guest   = new Person(2, "yui")

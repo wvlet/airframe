@@ -21,8 +21,6 @@ import scala.concurrent.duration._
 /**
   */
 class ElapsedTimeTest extends AirSpec {
-  scalaJsSupport
-
   case class Example(str: String, value: Double, unit: TimeUnit)
 
   val examples = Seq(
@@ -186,5 +184,5 @@ class ElapsedTimeTest extends AirSpec {
     assert(parse("1h").compareTo(parse("1d")) <= 0)
   }
 
-  test("support rounding") {}
+  test("support rounding")[Any] {}
 }

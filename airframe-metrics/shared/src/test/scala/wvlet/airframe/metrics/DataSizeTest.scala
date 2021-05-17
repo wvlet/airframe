@@ -18,8 +18,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class DataSizeTest extends AirSpec {
-  scalaJsSupport
-
   import DataSize._
 
   test("parse string") {

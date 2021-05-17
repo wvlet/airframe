@@ -24,8 +24,6 @@ object RecursiveSurfaceTest {
 /**
   */
 class RecursiveSurfaceTest extends SurfaceSpec {
-  scalaJsSupport
-
   import RecursiveSurfaceTest._
 
   test("find surface from full type name string") {
