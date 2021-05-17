@@ -222,6 +222,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       val typeArgs = typeArgsOf(t).map(surfaceOf(_))
       val methodParams = constructorParametersOf(t)
       val isStatic = !t.typeSymbol.flags.is(Flags.Local)
+      // TODO: This code doesn't work for Scala.js + Scala 3.0.0
       '{
         new wvlet.airframe.surface.reflect.RuntimeGenericSurface(
           ${clsOf(t)},
@@ -303,8 +304,9 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
         val mod = Expr(modifierBitMaskOf(m))
         val owner = surfaceOf(t)
         val name = Expr(m.name)
-         val ret = surfaceOf(df.returnTpt.tpe)
+        val ret = surfaceOf(df.returnTpt.tpe)
         val args = methodParametersOf(t, m)
+        // TODO: This code doesn't work for Scala.js + Scala 3.0.0
         '{ wvlet.airframe.surface.reflect.ReflectMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq) }
     }
     Expr.ofSeq(methodSurfaces)
