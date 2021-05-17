@@ -20,8 +20,6 @@ import wvlet.airframe.ulid.ULID
 /**
   */
 class ScalaStandardCodecTest extends CodecSpec {
-  scalaJsSupport
-
   test("support Option[A]") {
     val v = Some("hello")
     roundtrip(Surface.of[Option[String]], Some("hello"))

@@ -78,8 +78,6 @@ trait LifeCycleOrder {
 /**
   */
 class LifeCycleManagerTest extends AirSpec {
-  scalaJsSupport
-
   test("call init hook") {
     val c = newSilentDesign.bind[CounterService].toSingleton.newSession.build[CounterService]
     c.initCount shouldBe 1

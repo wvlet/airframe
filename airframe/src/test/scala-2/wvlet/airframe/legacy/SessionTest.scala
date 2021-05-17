@@ -34,8 +34,6 @@ trait DesignBindExample {
 /**
   */
 class SessionTest extends AirSpec {
-  scalaJsSupport
-
   val d1 =
     newDesign
       .bind[HelloBind].toSingleton

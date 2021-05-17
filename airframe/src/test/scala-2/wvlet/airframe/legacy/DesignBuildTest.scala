@@ -20,8 +20,6 @@ import wvlet.airframe._
 /**
   */
 class DesignBuildTest extends AirSpec {
-  scalaJsSupport
-
   test("visible outer variables in code block") {
     val helloDesign = "hello"
     val d = newSilentDesign

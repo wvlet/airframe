@@ -19,8 +19,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class DataTypeTest extends AirSpec {
-  scalaJsSupport
-
   test("have primitive types") {
     DataType.primitiveTypes.contains(DataType.NIL) shouldBe true
     DataType.primitiveTypes.contains(DataType.INTEGER) shouldBe true

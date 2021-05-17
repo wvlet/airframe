@@ -21,8 +21,6 @@ import wvlet.airframe._
 /**
   */
 class AssistedInjectionTest extends AirSpec {
-  scalaJsSupport
-
   import AssistedInjectionTest._
 
   test("support assisted injection") {

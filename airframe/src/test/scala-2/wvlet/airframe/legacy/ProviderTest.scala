@@ -115,8 +115,6 @@ trait PS5 {
 /**
   */
 class ProviderTest extends AirSpec {
-  scalaJsSupport
-
   test("build singletons with provider") {
     val p = providerDesign.newSession.build[ProviderExample]
 

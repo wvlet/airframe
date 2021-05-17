@@ -30,8 +30,6 @@ object BindTest {
 /**
   */
 class BindTest extends AirSpec {
-  scalaJsSupport
-
   import BindTest._
 
   test("allow provider based initialization") {

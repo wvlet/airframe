@@ -13,24 +13,21 @@
  */
 package wvlet.airframe.codec
 
-import java.math.BigInteger
-import java.time.Instant
-
 import org.scalacheck.util.Pretty
 import wvlet.airframe.codec.PrimitiveCodec.LongCodec
-import wvlet.airframe.json.JSON
-import wvlet.airframe.json.JSON.{JSONArray, JSONObject, JSONString}
+import wvlet.airframe.json.JSON.JSONString
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.msgpack.spi.Value.StringValue
 import wvlet.airframe.surface.{ArraySurface, GenericSurface, Surface}
 import wvlet.airspec.spi.PropertyCheck
 
+import java.math.BigInteger
+import java.time.Instant
 import scala.util.Random
 
 /**
   */
 object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
-  scalaJsSupport
 
   import org.scalacheck._
 

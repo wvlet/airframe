@@ -20,8 +20,6 @@ import wvlet.airframe._
 /**
   */
 class DISupportTest extends AirSpec {
-  scalaJsSupport
-
   class A(val session: Session) extends DISupport {
     private val s = bind[String]
 

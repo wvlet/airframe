@@ -20,8 +20,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class MessageCodecTest extends AirSpec {
-  scalaJsSupport
-
   test("have surface") {
     val l = LongCodec.surface
     debug(l)

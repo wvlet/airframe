@@ -39,8 +39,6 @@ import TaggedBindingTest._
 /**
   */
 class TaggedBindingTest extends AirSpec {
-  scalaJsSupport
-
   test("support tagged binding") {
     val apple = Surface.of[Fruit @@ Apple]
     debug(s"apple: ${apple}, alias:${apple.isAlias}")

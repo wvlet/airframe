@@ -21,8 +21,6 @@ import wvlet.airspec.AirSpec
 /**
   */
 class ExtendedCloseableTest extends AirSpec {
-  scalaJsSupport
-
   private val closeCount = new AtomicInteger(0)
 
   trait A extends AutoCloseable {

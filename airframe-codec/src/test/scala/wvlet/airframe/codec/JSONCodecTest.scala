@@ -22,8 +22,6 @@ import wvlet.airframe.msgpack.spi.Value
 /**
   */
 class JSONCodecTest extends AirSpec {
-  scalaJsSupport
-
   protected def check(json: String): Unit = {
     val b = JSONCodec.toMsgPack(json)
     JSONCodec.unpackMsgPack(b) match {
