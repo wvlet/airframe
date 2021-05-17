@@ -9,7 +9,9 @@ import wvlet.log.LogSupport
   * Design instance does not hold any duplicate bindings for the same Surface.
   */
 private[airframe] trait DesignImpl extends LogSupport { self: Design =>
-  inline def bind[A]: Binder[A] = ${ DesignMacros.designBind[A]('self) }
+  inline def bind[A]: Binder[A] = {
+    new Binder(self, Surface.of[A], SourceCode()).asInstanceOf[Binder[A]]
+  }
 
   inline def remove[A]: Design = {
     {
@@ -48,14 +50,4 @@ private[airframe] trait DesignImpl extends LogSupport { self: Design =>
     }.asInstanceOf[B]
   }
 
-}
-
-private[airframe] object DesignMacros {
-  import scala.quoted._
-
-  def designBind[A](design:Expr[Design])(using quotes:Quotes, tpe: Type[A]): Expr[Binder[A]] = {
-    '{
-      new Binder(${design}, Surface.of[A], SourceCode()).asInstanceOf[Binder[A]]
-    }
-  }
 }

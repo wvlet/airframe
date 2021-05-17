@@ -1,12 +1,6 @@
 package wvlet.airframe
 
-import wvlet.airframe.AirframeException.MISSING_SESSION
-import wvlet.airframe.lifecycle.LifeCycleManager
-import wvlet.airframe.surface.Surface
-import wvlet.log.LogSupport
-
 import scala.language.experimental.macros
-import scala.util.Try
 import scala.reflect.runtime.{universe => ru}
 
 private[airframe] trait SessionImpl { self: Session =>

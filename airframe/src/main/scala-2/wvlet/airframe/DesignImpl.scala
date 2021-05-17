@@ -1,14 +1,8 @@
 package wvlet.airframe
 
-import wvlet.airframe.Binder.Binding
-import wvlet.airframe.surface.Surface
-import wvlet.airframe.tracing.{DIStats, Tracer}
 import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
-import Design._
-import DesignOptions._
-import wvlet.airframe.lifecycle.LifeCycleHookType
 
 /**
   * Immutable airframe design.

@@ -12,19 +12,12 @@ private[airframe] trait SessionImpl { self: Session =>
     * @tparam A
     * @return object
     */
-  inline def build[A]: A = ${ SessionImpl.buildImpl[A]('self) }
+  inline def build[A]: A = {
+    self.get[A](Surface.of[A])
+  }
 
   /**
     * Register an instance to the session to control the life cycle of the object under this session.
     */
   def register[A](instance: A): Unit
-}
-
-
-private[airframe] object SessionImpl {
-  import scala.quoted._
-
-  def buildImpl[A](session: Expr[Session])(using Quotes, Type[A]): Expr[A] = {
-    '{ ${session}.get[A](Surface.of[A]) }
-  }
 }

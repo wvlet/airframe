@@ -14,6 +14,7 @@
 package wvlet.airframe.di
 
 import wvlet.airframe.Design
+import wvlet.airframe.surface.Surface
 
 import java.util.concurrent.atomic.AtomicInteger
 import wvlet.airspec.AirSpec
@@ -38,7 +39,7 @@ object SingletonTest {
     def hello: String = "hello"
   }
 
-  class C extends NonAbstract {
+  class C() extends NonAbstract {
     override def hello = "nice"
   }
 
@@ -83,6 +84,7 @@ class SingletonTest extends AirSpec {
       .bind[E].toSingleton
       .bind[NonAbstract].to[C]
 
+    info(Surface.of[C].getClass)
     val session = d.newSession
     val e       = session.build[E]
     e.m.hello shouldBe "nice"
