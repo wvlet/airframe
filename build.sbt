@@ -106,8 +106,10 @@ val buildSettings = Seq[Setting[_]](
   },
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(
-    ("org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test).cross(CrossVersion.for3Use2_13),
-    "org.scalacheck"      %%% "scalacheck" % SCALACHECK_VERSION % Test
+    "org.wvlet.airframe" %%% "airspec" % AIRSPEC_VERSION % Test,
+    // Use this line for Scala.js + AirSpec bootstrap
+    //("org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test).cross(CrossVersion.for3Use2_13),
+    "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % Test
   ) ++ {
     if (DOTTY)
       Seq.empty
