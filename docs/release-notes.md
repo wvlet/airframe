@@ -6,6 +6,15 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.5.4
+
+This is a minor bug fix release. We've found airframe-surface for Scala 3 still has several issues, which may cause errors in Airframe DI.
+
+- airframe-di: Fixes macro-compilation errors by using only inline methods for Scala 3 ([#1673](https://github.com/wvlet/airframe/issues/1673)) [[db2cdf690](https://github.com/wvlet/airframe/commit/db2cdf690)]
+- airspec: Show deprecation warning messages for scalaJSSupport usage.
+- airframe-json: Deprecate JSON query (path / to).value syntax. Use (path / to).getValue instead becuase .value can be ambiguous in Scala 3. 
+- internal: Migrating test codes for Scala 3 ([#1672](https://github.com/wvlet/airframe/issues/1672)) [[76943cfd0](https://github.com/wvlet/airframe/commit/76943cfd0)]
+
 ## 21.5.3
 
 AirSpec, a testing library for Scala, now supports Scala 3.0.0! From this version, AirSpec only supports `test(...) { ... }` syntax, and deprecates using public functions as test cases. See also [AirSpec documentation](https://wvlet.org/airframe/docs/airspec).
