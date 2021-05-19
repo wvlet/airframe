@@ -363,20 +363,17 @@ For example, if `X` is already started (onStart is called) in the parent session
 
 ### Finding The Current Session
 
-You may need to find the current session to manage lifecycles of manually created instances.
-In this case, you can bind Airframe's Session with `bind[Session]` and register newly created instances to the session:
+You may need to find the current session to manage lifecycles of manually created instances. In this case, you can bind Airframe's Session by injecting `wvlet.airframe.Session`. You can register newly created instances to the session to manages their lifecycle with the current session.
 
 ```scala
 import wvlet.airframe._
 
-class MyDB(name:String) {
+class MyDB(name:String) extends AutoCloseable {
   private val conn = newConnection(name)
-    .onShutdown{ x => x.close() }
+  override def close(): Unit = { conn.close() }
 }
 
-trait MyApp {
-  private val session = bind[Session]
-
+class MyApp(session: Session) {
   def openDB(name:String): MyDB = {
     val db = new MyDB(name)
      // Adding MyDB instance to the current session so that
@@ -429,10 +426,8 @@ case class Fruit(name: String)
 type Apple = Fruit
 type Banana = Fruit
 
-trait TaggedBinding {
-  val apple  = bind[Apple]
-  val banana = bind[Banana]
-}
+class TaggedBinding(apple:Apple, banana:Banana)
+
  ```
 
 Alias binding is useful to inject primitive type values:
@@ -441,12 +436,13 @@ import wvlet.airframe._
 
 type Env = String
 
-trait MyService {
+class MyService(env:Env, session: Session) {
   // Conditional binding
-  lazy val threadManager = bind[Env] match {
-     case "test" => bind[TestingThreadManager] // prepare a testing thread manager
-     case "production" => bind[ThreadManager] // prepare a thread manager for production
+  lazy val threadManager = env match {
+     case "test" => new TestingThreadManager(...) // prepare a testing thread manager
+     case "production" => new ThreadManager(...)  // prepare a thread manager for production
   }
+  session.register(threadManager)
 }
 
 val coreDesign = newDesign
