@@ -325,18 +325,15 @@ for instantiating <code>P1</code> and <code>A1</code>.</li>
 For example, if <code>X</code> is already started (onStart is called) in the parent session (= owner session), this hook will not be called again in the child session.</li>
 </ul>
 <h3><a class="anchor" aria-hidden="true" id="finding-the-current-session"></a><a href="#finding-the-current-session" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Finding The Current Session</h3>
-<p>You may need to find the current session to manage lifecycles of manually created instances.
-In this case, you can bind Airframe's Session with <code>bind[Session]</code> and register newly created instances to the session:</p>
+<p>You may need to find the current session to manage lifecycles of manually created instances. In this case, you can bind Airframe's Session by injecting <code>wvlet.airframe.Session</code>. You can register newly created instances to the session to manages their lifecycle with the current session.</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyDB</span>(<span class="hljs-params">name:<span class="hljs-type">String</span></span>) </span>{
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyDB</span>(<span class="hljs-params">name:<span class="hljs-type">String</span></span>) <span class="hljs-keyword">extends</span> <span class="hljs-title">AutoCloseable</span> </span>{
   <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> conn = newConnection(name)
-    .onShutdown{ x =&gt; x.close() }
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">close</span></span>(): <span class="hljs-type">Unit</span> = { conn.close() }
 }
 
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyApp</span> </span>{
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> session = bind[<span class="hljs-type">Session</span>]
-
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyApp</span>(<span class="hljs-params">session: <span class="hljs-type">Session</span></span>) </span>{
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">openDB</span></span>(name:<span class="hljs-type">String</span>): <span class="hljs-type">MyDB</span> = {
     <span class="hljs-keyword">val</span> db = <span class="hljs-keyword">new</span> <span class="hljs-type">MyDB</span>(name)
      <span class="hljs-comment">// Adding MyDB instance to the current session so that</span>
@@ -375,22 +372,21 @@ bind[<span class="hljs-type">Map</span>[_,_]]
 <span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">Apple</span> </span>= <span class="hljs-type">Fruit</span>
 <span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">Banana</span> </span>= <span class="hljs-type">Fruit</span>
 
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">TaggedBinding</span> </span>{
-  <span class="hljs-keyword">val</span> apple  = bind[<span class="hljs-type">Apple</span>]
-  <span class="hljs-keyword">val</span> banana = bind[<span class="hljs-type">Banana</span>]
-}
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TaggedBinding</span>(<span class="hljs-params">apple:<span class="hljs-type">Apple</span>, banana:<span class="hljs-type">Banana</span></span>)</span>
+
 </code></pre>
 <p>Alias binding is useful to inject primitive type values:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
 <span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">Env</span> </span>= <span class="hljs-type">String</span>
 
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyService</span> </span>{
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyService</span>(<span class="hljs-params">env:<span class="hljs-type">Env</span>, session: <span class="hljs-type">Session</span></span>) </span>{
   <span class="hljs-comment">// Conditional binding</span>
-  <span class="hljs-keyword">lazy</span> <span class="hljs-keyword">val</span> threadManager = bind[<span class="hljs-type">Env</span>] <span class="hljs-keyword">match</span> {
-     <span class="hljs-keyword">case</span> <span class="hljs-string">"test"</span> =&gt; bind[<span class="hljs-type">TestingThreadManager</span>] <span class="hljs-comment">// prepare a testing thread manager</span>
-     <span class="hljs-keyword">case</span> <span class="hljs-string">"production"</span> =&gt; bind[<span class="hljs-type">ThreadManager</span>] <span class="hljs-comment">// prepare a thread manager for production</span>
+  <span class="hljs-keyword">lazy</span> <span class="hljs-keyword">val</span> threadManager = env <span class="hljs-keyword">match</span> {
+     <span class="hljs-keyword">case</span> <span class="hljs-string">"test"</span> =&gt; <span class="hljs-keyword">new</span> <span class="hljs-type">TestingThreadManager</span>(...) <span class="hljs-comment">// prepare a testing thread manager</span>
+     <span class="hljs-keyword">case</span> <span class="hljs-string">"production"</span> =&gt; <span class="hljs-keyword">new</span> <span class="hljs-type">ThreadManager</span>(...)  <span class="hljs-comment">// prepare a thread manager for production</span>
   }
+  session.register(threadManager)
 }
 
 <span class="hljs-keyword">val</span> coreDesign = newDesign
