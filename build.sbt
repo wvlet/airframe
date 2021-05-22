@@ -332,7 +332,7 @@ lazy val airframe =
     .crossType(CrossType.Pure)
     .in(file("airframe"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings("."))
+    .settings(dottyCrossBuildSettings)
     .settings(
       name := "airframe",
       description := "Dependency injection library tailored to Scala",
@@ -357,30 +357,33 @@ lazy val airframeJS  = airframe.js
 
 def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: String = "main"): Seq[sbt.File] = {
   val scalaMajorVersion = scalaBinaryVersion.split("\\.").head
-  for (suffix <- Seq("", s"-${scalaBinaryVersion}", s"-${scalaMajorVersion}"))
+  for (suffix <- Seq("", s"-${scalaBinaryVersion}", s"-${scalaMajorVersion}").distinct)
     yield {
       file(s"${baseDir}/src/${srcType}/scala${suffix}")
     }
 }
 
-def dottyCrossBuildSettings(prefix: String): Seq[Setting[_]] = {
+def dottyCrossBuildSettings: Seq[Setting[_]] = {
   Seq(
     crossScalaVersions := {
-      if (DOTTY) withDotty
-      else targetScalaVersions
+      if (DOTTY) withDotty else targetScalaVersions
     },
-    Compile / unmanagedSourceDirectories ++= crossBuildSources(
-      scalaBinaryVersion.value,
-      (baseDirectory.value.getParentFile / prefix).toString
-    ),
-    Test / unmanagedSourceDirectories ++= {
-      crossBuildSources(scalaBinaryVersion.value, baseDirectory.value.getParentFile.getPath, srcType = "test")
-//      scalaBinaryVersion.value match {
-//        case v if v.startsWith("3.") =>
-//          Seq[sbt.File](file(s"${(baseDirectory.value.getParentFile / prefix).toString}/src/test/scala-3"))
-//        case _ =>
-//          (Test / unmanagedSourceDirectories).value
-//      }
+    Compile / unmanagedSourceDirectories := {
+      val origDirs = (Compile / unmanagedSourceDirectories).value
+      val newDirs = crossBuildSources(
+        scalaBinaryVersion.value,
+        baseDirectory.value.getParent
+      )
+      (origDirs ++ newDirs).distinct
+    },
+    Test / unmanagedSourceDirectories := {
+      val origDirs = (Test / unmanagedSourceDirectories).value
+      val newDirs = crossBuildSources(
+        scalaBinaryVersion.value,
+        baseDirectory.value.getParent,
+        srcType = "test"
+      )
+      (origDirs ++ newDirs).distinct
     }
   )
 }
@@ -392,7 +395,7 @@ lazy val airframeMacros =
     .crossType(CrossType.Pure)
     .in(file("airframe-di-macros"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings("."))
+    .settings(dottyCrossBuildSettings)
     .settings(
       name := "airframe-di-macros",
       description := "Macros for Airframe Di"
@@ -420,9 +423,10 @@ val surfaceDependencies = { scalaVersion: String =>
 
 lazy val surface =
   crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe-surface"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings("shared"))
+    .settings(dottyCrossBuildSettings)
     .settings(
       name := "airframe-surface",
       description := "A library for extracting object structure surface",
@@ -538,8 +542,10 @@ val logJVMDependencies = Seq(
 // airframe-log should have minimum dependencies
 lazy val log: sbtcrossproject.CrossProject =
   crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe-log"))
     .settings(buildSettings)
+    .settings(dottyCrossBuildSettings)
     .settings(
       name := "airframe-log",
       description := "Fancy logger for Scala",
@@ -547,24 +553,7 @@ lazy val log: sbtcrossproject.CrossProject =
         if (DOTTY) Seq("-source:3.0-migration")
         else Nil
       },
-      crossScalaVersions := {
-        if (DOTTY) withDotty
-        else targetScalaVersions
-      },
-      Compile / unmanagedSourceDirectories ++= {
-        scalaBinaryVersion.value match {
-          case v if v.startsWith("2.") =>
-            Seq(
-              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-2"
-            )
-          case v if v.startsWith("3.") =>
-            Seq(
-              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-3"
-            )
-          case _ =>
-            Seq.empty
-        }
-      },
+      crossScalaVersions := withDotty,
       libraryDependencies ++= logDependencies(scalaVersion.value)
     )
     .jvmSettings(
@@ -583,6 +572,7 @@ lazy val logJS  = log.js
 
 lazy val metrics =
   crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe-metrics"))
     .settings(buildSettings)
     .settings(
@@ -622,7 +612,7 @@ lazy val codec =
     .crossType(CrossType.Pure)
     .in(file("airframe-codec"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings("."))
+    .settings(dottyCrossBuildSettings)
     .settings(
       name := "airframe-codec",
       description := "Airframe MessagePack-based codec"
@@ -686,7 +676,7 @@ lazy val http =
     .enablePlugins(BuildInfoPlugin)
     .in(file("airframe-http"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings("."))
+    .settings(dottyCrossBuildSettings)
     .settings(
       name := "airframe-http",
       description := "REST and RPC Framework",
@@ -1048,7 +1038,7 @@ val airspecBuildSettings = Seq[Setting[_]](
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
     val sourceDirs =
-      for (m <- airspecDependsOn.value; infix <- Seq("", "/shared")) yield {
+      for (m <- airspecDependsOn.value; infix <- Seq("")) yield {
         crossBuildSources(sv, s"${baseDir}/${m}${infix}")
       }
     sourceDirs.flatten
@@ -1060,7 +1050,7 @@ val airspecJVMBuildSettings = Seq[Setting[_]](
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
     val sourceDirs =
-      for (m <- airspecDependsOn.value; folder <- Seq(".jvm", "jvm")) yield {
+      for (m <- airspecDependsOn.value; folder <- Seq(".jvm")) yield {
         crossBuildSources(sv, s"${baseDir}/${m}/${folder}")
       }
     sourceDirs.flatten
@@ -1072,7 +1062,7 @@ val airspecJSBuildSettings = Seq[Setting[_]](
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
     val sourceDirs =
-      for (m <- airspecDependsOn.value; folder <- Seq(".js", "js")) yield {
+      for (m <- airspecDependsOn.value; folder <- Seq(".js")) yield {
         crossBuildSources(sv, s"${baseDir}/${m}/${folder}")
       }
     sourceDirs.flatten
