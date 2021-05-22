@@ -161,8 +161,8 @@ lazy val root =
 
 // JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12.
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
-  airframeMacrosJVM,
-  airframeJVM,
+  diMacrosJVM,
+  diJVM,
   surfaceJVM,
   logJVM,
   canvas,
@@ -201,8 +201,8 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
 lazy val jsProjects: Seq[ProjectReference] = Seq(
   logJS,
   surfaceJS,
-  airframeMacrosJS,
-  airframeJS,
+  diMacrosJS,
+  diJS,
   metricsJS,
   controlJS,
   ulidJS,
@@ -250,8 +250,8 @@ lazy val projectDotty =
       crossScalaVersions := Seq(SCALA_3_0)
     )
     .aggregate(
-      airframeMacrosJVM,
-      airframeJVM,
+      diMacrosJVM,
+      diJVM,
       airspecJVM,
       logJVM,
       surfaceJVM,
@@ -327,10 +327,10 @@ def airframeDIDependencies = Seq(
   "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION
 )
 
-lazy val airframe =
+lazy val di =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
-    .in(file("airframe"))
+    .in(file("airframe-di"))
     .settings(buildSettings)
     .settings(dottyCrossBuildSettings)
     .settings(
@@ -349,11 +349,11 @@ lazy val airframe =
     )
     .dependsOn(
       surface,
-      airframeMacros
+      diMacros
     )
 
-lazy val airframeJVM = airframe.jvm
-lazy val airframeJS  = airframe.js
+lazy val diJVM = di.jvm
+lazy val diJS  = di.js
 
 def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: String = "main"): Seq[sbt.File] = {
   val scalaMajorVersion = scalaBinaryVersion.split("\\.").head
@@ -390,7 +390,7 @@ def dottyCrossBuildSettings: Seq[Setting[_]] = {
 
 // Airframe DI needs to call macro methods, so we needed to split the project into DI and DI macros.
 // This project sources and classes will be embedded to airframe.jar, so we don't publish airframe-di-macros
-lazy val airframeMacros =
+lazy val diMacros =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-di-macros"))
@@ -403,8 +403,8 @@ lazy val airframeMacros =
     .jsSettings(jsBuildSettings)
     .dependsOn(log, surface)
 
-lazy val airframeMacrosJVM = airframeMacros.jvm
-lazy val airframeMacrosJS  = airframeMacros.js
+lazy val diMacrosJVM = diMacros.jvm
+lazy val diMacrosJS  = diMacros.js
 
 // // To use airframe in other airframe modules, we need to reference airframeMacros project
 // lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
@@ -463,7 +463,7 @@ lazy val config =
         "org.yaml" % "snakeyaml" % "1.28"
       )
     )
-    .dependsOn(airframeJVM, codecJVM)
+    .dependsOn(diJVM, codecJVM)
 
 lazy val control =
   crossProject(JVMPlatform, JSPlatform)
@@ -553,7 +553,6 @@ lazy val log: sbtcrossproject.CrossProject =
         if (DOTTY) Seq("-source:3.0-migration")
         else Nil
       },
-      crossScalaVersions := withDotty,
       libraryDependencies ++= logDependencies(scalaVersion.value)
     )
     .jvmSettings(
@@ -646,7 +645,7 @@ lazy val jdbc =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(airframeJVM, controlJVM, config)
+    .dependsOn(diJVM, controlJVM, config)
 
 lazy val rx =
   crossProject(JVMPlatform, JSPlatform)
@@ -714,7 +713,7 @@ lazy val httpRouter =
       name := "airframe-http-router",
       description := "Request routing library"
     )
-    .dependsOn(airframeJVM, httpJVM)
+    .dependsOn(diJVM, httpJVM)
 
 lazy val httpCodeGen =
   project
@@ -879,7 +878,7 @@ lazy val fluentd =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, airframeJVM)
+    .dependsOn(codecJVM, diJVM)
 
 def sqlRefLib = { scalaVersion: String =>
   if (scalaVersion.startsWith("2.12")) {
@@ -986,8 +985,8 @@ lazy val examples =
     .dependsOn(
       codecJVM,
       config,
-      airframeJVM,
-      airframeMacrosJVM,
+      diJVM,
+      diMacrosJVM,
       launcher,
       jmx,
       jdbc,
@@ -1008,7 +1007,7 @@ lazy val dottyTest =
         else targetScalaVersions
       }
     )
-    .dependsOn(logJVM, surfaceJVM, airframeJVM, codecJVM)
+    .dependsOn(logJVM, surfaceJVM, diJVM, codecJVM)
 
 /**
   * AirSpec build definitions.
@@ -1227,4 +1226,4 @@ lazy val airspecLight =
         "org.scalacheck" %%% "scalacheck"     % SCALACHECK_VERSION % Provided
       )
     )
-    .dependsOn(airframeJVM, metricsJVM)
+    .dependsOn(diJVM, metricsJVM)
