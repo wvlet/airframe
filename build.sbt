@@ -26,22 +26,22 @@ val PARQUET_VERSION                 = "1.12.0"
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
   "publishSnapshots",
-  s"+ projectJVM/publish; ++ ${SCALA_2_12}; + projectJS/publish"
+  s"+ projectJVM/publish; + projectJS/publish"
 )
 
 // [Development purpose] publish all artifacts to the local repo
 addCommandAlias(
   "publishAllLocal",
-  s"+ projectJVM/publishLocal; ++ ${SCALA_2_12}; + projectJS/publishLocal;"
+  s"+ projectJVM/publishLocal; + projectJS/publishLocal;"
 )
 
 addCommandAlias(
   "publishJSSigned",
-  s"; + projectJS/publishSigned;"
+  s"+ projectJS/publishSigned"
 )
 addCommandAlias(
   "publishJSLocal",
-  s"; + projectJS/publishLocal; "
+  s"+ projectJS/publishLocal"
 )
 
 // Allow using Ctrl+C in sbt without exiting the prompt
@@ -63,7 +63,7 @@ val DOTTY = sys.env.isDefinedAt("DOTTY")
 // We MUST use Scala 2.12 for building sbt-airframe
 ThisBuild / scalaVersion := {
   if (DOTTY) SCALA_3_0
-  else SCALA_2_12
+  else SCALA_2_13
 }
 ThisBuild / organization := "org.wvlet.airframe"
 
