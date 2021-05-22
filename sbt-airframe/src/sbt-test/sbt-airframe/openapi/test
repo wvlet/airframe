@@ -1,3 +1,0 @@
-> package
-$ exists target/openapi.yaml
-> check

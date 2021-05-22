@@ -26,13 +26,13 @@ val PARQUET_VERSION                 = "1.12.0"
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
   "publishSnapshots",
-  s"+ projectJVM/publish; ++ ${SCALA_2_12} sbtAirframe/publish; + projectJS/publish"
+  s"+ projectJVM/publish; ++ ${SCALA_2_12}; + projectJS/publish"
 )
 
 // [Development purpose] publish all artifacts to the local repo
 addCommandAlias(
   "publishAllLocal",
-  s"+ projectJVM/publishLocal; ++ ${SCALA_2_12} sbtAirframe/publishLocal; + projectJS/publishLocal;"
+  s"+ projectJVM/publishLocal; ++ ${SCALA_2_12}; + projectJS/publishLocal;"
 )
 
 addCommandAlias(
@@ -157,7 +157,7 @@ lazy val root =
         }
       }
     )
-    .aggregate((jvmProjects ++ jsProjects ++ sbtProjects): _*)
+    .aggregate((jvmProjects ++ jsProjects): _*)
 
 // JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12.
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
@@ -215,8 +215,6 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   widgetJS,
   airspecJS
 )
-
-lazy val sbtProjects: Seq[ProjectReference] = Seq(sbtAirframe)
 
 // For community-build
 lazy val communityBuild =
@@ -744,6 +742,7 @@ lazy val httpCodeGen =
         // Swagger includes dependency to SLF4J, so redirect slf4j logs to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION % Test
       ),
+      // Published package is necessary for sbt-airframe
       publishPackArchiveTgz
     )
     .dependsOn(httpRouter, launcher)
@@ -1004,40 +1003,6 @@ lazy val examples =
       jdbc,
       finagle
     )
-
-// sbt plugin
-lazy val sbtAirframe =
-  project
-    .in(file("sbt-airframe"))
-    .enablePlugins(SbtPlugin, BuildInfoPlugin)
-    .settings(
-      buildSettings,
-      buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-      buildInfoPackage := "wvlet.airframe.sbt",
-      name := "sbt-airframe",
-      description := "sbt plugin for helping programming with Airframe",
-      scalaVersion := SCALA_2_12,
-      // This setting might be unnecessary?
-      //crossSbtVersions := Vector("1.3.13"),
-      libraryDependencies ++= Seq(
-        "io.get-coursier"   %% "coursier"         % "2.0.16",
-        "org.apache.commons" % "commons-compress" % "1.20"
-      ),
-      scriptedLaunchOpts := {
-        scriptedLaunchOpts.value ++
-          Seq("-Xmx1024M", "-Dplugin.version=" + version.value)
-      },
-      scriptedDependencies := {
-        // Publish all dependencies necessary for running the scripted tests
-        val depPublish = scriptedDependencies.value
-        val p1         = (httpCodeGen / packArchiveTgz / publishLocal).value
-        val p2         = publishLocal.all(ScopeFilter(inDependencies(finagle))).value
-        val p3         = publishLocal.all(ScopeFilter(inDependencies(grpc))).value
-        val p4         = publishLocal.all(ScopeFilter(inDependencies(httpJS))).value
-      },
-      scriptedBufferLog := false
-    )
-    .dependsOn(controlJVM, codecJVM, logJVM, httpCodeGen % Test)
 
 // Dotty test project
 lazy val dottyTest =
