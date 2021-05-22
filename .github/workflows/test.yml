@@ -86,13 +86,3 @@ jobs:
         run: npm install jsdom@16.4.0
       - name: Scala.js test
         run: JVM_OPTS=-Xmx4g ./sbt ++2.13.5 "; projectJS/test"
-  test_sbt_plugin:
-    name: sbt-airframe
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v10
-        with:
-          java-version: adopt@1.11
-      - name: sbt-airframe test
-        run: ./sbt sbtAirframe/scripted
