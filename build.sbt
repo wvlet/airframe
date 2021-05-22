@@ -366,22 +366,17 @@ def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: Stri
 def dottyCrossBuildSettings(prefix: String): Seq[Setting[_]] = {
   Seq(
     crossScalaVersions := {
-      if (DOTTY) withDotty
-      else targetScalaVersions
+      if (DOTTY) withDotty else targetScalaVersions
     },
     Compile / unmanagedSourceDirectories ++= crossBuildSources(
       scalaBinaryVersion.value,
       (baseDirectory.value.getParentFile / prefix).toString
     ),
-    Test / unmanagedSourceDirectories ++= {
-      crossBuildSources(scalaBinaryVersion.value, baseDirectory.value.getParentFile.getPath, srcType = "test")
-//      scalaBinaryVersion.value match {
-//        case v if v.startsWith("3.") =>
-//          Seq[sbt.File](file(s"${(baseDirectory.value.getParentFile / prefix).toString}/src/test/scala-3"))
-//        case _ =>
-//          (Test / unmanagedSourceDirectories).value
-//      }
-    }
+    Test / unmanagedSourceDirectories ++= crossBuildSources(
+      scalaBinaryVersion.value,
+      (baseDirectory.value.getParentFile / prefix).toString,
+      srcType = "test"
+    )
   )
 }
 
@@ -420,9 +415,10 @@ val surfaceDependencies = { scalaVersion: String =>
 
 lazy val surface =
   crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe-surface"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings("shared"))
+    .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe-surface",
       description := "A library for extracting object structure surface",
@@ -538,8 +534,10 @@ val logJVMDependencies = Seq(
 // airframe-log should have minimum dependencies
 lazy val log: sbtcrossproject.CrossProject =
   crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe-log"))
     .settings(buildSettings)
+    .settings(dottyCrossBuildSettings("."))
     .settings(
       name := "airframe-log",
       description := "Fancy logger for Scala",
@@ -547,24 +545,7 @@ lazy val log: sbtcrossproject.CrossProject =
         if (DOTTY) Seq("-source:3.0-migration")
         else Nil
       },
-      crossScalaVersions := {
-        if (DOTTY) withDotty
-        else targetScalaVersions
-      },
-      Compile / unmanagedSourceDirectories ++= {
-        scalaBinaryVersion.value match {
-          case v if v.startsWith("2.") =>
-            Seq(
-              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-2"
-            )
-          case v if v.startsWith("3.") =>
-            Seq(
-              baseDirectory.value.getParentFile / "shared" / "src" / "main" / "scala-3"
-            )
-          case _ =>
-            Seq.empty
-        }
-      },
+      crossScalaVersions := withDotty,
       libraryDependencies ++= logDependencies(scalaVersion.value)
     )
     .jvmSettings(
@@ -1048,7 +1029,7 @@ val airspecBuildSettings = Seq[Setting[_]](
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
     val sourceDirs =
-      for (m <- airspecDependsOn.value; infix <- Seq("", "/shared")) yield {
+      for (m <- airspecDependsOn.value; infix <- Seq("")) yield {
         crossBuildSources(sv, s"${baseDir}/${m}${infix}")
       }
     sourceDirs.flatten
@@ -1060,7 +1041,7 @@ val airspecJVMBuildSettings = Seq[Setting[_]](
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
     val sourceDirs =
-      for (m <- airspecDependsOn.value; folder <- Seq(".jvm", "jvm")) yield {
+      for (m <- airspecDependsOn.value; folder <- Seq(".jvm")) yield {
         crossBuildSources(sv, s"${baseDir}/${m}/${folder}")
       }
     sourceDirs.flatten
@@ -1072,7 +1053,7 @@ val airspecJSBuildSettings = Seq[Setting[_]](
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
     val sourceDirs =
-      for (m <- airspecDependsOn.value; folder <- Seq(".js", "js")) yield {
+      for (m <- airspecDependsOn.value; folder <- Seq(".js")) yield {
         crossBuildSources(sv, s"${baseDir}/${m}/${folder}")
       }
     sourceDirs.flatten
