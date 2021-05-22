@@ -357,7 +357,7 @@ lazy val airframeJS  = airframe.js
 
 def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: String = "main"): Seq[sbt.File] = {
   val scalaMajorVersion = scalaBinaryVersion.split("\\.").head
-  for (suffix <- Seq("", s"-${scalaBinaryVersion}", s"-${scalaMajorVersion}"))
+  for (suffix <- Seq("", s"-${scalaBinaryVersion}", s"-${scalaMajorVersion}").distinct)
     yield {
       file(s"${baseDir}/src/${srcType}/scala${suffix}")
     }
@@ -367,16 +367,16 @@ def dottyCrossBuildSettings(prefix: String): Seq[Setting[_]] = {
   Seq(
     crossScalaVersions := {
       if (DOTTY) withDotty else targetScalaVersions
-    },
-    Compile / unmanagedSourceDirectories ++= crossBuildSources(
-      scalaBinaryVersion.value,
-      (baseDirectory.value.getParentFile / prefix).toString
-    ),
-    Test / unmanagedSourceDirectories ++= crossBuildSources(
-      scalaBinaryVersion.value,
-      (baseDirectory.value.getParentFile / prefix).toString,
-      srcType = "test"
-    )
+    }
+//    Compile / unmanagedSourceDirectories ++= crossBuildSources(
+//      scalaBinaryVersion.value,
+//      (baseDirectory.value.getParentFile / prefix).toString
+//    ),
+//    Test / unmanagedSourceDirectories ++= crossBuildSources(
+//      scalaBinaryVersion.value,
+//      (baseDirectory.value.getParentFile / prefix).toString,
+//      srcType = "test"
+//    )
   )
 }
 
@@ -564,6 +564,7 @@ lazy val logJS  = log.js
 
 lazy val metrics =
   crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe-metrics"))
     .settings(buildSettings)
     .settings(
