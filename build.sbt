@@ -367,16 +367,21 @@ def dottyCrossBuildSettings(prefix: String): Seq[Setting[_]] = {
   Seq(
     crossScalaVersions := {
       if (DOTTY) withDotty else targetScalaVersions
+    },
+    Compile / unmanagedSourceDirectories := {
+      val origDirs = (Compile / unmanagedSourceDirectories).value
+      val newDirs  = crossBuildSources(scalaBinaryVersion.value, (baseDirectory.value.getParentFile / prefix).toString)
+      (origDirs ++ newDirs).distinct
+    },
+    Test / unmanagedSourceDirectories := {
+      val origDirs = (Test / unmanagedSourceDirectories).value
+      val newDirs = crossBuildSources(
+        scalaBinaryVersion.value,
+        (baseDirectory.value.getParentFile / prefix).toString,
+        srcType = "test"
+      )
+      (origDirs ++ newDirs).distinct
     }
-//    Compile / unmanagedSourceDirectories ++= crossBuildSources(
-//      scalaBinaryVersion.value,
-//      (baseDirectory.value.getParentFile / prefix).toString
-//    ),
-//    Test / unmanagedSourceDirectories ++= crossBuildSources(
-//      scalaBinaryVersion.value,
-//      (baseDirectory.value.getParentFile / prefix).toString,
-//      srcType = "test"
-//    )
   )
 }
 
