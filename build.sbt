@@ -332,7 +332,7 @@ lazy val airframe =
     .crossType(CrossType.Pure)
     .in(file("airframe"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings("."))
+    .settings(dottyCrossBuildSettings)
     .settings(
       name := "airframe",
       description := "Dependency injection library tailored to Scala",
@@ -363,21 +363,24 @@ def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: Stri
     }
 }
 
-def dottyCrossBuildSettings(prefix: String): Seq[Setting[_]] = {
+def dottyCrossBuildSettings: Seq[Setting[_]] = {
   Seq(
     crossScalaVersions := {
       if (DOTTY) withDotty else targetScalaVersions
     },
     Compile / unmanagedSourceDirectories := {
       val origDirs = (Compile / unmanagedSourceDirectories).value
-      val newDirs  = crossBuildSources(scalaBinaryVersion.value, (baseDirectory.value.getParentFile / prefix).toString)
+      val newDirs = crossBuildSources(
+        scalaBinaryVersion.value,
+        baseDirectory.value.getParent
+      )
       (origDirs ++ newDirs).distinct
     },
     Test / unmanagedSourceDirectories := {
       val origDirs = (Test / unmanagedSourceDirectories).value
       val newDirs = crossBuildSources(
         scalaBinaryVersion.value,
-        (baseDirectory.value.getParentFile / prefix).toString,
+        baseDirectory.value.getParent,
         srcType = "test"
       )
       (origDirs ++ newDirs).distinct
@@ -392,7 +395,7 @@ lazy val airframeMacros =
     .crossType(CrossType.Pure)
     .in(file("airframe-di-macros"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings("."))
+    .settings(dottyCrossBuildSettings)
     .settings(
       name := "airframe-di-macros",
       description := "Macros for Airframe Di"
@@ -423,7 +426,7 @@ lazy val surface =
     .crossType(CrossType.Pure)
     .in(file("airframe-surface"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings("."))
+    .settings(dottyCrossBuildSettings)
     .settings(
       name := "airframe-surface",
       description := "A library for extracting object structure surface",
@@ -542,7 +545,7 @@ lazy val log: sbtcrossproject.CrossProject =
     .crossType(CrossType.Pure)
     .in(file("airframe-log"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings("."))
+    .settings(dottyCrossBuildSettings)
     .settings(
       name := "airframe-log",
       description := "Fancy logger for Scala",
@@ -609,7 +612,7 @@ lazy val codec =
     .crossType(CrossType.Pure)
     .in(file("airframe-codec"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings("."))
+    .settings(dottyCrossBuildSettings)
     .settings(
       name := "airframe-codec",
       description := "Airframe MessagePack-based codec"
@@ -673,7 +676,7 @@ lazy val http =
     .enablePlugins(BuildInfoPlugin)
     .in(file("airframe-http"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings("."))
+    .settings(dottyCrossBuildSettings)
     .settings(
       name := "airframe-http",
       description := "REST and RPC Framework",
