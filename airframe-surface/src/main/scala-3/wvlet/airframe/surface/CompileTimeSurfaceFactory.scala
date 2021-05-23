@@ -59,6 +59,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
   private val memo = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
 
   private def surfaceOf(t: TypeRepr): Expr[Surface] = {
+    println(s"surfaceOf ${fullTypeNameOf(t)}")
     if(seen.contains(t)) {
       if(memo.contains(t)) {
         memo(t)
@@ -74,7 +75,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       val generator = factory.andThen { expr =>
         '{ wvlet.airframe.surface.surfaceCache.getOrElseUpdate(${Expr(fullTypeNameOf(t))}, ${expr}) }
       }
-      //println(s"--- surfaceOf(${t})")
+      println(s"--- surfaceOf(${t})")
       val surface = generator(t)
       memo += (t -> surface)
       surface
@@ -219,7 +220,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
 
   private def genericTypeWithConstructorFactory: Factory = {
     case t if Option(t.typeSymbol.primaryConstructor).exists(p => p.exists && p.paramSymss.flatten.nonEmpty) =>
-      val typeArgs = typeArgsOf(t).map(surfaceOf(_))
+      val typeArgs = typeArgsOf(t.simplified).map(surfaceOf(_))
       val methodParams = constructorParametersOf(t)
       val isStatic = !t.typeSymbol.flags.is(Flags.Local)
       // TODO: This code doesn't work for Scala.js + Scala 3.0.0
@@ -243,7 +244,25 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       newGenericSurfaceOf(t)
   }
 
+//  private def hasStringUnapply(t: TypeRepr): Boolean = {
+//    t.typeSymbol.companionClass match {
+//      case cp: Symbol if !cp.isNoSymbol =>
+//        cp.memberMethod("unapply") match {
+//          case m: Symbol if m.paramSymss.size == 1 =>
+//            val args: List[Symbol] = m.paramSymss.head
+//            if(args.size == 1) {
+//              args.head.tree match {
+//                case v:ValDef if v.tpt.tpe =:= Type.of[String]
+//            false
+//          case _ => false
+//        }
+//      case _ =>
+//        false
+//    }
+//  }
+//
   private def methodArgsOf(method:Symbol): List[Symbol] = {
+    // TODO: Substitute (apply) type parameters
     method.paramSymss.flatten
   }
 
@@ -256,7 +275,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
     val methodArgs = methodArgsOf(method)
     val argClasses = methodArgs.map(_.tree).collect {
       case v:ValDef =>
-        //println(s"${v.name}: ${v}")
+        println(s"${v.name}: ${v}")
         clsOf(v.tpt.tpe.dealias)
     }
     val isConstructor = t.typeSymbol.primaryConstructor == method

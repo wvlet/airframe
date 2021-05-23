@@ -505,6 +505,7 @@ object ReflectSurfaceFactory extends LogSupport {
       }
 
       for (params <- constructor.paramLists) yield {
+        // Necessary for resolving type parameters e.g., Cons[A](p:Cons[A]) => Cons[String](p:Cons[String])
         val concreteArgTypes = params.map { p =>
           try {
             p.typeSignature.substituteTypes(classTypeParams, targetType.typeArgs)
