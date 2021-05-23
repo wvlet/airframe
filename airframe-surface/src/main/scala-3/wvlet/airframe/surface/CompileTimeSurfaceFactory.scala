@@ -70,7 +70,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
     else {
       seen += t
       // For debugging
-      // println(s"[${typeNameOf(t)}]\n  ${t}")
+      //println(s"[${typeNameOf(t)}]\n  ${t}")
       val generator = factory.andThen { expr =>
         '{ wvlet.airframe.surface.surfaceCache.getOrElseUpdate(${Expr(fullTypeNameOf(t))}, ${expr}) }
       }
