@@ -110,28 +110,29 @@ class TastySurfaceFactory(using quotes: Quotes) extends LogSupport {
   }
 
   private def fullTypeNameOf(t:TypeRepr): String = {
-  def sanitize(symbol:Symbol): String = {
-  val fullName = symbol.fullName
-  fullName.split("\\.").toList match {
-  case "scala" :: "Predef$" :: tail =>
-  tail.mkString(".")
-  case "scala" :: "collection" :: "immutable" :: tail =>
-  tail.mkString(".")
-  case "scala" :: nme :: Nil =>
-  nme
-  case _ =>
-  fullName.replaceAll("\\$", "")
-  }
-  }
-  t match {
-  case a:AppliedType if a.args.nonEmpty =>
-  s"${sanitize(a.typeSymbol)}[${a.args.map(pt => fullTypeNameOf(pt.asType)).mkString(",")}]"
-  case other =>
-  sanitize(other.typeSymbol)
-  }
+    def sanitize(symbol:Symbol): String = {
+      val fullName = symbol.fullName
+      fullName.split("\\.").toList match {
+        case "scala" :: "Predef$" :: tail =>
+          tail.mkString(".")
+        case "scala" :: "collection" :: "immutable" :: tail =>
+          tail.mkString(".")
+        case "scala" :: nme :: Nil =>
+          nme
+        case _ =>
+          fullName.replaceAll("\\$", "")
+      }
+    }
+    t match {
+      case a:AppliedType if a.args.nonEmpty =>
+        s"${sanitize(a.typeSymbol)}[${a.args.map(pt => fullTypeNameOf(pt.asType)).mkString(",")}]"
+      case other =>
+        sanitize(other.typeSymbol)
+    }
   }
 
   private def typeNameOf(t: Type[_]): String = {
-  t.typeSymbol.fullName
+    t.typeSymbol.fullName
   }
-  }
+
+}
