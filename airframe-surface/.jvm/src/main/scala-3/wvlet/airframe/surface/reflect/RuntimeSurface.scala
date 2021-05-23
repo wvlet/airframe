@@ -14,10 +14,11 @@
 package wvlet.airframe.surface.reflect
 
 import wvlet.log.LogSupport
-import wvlet.airframe.surface._
+import wvlet.airframe.surface.Surface
+import wvlet.airframe.surface.CompileTimeSurfaceFactory
 
 /**
   */
 object RuntimeSurface extends LogSupport {
-  def of[A]: Surface = ???
+  inline def of[A]: Surface = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
 }
