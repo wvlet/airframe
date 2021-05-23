@@ -85,7 +85,7 @@ val buildSettings = Seq[Setting[_]](
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
   // Exclude compile-time only projects. This is a workaround for bloop,
-  // which cannot resolve Optional dependencies nor compile-internal dependencie.
+  // which cannot resolve Optional dependencies nor compile-internal dependencies.
   pomPostProcess := excludePomDependency(Seq("airspec_2.12", "airspec_2.13")),
   crossScalaVersions := targetScalaVersions,
   crossPaths := true,
@@ -408,12 +408,23 @@ lazy val diMacrosJS  = diMacros.js
 val surfaceDependencies = { scalaVersion: String =>
   scalaVersion match {
     case s if s.startsWith("3.") =>
-      Seq()
+      Seq.empty
     case _ =>
       Seq(
         ("org.scala-lang" % "scala-reflect"  % scalaVersion),
         ("org.scala-lang" % "scala-compiler" % scalaVersion % Provided)
       )
+  }
+}
+
+val surfaceJVMDependencies = { scalaVersion: String =>
+  scalaVersion match {
+    case s if s.startsWith("3.") =>
+      Seq(
+        "org.scala-lang" %% "scala3-tasty-inspector" % s,
+        "org.scala-lang" %% "scala3-staging"         % s
+      )
+    case _ => Seq.empty
   }
 }
 
@@ -430,6 +441,7 @@ lazy val surface =
     )
     .jvmSettings(
       // For adding PreDestroy, PostConstruct annotations to Java9
+      libraryDependencies ++= surfaceJVMDependencies(scalaVersion.value),
       libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION % Test
     )
     .jsSettings(jsBuildSettings)
@@ -1110,6 +1122,7 @@ lazy val airspecCore =
     )
     .jvmSettings(
       airspecJVMBuildSettings,
+      libraryDependencies ++= surfaceJVMDependencies(scalaVersion.value),
       Compile / packageBin / mappings ++= (airspecLogJVM / Compile / packageBin / mappings).value,
       Compile / packageSrc / mappings ++= (airspecLogJVM / Compile / packageSrc / mappings).value
     )
