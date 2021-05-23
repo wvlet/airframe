@@ -59,7 +59,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
   private val memo = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
 
   private def surfaceOf(t: TypeRepr): Expr[Surface] = {
-    println(s"surfaceOf ${fullTypeNameOf(t)}")
+    //println(s"surfaceOf ${fullTypeNameOf(t)}")
     if(seen.contains(t)) {
       if(memo.contains(t)) {
         memo(t)
@@ -75,7 +75,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       val generator = factory.andThen { expr =>
         '{ wvlet.airframe.surface.surfaceCache.getOrElseUpdate(${Expr(fullTypeNameOf(t))}, ${expr}) }
       }
-      println(s"--- surfaceOf(${t})")
+      //println(s"--- surfaceOf(${t})")
       val surface = generator(t)
       memo += (t -> surface)
       surface
@@ -275,7 +275,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
     val methodArgs = methodArgsOf(method)
     val argClasses = methodArgs.map(_.tree).collect {
       case v:ValDef =>
-        println(s"${v.name}: ${v}")
+        //println(s"${v.name}: ${v}")
         clsOf(v.tpt.tpe.dealias)
     }
     val isConstructor = t.typeSymbol.primaryConstructor == method
