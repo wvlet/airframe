@@ -18,15 +18,15 @@ object TastySurfaceFactory extends LogSupport {
   private val cache = new ConcurrentHashMap[Class[_], Surface]().asScala
 
   def ofClass(cl: Class[_]): Surface = {
-    info(s"ofClass: ${cl}")
+    debug(s"ofClass: ${cl}")
     cache.getOrElseUpdate(cl, {
-      info(s"Update cache for ${cl}")
+      debug(s"Update cache for ${cl}")
       // Generates Surface from a runtime class
       staging.run {
         (quotes: Quotes) ?=>
         import quotes.reflect._
         val tastyType = quotes.reflect.TypeRepr.typeConstructorOf(cl)
-        info(tastyType)
+        debug(tastyType)
         val f = new CompileTimeSurfaceFactory(using quotes)
         val expr = f.surfaceOf(tastyType.asType)
         expr
@@ -41,7 +41,7 @@ object TastySurfaceFactory extends LogSupport {
       (quotes: Quotes) ?=>
       import quotes.reflect._
       val tastyType = quotes.reflect.TypeRepr.typeConstructorOf(cl)
-      info(tastyType)
+      debug(tastyType)
       val f = new CompileTimeSurfaceFactory(using quotes)
       f.methodsOf(tastyType.asType)
     }

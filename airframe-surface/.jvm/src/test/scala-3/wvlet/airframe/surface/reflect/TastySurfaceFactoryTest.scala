@@ -13,20 +13,20 @@ object TastySurfaceFactoryTest extends AirSpec {
 
   test("of[A]") {
     val s = TastySurfaceFactory.of[Person]
-    info(s.params.mkString(", "))
+    debug(s.params.mkString(", "))
   }
 
   test("ofClass") {
     val s = ReflectSurfaceFactory.ofClass(classOf[Person])
-    info(s)
+    debug(s)
 
     val s2 = ReflectSurfaceFactory.ofClass(classOf[Person])
-    info(s2)
+    debug(s2)
   }
 
   test("methodsOf") {
     pending("runtime error is shown")
     val m = TastySurfaceFactory.methodsOfClass(classOf[Person])
-    info(m.mkString(", "))
+    debug(m.mkString(", "))
   }
 }
