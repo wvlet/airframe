@@ -22,7 +22,7 @@ class RuntimeGenericSurface(
     with LogSupport {
   self =>
 
-  def withOuter(outer: AnyRef): Surface = {
+  override def withOuter(outer: AnyRef): Surface = {
     new RuntimeGenericSurface(rawType, typeArgs, params, Some(outer), isStatic = false)
   }
 

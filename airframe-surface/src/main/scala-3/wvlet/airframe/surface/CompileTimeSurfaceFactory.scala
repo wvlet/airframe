@@ -9,6 +9,7 @@ private[surface] object CompileTimeSurfaceFactory {
     import quotes._
     import quotes.reflect._
 
+
     val f = new CompileTimeSurfaceFactory(using quotes)
     f.surfaceOf(tpe)
   }
@@ -224,6 +225,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       val methodParams = constructorParametersOf(t)
       val isStatic = !t.typeSymbol.flags.is(Flags.Local)
       // TODO: This code doesn't work for Scala.js + Scala 3.0.0
+      
       '{
         new wvlet.airframe.surface.reflect.RuntimeGenericSurface(
           ${clsOf(t)},
