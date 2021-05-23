@@ -59,6 +59,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
   private val memo = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
 
   private def surfaceOf(t: TypeRepr): Expr[Surface] = {
+    //println(s"surfaceOf ${fullTypeNameOf(t)}")
     if(seen.contains(t)) {
       if(memo.contains(t)) {
         memo(t)
@@ -219,7 +220,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
 
   private def genericTypeWithConstructorFactory: Factory = {
     case t if Option(t.typeSymbol.primaryConstructor).exists(p => p.exists && p.paramSymss.flatten.nonEmpty) =>
-      val typeArgs = typeArgsOf(t).map(surfaceOf(_))
+      val typeArgs = typeArgsOf(t.simplified).map(surfaceOf(_))
       val methodParams = constructorParametersOf(t)
       val isStatic = !t.typeSymbol.flags.is(Flags.Local)
       // TODO: This code doesn't work for Scala.js + Scala 3.0.0
@@ -239,11 +240,53 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       '{ new GenericSurface(${clsOf(a)}, typeArgs = ${Expr.ofSeq(typeArgs)}.toIndexedSeq) }
     case r: Refinement =>
       newGenericSurfaceOf(r.info)
+    case t if hasStringUnapply(t) =>
+      '{
+        EnumSurface(
+          ${clsOf(t)},
+          { (cl: Class[_], s: String) => wvlet.airframe.surface.reflect.TypeConverter.convertToCls(s, cl) }
+        )
+      }
     case t =>
       newGenericSurfaceOf(t)
   }
 
+  private def hasOptionReturnType(d: DefDef, retElementType: TypeRepr): Boolean = {
+    if(d.returnTpt.tpe <:< TypeRepr.of[Option[_]]) {
+      val typeArgs = typeArgsOf(d.returnTpt.tpe)
+      typeArgs.headOption match {
+        case Some(t) if t =:= retElementType => true
+        case _ => false
+      }
+    }
+    else {
+      false
+    }
+  }
+
+  private def hasStringUnapply(t: TypeRepr): Boolean = {
+    t.typeSymbol.companionClass match {
+      case cp: Symbol =>
+        cp.memberMethod("unapply").headOption.map(_.tree) match {
+          case Some(m: DefDef) if m.paramss.size == 1 && hasOptionReturnType(m, t) =>
+            val args: List[ParamClause] = m.paramss
+            args.headOption.flatMap(_.params.headOption) match {
+              // Is the first argument type String? def unapply(s: String)
+              case Some(v:ValDef) if v.tpt.tpe =:= TypeRepr.of[String] =>
+                true
+              case _ =>
+                false
+            }
+          case _ =>
+            false
+        }
+     case _ =>
+       false
+   }
+ }
+
   private def methodArgsOf(method:Symbol): List[Symbol] = {
+    // TODO: Substitute (apply) type parameters
     method.paramSymss.flatten
   }
 

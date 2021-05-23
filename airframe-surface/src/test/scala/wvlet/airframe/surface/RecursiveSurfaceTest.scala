@@ -13,12 +13,10 @@
  */
 package wvlet.airframe.surface
 
-import wvlet.airframe.surface
-
 object RecursiveSurfaceTest {
   case class Leaf(name: String)
   case class Cons(head: String, tail: Cons)
-  case class TypedCons[A](head: String, tail: TypedCons[A])
+  case class TypedCons[A](head: Int, tail: TypedCons[A])
 }
 
 /**
@@ -28,7 +26,7 @@ class RecursiveSurfaceTest extends SurfaceSpec {
 
   test("find surface from full type name string") {
     val s = Surface.of[Leaf]
-    assert(surface.getCached("wvlet.airframe.surface.RecursiveSurfaceTest.Leaf") == s)
+    assert(wvlet.airframe.surface.getCached("wvlet.airframe.surface.RecursiveSurfaceTest.Leaf") == s)
   }
 
   test("support recursive type") {
@@ -53,15 +51,17 @@ class RecursiveSurfaceTest extends SurfaceSpec {
 
   test("support generic recursive type") {
     val c: Surface = Surface.of[TypedCons[String]]
-    assert(c.toString == "TypedCons[String]")
+    debug(s"TypeCons[String] ${c.getClass}")
+    c.toString shouldBe "TypedCons[String]"
 
-    assert(c.params.length == 2)
-    assert(c.params(0).surface == Primitive.String)
+    c.params.length shouldBe 2
+    c.params(0).surface shouldBe Primitive.Int
 
     val lazyC: Surface = c.params(1).surface
-    assert(lazyC.toString == "TypedCons[String]")
-    assert(lazyC.params.length == 2)
-    assert(lazyC.isPrimitive == false)
-    assert(lazyC.isOption == false)
+    debug(s"lazyC surface: ${lazyC.getClass}...")
+    lazyC.toString shouldBe "TypedCons[String]"
+    lazyC.params.length shouldBe 2
+    lazyC.isPrimitive shouldBe false
+    lazyC.isOption shouldBe false
   }
 }
