@@ -3,8 +3,6 @@ import scala.quoted._
 
 private[surface] object CompileTimeSurfaceFactory {
 
-  given staging.Compiler = staging.Compiler.make(getClass.getClassLoader)
-
   type SurfaceMatcher = PartialFunction[Type[_], Expr[Surface]]
 
   def surfaceOf[A](using tpe: Type[A], quotes: Quotes): Expr[Surface] = {
@@ -16,7 +14,7 @@ private[surface] object CompileTimeSurfaceFactory {
     val t = TypeRepr.of[A]
     if(!t.typeSymbol.flags.is(Flags.Static)) {
       t.typeSymbol.maybeOwner match {
-        case s: Symbol if !s.isNoSymbol && s.isClassDef && !s.isPackageDef =>
+        case s: Symbol if !s.isNoSymbol && s.isClassDef && !s.isPackageDef && !s.flags.is(Flags.Trait) =>
           //println(s"===owner: ${s} for ${t}")
           '{ ${surfaceExpr}.withOuter(${This(s).asExpr}.asInstanceOf[AnyRef]) }
         case _ =>
