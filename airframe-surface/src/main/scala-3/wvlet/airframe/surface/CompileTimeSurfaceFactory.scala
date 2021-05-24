@@ -13,14 +13,14 @@ private[surface] object CompileTimeSurfaceFactory {
     val surfaceExpr = f.surfaceOf(tpe)
     val t = TypeRepr.of[A]
     val flags = t.typeSymbol.flags
-    if(!flags.is(Flags.Static)) {
+    if(!flags.is(Flags.Static) && flags.is(Flags.NoInits)) {
       t.typeSymbol.maybeOwner match {
         case s: Symbol if !s.isNoSymbol &&
                 s.isClassDef &&
                 !s.isPackageDef &&
-                !s.flags.is(Flags.Trait)
-                && !s.flags.is(Flags.Abstract) =>
-          println(s"===owner: ${s} for ${t} ${flags}")
+                !s.flags.is(Flags.Module) &&
+                !s.flags.is(Flags.Trait) =>
+          //println(s"${t}\n${flags.show}\nowner:${s}\n${s.flags.show}")
           '{ ${surfaceExpr}.withOuter(${This(s).asExpr}.asInstanceOf[AnyRef]) }
         case _ =>
           surfaceExpr
