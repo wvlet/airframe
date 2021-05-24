@@ -14,6 +14,7 @@
 package wvlet.airframe.surface
 
 import wvlet.airspec.AirSpec
+import wvlet.airframe.surface.reflect.RuntimeGenericSurface
 
 /**
   */
@@ -22,17 +23,16 @@ class InnerClassTest extends AirSpec {
 
   test("pass inner class context to Surface") {
     val s = Surface.of[A]
+    debug(s.asInstanceOf[RuntimeGenericSurface].outer.get.getClass())
     val a = s.objectFactory.map { x => x.newInstance(Seq(1, "leo")) }
     a shouldBe Some(A(1, "leo"))
   }
 
-  test("throw IllegalStateException when failed to find the outer class instance") {
-    val e = intercept[IllegalStateException] {
-      new {
-        val s = Surface.of[A]
-        s.objectFactory.map { x => x.newInstance(Seq(1, "leo")) }
-      }
+  test("find an inner class inside a code block") {
+    new {
+      val s = Surface.of[A]
+      val a = s.objectFactory.map { x => x.newInstance(Seq(1, "leo")) }
+      a shouldBe Some(A(1, "leo"))
     }
-    e.getMessage.contains(s"${this.getClass.getSimpleName}") shouldBe true
   }
 }

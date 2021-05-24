@@ -10,7 +10,25 @@ private[surface] object CompileTimeSurfaceFactory {
     import quotes.reflect._
 
     val f = new CompileTimeSurfaceFactory(using quotes)
-    f.surfaceOf(tpe)
+    val surfaceExpr = f.surfaceOf(tpe)
+    val t = TypeRepr.of[A]
+    val flags = t.typeSymbol.flags
+    if(!flags.is(Flags.Static) && flags.is(Flags.NoInits)) {
+      t.typeSymbol.maybeOwner match {
+        case s: Symbol if !s.isNoSymbol &&
+                s.isClassDef &&
+                !s.isPackageDef &&
+                !s.flags.is(Flags.Module) &&
+                !s.flags.is(Flags.Trait) =>
+          //println(s"${t}\n${flags.show}\nowner:${s}\n${s.flags.show}")
+          '{ ${surfaceExpr}.withOuter(${This(s).asExpr}.asInstanceOf[AnyRef]) }
+        case _ =>
+          surfaceExpr
+      }
+    }
+    else {
+      surfaceExpr
+    }
   }
 
   def methodsOf[A](using tpe: Type[A], quotes: Quotes): Expr[Seq[MethodSurface]] = {
@@ -224,6 +242,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       val methodParams = constructorParametersOf(t)
       val isStatic = !t.typeSymbol.flags.is(Flags.Local)
       // TODO: This code doesn't work for Scala.js + Scala 3.0.0
+
       '{
         new wvlet.airframe.surface.reflect.RuntimeGenericSurface(
           ${clsOf(t)},

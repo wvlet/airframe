@@ -16,13 +16,13 @@ class RuntimeGenericSurface(
     override val rawType: Class[_],
     override val typeArgs: Seq[Surface] = Seq.empty,
     override val params: Seq[Parameter] = Seq.empty,
-    outer: Option[AnyRef] = None,
+    val outer: Option[AnyRef] = None,
     isStatic: Boolean
 ) extends GenericSurface(rawType, typeArgs, params, None)
     with LogSupport {
   self =>
 
-  def withOuter(outer: AnyRef): Surface = {
+  override def withOuter(outer: AnyRef): Surface = {
     new RuntimeGenericSurface(rawType, typeArgs, params, Some(outer), isStatic = false)
   }
 
