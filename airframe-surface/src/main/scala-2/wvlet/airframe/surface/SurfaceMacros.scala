@@ -32,7 +32,7 @@ private[surface] object SurfaceMacros {
       // If t is non-static class (e.g., this.A), we need to pass its outer context instance (as this)
       val owner = t.owner
       owner match {
-        case o if o.isClass && o != NoSymbol =>
+        case o if o.isClass && o != NoSymbol && !o.isAbstract =>
           q"wvlet.airframe.surface.SurfaceFactory.localSurfaceOf[${targetType}](${t.owner}.this)"
         case _ =>
           q"wvlet.airframe.surface.SurfaceFactory.localSurfaceOf[${targetType}](this)"

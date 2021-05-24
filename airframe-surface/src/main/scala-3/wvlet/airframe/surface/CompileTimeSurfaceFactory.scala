@@ -12,10 +12,15 @@ private[surface] object CompileTimeSurfaceFactory {
     val f = new CompileTimeSurfaceFactory(using quotes)
     val surfaceExpr = f.surfaceOf(tpe)
     val t = TypeRepr.of[A]
-    if(!t.typeSymbol.flags.is(Flags.Static)) {
+    val flags = t.typeSymbol.flags
+    if(!flags.is(Flags.Static)) {
       t.typeSymbol.maybeOwner match {
-        case s: Symbol if !s.isNoSymbol && s.isClassDef && !s.isPackageDef && !s.flags.is(Flags.Trait) =>
-          //println(s"===owner: ${s} for ${t}")
+        case s: Symbol if !s.isNoSymbol &&
+                s.isClassDef &&
+                !s.isPackageDef &&
+                !s.flags.is(Flags.Trait)
+                && !s.flags.is(Flags.Abstract) =>
+          println(s"===owner: ${s} for ${t} ${flags}")
           '{ ${surfaceExpr}.withOuter(${This(s).asExpr}.asInstanceOf[AnyRef]) }
         case _ =>
           surfaceExpr
@@ -237,7 +242,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       val methodParams = constructorParametersOf(t)
       val isStatic = !t.typeSymbol.flags.is(Flags.Local)
       // TODO: This code doesn't work for Scala.js + Scala 3.0.0
-      
+
       '{
         new wvlet.airframe.surface.reflect.RuntimeGenericSurface(
           ${clsOf(t)},
