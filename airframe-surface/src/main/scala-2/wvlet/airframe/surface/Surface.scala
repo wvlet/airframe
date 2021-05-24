@@ -32,7 +32,7 @@ trait Surface extends Serializable {
   def isSeq: Boolean = classOf[Seq[_]].isAssignableFrom(rawType)
 
   def objectFactory: Option[ObjectFactory] = None
-  def withOuter(outer: AnyRef): Surface = this
+  def withOuter(outer: AnyRef): Surface    = this
 }
 
 object Surface {
