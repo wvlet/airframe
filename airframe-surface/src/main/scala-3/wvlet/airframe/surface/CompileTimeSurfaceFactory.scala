@@ -3,15 +3,29 @@ import scala.quoted._
 
 private[surface] object CompileTimeSurfaceFactory {
 
+  given staging.Compiler = staging.Compiler.make(getClass.getClassLoader)
+
   type SurfaceMatcher = PartialFunction[Type[_], Expr[Surface]]
 
   def surfaceOf[A](using tpe: Type[A], quotes: Quotes): Expr[Surface] = {
     import quotes._
     import quotes.reflect._
 
-
     val f = new CompileTimeSurfaceFactory(using quotes)
-    f.surfaceOf(tpe)
+    val surfaceExpr = f.surfaceOf(tpe)
+    val t = TypeRepr.of[A]
+    if(!t.typeSymbol.flags.is(Flags.Static)) {
+      t.typeSymbol.maybeOwner match {
+        case s: Symbol if !s.isNoSymbol && s.isClassDef && !s.isPackageDef =>
+          println(s"===owner: ${s} for ${t}")
+          '{ ${surfaceExpr}.withOuter(${This(s).asExpr}.asInstanceOf[AnyRef]) }
+        case _ =>
+          surfaceExpr
+      }
+    }
+    else {
+      surfaceExpr
+    }
   }
 
   def methodsOf[A](using tpe: Type[A], quotes: Quotes): Expr[Seq[MethodSurface]] = {
