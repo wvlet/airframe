@@ -21,7 +21,7 @@ import wvlet.airframe.surface.reflect.RuntimeGenericSurface
 class InnerClassTest extends AirSpec {
   case class A(id: Int, name: String)
 
-// ....................
+// ........................
 
   test("pass inner class context to Surface") {
     val s = Surface.of[A]
@@ -34,7 +34,7 @@ class InnerClassTest extends AirSpec {
     new {
       val s = Surface.of[A]
       val a = s.objectFactory.map { x => x.newInstance(Seq(1, "leo")) }
-        a shouldBe Some(A(1, "leo"))
+      a shouldBe Some(A(1, "leo"))
     }
   }
 }
