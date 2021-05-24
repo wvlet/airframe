@@ -17,7 +17,7 @@ private[surface] object CompileTimeSurfaceFactory {
     if(!t.typeSymbol.flags.is(Flags.Static)) {
       t.typeSymbol.maybeOwner match {
         case s: Symbol if !s.isNoSymbol && s.isClassDef && !s.isPackageDef =>
-          println(s"===owner: ${s} for ${t}")
+          //println(s"===owner: ${s} for ${t}")
           '{ ${surfaceExpr}.withOuter(${This(s).asExpr}.asInstanceOf[AnyRef]) }
         case _ =>
           surfaceExpr
