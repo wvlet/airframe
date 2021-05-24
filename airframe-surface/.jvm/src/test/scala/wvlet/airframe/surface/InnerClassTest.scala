@@ -21,8 +21,6 @@ import wvlet.airframe.surface.reflect.RuntimeGenericSurface
 class InnerClassTest extends AirSpec {
   case class A(id: Int, name: String)
 
-// ........................
-
   test("pass inner class context to Surface") {
     val s = Surface.of[A]
     debug(s.asInstanceOf[RuntimeGenericSurface].outer.get.getClass())
