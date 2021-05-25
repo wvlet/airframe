@@ -37,7 +37,7 @@ private[surface] object CompileTimeSurfaceFactory {
   }
 }
 
-private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
+private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes:Q) {
   import quotes._
   import quotes.reflect._
 
