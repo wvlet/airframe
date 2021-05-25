@@ -391,6 +391,7 @@ object ReflectSurfaceFactory extends LogSupport {
         wvlet.airframe.surface.ExistentialType
       case t @ TypeRef(NoPrefix, tpe, args) if !t.typeSymbol.isClass =>
         val name = tpe.name.decodedName.toString
+
         HigherKindedTypeSurface(name, name, surfaceOf(t.erasure), args.map(ta => surfaceOf(ta)))
     }
 
