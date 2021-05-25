@@ -27,9 +27,9 @@ object NamedParameterTest extends AirSpec {
   }
 
   trait A[Elem]
-  
+
   test("read F[_]") {
-    val s  = Surface.of[MyService[A]]
+    val s = Surface.of[MyService[A]]
     s.toString shouldBe "MyService[A]"
 
     val m = Surface.methodsOf[MyService[A]]
