@@ -93,8 +93,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes:Q) {
       val generator = factory.andThen { expr =>
         '{ wvlet.airframe.surface.surfaceCache.getOrElseUpdate(${Expr(fullTypeNameOf(t))}, ${expr}) }
       }
-      //println(s"--- surfaceOf(${t})")
       val surface = generator(t)
+      //println(s"--- ${surface.show}")
       memo += (t -> surface)
       surface
     }
@@ -174,6 +174,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes:Q) {
       val params = (0 until len).map{ i => h.param(i) }
       val args = params.map(surfaceOf(_))
       '{ HigherKindedTypeSurface(${Expr(name)}, ${Expr(fullName)}, ${inner}, ${Expr.ofSeq(args)} ) }
+    case a @ AppliedType if a.typeSymbol.name.contains("$") =>
+      '{ wvlet.airframe.surface.ExistentialType }
+    case a: AppliedType if !a.typeSymbol.isClassDef =>
+      val name = a.typeSymbol.name
+      val fullName = fullTypeNameOf(a)
+      val args = a.args.map(surfaceOf(_))
+      // TODO support type erasure instead of using AnyRefSurface
+      '{ HigherKindedTypeSurface(${Expr(name)}, ${Expr(fullName)}, AnyRefSurface, ${Expr.ofSeq(args)} ) }
   }
 
   private def typeArgsOf(t: TypeRepr): List[TypeRepr] = {
@@ -366,7 +374,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes:Q) {
         val mod = Expr(modifierBitMaskOf(m))
         val owner = surfaceOf(t)
         val name = Expr(m.name)
+        //println(s"======= ${df.returnTpt.show}")
         val ret = surfaceOf(df.returnTpt.tpe)
+        //println(s"==== method of: ${ret.show}")
         val args = methodParametersOf(t, m)
         // TODO: This code doesn't work for Scala.js + Scala 3.0.0
         '{ wvlet.airframe.surface.reflect.ReflectMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq) }
