@@ -237,12 +237,12 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
   }
 
   private def genericTypeWithConstructorFactory: Factory = {
-    case t if Option(t.typeSymbol.primaryConstructor).exists(p => p.exists && p.paramSymss.flatten.nonEmpty) =>
+    case t if !t.typeSymbol.flags.is(Flags.Abstract)
+    && Option(t.typeSymbol.primaryConstructor).exists(p => p.exists) =>
       val typeArgs = typeArgsOf(t.simplified).map(surfaceOf(_))
       val methodParams = constructorParametersOf(t)
       val isStatic = !t.typeSymbol.flags.is(Flags.Local)
       // TODO: This code doesn't work for Scala.js + Scala 3.0.0
-
       '{
         new wvlet.airframe.surface.reflect.RuntimeGenericSurface(
           ${clsOf(t)},
