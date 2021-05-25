@@ -37,8 +37,8 @@ object EnumTest extends AirSpec {
         f(classOf[Color], "Blue") shouldBe Some(Blue)
         f(classOf[Color], "Red") shouldBe Some(Red)
         f(classOf[Color], "White") shouldBe empty
-      case _ =>
-        fail("EnumSurface is not found")
+      case other =>
+        fail(s"EnumSurface should be used: ${other.getClass}")
     }
   }
 }

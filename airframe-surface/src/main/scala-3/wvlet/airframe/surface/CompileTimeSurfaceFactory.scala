@@ -237,7 +237,7 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
   }
 
   private def genericTypeWithConstructorFactory: Factory = {
-    case t if !t.typeSymbol.flags.is(Flags.Abstract)
+    case t if !t.typeSymbol.flags.is(Flags.Abstract) && !t.typeSymbol.flags.is(Flags.Trait)
     && Option(t.typeSymbol.primaryConstructor).exists(p => p.exists && p.paramSymss.nonEmpty) =>
       val typeArgs = typeArgsOf(t.simplified).map(surfaceOf(_))
       val methodParams = constructorParametersOf(t)
