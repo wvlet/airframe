@@ -37,7 +37,7 @@ private[surface] object CompileTimeSurfaceFactory {
   }
 }
 
-private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
+private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes:Q) {
   import quotes._
   import quotes.reflect._
 
@@ -93,8 +93,8 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       val generator = factory.andThen { expr =>
         '{ wvlet.airframe.surface.surfaceCache.getOrElseUpdate(${Expr(fullTypeNameOf(t))}, ${expr}) }
       }
-      //println(s"--- surfaceOf(${t})")
       val surface = generator(t)
+      //println(s"--- ${surface.show}")
       memo += (t -> surface)
       surface
     }
@@ -174,6 +174,14 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
       val params = (0 until len).map{ i => h.param(i) }
       val args = params.map(surfaceOf(_))
       '{ HigherKindedTypeSurface(${Expr(name)}, ${Expr(fullName)}, ${inner}, ${Expr.ofSeq(args)} ) }
+    case a @ AppliedType if a.typeSymbol.name.contains("$") =>
+      '{ wvlet.airframe.surface.ExistentialType }
+    case a: AppliedType if !a.typeSymbol.isClassDef =>
+      val name = a.typeSymbol.name
+      val fullName = fullTypeNameOf(a)
+      val args = a.args.map(surfaceOf(_))
+      // TODO support type erasure instead of using AnyRefSurface
+      '{ HigherKindedTypeSurface(${Expr(name)}, ${Expr(fullName)}, AnyRefSurface, ${Expr.ofSeq(args)} ) }
   }
 
   private def typeArgsOf(t: TypeRepr): List[TypeRepr] = {
@@ -304,22 +312,58 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
    }
  }
 
-  private def methodArgsOf(method:Symbol): List[Symbol] = {
-    // TODO: Substitute (apply) type parameters
-    method.paramSymss.flatten
+  private case class MethodArg(name:String, tpe:TypeRepr)
+
+  private def methodArgsOf(t: TypeRepr, method:Symbol): List[MethodArg] = {
+    val classTypeParams: List[TypeRepr] = t match {
+      case a: AppliedType =>
+        a.args
+      case _ =>
+        List.empty[TypeRepr]
+    }
+
+    //println(s"==== method args of ${fullTypeNameOf(t)}")
+    method.paramSymss match {
+      case List(tpeArgs, methodArgs) =>
+        // Resolve type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
+        val typeArgTable = tpeArgs.map(_.tree).zipWithIndex.collect {
+          case (td:TypeDef, i:Int) if i < classTypeParams.size =>
+            td.name -> classTypeParams(i)
+        }.toMap[String, TypeRepr]
+        //println(s"type args: ${typeArgTable}")
+        methodArgs.map(_.tree).collect {
+          case v:ValDef =>
+            // Substitue type param to actual types
+            val resolved: TypeRepr = v.tpt.tpe match {
+              case a: AppliedType =>
+                val resolvedTypeArgs = a.args.map {
+                  case p if p.typeSymbol.isTypeParam && typeArgTable.contains(p.typeSymbol.name)  =>
+                    typeArgTable(p.typeSymbol.name)
+                  case other => other
+                }
+                a.appliedTo(resolvedTypeArgs)
+              case other => other
+            }
+            MethodArg(v.name, resolved)
+        }
+      case lst =>
+        lst.flatten.map(_.tree).collect {
+          case v:ValDef =>
+            MethodArg(v.name, v.tpt.tpe)
+        }
+    }
   }
 
   private def constructorParametersOf(t: TypeRepr): Expr[Seq[MethodParameter]] = {
     methodParametersOf(t, t.typeSymbol.primaryConstructor)
   }
 
+
   private def methodParametersOf(t: TypeRepr, method:Symbol): Expr[Seq[MethodParameter]] = {
     val methodName = method.name
-    val methodArgs = methodArgsOf(method)
-    val argClasses = methodArgs.map(_.tree).collect {
-      case v:ValDef =>
-        //println(s"${v.name}: ${v}")
-        clsOf(v.tpt.tpe.dealias)
+    val methodArgs = methodArgsOf(t, method)
+    val argClasses = methodArgs.map { arg =>
+      clsOf(arg.tpe.dealias)
     }
     val isConstructor = t.typeSymbol.primaryConstructor == method
     val constructorRef = '{
@@ -328,10 +372,8 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
 
     //println(s"======= ${t.typeSymbol.memberMethods}")
 
-    val paramExprs = for{
-      (field, v:ValDef, i) <- methodArgs.zipWithIndex.map((f, i) => (f, f.tree, i))
-    } yield {
-      val paramType = v.tpt.tpe
+    val paramExprs = for((field, i) <- methodArgs.zipWithIndex) yield {
+      val paramType = field.tpe
       val paramName = field.name
       // println(s"${paramName}: ${v.tpt.show} ${TypeRepr.of[Option[String]].show}")
       // TODO: Use StdMethodParameter when supportin Scala.js in Scala 3
@@ -366,7 +408,9 @@ private[surface] class CompileTimeSurfaceFactory(using quotes:Quotes) {
         val mod = Expr(modifierBitMaskOf(m))
         val owner = surfaceOf(t)
         val name = Expr(m.name)
+        //println(s"======= ${df.returnTpt.show}")
         val ret = surfaceOf(df.returnTpt.tpe)
+        //println(s"==== method of: ${ret.show}")
         val args = methodParametersOf(t, m)
         // TODO: This code doesn't work for Scala.js + Scala 3.0.0
         '{ wvlet.airframe.surface.reflect.ReflectMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq) }

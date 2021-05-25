@@ -16,6 +16,7 @@ import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future
 import scala.language.higherKinds
+import wvlet.airframe.surface.Surface
 
 /**
   */
@@ -25,15 +26,17 @@ object NamedParameterTest extends AirSpec {
     def hello: F[String]
   }
 
-  test("read F[_]") {
-    val cl = classOf[MyService[Future]]
-    val s  = ReflectSurfaceFactory.ofClass(cl)
-    s.toString shouldBe "MyService[F]"
+  trait A[Elem]
 
-    val m = ReflectSurfaceFactory.methodsOfClass(cl)
+  test("read F[_]") {
+    val s = Surface.of[MyService[A]]
+    s.toString shouldBe "MyService[A]"
+
+    val m = Surface.methodsOf[MyService[A]]
     m.headOption shouldBe defined
 
     val m1 = m.head
+    //info(m1.returnType.getClass())
     m1.returnType.toString shouldBe "F[String]"
   }
 }
