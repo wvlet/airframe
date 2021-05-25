@@ -5,7 +5,7 @@ import wvlet.airframe.Design
 import wvlet.airframe.surface.Surface
 
 object AbstractTypeTest extends AirSpec {
-  
+
   trait Abst {
     def hello = "hello abst"
   }
