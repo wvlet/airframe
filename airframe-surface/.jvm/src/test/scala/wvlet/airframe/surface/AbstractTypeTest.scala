@@ -1,9 +1,7 @@
-package wvlet.airframe.di
+package wvlet.airframe.surface
 
 import wvlet.airspec.AirSpec
-import wvlet.airframe.Design
-import wvlet.airframe.surface.Surface
-
+  
 object AbstractTypeTest extends AirSpec {
   
   trait Abst {
@@ -13,16 +11,11 @@ object AbstractTypeTest extends AirSpec {
     override def hello: String = "hello impl"
   }
 
-  test("bind to abstract type") {
-    val d = Design.newSilentDesign
-      .bind[Abst].to[AbstImpl]
-
+  test("object factory of an abstract type impl") {
     val s = Surface.of[AbstImpl]
     s.objectFactory shouldBe defined
 
-    d.build[Abst] { (a: Abst) =>
-      a.hello shouldBe "hello impl"
-    }
+    val a = s.objectFactory.get.newInstance(Seq.empty).asInstanceOf[Abst]
+    a.hello shouldBe "hello impl"
   }
-
 }
