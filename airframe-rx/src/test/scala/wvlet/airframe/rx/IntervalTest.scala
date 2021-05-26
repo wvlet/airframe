@@ -89,6 +89,7 @@ class IntervalTest extends AirSpec {
       counter.incrementAndGet()
       s += x
     }
+
     while (counter.get() != 1) {}
     c.cancel
     s shouldBe Seq(1)
@@ -109,5 +110,14 @@ class IntervalTest extends AirSpec {
     while (counter.get() != 1) {}
     c.cancel
     s shouldBe Seq(3)
+  }
+
+  test("throttleLast of empty seq") {
+    pendingScalaJS
+    val rx = Rx.fromSeq(Seq.empty[Int]).throttleLast(1, TimeUnit.MILLISECONDS)
+    val c  = rx.run { x => }
+    compat.scheduleOnce(100) {
+      c.cancel
+    }
   }
 }

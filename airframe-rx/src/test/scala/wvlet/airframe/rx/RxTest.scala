@@ -239,6 +239,28 @@ object RxTest extends AirSpec {
     e.cancel
   }
 
+  test("zip4") {
+    val a = Rx.variable(1)
+    val b = Rx.variable("a")
+    val c = Rx.variable(true)
+    val d = Rx.variable(false)
+
+    val x  = a.zip(b, c, d)
+    val ev = Seq.newBuilder[RxEvent]
+    val ca = RxRunner.runContinuously(x)(ev += _)
+
+    a := 2
+    b := "b"
+    c := false
+    d := true
+
+    val events = ev.result()
+    events shouldBe Seq(
+      OnNext(1, "a", true, false),
+      OnNext(2, "b", false, true)
+    )
+  }
+
   test("join") {
     val x  = Rx.variable(1)
     val y  = Rx.variable("a")
