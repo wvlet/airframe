@@ -245,7 +245,7 @@ object RxTest extends AirSpec {
     val c = Rx.variable(true)
     val d = Rx.variable(false)
 
-    val x     = a.zip(b, c, d)
+    val x  = a.zip(b, c, d)
     val ev = Seq.newBuilder[RxEvent]
     val ca = RxRunner.runContinuously(x)(ev += _)
 
@@ -260,7 +260,6 @@ object RxTest extends AirSpec {
       OnNext(2, "b", false, true)
     )
   }
-
 
   test("join") {
     val x  = Rx.variable(1)
