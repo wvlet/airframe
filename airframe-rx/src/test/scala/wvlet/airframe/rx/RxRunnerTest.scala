@@ -1,6 +1,7 @@
 package wvlet.airframe.rx
 
 import wvlet.airspec.AirSpec
+import java.util.concurrent.TimeUnit
 
 object RxRunnerTest extends AirSpec {
 
@@ -56,6 +57,24 @@ object RxRunnerTest extends AirSpec {
       c.cancel
 
     }
+
+    test("timer") {
+      val rx = Rx.timer(1, TimeUnit.MILLISECONDS).map[Int] { x =>
+        throw ex
+      }
+      var c = Cancelable.empty
+      c = RxRunner.run(rx) {
+        case OnError(e) =>
+          e shouldBeTheSameInstanceAs ex
+        case other =>
+          fail(s"should not be here: ${other}")
+      }
+      // Wait a bit
+      compat.scheduleOnce(10) {
+        c.cancel
+      }
+    }
+
   }
 
 }
