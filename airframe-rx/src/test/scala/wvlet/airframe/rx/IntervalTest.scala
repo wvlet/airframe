@@ -113,6 +113,7 @@ class IntervalTest extends AirSpec {
   }
 
   test("throttleLast of empty seq") {
+    pendingScalaJS
     val rx = Rx.fromSeq(Seq.empty[Int]).throttleLast(1, TimeUnit.MILLISECONDS)
     val c  = rx.run { x => }
     compat.scheduleOnce(100) {
