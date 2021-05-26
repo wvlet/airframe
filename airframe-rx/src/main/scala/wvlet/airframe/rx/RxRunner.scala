@@ -38,7 +38,8 @@ object RxResult {
 object RxRunner extends LogSupport {
 
   private val defaultRunner = new RxRunner(continuous = false)
-  // Used for continuous RxVar evaluation (e.g., RxVar -> DOM rendering)
+  // Used for continuous RxVar evaluation (e.g., RxVar -> DOM rendering).
+  // This runner will not report OnCompleiton event
   private val continuousRunner = new RxRunner(continuous = true)
 
   def run[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable =
