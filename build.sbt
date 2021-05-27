@@ -19,7 +19,7 @@ val SCALAJS_DOM_VERSION             = "1.1.0"
 val FINAGLE_VERSION                 = "21.4.0"
 val FLUENCY_VERSION                 = "2.5.1"
 val GRPC_VERSION                    = "1.38.0"
-val JMH_VERSION                     = "1.31"
+val JMH_VERSION                     = "1.32"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 val PARQUET_VERSION                 = "1.12.0"
 
@@ -855,8 +855,8 @@ lazy val benchmark =
         "org.openjdk.jmh" % "jmh-generator-bytecode"   % JMH_VERSION,
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION,
         // Used only for json benchmark
-        "org.json4s" %% "json4s-jackson" % "4.0.0",
-        "io.circe"   %% "circe-parser"   % "0.14.0",
+        "org.json4s" %% "json4s-jackson" % "3.6.11",
+        "io.circe"   %% "circe-parser"   % "0.14.1",
         // For ScalaPB
         // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
         // For grpc-java
