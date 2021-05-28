@@ -72,13 +72,13 @@ class GrpcRequestHandler(
           m
         case _ =>
           val e = new IllegalArgumentException(s"Request data is not a MapValue: ${value}")
-          logger.error(e)
+          reportError(e)
           requestLogger.logError(e, grpcContext, rpcContext)
           throw e
       }
     } catch {
       case e: MessageCodecException =>
-        logger.error(e)
+        reportError(e)
         requestLogger.logError(e, grpcContext, rpcContext)
         throw e
     }
