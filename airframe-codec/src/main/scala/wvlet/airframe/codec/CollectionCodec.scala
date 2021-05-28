@@ -182,6 +182,9 @@ object CollectionCodec {
 
     protected def unpackMap(u: Unpacker, v: MessageContext): Unit = {
       u.getNextFormat.getValueType match {
+        case ValueType.NIL =>
+          u.unpackNil
+          v.setObject(castResult(newMapBuilder.result()))
         case ValueType.MAP =>
           val len = u.unpackMapHeader
           val b   = newMapBuilder

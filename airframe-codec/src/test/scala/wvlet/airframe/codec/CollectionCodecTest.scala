@@ -23,9 +23,16 @@ import scala.jdk.CollectionConverters._
 /**
   */
 class CollectionCodecTest extends CodecSpec {
+
   test("support Map type") {
     val v = Map("id" -> 1)
     roundtrip(Surface.of[Map[String, Int]], v, DataType.ANY)
+  }
+
+  test("read null as empty map") {
+    val codec   = MessageCodec.of[Map[String, Int]]
+    val msgpack = MessagePack.newBufferPacker.packNil.toByteArray
+    codec.unpack(msgpack) shouldBe Map.empty
   }
 
   test("support ListMap type") {
