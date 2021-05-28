@@ -24,9 +24,11 @@ import wvlet.airframe.surface.{CName, MethodSurface, Surface}
 import wvlet.log.LogSupport
 import wvlet.airframe.rx._
 
+import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{Callable, ExecutorService}
-import scala.concurrent.{ExecutionContext, Promise}
+import scala.annotation.tailrec
+import scala.concurrent.{ExecutionContext, ExecutionException, Promise}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -92,6 +94,25 @@ class GrpcRequestHandler(
     }
   }
 
+  private def reportError(e: Throwable): Unit = {
+
+    /**
+      * Find the root cause of the exception from wrapped exception classes
+      */
+    @tailrec
+    def findCause(e: Throwable): Throwable = {
+      e match {
+        case i: InvocationTargetException if i.getTargetException != null =>
+          findCause(i.getTargetException)
+        case ee: ExecutionException if ee.getCause != null =>
+          findCause(ee.getCause)
+        case _ =>
+          e
+      }
+    }
+    logger.error(findCause(e))
+  }
+
   def invokeMethod(request: MsgPack): Try[Any] = {
     val grpcContext = GrpcContext.current
 
@@ -127,7 +148,7 @@ class GrpcRequestHandler(
         ret
       } catch {
         case e: Throwable =>
-          logger.error(e)
+          reportError(e)
           requestLogger.logError(e, grpcContext, rpcContext.withRPCArgs(args))
           throw e
       }
@@ -172,12 +193,12 @@ class GrpcRequestHandler(
           case Success(v) =>
             rx.add(OnNext(v))
           case Failure(e) =>
-            logger.error(e)
+            reportError(e)
             rx.add(OnError(e))
         }
       }
       override def onError(t: Throwable): Unit = {
-        logger.error(t)
+        reportError(t)
         requestLogger.logError(t, grpcContext, rpcContext)
         rx.add(OnError(t))
         responseObserver.onError(GrpcException.wrap(t))
@@ -191,7 +212,7 @@ class GrpcRequestHandler(
             responseObserver.onNext(GrpcResponse(value, encoding))
             responseObserver.onCompleted()
           case Failure(e) =>
-            logger.error(e)
+            reportError(e)
             requestLogger.logError(e, grpcContext, rpcContext)
             responseObserver.onError(GrpcException.wrap(e))
         }(ExecutionContext.fromExecutor(executorService))
@@ -240,7 +261,7 @@ class GrpcRequestHandler(
         }
       }
       override def onError(t: Throwable): Unit = {
-        logger.warn(t)
+        reportError(t)
         rx.add(OnError(t))
         responseObserver.onError(t)
       }
@@ -256,7 +277,7 @@ class GrpcRequestHandler(
                   case OnNext(value) =>
                     responseObserver.onNext(GrpcResponse(value, encoding))
                   case OnError(e) =>
-                    logger.error(e)
+                    reportError(e)
                     requestLogger.logError(e, grpcContext, rpcContext)
                     responseObserver.onError(GrpcException.wrap(e))
                   case OnCompletion =>
@@ -269,7 +290,7 @@ class GrpcRequestHandler(
                 responseObserver.onCompleted()
             }
           case Failure(e) =>
-            logger.error(e)
+            reportError(e)
             requestLogger.logError(e, grpcContext, rpcContext)
             responseObserver.onError(GrpcException.wrap(e))
         }(ExecutionContext.fromExecutor(executorService))
