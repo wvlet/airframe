@@ -70,11 +70,13 @@ class GrpcRequestHandler(
           m
         case _ =>
           val e = new IllegalArgumentException(s"Request data is not a MapValue: ${value}")
+          logger.error(e)
           requestLogger.logError(e, grpcContext, rpcContext)
           throw e
       }
     } catch {
       case e: MessageCodecException =>
+        logger.error(e)
         requestLogger.logError(e, grpcContext, rpcContext)
         throw e
     }
@@ -125,6 +127,7 @@ class GrpcRequestHandler(
         ret
       } catch {
         case e: Throwable =>
+          logger.error(e)
           requestLogger.logError(e, grpcContext, rpcContext.withRPCArgs(args))
           throw e
       }
@@ -169,10 +172,12 @@ class GrpcRequestHandler(
           case Success(v) =>
             rx.add(OnNext(v))
           case Failure(e) =>
+            logger.error(e)
             rx.add(OnError(e))
         }
       }
       override def onError(t: Throwable): Unit = {
+        logger.error(t)
         requestLogger.logError(t, grpcContext, rpcContext)
         rx.add(OnError(t))
         responseObserver.onError(GrpcException.wrap(t))
@@ -186,6 +191,7 @@ class GrpcRequestHandler(
             responseObserver.onNext(GrpcResponse(value, encoding))
             responseObserver.onCompleted()
           case Failure(e) =>
+            logger.error(e)
             requestLogger.logError(e, grpcContext, rpcContext)
             responseObserver.onError(GrpcException.wrap(e))
         }(ExecutionContext.fromExecutor(executorService))
@@ -234,6 +240,7 @@ class GrpcRequestHandler(
         }
       }
       override def onError(t: Throwable): Unit = {
+        logger.warn(t)
         rx.add(OnError(t))
         responseObserver.onError(t)
       }
@@ -249,6 +256,7 @@ class GrpcRequestHandler(
                   case OnNext(value) =>
                     responseObserver.onNext(GrpcResponse(value, encoding))
                   case OnError(e) =>
+                    logger.error(e)
                     requestLogger.logError(e, grpcContext, rpcContext)
                     responseObserver.onError(GrpcException.wrap(e))
                   case OnCompletion =>
@@ -261,6 +269,7 @@ class GrpcRequestHandler(
                 responseObserver.onCompleted()
             }
           case Failure(e) =>
+            logger.error(e)
             requestLogger.logError(e, grpcContext, rpcContext)
             responseObserver.onError(GrpcException.wrap(e))
         }(ExecutionContext.fromExecutor(executorService))
