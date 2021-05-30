@@ -16,7 +16,7 @@ package wvlet.airframe.codec
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
-
+import wvlet.airframe.json.JSONParseException
 import scala.util.{Failure, Success, Try}
 
 trait PackAsMapSupport[A] { self: MessageCodec[A] =>
@@ -184,6 +184,16 @@ class ParamListCodec(
         }
         trace(s"map:${map.mkString(",")}, args:${args.mkString(", ")}")
         v.setObject(args)
+      case ValueType.STRING =>
+        // Assume it's a JSON input
+        val json = u.unpackString
+        try {
+          val msgpack = JSONCodec.toMsgPack(json)
+          this.unpackMsgPack(msgpack).map { x => v.setObject(x) }
+        } catch {
+          case e: JSONParseException =>
+            v.setError(e)
+        }
       case other =>
         u.skipValue
         v.setIncompatibleFormatException(this, s"Expected ARRAY or MAP type input for ${name}")
