@@ -96,4 +96,22 @@ class ULIDTest extends AirSpec with PropertyCheck {
     val decodedTs = CrockfordBase32.decode48bits(tsString)
     ts shouldBe decodedTs
   }
+
+  test("customize random generator") {
+    try {
+      ULID.useNonSecureRandomULIDGenerator
+      for (i <- 0 to 10) {
+        val ulid      = ULID.newULID
+        val timestamp = ulid.epochMillis
+        val str       = ulid.toString
+        val parsed    = ULID.fromString(str)
+        ulid shouldBe parsed
+        ulid <= ULID.MaxValue shouldBe true
+        debug(s"${ulid} ${timestamp} ${parsed}")
+      }
+    } finally {
+      ULID.useDefaultULIDGenerator
+    }
+
+  }
 }

@@ -13,11 +13,13 @@
  */
 package wvlet.airframe.benchmark.ulid
 
-import org.openjdk.jmh.annotations.{Benchmark, BenchmarkMode, Group, Mode, OutputTimeUnit, Scope, State}
+import org.openjdk.jmh.annotations.{Benchmark, BenchmarkMode, Group, Mode, OutputTimeUnit, Scope, State, Threads}
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.ulid.{ULID => AirframeULID}
 import com.chatwork.scala.ulid.{ULID => ChatworkULID}
+
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 abstract class ULIDBenchmark {
   protected def newMonotonicULIDString: String
@@ -29,24 +31,38 @@ abstract class ULIDBenchmark {
   }
 }
 
-@State(Scope.Thread)
+@Threads(2)
+@State(Scope.Group)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class Airframe extends ULIDBenchmark {
   override protected def newMonotonicULIDString: String = {
-    AirframeULID.newULID.toString
+    AirframeULID.newULIDString
   }
 }
 
-@State(Scope.Thread)
+@Threads(2)
+@State(Scope.Group)
+@BenchmarkMode(Array(Mode.Throughput))
+@OutputTimeUnit(TimeUnit.SECONDS)
+class AirframeNonSecure extends ULIDBenchmark {
+  private val gen = AirframeULID.nonSecureRandomULIDGenerator
+
+  override protected def newMonotonicULIDString: String = {
+    gen.newULIDString
+  }
+}
+
+@Threads(2)
+@State(Scope.Group)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class Chatwork extends ULIDBenchmark {
-  private var lastValue: ChatworkULID = ChatworkULID.generate()
+  private val lastValue: AtomicReference[ChatworkULID] = new AtomicReference(ChatworkULID.generate())
 
   override protected def newMonotonicULIDString: String = {
-    val newValue = ChatworkULID.generateMonotonic(lastValue)
-    lastValue = newValue
+    val newValue = ChatworkULID.generateMonotonic(lastValue.get())
+    lastValue.set(newValue)
     newValue.asString
   }
 
@@ -57,7 +73,8 @@ class Chatwork extends ULIDBenchmark {
   }
 }
 
-@State(Scope.Thread)
+@Threads(2)
+@State(Scope.Group)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class UUID {
