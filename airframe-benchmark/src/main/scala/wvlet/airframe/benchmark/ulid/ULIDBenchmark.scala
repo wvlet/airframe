@@ -13,13 +13,12 @@
  */
 package wvlet.airframe.benchmark.ulid
 
-import org.openjdk.jmh.annotations.{Benchmark, BenchmarkMode, Group, Mode, OutputTimeUnit, Scope, State, Threads}
+import com.chatwork.scala.ulid.{ULID => ChatworkULID}
+import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.ulid.{ULID => AirframeULID}
-import com.chatwork.scala.ulid.{ULID => ChatworkULID}
 
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicReference
 
 abstract class ULIDBenchmark {
   protected def newMonotonicULIDString: String
@@ -31,39 +30,45 @@ abstract class ULIDBenchmark {
   }
 }
 
-@Threads(2)
-@State(Scope.Group)
+@Threads(4)
+@State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class Airframe extends ULIDBenchmark {
   override protected def newMonotonicULIDString: String = {
-    AirframeULID.newULIDString
+    AirframeULID.newULID.toString
   }
 }
 
-@Threads(2)
-@State(Scope.Group)
+@Threads(4)
+@State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class AirframeNonSecure extends ULIDBenchmark {
   private val gen = AirframeULID.nonSecureRandomULIDGenerator
 
   override protected def newMonotonicULIDString: String = {
-    gen.newULIDString
+    gen.newULID.toString
   }
 }
 
-@Threads(2)
-@State(Scope.Group)
+@Threads(4)
+@State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class Chatwork extends ULIDBenchmark {
-  private val lastValue: AtomicReference[ChatworkULID] = new AtomicReference(ChatworkULID.generate())
+  private var lastValue: ChatworkULID = ChatworkULID.generate()
 
   override protected def newMonotonicULIDString: String = {
-    val newValue = ChatworkULID.generateMonotonic(lastValue.get())
-    lastValue.set(newValue)
-    newValue.asString
+    var newValue: Option[ChatworkULID] = None
+    synchronized {
+      newValue = ChatworkULID.generateStrictlyMonotonic(lastValue)
+      while (newValue.isEmpty) {
+        newValue = ChatworkULID.generateStrictlyMonotonic(lastValue)
+      }
+      lastValue = newValue.get
+    }
+    newValue.get.asString
   }
 
   @Benchmark
@@ -73,8 +78,8 @@ class Chatwork extends ULIDBenchmark {
   }
 }
 
-@Threads(2)
-@State(Scope.Group)
+@Threads(4)
+@State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class UUID {
