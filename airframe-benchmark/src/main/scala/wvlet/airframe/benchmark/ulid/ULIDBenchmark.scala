@@ -13,10 +13,11 @@
  */
 package wvlet.airframe.benchmark.ulid
 
-import org.openjdk.jmh.annotations.{Benchmark, BenchmarkMode, Group, Mode, OutputTimeUnit, Scope, State}
+import com.chatwork.scala.ulid.{ULID => ChatworkULID}
+import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.ulid.{ULID => AirframeULID}
-import com.chatwork.scala.ulid.{ULID => ChatworkULID}
+
 import java.util.concurrent.TimeUnit
 
 abstract class ULIDBenchmark {
@@ -29,7 +30,8 @@ abstract class ULIDBenchmark {
   }
 }
 
-@State(Scope.Thread)
+@Threads(4)
+@State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class Airframe extends ULIDBenchmark {
@@ -38,16 +40,35 @@ class Airframe extends ULIDBenchmark {
   }
 }
 
-@State(Scope.Thread)
+@Threads(4)
+@State(Scope.Benchmark)
+@BenchmarkMode(Array(Mode.Throughput))
+@OutputTimeUnit(TimeUnit.SECONDS)
+class AirframeNonSecure extends ULIDBenchmark {
+  private val gen = AirframeULID.nonSecureRandomULIDGenerator
+
+  override protected def newMonotonicULIDString: String = {
+    gen.newULID.toString
+  }
+}
+
+@Threads(4)
+@State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class Chatwork extends ULIDBenchmark {
   private var lastValue: ChatworkULID = ChatworkULID.generate()
 
   override protected def newMonotonicULIDString: String = {
-    val newValue = ChatworkULID.generateMonotonic(lastValue)
-    lastValue = newValue
-    newValue.asString
+    var newValue: Option[ChatworkULID] = None
+    synchronized {
+      newValue = ChatworkULID.generateStrictlyMonotonic(lastValue)
+      while (newValue.isEmpty) {
+        newValue = ChatworkULID.generateStrictlyMonotonic(lastValue)
+      }
+      lastValue = newValue.get
+    }
+    newValue.get.asString
   }
 
   @Benchmark
@@ -57,7 +78,8 @@ class Chatwork extends ULIDBenchmark {
   }
 }
 
-@State(Scope.Thread)
+@Threads(4)
+@State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class UUID {
