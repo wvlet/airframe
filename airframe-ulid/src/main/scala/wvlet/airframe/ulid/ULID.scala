@@ -184,7 +184,7 @@ object ULID {
     * @param timeSource a function that returns the current time in milliseconds (e.g. java.lang.System.currentTimeMillis())
     * @param random a function that returns a 80-bit random values in Array[Byte] (size:10)
     */
-  private class ULIDGenerator(random: () => Array[Byte]) {
+  class ULIDGenerator(random: () => Array[Byte]) {
     private val baseSystemTimeMillis = System.currentTimeMillis()
     private val baseNanoTime         = System.nanoTime()
 
