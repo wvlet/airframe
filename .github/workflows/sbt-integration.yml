@@ -1,0 +1,48 @@
+name: sbt-integration
+
+on:
+  pull_request:
+    paths:
+      - '**.scala'
+      - '**.java'
+      - '**.sbt'
+      - '.github/workflows/sbt-integration.yml'
+  push:
+    branches:
+      - master
+    paths:
+      - '**.scala'
+      - '**.java'
+      - '**.sbt'
+
+jobs:
+  sbt_airframe:
+    name: sbt-airframe
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout airframe
+      - uses: actions/checkout@v2
+        with:
+	  path: airframe
+          fetch-depth: 10000
+      # Fetch all tags so that sbt-dynver can find the previous release version
+      - run: git fetch --tags -f
+        working-directory: ./airframe
+      - uses: olafurpg/setup-scala@v10
+        with:
+          java-version: adopt@1.11
+      - name: Create a snapshot
+        run: ./sbt ++2.12.14 "projectJVM/publishLocal; projectJS/publishLocal"
+	working-directory: ./airframe
+      - name: Checkout sbt-airframe
+        uses: actions/checkout@v2
+        with:
+          repository: wvlet/sbt-airframe
+	  path: sbt-airframe
+      - name: Get Airframe version
+        run: echo "AIRFRAME_VERSION=$(./sbt -batch httpJVM/version | tail -1 | cut -d ' ' -f2)" >> $GITHUB_ENV
+        working-directory: ./airframe
+      - name: Run sbt plugin tests
+        run: AIRFRAME_VERSION=${AIRFRAME_VERSION} ./sbt scripted
+	working-directory: ./sbt-airframe
+	
