@@ -23,7 +23,7 @@ jobs:
       - name: Checkout airframe
       - uses: actions/checkout@v2
         with:
-	  path: airframe
+          path: airframe
           fetch-depth: 10000
       # Fetch all tags so that sbt-dynver can find the previous release version
       - run: git fetch --tags -f
@@ -33,16 +33,15 @@ jobs:
           java-version: adopt@1.11
       - name: Create a snapshot
         run: ./sbt ++2.12.14 "projectJVM/publishLocal; projectJS/publishLocal"
-	working-directory: ./airframe
+        working-directory: ./airframe
       - name: Checkout sbt-airframe
         uses: actions/checkout@v2
         with:
           repository: wvlet/sbt-airframe
-	  path: sbt-airframe
+          path: sbt-airframe
       - name: Get Airframe version
         run: echo "AIRFRAME_VERSION=$(./sbt -batch httpJVM/version | tail -1 | cut -d ' ' -f2)" >> $GITHUB_ENV
         working-directory: ./airframe
       - name: Run sbt plugin tests
         run: AIRFRAME_VERSION=${AIRFRAME_VERSION} ./sbt scripted
-	working-directory: ./sbt-airframe
-	
+        working-directory: ./sbt-airframe
