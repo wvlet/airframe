@@ -32,7 +32,7 @@ jobs:
         with:
           java-version: adopt@1.11
       - name: Get Airframe version
-        run: echo "AIRFRAME_VERSION=$(./sbt httpJVM/version | tail -1 | cut -d ' ' -f2)" >> $GITHUB_ENV
+        run: echo "AIRFRAME_VERSION=$(./scripts/dynver.sh)" >> $GITHUB_ENV
         working-directory: ./airframe
       - name: Check Airframe version
         run: echo ${AIRFRAME_VERSION}
