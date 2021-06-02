@@ -15,6 +15,7 @@ package wvlet.airframe.ulid
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
+import scala.util.Random
 
 /**
   * ULID string, consisting of 26 characters.
@@ -85,9 +86,13 @@ object ULID {
   private[ulid] val MinTime = 0L
   private[ulid] val MaxTime = (~0L) >>> (64 - 48) // Timestamp uses 48-bit range
 
-  private val random: scala.util.Random = compat.random
+  private var _generator: ULIDGenerator = defaultULIDGenerator
 
-  private val defaultGenerator = {
+  /**
+    * The default secure random-based ULID Generator
+    */
+  def defaultULIDGenerator: ULIDGenerator = {
+    val random: scala.util.Random = compat.random
     val randGen = { () =>
       val r = new Array[Byte](10)
       random.nextBytes(r)
@@ -97,14 +102,47 @@ object ULID {
   }
 
   /**
+    * Return a fast ULID generator, but with a reduced randomness
+    */
+  def nonSecureRandomULIDGenerator: ULIDGenerator = {
+    val randGen = { () =>
+      val r = new Array[Byte](10); Random.nextBytes(r); r
+    }
+    new ULIDGenerator(randGen)
+  }
+
+  /**
+    * Set the default ULIDGenerator that will be used for ULID.newULID.
+    * @param newGenerator
+    */
+  def setDefaultULIDGenerator(newGenerator: ULIDGenerator): Unit = {
+    require(newGenerator != null, "ULIDGenerator is null")
+    _generator = newGenerator
+  }
+
+  /**
+    * Use the fast ULID generator by default with reduced randomness
+    */
+  def useNonSecureRandomULIDGenerator: Unit = {
+    setDefaultULIDGenerator(nonSecureRandomULIDGenerator)
+  }
+
+  /**
+    * Use the default secura-random based ULID generator.
+    */
+  def useDefaultULIDGenerator: Unit = {
+    setDefaultULIDGenerator(defaultULIDGenerator)
+  }
+
+  /**
     * Create a new ULID
     */
-  def newULID: ULID = new ULID(defaultGenerator.generate)
+  def newULID: ULID = _generator.newULID
 
   /**
     * Create a new ULID string
     */
-  def newULIDString: String = defaultGenerator.generate
+  def newULIDString: String = _generator.newULIDString
 
   /**
     * Create a new ULID from a given string of size 26
@@ -184,7 +222,7 @@ object ULID {
     * @param timeSource a function that returns the current time in milliseconds (e.g. java.lang.System.currentTimeMillis())
     * @param random a function that returns a 80-bit random values in Array[Byte] (size:10)
     */
-  private class ULIDGenerator(random: () => Array[Byte]) {
+  class ULIDGenerator(random: () => Array[Byte]) {
     private val baseSystemTimeMillis = System.currentTimeMillis()
     private val baseNanoTime         = System.nanoTime()
 
@@ -195,8 +233,10 @@ object ULID {
       baseSystemTimeMillis + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - baseNanoTime)
     }
 
+    def newULID: ULID = new ULID(newULIDString)
+
     /**
-      * Generate ULID string.
+      * Generate a new ULID string.
       *
       * Tips for optimizing performance:
       *
@@ -208,7 +248,7 @@ object ULID {
       * is ideal.
       * 4. In base32 encoding/decoding, use bit-shift operators as much as possible to utilize CPU registers and memory cache.
       */
-    def generate: String = {
+    def newULIDString: String = {
       val unixTimeMillis: Long = currentTimeInMillis
       if (unixTimeMillis > MaxTime) {
         throw new IllegalStateException(f"unixtime should be less than: ${MaxTime}%,d: ${unixTimeMillis}%,d")
@@ -227,7 +267,7 @@ object ULID {
             if ((nextHi & (~0L << 16)) != 0) {
               // Random number overflow. Wait for one millisecond and retry
               compat.sleep(1)
-              generate
+              newULIDString
             } else {
               nextHi |= unixTimeMillis << (64 - 48)
               generateFrom(nextHi, 0)

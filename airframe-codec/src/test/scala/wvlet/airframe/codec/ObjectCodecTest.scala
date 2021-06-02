@@ -34,6 +34,9 @@ object ObjectCodecTest {
   case class A3(opt: Option[String], str: String)
 
   case class B(@required name: String)
+
+  case class Nested(i: Int, s: String)
+  case class JSONField(v: Nested)
 }
 
 /**
@@ -127,5 +130,14 @@ class ObjectCodecTest extends CodecSpec {
     }
     warn(ex.getMessage)
     ex.errorCode shouldBe MISSING_PARAMETER
+  }
+
+  test("nested JSON field") {
+    val codec = MessageCodec.of[JSONField]
+    val p     = MessagePack.newBufferPacker
+    p.packArrayHeader(1)
+    p.packString("""{"i":1,"s":"hello"}""")
+    val msgpack = p.toByteArray
+    codec.fromMsgPack(msgpack) shouldBe JSONField(Nested(1, "hello"))
   }
 }

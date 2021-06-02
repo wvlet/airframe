@@ -127,6 +127,7 @@ class ScalaStandardCodecTest extends CodecSpec {
     val et    = Left(new IllegalArgumentException("test exception"))
     val json  = codec.toJson(et)
     debug(json)
+    import wvlet.airframe.json._
     JSON.parse(json) match {
       case JSONArray(Seq(obj @ JSONObject(v), JSON.JSONNull)) =>
         (obj / "exceptionClass").toStringValue shouldBe "java.lang.IllegalArgumentException"

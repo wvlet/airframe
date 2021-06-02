@@ -52,7 +52,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     val javaListCodec = MessageCodec
       .ofSurface(new GenericSurface(classOf[java.util.List[_]], Seq(surface))).asInstanceOf[MessageCodec[
         java.util.List[T]
-      ]]
+      ]].asInstanceOf[MessageCodec[java.util.List[_]]]
 
     forAll { (v: Array[T]) =>
       // Array round trip
@@ -60,7 +60,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
       // Seq -> Array
       roundtrip(seqCodec, v.toSeq, DataType.ANY)
       // java.util.List[T] -> Array
-      roundtrip(javaListCodec, v.toSeq.asJava, DataType.ANY)
+      roundtrip(javaListCodec, v.toList.asJava, DataType.ANY)
     }
   }
 
