@@ -30,15 +30,12 @@ Airframe also has other [useful utility modules](#list-of-airframe-modules) like
 Airframe is a collection of essential libraries. Add necessary modules for your applications to your `libraryDependencies` setting in __build.sbt__ file.
 
 [![maven central](https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central)](https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
-) [![airframe](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange
-)](https://index.scala-lang.org/wvlet/airframe)
-
 
 **build.sbt**
 ```scala
 val AIRFRAME_VERSION="(version)"
 
-# For Scala 2.12, and 2.13
+// For Scala 2.12, 2.13, 3.0
 libraryDependencies ++= Seq(
   "org.wvlet.airframe" %% "airframe"               % AIRFRAME_VERSION, // Dependency injection
   "org.wvlet.airframe" %% "airframe-codec"         % AIRFRAME_VERSION, // MessagePack-based schema-on-read codec
@@ -56,11 +53,12 @@ libraryDependencies ++= Seq(
   "org.wvlet.airframe" %% "airframe-metrics"       % AIRFRAME_VERSION, // Metrics units
   "org.wvlet.airframe" %% "airframe-msgpack"       % AIRFRAME_VERSION, // Pure-Scala MessagePack
   "org.wvlet.airframe" %% "airframe-rx"            % AIRFRAME_VERSION, // ReactiveX interface
+  "org.wvlet.airframe" %% "airframe-rx-html"       % AIRFRAME_VERSION, // Reactive DOM
   "org.wvlet.airframe" %% "airframe-surface"       % AIRFRAME_VERSION, // Object surface inspector
   "org.wvlet.airframe" %% "airframe-ulid"          % AIRFRAME_VERSION, // ULID generator
 )
 
-# For Scala.js, the following libraries can be used:
+// For Scala.js, the following libraries can be used:
 libraryDependencies ++= Seq(
   "org.wvlet.airframe" %%% "airframe"         % AIRFRAME_VERSION, // Dependency injection
   "org.wvlet.airframe" %%% "airframe-codec"   % AIRFRAME_VERSION, // MessagePack-based schema-on-read codec
@@ -71,11 +69,17 @@ libraryDependencies ++= Seq(
   "org.wvlet.airframe" %%% "airframe-msgpack" % AIRFRAME_VERSION, // Pure-Scala MessagePack
   "org.wvlet.airframe" %%% "airframe-metrics" % AIRFRAME_VERSION, // Metrics units
   "org.wvlet.airframe" %%% "airframe-rx"      % AIRFRAME_VERSION, // ReactiveX interface
+  "org.wvlet.airframe" %%% "airframe-rx-html" % AIRFRAME_VERSION, // Reactive DOM
   "org.wvlet.airframe" %%% "airframe-surface" % AIRFRAME_VERSION, // Object surface inspector
   "org.wvlet.airframe" %%% "airframe-ulid"    % AIRFRAME_VERSION, // ULID generator
 )
 ```
 
+If you need an early access to the latest features, [snapshot versions](https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/) are also available for each master branch commit. To use snapshot versions, add Sonatype snapshot repository to your resolver setting:
+
+```scala
+resolvers += Resolver.sonatypeRepo("snapshots")
+```
 
 ## Usage Guides
 
