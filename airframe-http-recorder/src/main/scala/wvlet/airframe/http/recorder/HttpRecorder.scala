@@ -24,7 +24,6 @@ import javax.net.ssl.SSLContext
 import wvlet.airframe.http.ServerAddress
 import wvlet.airframe.http.finagle.FinagleServer
 import wvlet.log.LogSupport
-import wvlet.log.io.IOUtil
 
 case class HttpRecorderConfig(
     recorderName: String = "http-recorder",
@@ -142,7 +141,7 @@ object HttpRecorder extends LogSupport {
   /**
     * Creates an HTTP server that will record HTTP responses.
     */
-  def createRecordOnlyServer(
+  def createRecordingServer(
       recorderConfig: HttpRecorderConfig,
       dropExistingSession: Boolean = true
   ): HttpRecorderServer = {
@@ -157,21 +156,10 @@ object HttpRecorder extends LogSupport {
     * Creates an HTTP server that returns only recorded HTTP responses.
     * If no matching record is found, use the given fallback handler.
     */
-  def createReplayOnlyServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
+  def createServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
     val recorder = new HttpRecordStore(recorderConfig)
     // Return the server instance as FinagleServer to avoid further recording
     val server = new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
-    server.start
-    server
-  }
-
-  /**
-    * Creates an HTTP server that returns programmed HTTP responses.
-    * If no matching record is found, use the given fallback handler.
-    */
-  def createProgrammableServer(recorderConfig: HttpRecorderConfig): HttpRecorderServer = {
-    val recorder = new HttpRecordStore(recorderConfig)
-    val server   = new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
     server.start
     server
   }
@@ -185,14 +173,6 @@ object HttpRecorder extends LogSupport {
     val server   = new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
     server.start
     server
-  }
-
-  /**
-    * Create an in-memory programmable server, whose recorded response will be discarded after closing the server.
-    * This is useful for debugging HTTP clients.
-    */
-  def createInMemoryProgrammableServer: HttpRecorderServer = {
-    createInMemoryServer(HttpRecorderConfig())
   }
 
   def defaultFallBackHandler = {

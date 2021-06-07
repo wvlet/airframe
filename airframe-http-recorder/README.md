@@ -48,7 +48,7 @@ withResource(HttpRecorder.createRecorderProxy(recorderConfig)) { server =>
 
 
 // Create a proxy server only for recording server responses
-withResource(HttpRecorder.createRecordOnlyServer(recorderConfig)) { server =>
+withResource(HttpRecorder.createRecordingServer(recorderConfig)) { server =>
   val addr = server.localAddress // "localhost:(port number)"
   // Requests to the local server will be recorded
 
@@ -57,7 +57,7 @@ withResource(HttpRecorder.createRecordOnlyServer(recorderConfig)) { server =>
 }
 
 // Create a replay server that returns recorded responses for matching requests 
-withResource(HttpRecorder.createReplayOnlyServer(recorderConfig)) { server =>
+withResource(HttpRecorder.createServer(recorderConfig)) { server =>
   val addr = server.localAddress // "localhost:(port number)"
   // Requests to the local server will return the recorded responses
 }
@@ -66,13 +66,15 @@ withResource(HttpRecorder.createReplayOnlyServer(recorderConfig)) { server =>
 
 ### Programmable HttpRecorderServer
 
+You can record responses by code instead of recording real interactions with the server.
+
 ```scala
 import wvlet.airframe.http.recorder._
 import wvlet.airframe.control.Control._
 import com.twitter.finagle.http.{Request,Response}
 
 val recorderConfig = HttpRecorderConfig(sessionName="my-recording")
-val response = withResource(HttpRecorder.createProgrammableServer(recorderConfig)) { server =>
+val response = withResource(HttpRecorder.createServer(recorderConfig)) { server =>
   // Add custom server responses
   val request = Request("/index.html")
   val response = Response()
@@ -84,9 +86,8 @@ val response = withResource(HttpRecorder.createProgrammableServer(recorderConfig
 }
 ```
 
-If you don't need to persist your recoded responsoe (e.g., in unit tests), use
-`HttpRecorder.createInMemoryProgrammableServer`. The recorded responses wiil be
-discarded after closing the server.
+If you don't need to persist your recoded responses (e.g., in unit tests), 
+use `HttpRecorder.createInMemoryServer`. The recorded responses will be discarded after closing the server.
 
 
 ### Customize Request Matcher

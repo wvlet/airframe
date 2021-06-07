@@ -25,7 +25,6 @@ import wvlet.airframe.json._
 import wvlet.airspec.AirSpec
 
 import scala.util.Random
-import scala.collection.JavaConverters._
 
 /**
   */
@@ -49,7 +48,7 @@ class HttpRecorderTest extends AirSpec {
       HttpRecorderConfig(recorderName = "wvlet.org", destUri = "https://wvlet.org", sessionName = "airframe")
     val path = "/airframe/"
     val response: Response =
-      withResource(HttpRecorder.createRecordOnlyServer(recorderConfig, dropExistingSession = true)) { server =>
+      withResource(HttpRecorder.createRecordingServer(recorderConfig, dropExistingSession = true)) { server =>
         withClient(server.localAddress) { client =>
           val response = client(Request(path)).map { response =>
             debug(response)
@@ -59,7 +58,7 @@ class HttpRecorderTest extends AirSpec {
         }
       }
 
-    val replayResponse: Response = withResource(HttpRecorder.createReplayOnlyServer(recorderConfig)) { server =>
+    val replayResponse: Response = withResource(HttpRecorder.createServer(recorderConfig)) { server =>
       withClient(server.localAddress) { client =>
         val response = client(Request(path)).map { response =>
           debug(response)
@@ -77,7 +76,7 @@ class HttpRecorderTest extends AirSpec {
     response.contentString shouldBe replayResponse.contentString
 
     // Check non-recorded response
-    val errorResponse = withResource(HttpRecorder.createReplayOnlyServer(recorderConfig)) { server =>
+    val errorResponse = withResource(HttpRecorder.createServer(recorderConfig)) { server =>
       withClient(server.localAddress) { client =>
         val response = client(Request("/non-recorded-path.html")).map { response =>
           debug(response)
@@ -120,7 +119,7 @@ class HttpRecorderTest extends AirSpec {
   }
 
   test("programmable server") {
-    val response = withResource(HttpRecorder.createInMemoryProgrammableServer) { server =>
+    val response = withResource(HttpRecorder.createInMemoryServer(HttpRecorderConfig())) { server =>
       server.clearSession
 
       val request  = Request("/index.html")
