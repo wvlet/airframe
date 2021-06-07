@@ -6,6 +6,62 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.6.0
+
+This version is mostly a bug-fix release for Scala 3. To simplify the cross build settings with Scala 3, sbt-airframe becomes a [separate GitHub project](https://github.com/wvlet/sbt-airframe). 
+
+### New Features
+
+- airframe-ulid: Support non-secure random ULID generator ([#1722](https://github.com/wvlet/airframe/issues/1722)) [[0a5524d0d](https://github.com/wvlet/airframe/commit/0a5524d0d)]
+- airframe-ulid: Make ULIDGenerator public ([#1721](https://github.com/wvlet/airframe/issues/1721)) [[31c179138](https://github.com/wvlet/airframe/commit/31c179138)]
+- airframe-codec: Support reading JSON as an object field ([#1720](https://github.com/wvlet/airframe/issues/1720)) [[dc0f1eccd](https://github.com/wvlet/airframe/commit/dc0f1eccd)]
+- airframe-grpc: Show the exception error message in RPC implementations ([#1716](https://github.com/wvlet/airframe/issues/1716)) [[78fcdda1c](https://github.com/wvlet/airframe/commit/78fcdda1c)]
+
+### Minor Fixes
+
+- airframe-http-recorder: Delete duplicated server creation methods ([#1703](https://github.com/wvlet/airframe/issues/1703)) [[8f186064b](https://github.com/wvlet/airframe/commit/8f186064b)]
+- airframe-codec: Fix MapCodec to read nil as an empty Map ([#1717](https://github.com/wvlet/airframe/issues/1717)) [[e0fe0a63a](https://github.com/wvlet/airframe/commit/e0fe0a63a)]
+- airframe-surface: Resolve type parameters for Scala 3 ([#1700](https://github.com/wvlet/airframe/issues/1700)) [[ae947249c](https://github.com/wvlet/airframe/commit/ae947249c)]
+- airframe-codec: Fix tests for Scala 3 ([#1699](https://github.com/wvlet/airframe/issues/1699)) [[28e8df563](https://github.com/wvlet/airframe/commit/28e8df563)]
+- airframe-surface: Support building abstract class impl for Scala 3 ([#1697](https://github.com/wvlet/airframe/issues/1697)) [[d5ae6ec4f](https://github.com/wvlet/airframe/commit/d5ae6ec4f)]
+- airframe-surface: Support local class surfaces for Scala 3 ([#1695](https://github.com/wvlet/airframe/issues/1695)) [[69538969e](https://github.com/wvlet/airframe/commit/69538969e)]
+- airframe-surface: Use compile-time surface for Scala 3 ([#1694](https://github.com/wvlet/airframe/issues/1694)) [[cdf921018](https://github.com/wvlet/airframe/commit/cdf921018)]
+- airframe-surface: Support EnumSurface for Scala 3 ([#1693](https://github.com/wvlet/airframe/issues/1693)) [[6be492a4d](https://github.com/wvlet/airframe/commit/6be492a4d)]
+- airframe-surface: Surface.ofClass(...) for Scala 3 ([#1692](https://github.com/wvlet/airframe/issues/1692)) [[d8ae38956](https://github.com/wvlet/airframe/commit/d8ae38956)]
+
+### Internal Updates
+
+- Extract sbt-airframe as a separate GitHub project ([#1686](https://github.com/wvlet/airframe/issues/1686)) [[cb238c85e](https://github.com/wvlet/airframe/commit/cb238c85e)]
+- internal: Move airframe src to airframe-di ([#1689](https://github.com/wvlet/airframe/issues/1689)) [[41b796d1e](https://github.com/wvlet/airframe/commit/41b796d1e)]
+- Update finagle-core, finagle-http, ... to 21.5.0 ([#1718](https://github.com/wvlet/airframe/issues/1718)) [[d647317b7](https://github.com/wvlet/airframe/commit/d647317b7)]
+- Update protobuf-java to 3.17.2 ([#1727](https://github.com/wvlet/airframe/issues/1727)) [[793d54818](https://github.com/wvlet/airframe/commit/793d54818)]
+- Update scala-ulid to 1.0.13 ([#1684](https://github.com/wvlet/airframe/issues/1684)) [[1408e43b6](https://github.com/wvlet/airframe/commit/1408e43b6)]
+- Update trino-main to 358 ([#1726](https://github.com/wvlet/airframe/issues/1726)) [[5e76a977e](https://github.com/wvlet/airframe/commit/5e76a977e)]
+- Add sbt-airframe integration test ([#1725](https://github.com/wvlet/airframe/issues/1725)) [[7dc5b345e](https://github.com/wvlet/airframe/commit/7dc5b345e)]
+- Update sbt-jmh to 0.4.3 ([#1724](https://github.com/wvlet/airframe/issues/1724)) [[0315fd734](https://github.com/wvlet/airframe/commit/0315fd734)]
+- Update sbt, sbt-dependency-tree to 1.5.3 ([#1723](https://github.com/wvlet/airframe/issues/1723)) [[08f6dab4d](https://github.com/wvlet/airframe/commit/08f6dab4d)]
+- Update swagger-parser to 2.0.26 ([#1712](https://github.com/wvlet/airframe/issues/1712)) [[04b380219](https://github.com/wvlet/airframe/commit/04b380219)]
+- Update sbt-scoverage to 1.8.2 ([#1713](https://github.com/wvlet/airframe/issues/1713)) [[e068e79cf](https://github.com/wvlet/airframe/commit/e068e79cf)]
+- Update spark-sql to 3.1.2 ([#1707](https://github.com/wvlet/airframe/issues/1707)) [[f122dcdb8](https://github.com/wvlet/airframe/commit/f122dcdb8)]
+- Update scala-compiler, scala-library, ... to 2.12.14 ([#1708](https://github.com/wvlet/airframe/issues/1708)) [[6dc75878a](https://github.com/wvlet/airframe/commit/6dc75878a)]
+- Update json4s-jackson to 4.0.0 ([#1701](https://github.com/wvlet/airframe/issues/1701)) [[71d214d3e](https://github.com/wvlet/airframe/commit/71d214d3e)]
+- Update jmh-core, jmh-generator-bytecode, ... to 1.32 ([#1706](https://github.com/wvlet/airframe/issues/1706)) [[509de959d](https://github.com/wvlet/airframe/commit/509de959d)]
+- Update circe-parser to 0.14.1 ([#1705](https://github.com/wvlet/airframe/issues/1705)) [[3cbb4c1ca](https://github.com/wvlet/airframe/commit/3cbb4c1ca)]
+- Update circe-parser to 0.14.0 ([#1702](https://github.com/wvlet/airframe/issues/1702)) [[cb40a85db](https://github.com/wvlet/airframe/commit/cb40a85db)]
+- airframe-rx: More test coverage ([#1704](https://github.com/wvlet/airframe/issues/1704)) [[dec3219f5](https://github.com/wvlet/airframe/commit/dec3219f5)]
+- Update protobuf-java to 3.17.1 ([#1696](https://github.com/wvlet/airframe/issues/1696)) [[b6815e8a9](https://github.com/wvlet/airframe/commit/b6815e8a9)]
+- internal: Use raw AirSpec again to test internal modules ([#1691](https://github.com/wvlet/airframe/issues/1691)) [[aee66648b](https://github.com/wvlet/airframe/commit/aee66648b)]
+- Use Scala 2.13 as the default Scala version ([#1690](https://github.com/wvlet/airframe/issues/1690)) [[0cdede246](https://github.com/wvlet/airframe/commit/0cdede246)]
+- internal: Use crossBuild.pure setting for source folder location consistency ([#1688](https://github.com/wvlet/airframe/issues/1688)) [[e6a1e55ae](https://github.com/wvlet/airframe/commit/e6a1e55ae)]
+- Update trino-main to 357 ([#1685](https://github.com/wvlet/airframe/issues/1685)) [[cf1b10dc6](https://github.com/wvlet/airframe/commit/cf1b10dc6)]
+- Ignore frequent scala-ulid updates [[873712528](https://github.com/wvlet/airframe/commit/873712528)]
+- Update sbt-scoverage to 1.8.1 ([#1683](https://github.com/wvlet/airframe/issues/1683)) [[72421877a](https://github.com/wvlet/airframe/commit/72421877a)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.38.0 ([#1682](https://github.com/wvlet/airframe/issues/1682)) [[06d5d0497](https://github.com/wvlet/airframe/commit/06d5d0497)]
+- Update scala-compiler, scala-library, ... to 2.13.6 ([#1679](https://github.com/wvlet/airframe/issues/1679)) [[c36f70622](https://github.com/wvlet/airframe/commit/c36f70622)]
+- Update msgpack-core to 0.8.24 ([#1678](https://github.com/wvlet/airframe/issues/1678)) [[99e91c997](https://github.com/wvlet/airframe/commit/99e91c997)]
+- AirSpec: Scala.js + Scala 3.0.0 prep ([#1676](https://github.com/wvlet/airframe/issues/1676)) [[0b6861daa](https://github.com/wvlet/airframe/commit/0b6861daa)]
+- Update airspec to 21.5.4 ([#1675](https://github.com/wvlet/airframe/issues/1675)) [[0e4ab52d8](https://github.com/wvlet/airframe/commit/0e4ab52d8)]
+
 ## 21.5.4
 
 This is a minor bug fix release. We've found airframe-surface for Scala 3 still has several issues, which may cause errors in Airframe DI.
