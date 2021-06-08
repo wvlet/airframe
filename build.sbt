@@ -163,7 +163,6 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   canvas,
   config,
   controlJVM,
-  ulidJVM,
   jmx,
   launcher,
   metricsJVM,
@@ -189,6 +188,7 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
   httpRecorder,
   benchmark,
   sql,
+  ulidJVM,
   examples
 )
 
