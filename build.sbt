@@ -9,7 +9,7 @@ val withDotty           = SCALA_3_0 :: targetScalaVersions
 
 val AIRSPEC_VERSION                 = "21.5.4"
 val SCALACHECK_VERSION              = "1.15.4"
-val MSGPACK_VERSION                 = "0.8.24"
+val MSGPACK_VERSION                 = "0.9.0"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.0.0"
 val SQLITE_JDBC_VERSION             = "3.34.0"
 val SLF4J_VERSION                   = "1.7.30"
