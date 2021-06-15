@@ -911,7 +911,7 @@ lazy val parquet =
       description := "Parquet columnar format reader/writer support",
       libraryDependencies ++= Seq(
         "org.apache.parquet" % "parquet-hadoop" % PARQUET_VERSION,
-        "org.apache.hadoop"  % "hadoop-client"  % "3.3.0" % Provided,
+        "org.apache.hadoop"  % "hadoop-client"  % "3.3.1" % Provided,
         // For Apple Silicon (M1)
         "org.xerial.snappy"  % "snappy-java"  % "1.1.8.4",
         "org.slf4j"          % "slf4j-jdk14"  % SLF4J_VERSION   % Optional,
