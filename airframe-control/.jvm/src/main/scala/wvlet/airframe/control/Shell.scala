@@ -15,12 +15,12 @@ package wvlet.airframe.control
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.lang.reflect.Field
-
 import wvlet.log.LogSupport
 
 import scala.collection.mutable.WeakHashMap
 import scala.sys.process.{Process, ProcessLogger}
 import scala.jdk.CollectionConverters._
+import scala.util.Try
 
 /**
   * Launch UNIX (or cygwin) commands from Scala
@@ -129,17 +129,20 @@ object Shell extends LogSupport {
     * @param p
     * @return process id or -1 if pid cannot be detected
     */
-  def getProcessID(p: java.lang.Process): Int = {
-    try {
-      // If the current OS is *Nix, the class of p is UNIXProcess and its pid can be obtained
-      // from pid field by using reflection.
-      val f = p.getClass().getDeclaredField("pid")
-      val pid: Int = withAccessTo(f, p) {
-        f.get(p).asInstanceOf[Int]
+  def getProcessID(p: java.lang.Process): Option[Int] = {
+    Try(p.pid().toInt).toOption.orElse {
+      try {
+        // This part is for JDK8 because java.lang.Process.pid() is available since JDK9.
+        // If the current OS is *Nix, the class of p is UNIXProcess and its pid can be obtained
+        // from pid field by using reflection.
+        val f = p.getClass().getDeclaredField("pid")
+        val pid: Int = withAccessTo(f, p) {
+          f.get(p).asInstanceOf[Int]
+        }
+        Some(pid)
+      } catch {
+        case e: Throwable => None
       }
-      pid
-    } catch {
-      case e: Throwable => -1
     }
   }
 
