@@ -92,9 +92,11 @@ class CanvasTest extends AirSpec with PropertyCheck {
     withCanvas(Canvas.wrap(ByteBuffer.allocate(canvasSize))) { c => checkReadWritePrimitiveValues(c) }
   }
 
-  test("create DirectByteBuffer-based canvas") {
-    val b = ByteBuffer.allocateDirect(canvasSize)
-    withCanvas(Canvas.wrap(b)) { c => checkReadWritePrimitiveValues(c) }
+  test("Show an error for an attempt to create DirectByteBuffer-based canvas") {
+    intercept[UnsupportedOperationException] {
+      val b = ByteBuffer.allocateDirect(canvasSize)
+      Canvas.wrap(b)
+    }
   }
 
   test("create slices") {

@@ -137,8 +137,6 @@ final class UnsafeCanvas(
       this.reference match {
         case m: Memory =>
           m.release
-        case d: ByteBuffer if d.isDirect =>
-          DirectBufferAccess.clean(d)
         case _ =>
         // No need to release
       }
@@ -152,11 +150,8 @@ object UnsafeCanvas {
   }
   def wrap(buf: ByteBuffer): Canvas = {
     if (buf.isDirect) {
-      new UnsafeCanvas(
-        base = null,
-        address = DirectBufferAccess.getAddress(buf) + buf.position(),
-        size = buf.remaining(),
-        reference = buf
+      throw new UnsupportedOperationException(
+        "DirectByteBuffer access is deprecated as it will not be avilable in JDK16"
       )
     } else if (buf.hasArray) {
       new UnsafeCanvas(
