@@ -46,7 +46,8 @@ class ShellTest extends AirSpec {
     val pid = Shell.getProcessID(p)
     debug(s"process ID:$pid")
     if (!OS.isWindows) {
-      pid > 0 shouldBe true
+      pid shouldBe defined
+      pid.get > 0 shouldBe true
     }
   }
 
@@ -61,15 +62,24 @@ class ShellTest extends AirSpec {
   }
 
   test("be able to kill processes") {
-    val p        = Shell.launchProcess("cat")
-    val pid      = Shell.getProcessID(p)
-    val exitCode = Shell.kill(pid)
+    val p = Shell.launchProcess("cat")
+    Shell
+      .getProcessID(p).map { pid =>
+        val exitCode = Shell.kill(pid)
+      }.getOrElse {
+        fail("Process is not found")
+      }
   }
 
   test("be able to kill process trees") {
-    val p   = Shell.launchProcess("cat")
-    val pid = Shell.getProcessID(p)
-    Shell.killTree(pid)
+    val p = Shell.launchProcess("cat")
+    Shell
+      .getProcessID(p).map { pid =>
+        Shell.killTree(pid)
+      }
+      .getOrElse {
+        fail("Process is not found")
+      }
   }
 
   test("find sh") {

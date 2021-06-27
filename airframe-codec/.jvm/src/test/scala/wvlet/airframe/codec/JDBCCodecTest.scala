@@ -189,7 +189,7 @@ class JDBCCodecTest extends AirSpec {
                 |(select * from (values (1, 'leo'), (2, 'yui')))
                 |select * from a order by id asc
                 |""".stripMargin) { rs =>
-      val jsonSeq = JDBCCodec(rs).toJsonSeq.iterator.toIndexedSeq
+      val jsonSeq = JDBCCodec(rs).toJsonSeq.toIndexedSeq
       jsonSeq(0) shouldBe """{"id":1,"name":"leo"}"""
       jsonSeq(1) shouldBe """{"id":2,"name":"yui"}"""
     }
