@@ -6,6 +6,32 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.7.0
+
+This version adds support for JDK16 and uses Scala.js 1.6.0 for JS projects. 
+
+Dependency updates:
+
+- Update postgresql to 42.2.23 ([#1751](https://github.com/wvlet/airframe/issues/1751)) [[997e93df7](https://github.com/wvlet/airframe/commit/997e93df7)]
+- Update sbt-scalajs-crossproject to 1.1.0 ([#1750](https://github.com/wvlet/airframe/issues/1750)) [[b9c6e0939](https://github.com/wvlet/airframe/commit/b9c6e0939)]
+- Update slf4j-jdk14 to 1.7.31 ([#1738](https://github.com/wvlet/airframe/issues/1738)) [[a716ef106](https://github.com/wvlet/airframe/commit/a716ef106)]
+- Update trino-main to 359 ([#1749](https://github.com/wvlet/airframe/issues/1749)) [[9aacaa958](https://github.com/wvlet/airframe/commit/9aacaa958)]
+- Update fluency-core, fluency-fluentd, ... to 2.6.0 ([#1745](https://github.com/wvlet/airframe/issues/1745)) [[09bb1bb92](https://github.com/wvlet/airframe/commit/09bb1bb92)]
+- Update sqlite-jdbc to 3.36.0.1 ([#1748](https://github.com/wvlet/airframe/issues/1748)) [[654f0d208](https://github.com/wvlet/airframe/commit/654f0d208)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.39.0 ([#1747](https://github.com/wvlet/airframe/issues/1747)) [[3da52dde2](https://github.com/wvlet/airframe/commit/3da52dde2)]
+- Update json4s-jackson to 4.0.1 ([#1746](https://github.com/wvlet/airframe/issues/1746)) [[12c5465a2](https://github.com/wvlet/airframe/commit/12c5465a2)]
+- Update swagger-parser to 2.0.27 ([#1744](https://github.com/wvlet/airframe/issues/1744)) [[4a0a708e9](https://github.com/wvlet/airframe/commit/4a0a708e9)]
+- Update finagle-core, finagle-http, ... to 21.6.0 ([#1742](https://github.com/wvlet/airframe/issues/1742)) [[b8354e936](https://github.com/wvlet/airframe/commit/b8354e936)]
+- JDK16 Support ([#1740](https://github.com/wvlet/airframe/issues/1740)) [[8dabb4757](https://github.com/wvlet/airframe/commit/8dabb4757)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.38.1 ([#1737](https://github.com/wvlet/airframe/issues/1737)) [[d1158ae61](https://github.com/wvlet/airframe/commit/d1158ae61)]
+- Update hadoop-client to 3.3.1 ([#1735](https://github.com/wvlet/airframe/issues/1735)) [[b4006b33a](https://github.com/wvlet/airframe/commit/b4006b33a)]
+- Update sbt, sbt-dependency-tree to 1.5.4 ([#1734](https://github.com/wvlet/airframe/issues/1734)) [[dc331483f](https://github.com/wvlet/airframe/commit/dc331483f)]
+- Update sbt-scalajs, scalajs-library, ... to 1.6.0 ([#1728](https://github.com/wvlet/airframe/issues/1728)) [[0d6910562](https://github.com/wvlet/airframe/commit/0d6910562)]
+- Update msgpack-core to 0.9.0 ([#1732](https://github.com/wvlet/airframe/issues/1732)) [[d3a5f47dd](https://github.com/wvlet/airframe/commit/d3a5f47dd)]
+- Update snakeyaml to 1.29 ([#1731](https://github.com/wvlet/airframe/issues/1731)) [[e4e19fee7](https://github.com/wvlet/airframe/commit/e4e19fee7)]
+- Remove airframe-ulid from the community build ([#1730](https://github.com/wvlet/airframe/issues/1730)) [[ba7285903](https://github.com/wvlet/airframe/commit/ba7285903)]
+- Update protobuf-java to 3.17.3 ([#1729](https://github.com/wvlet/airframe/issues/1729)) [[58a9414cd](https://github.com/wvlet/airframe/commit/58a9414cd)]
+
 ## 21.6.0
 
 This version is mostly a bug-fix release for Scala 3. To simplify the cross build settings with Scala 3, sbt-airframe becomes a [separate GitHub project](https://github.com/wvlet/sbt-airframe). 
