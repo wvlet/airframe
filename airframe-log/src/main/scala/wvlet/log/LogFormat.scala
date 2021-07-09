@@ -63,15 +63,14 @@ object LogFormatter {
       case _ =>
         val trace = new StringWriter()
         e.printStackTrace(new PrintWriter(trace))
-        val stackTrace = trace.toString
+        val stackTraceLines = trace.toString.split("\n")
         val filtered =
-          stackTrace
-            .split("\n") // Array
+          stackTraceLines
             .filter(stackTraceFilter)
             .sliding(2)
-            .collect { case Array(a, b) if a != b => a }
+            .collect { case Array(a, b) if a != b => b }
 
-        filtered.mkString("\n")
+        (stackTraceLines.headOption ++ filtered).mkString("\n")
     }
   }
 
