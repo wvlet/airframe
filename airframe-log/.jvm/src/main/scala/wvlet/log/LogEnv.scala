@@ -1,7 +1,6 @@
 package wvlet.log
-import java.io.PrintStream
+import java.io.{FileDescriptor, FileOutputStream, PrintStream}
 import java.lang.management.ManagementFactory
-
 import javax.management.{InstanceAlreadyExistsException, ObjectName}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 
@@ -11,8 +10,16 @@ private[log] object LogEnv extends LogEnvBase {
   override def isScalaJS: Boolean        = false
   override def defaultLogLevel: LogLevel = LogLevel.INFO
 
-  override def defaultConsoleOutput: PrintStream         = System.err
-  override def defaultHandler: java.util.logging.Handler = new ConsoleLogHandler(SourceCodeLogFormatter)
+  override lazy val defaultConsoleOutput: PrintStream = {
+    // Note: In normal circumstances, using System.err here is fine, but
+    // System.err can be replaced with other implementation
+    // (e.g., airlift.Logging, which is used in Trino https://github.com/airlift/airlift/blob/master/log-manager/src/main/java/io/airlift/log/Logging.java),
+    // so we create a stderr stream explicitly here.
+    new PrintStream(new FileOutputStream(FileDescriptor.err))
+  }
+  override def defaultHandler: java.util.logging.Handler = {
+    new ConsoleLogHandler(SourceCodeLogFormatter)
+  }
 
   /**
     * @param cl
