@@ -21,7 +21,7 @@ import wvlet.airframe.http.impl.HttpMacros
 import scala.concurrent.Future
 import scala.language.higherKinds
 
-object Http {
+object Http extends HttpBase {
 
   // Aliases for http clients using standard HttpMessage.Request/Response
   type SyncClient  = HttpSyncClient[Request, Response]
@@ -101,27 +101,6 @@ object Http {
   def serverException(status: HttpStatus, cause: Throwable): HttpServerException = {
     new HttpServerException(status, cause.getMessage, cause)
   }
-
-  import scala.language.experimental.macros
-
-  /**
-    * Create a new HttpServerException with a custom content-body in JSON or MsgPack format. The content type will be
-    * determined by the Accept header in the request
-    */
-  def serverException[A](request: HttpRequest[_], status: HttpStatus, content: A): HttpServerException =
-    macro HttpMacros.newServerException[A]
-
-  /**
-    * Create a new HttpServerException with a custom content-body in JSON or MsgPack format. The content type will be
-    * determined by the Accept header in the request
-    */
-  def serverException[A](
-      request: HttpRequest[_],
-      status: HttpStatus,
-      content: A,
-      codecFactory: MessageCodecFactory
-  ): HttpServerException =
-    macro HttpMacros.newServerExceptionWithCodecFactory[A]
 
   private[http] def parseAcceptHeader(value: Option[String]): Seq[String] = {
     value

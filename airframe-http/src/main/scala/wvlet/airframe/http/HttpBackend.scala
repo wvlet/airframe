@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.language.higherKinds
 import scala.util.control.NonFatal
 import scala.language.higherKinds
@@ -93,7 +93,7 @@ object HttpBackend {
 
   object DefaultBackend extends HttpBackend[HttpMessage.Request, HttpMessage.Response, scala.concurrent.Future] {
     // TODO: Should we customize execution Context?
-    private[http] implicit lazy val executionContext = ExecutionContext.global
+    private[http] implicit lazy val executionContext: ExecutionContextExecutor = ExecutionContext.global
 
     override protected implicit val httpRequestAdapter: HttpRequestAdapter[HttpMessage.Request] =
       HttpMessage.HttpMessageRequestAdapter
