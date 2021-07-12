@@ -49,7 +49,7 @@ trait HttpMessageBase[Raw] { self: HttpMessage[Raw] =>
       self.withMsgPack(codecFactory.of[A].toMsgPack(a))
     }
     else {
-      self.withMsgPack(codecFactory.of[A].toJson(a))
+      self.withJson(codecFactory.of[A].toJson(a))
     }
   }
 }

@@ -13,12 +13,10 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.HttpBackend.DefaultBackend
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.impl.HttpMacros
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.language.higherKinds
 
 object Http extends HttpBase {
@@ -29,7 +27,7 @@ object Http extends HttpBase {
 
   // Standard HttpFilter
   abstract class Filter extends HttpFilter[Request, Response, Future] {
-    protected implicit val executorContext = DefaultBackend.executionContext
+    protected implicit val executorContext: ExecutionContextExecutor = DefaultBackend.executionContext
     override protected def backend: HttpBackend[Request, Response, Future] =
       HttpBackend.DefaultBackend
   }
