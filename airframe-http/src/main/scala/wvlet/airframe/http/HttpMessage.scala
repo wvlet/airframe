@@ -12,15 +12,13 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.http.HttpMessage.{Message, StringMessage}
+import wvlet.airframe.msgpack.spi.MsgPack
+
 import java.nio.charset.StandardCharsets
 import java.time.format.DateTimeFormatter
 import java.time.{Instant, ZoneId, ZoneOffset}
 import java.util.Locale
-
-import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, Message, StringMessage}
-import wvlet.airframe.msgpack.spi.MsgPack
-
 import scala.language.experimental.macros
 
 trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
