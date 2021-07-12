@@ -118,21 +118,28 @@ object HttpServerExceptionTest extends AirSpec {
 
     test("json") {
       val e =
-        Http.serverException(req, HttpStatus.BadRequest_400, ErrorResponse(100, "invalid input"))
+        Http.serverException(req, HttpStatus.BadRequest_400).withContentOf(ErrorResponse(100, "invalid input"))
       e.status shouldBe HttpStatus.BadRequest_400
       MessageCodec.of[ErrorResponse].fromJson(e.contentString) shouldBe ErrorResponse(100, "invalid input")
     }
 
     test("msgpack") {
       val e =
-        Http.serverException(req.withAcceptMsgPack, HttpStatus.BadRequest_400, ErrorResponse(100, "invalid input"))
+        Http
+          .serverException(req.withAcceptMsgPack, HttpStatus.BadRequest_400).withContentOf(
+            ErrorResponse(100, "invalid input")
+          )
       e.status shouldBe HttpStatus.BadRequest_400
       MessageCodec.of[ErrorResponse].fromMsgPack(e.contentBytes) shouldBe ErrorResponse(100, "invalid input")
     }
 
     test("json custom codec") {
       val e =
-        Http.serverException(req, HttpStatus.BadRequest_400, ErrorResponse(100, "invalid input"), customCodec)
+        Http
+          .serverException(req, HttpStatus.BadRequest_400).withContentOf(
+            ErrorResponse(100, "invalid input"),
+            customCodec
+          )
       e.status shouldBe HttpStatus.BadRequest_400
       e.contentString shouldBe """[100,"invalid input"]"""
       MessageCodec.of[ErrorResponse].fromJson(e.contentString) shouldBe ErrorResponse(100, "invalid input")
