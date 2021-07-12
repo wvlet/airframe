@@ -95,15 +95,14 @@ object Http extends HttpBase {
 
   /**
     * Create a new server exception that can be used to exit the Endpoint or RPC process.
-    * The content type will be the same with the input request
+    * The content type will be the same with the Accept type
     */
   def serverException(request: Request, status: HttpStatus): HttpServerException = {
     val e = new HttpServerException(status)
-    request.contentType match {
-      case Some(contentType) =>
-        e.withContentType(contentType)
-      case _ =>
-        e
+    if (request.acceptsMsgPack) {
+      e.withContentTypeMsgPack
+    } else {
+      e.withContentTypeJson
     }
   }
 

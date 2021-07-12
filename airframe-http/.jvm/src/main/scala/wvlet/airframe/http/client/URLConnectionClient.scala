@@ -44,8 +44,7 @@ case class URLConnectionClientConfig(
   * Http sync client implementation using URLConnection
   */
 class URLConnectionClient(address: ServerAddress, protected val config: URLConnectionClientConfig)
-    extends HttpSyncClient[Request, Response]
-    with URLConnectionClientBase {
+    extends URLConnectionClientBase {
 
   override def send(
       req: Request,
