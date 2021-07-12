@@ -41,4 +41,5 @@ case class HttpServerException(private var response: HttpMessage.Response, cause
   }
 
   def toResponse: HttpMessage.Response = response
+
 }
