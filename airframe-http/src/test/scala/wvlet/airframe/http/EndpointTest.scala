@@ -27,5 +27,6 @@ object EndpointTest extends AirSpec {
 
   test("test endpoint compilation") {
     // Only need to check HTTP interface can be compiled both in JVM and Scala.js
+    true
   }
 }
