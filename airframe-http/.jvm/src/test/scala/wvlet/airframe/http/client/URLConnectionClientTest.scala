@@ -60,7 +60,7 @@ object URLConnectionClientTest extends AirSpec {
     m("args") shouldBe Map("id" -> "1", "name" -> "leo")
   }
 
-  test("sync client") { client: SyncClient =>
+  test("sync client") { (client: SyncClient) =>
     test("complement missing slash") {
       val resp = client.sendSafe(Http.GET("get"))
       resp.status shouldBe HttpStatus.Ok_200

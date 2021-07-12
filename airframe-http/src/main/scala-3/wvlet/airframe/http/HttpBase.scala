@@ -12,21 +12,11 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
-import wvlet.airspec.AirSpec
+
+import wvlet.airframe.codec.MessageCodecFactory
 
 /**
   */
-object EndpointTest extends AirSpec {
+trait HttpBase {
 
-  class MyApp {
-    @Endpoint(method = HttpMethod.GET, path = "/v1/info")
-    def hello: String = {
-      "hello"
-    }
-  }
-
-  test("test endpoint compilation") {
-    // Only need to check HTTP interface can be compiled both in JVM and Scala.js
-    true
-  }
 }

@@ -13,15 +13,13 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.HttpBackend.DefaultBackend
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.impl.HttpMacros
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.language.higherKinds
 
-object Http {
+object Http extends HttpBase {
 
   // Aliases for http clients using standard HttpMessage.Request/Response
   type SyncClient  = HttpSyncClient[Request, Response]
@@ -29,7 +27,7 @@ object Http {
 
   // Standard HttpFilter
   abstract class Filter extends HttpFilter[Request, Response, Future] {
-    protected implicit val executorContext = DefaultBackend.executionContext
+    protected implicit val executorContext: ExecutionContextExecutor = DefaultBackend.executionContext
     override protected def backend: HttpBackend[Request, Response, Future] =
       HttpBackend.DefaultBackend
   }
@@ -96,32 +94,24 @@ object Http {
   }
 
   /**
+    * Create a new server exception that can be used to exit the Endpoint or RPC process.
+    * The content type will be the same with the Accept type
+    */
+  def serverException(request: Request, status: HttpStatus): HttpServerException = {
+    val e = new HttpServerException(status)
+    if (request.acceptsMsgPack) {
+      e.withContentTypeMsgPack
+    } else {
+      e.withContentTypeJson
+    }
+  }
+
+  /**
     * Create a new server exception with an explicit cause
     */
   def serverException(status: HttpStatus, cause: Throwable): HttpServerException = {
     new HttpServerException(status, cause.getMessage, cause)
   }
-
-  import scala.language.experimental.macros
-
-  /**
-    * Create a new HttpServerException with a custom content-body in JSON or MsgPack format.
-    * The content type will be determined by the Accept header in the request
-    */
-  def serverException[A](request: HttpRequest[_], status: HttpStatus, content: A): HttpServerException =
-    macro HttpMacros.newServerException[A]
-
-  /**
-    * Create a new HttpServerException with a custom content-body in JSON or MsgPack format.
-    * The content type will be determined by the Accept header in the request
-    */
-  def serverException[A](
-      request: HttpRequest[_],
-      status: HttpStatus,
-      content: A,
-      codecFactory: MessageCodecFactory
-  ): HttpServerException =
-    macro HttpMacros.newServerExceptionWithCodecFactory[A]
 
   private[http] def parseAcceptHeader(value: Option[String]): Seq[String] = {
     value
