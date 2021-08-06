@@ -6,6 +6,29 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.8.0
+
+Upgraded to [Scala.js 1.7.0](https://www.scala-js.org/news/2021/08/04/announcing-scalajs-1.7.0/), which fixed all of the known bugs in Scala.js 1.6.0.
+
+Minor Fixes:
+
+- airframe-http: Fixes [#1772](https://github.com/wvlet/airframe/issues/1772) Properly decode URL-encoded paths when scanning jar files ([#1773](https://github.com/wvlet/airframe/issues/1773)) [[9d7184df3](https://github.com/wvlet/airframe/commit/9d7184df3)]
+- airframe-log: Fix formatStacktrace dropping last line ([#1759](https://github.com/wvlet/airframe/issues/1759)) [[a093436b3](https://github.com/wvlet/airframe/commit/a093436b3)]
+- airframe-log: Add a workaround if System.err is replaced for logging ([#1756](https://github.com/wvlet/airframe/issues/1756)) [[3c5eed424](https://github.com/wvlet/airframe/commit/3c5eed424)]
+
+Dependency Updates:
+
+- Update sbt-scalajs, scalajs-compiler, ... to 1.7.0 ([#1771](https://github.com/wvlet/airframe/issues/1771)) [[0eda8c4c2](https://github.com/wvlet/airframe/commit/0eda8c4c2)]
+- Update trino-main to 360 ([#1770](https://github.com/wvlet/airframe/issues/1770)) [[152c8bf6b](https://github.com/wvlet/airframe/commit/152c8bf6b)]
+- Update json4s-jackson to 4.0.3 ([#1767](https://github.com/wvlet/airframe/issues/1767)) [[32abe607a](https://github.com/wvlet/airframe/commit/32abe607a)]
+- Update slf4j-jdk14 to 1.7.32 ([#1764](https://github.com/wvlet/airframe/issues/1764)) [[1b32fec4b](https://github.com/wvlet/airframe/commit/1b32fec4b)]
+- Update sbt-mdoc to 2.2.22 ([#1765](https://github.com/wvlet/airframe/issues/1765)) [[253621f34](https://github.com/wvlet/airframe/commit/253621f34)]
+- Update HikariCP to 5.0.0 ([#1762](https://github.com/wvlet/airframe/issues/1762)) [[3e09bad26](https://github.com/wvlet/airframe/commit/3e09bad26)]
+- Update sbt, sbt-dependency-tree to 1.5.5 ([#1761](https://github.com/wvlet/airframe/issues/1761)) [[38b6dbc32](https://github.com/wvlet/airframe/commit/38b6dbc32)]
+- Update scala-collection-compat to 2.5.0 ([#1758](https://github.com/wvlet/airframe/issues/1758)) [[8c2615fb0](https://github.com/wvlet/airframe/commit/8c2615fb0)]
+- Update sbt-scalafmt to 2.4.3 ([#1755](https://github.com/wvlet/airframe/issues/1755)) [[a0238ec53](https://github.com/wvlet/airframe/commit/a0238ec53)]
+- Update sbt-pack to 0.14 ([#1753](https://github.com/wvlet/airframe/issues/1753)) [[4a5e2fe1e](https://github.com/wvlet/airframe/commit/4a5e2fe1e)]
+
 ## 21.7.0
 
 This version adds support for JDK16 and uses Scala.js 1.6.0 for JS projects. 
