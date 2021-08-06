@@ -15,13 +15,19 @@ package wvlet.airframe.http.codegen
 import java.io.File
 import java.net.{URL, URLClassLoader}
 import java.util.jar.JarFile
-
 import wvlet.log.LogSupport
+
+import java.nio.charset.StandardCharsets
 
 /**
   * Scan all class files in the class path and jar files to find airframe-http interface classes
   */
 object ClassScanner extends LogSupport {
+
+  private[codegen] def decodePath(path: String): String = {
+    // Decode URL-encoded string paths
+    java.net.URLDecoder.decode(path, StandardCharsets.UTF_8)
+  }
 
   def scanClasses(cl: ClassLoader, targetPackageNames: Seq[String]): Seq[String] = {
     def loop(c: ClassLoader): Seq[URL] = {
@@ -41,9 +47,9 @@ object ClassScanner extends LogSupport {
     def findClasses(url: URL): Seq[String] = {
       url match {
         case dir if dir.getProtocol == "file" && { val d = new File(dir.getPath); d.exists() && d.isDirectory } =>
-          scanClassesInDirectory(dir.getPath, targetPackageNames)
+          scanClassesInDirectory(decodePath(dir.getPath), targetPackageNames)
         case jarFile if jarFile.getProtocol == "file" && jarFile.getPath.endsWith(".jar") =>
-          scanClassesInJar(jarFile.getPath, targetPackageNames)
+          scanClassesInJar(decodePath(jarFile.getPath), targetPackageNames)
         case _ =>
           Seq.empty
       }
