@@ -72,9 +72,9 @@ conf.set("fs.s3a.access.key", "...")
 conf.set("fs.s3a.secret.key", "...")
 
 // Option 2: Using a custom AWS credential provider implementing com.amazonaws.auth.AWSCredentialsProvider
-conf.set("fs.s3a.aws.credentials.provider", "DefaultAWSCredentialsProviderChain")
+conf.set("fs.s3a.aws.credentials.provider", "com.amazonaws.auth.DefaultAWSCredentialsProviderChain")
 
-// Use s3a:// prefix to specify an S3 bucket name, and pass hadoopConf
+// Use s3a:// prefix to specify an S3 path, and pass hadoopConf
 Parquet.newReader[MyEntry](path = "s3a://my-bucket/data.parquet", hadoopConf = conf)
 ```
 
