@@ -14,7 +14,11 @@ airframe-parquet is a library for reading and writing for Scala objects using Pa
 libraryDependencies ++= Seq(
   "org.wvlet.airframe" %% "airframe-parquet" % "(version)"
   // Use your own hadoop version
-  "org.apache.hadoop"  % "hadoop-client"  % "3.3.0" 
+  "org.apache.hadoop"  % "hadoop-client"  % "3.3.1",
+  // [Optional] For supporting S3
+  "org.apache.hadoop"  % "hadoop-aws"  % "3.3.1",
+  // [Optional] For using custom AWS credential provider
+  "software.amazon.awssdk" % "auth" % "2.17.18"
 )
 ```
 
@@ -53,6 +57,28 @@ val j2 = jsonReader.read() // {"id":2,"name":"yui"}
 jsonReader.read() // null
 jsonReader.close()
 ```
+
+### Using with AWS S3
+
+airframe-parquet uses HadoopFileSystem for reading data from S3.
+hadoopConf needs to be configured for AWS authentication.
+
+```scala
+import org.apache.hadoop.conf.Configuration
+
+val conf = new Configuration()
+// Option 1: Using AWS keys
+conf.set("fs.s3a.access.key", "...")
+conf.set("fs.s3a.secret.key", "...")
+
+// Option 2: Using a custom AWS credential provider implementing com.amazonaws.auth.AWSCredentialsProvider
+conf.set("fs.s3a.aws.credentials.provider", "com.amazonaws.auth.DefaultAWSCredentialsProviderChain")
+
+// Use s3a:// prefix to specify an S3 path, and pass hadoopConf
+Parquet.newReader[MyEntry](path = "s3a://my-bucket/data.parquet", hadoopConf = conf)
+```
+
+For other configuration parameters, see also [hadoop-aws](https://hadoop.apache.org/docs/stable/hadoop-aws/tools/hadoop-aws/index.html) documentation.
 
 ## Querying Parquet with A Simple SQL
 

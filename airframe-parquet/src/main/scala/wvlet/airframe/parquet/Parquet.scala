@@ -20,45 +20,49 @@ object Parquet extends LogSupport {
 
   def newWriter[A: ru.TypeTag](
       path: String,
+      // Hadoop filesystem specific configuration, e.g., fs.s3a.access.key
+      hadoopConf: Configuration = new Configuration(),
       config: AirframeParquetWriter.Builder[A] => AirframeParquetWriter.Builder[A] =
         identity[AirframeParquetWriter.Builder[A]](_)
   ): ParquetWriter[A] = {
-    val b       = AirframeParquetWriter.builder[A](path)
+    val b       = AirframeParquetWriter.builder[A](path, hadoopConf)
     val builder = config(b)
     builder.build()
   }
 
   def newReader[A: ru.TypeTag](
       path: String,
+      // Hadoop filesystem specific configuration, e.g., fs.s3a.access.key
+      hadoopConf: Configuration = new Configuration(),
       config: ParquetReader.Builder[A] => ParquetReader.Builder[A] = identity[ParquetReader.Builder[A]](_)
   ): ParquetReader[A] = {
-    val b = AirframeParquetReader.builder[A](path)
+    val b: ParquetReader.Builder[A] = AirframeParquetReader.builder[A](path, hadoopConf)
     config(b).build()
   }
 
   def query[A: ru.TypeTag](
       path: String,
       sql: String,
+      hadoopConf: Configuration = new Configuration(),
       config: ParquetReader.Builder[A] => ParquetReader.Builder[A] = identity[ParquetReader.Builder[A]](_)
   ): ParquetReader[A] = {
     // Read Parquet schema for resolving column types
-    val schema = readSchema(path)
-    val plan   = ParquetQueryPlanner.parse(sql, schema)
-    val b      = AirframeParquetReader.builder[A](path, plan = Some(plan))
+    val schema                      = readSchema(path)
+    val plan                        = ParquetQueryPlanner.parse(sql, schema)
+    val b: ParquetReader.Builder[A] = AirframeParquetReader.builder[A](path, conf = hadoopConf, plan = Some(plan))
 
-    val conf = plan.predicate match {
+    val newConf = plan.predicate match {
       case Some(pred) =>
         // Set Parquet filter
         config(b).withFilter(FilterCompat.get(pred))
       case _ =>
         config(b)
     }
-    conf.build()
+    newConf.build()
   }
 
-  def readSchema(path: String): MessageType = {
-    val conf  = new Configuration()
-    val input = HadoopInputFile.fromPath(new Path(path), conf)
+  def readSchema(path: String, hadoopConf: Configuration = new Configuration()): MessageType = {
+    val input = HadoopInputFile.fromPath(new Path(path), hadoopConf)
     withResource(ParquetFileReader.open(input)) { reader =>
       reader.getFooter.getFileMetaData.getSchema
     }
