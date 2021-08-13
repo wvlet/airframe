@@ -329,7 +329,7 @@ object ReflectSurfaceFactory extends LogSupport {
             } catch {
               case e: NoSuchElementException =>
                 // Failed to create surface (Not found in cache)
-                wvlet.airframe.surface.ExistentialType
+                AnyRefSurface
             }
           // Cache if not yet cached
           surfaceCache.getOrElseUpdate(fullName, surface)
@@ -398,7 +398,13 @@ object ReflectSurfaceFactory extends LogSupport {
         wvlet.airframe.surface.ExistentialType
       case t @ TypeRef(NoPrefix, tpe, args) if !t.typeSymbol.isClass =>
         val name = tpe.name.decodedName.toString
-        HigherKindedTypeSurface(name, name, surfaceOf(t.erasure), args.map(ta => surfaceOf(ta)))
+        val ref: Surface = if (t.typeSymbol.isAbstract && t.typeArgs.isEmpty) {
+          // When t is just a type letter (e.g., A, T, etc.)
+          AnyRefSurface
+        } else {
+          surfaceOf(t.erasure)
+        }
+        HigherKindedTypeSurface(name, name, ref, args.map(ta => surfaceOf(ta)))
     }
 
     private def taggedTypeFactory: SurfaceMatcher = {
