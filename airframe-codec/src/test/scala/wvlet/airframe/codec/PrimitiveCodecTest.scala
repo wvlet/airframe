@@ -19,6 +19,7 @@ import wvlet.airframe.json.JSON.JSONString
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.msgpack.spi.Value.StringValue
 import wvlet.airframe.surface.{ArraySurface, GenericSurface, Surface}
+import wvlet.airframe.ulid.ULID
 import wvlet.airspec.spi.PropertyCheck
 
 import java.math.BigInteger
@@ -374,6 +375,8 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
   }
 
   test("read Any values") {
+    val ulid = ULID.newULID
+
     val input: Seq[Any] = Seq(
       "hello",
       true,
@@ -388,7 +391,8 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
       StringValue("value"),
       Instant.ofEpochMilli(100),
       Some("hello opt"),
-      None
+      None,
+      ulid
     )
 
     val codec   = MessageCodec.of[Any]
@@ -410,7 +414,8 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
       "value",
       Instant.ofEpochMilli(100),
       "hello opt",
-      null
+      null,
+      ulid.toString
     )
   }
 

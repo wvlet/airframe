@@ -12,28 +12,16 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.finagle.filter
-import java.util.Locale
-import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import com.twitter.finagle.http.{HeaderMap, Request, Response}
-import com.twitter.finagle.{Service, SimpleFilter, http}
+import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
 import wvlet.airframe.control.MultipleExceptions
-import wvlet.airframe.http.finagle.FinagleServer.findCause
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter._
 import wvlet.airframe.http.finagle.{FinagleBackend, FinagleServer}
-import wvlet.airframe.http.{
-  HttpAccessLogWriter,
-  HttpBackend,
-  HttpContext,
-  HttpHeader,
-  HttpMessage,
-  HttpServerException,
-  HttpStatus
-}
 import wvlet.airframe.http.router.RPCCallContext
-import wvlet.airframe.surface.MethodSurface
-import wvlet.log.LogTimestampFormatter
+import wvlet.airframe.http.{HttpAccessLogWriter, HttpBackend, HttpHeader, HttpStatus}
 
+import java.util.concurrent.TimeUnit
 import scala.collection.immutable.ListMap
 import scala.util.Try
 import scala.util.control.NonFatal

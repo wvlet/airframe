@@ -21,6 +21,7 @@ import wvlet.airframe.http.HttpAccessLogWriter.JSONHttpAccessLogWriter
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.http._
 import wvlet.airframe.surface.secret
+import wvlet.airframe.ulid.ULID
 import wvlet.airspec.AirSpec
 import wvlet.log.Logger
 import wvlet.log.io.IOUtil
