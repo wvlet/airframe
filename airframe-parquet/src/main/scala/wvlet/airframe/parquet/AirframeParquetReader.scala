@@ -36,11 +36,11 @@ import scala.reflect.runtime.{universe => ru}
 
 object AirframeParquetReader {
 
-  def builder[A: ru.TypeTag](path: String, plan: Option[ParquetQueryPlan] = None): Builder[A] = {
-    val conf   = new Configuration()
-    val fsPath = new Path(path)
-    val file   = HadoopInputFile.fromPath(fsPath, conf)
-    new Builder[A](Surface.of[A], file, plan)
+  def builder[A: ru.TypeTag](path: String, conf: Configuration, plan: Option[ParquetQueryPlan] = None): Builder[A] = {
+    val fsPath  = new Path(path)
+    val file    = HadoopInputFile.fromPath(fsPath, conf)
+    val builder = new Builder[A](Surface.of[A], file, plan)
+    builder.withConf(conf).asInstanceOf[Builder[A]]
   }
 
   class Builder[A](surface: Surface, inputFile: InputFile, plan: Option[ParquetQueryPlan])

@@ -39,12 +39,11 @@ import scala.jdk.CollectionConverters._
   */
 
 object AirframeParquetWriter {
-  def builder[A: ru.TypeTag](path: String): Builder[A] = {
+  def builder[A: ru.TypeTag](path: String, conf: Configuration): Builder[A] = {
     val s      = Surface.of[A]
     val fsPath = new Path(path)
-    val conf   = new Configuration()
     val file   = HadoopOutputFile.fromPath(fsPath, conf)
-    val b      = new Builder[A](s, file)
+    val b      = new Builder[A](s, file).withConf(conf)
     // Use snappy by default
     b.withCompressionCodec(CompressionCodecName.SNAPPY)
       .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
