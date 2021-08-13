@@ -13,17 +13,14 @@
  */
 package wvlet.airframe.http.recorder
 
-import java.util.Locale
-
-import com.twitter.finagle.builder.ClientBuilder
+import com.twitter.finagle.Service
 import com.twitter.finagle.http.{Request, Response, Status}
-import com.twitter.finagle.service.RetryPolicy
-import com.twitter.finagle.{Http, Service}
 import com.twitter.util.Future
-import javax.net.ssl.SSLContext
 import wvlet.airframe.http.ServerAddress
-import wvlet.airframe.http.finagle.FinagleServer
+import wvlet.airframe.http.finagle.{Finagle, FinagleServer}
 import wvlet.log.LogSupport
+
+import java.util.Locale
 
 case class HttpRecorderConfig(
     recorderName: String = "http-recorder",
@@ -96,20 +93,11 @@ object HttpRecorder extends LogSupport {
 
   private def newDestClient(recorderConfig: HttpRecorderConfig): Service[Request, Response] = {
     debug(s"dest: ${recorderConfig.destAddress}")
-    val clientBuilder =
-      ClientBuilder()
-        .stack(Http.client)
-        .name("airframe-http-recorder-proxy")
-        .dest(recorderConfig.destAddress.hostAndPort)
-        .noFailureAccrual
-        .keepAlive(true)
-        .retryPolicy(RetryPolicy.tries(3, RetryPolicy.TimeoutAndWriteExceptionsOnly))
 
-    (if (recorderConfig.destAddress.port == 443) {
-       clientBuilder.tls(SSLContext.getDefault)
-     } else {
-       clientBuilder
-     }).build()
+    Finagle.client
+      .withInitializer(_.withLabel("airframe-http-recorder-proxy"))
+      .newClient(recorderConfig.destAddress.hostAndPort)
+      .nativeClient
   }
 
   private def newRecordStoreForRecording(recorderConfig: HttpRecorderConfig, dropSession: Boolean): HttpRecordStore = {

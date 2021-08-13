@@ -31,12 +31,13 @@ object HttpRequestMatcher {
   def defaultExcludeHeaderPrefixes: Seq[String] =
     Seq(
       "date",           // unstable header
-      "x-b3-",          // Finagle's tracing IDs
+      "x-b3-",          // Finagle tracing IDs
       "finagle-",       // Finagle specific headers
       "host",           // The host value can be changed
       "content-length", // this can be 0 (or missing)
       "connection",     // Client might set this header
-      "user-agent"      // User-agent can be arbitrary
+      "user-agent",     // User-agent can be arbitrary
+      "x-http2-"        // Finagle add x-http2- headers
     )
 
   def newRequestMatcher(extraHeadersToExclude: Seq[String]): HttpRequestMatcher = {
