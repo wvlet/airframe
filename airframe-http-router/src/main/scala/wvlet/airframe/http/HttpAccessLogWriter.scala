@@ -16,6 +16,7 @@ package wvlet.airframe.http
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.surface.{MethodSurface, Parameter, Surface}
 import wvlet.airframe.http.router.RPCCallContext
+import wvlet.airframe.ulid.ULID
 import wvlet.log.{AsyncHandler, LogFormatter, LogRecord, LogRotationHandler, LogTimestampFormatter}
 
 import java.lang.reflect.InvocationTargetException
@@ -181,6 +182,9 @@ object HttpAccessLogWriter {
           ListMap.empty
         case _ if p.isSecret =>
           ListMap.empty
+        case u: ULID =>
+          // Fixes https://github.com/wvlet/airframe/issues/1715
+          ListMap(p.name -> u)
         case _ if p.surface.params.length > 0 =>
           ListMap(p.name -> traverseObject(p.surface, arg))
         case _ =>
