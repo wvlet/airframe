@@ -323,13 +323,13 @@ object ReflectSurfaceFactory extends LogSupport {
             trace(f"Resolving the unknown type $tpe into AnyRef")
             new GenericSurface(resolveClass(tpe))
           }
-          val surface =
+          val surface: Surface =
             try {
               m(tpe)
             } catch {
               case e: NoSuchElementException =>
                 // Failed to create surface (Not found in cache)
-                AnyRefSurface
+                wvlet.airframe.surface.ExistentialType
             }
           // Cache if not yet cached
           surfaceCache.getOrElseUpdate(fullName, surface)
