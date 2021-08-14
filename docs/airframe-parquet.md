@@ -144,3 +144,11 @@ val reader = Parquet.newReader[MyEntry](
   config = _.withFilter(filter)
 )
 ```
+
+## Read Column Statistics
+
+```scala
+// Read Parquet metadat to get column statistics
+val stats: Map[String, ColumnStatistics] = Parquet.readStatistics("data.parquet")
+// Map(id -> ColumnStatistics(numNulls = Some(0), uncompressedSize = Some(..), .., minValue = Some(1), maxValue = Some(2)), ... )
+```

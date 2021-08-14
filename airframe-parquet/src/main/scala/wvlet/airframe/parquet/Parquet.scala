@@ -9,7 +9,6 @@ import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.{MessageType, Type, Types}
 import wvlet.airframe.control.Control.withResource
-import wvlet.airframe.json.Json
 import wvlet.airframe.surface.{OptionSurface, Parameter, Primitive, Surface}
 import wvlet.log.LogSupport
 
@@ -66,6 +65,11 @@ object Parquet extends LogSupport {
     withResource(ParquetFileReader.open(input)) { reader =>
       reader.getFooter.getFileMetaData.getSchema
     }
+  }
+
+  def readStatistics(path: String, hadoopConf: Configuration = new Configuration()): Map[String, ColumnStatistics] = {
+    val input = HadoopInputFile.fromPath(new Path(path), hadoopConf)
+    ParquetStatsReader.readStatistics(input)
   }
 
   def toParquetSchema(surface: Surface): MessageType = {
