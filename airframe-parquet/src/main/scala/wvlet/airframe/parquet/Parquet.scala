@@ -18,7 +18,7 @@ import scala.reflect.runtime.{universe => ru}
 object Parquet extends LogSupport {
 
   /**
-    * Create a Parquet writer that accepts records represented in Map, Array, JSON, etc.
+    * Create a Parquet writer that accepts records represented in Map, Array, JSON, MsgPack, etc.
     * @param path
     * @param schema
     * @param hadoopConf

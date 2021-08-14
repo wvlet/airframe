@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.parquet
 
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
+import org.apache.parquet.schema.{MessageType, PrimitiveType, Types}
 import wvlet.airframe.codec.PrimitiveCodec.AnyCodec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.surface.Surface
@@ -72,5 +74,30 @@ object ParquetRecordWriterTest extends AirSpec {
         }
       }
     }
+  }
+
+  case class RecordOpt(id: Int, flag: Option[Int] = None)
+  private val schema2 = new MessageType(
+    "my record",
+    Types.required(PrimitiveTypeName.INT32).named("id"),
+    Types.optional(PrimitiveTypeName.INT32).named("flag")
+  )
+
+  test("write records with Option") {
+    IOUtil.withTempFile("target/tmp-record-opt", ".parquet") { file =>
+      withResource(Parquet.newRecordWriter(file.getPath, schema2)) { writer =>
+        writer.write(RecordOpt(1, Some(1)))
+        writer.write(RecordOpt(2, None))
+        writer.write("""{"id":"3"}""")
+      }
+
+      withResource(Parquet.newReader[Map[String, Any]](file.getPath)) { reader =>
+        reader.read() shouldBe Map("id" -> 1, "flag" -> 1)
+        reader.read() shouldBe Map("id" -> 2)
+        reader.read() shouldBe Map("id" -> 3)
+        reader.read() shouldBe null
+      }
+    }
+
   }
 }
