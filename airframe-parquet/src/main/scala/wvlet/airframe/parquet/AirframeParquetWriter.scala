@@ -36,7 +36,7 @@ import wvlet.airframe.codec.PrimitiveCodec.{
 }
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecException, MessageCodecFactory}
 import wvlet.airframe.json.JSONParseException
-import wvlet.airframe.msgpack.spi.Value.{ArrayValue, MapValue, StringValue}
+import wvlet.airframe.msgpack.spi.Value.{ArrayValue, BinaryValue, MapValue, StringValue}
 import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack, Value}
 import wvlet.airframe.parquet.AirframeParquetWriter.ParquetCodec
 import wvlet.airframe.surface.{CName, Parameter, Surface}
@@ -251,7 +251,7 @@ class ParquetRecordCodec(schema: MessageType) extends LogSupport {
         anyCodec.toMsgPack(obj)
       } catch {
         case e: MessageCodecException =>
-          throw new IllegalArgumentException(s"Cannot convert the input into MsgPack: ${obj}")
+          throw new IllegalArgumentException(s"Cannot convert the input into MsgPack: ${obj}", e)
       }
     val value = ValueCodec.fromMsgPack(msgpack)
     packValue(value, recordConsumer)
@@ -287,6 +287,15 @@ class ParquetRecordCodec(schema: MessageType) extends LogSupport {
           val cKey     = CName.toCanonicalName(keyValue)
           writeColumnValue(cKey, v)
         }
+      case b: BinaryValue =>
+        // Assume it's a message pack value
+        try {
+          val v = ValueCodec.fromMsgPack(b.v)
+          packValue(v, recordConsumer)
+        } catch {
+          case e: MessageCodecException =>
+            invalidInput(b, e)
+        }
       case s: StringValue =>
         val str = s.toString
         if (str.startsWith("{") || str.startsWith("[")) {
@@ -310,7 +319,7 @@ class ParquetRecordCodec(schema: MessageType) extends LogSupport {
 
   private def invalidInput(v: Value, cause: Throwable): Nothing = {
     throw new IllegalArgumentException(
-      s"The input for ${schema} must be Map[String, Any], Array, or JSON strings: ${v}",
+      s"The input for ${schema} must be Map[String, Any], Array, MsgPack, or JSON strings: ${v}",
       cause
     )
   }

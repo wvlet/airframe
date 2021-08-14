@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.parquet
 
+import wvlet.airframe.codec.PrimitiveCodec.AnyCodec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
@@ -22,16 +23,16 @@ import wvlet.log.io.IOUtil
   */
 object ParquetRecordWriterTest extends AirSpec {
   case class MyRecord(id: Int, name: String)
+  private val schema = Parquet.toParquetSchema(Surface.of[MyRecord])
 
   test("write generic records with a schema") {
-    val schema = Parquet.toParquetSchema(Surface.of[MyRecord])
-
     IOUtil.withTempFile("target/tmp-record", ".parquet") { file =>
       withResource(Parquet.newRecordWriter(file.getPath, schema)) { writer =>
         writer.write(Map("id" -> 1, "name" -> "leo"))
         writer.write(Array(2, "yui"))
         writer.write("""{"id":3, "name":"aina"}""")
         writer.write("""[4, "ruri"]""")
+        writer.write(AnyCodec.toMsgPack(Map("id" -> 5, "name" -> "xxx")))
       }
 
       withResource(Parquet.newReader[Map[String, Any]](file.getPath)) { reader =>
@@ -39,7 +40,36 @@ object ParquetRecordWriterTest extends AirSpec {
         reader.read() shouldBe Map("id" -> 2, "name" -> "yui")
         reader.read() shouldBe Map("id" -> 3, "name" -> "aina")
         reader.read() shouldBe Map("id" -> 4, "name" -> "ruri")
+        reader.read() shouldBe Map("id" -> 5, "name" -> "xxx")
         reader.read() shouldBe null
+      }
+    }
+  }
+
+  test("throw an exception for an invalid input") {
+    IOUtil.withTempFile("target/tmp-record-invalid", ".parquet") { file =>
+      withResource(Parquet.newRecordWriter(file.getPath, schema)) { writer =>
+        intercept[IllegalArgumentException] {
+          writer.write("{broken json data}")
+        }
+        intercept[IllegalArgumentException] {
+          writer.write("not a json data")
+        }
+        intercept[IllegalArgumentException] {
+          // Broken MessagePack data
+          writer.write(Array[Byte](0x1))
+        }
+        intercept[IllegalArgumentException] {
+          // Insufficient array size
+          writer.write(Array(1))
+        }
+        intercept[IllegalArgumentException] {
+          // Too large array size
+          writer.write(Array(1, 2, 3))
+        }
+        intercept[IllegalArgumentException] {
+          writer.write(null)
+        }
       }
     }
   }
