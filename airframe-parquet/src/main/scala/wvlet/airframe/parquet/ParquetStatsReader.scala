@@ -43,6 +43,10 @@ object ParquetStatsReader extends LogSupport {
     }
 
     def add(columnName: String, value: Long): Unit = {
+      // TODO: Use updateWith when deprecating Scala 2.12 support
+//      table.updateWith(columnName){ prev: Option[Long] =>
+//        prev.getOrElse(0) + value
+//      }
       val newValue = table.getOrElse(columnName, 0L) + value
       table.put(columnName, newValue)
     }
@@ -56,11 +60,13 @@ object ParquetStatsReader extends LogSupport {
     var rowCount           = 0L
     val schema             = metadata.getFileMetaData.getSchema
     // Prepare statistics holder
-    val columnStats = schema.getColumns.asScala.map { col =>
-      val colName = col.getPath.mkString(".")
-      val tpe     = col.getPrimitiveType
-      colName -> Statistics.createStats(tpe)
-    }.toMap
+    val columnStats = schema.getColumns.asScala
+      .map { col =>
+        val colName = col.getPath.mkString(".")
+        val tpe     = col.getPrimitiveType
+        colName -> Statistics.createStats(tpe)
+      // We need to specify explicit map element types for Scala 2.12
+      }.toMap[String, Statistics[_]]
 
     val uncompressedSize = new ColumnMetric()
     val compressedSize   = new ColumnMetric()
