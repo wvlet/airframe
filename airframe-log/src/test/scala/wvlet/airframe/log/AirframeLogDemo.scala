@@ -73,6 +73,7 @@ class AirframeLogDemo extends AirSpec {
     Thread.currentThread().setName("thread-1")
     try {
       log(SourceCodeLogFormatter)
+      log(ThreadLogFormatter)
       log(SimpleLogFormatter)
       log(AppLogFormatter)
       log(IntelliJLogFormatter)

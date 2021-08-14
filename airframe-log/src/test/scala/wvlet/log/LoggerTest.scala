@@ -108,6 +108,10 @@ class LoggerTest extends Spec {
     Logger.setDefaultFormatter(SourceCodeLogFormatter)
     new MyAppClass
   }
+  test("support log with thread name") {
+    Logger.setDefaultFormatter(ThreadLogFormatter)
+    new MyAppClass
+  }
 
   test("support intellij format") {
     Logger.setDefaultFormatter(IntelliJLogFormatter)
