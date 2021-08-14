@@ -12,7 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.log
-import wvlet.log.{LogSupport, Spec}
+import wvlet.log.{LogLevel, Logger, Spec}
+
+import java.io.StringReader
+import java.util.Properties
 
 /**
   */
@@ -23,5 +26,17 @@ class LogTest extends Spec {
 
     wvlet.airframe.log.initNoColor
     debug("hello")
+  }
+
+  test("Test setting root log level") {
+    val p            = new Properties()
+    val rootLogLevel = Logger.getDefaultLogLevel
+    try {
+      p.load(new StringReader("_root_ = trace"))
+      Logger.setLogLevels(p)
+      Logger.getDefaultLogLevel shouldBe LogLevel.TRACE
+    } finally {
+      Logger.setDefaultLogLevel(rootLogLevel)
+    }
   }
 }

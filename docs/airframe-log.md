@@ -115,6 +115,10 @@ com.amazonaws=info
 ```
 The format follows [Java Properties file format](https://docs.oracle.com/javase/7/docs/api/java/util/Properties.html#load(java.io.Reader)).
 
+To specify a root log level, use `_root_` keyword: 
+```scala
+_root_=debug
+```
 
 In default, loglevel file will be found in this order:
 
