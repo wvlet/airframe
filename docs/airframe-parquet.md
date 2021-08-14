@@ -56,6 +56,29 @@ val j1 = jsonReader.read() // {"id":1,"name":"leo"}
 val j2 = jsonReader.read() // {"id":2,"name":"yui"} 
 jsonReader.read() // null
 jsonReader.close()
+
+// Writing dynamically generated records
+import org.apache.parquet.schema._
+// Create a Parquet schema
+val schema = new MessageType(
+  "MyEntry",
+  Types.required(PrimitiveTypeName.INT32).named("id"),
+  Types.optional(PrimitiveTypeName.BINARY).as(stringType).named("name")
+)
+// Create a record writer for the given schema
+val recordWriter = Parquet.newRecordWriter(path = "record.parquet", schema)
+// Write a record using Map (column name -> value)
+recordWriter.write(Map("id" -> 1, "name" -> "leo"))
+// Write a record using JSON object
+recordWriter.write("""{"id":2, "name":"yui"}""")
+// Write a record using Array
+recordWriter.write(Seq(3, "aina"))
+// Write a record using JSON array
+recordWriter.write("""[4, "xxx"]""")
+// You can use case classes as input as well
+recordWriter.write(MyEntry(5, "yyy"))
+
+recordWriter.close()
 ```
 
 ### Using with AWS S3

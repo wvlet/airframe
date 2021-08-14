@@ -17,6 +17,26 @@ import scala.reflect.runtime.{universe => ru}
 
 object Parquet extends LogSupport {
 
+  /**
+    * Create a Parquet writer that accepts records represented in Map, Array, JSON, MsgPack, etc.
+    * @param path
+    * @param schema
+    * @param hadoopConf
+    * @param config
+    * @return
+    */
+  def newRecordWriter(
+      path: String,
+      schema: MessageType,
+      hadoopConf: Configuration = new Configuration(),
+      config: AirframeParquetWriter.RecordWriterBuilder => AirframeParquetWriter.RecordWriterBuilder =
+        identity[AirframeParquetWriter.RecordWriterBuilder](_)
+  ): ParquetWriter[Any] = {
+    val b       = AirframeParquetWriter.recordWriterBuilder(path, schema, hadoopConf)
+    val builder = config(b)
+    builder.build()
+  }
+
   def newWriter[A: ru.TypeTag](
       path: String,
       // Hadoop filesystem specific configuration, e.g., fs.s3a.access.key
