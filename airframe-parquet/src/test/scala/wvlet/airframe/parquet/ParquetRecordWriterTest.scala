@@ -29,10 +29,16 @@ object ParquetRecordWriterTest extends AirSpec {
     IOUtil.withTempFile("target/tmp-record", ".parquet") { file =>
       withResource(Parquet.newRecordWriter(file.getPath, schema)) { writer =>
         writer.write(Map("id" -> 1, "name" -> "leo"))
+        writer.write(Array(2, "yui"))
+        writer.write("""{"id":3, "name":"aina"}""")
+        writer.write("""[4, "ruri"]""")
       }
 
       withResource(Parquet.newReader[Map[String, Any]](file.getPath)) { reader =>
         reader.read() shouldBe Map("id" -> 1, "name" -> "leo")
+        reader.read() shouldBe Map("id" -> 2, "name" -> "yui")
+        reader.read() shouldBe Map("id" -> 3, "name" -> "aina")
+        reader.read() shouldBe Map("id" -> 4, "name" -> "ruri")
         reader.read() shouldBe null
       }
     }
