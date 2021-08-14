@@ -56,6 +56,23 @@ object AirframeParquetWriter {
     }
   }
 
+  class RecordWriterBuilder(schema: MessageType, file: OutputFile)
+      extends ParquetWriter.Builder[Any, RecordWriterBuilder](file: OutputFile) {
+    override def self(): RecordWriterBuilder = this
+    override def getWriteSupport(conf: Configuration): WriteSupport[Any] = {
+      new AirframeParquetRecordWriterSupport(schema)
+    }
+  }
+
+  def recordWriterBuilder(path: String, schema: MessageType, conf: Configuration): RecordWriterBuilder = {
+    val fsPath = new Path(path)
+    val file   = HadoopOutputFile.fromPath(fsPath, conf)
+    val b      = new RecordWriterBuilder(schema, file).withConf(conf)
+    // Use snappy by default
+    b.withCompressionCodec(CompressionCodecName.SNAPPY)
+      .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
+  }
+
   /**
     * Convert object --[MessageCodec]--> msgpack --[MessageCodec]--> Parquet type --> RecordConsumer
     * @param tpe
@@ -167,5 +184,32 @@ class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] w
     } finally {
       recordConsumer.endMessage()
     }
+  }
+}
+
+class AirframeParquetRecordWriterSupport(schema: MessageType) extends WriteSupport[Any] with LogSupport {
+  private var recordConsumer: RecordConsumer = null
+
+  override def init(configuration: Configuration): WriteContext = {
+    new WriteContext(schema, Map.empty[String, String].asJava)
+  }
+
+  override def prepareForWrite(recordConsumer: RecordConsumer): Unit = {
+    this.recordConsumer = recordConsumer
+  }
+
+  private val codec = MessageCodec.of[Any]
+
+  override def write(record: Any): Unit = {
+    require(recordConsumer != null)
+
+    val msgpack = codec.toMsgPack(record)
+    try {
+      recordConsumer.startMessage()
+
+    } finally {
+      recordConsumer.endMessage()
+    }
+
   }
 }
