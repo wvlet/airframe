@@ -99,7 +99,7 @@ object ReflectSurfaceFactory extends LogSupport {
   def findTypeOf(s: Surface): Option[ru.Type] = typeMap.get(s)
 
   def get(name: String): Surface = {
-    surfaceCache.getOrElse(name, throw new IllegalArgumentException(s"Surface ${name} is not found in cache"))
+    surfaceCache.getOrElse(name, throw new NoSuchElementException(s"Surface ${name} is not found in cache"))
   }
 
   private def typeNameOf(t: ru.Type): String = {
@@ -323,11 +323,18 @@ object ReflectSurfaceFactory extends LogSupport {
             trace(f"Resolving the unknown type $tpe into AnyRef")
             new GenericSurface(resolveClass(tpe))
           }
-          val surface = m(tpe)
+          val surface: Surface =
+            try {
+              m(tpe)
+            } catch {
+              case e: NoSuchElementException =>
+                // Failed to create surface (Not found in cache)
+                AnyRefSurface
+            }
           // Cache if not yet cached
           surfaceCache.getOrElseUpdate(fullName, surface)
           typeMap.getOrElseUpdate(surface, tpe)
-          trace(s"surfaceOf(${tpe}) Surface: ${surface}, Surace class:${surface.getClass}, tpe: ${showRaw(tpe)}")
+          trace(s"surfaceOf(${tpe}) Surface: ${surface}, Surface class:${surface.getClass}, tpe: ${showRaw(tpe)}")
           surface
         }
       } catch {
@@ -391,8 +398,13 @@ object ReflectSurfaceFactory extends LogSupport {
         wvlet.airframe.surface.ExistentialType
       case t @ TypeRef(NoPrefix, tpe, args) if !t.typeSymbol.isClass =>
         val name = tpe.name.decodedName.toString
-
-        HigherKindedTypeSurface(name, name, surfaceOf(t.erasure), args.map(ta => surfaceOf(ta)))
+        val ref: Surface = if (t.typeSymbol.isAbstract && t.typeArgs.isEmpty) {
+          // When t is just a type letter (e.g., A, T, etc.)
+          AnyRefSurface
+        } else {
+          surfaceOf(t.erasure)
+        }
+        HigherKindedTypeSurface(name, name, ref, args.map(ta => surfaceOf(ta)))
     }
 
     private def taggedTypeFactory: SurfaceMatcher = {
