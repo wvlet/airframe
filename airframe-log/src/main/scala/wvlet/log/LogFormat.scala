@@ -13,11 +13,12 @@
  */
 package wvlet.log
 
+import wvlet.airframe.log.AnsiColorPalette
+
 import java.io.{PrintWriter, StringWriter}
 import java.util.logging.Formatter
 import java.util.regex.Pattern
 import java.util.{logging => jl}
-
 import wvlet.log.LogLevel.{DEBUG, ERROR, INFO, TRACE, WARN}
 
 /**
@@ -34,7 +35,7 @@ trait LogFormatter extends Formatter {
   }
 }
 
-object LogFormatter {
+object LogFormatter extends AnsiColorPalette {
   import LogTimestampFormatter._
 
   def currentThreadName: String = Thread.currentThread().getName
@@ -155,6 +156,23 @@ object LogFormatter {
       val logTag = highlightLog(r.level, r.level.name)
       val log =
         f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(
+          Console.WHITE,
+          r.leafLoggerName
+        )}] ${highlightLog(r.level, r.getMessage)} ${loc}"
+      appendStackTrace(log, r)
+    }
+  }
+
+  object ThreadLogFormatter extends LogFormatter {
+    override def formatLog(r: LogRecord): String = {
+      val loc =
+        r.source
+          .map(source => s" ${withColor(Console.BLUE, s"- (${source.fileLoc})")}")
+          .getOrElse("")
+
+      val logTag = highlightLog(r.level, r.level.name)
+      val log =
+        f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} [${withColor(BRIGHT_BLUE, currentThreadName)}] ${logTag}%14s [${withColor(
           Console.WHITE,
           r.leafLoggerName
         )}] ${highlightLog(r.level, r.getMessage)} ${loc}"

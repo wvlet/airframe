@@ -180,6 +180,7 @@ This code will show:
 ### Pre-defined log formatters:
 Here is the list of pre-defined log formatters.
  - **SourceCodeLogFormatter** (with source code location)
+ - **ThreadLogFormatter** (with source code location + current thread name)
  - **PlainSourceCodeLogFormatter** (with source code location without ANSI coloring)
  - **AppLogFormatter** (without source code location)
  - **TSVLogFormatter** (logging in TSV format)
