@@ -155,6 +155,9 @@ org.apache.http=<span class="hljs-keyword">info</span>
 com.amazonaws=<span class="hljs-keyword">info</span>
 </code></pre>
 <p>The format follows <a href="https://docs.oracle.com/javase/7/docs/api/java/util/Properties.html#load(java.io.Reader)">Java Properties file format</a>.</p>
+<p>To specify a root log level, use <code>_root_</code> keyword:</p>
+<pre><code class="hljs css language-scala">_root_=debug
+</code></pre>
 <p>In default, loglevel file will be found in this order:</p>
 <ol>
 <li><code>log-test.properties</code> in the classpath.</li>
