@@ -264,7 +264,11 @@ object Logger {
     for ((loggerName, level) <- logLevels.asScala) {
       LogLevel.unapply(level) match {
         case Some(lv) =>
-          Logger(loggerName).setLogLevel(lv)
+          if (loggerName == "_root_") {
+            rootLogger.setLogLevel(lv)
+          } else {
+            Logger(loggerName).setLogLevel(lv)
+          }
         case None =>
           Console.err.println(s"Unknown loglevel ${level} is specified for ${loggerName}")
       }
