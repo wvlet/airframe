@@ -34,6 +34,9 @@ class GrpcClientGeneratorTest extends AirSpec {
       HttpClientGeneratorConfig("example.grpc:grpc")
     )
     debug(code)
+    code.contains(
+      "def sayHello(message: String, callOptions: io.grpc.CallOptions => io.grpc.CallOptions = identity): String"
+    ) shouldBe true
   }
 
   test("resolve alias types") {

@@ -190,13 +190,13 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
 
           val requestObject = m.clientCallParameters.headOption.getOrElse("Map.empty[String, Any]")
           val lines         = Seq.newBuilder[String]
-          lines += s"def ${m.name}(${inputArgs.mkString(", ")}): ${m.returnType.fullTypeName} = {"
+          lines += s"def ${m.name}(${inputArgs.mkString(", ")}, callOptions: io.grpc.CallOptions => io.grpc.CallOptions = identity): ${m.returnType.fullTypeName} = {"
           m.grpcMethodType match {
             case GrpcMethodType.UNARY =>
               lines += s"  val __m = ${requestObject}"
               lines += s"  val codec = codecFactory.of[${m.requestModelClassType}]"
               lines += s"  ClientCalls"
-              lines += s"    .blockingUnaryCall(getChannel, descriptors.${m.name}Descriptor, getCallOptions, codec.toMsgPack(__m))"
+              lines += s"    .blockingUnaryCall(getChannel, descriptors.${m.name}Descriptor, callOptions(getCallOptions), codec.toMsgPack(__m))"
               lines += s"    .asInstanceOf[${m.returnType.fullTypeName}]"
             case GrpcMethodType.SERVER_STREAMING =>
               lines += s"  val __m = ${requestObject}"
@@ -204,7 +204,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
               lines += s"  val responseObserver = wvlet.airframe.http.grpc.GrpcClientCalls.blockingResponseObserver[${m.grpcReturnType.fullTypeName}]"
               lines += s"  ClientCalls"
               lines += s"    .asyncServerStreamingCall("
-              lines += s"       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),"
+              lines += s"       getChannel.newCall(descriptors.${m.name}Descriptor, callOptions(getCallOptions)),"
               lines += s"       codec.toMsgPack(__m),"
               lines += s"       responseObserver"
               lines += s"    )"
@@ -213,7 +213,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
               lines += s"  val responseObserver = wvlet.airframe.http.grpc.GrpcClientCalls.blockingResponseObserver[${m.grpcReturnType.fullTypeName}]"
               lines += s"  val requestObserver = ClientCalls"
               lines += s"    .asyncClientStreamingCall("
-              lines += s"       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),"
+              lines += s"       getChannel.newCall(descriptors.${m.name}Descriptor, callOptions(getCallOptions)),"
               lines += s"       responseObserver"
               lines += s"    )"
               lines += s"  wvlet.airframe.http.grpc.GrpcClientCalls.readClientRequestStream("
@@ -226,7 +226,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
               lines += s"  val responseObserver = wvlet.airframe.http.grpc.GrpcClientCalls.blockingResponseObserver[${m.grpcReturnType.fullTypeName}]"
               lines += s"  val requestObserver = ClientCalls"
               lines += s"    .asyncBidiStreamingCall("
-              lines += s"       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),"
+              lines += s"       getChannel.newCall(descriptors.${m.name}Descriptor, callOptions(getCallOptions)),"
               lines += s"       responseObserver"
               lines += s"    )"
               lines += s"  wvlet.airframe.http.grpc.GrpcClientCalls.readClientRequestStream("
@@ -277,7 +277,10 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
           val requestObject =
             m.clientCallParameters.headOption.getOrElse("Map.empty[String, Any]")
           val clientArgs =
-            inputArgs :+ s"responseObserver: io.grpc.stub.StreamObserver[${m.grpcReturnType.fullTypeName}]"
+            inputArgs ++ Seq(
+              s"responseObserver: io.grpc.stub.StreamObserver[${m.grpcReturnType.fullTypeName}]",
+              "callOptions: io.grpc.CallOptions => io.grpc.CallOptions = identity"
+            )
           val lines = m.grpcMethodType match {
             case GrpcMethodType.UNARY =>
               s"""def ${m.name}(${clientArgs.mkString(", ")}): Unit = {
@@ -285,7 +288,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
                  |  val codec = codecFactory.of[${m.requestModelClassType}]
                  |  ClientCalls
                  |    .asyncUnaryCall[MsgPack, Any](
-                 |       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),
+                 |       getChannel.newCall(descriptors.${m.name}Descriptor, callOptions(getCallOptions)),
                  |       codec.toMsgPack(__m),
                  |       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]
                  |    )
@@ -296,7 +299,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
                  |  val codec = codecFactory.of[${m.requestModelClassType}]
                  |  ClientCalls
                  |    .asyncServerStreamingCall[MsgPack, Any](
-                 |       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),
+                 |       getChannel.newCall(descriptors.${m.name}Descriptor, callOptions(getCallOptions)),
                  |       codec.toMsgPack(__m),
                  |       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]
                  |    )
@@ -307,7 +310,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
                  |  val codec = codecFactory.of[${m.grpcClientStreamingRequestType.fullTypeName}]
                  |  val requestObserver = ClientCalls
                  |    .asyncClientStreamingCall[MsgPack, Any](
-                 |       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),
+                 |       getChannel.newCall(descriptors.${m.name}Descriptor, callOptions(getCallOptions)),
                  |       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]
                  |    )
                  |  wvlet.airframe.http.grpc.GrpcClientCalls.translate[MsgPack, ${m.grpcClientStreamingRequestType.fullTypeName}](
@@ -321,7 +324,7 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
                  |  val codec = codecFactory.of[${m.grpcClientStreamingRequestType.fullTypeName}]
                  |  val requestObserver = ClientCalls
                  |    .asyncBidiStreamingCall[MsgPack, Any](
-                 |       getChannel.newCall(descriptors.${m.name}Descriptor, getCallOptions),
+                 |       getChannel.newCall(descriptors.${m.name}Descriptor, callOptions(getCallOptions)),
                  |       responseObserver.asInstanceOf[io.grpc.stub.StreamObserver[Any]]
                  |    )
                  |  wvlet.airframe.http.grpc.GrpcClientCalls.translate[MsgPack, ${m.grpcClientStreamingRequestType.fullTypeName}](
