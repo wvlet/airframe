@@ -18,7 +18,6 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.filter2.compat.FilterCompat
 import org.apache.parquet.filter2.predicate.FilterApi
 import org.apache.parquet.hadoop.ParquetFileWriter
-import software.amazon.awssdk.auth.credentials.{AwsCredentials, AwsCredentialsProvider}
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.{JSON, Json}
@@ -70,6 +69,21 @@ object ParquetTest extends AirSpec {
         reader.read() shouldBe null
       }
 
+      test("read statistics") {
+        val stats = Parquet.readStatistics(file.getPath)
+        debug(stats)
+        stats("id").numNulls shouldBe Some(0)
+        stats("id").uncompressedSize shouldBe defined
+        stats("id").compressedSize shouldBe defined
+        stats("id").minValue shouldBe Some(1)
+        stats("id").maxValue shouldBe Some(2)
+
+        stats("name").numNulls shouldBe Some(0)
+        stats("name").uncompressedSize shouldBe defined
+        stats("name").compressedSize shouldBe defined
+        stats("name").minValue shouldBe Some("leo")
+        stats("name").maxValue shouldBe Some("yui")
+      }
     }
   }
 
