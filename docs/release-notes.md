@@ -6,6 +6,34 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.8.1
+
+[airframe-parquet](https://wvlet.org/airframe/docs/airframe-parquet) now supports AWS S3, writing dynamic records, and reading column statistics.  
+airframe-log added ThreadLogFormatter to show the current thread name in the log. This is suited to multi-thread applications.
+
+### New Features
+
+- airframe-parquet: Support S3 ([#1777](https://github.com/wvlet/airframe/issues/1777)) [[ed99dd086](https://github.com/wvlet/airframe/commit/ed99dd086)]
+- airframe-parquet: Add record writer ([#1785](https://github.com/wvlet/airframe/issues/1785)) [[555960bf7](https://github.com/wvlet/airframe/commit/555960bf7)]
+- airframe-parquet: Read column statistics ([#1784](https://github.com/wvlet/airframe/issues/1784)) [[cdd3f95fd](https://github.com/wvlet/airframe/commit/cdd3f95fd)]
+- airframe-log: Support setting the root log level with _root_ logger name ([#1788](https://github.com/wvlet/airframe/issues/1788)) [[7b44e4e9d](https://github.com/wvlet/airframe/commit/7b44e4e9d)]
+- airframe-log: Add ThreadLogFormatter ([#1786](https://github.com/wvlet/airframe/issues/1786)) [[53e3186b1](https://github.com/wvlet/airframe/commit/53e3186b1)]
+
+### Bug Fixes
+
+- airframe-surface: Give up building Surface for difficult types ([#1781](https://github.com/wvlet/airframe/issues/1781)) [[ec8ec7e0a](https://github.com/wvlet/airframe/commit/ec8ec7e0a)]
+- airframe-http: Fixes [#1715](https://github.com/wvlet/airframe/issues/1715) for logging ULID RPC arg ([#1780](https://github.com/wvlet/airframe/issues/1780)) [[16a070152](https://github.com/wvlet/airframe/commit/16a070152)]
+
+### Dependency Updates
+
+- Upgrade to Finagle 21.8.0 ([#1778](https://github.com/wvlet/airframe/issues/1778)) [[00c9f27bd](https://github.com/wvlet/airframe/commit/00c9f27bd)]
+- Update logback-core to 1.2.5 ([#1768](https://github.com/wvlet/airframe/issues/1768)) [[8d0e2da4e](https://github.com/wvlet/airframe/commit/8d0e2da4e)]
+- Update sbt-sonatype to 3.9.9 ([#1790](https://github.com/wvlet/airframe/issues/1790)) [[bb7be3ab1](https://github.com/wvlet/airframe/commit/bb7be3ab1)]
+- airframe-control: Remove scala-parser-combinators dependency ([#1789](https://github.com/wvlet/airframe/issues/1789)) [[6afc0a7c0](https://github.com/wvlet/airframe/commit/6afc0a7c0)]
+- Update auth to 2.17.19 ([#1783](https://github.com/wvlet/airframe/issues/1783)) [[5f10fef39](https://github.com/wvlet/airframe/commit/5f10fef39)]
+- Update jmh-core, jmh-generator-bytecode, ... to 1.33 ([#1775](https://github.com/wvlet/airframe/issues/1775)) [[0928cd435](https://github.com/wvlet/airframe/commit/0928cd435)]
+- Fixes [#1752](https://github.com/wvlet/airframe/issues/1752): Simplify build settings ([#1779](https://github.com/wvlet/airframe/issues/1779)) [[851940945](https://github.com/wvlet/airframe/commit/851940945)]
+
 ## 21.8.0
 
 Upgraded to [Scala.js 1.7.0](https://www.scala-js.org/news/2021/08/04/announcing-scalajs-1.7.0/), which fixed all of the known bugs in Scala.js 1.6.0.
