@@ -14,35 +14,73 @@
 package wvlet.airframe.control
 import wvlet.log.LogSupport
 
-import scala.util.parsing.combinator.RegexParsers
-
 /**
   * Tokenize single string representations of command line arguments into Array[String]
   */
-object CommandLineTokenizer extends RegexParsers with LogSupport {
+object CommandLineTokenizer extends LogSupport {
+  private val DOUBLE_QUOTED_LITERAL = ("\"" + """([^"\p{Cntrl}\\]|\\[\\/\\"bfnrt]|\\u[a-fA-F0-9]{4})*""" + "\"").r
+  private val SINGLE_QUOTED_LITERAL = ("'" + """([^'\p{Cntrl}\\]|\\[\\/\\"bfnrt]|\\u[a-fA-F0-9]{4})*""" + "'").r
+  private val REGULAR_TOKEN         = """([^\"'\s]+)""".r
+
   private def unquote(s: String): String = s.substring(1, s.length() - 1)
 
-  def stringLiteral: Parser[String] =
-    ("\"" + """([^"\p{Cntrl}\\]|\\[\\/\\"bfnrt]|\\u[a-fA-F0-9]{4})*""" + "\"").r ^^ { unquote(_) }
-  def quotation: Parser[String] =
-    ("'" + """([^'\p{Cntrl}\\]|\\[\\/\\"bfnrt]|\\u[a-fA-F0-9]{4})*""" + "'").r ^^ { unquote(_) }
-  def other: Parser[String]        = """([^\"'\s]+)""".r
-  def token: Parser[String]        = stringLiteral | quotation | other
-  def tokens: Parser[List[String]] = rep(token)
-
   def tokenize(line: String): Array[String] = {
-    val p = parseAll(tokens, line)
-    val r = p match {
-      case Success(result, next) => result
-      case Error(msg, next) => {
-        warn(msg)
-        List.empty
-      }
-      case Failure(msg, next) => {
-        warn(msg)
-        List.empty
+    parse(0, line).toArray
+  }
+
+  private def parse(pos: Int, line: String): List[String] = {
+    var cursor = pos
+
+    def skipWhiteSpaces: Unit = {
+      var toContinue = true
+      while (toContinue && cursor < line.length) {
+        val ch = line.charAt(cursor)
+        ch match {
+          case ' ' | '\t' | '\n' | '\r' =>
+            cursor += 1
+          case _ =>
+            toContinue = false
+        }
       }
     }
-    r.toArray
+
+    def parseToken: List[String] = {
+      REGULAR_TOKEN.findPrefixMatchOf(line.substring(cursor)) match {
+        case Some(m) =>
+          val token = m.matched
+          token :: parse(cursor + token.length, line)
+        case None =>
+          throw new IllegalArgumentException(s"Failed to parse token. pos:${pos}\n${line}")
+      }
+    }
+
+    skipWhiteSpaces
+    if (cursor >= line.length) {
+      Nil
+    } else {
+      val ch = line.charAt(cursor)
+      ch match {
+        case '\'' =>
+          // Parse single quoted token
+          SINGLE_QUOTED_LITERAL.findPrefixMatchOf(line.substring(cursor)) match {
+            case Some(m) =>
+              val token = m.matched
+              unquote(token) :: parse(cursor + token.length, line)
+            case None =>
+              parseToken
+          }
+        case '"' =>
+          // Parse double quoted token
+          DOUBLE_QUOTED_LITERAL.findPrefixMatchOf(line.substring(cursor)) match {
+            case Some(m) =>
+              val token = m.matched
+              unquote(token) :: parse(cursor + token.length, line)
+            case None =>
+              parseToken
+          }
+        case _ =>
+          parseToken
+      }
+    }
   }
 }
