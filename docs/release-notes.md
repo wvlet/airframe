@@ -16,7 +16,7 @@ airframe-log added ThreadLogFormatter to show the current thread name in the log
 - airframe-parquet: Support S3 ([#1777](https://github.com/wvlet/airframe/issues/1777)) [[ed99dd086](https://github.com/wvlet/airframe/commit/ed99dd086)]
 - airframe-parquet: Add record writer ([#1785](https://github.com/wvlet/airframe/issues/1785)) [[555960bf7](https://github.com/wvlet/airframe/commit/555960bf7)]
 - airframe-parquet: Read column statistics ([#1784](https://github.com/wvlet/airframe/issues/1784)) [[cdd3f95fd](https://github.com/wvlet/airframe/commit/cdd3f95fd)]
-- airframe-log: Support setting the root log level with _root_ logger name ([#1788](https://github.com/wvlet/airframe/issues/1788)) [[7b44e4e9d](https://github.com/wvlet/airframe/commit/7b44e4e9d)]
+- airframe-log: Support setting the root log level with `_root_` logger name ([#1788](https://github.com/wvlet/airframe/issues/1788)) [[7b44e4e9d](https://github.com/wvlet/airframe/commit/7b44e4e9d)]
 - airframe-log: Add ThreadLogFormatter ([#1786](https://github.com/wvlet/airframe/issues/1786)) [[53e3186b1](https://github.com/wvlet/airframe/commit/53e3186b1)]
 
 ### Bug Fixes
