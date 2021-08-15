@@ -14,8 +14,6 @@
 package wvlet.airframe.control
 import wvlet.log.LogSupport
 
-import scala.annotation.tailrec
-
 /**
   * Tokenize single string representations of command line arguments into Array[String]
   */
@@ -63,6 +61,7 @@ object CommandLineTokenizer extends LogSupport {
       val ch = line.charAt(cursor)
       ch match {
         case '\'' =>
+          // Parse single quoted token
           SINGLE_QUOTED_LITERAL.findPrefixMatchOf(line.substring(cursor)) match {
             case Some(m) =>
               val token = m.matched
@@ -71,6 +70,7 @@ object CommandLineTokenizer extends LogSupport {
               parseToken
           }
         case '"' =>
+          // Parse double quoted token
           DOUBLE_QUOTED_LITERAL.findPrefixMatchOf(line.substring(cursor)) match {
             case Some(m) =>
               val token = m.matched
