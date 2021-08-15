@@ -483,11 +483,6 @@ lazy val control =
       name := "airframe-control",
       description := "A library for controlling program flows and retrying"
     )
-    .jvmSettings(
-      libraryDependencies ++= Seq(
-        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
-      )
-    )
     .dependsOn(log, airspecRef % Test)
 
 lazy val controlJVM = control.jvm
@@ -528,10 +523,7 @@ lazy val launcher =
     .settings(buildSettings)
     .settings(
       name := "airframe-launcher",
-      description := "Command-line program launcher",
-      libraryDependencies ++= Seq(
-        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
-      )
+      description := "Command-line program launcher"
     )
     .dependsOn(surfaceJVM, controlJVM, codecJVM, airspecRefJVM % Test)
 
