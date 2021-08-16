@@ -110,8 +110,14 @@ object Parquet extends LogSupport {
           Types.primitive(PrimitiveTypeName.BOOLEAN, repetition).named(name)
         case o: OptionSurface =>
           toParquetType(o.elementSurface, name, Some(Type.Repetition.OPTIONAL))
+        case s: Surface if s.isSeq || s.isArray =>
+          val elementSurface = s.typeArgs(0)
+          toParquetType(elementSurface, name, Some(Type.Repetition.REPEATED))
+//        case m: Surface if s.isMap =>
+//          val keySurface = s.typeArgs(0)
+//          val valueSurface = s.typeArgs(1)
         case _ =>
-          // TODO Support Array/Seq/Map types. Just usg MsgPack binaary
+          // TODO Support Array/Seq/Map types. Just use MsgPack binary here
           Types.primitive(PrimitiveTypeName.BINARY, repetition).named(name)
       }
     }
