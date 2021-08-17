@@ -131,7 +131,10 @@ class SeqParquetCodec(elementCodec: ParquetCodec) extends ParquetCodec {
 
 object ParquetCodec {
 
-  def codecOf(surface: Surface): ParquetCodec = {}
+  def codecOf(surface: Surface): ParquetCodec = {
+    d
+
+  }
 
   private[parquet] def parquetCodecOf(tpe: Type, index: Int, codec: MessageCodec[_]): ParquetCodec = {
     if (tpe.isPrimitive) {
