@@ -13,7 +13,6 @@
  */
 package example.ui
 
-import example.api.HelloApi.TableData
 import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
 import wvlet.airframe.rx.{Rx, RxOption}
