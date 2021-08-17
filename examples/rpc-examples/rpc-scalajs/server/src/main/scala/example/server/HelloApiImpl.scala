@@ -14,7 +14,6 @@
 package example.server
 
 import example.api.HelloApi
-import example.api.HelloApi.TableData
 
 /**
   */
