@@ -65,8 +65,8 @@ object DataType {
   }
 
   /**
-    * Union type represents a type whose data can be one of the specified types.
-    * The members of a union type need to be record types.
+    * Union type represents a type whose data can be one of the specified types. The members of a union type need to be
+    * record types.
     * @param types
     */
   case class UNION(types: Seq[RecordType]) extends StructuredType {
@@ -94,7 +94,8 @@ object DataType {
     @transient private lazy val columnIdx: Map[String, Int] = column.map(_.name).zipWithIndex.toMap[String, Int]
 
     /**
-      * @param index 0-origin index
+      * @param index
+      *   0-origin index
       * @return
       */
     def columnType(index: Int): Column = column(index)

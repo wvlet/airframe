@@ -56,7 +56,8 @@ object Shell extends LogSupport {
   /**
     * Kill the process tree rooted from pid
     * @param pid
-    * @return exit code
+    * @return
+    *   exit code
     */
   def killTree(pid: Int, signal: String = "TERM"): Int = {
     // stop the parent process first to keep it from forking another child process
@@ -103,8 +104,7 @@ object Shell extends LogSupport {
   }
 
   /**
-    * launch a command in the remote host. The target host needs to be accessed
-    * via ssh command without password.
+    * launch a command in the remote host. The target host needs to be accessed via ssh command without password.
     * @param host
     * @param cmdLine
     */
@@ -115,7 +115,8 @@ object Shell extends LogSupport {
   /**
     * Return the process ID of the current JVM.
     *
-    * @return process id or -1 when process ID is not found.
+    * @return
+    *   process id or -1 when process ID is not found.
     */
   def getProcessIDOfCurrentJVM: Int = {
     val r = ManagementFactory.getRuntimeMXBean
@@ -127,7 +128,8 @@ object Shell extends LogSupport {
   /**
     * Returns process id
     * @param p
-    * @return process id or -1 if pid cannot be detected
+    * @return
+    *   process id or -1 if pid cannot be detected
     */
   def getProcessID(p: java.lang.Process): Option[Int] = {
     Try(p.pid().toInt).toOption.orElse {

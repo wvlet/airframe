@@ -163,7 +163,8 @@ case class Launcher private[launcher] (config: LauncherConfig, private[launcher]
   /**
     * Add a sub command module to the launcher
     *
-    * @param name sub command name
+    * @param name
+    *   sub command name
     * @param description
     * @tparam M
     * @return
@@ -202,7 +203,7 @@ case class LauncherInfo(name: String, description: String, usage: String, isDefa
   *             repeat:Int=1,
   *             @argument
   *             message:String = "hello") {
-  *      for(i <- 0 until repeat) println(message)
+  *       for(i <- 0 until repeat) println(message)
   *   }
   * }
   *

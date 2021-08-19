@@ -17,8 +17,8 @@ import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 /**
-  * Reproduction of https://github.com/wvlet/airframe/pull/423
-  * Locally created case classes should be visible inside the generated code.
+  * Reproduction of https://github.com/wvlet/airframe/pull/423 Locally created case classes should be visible inside the
+  * generated code.
   */
 class LocalCaseClassTest extends AirSpec {
   case class LocalConfigA()

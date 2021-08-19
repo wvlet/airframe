@@ -18,8 +18,7 @@ import sbt.testing.{Fingerprint, SubclassFingerprint}
 import wvlet.airspec.runner.AirSpecSbtRunner
 
 /**
-  * Include this class to your build.sbt:
-  * testFrameworks += new TestFramework("wvlet.airspec.AirSpecFramework")
+  * Include this class to your build.sbt: testFrameworks += new TestFramework("wvlet.airspec.AirSpecFramework")
   */
 class Framework extends sbt.testing.Framework {
   import Framework._

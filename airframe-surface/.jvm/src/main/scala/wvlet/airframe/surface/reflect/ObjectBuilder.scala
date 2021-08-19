@@ -61,7 +61,8 @@ trait GenericBuilder {
 /**
   * Generic object builder
   *
-  * @author leo
+  * @author
+  *   leo
   */
 trait ObjectBuilder extends GenericBuilder {
   def build: Any

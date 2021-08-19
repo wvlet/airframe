@@ -27,12 +27,9 @@ import scala.language.implicitConversions
 package object airframe {
 
   /**
-    * The entry point to create a new design beginning from a blanc design
-    * <code>
-    * import wvlet.airframe._
+    * The entry point to create a new design beginning from a blanc design <code> import wvlet.airframe._
     *
-    * val d = design.bind[X]
-    * </code>
+    * val d = design.bind[X] </code>
     */
   def newDesign: Design = Design.empty
 
@@ -71,38 +68,38 @@ package object airframe {
     macro bind5Impl[A, D1, D2, D3, D4, D5]
 
   /**
-    * Create a new instance of A using the provider function.
-    * The lifecycle of the generated instance of A will be managed by the current session.
+    * Create a new instance of A using the provider function. The lifecycle of the generated instance of A will be
+    * managed by the current session.
     */
   def bindLocal[A](provider: => A): A = macro bindLocal0Impl[A]
 
   /**
-    * Create a new instance of A using the provider function that receives a dependency of D1.
-    * The lifecycle of the generated instaance of A will be managed by the current session
+    * Create a new instance of A using the provider function that receives a dependency of D1. The lifecycle of the
+    * generated instaance of A will be managed by the current session
     */
   def bindLocal[A, D1](provider: => D1 => A): A = macro bindLocal1Impl[A, D1]
 
   /**
-    * Create a new instance of A using the provider function that receives dependencies of D1 and D2.
-    * The lifecycle of the generated instance of A will be managed by the current session
+    * Create a new instance of A using the provider function that receives dependencies of D1 and D2. The lifecycle of
+    * the generated instance of A will be managed by the current session
     */
   def bindLocal[A, D1, D2](provider: => (D1, D2) => A): A = macro bindLocal2Impl[A, D1, D2]
 
   /**
-    * Create a new instance of A using the provider function that receives dependencies of D1, D2, and D3.
-    * The lifecycle of the generated instance of A will be managed by the current session
+    * Create a new instance of A using the provider function that receives dependencies of D1, D2, and D3. The lifecycle
+    * of the generated instance of A will be managed by the current session
     */
   def bindLocal[A, D1, D2, D3](provider: => (D1, D2, D3) => A): A = macro bindLocal3Impl[A, D1, D2, D3]
 
   /**
-    * Create a new instance of A using the provider function that receives dependencies of D1, D2, D3, and D4.
-    * The lifecycle of the generated instance of A will be managed by the current session
+    * Create a new instance of A using the provider function that receives dependencies of D1, D2, D3, and D4. The
+    * lifecycle of the generated instance of A will be managed by the current session
     */
   def bindLocal[A, D1, D2, D3, D4](provider: => (D1, D2, D3, D4) => A): A = macro bindLocal4Impl[A, D1, D2, D3, D4]
 
   /**
-    * Create a new instance of A using the provider function that receives dependencies of D1, D2, D3, D4, and D5.
-    * The lifecycle of the generated instance of A will be managed by the current session
+    * Create a new instance of A using the provider function that receives dependencies of D1, D2, D3, D4, and D5. The
+    * lifecycle of the generated instance of A will be managed by the current session
     */
   def bindLocal[A, D1, D2, D3, D4, D5](provider: => (D1, D2, D3, D4, D5) => A): A =
     macro bindLocal5Impl[A, D1, D2, D3, D4, D5]

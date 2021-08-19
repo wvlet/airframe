@@ -19,7 +19,8 @@ object GrpcContext {
   private[grpc] val contextKey = Context.key[GrpcContext]("grpc_context")
 
   /**
-    * Get the current GrpcContext. If it returns None, it means this method is called outside gRPC's local thread for processing the request
+    * Get the current GrpcContext. If it returns None, it means this method is called outside gRPC's local thread for
+    * processing the request
     *
     * @return
     */

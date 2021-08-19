@@ -22,8 +22,8 @@ import scala.util.Try
 /**
   * Convert HtmlNodes into DOM elements for Scala.js.
   *
-  * An important functionality of this renderer is composing Cancelable objects so that
-  * resources allocated along with the rendered DOM objects will be properly discarded.
+  * An important functionality of this renderer is composing Cancelable objects so that resources allocated along with
+  * the rendered DOM objects will be properly discarded.
   *
   * Resources include event listeners, Rx subscribers, etc.
   */

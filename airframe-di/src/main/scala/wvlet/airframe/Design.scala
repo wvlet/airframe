@@ -186,8 +186,8 @@ class Design(
   /**
     * Create a new session.
     *
-    * With this method, the session will not start automatically. You need to explicitly call
-    * session.start and session.shutdown to start/terminate the lifecycle of objects
+    * With this method, the session will not start automatically. You need to explicitly call session.start and
+    * session.shutdown to start/terminate the lifecycle of objects
     *
     * @return
     */
@@ -222,8 +222,7 @@ class Design(
 object Design {
 
   /**
-    * Empty design.
-    * Using Vector as a binding holder for performance and serialization reason
+    * Empty design. Using Vector as a binding holder for performance and serialization reason
     */
   private[airframe] val blanc: Design = new Design(new DesignOptions(), Vector.empty, Vector.empty)
 

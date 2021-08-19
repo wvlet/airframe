@@ -24,11 +24,11 @@ import scala.util.{Failure, Success, Try}
 /**
   * AirSpecTaskRunner will execute a task.
   *
-  * For each test spec (AirSpec instance), it will create a global airframe session,
-  * which can be configured with configure(Design).
+  * For each test spec (AirSpec instance), it will create a global airframe session, which can be configured with
+  * configure(Design).
   *
-  * For each test method in the AirSpec instance, it will create a child session so that
-  * users can manage test-method local instances, which will be discarded after the completion of the test method.
+  * For each test method in the AirSpec instance, it will create a child session so that users can manage test-method
+  * local instances, which will be discarded after the completion of the test method.
   */
 private[airspec] class AirSpecTaskRunner(
     taskDef: TaskDef,

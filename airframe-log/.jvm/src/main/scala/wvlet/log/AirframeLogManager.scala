@@ -24,8 +24,7 @@ object AirframeLogManager {
 }
 
 /**
-  * Custom log manager to postpone the reset of loggers
-  * This is based on the technique mentioned in:
+  * Custom log manager to postpone the reset of loggers This is based on the technique mentioned in:
   * https://stackoverflow.com/questions/13825403/java-how-to-get-logger-to-work-in-shutdown-hook
   */
 class AirframeLogManager extends LogManager {

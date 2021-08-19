@@ -32,7 +32,8 @@ object LogLevelScanner {
   /**
     * Set log levels using a given Properties file
     *
-    * @param file Properties file
+    * @param file
+    *   Properties file
     */
   def setLogLevels(file: File): Unit = {
     val logLevels = new Properties()
@@ -85,9 +86,9 @@ object LogLevelScanner {
   }
 
   /**
-    * Terminate the log-level scanner thread. The thread will remain in the system until
-    * the next log scan schedule. This is for reusing the thread if scheduleLogLevelScan is called again in a short duration, and
-    * reduce the overhead of creating a new thread.
+    * Terminate the log-level scanner thread. The thread will remain in the system until the next log scan schedule.
+    * This is for reusing the thread if scheduleLogLevelScan is called again in a short duration, and reduce the
+    * overhead of creating a new thread.
     */
   def stopScheduledLogLevelScan: Unit = {
     logLevelScanner.stop
@@ -96,7 +97,8 @@ object LogLevelScanner {
   /**
     * @param logLevelFileCandidates
     * @param lastScannedMillis
-    * @return updated last scanned millis
+    * @return
+    *   updated last scanned millis
     */
   private[log] def scan(logLevelFileCandidates: List[String], lastScannedMillis: Option[Long]): Option[Long] = {
     @tailrec

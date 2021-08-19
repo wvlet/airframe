@@ -16,11 +16,11 @@ package wvlet.airframe.msgpack.spi
 /**
   * Buffer interface, which does not have any internal cursors unlike ByteBuffer of Java library.
   *
-  * - The read methods read the buffer data from the given position.
-  * - The write methods write data to the specified position in the buffer and return the written byte length.
+  *   - The read methods read the buffer data from the given position.
+  *   - The write methods write data to the specified position in the buffer and return the written byte length.
   *
-  * If the buffer capacity is insufficient, these read/write methods throw an [[InsufficientBufferException]].
-  * If this exception is thrown, the user code should feed more data, and then resume reading.
+  * If the buffer capacity is insufficient, these read/write methods throw an [[InsufficientBufferException]]. If this
+  * exception is thrown, the user code should feed more data, and then resume reading.
   */
 trait Buffer {
   def size: Int

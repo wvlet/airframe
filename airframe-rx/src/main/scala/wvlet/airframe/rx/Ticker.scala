@@ -27,7 +27,8 @@ trait Ticker {
 /**
   * A Ticker implementation that can be incremented manually for testing purpose
   *
-  *  This implementation is similar to FakeTicker in Guava: https://github.com/google/guava/blob/master/guava-testlib/src/com/google/common/testing/FakeTicker.java
+  * This implementation is similar to FakeTicker in Guava:
+  * https://github.com/google/guava/blob/master/guava-testlib/src/com/google/common/testing/FakeTicker.java
   */
 case class ManualTicker(nanos: AtomicLong = new AtomicLong(0), autoIncrementStepNanos: Long = 0) extends Ticker {
 
@@ -50,7 +51,7 @@ case class ManualTicker(nanos: AtomicLong = new AtomicLong(0), autoIncrementStep
   }
 
   /**
-    *  Advance the ticker for the given nanoseconds
+    * Advance the ticker for the given nanoseconds
     * @param nanoseconds
     * @return
     */

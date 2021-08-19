@@ -132,7 +132,8 @@ class GoogleAuth(config: GoogleAuthConfig) extends LogSupport {
   }
 
   /**
-    * @param uxMode "popup" or "redirect"
+    * @param uxMode
+    *   "popup" or "redirect"
     */
   def signIn(uxMode: String = "popup"): Unit = {
     val signInOptions = js.Dynamic.literal(

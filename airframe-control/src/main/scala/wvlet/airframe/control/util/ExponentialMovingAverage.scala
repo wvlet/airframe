@@ -28,8 +28,7 @@ private[control] class ExponentialMovingAverage(windowSize: Long) {
   /**
     * Update the average with observed value `x`, and return the new average.
     *
-    * Since `update` requires monotonic timestamps, it is up to the caller to
-    * ensure that calls to update do not race.
+    * Since `update` requires monotonic timestamps, it is up to the caller to ensure that calls to update do not race.
     */
   def update(timeStamp: Long, x: Double): Double = {
     if (time == Long.MinValue) {
@@ -50,7 +49,8 @@ private[control] class ExponentialMovingAverage(windowSize: Long) {
   /**
     * Return the last observation.
     *
-    * @note This is safe to call without synchronization.
+    * @note
+    *   This is safe to call without synchronization.
     */
   def last: Double = ema
 

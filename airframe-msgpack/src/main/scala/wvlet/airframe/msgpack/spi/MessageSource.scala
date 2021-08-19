@@ -18,26 +18,24 @@ package wvlet.airframe.msgpack.spi
 trait MessageSource extends AutoCloseable {
 
   /**
-    * Returns a next buffer to read.
-    * <p>
-    * This method should return a [[ReadBuffer]] instance that has data filled in. When this method is called twice,
-    * the previously returned buffer is no longer used. Thus implementation of this method can safely discard it.
-    * This is useful when it uses a memory pool.
+    * Returns a next buffer to read. <p> This method should return a [[ReadBuffer]] instance that has data filled in.
+    * When this method is called twice, the previously returned buffer is no longer used. Thus implementation of this
+    * method can safely discard it. This is useful when it uses a memory pool.
     *
-    * @return the next input [[ReadBuffer]], or return None if no more buffer is available.
-    * @throws java.io.IOException when IO error occurred when reading the data
+    * @return
+    *   the next input [[ReadBuffer]], or return None if no more buffer is available.
+    * @throws java.io.IOException
+    *   when IO error occurred when reading the data
     */
   def next: Option[ReadBuffer]
 
   /**
-    * Closes the input.
-    * <p>
-    * When this method is called, the buffer previously returned from [[next]] method is no longer used.
-    * Thus implementation of this method can safely discard it.
-    * <p>
-    * If the input is already closed then invoking this method has no effect.
+    * Closes the input. <p> When this method is called, the buffer previously returned from [[next]] method is no longer
+    * used. Thus implementation of this method can safely discard it. <p> If the input is already closed then invoking
+    * this method has no effect.
     *
-    * @throws Exception when IO error occurred when closing the data source
+    * @throws Exception
+    *   when IO error occurred when closing the data source
     */
   override def close: Unit
 }

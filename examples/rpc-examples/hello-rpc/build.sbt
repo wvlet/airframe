@@ -17,7 +17,7 @@ lazy val greeter =
     .enablePlugins(AirframeHttpPlugin, PackPlugin)
     .settings(
       // Generates HTTP clients
-      airframeHttpClients := Seq("greeter.api:sync", "greeter.api:grpc"),
+      airframeHttpClients         := Seq("greeter.api:sync", "greeter.api:grpc"),
       airframeHttpGeneratorOption := "-l debug",
       libraryDependencies ++= Seq(
         "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION,

@@ -41,8 +41,7 @@ trait Session extends SessionImpl with AutoCloseable {
   def design: Design
 
   /**
-    * Internal method for building an instance of type A. This method does not inject the
-    * session to A at first hand.
+    * Internal method for building an instance of type A. This method does not inject the session to A at first hand.
     *
     * @tparam A
     * @return
@@ -50,7 +49,8 @@ trait Session extends SessionImpl with AutoCloseable {
   def get[A](surface: Surface)(implicit sourceCode: SourceCode): A
 
   /**
-    * Internal method for building an instance of type A, or if no binding is found, use the given trait instance factory
+    * Internal method for building an instance of type A, or if no binding is found, use the given trait instance
+    * factory
     *
     * @tparam A
     * @return
@@ -65,30 +65,35 @@ trait Session extends SessionImpl with AutoCloseable {
   def getInstanceOf(surface: Surface)(implicit sourceCode: SourceCode): Any
 
   /**
-    * Create a child session with an additional design.
-    * The created session shares the same singleton holder and the lifecycle manager with this session.
+    * Create a child session with an additional design. The created session shares the same singleton holder and the
+    * lifecycle manager with this session.
     */
   def newSharedChildSession(d: Design): Session
 
   /**
-    * Create a child session with an additional design.
-    * The created session has its own singleton holder and a lifecycle manager.
+    * Create a child session with an additional design. The created session has its own singleton holder and a lifecycle
+    * manager.
     *
-    * - Child sessions tries to delegate the object binding to the parent (or ancestor) session if no corresponding binding is defined in the child design.
-    * - If the parent and ancestors ve no binding for a given type, it will creates a new object in the child session.
-    * - If the parent or an ancestor session already initialized a target binding, lifecycle hooks for that binding will not be called in the child session.
+    *   - Child sessions tries to delegate the object binding to the parent (or ancestor) session if no corresponding
+    *     binding is defined in the child design.
+    *   - If the parent and ancestors ve no binding for a given type, it will creates a new object in the child session.
+    *   - If the parent or an ancestor session already initialized a target binding, lifecycle hooks for that binding
+    *     will not be called in the child session.
     *
-    * @param d Additional design for child session
-    *          @param inheritParentDesignOptions if true (default) use the same design options (e.g., production mode, life cycle logging) with the parent design
+    * @param d
+    *   Additional design for child session
+    * @param inheritParentDesignOptions
+    *   if true (default) use the same design options (e.g., production mode, life cycle logging) with the parent design
     * @return
     */
   def newChildSession(d: Design = Design.blanc, inheritParentDesignOptions: Boolean = true): Session
 
   /**
-    * Create a child session and execute the body part.
-    * The created session has its own singleton holder and lifecycle manager.
+    * Create a child session and execute the body part. The created session has its own singleton holder and lifecycle
+    * manager.
     *
-    * @param d Additional design for child session.
+    * @param d
+    *   Additional design for child session.
     * @param body
     * @tparam U
     * @return

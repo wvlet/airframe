@@ -165,7 +165,7 @@ object Expression {
   case class SingleColumn(expr: Expression, alias: Option[Expression]) extends Attribute {
     override def name: String              = alias.getOrElse(expr).toString
     override def children: Seq[Expression] = Seq(expr) ++ alias.toSeq
-    override def toString                  = s"SingleColumn(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
+    override def toString = s"SingleColumn(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
   }
 
   case class SortItem(sortKey: Expression, ordering: Option[SortOrdering] = None, nullOrdering: Option[NullOrdering])
@@ -253,7 +253,7 @@ object Expression {
   ) extends Expression {
     override def children: Seq[Expression] = args ++ filter.toSeq ++ window.toSeq
     def functionName: String               = name.toString.toLowerCase(Locale.US)
-    override def toString                  = s"FunctionCall(${name}, ${args.mkString(", ")}, distinct:${isDistinct}, window:${window})"
+    override def toString = s"FunctionCall(${name}, ${args.mkString(", ")}, distinct:${isDistinct}, window:${window})"
   }
   case class LambdaExpr(body: Expression, args: Seq[String]) extends Expression with UnaryExpression {
     def child = body
@@ -444,11 +444,11 @@ object Expression {
   }
 
   abstract sealed class CurrentTimeBase(name: String, precision: Option[Int]) extends LeafExpression
-  case class CurrentTime(precision: Option[Int])                              extends CurrentTimeBase("current_time", precision)
-  case class CurrentDate(precision: Option[Int])                              extends CurrentTimeBase("current_date", precision)
-  case class CurrentTimestamp(precision: Option[Int])                         extends CurrentTimeBase("current_timestamp", precision)
-  case class CurrentLocalTime(precision: Option[Int])                         extends CurrentTimeBase("localtime", precision)
-  case class CurrentLocalTimeStamp(precision: Option[Int])                    extends CurrentTimeBase("localtimestamp", precision)
+  case class CurrentTime(precision: Option[Int])           extends CurrentTimeBase("current_time", precision)
+  case class CurrentDate(precision: Option[Int])           extends CurrentTimeBase("current_date", precision)
+  case class CurrentTimestamp(precision: Option[Int])      extends CurrentTimeBase("current_timestamp", precision)
+  case class CurrentLocalTime(precision: Option[Int])      extends CurrentTimeBase("localtime", precision)
+  case class CurrentLocalTimeStamp(precision: Option[Int]) extends CurrentTimeBase("localtimestamp", precision)
 
   // 1-origin parameter
   case class Parameter(index: Int) extends LeafExpression

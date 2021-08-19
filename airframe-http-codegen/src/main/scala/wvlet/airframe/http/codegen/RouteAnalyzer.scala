@@ -36,8 +36,8 @@ object RouteAnalyzer {
   }
 
   /**
-    * airframe-http interface may contain HTTP specific parameters  (e.g., HttpRequest, HttpContext, etc.).
-    * We need to remove these server-side only arguments to generate client methods.
+    * airframe-http interface may contain HTTP specific parameters (e.g., HttpRequest, HttpContext, etc.). We need to
+    * remove these server-side only arguments to generate client methods.
     */
   private def isClientSideArg(x: MethodParameter): Boolean = {
     !classOf[HttpMessage.Request].isAssignableFrom(x.surface.rawType) &&
@@ -54,9 +54,9 @@ object RouteAnalyzer {
     var pathOnlyArgs = Set.empty[MethodParameter]
 
     /**
-      * Resolve path variables (e.g., id in /v1/query/:id) using the client interface arguments.
-      * For example, if the input resource (e.g., QueryRequest(id:String)) contains parameters matching the path variables,
-      * use them when building path strings.
+      * Resolve path variables (e.g., id in /v1/query/:id) using the client interface arguments. For example, if the
+      * input resource (e.g., QueryRequest(id:String)) contains parameters matching the path variables, use them when
+      * building path strings.
       */
     val path = {
       val pathBuilder = Seq.newBuilder[String]
