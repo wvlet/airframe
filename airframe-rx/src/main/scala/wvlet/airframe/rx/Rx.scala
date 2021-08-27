@@ -39,8 +39,8 @@ trait Rx[+A] {
   def subscribe[U](subscriber: A => U): Cancelable = runContinuously(subscriber)
 
   /**
-    * Evaluate this Rx[A] and apply the given effect function. Once OnError(e) or OnCompletion is observed,
-    * it will stop the evaluation.
+    * Evaluate this Rx[A] and apply the given effect function. Once OnError(e) or OnCompletion is observed, it will stop
+    * the evaluation.
     *
     * @param effect
     * @tparam U
@@ -58,8 +58,7 @@ trait Rx[+A] {
   }
 
   /**
-    * Keep evaluating Rx[A] even if OnError(e) or OnCompletion is reported.
-    * This is useful for keep processing streams.
+    * Keep evaluating Rx[A] even if OnError(e) or OnCompletion is reported. This is useful for keep processing streams.
     */
   def runContinuously[U](effect: A => U): Cancelable = {
     RxRunner.runContinuously(this) {
@@ -81,8 +80,8 @@ trait Rx[+A] {
 }
 
 /**
-  * The base reactive stream interface that can receive events from upstream operators and chain
-  * next actions using Scala-collection like operators (e.g., map, filter, etc.)
+  * The base reactive stream interface that can receive events from upstream operators and chain next actions using
+  * Scala-collection like operators (e.g., map, filter, etc.)
   */
 trait RxStream[+A] extends Rx[A] with LogSupport {
   import Rx._
@@ -100,8 +99,8 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
   def withFilter(f: A => Boolean): RxStream[A] = FilterOp(this, f)
 
   /**
-    * Combine two Rx streams to form a sequence of pairs.
-    * This will emit a new pair when both of the streams are updated.
+    * Combine two Rx streams to form a sequence of pairs. This will emit a new pair when both of the streams are
+    * updated.
     */
   def zip[B](other: Rx[B]): RxStream[(A, B)]                             = Rx.zip(this, other)
   def zip[B, C](b: Rx[B], c: Rx[C]): RxStream[(A, B, C)]                 = Rx.zip(this, b, c)
@@ -112,8 +111,8 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     *
     * This method is useful when you need to monitor multiple Rx objects.
     *
-    * Using joins will be more intuitive than nesting multiple Rx operators
-    * like Rx[A].map { x => ... Rx[B].map { ...} }.
+    * Using joins will be more intuitive than nesting multiple Rx operators like Rx[A].map { x => ... Rx[B].map { ...}
+    * }.
     */
   def join[B](other: Rx[B]): RxStream[(A, B)]                             = Rx.join(this, other)
   def join[B, C](b: Rx[B], c: Rx[C]): RxStream[(A, B, C)]                 = Rx.join(this, b, c)
@@ -122,13 +121,9 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
   /**
     * Combine Rx stream and Future operators.
     *
-    * This method is useful when you need to call RPC multiple times and
-    * chain the next operation after receiving the response.
-    * <code>
-    * Rx.intervalMillis(1000)
-    *   .andThen { i => callRpc(...) } // Returns Future
-    *   .map { (rpcReturnValue) => ... } // Use the Future response
-    * </code>
+    * This method is useful when you need to call RPC multiple times and chain the next operation after receiving the
+    * response. <code> Rx.intervalMillis(1000) .andThen { i => callRpc(...) } // Returns Future .map { (rpcReturnValue)
+    * => ... } // Use the Future response </code>
     */
   def andThen[B](f: A => Future[B])(implicit ex: ExecutionContext): RxStream[B] = {
     this.flatMap(a => Rx.future(f(a)))
@@ -140,28 +135,25 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
   /**
     * Cache the last item, and emit the cached value if available.
     *
-    * The cached value will be preserved to the operator itself even after cancelling the subscription.
-    * Re-subscription of this operator will immediately return the cached
-    * value to the downstream operator.
+    * The cached value will be preserved to the operator itself even after cancelling the subscription. Re-subscription
+    * of this operator will immediately return the cached value to the downstream operator.
     *
-    * This operator is useful if we need to involve time-consuming process, and want to reuse the last result:
-    * <code>
+    * This operator is useful if we need to involve time-consuming process, and want to reuse the last result: <code>
     * val v = Rx.intervalMillis(1000).map(i => (heavy process)).cache
     *
-    * v.map { x => ... }
-    * </code>
+    * v.map { x => ... } </code>
     */
   def cache[A1 >: A]: RxStreamCache[A1] = CacheOp(this)
 
   /**
-    * Take an event up to <i>n</i> elements. This may receive fewer events than n if the upstream operator
-    * completes before generating <i>n</i> elements.
+    * Take an event up to <i>n</i> elements. This may receive fewer events than n if the upstream operator completes
+    * before generating <i>n</i> elements.
     */
   def take(n: Long): RxStream[A] = TakeOp(this, n)
 
   /**
-    * Emit the first item of the source within each sampling period.
-    * This is useful, for example, to prevent double-clicks of buttons.
+    * Emit the first item of the source within each sampling period. This is useful, for example, to prevent
+    * double-clicks of buttons.
     */
   def throttleFirst(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): RxStream[A] =
     ThrottleFirstOp[A](this, timeWindow, unit)
@@ -228,7 +220,8 @@ object Rx extends LogSupport {
   def empty[A]: RxStream[A]                = fromSeq(Seq.empty)
 
   /**
-    * @deprecated(description = "Use Rx.variable instead", since = "20.9.2")
+    * @deprecated(description
+    *   = "Use Rx.variable instead", since = "20.9.2")
     */
   def apply[A](v: A): RxVar[A]                        = variable(v)
   def variable[A](v: A): RxVar[A]                     = new RxVar(v)
@@ -247,12 +240,8 @@ object Rx extends LogSupport {
   def concat[A, A1 >: A](a: Rx[A], b: Rx[A1]): RxStream[A1] = ConcatOp(a, b)
 
   /**
-    * Periodically trigger an event and report the interval millis.
-    * After running Rx with an interval, the cancel method must be called to stop the timer:
-    * <code>
-    *   val c = Rx.interval(...).run { x => ... }
-    *   c.cancel
-    * </code>
+    * Periodically trigger an event and report the interval millis. After running Rx with an interval, the cancel method
+    * must be called to stop the timer: <code> val c = Rx.interval(...).run { x => ... } c.cancel </code>
     */
   def interval(interval: Long, unit: TimeUnit): RxStream[Long] = IntervalOp(interval, unit)
   def intervalMillis(intervalMillis: Long): RxStream[Long]     = interval(intervalMillis, TimeUnit.MILLISECONDS)
@@ -281,11 +270,11 @@ object Rx extends LogSupport {
   }
 
   /**
-    * Mapping a Scala Future into Rx. While the future response is unavailable, it emits Rx.none.
-    * When the future is complete, Rx.some(A) will be returned.
+    * Mapping a Scala Future into Rx. While the future response is unavailable, it emits Rx.none. When the future is
+    * complete, Rx.some(A) will be returned.
     *
-    * The difference from Rx.future is that this method can observe the waiting state of the Future response.
-    *  For example, while this returns None, you can render an icon that represents loading state.
+    * The difference from Rx.future is that this method can observe the waiting state of the Future response. For
+    * example, while this returns None, you can render an icon that represents loading state.
     */
   def fromFuture[A](f: Future[A])(implicit ec: ExecutionContext): RxOption[A] = {
     futureToRx(f)(ec).toOption

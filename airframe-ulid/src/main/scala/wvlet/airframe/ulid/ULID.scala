@@ -76,10 +76,10 @@ final case class ULID(private val ulid: String) extends Ordered[ULID] {
   * ULID generator implementation based on https://github.com/petitviolet/ulid4s
   *
   * ULID has 128 bit value:
-  * |-- Unix timestamp milliseconds (48-bit) ---- | -----  random value (80 bits) ------ |
+  * |-- Unix timestamp milliseconds (48-bit) ---- | ----- random value (80 bits) ------ |
   *
-  * The string representation of ULID uses 26 characters in Crockford Base 32 representation,
-  * each character of which represents 5-bit value (0-31).
+  * The string representation of ULID uses 26 characters in Crockford Base 32 representation, each character of which
+  * represents 5-bit value (0-31).
   */
 object ULID {
   val MaxValue: ULID        = ULID("7ZZZZZZZZZZZZZZZZZZZZZZZZZ")
@@ -160,9 +160,12 @@ object ULID {
 
   /**
     * Create an ULID from a given timestamp (48-bit) and a random value (80-bit)
-    * @param unixTimeMillis 48-bit unix time millis
-    * @param randHi  16-bit hi-part of 80-bit random value
-    * @param randLow 64-bit low-part of 80-bit random value
+    * @param unixTimeMillis
+    *   48-bit unix time millis
+    * @param randHi
+    *   16-bit hi-part of 80-bit random value
+    * @param randLow
+    *   64-bit low-part of 80-bit random value
     * @return
     */
   def of(unixTimeMillis: Long, randHi: Long, randLow: Long): ULID = {
@@ -219,8 +222,10 @@ object ULID {
 
   /**
     * ULID generator.
-    * @param timeSource a function that returns the current time in milliseconds (e.g. java.lang.System.currentTimeMillis())
-    * @param random a function that returns a 80-bit random values in Array[Byte] (size:10)
+    * @param timeSource
+    *   a function that returns the current time in milliseconds (e.g. java.lang.System.currentTimeMillis())
+    * @param random
+    *   a function that returns a 80-bit random values in Array[Byte] (size:10)
     */
   class ULIDGenerator(random: () => Array[Byte]) {
     private val baseSystemTimeMillis = System.currentTimeMillis()
@@ -240,13 +245,13 @@ object ULID {
       *
       * Tips for optimizing performance:
       *
-      * 1. Reduce the number of Random number generation. SecureRandom is quite slow, so within the same milliseconds, just incrementing the randomness part will provide
-      * better performance.
-      * 2. Generate random in Array[Byte] (10 bytes = 80 bits). Regular Random uses 48-bit seed, so calling Random.nextInt (32 bits) x 3 is faster, but
-      * SecureRandom has optimization for Array[Byte] generation, which is much faster than calling nextInt three times.
-      * 3. ULIDs are often used in the string value form (e.g., transaction IDs, object IDs which can be embedded to URLs, etc.). Generating ULID String from the beginning
-      * is ideal.
-      * 4. In base32 encoding/decoding, use bit-shift operators as much as possible to utilize CPU registers and memory cache.
+      *   1. Reduce the number of Random number generation. SecureRandom is quite slow, so within the same milliseconds,
+      *      just incrementing the randomness part will provide better performance. 2. Generate random in Array[Byte]
+      *      (10 bytes = 80 bits). Regular Random uses 48-bit seed, so calling Random.nextInt (32 bits) x 3 is faster,
+      *      but SecureRandom has optimization for Array[Byte] generation, which is much faster than calling nextInt
+      *      three times. 3. ULIDs are often used in the string value form (e.g., transaction IDs, object IDs which can
+      *      be embedded to URLs, etc.). Generating ULID String from the beginning is ideal. 4. In base32
+      *      encoding/decoding, use bit-shift operators as much as possible to utilize CPU registers and memory cache.
       */
     def newULIDString: String = {
       val unixTimeMillis: Long = currentTimeInMillis

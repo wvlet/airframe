@@ -16,8 +16,7 @@ package wvlet.airframe
 import wvlet.airspec.AirSpec
 
 /**
-  * TODO: This works only in JVM,
-  * because we cannot extract constructor default parameters in Scala.js
+  * TODO: This works only in JVM, because we cannot extract constructor default parameters in Scala.js
   */
 class ConstructorBindingTest extends AirSpec {
   import ConstructorBindingTest._

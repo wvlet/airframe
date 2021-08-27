@@ -40,9 +40,8 @@ case class InsufficientBufferException(currentPosition: Long, expectedLength: Lo
     )
 
 /**
-  * This error is thrown when the user tries to read an integer value
-  * using a smaller types. For example, calling MessageUnpacker.unpackInt() for an integer value
-  * that is larger than Integer.MAX_VALUE will cause this exception.
+  * This error is thrown when the user tries to read an integer value using a smaller types. For example, calling
+  * MessageUnpacker.unpackInt() for an integer value that is larger than Integer.MAX_VALUE will cause this exception.
   */
 case class IntegerOverflowException(bigInteger: BigInteger)
     extends MessageException(ErrorCode.INTEGER_OVERFLOW, s"Too large integer: ${bigInteger}") {

@@ -910,12 +910,11 @@ object PrimitiveCodec {
   }
 
   /**
-    * Codec for Any values. This only supports very basic types to enable
-    * packing/unpacking collections like Seq[Any], Map[Any, Any] at ease.
+    * Codec for Any values. This only supports very basic types to enable packing/unpacking collections like Seq[Any],
+    * Map[Any, Any] at ease.
     *
-    * Another option to implement AnyCodec is packing pairs of (type, value), but
-    * we will not take this approach as this will require many bytes to fully encode
-    * type names.
+    * Another option to implement AnyCodec is packing pairs of (type, value), but we will not take this approach as this
+    * will require many bytes to fully encode type names.
     */
   object AnyCodec extends MessageCodec[Any] {
     override def pack(p: Packer, v: Any): Unit = {

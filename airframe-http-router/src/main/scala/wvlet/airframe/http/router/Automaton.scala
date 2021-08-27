@@ -54,13 +54,13 @@ object Automaton {
     }
 
     /**
-      *  Converting NFA to DFA
+      * Converting NFA to DFA
       *
-      *   NFA: (Node, Token) -> Seq[Node]  (multiple next nodes can be found for a given token)
-      *   DFA: State = Seq[Node]
-      *     (State, Token) -> State        (only a single state can be found for a given token)
+      * NFA: (Node, Token) -> Seq[Node] (multiple next nodes can be found for a given token) DFA: State = Seq[Node]
+      * (State, Token) -> State (only a single state can be found for a given token)
       *
-      * @param init initial node to start
+      * @param init
+      *   initial node to start
       */
     def toDFA(init: Node, defaultToken: Token): DFA[NodeSet, Token] = {
       // This code is following a standard procedure for converting NFA into DFA:

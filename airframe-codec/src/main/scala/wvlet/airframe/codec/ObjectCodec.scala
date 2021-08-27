@@ -25,8 +25,8 @@ trait PackAsMapSupport[A] { self: MessageCodec[A] =>
 
 /**
   * A generic codec for parameter lists:
-  * - array form: [v1, v2, ...]
-  * - map form: {k1:v1, k2:v2, ..}
+  *   - array form: [v1, v2, ...]
+  *   - map form: {k1:v1, k2:v2, ..}
   *
   * @param name
   * @param params

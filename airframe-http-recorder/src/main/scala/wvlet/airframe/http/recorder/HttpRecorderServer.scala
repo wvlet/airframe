@@ -80,8 +80,8 @@ object HttpRecorderServer {
   }
 
   /**
-    * A request filter for replaying responses for known requests, and sending the
-    * requests to the destination server for unknown requests.
+    * A request filter for replaying responses for known requests, and sending the requests to the destination server
+    * for unknown requests.
     */
   def newRecordProxyService(recordStore: HttpRecordStore, destClient: Service[Request, Response]): FinagleService = {
     new ReplayFilter(recordStore) andThen new RecordingFilter(recordStore) andThen destClient

@@ -35,8 +35,8 @@ trait Packer extends AutoCloseable {
   def packTimestamp(v: Instant): this.type = packTimestamp(v.getEpochSecond, v.getNano)
 
   /**
-    * if nanoAdjustment == 0 and epochSeconds <= 2^32, it will encode the timestamp using Timestamp32.
-    * Otherwise, an appropriate timestamp code is chosen automatically from one of timestamp32, timestamp64, and timestamp96.
+    * if nanoAdjustment == 0 and epochSeconds <= 2^32, it will encode the timestamp using Timestamp32. Otherwise, an
+    * appropriate timestamp code is chosen automatically from one of timestamp32, timestamp64, and timestamp96.
     */
   def packTimestamp(epochSecond: Long, nanoAdjustment: Int = 0): this.type
   def packArrayHeader(arraySize: Int): this.type

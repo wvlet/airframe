@@ -63,7 +63,8 @@ object Path extends LogSupport {
 /**
   * Representing paths separated by slashes
   *
-  * @author leo
+  * @author
+  *   leo
   */
 trait Path extends Iterable[String] {
   override def toString = fullPath

@@ -25,12 +25,9 @@ import scala.language.implicitConversions
 package object airframe {
 
   /**
-    * The entry point to create a new design beginning from a blanc design
-    * <code>
-    * import wvlet.airframe._
+    * The entry point to create a new design beginning from a blanc design <code> import wvlet.airframe._
     *
-    * val d = design.bind[X]
-    * </code>
+    * val d = design.bind[X] </code>
     */
   def newDesign: Design = Design.empty
 

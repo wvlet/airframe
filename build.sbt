@@ -86,10 +86,10 @@ val buildSettings = Seq[Setting[_]](
   ),
   // Exclude compile-time only projects. This is a workaround for bloop,
   // which cannot resolve Optional dependencies nor compile-internal dependencies.
-  pomPostProcess := excludePomDependency(Seq("airspec_2.12", "airspec_2.13")),
+  pomPostProcess     := excludePomDependency(Seq("airspec_2.12", "airspec_2.13")),
   crossScalaVersions := targetScalaVersions,
-  crossPaths := true,
-  publishMavenStyle := true,
+  crossPaths         := true,
+  publishMavenStyle  := true,
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   scalacOptions ++= Seq(
     "-feature",
@@ -121,15 +121,15 @@ ThisBuild / publishTo := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
   crossScalaVersions := targetScalaVersions,
-  coverageEnabled := false
+  coverageEnabled    := false
 )
 
 val noPublish = Seq(
   publishArtifact := false,
-  publish := {},
-  publishLocal := {},
+  publish         := {},
+  publishLocal    := {},
   // Explicitely skip the doc task because protobuf related Java files causes no type found error
-  Compile / doc / sources := Seq.empty,
+  Compile / doc / sources                := Seq.empty,
   Compile / packageDoc / publishArtifact := false
 )
 
@@ -276,11 +276,11 @@ lazy val docs =
   project
     .in(file("airframe-docs"))
     .settings(
-      name := "airframe-docs",
-      moduleName := "airframe-docs",
+      name            := "airframe-docs",
+      moduleName      := "airframe-docs",
       publishArtifact := false,
-      publish := {},
-      publishLocal := {},
+      publish         := {},
+      publishLocal    := {},
       mdoc / watchTriggers += ((ThisBuild / baseDirectory).value / "docs").toGlob / ** / "*.md"
     )
     .enablePlugins(MdocPlugin, DocusaurusPlugin)
@@ -329,7 +329,7 @@ lazy val di =
     .settings(buildSettings)
     .settings(dottyCrossBuildSettings)
     .settings(
-      name := "airframe",
+      name        := "airframe",
       description := "Dependency injection library tailored to Scala",
       // For PreDestroy, PostConstruct annotations
       libraryDependencies ++= airframeDIDependencies
@@ -394,7 +394,7 @@ lazy val diMacros =
     .settings(buildSettings)
     .settings(dottyCrossBuildSettings)
     .settings(
-      name := "airframe-di-macros",
+      name        := "airframe-di-macros",
       description := "Macros for Airframe Di"
     )
     .jsSettings(jsBuildSettings)
@@ -436,7 +436,7 @@ lazy val surface =
     .settings(buildSettings)
     .settings(dottyCrossBuildSettings)
     .settings(
-      name := "airframe-surface",
+      name        := "airframe-surface",
       description := "A library for extracting object structure surface",
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
@@ -456,7 +456,7 @@ lazy val canvas =
     .in(file("airframe-canvas"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-canvas",
+      name        := "airframe-canvas",
       description := "Airframe off-heap memory library"
     )
     .dependsOn(logJVM, controlJVM % Test, airspecRefJVM % Test)
@@ -466,7 +466,7 @@ lazy val config =
     .in(file("airframe-config"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-config",
+      name        := "airframe-config",
       description := "airframe configuration module",
       libraryDependencies ++= Seq(
         "org.yaml" % "snakeyaml" % "1.29"
@@ -480,7 +480,7 @@ lazy val control =
     .in(file("airframe-control"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-control",
+      name        := "airframe-control",
       description := "A library for controlling program flows and retrying"
     )
     .dependsOn(log, airspecRef % Test)
@@ -494,7 +494,7 @@ lazy val ulid =
     .in(file("airframe-ulid"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-ulid",
+      name        := "airframe-ulid",
       description := "ULID: Universally Unique Lexicographically Sortable Identifier"
     )
     .jsSettings(
@@ -510,7 +510,7 @@ lazy val jmx =
     .in(file("airframe-jmx"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-jmx",
+      name        := "airframe-jmx",
       description := "A library for exposing Scala object data through JMX",
       // Do not run tests concurrently to avoid JMX registration failures
       runTestSequentially
@@ -522,7 +522,7 @@ lazy val launcher =
     .in(file("airframe-launcher"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-launcher",
+      name        := "airframe-launcher",
       description := "Command-line program launcher"
     )
     .dependsOn(surfaceJVM, controlJVM, codecJVM, airspecRefJVM % Test)
@@ -548,7 +548,7 @@ lazy val log: sbtcrossproject.CrossProject =
     .settings(buildSettings)
     .settings(dottyCrossBuildSettings)
     .settings(
-      name := "airframe-log",
+      name        := "airframe-log",
       description := "Fancy logger for Scala",
       scalacOptions ++= {
         if (DOTTY) Seq("-source:3.0-migration")
@@ -577,7 +577,7 @@ lazy val metrics =
     .in(file("airframe-metrics"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-metrics",
+      name        := "airframe-metrics",
       description := "Basit metric representations, including duration, size, time window, etc."
     )
     .jsSettings(jsBuildSettings)
@@ -592,7 +592,7 @@ lazy val msgpack =
     .in(file("airframe-msgpack"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-msgpack",
+      name        := "airframe-msgpack",
       description := "Pure-Scala MessagePack library"
     )
     .jvmSettings(
@@ -615,7 +615,7 @@ lazy val codec =
     .settings(buildSettings)
     .settings(dottyCrossBuildSettings)
     .settings(
-      name := "airframe-codec",
+      name        := "airframe-codec",
       description := "Airframe MessagePack-based codec"
     )
     .jvmSettings(
@@ -637,7 +637,7 @@ lazy val jdbc =
     .in(file("airframe-jdbc"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-jdbc",
+      name        := "airframe-jdbc",
       description := "JDBC connection pool service",
       libraryDependencies ++= Seq(
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
@@ -655,7 +655,7 @@ lazy val rx =
     .in(file("airframe-rx"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-rx",
+      name        := "airframe-rx",
       description := "Reactive stream (Rx) interface"
     )
     .jvmSettings(
@@ -679,9 +679,9 @@ lazy val http =
     .settings(buildSettings)
     .settings(dottyCrossBuildSettings)
     .settings(
-      name := "airframe-http",
-      description := "REST and RPC Framework",
-      buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+      name             := "airframe-http",
+      description      := "REST and RPC Framework",
+      buildInfoKeys    := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
       buildInfoPackage := "wvlet.airframe.http"
     )
     .jvmSettings(
@@ -712,7 +712,7 @@ lazy val httpRouter =
     .in(file("airframe-http-router"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-http-router",
+      name        := "airframe-http-router",
       description := "Request routing library"
     )
     .dependsOn(diJVM, httpJVM, airspecRefJVM % Test)
@@ -723,9 +723,9 @@ lazy val httpCodeGen =
     .enablePlugins(PackPlugin)
     .settings(buildSettings)
     .settings(
-      name := "airframe-http-codegen",
-      description := "REST and RPC code generator",
-      packMain := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
+      name               := "airframe-http-codegen",
+      description        := "REST and RPC code generator",
+      packMain           := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
       packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13"),
       libraryDependencies ++= Seq(
         // Use swagger-parser only for validating YAML format in tests
@@ -745,7 +745,7 @@ lazy val grpc =
     .in(file("airframe-http-grpc"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-http-grpc",
+      name        := "airframe-http-grpc",
       description := "Airframe HTTP gRPC backend",
       libraryDependencies ++= Seq(
         "io.grpc"           % "grpc-netty-shaded" % GRPC_VERSION,
@@ -764,7 +764,7 @@ lazy val finagle =
     .in(file("airframe-http-finagle"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-http-finagle",
+      name        := "airframe-http-finagle",
       description := "REST API binding for Finagle",
       // Finagle doesn't support Scala 2.13 yet
       libraryDependencies ++= Seq(
@@ -783,7 +783,7 @@ lazy val okhttp =
     .in(file("airframe-http-okhttp"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-http-okhttp",
+      name        := "airframe-http-okhttp",
       description := "REST API binding for OkHttp",
       libraryDependencies ++= Seq(
         "com.squareup.okhttp3" % "okhttp" % "3.14.9"
@@ -796,7 +796,7 @@ lazy val httpRecorder =
     .in(file("airframe-http-recorder"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-http-recorder",
+      name        := "airframe-http-recorder",
       description := "Http Response Recorder",
       // Finagle doesn't support Scala 2.13 yet
       libraryDependencies ++= Seq(
@@ -815,7 +815,7 @@ lazy val json =
     .in(file("airframe-json"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-json",
+      name        := "airframe-json",
       description := "JSON parser"
     )
     .jsSettings(jsBuildSettings)
@@ -832,16 +832,16 @@ lazy val benchmark =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      name := "airframe-benchmark",
+      name     := "airframe-benchmark",
       packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
       // Turbo mode didn't work with this error:
       // java.lang.RuntimeException: ERROR: Unable to find the resource: /META-INF/BenchmarkList
       turbo := false,
       // Generate JMH benchmark cord before packaging and testing
-      pack := pack.dependsOn(Test / compile).value,
+      pack                  := pack.dependsOn(Test / compile).value,
       Jmh / sourceDirectory := (Compile / sourceDirectory).value,
-      Jmh / compile := (Jmh / compile).triggeredBy(Compile / compile).value,
-      Test / compile := ((Test / compile).dependsOn(Jmh / compile)).value,
+      Jmh / compile         := (Jmh / compile).triggeredBy(Compile / compile).value,
+      Test / compile        := ((Test / compile).dependsOn(Jmh / compile)).value,
       // Need to fork JVM so that sbt can set the classpass properly for running JMH
       run / fork := true,
       libraryDependencies ++= Seq(
@@ -872,7 +872,7 @@ lazy val fluentd =
     .in(file("airframe-fluentd"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-fluentd",
+      name        := "airframe-fluentd",
       description := "Fluentd logger",
       libraryDependencies ++= Seq(
         "org.komamitsu" % "fluency-core"         % FLUENCY_VERSION,
@@ -902,7 +902,7 @@ lazy val parquet =
     .in(file("airframe-parquet"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-parquet",
+      name        := "airframe-parquet",
       description := "Parquet columnar format reader/writer support",
       libraryDependencies ++= Seq(
         "org.apache.parquet" % "parquet-hadoop" % PARQUET_VERSION,
@@ -924,12 +924,12 @@ lazy val sql =
     .in(file("airframe-sql"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-sql",
-      description := "SQL parser & analyzer",
-      Antlr4 / antlr4Version := "4.9.2",
+      name                       := "airframe-sql",
+      description                := "SQL parser & analyzer",
+      Antlr4 / antlr4Version     := "4.9.2",
       Antlr4 / antlr4PackageName := Some("wvlet.airframe.sql.parser"),
       Antlr4 / antlr4GenListener := true,
-      Antlr4 / antlr4GenVisitor := true,
+      Antlr4 / antlr4GenVisitor  := true,
       libraryDependencies ++= Seq(
         // For parsing DataType strings
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
@@ -943,7 +943,7 @@ lazy val rxHtml =
     .in(file("airframe-rx-html"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-rx-html",
+      name        := "airframe-rx-html",
       description := "Reactive HTML elements for Scala and Scala.js",
       libraryDependencies ++= {
         if (DOTTY)
@@ -970,7 +970,7 @@ lazy val widgetJS =
     .in(file("airframe-rx-widget"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-rx-widget",
+      name        := "airframe-rx-widget",
       description := "Reactive Widget library for Scala.js",
       jsBuildSettings,
       Test / jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
@@ -986,7 +986,7 @@ lazy val examples =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      name := "airframe-examples",
+      name        := "airframe-examples",
       description := "Airframe examples",
       libraryDependencies ++= Seq(
       )
@@ -1010,7 +1010,7 @@ lazy val dottyTest =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      name := "airframe-dotty-test",
+      name        := "airframe-dotty-test",
       description := "test for dotty",
       crossScalaVersions := {
         if (DOTTY) withDotty
@@ -1022,15 +1022,16 @@ lazy val dottyTest =
 /**
   * AirSpec build definitions.
   *
-  * To make airspec a standalone library without any cyclic project references, airspec embeds the source code of airframe-log, di, surface, etc.
+  * To make airspec a standalone library without any cyclic project references, airspec embeds the source code of
+  * airframe-log, di, surface, etc.
   *
-  * Since airframe-log, di, and surfaces uses Scala macros whose def-macros cannot be called within the same project,
-  * we need to split the source code into 4 projects:
+  * Since airframe-log, di, and surfaces uses Scala macros whose def-macros cannot be called within the same project, we
+  * need to split the source code into 4 projects:
   *
-  *  - airspec-log (dependsOn airframe-log's source)
-  *  - airspec-core (di-macros, surface)  # surface uses airframe-log macros
-  *  - airspec-deps (di, metrics)  # di uses di-macros
-  *  - airspec (test-interface) # Need to split this as IntelliJ cannot find classes in unmanagedSourceDirectories
+  *   - airspec-log (dependsOn airframe-log's source)
+  *   - airspec-core (di-macros, surface) # surface uses airframe-log macros
+  *   - airspec-deps (di, metrics) # di uses di-macros
+  *   - airspec (test-interface) # Need to split this as IntelliJ cannot find classes in unmanagedSourceDirectories
   *
   * airspec.jar will be an all-in-one jar with airframe-log, di, surface, metrics, etc.
   */
@@ -1087,7 +1088,7 @@ lazy val airspecLog =
     .settings(
       airspecDependsOn := airspecLogDependencies,
       airspecBuildSettings,
-      name := "airspec-log",
+      name        := "airspec-log",
       description := "airframe-log for AirSpec",
       libraryDependencies ++= logDependencies(scalaVersion.value)
     )
@@ -1114,7 +1115,7 @@ lazy val airspecCore =
     .settings(
       airspecDependsOn := airspecCoreDependencies,
       airspecBuildSettings,
-      name := "airspec-core",
+      name        := "airspec-core",
       description := "A core module of AirSpec with Surface and DI macros",
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
@@ -1144,7 +1145,7 @@ lazy val airspecDeps =
     .settings(
       airspecDependsOn := airspecDependencies,
       airspecBuildSettings,
-      name := "airspec-deps",
+      name        := "airspec-deps",
       description := "Dependencies of AirSpec"
     )
     .jvmSettings(
@@ -1172,7 +1173,7 @@ lazy val airspec =
     .settings(
       airspecDependsOn := Seq("airspec"),
       airspecBuildSettings,
-      name := "airspec",
+      name        := "airspec",
       description := "AirSpec: A Functional Testing Framework for Scala",
       libraryDependencies ++= Seq(
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % Optional
@@ -1224,7 +1225,7 @@ lazy val airspecRef =
     .settings(noPublish)
     .settings(
       //airspecBuildSettings,
-      name := "airspec-ref",
+      name        := "airspec-ref",
       description := "A project for referencing airspec for internal testing",
       libraryDependencies += {
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION
@@ -1241,7 +1242,7 @@ lazy val airspecLight =
     .in(file("airspec-light"))
     .settings(buildSettings)
     .settings(
-      name := "airspec-light",
+      name        := "airspec-light",
       description := "API and and runner for AirSpec test cases",
       // Need to see the airspec source code directly to avoid any cyclic project references
       airspecDependsOn := Seq("airspec"),

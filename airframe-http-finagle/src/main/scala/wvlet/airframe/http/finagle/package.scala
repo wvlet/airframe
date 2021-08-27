@@ -30,8 +30,7 @@ package object finagle {
   type FinagleSyncClient = HttpSyncClient[Request, Response]
 
   /**
-    * A design for setting up airframe-http-finagle.
-    * If you create your own FinagleServers, use this design.
+    * A design for setting up airframe-http-finagle. If you create your own FinagleServers, use this design.
     */
   def finagleBaseDesign: Design =
     Design.newDesign

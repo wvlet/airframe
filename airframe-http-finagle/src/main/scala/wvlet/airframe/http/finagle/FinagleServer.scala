@@ -159,8 +159,7 @@ case class FinagleServerConfig(
   }
 
   /**
-    * Start the server and execute the code block. After finishing the code block,
-    * it will stop the server.
+    * Start the server and execute the code block. After finishing the code block, it will stop the server.
     *
     * If you want to keep running the server, call server.waitServerTermination inside the code block.
     */
@@ -232,9 +231,9 @@ object FinagleServer extends LogSupport {
   }
 
   /**
-    * The default error handler to return HttpServerException with its error code and content body (if defined).
-    * For other types of errors, it wraps exceptions as InternalServerError (500).
-    * For such unknown errors, we do not return the exception as is because it may contain internal information.
+    * The default error handler to return HttpServerException with its error code and content body (if defined). For
+    * other types of errors, it wraps exceptions as InternalServerError (500). For such unknown errors, we do not return
+    * the exception as is because it may contain internal information.
     */
   def defaultErrorFilter: SimpleFilter[Request, Response] =
     new SimpleFilter[Request, Response] {
@@ -300,7 +299,8 @@ trait FinagleServerFactory extends AutoCloseable with LogSupport {
 
   /**
     * Override this method to customize Finagle Server configuration.
-    * @deprecated(description = "Use FinagleServerConfig.withServerInitializer", since = "19.11.0")
+    * @deprecated(description
+    *   = "Use FinagleServerConfig.withServerInitializer", since = "19.11.0")
     */
   protected def initServer(server: Http.Server): Http.Server = {
     // Do nothing by default

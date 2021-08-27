@@ -30,13 +30,14 @@ trait Unpacker extends AutoCloseable {
   def unpackNil: Unit
 
   /**
-    * Peeks a Nil byte and read it if the next byte is actually a Nil value,
-    * then proceed the cursor 1 byte and return true.
+    * Peeks a Nil byte and read it if the next byte is actually a Nil value, then proceed the cursor 1 byte and return
+    * true.
     *
     * If the next byte is not Nil, it will return false and the cursor position will not be changed.
     *
-    * @return true if a nil value is read and the cursor is proceeded 1 bytes. false if the next value is not
-    *         Nil and the cursor position will not change.
+    * @return
+    *   true if a nil value is read and the cursor is proceeded 1 bytes. false if the next value is not Nil and the
+    *   cursor position will not change.
     */
   def tryUnpackNil: Boolean
   def unpackBoolean: Boolean

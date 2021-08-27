@@ -18,19 +18,17 @@ import wvlet.log.LogSupport
 import wvlet.airframe.surface.reflect.Path
 
 /**
-  * Holder of structured data consisting of named values. ValueHolder is immutable, so
-  * the set operations in this class return another ValueHolder and never modify the original ValueHolder.
+  * Holder of structured data consisting of named values. ValueHolder is immutable, so the set operations in this class
+  * return another ValueHolder and never modify the original ValueHolder.
   *
-  * <pre>
-  * A(a, B(b, c))
+  * <pre> A(a, B(b, c))
   *
   * { a: apple, B:{b:book, c:car} }
   *
-  * val n1 = EmptyNode.set("a", apple)  =>  Node(a -> Leaf(apple))
-  * val n2 = n1.set("B.b", "book")
+  * val n1 = EmptyNode.set("a", apple) => Node(a -> Leaf(apple)) val n2 = n1.set("B.b", "book")
   * => Node(a -> Leaf(apple), B -> EmptyNode.set("b", "book"))
-  * => Node(a -> apple, B->Node(b -> Leaf(book)))
-  * val n3 = n2.set("B.c", "car") => Node(a ->apple, B->Node(b -> Leaf(book), c->Leaf(car)))
+  * => Node(a -> apple, B->Node(b -> Leaf(book))) val n3 = n2.set("B.c", "car") => Node(a ->apple, B->Node(b ->
+  * Leaf(book), c->Leaf(car)))
   *
   * </pre>
   */
@@ -44,9 +42,11 @@ sealed trait StringTree {
   /**
     * Set a value at the specified path
     *
-    * @param path string representation of Path
+    * @param path
+    *   string representation of Path
     * @param value
-    * @return updated value holder
+    * @return
+    *   updated value holder
     */
   def set(path: String, value: String): StringTree = setNode(Path(path), Leaf(value))
 
@@ -55,9 +55,12 @@ sealed trait StringTree {
   /**
     * Set a value at the specified path
     *
-    * @param path  path
-    * @param value String value to set
-    * @return updated value holder
+    * @param path
+    *   path
+    * @param value
+    *   String value to set
+    * @return
+    *   updated value holder
     */
   def setNode(path: Path, node: StringTree): StringTree
 
@@ -65,7 +68,8 @@ sealed trait StringTree {
     * Extract a part of the value holder under the path
     *
     * @param path
-    * @return value holder under the path
+    * @return
+    *   value holder under the path
     */
   def get(path: String): StringTree = get(Path(path))
 
@@ -73,7 +77,8 @@ sealed trait StringTree {
     * Extract a part of the value holder under the path
     *
     * @param path
-    * @return value holder under the path
+    * @return
+    *   value holder under the path
     */
   def get(path: Path): StringTree
 

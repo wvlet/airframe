@@ -49,8 +49,7 @@ trait Parameter extends ParameterBase {
   override def call(obj: Any, x: Any*): Any = get(obj)
 
   /**
-    * Get the default value of this parameter.
-    * For example the default value of x in class A(x:Int = 10) is 10
+    * Get the default value of this parameter. For example the default value of x in class A(x:Int = 10) is 10
     *
     * @return
     */

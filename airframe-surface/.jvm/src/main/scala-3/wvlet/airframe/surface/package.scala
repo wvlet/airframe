@@ -13,5 +13,3 @@ package object surface {
 
   def newCacheMap[A, B]: scala.collection.mutable.Map[A, B] = new mutable.WeakHashMap[A, B]()
 }
-
-

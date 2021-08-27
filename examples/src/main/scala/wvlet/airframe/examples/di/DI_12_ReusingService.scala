@@ -19,7 +19,8 @@ import wvlet.log.LogSupport
   * If you have services that have some resources (e.g., database connections, http clients, thread managers, etc.),
   * define trait XXXService and add lifecycle hooks to the trait to properly release such resources.
   *
-  * Service traits defined in this manner will be reusable components that can safely manage your resources upon session termination.
+  * Service traits defined in this manner will be reusable components that can safely manage your resources upon session
+  * termination.
   *
   * The lifecycle of resources will be managed in First-In Last-Out (FILO) order. Even if you use these service traits
   * multiple times, shutdown hooks will be called only once per the resource.

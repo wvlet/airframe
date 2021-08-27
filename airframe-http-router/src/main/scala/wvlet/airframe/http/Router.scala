@@ -26,15 +26,13 @@ import scala.language.higherKinds
   *
   * Router can be nested
   *   - Router1 with Filter1
-  *      - Router2: endpoints e1, e2
-  *      - Router3: endpoints e3 with Filter2
+  *     - Router2: endpoints e1, e2
+  *     - Router3: endpoints e3 with Filter2
   *   - Router4: endpoints e4
   *
   * From this router definition, the backend HTTP server specific implementation will build a mapping table like this:
-  *   e1 -> Filter1 andThen process(e1)
-  *   e2 -> Filter1 andThen process(e2)
-  *   e3 -> Filter1 andThen Filter2 andThen process(e3)
-  *   e4 -> process(e4)
+  * e1 -> Filter1 andThen process(e1) e2 -> Filter1 andThen process(e2) e3 -> Filter1 andThen Filter2 andThen
+  * process(e3) e4 -> process(e4)
   */
 case class Router(
     surface: Option[Surface] = None,
