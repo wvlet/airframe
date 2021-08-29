@@ -7,8 +7,10 @@ import org.apache.parquet.hadoop.util.HadoopInputFile
 import org.apache.parquet.hadoop.{ParquetFileReader, ParquetReader, ParquetWriter}
 import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
-import org.apache.parquet.schema.{MessageType, Type, Types}
+import org.apache.parquet.schema.Types.PrimitiveBuilder
+import org.apache.parquet.schema.{MessageType, PrimitiveType, Type, Types}
 import wvlet.airframe.control.Control.withResource
+import wvlet.airframe.surface.Primitive.PrimitiveSurface
 import wvlet.airframe.surface.{OptionSurface, Parameter, Primitive, Surface}
 import wvlet.log.LogSupport
 
@@ -93,29 +95,67 @@ object Parquet extends LogSupport {
   }
 
   def toParquetSchema(surface: Surface): MessageType = {
+
+    def toParquetPrimitiveTypeName(s:PrimitiveSurface): PrimitiveTypeName = {
+      s match {
+        case Primitive.Int | Primitive.Short | Primitive.Byte =>
+          PrimitiveTypeName.INT32
+        case Primitive.Long =>
+          PrimitiveTypeName.INT64
+        case Primitive.Float =>
+          PrimitiveTypeName.FLOAT
+        case Primitive.Double =>
+          PrimitiveTypeName.DOUBLE
+        case Primitive.String | Primitive.Char =>
+          PrimitiveTypeName.BINARY
+        case Primitive.Boolean =>
+          PrimitiveTypeName.BOOLEAN
+        case _ =>
+          ???
+    }
+
+    def toParquetPrimitive(
+        s: PrimitiveSurface,
+        rep: Option[Type.Repetition] = None
+    ): PrimitiveBuilder[PrimitiveType] = {
+      val repetition = rep.getOrElse(Type.Repetition.OPTIONAL)
+      val typeName = toParquetPrimitiveTypeName(s)
+      s match {
+        case Primitive.String | Primitive.Char =>
+          Types.primitive(typeName, repetition).as(stringType)
+        case _ =>
+          Types.primitive(typeName, repetition)
+      }
+    }
+
     def toParquetType(s: Surface, name: String, rep: Option[Type.Repetition] = None): Type = {
       val repetition = rep.getOrElse(Type.Repetition.OPTIONAL)
       s match {
-        case Primitive.Int | Primitive.Short =>
-          Types.primitive(PrimitiveTypeName.INT32, repetition).named(name)
-        case Primitive.Long =>
-          Types.primitive(PrimitiveTypeName.INT64, repetition).named(name)
-        case Primitive.Float =>
-          Types.primitive(PrimitiveTypeName.FLOAT, repetition).named(name)
-        case Primitive.Double =>
-          Types.primitive(PrimitiveTypeName.DOUBLE, repetition).named(name)
-        case Primitive.String =>
-          Types.primitive(PrimitiveTypeName.BINARY, repetition).as(stringType).named(name)
-        case Primitive.Boolean =>
-          Types.primitive(PrimitiveTypeName.BOOLEAN, repetition).named(name)
+        case p: PrimitiveSurface =>
+          toParquetPrimitive(p, rep).named(name)
         case o: OptionSurface =>
           toParquetType(o.elementSurface, name, Some(Type.Repetition.OPTIONAL))
         case s: Surface if s.isSeq || s.isArray =>
           val elementSurface = s.typeArgs(0)
           toParquetType(elementSurface, name, Some(Type.Repetition.REPEATED))
-//        case m: Surface if s.isMap =>
-//          val keySurface = s.typeArgs(0)
-//          val valueSurface = s.typeArgs(1)
+        case m: Surface if s.isMap =>
+          val keySurface   = m.typeArgs(0)
+          val valueSurface = m.typeArgs(1)
+          keySurface match {
+            case p: PrimitiveSurface =>
+              val keyType = toParquetPrimitive(p).named("key").getPrimitiveTypeName
+              val mapType = Types.map(rep.getOrElse(Type.Repetition.REPEATED)).key(keyType)
+              valueSurface match {
+                case vp: PrimitiveSurface =>
+                  val valueType = toParquetPrimitiveTypeName(vp)
+                  mapType.optionalValue(valueType).named(name)
+                case other =>
+                  mapType.optionalValue()
+
+              }
+
+          }
+
         case _ =>
           // TODO Support Array/Seq/Map types. Just use MsgPack binary here
           Types.primitive(PrimitiveTypeName.BINARY, repetition).named(name)
