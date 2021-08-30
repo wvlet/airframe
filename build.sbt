@@ -156,6 +156,7 @@ lazy val root =
 
 // JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12.
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
+  arrow,
   diMacrosJVM,
   diJVM,
   surfaceJVM,
@@ -979,6 +980,18 @@ lazy val widgetJS =
       //      npmDependencies in Test += "node" -> "12.14.1"
     )
     .dependsOn(logJS, rxHtmlJS, airspecRefJS % Test)
+
+lazy val arrow =
+  project
+    .in(file("airframe-arrow"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-arrow",
+      description := "Arrow support",
+      libraryDependencies ++= Seq(
+      )
+    )
+    .dependsOn(grpc, airspecRefJVM % Test)
 
 lazy val examples =
   project
