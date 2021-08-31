@@ -404,7 +404,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     }
   }
 
-  test("supprot RawStringHeader") {
+  test("support RawStringHeader") {
     for (size <- headerSizes) {
       roundtrip(size) { OffsetPacker.packRawStringHeader(_, _) } { OffsetUnpacker.unpackRawStringHeader(_) }
     }
