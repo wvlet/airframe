@@ -16,8 +16,8 @@ package wvlet.airframe.examples.di
 import wvlet.log.LogSupport
 
 /**
-  * To reuse same type data for different purposes, use type aliases.
-  * Airframe treats type aliases with different names as different types when binding dependencies.
+  * To reuse same type data for different purposes, use type aliases. Airframe treats type aliases with different names
+  * as different types when binding dependencies.
   */
 object DI_10_TypeAliasBinding extends App {
   import wvlet.airframe._

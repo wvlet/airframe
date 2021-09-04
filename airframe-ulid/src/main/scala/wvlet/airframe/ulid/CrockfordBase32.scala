@@ -45,16 +45,15 @@ object CrockfordBase32 {
   @inline def encode(i: Int): Char   = ENCODING_CHARS(i & 0x1f)
 
   /**
-    * Decode a string representation of 128 bit value (26 characters) as a pair of
-    * (Long, Long) (128 bits)
+    * Decode a string representation of 128 bit value (26 characters) as a pair of (Long, Long) (128 bits)
     *
-    * Note that technically 26 characters x 5 bite can represent 130-bit values.
-    * This method will discard the top 2 bits from the string as ULID only uses 128 bits.
+    * Note that technically 26 characters x 5 bite can represent 130-bit values. This method will discard the top 2 bits
+    * from the string as ULID only uses 128 bits.
     */
   def decode128bits(s: String): (Long, Long) = {
 
     /**
-      * |      hi (64-bits)     |    low (64-bits)    |
+      * | hi (64-bits) | low (64-bits) |
       */
     val len = s.length
     if (len != 26) {
@@ -97,8 +96,8 @@ object CrockfordBase32 {
   }
 
   /**
-    * Decode 10-character Crockford Base32 as a 48-bit unsigned value.
-    * This is used for decoding ULID timestamp (48-bit value)
+    * Decode 10-character Crockford Base32 as a 48-bit unsigned value. This is used for decoding ULID timestamp (48-bit
+    * value)
     */
   def decode48bits(s: String): Long = {
     val len = s.length

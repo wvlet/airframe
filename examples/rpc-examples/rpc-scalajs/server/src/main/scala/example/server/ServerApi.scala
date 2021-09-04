@@ -18,7 +18,6 @@ import wvlet.airframe.http.{Endpoint, StaticContent}
 case class ServerInfo(name: String = "example-server")
 
 /**
-  *
   */
 class ServerApi {
   @Endpoint(path = "/v1/info")

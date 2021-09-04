@@ -257,7 +257,7 @@ object LifeCycleManager {
     }
 
     /**
-      *  Return true if it is not yet registered
+      * Return true if it is not yet registered
       */
     def registerOnlyOnce(x: LifeCycleHook): Boolean = {
       synchronized {
@@ -320,9 +320,8 @@ object ShowDebugLifeCycleLog extends LifeCycleEventHandler {
 /**
   * First In, Last Out (FILO) hook executor.
   *
-  * If objects are injected in A -> B -> C order, the init and shutdown orders will be as follows:
-  * init hook call order: A -> B -> C
-  * shutdown hook call order: C -> B -> A
+  * If objects are injected in A -> B -> C order, the init and shutdown orders will be as follows: init hook call order:
+  * A -> B -> C shutdown hook call order: C -> B -> A
   */
 object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {

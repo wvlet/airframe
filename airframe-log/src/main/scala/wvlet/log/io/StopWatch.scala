@@ -30,8 +30,8 @@ import scala.collection.mutable.LinkedHashMap
 //--------------------------------------
 
 /**
-  * Timer trait measures the performance of code blocks.
-  * Extend this trait and wrap the code to measure with `time(code_name){ ... }`:
+  * Timer trait measures the performance of code blocks. Extend this trait and wrap the code to measure with
+  * `time(code_name){ ... }`:
   *
   * {{{
   * class A extends Timer {
@@ -41,7 +41,7 @@ import scala.collection.mutable.LinkedHashMap
   *       // code A
   *     }
   *     block("B") {
-  *      // code B
+  *       // code B
   *     }
   *   }
   *   // report elapsed time of A, B and the total running time
@@ -59,34 +59,34 @@ import scala.collection.mutable.LinkedHashMap
   *
   *   // Repeat 10 times the evaluation of the whole block
   *   val t = time("repetitive evaluation", repeat=10) {
-  *      // This part will be executed 1000 x 10 times
-  *      block("A", repeat=1000) {
-  *        // code A
-  *      }
+  *       // This part will be executed 1000 x 10 times
+  *       block("A", repeat=1000) {
+  *         // code A
+  *       }
   *
-  *      // This part will be executed 1000 x 10 times
-  *      block("B", repeat=1000) {
-  *        // code B
-  *      }
+  *       // This part will be executed 1000 x 10 times
+  *       block("B", repeat=1000) {
+  *         // code B
+  *       }
   *   }
   *
   *   println(t)
   *
   *   // Which code is faster?
   *   if(t("A") <= t("B"))
-  *      println("A is faster")
+  *       println("A is faster")
   *   else
-  *      println("B is faster")
+  *       println("B is faster")
   * }
   * }}}
   *
-  * When measuring Scala (Java) code performances, you should take the average of execution times and reorder
-  * the code block execution orders, because JVM has JIT compiler, which optimizes the code at runtime.
-  * And also cache usage and the running state of the garbage core (GC) affects
-  * the code performance. By repeating the executions of the entire or individual blocks with the `repeat` option,
-  * you can avoid such pitfalls of benchmarking.
+  * When measuring Scala (Java) code performances, you should take the average of execution times and reorder the code
+  * block execution orders, because JVM has JIT compiler, which optimizes the code at runtime. And also cache usage and
+  * the running state of the garbage core (GC) affects the code performance. By repeating the executions of the entire
+  * or individual blocks with the `repeat` option, you can avoid such pitfalls of benchmarking.
   *
-  * @author leo
+  * @author
+  *   leo
   */
 trait Timer extends Serializable {
   import scala.jdk.CollectionConverters._
@@ -117,7 +117,8 @@ trait Timer extends Serializable {
     *
     * @param blockName
     * @param logLevel
-    * @param repeat the number of repetitive execution
+    * @param repeat
+    *   the number of repetitive execution
     * @param f
     * @tparam A
     * @return
@@ -299,7 +300,8 @@ class StopWatch {
   /**
     * Gets the elapsed time since this instance is created in seconds.
     *
-    * @return the elapsed time in seconds.
+    * @return
+    *   the elapsed time in seconds.
     */
   def getElapsedTime: Double = {
     if (state == State.RUNNING) {
@@ -312,8 +314,7 @@ class StopWatch {
   }
 
   /**
-    * Reset the stop watch. The subsequent calls to
-    * getElapsedTime or getIntervalTime will measure the time interval
+    * Reset the stop watch. The subsequent calls to getElapsedTime or getIntervalTime will measure the time interval
     * beginning from this method call.
     */
   def reset: Unit = {
@@ -324,7 +325,8 @@ class StopWatch {
   /**
     * Stop the timer
     *
-    * @return interval time since the last resume call
+    * @return
+    *   interval time since the last resume call
     */
   def stop: Double = {
     if (state == State.STOPPED) {

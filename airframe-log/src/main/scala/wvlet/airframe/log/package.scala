@@ -20,8 +20,7 @@ import wvlet.log.Logger
 package object log {
 
   /**
-    * Initialize the logger to the default log level and
-    * default handler
+    * Initialize the logger to the default log level and default handler
     */
   def init: Unit = {
     Logger.init

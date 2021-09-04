@@ -2,12 +2,9 @@ package wvlet.airframe.surface.reflect
 
 import wvlet.airspec.AirSpec
 
-
-case class Person(id:Int, name:String) {
+case class Person(id: Int, name: String) {
   def hello: String = "hello"
 }
-
-
 
 object TastySurfaceFactoryTest extends AirSpec {
 

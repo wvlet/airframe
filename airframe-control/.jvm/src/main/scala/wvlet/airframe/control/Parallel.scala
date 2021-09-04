@@ -58,10 +58,14 @@ object Parallel extends LogSupport {
   /**
     * Process all elements of the source by the given function then wait for the completion.
     *
-    * @param source      Source collection
-    * @param parallelism Parallelism, the default value is a number of available processors
-    * @param f           Function which processes each element of the source collection
-    * @return Collection of the results
+    * @param source
+    *   Source collection
+    * @param parallelism
+    *   Parallelism, the default value is a number of available processors
+    * @param f
+    *   Function which processes each element of the source collection
+    * @return
+    *   Collection of the results
     */
   def run[T, R: ClassTag](source: Seq[T], parallelism: Int = Runtime.getRuntime.availableProcessors())(
       f: T => R
@@ -115,13 +119,17 @@ object Parallel extends LogSupport {
   }
 
   /**
-    * Process all elements of the source by the given function then don't wait completion.
-    * The result is an iterator which is likely a stream which elements are pushed continuously.
+    * Process all elements of the source by the given function then don't wait completion. The result is an iterator
+    * which is likely a stream which elements are pushed continuously.
     *
-    * @param source      the source iterator
-    * @param parallelism Parallelism, the default value is a number of available processors
-    * @param f           Function which processes each element of the source collection
-    * @return Iterator of the results
+    * @param source
+    *   the source iterator
+    * @param parallelism
+    *   Parallelism, the default value is a number of available processors
+    * @param f
+    *   Function which processes each element of the source collection
+    * @return
+    *   Iterator of the results
     */
   def iterate[T, R](
       source: Iterator[T],

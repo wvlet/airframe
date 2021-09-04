@@ -16,18 +16,19 @@ package wvlet.airframe.http
 import wvlet.airframe.codec.MessageCodecFactory
 
 trait HttpMessageBase[Raw] {
-  def withJsonOf[A](a: A): Raw = ???
-  def withJsonOf[A](a: A, codecFactory: MessageCodecFactory): Raw = ???
-  def withMsgPackOf[A](a: A): Raw = ???
+  def withJsonOf[A](a: A): Raw                                       = ???
+  def withJsonOf[A](a: A, codecFactory: MessageCodecFactory): Raw    = ???
+  def withMsgPackOf[A](a: A): Raw                                    = ???
   def withMsgPackOf[A](a: A, codecFactory: MessageCodecFactory): Raw = ???
 
   /**
-   * Set the content body using a given object. Encoding can be JSON or MsgPack based on Content-Type header.
-   */
+    * Set the content body using a given object. Encoding can be JSON or MsgPack based on Content-Type header.
+    */
   def withContentOf[A](a: A): Raw = ???
 
   /**
-   * Set the content body using a given object and codec factory. Encoding can be JSON or MsgPack based on Content-Type header.
-   */
+    * Set the content body using a given object and codec factory. Encoding can be JSON or MsgPack based on Content-Type
+    * header.
+    */
   def withContentOf[A](a: A, codecFactory: MessageCodecFactory): Raw = ???
 }

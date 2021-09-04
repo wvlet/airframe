@@ -34,8 +34,8 @@ private[airspec] class AirSpecTask(
   override def tags(): Array[String] = Array.empty
 
   /**
-    * This method will be used only for Scala (JVM). This will delegate the task execution process to
-    * execute(handler, logger, continuation)
+    * This method will be used only for Scala (JVM). This will delegate the task execution process to execute(handler,
+    * logger, continuation)
     */
   def execute(eventHandler: EventHandler, loggers: Array[sbt.testing.Logger]): Array[sbt.testing.Task] = {
     val p = Promise[Unit]()
@@ -46,14 +46,12 @@ private[airspec] class AirSpecTask(
 
   /**
     * Scala.js specific executor:
-    * [[[sbt.testing.Task.execute(eventHandler:sbt\.testing\.EventHandler,loggers:Array[sbt\.testing\.Logger])*
-    * execute]]]
-    * but takes a continuation.
+    * [[[sbt.testing.Task.execute(eventHandler:sbt\.testing\.EventHandler,loggers:Array[sbt\.testing\.Logger])* execute]]
+    * ] but takes a continuation.
     *
     * This is to support JavaScripts asynchronous nature.
     *
-    * When running in a JavaScript environment, only this method will be
-    * called.
+    * When running in a JavaScript environment, only this method will be called.
     */
   def execute(
       eventHandler: EventHandler,

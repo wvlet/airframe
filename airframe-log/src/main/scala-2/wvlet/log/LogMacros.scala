@@ -17,11 +17,11 @@ import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
 
 /**
-  * Scala macros for generating log output code. This class inserts a code that checkes log level.
-  * If the logging is enabled, it sends a log with the source code location where the logging method is called.
+  * Scala macros for generating log output code. This class inserts a code that checkes log level. If the logging is
+  * enabled, it sends a log with the source code location where the logging method is called.
   *
-  * The log message object will created only if the log level is enabled, so logger.trace(xxx) etc. can be
-  * used without any overhead.
+  * The log message object will created only if the log level is enabled, so logger.trace(xxx) etc. can be used without
+  * any overhead.
   */
 private[log] object LogMacros {
   private class MacroHelper[C <: Context](val c: C) {

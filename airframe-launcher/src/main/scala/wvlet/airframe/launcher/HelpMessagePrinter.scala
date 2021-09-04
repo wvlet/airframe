@@ -44,7 +44,7 @@ object HelpMessagePrinter extends LogSupport with AnsiColorPalette {
     * Teh default help message printer in this format:
     * {{{
     *   usage: (command name) (command arguments)
-    *      (description)
+    *       (description)
     *
     *   [global options]
     *   ...

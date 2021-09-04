@@ -92,9 +92,9 @@ trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
   }
 
   // HTTP header setting utility methods
-  def withAccept(acceptType: String): Raw               = withHeader(HttpHeader.Accept, acceptType)
-  def withAcceptMsgPack: Raw                            = withHeader(HttpHeader.Accept, HttpHeader.MediaType.ApplicationMsgPack)
-  def withAllow(allow: String): Raw                     = withHeader(HttpHeader.Allow, allow)
+  def withAccept(acceptType: String): Raw = withHeader(HttpHeader.Accept, acceptType)
+  def withAcceptMsgPack: Raw              = withHeader(HttpHeader.Accept, HttpHeader.MediaType.ApplicationMsgPack)
+  def withAllow(allow: String): Raw       = withHeader(HttpHeader.Allow, allow)
   def withAuthorization(authorization: String): Raw     = withHeader(HttpHeader.Authorization, authorization)
   def withCacheControl(cacheControl: String): Raw       = withHeader(HttpHeader.CacheControl, cacheControl)
   def withContentType(contentType: String): Raw         = withHeader(HttpHeader.ContentType, contentType)

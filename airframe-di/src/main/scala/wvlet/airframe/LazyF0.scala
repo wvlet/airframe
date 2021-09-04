@@ -22,8 +22,7 @@ object LazyF0 {
 /**
   * This class is used to obtain the class names of the call-by-name functions (Function0[R]).
   *
-  * This wrapper do not directly access the field f (Function0[R]) in order
-  * to avoid the evaluation of the function.
+  * This wrapper do not directly access the field f (Function0[R]) in order to avoid the evaluation of the function.
   * @param f
   * @tparam R
   */
@@ -48,8 +47,8 @@ class LazyF0[+R](f: => R) extends Serializable with Cloneable {
   }
 
   /**
-    * This definition is necessary to let compiler generate the private field 'f' that
-    * holds a reference to the call-by-name function.
+    * This definition is necessary to let compiler generate the private field 'f' that holds a reference to the
+    * call-by-name function.
     *
     * @return
     */

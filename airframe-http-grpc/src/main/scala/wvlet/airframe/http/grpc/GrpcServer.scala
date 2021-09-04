@@ -75,8 +75,8 @@ case class GrpcServerConfig(
     this.copy(executorProvider = provider)
 
   /**
-    * Set the maximum number of grpc server threads. The default is max(the number of CPU x 2, 2).
-    * If you are using a custom ExecutorService, this setting might not be effective.
+    * Set the maximum number of grpc server threads. The default is max(the number of CPU x 2, 2). If you are using a
+    * custom ExecutorService, this setting might not be effective.
     */
   def withMaxThreads(numThreads: Int) = this.copy(maxThreads = numThreads)
 
@@ -96,8 +96,8 @@ case class GrpcServerConfig(
   }
 
   /**
-    * Start a standalone gRPC server and execute the given code block.
-    * After exiting the code block, it will stop the gRPC server.
+    * Start a standalone gRPC server and execute the given code block. After exiting the code block, it will stop the
+    * gRPC server.
     *
     * If you want to keep running the server inside the code block, call server.awaitTermination.
     */

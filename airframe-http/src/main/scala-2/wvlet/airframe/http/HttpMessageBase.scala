@@ -29,7 +29,8 @@ trait HttpMessageBase[Raw] {
   def withContentOf[A](a: A): Raw = macro HttpMacros.toContentOf[A]
 
   /**
-    * Set the content body using a given object and codec factory. Encoding can be JSON or MsgPack based on Content-Type header.
+    * Set the content body using a given object and codec factory. Encoding can be JSON or MsgPack based on Content-Type
+    * header.
     */
   def withContentOf[A](a: A, codecFactory: MessageCodecFactory): Raw = macro HttpMacros.toContentWithCodecFactory[A]
 }

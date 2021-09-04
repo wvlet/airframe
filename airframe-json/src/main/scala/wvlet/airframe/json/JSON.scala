@@ -194,8 +194,7 @@ object JSON extends LogSupport {
   }
 
   /**
-    * This function can be used to properly quote Strings
-    * for JSON output.
+    * This function can be used to properly quote Strings for JSON output.
     */
   def quoteJSONString(s: String): String = {
     s.map {

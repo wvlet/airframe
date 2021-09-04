@@ -61,11 +61,9 @@ object ServiceMixinExample {
   }
 
   /**
-    * Mix-in printer/fortune instances
-    * Pros:
+    * Mix-in printer/fortune instances Pros:
     *   - trait can be shared with multiple components
-    *   - xxxService trait can be a module
-    * Cons:
+    *   - xxxService trait can be a module Cons:
     *   - Need to define XXXService boilerplate, which just has a val or def of the service object
     *   - Cannot change the variable name without defining additional XXXService trait
     *     - Need to care about variable naming conflict
@@ -80,8 +78,7 @@ object ServiceMixinExample {
     *
     * Pros:
     *   - Service reference (e.g., printer, fortune) can be scoped inside the trait.
-    *   - No boilerplate code is required
-    * Cons:
+    *   - No boilerplate code is required Cons:
     *   - To reuse it in other traits, we still need to care about the naming conflict
     */
   trait FortunePrinterEmbedded {
@@ -96,8 +93,7 @@ object ServiceMixinExample {
     *
     * Pros:
     *   - Close to the traditional OO programming style
-    *   - Can be used without DI framework
-    * Cons:
+    *   - Can be used without DI framework Cons:
     *   - To add/remove modules, we need to create another constructor or class.
     * -> code duplication occurs
     *   - It's hard to enhance the class functionality

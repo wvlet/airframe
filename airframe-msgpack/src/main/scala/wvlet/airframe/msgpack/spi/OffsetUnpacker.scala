@@ -26,7 +26,8 @@ import scala.collection.immutable.ListMap
 import scala.collection.mutable
 
 /**
-  * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by calling [[ReadCursor.lastReadLength]] method.
+  * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by calling
+  * [[ReadCursor.lastReadLength]] method.
   */
 object OffsetUnpacker {
   def peekNextFormat(cursor: ReadCursor): MessageFormat = {
@@ -642,13 +643,15 @@ object OffsetUnpacker {
   }
 
   /**
-    * Read a payload of the given length from the given buffer[position], and write the result to the destination buffer.
+    * Read a payload of the given length from the given buffer[position], and write the result to the destination
+    * buffer.
     *
     * @param cursor
     * @param length
     * @param dest
     * @param destIndex
-    * @return A slice (shallow copy) of the destination buffer
+    * @return
+    *   A slice (shallow copy) of the destination buffer
     */
   def readPayload(cursor: ReadCursor, length: Int, dest: WriteBuffer, destIndex: Int): ReadBuffer = {
     cursor.readBytes(length, dest, destIndex)
