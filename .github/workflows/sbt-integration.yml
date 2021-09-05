@@ -20,30 +20,20 @@ jobs:
     name: sbt-airframe
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout airframe
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
         with:
-          path: airframe
           fetch-depth: 10000
       # Fetch all tags so that sbt-dynver can find the previous release version
       - run: git fetch --tags -f
-        working-directory: ./airframe
       - uses: olafurpg/setup-scala@v11
         with:
           java-version: adopt@1.11
       - name: Get Airframe version
         run: echo "AIRFRAME_VERSION=$(./scripts/dynver.sh)" >> $GITHUB_ENV
-        working-directory: ./airframe
       - name: Check Airframe version
         run: echo ${AIRFRAME_VERSION}
-      - name: Create a snapshot
+      - name: Create a snapshot of Airframe
         run: ./sbt ++2.12.14 "projectJVM/publishLocal; projectJS/publishLocal"
-        working-directory: ./airframe
-      - name: Checkout sbt-airframe
-        uses: actions/checkout@v2
-        with:
-          repository: wvlet/sbt-airframe
-          path: sbt-airframe
-      - name: Run sbt plugin tests
+      - name: Run sbt-airframe plugin tests
         run: AIRFRAME_VERSION=${AIRFRAME_VERSION} ./sbt scripted
         working-directory: ./sbt-airframe
