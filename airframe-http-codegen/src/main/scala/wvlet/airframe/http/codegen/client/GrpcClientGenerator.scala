@@ -32,7 +32,6 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
   import HttpClientGenerator._
 
   override def name: String             = "grpc"
-  override def defaultFileName: String  = "ServiceGrpc.scala"
   override def defaultClassName: String = "ServiceGrpc"
 
   override def generate(src: HttpClientIR.ClientSourceDef): String = {

@@ -276,7 +276,7 @@ addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % "(version)")
 
 To generate HTTP clients, add `airframeHttpClients` setting to your `build.sbt`. You need to specify
 which API package to use for generating RPC clients. The format
-is `<RPC package name>:<client type>(:<target package name>)?`. For example:
+is `<RPC package name>:<client type>(:<target package name>(.<target class name)?))?`. For example:
 
 __build.sbt__
 
@@ -292,7 +292,7 @@ Supported client types are:
 - __async__: Create an async HTTP client (ServiceClient) for Scala (JVM) using Future
   abstraction (`F`). The `F` can be `scala.concurrent.Future` or twitter-util's Future.
 - __scalajs__:  Create an RPC client (ServiceClientJS)
-- __grpc__: Create gRPC client stubs (ServiceGrpc: SyncClient, AsyncClient)
+- __grpc__: Create gRPC client (ServiceGrpc: SyncClient, AsyncClient)
 
 To support other types of clients, see the examples
 of [HTTP code generators](https://github.com/wvlet/airframe/blob/master/airframe-http/.jvm/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClient.scala)

@@ -30,24 +30,41 @@ case class HttpClientGeneratorConfig(
     // scala-async, scala-sync, scala-js, etc.
     clientType: HttpClientGenerator = AsyncClientGenerator,
     // [optional] Which package to use for the generating client code?
-    targetPackageName: String
+    targetPackageName: String,
+    targetClassName: Option[String]
 ) {
-  def fileName = clientType.defaultFileName
+  def clientClassName: String = targetClassName.getOrElse(clientType.defaultClassName)
+  def fileName: String        = s"${clientClassName}.scala"
 }
 
 object HttpClientGeneratorConfig {
 
   def apply(s: String): HttpClientGeneratorConfig = {
-    // Parse strings of (package):(type)(:(targetPackage))? format. For example:
+    // Parse strings of (package):(type)(:(targetPackageName(.targetClassName)?)? format. For example:
     //    "example.api:async:example.api.client"
     //    "example.api:sync"
-    val (packageName, tpe, targetPackage) = s.split(":") match {
-      case Array(p, tpe, clsName) =>
-        (p, tpe, clsName)
+    //    "example.api:grpc:MyGrpcClient"
+    //    "example.api:scalajs:example.api.client.MyJSClient"
+    val (packageName, tpe, targetPackage, targetCls) = s.split(":") match {
+      case Array(p, tpe, pkgName) =>
+        val lst = pkgName.split("\\.")
+        // Assume that it's a client class name if the first letter is capital
+        if (lst.last.matches("^[A-Z].*")) {
+          val clsName = lst.lastOption
+          if (lst.length == 1) {
+            // If only a class name is given, use the same package with API
+            (p, tpe, p, clsName)
+          } else {
+            (p, tpe, lst.dropRight(1).mkString("."), clsName)
+          }
+        } else {
+          (p, tpe, pkgName, None)
+        }
       case Array(p, tpe) =>
-        (p, tpe, p)
+        (p, tpe, p, None)
       case Array(p) =>
-        (p, "async", p)
+        // Generate async client by default
+        (p, "async", p, None)
       case _ =>
         throw new IllegalArgumentException(s"Invalid argument: ${s}")
     }
@@ -57,7 +74,8 @@ object HttpClientGeneratorConfig {
       clientType = HttpClientGenerator.findClient(tpe).getOrElse {
         throw new IllegalArgumentException(s"Unknown client type: ${tpe}")
       },
-      targetPackageName = targetPackage
+      targetPackageName = targetPackage,
+      targetClassName = targetCls
     )
   }
 }
@@ -112,7 +130,7 @@ case class HttpCodeGeneratorOption(
     outDir: File,
     @option(prefix = "-t", description = "target directory")
     targetDir: File,
-    @argument(description = "client code generation targets: (package):(type)(:(targetPackage))?")
+    @argument(description = "client code generation targets: (package):(type)(:(targetClassName))?")
     targets: Seq[String] = Seq.empty
 )
 

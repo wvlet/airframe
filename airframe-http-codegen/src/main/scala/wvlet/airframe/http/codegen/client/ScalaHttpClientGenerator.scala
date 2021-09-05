@@ -47,7 +47,6 @@ object AsyncClientGenerator extends HttpClientGenerator {
   import HttpClientGenerator._
 
   override def name: String             = "async"
-  override def defaultFileName: String  = "ServiceClient.scala"
   override def defaultClassName: String = "ServiceClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
@@ -107,7 +106,6 @@ object SyncClientGenerator extends HttpClientGenerator {
   import HttpClientGenerator._
 
   override def name: String             = "sync"
-  override def defaultFileName: String  = "ServiceSyncClient.scala"
   override def defaultClassName: String = "ServiceSyncClient"
   override def generate(src: ClientSourceDef): String = {
     def code =
@@ -169,7 +167,6 @@ object ScalaJSClientGenerator extends HttpClientGenerator {
   import HttpClientGenerator._
 
   override def name: String             = "scalajs"
-  override def defaultFileName: String  = "ServiceJSClient.scala"
   override def defaultClassName: String = "ServiceJSClient"
   override def generate(src: ClientSourceDef): String = {
     def code: String =
