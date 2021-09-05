@@ -18,8 +18,8 @@ val buildSettings = Seq[Setting[_]](
   homepage := Some(url("https://wvlet.org/airframe")),
   scmInfo := Some(
     ScmInfo(
-      browseUrl = url("https://github.com/wvlet/sbt-airframe"),
-      connection = "scm:git@github.com:wvlet/sbt-airframe.git"
+      browseUrl = url("https://github.com/wvlet/airframe"),
+      connection = "scm:git@github.com:wvlet/airframe.git"
     )
   ),
   developers := List(
