@@ -221,7 +221,7 @@ object Rx extends LogSupport {
 
   /**
     * @deprecated(description
-    *   = "Use Rx.variable instead", since = "20.9.2")
+    * = "Use Rx.variable instead", since = "20.9.2")
     */
   def apply[A](v: A): RxVar[A]                        = variable(v)
   def variable[A](v: A): RxVar[A]                     = new RxVar(v)
