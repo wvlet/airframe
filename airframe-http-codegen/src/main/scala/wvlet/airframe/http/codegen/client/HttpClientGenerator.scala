@@ -21,7 +21,6 @@ import wvlet.airframe.surface.Surface
   */
 trait HttpClientGenerator {
   def name: String
-  def defaultFileName: String
   def defaultClassName: String
   def generate(src: ClientSourceDef): String
 }

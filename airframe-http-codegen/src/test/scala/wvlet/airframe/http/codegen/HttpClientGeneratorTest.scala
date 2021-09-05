@@ -13,9 +13,9 @@
  */
 package wvlet.airframe.http.codegen
 import java.net.URLClassLoader
-
 import example.api._
 import wvlet.airframe.http._
+import wvlet.airframe.http.codegen.client.{AsyncClientGenerator, GrpcClientGenerator}
 import wvlet.airspec.AirSpec
 
 /**
@@ -32,6 +32,49 @@ class HttpClientGeneratorTest extends AirSpec {
 
     val q = router.routes.find(x => x.method == HttpMethod.GET && x.path == "/v1/query")
     q shouldBe defined
+  }
+
+  test("customize RPC client") {
+    test("custom class name") {
+      val config = HttpClientGeneratorConfig("example.api:async:MyApiClient")
+      config.apiPackageName shouldBe "example.api"
+      config.clientType shouldBe AsyncClientGenerator
+      config.targetClassName shouldBe Some("MyApiClient")
+      config.clientFileName shouldBe "MyApiClient.scala"
+      config.targetPackageName shouldBe "example.api"
+
+      val code = HttpCodeGenerator.generate(router, config)
+      code.contains("package example.api") shouldBe true
+      code.contains("class MyApiClient") shouldBe true
+    }
+
+    test("custom package and class name") {
+      val config = HttpClientGeneratorConfig("example.api:grpc:example.api.client.MyApiClient")
+      config.apiPackageName shouldBe "example.api"
+      config.clientType shouldBe GrpcClientGenerator
+      config.targetClassName shouldBe Some("MyApiClient")
+      config.clientFileName shouldBe "MyApiClient.scala"
+      config.targetPackageName shouldBe "example.api.client"
+
+      val code = HttpCodeGenerator.generate(router, config)
+      code.contains("package example.api.client") shouldBe true
+      // grpc target generates client generator in a Scala object
+      code.contains("object MyApiClient") shouldBe true
+    }
+
+    test("customize only package") {
+      val config = HttpClientGeneratorConfig("example.api:grpc:example.api.client")
+      config.apiPackageName shouldBe "example.api"
+      config.clientType shouldBe GrpcClientGenerator
+      config.targetClassName shouldBe None
+      config.clientFileName shouldBe s"${GrpcClientGenerator.defaultClassName}.scala"
+      config.targetPackageName shouldBe "example.api.client"
+
+      val code = HttpCodeGenerator.generate(router, config)
+      code.contains("package example.api.client") shouldBe true
+      code.contains(s"object ${GrpcClientGenerator.defaultClassName}") shouldBe true
+    }
+
   }
 
   test("generate async client") {
