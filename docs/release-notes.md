@@ -6,6 +6,25 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.9.0
+
+This is mostly a dependency update release.
+
+- airframe-http: Support customizing generated RPC client names ([#1821](https://github.com/wvlet/airframe/issues/1821)) [[f84a4bf14](https://github.com/wvlet/airframe/commit/f84a4bf14)]
+- Update examples ([#1793](https://github.com/wvlet/airframe/issues/1793)) [[04e28a42e](https://github.com/wvlet/airframe/commit/04e28a42e)]
+- Upgrade to Scala 3.0.1 ([#1794](https://github.com/wvlet/airframe/issues/1794)) [[2eb2bfcbe](https://github.com/wvlet/airframe/commit/2eb2bfcbe)]
+- Update scalajs-dom to 1.2.0 ([#1806](https://github.com/wvlet/airframe/issues/1806)) [[7d6840cb7](https://github.com/wvlet/airframe/commit/7d6840cb7)]
+- Update sqlite-jdbc to 3.36.0.3 ([#1812](https://github.com/wvlet/airframe/issues/1812)) [[b27f30ce8](https://github.com/wvlet/airframe/commit/b27f30ce8)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.40.1 ([#1802](https://github.com/wvlet/airframe/issues/1802)) [[8da9a7b78](https://github.com/wvlet/airframe/commit/8da9a7b78)]
+- airframe-msgpack: Test tryUnpackNil at EOL ([#1787](https://github.com/wvlet/airframe/issues/1787)) [[f0bdf1489](https://github.com/wvlet/airframe/commit/f0bdf1489)]
+
+Internal Dependency Updates:
+- Upgrade to scalafmt-core 3.0.2 ([#1822](https://github.com/wvlet/airframe/issues/1822)) [[18bd9c5b8](https://github.com/wvlet/airframe/commit/18bd9c5b8)]
+- Update auth to 2.17.34 ([#1819](https://github.com/wvlet/airframe/issues/1819)) [[bbca62f5f](https://github.com/wvlet/airframe/commit/bbca62f5f)]
+- Update trino-main to 361 ([#1810](https://github.com/wvlet/airframe/issues/1810)) [[444623f9c](https://github.com/wvlet/airframe/commit/444623f9c)]
+- Update sbt-mdoc to 2.2.23 ([#1808](https://github.com/wvlet/airframe/issues/1808)) [[cc5d7428f](https://github.com/wvlet/airframe/commit/cc5d7428f)]
+- Update sbt-sonatype to 3.9.10 ([#1804](https://github.com/wvlet/airframe/issues/1804)) [[d5ca4f63c](https://github.com/wvlet/airframe/commit/d5ca4f63c)]
+
 ## 21.8.1
 
 [airframe-parquet](https://wvlet.org/airframe/docs/airframe-parquet) now supports AWS S3, writing dynamic records, and reading column statistics.  
