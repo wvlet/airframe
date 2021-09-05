@@ -291,7 +291,7 @@ generating async, sync, or Scala.js HTTP clients.</p>
 </code></pre>
 <p>To generate HTTP clients, add <code>airframeHttpClients</code> setting to your <code>build.sbt</code>. You need to specify
 which API package to use for generating RPC clients. The format
-is <code>&lt;RPC package name&gt;:&lt;client type&gt;(:&lt;target package name&gt;)?</code>. For example:</p>
+is <code>&lt;RPC package name&gt;:&lt;client type&gt;(:&lt;target package name&gt;(.&lt;target class name)?))?</code>. For example:</p>
 <p><strong>build.sbt</strong></p>
 <pre><code class="hljs css language-scala">enablePlugins(<span class="hljs-type">AirframeHttpPlugin</span>)
 
@@ -303,7 +303,7 @@ airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-stri
 <li><strong>async</strong>: Create an async HTTP client (ServiceClient) for Scala (JVM) using Future
 abstraction (<code>F</code>). The <code>F</code> can be <code>scala.concurrent.Future</code> or twitter-util's Future.</li>
 <li><strong>scalajs</strong>:  Create an RPC client (ServiceClientJS)</li>
-<li><strong>grpc</strong>: Create gRPC client stubs (ServiceGrpc: SyncClient, AsyncClient)</li>
+<li><strong>grpc</strong>: Create gRPC client (ServiceGrpc: SyncClient, AsyncClient)</li>
 </ul>
 <p>To support other types of clients, see the examples
 of <a href="https://github.com/wvlet/airframe/blob/master/airframe-http/.jvm/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClient.scala">HTTP code generators</a>
