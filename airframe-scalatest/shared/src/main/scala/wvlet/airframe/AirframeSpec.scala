@@ -20,7 +20,6 @@ import wvlet.log.{LogSupport, Logger}
 import scala.language.implicitConversions
 
 /**
-  *
   */
 trait AirframeSpec
     extends WordSpec

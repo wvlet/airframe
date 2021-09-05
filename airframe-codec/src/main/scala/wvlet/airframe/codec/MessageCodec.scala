@@ -31,8 +31,7 @@ trait MessageCodec[A] extends LogSupport {
   def pack(v: A): MsgPack = toMsgPack(v)
 
   /**
-    * Converting the input MessagePack into an object. If the conversion fails,
-    * throw an IllegalArgumentException
+    * Converting the input MessagePack into an object. If the conversion fails, throw an IllegalArgumentException
     */
   def unpack(msgpack: MsgPack): A = {
     val unpacker = am.MessagePack.newUnpacker(msgpack)

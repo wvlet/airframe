@@ -41,8 +41,9 @@ object TypeConverter extends LogSupport {
         if (
           /** StartMarker */
           isOptionCls
-          /** EndMarker */
-          (cls(value))
+          /**
+            * EndMarker
+            */ (cls(value))
         ) {
           Option(value)
         } else {

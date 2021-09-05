@@ -26,16 +26,15 @@ import scala.collection.mutable.WeakHashMap
 //--------------------------------------
 
 /**
-  * Utility for managing names written in different spellings. For example,
-  * variable name <i>localAddress</i> can be written as "local address", "local_address", etc.
+  * Utility for managing names written in different spellings. For example, variable name <i>localAddress</i> can be
+  * written as "local address", "local_address", etc.
   *
   * CanonicalName is the representative name of these variants.
   *
-  * <pre>
-  * CName("localAddress") == CName("local address") == CName("local_address")
-  * </pre>
+  * <pre> CName("localAddress") == CName("local address") == CName("local_address") </pre>
   *
-  * @author leo
+  * @author
+  *   leo
   */
 object CName {
   private val cnameTable = newCacheMap[String, CName]
@@ -123,7 +122,8 @@ object CName {
 }
 
 /**
-  * Canonical name. This name is used as a common name of wording variants (e.g., difference of capital letter usage, hyphenation, etc.)
+  * Canonical name. This name is used as a common name of wording variants (e.g., difference of capital letter usage,
+  * hyphenation, etc.)
   *
   * @param canonicalName
   * @param naturalName

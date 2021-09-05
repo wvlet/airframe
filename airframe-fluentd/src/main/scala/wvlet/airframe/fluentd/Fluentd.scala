@@ -122,7 +122,8 @@ object Fluentd {
 
   /**
     * Create a new Fluency-backed FluentdClient.
-    * @deprecated Use Fluentd.client.newFluentdLogger instead
+    * @deprecated
+    *   Use Fluentd.client.newFluentdLogger instead
     */
   def newFluentdLogger(
       host: String = "127.0.0.1",
@@ -157,7 +158,8 @@ object Fluentd {
   }
 
   /**
-    * @deprecated Use Fluentd.client.newTDLogger instead
+    * @deprecated
+    *   Use Fluentd.client.newTDLogger instead
     */
   def newTDLogger(
       apikey: String,

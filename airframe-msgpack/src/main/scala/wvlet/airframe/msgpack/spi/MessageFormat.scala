@@ -77,7 +77,8 @@ object MessageFormat {
   /**
     * Returns a MessageFormat type of the specified byte value
     *
-    * @param code MessageFormat of the given byte
+    * @param code
+    *   MessageFormat of the given byte
     * @return
     */
   def of(code: Byte): MessageFormat = formatTable(code & 0xff)
@@ -85,7 +86,8 @@ object MessageFormat {
   /**
     * Converting a byte value into MessageFormat. For faster performance, use {@link #valueOf}
     *
-    * @param b MessageFormat of the given byte
+    * @param b
+    *   MessageFormat of the given byte
     * @return
     */
   private[spi] def toMessageFormat(b: Byte): MessageFormat = {

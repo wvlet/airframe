@@ -57,7 +57,8 @@ object OpenAPI {
   /**
     * Generate Open API model class from Airframe HTTP/RPC Router definition
     * @param router
-    * @return OpenAPI model class
+    * @return
+    *   OpenAPI model class
     */
   def ofRouter(router: Router, config: OpenAPIGeneratorConfig = OpenAPIGeneratorConfig()): OpenAPI = {
     OpenAPIGenerator.buildFromRouter(router, config)

@@ -43,13 +43,7 @@ object DI_91_Stats extends App {
   /**
     * Show the design coverage and access stats.
     *
-    * [coverage]
-    * design coverage: 66.7%
-    * [unused types]
-    * C
-    * [access stats]
-    * [A] init:1, inject:1
-    * [B] init:1, inject:1
+    * [coverage] design coverage: 66.7% [unused types] C [access stats] [A] init:1, inject:1 [B] init:1, inject:1
     */
   println(report)
 }

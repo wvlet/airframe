@@ -102,8 +102,7 @@ case class JSHttpClientConfig(
   }
 
   /**
-    * Converter Future[A] to Rx[A].
-    * Use this method when you need to add a common error handler (e.g., with Rx.recover)
+    * Converter Future[A] to Rx[A]. Use this method when you need to add a common error handler (e.g., with Rx.recover)
     */
   def withRxConverter(f: Future[_] => RxStream[_]): JSHttpClientConfig = {
     this.copy(rxConverter = f)

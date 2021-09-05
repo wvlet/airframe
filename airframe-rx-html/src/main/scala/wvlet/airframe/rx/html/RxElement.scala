@@ -36,8 +36,7 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
   /**
     * Called right before unmounting (deleting) this RxElement from DOM.
     *
-    * This is a good place to remove any background process or
-    * manually added event listeners.
+    * This is a good place to remove any background process or manually added event listeners.
     */
   def beforeUnmount: Unit = {}
 

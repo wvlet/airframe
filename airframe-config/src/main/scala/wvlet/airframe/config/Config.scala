@@ -95,8 +95,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
   import wvlet.airframe.surface.reflect._
 
   /**
-    * Create a map representation of this config for display purpose.
-    * Parameters with @secret annotation will be hidden.
+    * Create a map representation of this config for display purpose. Parameters with @secret annotation will be hidden.
     */
   def toPrintableMap: Map[String, Any] = {
     def traverse(s: Surface, v: Any, secret: Option[wvlet.airframe.surface.secret]): Any = {

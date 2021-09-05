@@ -101,8 +101,8 @@ private[wvlet] object AirframeMacros {
     }
 
     /**
-      * Register a factory for generating a trait that can embed the current session.
-      * This step is necessary for instantiating trait, which has no default constructor.
+      * Register a factory for generating a trait that can embed the current session. This step is necessary for
+      * instantiating trait, which has no default constructor.
       *
       * This method will return the surface of t
       */

@@ -66,8 +66,7 @@ object HealthCheckPolicy extends LogSupport {
       }
 
       /**
-        * Called when request is failed.
-        * Returns delay
+        * Called when request is failed. Returns delay
         */
       override def recordFailure: Unit = {
         consecutiveFailures.incrementAndGet()

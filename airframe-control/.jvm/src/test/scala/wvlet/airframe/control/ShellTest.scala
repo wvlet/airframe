@@ -24,7 +24,8 @@ import wvlet.airspec.AirSpec
 //--------------------------------------
 
 /**
-  * @author leo
+  * @author
+  *   leo
   */
 class ShellTest extends AirSpec {
 
