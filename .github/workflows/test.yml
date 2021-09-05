@@ -25,6 +25,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: scalafmt test
         run: ./sbt scalafmtCheckAll
+      - name: scalafmt sbt-airframe
+        run: ./sbt scalafmtCheckAll
+        working-directory: ./sbt-airframe
   test_2_12:
     name: Scala 2.12
     runs-on: ubuntu-latest

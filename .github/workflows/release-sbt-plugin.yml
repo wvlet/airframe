@@ -1,0 +1,44 @@
+name: Release sbt-airframe
+
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+
+jobs:
+  publish_jvm:
+    name: Publish sbt-airframe plugin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 10000
+      # Fetch all tags so that sbt-dynver can find the previous release version
+      - run: git fetch --tags -f
+      # Install OpenJDK 11
+      - uses: olafurpg/setup-scala@v10
+        with:
+          java-version: adopt@1.11
+      - name: Setup GPG
+        env:
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
+        run: echo $PGP_SECRET | base64 --decode | gpg --import --batch --yes
+      - name: Get Airframe version
+        run: echo "AIRFRAME_VERSION=$(./scripts/dynver.sh)" >> $GITHUB_ENV
+      - name: Check Airframe version
+        run: echo ${AIRFRAME_VERSION}
+      - name: Create Airframe artifacts locally
+        run: ./sbt ++2.12.14 "projectJVM/publishLocal; projectJS/publishLocal"
+      - name: Build sbt-airframe bundle
+        env:
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+        run: |
+          ./sbt publishSigned
+        working-directory: ./sbt-airframe
+      - name: Release to Sonatype
+        env:
+          SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
+          SONATYPE_PASSWORD: '${{ secrets.SONATYPE_PASS }}'
+        run: ./sbt sonatypeBundleRelease
+        working-directory: ./sbt-airframe
