@@ -10,9 +10,9 @@ SNAPSHOT_VERSION=`echo ${DYN_VER} | ruby -pe "gsub(/v([^-]*)-([0-9]+)-g(.*)/, '\
 
 if [ ${GIT_DIST} -eq 0 ]; then
   if [ ${GIT_TAG} == *"-dirty" ]; then
-    VERSION=${RELEASE_VERSION}
-  else
     VERSION=${SNAPSHOT_VERSION}
+  else
+    VERSION=${RELEASE_VERSION}
   fi
 else
   VERSION=${SNAPSHOT_VERSION}
