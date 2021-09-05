@@ -31,10 +31,10 @@ case class HttpClientGeneratorConfig(
     clientType: HttpClientGenerator = AsyncClientGenerator,
     // [optional] Which package to use for the generating client code?
     targetPackageName: String,
-    targetClassName: Option[String]
+    private[codegen] val targetClassName: Option[String]
 ) {
   def clientClassName: String = targetClassName.getOrElse(clientType.defaultClassName)
-  def fileName: String        = s"${clientClassName}.scala"
+  def clientFileName: String  = s"${clientClassName}.scala"
 }
 
 object HttpClientGeneratorConfig {
@@ -130,7 +130,7 @@ case class HttpCodeGeneratorOption(
     outDir: File,
     @option(prefix = "-t", description = "target directory")
     targetDir: File,
-    @argument(description = "client code generation targets: (package):(type)(:(targetClassName))?")
+    @argument(description = "client code generation targets: (package):(type)(:(targetPackageName)(.tagetClassName)?)?")
     targets: Seq[String] = Seq.empty
 )
 
@@ -197,7 +197,7 @@ class HttpCodeGenerator(
         if (!option.targetDir.exists()) {
           option.targetDir.mkdirs()
         }
-        val path       = s"${config.targetPackageName.replaceAll("\\.", "/")}/${config.fileName}"
+        val path       = s"${config.targetPackageName.replaceAll("\\.", "/")}/${config.clientFileName}"
         val outputFile = new File(option.outDir, path)
 
         val router         = buildRouter(Seq(config.apiPackageName), cl)

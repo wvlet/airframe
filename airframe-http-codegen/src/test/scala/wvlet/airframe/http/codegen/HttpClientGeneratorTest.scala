@@ -40,7 +40,7 @@ class HttpClientGeneratorTest extends AirSpec {
       config.apiPackageName shouldBe "example.api"
       config.clientType shouldBe AsyncClientGenerator
       config.targetClassName shouldBe Some("MyApiClient")
-      config.fileName shouldBe "MyApiClient.scala"
+      config.clientFileName shouldBe "MyApiClient.scala"
       config.targetPackageName shouldBe "example.api"
 
       val code = HttpCodeGenerator.generate(router, config)
@@ -53,7 +53,7 @@ class HttpClientGeneratorTest extends AirSpec {
       config.apiPackageName shouldBe "example.api"
       config.clientType shouldBe GrpcClientGenerator
       config.targetClassName shouldBe Some("MyApiClient")
-      config.fileName shouldBe "MyApiClient.scala"
+      config.clientFileName shouldBe "MyApiClient.scala"
       config.targetPackageName shouldBe "example.api.client"
 
       val code = HttpCodeGenerator.generate(router, config)
@@ -61,6 +61,20 @@ class HttpClientGeneratorTest extends AirSpec {
       // grpc target generates client generator in a Scala object
       code.contains("object MyApiClient") shouldBe true
     }
+
+    test("customize only package") {
+      val config = HttpClientGeneratorConfig("example.api:grpc:example.api.client")
+      config.apiPackageName shouldBe "example.api"
+      config.clientType shouldBe GrpcClientGenerator
+      config.targetClassName shouldBe None
+      config.clientFileName shouldBe s"${GrpcClientGenerator.defaultClassName}.scala"
+      config.targetPackageName shouldBe "example.api.client"
+
+      val code = HttpCodeGenerator.generate(router, config)
+      code.contains("package example.api.client") shouldBe true
+      code.contains(s"object ${GrpcClientGenerator.defaultClassName}") shouldBe true
+    }
+
   }
 
   test("generate async client") {
