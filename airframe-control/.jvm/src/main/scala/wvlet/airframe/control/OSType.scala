@@ -25,7 +25,8 @@ import scala.sys.process.Process
 /**
   * OS type resolver
   *
-  * @author leo
+  * @author
+  *   leo
   */
 object OS {
   def isWindows: Boolean = getType == OSType.Windows

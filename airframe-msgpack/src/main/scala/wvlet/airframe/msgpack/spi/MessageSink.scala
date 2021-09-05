@@ -18,65 +18,65 @@ import java.io.{Flushable, IOException}
 /**
   * Provides a buffered output stream that writes sequence of [[WriteBuffer]] instances.
   *
-  * A Sink implementation has total control of the buffer memory so that it can reuse buffer memory,
-  * use buffer pools, or use memory-mapped files.
+  * A Sink implementation has total control of the buffer memory so that it can reuse buffer memory, use buffer pools,
+  * or use memory-mapped files.
   */
 trait MessageSink extends AutoCloseable with Flushable {
 
   /**
-    * Allocates the next buffer for writing MessagePack data.
-    * <p>
-    * This method returns an [[WriteBuffer]] instance that has specified size of capacity at least.
-    * <p>
-    * When this method is called twice, the previously returned buffer is no longer used. This method may be called
-    * twice without call of [[writeBuffer(int)]] in between. In this case, the buffer should be
-    * discarded without flushing it to the output.
+    * Allocates the next buffer for writing MessagePack data. <p> This method returns an [[WriteBuffer]] instance that
+    * has specified size of capacity at least. <p> When this method is called twice, the previously returned buffer is
+    * no longer used. This method may be called twice without call of [[writeBuffer(int)]] in between. In this case, the
+    * buffer should be discarded without flushing it to the output.
     *
-    * @param minimumSize the minimum required buffer size to allocate
-    * @return a Buffer instance with at least minimumSize bytes of capacity
+    * @param minimumSize
+    *   the minimum required buffer size to allocate
+    * @return
+    *   a Buffer instance with at least minimumSize bytes of capacity
     * @throws IOException
     */
   @throws[IOException]
   def next(minimumSize: Int): WriteBuffer
 
   /**
-    * Writes the previously allocated buffer(s).
-    * <p>
-    * This method should write the buffer previously returned from [[next(int)]] method until specified number of
-    * bytes. Once the entire buffer contents is totally written to the sink, the buffer should not be used because
-    * a BufferSink implementation might reuse the buffer.
-    * <p>
-    * This method is not always called for each [[next(int)]] call. In this case, the buffer should be discarded
-    * without flushing it to the output when the next [[next(int)]] is called.
+    * Writes the previously allocated buffer(s). <p> This method should write the buffer previously returned from
+    * [[next(int)]] method until specified number of bytes. Once the entire buffer contents is totally written to the
+    * sink, the buffer should not be used because a BufferSink implementation might reuse the buffer. <p> This method is
+    * not always called for each [[next(int)]] call. In this case, the buffer should be discarded without flushing it to
+    * the output when the next [[next(int)]] is called.
     *
-    * @param length the number of bytes to write
+    * @param length
+    *   the number of bytes to write
     * @throws IOException
     */
   @throws[IOException]
   def writeBuffer(length: Int): Unit
 
   /**
-    * Writes an external payload data.
-    * This method should follow semantics of OutputStream.
+    * Writes an external payload data. This method should follow semantics of OutputStream.
     *
-    * @param buffer the data to write
-    * @param offset the start offset in the data
-    * @param length the number of bytes to write
+    * @param buffer
+    *   the data to write
+    * @param offset
+    *   the start offset in the data
+    * @param length
+    *   the number of bytes to write
     * @throws IOException
     */
   @throws[IOException]
   def write(buffer: Array[Byte], offset: Int, length: Int): Unit
 
   /**
-    * Writes an external payload data.
-    * <p>
-    * Unlike [[write(byte[], int, int)]] method, the buffer is given - this BufferSink implementation
-    * gets ownership of the buffer and may modify contents of the buffer. Contents of this buffer won't be modified
-    * by the caller.
+    * Writes an external payload data. <p> Unlike [[write(byte[], int, int)]] method, the buffer is given - this
+    * BufferSink implementation gets ownership of the buffer and may modify contents of the buffer. Contents of this
+    * buffer won't be modified by the caller.
     *
-    * @param buffer the data to add
-    * @param offset the start offset in the data
-    * @param length the number of bytes to add
+    * @param buffer
+    *   the data to add
+    * @param offset
+    *   the start offset in the data
+    * @param length
+    *   the number of bytes to add
     * @throws IOException
     */
   @throws[IOException]

@@ -183,7 +183,8 @@ object OptionParser extends LogSupport {
 /**
   * CommandTrait-line argument parser
   *
-  * @author leo
+  * @author
+  *   leo
   */
 class OptionParser(val schema: OptionSchema) extends LogSupport {
   def this(m: MethodSurface) = this(new MethodOptionSchema(m))
@@ -194,7 +195,8 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
     * Parse the command-line arguments
     *
     * @param args
-    * @return parse result
+    * @return
+    *   parse result
     */
   def parse(args: Array[String]): OptionParserResult = {
     def findMatch[T](p: Regex, s: String): Option[Match] = p.findFirstMatchIn(s)

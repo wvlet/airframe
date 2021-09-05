@@ -80,9 +80,8 @@ case class HttpRecorderConfig(
 }
 
 /**
-  * Creates a proxy server for recording and replaying HTTP responses.
-  * This is useful for simulate the behavior of Web services, that
-  * are usually too heavy to use in an restricted environment (e.g., CI servers)
+  * Creates a proxy server for recording and replaying HTTP responses. This is useful for simulate the behavior of Web
+  * services, that are usually too heavy to use in an restricted environment (e.g., CI servers)
   */
 object HttpRecorder extends LogSupport {
   def config: HttpRecorderConfig = HttpRecorderConfig()
@@ -110,8 +109,8 @@ object HttpRecorder extends LogSupport {
   }
 
   /**
-    * Creates an HTTP proxy server that will return recorded responses. If no record is found, it will
-    * actually send the request to the destination server and record the response.
+    * Creates an HTTP proxy server that will return recorded responses. If no record is found, it will actually send the
+    * request to the destination server and record the response.
     */
   def createRecorderProxy(
       recorderConfig: HttpRecorderConfig,
@@ -141,8 +140,8 @@ object HttpRecorder extends LogSupport {
   }
 
   /**
-    * Creates an HTTP server that returns only recorded HTTP responses.
-    * If no matching record is found, use the given fallback handler.
+    * Creates an HTTP server that returns only recorded HTTP responses. If no matching record is found, use the given
+    * fallback handler.
     */
   def createServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
     val recorder = new HttpRecordStore(recorderConfig)
@@ -153,8 +152,8 @@ object HttpRecorder extends LogSupport {
   }
 
   /**
-    * Create an in-memory programmable server, whose recorded response will be discarded after closing the server.
-    * This is useful for debugging HTTP clients
+    * Create an in-memory programmable server, whose recorded response will be discarded after closing the server. This
+    * is useful for debugging HTTP clients
     */
   def createInMemoryServer(recorderConfig: HttpRecorderConfig): HttpRecorderServer = {
     val recorder = new HttpRecordStore(recorderConfig, inMemory = true)

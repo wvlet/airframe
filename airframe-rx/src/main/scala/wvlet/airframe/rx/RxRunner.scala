@@ -13,7 +13,8 @@ import Rx._
 /**
   * States for propagating the result of the downstream operators.
   *
-  * TODO: Add a state for telling how many elements can be received in downstream operators for implementing back-pressure
+  * TODO: Add a state for telling how many elements can be received in downstream operators for implementing
+  * back-pressure
   */
 sealed trait RxResult {
   def toContinue: Boolean
@@ -73,13 +74,14 @@ class RxRunner(
 ) extends LogSupport { runner =>
 
   /**
-    * Build an executable chain of Rx operators. The resulting chain
-    * will be registered as a subscriber to the root node (see RxVar.foreach). If the root value changes,
-    * the effect code block will be executed.
+    * Build an executable chain of Rx operators. The resulting chain will be registered as a subscriber to the root node
+    * (see RxVar.foreach). If the root value changes, the effect code block will be executed.
     *
     * @param rx
-    * @param effect a function to process the generated RxEvent. This function must return [[RxResult.Continue]] when the downstream operator can
-    *               receive further events (OnNext). If the leaf sink operator issued OnError or OnCompletion event, this must return [[RxResult.Stop]].
+    * @param effect
+    *   a function to process the generated RxEvent. This function must return [[RxResult.Continue]] when the downstream
+    *   operator can receive further events (OnNext). If the leaf sink operator issued OnError or OnCompletion event,
+    *   this must return [[RxResult.Stop]].
     * @tparam A
     */
   def run[A](rx: Rx[A])(effect: RxEvent => RxResult): Cancelable = {

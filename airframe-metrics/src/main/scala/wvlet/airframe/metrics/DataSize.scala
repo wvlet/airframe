@@ -20,8 +20,8 @@ import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 /**
-  * A human-readable data size representation.
-  * This is a re-implementation of https://github.com/airlift/units/blob/master/src/main/java/io/airlift/units/DataSize.java for Scala.
+  * A human-readable data size representation. This is a re-implementation of
+  * https://github.com/airlift/units/blob/master/src/main/java/io/airlift/units/DataSize.java for Scala.
   */
 case class DataSize(value: Double, unit: DataSizeUnit) extends Comparable[DataSize] {
   require(!value.isInfinite, s"infinite size")

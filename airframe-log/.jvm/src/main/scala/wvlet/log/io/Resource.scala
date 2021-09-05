@@ -39,16 +39,20 @@ trait ResourceReader {
 /**
   * Resource file manager.
   *
-  * @author leo
+  * @author
+  *   leo
   */
 object Resource {
 
   /**
     * Open a resource as a stream, then execute the code block using the stream
     *
-    * @param referenceClass   context class to specify the package containing the resource file
-    * @param resourceFileName file name
-    * @param body             code block
+    * @param referenceClass
+    *   context class to specify the package containing the resource file
+    * @param resourceFileName
+    *   file name
+    * @param body
+    *   code block
     * @tparam U
     */
   def open[U](referenceClass: Class[_], resourceFileName: String)(body: BufferedInputStream => U): U = {
@@ -123,10 +127,11 @@ object Resource {
     * Finds the java.net.URL of the resource
     *
     * @param packageName
-    * the base package name to find the resource
+    *   the base package name to find the resource
     * @param resourceFileName
-    * the resource file name relative to the package folder
-    * @return the URL of the specified resource
+    *   the resource file name relative to the package folder
+    * @return
+    *   the URL of the specified resource
     */
   def find(packageName: String, resourceFileName: String): Option[URL] = {
     val resourcePath = resolveResourcePath(packageName, resourceFileName)
@@ -151,19 +156,19 @@ object Resource {
   /**
     * VirtualFile is a common interface to handle system files and file resources in JAR.
     *
-    * System file resources have an URL prefixed with "file:".
-    * e.g., "file:/C:/Program Files/Software/classes/org/xerial/util/FileResource.java"
-    * JAR file contents have an URL prefixed with "jar:file:
+    * System file resources have an URL prefixed with "file:". e.g., "file:/C:/Program
+    * Files/Software/classes/org/xerial/util/FileResource.java" JAR file contents have an URL prefixed with "jar:file:
     * e.g., "jar:file:/C:/Program Files/Software/something.jar!/org/xerial/util/FileResource.java"
     *
-    * @author leo
+    * @author
+    *   leo
     */
   abstract trait VirtualFile {
 
     /**
-      * Gets the logical path of the file.
-      * For example, if this VirtualFile' URL is "file:/somewhere/org/xerial/util/FileResource.java",
-      * its logical name is org/xerial/util/FileResource.java, beginning from the root package.
+      * Gets the logical path of the file. For example, if this VirtualFile' URL is
+      * "file:/somewhere/org/xerial/util/FileResource.java", its logical name is org/xerial/util/FileResource.java,
+      * beginning from the root package.
       *
       * @return
       */
@@ -172,7 +177,8 @@ object Resource {
     /**
       * is directory?
       *
-      * @return true when the file is a directory, otherwise false
+      * @return
+      *   true when the file is a directory, otherwise false
       */
     def isDirectory: Boolean
 
@@ -187,7 +193,8 @@ object Resource {
   /**
     * A virtual file implementation for usual files
     *
-    * @author leo
+    * @author
+    *   leo
     */
   case class SystemFile(file: java.io.File, logicalPath: String) extends VirtualFile {
     def url: URL = file.toURI.toURL
@@ -198,7 +205,8 @@ object Resource {
   /**
     * A virtual file implementation for file resources contained in a JAR file
     *
-    * @author leo
+    * @author
+    *   leo
     */
   case class FileInJar(resourceURL: URL, logicalPath: String, isDirectory: Boolean) extends VirtualFile {
     if (resourceURL == null) {
@@ -242,14 +250,16 @@ object Resource {
   }
 
   /**
-    * Create a list of all resources under the given resourceURL recursively. If the
-    * resourceURL is a file, this method searches directories under the path. If the resource is contained
-    * in a Jar file, it searches contents of the Jar file.
+    * Create a list of all resources under the given resourceURL recursively. If the resourceURL is a file, this method
+    * searches directories under the path. If the resource is contained in a Jar file, it searches contents of the Jar
+    * file.
     *
     * @param resourceURL
-    * @param packageName package name under consideration
+    * @param packageName
+    *   package name under consideration
     * @param resourceFilter
-    * @return the list of resources matching the given resource filter
+    * @return
+    *   the list of resources matching the given resource filter
     */
   private def listResources(
       resourceURL: URL,
@@ -336,8 +346,10 @@ object Resource {
   /**
     * Find resource URLs that can be found from a given class loader and its ancestors
     *
-    * @param cl   class loader
-    * @param name resource name
+    * @param cl
+    *   class loader
+    * @param name
+    *   resource name
     * @return
     */
   def findResourceURLs(cl: ClassLoader, name: String): Seq[URL] = {

@@ -27,17 +27,21 @@ import scala.util.Try
 /**
   * Asynchronous HTTP Client interface
   *
-  * @tparam F An abstraction for Future type (e.g., Resolves the differences between Twitter Future, Scala Future, etc.)
+  * @tparam F
+  *   An abstraction for Future type (e.g., Resolves the differences between Twitter Future, Scala Future, etc.)
   * @tparam Req
   * @tparam Resp
   */
 trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
 
   /**
-    * Send an HTTP request and get the response. It will throw an exception for non successful responses (after reaching the max retry limit)
+    * Send an HTTP request and get the response. It will throw an exception for non successful responses (after reaching
+    * the max retry limit)
     *
-    * @throws HttpClientMaxRetryException if max retry reaches
-    * @throws HttpClientException for non-retryable error is happend
+    * @throws HttpClientMaxRetryException
+    *   if max retry reaches
+    * @throws HttpClientException
+    *   for non-retryable error is happend
     */
   def send(req: Req, requestFilter: Req => Req = identity): F[Resp]
 
@@ -244,10 +248,13 @@ class HttpSyncClientAdapter[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Res
   protected def awaitF[A](f: F[A]): A = asyncClient.awaitF(f)
 
   /**
-    * Send an HTTP request and get the response. It will throw an exception for non successful responses (after reaching the max retry)
+    * Send an HTTP request and get the response. It will throw an exception for non successful responses (after reaching
+    * the max retry)
     *
-    * @throws HttpClientMaxRetryException if max retry reaches
-    * @throws HttpClientException for non-retryable error is happend
+    * @throws HttpClientMaxRetryException
+    *   if max retry reaches
+    * @throws HttpClientException
+    *   for non-retryable error is happend
     */
   override def send(req: Req, requestFilter: Req => Req = identity): Resp = awaitF(asyncClient.send(req, requestFilter))
 

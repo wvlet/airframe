@@ -16,9 +16,8 @@ private[airspec] trait AirSpecSpiCompat {
   /**
     * This will add Scala.js support to the AirSpec.
     *
-    * Scala.js does not support runtime reflection, so the user needs to
-    * explicitly create Seq[MethodSurface] at compile-time.
-    * This method is a helper method to populate methodSurfaces automatically.
+    * Scala.js does not support runtime reflection, so the user needs to explicitly create Seq[MethodSurface] at
+    * compile-time. This method is a helper method to populate methodSurfaces automatically.
     */
   protected def scalaJsSupport: Unit = {
     wvlet.log

@@ -127,7 +127,8 @@ object RouteMatcher extends LogSupport {
   }
 
   /**
-    * Define an operation when matching path component is found (e.g., binding path components to matching path variables)
+    * Define an operation when matching path component is found (e.g., binding path components to matching path
+    * variables)
     */
   sealed trait PathMapping {
     // Matched route

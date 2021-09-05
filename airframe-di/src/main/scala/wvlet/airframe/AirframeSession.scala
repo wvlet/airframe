@@ -184,8 +184,8 @@ private[airframe] class AirframeSession(
   }
 
   /**
-    * Called when injecting an instance of the surface for the first time.
-    * The other hooks (e.g., onStart, onShutdown) will be called in a separate step after the object is injected.
+    * Called when injecting an instance of the surface for the first time. The other hooks (e.g., onStart, onShutdown)
+    * will be called in a separate step after the object is injected.
     */
   private[airframe] def registerInjectee(bindTarget: Surface, tpe: Surface, injectee: Any): AnyRef = {
     debug(s"[${name}] Init [${bindTarget} -> ${tpe}]: ${injectee}")
@@ -209,8 +209,8 @@ private[airframe] class AirframeSession(
     }
 
     /**
-      * If an injected class implements close() (in AutoCloseable interface), add a shutdown hook to call
-      * close() if there is no other shutdown hooks
+      * If an injected class implements close() (in AutoCloseable interface), add a shutdown hook to call close() if
+      * there is no other shutdown hooks
       */
     if (classOf[AutoCloseable].isAssignableFrom(injectee.getClass)) {
       injectee match {
@@ -245,7 +245,8 @@ private[airframe] class AirframeSession(
   private[airframe] val observedTypes = new ConcurrentHashMap[Surface, Long]().asScala
 
   /**
-    * Find a session (including parent and ancestor parents) that owns t, that is, a session that can build t or has ever built t.
+    * Find a session (including parent and ancestor parents) that owns t, that is, a session that can build t or has
+    * ever built t.
     */
   private[airframe] def findOwnerSessionOf(t: Surface): Option[AirframeSession] = {
     if (bindingTable.contains(t) || observedTypes.contains(t)) {

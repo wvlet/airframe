@@ -23,9 +23,9 @@ import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
 /**
-  *  Create the terminal request handler for processing a method with @EndPoint annotation.
+  * Create the terminal request handler for processing a method with @EndPoint annotation.
   *
-  *  This handler will call a controller method with the request parameters build from the method arguments.
+  * This handler will call a controller method with the request parameters build from the method arguments.
   */
 class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
     protected val backend: HttpBackend[Req, Resp, F],

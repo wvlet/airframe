@@ -59,7 +59,7 @@ class DefaultGrpcRequestLogger(serverName: String, logWriter: HttpAccessLogWrite
 
 object GrpcRequestLogger extends LogSupport {
 
-  def newLogger(serverName: String)                              = new DefaultGrpcRequestLogger(serverName, HttpAccessLogWriter.default)
+  def newLogger(serverName: String) = new DefaultGrpcRequestLogger(serverName, HttpAccessLogWriter.default)
   def newLogger(serverName: String, writer: HttpAccessLogWriter) = new DefaultGrpcRequestLogger(serverName, writer)
 
   // Logger for discarding all logs

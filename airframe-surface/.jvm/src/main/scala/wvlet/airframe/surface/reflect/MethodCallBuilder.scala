@@ -29,7 +29,8 @@ import wvlet.log.LogSupport
 /**
   * Builds method call arguments
   *
-  * @author leo
+  * @author
+  *   leo
   */
 class MethodCallBuilder(m: MethodSurface, owner: AnyRef) extends StandardBuilder with LogSupport {
   // Find the default arguments of the method

@@ -30,8 +30,8 @@ object ServerMain {
 
 class ServerMain(
     @option(prefix = "-h,--help", description = "Display help messages", isHelp = true)
-    help: Boolean)
-    extends LogSupport {
+    help: Boolean
+) extends LogSupport {
 
   @command(isDefault = true)
   def default: Unit = {
@@ -41,7 +41,8 @@ class ServerMain(
   @command(description = "Launch an RPC server")
   def server(
       @option(prefix = "-p,--port", description = "port number")
-      port: Int = 8080): Unit = {
+      port: Int = 8080
+  ): Unit = {
 
     val router = Router
       .add[HelloApiImpl]

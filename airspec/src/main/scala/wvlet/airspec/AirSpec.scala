@@ -56,7 +56,8 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
   }
 
   /**
-    * Register a new test. If a custom Design is provided, it will be used to populate the arguments of the test body method.
+    * Register a new test. If a custom Design is provided, it will be used to populate the arguments of the test body
+    * method.
     */
   protected def test(name: String, design: Design = Design.empty): AirSpecTestBuilder =
     new AirSpecTestBuilder(this, name, design)
@@ -85,8 +86,8 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
   /**
     * Provide a test-case local design in the spec.
     *
-    * Note that if you override a global design in this method,
-    * test cases will create test-case local instances (singletons)
+    * Note that if you override a global design in this method, test cases will create test-case local instances
+    * (singletons)
     */
   protected def localDesign: Design = Design.empty
 

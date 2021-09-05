@@ -164,7 +164,8 @@ object Retry extends LogSupport {
       * Update the retry context, including retry count, last error, next wait time, etc.
       *
       * @param retryReason
-      * @return the next retry context
+      * @return
+      *   the next retry context
       */
     def nextRetry(retryReason: Throwable): RetryContext = {
       val nextRetryCtx = this.copy(
@@ -221,8 +222,8 @@ object Retry extends LogSupport {
     }
 
     /**
-      * Set a detailed error handler upon Exception. If the given exception is not retryable,
-      * just rethrow the exception. Otherwise, consume the exception.
+      * Set a detailed error handler upon Exception. If the given exception is not retryable, just rethrow the
+      * exception. Otherwise, consume the exception.
       */
     def withErrorClassifier(errorClassifier: Throwable => ResultClass.Failed): RetryContext = {
       this.copy(errorClassifier = errorClassifier)

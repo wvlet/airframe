@@ -19,8 +19,7 @@ import com.twitter.finagle.http.{MediaType, Request}
 import wvlet.log.LogSupport
 
 /**
-  * Compute a hash key of the given HTTP request.
-  * This value will be used for DB indexes
+  * Compute a hash key of the given HTTP request. This value will be used for DB indexes
   */
 trait HttpRequestMatcher {
   def computeHash(request: Request): Int

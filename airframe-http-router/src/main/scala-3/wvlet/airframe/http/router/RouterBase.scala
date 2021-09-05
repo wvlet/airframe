@@ -16,9 +16,10 @@ package wvlet.airframe.http.router
 import wvlet.airframe.http.Router
 
 trait RouterBase {
+
   /**
-   * Add methods annotated with @Endpoint to the routing table
-   */
-  def add[Controller]: Router = ???
+    * Add methods annotated with @Endpoint to the routing table
+    */
+  def add[Controller]: Router     = ???
   def andThen[Controller]: Router = ???
 }

@@ -23,8 +23,7 @@ import wvlet.airframe.msgpack.spi._
 import scala.collection.immutable.ListMap
 
 /**
-  * A bridge implementation with msgpack-core MessageUnpacker.
-  * TODO: Use pure-Scala impl
+  * A bridge implementation with msgpack-core MessageUnpacker. TODO: Use pure-Scala impl
   */
 class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
   override def close(): Unit = {

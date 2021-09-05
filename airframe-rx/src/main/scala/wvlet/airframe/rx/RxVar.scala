@@ -54,8 +54,7 @@ class RxVar[A](private var currentValue: A) extends RxStream[A] with RxVarOps[A]
   }
 
   /**
-    * Updates the variable and trigger the recalculation of the subscribers
-    * currentValue => newValue
+    * Updates the variable and trigger the recalculation of the subscribers currentValue => newValue
     */
   override def update(updater: A => A, force: Boolean = false): Unit = {
     val newValue = updater(currentValue)
@@ -102,8 +101,7 @@ trait RxVarOps[A] {
   def forceUpdate(updater: A => A): Unit = update(updater, force = true)
 
   /**
-    * Updates the variable and trigger the recalculation of the subscribers
-    * currentValue => newValue
+    * Updates the variable and trigger the recalculation of the subscribers currentValue => newValue
     */
   def update(updater: A => A, force: Boolean = false): Unit
 

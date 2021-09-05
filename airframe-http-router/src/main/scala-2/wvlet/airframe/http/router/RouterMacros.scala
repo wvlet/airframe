@@ -19,8 +19,7 @@ import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
 
 /**
-  * Macros for creating a trait factory (Session => A) so that we can register
-  * the factory upon defining Route.of[A].
+  * Macros for creating a trait factory (Session => A) so that we can register the factory upon defining Route.of[A].
   *
   * So once you register a route for A, you don't need to call bind[A].toSingleton, etc.
   */

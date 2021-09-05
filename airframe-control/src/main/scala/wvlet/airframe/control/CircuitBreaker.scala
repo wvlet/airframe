@@ -47,8 +47,8 @@ object CircuitBreaker extends LogSupport {
   }
 
   /**
-    * Create a CircuitBreaker that will be open if the failure rate in a time window exceeds the given threshold.
-    * The failure rate will be decayed exponentially as time goes.
+    * Create a CircuitBreaker that will be open if the failure rate in a time window exceeds the given threshold. The
+    * failure rate will be decayed exponentially as time goes.
     */
   def withFailureRate(failureRate: Double, timeWindowMillis: Int = 60000): CircuitBreaker = {
     default.withHealthCheckPolicy(HealthCheckPolicy.markDeadOnRecentFailureRate(failureRate, timeWindowMillis))
@@ -176,24 +176,24 @@ case class CircuitBreaker(
   }
 
   /**
-    * Set a classifier to determine whether the exception happened in the code block can be ignoreable or not for
-    * the accessing the target service.
+    * Set a classifier to determine whether the exception happened in the code block can be ignoreable or not for the
+    * accessing the target service.
     */
   def withErrorClassifier(newErrorClassifier: Throwable => ResultClass.Failed): CircuitBreaker = {
     this.copy(errorClassifier = newErrorClassifier)
   }
 
   /**
-    * Set a delay policy until moving the state from OPEN to HALF_OPEN (probing) state.
-    * The default is Jittered-exponential backoff delay with the initial interval of 30 seconds.
+    * Set a delay policy until moving the state from OPEN to HALF_OPEN (probing) state. The default is
+    * Jittered-exponential backoff delay with the initial interval of 30 seconds.
     */
   def withDelayAfterMarkedDead(retryPolicy: RetryPolicy): CircuitBreaker = {
     this.copy(delayAfterMarkedDead = retryPolicy)
   }
 
   /**
-    * Set a fallback handler which process the exception happened in the code block.
-    * The default is just throwing the exception as it is.
+    * Set a fallback handler which process the exception happened in the code block. The default is just throwing the
+    * exception as it is.
     */
   def withFallbackHandler(handler: Throwable => Any): CircuitBreaker = {
     this.copy(fallbackHandler = handler)
@@ -207,16 +207,16 @@ case class CircuitBreaker(
   }
 
   /**
-    * Set a recovery policiy which determine if ths circuit breaker can recover from HALF_OPEN to CLOSED.
-    * The default policy recovers immediately if health check is once successful.
+    * Set a recovery policiy which determine if ths circuit breaker can recover from HALF_OPEN to CLOSED. The default
+    * policy recovers immediately if health check is once successful.
     */
   def withRecoveryPolicy(recoveryPolicy: CircuitBreakerRecoveryPolicy): CircuitBreaker = {
     this.copy(recoveryPolicy = recoveryPolicy)
   }
 
   /**
-    * Defines the action when trying to use the open circuit. The default
-    * behavior is to throw CircuitBreakerOpenException
+    * Defines the action when trying to use the open circuit. The default behavior is to throw
+    * CircuitBreakerOpenException
     */
   def onOpenFailure(handler: CircuitBreakerContext => Unit): CircuitBreaker = {
     this.copy(onOpenFailureHandler = handler)
@@ -260,8 +260,8 @@ case class CircuitBreaker(
   /**
     * Note: Use this method only for the standalone mode. Generally, using CircuiteBreaker.run is sufficient.
     *
-    * If the connection is open, perform the specified action. The
-    * default behavior is fail-fast, i.e., throwing CircuitBreakerOpenException
+    * If the connection is open, perform the specified action. The default behavior is fail-fast, i.e., throwing
+    * CircuitBreakerOpenException
     */
   def verifyConnection: Unit = {
     if (!isConnected) {
@@ -321,15 +321,15 @@ case class CircuitBreaker(
   /**
     * Execute the body block through the CircuitBreaker.
     *
-    * If the state is OPEN, this will throw CircuitBreakerOpenException (fail-fast). The state will move to HALF_OPEN state
-    * after a certain amount of delay, determined by the delayAfterMarkedDead policy.
+    * If the state is OPEN, this will throw CircuitBreakerOpenException (fail-fast). The state will move to HALF_OPEN
+    * state after a certain amount of delay, determined by the delayAfterMarkedDead policy.
     *
-    * If the state is HALF_OPEN, this method allows running the code block once, and if the result is successful,
-    * the state will move to CLOSED. If not, the state will be OPEN again.
+    * If the state is HALF_OPEN, this method allows running the code block once, and if the result is successful, the
+    * state will move to CLOSED. If not, the state will be OPEN again.
     *
-    * If the state is CLOSED, the code block will be executed normally. If the result is marked failure or nonRetryable exception
-    * is thrown, it will report to the failure to the HealthCheckPolicy. If this policy determines the target service is dead,
-    * the circuit will shift to OPEN state to block the future execution.
+    * If the state is CLOSED, the code block will be executed normally. If the result is marked failure or nonRetryable
+    * exception is thrown, it will report to the failure to the HealthCheckPolicy. If this policy determines the target
+    * service is dead, the circuit will shift to OPEN state to block the future execution.
     */
   def run[A: ClassTag](body: => A): A = {
     verifyConnection
