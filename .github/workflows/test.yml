@@ -37,7 +37,7 @@ jobs:
         with:
           java-version: adopt@1.11
       - name: Scala 2.12 test
-        run: ./sbt ++2.12.14 projectJVM/test
+        run: ./sbt ++2.12.15 projectJVM/test
   test_2_13:
     name: Scala 2.13
     runs-on: ubuntu-latest
@@ -98,4 +98,4 @@ jobs:
       - name: Node.js setup
         run: npm install jsdom@16.4.0
       - name: Scala.js test
-        run: JVM_OPTS=-Xmx4g ./sbt ++2.13.5 "; projectJS/test"
+        run: JVM_OPTS=-Xmx4g ./sbt ++2.13.6 "; projectJS/test"
