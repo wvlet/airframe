@@ -21,7 +21,7 @@ val FLUENCY_VERSION                 = "2.6.0"
 val GRPC_VERSION                    = "1.40.1"
 val JMH_VERSION                     = "1.33"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
-val PARQUET_VERSION                 = "1.12.0"
+val PARQUET_VERSION                 = "1.12.1"
 
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
