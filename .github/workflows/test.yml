@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v11
         with:
-          java-version: adopt@1.11
+          java-version: temurin@1.11
       - name: Scala 2.12 test
         run: ./sbt ++2.12.15 projectJVM/test
   test_2_13:
@@ -45,18 +45,18 @@ jobs:
       - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v11
         with:
-          java-version: adopt@1.11
+          java-version: temurin@1.11
       - name: Scala 2.13 test
         run: ./sbt projectJVM/test
   test_2_13_lastet_jdk:
-    name: Scala 2.13 + JDK16
+    name: Scala 2.13 + JDK17
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v11
         with:
-          java-version: adopt@1.16
-      - name: Scala 2.13 + JDK16 test
+          java-version: zulu@1.17
+      - name: Scala 2.13 + JDK17 test
         run: ./sbt projectJVM/test
   test_3:
     name: Scala 3.x (Dotty)
@@ -65,7 +65,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v11
         with:
-          java-version: adopt@1.11
+          java-version: temurin@1.11
       - name: Scala 3.x test
         # Only use a limited number of tests until AirSpec and DI can support Scala 3
         run: DOTTY=true ./sbt "projectDotty/compile; dottyTest/run"
@@ -76,7 +76,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v11
         with:
-          java-version: adopt@1.11
+          java-version: temurin@1.11
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
@@ -91,7 +91,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v11
         with:
-          java-version: adopt@1.11
+          java-version: temurin@1.11
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
