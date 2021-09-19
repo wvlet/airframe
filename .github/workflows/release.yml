@@ -19,7 +19,7 @@ jobs:
       # Install OpenJDK 11
       - uses: olafurpg/setup-scala@v11
         with:
-          java-version: adopt@1.11
+          java-version: zulu@1.11
       - name: Setup GPG
         env:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
