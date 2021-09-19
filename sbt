@@ -216,7 +216,7 @@ getJavaVersion() {
   # but on 9 and 10 it's 9.x.y and 10.x.y.
   if [[ "$str" =~ ^1\.([0-9]+)(\..*)?$ ]]; then
     echo "${BASH_REMATCH[1]}"
-  elif [[ "$str" =~ ^([0-9]+)(\..*)?$ ]]; then
+  elif [[ "$str" =~ ^([0-9]+)(\..*)?(-ea)?$ ]]; then
     echo "${BASH_REMATCH[1]}"
   elif [[ -n "$str" ]]; then
     echoerr "Can't parse java version from: $str"
@@ -259,7 +259,7 @@ default_jvm_opts() {
     else
       echo "$default_jvm_opts_common -XX:+UnlockExperimentalVMOptions -XX:+UseJVMCICompiler"
     fi
-  elif [[ $v -ge 8 && $v -le 17 ]]; then
+  elif [[ $v -ge 8 ]]; then
     echo "$default_jvm_opts_common"
   else
     echo "-XX:MaxPermSize=384m $default_jvm_opts_common"
