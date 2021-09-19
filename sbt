@@ -259,7 +259,7 @@ default_jvm_opts() {
     else
       echo "$default_jvm_opts_common -XX:+UnlockExperimentalVMOptions -XX:+UseJVMCICompiler"
     fi
-  elif [[ $v -ge 8 ]]; then
+  elif [[ $v -ge 8 && $v -le 17 ]]; then
     echo "$default_jvm_opts_common"
   else
     echo "-XX:MaxPermSize=384m $default_jvm_opts_common"
