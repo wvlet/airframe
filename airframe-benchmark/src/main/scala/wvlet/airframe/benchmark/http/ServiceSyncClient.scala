@@ -19,7 +19,7 @@ import wvlet.airframe.http._
 import scala.collection.immutable.Map
 
 class ServiceSyncClient[Req, Resp](private val client: HttpSyncClient[Req, Resp]) extends AutoCloseable {
-  override def close(): Unit = { client.close() }
+  override def close(): Unit               = { client.close() }
   def getClient: HttpSyncClient[Req, Resp] = client
   object Greeter {
     def hello(name: String, requestFilter: Req => Req = identity): String = {

@@ -47,9 +47,9 @@ object HealthCheckPolicy extends LogSupport {
     */
   def alwaysHealthy: HealthCheckPolicy = new HealthCheckPolicy {
     override def isMarkedDead: Boolean = false
-    override def recordSuccess: Unit = {}
-    override def recordFailure: Unit = {}
-    override def recovered: Unit = {}
+    override def recordSuccess: Unit   = {}
+    override def recordFailure: Unit   = {}
+    override def recovered: Unit       = {}
   }
 
   /**

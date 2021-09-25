@@ -19,15 +19,15 @@ import wvlet.log.LogSupport
 
 class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
-  override def result: JSONValue        = null
-  override def isObjectContext: Boolean = false
+  override def result: JSONValue                           = null
+  override def isObjectContext: Boolean                    = false
   override def closeContext(s: JSONSource, end: Int): Unit = {}
-  def add(v: JSONValue): Unit = {}
+  def add(v: JSONValue): Unit                              = {}
 
   override def singleContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
     new JSONValueBuilder {
-      private[this] var holder: JSONValue = _
-      override def isObjectContext        = false
+      private[this] var holder: JSONValue                      = _
+      override def isObjectContext                             = false
       override def closeContext(s: JSONSource, end: Int): Unit = {}
       override def add(v: JSONValue): Unit = {
         holder = v

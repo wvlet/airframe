@@ -28,18 +28,18 @@ object HttpRequestMapperTest extends AirSpec {
 
   @RPC
   trait MyApi {
-    def rpc1(p1: String): Unit = {}
-    def rpc2(p1: String, p2: Int): Unit = {}
-    def rpc3(p1: NestedRequest): Unit = {}
+    def rpc1(p1: String): Unit                    = {}
+    def rpc2(p1: String, p2: Int): Unit           = {}
+    def rpc3(p1: NestedRequest): Unit             = {}
     def rpc4(p1: String, p2: NestedRequest): Unit = {}
-    def rpc5(p1: Option[String]): Unit = {}
-    def rpc6(p1: Option[NestedRequest]): Unit = {}
+    def rpc5(p1: Option[String]): Unit            = {}
+    def rpc6(p1: Option[NestedRequest]): Unit     = {}
     def rpc7(
         request: HttpMessage.Request,
         context: HttpContext[Request, Response, Future],
         req: HttpRequest[Request]
     ): Unit = {}
-    def rpc8(p1: Int): Unit = {}
+    def rpc8(p1: Int): Unit         = {}
     def rpc9(p1: Option[Int]): Unit = {}
   }
 
