@@ -20,7 +20,7 @@ import scala.language.higherKinds
 import scala.collection.immutable.Map
 
 class ServiceClient[F[_], Req, Resp](private val client: HttpClient[F, Req, Resp]) extends AutoCloseable {
-  override def close(): Unit = { client.close() }
+  override def close(): Unit              = { client.close() }
   def getClient: HttpClient[F, Req, Resp] = client
   object Greeter {
     def hello(name: String, requestFilter: Req => Req = identity): F[String] = {

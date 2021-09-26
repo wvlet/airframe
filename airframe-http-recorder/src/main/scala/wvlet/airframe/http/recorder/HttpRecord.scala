@@ -78,8 +78,8 @@ case class HttpRecord(
 }
 
 object HttpRecord extends LogSupport {
-  private[recorder] val headerCodec                               = MessageCodec.of[Seq[(String, String)]]
-  private[recorder] val recordCodec                               = MessageCodec.of[HttpRecord]
+  private[recorder] val headerCodec = MessageCodec.of[Seq[(String, String)]]
+  private[recorder] val recordCodec = MessageCodec.of[HttpRecord]
   private[recorder] def createTableSQL(tableName: String): String =
     // TODO: Add a method to generate this SQL statement in airframe-codec
     s"""create table if not exists "${tableName}" (
