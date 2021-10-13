@@ -888,7 +888,7 @@ def sqlRefLib = { scalaVersion: String =>
   if (scalaVersion.startsWith("2.12")) {
     Seq(
       // Include Spark just as a reference implementation
-      "org.apache.spark" %% "spark-sql" % "3.1.2" % Test,
+      "org.apache.spark" %% "spark-sql" % "3.2.0" % Test,
       // Include Trino as a reference implementation
       "io.trino" % "trino-main" % "363" % Test
     )
