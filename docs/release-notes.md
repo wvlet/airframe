@@ -6,6 +6,45 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.10.0
+
+This is a maintainance release with dependency updates. 
+- JDK17 support
+- Scala 2.12.15 support
+- Scala.js 1.7.1 support 
+
+### Dependency updates
+
+- Update spark-sql to 3.2.0 ([#1874](https://github.com/wvlet/airframe/issues/1874)) [[609081694](https://github.com/wvlet/airframe/commit/609081694)]
+- Update parquet-avro, parquet-hadoop to 1.12.2 ([#1866](https://github.com/wvlet/airframe/issues/1866)) [[9b7e8df58](https://github.com/wvlet/airframe/commit/9b7e8df58)]
+- Update trino-main to 363 ([#1868](https://github.com/wvlet/airframe/issues/1868)) [[cdd767311](https://github.com/wvlet/airframe/commit/cdd767311)]
+- Update sbt-scalajs, scalajs-compiler, ... to 1.7.1 ([#1867](https://github.com/wvlet/airframe/issues/1867)) [[5d58e09a4](https://github.com/wvlet/airframe/commit/5d58e09a4)]
+- Update sbt-scoverage to 1.9.1 ([#1872](https://github.com/wvlet/airframe/issues/1872)) [[275e69ecd](https://github.com/wvlet/airframe/commit/275e69ecd)]
+- Update protobuf-java to 3.18.1 ([#1864](https://github.com/wvlet/airframe/issues/1864)) [[4b048f224](https://github.com/wvlet/airframe/commit/4b048f224)]
+- Update scalafmt-core to 3.0.6 ([#1862](https://github.com/wvlet/airframe/issues/1862)) [[4d75e297e](https://github.com/wvlet/airframe/commit/4d75e297e)]
+- Update auth to 2.17.50 ([#1858](https://github.com/wvlet/airframe/issues/1858)) [[a5747205f](https://github.com/wvlet/airframe/commit/a5747205f)]
+- Update scala-parallel-collections to 1.0.4 ([#1854](https://github.com/wvlet/airframe/issues/1854)) [[804a01858](https://github.com/wvlet/airframe/commit/804a01858)]
+- Update swagger-parser to 2.0.28 ([#1857](https://github.com/wvlet/airframe/issues/1857)) [[1a627d2fe](https://github.com/wvlet/airframe/commit/1a627d2fe)]
+- Update finagle-core, finagle-http, ... to 21.9.0 ([#1859](https://github.com/wvlet/airframe/issues/1859)) [[f5aa039dc](https://github.com/wvlet/airframe/commit/f5aa039dc)]
+- Update scala-parser-combinators to 2.1.0 ([#1853](https://github.com/wvlet/airframe/issues/1853)) [[19f0689f1](https://github.com/wvlet/airframe/commit/19f0689f1)]
+- Update scalafmt-core to 3.0.5 ([#1851](https://github.com/wvlet/airframe/issues/1851)) [[f72f26613](https://github.com/wvlet/airframe/commit/f72f26613)]
+- Update postgresql to 42.2.24 ([#1848](https://github.com/wvlet/airframe/issues/1848)) [[d5e055359](https://github.com/wvlet/airframe/commit/d5e055359)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.41.0 ([#1846](https://github.com/wvlet/airframe/issues/1846)) [[0583a8869](https://github.com/wvlet/airframe/commit/0583a8869)]
+- Update trino-main to 362 ([#1842](https://github.com/wvlet/airframe/issues/1842)) [[f33e5a716](https://github.com/wvlet/airframe/commit/f33e5a716)]
+- Test against JDK17 ([#1841](https://github.com/wvlet/airframe/issues/1841)) [[38b544ca9](https://github.com/wvlet/airframe/commit/38b544ca9)]
+- Update scalafmt-core to 3.0.4 ([#1839](https://github.com/wvlet/airframe/issues/1839)) [[969bff0d9](https://github.com/wvlet/airframe/commit/969bff0d9)]
+- Update sbt-scoverage to 1.9.0 ([#1836](https://github.com/wvlet/airframe/issues/1836)) [[84a57c362](https://github.com/wvlet/airframe/commit/84a57c362)]
+- Update logback-core to 1.2.6 ([#1827](https://github.com/wvlet/airframe/issues/1827)) [[4c429245d](https://github.com/wvlet/airframe/commit/4c429245d)]
+- Update parquet-avro, parquet-hadoop to 1.12.1 ([#1834](https://github.com/wvlet/airframe/issues/1834)) [[037b01166](https://github.com/wvlet/airframe/commit/037b01166)]
+- Update protobuf-java to 3.18.0 ([#1835](https://github.com/wvlet/airframe/issues/1835)) [[9eed688d3](https://github.com/wvlet/airframe/commit/9eed688d3)]
+- Update Scala to 2.12.15 ([#1832](https://github.com/wvlet/airframe/issues/1832)) [[8b97fe6e1](https://github.com/wvlet/airframe/commit/8b97fe6e1)]
+- Update scalafmt-core to 3.0.3 ([#1829](https://github.com/wvlet/airframe/issues/1829)) [[274a9c3fc](https://github.com/wvlet/airframe/commit/274a9c3fc)]
+
+
+### Internal Changes
+
+- sbt-airframe: Build as a sub-folder project ([#1823](https://github.com/wvlet/airframe/issues/1823)) [[bddec856d](https://github.com/wvlet/airframe/commit/bddec856d)]
+
 ## 21.9.0
 
 This is mostly a dependency update release.
