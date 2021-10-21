@@ -43,7 +43,7 @@ jobs:
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
-test_2_13:
+  test_2_13:
     name: Scala 2.13
     runs-on: ubuntu-latest
     steps:
@@ -58,7 +58,7 @@ test_2_13:
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
-test_2_13_lastet_jdk:
+  test_2_13_lastet_jdk:
     name: Scala 2.13 + JDK17
     runs-on: ubuntu-latest
     steps:
@@ -73,7 +73,7 @@ test_2_13_lastet_jdk:
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
-test_3:
+  test_3:
     name: Scala 3.x (Dotty)
     runs-on: ubuntu-latest
     steps:
@@ -89,7 +89,7 @@ test_3:
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
-test_js:
+  test_js:
     name: Scala.js / Scala 2.12
     runs-on: ubuntu-latest
     steps:
