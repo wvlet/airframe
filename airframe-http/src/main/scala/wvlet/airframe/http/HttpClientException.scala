@@ -17,13 +17,13 @@ import java.lang.reflect.InvocationTargetException
 import java.net._
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.{ExecutionException, TimeoutException}
-
 import javax.net.ssl.{SSLException, SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
 import wvlet.airframe.control.{ResultClass, Retry}
 import wvlet.airframe.control.ResultClass.{Failed, Succeeded, nonRetryableFailure, retryableFailure}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.log.LogSupport
 
+import scala.annotation.tailrec
 import scala.language.existentials
 
 /**
@@ -166,7 +166,7 @@ object HttpClientException extends LogSupport {
           nonRetryableFailure(e)
       }
     // Exceptions from Finagle. Using the string class names so as not to include Finagle dependencies.
-    case e: Throwable if finagleRetryableExceptionClasses.contains(e.getClass().getName) =>
+    case e: Throwable if isRetryableFinagleException(e) =>
       retryableFailure(e)
   }
 
@@ -175,6 +175,26 @@ object HttpClientException extends LogSupport {
     "com.twitter.finagle.ReadTimedOutException",
     "com.twitter.finagle.WriteTimedOutException"
   )
+
+  def isRetryableFinagleException(e: Throwable): Boolean = {
+    @tailrec
+    def iter(cl: Any): Boolean = {
+      cl match {
+        case null => false
+        case e: Throwable =>
+          iter(e.getClass)
+        case cl: Class[_] if classOf[Throwable].isAssignableFrom(cl) =>
+          if (finagleRetryableExceptionClasses.contains(cl.getName)) {
+            true
+          } else {
+            // Traverse the parent exception class
+            iter(cl.getSuperclass)
+          }
+        case _ => false
+      }
+    }
+    iter(e)
+  }
 
   def sslExceptionClassifier: PartialFunction[Throwable, Failed] = { case e: SSLException =>
     e match {
