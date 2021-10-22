@@ -36,7 +36,9 @@ object HttpRequestMatcher {
       "content-length", // this can be 0 (or missing)
       "connection",     // Client might set this header
       "user-agent",     // User-agent can be arbitrary
-      "x-http2-"        // Finagle add x-http2- headers
+      "x-http2-",       // Finagle add x-http2- headers
+      "pragma",         // Jersey client may add this header
+      "cache-control"   // cache-control intention is usually unrelated to specifying the resource
     )
 
   def newRequestMatcher(extraHeadersToExclude: Seq[String]): HttpRequestMatcher = {
