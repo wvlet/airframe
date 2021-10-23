@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.surface.{MethodSurface, Parameter, Surface}
+import wvlet.airframe.surface.{MethodSurface, Parameter, Surface, TypeName}
 import wvlet.airframe.http.router.RPCCallContext
 import wvlet.airframe.ulid.ULID
 import wvlet.log.{AsyncHandler, LogFormatter, LogRecord, LogRotationHandler, LogTimestampFormatter}
@@ -150,7 +150,7 @@ object HttpAccessLogWriter {
 
   private[http] def rpcLog(rpcContext: RPCCallContext): ListMap[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
-    m += "rpc_interface" -> rpcContext.rpcInterfaceCls.getName.stripSuffix("$")
+    m += "rpc_interface" -> TypeName.sanitizeTypeName(rpcContext.rpcInterfaceCls.getName)
     m += "rpc_class"     -> rpcContext.rpcMethodSurface.owner.fullName
     m += "rpc_method"    -> rpcContext.rpcMethodSurface.name
 

@@ -15,13 +15,11 @@ package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.{Method, Request, Response}
 import com.twitter.util.Future
-import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.HttpAccessLogWriter.JSONHttpAccessLogWriter
-import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.http._
+import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.surface.secret
-import wvlet.airframe.ulid.ULID
 import wvlet.airspec.AirSpec
 import wvlet.log.Logger
 import wvlet.log.io.IOUtil

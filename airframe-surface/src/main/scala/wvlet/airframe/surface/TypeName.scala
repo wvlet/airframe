@@ -15,7 +15,7 @@ package wvlet.airframe.surface
 
 /**
   */
-private[surface] object TypeName {
+private[airframe] object TypeName {
   def sanitizeTypeName(s: String): String = {
     s.stripSuffix("$").replaceAll("\\.package\\$", ".").replaceAll("\\$+", ".")
   }
