@@ -57,7 +57,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes:Q) {
           case other =>
             other
         }
-        name.stripSuffix("$").replaceAll("\\.package\\$", ".").replaceAll("\\$+", ".")
+        name.toString.stripSuffix("$").replaceAll("\\.package\\$", ".").replaceAll("\\$+", ".")
       }
       t match {
         case a:AppliedType if a.args.nonEmpty =>
