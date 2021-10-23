@@ -200,8 +200,12 @@ private[surface] object SurfaceMacros {
           List.empty
       }
 
+    private def sanitizeTypeName(s: String): String = {
+      s.stripSuffix("$").replaceAll("\\.package\\$", ".").replaceAll("\\$+", ".")
+    }
+
     private def typeNameOf(t: c.Type): String = {
-      t.dealias.typeSymbol.fullName
+      sanitizeTypeName(t.dealias.typeSymbol.fullName)
     }
 
     private def elementTypeOf(t: c.Type): c.Tree = {
@@ -688,7 +692,7 @@ private[surface] object SurfaceMacros {
       * @return
       */
     private def fullTypeNameOf(typeEv: c.Type): String = {
-      typeEv match {
+      val name = typeEv match {
         case TypeRef(prefix, typeSymbol, args) if args.isEmpty =>
           typeSymbol.fullName
         case TypeRef(prefix, typeSymbol, args) if !args.isEmpty =>
@@ -696,6 +700,7 @@ private[surface] object SurfaceMacros {
           s"${typeSymbol.fullName}[${typeArgs}]"
         case _ => typeEv.typeSymbol.fullName
       }
+      sanitizeTypeName(name)
     }
 
     def modifierBitMaskOf(m: MethodSymbol): Int = {

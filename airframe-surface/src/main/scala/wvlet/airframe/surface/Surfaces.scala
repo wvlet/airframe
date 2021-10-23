@@ -276,26 +276,28 @@ class GenericSurface(
     } catch {
       case e: InternalError =>
         // Scala REPL use class name like $line3.$read$$iw$$iw$A, which causes InternalError at getSimpleName
-        rawType.getName
+        TypeName.sanitizeTypeName(rawType.getName)
     }
   }
 
   def name: String = {
     val clsName = TypeName.sanitizeTypeName(getClassName)
-    if (typeArgs.isEmpty) {
+    val s = if (typeArgs.isEmpty) {
       clsName
     } else {
       s"${clsName}[${typeArgs.map(_.name).mkString(",")}]"
     }
+    TypeName.sanitizeTypeName(s)
   }
 
   def fullName: String = {
     val clsName = TypeName.sanitizeTypeName(rawType.getName)
-    if (typeArgs.isEmpty) {
+    val s = if (typeArgs.isEmpty) {
       clsName
     } else {
       s"${clsName}[${typeArgs.map(_.fullName).mkString(",")}]"
     }
+    TypeName.sanitizeTypeName(s)
   }
 
   def isOption: Boolean    = false

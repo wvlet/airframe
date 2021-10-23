@@ -77,11 +77,10 @@ object AsyncClientGenerator extends HttpClientGenerator with LogSupport {
     def serviceBody(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
-          val inputArgs =
-            m.inputParameters
-              .map { x =>
-                s"${x.name}: ${x.surface.fullTypeName}" ++ Seq("requestFilter: Req => Req = identity")
-              }
+          val inputArgs = (m.inputParameters
+            .map { x =>
+              s"${x.name}: ${x.surface.fullTypeName}"
+            }) ++ Seq("requestFilter: Req => Req = identity")
 
           val sendRequestArgs = Seq.newBuilder[String]
           sendRequestArgs += s"""resourcePath = s"${m.path}""""

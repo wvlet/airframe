@@ -13,9 +13,10 @@
  */
 package wvlet.airframe.surface.reflect
 
+import wvlet.airframe.surface.TypeName.sanitizeTypeName
+
 import java.lang.reflect.{Constructor, InvocationTargetException}
 import java.util.concurrent.ConcurrentHashMap
-
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
 
@@ -100,10 +101,6 @@ object ReflectSurfaceFactory extends LogSupport {
 
   def get(name: String): Surface = {
     surfaceCache.getOrElse(name, throw new NoSuchElementException(s"Surface ${name} is not found in cache"))
-  }
-
-  private def sanitizeTypeName(s: String): String = {
-    s.replaceAll("(\\$|\\.package\\$)", ".")
   }
 
   private def typeNameOf(t: ru.Type): String = {
