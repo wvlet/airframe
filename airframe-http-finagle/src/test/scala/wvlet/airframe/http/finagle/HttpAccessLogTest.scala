@@ -15,13 +15,11 @@ package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.{Method, Request, Response}
 import com.twitter.util.Future
-import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.HttpAccessLogWriter.JSONHttpAccessLogWriter
-import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.http._
+import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.surface.secret
-import wvlet.airframe.ulid.ULID
 import wvlet.airspec.AirSpec
 import wvlet.log.Logger
 import wvlet.log.io.IOUtil
@@ -123,8 +121,8 @@ object HttpAccessLogTest extends AirSpec {
 
       // RPC logs
       log.get("rpc_method") shouldBe Some("user")
-      log.get("rpc_interface") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest$MyService")
-      log.get("rpc_class") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest$MyService")
+      log.get("rpc_interface") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest.MyService")
+      log.get("rpc_class") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest.MyService")
       log.get("rpc_args") shouldBe Some(Map("id" -> 1))
     }
 
@@ -242,8 +240,8 @@ object HttpAccessLogTest extends AirSpec {
       log.get("status_code_name") shouldBe Some(HttpStatus.Ok_200.reason)
 
       log.get("rpc_method") shouldBe Some("user")
-      log.get("rpc_interface") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest$MyService")
-      log.get("rpc_class") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest$MyService")
+      log.get("rpc_interface") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest.MyService")
+      log.get("rpc_class") shouldBe Some("wvlet.airframe.http.finagle.HttpAccessLogTest.MyService")
       log.get("rpc_args") shouldBe Some(Map("id" -> 2))
     }
   }

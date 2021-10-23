@@ -47,17 +47,17 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes:Q) {
 
   private def fullTypeNameOf(t:TypeRepr): String = {
       def sanitize(symbol:Symbol): String = {
-        val fullName = symbol.fullName
-        fullName.split("\\.").toList match {
+        val name = symbol.fullName.split("\\.").toList match {
           case "scala" :: "Predef$" :: tail =>
             tail.mkString(".")
           case "scala" :: "collection" :: "immutable" :: tail =>
             tail.mkString(".")
           case "scala" :: nme :: Nil =>
             nme
-          case _ =>
-            fullName.replaceAll("\\$", "")
+          case other =>
+            other
         }
+        name.toString.stripSuffix("$").replaceAll("\\.package\\$", ".").replaceAll("\\$+", ".")
       }
       t match {
         case a:AppliedType if a.args.nonEmpty =>
@@ -131,7 +131,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes:Q) {
   }
 
   private def typeNameOf(t: TypeRepr): String = {
-    t.typeSymbol.fullName
+    t.typeSymbol.fullName.stripSuffix("$").replaceAll("\\.package\\$", ".").replaceAll("\\$+", ".")
   }
 
   private def isTaggedType(t: TypeRepr): Boolean = {

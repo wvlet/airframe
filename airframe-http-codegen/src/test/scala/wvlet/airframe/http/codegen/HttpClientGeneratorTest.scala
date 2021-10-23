@@ -138,4 +138,15 @@ class HttpClientGeneratorTest extends AirSpec {
     debug(classes)
   }
 
+  test("generate clients inside a package object") {
+    val code = HttpCodeGenerator.generate(
+      Router.of[example.service.PkgService],
+      HttpClientGeneratorConfig("example.service:sync")
+    )
+    debug(code)
+
+    code.contains(": example.service.Node") shouldBe true
+    code.contains("example.service.package.Node") shouldBe false
+  }
+
 }

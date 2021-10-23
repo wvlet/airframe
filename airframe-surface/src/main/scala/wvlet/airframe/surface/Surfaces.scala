@@ -201,11 +201,12 @@ case class HigherKindedTypeSurface(
     override val typeArgs: Seq[Surface]
 ) extends GenericSurface(ref.rawType, typeArgs, ref.params, ref.objectFactory) {
   override def toString: String = {
-    if (typeArgs.isEmpty) {
+    val s = if (typeArgs.isEmpty) {
       name
     } else {
       s"${name}[${typeArgs.mkString(",")}]"
     }
+    TypeName.sanitizeTypeName(s)
   }
   override def isAlias: Boolean     = false
   override def isPrimitive: Boolean = ref.isPrimitive
@@ -272,28 +273,32 @@ class GenericSurface(
 ) extends Surface {
   private def getClassName: String = {
     try {
-      rawType.getSimpleName.stripSuffix("$")
+      TypeName.sanitizeTypeName(rawType.getSimpleName)
     } catch {
       case e: InternalError =>
         // Scala REPL use class name like $line3.$read$$iw$$iw$A, which causes InternalError at getSimpleName
-        rawType.getName
+        TypeName.sanitizeTypeName(rawType.getName)
     }
   }
 
   def name: String = {
-    if (typeArgs.isEmpty) {
-      getClassName
+    val clsName = TypeName.sanitizeTypeName(getClassName)
+    val s = if (typeArgs.isEmpty) {
+      clsName
     } else {
-      s"${getClassName}[${typeArgs.map(_.name).mkString(",")}]"
+      s"${clsName}[${typeArgs.map(_.name).mkString(",")}]"
     }
+    TypeName.sanitizeTypeName(s)
   }
 
   def fullName: String = {
-    if (typeArgs.isEmpty) {
-      rawType.getName
+    val clsName = TypeName.sanitizeTypeName(rawType.getName)
+    val s = if (typeArgs.isEmpty) {
+      clsName
     } else {
-      s"${rawType.getName}[${typeArgs.map(_.fullName).mkString(",")}]"
+      s"${clsName}[${typeArgs.map(_.fullName).mkString(",")}]"
     }
+    TypeName.sanitizeTypeName(s)
   }
 
   def isOption: Boolean    = false
@@ -322,11 +327,12 @@ case class LazySurface(rawType: Class[_], fullName: String) extends Surface {
   protected def ref: Surface = wvlet.airframe.surface.getCached(fullName)
 
   def name: String = {
-    if (typeArgs.isEmpty) {
+    val s = if (typeArgs.isEmpty) {
       rawType.getSimpleName
     } else {
       s"${rawType.getSimpleName}[${typeArgs.map(_.name).mkString(",")}]"
     }
+    TypeName.sanitizeTypeName(s)
   }
 
   override def toString: String                     = name

@@ -13,9 +13,10 @@
  */
 package wvlet.airframe.surface.reflect
 
+import wvlet.airframe.surface.TypeName.sanitizeTypeName
+
 import java.lang.reflect.{Constructor, InvocationTargetException}
 import java.util.concurrent.ConcurrentHashMap
-
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
 
@@ -103,7 +104,7 @@ object ReflectSurfaceFactory extends LogSupport {
   }
 
   private def typeNameOf(t: ru.Type): String = {
-    t.dealias.typeSymbol.fullName
+    sanitizeTypeName(t.dealias.typeSymbol.fullName)
   }
 
   private def isTaggedType(t: ru.Type): Boolean = {
@@ -111,7 +112,7 @@ object ReflectSurfaceFactory extends LogSupport {
   }
 
   private[reflect] def fullTypeNameOf(tpe: ru.Type): TypeName = {
-    tpe match {
+    val name = tpe match {
       case t if t.typeArgs.length == 2 && isTaggedType(t) =>
         s"${fullTypeNameOf(t.typeArgs(0))}@@${fullTypeNameOf(t.typeArgs(1))}"
       case alias @ TypeRef(prefix, symbol, args)
@@ -128,6 +129,7 @@ object ReflectSurfaceFactory extends LogSupport {
         s"${typeSymbol.fullName}[${typeArgs}]"
       case _ => tpe.typeSymbol.fullName
     }
+    sanitizeTypeName(name)
   }
 
   def apply(tpe: ru.Type): Surface = {

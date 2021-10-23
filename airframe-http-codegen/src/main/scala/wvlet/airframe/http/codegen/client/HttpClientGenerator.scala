@@ -16,6 +16,7 @@ package wvlet.airframe.http.codegen.client
 import wvlet.airframe.http.codegen.HttpClientIR.{ClientServiceDef, ClientServicePackages, ClientSourceDef}
 import wvlet.airframe.http.codegen.client.ScalaHttpClientGenerator.indent
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 /**
   */
@@ -25,14 +26,14 @@ trait HttpClientGenerator {
   def generate(src: ClientSourceDef): String
 }
 
-object HttpClientGenerator {
+object HttpClientGenerator extends LogSupport {
 
   private[codegen] def fullTypeNameOf(s: Surface): String = {
     s match {
       case p if p.isPrimitive && !p.isAlias =>
         p.name
       case _ =>
-        s.fullName.replaceAll("\\$", ".")
+        s.fullName
     }
   }
 

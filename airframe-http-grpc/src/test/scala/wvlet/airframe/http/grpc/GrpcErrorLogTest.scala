@@ -76,7 +76,7 @@ object GrpcErrorLogTest extends AirSpec {
       log("path") shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/hello"
       log("content_type") shouldBe "application/grpc"
       log("rpc_interface") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
-      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.GrpcErrorLogTest$DemoApiDebug"
+      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.GrpcErrorLogTest.DemoApiDebug"
       log("rpc_method") shouldBe "hello"
       log("rpc_args") shouldBe Map("name" -> "gRPC")
       log.contains("time") shouldBe true
@@ -101,7 +101,7 @@ object GrpcErrorLogTest extends AirSpec {
       log("path") shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/helloClientStreaming"
       log("content_type") shouldBe "application/grpc"
       log("rpc_interface") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
-      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.GrpcErrorLogTest$DemoApiDebug"
+      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.GrpcErrorLogTest.DemoApiDebug"
       log("rpc_method") shouldBe "helloClientStreaming"
       log.get("rpc_args") shouldBe empty
       log.contains("time") shouldBe true
@@ -126,7 +126,7 @@ object GrpcErrorLogTest extends AirSpec {
       log("path") shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/helloBidiStreaming"
       log("content_type") shouldBe "application/grpc"
       log("rpc_interface") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
-      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.GrpcErrorLogTest$DemoApiDebug"
+      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.GrpcErrorLogTest.DemoApiDebug"
       log("rpc_method") shouldBe "helloBidiStreaming"
       log.get("rpc_args") shouldBe empty
       log.contains("time") shouldBe true
