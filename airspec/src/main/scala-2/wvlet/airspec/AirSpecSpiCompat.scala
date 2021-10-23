@@ -27,7 +27,7 @@ private[airspec] trait AirSpecSpiCompat {
   }
 }
 
-class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design) extends wvlet.log.LogSupport {
+class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design) {
   def apply[R](body: => R): Unit = macro AirSpecMacros.test0Impl[R]
   def apply[D1, R](body: D1 => R): Unit = macro AirSpecMacros.test1Impl[D1, R]
   def apply[D1, D2, R](body: (D1, D2) => R): Unit = macro AirSpecMacros.test2Impl[D1, D2, R]
@@ -39,12 +39,17 @@ class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Des
 
 object AirSpecTestBuilder extends wvlet.log.LogSupport {
   implicit class Helper(val v: AirSpecTestBuilder) extends AnyVal {
-
     def addF0[R](r: Surface, body: wvlet.airframe.LazyF0[R]): Unit = {
       v.spec.addLocalTestDef(AirSpecDefF0(v.name, v.design, r, body))
     }
     def addF1[D1, R](d1: Surface, r: Surface, body: D1 => R): Unit = {
-      v.spec.addLocalTestDef(AirSpecDefF1(v.name, v.design, d1, r, body))
+      body match {
+        case f: Seq[_] =>
+          // Workaround for: https://github.com/wvlet/airframe/issues/1845
+          v.spec.addLocalTestDef(AirSpecDefF0(v.name, v.design, r, wvlet.airframe.LazyF0(() => body)))
+        case _ =>
+          v.spec.addLocalTestDef(AirSpecDefF1(v.name, v.design, d1, r, body))
+      }
     }
     def addF2[D1, D2, R](d1: Surface, d2: Surface, r: Surface, body: (D1, D2) => R): Unit = {
       v.spec.addLocalTestDef(AirSpecDefF2(v.name, v.design, d1, d2, r, body))

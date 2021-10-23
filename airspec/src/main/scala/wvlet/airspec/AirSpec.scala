@@ -59,8 +59,9 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
     * Register a new test. If a custom Design is provided, it will be used to populate the arguments of the test body
     * method.
     */
-  protected def test(name: String, design: Design = Design.empty): AirSpecTestBuilder =
+  protected def test(name: String, design: Design = Design.empty): AirSpecTestBuilder = {
     new AirSpecTestBuilder(this, name, design)
+  }
 
   private[airspec] def testDefinitions: Seq[AirSpecDef] = {
     _localTestDefs.reverse
