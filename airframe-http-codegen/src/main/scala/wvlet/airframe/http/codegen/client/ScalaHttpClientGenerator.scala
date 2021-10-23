@@ -14,6 +14,7 @@
 package wvlet.airframe.http.codegen.client
 
 import wvlet.airframe.http.codegen.HttpClientIR.{ClientMethodDef, ClientServiceDef, ClientSourceDef}
+import wvlet.log.LogSupport
 
 /**
   */
@@ -42,7 +43,7 @@ object ScalaHttpClientGenerator {
 
 import ScalaHttpClientGenerator._
 
-object AsyncClientGenerator extends HttpClientGenerator {
+object AsyncClientGenerator extends HttpClientGenerator with LogSupport {
 
   import HttpClientGenerator._
 
@@ -78,7 +79,9 @@ object AsyncClientGenerator extends HttpClientGenerator {
         .map { m =>
           val inputArgs =
             m.inputParameters
-              .map(x => s"${x.name}: ${x.surface.fullTypeName}") ++ Seq("requestFilter: Req => Req = identity")
+              .map { x =>
+                s"${x.name}: ${x.surface.fullTypeName}" ++ Seq("requestFilter: Req => Req = identity")
+              }
 
           val sendRequestArgs = Seq.newBuilder[String]
           sendRequestArgs += s"""resourcePath = s"${m.path}""""

@@ -102,8 +102,12 @@ object ReflectSurfaceFactory extends LogSupport {
     surfaceCache.getOrElse(name, throw new NoSuchElementException(s"Surface ${name} is not found in cache"))
   }
 
+  private def sanitizeTypeName(s: String): String = {
+    s.replaceAll("(\\$|\\.package\\$)", ".")
+  }
+
   private def typeNameOf(t: ru.Type): String = {
-    t.dealias.typeSymbol.fullName
+    sanitizeTypeName(t.dealias.typeSymbol.fullName)
   }
 
   private def isTaggedType(t: ru.Type): Boolean = {
@@ -111,7 +115,7 @@ object ReflectSurfaceFactory extends LogSupport {
   }
 
   private[reflect] def fullTypeNameOf(tpe: ru.Type): TypeName = {
-    tpe match {
+    val name = tpe match {
       case t if t.typeArgs.length == 2 && isTaggedType(t) =>
         s"${fullTypeNameOf(t.typeArgs(0))}@@${fullTypeNameOf(t.typeArgs(1))}"
       case alias @ TypeRef(prefix, symbol, args)
@@ -128,6 +132,7 @@ object ReflectSurfaceFactory extends LogSupport {
         s"${typeSymbol.fullName}[${typeArgs}]"
       case _ => tpe.typeSymbol.fullName
     }
+    sanitizeTypeName(name)
   }
 
   def apply(tpe: ru.Type): Surface = {

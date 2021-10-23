@@ -272,7 +272,7 @@ class GenericSurface(
 ) extends Surface {
   private def getClassName: String = {
     try {
-      rawType.getSimpleName.stripSuffix("$")
+      TypeName.sanitizeTypeName(rawType.getSimpleName)
     } catch {
       case e: InternalError =>
         // Scala REPL use class name like $line3.$read$$iw$$iw$A, which causes InternalError at getSimpleName
@@ -281,18 +281,20 @@ class GenericSurface(
   }
 
   def name: String = {
+    val clsName = TypeName.sanitizeTypeName(getClassName)
     if (typeArgs.isEmpty) {
-      getClassName
+      clsName
     } else {
-      s"${getClassName}[${typeArgs.map(_.name).mkString(",")}]"
+      s"${clsName}[${typeArgs.map(_.name).mkString(",")}]"
     }
   }
 
   def fullName: String = {
+    val clsName = TypeName.sanitizeTypeName(rawType.getName)
     if (typeArgs.isEmpty) {
-      rawType.getName
+      clsName
     } else {
-      s"${rawType.getName}[${typeArgs.map(_.fullName).mkString(",")}]"
+      s"${clsName}[${typeArgs.map(_.fullName).mkString(",")}]"
     }
   }
 
