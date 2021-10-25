@@ -16,6 +16,9 @@ package wvlet.airframe.http
 import wvlet.airframe.http.HttpBackend.DefaultBackend
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 
+import java.time.{Instant, ZoneId, ZoneOffset}
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.language.higherKinds
 
@@ -118,6 +121,17 @@ object Http extends HttpBase {
       .map(_.split(",").map(_.trim).filter(_.nonEmpty).toSeq)
       .getOrElse(Seq.empty)
   }
+
+  private[http] def formatInstant(date: Instant): String = {
+    val HttpDateFormat: DateTimeFormatter =
+      DateTimeFormatter
+        .ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
+        .withLocale(Locale.ENGLISH)
+        .withZone(ZoneId.of("GMT"))
+
+    date.atOffset(ZoneOffset.UTC).format(HttpDateFormat)
+  }
+
 }
 
 /**
