@@ -94,8 +94,8 @@ object Http extends HttpBase {
   }
 
   /**
-    * Create a new server exception that can be used to exit the Endpoint or RPC process.
-    * The content type will be the same with the Accept type
+    * Create a new server exception that can be used to exit the Endpoint or RPC process. The content type will be the
+    * same with the Accept type
     */
   def serverException(request: Request, status: HttpStatus): HttpServerException = {
     val e = new HttpServerException(status)

@@ -17,6 +17,4 @@ import wvlet.airframe.codec.MessageCodecFactory
 
 /**
   */
-trait HttpBase {
-
-}
+trait HttpBase {}
