@@ -22,7 +22,7 @@ import java.util.Locale
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.language.higherKinds
 
-object Http extends HttpBase {
+object Http {
 
   // Aliases for http clients using standard HttpMessage.Request/Response
   type SyncClient  = HttpSyncClient[Request, Response]
