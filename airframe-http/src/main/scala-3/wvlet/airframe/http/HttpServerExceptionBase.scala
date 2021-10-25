@@ -15,7 +15,12 @@ package wvlet.airframe.http
 
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 
-trait HttpServerExceptionBase { self: HttpServerException =>
+trait HttpServerExceptionBase {
+  // WARNING: Using a self reference hits compiler VerifyError https://github.com/lampepfl/dotty/issues/9270
+  // self: HttpServerException =>
+
+  private def self: HttpServerException = this.asInstanceOf[HttpServerException]
+
   inline def withJsonOf[A](a: A): HttpServerException = {
     self.withJson(MessageCodec.of[A].toJson(a))
   }

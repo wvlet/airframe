@@ -134,10 +134,10 @@ object HttpAccessLogWriter {
     findCause(e) match {
       case null =>
       // no-op
-      case se @ HttpServerException(_, cause) =>
+      case se: HttpServerException =>
         // If the cause is provided, record it. Otherwise, recording the status_code is sufficient.
-        if (cause != null) {
-          val rootCause = findCause(cause)
+        if (se.getCause != null) {
+          val rootCause = findCause(se.getCause)
           m += "exception"         -> rootCause
           m += "exception_message" -> rootCause.getMessage
         }

@@ -22,15 +22,15 @@ import java.time.Instant
 /**
   * Exception to report errors to client
   */
-case class HttpServerException(private var response: HttpMessage.Response, cause: Throwable)
-    extends Exception(response.contentString, cause)
+class HttpServerException(val status: HttpStatus, msg: String, cause: Throwable)
+    extends Exception(msg, cause)
     with HttpServerExceptionBase {
-  def this(status: HttpStatus, message: String, cause: Throwable) = this(Http.response(status, message), cause)
-  def this(status: HttpStatus, message: String) = this(status, message, null)
+
+  private var response: HttpMessage.Response = Http.response(status, msg)
+
   def this(status: HttpStatus) = this(status, status.toString, null)
 
-  def status: HttpStatus = response.status
-  def statusCode: Int    = response.statusCode
+  def statusCode: Int = response.statusCode
 
   def toResponse: HttpMessage.Response = response
   def header: HttpMultiMap             = response.header

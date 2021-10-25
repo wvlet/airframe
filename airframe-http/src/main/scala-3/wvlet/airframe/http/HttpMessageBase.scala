@@ -15,7 +15,10 @@ package wvlet.airframe.http
 
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 
-trait HttpMessageBase[Raw] { self: HttpMessage[Raw] =>
+trait HttpMessageBase[Raw] {
+
+  private def self: HttpMessage[Raw] = this.asInstanceOf[HttpMessage[Raw]]
+
   inline def withJsonOf[A](a: A): Raw = {
     self.withJson(MessageCodec.of[A].toJson(a))
   }
