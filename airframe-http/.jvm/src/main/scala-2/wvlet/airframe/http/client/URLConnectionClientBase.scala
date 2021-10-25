@@ -16,7 +16,7 @@ package wvlet.airframe.http.client
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{Http, HttpSyncClient}
+import wvlet.airframe.http.{Http, HttpResponseCodec, HttpSyncClient}
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.airframe.surface.Surface
 
@@ -34,9 +34,10 @@ trait URLConnectionClientBase extends HttpSyncClient[Request, Response] { self: 
       // Can return the response as is
       response.asInstanceOf[A]
     } else {
+      val standardResponseCodec = new HttpResponseCodec[Response]
       // Need a conversion
       val codec   = MessageCodec.of[A]
-      val msgpack = self.responseCodec.toMsgPack(response)
+      val msgpack = standardResponseCodec.toMsgPack(response)
       codec.unpack(msgpack)
     }
   }

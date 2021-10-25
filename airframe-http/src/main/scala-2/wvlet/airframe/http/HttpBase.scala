@@ -27,23 +27,21 @@ trait HttpBase {
     * determined by the Accept header in the request
     *
     * @deprecated(message
-    *   = "use .withContentOf(...) instead", since="21.7.0")
+    * = "use .withContentOf(...) instead", since="21.7.0")
     */
-  def serverException[A](request: HttpRequest[_], status: HttpStatus, content: A): HttpServerException =
-    macro HttpMacros.newServerException[A]
+  def serverException[A](request: HttpRequest[_], status: HttpStatus, content: A): HttpServerException = ???
 
   /**
     * Create a new HttpServerException with a custom content-body in JSON or MsgPack format. The content type will be
     * determined by the Accept header in the request
     *
     * @deprecated(message
-    *   = "use .withContentOf(...) instead", since="21.7.0")
+    * = "use .withContentOf(...) instead", since="21.7.0")
     */
   def serverException[A](
       request: HttpRequest[_],
       status: HttpStatus,
       content: A,
       codecFactory: MessageCodecFactory
-  ): HttpServerException =
-    macro HttpMacros.newServerExceptionWithCodecFactory[A]
+  ): HttpServerException = ???
 }

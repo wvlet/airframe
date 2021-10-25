@@ -75,17 +75,16 @@ trait HttpSyncClient[Req, Resp] extends HttpSyncClientBase[Req, Resp] with AutoC
 
   def sendSafe(req: Req, requestFilter: Req => Req = identity): Resp
 
-  protected val responseCodec = new HttpResponseCodec[Response]
-
   protected def convertAs[A](response: Response, surface: Surface): A = {
     if (classOf[Response].isAssignableFrom(surface.rawType)) {
       // Can return the response as is
       response.asInstanceOf[A]
     } else {
       // Need a conversion
-      val codec   = MessageCodec.ofSurface(surface)
-      val msgpack = responseCodec.toMsgPack(response)
-      val obj     = codec.unpack(msgpack)
+      val standardResponseCodec = new HttpResponseCodec[Response]
+      val codec                 = MessageCodec.ofSurface(surface)
+      val msgpack               = standardResponseCodec.toMsgPack(response)
+      val obj                   = codec.unpack(msgpack)
       obj.asInstanceOf[A]
     }
   }
