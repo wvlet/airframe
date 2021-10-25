@@ -12,15 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
-import java.nio.charset.StandardCharsets
-import java.time.format.DateTimeFormatter
-import java.time.{Instant, ZoneId, ZoneOffset}
-import java.util.Locale
-
-import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, Message, StringMessage}
+import wvlet.airframe.http.Http.formatInstant
+import wvlet.airframe.http.HttpMessage.{Message, StringMessage}
 import wvlet.airframe.msgpack.spi.MsgPack
 
+import java.nio.charset.StandardCharsets
+import java.time.Instant
 import scala.language.experimental.macros
 
 trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
@@ -110,16 +107,6 @@ trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
   def withUserAgent(userAgent: String): Raw             = withHeader(HttpHeader.UserAgent, userAgent)
   def withXForwardedFor(xForwardedFor: String): Raw     = withHeader(HttpHeader.xForwardedFor, xForwardedFor)
   def withXForwardedProto(xForwardedProto: String): Raw = withHeader(HttpHeader.xForwardedProto, xForwardedProto)
-
-  private def formatInstant(date: Instant): String = {
-    val HttpDateFormat: DateTimeFormatter =
-      DateTimeFormatter
-        .ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
-        .withLocale(Locale.ENGLISH)
-        .withZone(ZoneId.of("GMT"))
-
-    date.atOffset(ZoneOffset.UTC).format(HttpDateFormat)
-  }
 
   def isContentTypeJson: Boolean = {
     contentType.exists(_.startsWith("application/json"))

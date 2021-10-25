@@ -13,24 +13,19 @@
  */
 package wvlet.airframe.http.client
 
+import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.control.{Control, IO}
+import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http._
+import wvlet.airframe.surface.Surface
+
 import java.io.{IOException, InputStream, OutputStream}
 import java.net.HttpURLConnection
 import java.util.concurrent.TimeUnit
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
-
-import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
-import wvlet.airframe.control.Retry.RetryContext
-import wvlet.airframe.control.{Control, IO}
-import wvlet.airframe.http.HttpClient.urlEncode
-import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http._
-import wvlet.airframe.http.HttpResponseCodec
-import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
-
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters._
-import scala.reflect.runtime.universe
-import scala.reflect.runtime.universe.TypeTag
 
 case class URLConnectionClientConfig(
     requestFilter: Request => Request = identity,
@@ -45,8 +40,8 @@ case class URLConnectionClientConfig(
 /**
   * Http sync client implementation using URLConnection
   */
-class URLConnectionClient(address: ServerAddress, config: URLConnectionClientConfig)
-    extends HttpSyncClient[Request, Response] {
+class URLConnectionClient(address: ServerAddress, protected val config: URLConnectionClientConfig)
+    extends URLConnectionClientBase {
 
   override def send(
       req: Request,
@@ -141,205 +136,23 @@ class URLConnectionClient(address: ServerAddress, config: URLConnectionClientCon
     }
   }
 
-  private val responseCodec = new HttpResponseCodec[Response]
-
-  private def convert[A: TypeTag](response: Response): A = {
-    if (
-      implicitly[TypeTag[A]] == scala.reflect.runtime.universe
-        .typeTag[Response]
-    ) {
-      // Can return the response as is
-      response.asInstanceOf[A]
-    } else {
-      // Need a conversion
-      val codec   = MessageCodec.of[A]
-      val msgpack = responseCodec.toMsgPack(response)
-      codec.unpack(msgpack)
-    }
-  }
-
-  override def get[Resource: TypeTag](
-      resourcePath: String,
-      requestFilter: Request => Request
-  ): Resource = {
-    convert[Resource](send(Http.request(resourcePath), requestFilter))
-  }
-
-  override def getOps[
-      Resource: TypeTag,
-      OperationResponse: TypeTag
-  ](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request
-  ): OperationResponse = {
-    getResource[Resource, OperationResponse](resourcePath, resource, requestFilter)
-  }
-
-  override def getResource[
-      ResourceRequest: universe.TypeTag,
-      Resource: universe.TypeTag
-  ](
-      resourcePath: String,
-      resourceRequest: ResourceRequest,
-      requestFilter: Request => Request
-  ): Resource = {
-    // Read resource as JSON
-    val resourceRequestJsonValue =
-      config.codecFactory.of[ResourceRequest].toJSONObject(resourceRequest)
-    val queryParams: Seq[String] =
-      resourceRequestJsonValue.v.map {
-        case (k, j @ JSONArray(_)) =>
-          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON array value
-        case (k, j @ JSONObject(_)) =>
-          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON object value
-        case (k, other) =>
-          s"${urlEncode(k)}=${urlEncode(other.toString)}"
-      }
-
-    val r0 = Http.GET(resourcePath)
-    val r = (r0.query, queryParams) match {
-      case (query, queryParams) if query.isEmpty && queryParams.nonEmpty =>
-        r0.withUri(s"${r0.uri}?${queryParams.mkString("&")}")
-      case (query, queryParams) if query.nonEmpty && queryParams.nonEmpty =>
-        r0.withUri(s"${r0.uri}&${queryParams.mkString("&")}")
-      case _ =>
-        r0
-    }
-    convert[Resource](send(r, requestFilter))
-  }
-
-  override def list[OperationResponse: TypeTag](
-      resourcePath: String,
-      requestFilter: Request => Request
-  ): OperationResponse = {
-    convert[OperationResponse](send(Http.request(resourcePath), requestFilter))
-  }
-
-  private def toJson[Resource: TypeTag](resource: Resource): String = {
-    val resourceCodec = config.codecFactory.of[Resource]
-    // TODO: Support non-json content body
-    val json = resourceCodec.toJson(resource)
-    json
-  }
-
-  override def post[Resource: TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request
-  ): Resource = {
-    val r = Http.POST(resourcePath).withJson(toJson(resource))
-    convert[Resource](send(r, requestFilter))
-  }
-
-  override def postRaw[Resource: TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request
-  ): Response = {
-    postOps[Resource, Response](resourcePath, resource, requestFilter)
-  }
-
-  override def postOps[
-      Resource: TypeTag,
-      OperationResponse: TypeTag
-  ](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request
-  ): OperationResponse = {
-    val r = Http.POST(resourcePath).withJson(toJson(resource))
-    convert[OperationResponse](send(r, requestFilter))
-  }
-
-  override def put[Resource: TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request
-  ): Resource = {
-    val r = Http.PUT(resourcePath).withJson(toJson(resource))
-    convert[Resource](send(r, requestFilter))
-  }
-
-  override def putRaw[Resource: TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request
-  ): Response =
-    putOps[Resource, Response](resourcePath, resource, requestFilter)
-
-  override def putOps[
-      Resource: TypeTag,
-      OperationResponse: TypeTag
-  ](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request
-  ): OperationResponse = {
-    val r = Http.PUT(resourcePath).withJson(toJson(resource))
-    convert[OperationResponse](send(r, requestFilter))
-  }
-
-  override def delete[OperationResponse: TypeTag](
-      resourcePath: String,
-      requestFilter: Request => Request
-  ): OperationResponse = {
-    val r = Http.DELETE(resourcePath)
-    convert[OperationResponse](send(r, requestFilter))
-  }
-
-  override def deleteRaw(
-      resourcePath: String,
-      requestFilter: Request => Request
-  ): Response = delete[Response](resourcePath, requestFilter)
-
-  override def deleteOps[
-      Resource: TypeTag,
-      OperationResponse: TypeTag
-  ](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request
-  ): OperationResponse = {
-
-    val r = Http.DELETE(resourcePath).withJson(toJson(resource))
-    convert[OperationResponse](send(r, requestFilter))
-  }
-
-  override def patch[Resource: TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request
-  ): Resource = {
-    val r = Http
-      .POST(resourcePath)
-      .withHeader("X-HTTP-Method-Override", "PATCH")
-      .withJson(toJson(resource))
-    convert[Resource](send(r, requestFilter))
-  }
-
-  override def patchRaw[Resource: TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request
-  ): Response =
-    patchOps[Resource, Response](resourcePath, resource, requestFilter)
-  override def patchOps[
-      Resource: TypeTag,
-      OperationResponse: TypeTag
-  ](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request
-  ): OperationResponse = {
-    // Workaround: URLConnection doesn't support PATCH
-    //https://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch
-    val r = Http
-      .POST(resourcePath)
-      .withHeader("X-HTTP-Method-Override", "PATCH")
-      .withJson(toJson(resource))
-    convert[OperationResponse](send(r, requestFilter))
-  }
-
   override def close(): Unit = {}
+
+  protected def getInternal[Resource](
+      resourcePath: String,
+      requestFilter: Request => Request,
+      resourceSurface: Surface
+  ): Resource = {
+    convertAs[Resource](send(Http.request(resourcePath), requestFilter), resourceSurface)
+  }
+//
+//  protected def getOpsInternal[Resource, OperationResponse](
+//    resourcePath: String,
+//    resource: Resource,
+//    requestFilter: Request => Request
+//  ): OperationResponse = {
+//    getResource[Resource, OperationResponse](resourcePath, resource, requestFilter)
+//  }
+//
+
 }

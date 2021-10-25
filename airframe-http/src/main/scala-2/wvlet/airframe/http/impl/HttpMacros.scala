@@ -19,36 +19,6 @@ import scala.reflect.macros.{blackbox => sm}
 /**
   */
 object HttpMacros {
-  def newServerException[A: c.WeakTypeTag](c: sm.Context)(request: c.Tree, status: c.Tree, content: c.Tree): c.Tree = {
-    import c.universe._
-    val tpe = implicitly[c.WeakTypeTag[A]].tpe
-    q"""{
-          val e = Http.serverException(${status})
-          if (${request}.acceptsMsgPack) {
-            e.withContentTypeMsgPack
-          } else {
-            e
-          }
-          e.withContentOf[${tpe}](${content})
-        }"""
-  }
-
-  def newServerExceptionWithCodecFactory[A: c.WeakTypeTag](
-      c: sm.Context
-  )(request: c.Tree, status: c.Tree, content: c.Tree, codecFactory: c.Tree): c.Tree = {
-    import c.universe._
-    val tpe = implicitly[c.WeakTypeTag[A]].tpe
-    q"""{
-          val e = Http.serverException(${status})
-          if (${request}.acceptsMsgPack) {
-            e.withContentTypeMsgPack
-          } else {
-            e
-          }
-          e.withContentOf[${tpe}](${content}, ${codecFactory})
-        }"""
-  }
-
   def toJsonWithCodecFactory[A: c.WeakTypeTag](c: sm.Context)(a: c.Tree, codecFactory: c.Tree): c.Tree = {
     import c.universe._
 

@@ -13,9 +13,8 @@
  */
 package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.Request
-import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http.{Endpoint, Http, HttpHeader, HttpMessage, HttpStatus, RPC, Router}
+import wvlet.airframe.http._
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
@@ -28,7 +27,7 @@ object ErrorResponseTest extends AirSpec {
   trait MyApp extends LogSupport {
     @Endpoint(path = "/v1/test")
     def errorResponse(req: HttpMessage.Request): String = {
-      throw Http.serverException(req, HttpStatus.BadRequest_400, ErrorResponse(10, "error test"))
+      throw Http.serverException(req, HttpStatus.BadRequest_400).withContentOf(ErrorResponse(10, "error test"))
     }
   }
 
