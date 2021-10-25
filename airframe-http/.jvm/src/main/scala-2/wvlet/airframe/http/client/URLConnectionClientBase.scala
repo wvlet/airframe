@@ -67,28 +67,11 @@ trait URLConnectionClientBase extends HttpSyncClient[Request, Response] { self: 
       requestFilter: Request => Request
   ): Resource = {
     // Read resource as JSON
-    val resourceRequestJsonValue =
+    val resourceRequestJsonValue = {
       self.config.codecFactory.of[ResourceRequest].toJSONObject(resourceRequest)
-    val queryParams: Seq[String] =
-      resourceRequestJsonValue.v.map {
-        case (k, j @ JSONArray(_)) =>
-          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON array value
-        case (k, j @ JSONObject(_)) =>
-          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON object value
-        case (k, other) =>
-          s"${urlEncode(k)}=${urlEncode(other.toString)}"
-      }
-
-    val r0 = Http.GET(resourcePath)
-    val r = (r0.query, queryParams) match {
-      case (query, queryParams) if query.isEmpty && queryParams.nonEmpty =>
-        r0.withUri(s"${r0.uri}?${queryParams.mkString("&")}")
-      case (query, queryParams) if query.nonEmpty && queryParams.nonEmpty =>
-        r0.withUri(s"${r0.uri}&${queryParams.mkString("&")}")
-      case _ =>
-        r0
     }
-    convert[Resource](send(r, requestFilter))
+    val req = buildGETRequest(resourcePath, resourceRequestJsonValue)
+    convert[Resource](send(req, requestFilter))
   }
 
   override def list[OperationResponse: TypeTag](
