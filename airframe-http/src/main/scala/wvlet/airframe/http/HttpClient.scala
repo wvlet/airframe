@@ -15,6 +15,8 @@ package wvlet.airframe.http
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.http.HttpClient.urlEncode
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -72,6 +74,44 @@ trait HttpSyncClient[Req, Resp] extends HttpSyncClientBase[Req, Resp] with AutoC
   def send(req: Req, requestFilter: Req => Req = identity): Resp
 
   def sendSafe(req: Req, requestFilter: Req => Req = identity): Resp
+
+  protected val responseCodec = new HttpResponseCodec[Response]
+
+  protected def convertAs[A](response: Response, surface: Surface): A = {
+    if (classOf[Response].isAssignableFrom(surface.rawType)) {
+      // Can return the response as is
+      response.asInstanceOf[A]
+    } else {
+      // Need a conversion
+      val codec   = MessageCodec.ofSurface(surface)
+      val msgpack = responseCodec.toMsgPack(response)
+      val obj     = codec.unpack(msgpack)
+      obj.asInstanceOf[A]
+    }
+  }
+
+  protected def buildGETRequest(resourcePath: String, requestBody: JSONObject): Request = {
+    val queryParams: Seq[String] =
+      requestBody.v.map {
+        case (k, j @ JSONArray(_)) =>
+          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON array value
+        case (k, j @ JSONObject(_)) =>
+          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON object value
+        case (k, other) =>
+          s"${urlEncode(k)}=${urlEncode(other.toString)}"
+      }
+
+    val r0 = Http.GET(resourcePath)
+    val r = (r0.query, queryParams) match {
+      case (query, queryParams) if query.isEmpty && queryParams.nonEmpty =>
+        r0.withUri(s"${r0.uri}?${queryParams.mkString("&")}")
+      case (query, queryParams) if query.nonEmpty && queryParams.nonEmpty =>
+        r0.withUri(s"${r0.uri}&${queryParams.mkString("&")}")
+      case _ =>
+        r0
+    }
+    r
+  }
 
 }
 

@@ -22,6 +22,7 @@ import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.airframe.surface.Surface
 
 /**
+  * TODO: Fix this
   */
 trait URLConnectionClientBase extends HttpSyncClient[Request, Response] { self: URLConnectionClient =>
 
@@ -52,8 +53,6 @@ trait URLConnectionClientBase extends HttpSyncClient[Request, Response] { self: 
           resource: Resource,
           requestFilter: Request => Request
   ): OperationResponse = {
-
-
     getResource[Resource, OperationResponse](resourcePath, resource, requestFilter)
   }
 

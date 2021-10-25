@@ -18,6 +18,7 @@ import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.{Http, HttpSyncClient}
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
+import wvlet.airframe.surface.Surface
 
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe.TypeTag
@@ -44,7 +45,7 @@ trait URLConnectionClientBase extends HttpSyncClient[Request, Response] { self: 
       resourcePath: String,
       requestFilter: Request => Request
   ): Resource = {
-    convert[Resource](send(Http.request(resourcePath), requestFilter))
+    getInternal[Resource](resourcePath, requestFilter, Surface.of[Resource])
   }
 
   override def getOps[

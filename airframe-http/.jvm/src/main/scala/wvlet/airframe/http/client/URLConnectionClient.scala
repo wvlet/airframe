@@ -13,20 +13,17 @@
  */
 package wvlet.airframe.http.client
 
+import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.control.{Control, IO}
+import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http._
+import wvlet.airframe.surface.Surface
+
 import java.io.{IOException, InputStream, OutputStream}
 import java.net.HttpURLConnection
 import java.util.concurrent.TimeUnit
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
-import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
-import wvlet.airframe.control.Retry.RetryContext
-import wvlet.airframe.control.{Control, IO}
-import wvlet.airframe.http.HttpClient.urlEncode
-import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http._
-import wvlet.airframe.http.HttpResponseCodec
-import wvlet.airframe.json.JSON.{JSONArray, JSONObject, JSONValue}
-import wvlet.airframe.surface.Surface
-
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters._
 
@@ -139,44 +136,23 @@ class URLConnectionClient(address: ServerAddress, protected val config: URLConne
     }
   }
 
-  protected val responseCodec = new HttpResponseCodec[Response]
-
   override def close(): Unit = {}
 
-  protected def convertAs[A](response: Response, surface: Surface): A = {
-    if (classOf[Response].isAssignableFrom(surface.rawType)) {
-      // Can return the response as is
-      response.asInstanceOf[A]
-    } else {
-      // Need a conversion
-      val codec   = MessageCodec.ofSurface(surface)
-      val msgpack = responseCodec.toMsgPack(response)
-      val obj     = codec.unpack(msgpack)
-      obj.asInstanceOf[A]
-    }
+  protected def getInternal[Resource](
+      resourcePath: String,
+      requestFilter: Request => Request,
+      resourceSurface: Surface
+  ): Resource = {
+    convertAs[Resource](send(Http.request(resourcePath), requestFilter), resourceSurface)
   }
-
-  protected def buildGETRequest(resourcePath: String, requestBody: JSONObject): Request = {
-    val queryParams: Seq[String] =
-      requestBody.v.map {
-        case (k, j @ JSONArray(_)) =>
-          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON array value
-        case (k, j @ JSONObject(_)) =>
-          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON object value
-        case (k, other) =>
-          s"${urlEncode(k)}=${urlEncode(other.toString)}"
-      }
-
-    val r0 = Http.GET(resourcePath)
-    val r = (r0.query, queryParams) match {
-      case (query, queryParams) if query.isEmpty && queryParams.nonEmpty =>
-        r0.withUri(s"${r0.uri}?${queryParams.mkString("&")}")
-      case (query, queryParams) if query.nonEmpty && queryParams.nonEmpty =>
-        r0.withUri(s"${r0.uri}&${queryParams.mkString("&")}")
-      case _ =>
-        r0
-    }
-    r
-  }
+//
+//  protected def getOpsInternal[Resource, OperationResponse](
+//    resourcePath: String,
+//    resource: Resource,
+//    requestFilter: Request => Request
+//  ): OperationResponse = {
+//    getResource[Resource, OperationResponse](resourcePath, resource, requestFilter)
+//  }
+//
 
 }
