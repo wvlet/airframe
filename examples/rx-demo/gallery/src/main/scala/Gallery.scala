@@ -17,7 +17,6 @@ import org.scalajs.dom
 import org.scalajs.dom.document
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html.all._
-import wvlet.airframe.rx.html.widget.ui.Browser
 import wvlet.airframe.rx.html.{DOMRenderer, RxCode, RxComponent, RxElement, extractCode, tags}
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
@@ -176,13 +175,26 @@ object Gallery extends LogSupport {
     }
   )
 
+
   def canvasDemo = Example(
     "Canvas",
     extractCode {
-      import wvlet.airframe.rx.html.widget.ui.Canvas
+      case class Canvas2D(canvas: org.scalajs.dom.html.Canvas, context: dom.CanvasRenderingContext2D) extends RxElement {
+        override def render: RxElement = span(canvas)
+      }
+
+      def new2DCanvas(width: Int = 100, height: Int = 100): Canvas2D = {
+        val canvas = dom.document.createElement("canvas").asInstanceOf[org.scalajs.dom.html.Canvas]
+        canvas.width = width
+        canvas.height = height
+        val renderer = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
+        Canvas2D(canvas, renderer)
+      }
+
+      def newCanvas(width: Int = 100, height: Int = 100): Canvas2D = new2DCanvas(width = width, height = height)
 
       // Creating a new canvas
-      val c = Canvas.newCanvas(50, 50)
+      val c = newCanvas(50, 50)
       import c._
       context.fillStyle = "#99CCFF"
       context.fillRect(0, 0, c.canvas.width, c.canvas.height)
@@ -225,7 +237,7 @@ object Gallery extends LogSupport {
   def browserDemo = Example(
     "Browser info",
     extractCode {
-      p(s"Browser url: ${Browser.url}")
+      p(s"Browser url: ${org.scalajs.dom.document.URL}")
     }
   )
 
