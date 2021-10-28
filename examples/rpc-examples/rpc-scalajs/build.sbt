@@ -1,12 +1,12 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val AIRFRAME_VERSION = "21.8.1"
+val AIRFRAME_VERSION = "21.10.0"
 ThisBuild / scalaVersion := "2.13.6"
 
 lazy val rpcExample =
   project
     .in(file("."))
-    .aggregate(apiJVM, apiJS)
+    .aggregate(apiJVM, apiJS, server, ui)
 
 lazy val api =
   crossProject(JVMPlatform, JSPlatform)
