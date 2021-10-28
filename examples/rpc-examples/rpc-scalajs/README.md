@@ -1,10 +1,12 @@
 Hello RPC ScalaJS
 --- 
 
+
 Compile:
 ```
 $ sbt
 > compile
+> ui/fastOptJS
 ```
 
 Start a server:
