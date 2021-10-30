@@ -64,7 +64,7 @@ class JDBCCodecTest extends AirSpec {
             |            """.stripMargin) { rs =>
       // TODO: It seems there is a bug in sqlite-jdbc around date, time, timestamp handling
       val md = rs.getMetaData
-      //(1 to md.getColumnCount).foreach(i => info(s"${md.getColumnType(i)}: ${md.getColumnTypeName(i)}"))
+      // (1 to md.getColumnCount).foreach(i => info(s"${md.getColumnType(i)}: ${md.getColumnTypeName(i)}"))
 
       val codec   = JDBCCodec(rs)
       val msgpack = codec.toMsgPack

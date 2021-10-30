@@ -84,7 +84,7 @@ class SurfaceTest extends SurfaceSpec {
   test("resolve surface from class") {
     pendingUntil("Scala.js doesn't support reflection")
     val a = Surface.of[A]
-    //check(Surface.get(classOf[A]).get, a.toString)
+    // check(Surface.get(classOf[A]).get, a.toString)
   }
 
   test("be equal") {

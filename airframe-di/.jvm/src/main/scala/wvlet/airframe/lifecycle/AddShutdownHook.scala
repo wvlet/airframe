@@ -38,7 +38,7 @@ object AddShutdownHook extends LifeCycleEventHandler {
       }
       // Resetting the logger when all LifeCycleManagers have terminated
       if (shutdownHooks.isEmpty) {
-        //AirframeLogManager.resetFinally
+        // AirframeLogManager.resetFinally
       }
     }
   }

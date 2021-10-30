@@ -85,7 +85,7 @@ object HealthCheckPolicy extends LogSupport {
       private val failureRateEMA = new ExponentialMovingAverage(timeWindowMillis)
 
       override def isMarkedDead: Boolean = {
-        //logger.warn(s"failure rate: ${failureRateEMA.last}, ${failureRate}")
+        // logger.warn(s"failure rate: ${failureRateEMA.last}, ${failureRate}")
         failureRateEMA.last > failureRate
       }
 

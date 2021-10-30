@@ -238,7 +238,7 @@ object ReflectSurfaceFactory extends LogSupport {
     private def nonObject(x: ru.Symbol): Boolean = {
       !x.isImplementationArtifact &&
       !x.isSynthetic &&
-      //!x.isAbstract &&
+      // !x.isAbstract &&
       x.fullName != "scala.Any" &&
       x.fullName != "java.lang.Object"
     }
@@ -547,7 +547,7 @@ object ReflectSurfaceFactory extends LogSupport {
       var index = 0
       val surfaceParams = args.map { arg =>
         val t = arg.name
-        //accessor = { x : Any => x.asInstanceOf[${target.tpe}].${arg.paramName} }
+        // accessor = { x : Any => x.asInstanceOf[${target.tpe}].${arg.paramName} }
         val expr = RuntimeMethodParameter(
           method = ref,
           index = index,

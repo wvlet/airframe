@@ -175,11 +175,11 @@ object Gallery extends LogSupport {
     }
   )
 
-
   def canvasDemo = Example(
     "Canvas",
     extractCode {
-      case class Canvas2D(canvas: org.scalajs.dom.html.Canvas, context: dom.CanvasRenderingContext2D) extends RxElement {
+      case class Canvas2D(canvas: org.scalajs.dom.html.Canvas, context: dom.CanvasRenderingContext2D)
+          extends RxElement {
         override def render: RxElement = span(canvas)
       }
 

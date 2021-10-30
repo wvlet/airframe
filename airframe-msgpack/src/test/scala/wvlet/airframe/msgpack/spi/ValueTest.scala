@@ -44,7 +44,7 @@ class ValueTest extends AirSpec with PropertyCheck {
       v.valueType shouldBe ValueType.INTEGER
       val i  = v.asInstanceOf[IntegerValue]
       val mf = i.mostSuccinctMessageFormat
-      //rankOf(mf) <= rankOf(expectedAtMost) shouldBe true
+      // rankOf(mf) <= rankOf(expectedAtMost) shouldBe true
     } catch {
       case e: Exception => warn(e)
     }

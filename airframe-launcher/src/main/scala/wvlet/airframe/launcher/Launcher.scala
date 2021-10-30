@@ -310,7 +310,7 @@ class CommandLauncher(
         }
         val obj = h.getLastValue
 
-        //val obj       = result.buildObject(c.surface)
+        // val obj       = result.buildObject(c.surface)
         val head      = LauncherInstance(this, obj)
         val nextStack = head :: stack
 

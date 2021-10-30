@@ -79,6 +79,6 @@ object Http_02_ObjectMapping extends App with LogSupport {
       client.get[Response]("/v1/resource/resource_path")
     }
   // Add this code to keep running the server process
-  //server.waitServerTermination
+  // server.waitServerTermination
   }
 }

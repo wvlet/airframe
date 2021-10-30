@@ -105,7 +105,7 @@ private[surface] object SurfaceMacros {
     private def nonObject(x: c.Symbol): Boolean = {
       !x.isImplementationArtifact &&
       !x.isSynthetic &&
-      //!x.isAbstract &&
+      // !x.isAbstract &&
       x.fullName != "scala.Any" &&
       x.fullName != "java.lang.Object"
     }

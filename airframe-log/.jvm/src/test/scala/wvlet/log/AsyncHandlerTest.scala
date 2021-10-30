@@ -69,7 +69,7 @@ class AsyncHandlerTest extends Spec with Timer {
             sl.resetHandler(handler)
 
             // Using a thread manager explicitly because of parallel collection issue of Scala 2.13.0-M4
-            //import CompatParColls.Converters._
+            // import CompatParColls.Converters._
             block("async") {
               withThreadManager { threadManager =>
                 for (i <- (0 until N)) {
@@ -101,7 +101,7 @@ class AsyncHandlerTest extends Spec with Timer {
         }
       }
     val t = result(0) // heavy handler result
-    //t("async").averageWithoutMinMax should be < t("sync").averageWithoutMinMax
+    // t("async").averageWithoutMinMax should be < t("sync").averageWithoutMinMax
   }
 }
 

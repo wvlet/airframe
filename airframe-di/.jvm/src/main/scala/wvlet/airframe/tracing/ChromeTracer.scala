@@ -138,7 +138,7 @@ class ChromeTracer(s: OutputStream) extends Tracer {
             tid = event.threadId
           )
         )
-        //out.println("]")
+        // out.println("]")
         out.flush()
       case _ =>
     }

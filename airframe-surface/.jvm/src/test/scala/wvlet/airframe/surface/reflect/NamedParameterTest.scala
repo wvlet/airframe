@@ -36,7 +36,7 @@ object NamedParameterTest extends AirSpec {
     m.headOption shouldBe defined
 
     val m1 = m.head
-    //info(m1.returnType.getClass())
+    // info(m1.returnType.getClass())
     m1.returnType.toString shouldBe "F[String]"
   }
 }

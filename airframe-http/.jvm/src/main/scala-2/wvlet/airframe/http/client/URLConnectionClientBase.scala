@@ -200,7 +200,7 @@ trait URLConnectionClientBase extends HttpSyncClient[Request, Response] { self: 
       requestFilter: Request => Request
   ): OperationResponse = {
     // Workaround: URLConnection doesn't support PATCH
-    //https://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch
+    // https://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch
     val r = Http
       .POST(resourcePath)
       .withHeader("X-HTTP-Method-Override", "PATCH")

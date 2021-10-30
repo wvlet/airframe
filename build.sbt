@@ -254,21 +254,21 @@ lazy val projectDotty =
       controlJVM,
       // codec uses Scala reflection
       codecJVM,
-      //fluentd,
-      //httpJVM,
-      //// Finagle isn't supporting Scala 3
-      //httpFinagle,
-      //grpc,
-      //jdbc,
-      //jmx,
-      //launcher,
+      // fluentd,
+      // httpJVM,
+      // // Finagle isn't supporting Scala 3
+      // httpFinagle,
+      // grpc,
+      // jdbc,
+      // jmx,
+      // launcher,
       metricsJVM,
       msgpackJVM,
       jsonJVM,
       rxJVM,
       // rx-html uses Scala Macros
-      //rxHtmlJVM,
-      //sql,
+      // rxHtmlJVM,
+      // sql,
       ulidJVM
     )
 
@@ -966,7 +966,7 @@ lazy val rxHtmlJS  = rxHtml.js
 
 lazy val widgetJS =
   project
-    .enablePlugins(ScalaJSPlugin) //, ScalaJSBundlerPlugin)
+    .enablePlugins(ScalaJSPlugin) // , ScalaJSBundlerPlugin)
     .in(file("airframe-rx-widget"))
     .settings(buildSettings)
     .settings(
@@ -1224,7 +1224,7 @@ lazy val airspecRef =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      //airspecBuildSettings,
+      // airspecBuildSettings,
       name        := "airspec-ref",
       description := "A project for referencing airspec for internal testing",
       libraryDependencies += {

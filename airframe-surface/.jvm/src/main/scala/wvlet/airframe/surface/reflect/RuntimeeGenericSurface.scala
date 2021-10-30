@@ -47,7 +47,7 @@ class RuntimeGenericSurface(
         }
       }
     }
-    //private val isStatic = mirror.classSymbol(rawType).isStatic
+    // private val isStatic = mirror.classSymbol(rawType).isStatic
     private def outerInstance: Option[AnyRef] = {
       if (isStatic) {
         None

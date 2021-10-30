@@ -116,9 +116,9 @@ package editor {
 
       def revive(data: UriComponents | Uri): Uri = js.native
 
-      //def revive(data: UriComponents | Uri | Unit): Uri | Unit               = js.native
-      //def revive(data: UriComponents | Uri | Null): Uri | Null               = js.native
-      //def revive(data: UriComponents | Uri | Unit | Null): Uri | Unit | Null = js.native
+      // def revive(data: UriComponents | Uri | Unit): Uri | Unit               = js.native
+      // def revive(data: UriComponents | Uri | Null): Uri | Null               = js.native
+      // def revive(data: UriComponents | Uri | Unit | Null): Uri | Unit | Null = js.native
     }
 
     @js.native
@@ -728,7 +728,7 @@ package editor {
 
       @js.native
       trait IStandaloneCodeEditor extends ICodeEditor {
-        //def updateOptions(newOptions: IEditorOptions with IGlobalEditorOptions): Unit             = js.native
+        // def updateOptions(newOptions: IEditorOptions with IGlobalEditorOptions): Unit             = js.native
         def addCommand(keybinding: Double, handler: ICommandHandler, context: String = ???): String | Null = js.native
 
         def createContextKey[T](key: String, defaultValue: T): IContextKey[T] = js.native
@@ -1723,7 +1723,7 @@ package editor {
 
       @js.native
       trait IComputedEditorOptions extends js.Object {
-        //def get[T <: EditorOption](id: T): FindComputedEditorOptionValueById[T] = js.native
+        // def get[T <: EditorOption](id: T): FindComputedEditorOptionValueById[T] = js.native
       }
 
       @js.native
@@ -2474,10 +2474,10 @@ package editor {
 
         override def getModel(): IEditorModel | Null = js.native
 
-        //def setModel(model: ITextModel | Null): Unit                                                    = js.native
+        // def setModel(model: ITextModel | Null): Unit                                                    = js.native
         def getOptions(): IComputedEditorOptions = js.native
 
-        //def getOption[T <: EditorOption](id: T): FindComputedEditorOptionValueById[T]                   = js.native
+        // def getOption[T <: EditorOption](id: T): FindComputedEditorOptionValueById[T]                   = js.native
         def getRawOptions(): IEditorOptions = js.native
 
         def getValue(options: js.Any = ???): String = js.native
@@ -2577,7 +2577,7 @@ package editor {
 
         override def getModel(): IEditorModel | Null = js.native
 
-        //def setModel(model: IDiffEditorModel | Null): Unit                                     = js.native
+        // def setModel(model: IDiffEditorModel | Null): Unit                                     = js.native
         def getOriginalEditor(): ICodeEditor = js.native
 
         def getModifiedEditor(): ICodeEditor = js.native
@@ -2706,7 +2706,7 @@ package editor {
         type LineNumbersType                   = String | js.Function1[Double, String]
         type InternalSuggestOptions            = ISuggestOptions
         type EditorOptionsType                 = EditorOptions.type
-        //type FindComputedEditorOptionValueById[T <: EditorOption] = ComputedEditorOptionValue[js.Any]
+        // type FindComputedEditorOptionValueById[T <: EditorOption] = ComputedEditorOptionValue[js.Any]
         type IReadOnlyModel = ITextModel
         type IModel         = ITextModel
       }

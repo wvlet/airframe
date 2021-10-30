@@ -63,7 +63,7 @@ trait Asserts { this: AirSpecSpi =>
     throw Ignored(reason, code)
   }
 
-  //protected def pending: Unit = macro AirSpecMacros.pendingImpl
+  // protected def pending: Unit = macro AirSpecMacros.pendingImpl
 
   protected def pendingUntil(reason: String = "pending")(implicit code: SourceCode): Unit = {
     throw Pending(reason, code)

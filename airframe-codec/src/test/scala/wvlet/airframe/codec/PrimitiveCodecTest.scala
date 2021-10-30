@@ -341,7 +341,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
       "13.2",
       "false",
       "true",
-      //"0.2",
+      // "0.2",
       "12345.01",
       "",
       LARGE_VALUE.toString,
@@ -357,7 +357,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(false)
     p.packBoolean(true)
     // Scala.js uses double for float values
-    //p.packFloat(0.2f)
+    // p.packFloat(0.2f)
     p.packDouble(12345.01)
     p.packNil                     // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
@@ -383,7 +383,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
       10,
       100L,
       10.0f,
-      //12345.01,
+      // 12345.01,
       10.toByte,
       12.toShort,
       20.toChar,
@@ -406,7 +406,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
       10L,
       100L,
       10.0,
-      //12345.01,
+      // 12345.01,
       10L,
       12L,
       20L,
