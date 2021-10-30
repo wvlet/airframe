@@ -134,7 +134,7 @@ package object airframe {
     traitFactoryCache.getOrElseUpdate(s, factory)
   }
 
-  //import wvlet.obj.tag._
+  // import wvlet.obj.tag._
   // Automatically add tag
-  //implicit def toTaggedType[A, Tag](obj: A): A @@ Tag = obj.taggedWith[Tag]
+  // implicit def toTaggedType[A, Tag](obj: A): A @@ Tag = obj.taggedWith[Tag]
 }

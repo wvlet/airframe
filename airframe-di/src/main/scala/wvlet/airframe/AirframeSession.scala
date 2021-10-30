@@ -229,7 +229,7 @@ private[airframe] class AirframeSession(
   }
 
   private def findLifeCycleHooksFor(t: Surface): Seq[LifeCycleHookDesign] = {
-    //trace(s"[${name}] findLifeCycleHooksFor ${t}")
+    // trace(s"[${name}] findLifeCycleHooksFor ${t}")
     if (design.hooks.isEmpty) {
       parent.map(_.findLifeCycleHooksFor(t)).getOrElse(Seq.empty)
     } else {
@@ -444,7 +444,7 @@ private[airframe] class AirframeSession(
               trace(s"[${name}] Using pre-compiled factory for ${surface} at ${sourceCode}")
               factory.asInstanceOf[Session => Any](this)
             case None =>
-              //buildWithReflection(t)
+              // buildWithReflection(t)
               warn(
                 s"[${name}] No binding nor the default constructor for ${surface} at ${sourceCode} is found. " +
                   s"Add bind[${surface}].toXXX to your design or make sure ${surface} is not an abstract class. The dependency order: ${seen.reverse

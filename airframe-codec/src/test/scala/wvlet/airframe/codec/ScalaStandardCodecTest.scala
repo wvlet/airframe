@@ -113,7 +113,7 @@ class ScalaStandardCodecTest extends CodecSpec {
           val errorLoc = stackTrace.find(x => x.getFileName.contains("ScalaStandardCodecTest"))
           errorLoc match {
             case Some(x) =>
-            //x.getMethodName.contains("Left") shouldBe true
+            // x.getMethodName.contains("Left") shouldBe true
             case _ =>
               warn(stackTrace.mkString("\n"))
               fail("should not reach here")

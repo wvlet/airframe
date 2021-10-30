@@ -98,5 +98,5 @@ object ZeroTest {
 
   case class ZeroA(i: Int, s: String, b: ZeroB)
   case class ZeroB(f: Float, d: Double)
-  //case class C(i: Int = 10, s: String = "Hello", f: Float = 123.4f, b: B)
+  // case class C(i: Int = 10, s: String = "Hello", f: Float = 123.4f, b: B)
 }

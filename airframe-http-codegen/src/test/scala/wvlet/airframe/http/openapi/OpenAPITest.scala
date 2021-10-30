@@ -492,7 +492,7 @@ class OpenAPITest extends AirSpec {
     )
 
     // For the ease of testing at https://editor.swagger.io/
-    //java.awt.Toolkit.getDefaultToolkit.getSystemClipboard
+    // java.awt.Toolkit.getDefaultToolkit.getSystemClipboard
     //      .setContents(new java.awt.datatransfer.StringSelection(yaml), null)
 
     fragments.foreach { x =>

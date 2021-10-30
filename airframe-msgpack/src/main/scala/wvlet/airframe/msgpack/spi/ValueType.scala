@@ -31,7 +31,7 @@ object ValueType {
   case object MAP       extends ValueType(false, false)
   case object EXTENSION extends ValueType(false, false)
 
-  //abstract class ExtValueType
+  // abstract class ExtValueType
   // Timestamp value should be reported as a first-class value?
   // TODO: But we cannot determine the value type without reading the second or more bytes
 //  sealed trait ExtValueType

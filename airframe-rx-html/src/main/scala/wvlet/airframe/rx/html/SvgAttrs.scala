@@ -18,7 +18,7 @@ package wvlet.airframe.rx.html
   */
 trait SvgAttrs {
 
-  //private def attr(name: String): HtmlAttributeOf = html.attr(name, Namespace.svg)
+  // private def attr(name: String): HtmlAttributeOf = html.attr(name, Namespace.svg)
 
   /**
     * This attribute defines the distance from the origin to the top of accent characters, measured by a distance within

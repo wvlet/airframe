@@ -100,9 +100,9 @@ object ServiceMixinExample {
     *   - Users needs to know the order of constructor arguments
     * -
     */
-  //class FortunePrinterAsClass @Inject ()(printer: Printer, fortune: Fortune) {
+  // class FortunePrinterAsClass @Inject ()(printer: Printer, fortune: Fortune) {
   //    printer.print(fortune.generate)
-  //}
+  // }
 
   class HeavyObject() extends LogSupport {
     debug(f"Heavy Process!!: ${this.hashCode()}%x")
@@ -125,7 +125,7 @@ object ServiceMixinExample {
   }
 
   class ClassWithContext(val c: Session) extends FortunePrinterMixin with LogSupport {
-    //info(s"context ${c}") // we should access context since Scala will remove private field, which is never used
+    // info(s"context ${c}") // we should access context since Scala will remove private field, which is never used
   }
 
   case class HelloConfig(message: String)

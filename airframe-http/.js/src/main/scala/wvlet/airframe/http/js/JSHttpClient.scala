@@ -202,7 +202,7 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
         retryContext.resultClassifier(resp) match {
           case ResultClass.Succeeded =>
             circuitBreaker.recordSuccess
-            //if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304)
+            // if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304)
             promise.success(resp)
           case ResultClass.Failed(isRetryable, cause, extraWait) =>
             circuitBreaker.recordFailure(cause)

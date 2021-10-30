@@ -68,7 +68,7 @@ trait GlobalAttrs {
     *
     * MDN
     */
-  //object data extends DataAttribute(List("data"))
+  // object data extends DataAttribute(List("data"))
 
   def data(suffix: String) = attr("data-" + suffix)
 

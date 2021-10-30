@@ -124,6 +124,6 @@ class MessageFormatTest extends AirSpec with Timer {
     }
 
     // Do not check the performance since on TravisCI performance can be very unstable
-    //t("table").averageWithoutMinMax shouldBe <=(t("switch").averageWithoutMinMax)
+    // t("table").averageWithoutMinMax shouldBe <=(t("switch").averageWithoutMinMax)
   }
 }

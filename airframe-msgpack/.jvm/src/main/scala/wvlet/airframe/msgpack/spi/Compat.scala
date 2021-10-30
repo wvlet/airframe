@@ -35,7 +35,7 @@ object Compat {
 
   def newBufferPacker: BufferPacker = {
     new PureScalaBufferPacker
-    //new BufferPackerImpl(mj.MessagePack.newDefaultBufferPacker())
+    // new BufferPackerImpl(mj.MessagePack.newDefaultBufferPacker())
   }
 
   def newPacker(out: OutputStream): Packer = {
@@ -53,7 +53,7 @@ object Compat {
   }
 
   def newUnpacker(msgpack: Array[Byte], offset: Int, len: Int): Unpacker = {
-    //new UnpackerImpl(mj.MessagePack.newDefaultUnpacker(msgpack, offset, len))
+    // new UnpackerImpl(mj.MessagePack.newDefaultUnpacker(msgpack, offset, len))
     // Use pure-scala unpacker
     new PureScalaBufferUnpacker(ByteArrayBuffer.fromArray(msgpack, offset, len))
   }
