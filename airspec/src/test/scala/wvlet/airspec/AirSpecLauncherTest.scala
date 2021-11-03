@@ -41,5 +41,4 @@ class AirSpecLauncherTest extends AirSpec {
       AirSpecLauncher.main(Array("test", "dummy.NonExistingSpec"))
     }
   }
-
 }

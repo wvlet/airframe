@@ -36,7 +36,15 @@ object F0Spec extends AirSpec {
     Nil
   }
 
+  def fun0: Long => Int = { s: Long =>
+    0
+  }
+
   test("one-arg", design = newDesign.bind[String].toInstance("hello")) { (s: String) =>
     f1.incrementAndGet()
+  }
+
+  test("function return") {
+    fun0
   }
 }

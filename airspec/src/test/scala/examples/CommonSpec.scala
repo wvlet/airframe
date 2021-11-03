@@ -27,7 +27,7 @@ class CommonSpec extends AirSpec {
     fail("test failure")
   }
 
-  test("exceptionTest").apply[Unit] {
+  test("exceptionTest") {
     ignore()
     throw new IllegalArgumentException("invalid argument")
   }
