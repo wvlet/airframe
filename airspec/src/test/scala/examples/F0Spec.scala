@@ -24,10 +24,12 @@ object F0Spec extends AirSpec {
 
   private val f0 = new AtomicInteger(0)
   private val f1 = new AtomicInteger(0)
+  private val f2 = new AtomicInteger(0)
 
   override protected def afterAll: Unit = {
     f0.get() shouldBe 1
     f1.get() shouldBe 1
+    f2.get() shouldBe 1
   }
 
   test("weird one-arg") {
@@ -36,15 +38,21 @@ object F0Spec extends AirSpec {
     Nil
   }
 
-  def fun0: Long => Int = { s: Long =>
-    0
-  }
-
   test("one-arg", design = newDesign.bind[String].toInstance("hello")) { (s: String) =>
     f1.incrementAndGet()
   }
 
-  test("function return") {
-    fun0
+  def fun1: Long => Int = { s: Long =>
+    0
+  }
+
+  test("function return")[Unit] {
+    f2.incrementAndGet()
+    fun1
+  }
+
+  test("returns function")[Unit] {
+    val f = { (i: Int) => s"count ${i}" }
+    f
   }
 }

@@ -210,6 +210,7 @@ As you modify this property file, a background thread automatically reads this l
 
 For more details, see the [documentation](https://wvlet.org/airframe/docs/airframe-log.html) of airframe-log.
 
+
 ## Dependency Injection with Airframe DI
 
 AirSpec can pass shared objects to your test cases by using function arguments.
@@ -333,6 +334,35 @@ class OverrideTest extends AirSpec {
   }
 }
 ```
+
+### FAQs
+
+Q: MissingTestDependency error is shown for a test without any argument block
+
+For example, this test throws an error:
+```scala
+// wvlet.airspec.spi.MissingTestDependency: Failed to call `return a function`. Missing dependency for Int:
+test("return a function") {
+  val f = { (i: Int) => s"count ${i}" }
+  f
+}
+```
+
+This is because the above code is equivalent to having one dependency argument like this:
+```scala
+test("return a function") { (i: Int) =>
+  // ...
+}
+```
+
+Workaround: Specify [Unit] type:
+```scala
+test("return a function")[Unit] {
+  val f = { (i: Int) => s"count ${i}" }
+  f
+}
+```
+
 
 ### Pro Tips
 
