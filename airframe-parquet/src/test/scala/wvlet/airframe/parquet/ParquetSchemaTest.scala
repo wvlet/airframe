@@ -13,13 +13,35 @@
  */
 package wvlet.airframe.parquet
 
+import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
+import org.apache.parquet.schema.Type.Repetition
 import wvlet.airframe.surface.Primitive
+import wvlet.airframe.surface.Primitive.PrimitiveSurface
 import wvlet.airspec.AirSpec
 
 object ParquetSchemaTest extends AirSpec {
-  test("Convert Surface to Parquet type") {
-    val p = ParquetSchema.toParquetType("c1", Primitive.Int)
-    info(p)
+  test("Convert PrimitiveSurface to Parquet type") {
+    def check(surface: PrimitiveSurface, expected: PrimitiveTypeName): Unit = {
+      val p = ParquetSchema.toParquetType("c1", surface)
+      p.getName shouldBe "c1"
+      p.getRepetition shouldBe Repetition.OPTIONAL
+      p.asPrimitiveType().getPrimitiveTypeName shouldBe expected
+    }
 
+    check(Primitive.Short, PrimitiveTypeName.INT32)
+    check(Primitive.Byte, PrimitiveTypeName.INT32)
+    check(Primitive.Int, PrimitiveTypeName.INT32)
+    check(Primitive.Long, PrimitiveTypeName.INT64)
+    check(Primitive.Char, PrimitiveTypeName.BINARY)
+    check(Primitive.String, PrimitiveTypeName.BINARY)
+    check(Primitive.Float, PrimitiveTypeName.FLOAT)
+    check(Primitive.Double, PrimitiveTypeName.DOUBLE)
+    check(Primitive.Boolean, PrimitiveTypeName.BOOLEAN)
+
+    // Non native types
+    check(Primitive.BigInt, PrimitiveTypeName.BINARY)
+    check(Primitive.Unit, PrimitiveTypeName.BINARY)
   }
+
+  test("...") {}
 }

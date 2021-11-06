@@ -16,7 +16,7 @@ package wvlet.airframe.parquet
 import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.Type.Repetition
-import org.apache.parquet.schema.{MessageType, PrimitiveType, Type, Types}
+import org.apache.parquet.schema.{LogicalTypeAnnotation, MessageType, PrimitiveType, Type, Types}
 import org.apache.parquet.schema.Types.{MapBuilder, PrimitiveBuilder}
 import wvlet.airframe.surface.Primitive.PrimitiveSurface
 import wvlet.airframe.surface.{ArraySurface, OptionSurface, Parameter, Primitive, Surface}
@@ -76,14 +76,16 @@ object ParquetSchema {
         val mapType      = Types.map(rep.getOrElse(Repetition.OPTIONAL))
         mapType.key(keyType).value(valueType)
       case s: Surface if s.params.size > 0 =>
-        // regular objec types
+        // e.g., case class objects
         var groupType = Types.buildGroup(rep.getOrElse(Repetition.OPTIONAL))
         for (p <- s.params) {
           groupType = groupType.addField(toParquetType(p.name, p.surface))
         }
         groupType
       case s: Surface =>
-        Types.primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL))
+        // Use MsgPack for other types
+        Types
+          .primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL)).as(LogicalTypeAnnotation.jsonType())
     }
   }
 
