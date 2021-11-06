@@ -15,10 +15,11 @@ package wvlet.airframe.parquet
 
 import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
+import org.apache.parquet.schema.Type.Repetition
 import org.apache.parquet.schema.{MessageType, PrimitiveType, Type, Types}
-import org.apache.parquet.schema.Types.PrimitiveBuilder
+import org.apache.parquet.schema.Types.{MapBuilder, PrimitiveBuilder}
 import wvlet.airframe.surface.Primitive.PrimitiveSurface
-import wvlet.airframe.surface.{OptionSurface, Parameter, Primitive, Surface}
+import wvlet.airframe.surface.{ArraySurface, OptionSurface, Parameter, Primitive, Surface}
 
 import scala.jdk.CollectionConverters._
 
@@ -45,10 +46,10 @@ object ParquetSchema {
 
   private def toParquetPrimitive(
       surface: PrimitiveSurface,
-      rep: Option[Type.Repetition] = None
+      rep: Option[Repetition] = None
   ): PrimitiveBuilder[PrimitiveType] = {
 
-    val repetition = rep.getOrElse(Type.Repetition.OPTIONAL)
+    val repetition = rep.getOrElse(Repetition.OPTIONAL)
     val typeName   = toParquetPrimitiveTypeName(surface)
     surface match {
       case Primitive.String | Primitive.Char =>
@@ -58,45 +59,42 @@ object ParquetSchema {
     }
   }
 
-  def toParquetType(name: String, surface: Surface, rep: Option[Type.Repetition] = None): Type = {
-    val repetition = rep.getOrElse(Type.Repetition.OPTIONAL)
+  def buildParquetType(surface: Surface, rep: Option[Repetition]): Types.Builder[_, _] = {
     surface match {
       case p: PrimitiveSurface =>
-        toParquetPrimitive(p, rep).named(name)
+        toParquetPrimitive(p, rep)
       case o: OptionSurface =>
-        toParquetType(name, o.elementSurface, Some(Type.Repetition.OPTIONAL))
+        buildParquetType(o.elementSurface, Some(Repetition.OPTIONAL))
       case s: Surface if s.isSeq || s.isArray =>
         val elementSurface = s.typeArgs(0)
-        toParquetType(name, elementSurface, Some(Type.Repetition.REPEATED))
+        buildParquetType(elementSurface, Some(Repetition.REPEATED))
       case m: Surface if m.isMap =>
         val keySurface   = m.typeArgs(0)
         val valueSurface = m.typeArgs(1)
-        keySurface match {
-          case p: PrimitiveSurface =>
-            val keyType = toParquetPrimitiveTypeName(p)
-            val mapType = Types.map(rep.getOrElse(Type.Repetition.REPEATED)).key(keyType)
-            valueSurface match {
-              case vp: PrimitiveSurface =>
-                val valueType = toParquetPrimitiveTypeName(vp)
-                mapType.optionalValue(valueType).named(name)
-              case other =>
-                ???
-              // mapType.optionalValue()
-
-            }
-
+        val keyType      = toParquetType("key", keySurface, Some(Repetition.REQUIRED))
+        val valueType    = toParquetType("value", valueSurface, Some(Repetition.REQUIRED))
+        val mapType      = Types.map(rep.getOrElse(Repetition.OPTIONAL))
+        mapType.key(keyType).value(valueType)
+      case s: Surface if s.params.size > 0 =>
+        // regular objec types
+        var groupType = Types.buildGroup(rep.getOrElse(Repetition.OPTIONAL))
+        for (p <- s.params) {
+          groupType = groupType.addField(toParquetType(p.name, p.surface))
         }
-
-      case _ =>
-        // TODO Support Array/Seq/Map types. Just use MsgPack binary here
-        Types.primitive(PrimitiveTypeName.BINARY, repetition).named(name)
+        groupType
+      case s: Surface =>
+        Types.primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL))
     }
+  }
+
+  def toParquetType(name: String, surface: Surface, rep: Option[Repetition] = None): Type = {
+    buildParquetType(surface, rep).named(name).asInstanceOf[Type]
   }
 
   def toParquetSchema(surface: Surface): MessageType = {
 
     def toType(p: Parameter): Type = {
-      toParquetType(p.name, p.surface, if (p.isRequired) Some(Type.Repetition.REQUIRED) else None)
+      toParquetType(p.name, p.surface, if (p.isRequired) Some(Repetition.REQUIRED) else None)
     }
 
     new MessageType(
