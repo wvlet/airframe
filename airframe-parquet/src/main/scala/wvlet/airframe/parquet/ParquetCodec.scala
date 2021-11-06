@@ -36,6 +36,7 @@ import scala.jdk.CollectionConverters._
 
 trait ParquetCodec {
   def write(recordConsumer: RecordConsumer, v: Any): Unit
+  def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit
 }
 
 case class ParameterCodec(index: Int, name: String, param: Parameter, parquetCodec: ParquetCodec)
@@ -70,6 +71,8 @@ class ObjectParquetCodec(paramCodecs: Seq[ParameterCodec], isRoot: Boolean) exte
       }
     }
   }
+
+  override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = ???
 }
 
 /**
@@ -83,10 +86,10 @@ abstract class ParquetCodecBase(tpe: Type, index: Int, protected val codec: Mess
 
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     val msgpack = codec.asInstanceOf[MessageCodec[Any]].toMsgPack(v)
-    writeMsgpack(recordConsumer, msgpack)
+    writeMsgPack(recordConsumer, msgpack)
   }
 
-  def writeMsgpack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
+  def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
     recordConsumer.startField(tpe.getName, index)
     writeValue(recordConsumer, msgpack)
     recordConsumer.endField(tpe.getName, index)
@@ -96,12 +99,12 @@ abstract class ParquetCodecBase(tpe: Type, index: Int, protected val codec: Mess
 abstract class PrimitiveParquetCodec(codec: MessageCodec[_]) extends ParquetCodec {
   protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit
 
-  def write(recordConsumer: RecordConsumer, v: Any): Unit = {
+  override def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     val msgpack = codec.asInstanceOf[MessageCodec[Any]].toMsgPack(v)
-    writeMsgpack(recordConsumer, msgpack)
+    writeMsgPack(recordConsumer, msgpack)
   }
 
-  def writeMsgpack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
+  override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
     writeValue(recordConsumer, msgpack)
   }
 }
@@ -127,14 +130,13 @@ class SeqParquetCodec(elementCodec: ParquetCodec) extends ParquetCodec {
         recordConsumer.addBinary(Binary.fromConstantByteArray(msgpack))
     }
   }
+
+  override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = ???
 }
 
 object ParquetCodec {
 
-  def codecOf(surface: Surface): ParquetCodec = {
-    d
-
-  }
+  def codecOf(surface: Surface): ParquetCodec = ???
 
   private[parquet] def parquetCodecOf(tpe: Type, index: Int, codec: MessageCodec[_]): ParquetCodec = {
     if (tpe.isPrimitive) {

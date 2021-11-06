@@ -175,7 +175,7 @@ class ParquetRecordCodec(schema: MessageType) extends LogSupport {
     def writeColumnValue(columnName: String, v: Value): Unit = {
       parquetCodecTable.get(columnName) match {
         case Some(parquetCodec) =>
-          parquetCodec.writeMsgpack(recordConsumer, v.toMsgpack)
+          parquetCodec.writeMsgPack(recordConsumer, v.toMsgpack)
         case None =>
         // No record. Skip the value
       }
