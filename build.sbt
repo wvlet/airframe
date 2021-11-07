@@ -1,4 +1,3 @@
-import sbt.Keys.libraryDependencies
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
 val SCALA_2_12          = "2.12.15"

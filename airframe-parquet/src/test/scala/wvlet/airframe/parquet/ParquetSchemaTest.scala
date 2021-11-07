@@ -15,11 +15,24 @@ package wvlet.airframe.parquet
 
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.Type.Repetition
-import wvlet.airframe.surface.Primitive
+import wvlet.airframe.surface.{ArraySurface, GenericSurface, OptionSurface, Primitive, Surface}
 import wvlet.airframe.surface.Primitive.PrimitiveSurface
 import wvlet.airspec.AirSpec
 
 object ParquetSchemaTest extends AirSpec {
+
+  private val primitiveTypeMapping = Map(
+    Primitive.Short   -> PrimitiveTypeName.INT32,
+    Primitive.Byte    -> PrimitiveTypeName.INT32,
+    Primitive.Int     -> PrimitiveTypeName.INT32,
+    Primitive.Long    -> PrimitiveTypeName.INT64,
+    Primitive.Char    -> PrimitiveTypeName.BINARY,
+    Primitive.String  -> PrimitiveTypeName.BINARY,
+    Primitive.Float   -> PrimitiveTypeName.FLOAT,
+    Primitive.Double  -> PrimitiveTypeName.DOUBLE,
+    Primitive.Boolean -> PrimitiveTypeName.BOOLEAN
+  )
+
   test("Convert PrimitiveSurface to Parquet type") {
     def check(surface: PrimitiveSurface, expected: PrimitiveTypeName): Unit = {
       val p = ParquetSchema.toParquetType("c1", surface)
@@ -28,20 +41,50 @@ object ParquetSchemaTest extends AirSpec {
       p.asPrimitiveType().getPrimitiveTypeName shouldBe expected
     }
 
-    check(Primitive.Short, PrimitiveTypeName.INT32)
-    check(Primitive.Byte, PrimitiveTypeName.INT32)
-    check(Primitive.Int, PrimitiveTypeName.INT32)
-    check(Primitive.Long, PrimitiveTypeName.INT64)
-    check(Primitive.Char, PrimitiveTypeName.BINARY)
-    check(Primitive.String, PrimitiveTypeName.BINARY)
-    check(Primitive.Float, PrimitiveTypeName.FLOAT)
-    check(Primitive.Double, PrimitiveTypeName.DOUBLE)
-    check(Primitive.Boolean, PrimitiveTypeName.BOOLEAN)
+    // Check for all primitive types
+    for ((surface, tpe) <- primitiveTypeMapping) {
+      check(surface, tpe)
+    }
 
     // Non native types
     check(Primitive.BigInt, PrimitiveTypeName.BINARY)
     check(Primitive.Unit, PrimitiveTypeName.BINARY)
   }
 
-  test("...") {}
+  test("Array type") {
+    for ((surface, tpe) <- primitiveTypeMapping) {
+      val t = ParquetSchema.toParquetType("a1", ArraySurface(classOf[Array[_]], surface))
+      t.getRepetition shouldBe Repetition.REPEATED
+      t.asPrimitiveType().getPrimitiveTypeName shouldBe tpe
+    }
+  }
+
+  test("Seq type") {
+    for ((surface, tpe) <- primitiveTypeMapping) {
+      val t = ParquetSchema.toParquetType("a1", new GenericSurface(classOf[Seq[_]], Seq(surface)))
+      t.getRepetition shouldBe Repetition.REPEATED
+      t.asPrimitiveType().getPrimitiveTypeName shouldBe tpe
+    }
+  }
+
+  test("Option type") {
+    for ((surface, tpe) <- primitiveTypeMapping) {
+      val t = ParquetSchema.toParquetType("c0", OptionSurface(surface.rawType, surface))
+      t.getRepetition shouldBe Repetition.OPTIONAL
+      t.asPrimitiveType().getPrimitiveTypeName shouldBe tpe
+    }
+  }
+
+  test("Map type") {
+    val t = ParquetSchema.toParquetType("m0", Surface.of[Map[String, Int]])
+    t.getRepetition shouldBe Repetition.OPTIONAL
+    val mt = t.asGroupType().getType(0).asGroupType()
+    val kt = mt.getType(0)
+    kt.getRepetition shouldBe Repetition.REQUIRED
+    kt.asPrimitiveType().getPrimitiveTypeName shouldBe PrimitiveTypeName.BINARY
+    val vt = mt.getType(1)
+    vt.getRepetition shouldBe Repetition.REQUIRED
+    vt.asPrimitiveType().getPrimitiveTypeName shouldBe PrimitiveTypeName.INT32
+  }
+
 }

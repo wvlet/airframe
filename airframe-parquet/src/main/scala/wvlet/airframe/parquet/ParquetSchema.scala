@@ -25,6 +25,7 @@ import scala.jdk.CollectionConverters._
 
 object ParquetSchema {
 
+  // Convert surface into primitive
   private def toParquetPrimitiveTypeName(s: PrimitiveSurface): PrimitiveTypeName = {
     s match {
       case Primitive.Int | Primitive.Short | Primitive.Byte =>
