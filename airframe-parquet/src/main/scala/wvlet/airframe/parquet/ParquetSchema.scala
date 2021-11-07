@@ -60,7 +60,7 @@ object ParquetSchema {
     }
   }
 
-  def buildParquetType(surface: Surface, rep: Option[Repetition]): Types.Builder[_, _] = {
+  private def buildParquetType(surface: Surface, rep: Option[Repetition]): Types.Builder[_, _] = {
     surface match {
       case p: PrimitiveSurface =>
         toParquetPrimitive(p, rep)
@@ -80,13 +80,12 @@ object ParquetSchema {
         // e.g., case class objects
         var groupType = Types.buildGroup(rep.getOrElse(Repetition.OPTIONAL))
         for (p <- s.params) {
-          groupType = groupType.addField(toParquetType(p.name, p.surface))
+          groupType = groupType.addField(toParquetType(p.name, p.surface, Some(Repetition.REQUIRED)))
         }
         groupType
       case s: Surface =>
         // Use MsgPack for other types
-        Types
-          .primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL)).as(LogicalTypeAnnotation.jsonType())
+        Types.primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL))
     }
   }
 
@@ -95,11 +94,9 @@ object ParquetSchema {
   }
 
   def toParquetSchema(surface: Surface): MessageType = {
-
     def toType(p: Parameter): Type = {
-      toParquetType(p.name, p.surface, if (p.isRequired) Some(Repetition.REQUIRED) else None)
+      toParquetType(p.name, p.surface, Some(Repetition.REQUIRED))
     }
-
     new MessageType(
       surface.fullName,
       surface.params.map(p => toType(p)).toList.asJava

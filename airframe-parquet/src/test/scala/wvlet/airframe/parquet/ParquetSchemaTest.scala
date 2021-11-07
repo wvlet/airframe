@@ -87,4 +87,24 @@ object ParquetSchemaTest extends AirSpec {
     vt.asPrimitiveType().getPrimitiveTypeName shouldBe PrimitiveTypeName.INT32
   }
 
+  case class A(
+      id: Int,
+      name: String,
+      address: Seq[String],
+      cls: Option[Long],
+      dept: B,
+      refs: Seq[B],
+      metadata: Map[String, Any]
+  )
+
+  case class B(
+      id: Long,
+      name: Boolean
+  )
+
+  test("object type") {
+    val s = ParquetSchema.toParquetSchema(Surface.of[A])
+    info(s)
+  }
+
 }
