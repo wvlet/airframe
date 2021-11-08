@@ -32,14 +32,18 @@ import wvlet.log.LogSupport
 import java.util
 import scala.collection.generic.Growable
 import scala.jdk.CollectionConverters._
-import scala.reflect.runtime.{universe => ru}
 
 object AirframeParquetReader {
 
-  def builder[A: ru.TypeTag](path: String, conf: Configuration, plan: Option[ParquetQueryPlan] = None): Builder[A] = {
+  def builder[A](
+      surface: Surface,
+      path: String,
+      conf: Configuration,
+      plan: Option[ParquetQueryPlan] = None
+  ): Builder[A] = {
     val fsPath  = new Path(path)
     val file    = HadoopInputFile.fromPath(fsPath, conf)
-    val builder = new Builder[A](Surface.of[A], file, plan)
+    val builder = new Builder[A](surface, file, plan)
     builder.withConf(conf).asInstanceOf[Builder[A]]
   }
 

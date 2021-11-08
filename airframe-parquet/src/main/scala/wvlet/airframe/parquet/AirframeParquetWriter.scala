@@ -31,18 +31,16 @@ import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack, Value}
 import wvlet.airframe.surface.{CName, Parameter, Surface}
 import wvlet.log.LogSupport
 
-import scala.reflect.runtime.{universe => ru}
 import scala.jdk.CollectionConverters._
 
 /**
   */
 
 object AirframeParquetWriter extends LogSupport {
-  def builder[A: ru.TypeTag](path: String, conf: Configuration): Builder[A] = {
-    val s      = Surface.of[A]
+  def builder[A](surface: Surface, path: String, conf: Configuration): Builder[A] = {
     val fsPath = new Path(path)
     val file   = HadoopOutputFile.fromPath(fsPath, conf)
-    val b      = new Builder[A](s, file).withConf(conf)
+    val b      = new Builder[A](surface, file).withConf(conf)
     // Use snappy by default
     b.withCompressionCodec(CompressionCodecName.SNAPPY)
       .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
@@ -86,7 +84,7 @@ class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] w
   import scala.jdk.CollectionConverters._
 
   override def init(configuration: Configuration): WriteSupport.WriteContext = {
-    trace(s"schema: ${schema}")
+    trace(s"schema: ${schema}, ${parquetCodec}")
     val extraMetadata: Map[String, String] = Map.empty
     new WriteContext(schema, extraMetadata.asJava)
   }
@@ -101,6 +99,7 @@ class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] w
       recordConsumer.startMessage()
       parquetCodec.foreach { case (param, pc) =>
         val v = param.get(record)
+        debug(s"write: ${v}, ${param}, ${pc}")
         v match {
           case None if param.surface.isOption =>
           // Skip writing Optional parameter

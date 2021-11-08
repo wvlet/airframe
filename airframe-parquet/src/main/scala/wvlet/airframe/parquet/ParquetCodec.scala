@@ -31,6 +31,7 @@ import wvlet.airframe.codec.PrimitiveCodec.{
   ValueCodec
 }
 import wvlet.airframe.surface.{Parameter, Surface}
+import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 
@@ -81,7 +82,7 @@ class ObjectParquetCodec(paramCodecs: Seq[ParameterCodec], isRoot: Boolean) exte
   * @param index
   * @param codec
   */
-abstract class ParquetCodecBase(tpe: Type, index: Int, protected val codec: MessageCodec[_]) {
+abstract class PrimitiveParquetCodec(tpe: Type, index: Int, protected val codec: MessageCodec[_]) extends ParquetCodec {
   protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit
 
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
@@ -96,24 +97,14 @@ abstract class ParquetCodecBase(tpe: Type, index: Int, protected val codec: Mess
   }
 }
 
-abstract class PrimitiveParquetCodec(codec: MessageCodec[_]) extends ParquetCodec {
-  protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit
-
+class SeqParquetCodec(tpe: Type, index: Int, elementCodec: ParquetCodec) extends ParquetCodec with LogSupport {
   override def write(recordConsumer: RecordConsumer, v: Any): Unit = {
-    val msgpack = codec.asInstanceOf[MessageCodec[Any]].toMsgPack(v)
-    writeMsgPack(recordConsumer, msgpack)
-  }
-
-  override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
-    writeValue(recordConsumer, msgpack)
-  }
-}
-
-class SeqParquetCodec(elementCodec: ParquetCodec) extends ParquetCodec {
-  override def write(recordConsumer: RecordConsumer, v: Any): Unit = {
+    info(s"write: ${v}")
+    recordConsumer.startField(tpe.getName, index)
     v match {
       case s: Seq[_] =>
         for (elem <- s) {
+          info(s"write elem: ${elem}")
           elementCodec.write(recordConsumer, elem)
         }
       case a: Array[_] =>
@@ -129,63 +120,70 @@ class SeqParquetCodec(elementCodec: ParquetCodec) extends ParquetCodec {
         val msgpack = AnyCodec.toMsgPack(v)
         recordConsumer.addBinary(Binary.fromConstantByteArray(msgpack))
     }
+    recordConsumer.endField(tpe.getName, index)
   }
 
   override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = ???
 }
 
-object ParquetCodec {
+object ParquetCodec extends LogSupport {
 
   def codecOf(surface: Surface): ParquetCodec = ???
 
   private[parquet] def parquetCodecOf(tpe: Type, index: Int, codec: MessageCodec[_]): ParquetCodec = {
     if (tpe.isPrimitive) {
-      tpe.asPrimitiveType().getPrimitiveTypeName match {
+      val primitiveCodec = tpe.asPrimitiveType().getPrimitiveTypeName match {
         case PrimitiveTypeName.INT32 =>
-          new PrimitiveParquetCodec(codec) {
+          new PrimitiveParquetCodec(tpe, index, codec) {
             override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
               recordConsumer.addInteger(IntCodec.fromMsgPack(msgpack))
             }
           }
         case PrimitiveTypeName.INT64 =>
-          new PrimitiveParquetCodec(codec) {
+          new PrimitiveParquetCodec(tpe, index, codec) {
             override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
               recordConsumer.addLong(LongCodec.fromMsgPack(msgpack))
             }
           }
         case PrimitiveTypeName.BOOLEAN =>
-          new PrimitiveParquetCodec(codec) {
+          new PrimitiveParquetCodec(tpe, index, codec) {
             override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
               recordConsumer.addBoolean(BooleanCodec.fromMsgPack(msgpack))
             }
           }
         case PrimitiveTypeName.FLOAT =>
-          new PrimitiveParquetCodec(codec) {
+          new PrimitiveParquetCodec(tpe, index, codec) {
             override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
               recordConsumer.addFloat(FloatCodec.fromMsgPack(msgpack))
             }
           }
         case PrimitiveTypeName.DOUBLE =>
-          new PrimitiveParquetCodec(codec) {
+          new PrimitiveParquetCodec(tpe, index, codec) {
             override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
               recordConsumer.addDouble(DoubleCodec.fromMsgPack(msgpack))
             }
           }
         case PrimitiveTypeName.BINARY if tpe.getLogicalTypeAnnotation == stringType =>
-          new PrimitiveParquetCodec(codec) {
+          new PrimitiveParquetCodec(tpe, index, codec) {
             override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
               recordConsumer.addBinary(Binary.fromString(StringCodec.fromMsgPack(msgpack)))
             }
           }
         case _ =>
-          new PrimitiveParquetCodec(codec) {
+          new PrimitiveParquetCodec(tpe, index, codec) {
             override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
               recordConsumer.addBinary(Binary.fromConstantByteArray(msgpack))
             }
           }
       }
+      tpe.getRepetition match {
+        case Repetition.REPEATED =>
+          new SeqParquetCodec(tpe, index, primitiveCodec)
+        case _ =>
+          primitiveCodec
+      }
     } else {
-      new PrimitiveParquetCodec(codec) {
+      new PrimitiveParquetCodec(tpe, index, codec) {
         override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
           recordConsumer.addBinary(Binary.fromConstantByteArray(msgpack))
         }

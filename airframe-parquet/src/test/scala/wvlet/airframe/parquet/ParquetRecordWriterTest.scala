@@ -26,6 +26,7 @@ import wvlet.log.io.IOUtil
 object ParquetRecordWriterTest extends AirSpec {
   case class MyRecord(id: Int, name: String)
   private val schema = Parquet.toParquetSchema(Surface.of[MyRecord])
+  info(schema)
 
   test("write generic records with a schema") {
     IOUtil.withTempFile("target/tmp-record", ".parquet") { file =>

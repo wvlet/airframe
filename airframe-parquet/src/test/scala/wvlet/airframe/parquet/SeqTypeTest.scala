@@ -27,7 +27,7 @@ object SeqTypeTest extends AirSpec {
   private val schema = Parquet.toParquetSchema(Surface.of[Contact])
 
   test("seq types") {
-    info(schema)
+    debug(schema)
     schema.getType(0).getName shouldBe "id"
     schema.getType(1).getName shouldBe "address"
     schema.getType(1).isRepetition(Repetition.REPEATED) shouldBe true

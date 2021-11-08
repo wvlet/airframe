@@ -94,7 +94,7 @@ object ParquetSchemaTest extends AirSpec {
       cls: Option[Long],
       dept: B,
       refs: Seq[B],
-      metadata: Map[String, Any]
+      metadata: Map[String, B]
   )
 
   case class B(
@@ -104,7 +104,7 @@ object ParquetSchemaTest extends AirSpec {
 
   test("object type") {
     val s = ParquetSchema.toParquetSchema(Surface.of[A])
-    info(s)
+    debug(s)
   }
 
 }
