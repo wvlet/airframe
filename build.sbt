@@ -786,7 +786,7 @@ lazy val okhttp =
       name        := "airframe-http-okhttp",
       description := "REST API binding for OkHttp",
       libraryDependencies ++= Seq(
-        "com.squareup.okhttp3" % "okhttp" % "3.14.9"
+        "com.squareup.okhttp3" % "okhttp" % "4.9.2"
       )
     )
     .dependsOn(httpJVM, finagle % Test, airspecRefJVM % Test)
