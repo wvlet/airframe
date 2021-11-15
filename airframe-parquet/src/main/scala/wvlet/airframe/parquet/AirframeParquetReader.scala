@@ -96,50 +96,46 @@ class AirframeParquetRecordMaterializer[A](surface: Surface, projectedSchema: Me
 }
 
 object ParquetRecordConverter {
-
-  type Holder = Growable[(String, Any)]
-
-  private class IntConverter(fieldName: String, holder: Holder) extends PrimitiveConverter {
+  private class IntConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
     override def addInt(value: Int): Unit = {
-      holder += fieldName -> value
+      holder.add(fieldName, value)
     }
   }
-  private class LongConverter(fieldName: String, holder: Holder) extends PrimitiveConverter {
+  private class LongConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
     override def addLong(value: Long): Unit = {
-      holder += fieldName -> value
+      holder.add(fieldName, value)
     }
   }
-  private class BooleanConverter(fieldName: String, holder: Holder) extends PrimitiveConverter {
+  private class BooleanConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
     override def addBoolean(value: Boolean): Unit = {
-      holder += fieldName -> value
+      holder.add(fieldName, value)
     }
   }
-  private class StringConverter(fieldName: String, holder: Holder) extends PrimitiveConverter {
+  private class StringConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter with LogSupport {
     override def addBinary(value: Binary): Unit = {
-      holder += fieldName -> value.toStringUsingUTF8
+      holder.add(fieldName, value.toStringUsingUTF8)
     }
   }
-  private class FloatConverter(fieldName: String, holder: Holder) extends PrimitiveConverter {
+  private class FloatConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
     override def addFloat(value: Float): Unit = {
-      holder += fieldName -> value
+      holder.add(fieldName, value)
     }
   }
-  private class DoubleConverter(fieldName: String, holder: Holder) extends PrimitiveConverter {
+  private class DoubleConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
     override def addDouble(value: Double): Unit = {
-      holder += fieldName -> value
+      holder.add(fieldName, value)
     }
   }
-  private class MsgPackConverter(fieldName: String, holder: Holder) extends PrimitiveConverter {
+  private class MsgPackConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
     override def addBinary(value: Binary): Unit = {
-      holder += fieldName -> ValueCodec.fromMsgPack(value.getBytes)
+      holder.add(fieldName, ValueCodec.fromMsgPack(value.getBytes))
     }
   }
-
 }
 
 class ParquetRecordConverter[A](surface: Surface, projectedSchema: MessageType) extends GroupConverter with LogSupport {
-  private val codec        = MessageCodec.ofSurface(surface)
-  private val recordHolder = Map.newBuilder[String, Any]
+  private val codec         = MessageCodec.ofSurface(surface)
+  private val recordBuilder = RecordBuilder.newBuilder
 
   import ParquetRecordConverter._
 
@@ -147,15 +143,15 @@ class ParquetRecordConverter[A](surface: Surface, projectedSchema: MessageType) 
     val cv: Converter = f match {
       case p if p.isPrimitive =>
         p.asPrimitiveType().getPrimitiveTypeName match {
-          case PrimitiveTypeName.INT32   => new IntConverter(f.getName, recordHolder)
-          case PrimitiveTypeName.INT64   => new LongConverter(f.getName, recordHolder)
-          case PrimitiveTypeName.BOOLEAN => new BooleanConverter(f.getName, recordHolder)
-          case PrimitiveTypeName.FLOAT   => new FloatConverter(f.getName, recordHolder)
-          case PrimitiveTypeName.DOUBLE  => new DoubleConverter(f.getName, recordHolder)
+          case PrimitiveTypeName.INT32   => new IntConverter(f.getName, recordBuilder)
+          case PrimitiveTypeName.INT64   => new LongConverter(f.getName, recordBuilder)
+          case PrimitiveTypeName.BOOLEAN => new BooleanConverter(f.getName, recordBuilder)
+          case PrimitiveTypeName.FLOAT   => new FloatConverter(f.getName, recordBuilder)
+          case PrimitiveTypeName.DOUBLE  => new DoubleConverter(f.getName, recordBuilder)
           case PrimitiveTypeName.BINARY if p.getLogicalTypeAnnotation == stringType =>
-            new StringConverter(f.getName, recordHolder)
+            new StringConverter(f.getName, recordBuilder)
           case PrimitiveTypeName.BINARY =>
-            new MsgPackConverter(f.getName, recordHolder)
+            new MsgPackConverter(f.getName, recordBuilder)
           case _ => ???
         }
       case _ =>
@@ -166,7 +162,7 @@ class ParquetRecordConverter[A](surface: Surface, projectedSchema: MessageType) 
   }.toIndexedSeq
 
   def currentRecord: A = {
-    val m = recordHolder.result()
+    val m = recordBuilder.toMap
     trace(m)
     codec.fromMap(m).asInstanceOf[A]
   }
@@ -174,7 +170,7 @@ class ParquetRecordConverter[A](surface: Surface, projectedSchema: MessageType) 
   override def getConverter(fieldIndex: Int): Converter = converters(fieldIndex)
 
   override def start(): Unit = {
-    recordHolder.clear()
+    recordBuilder.clear()
   }
 
   override def end(): Unit = {}

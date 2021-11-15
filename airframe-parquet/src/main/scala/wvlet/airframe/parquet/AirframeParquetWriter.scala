@@ -73,8 +73,8 @@ object AirframeParquetWriter extends LogSupport {
 }
 
 class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] with LogSupport {
-  private val (schema, objectCodec): (MessageType, ObjectParquetCodec) = {
-    ObjectParquetCodec.buildFromSurface(surface)
+  private val (schema, objectCodec): (MessageType, ObjectParquetWriteCodec) = {
+    ObjectParquetWriteCodec.buildFromSurface(surface)
   }
 
   private var recordConsumer: RecordConsumer = null
@@ -128,12 +128,12 @@ class ParquetRecordCodec(schema: MessageType) extends LogSupport {
 
   private val columnNames: IndexedSeq[String] =
     schema.getFields.asScala.map(x => CName.toCanonicalName(x.getName)).toIndexedSeq
-  private val parquetCodecTable: Map[String, ParquetCodec] = {
+  private val parquetCodecTable: Map[String, ParquetWriteCodec] = {
     schema.getFields.asScala.zipWithIndex
       .map { case (f, index) =>
         val cKey = CName.toCanonicalName(f.getName)
-        cKey -> ParquetCodec.parquetCodecOf(f, ValueCodec)
-      }.toMap[String, ParquetCodec]
+        cKey -> ParquetWriteCodec.parquetCodecOf(f, ValueCodec)
+      }.toMap[String, ParquetWriteCodec]
   }
 
   private val anyCodec = MessageCodec.of[Any]

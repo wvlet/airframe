@@ -23,7 +23,7 @@ import wvlet.airframe.codec.PrimitiveCodec.{BooleanCodec, DoubleCodec, FloatCode
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.log.LogSupport
 
-trait ParquetCodec {
+trait ParquetWriteCodec {
   def write(recordConsumer: RecordConsumer, v: Any): Unit
   def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit
 }
@@ -34,7 +34,7 @@ trait ParquetCodec {
   * @param index
   * @param codec
   */
-abstract class PrimitiveParquetCodec(codec: MessageCodec[_]) extends ParquetCodec with LogSupport {
+abstract class PrimitiveParquetCodec(codec: MessageCodec[_]) extends ParquetWriteCodec with LogSupport {
 
   /**
     * The root method for actually writing an input value to the Parquet file
@@ -58,9 +58,9 @@ abstract class PrimitiveParquetCodec(codec: MessageCodec[_]) extends ParquetCode
   }
 }
 
-object ParquetCodec extends LogSupport {
+object ParquetWriteCodec extends LogSupport {
 
-  private[parquet] def parquetCodecOf(tpe: Type, codec: MessageCodec[_]): ParquetCodec = {
+  private[parquet] def parquetCodecOf(tpe: Type, codec: MessageCodec[_]): ParquetWriteCodec = {
     if (tpe.isPrimitive) {
       val primitiveCodec = tpe.asPrimitiveType().getPrimitiveTypeName match {
         case PrimitiveTypeName.INT32 =>
