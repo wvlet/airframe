@@ -73,18 +73,14 @@ object AirframeParquetWriter extends LogSupport {
 }
 
 class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] with LogSupport {
-  private lazy val schema: MessageType = Parquet.toParquetSchema(surface)
-  private val parquetCodec: Seq[(Parameter, ParquetCodec)] =
-    surface.params.zip(schema.getFields.asScala).map { case (param, tpe) =>
-      val codec = MessageCodec.ofSurface(param.surface)
-      (param, ParquetCodec.parquetCodecOf(tpe, param.index, codec))
-    }
+  private val (schema, objectCodec): (MessageType, ObjectParquetCodec) = {
+    ObjectParquetCodec.buildFromSurface(surface)
+  }
 
   private var recordConsumer: RecordConsumer = null
   import scala.jdk.CollectionConverters._
 
   override def init(configuration: Configuration): WriteSupport.WriteContext = {
-    trace(s"schema: ${schema}, ${parquetCodec}")
     val extraMetadata: Map[String, String] = Map.empty
     new WriteContext(schema, extraMetadata.asJava)
   }
@@ -95,21 +91,7 @@ class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] w
 
   override def write(record: A): Unit = {
     require(recordConsumer != null)
-    try {
-      recordConsumer.startMessage()
-      parquetCodec.foreach { case (param, pc) =>
-        val v = param.get(record)
-        debug(s"write: ${v}, ${param}, ${pc}")
-        v match {
-          case None if param.surface.isOption =>
-          // Skip writing Optional parameter
-          case _ =>
-            pc.write(recordConsumer, v)
-        }
-      }
-    } finally {
-      recordConsumer.endMessage()
-    }
+    objectCodec.write(recordConsumer, record)
   }
 }
 
@@ -139,7 +121,7 @@ class AirframeParquetRecordWriterSupport(schema: MessageType) extends WriteSuppo
 }
 
 /**
-  * Ajust any input objects into the shape of the Parquet schema
+  * Adjust any input objects into the shape of the Parquet schema
   * @param schema
   */
 class ParquetRecordCodec(schema: MessageType) extends LogSupport {
