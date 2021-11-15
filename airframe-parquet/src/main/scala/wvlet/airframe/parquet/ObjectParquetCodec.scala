@@ -14,18 +14,30 @@
 package wvlet.airframe.parquet
 
 import org.apache.parquet.io.api.{Binary, RecordConsumer}
+import org.apache.parquet.schema.Type.Repetition
 import org.apache.parquet.schema.{MessageType, Type}
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.codec.PrimitiveCodec.AnyCodec
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.surface.{Parameter, Surface}
 import wvlet.log.LogSupport
+
 import scala.jdk.CollectionConverters._
+
+trait FieldCodec extends LogSupport {
+  def index: Int
+  def name: String
+  def parquetCodec: ParquetCodec
+  // Surface parameter
+  def param: Parameter
+
+  def write(recordConsumer: RecordConsumer, v: Any): Unit
+}
 
 /**
   * A codec for writing an object parameter as a Parquet field
   */
-case class ParameterCodec(index: Int, name: String, param: Parameter, parquetCodec: ParquetCodec) {
+case class ParameterCodec(index: Int, name: String, param: Parameter, parquetCodec: ParquetCodec) extends FieldCodec {
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     try {
       recordConsumer.startField(name, index)
@@ -39,13 +51,18 @@ case class ParameterCodec(index: Int, name: String, param: Parameter, parquetCod
 /**
   * Object parameter codec for Option[X] type. This codec is used for skipping startField() and endField() calls at all
   */
-class OptionParameterCodec(elementCodec: ParameterCodec) extends ParquetCodec {
+class OptionParameterCodec(parameterCodec: ParameterCodec) extends FieldCodec {
+  override def index: Int                 = parameterCodec.index
+  override def name: String               = parameterCodec.name
+  override def parquetCodec: ParquetCodec = parameterCodec.parquetCodec
+  override def param: Parameter           = parameterCodec.param
+
   override def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     v match {
-      case None =>
+      case None | null =>
       // Skip writing Optional parameter
       case _ =>
-        elementCodec.write(recordConsumer, v)
+        parameterCodec.write(recordConsumer, v)
     }
   }
 }
@@ -75,7 +92,7 @@ class SeqParquetCodec(elementCodec: ParquetCodec) extends ParquetCodec with LogS
   override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = ???
 }
 
-case class ObjectParquetCodec(paramCodecs: Seq[ParameterCodec], isRoot: Boolean = false) extends ParquetCodec {
+case class ObjectParquetCodec(paramCodecs: Seq[FieldCodec], isRoot: Boolean = false) extends ParquetCodec {
   def asRoot: ObjectParquetCodec = this.copy(isRoot = true)
 
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
@@ -90,8 +107,11 @@ case class ObjectParquetCodec(paramCodecs: Seq[ParameterCodec], isRoot: Boolean 
         // No output
         case _ =>
           paramCodecs.foreach { p =>
-            val paramValue = p.param.get(v)
-            p.write(recordConsumer, paramValue)
+            p.param.get(v) match {
+              case null =>
+              case paramValue =>
+                p.write(recordConsumer, paramValue)
+            }
           }
       }
     } finally {
@@ -110,8 +130,23 @@ object ObjectParquetCodec {
   def buildFromSurface(surface: Surface): (MessageType, ObjectParquetCodec) = {
     val schema = Parquet.toParquetSchema(surface)
     val paramCodecs = surface.params.zip(schema.getFields.asScala).map { case (param, tpe) =>
-      val codec = MessageCodec.ofSurface(param.surface)
-      ParameterCodec(param.index, param.name, param, ParquetCodec.parquetCodecOf(tpe, codec))
+      // Resolve the element type X of Option[X], Seq[X], etc.
+      val elementSurface = tpe.getRepetition match {
+        case Repetition.OPTIONAL if param.surface.isOption =>
+          param.surface.typeArgs(0)
+        case Repetition.REPEATED if param.surface.typeArgs.length == 1 =>
+          param.surface.typeArgs(0)
+        case _ =>
+          param.surface
+      }
+      val elementCodec = MessageCodec.ofSurface(elementSurface)
+      val pc           = ParameterCodec(param.index, param.name, param, ParquetCodec.parquetCodecOf(tpe, elementCodec))
+      tpe.getRepetition match {
+        case Repetition.OPTIONAL =>
+          new OptionParameterCodec(pc)
+        case _ =>
+          pc
+      }
     }
     (schema, ObjectParquetCodec(paramCodecs).asRoot)
   }

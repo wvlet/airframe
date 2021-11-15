@@ -132,7 +132,7 @@ class ParquetRecordCodec(schema: MessageType) extends LogSupport {
     schema.getFields.asScala.zipWithIndex
       .map { case (f, index) =>
         val cKey = CName.toCanonicalName(f.getName)
-        cKey -> ParquetCodec.parquetCodecOf(f, index, ValueCodec)
+        cKey -> ParquetCodec.parquetCodecOf(f, ValueCodec)
       }.toMap[String, ParquetCodec]
   }
 

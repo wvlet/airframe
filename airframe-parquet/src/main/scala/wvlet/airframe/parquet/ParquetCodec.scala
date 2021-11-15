@@ -34,7 +34,7 @@ trait ParquetCodec {
   * @param index
   * @param codec
   */
-abstract class PrimitiveParquetCodec(codec: MessageCodec[_]) extends ParquetCodec {
+abstract class PrimitiveParquetCodec(codec: MessageCodec[_]) extends ParquetCodec with LogSupport {
 
   /**
     * The root method for actually writing an input value to the Parquet file
@@ -43,12 +43,17 @@ abstract class PrimitiveParquetCodec(codec: MessageCodec[_]) extends ParquetCode
     */
   protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit
 
-  def write(recordConsumer: RecordConsumer, v: Any): Unit = {
-    val msgpack = codec.asInstanceOf[MessageCodec[Any]].toMsgPack(v)
-    writeMsgPack(recordConsumer, msgpack)
+  override def write(recordConsumer: RecordConsumer, v: Any): Unit = {
+    try {
+      val msgpack = codec.asInstanceOf[MessageCodec[Any]].toMsgPack(v)
+      writeMsgPack(recordConsumer, msgpack)
+    } catch {
+      case e: Throwable =>
+        warn(e)
+    }
   }
 
-  def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
+  override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
     writeValue(recordConsumer, msgpack)
   }
 }
@@ -105,8 +110,6 @@ object ParquetCodec extends LogSupport {
       tpe.getRepetition match {
         case Repetition.REPEATED =>
           new SeqParquetCodec(primitiveCodec)
-        case Repetition.OPTIONAL =>
-          new OptionParameterCodec(primitiveCodec)
         case _ =>
           primitiveCodec
       }
