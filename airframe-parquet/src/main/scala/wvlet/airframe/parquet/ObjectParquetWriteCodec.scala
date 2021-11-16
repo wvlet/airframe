@@ -18,7 +18,7 @@ import org.apache.parquet.schema.Type.Repetition
 import org.apache.parquet.schema.{MessageType, Type}
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.codec.PrimitiveCodec.AnyCodec
-import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.airframe.msgpack.spi.{Code, MessagePack, MsgPack}
 import wvlet.airframe.surface.{Parameter, Surface}
 import wvlet.log.LogSupport
 
@@ -29,20 +29,29 @@ trait FieldCodec extends LogSupport {
   def name: String
   def parquetCodec: ParquetWriteCodec
   // Surface parameter
-  def param: Parameter
+  // def param: Parameter
 
   def write(recordConsumer: RecordConsumer, v: Any): Unit
+  def writeMsgPack(recordConsumer: RecordConsumer, v: MsgPack): Unit
 }
 
 /**
   * A codec for writing an object parameter as a Parquet field
   */
-case class ParameterCodec(index: Int, name: String, param: Parameter, parquetCodec: ParquetWriteCodec)
-    extends FieldCodec {
+case class ParameterCodec(index: Int, name: String, parquetCodec: ParquetWriteCodec) extends FieldCodec {
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     try {
       recordConsumer.startField(name, index)
       parquetCodec.write(recordConsumer, v)
+    } finally {
+      recordConsumer.endField(name, index)
+    }
+  }
+
+  def writeMsgPack(recordConsumer: RecordConsumer, v: MsgPack): Unit = {
+    try {
+      recordConsumer.startField(name, index)
+      parquetCodec.writeMsgPack(recordConsumer, v)
     } finally {
       recordConsumer.endField(name, index)
     }
@@ -56,7 +65,6 @@ class OptionParameterCodec(parameterCodec: ParameterCodec) extends FieldCodec {
   override def index: Int                      = parameterCodec.index
   override def name: String                    = parameterCodec.name
   override def parquetCodec: ParquetWriteCodec = parameterCodec.parquetCodec
-  override def param: Parameter                = parameterCodec.param
 
   override def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     v match {
@@ -64,6 +72,12 @@ class OptionParameterCodec(parameterCodec: ParameterCodec) extends FieldCodec {
         parameterCodec.write(recordConsumer, x)
       case _ => // None or null
       // Skip writing Optional parameter
+    }
+  }
+
+  override def writeMsgPack(recordConsumer: RecordConsumer, v: MsgPack): Unit = {
+    if (v != null && (v.length == 1 && v(0) != Code.NIL)) {
+      parameterCodec.writeMsgPack(recordConsumer, v)
     }
   }
 }
@@ -93,7 +107,7 @@ class SeqParquetCodec(elementCodec: ParquetWriteCodec) extends ParquetWriteCodec
   override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = ???
 }
 
-case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], isRoot: Boolean = false)
+case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], params: Seq[Parameter], isRoot: Boolean = false)
     extends ParquetWriteCodec
     with LogSupport {
   def asRoot: ObjectParquetWriteCodec = this.copy(isRoot = true)
@@ -110,12 +124,12 @@ case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], isRoot: Boolean
         case null =>
         // No output
         case _ =>
-          paramCodecs.foreach { p =>
-            p.param.get(v) match {
+          paramCodecs.zip(params).foreach { case (codec, p) =>
+            p.get(v) match {
               case null =>
               case paramValue =>
                 trace(s"Write ${p.name}: ${paramValue}")
-                p.write(recordConsumer, paramValue)
+                codec.write(recordConsumer, paramValue)
             }
           }
       }
@@ -147,7 +161,6 @@ object ObjectParquetWriteCodec {
       val pc = ParameterCodec(
         param.index,
         param.name,
-        param,
         ParquetWriteCodec.parquetCodecOf(tpe, elementSurface, elementCodec)
       )
       tpe.getRepetition match {
@@ -157,6 +170,6 @@ object ObjectParquetWriteCodec {
           pc
       }
     }
-    ObjectParquetWriteCodec(paramCodecs)
+    ObjectParquetWriteCodec(paramCodecs, surface.params)
   }
 }

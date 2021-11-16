@@ -100,6 +100,7 @@ class AirframeParquetRecordWriterSupport(schema: MessageType) extends WriteSuppo
   private var recordConsumer: RecordConsumer = null
 
   override def init(configuration: Configuration): WriteContext = {
+    trace(s"schema: ${schema}")
     new WriteContext(schema, Map.empty[String, String].asJava)
   }
 
@@ -129,12 +130,13 @@ class ParquetRecordCodec(schema: MessageType) extends LogSupport {
 
   private val columnNames: IndexedSeq[String] =
     schema.getFields.asScala.map(x => CName.toCanonicalName(x.getName)).toIndexedSeq
-  private val parquetCodecTable: Map[String, ParquetWriteCodec] = {
+  private val parquetCodecTable: Map[String, ParameterCodec] = {
     schema.getFields.asScala.zipWithIndex
       .map { case (f, index) =>
-        val cKey = CName.toCanonicalName(f.getName)
-        cKey -> ParquetWriteCodec.parquetCodecOf(f, Surface.of[Any], ValueCodec)
-      }.toMap[String, ParquetWriteCodec]
+        val cKey         = CName.toCanonicalName(f.getName)
+        val parquetCodec = ParquetWriteCodec.parquetCodecOf(f, Surface.of[Any], ValueCodec)
+        cKey -> ParameterCodec(index, f.getName, parquetCodec)
+      }.toMap[String, ParameterCodec]
   }
 
   private val anyCodec = MessageCodec.of[Any]
@@ -156,8 +158,8 @@ class ParquetRecordCodec(schema: MessageType) extends LogSupport {
 
     def writeColumnValue(columnName: String, v: Value): Unit = {
       parquetCodecTable.get(columnName) match {
-        case Some(parquetCodec) =>
-          parquetCodec.writeMsgPack(recordConsumer, v.toMsgpack)
+        case Some(parameterCodec) =>
+          parameterCodec.writeMsgPack(recordConsumer, v.toMsgpack)
         case None =>
         // No record. Skip the value
       }
