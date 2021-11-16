@@ -78,13 +78,17 @@ object ParquetSchemaTest extends AirSpec {
   test("Map type") {
     val t = ParquetSchema.toParquetType("m0", Surface.of[Map[String, Int]])
     t.getRepetition shouldBe Repetition.OPTIONAL
-    val mt = t.asGroupType().getType(0).asGroupType()
-    val kt = mt.getType(0)
-    kt.getRepetition shouldBe Repetition.REQUIRED
-    kt.asPrimitiveType().getPrimitiveTypeName shouldBe PrimitiveTypeName.BINARY
-    val vt = mt.getType(1)
-    vt.getRepetition shouldBe Repetition.REQUIRED
-    vt.asPrimitiveType().getPrimitiveTypeName shouldBe PrimitiveTypeName.INT32
+
+    // Use MessagePack type for Map
+    t.asPrimitiveType().getPrimitiveTypeName shouldBe PrimitiveTypeName.BINARY
+//
+//    val mt = t.asGroupType().getType(0).asGroupType()
+//    val kt = mt.getType(0)
+//    kt.getRepetition shouldBe Repetition.REQUIRED
+//    kt.asPrimitiveType().getPrimitiveTypeName shouldBe PrimitiveTypeName.BINARY
+//    val vt = mt.getType(1)
+//    vt.getRepetition shouldBe Repetition.REQUIRED
+//    vt.asPrimitiveType().getPrimitiveTypeName shouldBe PrimitiveTypeName.INT32
   }
 
   case class A(
