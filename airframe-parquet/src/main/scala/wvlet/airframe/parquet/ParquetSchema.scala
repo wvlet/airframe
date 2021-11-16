@@ -20,7 +20,9 @@ import org.apache.parquet.schema.{LogicalTypeAnnotation, MessageType, PrimitiveT
 import org.apache.parquet.schema.Types.{MapBuilder, PrimitiveBuilder}
 import wvlet.airframe.surface.Primitive.PrimitiveSurface
 import wvlet.airframe.surface.{ArraySurface, OptionSurface, Parameter, Primitive, Surface}
+import wvlet.airframe.ulid.ULID
 
+import java.util.UUID
 import scala.jdk.CollectionConverters._
 
 object ParquetSchema {
@@ -69,13 +71,16 @@ object ParquetSchema {
       case s: Surface if s.isSeq || s.isArray =>
         val elementSurface = s.typeArgs(0)
         buildParquetType(elementSurface, Some(Repetition.REPEATED))
-      case m: Surface if m.isMap =>
-        val keySurface   = m.typeArgs(0)
-        val valueSurface = m.typeArgs(1)
-        val keyType      = toParquetType("key", keySurface, Some(Repetition.REQUIRED))
-        val valueType    = toParquetType("value", valueSurface, Some(Repetition.REQUIRED))
-        val mapType      = Types.map(rep.getOrElse(Repetition.OPTIONAL))
-        mapType.key(keyType).value(valueType)
+//      case m: Surface if m.isMap =>
+//        val keySurface   = m.typeArgs(0)
+//        val valueSurface = m.typeArgs(1)
+//        val keyType      = toParquetType("key", keySurface, Some(Repetition.REQUIRED))
+//        val valueType    = toParquetType("value", valueSurface, Some(Repetition.REQUIRED))
+//        val mapType      = Types.map(rep.getOrElse(Repetition.OPTIONAL))
+//        mapType.key(keyType).value(valueType)
+      case s: Surface if s.rawType == classOf[ULID] || s.rawType == classOf[UUID] =>
+        // Use string type for ULID
+        Types.primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL)).as(stringType())
       case s: Surface if s.params.size > 0 =>
         // e.g., case class objects
         var groupType = Types.buildGroup(rep.getOrElse(Repetition.OPTIONAL))

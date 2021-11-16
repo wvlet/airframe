@@ -21,6 +21,7 @@ import org.apache.parquet.schema.Type.Repetition
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.codec.PrimitiveCodec.{BooleanCodec, DoubleCodec, FloatCodec, IntCodec, LongCodec, StringCodec}
 import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 trait ParquetWriteCodec {
@@ -60,7 +61,7 @@ abstract class PrimitiveParquetCodec(codec: MessageCodec[_]) extends ParquetWrit
 
 object ParquetWriteCodec extends LogSupport {
 
-  private[parquet] def parquetCodecOf(tpe: Type, codec: MessageCodec[_]): ParquetWriteCodec = {
+  private[parquet] def parquetCodecOf(tpe: Type, surface: Surface, codec: MessageCodec[_]): ParquetWriteCodec = {
     if (tpe.isPrimitive) {
       val primitiveCodec = tpe.asPrimitiveType().getPrimitiveTypeName match {
         case PrimitiveTypeName.INT32 =>
@@ -114,9 +115,19 @@ object ParquetWriteCodec extends LogSupport {
           primitiveCodec
       }
     } else {
-      new PrimitiveParquetCodec(codec) {
-        override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
-          recordConsumer.addBinary(Binary.fromConstantByteArray(msgpack))
+      if (surface.params.length > 0) {
+        // group type
+        val groupCodec = ObjectParquetWriteCodec.buildFromSurface(surface, Parquet.toParquetSchema(surface))
+        if (tpe.isRepetition(Repetition.REPEATED)) {
+          new SeqParquetCodec(groupCodec)
+        } else {
+          groupCodec
+        }
+      } else {
+        new PrimitiveParquetCodec(codec) {
+          override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
+            recordConsumer.addBinary(Binary.fromConstantByteArray(msgpack))
+          }
         }
       }
     }

@@ -60,10 +60,10 @@ class OptionParameterCodec(parameterCodec: ParameterCodec) extends FieldCodec {
 
   override def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     v match {
-      case None | null =>
+      case Some(x) =>
+        parameterCodec.write(recordConsumer, x)
+      case _ => // None or null
       // Skip writing Optional parameter
-      case _ =>
-        parameterCodec.write(recordConsumer, v)
     }
   }
 }
@@ -93,11 +93,14 @@ class SeqParquetCodec(elementCodec: ParquetWriteCodec) extends ParquetWriteCodec
   override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = ???
 }
 
-case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], isRoot: Boolean = false) extends ParquetWriteCodec {
+case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], isRoot: Boolean = false)
+    extends ParquetWriteCodec
+    with LogSupport {
   def asRoot: ObjectParquetWriteCodec = this.copy(isRoot = true)
 
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     try {
+      debug(s"Write object: ${v}")
       if (isRoot) {
         recordConsumer.startMessage()
       } else {
@@ -108,6 +111,7 @@ case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], isRoot: Boolean
         // No output
         case _ =>
           paramCodecs.foreach { p =>
+            debug(s"Write ${p.name}")
             p.param.get(v) match {
               case null =>
               case paramValue =>
@@ -128,8 +132,7 @@ case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], isRoot: Boolean
 }
 
 object ObjectParquetWriteCodec {
-  def buildFromSurface(surface: Surface): (MessageType, ObjectParquetWriteCodec) = {
-    val schema = Parquet.toParquetSchema(surface)
+  def buildFromSurface(surface: Surface, schema: MessageType): ObjectParquetWriteCodec = {
     val paramCodecs = surface.params.zip(schema.getFields.asScala).map { case (param, tpe) =>
       // Resolve the element type X of Option[X], Seq[X], etc.
       val elementSurface = tpe.getRepetition match {
@@ -141,7 +144,12 @@ object ObjectParquetWriteCodec {
           param.surface
       }
       val elementCodec = MessageCodec.ofSurface(elementSurface)
-      val pc = ParameterCodec(param.index, param.name, param, ParquetWriteCodec.parquetCodecOf(tpe, elementCodec))
+      val pc = ParameterCodec(
+        param.index,
+        param.name,
+        param,
+        ParquetWriteCodec.parquetCodecOf(tpe, elementSurface, elementCodec)
+      )
       tpe.getRepetition match {
         case Repetition.OPTIONAL =>
           new OptionParameterCodec(pc)
@@ -149,6 +157,6 @@ object ObjectParquetWriteCodec {
           pc
       }
     }
-    (schema, ObjectParquetWriteCodec(paramCodecs).asRoot)
+    ObjectParquetWriteCodec(paramCodecs)
   }
 }
