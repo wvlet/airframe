@@ -29,7 +29,9 @@ trait Surface extends Serializable {
   def isOption: Boolean
   def isAlias: Boolean
   def isPrimitive: Boolean
-  def isSeq: Boolean = classOf[Seq[_]].isAssignableFrom(rawType)
+  def isSeq: Boolean   = classOf[Seq[_]].isAssignableFrom(rawType)
+  def isMap: Boolean   = classOf[Map[_, _]].isAssignableFrom(rawType)
+  def isArray: Boolean = this.isInstanceOf[ArraySurface]
 
   def objectFactory: Option[ObjectFactory] = None
   def withOuter(outer: AnyRef): Surface    = this

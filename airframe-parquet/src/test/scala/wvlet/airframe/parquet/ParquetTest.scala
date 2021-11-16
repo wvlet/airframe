@@ -107,7 +107,9 @@ object ParquetTest extends AirSpec {
       createdAt: Instant = Instant.now(),
       updatedAt: Option[Instant] = Some(Instant.now().plusMillis(1000)),
       finishedAt: Option[Instant] = None,
-      nested: Seq[MyEntry] = Seq(e1, e2)
+      nested: MyEntry = e1,
+      nestedOpt: Option[MyEntry] = Some(e1),
+      nestedList: Seq[MyEntry] = Seq(e1, e2)
   )
   val d1 = MyData()
   val d2 = MyData()
