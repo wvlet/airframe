@@ -83,7 +83,6 @@ class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] w
 
   override def init(configuration: Configuration): WriteSupport.WriteContext = {
     val extraMetadata: Map[String, String] = Map.empty
-    debug(s"schema: ${schema}")
     new WriteContext(schema, extraMetadata.asJava)
   }
 

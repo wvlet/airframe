@@ -155,8 +155,20 @@ class ParquetRecordConverter[A](surface: Surface, projectedSchema: MessageType) 
           case _ => ???
         }
       case _ =>
-        // TODO Support nested types
-        ???
+        // GroupConverter for nested objects
+
+        surface.params.find(_.name == f.getName) match {
+          case Some(param) =>
+            if (param.surface.isOption || param.surface.isSeq || param.surface.isArray) {
+              // For Option[X], Seq[X] types, extract X
+              val elementSurface = param.surface.typeArgs(0)
+              new ParquetRecordConverter(param.surface, ParquetSchema.toParquetSchema(elementSurface))
+            } else {
+              new ParquetRecordConverter(param.surface, ParquetSchema.toParquetSchema(param.surface))
+            }
+          case None =>
+            ???
+        }
     }
     cv
   }.toIndexedSeq

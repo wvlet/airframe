@@ -100,7 +100,7 @@ case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], isRoot: Boolean
 
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     try {
-      debug(s"Write object: ${v}")
+      trace(s"Write object: ${v}")
       if (isRoot) {
         recordConsumer.startMessage()
       } else {
@@ -111,10 +111,10 @@ case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], isRoot: Boolean
         // No output
         case _ =>
           paramCodecs.foreach { p =>
-            debug(s"Write ${p.name}")
             p.param.get(v) match {
               case null =>
               case paramValue =>
+                trace(s"Write ${p.name}: ${paramValue}")
                 p.write(recordConsumer, paramValue)
             }
           }
