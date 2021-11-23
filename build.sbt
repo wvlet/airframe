@@ -908,7 +908,7 @@ lazy val parquet =
         "org.apache.hadoop"  % "hadoop-client"  % "3.3.1" % Provided,
         // For S3 support
         "org.apache.hadoop"      % "hadoop-aws" % "3.3.1"   % Provided,
-        "software.amazon.awssdk" % "auth"       % "2.17.50" % Provided,
+        "software.amazon.awssdk" % "auth"       % "2.17.88" % Provided,
         // For Apple Silicon (M1)
         "org.xerial.snappy"  % "snappy-java"  % "1.1.8.4",
         "org.slf4j"          % "slf4j-jdk14"  % SLF4J_VERSION   % Optional,
