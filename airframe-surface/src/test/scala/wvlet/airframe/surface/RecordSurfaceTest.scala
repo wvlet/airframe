@@ -17,10 +17,19 @@ import wvlet.airspec.AirSpec
 
 class RecordSurfaceTest extends AirSpec {
   test("build custom surface") {
+    val p1 = RecordParameter(0, "p1", Primitive.Int)
+    val p2 = RecordParameter(1, "p2", Primitive.String)
+    val p3 = RecordParameter(2, "p3", OptionSurface(classOf[Option[Long]], Primitive.Long))
     val s = RecordSurface
       .newSurface("myrecord")
-      .addParam(RecordParameter(0, "p1", Primitive.Int))
+      .addParam(p1)
+      .addParam(p2)
+      .addParam(p3)
 
-    debug(s)
+    s.typeArgs shouldBe empty
+    s.params.length shouldBe 3
+    s.params(0) shouldBe p1
+    s.params(1) shouldBe p2
+    s.params(2) shouldBe p3
   }
 }

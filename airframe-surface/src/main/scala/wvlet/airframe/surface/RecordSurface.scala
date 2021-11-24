@@ -35,10 +35,13 @@ case class RecordSurface(
 
   override def isAlias: Boolean = false
 
-  def withTypeArgs(newTypeArgs: Seq[Surface]): RecordSurface      = this.copy(typeArgs = newTypeArgs)
-  def withRawType(cls: Class[_]): RecordSurface                   = this.copy(rawType = cls)
-  def withParams(newParams: Seq[Parameter]): RecordSurface        = this.copy(params = newParams)
-  def addParam(newParam: Parameter): RecordSurface                = this.copy(params = params :+ newParam)
+  def withTypeArgs(newTypeArgs: Seq[Surface]): RecordSurface = this.copy(typeArgs = newTypeArgs)
+  def withRawType(cls: Class[_]): RecordSurface              = this.copy(rawType = cls)
+  def withParams(newParams: Seq[Parameter]): RecordSurface   = this.copy(params = newParams)
+  def addParam(newParam: Parameter): RecordSurface = {
+    require(newParam.index == params.length, s"index must be ${params.length}: ${newParam.index}")
+    this.copy(params = params :+ newParam)
+  }
   def withObjectFactory(newFactory: ObjectFactory): RecordSurface = this.copy(objectFactory = Some(newFactory))
   def asRequired: RecordSurface                                   = this.copy(isRequired = true)
   def asSecret: RecordSurface                                     = this.copy(isSecret = true)
