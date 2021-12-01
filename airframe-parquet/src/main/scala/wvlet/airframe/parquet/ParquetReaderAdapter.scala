@@ -27,7 +27,7 @@ import wvlet.airframe.surface.{CName, Surface}
 import java.util
 import scala.jdk.CollectionConverters._
 
-object AirframeParquetReader {
+object ParquetReaderAdapter {
 
   def builder[A](
       surface: Surface,
@@ -44,12 +44,12 @@ object AirframeParquetReader {
   class Builder[A](surface: Surface, inputFile: InputFile, plan: Option[ParquetQueryPlan])
       extends ParquetReader.Builder[A](inputFile) {
     override def getReadSupport(): ReadSupport[A] = {
-      new AirframeParquetReadSupport[A](surface, plan)
+      new ParquetReadSupportAdapter[A](surface, plan)
     }
   }
 }
 
-class AirframeParquetReadSupport[A](surface: Surface, plan: Option[ParquetQueryPlan]) extends ReadSupport[A] {
+class ParquetReadSupportAdapter[A](surface: Surface, plan: Option[ParquetQueryPlan]) extends ReadSupport[A] {
   override def init(context: InitContext): ReadSupport.ReadContext = {
     val parquetFileSchema = context.getFileSchema
     val targetColumns = plan match {

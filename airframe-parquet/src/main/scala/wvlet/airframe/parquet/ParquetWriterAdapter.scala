@@ -30,7 +30,7 @@ import scala.jdk.CollectionConverters._
 
 /**
   */
-object AirframeParquetWriter extends LogSupport {
+object ParquetWriterAdapter extends LogSupport {
   def builder[A](surface: Surface, path: String, conf: Configuration): Builder[A] = {
     val fsPath = new Path(path)
     val file   = HadoopOutputFile.fromPath(fsPath, conf)
@@ -43,7 +43,7 @@ object AirframeParquetWriter extends LogSupport {
   class Builder[A](surface: Surface, file: OutputFile) extends ParquetWriter.Builder[A, Builder[A]](file: OutputFile) {
     override def self(): Builder[A] = this
     override def getWriteSupport(conf: Configuration): WriteSupport[A] = {
-      new AirframeParquetWriteSupport[A](surface)
+      new ParquetWriteSupportAdapter[A](surface)
     }
   }
 
@@ -51,7 +51,7 @@ object AirframeParquetWriter extends LogSupport {
       extends ParquetWriter.Builder[Any, RecordWriterBuilder](file: OutputFile) {
     override def self(): RecordWriterBuilder = this
     override def getWriteSupport(conf: Configuration): WriteSupport[Any] = {
-      new AirframeParquetRecordWriterSupport(schema)
+      new ParquetRecordWriterSupportAdapter(schema)
     }
   }
 
@@ -66,7 +66,7 @@ object AirframeParquetWriter extends LogSupport {
 
 }
 
-class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] with LogSupport {
+class ParquetWriteSupportAdapter[A](surface: Surface) extends WriteSupport[A] with LogSupport {
   private lazy val schema = Parquet.toParquetSchema(surface)
   private val objectCodec: ParquetObjectWriter = {
     ParquetObjectWriter.buildFromSurface(surface, schema).asRoot
@@ -90,7 +90,7 @@ class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] w
   }
 }
 
-class AirframeParquetRecordWriterSupport(schema: MessageType) extends WriteSupport[Any] with LogSupport {
+class ParquetRecordWriterSupportAdapter(schema: MessageType) extends WriteSupport[Any] with LogSupport {
   private var recordConsumer: RecordConsumer = null
 
   override def init(configuration: Configuration): WriteContext = {

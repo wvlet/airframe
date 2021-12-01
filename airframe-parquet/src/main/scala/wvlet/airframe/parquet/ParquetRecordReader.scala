@@ -23,7 +23,7 @@ import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 import scala.jdk.CollectionConverters._
 
-object ParquetRecordConverter {
+object ParquetRecordReader {
   private class IntConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
     override def addInt(value: Int): Unit = {
       holder.add(fieldName, value)
@@ -59,18 +59,21 @@ object ParquetRecordConverter {
       holder.add(fieldName, ValueCodec.fromMsgPack(value.getBytes))
     }
   }
+
+  case class ParentContext(paramName: String, recordBuilder: RecordBuilder)
+
 }
 
-class ParquetRecordConverter[A](
+import ParquetRecordReader._
+
+class ParquetRecordReader[A](
     surface: Surface,
     projectedSchema: GroupType,
-    parentRecordBuilder: Option[RecordBuilder] = None
+    parentContext: Option[ParentContext] = None
 ) extends GroupConverter
     with LogSupport {
   private val codec         = MessageCodec.ofSurface(surface)
   private val recordBuilder = RecordBuilder.newBuilder
-
-  import ParquetRecordConverter._
 
   private val converters: Seq[Converter] = projectedSchema.getFields.asScala.map { f =>
     val cv: Converter = f match {
@@ -93,10 +96,10 @@ class ParquetRecordConverter[A](
           new MsgPackConverter(f.getName, recordBuilder)
         } else {
           // Mapping Parquet group types to non-object types
-          new ParquetRecordConverter(
+          new ParquetRecordReader(
             Surface.of[Map[String, Any]],
             f.asGroupType(),
-            parentRecordBuilder = Some(recordBuilder)
+            parentContext = Some(ParentContext(f.getName, recordBuilder))
           )
         }
       case _ =>
@@ -106,9 +109,9 @@ class ParquetRecordConverter[A](
             if (param.surface.isOption || param.surface.isSeq || param.surface.isArray) {
               // For Option[X], Seq[X] types, extract X
               val elementSurface = param.surface.typeArgs(0)
-              new ParquetRecordConverter(param.surface, ParquetSchema.toParquetSchema(elementSurface))
+              new ParquetRecordReader(param.surface, ParquetSchema.toParquetSchema(elementSurface))
             } else {
-              new ParquetRecordConverter(param.surface, ParquetSchema.toParquetSchema(param.surface))
+              new ParquetRecordReader(param.surface, ParquetSchema.toParquetSchema(param.surface))
             }
           case None =>
             ???
@@ -128,11 +131,18 @@ class ParquetRecordConverter[A](
     recordBuilder.clear()
   }
 
-  override def end(): Unit = {}
+  override def end(): Unit = {
+    parentContext.foreach { ctx =>
+      ctx.recordBuilder.add(ctx.paramName, recordBuilder.toMap)
+    }
+  }
 }
 
+/**
+  * An adapter class for org.apache.parquet.RecordMaterializer
+  */
 class ParquetRecordMaterializer[A](surface: Surface, projectedSchema: MessageType) extends RecordMaterializer[A] {
-  private val recordConverter = new ParquetRecordConverter[A](surface, projectedSchema)
+  private val recordConverter = new ParquetRecordReader[A](surface, projectedSchema)
 
   override def getCurrentRecord: A = recordConverter.currentRecord
 

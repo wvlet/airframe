@@ -145,7 +145,7 @@ case class ParquetObjectWriter(paramCodecs: Seq[ParquetFieldWriter], params: Seq
     }
   }
 
-  private def schema           = paramCodecs.mkString(", ")
+  private def schema           = s"[${paramCodecs.map(_.name).mkString(", ")}]"
   private lazy val columnNames = paramCodecs.map(x => CName.toCanonicalName(x.name)).toIndexedSeq
   private lazy val parquetCodecTable: Map[String, ParquetFieldWriter] = {
     paramCodecs.map(x => CName.toCanonicalName(x.name) -> x).toMap
@@ -158,7 +158,7 @@ case class ParquetObjectWriter(paramCodecs: Seq[ParquetFieldWriter], params: Seq
 
   private def packValue(recordConsumer: RecordConsumer, value: Value): Unit = {
     def writeColumnValue(columnName: String, v: Value): Unit = {
-      debug(s"write column value: ${columnName} -> ${v}")
+      trace(s"write column value: ${columnName} -> ${v}")
       parquetCodecTable.get(columnName) match {
         case Some(parameterCodec) =>
           v match {
@@ -173,8 +173,6 @@ case class ParquetObjectWriter(paramCodecs: Seq[ParquetFieldWriter], params: Seq
         // No record. Skip the value
       }
     }
-
-    debug(s"packValue: ${value}")
 
     value match {
       case arr: ArrayValue =>

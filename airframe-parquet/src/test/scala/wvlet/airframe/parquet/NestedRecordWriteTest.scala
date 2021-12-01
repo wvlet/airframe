@@ -28,8 +28,6 @@ object NestedRecordWriteTest extends AirSpec {
   private val schema = Parquet.toParquetSchema(Surface.of[PartitionIndex])
 
   test("write nested records") {
-    debug(schema)
-
     val m1 = Map(
       "id"       -> ULID.newULID,
       "c1_stats" -> ColStats(Some(ValueFactory.newInteger(1)), Some(ValueFactory.newInteger(10))),
@@ -41,13 +39,12 @@ object NestedRecordWriteTest extends AirSpec {
         writer.write(m1)
       }
 
-      val stats = Parquet.readStatistics(file.getPath)
-      debug(stats)
-
       withResource(Parquet.newReader[Map[String, Any]](file.getPath)) { reader =>
         val r1 = reader.read()
         debug(s"record: ${r1}")
-        r1 shouldBe m1
+        r1.get("id").toString shouldBe m1.get("id").toString
+        r1.get("c1_stats") shouldBe Some(Map("min" -> 1, "max" -> 10))
+        r1.get("c2_stats") shouldBe Some(Map.empty)
       }
     }
   }

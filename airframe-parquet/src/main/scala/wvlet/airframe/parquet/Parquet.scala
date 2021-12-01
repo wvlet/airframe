@@ -26,10 +26,10 @@ object Parquet extends LogSupport {
       path: String,
       schema: MessageType,
       hadoopConf: Configuration = new Configuration(),
-      config: AirframeParquetWriter.RecordWriterBuilder => AirframeParquetWriter.RecordWriterBuilder =
-        identity[AirframeParquetWriter.RecordWriterBuilder](_)
+      config: ParquetWriterAdapter.RecordWriterBuilder => ParquetWriterAdapter.RecordWriterBuilder =
+        identity[ParquetWriterAdapter.RecordWriterBuilder](_)
   ): ParquetWriter[Any] = {
-    val b       = AirframeParquetWriter.recordWriterBuilder(path, schema, hadoopConf)
+    val b       = ParquetWriterAdapter.recordWriterBuilder(path, schema, hadoopConf)
     val builder = config(b)
     builder.build()
   }
@@ -38,11 +38,11 @@ object Parquet extends LogSupport {
       path: String,
       // Hadoop filesystem specific configuration, e.g., fs.s3a.access.key
       hadoopConf: Configuration = new Configuration(),
-      config: AirframeParquetWriter.Builder[A] => AirframeParquetWriter.Builder[A] =
-        identity[AirframeParquetWriter.Builder[A]](_)
+      config: ParquetWriterAdapter.Builder[A] => ParquetWriterAdapter.Builder[A] =
+        identity[ParquetWriterAdapter.Builder[A]](_)
   ): ParquetWriter[A] = {
     val s       = Surface.of[A]
-    val b       = AirframeParquetWriter.builder[A](s, path, hadoopConf)
+    val b       = ParquetWriterAdapter.builder[A](s, path, hadoopConf)
     val builder = config(b)
     builder.build()
   }
@@ -54,7 +54,7 @@ object Parquet extends LogSupport {
       config: ParquetReader.Builder[A] => ParquetReader.Builder[A] = identity[ParquetReader.Builder[A]](_)
   ): ParquetReader[A] = {
     val s                           = Surface.of[A]
-    val b: ParquetReader.Builder[A] = AirframeParquetReader.builder[A](s, path, hadoopConf)
+    val b: ParquetReader.Builder[A] = ParquetReaderAdapter.builder[A](s, path, hadoopConf)
     config(b).build()
   }
 
@@ -68,7 +68,7 @@ object Parquet extends LogSupport {
     // Read Parquet schema for resolving column types
     val schema                      = readSchema(path)
     val plan                        = ParquetQueryPlanner.parse(sql, schema)
-    val b: ParquetReader.Builder[A] = AirframeParquetReader.builder[A](s, path, conf = hadoopConf, plan = Some(plan))
+    val b: ParquetReader.Builder[A] = ParquetReaderAdapter.builder[A](s, path, conf = hadoopConf, plan = Some(plan))
 
     val newConf = plan.predicate match {
       case Some(pred) =>
