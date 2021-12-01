@@ -536,7 +536,7 @@ val logDependencies = { scalaVersion: String =>
 }
 
 val logJVMDependencies = Seq(
-  "ch.qos.logback" % "logback-core" % "1.2.6"
+  "ch.qos.logback" % "logback-core" % "1.2.7"
 )
 
 // airframe-log should have minimum dependencies
