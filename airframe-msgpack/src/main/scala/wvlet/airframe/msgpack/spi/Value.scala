@@ -223,6 +223,9 @@ object Value {
     def apply(i: Int): Value = elems.apply(i)
     def size: Int            = elems.size
 
+    def isEmpty: Boolean  = elems.isEmpty
+    def nonEmpty: Boolean = elems.nonEmpty
+
     override def toJson: String = {
       s"[${elems.map(_.toJson).mkString(",")}]"
     }

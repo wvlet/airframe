@@ -15,7 +15,7 @@
 package wvlet.airframe.surface
 
 /**
-  * Note: This interface is the same with scala-2 Surface interface, but Scala compiler requires defining Surface object 
+  * Note: This interface is the same with scala-2 Surface interface, but Scala compiler requires defining Surface object
   * in the same file, so this interface is copied.
   */
 trait Surface extends Serializable {
@@ -31,6 +31,8 @@ trait Surface extends Serializable {
   def isAlias: Boolean
   def isPrimitive: Boolean
   def isSeq: Boolean = classOf[Seq[_]].isAssignableFrom(rawType)
+  def isMap: Boolean   = classOf[Map[_, _]].isAssignableFrom(rawType)
+  def isArray: Boolean = this.isInstanceOf[ArraySurface]
 
   def objectFactory: Option[ObjectFactory] = None
   def withOuter(outer: AnyRef): Surface = this

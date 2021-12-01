@@ -18,8 +18,17 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.Type.Repetition
 import org.apache.parquet.schema.{LogicalTypeAnnotation, MessageType, PrimitiveType, Type, Types}
 import org.apache.parquet.schema.Types.{MapBuilder, PrimitiveBuilder}
+import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.surface.Primitive.PrimitiveSurface
-import wvlet.airframe.surface.{ArraySurface, OptionSurface, Parameter, Primitive, Surface}
+import wvlet.airframe.surface.{
+  ArraySurface,
+  OptionSurface,
+  Parameter,
+  Primitive,
+  RecordParameter,
+  RecordSurface,
+  Surface
+}
 import wvlet.airframe.ulid.ULID
 
 import java.util.UUID
@@ -94,6 +103,38 @@ object ParquetSchema {
     }
   }
 
+  def buildSurfaceFromParquetSchema(schema: Type): Surface = {
+    def toSurface(t: Type): Surface = {
+      if (t.isPrimitive) {
+        val p = t.asPrimitiveType()
+        p.getPrimitiveTypeName match {
+          case PrimitiveTypeName.INT32 =>
+            Primitive.Int
+          case PrimitiveTypeName.INT64 =>
+            Primitive.Long
+          case PrimitiveTypeName.FLOAT =>
+            Primitive.Float
+          case PrimitiveTypeName.DOUBLE =>
+            Primitive.Double
+          case PrimitiveTypeName.BOOLEAN =>
+            Primitive.Boolean
+          case PrimitiveTypeName.BINARY if p.getLogicalTypeAnnotation == stringType() =>
+            Primitive.String
+          case _ =>
+            Surface.of[MsgPack]
+        }
+      } else {
+        val g = t.asGroupType()
+        var r = RecordSurface.newSurface(t.getName)
+        for ((f, i) <- g.getFields.asScala.zipWithIndex) {
+          r = r.addParam(RecordParameter(i, f.getName, toSurface(f)))
+        }
+        r
+      }
+    }
+    toSurface(schema)
+  }
+
   def toParquetType(name: String, surface: Surface, rep: Option[Repetition] = None): Type = {
     buildParquetType(surface, rep).named(name).asInstanceOf[Type]
   }
@@ -102,10 +143,11 @@ object ParquetSchema {
     def toType(p: Parameter): Type = {
       toParquetType(p.name, p.surface, Some(Repetition.REQUIRED))
     }
-    new MessageType(
+    val tpe = new MessageType(
       surface.fullName,
       surface.params.map(p => toType(p)).toList.asJava
     )
+    tpe
   }
 
 }

@@ -16,15 +16,17 @@ package wvlet.airframe.parquet
 import org.apache.parquet.io.api.{Binary, RecordConsumer}
 import org.apache.parquet.schema.Type.Repetition
 import org.apache.parquet.schema.{MessageType, Type}
-import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.codec.PrimitiveCodec.AnyCodec
-import wvlet.airframe.msgpack.spi.{Code, MessagePack, MsgPack}
-import wvlet.airframe.surface.{Parameter, Surface}
+import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecException}
+import wvlet.airframe.codec.PrimitiveCodec.{AnyCodec, ValueCodec}
+import wvlet.airframe.json.JSONParseException
+import wvlet.airframe.msgpack.spi.Value.{ArrayValue, BinaryValue, MapValue, StringValue}
+import wvlet.airframe.msgpack.spi.{Code, MessagePack, MsgPack, Value}
+import wvlet.airframe.surface.{CName, Parameter, Surface}
 import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 
-trait FieldCodec extends LogSupport {
+trait ParquetFieldWriter extends LogSupport {
   def index: Int
   def name: String
   def parquetCodec: ParquetWriteCodec
@@ -38,7 +40,8 @@ trait FieldCodec extends LogSupport {
 /**
   * A codec for writing an object parameter as a Parquet field
   */
-case class ParameterCodec(index: Int, name: String, parquetCodec: ParquetWriteCodec) extends FieldCodec {
+case class ParquetParameterWriter(index: Int, name: String, parquetCodec: ParquetWriteCodec)
+    extends ParquetFieldWriter {
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     try {
       recordConsumer.startField(name, index)
@@ -61,7 +64,7 @@ case class ParameterCodec(index: Int, name: String, parquetCodec: ParquetWriteCo
 /**
   * Object parameter codec for Option[X] type. This codec is used for skipping startField() and endField() calls at all
   */
-class OptionParameterCodec(parameterCodec: ParameterCodec) extends FieldCodec {
+class ParquetOptionWriter(parameterCodec: ParquetParameterWriter) extends ParquetFieldWriter {
   override def index: Int                      = parameterCodec.index
   override def name: String                    = parameterCodec.name
   override def parquetCodec: ParquetWriteCodec = parameterCodec.parquetCodec
@@ -82,7 +85,7 @@ class OptionParameterCodec(parameterCodec: ParameterCodec) extends FieldCodec {
   }
 }
 
-class SeqParquetCodec(elementCodec: ParquetWriteCodec) extends ParquetWriteCodec with LogSupport {
+class ParquetSeqWriter(elementCodec: ParquetWriteCodec) extends ParquetWriteCodec with LogSupport {
   override def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     v match {
       case s: Seq[_] =>
@@ -107,10 +110,10 @@ class SeqParquetCodec(elementCodec: ParquetWriteCodec) extends ParquetWriteCodec
   override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = ???
 }
 
-case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], params: Seq[Parameter], isRoot: Boolean = false)
+case class ParquetObjectWriter(paramCodecs: Seq[ParquetFieldWriter], params: Seq[Parameter], isRoot: Boolean = false)
     extends ParquetWriteCodec
     with LogSupport {
-  def asRoot: ObjectParquetWriteCodec = this.copy(isRoot = true)
+  override def asRoot: ParquetObjectWriter = this.copy(isRoot = true)
 
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     try {
@@ -142,11 +145,108 @@ case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], params: Seq[Par
     }
   }
 
-  override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = ???
+  private def schema           = s"[${paramCodecs.map(_.name).mkString(", ")}]"
+  private lazy val columnNames = paramCodecs.map(x => CName.toCanonicalName(x.name)).toIndexedSeq
+  private lazy val parquetCodecTable: Map[String, ParquetFieldWriter] = {
+    paramCodecs.map(x => CName.toCanonicalName(x.name) -> x).toMap
+  }
+
+  override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
+    val value = ValueCodec.fromMsgPack(msgpack)
+
+    if (isRoot) {
+      recordConsumer.startMessage()
+    } else {
+      recordConsumer.startGroup()
+    }
+    try {
+      packValue(recordConsumer, value)
+    } finally {
+      if (isRoot) {
+        recordConsumer.endMessage()
+      } else {
+        recordConsumer.endGroup()
+      }
+    }
+  }
+
+  private def packValue(recordConsumer: RecordConsumer, value: Value): Unit = {
+    def writeColumnValue(columnName: String, v: Value): Unit = {
+      trace(s"write column value: ${columnName} -> ${v}")
+      parquetCodecTable.get(columnName) match {
+        case Some(parameterCodec) =>
+          v match {
+            case m: MapValue if m.isEmpty =>
+            // skip
+            case a: ArrayValue if a.isEmpty =>
+            // skip
+            case _ =>
+              parameterCodec.writeMsgPack(recordConsumer, v.toMsgpack)
+          }
+        case None =>
+        // No record. Skip the value
+      }
+    }
+    trace(s"packValue: ${value}")
+
+    value match {
+      case arr: ArrayValue =>
+        // Array value
+        if (arr.size == paramCodecs.length) {
+          for ((e, colIndex) <- arr.elems.zipWithIndex) {
+            val colName = columnNames(colIndex)
+            writeColumnValue(colName, e)
+          }
+        } else {
+          // Invalid shape
+          throw new IllegalArgumentException(s"${arr} size doesn't match with ${paramCodecs}")
+        }
+      case m: MapValue =>
+        for ((k, v) <- m.entries) {
+          val keyValue = k.toString
+          val cKey     = CName.toCanonicalName(keyValue)
+          writeColumnValue(cKey, v)
+        }
+      case b: BinaryValue =>
+        // Assume it's a message pack value
+        try {
+          val v = ValueCodec.fromMsgPack(b.v)
+          packValue(recordConsumer, v)
+        } catch {
+          case e: MessageCodecException =>
+            invalidInput(b, e)
+        }
+      case s: StringValue =>
+        val str = s.toString
+        if (str.startsWith("{") || str.startsWith("[")) {
+          // Assume the input is a json object or an array
+          try {
+            val msgpack = JSONCodec.toMsgPack(str)
+            val value   = ValueCodec.fromMsgPack(msgpack)
+            packValue(recordConsumer, value)
+          } catch {
+            case e: JSONParseException =>
+              // Not a json value.
+              invalidInput(s, e)
+          }
+        } else {
+          invalidInput(s, null)
+        }
+      case _ =>
+        invalidInput(value, null)
+    }
+  }
+
+  private def invalidInput(v: Value, cause: Throwable): Nothing = {
+    throw new IllegalArgumentException(
+      s"The input for ${schema} must be Map[String, Any], Array, MsgPack, or JSON strings: ${v}",
+      cause
+    )
+  }
 }
 
-object ObjectParquetWriteCodec {
-  def buildFromSurface(surface: Surface, schema: MessageType): ObjectParquetWriteCodec = {
+object ParquetObjectWriter {
+  def buildFromSurface(surface: Surface, schema: MessageType): ParquetObjectWriter = {
     val paramCodecs = surface.params.zip(schema.getFields.asScala).map { case (param, tpe) =>
       // Resolve the element type X of Option[X], Seq[X], etc.
       val elementSurface = tpe.getRepetition match {
@@ -158,18 +258,18 @@ object ObjectParquetWriteCodec {
           param.surface
       }
       val elementCodec = MessageCodec.ofSurface(elementSurface)
-      val pc = ParameterCodec(
+      val pc = ParquetParameterWriter(
         param.index,
         param.name,
         ParquetWriteCodec.parquetCodecOf(tpe, elementSurface, elementCodec)
       )
       tpe.getRepetition match {
         case Repetition.OPTIONAL =>
-          new OptionParameterCodec(pc)
+          new ParquetOptionWriter(pc)
         case _ =>
           pc
       }
     }
-    ObjectParquetWriteCodec(paramCodecs, surface.params)
+    ParquetObjectWriter(paramCodecs, surface.params)
   }
 }
