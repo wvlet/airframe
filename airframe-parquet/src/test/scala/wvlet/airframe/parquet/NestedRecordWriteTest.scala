@@ -30,20 +30,24 @@ object NestedRecordWriteTest extends AirSpec {
   test("write nested records") {
     debug(schema)
 
+    val m1 = Map(
+      "id"       -> ULID.newULID,
+      "c1_stats" -> ColStats(Some(ValueFactory.newInteger(1)), Some(ValueFactory.newInteger(10))),
+      "c2_stats" -> ColStats(None, None)
+    )
+
     IOUtil.withTempFile("target/tmp-nested-record", ".parquet") { file =>
       withResource(Parquet.newRecordWriter(file.getPath, schema)) { writer =>
-        writer.write(
-          Map(
-            "id"       -> ULID.newULID,
-            "c1_stats" -> ColStats(Some(ValueFactory.newInteger(1)), Some(ValueFactory.newInteger(10))),
-            "c2_stats" -> ColStats(None, None)
-          )
-        )
+        writer.write(m1)
       }
 
+      val stats = Parquet.readStatistics(file.getPath)
+      debug(stats)
+
       withResource(Parquet.newReader[Map[String, Any]](file.getPath)) { reader =>
-        val pi = reader.read()
-        info(s"record: ${pi}")
+        val r1 = reader.read()
+        debug(s"record: ${r1}")
+        r1 shouldBe m1
       }
     }
   }

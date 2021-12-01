@@ -21,16 +21,10 @@ import org.apache.parquet.hadoop.api.{InitContext, ReadSupport}
 import org.apache.parquet.hadoop.util.HadoopInputFile
 import org.apache.parquet.io.InputFile
 import org.apache.parquet.io.api._
-import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
 import org.apache.parquet.schema.MessageType
-import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
-import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.surface.{CName, Surface}
-import wvlet.log.LogSupport
 
 import java.util
-import scala.collection.generic.Growable
 import scala.jdk.CollectionConverters._
 
 object AirframeParquetReader {
@@ -82,108 +76,6 @@ class AirframeParquetReadSupport[A](surface: Surface, plan: Option[ParquetQueryP
       fileSchema: MessageType,
       readContext: ReadSupport.ReadContext
   ): RecordMaterializer[A] = {
-    new AirframeParquetRecordMaterializer[A](surface, readContext.getRequestedSchema)
+    new ParquetRecordMaterializer[A](surface, readContext.getRequestedSchema)
   }
-}
-
-class AirframeParquetRecordMaterializer[A](surface: Surface, projectedSchema: MessageType)
-    extends RecordMaterializer[A] {
-  private val recordConverter = new ParquetRecordConverter[A](surface, projectedSchema)
-
-  override def getCurrentRecord: A = recordConverter.currentRecord
-
-  override def getRootConverter: GroupConverter = recordConverter
-}
-
-object ParquetRecordConverter {
-  private class IntConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
-    override def addInt(value: Int): Unit = {
-      holder.add(fieldName, value)
-    }
-  }
-  private class LongConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
-    override def addLong(value: Long): Unit = {
-      holder.add(fieldName, value)
-    }
-  }
-  private class BooleanConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
-    override def addBoolean(value: Boolean): Unit = {
-      holder.add(fieldName, value)
-    }
-  }
-  private class StringConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter with LogSupport {
-    override def addBinary(value: Binary): Unit = {
-      holder.add(fieldName, value.toStringUsingUTF8)
-    }
-  }
-  private class FloatConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
-    override def addFloat(value: Float): Unit = {
-      holder.add(fieldName, value)
-    }
-  }
-  private class DoubleConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
-    override def addDouble(value: Double): Unit = {
-      holder.add(fieldName, value)
-    }
-  }
-  private class MsgPackConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
-    override def addBinary(value: Binary): Unit = {
-      holder.add(fieldName, ValueCodec.fromMsgPack(value.getBytes))
-    }
-  }
-}
-
-class ParquetRecordConverter[A](surface: Surface, projectedSchema: MessageType) extends GroupConverter with LogSupport {
-  private val codec         = MessageCodec.ofSurface(surface)
-  private val recordBuilder = RecordBuilder.newBuilder
-
-  import ParquetRecordConverter._
-
-  private val converters: Seq[Converter] = projectedSchema.getFields.asScala.map { f =>
-    val cv: Converter = f match {
-      case p if p.isPrimitive =>
-        p.asPrimitiveType().getPrimitiveTypeName match {
-          case PrimitiveTypeName.INT32   => new IntConverter(f.getName, recordBuilder)
-          case PrimitiveTypeName.INT64   => new LongConverter(f.getName, recordBuilder)
-          case PrimitiveTypeName.BOOLEAN => new BooleanConverter(f.getName, recordBuilder)
-          case PrimitiveTypeName.FLOAT   => new FloatConverter(f.getName, recordBuilder)
-          case PrimitiveTypeName.DOUBLE  => new DoubleConverter(f.getName, recordBuilder)
-          case PrimitiveTypeName.BINARY if p.getLogicalTypeAnnotation == stringType =>
-            new StringConverter(f.getName, recordBuilder)
-          case PrimitiveTypeName.BINARY =>
-            new MsgPackConverter(f.getName, recordBuilder)
-          case _ => ???
-        }
-      case _ =>
-        // GroupConverter for nested objects
-
-        surface.params.find(_.name == f.getName) match {
-          case Some(param) =>
-            if (param.surface.isOption || param.surface.isSeq || param.surface.isArray) {
-              // For Option[X], Seq[X] types, extract X
-              val elementSurface = param.surface.typeArgs(0)
-              new ParquetRecordConverter(param.surface, ParquetSchema.toParquetSchema(elementSurface))
-            } else {
-              new ParquetRecordConverter(param.surface, ParquetSchema.toParquetSchema(param.surface))
-            }
-          case None =>
-            ???
-        }
-    }
-    cv
-  }.toIndexedSeq
-
-  def currentRecord: A = {
-    val m = recordBuilder.toMap
-    trace(m)
-    codec.fromMap(m).asInstanceOf[A]
-  }
-
-  override def getConverter(fieldIndex: Int): Converter = converters(fieldIndex)
-
-  override def start(): Unit = {
-    recordBuilder.clear()
-  }
-
-  override def end(): Unit = {}
 }
