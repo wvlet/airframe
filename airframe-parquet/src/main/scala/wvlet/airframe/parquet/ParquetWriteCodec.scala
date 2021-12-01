@@ -16,7 +16,7 @@ package wvlet.airframe.parquet
 import org.apache.parquet.io.api.{Binary, RecordConsumer}
 import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
-import org.apache.parquet.schema.Type
+import org.apache.parquet.schema.{MessageType, Type}
 import org.apache.parquet.schema.Type.Repetition
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.codec.PrimitiveCodec.{BooleanCodec, DoubleCodec, FloatCodec, IntCodec, LongCodec, StringCodec}
@@ -118,10 +118,14 @@ object ParquetWriteCodec extends LogSupport {
       if (surface.params.length > 0) {
         // group type
         val groupCodec = ObjectParquetWriteCodec.buildFromSurface(surface, Parquet.toParquetSchema(surface))
-        if (tpe.isRepetition(Repetition.REPEATED)) {
-          new SeqParquetCodec(groupCodec)
-        } else {
-          groupCodec
+        tpe match {
+          case m: MessageType =>
+            // MessageType is always a REPEATED type, so no need to wrap with SeqParquetCodec
+            groupCodec
+          case _ if tpe.isRepetition(Repetition.REPEATED) =>
+            new SeqParquetCodec(groupCodec)
+          case _ =>
+            groupCodec
         }
       } else {
         new PrimitiveParquetCodec(codec) {

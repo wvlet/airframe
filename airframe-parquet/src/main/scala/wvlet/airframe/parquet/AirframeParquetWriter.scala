@@ -15,27 +15,21 @@ package wvlet.airframe.parquet
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import org.apache.parquet.hadoop.{ParquetFileWriter, ParquetWriter}
 import org.apache.parquet.hadoop.api.WriteSupport
 import org.apache.parquet.hadoop.api.WriteSupport.WriteContext
 import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.apache.parquet.hadoop.util.HadoopOutputFile
+import org.apache.parquet.hadoop.{ParquetFileWriter, ParquetWriter}
 import org.apache.parquet.io.OutputFile
-import org.apache.parquet.io.api.{Binary, RecordConsumer}
-import org.apache.parquet.schema.{MessageType, Type}
-import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
-import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecException, MessageCodecFactory}
-import wvlet.airframe.json.JSONParseException
-import wvlet.airframe.msgpack.spi.Value.{ArrayValue, BinaryValue, MapValue, StringValue}
-import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack, Value}
-import wvlet.airframe.surface.{CName, Parameter, Surface}
+import org.apache.parquet.io.api.RecordConsumer
+import org.apache.parquet.schema.MessageType
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 
 /**
   */
-
 object AirframeParquetWriter extends LogSupport {
   def builder[A](surface: Surface, path: String, conf: Configuration): Builder[A] = {
     val fsPath = new Path(path)
@@ -108,7 +102,7 @@ class AirframeParquetRecordWriterSupport(schema: MessageType) extends WriteSuppo
     this.recordConsumer = recordConsumer
   }
 
-  private val codec = new ParquetRecordCodec(schema)
+  private val codec = new ParquetRecordWriter(schema)
 
   override def write(record: Any): Unit = {
     require(recordConsumer != null)
@@ -120,104 +114,4 @@ class AirframeParquetRecordWriterSupport(schema: MessageType) extends WriteSuppo
       recordConsumer.endMessage()
     }
   }
-}
-
-/**
-  * Adjust any input objects into the shape of the Parquet schema
-  * @param schema
-  */
-class ParquetRecordCodec(schema: MessageType) extends LogSupport {
-
-  private val columnNames: IndexedSeq[String] =
-    schema.getFields.asScala.map(x => CName.toCanonicalName(x.getName)).toIndexedSeq
-  private val parquetCodecTable: Map[String, ParameterCodec] = {
-    schema.getFields.asScala.zipWithIndex
-      .map { case (f, index) =>
-        val cKey         = CName.toCanonicalName(f.getName)
-        val parquetCodec = ParquetWriteCodec.parquetCodecOf(f, Surface.of[Any], ValueCodec)
-        cKey -> ParameterCodec(index, f.getName, parquetCodec)
-      }.toMap[String, ParameterCodec]
-  }
-
-  private val anyCodec = MessageCodec.of[Any]
-
-  def pack(obj: Any, recordConsumer: RecordConsumer): Unit = {
-    val msgpack =
-      try {
-        anyCodec.toMsgPack(obj)
-      } catch {
-        case e: MessageCodecException =>
-          throw new IllegalArgumentException(s"Cannot convert the input into MsgPack: ${obj}", e)
-      }
-    val value = ValueCodec.fromMsgPack(msgpack)
-    packValue(value, recordConsumer)
-  }
-
-  def packValue(value: Value, recordConsumer: RecordConsumer): Unit = {
-    trace(s"packValue: ${value}")
-
-    def writeColumnValue(columnName: String, v: Value): Unit = {
-      parquetCodecTable.get(columnName) match {
-        case Some(parameterCodec) =>
-          parameterCodec.writeMsgPack(recordConsumer, v.toMsgpack)
-        case None =>
-        // No record. Skip the value
-      }
-    }
-
-    value match {
-      case arr: ArrayValue =>
-        // Array value
-        if (arr.size == schema.getFieldCount) {
-          for ((e, colIndex) <- arr.elems.zipWithIndex) {
-            val colName = columnNames(colIndex)
-            writeColumnValue(colName, e)
-          }
-        } else {
-          // Invalid shape
-          throw new IllegalArgumentException(s"${arr} size doesn't match with ${schema}")
-        }
-      case m: MapValue =>
-        for ((k, v) <- m.entries) {
-          val keyValue = k.toString
-          val cKey     = CName.toCanonicalName(keyValue)
-          writeColumnValue(cKey, v)
-        }
-      case b: BinaryValue =>
-        // Assume it's a message pack value
-        try {
-          val v = ValueCodec.fromMsgPack(b.v)
-          packValue(v, recordConsumer)
-        } catch {
-          case e: MessageCodecException =>
-            invalidInput(b, e)
-        }
-      case s: StringValue =>
-        val str = s.toString
-        if (str.startsWith("{") || str.startsWith("[")) {
-          // Assume the input is a json object or an array
-          try {
-            val msgpack = JSONCodec.toMsgPack(str)
-            val value   = ValueCodec.fromMsgPack(msgpack)
-            packValue(value, recordConsumer)
-          } catch {
-            case e: JSONParseException =>
-              // Not a json value.
-              invalidInput(s, e)
-          }
-        } else {
-          invalidInput(s, null)
-        }
-      case _ =>
-        invalidInput(value, null)
-    }
-  }
-
-  private def invalidInput(v: Value, cause: Throwable): Nothing = {
-    throw new IllegalArgumentException(
-      s"The input for ${schema} must be Map[String, Any], Array, MsgPack, or JSON strings: ${v}",
-      cause
-    )
-  }
-
 }

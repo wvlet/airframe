@@ -16,10 +16,12 @@ package wvlet.airframe.parquet
 import org.apache.parquet.io.api.{Binary, RecordConsumer}
 import org.apache.parquet.schema.Type.Repetition
 import org.apache.parquet.schema.{MessageType, Type}
-import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.codec.PrimitiveCodec.AnyCodec
-import wvlet.airframe.msgpack.spi.{Code, MessagePack, MsgPack}
-import wvlet.airframe.surface.{Parameter, Surface}
+import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecException}
+import wvlet.airframe.codec.PrimitiveCodec.{AnyCodec, ValueCodec}
+import wvlet.airframe.json.JSONParseException
+import wvlet.airframe.msgpack.spi.Value.{ArrayValue, BinaryValue, MapValue, StringValue}
+import wvlet.airframe.msgpack.spi.{Code, MessagePack, MsgPack, Value}
+import wvlet.airframe.surface.{CName, Parameter, Surface}
 import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
@@ -142,7 +144,91 @@ case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], params: Seq[Par
     }
   }
 
-  override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = ???
+  private def schema           = paramCodecs.mkString(", ")
+  private lazy val columnNames = paramCodecs.map(x => CName.toCanonicalName(x.name)).toIndexedSeq
+  private lazy val parquetCodecTable: Map[String, FieldCodec] = {
+    paramCodecs.map(x => CName.toCanonicalName(x.name) -> x).toMap
+  }
+
+  override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
+    val value = ValueCodec.fromMsgPack(msgpack)
+    packValue(recordConsumer, value)
+  }
+
+  private def packValue(recordConsumer: RecordConsumer, value: Value): Unit = {
+    def writeColumnValue(columnName: String, v: Value): Unit = {
+      debug(s"write column value: ${columnName} -> ${v}")
+      parquetCodecTable.get(columnName) match {
+        case Some(parameterCodec) =>
+          v match {
+            case m: MapValue if m.isEmpty =>
+            // skip
+            case a: ArrayValue if a.isEmpty =>
+            // skip
+            case _ =>
+              parameterCodec.writeMsgPack(recordConsumer, v.toMsgpack)
+          }
+        case None =>
+        // No record. Skip the value
+      }
+    }
+
+    debug(s"packValue: ${value}")
+
+    value match {
+      case arr: ArrayValue =>
+        // Array value
+        if (arr.size == paramCodecs.length) {
+          for ((e, colIndex) <- arr.elems.zipWithIndex) {
+            val colName = columnNames(colIndex)
+            writeColumnValue(colName, e)
+          }
+        } else {
+          // Invalid shape
+          throw new IllegalArgumentException(s"${arr} size doesn't match with ${paramCodecs}")
+        }
+      case m: MapValue =>
+        for ((k, v) <- m.entries) {
+          val keyValue = k.toString
+          val cKey     = CName.toCanonicalName(keyValue)
+          writeColumnValue(cKey, v)
+        }
+      case b: BinaryValue =>
+        // Assume it's a message pack value
+        try {
+          val v = ValueCodec.fromMsgPack(b.v)
+          packValue(recordConsumer, v)
+        } catch {
+          case e: MessageCodecException =>
+            invalidInput(b, e)
+        }
+      case s: StringValue =>
+        val str = s.toString
+        if (str.startsWith("{") || str.startsWith("[")) {
+          // Assume the input is a json object or an array
+          try {
+            val msgpack = JSONCodec.toMsgPack(str)
+            val value   = ValueCodec.fromMsgPack(msgpack)
+            packValue(recordConsumer, value)
+          } catch {
+            case e: JSONParseException =>
+              // Not a json value.
+              invalidInput(s, e)
+          }
+        } else {
+          invalidInput(s, null)
+        }
+      case _ =>
+        invalidInput(value, null)
+    }
+  }
+
+  private def invalidInput(v: Value, cause: Throwable): Nothing = {
+    throw new IllegalArgumentException(
+      s"The input for ${schema} must be Map[String, Any], Array, MsgPack, or JSON strings: ${v}",
+      cause
+    )
+  }
 }
 
 object ObjectParquetWriteCodec {
