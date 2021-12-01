@@ -6,6 +6,51 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.11.0
+
+This version supports nested record read/write of Parquet files and includes major dependency updates (Scala, Scala.js, scalajs-dom, Finagle, okhttp, etc.)
+
+### New Features
+- airframe-parquet: Support nested schema ([#1917](https://github.com/wvlet/airframe/issues/1917)) [[d2ab8fad](https://github.com/wvlet/airframe/commit/d2ab8fad)]
+- airframe-parquet: Parquet nested record support - M2 ([#1943](https://github.com/wvlet/airframe/issues/1943)) [[8b3c88bd](https://github.com/wvlet/airframe/commit/8b3c88bd)]
+
+### Bug Fixes
+- airspec: Fixes [#1845](https://github.com/wvlet/airframe/issues/1845) MISSING_DEPENDENCY for no-arg tests ([#1895](https://github.com/wvlet/airframe/issues/1895)) [[01792ff7](https://github.com/wvlet/airframe/commit/01792ff7)]
+- airframe-http: Fixes [#1843](https://github.com/wvlet/airframe/issues/1843): Sanitize class names in Surface and http/RPC logs ([#1894](https://github.com/wvlet/airframe/issues/1894)) [[a1b68688](https://github.com/wvlet/airframe/commit/a1b68688)]
+- airframe-http: Scala 3 support prep ([#1760](https://github.com/wvlet/airframe/issues/1760)) [[68322a4b](https://github.com/wvlet/airframe/commit/68322a4b)]
+
+### Major Dependency Updates
+- Upgrade to Scala 3.1.0 ([#1882](https://github.com/wvlet/airframe/issues/1882)) [[75517719](https://github.com/wvlet/airframe/commit/75517719)]
+- Update scalajs-dom to 2.0.0 ([#1888](https://github.com/wvlet/airframe/issues/1888)) [[819c95e2](https://github.com/wvlet/airframe/commit/819c95e2)]
+- Update scalajs-compiler to 1.7.1 ([#1913](https://github.com/wvlet/airframe/issues/1913)) [[69fd17a8](https://github.com/wvlet/airframe/commit/69fd17a8)]
+- Update finagle-core, finagle-http, ... to 21.11.0 ([#1944](https://github.com/wvlet/airframe/issues/1944)) [[125bf365](https://github.com/wvlet/airframe/commit/125bf365)]
+- Update okhttp to 4.9.3 ([#1939](https://github.com/wvlet/airframe/issues/1939)) [[faf33ec4](https://github.com/wvlet/airframe/commit/faf33ec4)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.42.1 ([#1930](https://github.com/wvlet/airframe/issues/1930)) [[ced33fe4](https://github.com/wvlet/airframe/commit/ced33fe4)]
+- Update scala-compiler, scala-library, ... to 2.13.7 ([#1908](https://github.com/wvlet/airframe/issues/1908)) [[e8dead6d](https://github.com/wvlet/airframe/commit/e8dead6d)]
+
+### Internal Dependency Updates
+- Update scalafmt-core to 3.2.0 ([#1947](https://github.com/wvlet/airframe/issues/1947)) [[c73981c6](https://github.com/wvlet/airframe/commit/c73981c6)]
+- Update sbt-scalafmt to 2.4.4 ([#1936](https://github.com/wvlet/airframe/issues/1936)) [[26398399](https://github.com/wvlet/airframe/commit/26398399)]
+- Update scala-collection-compat to 2.6.0 ([#1924](https://github.com/wvlet/airframe/issues/1924)) [[fc910bc9](https://github.com/wvlet/airframe/commit/fc910bc9)]
+- Update antlr4, antlr4-runtime to 4.9.3 ([#1922](https://github.com/wvlet/airframe/issues/1922)) [[fbd78ad8](https://github.com/wvlet/airframe/commit/fbd78ad8)]
+- [#1824](https://github.com/wvlet/airframe/issues/1824): Manage sample project dependencies with Scala steward ([#1916](https://github.com/wvlet/airframe/issues/1916)) [[1be61391](https://github.com/wvlet/airframe/commit/1be61391)]
+- airspec: Add note for `test(...) { (function) }` issue [#1681](https://github.com/wvlet/airframe/issues/1681) ([#1915](https://github.com/wvlet/airframe/issues/1915)) [[6bb846eb](https://github.com/wvlet/airframe/commit/6bb846eb)]
+- Update sbt-scoverage to 1.9.2 ([#1911](https://github.com/wvlet/airframe/issues/1911)) [[88905c40](https://github.com/wvlet/airframe/commit/88905c40)]
+- Update trino-main to 364 ([#1909](https://github.com/wvlet/airframe/issues/1909)) [[14111818](https://github.com/wvlet/airframe/commit/14111818)]
+- Update postgresql to 42.3.1 ([#1904](https://github.com/wvlet/airframe/issues/1904)) [[082689d3](https://github.com/wvlet/airframe/commit/082689d3)]
+- Update protobuf-java to 3.19.1 ([#1903](https://github.com/wvlet/airframe/issues/1903)) [[037d6b56](https://github.com/wvlet/airframe/commit/037d6b56)]
+- Update rpc examples ([#1901](https://github.com/wvlet/airframe/issues/1901)) [[b68ba769](https://github.com/wvlet/airframe/commit/b68ba769)]
+- Add gallery demo ([#1900](https://github.com/wvlet/airframe/issues/1900)) [[b5655fc6](https://github.com/wvlet/airframe/commit/b5655fc6)]
+- Update example ([#1899](https://github.com/wvlet/airframe/issues/1899)) [[8a0ac479](https://github.com/wvlet/airframe/commit/8a0ac479)]
+- http-recorder: Ignore pragma, cache-control header for request match ([#1892](https://github.com/wvlet/airframe/issues/1892)) [[2ac80e6e](https://github.com/wvlet/airframe/commit/2ac80e6e)]
+- airframe-finagle: Handle ChannelClosedException sub classes ([#1891](https://github.com/wvlet/airframe/issues/1891)) [[15045eab](https://github.com/wvlet/airframe/commit/15045eab)]
+- Add action-junit-report ([#1889](https://github.com/wvlet/airframe/issues/1889)) [[66656835](https://github.com/wvlet/airframe/commit/66656835)]
+- Update protobuf-java to 3.19.0 ([#1886](https://github.com/wvlet/airframe/issues/1886)) [[f88437cc](https://github.com/wvlet/airframe/commit/f88437cc)]
+- Update sbt-mdoc to 2.2.24 ([#1884](https://github.com/wvlet/airframe/issues/1884)) [[f8e6ecd5](https://github.com/wvlet/airframe/commit/f8e6ecd5)]
+- Update scalafmt-core to 3.0.7 ([#1885](https://github.com/wvlet/airframe/issues/1885)) [[bd96684f](https://github.com/wvlet/airframe/commit/bd96684f)]
+- Update postgresql to 42.3.0 ([#1880](https://github.com/wvlet/airframe/issues/1880)) [[b9a51438](https://github.com/wvlet/airframe/commit/b9a51438)]
+- Update airframe-codec, airframe-control, ... to 21.10.0 ([#1877](https://github.com/wvlet/airframe/issues/1877)) [[6bb326b8](https://github.com/wvlet/airframe/commit/6bb326b8)]
+
 ## 21.10.0
 
 This is a maintainance release with dependency updates. 
