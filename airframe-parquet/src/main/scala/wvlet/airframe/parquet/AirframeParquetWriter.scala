@@ -68,8 +68,8 @@ object AirframeParquetWriter extends LogSupport {
 
 class AirframeParquetWriteSupport[A](surface: Surface) extends WriteSupport[A] with LogSupport {
   private lazy val schema = Parquet.toParquetSchema(surface)
-  private val objectCodec: ObjectParquetWriteCodec = {
-    ObjectParquetWriteCodec.buildFromSurface(surface, schema).asRoot
+  private val objectCodec: ParquetObjectWriter = {
+    ParquetObjectWriter.buildFromSurface(surface, schema).asRoot
   }
 
   private var recordConsumer: RecordConsumer = null

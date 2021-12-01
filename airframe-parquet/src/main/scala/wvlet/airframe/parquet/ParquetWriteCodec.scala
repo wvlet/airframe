@@ -110,20 +110,20 @@ object ParquetWriteCodec extends LogSupport {
       }
       tpe.getRepetition match {
         case Repetition.REPEATED =>
-          new SeqParquetCodec(primitiveCodec)
+          new ParquetSeqWriter(primitiveCodec)
         case _ =>
           primitiveCodec
       }
     } else {
       if (surface.params.length > 0) {
         // group type
-        val groupCodec = ObjectParquetWriteCodec.buildFromSurface(surface, Parquet.toParquetSchema(surface))
+        val groupCodec = ParquetObjectWriter.buildFromSurface(surface, Parquet.toParquetSchema(surface))
         tpe match {
           case m: MessageType =>
             // MessageType is always a REPEATED type, so no need to wrap with SeqParquetCodec
             groupCodec
           case _ if tpe.isRepetition(Repetition.REPEATED) =>
-            new SeqParquetCodec(groupCodec)
+            new ParquetSeqWriter(groupCodec)
           case _ =>
             groupCodec
         }

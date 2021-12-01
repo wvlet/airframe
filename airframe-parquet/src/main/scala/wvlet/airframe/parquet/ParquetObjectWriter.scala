@@ -26,7 +26,7 @@ import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 
-trait FieldCodec extends LogSupport {
+trait ParquetFieldWriter extends LogSupport {
   def index: Int
   def name: String
   def parquetCodec: ParquetWriteCodec
@@ -40,7 +40,8 @@ trait FieldCodec extends LogSupport {
 /**
   * A codec for writing an object parameter as a Parquet field
   */
-case class ParameterCodec(index: Int, name: String, parquetCodec: ParquetWriteCodec) extends FieldCodec {
+case class ParquetParameterWriter(index: Int, name: String, parquetCodec: ParquetWriteCodec)
+    extends ParquetFieldWriter {
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     try {
       recordConsumer.startField(name, index)
@@ -63,7 +64,7 @@ case class ParameterCodec(index: Int, name: String, parquetCodec: ParquetWriteCo
 /**
   * Object parameter codec for Option[X] type. This codec is used for skipping startField() and endField() calls at all
   */
-class OptionParameterCodec(parameterCodec: ParameterCodec) extends FieldCodec {
+class ParquetOptionWriter(parameterCodec: ParquetParameterWriter) extends ParquetFieldWriter {
   override def index: Int                      = parameterCodec.index
   override def name: String                    = parameterCodec.name
   override def parquetCodec: ParquetWriteCodec = parameterCodec.parquetCodec
@@ -84,7 +85,7 @@ class OptionParameterCodec(parameterCodec: ParameterCodec) extends FieldCodec {
   }
 }
 
-class SeqParquetCodec(elementCodec: ParquetWriteCodec) extends ParquetWriteCodec with LogSupport {
+class ParquetSeqWriter(elementCodec: ParquetWriteCodec) extends ParquetWriteCodec with LogSupport {
   override def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     v match {
       case s: Seq[_] =>
@@ -109,10 +110,10 @@ class SeqParquetCodec(elementCodec: ParquetWriteCodec) extends ParquetWriteCodec
   override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = ???
 }
 
-case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], params: Seq[Parameter], isRoot: Boolean = false)
+case class ParquetObjectWriter(paramCodecs: Seq[ParquetFieldWriter], params: Seq[Parameter], isRoot: Boolean = false)
     extends ParquetWriteCodec
     with LogSupport {
-  def asRoot: ObjectParquetWriteCodec = this.copy(isRoot = true)
+  def asRoot: ParquetObjectWriter = this.copy(isRoot = true)
 
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     try {
@@ -146,7 +147,7 @@ case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], params: Seq[Par
 
   private def schema           = paramCodecs.mkString(", ")
   private lazy val columnNames = paramCodecs.map(x => CName.toCanonicalName(x.name)).toIndexedSeq
-  private lazy val parquetCodecTable: Map[String, FieldCodec] = {
+  private lazy val parquetCodecTable: Map[String, ParquetFieldWriter] = {
     paramCodecs.map(x => CName.toCanonicalName(x.name) -> x).toMap
   }
 
@@ -231,8 +232,8 @@ case class ObjectParquetWriteCodec(paramCodecs: Seq[FieldCodec], params: Seq[Par
   }
 }
 
-object ObjectParquetWriteCodec {
-  def buildFromSurface(surface: Surface, schema: MessageType): ObjectParquetWriteCodec = {
+object ParquetObjectWriter {
+  def buildFromSurface(surface: Surface, schema: MessageType): ParquetObjectWriter = {
     val paramCodecs = surface.params.zip(schema.getFields.asScala).map { case (param, tpe) =>
       // Resolve the element type X of Option[X], Seq[X], etc.
       val elementSurface = tpe.getRepetition match {
@@ -244,18 +245,18 @@ object ObjectParquetWriteCodec {
           param.surface
       }
       val elementCodec = MessageCodec.ofSurface(elementSurface)
-      val pc = ParameterCodec(
+      val pc = ParquetParameterWriter(
         param.index,
         param.name,
         ParquetWriteCodec.parquetCodecOf(tpe, elementSurface, elementCodec)
       )
       tpe.getRepetition match {
         case Repetition.OPTIONAL =>
-          new OptionParameterCodec(pc)
+          new ParquetOptionWriter(pc)
         case _ =>
           pc
       }
     }
-    ObjectParquetWriteCodec(paramCodecs, surface.params)
+    ParquetObjectWriter(paramCodecs, surface.params)
   }
 }
