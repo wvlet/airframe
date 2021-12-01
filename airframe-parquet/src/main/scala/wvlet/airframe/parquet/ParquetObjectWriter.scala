@@ -113,7 +113,7 @@ class ParquetSeqWriter(elementCodec: ParquetWriteCodec) extends ParquetWriteCode
 case class ParquetObjectWriter(paramCodecs: Seq[ParquetFieldWriter], params: Seq[Parameter], isRoot: Boolean = false)
     extends ParquetWriteCodec
     with LogSupport {
-  def asRoot: ParquetObjectWriter = this.copy(isRoot = true)
+  override def asRoot: ParquetObjectWriter = this.copy(isRoot = true)
 
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
     try {
@@ -153,7 +153,21 @@ case class ParquetObjectWriter(paramCodecs: Seq[ParquetFieldWriter], params: Seq
 
   override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
     val value = ValueCodec.fromMsgPack(msgpack)
-    packValue(recordConsumer, value)
+
+    if (isRoot) {
+      recordConsumer.startMessage()
+    } else {
+      recordConsumer.startGroup()
+    }
+    try {
+      packValue(recordConsumer, value)
+    } finally {
+      if (isRoot) {
+        recordConsumer.endMessage()
+      } else {
+        recordConsumer.endGroup()
+      }
+    }
   }
 
   private def packValue(recordConsumer: RecordConsumer, value: Value): Unit = {
@@ -173,6 +187,7 @@ case class ParquetObjectWriter(paramCodecs: Seq[ParquetFieldWriter], params: Seq
         // No record. Skip the value
       }
     }
+    trace(s"packValue: ${value}")
 
     value match {
       case arr: ArrayValue =>

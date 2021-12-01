@@ -27,7 +27,7 @@ import wvlet.log.LogSupport
 class ParquetRecordWriter(schema: MessageType) extends LogSupport {
   private val parquetCodec: ParquetWriteCodec = {
     val surface = ParquetSchema.buildSurfaceFromParquetSchema(schema)
-    ParquetWriteCodec.parquetCodecOf(schema, surface, ValueCodec)
+    ParquetWriteCodec.parquetCodecOf(schema, surface, ValueCodec).asRoot
   }
 
   private val anyCodec = MessageCodec.of[Any]

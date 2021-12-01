@@ -107,11 +107,6 @@ class ParquetRecordWriterSupportAdapter(schema: MessageType) extends WriteSuppor
   override def write(record: Any): Unit = {
     require(recordConsumer != null)
 
-    try {
-      recordConsumer.startMessage()
-      codec.pack(record, recordConsumer)
-    } finally {
-      recordConsumer.endMessage()
-    }
+    codec.pack(record, recordConsumer)
   }
 }

@@ -133,7 +133,8 @@ class ParquetRecordReader[A](
 
   override def end(): Unit = {
     parentContext.foreach { ctx =>
-      ctx.recordBuilder.add(ctx.paramName, recordBuilder.toMap)
+      val m = recordBuilder.toMap
+      ctx.recordBuilder.add(ctx.paramName, m)
     }
   }
 }

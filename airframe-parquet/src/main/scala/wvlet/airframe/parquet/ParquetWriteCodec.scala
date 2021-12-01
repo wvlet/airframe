@@ -25,6 +25,7 @@ import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 trait ParquetWriteCodec {
+  def asRoot: ParquetWriteCodec = this
   def write(recordConsumer: RecordConsumer, v: Any): Unit
   def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit
 }

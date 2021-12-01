@@ -33,10 +33,18 @@ object NestedRecordWriteTest extends AirSpec {
       "c1_stats" -> ColStats(Some(ValueFactory.newInteger(1)), Some(ValueFactory.newInteger(10))),
       "c2_stats" -> ColStats(None, None)
     )
+    val m2 = Map(
+      "id"       -> ULID.newULID,
+      "c1_stats" -> ColStats(Some(ValueFactory.newInteger(100)), Some(ValueFactory.newInteger(1000))),
+      "c2_stats" -> ColStats(Some(ValueFactory.newString("apple")), Some(ValueFactory.newString("zebra")))
+    )
+
+    debug(s"write target schema: ${schema}")
 
     IOUtil.withTempFile("target/tmp-nested-record", ".parquet") { file =>
       withResource(Parquet.newRecordWriter(file.getPath, schema)) { writer =>
         writer.write(m1)
+        writer.write(m2)
       }
 
       withResource(Parquet.newReader[Map[String, Any]](file.getPath)) { reader =>
@@ -45,6 +53,12 @@ object NestedRecordWriteTest extends AirSpec {
         r1.get("id").toString shouldBe m1.get("id").toString
         r1.get("c1_stats") shouldBe Some(Map("min" -> 1, "max" -> 10))
         r1.get("c2_stats") shouldBe Some(Map.empty)
+
+        val r2 = reader.read()
+        debug(s"record: ${r2}")
+        r2.get("id").toString shouldBe m2.get("id").toString
+        r2.get("c1_stats") shouldBe Some(Map("min" -> 100, "max" -> 1000))
+        r2.get("c2_stats") shouldBe Some(Map("min" -> "apple", "max" -> "zebra"))
       }
     }
   }
