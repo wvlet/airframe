@@ -42,12 +42,21 @@ trait ParquetFieldWriter extends LogSupport {
   */
 case class ParquetParameterWriter(index: Int, name: String, parquetCodec: ParquetWriteCodec)
     extends ParquetFieldWriter {
+
   def write(recordConsumer: RecordConsumer, v: Any): Unit = {
-    try {
-      recordConsumer.startField(name, index)
-      parquetCodec.write(recordConsumer, v)
-    } finally {
-      recordConsumer.endField(name, index)
+    // if v is empty, Parquet requires skipping to write the field completely
+    v match {
+      case s: Seq[_] if s.isEmpty    =>
+      case a: Array[_] if a.isEmpty  =>
+      case m: Map[_, _] if m.isEmpty =>
+      case None                      =>
+      case _ =>
+        try {
+          recordConsumer.startField(name, index)
+          parquetCodec.write(recordConsumer, v)
+        } finally {
+          recordConsumer.endField(name, index)
+        }
     }
   }
 
