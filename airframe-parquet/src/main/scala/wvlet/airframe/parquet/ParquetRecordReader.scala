@@ -109,9 +109,17 @@ class ParquetRecordReader[A](
             if (param.surface.isOption || param.surface.isSeq || param.surface.isArray) {
               // For Option[X], Seq[X] types, extract X
               val elementSurface = param.surface.typeArgs(0)
-              new ParquetRecordReader(param.surface, ParquetSchema.toParquetSchema(elementSurface))
+              new ParquetRecordReader(
+                param.surface,
+                ParquetSchema.toParquetSchema(elementSurface),
+                parentContext = Some(ParentContext(f.getName, recordBuilder))
+              )
             } else {
-              new ParquetRecordReader(param.surface, ParquetSchema.toParquetSchema(param.surface))
+              new ParquetRecordReader(
+                param.surface,
+                ParquetSchema.toParquetSchema(param.surface),
+                parentContext = Some(ParentContext(f.getName, recordBuilder))
+              )
             }
           case None =>
             ???

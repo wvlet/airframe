@@ -62,4 +62,29 @@ object NestedRecordWriteTest extends AirSpec {
       }
     }
   }
+
+  case class DataEntry(id: ULID, location: DataLocation)
+  case class DataLocation(path: String)
+
+  test("write nested objects") {
+    val lst = (0 until 10).map { i =>
+      DataEntry(ULID.newULID, DataLocation(s"path-${i}"))
+    }.toSeq
+
+    IOUtil.withTempFile("target/tmp-nested-objects", ".parquet") { file =>
+      withResource(Parquet.newWriter[DataEntry](file.getPath)) { writer =>
+        lst.foreach(writer.write(_))
+      }
+
+      withResource(Parquet.newReader[DataEntry](file.getPath)) { reader =>
+        val b = Seq.newBuilder[DataEntry]
+        Iterator.continually(reader.read()).takeWhile(_ != null).foreach { item =>
+          b += item
+        }
+        val result = b.result()
+        result shouldBe lst
+      }
+    }
+  }
+
 }
