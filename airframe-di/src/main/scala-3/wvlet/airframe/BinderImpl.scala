@@ -86,7 +86,11 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
   inline def toProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): DesignWithContext[A] = {
     self.design.addBinding[A](
       ProviderBinding(
-        DependencyFactory(self.from, Seq(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4], Surface.of[D5]), factory),
+        DependencyFactory(
+          self.from,
+          Seq(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4], Surface.of[D5]),
+          factory
+        ),
         true,
         false,
         SourceCode()
@@ -137,7 +141,11 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
   inline def toEagerSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): DesignWithContext[A] = {
     self.design.addBinding[A](
       ProviderBinding(
-        DependencyFactory(self.from, Seq(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4], Surface.of[D5]), factory),
+        DependencyFactory(
+          self.from,
+          Seq(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4], Surface.of[D5]),
+          factory
+        ),
         true,
         true,
         SourceCode()
@@ -145,4 +153,3 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     )
   }
 }
-

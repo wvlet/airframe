@@ -19,26 +19,25 @@ object TastySurfaceFactory extends LogSupport {
 
   def ofClass(cl: Class[_]): Surface = {
     debug(s"ofClass: ${cl}")
-    cache.getOrElseUpdate(cl, {
-      debug(s"Update cache for ${cl}")
-      // Generates Surface from a runtime class
-      staging.run {
-        (quotes: Quotes) ?=>
-        import quotes.reflect._
-        val tastyType = quotes.reflect.TypeRepr.typeConstructorOf(cl)
-        debug(tastyType)
-        val f = new CompileTimeSurfaceFactory(using quotes)
-        val expr = f.surfaceOf(tastyType.asType)
-        expr
+    cache.getOrElseUpdate(
+      cl, {
+        debug(s"Update cache for ${cl}")
+        // Generates Surface from a runtime class
+        staging.run { (quotes: Quotes) ?=>
+          import quotes.reflect._
+          val tastyType = quotes.reflect.TypeRepr.typeConstructorOf(cl)
+          debug(tastyType)
+          val f    = new CompileTimeSurfaceFactory(using quotes)
+          val expr = f.surfaceOf(tastyType.asType)
+          expr
+        }
       }
-    }
     )
   }
 
   def methodsOfClass(cl: Class[_]): Seq[MethodSurface] = {
     // Generates Surface from a runtime class
-    val code: Seq[MethodSurface] = staging.run {
-      (quotes: Quotes) ?=>
+    val code: Seq[MethodSurface] = staging.run { (quotes: Quotes) ?=>
       import quotes.reflect._
       val tastyType = quotes.reflect.TypeRepr.typeConstructorOf(cl)
       debug(tastyType)

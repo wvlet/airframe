@@ -21,9 +21,8 @@ private[airframe] trait DesignImpl extends LogSupport { self: Design =>
   }
 
   /**
-    * A helper method of creating a new session and an instance of A.
-    * This method is useful when you only need to use A as an entry point of your program.
-    * After executing the body, the sesion will be closed.
+    * A helper method of creating a new session and an instance of A. This method is useful when you only need to use A
+    * as an entry point of your program. After executing the body, the sesion will be closed.
     *
     * @param body
     * @tparam A

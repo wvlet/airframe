@@ -38,22 +38,21 @@ trait HttpServerExceptionBase {
     * Set the content body using a given object. Encoding can be JSON or MsgPack based on Content-Type header.
     */
   inline def withContentOf[A](a: A): HttpServerException = {
-    if(self.isContentTypeMsgPack) {
+    if (self.isContentTypeMsgPack) {
       self.withMsgPack(MessageCodec.of[A].toMsgPack(a))
-    }
-    else {
+    } else {
       self.withJson(MessageCodec.of[A].toJson(a))
     }
   }
 
   /**
-    * Set the content body using a given object and codec factory. Encoding can be JSON or MsgPack based on Content-Type header.
+    * Set the content body using a given object and codec factory. Encoding can be JSON or MsgPack based on Content-Type
+    * header.
     */
   inline def withContentOf[A](a: A, codecFactory: MessageCodecFactory): HttpServerException = {
-    if(self.isContentTypeMsgPack) {
+    if (self.isContentTypeMsgPack) {
       self.withMsgPack(codecFactory.of[A].toMsgPack(a))
-    }
-    else {
+    } else {
       self.withJson(codecFactory.of[A].toJson(a))
     }
   }
