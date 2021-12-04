@@ -23,7 +23,7 @@ import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 import scala.jdk.CollectionConverters._
 
-object ParquetRecordReader {
+object ParquetRecordReader extends LogSupport {
   private class IntConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
     override def addInt(value: Int): Unit = {
       holder.add(fieldName, value)

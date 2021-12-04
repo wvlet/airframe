@@ -119,7 +119,7 @@ class ParquetSeqWriter(elementCodec: ParquetWriteCodec) extends ParquetWriteCode
   override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = ???
 }
 
-case class ParquetObjectWriter(paramCodecs: Seq[ParquetFieldWriter], params: Seq[Parameter], isRoot: Boolean = false)
+case class ParquetObjectWriter(paramWriters: Seq[ParquetFieldWriter], params: Seq[Parameter], isRoot: Boolean = false)
     extends ParquetWriteCodec
     with LogSupport {
   override def asRoot: ParquetObjectWriter = this.copy(isRoot = true)
@@ -136,12 +136,12 @@ case class ParquetObjectWriter(paramCodecs: Seq[ParquetFieldWriter], params: Seq
         case null =>
         // No output
         case _ =>
-          paramCodecs.zip(params).foreach { case (codec, p) =>
+          paramWriters.zip(params).foreach { case (paramWriter, p) =>
             p.get(v) match {
               case null =>
               case paramValue =>
                 trace(s"Write ${p.name}: ${paramValue}")
-                codec.write(recordConsumer, paramValue)
+                paramWriter.write(recordConsumer, paramValue)
             }
           }
       }
@@ -154,10 +154,10 @@ case class ParquetObjectWriter(paramCodecs: Seq[ParquetFieldWriter], params: Seq
     }
   }
 
-  private def schema           = s"[${paramCodecs.map(_.name).mkString(", ")}]"
-  private lazy val columnNames = paramCodecs.map(x => CName.toCanonicalName(x.name)).toIndexedSeq
+  private def schema           = s"[${paramWriters.map(_.name).mkString(", ")}]"
+  private lazy val columnNames = paramWriters.map(x => CName.toCanonicalName(x.name)).toIndexedSeq
   private lazy val parquetCodecTable: Map[String, ParquetFieldWriter] = {
-    paramCodecs.map(x => CName.toCanonicalName(x.name) -> x).toMap
+    paramWriters.map(x => CName.toCanonicalName(x.name) -> x).toMap
   }
 
   override def writeMsgPack(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
@@ -201,14 +201,14 @@ case class ParquetObjectWriter(paramCodecs: Seq[ParquetFieldWriter], params: Seq
     value match {
       case arr: ArrayValue =>
         // Array value
-        if (arr.size == paramCodecs.length) {
+        if (arr.size == paramWriters.length) {
           for ((e, colIndex) <- arr.elems.zipWithIndex) {
             val colName = columnNames(colIndex)
             writeColumnValue(colName, e)
           }
         } else {
           // Invalid shape
-          throw new IllegalArgumentException(s"${arr} size doesn't match with ${paramCodecs}")
+          throw new IllegalArgumentException(s"${arr} size doesn't match with ${paramWriters}")
         }
       case m: MapValue =>
         for ((k, v) <- m.entries) {
