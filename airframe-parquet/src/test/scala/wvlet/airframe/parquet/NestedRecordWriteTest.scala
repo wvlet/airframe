@@ -87,4 +87,35 @@ object NestedRecordWriteTest extends AirSpec {
     }
   }
 
+  case class Partition(
+      id: ULID,
+      sortedBy: Seq[String] = Seq.empty,
+      metadata: Map[String, Any] = Map.empty
+  )
+
+  test("write records with Option/Seq") {
+    val p0 = Partition(id = ULID.newULID)
+    IOUtil.withTempFile("target/tmp-nested-opt", ".parquet") { file =>
+      withResource(Parquet.newWriter[Partition](file.getPath)) { writer =>
+        writer.write(p0)
+      }
+      withResource(Parquet.newReader[Partition](file.getPath)) { reader =>
+        val r0 = reader.read()
+        r0 shouldBe p0
+      }
+    }
+  }
+
+  test("write records with Option/Seq using record writer") {
+    val p0 = Partition(id = ULID.newULID, metadata = Map("xxx" -> "yyy"))
+    IOUtil.withTempFile("target/tmp-nested-opt-record", ".parquet") { file =>
+      withResource(Parquet.newRecordWriter(file.getPath, Parquet.toParquetSchema(Surface.of[Partition]))) { writer =>
+        writer.write(p0)
+      }
+      withResource(Parquet.newReader[Partition](file.getPath)) { reader =>
+        val r0 = reader.read()
+        r0 shouldBe p0
+      }
+    }
+  }
 }

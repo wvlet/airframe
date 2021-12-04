@@ -80,6 +80,9 @@ object ParquetSchema {
       case s: Surface if s.isSeq || s.isArray =>
         val elementSurface = s.typeArgs(0)
         buildParquetType(elementSurface, Some(Repetition.REPEATED))
+      case m: Surface if m.isMap =>
+        // Encode Map[_, _] type as Binary and make it optional as Map can be empty
+        Types.primitive(PrimitiveTypeName.BINARY, Repetition.OPTIONAL)
 //      case m: Surface if m.isMap =>
 //        val keySurface   = m.typeArgs(0)
 //        val valueSurface = m.typeArgs(1)
