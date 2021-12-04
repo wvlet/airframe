@@ -18,12 +18,12 @@ import wvlet.airframe.surface.Surface
 import java.util.concurrent.ConcurrentHashMap
 
 private[airframe] trait AirframeSessionImpl { self: AirframeSession =>
-   inline override def register[A](instance: A): Unit = {
-      {
-         val surface = Surface.of[A]
-         val owner = self.findOwnerSessionOf(surface).getOrElse(self)
-         owner.registerInjectee(surface, surface, instance)
-         ()
-      }
-   }
+  inline override def register[A](instance: A): Unit = {
+    {
+      val surface = Surface.of[A]
+      val owner   = self.findOwnerSessionOf(surface).getOrElse(self)
+      owner.registerInjectee(surface, surface, instance)
+      ()
+    }
+  }
 }

@@ -17,7 +17,7 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{Http,HttpResponseCodec, HttpSyncClient}
+import wvlet.airframe.http.{Http, HttpResponseCodec, HttpSyncClient}
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.airframe.surface.Surface
 
@@ -33,37 +33,37 @@ trait URLConnectionClientBase extends HttpSyncClient[Request, Response] { self: 
     } else {
       // Need a conversion
       val standardResponseCodec = new HttpResponseCodec[Response]
-      val codec   = MessageCodec.of[A]
-      val msgpack = standardResponseCodec.toMsgPack(response)
+      val codec                 = MessageCodec.of[A]
+      val msgpack               = standardResponseCodec.toMsgPack(response)
       codec.unpack(msgpack)
     }
   }
 
   override def get[Resource](
-          resourcePath: String,
-          requestFilter: Request => Request
+      resourcePath: String,
+      requestFilter: Request => Request
   ): Resource = {
     convert[Resource](send(Http.request(resourcePath), requestFilter))
   }
 
   inline override def getOps[
-          Resource,
-          OperationResponse
+      Resource,
+      OperationResponse
   ](
-          resourcePath: String,
-          resource: Resource,
-          requestFilter: Request => Request
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request
   ): OperationResponse = {
     getResource[Resource, OperationResponse](resourcePath, resource, requestFilter)
   }
 
   inline override def getResource[
-          ResourceRequest,
-          Resource
+      ResourceRequest,
+      Resource
   ](
-          resourcePath: String,
-          resourceRequest: ResourceRequest,
-          requestFilter: Request => Request
+      resourcePath: String,
+      resourceRequest: ResourceRequest,
+      requestFilter: Request => Request
   ): Resource = {
     // Read resource as JSON
     val resourceRequestJsonValue =
@@ -73,8 +73,8 @@ trait URLConnectionClientBase extends HttpSyncClient[Request, Response] { self: 
   }
 
   override def list[OperationResponse](
-          resourcePath: String,
-          requestFilter: Request => Request
+      resourcePath: String,
+      requestFilter: Request => Request
   ): OperationResponse = {
     convert[OperationResponse](send(Http.request(resourcePath), requestFilter))
   }
@@ -87,82 +87,82 @@ trait URLConnectionClientBase extends HttpSyncClient[Request, Response] { self: 
   }
 
   override def post[Resource](
-          resourcePath: String,
-          resource: Resource,
-          requestFilter: Request => Request
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request
   ): Resource = {
     val r = Http.POST(resourcePath).withJson(toJson(resource))
     convert[Resource](send(r, requestFilter))
   }
 
   override def postRaw[Resource](
-          resourcePath: String,
-          resource: Resource,
-          requestFilter: Request => Request
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request
   ): Response = {
     postOps[Resource, Response](resourcePath, resource, requestFilter)
   }
 
   override def postOps[
-          Resource,
-          OperationResponse
+      Resource,
+      OperationResponse
   ](
-          resourcePath: String,
-          resource: Resource,
-          requestFilter: Request => Request
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request
   ): OperationResponse = {
     val r = Http.POST(resourcePath).withJson(toJson(resource))
     convert[OperationResponse](send(r, requestFilter))
   }
 
   override def put[Resource](
-          resourcePath: String,
-          resource: Resource,
-          requestFilter: Request => Request
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request
   ): Resource = {
     val r = Http.PUT(resourcePath).withJson(toJson(resource))
     convert[Resource](send(r, requestFilter))
   }
 
   override def putRaw[Resource](
-          resourcePath: String,
-          resource: Resource,
-          requestFilter: Request => Request
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request
   ): Response =
     putOps[Resource, Response](resourcePath, resource, requestFilter)
 
   override def putOps[
-          Resource,
-          OperationResponse
+      Resource,
+      OperationResponse
   ](
-          resourcePath: String,
-          resource: Resource,
-          requestFilter: Request => Request
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request
   ): OperationResponse = {
     val r = Http.PUT(resourcePath).withJson(toJson(resource))
     convert[OperationResponse](send(r, requestFilter))
   }
 
   override def delete[OperationResponse](
-          resourcePath: String,
-          requestFilter: Request => Request
+      resourcePath: String,
+      requestFilter: Request => Request
   ): OperationResponse = {
     val r = Http.DELETE(resourcePath)
     convert[OperationResponse](send(r, requestFilter))
   }
 
   override def deleteRaw(
-          resourcePath: String,
-          requestFilter: Request => Request
+      resourcePath: String,
+      requestFilter: Request => Request
   ): Response = delete[Response](resourcePath, requestFilter)
 
   override def deleteOps[
-          Resource,
-          OperationResponse
+      Resource,
+      OperationResponse
   ](
-          resourcePath: String,
-          resource: Resource,
-          requestFilter: Request => Request
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request
   ): OperationResponse = {
 
     val r = Http.DELETE(resourcePath).withJson(toJson(resource))
@@ -170,37 +170,37 @@ trait URLConnectionClientBase extends HttpSyncClient[Request, Response] { self: 
   }
 
   override def patch[Resource](
-          resourcePath: String,
-          resource: Resource,
-          requestFilter: Request => Request
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request
   ): Resource = {
     val r = Http
-            .POST(resourcePath)
-            .withHeader("X-HTTP-Method-Override", "PATCH")
-            .withJson(toJson(resource))
+      .POST(resourcePath)
+      .withHeader("X-HTTP-Method-Override", "PATCH")
+      .withJson(toJson(resource))
     convert[Resource](send(r, requestFilter))
   }
 
   override def patchRaw[Resource](
-          resourcePath: String,
-          resource: Resource,
-          requestFilter: Request => Request
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request
   ): Response =
     patchOps[Resource, Response](resourcePath, resource, requestFilter)
   override def patchOps[
-          Resource,
-          OperationResponse
+      Resource,
+      OperationResponse
   ](
-          resourcePath: String,
-          resource: Resource,
-          requestFilter: Request => Request
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request
   ): OperationResponse = {
     // Workaround: URLConnection doesn't support PATCH
-    //https://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch
+    // https://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch
     val r = Http
-            .POST(resourcePath)
-            .withHeader("X-HTTP-Method-Override", "PATCH")
-            .withJson(toJson(resource))
+      .POST(resourcePath)
+      .withHeader("X-HTTP-Method-Override", "PATCH")
+      .withJson(toJson(resource))
     convert[OperationResponse](send(r, requestFilter))
   }
 

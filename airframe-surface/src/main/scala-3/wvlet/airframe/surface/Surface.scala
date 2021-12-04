@@ -30,14 +30,13 @@ trait Surface extends Serializable {
   def isOption: Boolean
   def isAlias: Boolean
   def isPrimitive: Boolean
-  def isSeq: Boolean = classOf[Seq[_]].isAssignableFrom(rawType)
+  def isSeq: Boolean   = classOf[Seq[_]].isAssignableFrom(rawType)
   def isMap: Boolean   = classOf[Map[_, _]].isAssignableFrom(rawType)
   def isArray: Boolean = this.isInstanceOf[ArraySurface]
 
   def objectFactory: Option[ObjectFactory] = None
-  def withOuter(outer: AnyRef): Surface = this
+  def withOuter(outer: AnyRef): Surface    = this
 }
-
 
 /**
   * Scala 3 implementation of Surface
@@ -45,6 +44,6 @@ trait Surface extends Serializable {
 object Surface {
   import scala.quoted._
 
-  inline def of[A]: Surface = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
+  inline def of[A]: Surface                   = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
   inline def methodsOf[A]: Seq[MethodSurface] = ${ CompileTimeSurfaceFactory.methodsOf[A] }
 }

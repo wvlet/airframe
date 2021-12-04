@@ -13,7 +13,6 @@
  */
 package wvlet.airframe
 
-
 /**
   * A hack to embed source code location where DI is used
   */
@@ -30,13 +29,13 @@ object SourceCode {
 
   private def generateImpl(using q: Quotes): Expr[SourceCode] = {
     import q.reflect._
-    val pos = Position.ofMacroExpansion
-    val line = Expr(pos.startLine)
-    val column = Expr(pos.endColumn)
-    val src = pos.sourceFile
+    val pos                         = Position.ofMacroExpansion
+    val line                        = Expr(pos.startLine)
+    val column                      = Expr(pos.endColumn)
+    val src                         = pos.sourceFile
     val srcPath: java.nio.file.Path = src.jpath
-    val path = Expr(srcPath.toFile.getPath)
-    val fileName = Expr(srcPath.getFileName().toString)
-    '{ SourceCode(${path}, ${fileName}, ${line} + 1, ${column}) }
+    val path                        = Expr(srcPath.toFile.getPath)
+    val fileName                    = Expr(srcPath.getFileName().toString)
+    '{ SourceCode(${ path }, ${ fileName }, ${ line } + 1, ${ column }) }
   }
 }
