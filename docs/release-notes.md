@@ -6,6 +6,15 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.12.0
+
+- airframe-parquet: Fix nested Seq/Map writer ([#1952](https://github.com/wvlet/airframe/issues/1952)) [[3b703a14](https://github.com/wvlet/airframe/commit/3b703a14)]
+- airframe-parquet: Fix nested object reader ([#1951](https://github.com/wvlet/airframe/issues/1951)) [[66000e04](https://github.com/wvlet/airframe/commit/66000e04)]
+- Update auth to 2.17.96 ([#1957](https://github.com/wvlet/airframe/issues/1957)) [[99f5d376](https://github.com/wvlet/airframe/commit/99f5d376)]
+- Update scalafmt-core to 3.2.1 ([#1955](https://github.com/wvlet/airframe/issues/1955)) [[e4f746bc](https://github.com/wvlet/airframe/commit/e4f746bc)]
+- Update sbt-scalafmt to 2.4.5 ([#1956](https://github.com/wvlet/airframe/issues/1956)) [[e1c872cc](https://github.com/wvlet/airframe/commit/e1c872cc)]
+- Update logback-core to 1.2.7 ([#1928](https://github.com/wvlet/airframe/issues/1928)) [[ab186cce](https://github.com/wvlet/airframe/commit/ab186cce)]
+
 ## 21.11.0
 
 This version supports nested record read/write of Parquet files and includes major dependency updates (Scala, Scala.js, scalajs-dom, Finagle, okhttp, etc.)
