@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.grpc.internal
 
-import io.grpc.{StatusException, StatusRuntimeException}
+import io.grpc.{Metadata, StatusException, StatusRuntimeException}
 import wvlet.airframe.codec.MessageCodecException
 import wvlet.airframe.http.{HttpServerException, HttpStatus}
 import wvlet.log.LogSupport
@@ -25,6 +25,8 @@ import scala.concurrent.ExecutionException
 /**
   */
 object GrpcException extends LogSupport {
+
+  private[grpc] val rpcErrorKey = Metadata.Key.of[String]("airframe_rpc_error", Metadata.ASCII_STRING_MARSHALLER)
 
   /**
     * Convert an exception to gRPC-specific exception types
@@ -56,19 +58,21 @@ object GrpcException extends LogSupport {
         s
       case e: MessageCodecException =>
         io.grpc.Status.INTERNAL
-          .withDescription(s"Failed to encode/decode data")
+          .withDescription(s"Failed to encode/decode data: ${e.getMessage}")
           .withCause(e)
           .asRuntimeException()
       case e: IllegalArgumentException =>
         io.grpc.Status.INVALID_ARGUMENT
           .withCause(e)
+          .withDescription(e.getMessage)
           .asRuntimeException()
       case e: UnsupportedOperationException =>
         io.grpc.Status.UNIMPLEMENTED
           .withCause(e)
+          .withDescription(e.getMessage)
           .asRuntimeException()
       case e: HttpServerException =>
-        val s = e.status match {
+        var s = e.status match {
           case HttpStatus.BadRequest_400 =>
             io.grpc.Status.INVALID_ARGUMENT
           case HttpStatus.Unauthorized_401 =>
@@ -89,7 +93,16 @@ object GrpcException extends LogSupport {
           case other =>
             io.grpc.Status.UNKNOWN
         }
-        s.withCause(e).asRuntimeException()
+
+        s = s.withCause(e).withDescription(e.getMessage)
+        if (e.message.nonEmpty) {
+          val m        = e.message
+          val metadata = new Metadata()
+          metadata.put[String](rpcErrorKey, s"${m.toContentString}")
+          s.asRuntimeException(metadata)
+        } else {
+          s.asRuntimeException()
+        }
       case other =>
         io.grpc.Status.INTERNAL
           .withCause(other)
