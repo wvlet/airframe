@@ -27,6 +27,8 @@ This version supports nested record read/write of Parquet files and includes maj
 - airspec: Fixes [#1845](https://github.com/wvlet/airframe/issues/1845) MISSING_DEPENDENCY for no-arg tests ([#1895](https://github.com/wvlet/airframe/issues/1895)) [[01792ff7](https://github.com/wvlet/airframe/commit/01792ff7)]
 - airframe-http: Fixes [#1843](https://github.com/wvlet/airframe/issues/1843): Sanitize class names in Surface and http/RPC logs ([#1894](https://github.com/wvlet/airframe/issues/1894)) [[a1b68688](https://github.com/wvlet/airframe/commit/a1b68688)]
 - airframe-http: Scala 3 support prep ([#1760](https://github.com/wvlet/airframe/issues/1760)) [[68322a4b](https://github.com/wvlet/airframe/commit/68322a4b)]
+- airframe-http-recorder: Ignore pragma, cache-control header for request match ([#1892](https://github.com/wvlet/airframe/issues/1892)) [[2ac80e6e](https://github.com/wvlet/airframe/commit/2ac80e6e)]
+- airframe-finagle: Handle ChannelClosedException sub classes ([#1891](https://github.com/wvlet/airframe/issues/1891)) [[15045eab](https://github.com/wvlet/airframe/commit/15045eab)]
 
 ### Major Dependency Updates
 - Upgrade to Scala 3.1.0 ([#1882](https://github.com/wvlet/airframe/issues/1882)) [[75517719](https://github.com/wvlet/airframe/commit/75517719)]
@@ -51,8 +53,6 @@ This version supports nested record read/write of Parquet files and includes maj
 - Update rpc examples ([#1901](https://github.com/wvlet/airframe/issues/1901)) [[b68ba769](https://github.com/wvlet/airframe/commit/b68ba769)]
 - Add gallery demo ([#1900](https://github.com/wvlet/airframe/issues/1900)) [[b5655fc6](https://github.com/wvlet/airframe/commit/b5655fc6)]
 - Update example ([#1899](https://github.com/wvlet/airframe/issues/1899)) [[8a0ac479](https://github.com/wvlet/airframe/commit/8a0ac479)]
-- http-recorder: Ignore pragma, cache-control header for request match ([#1892](https://github.com/wvlet/airframe/issues/1892)) [[2ac80e6e](https://github.com/wvlet/airframe/commit/2ac80e6e)]
-- airframe-finagle: Handle ChannelClosedException sub classes ([#1891](https://github.com/wvlet/airframe/issues/1891)) [[15045eab](https://github.com/wvlet/airframe/commit/15045eab)]
 - Add action-junit-report ([#1889](https://github.com/wvlet/airframe/issues/1889)) [[66656835](https://github.com/wvlet/airframe/commit/66656835)]
 - Update protobuf-java to 3.19.0 ([#1886](https://github.com/wvlet/airframe/issues/1886)) [[f88437cc](https://github.com/wvlet/airframe/commit/f88437cc)]
 - Update sbt-mdoc to 2.2.24 ([#1884](https://github.com/wvlet/airframe/issues/1884)) [[f8e6ecd5](https://github.com/wvlet/airframe/commit/f8e6ecd5)]
