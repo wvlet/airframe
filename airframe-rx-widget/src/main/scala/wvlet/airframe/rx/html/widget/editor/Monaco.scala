@@ -8,7 +8,7 @@ package editor {
 
   package monaco {
 
-    import org.scalajs.dom.raw.{HTMLElement, MouseEvent, Worker}
+    import org.scalajs.dom.{HTMLElement, MouseEvent, Worker}
 
     @js.native
     trait Environment extends js.Object {
@@ -608,7 +608,7 @@ package editor {
 
     package editor {
 
-      import org.scalajs.dom.raw.Element
+      import org.scalajs.dom.Element
       import wvlet.airframe.rx.html.widget.editor.monaco.editor.Editor.{
         BuiltinTheme,
         EditorAutoClosingOvertypeStrategy,

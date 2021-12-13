@@ -18,6 +18,6 @@ import org.scalajs.dom
   */
 object compat {
   trait PlatformEmbeddableNode {
-    @inline implicit def embedHtmlElement[A <: dom.raw.Element]: EmbeddableNode[A] = null
+    @inline implicit def embedHtmlElement[A <: dom.Element]: EmbeddableNode[A] = null
   }
 }

@@ -115,7 +115,7 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
     }
     val tail = e.status match {
       case Status.Success => ""
-      case _ if e.throwable.isDefined =>
+      case _ if e.throwable.isDefined() =>
         val ex = e.throwable.get()
         ex match {
           case se: AirSpecFailureBase =>

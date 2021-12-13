@@ -51,7 +51,7 @@ private[airspec] class AirSpecTaskRunner(
         // Getting an instance of AirSpec
         val testObj = taskDef.fingerprint() match {
           // In Scala.js we cannot use pattern match for objects like AirSpecObjectFingerPrint, so using isModule here.
-          case c: SubclassFingerprint if c.isModule =>
+          case c: SubclassFingerprint if c.isModule() =>
             compat.findCompanionObjectOf(testClassName, classLoader)
           case _ =>
             compat.newInstanceOf(testClassName, classLoader)
