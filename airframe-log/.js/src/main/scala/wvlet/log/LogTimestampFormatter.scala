@@ -7,10 +7,10 @@ import scala.scalajs.js
   */
 object LogTimestampFormatter {
   def formatTimestamp(timeMillis: Long): String = {
-    new js.Date(timeMillis).toISOString()
+    new js.Date(timeMillis.toDouble).toISOString()
   }
 
   def formatTimestampWithNoSpaace(timeMillis: Long): String = {
-    new js.Date(timeMillis).toISOString()
+    new js.Date(timeMillis.toDouble).toISOString()
   }
 }

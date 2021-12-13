@@ -23,7 +23,7 @@ object compat {
       private var intervalHandle: Option[SetIntervalHandle] = None
       private var lastTimeMillis                            = System.currentTimeMillis()
       override def schedule[U](millis: Long)(body: Long => U): Unit = {
-        val handle = scala.scalajs.js.timers.setInterval(millis) {
+        val handle = scala.scalajs.js.timers.setInterval(millis.toDouble) {
           val currentTimeMillis = System.currentTimeMillis()
           try {
             body(currentTimeMillis - lastTimeMillis)
@@ -42,7 +42,7 @@ object compat {
   }
 
   def scheduleOnce[U](delayMills: Long)(body: => U): Cancelable = {
-    val timeoutHandle = scala.scalajs.js.timers.setTimeout(delayMills)(body)
+    val timeoutHandle = scala.scalajs.js.timers.setTimeout(delayMills.toDouble)(body)
     Cancelable { () =>
       Option(timeoutHandle).foreach { handle =>
         Try(scala.scalajs.js.timers.clearTimeout(handle))
