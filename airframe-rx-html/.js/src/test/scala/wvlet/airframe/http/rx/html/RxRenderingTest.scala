@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.rx.html
 
-import org.scalajs.dom.raw.HTMLElement
+import org.scalajs.dom.HTMLElement
 import wvlet.airframe.rx.{Cancelable, Rx, RxStream}
 import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxElement}
 import wvlet.airspec.AirSpec
