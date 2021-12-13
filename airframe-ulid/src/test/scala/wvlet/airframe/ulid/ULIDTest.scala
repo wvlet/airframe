@@ -50,13 +50,7 @@ class ULIDTest extends AirSpec with PropertyCheck {
   }
 
   test("generate monotonically increasing ULIDs") {
-    val start = System.currentTimeMillis() - 1
-    val lst   = (0 to 10000).map { i => ULID.newULID }
-    val end   = System.currentTimeMillis()
-    lst.forall { x =>
-      start <= x.epochMillis && x.epochMillis <= end shouldBe true
-    }
-
+    val lst: Seq[ULID] = (0 to 1000).map { i => ULID.newULID }
     lst.sliding(2).forall { pair =>
       pair(0) < pair(1) &&
       pair(0).epochMillis <= pair(1).epochMillis
