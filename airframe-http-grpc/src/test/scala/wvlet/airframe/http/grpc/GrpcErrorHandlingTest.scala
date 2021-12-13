@@ -39,8 +39,8 @@ object GrpcErrorHandlingTest extends AirSpec {
     ex.getMessage.contains("409") shouldBe true
     ex.getStatus.isOk shouldBe false
     ex.getStatus.getCode shouldBe Code.ALREADY_EXISTS
-    val trailors = Status.trailersFromThrowable(ex)
-    val rpcError = trailors.get[String](GrpcException.rpcErrorKey)
-    info(s"error trailor: ${rpcError}")
+    val trailers = Status.trailersFromThrowable(ex)
+    val rpcError = trailers.get[String](GrpcException.rpcErrorKey)
+    info(s"error trailer: ${rpcError}")
   }
 }
