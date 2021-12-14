@@ -20,7 +20,6 @@ class RPCExceptionTest extends AirSpec {
   test("enumerate all error types") {
     ErrorType.unapply("USER_ERROR") shouldBe Some(ErrorType.USER_ERROR)
     ErrorType.unapply("INTERNAL_ERROR") shouldBe Some(ErrorType.INTERNAL_ERROR)
-    ErrorType.unapply("EXTERNAL_ERROR") shouldBe Some(ErrorType.EXTERNAL_ERROR)
 
     ErrorType.all.foreach { tpe =>
       ErrorType.unapply(tpe.name) shouldBe Some(tpe)
