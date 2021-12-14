@@ -120,9 +120,7 @@ ThisBuild / publishTo := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
   crossScalaVersions := targetScalaVersions,
-  coverageEnabled    := false,
-  // For addressing the fairness issue of the global ExecutorContext https://github.com/scala-js/scala-js/issues/4129
-  libraryDependencies += "org.scala-js" %%% "scala-js-macrotask-executor" % "1.0.0"
+  coverageEnabled    := false
 )
 
 val noPublish = Seq(
@@ -665,7 +663,9 @@ lazy val rx =
       )
     )
     .jsSettings(
-      jsBuildSettings
+      jsBuildSettings,
+      // For addressing the fairness issue of the global ExecutorContext https://github.com/scala-js/scala-js/issues/4129
+      libraryDependencies += "org.scala-js" %%% "scala-js-macrotask-executor" % "1.0.0"
     )
     .dependsOn(log, airspecRef % Test)
 
