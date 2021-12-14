@@ -6,6 +6,22 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 21.12.1
+
+This release is for upgrading to Scala.js 1.8.0 and using a safer version of logback-core 1.2.8, which removes JNDI/JDBC related codei [LOGBACK-1591](https://jira.qos.ch/browse/LOGBACK-1591). Note that it's a different issue from the log4j vulnerability [CVE-2021-44228](https://nvd.nist.gov/vuln/detail/CVE-2021-44228). logback-core is used inside airframe-log for rotating log files and airframe-log doesn't use any logback configuration file, which can be a target of JNDI lookup security hole.  
+
+
+- airframe-rx: Add MacroTask executor as a dependency ([#1972](https://github.com/wvlet/airframe/issues/1972)) [[8784b0ab](https://github.com/wvlet/airframe/commit/8784b0ab)]
+- Update logback-core to 1.2.8 ([#1971](https://github.com/wvlet/airframe/issues/1971)) [[d6957f48](https://github.com/wvlet/airframe/commit/d6957f48)]
+- Use MacrotaskExecutor  ([#1970](https://github.com/wvlet/airframe/issues/1970)) [[3b294ff4](https://github.com/wvlet/airframe/commit/3b294ff4)]
+- Update scalajs-test-interface to 1.8.0 ([#1967](https://github.com/wvlet/airframe/issues/1967)) [[badec138](https://github.com/wvlet/airframe/commit/badec138)]
+- Fix scalajs-dom related warnings ([#1968](https://github.com/wvlet/airframe/issues/1968)) [[b6467ec0](https://github.com/wvlet/airframe/commit/b6467ec0)]
+- Remove unstable ULID tests because System.currentTimeMillis() can be rollbacked occasionally ([#1966](https://github.com/wvlet/airframe/issues/1966)) [[bff25ca7](https://github.com/wvlet/airframe/commit/bff25ca7)]
+- Update sbt-scalajs, scalajs-compiler, ... to 1.8.0 ([#1965](https://github.com/wvlet/airframe/issues/1965)) [[edd480d4](https://github.com/wvlet/airframe/commit/edd480d4)]
+- Fix 21.11.0 release note [[619c457d](https://github.com/wvlet/airframe/commit/619c457d)]
+- Update sbt, sbt-dependency-tree, ... to 1.5.6 ([#1964](https://github.com/wvlet/airframe/issues/1964)) [[79fb0c3b](https://github.com/wvlet/airframe/commit/79fb0c3b)]
+- Update trino-main to 365 ([#1958](https://github.com/wvlet/airframe/issues/1958)) [[b4971366](https://github.com/wvlet/airframe/commit/b4971366)]
+
 ## 21.12.0
 
 - airframe-parquet: Fix nested Seq/Map writer ([#1952](https://github.com/wvlet/airframe/issues/1952)) [[3b703a14](https://github.com/wvlet/airframe/commit/3b703a14)]
