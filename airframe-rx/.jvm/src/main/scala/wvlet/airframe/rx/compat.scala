@@ -19,6 +19,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
   */
 object compat {
+  def defaultExecutionContext: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+
   def newTimer: Timer =
     new Timer {
       private val t = new java.util.Timer(true)

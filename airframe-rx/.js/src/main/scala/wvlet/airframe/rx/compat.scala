@@ -12,12 +12,16 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx
+import org.scalajs.macrotaskexecutor.MacrotaskExecutor
+
 import scala.scalajs.js.timers.SetIntervalHandle
 import scala.util.Try
 
 /**
   */
 object compat {
+  def defaultExecutionContext: scala.concurrent.ExecutionContext = MacrotaskExecutor.Implicits.global
+
   def newTimer: Timer = {
     new Timer {
       private var intervalHandle: Option[SetIntervalHandle] = None

@@ -29,7 +29,7 @@ class HtmlRenderingTest extends AirSpec {
         c.cancel
         other.innerText
     }
-    info(txt)
+    debug(txt)
     txt
   }
 

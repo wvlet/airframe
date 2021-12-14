@@ -342,8 +342,7 @@ object RxTest extends AirSpec {
     )
   }
 
-  implicit val ec: scala.concurrent.ExecutionContext =
-    scala.concurrent.ExecutionContext.global
+  implicit val ec: scala.concurrent.ExecutionContext = compat.defaultExecutionContext
 
   test("from Future[X]") {
     val f  = Future.successful(1)
