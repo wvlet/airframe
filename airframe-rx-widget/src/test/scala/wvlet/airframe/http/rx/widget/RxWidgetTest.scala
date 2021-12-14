@@ -36,7 +36,7 @@ class RxWidgetTest extends AirSpec {
       case _ =>
         dom.innerText
     }
-    info(html)
+    debug(html)
     c.cancel // cleanup
     html
   }

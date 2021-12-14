@@ -120,7 +120,9 @@ ThisBuild / publishTo := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
   crossScalaVersions := targetScalaVersions,
-  coverageEnabled    := false
+  coverageEnabled    := false,
+  // For addressing the issue fairness of global ExecutorContext https://github.com/scala-js/scala-js/issues/4129
+  libraryDependencies += "org.scala-js" %%% "scala-js-macrotask-executor" % "1.0.0"
 )
 
 val noPublish = Seq(

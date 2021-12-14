@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.js
+import org.scalajs.macrotaskexecutor.MacrotaskExecutor
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory, MessageContext}
 import wvlet.airframe.http.Http
-import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http.js.JSHttpClient.MessageEncoding
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 import wvlet.airframe.surface.Surface
@@ -23,8 +23,8 @@ import wvlet.airspec.AirSpec
 /**
   */
 object JSHttpClientTest extends AirSpec {
+  implicit val ec: scala.concurrent.ExecutionContext = MacrotaskExecutor.Implicits.global
 
-  implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
   case class Person(id: Int, name: String)
 
   test("create http client") {
