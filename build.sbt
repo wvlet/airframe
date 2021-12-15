@@ -21,6 +21,7 @@ val GRPC_VERSION                    = "1.42.1"
 val JMH_VERSION                     = "1.33"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 val PARQUET_VERSION                 = "1.12.2"
+val SNAKE_YAML_VERSION              = "1.29"
 
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
@@ -468,7 +469,7 @@ lazy val config =
       name        := "airframe-config",
       description := "airframe configuration module",
       libraryDependencies ++= Seq(
-        "org.yaml" % "snakeyaml" % "1.29"
+        "org.yaml" % "snakeyaml" % SNAKE_YAML_VERSION
       )
     )
     .dependsOn(diJVM, codecJVM, airspecRefJVM % Test)
@@ -774,7 +775,9 @@ lazy val finagle =
         "com.twitter" %% "finagle-netty4"      % FINAGLE_VERSION,
         "com.twitter" %% "finagle-core"        % FINAGLE_VERSION,
         // Redirecting slf4j log in Finagle to airframe-log
-        "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
+        "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION,
+        // Use a version that fixes [CVE-2017-18640]
+        "org.yaml" % "snakeyaml" % SNAKE_YAML_VERSION
       )
     )
     .dependsOn(httpRouter, airspecRefJVM % Test)
@@ -878,7 +881,9 @@ lazy val fluentd =
       libraryDependencies ++= Seq(
         "org.komamitsu" % "fluency-core"         % FLUENCY_VERSION,
         "org.komamitsu" % "fluency-fluentd"      % FLUENCY_VERSION,
-        "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION,
+        "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION
+        // td-client-java -> json-simple happened to include junit 4.10 [CVE-2020-15250]
+          exclude ("junit", "junit"),
         // Redirecting slf4j log from Fluency to aiframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
