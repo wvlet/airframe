@@ -13,13 +13,14 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.http.ErrorType.USER_ERROR
 import wvlet.airspec.AirSpec
 
-class RPCExceptionTest extends AirSpec {
-
+object RPCExceptionTest extends AirSpec {
   test("enumerate all error types") {
     ErrorType.unapply("USER_ERROR") shouldBe Some(ErrorType.USER_ERROR)
     ErrorType.unapply("INTERNAL_ERROR") shouldBe Some(ErrorType.INTERNAL_ERROR)
+    ErrorType.unapply("RESOURCE_ERROR") shouldBe Some(ErrorType.RESOURCE_ERROR)
 
     ErrorType.all.foreach { tpe =>
       ErrorType.unapply(tpe.name) shouldBe Some(tpe)
@@ -27,4 +28,7 @@ class RPCExceptionTest extends AirSpec {
       ErrorType.unapply(tpe.name.reverse) shouldBe None
     }
   }
+
+  test("standard error code") {}
+
 }
