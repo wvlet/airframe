@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.http.ErrorType.USER_ERROR
 import wvlet.airspec.AirSpec
 
 object RPCExceptionTest extends AirSpec {
@@ -27,6 +26,16 @@ object RPCExceptionTest extends AirSpec {
       ErrorType.unapply(tpe.name.toLowerCase) shouldBe Some(tpe)
       ErrorType.unapply(tpe.name.reverse) shouldBe None
     }
+  }
+
+  test("report RPC error") {}
+
+  test("update exception instance") {
+    val ex1 = RPCException(StandardErrorCode.SYNTAX_ERROR, "syntax error")
+    val ex2 = ex1.withMessage("updated error message")
+
+    info(ex1)
+    info(ex2)
   }
 
   test("standard error code") {}

@@ -23,8 +23,18 @@ case class RPCException(
     // Custom data
     metadata: Map[String, Any] = Map.empty
 ) extends Exception(s"[${errorCode}] ${message}", cause.getOrElse(null)) {
-  def withMessage(newMessage: String): RPCException = this.copy(message = newMessage)
+
+  def withMessage(newMessage: String): RPCException = {
+    val ex = this.copy(message = newMessage)
+    ex.setStackTrace(this.getStackTrace)
+    ex
+  }
 }
+
+case class RPCError(
+    errorType: String,
+    errorCode: String
+) {}
 
 /**
   * A base class for defining custom ErrorCode.
@@ -67,14 +77,20 @@ object StandardErrorCode {
   case object INVALID_REQUEST  extends UserError
   case object INVALID_ARGUMENT extends UserError
   case object SYNTAX_ERROR     extends UserError
-  case object NOT_SUPPORTED    extends UserError
+
+  /**
+    * Used for describing index out of bounds error, number overflow, underflow, scaling errors of the user inputs, etc.
+    */
+  case object OUT_OF_RANGE extends UserError
 
   // Invalid RPC target
   case object NOT_FOUND      extends UserError
   case object ALREADY_EXISTS extends UserError
-  case object OUT_OF_RANGE   extends UserError
+  case object NOT_SUPPORTED  extends UserError
+  case object UNIMPLEMENTED  extends UserError
 
   // Invalid service state
+  case object UNEXPECTED_STATE   extends UserError
   case object INCONSISTENT_STATE extends UserError
 
   // Auth
@@ -82,20 +98,31 @@ object StandardErrorCode {
   case object PERMISSION_DENIED extends UserError
 
   // Request error
-  case object CANCELLED extends UserError
+  case object CANCELLED   extends UserError
+  case object INTERRUPTED extends UserError
 
   // Internal errors
   case object GENERIC_INTERNAL_ERROR extends InternalError
-  case object UNKNOWN_INTERNAL_ERROR extends InternalError
-  case object UNAVAILABLE            extends InternalError
-  case object DEADLINE_EXCEEDED      extends InternalError
-  case object CONFLICT               extends InternalError
-  case object ABORTED                extends InternalError
+  /*
+   * Unknown error will be categorized as an internal error
+   */
+  case object UNKNOWN extends InternalError
+
+  /**
+    * When the service is currently unavailable, e.g., circuit breaker is open, the service is down, etc.
+    */
+  case object UNAVAILABLE       extends InternalError
+  case object DEADLINE_EXCEEDED extends InternalError
+  case object CONFLICT          extends InternalError
+  case object ABORTED           extends InternalError
+
+  /**
+    * Data is corrupted
+    */
+  case object DATA_CORRUPTED extends InternalError
 
   // Resource errors
   case object GENERIC_RESOURCE_ERROR extends ResourceError
   case object TOO_MANY_REQUESTS      extends ResourceError
   case object RESOURCE_EXHAUSTED     extends ResourceError
-  case object REACHED_QUOTA          extends ResourceError
-
 }
