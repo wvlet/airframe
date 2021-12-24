@@ -53,6 +53,7 @@ val buildSettings = Seq[Setting[_]](
   crossScalaVersions := targetScalaVersions,
   crossPaths         := true,
   publishMavenStyle  := true,
+  versionScheme      := None,
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   scalacOptions ++= Seq(
     "-feature",
@@ -68,9 +69,7 @@ val buildSettings = Seq[Setting[_]](
     }
   },
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
-  libraryDependencies ++= Seq(
-    "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % Test
-  ) ++ {
+  libraryDependencies ++= {
     if (DOTTY)
       Seq.empty
     else

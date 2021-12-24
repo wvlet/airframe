@@ -7,3 +7,32 @@ AirSpec uses pure Scala functions for writing test cases. This style requires no
 
 - [GitHub: AirSpec](https://github.com/wvlet/airframe/tree/master/airspec)
 - [Documentation](https://wvlet.org/airframe/docs/airspec)
+
+
+## For Developers
+
+```scala
+$ ../sbt
+
+> airspecJVM/compile
+> airspecJVM/test
+> airspecJVM/publishLocal
+
+
+> airspecJS/compile
+> airspecJS/test
+```
+
+For Scala 3, launch sbt with DOTTY=true environment variable:
+
+```scala
+$ DOTTY=true ../sbt
+```
+
+
+Scals.js + Scala 3 version is not natively built, but you can use AirSpec by importing it with `.cross(CrossVersion.for3Use2_13)`:
+
+```scala
+libraryDependencies +=
+ ("org.wvlet.airframe" %% "airspec" % AIRSPEC_VERSION).cross(CrossVersion.for3Use2_13)
+```
