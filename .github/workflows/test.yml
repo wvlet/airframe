@@ -158,4 +158,3 @@ jobs:
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report AirSpec
-        working-directory: ./airspec
