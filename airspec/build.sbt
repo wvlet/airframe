@@ -26,6 +26,9 @@ ThisBuild / dynverSonatypeSnapshots := true
 // Use coursier friendly version separator
 ThisBuild / dynverSeparator := "-"
 
+// We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
+ThisBuild / publishTo := sonatypePublishToBundle.value
+
 val noPublish = Seq(
   publishArtifact := false,
   publish         := {},
@@ -53,7 +56,6 @@ val buildSettings = Seq[Setting[_]](
   crossScalaVersions := targetScalaVersions,
   crossPaths         := true,
   publishMavenStyle  := true,
-  versionScheme      := None,
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   scalacOptions ++= Seq(
     "-feature",

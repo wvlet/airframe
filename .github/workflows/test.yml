@@ -23,8 +23,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: scalafmt test
+      - name: scalafmt
         run: ./sbt scalafmtCheckAll
+      - name: scalafmt airspec
+        run: ../sbt scalafmtCheckAll
+        working-directory: ./airspec
       - name: scalafmt sbt-airframe
         run: ./sbt scalafmtCheckAll
         working-directory: ./sbt-airframe
