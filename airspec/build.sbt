@@ -29,6 +29,10 @@ ThisBuild / dynverSeparator := "-"
 // We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
 ThisBuild / publishTo := sonatypePublishToBundle.value
 
+// For Sonatype
+ThisBuild / sonatypeProfileName := "org.wvlet"
+ThisBuild / sonatypeSessionName := s"${sonatypeSessionName.value} for AirSpec"
+
 val noPublish = Seq(
   publishArtifact := false,
   publish         := {},
