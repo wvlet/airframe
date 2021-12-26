@@ -42,7 +42,7 @@ object F0Spec extends AirSpec {
     f1.incrementAndGet()
   }
 
-  def fun1: Long => Int = { s: Long =>
+  def fun1: Long => Int = { (s: Long) =>
     0
   }
 

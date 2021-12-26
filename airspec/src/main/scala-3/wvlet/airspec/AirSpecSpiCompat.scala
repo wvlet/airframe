@@ -39,7 +39,14 @@ object AirSpecTestBuilder extends wvlet.log.LogSupport {
       v.spec.addLocalTestDef(AirSpecDefF0(v.name, v.design, r, body))
     }
     def addF1[D1, R](d1: Surface, r: Surface, body: D1 => R): Unit = {
-      v.spec.addLocalTestDef(AirSpecDefF1(v.name, v.design, d1, r, body))
+      val spec = body match {
+        case s: Seq[_] =>
+          // Workaround for: https://github.com/wvlet/airframe/issues/1845
+          AirSpecDefF0(v.name, v.design, r, wvlet.airframe.LazyF0(() => body))
+        case _ =>
+          AirSpecDefF1(v.name, v.design, d1, r, body)
+      }
+      v.spec.addLocalTestDef(spec)
     }
     def addF2[D1, D2, R](d1: Surface, d2: Surface, r: Surface, body: (D1, D2) => R): Unit = {
       v.spec.addLocalTestDef(AirSpecDefF2(v.name, v.design, d1, d2, r, body))
