@@ -11,16 +11,24 @@ AirSpec uses pure Scala functions for writing test cases. This style requires no
 
 ## For Developers
 
+
 ```scala
 $ ../sbt
 
+// Publish a local snapshot of AirSpec for Scala 2.12, 2.13
+> publishAllLocal
+
+// Publish a snapshot of AirSpec for Scala 2.12, 2.13 to Sonatype
+> publishSnapshot
+
+// Building individual projects
 > airspecJVM/compile
 > airspecJVM/test
 > airspecJVM/publishLocal
 
-
 > airspecJS/compile
 > airspecJS/test
+> airspecJS/publishLocal
 ```
 
 For Scala 3, launch sbt with DOTTY=true environment variable:

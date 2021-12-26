@@ -1,3 +1,15 @@
+// A short cut for publishing snapshots to Sonatype
+addCommandAlias(
+  "publishSnapshots",
+  s"+airspecJVM/publish; +airspecJS/publish"
+)
+
+// [Development purpose] publish all artifacts to the local repo
+addCommandAlias(
+  "publishAllLocal",
+  s"+airspecJVM/publishLocal; +airspecJS/publishLocal;"
+)
+
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -14,11 +26,14 @@ val JAVAX_ANNOTATION_API_VERSION = "1.3.2"
 // A build configuration switch for working on Dotty migration. This needs to be removed eventually
 val DOTTY = sys.env.isDefinedAt("DOTTY")
 
+ThisBuild / usePipelining := false
+
 // We MUST use Scala 2.12 for building sbt-airframe
 ThisBuild / scalaVersion := {
   if (DOTTY) SCALA_3_0
   else SCALA_2_13
 }
+
 ThisBuild / organization := "org.wvlet.airframe"
 
 // Use dynamic snapshot version strings for non tagged versions
@@ -26,14 +41,14 @@ ThisBuild / dynverSonatypeSnapshots := true
 // Use coursier friendly version separator
 ThisBuild / dynverSeparator := "-"
 
-// We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
-ThisBuild / publishTo := sonatypePublishToBundle.value
-
 // For Sonatype
+// We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
+ThisBuild / publishTo           := sonatypePublishToBundle.value
 ThisBuild / sonatypeProfileName := "org.wvlet"
 ThisBuild / sonatypeSessionName := s"${sonatypeSessionName.value} for AirSpec"
 
 val noPublish = Seq(
+  publish / skip  := true,
   publishArtifact := false,
   publish         := {},
   publishLocal    := {},
@@ -92,6 +107,8 @@ def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: Stri
 }
 
 // https://stackoverflow.com/questions/41670018/how-to-prevent-sbt-to-include-test-dependencies-into-the-pom
+import sbt.ThisBuild
+
 import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, _}
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 
@@ -336,10 +353,9 @@ lazy val airspec =
         ("org.portable-scala" %%% "portable-scala-reflect" % "1.1.1").cross(CrossVersion.for3Use2_13)
       )
     )
-    .dependsOn(airspecDeps % Provided) // Use Provided dependency for bloop, and remove it later with pomPostProcess
+    // This should be Optional dependency, but using Provided dependency for bloop which doesn't support Optional.
+    // This provided dependency will be removed later with pomPostProcess
+    .dependsOn(airspecDeps % Provided)
 
 lazy val airspecJVM = airspec.jvm
 lazy val airspecJS  = airspec.js
-
-def isAirSpecClass(mapping: (File, String)): Boolean =
-  mapping._2.startsWith("wvlet/airspec/")

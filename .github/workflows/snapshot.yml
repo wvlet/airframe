@@ -37,6 +37,6 @@ jobs:
           SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
           SONATYPE_PASSWORD: '${{ secrets.SONATYPE_PASS }}'
         run: |
-          ../sbt "+airspecJVM/publish; +airspecJS/publish"
+          ../sbt publishSnapshots
           DOTTY=true ../sbt airspecJVM/publish
         working-directory: ./airspec
