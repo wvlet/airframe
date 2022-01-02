@@ -22,8 +22,8 @@ class Injectee(val surface: Surface, val injectee: Any) {
     other match {
       case that: Injectee =>
         (that canEqual this) &&
-          surface == that.surface &&
-          injectee == that.injectee
+        surface == that.surface &&
+        injectee == that.injectee
       case _ => false
     }
 
