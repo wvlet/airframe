@@ -46,9 +46,9 @@ class Design(
     other match {
       case that: Design =>
         (that canEqual this) &&
-        designOptions == that.designOptions &&
-        binding == that.binding &&
-        hooks == that.hooks
+          designOptions == that.designOptions &&
+          binding == that.binding &&
+          hooks == that.hooks
       case _ => false
     }
 
