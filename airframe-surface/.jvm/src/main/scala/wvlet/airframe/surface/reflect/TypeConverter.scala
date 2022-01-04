@@ -38,13 +38,7 @@ object TypeConverter extends LogSupport {
       if (targetType.isPrimitive) {
         convertToPrimitive(value, targetType)
       } else if (targetType.isOption) {
-        if (
-          /** StartMarker */
-          isOptionCls
-          /**
-            * EndMarker
-            */ (cls(value))
-        ) {
+        if (isOptionCls(cls(value))) {
           Option(value)
         } else {
           Option(convert(value, targetType.typeArgs(0)))
