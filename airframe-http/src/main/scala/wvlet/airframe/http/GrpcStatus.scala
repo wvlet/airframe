@@ -13,18 +13,60 @@
  */
 package wvlet.airframe.http
 
+sealed abstract class GrpcStatus(
+    // gRPC status code
+    val code: Int,
+    // Mapping to an HTTP Status code (2xx - 5xx)
+    val httpStatus: HttpStatus
+) {
+
+  /**
+    * The string representation of this status code
+    */
+  val name: String = {
+    // Trim _(status code) suffix
+    val s = toString()
+    s.lastIndexOf('_') match {
+      case -1  => s
+      case pos => s.substring(0, pos)
+    }
+  }
+}
+
 /**
   * gRPC error code definitions in https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto
   */
 object GrpcStatus {
+
+  def all: Seq[GrpcStatus] = Seq(
+    GrpcStatus.OK_0,
+    GrpcStatus.CANCELLED_1,
+    GrpcStatus.UNKNOWN_2,
+    GrpcStatus.INVALID_ARGUMENT_3,
+    GrpcStatus.DEADLINE_EXCEEDED_4,
+    GrpcStatus.NOT_FOUND_5,
+    GrpcStatus.ALREADY_EXISTS_6,
+    GrpcStatus.PERMISSION_DENIED_7,
+    GrpcStatus.RESOURCE_EXHAUSTED_8,
+    GrpcStatus.FAILED_PRECONDITION_9,
+    GrpcStatus.ABORTED_10,
+    GrpcStatus.OUT_OF_RANGE_11,
+    GrpcStatus.UNIMPLEMENTED_12,
+    GrpcStatus.INTERNAL_13,
+    GrpcStatus.UNAVAILABLE_14,
+    GrpcStatus.DATA_LOSS_15,
+    GrpcStatus.UNAUTHENTICATED_16
+  )
+
+  private val codeTable = all.map(x => x.code -> x).toMap
+
+  def ofCode(code: Int): GrpcStatus =
+    codeTable.getOrElse(code, throw new IllegalArgumentException(s"Unknown gRPC code: ${code}"))
+
   // Not an error; returned on success
-  //
-  // HTTP Mapping: 200 OK
   case object OK_0 extends GrpcStatus(code = 0, HttpStatus.Ok_200)
 
   // The operation was cancelled, typically by the caller.
-
-  // HTTP Mapping: 499 Client Closed Request
   case object CANCELLED_1 extends GrpcStatus(code = 1, HttpStatus.ClientClosedRequest_499)
 
   // Unknown error.  For example, this error may be returned when
@@ -32,16 +74,12 @@ object GrpcStatus {
   // an error space that is not known in this address space.  Also
   // errors raised by APIs that do not return enough error information
   // may be converted to this error.
-
-  // HTTP Mapping: 500 Internal Server Error
   case object UNKNOWN_2 extends GrpcStatus(code = 2, HttpStatus.InternalServerError_500)
 
   // The client specified an invalid argument.  Note that this differs
   // from `FAILED_PRECONDITION`.  `INVALID_ARGUMENT` indicates arguments
   // that are problematic regardless of the state of the system
   // (e.g., a malformed file name).
-
-  // HTTP Mapping: 400 Bad Request
   case object INVALID_ARGUMENT_3 extends GrpcStatus(code = 3, HttpStatus.BadRequest_400)
 
   // The deadline expired before the operation could complete. For operations
@@ -49,8 +87,6 @@ object GrpcStatus {
   // even if the operation has completed successfully.  For example, a
   // successful response from a server could have been delayed long
   // enough for the deadline to expire.
-
-  // HTTP Mapping: 504 Gateway Timeout
   case object DEADLINE_EXCEEDED_4 extends GrpcStatus(code = 4, HttpStatus.GatewayTimeout_504)
 
   // Some requested entity (e.g., file or directory) was not found.
@@ -66,8 +102,6 @@ object GrpcStatus {
 
   // The entity that a client attempted to create (e.g., file or directory)
   // already exists.
-
-  // HTTP Mapping: 409 Conflict
   case object ALREADY_EXISTS_6 extends GrpcStatus(code = 6, HttpStatus.Conflict_409)
 
   // The caller does not have permission to execute the specified
@@ -78,20 +112,14 @@ object GrpcStatus {
   // instead for those errors). This error code does not imply the
   // request is valid or the requested entity exists or satisfies
   // other pre-conditions.
-
-  // HTTP Mapping: 403 Forbidden
   case object PERMISSION_DENIED_7 extends GrpcStatus(code = 7, HttpStatus.Forbidden_403)
 
   // The request does not have valid authentication credentials for the
   // operation.
-
-  // HTTP Mapping: 401 Unauthorized
   case object UNAUTHENTICATED_16 extends GrpcStatus(code = 16, HttpStatus.Unauthorized_401)
 
   // Some resource has been exhausted, perhaps a per-user quota, or
   // perhaps the entire file system is out of space.
-
-  // HTTP Mapping: 429 Too Many Requests
   case object RESOURCE_EXHAUSTED_8 extends GrpcStatus(code = 8, HttpStatus.TooManyRequests_429)
 
   // The operation was rejected because the system is not in a state
@@ -111,7 +139,6 @@ object GrpcStatus {
   //      should be returned since the client should not retry unless
   //      the files are deleted from the directory.
   //
-  // HTTP Mapping: 400 Bad Request
   case object FAILED_PRECONDITION_9 extends GrpcStatus(code = 9, HttpStatus.BadRequest_400)
 
   // The operation was aborted, typically due to a concurrency issue such as
@@ -119,8 +146,6 @@ object GrpcStatus {
 
   // See the guidelines above for deciding between `FAILED_PRECONDITION`,
   // `ABORTED`, and `UNAVAILABLE`.
-  //
-  // HTTP Mapping: 409 Conflict
   case object ABORTED_10 extends GrpcStatus(code = 10, HttpStatus.Conflict_409)
 
   // The operation was attempted past the valid range.  E.g., seeking or
@@ -138,51 +163,22 @@ object GrpcStatus {
   // error) when it applies so that callers who are iterating through
   // a space can easily look for an `OUT_OF_RANGE` error to detect when
   // they are done.
-
   case object OUT_OF_RANGE_11 extends GrpcStatus(code = 11, HttpStatus.BadRequest_400)
 
   // The operation is not implemented or is not supported/enabled in this
   // service.
-
-  // HTTP Mapping: 501 Not Implemented
   case object UNIMPLEMENTED_12 extends GrpcStatus(code = 12, HttpStatus.NotImplemented_501)
 
   // Internal errors.  This means that some invariants expected by the
   // underlying system have been broken.  This error code is reserved
   // for serious errors.
-
   case object INTERNAL_13 extends GrpcStatus(code = 13, HttpStatus.InternalServerError_500)
 
   // The service is currently unavailable.  This is most likely a
   // transient condition, which can be corrected by retrying with
   // a backoff. Note that it is not always safe to retry
-  // non-idempotent operations.
-
-  // HTTP Mapping: 503 Service Unavailable
   case object UNAVAILABLE_14 extends GrpcStatus(code = 14, HttpStatus.ServiceUnavailable_503)
 
   // Unrecoverable data loss or corruption.
-  //
-  // HTTP Mapping: 500 Internal Server Error
   case object DATA_LOSS_15 extends GrpcStatus(code = 15, HttpStatus.InternalServerError_500)
-}
-
-sealed abstract class GrpcStatus(
-    // gRPC status code
-    val code: Int,
-    // Mapping to an HTTP Status code (2xx - 5xx)
-    val httpStatus: HttpStatus
-) {
-
-  /**
-    * The string representation of this status code
-    */
-  def name: String = {
-    // Trim _(status code) suffix
-    val s = toString()
-    s.indexOf('_') match {
-      case -1  => s
-      case pos => s.substring(0, pos)
-    }
-  }
 }
