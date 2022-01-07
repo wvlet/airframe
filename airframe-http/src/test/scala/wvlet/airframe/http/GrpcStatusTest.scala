@@ -55,4 +55,24 @@ class GrpcStatusTest extends AirSpec {
     GrpcStatus.DATA_LOSS_15.name shouldBe "DATA_LOSS"
     GrpcStatus.UNAUTHENTICATED_16.name shouldBe "UNAUTHENTICATED"
   }
+
+  test("http status mapping") {
+    GrpcStatus.OK_0.httpStatus shouldBe HttpStatus.Ok_200
+    GrpcStatus.CANCELLED_1.httpStatus shouldBe HttpStatus.ClientClosedRequest_499
+    GrpcStatus.UNKNOWN_2.httpStatus shouldBe HttpStatus.InternalServerError_500
+    GrpcStatus.INVALID_ARGUMENT_3.httpStatus shouldBe HttpStatus.BadRequest_400
+    GrpcStatus.DEADLINE_EXCEEDED_4.httpStatus shouldBe HttpStatus.GatewayTimeout_504
+    GrpcStatus.NOT_FOUND_5.httpStatus shouldBe HttpStatus.NotFound_404
+    GrpcStatus.ALREADY_EXISTS_6.httpStatus shouldBe HttpStatus.Conflict_409
+    GrpcStatus.PERMISSION_DENIED_7.httpStatus shouldBe HttpStatus.Forbidden_403
+    GrpcStatus.RESOURCE_EXHAUSTED_8.httpStatus shouldBe HttpStatus.TooManyRequests_429
+    GrpcStatus.FAILED_PRECONDITION_9.httpStatus shouldBe HttpStatus.BadRequest_400
+    GrpcStatus.ABORTED_10.httpStatus shouldBe HttpStatus.Conflict_409
+    GrpcStatus.OUT_OF_RANGE_11.httpStatus shouldBe HttpStatus.BadRequest_400
+    GrpcStatus.UNIMPLEMENTED_12.httpStatus shouldBe HttpStatus.NotImplemented_501
+    GrpcStatus.INTERNAL_13.httpStatus shouldBe HttpStatus.InternalServerError_500
+    GrpcStatus.UNAVAILABLE_14.httpStatus shouldBe HttpStatus.ServiceUnavailable_503
+    GrpcStatus.DATA_LOSS_15.httpStatus shouldBe HttpStatus.InternalServerError_500
+    GrpcStatus.UNAUTHENTICATED_16.httpStatus shouldBe HttpStatus.Unauthorized_401
+  }
 }
