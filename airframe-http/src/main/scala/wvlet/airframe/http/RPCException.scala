@@ -13,116 +13,61 @@
  */
 package wvlet.airframe.http
 
-case class RPCException(
-    // Application-specific error code
-    errorCode: ErrorCode,
+import wvlet.airframe.codec.PackSupport
+import wvlet.airframe.msgpack.spi.Packer
+
+class RPCException(
+    rpcError: RPCError
+) extends Exception(rpcError.toString, rpcError.cause.getOrElse(null))
+
+case class RPCError(
     // Error message
     message: String,
     // Cause of the exception
     cause: Option[Throwable] = None,
+    // Application-specific error code
+    errorCode: Option[RPCErrorCode],
+    // HTTP status code
+    httpStatus: Option[HttpStatus] = None,
+    // gRPC specific error code
+    grpcStatus: Option[GrpcStatus] = None,
     // Custom data
     metadata: Map[String, Any] = Map.empty
-) extends Exception(s"[${errorCode}] ${message}", cause.getOrElse(null)) {
-
-  def withMessage(newMessage: String): RPCException = {
-    val ex = this.copy(message = newMessage)
-    ex.setStackTrace(this.getStackTrace)
-    ex
+) {
+  def statusCodeString: String = {
+    errorCode
+      .map { c =>
+        s"${c.name}"
+      }
+      .orElse {
+        httpStatus.map(s => s"${s.code}:${s.reason}")
+      }
+      .orElse {
+        grpcStatus.map(s => s"${s.code}:${s.name}")
+      }
+      .getOrElse("unknown")
   }
-}
 
-case class RPCError(
-    errorType: String,
-    errorCode: String
-) {}
+  override def toString: String                             = s"[${statusCodeString}] ${message}"
+  def asException: RPCException                             = new RPCException(this)
+  def withMessage(newMessage: String): RPCError             = this.copy(message = newMessage)
+  def withMetadata(newMetadata: Map[String, Any]): RPCError = this.copy(metadata = newMetadata)
+}
 
 /**
-  * A base class for defining custom ErrorCode.
+  * A base class for defining application-specific error code
   */
-sealed abstract class ErrorCode(
-    val errorType: ErrorType
-) {
-  def name: String = toString()
-}
+trait RPCErrorCode extends PackSupport {
+  // Error type (user, internal, or resource)
+  def errorType: RPCErrorType
+  // Unique error code name. This name will be used for serde
+  def name: String
+  // Mapping to an HTTP status code (required)
+  def httpStatus: HttpStatus
+  // Description of the error
+  def description: String
 
-sealed trait ErrorType {
-  def name: String = toString()
-}
-
-object ErrorType {
-  // User-input related errors
-  case object USER_ERROR extends ErrorType
-  // Server internal failures, which are usually retryable
-  case object INTERNAL_ERROR extends ErrorType
-  // The resource has been exhausted or a per-user quota has reached
-  case object RESOURCE_ERROR extends ErrorType
-
-  def all: Seq[ErrorType] = Seq(USER_ERROR, INTERNAL_ERROR, RESOURCE_ERROR)
-
-  def unapply(s: String): Option[ErrorType] = {
-    val name = s.toUpperCase()
-    all.find(_.toString == name)
+  override def pack(p: Packer): Unit = {
+    p.packString(name)
   }
-}
-
-object StandardErrorCode {
-  import ErrorType._
-
-  abstract class UserError     extends ErrorCode(USER_ERROR)
-  abstract class InternalError extends ErrorCode(INTERNAL_ERROR)
-  abstract class ResourceError extends ErrorCode(RESOURCE_ERROR)
-
-  case object GENERIC_USER_ERROR extends UserError
-  // Invalid RPC requests
-  case object INVALID_REQUEST  extends UserError
-  case object INVALID_ARGUMENT extends UserError
-  case object SYNTAX_ERROR     extends UserError
-
-  /**
-    * Used for describing index out of bounds error, number overflow, underflow, scaling errors of the user inputs, etc.
-    */
-  case object OUT_OF_RANGE extends UserError
-
-  // Invalid RPC target
-  case object NOT_FOUND      extends UserError
-  case object ALREADY_EXISTS extends UserError
-  case object NOT_SUPPORTED  extends UserError
-  case object UNIMPLEMENTED  extends UserError
-
-  // Invalid service state
-  case object UNEXPECTED_STATE   extends UserError
-  case object INCONSISTENT_STATE extends UserError
-
-  // Auth
-  case object UNAUTHENTICATED   extends UserError
-  case object PERMISSION_DENIED extends UserError
-
-  // Request error
-  case object CANCELLED   extends UserError
-  case object INTERRUPTED extends UserError
-
-  // Internal errors
-  case object GENERIC_INTERNAL_ERROR extends InternalError
-  /*
-   * Unknown error will be categorized as an internal error
-   */
-  case object UNKNOWN extends InternalError
-
-  /**
-    * When the service is currently unavailable, e.g., circuit breaker is open, the service is down, etc.
-    */
-  case object UNAVAILABLE       extends InternalError
-  case object DEADLINE_EXCEEDED extends InternalError
-  case object CONFLICT          extends InternalError
-  case object ABORTED           extends InternalError
-
-  /**
-    * Data is corrupted
-    */
-  case object DATA_CORRUPTED extends InternalError
-
-  // Resource errors
-  case object GENERIC_RESOURCE_ERROR extends ResourceError
-  case object TOO_MANY_REQUESTS      extends ResourceError
-  case object RESOURCE_EXHAUSTED     extends ResourceError
 }

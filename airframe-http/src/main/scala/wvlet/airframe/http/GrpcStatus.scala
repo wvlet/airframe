@@ -19,6 +19,7 @@ sealed abstract class GrpcStatus(
     // Mapping to an HTTP Status code (2xx - 5xx)
     val httpStatus: HttpStatus
 ) {
+  override def toString: String = s"${name}"
 
   /**
     * The string representation of this status code

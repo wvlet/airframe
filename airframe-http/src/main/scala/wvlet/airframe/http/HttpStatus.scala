@@ -13,8 +13,17 @@
  */
 package wvlet.airframe.http
 
-class HttpStatus(val code: Int) {
+import wvlet.airframe.codec.PackSupport
+import wvlet.airframe.msgpack.spi.Value.{IntegerValue, LongValue, StringValue}
+import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
+
+import scala.util.{Failure, Success, Try}
+
+class HttpStatus(val code: Int) extends PackSupport {
   override def toString = s"[${code}: ${reason}]"
+  override def pack(p: Packer): Unit = {
+    p.packInt(code)
+  }
   def reason: String =
     HttpStatus.reasons.get(this) match {
       case Some(reason)    => reason
@@ -48,6 +57,21 @@ object HttpStatus {
 
   def ofCode(code: Int): HttpStatus = {
     statusTable.getOrElse(code, new HttpStatus(code))
+  }
+
+  def unapply(s: String): Option[HttpStatus] = {
+    Try(s.toInt) match {
+      case Success(code) => statusTable.get(code)
+      case Failure(e)    => None
+    }
+  }
+
+  def unpack(u: Unpacker): Option[HttpStatus] = {
+    u.unpackValue match {
+      case l @ LongValue(v) if l.isValidInt => statusTable.get(v.toInt)
+      case StringValue(s)                   => Try(s.toInt).toOption.flatMap(statusTable.get(_))
+      case other                            => None
+    }
   }
 
   // Unknown status
