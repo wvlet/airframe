@@ -98,7 +98,7 @@ object ServiceMixinExample {
     * -> code duplication occurs
     *   - It's hard to enhance the class functionality
     *   - Users needs to know the order of constructor arguments
-    * -
+    * \-
     */
   // class FortunePrinterAsClass @Inject ()(printer: Printer, fortune: Fortune) {
   //    printer.print(fortune.generate)

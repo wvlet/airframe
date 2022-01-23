@@ -76,7 +76,7 @@ final case class ULID(private val ulid: String) extends Ordered[ULID] {
   * ULID generator implementation based on https://github.com/petitviolet/ulid4s
   *
   * ULID has 128 bit value:
-  * |-- Unix timestamp milliseconds (48-bit) ---- | ----- random value (80 bits) ------ |
+  * \|-- Unix timestamp milliseconds (48-bit) ---- | ----- random value (80 bits) ------ |
   *
   * The string representation of ULID uses 26 characters in Crockford Base 32 representation, each character of which
   * represents 5-bit value (0-31).
