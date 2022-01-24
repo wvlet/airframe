@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
 
 class GrpcStatusTest extends AirSpec {
@@ -74,5 +75,16 @@ class GrpcStatusTest extends AirSpec {
     GrpcStatus.UNAVAILABLE_14.httpStatus shouldBe HttpStatus.ServiceUnavailable_503
     GrpcStatus.DATA_LOSS_15.httpStatus shouldBe HttpStatus.InternalServerError_500
     GrpcStatus.UNAUTHENTICATED_16.httpStatus shouldBe HttpStatus.Unauthorized_401
+  }
+
+  test("pack/unpack") {
+    def testPackUnpack(s: GrpcStatus): Unit = {
+      val p = MessagePack.newBufferPacker
+      s.pack(p)
+      val msgpack = p.toByteArray
+      val opt     = GrpcStatus.unpack(MessagePack.newUnpacker(msgpack))
+      opt shouldBe Some(s)
+    }
+    GrpcStatus.all.foreach(testPackUnpack)
   }
 }

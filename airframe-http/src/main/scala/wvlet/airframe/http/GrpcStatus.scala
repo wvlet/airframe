@@ -13,13 +13,16 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.codec.PackSupport
+import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
+import scala.util.Try
+
 sealed abstract class GrpcStatus(
     // gRPC status code
     val code: Int,
     // Mapping to an HTTP Status code (2xx - 5xx)
     val httpStatus: HttpStatus
-) {
-  override def toString: String = s"${name}"
+) extends PackSupport {
 
   /**
     * The string representation of this status code
@@ -31,6 +34,10 @@ sealed abstract class GrpcStatus(
       case -1  => s
       case pos => s.substring(0, pos)
     }
+  }
+
+  override def pack(packer: Packer): Unit = {
+    packer.packInt(code)
   }
 }
 
@@ -59,10 +66,26 @@ object GrpcStatus {
     GrpcStatus.UNAUTHENTICATED_16
   )
 
+  // Mapping from an integer code to GrpcStatus object
   private val codeTable = all.map(x => x.code -> x).toMap
 
   def ofCode(code: Int): GrpcStatus =
     codeTable.getOrElse(code, throw new IllegalArgumentException(s"Unknown gRPC code: ${code}"))
+
+  def unpack(u: Unpacker): Option[GrpcStatus] = {
+    u.getNextValueType match {
+      case ValueType.INTEGER =>
+        val code = u.unpackInt
+        codeTable.get(code)
+      case ValueType.FLOAT =>
+        Try(u.unpackFloat.toInt).toOption.flatMap(codeTable.get(_))
+      case ValueType.STRING =>
+        val s = u.unpackString
+        Try(s.toInt).toOption.flatMap(codeTable.get(_))
+      case _ =>
+        None
+    }
+  }
 
   // Not an error; returned on success
   case object OK_0 extends GrpcStatus(code = 0, HttpStatus.Ok_200)
