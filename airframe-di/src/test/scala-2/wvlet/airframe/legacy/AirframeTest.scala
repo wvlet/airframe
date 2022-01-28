@@ -97,8 +97,7 @@ object ServiceMixinExample {
     *   - To add/remove modules, we need to create another constructor or class.
     * -> code duplication occurs
     *   - It's hard to enhance the class functionality
-    *   - Users needs to know the order of constructor arguments
-    * -
+    *   - Users needs to know the order of constructor arguments \-
     */
   // class FortunePrinterAsClass @Inject ()(printer: Printer, fortune: Fortune) {
   //    printer.print(fortune.generate)
