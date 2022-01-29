@@ -53,7 +53,7 @@ object CrockfordBase32 {
   def decode128bits(s: String): (Long, Long) = {
 
     /**
-      * \| hi (64-bits) | low (64-bits) |
+      * `| hi (64-bits) | low (64-bits) |`
       */
     val len = s.length
     if (len != 26) {
