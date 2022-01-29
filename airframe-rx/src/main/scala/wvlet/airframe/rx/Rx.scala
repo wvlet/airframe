@@ -122,8 +122,12 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     * Combine Rx stream and Future operators.
     *
     * This method is useful when you need to call RPC multiple times and chain the next operation after receiving the
-    * response. <code> Rx.intervalMillis(1000) .andThen { i => callRpc(...) } // Returns Future .map { (rpcReturnValue)
-    * \=> ... } // Use the Future response </code>
+    * response.
+    * {{{
+    * Rx.intervalMillis(1000)
+    *   .andThen { i => callRpc(...) } // Returns Future
+    *   .map { (rpcReturnValue) => ... } // Use the Future response
+    * }}}
     */
   def andThen[B](f: A => Future[B])(implicit ex: ExecutionContext): RxStream[B] = {
     this.flatMap(a => Rx.future(f(a)))
