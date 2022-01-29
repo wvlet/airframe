@@ -21,16 +21,16 @@ import wvlet.airframe.surface.reflect.Path
   * Holder of structured data consisting of named values. ValueHolder is immutable, so the set operations in this class
   * return another ValueHolder and never modify the original ValueHolder.
   *
-  * <pre> A(a, B(b, c))
+  * {{{
+  * A(a, B(b, c))
   *
   * { a: apple, B:{b:book, c:car} }
   *
-  * val n1 = EmptyNode.set("a", apple) => Node(a -> Leaf(apple)) val n2 = n1.set("B.b", "book")
-  * => Node(a -> Leaf(apple), B -> EmptyNode.set("b", "book"))
-  * => Node(a -> apple, B->Node(b -> Leaf(book))) val n3 = n2.set("B.c", "car") => Node(a ->apple, B->Node(b ->
-  * Leaf(book), c->Leaf(car)))
+  * val n1 = EmptyNode.set("a", apple) => Node(a -> Leaf(apple))
+  * val n2 = n1.set("B.b", "book") => Node(a -> Leaf(apple), B -> EmptyNode.set("b", "book")) => Node(a -> apple, B -> Node(b -> Leaf(book)))
+  * val n3 = n2.set("B.c", "car") => Node(a -> apple, B -> Node(b -> Leaf(book), c -> Leaf(car)))
   *
-  * </pre>
+  * }}}
   */
 sealed trait StringTree {
   def +(e: (Path, StringTree)): StringTree = setNode(e._1, e._2)
