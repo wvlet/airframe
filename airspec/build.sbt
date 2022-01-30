@@ -47,6 +47,9 @@ ThisBuild / publishTo           := sonatypePublishToBundle.value
 ThisBuild / sonatypeProfileName := "org.wvlet"
 ThisBuild / sonatypeSessionName := s"${sonatypeSessionName.value} for AirSpec"
 
+// Share
+ThisBuild / scalafmtConfig := file("../.scalafmt.conf")
+
 val noPublish = Seq(
   publish / skip  := true,
   publishArtifact := false,
