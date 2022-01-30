@@ -14,7 +14,69 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.codec.PackSupport
+import wvlet.airframe.http.HttpStatus.{
+  Accepted_202,
+  BadGateway_502,
+  BadRequest_400,
+  ClientClosedRequest_499,
+  Conflict_409,
+  Continue_100,
+  Created_201,
+  EnhanceYourCalm_420,
+  ExpectationFailed_417,
+  FailedDependency_424,
+  Forbidden_403,
+  Found_302,
+  GatewayTimeout_504,
+  Gone_410,
+  HttpVersionNotSupported_505,
+  InsufficientStorage_507,
+  InternalServerError_500,
+  LengthRequired_411,
+  Locked_423,
+  MethodNotAllowed_405,
+  MovedPermanently_301,
+  MultiStatus_207,
+  MultipleChoices_300,
+  NetworkAuthenticationRequired_511,
+  NoContent_204,
+  NonAuthoritativeInformation_203,
+  NotAcceptable_406,
+  NotExtended_510,
+  NotFound_404,
+  NotImplemented_501,
+  NotModified_304,
+  Ok_200,
+  PartialContent_206,
+  PaymentRequired_402,
+  PermanentRedirect_308,
+  PreconditionFailed_412,
+  PreconditionRequired_428,
+  Processing_102,
+  ProxyAuthenticationRequired_407,
+  RequestEntityTooLarge_413,
+  RequestHeaderFieldsTooLarge_431,
+  RequestTimeout_408,
+  RequestURITooLong_414,
+  RequestedRangeNotSatisfiable_416,
+  ResetContent_205,
+  SeeOther_303,
+  ServiceUnavailable_503,
+  SwitchingProtocols_101,
+  TemporaryRedirect_307,
+  TooManyRequests_429,
+  Unauthorized_401,
+  UnavailableForLegalReasons_451,
+  Unknown_000,
+  UnorderedCollection_425,
+  UnprocessableEntity_422,
+  UnsupportedMediaType_415,
+  UpgradeRequired_426,
+  UseProxy_305,
+  VariantAlsoNegotiates_506
+}
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
+
 import scala.util.Try
 
 sealed abstract class GrpcStatus(
@@ -205,4 +267,89 @@ object GrpcStatus {
 
   // Unrecoverable data loss or corruption.
   case object DATA_LOSS_15 extends GrpcStatus(code = 15, HttpStatus.InternalServerError_500)
+
+  /**
+    * Mapping table from HTTP status to gRPC status code. This table is used for inferring grpc status when a
+    * HTTPServerException is thrown.
+    */
+  private val httpStatusCodeMapping = Map[HttpStatus, GrpcStatus](
+    HttpStatus.Unknown_000                       -> UNKNOWN_2,
+    HttpStatus.Continue_100                      -> UNKNOWN_2,
+    HttpStatus.SwitchingProtocols_101            -> UNKNOWN_2,
+    HttpStatus.Processing_102                    -> UNKNOWN_2,
+    HttpStatus.Ok_200                            -> OK_0,
+    HttpStatus.Created_201                       -> OK_0,
+    HttpStatus.Accepted_202                      -> OK_0,
+    HttpStatus.NonAuthoritativeInformation_203   -> OK_0,
+    HttpStatus.NoContent_204                     -> OK_0,
+    HttpStatus.ResetContent_205                  -> OK_0,
+    HttpStatus.PartialContent_206                -> OK_0,
+    HttpStatus.MultiStatus_207                   -> OK_0,
+    HttpStatus.MultipleChoices_300               -> NOT_FOUND_5,
+    HttpStatus.MovedPermanently_301              -> NOT_FOUND_5,
+    HttpStatus.Found_302                         -> NOT_FOUND_5,
+    HttpStatus.SeeOther_303                      -> NOT_FOUND_5,
+    HttpStatus.NotModified_304                   -> NOT_FOUND_5,
+    HttpStatus.UseProxy_305                      -> NOT_FOUND_5,
+    HttpStatus.TemporaryRedirect_307             -> NOT_FOUND_5,
+    HttpStatus.PermanentRedirect_308             -> NOT_FOUND_5,
+    HttpStatus.BadRequest_400                    -> INVALID_ARGUMENT_3,
+    HttpStatus.Unauthorized_401                  -> UNAUTHENTICATED_16,
+    HttpStatus.PaymentRequired_402               -> RESOURCE_EXHAUSTED_8,
+    HttpStatus.Forbidden_403                     -> PERMISSION_DENIED_7,
+    HttpStatus.NotFound_404                      -> NOT_FOUND_5,
+    HttpStatus.MethodNotAllowed_405              -> NOT_FOUND_5,
+    HttpStatus.NotAcceptable_406                 -> PERMISSION_DENIED_7,
+    HttpStatus.ProxyAuthenticationRequired_407   -> UNAUTHENTICATED_16,
+    HttpStatus.RequestTimeout_408                -> DEADLINE_EXCEEDED_4,
+    HttpStatus.Conflict_409                      -> ABORTED_10,
+    HttpStatus.Gone_410                          -> NOT_FOUND_5,
+    HttpStatus.LengthRequired_411                -> INVALID_ARGUMENT_3,
+    HttpStatus.PreconditionFailed_412            -> FAILED_PRECONDITION_9,
+    HttpStatus.RequestEntityTooLarge_413         -> INVALID_ARGUMENT_3,
+    HttpStatus.RequestURITooLong_414             -> INVALID_ARGUMENT_3,
+    HttpStatus.UnsupportedMediaType_415          -> INVALID_ARGUMENT_3,
+    HttpStatus.RequestedRangeNotSatisfiable_416  -> OUT_OF_RANGE_11,
+    HttpStatus.ExpectationFailed_417             -> FAILED_PRECONDITION_9,
+    HttpStatus.EnhanceYourCalm_420               -> RESOURCE_EXHAUSTED_8,
+    HttpStatus.UnprocessableEntity_422           -> INVALID_ARGUMENT_3,
+    HttpStatus.Locked_423                        -> FAILED_PRECONDITION_9,
+    HttpStatus.FailedDependency_424              -> FAILED_PRECONDITION_9,
+    HttpStatus.UnorderedCollection_425           -> INVALID_ARGUMENT_3,
+    HttpStatus.UpgradeRequired_426               -> FAILED_PRECONDITION_9,
+    HttpStatus.PreconditionRequired_428          -> FAILED_PRECONDITION_9,
+    HttpStatus.TooManyRequests_429               -> RESOURCE_EXHAUSTED_8,
+    HttpStatus.RequestHeaderFieldsTooLarge_431   -> INVALID_ARGUMENT_3,
+    HttpStatus.UnavailableForLegalReasons_451    -> PERMISSION_DENIED_7,
+    HttpStatus.ClientClosedRequest_499           -> CANCELLED_1,
+    HttpStatus.InternalServerError_500           -> INTERNAL_13,
+    HttpStatus.NotImplemented_501                -> UNIMPLEMENTED_12,
+    HttpStatus.BadGateway_502                    -> UNAVAILABLE_14,
+    HttpStatus.ServiceUnavailable_503            -> UNAVAILABLE_14,
+    HttpStatus.GatewayTimeout_504                -> DEADLINE_EXCEEDED_4,
+    HttpStatus.HttpVersionNotSupported_505       -> UNIMPLEMENTED_12,
+    HttpStatus.VariantAlsoNegotiates_506         -> INTERNAL_13,
+    HttpStatus.InsufficientStorage_507           -> RESOURCE_EXHAUSTED_8,
+    HttpStatus.NotExtended_510                   -> INTERNAL_13,
+    HttpStatus.NetworkAuthenticationRequired_511 -> UNAUTHENTICATED_16
+  )
+
+  // Mapping HTTP status code to gRPC status
+  def ofHttpStatus(status: HttpStatus): GrpcStatus = {
+    httpStatusCodeMapping.get(status) match {
+      case Some(grpcStatus) => grpcStatus
+      case None =>
+        status match {
+          case s if s.isSuccessful =>
+            OK_0
+          case s if s.isClientError =>
+            FAILED_PRECONDITION_9
+          case s if s.isServerError =>
+            INTERNAL_13
+          case _ =>
+            UNKNOWN_2
+        }
+    }
+  }
+
 }

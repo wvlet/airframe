@@ -16,6 +16,11 @@ package wvlet.airframe.http
 import wvlet.airframe.codec.PackSupport
 import wvlet.airframe.msgpack.spi.Packer
 
+/**
+  * RPCException provides a backend-independent (e.g., Finagle or gRPC) RPC error reporting mechanism.
+  *
+  * @param rpcError
+  */
 class RPCException(
     rpcError: RPCError
 ) extends Exception(rpcError.toString, rpcError.cause.getOrElse(null))
@@ -36,15 +41,9 @@ case class RPCError(
 ) {
   def statusCodeString: String = {
     errorCode
-      .map { c =>
-        s"${c.name}"
-      }
-      .orElse {
-        httpStatus.map(s => s"${s.code}:${s.reason}")
-      }
-      .orElse {
-        grpcStatus.map(s => s"${s.code}:${s.name}")
-      }
+      .map(c => s"${c.name}")
+      .orElse(httpStatus.map(s => s"${s.code}:${s.reason}"))
+      .orElse(grpcStatus.map(s => s"${s.code}:${s.name}"))
       .getOrElse("unknown")
   }
 
