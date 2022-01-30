@@ -59,6 +59,14 @@ package object html {
     def noValue: HtmlNode                             = HtmlAttribute(name, true, namespace)
   }
 
+  class HtmlEventHandlerOf[E](name: String, namespace: Namespace = Namespace.xhtml) {
+    def apply[U](v: E => U): HtmlNode  = HtmlAttribute(name, v, namespace)
+    def ->[U](v: E => U): HtmlNode     = apply(v)
+    def apply[U](v: () => U): HtmlNode = HtmlAttribute(name, v, namespace)
+    def ->[U](v: () => U): HtmlNode    = apply(v)
+    def noValue: HtmlNode              = HtmlAttribute(name, false, namespace)
+  }
+
   case class EntityRef(ref: String) extends HtmlNode
 
   // TODO embed namespace properly to DOM
@@ -70,11 +78,13 @@ package object html {
     val svgXLink         = Namespace("http://www.w3.org/1999/xlink")
   }
 
-  def tag(name: String): HtmlElement                            = new HtmlElement(name)
-  def tagOf(name: String, namespace: Namespace)                 = new HtmlElement(name, namespace)
-  def attr(name: String): HtmlAttributeOf                       = new HtmlAttributeOf(name)
-  def attr(name: String, namespace: Namespace): HtmlAttributeOf = new HtmlAttributeOf(name, namespace)
-  def attributeOf(name: String): HtmlAttributeOf                = attr(name)
+  def tag(name: String): HtmlElement                                        = new HtmlElement(name)
+  def tagOf(name: String, namespace: Namespace)                             = new HtmlElement(name, namespace)
+  def attr(name: String): HtmlAttributeOf                                   = new HtmlAttributeOf(name)
+  def attr(name: String, namespace: Namespace): HtmlAttributeOf             = new HtmlAttributeOf(name, namespace)
+  def attributeOf(name: String): HtmlAttributeOf                            = attr(name)
+  def handler[T](name: String): HtmlEventHandlerOf[T]                       = new HtmlEventHandlerOf[T](name)
+  def handler[T](name: String, namespace: Namespace): HtmlEventHandlerOf[T] = new HtmlEventHandlerOf[T](name, namespace)
 
   @implicitNotFound(msg = "Unsupported type as an attribute value")
   trait EmbeddableAttribute[X]
