@@ -20,7 +20,6 @@ import wvlet.airspec.{AirSpecDef, AirSpecSpi}
   * AirSpecContext is an interface to pass the test environment data to individual test methods.
   *
   * Spec: global
-  * -
   */
 trait AirSpecContext {
   def hasChildTask: Boolean
