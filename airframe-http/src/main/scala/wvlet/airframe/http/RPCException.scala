@@ -63,6 +63,7 @@ trait RPCErrorCode extends PackSupport {
   def name: String
   // Mapping to an HTTP status code (required)
   def httpStatus: HttpStatus
+
   // Description of the error
   def description: String
 
