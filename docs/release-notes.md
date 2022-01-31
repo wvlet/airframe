@@ -6,6 +6,66 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.1.0
+
+This version introduces type-safe event handlers (e.g., `onclick -> { e: MouseEvent => ... }`) for airframe-rx-html. Thanks [@exoego](https://github.com/exoego) for the contribution!
+
+- airframe-rx-html: Add type-safe event handler ([#2044](https://github.com/wvlet/airframe/issues/2044)) [[9b23ccc7](https://github.com/wvlet/airframe/commit/9b23ccc7)]
+
+From this version, AirSpec will be built using a sub folder of Airframe project. This is for simplyfing the build definition of Airframe. 
+
+- Build AirSpec using a sub project ([#1992](https://github.com/wvlet/airframe/issues/1992)) [[9994d212](https://github.com/wvlet/airframe/commit/9994d212)]
+
+### Minor fixes
+
+- Share same scalafmt config between airframe and airspec ([#2043](https://github.com/wvlet/airframe/issues/2043)) [[bad8bcc5](https://github.com/wvlet/airframe/commit/bad8bcc5)]
+- Bump scalafmt and fix format ([#2038](https://github.com/wvlet/airframe/issues/2038)) [[606b4c1a](https://github.com/wvlet/airframe/commit/606b4c1a)]
+
+### Major dependency updates 
+
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.44.0 ([#2036](https://github.com/wvlet/airframe/issues/2036)) [[e2bc8dc4](https://github.com/wvlet/airframe/commit/e2bc8dc4)]
+- Update fluency-core, fluency-fluentd, ... to 2.6.2 ([#2032](https://github.com/wvlet/airframe/issues/2032)) [[0734f2da](https://github.com/wvlet/airframe/commit/0734f2da)]
+- Update finagle-core, finagle-http, ... to 22.1.0 ([#2017](https://github.com/wvlet/airframe/issues/2017)) [[0a6c6b88](https://github.com/wvlet/airframe/commit/0a6c6b88)]
+- Update scala-compiler, scala-library, ... to 2.13.8 ([#2014](https://github.com/wvlet/airframe/issues/2014)) [[8595eec7](https://github.com/wvlet/airframe/commit/8595eec7)]
+- Update HikariCP to 5.0.1 ([#2007](https://github.com/wvlet/airframe/issues/2007)) [[872b3bbe](https://github.com/wvlet/airframe/commit/872b3bbe)]
+- Update scalajs-dom to 2.1.0 ([#1997](https://github.com/wvlet/airframe/issues/1997)) [[e61c8832](https://github.com/wvlet/airframe/commit/e61c8832)]
+- Update logback-core to 1.2.10 ([#1989](https://github.com/wvlet/airframe/issues/1989)) [[b473ee02](https://github.com/wvlet/airframe/commit/b473ee02)]
+- Update swagger-parser to 2.0.29 ([#1983](https://github.com/wvlet/airframe/issues/1983)) [[ebdaba8d](https://github.com/wvlet/airframe/commit/ebdaba8d)]
+- Update slf4j-jdk14 to 1.7.35 ([#2030](https://github.com/wvlet/airframe/issues/2030)) [[9654f1a0](https://github.com/wvlet/airframe/commit/9654f1a0)]
+
+
+### Internal dependency updates
+
+- Update sbt-mdoc to 2.3.0 ([#2040](https://github.com/wvlet/airframe/issues/2040)) [[bbd801fa](https://github.com/wvlet/airframe/commit/bbd801fa)]
+- Update protobuf-java to 3.19.4 ([#2039](https://github.com/wvlet/airframe/issues/2039)) [[8489ce9d](https://github.com/wvlet/airframe/commit/8489ce9d)]
+- Update spark-sql to 3.2.1 ([#2034](https://github.com/wvlet/airframe/issues/2034)) [[03ae35da](https://github.com/wvlet/airframe/commit/03ae35da)]
+- Update trino-main to 369 ([#2029](https://github.com/wvlet/airframe/issues/2029)) [[fc3d4fd9](https://github.com/wvlet/airframe/commit/fc3d4fd9)]
+- Update json4s-jackson to 4.0.4 ([#2027](https://github.com/wvlet/airframe/issues/2027)) [[01ba66e1](https://github.com/wvlet/airframe/commit/01ba66e1)]
+- Update slf4j-jdk14 to 1.7.33 ([#2015](https://github.com/wvlet/airframe/issues/2015)) [[7a833b46](https://github.com/wvlet/airframe/commit/7a833b46)]
+- Update trino-main to 368 ([#2012](https://github.com/wvlet/airframe/issues/2012)) [[073d07bf](https://github.com/wvlet/airframe/commit/073d07bf)]
+- Update protobuf-java to 3.19.3 ([#2009](https://github.com/wvlet/airframe/issues/2009)) [[0b9d4c6e](https://github.com/wvlet/airframe/commit/0b9d4c6e)]
+- Update sbt-scoverage to 1.9.3 ([#2010](https://github.com/wvlet/airframe/issues/2010)) [[06856913](https://github.com/wvlet/airframe/commit/06856913)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.43.2 ([#2003](https://github.com/wvlet/airframe/issues/2003)) [[890b9ff7](https://github.com/wvlet/airframe/commit/890b9ff7)]
+- Update protobuf-java to 3.19.2 ([#2001](https://github.com/wvlet/airframe/issues/2001)) [[25a0ecc1](https://github.com/wvlet/airframe/commit/25a0ecc1)]
+- Update scalafmt-core to 3.3.1 ([#1998](https://github.com/wvlet/airframe/issues/1998)) [[c252839d](https://github.com/wvlet/airframe/commit/c252839d)]
+- Update sbt, sbt-dependency-tree, ... to 1.6.1 ([#1996](https://github.com/wvlet/airframe/issues/1996)) [[4437ee28](https://github.com/wvlet/airframe/commit/4437ee28)]
+- Update scalafmt-core to 3.3.0 ([#1995](https://github.com/wvlet/airframe/issues/1995)) [[264e1c91](https://github.com/wvlet/airframe/commit/264e1c91)]
+- Update sbt, sbt-dependency-tree, ... to 1.6.0 ([#1994](https://github.com/wvlet/airframe/issues/1994)) [[0f0211c0](https://github.com/wvlet/airframe/commit/0f0211c0)]
+- Update sbt-scalafmt to 2.4.6 ([#1993](https://github.com/wvlet/airframe/issues/1993)) [[c7ff87c6](https://github.com/wvlet/airframe/commit/c7ff87c6)]
+- Update scalafmt-core to 3.2.2 ([#1991](https://github.com/wvlet/airframe/issues/1991)) [[1ac32f06](https://github.com/wvlet/airframe/commit/1ac32f06)]
+- Update jmh-core, jmh-generator-bytecode, ... to 1.34 ([#1990](https://github.com/wvlet/airframe/issues/1990)) [[9d96fc18](https://github.com/wvlet/airframe/commit/9d96fc18)]
+- Update trino-main to 367 ([#1988](https://github.com/wvlet/airframe/issues/1988)) [[63b25e69](https://github.com/wvlet/airframe/commit/63b25e69)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.43.1 ([#1984](https://github.com/wvlet/airframe/issues/1984)) [[42a7a657](https://github.com/wvlet/airframe/commit/42a7a657)]
+- Update sbt, sbt-dependency-tree, ... to 1.5.8 ([#1985](https://github.com/wvlet/airframe/issues/1985)) [[a38971d6](https://github.com/wvlet/airframe/commit/a38971d6)]
+- Update logback-core to 1.2.9 ([#1982](https://github.com/wvlet/airframe/issues/1982)) [[c1f97537](https://github.com/wvlet/airframe/commit/c1f97537)]
+- Update finagle-core, finagle-http, ... to 21.12.0 ([#1981](https://github.com/wvlet/airframe/issues/1981)) [[e66ab863](https://github.com/wvlet/airframe/commit/e66ab863)]
+- Update snakeyaml to 1.30 ([#1979](https://github.com/wvlet/airframe/issues/1979)) [[5a8c615c](https://github.com/wvlet/airframe/commit/5a8c615c)]
+- Update sbt, sbt-dependency-tree, ... to 1.5.7 ([#1978](https://github.com/wvlet/airframe/issues/1978)) [[5d62b17c](https://github.com/wvlet/airframe/commit/5d62b17c)]
+- airframe-config: Upgrade snake-yaml to 1.29 for CVE-2017-18640([#1977](https://github.com/wvlet/airframe/issues/1977)) [[20fa080b](https://github.com/wvlet/airframe/commit/20fa080b)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.43.0 ([#1975](https://github.com/wvlet/airframe/issues/1975)) [[6502da7b](https://github.com/wvlet/airframe/commit/6502da7b)]
+- Update trino-main to 366 ([#1976](https://github.com/wvlet/airframe/issues/1976)) [[eaa4665a](https://github.com/wvlet/airframe/commit/eaa4665a)]
+- Update airframe-codec, airframe-control, ... to 21.12.1 ([#1974](https://github.com/wvlet/airframe/issues/1974)) [[e3ea36f6](https://github.com/wvlet/airframe/commit/e3ea36f6)]
+
 ## 21.12.1
 
 This release is for upgrading to Scala.js 1.8.0 and using a safer version of logback-core 1.2.8, which removes JNDI/JDBC related codei [LOGBACK-1591](https://jira.qos.ch/browse/LOGBACK-1591). Note that it's a different issue from the log4j vulnerability [CVE-2021-44228](https://nvd.nist.gov/vuln/detail/CVE-2021-44228). logback-core is used inside airframe-log for rotating log files and airframe-log doesn't use any logback configuration file, which can be a target of JNDI lookup security hole.  
