@@ -20,4 +20,7 @@ object compat {
   trait PlatformEmbeddableNode {
     @inline implicit def embedHtmlElement[A <: dom.Element]: EmbeddableNode[A] = null
   }
+  type UIEvent    = dom.UIEvent
+  type MouseEvent = dom.MouseEvent
+  type WheelEvent = dom.WheelEvent
 }

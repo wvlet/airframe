@@ -17,4 +17,7 @@ package wvlet.airframe.rx.html
   */
 object compat {
   trait PlatformEmbeddableNode {}
+  type UIEvent    = org.w3c.dom.events.UIEvent
+  type MouseEvent = org.w3c.dom.events.MouseEvent
+  type WheelEvent = org.w3c.dom.events.UIEvent // WheelEvent not defined
 }
