@@ -43,9 +43,9 @@ ThisBuild / dynverSeparator := "-"
 
 // For Sonatype
 // We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
-ThisBuild / publishTo           := sonatypePublishToBundle.value
-ThisBuild / sonatypeProfileName := "org.wvlet"
-ThisBuild / sonatypeSessionName := s"${sonatypeSessionName.value} for AirSpec"
+ThisBuild / publishTo := sonatypePublishToBundle.value
+sonatypeProfileName   := "org.wvlet"
+sonatypeSessionName   := s"${sonatypeSessionName.value} for AirSpec"
 
 // Share
 ThisBuild / scalafmtConfig := file("../.scalafmt.conf")
