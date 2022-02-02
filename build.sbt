@@ -436,6 +436,8 @@ lazy val surface =
     .settings(
       name        := "airframe-surface",
       description := "A library for extracting object structure surface",
+      libraryDependencies -= "org.wvlet.airframe" %%% "airspec" % AIRSPEC_VERSION % Test,
+      libraryDependencies += "org.scalameta" %%% "munit" % "0.7.29" % Test,
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
     .jvmSettings(

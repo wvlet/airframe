@@ -43,8 +43,8 @@ class ParamTest extends SurfaceSpec {
     val p2 = s.params(1)
     val p3 = s.params(2)
     val v  = ParamTest.B(1, 2, 3)
-    p1.get(v) shouldBe 1
-    p2.get(v) shouldBe 2
-    p3.get(v) shouldBe 3
+    assertEquals(p1.get(v), 1)
+    assertEquals(p2.get(v), 2)
+    assertEquals(p3.get(v), 3)
   }
 }

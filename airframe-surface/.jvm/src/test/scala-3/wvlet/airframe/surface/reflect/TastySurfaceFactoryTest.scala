@@ -1,12 +1,13 @@
 package wvlet.airframe.surface.reflect
 
-import wvlet.airspec.AirSpec
+import wvlet.log.LogSupport
+import wvlet.airframe.surface.AirSpecBridge
 
 case class Person(id: Int, name: String) {
   def hello: String = "hello"
 }
 
-object TastySurfaceFactoryTest extends AirSpec {
+class TastySurfaceFactoryTest extends munit.FunSuite with AirSpecBridge with LogSupport {
 
   test("of[A]") {
     val s = TastySurfaceFactory.of[Person]

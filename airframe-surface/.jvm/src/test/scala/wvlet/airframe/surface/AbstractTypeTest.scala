@@ -1,8 +1,6 @@
 package wvlet.airframe.surface
 
-import wvlet.airspec.AirSpec
-
-object AbstractTypeTest extends AirSpec {
+class AbstractTypeTest extends munit.FunSuite {
 
   trait Abst {
     def hello = "hello abst"
@@ -13,9 +11,9 @@ object AbstractTypeTest extends AirSpec {
 
   test("object factory of an abstract type impl") {
     val s = Surface.of[AbstImpl]
-    s.objectFactory shouldBe defined
+    assert(s.objectFactory.isDefined)
 
     val a = s.objectFactory.get.newInstance(Seq.empty).asInstanceOf[Abst]
-    a.hello shouldBe "hello impl"
+    assertEquals(a.hello, "hello impl")
   }
 }

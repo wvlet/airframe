@@ -12,15 +12,13 @@
  * limitations under the License.
  */
 package wvlet.airframe.surface.reflect
-import wvlet.airspec.AirSpec
 
-import scala.concurrent.Future
 import scala.language.higherKinds
 import wvlet.airframe.surface.Surface
 
 /**
   */
-object NamedParameterTest extends AirSpec {
+class NamedParameterTest extends munit.FunSuite {
 
   trait MyService[F[_]] {
     def hello: F[String]
@@ -30,13 +28,13 @@ object NamedParameterTest extends AirSpec {
 
   test("read F[_]") {
     val s = Surface.of[MyService[A]]
-    s.toString shouldBe "MyService[A]"
+    assertEquals(s.toString, "MyService[A]")
 
     val m = Surface.methodsOf[MyService[A]]
-    m.headOption shouldBe defined
+    assert(m.headOption.isDefined)
 
     val m1 = m.head
     // info(m1.returnType.getClass())
-    m1.returnType.toString shouldBe "F[String]"
+    assertEquals(m1.returnType.toString, "F[String]")
   }
 }
