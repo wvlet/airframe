@@ -12,11 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe.surface
-import wvlet.airspec.AirSpec
+
+import wvlet.log.LogSupport
 
 /**
   */
-object AliasSurfaceTest extends AirSpec {
+class AliasSurfaceTest extends munit.FunSuite with LogSupport {
 
   case class Holder[A](v: A)
   type MyInt = Holder[Int]

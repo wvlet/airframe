@@ -78,7 +78,7 @@ class SurfaceTest extends SurfaceSpec {
   }
 
   test("find primitive Surfaces") {
-    Primitive(classOf[Int]) shouldBe Primitive.Int
+    assertEquals(Primitive(classOf[Int]), Primitive.Int)
   }
 
   test("resolve surface from class") {
@@ -176,7 +176,7 @@ class SurfaceTest extends SurfaceSpec {
   test("resolve generic type") {
     val d1 = check(Surface.of[D[String]], "D[String]")
     val d2 = check(Surface.of[D[A]], "D[A]")
-    d1 shouldNotBeTheSameInstanceAs d2
+    assert(d1 ne d2, "should not be the same instance")
   }
 
   test("resolve recursive type") {
@@ -185,7 +185,7 @@ class SurfaceTest extends SurfaceSpec {
 
   test("resolve generic abstract type") {
     val d = check(Surface.of[D[_]], "D[_]")
-    d.typeArgs.length shouldBe 1
+    assertEquals(d.typeArgs.length, 1)
     check(Surface.of[Map[_, _]], "Map[_,_]")
   }
 
@@ -230,9 +230,9 @@ class SurfaceTest extends SurfaceSpec {
 
   test("object factory") {
     val s = Surface.of[F]
-    s.objectFactory shouldBe defined
+    assert(s.objectFactory.isDefined)
     val f = s.objectFactory.map(_.newInstance(Seq(100)))
-    f shouldBe Some(F(100))
+    assertEquals(f, Some(F(100)))
   }
 
   test("bigint") {

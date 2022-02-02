@@ -12,12 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.surface
-import wvlet.airspec.AirSpec
-import wvlet.log.Logger
 
 /**
   */
-object EnumTest extends AirSpec {
+object EnumTest {
 
   sealed trait Color
   case object Blue extends Color
@@ -29,14 +27,18 @@ object EnumTest extends AirSpec {
       values.find(_.toString == s)
     }
   }
+}
+
+class EnumTest extends munit.FunSuite {
+  import EnumTest._
 
   test("Find Surface.stringExtractor") {
     Surface.of[Color] match {
       case s: EnumSurface =>
         val f = s.stringExtractor
-        f(classOf[Color], "Blue") shouldBe Some(Blue)
-        f(classOf[Color], "Red") shouldBe Some(Red)
-        f(classOf[Color], "White") shouldBe empty
+        assertEquals(f(classOf[Color], "Blue"), Some(Blue))
+        assertEquals(f(classOf[Color], "Red"), Some(Red))
+        assertEquals(f(classOf[Color], "White"), None)
       case other =>
         fail(s"EnumSurface should be used: ${other.getClass}")
     }

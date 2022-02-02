@@ -52,16 +52,16 @@ class RecursiveSurfaceTest extends SurfaceSpec {
   test("support generic recursive type") {
     val c: Surface = Surface.of[TypedCons[String]]
     debug(s"TypeCons[String] ${c.getClass}")
-    c.toString shouldBe "TypedCons[String]"
+    assertEquals(c.toString, "TypedCons[String]")
 
-    c.params.length shouldBe 2
-    c.params(0).surface shouldBe Primitive.Int
+    assertEquals(c.params.length, 2)
+    assertEquals(c.params(0).surface, Primitive.Int)
 
     val lazyC: Surface = c.params(1).surface
     debug(s"lazyC surface: ${lazyC.getClass}...")
-    lazyC.toString shouldBe "TypedCons[String]"
-    lazyC.params.length shouldBe 2
-    lazyC.isPrimitive shouldBe false
-    lazyC.isOption shouldBe false
+    assertEquals(lazyC.toString, "TypedCons[String]")
+    assertEquals(lazyC.params.length, 2)
+    assertEquals(lazyC.isPrimitive, false)
+    assertEquals(lazyC.isOption, false)
   }
 }

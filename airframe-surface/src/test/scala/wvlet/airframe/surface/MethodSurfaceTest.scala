@@ -71,8 +71,8 @@ class MethodSurfaceTest extends SurfaceSpec {
     assert(arg2.isStatic == false)
 
     // Hide protected/private methods
-    m.find(_.name == "helloProtected") shouldBe empty
-    m.find(_.name == "helloPrivate") shouldBe empty
+    assert(m.find(_.name == "helloProtected").isEmpty)
+    assert(m.find(_.name == "helloPrivate").isEmpty)
 
     val f = m.find(_.name == "helloFinal").get
     assert(f.isAbstract == false)
@@ -88,28 +88,28 @@ class MethodSurfaceTest extends SurfaceSpec {
 
   test("inherit parent methods") {
     val m = Surface.methodsOf[B]
-    m.find(_.name == "helloParent") shouldBe defined
+    assert(m.find(_.name == "helloParent").isDefined)
   }
 
   test("support generic methods") {
     val m = Surface.methodsOf[C]
-    m.find(_.name == "generic") shouldBe defined
+    assert(m.find(_.name == "generic").isDefined)
   }
 
   test("find method default parameter") {
     val ms = Surface.methodsOf[D]
     val m  = ms.find(_.name == "hello").get
-    m.args.headOption shouldBe defined
+    assert(m.args.headOption.isDefined)
     val h = m.args.head
 
     val d = new D
     val v = h.getMethodArgDefaultValue(d)
     if (!isScalaJS) {
       // Scala.js doesn't support reading default method arguments
-      v shouldBe Some("hello")
+      assertEquals(v, Some("hello"))
     }
 
     val msg = m.call(d, "world")
-    msg shouldBe "world"
+    assertEquals(msg, "world")
   }
 }
