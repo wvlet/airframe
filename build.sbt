@@ -437,6 +437,7 @@ lazy val surface =
       name        := "airframe-surface",
       description := "A library for extracting object structure surface",
       libraryDependencies -= "org.wvlet.airframe" %%% "airspec" % AIRSPEC_VERSION % Test,
+      // TODO: This is a temporaly solution. Use AirSpec after Scala 3 support of Surface is completed
       libraryDependencies += "org.scalameta" %%% "munit" % "0.7.29" % Test,
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
