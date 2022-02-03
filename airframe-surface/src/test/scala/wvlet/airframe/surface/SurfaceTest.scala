@@ -184,6 +184,7 @@ class SurfaceTest extends SurfaceSpec {
   }
 
   test("resolve generic abstract type") {
+    assertEquals(Surface.of[D[_]].typeArgs, Seq(ExistentialType))
     val d = check(Surface.of[D[_]], "D[_]")
     assertEquals(d.typeArgs.length, 1)
     check(Surface.of[Map[_, _]], "Map[_,_]")

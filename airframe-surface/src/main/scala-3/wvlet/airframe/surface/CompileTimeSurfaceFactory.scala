@@ -93,7 +93,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       // println(s"[${typeNameOf(t)}]\n  ${t}")
       val generator = factory.andThen { expr =>
         val cacheKey =
-          if (typeNameOf(t) == "scala.Any" && classOf[DottyTypes.TypeParamRef].isAssignableFrom(t.getClass)) {
+          if (typeNameOf(t) == "scala.Any" && classOf[DottyTypes.TypeBounds].isAssignableFrom(t.getClass)) {
+            // Distinguish scala.Any and type bounds (such as _)
+            s"${fullTypeNameOf(t)} for ${t}"
+          } else if (typeNameOf(t) == "scala.Any" && classOf[DottyTypes.TypeParamRef].isAssignableFrom(t.getClass)) {
             // This ensure different cache key for each Type Parameter (such as T and U).
             // This is required because fullTypeNameOf of every Type Parameters is `scala.Any`.
             s"${fullTypeNameOf(t)} for ${t}"
