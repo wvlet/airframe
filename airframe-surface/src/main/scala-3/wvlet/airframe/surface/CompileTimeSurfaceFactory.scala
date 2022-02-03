@@ -92,7 +92,15 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       // For debugging
       // println(s"[${typeNameOf(t)}]\n  ${t}")
       val generator = factory.andThen { expr =>
-        '{ wvlet.airframe.surface.surfaceCache.getOrElseUpdate(${ Expr(fullTypeNameOf(t)) }, ${ expr }) }
+        val cacheKey =
+          if (typeNameOf(t) == "scala.Any" && classOf[DottyTypes.TypeParamRef].isAssignableFrom(t.getClass)) {
+            // This ensure different cache key for each Type Parameter (such as T and U).
+            // This is required because fullTypeNameOf of every Type Parameters is `scala.Any`.
+            s"${fullTypeNameOf(t)} for ${t}"
+          } else {
+            fullTypeNameOf(t)
+          }
+        '{ wvlet.airframe.surface.surfaceCache.getOrElseUpdate(${ Expr(cacheKey) }, ${ expr }) }
       }
       val surface = generator(t)
       // println(s"--- ${surface.show}")
