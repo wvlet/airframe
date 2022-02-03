@@ -330,7 +330,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
               td.name -> classTypeParams(i)
           }.toMap[String, TypeRepr]
         // println(s"type args: ${typeArgTable}")
-        methodArgs.map(_.tree).collect { case v: ValDef =>
+        // tpeArgs for case fields, methodArgs for method arguments
+        // E.g. case class Foo(a: String)(implicit b: Int)
+        (tpeArgs ++ methodArgs).map(_.tree).collect { case v: ValDef =>
           // Substitue type param to actual types
           val resolved: TypeRepr = v.tpt.tpe match {
             case a: AppliedType =>
