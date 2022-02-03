@@ -47,17 +47,19 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
   private def fullTypeNameOf(t: TypeRepr): String = {
     def sanitize(symbol: Symbol): String = {
-      val name = symbol.fullName.split("\\.").toList match {
+      val nameParts: List[String] = symbol.fullName.split("\\.").toList match {
         case "scala" :: "Predef$" :: tail =>
-          tail.mkString(".")
+          tail
         case "scala" :: "collection" :: "immutable" :: tail =>
-          tail.mkString(".")
+          tail
         case "scala" :: nme :: Nil =>
-          nme
+          List(nme)
         case other =>
           other
       }
-      name.toString.stripSuffix("$").replaceAll("\\.package\\$", ".").replaceAll("\\$+", ".")
+      nameParts
+        .mkString(".").stripSuffix("$").replaceAll("\\.package\\$", ".").replaceAll("\\$+", ".")
+        .replaceAll("\\.\\.", ".")
     }
     t match {
       case a: AppliedType if a.args.nonEmpty =>
