@@ -1,5 +1,6 @@
 package wvlet.airframe.surface
 import scala.quoted._
+import dotty.tools.dotc.core.{Types as DottyTypes}
 
 private[surface] object CompileTimeSurfaceFactory {
 
@@ -112,6 +113,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       javaEnumFactory orElse
       exisitentialTypeFactory orElse
       genericTypeWithConstructorFactory orElse
+      typeParameterFactory orElse
       genericTypeFactory
   }
 
@@ -260,6 +262,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           isStatic = ${ Expr(isStatic) }
         )
       }
+  }
+
+  private def typeParameterFactory: Factory = {
+    case p: DottyTypes.ParamRef if (fullTypeNameOf(p) == "Any") =>
+      val paramName = Expr(p.paramName.toString)
+      '{ HigherKindedTypeSurface(${ paramName }, ${ paramName }, AnyRefSurface, Nil) }
   }
 
   private def genericTypeFactory: Factory = {
