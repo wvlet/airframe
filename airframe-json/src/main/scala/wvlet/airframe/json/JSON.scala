@@ -119,7 +119,7 @@ object JSON extends LogSupport {
     def toJSON: String
   }
 
-  final case object JSONNull extends JSONValue {
+  case object JSONNull extends JSONValue {
     override def toJSON: String = "null"
   }
 

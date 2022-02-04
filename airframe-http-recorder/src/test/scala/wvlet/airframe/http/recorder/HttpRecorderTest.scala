@@ -71,7 +71,7 @@ class HttpRecorderTest extends AirSpec {
     response.status shouldBe replayResponse.status
     replayResponse.headerMap.get("X-Airframe-Record-Time") shouldBe defined
     orderInsensitveHash(response.headerMap.toMap) shouldBe orderInsensitveHash(
-      (replayResponse.headerMap - "X-Airframe-Record-Time").toMap
+      (replayResponse.headerMap -= "X-Airframe-Record-Time").toMap
     )
     response.contentString shouldBe replayResponse.contentString
 

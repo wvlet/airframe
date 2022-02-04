@@ -158,7 +158,7 @@ object OpenAPI {
       additionalProperties: Option[SchemaOrRef] = None,
       items: Option[SchemaOrRef] = None,
       nullable: Option[Boolean] = None,
-      enum: Option[Seq[String]] = None
+      `enum`: Option[Seq[String]] = None
   ) extends SchemaOrRef {
     override def getElementClass = classOf[Schema]
   }

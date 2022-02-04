@@ -95,7 +95,7 @@ object DataSize {
     def toDataSize = DataSize.apply(bytes)
   }
 
-  private val dataSizePattern = """^\s*(\d+(?:\.\d+)?)\s*([a-zA-Z]+)\s*$""".r("num", "unit")
+  private val dataSizePattern = """^\s*(?<num>\d+(?:\.\d+)?)\s*(?<unit>[a-zA-Z]+)\s*$""".r
 
   sealed class DataSizeUnit private[metrics] (val factor: Long, val unitString: String)
   case object BYTE     extends DataSizeUnit(1L, "B")

@@ -48,7 +48,7 @@ case class TimeVector(x: Long, offset: Long, unit: TimeWindowUnit) {
 }
 
 object TimeVector {
-  private val durationPattern = "^([+-]|last|next)?([0-9]+)(s|m|d|h|w|M|q|y)".r("prefix", "num", "unit")
+  private val durationPattern = "^(?<prefix>[+-]|last|next)?(?<num>[0-9]+)(?<unit>s|m|d|h|w|M|q|y)".r
 
   def apply(s: String): TimeVector = {
     s match {
