@@ -1022,3 +1022,5 @@ lazy val dottyTest =
       crossScalaVersions := List(SCALA_3_0)
     )
     .dependsOn(logJVM, surfaceJVM, diJVM, codecJVM)
+    // Allow dottyTest/test to run all tests in these projects
+    .aggregate(logJVM, surfaceJVM, diJVM, codecJVM)
