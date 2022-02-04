@@ -95,7 +95,7 @@ val buildSettings = Seq[Setting[_]](
     "-feature",
     "-deprecation"
   ) ++ {
-    if (DOTTY) {
+    if (scalaVersion.value.startsWith("3.")) {
       Seq.empty
     } else {
       Seq(
@@ -109,7 +109,7 @@ val buildSettings = Seq[Setting[_]](
     "org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test,
     "org.scalacheck"     %%% "scalacheck" % SCALACHECK_VERSION % Test
   ) ++ {
-    if (DOTTY)
+    if (scalaVersion.value.startsWith("3."))
       Seq.empty
     else
       Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.6.0")
@@ -530,7 +530,7 @@ lazy val launcher =
 
 val logDependencies = { scalaVersion: String =>
   scalaVersion match {
-    case s if DOTTY =>
+    case s if s.startsWith("3.") =>
       Seq.empty
     case _ =>
       Seq("org.scala-lang" % "scala-reflect" % scalaVersion % Provided)
@@ -553,7 +553,7 @@ lazy val log: sbtcrossproject.CrossProject =
       name        := "airframe-log",
       description := "Fancy logger for Scala",
       scalacOptions ++= {
-        if (DOTTY) Seq("-source:3.0-migration")
+        if (scalaVersion.value.startsWith("3.")) Seq("-source:3.0-migration")
         else Nil
       },
       libraryDependencies ++= logDependencies(scalaVersion.value)
@@ -953,7 +953,7 @@ lazy val rxHtml =
       name        := "airframe-rx-html",
       description := "Reactive HTML elements for Scala and Scala.js",
       libraryDependencies ++= {
-        if (DOTTY)
+        if (scalaVersion.value.startsWith("3."))
           Seq.empty
         else
           Seq("org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided)
@@ -1016,11 +1016,9 @@ lazy val dottyTest =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      name        := "airframe-dotty-test",
-      description := "test for dotty",
-      crossScalaVersions := {
-        if (DOTTY) withDotty
-        else targetScalaVersions
-      }
+      name               := "airframe-dotty-test",
+      description        := "test for dotty",
+      scalaVersion       := SCALA_3_0,
+      crossScalaVersions := List(SCALA_3_0)
     )
     .dependsOn(logJVM, surfaceJVM, diJVM, codecJVM)

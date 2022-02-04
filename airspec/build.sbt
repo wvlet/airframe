@@ -83,7 +83,7 @@ val buildSettings = Seq[Setting[_]](
     "-feature",
     "-deprecation"
   ) ++ {
-    if (DOTTY) {
+    if (scalaVersion.value.startsWith("3.")) {
       Seq.empty
     } else {
       Seq(
@@ -94,7 +94,7 @@ val buildSettings = Seq[Setting[_]](
   },
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= {
-    if (DOTTY)
+    if (scalaVersion.value.startsWith("3."))
       Seq.empty
     else
       Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.6.0")
@@ -209,7 +209,7 @@ lazy val airspecLog =
       description := "airframe-log for AirSpec",
       libraryDependencies ++= {
         scalaVersion.value match {
-          case s if DOTTY =>
+          case s if s.startsWith("3.") =>
             Seq.empty
           case v =>
             Seq("org.scala-lang" % "scala-reflect" % v % Provided)
