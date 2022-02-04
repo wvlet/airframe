@@ -97,7 +97,7 @@ object Count {
   def apply(value: Long): Count                = Count(value, ONE)
   def unapply(countStr: String): Option[Count] = Try(apply(countStr)).toOption
 
-  private val countPattern = """^\s*((?:-?)?[\d,]+(?:\.\d+)?)\s*([a-zA-Z])\s*$""".r("num", "unit")
+  private val countPattern = """^\s*(?<num>(?:-?)?[\d,]+(?:\.\d+)?)\s*(?<unit>[a-zA-Z])\s*$""".r
   def apply(countStr: String): Count = {
     countPattern.findFirstMatchIn(countStr) match {
       case None =>

@@ -191,7 +191,7 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
 
   @tailrec
   private def parseOffset(o: String, windowUnit: TimeWindowUnit, adjustments: Seq[TimeVector] = Nil): ZonedDateTime = {
-    val pattern = s"^([^/]+)(/(.+))".r("duration", "sep", "offset")
+    val pattern = s"^(?<duration>[^/]+)(?<sep>/(?<offset>.+))".r
     pattern.findFirstMatchIn(o) match {
       case Some(m) =>
         // When a nested offset is found
@@ -234,7 +234,7 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
   }
 
   def parse(str: String): TimeWindow = {
-    val pattern = s"^([^/]+)(/(.*))?".r("duration", "sep", "offset")
+    val pattern = s"^(?<duration>[^/]+)(?<sep>/(?<offset>.*))?".r
     pattern.findFirstMatchIn(str) match {
       case Some(m) =>
         val d = m.group("duration")

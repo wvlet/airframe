@@ -39,10 +39,10 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   def expressions: Seq[Expression] = {
     def collectExpression(x: Any): Seq[Expression] = {
       x match {
-        case e: Expression     => e :: Nil
-        case Some(x)           => collectExpression(x)
-        case s: Traversable[_] => s.flatMap(collectExpression _).toSeq
-        case other             => Nil
+        case e: Expression  => e :: Nil
+        case Some(x)        => collectExpression(x)
+        case s: Iterable[_] => s.flatMap(collectExpression _).toSeq
+        case other          => Nil
       }
     }
 

@@ -65,6 +65,7 @@ object Shell extends LogSupport {
 
     // retrieve child processes
     val pb = prepareProcessBuilder(s"ps -o pid -p $pid | sed 1d", inheritIO = true)
+    // TODO: Use lazyLines when Scala 2.12 dropped
     for (line <- Process(pb).lineStream) {
       val childPID = line.trim.toInt
       killTree(childPID, signal)

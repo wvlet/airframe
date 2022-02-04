@@ -313,7 +313,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private def hasStringUnapply(t: TypeRepr): Boolean = {
     t.typeSymbol.companionClass match {
       case cp: Symbol =>
-        cp.memberMethod("unapply").headOption.map(_.tree) match {
+        cp.methodMember("unapply").headOption.map(_.tree) match {
           case Some(m: DefDef) if m.paramss.size == 1 && hasOptionReturnType(m, t) =>
             val args: List[ParamClause] = m.paramss
             args.headOption.flatMap(_.params.headOption) match {
@@ -446,7 +446,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
   private def localMethodsOf(t: TypeRepr): Seq[Symbol] = {
     def allMethods = {
-      t.typeSymbol.memberMethods
+      t.typeSymbol.methodMembers
         .filter { x =>
           nonObject(x.owner) &&
           x.isDefDef &&

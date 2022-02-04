@@ -34,9 +34,7 @@ object NestedElementTest extends AirSpec {
     div(
       id -> "nested",
       // Seq[RxElement]
-      lst.toSeq.map { i => new MyElement(s"button ${i}") },
-      // Iterable[RxElement]
-      lst.toIterable.map { i => new MyElement(s"button ${i}") }
+      lst.toSeq.map { i => new MyElement(s"button ${i}") }
     )
   }
 

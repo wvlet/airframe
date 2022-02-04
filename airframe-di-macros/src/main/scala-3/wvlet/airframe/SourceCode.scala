@@ -33,7 +33,7 @@ object SourceCode {
     val line                        = Expr(pos.startLine)
     val column                      = Expr(pos.endColumn)
     val src                         = pos.sourceFile
-    val srcPath: java.nio.file.Path = src.jpath
+    val srcPath: java.nio.file.Path = java.nio.file.Paths.get(src.path)
     val path                        = Expr(srcPath.toFile.getPath)
     val fileName                    = Expr(srcPath.getFileName().toString)
     '{ SourceCode(${ path }, ${ fileName }, ${ line } + 1, ${ column }) }

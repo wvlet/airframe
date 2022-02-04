@@ -92,6 +92,7 @@ object CrockfordBase32 {
       h >>>= 5
       i += 1
     }
+    // TODO: Use reverseInPlace when Scala 2.12 dropped
     s.reverseContents().toString()
   }
 
