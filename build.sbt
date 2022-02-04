@@ -1016,11 +1016,9 @@ lazy val dottyTest =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      name        := "airframe-dotty-test",
-      description := "test for dotty",
-      crossScalaVersions := {
-        if (DOTTY) withDotty
-        else targetScalaVersions
-      }
+      name               := "airframe-dotty-test",
+      description        := "test for dotty",
+      scalaVersion       := SCALA_3_0,
+      crossScalaVersions := List(SCALA_3_0)
     )
     .dependsOn(logJVM, surfaceJVM, diJVM, codecJVM)
