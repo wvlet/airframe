@@ -522,7 +522,7 @@ private[wvlet] object AirframeMacros {
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
          session.lifeCycleManager.addInjectHook(wvlet.airframe.lifecycle.EventHookHolder(${h
-      .surfaceOf(t)}, dep, ${body}))
+        .surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -536,7 +536,7 @@ private[wvlet] object AirframeMacros {
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
          session.lifeCycleManager.addStartHook(wvlet.airframe.lifecycle.EventHookHolder(${h
-      .surfaceOf(t)}, dep, ${body}))
+        .surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -552,7 +552,7 @@ private[wvlet] object AirframeMacros {
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
          session.lifeCycleManager.addStartHook(wvlet.airframe.lifecycle.EventHookHolder(${h
-      .surfaceOf(t)}, dep, ${body}))
+        .surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -566,7 +566,7 @@ private[wvlet] object AirframeMacros {
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
          session.lifeCycleManager.addPreShutdownHook(wvlet.airframe.lifecycle.EventHookHolder(${h
-      .surfaceOf(t)}, dep, ${body}))
+        .surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -580,7 +580,7 @@ private[wvlet] object AirframeMacros {
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
          session.lifeCycleManager.addShutdownHook(wvlet.airframe.lifecycle.EventHookHolder(${h
-      .surfaceOf(t)}, dep, ${body}))
+        .surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -848,7 +848,7 @@ private[wvlet] object AirframeMacros {
     val h  = new BindHelper[c.type](c)
     q"""{ i1: ${i1} =>
           val session = ${h.findSession}.newSharedChildSession(wvlet.airframe.newDesign.bind(${h
-      .surfaceOf(i1)}).toLazyInstance(i1))
+        .surfaceOf(i1)}).toLazyInstance(i1))
           ${h.createNewInstanceOf(a)}(session)
         }
       """

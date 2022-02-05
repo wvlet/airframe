@@ -93,13 +93,13 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
       def modelClasses(svc: ClientServiceDef): String = {
         s"""object ${svc.serviceName}Models {
            |${indent(
-          svc.methods
-            .filter { x =>
-              x.requestModelClassDef.isDefined
-            }
-            .map(_.requestModelClassDef.get.code(isPrivate = false))
-            .mkString("\n")
-        )}
+            svc.methods
+              .filter { x =>
+                x.requestModelClassDef.isDefined
+              }
+              .map(_.requestModelClassDef.get.code(isPrivate = false))
+              .mkString("\n")
+          )}
            |}""".stripMargin
       }
 
@@ -111,8 +111,8 @@ object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
           s"""${serviceBody}
              |${modelClassesBody}
              |${current.children
-            .map(traverse(_))
-            .mkString("\n")}""".stripMargin.trim
+              .map(traverse(_))
+              .mkString("\n")}""".stripMargin.trim
         if (current.packageLeafName.isEmpty) {
           body
         } else {

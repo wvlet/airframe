@@ -156,9 +156,9 @@ object LogFormatter extends AnsiColorPalette {
       val logTag = highlightLog(r.level, r.level.name)
       val log =
         f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(
-          Console.WHITE,
-          r.leafLoggerName
-        )}] ${highlightLog(r.level, r.getMessage)} ${loc}"
+            Console.WHITE,
+            r.leafLoggerName
+          )}] ${highlightLog(r.level, r.getMessage)} ${loc}"
       appendStackTrace(log, r)
     }
   }
@@ -173,9 +173,9 @@ object LogFormatter extends AnsiColorPalette {
       val logTag = highlightLog(r.level, r.level.name)
       val log =
         f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} [${withColor(BRIGHT_BLUE, currentThreadName)}] ${logTag}%14s [${withColor(
-          Console.WHITE,
-          r.leafLoggerName
-        )}] ${highlightLog(r.level, r.getMessage)} ${loc}"
+            Console.WHITE,
+            r.leafLoggerName
+          )}] ${highlightLog(r.level, r.getMessage)} ${loc}"
       appendStackTrace(log, r)
     }
   }

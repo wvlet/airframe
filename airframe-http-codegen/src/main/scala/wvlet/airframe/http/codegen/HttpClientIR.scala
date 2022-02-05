@@ -149,11 +149,11 @@ object HttpClientIR extends LogSupport {
   case class ClientRequestModelClassDef(name: String, parameter: Seq[Parameter]) {
     def code(isPrivate: Boolean = true) =
       s"${if (isPrivate) "private "
-      else ""}case class ${name}(${parameter
-        .map { p =>
-          s"${p.name}: ${p.surface.fullName.replaceAll("\\$", ".")}"
-        }
-        .mkString(", ")})"
+        else ""}case class ${name}(${parameter
+          .map { p =>
+            s"${p.name}: ${p.surface.fullName.replaceAll("\\$", ".")}"
+          }
+          .mkString(", ")})"
   }
 
   case class ClientMethodDef(
@@ -341,10 +341,10 @@ object HttpClientIR extends LogSupport {
         }
 
         clientCallParams += s"${requestModelClassName}(${requestModelClassParamSurfaces
-          .map { p =>
-            s"${p.name} = ${p.name}"
-          }
-          .mkString(", ")})"
+            .map { p =>
+              s"${p.name} = ${p.name}"
+            }
+            .mkString(", ")})"
 
         // Create a model class surface for defining http request object parameter
         val requestModelClassSurface =
