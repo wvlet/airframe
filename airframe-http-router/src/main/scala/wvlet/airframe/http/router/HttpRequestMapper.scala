@@ -244,7 +244,7 @@ object HttpRequestMapper extends LogSupport {
 
     trace(
       s"Method binding for request ${adapter.pathOf(request)}: ${methodSurface.name}(${methodSurface.args
-        .mkString(", ")}) <= [${methodArgs.mkString(", ")}]"
+          .mkString(", ")}) <= [${methodArgs.mkString(", ")}]"
     )
     methodArgs.toSeq
   }

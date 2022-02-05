@@ -52,7 +52,7 @@ class URLConnectionClient(address: ServerAddress, protected val config: URLConne
     val request = requestFilter(config.requestFilter(req))
 
     val url = s"${address.uri}${if (request.uri.startsWith("/")) request.uri
-    else s"/${request.uri}"}"
+      else s"/${request.uri}"}"
 
     // Send the request with retry support. Setting the context request is necessary to properly show
     // the request path upon errors

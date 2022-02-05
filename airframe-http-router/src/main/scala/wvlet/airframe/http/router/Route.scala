@@ -92,7 +92,7 @@ case class ControllerRoute(
 
   override def toString =
     s"${method} ${path} -> ${methodSurface.name}(${methodSurface.args
-      .map(x => s"${x.name}:${x.surface}").mkString(", ")}): ${methodSurface.returnType}"
+        .map(x => s"${x.name}:${x.surface}").mkString(", ")}): ${methodSurface.returnType}"
 
   override lazy val serviceName: String = {
     rpcInterfaceCls.getName.replaceAll("\\$anon\\$", "").replaceAll("\\$", ".")

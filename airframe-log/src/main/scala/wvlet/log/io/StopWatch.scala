@@ -265,8 +265,8 @@ trait TimeReport extends Ordered[TimeReport] {
 
   def genReportLine: String = {
     f"-$name%-15s\ttotal:${toHumanReadableFormat(s.getElapsedTime)}, count:${executionCount}%,5d, avg:${toHumanReadableFormat(
-      average
-    )}, min:${toHumanReadableFormat(minInterval)}, median:${toHumanReadableFormat(median)}, max:${toHumanReadableFormat(maxInterval)}"
+        average
+      )}, min:${toHumanReadableFormat(minInterval)}, median:${toHumanReadableFormat(median)}, max:${toHumanReadableFormat(maxInterval)}"
   }
 
   def report: String = {

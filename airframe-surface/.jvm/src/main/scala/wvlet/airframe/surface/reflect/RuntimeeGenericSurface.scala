@@ -100,13 +100,13 @@ class RuntimeGenericSurface(
         case e: InvocationTargetException =>
           logger.warn(
             s"Failed to instantiate ${self}: [${e.getTargetException.getClass.getName}] ${e.getTargetException.getMessage}\nargs:[${args
-              .mkString(", ")}]"
+                .mkString(", ")}]"
           )
           throw e.getTargetException
         case e: Throwable =>
           logger.warn(
             s"Failed to instantiate ${self}: [${e.getClass.getName}] ${e.getMessage}\nargs:[${args
-              .mkString(", ")}]"
+                .mkString(", ")}]"
           )
           throw e
       }

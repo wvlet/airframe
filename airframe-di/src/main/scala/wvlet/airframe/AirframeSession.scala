@@ -448,7 +448,7 @@ private[airframe] class AirframeSession(
               warn(
                 s"[${name}] No binding nor the default constructor for ${surface} at ${sourceCode} is found. " +
                   s"Add bind[${surface}].toXXX to your design or make sure ${surface} is not an abstract class. The dependency order: ${seen.reverse
-                    .mkString(" -> ")}"
+                      .mkString(" -> ")}"
               )
               throw MISSING_DEPENDENCY(seen, sourceCode)
           }
