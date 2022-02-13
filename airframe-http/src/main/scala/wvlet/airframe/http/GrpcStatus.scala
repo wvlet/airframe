@@ -14,67 +14,6 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.codec.PackSupport
-import wvlet.airframe.http.HttpStatus.{
-  Accepted_202,
-  BadGateway_502,
-  BadRequest_400,
-  ClientClosedRequest_499,
-  Conflict_409,
-  Continue_100,
-  Created_201,
-  EnhanceYourCalm_420,
-  ExpectationFailed_417,
-  FailedDependency_424,
-  Forbidden_403,
-  Found_302,
-  GatewayTimeout_504,
-  Gone_410,
-  HttpVersionNotSupported_505,
-  InsufficientStorage_507,
-  InternalServerError_500,
-  LengthRequired_411,
-  Locked_423,
-  MethodNotAllowed_405,
-  MovedPermanently_301,
-  MultiStatus_207,
-  MultipleChoices_300,
-  NetworkAuthenticationRequired_511,
-  NoContent_204,
-  NonAuthoritativeInformation_203,
-  NotAcceptable_406,
-  NotExtended_510,
-  NotFound_404,
-  NotImplemented_501,
-  NotModified_304,
-  Ok_200,
-  PartialContent_206,
-  PaymentRequired_402,
-  PermanentRedirect_308,
-  PreconditionFailed_412,
-  PreconditionRequired_428,
-  Processing_102,
-  ProxyAuthenticationRequired_407,
-  RequestEntityTooLarge_413,
-  RequestHeaderFieldsTooLarge_431,
-  RequestTimeout_408,
-  RequestURITooLong_414,
-  RequestedRangeNotSatisfiable_416,
-  ResetContent_205,
-  SeeOther_303,
-  ServiceUnavailable_503,
-  SwitchingProtocols_101,
-  TemporaryRedirect_307,
-  TooManyRequests_429,
-  Unauthorized_401,
-  UnavailableForLegalReasons_451,
-  Unknown_000,
-  UnorderedCollection_425,
-  UnprocessableEntity_422,
-  UnsupportedMediaType_415,
-  UpgradeRequired_426,
-  UseProxy_305,
-  VariantAlsoNegotiates_506
-}
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
 
 import scala.util.Try
@@ -270,7 +209,7 @@ object GrpcStatus {
 
   /**
     * Mapping table from HTTP status to gRPC status code. This table is used for inferring grpc status when a
-    * HTTPServerException is thrown.
+    * HTTPServerException is thrown within gRPC backend servers.
     */
   private val httpStatusCodeMapping = Map[HttpStatus, GrpcStatus](
     HttpStatus.Unknown_000                       -> UNKNOWN_2,
@@ -343,7 +282,7 @@ object GrpcStatus {
           case s if s.isSuccessful =>
             OK_0
           case s if s.isClientError =>
-            FAILED_PRECONDITION_9
+            INVALID_ARGUMENT_3
           case s if s.isServerError =>
             INTERNAL_13
           case _ =>
