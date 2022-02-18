@@ -206,7 +206,11 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
             Try(TimeVector(o)) match {
               case Success(x) =>
                 // When the offset string is time duration patterns (e.g., 0M, 0d, etc.)
-                x.timeWindowFrom(adjustOffset(now, adjustments)).start
+                if (x.x <= 0) {
+                  x.timeWindowFrom(adjustOffset(now, adjustments)).start
+                } else {
+                  x.timeWindowFrom(adjustOffset(now, adjustments)).end
+                }
               case Failure(e) =>
                 // When the offset string is the exact date
                 val (timeString, truncate) = if (o.endsWith(")")) {
