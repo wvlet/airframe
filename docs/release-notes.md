@@ -6,6 +6,45 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.2.0
+
+This version upgrades Scala.js vertion to 1.9.0, and improves support for Scala 3
+
+- Update sbt-scalajs, scalajs-compiler, ... to 1.9.0 ([#2071](https://github.com/wvlet/airframe/issues/2071)) [[78035500](https://github.com/wvlet/airframe/commit/78035500)]
+
+### Bug Fixes
+
+- airframe-metrics: Support positive base duration in TimeWindow ([#2079](https://github.com/wvlet/airframe/issues/2079)) [[40a31711](https://github.com/wvlet/airframe/commit/40a31711)]
+- airframe-surface: Handle case fields as method arguments in Scala 3 ([#2051](https://github.com/wvlet/airframe/issues/2051)) [[93635586](https://github.com/wvlet/airframe/commit/93635586)]
+- airframe-surface: Scala 3: Pass all tests on JVM ([#2052](https://github.com/wvlet/airframe/issues/2052)) [[7b0d96cc](https://github.com/wvlet/airframe/commit/7b0d96cc)]
+
+### Internal Updates
+
+- [build] Make it easier on cross-build while working on Scala 3 support ([#2056](https://github.com/wvlet/airframe/issues/2056)) [[74127800](https://github.com/wvlet/airframe/commit/74127800)]
+- Use munit temporarily to avoid airspec <-> surface circular reference ([#2049](https://github.com/wvlet/airframe/issues/2049)) [[c8173e5e](https://github.com/wvlet/airframe/commit/c8173e5e)]
+- Fix sonatype settings for AirSpec releases [[1c54fc61](https://github.com/wvlet/airframe/commit/1c54fc61)]
+- Update sbt-buildinfo to 0.11.0 ([#2077](https://github.com/wvlet/airframe/issues/2077)) [[82946fb6](https://github.com/wvlet/airframe/commit/82946fb6)]
+- Update trino-main to 371 ([#2076](https://github.com/wvlet/airframe/issues/2076)) [[cfd4cf13](https://github.com/wvlet/airframe/commit/cfd4cf13)]
+- Update postgresql to 42.3.3 ([#2074](https://github.com/wvlet/airframe/issues/2074)) [[d6cd3d16](https://github.com/wvlet/airframe/commit/d6cd3d16)]
+- Update scalajs-test-interface to 1.9.0 ([#2072](https://github.com/wvlet/airframe/issues/2072)) [[ca683c6d](https://github.com/wvlet/airframe/commit/ca683c6d)]
+- Update scalafmt-core to 3.4.3 ([#2070](https://github.com/wvlet/airframe/issues/2070)) [[3bc98c9e](https://github.com/wvlet/airframe/commit/3bc98c9e)]
+- Update sbt-sonatype to 3.9.11 ([#2066](https://github.com/wvlet/airframe/issues/2066)) [[adbb58fb](https://github.com/wvlet/airframe/commit/adbb58fb)]
+- Update swagger-parser to 2.0.30 ([#2062](https://github.com/wvlet/airframe/issues/2062)) [[b71f86ca](https://github.com/wvlet/airframe/commit/b71f86ca)]
+- Update slf4j-jdk14 to 1.7.36 ([#2064](https://github.com/wvlet/airframe/issues/2064)) [[eed963fe](https://github.com/wvlet/airframe/commit/eed963fe)]
+- Update scalafmt-core to 3.4.2 ([#2061](https://github.com/wvlet/airframe/issues/2061)) [[5f439149](https://github.com/wvlet/airframe/commit/5f439149)]
+- Update scalafmt-core to 3.4.1 ([#2060](https://github.com/wvlet/airframe/issues/2060)) [[468457be](https://github.com/wvlet/airframe/commit/468457be)]
+- Fix Scala deprecations as much as possible ([#2058](https://github.com/wvlet/airframe/issues/2058)) [[06ad0533](https://github.com/wvlet/airframe/commit/06ad0533)]
+- Update trino-main to 370 ([#2057](https://github.com/wvlet/airframe/issues/2057)) [[b4e91839](https://github.com/wvlet/airframe/commit/b4e91839)]
+- Update auth to 2.17.123 ([#2054](https://github.com/wvlet/airframe/issues/2054)) [[057240bf](https://github.com/wvlet/airframe/commit/057240bf)]
+- Upgrade to Scala 3.1.1 ([#2055](https://github.com/wvlet/airframe/issues/2055)) [[8b6abcd8](https://github.com/wvlet/airframe/commit/8b6abcd8)]
+- Update fluency-core, fluency-fluentd, ... to 2.6.3 ([#2053](https://github.com/wvlet/airframe/issues/2053)) [[2d4061d6](https://github.com/wvlet/airframe/commit/2d4061d6)]
+- Update auth to 2.17.122 ([#2050](https://github.com/wvlet/airframe/issues/2050)) [[a9b5c923](https://github.com/wvlet/airframe/commit/a9b5c923)]
+- Update auth to 2.17.121 ([#2041](https://github.com/wvlet/airframe/issues/2041)) [[7de415c1](https://github.com/wvlet/airframe/commit/7de415c1)]
+- Update postgresql to 42.3.2 ([#2046](https://github.com/wvlet/airframe/issues/2046)) [[e65bd716](https://github.com/wvlet/airframe/commit/e65bd716)]
+- Update sbt-airframe to 22.1.0 [[a1eb5625](https://github.com/wvlet/airframe/commit/a1eb5625)]
+- Update sbt, sbt-dependency-tree, ... to 1.6.2 [[00749a97](https://github.com/wvlet/airframe/commit/00749a97)]
+- Update airspec to 22.1.0 ([#2045](https://github.com/wvlet/airframe/issues/2045)) [[04ddd95c](https://github.com/wvlet/airframe/commit/04ddd95c)]
+
 ## 22.1.0
 
 This version introduces type-safe event handlers (e.g., `onclick -> { e: MouseEvent => ... }`) for airframe-rx-html. Thanks [@exoego](https://github.com/exoego) for the contribution!
