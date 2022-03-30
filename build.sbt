@@ -15,10 +15,10 @@ val SLF4J_VERSION                   = "1.7.36"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
 val SCALAJS_DOM_VERSION             = "2.0.0"
-val FINAGLE_VERSION                 = "22.2.0"
+val FINAGLE_VERSION                 = "22.3.0"
 val FLUENCY_VERSION                 = "2.6.3"
 val GRPC_VERSION                    = "1.45.0"
-val JMH_VERSION                     = "1.34"
+val JMH_VERSION                     = "1.35"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 val PARQUET_VERSION                 = "1.12.2"
 val SNAKE_YAML_VERSION              = "1.30"
@@ -897,7 +897,7 @@ def sqlRefLib = { scalaVersion: String =>
       // Include Spark just as a reference implementation
       "org.apache.spark" %% "spark-sql" % "3.2.1" % Test,
       // Include Trino as a reference implementation
-      "io.trino" % "trino-main" % "374" % Test
+      "io.trino" % "trino-main" % "375" % Test
     )
   } else {
     Seq.empty
