@@ -6,6 +6,33 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.3.0
+
+This version is a maintenance release for dependency updatates:
+
+- Update sbt-mdoc to 2.3.2 ([#2101](https://github.com/wvlet/airframe/issues/2101)) [[7ba56b97](https://github.com/wvlet/airframe/commit/7ba56b97)]
+- Update jmh-core, jmh-generator-bytecode, ... to 1.35 ([#2102](https://github.com/wvlet/airframe/issues/2102)) [[78afcd9c](https://github.com/wvlet/airframe/commit/78afcd9c)]
+- Update trino-main to 375 ([#2103](https://github.com/wvlet/airframe/issues/2103)) [[346d3bd0](https://github.com/wvlet/airframe/commit/346d3bd0)]
+- Update finagle-core, finagle-http, ... to 22.3.0 ([#2104](https://github.com/wvlet/airframe/issues/2104)) [[3bbbc469](https://github.com/wvlet/airframe/commit/3bbbc469)]
+- Revert "Update sbt-sonatype to 3.9.12 ([#2082](https://github.com/wvlet/airframe/issues/2082))" ([#2100](https://github.com/wvlet/airframe/issues/2100)) [[e69eb9f5](https://github.com/wvlet/airframe/commit/e69eb9f5)]
+- Update scala-collection-compat to 2.7.0 ([#2099](https://github.com/wvlet/airframe/issues/2099)) [[87592f2d](https://github.com/wvlet/airframe/commit/87592f2d)]
+- Update sbt-scalajs-crossproject to 1.2.0 ([#2098](https://github.com/wvlet/airframe/issues/2098)) [[dedbd5d4](https://github.com/wvlet/airframe/commit/dedbd5d4)]
+- Update trino-main to 374 ([#2097](https://github.com/wvlet/airframe/issues/2097)) [[18eb8b5d](https://github.com/wvlet/airframe/commit/18eb8b5d)]
+- Update swagger-parser to 2.0.31 ([#2096](https://github.com/wvlet/airframe/issues/2096)) [[ac6374f0](https://github.com/wvlet/airframe/commit/ac6374f0)]
+- Update trino-main to 373 ([#2095](https://github.com/wvlet/airframe/issues/2095)) [[7f8632c6](https://github.com/wvlet/airframe/commit/7f8632c6)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.45.0 ([#2094](https://github.com/wvlet/airframe/issues/2094)) [[54608379](https://github.com/wvlet/airframe/commit/54608379)]
+- Update msgpack-core to 0.9.1 ([#2093](https://github.com/wvlet/airframe/issues/2093)) [[61701722](https://github.com/wvlet/airframe/commit/61701722)]
+- Update hadoop-aws, hadoop-client to 3.3.2 ([#2091](https://github.com/wvlet/airframe/issues/2091)) [[c071146c](https://github.com/wvlet/airframe/commit/c071146c)]
+- Update logback-core to 1.2.11 ([#2092](https://github.com/wvlet/airframe/issues/2092)) [[91e02e26](https://github.com/wvlet/airframe/commit/91e02e26)]
+- Update trino-main to 372 ([#2090](https://github.com/wvlet/airframe/issues/2090)) [[d45ceb4e](https://github.com/wvlet/airframe/commit/d45ceb4e)]
+- Update sbt-mdoc to 2.3.1 ([#2088](https://github.com/wvlet/airframe/issues/2088)) [[beeefc43](https://github.com/wvlet/airframe/commit/beeefc43)]
+- Update finagle-core, finagle-http, ... to 22.2.0 ([#2089](https://github.com/wvlet/airframe/issues/2089)) [[0af461bd](https://github.com/wvlet/airframe/commit/0af461bd)]
+- Slow down awssdk update ([#2087](https://github.com/wvlet/airframe/issues/2087)) [[09a66a29](https://github.com/wvlet/airframe/commit/09a66a29)]
+- Update sbt-sonatype to 3.9.12 ([#2082](https://github.com/wvlet/airframe/issues/2082)) [[105d1a70](https://github.com/wvlet/airframe/commit/105d1a70)]
+- Update scala-parser-combinators to 2.1.1 ([#2084](https://github.com/wvlet/airframe/issues/2084)) [[8cd1e9a3](https://github.com/wvlet/airframe/commit/8cd1e9a3)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.44.1 ([#2080](https://github.com/wvlet/airframe/issues/2080)) [[7357cd76](https://github.com/wvlet/airframe/commit/7357cd76)]
+- Update airspec, sbt-airframe to 22.2.0 ([#2081](https://github.com/wvlet/airframe/issues/2081)) [[c78698c0](https://github.com/wvlet/airframe/commit/c78698c0)]
+
 ## 22.2.0
 
 This version upgrades Scala.js vertion to 1.9.0, and improves support for Scala 3
