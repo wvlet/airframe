@@ -19,7 +19,7 @@ val SCALA_3_0           = "3.1.0"
 val targetScalaVersions = SCALA_2_13 :: SCALA_2_12 :: Nil
 val withDotty           = SCALA_3_0 :: targetScalaVersions
 
-val SCALACHECK_VERSION           = "1.15.4"
+val SCALACHECK_VERSION           = "1.16.0"
 val JS_JAVA_LOGGING_VERSION      = "1.0.0"
 val JAVAX_ANNOTATION_API_VERSION = "1.3.2"
 
