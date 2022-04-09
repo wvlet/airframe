@@ -106,9 +106,9 @@ jobs:
           java-version: zulu@1.11
       - uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '16'
       - name: Node.js setup
-        run: npm install jsdom@16.4.0
+        run: npm install jsdom@16.7.0
       - name: Scala.js test
         run: JVM_OPTS=-Xmx4g ./sbt "; projectJS/test"
       - name: Publish Test Report
@@ -127,9 +127,9 @@ jobs:
           java-version: zulu@1.11
       - uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '16'
       - name: Node.js setup
-        run: npm install jsdom@16.4.0
+        run: npm install jsdom@16.7.0
       - name: Scala.js test
         run: JVM_OPTS=-Xmx4g ./sbt ++2.13.6 "; projectJS/test"
       - name: Publish Test Report
