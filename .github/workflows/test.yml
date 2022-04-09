@@ -108,7 +108,7 @@ jobs:
         with:
           node-version: '16'
       - name: Node.js setup
-        run: npm install jsdom@16.7.0
+        run: ./scripts/scalajs-setup.sh
       - name: Scala.js test
         run: JVM_OPTS=-Xmx4g ./sbt "; projectJS/test"
       - name: Publish Test Report
@@ -129,7 +129,7 @@ jobs:
         with:
           node-version: '16'
       - name: Node.js setup
-        run: npm install jsdom@16.7.0
+        run: ./scripts/scalajs-setup.sh
       - name: Scala.js test
         run: JVM_OPTS=-Xmx4g ./sbt ++2.13.6 "; projectJS/test"
       - name: Publish Test Report
