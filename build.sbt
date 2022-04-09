@@ -496,10 +496,11 @@ lazy val ulid =
     .settings(buildSettings)
     .settings(
       name        := "airframe-ulid",
-      description := "ULID: Universally Unique Lexicographically Sortable Identifier"
+      description := "ULID: Universally Unique Lexicographically Sortable Identifier",
     )
     .jsSettings(
-      jsBuildSettings
+      jsBuildSettings,
+      libraryDependencies += ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0").cross(CrossVersion.for3Use2_13)
     )
     .dependsOn(log % Test)
 
