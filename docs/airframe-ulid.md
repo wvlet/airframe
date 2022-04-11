@@ -55,11 +55,13 @@ __build.sbt__
 libraryDependencies += "org.wvlet.airframe" %% "airframe-ulid" % "(version)"
 ```
 
-For Scala.js 1.10.0 or later, add scalajs-java-securerandom for generating ULID with a Cryptographically-Secure-Pseudo-Random-Number-Generator (CSPRNG). When using Node.js environment, install npm module `crypto` as well:
+For Scala.js 1.10.0 or later, add a dependency to scalajs-java-securerandom library for generating ULID with a Cryptographically-Secure-Pseudo-Random-Number-Generator (CSPRNG).
+If Node.js crypto module or Web Crypto API in Web browsers are unavailable, it will fall back to a non-secure random generator, which is useful for testing purpose at JSDOM environment, which doesn't support crypto module yet:
 
 ```scala
 libraryDependencies ++= Seq(
   "org.wvlet.airframe" %%% "airframe-ulid" % "(version)",
+  // Add SecureRandom implementation for Scala.js
   ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0").cross(CrossVersion.for3Use2_13)
 )
 ```
