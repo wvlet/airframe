@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx
-import java.util.UUID
 
 /**
   * This code is copied from airframe-di so that airframe-rx doesn't need to depend on airframe-di.
@@ -29,8 +28,8 @@ private[rx] object LazyF0 {
   * @tparam R
   */
 private[rx] class LazyF0[+R](f: => R) extends Serializable with Cloneable {
-  // Generates uuid to make sure the identity of this LazyF0 instance after serde
-  private val uuid = UUID.randomUUID()
+  // Generates an id to make sure the identity of this LazyF0 instance after serde
+  private val objectId = new Object().hashCode()
 
   def copy: LazyF0[R] = clone().asInstanceOf[this.type]
 
@@ -56,9 +55,7 @@ private[rx] class LazyF0[+R](f: => R) extends Serializable with Cloneable {
     */
   def eval: R = f
 
-  override def hashCode(): Int = {
-    uuid.hashCode()
-  }
+  override def hashCode(): Int = objectId
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[LazyF0[_]]
 
@@ -67,7 +64,7 @@ private[rx] class LazyF0[+R](f: => R) extends Serializable with Cloneable {
       case that: LazyF0[_] =>
         // Scala 2.12 generates Lambda for Function0, and the class might be generated every time, so
         // comparing functionClasses doesn't work
-        (that canEqual this) && this.uuid == that.uuid
+        (that canEqual this) && this.objectId == that.objectId
       case _ => false
     }
   }
