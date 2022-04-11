@@ -6,6 +6,17 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.4.1
+
+This version upgrades to Scala.js 1.10.0 to address a security vulnerability [CVE-2022-28355](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28355) found in java.util.UUID.randomUUID() implementation of Scala.js. If UUID.randomUUID() is used for generting publicly visible IDs, generated IDs were preditable in the former Scala.js versions.   
+Similarily, airframe-ulid for Scala.js is fixed to use SecureRandom to avoid generating predictable ULID values.
+
+
+- Upgrade to Scala.js 1.10.0 ([#2122](https://github.com/wvlet/airframe/issues/2122)) [[d2ce4725](https://github.com/wvlet/airframe/commit/d2ce4725)]
+- airframe-ulid: Use SecureRandom-based generator for Scala.js ([#2121](https://github.com/wvlet/airframe/issues/2121)) [[07936e55](https://github.com/wvlet/airframe/commit/07936e55)]
+- Add scala-js-java-securerandom for Scala.js 1.10.0 ([#2117](https://github.com/wvlet/airframe/issues/2117)) [[96f5d37e](https://github.com/wvlet/airframe/commit/96f5d37e)]
+- Update airspec to 22.4.0 ([#2120](https://github.com/wvlet/airframe/issues/2120)) [[e1a607d6](https://github.com/wvlet/airframe/commit/e1a607d6)]
+
 ## 22.4.0
 
 This is a maintenance release for upgrading internal libraries.
