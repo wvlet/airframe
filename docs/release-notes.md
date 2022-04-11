@@ -6,6 +6,21 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.4.0
+
+This is a maintenance release for upgrading internal libraries.
+
+- Remove dependency to UUID.randomUUID()  ([#2118](https://github.com/wvlet/airframe/issues/2118)) [[75f17f24](https://github.com/wvlet/airframe/commit/75f17f24)]
+- Update trino-main to 376 ([#2115](https://github.com/wvlet/airframe/issues/2115)) [[39a9bda2](https://github.com/wvlet/airframe/commit/39a9bda2)]
+- Update scalacheck to 1.16.0 ([#2116](https://github.com/wvlet/airframe/issues/2116)) [[ef986b63](https://github.com/wvlet/airframe/commit/ef986b63)]
+- Update json4s-jackson to 4.0.5 ([#2113](https://github.com/wvlet/airframe/issues/2113)) [[cc6f312e](https://github.com/wvlet/airframe/commit/cc6f312e)]
+- Update protobuf-java to 3.20.0 ([#2110](https://github.com/wvlet/airframe/issues/2110)) [[ae8acf37](https://github.com/wvlet/airframe/commit/ae8acf37)]
+- Update swagger-parser to 2.0.32 ([#2111](https://github.com/wvlet/airframe/issues/2111)) [[b35d7e29](https://github.com/wvlet/airframe/commit/b35d7e29)]
+- Update scalafmt-core to 3.5.0 ([#2109](https://github.com/wvlet/airframe/issues/2109)) [[1d53aa78](https://github.com/wvlet/airframe/commit/1d53aa78)]
+- Update sbt-airframe to 22.3.0 ([#2108](https://github.com/wvlet/airframe/issues/2108)) [[9e0210c5](https://github.com/wvlet/airframe/commit/9e0210c5)]
+- Update airspec to 22.3.0 ([#2107](https://github.com/wvlet/airframe/issues/2107)) [[10552510](https://github.com/wvlet/airframe/commit/10552510)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.45.1 ([#2105](https://github.com/wvlet/airframe/issues/2105)) [[bc3bd141](https://github.com/wvlet/airframe/commit/bc3bd141)]
+
 ## 22.3.0
 
 This version is a maintenance release for dependency updatates:
