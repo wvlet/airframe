@@ -8,7 +8,7 @@ Airframe uses YY.MM.patch versioning scheme, so the version numbers match with t
 
 ## 22.4.1
 
-This version upgrades to Scala.js 1.10.0 to address a security vulnerability [CVE-2022-28355](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28355) found in java.util.UUID.randomUUID() implementation of Scala.js. If UUID.randomUUID() is used for generting publicly visible IDs, generated IDs were preditable in the former Scala.js versions.   
+This version upgrades to [Scala.js 1.10.0](https://www.scala-js.org/news/2022/04/04/announcing-scalajs-1.10.0/) to address a security vulnerability [CVE-2022-28355](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28355) found in java.util.UUID.randomUUID() implementation of Scala.js. If UUID.randomUUID() is used for generting publicly visible IDs, generated IDs were preditable in the former Scala.js versions.   
 Similarily, airframe-ulid for Scala.js is fixed to use SecureRandom to avoid generating predictable ULID values.
 
 
