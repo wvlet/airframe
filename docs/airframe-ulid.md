@@ -53,15 +53,9 @@ ULIDs can be encoded as 128-bit values, using network-byte order (big-endian, MS
 __build.sbt__
 ```scala
 libraryDependencies += "org.wvlet.airframe" %% "airframe-ulid" % "(version)"
-```
 
-For Scala.js 1.10.0 or later, add scalajs-java-securerandom for generating ULID with a Cryptographically-Secure-Pseudo-Random-Number-Generator (CSPRNG). When using Node.js environment, install npm module `crypto` as well:
-
-```scala
-libraryDependencies ++= Seq(
-  "org.wvlet.airframe" %%% "airframe-ulid" % "(version)",
-  ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0").cross(CrossVersion.for3Use2_13)
-)
+// For Scala.js
+libraryDependencies ++= "org.wvlet.airframe" %%% "airframe-ulid" % "(version)"
 ```
 
 ULID can be generated with `ULID.newULID` method:
@@ -140,3 +134,9 @@ Comparison targets:
 - Java's UUID.randomUUID()
 
 [Benchmark code](https://github.com/wvlet/airframe/blob/master/airframe-benchmark/src/main/scala/wvlet/airframe/benchmark/ulid/ULIDBenchmark.scala) using JMH.
+
+
+### Scala.js-specific Note
+
+For Scala.js 1.10.0 or later, ULID generator uses scalajs-java-securerandom library for generating ULIDs using a Cryptographically-Secure-Pseudo-Random-Number-Generator (CSPRNG).
+If none of Node.js crypto module or Web Crypto API in Web browsers is available, airframe-ulid falls back to a non-secure random generator, which is useful only for testing purpose at JSDOM environment, which doesn't support crypto module.
