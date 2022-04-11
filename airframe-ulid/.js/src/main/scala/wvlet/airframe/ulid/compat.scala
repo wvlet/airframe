@@ -18,7 +18,15 @@ import scala.util.Random
 /**
   */
 object compat {
-  val random: Random = scala.util.Random
+  val random: Random = {
+    try {
+      // When 'crypto' module is available
+      new scala.util.Random(new java.security.SecureRandom())
+    } catch {
+      case _: Throwable =>
+        scala.util.Random
+    }
+  }
 
   def sleep(millis: Int): Unit = {
     // no-op as Scala.js has no sleep

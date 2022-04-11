@@ -503,7 +503,9 @@ lazy val ulid =
       description := "ULID: Universally Unique Lexicographically Sortable Identifier"
     )
     .jsSettings(
-      jsBuildSettings
+      jsBuildSettings,
+      // For using SecureRandom (requires `crypto` package)
+      libraryDependencies += ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0").cross(CrossVersion.for3Use2_13)
     )
     .dependsOn(log % Test)
 
