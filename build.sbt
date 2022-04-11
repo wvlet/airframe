@@ -125,7 +125,8 @@ ThisBuild / publishTo := sonatypePublishToBundle.value
 val jsBuildSettings = Seq[Setting[_]](
   crossScalaVersions := targetScalaVersions,
   // #2117 For using java.util.UUID.randomUUID() in Scala.js
-  libraryDependencies += ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0").cross(CrossVersion.for3Use2_13),
+  libraryDependencies += ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0" % Test)
+    .cross(CrossVersion.for3Use2_13),
   coverageEnabled := false
 )
 
@@ -486,6 +487,7 @@ lazy val control =
       name        := "airframe-control",
       description := "A library for controlling program flows and retrying"
     )
+    .jsSettings(jsBuildSettings)
     .dependsOn(log)
 
 lazy val controlJVM = control.jvm
