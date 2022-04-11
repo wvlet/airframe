@@ -13,12 +13,9 @@
  */
 package wvlet.airframe
 
-import java.util.UUID
-
 import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.airframe.lifecycle.{AFTER_START, BEFORE_SHUTDOWN, ON_INIT, ON_INJECT, ON_SHUTDOWN, ON_START}
 import wvlet.airframe.surface.Surface
-import wvlet.log.LogSupport
 
 object Binder {
   sealed trait Binding extends Serializable {
@@ -44,15 +41,15 @@ object Binder {
     def from: Surface                  = factory.from
     override def forSingleton: Boolean = provideSingleton
 
-    private val uuid: UUID = UUID.randomUUID()
+    private val objectId = new Object().hashCode()
 
-    override def hashCode(): Int = { uuid.hashCode() }
+    override def hashCode(): Int = { objectId }
     override def equals(other: Any): Boolean = {
       other match {
         case that: ProviderBinding =>
           // Scala 2.12 generates Lambda for Function0, and the class might be generated every time, so
           // comparing functionClasses doesn't work
-          (that canEqual this) && this.uuid == that.uuid
+          (that canEqual this) && this.objectId == that.objectId
         case _ => false
       }
     }
