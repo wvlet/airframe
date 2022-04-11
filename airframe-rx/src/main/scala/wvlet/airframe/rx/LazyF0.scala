@@ -28,7 +28,7 @@ private[rx] object LazyF0 {
   * @tparam R
   */
 private[rx] class LazyF0[+R](f: => R) extends Serializable with Cloneable {
-  // Generates uuid to make sure the identity of this LazyF0 instance after serde
+  // Generates an id to make sure the identity of this LazyF0 instance after serde
   private val objectId = new Object().hashCode()
 
   def copy: LazyF0[R] = clone().asInstanceOf[this.type]
