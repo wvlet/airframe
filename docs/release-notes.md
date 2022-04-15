@@ -6,6 +6,15 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.4.2
+
+A minor bug fix release.
+
+- airframe-log: Handle occasional JMX registration failure in JDK17 [#2127](https://github.com/wvlet/airframe/issues/2127) ([#2128](https://github.com/wvlet/airframe/issues/2128)) [[8d724e2e](https://github.com/wvlet/airframe/commit/8d724e2e)]
+- Update trino-main to 377 ([#2126](https://github.com/wvlet/airframe/issues/2126)) [[e2bf0386](https://github.com/wvlet/airframe/commit/e2bf0386)]
+- Update airspec to 22.4.1 ([#2124](https://github.com/wvlet/airframe/issues/2124)) [[3e0b3224](https://github.com/wvlet/airframe/commit/3e0b3224)]
+- Update sbt-airframe to 22.4.1 ([#2123](https://github.com/wvlet/airframe/issues/2123)) [[312b7ab8](https://github.com/wvlet/airframe/commit/312b7ab8)]
+
 ## 22.4.1
 
 This version upgrades to [Scala.js 1.10.0](https://www.scala-js.org/news/2022/04/04/announcing-scalajs-1.10.0/) to address a security vulnerability [CVE-2022-28355](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-28355) found in java.util.UUID.randomUUID() implementation of Scala.js. If UUID.randomUUID() is used for generting publicly visible IDs, generated IDs were preditable in the former Scala.js versions.   
