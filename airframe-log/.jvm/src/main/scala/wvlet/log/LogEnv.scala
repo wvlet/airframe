@@ -1,7 +1,7 @@
 package wvlet.log
 import java.io.{FileDescriptor, FileOutputStream, PrintStream}
 import java.lang.management.ManagementFactory
-import javax.management.{InstanceAlreadyExistsException, ObjectName}
+import javax.management.{InstanceAlreadyExistsException, ObjectName, MBeanServer}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 
 /**
@@ -68,16 +68,31 @@ private[log] object LogEnv extends LogEnvBase {
   // Register JMX entry upon start-up
   registerJMX
 
+  private lazy val getMBeanServer: Option[MBeanServer] = {
+    // A workaround for an issue, that in some environment (e.g., JDK17 + IntelliJ),
+    // NPE with `Cannot invoke "jdk.internal.platform.CgroupInfo.getMountPoint()" because "anyController" is null`
+    // error can be thrown. https://github.com/wvlet/airframe/issues/2127
+    try {
+      Some(ManagementFactory.getPlatformMBeanServer)
+    } catch {
+      case e: Throwable =>
+        // Show an error once without using the logger itself
+        e.printStackTrace()
+        None
+    }
+  }
+
   override def registerJMX: Unit = {
     if (!onGraalVM) {
       // Register the log level configuration interface to JMX
-      val mbeanServer = ManagementFactory.getPlatformMBeanServer
-      if (!mbeanServer.isRegistered(mBeanName)) {
-        try {
-          mbeanServer.registerMBean(LoggerJMX, mBeanName)
-        } catch {
-          case e: InstanceAlreadyExistsException =>
-          // this exception can happen as JMX entries can be initialized by different class loaders while running sbt
+      getMBeanServer.foreach { mbeanServer =>
+        if (!mbeanServer.isRegistered(mBeanName)) {
+          try {
+            mbeanServer.registerMBean(LoggerJMX, mBeanName)
+          } catch {
+            case e: InstanceAlreadyExistsException =>
+            // this exception can happen as JMX entries can be initialized by different class loaders while running sbt
+          }
         }
       }
     }
@@ -85,9 +100,10 @@ private[log] object LogEnv extends LogEnvBase {
 
   override def unregisterJMX: Unit = {
     if (!onGraalVM) {
-      val mbeanServer = ManagementFactory.getPlatformMBeanServer
-      if (mbeanServer.isRegistered(mBeanName)) {
-        mbeanServer.unregisterMBean(mBeanName)
+      getMBeanServer.foreach { mbeanServer =>
+        if (mbeanServer.isRegistered(mBeanName)) {
+          mbeanServer.unregisterMBean(mBeanName)
+        }
       }
     }
   }
