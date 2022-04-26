@@ -43,6 +43,6 @@ private[grpc] object GrpcResponseHeaderInterceptor extends ServerInterceptor {
         }
       },
       requestHeaders
-    );
+    )
   }
 }

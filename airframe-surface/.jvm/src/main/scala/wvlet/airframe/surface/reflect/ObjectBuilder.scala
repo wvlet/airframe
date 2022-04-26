@@ -147,7 +147,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
                 val lst = value match {
                   case a if isArrayCls(value.getClass) =>
                     a.asInstanceOf[Array[_]].toIndexedSeq
-                  case a if isJavaColleciton(value.getClass) =>
+                  case a if isJavaCollection(value.getClass) =>
                     a.asInstanceOf[java.util.Collection[_]].asScala.toIndexedSeq
                   case s if isSeq(value.getClass) => s.asInstanceOf[Seq[_]]
                   case other =>

@@ -20,7 +20,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
 import wvlet.airframe.http.grpc._
 import wvlet.airframe.http.router.Route
-import wvlet.airframe.http.{RPC, Router}
+import wvlet.airframe.http.{Http, HttpStatus, RPC, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.log.LogSupport
@@ -61,6 +61,10 @@ trait DemoApi extends LogSupport {
     // do nothing
     debug(s"hello ${name}")
   }
+
+  def error409Test: String = {
+    throw Http.serverException(HttpStatus.Conflict_409).withContent("test message")
+  }
 }
 
 object DemoApi {
@@ -79,6 +83,13 @@ object DemoApi {
     }
   }
 
+  /**
+    * Manually build a gRPC client here as we can't use sbt-airframe.
+    * @param channel
+    * @param callOptions
+    * @param codecFactory
+    * @param encoding
+    */
   case class DemoApiClient(
       channel: Channel,
       callOptions: CallOptions = CallOptions.DEFAULT,
@@ -105,6 +116,8 @@ object DemoApi {
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("helloOpt"), codecFactory)
     private val returnUnitMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("returnUnit"), codecFactory)
+    private val errorTestMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("error409Test"), codecFactory)
 
     def withEncoding(encoding: GrpcEncoding): DemoApiClient = {
       this.copy(encoding = encoding)
@@ -188,6 +201,13 @@ object DemoApi {
       val resp = ClientCalls
         .blockingUnaryCall(_channel, returnUnitMethodDescriptor, getCallOptions, encode(m))
       resp.asInstanceOf[Unit]
+    }
+
+    def error409Test: String = {
+      val resp = ClientCalls
+        .blockingUnaryCall(_channel, errorTestMethodDescriptor, getCallOptions, encode(Map.empty))
+
+      resp.asInstanceOf[String]
     }
   }
 
