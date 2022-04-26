@@ -13,10 +13,6 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.codec.PackSupport
-import wvlet.airframe.http.RPCErrorType.{INTERNAL_ERROR, RESOURCE_ERROR, USER_ERROR}
-import wvlet.airframe.msgpack.spi.Packer
-
 /**
   * RPCException provides a backend-independent (e.g., Finagle or gRPC) RPC error reporting mechanism.
   *
@@ -27,9 +23,9 @@ class RPCException(
 ) extends Exception(rpcError.toString, rpcError.cause.getOrElse(null))
 
 object RPCException {
-  def userError(errorCode: Int, message: String): RPCError = RPCError(message, )
-  def internalError(errorCode: Int, message: String): RPCErrorType                          = INTERNAL_ERROR
-  def resourceError: RPCErrorType                          = RESOURCE_ERROR
+  // def userError(errorCode: Int, message: String): RPCError = RPCError(message, )
+  // def internalError(errorCode: Int, message: String): RPCErrorType                          = INTERNAL_ERROR
+  // def resourceError: RPCErrorType                          = RESOURCE_ERROR
 }
 
 case class RPCError(
@@ -59,4 +55,3 @@ case class RPCError(
   def withMessage(newMessage: String): RPCError             = this.copy(message = newMessage)
   def withMetadata(newMetadata: Map[String, Any]): RPCError = this.copy(metadata = newMetadata)
 }
-

@@ -164,6 +164,8 @@ object GrpcStatus {
   //      should be returned since the client should not retry unless
   //      the files are deleted from the directory.
   //
+  // Note: This is intentionally mapped to BadRequest_400 https://github.com/grpc-ecosystem/grpc-gateway/issues/972
+  //
   case object FAILED_PRECONDITION_9 extends GrpcStatus(code = 9, HttpStatus.BadRequest_400)
 
   // The operation was aborted, typically due to a concurrency issue such as

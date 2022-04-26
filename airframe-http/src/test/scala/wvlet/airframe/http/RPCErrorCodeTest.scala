@@ -16,5 +16,16 @@ package wvlet.airframe.http
 import wvlet.airspec.AirSpec
 
 class RPCErrorCodeTest extends AirSpec {
-  test("No duplicates") {}
+  test("No duplicates") {
+    var knownErrorCodes = Set.empty[Int]
+
+    RPCErrorCode.all.foreach { x =>
+      knownErrorCodes.contains(x.code) shouldBe false
+      knownErrorCodes += x.code
+
+      // sanity test
+      val errorDetails = s"${x}[${x.code}] ${x.grpcStatus} ${x.httpStatus}"
+      info(errorDetails)
+    }
+  }
 }

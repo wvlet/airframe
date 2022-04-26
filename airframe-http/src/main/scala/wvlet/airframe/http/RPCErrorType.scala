@@ -25,7 +25,7 @@ sealed trait RPCErrorType extends PackSupport {
   def errorCodeMin: Int = errorCodeRange._1
   def errorCodeMax: Int = errorCodeRange._2
 
-  def isValidErrorCode(code: Int): Boolean = code <= errorCodeMin && code < errorCodeMax
+  def isValidErrorCode(code: Int): Boolean = errorCodeMin <= code && code < errorCodeMax
   def isValidHttpStatus(httpStatus: HttpStatus): Boolean
 
   /**
@@ -61,7 +61,7 @@ object RPCErrorType {
 
   // The resource has been exhausted or a per-user quota has reached.
   // The request can be retried after the underlying resource issue is resolved.
-  case object RESOURCE_ERROR extends RPCErrorType {
+  case object RESOURCE_EXHAUSTED extends RPCErrorType {
     override def errorCodePrefix: String    = "R"
     override def errorCodeRange: (Int, Int) = (0x2000, 0x3000)
 
@@ -70,7 +70,7 @@ object RPCErrorType {
     }
   }
 
-  def all: Seq[RPCErrorType] = Seq(USER_ERROR, INTERNAL_ERROR, RESOURCE_ERROR)
+  def all: Seq[RPCErrorType] = Seq(USER_ERROR, INTERNAL_ERROR, RESOURCE_EXHAUSTED)
 
   def unapply(s: String): Option[RPCErrorType] = {
     val name = s.toUpperCase()

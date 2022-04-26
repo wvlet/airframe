@@ -19,7 +19,7 @@ object RPCErrorTypeTest extends AirSpec {
   test("enumerate all error types") {
     RPCErrorType.unapply("USER_ERROR") shouldBe Some(RPCErrorType.USER_ERROR)
     RPCErrorType.unapply("INTERNAL_ERROR") shouldBe Some(RPCErrorType.INTERNAL_ERROR)
-    RPCErrorType.unapply("RESOURCE_ERROR") shouldBe Some(RPCErrorType.RESOURCE_ERROR)
+    RPCErrorType.unapply("RESOURCE_EXHAUSTED") shouldBe Some(RPCErrorType.RESOURCE_EXHAUSTED)
 
     RPCErrorType.all.foreach { tpe =>
       RPCErrorType.unapply(tpe.name) shouldBe Some(tpe)
