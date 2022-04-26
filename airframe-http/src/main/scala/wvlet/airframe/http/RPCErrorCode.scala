@@ -24,6 +24,7 @@ import wvlet.airframe.msgpack.spi.Packer
   * If you need an application-specific error code, it can be defined as an additional argument of the RPCError class.
   */
 object RPCErrorCode {
+
   import RPCErrorType._
 
   // def ofCode(code: Int): Option[RPCErrorCode] = {}
@@ -207,24 +208,8 @@ object RPCErrorCode {
     * The user has reached its running time limit
     */
   case object EXCEEDED_TIME_LIMIT_R6 extends RPCErrorCode(RESOURCE_ERROR, GrpcStatus.RESOURCE_EXHAUSTED_8)
-}
 
-/**
-  * A base class for defining standard RPC error codes
-  */
-sealed abstract class RPCErrorCode(
-    // Error type (user, internal, or resource)
-    val errorType: RPCErrorType,
-    // Mapping to an gRPC status code
-    val grpcStatus: GrpcStatus
-) extends PackSupport {
-  assert(errorType.isValidErrorCode(code), s"Error code ${code} is invalid for ${errorType}")
-  assert(errorType.isValidHttpStatus(httpStatus), s"Unexpected http status ${httpStatus} for the error code: ${name}")
-
-  /**
-    * Integer-based error code
-    */
-  lazy val code: Int = {
+  private def extractErrorCode(name: String): Int = {
     val separatorPos = name.lastIndexOf("_")
     separatorPos match {
       case -1 =>
@@ -260,6 +245,26 @@ sealed abstract class RPCErrorCode(
         }
     }
   }
+}
+
+/**
+  * A base class for defining standard RPC error codes
+  */
+sealed abstract class RPCErrorCode(
+    // Error type (user, internal, or resource)
+    val errorType: RPCErrorType,
+    // Mapping to an gRPC status code
+    val grpcStatus: GrpcStatus
+) extends PackSupport {
+  assert(errorType.isValidErrorCode(code), s"Error code ${code} is invalid for ${errorType}")
+  assert(errorType.isValidHttpStatus(httpStatus), s"Unexpected http status ${httpStatus} for the error code: ${name}")
+
+  import RPCErrorCode._
+
+  /**
+    * Integer-based error code
+    */
+  lazy val code: Int = extractErrorCode(name)
 
   // The error code name. Using the case object name is preferred
   def name: String           = this.toString()
