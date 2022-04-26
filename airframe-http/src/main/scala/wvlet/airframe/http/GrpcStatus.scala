@@ -192,7 +192,7 @@ object GrpcStatus {
 
   // The operation is not implemented or is not supported/enabled in this
   // service.
-  case object UNIMPLEMENTED_12 extends GrpcStatus(code = 12, HttpStatus.NotImplemented_501)
+  case object UNIMPLEMENTED_12 extends GrpcStatus(code = 12, HttpStatus.MethodNotAllowed_405)
 
   // Internal errors.  This means that some invariants expected by the
   // underlying system have been broken.  This error code is reserved
@@ -237,7 +237,7 @@ object GrpcStatus {
     HttpStatus.PaymentRequired_402               -> RESOURCE_EXHAUSTED_8,
     HttpStatus.Forbidden_403                     -> PERMISSION_DENIED_7,
     HttpStatus.NotFound_404                      -> NOT_FOUND_5,
-    HttpStatus.MethodNotAllowed_405              -> NOT_FOUND_5,
+    HttpStatus.MethodNotAllowed_405              -> UNIMPLEMENTED_12,
     HttpStatus.NotAcceptable_406                 -> PERMISSION_DENIED_7,
     HttpStatus.ProxyAuthenticationRequired_407   -> UNAUTHENTICATED_16,
     HttpStatus.RequestTimeout_408                -> DEADLINE_EXCEEDED_4,
@@ -247,7 +247,7 @@ object GrpcStatus {
     HttpStatus.PreconditionFailed_412            -> FAILED_PRECONDITION_9,
     HttpStatus.RequestEntityTooLarge_413         -> INVALID_ARGUMENT_3,
     HttpStatus.RequestURITooLong_414             -> INVALID_ARGUMENT_3,
-    HttpStatus.UnsupportedMediaType_415          -> INVALID_ARGUMENT_3,
+    HttpStatus.UnsupportedMediaType_415          -> UNIMPLEMENTED_12,
     HttpStatus.RequestedRangeNotSatisfiable_416  -> OUT_OF_RANGE_11,
     HttpStatus.ExpectationFailed_417             -> FAILED_PRECONDITION_9,
     HttpStatus.EnhanceYourCalm_420               -> RESOURCE_EXHAUSTED_8,

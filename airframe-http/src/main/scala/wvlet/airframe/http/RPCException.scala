@@ -14,6 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.codec.PackSupport
+import wvlet.airframe.http.RPCErrorType.{INTERNAL_ERROR, RESOURCE_ERROR, USER_ERROR}
 import wvlet.airframe.msgpack.spi.Packer
 
 /**
@@ -24,6 +25,12 @@ import wvlet.airframe.msgpack.spi.Packer
 class RPCException(
     rpcError: RPCError
 ) extends Exception(rpcError.toString, rpcError.cause.getOrElse(null))
+
+object RPCException {
+  def userError(errorCode: Int, message: String): RPCError = RPCError(message, )
+  def internalError(errorCode: Int, message: String): RPCErrorType                          = INTERNAL_ERROR
+  def resourceError: RPCErrorType                          = RESOURCE_ERROR
+}
 
 case class RPCError(
     // Error message
@@ -48,26 +55,8 @@ case class RPCError(
   }
 
   override def toString: String                             = s"[${statusCodeString}] ${message}"
-  def asException: RPCException                             = new RPCException(this)
+  def toException: RPCException                             = new RPCException(this)
   def withMessage(newMessage: String): RPCError             = this.copy(message = newMessage)
   def withMetadata(newMetadata: Map[String, Any]): RPCError = this.copy(metadata = newMetadata)
 }
 
-/**
-  * A base class for defining application-specific error code
-  */
-trait RPCErrorCode extends PackSupport {
-  // Error type (user, internal, or resource)
-  def errorType: RPCErrorType
-  // Unique error code name. This name will be used for serde
-  def name: String
-  // Mapping to an HTTP status code (required)
-  def httpStatus: HttpStatus
-
-  // Description of the error
-  def description: String
-
-  override def pack(p: Packer): Unit = {
-    p.packString(name)
-  }
-}
