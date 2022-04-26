@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
 
 object RPCStatusTypeTest extends AirSpec {
@@ -37,6 +39,17 @@ object RPCStatusTypeTest extends AirSpec {
 
     intercept[IllegalArgumentException] {
       RPCStatusType.ofPrefix('X')
+    }
+  }
+
+  test("serialize with MessageCodec") {
+    RPCStatusType.all.foreach { x =>
+      val p = MessagePack.newBufferPacker
+      x.pack(p)
+      val msgpack = p.toByteArray
+
+      val codec = MessageCodec.of[RPCStatusType]
+      codec.fromMsgPack(msgpack) shouldBe x
     }
   }
 }

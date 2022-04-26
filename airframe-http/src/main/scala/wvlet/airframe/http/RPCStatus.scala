@@ -14,7 +14,10 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.codec.PackSupport
-import wvlet.airframe.msgpack.spi.Packer
+import wvlet.airframe.msgpack.spi.Value.{IntegerValue, LongValue}
+import wvlet.airframe.msgpack.spi.{Packer, Value}
+
+import scala.util.Try
 
 /**
   * Define the standard RPC code that can be used for generic RPC service implementation.
@@ -28,6 +31,15 @@ object RPCStatus {
   import RPCStatusType._
 
   private val codeTable: Map[Int, RPCStatus] = all.map { x => x.code -> x }.toMap
+
+  def unapply(v: Value): Option[RPCStatus] = {
+    v match {
+      case l: LongValue =>
+        Try(ofCode(l.asInt)).toOption
+      case _ =>
+        None
+    }
+  }
 
   def ofCode(code: Int): RPCStatus = {
     codeTable.getOrElse(code, throw new IllegalArgumentException(s"Invalid RPCStatus code: ${code}"))

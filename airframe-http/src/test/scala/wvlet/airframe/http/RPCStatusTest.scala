@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
+import wvlet.airframe.msgpack.spi.{MessagePack, Value}
 import wvlet.airspec.AirSpec
 
 class RPCStatusTest extends AirSpec {
@@ -35,4 +37,21 @@ class RPCStatusTest extends AirSpec {
       RPCStatus.ofCode(x.code) shouldBe x
     }
   }
+
+  test("serialize as integer") {
+    RPCStatus.all.foreach { x =>
+      val packer = MessagePack.newBufferPacker
+      x.pack(packer)
+      val msgpack = packer.toByteArray
+
+      val v = ValueCodec.fromMsgPack(msgpack)
+      v shouldBe Value.LongValue(x.code)
+
+    // TODO Support unapply(v: Value) is supported in airframe-codec
+    // val codec = MessageCodec.of[RPCStatus]
+    // val s1    = codec.fromMsgPack(msgpack)
+    // info(s1)
+    }
+  }
+
 }

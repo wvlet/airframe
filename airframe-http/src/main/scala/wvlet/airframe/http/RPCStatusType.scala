@@ -30,7 +30,7 @@ sealed trait RPCStatusType extends PackSupport {
   def isValidHttpStatus(httpStatus: HttpStatus): Boolean
 
   /**
-    * The error code range [start, end)
+    * The error code range [start, end) Using multiples of 1000 for the readability.
     */
   def codeRange: (Int, Int)
   def name: String = toString()
@@ -46,14 +46,14 @@ object RPCStatusType {
     val p = prefix.toString
     all
       .find(_.codeStringPrefix == p).getOrElse(
-        throw new IllegalArgumentException(s"Unknown RPCStatusType code prefix: ${prefix}")
+        throw new IllegalArgumentException(s"Unknown RPCStatus code prefix: ${prefix}")
       )
   }
 
   // For successful responses
   case object SUCCESS extends RPCStatusType {
     override def codeStringPrefix: String = "S"
-    override def codeRange: (Int, Int)    = (0x0000, 0x1000)
+    override def codeRange: (Int, Int)    = (0, 1000)
     override def isValidHttpStatus(httpStatus: HttpStatus): Boolean = {
       httpStatus.isSuccessful
     }
@@ -62,7 +62,7 @@ object RPCStatusType {
   // User-input or authentication related errors, which are not retryable in general
   case object USER_ERROR extends RPCStatusType {
     override def codeStringPrefix: String = "U"
-    override def codeRange: (Int, Int)    = (0x1000, 0x2000)
+    override def codeRange: (Int, Int)    = (1000, 2000)
     override def isValidHttpStatus(httpStatus: HttpStatus): Boolean = {
       httpStatus.isClientError
     }
@@ -70,7 +70,7 @@ object RPCStatusType {
   // Server internal failures, which are retryable in general
   case object INTERNAL_ERROR extends RPCStatusType {
     override def codeStringPrefix: String = "I"
-    override def codeRange: (Int, Int)    = (0x2000, 0x3000)
+    override def codeRange: (Int, Int)    = (2000, 3000)
 
     override def isValidHttpStatus(httpStatus: HttpStatus): Boolean = {
       httpStatus.isServerError
@@ -82,7 +82,7 @@ object RPCStatusType {
   // The request can be retried after the underlying resource issue is resolved.
   case object RESOURCE_EXHAUSTED extends RPCStatusType {
     override def codeStringPrefix: String = "R"
-    override def codeRange: (Int, Int)    = (0x3000, 0x4000)
+    override def codeRange: (Int, Int)    = (3000, 4000)
 
     override def isValidHttpStatus(httpStatus: HttpStatus): Boolean = {
       httpStatus == HttpStatus.TooManyRequests_429

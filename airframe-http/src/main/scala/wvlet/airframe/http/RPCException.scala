@@ -22,35 +22,17 @@ class RPCException(
     rpcError: RPCError
 ) extends Exception(rpcError.toString, rpcError.cause.getOrElse(null))
 
-object RPCException {
-  // def userError(errorCode: Int, message: String): RPCError = RPCError(message, )
-  // def internalError(errorCode: Int, message: String): RPCErrorType                          = INTERNAL_ERROR
-  // def resourceError: RPCErrorType                          = RESOURCE_ERROR
-}
-
 case class RPCError(
+    // RPC status
+    status: RPCStatus,
     // Error message
     message: String,
     // Cause of the exception
     cause: Option[Throwable] = None,
-    // Application-specific error code
-    errorCode: Option[RPCStatus],
-    // HTTP status code
-    httpStatus: Option[HttpStatus] = None,
-    // gRPC specific error code
-    grpcStatus: Option[GrpcStatus] = None,
     // Custom data
     metadata: Map[String, Any] = Map.empty
 ) {
-  def statusCodeString: String = {
-    errorCode
-      .map(c => s"${c.name}")
-      .orElse(httpStatus.map(s => s"${s.code}:${s.reason}"))
-      .orElse(grpcStatus.map(s => s"${s.code}:${s.name}"))
-      .getOrElse("unknown")
-  }
-
-  override def toString: String                             = s"[${statusCodeString}] ${message}"
+  override def toString: String                             = s"[${status}] ${message}"
   def toException: RPCException                             = new RPCException(this)
   def withMessage(newMessage: String): RPCError             = this.copy(message = newMessage)
   def withMetadata(newMetadata: Map[String, Any]): RPCError = this.copy(metadata = newMetadata)
