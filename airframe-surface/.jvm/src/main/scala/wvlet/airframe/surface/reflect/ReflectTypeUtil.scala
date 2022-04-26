@@ -88,7 +88,7 @@ object ReflectTypeUtil extends LogSupport {
     cl.isArray || cl.getSimpleName == "Array"
   }
 
-  def isJavaColleciton[T](cl: Class[T]): Boolean = {
+  def isJavaCollection[T](cl: Class[T]): Boolean = {
     classOf[java.util.Collection[_]].isAssignableFrom(cl)
   }
 

@@ -22,6 +22,9 @@ import java.util.Locale
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.language.higherKinds
 
+/**
+  * An entry point to access airframe-http functionalities
+  */
 object Http {
 
   // Aliases for http clients using standard HttpMessage.Request/Response

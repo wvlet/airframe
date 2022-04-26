@@ -106,7 +106,7 @@ object Value {
   private val LONG_MIN  = BigInteger.valueOf(Long.MinValue.toLong)
   private val LONG_MAX  = BigInteger.valueOf(Long.MaxValue.toLong)
 
-  case class BigIntegerValue(val v: BigInteger) extends IntegerValue {
+  case class BigIntegerValue(v: BigInteger) extends IntegerValue {
     override def toJson                                           = v.toString
     private def within(min: BigInteger, max: BigInteger): Boolean = v.compareTo(min) >= 0 && v.compareTo(max) <= 0
 

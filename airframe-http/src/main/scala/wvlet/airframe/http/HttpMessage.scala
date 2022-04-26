@@ -128,11 +128,14 @@ trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
 object HttpMessage {
 
   trait Message {
+    def isEmpty: Boolean  = false
+    def nonEmpty: Boolean = !isEmpty
     def toContentString: String
     def toContentBytes: Array[Byte]
   }
 
   case object EmptyMessage extends Message {
+    override def isEmpty: Boolean            = true
     override def toContentString: String     = ""
     override def toContentBytes: Array[Byte] = Array.empty
   }

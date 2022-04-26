@@ -302,7 +302,9 @@ class GrpcRequestHandler(
 
 }
 
-private[grpc] class RPCUnaryMethodHandler(rpcRequestHandler: GrpcRequestHandler) extends UnaryMethod[MsgPack, Any] {
+private[grpc] class RPCUnaryMethodHandler(rpcRequestHandler: GrpcRequestHandler)
+    extends UnaryMethod[MsgPack, Any]
+    with LogSupport {
   override def invoke(
       request: MsgPack,
       responseObserver: StreamObserver[Any]

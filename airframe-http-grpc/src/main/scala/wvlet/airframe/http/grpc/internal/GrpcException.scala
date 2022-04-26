@@ -13,9 +13,9 @@
  */
 package wvlet.airframe.http.grpc.internal
 
-import io.grpc.{StatusException, StatusRuntimeException}
+import io.grpc.{Metadata, Status, StatusException, StatusRuntimeException}
 import wvlet.airframe.codec.MessageCodecException
-import wvlet.airframe.http.{HttpServerException, HttpStatus}
+import wvlet.airframe.http.{GrpcStatus, HttpServerException, HttpStatus}
 import wvlet.log.LogSupport
 
 import java.lang.reflect.InvocationTargetException
@@ -25,6 +25,8 @@ import scala.concurrent.ExecutionException
 /**
   */
 object GrpcException extends LogSupport {
+
+  private[grpc] val rpcErrorKey = Metadata.Key.of[String]("airframe_rpc_error", Metadata.ASCII_STRING_MARSHALLER)
 
   /**
     * Convert an exception to gRPC-specific exception types
@@ -56,40 +58,34 @@ object GrpcException extends LogSupport {
         s
       case e: MessageCodecException =>
         io.grpc.Status.INTERNAL
-          .withDescription(s"Failed to encode/decode data")
+          .withDescription(s"Failed to encode/decode data: ${e.getMessage}")
           .withCause(e)
           .asRuntimeException()
       case e: IllegalArgumentException =>
         io.grpc.Status.INVALID_ARGUMENT
           .withCause(e)
+          .withDescription(e.getMessage)
           .asRuntimeException()
       case e: UnsupportedOperationException =>
         io.grpc.Status.UNIMPLEMENTED
           .withCause(e)
+          .withDescription(e.getMessage)
           .asRuntimeException()
       case e: HttpServerException =>
-        val s = e.status match {
-          case HttpStatus.BadRequest_400 =>
-            io.grpc.Status.INVALID_ARGUMENT
-          case HttpStatus.Unauthorized_401 =>
-            io.grpc.Status.UNAUTHENTICATED
-          case HttpStatus.Forbidden_403 =>
-            io.grpc.Status.PERMISSION_DENIED
-          case HttpStatus.NotFound_404 =>
-            io.grpc.Status.UNIMPLEMENTED
-          case HttpStatus.Conflict_409 =>
-            io.grpc.Status.ALREADY_EXISTS
-          case HttpStatus.TooManyRequests_429 | HttpStatus.BadGateway_502 | HttpStatus.ServiceUnavailable_503 |
-              HttpStatus.GatewayTimeout_504 =>
-            io.grpc.Status.UNAVAILABLE
-          case s if s.isServerError =>
-            io.grpc.Status.INTERNAL
-          case s if s.isClientError =>
-            io.grpc.Status.INVALID_ARGUMENT
-          case other =>
-            io.grpc.Status.UNKNOWN
+        val grpcStatus = GrpcStatus.ofHttpStatus(e.status)
+        val s = Status
+          .fromCodeValue(grpcStatus.code)
+          .withCause(e)
+          .withDescription(e.getMessage)
+
+        if (e.message.nonEmpty) {
+          val m        = e.message
+          val metadata = new Metadata()
+          metadata.put[String](rpcErrorKey, s"${m.toContentString}")
+          s.asRuntimeException(metadata)
+        } else {
+          s.asRuntimeException()
         }
-        s.withCause(e).asRuntimeException()
       case other =>
         io.grpc.Status.INTERNAL
           .withCause(other)

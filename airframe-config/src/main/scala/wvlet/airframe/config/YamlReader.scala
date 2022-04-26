@@ -148,7 +148,7 @@ class YamlReader(map: Map[AnyRef, AnyRef]) extends LogSupport {
             pack(packer, k)
             pack(packer, v)
           }
-        case c if ReflectTypeUtil.isJavaColleciton(c.getClass) =>
+        case c if ReflectTypeUtil.isJavaCollection(c.getClass) =>
           val cl = c.asInstanceOf[java.util.Collection[_]].asScala
           trace(s"pack collection (${cl.size})")
           packer.packArrayHeader(cl.size)
