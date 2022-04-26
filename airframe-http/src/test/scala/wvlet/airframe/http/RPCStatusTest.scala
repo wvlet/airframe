@@ -15,16 +15,24 @@ package wvlet.airframe.http
 
 import wvlet.airspec.AirSpec
 
-object RPCErrorTypeTest extends AirSpec {
-  test("enumerate all error types") {
-    RPCErrorType.unapply("USER_ERROR") shouldBe Some(RPCErrorType.USER_ERROR)
-    RPCErrorType.unapply("INTERNAL_ERROR") shouldBe Some(RPCErrorType.INTERNAL_ERROR)
-    RPCErrorType.unapply("RESOURCE_EXHAUSTED") shouldBe Some(RPCErrorType.RESOURCE_EXHAUSTED)
+class RPCStatusTest extends AirSpec {
 
-    RPCErrorType.all.foreach { tpe =>
-      RPCErrorType.unapply(tpe.name) shouldBe Some(tpe)
-      RPCErrorType.unapply(tpe.name.toLowerCase) shouldBe Some(tpe)
-      RPCErrorType.unapply(tpe.name.reverse) shouldBe None
+  test("No duplicates") {
+    var knownCodes = Set.empty[Int]
+
+    RPCStatus.all.foreach { x =>
+      knownCodes.contains(x.code) shouldBe false
+      knownCodes += x.code
+
+      // sanity test
+      val errorDetails = s"${x}[${x.code}] ${x.grpcStatus} ${x.httpStatus}"
+      debug(errorDetails)
+    }
+  }
+
+  test("ofCode(code) maps to the right code") {
+    RPCStatus.all.foreach { x =>
+      RPCStatus.ofCode(x.code) shouldBe x
     }
   }
 }

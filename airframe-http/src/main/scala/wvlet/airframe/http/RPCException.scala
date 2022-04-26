@@ -34,7 +34,7 @@ case class RPCError(
     // Cause of the exception
     cause: Option[Throwable] = None,
     // Application-specific error code
-    errorCode: Option[RPCErrorCode],
+    errorCode: Option[RPCStatus],
     // HTTP status code
     httpStatus: Option[HttpStatus] = None,
     // gRPC specific error code
