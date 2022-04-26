@@ -70,7 +70,7 @@ class GrpcStatusTest extends AirSpec {
     GrpcStatus.FAILED_PRECONDITION_9.httpStatus shouldBe HttpStatus.BadRequest_400
     GrpcStatus.ABORTED_10.httpStatus shouldBe HttpStatus.Conflict_409
     GrpcStatus.OUT_OF_RANGE_11.httpStatus shouldBe HttpStatus.BadRequest_400
-    GrpcStatus.UNIMPLEMENTED_12.httpStatus shouldBe HttpStatus.NotImplemented_501
+    GrpcStatus.UNIMPLEMENTED_12.httpStatus shouldBe HttpStatus.MethodNotAllowed_405
     GrpcStatus.INTERNAL_13.httpStatus shouldBe HttpStatus.InternalServerError_500
     GrpcStatus.UNAVAILABLE_14.httpStatus shouldBe HttpStatus.ServiceUnavailable_503
     GrpcStatus.DATA_LOSS_15.httpStatus shouldBe HttpStatus.InternalServerError_500

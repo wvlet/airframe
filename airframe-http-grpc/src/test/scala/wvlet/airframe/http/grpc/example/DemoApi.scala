@@ -20,7 +20,6 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
 import wvlet.airframe.http.grpc._
 import wvlet.airframe.http.router.Route
-import wvlet.airframe.http.rpc.Status
 import wvlet.airframe.http.{Http, HttpStatus, RPC, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{Rx, RxStream}
