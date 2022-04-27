@@ -94,7 +94,14 @@ object GrpcException extends LogSupport {
           .withDescription(e.getMessage)
 
         val metadata = new Metadata()
-        metadata.put[String](rpcErrorKey, e.toJson)
+        try {
+          metadata.put[String](rpcErrorKey, e.toJson)
+        } catch {
+          case ex: Throwable =>
+            // Failed to build JSON data.
+            // Just show warning so as not to block the RPC response
+            warn(s"Failed to serialize RPCException: ${e}", ex)
+        }
         s.asRuntimeException(metadata)
       case other =>
         io.grpc.Status.INTERNAL

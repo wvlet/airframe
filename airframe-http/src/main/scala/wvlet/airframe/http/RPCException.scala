@@ -65,8 +65,8 @@ case class RPCException(
 /**
   * A model class for RPC error message body. This message will be embedded to HTTP response body or gRPC trailer.
   *
-  * We need this class to avoid directly serde RPCException class in airframe-codec, so that we can properly propagate
-  * the exact stack trace to the client.
+  * We need this class to avoid directly serde RPCException classes with airframe-codec, so that we can properly
+  * propagate the exact stack trace to the client.
   */
 case class RPCErrorMessage(
     code: Int = RPCStatus.UNKNOWN_I1.code,
