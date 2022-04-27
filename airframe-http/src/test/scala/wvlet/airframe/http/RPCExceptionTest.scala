@@ -17,7 +17,8 @@ import wvlet.airspec.AirSpec
 
 class RPCExceptionTest extends AirSpec {
   test("Create a new RPCException") {
-    // RPCException.userError
+    RPCStatus.USER_ERROR_U0
+
   }
 
 }

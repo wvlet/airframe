@@ -29,6 +29,8 @@ case class RPCError(
     message: String,
     // Cause of the exception
     cause: Option[Throwable] = None,
+    // Application-specific status code
+    applicationStatusCode: Option[Int] = None,
     // Custom data
     metadata: Map[String, Any] = Map.empty
 ) {

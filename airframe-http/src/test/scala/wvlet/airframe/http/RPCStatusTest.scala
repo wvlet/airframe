@@ -38,6 +38,24 @@ class RPCStatusTest extends AirSpec {
     }
   }
 
+  test("ofCode('unknown code')") {
+    intercept[IllegalArgumentException] {
+      RPCStatus.ofCode(-1) shouldBe None
+    }
+  }
+
+  test("ofCodeName maps to the right code") {
+    RPCStatus.all.foreach { x =>
+      RPCStatus.ofCodeName(x.name) shouldBe x
+    }
+  }
+
+  test("ofCodeName('unknown code name')") {
+    intercept[IllegalArgumentException] {
+      RPCStatus.ofCodeName("INVALID_CODE_000") shouldBe None
+    }
+  }
+
   test("serialize as integer") {
     RPCStatus.all.foreach { x =>
       val packer = MessagePack.newBufferPacker
