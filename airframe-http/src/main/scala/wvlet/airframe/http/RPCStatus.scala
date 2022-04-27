@@ -81,6 +81,7 @@ object RPCStatus {
 
   private def internalErrors: Seq[RPCStatus] = Seq(
     INTERNAL_ERROR_I0,
+    UNKNOWN_I1,
     UNAVAILABLE_I2,
     TIMEOUT_I3,
     DEADLINE_EXCEEDED_I4,
