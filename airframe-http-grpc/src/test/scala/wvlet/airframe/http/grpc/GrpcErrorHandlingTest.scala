@@ -57,7 +57,7 @@ object GrpcErrorHandlingTest extends AirSpec {
         ex.getStatus.isOk shouldBe false
         ex.getStatus.getCode shouldBe Code.ABORTED
         val trailers = Status.trailersFromThrowable(ex)
-        val rpcError = trailers.get[String](GrpcException.rpcErrorKey)
+        val rpcError = trailers.get[String](GrpcException.rpcErrorBodyKey)
         rpcError.contains("test message") shouldBe true
       }
 
@@ -66,7 +66,7 @@ object GrpcErrorHandlingTest extends AirSpec {
           client.rpcExceptionTest
         }
         val trailers     = Status.trailersFromThrowable(ex)
-        val rpcErrorJson = trailers.get[String](GrpcException.rpcErrorKey)
+        val rpcErrorJson = trailers.get[String](GrpcException.rpcErrorBodyKey)
         val e            = RPCException.fromJson(rpcErrorJson)
 
         e.status shouldBe RPCStatus.SYNTAX_ERROR_U3

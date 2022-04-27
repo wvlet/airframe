@@ -26,7 +26,7 @@ import scala.concurrent.ExecutionException
   */
 object GrpcException extends LogSupport {
 
-  private[grpc] val rpcErrorKey = Metadata.Key.of[String]("airframe_rpc_error", Metadata.ASCII_STRING_MARSHALLER)
+  private[grpc] val rpcErrorBodyKey = Metadata.Key.of[String]("airframe_rpc_error", Metadata.ASCII_STRING_MARSHALLER)
 
   /**
     * Convert an exception to gRPC-specific exception types
@@ -81,7 +81,7 @@ object GrpcException extends LogSupport {
         if (e.message.nonEmpty) {
           val m        = e.message
           val metadata = new Metadata()
-          metadata.put[String](rpcErrorKey, s"${m.toContentString}")
+          metadata.put[String](rpcErrorBodyKey, s"${m.toContentString}")
           s.asRuntimeException(metadata)
         } else {
           s.asRuntimeException()
@@ -95,7 +95,7 @@ object GrpcException extends LogSupport {
 
         val metadata = new Metadata()
         try {
-          metadata.put[String](rpcErrorKey, e.toJson)
+          metadata.put[String](rpcErrorBodyKey, e.toJson)
         } catch {
           case ex: Throwable =>
             // Failed to build JSON data.
