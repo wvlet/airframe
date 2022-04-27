@@ -63,7 +63,7 @@ object GrpcErrorHandlingTest extends AirSpec {
 
       test("propagate RPCException") {
         val ex = intercept[StatusRuntimeException] {
-          client.rpcExceptionTest
+          client.rpcExceptionTest(false)
         }
         val trailers     = Status.trailersFromThrowable(ex)
         val rpcErrorJson = trailers.get[String](GrpcException.rpcErrorBodyKey)
@@ -86,6 +86,33 @@ object GrpcErrorHandlingTest extends AirSpec {
         stackTrace.contains("wvlet.airframe.http.RPCStatus.newException") shouldBe true
         stackTrace.contains("wvlet.airframe.http.grpc.example.DemoApi.throwEx") shouldBe true
         stackTrace.contains("wvlet.airframe.http.grpc.example.DemoApi.rpcExceptionTest") shouldBe true
+      }
+
+      test("suppress RPCException stacktrace") {
+        val ex = intercept[StatusRuntimeException] {
+          client.rpcExceptionTest(true)
+        }
+        val trailers     = Status.trailersFromThrowable(ex)
+        val rpcErrorJson = trailers.get[String](GrpcException.rpcErrorBodyKey)
+        val e            = RPCException.fromJson(rpcErrorJson)
+
+        e.status shouldBe RPCStatus.SYNTAX_ERROR_U3
+        e.message shouldBe "test RPC exception"
+        e.cause shouldBe empty
+        e.appErrorCode shouldBe Some(11)
+        e.metadata shouldBe Map("retry" -> 0)
+
+        // Extract stack trace
+        val s   = new StringWriter()
+        val out = new PrintWriter(s)
+        e.printStackTrace(out)
+        out.flush()
+
+        val stackTrace = s.toString
+        // Stack trace should not have detailed information when RPCException.noStackTrace is used
+        stackTrace.contains("wvlet.airframe.http.RPCStatus.newException") shouldBe false
+        stackTrace.contains("wvlet.airframe.http.grpc.example.DemoApi.throwEx") shouldBe false
+        stackTrace.contains("wvlet.airframe.http.grpc.example.DemoApi.rpcExceptionTest") shouldBe false
       }
     }
   }

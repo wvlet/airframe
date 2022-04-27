@@ -68,7 +68,7 @@ trait DemoApi extends LogSupport {
 
   private def throwEx = throw new IllegalArgumentException("syntax error")
 
-  def rpcExceptionTest: String = {
+  def rpcExceptionTest(suppress: Boolean): String = {
     try {
       throwEx
       ""
@@ -80,6 +80,9 @@ trait DemoApi extends LogSupport {
           appErrorCode = 11,
           metadata = Map("retry" -> 0)
         )
+        if (suppress) {
+          ex.noStackTrace
+        }
         throw ex
     }
   }
@@ -230,9 +233,14 @@ object DemoApi {
       resp.asInstanceOf[String]
     }
 
-    def rpcExceptionTest: String = {
+    def rpcExceptionTest(suppress: Boolean): String = {
       val resp = ClientCalls
-        .blockingUnaryCall(_channel, rpcExceptionTestMethodDescriptor, getCallOptions, encode(Map.empty))
+        .blockingUnaryCall(
+          _channel,
+          rpcExceptionTestMethodDescriptor,
+          getCallOptions,
+          encode(Map("suppress" -> suppress))
+        )
 
       resp.asInstanceOf[String]
     }
