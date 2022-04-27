@@ -30,8 +30,8 @@ object RPCStatus {
 
   import RPCStatusType._
 
-  private val codeTable: Map[Int, RPCStatus]        = all.map { x => x.code -> x }.toMap
-  private val codeNameTable: Map[String, RPCStatus] = all.map { x => x.name -> x }.toMap
+  private lazy val codeTable: Map[Int, RPCStatus]        = all.map { x => x.code -> x }.toMap
+  private lazy val codeNameTable: Map[String, RPCStatus] = all.map { x => x.name -> x }.toMap
 
   def unapply(v: Value): Option[RPCStatus] = {
     v match {
@@ -324,4 +324,31 @@ sealed abstract class RPCStatus(
   override def pack(p: Packer): Unit = {
     p.packInt(code)
   }
+
+  /**
+    * Create a new RPCException with this RPCStatus.
+    * @param message
+    *   the error message (required)
+    * @param cause
+    *   the cause of the error (optional)
+    * @param appErrorCode
+    *   application-specific error code. default: -1 (None)
+    * @param metadata
+    *   application-specific metadata (optional)
+    */
+  def toException(
+      message: String,
+      cause: Throwable = null,
+      appErrorCode: Int = -1,
+      metadata: Map[String, Any] = Map.empty
+  ): RPCException = {
+    RPCException(
+      status = this,
+      message = message,
+      cause = Option(cause),
+      appErrorCode = if (appErrorCode == -1) None else Some(appErrorCode),
+      metadata = metadata
+    )
+  }
+
 }

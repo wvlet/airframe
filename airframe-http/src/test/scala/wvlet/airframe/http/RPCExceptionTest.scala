@@ -17,8 +17,13 @@ import wvlet.airspec.AirSpec
 
 class RPCExceptionTest extends AirSpec {
   test("Create a new RPCException") {
-    RPCStatus.USER_ERROR_U0
-
+    RPCStatus.USER_ERROR_U0.toException(s"user error test")
+    RPCStatus.INVALID_REQUEST_U1.toException(
+      "invalid RPC request",
+      new IllegalArgumentException("syntax error"),
+      appErrorCode = 10,
+      metadata = Map("line" -> 100, "pos" -> 10)
+    )
   }
 
 }

@@ -15,27 +15,16 @@ package wvlet.airframe.http
 
 /**
   * RPCException provides a backend-independent (e.g., Finagle or gRPC) RPC error reporting mechanism.
-  *
-  * @param rpcError
   */
-class RPCException(
-    rpcError: RPCError
-) extends Exception(rpcError.toString, rpcError.cause.getOrElse(null))
-
-case class RPCError(
+case class RPCException(
     // RPC status
     status: RPCStatus,
     // Error message
-    message: String,
+    message: String = "",
     // Cause of the exception
     cause: Option[Throwable] = None,
-    // Application-specific status code
-    applicationStatusCode: Option[Int] = None,
-    // Custom data
+    // [optional] Application-specific status code
+    appErrorCode: Option[Int] = None,
+    // [optional] Application-specific metadata
     metadata: Map[String, Any] = Map.empty
-) {
-  override def toString: String                             = s"[${status}] ${message}"
-  def toException: RPCException                             = new RPCException(this)
-  def withMessage(newMessage: String): RPCError             = this.copy(message = newMessage)
-  def withMetadata(newMetadata: Map[String, Any]): RPCError = this.copy(metadata = newMetadata)
-}
+) extends Exception(s"[${status}] ${message}", cause.getOrElse(null))
