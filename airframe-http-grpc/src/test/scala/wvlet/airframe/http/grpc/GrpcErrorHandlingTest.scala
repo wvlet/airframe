@@ -16,7 +16,7 @@ package wvlet.airframe.http.grpc
 import io.grpc.Status
 import io.grpc.Status.Code
 import io.grpc.StatusRuntimeException
-import wvlet.airframe.http.Router
+import wvlet.airframe.http.{RPCException, Router}
 import wvlet.airframe.http.grpc.GrpcErrorLogTest.DemoApiDebug
 import wvlet.airframe.http.grpc.example.DemoApi.DemoApiClient
 import wvlet.airframe.http.grpc.internal.GrpcException
@@ -31,16 +31,31 @@ object GrpcErrorHandlingTest extends AirSpec {
       .designWithChannel
   }
 
-  test("handle error") { (client: DemoApiClient) =>
+  test("exception test") { (client: DemoApiClient) =>
     warn("Starting a gRPC error handling test")
-    val ex = intercept[StatusRuntimeException] {
-      client.error409Test
+
+    test("handle error") {
+      val ex = intercept[StatusRuntimeException] {
+        client.error409Test
+      }
+      ex.getMessage.contains("409") shouldBe true
+      ex.getStatus.isOk shouldBe false
+      ex.getStatus.getCode shouldBe Code.ABORTED
+      val trailers = Status.trailersFromThrowable(ex)
+      val rpcError = trailers.get[String](GrpcException.rpcErrorKey)
+      info(s"error trailer: ${rpcError}")
     }
-    ex.getMessage.contains("409") shouldBe true
-    ex.getStatus.isOk shouldBe false
-    ex.getStatus.getCode shouldBe Code.ABORTED
-    val trailers = Status.trailersFromThrowable(ex)
-    val rpcError = trailers.get[String](GrpcException.rpcErrorKey)
-    info(s"error trailer: ${rpcError}")
+
+    test("rpc exception test") {
+      val ex = intercept[StatusRuntimeException] {
+        client.rpcExceptionTest
+      }
+      val trailers     = Status.trailersFromThrowable(ex)
+      val rpcErrorJson = trailers.get[String](GrpcException.rpcErrorKey)
+      info(rpcErrorJson)
+      val e = RPCException.fromJson(rpcErrorJson)
+      info(e)
+      info(e.getCause)
+    }
   }
 }

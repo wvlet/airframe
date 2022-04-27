@@ -16,14 +16,40 @@ package wvlet.airframe.http
 import wvlet.airspec.AirSpec
 
 class RPCExceptionTest extends AirSpec {
+
+  private def newTestException = RPCStatus.INVALID_REQUEST_U1.newException(
+    "invalid RPC request",
+    new IllegalArgumentException("syntax error"),
+    appErrorCode = 10,
+    metadata = Map("line" -> 100, "pos" -> 10)
+  )
+
   test("Create a new RPCException") {
-    RPCStatus.USER_ERROR_U0.toException(s"user error test")
-    RPCStatus.INVALID_REQUEST_U1.toException(
-      "invalid RPC request",
-      new IllegalArgumentException("syntax error"),
-      appErrorCode = 10,
-      metadata = Map("line" -> 100, "pos" -> 10)
-    )
+    RPCStatus.USER_ERROR_U0.newException(s"user error test")
+  }
+
+  test("toMap error contents") {
+    val e1 = newTestException
+    val m  = e1.toMessage
+    m.code shouldBe e1.status.code
+    m.codeName shouldBe e1.status.name
+    m.message shouldBe e1.message
+    m.appErrorCode shouldBe e1.appErrorCode
+    m.metadata shouldBe e1.metadata
+    m.cause shouldNotBe empty
+  }
+
+  test("hide stack trace") {
+    val e1 = newTestException
+    e1.noStackTrace
+    val m = e1.toMessage
+    m.cause shouldBe empty
+  }
+
+  test("toJson error contents") {
+    val e1 = newTestException
+    // sanity test
+    val json = e1.toJson
   }
 
 }
