@@ -20,7 +20,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
 import wvlet.airframe.http.grpc._
 import wvlet.airframe.http.router.Route
-import wvlet.airframe.http.{Http, HttpStatus, RPC, Router}
+import wvlet.airframe.http.{Http, HttpStatus, RPC, RPCStatus, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.log.LogSupport
@@ -64,6 +64,27 @@ trait DemoApi extends LogSupport {
 
   def error409Test: String = {
     throw Http.serverException(HttpStatus.Conflict_409).withContent("test message")
+  }
+
+  private def throwEx = throw new IllegalArgumentException("syntax error")
+
+  def rpcExceptionTest(suppress: Boolean): String = {
+    try {
+      throwEx
+      ""
+    } catch {
+      case e: Throwable =>
+        val ex = RPCStatus.SYNTAX_ERROR_U3.newException(
+          message = "test RPC exception",
+          cause = e,
+          appErrorCode = 11,
+          metadata = Map("retry" -> 0)
+        )
+        if (suppress) {
+          ex.noStackTrace
+        }
+        throw ex
+    }
   }
 }
 
@@ -118,6 +139,8 @@ object DemoApi {
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("returnUnit"), codecFactory)
     private val errorTestMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("error409Test"), codecFactory)
+    private val rpcExceptionTestMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("rpcExceptionTest"), codecFactory)
 
     def withEncoding(encoding: GrpcEncoding): DemoApiClient = {
       this.copy(encoding = encoding)
@@ -206,6 +229,18 @@ object DemoApi {
     def error409Test: String = {
       val resp = ClientCalls
         .blockingUnaryCall(_channel, errorTestMethodDescriptor, getCallOptions, encode(Map.empty))
+
+      resp.asInstanceOf[String]
+    }
+
+    def rpcExceptionTest(suppress: Boolean): String = {
+      val resp = ClientCalls
+        .blockingUnaryCall(
+          _channel,
+          rpcExceptionTestMethodDescriptor,
+          getCallOptions,
+          encode(Map("suppress" -> suppress))
+        )
 
       resp.asInstanceOf[String]
     }

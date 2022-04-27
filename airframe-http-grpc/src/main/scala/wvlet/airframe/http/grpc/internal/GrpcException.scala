@@ -15,7 +15,7 @@ package wvlet.airframe.http.grpc.internal
 
 import io.grpc.{Metadata, Status, StatusException, StatusRuntimeException}
 import wvlet.airframe.codec.MessageCodecException
-import wvlet.airframe.http.{GrpcStatus, HttpServerException, HttpStatus}
+import wvlet.airframe.http.{GrpcStatus, HttpServerException, HttpStatus, RPCException}
 import wvlet.log.LogSupport
 
 import java.lang.reflect.InvocationTargetException
@@ -26,7 +26,7 @@ import scala.concurrent.ExecutionException
   */
 object GrpcException extends LogSupport {
 
-  private[grpc] val rpcErrorKey = Metadata.Key.of[String]("airframe_rpc_error", Metadata.ASCII_STRING_MARSHALLER)
+  private[grpc] val rpcErrorBodyKey = Metadata.Key.of[String]("airframe_rpc_error", Metadata.ASCII_STRING_MARSHALLER)
 
   /**
     * Convert an exception to gRPC-specific exception types
@@ -81,11 +81,28 @@ object GrpcException extends LogSupport {
         if (e.message.nonEmpty) {
           val m        = e.message
           val metadata = new Metadata()
-          metadata.put[String](rpcErrorKey, s"${m.toContentString}")
+          metadata.put[String](rpcErrorBodyKey, s"${m.toContentString}")
           s.asRuntimeException(metadata)
         } else {
           s.asRuntimeException()
         }
+      case e: RPCException =>
+        val grpcStatus = e.status.grpcStatus
+        val s = Status
+          .fromCodeValue(grpcStatus.code)
+          .withCause(e.cause.getOrElse(null))
+          .withDescription(e.getMessage)
+
+        val metadata = new Metadata()
+        try {
+          metadata.put[String](rpcErrorBodyKey, e.toJson)
+        } catch {
+          case ex: Throwable =>
+            // Failed to build JSON data.
+            // Just show warning so as not to block the RPC response
+            warn(s"Failed to serialize RPCException: ${e}", ex)
+        }
+        s.asRuntimeException(metadata)
       case other =>
         io.grpc.Status.INTERNAL
           .withCause(other)

@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.codec.PackSupport
-import wvlet.airframe.msgpack.spi.Value.{IntegerValue, LongValue}
+import wvlet.airframe.msgpack.spi.Value.{IntegerValue, LongValue, StringValue}
 import wvlet.airframe.msgpack.spi.{Packer, Value}
 
 import scala.util.Try
@@ -30,12 +30,21 @@ object RPCStatus {
 
   import RPCStatusType._
 
-  private val codeTable: Map[Int, RPCStatus] = all.map { x => x.code -> x }.toMap
+  private lazy val codeTable: Map[Int, RPCStatus]        = all.map { x => x.code -> x }.toMap
+  private lazy val codeNameTable: Map[String, RPCStatus] = all.map { x => x.name -> x }.toMap
+
+  def unapply(s: String): Option[RPCStatus] = {
+    Try(ofCode(s.toInt)).toOption
+  }
 
   def unapply(v: Value): Option[RPCStatus] = {
     v match {
       case l: LongValue =>
         Try(ofCode(l.asInt)).toOption
+      case s: StringValue =>
+        Try(ofCodeName(s.toString))
+          .orElse(Try(ofCode(s.toString.toInt)))
+          .toOption
       case _ =>
         None
     }
@@ -43,6 +52,10 @@ object RPCStatus {
 
   def ofCode(code: Int): RPCStatus = {
     codeTable.getOrElse(code, throw new IllegalArgumentException(s"Invalid RPCStatus code: ${code}"))
+  }
+
+  def ofCodeName(name: String): RPCStatus = {
+    codeNameTable.getOrElse(name, throw new IllegalArgumentException(s"Invalid RPCStatus name: ${name}"))
   }
 
   def all: Seq[RPCStatus] =
@@ -68,13 +81,14 @@ object RPCStatus {
 
   private def internalErrors: Seq[RPCStatus] = Seq(
     INTERNAL_ERROR_I0,
-    UNAVAILABLE_I1,
-    TIMEOUT_I2,
-    DEADLINE_EXCEEDED_I3,
-    INTERRUPTED_I4,
-    SERVICE_STARTING_UP_I5,
-    SERVICE_SHUTTING_DOWN_I6,
-    DATA_LOSS_I7
+    UNKNOWN_I1,
+    UNAVAILABLE_I2,
+    TIMEOUT_I3,
+    DEADLINE_EXCEEDED_I4,
+    INTERRUPTED_I5,
+    SERVICE_STARTING_UP_I6,
+    SERVICE_SHUTTING_DOWN_I7,
+    DATA_LOSS_I8
   )
 
   private def resourceErrors: Seq[RPCStatus] = Seq(
@@ -173,40 +187,45 @@ object RPCStatus {
   case object INTERNAL_ERROR_I0 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.INTERNAL_13)
 
   /**
+    * An unknown internal error
+    */
+  case object UNKNOWN_I1 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.UNKNOWN_2)
+
+  /**
     * The service is unavailable.
     */
-  case object UNAVAILABLE_I1 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.UNAVAILABLE_14)
+  case object UNAVAILABLE_I2 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.UNAVAILABLE_14)
 
   /**
     * The service respond the request in time (e.g., circuit breaker is open, timeout exceeded, etc.) For operations
     * that change the system state, this error might be returned even if the operation has completed successfully.
     */
-  case object TIMEOUT_I2 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.DEADLINE_EXCEEDED_4)
+  case object TIMEOUT_I3 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.DEADLINE_EXCEEDED_4)
 
   /**
     * The request cannot be processed in the user-specified deadline. The client may retry the request
     */
-  case object DEADLINE_EXCEEDED_I3 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.DEADLINE_EXCEEDED_4)
+  case object DEADLINE_EXCEEDED_I4 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.DEADLINE_EXCEEDED_4)
 
   /**
     * The request is interrupted at the service
     */
-  case object INTERRUPTED_I4 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.INTERNAL_13)
+  case object INTERRUPTED_I5 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.INTERNAL_13)
 
   /**
     * The service is starting now. The client can retry the request after a while
     */
-  case object SERVICE_STARTING_UP_I5 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.UNAVAILABLE_14)
+  case object SERVICE_STARTING_UP_I6 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.UNAVAILABLE_14)
 
   /**
     * The service is shutting down now.
     */
-  case object SERVICE_SHUTTING_DOWN_I6 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.UNAVAILABLE_14)
+  case object SERVICE_SHUTTING_DOWN_I7 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.UNAVAILABLE_14)
 
   /**
     * Data loss or corrupted data
     */
-  case object DATA_LOSS_I7 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.DATA_LOSS_15)
+  case object DATA_LOSS_I8 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.DATA_LOSS_15)
 
   /**
     * The resource for completing the request is insufficient.
@@ -315,4 +334,31 @@ sealed abstract class RPCStatus(
   override def pack(p: Packer): Unit = {
     p.packInt(code)
   }
+
+  /**
+    * Create a new RPCException with this RPCStatus.
+    * @param message
+    *   the error message (required)
+    * @param cause
+    *   the cause of the error (optional)
+    * @param appErrorCode
+    *   application-specific error code. default: -1 (None)
+    * @param metadata
+    *   application-specific metadata (optional)
+    */
+  def newException(
+      message: String,
+      cause: Throwable = null,
+      appErrorCode: Int = -1,
+      metadata: Map[String, Any] = Map.empty
+  ): RPCException = {
+    RPCException(
+      status = this,
+      message = message,
+      cause = Option(cause),
+      appErrorCode = if (appErrorCode == -1) None else Some(appErrorCode),
+      metadata = metadata
+    )
+  }
+
 }

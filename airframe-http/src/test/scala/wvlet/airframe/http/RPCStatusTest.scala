@@ -19,12 +19,22 @@ import wvlet.airspec.AirSpec
 
 class RPCStatusTest extends AirSpec {
 
-  test("No duplicates") {
+  test("Have no duplicates and no gaps") {
     var knownCodes = Set.empty[Int]
 
+    var counter                            = 0
+    var currentType: Option[RPCStatusType] = None
+
     RPCStatus.all.foreach { x =>
+      // Bump the counter for each statusType
+      if (currentType.isEmpty || currentType != Some(x.statusType)) {
+        currentType = Some(x.statusType)
+        counter = x.statusType.minCode
+      }
       knownCodes.contains(x.code) shouldBe false
       knownCodes += x.code
+      x.code shouldBe counter
+      counter += 1
 
       // sanity test
       val errorDetails = s"${x}[${x.code}] ${x.grpcStatus} ${x.httpStatus}"
@@ -35,6 +45,24 @@ class RPCStatusTest extends AirSpec {
   test("ofCode(code) maps to the right code") {
     RPCStatus.all.foreach { x =>
       RPCStatus.ofCode(x.code) shouldBe x
+    }
+  }
+
+  test("ofCode('unknown code')") {
+    intercept[IllegalArgumentException] {
+      RPCStatus.ofCode(-1) shouldBe None
+    }
+  }
+
+  test("ofCodeName maps to the right code") {
+    RPCStatus.all.foreach { x =>
+      RPCStatus.ofCodeName(x.name) shouldBe x
+    }
+  }
+
+  test("ofCodeName('unknown code name')") {
+    intercept[IllegalArgumentException] {
+      RPCStatus.ofCodeName("INVALID_CODE_000") shouldBe None
     }
   }
 

@@ -13,27 +13,86 @@
  */
 package wvlet.airframe.http
 
-/**
-  * RPCException provides a backend-independent (e.g., Finagle or gRPC) RPC error reporting mechanism.
-  *
-  * @param rpcError
-  */
-class RPCException(
-    rpcError: RPCError
-) extends Exception(rpcError.toString, rpcError.cause.getOrElse(null))
+import wvlet.airframe.codec.{GenericException, GenericStackTraceElement, MessageCodec}
 
-case class RPCError(
+/**
+  * RPCException provides a backend-independent (e.g., Finagle or gRPC) RPC error reporting mechanism. Create this
+  * exception with (RPCStatus code).toException(...) method.
+  *
+  * If necessary, we can add more standard error_details parameter like
+  * https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto
+  */
+case class RPCException(
     // RPC status
-    status: RPCStatus,
+    status: RPCStatus = RPCStatus.INTERNAL_ERROR_I0,
     // Error message
-    message: String,
+    message: String = "",
     // Cause of the exception
     cause: Option[Throwable] = None,
-    // Custom data
+    // [optional] Application-specific status code
+    appErrorCode: Option[Int] = None,
+    // [optional] Application-specific metadata
     metadata: Map[String, Any] = Map.empty
-) {
-  override def toString: String                             = s"[${status}] ${message}"
-  def toException: RPCException                             = new RPCException(this)
-  def withMessage(newMessage: String): RPCError             = this.copy(message = newMessage)
-  def withMetadata(newMetadata: Map[String, Any]): RPCError = this.copy(metadata = newMetadata)
+) extends Exception(s"[${status}] ${message}", cause.getOrElse(null)) {
+
+  private var _includeStackTrace: Boolean = true
+
+  /**
+    * Do not embed stacktrace and the cause objects in the RPC exception error response
+    */
+  def noStackTrace: RPCException = {
+    _includeStackTrace = false
+    this
+  }
+
+  def toMessage: RPCErrorMessage = {
+    RPCErrorMessage(
+      code = status.code,
+      codeName = status.name,
+      message = message,
+      stackTrace = if (_includeStackTrace) Some(GenericException.extractStackTrace(this)) else None,
+      cause = if (_includeStackTrace) cause else None,
+      appErrorCode = appErrorCode,
+      metadata = metadata
+    )
+  }
+
+  def toJson: String = {
+    MessageCodec.of[RPCErrorMessage].toJson(toMessage)
+  }
+}
+
+/**
+  * A model class for RPC error message body. This message will be embedded to HTTP response body or gRPC trailer.
+  *
+  * We need this class to avoid directly serde RPCException classes with airframe-codec, so that we can properly
+  * propagate the exact stack trace to the client.
+  */
+case class RPCErrorMessage(
+    code: Int = RPCStatus.UNKNOWN_I1.code,
+    codeName: String = RPCStatus.UNKNOWN_I1.name,
+    message: String = "",
+    stackTrace: Option[Seq[GenericStackTraceElement]] = None,
+    cause: Option[Throwable] = None,
+    appErrorCode: Option[Int] = None,
+    metadata: Map[String, Any] = Map.empty
+)
+
+object RPCException {
+  def fromJson(json: String): RPCException = {
+    val codec = MessageCodec.of[RPCErrorMessage]
+    val m     = codec.fromJson(json)
+    val ex = new RPCException(
+      status = RPCStatus.ofCode(m.code),
+      message = m.message,
+      cause = m.cause,
+      appErrorCode = m.appErrorCode,
+      metadata = m.metadata
+    )
+    // Recover the original stack trace
+    m.stackTrace.foreach { x =>
+      ex.setStackTrace(x.map(_.toJavaStackTraceElement).toArray)
+    }
+    ex
+  }
 }

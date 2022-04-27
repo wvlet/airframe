@@ -60,10 +60,7 @@ case class GenericException(
 }
 
 object GenericException {
-  def fromThrowable(e: Throwable, seen: Set[Throwable] = Set.empty): GenericException = {
-    val exceptionClass = e.getClass.getName
-    val message        = Option(e.getMessage).getOrElse(e.getClass.getSimpleName)
-
+  def extractStackTrace(e: Throwable): Seq[GenericStackTraceElement] = {
     val stackTrace = for (x <- e.getStackTrace) yield {
       GenericStackTraceElement(
         className = x.getClassName,
@@ -72,7 +69,14 @@ object GenericException {
         lineNumber = x.getLineNumber
       )
     }
+    stackTrace
+  }
 
+  def fromThrowable(e: Throwable, seen: Set[Throwable] = Set.empty): GenericException = {
+    val exceptionClass = e.getClass.getName
+    val message        = Option(e.getMessage).getOrElse(e.getClass.getSimpleName)
+
+    val stackTrace = extractStackTrace(e)
     val cause = Option(e.getCause).flatMap { ce =>
       if (seen.contains(ce)) {
         None
