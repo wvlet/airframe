@@ -26,7 +26,7 @@ import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.http.router.{ControllerProvider, ResponseHandler}
-import wvlet.airframe.http.{HttpBackend, HttpServerException, Router}
+import wvlet.airframe.http.{HttpBackend, HttpMessage, HttpServerException, RPCException, Router}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -34,6 +34,7 @@ import wvlet.log.io.IOUtil
 import scala.annotation.tailrec
 import scala.collection.parallel.immutable.ParVector
 import scala.concurrent.ExecutionException
+import scala.util.Try
 import scala.util.control.NonFatal
 
 case class FinagleServerConfig(
@@ -246,6 +247,18 @@ object FinagleServer extends LogSupport {
               logger.warn(s"${request} failed: ${e.getMessage}", findCause(e.getCause))
               // HttpServerException is a properly handled exception, so convert it to an error response
               Future.value(convertToFinagleResponse(e.toResponse))
+            case e: RPCException =>
+              logger.warn(s"RPC request ${request} failed: ${e.getMessage}", findCause(e.getCause))
+              var resp = wvlet.airframe.http.Http.response(e.status.httpStatus)
+              try {
+                val errorResponseJson = e.toJson
+                resp = resp.withJson(errorResponseJson)
+              } catch {
+                case ex: Throwable =>
+                  // Show warning
+                  logger.warn(s"Failed to serialize RPCException: ${e}", ex)
+              }
+              Future.value(convertToFinagleResponse(resp))
             case other =>
               logger.warn(s"${request} failed: ${other}", other)
               // Just return internal server failure with 500 response code
