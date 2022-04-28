@@ -76,7 +76,11 @@ object RPCStatus {
     NOT_SUPPORTED_U7,
     UNIMPLEMENTED_U8,
     UNEXPECTED_STATE_U9,
-    INCONSISTENT_STATE_U10
+    INCONSISTENT_STATE_U10,
+    CANCELLED_U11,
+    ABORTED_U12,
+    UNAUTHENTICATED_U13,
+    PERMISSION_DENIED_U14
   )
 
   private def internalErrors: Seq[RPCStatus] = Seq(
@@ -169,7 +173,7 @@ object RPCStatus {
     * The request is aborted (e.g., dead-lock, transaction conflicts, etc.) The client should retry the request it a
     * higher-level.
     */
-  case object ABORTED_U12 extends RPCStatus(INTERNAL_ERROR, GrpcStatus.ABORTED_10)
+  case object ABORTED_U12 extends RPCStatus(USER_ERROR, GrpcStatus.ABORTED_10)
 
   /**
     * The user has not been authenticated
