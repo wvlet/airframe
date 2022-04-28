@@ -320,6 +320,9 @@ sealed abstract class RPCStatus(
 
   import RPCStatus._
 
+  def isSuccess: Boolean = statusType == RPCStatusType.SUCCESS
+  def isFailure: Boolean = !isSuccess
+
   /**
     * Integer-based error code
     */

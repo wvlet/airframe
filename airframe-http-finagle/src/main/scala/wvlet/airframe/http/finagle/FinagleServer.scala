@@ -249,7 +249,10 @@ object FinagleServer extends LogSupport {
               Future.value(convertToFinagleResponse(e.toResponse))
             case e: RPCException =>
               logger.warn(s"RPC request ${request} failed: ${e.getMessage}", findCause(e.getCause))
-              var resp = wvlet.airframe.http.Http.response(e.status.httpStatus)
+              var resp = wvlet.airframe.http.Http
+                .response(e.status.httpStatus)
+                // Add RPC status header to handle errors in clients
+                .addHeader("x-airframe-rpc-status", e.status.code.toString)
               try {
                 val errorResponseJson = e.toJson
                 resp = resp.withJson(errorResponseJson)

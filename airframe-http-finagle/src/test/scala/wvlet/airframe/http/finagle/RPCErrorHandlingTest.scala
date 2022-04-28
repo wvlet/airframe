@@ -43,17 +43,17 @@ class RPCErrorHandlingTest extends AirSpec {
     Finagle.server.withRouter(router).designWithSyncClient
 
   test("rpc error test") { (client: FinagleSyncClient) =>
-    warn("Running RPC exception test. Some warning messages will be shown")
+    warn("Running RPC exception tests. Some warning messages will be shown")
 
     test("with stack trace") {
       val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/permissionCheck")
       req.setContentTypeJson()
-      val resp = client.sendSafe(req)
 
-      val errorJson = resp.getContentString()
-      val ex        = RPCException.fromJson(errorJson)
+      val ex = intercept[RPCException] {
+        client.sendSafe(req)
+      }
 
-      resp.statusCode shouldBe RPCStatus.PERMISSION_DENIED_U14.httpStatus.code
+      // resp.statusCode shouldBe RPCStatus.PERMISSION_DENIED_U14.httpStatus.code
       ex.status shouldBe RPCStatus.PERMISSION_DENIED_U14
       ex.message shouldBe "permission denied"
       ex.metadata shouldBe Map("retry_count" -> 3)
@@ -69,12 +69,12 @@ class RPCErrorHandlingTest extends AirSpec {
     test("without stack trace") {
       val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/authCheck")
       req.setContentTypeJson()
-      val resp = client.sendSafe(req)
 
-      val errorJson = resp.getContentString()
-      val ex        = RPCException.fromJson(errorJson)
+      val ex = intercept[RPCException] {
+        client.sendSafe(req)
+      }
 
-      resp.statusCode shouldBe RPCStatus.UNAUTHENTICATED_U13.httpStatus.code
+      // resp.statusCode shouldBe RPCStatus.UNAUTHENTICATED_U13.httpStatus.code
       ex.status shouldBe RPCStatus.UNAUTHENTICATED_U13
       ex.message shouldBe "not authenticated"
 
@@ -84,6 +84,18 @@ class RPCErrorHandlingTest extends AirSpec {
       p.flush()
       val stackTrace = s.toString
       stackTrace.contains("DemoApi.authCheck") shouldBe false
+    }
+
+    test("read error response with postOps") {
+      val ex = intercept[RPCException] {
+        val req =
+          client.postOps[Map[String, Any], String](
+            "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/authCheck",
+            Map.empty
+          )
+      }
+      ex.status shouldBe RPCStatus.UNAUTHENTICATED_U13
+      ex.message shouldBe "not authenticated"
     }
   }
 

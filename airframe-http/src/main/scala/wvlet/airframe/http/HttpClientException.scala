@@ -12,19 +12,20 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.control.ResultClass
+import wvlet.airframe.control.ResultClass.{Failed, Succeeded, nonRetryableFailure, retryableFailure}
+import wvlet.airframe.control.Retry.RetryContext
+import wvlet.log.LogSupport
+
 import java.io.EOFException
 import java.lang.reflect.InvocationTargetException
 import java.net._
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.{ExecutionException, TimeoutException}
 import javax.net.ssl.{SSLException, SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
-import wvlet.airframe.control.{ResultClass, Retry}
-import wvlet.airframe.control.ResultClass.{Failed, Succeeded, nonRetryableFailure, retryableFailure}
-import wvlet.airframe.control.Retry.RetryContext
-import wvlet.log.LogSupport
-
 import scala.annotation.tailrec
 import scala.language.existentials
+import scala.util.Try
 
 /**
   */
@@ -60,13 +61,39 @@ case class HttpClientMaxRetryException(
   * Common classifiers for HTTP client responses and exceptions in order to retry HTTP requests.
   */
 object HttpClientException extends LogSupport {
-  private def requestFailure[Resp](response: Resp)(implicit adapter: HttpResponseAdapter[Resp]): HttpClientException = {
+  private def requestFailure[Resp](response: Resp)(implicit adapter: HttpResponseAdapter[Resp]): Throwable = {
     val status  = adapter.statusOf(response)
     val content = adapter.contentStringOf(response)
-    if (content == null || content.isEmpty) {
-      new HttpClientException(adapter.wrap(response), status)
-    } else {
-      new HttpClientException(adapter.wrap(response), status, s"Request failed: ${content}")
+
+    def handleRegularResponse: HttpClientException = {
+      if (content == null || content.isEmpty) {
+        new HttpClientException(adapter.wrap(response), status)
+      } else {
+        new HttpClientException(adapter.wrap(response), status, s"Request failed: ${content}")
+      }
+    }
+
+    // TODO:
+    // Handling RPC exception here might not be a good idea as the user need to handle
+    // both HttpClientException (e.g., request failure) and RPCException returned from the server.
+    // A common RPC HTTP client needs to be defined instead
+    adapter.headerOf(response).get("x-airframe-rpc-status") match {
+      case Some(rpcStatus) =>
+        try {
+          val status = RPCStatus.ofCode(rpcStatus.toInt)
+          if (status.isSuccess) {
+            // No error body will be contained
+            handleRegularResponse
+          } else {
+            RPCException.fromJson(content)
+          }
+        } catch {
+          case e: Throwable =>
+            warn(e)
+            handleRegularResponse
+        }
+      case None =>
+        handleRegularResponse
     }
   }
 

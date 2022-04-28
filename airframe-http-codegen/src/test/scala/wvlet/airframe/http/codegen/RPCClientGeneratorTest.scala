@@ -18,10 +18,17 @@ import wvlet.airspec.AirSpec
 /**
   */
 class RPCClientGeneratorTest extends AirSpec {
+  val router = RouteScanner.buildRouter(Seq(classOf[RPCTestService]))
+
   test("avoid duplicate route entries") {
-    val router = RouteScanner.buildRouter(Seq(classOf[RPCTestService]))
-    val r      = router.toString
+    val r = router.toString
     r.contains("/example.rpc.RPCTestService/addUser") shouldBe true
     r.contains("addUser(request:CreateUserRequest): User") shouldBe true
+  }
+
+  test("propagate RPCException") {
+    val config = HttpClientGeneratorConfig("example.api.rpc:sync:MyRPCClient")
+    val code   = HttpCodeGenerator.generate(router, config)
+    debug(code)
   }
 }
