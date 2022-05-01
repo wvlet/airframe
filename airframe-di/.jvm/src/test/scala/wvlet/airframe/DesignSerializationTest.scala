@@ -13,10 +13,20 @@
  */
 package wvlet.airframe
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, ObjectInputStream, ObjectOutputStream}
 
 import DesignTest._
 import wvlet.airspec.AirSpec
+
+class CustomClassLoader(in: InputStream) extends ObjectInputStream(in) {
+  override def resolveClass(desc: java.io.ObjectStreamClass): Class[_] = {
+    try {
+      Class.forName(desc.getName, false, getClass.getClassLoader)
+    } catch {
+      case _: ClassNotFoundException => super.resolveClass(desc)
+    }
+  }
+}
 
 object DesignSerializationTest {
   def serialize(d: Design): Array[Byte] = {
@@ -28,10 +38,9 @@ object DesignSerializationTest {
   }
 
   def deserialize(b: Array[Byte]): Design = {
-    val in  = new ByteArrayInputStream(b)
-    val oi  = new ObjectInputStream(in)
-    val obj = oi.readObject().asInstanceOf[Design]
-    obj.asInstanceOf[Design]
+    val in = new ByteArrayInputStream(b)
+    val oi = new CustomClassLoader(in)
+    oi.readObject().asInstanceOf[Design]
   }
 }
 
