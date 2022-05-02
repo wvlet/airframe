@@ -214,7 +214,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   private def elementTypeSurfaceOf(t: TypeRepr): Expr[Surface] = {
-    typeArgsOf(t).map(surfaceOf(_)).head
+    typeArgsOf(t).map(surfaceOf(_)).headOption match {
+      case Some(expr) =>
+        expr
+      case None =>
+        // FIXME: Is this right ?
+        '{ AnyRefSurface }
+    }
   }
 
   private def arrayFactory: Factory = {
