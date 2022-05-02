@@ -165,10 +165,18 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private def aliasFactory: Factory = {
     case t if t.typeSymbol.isType && t.typeSymbol.isAliasType && !belongsToScalaDefault(t) =>
       val dealiased = t.dealias
-      val inner = if (t != dealiased) {
-        surfaceOf(dealiased)
-      } else {
-        surfaceOf(t.simplified)
+      // t.dealias does not dealias for current implementation.
+      // This workaround attempts to extract dealiased type from AST.
+      val symbolInOwner = t.typeSymbol.maybeOwner.declarations.find(_.name.toString == t.typeSymbol.name.toString)
+      val inner = symbolInOwner.map(_.tree) match {
+        case Some(TypeDef(_, b: TypeTree)) =>
+          surfaceOf(b.tpe)
+        case _ =>
+          if (t != dealiased) {
+            surfaceOf(dealiased)
+          } else {
+            surfaceOf(t.simplified)
+          }
       }
       val s        = t.typeSymbol
       val name     = Expr(s.name)
