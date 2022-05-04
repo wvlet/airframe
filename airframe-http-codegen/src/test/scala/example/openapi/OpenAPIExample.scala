@@ -41,7 +41,7 @@ object OpenAPIRPCExample {
       x2: Long,
       x3: Boolean,
       x4: Float,
-      x5: Double,
+      x5: Double = 1.0,
       x6: Array[String],
       x7: Seq[String],
       x8: Map[String, Any],
