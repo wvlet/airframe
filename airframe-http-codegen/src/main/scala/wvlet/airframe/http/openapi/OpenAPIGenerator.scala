@@ -434,7 +434,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
 
   private def requiredParams(params: Seq[wvlet.airframe.surface.Parameter]): Option[Seq[String]] = {
     val required = params
-      .filter(p => p.isRequired || !p.surface.isOption)
+      .filter(p => p.isRequired || !(p.getDefaultValue.nonEmpty || p.surface.isOption))
       .map(_.name)
     if (required.isEmpty) None else Some(required)
   }

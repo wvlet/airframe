@@ -28,17 +28,17 @@ class OpenAPITest extends AirSpec {
     val openapi = OpenAPI
       .ofRouter(rpcRouter)
       .withInfo(OpenAPI.Info(title = "RPCTest", version = "1.0"))
-    debug(openapi)
+    trace(openapi)
 
     openapi.info.title shouldBe "RPCTest"
     openapi.info.version shouldBe "1.0"
 
     val json = openapi.toJSON
-    debug(s"Open API JSON:\n${json}\n")
+    trace(s"Open API JSON:\n${json}\n")
     parseOpenAPI(json)
 
     val yaml = openapi.toYAML
-    debug(s"Open API Yaml:\n${yaml}\n")
+    trace(s"Open API Yaml:\n${yaml}\n")
     parseOpenAPI(yaml)
 
     // Naive tests for checking YAML fragments.
@@ -126,7 +126,6 @@ class OpenAPITest extends AirSpec {
         |        - x2
         |        - x3
         |        - x4
-        |        - x5
         |        - x6
         |        - x7
         |        - x8
@@ -173,7 +172,7 @@ class OpenAPITest extends AirSpec {
     )
 
     fragments.foreach { x =>
-      debug(s"checking ${x}")
+      debug(s"checking\n${x}")
       yaml.contains(x) shouldBe true
     }
   }
