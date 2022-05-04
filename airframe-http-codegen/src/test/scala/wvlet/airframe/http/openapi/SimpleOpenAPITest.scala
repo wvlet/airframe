@@ -25,9 +25,12 @@ object SimpleOpenAPITest extends AirSpec {
     def hello(person: Person): String
   }
 
+  private val openApiConfig = OpenAPIGeneratorConfig(basePackage = "wvlet.airframe.http.openapi.SimpleOpenAPITest")
+  private def openApiGenerator(router: Router) =  OpenAPI.ofRouter(router, openApiConfig)
+
   test("yaml") {
     val r    = Router.of[MyService]
-    val yaml = OpenAPI.ofRouter(r).toYAML
+    val yaml = openApiGenerator(r).toYAML
     debug(yaml)
   }
 
@@ -40,11 +43,11 @@ object SimpleOpenAPITest extends AirSpec {
 
   test("recursive type") {
     val r    = Router.of[RecursiveTypeApi]
-    val yaml = OpenAPI.ofRouter(r).toYAML
+    val yaml = openApiGenerator(r).toYAML
     debug(yaml)
 
     yaml.contains(
-      s"""wvlet.airframe.http.openapi.SimpleOpenAPITest.Stat:
+      s"""Stat:
          |      type: object
          |      required:
          |        - childStats
@@ -53,11 +56,11 @@ object SimpleOpenAPITest extends AirSpec {
          |        childStats:
          |          type: array
          |          items:
-         |            $$ref: '#/components/schemas/wvlet.airframe.http.openapi.SimpleOpenAPITest.Stat'
+         |            $$ref: '#/components/schemas/Stat'
          |        prop:
          |          type: object
          |          additionalProperties:
-         |            $$ref: '#/components/schemas/wvlet.airframe.http.openapi.SimpleOpenAPITest.Stat'""".stripMargin
+         |            $$ref: '#/components/schemas/Stat'""".stripMargin
     ) shouldBe true
   }
 
@@ -71,7 +74,7 @@ object SimpleOpenAPITest extends AirSpec {
 
   test("collection parameter") {
     val r    = Router.of[CollectionApi]
-    val yaml = OpenAPI.ofRouter(r).toYAML
+    val yaml = openApiGenerator(r).toYAML
     debug(yaml)
   }
 
