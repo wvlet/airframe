@@ -26,7 +26,7 @@ object SimpleOpenAPITest extends AirSpec {
   }
 
   private val openApiConfig = OpenAPIGeneratorConfig(basePackage = "wvlet.airframe.http.openapi.SimpleOpenAPITest")
-  private def openApiGenerator(router: Router) =  OpenAPI.ofRouter(router, openApiConfig)
+  private def openApiGenerator(router: Router) = OpenAPI.ofRouter(router, openApiConfig)
 
   test("yaml") {
     val r    = Router.of[MyService]

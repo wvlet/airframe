@@ -45,29 +45,25 @@ case class OpenAPIGeneratorConfig(
 ) {
   require(basePackage.length >= 0, "basePackage must not be null")
 
-  val packagePrefix: String = if(basePackage.endsWith(".")) basePackage else s"${basePackage}."
+  val packagePrefix: String = if (basePackage.endsWith(".")) basePackage else s"${basePackage}."
 }
 
 /**
   * OpenAPI schema generator
   */
-private[openapi] object OpenAPIGenerator extends LogSupport
-{
+private[openapi] object OpenAPIGenerator extends LogSupport {
 
   import OpenAPI._
-
 
   private[openapi] def buildFromRouter(router: Router, config: OpenAPIGeneratorConfig): OpenAPI = {
     val g = new OpenAPIGenerator(config)
     g.buildFromRouter(router)
   }
 
-
   /**
     * Sanitize the given class name as Open API doesn't support names containing $
     */
-  private def sanitizedSurfaceName(s: Surface): String =
-  {
+  private def sanitizedSurfaceName(s: Surface): String = {
     s match {
       case o: OptionSurface =>
         sanitizedSurfaceName(o.elementSurface)
@@ -85,11 +81,10 @@ private[openapi] object OpenAPIGenerator extends LogSupport
   /**
     * Check whether the type is a primitive (no need to use component reference) or not
     */
-  private def isPrimitiveTypeFamily(s: Surface): Boolean =
-  {
+  private def isPrimitiveTypeFamily(s: Surface): Boolean = {
     s match {
       case s if s.isPrimitive => true
-      case o: OptionSurface => o.elementSurface.isPrimitive
+      case o: OptionSurface   => o.elementSurface.isPrimitive
       case f: Surface if Router.isFuture(f) =>
         isPrimitiveTypeFamily(Router.unwrapFuture(f))
       case r: Surface if Router.isHttpResponse(r) =>
@@ -101,8 +96,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport
     }
   }
 
-  private def extractNonPrimitiveSurfaces(s: Surface, seen: Set[Surface]): Seq[Surface] =
-  {
+  private def extractNonPrimitiveSurfaces(s: Surface, seen: Set[Surface]): Seq[Surface] = {
     s match {
       case s if seen.contains(s) =>
         Seq(s)
@@ -136,25 +130,23 @@ private[openapi] object OpenAPIGenerator extends LogSupport
       val pathItems = lst.map(_._2)
       if (pathItems.size == 0) {
         b += path -> pathItems.head
-      }
-      else {
+      } else {
         b += path -> pathItems.reduce(_ ++ _)
       }
     }
     b.result()
   }
 
-  private def requiredParams(params: Seq[wvlet.airframe.surface.Parameter]): Option[Seq[String]] ={
+  private def requiredParams(params: Seq[wvlet.airframe.surface.Parameter]): Option[Seq[String]] = {
     val required = params
-            .filter(p => p.isRequired || !(p.getDefaultValue.nonEmpty || p.surface.isOption))
-            .map(_.name)
+      .filter(p => p.isRequired || !(p.getDefaultValue.nonEmpty || p.surface.isOption))
+      .map(_.name)
     if (required.isEmpty) None
     else Some(required)
   }
 }
 
-
-class OpenAPIGenerator(config:OpenAPIGeneratorConfig) extends LogSupport {
+class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
   import OpenAPI._
   import OpenAPIGenerator._
 
@@ -236,8 +228,6 @@ class OpenAPIGenerator(config:OpenAPIGeneratorConfig) extends LogSupport {
           }
         }
       }
-
-
 
       // Http response type
       def toParameter(p: MethodParameter, in: In): ParameterOrRef = {
@@ -470,6 +460,5 @@ class OpenAPIGenerator(config:OpenAPIGeneratorConfig) extends LogSupport {
       )
     }
   }
-
 
 }
