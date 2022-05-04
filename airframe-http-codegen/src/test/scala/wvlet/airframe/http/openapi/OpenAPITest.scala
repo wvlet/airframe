@@ -24,9 +24,11 @@ class OpenAPITest extends AirSpec {
   private val rpcRouter      = Router.add[OpenAPIRPCExample]
   private val endpointRouter = Router.add[OpenAPIEndpointExample]
 
+  private val config = OpenAPIGeneratorConfig(basePackage = "example.openapi")
+
   test("Generate OpenAPI from Router") {
     val openapi = OpenAPI
-      .ofRouter(rpcRouter)
+      .ofRouter(rpcRouter, config)
       .withInfo(OpenAPI.Info(title = "RPCTest", version = "1.0"))
     trace(openapi)
 
@@ -58,7 +60,7 @@ class OpenAPITest extends AirSpec {
         |                - p1
         |              properties:
         |                p1:
-        |                  $ref: '#/components/schemas/example.openapi.OpenAPIRPCExample.RPCRequest'""".stripMargin,
+        |                  $ref: '#/components/schemas/OpenAPIRPCExample.RPCRequest'""".stripMargin,
       """      responses:
         |        '200':
         |          description: 'RPC response'
@@ -76,10 +78,10 @@ class OpenAPITest extends AirSpec {
         |          content:
         |            application/json:
         |              schema:
-        |                $ref: '#/components/schemas/example.openapi.OpenAPIRPCExample.RPCResponse'
+        |                $ref: '#/components/schemas/OpenAPIRPCExample.RPCResponse'
         |            application/x-msgpack:
         |              schema:
-        |                $ref: '#/components/schemas/example.openapi.OpenAPIRPCExample.RPCResponse'""".stripMargin,
+        |                $ref: '#/components/schemas/OpenAPIRPCExample.RPCResponse'""".stripMargin,
       """      operationId: rpcWithOption
         |      requestBody:
         |        content:
@@ -119,7 +121,7 @@ class OpenAPITest extends AirSpec {
         |""".stripMargin,
       """components:
         |  schemas:
-        |    example.openapi.OpenAPIRPCExample.RPCRequest:
+        |    OpenAPIRPCExample.RPCRequest:
         |      type: object
         |      required:
         |        - x1
@@ -159,7 +161,7 @@ class OpenAPITest extends AirSpec {
         |        x9:
         |          type: integer
         |          format: int32""".stripMargin,
-      """    example.openapi.OpenAPIRPCExample.RPCResponse:
+      """    OpenAPIRPCExample.RPCResponse:
         |      type: object
         |      required:
         |        - y1
@@ -193,7 +195,7 @@ class OpenAPITest extends AirSpec {
 
   test("Generate OpenAPI spec from @Endpoint") {
     val openapi = OpenAPI
-      .ofRouter(endpointRouter)
+      .ofRouter(endpointRouter, config)
       .withInfo(OpenAPI.Info(title = "EndpointTest", version = "1.0"))
     debug(openapi)
 
@@ -335,7 +337,7 @@ class OpenAPITest extends AirSpec {
         |                - p1
         |              properties:
         |                p1:
-        |                  $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointRequest'
+        |                  $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointRequest'
         |          application/x-msgpack:
         |            schema:
         |              type: object
@@ -343,7 +345,7 @@ class OpenAPITest extends AirSpec {
         |                - p1
         |              properties:
         |                p1:
-        |                  $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointRequest'
+        |                  $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointRequest'
         |        required: true
         |      responses:
         |        '200':
@@ -351,10 +353,10 @@ class OpenAPITest extends AirSpec {
         |          content:
         |            application/json:
         |              schema:
-        |                $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointResponse'
+        |                $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointResponse'
         |            application/x-msgpack:
         |              schema:
-        |                $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointResponse'""".stripMargin,
+        |                $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointResponse'""".stripMargin,
       """  /v1/post6/{id}:
         |    post:
         |      summary: post6
@@ -377,7 +379,7 @@ class OpenAPITest extends AirSpec {
         |                - p1
         |              properties:
         |                p1:
-        |                  $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointRequest'
+        |                  $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointRequest'
         |          application/x-msgpack:
         |            schema:
         |              type: object
@@ -386,7 +388,7 @@ class OpenAPITest extends AirSpec {
         |                - p1
         |              properties:
         |                p1:
-        |                  $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointRequest'
+        |                  $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointRequest'
         |        required: true
         |      responses:
         |        '200':
@@ -394,11 +396,11 @@ class OpenAPITest extends AirSpec {
         |          content:
         |            application/json:
         |              schema:
-        |                $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointResponse'
+        |                $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointResponse'
         |            application/x-msgpack:
         |              schema:
-        |                $ref: '#/components/schemas/example.openapi.OpenAPIEndpointExample.EndpointResponse'""".stripMargin,
-      """    example.openapi.OpenAPIEndpointExample.EndpointRequest:
+        |                $ref: '#/components/schemas/OpenAPIEndpointExample.EndpointResponse'""".stripMargin,
+      """    OpenAPIEndpointExample.EndpointRequest:
         |      type: object
         |      required:
         |        - x1
@@ -439,7 +441,7 @@ class OpenAPITest extends AirSpec {
         |        x9:
         |          type: integer
         |          format: int32""".stripMargin,
-      """    example.openapi.OpenAPIEndpointExample.EndpointResponse:
+      """    OpenAPIEndpointExample.EndpointResponse:
         |      type: object
         |      required:
         |        - y1
