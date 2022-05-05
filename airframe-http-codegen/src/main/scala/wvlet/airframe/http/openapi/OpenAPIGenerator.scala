@@ -154,8 +154,14 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
   }
 
   private def schemaName(surface: Surface): String = {
-    val s = sanitizedSurfaceName(surface)
-    config.packagePrefixes.map(s.stripPrefix(_)).minBy(_.length)
+    val s          = sanitizedSurfaceName(surface)
+    val candidates = config.packagePrefixes.map(s.stripPrefix(_))
+    if (candidates.isEmpty) {
+      s
+    } else {
+      // Take the smallest name
+      candidates.minBy(_.length)
+    }
   }
 
   def buildFromRouter(router: Router): OpenAPI = {

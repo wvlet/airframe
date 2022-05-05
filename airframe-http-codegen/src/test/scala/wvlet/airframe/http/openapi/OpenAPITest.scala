@@ -180,16 +180,34 @@ class OpenAPITest extends AirSpec {
   }
 
   test(s"Generate OpenAPI spec from command line") {
-    val yaml = HttpCodeGenerator.generateOpenAPI(rpcRouter, "yaml", title = "My API", version = "1.0")
+    val yaml = HttpCodeGenerator.generateOpenAPI(
+      rpcRouter,
+      "yaml",
+      title = "My API",
+      version = "1.0",
+      packageNames = Seq("example.openapi")
+    )
     debug(yaml)
     parseOpenAPI(yaml)
 
-    val json = HttpCodeGenerator.generateOpenAPI(rpcRouter, "json", title = "My API", version = "1.0")
+    val json = HttpCodeGenerator.generateOpenAPI(
+      rpcRouter,
+      "json",
+      title = "My API",
+      version = "1.0",
+      packageNames = Seq("example.openapi")
+    )
     debug(json)
     parseOpenAPI(json)
 
     intercept[IllegalArgumentException] {
-      HttpCodeGenerator.generateOpenAPI(rpcRouter, "invalid", title = "My API", version = "1.0")
+      HttpCodeGenerator.generateOpenAPI(
+        rpcRouter,
+        "invalid",
+        title = "My API",
+        version = "1.0",
+        packageNames = Seq("example.openapi")
+      )
     }
   }
 
