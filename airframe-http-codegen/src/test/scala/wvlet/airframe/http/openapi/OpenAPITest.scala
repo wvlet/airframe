@@ -24,7 +24,7 @@ class OpenAPITest extends AirSpec {
   private val rpcRouter      = Router.add[OpenAPIRPCExample]
   private val endpointRouter = Router.add[OpenAPIEndpointExample]
 
-  private val config = OpenAPIGeneratorConfig(basePackage = "example.openapi")
+  private val config = OpenAPIGeneratorConfig(basePackages = Seq("example.openapi"))
 
   test("Generate OpenAPI from Router") {
     val openapi = OpenAPI

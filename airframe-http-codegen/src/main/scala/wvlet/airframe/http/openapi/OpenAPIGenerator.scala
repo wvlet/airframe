@@ -29,7 +29,7 @@ import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import scala.collection.immutable.ListMap
 
 case class OpenAPIGeneratorConfig(
-    basePackage: String = "",
+    basePackages: Seq[String] = Seq.empty,
     // status code -> Response
     commonErrorResponses: Map[String, OpenAPI.Response] = ListMap(
       "400" -> Response(
@@ -43,9 +43,7 @@ case class OpenAPIGeneratorConfig(
       )
     )
 ) {
-  require(basePackage.length >= 0, "basePackage must not be null")
-
-  val packagePrefix: String = if (basePackage.endsWith(".")) basePackage else s"${basePackage}."
+  val packagePrefixes: Seq[String] = basePackages.map(prefix => if (prefix.endsWith(".")) prefix else s"${prefix}.")
 }
 
 /**
@@ -157,7 +155,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
 
   private def schemaName(surface: Surface): String = {
     val s = sanitizedSurfaceName(surface)
-    s.stripPrefix(config.packagePrefix)
+    config.packagePrefixes.map(s.stripPrefix(_)).minBy(_.length)
   }
 
   def buildFromRouter(router: Router): OpenAPI = {
