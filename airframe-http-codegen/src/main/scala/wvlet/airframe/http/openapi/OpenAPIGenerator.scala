@@ -12,24 +12,24 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.openapi
-import java.time.Instant
-import java.util.Locale
-import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
-
 import wvlet.airframe.codec.GenericException
-import wvlet.airframe.http.{HttpMethod, HttpStatus, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer
 import wvlet.airframe.http.openapi.OpenAPI.Response
+import wvlet.airframe.http.{HttpMethod, HttpStatus, Router}
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
 import wvlet.airframe.metrics.{Count, DataSize, ElapsedTime}
 import wvlet.airframe.msgpack.spi.{MsgPack, Value}
-import wvlet.airframe.surface.{ArraySurface, GenericSurface, MethodParameter, OptionSurface, Primitive, Surface, Union2}
+import wvlet.airframe.surface._
 import wvlet.log.LogSupport
 
+import java.time.Instant
+import java.util.Locale
+import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import scala.collection.immutable.ListMap
 
 case class OpenAPIGeneratorConfig(
+    basePackages: Seq[String] = Seq.empty,
     // status code -> Response
     commonErrorResponses: Map[String, OpenAPI.Response] = ListMap(
       "400" -> Response(
@@ -42,13 +42,21 @@ case class OpenAPIGeneratorConfig(
         description = HttpStatus.ServiceUnavailable_503.reason
       )
     )
-)
+) {
+  val packagePrefixes: Seq[String] = basePackages.map(prefix => if (prefix.endsWith(".")) prefix else s"${prefix}.")
+}
 
 /**
   * OpenAPI schema generator
   */
 private[openapi] object OpenAPIGenerator extends LogSupport {
+
   import OpenAPI._
+
+  private[openapi] def buildFromRouter(router: Router, config: OpenAPIGeneratorConfig): OpenAPI = {
+    val g = new OpenAPIGenerator(config)
+    g.buildFromRouter(router)
+  }
 
   /**
     * Sanitize the given class name as Open API doesn't support names containing $
@@ -111,7 +119,52 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     }
   }
 
-  private[openapi] def buildFromRouter(router: Router, config: OpenAPIGeneratorConfig): OpenAPI = {
+  /**
+    * Merge PathItems in the same path
+    */
+  private def mergePaths(paths: Seq[(String, Map[String, PathItem])]): Seq[(String, Map[String, PathItem])] = {
+    val b = Seq.newBuilder[(String, Map[String, PathItem])]
+    for ((path, lst) <- paths.groupBy(_._1)) {
+      val pathItems = lst.map(_._2)
+      if (pathItems.size == 0) {
+        b += path -> pathItems.head
+      } else {
+        b += path -> pathItems.reduce(_ ++ _)
+      }
+    }
+    b.result()
+  }
+
+  private def requiredParams(params: Seq[wvlet.airframe.surface.Parameter]): Option[Seq[String]] = {
+    val required = params
+      .filter(p => p.isRequired || !(p.getDefaultValue.nonEmpty || p.surface.isOption))
+      .map(_.name)
+    if (required.isEmpty) None
+    else Some(required)
+  }
+}
+
+class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
+  import OpenAPI._
+  import OpenAPIGenerator._
+
+  import scala.jdk.CollectionConverters._
+  private val schemaCache = {
+    new ConcurrentHashMap[Surface, SchemaOrRef]().asScala
+  }
+
+  private def schemaName(surface: Surface): String = {
+    val s          = sanitizedSurfaceName(surface)
+    val candidates = config.packagePrefixes.map(s.stripPrefix(_))
+    if (candidates.isEmpty) {
+      s
+    } else {
+      // Take the smallest name
+      candidates.minBy(_.length)
+    }
+  }
+
+  def buildFromRouter(router: Router): OpenAPI = {
     val referencedSchemas = Map.newBuilder[String, SchemaOrRef]
 
     val paths: Seq[(String, Map[String, PathItem])] = for (route <- router.routes) yield {
@@ -147,7 +200,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
           // Do not register schema
           case _ =>
             trace(s"Register a component: ${s}")
-            referencedSchemas += sanitizedSurfaceName(s) -> getOpenAPISchema(s, Set.empty)
+            referencedSchemas += schemaName(s) -> getOpenAPISchema(s, Set.empty)
         }
       }
       componentTypes.map(s => registerComponent(s))
@@ -191,12 +244,12 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
               Some(getOpenAPISchema(p.surface, componentTypes))
             } else {
               registerComponent(p.surface)
-              Some(SchemaRef(s"#/components/schemas/${sanitizedSurfaceName(p.surface)}"))
+              Some(SchemaRef(s"#/components/schemas/${schemaName(p.surface)}"))
             },
             allowEmptyValue = if (p.getDefaultValue.nonEmpty) Some(true) else None
           )
         } else {
-          ParameterRef(s"#/components/parameters/${sanitizedSurfaceName(p.surface)}")
+          ParameterRef(s"#/components/parameters/${schemaName(p.surface)}")
         }
       }
 
@@ -289,29 +342,9 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     )
   }
 
-  /**
-    * Merge PathItems in the same path
-    */
-  private def mergePaths(paths: Seq[(String, Map[String, PathItem])]): Seq[(String, Map[String, PathItem])] = {
-    val b = Seq.newBuilder[(String, Map[String, PathItem])]
-    for ((path, lst) <- paths.groupBy(_._1)) {
-      val pathItems = lst.map(_._2)
-      if (pathItems.size == 0) {
-        b += path -> pathItems.head
-      } else {
-        b += path -> pathItems.reduce(_ ++ _)
-      }
-    }
-    b.result()
-  }
-
-  import scala.jdk.CollectionConverters._
-  private val schemaCache =
-    new ConcurrentHashMap[Surface, SchemaOrRef]().asScala
-
   def getOpenAPISchema(s: Surface, seen: Set[Surface]): SchemaOrRef = {
     if (seen.contains(s)) {
-      SchemaRef(`$ref` = s"#/components/schemas/${sanitizedSurfaceName(s)}")
+      SchemaRef(`$ref` = s"#/components/schemas/${schemaName(s)}")
     } else {
       schemaCache.getOrElseUpdate(
         s, {
@@ -430,13 +463,6 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         }
       )
     }
-  }
-
-  private def requiredParams(params: Seq[wvlet.airframe.surface.Parameter]): Option[Seq[String]] = {
-    val required = params
-      .filter(p => p.isRequired || !(p.getDefaultValue.nonEmpty || p.surface.isOption))
-      .map(_.name)
-    if (required.isEmpty) None else Some(required)
   }
 
 }

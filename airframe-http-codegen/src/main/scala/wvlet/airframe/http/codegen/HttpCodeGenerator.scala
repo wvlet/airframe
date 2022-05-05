@@ -19,7 +19,7 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Control
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.client.{AsyncClientGenerator, HttpClientGenerator}
-import wvlet.airframe.http.openapi.OpenAPI
+import wvlet.airframe.http.openapi.{OpenAPI, OpenAPIGeneratorConfig}
 import wvlet.airframe.launcher.Launcher
 import wvlet.log.io.IOUtil
 import wvlet.log.{LogLevel, LogSupport, Logger}
@@ -100,8 +100,17 @@ object HttpCodeGenerator extends LogSupport {
     code
   }
 
-  def generateOpenAPI(router: Router, formatType: String, title: String, version: String): String = {
-    val openapi = OpenAPI.ofRouter(router).withInfo(OpenAPI.Info(title = title, version = version))
+  def generateOpenAPI(
+      router: Router,
+      formatType: String,
+      title: String,
+      version: String,
+      packageNames: Seq[String]
+  ): String = {
+    val openapi = OpenAPI
+      .ofRouter(router, OpenAPIGeneratorConfig(basePackages = packageNames)).withInfo(
+        OpenAPI.Info(title = title, version = version)
+      )
     val schema = formatType match {
       case "yaml" =>
         openapi.toYAML
@@ -239,7 +248,8 @@ class HttpCodeGenerator(
     trace(s"classpath: ${option.classpath.mkString(":")}")
     val router = buildRouter(option.packageNames, newClassLoader(option.classpath.mkString(":")))
     debug(router)
-    val schema = HttpCodeGenerator.generateOpenAPI(router, option.formatType, option.title, option.version)
+    val schema =
+      HttpCodeGenerator.generateOpenAPI(router, option.formatType, option.title, option.version, option.packageNames)
     debug(schema)
     info(s"Writing OpenAPI spec ${option.formatType} to ${option.outFile.getPath}")
     writeFile(option.outFile, schema)
