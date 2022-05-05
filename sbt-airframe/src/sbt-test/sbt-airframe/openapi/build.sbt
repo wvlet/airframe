@@ -18,8 +18,8 @@ TaskKey[Unit]("check") := {
     "version: '1.0.0'",
     "/example.api.OpenAPIRPCExample/rpcWithPrimitiveAndOption:",
     "/example.api.OpenAPIRPCExample/rpcWithPrimitive:",
-    "$ref: '#/components/schemas/example.api.OpenAPIRPCExample.RPCRequest'",
-    "example.api.OpenAPIRPCExample.RPCRequest:"
+    "$ref: '#/components/schemas/OpenAPIRPCExample.RPCRequest'",
+    "OpenAPIRPCExample.RPCRequest:"
   )
   expected.foreach { x =>
     if (!yaml.contains(x)) {
