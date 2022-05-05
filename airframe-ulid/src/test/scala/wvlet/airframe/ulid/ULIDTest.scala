@@ -83,6 +83,16 @@ class ULIDTest extends AirSpec with PropertyCheck {
     }
   }
 
+  test("equals/hashCode") {
+    val ulid1 = ULID.newULID
+    val ulid2 = ULID.fromString(ulid1.toString)
+
+    ulid1 shouldBe ulid2
+    ulid1.equals(ulid2) shouldBe true
+    ulid1.equals(null) shouldBe false
+    ulid1.hashCode() shouldBe ulid2.hashCode()
+  }
+
   test("encode timestamp") {
     val ulid      = ULID.newULID
     val ts        = ulid.epochMillis
