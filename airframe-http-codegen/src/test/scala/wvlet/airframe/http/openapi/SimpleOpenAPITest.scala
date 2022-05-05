@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.openapi
 import wvlet.airframe.http.{RPC, Router}
+import wvlet.airframe.ulid.ULID
 import wvlet.airspec.AirSpec
 
 /**
@@ -77,6 +78,22 @@ object SimpleOpenAPITest extends AirSpec {
     val r    = Router.of[CollectionApi]
     val yaml = openApiGenerator(r).toYAML
     debug(yaml)
+  }
+
+  @RPC
+  trait ULIDTestApi {
+    def getULID: ULID
+  }
+
+  test("represent ulid type as string") {
+    val r    = Router.of[ULIDTestApi]
+    val yaml = openApiGenerator(r).toYAML
+    debug(yaml)
+
+    yaml.contains("""$ref: '#/components/schemas/wvlet.airframe.ulid.ULID'""".stripMargin) shouldBe true
+    yaml.contains("""  schemas:
+                    |    wvlet.airframe.ulid.ULID:
+                    |      type: string""".stripMargin) shouldBe true
   }
 
 }

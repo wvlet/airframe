@@ -21,6 +21,7 @@ import wvlet.airframe.json.Json
 import wvlet.airframe.metrics.{Count, DataSize, ElapsedTime}
 import wvlet.airframe.msgpack.spi.{MsgPack, Value}
 import wvlet.airframe.surface._
+import wvlet.airframe.ulid.ULID
 import wvlet.log.LogSupport
 
 import java.time.Instant
@@ -400,6 +401,8 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
             case s if s == Surface.of[ElapsedTime] =>
               Schema(`type` = "string")
             case s if s == Surface.of[Count] =>
+              Schema(`type` = "string")
+            case s if s == Surface.of[ULID] =>
               Schema(`type` = "string")
             case o: OptionSurface =>
               getOpenAPISchema(o.elementSurface, seen + s)
