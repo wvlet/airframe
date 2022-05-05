@@ -20,7 +20,7 @@ import scala.util.Random
 /**
   * ULID string, consisting of 26 characters.
   */
-final case class ULID(private val ulid: String) extends Ordered[ULID] {
+final class ULID(private val ulid: String) extends Ordered[ULID] {
 
   /**
     * Return the string representation of this ULID
@@ -69,6 +69,14 @@ final case class ULID(private val ulid: String) extends Ordered[ULID] {
 
   override def compare(that: ULID): Int = {
     this.ulid.compareTo(that.ulid)
+  }
+
+  override def hashCode(): Int = ulid.hashCode
+
+  override def equals(other: Any): Boolean = other match {
+    case that: ULID =>
+      ulid == that.ulid
+    case _ => false
   }
 }
 
