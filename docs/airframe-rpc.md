@@ -295,7 +295,7 @@ Supported client types are:
 - __grpc__: Create gRPC client (ServiceGrpc: SyncClient, AsyncClient)
 
 To support other types of clients, see the examples
-of [HTTP code generators](https://github.com/wvlet/airframe/blob/master/airframe-http/.jvm/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClient.scala)
+of [HTTP code generators](https://github.com/wvlet/airframe/blob/master/airframe-http-codegen/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClientGenerator.scala)
 . This code reads a Router definition of RPC interfaces, and generate client code for calling RPC
 endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would
 like to add Open API spec generator so that many programming languages can be used with Airframe
