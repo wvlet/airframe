@@ -95,17 +95,6 @@ private[airspec] class AirSpecTaskRunner(
     selectedSpecs
   }
 
-  private def handleError(e: Throwable, startTimeNanos: Long): Unit = {
-    taskLogger.logSpecName(leafName, indentLevel = 0)
-    val cause  = compat.findCause(e)
-    val status = AirSpecException.classifyException(cause)
-    // Unknown error
-    val event =
-      AirSpecEvent(taskDef, "<spec>", status, new OptionalThrowable(cause), System.nanoTime() - startTimeNanos)
-    taskLogger.logEvent(event)
-    eventHandler.handle(event)
-  }
-
   def runTask: Future[Unit] = {
     val startTimeNanos = System.nanoTime()
     Future
@@ -125,12 +114,24 @@ private[airspec] class AirSpecTaskRunner(
           Future.unit
         }
       }
-      .andThen[Unit] { _ =>
+      .transform { case ret =>
         compat.stopLogScanner
+        ret
       }
       .recover { case e: Throwable =>
-        handleError(e, startTimeNanos)
+        reportSpecLevelError(e, startTimeNanos)
       }
+  }
+
+  private def reportSpecLevelError(e: Throwable, startTimeNanos: Long): Unit = {
+    taskLogger.logSpecName(leafName, indentLevel = 0)
+    val cause  = compat.findCause(e)
+    val status = AirSpecException.classifyException(cause)
+    // Unknown error
+    val event =
+      AirSpecEvent(taskDef, "<spec>", status, new OptionalThrowable(cause), System.nanoTime() - startTimeNanos)
+    taskLogger.logEvent(event)
+    eventHandler.handle(event)
   }
 
   private def runSpec(
@@ -139,13 +140,13 @@ private[airspec] class AirSpecTaskRunner(
       targetTestDefs: Seq[AirSpecDef]
   ): Future[Unit] = {
 
-    def startSpec = Future.apply[Unit] {
+    def startSpec = {
       trace(s"[${spec.specName}] Start spec")
       val indentLevel = parentContext.map(_.indentLevel + 1).getOrElse(0)
       taskLogger.logSpecName(spec.leafSpecName, indentLevel = indentLevel)
     }
 
-    def runBeforeAll: Future[Unit] = Future.apply {
+    def runBeforeAll: Unit = {
       trace(s"[${spec.specName}] beforeAll")
       spec.callBeforeAll
     }
@@ -170,32 +171,29 @@ private[airspec] class AirSpecTaskRunner(
       }.flatMap { (globalSession: Session) =>
         val localDesign = spec.callLocalDesign
         val testFuture = targetTestDefs.foldLeft(Future.unit) { (prev, m) =>
-          prev.transform { _ =>
+          prev.transform { case _ =>
             Try(runSingle(parentContext, globalSession, spec, m, isLocal = false, design = localDesign))
           }
         }
-        testFuture.andThen { _ =>
+        testFuture.transform { case ret =>
           trace(s"[${spec.specName}] Shutdown the spec session")
           globalSession.shutdown
+          ret
         }
       }
 
-    def runAfterAll: Future[Unit] = Future.apply {
+    def runAfterAll: Unit = {
       trace(s"[${spec.specName}] afterAll")
       spec.callAfterAll
     }
 
-    startSpec
-      .flatMap(_ => runBeforeAll)
-      .flatMap { _ =>
-        runBody
-      }
-      .transformWith {
-        case Success(result) =>
-          runAfterAll
-        case Failure(e) =>
-          warn(e)
-          runAfterAll.flatMap(_ => Future.failed(e))
+    Future
+      .apply(startSpec)
+      .map(_ => runBeforeAll)
+      .flatMap(_ => runBody)
+      .transform { case ret =>
+        runAfterAll
+        ret
       }
   }
 
