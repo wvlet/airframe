@@ -214,7 +214,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
         )
 
         val result: Seq[File] = if (!cacheFile.exists) {
-          debug(s"airframe-http directory: ${binDir}")z
+          debug(s"airframe-http directory: ${binDir}")
           val commandLineOptsJson = MessageCodec.of[HttpCodeGeneratorOption].toJson(commandLineOpts)
           trace(s"airframe-http code-generator option:\n${commandLineOptsJson}")
           val optFile = baseDir / "gen-client-opts.json"
