@@ -39,54 +39,41 @@ private[airspec] class AirSpecTaskRunner(
 ) extends LogSupport {
   import wvlet.airspec._
 
-  def runTask: Unit = {
-    val testClassName = taskDef.fullyQualifiedName()
-    val leafName      = AirSpecSpi.leafClassName(AirSpecSpi.decodeClassName(testClassName))
-
-    val startTimeNanos = System.nanoTime()
-    try {
-      // Start a background log level scanner thread. If a thread is already running, reuse it.
-      compat.withLogScanner {
-        trace(s"Processing task: ${taskDef}")
-        // Getting an instance of AirSpec
-        val testObj = taskDef.fingerprint() match {
-          // In Scala.js we cannot use pattern match for objects like AirSpecObjectFingerPrint, so using isModule here.
-          case c: SubclassFingerprint if c.isModule() =>
-            compat.findCompanionObjectOf(testClassName, classLoader)
-          case _ =>
-            compat.newInstanceOf(testClassName, classLoader)
-        }
-
-        testObj match {
-          case Some(spec: AirSpecSpi) =>
-            run(parentContext = None, spec, spec.testDefinitions)
-          case _ =>
-            taskLogger.logSpecName(leafName, indentLevel = 0)
-            throw new IllegalStateException(
-              s"${testClassName} needs to be a class or object extending AirSpec: ${testObj.getClass}"
-            )
-        }
-      }
-    } catch {
-      case e: Throwable =>
+  private def findTestInstance(): AirSpecSpi = {
+    // Get an instance of AirSpec
+    val testObj = taskDef.fingerprint() match {
+      // In Scala.js we cannot use pattern match for objects like AirSpecObjectFingerPrint, so using isModule here.
+      case c: SubclassFingerprint if c.isModule() =>
+        compat.findCompanionObjectOf(testClassName, classLoader)
+      case _ =>
+        compat.newInstanceOf(testClassName, classLoader)
+    }
+    testObj match {
+      case Some(spec: AirSpecSpi) =>
+        spec
+      case _ =>
         taskLogger.logSpecName(leafName, indentLevel = 0)
-        val cause  = compat.findCause(e)
-        val status = AirSpecException.classifyException(cause)
-        // Unknown error
-        val event =
-          AirSpecEvent(taskDef, "<spec>", status, new OptionalThrowable(cause), System.nanoTime() - startTimeNanos)
-        taskLogger.logEvent(event)
-        eventHandler.handle(event)
+        throw new IllegalStateException(
+          s"${testClassName} needs to be a class or object extending AirSpec: ${testObj.getClass}"
+        )
     }
   }
 
-  private[airspec] def run(parentContext: Option[AirSpecContext], spec: AirSpecSpi, testDefs: Seq[AirSpecDef]): Unit = {
+  private def testClassName = taskDef.fullyQualifiedName()
+  private def leafName      = AirSpecSpi.leafClassName(AirSpecSpi.decodeClassName(testClassName))
+  private def specName(parentContext: Option[AirSpecContext], spec: AirSpecSpi): String = {
+    val parentName = parentContext.map(x => s"${x.specName}.").getOrElse("")
+    s"${parentName}${spec.leafSpecName}"
+  }
+
+  private def findTargetSpecs(parentContext: Option[AirSpecContext], spec: AirSpecSpi): Seq[AirSpecDef] = {
+    val testDefs = spec.testDefinitions
     if (testDefs.isEmpty) {
       val name = specName(parentContext, spec)
       warn(s"No test definition is found in ${name}. Add at least one test(...) method call.")
     }
 
-    val selectedMethods =
+    val selectedSpecs =
       config.pattern match {
         case Some(regex) =>
           // Find matching methods
@@ -99,14 +86,40 @@ private[airspec] class AirSpecTaskRunner(
           testDefs
       }
 
-    if (selectedMethods.nonEmpty) {
-      runSpec(parentContext, spec, selectedMethods)
+    selectedSpecs
+  }
+
+  def runTask: Unit = {
+    val startTimeNanos = System.nanoTime()
+    try {
+      // Start a background log level scanner thread. If a thread is already running, reuse it.
+      compat.withLogScanner {
+        trace(s"Processing task: ${taskDef}")
+        val spec: AirSpecSpi = findTestInstance()
+        run(parentContext = None, spec)
+      }
+    } catch {
+      case e: Throwable =>
+        handleError(e, startTimeNanos)
     }
   }
 
-  private def specName(parentContext: Option[AirSpecContext], spec: AirSpecSpi): String = {
-    val parentName = parentContext.map(x => s"${x.specName}.").getOrElse("")
-    s"${parentName}${spec.leafSpecName}"
+  private def handleError(e: Throwable, startTimeNanos: Long): Unit = {
+    taskLogger.logSpecName(leafName, indentLevel = 0)
+    val cause  = compat.findCause(e)
+    val status = AirSpecException.classifyException(cause)
+    // Unknown error
+    val event =
+      AirSpecEvent(taskDef, "<spec>", status, new OptionalThrowable(cause), System.nanoTime() - startTimeNanos)
+    taskLogger.logEvent(event)
+    eventHandler.handle(event)
+  }
+
+  private[airspec] def run(parentContext: Option[AirSpecContext], spec: AirSpecSpi): Unit = {
+    val targetSpecs = findTargetSpecs(parentContext, spec)
+    if (targetSpecs.nonEmpty) {
+      runSpec(parentContext, spec, targetSpecs)
+    }
   }
 
   private def runSpec(
