@@ -19,6 +19,7 @@ import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
 import wvlet.airspec.spi.{AirSpecContext, AirSpecException}
 import wvlet.log.LogSupport
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -38,6 +39,8 @@ private[airspec] class AirSpecTaskRunner(
     classLoader: ClassLoader
 ) extends LogSupport {
   import wvlet.airspec._
+
+  private implicit val ec: ExecutionContext = Compat.executionContext
 
   private def findTestInstance(): AirSpecSpi = {
     // Get an instance of AirSpec
@@ -69,10 +72,10 @@ private[airspec] class AirSpecTaskRunner(
   /**
     * Process test name filter and extract the target specs
     */
-  private def findTargetSpecs(parentContext: Option[AirSpecContext], spec: AirSpecSpi): Seq[AirSpecDef] = {
+  private def findTargetSpecs(spec: AirSpecSpi): Seq[AirSpecDef] = {
     val testDefs = spec.testDefinitions
     if (testDefs.isEmpty) {
-      val name = specName(parentContext, spec)
+      val name = specName(None, spec)
       warn(s"No test definition is found in ${name}. Add at least one test(...) method call.")
     }
 
@@ -82,7 +85,7 @@ private[airspec] class AirSpecTaskRunner(
           // Find matching methods
           testDefs.filter { m =>
             // Concatenate (parent class name)? + class name + method name for handy search
-            val fullName = s"${specName(parentContext, spec)}.${m.name}"
+            val fullName = s"${specName(None, spec)}.${m.name}"
             regex.findFirstIn(fullName).isDefined
           }
         case None =>
@@ -90,21 +93,6 @@ private[airspec] class AirSpecTaskRunner(
       }
 
     selectedSpecs
-  }
-
-  def runTask: Unit = {
-    val startTimeNanos = System.nanoTime()
-    try {
-      // Start a background log level scanner thread. If a thread is already running, reuse it.
-      compat.withLogScanner {
-        trace(s"Processing task: ${taskDef}")
-        val spec: AirSpecSpi = findTestInstance()
-        run(parentContext = None, spec)
-      }
-    } catch {
-      case e: Throwable =>
-        handleError(e, startTimeNanos)
-    }
   }
 
   private def handleError(e: Throwable, startTimeNanos: Long): Unit = {
@@ -118,10 +106,24 @@ private[airspec] class AirSpecTaskRunner(
     eventHandler.handle(event)
   }
 
-  private[airspec] def run(parentContext: Option[AirSpecContext], spec: AirSpecSpi): Unit = {
-    val targetSpecs = findTargetSpecs(parentContext, spec)
-    if (targetSpecs.nonEmpty) {
-      runSpec(parentContext, spec, targetSpecs)
+  def runTask: Future[Unit] = {
+    val startTimeNanos = System.nanoTime()
+    try {
+      // Start a background log level scanner thread. If a thread is already running, reuse it.
+      compat.withLogScanner {
+        trace(s"Processing task: ${taskDef}")
+        val spec: AirSpecSpi = findTestInstance()
+        val targetSpecs      = findTargetSpecs(spec)
+        if (targetSpecs.nonEmpty) {
+          runSpec(None, spec, targetSpecs)
+        } else {
+          Future.unit
+        }
+      }
+    } catch {
+      case e: Throwable =>
+        handleError(e, startTimeNanos)
+        Future.failed(e)
     }
   }
 
@@ -129,14 +131,16 @@ private[airspec] class AirSpecTaskRunner(
       parentContext: Option[AirSpecContext],
       spec: AirSpecSpi,
       targetTestDefs: Seq[AirSpecDef]
-  ): Unit = {
-    val indentLevel = parentContext.map(_.indentLevel + 1).getOrElse(0)
-    taskLogger.logSpecName(spec.leafSpecName, indentLevel = indentLevel)
+  ): Future[Unit] = {
 
-    try {
-      // Start the spec
-      spec.callBeforeAll
+    def startSpec = Future.apply[Unit] {
+      val indentLevel = parentContext.map(_.indentLevel + 1).getOrElse(0)
+      taskLogger.logSpecName(spec.leafSpecName, indentLevel = indentLevel)
+    }
 
+    def runBeforeAll: Future[Unit] = Future.apply(spec.callBeforeAll)
+
+    def runBody: Future[Unit] = Future.apply {
       // Configure the global spec design
       var d = Design.newDesign.noLifeCycleLogging
       d = d + spec.callDesign
@@ -145,17 +149,31 @@ private[airspec] class AirSpecTaskRunner(
       val globalSession =
         parentContext
           .map(_.currentSession.newChildSession(d))
-          .getOrElse { d.newSessionBuilder.noShutdownHook.build } // Do not register JVM shutdown hooks
+          .getOrElse {
+            d.newSessionBuilder.noShutdownHook.build
+          } // Do not register JVM shutdown hooks
 
       val localDesign = spec.callLocalDesign
+      var taskFuture  = Future.unit
       globalSession.start {
-        for (m <- targetTestDefs) {
-          runSingle(parentContext, globalSession, spec, m, isLocal = false, design = localDesign)
+        taskFuture = targetTestDefs.foldLeft(Future.unit) { (prev, m) =>
+          prev.map[Unit](_ => runSingle(parentContext, globalSession, spec, m, isLocal = false, design = localDesign))
         }
       }
-    } finally {
-      spec.callAfterAll
+      taskFuture
     }
+
+    def runAfterAll: Future[Unit] = Future.apply(spec.callAfterAll)
+
+    startSpec
+      .flatMap(_ => runBeforeAll)
+      .flatMap(_ => runBody)
+      .transformWith {
+        case Success(result) =>
+          runAfterAll
+        case Failure(e) =>
+          runAfterAll.flatMap(_ => Future.failed(e))
+      }
   }
 
   private var displayedContext = Set.empty[String]

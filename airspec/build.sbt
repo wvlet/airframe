@@ -327,7 +327,8 @@ lazy val airspec =
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % Optional
       ),
       // A workaround for bloop, which cannot resolve Optional dependencies
-      pomPostProcess := excludePomDependency(Seq("airspec-deps", "airspec_2.12", "airspec_2.13"))
+      pomPostProcess           := excludePomDependency(Seq("airspec-deps", "airspec_2.12", "airspec_2.13")),
+      Test / parallelExecution := false
     )
     .jvmSettings(
       // Embed dependent project codes to make airspec a single jar
@@ -352,8 +353,9 @@ lazy val airspec =
         .filter(x => x._2 != "JS_DEPENDENCIES"),
       Compile / packageSrc / mappings ++= (airspecDepsJS / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
-        ("org.scala-js"        %% "scalajs-test-interface" % scalaJSVersion).cross(CrossVersion.for3Use2_13),
-        ("org.portable-scala" %%% "portable-scala-reflect" % "1.1.2").cross(CrossVersion.for3Use2_13)
+        ("org.scala-js"        %% "scalajs-test-interface"      % scalaJSVersion).cross(CrossVersion.for3Use2_13),
+        ("org.portable-scala" %%% "portable-scala-reflect"      % "1.1.2").cross(CrossVersion.for3Use2_13),
+        "org.scala-js"        %%% "scala-js-macrotask-executor" % "1.0.0"
       )
     )
     // This should be Optional dependency, but using Provided dependency for bloop which doesn't support Optional.

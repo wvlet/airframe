@@ -21,12 +21,17 @@ import wvlet.airspec.spi.{Asserts, JsObjectMatcher}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.{ConsoleLogHandler, LogSupport, Logger}
 
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 /**
   */
 private[airspec] object Compat extends CompatApi with LogSupport {
   override def isScalaJs = true
+
+  override private[airspec] def executionContext: ExecutionContext =
+    org.scalajs.macrotaskexecutor.MacrotaskExecutor.Implicits.global
+
   private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     val clsOpt = Reflect.lookupLoadableModuleClass(fullyQualifiedName + "$", classLoader)
     clsOpt.map {

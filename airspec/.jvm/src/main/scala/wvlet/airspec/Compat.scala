@@ -14,7 +14,6 @@
 package wvlet.airspec
 
 import java.lang.reflect.InvocationTargetException
-
 import sbt.testing.Fingerprint
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.Logger
@@ -25,10 +24,16 @@ import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.airspec.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
 import wvlet.airspec.spi.{AirSpecException, Asserts}
 
+import java.util.concurrent.Executors
+import scala.concurrent.ExecutionContext
+
 /**
   */
 private[airspec] object Compat extends CompatApi {
   override def isScalaJs = false
+
+  override private[airspec] def executionContext: ExecutionContext =
+    ExecutionContext.fromExecutorService(Executors.newSingleThreadExecutor())
 
   private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     val cls = classLoader.loadClass(fullyQualifiedName)

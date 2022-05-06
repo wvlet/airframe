@@ -16,6 +16,7 @@ package wvlet.airspec
 import sbt.testing.Fingerprint
 import wvlet.airframe.surface.MethodSurface
 import wvlet.airspec.spi.Asserts
+import scala.concurrent.ExecutionContext
 
 /**
   * An interface for compatibility between Scala JVM and Scala.js
@@ -23,6 +24,7 @@ import wvlet.airspec.spi.Asserts
 trait CompatApi {
   def isScalaJs: Boolean
 
+  private[airspec] def executionContext: ExecutionContext
   private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
   private[airspec] def getFingerprint(fullyQualifiedName: String, classLoader: ClassLoader): Option[Fingerprint]
   private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
