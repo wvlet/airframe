@@ -29,6 +29,8 @@ trait CompatApi {
   private[airspec] def getFingerprint(fullyQualifiedName: String, classLoader: ClassLoader): Option[Fingerprint]
   private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
   private[airspec] def withLogScanner[U](block: => U): U
+  private[airspec] def startLogScanner: Unit
+  private[airspec] def stopLogScanner: Unit
   private[airspec] def findCause(e: Throwable): Throwable
 
   private[airspec] def getSpecName(cls: Class[_]): String

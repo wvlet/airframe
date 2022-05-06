@@ -32,7 +32,7 @@ import scala.concurrent.ExecutionContext
 private[airspec] object Compat extends CompatApi {
   override def isScalaJs = false
 
-  override private[airspec] def executionContext: ExecutionContext =
+  override private[airspec] val executionContext: ExecutionContext =
     ExecutionContext.fromExecutorService(Executors.newSingleThreadExecutor())
 
   private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
@@ -73,15 +73,22 @@ private[airspec] object Compat extends CompatApi {
   }
 
   private[airspec] def withLogScanner[U](block: => U): U = {
+    startLogScanner
+    try {
+      block
+    } finally {
+      stopLogScanner
+    }
+  }
+
+  private[airspec] def startLogScanner: Unit = {
     Logger.setDefaultFormatter(SourceCodeLogFormatter)
 
     // Periodically scan log level file
     Logger.scheduleLogLevelScan
-    try {
-      block
-    } finally {
-      Logger.stopScheduledLogLevelScan
-    }
+  }
+  private[airspec] def stopLogScanner: Unit = {
+    Logger.stopScheduledLogLevelScan
   }
 
   @tailrec private[airspec] def findCause(e: Throwable): Throwable = {

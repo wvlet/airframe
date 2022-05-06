@@ -108,23 +108,29 @@ private[airspec] class AirSpecTaskRunner(
 
   def runTask: Future[Unit] = {
     val startTimeNanos = System.nanoTime()
-    try {
-      // Start a background log level scanner thread. If a thread is already running, reuse it.
-      compat.withLogScanner {
-        trace(s"Processing task: ${taskDef}")
-        val spec: AirSpecSpi = findTestInstance()
-        val targetSpecs      = findTargetSpecs(spec)
+    Future
+      .apply {
+        // Start a background log level scanner thread. If a thread is already running, reuse it.
+        compat.startLogScanner
+      }
+      .map { _ =>
+        val spec = findTestInstance()
+        trace(s"[${spec.specName}] Finding a spec instance")
+        (spec, findTargetSpecs(spec))
+      }
+      .flatMap { case (spec: AirSpecSpi, targetSpecs: Seq[AirSpecDef]) =>
         if (targetSpecs.nonEmpty) {
           runSpec(None, spec, targetSpecs)
         } else {
           Future.unit
         }
       }
-    } catch {
-      case e: Throwable =>
+      .andThen[Unit] { _ =>
+        compat.stopLogScanner
+      }
+      .recover { case e: Throwable =>
         handleError(e, startTimeNanos)
-        Future.failed(e)
-    }
+      }
   }
 
   private def runSpec(
@@ -134,44 +140,61 @@ private[airspec] class AirSpecTaskRunner(
   ): Future[Unit] = {
 
     def startSpec = Future.apply[Unit] {
+      trace(s"[${spec.specName}] Start spec")
       val indentLevel = parentContext.map(_.indentLevel + 1).getOrElse(0)
       taskLogger.logSpecName(spec.leafSpecName, indentLevel = indentLevel)
     }
 
-    def runBeforeAll: Future[Unit] = Future.apply(spec.callBeforeAll)
-
-    def runBody: Future[Unit] = Future.apply {
-      // Configure the global spec design
-      var d = Design.newDesign.noLifeCycleLogging
-      d = d + spec.callDesign
-
-      // Create a global Airframe session
-      val globalSession =
-        parentContext
-          .map(_.currentSession.newChildSession(d))
-          .getOrElse {
-            d.newSessionBuilder.noShutdownHook.build
-          } // Do not register JVM shutdown hooks
-
-      val localDesign = spec.callLocalDesign
-      var taskFuture  = Future.unit
-      globalSession.start {
-        taskFuture = targetTestDefs.foldLeft(Future.unit) { (prev, m) =>
-          prev.map[Unit](_ => runSingle(parentContext, globalSession, spec, m, isLocal = false, design = localDesign))
-        }
-      }
-      taskFuture
+    def runBeforeAll: Future[Unit] = Future.apply {
+      trace(s"[${spec.specName}] beforeAll")
+      spec.callBeforeAll
     }
 
-    def runAfterAll: Future[Unit] = Future.apply(spec.callAfterAll)
+    def runBody: Future[Unit] = Future
+      .apply {
+        trace(s"[${spec.specName}] Found ${targetTestDefs.size} tests")
+        // Configure the global spec design
+        var d = Design.newDesign.noLifeCycleLogging
+        d = d + spec.callDesign
+
+        // Create a global Airframe session
+        val globalSession =
+          parentContext
+            .map(_.currentSession.newChildSession(d))
+            // Do not register JVM shutdown hooks
+            .getOrElse(d.newSessionBuilder.noShutdownHook.build)
+
+        trace(s"[${spec.specName}] Start a spec session")
+        globalSession.start
+        globalSession
+      }.flatMap { (globalSession: Session) =>
+        val localDesign = spec.callLocalDesign
+        val testFuture = targetTestDefs.foldLeft(Future.unit) { (prev, m) =>
+          prev.transform { _ =>
+            Try(runSingle(parentContext, globalSession, spec, m, isLocal = false, design = localDesign))
+          }
+        }
+        testFuture.andThen { _ =>
+          trace(s"[${spec.specName}] Shutdown the spec session")
+          globalSession.shutdown
+        }
+      }
+
+    def runAfterAll: Future[Unit] = Future.apply {
+      trace(s"[${spec.specName}] afterAll")
+      spec.callAfterAll
+    }
 
     startSpec
       .flatMap(_ => runBeforeAll)
-      .flatMap(_ => runBody)
+      .flatMap { _ =>
+        runBody
+      }
       .transformWith {
         case Success(result) =>
           runAfterAll
         case Failure(e) =>
+          warn(e)
           runAfterAll.flatMap(_ => Future.failed(e))
       }
   }
@@ -186,6 +209,7 @@ private[airspec] class AirSpecTaskRunner(
       isLocal: Boolean,
       design: Design
   ): Unit = {
+    trace(s"[${spec.specName}] run test: ${m.name}")
 
     val ctxName = parentContext.map(ctx => s"${ctx.fullSpecName}.${ctx.testName}").getOrElse("N/A")
 

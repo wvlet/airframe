@@ -38,8 +38,9 @@ private[airspec] class AirSpecTask(
     * logger, continuation)
     */
   def execute(eventHandler: EventHandler, loggers: Array[sbt.testing.Logger]): Array[sbt.testing.Task] = {
-    execute(eventHandler, loggers, _ => ())
-    // Await.result(p.future, Duration.Inf)
+    val p = Promise[Unit]()
+    execute(eventHandler, loggers, _ => p.success(()))
+    Await.result(p.future, Duration.Inf)
     Array.empty
   }
 
@@ -57,7 +58,8 @@ private[airspec] class AirSpecTask(
       loggers: Array[sbt.testing.Logger],
       continuation: Array[sbt.testing.Task] => Unit
   ): Unit = {
+    implicit val ec = wvlet.airspec.Compat.executionContext
     new AirSpecTaskRunner(taskDef, config, taskLogger, eventHandler, classLoader).runTask
-      .foreach(_ => continuation(Array.empty))(wvlet.airspec.Compat.executionContext)
+      .foreach(_ => continuation(Array.empty))
   }
 }
