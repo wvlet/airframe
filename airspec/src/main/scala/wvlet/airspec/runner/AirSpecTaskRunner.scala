@@ -66,6 +66,9 @@ private[airspec] class AirSpecTaskRunner(
     s"${parentName}${spec.leafSpecName}"
   }
 
+  /**
+    * Process test name filter and extract the target specs
+    */
   private def findTargetSpecs(parentContext: Option[AirSpecContext], spec: AirSpecSpi): Seq[AirSpecDef] = {
     val testDefs = spec.testDefinitions
     if (testDefs.isEmpty) {
