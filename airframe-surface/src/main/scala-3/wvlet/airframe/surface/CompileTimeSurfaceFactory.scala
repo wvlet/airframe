@@ -299,6 +299,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     case a: AppliedType =>
       val typeArgs = a.args.map(surfaceOf(_))
       '{ new GenericSurface(${ clsOf(a) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
+    // special treatment for type Foo = Foo[Buz]
+    case TypeBounds(a1:AppliedType, a2:AppliedType) if a1 == a2 =>
+      val typeArgs = a1.args.map(surfaceOf(_))
+      '{ new GenericSurface(${ clsOf(a1) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
     case r: Refinement =>
       newGenericSurfaceOf(r.info)
     case t if hasStringUnapply(t) =>
