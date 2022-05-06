@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.openapi
-import wvlet.airframe.http.{RPC, Router}
+import wvlet.airframe.http.{RPC, Router, description}
 import wvlet.airframe.ulid.ULID
 import wvlet.airspec.AirSpec
 
@@ -94,6 +94,29 @@ object SimpleOpenAPITest extends AirSpec {
     yaml.contains("""  schemas:
                     |    wvlet.airframe.ulid.ULID:
                     |      type: string""".stripMargin) shouldBe true
+  }
+
+  @RPC
+  trait DescriptionTestApi {
+    @description("sample method")
+    def method1(
+        @description("custom parameter 1")
+        p1: String
+    ): Method1Response
+  }
+
+  @description("method1 response")
+  case class Method1Response(@description("response code") ret: Int)
+
+  test("annotation description") {
+    val r    = Router.of[DescriptionTestApi]
+    val yaml = openApiGenerator(r).toYAML
+
+    info(yaml)
+    yaml.contains("description: 'sample method'") shouldBe true
+    yaml.contains("description: 'custom parameter 1'") shouldBe true
+    yaml.contains("description: 'method1 response'") shouldBe true
+    yaml.contains("description: 'response code'") shouldBe true
   }
 
 }

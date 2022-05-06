@@ -161,6 +161,10 @@ object OpenAPI {
       `enum`: Option[Seq[String]] = None
   ) extends SchemaOrRef {
     override def getElementClass = classOf[Schema]
+
+    def withDescription(description: Option[String]) = {
+      this.copy(description = description)
+    }
   }
 
   case class Encoding()

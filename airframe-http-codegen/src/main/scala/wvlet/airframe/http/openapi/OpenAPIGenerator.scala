@@ -15,14 +15,16 @@ package wvlet.airframe.http.openapi
 import wvlet.airframe.codec.GenericException
 import wvlet.airframe.http.codegen.RouteAnalyzer
 import wvlet.airframe.http.openapi.OpenAPI.Response
-import wvlet.airframe.http.{HttpMethod, HttpStatus, Router}
+import wvlet.airframe.http.{HttpMethod, HttpStatus, Router, description}
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
 import wvlet.airframe.metrics.{Count, DataSize, ElapsedTime}
 import wvlet.airframe.msgpack.spi.{MsgPack, Value}
 import wvlet.airframe.surface._
+import wvlet.airframe.surface.reflect.{ReflectMethodSurface, ReflectTypeUtil}
 import wvlet.airframe.ulid.ULID
 import wvlet.log.LogSupport
+import wvlet.airframe.surface.reflect._
 
 import java.time.Instant
 import java.util.Locale
@@ -213,7 +215,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
           required = requiredParams(routeAnalysis.userInputParameters),
           properties = Some(
             routeAnalysis.httpClientCallInputs.map { p =>
-              p.name -> getOpenAPISchema(p.surface, componentTypes)
+              p.name -> getOpenAPISchema(p, componentTypes)
             }.toMap
           )
         )
@@ -240,9 +242,10 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
           Parameter(
             name = p.name,
             in = in,
+            description = p.findAnnotationOf[description].map(_.value()),
             required = true,
             schema = if (isPrimitiveTypeFamily(p.surface)) {
-              Some(getOpenAPISchema(p.surface, componentTypes))
+              Some(getOpenAPISchema(p, componentTypes))
             } else {
               registerComponent(p.surface)
               Some(SchemaRef(s"#/components/schemas/${schemaName(p.surface)}"))
@@ -290,8 +293,11 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
 
       val pathItem = PathItem(
         summary = route.methodSurface.name,
-        // TODO Use @RPC(description = ???) or Scaladoc comment
-        description = route.methodSurface.name,
+        description = route.methodSurface
+          // Extract the description from @description annotation if exists
+          .findAnnotationOf[description].map(_.value()).getOrElse(
+            route.methodSurface.name
+          ),
         operationId = route.methodSurface.name,
         parameters =
           if (pathAndQueryParameters.isEmpty) None
@@ -341,6 +347,17 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
         )
       )
     )
+  }
+
+  def getOpenAPISchema(p: wvlet.airframe.surface.Parameter, seen: Set[Surface]): SchemaOrRef = {
+    val schema = getOpenAPISchema(p.surface, seen)
+    warn(s"---here: ${schema}")
+    schema match {
+      case s: Schema =>
+        s.withDescription(p.findAnnotationOf[description].map(_.value))
+      case _ =>
+        schema
+    }
   }
 
   def getOpenAPISchema(s: Surface, seen: Set[Surface]): SchemaOrRef = {
@@ -448,12 +465,13 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
               // Use ListMap for preserving parameter orders
               val b = ListMap.newBuilder[String, SchemaOrRef]
               g.params.foreach { p =>
-                b += p.name -> getOpenAPISchema(p.surface, seen + g)
+                b += p.name -> getOpenAPISchema(p, seen + g)
               }
               val properties = b.result()
 
               Schema(
                 `type` = "object",
+                description = g.findAnnotationOf[description].map(_.value()),
                 required = requiredParams(g.params),
                 properties = if (properties.isEmpty) None else Some(properties)
               )
@@ -461,7 +479,10 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
               getOpenAPISchema(s.dealias, seen + s)
             case other =>
               warn(s"Unknown type ${other.fullName}. Use string instead")
-              Schema(`type` = "string")
+              Schema(
+                `type` = "string",
+                description = other.findAnnotationOf[description].map(_.value())
+              )
           }
         }
       )
