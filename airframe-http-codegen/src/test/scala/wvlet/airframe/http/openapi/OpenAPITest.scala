@@ -71,7 +71,7 @@ class OpenAPITest extends AirSpec {
         |        '503':
         |          $ref: '#/components/responses/503'
         |      tags:
-        |        - 'example.openapi.OpenAPIRPCExample'""".stripMargin,
+        |        - OpenAPIRPCExample""".stripMargin,
       """      responses:
         |        '200':
         |          description: 'RPC response'

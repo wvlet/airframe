@@ -155,10 +155,14 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
   }
 
   private def schemaName(surface: Surface): String = {
-    val s          = sanitizedSurfaceName(surface)
-    val candidates = config.packagePrefixes.map(s.stripPrefix(_))
+    val s = sanitizedSurfaceName(surface)
+    suppressPackagePrefix(s)
+  }
+
+  private def suppressPackagePrefix(name: String): String = {
+    val candidates = config.packagePrefixes.map(name.stripPrefix(_))
     if (candidates.isEmpty) {
-      s
+      name
     } else {
       // Take the smallest name
       candidates.minBy(_.length)
@@ -319,7 +323,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
           }
           .toMap,
         tags = {
-          Some(Seq(route.serviceName))
+          Some(Seq(suppressPackagePrefix(route.serviceName)))
         }
       )
       path -> Map(httpMethod -> pathItem)
