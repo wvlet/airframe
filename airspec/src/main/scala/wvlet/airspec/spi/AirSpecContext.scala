@@ -57,5 +57,5 @@ trait AirSpecContext {
 
   protected[airspec] def runSingle(testDef: AirSpecDef): Unit
 
-  private[airspec] def childResults: Seq[Future[Unit]]
+  private[airspec] def childResults: Seq[() => Future[Unit]]
 }

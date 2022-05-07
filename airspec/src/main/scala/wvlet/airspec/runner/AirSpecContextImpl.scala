@@ -33,7 +33,7 @@ private[airspec] class AirSpecContextImpl(
 ) extends AirSpecContext
     with LogSupport {
 
-  private val childTaskResults: ListBuffer[Future[Unit]] = ListBuffer.empty
+  private val childTaskResults: ListBuffer[() => Future[Unit]] = ListBuffer.empty
 
   override def hasChildTask: Boolean = {
     synchronized {
@@ -42,14 +42,16 @@ private[airspec] class AirSpecContextImpl(
   }
 
   override protected[airspec] def runSingle(testDef: AirSpecDef): Unit = {
-    val taskResult: Future[Unit] =
+    // Lazily generate Futures for child tasks
+    val taskResult: () => Future[Unit] = { () =>
       taskExecutor.runSingle(Some(this), currentSession, currentSpec, testDef, isLocal = true, design = testDef.design)
+    }
     synchronized {
       childTaskResults += taskResult
     }
   }
 
-  private[airspec] override def childResults: Seq[Future[Unit]] = {
+  private[airspec] override def childResults: Seq[() => Future[Unit]] = {
     synchronized {
       childTaskResults.toSeq
     }
