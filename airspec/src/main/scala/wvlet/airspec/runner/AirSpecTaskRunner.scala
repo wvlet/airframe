@@ -295,8 +295,9 @@ private[airspec] class AirSpecTaskRunner(
         runTest(childSession, context)
           .transformWith { case result: Try[_] =>
             // Await the child task completion, then report the current spec result
-            val childTasks = context.childResults.foldLeft(Future.unit) { case (prev, task) =>
-              prev.transformWith(_ => task())
+            val childTasks = context.childTests.foldLeft(Future.unit) { case (prev, childTest) =>
+              // After the previos test finishes, start the next child test
+              prev.transformWith(_ => childTest())
             }
             childTasks.transform(_ => result)
           }

@@ -73,8 +73,8 @@ private[airspec] object Compat extends CompatApi {
   }
 
   private[airspec] def withLogScanner[U](block: => U): U = {
-    startLogScanner
     try {
+      startLogScanner
       block
     } finally {
       stopLogScanner

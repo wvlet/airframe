@@ -33,11 +33,15 @@ private[airspec] class AirSpecContextImpl(
 ) extends AirSpecContext
     with LogSupport {
 
-  private val childTaskResults: ListBuffer[() => Future[Unit]] = ListBuffer.empty
+  /**
+    * A list of child tests, which are not yet started. As Scala Future starts the body evaluation eagerly, wrapping
+    * Future with a no-argument function.
+    */
+  private val childTestList: ListBuffer[() => Future[Unit]] = ListBuffer.empty
 
   override def hasChildTask: Boolean = {
     synchronized {
-      childTaskResults.size > 0
+      childTestList.size > 0
     }
   }
 
@@ -47,13 +51,13 @@ private[airspec] class AirSpecContextImpl(
       taskExecutor.runSingle(Some(this), currentSession, currentSpec, testDef, isLocal = true, design = testDef.design)
     }
     synchronized {
-      childTaskResults += taskResult
+      childTestList += taskResult
     }
   }
 
-  private[airspec] override def childResults: Seq[() => Future[Unit]] = {
+  private[airspec] override def childTests: Seq[() => Future[Unit]] = {
     synchronized {
-      childTaskResults.toSeq
+      childTestList.toSeq
     }
   }
 }
