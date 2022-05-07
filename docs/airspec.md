@@ -19,12 +19,13 @@ AirSpec uses just `test("...") { ... }` syntax for writing test cases. This styl
 - Support basic assertion syntaxes: `assert(cond)`, `x shouldBe y`, etc.
   - No need to learn other complex DSLs.
 - Nesting and reusing test cases with `test(...)`
+- Asyc testing support for `scala.concurrent.Future[ ]`
 - Lifecycle management with [Airframe DI](airframe-di.md):
   - DI will inject the arguments of test methods based on your custom Design.
   - The lifecycle (e.g., start and shutdown) of the injected services will be properly managed.
 - Handy keyword search for _sbt_: `> testOnly -- (a pattern for class or method names)`
 - Property-based testing integrated with [ScalaCheck](https://www.scalacheck.org/)
-- Scala 2.11, 2.12, 2.13, 3.0, and Scala.js support
+- Scala 2.12, 2.13, 3.0, and Scala.js support
 
 To start using AirSpec, read [Quick Start](#quick-start).
 
@@ -209,6 +210,30 @@ org.mydomain.myapp.MyTest=trace
 As you modify this property file, a background thread automatically reads this log file and refreshes the log level accordingly.
 
 For more details, see the [documentation](https://wvlet.org/airframe/docs/airframe-log.html) of airframe-log.
+
+
+## Async Testing
+
+Since the version 22.5.0, AirSpec supports tests returning `Future[_]` values. Such async tests are useful, especially if your application needs to wait the completion of network requests, such as Ajax responses in Scala.js, RPC responses from a server, etc. If test specs returns `Future` values, AirSpec awaits the completion of async tests, so you don't need to write synchronization steps in your test code.
+
+
+```scala
+import wvlet.airspec._
+import scala.concurrent.{Future,ExecutionContext}
+
+class AsyncTest extends AirSpec {
+  // Use the default ExecutionContext for running Future tasks.
+  private implicit val ec: ExecutionContext = defaultExecutionContext
+
+  // AirSpec awaits the completion of the returned Future value
+  test("async test") {
+    Future.apply {
+       println("hello async test")
+    }
+  }
+}
+
+```
 
 
 ## Dependency Injection with Airframe DI
