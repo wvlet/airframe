@@ -106,7 +106,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         '{ wvlet.airframe.surface.surfaceCache.getOrElseUpdate(${ Expr(cacheKey) }, ${ expr }) }
       }
       val surface = generator(t)
-      // println(s"--- ${surface.show}")
       memo += (t -> surface)
       surface
     }
@@ -300,7 +299,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       val typeArgs = a.args.map(surfaceOf(_))
       '{ new GenericSurface(${ clsOf(a) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
     // special treatment for type Foo = Foo[Buz]
-    case TypeBounds(a1:AppliedType, a2:AppliedType) if a1 == a2 =>
+    case TypeBounds(a1: AppliedType, a2: AppliedType) if a1 == a2 =>
       val typeArgs = a1.args.map(surfaceOf(_))
       '{ new GenericSurface(${ clsOf(a1) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
     case r: Refinement =>
