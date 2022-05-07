@@ -95,6 +95,9 @@ private[airspec] class AirSpecTaskRunner(
     selectedSpecs
   }
 
+  /**
+    * Run this AirSpec task
+    */
   def runTask: Future[Unit] = {
     val startTimeNanos = System.nanoTime()
     Future

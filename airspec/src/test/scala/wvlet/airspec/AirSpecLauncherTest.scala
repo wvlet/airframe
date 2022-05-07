@@ -17,23 +17,23 @@ package wvlet.airspec
   */
 class AirSpecLauncherTest extends AirSpec {
   test("run main") {
-    AirSpecLauncher.main(Array.empty)
+    AirSpecLauncher.execute(Array.empty)
   }
 
   test("run --help") {
-    AirSpecLauncher.main(Array("--help"))
+    AirSpecLauncher.execute(Array("--help"))
   }
 
   test("run test without arg") {
-    AirSpecLauncher.main(Array("test"))
+    AirSpecLauncher.execute(Array("test"))
   }
 
   test("run test") {
-    AirSpecLauncher.main(Array("test", "examples.CommonSpec"))
+    AirSpecLauncher.execute(Array("test", "examples.CommonSpec"))
   }
 
   test("run tests with args") {
-    AirSpecLauncher.main(Array("test", "examples.CommonSpec", "hello"))
+    AirSpecLauncher.execute(Array("test", "examples.CommonSpec", "hello"))
   }
 
   test("try to run test with non-exisiting test") {
