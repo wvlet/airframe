@@ -17,7 +17,7 @@ import wvlet.airspec.AirSpec
 
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
 import scala.concurrent.{Future, Promise}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /**
   */
@@ -348,8 +348,15 @@ object RxTest extends AirSpec {
     val f  = Future.successful(1)
     val rx = f.toRx
 
-    pending("requires async test")
-    rx.run(x => x shouldBe Some(1))
+    val p = Promise[Int]()
+    rx.run {
+      case Some(v) =>
+        p.success(v)
+      case None =>
+        p.failure(new IllegalStateException())
+    }
+
+    p.future.foreach { x => x shouldBe Some(1) }
   }
 
   test("from Future[Exception]") {
@@ -357,7 +364,6 @@ object RxTest extends AirSpec {
 
     val rx = fe.toRx
 
-    pending("requires async test")
     rx.run { (x: Option[Exception]) =>
       x match {
         case None => // ok
@@ -375,7 +381,13 @@ object RxTest extends AirSpec {
     rx.run { x =>
       x shouldBe -1
     }
-    p.failure(new IllegalArgumentException)
+    p.failure(new IllegalArgumentException).future.transform {
+      case Success(ret) =>
+        Try(fail("cannot reach here"))
+      case Failure(ex) =>
+        // ok
+        Success(true)
+    }
   }
 
   test("Future response") {

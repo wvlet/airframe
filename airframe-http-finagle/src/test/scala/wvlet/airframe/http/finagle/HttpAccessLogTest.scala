@@ -16,13 +16,17 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.{Method, Request, Response}
 import com.twitter.util.Future
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.control.Resource
 import wvlet.airframe.http.HttpAccessLogWriter.JSONHttpAccessLogWriter
 import wvlet.airframe.http._
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
+import wvlet.airframe.newDesign
 import wvlet.airframe.surface.secret
 import wvlet.airspec.AirSpec
 import wvlet.log.Logger
 import wvlet.log.io.IOUtil
+
+import java.io.File
 
 /**
   */
@@ -203,25 +207,28 @@ object HttpAccessLogTest extends AirSpec {
     }
   }
 
-  test("JSON access log") {
-    IOUtil.withTempFile("target/http_access_log_test.json") { f =>
-      test(
-        "Write logs in JSON",
-        design = Finagle.server
-          .withRouter(router)
-          .withLoggingFilter(
-            new HttpAccessLogFilter(
-              httpAccessLogWriter = new JSONHttpAccessLogWriter(HttpAccessLogConfig(fileName = f.getPath()))
-            )
+  test(
+    "JSON access log",
+    design = newDesign.bind[Resource[File]].toInstance(Resource.newTempFile("target/http_access_log_test.json"))
+  ) { file: Resource[File] =>
+    test(
+      "Write logs in JSON",
+      design = Finagle.server
+        .withRouter(router)
+        .withLoggingFilter(
+          new HttpAccessLogFilter(
+            httpAccessLogWriter = new JSONHttpAccessLogWriter(HttpAccessLogConfig(fileName = file.get.getPath()))
           )
-          .designWithSyncClient
-      ) { client: FinagleSyncClient =>
-        val resp = client.get[String]("/user/2")
-        resp shouldBe "hello user:2"
-      }
+        )
+        .designWithSyncClient
+    ) { client: FinagleSyncClient =>
+      val resp = client.get[String]("/user/2")
+      resp shouldBe "hello user:2"
+    }
 
+    test("Read JSON logs") {
       // Read the JSON log file
-      val json = IOUtil.readAsString(f)
+      val json = IOUtil.readAsString(file.get)
       debug(json)
 
       // Parse the JSON log
