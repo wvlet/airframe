@@ -16,11 +16,11 @@ package examples
 import wvlet.airspec.AirSpec
 
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class AsyncTest extends AirSpec {
 
-  private implicit val ec = defaultExecutionContext
+  private implicit val ec: ExecutionContext = defaultExecutionContext
 
   private val completedTests = ListBuffer.empty[String]
 
