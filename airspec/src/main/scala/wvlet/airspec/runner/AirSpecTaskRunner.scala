@@ -298,7 +298,7 @@ private[airspec] class AirSpecTaskRunner(
             val childTasks = context.childResults.foldLeft(Future.unit) { case (prev, task) =>
               prev.transformWith(_ => task())
             }
-            childTasks.andThen(_ => result)
+            childTasks.transform(_ => result)
           }
           .transform { case result: Try[_] =>
             cleanup(childSession)
