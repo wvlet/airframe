@@ -207,6 +207,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     t match {
       case a: AppliedType =>
         a.args
+      // TODO: Dealiasing should be done before ?
+      case DottyTypes.TypeAlias(DottyTypes.HKTypeLambda(_, a: AppliedType)) =>
+        a.args
       case other =>
         List.empty
     }
