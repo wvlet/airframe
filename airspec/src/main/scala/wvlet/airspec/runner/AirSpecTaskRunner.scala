@@ -313,7 +313,7 @@ private[airspec] class AirSpecTaskRunner(
               showTestName = !context.hasChildTask
             )
             eventHandler.handle(e)
-            Try[Unit]()
+            Try(())
           }
       }
   }
