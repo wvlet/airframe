@@ -58,10 +58,8 @@ private[airspec] class AirSpecTask(
       loggers: Array[sbt.testing.Logger],
       continuation: Array[sbt.testing.Task] => Unit
   ): Unit = {
-    try {
-      new AirSpecTaskRunner(taskDef, config, taskLogger, eventHandler, classLoader).runTask
-    } finally {
-      continuation(Array.empty)
-    }
+    implicit val ec = wvlet.airspec.Compat.executionContext
+    new AirSpecTaskRunner(taskDef, config, taskLogger, eventHandler, classLoader).runTask
+      .foreach(_ => continuation(Array.empty))
   }
 }

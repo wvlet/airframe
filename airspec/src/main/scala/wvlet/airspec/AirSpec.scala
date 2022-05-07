@@ -104,6 +104,11 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
   protected def inGitHubAction: Boolean = airspec.inGitHubAction
 
   protected def isScalaJS: Boolean = compat.isScalaJs
+
+  /**
+    * Provide a platform-independent execution context for async testing
+    */
+  protected def defaultExecutionContext: scala.concurrent.ExecutionContext = compat.executionContext
 }
 
 private[airspec] object AirSpecSpi {

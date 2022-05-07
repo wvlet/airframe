@@ -13,13 +13,14 @@
  */
 package wvlet.airspec.runner
 
-import java.util.concurrent.atomic.AtomicInteger
-
 import wvlet.airframe.Session
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.spi.AirSpecContext
 import wvlet.airspec.{AirSpecDef, AirSpecSpi}
 import wvlet.log.LogSupport
+
+import scala.collection.mutable.ListBuffer
+import scala.concurrent.Future
 
 /**
   */
@@ -31,14 +32,32 @@ private[airspec] class AirSpecContextImpl(
     val currentSession: Session
 ) extends AirSpecContext
     with LogSupport {
-  private val childTaskCount = new AtomicInteger(0)
+
+  /**
+    * A list of child tests, which are not yet started. As Scala Future starts the body evaluation eagerly, wrapping
+    * Future with a no-argument function.
+    */
+  private val childTestList: ListBuffer[() => Future[Unit]] = ListBuffer.empty
 
   override def hasChildTask: Boolean = {
-    childTaskCount.get > 0
+    synchronized {
+      childTestList.size > 0
+    }
   }
 
   override protected[airspec] def runSingle(testDef: AirSpecDef): Unit = {
-    childTaskCount.incrementAndGet()
-    taskExecutor.runSingle(Some(this), currentSession, currentSpec, testDef, isLocal = true, design = testDef.design)
+    // Lazily generate Futures for child tasks
+    val taskResult: () => Future[Unit] = { () =>
+      taskExecutor.runSingle(Some(this), currentSession, currentSpec, testDef, isLocal = true, design = testDef.design)
+    }
+    synchronized {
+      childTestList += taskResult
+    }
+  }
+
+  private[airspec] override def childTests: Seq[() => Future[Unit]] = {
+    synchronized {
+      childTestList.toSeq
+    }
   }
 }

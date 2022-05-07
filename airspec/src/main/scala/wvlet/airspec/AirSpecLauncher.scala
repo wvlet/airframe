@@ -13,27 +13,39 @@
  */
 package wvlet.airspec
 
-import sbt.testing.TaskDef
+import sbt.testing._
 import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
 import wvlet.airspec.runner.{AirSpecEventHandler, AirSpecLogger, AirSpecTaskRunner}
 import wvlet.log.LogSupport
+
+import scala.concurrent.Future
 
 /**
   */
 object AirSpecLauncher extends LogSupport {
   def main(args: Array[String]): Unit = {
+    execute(args)
+  }
+
+  /**
+    * Entrypoint for async testing
+    */
+  def execute(args: Array[String]): Future[Unit] = {
     args.length match {
       case 0 =>
         info(s"airspec: [command]")
+        Future.unit
       case _ =>
         val cmd = args(0)
         cmd match {
           case "-h" | "help" | "--help" =>
             printHelp
+            Future.unit
           case "test" =>
             run(args.tail)
           case _ =>
             warn(s"Unknown command: ${cmd}")
+            Future.unit
         }
     }
   }
@@ -44,10 +56,11 @@ object AirSpecLauncher extends LogSupport {
                |help       show this message""".stripMargin)
   }
 
-  private def run(args: Array[String]): Unit = {
+  private def run(args: Array[String]): Future[Unit] = {
     args.length match {
       case 0 =>
         warn(s"No test is specified")
+        Future.unit
       case _ =>
         val testClassFullName = args(0)
         info(s"Run tests in ${testClassFullName}")
@@ -74,9 +87,9 @@ object AirSpecLauncher extends LogSupport {
           new AirSpecEventHandler(),
           cl
         )
-        runner.runTask
+        val future = runner.runTask
+        future
     }
-
   }
 
 }

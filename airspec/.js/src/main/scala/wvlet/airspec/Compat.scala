@@ -21,12 +21,17 @@ import wvlet.airspec.spi.{Asserts, JsObjectMatcher}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.{ConsoleLogHandler, LogSupport, Logger}
 
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 /**
   */
 private[airspec] object Compat extends CompatApi with LogSupport {
   override def isScalaJs = true
+
+  override private[airspec] val executionContext: ExecutionContext =
+    org.scalajs.macrotaskexecutor.MacrotaskExecutor.Implicits.global
+
   private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     val clsOpt = Reflect.lookupLoadableModuleClass(fullyQualifiedName + "$", classLoader)
     clsOpt.map {
@@ -62,9 +67,14 @@ private[airspec] object Compat extends CompatApi with LogSupport {
   }
 
   private[airspec] def withLogScanner[U](block: => U): U = {
-    Logger.setDefaultHandler(new ConsoleLogHandler(SourceCodeLogFormatter))
+    startLogScanner
     block
   }
+
+  private[airspec] def startLogScanner: Unit = {
+    Logger.setDefaultHandler(new ConsoleLogHandler(SourceCodeLogFormatter))
+  }
+  private[airspec] def stopLogScanner: Unit = {}
 
   private[airspec] def findCause(e: Throwable): Throwable = {
     // Scala.js has no InvocationTargetException
