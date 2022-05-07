@@ -257,17 +257,27 @@ private[airspec] class AirSpecTaskRunner(
     }
 
     def runTest(childSession: Session, context: AirSpecContext): Future[_] = {
-      // Wrap the execution with Try[_] to report the test result to the event handler
-      Try(m.run(context, childSession)) match {
-        case s @ Success(ret) =>
-          ret match {
-            case f: Future[_] =>
-              f
-            case _ =>
-              Future.successful(ret)
-          }
-        case f @ Failure(e) =>
-          Future.failed(e)
+      try {
+        m.run(context, childSession) match {
+          // When the test case returns a Future, we need to chain the next action
+          case future: Future[_] => future
+          case nonFuture         => Future.successful(nonFuture)
+        }
+      } catch {
+        case e: Throwable => Future.failed(e)
+      }
+    }
+
+    def cleanup(childSession: Session): Unit = {
+      Try {
+        trace(s"[${testName}] close child session")
+        childSession.shutdown
+      }
+
+      Try {
+        trace(s"[${testName}] after")
+        spec.callAfter
+        spec.popContext
       }
     }
 
@@ -277,40 +287,31 @@ private[airspec] class AirSpecTaskRunner(
       .map { (childSession: Session) =>
         (childSession, newContext(childSession))
       }
-      .flatMap[(Any, Boolean)] { case (childSession: Session, context: AirSpecContext) =>
-        var hadChildTask = false
+      .flatMap[Unit] { case (childSession: Session, context: AirSpecContext) =>
         runTest(childSession, context)
-          .transform { case ret =>
-            trace(s"[${testName}] close child session")
-            childSession.shutdown
+          .transform { case result: Try[_] =>
+            cleanup(childSession)
 
-            trace(s"[${testName}] after")
-            spec.callAfter
-            spec.popContext
-            // If the test method had any child task, update the flag
-            hadChildTask |= context.hasChildTask
-            ret
+            // Report the test result
+            val durationNanos = System.nanoTime() - startTimeNanos
+
+            val (status, throwableOpt) = result match {
+              case Success(x) =>
+                (Status.Success, new OptionalThrowable())
+              case Failure(ex) =>
+                val status = AirSpecException.classifyException(ex)
+                (status, new OptionalThrowable(compat.findCause(ex)))
+            }
+            val e = AirSpecEvent(taskDef, m.name, status, throwableOpt, durationNanos)
+            taskLogger.logEvent(
+              e,
+              indentLevel = indentLevel,
+              // If the test has any child tests, do not sow the test name
+              showTestName = !context.hasChildTask
+            )
+            eventHandler.handle(e)
+            Try[Unit]()
           }
-          .transform { case result =>
-            (result, hadChildTask)
-
-          }
-      }
-      .map { case (result: Try[Any], hadChildTask: Boolean) =>
-        // Report the test result
-        val durationNanos = System.nanoTime() - startTimeNanos
-
-        val (status, throwableOpt) = result match {
-          case Success(x) =>
-            (Status.Success, new OptionalThrowable())
-          case Failure(ex) =>
-            val status = AirSpecException.classifyException(ex)
-            (status, new OptionalThrowable(compat.findCause(ex)))
-        }
-
-        val e = AirSpecEvent(taskDef, m.name, status, throwableOpt, durationNanos)
-        taskLogger.logEvent(e, indentLevel = indentLevel, showTestName = !hadChildTask)
-        eventHandler.handle(e)
       }
   }
 
