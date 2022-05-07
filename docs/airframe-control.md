@@ -37,6 +37,32 @@ Control.withResources(
 }
 ```
 
+## Resource[R]
+
+When using AirSpec, it will be useful to create temporary resources that will be cleaned up automatically after finishing tests:
+
+```scala
+import wvlet.airframe._
+import wvlet.airframe.control.Resource
+import wvlet.airspec.AirSpec
+
+class MyTest extends AirSpec {
+
+  // Define a temporary file binding  
+  override def design: Design = newDesign
+    .bind[Resource[File]].toInstance(Resource.newTempFile("tmpfile", ".tmp"))
+
+  test("temp file test") { (file: Resource[File]) =>
+    // A temporary file will be created after starting the test
+    val f: File = file.get  
+
+  }
+  // The file will be deletged after finishing the test
+}
+```
+
+`Resource[R]` works when the loan pattern cannot be used in asynchronous programming.
+
 ## Retry
 
 ### Exponential Backoff
