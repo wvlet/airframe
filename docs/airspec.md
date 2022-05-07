@@ -19,7 +19,7 @@ AirSpec uses just `test("...") { ... }` syntax for writing test cases. This styl
 - Support basic assertion syntaxes: `assert(cond)`, `x shouldBe y`, etc.
   - No need to learn other complex DSLs.
 - Nesting and reusing test cases with `test(...)`
-- Asyc testing support for `scala.concurrent.Future[ ]`
+- Async testing support for `scala.concurrent.Future[ ]`
 - Lifecycle management with [Airframe DI](airframe-di.md):
   - DI will inject the arguments of test methods based on your custom Design.
   - The lifecycle (e.g., start and shutdown) of the injected services will be properly managed.
