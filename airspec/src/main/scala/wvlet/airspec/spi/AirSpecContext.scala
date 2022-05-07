@@ -16,6 +16,8 @@ package wvlet.airspec.spi
 import wvlet.airframe.Session
 import wvlet.airspec.{AirSpecDef, AirSpecSpi}
 
+import scala.concurrent.Future
+
 /**
   * AirSpecContext is an interface to pass the test environment data to individual test methods.
   *
@@ -54,4 +56,6 @@ trait AirSpecContext {
   }
 
   protected[airspec] def runSingle(testDef: AirSpecDef): Unit
+
+  private[airspec] def childResults: Seq[Future[Unit]]
 }

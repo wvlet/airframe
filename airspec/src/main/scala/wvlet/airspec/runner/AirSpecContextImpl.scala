@@ -13,13 +13,14 @@
  */
 package wvlet.airspec.runner
 
-import java.util.concurrent.atomic.AtomicInteger
-
 import wvlet.airframe.Session
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.spi.AirSpecContext
 import wvlet.airspec.{AirSpecDef, AirSpecSpi}
 import wvlet.log.LogSupport
+
+import scala.collection.mutable.ListBuffer
+import scala.concurrent.Future
 
 /**
   */
@@ -31,14 +32,26 @@ private[airspec] class AirSpecContextImpl(
     val currentSession: Session
 ) extends AirSpecContext
     with LogSupport {
-  private val childTaskCount = new AtomicInteger(0)
+
+  private val childTaskResults: ListBuffer[Future[Unit]] = ListBuffer.empty
 
   override def hasChildTask: Boolean = {
-    childTaskCount.get > 0
+    synchronized {
+      childTaskResults.size > 0
+    }
   }
 
   override protected[airspec] def runSingle(testDef: AirSpecDef): Unit = {
-    childTaskCount.incrementAndGet()
-    taskExecutor.runSingle(Some(this), currentSession, currentSpec, testDef, isLocal = true, design = testDef.design)
+    val taskResult: Future[Unit] =
+      taskExecutor.runSingle(Some(this), currentSession, currentSpec, testDef, isLocal = true, design = testDef.design)
+    synchronized {
+      childTaskResults += taskResult
+    }
+  }
+
+  private[airspec] override def childResults: Seq[Future[Unit]] = {
+    synchronized {
+      childTaskResults.toSeq
+    }
   }
 }

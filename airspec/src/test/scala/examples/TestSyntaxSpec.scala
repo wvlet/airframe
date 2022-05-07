@@ -54,10 +54,6 @@ class TestSyntaxSpec extends AirSpec {
   }
 
   test("nested tests") {
-    if (isScalaJS) {
-      pending("nested tests have a bug in async processing")
-    }
-
     test("test1") {
       debug("hello test1")
     }

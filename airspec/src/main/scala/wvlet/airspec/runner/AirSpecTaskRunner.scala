@@ -240,7 +240,7 @@ private[airspec] class AirSpecTaskRunner(
 
     // Create a test-method local child session
     def startChildSession: Session = {
-      trace(s"[${testName}] start child session")
+      trace(s"[${testName}] start a child session")
       val childSession = globalSession.newChildSession(childDesign)
       childSession.start
       childSession
@@ -272,15 +272,16 @@ private[airspec] class AirSpecTaskRunner(
     }
 
     def cleanup(childSession: Session): Unit = {
-      Try {
-        trace(s"[${testName}] close child session")
+      try {
+        trace(s"[${testName}] close the child session")
         childSession.shutdown
-      }
-
-      Try {
-        trace(s"[${testName}] after")
-        spec.callAfter
-        spec.popContext
+      } finally {
+        try {
+          trace(s"[${testName}] after")
+          spec.callAfter
+        } finally {
+          spec.popContext
+        }
       }
     }
 
@@ -292,6 +293,10 @@ private[airspec] class AirSpecTaskRunner(
       }
       .flatMap[Unit] { case (childSession: Session, context: AirSpecContext) =>
         runTest(childSession, context)
+          .transformWith { case result: Try[_] =>
+            // Await the child task completion, then report the current spec result
+            Future.sequence(context.childResults).andThen(_ => result)
+          }
           .transform { case result: Try[_] =>
             cleanup(childSession)
 
