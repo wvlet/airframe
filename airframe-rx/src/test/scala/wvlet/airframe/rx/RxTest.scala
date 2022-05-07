@@ -348,7 +348,15 @@ object RxTest extends AirSpec {
     val f  = Future.successful(1)
     val rx = f.toRx
 
-    rx.run(x => x shouldBe Some(1))
+    val p = Promise[Int]()
+    rx.run {
+      case Some(v) =>
+        p.success(v)
+      case None =>
+        p.failure(new IllegalStateException())
+    }
+
+    p.future.foreach { x => x shouldBe Some(1) }
   }
 
   test("from Future[Exception]") {
