@@ -80,6 +80,9 @@ object HttpHeader {
   final val xForwardedFor                 = "X-Forwarded-For"
   final val xForwardedProto               = "X-Forwarded-Proto"
 
+  // Airframe RPC specific status code
+  final val xAirframeRPCStatus = "x-airframe-rpc-status"
+
   object MediaType {
     final val ApplicationJson    = "application/json;charset=utf-8"
     final val ApplicationMsgPack = "application/x-msgpack"

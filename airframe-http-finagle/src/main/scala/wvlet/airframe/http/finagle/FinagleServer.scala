@@ -26,7 +26,7 @@ import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.http.router.{ControllerProvider, ResponseHandler}
-import wvlet.airframe.http.{HttpBackend, HttpMessage, HttpServerException, RPCException, Router}
+import wvlet.airframe.http.{HttpBackend, HttpHeader, HttpMessage, HttpServerException, RPCException, Router}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -252,7 +252,7 @@ object FinagleServer extends LogSupport {
               var resp = wvlet.airframe.http.Http
                 .response(e.status.httpStatus)
                 // Add RPC status header to handle errors in clients
-                .addHeader("x-airframe-rpc-status", e.status.code.toString)
+                .addHeader(HttpHeader.xAirframeRPCStatus, e.status.code.toString)
               try {
                 val errorResponseJson = e.toJson
                 resp = resp.withJson(errorResponseJson)
