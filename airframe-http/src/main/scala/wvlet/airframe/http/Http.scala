@@ -156,10 +156,17 @@ trait HttpRequest[Req] {
   def contentString: String        = adapter.contentStringOf(toRaw)
   def accept: Seq[String] =
     Http.parseAcceptHeader(header.get(HttpHeader.Accept))
-  def acceptsMsgPack: Boolean =
-    accept.contains(HttpHeader.MediaType.ApplicationMsgPack)
-  def acceptJson: Boolean =
-    accept.contains(HttpHeader.MediaType.ApplicationJson)
+  def acceptsMsgPack: Boolean = {
+    accept.contains(HttpHeader.MediaType.ApplicationMsgPack) ||
+    // legacy header
+    accept.contains("application/x-msgpack")
+  }
+
+  def acceptsJson: Boolean = {
+    accept.contains(HttpHeader.MediaType.ApplicationJson) ||
+    // Plain JSON header without encoding type
+    accept.contains("application/json")
+  }
 }
 
 /**

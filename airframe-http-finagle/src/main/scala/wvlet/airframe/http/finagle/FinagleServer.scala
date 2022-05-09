@@ -256,7 +256,7 @@ object FinagleServer extends LogSupport {
 
               try {
                 // Embed RPCError into the response body
-                if (request.acceptJson) {
+                if (request.acceptsJson) {
                   resp = resp.withJson(e.toJson)
                 } else {
                   // Use MessagePack encoding by default
