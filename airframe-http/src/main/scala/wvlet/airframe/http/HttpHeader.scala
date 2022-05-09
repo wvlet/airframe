@@ -85,6 +85,6 @@ object HttpHeader {
 
   object MediaType {
     final val ApplicationJson    = "application/json;charset=utf-8"
-    final val ApplicationMsgPack = "application/x-msgpack"
+    final val ApplicationMsgPack = "application/msgpack"
   }
 }
