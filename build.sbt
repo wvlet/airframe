@@ -626,6 +626,10 @@ lazy val codec =
     .settings(buildSettings)
     .settings(dottyCrossBuildSettings)
     .settings(
+      // TODO: #1698 Avoid "illegal multithreaded access to ContextBase error" on Scala 3
+      // Tests in this project are sequentially executed
+      Test / parallelExecution := false,
+
       name        := "airframe-codec",
       description := "Airframe MessagePack-based codec"
     )
