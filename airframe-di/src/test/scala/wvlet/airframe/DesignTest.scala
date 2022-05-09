@@ -84,7 +84,7 @@ object DesignTest extends AirSpec {
 
   test("bind providers") {
     val d = newSilentDesign
-      .bind[Hello].toProvider { (m: ProductionString) => Hello(m) }
+      .bind[Hello].toProvider[ProductionString] { m => Hello(m) }
       .bind[ProductionString].toInstance("hello production")
 
     d.build[Hello] { h => h.message shouldBe "hello production" }
