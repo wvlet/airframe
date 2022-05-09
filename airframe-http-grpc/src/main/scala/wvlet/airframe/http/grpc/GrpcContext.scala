@@ -14,6 +14,7 @@
 package wvlet.airframe.http.grpc
 
 import io.grpc._
+import wvlet.airframe.http.RPCEncoding
 
 object GrpcContext {
   private[grpc] val contextKey = Context.key[GrpcContext]("grpc_context")
@@ -25,13 +26,13 @@ object GrpcContext {
     * @return
     */
   def current: Option[GrpcContext]  = Option(contextKey.get())
-  private[grpc] def currentEncoding = current.map(_.encoding).getOrElse(GrpcEncoding.MsgPack)
+  private[grpc] def currentEncoding = current.map(_.encoding).getOrElse(RPCEncoding.MsgPack)
 
   private[grpc] val KEY_ACCEPT       = Metadata.Key.of("accept", Metadata.ASCII_STRING_MARSHALLER)
   private[grpc] val KEY_CONTENT_TYPE = Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)
 
   private[grpc] implicit class RichMetadata(val m: Metadata) extends AnyVal {
-    def accept: String = Option(m.get(KEY_ACCEPT)).getOrElse(GrpcEncoding.ApplicationMsgPack)
+    def accept: String = Option(m.get(KEY_ACCEPT)).getOrElse(RPCEncoding.ApplicationMsgPack)
     def setAccept(s: String): Unit = {
       m.removeAll(KEY_ACCEPT)
       m.put(KEY_ACCEPT, s)
@@ -54,13 +55,13 @@ case class GrpcContext(
 ) {
   // Return the accept header
   def accept: String = metadata.accept
-  def encoding: GrpcEncoding = accept match {
-    case GrpcEncoding.ApplicationJson =>
+  def encoding: RPCEncoding = accept match {
+    case RPCEncoding.ApplicationJson =>
       // Json input
-      GrpcEncoding.JSON
+      RPCEncoding.JSON
     case _ =>
       // Use msgpack by default
-      GrpcEncoding.MsgPack
+      RPCEncoding.MsgPack
   }
 
 }

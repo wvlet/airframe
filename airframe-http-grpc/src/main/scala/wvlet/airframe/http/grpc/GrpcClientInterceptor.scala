@@ -15,9 +15,10 @@ package wvlet.airframe.http.grpc
 
 import io.grpc.stub.MetadataUtils
 import io.grpc.{Channel, ClientInterceptors, Metadata}
+import wvlet.airframe.http.RPCEncoding
 
 object GrpcClientInterceptor {
-  def wrap(c: Channel, encoding: GrpcEncoding = GrpcEncoding.MsgPack): Channel = {
+  def wrap(c: Channel, encoding: RPCEncoding = RPCEncoding.MsgPack): Channel = {
     import GrpcContext._
     val newHeaders = new Metadata()
     newHeaders.put(

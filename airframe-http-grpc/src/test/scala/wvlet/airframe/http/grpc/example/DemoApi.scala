@@ -20,7 +20,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
 import wvlet.airframe.http.grpc._
 import wvlet.airframe.http.router.Route
-import wvlet.airframe.http.{Http, HttpStatus, RPC, RPCStatus, Router}
+import wvlet.airframe.http.{Http, HttpStatus, RPC, RPCEncoding, RPCStatus, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.log.LogSupport
@@ -115,7 +115,7 @@ object DemoApi {
       channel: Channel,
       callOptions: CallOptions = CallOptions.DEFAULT,
       codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
-      encoding: GrpcEncoding = GrpcEncoding.MsgPack
+      encoding: RPCEncoding = RPCEncoding.MsgPack
   ) extends AbstractBlockingStub[DemoApiClient](channel, callOptions) {
     override def build(channel: Channel, callOptions: CallOptions): DemoApiClient = {
       new DemoApiClient(channel, callOptions)
@@ -142,7 +142,7 @@ object DemoApi {
     private val rpcExceptionTestMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("rpcExceptionTest"), codecFactory)
 
-    def withEncoding(encoding: GrpcEncoding): DemoApiClient = {
+    def withEncoding(encoding: RPCEncoding): DemoApiClient = {
       this.copy(encoding = encoding)
     }
 

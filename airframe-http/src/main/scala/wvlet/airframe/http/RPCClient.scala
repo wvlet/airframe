@@ -13,12 +13,42 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.http.HttpMessage.Request
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
+import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.surface.Surface
 
-class RPCSyncClient(httpSyncClient: Http.SyncClient) {
+case class RPCClientConfig(
+    requestFilter: HttpMessage.Request => HttpMessage.Request = identity,
+    retryContext: RetryContext = HttpClient.defaultHttpClientRetry[Request, Response],
+    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
+    rpcEncoding: RPCEncoding = RPCEncoding.MsgPack
+)
 
-  def send(req: Request, requestFilter: Request => Request = identity): HttpMessage.Response = {
-    ???
+class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient) extends AutoCloseable {
+
+  override def close(): Unit = {
+    httpSyncClient.close()
+  }
+
+  def sendRequest(
+      path: String,
+      requestSurface: Surface,
+      requestContent: Any,
+      requestFilter: Request => Request = identity
+  ): HttpMessage.Response = {
+
+    val requestEncoder: MessageCodec[Any] =
+      config.codecFactory.ofSurface(requestSurface).asInstanceOf[MessageCodec[Any]]
+
+    val request: Request =
+      Http
+        .POST(path)
+        .withContentType(config.rpcEncoding.applicationType)
+        .withContent(config.rpcEncoding.encodeWithCodec[Any](requestContent, requestEncoder))
+
+    val response = httpSyncClient.sendSafe(request, config.requestFilter.andThen(requestFilter))
+    response
   }
 
 }

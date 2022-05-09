@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.grpc
+package wvlet.airframe.http
 
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
@@ -21,17 +21,18 @@ import java.nio.charset.StandardCharsets
 
 /**
   */
-sealed trait GrpcEncoding {
+sealed trait RPCEncoding {
   def applicationType: String
   def encodeWithCodec[A](v: A, codec: MessageCodec[A]): Array[Byte]
   def unpackValue(bytes: Array[Byte]): Value
 }
 
-object GrpcEncoding {
+object RPCEncoding {
+  // Note: https://github.com/msgpack/msgpack/issues/194
   val ApplicationMsgPack = "application/msgpack"
   val ApplicationJson    = "application/json"
 
-  case object MsgPack extends GrpcEncoding {
+  case object MsgPack extends RPCEncoding {
     override def applicationType: String = ApplicationMsgPack
     override def encodeWithCodec[A](v: A, codec: MessageCodec[A]): Array[Byte] = {
       codec.toMsgPack(v)
@@ -41,7 +42,7 @@ object GrpcEncoding {
     }
   }
 
-  case object JSON extends GrpcEncoding {
+  case object JSON extends RPCEncoding {
     override def applicationType: String = ApplicationJson
     override def encodeWithCodec[A](v: A, codec: MessageCodec[A]): Array[Byte] = {
       codec.toJson(v).getBytes(StandardCharsets.UTF_8)
@@ -51,7 +52,7 @@ object GrpcEncoding {
     }
   }
 
-  private[grpc] def isJsonObjectMessage(bytes: Array[Byte]): Boolean = {
+  private[http] def isJsonObjectMessage(bytes: Array[Byte]): Boolean = {
     bytes.length >= 2 && bytes.head == '{' && bytes.last == '}'
   }
 }
