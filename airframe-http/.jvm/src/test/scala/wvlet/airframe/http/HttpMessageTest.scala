@@ -156,7 +156,7 @@ class HttpMessageTest extends AirSpec {
   test("msgpack request") {
     val r = Http.request("/v1/info").withAcceptMsgPack
 
-    r.accept shouldBe Seq("application/x-msgpack")
+    r.accept shouldBe Seq(HttpHeader.MediaType.ApplicationMsgPack)
     r.acceptsMsgPack shouldBe true
     r.acceptsJson shouldBe false
   }
