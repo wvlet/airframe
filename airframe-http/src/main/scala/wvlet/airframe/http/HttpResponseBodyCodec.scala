@@ -18,7 +18,7 @@ import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 
 /**
   */
-class HttpResponseCodec[Resp: HttpResponseAdapter] extends MessageCodec[HttpResponse[_]] {
+class HttpResponseBodyCodec[Resp: HttpResponseAdapter] extends MessageCodec[HttpResponse[_]] {
   override def pack(p: Packer, v: HttpResponse[_]): Unit = {
     v.contentType match {
       case Some("application/msgpack") | Some("application/x-msgpack") =>

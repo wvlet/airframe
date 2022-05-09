@@ -84,14 +84,14 @@ class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient)
     }
   }
 
-  private val standardResponseCodec = new HttpResponseCodec[Response]
+  private val responseBodyCodec = new HttpResponseBodyCodec[Response]
 
   private def parseResponse(response: Response, responseSurface: Surface): Any = {
     if (classOf[Response].isAssignableFrom(responseSurface.rawType)) {
       response
     } else {
       try {
-        val msgpack        = standardResponseCodec.toMsgPack(response)
+        val msgpack        = responseBodyCodec.toMsgPack(response)
         val codec          = config.codecFactory.ofSurface(responseSurface)
         val responseObject = codec.fromMsgPack(msgpack)
         responseObject
@@ -108,11 +108,8 @@ class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient)
       .flatMap(x => Try(x.toInt).toOption) match {
       case Some(rpcStatus) =>
         try {
-          if (response.isContentTypeJson) {
-            RPCException.fromJson(response.contentString)
-          } else {
-            RPCException.fromMsgPack(response.contentBytes)
-          }
+          val msgpack = responseBodyCodec.toMsgPack(response)
+          RPCException.fromMsgPack(msgpack)
         } catch {
           case e: MessageCodecException =>
             RPCStatus.ofCode(rpcStatus).newException(s"Failed to parse the RPC error details", e)

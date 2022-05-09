@@ -22,7 +22,7 @@ import wvlet.airframe.Design
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http._
-import wvlet.airframe.http.HttpResponseCodec
+import wvlet.airframe.http.HttpResponseBodyCodec
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
@@ -199,7 +199,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
 
   // make sure using Map output
   private val codecFactory  = config.codecFactory.withMapOutput
-  private val responseCodec = new HttpResponseCodec[Response]
+  private val responseCodec = new HttpResponseBodyCodec[Response]
 
   private def convert[A: ru.TypeTag](response: Future[Response]): Future[A] = {
     if (implicitly[ru.TypeTag[A]] == ru.typeTag[Response]) {
