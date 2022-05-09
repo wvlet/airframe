@@ -16,7 +16,8 @@ package wvlet.airframe.http.grpc.internal
 import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
 import io.grpc.stub.StreamObserver
 import wvlet.airframe.codec.{MessageCodec, MessageCodecException, MessageCodecFactory}
-import wvlet.airframe.http.grpc.{GrpcContext, GrpcEncoding, GrpcResponse}
+import wvlet.airframe.http.RPCEncoding
+import wvlet.airframe.http.grpc.{GrpcContext, GrpcResponse}
 import wvlet.airframe.http.router.{HttpRequestMapper, RPCCallContext}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
@@ -58,12 +59,12 @@ class GrpcRequestHandler(
     */
   private def readRequestAsValue(grpcContext: Option[GrpcContext], request: MsgPack): MapValue = {
     try {
-      val value = if (GrpcEncoding.isJsonObjectMessage(request)) {
+      val value = if (RPCEncoding.isJsonObjectMessage(request)) {
         // The input is a JSON message
-        GrpcEncoding.JSON.unpackValue(request)
+        RPCEncoding.JSON.unpackValue(request)
       } else {
         // Check the message type using the accept header:
-        val encoding = grpcContext.map(_.encoding).getOrElse(GrpcEncoding.MsgPack)
+        val encoding = grpcContext.map(_.encoding).getOrElse(RPCEncoding.MsgPack)
         encoding.unpackValue(request)
       }
 
@@ -85,11 +86,11 @@ class GrpcRequestHandler(
   }
 
   private def readStreamingInput[A](grpcContext: Option[GrpcContext], codec: MessageCodec[A], request: MsgPack): A = {
-    val encoding = grpcContext.map(_.encoding).getOrElse(GrpcEncoding.MsgPack)
+    val encoding = grpcContext.map(_.encoding).getOrElse(RPCEncoding.MsgPack)
     encoding match {
-      case GrpcEncoding.MsgPack =>
+      case RPCEncoding.MsgPack =>
         codec.fromMsgPack(request)
-      case GrpcEncoding.JSON =>
+      case RPCEncoding.JSON =>
         codec.fromJson(request)
     }
   }

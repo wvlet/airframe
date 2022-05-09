@@ -18,6 +18,7 @@ import io.grpc.{Status, StatusException, StatusRuntimeException}
 import wvlet.airframe.codec.{MessageCodec, MessageCodecException, ParamListCodec}
 import wvlet.airframe.codec.PrimitiveCodec.{UnitCodec, ValueCodec}
 import wvlet.airframe.control.IO
+import wvlet.airframe.http.RPCEncoding
 import wvlet.airframe.http.grpc.internal.GrpcException
 import wvlet.airframe.msgpack.spi.{Code, MessagePack, MsgPack, OffsetPacker, ValueFactory}
 import wvlet.airframe.msgpack.spi.Value.MapValue
@@ -41,7 +42,7 @@ object GrpcRequestMarshaller extends Marshaller[MsgPack] with LogSupport {
 /**
   * This class wraps the response value with encoding method information
   */
-case class GrpcResponse(value: Any, encoding: GrpcEncoding)
+case class GrpcResponse(value: Any, encoding: RPCEncoding)
 
 class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[Any] with LogSupport {
 
@@ -54,7 +55,7 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[Any] 
       response match {
         case GrpcResponse(v, encoding) =>
           encoding match {
-            case GrpcEncoding.JSON =>
+            case RPCEncoding.JSON =>
               // Wrap JSON with a response object for the ease of parsing
               val json = s"""{"response":${codec.toJson(v.asInstanceOf[A])}}"""
               new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))
@@ -74,7 +75,7 @@ class GrpcResponseMarshaller[A](codec: MessageCodec[A]) extends Marshaller[Any] 
     val bytes = IO.readFully(stream)
 
     try {
-      if (GrpcEncoding.isJsonObjectMessage(bytes)) {
+      if (RPCEncoding.isJsonObjectMessage(bytes)) {
         // Parse {"response": ....}
         ValueCodec.fromJson(bytes) match {
           case m: MapValue =>

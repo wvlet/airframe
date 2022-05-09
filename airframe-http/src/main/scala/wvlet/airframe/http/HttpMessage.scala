@@ -112,13 +112,13 @@ trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
     contentType.exists(_.startsWith("application/json"))
   }
   def isContentTypeMsgPack: Boolean = {
-    contentType.exists(_ == HttpHeader.MediaType.ApplicationMsgPack)
+    contentType.exists(x => x == HttpHeader.MediaType.ApplicationMsgPack || x == "application/msgpack")
   }
   def acceptsJson: Boolean = {
     accept.exists(x => x == HttpHeader.MediaType.ApplicationJson || x.startsWith("application/json"))
   }
   def acceptsMsgPack: Boolean = {
-    accept.exists(_ == HttpHeader.MediaType.ApplicationMsgPack)
+    accept.exists(x => x == HttpHeader.MediaType.ApplicationMsgPack || x == "application/msgpack")
   }
 }
 

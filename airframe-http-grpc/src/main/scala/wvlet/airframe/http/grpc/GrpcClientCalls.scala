@@ -14,6 +14,7 @@
 package wvlet.airframe.http.grpc
 import io.grpc.stub.{MetadataUtils, StreamObserver}
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.http.RPCEncoding
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner, RxStream}
 import wvlet.log.LogSupport
@@ -47,7 +48,7 @@ object GrpcClientCalls extends LogSupport {
       input: Rx[A],
       codec: MessageCodec[A],
       requestObserver: StreamObserver[MsgPack],
-      encoding: GrpcEncoding = GrpcEncoding.MsgPack
+      encoding: RPCEncoding = RPCEncoding.MsgPack
   ): Cancelable = {
     RxRunner.run(input) {
       case OnNext(x) => {

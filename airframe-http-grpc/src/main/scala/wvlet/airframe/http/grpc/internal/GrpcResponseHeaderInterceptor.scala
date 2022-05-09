@@ -15,7 +15,8 @@ package wvlet.airframe.http.grpc.internal
 
 import io.grpc.ForwardingServerCall.SimpleForwardingServerCall
 import io.grpc.{Contexts, Metadata, ServerCall, ServerCallHandler, ServerInterceptor}
-import wvlet.airframe.http.grpc.{GrpcContext, GrpcEncoding}
+import wvlet.airframe.http.RPCEncoding
+import wvlet.airframe.http.grpc.GrpcContext
 
 /**
   * An interceptor for setting the response headers based on the encoding used for RPC
@@ -34,10 +35,10 @@ private[grpc] object GrpcResponseHeaderInterceptor extends ServerInterceptor {
           // grpc-java always uses content-type: application/grpc
           // https://github.com/grpc/grpc-java/issues/7321
           requestHeaders.accept match {
-            case GrpcEncoding.ApplicationJson =>
-              responseHeaders.setContentType(GrpcEncoding.ApplicationJson)
+            case RPCEncoding.ApplicationJson =>
+              responseHeaders.setContentType(RPCEncoding.ApplicationJson)
             case _ =>
-              responseHeaders.setContentType(GrpcEncoding.ApplicationMsgPack)
+              responseHeaders.setContentType(RPCEncoding.ApplicationMsgPack)
           }
           super.sendHeaders(responseHeaders);
         }
