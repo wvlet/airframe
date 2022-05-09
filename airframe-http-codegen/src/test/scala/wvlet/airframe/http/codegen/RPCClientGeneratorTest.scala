@@ -29,6 +29,6 @@ class RPCClientGeneratorTest extends AirSpec {
   test("propagate RPCException") {
     val config = HttpClientGeneratorConfig("example.api.rpc:sync:MyRPCClient")
     val code   = HttpCodeGenerator.generate(router, config)
-    info(code)
+    debug(code)
   }
 }

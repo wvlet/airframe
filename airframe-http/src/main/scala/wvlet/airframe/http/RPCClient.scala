@@ -18,6 +18,13 @@ import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.surface.Surface
 
+/**
+  * Configuration for RPC clients
+  * @param requestFilter
+  * @param retryContext
+  * @param codecFactory
+  * @param rpcEncoding
+  */
 case class RPCClientConfig(
     requestFilter: HttpMessage.Request => HttpMessage.Request = identity,
     retryContext: RetryContext = HttpClient.defaultHttpClientRetry[Request, Response],
@@ -25,6 +32,11 @@ case class RPCClientConfig(
     rpcEncoding: RPCEncoding = RPCEncoding.MsgPack
 )
 
+/**
+  * RPC client implementation base
+  * @param config
+  * @param httpSyncClient
+  */
 class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient) extends AutoCloseable {
 
   override def close(): Unit = {
