@@ -39,14 +39,16 @@ case class RPCClientConfig(
   * @param config
   * @param httpSyncClient
   */
-class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient) extends AutoCloseable {
+class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient)
+    extends RPCSyncClientBase
+    with AutoCloseable {
 
   override def close(): Unit = {
     httpSyncClient.close()
   }
 
-  def send(
-      path: String,
+  def sendRaw(
+      resourcePath: String,
       requestSurface: Surface,
       requestContent: Any,
       responseSurface: Surface,
@@ -58,7 +60,7 @@ class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient) ex
     val request: Request =
       try {
         Http
-          .POST(path)
+          .POST(resourcePath)
           .withContentType(config.rpcEncoding.applicationType)
           .withContent(config.rpcEncoding.encodeWithCodec[Any](requestContent, requestEncoder))
       } catch {
@@ -113,7 +115,7 @@ class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient) ex
           }
         } catch {
           case e: MessageCodecException =>
-            RPCStatus.ofCode(rpcStatus).newException(s"N/A", e)
+            RPCStatus.ofCode(rpcStatus).newException(s"Failed to parse the RPC error details", e)
         }
       case None =>
         RPCStatus.DATA_LOSS_I8.newException(s"Invalid RPC response: ${response}")
