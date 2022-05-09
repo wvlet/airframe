@@ -253,9 +253,15 @@ object FinagleServer extends LogSupport {
                 .response(e.status.httpStatus)
                 // Add RPC status header to handle errors in clients
                 .addHeader(HttpHeader.xAirframeRPCStatus, e.status.code.toString)
+
               try {
-                val errorResponseJson = e.toJson
-                resp = resp.withJson(errorResponseJson)
+                // Embed RPCError into the response body
+                if (request.acceptJson) {
+                  resp = resp.withJson(e.toJson)
+                } else {
+                  // Use MessagePack encoding by default
+                  resp = resp.withMsgPack(e.toMsgPack)
+                }
               } catch {
                 case ex: Throwable =>
                   // Show warning

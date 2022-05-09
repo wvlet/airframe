@@ -14,6 +14,9 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.codec.{GenericException, GenericStackTraceElement, MessageCodec}
+import wvlet.airframe.http.RPCException.rpcErrorMessageCodec
+import wvlet.airframe.json.Json
+import wvlet.airframe.msgpack.spi.MsgPack
 
 /**
   * RPCException provides a backend-independent (e.g., Finagle or gRPC) RPC error reporting mechanism. Create this
@@ -57,8 +60,12 @@ case class RPCException(
     )
   }
 
-  def toJson: String = {
-    MessageCodec.of[RPCErrorMessage].toJson(toMessage)
+  def toJson: Json = {
+    rpcErrorMessageCodec.toJson(toMessage)
+  }
+
+  def toMsgPack: MsgPack = {
+    rpcErrorMessageCodec.toMsgPack(toMessage)
   }
 }
 
@@ -79,9 +86,10 @@ case class RPCErrorMessage(
 )
 
 object RPCException {
-  def fromJson(json: String): RPCException = {
-    val codec = MessageCodec.of[RPCErrorMessage]
-    val m     = codec.fromJson(json)
+
+  private val rpcErrorMessageCodec = MessageCodec.of[RPCErrorMessage]
+
+  private def fromRPCErrorMessage(m: RPCErrorMessage): RPCException = {
     val ex = new RPCException(
       status = RPCStatus.ofCode(m.code),
       message = m.message,
@@ -94,5 +102,15 @@ object RPCException {
       ex.setStackTrace(x.map(_.toJavaStackTraceElement).toArray)
     }
     ex
+  }
+
+  def fromJson(json: String): RPCException = {
+    val m = rpcErrorMessageCodec.fromJson(json)
+    fromRPCErrorMessage(m)
+  }
+
+  def fromMsgPack(msgpack: MsgPack): RPCException = {
+    val m = rpcErrorMessageCodec.fromMsgPack(msgpack)
+    fromRPCErrorMessage(m)
   }
 }

@@ -158,6 +158,8 @@ trait HttpRequest[Req] {
     Http.parseAcceptHeader(header.get(HttpHeader.Accept))
   def acceptsMsgPack: Boolean =
     accept.contains(HttpHeader.MediaType.ApplicationMsgPack)
+  def acceptJson: Boolean =
+    accept.contains(HttpHeader.MediaType.ApplicationJson)
 }
 
 /**
