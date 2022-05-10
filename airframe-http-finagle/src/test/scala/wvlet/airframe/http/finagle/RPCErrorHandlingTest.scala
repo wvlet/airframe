@@ -15,7 +15,7 @@ package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.{Method, Request}
 import wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi
-import wvlet.airframe.http.{RPC, RPCException, RPCStatus, Router}
+import wvlet.airframe.http.{HttpHeader, RPC, RPCException, RPCStatus, Router}
 import wvlet.airspec.AirSpec
 
 import java.io.{PrintWriter, StringWriter}
@@ -47,7 +47,7 @@ class RPCErrorHandlingTest extends AirSpec {
 
     test("with stack trace") {
       val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/permissionCheck")
-      req.setContentTypeJson()
+      req.accept = HttpHeader.MediaType.ApplicationJson
       val resp = client.sendSafe(req)
 
       val errorJson = resp.getContentString()
@@ -68,7 +68,7 @@ class RPCErrorHandlingTest extends AirSpec {
 
     test("without stack trace") {
       val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/authCheck")
-      req.setContentTypeJson()
+      req.accept = HttpHeader.MediaType.ApplicationJson
       val resp = client.sendSafe(req)
 
       val errorJson = resp.getContentString()

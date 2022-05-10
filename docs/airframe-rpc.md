@@ -720,7 +720,7 @@ case class HelloResponse(message: String)
 - __Method__: POST
 - __Path__: `/(package name).(RPC interface name)/(method name)`
   - ex. `POST /hello.api.v1.MyService/hello`
-- __Content-Type__: `application/x-msgpack` (default), `application/json`, or `application/grpc` (
+- __Content-Type__: `application/msgpack` (default), `application/json`, or `application/grpc` (
   gRPC backend with HTTP/2)
 - __Request body__: JSON or MessagePack (default) representation of the method arguments. Each
   method parameter names and arguments need to be a key-value pair in the JSON object.
@@ -736,7 +736,7 @@ case class HelloResponse(message: String)
 }
 ```
 
-- __Accept__: "application/json" or "application/x-msgpack" (default)
+- __Accept__: "application/json" or "application/msgpack" (default)
 - __Response body__: JSON or MessagePack (default) representation of the method return type:
 
 ```json
