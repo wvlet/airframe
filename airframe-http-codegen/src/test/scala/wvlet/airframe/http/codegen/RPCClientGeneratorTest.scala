@@ -30,13 +30,13 @@ class RPCClientGeneratorTest extends AirSpec {
     val config = HttpClientGeneratorConfig("example.api.rpc:sync:MyRPCClient")
     val code   = HttpCodeGenerator.generate(router, config)
     // TODO Use debug log level
-    info(code)
+    debug(code)
   }
 
   test("propagate RPCException in async client") {
     val config = HttpClientGeneratorConfig("example.api.rpc:async:MyRPCClient")
     val code   = HttpCodeGenerator.generate(router, config)
     // TODO Use debug log level
-    info(code)
+    debug(code)
   }
 }
