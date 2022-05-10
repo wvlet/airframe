@@ -15,7 +15,7 @@ package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.{Method, Request}
 import wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi
-import wvlet.airframe.http.{RPC, RPCException, RPCStatus, Router}
+import wvlet.airframe.http.{HttpHeader, RPC, RPCException, RPCStatus, Router}
 import wvlet.airspec.AirSpec
 
 import java.io.{PrintWriter, StringWriter}
@@ -45,9 +45,30 @@ class RPCErrorHandlingTest extends AirSpec {
   test("rpc error test") { (client: FinagleSyncClient) =>
     warn("Running RPC exception test. Some warning messages will be shown")
 
+    test("with stack trace in msgpack") {
+      val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/permissionCheck")
+
+      val resp = client.sendSafe(req)
+
+      val errorMsgPack = resp.contentBytes
+      val ex           = RPCException.fromMsgPack(errorMsgPack)
+
+      resp.statusCode shouldBe RPCStatus.PERMISSION_DENIED_U14.httpStatus.code
+      ex.status shouldBe RPCStatus.PERMISSION_DENIED_U14
+      ex.message shouldBe "permission denied"
+      ex.metadata shouldBe Map("retry_count" -> 3)
+
+      val s = new StringWriter
+      val p = new PrintWriter(s)
+      ex.printStackTrace(p)
+      p.flush()
+      val stackTrace = s.toString
+      stackTrace.contains("DemoApi.permissionCheck") shouldBe true
+    }
+
     test("with stack trace") {
       val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/permissionCheck")
-      req.setContentTypeJson()
+      req.accept = HttpHeader.MediaType.ApplicationJson
       val resp = client.sendSafe(req)
 
       val errorJson = resp.getContentString()
@@ -68,7 +89,7 @@ class RPCErrorHandlingTest extends AirSpec {
 
     test("without stack trace") {
       val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/authCheck")
-      req.setContentTypeJson()
+      req.accept = HttpHeader.MediaType.ApplicationJson
       val resp = client.sendSafe(req)
 
       val errorJson = resp.getContentString()

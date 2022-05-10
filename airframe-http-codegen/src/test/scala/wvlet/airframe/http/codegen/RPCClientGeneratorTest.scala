@@ -26,9 +26,17 @@ class RPCClientGeneratorTest extends AirSpec {
     r.contains("addUser(request:CreateUserRequest): User") shouldBe true
   }
 
-  test("propagate RPCException") {
+  test("propagate RPCException in sync client") {
     val config = HttpClientGeneratorConfig("example.api.rpc:sync:MyRPCClient")
     val code   = HttpCodeGenerator.generate(router, config)
+    // TODO Use debug log level
+    debug(code)
+  }
+
+  test("propagate RPCException in async client") {
+    val config = HttpClientGeneratorConfig("example.api.rpc:async:MyRPCClient")
+    val code   = HttpCodeGenerator.generate(router, config)
+    // TODO Use debug log level
     debug(code)
   }
 }

@@ -33,6 +33,7 @@ import scala.util.{Failure, Success, Try}
 
 object JSHttpClient {
 
+  @deprecated("Use RPCEncoding instead", "21.5.0")
   sealed trait MessageEncoding
   object MessageEncoding {
     object MessagePackEncoding extends MessageEncoding
@@ -41,20 +42,31 @@ object JSHttpClient {
 
   // An http client for production-use
   def defaultClient = {
-    val protocol = window.location.protocol.stripSuffix(":")
-    val hostname = window.location.hostname
-    if (hostname == "localhost" && protocol == "http") {
-      // Use local client for testing
-      localClient
-    } else {
-      val port    = Option(window.location.port).map(x => if (x.isEmpty) "" else s":${x}").getOrElse("")
-      val address = ServerAddress(s"${protocol}://${hostname}${port}")
-      JSHttpClient(JSHttpClientConfig(serverAddress = Some(address)))
+    resolveServerAddress match {
+      case None =>
+        // Use local client for testing
+        localClient
+      case Some(address) =>
+        JSHttpClient(JSHttpClientConfig(serverAddress = Some(ServerAddress(address))))
     }
   }
 
   // An http client that can be used for local testing
   def localClient = JSHttpClient()
+
+  /**
+    * Find the host server address from the browser context
+    */
+  def resolveServerAddress: Option[String] = {
+    val protocol = window.location.protocol.stripSuffix(":")
+    val hostname = window.location.hostname
+    if (hostname == "localhost" && protocol == "http") {
+      None
+    } else {
+      val port = Option(window.location.port).map(x => if (x.isEmpty) "" else s":${x}").getOrElse("")
+      Some(s"${protocol}://${hostname}${port}")
+    }
+  }
 
   def defaultHttpClientRetryer: RetryContext = {
     Retry
@@ -65,6 +77,9 @@ object JSHttpClient {
   }
 }
 
+/**
+  * TODO: We can use HttpClientConfig instead. This config is left here for the compatibility
+  */
 case class JSHttpClientConfig(
     serverAddress: Option[ServerAddress] = None,
     requestEncoding: MessageEncoding = MessageEncoding.MessagePackEncoding,
@@ -253,16 +268,15 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
             codecFactory.of(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
           // Read the response body as MessagePack or JSON
           val ct = resp.contentType
-          resp.contentType match {
-            case Some("application/x-msgpack") =>
-              responseCodec.fromMsgPack(resp.contentBytes)
-            case _ =>
-              val json = resp.contentString
-              if (json.nonEmpty) {
-                responseCodec.fromJson(json)
-              } else {
-                throw new HttpClientException(resp, resp.status, "Empty response from the server")
-              }
+          if (resp.isContentTypeMsgPack) {
+            responseCodec.fromMsgPack(resp.contentBytes)
+          } else {
+            val json = resp.contentString
+            if (json.nonEmpty) {
+              responseCodec.fromJson(json)
+            } else {
+              throw new HttpClientException(resp, resp.status, "Empty response from the server")
+            }
           }
       }
     }

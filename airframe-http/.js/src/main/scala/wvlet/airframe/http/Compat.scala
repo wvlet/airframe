@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.http.js.JSHttpClientBackend
+
 /**
   * Scala.js specific implementation
   */
@@ -20,5 +22,5 @@ private object Compat extends CompatApi {
   override def urlEncode(s: String): String = {
     scala.scalajs.js.URIUtils.encodeURI(s)
   }
-  override def defaultHttpClientBackend: HttpClientBackend = ???
+  override def defaultHttpClientBackend: HttpClientBackend = JSHttpClientBackend
 }

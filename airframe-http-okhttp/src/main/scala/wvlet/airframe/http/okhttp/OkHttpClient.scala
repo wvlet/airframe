@@ -7,7 +7,7 @@ import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http._
-import wvlet.airframe.http.HttpResponseCodec
+import wvlet.airframe.http.HttpResponseBodyCodec
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.log.LogSupport
 
@@ -59,7 +59,7 @@ class OkHttpClient(address: ServerAddress, config: OkHttpClientConfig)
   }
 
   private val codecFactory  = MessageCodecFactory.defaultFactoryForJSON
-  private val responseCodec = new HttpResponseCodec[Response]
+  private val responseCodec = new HttpResponseBodyCodec[Response]
 
   private def convert[A: ru.TypeTag](response: Response): A = {
     if (implicitly[ru.TypeTag[A]] == ru.typeTag[Response]) {

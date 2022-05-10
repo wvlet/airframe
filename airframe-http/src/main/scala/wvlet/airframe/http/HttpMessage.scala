@@ -91,6 +91,7 @@ trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
   // HTTP header setting utility methods
   def withAccept(acceptType: String): Raw = withHeader(HttpHeader.Accept, acceptType)
   def withAcceptMsgPack: Raw              = withHeader(HttpHeader.Accept, HttpHeader.MediaType.ApplicationMsgPack)
+  def withAcceptJson: Raw                 = withHeader(HttpHeader.Accept, HttpHeader.MediaType.ApplicationJson)
   def withAllow(allow: String): Raw       = withHeader(HttpHeader.Allow, allow)
   def withAuthorization(authorization: String): Raw     = withHeader(HttpHeader.Authorization, authorization)
   def withCacheControl(cacheControl: String): Raw       = withHeader(HttpHeader.CacheControl, cacheControl)
@@ -112,13 +113,13 @@ trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
     contentType.exists(_.startsWith("application/json"))
   }
   def isContentTypeMsgPack: Boolean = {
-    contentType.exists(x => x == HttpHeader.MediaType.ApplicationMsgPack || x == "application/msgpack")
+    contentType.exists(x => x == HttpHeader.MediaType.ApplicationMsgPack || x == "application/x-msgpack")
   }
   def acceptsJson: Boolean = {
     accept.exists(x => x == HttpHeader.MediaType.ApplicationJson || x.startsWith("application/json"))
   }
   def acceptsMsgPack: Boolean = {
-    accept.exists(x => x == HttpHeader.MediaType.ApplicationMsgPack || x == "application/msgpack")
+    accept.exists(x => x == HttpHeader.MediaType.ApplicationMsgPack || x == "application/x-msgpack")
   }
 }
 
