@@ -35,6 +35,8 @@ class RPCClient(config: HttpClientConfig, httpClient: Http.AsyncClient)
     httpClient.close()
   }
 
+  private implicit val ec = config.backend.defaultExecutionContext
+
   def sendRaw(
       resourcePath: String,
       requestSurface: Surface,
@@ -51,7 +53,7 @@ class RPCClient(config: HttpClientConfig, httpClient: Http.AsyncClient)
         } else {
           throw RPCClient.parseRPCException(response)
         }
-      }(config.backend.defaultExecutionContext)
+      }
   }
 
 }
@@ -105,15 +107,15 @@ object RPCClient extends LogSupport {
       config.codecFactory.ofSurface(requestSurface).asInstanceOf[MessageCodec[Any]]
 
     try {
-      // Encode request body
       Http
         .POST(resourcePath)
         .withContentType(config.rpcEncoding.applicationType)
+        // Encode request body
         .withContent(config.rpcEncoding.encodeWithCodec[Any](requestContent, requestEncoder))
     } catch {
       case e: Throwable =>
         throw RPCStatus.INVALID_ARGUMENT_U2.newException(
-          message = s"Failed to encode RPC request arguments: ${requestContent} -- ${e.getMessage}",
+          message = s"Failed to encode the RPC request argument ${requestContent}: ${e.getMessage}",
           cause = e
         )
     }
@@ -130,7 +132,10 @@ object RPCClient extends LogSupport {
         responseObject
       } catch {
         case e: MessageCodecException =>
-          throw RPCStatus.DATA_LOSS_I8.newException(s"Failed to parse the RPC response from the server: ${response}", e)
+          throw RPCStatus.DATA_LOSS_I8.newException(
+            s"Failed to parse the RPC response from the server ${response}: ${e.getMessage}",
+            e
+          )
       }
     }
   }
@@ -145,7 +150,7 @@ object RPCClient extends LogSupport {
           RPCException.fromMsgPack(msgpack)
         } catch {
           case e: MessageCodecException =>
-            RPCStatus.ofCode(rpcStatus).newException(s"Failed to parse the RPC error details", e)
+            RPCStatus.ofCode(rpcStatus).newException(s"Failed to parse the RPC error details: ${e.getMessage}", e)
         }
       case None =>
         RPCStatus.DATA_LOSS_I8.newException(s"Invalid RPC response: ${response}")
