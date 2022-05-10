@@ -34,7 +34,7 @@ case class HttpClientConfig(
       * For converting Future[A] to Rx[A]. Use this method when you need to add a common error handler for Rx (e.g.,
       * with Rx.recover)
       */
-    rxConverter: Future[_] => RxStream[_] = { f: Future[_] =>
+    rxConverter: Future[_] => RxStream[_] = { (f: Future[_]) =>
       Rx.future(f)(Compat.defaultHttpClientBackend.defaultExecutionContext)
     }
 ) {
@@ -43,6 +43,10 @@ case class HttpClientConfig(
 
   def newAsyncClient(serverAddress: String): Http.AsyncClient =
     backend.newAsyncClient(serverAddress, this)
+
+  def newRPCSyncClient(serverAddress: String): RPCSyncClient = {
+    new RPCSyncClient(this, newSyncClient(serverAddress))
+  }
 
   def newRPCClientForScalaJS: RPCClient = {
     backend.newRPCClientForScalaJS(this)

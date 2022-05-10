@@ -77,6 +77,9 @@ object JSHttpClient {
   }
 }
 
+/**
+  * TODO: We can use HttpClientConfig instead. This config is left here for the compatibility
+  */
 case class JSHttpClientConfig(
     serverAddress: Option[ServerAddress] = None,
     requestEncoding: MessageEncoding = MessageEncoding.MessagePackEncoding,

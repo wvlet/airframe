@@ -35,7 +35,7 @@ class RPCClient(config: HttpClientConfig, httpClient: Http.AsyncClient)
     httpClient.close()
   }
 
-  private implicit val ec = config.backend.defaultExecutionContext
+  private implicit val ec: ExecutionContext = config.backend.defaultExecutionContext
 
   def sendRaw(
       resourcePath: String,
@@ -47,7 +47,7 @@ class RPCClient(config: HttpClientConfig, httpClient: Http.AsyncClient)
     val request: Request = RPCClient.prepareRPCRequest(config, resourcePath, requestSurface, requestContent)
     httpClient
       .sendSafe(request, config.requestFilter.andThen(requestFilter))
-      .map { response: Response =>
+      .map { (response: Response) =>
         if (response.status.isSuccessful) {
           RPCClient.parseResponse(config, response, responseSurface)
         } else {
@@ -131,7 +131,7 @@ object RPCClient extends LogSupport {
         val responseObject = codec.fromMsgPack(msgpack)
         responseObject
       } catch {
-        case e: MessageCodecException =>
+        case e: Throwable =>
           throw RPCStatus.DATA_LOSS_I8.newException(
             s"Failed to parse the RPC response from the server ${response}: ${e.getMessage}",
             e
@@ -149,7 +149,7 @@ object RPCClient extends LogSupport {
           val msgpack = responseBodyCodec.toMsgPack(response)
           RPCException.fromMsgPack(msgpack)
         } catch {
-          case e: MessageCodecException =>
+          case e: Throwable =>
             RPCStatus.ofCode(rpcStatus).newException(s"Failed to parse the RPC error details: ${e.getMessage}", e)
         }
       case None =>

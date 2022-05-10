@@ -15,6 +15,8 @@ package wvlet.airframe.http
 
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.http.HttpMessage.{Response,Request}
+import scala.concurrent.Future
+
 /**
   * Scala 3 specific helper method to make an RPC request
   */
@@ -25,5 +27,16 @@ trait RPCSyncClientBase { self: RPCSyncClient =>
       requestFilter: Request => Request
   ): ResponseType = {
     self.sendRaw(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[ResponseType]
+  }
+}
+
+
+trait RPCClientBase { self: RPCClient =>
+  inline def send[RequestType, ResponseType](
+    resourcePath: String,
+    request: RequestType,
+    requestFilter: Request => Request
+  ): Future[ResponseType] = {
+    self.sendRaw(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[Future[ResponseType]]
   }
 }
