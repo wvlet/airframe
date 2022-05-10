@@ -526,4 +526,29 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     mod
   }
 
+  def surfaceFromClass(cl: Class[_]): Expr[Surface] = {
+    val name         = cl.getName
+    val rawType      = Class.forName(name)
+    val constructors = rawType.getConstructors
+    val (typeArgs, params) = if (constructors.nonEmpty) {
+      val primaryConstructor = constructors(0)
+      val paramSurfaces: Seq[Expr[Surface]] = primaryConstructor.getParameterTypes.map { paramType =>
+        val tastyType = quotes.reflect.TypeRepr.typeConstructorOf(paramType)
+        surfaceOf(tastyType)
+      }.toSeq
+      // FIXME: Use TastyInspector as runtime-like reflection for Scala 3
+      val params: Seq[Expr[Parameter]] = Seq.empty
+      (Expr.ofSeq(paramSurfaces), Expr.ofSeq(params))
+    } else {
+      ('{ Seq.empty[Surface] }, '{ Seq.empty[Parameter] })
+    }
+
+    '{
+      new wvlet.airframe.surface.GenericSurface(
+        rawType = Class.forName(${ Expr(name) }),
+        typeArgs = ${ typeArgs }
+      )
+    }
+  }
+
 }

@@ -30,11 +30,8 @@ object TastySurfaceFactory extends LogSupport {
           val f = new CompileTimeSurfaceFactory(using quotes)
           tastyType match {
             case t if t.show == "<none>.<none>" =>
-              val name = cl.getName
-              // FIXME: A workaround for runtime surface generation.
               // Example use case is MessageCodec.of[Any].
-              // `GenericSurface(${ Expr(cl) }) `causes `scala.MatchError: NoType` ¯\_(ツ)_/¯
-              '{ new wvlet.airframe.surface.GenericSurface(${ Expr(cl) }) }
+              f.surfaceFromClass(cl)
             case _ =>
               f.surfaceOf(tastyType.asType)
           }
