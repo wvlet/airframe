@@ -24,8 +24,11 @@ trait HttpClientBackend {
   def defaultRequestRetryer: RetryContext
 
   def newSyncClient(severAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response]
+
   def newAsyncClient(
       serverAddress: String,
       clientConfig: HttpClientConfig
   ): HttpClient[Future, Request, Response]
+
+  def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCClient
 }

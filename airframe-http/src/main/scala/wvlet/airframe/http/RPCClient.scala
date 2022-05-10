@@ -13,43 +13,27 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.codec.{MessageCodec, MessageCodecException, MessageCodecFactory}
-import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.codec.{MessageCodec, MessageCodecException}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-
-/**
-  * Configuration for RPC clients
-  * @param requestFilter
-  * @param retryContext
-  * @param codecFactory
-  * @param rpcEncoding
-  */
-case class RPCClientConfig(
-    requestFilter: HttpMessage.Request => HttpMessage.Request = identity,
-    retryContext: RetryContext = HttpClient.defaultHttpClientRetry[Request, Response],
-    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
-    rpcEncoding: RPCEncoding = RPCEncoding.MsgPack
-)
 
 /**
   * A base scala Future-based RPC client implementation, which is mainly for supporting Scala.js
   * @param config
   * @param httpClient
   */
-class RPCClient(config: RPCClientConfig, httpClient: Http.AsyncClient) extends RPCClientBase with AutoCloseable {
+class RPCClient(config: HttpClientConfig, httpClient: Http.AsyncClient)
+    extends RPCClientBase
+    with AutoCloseable
+    with LogSupport {
 
   override def close(): Unit = {
     httpClient.close()
   }
-
-  /**
-    * Get the internal http client
-    */
-  def getClient: Http.AsyncClient = httpClient
 
   def sendRaw(
       resourcePath: String,
@@ -57,9 +41,8 @@ class RPCClient(config: RPCClientConfig, httpClient: Http.AsyncClient) extends R
       requestContent: Any,
       responseSurface: Surface,
       requestFilter: Request => Request = identity
-  )(implicit ec: ExecutionContext): Future[Any] = {
+  ): Future[Any] = {
     val request: Request = RPCClient.prepareRPCRequest(config, resourcePath, requestSurface, requestContent)
-
     httpClient
       .sendSafe(request, config.requestFilter.andThen(requestFilter))
       .map { response: Response =>
@@ -68,7 +51,7 @@ class RPCClient(config: RPCClientConfig, httpClient: Http.AsyncClient) extends R
         } else {
           throw RPCClient.parseRPCException(response)
         }
-      }
+      }(config.backend.defaultExecutionContext)
   }
 
 }
@@ -78,7 +61,7 @@ class RPCClient(config: RPCClientConfig, httpClient: Http.AsyncClient) extends R
   * @param config
   * @param httpSyncClient
   */
-class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient)
+class RPCSyncClient(config: HttpClientConfig, httpSyncClient: Http.SyncClient)
     extends RPCSyncClientBase
     with AutoCloseable {
 
@@ -109,11 +92,11 @@ class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient)
 
 }
 
-object RPCClient {
+object RPCClient extends LogSupport {
   private val responseBodyCodec = new HttpResponseBodyCodec[Response]
 
   private[http] def prepareRPCRequest(
-      config: RPCClientConfig,
+      config: HttpClientConfig,
       resourcePath: String,
       requestSurface: Surface,
       requestContent: Any
@@ -121,23 +104,22 @@ object RPCClient {
     val requestEncoder: MessageCodec[Any] =
       config.codecFactory.ofSurface(requestSurface).asInstanceOf[MessageCodec[Any]]
 
-    val request: Request =
-      try {
-        Http
-          .POST(resourcePath)
-          .withContentType(config.rpcEncoding.applicationType)
-          .withContent(config.rpcEncoding.encodeWithCodec[Any](requestContent, requestEncoder))
-      } catch {
-        case e: MessageCodecException =>
-          throw RPCStatus.INVALID_ARGUMENT_U2.newException(
-            message = s"Failed to encode RPC request arguments: ${requestContent}",
-            cause = e
-          )
-      }
-    request
+    try {
+      // Encode request body
+      Http
+        .POST(resourcePath)
+        .withContentType(config.rpcEncoding.applicationType)
+        .withContent(config.rpcEncoding.encodeWithCodec[Any](requestContent, requestEncoder))
+    } catch {
+      case e: Throwable =>
+        throw RPCStatus.INVALID_ARGUMENT_U2.newException(
+          message = s"Failed to encode RPC request arguments: ${requestContent} -- ${e.getMessage}",
+          cause = e
+        )
+    }
   }
 
-  private[http] def parseResponse(config: RPCClientConfig, response: Response, responseSurface: Surface): Any = {
+  private[http] def parseResponse(config: HttpClientConfig, response: Response, responseSurface: Surface): Any = {
     if (classOf[Response].isAssignableFrom(responseSurface.rawType)) {
       response
     } else {

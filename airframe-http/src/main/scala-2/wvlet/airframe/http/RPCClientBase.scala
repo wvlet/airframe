@@ -35,5 +35,5 @@ trait RPCClientBase { self: RPCClient =>
       resourcePath: String,
       request: RequestType,
       requestFilter: Request => Request
-  )(implicit ec: ExecutionContext): Future[ResponseType] = macro HttpMacros.rpcSendAsync[Request, ResponseType]
+  ): Future[ResponseType] = macro HttpMacros.rpcSendAsync[RequestType, ResponseType]
 }

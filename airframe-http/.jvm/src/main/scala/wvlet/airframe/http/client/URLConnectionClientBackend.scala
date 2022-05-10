@@ -14,7 +14,7 @@
 package wvlet.airframe.http.client
 import wvlet.airframe.control.Retry
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{HttpClient, HttpClientBackend, HttpClientConfig, HttpSyncClient, ServerAddress}
+import wvlet.airframe.http.{HttpClient, HttpClientBackend, HttpClientConfig, HttpSyncClient, RPCClient, ServerAddress}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -45,4 +45,5 @@ object URLConnectionClientBackend extends HttpClientBackend {
     throw new UnsupportedOperationException("Default async client is not supported.")
   }
 
+  override def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCClient = ???
 }

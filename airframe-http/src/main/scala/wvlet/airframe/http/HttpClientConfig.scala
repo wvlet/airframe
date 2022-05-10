@@ -38,11 +38,15 @@ case class HttpClientConfig(
       Rx.future(f)(Compat.defaultHttpClientBackend.defaultExecutionContext)
     }
 ) {
-  def newSyncClient(serverAddress: String): HttpSyncClient[Request, Response] =
+  def newSyncClient(serverAddress: String): Http.SyncClient =
     backend.newSyncClient(serverAddress, this)
 
-  def newAsyncClient(serverAddress: String): HttpClient[Future, Request, Response] =
+  def newAsyncClient(serverAddress: String): Http.AsyncClient =
     backend.newAsyncClient(serverAddress, this)
+
+  def newRPCClientForScalaJS: RPCClient = {
+    backend.newRPCClientForScalaJS(this)
+  }
 
   def withBackend(newBackend: HttpClientBackend): HttpClientConfig =
     this.copy(backend = newBackend)

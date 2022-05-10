@@ -39,7 +39,7 @@ object HttpMacros {
 
   def rpcSendAsync[RequestType: c.WeakTypeTag, ResponseType: c.WeakTypeTag](
       c: sm.Context
-  )(resourcePath: c.Tree, request: c.Tree, requestFilter: c.Tree)(ec: c.Tree): c.Tree = {
+  )(resourcePath: c.Tree, request: c.Tree, requestFilter: c.Tree): c.Tree = {
     import c.universe._
     val t1 = implicitly[c.WeakTypeTag[RequestType]]
     val t2 = implicitly[c.WeakTypeTag[ResponseType]]
@@ -50,7 +50,7 @@ object HttpMacros {
             ${request},
             wvlet.airframe.surface.Surface.of[${t2}],
             ${requestFilter}
-          )(${ec}).asInstanceOf[${t2}]
+          ).asInstanceOf[scala.concurrent.Future[${t2}]]
        }"""
   }
 

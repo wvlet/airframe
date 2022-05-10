@@ -14,7 +14,17 @@
 package wvlet.airframe.http.js
 
 import wvlet.airframe.control.Retry
-import wvlet.airframe.http.{HttpClient, HttpClientBackend, HttpClientConfig, HttpMessage, HttpSyncClient}
+import wvlet.airframe.http.js.JSHttpClient.MessageEncoding
+import wvlet.airframe.http.{
+  HttpClient,
+  HttpClientBackend,
+  HttpClientConfig,
+  HttpMessage,
+  HttpSyncClient,
+  RPCClient,
+  RPCEncoding,
+  ServerAddress
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -39,7 +49,25 @@ object JSHttpClientBackend extends HttpClientBackend {
       serverAddress: String,
       clientConfig: HttpClientConfig
   ): HttpClient[Future, HttpMessage.Request, HttpMessage.Response] = {
-    new JSHttpClientAdaptor(JSHttpClient())
+    val address = if (serverAddress.isEmpty) None else Some(ServerAddress(serverAddress))
+
+    // TODO: Use HttpClientConfig in JSHttpClient
+    val config = JSHttpClientConfig(serverAddress = address)
+      .withRequestEncoding(
+        if (clientConfig.rpcEncoding == RPCEncoding.JSON) MessageEncoding.JsonEncoding
+        else MessageEncoding.MessagePackEncoding
+      )
+      .withRequestFilter(clientConfig.requestFilter)
+      .withRetry(r => clientConfig.retryContext)
+      .withCodecFactory(clientConfig.codecFactory)
+      .withCircuitBreaker(c => clientConfig.circuitBreaker)
+      .withRxConverter(clientConfig.rxConverter)
+
+    new JSHttpClientAdaptor(JSHttpClient(config))
   }
 
+  override def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCClient = {
+    val asyncClient = newAsyncClient(JSHttpClient.resolveServerAddress.getOrElse(""), clientConfig)
+    new RPCClient(clientConfig, asyncClient)
+  }
 }
