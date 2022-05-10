@@ -652,7 +652,7 @@ example:</p>
 <ul>
 <li>ex. <code>POST /hello.api.v1.MyService/hello</code></li>
 </ul></li>
-<li><strong>Content-Type</strong>: <code>application/x-msgpack</code> (default), <code>application/json</code>, or <code>application/grpc</code> (
+<li><strong>Content-Type</strong>: <code>application/msgpack</code> (default), <code>application/json</code>, or <code>application/grpc</code> (
 gRPC backend with HTTP/2)</li>
 <li><strong>Request body</strong>: JSON or MessagePack (default) representation of the method arguments. Each
 method parameter names and arguments need to be a key-value pair in the JSON object.
@@ -669,7 +669,7 @@ request to the above <code>hello(request:HelloRequest)</code> method will requir
 }
 </code></pre>
 <ul>
-<li><strong>Accept</strong>: &quot;application/json&quot; or &quot;application/x-msgpack&quot; (default)</li>
+<li><strong>Accept</strong>: &quot;application/json&quot; or &quot;application/msgpack&quot; (default)</li>
 <li><strong>Response body</strong>: JSON or MessagePack (default) representation of the method return type:</li>
 </ul>
 <pre><code class="hljs css language-json">{
