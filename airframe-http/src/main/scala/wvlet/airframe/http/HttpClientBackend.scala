@@ -30,5 +30,5 @@ trait HttpClientBackend {
       clientConfig: HttpClientConfig
   ): HttpClient[Future, Request, Response]
 
-  def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCClient
+  def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCHttpClient
 }

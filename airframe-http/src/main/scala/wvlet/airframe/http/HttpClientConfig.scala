@@ -44,11 +44,11 @@ case class HttpClientConfig(
   def newAsyncClient(serverAddress: String): Http.AsyncClient =
     backend.newAsyncClient(serverAddress, this)
 
-  def newRPCSyncClient(serverAddress: String): RPCSyncClient = {
-    new RPCSyncClient(this, newSyncClient(serverAddress))
+  def newRPCSyncClient(serverAddress: String): RPCHttpSyncClient = {
+    new RPCHttpSyncClient(this, newSyncClient(serverAddress))
   }
 
-  def newRPCClientForScalaJS: RPCClient = {
+  def newRPCClientForScalaJS: RPCHttpClient = {
     backend.newRPCClientForScalaJS(this)
   }
 

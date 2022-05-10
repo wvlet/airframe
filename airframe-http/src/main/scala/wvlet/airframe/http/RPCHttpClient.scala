@@ -1,5 +1,5 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the vLicense");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -22,11 +22,11 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 /**
-  * A base scala Future-based RPC client implementation, which is mainly for supporting Scala.js
+  * A scala Future-based RPC http client implementation, which is mainly for supporting Scala.js
   * @param config
   * @param httpClient
   */
-class RPCClient(config: HttpClientConfig, httpClient: Http.AsyncClient)
+class RPCHttpClient(config: HttpClientConfig, httpClient: Http.AsyncClient)
     extends RPCClientBase
     with AutoCloseable
     with LogSupport {
@@ -37,6 +37,10 @@ class RPCClient(config: HttpClientConfig, httpClient: Http.AsyncClient)
 
   private implicit val ec: ExecutionContext = config.backend.defaultExecutionContext
 
+  /**
+    * Send an RPC request (POST) and return the RPC response. If any failure happens, it will return
+    * Future[RPCException]
+    */
   def sendRaw(
       resourcePath: String,
       requestSurface: Surface,
@@ -44,26 +48,31 @@ class RPCClient(config: HttpClientConfig, httpClient: Http.AsyncClient)
       responseSurface: Surface,
       requestFilter: Request => Request = identity
   ): Future[Any] = {
-    val request: Request = RPCClient.prepareRPCRequest(config, resourcePath, requestSurface, requestContent)
-    httpClient
-      .sendSafe(request, config.requestFilter.andThen(requestFilter))
-      .map { (response: Response) =>
-        if (response.status.isSuccessful) {
-          RPCClient.parseResponse(config, response, responseSurface)
-        } else {
-          throw RPCClient.parseRPCException(response)
+
+    Future {
+      val request: Request = RPCHttpClient.prepareRPCRequest(config, resourcePath, requestSurface, requestContent)
+      request
+    }.flatMap { (request: Request) =>
+      httpClient
+        .sendSafe(request, config.requestFilter.andThen(requestFilter))
+        .map { (response: Response) =>
+          if (response.status.isSuccessful) {
+            RPCHttpClient.parseResponse(config, response, responseSurface)
+          } else {
+            throw RPCHttpClient.parseRPCException(response)
+          }
         }
-      }
+    }
   }
 
 }
 
 /**
-  * RPC client implementation base
+  * HTTP client implementation base for RPC
   * @param config
   * @param httpSyncClient
   */
-class RPCSyncClient(config: HttpClientConfig, httpSyncClient: Http.SyncClient)
+class RPCHttpSyncClient(config: HttpClientConfig, httpSyncClient: Http.SyncClient)
     extends RPCSyncClientBase
     with AutoCloseable {
 
@@ -71,6 +80,9 @@ class RPCSyncClient(config: HttpClientConfig, httpSyncClient: Http.SyncClient)
     httpSyncClient.close()
   }
 
+  /**
+    * Send an RPC request (POST) and return the RPC response. This method will throw RPCException when an error happens
+    */
   def sendRaw(
       resourcePath: String,
       requestSurface: Surface,
@@ -78,23 +90,23 @@ class RPCSyncClient(config: HttpClientConfig, httpSyncClient: Http.SyncClient)
       responseSurface: Surface,
       requestFilter: Request => Request = identity
   ): Any = {
-    val request: Request = RPCClient.prepareRPCRequest(config, resourcePath, requestSurface, requestContent)
+    val request: Request = RPCHttpClient.prepareRPCRequest(config, resourcePath, requestSurface, requestContent)
 
     // sendSafe method internally handles retries and HttpClientException, and then it returns the last response
     val response: Response = httpSyncClient.sendSafe(request, config.requestFilter.andThen(requestFilter))
 
     // f Parse the RPC response
     if (response.status.isSuccessful) {
-      RPCClient.parseResponse(config, response, responseSurface)
+      RPCHttpClient.parseResponse(config, response, responseSurface)
     } else {
       // Parse the RPC error message
-      throw RPCClient.parseRPCException(response)
+      throw RPCHttpClient.parseRPCException(response)
     }
   }
 
 }
 
-object RPCClient extends LogSupport {
+object RPCHttpClient extends LogSupport {
   private val responseBodyCodec = new HttpResponseBodyCodec[Response]
 
   private[http] def prepareRPCRequest(

@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.js
 
-import wvlet.airframe.http.{Http, HttpClientConfig, RPCClient, RPCSyncClient}
+import wvlet.airframe.http.{Http, HttpClientConfig, RPCHttpClient, RPCHttpSyncClient}
 import wvlet.airspec.AirSpec
 
 class JSRPCClientTest extends AirSpec {
@@ -28,13 +28,20 @@ class JSRPCClientTest extends AirSpec {
     val client = Http.client.newAsyncClient(PUBLIC_REST_SERVICE)
 
     // TODO: This test will be effective after the async test support in AirSpec 22.5.0
-    val rpcClient = new RPCClient(config, client)
+    val rpcClient = new RPCHttpClient(config, client)
     rpcClient
       .send[TestRequest, TestResponse]("/post", TestRequest(1, "test"), identity)
       .map { response =>
         debug(response)
         response.headers.get("Content-Type") shouldBe Some("application/msgpack")
       }(config.backend.defaultExecutionContext)
+  }
+
+  test("create RPC client") {
+    val config = HttpClientConfig()
+
+    // Sanity test for client creation
+    val client = config.newRPCClientForScalaJS
   }
 
 }

@@ -20,7 +20,7 @@ import scala.concurrent.Future
 /**
   * Scala 3 specific helper method to make an RPC request
   */
-trait RPCSyncClientBase { self: RPCSyncClient =>
+trait RPCSyncClientBase { self: RPCHttpSyncClient =>
   inline def send[RequestType, ResponseType](
       resourcePath: String,
       request: RequestType,
@@ -31,7 +31,7 @@ trait RPCSyncClientBase { self: RPCSyncClient =>
 }
 
 
-trait RPCClientBase { self: RPCClient =>
+trait RPCClientBase { self: RPCHttpClient =>
   inline def send[RequestType, ResponseType](
     resourcePath: String,
     request: RequestType,

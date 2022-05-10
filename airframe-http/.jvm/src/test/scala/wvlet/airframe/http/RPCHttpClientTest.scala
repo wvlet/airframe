@@ -15,7 +15,7 @@ package wvlet.airframe.http
 
 import wvlet.airspec.AirSpec
 
-object RPCClientTest extends AirSpec {
+object RPCHttpClientTest extends AirSpec {
 
   // Use a public REST test server
   private val PUBLIC_REST_SERVICE = "https://httpbin.org/"

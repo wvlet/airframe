@@ -22,7 +22,7 @@ import scala.language.experimental.macros
 /**
   * Scala 2 specific helper method to make an RPC request
   */
-trait RPCSyncClientBase { self: RPCSyncClient =>
+trait RPCSyncClientBase { self: RPCHttpSyncClient =>
   def send[RequestType, ResponseType](
       resourcePath: String,
       request: RequestType,
@@ -30,7 +30,7 @@ trait RPCSyncClientBase { self: RPCSyncClient =>
   ): ResponseType = macro HttpMacros.rpcSend[RequestType, ResponseType]
 }
 
-trait RPCClientBase { self: RPCClient =>
+trait RPCClientBase { self: RPCHttpClient =>
   def send[RequestType, ResponseType](
       resourcePath: String,
       request: RequestType,

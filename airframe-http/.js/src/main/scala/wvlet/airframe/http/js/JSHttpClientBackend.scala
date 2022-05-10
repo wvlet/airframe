@@ -21,7 +21,7 @@ import wvlet.airframe.http.{
   HttpClientConfig,
   HttpMessage,
   HttpSyncClient,
-  RPCClient,
+  RPCHttpClient,
   RPCEncoding,
   ServerAddress
 }
@@ -66,8 +66,8 @@ object JSHttpClientBackend extends HttpClientBackend {
     new JSHttpClientAdaptor(JSHttpClient(config))
   }
 
-  override def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCClient = {
+  override def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCHttpClient = {
     val asyncClient = newAsyncClient(JSHttpClient.resolveServerAddress.getOrElse(""), clientConfig)
-    new RPCClient(clientConfig, asyncClient)
+    new RPCHttpClient(clientConfig, asyncClient)
   }
 }
