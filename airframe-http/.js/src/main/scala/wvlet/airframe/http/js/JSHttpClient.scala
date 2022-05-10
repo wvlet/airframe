@@ -33,6 +33,7 @@ import scala.util.{Failure, Success, Try}
 
 object JSHttpClient {
 
+  @deprecated("Use RPCEncoding instead", "21.5.0")
   sealed trait MessageEncoding
   object MessageEncoding {
     object MessagePackEncoding extends MessageEncoding
@@ -253,16 +254,15 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
             codecFactory.of(operationResponseSurface).asInstanceOf[MessageCodec[OperationResponse]]
           // Read the response body as MessagePack or JSON
           val ct = resp.contentType
-          resp.contentType match {
-            case Some("application/x-msgpack") =>
-              responseCodec.fromMsgPack(resp.contentBytes)
-            case _ =>
-              val json = resp.contentString
-              if (json.nonEmpty) {
-                responseCodec.fromJson(json)
-              } else {
-                throw new HttpClientException(resp, resp.status, "Empty response from the server")
-              }
+          if (resp.isContentTypeMsgPack) {
+            responseCodec.fromMsgPack(resp.contentBytes)
+          } else {
+            val json = resp.contentString
+            if (json.nonEmpty) {
+              responseCodec.fromJson(json)
+            } else {
+              throw new HttpClientException(resp, resp.status, "Empty response from the server")
+            }
           }
       }
     }

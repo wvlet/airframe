@@ -16,6 +16,7 @@ package wvlet.airframe.http
 import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http.impl.HttpMacros
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.experimental.macros
 
 /**
@@ -27,4 +28,12 @@ trait RPCSyncClientBase { self: RPCSyncClient =>
       request: RequestType,
       requestFilter: Request => Request
   ): ResponseType = macro HttpMacros.rpcSend[RequestType, ResponseType]
+}
+
+trait RPCClientBase { self: RPCClient =>
+  def send[RequestType, ResponseType](
+      resourcePath: String,
+      request: RequestType,
+      requestFilter: Request => Request
+  )(implicit ec: ExecutionContext): Future[ResponseType] = macro HttpMacros.rpcSendAsync[Request, ResponseType]
 }

@@ -12,12 +12,21 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.client
+import wvlet.airframe.control.Retry
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{HttpClientBackend, HttpClientConfig, HttpSyncClient, ServerAddress}
+import wvlet.airframe.http.{HttpClient, HttpClientBackend, HttpClientConfig, HttpSyncClient, ServerAddress}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   */
 object URLConnectionClientBackend extends HttpClientBackend {
+  override def defaultExecutionContext: ExecutionContext = ???
+
+  override def defaultRequestRetryer: Retry.RetryContext = {
+    HttpClient.defaultHttpClientRetry[Request, Response]
+  }
+
   def newSyncClient(serverAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response] = {
     new URLConnectionClient(
       ServerAddress(serverAddress),
@@ -28,4 +37,12 @@ object URLConnectionClientBackend extends HttpClientBackend {
       )
     )
   }
+
+  override def newAsyncClient(
+      serverAddress: String,
+      clientConfig: HttpClientConfig
+  ): HttpClient[Future, Request, Response] = {
+    throw new UnsupportedOperationException("Default async client is not supported.")
+  }
+
 }

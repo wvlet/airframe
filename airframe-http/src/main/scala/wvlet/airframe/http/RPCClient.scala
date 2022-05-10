@@ -18,6 +18,7 @@ import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.surface.Surface
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 /**
@@ -33,6 +34,44 @@ case class RPCClientConfig(
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
     rpcEncoding: RPCEncoding = RPCEncoding.MsgPack
 )
+
+/**
+  * A base scala Future-based RPC client implementation, which is mainly for supporting Scala.js
+  * @param config
+  * @param httpClient
+  */
+class RPCClient(config: RPCClientConfig, httpClient: Http.AsyncClient) extends RPCClientBase with AutoCloseable {
+
+  override def close(): Unit = {
+    httpClient.close()
+  }
+
+  /**
+    * Get the internal http client
+    */
+  def getClient: Http.AsyncClient = httpClient
+
+  def sendRaw(
+      resourcePath: String,
+      requestSurface: Surface,
+      requestContent: Any,
+      responseSurface: Surface,
+      requestFilter: Request => Request = identity
+  )(implicit ec: ExecutionContext): Future[Any] = {
+    val request: Request = RPCClient.prepareRPCRequest(config, resourcePath, requestSurface, requestContent)
+
+    httpClient
+      .sendSafe(request, config.requestFilter.andThen(requestFilter))
+      .map { response: Response =>
+        if (response.status.isSuccessful) {
+          RPCClient.parseResponse(config, response, responseSurface)
+        } else {
+          throw RPCClient.parseRPCException(response)
+        }
+      }
+  }
+
+}
 
 /**
   * RPC client implementation base
@@ -54,6 +93,31 @@ class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient)
       responseSurface: Surface,
       requestFilter: Request => Request = identity
   ): Any = {
+    val request: Request = RPCClient.prepareRPCRequest(config, resourcePath, requestSurface, requestContent)
+
+    // sendSafe method internally handles retries and HttpClientException, and then it returns the last response
+    val response: Response = httpSyncClient.sendSafe(request, config.requestFilter.andThen(requestFilter))
+
+    // f Parse the RPC response
+    if (response.status.isSuccessful) {
+      RPCClient.parseResponse(config, response, responseSurface)
+    } else {
+      // Parse the RPC error message
+      throw RPCClient.parseRPCException(response)
+    }
+  }
+
+}
+
+object RPCClient {
+  private val responseBodyCodec = new HttpResponseBodyCodec[Response]
+
+  private[http] def prepareRPCRequest(
+      config: RPCClientConfig,
+      resourcePath: String,
+      requestSurface: Surface,
+      requestContent: Any
+  ): Request = {
     val requestEncoder: MessageCodec[Any] =
       config.codecFactory.ofSurface(requestSurface).asInstanceOf[MessageCodec[Any]]
 
@@ -70,23 +134,10 @@ class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient)
             cause = e
           )
       }
-
-    // sendSafe handles HttpClientException and return the response
-    val response: Response = httpSyncClient.sendSafe(request, config.requestFilter.andThen(requestFilter))
-
-    // Parse the RPC response
-    if (response.status.isSuccessful) {
-      parseResponse(response, responseSurface)
-    } else {
-      // Parse the RPC error message
-      val ex = parseRPCException(response)
-      throw ex
-    }
+    request
   }
 
-  private val responseBodyCodec = new HttpResponseBodyCodec[Response]
-
-  private def parseResponse(response: Response, responseSurface: Surface): Any = {
+  private[http] def parseResponse(config: RPCClientConfig, response: Response, responseSurface: Surface): Any = {
     if (classOf[Response].isAssignableFrom(responseSurface.rawType)) {
       response
     } else {
@@ -102,7 +153,7 @@ class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient)
     }
   }
 
-  private def parseRPCException(response: Response): RPCException = {
+  private[http] def parseRPCException(response: Response): RPCException = {
     response
       .getHeader(HttpHeader.xAirframeRPCStatus)
       .flatMap(x => Try(x.toInt).toOption) match {
@@ -118,4 +169,5 @@ class RPCSyncClient(config: RPCClientConfig, httpSyncClient: Http.SyncClient)
         RPCStatus.DATA_LOSS_I8.newException(s"Invalid RPC response: ${response}")
     }
   }
+
 }

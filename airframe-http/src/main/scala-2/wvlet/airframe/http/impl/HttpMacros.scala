@@ -37,6 +37,23 @@ object HttpMacros {
        }"""
   }
 
+  def rpcSendAsync[RequestType: c.WeakTypeTag, ResponseType: c.WeakTypeTag](
+      c: sm.Context
+  )(resourcePath: c.Tree, request: c.Tree, requestFilter: c.Tree)(ec: c.Tree): c.Tree = {
+    import c.universe._
+    val t1 = implicitly[c.WeakTypeTag[RequestType]]
+    val t2 = implicitly[c.WeakTypeTag[ResponseType]]
+    q"""{
+          ${c.prefix}.sendRaw(
+            ${resourcePath},
+            wvlet.airframe.surface.Surface.of[${t1}],
+            ${request},
+            wvlet.airframe.surface.Surface.of[${t2}],
+            ${requestFilter}
+          )(${ec}).asInstanceOf[${t2}]
+       }"""
+  }
+
   def toJsonWithCodecFactory[A: c.WeakTypeTag](c: sm.Context)(a: c.Tree, codecFactory: c.Tree): c.Tree = {
     import c.universe._
 

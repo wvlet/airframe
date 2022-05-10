@@ -12,11 +12,20 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   */
 trait HttpClientBackend {
+  def defaultExecutionContext: ExecutionContext
+  def defaultRequestRetryer: RetryContext
+
   def newSyncClient(severAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response]
-  // def newClient(serverAddress: ServerAddress, clientConfig: HttpClientConfig): HttpClient[F, Request, Response] = ???
+  def newAsyncClient(
+      serverAddress: String,
+      clientConfig: HttpClientConfig
+  ): HttpClient[Future, Request, Response]
 }

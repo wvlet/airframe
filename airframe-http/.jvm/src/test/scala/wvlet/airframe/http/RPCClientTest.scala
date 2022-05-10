@@ -23,7 +23,19 @@ object RPCClientTest extends AirSpec {
   case class TestRequest(id: Int, name: String)
   case class TestResponse(url: String, headers: Map[String, Any])
 
-  test("Create RPC Client") {
+  test("Create an RPCSyncClient") {
+    val config    = RPCClientConfig()
+    val client    = Http.client.newSyncClient(PUBLIC_REST_SERVICE)
+    val rpcClient = new RPCSyncClient(config, client)
+    val response  = rpcClient.send[TestRequest, TestResponse]("/post", TestRequest(1, "test"), identity)
+
+    // Test message
+    debug(response)
+    response.headers.get("Content-Type") shouldBe Some("application/msgpack")
+  }
+
+  test("Create an Async RPCClient") {
+
     val config    = RPCClientConfig()
     val client    = Http.client.newSyncClient(PUBLIC_REST_SERVICE)
     val rpcClient = new RPCSyncClient(config, client)
