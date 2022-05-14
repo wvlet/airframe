@@ -98,8 +98,8 @@ object GrpcException extends LogSupport {
           metadata.put[String](rpcErrorBodyKey, e.toJson)
         } catch {
           case ex: Throwable =>
-            // Failed to build JSON data.
-            // Just show warning so as not to block the RPC response
+            // Failed to build JSON data. This should not happen in general, so
+            // just show a warning message so as not to block the RPC response
             warn(s"Failed to serialize RPCException: ${e}", ex)
         }
         s.asRuntimeException(metadata)
