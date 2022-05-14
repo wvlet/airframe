@@ -19,6 +19,7 @@ import wvlet.airframe.Session
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.grpc.{
+  GrpcMethod,
   GrpcRequestMarshaller,
   GrpcResponse,
   GrpcResponseMarshaller,
@@ -61,6 +62,18 @@ object GrpcServiceBuilder {
         throw new IllegalStateException("unexpected")
       }
     }
+  }
+
+  def buildGrpcMethod[Req, Resp](
+      r: Route,
+      requestSurface: Surface,
+      codecFactory: MessageCodecFactory
+  ): GrpcMethod[Req, Resp] = {
+    val desc = buildMethodDescriptor(r, codecFactory)
+    GrpcMethod[Req, Resp](
+      desc.asInstanceOf[MethodDescriptor[MsgPack, Resp]],
+      codecFactory.ofSurface(requestSurface).asInstanceOf[MessageCodec[Req]]
+    )
   }
 
   def buildMethodDescriptor(r: Route, codecFactory: MessageCodecFactory): MethodDescriptor[MsgPack, Any] = {
