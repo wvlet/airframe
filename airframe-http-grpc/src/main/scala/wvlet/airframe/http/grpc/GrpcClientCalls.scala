@@ -22,7 +22,7 @@ import wvlet.log.LogSupport
 import scala.util.{Failure, Success, Try}
 
 /**
-  * Helper methods for making gRPC calls
+  * Helper methods for making gRPC calls. This code is used in generated grpc clients.
   */
 object GrpcClientCalls extends LogSupport {
 

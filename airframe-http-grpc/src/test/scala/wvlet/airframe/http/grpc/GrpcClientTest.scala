@@ -13,12 +13,21 @@
  */
 package wvlet.airframe.http.grpc
 
+import io.grpc.stub.StreamObserver
 import wvlet.airframe.Design
-import wvlet.airframe.http.{RPCException, RPCStatus}
 import wvlet.airframe.http.grpc.example.DemoApiV2
+import wvlet.airframe.http.grpc.internal.GrpcRequestHandler
+import wvlet.airframe.http.{RPCException, RPCStatus}
 import wvlet.airspec.AirSpec
+import wvlet.log.{LogSupport, Logger}
+
+import scala.concurrent.{Future, Promise}
+import scala.util.{Failure, Success}
 
 class GrpcClientTest extends AirSpec {
+
+  // TODO Use AirSpec's defaultExecutionContext
+  private implicit val sc = scala.concurrent.ExecutionContext.global
 
   override def design: Design = DemoApiV2.design
 
@@ -27,14 +36,63 @@ class GrpcClientTest extends AirSpec {
       client.hello("v2") shouldBe "Hello v2!"
     }
 
-    test("RPCException") {
-      warn("Testing RPCException handling")
-      val ex = intercept[RPCException] {
-        client.errorTest("xxx")
-      }
-      ex.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
-      ex.message shouldBe "Hello error: xxx"
+    test("helloAsync") {
+      val p = Promise[String]()
+      client.helloAsync(
+        "v2 async",
+        new StreamObserver[String] with LogSupport {
+          override def onNext(value: String): Unit = {
+            p.success(value)
+          }
+
+          override def onError(t: Throwable): Unit = {
+            p.failure(t)
+          }
+
+          override def onCompleted(): Unit = {}
+        }
+      )
+      p.future.foreach(value => value shouldBe "Hello v2 async!")
     }
+
+    test("RPCException") {
+      Logger.of[GrpcRequestHandler].suppressAllLogs {
+        val ex = intercept[RPCException] {
+          client.errorTest("xxx")
+        }
+        ex.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+        ex.message shouldBe "Hello error: xxx"
+      }
+    }
+
+    test("RPCException async") {
+      val p = Promise[RPCException]()
+      client.errorTestAsync(
+        "yyy",
+        new StreamObserver[String] {
+          override def onNext(value: String): Unit = {
+            p.failure(new IllegalStateException("Cannot reach here"))
+          }
+
+          override def onError(t: Throwable): Unit = {
+            t match {
+              case e: RPCException =>
+                p.success(e)
+              case other =>
+                p.failure(t)
+            }
+          }
+
+          override def onCompleted(): Unit = {}
+        }
+      )
+
+      p.future.map { (e: RPCException) =>
+        e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+        e.message shouldBe "Hello error: yyy"
+      }
+    }
+
   }
 
 }

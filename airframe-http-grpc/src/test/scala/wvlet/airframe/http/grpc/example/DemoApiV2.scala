@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.grpc.example
 
-import io.grpc.stub.AbstractBlockingStub
+import io.grpc.stub.{AbstractBlockingStub, StreamObserver}
 import io.grpc.{CallOptions, Channel}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
@@ -82,8 +82,17 @@ object DemoApiV2 {
       client.unaryCall(_channel, helloMethod, Map("name" -> name))
     }
 
+    def helloAsync(name: String, observer: StreamObserver[String]): Unit = {
+      client.asyncUnaryCall(_channel, helloMethod, Map("name" -> name), observer)
+    }
+
     def errorTest(name: String): String = {
       client.unaryCall(_channel, errorTestMethod, Map("name" -> name))
     }
+
+    def errorTestAsync(name: String, observer: StreamObserver[String]): Unit = {
+      client.asyncUnaryCall(_channel, errorTestMethod, Map("name" -> name), observer)
+    }
+
   }
 }

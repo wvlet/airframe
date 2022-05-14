@@ -73,4 +73,24 @@ class GrpcClient(config: GrpcClientConfig) {
     }
   }
 
+  def asyncUnaryCall[Req, Resp](
+      channel: io.grpc.Channel,
+      method: GrpcMethod[Req, Resp],
+      request: Req,
+      responseObserver: io.grpc.stub.StreamObserver[Resp]
+  ): Unit = {
+    try {
+      val requestBody: Array[Byte] = prepareRPCRequestBody(method, request)
+      ClientCalls.asyncUnaryCall(
+        channel.newCall(method.descriptor, config.callOptions),
+        requestBody,
+        responseObserver
+      )
+    } catch {
+      case e: RPCException =>
+        responseObserver.onError(e)
+    }
+
+  }
+
 }

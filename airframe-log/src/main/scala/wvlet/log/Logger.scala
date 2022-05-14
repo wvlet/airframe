@@ -169,6 +169,22 @@ class Logger(
       setLogLevel(prev)
     }
   }
+
+  /**
+    * Suppress all log messages. This is useful for error handling tests
+    * @param f
+    * @tparam U
+    * @return
+    */
+  def suppressAllLogs[U](f: => U): U = {
+    val prev = getLogLevel
+    try {
+      setLogLevel(LogLevel.OFF)
+      f
+    } finally {
+      setLogLevel(prev)
+    }
+  }
 }
 
 object Logger {
