@@ -28,6 +28,7 @@ class GrpcClientTest extends AirSpec {
     }
 
     test("RPCException") {
+      warn("Testing RPCException handling")
       val ex = intercept[RPCException] {
         client.errorTest("xxx")
       }
