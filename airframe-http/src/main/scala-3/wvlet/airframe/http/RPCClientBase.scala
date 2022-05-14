@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.surface.Surface
-import wvlet.airframe.http.HttpMessage.{Response,Request}
+import wvlet.airframe.http.HttpMessage.{Response, Request}
 import scala.concurrent.Future
 
 /**
@@ -26,17 +26,22 @@ trait RPCSyncClientBase { self: RPCHttpSyncClient =>
       request: RequestType,
       requestFilter: Request => Request
   ): ResponseType = {
-    self.sendRaw(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[ResponseType]
+    self
+      .sendRaw(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[
+        ResponseType
+      ]
   }
 }
 
-
 trait RPCClientBase { self: RPCHttpClient =>
   inline def send[RequestType, ResponseType](
-    resourcePath: String,
-    request: RequestType,
-    requestFilter: Request => Request
+      resourcePath: String,
+      request: RequestType,
+      requestFilter: Request => Request
   ): Future[ResponseType] = {
-    self.sendRaw(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[Future[ResponseType]]
+    self
+      .sendRaw(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[
+        Future[ResponseType]
+      ]
   }
 }
