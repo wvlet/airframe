@@ -14,7 +14,7 @@
 package wvlet.airframe.http.grpc
 
 import io.grpc.{CallOptions, Status, StatusException, StatusRuntimeException}
-import io.grpc.stub.ClientCalls
+import io.grpc.stub.{ClientCalls, StreamObserver}
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.grpc.internal.GrpcException
 import wvlet.airframe.http.{RPCEncoding, RPCException, RPCStatus}
@@ -46,14 +46,44 @@ class GrpcClient(config: GrpcClientConfig) {
     }
   }
 
-  private def translateToRPCException(ex: StatusRuntimeException): RPCException = {
-    try {
-      val trailers     = Status.trailersFromThrowable(ex)
-      val rpcErrorJson = trailers.get[String](GrpcException.rpcErrorBodyKey)
-      RPCException.fromJson(rpcErrorJson)
-    } catch {
-      case e: Throwable =>
-        RPCStatus.DATA_LOSS_I8.newException(s"Failed to parse the RPC error details: ${ex.getMessage}")
+  /**
+    * Translate exception to RPCException
+    * @param e
+    * @return
+    */
+  private def translateException(e: Throwable): Throwable = {
+    e match {
+      case e: RPCException => e
+      case ex: StatusRuntimeException =>
+        try {
+          val trailers     = Status.trailersFromThrowable(ex)
+          val rpcErrorJson = trailers.get[String](GrpcException.rpcErrorBodyKey)
+          RPCException.fromJson(rpcErrorJson)
+        } catch {
+          case e: Throwable =>
+            RPCStatus.DATA_LOSS_I8.newException(s"Failed to parse the RPC error details: ${ex.getMessage}")
+        }
+      case other =>
+        other
+    }
+  }
+
+  /**
+    * Wrapper of the user provided StreamObserver to properly report RPCException message embedded in the trailer of
+    * StatusRuntimeException
+    */
+  private class GrpcStreamObserverWrapper[Resp](observer: io.grpc.stub.StreamObserver[Resp])
+      extends StreamObserver[Resp] {
+    override def onNext(value: Resp): Unit = {
+      observer.onNext(value)
+    }
+
+    override def onError(t: Throwable): Unit = {
+      observer.onError(translateException(t))
+    }
+
+    override def onCompleted(): Unit = {
+      observer.onCompleted()
     }
   }
 
@@ -69,7 +99,7 @@ class GrpcClient(config: GrpcClientConfig) {
         .asInstanceOf[Resp]
     } catch {
       case e: StatusRuntimeException =>
-        throw translateToRPCException(e)
+        throw translateException(e)
     }
   }
 
@@ -84,13 +114,11 @@ class GrpcClient(config: GrpcClientConfig) {
       ClientCalls.asyncUnaryCall(
         channel.newCall(method.descriptor, config.callOptions),
         requestBody,
-        responseObserver
+        new GrpcStreamObserverWrapper(responseObserver)
       )
     } catch {
-      case e: RPCException =>
-        responseObserver.onError(e)
+      case e: Throwable =>
+        responseObserver.onError(translateException(e))
     }
-
   }
-
 }
