@@ -191,7 +191,7 @@ class Logger(
     * Suppress the log level around the given Future. After the given Future completes, the log level will be reset to
     * the original level.
     */
-  def suppressLogs[U](body: => Future[U])(implicit ec: ExecutionContext): Future[U] = {
+  def suppressLogAroundFuture[U](body: => Future[U])(implicit ec: ExecutionContext): Future[U] = {
     val prev = getLogLevel
     Future
       .apply(

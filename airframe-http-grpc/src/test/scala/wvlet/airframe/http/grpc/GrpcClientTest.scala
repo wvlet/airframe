@@ -56,7 +56,8 @@ class GrpcClientTest extends AirSpec {
 
     test("server streaming") {
       val rx = client.serverStreaming("streaming")
-      info(rx.toSeq.toIndexedSeq)
+
+      rx.toSeq shouldBe Seq("streaming:0", "streaming:1")
     }
 
     test("RPCException") {
@@ -91,7 +92,7 @@ class GrpcClientTest extends AirSpec {
         }
       )
 
-      Logger.of[GrpcRequestHandler].suppressLogs {
+      Logger.of[GrpcRequestHandler].suppressLogAroundFuture {
         p.future.map { (e: RPCException) =>
           e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
           e.message shouldBe "Hello error: yyy"
