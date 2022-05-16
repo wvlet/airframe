@@ -40,7 +40,9 @@ object Control {
   }
 
   /**
-    * A loan pattern for Future[U]
+    * A loan pattern for Future[U].
+    *
+    * TODO: Test this after async test is available in 22.5.0
     */
   def withResourceAsync[R <: AutoCloseable, U](
       resource: R
@@ -49,8 +51,18 @@ object Control {
       .apply(resource)
       .flatMap(r => body(r))
       .transform { case any =>
-        Try(resource.close())
-        any
+        Try(resource.close()) match {
+          case Success(_) =>
+            any
+          case Failure(e) =>
+            // If closing the resource failed, report the error in the Future
+            any match {
+              case Success(x) =>
+                Failure(e)
+              case Failure(ex) =>
+                Failure(MultipleExceptions(List(e, ex)))
+            }
+        }
       }
   }
 
