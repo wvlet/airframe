@@ -31,7 +31,7 @@ trait Resource[A] extends AutoCloseable {
   def wrapFuture[U](body: A => Future[U])(implicit ec: ExecutionContext): Future[U] = {
     Future
       .apply(get)
-      .flatMap { a: A => body(a) }
+      .flatMap { (a: A) => body(a) }
       .transform { case any =>
         Try(close())
         any
