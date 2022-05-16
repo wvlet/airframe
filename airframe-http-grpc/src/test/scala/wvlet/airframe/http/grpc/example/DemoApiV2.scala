@@ -21,6 +21,7 @@ import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
 import wvlet.airframe.http.grpc.{GrpcClient, GrpcClientConfig, GrpcClientInterceptor, gRPC}
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{RPC, RPCEncoding, RPCStatus, Router}
+import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.Surface
 
 /**
@@ -30,6 +31,10 @@ import wvlet.airframe.surface.Surface
 trait DemoApiV2 {
   def hello(name: String): String = {
     s"Hello ${name}!"
+  }
+
+  def serverStreaming(name: String): Rx[String] = {
+    Rx.sequence(s"${name}:0", s"${name}:1")
   }
 
   def errorTest(name: String): String = {
@@ -64,13 +69,19 @@ object DemoApiV2 {
 
     private val client        = new GrpcClient(GrpcClientConfig(rpcEncoding = rpcEncoding, callOptions = callOptions))
     private lazy val _channel = GrpcClientInterceptor.wrap(getChannel, rpcEncoding)
-
     private val helloMethod =
       GrpcServiceBuilder.buildGrpcMethod[Map[String, Any], String](
         getRoute("hello"),
         Surface.of[Map[String, Any]],
         codecFactory
       )
+    private val serverStreamingMethod =
+      GrpcServiceBuilder.buildGrpcMethod[Map[String, Any], String](
+        getRoute("serverStreaming"),
+        Surface.of[Map[String, Any]],
+        codecFactory
+      )
+
     private val errorTestMethod =
       GrpcServiceBuilder.buildGrpcMethod[Map[String, Any], String](
         getRoute("errorTest"),
@@ -86,6 +97,9 @@ object DemoApiV2 {
       client.asyncUnaryCall(_channel, helloMethod, Map("name" -> name), observer)
     }
 
+    def serverStreaming(name: String): RxStream[String] = {
+      client.serverStreamingCall(_channel, serverStreamingMethod, Map("name" -> name))
+    }
     def errorTest(name: String): String = {
       client.unaryCall(_channel, errorTestMethod, Map("name" -> name))
     }
@@ -93,6 +107,6 @@ object DemoApiV2 {
     def errorTestAsync(name: String, observer: StreamObserver[String]): Unit = {
       client.asyncUnaryCall(_channel, errorTestMethod, Map("name" -> name), observer)
     }
-
   }
+
 }

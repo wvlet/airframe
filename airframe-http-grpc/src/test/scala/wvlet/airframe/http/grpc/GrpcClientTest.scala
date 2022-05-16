@@ -21,8 +21,7 @@ import wvlet.airframe.http.{RPCException, RPCStatus}
 import wvlet.airspec.AirSpec
 import wvlet.log.{LogSupport, Logger}
 
-import scala.concurrent.{Future, Promise}
-import scala.util.{Failure, Success}
+import scala.concurrent.Promise
 
 class GrpcClientTest extends AirSpec {
 
@@ -55,8 +54,13 @@ class GrpcClientTest extends AirSpec {
       p.future.foreach(value => value shouldBe "Hello v2 async!")
     }
 
+    test("server streaming") {
+      val rx = client.serverStreaming("streaming")
+      info(rx.toSeq.toIndexedSeq)
+    }
+
     test("RPCException") {
-      Logger.of[GrpcRequestHandler].suppressAllLogs {
+      Logger.of[GrpcRequestHandler].suppressLogs {
         val ex = intercept[RPCException] {
           client.errorTest("xxx")
         }
@@ -87,9 +91,11 @@ class GrpcClientTest extends AirSpec {
         }
       )
 
-      p.future.map { (e: RPCException) =>
-        e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
-        e.message shouldBe "Hello error: yyy"
+      Logger.of[GrpcRequestHandler].suppressLogs {
+        p.future.map { (e: RPCException) =>
+          e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+          e.message shouldBe "Hello error: yyy"
+        }
       }
     }
 

@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.control
 import scala.util.control.NonFatal
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 /**
   */
@@ -35,6 +37,21 @@ object Control {
     } finally {
       closeResources(resource1, resource2)
     }
+  }
+
+  /**
+    * A loan pattern for Future[U]
+    */
+  def withResourceAsync[R <: AutoCloseable, U](
+      resource: R
+  )(body: R => Future[U])(implicit sc: ExecutionContext): Future[U] = {
+    Future
+      .apply(resource)
+      .flatMap(r => body(r))
+      .transform { case any =>
+        Try(resource.close())
+        any
+      }
   }
 
   def closeResources[R <: AutoCloseable](resources: R*): Unit = {

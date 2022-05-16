@@ -14,6 +14,8 @@
 package wvlet.airframe.control
 
 import java.io.File
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 /**
   * Resource that can be closed.
@@ -22,6 +24,19 @@ import java.io.File
 trait Resource[A] extends AutoCloseable {
   def get: A
   def close(): Unit
+
+  /**
+    * Wrap a Future with this resource. After the future completes, the resource will be closed
+    */
+  def wrapFuture[U](body: A => Future[U])(implicit ec: ExecutionContext): Future[U] = {
+    Future
+      .apply(get)
+      .flatMap { a: A => body(a) }
+      .transform { case any =>
+        Try(close())
+        any
+      }
+  }
 }
 
 object Resource {
@@ -33,20 +48,18 @@ object Resource {
     * @param dir
     * @return
     */
-  def newTempFile(name: String, suffix: String = ".tmp", dir: String = "target"): Resource[File] = new Resource[File] {
-    private val file = {
+  def newTempFile(name: String, suffix: String = ".tmp", dir: String = "target"): Resource[File] = newResource[File](
+    resource = {
+      new File(dir)
       // Create the target directory if not exists
       val d = new File(dir)
       d.mkdirs()
       File.createTempFile(name, suffix, d)
+    },
+    onClose = { (file: File) =>
+      file.delete
     }
-
-    override def get: File = file
-
-    override def close(): Unit = {
-      file.delete()
-    }
-  }
+  )
 
   /**
     * Create a new Resource from an AutoClosable object
@@ -54,11 +67,17 @@ object Resource {
     * @tparam R
     * @return
     */
-  def newResource[R <: AutoCloseable](resource: R): Resource[R] = new Resource[R] {
-    override def get: R = resource
-    override def close(): Unit = {
-      resource.close()
+  def newResource[R](
+      resource: R,
+      onInit: R => Unit = { (x: R) => },
+      onClose: R => Unit
+  ): Resource[R] = {
+    new Resource[R] {
+      onInit(resource)
+      override def get: R = resource
+      override def close(): Unit = {
+        onClose(resource)
+      }
     }
   }
-
 }

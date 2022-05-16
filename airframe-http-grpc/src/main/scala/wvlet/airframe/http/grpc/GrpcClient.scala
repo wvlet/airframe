@@ -18,6 +18,8 @@ import io.grpc.stub.{ClientCalls, StreamObserver}
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.grpc.internal.GrpcException
 import wvlet.airframe.http.{RPCEncoding, RPCException, RPCStatus}
+import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, RxBlockingQueue, RxStream}
 
 case class GrpcClientConfig(
     rpcEncoding: RPCEncoding = RPCEncoding.MsgPack,
@@ -33,6 +35,7 @@ case class GrpcMethod[Req, Resp](
 )
 
 class GrpcClient(config: GrpcClientConfig) {
+  import GrpcClient._
 
   private def prepareRPCRequestBody[Req, Resp](method: GrpcMethod[Req, Resp], request: Req): Array[Byte] = {
     try {
@@ -43,6 +46,73 @@ class GrpcClient(config: GrpcClientConfig) {
           message = s"Failed to encode the RPC request argument: ${request}: ${e.getMessage}",
           cause = e
         )
+    }
+  }
+
+  def unaryCall[Req, Resp](
+      channel: io.grpc.Channel,
+      method: GrpcMethod[Req, Resp],
+      request: Req
+  ): Resp = {
+    val requestBody: Array[Byte] = prepareRPCRequestBody(method, request)
+    try {
+      ClientCalls
+        .blockingUnaryCall[Array[Byte], Resp](channel, method.descriptor, config.callOptions, requestBody)
+        .asInstanceOf[Resp]
+    } catch {
+      case e: StatusRuntimeException =>
+        throw translateException(e)
+    }
+  }
+
+  def serverStreamingCall[Req, Resp](
+      channel: io.grpc.Channel,
+      method: GrpcMethod[Req, Resp],
+      request: Req
+  ): RxStream[Resp] = {
+    val requestBody: Array[Byte] = prepareRPCRequestBody(method, request)
+    val responseObserver         = new RxStreamObserver[Resp]
+    ClientCalls.asyncServerStreamingCall[MsgPack, Resp](
+      channel.newCall(method.descriptor, config.callOptions),
+      requestBody,
+      responseObserver
+    )
+    responseObserver.toRx
+  }
+
+  def asyncUnaryCall[Req, Resp](
+      channel: io.grpc.Channel,
+      method: GrpcMethod[Req, Resp],
+      request: Req,
+      responseObserver: io.grpc.stub.StreamObserver[Resp]
+  ): Unit = {
+    try {
+      val requestBody: Array[Byte] = prepareRPCRequestBody(method, request)
+      ClientCalls.asyncUnaryCall(
+        channel.newCall(method.descriptor, config.callOptions),
+        requestBody,
+        new GrpcStreamObserverWrapper(responseObserver)
+      )
+    } catch {
+      case e: Throwable =>
+        responseObserver.onError(translateException(e))
+    }
+  }
+
+}
+
+object GrpcClient {
+
+  private class RxStreamObserver[A] extends StreamObserver[A] {
+    val toRx: RxBlockingQueue[A] = new RxBlockingQueue[A]
+    override def onNext(v: A): Unit = {
+      toRx.add(OnNext(v))
+    }
+    override def onError(t: Throwable): Unit = {
+      toRx.add(OnError(t))
+    }
+    override def onCompleted(): Unit = {
+      toRx.add(OnCompletion)
     }
   }
 
@@ -87,38 +157,4 @@ class GrpcClient(config: GrpcClientConfig) {
     }
   }
 
-  def unaryCall[Req, Resp](
-      channel: io.grpc.Channel,
-      method: GrpcMethod[Req, Resp],
-      request: Req
-  ): Resp = {
-    val requestBody: Array[Byte] = prepareRPCRequestBody(method, request)
-    try {
-      ClientCalls
-        .blockingUnaryCall[Array[Byte], Resp](channel, method.descriptor, config.callOptions, requestBody)
-        .asInstanceOf[Resp]
-    } catch {
-      case e: StatusRuntimeException =>
-        throw translateException(e)
-    }
-  }
-
-  def asyncUnaryCall[Req, Resp](
-      channel: io.grpc.Channel,
-      method: GrpcMethod[Req, Resp],
-      request: Req,
-      responseObserver: io.grpc.stub.StreamObserver[Resp]
-  ): Unit = {
-    try {
-      val requestBody: Array[Byte] = prepareRPCRequestBody(method, request)
-      ClientCalls.asyncUnaryCall(
-        channel.newCall(method.descriptor, config.callOptions),
-        requestBody,
-        new GrpcStreamObserverWrapper(responseObserver)
-      )
-    } catch {
-      case e: Throwable =>
-        responseObserver.onError(translateException(e))
-    }
-  }
 }
