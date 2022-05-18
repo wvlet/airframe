@@ -30,7 +30,12 @@ import wvlet.airframe.surface.Surface
 @RPC
 trait DemoApiV2 {
   def hello(name: String): String = {
-    s"Hello ${name}!"
+    name match {
+      case "XXX" =>
+        throw RPCStatus.INVALID_ARGUMENT_U2.newException(s"Hello error: ${name}")
+      case _ =>
+        s"Hello ${name}!"
+    }
   }
 
   def serverStreaming(name: String): Rx[String] = {
@@ -40,10 +45,6 @@ trait DemoApiV2 {
       case _ =>
         Rx.sequence(s"${name}:0", s"${name}:1")
     }
-  }
-
-  def errorTest(name: String): String = {
-    throw RPCStatus.INVALID_ARGUMENT_U2.newException(s"Hello error: ${name}")
   }
 }
 
@@ -88,13 +89,6 @@ object DemoApiV2 {
         codecFactory
       )
 
-    private val errorTestMethod =
-      GrpcServiceBuilder.buildGrpcMethod[Map[String, Any], String](
-        getRoute("errorTest"),
-        Surface.of[Map[String, Any]],
-        codecFactory
-      )
-
     def hello(name: String): String = {
       client.unaryCall(helloMethod, Map("name" -> name))
     }
@@ -109,14 +103,6 @@ object DemoApiV2 {
 
     def serverStreamingAsync(name: String, observer: StreamObserver[String]): Unit = {
       client.asyncServerStreamingCall(serverStreamingMethod, Map("name" -> name), observer)
-    }
-
-    def errorTest(name: String): String = {
-      client.unaryCall(errorTestMethod, Map("name" -> name))
-    }
-
-    def errorTestAsync(name: String, observer: StreamObserver[String]): Unit = {
-      client.asyncUnaryCall(errorTestMethod, Map("name" -> name), observer)
     }
   }
 

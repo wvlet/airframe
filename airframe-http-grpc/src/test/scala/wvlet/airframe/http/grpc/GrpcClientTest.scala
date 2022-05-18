@@ -95,17 +95,17 @@ class GrpcClientTest extends AirSpec {
     test("RPCException") {
       Logger.of[GrpcRequestHandler].suppressLogs {
         val ex = intercept[RPCException] {
-          client.errorTest("xxx")
+          client.hello("XXX")
         }
         ex.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
-        ex.message shouldBe "Hello error: xxx"
+        ex.message shouldBe "Hello error: XXX"
       }
     }
 
     test("RPCException async") {
       val p = Promise[RPCException]()
-      client.errorTestAsync(
-        "yyy",
+      client.helloAsync(
+        "XXX",
         new StreamObserver[String] {
           override def onNext(value: String): Unit = {
             p.failure(new IllegalStateException("Cannot reach here"))
