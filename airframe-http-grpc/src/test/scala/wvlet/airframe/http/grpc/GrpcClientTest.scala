@@ -60,6 +60,16 @@ class GrpcClientTest extends AirSpec {
       rx.toSeq shouldBe Seq("streaming:0", "streaming:1")
     }
 
+    test("RPCException in server streaming") {
+      Logger.of[GrpcRequestHandler].suppressLogs {
+        val rx = client.serverStreaming("XXX")
+        rx.recover { case e: RPCException =>
+          e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+          e.message shouldBe s"invalid name: XXX"
+        }.toSeq
+      }
+    }
+
     test("server streaming async") {
       val p = Promise[Seq[String]]()
       client.serverStreamingAsync(

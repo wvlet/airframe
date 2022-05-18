@@ -34,7 +34,12 @@ trait DemoApiV2 {
   }
 
   def serverStreaming(name: String): Rx[String] = {
-    Rx.sequence(s"${name}:0", s"${name}:1")
+    name match {
+      case "XXX" =>
+        throw RPCStatus.INVALID_ARGUMENT_U2.newException(s"invalid name: ${name}")
+      case _ =>
+        Rx.sequence(s"${name}:0", s"${name}:1")
+    }
   }
 
   def errorTest(name: String): String = {

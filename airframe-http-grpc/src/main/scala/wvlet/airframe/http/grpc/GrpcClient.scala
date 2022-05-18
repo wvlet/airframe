@@ -77,7 +77,7 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
     ClientCalls.asyncServerStreamingCall[MsgPack, Resp](
       getChannel.newCall(method.descriptor, config.callOptions),
       requestBody,
-      responseObserver
+      new GrpcStreamObserverWrapper(responseObserver)
     )
     responseObserver.toRx
   }
@@ -110,7 +110,7 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
       ClientCalls.asyncServerStreamingCall(
         getChannel.newCall(method.descriptor, config.callOptions),
         requestBody,
-        responseObserver
+        new GrpcStreamObserverWrapper(responseObserver)
       )
     } catch {
       case e: Throwable =>
