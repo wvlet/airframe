@@ -34,7 +34,7 @@ case class GrpcMethod[Req, Resp](
     requestCodec: MessageCodec[Req]
 )
 
-class GrpcClient(config: GrpcClientConfig) {
+class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
   import GrpcClient._
 
   private def prepareRPCRequestBody[Req, Resp](method: GrpcMethod[Req, Resp], request: Req): Array[Byte] = {
@@ -49,15 +49,18 @@ class GrpcClient(config: GrpcClientConfig) {
     }
   }
 
+  protected def getChannel: io.grpc.Channel = {
+    channel
+  }
+
   def unaryCall[Req, Resp](
-      channel: io.grpc.Channel,
       method: GrpcMethod[Req, Resp],
       request: Req
   ): Resp = {
     val requestBody: Array[Byte] = prepareRPCRequestBody(method, request)
     try {
       ClientCalls
-        .blockingUnaryCall[Array[Byte], Resp](channel, method.descriptor, config.callOptions, requestBody)
+        .blockingUnaryCall[Array[Byte], Resp](getChannel, method.descriptor, config.callOptions, requestBody)
         .asInstanceOf[Resp]
     } catch {
       case e: StatusRuntimeException =>
@@ -66,14 +69,13 @@ class GrpcClient(config: GrpcClientConfig) {
   }
 
   def serverStreamingCall[Req, Resp](
-      channel: io.grpc.Channel,
       method: GrpcMethod[Req, Resp],
       request: Req
   ): RxStream[Resp] = {
     val requestBody: Array[Byte] = prepareRPCRequestBody(method, request)
     val responseObserver         = new RxStreamObserver[Resp]
     ClientCalls.asyncServerStreamingCall[MsgPack, Resp](
-      channel.newCall(method.descriptor, config.callOptions),
+      getChannel.newCall(method.descriptor, config.callOptions),
       requestBody,
       responseObserver
     )
@@ -81,15 +83,14 @@ class GrpcClient(config: GrpcClientConfig) {
   }
 
   def asyncUnaryCall[Req, Resp](
-      channel: io.grpc.Channel,
       method: GrpcMethod[Req, Resp],
       request: Req,
-      responseObserver: io.grpc.stub.StreamObserver[Resp]
+      responseObserver: StreamObserver[Resp]
   ): Unit = {
     try {
       val requestBody: Array[Byte] = prepareRPCRequestBody(method, request)
       ClientCalls.asyncUnaryCall(
-        channel.newCall(method.descriptor, config.callOptions),
+        getChannel.newCall(method.descriptor, config.callOptions),
         requestBody,
         new GrpcStreamObserverWrapper(responseObserver)
       )
@@ -99,6 +100,24 @@ class GrpcClient(config: GrpcClientConfig) {
     }
   }
 
+  def asyncServerStreamingCall[Req, Resp](
+      method: GrpcMethod[Req, Resp],
+      request: Req,
+      responseObserver: StreamObserver[Resp]
+  ): Unit = {
+    try {
+      val requestBody = prepareRPCRequestBody(method, request)
+      ClientCalls.asyncServerStreamingCall(
+        getChannel.newCall(method.descriptor, config.callOptions),
+        requestBody,
+        responseObserver
+      )
+    } catch {
+      case e: Throwable =>
+        responseObserver.onError(translateException(e))
+    }
+
+  }
 }
 
 object GrpcClient {

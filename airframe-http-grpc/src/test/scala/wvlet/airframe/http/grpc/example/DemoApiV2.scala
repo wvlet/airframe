@@ -67,8 +67,9 @@ object DemoApiV2 {
       new SyncClient(channel, callOptions, codecFactory, rpcEncoding)
     }
 
-    private val client        = new GrpcClient(GrpcClientConfig(rpcEncoding = rpcEncoding, callOptions = callOptions))
     private lazy val _channel = GrpcClientInterceptor.wrap(getChannel, rpcEncoding)
+    private val client =
+      new GrpcClient(_channel, GrpcClientConfig(rpcEncoding = rpcEncoding, callOptions = callOptions))
     private val helloMethod =
       GrpcServiceBuilder.buildGrpcMethod[Map[String, Any], String](
         getRoute("hello"),
@@ -90,22 +91,27 @@ object DemoApiV2 {
       )
 
     def hello(name: String): String = {
-      client.unaryCall(_channel, helloMethod, Map("name" -> name))
+      client.unaryCall(helloMethod, Map("name" -> name))
     }
 
     def helloAsync(name: String, observer: StreamObserver[String]): Unit = {
-      client.asyncUnaryCall(_channel, helloMethod, Map("name" -> name), observer)
+      client.asyncUnaryCall(helloMethod, Map("name" -> name), observer)
     }
 
     def serverStreaming(name: String): RxStream[String] = {
-      client.serverStreamingCall(_channel, serverStreamingMethod, Map("name" -> name))
+      client.serverStreamingCall(serverStreamingMethod, Map("name" -> name))
     }
+
+    def serverStreamingAsync(name: String, observer: StreamObserver[String]): Unit = {
+      client.asyncServerStreamingCall(serverStreamingMethod, Map("name" -> name), observer)
+    }
+
     def errorTest(name: String): String = {
-      client.unaryCall(_channel, errorTestMethod, Map("name" -> name))
+      client.unaryCall(errorTestMethod, Map("name" -> name))
     }
 
     def errorTestAsync(name: String, observer: StreamObserver[String]): Unit = {
-      client.asyncUnaryCall(_channel, errorTestMethod, Map("name" -> name), observer)
+      client.asyncUnaryCall(errorTestMethod, Map("name" -> name), observer)
     }
   }
 

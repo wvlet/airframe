@@ -60,6 +60,28 @@ class GrpcClientTest extends AirSpec {
       rx.toSeq shouldBe Seq("streaming:0", "streaming:1")
     }
 
+    test("server streaming async") {
+      val p = Promise[Seq[String]]()
+      client.serverStreamingAsync(
+        "async",
+        new StreamObserver[String] {
+          private val s = Seq.newBuilder[String]
+          override def onNext(value: String): Unit = {
+            s += value
+          }
+
+          override def onError(t: Throwable): Unit = {
+            p.failure(t)
+          }
+
+          override def onCompleted(): Unit = {
+            p.success(s.result())
+          }
+        }
+      )
+      p.future.foreach(value => value shouldBe Seq("async:0", "async:1"))
+    }
+
     test("RPCException") {
       Logger.of[GrpcRequestHandler].suppressLogs {
         val ex = intercept[RPCException] {
