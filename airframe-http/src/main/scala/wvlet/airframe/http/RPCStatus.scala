@@ -32,6 +32,9 @@ object RPCStatus {
 
   private lazy val codeTable: Map[Int, RPCStatus]        = all.map { x => x.code -> x }.toMap
   private lazy val codeNameTable: Map[String, RPCStatus] = all.map { x => x.name -> x }.toMap
+  private lazy val grpcStatusCodeTable: Map[Int, RPCStatus] = all.map { x =>
+    x.grpcStatus.code -> x
+  }.toMap
 
   def unapply(s: String): Option[RPCStatus] = {
     Try(ofCode(s.toInt)).toOption
@@ -56,6 +59,13 @@ object RPCStatus {
 
   def ofCodeName(name: String): RPCStatus = {
     codeNameTable.getOrElse(name, throw new IllegalArgumentException(s"Invalid RPCStatus name: ${name}"))
+  }
+
+  def fromGrpcStatusCode(grpcStatusCode: Int): RPCStatus = {
+    grpcStatusCodeTable.getOrElse(
+      grpcStatusCode,
+      throw new IllegalArgumentException(s"Invalid gRPC status code: ${grpcStatusCode}")
+    )
   }
 
   def all: Seq[RPCStatus] =

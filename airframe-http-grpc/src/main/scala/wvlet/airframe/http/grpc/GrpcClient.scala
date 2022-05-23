@@ -20,6 +20,7 @@ import wvlet.airframe.http.grpc.internal.GrpcException
 import wvlet.airframe.http.{RPCEncoding, RPCException, RPCStatus}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner, RxStream}
+import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
 
@@ -110,7 +111,11 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
       getChannel.newCall(method.descriptor, config.callOptions),
       new GrpcStreamObserverWrapper[Resp](responseObserver)
     )
-    GrpcClientCalls.translate[MsgPack, Req](requestObserver, method.requestCodec.toMsgPack(_))
+    // Return a StreamObserver for receiving a stream of Req objects from the client
+    GrpcClient.wrapRequestObserver[MsgPack, Req](
+      requestObserver,
+      config.rpcEncoding.encodeWithCodec(_, method.requestCodec)
+    )
   }
 
   def asyncUnaryCall[Req, Resp](
@@ -151,7 +156,7 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
   }
 }
 
-object GrpcClient {
+object GrpcClient extends LogSupport {
 
   trait BlockingRxStreamObserver[A] extends StreamObserver[A] {
     def toRx: RxStream[A]
@@ -194,12 +199,26 @@ object GrpcClient {
       case e: RPCException => e
       case ex: StatusRuntimeException =>
         try {
-          val trailers     = Status.trailersFromThrowable(ex)
-          val rpcErrorJson = trailers.get[String](GrpcException.rpcErrorBodyKey)
-          RPCException.fromJson(rpcErrorJson)
+          val trailers = Status.trailersFromThrowable(ex)
+          // For the server-side RPC error, it should have an RPCException message in the trailer
+          if (trailers != null && trailers.containsKey(GrpcException.rpcErrorBodyKey)) {
+            try {
+              val rpcErrorJson = trailers.get[String](GrpcException.rpcErrorBodyKey)
+              RPCException.fromJson(rpcErrorJson)
+            } catch {
+              case e: Throwable =>
+                RPCStatus.DATA_LOSS_I8.newException(s"Failed to parse the RPC error details: ${ex.getMessage}", e)
+            }
+          } else {
+            // Other gRPC errors
+            val rpcStatus = RPCStatus.fromGrpcStatusCode(ex.getStatus.getCode.value())
+            rpcStatus.newException(s"gRPC failure: ${ex.getMessage}", ex)
+          }
         } catch {
           case e: Throwable =>
-            RPCStatus.DATA_LOSS_I8.newException(s"Failed to parse the RPC error details: ${ex.getMessage}")
+            warn(s"Failed to translate to RPCException", e)
+            // Return the original exception
+            ex
         }
       case other =>
         other
@@ -243,6 +262,35 @@ object GrpcClient {
       case OnError(e) => requestObserver.onError(e)
       case OnCompletion => {
         requestObserver.onCompleted()
+      }
+    }
+  }
+
+  /**
+    * Wrap the client-side StreamObserver
+    * @param observer
+    * @param f
+    * @tparam A
+    * @tparam B
+    * @return
+    */
+  private def wrapRequestObserver[A, B](observer: StreamObserver[A], f: B => A): StreamObserver[B] = {
+    new StreamObserver[B] {
+      override def onNext(value: B): Unit = {
+        Try(f(value)) match {
+          case Success(a) => observer.onNext(a)
+          case Failure(e) =>
+            observer.onError(
+              RPCStatus.INVALID_ARGUMENT_U2
+                .newException(s"Failed to encode the request value ${value}: ${e.getMessage}", e)
+            )
+        }
+      }
+      override def onError(t: Throwable): Unit = {
+        observer.onError(translateException(t))
+      }
+      override def onCompleted(): Unit = {
+        observer.onCompleted()
       }
     }
   }
