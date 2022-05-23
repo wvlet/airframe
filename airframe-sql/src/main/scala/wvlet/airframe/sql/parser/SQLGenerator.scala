@@ -52,8 +52,8 @@ object SQLGenerator extends LogSupport {
           b += printExpression(x)
         }
         b.result().mkString(" ")
-      case r: Relation => printRelation(r)
       case d: DDL      => printDDL(d)
+      case r: Relation => printRelation(r)
       case other       => unknown(other)
     }
   }
