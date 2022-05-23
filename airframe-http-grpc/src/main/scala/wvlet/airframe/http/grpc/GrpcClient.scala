@@ -167,7 +167,21 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
       new GrpcStreamObserverWrapper[Resp](responseObserver)
     )
     // Return a StreamObserver for receiving a stream of Req objects from the client
-    GrpcClient.wrapRequestObserver[MsgPack, Req](
+    GrpcClient.wrapRequestObserver(
+      requestObserver,
+      config.rpcEncoding.encodeWithCodec(_, method.requestCodec)
+    )
+  }
+
+  def asyncBidiStreamingCall[Req, Resp](
+      method: GrpcMethod[Req, Resp],
+      responseObserver: StreamObserver[Resp]
+  ): StreamObserver[Req] = {
+    val requestObserver = ClientCalls.asyncBidiStreamingCall(
+      getChannel.newCall(method.descriptor, config.callOptions),
+      new GrpcStreamObserverWrapper[Resp](responseObserver)
+    )
+    GrpcClient.wrapRequestObserver(
       requestObserver,
       config.rpcEncoding.encodeWithCodec(_, method.requestCodec)
     )

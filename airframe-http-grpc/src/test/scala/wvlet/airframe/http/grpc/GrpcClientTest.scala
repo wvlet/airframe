@@ -173,6 +173,32 @@ class GrpcClientTest extends AirSpec {
       rx.toSeq shouldBe Seq(DemoResponse("Hello A"), DemoResponse("Hello B"))
     }
 
+    test("async bidi streaming") {
+      val p = Promise[Seq[DemoResponse]]()
+      val requestObserver = client.asyncBidiStreaming(new StreamObserver[DemoResponse] {
+        private val s = Seq.newBuilder[DemoResponse]
+        override def onNext(value: DemoResponse): Unit = {
+          s += value
+        }
+
+        override def onError(t: Throwable): Unit = {
+          p.failure(t)
+        }
+
+        override def onCompleted(): Unit = {
+          p.success(s.result())
+        }
+      })
+
+      requestObserver.onNext(DemoMessage("A"))
+      requestObserver.onNext(DemoMessage("B"))
+      requestObserver.onCompleted()
+
+      p.future.foreach { value =>
+        value shouldBe Seq(DemoResponse("Hello A"), DemoResponse("Hello B"))
+      }
+    }
+
   }
 
 }

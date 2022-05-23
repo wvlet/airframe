@@ -145,6 +145,10 @@ object DemoApiV2 {
       client.bidiStreamingCall(bidiStreamingMethod, input)
     }
 
+    def asyncBidiStreaming(observer: StreamObserver[DemoResponse]): StreamObserver[DemoMessage] = {
+      client.asyncBidiStreamingCall(bidiStreamingMethod, observer)
+    }
+
   }
 
 }
