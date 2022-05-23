@@ -103,19 +103,22 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
     responseObserver.toRx.toSeq.head
   }
 
-  def asyncClientStreamingCall[Req, Resp](
+  def bidiStreamingCall[Req, Resp](
       method: GrpcMethod[Req, Resp],
-      responseObserver: StreamObserver[Resp]
-  ): StreamObserver[Req] = {
-    val requestObserver = ClientCalls.asyncClientStreamingCall(
+      request: RxStream[Req]
+  ): RxStream[Resp] = {
+    val responseObserver = GrpcClient.blockingRxResponseObserver[Resp]
+    val requestObserver = ClientCalls.asyncBidiStreamingCall(
       getChannel.newCall(method.descriptor, config.callOptions),
       new GrpcStreamObserverWrapper[Resp](responseObserver)
     )
-    // Return a StreamObserver for receiving a stream of Req objects from the client
-    GrpcClient.wrapRequestObserver[MsgPack, Req](
+    GrpcClient.readClientRequestStream(
+      request,
+      method.requestCodec,
       requestObserver,
-      config.rpcEncoding.encodeWithCodec(_, method.requestCodec)
+      encoding = config.rpcEncoding
     )
+    responseObserver.toRx
   }
 
   def asyncUnaryCall[Req, Resp](
@@ -154,6 +157,22 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
     }
 
   }
+
+  def asyncClientStreamingCall[Req, Resp](
+      method: GrpcMethod[Req, Resp],
+      responseObserver: StreamObserver[Resp]
+  ): StreamObserver[Req] = {
+    val requestObserver = ClientCalls.asyncClientStreamingCall(
+      getChannel.newCall(method.descriptor, config.callOptions),
+      new GrpcStreamObserverWrapper[Resp](responseObserver)
+    )
+    // Return a StreamObserver for receiving a stream of Req objects from the client
+    GrpcClient.wrapRequestObserver[MsgPack, Req](
+      requestObserver,
+      config.rpcEncoding.encodeWithCodec(_, method.requestCodec)
+    )
+  }
+
 }
 
 object GrpcClient extends LogSupport {
@@ -226,8 +245,8 @@ object GrpcClient extends LogSupport {
   }
 
   /**
-    * Wrapper of the user provided StreamObserver to properly report RPCException message embedded in the trailer of
-    * StatusRuntimeException
+    * Wrapper of the user provided response StreamObserver to properly report RPCException message embedded in the
+    * trailer of StatusRuntimeException
     */
   private class GrpcStreamObserverWrapper[Resp](observer: io.grpc.stub.StreamObserver[Resp])
       extends StreamObserver[Resp] {

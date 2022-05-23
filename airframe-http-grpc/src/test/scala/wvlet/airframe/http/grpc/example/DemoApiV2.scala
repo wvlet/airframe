@@ -17,7 +17,7 @@ import io.grpc.stub.{AbstractBlockingStub, StreamObserver}
 import io.grpc.{CallOptions, Channel}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.http.grpc.example.DemoApiV2.DemoMessage
+import wvlet.airframe.http.grpc.example.DemoApiV2.{DemoMessage, DemoResponse}
 import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
 import wvlet.airframe.http.grpc.{GrpcClient, GrpcClientConfig, GrpcClientInterceptor, gRPC}
 import wvlet.airframe.http.router.Route
@@ -53,10 +53,15 @@ trait DemoApiV2 extends LogSupport {
     val x = input.toSeq
     x.map(_.name).mkString(", ")
   }
+
+  def bidiStreaming(input: RxStream[DemoMessage]): RxStream[DemoResponse] = {
+    input.map(x => DemoResponse(s"Hello ${x.name}"))
+  }
 }
 
 object DemoApiV2 {
   case class DemoMessage(name: String)
+  case class DemoResponse(name: String)
 
   private val router = Router.add[DemoApiV2]
 
@@ -105,6 +110,13 @@ object DemoApiV2 {
         codecFactory
       )
 
+    private val bidiStreamingMethod =
+      GrpcServiceBuilder.buildGrpcMethod[DemoMessage, DemoResponse](
+        getRoute("bidiStreaming"),
+        Surface.of[DemoMessage],
+        codecFactory
+      )
+
     def hello(name: String): String = {
       client.unaryCall(helloMethod, Map("name" -> name))
     }
@@ -127,6 +139,10 @@ object DemoApiV2 {
 
     def asyncClientStreaming(observer: StreamObserver[String]): StreamObserver[DemoMessage] = {
       client.asyncClientStreamingCall(clientStreamingMethod, observer)
+    }
+
+    def bidiStreaming(input: RxStream[DemoMessage]): RxStream[DemoResponse] = {
+      client.bidiStreamingCall(bidiStreamingMethod, input)
     }
 
   }

@@ -16,7 +16,7 @@ package wvlet.airframe.http.grpc
 import io.grpc.stub.StreamObserver
 import wvlet.airframe.Design
 import wvlet.airframe.http.grpc.example.DemoApiV2
-import wvlet.airframe.http.grpc.example.DemoApiV2.DemoMessage
+import wvlet.airframe.http.grpc.example.DemoApiV2.{DemoMessage, DemoResponse}
 import wvlet.airframe.http.grpc.internal.GrpcRequestHandler
 import wvlet.airframe.http.{RPCException, RPCStatus}
 import wvlet.airframe.rx.Rx
@@ -163,6 +163,11 @@ class GrpcClientTest extends AirSpec {
       p.future.foreach { value =>
         value shouldBe "A, B"
       }
+    }
+
+    test("bidi streaming") {
+      val rx = client.bidiStreaming(Rx.fromSeq(Seq(DemoMessage("A"), DemoMessage("B"))))
+      rx.toSeq shouldBe Seq(DemoResponse("Hello A"), DemoResponse("Hello B"))
     }
 
   }
