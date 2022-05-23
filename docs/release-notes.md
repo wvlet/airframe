@@ -10,7 +10,7 @@ Airframe uses YY.MM.patch versioning scheme, so the version numbers match with t
 
 This version changes the behavior of AirSpec in order to support [async testing](https://wvlet.org/airframe/docs/airspec#async-testing) for tests that return `Future[_]` values. With async testing, you don't need to wait the completion of `Future[_]` objects in your test cases. This is especially useful when you need to await network responses in your Scala and Scala.js test code.  
 
-If you have tests that acquire resources around Future, you may see unexpected execution test orderi due to this change. To properly acquire and release resources for async testing, consider using newly added methods `Control.withResourceAsync(resource)` and `wvlet.airframe.control.Resource[A].wrapFuture`. 
+If you have tests that acquire resources around Future, you may see unexpected execution test order due to this change. To properly acquire and release resources for async testing, consider using newly added methods `Control.withResourceAsync(resource)` and `wvlet.airframe.control.Resource[A].wrapFuture`.
 
 This version also adds `wvlet.airframe.http.RPCStatus` error code, which will be the standard error reporting method in Airframe RPC. In the upcoming Airframe versions, you can use `RPCStatus.newException(...)` to propagate RPC server-side errors into clients in the form of `wvlet.airframe.http.RPCException`.  
 
@@ -20,6 +20,7 @@ This version also adds `wvlet.airframe.http.RPCStatus` error code, which will be
 - airframe-http: [#1559](https://github.com/wvlet/airframe/issues/1559) Use Jitter by default with max retry = 15 in http clients ([#2180](https://github.com/wvlet/airframe/issues/2180)) [[f72605a42](https://github.com/wvlet/airframe/commit/f72605a42)]
 - airframe-rx: Add RxVar.stop to send OnCompletion event
 - airframe-ulid: Make ULID a regular class and map to string in OpenAPI ([#2155](https://github.com/wvlet/airframe/issues/2155)) [[ea7de71e3](https://github.com/wvlet/airframe/commit/ea7de71e3)]
+- airframe-control: Add Resource[R] for releasing resources at ease in AirSpec ([#2162](https://github.com/wvlet/airframe/issues/2162)) [[c7fcfe7d4](https://github.com/wvlet/airframe/commit/c7fcfe7d4)]
 - Upgrade to Scala 3.1.2 ([#2161](https://github.com/wvlet/airframe/issues/2161)) [[4ba827f86](https://github.com/wvlet/airframe/commit/4ba827f86)]
 - Update scalajs-dom to 2.2.0 ([#2173](https://github.com/wvlet/airframe/issues/2173)) [[17fbf20fc](https://github.com/wvlet/airframe/commit/17fbf20fc)]
 - Update grpc-netty-shaded, grpc-protobuf, ... to 1.46.0 ([#2138](https://github.com/wvlet/airframe/issues/2138)) [[0c6d81e87](https://github.com/wvlet/airframe/commit/0c6d81e87)]
@@ -43,7 +44,6 @@ This version also adds `wvlet.airframe.http.RPCStatus` error code, which will be
 - airframe-http-finagle: Propagate RPCException to clients ([#2141](https://github.com/wvlet/airframe/issues/2141)) [[e43122068](https://github.com/wvlet/airframe/commit/e43122068)]
 - airframe-grpc: Propagate RPCException to clients ([#2139](https://github.com/wvlet/airframe/issues/2139)) [[7f211936b](https://github.com/wvlet/airframe/commit/7f211936b)]
 - airframe-rpc: Add RPC status code ([#1973](https://github.com/wvlet/airframe/issues/1973)) [[dccb460de](https://github.com/wvlet/airframe/commit/dccb460de)]
-- airframe-control: Add Resource[R] for releasing resources at ease in AirSpec ([#2162](https://github.com/wvlet/airframe/issues/2162)) [[c7fcfe7d4](https://github.com/wvlet/airframe/commit/c7fcfe7d4)]
 - Update fluency-core, fluency-fluentd, ... to 2.6.4 ([#2137](https://github.com/wvlet/airframe/issues/2137)) [[a4b463e22](https://github.com/wvlet/airframe/commit/a4b463e22)]
 - Update postgresql to 42.3.5 ([#2152](https://github.com/wvlet/airframe/issues/2152)) [[7b522f269](https://github.com/wvlet/airframe/commit/7b522f269)]
 - Update portable-scala-reflect to 1.1.2 ([#2134](https://github.com/wvlet/airframe/issues/2134)) [[ba4f4efa7](https://github.com/wvlet/airframe/commit/ba4f4efa7)]
