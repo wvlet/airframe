@@ -54,7 +54,9 @@ class RxVar[A](private var currentValue: A) extends RxStream[A] with RxVarOps[A]
   }
 
   /**
-    * Updates the variable and trigger the recalculation of the subscribers currentValue => newValue
+    * Updates the variable and trigger the recalculation of the subscribers currentValue => newValue. This method will
+    * tigger the update only when the value changes. When the force flag is true (default: false), it will always
+    * propagate the event to the downstream subscribers.
     */
   override def update(updater: A => A, force: Boolean = false): Unit = {
     val newValue = updater(currentValue)
@@ -62,6 +64,14 @@ class RxVar[A](private var currentValue: A) extends RxStream[A] with RxVarOps[A]
       currentValue = newValue
       propagateEvent(OnNext(newValue))
     }
+  }
+
+  /**
+    * Stop updating this variable and send OnCompletion event to the downstream subscribers. After this method is
+    * called, the behavior of the downstream subscribers is undefined for further updates of this variable.
+    */
+  def stop(): Unit = {
+    propagateEvent(OnCompletion)
   }
 
   private def propagateEvent(e: RxEvent): Unit = {

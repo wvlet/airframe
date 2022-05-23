@@ -166,7 +166,10 @@ class GrpcClientTest extends AirSpec {
     }
 
     test("bidi streaming") {
-      val rx = client.bidiStreaming(Rx.fromSeq(Seq(DemoMessage("A"), DemoMessage("B"))))
+      val input = Rx.variable(DemoMessage("A"))
+      val rx    = client.bidiStreaming(input)
+      input := DemoMessage("B")
+      input.stop()
       rx.toSeq shouldBe Seq(DemoResponse("Hello A"), DemoResponse("Hello B"))
     }
 
