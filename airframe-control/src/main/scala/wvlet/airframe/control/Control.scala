@@ -51,19 +51,27 @@ object Control {
       .apply(resource)
       .flatMap(r => body(r))
       .transform { case any =>
-        Try(resource.close()) match {
-          case Success(_) =>
-            any
-          case Failure(e) =>
-            // If closing the resource failed, report the error in the Future
-            any match {
-              case Success(x) =>
-                Failure(e)
-              case Failure(ex) =>
-                Failure(MultipleExceptions(List(e, ex)))
-            }
-        }
+        closeSafely(any, () => resource.close())
       }
+  }
+
+  /**
+    * Safely close the resource. If the resource is closed successfully, return the preceding result, if closing the
+    * resource is failed, combine the previous exception (if exists) and the resource closing exception together.
+    */
+  private[control] def closeSafely[U](preceding: Try[U], close: () => Unit): Try[U] = {
+    Try(close()) match {
+      case Success(_) =>
+        preceding
+      case Failure(e) =>
+        // If closing the resource failed, report the error in the Future
+        preceding match {
+          case Success(x) =>
+            Failure(e)
+          case Failure(ex) =>
+            Failure(MultipleExceptions(List(e, ex)))
+        }
+    }
   }
 
   def closeResources[R <: AutoCloseable](resources: R*): Unit = {

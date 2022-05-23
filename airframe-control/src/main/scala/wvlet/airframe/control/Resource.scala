@@ -15,7 +15,6 @@ package wvlet.airframe.control
 
 import java.io.File
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 /**
   * Resource that can be closed.
@@ -33,8 +32,7 @@ trait Resource[A] extends AutoCloseable {
       .apply(get)
       .flatMap { (a: A) => body(a) }
       .transform { case any =>
-        Try(close())
-        any
+        Control.closeSafely(any, () => close())
       }
   }
 }
