@@ -419,10 +419,13 @@ object LogicalPlan {
       s"LV(${child.sig(config)})"
   }
 
-// DDL
+  /*
+   * SQL statements for changing the table schema or catalog
+   */
   sealed trait DDL extends LogicalPlan with LeafPlan with SQLSig {
     override def outputAttributes: Seq[Attribute] = Seq.empty
   }
+
   case class CreateSchema(schema: QName, ifNotExists: Boolean, properties: Option[Seq[SchemaProperty]]) extends DDL {
     override def sig(config: QuerySignatureConfig) = "CS"
   }
@@ -439,44 +442,11 @@ object LogicalPlan {
       s"CT(${TableRef(table).sig(config)})"
     }
   }
-
-  case class CreateTableAs(
-      table: QName,
-      ifNotEotExists: Boolean,
-      columnAliases: Option[Seq[Identifier]],
-      query: Relation
-  ) extends DDL {
-    override def sig(config: QuerySignatureConfig) =
-      s"CT(${TableRef(table).sig(config)},${query.sig(config)})"
-    override def inputAttributes: Seq[Attribute]  = query.inputAttributes
-    override def outputAttributes: Seq[Attribute] = Nil
-  }
   case class DropTable(table: QName, ifExists: Boolean) extends DDL {
     override def sig(config: QuerySignatureConfig): String = {
       s"DT(${TableRef(table).sig(config)})"
     }
   }
-  trait Update extends LogicalPlan with SQLSig
-
-  case class InsertInto(table: QName, columnAliases: Option[Seq[Identifier]], query: Relation)
-      extends Update
-      with UnaryRelation {
-    override def child: Relation = query
-    override def sig(config: QuerySignatureConfig): String = {
-      s"I(${TableRef(table).sig(config)},${query.sig(config)})"
-    }
-    override def inputAttributes: Seq[Attribute]  = query.inputAttributes
-    override def outputAttributes: Seq[Attribute] = Nil
-  }
-
-  case class Delete(table: QName, where: Option[Expression]) extends Update with LeafPlan {
-    override def sig(config: QuerySignatureConfig): String = {
-      s"D(${TableRef(table).sig(config)})"
-    }
-    override def inputAttributes: Seq[Attribute]  = Nil
-    override def outputAttributes: Seq[Attribute] = Nil
-  }
-
   case class RenameTable(table: QName, renameTo: QName) extends DDL {
     override def sig(config: QuerySignatureConfig): String = {
       s"RT(${TableRef(table).sig(config)})"
@@ -498,4 +468,44 @@ object LogicalPlan {
   case class DropView(viewName: QName, ifExists: Boolean) extends DDL {
     override def sig(config: QuerySignatureConfig) = "DV"
   }
+
+  /**
+    * A base trait for all update operations (e.g., add/delete the table contents).
+    */
+  trait Update extends LogicalPlan with SQLSig
+
+  case class CreateTableAs(
+      table: QName,
+      ifNotEotExists: Boolean,
+      columnAliases: Option[Seq[Identifier]],
+      query: Relation
+  ) extends DDL
+      with Update
+      with UnaryRelation {
+    override def sig(config: QuerySignatureConfig) =
+      s"CT(${TableRef(table).sig(config)},${query.sig(config)})"
+    override def inputAttributes: Seq[Attribute]  = query.inputAttributes
+    override def outputAttributes: Seq[Attribute] = query.outputAttributes
+    override def child: Relation                  = query
+  }
+
+  case class InsertInto(table: QName, columnAliases: Option[Seq[Identifier]], query: Relation)
+      extends Update
+      with UnaryRelation {
+    override def child: Relation = query
+    override def sig(config: QuerySignatureConfig): String = {
+      s"I(${TableRef(table).sig(config)},${query.sig(config)})"
+    }
+    override def inputAttributes: Seq[Attribute]  = query.inputAttributes
+    override def outputAttributes: Seq[Attribute] = Nil
+  }
+
+  case class Delete(table: QName, where: Option[Expression]) extends Update with LeafPlan {
+    override def sig(config: QuerySignatureConfig): String = {
+      s"D(${TableRef(table).sig(config)})"
+    }
+    override def inputAttributes: Seq[Attribute]  = Nil
+    override def outputAttributes: Seq[Attribute] = Nil
+  }
+
 }
