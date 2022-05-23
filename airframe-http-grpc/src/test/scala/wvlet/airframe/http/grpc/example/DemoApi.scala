@@ -96,7 +96,7 @@ object DemoApi {
     .designWithChannel
     .bind[DemoApiClient].toProvider { channel: Channel => new DemoApiClient(channel) }
 
-  def router = Router.add[DemoApi]
+  val router = Router.add[DemoApi]
 
   private def getRoute(name: String): Route = {
     router.routes.find(_.methodSurface.name == name).getOrElse {

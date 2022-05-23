@@ -15,10 +15,11 @@ package wvlet.log
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.{Properties, logging => jl}
-
 import scala.annotation.tailrec
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
+import scala.util.Try
 
 /**
   * An wrapper of java.util.logging.Logger for supporting rich-format logging
@@ -168,6 +169,39 @@ class Logger(
     } finally {
       setLogLevel(prev)
     }
+  }
+
+  /**
+    * Suppress all log messages. This is useful for error handling tests
+    * @param f
+    * @tparam U
+    * @return
+    */
+  def suppressLogs[U](f: => U): U = {
+    val prev = getLogLevel
+    try {
+      setLogLevel(LogLevel.OFF)
+      f
+    } finally {
+      setLogLevel(prev)
+    }
+  }
+
+  /**
+    * Suppress the log level around the given Future. After the given Future completes, the log level will be reset to
+    * the original level.
+    */
+  def suppressLogAroundFuture[U](body: => Future[U])(implicit ec: ExecutionContext): Future[U] = {
+    val prev = getLogLevel
+    Future
+      .apply(
+        setLogLevel(LogLevel.OFF)
+      ).flatMap { _ =>
+        body
+      }.transform { case any =>
+        Try(setLogLevel(prev))
+        any
+      }
   }
 }
 
