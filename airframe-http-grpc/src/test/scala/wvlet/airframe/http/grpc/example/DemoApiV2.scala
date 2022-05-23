@@ -17,11 +17,11 @@ import io.grpc.stub.{AbstractBlockingStub, StreamObserver}
 import io.grpc.{CallOptions, Channel}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.http.grpc.example.DemoApiV2.DemoMessage
 import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
 import wvlet.airframe.http.grpc.{GrpcClient, GrpcClientConfig, GrpcClientInterceptor, gRPC}
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{RPC, RPCEncoding, RPCStatus, Router}
-import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -49,13 +49,15 @@ trait DemoApiV2 extends LogSupport {
     }
   }
 
-  def clientStreaming(input: RxStream[String]): String = {
+  def clientStreaming(input: RxStream[DemoMessage]): String = {
     val x = input.toSeq
-    x.mkString(", ")
+    x.map(_.name).mkString(", ")
   }
 }
 
 object DemoApiV2 {
+  case class DemoMessage(name: String)
+
   private val router = Router.add[DemoApiV2]
 
   def design: Design = gRPC.server
@@ -97,9 +99,9 @@ object DemoApiV2 {
       )
 
     private val clientStreamingMethod =
-      GrpcServiceBuilder.buildGrpcMethod[String, String](
+      GrpcServiceBuilder.buildGrpcMethod[DemoMessage, String](
         getRoute("clientStreaming"),
-        Surface.of[String],
+        Surface.of[DemoMessage],
         codecFactory
       )
 
@@ -119,11 +121,11 @@ object DemoApiV2 {
       client.asyncServerStreamingCall(serverStreamingMethod, Map("name" -> name), observer)
     }
 
-    def clientStreaming(input: RxStream[String]): String = {
+    def clientStreaming(input: RxStream[DemoMessage]): String = {
       client.clientStreamingCall(clientStreamingMethod, input)
     }
 
-    def asyncClientStreaming(observer: StreamObserver[String]): StreamObserver[String] = {
+    def asyncClientStreaming(observer: StreamObserver[String]): StreamObserver[DemoMessage] = {
       client.asyncClientStreamingCall(clientStreamingMethod, observer)
     }
 

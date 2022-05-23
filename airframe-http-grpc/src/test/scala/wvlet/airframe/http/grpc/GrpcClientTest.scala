@@ -16,6 +16,7 @@ package wvlet.airframe.http.grpc
 import io.grpc.stub.StreamObserver
 import wvlet.airframe.Design
 import wvlet.airframe.http.grpc.example.DemoApiV2
+import wvlet.airframe.http.grpc.example.DemoApiV2.DemoMessage
 import wvlet.airframe.http.grpc.internal.GrpcRequestHandler
 import wvlet.airframe.http.{RPCException, RPCStatus}
 import wvlet.airframe.rx.Rx
@@ -133,7 +134,7 @@ class GrpcClientTest extends AirSpec {
     }
 
     test("client streaming") {
-      val result = client.clientStreaming(Rx.fromSeq(Seq("A", "B")))
+      val result = client.clientStreaming(Rx.fromSeq(Seq(DemoMessage("A"), DemoMessage("B"))))
       result shouldBe "A, B"
     }
 
@@ -156,8 +157,8 @@ class GrpcClientTest extends AirSpec {
         }
       )
 
-      requestObserver.onNext("A")
-      requestObserver.onNext("B")
+      requestObserver.onNext(DemoMessage("A"))
+      requestObserver.onNext(DemoMessage("B"))
       requestObserver.onCompleted()
       p.future.foreach { value =>
         value shouldBe "A, B"
