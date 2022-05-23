@@ -51,7 +51,13 @@ trait DemoApiV2 extends LogSupport {
 
   def clientStreaming(input: RxStream[DemoMessage]): String = {
     val x = input.toSeq
-    x.map(_.name).mkString(", ")
+    x.map(_.name).map {
+        case "XXX" =>
+          throw RPCStatus.INVALID_ARGUMENT_U2.newException(s"invalid client input: XXX")
+        case other =>
+          other
+      }
+      .mkString(", ")
   }
 
   def bidiStreaming(input: RxStream[DemoMessage]): RxStream[DemoResponse] = {
