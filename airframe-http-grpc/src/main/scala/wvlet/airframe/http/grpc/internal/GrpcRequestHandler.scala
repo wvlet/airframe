@@ -14,7 +14,7 @@
 package wvlet.airframe.http.grpc.internal
 
 import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
-import io.grpc.stub.StreamObserver
+import io.grpc.stub.{ClientCallStreamObserver, ServerCallStreamObserver, StreamObserver}
 import wvlet.airframe.codec.{MessageCodec, MessageCodecException, MessageCodecFactory}
 import wvlet.airframe.http.RPCEncoding
 import wvlet.airframe.http.grpc.{GrpcContext, GrpcResponse}
@@ -243,8 +243,10 @@ class GrpcRequestHandler(
           executorService.submit(new Callable[Unit] {
             override def call(): Unit = {
               Try(methodSurface.call(controller, rx)) match {
-                case Success(value) => promise.success(value)
-                case Failure(e)     => promise.failure(e)
+                case Success(value) =>
+                  promise.success(value)
+                case Failure(e) =>
+                  promise.failure(e)
               }
             }
           })
@@ -283,7 +285,9 @@ class GrpcRequestHandler(
                     responseObserver.onError(GrpcException.wrap(e))
                   case OnCompletion =>
                     requestLogger.logRPC(grpcContext, rpcContext)
-                    responseObserver.onCompleted()
+                    if (isReady(responseObserver)) {
+                      responseObserver.onCompleted()
+                    }
                 }
               case other =>
                 requestLogger.logRPC(grpcContext, rpcContext)
@@ -299,6 +303,22 @@ class GrpcRequestHandler(
     }
 
     requestObserver
+  }
+
+  /**
+    * Check whether the observer is ready for accepting more message
+    * @param observer
+    * @return
+    */
+  private def isReady(observer: StreamObserver[_]): Boolean = {
+    observer match {
+      case so: ServerCallStreamObserver[_] =>
+        so.isReady
+      case co: ClientCallStreamObserver[_] =>
+        co.isReady
+      case _ =>
+        true
+    }
   }
 
 }

@@ -61,7 +61,14 @@ trait DemoApiV2 extends LogSupport {
   }
 
   def bidiStreaming(input: RxStream[DemoMessage]): RxStream[DemoResponse] = {
-    input.map(x => DemoResponse(s"Hello ${x.name}"))
+    input.map(x =>
+      x.name match {
+        case "XXX" =>
+          throw RPCStatus.INVALID_ARGUMENT_U2.newException(s"invalid bidi input: XXX")
+        case _ =>
+          DemoResponse(s"Hello ${x.name}")
+      }
+    )
   }
 }
 

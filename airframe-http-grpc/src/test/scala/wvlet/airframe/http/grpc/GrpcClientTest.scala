@@ -14,7 +14,7 @@
 package wvlet.airframe.http.grpc
 
 import io.grpc.stub.StreamObserver
-import wvlet.airframe.Design
+import wvlet.airframe.{Design, http}
 import wvlet.airframe.http.grpc.example.DemoApiV2
 import wvlet.airframe.http.grpc.example.DemoApiV2.{DemoMessage, DemoResponse}
 import wvlet.airframe.http.grpc.internal.GrpcRequestHandler
@@ -255,6 +255,21 @@ class GrpcClientTest extends AirSpec {
         rx.toSeq shouldBe Seq(DemoResponse("Hello A"), DemoResponse("Hello B"))
       }
 
+      test("sync with RPCException") {
+        val input = Rx.variable(DemoMessage("A"))
+        val rx    = client.bidiStreaming(input)
+        input := DemoMessage("XXX")
+        input.stop()
+        rx.recover {
+          case e: RPCException =>
+            e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+            e.message shouldBe "invalid bidi input: XXX"
+          case e: Throwable =>
+            warn(e)
+            fail(s"unexpected exception: ${e}")
+        }.toSeq
+      }
+
       test("async") {
         val p = Promise[Seq[DemoResponse]]()
         val requestObserver = client.asyncBidiStreaming(new StreamObserver[DemoResponse] {
@@ -279,6 +294,38 @@ class GrpcClientTest extends AirSpec {
 
         p.future.foreach { value =>
           value shouldBe Seq(DemoResponse("Hello A"), DemoResponse("Hello B"))
+        }
+      }
+
+      test("async with RPCException") {
+        val p = Promise[Seq[DemoResponse]]()
+        val requestObserver = client.asyncBidiStreaming(new StreamObserver[DemoResponse] {
+          private val s = Seq.newBuilder[DemoResponse]
+
+          override def onNext(value: DemoResponse): Unit = {
+            s += value
+          }
+
+          override def onError(t: Throwable): Unit = {
+            p.failure(t)
+          }
+
+          override def onCompleted(): Unit = {
+            p.success(s.result())
+          }
+        })
+
+        requestObserver.onNext(DemoMessage("A"))
+        requestObserver.onNext(DemoMessage("XXX"))
+        requestObserver.onCompleted()
+
+        p.future.recover {
+          case e: RPCException =>
+            e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+            e.message shouldBe "invalid bidi input: XXX"
+          case e: Throwable =>
+            warn(e)
+            fail(s"unexpected exception: ${e}")
         }
       }
     }
