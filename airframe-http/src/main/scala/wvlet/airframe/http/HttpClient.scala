@@ -151,7 +151,7 @@ class HttpSyncClientAdapter[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Res
 object HttpClient extends LogSupport {
   def defaultHttpClientRetry[Req: HttpRequestAdapter: ClassTag, Resp: HttpResponseAdapter]: RetryContext = {
     Retry
-      .withBackOff(maxRetry = 10)
+      .withJitter(maxRetry = 15)
       .withResultClassifier(HttpClientException.classifyHttpResponse[Resp])
       .withErrorClassifier(HttpClientException.classifyExecutionFailure)
       .beforeRetry(defaultBeforeRetryAction[Req])
