@@ -214,6 +214,36 @@ class GrpcClientTest extends AirSpec {
           value shouldBe "A, B"
         }
       }
+
+      test("async with RPCException") {
+        val p = Promise[String]()
+        val requestObserver = client.asyncClientStreaming(
+          new StreamObserver[String] {
+            private var s = ""
+
+            override def onNext(value: String): Unit = {
+              s = value
+            }
+
+            override def onError(t: Throwable): Unit = {
+              p.failure(t)
+            }
+
+            override def onCompleted(): Unit = {
+              p.success(s)
+            }
+          }
+        )
+
+        requestObserver.onNext(DemoMessage("A"))
+        requestObserver.onNext(DemoMessage("XXX"))
+        requestObserver.onCompleted()
+
+        p.future.recover { case e: RPCException =>
+          e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+          e.message shouldBe "invalid client input: XXX"
+        }
+      }
     }
 
     test("bidi streaming") {
