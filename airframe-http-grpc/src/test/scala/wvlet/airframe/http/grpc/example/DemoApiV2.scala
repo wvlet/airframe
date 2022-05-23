@@ -21,14 +21,16 @@ import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
 import wvlet.airframe.http.grpc.{GrpcClient, GrpcClientConfig, GrpcClientInterceptor, gRPC}
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{RPC, RPCEncoding, RPCStatus, Router}
+import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 /**
   * Demo gRPC API used for GrpcClientTest
   */
 @RPC
-trait DemoApiV2 {
+trait DemoApiV2 extends LogSupport {
   def hello(name: String): String = {
     name match {
       case "XXX" =>
@@ -45,6 +47,11 @@ trait DemoApiV2 {
       case _ =>
         Rx.sequence(s"${name}:0", s"${name}:1")
     }
+  }
+
+  def clientStreaming(input: RxStream[String]): String = {
+    val x = input.toSeq
+    x.mkString(", ")
   }
 }
 
@@ -89,6 +96,13 @@ object DemoApiV2 {
         codecFactory
       )
 
+    private val clientStreamingMethod =
+      GrpcServiceBuilder.buildGrpcMethod[String, String](
+        getRoute("clientStreaming"),
+        Surface.of[String],
+        codecFactory
+      )
+
     def hello(name: String): String = {
       client.unaryCall(helloMethod, Map("name" -> name))
     }
@@ -104,6 +118,15 @@ object DemoApiV2 {
     def serverStreamingAsync(name: String, observer: StreamObserver[String]): Unit = {
       client.asyncServerStreamingCall(serverStreamingMethod, Map("name" -> name), observer)
     }
+
+    def clientStreaming(input: RxStream[String]): String = {
+      client.clientStreamingCall(clientStreamingMethod, input)
+    }
+
+    def asyncClientStreaming(observer: StreamObserver[String]): StreamObserver[String] = {
+      client.asyncClientStreamingCall(clientStreamingMethod, observer)
+    }
+
   }
 
 }

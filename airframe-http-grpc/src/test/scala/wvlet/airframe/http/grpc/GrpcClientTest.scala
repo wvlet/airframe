@@ -18,6 +18,7 @@ import wvlet.airframe.Design
 import wvlet.airframe.http.grpc.example.DemoApiV2
 import wvlet.airframe.http.grpc.internal.GrpcRequestHandler
 import wvlet.airframe.http.{RPCException, RPCStatus}
+import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 import wvlet.log.{LogSupport, Logger}
 
@@ -31,11 +32,20 @@ class GrpcClientTest extends AirSpec {
   override def design: Design = DemoApiV2.design
 
   test("GrpcClient") { (client: DemoApiV2.SyncClient) =>
-    test("hello") {
+    test("unary") {
       client.hello("v2") shouldBe "Hello v2!"
     }
 
-    test("helloAsync") {
+    test("unary with RPCException") {
+      Logger.of[GrpcRequestHandler].suppressLogs {
+        val ex = intercept[RPCException] {
+          client.hello("XXX")
+        }
+        ex.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+        ex.message shouldBe "Hello error: XXX"
+      }
+    }
+    test("async unary") {
       val p = Promise[String]()
       client.helloAsync(
         "v2 async",
@@ -54,55 +64,7 @@ class GrpcClientTest extends AirSpec {
       p.future.foreach(value => value shouldBe "Hello v2 async!")
     }
 
-    test("server streaming") {
-      val rx = client.serverStreaming("streaming")
-
-      rx.toSeq shouldBe Seq("streaming:0", "streaming:1")
-    }
-
-    test("RPCException in server streaming") {
-      Logger.of[GrpcRequestHandler].suppressLogs {
-        val rx = client.serverStreaming("XXX")
-        rx.recover { case e: RPCException =>
-          e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
-          e.message shouldBe s"invalid name: XXX"
-        }.toSeq
-      }
-    }
-
-    test("server streaming async") {
-      val p = Promise[Seq[String]]()
-      client.serverStreamingAsync(
-        "async",
-        new StreamObserver[String] {
-          private val s = Seq.newBuilder[String]
-          override def onNext(value: String): Unit = {
-            s += value
-          }
-
-          override def onError(t: Throwable): Unit = {
-            p.failure(t)
-          }
-
-          override def onCompleted(): Unit = {
-            p.success(s.result())
-          }
-        }
-      )
-      p.future.foreach(value => value shouldBe Seq("async:0", "async:1"))
-    }
-
-    test("RPCException") {
-      Logger.of[GrpcRequestHandler].suppressLogs {
-        val ex = intercept[RPCException] {
-          client.hello("XXX")
-        }
-        ex.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
-        ex.message shouldBe "Hello error: XXX"
-      }
-    }
-
-    test("RPCException async") {
+    test("async unary with RPCException") {
       val p = Promise[RPCException]()
       client.helloAsync(
         "XXX",
@@ -129,6 +91,76 @@ class GrpcClientTest extends AirSpec {
           e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
           e.message shouldBe "Hello error: yyy"
         }
+      }
+    }
+
+    test("server streaming") {
+      val rx = client.serverStreaming("streaming")
+
+      rx.toSeq shouldBe Seq("streaming:0", "streaming:1")
+    }
+
+    test("server streaming with RPCException") {
+      Logger.of[GrpcRequestHandler].suppressLogs {
+        val rx = client.serverStreaming("XXX")
+        rx.recover { case e: RPCException =>
+          e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+          e.message shouldBe s"invalid name: XXX"
+        }.toSeq
+      }
+    }
+
+    test("async server streaming") {
+      val p = Promise[Seq[String]]()
+      client.serverStreamingAsync(
+        "async",
+        new StreamObserver[String] {
+          private val s = Seq.newBuilder[String]
+          override def onNext(value: String): Unit = {
+            s += value
+          }
+
+          override def onError(t: Throwable): Unit = {
+            p.failure(t)
+          }
+
+          override def onCompleted(): Unit = {
+            p.success(s.result())
+          }
+        }
+      )
+      p.future.foreach(value => value shouldBe Seq("async:0", "async:1"))
+    }
+
+    test("client streaming") {
+      val result = client.clientStreaming(Rx.fromSeq(Seq("A", "B")))
+      result shouldBe "A, B"
+    }
+
+    test("async client streaming") {
+      val p = Promise[String]()
+      val requestObserver = client.asyncClientStreaming(
+        new StreamObserver[String] {
+          private var s = ""
+          override def onNext(value: String): Unit = {
+            s = value
+          }
+
+          override def onError(t: Throwable): Unit = {
+            p.failure(t)
+          }
+
+          override def onCompleted(): Unit = {
+            p.success(s)
+          }
+        }
+      )
+
+      requestObserver.onNext("A")
+      requestObserver.onNext("B")
+      requestObserver.onCompleted()
+      p.future.foreach { value =>
+        value shouldBe "A, B"
       }
     }
 

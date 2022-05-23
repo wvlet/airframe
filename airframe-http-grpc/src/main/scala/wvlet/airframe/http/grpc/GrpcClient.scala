@@ -19,7 +19,9 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.grpc.internal.GrpcException
 import wvlet.airframe.http.{RPCEncoding, RPCException, RPCStatus}
 import wvlet.airframe.msgpack.spi.MsgPack
-import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, RxBlockingQueue, RxStream}
+import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner, RxStream}
+
+import scala.util.{Failure, Success, Try}
 
 case class GrpcClientConfig(
     rpcEncoding: RPCEncoding = RPCEncoding.MsgPack,
@@ -82,6 +84,35 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
     responseObserver.toRx
   }
 
+  def clientStreamingCall[Req, Resp](
+      method: GrpcMethod[Req, Resp],
+      request: RxStream[Req]
+  ): Resp = {
+    val responseObserver = GrpcClient.blockingRxResponseObserver[Resp]
+    val requestObserver = ClientCalls.asyncClientStreamingCall(
+      getChannel.newCall(method.descriptor, config.callOptions),
+      new GrpcStreamObserverWrapper[Resp](responseObserver)
+    )
+    GrpcClient.readClientRequestStream(
+      request,
+      method.requestCodec,
+      requestObserver,
+      encoding = config.rpcEncoding
+    )
+    responseObserver.toRx.toSeq.head
+  }
+
+  def asyncClientStreamingCall[Req, Resp](
+      method: GrpcMethod[Req, Resp],
+      responseObserver: StreamObserver[Resp]
+  ): StreamObserver[Req] = {
+    val requestObserver = ClientCalls.asyncClientStreamingCall(
+      getChannel.newCall(method.descriptor, config.callOptions),
+      new GrpcStreamObserverWrapper[Resp](responseObserver)
+    )
+    GrpcClientCalls.translate[MsgPack, Req](requestObserver, method.requestCodec.toMsgPack(_))
+  }
+
   def asyncUnaryCall[Req, Resp](
       method: GrpcMethod[Req, Resp],
       request: Req,
@@ -121,6 +152,24 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
 }
 
 object GrpcClient {
+
+  trait BlockingRxStreamObserver[A] extends StreamObserver[A] {
+    def toRx: RxStream[A]
+  }
+
+  private def blockingRxResponseObserver[A]: BlockingRxStreamObserver[A] =
+    new BlockingRxStreamObserver[A] {
+      val toRx: RxBlockingQueue[A] = new RxBlockingQueue[A]
+      override def onNext(v: A): Unit = {
+        toRx.add(OnNext(v))
+      }
+      override def onError(t: Throwable): Unit = {
+        toRx.add(OnError(t))
+      }
+      override def onCompleted(): Unit = {
+        toRx.add(OnCompletion)
+      }
+    }
 
   private class RxStreamObserver[A] extends StreamObserver[A] {
     val toRx: RxBlockingQueue[A] = new RxBlockingQueue[A]
@@ -176,4 +225,25 @@ object GrpcClient {
     }
   }
 
+  private def readClientRequestStream[A](
+      input: Rx[A],
+      codec: MessageCodec[A],
+      requestObserver: StreamObserver[MsgPack],
+      encoding: RPCEncoding = RPCEncoding.MsgPack
+  ): Cancelable = {
+    RxRunner.run(input) {
+      case OnNext(x) => {
+        Try(encoding.encodeWithCodec(x.asInstanceOf[A], codec)) match {
+          case Success(msgpack) =>
+            requestObserver.onNext(msgpack)
+          case Failure(e) =>
+            requestObserver.onError(e)
+        }
+      }
+      case OnError(e) => requestObserver.onError(e)
+      case OnCompletion => {
+        requestObserver.onCompleted()
+      }
+    }
+  }
 }
