@@ -29,8 +29,8 @@ This version also adds `wvlet.airframe.http.RPCStatus` error code, which will be
 ### Minor updates
 
 - airframe-log: Add Logger.supporessLog, suppressLogAroundFuture
-- airframe-config: Add Control.withResourceAsync
-- airframe-config: Add Resource.wrapFuture
+- airframe-control: Add Control.withResourceAsync
+- airframe-control: Add Resource.wrapFuture
 - airframe-http: Add the default mappings from gRPC code to RPCStatus
 - airframe-http: Add @description annotation ([#2157](https://github.com/wvlet/airframe/issues/2157)) [[d43e5b26b](https://github.com/wvlet/airframe/commit/d43e5b26b)]
 - airframe-sql: Mark CTAS as Update type ([#2181](https://github.com/wvlet/airframe/issues/2181)) [[c12a7760e](https://github.com/wvlet/airframe/commit/c12a7760e)]
@@ -49,7 +49,7 @@ This version also adds `wvlet.airframe.http.RPCStatus` error code, which will be
 - Update portable-scala-reflect to 1.1.2 ([#2134](https://github.com/wvlet/airframe/issues/2134)) [[ba4f4efa7](https://github.com/wvlet/airframe/commit/ba4f4efa7)]
 
 
-## Internal dependency updates
+### Internal dependency updates
 
 - Update circe-parser to 0.14.2 ([#2177](https://github.com/wvlet/airframe/issues/2177)) [[fc713794b](https://github.com/wvlet/airframe/commit/fc713794b)]
 - Update swagger-parser to 2.0.33 ([#2178](https://github.com/wvlet/airframe/issues/2178)) [[e64c35197](https://github.com/wvlet/airframe/commit/e64c35197)]
