@@ -6,6 +6,65 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.5.0
+
+This version changes the behavior of AirSpec in order to support [async testing](https://wvlet.org/airframe/docs/airspec#async-testing) for tests that return `Future[_]` values. With async testing, you don't need to wait the completion of `Future[_]` objects in your test cases. This is especially useful when you need to await network responses in your Scala and Scala.js test code.  
+
+If you have tests that acquire resources around Future, you may see unexpected execution test orderi due to this change. To properly acquire and release resources for async testing, consider using newly added methods `Control.withResourceAsync(resource)` and `wvlet.airframe.control.Resource[A].wrapFuture`. 
+
+This version also adds `wvlet.airframe.http.RPCStatus` error code, which will be the standard error reporting method in Airframe RPC. In the upcoming Airframe versions, you can use `RPCStatus.newException(...)` to propagate RPC server-side errors into clients in the form of `wvlet.airframe.http.RPCException`.  
+
+### Major updates
+
+- AirSpec: Add async test support ([#2159](https://github.com/wvlet/airframe/issues/2159)) [[8046872d9](https://github.com/wvlet/airframe/commit/8046872d9)]
+- airframe-http: [#1559](https://github.com/wvlet/airframe/issues/1559) Use Jitter by default with max retry = 15 in http clients ([#2180](https://github.com/wvlet/airframe/issues/2180)) [[f72605a42](https://github.com/wvlet/airframe/commit/f72605a42)]
+- airframe-rx: Add RxVar.stop to send OnCompletion event
+- airframe-ulid: Make ULID a regular class and map to string in OpenAPI ([#2155](https://github.com/wvlet/airframe/issues/2155)) [[ea7de71e3](https://github.com/wvlet/airframe/commit/ea7de71e3)]
+- Upgrade to Scala 3.1.2 ([#2161](https://github.com/wvlet/airframe/issues/2161)) [[4ba827f86](https://github.com/wvlet/airframe/commit/4ba827f86)]
+- Update scalajs-dom to 2.2.0 ([#2173](https://github.com/wvlet/airframe/issues/2173)) [[17fbf20fc](https://github.com/wvlet/airframe/commit/17fbf20fc)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.46.0 ([#2138](https://github.com/wvlet/airframe/issues/2138)) [[0c6d81e87](https://github.com/wvlet/airframe/commit/0c6d81e87)]
+- Update finagle-core, finagle-http, ... to 22.4.0 ([#2133](https://github.com/wvlet/airframe/issues/2133)) [[852f5cf5c](https://github.com/wvlet/airframe/commit/852f5cf5c)]
+
+### Minor updates
+
+- airframe-log: Add Logger.supporessLog, suppressLogAroundFuture
+- airframe-config: Add Control.withResourceAsync
+- airframe-config: Add Resource.wrapFuture
+- airframe-http: Add the default mappings from gRPC code to RPCStatus
+- airframe-http: Add @description annotation ([#2157](https://github.com/wvlet/airframe/issues/2157)) [[d43e5b26b](https://github.com/wvlet/airframe/commit/d43e5b26b)]
+- airframe-sql: Mark CTAS as Update type ([#2181](https://github.com/wvlet/airframe/issues/2181)) [[c12a7760e](https://github.com/wvlet/airframe/commit/c12a7760e)]
+- airframe-grpc: Add GrpcClient for consolidating a logic for handling RPCException ([#2172](https://github.com/wvlet/airframe/issues/2172)) [[4c8f1c24b](https://github.com/wvlet/airframe/commit/4c8f1c24b)]
+- airframe-grpc: Add GrpcClient to handle RPCException properly
+- Add RPCHttpClient to handle RPCException at client side ([#2165](https://github.com/wvlet/airframe/issues/2165)) [[782b3434f](https://github.com/wvlet/airframe/commit/782b3434f)]
+- airframe-http: Add RPCEncoding object for managing application/msgpack, json content types ([#2144](https://github.com/wvlet/airframe/issues/2144)) [[a9a04eb40](https://github.com/wvlet/airframe/commit/a9a04eb40)]
+- openapi: Suppress package prefix from tags ([#2158](https://github.com/wvlet/airframe/issues/2158)) [[cc284547f](https://github.com/wvlet/airframe/commit/cc284547f)]
+- openapi: Support removing package prefixes from object names  ([#2154](https://github.com/wvlet/airframe/issues/2154)) [[6ffe483ab](https://github.com/wvlet/airframe/commit/6ffe483ab)]
+- [#2419](https://github.com/wvlet/airframe/issues/2419): Use optional OpenAPI parameter if a default value is defined ([#2153](https://github.com/wvlet/airframe/issues/2153)) [[ebc7b86f1](https://github.com/wvlet/airframe/commit/ebc7b86f1)]
+- airframe-http-finagle: Propagate RPCException to clients ([#2141](https://github.com/wvlet/airframe/issues/2141)) [[e43122068](https://github.com/wvlet/airframe/commit/e43122068)]
+- airframe-grpc: Propagate RPCException to clients ([#2139](https://github.com/wvlet/airframe/issues/2139)) [[7f211936b](https://github.com/wvlet/airframe/commit/7f211936b)]
+- airframe-rpc: Add RPC status code ([#1973](https://github.com/wvlet/airframe/issues/1973)) [[dccb460de](https://github.com/wvlet/airframe/commit/dccb460de)]
+- airframe-control: Add Resource[R] for releasing resources at ease in AirSpec ([#2162](https://github.com/wvlet/airframe/issues/2162)) [[c7fcfe7d4](https://github.com/wvlet/airframe/commit/c7fcfe7d4)]
+- Update fluency-core, fluency-fluentd, ... to 2.6.4 ([#2137](https://github.com/wvlet/airframe/issues/2137)) [[a4b463e22](https://github.com/wvlet/airframe/commit/a4b463e22)]
+- Update postgresql to 42.3.5 ([#2152](https://github.com/wvlet/airframe/issues/2152)) [[7b522f269](https://github.com/wvlet/airframe/commit/7b522f269)]
+- Update portable-scala-reflect to 1.1.2 ([#2134](https://github.com/wvlet/airframe/issues/2134)) [[ba4f4efa7](https://github.com/wvlet/airframe/commit/ba4f4efa7)]
+
+
+## Internal dependency updates
+
+- Update circe-parser to 0.14.2 ([#2177](https://github.com/wvlet/airframe/issues/2177)) [[fc713794b](https://github.com/wvlet/airframe/commit/fc713794b)]
+- Update swagger-parser to 2.0.33 ([#2178](https://github.com/wvlet/airframe/issues/2178)) [[e64c35197](https://github.com/wvlet/airframe/commit/e64c35197)]
+- Update hadoop-aws, hadoop-client to 3.3.3 ([#2176](https://github.com/wvlet/airframe/issues/2176)) [[954c549f7](https://github.com/wvlet/airframe/commit/954c549f7)]
+- Update trino-main to 381 ([#2175](https://github.com/wvlet/airframe/issues/2175)) [[3c4c34757](https://github.com/wvlet/airframe/commit/3c4c34757)]
+- Update trino-main to 380 ([#2160](https://github.com/wvlet/airframe/issues/2160)) [[f99e08e49](https://github.com/wvlet/airframe/commit/f99e08e49)]
+- Update airframe-rpc.md ([#2156](https://github.com/wvlet/airframe/issues/2156)) [[13af55b84](https://github.com/wvlet/airframe/commit/13af55b84)]
+- Update scalafmt-core to 3.5.2 ([#2146](https://github.com/wvlet/airframe/issues/2146)) [[c44e6a647](https://github.com/wvlet/airframe/commit/c44e6a647)]
+- Update trino-main to 379 ([#2143](https://github.com/wvlet/airframe/issues/2143)) [[88e810598](https://github.com/wvlet/airframe/commit/88e810598)]
+- Update trino-main to 378 ([#2136](https://github.com/wvlet/airframe/issues/2136)) [[27cb12c8b](https://github.com/wvlet/airframe/commit/27cb12c8b)]
+- Update protobuf-java to 3.20.1 ([#2135](https://github.com/wvlet/airframe/issues/2135)) [[b365c8002](https://github.com/wvlet/airframe/commit/b365c8002)]
+- Update scalafmt-core to 3.5.1 ([#2132](https://github.com/wvlet/airframe/issues/2132)) [[98229b1ed](https://github.com/wvlet/airframe/commit/98229b1ed)]
+- Update postgresql to 42.3.4 ([#2129](https://github.com/wvlet/airframe/issues/2129)) [[a106bfa5f](https://github.com/wvlet/airframe/commit/a106bfa5f)]
+- Update airspec, sbt-airframe to 22.4.2 ([#2131](https://github.com/wvlet/airframe/issues/2131)) [[90000213b](https://github.com/wvlet/airframe/commit/90000213b)]
+
 ## 22.4.2
 
 A minor bug fix release.
