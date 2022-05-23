@@ -82,4 +82,11 @@ class RPCStatusTest extends AirSpec {
     }
   }
 
+  test("fromGrpcStatusCode") {
+    GrpcStatus.all.foreach { x =>
+      val status = RPCStatus.fromGrpcStatusCode(x.code)
+      status.grpcStatus shouldBe x
+    }
+  }
+
 }

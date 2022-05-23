@@ -30,11 +30,33 @@ object RPCStatus {
 
   import RPCStatusType._
 
+  // These variables need to be lazy to avoid NPE during the initialization
   private lazy val codeTable: Map[Int, RPCStatus]        = all.map { x => x.code -> x }.toMap
   private lazy val codeNameTable: Map[String, RPCStatus] = all.map { x => x.name -> x }.toMap
-  private lazy val grpcStatusCodeTable: Map[Int, RPCStatus] = all.map { x =>
-    x.grpcStatus.code -> x
+  private lazy val grpcStatusCodeTable: Map[Int, RPCStatus] = grpcStatusCodeMapping.map { case (g, r) =>
+    g.code -> r
   }.toMap
+
+  // Default mapping from gRPC status code
+  private val grpcStatusCodeMapping = Map(
+    GrpcStatus.OK_0                  -> RPCStatus.SUCCESS_S0,
+    GrpcStatus.CANCELLED_1           -> RPCStatus.CANCELLED_U11,
+    GrpcStatus.UNKNOWN_2             -> RPCStatus.UNKNOWN_I1,
+    GrpcStatus.INVALID_ARGUMENT_3    -> RPCStatus.INVALID_ARGUMENT_U2,
+    GrpcStatus.DEADLINE_EXCEEDED_4   -> RPCStatus.DEADLINE_EXCEEDED_I4,
+    GrpcStatus.NOT_FOUND_5           -> RPCStatus.NOT_FOUND_U5,
+    GrpcStatus.ALREADY_EXISTS_6      -> RPCStatus.ALREADY_EXISTS_U6,
+    GrpcStatus.PERMISSION_DENIED_7   -> RPCStatus.PERMISSION_DENIED_U14,
+    GrpcStatus.RESOURCE_EXHAUSTED_8  -> RPCStatus.RESOURCE_EXHAUSTED_R0,
+    GrpcStatus.FAILED_PRECONDITION_9 -> RPCStatus.UNEXPECTED_STATE_U9,
+    GrpcStatus.ABORTED_10            -> RPCStatus.ABORTED_U12,
+    GrpcStatus.OUT_OF_RANGE_11       -> RPCStatus.OUT_OF_RANGE_U4,
+    GrpcStatus.UNIMPLEMENTED_12      -> RPCStatus.UNIMPLEMENTED_U8,
+    GrpcStatus.INTERNAL_13           -> RPCStatus.INTERNAL_ERROR_I0,
+    GrpcStatus.UNAVAILABLE_14        -> RPCStatus.UNAVAILABLE_I2,
+    GrpcStatus.DATA_LOSS_15          -> RPCStatus.DATA_LOSS_I8,
+    GrpcStatus.UNAUTHENTICATED_16    -> RPCStatus.UNAUTHENTICATED_U13
+  )
 
   def unapply(s: String): Option[RPCStatus] = {
     Try(ofCode(s.toInt)).toOption
