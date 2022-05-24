@@ -92,7 +92,7 @@ class GrpcClientTest extends AirSpec {
         Logger.of[GrpcRequestHandler].suppressLogAroundFuture {
           p.future.map { (e: RPCException) =>
             e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
-            e.message shouldBe "Hello error: yyy"
+            e.message shouldBe "Hello error: XXX"
           }
         }
       }
@@ -175,15 +175,17 @@ class GrpcClientTest extends AirSpec {
       }
 
       test("sync with RPCException") {
-        try {
-          val result = client.clientStreaming(Rx.fromSeq(Seq(DemoMessage("A"), DemoMessage("XXX"))))
-          fail("should not reach here")
-        } catch {
-          case e: RPCException =>
-            e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
-            e.message shouldBe "invalid client input: XXX"
-          case other: Throwable =>
-            fail(s"Invalid exception: ${other}")
+        Logger.of[GrpcRequestHandler].suppressLogs {
+          try {
+            val result = client.clientStreaming(Rx.fromSeq(Seq(DemoMessage("A"), DemoMessage("XXX"))))
+            fail("should not reach here")
+          } catch {
+            case e: RPCException =>
+              e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+              e.message shouldBe "invalid client input: XXX"
+            case other: Throwable =>
+              fail(s"Invalid exception: ${other}")
+          }
         }
       }
 
@@ -217,6 +219,7 @@ class GrpcClientTest extends AirSpec {
 
       test("async with RPCException") {
         val p = Promise[String]()
+
         val requestObserver = client.asyncClientStreaming(
           new StreamObserver[String] {
             private var s = ""
@@ -239,9 +242,11 @@ class GrpcClientTest extends AirSpec {
         requestObserver.onNext(DemoMessage("XXX"))
         requestObserver.onCompleted()
 
-        p.future.recover { case e: RPCException =>
-          e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
-          e.message shouldBe "invalid client input: XXX"
+        Logger.of[GrpcRequestHandler].suppressLogAroundFuture {
+          p.future.recover { case e: RPCException =>
+            e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+            e.message shouldBe "invalid client input: XXX"
+          }
         }
       }
     }
@@ -256,18 +261,20 @@ class GrpcClientTest extends AirSpec {
       }
 
       test("sync with RPCException") {
-        val input = Rx.variable(DemoMessage("A"))
-        val rx    = client.bidiStreaming(input)
-        input := DemoMessage("XXX")
-        input.stop()
-        rx.recover {
-          case e: RPCException =>
-            e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
-            e.message shouldBe "invalid bidi input: XXX"
-          case e: Throwable =>
-            warn(e)
-            fail(s"unexpected exception: ${e}")
-        }.toSeq
+        Logger.of[GrpcRequestHandler].suppressLogs {
+          val input = Rx.variable(DemoMessage("A"))
+          val rx    = client.bidiStreaming(input)
+          input := DemoMessage("XXX")
+          input.stop()
+          rx.recover {
+            case e: RPCException =>
+              e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+              e.message shouldBe "invalid bidi input: XXX"
+            case e: Throwable =>
+              warn(e)
+              fail(s"unexpected exception: ${e}")
+          }.toSeq
+        }
       }
 
       test("async") {
@@ -315,17 +322,20 @@ class GrpcClientTest extends AirSpec {
           }
         })
 
-        requestObserver.onNext(DemoMessage("A"))
-        requestObserver.onNext(DemoMessage("XXX"))
-        requestObserver.onCompleted()
+        Logger.of[GrpcRequestHandler].suppressLogAroundFuture {
 
-        p.future.recover {
-          case e: RPCException =>
-            e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
-            e.message shouldBe "invalid bidi input: XXX"
-          case e: Throwable =>
-            warn(e)
-            fail(s"unexpected exception: ${e}")
+          requestObserver.onNext(DemoMessage("A"))
+          requestObserver.onNext(DemoMessage("XXX"))
+          requestObserver.onCompleted()
+
+          p.future.recover {
+            case e: RPCException =>
+              e.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+              e.message shouldBe "invalid bidi input: XXX"
+            case e: Throwable =>
+              warn(e)
+              fail(s"unexpected exception: ${e}")
+          }
         }
       }
     }
