@@ -15,6 +15,8 @@ package wvlet.airframe.http
 
 import wvlet.airframe.http.js.JSHttpClientBackend
 
+import scala.concurrent.ExecutionContext
+
 /**
   * Scala.js specific implementation
   */
@@ -23,4 +25,6 @@ private object Compat extends CompatApi {
     scala.scalajs.js.URIUtils.encodeURI(s)
   }
   override def defaultHttpClientBackend: HttpClientBackend = JSHttpClientBackend
+
+  override def defaultExecutionContext: ExecutionContext = scala.scalajs.concurrent.JSExecutionContext.queue
 }

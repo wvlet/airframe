@@ -30,9 +30,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object JSHttpClientBackend extends HttpClientBackend {
 
-  override def defaultExecutionContext: ExecutionContext = {
-    scala.scalajs.concurrent.JSExecutionContext.queue
-  }
   override def defaultRequestRetryer: Retry.RetryContext = {
     // Use this for compatibility. We may be able to use HttpClient.defaultHttpClientRetry in future
     JSHttpClient.defaultHttpClientRetryer

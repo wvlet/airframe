@@ -20,15 +20,18 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   */
 trait HttpClientBackend {
-  def defaultExecutionContext: ExecutionContext
-  def defaultRequestRetryer: RetryContext
+  def defaultRequestRetryer: RetryContext = HttpClient.defaultHttpClientRetry[Request, Response]
 
   def newSyncClient(severAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response]
 
   def newAsyncClient(
       serverAddress: String,
       clientConfig: HttpClientConfig
-  ): HttpClient[Future, Request, Response]
+  ): HttpClient[Future, Request, Response] = {
+    throw new UnsupportedOperationException("async client is not supported.")
+  }
 
-  def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCHttpClient
+  def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCHttpClient = {
+    throw new UnsupportedOperationException("scala.js client is not supported.")
+  }
 }

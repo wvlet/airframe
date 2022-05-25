@@ -13,8 +13,9 @@
  */
 package wvlet.airframe.http
 import java.net.URLEncoder
-
 import wvlet.airframe.http.client.URLConnectionClientBackend
+
+import scala.concurrent.ExecutionContext
 
 /**
   */
@@ -25,5 +26,9 @@ object Compat extends CompatApi {
   override def defaultHttpClientBackend: HttpClientBackend = {
     // TODO: Use JDK11's HttpClient backend
     URLConnectionClientBackend
+  }
+
+  override def defaultExecutionContext: ExecutionContext = {
+    scala.concurrent.ExecutionContext.global
   }
 }

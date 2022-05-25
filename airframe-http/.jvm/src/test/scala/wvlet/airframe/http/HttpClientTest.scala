@@ -16,9 +16,9 @@ import java.io.EOFException
 import java.lang.reflect.InvocationTargetException
 import java.net._
 import java.util.concurrent.{ExecutionException, TimeoutException}
-
 import javax.net.ssl.{SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
 import wvlet.airspec.AirSpec
+import wvlet.log.Logger
 
 /**
   */
@@ -70,9 +70,11 @@ class HttpClientTest extends AirSpec {
           "Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed."
         )
     )
-    retryableResponses.foreach { r =>
-      new RetryTest(expectedRetryCount = 1, expectedExecCount = 2) {
-        override def body = r
+    Logger("wvlet.airframe.http.HttpClient").suppressWarnings {
+      retryableResponses.foreach { r =>
+        new RetryTest(expectedRetryCount = 1, expectedExecCount = 2) {
+          override def body = r
+        }
       }
     }
   }
@@ -109,9 +111,11 @@ class HttpClientTest extends AirSpec {
       new InvocationTargetException(new TimeoutException("timeout at reflection call"))
     )
 
-    retryableExceptions.foreach { e =>
-      new RetryTest(expectedRetryCount = 1, expectedExecCount = 2) {
-        override def body = throw e
+    Logger("wvlet.airframe.http.HttpClient").suppressLogs {
+      retryableExceptions.foreach { e =>
+        new RetryTest(expectedRetryCount = 1, expectedExecCount = 2) {
+          override def body = throw e
+        }
       }
     }
   }
