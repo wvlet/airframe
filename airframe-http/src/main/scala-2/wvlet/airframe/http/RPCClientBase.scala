@@ -16,7 +16,7 @@ package wvlet.airframe.http
 import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http.impl.HttpMacros
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.language.experimental.macros
 
 /**

@@ -28,19 +28,15 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   */
 object URLConnectionClientBackend extends HttpClientBackend {
-  override def defaultExecutionContext: ExecutionContext = ???
-
-  override def defaultRequestRetryer: Retry.RetryContext = {
-    HttpClient.defaultHttpClientRetry[Request, Response]
-  }
-
   def newSyncClient(serverAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response] = {
     new URLConnectionClient(
       ServerAddress(serverAddress),
       URLConnectionClientConfig(
         requestFilter = clientConfig.requestFilter,
         retryContext = clientConfig.retryContext,
-        codecFactory = clientConfig.codecFactory
+        codecFactory = clientConfig.codecFactory,
+        readTimeout = clientConfig.readTimeout,
+        connectTimeout = clientConfig.connectTimeout
       )
     )
   }

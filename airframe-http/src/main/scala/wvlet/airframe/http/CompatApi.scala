@@ -13,10 +13,13 @@
  */
 package wvlet.airframe.http
 
+import scala.concurrent.ExecutionContext
+
 /**
   * An interface for using different implementation betweeen Scala JVM and Scala.js
   */
 trait CompatApi {
   def urlEncode(s: String): String
   def defaultHttpClientBackend: HttpClientBackend
+  def defaultExecutionContext: ExecutionContext
 }

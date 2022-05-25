@@ -20,6 +20,7 @@ import wvlet.airframe.http.Http.SyncClient
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.{Http, HttpStatus}
 import wvlet.airspec.AirSpec
+import wvlet.log.Logger
 
 /**
   */
@@ -115,9 +116,10 @@ object URLConnectionClientTest extends AirSpec {
     }
 
     test("Handle 5xx retry") {
-      warn(s"Run 5xx retry test")
-      intercept[MaxRetryException] {
-        client.get[String]("/status/500")
+      Logger("wvlet.airframe.http.HttpClient").suppressWarnings {
+        intercept[MaxRetryException] {
+          client.get[String]("/status/500")
+        }
       }
     }
   }

@@ -18,7 +18,9 @@ import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.rx.{Rx, RxStream}
 
-import scala.concurrent.Future
+import java.util.concurrent.TimeUnit
+import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.Duration
 
 /**
   */
@@ -35,8 +37,14 @@ case class HttpClientConfig(
       * with Rx.recover)
       */
     rxConverter: Future[_] => RxStream[_] = { (f: Future[_]) =>
-      Rx.future(f)(Compat.defaultHttpClientBackend.defaultExecutionContext)
-    }
+      Rx.future(f)(Compat.defaultExecutionContext)
+    },
+    // timeout applied when establishing HTTP connection to the target host
+    connectTimeout: Duration = Duration(90, TimeUnit.SECONDS),
+    // timeout applied when receiving data from the target host
+    readTimeout: Duration = Duration(90, TimeUnit.SECONDS),
+    // Provide a thread execution context for async client
+    executionContextProvider: () => ExecutionContext = { () => Compat.defaultExecutionContext }
 ) {
   def newSyncClient(serverAddress: String): Http.SyncClient =
     backend.newSyncClient(serverAddress, this)
@@ -69,6 +77,17 @@ case class HttpClientConfig(
   }
   def noCircuitBreaker: HttpClientConfig = {
     this.copy(circuitBreaker = CircuitBreaker.alwaysClosed)
+  }
+
+  def withExecutionContextProvider(provider: () => ExecutionContext): HttpClientConfig = {
+    this.copy(executionContextProvider = provider)
+  }
+
+  def withConnectTimeout(duration: Duration): HttpClientConfig = {
+    this.copy(connectTimeout = duration)
+  }
+  def withReadTimeout(duration: Duration): HttpClientConfig = {
+    this.copy(readTimeout = duration)
   }
 
   /**
