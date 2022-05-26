@@ -37,9 +37,9 @@ class JavaHttpSyncClientTest extends AirSpec {
       val resp = client.send(Http.GET("/get?id=1&name=leo"))
       resp.status shouldBe HttpStatus.Ok_200
       resp.isContentTypeJson shouldBe true
-      val json = JSON.parse(resp.message.toContentString)
-      (json / "args" / "id").toStringValue shouldBe "1"
-      (json / "args" / "name").toStringValue shouldBe "leo"
+      val json = JSON.parse(resp.message.toContentString).toJSON
+      val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
+      m("args") shouldBe Map("id" -> "1", "name" -> "leo")
     }
 
     test("POST") {
@@ -47,9 +47,10 @@ class JavaHttpSyncClientTest extends AirSpec {
       val resp = client.send(Http.POST("/post").withContent(data))
       resp.status shouldBe HttpStatus.Ok_200
       resp.isContentTypeJson shouldBe true
-      val json = JSON.parse(resp.message.toContentString)
-      json("data").toString shouldBe data
-      json("json").toString shouldBe data
+      val json = JSON.parse(resp.message.toContentString).toJSON
+      val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
+      m("data").toString shouldBe data
+      m("json") shouldBe Map("id" -> 1, "name" -> "leo")
     }
 
     test("404 with HttpClientException") {

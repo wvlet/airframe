@@ -14,15 +14,17 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.Design
+import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
 import wvlet.airspec.AirSpec
 
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 class JavaHttpAsyncClientTest extends AirSpec {
 
-  private implicit val ec = defaultExecutionContext
+  private implicit val ec: ExecutionContext = defaultExecutionContext
 
   // Use a public REST test server
   private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
@@ -43,9 +45,9 @@ class JavaHttpAsyncClientTest extends AirSpec {
         .map { resp =>
           resp.status shouldBe HttpStatus.Ok_200
           resp.isContentTypeJson shouldBe true
-          val json = JSON.parse(resp.message.toContentString)
-          (json / "args" / "id").toStringValue shouldBe "1"
-          (json / "args" / "name").toStringValue shouldBe "leo"
+          val json = JSON.parse(resp.message.toContentString).toJSON
+          val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
+          m("args") shouldBe Map("id" -> "1", "name" -> "leo")
         }
     }
 
@@ -54,9 +56,10 @@ class JavaHttpAsyncClientTest extends AirSpec {
       client.send(Http.POST("/post").withContent(data)).map { resp =>
         resp.status shouldBe HttpStatus.Ok_200
         resp.isContentTypeJson shouldBe true
-        val json = JSON.parse(resp.message.toContentString)
-        json("data").toString shouldBe data
-        json("json").toString shouldBe data
+        val json = JSON.parse(resp.message.toContentString).toJSON
+        val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
+        m("data") shouldBe data
+        m("json") shouldBe Map("id" -> 1, "name" -> "leo")
       }
     }
 
