@@ -22,9 +22,8 @@ import java.net.http.HttpClient.Redirect
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
 import java.net.http.{HttpClient, HttpRequest, HttpResponse}
-import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
-import scala.util.{Failure, Success}
+import scala.util.control.NonFatal
 
 /**
   * Http client implementation using a new Java Http Client since Java 11.
@@ -67,6 +66,17 @@ class JavaHttpSyncClient(serverAddress: ServerAddress, val config: HttpClientCon
           Option(lastResponse).getOrElse(Http.response(HttpStatus.InternalServerError_500)),
           e.retryContext,
           e.retryContext.lastError
+        )
+      case e: HttpClientException =>
+        // Throw as is
+        throw e
+      case NonFatal(e) =>
+        val resp = Option(lastResponse).getOrElse(Http.response(HttpStatus.InternalServerError_500))
+        throw new HttpClientException(
+          resp,
+          status = resp.status,
+          message = e.getMessage,
+          cause = e
         )
     }
   }
