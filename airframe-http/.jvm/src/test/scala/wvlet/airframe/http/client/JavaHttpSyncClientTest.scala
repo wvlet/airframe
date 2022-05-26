@@ -18,7 +18,7 @@ import wvlet.airframe.http.{Http, HttpClientException, HttpClientMaxRetryExcepti
 import wvlet.airframe.json.JSON
 import wvlet.airspec.AirSpec
 
-class JavaHttpClientTest extends AirSpec {
+class JavaHttpSyncClientTest extends AirSpec {
 
   // Use a public REST test server
   private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
@@ -65,12 +65,12 @@ class JavaHttpClientTest extends AirSpec {
       val e = intercept[HttpClientMaxRetryException] {
         client.send(Http.GET("/status/500"))
       }
-      e.status shouldBe HttpStatus.InternalServerError_500
+      e.status.isServerError shouldBe true
     }
 
     test("handle max retry safely") {
       val lastResp = client.sendSafe(Http.GET("/status/500"))
-      lastResp.status shouldBe HttpStatus.InternalServerError_500
+      lastResp.status.isServerError shouldBe true
     }
   }
 

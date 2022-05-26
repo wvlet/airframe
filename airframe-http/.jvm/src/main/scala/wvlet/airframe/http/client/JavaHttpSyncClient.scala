@@ -27,7 +27,7 @@ import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success}
 
 /**
-  * Http client implmeentation using a new Java Http Client since Java 11.
+  * Http client implementation using a new Java Http Client since Java 11.
   * @param serverAddress
   * @param config
   */
@@ -53,7 +53,7 @@ class JavaHttpSyncClient(serverAddress: ServerAddress, val config: HttpClientCon
 
     var lastResponse: Response = null
     try {
-      // This will apply result classifier/error classifier
+      // Send http requst with retry support
       config.retryContext.runWithContext(request) {
         val httpResponse: HttpResponse[Array[Byte]] =
           javaHttpClient.send(httpRequest, BodyHandlers.ofByteArray())
@@ -119,33 +119,6 @@ class JavaHttpSyncClient(serverAddress: ServerAddress, val config: HttpClientCon
       .withHeader(header.result())
       .withContent(HttpMessage.byteArrayMessage(httpResponse.body()))
   }
-}
 
-class JavaHttpAsyncClient(serverAddress: ServerAddress, syncClient: JavaHttpSyncClient) extends HttpAsyncClient {
-
-  private implicit val ec = syncClient.config.executionContextProvider()
-
-  override def send(req: Request, requestFilter: Request => Request): Future[Response] = {
-    val p = Promise[Response]()
-    Future
-      .apply {
-        syncClient.send(req, requestFilter)
-      }
-      .transform { result =>
-        result match {
-          case Success(resp) =>
-            p.success(resp)
-          case Failure(ex) =>
-            p.failure(ex)
-        }
-        result
-      }
-
-    p.future
-  }
-
-  override def close(): Unit = {
-    // no-op
-  }
-
+  def toAsyncClient: JavaHttpAsyncClient = new JavaHttpAsyncClient(this)
 }
