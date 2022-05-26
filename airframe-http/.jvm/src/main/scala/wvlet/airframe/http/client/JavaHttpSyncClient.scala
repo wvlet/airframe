@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.client
 
+import wvlet.airframe.control.CircuitBreaker
 import wvlet.airframe.control.Retry.MaxRetryException
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
@@ -32,7 +33,8 @@ import scala.util.control.NonFatal
   */
 class JavaHttpSyncClient(serverAddress: ServerAddress, val config: HttpClientConfig) extends client.HttpSyncClient {
 
-  private val javaHttpClient: HttpClient = newClient(config)
+  private val javaHttpClient: HttpClient     = newClient(config)
+  private val circuitBreaker: CircuitBreaker = config.circuitBreaker
 
   private def newClient(config: HttpClientConfig): HttpClient = {
     HttpClient
@@ -47,13 +49,14 @@ class JavaHttpSyncClient(serverAddress: ServerAddress, val config: HttpClientCon
       requestFilter: HttpMessage.Request => HttpMessage.Request
   ): HttpMessage.Response = {
 
-    val request     = config.requestFilter(requestFilter(req))
+    val request = config.requestFilter(requestFilter(req))
+    // New Java's HttpRequest is immutable, so we can reuse the same request instance
     val httpRequest = buildRequest(serverAddress, request, config)
 
     var lastResponse: Response = null
     try {
       // Send http requst with retry support
-      config.retryContext.runWithContext(request) {
+      config.retryContext.runWithContext(request, circuitBreaker) {
         val httpResponse: HttpResponse[Array[Byte]] =
           javaHttpClient.send(httpRequest, BodyHandlers.ofByteArray())
 

@@ -174,6 +174,9 @@ val cb = CircuitBreaker
   }
 ```
 
+CircuitBreaker can also be used with Retry:   `Retry.runWithContext(context, circuitBreaker)`
+
+
 ## Parallel
 
 Parallel is a library for ensuring using a fixed number of threads (= parallelism) for running tasks.
