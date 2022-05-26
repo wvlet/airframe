@@ -12,14 +12,24 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.client
-import wvlet.airframe.http.HttpMessage.{Message, Response}
-import wvlet.airframe.http.{Http, HttpClientConfig, HttpHeader, HttpMessage, HttpMultiMap, HttpStatus, ServerAddress}
 
-import java.net.{Authenticator, URI}
-import java.net.http.{HttpClient, HttpRequest, HttpResponse}
+import wvlet.airframe.control.Retry.MaxRetryException
+import wvlet.airframe.http.HttpMessage.Response
+import wvlet.airframe.http.{
+  Http,
+  HttpClientConfig,
+  HttpClientMaxRetryException,
+  HttpMessage,
+  HttpMultiMap,
+  HttpStatus,
+  ServerAddress
+}
+
+import java.net.URI
 import java.net.http.HttpClient.Redirect
-import java.net.http.HttpRequest.{BodyPublisher, BodyPublishers}
+import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
+import java.net.http.{HttpClient, HttpRequest, HttpResponse}
 import scala.jdk.CollectionConverters._
 
 /**
@@ -27,7 +37,7 @@ import scala.jdk.CollectionConverters._
   * @param serverAddress
   * @param config
   */
-class JDKSyncHttpClient(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpSyncClient {
+class JavaHttpSyncClient(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpSyncClient {
 
   private val javaHttpClient: HttpClient = {
     HttpClient
@@ -60,32 +70,43 @@ class JDKSyncHttpClient(serverAddress: ServerAddress, config: HttpClientConfig) 
           BodyPublishers.noBody()
         case s: HttpMessage.StringMessage =>
           BodyPublishers.ofString(s.toContentString)
-        case b: HttpMessage.ByteArrayMessage =>
-          BodyPublishers.ofByteArray(b.toContentBytes)
         case m =>
           BodyPublishers.ofByteArray(m.toContentBytes)
       }
     )
 
-    val httpRequest = requestBuilder.build()
-    config.retryContext.runWithContext(request) {
+    val httpRequest            = requestBuilder.build()
+    var lastResponse: Response = null
+    try {
+      config.retryContext.runWithContext(request) {
+        val httpResponse: HttpResponse[Array[Byte]] =
+          javaHttpClient.send(httpRequest, BodyHandlers.ofByteArray())
 
-      val httpResponse: HttpResponse[Array[Byte]] =
-        javaHttpClient.send(httpRequest, BodyHandlers.ofByteArray())
-
-      // Read HTTP response headers
-      val header = HttpMultiMap.newBuilder
-      httpResponse.headers().map().asScala.map { case (key, values) =>
-        values.asScala.foreach { v =>
-          header.add(key, v)
+        // Read HTTP response headers
+        val header = HttpMultiMap.newBuilder
+        httpResponse.headers().map().asScala.map { case (key, values) =>
+          values.asScala.foreach { v =>
+            header.add(key, v)
+          }
         }
-      }
 
-      val resp = Http
-        .response(HttpStatus.ofCode(httpResponse.statusCode()))
-        .withHeader(header.result())
-        .withContent(HttpMessage.byteArrayMessage(httpResponse.body()))
-      resp
+        lastResponse = Http
+          .response(HttpStatus.ofCode(httpResponse.statusCode()))
+          .withHeader(header.result())
+          .withContent(HttpMessage.byteArrayMessage(httpResponse.body()))
+        lastResponse
+      }
+    } catch {
+      case e: MaxRetryException =>
+        throw HttpClientMaxRetryException(
+          Option(lastResponse).getOrElse(Http.response(HttpStatus.InternalServerError_500)),
+          e.retryContext,
+          e.retryContext.lastError
+        )
     }
+  }
+
+  override def close(): Unit = {
+    // It seems Java Http Client has no close method
   }
 }

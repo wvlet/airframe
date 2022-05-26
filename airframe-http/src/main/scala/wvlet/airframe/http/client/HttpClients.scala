@@ -21,7 +21,7 @@ import scala.concurrent.Future
 /**
   * A standard blocking http client interface
   */
-trait HttpSyncClient {
+trait HttpSyncClient extends AutoCloseable {
 
   /**
     * Send an HTTP request and get the response. It will throw an exception for non successful responses (after reaching
@@ -50,7 +50,7 @@ trait HttpSyncClient {
 /**
   * A standard asyn http client interface using Scala Future
   */
-trait HttpAsyncClient {
+trait HttpAsyncClient extends AutoCloseable {
 
   /**
     * Send an HTTP request and get the response. It will return an exception for non successful responses (after

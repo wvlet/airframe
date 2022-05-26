@@ -49,7 +49,7 @@ case class HttpClientMaxRetryException(
           case e: HttpClientException =>
             e.status
           case _ =>
-            HttpStatus.Unknown_000
+            HttpStatus.InternalServerError_500
         }
       },
       message = s"Reached the max retry count ${retryContext.retryCount}/${retryContext.maxRetry}: ${cause.getMessage}",
