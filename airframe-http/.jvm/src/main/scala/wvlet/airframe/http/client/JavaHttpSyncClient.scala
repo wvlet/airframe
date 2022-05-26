@@ -49,7 +49,7 @@ class JavaHttpSyncClient(serverAddress: ServerAddress, val config: HttpClientCon
       requestFilter: HttpMessage.Request => HttpMessage.Request
   ): HttpMessage.Response = {
 
-    val request = config.requestFilter(requestFilter(req))
+    val request = requestFilter(config.requestFilter(req))
     // New Java's HttpRequest is immutable, so we can reuse the same request instance
     val httpRequest = buildRequest(serverAddress, request, config)
 
