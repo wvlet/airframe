@@ -13,16 +13,19 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.control.CircuitBreaker
+import wvlet.airframe.control.{CircuitBreaker, IO}
+import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.control.Retry.MaxRetryException
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
 
+import java.io.{ByteArrayInputStream, InputStream}
 import java.net.URI
 import java.net.http.HttpClient.Redirect
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
 import java.net.http.{HttpClient, HttpRequest, HttpResponse}
+import java.util.zip.{GZIPInputStream, InflaterInputStream}
 import scala.jdk.CollectionConverters._
 import scala.util.control.NonFatal
 
@@ -57,8 +60,8 @@ class JavaHttpSyncClient(serverAddress: ServerAddress, val config: HttpClientCon
     try {
       // Send http requst with retry support
       config.retryContext.runWithContext(request, circuitBreaker) {
-        val httpResponse: HttpResponse[Array[Byte]] =
-          javaHttpClient.send(httpRequest, BodyHandlers.ofByteArray())
+        val httpResponse: HttpResponse[InputStream] =
+          javaHttpClient.send(httpRequest, BodyHandlers.ofInputStream())
 
         lastResponse = readResponse(httpResponse)
         lastResponse
@@ -118,19 +121,36 @@ class JavaHttpSyncClient(serverAddress: ServerAddress, val config: HttpClientCon
     requestBuilder.build()
   }
 
-  private def readResponse(httpResponse: java.net.http.HttpResponse[Array[Byte]]): Response = {
+  private def readResponse(httpResponse: java.net.http.HttpResponse[InputStream]): Response = {
     // Read HTTP response headers
-    val header = HttpMultiMap.newBuilder
-    httpResponse.headers().map().asScala.map { case (key, values) =>
-      values.asScala.foreach { v =>
-        header.add(key, v)
+    val header: HttpMultiMap = {
+      val h = HttpMultiMap.newBuilder
+      httpResponse.headers().map().asScala.map { case (key, values) =>
+        values.asScala.foreach { v =>
+          h.add(key, v)
+        }
       }
+      h.result()
+    }
+
+    // Decompress contents
+    val body: Array[Byte] = withResource {
+      header.get(HttpHeader.ContentEncoding).map(_.toLowerCase()) match {
+        case Some("gzip") =>
+          new GZIPInputStream(httpResponse.body())
+        case Some("deflate") =>
+          new InflaterInputStream(httpResponse.body())
+        case _ =>
+          httpResponse.body()
+      }
+    } { (in: InputStream) =>
+      IO.readFully(in)
     }
 
     Http
       .response(HttpStatus.ofCode(httpResponse.statusCode()))
-      .withHeader(header.result())
-      .withContent(HttpMessage.byteArrayMessage(httpResponse.body()))
+      .withHeader(header)
+      .withContent(HttpMessage.byteArrayMessage(body))
   }
 
   def toAsyncClient: JavaHttpAsyncClient = new JavaHttpAsyncClient(this)
