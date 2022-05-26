@@ -14,6 +14,7 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.Design
+import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
 import wvlet.airframe.http.{Http, HttpClientException, HttpClientMaxRetryException, HttpStatus, ServerAddress}
 import wvlet.airframe.json.JSON
@@ -73,6 +74,21 @@ class JavaHttpSyncClientTest extends AirSpec {
       val lastResp = client.sendSafe(Http.GET("/status/500"))
       lastResp.status.isServerError shouldBe true
     }
+
+    test("gzip encoding") {
+      val resp = client.send(Http.GET("/gzip"))
+      val m    = MessageCodec.of[Map[String, Any]].fromJson(resp.contentString)
+      m("gzipped") shouldBe true
+      resp.contentEncoding shouldBe Some("gzip")
+    }
+
+    test("deflate encoding") {
+      val resp = client.send(Http.GET("/deflate"))
+      val m    = MessageCodec.of[Map[String, Any]].fromJson(resp.contentString)
+      m("deflated") shouldBe true
+      resp.contentEncoding shouldBe Some("deflate")
+    }
+
   }
 
   test("circuit breaker") {
