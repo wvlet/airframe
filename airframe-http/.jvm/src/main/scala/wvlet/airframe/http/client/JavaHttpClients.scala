@@ -14,32 +14,28 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.control.Retry.MaxRetryException
-import wvlet.airframe.http.HttpMessage.Response
-import wvlet.airframe.http.{
-  Http,
-  HttpClientConfig,
-  HttpClientMaxRetryException,
-  HttpMessage,
-  HttpMultiMap,
-  HttpStatus,
-  ServerAddress
-}
+import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http._
 
 import java.net.URI
 import java.net.http.HttpClient.Redirect
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
 import java.net.http.{HttpClient, HttpRequest, HttpResponse}
+import scala.concurrent.{Future, Promise}
 import scala.jdk.CollectionConverters._
+import scala.util.{Failure, Success}
 
 /**
   * Http client implmeentation using a new Java Http Client since Java 11.
   * @param serverAddress
   * @param config
   */
-class JavaHttpSyncClient(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpSyncClient {
+class JavaHttpSyncClient(serverAddress: ServerAddress, val config: HttpClientConfig) extends client.HttpSyncClient {
 
-  private val javaHttpClient: HttpClient = {
+  private val javaHttpClient: HttpClient = newClient(config)
+
+  private def newClient(config: HttpClientConfig): HttpClient = {
     HttpClient
       .newBuilder()
       .followRedirects(Redirect.NORMAL)
@@ -52,7 +48,38 @@ class JavaHttpSyncClient(serverAddress: ServerAddress, config: HttpClientConfig)
       requestFilter: HttpMessage.Request => HttpMessage.Request
   ): HttpMessage.Response = {
 
-    val request = requestFilter(config.requestFilter(req))
+    val request     = config.requestFilter(requestFilter(req))
+    val httpRequest = buildRequest(serverAddress, request, config)
+
+    var lastResponse: Response = null
+    try {
+      // This will apply result classifier/error classifier
+      config.retryContext.runWithContext(request) {
+        val httpResponse: HttpResponse[Array[Byte]] =
+          javaHttpClient.send(httpRequest, BodyHandlers.ofByteArray())
+
+        lastResponse = readResponse(httpResponse)
+        lastResponse
+      }
+    } catch {
+      case e: MaxRetryException =>
+        throw HttpClientMaxRetryException(
+          Option(lastResponse).getOrElse(Http.response(HttpStatus.InternalServerError_500)),
+          e.retryContext,
+          e.retryContext.lastError
+        )
+    }
+  }
+
+  override def close(): Unit = {
+    // It seems Java Http Client has no close method
+  }
+
+  private def buildRequest(
+      serverAddress: ServerAddress,
+      request: Request,
+      config: HttpClientConfig
+  ): HttpRequest = {
     val uri = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
       else s"/${request.uri}"}"
 
@@ -75,38 +102,50 @@ class JavaHttpSyncClient(serverAddress: ServerAddress, config: HttpClientConfig)
       }
     )
 
-    val httpRequest            = requestBuilder.build()
-    var lastResponse: Response = null
-    try {
-      config.retryContext.runWithContext(request) {
-        val httpResponse: HttpResponse[Array[Byte]] =
-          javaHttpClient.send(httpRequest, BodyHandlers.ofByteArray())
+    requestBuilder.build()
+  }
 
-        // Read HTTP response headers
-        val header = HttpMultiMap.newBuilder
-        httpResponse.headers().map().asScala.map { case (key, values) =>
-          values.asScala.foreach { v =>
-            header.add(key, v)
-          }
-        }
-
-        lastResponse = Http
-          .response(HttpStatus.ofCode(httpResponse.statusCode()))
-          .withHeader(header.result())
-          .withContent(HttpMessage.byteArrayMessage(httpResponse.body()))
-        lastResponse
+  private def readResponse(httpResponse: java.net.http.HttpResponse[Array[Byte]]): Response = {
+    // Read HTTP response headers
+    val header = HttpMultiMap.newBuilder
+    httpResponse.headers().map().asScala.map { case (key, values) =>
+      values.asScala.foreach { v =>
+        header.add(key, v)
       }
-    } catch {
-      case e: MaxRetryException =>
-        throw HttpClientMaxRetryException(
-          Option(lastResponse).getOrElse(Http.response(HttpStatus.InternalServerError_500)),
-          e.retryContext,
-          e.retryContext.lastError
-        )
     }
+
+    Http
+      .response(HttpStatus.ofCode(httpResponse.statusCode()))
+      .withHeader(header.result())
+      .withContent(HttpMessage.byteArrayMessage(httpResponse.body()))
+  }
+}
+
+class JavaHttpAsyncClient(serverAddress: ServerAddress, syncClient: JavaHttpSyncClient) extends HttpAsyncClient {
+
+  private implicit val ec = syncClient.config.executionContextProvider()
+
+  override def send(req: Request, requestFilter: Request => Request): Future[Response] = {
+    val p = Promise[Response]()
+    Future
+      .apply {
+        syncClient.send(req, requestFilter)
+      }
+      .transform { result =>
+        result match {
+          case Success(resp) =>
+            p.success(resp)
+          case Failure(ex) =>
+            p.failure(ex)
+        }
+        result
+      }
+
+    p.future
   }
 
   override def close(): Unit = {
-    // It seems Java Http Client has no close method
+    // no-op
   }
+
 }

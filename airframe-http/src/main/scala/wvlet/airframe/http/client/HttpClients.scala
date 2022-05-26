@@ -54,12 +54,7 @@ trait HttpAsyncClient extends AutoCloseable {
 
   /**
     * Send an HTTP request and get the response. It will return an exception for non successful responses (after
-    * reaching the max retry limit)
+    * reaching the max retry limit). If any HttpClientException happens, it will be returned as Future[Throwable]
     */
   def send(req: Request, requestFilter: Request => Request = identity): Future[Response]
-
-  /**
-    * Send an HTTP request and returns a response (or the last response if the request is retried)
-    */
-  def sendSafe(req: Request, requestFilter: Request => Request = identity): Future[Response]
 }
