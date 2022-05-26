@@ -63,6 +63,19 @@ class JavaHttpAsyncClientTest extends AirSpec {
       }
     }
 
+    test("404") {
+      client.sendSafe(Http.GET("/status/404")).transform { ret =>
+        ret match {
+          case Success(resp) =>
+            resp.status shouldBe HttpStatus.NotFound_404
+            ret
+          case _ =>
+            fail(s"Cannot reach here")
+            ret
+        }
+      }
+    }
+
     test("404 with HttpClientException") {
       client.send(Http.GET("/status/404")).transform { ret =>
         ret match {
