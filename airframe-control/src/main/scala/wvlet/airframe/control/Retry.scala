@@ -254,11 +254,13 @@ object Retry extends LogSupport {
       runInternal(None)(body)
     }
 
-    def runWithContext[A](context: Any)(body: => A): A = {
-      runInternal(Option(context))(body)
+    def runWithContext[A](context: Any, circuitBreaker: CircuitBreaker = CircuitBreaker.alwaysClosed)(body: => A): A = {
+      runInternal(Option(context), circuitBreaker)(body)
     }
 
-    protected def runInternal[A](context: Option[Any])(body: => A): A = {
+    protected def runInternal[A](context: Option[Any], circuitBreaker: CircuitBreaker = CircuitBreaker.alwaysClosed)(
+        body: => A
+    ): A = {
       var result: Option[A]          = None
       var retryContext: RetryContext = init(context)
 
@@ -266,7 +268,11 @@ object Retry extends LogSupport {
 
       while (isFirst || (result.isEmpty && retryContext.canContinue)) {
         isFirst = false
-        val ret = Try(body)
+
+        val ret = Try {
+          circuitBreaker.verifyConnection
+          body
+        }
         val resultClass = ret match {
           case Success(x) =>
             // Test whether the code block execution is succeeded or failed
@@ -279,14 +285,17 @@ object Retry extends LogSupport {
 
         resultClass match {
           case ResultClass.Succeeded =>
+            circuitBreaker.recordSuccess
             // OK. Exit the loop
             result = Some(ret.get)
           case ResultClass.Failed(isRetryable, cause, extraWait) if isRetryable =>
+            circuitBreaker.recordFailure(cause)
             // Retryable error
             retryContext = retryContext.withExtraWait(extraWait).nextRetry(cause)
             // Wait until the next retry
             Compat.sleep(retryContext.nextWaitMillis)
           case ResultClass.Failed(_, cause, _) =>
+            circuitBreaker.recordFailure(cause)
             // Non-retryable error. Exit the loop by throwing the exception
             throw cause
         }

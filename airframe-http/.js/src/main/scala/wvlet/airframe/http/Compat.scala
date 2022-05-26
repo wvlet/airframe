@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http
 
+import org.scalajs.macrotaskexecutor.MacrotaskExecutor
 import wvlet.airframe.http.js.JSHttpClientBackend
 
 import scala.concurrent.ExecutionContext
@@ -26,5 +27,7 @@ private object Compat extends CompatApi {
   }
   override def defaultHttpClientBackend: HttpClientBackend = JSHttpClientBackend
 
-  override def defaultExecutionContext: ExecutionContext = scala.scalajs.concurrent.JSExecutionContext.queue
+  override def defaultExecutionContext: ExecutionContext = {
+    org.scalajs.macrotaskexecutor.MacrotaskExecutor.Implicits.global
+  }
 }

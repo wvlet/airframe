@@ -34,7 +34,7 @@ class JSRPCClientTest extends AirSpec {
       .map { response =>
         debug(response)
         response.headers.get("Content-Type") shouldBe Some("application/msgpack")
-      }(config.executionContextProvider())
+      }(config.executionContextProvider(config))
   }
 
   test("create RPC client") {

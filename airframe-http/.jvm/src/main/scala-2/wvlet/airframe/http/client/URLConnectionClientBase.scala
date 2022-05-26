@@ -14,10 +14,8 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{Http, HttpResponseBodyCodec, HttpSyncClient}
-import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
+import wvlet.airframe.http.{Http, HttpResponseBodyCodec}
 import wvlet.airframe.surface.Surface
 
 import scala.reflect.runtime.universe
@@ -25,7 +23,8 @@ import scala.reflect.runtime.universe.TypeTag
 
 /**
   */
-trait URLConnectionClientBase extends HttpSyncClient[Request, Response] { self: URLConnectionClient =>
+trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request, Response] {
+  self: URLConnectionClient =>
   protected def convert[A: TypeTag](response: Response): A = {
     if (
       implicitly[TypeTag[A]] == scala.reflect.runtime.universe

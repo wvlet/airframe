@@ -18,7 +18,7 @@ import java.net._
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.{ExecutionException, TimeoutException}
 import javax.net.ssl.{SSLException, SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
-import wvlet.airframe.control.{ResultClass, Retry}
+import wvlet.airframe.control.{CircuitBreakerOpenException, ResultClass, Retry}
 import wvlet.airframe.control.ResultClass.{Failed, Succeeded, nonRetryableFailure, retryableFailure}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.log.LogSupport
@@ -49,7 +49,7 @@ case class HttpClientMaxRetryException(
           case e: HttpClientException =>
             e.status
           case _ =>
-            HttpStatus.Unknown_000
+            HttpStatus.InternalServerError_500
         }
       },
       message = s"Reached the max retry count ${retryContext.retryCount}/${retryContext.maxRetry}: ${cause.getMessage}",
@@ -145,6 +145,8 @@ object HttpClientException extends LogSupport {
       invocationTargetExceptionClassifier
 
   def connectionExceptionClassifier: PartialFunction[Throwable, Failed] = {
+    // Make it non-retryable for failfast behavior if the circuit is open
+    case e: CircuitBreakerOpenException => nonRetryableFailure(e)
     // Other types of exception that can happen inside HTTP clients (e.g., Jetty)
     case e: java.lang.InterruptedException =>
       // Retryable when the http client thread execution is interrupted.

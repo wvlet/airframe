@@ -28,7 +28,10 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   */
 object URLConnectionClientBackend extends HttpClientBackend {
-  def newSyncClient(serverAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response] = {
+  def newSyncClient(
+      serverAddress: String,
+      clientConfig: HttpClientConfig
+  ): wvlet.airframe.http.HttpSyncClient[Request, Response] = {
     new URLConnectionClient(
       ServerAddress(serverAddress),
       URLConnectionClientConfig(

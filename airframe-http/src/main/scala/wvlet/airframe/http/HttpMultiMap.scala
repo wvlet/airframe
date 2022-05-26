@@ -38,7 +38,7 @@ object HttpMultiMap {
 }
 
 /**
-  * Immutable MultiMap structure for representing Http headers, query parameters, etc.
+  * Immutable case-insensitive MultiMap structure for representing Http headers, query parameters, etc.
   */
 case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
 
