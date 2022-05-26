@@ -25,7 +25,9 @@ import java.net.http.HttpClient.Redirect
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
 import java.net.http.{HttpClient, HttpRequest, HttpResponse}
+import java.util.concurrent.{Executor, ExecutorService}
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 import scala.util.control.NonFatal
 
@@ -34,16 +36,31 @@ import scala.util.control.NonFatal
   * @param serverAddress
   * @param config
   */
-class JavaHttpSyncClient(serverAddress: ServerAddress, val config: HttpClientConfig) extends client.HttpSyncClient {
+class JavaHttpSyncClient(serverAddress: ServerAddress, config: HttpClientConfig) extends client.HttpSyncClient {
 
   private val javaHttpClient: HttpClient     = newClient(config)
   private val circuitBreaker: CircuitBreaker = config.circuitBreaker.withName(s"${serverAddress}")
+  private implicit val ec: ExecutionContext  = config.executionContextProvider(config)
+
+  override def close(): Unit = {
+    // It seems Java Http Client has no close method
+    ec match {
+      case e: ExecutorService =>
+        // Close the thread pool
+        e.shutdownNow()
+      case _ =>
+    }
+  }
 
   private def newClient(config: HttpClientConfig): HttpClient = {
     HttpClient
       .newBuilder()
       .followRedirects(Redirect.NORMAL)
       .connectTimeout(java.time.Duration.ofMillis(config.connectTimeout.toMillis))
+      // Wrap Scala's ExecutionContext as Java's Executor
+      .executor(new Executor {
+        override def execute(command: Runnable): Unit = ec.execute(command)
+      })
       .build()
   }
 
@@ -87,8 +104,22 @@ class JavaHttpSyncClient(serverAddress: ServerAddress, val config: HttpClientCon
     }
   }
 
-  override def close(): Unit = {
-    // It seems Java Http Client has no close method
+  def sendAsync(
+      req: HttpMessage.Request,
+      requestFilter: HttpMessage.Request => HttpMessage.Request
+  ): Future[HttpMessage.Response] = {
+    Future.apply {
+      send(req, requestFilter)
+    }
+  }
+
+  def sendSafeAsync(
+      req: HttpMessage.Request,
+      requestFilter: HttpMessage.Request => HttpMessage.Request
+  ): Future[HttpMessage.Response] = {
+    Future.apply {
+      sendSafe(req, requestFilter)
+    }
   }
 
   private def buildRequest(

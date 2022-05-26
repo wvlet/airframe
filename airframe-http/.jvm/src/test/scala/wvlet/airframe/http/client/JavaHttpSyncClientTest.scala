@@ -15,6 +15,7 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
 import wvlet.airframe.http.{Http, HttpClientException, HttpClientMaxRetryException, HttpStatus, ServerAddress}
 import wvlet.airframe.json.JSON
@@ -92,18 +93,21 @@ class JavaHttpSyncClientTest extends AirSpec {
   }
 
   test("circuit breaker") {
-    val client = new JavaHttpSyncClient(
-      ServerAddress(PUBLIC_REST_SERVICE),
-      Http.client.withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
-    )
-    val e = intercept[HttpClientException] {
-      client.send(Http.GET("/status/500"))
-    }
-    e.getCause match {
-      case c: CircuitBreakerOpenException =>
-      // ok
-      case other =>
-        fail(s"Unexpected failure: ${e}")
+    withResource(
+      new JavaHttpSyncClient(
+        ServerAddress(PUBLIC_REST_SERVICE),
+        Http.client.withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
+      )
+    ) { client =>
+      val e = intercept[HttpClientException] {
+        client.send(Http.GET("/status/500"))
+      }
+      e.getCause match {
+        case c: CircuitBreakerOpenException =>
+        // ok
+        case other =>
+          fail(s"Unexpected failure: ${e}")
+      }
     }
   }
 

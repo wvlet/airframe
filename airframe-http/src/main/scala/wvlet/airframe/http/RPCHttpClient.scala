@@ -35,7 +35,7 @@ class RPCHttpClient(config: HttpClientConfig, httpClient: Http.AsyncClient)
     httpClient.close()
   }
 
-  private implicit val ec: ExecutionContext = config.executionContextProvider()
+  private implicit val ec: ExecutionContext = config.executionContextProvider(config)
 
   /**
     * Send an RPC request (POST) and return the RPC response. If any failure happens, it will return

@@ -32,19 +32,20 @@ case class HttpClientConfig(
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
     // The default circuit breaker, which will be open after 5 consecutive failures
     circuitBreaker: CircuitBreaker = CircuitBreaker.withConsecutiveFailures(5),
-    /**
-      * For converting Future[A] to Rx[A]. Use this method when you need to add a common error handler for Rx (e.g.,
-      * with Rx.recover)
-      */
-    rxConverter: Future[_] => RxStream[_] = { (f: Future[_]) =>
-      Rx.future(f)(Compat.defaultExecutionContext)
-    },
     // timeout applied when establishing HTTP connection to the target host
     connectTimeout: Duration = Duration(90, TimeUnit.SECONDS),
     // timeout applied when receiving data from the target host
     readTimeout: Duration = Duration(90, TimeUnit.SECONDS),
-    // Provide a thread execution context for async client
-    executionContextProvider: () => ExecutionContext = { () => Compat.defaultExecutionContext }
+    // Provide a thread executor for sending http requests and supporting Scala Future responses
+    executionContextProvider: HttpClientConfig => ExecutionContext = { _ => Compat.defaultExecutionContext },
+    /**
+      * For converting Future[A] to Rx[A]. Use this method when you need to add a common error handler for Rx (e.g.,
+      * with Rx.recover). This is mainly used in generated RPC clients for Scala.js
+      */
+    rxConverter: Future[_] => RxStream[_] = { (f: Future[_]) =>
+      // TODO: This execution context needs to reference a global one if we need to use it in Scala JVM
+      Rx.future(f)(Compat.defaultExecutionContext)
+    }
 ) {
   def newSyncClient(serverAddress: String): Http.SyncClient =
     backend.newSyncClient(serverAddress, this)
@@ -79,7 +80,7 @@ case class HttpClientConfig(
     this.copy(circuitBreaker = CircuitBreaker.alwaysClosed)
   }
 
-  def withExecutionContextProvider(provider: () => ExecutionContext): HttpClientConfig = {
+  def withExecutionContextProvider(provider: HttpClientConfig => ExecutionContext): HttpClientConfig = {
     this.copy(executionContextProvider = provider)
   }
 

@@ -15,6 +15,8 @@ package wvlet.airframe.http
 import java.net.URLEncoder
 import wvlet.airframe.http.client.URLConnectionClientBackend
 
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{Executors, ThreadFactory}
 import scala.concurrent.ExecutionContext
 
 /**
@@ -28,7 +30,24 @@ object Compat extends CompatApi {
     URLConnectionClientBackend
   }
 
+  private val threadFactoryId = new AtomicInteger()
+
+  /**
+    * A thread factory for creating a daemon thread so as not to block JVM shutdown
+    */
+  private class DefaultThreadFactory extends ThreadFactory {
+    private val factoryId = threadFactoryId.getAndIncrement()
+    private val threadId  = new AtomicInteger()
+    override def newThread(r: Runnable): Thread = {
+      val threadName = s"airframe-http-${factoryId}:${threadId.getAndIncrement()}"
+      val thread     = new Thread(null, r, threadName)
+      thread.setDaemon(true)
+      thread
+    }
+  }
+
   override def defaultExecutionContext: ExecutionContext = {
-    scala.concurrent.ExecutionContext.global
+    // We should not use scala.concurrent.ExecutionContext.global as it might be closed
+    ExecutionContext.fromExecutorService(Executors.newCachedThreadPool(new DefaultThreadFactory))
   }
 }

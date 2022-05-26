@@ -15,8 +15,7 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 
-import scala.concurrent.{Future, Promise}
-import scala.util.{Failure, Success}
+import scala.concurrent.Future
 
 /**
   * An wrapper of JavaHttpSyncClient for supporting async response
@@ -24,29 +23,16 @@ import scala.util.{Failure, Success}
   */
 class JavaHttpAsyncClient(syncClient: JavaHttpSyncClient) extends HttpAsyncClient {
 
-  private implicit val ec = syncClient.config.executionContextProvider()
-
   override def send(req: Request, requestFilter: Request => Request): Future[Response] = {
-    val p = Promise[Response]()
-    Future
-      .apply {
-        syncClient.send(req, requestFilter)
-      }
-      .transform { result =>
-        result match {
-          case Success(resp) =>
-            p.success(resp)
-          case Failure(ex) =>
-            p.failure(ex)
-        }
-        result
-      }
-
-    p.future
+    syncClient.sendAsync(req, requestFilter)
   }
 
   override def close(): Unit = {
-    // no-op
+    syncClient.close()
   }
 
+  override def sendSafe(req: Request, requestFilter: Request => Request): Future[Response] = {
+    syncClient.sendSafeAsync(req, requestFilter)
+
+  }
 }

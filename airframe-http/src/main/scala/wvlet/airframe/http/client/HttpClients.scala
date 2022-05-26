@@ -24,18 +24,25 @@ import scala.concurrent.Future
 trait HttpSyncClient extends AutoCloseable {
 
   /**
-    * Send an HTTP request and get the response. It will throw an exception for non successful responses (after reaching
-    * the max retry limit)
+    * Send an HTTP request and get the response. It will throw an exception for non-successful responses. For example,
+    * when receiving non-retryable status code (e.g., 4xx), it will throw HttpClientException. For server side failures
+    * (5xx responses), this continues request retry until the max retry count.
+    *
+    * If it exceeds the number of max retry attempts, HttpClientMaxRetryException will be thrown.
     *
     * @throws HttpClientMaxRetryException
     *   if max retry reaches
     * @throws HttpClientException
-    *   for non-retryable error is happend
+    *   for non-retryable error is occurred
     */
   def send(req: Request, requestFilter: Request => Request = identity): Response
 
   /**
-    * Send an HTTP request and returns a response (or the last response if the request is retried)
+    * Send an HTTP request and returns a response (or the last response if the request is retried). Unlike [[send()]],
+    * this method returns a regular Http Response object even for non-retryable responses (e.g., 4xx error code). For
+    * retryable responses (e.g., 5xx) this continues retry until the max retry count.
+    *
+    * After reaching the max retry count, it will return a the last response even for 5xx status code.
     */
   def sendSafe(req: Request, requestFilter: Request => Request = identity): Response = {
     try {
@@ -48,13 +55,28 @@ trait HttpSyncClient extends AutoCloseable {
 }
 
 /**
-  * A standard asyn http client interface using Scala Future
+  * A standard async http client interface for Scala Future
   */
 trait HttpAsyncClient extends AutoCloseable {
 
   /**
-    * Send an HTTP request and get the response. It will return an exception for non successful responses (after
-    * reaching the max retry limit). If any HttpClientException happens, it will be returned as Future[Throwable]
+    * Send an HTTP request and get the response in Scala Future type.
+    *
+    * It will return `Future[HttpClientException]` for non-successful responses. For example, when receiving
+    * non-retryable status code (e.g., 4xx), it will return Future[HttpClientException]. For server side failures (5xx
+    * responses), this continues request retry until the max retry count.
+    *
+    * If it exceeds the number of max retry attempts, it will return Future[HttpClientMaxRetryException].
     */
   def send(req: Request, requestFilter: Request => Request = identity): Future[Response]
+
+  /**
+    * Send an HTTP request and returns a response (or the last response if the request is retried)
+    *
+    * @param req
+    * @param requestFilter
+    * @return
+    */
+  def sendSafe(req: Request, requestFilter: Request => Request = identity): Future[Response]
+
 }
