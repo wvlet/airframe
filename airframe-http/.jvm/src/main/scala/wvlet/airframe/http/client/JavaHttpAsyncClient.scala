@@ -33,6 +33,5 @@ class JavaHttpAsyncClient(syncClient: JavaHttpSyncClient) extends HttpAsyncClien
 
   override def sendSafe(req: Request, requestFilter: Request => Request): Future[Response] = {
     syncClient.sendSafeAsync(req, requestFilter)
-
   }
 }

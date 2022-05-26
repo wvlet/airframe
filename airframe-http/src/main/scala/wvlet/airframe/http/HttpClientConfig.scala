@@ -84,6 +84,8 @@ case class HttpClientConfig(
     this.copy(executionContextProvider = provider)
   }
 
+  def newExecutionContext: ExecutionContext = executionContextProvider(this)
+
   def withConnectTimeout(duration: Duration): HttpClientConfig = {
     this.copy(connectTimeout = duration)
   }

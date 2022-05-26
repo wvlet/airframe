@@ -15,15 +15,15 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http._
+import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
+import wvlet.airframe.http.{Http, HttpClientException, HttpClientMaxRetryException, HttpStatus, ServerAddress}
 import wvlet.airframe.json.JSON
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class JavaHttpAsyncClientTest extends AirSpec {
-
+class JSHttpAsyncClientTest extends AirSpec {
   private implicit val ec: ExecutionContext = defaultExecutionContext
 
   // Use a public REST test server
@@ -32,10 +32,10 @@ class JavaHttpAsyncClientTest extends AirSpec {
   override def design: Design =
     Design.newDesign
       .bind[HttpAsyncClient].toInstance {
-        new JavaHttpSyncClient(
-          ServerAddress(PUBLIC_REST_SERVICE),
-          Http.client.withRetryContext(_.withMaxRetry(1))
-        ).toAsyncClient
+        new JSHttpAsyncClient(
+          Http.client.withRetryContext(_.withMaxRetry(1)),
+          Some(ServerAddress(PUBLIC_REST_SERVICE))
+        )
       }
 
   test("java http sync client") { (client: HttpAsyncClient) =>
@@ -101,6 +101,23 @@ class JavaHttpAsyncClientTest extends AirSpec {
           case _ =>
             ret
         }
+      }
+    }
+  }
+
+  test("circuit breaker test") {
+    val client = new JSHttpAsyncClient(
+      Http.client.withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1)),
+      Some(ServerAddress(PUBLIC_REST_SERVICE))
+    )
+    client.send(Http.GET("/status/500")).transform { ret =>
+      ret match {
+        case Failure(e: CircuitBreakerOpenException) =>
+          // ok
+          Success(())
+        case other =>
+          fail(s"Unexpected response: ${other}")
+          ret
       }
     }
   }

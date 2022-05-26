@@ -40,7 +40,7 @@ class JavaHttpSyncClient(serverAddress: ServerAddress, config: HttpClientConfig)
 
   private val javaHttpClient: HttpClient     = newClient(config)
   private val circuitBreaker: CircuitBreaker = config.circuitBreaker.withName(s"${serverAddress}")
-  private implicit val ec: ExecutionContext  = config.executionContextProvider(config)
+  private implicit val ec: ExecutionContext  = config.newExecutionContext
 
   override def close(): Unit = {
     // It seems Java Http Client has no close method
