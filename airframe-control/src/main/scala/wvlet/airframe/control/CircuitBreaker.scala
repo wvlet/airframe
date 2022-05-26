@@ -70,7 +70,7 @@ object CircuitBreaker extends LogSupport {
   }
 
   private[control] def reportStateChange = { (ctx: CircuitBreakerContext) =>
-    info(s"CircuitBreaker(name:${ctx.name}) is changed to ${ctx.state}")
+    info(s"CircuitBreaker[${ctx.name}] is changed to ${ctx.state}")
   }
 }
 

@@ -34,7 +34,7 @@ import scala.util.control.NonFatal
 class JavaHttpSyncClient(serverAddress: ServerAddress, val config: HttpClientConfig) extends client.HttpSyncClient {
 
   private val javaHttpClient: HttpClient     = newClient(config)
-  private val circuitBreaker: CircuitBreaker = config.circuitBreaker
+  private val circuitBreaker: CircuitBreaker = config.circuitBreaker.withName(s"${serverAddress}")
 
   private def newClient(config: HttpClientConfig): HttpClient = {
     HttpClient
