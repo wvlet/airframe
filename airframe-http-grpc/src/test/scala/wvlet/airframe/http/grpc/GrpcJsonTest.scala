@@ -27,7 +27,7 @@ class GrpcJsonTest extends AirSpec {
 
   protected override def design = gRPC.server.withRouter(router).designWithChannel
 
-  test("json encoding") { c: DemoApiClient =>
+  test("json encoding") { (c: DemoApiClient) =>
     val client = c.withEncoding(RPCEncoding.JSON)
 
     test("unary") {

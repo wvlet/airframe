@@ -94,7 +94,7 @@ object DemoApi {
     .withRouter(router)
     .withName("DemoApi")
     .designWithChannel
-    .bind[DemoApiClient].toProvider { channel: Channel => new DemoApiClient(channel) }
+    .bind[DemoApiClient].toProvider { (channel: Channel) => new DemoApiClient(channel) }
 
   val router = Router.add[DemoApi]
 

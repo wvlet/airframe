@@ -38,7 +38,7 @@ case class GrpcServerConfig(
     executorProvider: GrpcServerConfig => ExecutorService = GrpcServer.newAsyncExecutorFactory,
     maxThreads: Int = (Runtime.getRuntime.availableProcessors() * 2).max(2),
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForMapOutput,
-    requestLoggerProvider: GrpcServerConfig => GrpcRequestLogger = { config: GrpcServerConfig =>
+    requestLoggerProvider: GrpcServerConfig => GrpcRequestLogger = { (config: GrpcServerConfig) =>
       GrpcRequestLogger
         .newLogger(config.name)
     }
@@ -85,7 +85,9 @@ case class GrpcServerConfig(
   def withRequestLoggerProvider(provider: GrpcServerConfig => GrpcRequestLogger) = this
     .copy(requestLoggerProvider = provider)
   // Disable RPC logging
-  def noRequestLogging = this.copy(requestLoggerProvider = { config: GrpcServerConfig => GrpcRequestLogger.nullLogger })
+  def noRequestLogging = this.copy(requestLoggerProvider = { (config: GrpcServerConfig) =>
+    GrpcRequestLogger.nullLogger
+  })
 
   /**
     * Create and start a new server based on this config.
@@ -123,7 +125,7 @@ case class GrpcServerConfig(
     */
   def designWithChannel: Design = {
     design
-      .bind[Channel].toProvider { server: GrpcServer =>
+      .bind[Channel].toProvider { (server: GrpcServer) =>
         ManagedChannelBuilder.forTarget(server.localAddress).usePlaintext().build()
       }
       .onShutdown {
