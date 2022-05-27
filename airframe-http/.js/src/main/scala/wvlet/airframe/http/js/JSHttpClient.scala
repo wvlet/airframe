@@ -37,6 +37,7 @@ object JSHttpClient {
   }
 
   // An http client for production-use
+  @deprecated("Use Http.client.newJSClient instead", "22.6.0")
   def defaultClient = {
     resolveServerAddress match {
       case None =>
@@ -140,12 +141,13 @@ case class JSHttpClientConfig(
   *
   * We do not implement HttpClient[F, Request, Response] interface as no TypeTag is available in Scala.js
   */
+@deprecated("Use Http.client.newJSClient", "22.6.0")
 case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) extends LogSupport {
   private def codecFactory = config.codecFactory.withMapOutput
 
   private val client = new JSAsyncClient(
-    config = config.toHttpClientConfig,
-    serverAddress = config.serverAddress
+    serverAddress = config.serverAddress.getOrElse(ServerAddress.empty),
+    config = config.toHttpClientConfig
   )
   private implicit val ec: ExecutionContext = client.getExecutionContext
 

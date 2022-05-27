@@ -11,9 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.js
+package wvlet.airframe.http.client
 
-import wvlet.airframe.http.client.{RPCHttpClient, RPCHttpSyncClient}
 import wvlet.airframe.http.{Http, HttpClientConfig}
 import wvlet.airspec.AirSpec
 
@@ -29,9 +28,8 @@ class JSRPCClientTest extends AirSpec {
     val client = Http.client.newAsyncClient(PUBLIC_REST_SERVICE)
 
     // TODO: This test will be effective after the async test support in AirSpec 22.5.0
-    val rpcClient = new RPCHttpClient(config, client)
-    rpcClient
-      .send[TestRequest, TestResponse]("/post", TestRequest(1, "test"), identity)
+    client
+      .rpc[TestRequest, TestResponse]("/post", TestRequest(1, "test"), identity)
       .map { response =>
         debug(response)
         response.headers.get("Content-Type") shouldBe Some("application/msgpack")
@@ -42,7 +40,7 @@ class JSRPCClientTest extends AirSpec {
     val config = HttpClientConfig()
 
     // Sanity test for client creation
-    val client = config.newRPCClientForScalaJS
+    val client = config.newJSClient
   }
 
 }

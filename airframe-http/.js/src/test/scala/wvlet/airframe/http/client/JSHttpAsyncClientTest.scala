@@ -33,8 +33,8 @@ class JSHttpAsyncClientTest extends AirSpec {
     Design.newDesign
       .bind[AsyncClient].toInstance {
         new JSAsyncClient(
-          Http.client.withRetryContext(_.withMaxRetry(1)),
-          Some(ServerAddress(PUBLIC_REST_SERVICE))
+          ServerAddress(PUBLIC_REST_SERVICE),
+          Http.client.withRetryContext(_.withMaxRetry(1))
         )
       }
 
@@ -107,8 +107,8 @@ class JSHttpAsyncClientTest extends AirSpec {
 
   test("circuit breaker test") {
     val client = new JSAsyncClient(
-      Http.client.withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1)),
-      Some(ServerAddress(PUBLIC_REST_SERVICE))
+      ServerAddress(PUBLIC_REST_SERVICE),
+      Http.client.withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
     )
     client.send(Http.GET("/status/500")).transform { ret =>
       ret match {
