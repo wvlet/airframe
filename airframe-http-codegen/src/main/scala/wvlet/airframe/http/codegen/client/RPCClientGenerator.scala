@@ -110,7 +110,7 @@ object RPCClientGenerator extends HttpClientGenerator {
 
     def sendRequestArgs(m: ClientMethodDef): String = {
       Seq(
-        s"\"${m.path}\"",
+        s""""${m.path}"""",
         m.clientCallParameters.mkString(", "),
         "requestFilter"
       ).mkString(", ")
