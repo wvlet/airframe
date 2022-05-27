@@ -11,32 +11,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.client
 
-import wvlet.airframe.surface.Surface
-import wvlet.airframe.http.HttpMessage.{Response,Request}
+import wvlet.airframe.http.HttpMessage.Request
+import wvlet.airframe.http.impl.HttpMacros
+
 import scala.concurrent.Future
+import scala.language.experimental.macros
 
 /**
-  * Scala 3 specific helper method to make an RPC request
+  * Scala 2 specific helper method to make an RPC request
   */
 trait RPCSyncClientBase { self: RPCHttpSyncClient =>
-  inline def send[RequestType, ResponseType](
+  def send[RequestType, ResponseType](
       resourcePath: String,
       request: RequestType,
       requestFilter: Request => Request
-  ): ResponseType = {
-    self.sendRaw(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[ResponseType]
-  }
+  ): ResponseType = macro HttpMacros.rpcSend[RequestType, ResponseType]
 }
 
-
 trait RPCClientBase { self: RPCHttpClient =>
-  inline def send[RequestType, ResponseType](
-    resourcePath: String,
-    request: RequestType,
-    requestFilter: Request => Request
-  ): Future[ResponseType] = {
-    self.sendRaw(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[Future[ResponseType]]
-  }
+  def send[RequestType, ResponseType](
+      resourcePath: String,
+      request: RequestType,
+      requestFilter: Request => Request
+  ): Future[ResponseType] = macro HttpMacros.rpcSendAsync[RequestType, ResponseType]
 }

@@ -23,8 +23,9 @@ import scala.reflect.runtime.universe.TypeTag
 
 /**
   */
-trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request, Response] {
-  self: URLConnectionClient =>
+trait SyncClientBase {
+  self: SyncClient =>
+
   protected def convert[A: TypeTag](response: Response): A = {
     if (
       implicitly[TypeTag[A]] == scala.reflect.runtime.universe
@@ -41,14 +42,22 @@ trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request
     }
   }
 
-  override def get[Resource: TypeTag](
+  protected def getInternal[Resource](
+      resourcePath: String,
+      requestFilter: Request => Request,
+      resourceSurface: Surface
+  ): Resource = {
+    HttpClients.convertAs[Resource](send(Http.request(resourcePath), requestFilter), resourceSurface)
+  }
+
+  def get[Resource: TypeTag](
       resourcePath: String,
       requestFilter: Request => Request
   ): Resource = {
     getInternal[Resource](resourcePath, requestFilter, Surface.of[Resource])
   }
 
-  override def getOps[
+  def getOps[
       Resource: TypeTag,
       OperationResponse: TypeTag
   ](
@@ -59,7 +68,7 @@ trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request
     getResource[Resource, OperationResponse](resourcePath, resource, requestFilter)
   }
 
-  override def getResource[
+  def getResource[
       ResourceRequest: universe.TypeTag,
       Resource: universe.TypeTag
   ](
@@ -71,11 +80,11 @@ trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request
     val resourceRequestJsonValue = {
       self.config.codecFactory.of[ResourceRequest].toJSONObject(resourceRequest)
     }
-    val req = buildGETRequest(resourcePath, resourceRequestJsonValue)
+    val req = HttpClients.buildGETRequest(resourcePath, resourceRequestJsonValue)
     convert[Resource](send(req, requestFilter))
   }
 
-  override def list[OperationResponse: TypeTag](
+  def list[OperationResponse: TypeTag](
       resourcePath: String,
       requestFilter: Request => Request
   ): OperationResponse = {
@@ -89,7 +98,7 @@ trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request
     json
   }
 
-  override def post[Resource: TypeTag](
+  def post[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
@@ -98,7 +107,7 @@ trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request
     convert[Resource](send(r, requestFilter))
   }
 
-  override def postRaw[Resource: TypeTag](
+  def postRaw[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
@@ -106,7 +115,7 @@ trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request
     postOps[Resource, Response](resourcePath, resource, requestFilter)
   }
 
-  override def postOps[
+  def postOps[
       Resource: TypeTag,
       OperationResponse: TypeTag
   ](
@@ -118,7 +127,7 @@ trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request
     convert[OperationResponse](send(r, requestFilter))
   }
 
-  override def put[Resource: TypeTag](
+  def put[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
@@ -127,14 +136,14 @@ trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request
     convert[Resource](send(r, requestFilter))
   }
 
-  override def putRaw[Resource: TypeTag](
+  def putRaw[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
   ): Response =
     putOps[Resource, Response](resourcePath, resource, requestFilter)
 
-  override def putOps[
+  def putOps[
       Resource: TypeTag,
       OperationResponse: TypeTag
   ](
@@ -146,7 +155,7 @@ trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request
     convert[OperationResponse](send(r, requestFilter))
   }
 
-  override def delete[OperationResponse: TypeTag](
+  def delete[OperationResponse: TypeTag](
       resourcePath: String,
       requestFilter: Request => Request
   ): OperationResponse = {
@@ -154,12 +163,12 @@ trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request
     convert[OperationResponse](send(r, requestFilter))
   }
 
-  override def deleteRaw(
+  def deleteRaw(
       resourcePath: String,
       requestFilter: Request => Request
   ): Response = delete[Response](resourcePath, requestFilter)
 
-  override def deleteOps[
+  def deleteOps[
       Resource: TypeTag,
       OperationResponse: TypeTag
   ](
@@ -172,7 +181,7 @@ trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request
     convert[OperationResponse](send(r, requestFilter))
   }
 
-  override def patch[Resource: TypeTag](
+  def patch[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
@@ -184,13 +193,14 @@ trait URLConnectionClientBase extends wvlet.airframe.http.HttpSyncClient[Request
     convert[Resource](send(r, requestFilter))
   }
 
-  override def patchRaw[Resource: TypeTag](
+  def patchRaw[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request
   ): Response =
     patchOps[Resource, Response](resourcePath, resource, requestFilter)
-  override def patchOps[
+
+  def patchOps[
       Resource: TypeTag,
       OperationResponse: TypeTag
   ](

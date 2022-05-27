@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.client
 
+import wvlet.airframe.http.HttpClientConfig
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 
 import scala.concurrent.Future
@@ -21,7 +22,9 @@ import scala.concurrent.Future
   * An wrapper of JavaHttpSyncClient for supporting async response
   * @param syncClient
   */
-class JavaHttpAsyncClient(syncClient: JavaHttpSyncClient) extends HttpAsyncClient {
+class JavaAsyncClient(syncClient: JavaHttpSyncClient) extends AsyncClient {
+
+  private[http] def config: HttpClientConfig = syncClient.config
 
   override def send(req: Request, requestFilter: Request => Request): Future[Response] = {
     syncClient.sendAsync(req, requestFilter)

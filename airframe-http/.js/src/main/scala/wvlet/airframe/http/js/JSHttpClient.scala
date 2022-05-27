@@ -19,7 +19,7 @@ import wvlet.airframe.control.{CircuitBreaker, Retry}
 import wvlet.airframe.http.HttpClient.defaultBeforeRetryAction
 import wvlet.airframe.http.HttpMessage._
 import wvlet.airframe.http._
-import wvlet.airframe.http.client.JSHttpAsyncClient
+import wvlet.airframe.http.client.JSAsyncClient
 import wvlet.airframe.http.js.JSHttpClient.MessageEncoding
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.{Primitive, Surface}
@@ -143,7 +143,7 @@ case class JSHttpClientConfig(
 case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) extends LogSupport {
   private def codecFactory = config.codecFactory.withMapOutput
 
-  private val client = new JSHttpAsyncClient(
+  private val client = new JSAsyncClient(
     config = config.toHttpClientConfig,
     serverAddress = config.serverAddress
   )

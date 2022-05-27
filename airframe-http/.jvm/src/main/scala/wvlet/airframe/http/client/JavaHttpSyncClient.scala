@@ -36,7 +36,8 @@ import scala.util.control.NonFatal
   * @param serverAddress
   * @param config
   */
-class JavaHttpSyncClient(serverAddress: ServerAddress, config: HttpClientConfig) extends client.HttpSyncClient {
+class JavaHttpSyncClient(serverAddress: ServerAddress, private[client] val config: HttpClientConfig)
+    extends client.SyncClient {
 
   private val javaHttpClient: HttpClient     = newClient(config)
   private val circuitBreaker: CircuitBreaker = config.circuitBreaker.withName(s"${serverAddress}")
@@ -184,5 +185,5 @@ class JavaHttpSyncClient(serverAddress: ServerAddress, config: HttpClientConfig)
       .withContent(HttpMessage.byteArrayMessage(body))
   }
 
-  def toAsyncClient: JavaHttpAsyncClient = new JavaHttpAsyncClient(this)
+  def toAsyncClient: JavaAsyncClient = new JavaAsyncClient(this)
 }

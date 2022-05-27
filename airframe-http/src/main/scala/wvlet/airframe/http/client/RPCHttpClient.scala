@@ -11,9 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.client
 
-import wvlet.airframe.codec.{MessageCodec, MessageCodecException}
+import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.http.{Http, HttpClientConfig, HttpHeader, HttpResponseBodyCodec, RPCException, RPCStatus}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -26,7 +27,7 @@ import scala.util.Try
   * @param config
   * @param httpClient
   */
-class RPCHttpClient(config: HttpClientConfig, httpClient: Http.AsyncClient)
+class RPCHttpClient(config: HttpClientConfig, httpClient: AsyncClient)
     extends RPCClientBase
     with AutoCloseable
     with LogSupport {
@@ -72,7 +73,7 @@ class RPCHttpClient(config: HttpClientConfig, httpClient: Http.AsyncClient)
   * @param config
   * @param httpSyncClient
   */
-class RPCHttpSyncClient(config: HttpClientConfig, httpSyncClient: Http.SyncClient)
+class RPCHttpSyncClient(config: HttpClientConfig, httpSyncClient: SyncClient)
     extends RPCSyncClientBase
     with AutoCloseable {
 

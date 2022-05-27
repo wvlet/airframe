@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.http.client.HttpClientBackend
+
 import scala.concurrent.ExecutionContext
 
 /**

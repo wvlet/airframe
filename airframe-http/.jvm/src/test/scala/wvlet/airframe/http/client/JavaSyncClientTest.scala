@@ -21,18 +21,18 @@ import wvlet.airframe.http.{Http, HttpClientException, HttpClientMaxRetryExcepti
 import wvlet.airframe.json.JSON
 import wvlet.airspec.AirSpec
 
-class JavaHttpSyncClientTest extends AirSpec {
+class JavaSyncClientTest extends AirSpec {
 
   // Use a public REST test server
   private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
 
   override def design: Design =
     Design.newDesign
-      .bind[HttpSyncClient].toInstance {
+      .bind[SyncClient].toInstance {
         new JavaHttpSyncClient(ServerAddress(PUBLIC_REST_SERVICE), Http.client.withRetryContext(_.withMaxRetry(1)))
       }
 
-  test("java http sync client") { (client: HttpSyncClient) =>
+  test("java http sync client") { (client: SyncClient) =>
     test("GET") {
       val resp = client.send(Http.GET("/get?id=1&name=leo"))
       resp.status shouldBe HttpStatus.Ok_200

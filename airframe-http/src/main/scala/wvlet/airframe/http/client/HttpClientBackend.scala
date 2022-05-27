@@ -11,23 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.client
+
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-
-import scala.concurrent.{ExecutionContext, Future}
+import wvlet.airframe.http.{HttpClient, HttpClientConfig}
 
 /**
   */
 trait HttpClientBackend {
   def defaultRequestRetryer: RetryContext = HttpClient.defaultHttpClientRetry[Request, Response]
 
-  def newSyncClient(severAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response]
+  def newSyncClient(serverAddress: String, clientConfig: HttpClientConfig): SyncClient
 
   def newAsyncClient(
       serverAddress: String,
       clientConfig: HttpClientConfig
-  ): HttpClient[Future, Request, Response] = {
+  ): AsyncClient = {
     throw new UnsupportedOperationException("async client is not supported.")
   }
 

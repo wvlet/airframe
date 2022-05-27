@@ -14,17 +14,9 @@
 package wvlet.airframe.http.js
 
 import wvlet.airframe.control.Retry
+import wvlet.airframe.http.client.{HttpClientBackend, RPCHttpClient}
 import wvlet.airframe.http.js.JSHttpClient.MessageEncoding
-import wvlet.airframe.http.{
-  HttpClient,
-  HttpClientBackend,
-  HttpClientConfig,
-  HttpMessage,
-  HttpSyncClient,
-  RPCHttpClient,
-  RPCEncoding,
-  ServerAddress
-}
+import wvlet.airframe.http.{HttpClient, HttpClientConfig, HttpMessage, HttpSyncClient, RPCEncoding, ServerAddress}
 
 import scala.concurrent.{ExecutionContext, Future}
 

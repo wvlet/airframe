@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.http.js
 
-import wvlet.airframe.http.{Http, HttpClientConfig, RPCHttpClient, RPCHttpSyncClient}
+import wvlet.airframe.http.client.{RPCHttpClient, RPCHttpSyncClient}
+import wvlet.airframe.http.{Http, HttpClientConfig}
 import wvlet.airspec.AirSpec
 
 class JSRPCClientTest extends AirSpec {

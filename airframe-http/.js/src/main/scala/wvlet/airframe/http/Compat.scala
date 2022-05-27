@@ -14,6 +14,7 @@
 package wvlet.airframe.http
 
 import org.scalajs.macrotaskexecutor.MacrotaskExecutor
+import wvlet.airframe.http.client.HttpClientBackend
 import wvlet.airframe.http.js.JSHttpClientBackend
 
 import scala.concurrent.ExecutionContext

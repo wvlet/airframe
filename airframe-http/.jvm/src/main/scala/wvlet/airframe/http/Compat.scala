@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http
 import java.net.URLEncoder
-import wvlet.airframe.http.client.URLConnectionClientBackend
+import wvlet.airframe.http.client.{HttpClientBackend, URLConnectionClientBackend}
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
