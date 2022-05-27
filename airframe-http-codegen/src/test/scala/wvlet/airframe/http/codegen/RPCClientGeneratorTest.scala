@@ -13,11 +13,11 @@
  */
 package wvlet.airframe.http.codegen
 
-import example.rpc.RPCTestService
+import example.rpc.RPCExample
 import wvlet.airspec.AirSpec
 
 class RPCClientGeneratorTest extends AirSpec {
-  private val router = RouteScanner.buildRouter(Seq(classOf[RPCTestService]))
+  private val router = RouteScanner.buildRouter(Seq(classOf[RPCExample]))
 
   test("generate RPC client") {
     val config = HttpClientGeneratorConfig("example.rpc:rpc")

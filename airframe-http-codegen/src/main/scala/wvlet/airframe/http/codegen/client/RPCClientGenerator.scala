@@ -107,12 +107,6 @@ object RPCClientGenerator extends HttpClientGenerator {
            |}""".stripMargin
       }
     }
-    def modelClassDef(m: ClientMethodDef): String = {
-      m.requestModelClassDef
-        .map { x =>
-          x.code()
-        }.mkString("\n")
-    }
 
     def sendRequestArgs(m: ClientMethodDef): String = {
       Seq(
