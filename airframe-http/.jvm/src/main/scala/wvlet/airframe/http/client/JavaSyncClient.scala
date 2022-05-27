@@ -36,7 +36,7 @@ import scala.util.control.NonFatal
   * @param serverAddress
   * @param config
   */
-class JavaHttpSyncClient(serverAddress: ServerAddress, private[client] val config: HttpClientConfig)
+class JavaSyncClient(serverAddress: ServerAddress, private[client] val config: HttpClientConfig)
     extends client.SyncClient {
 
   private val javaHttpClient: HttpClient                          = newClient(config)

@@ -29,7 +29,7 @@ class JavaSyncClientTest extends AirSpec {
   override def design: Design =
     Design.newDesign
       .bind[SyncClient].toInstance {
-        new JavaHttpSyncClient(ServerAddress(PUBLIC_REST_SERVICE), Http.client.withRetryContext(_.withMaxRetry(1)))
+        new JavaSyncClient(ServerAddress(PUBLIC_REST_SERVICE), Http.client.withRetryContext(_.withMaxRetry(1)))
       }
 
   test("java http sync client") { (client: SyncClient) =>
@@ -95,7 +95,7 @@ class JavaSyncClientTest extends AirSpec {
 
   test("circuit breaker") {
     withResource(
-      new JavaHttpSyncClient(
+      new JavaSyncClient(
         ServerAddress(PUBLIC_REST_SERVICE),
         Http.client.withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
       )
