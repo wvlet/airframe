@@ -33,6 +33,7 @@ object URLConnectionClientTest extends AirSpec {
       .bind[SyncClient]
       .toInstance(
         Http.client
+          .withBackend(URLConnectionClientBackend)
           .withRetryContext(_.withMaxRetry(1))
           .newSyncClient(PUBLIC_REST_SERVICE)
       )
@@ -53,38 +54,30 @@ object URLConnectionClientTest extends AirSpec {
     m("json") shouldBe Map("id" -> 1, "name" -> "leo")
   }
 
-//  test("create a new sync client") {
-//    val m = Http
-//      .clientFor(PUBLIC_REST_SERVICE)
-//      .getOps[Person, Map[String, Any]]("/get", p)
-//    m("args") shouldBe Map("id" -> "1", "name" -> "leo")
-//  }
-//
-//  test("sync client") { (client: SyncClient) =>
-//    test("complement missing slash") {
-//      val resp = client.sendSafe(Http.GET("get"))
-//      resp.status shouldBe HttpStatus.Ok_200
-//    }
-//
-//    test("Read content with 200") {
-//      val resp = client.sendSafe(Http.GET("/get"))
-//      debug(resp)
-//      resp.status shouldBe HttpStatus.Ok_200
-//      debug(resp.contentString)
-//    }
-//
-//    test("user-agent") {
-//      val resp =
-//        client.get[Map[String, String]]("/user-agent", _.withUserAgent("airframe-http"))
-//      resp.get("user-agent") shouldBe Some("airframe-http")
-//    }
-//
-//    test("delete") {
-//      client.delete[String]("/delete")
-//      val resp = client.deleteRaw("/delete")
-//      resp.status shouldBe HttpStatus.Ok_200
-//    }
-//
+  test("sync client") { (client: SyncClient) =>
+    test("complement missing slash") {
+      val resp = client.sendSafe(Http.GET("get"))
+      resp.status shouldBe HttpStatus.Ok_200
+    }
+
+    test("Read content with 200") {
+      val resp = client.sendSafe(Http.GET("/get"))
+      debug(resp)
+      resp.status shouldBe HttpStatus.Ok_200
+      debug(resp.contentString)
+    }
+
+    test("user-agent") {
+      val resp =
+        client.sendSafe(Http.GET("/user-agent"), _.withUserAgent("airframe-http"))
+      MessageCodec.of[Map[String, Any]].fromJson(resp.contentString).get("user-agent") shouldBe Some("airframe-http")
+    }
+
+    test("delete") {
+      val resp = client.sendSafe(Http.DELETE("/delete"))
+      resp.status shouldBe HttpStatus.Ok_200
+    }
+
 //    test("patch") {
 //      ignore("URLConnection doesn't support patch, so we need to use POST endpoint + X-HTTP-Method-Override header")
 //      check(client.patchRaw[Person]("/post", p))
@@ -105,20 +98,20 @@ object URLConnectionClientTest extends AirSpec {
 //      check(client.postOps[Person, Map[String, Any]]("/post", p))
 //      check(client.putOps[Person, Map[String, Any]]("/put", p))
 //    }
-//
-//    test("Handle 404 (Not Found)") {
-//      val errorResp = client.sendSafe(Http.GET("/status/404"))
-//      debug(errorResp)
-//      errorResp.status shouldBe HttpStatus.NotFound_404
-//      debug(errorResp.contentString)
-//    }
-//
-//    test("Handle 5xx retry") {
-//      Logger("wvlet.airframe.http.HttpClient").suppressWarnings {
-//        intercept[MaxRetryException] {
-//          client.get[String]("/status/500")
-//        }
-//      }
-//    }
-//  }
+
+    test("Handle 404 (Not Found)") {
+      val errorResp = client.sendSafe(Http.GET("/status/404"))
+      debug(errorResp)
+      errorResp.status shouldBe HttpStatus.NotFound_404
+      debug(errorResp.contentString)
+    }
+
+    test("Handle 5xx retry") {
+      Logger("wvlet.airframe.http.HttpClient").suppressWarnings {
+        intercept[MaxRetryException] {
+          client.send(Http.GET("/status/500"))
+        }
+      }
+    }
+  }
 }

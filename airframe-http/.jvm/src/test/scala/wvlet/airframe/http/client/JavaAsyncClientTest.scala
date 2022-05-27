@@ -32,7 +32,7 @@ class JavaAsyncClientTest extends AirSpec {
   override def design: Design =
     Design.newDesign
       .bind[AsyncClient].toInstance {
-        new JavaHttpSyncClient(
+        new JavaSyncClient(
           ServerAddress(PUBLIC_REST_SERVICE),
           Http.client.withRetryContext(_.withMaxRetry(1))
         ).toAsyncClient

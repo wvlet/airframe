@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http
 import java.net.URLEncoder
-import wvlet.airframe.http.client.{HttpClientBackend, URLConnectionClientBackend}
+import wvlet.airframe.http.client.{HttpClientBackend, JavaHttpClientBackend, URLConnectionClientBackend}
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
@@ -26,8 +26,7 @@ object Compat extends CompatApi {
     URLEncoder.encode(s, "UTF-8")
   }
   override def defaultHttpClientBackend: HttpClientBackend = {
-    // TODO: Use JDK11's HttpClient backend
-    URLConnectionClientBackend
+    JavaHttpClientBackend
   }
 
   private val threadFactoryId = new AtomicInteger()
