@@ -15,7 +15,6 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.client.{RPCHttpClient, RPCHttpSyncClient}
 
 import scala.concurrent.Future
 
