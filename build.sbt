@@ -261,8 +261,7 @@ lazy val projectDotty =
       // codec uses Scala reflection
       codecJVM,
       // fluentd,
-      httpJVM,
-      httpRouter,
+      // httpJVM,
       // // Finagle isn't supporting Scala 3
       // httpFinagle,
       // grpc,

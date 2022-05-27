@@ -203,7 +203,7 @@ case class Router(
   }
 }
 
-object Router extends RouterObjectBase with LogSupport {
+object Router extends LogSupport {
   val empty: Router   = new Router()
   def apply(): Router = empty
 
@@ -236,6 +236,9 @@ object Router extends RouterObjectBase with LogSupport {
 
     loop(routes.head, routes.tail)
   }
+
+  def of[Controller]: Router = macro RouterMacros.of[Controller]
+  def add[Controller]: Router = macro RouterMacros.of[Controller]
 
   def add(filter: HttpFilterType) = {
     new Router(filterInstance = Some(filter))
