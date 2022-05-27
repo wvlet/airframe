@@ -33,7 +33,7 @@ class GrpcRequestLoggerTest extends AirSpec {
     gRPC.server
       .withName("demo-api")
       .withRouter(DemoApi.router)
-      .withRequestLoggerProvider { config: GrpcServerConfig =>
+      .withRequestLoggerProvider { (config: GrpcServerConfig) =>
         GrpcRequestLogger.newLogger(config.name, inMemoryLogWriter)
       }
       .designWithChannel
@@ -45,7 +45,7 @@ class GrpcRequestLoggerTest extends AirSpec {
     inMemoryLogWriter.getLogs
   }
 
-  test("request logger test") { client: DemoApiClient =>
+  test("request logger test") { (client: DemoApiClient) =>
     test("unary method log") {
       val logs = captureAll {
         client.hello("gRPC")

@@ -22,7 +22,7 @@ object GrpcContextTest extends AirSpec {
 
   override protected def design: Design = DemoApi.design
 
-  test("get context") { client: DemoApiClient =>
+  test("get context") { (client: DemoApiClient) =>
     val ret = client.getContext
     info(ret)
     client.getContext

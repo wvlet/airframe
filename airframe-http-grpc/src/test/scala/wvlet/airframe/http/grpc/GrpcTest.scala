@@ -89,7 +89,7 @@ object GrpcTest extends AirSpec {
         info(s"Shutting down gRPC server localhost:${port}")
         server.shutdownNow()
       }
-      .bind[ManagedChannel].toProvider { server: Server =>
+      .bind[ManagedChannel].toProvider { (server: Server) =>
         ManagedChannelBuilder.forTarget(s"localhost:${server.getPort}").usePlaintext().build()
       }
       .onShutdown { channel =>

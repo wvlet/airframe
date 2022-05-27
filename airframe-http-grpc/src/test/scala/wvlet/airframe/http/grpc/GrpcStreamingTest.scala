@@ -23,14 +23,14 @@ import wvlet.airspec.AirSpec
   */
 object GrpcStreamingTest extends AirSpec {
 
-  private def router = Router.add[DemoApi]
-  debug(router)
-
-  protected override def design = gRPC.server.withRouter(router).designWithChannel
+  private lazy val router: Router = Router.add[DemoApi]
+  protected override def design = {
+    gRPC.server.withRouter(router).designWithChannel
+  }
 
   // launching a gRPC server first
-  test("Launch a standalone gRPC server") { server: GrpcServer =>
-    test("Test gRPC client methods") { stub: DemoApiClient =>
+  test("Launch a standalone gRPC server") { (server: GrpcServer) =>
+    test("Test gRPC client methods") { (stub: DemoApiClient) =>
       val N = 10
 
       test("unary") {

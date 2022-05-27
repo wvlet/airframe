@@ -21,7 +21,7 @@ object GrpcServerFactoryTest extends AirSpec {
 
   private val r = Router.add[Greeter]
 
-  test("Build multiple gRPC servers") { f: GrpcServerFactory =>
+  test("Build multiple gRPC servers") { (f: GrpcServerFactory) =>
     val s1 = f.newServer(gRPC.server.withName("grpc1").withRouter(r))
     val s2 = f.newServer(gRPC.server.withName("grpc2").withRouter(r))
   }

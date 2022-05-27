@@ -23,12 +23,11 @@ import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 import wvlet.log.{LogSupport, Logger}
 
-import scala.concurrent.Promise
+import scala.concurrent.{ExecutionContext, Promise}
 
 class GrpcClientTest extends AirSpec {
 
-  // TODO Use AirSpec's defaultExecutionContext
-  private implicit val sc = scala.concurrent.ExecutionContext.global
+  private implicit val sc: ExecutionContext = defaultExecutionContext
 
   override def design: Design = DemoApiV2.design
 
