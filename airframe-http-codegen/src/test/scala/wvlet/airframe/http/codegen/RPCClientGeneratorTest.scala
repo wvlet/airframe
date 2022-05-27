@@ -12,31 +12,16 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
-import example.rpc.RPCTestService
+
+import example.rpc.RPCExample
 import wvlet.airspec.AirSpec
 
-/**
-  */
 class RPCClientGeneratorTest extends AirSpec {
-  val router = RouteScanner.buildRouter(Seq(classOf[RPCTestService]))
+  private val router = RouteScanner.buildRouter(Seq(classOf[RPCExample]))
 
-  test("avoid duplicate route entries") {
-    val r = router.toString
-    r.contains("/example.rpc.RPCTestService/addUser") shouldBe true
-    r.contains("addUser(request:CreateUserRequest): User") shouldBe true
-  }
-
-  test("propagate RPCException in sync client") {
-    val config = HttpClientGeneratorConfig("example.api.rpc:sync:MyRPCClient")
+  test("generate RPC client") {
+    val config = HttpClientGeneratorConfig("example.rpc:rpc")
     val code   = HttpCodeGenerator.generate(router, config)
-    // TODO Use debug log level
-    debug(code)
-  }
-
-  test("propagate RPCException in async client") {
-    val config = HttpClientGeneratorConfig("example.api.rpc:async:MyRPCClient")
-    val code   = HttpCodeGenerator.generate(router, config)
-    // TODO Use debug log level
     debug(code)
   }
 }

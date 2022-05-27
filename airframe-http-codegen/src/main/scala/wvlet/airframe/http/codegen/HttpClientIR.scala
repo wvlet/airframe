@@ -18,6 +18,7 @@ import wvlet.airframe.http.Router.unwrapFuture
 import wvlet.airframe.http.{HttpMethod, Router}
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.codegen.client.HttpClientGenerator
+import wvlet.airframe.http.codegen.client.HttpClientGenerator.fullTypeNameOf
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface}
@@ -151,7 +152,7 @@ object HttpClientIR extends LogSupport {
       s"${if (isPrivate) "private "
         else ""}case class ${name}(${parameter
           .map { p =>
-            s"${p.name}: ${p.surface.fullName.replaceAll("\\$", ".")}"
+            s"${p.name}: ${fullTypeNameOf(p.surface).replaceAll("\\$", ".")}"
           }
           .mkString(", ")})"
   }
