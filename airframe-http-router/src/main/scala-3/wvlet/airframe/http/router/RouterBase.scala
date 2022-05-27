@@ -14,12 +14,36 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.http.Router
+import wvlet.airframe.http.HttpFilterType
+import wvlet.airframe.surface.Surface
 
-trait RouterBase {
+trait RouterBase { self: Router =>
+  inline def add[Controller]: Router = {
+    self.addInternal(Surface.of[Controller], Surface.methodsOf[Controller])
+  }
 
-  /**
-    * Add methods annotated with @Endpoint to the routing table
-    */
-  def add[Controller]: Router     = ???
-  def andThen[Controller]: Router = ???
+  inline def andThen[Controller]: Router = {
+    self.andThen(Router.add[Controller])
+  }
+}
+
+trait RouterObjectBase {
+  inline def of[Controller]: Router = ${ RouterObjectMacros.routerOf[Controller] }
+
+  inline def add[Controller]: Router = ${ RouterObjectMacros.routerOf[Controller] }
+}
+
+private[router] object RouterObjectMacros {
+  import scala.quoted._
+
+  def routerOf[Controller: Type](using quotes: Quotes): Expr[Router] = {
+    import quotes._
+    import quotes.reflect._
+
+    if (TypeRepr.of[Controller] <:< TypeRepr.of[HttpFilterType]) {
+      '{ Router(filterSurface = Some(Surface.of[Controller])) }
+    } else {
+      '{ Router.empty.add[Controller] }
+    }
+  }
 }

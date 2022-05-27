@@ -27,3 +27,8 @@ trait RouterBase {
   def andThen[Controller]: Router = macro RouterMacros.andThen[Controller]
 
 }
+
+trait RouterObjectBase {
+  def of[Controller]: Router = macro RouterMacros.of[Controller]
+  def add[Controller]: Router = macro RouterMacros.of[Controller]
+}

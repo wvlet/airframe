@@ -16,14 +16,14 @@ package wvlet.airframe.http.router
 /**
   */
 object Automaton {
-  def empty[Node, Token]: Automaton[Node, Token] = new Automaton(Set.empty, Set.empty)
+  def empty[Node, Token]: AutomatonGraph[Node, Token] = new AutomatonGraph(Set.empty, Set.empty)
 
   case class Edge[Node, Token](src: Node, token: Token, dest: Node)
 
   /**
     * Immutable Automaton implementation. Adding nodes or edges will create a new Automaton instance
     */
-  class Automaton[Node, Token](val nodes: Set[Node], val edges: Set[Edge[Node, Token]]) {
+  class AutomatonGraph[Node, Token](val nodes: Set[Node], val edges: Set[Edge[Node, Token]]) {
     type NodeSet = Set[Node]
 
     override def toString: String = {
@@ -35,12 +35,12 @@ object Automaton {
          |""".stripMargin
     }
 
-    def addNode(n: Node): Automaton[Node, Token] = {
-      new Automaton(nodes + n, edges)
+    def addNode(n: Node): AutomatonGraph[Node, Token] = {
+      new AutomatonGraph(nodes + n, edges)
     }
 
-    def addEdge(src: Node, token: Token, dest: Node): Automaton[Node, Token] = {
-      new Automaton(nodes ++ Seq(src, dest), edges + (Edge(src, token, dest)))
+    def addEdge(src: Node, token: Token, dest: Node): AutomatonGraph[Node, Token] = {
+      new AutomatonGraph(nodes ++ Seq(src, dest), edges + (Edge(src, token, dest)))
     }
 
     def outEdgesFrom(n: Node): Set[Edge[Node, Token]] = {
