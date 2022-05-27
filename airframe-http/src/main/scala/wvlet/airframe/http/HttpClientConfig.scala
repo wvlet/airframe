@@ -23,13 +23,21 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 
+object HttpClientConfig {
+  // Tell the IntelliJ that Compat object implements CompatAPI. This a workaround of IntelliJ, which cannot properly highlight cross-build project code:
+  // https://youtrack.jetbrains.com/issue/SCL-19567/Support-of-CrossType-Full-wanted
+  private def compat: CompatApi = wvlet.airframe.http.Compat
+}
+
+import HttpClientConfig._
+
 /**
   */
 case class HttpClientConfig(
-    backend: HttpClientBackend = Compat.defaultHttpClientBackend,
+    backend: HttpClientBackend = compat.defaultHttpClientBackend,
     requestFilter: Request => Request = identity,
     rpcEncoding: RPCEncoding = RPCEncoding.MsgPack,
-    retryContext: RetryContext = Compat.defaultHttpClientBackend.defaultRequestRetryer,
+    retryContext: RetryContext = compat.defaultHttpClientBackend.defaultRequestRetryer,
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
     // The default circuit breaker, which will be open after 5 consecutive failures
     circuitBreaker: CircuitBreaker = CircuitBreaker.withConsecutiveFailures(5),
@@ -38,24 +46,27 @@ case class HttpClientConfig(
     // timeout applied when receiving data from the target host
     readTimeout: Duration = Duration(90, TimeUnit.SECONDS),
     // Provide a thread executor for sending http requests and supporting Scala Future responses
-    executionContextProvider: HttpClientConfig => ExecutionContext = { _ => Compat.defaultExecutionContext },
+    executionContextProvider: HttpClientConfig => ExecutionContext = { _ => compat.defaultExecutionContext },
     /**
       * For converting Future[A] to Rx[A]. Use this method when you need to add a common error handler for Rx (e.g.,
       * with Rx.recover). This is mainly used in generated RPC clients for Scala.js
       */
     rxConverter: Future[_] => RxStream[_] = { (f: Future[_]) =>
       // TODO: This execution context needs to reference a global one if we need to use it in Scala JVM
-      Rx.future(f)(Compat.defaultExecutionContext)
+      Rx.future(f)(compat.defaultExecutionContext)
     }
 ) {
   def newSyncClient(serverAddress: String): SyncClient =
-    backend.newSyncClient(serverAddress, this)
+    backend.newSyncClient(ServerAddress(serverAddress), this)
 
   def newAsyncClient(serverAddress: String): AsyncClient =
-    backend.newAsyncClient(serverAddress, this)
+    backend.newAsyncClient(ServerAddress(serverAddress), this)
 
-  def newLocalAsyncClient: AsyncClient = {
-    backend.newAsyncClient("", this)
+  /**
+    * Create a default Async client for Scala.js in web browsers
+    */
+  def newJSClient: AsyncClient = {
+    backend.newAsyncClient(compat.hostServerAddress, this)
   }
 
   def withBackend(newBackend: HttpClientBackend): HttpClientConfig =

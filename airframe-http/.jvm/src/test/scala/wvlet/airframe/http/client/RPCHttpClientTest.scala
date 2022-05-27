@@ -11,8 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.client
 
+import wvlet.airframe.http.Http
 import wvlet.airspec.AirSpec
 
 object RPCHttpClientTest extends AirSpec {
@@ -24,8 +25,8 @@ object RPCHttpClientTest extends AirSpec {
   case class TestResponse(url: String, headers: Map[String, Any])
 
   test("Create an RPCSyncClient") {
-    val rpcClient = Http.client.newRPCSyncClient(PUBLIC_REST_SERVICE)
-    val response  = rpcClient.send[TestRequest, TestResponse]("/post", TestRequest(1, "test"), identity)
+    val rpcClient = Http.client.newSyncClient(PUBLIC_REST_SERVICE)
+    val response  = rpcClient.rpc[TestRequest, TestResponse]("/post", TestRequest(1, "test"), identity)
 
     // Test message
     debug(response)

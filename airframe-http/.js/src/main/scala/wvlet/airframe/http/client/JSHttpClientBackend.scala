@@ -25,17 +25,16 @@ object JSHttpClientBackend extends HttpClientBackend {
   }
 
   override def newSyncClient(
-      severAddress: String,
+      severAddress: ServerAddress,
       clientConfig: HttpClientConfig
   ): SyncClient = {
     throw new UnsupportedOperationException("sync client is not supported in Scala.js")
   }
 
   override def newAsyncClient(
-      serverAddress: String,
+      serverAddress: ServerAddress,
       clientConfig: HttpClientConfig
   ): AsyncClient = {
-    val address = if (serverAddress.isEmpty) None else Some(ServerAddress(serverAddress))
-    new JSAsyncClient(clientConfig, address)
+    new JSAsyncClient(serverAddress, clientConfig)
   }
 }

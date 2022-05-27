@@ -25,7 +25,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 import scala.util.{Failure, Success, Try}
 
-class JSAsyncClient(private[client] val config: HttpClientConfig, serverAddress: Option[ServerAddress] = None)
+class JSAsyncClient(serverAddress: ServerAddress, private[client] val config: HttpClientConfig)
     extends AsyncClient
     with LogSupport {
 
@@ -100,7 +100,9 @@ class JSAsyncClient(private[client] val config: HttpClientConfig, serverAddress:
 
   private def dispatchInternal(retryContext: RetryContext, request: Request): Future[Response] = {
     val xhr = new dom.XMLHttpRequest()
-    val uri = serverAddress.map(address => s"${address.uri}${request.uri}").getOrElse(request.uri)
+
+    val path = if (request.uri.startsWith("/")) request.uri else s"/${request.uri}"
+    val uri  = s"${serverAddress.uri}${path}"
 
     trace(s"Sending request: ${request}")
     xhr.open(request.method, uri)

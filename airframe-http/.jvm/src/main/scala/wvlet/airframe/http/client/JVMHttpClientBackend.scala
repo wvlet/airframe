@@ -15,14 +15,14 @@ package wvlet.airframe.http.client
 import wvlet.airframe.http.{HttpClientConfig, ServerAddress}
 
 object JVMHttpClientBackend extends HttpClientBackend {
-  override def newSyncClient(serverAddress: String, clientConfig: HttpClientConfig): SyncClient = {
-    new JavaHttpSyncClient(ServerAddress(serverAddress), clientConfig)
+  override def newSyncClient(serverAddress: ServerAddress, clientConfig: HttpClientConfig): SyncClient = {
+    new JavaHttpSyncClient(serverAddress, clientConfig)
   }
 
   override def newAsyncClient(
-      serverAddress: String,
+      serverAddress: ServerAddress,
       clientConfig: HttpClientConfig
   ): AsyncClient = {
-    new JavaHttpSyncClient(ServerAddress(serverAddress), clientConfig).toAsyncClient
+    new JavaHttpSyncClient(serverAddress, clientConfig).toAsyncClient
   }
 }

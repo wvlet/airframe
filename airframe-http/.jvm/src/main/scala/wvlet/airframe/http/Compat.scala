@@ -50,4 +50,9 @@ object Compat extends CompatApi {
     // We should not use scala.concurrent.ExecutionContext.global as it might be closed
     ExecutionContext.fromExecutorService(Executors.newCachedThreadPool(new DefaultThreadFactory))
   }
+
+  override def hostServerAddress: ServerAddress = {
+    // There is no notion of host server in JVM
+    ServerAddress.empty
+  }
 }
