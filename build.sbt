@@ -93,7 +93,7 @@ val buildSettings = Seq[Setting[_]](
   crossScalaVersions := targetScalaVersions,
   crossPaths         := true,
   publishMavenStyle  := true,
-  javacOptions ++= Seq("-source", "11", "-target", "11"),
+  javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   scalacOptions ++= Seq(
     "-feature",
     "-deprecation"
