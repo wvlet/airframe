@@ -12,25 +12,32 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.client
-import wvlet.airframe.http.{HttpClientConfig, ServerAddress}
 
-/**
-  */
-object URLConnectionClientBackend extends HttpClientBackend {
-  def newSyncClient(
-      serverAddress: ServerAddress,
+import wvlet.airframe.control.Retry
+import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.{HttpClient, HttpClientConfig, HttpClientException, ServerAddress}
+
+object JSHttpClientBackend extends HttpClientBackend {
+
+  override def defaultRequestRetryer: Retry.RetryContext = {
+    HttpClient
+      .baseHttpClientRetry[Request, Response]
+      // defaultHttpClientRetry has many JVM specific exception classifiers,
+      // so we need to use a simple one for Scala.js
+      .withErrorClassifier(HttpClientException.classifyExecutionFailureScalaJS)
+  }
+
+  override def newSyncClient(
+      severAddress: ServerAddress,
       clientConfig: HttpClientConfig
   ): SyncClient = {
-    new URLConnectionClient(
-      serverAddress,
-      clientConfig
-    )
+    throw new UnsupportedOperationException("sync client is not supported in Scala.js")
   }
 
   override def newAsyncClient(
       serverAddress: ServerAddress,
       clientConfig: HttpClientConfig
   ): AsyncClient = {
-    throw new UnsupportedOperationException("Default async client is not supported.")
+    new JSAsyncClient(serverAddress, clientConfig)
   }
 }

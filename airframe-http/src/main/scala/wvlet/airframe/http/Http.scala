@@ -27,10 +27,6 @@ import scala.language.higherKinds
   */
 object Http {
 
-  // Aliases for http clients using standard HttpMessage.Request/Response
-  type SyncClient  = HttpSyncClient[Request, Response]
-  type AsyncClient = HttpClient[Future, Request, Response]
-
   // Standard HttpFilter
   abstract class Filter extends HttpFilter[Request, Response, Future] {
     protected implicit val executorContext: ExecutionContextExecutor = DefaultBackend.executionContext
@@ -51,7 +47,7 @@ object Http {
   /**
     * Create the default HTTP sync client for the target server address
     */
-  def clientFor(serverAddress: String): SyncClient =
+  def clientFor(serverAddress: String): wvlet.airframe.http.client.SyncClient =
     client.newSyncClient(serverAddress)
 
   /**

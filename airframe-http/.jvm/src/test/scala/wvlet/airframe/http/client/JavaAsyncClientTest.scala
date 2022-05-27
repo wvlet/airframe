@@ -22,7 +22,7 @@ import wvlet.airspec.AirSpec
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class JavaHttpAsyncClientTest extends AirSpec {
+class JavaAsyncClientTest extends AirSpec {
 
   private implicit val ec: ExecutionContext = defaultExecutionContext
 
@@ -31,14 +31,14 @@ class JavaHttpAsyncClientTest extends AirSpec {
 
   override def design: Design =
     Design.newDesign
-      .bind[HttpAsyncClient].toInstance {
+      .bind[AsyncClient].toInstance {
         new JavaHttpSyncClient(
           ServerAddress(PUBLIC_REST_SERVICE),
           Http.client.withRetryContext(_.withMaxRetry(1))
         ).toAsyncClient
       }
 
-  test("java http sync client") { (client: HttpAsyncClient) =>
+  test("java http sync client") { (client: AsyncClient) =>
     test("GET") {
       client
         .send(Http.GET("/get?id=1&name=leo"))

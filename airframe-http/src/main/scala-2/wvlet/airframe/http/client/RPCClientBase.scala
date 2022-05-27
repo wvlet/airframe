@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.client
 
 import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http.impl.HttpMacros
@@ -22,16 +22,16 @@ import scala.language.experimental.macros
 /**
   * Scala 2 specific helper method to make an RPC request
   */
-trait RPCSyncClientBase { self: RPCHttpSyncClient =>
-  def send[RequestType, ResponseType](
+trait RPCSyncClientBase { self: SyncClient =>
+  def rpc[RequestType, ResponseType](
       resourcePath: String,
       request: RequestType,
       requestFilter: Request => Request
   ): ResponseType = macro HttpMacros.rpcSend[RequestType, ResponseType]
 }
 
-trait RPCClientBase { self: RPCHttpClient =>
-  def send[RequestType, ResponseType](
+trait RPCAsyncClientBase { self: AsyncClient =>
+  def rpc[RequestType, ResponseType](
       resourcePath: String,
       request: RequestType,
       requestFilter: Request => Request

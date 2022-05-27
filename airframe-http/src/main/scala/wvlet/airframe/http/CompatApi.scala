@@ -13,13 +13,17 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.http.client.HttpClientBackend
+
 import scala.concurrent.ExecutionContext
 
 /**
-  * An interface for using different implementation betweeen Scala JVM and Scala.js
+  * An interface for using different implementation between Scala JVM and Scala.js
   */
 trait CompatApi {
   def urlEncode(s: String): String
+
+  def hostServerAddress: ServerAddress
   def defaultHttpClientBackend: HttpClientBackend
   def defaultExecutionContext: ExecutionContext
 }

@@ -55,6 +55,19 @@ class ServerAddressTest extends AirSpec {
       ServerAddress("wvlet.org", 8080, "http"),
       "http://wvlet.org:8080",
       "wvlet.org:8080"
+    ),
+    // Empty server address
+    (
+      ServerAddress(""),
+      ServerAddress("", -1, "http"),
+      "",
+      ""
+    ),
+    (
+      ServerAddress.empty,
+      ServerAddress("", -1, "http"),
+      "",
+      ""
     )
   )
 

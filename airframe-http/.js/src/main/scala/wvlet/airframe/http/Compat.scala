@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.http
 
-import org.scalajs.macrotaskexecutor.MacrotaskExecutor
-import wvlet.airframe.http.js.JSHttpClientBackend
+import org.scalajs.dom.window
+import wvlet.airframe.http.client.{HttpClientBackend, JSHttpClientBackend}
 
 import scala.concurrent.ExecutionContext
 
@@ -25,6 +25,31 @@ private object Compat extends CompatApi {
   override def urlEncode(s: String): String = {
     scala.scalajs.js.URIUtils.encodeURI(s)
   }
+
+  override def hostServerAddress: ServerAddress = {
+    try {
+      // Look up the local browser address
+      val protocol = window.location.protocol.stripSuffix(":")
+      val hostname = window.location.hostname
+      // For localhost, no server address is required
+      if (hostname == "localhost" && protocol == "http") {
+        ServerAddress.empty
+      } else {
+        // For web servers, need to provide the server address
+        val port = Option(window.location.port)
+          .map(x =>
+            if (x.isEmpty) ""
+            else s":${x}"
+          ).getOrElse("")
+        ServerAddress(s"${protocol}://${hostname}${port}")
+      }
+    } catch {
+      // dom.window might be null in Node.js environment
+      case e: Throwable =>
+        ServerAddress.empty
+    }
+  }
+
   override def defaultHttpClientBackend: HttpClientBackend = JSHttpClientBackend
 
   override def defaultExecutionContext: ExecutionContext = {

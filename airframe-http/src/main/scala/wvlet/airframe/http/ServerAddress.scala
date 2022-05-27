@@ -26,25 +26,43 @@ case class ServerAddress(
     // http or https
     scheme: String = "http"
 ) {
+  require(host != null, "host must not be null")
+
   override def toString: String = hostAndPort
 
-  // Returns host:port string without the protcol scheme like http://, https://
-  def hostAndPort: String = s"${host}:${port}"
+  // Returns host:port string without the protocol scheme like http://, https://
+  def hostAndPort: String = {
+    val p = if (port == -1) "" else s":${port}"
+    s"${host}${p}"
+  }
 
   // Returns URI with the protocol scheme (if specified)
   def uri: String = {
-    val prefix = s"${scheme}://${host}"
-    if (port != -1) {
-      s"${prefix}:${port}"
+    if (host.isEmpty) {
+      // Return empty address
+      ""
     } else {
-      prefix
+      val prefix = s"${scheme}://${host}"
+      if (port != -1) {
+        s"${prefix}:${port}"
+      } else {
+        prefix
+      }
     }
   }
 }
 
 object ServerAddress extends LogSupport {
+
+  /**
+    * Empty server address, which will be used for local testing
+    */
+  val empty: ServerAddress = ServerAddress("", -1)
+
   def apply(address: String): ServerAddress = {
-    if (address.matches("""\w+:\/\/.*""")) {
+    if (address == null || address.isEmpty) {
+      ServerAddress.empty
+    } else if (address.matches("""\w+:\/\/.*""")) {
       val uri         = URI.create(address)
       val givenScheme = Option(uri.getScheme)
       val (port, scheme) = uri.getPort match {

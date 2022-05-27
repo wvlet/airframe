@@ -11,25 +11,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.client
 
+import wvlet.airframe.http.{Http, HttpClientConfig}
 import wvlet.airspec.AirSpec
 
-object RPCHttpClientTest extends AirSpec {
+import scala.concurrent.ExecutionContext
+
+class JSRPCClientTest extends AirSpec {
+
+  private implicit val ec: ExecutionContext = defaultExecutionContext
 
   // Use a public REST test server
   private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
-
   case class TestRequest(id: Int, name: String)
   case class TestResponse(url: String, headers: Map[String, Any])
 
-  test("Create an RPCSyncClient") {
-    val rpcClient = Http.client.newRPCSyncClient(PUBLIC_REST_SERVICE)
-    val response  = rpcClient.send[TestRequest, TestResponse]("/post", TestRequest(1, "test"), identity)
+  test("Create an Async RPCClient") {
+    val client = Http.client.newAsyncClient(PUBLIC_REST_SERVICE)
 
-    // Test message
-    debug(response)
-    response.headers.get("Content-Type") shouldBe Some("application/msgpack")
+    // TODO: This test will be effective after the async test support in AirSpec 22.5.0
+    client
+      .rpc[TestRequest, TestResponse]("/post", TestRequest(1, "test"), identity)
+      .map { response =>
+        debug(response)
+        response.headers.get("Content-Type") shouldBe Some("application/msgpack")
+      }
+  }
+
+  test("create RPC client") {
+    val config = HttpClientConfig()
+
+    // Sanity test for client creation
+    val client = config.newJSClient
   }
 
 }

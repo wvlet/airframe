@@ -14,6 +14,7 @@
 package wvlet.airframe.http.finagle.filter
 
 import wvlet.airframe.Design
+import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.finagle.{Finagle, FinagleContext, FinagleServer}
 import wvlet.airframe.http.{Endpoint, Http, HttpContext, HttpMessage, Router}
 import wvlet.airspec.AirSpec
@@ -53,14 +54,14 @@ object StandardFilterTest extends AirSpec {
   protected override def design =
     Design.newDesign
       .add(Finagle.server.withRouter(router).design)
-      .bind[Http.SyncClient]
+      .bind[SyncClient]
       .toProvider { server: FinagleServer =>
         Http.client
           .withRetryContext(_.noRetry)
           .newSyncClient(server.localAddress)
       }
 
-  test("use standard filter") { client: Http.SyncClient =>
+  test("use standard filter") { client: SyncClient =>
     val resp = client.send(Http.request("/"))
     resp.contentString shouldBe "[Filtered] [xxxx] Hello myapp!"
   }

@@ -13,35 +13,21 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.control.{Control, IO}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
-import wvlet.airframe.surface.Surface
 
 import java.io.{IOException, InputStream, OutputStream}
 import java.net.HttpURLConnection
-import java.util.concurrent.TimeUnit
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters._
 
-case class URLConnectionClientConfig(
-    requestFilter: Request => Request = identity,
-    connectionFilter: HttpURLConnection => HttpURLConnection = identity,
-    readTimeout: Duration = Duration(90, TimeUnit.SECONDS),
-    connectTimeout: Duration = Duration(90, TimeUnit.SECONDS),
-    retryContext: RetryContext = HttpClient.defaultHttpClientRetry[Request, Response],
-    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
-    followRedirect: Boolean = true
-)
-
 /**
   * Http sync client implementation using URLConnection
   */
-class URLConnectionClient(address: ServerAddress, protected val config: URLConnectionClientConfig)
-    extends URLConnectionClientBase {
+class URLConnectionClient(serverAddress: ServerAddress, private[client] val config: HttpClientConfig)
+    extends SyncClient {
 
   override def send(
       req: Request,
@@ -51,7 +37,7 @@ class URLConnectionClient(address: ServerAddress, protected val config: URLConne
     // Apply the default filter first and then the given custom filter
     val request = requestFilter(config.requestFilter(req))
 
-    val url = s"${address.uri}${if (request.uri.startsWith("/")) request.uri
+    val url = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
       else s"/${request.uri}"}"
 
     // Send the request with retry support. Setting the context request is necessary to properly show
@@ -75,9 +61,9 @@ class URLConnectionClient(address: ServerAddress, protected val config: URLConne
 
       conn0.setReadTimeout(timeoutMillis(config.readTimeout))
       conn0.setConnectTimeout(timeoutMillis(config.connectTimeout))
-      conn0.setInstanceFollowRedirects(config.followRedirect)
+      conn0.setInstanceFollowRedirects(true)
 
-      val conn    = config.connectionFilter(conn0)
+      val conn    = conn0 // config.connectionFilter(conn0)
       val content = req.contentBytes
       if (content.nonEmpty) {
         conn.setDoOutput(true)
@@ -137,15 +123,15 @@ class URLConnectionClient(address: ServerAddress, protected val config: URLConne
   }
 
   override def close(): Unit = {}
-
-  protected def getInternal[Resource](
-      resourcePath: String,
-      requestFilter: Request => Request,
-      resourceSurface: Surface
-  ): Resource = {
-    convertAs[Resource](send(Http.request(resourcePath), requestFilter), resourceSurface)
-  }
 //
+//  protected def getInternal[Resource](
+//      resourcePath: String,
+//      requestFilter: Request => Request,
+//      resourceSurface: Surface
+//  ): Resource = {
+//    convertAs[Resource](send(Http.request(resourcePath), requestFilter), resourceSurface)
+//  }
+////
 //  protected def getOpsInternal[Resource, OperationResponse](
 //    resourcePath: String,
 //    resource: Resource,

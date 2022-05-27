@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http
 import java.net.URLEncoder
-import wvlet.airframe.http.client.URLConnectionClientBackend
+import wvlet.airframe.http.client.{HttpClientBackend, URLConnectionClientBackend}
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
@@ -49,5 +49,10 @@ object Compat extends CompatApi {
   override def defaultExecutionContext: ExecutionContext = {
     // We should not use scala.concurrent.ExecutionContext.global as it might be closed
     ExecutionContext.fromExecutorService(Executors.newCachedThreadPool(new DefaultThreadFactory))
+  }
+
+  override def hostServerAddress: ServerAddress = {
+    // There is no notion of host server in JVM
+    ServerAddress.empty
   }
 }

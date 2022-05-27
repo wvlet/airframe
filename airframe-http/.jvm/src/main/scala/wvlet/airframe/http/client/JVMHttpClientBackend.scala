@@ -14,23 +14,15 @@
 package wvlet.airframe.http.client
 import wvlet.airframe.http.{HttpClientConfig, ServerAddress}
 
-/**
-  */
-object URLConnectionClientBackend extends HttpClientBackend {
-  def newSyncClient(
-      serverAddress: ServerAddress,
-      clientConfig: HttpClientConfig
-  ): SyncClient = {
-    new URLConnectionClient(
-      serverAddress,
-      clientConfig
-    )
+object JVMHttpClientBackend extends HttpClientBackend {
+  override def newSyncClient(serverAddress: ServerAddress, clientConfig: HttpClientConfig): SyncClient = {
+    new JavaHttpSyncClient(serverAddress, clientConfig)
   }
 
   override def newAsyncClient(
       serverAddress: ServerAddress,
       clientConfig: HttpClientConfig
   ): AsyncClient = {
-    throw new UnsupportedOperationException("Default async client is not supported.")
+    new JavaHttpSyncClient(serverAddress, clientConfig).toAsyncClient
   }
 }

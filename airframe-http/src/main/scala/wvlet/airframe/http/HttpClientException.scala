@@ -139,22 +139,38 @@ object HttpClientException extends LogSupport {
     executionFailureClassifier.applyOrElse(ex, nonRetryable)
   }
 
-  def executionFailureClassifier: PartialFunction[Throwable, Failed] =
-    connectionExceptionClassifier orElse
-      sslExceptionClassifier orElse
-      invocationTargetExceptionClassifier
+  /**
+    * The default exception classifier for Scala.js, which does not reference any JVM-specific pakckages, such as
+    * java.net, java.reflect, etc.
+    * @param ex
+    * @return
+    */
+  def classifyExecutionFailureScalaJS(ex: Throwable): Failed = {
+    (scalajsCompatibleFailureClassifier orElse
+      rootCauseExceptionClassifierScalaJS).applyOrElse(ex, nonRetryable)
+  }
 
-  def connectionExceptionClassifier: PartialFunction[Throwable, Failed] = {
+  def executionFailureClassifier: PartialFunction[Throwable, Failed] = {
+    scalajsCompatibleFailureClassifier orElse
+      connectionExceptionClassifier orElse
+      sslExceptionClassifier orElse
+      rootCauseExceptionClassifier
+  }
+
+  def scalajsCompatibleFailureClassifier: PartialFunction[Throwable, Failed] = {
     // Make it non-retryable for failfast behavior if the circuit is open
     case e: CircuitBreakerOpenException => nonRetryableFailure(e)
+    case e: EOFException                => retryableFailure(e)
+    case e: TimeoutException            => retryableFailure(e)
+  }
+
+  def connectionExceptionClassifier: PartialFunction[Throwable, Failed] = {
     // Other types of exception that can happen inside HTTP clients (e.g., Jetty)
     case e: java.lang.InterruptedException =>
       // Retryable when the http client thread execution is interrupted.
       retryableFailure(e)
     case e: ProtocolException      => retryableFailure(e)
     case e: ConnectException       => retryableFailure(e)
-    case e: EOFException           => retryableFailure(e)
-    case e: TimeoutException       => retryableFailure(e)
     case e: ClosedChannelException => retryableFailure(e)
     case e: SocketTimeoutException => retryableFailure(e)
     case e: SocketException =>
@@ -210,7 +226,7 @@ object HttpClientException extends LogSupport {
     }
   }
 
-  def invocationTargetExceptionClassifier: PartialFunction[Throwable, Failed] = {
+  def rootCauseExceptionClassifier: PartialFunction[Throwable, Failed] = {
     case e: ExecutionException if e.getCause != null =>
       classifyExecutionFailure(e.getCause)
     case e: InvocationTargetException =>
@@ -220,8 +236,20 @@ object HttpClientException extends LogSupport {
       classifyExecutionFailure(e.getCause)
   }
 
+  /**
+    * For ScalaJs, which doesn't have InvocationTargetException
+    * @return
+    */
+  def rootCauseExceptionClassifierScalaJS: PartialFunction[Throwable, Failed] = {
+    case e: ExecutionException if e.getCause != null =>
+      classifyExecutionFailureScalaJS(e.getCause)
+    case e if e.getCause != null =>
+      // Trace the true cause
+      classifyExecutionFailureScalaJS(e.getCause)
+  }
+
   def nonRetryable: Throwable => Failed = { case e =>
-    // We canot retry when an unknown exception is thrown
+    // We cannot retry when an unknown exception is thrown
     nonRetryableFailure(e)
   }
 }

@@ -11,27 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.client
+
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-
-import scala.concurrent.{ExecutionContext, Future}
+import wvlet.airframe.http.{HttpClient, HttpClientConfig, ServerAddress}
 
 /**
   */
 trait HttpClientBackend {
   def defaultRequestRetryer: RetryContext = HttpClient.defaultHttpClientRetry[Request, Response]
 
-  def newSyncClient(severAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response]
+  def newSyncClient(serverAddress: ServerAddress, clientConfig: HttpClientConfig): SyncClient
 
   def newAsyncClient(
-      serverAddress: String,
+      serverAddress: ServerAddress,
       clientConfig: HttpClientConfig
-  ): HttpClient[Future, Request, Response] = {
+  ): AsyncClient = {
     throw new UnsupportedOperationException("async client is not supported.")
-  }
-
-  def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCHttpClient = {
-    throw new UnsupportedOperationException("scala.js client is not supported.")
   }
 }
