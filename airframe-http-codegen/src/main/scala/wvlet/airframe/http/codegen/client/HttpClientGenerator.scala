@@ -32,6 +32,12 @@ object HttpClientGenerator extends LogSupport {
     s match {
       case p if p.isPrimitive && !p.isAlias =>
         p.name
+      case a if a.fullName == "scala.Any" =>
+        "Any"
+      case p if p.isOption =>
+        s"Option[${p.typeArgs.map(fullTypeNameOf(_)).mkString(", ")}]"
+      case m if m.isMap && m.rawType == classOf[Map[_, _]] =>
+        s"Map[${m.typeArgs.map(fullTypeNameOf(_)).mkString(", ")}]"
       case _ =>
         s.fullName
     }
