@@ -29,14 +29,14 @@ class JSAsyncClient(private[client] val config: HttpClientConfig, serverAddress:
     extends AsyncClient
     with LogSupport {
 
-  private implicit val ec: ExecutionContext  = config.newExecutionContext
-  private val circuitBreaker: CircuitBreaker = config.circuitBreaker.withName(s"${serverAddress}")
+  private[client] implicit val executionContext: ExecutionContext = config.newExecutionContext
+  private val circuitBreaker: CircuitBreaker                      = config.circuitBreaker.withName(s"${serverAddress}")
 
   /**
     * Provide the underlying ExecutionContext. This is only for internal-use
     * @return
     */
-  private[http] def getExecutionContext: ExecutionContext = ec
+  private[http] def getExecutionContext: ExecutionContext = executionContext
 
   override def close(): Unit = {
     // nothing to do

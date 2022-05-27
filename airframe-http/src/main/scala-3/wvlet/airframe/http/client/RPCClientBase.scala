@@ -22,23 +22,23 @@ import scala.concurrent.Future
 /**
   * Scala 3 specific helper method to make an RPC request
   */
-trait RPCSyncClientBase { self: RPCHttpSyncClient =>
-  inline def send[RequestType, ResponseType](
+trait RPCSyncClientBase { self: SyncClient =>
+  inline def rpc[RequestType, ResponseType](
       resourcePath: String,
       request: RequestType,
       requestFilter: Request => Request
   ): ResponseType = {
-    self.sendRaw(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[ResponseType]
+    self.sendRPC(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[ResponseType]
   }
 }
 
 
-trait RPCClientBase { self: RPCHttpClient =>
-  inline def send[RequestType, ResponseType](
+trait RPCAsyncClientBase { self: AsyncClient =>
+  inline def rpc[RequestType, ResponseType](
     resourcePath: String,
     request: RequestType,
     requestFilter: Request => Request
   ): Future[ResponseType] = {
-    self.sendRaw(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[Future[ResponseType]]
+    self.sendRPC(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[Future[ResponseType]]
   }
 }

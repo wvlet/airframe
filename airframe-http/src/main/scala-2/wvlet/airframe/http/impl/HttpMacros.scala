@@ -27,7 +27,7 @@ object HttpMacros {
     val t1 = implicitly[c.WeakTypeTag[RequestType]]
     val t2 = implicitly[c.WeakTypeTag[ResponseType]]
     q"""{
-          ${c.prefix}.sendRaw(
+          ${c.prefix}.sendRPC(
             ${resourcePath},
             wvlet.airframe.surface.Surface.of[${t1}],
             ${request},
@@ -44,7 +44,7 @@ object HttpMacros {
     val t1 = implicitly[c.WeakTypeTag[RequestType]]
     val t2 = implicitly[c.WeakTypeTag[ResponseType]]
     q"""{
-          ${c.prefix}.sendRaw(
+          ${c.prefix}.sendRPC(
             ${resourcePath},
             wvlet.airframe.surface.Surface.of[${t1}],
             ${request},

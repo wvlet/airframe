@@ -16,7 +16,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.CircuitBreaker
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.client.{SyncClient, AsyncClient, HttpClientBackend, RPCHttpClient, RPCHttpSyncClient}
+import wvlet.airframe.http.client.{SyncClient, AsyncClient, HttpClientBackend}
 import wvlet.airframe.rx.{Rx, RxStream}
 
 import java.util.concurrent.TimeUnit
@@ -54,12 +54,8 @@ case class HttpClientConfig(
   def newAsyncClient(serverAddress: String): AsyncClient =
     backend.newAsyncClient(serverAddress, this)
 
-  def newRPCSyncClient(serverAddress: String): RPCHttpSyncClient = {
-    new RPCHttpSyncClient(this, newSyncClient(serverAddress))
-  }
-
-  def newRPCClientForScalaJS: RPCHttpClient = {
-    backend.newRPCClientForScalaJS(this)
+  def newLocalAsyncClient: AsyncClient = {
+    backend.newAsyncClient("", this)
   }
 
   def withBackend(newBackend: HttpClientBackend): HttpClientConfig =

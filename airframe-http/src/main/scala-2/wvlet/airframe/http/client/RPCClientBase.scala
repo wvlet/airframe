@@ -22,16 +22,16 @@ import scala.language.experimental.macros
 /**
   * Scala 2 specific helper method to make an RPC request
   */
-trait RPCSyncClientBase { self: RPCHttpSyncClient =>
-  def send[RequestType, ResponseType](
+trait RPCSyncClientBase { self: SyncClient =>
+  def rpc[RequestType, ResponseType](
       resourcePath: String,
       request: RequestType,
       requestFilter: Request => Request
   ): ResponseType = macro HttpMacros.rpcSend[RequestType, ResponseType]
 }
 
-trait RPCClientBase { self: RPCHttpClient =>
-  def send[RequestType, ResponseType](
+trait RPCAsyncClientBase { self: AsyncClient =>
+  def rpc[RequestType, ResponseType](
       resourcePath: String,
       request: RequestType,
       requestFilter: Request => Request

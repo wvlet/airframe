@@ -33,6 +33,4 @@ object URLConnectionClientBackend extends HttpClientBackend {
   ): AsyncClient = {
     throw new UnsupportedOperationException("Default async client is not supported.")
   }
-
-  override def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCHttpClient = ???
 }

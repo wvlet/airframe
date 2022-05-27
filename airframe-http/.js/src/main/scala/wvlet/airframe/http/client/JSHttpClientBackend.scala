@@ -36,13 +36,6 @@ object JSHttpClientBackend extends HttpClientBackend {
       clientConfig: HttpClientConfig
   ): AsyncClient = {
     val address = if (serverAddress.isEmpty) None else Some(ServerAddress(serverAddress))
-
-    // TODO: Use HttpClientConfig in JSHttpClient
     new JSAsyncClient(clientConfig, address)
-  }
-
-  override def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCHttpClient = {
-    val asyncClient = newAsyncClient(JSHttpClient.resolveServerAddress.getOrElse(""), clientConfig)
-    new RPCHttpClient(clientConfig, asyncClient)
   }
 }

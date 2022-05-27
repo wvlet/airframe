@@ -30,8 +30,4 @@ trait HttpClientBackend {
   ): AsyncClient = {
     throw new UnsupportedOperationException("async client is not supported.")
   }
-
-  def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCHttpClient = {
-    throw new UnsupportedOperationException("scala.js client is not supported.")
-  }
 }
