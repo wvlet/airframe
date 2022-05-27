@@ -62,7 +62,7 @@ class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
           case other =>
             // If X is other type, convert X into an HttpResponse
             backend.mapF(
-              result.asInstanceOf[F[_]],
+              result.asInstanceOf[F[Resp]],
               { (x: Any) => responseHandler.toHttpResponse(route, request, futureValueSurface, x) }
             )
         }
