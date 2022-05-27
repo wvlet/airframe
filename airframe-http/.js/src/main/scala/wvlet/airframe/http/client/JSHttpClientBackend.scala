@@ -11,14 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.js
+package wvlet.airframe.http.client
 
 import wvlet.airframe.control.Retry
-import wvlet.airframe.http.client.{HttpClientBackend, RPCHttpClient}
-import wvlet.airframe.http.js.JSHttpClient.MessageEncoding
-import wvlet.airframe.http.{HttpClient, HttpClientConfig, HttpMessage, HttpSyncClient, RPCEncoding, ServerAddress}
-
-import scala.concurrent.{ExecutionContext, Future}
+import wvlet.airframe.http.js.JSHttpClient
+import wvlet.airframe.http.{HttpClientConfig, ServerAddress}
 
 object JSHttpClientBackend extends HttpClientBackend {
 
@@ -30,29 +27,18 @@ object JSHttpClientBackend extends HttpClientBackend {
   override def newSyncClient(
       severAddress: String,
       clientConfig: HttpClientConfig
-  ): HttpSyncClient[HttpMessage.Request, HttpMessage.Response] = {
+  ): SyncClient = {
     throw new UnsupportedOperationException("sync client is not supported in Scala.js")
   }
 
   override def newAsyncClient(
       serverAddress: String,
       clientConfig: HttpClientConfig
-  ): HttpClient[Future, HttpMessage.Request, HttpMessage.Response] = {
+  ): AsyncClient = {
     val address = if (serverAddress.isEmpty) None else Some(ServerAddress(serverAddress))
 
     // TODO: Use HttpClientConfig in JSHttpClient
-    val config = JSHttpClientConfig(serverAddress = address)
-      .withRequestEncoding(
-        if (clientConfig.rpcEncoding == RPCEncoding.JSON) MessageEncoding.JsonEncoding
-        else MessageEncoding.MessagePackEncoding
-      )
-      .withRequestFilter(clientConfig.requestFilter)
-      .withRetry(r => clientConfig.retryContext)
-      .withCodecFactory(clientConfig.codecFactory)
-      .withCircuitBreaker(c => clientConfig.circuitBreaker)
-      .withRxConverter(clientConfig.rxConverter)
-
-    new JSHttpClientAdaptor(JSHttpClient(config))
+    new JSAsyncClient(clientConfig, address)
   }
 
   override def newRPCClientForScalaJS(clientConfig: HttpClientConfig): RPCHttpClient = {

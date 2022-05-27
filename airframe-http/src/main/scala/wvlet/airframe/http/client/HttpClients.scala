@@ -31,7 +31,7 @@ import scala.concurrent.Future
 /**
   * A standard blocking http client interface
   */
-trait SyncClient extends AutoCloseable {
+trait SyncClient extends SyncClientBase with AutoCloseable {
 
   private[client] def config: HttpClientConfig
 

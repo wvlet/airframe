@@ -52,7 +52,7 @@ trait SyncClientBase {
 
   def get[Resource: TypeTag](
       resourcePath: String,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): Resource = {
     getInternal[Resource](resourcePath, requestFilter, Surface.of[Resource])
   }
@@ -63,7 +63,7 @@ trait SyncClientBase {
   ](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): OperationResponse = {
     getResource[Resource, OperationResponse](resourcePath, resource, requestFilter)
   }
@@ -74,7 +74,7 @@ trait SyncClientBase {
   ](
       resourcePath: String,
       resourceRequest: ResourceRequest,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): Resource = {
     // Read resource as JSON
     val resourceRequestJsonValue = {
@@ -86,7 +86,7 @@ trait SyncClientBase {
 
   def list[OperationResponse: TypeTag](
       resourcePath: String,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): OperationResponse = {
     convert[OperationResponse](send(Http.request(resourcePath), requestFilter))
   }
@@ -101,7 +101,7 @@ trait SyncClientBase {
   def post[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): Resource = {
     val r = Http.POST(resourcePath).withJson(toJson(resource))
     convert[Resource](send(r, requestFilter))
@@ -110,7 +110,7 @@ trait SyncClientBase {
   def postRaw[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): Response = {
     postOps[Resource, Response](resourcePath, resource, requestFilter)
   }
@@ -121,7 +121,7 @@ trait SyncClientBase {
   ](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): OperationResponse = {
     val r = Http.POST(resourcePath).withJson(toJson(resource))
     convert[OperationResponse](send(r, requestFilter))
@@ -130,7 +130,7 @@ trait SyncClientBase {
   def put[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): Resource = {
     val r = Http.PUT(resourcePath).withJson(toJson(resource))
     convert[Resource](send(r, requestFilter))
@@ -139,7 +139,7 @@ trait SyncClientBase {
   def putRaw[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): Response =
     putOps[Resource, Response](resourcePath, resource, requestFilter)
 
@@ -149,7 +149,7 @@ trait SyncClientBase {
   ](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): OperationResponse = {
     val r = Http.PUT(resourcePath).withJson(toJson(resource))
     convert[OperationResponse](send(r, requestFilter))
@@ -157,7 +157,7 @@ trait SyncClientBase {
 
   def delete[OperationResponse: TypeTag](
       resourcePath: String,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): OperationResponse = {
     val r = Http.DELETE(resourcePath)
     convert[OperationResponse](send(r, requestFilter))
@@ -165,7 +165,7 @@ trait SyncClientBase {
 
   def deleteRaw(
       resourcePath: String,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): Response = delete[Response](resourcePath, requestFilter)
 
   def deleteOps[
@@ -174,7 +174,7 @@ trait SyncClientBase {
   ](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): OperationResponse = {
 
     val r = Http.DELETE(resourcePath).withJson(toJson(resource))
@@ -184,7 +184,7 @@ trait SyncClientBase {
   def patch[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): Resource = {
     val r = Http
       .POST(resourcePath)
@@ -196,7 +196,7 @@ trait SyncClientBase {
   def patchRaw[Resource: TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): Response =
     patchOps[Resource, Response](resourcePath, resource, requestFilter)
 
@@ -206,13 +206,12 @@ trait SyncClientBase {
   ](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request => Request
+      requestFilter: Request => Request = identity
   ): OperationResponse = {
     // Workaround: URLConnection doesn't support PATCH
     // https://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch
     val r = Http
-      .POST(resourcePath)
-      .withHeader("X-HTTP-Method-Override", "PATCH")
+      .PATCH(resourcePath)
       .withJson(toJson(resource))
     convert[OperationResponse](send(r, requestFilter))
   }

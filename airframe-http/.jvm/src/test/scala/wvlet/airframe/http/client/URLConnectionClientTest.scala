@@ -16,7 +16,6 @@ package wvlet.airframe.http.client
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Retry.MaxRetryException
-import wvlet.airframe.http.Http.SyncClient
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.{Http, HttpStatus}
 import wvlet.airspec.AirSpec
@@ -87,7 +86,7 @@ object URLConnectionClientTest extends AirSpec {
     }
 
     test("patch") {
-      // URLConnection doesn't support patch, so we need to use POST endpoint + X-HTTP-Method-Override header
+      ignore("URLConnection doesn't support patch, so we need to use POST endpoint + X-HTTP-Method-Override header")
       check(client.patchRaw[Person]("/post", p))
       check(client.patchOps[Person, Map[String, Any]]("/post", p))
     }
@@ -95,7 +94,6 @@ object URLConnectionClientTest extends AirSpec {
     test("xxxRaw") {
       check(client.postRaw[Person]("/post", p))
       check(client.putRaw[Person]("/put", p))
-
     }
 
     test("getOps") {

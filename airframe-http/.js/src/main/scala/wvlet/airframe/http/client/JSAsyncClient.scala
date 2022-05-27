@@ -25,7 +25,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 import scala.util.{Failure, Success, Try}
 
-class JSAsyncClient(config: HttpClientConfig, serverAddress: Option[ServerAddress] = None)
+class JSAsyncClient(private[client] val config: HttpClientConfig, serverAddress: Option[ServerAddress] = None)
     extends AsyncClient
     with LogSupport {
 
