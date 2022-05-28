@@ -267,7 +267,7 @@ lazy val projectDotty =
       // httpFinagle,
       // grpc,
       // jdbc,
-      // jmx,
+      jmx,
       launcher,
       metricsJVM,
       msgpackJVM,
