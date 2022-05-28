@@ -17,27 +17,26 @@ import javax.management._
 
 import wvlet.log.LogSupport
 
-import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Try}
 
 /**
   */
-trait JMXRegistry extends JMXMBeanServerService with LogSupport {
+trait JMXRegistry extends JMXMBeanServerService with JMXRegistryCompat with LogSupport {
   private var registeredMBean = Set.empty[ObjectName]
 
-  def register[A: ru.WeakTypeTag](obj: A): Unit = {
+  def register[A](mbean: JMXMBean, obj: A): Unit = {
+    val mbean       = JMXMBean.of(obj)
     val cl          = obj.getClass
     val packageName = cl.getPackage.getName
     val name        = s"${packageName}:name=${JMXRegistry.getSimpleClassName(cl)}"
-    register(name, obj)
+    register(mbean, name, obj)
   }
 
-  def register[A: ru.WeakTypeTag](name: String, obj: A): Unit = {
-    register(new ObjectName(name), obj)
+  def register[A](mbean: JMXMBean, name: String, obj: A): Unit = {
+    register(mbean, new ObjectName(name), obj)
   }
 
-  def register[A: ru.WeakTypeTag](objectName: ObjectName, obj: A): Unit = {
-    val mbean = JMXMBean.of(obj)
+  def register[A](mbean: JMXMBean, objectName: ObjectName, obj: A): Unit = {
     synchronized {
       if (mbeanServer.isRegistered(objectName)) {
         // Avoid the duplicate registration
