@@ -27,8 +27,6 @@ import wvlet.airframe.surface.reflect.{GenericBuilder, ObjectBuilder, Path, Refl
 import wvlet.log.{LogSupport, Logger}
 
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.ClassTag
-import scala.reflect.runtime.{universe => ru}
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
@@ -39,22 +37,10 @@ object OptionParser extends LogSupport {
   def tokenize(line: String): Array[String] =
     CommandLineTokenizer.tokenize(line)
 
-  def of[A: ru.WeakTypeTag]: OptionParser = {
-    apply(ReflectSurfaceFactory.of[A])
-  }
-
   def apply(surface: Surface): OptionParser = {
     val schema = ClassOptionSchema(surface)
     assert(schema != null)
     new OptionParser(schema)
-  }
-
-  def parse[A <: AnyRef](args: Array[String])(implicit m: ClassTag[A]): OptionParserResult = {
-    of[A].parse(args)
-  }
-
-  def parse[A <: AnyRef](argLine: String)(implicit m: ClassTag[A]): OptionParserResult = {
-    parse(tokenize(argLine))
   }
 
   private[launcher] def splitPrefixes(prefix: String): Seq[String] = {
