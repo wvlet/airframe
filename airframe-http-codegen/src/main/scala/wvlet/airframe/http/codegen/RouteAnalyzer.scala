@@ -13,9 +13,10 @@
  */
 package wvlet.airframe.http.codegen
 
-import wvlet.airframe.http.{HttpContext, HttpMessage, HttpRequest}
+import wvlet.airframe.http.{HttpContext, HttpContextBase, HttpMessage, HttpRequest}
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.surface.{CName, MethodParameter}
+
 import scala.language.higherKinds
 
 /**
@@ -42,8 +43,7 @@ object RouteAnalyzer {
   private def isClientSideArg(x: MethodParameter): Boolean = {
     !classOf[HttpMessage.Request].isAssignableFrom(x.surface.rawType) &&
     !classOf[HttpRequest[_]].isAssignableFrom(x.surface.rawType) &&
-    !classOf[HttpContext[_, _, F] forSome { type F[_] }]
-      .isAssignableFrom(x.surface.rawType) &&
+    !classOf[HttpContextBase].isAssignableFrom(x.surface.rawType) &&
     x.surface.fullName != "com.twitter.finagle.http.Request"
   }
 

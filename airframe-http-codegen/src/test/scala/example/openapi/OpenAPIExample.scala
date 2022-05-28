@@ -122,3 +122,8 @@ object OpenAPIEndpointExample {
   )
   case class EndpointResponse(y1: String, y2: Boolean)
 }
+
+trait OpenAPISmallExample {
+  @Endpoint(method = HttpMethod.GET, path = "/v1/get/:id")
+  def getWithParam(id: Int): Unit
+}
