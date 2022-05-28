@@ -61,7 +61,7 @@ class HtmlTest extends AirSpec {
       onclick -> { () =>
         "hello"
       },
-      onclick -> { event: Any =>
+      onclick -> { (event: Any) =>
         "hello"
       }
     )
