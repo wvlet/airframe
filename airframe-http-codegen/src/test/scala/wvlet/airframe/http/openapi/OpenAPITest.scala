@@ -514,7 +514,10 @@ class OpenAPITest extends AirSpec {
     // java.awt.Toolkit.getDefaultToolkit.getSystemClipboard
     //      .setContents(new java.awt.datatransfer.StringSelection(yaml), null)
 
+    debug(endpointRouter)
+
     fragments.foreach { x =>
+      debug(x)
       yaml.contains(x) shouldBe true
     }
 

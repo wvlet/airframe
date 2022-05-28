@@ -86,7 +86,7 @@ object OpenAPI {
       tags: Option[Seq[String]] = None
   )
 
-  type ParameterOrRef = Union2[Parameter, ParameterRef]
+  abstract class ParameterOrRef extends Union2[Parameter, ParameterRef]
 
   case class Parameter(
       name: String,
@@ -128,7 +128,8 @@ object OpenAPI {
       required: Boolean = false
   )
 
-  type SchemaOrRef = Union3[Schema, SchemaRef, OneOf]
+  // type SchemaOrRef = Union3[Schema, SchemaRef, OneOf]
+  abstract class SchemaOrRef extends Union3[Schema, SchemaRef, OneOf]
 
   case class MediaType(
       // Scheme or SchemaRef,

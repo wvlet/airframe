@@ -19,9 +19,14 @@ import scala.concurrent.Future
 import scala.language.higherKinds
 
 /**
+  * A base type to use classOf[HttpContextBase]. classOf[HttpContext[_, _, _] is not supported for higherkinded types
+  */
+trait HttpContextBase
+
+/**
   * Used for passing the subsequent actions to HttpFilter and for defining the leaf action of request processing chain.
   */
-trait HttpContext[Req, Resp, F[_]] {
+trait HttpContext[Req, Resp, F[_]] extends HttpContextBase {
   protected def backend: HttpBackend[Req, Resp, F]
   private[http] def backendName: String = backend.name
 
