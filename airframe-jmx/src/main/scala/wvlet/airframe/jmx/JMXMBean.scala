@@ -21,7 +21,6 @@ import wvlet.log.LogSupport
 import wvlet.airframe.surface.reflect._
 import wvlet.airframe.surface.{MethodSurface, Parameter, ParameterBase, Surface}
 
-import scala.reflect.runtime.{universe => ru}
 import wvlet.airframe.{jmx => aj}
 
 /**
@@ -68,10 +67,10 @@ case class JMXMBean(obj: AnyRef, mBeanInfo: MBeanInfo, attributes: Seq[MBeanPara
   }
 }
 
-object JMXMBean extends LogSupport {
+object JMXMBean extends JMXMBeanCompat with LogSupport {
   private case class JMXMethod(m: MethodSurface, jmxAnnotation: JMX)
 
-  def of[A: ru.WeakTypeTag](obj: A): JMXMBean = {
+  def of[A](obj: A, surface: Surface, methodSurfaces: Seq[MethodSurface]): JMXMBean = {
     // Find JMX description
     val cl = obj.getClass
 
@@ -82,9 +81,7 @@ object JMXMBean extends LogSupport {
     debug(s"Find JMX methods in ${cl}, description:${description}")
 
     // Collect JMX parameters from the class
-    val tpe = implicitly[ru.WeakTypeTag[A]].tpe
-
-    val mbeanParams = collectMBeanParameters(None, tpe)
+    val mbeanParams = collectMBeanParameters(None, surface, methodSurfaces)
     val attrInfo = mbeanParams.map { x =>
       val desc = new ImmutableDescriptor()
       new MBeanAttributeInfo(
@@ -116,10 +113,11 @@ object JMXMBean extends LogSupport {
     }
   }
 
-  private def collectMBeanParameters(parent: Option[ParameterBase], tpe: ru.Type): Seq[MBeanParameter] = {
-    val surface = ReflectSurfaceFactory.ofType(tpe)
-    val methods = ReflectSurfaceFactory.methodsOfType(tpe)
-
+  private def collectMBeanParameters(
+      parent: Option[ParameterBase],
+      surface: Surface,
+      methods: Seq[MethodSurface]
+  ): Seq[MBeanParameter] = {
     val jmxParams: Seq[ParameterBase] = surface.params.filter(_.findAnnotationOf[aj.JMX].isDefined) ++ methods.filter(
       _.findAnnotationOf[aj.JMX].isDefined
     )
@@ -127,10 +125,13 @@ object JMXMBean extends LogSupport {
     jmxParams.flatMap { p =>
       val paramName = parent.map(x => s"${x.name}.${p.name}").getOrElse(p.name)
       if (isNestedMBean(p)) {
-        ReflectSurfaceFactory.findTypeOf(p.surface) match {
-          case Some(tpe) => collectMBeanParameters(Some(p), tpe)
-          case None      => Seq.empty
-        }
+        collectMBeanParameters(
+          Some(p),
+          p.surface,
+          // In Scala 3, we cannot traverse nested parameters at ease without unless runtime reflection is available
+          // So when using nested JMX, we can support only nested JMX parameters, but not nested methods.
+          Seq.empty
+        )
       } else {
         val description = getDescription(p)
         Seq(
