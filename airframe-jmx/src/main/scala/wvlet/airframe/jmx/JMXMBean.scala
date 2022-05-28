@@ -149,18 +149,8 @@ object JMXMBean extends JMXMBeanCompat with LogSupport {
   private def isNestedMBean(p: ParameterBase): Boolean = {
     import wvlet.airframe.surface.reflect._
 
-    val jmxParams = p.surface.params.find(x => x.findAnnotationOf[aj.JMX].isDefined)
-    if (jmxParams.isDefined) {
-      true
-    } else {
-      ReflectSurfaceFactory.findTypeOf(p.surface) match {
-        case None => false
-        case Some(tpe) =>
-          val methods    = ReflectSurfaceFactory.methodsOfType(tpe)
-          val jmxMethods = methods.find(m => m.findAnnotationOf[aj.JMX].isDefined)
-          jmxMethods.isDefined
-      }
-    }
+    // We can support only nested parameters
+    p.surface.params.exists(x => x.findAnnotationOf[aj.JMX].isDefined)
   }
 
   def collectUniqueAnnotations(m: Method): Seq[Annotation] = {
