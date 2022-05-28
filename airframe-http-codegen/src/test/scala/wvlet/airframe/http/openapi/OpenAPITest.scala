@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.openapi
-import example.openapi.{OpenAPIEndpointExample, OpenAPIRPCExample}
+import example.openapi.{OpenAPIEndpointExample, OpenAPIRPCExample, OpenAPISmallExample}
 import io.swagger.v3.parser.OpenAPIV3Parser
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.HttpCodeGenerator
@@ -209,6 +209,24 @@ class OpenAPITest extends AirSpec {
         packageNames = Seq("example.openapi")
       )
     }
+  }
+
+  test("Get with param") {
+    val openAPI = OpenAPI
+      .ofRouter(Router.of[OpenAPISmallExample])
+    val yaml = openAPI.toYAML
+    yaml.contains("""  /v1/get/{id}:
+                    |    get:
+                    |      summary: getWithParam
+                    |      description: getWithParam
+                    |      operationId: getWithParam
+                    |      parameters:
+                    |        - name: id
+                    |          in: path
+                    |          required: true
+                    |          schema:
+                    |            type: integer
+                    |            format: int32""".stripMargin) shouldBe true
   }
 
   test("Generate OpenAPI spec from @Endpoint") {
@@ -510,11 +528,9 @@ class OpenAPITest extends AirSpec {
         |      operationId: multi2""".stripMargin
     )
 
-    // For the ease of testing at https://editor.swagger.io/
+    // Use this code snippet for ease of testing at https://editor.swagger.io/
     // java.awt.Toolkit.getDefaultToolkit.getSystemClipboard
     //      .setContents(new java.awt.datatransfer.StringSelection(yaml), null)
-
-    debug(endpointRouter)
 
     fragments.foreach { x =>
       debug(x)

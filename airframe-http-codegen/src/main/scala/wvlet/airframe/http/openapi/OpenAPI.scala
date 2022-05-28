@@ -86,7 +86,7 @@ object OpenAPI {
       tags: Option[Seq[String]] = None
   )
 
-  abstract class ParameterOrRef extends Union2[Parameter, ParameterRef]
+  type ParameterOrRef = Union2[Parameter, ParameterRef]
 
   case class Parameter(
       name: String,
@@ -96,13 +96,13 @@ object OpenAPI {
       schema: Option[SchemaOrRef] = None,
       deprecated: Option[Boolean] = None,
       allowEmptyValue: Option[Boolean] = None
-  ) extends ParameterOrRef {
+  ) extends Union2[Parameter, ParameterRef] {
     override def getElementClass = classOf[Parameter]
   }
 
   case class ParameterRef(
       `$ref`: String
-  ) extends ParameterOrRef {
+  ) extends Union2[Parameter, ParameterRef] {
     override def getElementClass = classOf[ParameterRef]
   }
 
@@ -129,7 +129,7 @@ object OpenAPI {
   )
 
   // type SchemaOrRef = Union3[Schema, SchemaRef, OneOf]
-  abstract class SchemaOrRef extends Union3[Schema, SchemaRef, OneOf]
+  type SchemaOrRef = Union3[Schema, SchemaRef, OneOf]
 
   case class MediaType(
       // Scheme or SchemaRef,
@@ -138,13 +138,13 @@ object OpenAPI {
   )
   case class OneOf(
       oneOf: Seq[SchemaOrRef]
-  ) extends SchemaOrRef {
+  ) extends Union3[Schema, SchemaRef, OneOf] {
     override def getElementClass = classOf[OneOf]
   }
 
   case class SchemaRef(
       `$ref`: String
-  ) extends SchemaOrRef {
+  ) extends Union3[Schema, SchemaRef, OneOf] {
     override def getElementClass = classOf[SchemaRef]
   }
 
@@ -160,7 +160,7 @@ object OpenAPI {
       items: Option[SchemaOrRef] = None,
       nullable: Option[Boolean] = None,
       `enum`: Option[Seq[String]] = None
-  ) extends SchemaOrRef {
+  ) extends Union3[Schema, SchemaRef, OneOf] {
     override def getElementClass = classOf[Schema]
 
     def withDescription(description: Option[String]) = {
