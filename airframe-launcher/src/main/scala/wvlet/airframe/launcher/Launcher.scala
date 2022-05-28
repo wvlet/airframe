@@ -31,37 +31,22 @@ import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 import wvlet.airframe.surface.{CName, MethodSurface, Surface}
 import wvlet.log.LogSupport
 
-import scala.reflect.runtime.{universe => ru}
-
 /**
   * Command launcher
   */
-object Launcher extends LogSupport {
-
-  /**
-    * Create a new Launcher of the given type
-    *
-    * @tparam A
-    * @return
-    */
-  def of[A: ru.WeakTypeTag]: Launcher = {
-    val cl = newCommandLauncher(ReflectSurfaceFactory.of[A], name = "", description = "")
-    Launcher(LauncherConfig(), cl)
-  }
-
-  def execute[A: ru.WeakTypeTag](argLine: String): A = execute(CommandLineTokenizer.tokenize(argLine))
-  def execute[A: ru.WeakTypeTag](args: Array[String]): A = {
-    val l      = Launcher.of[A]
-    val result = l.execute(args)
-    result.getRootInstance.asInstanceOf[A]
-  }
+object Launcher extends LauncherCompat with LogSupport {
 
   /**
     * Create a launcher for a class
     *
     * @return
     */
-  private[launcher] def newCommandLauncher(surface: Surface, name: String, description: String): CommandLauncher = {
+  private[launcher] def newCommandLauncher(
+      surface: Surface,
+      methods: Seq[MethodSurface],
+      name: String,
+      description: String
+  ): CommandLauncher = {
     val parser = OptionParser(surface)
 
     // Generate a command-line usage message
@@ -77,14 +62,12 @@ object Launcher extends LogSupport {
 
     // Find sub commands marked with [[wvlet.airframe.opts.command]] annotation
     import wvlet.airframe.surface.reflect._
-    val methods = ReflectSurfaceFactory.methodsOf(surface)
     val subCommands = for (m <- methods; c <- m.findAnnotationOf[command]) yield {
       newMethodLauncher(m, c)
     }
 
     // Find the default command
-    val defaultCommand = ReflectSurfaceFactory
-      .methodsOf(surface)
+    val defaultCommand = methods
       .find { m =>
         import wvlet.airframe.surface.reflect._
         m.findAnnotationOf[command] match {
@@ -92,7 +75,7 @@ object Launcher extends LogSupport {
           case None      => false
         }
       }
-      .map { m => { li: LauncherInstance => m.call(li.instance) } }
+      .map { m => { (li: LauncherInstance) => m.call(li.instance) } }
 
     new CommandLauncher(
       LauncherInfo(commandName, commandDescription, commandUsage),
@@ -132,10 +115,11 @@ private[launcher] case class LauncherConfig(
     helpMessagePrinter: HelpMessagePrinter = HelpMessagePrinter.default,
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactory,
     // command name -> default action
-    defaultCommand: LauncherInstance => Any = { li: LauncherInstance => println("Type --help to see the usage") }
+    defaultCommand: LauncherInstance => Any = { (li: LauncherInstance) => println("Type --help to see the usage") }
 )
 
-case class Launcher private[launcher] (config: LauncherConfig, private[launcher] val mainLauncher: CommandLauncher) {
+case class Launcher private[launcher] (config: LauncherConfig, private[launcher] val mainLauncher: CommandLauncher)
+    extends LauncherBaseCompat {
   def printHelp: Unit = {
     mainLauncher.printHelpInternal(config, List(mainLauncher))
   }
@@ -158,19 +142,6 @@ case class Launcher private[launcher] (config: LauncherConfig, private[launcher]
   def execute(argLine: String): LauncherResult = execute(CommandLineTokenizer.tokenize(argLine))
   def execute(args: Array[String]): LauncherResult = {
     mainLauncher.execute(config, List.empty, args.toSeq, showHelp = false)
-  }
-
-  /**
-    * Add a sub command module to the launcher
-    *
-    * @param name
-    *   sub command name
-    * @param description
-    * @tparam M
-    * @return
-    */
-  def addModule[M: ru.TypeTag](name: String, description: String): Launcher = {
-    Launcher(config, mainLauncher.addCommandModule[M](name, description))
   }
 
   def add(l: Launcher, name: String, description: String): Launcher = {
@@ -215,7 +186,8 @@ class CommandLauncher(
     private[launcher] val optionParser: OptionParser,
     private[launcher] val subCommands: Seq[CommandLauncher],
     defaultCommand: Option[LauncherInstance => Any]
-) extends LogSupport {
+) extends CommandLauncherBaseCompat
+    with LogSupport {
   def name: String        = launcherInfo.name
   def description: String = launcherInfo.description
   def usage: String       = launcherInfo.usage
@@ -226,12 +198,6 @@ class CommandLauncher(
 
   private[launcher] def optionList: Seq[CLOption] = {
     optionParser.optionList
-  }
-
-  private[launcher] def addCommandModule[B: ru.TypeTag](name: String, description: String): CommandLauncher = {
-    val moduleSurface = ReflectSurfaceFactory.ofType(implicitly[ru.TypeTag[B]].tpe)
-    val subLauncher   = Launcher.newCommandLauncher(moduleSurface, name, description)
-    add(name, description, subLauncher)
   }
 
   private[launcher] def add(name: String, description: String, commandLauncher: CommandLauncher): CommandLauncher = {
