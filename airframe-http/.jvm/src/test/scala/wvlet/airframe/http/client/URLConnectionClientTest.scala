@@ -85,18 +85,21 @@ object URLConnectionClientTest extends AirSpec {
 //      check(client.patchOps[Person, Map[String, Any]]("/post", p))
 //    }
 //
-    test("xxxRaw") {
+    test("call with Response return value") {
       check(client.call[Person, Response](Http.POST("/post"), p))
-      check(client.call[Person, Map[String, Any]](Http.PUT("/put"), p))
+      check(client.call[Person, Response](Http.PUT("/put"), p))
     }
 
-    test("getOps") {
-      val m = client.readAs[Map[String, Any]](Http.GET(s"/get?id=${p.id}&name=${p.name}"))
+    test("call with GET") {
+      val m = client.call[Person, Map[String, Any]](Http.GET(s"/get"), p)
       m("args") shouldBe Map("id" -> "1", "name" -> "leo")
     }
 
-    test("xxxOps") {
+    test("call with POST") {
       check(client.call[Person, Map[String, Any]](Http.POST("/post"), p))
+    }
+
+    test("call with PUT") {
       check(client.call[Person, Map[String, Any]](Http.PUT("/put"), p))
     }
 

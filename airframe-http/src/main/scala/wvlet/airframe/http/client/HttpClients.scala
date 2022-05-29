@@ -16,6 +16,7 @@ package wvlet.airframe.http.client
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
+import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.airframe.surface.Surface
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -177,14 +178,20 @@ object HttpClients {
       requestBody: Req
   ): Request = {
     try {
-      val requestCodec: MessageCodec[Req] =
-        config.codecFactory.ofSurface(requestSurface).asInstanceOf[MessageCodec[Req]]
-      val bytes = config.rpcEncoding.encodeWithCodec(requestBody, requestCodec)
-      config.rpcEncoding match {
-        case RPCEncoding.MsgPack =>
-          baseRequest.withMsgPack(bytes)
-        case RPCEncoding.JSON =>
-          baseRequest.withJson(bytes)
+      baseRequest.method match {
+        case HttpMethod.GET =>
+          val newPath = HttpClient.buildResourceUri[Req](baseRequest.path, requestBody, requestSurface)
+          baseRequest.withUri(newPath)
+        case _ =>
+          val requestCodec: MessageCodec[Req] =
+            config.codecFactory.ofSurface(requestSurface).asInstanceOf[MessageCodec[Req]]
+          val bytes = config.rpcEncoding.encodeWithCodec(requestBody, requestCodec)
+          config.rpcEncoding match {
+            case RPCEncoding.MsgPack =>
+              baseRequest.withMsgPack(bytes)
+            case RPCEncoding.JSON =>
+              baseRequest.withJson(bytes)
+          }
       }
     } catch {
       case e: Throwable =>
