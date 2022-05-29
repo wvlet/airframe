@@ -77,6 +77,9 @@ case class HttpClientConfig(
   def withRPCEncoding(newEncoding: RPCEncoding): HttpClientConfig = {
     this.copy(rpcEncoding = newEncoding)
   }
+  def withJSONEncoding: HttpClientConfig    = withRPCEncoding(RPCEncoding.JSON)
+  def withMsgPackEncoding: HttpClientConfig = withRPCEncoding(RPCEncoding.MsgPack)
+
   def withCodecFactory(newCodecFactory: MessageCodecFactory): HttpClientConfig =
     this.copy(codecFactory = newCodecFactory)
   def withRetryContext(filter: RetryContext => RetryContext): HttpClientConfig =

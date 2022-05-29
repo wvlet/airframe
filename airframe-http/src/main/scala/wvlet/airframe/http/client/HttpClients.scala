@@ -13,15 +13,13 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.codec
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
-import wvlet.airframe.surface.{RecordSurface, Surface}
+import wvlet.airframe.surface.Surface
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-import scala.util.control.NonFatal
 
 /**
   * A standard blocking http client interface

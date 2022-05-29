@@ -28,7 +28,10 @@ trait RPCSyncClientBase { self: SyncClient =>
       request: RequestType,
       requestFilter: Request => Request
   ): ResponseType = {
-    self.sendRPC(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[ResponseType]
+    self
+      .sendRPC(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[
+        ResponseType
+      ]
   }
 
   /**
@@ -45,18 +48,24 @@ trait RPCSyncClientBase { self: SyncClient =>
     self.sendRaw[Resp](request, Surface.of[Resp], requestFilter)
   }
 
-  inline def call[Req, Resp](request: Request, requestContent: Req, requestFilter: Request => Request = identity): Resp = {
+  inline def call[Req, Resp](
+      request: Request,
+      requestContent: Req,
+      requestFilter: Request => Request = identity
+  ): Resp = {
     self.sendRaw[Req, Resp](request, Surface.of[Req], Surface.of[Resp], requestContent, requestFilter)
   }
 }
 
-
 trait RPCAsyncClientBase { self: AsyncClient =>
   inline def rpc[RequestType, ResponseType](
-    resourcePath: String,
-    request: RequestType,
-    requestFilter: Request => Request
+      resourcePath: String,
+      request: RequestType,
+      requestFilter: Request => Request
   ): Future[ResponseType] = {
-    self.sendRPC(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[Future[ResponseType]]
+    self
+      .sendRPC(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[
+        Future[ResponseType]
+      ]
   }
 }
