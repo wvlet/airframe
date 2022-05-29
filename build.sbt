@@ -258,6 +258,7 @@ lazy val projectDotty =
       surfaceJVM,
       canvas,
       controlJVM,
+      config,
       // codec uses Scala reflection
       codecJVM,
       // fluentd,

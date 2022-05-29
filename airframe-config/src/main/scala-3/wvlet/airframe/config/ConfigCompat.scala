@@ -17,17 +17,18 @@ import wvlet.airframe.{Design, SourceCode}
 import wvlet.airframe.surface.Surface
 
 trait ConfigPackageCompat { self: ConfigurableDesign =>
-  def bindConfig[A](config: A)(implicit sourceCode: SourceCode): Design = {
-    bindConfigInternal[A](Surface.of[A], config)(sourceCode)
+  inline def bindConfig[A](config: A)(implicit sourceCode: SourceCode): Design = {
+    self.bindConfigInternal[A](Surface.of[A], config)(sourceCode)
   }
 
-  def bindConfigFromYaml[A](yamlFile: String)(implicit sourceCode: SourceCode): Design = {
-    bindConfigFromYamlInternal[A](Surface.of[A], yamlFile)(sourceCode)
+  inline def bindConfigFromYaml[A](yamlFile: String)(implicit sourceCode: SourceCode): Design = {
+    self.bindConfigFromYamlInternal[A](Surface.of[A], yamlFile)(sourceCode)
   }
-  def bindConfigFromYaml[A](yamlFile: String, defaultValue: => A)(implicit
-    sourceCode: SourceCode
+
+  inline def bindConfigFromYaml[A](yamlFile: String, defaultValue: => A)(implicit
+      sourceCode: SourceCode
   ): Design = {
-    bindConfigFromYamlInternal[A](Surface.of[A], yamlFile, defaultValue)(sourceCode)
+    self.bindConfigFromYamlInternal[A](Surface.of[A], yamlFile, defaultValue)(sourceCode)
   }
 }
 

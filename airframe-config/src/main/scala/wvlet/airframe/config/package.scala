@@ -13,10 +13,9 @@
  */
 package wvlet.airframe
 import java.util.Properties
-
 import wvlet.airframe.config.Config.REPORT_UNUSED_PROPERTIES
 import wvlet.airframe.surface.Surface
-import wvlet.log.Logger
+import wvlet.log.{LogSupport, Logger}
 
 /**
   */

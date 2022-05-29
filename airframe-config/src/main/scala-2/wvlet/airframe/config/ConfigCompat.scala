@@ -20,16 +20,16 @@ import scala.reflect.runtime.{universe => ru}
 
 trait ConfigPackageCompat { self: ConfigurableDesign =>
   def bindConfig[A: ru.TypeTag](config: A)(implicit sourceCode: SourceCode): Design = {
-    bindConfigInternal[A](Surface.of[A], config)(sourceCode)
+    self.bindConfigInternal[A](Surface.of[A], config)(sourceCode)
   }
 
   def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String)(implicit sourceCode: SourceCode): Design = {
-    bindConfigFromYamlInternal[A](Surface.of[A], yamlFile)(sourceCode)
+    self.bindConfigFromYamlInternal[A](Surface.of[A], yamlFile)(sourceCode)
   }
   def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String, defaultValue: => A)(implicit
       sourceCode: SourceCode
   ): Design = {
-    bindConfigFromYamlInternal[A](Surface.of[A], yamlFile, defaultValue)(sourceCode)
+    self.bindConfigFromYamlInternal[A](Surface.of[A], yamlFile, defaultValue)(sourceCode)
   }
 }
 
