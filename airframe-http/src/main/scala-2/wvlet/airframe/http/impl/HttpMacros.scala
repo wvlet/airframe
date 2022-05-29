@@ -44,7 +44,7 @@ object HttpMacros {
 
     val respType = implicitly[c.WeakTypeTag[Resp]]
     q"""{
-         ${c.prefix}.sendRaw[${respType}](
+         ${c.prefix}.readAsInternal[${respType}](
            ${request},
            wvlet.airframe.surface.Surface.of[${respType}],
            identity
@@ -61,7 +61,7 @@ object HttpMacros {
     val respType = implicitly[c.WeakTypeTag[Resp]]
 
     q"""{
-         ${c.prefix}.sendRaw[${respType}](
+         ${c.prefix}.readAsInternal[${respType}](
            ${request},
            wvlet.airframe.surface.Surface.of[${respType}],
            ${requestFilter}
@@ -79,7 +79,7 @@ object HttpMacros {
     val respType = implicitly[c.WeakTypeTag[Resp]]
 
     q"""{
-         ${c.prefix}.sendRaw[${reqType}](
+         ${c.prefix}.callInternal[${reqType}, ${respType}](
            ${request},
            wvlet.airframe.surface.Surface.of[${reqType}],
            wvlet.airframe.surface.Surface.of[${respType}],
@@ -100,7 +100,7 @@ object HttpMacros {
     val respType = implicitly[c.WeakTypeTag[Resp]]
 
     q"""{
-         ${c.prefix}.sendRaw[${reqType}](
+         ${c.prefix}.callInternal[${reqType}, ${respType}](
            ${request},
            wvlet.airframe.surface.Surface.of[${reqType}],
            wvlet.airframe.surface.Surface.of[${respType}],

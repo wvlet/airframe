@@ -44,16 +44,16 @@ trait RPCSyncClientBase { self: SyncClient =>
     * @throws HttpClientException
     *   if failed to read or process the response
     */
-  inline def readAs[Resp](request: Request, requestFilter: Request => Request = identity): Resp = {
-    self.sendRaw[Resp](request, Surface.of[Resp], requestFilter)
+  inline def readAs[Resp](req: Request, requestFilter: Request => Request = identity): Resp = {
+    self.readAsInternal[Resp](req, Surface.of[Resp], requestFilter)
   }
 
   inline def call[Req, Resp](
-      request: Request,
+      req: Request,
       requestContent: Req,
       requestFilter: Request => Request = identity
   ): Resp = {
-    self.sendRaw[Req, Resp](request, Surface.of[Req], Surface.of[Resp], requestContent, requestFilter)
+    self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent, requestFilter)
   }
 }
 

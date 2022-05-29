@@ -58,7 +58,7 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
     }
   }
 
-  protected def sendRaw[Resp](
+  private[client] def readAsInternal[Resp](
       req: Request,
       responseSurface: Surface,
       requestFilter: Request => Request
@@ -67,7 +67,7 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
     HttpClients.parseResponse(config, responseSurface, resp)
   }
 
-  protected def sendRaw[Req, Resp](
+  private[client] def callInternal[Req, Resp](
       req: Request,
       requestSurface: Surface,
       responseSurface: Surface,
@@ -94,7 +94,7 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
     *
     * @throws RPCException
     */
-  protected def sendRPC[Req](
+  private[client] def sendRPC[Req](
       resourcePath: String,
       requestSurface: Surface,
       requestContent: Req,
