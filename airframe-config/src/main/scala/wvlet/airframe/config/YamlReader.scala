@@ -26,22 +26,21 @@ import wvlet.airframe.surface.reflect.ReflectTypeUtil
 
 import scala.jdk.CollectionConverters._
 import scala.collection.immutable.ListMap
-import scala.reflect.runtime.{universe => ru}
 
-object YamlReader extends LogSupport {
-  def load[A: ru.TypeTag](resourcePath: String, env: String): A = {
-    val map = loadMapOf[A](resourcePath)
+object YamlReader extends YamlReaderCompat with LogSupport {
+
+  private[config] def load[A](surface: Surface, resourcePath: String, env: String): A = {
+    val map = loadMapOf[A](surface, resourcePath)
     if (!map.contains(env)) {
       throw new IllegalArgumentException(s"Env $env is not found in $resourcePath")
     }
     map(env)
   }
 
-  def loadMapOf[A: ru.TypeTag](resourcePath: String): Map[String, A] = {
+  private[config] def loadMapOf[A](surface: Surface, resourcePath: String): Map[String, A] = {
     val yaml = loadYaml(resourcePath)
     trace(s"yaml data: ${yaml.mkString(", ")}")
-    val surface: Surface = wvlet.airframe.surface.Surface.of[A]
-    val map              = ListMap.newBuilder[String, A]
+    val map = ListMap.newBuilder[String, A]
     for ((k, v) <- yaml) yield {
       map += k.toString -> bindMap[A](surface, v.asInstanceOf[ju.Map[AnyRef, AnyRef]].asScala.toMap)
     }
@@ -74,14 +73,13 @@ object YamlReader extends LogSupport {
       .toSeq
   }
 
-  def bind[A: ru.TypeTag](prop: Map[AnyRef, AnyRef]): A = {
-    bindMap(Surface.of[A], prop).asInstanceOf[A]
+  private[config] def bind[A](surface: Surface, prop: Map[AnyRef, AnyRef]): A = {
+    bindMap(surface, prop).asInstanceOf[A]
   }
 
-  def bindMap[A: ru.TypeTag](surface: Surface, prop: Map[AnyRef, AnyRef]): A = {
+  def bindMap[A](surface: Surface, prop: Map[AnyRef, AnyRef]): A = {
     val yamlMsgpack = toMsgPack(prop)
-    val surface     = Surface.of[A]
-    val codec       = MessageCodec.of[A]
+    val codec       = MessageCodec.ofSurface(surface)
     val result =
       codec.unpackMsgPack(yamlMsgpack).getOrElse(Zero.zeroOf(surface))
     trace(result)

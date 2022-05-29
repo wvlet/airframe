@@ -254,7 +254,7 @@ class ConfigTest extends AirSpec {
     val c = Config(env = "default", configPaths = configPaths)
       .register[SampleConfig](SampleConfig(1, "hello"))
       .register[SampleConfig @@ AppScope](SampleConfig(1, "hellohello").asInstanceOf[SampleConfig @@ AppScope])
-      .overrideWithProperties(p, onUnusedProperties = { p: Properties => unused = Some(p) })
+      .overrideWithProperties(p, onUnusedProperties = { (p: Properties) => unused = Some(p) })
 
     unused shouldBe defined
     unused.get.size shouldBe 1

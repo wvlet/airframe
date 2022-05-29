@@ -16,7 +16,6 @@ package wvlet.airframe.config
 import java.io.{File, FileNotFoundException, StringReader}
 import java.util.Properties
 
-import wvlet.airframe.Design
 import wvlet.airframe.DesignOptions
 import wvlet.airframe.config.PropertiesConfig.ConfigKey
 import wvlet.airframe.config.YamlReader.loadMapOf
@@ -25,7 +24,6 @@ import wvlet.log.LogSupport
 import wvlet.log.io.{IOUtil, Resource}
 
 import scala.collection.immutable.ListMap
-import scala.reflect.runtime.{universe => ru}
 
 case class ConfigHolder(tpe: Surface, value: Any)
 
@@ -68,10 +66,10 @@ object Config extends LogSupport {
     }
   }
 
-  def REPORT_UNUSED_PROPERTIES: Properties => Unit = { unused: Properties =>
+  def REPORT_UNUSED_PROPERTIES: Properties => Unit = { (unused: Properties) =>
     warn(s"There are unused properties: ${unused}")
   }
-  def REPORT_ERROR_FOR_UNUSED_PROPERTIES: Properties => Unit = { unused: Properties =>
+  def REPORT_ERROR_FOR_UNUSED_PROPERTIES: Properties => Unit = { (unused: Properties) =>
     throw new IllegalArgumentException(s"There are unused properties: ${unused}")
   }
 }
@@ -87,7 +85,8 @@ case class ConfigChange(tpe: Surface, key: ConfigKey, default: Any, current: Any
 import wvlet.airframe.config.Config._
 
 case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHolder])
-    extends Iterable[ConfigHolder]
+    extends ConfigCompat
+    with Iterable[ConfigHolder]
     with DesignOptions.AdditiveDesignOption[Config]
     with LogSupport {
   override def toString: String = printConfig
@@ -197,32 +196,30 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     b.result()
   }
 
-  private def find[A](tpe: Surface): Option[Any] = {
+  protected def find[A](tpe: Surface): Option[Any] = {
     holder.get(tpe).map(_.value)
   }
 
-  def of[ConfigType: ru.TypeTag]: ConfigType = {
-    val t = Surface.of[ConfigType]
-    find(t) match {
+  def ofSurface[ConfigType](surface: Surface): ConfigType = {
+    find(surface) match {
       case Some(x) =>
         x.asInstanceOf[ConfigType]
       case None =>
-        throw new IllegalArgumentException(s"No config value for ${t} is found")
+        throw new IllegalArgumentException(s"No config value for ${surface} is found")
     }
   }
 
-  def getOrElse[ConfigType: ru.TypeTag](default: => ConfigType): ConfigType = {
-    val t = Surface.of[ConfigType]
-    find(t) match {
+  protected def getOrElseOfSurface[ConfigType](surface: Surface, default: => ConfigType): ConfigType = {
+    find(surface) match {
       case Some(x) =>
         x.asInstanceOf[ConfigType]
       case None =>
         default
     }
   }
-  def defaultValueOf[ConfigType: ru.TypeTag]: ConfigType = {
-    val tpe = Surface.of[ConfigType]
-    getDefaultValueOf(tpe).asInstanceOf[ConfigType]
+
+  protected def defaultValueOfSurface[ConfigType](surface: Surface): ConfigType = {
+    getDefaultValueOf(surface).asInstanceOf[ConfigType]
   }
 
   def +(h: ConfigHolder): Config = Config(env, this.holder + (h.tpe -> h))
@@ -233,25 +230,17 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     Config(env, this.holder ++ other.asInstanceOf[Config].holder)
   }
 
-  def register[ConfigType: ru.TypeTag](config: ConfigType): Config = {
-    val tpe = Surface.of[ConfigType]
-    this + ConfigHolder(tpe, config)
+  def registerOfSurface[ConfigType](surface: Surface, config: ConfigType): Config = {
+    this + ConfigHolder(surface, config)
   }
 
-  /**
-    * Register the default value of the object as configuration
-    *
-    * @tparam ConfigType
-    * @return
-    */
-  def registerDefault[ConfigType: ru.TypeTag]: Config = {
-    val tpe = Surface.of[ConfigType]
-    this + ConfigHolder(tpe, defaultValueOf[ConfigType])
+  protected def registerDefaultOfSurface[ConfigType](surface: Surface): Config = {
+    this + ConfigHolder(surface, defaultValueOfSurface[ConfigType](surface))
   }
 
-  def registerFromYaml[ConfigType: ru.TypeTag](yamlFile: String): Config = {
-    val tpe = Surface.of[ConfigType]
+  def registerFromYaml[ConfigType](surface: Surface, yamlFile: String): Config = {
     val config: Option[ConfigType] = loadFromYaml[ConfigType](
+      surface,
       yamlFile,
       onMissingFile = {
         throw new FileNotFoundException(s"${yamlFile} is not found in ${env.configPaths.mkString(":")}")
@@ -259,25 +248,27 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     )
     config match {
       case Some(x) =>
-        this + ConfigHolder(tpe, x)
+        this + ConfigHolder(surface, x)
       case None =>
-        throw new IllegalArgumentException(s"No configuration for ${tpe} (${env.env} or ${env.defaultEnv}) is found")
+        throw new IllegalArgumentException(
+          s"No configuration for ${surface} (${env.env} or ${env.defaultEnv}) is found"
+        )
     }
   }
 
-  private def loadFromYaml[ConfigType: ru.TypeTag](
+  private def loadFromYaml[ConfigType](
+      surface: Surface,
       yamlFile: String,
       onMissingFile: => Option[ConfigType]
   ): Option[ConfigType] = {
-    val tpe = Surface.of[ConfigType]
     findConfigFile(yamlFile) match {
       case None =>
         onMissingFile
       case Some(realPath) =>
-        val m = loadMapOf[ConfigType](realPath)
+        val m = loadMapOf[ConfigType](surface, realPath)
         m.get(env.env) match {
           case Some(x) =>
-            info(s"Loading ${tpe} from ${realPath}, env:${env.env}")
+            info(s"Loading ${surface} from ${realPath}, env:${env.env}")
             Some(x)
           case None =>
             // Load default
@@ -285,17 +276,20 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
               s"Configuration for ${env.env} is not found in ${realPath}. Load ${env.defaultEnv} configuration instead"
             )
             m.get(env.defaultEnv).map { x =>
-              info(s"Loading ${tpe} from ${realPath}, default env:${env.defaultEnv}")
+              info(s"Loading ${surface} from ${realPath}, default env:${env.defaultEnv}")
               x
             }
         }
     }
   }
 
-  def registerFromYamlOrElse[ConfigType: ru.TypeTag](yamlFile: String, defaultValue: => ConfigType): Config = {
-    val tpe    = Surface.of[ConfigType]
-    val config = loadFromYaml[ConfigType](yamlFile, onMissingFile = Some(defaultValue))
-    this + ConfigHolder(tpe, config.get)
+  def registerFromYamlOrElse[ConfigType](
+      surface: Surface,
+      yamlFile: String,
+      defaultValue: => ConfigType
+  ): Config = {
+    val config = loadFromYaml[ConfigType](surface, yamlFile, onMissingFile = Some(defaultValue))
+    this + ConfigHolder(surface, config.get)
   }
 
   def overrideWith(
