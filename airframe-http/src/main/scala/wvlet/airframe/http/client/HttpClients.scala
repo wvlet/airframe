@@ -65,7 +65,7 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
       requestFilter: Request => Request
   ): Resp = {
     val resp: Response = send(req, requestFilter = requestFilter)
-    HttpClients.parseResponse(config, responseSurface, resp)
+    HttpClients.parseResponse[Resp](config, responseSurface, resp)
   }
 
   private[client] def callInternal[Req, Resp](
@@ -77,7 +77,7 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
   ): Resp = {
     val newRequest     = HttpClients.prepareRequest(config, req, requestSurface, requestContent)
     val resp: Response = send(newRequest, requestFilter = requestFilter)
-    HttpClients.parseResponse(config, responseSurface, resp)
+    HttpClients.parseResponse[Resp](config, responseSurface, resp)
   }
 
   /**
@@ -145,7 +145,35 @@ trait AsyncClient extends RPCAsyncClientBase with AutoCloseable {
     */
   def sendSafe(req: Request, requestFilter: Request => Request = identity): Future[Response]
 
-  protected def sendRPC[Req](
+  private[client] def readAsInternal[Resp](
+      req: Request,
+      responseSurface: Surface,
+      requestFilter: Request => Request
+  ): Future[Resp] = {
+    send(req, requestFilter = requestFilter).map { resp =>
+      HttpClients.parseResponse[Resp](config, responseSurface, resp)
+    }
+  }
+
+  private[client] def callInternal[Req, Resp](
+      req: Request,
+      requestSurface: Surface,
+      responseSurface: Surface,
+      requestContent: Req,
+      requestFilter: Request => Request
+  ): Future[Resp] = {
+    Future
+      .apply {
+        HttpClients.prepareRequest(config, req, requestSurface, requestContent)
+      }
+      .flatMap { newRequest =>
+        send(newRequest, requestFilter = requestFilter).map { resp =>
+          HttpClients.parseResponse[Resp](config, responseSurface, resp)
+        }
+      }
+  }
+
+  private[client] def sendRPC[Req](
       resourcePath: String,
       requestSurface: Surface,
       requestContent: Req,
