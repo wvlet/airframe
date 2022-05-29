@@ -18,16 +18,12 @@ import wvlet.airframe.config.Config.REPORT_UNUSED_PROPERTIES
 import wvlet.airframe.surface.Surface
 import wvlet.log.Logger
 
-import scala.language.experimental.macros
-
 /**
   */
 package object config {
   private val logger = Logger("wvlet.airframe.config")
 
-  import scala.reflect.runtime.{universe => ru}
-
-  implicit class ConfigurableDesign(d: Design) {
+  implicit class ConfigurableDesign(d: Design) extends ConfigPackageCompat {
     def showConfig: Design = {
       processConfig { c => logger.info(c.printConfig) }
     }
@@ -64,27 +60,28 @@ package object config {
       d.withConfig(currentConfig.withConfigPaths(configPaths))
     }
 
-    def bindConfig[A: ru.TypeTag](config: A)(implicit sourceCode: SourceCode): Design = {
-      val configHolder = currentConfig.register[A](config)
-      val s            = Surface.of[A]
+    private[config] def bindConfigInternal[A](surface: Surface, config: A)(implicit sourceCode: SourceCode): Design = {
+      val configHolder = currentConfig.registerOfSurface[A](surface, config)
       d.withConfig(configHolder)
-        .bind(s)(sourceCode).toInstance(config)
+        .bind(surface)(sourceCode).toInstance(config)
     }
 
-    def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String)(implicit sourceCode: SourceCode): Design = {
-      val configHolder = currentConfig.registerFromYaml[A](yamlFile)
+    private[config] def bindConfigFromYamlInternal[A](
+        surface: Surface,
+        yamlFile: String
+    )(implicit sourceCode: SourceCode): Design = {
+      val configHolder = currentConfig.registerFromYaml[A](surface, yamlFile)
       d.withConfig(configHolder)
-        .bind(Surface.of[A])(sourceCode).toInstance(configHolder.of[A])
+        .bind(surface)(sourceCode).toInstance(configHolder.ofSurface[A](surface))
     }
 
-    def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String, defaultValue: => A)(implicit
+    private[config] def bindConfigFromYamlInternal[A](surface: Surface, yamlFile: String, defaultValue: => A)(implicit
         sourceCode: SourceCode
     ): Design = {
-      val configHolder = currentConfig.registerFromYamlOrElse[A](yamlFile, defaultValue)
-      val s            = Surface.of[A]
-      val newConfig    = configHolder.of[A]
+      val configHolder = currentConfig.registerFromYamlOrElse[A](surface, yamlFile, defaultValue)
+      val newConfig    = configHolder.ofSurface[A](surface)
       d.withConfig(configHolder)
-        .bind(s)(sourceCode).toInstance(newConfig)
+        .bind(surface)(sourceCode).toInstance(newConfig)
     }
 
     /**
