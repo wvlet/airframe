@@ -13,13 +13,15 @@
  */
 package wvlet.airframe.http.client
 
+import wvlet.airframe.codec
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.surface.{RecordSurface, Surface}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import scala.util.control.NonFatal
 
 /**
   * A standard blocking http client interface
@@ -58,6 +60,27 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
     }
   }
 
+  protected def sendRaw[Resp](
+      req: Request,
+      responseSurface: Surface,
+      requestFilter: Request => Request
+  ): Resp = {
+    val resp: Response = send(req, requestFilter = requestFilter)
+    HttpClients.parseResponse(config, responseSurface, resp)
+  }
+
+  protected def sendRaw[Req, Resp](
+      req: Request,
+      requestSurface: Surface,
+      responseSurface: Surface,
+      requestContent: Req,
+      requestFilter: Request => Request
+  ): Resp = {
+    val requestBody    = HttpClients.encodeRequest[Req](config, requestSurface, requestContent)
+    val resp: Response = send(req.withContent(requestBody), requestFilter = requestFilter)
+    HttpClients.parseResponse(config, responseSurface, resp)
+  }
+
   /**
     * Send an RPC request (POST) and return the RPC response. This method will throw RPCException when an error happens
     *
@@ -93,6 +116,7 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
       throw HttpClients.parseRPCException(response)
     }
   }
+
 }
 
 /**
@@ -143,11 +167,57 @@ trait AsyncClient extends RPCAsyncClientBase with AutoCloseable {
         }
     }
   }
-
 }
 
 object HttpClients {
   private val responseBodyCodec = new HttpResponseBodyCodec[Response]
+
+  private[client] def encodeRequest[Req](
+      config: HttpClientConfig,
+      requestSurface: Surface,
+      requestBody: Req
+  ): HttpMessage.Message = {
+    try {
+      val requestCodec: MessageCodec[Req] =
+        config.codecFactory.ofSurface(requestSurface).asInstanceOf[MessageCodec[Req]]
+      val bytes = config.rpcEncoding.encodeWithCodec(requestBody, requestCodec)
+      HttpMessage.byteArrayMessage(bytes)
+    } catch {
+      case e: Throwable =>
+        throw new HttpClientException(
+          Http.response(HttpStatus.BadRequest_400),
+          HttpStatus.BadRequest_400,
+          s"Failed to encode the HTTP request body: ${requestBody}",
+          e
+        )
+    }
+  }
+
+  private[client] def parseResponse[Resp](
+      config: HttpClientConfig,
+      responseSurface: Surface,
+      resp: Response
+  ): Resp = {
+    // If the response type is Response, return as is
+    if (classOf[Response].isAssignableFrom(responseSurface.rawType)) {
+      resp.asInstanceOf[Resp]
+    } else {
+      try {
+        val msgpack        = responseBodyCodec.toMsgPack(resp)
+        val codec          = config.codecFactory.ofSurface(responseSurface)
+        val responseObject = codec.fromMsgPack(msgpack)
+        responseObject.asInstanceOf[Resp]
+      } catch {
+        case e: Throwable =>
+          throw new HttpClientException(
+            resp,
+            resp.status,
+            s"Failed to parse the response from the server: ${resp}: ${e.getMessage}",
+            e
+          )
+      }
+    }
+  }
 
   private[http] def prepareRPCRequest(
       config: HttpClientConfig,

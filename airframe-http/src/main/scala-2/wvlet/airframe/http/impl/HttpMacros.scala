@@ -20,12 +20,12 @@ import scala.reflect.macros.{blackbox => sm}
   */
 object HttpMacros {
 
-  def rpcSend[RequestType: c.WeakTypeTag, ResponseType: c.WeakTypeTag](
+  def rpcSend[Req: c.WeakTypeTag, Resp: c.WeakTypeTag](
       c: sm.Context
   )(resourcePath: c.Tree, request: c.Tree, requestFilter: c.Tree): c.Tree = {
     import c.universe._
-    val t1 = implicitly[c.WeakTypeTag[RequestType]]
-    val t2 = implicitly[c.WeakTypeTag[ResponseType]]
+    val t1 = implicitly[c.WeakTypeTag[Req]]
+    val t2 = implicitly[c.WeakTypeTag[Resp]]
     q"""{
           ${c.prefix}.sendRPC(
             ${resourcePath},
@@ -34,6 +34,79 @@ object HttpMacros {
             wvlet.airframe.surface.Surface.of[${t2}],
             ${requestFilter}
           ).asInstanceOf[${t2}]
+       }"""
+  }
+
+  def read0[Resp: c.WeakTypeTag](c: sm.Context)(
+      request: c.Tree
+  ): c.Tree = {
+    import c.universe._
+
+    val respType = implicitly[c.WeakTypeTag[Resp]]
+    q"""{
+         ${c.prefix}.sendRaw[${respType}](
+           ${request},
+           wvlet.airframe.surface.Surface.of[${respType}],
+           identity
+         )
+       }"""
+  }
+
+  def read1[Resp: c.WeakTypeTag](c: sm.Context)(
+      request: c.Tree,
+      requestFilter: c.Tree
+  ): c.Tree = {
+    import c.universe._
+
+    val respType = implicitly[c.WeakTypeTag[Resp]]
+
+    q"""{
+         ${c.prefix}.sendRaw[${respType}](
+           ${request},
+           wvlet.airframe.surface.Surface.of[${respType}],
+           ${requestFilter}
+         )
+       }"""
+  }
+
+  def call0[Req: c.WeakTypeTag, Resp: c.WeakTypeTag](c: sm.Context)(
+      request: c.Tree,
+      requestContent: c.Tree
+  ): c.Tree = {
+    import c.universe._
+
+    val reqType  = implicitly[c.WeakTypeTag[Req]]
+    val respType = implicitly[c.WeakTypeTag[Resp]]
+
+    q"""{
+         ${c.prefix}.sendRaw[${reqType}](
+           ${request},
+           wvlet.airframe.surface.Surface.of[${reqType}],
+           wvlet.airframe.surface.Surface.of[${respType}],
+           ${requestContent},
+           identity
+         )
+       }"""
+  }
+
+  def call1[Req: c.WeakTypeTag, Resp: c.WeakTypeTag](c: sm.Context)(
+      request: c.Tree,
+      requestContent: c.Tree,
+      requestFilter: c.Tree
+  ): c.Tree = {
+    import c.universe._
+
+    val reqType  = implicitly[c.WeakTypeTag[Req]]
+    val respType = implicitly[c.WeakTypeTag[Resp]]
+
+    q"""{
+         ${c.prefix}.sendRaw[${reqType}](
+           ${request},
+           wvlet.airframe.surface.Surface.of[${reqType}],
+           wvlet.airframe.surface.Surface.of[${respType}],
+           ${requestContent},
+           ${requestFilter}
+         )
        }"""
   }
 

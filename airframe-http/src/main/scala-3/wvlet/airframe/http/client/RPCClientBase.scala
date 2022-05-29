@@ -29,6 +29,14 @@ trait RPCSyncClientBase { self: SyncClient =>
   ): ResponseType = {
     self.sendRPC(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[ResponseType]
   }
+
+  inline def readAs[Resp](request: Request, requestFilter: Request => Request = identity): Resp = {
+    self.sendRaw[Resp](request, Surface.of[Resp], requestFilter)
+  }
+
+  inline def call[Req, Resp](request: Request, requestContent: Req, requestFilter: Request => Request): Resp = {
+    self.sendRaw[Req, Resp](request, Surface.of[Req], Surface.of[Resp], requestContent, requestFilter)
+  }
 }
 
 

@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.client
 
+import wvlet.airframe.http.HttpClientException
 import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http.impl.HttpMacros
 
@@ -23,11 +24,51 @@ import scala.language.experimental.macros
   * Scala 2 specific helper method to make an RPC request
   */
 trait RPCSyncClientBase { self: SyncClient =>
-  def rpc[RequestType, ResponseType](
+  def rpc[Req, Resp](
       resourcePath: String,
-      request: RequestType,
+      request: Req,
       requestFilter: Request => Request
-  ): ResponseType = macro HttpMacros.rpcSend[RequestType, ResponseType]
+  ): Resp = macro HttpMacros.rpcSend[Req, Resp]
+
+  /**
+    * Read the response as a specified type
+    * @param request
+    * @tparam Resp
+    * @return
+    *   a response translated to the specified type
+    *
+    * @throws HttpClientException
+    *   if failed to read or process the response
+    */
+  def readAs[Resp](
+      request: Request
+  ): Resp = macro HttpMacros.read0[Resp]
+
+  /**
+    * Read the response as a specified type
+    * @param request
+    * @tparam Resp
+    * @return
+    *   response translated to the specified type
+    *
+    * @throws HttpClientException
+    *   if failed to read or process the response
+    */
+  def readAs[Resp](
+      request: Request,
+      requestFilter: Request => Request
+  ): Resp = macro HttpMacros.read1[Resp]
+
+  def call[Req, Resp](
+      request: Request,
+      requestContent: Req
+  ): Resp = macro HttpMacros.call0[Req, Resp]
+
+  def call[Req, Resp](
+      request: Request,
+      requestContent: Req,
+      requestFilter: Request => Request
+  ): Resp = macro HttpMacros.call1[Req, Resp]
 }
 
 trait RPCAsyncClientBase { self: AsyncClient =>
