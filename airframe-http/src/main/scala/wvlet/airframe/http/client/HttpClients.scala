@@ -76,8 +76,8 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
       requestContent: Req,
       requestFilter: Request => Request
   ): Resp = {
-    val requestBody    = HttpClients.encodeRequest[Req](config, requestSurface, requestContent)
-    val resp: Response = send(req.withContent(requestBody), requestFilter = requestFilter)
+    val newRequest     = HttpClients.prepareRequest(config, req, requestSurface, requestContent)
+    val resp: Response = send(newRequest, requestFilter = requestFilter)
     HttpClients.parseResponse(config, responseSurface, resp)
   }
 
@@ -96,7 +96,7 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
     *
     * @throws RPCException
     */
-  def sendRPC[Req](
+  protected def sendRPC[Req](
       resourcePath: String,
       requestSurface: Surface,
       requestContent: Req,
@@ -146,7 +146,7 @@ trait AsyncClient extends RPCAsyncClientBase with AutoCloseable {
     */
   def sendSafe(req: Request, requestFilter: Request => Request = identity): Future[Response]
 
-  def sendRPC[Req](
+  protected def sendRPC[Req](
       resourcePath: String,
       requestSurface: Surface,
       requestContent: Req,
@@ -172,16 +172,22 @@ trait AsyncClient extends RPCAsyncClientBase with AutoCloseable {
 object HttpClients {
   private val responseBodyCodec = new HttpResponseBodyCodec[Response]
 
-  private[client] def encodeRequest[Req](
+  private[client] def prepareRequest[Req](
       config: HttpClientConfig,
+      baseRequest: Request,
       requestSurface: Surface,
       requestBody: Req
-  ): HttpMessage.Message = {
+  ): Request = {
     try {
       val requestCodec: MessageCodec[Req] =
         config.codecFactory.ofSurface(requestSurface).asInstanceOf[MessageCodec[Req]]
       val bytes = config.rpcEncoding.encodeWithCodec(requestBody, requestCodec)
-      HttpMessage.byteArrayMessage(bytes)
+      config.rpcEncoding match {
+        case RPCEncoding.MsgPack =>
+          baseRequest.withMsgPack(bytes)
+        case RPCEncoding.JSON =>
+          baseRequest.withJson(bytes)
+      }
     } catch {
       case e: Throwable =>
         throw new HttpClientException(
