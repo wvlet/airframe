@@ -17,14 +17,7 @@ import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
-import wvlet.airframe.http.{
-  Http,
-  HttpClientException,
-  HttpClientMaxRetryException,
-  HttpStatus,
-  RPCEncoding,
-  ServerAddress
-}
+import wvlet.airframe.http.{Http, HttpClientException, HttpClientMaxRetryException, HttpStatus, ServerAddress}
 import wvlet.airframe.json.{JSON, Json}
 import wvlet.airspec.AirSpec
 
