@@ -58,35 +58,31 @@ class TypedMetricLogger[T <: TaggedMetric](fluentdClient: MetricLogger, codec: M
 class MetricLoggerFactory(
     fluentdClient: MetricLogger,
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactory.withMapOutput
-) extends LogSupport
+) extends MetricLoggerFactoryCompat
+    with LogSupport
     with AutoCloseable {
   def getLogger: MetricLogger = fluentdClient
   def getLoggerWithTagPrefix(tagPrefix: String): MetricLogger =
     fluentdClient.withTagPrefix(tagPrefix)
 
   import scala.jdk.CollectionConverters._
-  import scala.reflect.runtime.{universe => ru}
 
   private val loggerCache = new ConcurrentHashMap[Surface, TypedMetricLogger[_]]().asScala
 
-  def getTypedLogger[T <: TaggedMetric: ru.TypeTag]: TypedMetricLogger[T] = {
+  protected def getTypedLoggerInternal[T <: TaggedMetric](
+      surface: Surface,
+      tagPrefix: Option[String]
+  ): TypedMetricLogger[T] = {
     loggerCache
       .getOrElseUpdate(
-        Surface.of[T], {
+        surface, {
           // Ensure to serialize as map type of MessagePack
-          val codec = codecFactory.withMapOutput.of[T]
-          new TypedMetricLogger[T](getLogger, codec)
-        }
-      ).asInstanceOf[TypedMetricLogger[T]]
-  }
-
-  def getTypedLoggerWithTagPrefix[T <: TaggedMetric: ru.TypeTag](tagPrefix: String): TypedMetricLogger[T] = {
-    loggerCache
-      .getOrElseUpdate(
-        Surface.of[T], {
-          // Ensure to serialize as map type of MessagePack
-          val codec = codecFactory.withMapOutput.of[T]
-          new TypedMetricLogger[T](getLoggerWithTagPrefix(tagPrefix), codec)
+          val codec = codecFactory.withMapOutput.of(surface).asInstanceOf[MessageCodec[T]]
+          val metricLogger = tagPrefix match {
+            case Some(prefix) => getLoggerWithTagPrefix(prefix)
+            case _            => getLogger
+          }
+          new TypedMetricLogger[T](metricLogger, codec)
         }
       ).asInstanceOf[TypedMetricLogger[T]]
   }
