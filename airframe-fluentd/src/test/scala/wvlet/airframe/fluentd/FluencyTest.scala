@@ -25,8 +25,8 @@ import wvlet.log.io.IOUtil
 
 case class MockFluentdConfig(port: Int)
 
-trait MockFluentd extends LogSupport {
-  lazy val socket = bind { config: MockFluentdConfig => new ServerSocket(config.port) }
+class MockFluentd(config: MockFluentdConfig) extends LogSupport {
+  private lazy val socket = new ServerSocket(config.port)
 
   val shutdown = new AtomicBoolean(false)
 
@@ -104,7 +104,7 @@ class FluencyTest extends AirSpec {
   test(
     "test extended time",
     design = fluentd.withFluentdLogger(port = fluentdPort, ackResponseMode = false, useExtendedEventTime = true)
-  ) { f: MetricLoggerFactory =>
+  ) { (f: MetricLoggerFactory) =>
     val l = f.getLogger
     l.emit("mytag", Map("data" -> "hello"))
     l.emitMsgPack("tag", Array(0xc6.toByte))

@@ -260,7 +260,7 @@ lazy val projectDotty =
       controlJVM,
       // codec uses Scala reflection
       codecJVM,
-      // fluentd,
+      fluentd,
       httpJVM,
       httpRouter,
       // // Finagle isn't supporting Scala 3
