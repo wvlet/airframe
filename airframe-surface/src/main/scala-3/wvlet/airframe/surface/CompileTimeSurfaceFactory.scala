@@ -106,7 +106,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         '{ wvlet.airframe.surface.surfaceCache.getOrElseUpdate(${ Expr(cacheKey) }, ${ expr }) }
       }
       val surface = generator(t)
-      // println(s"--- ${surface.show}")
       memo += (t -> surface)
       surface
     }
@@ -165,10 +164,18 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private def aliasFactory: Factory = {
     case t if t.typeSymbol.isType && t.typeSymbol.isAliasType && !belongsToScalaDefault(t) =>
       val dealiased = t.dealias
-      val inner = if (t != dealiased) {
-        surfaceOf(dealiased)
-      } else {
-        surfaceOf(t.simplified)
+      // t.dealias does not dealias for current implementation.
+      // This workaround attempts to extract dealiased type from AST.
+      val symbolInOwner = t.typeSymbol.maybeOwner.declarations.find(_.name.toString == t.typeSymbol.name.toString)
+      val inner = symbolInOwner.map(_.tree) match {
+        case Some(TypeDef(_, b: TypeTree)) =>
+          surfaceOf(b.tpe)
+        case _ =>
+          if (t != dealiased) {
+            surfaceOf(dealiased)
+          } else {
+            surfaceOf(t.simplified)
+          }
       }
       val s        = t.typeSymbol
       val name     = Expr(s.name)
@@ -200,13 +207,22 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     t match {
       case a: AppliedType =>
         a.args
+      // TODO: Dealiasing should be done before ?
+      case DottyTypes.TypeAlias(DottyTypes.HKTypeLambda(_, a: AppliedType)) =>
+        a.args
       case other =>
         List.empty
     }
   }
 
   private def elementTypeSurfaceOf(t: TypeRepr): Expr[Surface] = {
-    typeArgsOf(t).map(surfaceOf(_)).head
+    typeArgsOf(t).map(surfaceOf(_)).headOption match {
+      case Some(expr) =>
+        expr
+      case None =>
+        // FIXME: Is this right ?
+        '{ AnyRefSurface }
+    }
   }
 
   private def arrayFactory: Factory = {
@@ -285,6 +301,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     case a: AppliedType =>
       val typeArgs = a.args.map(surfaceOf(_))
       '{ new GenericSurface(${ clsOf(a) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
+    // special treatment for type Foo = Foo[Buz]
+    case TypeBounds(a1: AppliedType, a2: AppliedType) if a1 == a2 =>
+      val typeArgs = a1.args.map(surfaceOf(_))
+      '{ new GenericSurface(${ clsOf(a1) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
     case r: Refinement =>
       newGenericSurfaceOf(r.info)
     case t if hasStringUnapply(t) =>
@@ -504,6 +524,31 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       mod |= MethodModifier.ABSTRACT
     }
     mod
+  }
+
+  def surfaceFromClass(cl: Class[_]): Expr[Surface] = {
+    val name         = cl.getName
+    val rawType      = Class.forName(name)
+    val constructors = rawType.getConstructors
+    val (typeArgs, params) = if (constructors.nonEmpty) {
+      val primaryConstructor = constructors(0)
+      val paramSurfaces: Seq[Expr[Surface]] = primaryConstructor.getParameterTypes.map { paramType =>
+        val tastyType = quotes.reflect.TypeRepr.typeConstructorOf(paramType)
+        surfaceOf(tastyType)
+      }.toSeq
+      // FIXME: Use TastyInspector as runtime-like reflection for Scala 3
+      val params: Seq[Expr[Parameter]] = Seq.empty
+      (Expr.ofSeq(paramSurfaces), Expr.ofSeq(params))
+    } else {
+      ('{ Seq.empty[Surface] }, '{ Seq.empty[Parameter] })
+    }
+
+    '{
+      new wvlet.airframe.surface.GenericSurface(
+        rawType = Class.forName(${ Expr(name) }),
+        typeArgs = ${ typeArgs }
+      )
+    }
   }
 
 }

@@ -46,6 +46,7 @@ class RecursiveHigherKindTypeTest extends SurfaceSpec {
     assertEquals(s.isOption, false)
     assertEquals(s.dealias.toString, "Holder[BySkinny]")
 
+    assertEquals(s.typeArgs(0).name, "BySkinny")
     assertEquals(s.typeArgs(0).dealias.name, "MyTask[A]")
   }
 }

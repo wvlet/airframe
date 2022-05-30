@@ -27,9 +27,14 @@ object TastySurfaceFactory extends LogSupport {
           import quotes.reflect._
           val tastyType = quotes.reflect.TypeRepr.typeConstructorOf(cl)
           debug(tastyType)
-          val f    = new CompileTimeSurfaceFactory(using quotes)
-          val expr = f.surfaceOf(tastyType.asType)
-          expr
+          val f = new CompileTimeSurfaceFactory(using quotes)
+          tastyType match {
+            case t if t.show == "<none>.<none>" =>
+              // Example use case is MessageCodec.of[Any].
+              f.surfaceFromClass(cl)
+            case _ =>
+              f.surfaceOf(tastyType.asType)
+          }
         }
       }
     )

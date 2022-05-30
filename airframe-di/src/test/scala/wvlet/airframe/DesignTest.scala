@@ -83,8 +83,9 @@ object DesignTest extends AirSpec {
   }
 
   test("bind providers") {
+    // TODO: Remove type argument when https://github.com/wvlet/airframe/issues/2200 fixed
     val d = newSilentDesign
-      .bind[Hello].toProvider { (m: ProductionString) => Hello(m) }
+      .bind[Hello].toProvider[ProductionString] { m => Hello(m) }
       .bind[ProductionString].toInstance("hello production")
 
     d.build[Hello] { h => h.message shouldBe "hello production" }
