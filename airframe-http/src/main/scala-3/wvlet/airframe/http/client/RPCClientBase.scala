@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.client
 
+import wvlet.airframe.http.HttpClientException
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 
@@ -27,17 +28,56 @@ trait RPCSyncClientBase { self: SyncClient =>
       request: RequestType,
       requestFilter: Request => Request
   ): ResponseType = {
-    self.sendRPC(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[ResponseType]
+    self
+      .sendRPC(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[
+        ResponseType
+      ]
+  }
+
+  /**
+    * Read the response as a specified type
+    * @param request
+    * @tparam Resp
+    * @return
+    *   a response translated to the specified type
+    *
+    * @throws HttpClientException
+    *   if failed to read or process the response
+    */
+  inline def readAs[Resp](req: Request, requestFilter: Request => Request = identity): Resp = {
+    self.readAsInternal[Resp](req, Surface.of[Resp], requestFilter)
+  }
+
+  inline def call[Req, Resp](
+      req: Request,
+      requestContent: Req,
+      requestFilter: Request => Request = identity
+  ): Resp = {
+    self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent, requestFilter)
   }
 }
 
-
 trait RPCAsyncClientBase { self: AsyncClient =>
   inline def rpc[RequestType, ResponseType](
-    resourcePath: String,
-    request: RequestType,
-    requestFilter: Request => Request
+      resourcePath: String,
+      request: RequestType,
+      requestFilter: Request => Request
   ): Future[ResponseType] = {
-    self.sendRPC(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[Future[ResponseType]]
+    self
+      .sendRPC(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[
+        Future[ResponseType]
+      ]
+  }
+
+  inline def readAs[Resp](req: Request, requestFilter: Request => Request = identity): Future[Resp] = {
+    self.readAsInternal[Resp](req, Surface.of[Resp], requestFilter)
+  }
+
+  inline def call[Req, Resp](
+      req: Request,
+      requestContent: Req,
+      requestFilter: Request => Request = identity
+  ): Future[Resp] = {
+    self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent, requestFilter)
   }
 }

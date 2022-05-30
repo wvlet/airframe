@@ -93,7 +93,7 @@ object HttpBackend {
 
   object DefaultBackend extends HttpBackend[HttpMessage.Request, HttpMessage.Response, scala.concurrent.Future] {
     // TODO: Should we customize execution Context?
-    private[http] implicit lazy val executionContext: ExecutionContextExecutor = ExecutionContext.global
+    private[http] implicit lazy val executionContext: ExecutionContext = compat.defaultExecutionContext
 
     override protected implicit val httpRequestAdapter: HttpRequestAdapter[HttpMessage.Request] =
       HttpMessage.HttpMessageRequestAdapter

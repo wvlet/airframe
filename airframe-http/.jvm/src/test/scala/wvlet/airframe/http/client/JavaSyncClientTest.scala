@@ -18,7 +18,7 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
 import wvlet.airframe.http.{Http, HttpClientException, HttpClientMaxRetryException, HttpStatus, ServerAddress}
-import wvlet.airframe.json.JSON
+import wvlet.airframe.json.{JSON, Json}
 import wvlet.airspec.AirSpec
 
 class JavaSyncClientTest extends AirSpec {
@@ -29,7 +29,11 @@ class JavaSyncClientTest extends AirSpec {
   override def design: Design =
     Design.newDesign
       .bind[SyncClient].toInstance {
-        new JavaSyncClient(ServerAddress(PUBLIC_REST_SERVICE), Http.client.withRetryContext(_.withMaxRetry(1)))
+        new JavaSyncClient(
+          ServerAddress(PUBLIC_REST_SERVICE),
+          Http.client.withJSONEncoding
+            .withRetryContext(_.withMaxRetry(1))
+        )
       }
 
   test("java http sync client") { (client: SyncClient) =>
@@ -42,6 +46,18 @@ class JavaSyncClientTest extends AirSpec {
       m("args") shouldBe Map("id" -> "1", "name" -> "leo")
     }
 
+    test("readAs") {
+      val m = client.readAs[Map[String, Any]](Http.GET("/get?id=1&name=leo"))
+      m("args") shouldBe Map("id" -> "1", "name" -> "leo")
+    }
+
+    test("readAs with HttpClientException") {
+      val e = intercept[HttpClientException] {
+        client.readAs[Map[String, Any]](Http.GET("/status/404"))
+      }
+      e.status shouldBe HttpStatus.NotFound_404
+    }
+
     test("POST") {
       val data = """{"id":1,"name":"leo"}"""
       val resp = client.send(Http.POST("/post").withContent(data))
@@ -51,6 +67,21 @@ class JavaSyncClientTest extends AirSpec {
       val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
       m("data").toString shouldBe data
       m("json") shouldBe Map("id" -> 1, "name" -> "leo")
+    }
+
+    test("call") {
+      val data = """{"id":1,"name":"leo"}"""
+      val m    = client.call[Json, Map[String, Any]](Http.POST("/post"), data)
+      m("data") shouldBe data
+      m("json") shouldBe Map("id" -> 1, "name" -> "leo")
+    }
+
+    test("call with HttpClientException") {
+      val data = """{"id":1,"name":"leo"}"""
+      val e = intercept[HttpClientException] {
+        client.call[Json, Map[String, Any]](Http.POST("/status/404"), data)
+      }
+      e.status shouldBe HttpStatus.NotFound_404
     }
 
     test("404 with HttpClientException") {

@@ -295,7 +295,8 @@ object Retry extends LogSupport {
             // Wait until the next retry
             Compat.sleep(retryContext.nextWaitMillis)
           case ResultClass.Failed(_, cause, _) =>
-            circuitBreaker.recordFailure(cause)
+            // For regular non-retryable failures, we need to treat them as successful responses
+            circuitBreaker.recordSuccess
             // Non-retryable error. Exit the loop by throwing the exception
             throw cause
         }

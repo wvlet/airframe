@@ -20,7 +20,7 @@ import wvlet.airframe.http.client.SyncClient
 import java.time.{Instant, ZoneId, ZoneOffset}
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.language.higherKinds
 
 /**
@@ -30,7 +30,7 @@ object Http {
 
   // Standard HttpFilter
   abstract class Filter extends HttpFilter[Request, Response, Future] {
-    protected implicit val executorContext: ExecutionContextExecutor = DefaultBackend.executionContext
+    protected implicit lazy val executorContext: ExecutionContext = compat.defaultExecutionContext
     override protected def backend: HttpBackend[Request, Response, Future] =
       HttpBackend.DefaultBackend
   }

@@ -76,6 +76,10 @@ trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
   def withJson(json: String): Raw = {
     copyWith(HttpMessage.stringMessage(json)).asInstanceOf[HttpMessage[Raw]].withContentTypeJson
   }
+  def withJson(json: Array[Byte]): Raw = {
+    copyWith(HttpMessage.byteArrayMessage(json)).asInstanceOf[HttpMessage[Raw]].withContentTypeJson
+  }
+
   def withMsgPack(msgPack: MsgPack): Raw = {
     copyWith(HttpMessage.byteArrayMessage(msgPack)).asInstanceOf[HttpMessage[Raw]].withContentTypeMsgPack
   }

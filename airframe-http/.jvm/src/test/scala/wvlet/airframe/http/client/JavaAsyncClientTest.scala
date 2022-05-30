@@ -15,6 +15,7 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
 import wvlet.airspec.AirSpec
@@ -22,7 +23,11 @@ import wvlet.airspec.AirSpec
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class JavaAsyncClientTest extends AirSpec {
+object JavaAsyncClientTest extends AirSpec {
+
+  case class Person(id: Int, name: String)
+  private val p     = Person(1, "leo")
+  private val pJson = """{"id":1,"name":"leo"}"""
 
   private implicit val ec: ExecutionContext = defaultExecutionContext
 
@@ -34,7 +39,7 @@ class JavaAsyncClientTest extends AirSpec {
       .bind[AsyncClient].toInstance {
         new JavaSyncClient(
           ServerAddress(PUBLIC_REST_SERVICE),
-          Http.client.withRetryContext(_.withMaxRetry(1))
+          Http.client.withJSONEncoding.withRetryContext(_.withMaxRetry(1))
         ).toAsyncClient
       }
 
@@ -51,6 +56,24 @@ class JavaAsyncClientTest extends AirSpec {
         }
     }
 
+    test("call with GET") {
+      // .
+      client
+        .call[Person, Map[String, Any]](Http.GET("/get"), p)
+        .map { m =>
+          m("args") shouldBe Map("id" -> "1", "name" -> "leo")
+        }
+    }
+
+    test("call with GET") {
+      // .
+      client
+        .call[Person, Map[String, Any]](Http.GET("/get"), p, identity[Request](_))
+        .map { m =>
+          m("args") shouldBe Map("id" -> "1", "name" -> "leo")
+        }
+    }
+
     test("POST") {
       val data = """{"id":1,"name":"leo"}"""
       client.send(Http.POST("/post").withContent(data)).map { resp =>
@@ -59,6 +82,13 @@ class JavaAsyncClientTest extends AirSpec {
         val json = JSON.parse(resp.message.toContentString).toJSON
         val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
         m("data") shouldBe data
+        m("json") shouldBe Map("id" -> 1, "name" -> "leo")
+      }
+    }
+
+    test("call with POST") {
+      client.call[Person, Map[String, Any]](Http.POST("/post"), p).map { m =>
+        m("data") shouldBe pJson
         m("json") shouldBe Map("id" -> 1, "name" -> "leo")
       }
     }

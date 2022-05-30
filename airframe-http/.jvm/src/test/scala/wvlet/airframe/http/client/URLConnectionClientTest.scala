@@ -34,6 +34,7 @@ object URLConnectionClientTest extends AirSpec {
       .toInstance(
         Http.client
           .withBackend(URLConnectionClientBackend)
+          .withJSONEncoding
           .withRetryContext(_.withMaxRetry(1))
           .newSyncClient(PUBLIC_REST_SERVICE)
       )
@@ -84,20 +85,23 @@ object URLConnectionClientTest extends AirSpec {
 //      check(client.patchOps[Person, Map[String, Any]]("/post", p))
 //    }
 //
-//    test("xxxRaw") {
-//      check(client.postRaw[Person]("/post", p))
-//      check(client.putRaw[Person]("/put", p))
-//    }
-//
-//    test("getOps") {
-//      val m = client.getOps[Person, Map[String, Any]]("/get", p)
-//      m("args") shouldBe Map("id" -> "1", "name" -> "leo")
-//    }
-//
-//    test("xxxOps") {
-//      check(client.postOps[Person, Map[String, Any]]("/post", p))
-//      check(client.putOps[Person, Map[String, Any]]("/put", p))
-//    }
+    test("call with Response return value") {
+      check(client.call[Person, Response](Http.POST("/post"), p))
+      check(client.call[Person, Response](Http.PUT("/put"), p))
+    }
+
+    test("call with GET") {
+      val m = client.call[Person, Map[String, Any]](Http.GET(s"/get"), p)
+      m("args") shouldBe Map("id" -> "1", "name" -> "leo")
+    }
+
+    test("call with POST") {
+      check(client.call[Person, Map[String, Any]](Http.POST("/post"), p))
+    }
+
+    test("call with PUT") {
+      check(client.call[Person, Map[String, Any]](Http.PUT("/put"), p))
+    }
 
     test("Handle 404 (Not Found)") {
       val errorResp = client.sendSafe(Http.GET("/status/404"))
