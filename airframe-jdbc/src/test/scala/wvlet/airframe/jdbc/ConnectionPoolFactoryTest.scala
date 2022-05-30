@@ -28,17 +28,12 @@ object ConnectionPoolFactoryTest {
 
 import wvlet.airframe.jdbc.ConnectionPoolFactoryTest._
 
-trait TestConnection extends LogSupport {
+class TestConnection(connectionPoolFactory: ConnectionPoolFactory, c1: MyDbConfig1, c2: MyDbConfig2, c3: MyDbConfig3)
+    extends LogSupport {
 
-  lazy val pool1 = bind { (connectionPoolFactory: ConnectionPoolFactory, c: MyDbConfig1) =>
-    connectionPoolFactory.newConnectionPool(c)
-  }
-  lazy val pool2 = bind { (connectionPoolFactory: ConnectionPoolFactory, c: MyDbConfig2) =>
-    connectionPoolFactory.newConnectionPool(c)
-  }
-  lazy val pgPool = bind { (connectionPoolFactory: ConnectionPoolFactory, c: MyDbConfig3) =>
-    connectionPoolFactory.newConnectionPool(c.withPostgreSQLConfig(PostgreSQLConfig(useSSL = false)))
-  }
+  lazy val pool1  = connectionPoolFactory.newConnectionPool(c1)
+  lazy val pool2  = connectionPoolFactory.newConnectionPool(c2)
+  lazy val pgPool = connectionPoolFactory.newConnectionPool(c3.withPostgreSQLConfig(PostgreSQLConfig(useSSL = false)))
 
   def test(pool: ConnectionPool): Unit = {
     pool.executeUpdate("create table if not exists test(id int, name text)")
@@ -90,35 +85,33 @@ trait TestConnection extends LogSupport {
 /**
   */
 class ConnectionPoolFactoryTest extends AirSpec {
-  val d = newDesign
+
+  override def design = newDesign
     .bind[ConnectionPoolFactory].toSingleton
     .bind[MyDbConfig1].toInstance(DbConfig.ofSQLite(path = "target/test/mydb1.sqlite"))
     .bind[MyDbConfig2].toInstance(DbConfig.ofSQLite(path = "target/test/mydb2.sqlite"))
     .bind[MyDbConfig3].toInstance(DbConfig.ofPostgreSQL(database = "travis_ci_test").withUser(user = "postgres"))
-    .noLifeCycleLogging
 
-  test("use multiple SQLite configs") {
-    d.build[TestConnection] { t =>
-      t.test(t.pool1)
-      t.test(t.pool2)
-    }
+  test("use multiple SQLite configs") { (t: TestConnection) =>
+    t.test(t.pool1)
+    t.test(t.pool2)
   }
 
-  test("use PostgreSQL connection pool") {
+  test("use PostgreSQL connection pool") { (t: TestConnection) =>
     if (!inTravisCI) pending("TravisCI cannot use PostgreSQL")
 
-    d.build[TestConnection] { t => t.test(t.pgPool) }
+    t.test(t.pgPool)
   }
 
-  test("report error for unknown db type") {
+  test("report error for unknown db type") { (f: ConnectionPoolFactory) =>
     intercept[IllegalArgumentException] {
-      d.build[ConnectionPoolFactory] { f => f.newConnectionPool(DbConfig.of("superdb")) }
+      f.newConnectionPool(DbConfig.of("superdb"))
     }
   }
 
-  test("report error for missing postgresql host") {
+  test("report error for missing postgresql host") { (f: ConnectionPoolFactory) =>
     intercept[IllegalArgumentException] {
-      d.build[ConnectionPoolFactory] { f => f.newConnectionPool(DbConfig.of("postgresql")) }
+      f.newConnectionPool(DbConfig.of("postgresql"))
     }
   }
 }

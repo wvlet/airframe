@@ -88,7 +88,7 @@ DbConfig.ofPostgreSQL(
 To add more configurations to the connection pool, use `withHikariConfig(...): 
 
 ```scala
-DbConfig().withHikariConfig { c: HikariConfig =>
+DbConfig().withHikariConfig { (c: HikariConfig) =>
   // Add your configurations for HikariConfig 
   c.setIdleTimeout(...)
   c
@@ -129,12 +129,15 @@ object MultipleConnection {
 
 import MultipleConnection._
 
-trait MultipleConnection {
-  val pool1 = bind{ (p: ConnectionPoolFactory, c:MyDB1Config) => p.newConnectionPool(c) }
-  val pool2 = bind{ (p: ConnectionPoolFactory, c:MyDB2Config) => p.newConnectionPool(c) }
+class MultipleConnection(f:ConnectionPoolFactory, c1:MyDB1Config, c2: MyDB2Config) {
+  val pool1 = f.newConnectionPool(c1)
+  val pool2 = f.newConnectionPool(c2) 
 }
 
 val d = newDesign
   .bind[MyDb1Config].toInstance(DbConfig.ofSQLite(path="mydb.sqlite"))
   .bind[MyDb2Config].toInstance(DbConfig.ofPostgreSQL(database="mydatabase"))
+  
+d.build[MultipleConnection] { c => ... }
+// connections will be closed after the DI session closes   
 ``` 
