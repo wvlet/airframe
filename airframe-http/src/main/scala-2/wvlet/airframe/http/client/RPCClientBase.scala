@@ -77,4 +77,38 @@ trait RPCAsyncClientBase { self: AsyncClient =>
       request: RequestType,
       requestFilter: Request => Request
   ): Future[ResponseType] = macro HttpMacros.rpcSendAsync[RequestType, ResponseType]
+
+  /**
+    * Read the response as a specified type
+    * @param request
+    * @tparam Resp
+    * @return
+    *   a response translated to the specified type
+    */
+  def readAs[Resp](
+      request: Request
+  ): Future[Resp] = macro HttpMacros.read0Async[Resp]
+
+  /**
+    * Read the response as a specified type
+    * @param request
+    * @tparam Resp
+    * @return
+    *   response translated to the specified type
+    */
+  def readAs[Resp](
+      request: Request,
+      requestFilter: Request => Request
+  ): Future[Resp] = macro HttpMacros.read1Async[Resp]
+
+  def call[Req, Resp](
+      request: Request,
+      requestContent: Req
+  ): Future[Resp] = macro HttpMacros.call0Async[Req, Resp]
+
+  def call[Req, Resp](
+      request: Request,
+      requestContent: Req,
+      requestFilter: Request => Request
+  ): Future[Resp] = macro HttpMacros.call1Async[Req, Resp]
 }

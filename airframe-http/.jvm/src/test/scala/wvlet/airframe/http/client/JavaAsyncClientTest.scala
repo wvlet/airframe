@@ -15,6 +15,7 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
 import wvlet.airspec.AirSpec
@@ -59,6 +60,15 @@ object JavaAsyncClientTest extends AirSpec {
       // .
       client
         .call[Person, Map[String, Any]](Http.GET("/get"), p)
+        .map { m =>
+          m("args") shouldBe Map("id" -> "1", "name" -> "leo")
+        }
+    }
+
+    test("call with GET") {
+      // .
+      client
+        .call[Person, Map[String, Any]](Http.GET("/get"), p, identity[Request](_))
         .map { m =>
           m("args") shouldBe Map("id" -> "1", "name" -> "leo")
         }

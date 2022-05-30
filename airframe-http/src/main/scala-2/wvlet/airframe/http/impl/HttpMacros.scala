@@ -110,6 +110,79 @@ object HttpMacros {
        }"""
   }
 
+  def read0Async[Resp: c.WeakTypeTag](c: sm.Context)(
+      request: c.Tree
+  ): c.Tree = {
+    import c.universe._
+
+    val respType = implicitly[c.WeakTypeTag[Resp]]
+    q"""{
+         ${c.prefix}.readAsInternal[${respType}](
+           ${request},
+           wvlet.airframe.surface.Surface.of[${respType}],
+           identity
+         )
+       }"""
+  }
+
+  def read1Async[Resp: c.WeakTypeTag](c: sm.Context)(
+      request: c.Tree,
+      requestFilter: c.Tree
+  ): c.Tree = {
+    import c.universe._
+
+    val respType = implicitly[c.WeakTypeTag[Resp]]
+
+    q"""{
+         ${c.prefix}.readAsInternal[${respType}](
+           ${request},
+           wvlet.airframe.surface.Surface.of[${respType}],
+           ${requestFilter}
+         )
+       }"""
+  }
+
+  def call0Async[Req: c.WeakTypeTag, Resp: c.WeakTypeTag](c: sm.Context)(
+      request: c.Tree,
+      requestContent: c.Tree
+  ): c.Tree = {
+    import c.universe._
+
+    val reqType  = implicitly[c.WeakTypeTag[Req]]
+    val respType = implicitly[c.WeakTypeTag[Resp]]
+
+    q"""{
+         ${c.prefix}.callInternal[${reqType}, ${respType}](
+           ${request},
+           wvlet.airframe.surface.Surface.of[${reqType}],
+           wvlet.airframe.surface.Surface.of[${respType}],
+           ${requestContent},
+           identity
+         )
+       }"""
+  }
+
+  def call1Async[Req: c.WeakTypeTag, Resp: c.WeakTypeTag](c: sm.Context)(
+      request: c.Tree,
+      requestContent: c.Tree,
+      requestFilter: c.Tree
+  ): c.Tree = {
+    import c.universe._
+
+    val reqType  = implicitly[c.WeakTypeTag[Req]]
+    val respType = implicitly[c.WeakTypeTag[Resp]]
+
+    q"""{
+         ${c.prefix}.callInternal[${reqType}, ${respType}](
+           ${request},
+           wvlet.airframe.surface.Surface.of[${reqType}],
+           wvlet.airframe.surface.Surface.of[${respType}],
+           ${requestContent},
+           ${requestFilter}
+         )
+       }"""
+  }
+
   def rpcSendAsync[RequestType: c.WeakTypeTag, ResponseType: c.WeakTypeTag](
       c: sm.Context
   )(resourcePath: c.Tree, request: c.Tree, requestFilter: c.Tree): c.Tree = {

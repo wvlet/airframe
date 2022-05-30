@@ -74,9 +74,9 @@ trait RPCAsyncClientBase { self: AsyncClient =>
   }
 
   inline def call[Req, Resp](
-    req: Request,
-    requestContent: Req,
-    requestFilter: Request => Request = identity
+      req: Request,
+      requestContent: Req,
+      requestFilter: Request => Request = identity
   ): Future[Resp] = {
     self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent, requestFilter)
   }

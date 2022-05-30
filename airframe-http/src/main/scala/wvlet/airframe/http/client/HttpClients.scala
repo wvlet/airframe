@@ -16,7 +16,6 @@ package wvlet.airframe.http.client
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
-import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.airframe.surface.Surface
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -59,7 +58,7 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
     }
   }
 
-  private[client] def readAsInternal[Resp](
+  def readAsInternal[Resp](
       req: Request,
       responseSurface: Surface,
       requestFilter: Request => Request
@@ -68,7 +67,7 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
     HttpClients.parseResponse[Resp](config, responseSurface, resp)
   }
 
-  private[client] def callInternal[Req, Resp](
+  def callInternal[Req, Resp](
       req: Request,
       requestSurface: Surface,
       responseSurface: Surface,
@@ -95,7 +94,7 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
     *
     * @throws RPCException
     */
-  private[client] def sendRPC[Req](
+  def sendRPC[Req](
       resourcePath: String,
       requestSurface: Surface,
       requestContent: Req,
@@ -145,7 +144,7 @@ trait AsyncClient extends RPCAsyncClientBase with AutoCloseable {
     */
   def sendSafe(req: Request, requestFilter: Request => Request = identity): Future[Response]
 
-  private[client] def readAsInternal[Resp](
+  def readAsInternal[Resp](
       req: Request,
       responseSurface: Surface,
       requestFilter: Request => Request
@@ -155,7 +154,7 @@ trait AsyncClient extends RPCAsyncClientBase with AutoCloseable {
     }
   }
 
-  private[client] def callInternal[Req, Resp](
+  def callInternal[Req, Resp](
       req: Request,
       requestSurface: Surface,
       responseSurface: Surface,
@@ -173,7 +172,7 @@ trait AsyncClient extends RPCAsyncClientBase with AutoCloseable {
       }
   }
 
-  private[client] def sendRPC[Req](
+  def sendRPC[Req](
       resourcePath: String,
       requestSurface: Surface,
       requestContent: Req,
