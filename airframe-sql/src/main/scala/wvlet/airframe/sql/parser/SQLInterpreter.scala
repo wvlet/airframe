@@ -668,10 +668,10 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
 
   override def visitFunctionCall(ctx: FunctionCallContext): FunctionCall = {
     val name = ctx.qualifiedName().getText
-    val filter: Option[Expression] = Option(ctx.filter()).map { f: FilterContext =>
+    val filter: Option[Expression] = Option(ctx.filter()).map { (f: FilterContext) =>
       expression(f.booleanExpression())
     }
-    val over: Option[Window] = Option(ctx.over()).map { o: OverContext =>
+    val over: Option[Window] = Option(ctx.over()).map { (o: OverContext) =>
       visitOver(o)
     }
 

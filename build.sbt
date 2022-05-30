@@ -276,7 +276,7 @@ lazy val projectDotty =
       rxJVM,
       // rx-html uses Scala Macros
       rxHtmlJVM,
-      // sql,
+      sql,
       ulidJVM
     )
 
@@ -630,9 +630,8 @@ lazy val codec =
       // TODO: #1698 Avoid "illegal multithreaded access to ContextBase error" on Scala 3
       // Tests in this project are sequentially executed
       Test / parallelExecution := false,
-
-      name        := "airframe-codec",
-      description := "Airframe MessagePack-based codec"
+      name                     := "airframe-codec",
+      description              := "Airframe MessagePack-based codec"
     )
     .jvmSettings(
       libraryDependencies ++= Seq(
