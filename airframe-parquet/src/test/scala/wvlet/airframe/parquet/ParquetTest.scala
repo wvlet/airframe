@@ -42,7 +42,7 @@ object ParquetTest extends AirSpec {
   test(
     "write Parquet",
     design = newDesign.bind[Resource[File]].toInstance(Resource.newTempFile("target/tmp", ".parquet"))
-  ) { parquetFile: Resource[File] =>
+  ) { (parquetFile: Resource[File]) =>
     val file = parquetFile.get
     debug(s"Writing to ${file}")
     withResource(

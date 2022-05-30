@@ -52,7 +52,7 @@ object ParquetQueryTest extends AirSpec {
 
   case class RecordProjection(id: Int, b: Boolean)
 
-  test("SQL over Parquet") { file: Resource[File] =>
+  test("SQL over Parquet") { (file: Resource[File]) =>
     val path = file.get.getPath
     test("read all columns") {
       val reader = Parquet.query[Record](path, "select * from _")

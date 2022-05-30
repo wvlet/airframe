@@ -10,9 +10,7 @@ import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
-import scala.reflect.runtime.{universe => ru}
-
-object Parquet extends LogSupport {
+object Parquet extends ParquetCompat with LogSupport {
 
   /**
     * Create a Parquet writer that accepts records represented in Map, Array, JSON, MsgPack, etc.
@@ -34,41 +32,42 @@ object Parquet extends LogSupport {
     builder.build()
   }
 
-  def newWriter[A: ru.TypeTag](
+  def newObjectWriter[A](
+      objectSurface: Surface,
       path: String,
       // Hadoop filesystem specific configuration, e.g., fs.s3a.access.key
       hadoopConf: Configuration = new Configuration(),
       config: ParquetWriterAdapter.Builder[A] => ParquetWriterAdapter.Builder[A] =
         identity[ParquetWriterAdapter.Builder[A]](_)
   ): ParquetWriter[A] = {
-    val s       = Surface.of[A]
-    val b       = ParquetWriterAdapter.builder[A](s, path, hadoopConf)
+    val b       = ParquetWriterAdapter.builder[A](objectSurface, path, hadoopConf)
     val builder = config(b)
     builder.build()
   }
 
-  def newReader[A: ru.TypeTag](
+  def newObjectReader[A](
+      objectSurface: Surface,
       path: String,
       // Hadoop filesystem specific configuration, e.g., fs.s3a.access.key
       hadoopConf: Configuration = new Configuration(),
       config: ParquetReader.Builder[A] => ParquetReader.Builder[A] = identity[ParquetReader.Builder[A]](_)
   ): ParquetReader[A] = {
-    val s                           = Surface.of[A]
-    val b: ParquetReader.Builder[A] = ParquetReaderAdapter.builder[A](s, path, hadoopConf)
+    val b: ParquetReader.Builder[A] = ParquetReaderAdapter.builder[A](objectSurface, path, hadoopConf)
     config(b).build()
   }
 
-  def query[A: ru.TypeTag](
+  def queryObject[A](
+      objectSurface: Surface,
       path: String,
       sql: String,
       hadoopConf: Configuration = new Configuration(),
       config: ParquetReader.Builder[A] => ParquetReader.Builder[A] = identity[ParquetReader.Builder[A]](_)
   ): ParquetReader[A] = {
-    val s = Surface.of[A]
     // Read Parquet schema for resolving column types
-    val schema                      = readSchema(path)
-    val plan                        = ParquetQueryPlanner.parse(sql, schema)
-    val b: ParquetReader.Builder[A] = ParquetReaderAdapter.builder[A](s, path, conf = hadoopConf, plan = Some(plan))
+    val schema = readSchema(path)
+    val plan   = ParquetQueryPlanner.parse(sql, schema)
+    val b: ParquetReader.Builder[A] =
+      ParquetReaderAdapter.builder[A](objectSurface, path, conf = hadoopConf, plan = Some(plan))
 
     val newConf = plan.predicate match {
       case Some(pred) =>

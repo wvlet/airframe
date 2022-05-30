@@ -276,7 +276,7 @@ lazy val projectDotty =
       rxJVM,
       // rx-html uses Scala Macros
       rxHtmlJVM,
-      // sql,
+      sql,
       ulidJVM
     )
 
