@@ -31,7 +31,7 @@ class ParquetRecordWriter(schema: MessageType, knownSurfaces: Seq[Surface] = Seq
     ParquetWriteCodec.parquetCodecOf(schema, surface, ValueCodec).asRoot
   }
 
-  private val codec = new AnyCodec(knownSurfaces)
+  private val codec = new AnyCodec(knownSurfaces = knownSurfaces)
 
   def pack(obj: Any, recordConsumer: RecordConsumer): Unit = {
     val msgpack =

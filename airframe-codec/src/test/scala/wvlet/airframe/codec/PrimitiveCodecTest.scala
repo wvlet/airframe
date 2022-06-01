@@ -14,7 +14,7 @@
 package wvlet.airframe.codec
 
 import org.scalacheck.util.Pretty
-import wvlet.airframe.codec.PrimitiveCodec.LongCodec
+import wvlet.airframe.codec.PrimitiveCodec.{AnyCodec, LongCodec}
 import wvlet.airframe.json.JSON.JSONString
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.msgpack.spi.Value.StringValue
@@ -425,7 +425,7 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     if (isScalaJS) {
       pending("Scala.js doesn't support runtime reflection")
     }
-    val anyCodec = MessageCodec.of[Any]
+    val anyCodec = new AnyCodec(knownSurfaces = Seq(Surface.of[Person]))
     val json     = anyCodec.toJson(Person(1, "leo"))
     json shouldBe """{"id":1,"name":"leo"}"""
   }

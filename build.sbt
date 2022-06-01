@@ -273,6 +273,7 @@ lazy val projectDotty =
       metricsJVM,
       msgpackJVM,
       jsonJVM,
+      parquet,
       rxJVM,
       // rx-html uses Scala Macros
       rxHtmlJVM,

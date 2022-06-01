@@ -921,7 +921,10 @@ object PrimitiveCodec {
     * Another option to implement AnyCodec is packing pairs of (type, value), but we will not take this approach as this
     * will require many bytes to fully encode type names.
     */
-  class AnyCodec(knownSurfaces: Seq[Surface] = Seq.empty) extends MessageCodec[Any] {
+  class AnyCodec(
+      codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
+      knownSurfaces: Seq[Surface] = Seq.empty
+  ) extends MessageCodec[Any] {
 
     private val knownSurfaceTable = knownSurfaces.map(s => s.rawType -> s).toMap[Class[_], Surface]
 
@@ -992,10 +995,10 @@ object PrimitiveCodec {
           val cl = v.getClass
           knownSurfaceTable.get(cl) match {
             case Some(surface) =>
-              val codec = MessageCodec.ofSurface(surface).asInstanceOf[MessageCodec[Any]]
+              val codec = codecFactory.ofSurface(surface).asInstanceOf[MessageCodec[Any]]
               codec.pack(p, v)
             case None =>
-              wvlet.airframe.codec.Compat.codecOfClass(cl) match {
+              wvlet.airframe.codec.Compat.codecOfClass(cl, codecFactory) match {
                 case Some(codec) =>
                   codec.asInstanceOf[MessageCodec[Any]].pack(p, v)
                 case None =>
