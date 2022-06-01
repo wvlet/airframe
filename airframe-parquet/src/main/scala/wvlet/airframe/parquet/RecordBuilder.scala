@@ -42,6 +42,7 @@ class RecordBuilderImpl extends RecordBuilder with LogSupport {
         }
     }
   }
+
   def toMap: Map[String, Any] = {
     holder
   }

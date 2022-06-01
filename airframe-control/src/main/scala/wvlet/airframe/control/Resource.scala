@@ -25,6 +25,20 @@ trait Resource[A] extends AutoCloseable {
   def close(): Unit
 
   /**
+    * Use the resource within the limited scope. After existing the scope, the resource will be closed
+    * @param body
+    * @tparam U
+    * @return
+    */
+  def use[U](body: A => U): U = {
+    try {
+      body(get)
+    } finally {
+      close()
+    }
+  }
+
+  /**
     * Wrap a Future with this resource. After the future completes, the resource will be closed
     */
   def wrapFuture[U](body: A => Future[U])(implicit ec: ExecutionContext): Future[U] = {

@@ -19,7 +19,7 @@ import org.apache.parquet.schema.{MessageType, Type}
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecException}
 import wvlet.airframe.codec.PrimitiveCodec.{AnyCodec, ValueCodec}
 import wvlet.airframe.json.JSONParseException
-import wvlet.airframe.msgpack.spi.Value.{ArrayValue, BinaryValue, MapValue, StringValue}
+import wvlet.airframe.msgpack.spi.Value.{ArrayValue, BinaryValue, MapValue, NilValue, StringValue}
 import wvlet.airframe.msgpack.spi.{Code, MessagePack, MsgPack, Value}
 import wvlet.airframe.surface.{CName, Parameter, Surface}
 import wvlet.log.LogSupport
@@ -111,7 +111,7 @@ class ParquetSeqWriter(elementCodec: ParquetWriteCodec) extends ParquetWriteCode
         }
       case _ =>
         // Write unknown value as binary
-        val msgpack = AnyCodec.toMsgPack(v)
+        val msgpack = AnyCodec.default.toMsgPack(v)
         recordConsumer.addBinary(Binary.fromConstantByteArray(msgpack))
     }
   }
@@ -185,6 +185,8 @@ case class ParquetObjectWriter(paramWriters: Seq[ParquetFieldWriter], params: Se
       parquetCodecTable.get(columnName) match {
         case Some(parameterCodec) =>
           v match {
+            case NilValue =>
+            // skip
             case m: MapValue if m.isEmpty =>
             // skip
             case a: ArrayValue if a.isEmpty =>

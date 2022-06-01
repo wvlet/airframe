@@ -16,6 +16,8 @@ object Parquet extends ParquetCompat with LogSupport {
     * Create a Parquet writer that accepts records represented in Map, Array, JSON, MsgPack, etc.
     * @param path
     * @param schema
+    * @param knownSurfaces
+    *   surfaces of objects that will be used for wrigin records
     * @param hadoopConf
     * @param config
     * @return
@@ -23,11 +25,12 @@ object Parquet extends ParquetCompat with LogSupport {
   def newRecordWriter(
       path: String,
       schema: MessageType,
+      knownSurfaces: Seq[Surface] = Seq.empty,
       hadoopConf: Configuration = new Configuration(),
       config: ParquetWriterAdapter.RecordWriterBuilder => ParquetWriterAdapter.RecordWriterBuilder =
         identity[ParquetWriterAdapter.RecordWriterBuilder](_)
   ): ParquetWriter[Any] = {
-    val b       = ParquetWriterAdapter.recordWriterBuilder(path, schema, hadoopConf)
+    val b       = ParquetWriterAdapter.recordWriterBuilder(path, schema, knownSurfaces, hadoopConf)
     val builder = config(b)
     builder.build()
   }

@@ -66,7 +66,7 @@ val schema = new MessageType(
   Types.optional(PrimitiveTypeName.BINARY).as(stringType).named("name")
 )
 // Create a record writer for the given schema
-val recordWriter = Parquet.newRecordWriter(path = "record.parquet", schema)
+val recordWriter = Parquet.newRecordWriter(path = "record.parquet", schema = schema)
 // Write a record using Map (column name -> value)
 recordWriter.write(Map("id" -> 1, "name" -> "leo"))
 // Write a record using JSON object
@@ -75,10 +75,23 @@ recordWriter.write("""{"id":2, "name":"yui"}""")
 recordWriter.write(Seq(3, "aina"))
 // Write a record using JSON array
 recordWriter.write("""[4, "xxx"]""")
-// You can use case classes as input as well
-recordWriter.write(MyEntry(5, "yyy"))
-
 recordWriter.close()
+
+
+// In case you need to write dynamic recoreds containing case classes,
+// register the Surfaces of these classes
+case class Nested(id:Int, entry:MyEntry)
+val nestedRecordWriter = Parquet.newRecordWriter(
+  path = "nested.parquet",
+  // You can build a Parquet schema matching to Surface
+  schema = Parquet.toParquetSchema(Surface.of[Nested]),
+  knownSurfaces = Seq(Surface.of[MyEntry]) // required to serialize MyEntry
+)
+
+// Write dynamic records
+nestedRecordWriter.write(Map("id" -> 1, "entry" -> MyEntry(1, "yyy"))
+nestedRecordWriter.write(Map("id" -> 2, "entry" -> MyEntry(2, "zzz"))
+nestedRecordWriter.close()
 ```
 
 ### Using with AWS S3

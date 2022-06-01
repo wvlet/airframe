@@ -15,8 +15,9 @@ package wvlet.airframe.parquet
 
 import org.apache.parquet.io.api.RecordConsumer
 import org.apache.parquet.schema.MessageType
-import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
+import wvlet.airframe.codec.PrimitiveCodec.{AnyCodec, ValueCodec}
 import wvlet.airframe.codec.{MessageCodec, MessageCodecException}
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 /**
@@ -24,18 +25,18 @@ import wvlet.log.LogSupport
   *
   * @param schema
   */
-class ParquetRecordWriter(schema: MessageType) extends LogSupport {
+class ParquetRecordWriter(schema: MessageType, knownSurfaces: Seq[Surface] = Seq.empty) extends LogSupport {
   private val parquetCodec: ParquetWriteCodec = {
     val surface = ParquetSchema.buildSurfaceFromParquetSchema(schema)
     ParquetWriteCodec.parquetCodecOf(schema, surface, ValueCodec).asRoot
   }
 
-  private val anyCodec = MessageCodec.of[Any]
+  private val codec = new AnyCodec(knownSurfaces)
 
   def pack(obj: Any, recordConsumer: RecordConsumer): Unit = {
     val msgpack =
       try {
-        anyCodec.toMsgPack(obj)
+        codec.toMsgPack(obj)
       } catch {
         case e: MessageCodecException =>
           throw new IllegalArgumentException(s"Cannot convert the input into MsgPack: ${obj}", e)

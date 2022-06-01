@@ -41,6 +41,7 @@ trait MessageCodec[A] extends LogSupport {
     } catch {
       case e: Throwable => throw unpackError(e)
     }
+    // TODO: Check v.isNull
     v.getError match {
       case Some(err) =>
         throw unpackError(err)

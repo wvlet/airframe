@@ -22,6 +22,7 @@ import wvlet.airframe.msgpack.spi._
 import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.airframe.ulid.ULID
 
+import java.util.concurrent.ConcurrentHashMap
 import scala.util.Try
 
 /**
@@ -46,7 +47,7 @@ object PrimitiveCodec {
     // JSON types
     Surface.of[JSONValue] -> JSONValueCodec,
     Surface.of[Json]      -> RawJsonCodec,
-    Surface.of[Any]       -> AnyCodec
+    Surface.of[Any]       -> AnyCodec.default
   )
 
   val primitiveArrayCodec = Map(
@@ -872,7 +873,7 @@ object PrimitiveCodec {
     override def pack(p: Packer, v: Array[Any]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
-        AnyCodec.pack(p, x)
+        AnyCodec.default.pack(p, x)
       }
     }
     override def unpack(
@@ -884,7 +885,7 @@ object PrimitiveCodec {
         val b   = Array.newBuilder[Any]
         b.sizeHint(len)
         (0 until len).foreach { i =>
-          AnyCodec.unpack(u, v)
+          AnyCodec.default.unpack(u, v)
           if (v.isNull) {
             b += null // or report error?
           } else {
@@ -909,6 +910,10 @@ object PrimitiveCodec {
     }
   }
 
+  object AnyCodec {
+    val default: AnyCodec = new AnyCodec()
+  }
+
   /**
     * Codec for Any values. This only supports very basic types to enable packing/unpacking collections like Seq[Any],
     * Map[Any, Any] at ease.
@@ -916,7 +921,10 @@ object PrimitiveCodec {
     * Another option to implement AnyCodec is packing pairs of (type, value), but we will not take this approach as this
     * will require many bytes to fully encode type names.
     */
-  object AnyCodec extends MessageCodec[Any] {
+  class AnyCodec(knownSurfaces: Seq[Surface] = Seq.empty) extends MessageCodec[Any] {
+
+    private val knownSurfaceTable = knownSurfaces.map(s => s.rawType -> s).toMap[Class[_], Surface]
+
     override def pack(p: Packer, v: Any): Unit = {
       v match {
         case null => p.packNil
@@ -982,12 +990,18 @@ object PrimitiveCodec {
           ThrowableCodec.pack(p, v)
         case _ =>
           val cl = v.getClass
-          wvlet.airframe.codec.Compat.codecOfClass(cl) match {
-            case Some(codec) =>
-              codec.asInstanceOf[MessageCodec[Any]].pack(p, v)
+          knownSurfaceTable.get(cl) match {
+            case Some(surface) =>
+              val codec = MessageCodec.ofSurface(surface).asInstanceOf[MessageCodec[Any]]
+              codec.pack(p, v)
             case None =>
-              // Pack as a string for unknown types
-              StringCodec.pack(p, v.toString)
+              wvlet.airframe.codec.Compat.codecOfClass(cl) match {
+                case Some(codec) =>
+                  codec.asInstanceOf[MessageCodec[Any]].pack(p, v)
+                case None =>
+                  // Pack as a string for unknown types
+                  StringCodec.pack(p, v.toString)
+              }
           }
       }
     }
