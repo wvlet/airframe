@@ -23,7 +23,8 @@ object ScalaStandardCodec {
   case class OptionCodec[A](elementCodec: MessageCodec[A]) extends MessageCodec[Option[A]] {
     override def pack(p: Packer, v: Option[A]): Unit = {
       v match {
-        case None => p.packNil
+        case None =>
+          p.packNil
         case Some(x) =>
           elementCodec.pack(p, x)
       }

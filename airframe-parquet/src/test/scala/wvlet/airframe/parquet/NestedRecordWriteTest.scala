@@ -14,6 +14,7 @@
 package wvlet.airframe.parquet
 
 import wvlet.airframe.control.Control.withResource
+import wvlet.airframe.control.Resource
 import wvlet.airframe.msgpack.spi.{Value, ValueFactory}
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.ulid.ULID
@@ -109,7 +110,13 @@ object NestedRecordWriteTest extends AirSpec {
   test("write records with Option/Seq using record writer") {
     val p0 = Partition(id = ULID.newULID, metadata = Map("xxx" -> "yyy"))
     IOUtil.withTempFile("target/tmp-nested-opt-record", ".parquet") { file =>
-      withResource(Parquet.newRecordWriter(file.getPath, Parquet.toParquetSchema(Surface.of[Partition]))) { writer =>
+      withResource(
+        Parquet.newRecordWriter(
+          file.getPath,
+          Parquet.toParquetSchema(Surface.of[Partition]),
+          knownSurfaces = Seq(Surface.of[Partition])
+        )
+      ) { writer =>
         writer.write(p0)
       }
       withResource(Parquet.newReader[Partition](file.getPath)) { reader =>

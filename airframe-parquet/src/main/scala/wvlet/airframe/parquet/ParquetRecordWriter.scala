@@ -15,7 +15,7 @@ package wvlet.airframe.parquet
 
 import org.apache.parquet.io.api.RecordConsumer
 import org.apache.parquet.schema.MessageType
-import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
+import wvlet.airframe.codec.PrimitiveCodec.{AnyCodec, ValueCodec}
 import wvlet.airframe.codec.{MessageCodec, MessageCodecException}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -31,19 +31,11 @@ class ParquetRecordWriter(schema: MessageType, knownSurfaces: Seq[Surface] = Seq
     ParquetWriteCodec.parquetCodecOf(schema, surface, ValueCodec).asRoot
   }
 
-  private val codecTable = knownSurfaces
-    .map { s =>
-      s.rawType -> MessageCodec.ofSurface(s).asInstanceOf[MessageCodec[Any]]
-    }.toMap[Class[_], MessageCodec[Any]]
-  private val anyCodec = MessageCodec.of[Any]
+  private val codec = new AnyCodec(knownSurfaces)
 
   def pack(obj: Any, recordConsumer: RecordConsumer): Unit = {
     val msgpack =
       try {
-        val codec: MessageCodec[Any] = Option(obj)
-          .map(_.getClass)
-          .flatMap(cls => codecTable.get(cls))
-          .getOrElse(anyCodec)
         codec.toMsgPack(obj)
       } catch {
         case e: MessageCodecException =>

@@ -35,7 +35,7 @@ object ParquetRecordWriterTest extends AirSpec {
         writer.write(Array(2, "yui"))
         writer.write("""{"id":3, "name":"aina"}""")
         writer.write("""[4, "ruri"]""")
-        writer.write(AnyCodec.toMsgPack(Map("id" -> 5, "name" -> "xxx")))
+        writer.write(AnyCodec.default.toMsgPack(Map("id" -> 5, "name" -> "xxx")))
       }
 
       withResource(Parquet.newReader[Map[String, Any]](file.getPath)) { reader =>

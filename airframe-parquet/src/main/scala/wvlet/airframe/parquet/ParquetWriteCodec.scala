@@ -19,7 +19,15 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.{MessageType, Type}
 import org.apache.parquet.schema.Type.Repetition
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.codec.PrimitiveCodec.{BooleanCodec, DoubleCodec, FloatCodec, IntCodec, LongCodec, StringCodec}
+import wvlet.airframe.codec.PrimitiveCodec.{
+  BooleanCodec,
+  DoubleCodec,
+  FloatCodec,
+  IntCodec,
+  LongCodec,
+  StringCodec,
+  ValueCodec
+}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
