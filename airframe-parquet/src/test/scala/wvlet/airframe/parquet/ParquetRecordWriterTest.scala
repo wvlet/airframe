@@ -86,10 +86,11 @@ object ParquetRecordWriterTest extends AirSpec {
 
   test("write records with Option") {
     IOUtil.withTempFile("target/tmp-record-opt", ".parquet") { file =>
-      withResource(Parquet.newRecordWriter(file.getPath, schema2)) { writer =>
-        writer.write(RecordOpt(1, Some(1)))
-        writer.write(RecordOpt(2, None))
-        writer.write("""{"id":"3"}""")
+      withResource(Parquet.newRecordWriter(file.getPath, schema2, knownSurfaces = Seq(Surface.of[RecordOpt]))) {
+        writer =>
+          writer.write(RecordOpt(1, Some(1)))
+          writer.write(RecordOpt(2, None))
+          writer.write("""{"id":"3"}""")
       }
 
       withResource(Parquet.newReader[Map[String, Any]](file.getPath)) { reader =>

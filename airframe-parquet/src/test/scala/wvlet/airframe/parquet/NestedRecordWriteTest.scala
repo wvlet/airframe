@@ -42,7 +42,7 @@ object NestedRecordWriteTest extends AirSpec {
     debug(s"write target schema: ${schema}")
 
     IOUtil.withTempFile("target/tmp-nested-record", ".parquet") { file =>
-      withResource(Parquet.newRecordWriter(file.getPath, schema)) { writer =>
+      withResource(Parquet.newRecordWriter(file.getPath, schema, knownSurfaces = Seq(Surface.of[ColStats]))) { writer =>
         writer.write(m1)
         writer.write(m2)
       }

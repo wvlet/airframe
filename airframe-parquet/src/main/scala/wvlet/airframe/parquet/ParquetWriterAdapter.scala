@@ -47,18 +47,23 @@ object ParquetWriterAdapter extends LogSupport {
     }
   }
 
-  class RecordWriterBuilder(schema: MessageType, file: OutputFile)
+  class RecordWriterBuilder(schema: MessageType, file: OutputFile, knownSurfaces: Seq[Surface])
       extends ParquetWriter.Builder[Any, RecordWriterBuilder](file: OutputFile) {
     override def self(): RecordWriterBuilder = this
     override def getWriteSupport(conf: Configuration): WriteSupport[Any] = {
-      new ParquetRecordWriterSupportAdapter(schema)
+      new ParquetRecordWriterSupportAdapter(schema, knownSurfaces)
     }
   }
 
-  def recordWriterBuilder(path: String, schema: MessageType, conf: Configuration): RecordWriterBuilder = {
+  def recordWriterBuilder(
+      path: String,
+      schema: MessageType,
+      knownSurfaces: Seq[Surface],
+      conf: Configuration
+  ): RecordWriterBuilder = {
     val fsPath = new Path(path)
     val file   = HadoopOutputFile.fromPath(fsPath, conf)
-    val b      = new RecordWriterBuilder(schema, file).withConf(conf)
+    val b      = new RecordWriterBuilder(schema, file, knownSurfaces).withConf(conf)
     // Use snappy by default
     b.withCompressionCodec(CompressionCodecName.SNAPPY)
       .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
@@ -90,7 +95,9 @@ class ParquetWriteSupportAdapter[A](surface: Surface) extends WriteSupport[A] wi
   }
 }
 
-class ParquetRecordWriterSupportAdapter(schema: MessageType) extends WriteSupport[Any] with LogSupport {
+class ParquetRecordWriterSupportAdapter(schema: MessageType, knownSurfaces: Seq[Surface])
+    extends WriteSupport[Any]
+    with LogSupport {
   private var recordConsumer: RecordConsumer = null
 
   override def init(configuration: Configuration): WriteContext = {
@@ -102,7 +109,7 @@ class ParquetRecordWriterSupportAdapter(schema: MessageType) extends WriteSuppor
     this.recordConsumer = recordConsumer
   }
 
-  private val codec = new ParquetRecordWriter(schema)
+  private val codec = new ParquetRecordWriter(schema, knownSurfaces)
 
   override def write(record: Any): Unit = {
     require(recordConsumer != null)
