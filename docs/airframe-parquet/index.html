@@ -117,7 +117,7 @@ jsonReader.close()
   <span class="hljs-type">Types</span>.optional(<span class="hljs-type">PrimitiveTypeName</span>.<span class="hljs-type">BINARY</span>).as(stringType).named(<span class="hljs-string">"name"</span>)
 )
 <span class="hljs-comment">// Create a record writer for the given schema</span>
-<span class="hljs-keyword">val</span> recordWriter = <span class="hljs-type">Parquet</span>.newRecordWriter(path = <span class="hljs-string">"record.parquet"</span>, schema)
+<span class="hljs-keyword">val</span> recordWriter = <span class="hljs-type">Parquet</span>.newRecordWriter(path = <span class="hljs-string">"record.parquet"</span>, schema = schema)
 <span class="hljs-comment">// Write a record using Map (column name -&gt; value)</span>
 recordWriter.write(<span class="hljs-type">Map</span>(<span class="hljs-string">"id"</span> -&gt; <span class="hljs-number">1</span>, <span class="hljs-string">"name"</span> -&gt; <span class="hljs-string">"leo"</span>))
 <span class="hljs-comment">// Write a record using JSON object</span>
@@ -126,10 +126,23 @@ recordWriter.write(<span class="hljs-string">""</span><span class="hljs-string">
 recordWriter.write(<span class="hljs-type">Seq</span>(<span class="hljs-number">3</span>, <span class="hljs-string">"aina"</span>))
 <span class="hljs-comment">// Write a record using JSON array</span>
 recordWriter.write(<span class="hljs-string">""</span><span class="hljs-string">"[4, "</span><span class="hljs-string">xxx"]"</span><span class="hljs-string">""</span>)
-<span class="hljs-comment">// You can use case classes as input as well</span>
-recordWriter.write(<span class="hljs-type">MyEntry</span>(<span class="hljs-number">5</span>, <span class="hljs-string">"yyy"</span>))
-
 recordWriter.close()
+
+
+<span class="hljs-comment">// In case you need to write dynamic recoreds containing case classes,</span>
+<span class="hljs-comment">// register the Surfaces of these classes</span>
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Nested</span>(<span class="hljs-params">id:<span class="hljs-type">Int</span>, entry:<span class="hljs-type">MyEntry</span></span>)</span>
+<span class="hljs-keyword">val</span> nestedRecordWriter = <span class="hljs-type">Parquet</span>.newRecordWriter(
+  path = <span class="hljs-string">"nested.parquet"</span>,
+  <span class="hljs-comment">// You can build a Parquet schema matching to Surface</span>
+  schema = <span class="hljs-type">Parquet</span>.toParquetSchema(<span class="hljs-type">Surface</span>.of[<span class="hljs-type">Nested</span>]),
+  knownSurfaces = <span class="hljs-type">Seq</span>(<span class="hljs-type">Surface</span>.of[<span class="hljs-type">MyEntry</span>]) <span class="hljs-comment">// required to serialize MyEntry</span>
+)
+
+<span class="hljs-comment">// Write dynamic records</span>
+nestedRecordWriter.write(<span class="hljs-type">Map</span>(<span class="hljs-string">"id"</span> -&gt; <span class="hljs-number">1</span>, <span class="hljs-string">"entry"</span> -&gt; <span class="hljs-type">MyEntry</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"yyy"</span>))
+nestedRecordWriter.write(<span class="hljs-type">Map</span>(<span class="hljs-string">"id"</span> -&gt; <span class="hljs-number">2</span>, <span class="hljs-string">"entry"</span> -&gt; <span class="hljs-type">MyEntry</span>(<span class="hljs-number">2</span>, <span class="hljs-string">"zzz"</span>))
+nestedRecordWriter.close()
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="using-with-aws-s3"></a><a href="#using-with-aws-s3" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using with AWS S3</h3>
 <p>airframe-parquet uses HadoopFileSystem for reading data from S3.
