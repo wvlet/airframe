@@ -89,7 +89,7 @@ jobs:
           java-version: zulu@1.11
       - name: Scala 3.x test
         # Only use a limited number of tests until AirSpec and DI can support Scala 3
-        run: DOTTY=true ./sbt "projectDotty/compile; dottyTest/run"
+        run: DOTTY=true ./sbt "projectDotty/test; dottyTest/run"
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v2
         if: always() # always run even if the previous step fails
