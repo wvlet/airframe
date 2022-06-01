@@ -6,6 +6,47 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.6.0
+
+This version extends Scala 3 support for additional modules, including config, fluentd, http, jdbc, jmx, launcher, rx-html, sql, parquet. 
+
+From this version, we drop the support of Java 8 for improving the maintainability and for adopting new Java client of JDK11, which can be used without any additional dependencies.
+airframe-http added a new standard http client implementation (Http.client.newSync/AsyncClient), which works both in JVM and Scala.js.
+
+### Major changes
+
+- Drop Java8 support and use Java11 http client by default ([#2191](https://github.com/wvlet/airframe/issues/2191)) [[716a3fec5](https://github.com/wvlet/airframe/commit/716a3fec5)]
+- airframe-parquet: Scala 3 support ([#2211](https://github.com/wvlet/airframe/issues/2211)) [[8ef953593](https://github.com/wvlet/airframe/commit/8ef953593)]
+- airframe-sql/parquet: Scala 3 support ([#2208](https://github.com/wvlet/airframe/issues/2208)) [[90931d9ec](https://github.com/wvlet/airframe/commit/90931d9ec)]
+- airframe-jdbc: Scala 3 support ([#2207](https://github.com/wvlet/airframe/issues/2207)) [[306581c34](https://github.com/wvlet/airframe/commit/306581c34)]
+- More dotty support ([#2147](https://github.com/wvlet/airframe/issues/2147)) [[83bf966e0](https://github.com/wvlet/airframe/commit/83bf966e0)]
+- airframe-http: Add readAs[Resp], call[Req, Resp] to http clients ([#2206](https://github.com/wvlet/airframe/issues/2206)) [[5b20fca6f](https://github.com/wvlet/airframe/commit/5b20fca6f)]
+- airframe-config: Scala 3 support ([#2205](https://github.com/wvlet/airframe/issues/2205)) [[410e8d6b2](https://github.com/wvlet/airframe/commit/410e8d6b2)]
+- airframe-fluentd: Scala 3 support ([#2204](https://github.com/wvlet/airframe/issues/2204)) [[00e398d53](https://github.com/wvlet/airframe/commit/00e398d53)]
+- Upgrade to Scala 3.1.2 for AirSpec ([#2203](https://github.com/wvlet/airframe/issues/2203)) [[c27342346](https://github.com/wvlet/airframe/commit/c27342346)]
+- airframe-jmx: Scala 3 support ([#2201](https://github.com/wvlet/airframe/issues/2201)) [[0068ea079](https://github.com/wvlet/airframe/commit/0068ea079)]
+- airframe-surface: Do not traverse non-public constructor ([#2199](https://github.com/wvlet/airframe/issues/2199)) [[558e981f2](https://github.com/wvlet/airframe/commit/558e981f2)]
+- airframe-http-codegen: Scala 3 support (Fix OpenAPI generator) ([#2198](https://github.com/wvlet/airframe/issues/2198)) [[edec851b1](https://github.com/wvlet/airframe/commit/edec851b1)]
+- airframe-launcher: Scala 3 support  ([#2197](https://github.com/wvlet/airframe/issues/2197)) [[20c7cd81a](https://github.com/wvlet/airframe/commit/20c7cd81a)]
+- airframe-rx-html: Scala 3 support ([#2196](https://github.com/wvlet/airframe/issues/2196)) [[c8d7f3096](https://github.com/wvlet/airframe/commit/c8d7f3096)]
+- airframe-http-codegen: Add 'rpc' client type ([#2195](https://github.com/wvlet/airframe/issues/2195)) [[cda07225d](https://github.com/wvlet/airframe/commit/cda07225d)]
+- airframe-grpc: Fix syntax for Scala 3 ([#2193](https://github.com/wvlet/airframe/issues/2193)) [[ee60277a8](https://github.com/wvlet/airframe/commit/ee60277a8)]
+- airframe-http: Scala 3 support ([#2192](https://github.com/wvlet/airframe/issues/2192)) [[1b94fa64f](https://github.com/wvlet/airframe/commit/1b94fa64f)]
+- airframe-http: Scala 3 support [[58528d1fc](https://github.com/wvlet/airframe/commit/58528d1fc)]
+- airframe-http: Add a common Sync/AsyncClient interface for Scala JVM and Scala.js ([#2190](https://github.com/wvlet/airframe/issues/2190)) [[52c0e7e50](https://github.com/wvlet/airframe/commit/52c0e7e50)]
+- airframe-http: Add JSHttpAsyncClient ([#2189](https://github.com/wvlet/airframe/issues/2189)) [[f4660c5d8](https://github.com/wvlet/airframe/commit/f4660c5d8)]
+- airframe-http: Add sync/async HTTP clients using JDK11 HttpClient ([#2188](https://github.com/wvlet/airframe/issues/2188)) [[653ce3526](https://github.com/wvlet/airframe/commit/653ce3526)]
+- airframe-http: Add read/connect timeout settings to HttpClientConfig ([#2187](https://github.com/wvlet/airframe/issues/2187)) [[de9036e56](https://github.com/wvlet/airframe/commit/de9036e56)]
+
+### Internal changes
+
+- Run Scala 3 unit tests on CI ([#2212](https://github.com/wvlet/airframe/issues/2212)) [[8004d8a6a](https://github.com/wvlet/airframe/commit/8004d8a6a)]
+- Update sbt-sonatype to 3.9.13 ([#2186](https://github.com/wvlet/airframe/issues/2186)) [[bd5df898a](https://github.com/wvlet/airframe/commit/bd5df898a)]
+- Update postgresql to 42.3.6 ([#2184](https://github.com/wvlet/airframe/issues/2184)) [[37d09b1c2](https://github.com/wvlet/airframe/commit/37d09b1c2)]
+- Update sbt-airframe to 22.5.0 ([#2185](https://github.com/wvlet/airframe/issues/2185)) [[1e69304aa](https://github.com/wvlet/airframe/commit/1e69304aa)]
+- Update airspec to 22.5.0 ([#2183](https://github.com/wvlet/airframe/issues/2183)) [[89ab0953a](https://github.com/wvlet/airframe/commit/89ab0953a)]
+- Update auth to 2.17.197 ([#2182](https://github.com/wvlet/airframe/issues/2182)) [[f46c139da](https://github.com/wvlet/airframe/commit/f46c139da)]
+
 ## 22.5.0
 
 This version changes the behavior of AirSpec in order to support [async testing](https://wvlet.org/airframe/docs/airspec#async-testing) for tests that return `Future[_]` values. With async testing, you don't need to wait the completion of `Future[_]` objects in your test cases. This is especially useful when you need to await network responses in your Scala and Scala.js test code.  
