@@ -45,7 +45,7 @@ case class HttpClientConfig(
     connectTimeout: Duration = Duration(90, TimeUnit.SECONDS),
     // timeout applied when receiving data from the target host
     readTimeout: Duration = Duration(90, TimeUnit.SECONDS),
-    // Provide a thread executor for sending http requests and supporting Scala Future responses
+    // Provide a thread executor for managing Scala Future responses
     executionContextProvider: HttpClientConfig => ExecutionContext = { _ => compat.defaultExecutionContext },
     /**
       * For converting Future[A] to Rx[A]. Use this method when you need to add a common error handler for Rx (e.g.,

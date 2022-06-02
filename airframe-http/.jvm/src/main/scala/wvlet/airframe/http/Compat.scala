@@ -40,6 +40,7 @@ object Compat extends CompatApi {
     override def newThread(r: Runnable): Thread = {
       val threadName = s"airframe-http-${factoryId}:${threadId.getAndIncrement()}"
       val thread     = new Thread(null, r, threadName)
+      thread.setName(threadName)
       thread.setDaemon(true)
       thread
     }
