@@ -6,6 +6,22 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.6.1
+
+This is a bug fix release of airframe-http client.
+
+
+- airframe-http: Fix deadlock at http client threads ([#2223](https://github.com/wvlet/airframe/issues/2223)) [[a900e0e88](https://github.com/wvlet/airframe/commit/a900e0e88)]
+
+### Internal updates
+
+- Update scalafmt-core to 3.5.8 ([#2219](https://github.com/wvlet/airframe/issues/2219)) [[9c8ff6d1d](https://github.com/wvlet/airframe/commit/9c8ff6d1d)]
+- Update auth to 2.17.203 ([#2222](https://github.com/wvlet/airframe/issues/2222)) [[1a7ae2be6](https://github.com/wvlet/airframe/commit/1a7ae2be6)]
+- Update parquet-avro, parquet-hadoop to 1.12.3 ([#2217](https://github.com/wvlet/airframe/issues/2217)) [[ba678f5b3](https://github.com/wvlet/airframe/commit/ba678f5b3)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.47.0 ([#2214](https://github.com/wvlet/airframe/issues/2214)) [[ab5b8f35e](https://github.com/wvlet/airframe/commit/ab5b8f35e)]
+- Update trino-main to 383 ([#2215](https://github.com/wvlet/airframe/issues/2215)) [[d92939c9b](https://github.com/wvlet/airframe/commit/d92939c9b)]
+- Update protobuf-java to 3.21.1 ([#2213](https://github.com/wvlet/airframe/issues/2213)) [[93218a265](https://github.com/wvlet/airframe/commit/93218a265)]
+
 ## 22.6.0
 
 This version extends Scala 3 support for additional modules, including config, fluentd, http, jdbc, jmx, launcher, rx-html, sql, parquet. 
