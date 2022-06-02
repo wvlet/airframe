@@ -13,11 +13,11 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
+import wvlet.airframe.{Design, newDesign}
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.ExecutionContext
@@ -39,7 +39,7 @@ object JavaAsyncClientTest extends AirSpec {
       .bind[AsyncClient].toInstance {
         new JavaSyncClient(
           ServerAddress(PUBLIC_REST_SERVICE),
-          Http.client.withJSONEncoding.withRetryContext(_.withMaxRetry(1))
+          Http.client.withJSONEncoding
         ).toAsyncClient
       }
 
@@ -119,7 +119,18 @@ object JavaAsyncClientTest extends AirSpec {
         }
       }
     }
+  }
 
+  test(
+    "retry test",
+    design = newDesign.bind[AsyncClient].toInstance {
+      new JavaSyncClient(
+        ServerAddress(PUBLIC_REST_SERVICE),
+        // Setting a short retry for the testing purpose
+        Http.client.withJSONEncoding.withRetryContext(_.withMaxRetry(1))
+      ).toAsyncClient
+    }
+  ) { (client: AsyncClient) =>
     test("handle max retry") {
       client.send(Http.GET("/status/500")).transform { ret =>
         ret match {

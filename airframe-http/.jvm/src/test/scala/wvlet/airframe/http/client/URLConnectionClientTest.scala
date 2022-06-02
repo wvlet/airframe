@@ -35,7 +35,6 @@ object URLConnectionClientTest extends AirSpec {
         Http.client
           .withBackend(URLConnectionClientBackend)
           .withJSONEncoding
-          .withRetryContext(_.withMaxRetry(1))
           .newSyncClient(PUBLIC_REST_SERVICE)
       )
   }
@@ -79,12 +78,12 @@ object URLConnectionClientTest extends AirSpec {
       resp.status shouldBe HttpStatus.Ok_200
     }
 
-//    test("patch") {
-//      ignore("URLConnection doesn't support patch, so we need to use POST endpoint + X-HTTP-Method-Override header")
-//      check(client.patchRaw[Person]("/post", p))
-//      check(client.patchOps[Person, Map[String, Any]]("/post", p))
-//    }
-//
+    //    test("patch") {
+    //      ignore("URLConnection doesn't support patch, so we need to use POST endpoint + X-HTTP-Method-Override header")
+    //      check(client.patchRaw[Person]("/post", p))
+    //      check(client.patchOps[Person, Map[String, Any]]("/post", p))
+    //    }
+    //
     test("call with Response return value") {
       check(client.call[Person, Response](Http.POST("/post"), p))
       check(client.call[Person, Response](Http.PUT("/put"), p))
@@ -109,7 +108,20 @@ object URLConnectionClientTest extends AirSpec {
       errorResp.status shouldBe HttpStatus.NotFound_404
       debug(errorResp.contentString)
     }
+  }
 
+  test(
+    "retry test",
+    design = Design.newDesign
+      .bind[SyncClient]
+      .toInstance(
+        Http.client
+          .withBackend(URLConnectionClientBackend)
+          .withJSONEncoding
+          .withRetryContext(_.withMaxRetry(1))
+          .newSyncClient(PUBLIC_REST_SERVICE)
+      )
+  ) { (client: SyncClient) =>
     test("Handle 5xx retry") {
       Logger("wvlet.airframe.http.HttpClient").suppressWarnings {
         intercept[MaxRetryException] {

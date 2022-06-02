@@ -18,6 +18,7 @@ import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.control.Retry.MaxRetryException
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
+import wvlet.log.LogSupport
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.net.URI
@@ -25,7 +26,7 @@ import java.net.http.HttpClient.Redirect
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
 import java.net.http.{HttpClient, HttpRequest, HttpResponse}
-import java.util.concurrent.{Executor, ExecutorService}
+import java.util.concurrent.{Executor, ExecutorService, Executors, TimeUnit}
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
@@ -37,10 +38,12 @@ import scala.util.control.NonFatal
   * @param config
   */
 class JavaSyncClient(serverAddress: ServerAddress, private[client] val config: HttpClientConfig)
-    extends client.SyncClient {
+    extends client.SyncClient
+    with LogSupport {
 
-  private val javaHttpClient: HttpClient                          = newClient(config)
-  private val circuitBreaker: CircuitBreaker                      = config.circuitBreaker.withName(s"${serverAddress}")
+  private val javaHttpClient: HttpClient     = newClient(config)
+  private val circuitBreaker: CircuitBreaker = config.circuitBreaker.withName(s"${serverAddress}")
+  // Execution context only for async methods
   private[client] implicit val executionContext: ExecutionContext = config.newExecutionContext
 
   override def close(): Unit = {
@@ -58,10 +61,12 @@ class JavaSyncClient(serverAddress: ServerAddress, private[client] val config: H
       .newBuilder()
       .followRedirects(Redirect.NORMAL)
       .connectTimeout(java.time.Duration.ofMillis(config.connectTimeout.toMillis))
-      // Wrap Scala's ExecutionContext as Java's Executor
-      .executor(new Executor {
-        override def execute(command: Runnable): Unit = executionContext.execute(command)
-      })
+      // Note: We tried to set a custom executor here for Java HttpClient, but
+      // internally the executor will be shared between multiple HttpClients and closing the executor will block
+      // other http clients, so we do not use the custom executor here.
+      // .executor(new Executor {
+      //  override def execute(command: Runnable): Unit = executionContext.execute(command)
+      // })
       .build()
   }
 

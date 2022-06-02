@@ -32,7 +32,6 @@ class JavaSyncClientTest extends AirSpec {
         new JavaSyncClient(
           ServerAddress(PUBLIC_REST_SERVICE),
           Http.client.withJSONEncoding
-            .withRetryContext(_.withMaxRetry(1))
         )
       }
 
@@ -96,18 +95,6 @@ class JavaSyncClientTest extends AirSpec {
       resp.status shouldBe HttpStatus.NotFound_404
     }
 
-    test("handle max retry") {
-      val e = intercept[HttpClientMaxRetryException] {
-        client.send(Http.GET("/status/500"))
-      }
-      e.status.isServerError shouldBe true
-    }
-
-    test("handle max retry safely") {
-      val lastResp = client.sendSafe(Http.GET("/status/500"))
-      lastResp.status.isServerError shouldBe true
-    }
-
     test("gzip encoding") {
       val resp = client.send(Http.GET("/gzip"))
       val m    = MessageCodec.of[Map[String, Any]].fromJson(resp.contentString)
@@ -122,6 +109,27 @@ class JavaSyncClientTest extends AirSpec {
       resp.contentEncoding shouldBe Some("deflate")
     }
 
+  }
+
+  test("retry test") {
+    withResource(
+      new JavaSyncClient(
+        ServerAddress(PUBLIC_REST_SERVICE),
+        Http.client.withRetryContext(_.withMaxRetry(1))
+      )
+    ) { client =>
+      test("handle max retry") {
+        val e = intercept[HttpClientMaxRetryException] {
+          client.send(Http.GET("/status/500"))
+        }
+        e.status.isServerError shouldBe true
+      }
+
+      test("handle max retry safely") {
+        val lastResp = client.sendSafe(Http.GET("/status/500"))
+        lastResp.status.isServerError shouldBe true
+      }
+    }
   }
 
   test("circuit breaker") {
