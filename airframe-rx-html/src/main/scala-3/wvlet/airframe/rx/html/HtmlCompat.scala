@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.rx.html
 
-
 trait HtmlCompat {
+
   /**
     * Extracting the source code of rxElement for demoing purpose
     * @param rxElements
