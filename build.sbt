@@ -23,7 +23,7 @@ val FLUENCY_VERSION                 = "2.6.4"
 val GRPC_VERSION                    = "1.47.0"
 val JMH_VERSION                     = "1.35"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
-val PARQUET_VERSION                 = "1.12.2"
+val PARQUET_VERSION                 = "1.12.3"
 val SNAKE_YAML_VERSION              = "1.30"
 
 // A short cut for publishing snapshots to Sonatype
