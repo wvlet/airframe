@@ -34,7 +34,7 @@ class JSHttpAsyncClientTest extends AirSpec {
       .bind[AsyncClient].toInstance {
         new JSAsyncClient(
           ServerAddress(PUBLIC_REST_SERVICE),
-          Http.client.withRetryContext(_.withMaxRetry(1))
+          Http.client
         )
       }
 
@@ -89,7 +89,18 @@ class JSHttpAsyncClientTest extends AirSpec {
         }
       }
     }
+  }
 
+  test(
+    "retry test",
+    design = Design.newDesign
+      .bind[AsyncClient].toInstance(
+        new JSAsyncClient(
+          ServerAddress(PUBLIC_REST_SERVICE),
+          Http.client.withRetryContext(_.withMaxRetry(1))
+        )
+      )
+  ) { (client: AsyncClient) =>
     test("handle max retry") {
       client.send(Http.GET("/status/500")).transform { ret =>
         ret match {
