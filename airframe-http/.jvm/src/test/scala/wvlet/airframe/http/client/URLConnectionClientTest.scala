@@ -69,7 +69,9 @@ object URLConnectionClientTest extends AirSpec {
 
     test("user-agent") {
       val resp =
-        client.sendSafe(Http.GET("/user-agent"), _.withUserAgent("airframe-http"))
+        client
+          .withRequestFilter(_.withUserAgent("airframe-http"))
+          .sendSafe(Http.GET("/user-agent"))
       MessageCodec.of[Map[String, Any]].fromJson(resp.contentString).get("user-agent") shouldBe Some("airframe-http")
     }
 

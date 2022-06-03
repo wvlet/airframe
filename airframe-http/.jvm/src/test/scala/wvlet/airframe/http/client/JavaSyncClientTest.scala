@@ -15,9 +15,8 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
-import wvlet.airframe.http.{Http, HttpClientException, HttpClientMaxRetryException, HttpStatus, ServerAddress}
+import wvlet.airframe.http.{Http, HttpClientException, HttpClientMaxRetryException, HttpStatus}
 import wvlet.airframe.json.{JSON, Json}
 import wvlet.airspec.AirSpec
 
@@ -29,10 +28,10 @@ class JavaSyncClientTest extends AirSpec {
   override def design: Design =
     Design.newDesign
       .bind[SyncClient].toInstance {
-        new JavaSyncClient(
-          ServerAddress(PUBLIC_REST_SERVICE),
-          Http.client.withJSONEncoding
-        )
+        Http.client
+          .withBackend(JavaHttpClientBackend)
+          .withJSONEncoding
+          .newSyncClient(PUBLIC_REST_SERVICE)
       }
 
   test("java http sync client") { (client: SyncClient) =>
@@ -108,47 +107,33 @@ class JavaSyncClientTest extends AirSpec {
       m("deflated") shouldBe true
       resp.contentEncoding shouldBe Some("deflate")
     }
-
   }
 
-  test("retry test") {
-    withResource(
-      new JavaSyncClient(
-        ServerAddress(PUBLIC_REST_SERVICE),
-        Http.client.withRetryContext(_.withMaxRetry(1))
-      )
-    ) { client =>
-      test("handle max retry") {
-        val e = intercept[HttpClientMaxRetryException] {
-          client.send(Http.GET("/status/500"))
-        }
-        e.status.isServerError shouldBe true
+  test("retry test") { (client: SyncClient) =>
+    test("handle max retry") {
+      val e = intercept[HttpClientMaxRetryException] {
+        client.withRetryContext(_.withMaxRetry(1)).send(Http.GET("/status/500"))
       }
+      e.status.isServerError shouldBe true
+    }
 
-      test("handle max retry safely") {
-        val lastResp = client.sendSafe(Http.GET("/status/500"))
-        lastResp.status.isServerError shouldBe true
-      }
+    test("handle max retry safely") {
+      val lastResp = client.withRetryContext(_.withMaxRetry(1)).sendSafe(Http.GET("/status/500"))
+      lastResp.status.isServerError shouldBe true
     }
   }
 
-  test("circuit breaker") {
-    withResource(
-      new JavaSyncClient(
-        ServerAddress(PUBLIC_REST_SERVICE),
-        Http.client.withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
-      )
-    ) { client =>
-      val e = intercept[HttpClientException] {
-        client.send(Http.GET("/status/500"))
-      }
-      e.getCause match {
-        case c: CircuitBreakerOpenException =>
-        // ok
-        case other =>
-          fail(s"Unexpected failure: ${e}")
-      }
+  test("circuit breaker") { (client: SyncClient) =>
+    val e = intercept[HttpClientException] {
+      client
+        .withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
+        .send(Http.GET("/status/500"))
+    }
+    e.getCause match {
+      case c: CircuitBreakerOpenException =>
+      // ok
+      case other =>
+        fail(s"Unexpected failure: ${e}")
     }
   }
-
 }

@@ -65,17 +65,16 @@ case class HttpClientConfig(
     }
 ) {
   def newSyncClient(serverAddress: String): SyncClient =
-    new SyncClientImpl(backend.newHttpChannel(ServerAddress(serverAddress), this), this)
+    backend.newSyncClient(ServerAddress(serverAddress), this)
 
   def newAsyncClient(serverAddress: String): AsyncClient =
-    new AsyncClientImpl(backend.newHttpChannel(ServerAddress(serverAddress), this), this)
+    backend.newAsyncClient(ServerAddress(serverAddress), this)
 
   /**
     * Create a default Async client for Scala.js in web browsers
     */
-  def newJSClient: AsyncClient = {
-    new AsyncClientImpl(backend.newHttpChannel(compat.hostServerAddress, this), this)
-  }
+  def newJSClient: AsyncClient =
+    backend.newAsyncClient(compat.hostServerAddress, this)
 
   def withBackend(newBackend: HttpClientBackend): HttpClientConfig =
     this.copy(backend = newBackend)

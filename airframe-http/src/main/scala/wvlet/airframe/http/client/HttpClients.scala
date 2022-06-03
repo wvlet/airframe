@@ -64,6 +64,9 @@ trait ClientFactory[ClientImpl] {
   def withReadTimeout(duration: Duration): ClientImpl = {
     build(config.withReadTimeout(duration))
   }
+  def withCircuitBreaker(filter: CircuitBreaker => CircuitBreaker): ClientImpl = {
+    build(config.withCircuitBreaker(filter))
+  }
 }
 
 class SyncClientImpl(protected val channel: HttpChannel, protected val config: HttpClientConfig) extends SyncClient {

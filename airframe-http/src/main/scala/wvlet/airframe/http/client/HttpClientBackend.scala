@@ -23,4 +23,15 @@ trait HttpClientBackend {
   def defaultRequestRetryer: RetryContext = HttpClient.defaultHttpClientRetry[Request, Response]
 
   def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel
+
+  def newSyncClient(serverAddress: ServerAddress, clientConfig: HttpClientConfig): SyncClient = {
+    new SyncClientImpl(newHttpChannel(serverAddress, clientConfig), clientConfig)
+  }
+
+  def newAsyncClient(
+      serverAddress: ServerAddress,
+      clientConfig: HttpClientConfig
+  ): AsyncClient = {
+    new AsyncClientImpl(newHttpChannel(serverAddress, clientConfig), clientConfig)
+  }
 }
