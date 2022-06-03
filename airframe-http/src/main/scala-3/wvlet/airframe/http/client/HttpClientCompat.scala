@@ -22,16 +22,18 @@ import scala.concurrent.Future
 /**
   * Scala 3 specific helper method to make an RPC request
   */
-trait RPCSyncClientBase { self: SyncClient =>
+trait SyncClientCompat { self: SyncClient =>
   inline def rpc[RequestType, ResponseType](
       resourcePath: String,
-      request: RequestType,
-      requestFilter: Request => Request
+      request: RequestType
   ): ResponseType = {
     self
-      .sendRPC(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[
-        ResponseType
-      ]
+      .sendRPC(
+        resourcePath,
+        Surface.of[RequestType],
+        request,
+        Surface.of[ResponseType]
+      ).asInstanceOf[ResponseType]
   }
 
   /**
@@ -44,40 +46,40 @@ trait RPCSyncClientBase { self: SyncClient =>
     * @throws HttpClientException
     *   if failed to read or process the response
     */
-  inline def readAs[Resp](req: Request, requestFilter: Request => Request = identity): Resp = {
-    self.readAsInternal[Resp](req, Surface.of[Resp], requestFilter)
+  inline def readAs[Resp](req: Request): Resp = {
+    self.readAsInternal[Resp](req, Surface.of[Resp])
   }
 
   inline def call[Req, Resp](
       req: Request,
       requestContent: Req,
-      requestFilter: Request => Request = identity
   ): Resp = {
-    self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent, requestFilter)
+    self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent)
   }
 }
 
-trait RPCAsyncClientBase { self: AsyncClient =>
+trait AsyncClientCompat { self: AsyncClient =>
   inline def rpc[RequestType, ResponseType](
       resourcePath: String,
       request: RequestType,
-      requestFilter: Request => Request
   ): Future[ResponseType] = {
     self
-      .sendRPC(resourcePath, Surface.of[RequestType], request, Surface.of[ResponseType], requestFilter).asInstanceOf[
-        Future[ResponseType]
-      ]
+      .sendRPC(
+        resourcePath,
+        Surface.of[RequestType],
+        request,
+        Surface.of[ResponseType]
+      ).asInstanceOf[Future[ResponseType]]
   }
 
-  inline def readAs[Resp](req: Request, requestFilter: Request => Request = identity): Future[Resp] = {
-    self.readAsInternal[Resp](req, Surface.of[Resp], requestFilter)
+  inline def readAs[Resp](req: Request): Future[Resp] = {
+    self.readAsInternal[Resp](req, Surface.of[Resp])
   }
 
   inline def call[Req, Resp](
       req: Request,
-      requestContent: Req,
-      requestFilter: Request => Request = identity
+      requestContent: Req
   ): Future[Resp] = {
-    self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent, requestFilter)
+    self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent)
   }
 }

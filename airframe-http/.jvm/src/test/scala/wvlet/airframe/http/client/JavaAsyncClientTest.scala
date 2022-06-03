@@ -68,7 +68,7 @@ object JavaAsyncClientTest extends AirSpec {
     test("call with GET") {
       // .
       client
-        .call[Person, Map[String, Any]](Http.GET("/get"), p, identity[Request](_))
+        .call[Person, Map[String, Any]](Http.GET("/get"), p)
         .map { m =>
           m("args") shouldBe Map("id" -> "1", "name" -> "leo")
         }

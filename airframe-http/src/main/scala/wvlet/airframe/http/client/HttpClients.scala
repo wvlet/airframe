@@ -57,7 +57,7 @@ trait HttpClientBase[Impl] {
 /**
   * A standard blocking http client interface
   */
-trait SyncClient extends RPCSyncClientBase with AutoCloseable {
+trait SyncClient extends SyncClientCompat with AutoCloseable {
 
   private[client] def config: HttpClientConfig
 
@@ -73,7 +73,7 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
     * @throws HttpClientException
     *   for non-retryable error is occurred
     */
-  def send(req: Request, requestFilter: Request => Request = identity): Response
+  def send(req: Request): Response
 
   /**
     * Send an HTTP request and returns a response (or the last response if the request is retried). Unlike [[send()]],
@@ -82,9 +82,9 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
     *
     * After reaching the max retry count, it will return a the last response even for 5xx status code.
     */
-  def sendSafe(req: Request, requestFilter: Request => Request = identity): Response = {
+  def sendSafe(req: Request): Response = {
     try {
-      send(req, requestFilter)
+      send(req)
     } catch {
       case e: HttpClientException =>
         e.response.toHttpResponse
@@ -93,10 +93,9 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
 
   def readAsInternal[Resp](
       req: Request,
-      responseSurface: Surface,
-      requestFilter: Request => Request
+      responseSurface: Surface
   ): Resp = {
-    val resp: Response = send(req, requestFilter = requestFilter)
+    val resp: Response = send(req)
     HttpClients.parseResponse[Resp](config, responseSurface, resp)
   }
 
@@ -104,11 +103,10 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
       req: Request,
       requestSurface: Surface,
       responseSurface: Surface,
-      requestContent: Req,
-      requestFilter: Request => Request
+      requestContent: Req
   ): Resp = {
     val newRequest     = HttpClients.prepareRequest(config, req, requestSurface, requestContent)
-    val resp: Response = send(newRequest, requestFilter = requestFilter)
+    val resp: Response = send(newRequest)
     HttpClients.parseResponse[Resp](config, responseSurface, resp)
   }
 
@@ -131,13 +129,12 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
       resourcePath: String,
       requestSurface: Surface,
       requestContent: Req,
-      responseSurface: Surface,
-      requestFilter: Request => Request = identity
+      responseSurface: Surface
   ): Any = {
     val request: Request = HttpClients.prepareRPCRequest(config, resourcePath, requestSurface, requestContent)
 
     // sendSafe method internally handles retries and HttpClientException, and then it returns the last response
-    val response: Response = sendSafe(request, requestFilter)
+    val response: Response = sendSafe(request)
 
     // f Parse the RPC response
     if (response.status.isSuccessful) {
@@ -153,7 +150,7 @@ trait SyncClient extends RPCSyncClientBase with AutoCloseable {
 /**
   * A standard async http client interface for Scala Future
   */
-trait AsyncClient extends RPCAsyncClientBase with AutoCloseable {
+trait AsyncClient extends AsyncClientCompat with AutoCloseable {
   private[client] def config: HttpClientConfig
   private[client] implicit val executionContext: ExecutionContext
 
@@ -166,23 +163,21 @@ trait AsyncClient extends RPCAsyncClientBase with AutoCloseable {
     *
     * If it exceeds the number of max retry attempts, it will return Future[HttpClientMaxRetryException].
     */
-  def send(req: Request, requestFilter: Request => Request = identity): Future[Response]
+  def send(req: Request): Future[Response]
 
   /**
     * Send an HTTP request and returns a response (or the last response if the request is retried)
     *
     * @param req
-    * @param requestFilter
     * @return
     */
-  def sendSafe(req: Request, requestFilter: Request => Request = identity): Future[Response]
+  def sendSafe(req: Request): Future[Response]
 
   def readAsInternal[Resp](
       req: Request,
-      responseSurface: Surface,
-      requestFilter: Request => Request
+      responseSurface: Surface
   ): Future[Resp] = {
-    send(req, requestFilter = requestFilter).map { resp =>
+    send(req).map { resp =>
       HttpClients.parseResponse[Resp](config, responseSurface, resp)
     }
   }
@@ -191,15 +186,14 @@ trait AsyncClient extends RPCAsyncClientBase with AutoCloseable {
       req: Request,
       requestSurface: Surface,
       responseSurface: Surface,
-      requestContent: Req,
-      requestFilter: Request => Request
+      requestContent: Req
   ): Future[Resp] = {
     Future
       .apply {
         HttpClients.prepareRequest(config, req, requestSurface, requestContent)
       }
       .flatMap { newRequest =>
-        send(newRequest, requestFilter = requestFilter).map { resp =>
+        send(newRequest).map { resp =>
           HttpClients.parseResponse[Resp](config, responseSurface, resp)
         }
       }
@@ -209,14 +203,13 @@ trait AsyncClient extends RPCAsyncClientBase with AutoCloseable {
       resourcePath: String,
       requestSurface: Surface,
       requestContent: Req,
-      responseSurface: Surface,
-      requestFilter: Request => Request = identity
+      responseSurface: Surface
   ): Future[Any] = {
     Future {
       val request: Request = HttpClients.prepareRPCRequest(config, resourcePath, requestSurface, requestContent)
       request
     }.flatMap { (request: Request) =>
-      sendSafe(request, config.requestFilter.andThen(requestFilter))
+      sendSafe(request)
         .map { (response: Response) =>
           if (response.status.isSuccessful) {
             HttpClients.parseRPCResponse(config, response, responseSurface)

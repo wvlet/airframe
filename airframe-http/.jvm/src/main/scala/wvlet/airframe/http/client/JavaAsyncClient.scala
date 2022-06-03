@@ -27,15 +27,15 @@ class JavaAsyncClient(syncClient: JavaSyncClient) extends AsyncClient {
   private[http] def config: HttpClientConfig           = syncClient.config
   private[http] val executionContext: ExecutionContext = syncClient.executionContext
 
-  override def send(req: Request, requestFilter: Request => Request): Future[Response] = {
-    syncClient.sendAsync(req, requestFilter)
+  override def send(req: Request): Future[Response] = {
+    syncClient.sendAsync(req)
   }
 
   override def close(): Unit = {
     syncClient.close()
   }
 
-  override def sendSafe(req: Request, requestFilter: Request => Request): Future[Response] = {
-    syncClient.sendSafeAsync(req, requestFilter)
+  override def sendSafe(req: Request): Future[Response] = {
+    syncClient.sendSafeAsync(req)
   }
 }

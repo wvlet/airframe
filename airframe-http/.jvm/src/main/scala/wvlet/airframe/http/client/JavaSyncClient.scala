@@ -71,11 +71,10 @@ class JavaSyncClient(serverAddress: ServerAddress, private[client] val config: H
   }
 
   override def send(
-      req: HttpMessage.Request,
-      requestFilter: HttpMessage.Request => HttpMessage.Request
+      req: HttpMessage.Request
   ): HttpMessage.Response = {
 
-    val request = requestFilter(config.requestFilter(req))
+    val request = config.requestFilter(req)
     // New Java's HttpRequest is immutable, so we can reuse the same request instance
     val httpRequest = buildRequest(serverAddress, request, config)
 
@@ -111,20 +110,18 @@ class JavaSyncClient(serverAddress: ServerAddress, private[client] val config: H
   }
 
   def sendAsync(
-      req: HttpMessage.Request,
-      requestFilter: HttpMessage.Request => HttpMessage.Request
+      req: HttpMessage.Request
   ): Future[HttpMessage.Response] = {
     Future.apply {
-      send(req, requestFilter)
+      send(req)
     }
   }
 
   def sendSafeAsync(
-      req: HttpMessage.Request,
-      requestFilter: HttpMessage.Request => HttpMessage.Request
+      req: HttpMessage.Request
   ): Future[HttpMessage.Response] = {
     Future.apply {
-      sendSafe(req, requestFilter)
+      sendSafe(req)
     }
   }
 

@@ -29,13 +29,10 @@ import scala.jdk.CollectionConverters._
 class URLConnectionClient(serverAddress: ServerAddress, private[client] val config: HttpClientConfig)
     extends SyncClient {
 
-  override def send(
-      req: Request,
-      requestFilter: Request => Request
-  ): Response = {
+  override def send(req: Request): Response = {
 
     // Apply the default filter first and then the given custom filter
-    val request = requestFilter(config.requestFilter(req))
+    val request = config.requestFilter(req)
 
     val url = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
       else s"/${request.uri}"}"
@@ -111,11 +108,10 @@ class URLConnectionClient(serverAddress: ServerAddress, private[client] val conf
   }
 
   override def sendSafe(
-      req: Request,
-      requestFilter: Request => Request
+      req: Request
   ): Response = {
     try {
-      send(req, requestFilter)
+      send(req)
     } catch {
       case e: HttpClientException =>
         e.response.toHttpResponse

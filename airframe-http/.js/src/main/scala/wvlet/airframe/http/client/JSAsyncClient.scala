@@ -42,19 +42,15 @@ class JSAsyncClient(serverAddress: ServerAddress, private[client] val config: Ht
     // nothing to do
   }
 
-  override def send(
-      req: HttpMessage.Request,
-      requestFilter: HttpMessage.Request => HttpMessage.Request
-  ): Future[HttpMessage.Response] = {
-    val request = buildRequest(req, requestFilter)
+  override def send(req: HttpMessage.Request): Future[HttpMessage.Response] = {
+    val request = buildRequest(req)
     dispatch(config.retryContext, request)
   }
 
   override def sendSafe(
-      req: HttpMessage.Request,
-      requestFilter: HttpMessage.Request => HttpMessage.Request
+      req: HttpMessage.Request
   ): Future[HttpMessage.Response] = {
-    send(req, requestFilter).transform { ret =>
+    send(req).transform { ret =>
       ret match {
         case Failure(e: HttpClientException) =>
           Success(e.response.toHttpResponse)
@@ -64,7 +60,7 @@ class JSAsyncClient(serverAddress: ServerAddress, private[client] val config: Ht
     }
   }
 
-  private def buildRequest(request: Request, requestFilter: Request => Request): Request = {
+  private def buildRequest(request: Request): Request = {
     request
       // Apply the default filter first
       .withFilter(config.requestFilter)
@@ -77,8 +73,6 @@ class JSAsyncClient(serverAddress: ServerAddress, private[client] val config: Ht
             r.withContentTypeJson.withAcceptJson
         }
       }
-      // Lastly, apply the user-provided filter
-      .withFilter(requestFilter)
   }
 
   /**
