@@ -160,7 +160,13 @@ class JSAsyncClient(serverAddress: ServerAddress, private[client] val config: Ht
             // if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304)
             promise.success(resp)
           case ResultClass.Failed(isRetryable, cause, extraWait) =>
-            circuitBreaker.recordFailure(cause)
+            if(isRetryable) {
+              circuitBreaker.recordFailure(cause)
+            }
+            else {
+              // For regular non-retryable responses (e.g., 4xx)
+              circuitBreaker.recordSuccess
+            }
             if (!retryContext.canContinue) {
               promise.failure(HttpClientMaxRetryException(resp, retryContext, cause))
             } else if (!isRetryable) {

@@ -14,12 +14,45 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
 import wvlet.airframe.surface.Surface
 
+import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+
+
+trait HttpChannel extends AutoCloseable {
+  def send(req: Request): Response
+}
+
+trait HttpClientBase[Impl] {
+
+  protected def config: HttpClientConfig
+
+  protected def newClient(config:HttpClientConfig): Impl
+
+  def withRequestFilter(requestFilter: Request => Request): Impl = {
+    newClient(config.withRequestFilter(requestFilter))
+  }
+  def withClientFilter(filter: ClientFilter): Impl = {
+    newClient(config.withClientFilter(filter))
+  }
+  def withRetryContext(filter: RetryContext => RetryContext): Impl = {
+    newClient(config.withRetryContext(filter))
+  }
+  def withConfig(filter: HttpClientConfig => HttpClientConfig): Impl = {
+    newClient(filter(config))
+  }
+  def withConnectTimeout(duration: Duration): Impl = {
+    newClient(config.withConnectTimeout(duration))
+  }
+  def withReadTimeout(duration: Duration): Impl = {
+    newClient(config.withReadTimeout(duration))
+  }
+}
 
 /**
   * A standard blocking http client interface

@@ -109,6 +109,7 @@ class HttpClientGeneratorTest extends AirSpec {
       router,
       HttpClientGeneratorConfig("example.api:scalajs:example.api.client.js")
     )
+    debug(code)
     code.contains("package example.api.client.js") shouldBe true
     code.contains("class ServiceJSClient") shouldBe true
 

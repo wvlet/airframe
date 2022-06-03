@@ -16,7 +16,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.CircuitBreaker
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.client.{SyncClient, AsyncClient, HttpClientBackend}
+import wvlet.airframe.http.client.{AsyncClient, ClientFilter, HttpClientBackend, SyncClient}
 import wvlet.airframe.rx.{Rx, RxStream}
 
 import java.util.concurrent.TimeUnit
@@ -47,6 +47,7 @@ case class HttpClientConfig(
     readTimeout: Duration = Duration(90, TimeUnit.SECONDS),
     // Provide a thread executor for managing Scala Future responses
     executionContextProvider: HttpClientConfig => ExecutionContext = { _ => compat.defaultExecutionContext },
+    clientFilter: ClientFilter = ClientFilter.identity,
     /**
       * For converting Future[A] to Rx[A]. Use this method when you need to add a common error handler for Rx (e.g.,
       * with Rx.recover). This is mainly used in generated RPC clients for Scala.js
@@ -71,8 +72,16 @@ case class HttpClientConfig(
 
   def withBackend(newBackend: HttpClientBackend): HttpClientConfig =
     this.copy(backend = newBackend)
+
+  /**
+    * Add a custom request filter
+    * @param newRequestFilter
+    * @return
+    */
   def withRequestFilter(newRequestFilter: Request => Request): HttpClientConfig =
-    this.copy(requestFilter = newRequestFilter)
+    this.copy(requestFilter = requestFilter.andThen(newRequestFilter))
+
+  def noRequestFilter: HttpClientConfig = this.copy(requestFilter = identity)
 
   def withRPCEncoding(newEncoding: RPCEncoding): HttpClientConfig = {
     this.copy(rpcEncoding = newEncoding)
@@ -103,6 +112,16 @@ case class HttpClientConfig(
   def withReadTimeout(duration: Duration): HttpClientConfig = {
     this.copy(readTimeout = duration)
   }
+
+  /**
+    * Add a new client filter
+    * @param filter
+    * @return
+    */
+  def withClientFilter(filter: ClientFilter): HttpClientConfig = {
+    this.copy(clientFilter = clientFilter.andThen(filter))
+  }
+  def noClientFilter: HttpClientConfig = this.copy(clientFilter = ClientFilter.identity)
 
   /**
     * Set a converter from Future[A] to Rx[A]
