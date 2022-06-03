@@ -145,10 +145,8 @@ object Retry extends LogSupport {
       resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
       errorClassifier: Throwable => ResultClass.Failed = ResultClass.ALWAYS_RETRY,
       beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT
-  )
-  {
-    def init(context: Option[Any] = None): RetryContext =
-    {
+  ) {
+    def init(context: Option[Any] = None): RetryContext = {
       this.copy(
         context = context,
         lastError = NOT_STARTED,
@@ -159,8 +157,7 @@ object Retry extends LogSupport {
       )
     }
 
-    def canContinue: Boolean =
-    {
+    def canContinue: Boolean = {
       retryCount < maxRetry
     }
 
@@ -169,10 +166,9 @@ object Retry extends LogSupport {
       *
       * @param retryReason
       * @return
-      * the next retry context
+      *   the next retry context
       */
-    def nextRetry(retryReason: Throwable): RetryContext =
-    {
+    def nextRetry(retryReason: Throwable): RetryContext = {
       val nextRetryCtx = this.copy(
         lastError = retryReason,
         retryCount = retryCount + 1,
@@ -184,53 +180,45 @@ object Retry extends LogSupport {
       nextRetryCtx
     }
 
-    def withExtraWait(extraWait: ExtraWait): RetryContext =
-    {
+    def withExtraWait(extraWait: ExtraWait): RetryContext = {
       if (extraWait.hasNoWait && this.extraWaitMillis == 0) {
         this
-      }
-      else {
+      } else {
         this.copy(extraWaitMillis = extraWait.extraWaitMillis(nextWaitMillis))
       }
     }
 
-    def withRetryWaitStrategy(newRetryWaitStrategy: RetryPolicy): RetryContext =
-    {
+    def withRetryWaitStrategy(newRetryWaitStrategy: RetryPolicy): RetryContext = {
       this.copy(retryWaitStrategy = newRetryWaitStrategy)
     }
 
-    def withMaxRetry(newMaxRetry: Int): RetryContext =
-    {
+    def withMaxRetry(newMaxRetry: Int): RetryContext = {
       this.copy(maxRetry = newMaxRetry)
     }
 
-    def noRetry: RetryContext =
-    {
+    def noRetry: RetryContext = {
       this.copy(maxRetry = 0)
     }
 
     def withBackOff(
-            initialIntervalMillis: Int = 100,
-            maxIntervalMillis: Int = 15000,
-            multiplier: Double = 1.5
-    ): RetryContext =
-    {
+        initialIntervalMillis: Int = 100,
+        maxIntervalMillis: Int = 15000,
+        multiplier: Double = 1.5
+    ): RetryContext = {
       val config = RetryPolicyConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
       this.copy(retryWaitStrategy = new ExponentialBackOff(config))
     }
 
     def withJitter(
-            initialIntervalMillis: Int = 100,
-            maxIntervalMillis: Int = 15000,
-            multiplier: Double = 1.5
-    ): RetryContext =
-    {
+        initialIntervalMillis: Int = 100,
+        maxIntervalMillis: Int = 15000,
+        multiplier: Double = 1.5
+    ): RetryContext = {
       val config = RetryPolicyConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
       this.copy(retryWaitStrategy = new Jitter(config))
     }
 
-    def withResultClassifier[U](newResultClassifier: U => ResultClass): RetryContext =
-    {
+    def withResultClassifier[U](newResultClassifier: U => ResultClass): RetryContext = {
       this.copy(resultClassifier = newResultClassifier.asInstanceOf[Any => ResultClass])
     }
 
@@ -238,21 +226,18 @@ object Retry extends LogSupport {
       * Set a detailed error handler upon Exception. If the given exception is not retryable, just rethrow the
       * exception. Otherwise, consume the exception.
       */
-    def withErrorClassifier(errorClassifier: Throwable => ResultClass.Failed): RetryContext =
-    {
+    def withErrorClassifier(errorClassifier: Throwable => ResultClass.Failed): RetryContext = {
       this.copy(errorClassifier = errorClassifier)
     }
 
-    def beforeRetry[U](handler: RetryContext => U): RetryContext =
-    {
+    def beforeRetry[U](handler: RetryContext => U): RetryContext = {
       this.copy(beforeRetryAction = handler)
     }
 
     /**
       * Clear the default beforeRetry action
       */
-    def noRetryLogging: RetryContext =
-    {
+    def noRetryLogging: RetryContext = {
       this.copy(beforeRetryAction = { (x: RetryContext) => })
     }
 
@@ -262,23 +247,19 @@ object Retry extends LogSupport {
       * @param errorClassifier
       * @return
       */
-    def retryOn(errorClassifier: PartialFunction[Throwable, ResultClass.Failed]): RetryContext =
-    {
+    def retryOn(errorClassifier: PartialFunction[Throwable, ResultClass.Failed]): RetryContext = {
       this.copy(errorClassifier = { (e: Throwable) => errorClassifier.applyOrElse(e, RETHROW_ALL) })
     }
 
-    def run[A](body: => A): A =
-    {
+    def run[A](body: => A): A = {
       runInternal(None)(body)
     }
 
-    def runWithContext[A](context: Any, circuitBreaker: CircuitBreaker = CircuitBreaker.alwaysClosed)(body: => A): A =
-    {
+    def runWithContext[A](context: Any, circuitBreaker: CircuitBreaker = CircuitBreaker.alwaysClosed)(body: => A): A = {
       runInternal(Option(context), circuitBreaker)(body)
     }
 
-    private def classifyResult[A](result: A): ResultClass =
-    {
+    private def classifyResult[A](result: A): ResultClass = {
       val resultClass = result match {
         case Success(x) =>
           // Test whether the code block execution is succeeded or failed
@@ -292,10 +273,9 @@ object Retry extends LogSupport {
     }
 
     protected def runInternal[A](context: Option[Any], circuitBreaker: CircuitBreaker = CircuitBreaker.alwaysClosed)(
-            body: => A
-    ): A =
-    {
-      var result: Option[A] = None
+        body: => A
+    ): A = {
+      var result: Option[A]          = None
       var retryContext: RetryContext = init(context)
 
       var isFirst: Boolean = true
@@ -335,38 +315,40 @@ object Retry extends LogSupport {
       }
     }
 
-    def runAsyncWithContext[A](context: Any, circuitBreaker: CircuitBreaker = CircuitBreaker.alwaysClosed)(body: => Future[A])(implicit ec: ExecutionContext): Future[A] = {
+    def runAsyncWithContext[A](context: Any, circuitBreaker: CircuitBreaker = CircuitBreaker.alwaysClosed)(
+        body: => Future[A]
+    )(implicit ec: ExecutionContext): Future[A] = {
       def loop(retryContext: RetryContext, isFirst: Boolean): Future[A] = {
         if (!isFirst && !retryContext.canContinue) {
           Future.failed(MaxRetryException(retryContext))
-        }
-        else {
-          Future.apply {
-            circuitBreaker.verifyConnection
-          }.flatMap { _ =>
-            body
-          }.transformWith { ret: Try[A] =>
-            val resultClass = classifyResult(ret)
-            resultClass match {
-              case ResultClass.Succeeded =>
-                circuitBreaker.recordSuccess
-                // Exit the loop
-                Future.fromTry(ret)
-              case ResultClass.Failed(isRetryable, cause, extraWait) if isRetryable =>
-                // Retryable error
-                circuitBreaker.recordFailure(cause)
-                // Add retry wait
-                val nextRetry = retryContext.withExtraWait(extraWait).nextRetry(cause)
-                Compat.scheduleAsync(nextRetry.nextWaitMillis) {
-                  loop(nextRetry, isFirst = false)
-                }
-              case ResultClass.Failed(_, cause, _) =>
-                // For regular non-retryable failures, we need to treat them as successful responses
-                circuitBreaker.recordSuccess
-                // Non-retryable error. Exit the loop with the exception
-                Future.failed(cause)
+        } else {
+          Future
+            .apply {
+              circuitBreaker.verifyConnection
+            }.flatMap { _ =>
+              body
+            }.transformWith { ret: Try[A] =>
+              val resultClass = classifyResult(ret)
+              resultClass match {
+                case ResultClass.Succeeded =>
+                  circuitBreaker.recordSuccess
+                  // Exit the loop
+                  Future.fromTry(ret)
+                case ResultClass.Failed(isRetryable, cause, extraWait) if isRetryable =>
+                  // Retryable error
+                  circuitBreaker.recordFailure(cause)
+                  // Add retry wait
+                  val nextRetry = retryContext.withExtraWait(extraWait).nextRetry(cause)
+                  Compat.scheduleAsync(nextRetry.nextWaitMillis) {
+                    loop(nextRetry, isFirst = false)
+                  }
+                case ResultClass.Failed(_, cause, _) =>
+                  // For regular non-retryable failures, we need to treat them as successful responses
+                  circuitBreaker.recordSuccess
+                  // Non-retryable error. Exit the loop with the exception
+                  Future.failed(cause)
+              }
             }
-          }
         }
       }
 

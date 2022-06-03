@@ -44,7 +44,7 @@ trait ClientFactory[ClientImpl] {
     * @param config
     * @return
     */
-  protected def build(config:HttpClientConfig): ClientImpl
+  protected def build(config: HttpClientConfig): ClientImpl
 
   def withRequestFilter(requestFilter: Request => Request): ClientImpl = {
     build(config.withRequestFilter(requestFilter))
@@ -84,6 +84,7 @@ class AsyncClientImpl(protected val channel: HttpChannel, protected val config: 
     channel.close()
   }
 }
+
 /**
   * A standard blocking http client interface
   */
@@ -109,31 +110,15 @@ trait SyncClient extends SyncClientCompat with ClientFactory[SyncClient] with Au
   def send(req: Request): Response = {
     val request = config.requestFilter(req)
 
-    var lastResponse: Response = null
+    var lastResponse: Option[Response] = None
     try {
       config.retryContext.runWithContext(request, circuitBreaker) {
-        lastResponse = config.clientFilter.chain(request, ClientContext.passThroughChannel(channel, config))
-        lastResponse
+        val resp = config.clientFilter.chain(request, ClientContext.passThroughChannel(channel, config))
+        lastResponse = Some(resp)
+        resp
       }
-    }
-    catch {
-      case e: MaxRetryException =>
-        throw HttpClientMaxRetryException(
-          Option(lastResponse).getOrElse(Http.response(HttpStatus.InternalServerError_500)),
-          e.retryContext,
-          e.retryContext.lastError
-        )
-      case e:HttpClientException =>
-        // Throw as is for known client exception
-        throw e
-      case NonFatal(e) =>
-        val resp = Option(lastResponse).getOrElse(Http.response(HttpStatus.InternalServerError_500))
-        throw new HttpClientException(
-          resp,
-          status = resp.status,
-          message = e.getMessage,
-          cause = e
-        )
+    } catch {
+      HttpClients.defaultHttpClientErrorHandler(lastResponse)
     }
   }
 
@@ -228,22 +213,21 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
     * If it exceeds the number of max retry attempts, it will return Future[HttpClientMaxRetryException].
     */
   def send(req: Request): Future[Response] = {
-    val request = config.requestFilter(req)
-
-    val retryContext = config.retryContext
-    val ret = config.clientFilter.chainAsync(request, ClientContext.passThroughChannel(channel, config))
-    ret.transform {
-      case Success(resp) =>
-        retryContext.resultClassifier(resp) match {
-          case ResultClass.Succeeded =>
-
-          case ResultClass.Failed(isRetryable, cause, extraWait) =>
-
-        }
-      case Failure(e) =>
-
-    }
-
+    val request                        = config.requestFilter(req)
+    var lastResponse: Option[Response] = None
+    config.retryContext
+      .runAsyncWithContext(request, circuitBreaker) {
+        config.clientFilter
+          .chainAsync(request, ClientContext.passThroughChannel(channel, config))
+          .map { resp =>
+            // Remember the last response for error reporting purpose
+            lastResponse = Some(resp)
+            resp
+          }
+      }
+      .recover {
+        HttpClients.defaultHttpClientErrorHandler(lastResponse)
+      }
   }
 
   /**
@@ -313,6 +297,28 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
 
 object HttpClients {
   private val responseBodyCodec = new HttpResponseBodyCodec[Response]
+
+  private[client] def defaultHttpClientErrorHandler(
+      lastResponse: Option[Response]
+  ): PartialFunction[Throwable, Nothing] = {
+    case e: MaxRetryException =>
+      throw HttpClientMaxRetryException(
+        lastResponse.getOrElse(Http.response(HttpStatus.InternalServerError_500)),
+        e.retryContext,
+        e.retryContext.lastError
+      )
+    case e: HttpClientException =>
+      // Throw as is for known client exception
+      throw e
+    case NonFatal(e) =>
+      val resp = lastResponse.getOrElse(Http.response(HttpStatus.InternalServerError_500))
+      throw new HttpClientException(
+        resp,
+        status = resp.status,
+        message = e.getMessage,
+        cause = e
+      )
+  }
 
   private[client] def prepareRequest[Req](
       config: HttpClientConfig,
