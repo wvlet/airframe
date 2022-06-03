@@ -77,9 +77,7 @@ class SyncClientImpl(protected val channel: HttpChannel, protected val config: H
 
 class AsyncClientImpl(protected val channel: HttpChannel, protected val config: HttpClientConfig) extends AsyncClient {
   override private[client] implicit val executionContext: ExecutionContext = channel.executionContext
-
-  override protected def build(config: HttpClientConfig): AsyncClient = new AsyncClientImpl(channel, config)
-
+  override protected def build(config: HttpClientConfig): AsyncClient      = new AsyncClientImpl(channel, config)
   override def close(): Unit = {
     channel.close()
   }

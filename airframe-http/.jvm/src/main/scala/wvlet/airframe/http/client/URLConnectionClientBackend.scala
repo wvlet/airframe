@@ -17,20 +17,7 @@ import wvlet.airframe.http.{HttpClientConfig, ServerAddress}
 /**
   */
 object URLConnectionClientBackend extends HttpClientBackend {
-  def newSyncClient(
-      serverAddress: ServerAddress,
-      clientConfig: HttpClientConfig
-  ): SyncClient = {
-    new URLConnectionClient(
-      serverAddress,
-      clientConfig
-    )
-  }
-
-  override def newAsyncClient(
-      serverAddress: ServerAddress,
-      clientConfig: HttpClientConfig
-  ): AsyncClient = {
-    throw new UnsupportedOperationException("Default async client is not supported.")
+  override def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel = {
+    new URLConnectionChannel(serverAddress, config)
   }
 }

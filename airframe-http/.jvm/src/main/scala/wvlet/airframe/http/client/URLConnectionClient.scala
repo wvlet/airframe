@@ -19,19 +19,21 @@ import wvlet.airframe.http._
 
 import java.io.{IOException, InputStream, OutputStream}
 import java.net.HttpURLConnection
+import java.util.concurrent.ExecutorService
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters._
 
-class URLConnectionChannel(serverAddress: ServerAddress) extends HttpChannel {
+class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel {
+  override private[client] implicit def executionContext: ExecutionContext = config.newExecutionContext
 
   override def send(req: Request, config: HttpClientConfig): Response = {
     // Apply the default filter first and then the given custom filter
     val request = config.requestFilter(req)
 
     val url = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
-    else s"/${request.uri}"}"
+      else s"/${request.uri}"}"
 
     // Send the request with retry support. Setting the context request is necessary to properly show
     // the request path upon errors
@@ -103,8 +105,15 @@ class URLConnectionChannel(serverAddress: ServerAddress) extends HttpChannel {
     response.withContent(responseContentBytes)
   }
 
-  override def sendAsync(req: Request, config: HttpClientConfig): Future[Response] = ???
-  override def close(): Unit = {}
+  override def sendAsync(req: Request, config: HttpClientConfig): Future[Response] = {
+    Future.apply(send(req, config))
+  }
+
+  override def close(): Unit = {
+    executionContext match {
+      case e: ExecutorService =>
+        e.shutdownNow()
+      case _ =>
+    }
+  }
 }
-
-

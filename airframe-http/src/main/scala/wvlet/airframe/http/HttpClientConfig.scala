@@ -16,7 +16,14 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.CircuitBreaker
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.client.{AsyncClient, ClientFilter, HttpClientBackend, SyncClient}
+import wvlet.airframe.http.client.{
+  AsyncClient,
+  AsyncClientImpl,
+  ClientFilter,
+  HttpClientBackend,
+  SyncClient,
+  SyncClientImpl
+}
 import wvlet.airframe.rx.{Rx, RxStream}
 
 import java.util.concurrent.TimeUnit
@@ -58,16 +65,16 @@ case class HttpClientConfig(
     }
 ) {
   def newSyncClient(serverAddress: String): SyncClient =
-    backend.newSyncClient(ServerAddress(serverAddress), this)
+    new SyncClientImpl(backend.newHttpChannel(ServerAddress(serverAddress), this), this)
 
   def newAsyncClient(serverAddress: String): AsyncClient =
-    backend.newAsyncClient(ServerAddress(serverAddress), this)
+    new AsyncClientImpl(backend.newHttpChannel(ServerAddress(serverAddress), this), this)
 
   /**
     * Create a default Async client for Scala.js in web browsers
     */
   def newJSClient: AsyncClient = {
-    backend.newAsyncClient(compat.hostServerAddress, this)
+    new AsyncClientImpl(backend.newHttpChannel(compat.hostServerAddress, this), this)
   }
 
   def withBackend(newBackend: HttpClientBackend): HttpClientConfig =
