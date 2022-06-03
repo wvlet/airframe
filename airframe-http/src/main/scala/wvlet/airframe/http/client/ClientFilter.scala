@@ -13,7 +13,10 @@
  */
 package wvlet.airframe.http.client
 
+import wvlet.airframe.http.HttpClientConfig
 import wvlet.airframe.http.HttpMessage.{Request, Response}
+
+import scala.concurrent.Future
 
 /**
   * Http client request and response interceptor interface.
@@ -23,6 +26,8 @@ import wvlet.airframe.http.HttpMessage.{Request, Response}
 trait ClientFilter {
   import ClientFilter._
   def chain(req: Request, context: ClientContext): Response
+  def chainAsync(req: Request, context: ClientContext): Future[Response]
+
   def andThen(next: ClientFilter): ClientFilter = {
     this match {
       case ClientFilter.identity =>
@@ -40,7 +45,11 @@ trait ClientFilter {
 object ClientFilter {
   object identity extends ClientFilter {
     override def chain(req: Request, context: ClientContext): Response ={
-      context.apply(req)
+      context.chain(req)
+    }
+
+    override def chainAsync(req: Request, context: ClientContext): Future[Response] = {
+      context.chainAsync(req)
     }
   }
 
@@ -48,15 +57,32 @@ object ClientFilter {
     override def chain(req: Request, context: ClientContext): Response = {
       prev.chain(req, next.andThen(context))
     }
+
+    override def chainAsync(req: Request, context: ClientContext): Future[Response] = {
+      prev.chainAsync(req, next.andThen(context))
+    }
   }
 
   private class FilterAndThen(filter: ClientFilter, nextContext: ClientContext) extends ClientContext {
-    override def apply(req: Request): Response = {
+    override def chain(req: Request): Response = {
       filter.chain(req, nextContext)
+    }
+
+    override def chainAsync(req: Request): Future[Response] = {
+      filter.chainAsync(req, nextContext)
     }
   }
 }
 
 trait ClientContext {
-  def apply(req: Request): Response
+  def chain(req: Request): Response
+  def chainAsync(req: Request): Future[Response]
+}
+
+object ClientContext {
+  def passThroughChannel(channel:HttpChannel, config: HttpClientConfig): ClientContext = new ClientContext {
+    override def chain(req: Request): Response = channel.send(req, config)
+    override def chainAsync(req: Request): Future[Response] = channel.sendAsync(req, config)
+  }
+
 }

@@ -20,22 +20,18 @@ import wvlet.airframe.http._
 import java.io.{IOException, InputStream, OutputStream}
 import java.net.HttpURLConnection
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters._
 
-/**
-  * Http sync client implementation using URLConnection
-  */
-class URLConnectionClient(serverAddress: ServerAddress, private[client] val config: HttpClientConfig)
-    extends SyncClient {
+class URLConnectionChannel(serverAddress: ServerAddress) extends HttpChannel {
 
-  override def send(req: Request): Response = {
-
+  override def send(req: Request, config: HttpClientConfig): Response = {
     // Apply the default filter first and then the given custom filter
     val request = config.requestFilter(req)
 
     val url = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
-      else s"/${request.uri}"}"
+    else s"/${request.uri}"}"
 
     // Send the request with retry support. Setting the context request is necessary to properly show
     // the request path upon errors
@@ -107,34 +103,8 @@ class URLConnectionClient(serverAddress: ServerAddress, private[client] val conf
     response.withContent(responseContentBytes)
   }
 
-  override def sendSafe(
-      req: Request
-  ): Response = {
-    try {
-      send(req)
-    } catch {
-      case e: HttpClientException =>
-        e.response.toHttpResponse
-    }
-  }
-
+  override def sendAsync(req: Request, config: HttpClientConfig): Future[Response] = ???
   override def close(): Unit = {}
-//
-//  protected def getInternal[Resource](
-//      resourcePath: String,
-//      requestFilter: Request => Request,
-//      resourceSurface: Surface
-//  ): Resource = {
-//    convertAs[Resource](send(Http.request(resourcePath), requestFilter), resourceSurface)
-//  }
-////
-//  protected def getOpsInternal[Resource, OperationResponse](
-//    resourcePath: String,
-//    resource: Resource,
-//    requestFilter: Request => Request
-//  ): OperationResponse = {
-//    getResource[Resource, OperationResponse](resourcePath, resource, requestFilter)
-//  }
-//
-
 }
+
+

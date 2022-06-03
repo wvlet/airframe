@@ -22,20 +22,17 @@ import scala.concurrent.{ExecutionContext, Future}
   * An wrapper of JavaHttpSyncClient for supporting async response
   * @param syncClient
   */
-class JavaAsyncClient(syncClient: JavaSyncClient) extends AsyncClient {
-
-  private[http] def config: HttpClientConfig           = syncClient.config
-  private[http] val executionContext: ExecutionContext = syncClient.executionContext
+class JavaAsyncClient(protected val channel: JavaClientChannel, protected val config: HttpClientConfig) extends AsyncClient {
+  override private[client] implicit val executionContext: ExecutionContext = channel.executionContext
 
   override def send(req: Request): Future[Response] = {
-    syncClient.sendAsync(req)
+    channel.sendAsync(req, config)
   }
 
   override def close(): Unit = {
-    syncClient.close()
+    channel.close()
   }
-
-  override def sendSafe(req: Request): Future[Response] = {
-    syncClient.sendSafeAsync(req)
+  override protected def build(config: HttpClientConfig): AsyncClient = {
+    new JavaAsyncClient(channel, config)
   }
 }

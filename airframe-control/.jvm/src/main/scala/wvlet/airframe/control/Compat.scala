@@ -13,10 +13,26 @@
  */
 package wvlet.airframe.control
 
+import java.util.{Timer, TimerTask}
+import scala.concurrent.{ExecutionContext, Future, Promise}
+
 /**
   */
 object Compat {
   def sleep(millis: Long): Unit = {
     Thread.sleep(millis)
+  }
+
+  def scheduleAsync[A](waitMillis: Long)(body: => Future[A])(implicit ec: ExecutionContext): Future[A] = {
+    val promise = Promise[A]()
+    val t = new Timer()
+    t.schedule(new TimerTask {
+      override def run(): Unit = {
+        body.onComplete { ret =>
+          promise.complete(ret)
+        }
+      }
+    }, waitMillis)
+    promise.future
   }
 }

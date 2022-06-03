@@ -14,52 +14,85 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.control.{CircuitBreaker, ResultClass}
+import wvlet.airframe.control.Retry.{MaxRetryException, RetryContext}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
 import wvlet.airframe.surface.Surface
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
+import scala.util.control.NonFatal
 
-
+/**
+  * A low-level interface for sending HTTP requests without managing retries or filters
+  */
 trait HttpChannel extends AutoCloseable {
-  def send(req: Request): Response
+  def send(req: Request, config: HttpClientConfig): Response
+  def sendAsync(req: Request, config: HttpClientConfig): Future[Response]
+
+  private[client] implicit def executionContext: ExecutionContext
 }
 
-trait HttpClientBase[Impl] {
+trait ClientFactory[ClientImpl] {
 
   protected def config: HttpClientConfig
 
-  protected def newClient(config:HttpClientConfig): Impl
+  /**
+    * Create a new client sharing the same underlying http client
+    * @param config
+    * @return
+    */
+  protected def build(config:HttpClientConfig): ClientImpl
 
-  def withRequestFilter(requestFilter: Request => Request): Impl = {
-    newClient(config.withRequestFilter(requestFilter))
+  def withRequestFilter(requestFilter: Request => Request): ClientImpl = {
+    build(config.withRequestFilter(requestFilter))
   }
-  def withClientFilter(filter: ClientFilter): Impl = {
-    newClient(config.withClientFilter(filter))
+  def withClientFilter(filter: ClientFilter): ClientImpl = {
+    build(config.withClientFilter(filter))
   }
-  def withRetryContext(filter: RetryContext => RetryContext): Impl = {
-    newClient(config.withRetryContext(filter))
+  def withRetryContext(filter: RetryContext => RetryContext): ClientImpl = {
+    build(config.withRetryContext(filter))
   }
-  def withConfig(filter: HttpClientConfig => HttpClientConfig): Impl = {
-    newClient(filter(config))
+  def withConfig(filter: HttpClientConfig => HttpClientConfig): ClientImpl = {
+    build(filter(config))
   }
-  def withConnectTimeout(duration: Duration): Impl = {
-    newClient(config.withConnectTimeout(duration))
+  def withConnectTimeout(duration: Duration): ClientImpl = {
+    build(config.withConnectTimeout(duration))
   }
-  def withReadTimeout(duration: Duration): Impl = {
-    newClient(config.withReadTimeout(duration))
+  def withReadTimeout(duration: Duration): ClientImpl = {
+    build(config.withReadTimeout(duration))
   }
 }
 
+class SyncClientImpl(protected val channel: HttpChannel, protected val config: HttpClientConfig) extends SyncClient {
+  override protected def build(config: HttpClientConfig): SyncClient = {
+    new SyncClientImpl(channel, config)
+  }
+  override def close(): Unit = {
+    channel.close()
+  }
+}
+
+class AsyncClientImpl(protected val channel: HttpChannel, protected val config: HttpClientConfig) extends AsyncClient {
+  override private[client] implicit val executionContext: ExecutionContext = channel.executionContext
+
+  override protected def build(config: HttpClientConfig): AsyncClient = new AsyncClientImpl(channel, config)
+
+  override def close(): Unit = {
+    channel.close()
+  }
+}
 /**
   * A standard blocking http client interface
   */
-trait SyncClient extends SyncClientCompat with AutoCloseable {
+trait SyncClient extends SyncClientCompat with ClientFactory[SyncClient] with AutoCloseable {
 
-  private[client] def config: HttpClientConfig
+  protected def channel: HttpChannel
+  protected def config: HttpClientConfig
+
+  private val circuitBreaker: CircuitBreaker = config.circuitBreaker
 
   /**
     * Send an HTTP request and get the response. It will throw an exception for non-successful responses. For example,
@@ -73,7 +106,36 @@ trait SyncClient extends SyncClientCompat with AutoCloseable {
     * @throws HttpClientException
     *   for non-retryable error is occurred
     */
-  def send(req: Request): Response
+  def send(req: Request): Response = {
+    val request = config.requestFilter(req)
+
+    var lastResponse: Response = null
+    try {
+      config.retryContext.runWithContext(request, circuitBreaker) {
+        lastResponse = config.clientFilter.chain(request, ClientContext.passThroughChannel(channel, config))
+        lastResponse
+      }
+    }
+    catch {
+      case e: MaxRetryException =>
+        throw HttpClientMaxRetryException(
+          Option(lastResponse).getOrElse(Http.response(HttpStatus.InternalServerError_500)),
+          e.retryContext,
+          e.retryContext.lastError
+        )
+      case e:HttpClientException =>
+        // Throw as is for known client exception
+        throw e
+      case NonFatal(e) =>
+        val resp = Option(lastResponse).getOrElse(Http.response(HttpStatus.InternalServerError_500))
+        throw new HttpClientException(
+          resp,
+          status = resp.status,
+          message = e.getMessage,
+          cause = e
+        )
+    }
+  }
 
   /**
     * Send an HTTP request and returns a response (or the last response if the request is retried). Unlike [[send()]],
@@ -150,9 +212,11 @@ trait SyncClient extends SyncClientCompat with AutoCloseable {
 /**
   * A standard async http client interface for Scala Future
   */
-trait AsyncClient extends AsyncClientCompat with AutoCloseable {
-  private[client] def config: HttpClientConfig
+trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with AutoCloseable {
+  protected def channel: HttpChannel
+  protected def config: HttpClientConfig
   private[client] implicit val executionContext: ExecutionContext
+  private val circuitBreaker: CircuitBreaker = config.circuitBreaker
 
   /**
     * Send an HTTP request and get the response in Scala Future type.
@@ -163,7 +227,24 @@ trait AsyncClient extends AsyncClientCompat with AutoCloseable {
     *
     * If it exceeds the number of max retry attempts, it will return Future[HttpClientMaxRetryException].
     */
-  def send(req: Request): Future[Response]
+  def send(req: Request): Future[Response] = {
+    val request = config.requestFilter(req)
+
+    val retryContext = config.retryContext
+    val ret = config.clientFilter.chainAsync(request, ClientContext.passThroughChannel(channel, config))
+    ret.transform {
+      case Success(resp) =>
+        retryContext.resultClassifier(resp) match {
+          case ResultClass.Succeeded =>
+
+          case ResultClass.Failed(isRetryable, cause, extraWait) =>
+
+        }
+      case Failure(e) =>
+
+    }
+
+  }
 
   /**
     * Send an HTTP request and returns a response (or the last response if the request is retried)
@@ -171,7 +252,16 @@ trait AsyncClient extends AsyncClientCompat with AutoCloseable {
     * @param req
     * @return
     */
-  def sendSafe(req: Request): Future[Response]
+  def sendSafe(req: Request): Future[Response] = {
+    send(req).transform { ret =>
+      ret match {
+        case Failure(e: HttpClientException) =>
+          Success(e.response.toHttpResponse)
+        case _ =>
+          ret
+      }
+    }
+  }
 
   def readAsInternal[Resp](
       req: Request,
