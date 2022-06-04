@@ -24,11 +24,16 @@ object Compat {
 
   def scheduleAsync[A](waitMillis: Long)(body: => Future[A])(implicit ec: ExecutionContext): Future[A] = {
     val promise = Promise[A]()
-    scalajs.js.timers.setTimeout(waitMillis) {
-      body.onComplete { ret =>
-        promise.complete(ret)
+    try {
+      scalajs.js.timers.setTimeout(waitMillis) {
+        body.onComplete { ret =>
+          promise.complete(ret)
+        }
       }
+    } catch {
+      case e: Throwable => promise.failure(e)
     }
+
     promise.future
   }
 }
