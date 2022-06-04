@@ -65,30 +65,30 @@ class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: 
     }
   }
 
-  override def send(req: Request, requestConfig: HttpClientConfig): Response = {
+  override def send(req: Request, channelConfig: ChannelConfig): Response = {
     // New Java's HttpRequest is immutable, so we can reuse the same request instance
-    val httpRequest = buildRequest(serverAddress, req, requestConfig)
+    val httpRequest = buildRequest(serverAddress, req, channelConfig)
     val httpResponse: HttpResponse[InputStream] =
       javaHttpClient.send(httpRequest, BodyHandlers.ofInputStream())
 
     readResponse(httpResponse)
   }
 
-  override def sendAsync(req: Request, requestConfig: HttpClientConfig): Future[Response] = {
-    Future.apply(send(req, requestConfig))
+  override def sendAsync(req: Request, channelConfig: ChannelConfig): Future[Response] = {
+    Future.apply(send(req, channelConfig))
   }
 
   private def buildRequest(
       serverAddress: ServerAddress,
       request: Request,
-      requestConfig: HttpClientConfig
+      channelConfig: ChannelConfig
   ): HttpRequest = {
     val uri = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
       else s"/${request.uri}"}"
 
     val requestBuilder = HttpRequest
       .newBuilder(URI.create(uri))
-      .timeout(java.time.Duration.ofMillis(requestConfig.readTimeout.toMillis))
+      .timeout(java.time.Duration.ofMillis(channelConfig.readTimeout.toMillis))
 
     // Set HTTP request headers
     request.header.entries.foreach(h => requestBuilder.setHeader(h.key, h.value))

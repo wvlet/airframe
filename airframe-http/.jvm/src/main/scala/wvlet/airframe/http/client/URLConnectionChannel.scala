@@ -28,55 +28,51 @@ import scala.jdk.CollectionConverters._
 class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel {
   override private[client] implicit def executionContext: ExecutionContext = config.newExecutionContext
 
-  override def send(request: Request, requestConfig: HttpClientConfig): Response = {
+  override def send(request: Request, channelConfig: ChannelConfig): Response = {
     val url = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
       else s"/${request.uri}"}"
 
-    // Send the request with retry support. Setting the context request is necessary to properly show
-    // the request path upon errors
-    requestConfig.retryContext.runWithContext(request) {
-      val conn0: HttpURLConnection =
-        new java.net.URL(url).openConnection().asInstanceOf[HttpURLConnection]
-      conn0.setRequestMethod(request.method)
-      for (e <- request.header.entries) {
-        conn0.setRequestProperty(e.key, e.value)
-      }
-      conn0.setDoInput(true)
+    val conn0: HttpURLConnection =
+      new java.net.URL(url).openConnection().asInstanceOf[HttpURLConnection]
+    conn0.setRequestMethod(request.method)
+    for (e <- request.header.entries) {
+      conn0.setRequestProperty(e.key, e.value)
+    }
+    conn0.setDoInput(true)
 
-      def timeoutMillis(d: Duration): Int = {
-        if (d.isFinite) {
-          d.toMillis.toInt
-        } else {
-          0
+    def timeoutMillis(d: Duration): Int = {
+      if (d.isFinite) {
+        d.toMillis.toInt
+      } else {
+        0
+      }
+    }
+
+    conn0.setReadTimeout(timeoutMillis(channelConfig.readTimeout))
+    conn0.setConnectTimeout(timeoutMillis(channelConfig.connectTimeout))
+    conn0.setInstanceFollowRedirects(true)
+
+    val conn    = conn0 // config.connectionFilter(conn0)
+    val content = request.contentBytes
+    if (content.nonEmpty) {
+      conn.setDoOutput(true)
+      Control.withResource(conn.getOutputStream()) { (out: OutputStream) =>
+        out.write(content)
+        out.flush()
+      }
+    }
+
+    try {
+      Control.withResource(conn.getInputStream()) { (in: InputStream) =>
+        readResponse(conn, in)
+      }
+    } catch {
+      case e: IOException if conn.getResponseCode != -1 =>
+        // When the request fails, but the server still returns meaningful responses
+        // (e.g., 404 NotFound throws FileNotFoundException)
+        Control.withResource(conn.getErrorStream()) { (err: InputStream) =>
+          readResponse(conn, err)
         }
-      }
-
-      conn0.setReadTimeout(timeoutMillis(requestConfig.readTimeout))
-      conn0.setConnectTimeout(timeoutMillis(requestConfig.connectTimeout))
-      conn0.setInstanceFollowRedirects(true)
-
-      val conn    = conn0 // config.connectionFilter(conn0)
-      val content = request.contentBytes
-      if (content.nonEmpty) {
-        conn.setDoOutput(true)
-        Control.withResource(conn.getOutputStream()) { (out: OutputStream) =>
-          out.write(content)
-          out.flush()
-        }
-      }
-
-      try {
-        Control.withResource(conn.getInputStream()) { (in: InputStream) =>
-          readResponse(conn, in)
-        }
-      } catch {
-        case e: IOException if conn.getResponseCode != -1 =>
-          // When the request fails, but the server still returns meaningful responses
-          // (e.g., 404 NotFound throws FileNotFoundException)
-          Control.withResource(conn.getErrorStream()) { (err: InputStream) =>
-            readResponse(conn, err)
-          }
-      }
     }
   }
 
@@ -102,8 +98,8 @@ class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfi
     response.withContent(responseContentBytes)
   }
 
-  override def sendAsync(req: Request, requestConfig: HttpClientConfig): Future[Response] = {
-    Future.apply(send(req, requestConfig))
+  override def sendAsync(req: Request, channelConfig: ChannelConfig): Future[Response] = {
+    Future.apply(send(req, channelConfig))
   }
 
   override def close(): Unit = {

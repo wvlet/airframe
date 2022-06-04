@@ -31,7 +31,6 @@ object RPCClientGenerator extends HttpClientGenerator {
       s"""${header(src.destPackageName)}
          |
          |import wvlet.airframe.http._
-         |import wvlet.airframe.http.HttpMessage.Request
          |import wvlet.airframe.http.client.{SyncClient, AsyncClient}
          |import scala.concurrent.Future
          |
@@ -73,7 +72,11 @@ object RPCClientGenerator extends HttpClientGenerator {
     }
 
     def syncClientClass: String =
-      s"""class RPCSyncClient(private val client:SyncClient) extends AutoCloseable {
+      s"""class RPCSyncClient(private val client:SyncClient) extends wvlet.airframe.http.client.ClientFactory[RPCSyncClient] with AutoCloseable {
+         |  override protected def build(newConfig: HttpClientConfig): RPCSyncClient = {
+         |    new RPCSyncClient(client.withConfig(_ => newConfig))
+         |  }
+         |  override protected def config: HttpClientConfig = client.config
          |  override def close(): Unit = { client.close() }
          |  def getClient: SyncClient = client
          |
@@ -82,10 +85,13 @@ object RPCClientGenerator extends HttpClientGenerator {
          |""".stripMargin
 
     def asyncClientClass: String =
-      s"""class RPCAsyncClient(private val client:AsyncClient) extends AutoCloseable {
+      s"""class RPCAsyncClient(private val client:AsyncClient) extends wvlet.airframe.http.client.ClientFactory[RPCAsyncClient] with AutoCloseable {
+         |  override protected def build(newConfig: HttpClientConfig): RPCAsyncClient = {
+         |    new RPCAsyncClient(client.withConfig(_ => newConfig))
+         |  }
+         |  override protected def config: HttpClientConfig = client.config
          |  override def close(): Unit = { client.close() }
          |  def getClient: AsyncClient = client
-         |
          |${indent(asyncClientBody)}
          |}
          |""".stripMargin
@@ -111,8 +117,7 @@ object RPCClientGenerator extends HttpClientGenerator {
     def sendRequestArgs(m: ClientMethodDef): String = {
       Seq(
         s""""${m.path}"""",
-        m.clientCallParameters.mkString(", "),
-        "requestFilter"
+        m.clientCallParameters.mkString(", ")
       ).mkString(", ")
     }
 
@@ -121,7 +126,7 @@ object RPCClientGenerator extends HttpClientGenerator {
         .map { m =>
           val inputArgs =
             m.inputParameters
-              .map(x => s"${x.name}: ${x.surface.fullTypeName}") ++ Seq("requestFilter: Request => Request = identity")
+              .map(x => s"${x.name}: ${x.surface.fullTypeName}")
 
           val returnType = if (isAsync) s"Future[${m.returnType.fullTypeName}]" else m.returnType.fullTypeName
 
