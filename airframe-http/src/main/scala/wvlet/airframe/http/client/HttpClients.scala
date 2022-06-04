@@ -120,9 +120,9 @@ trait SyncClient extends SyncClientCompat with ClientFactory[SyncClient] with Au
     * @tparam Req
     * @return
     */
-  def sendRPC[Req](method: RPCMethod, request: Req): Any = {
+  def sendRPC[Req](method: RPCMethod, requestContent: Req): Any = {
     val request: Request =
-      HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, method.responseSurface)
+      HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent)
 
     // sendSafe method internally handles retries and HttpClientException, and then it returns the last response
     val response: Response = sendSafe(request)

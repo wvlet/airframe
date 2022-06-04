@@ -19,12 +19,10 @@ import scala.concurrent.Future
 
 class ClientLoggingFilter extends ClientFilter with LogSupport {
   override def chain(req: HttpMessage.Request, context: ClientContext): HttpMessage.Response = {
-    info(req)
-    info(req.header)
+    trace(req)
     try {
       val resp = context.chain(req)
-      info(resp)
-      info(resp.header)
+      trace(resp)
       resp
     } catch {
       case e: Throwable =>

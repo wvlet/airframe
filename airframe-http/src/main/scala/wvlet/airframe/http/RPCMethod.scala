@@ -24,10 +24,11 @@ import wvlet.airframe.surface.{MethodSurface, Surface, TypeName}
 case class RPCMethod(
     // RPC endpoint path starting with '/'
     path: String,
+    rpcInterface: String,
+    methodName: String,
     requestSurface: Surface,
     responseSurface: Surface
 ) {
-  val (rpcInterface, methodName) = path.stripPrefix("/").partition(_ == "/")
 
   /**
     * Generate a map representation of this method for logging purpose

@@ -30,9 +30,9 @@ object RPCClientGenerator extends HttpClientGenerator {
     def code: String =
       s"""${header(src.destPackageName)}
          |
+         |import scala.concurrent.Future
          |import wvlet.airframe.http._
          |import wvlet.airframe.http.client.{SyncClient, AsyncClient}
-         |import scala.concurrent.Future
          |import wvlet.airframe.surface.Surface
          |
          |${obj}""".stripMargin
@@ -69,7 +69,7 @@ object RPCClientGenerator extends HttpClientGenerator {
     def rpcMethodDefs(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
-          s"val __m_${m.name} = RPCMethod(\"${m.path}\", Surface.of[${m.requestModelClassType}], Surface.of[${m.returnType.fullTypeName}])"
+          s"val __m_${m.name} = RPCMethod(\"${m.path}\", \"${svc.interfaceName}\", \"${m.name}\", Surface.of[${m.requestModelClassType}], Surface.of[${m.returnType.fullTypeName}])"
         }.mkString("\n")
     }
 
@@ -84,7 +84,7 @@ object RPCClientGenerator extends HttpClientGenerator {
     }
 
     def syncClientClass: String =
-      s"""class RPCSyncClient(private val client:SyncClient) extends wvlet.airframe.http.client.ClientFactory[RPCSyncClient] with AutoCloseable {
+      s"""class RPCSyncClient(client:SyncClient) extends wvlet.airframe.http.client.ClientFactory[RPCSyncClient] with AutoCloseable {
          |  override protected def build(newConfig: HttpClientConfig): RPCSyncClient = {
          |    new RPCSyncClient(client.withConfig(_ => newConfig))
          |  }
@@ -97,7 +97,7 @@ object RPCClientGenerator extends HttpClientGenerator {
          |""".stripMargin
 
     def asyncClientClass: String =
-      s"""class RPCAsyncClient(private val client:AsyncClient) extends wvlet.airframe.http.client.ClientFactory[RPCAsyncClient] with AutoCloseable {
+      s"""class RPCAsyncClient(client:AsyncClient) extends wvlet.airframe.http.client.ClientFactory[RPCAsyncClient] with AutoCloseable {
          |  override protected def build(newConfig: HttpClientConfig): RPCAsyncClient = {
          |    new RPCAsyncClient(client.withConfig(_ => newConfig))
          |  }

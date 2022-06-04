@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.http.Http
+import wvlet.airframe.http.{Http, RPCMethod}
+import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 object RPCHttpClientTest extends AirSpec {
@@ -26,7 +27,8 @@ object RPCHttpClientTest extends AirSpec {
 
   test("Create an RPCSyncClient") {
     val rpcClient = Http.client.newSyncClient(PUBLIC_REST_SERVICE)
-    val response  = rpcClient.rpc[TestRequest, TestResponse]("/post", TestRequest(1, "test"))
+    val m         = RPCMethod("/post", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
+    val response  = rpcClient.sendRPC(m, TestRequest(1, "test")).asInstanceOf[TestResponse]
 
     // Test message
     debug(response)
