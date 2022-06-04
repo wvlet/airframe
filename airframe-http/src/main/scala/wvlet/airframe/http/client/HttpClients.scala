@@ -73,7 +73,7 @@ trait ClientFactory[ClientImpl] {
   }
 }
 
-class SyncClientImpl(protected val channel: HttpChannel, protected val config: HttpClientConfig) extends SyncClient {
+class SyncClientImpl(protected val channel: HttpChannel, val config: HttpClientConfig) extends SyncClient {
   override protected def build(newConfig: HttpClientConfig): SyncClient = {
     new SyncClientImpl(channel, newConfig)
   }
@@ -82,7 +82,7 @@ class SyncClientImpl(protected val channel: HttpChannel, protected val config: H
   }
 }
 
-class AsyncClientImpl(protected val channel: HttpChannel, protected val config: HttpClientConfig) extends AsyncClient {
+class AsyncClientImpl(protected val channel: HttpChannel, val config: HttpClientConfig) extends AsyncClient {
   override private[client] implicit val executionContext: ExecutionContext = channel.executionContext
   override protected def build(newConfig: HttpClientConfig): AsyncClient   = new AsyncClientImpl(channel, newConfig)
   override def close(): Unit = {
@@ -96,7 +96,7 @@ class AsyncClientImpl(protected val channel: HttpChannel, protected val config: 
 trait SyncClient extends SyncClientCompat with ClientFactory[SyncClient] with AutoCloseable {
 
   protected def channel: HttpChannel
-  protected def config: HttpClientConfig
+  def config: HttpClientConfig
 
   private val circuitBreaker: CircuitBreaker = config.circuitBreaker
 
@@ -204,7 +204,7 @@ trait SyncClient extends SyncClientCompat with ClientFactory[SyncClient] with Au
   */
 trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with AutoCloseable {
   protected def channel: HttpChannel
-  protected def config: HttpClientConfig
+  def config: HttpClientConfig
   private[client] implicit val executionContext: ExecutionContext
   private val circuitBreaker: CircuitBreaker = config.circuitBreaker
 

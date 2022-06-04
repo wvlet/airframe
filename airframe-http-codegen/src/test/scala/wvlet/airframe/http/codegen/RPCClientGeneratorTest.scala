@@ -14,6 +14,7 @@
 package wvlet.airframe.http.codegen
 
 import example.rpc.RPCExample
+import wvlet.airframe.http.Http
 import wvlet.airspec.AirSpec
 
 class RPCClientGeneratorTest extends AirSpec {
