@@ -25,14 +25,17 @@ object Compat {
 
   def scheduleAsync[A](waitMillis: Long)(body: => Future[A])(implicit ec: ExecutionContext): Future[A] = {
     val promise = Promise[A]()
-    val t = new Timer()
-    t.schedule(new TimerTask {
-      override def run(): Unit = {
-        body.onComplete { ret =>
-          promise.complete(ret)
+    val t       = new Timer()
+    t.schedule(
+      new TimerTask {
+        override def run(): Unit = {
+          body.onComplete { ret =>
+            promise.complete(ret)
+          }
         }
-      }
-    }, waitMillis)
+      },
+      waitMillis
+    )
     promise.future
   }
 }
