@@ -138,7 +138,7 @@ object HttpRequestMapper extends LogSupport {
         None
       } else {
         adapter.contentTypeOf(request).map(_.split(";")(0).toLowerCase()) match {
-          case Some("application/x-msgpack") =>
+          case Some("application/msgpack") | Some("application/x-msgpack") =>
             Some(contentBytes)
           case Some("application/json") =>
             // JSON -> msgpack
