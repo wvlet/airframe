@@ -27,7 +27,7 @@ jobs:
       - run: git fetch --tags -f
       - uses: olafurpg/setup-scala@v11
         with:
-          java-version: adopt@1.17
+          java-version: zulu@1.17
       - name: Get Airframe version
         run: echo "AIRFRAME_VERSION=$(./scripts/dynver.sh)" >> $GITHUB_ENV
       - name: Check Airframe version
