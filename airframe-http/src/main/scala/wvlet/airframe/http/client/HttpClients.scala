@@ -45,10 +45,10 @@ trait ClientFactory[ClientImpl] {
 
   /**
     * Create a new client sharing the same underlying http client
-    * @param config
+    * @param newConfig
     * @return
     */
-  protected def build(config: HttpClientConfig): ClientImpl
+  protected def build(newConfig: HttpClientConfig): ClientImpl
 
   def withRequestFilter(requestFilter: Request => Request): ClientImpl = {
     build(config.withRequestFilter(requestFilter))
@@ -74,8 +74,8 @@ trait ClientFactory[ClientImpl] {
 }
 
 class SyncClientImpl(protected val channel: HttpChannel, protected val config: HttpClientConfig) extends SyncClient {
-  override protected def build(config: HttpClientConfig): SyncClient = {
-    new SyncClientImpl(channel, config)
+  override protected def build(newConfig: HttpClientConfig): SyncClient = {
+    new SyncClientImpl(channel, newConfig)
   }
   override def close(): Unit = {
     channel.close()
@@ -84,7 +84,7 @@ class SyncClientImpl(protected val channel: HttpChannel, protected val config: H
 
 class AsyncClientImpl(protected val channel: HttpChannel, protected val config: HttpClientConfig) extends AsyncClient {
   override private[client] implicit val executionContext: ExecutionContext = channel.executionContext
-  override protected def build(config: HttpClientConfig): AsyncClient      = new AsyncClientImpl(channel, config)
+  override protected def build(newConfig: HttpClientConfig): AsyncClient   = new AsyncClientImpl(channel, newConfig)
   override def close(): Unit = {
     channel.close()
   }
