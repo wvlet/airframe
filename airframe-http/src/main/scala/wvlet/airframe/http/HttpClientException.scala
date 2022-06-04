@@ -158,7 +158,7 @@ object HttpClientException extends LogSupport {
   }
 
   def scalajsCompatibleFailureClassifier: PartialFunction[Throwable, Failed] = {
-    // Make it non-retryable for failfast behavior if the circuit is open
+    // Make it non-retryable to fail-fast if the circuit is open
     case e: CircuitBreakerOpenException => nonRetryableFailure(e)
     case e: EOFException                => retryableFailure(e)
     case e: TimeoutException            => retryableFailure(e)

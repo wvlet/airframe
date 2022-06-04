@@ -14,7 +14,7 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.control.{CircuitBreaker, ResultClass}
+import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException, ResultClass}
 import wvlet.airframe.control.Retry.{MaxRetryException, RetryContext}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
@@ -302,15 +302,23 @@ object HttpClients {
   private[client] def defaultHttpClientErrorHandler(
       lastResponse: Option[Response]
   ): PartialFunction[Throwable, Nothing] = {
+    case e: HttpClientException =>
+      // Throw as is for known client exception
+      throw e
+    case e: CircuitBreakerOpenException =>
+      val resp = lastResponse.getOrElse(Http.response(HttpStatus.ServiceUnavailable_503))
+      throw new HttpClientException(
+        resp,
+        status = resp.status,
+        message = e.getMessage,
+        cause = e
+      )
     case e: MaxRetryException =>
       throw HttpClientMaxRetryException(
         lastResponse.getOrElse(Http.response(HttpStatus.InternalServerError_500)),
         e.retryContext,
         e.retryContext.lastError
       )
-    case e: HttpClientException =>
-      // Throw as is for known client exception
-      throw e
     case NonFatal(e) =>
       val resp = lastResponse.getOrElse(Http.response(HttpStatus.InternalServerError_500))
       throw new HttpClientException(
