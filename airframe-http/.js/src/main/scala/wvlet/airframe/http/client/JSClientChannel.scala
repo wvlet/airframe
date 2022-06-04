@@ -39,11 +39,11 @@ class JSClientChannel(serverAddress: ServerAddress, private[client] val config: 
     // nothing to do
   }
 
-  override def send(request: HttpMessage.Request, requestConfig: HttpClientConfig): HttpMessage.Response = ???
+  override def send(request: HttpMessage.Request, channelConfig: ChannelConfig): HttpMessage.Response = ???
 
   override def sendAsync(
       request: HttpMessage.Request,
-      requestConfig: HttpClientConfig
+      channelConfig: ChannelConfig
   ): Future[HttpMessage.Response] = {
 
     val xhr = new dom.XMLHttpRequest()

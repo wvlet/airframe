@@ -38,6 +38,11 @@ object HttpClientConfig {
 
 import HttpClientConfig._
 
+trait ChannelConfig {
+  def connectTimeout: Duration
+  def readTimeout: Duration
+}
+
 /**
   */
 case class HttpClientConfig(
@@ -63,7 +68,7 @@ case class HttpClientConfig(
       // TODO: This execution context needs to reference a global one if we need to use it in Scala JVM
       Rx.future(f)(compat.defaultExecutionContext)
     }
-) {
+) extends ChannelConfig {
   def newSyncClient(serverAddress: String): SyncClient =
     backend.newSyncClient(ServerAddress(serverAddress), this)
 

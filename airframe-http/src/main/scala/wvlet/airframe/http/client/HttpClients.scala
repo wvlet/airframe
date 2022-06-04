@@ -20,58 +20,9 @@ import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
 import wvlet.airframe.surface.Surface
 
-import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
-
-/**
-  * A low-level interface for sending HTTP requests without managing retries or filters
-  */
-trait HttpChannel extends AutoCloseable {
-  def send(req: Request, requestConfig: HttpClientConfig): Response
-  def sendAsync(req: Request, requestConfig: HttpClientConfig): Future[Response]
-
-  private[client] implicit def executionContext: ExecutionContext
-}
-
-/**
-  * Interface for customizing config for each requests
-  * @tparam ClientImpl
-  */
-trait ClientFactory[ClientImpl] {
-
-  protected def config: HttpClientConfig
-
-  /**
-    * Create a new client sharing the same underlying http client
-    * @param newConfig
-    * @return
-    */
-  protected def build(newConfig: HttpClientConfig): ClientImpl
-
-  def withRequestFilter(requestFilter: Request => Request): ClientImpl = {
-    build(config.withRequestFilter(requestFilter))
-  }
-  def withClientFilter(filter: ClientFilter): ClientImpl = {
-    build(config.withClientFilter(filter))
-  }
-  def withRetryContext(filter: RetryContext => RetryContext): ClientImpl = {
-    build(config.withRetryContext(filter))
-  }
-  def withConfig(filter: HttpClientConfig => HttpClientConfig): ClientImpl = {
-    build(filter(config))
-  }
-  def withConnectTimeout(duration: Duration): ClientImpl = {
-    build(config.withConnectTimeout(duration))
-  }
-  def withReadTimeout(duration: Duration): ClientImpl = {
-    build(config.withReadTimeout(duration))
-  }
-  def withCircuitBreaker(filter: CircuitBreaker => CircuitBreaker): ClientImpl = {
-    build(config.withCircuitBreaker(filter))
-  }
-}
 
 class SyncClientImpl(protected val channel: HttpChannel, val config: HttpClientConfig) extends SyncClient {
   override protected def build(newConfig: HttpClientConfig): SyncClient = {
