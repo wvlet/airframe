@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.http.{Http, HttpClientConfig}
+import wvlet.airframe.http.{Http, HttpClientConfig, RPCMethod}
+import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.ExecutionContext
@@ -30,9 +31,9 @@ class JSRPCClientTest extends AirSpec {
   test("Create an Async RPCClient") {
     val client = Http.client.newAsyncClient(PUBLIC_REST_SERVICE)
 
-    // TODO: This test will be effective after the async test support in AirSpec 22.5.0
+    val m = RPCMethod("/post", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
     client
-      .rpc[TestRequest, TestResponse]("/post", TestRequest(1, "test"))
+      .rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))
       .map { response =>
         debug(response)
         response.headers.get("Content-Type") shouldBe Some("application/msgpack")

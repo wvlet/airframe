@@ -21,7 +21,7 @@ import wvlet.airframe.http.codegen.client.HttpClientGenerator
 import wvlet.airframe.http.codegen.client.HttpClientGenerator.fullTypeNameOf
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.rx.{Rx, RxStream}
-import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface}
+import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface, TypeName}
 import wvlet.log.LogSupport
 
 /**
@@ -126,8 +126,11 @@ object HttpClientIR extends LogSupport {
       basePackageName: String,
       fullPackageName: String,
       serviceName: String,
+      interfaceClass: Class[_],
       methods: Seq[ClientMethodDef]
   ) extends ClientCodeIR {
+    def interfaceName: String = TypeName.sanitizeTypeName(interfaceClass.getName)
+
     def fullServiceName: String = s"${internalPackageName}.${serviceName}"
     def internalPackageName: String = {
       if (relativePackageName.isEmpty) {
@@ -274,6 +277,7 @@ object HttpClientIR extends LogSupport {
         basePackageName = config.apiPackageName,
         fullPackageName = controllerSurface.rawType.getPackageName,
         serviceName = controllerName,
+        interfaceClass = controllerSurface.rawType,
         routes.map(buildClientCall)
       )
     }

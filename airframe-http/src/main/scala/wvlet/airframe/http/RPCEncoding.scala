@@ -28,7 +28,7 @@ sealed trait RPCEncoding {
 }
 
 object RPCEncoding {
-  // Note: https://github.com/msgpack/msgpack/issues/194
+  // Note on why we use appliaction/msgpack https://github.com/msgpack/msgpack/issues/194
   val ApplicationMsgPack = "application/msgpack"
   val ApplicationJson    = "application/json"
 
