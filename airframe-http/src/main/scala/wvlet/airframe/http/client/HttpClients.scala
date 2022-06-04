@@ -115,39 +115,26 @@ trait SyncClient extends SyncClientCompat with ClientFactory[SyncClient] with Au
 
   /**
     * Send an RPC request (POST) and return the RPC response. This method will throw RPCException when an error happens
-    *
-    * @param resourcePath
-    * @param requestSurface
-    * @param requestContent
-    * @param responseSurface
-    * @param requestFilter
+    * @param method
+    * @param request
     * @tparam Req
-    *   request type
     * @return
-    *   response
-    *
-    * @throws RPCException
     */
-  def sendRPC[Req](
-      resourcePath: String,
-      requestSurface: Surface,
-      requestContent: Req,
-      responseSurface: Surface
-  ): Any = {
-    val request: Request = HttpClients.prepareRPCRequest(config, resourcePath, requestSurface, requestContent)
+  def sendRPC[Req](method: RPCMethod, request: Req): Any = {
+    val request: Request =
+      HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, method.responseSurface)
 
     // sendSafe method internally handles retries and HttpClientException, and then it returns the last response
     val response: Response = sendSafe(request)
 
     // f Parse the RPC response
     if (response.status.isSuccessful) {
-      HttpClients.parseRPCResponse(config, response, responseSurface)
+      HttpClients.parseRPCResponse(config, response, method.responseSurface)
     } else {
       // Parse the RPC error message
       throw HttpClients.parseRPCException(response)
     }
   }
-
 }
 
 /**
@@ -230,19 +217,17 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
   }
 
   def sendRPC[Req](
-      resourcePath: String,
-      requestSurface: Surface,
-      requestContent: Req,
-      responseSurface: Surface
+      method: RPCMethod,
+      requestContent: Req
   ): Future[Any] = {
     Future {
-      val request: Request = HttpClients.prepareRPCRequest(config, resourcePath, requestSurface, requestContent)
+      val request: Request = HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent)
       request
     }.flatMap { (request: Request) =>
       sendSafe(request)
         .map { (response: Response) =>
           if (response.status.isSuccessful) {
-            HttpClients.parseRPCResponse(config, response, responseSurface)
+            HttpClients.parseRPCResponse(config, response, method.responseSurface)
           } else {
             throw HttpClients.parseRPCException(response)
           }

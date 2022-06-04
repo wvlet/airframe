@@ -19,23 +19,6 @@ import scala.reflect.macros.{blackbox => sm}
 /**
   */
 object HttpMacros {
-
-  def rpcSend[Req: c.WeakTypeTag, Resp: c.WeakTypeTag](
-      c: sm.Context
-  )(resourcePath: c.Tree, request: c.Tree): c.Tree = {
-    import c.universe._
-    val t1 = implicitly[c.WeakTypeTag[Req]]
-    val t2 = implicitly[c.WeakTypeTag[Resp]]
-    q"""{
-          ${c.prefix}.sendRPC(
-            ${resourcePath},
-            wvlet.airframe.surface.Surface.of[${t1}],
-            ${request},
-            wvlet.airframe.surface.Surface.of[${t2}]
-          ).asInstanceOf[${t2}]
-       }"""
-  }
-
   def read0[Resp: c.WeakTypeTag](c: sm.Context)(
       request: c.Tree
   ): c.Tree = {
@@ -99,22 +82,6 @@ object HttpMacros {
            wvlet.airframe.surface.Surface.of[${respType}],
            ${requestContent}
          )
-       }"""
-  }
-
-  def rpcSendAsync[RequestType: c.WeakTypeTag, ResponseType: c.WeakTypeTag](
-      c: sm.Context
-  )(resourcePath: c.Tree, request: c.Tree): c.Tree = {
-    import c.universe._
-    val t1 = implicitly[c.WeakTypeTag[RequestType]]
-    val t2 = implicitly[c.WeakTypeTag[ResponseType]]
-    q"""{
-          ${c.prefix}.sendRPC(
-            ${resourcePath},
-            wvlet.airframe.surface.Surface.of[${t1}],
-            ${request},
-            wvlet.airframe.surface.Surface.of[${t2}]
-          ).asInstanceOf[scala.concurrent.Future[${t2}]]
        }"""
   }
 

@@ -33,6 +33,7 @@ object RPCClientGenerator extends HttpClientGenerator {
          |import wvlet.airframe.http._
          |import wvlet.airframe.http.client.{SyncClient, AsyncClient}
          |import scala.concurrent.Future
+         |import wvlet.airframe.surface.Surface
          |
          |${obj}""".stripMargin
 
@@ -53,22 +54,33 @@ object RPCClientGenerator extends HttpClientGenerator {
 
     def internalDefs: String = {
       s"""object internal {
-         |${indent(src.classDef.services.map(modelClasses(_)).mkString("\n"))}
+         |${indent(src.classDef.services.map(internalDefOf(_)).mkString("\n"))}
          |}""".stripMargin
+    }
+
+    def internalDefOf(svc: ClientServiceDef): String = {
+      s"""object ${svc.serviceName}Internals {
+         |${indent(modelClasses(svc))}
+         |
+         |${indent(rpcMethodDefs(svc))}
+         |}""".stripMargin
+    }
+
+    def rpcMethodDefs(svc: ClientServiceDef): String = {
+      svc.methods
+        .map { m =>
+          s"val __m_${m.name} = RPCMethod(\"${m.path}\", Surface.of[${m.requestModelClassType}], Surface.of[${m.returnType.fullTypeName}])"
+        }.mkString("\n")
     }
 
     // Generate model classes that wrap request parameters
     def modelClasses(svc: ClientServiceDef): String = {
-      s"""object ${svc.serviceName}Models {
-         |${indent(
-          svc.methods
-            .filter { x =>
-              x.requestModelClassDef.isDefined
-            }
-            .map(_.requestModelClassDef.get.code(isPrivate = false))
-            .mkString("\n")
-        )}
-         |}""".stripMargin
+      svc.methods
+        .filter { x =>
+          x.requestModelClassDef.isDefined
+        }
+        .map(_.requestModelClassDef.get.code(isPrivate = false))
+        .mkString("\n")
     }
 
     def syncClientClass: String =
@@ -99,7 +111,7 @@ object RPCClientGenerator extends HttpClientGenerator {
     def syncClientBody: String = {
       HttpClientGenerator.generateNestedStub(src) { svc =>
         s"""object ${svc.serviceName} {
-           |  import internal.${svc.serviceName}Models._
+           |  import internal.${svc.serviceName}Internals._
            |${indent(rpcMethods(svc, isAsync = false))}
            |}""".stripMargin
       }
@@ -108,7 +120,7 @@ object RPCClientGenerator extends HttpClientGenerator {
     def asyncClientBody: String = {
       HttpClientGenerator.generateNestedStub(src) { svc =>
         s"""object ${svc.serviceName} {
-           |  import internal.${svc.serviceName}Models._
+           |  import internal.${svc.serviceName}Internals._
            |${indent(rpcMethods(svc, isAsync = true))}
            |}""".stripMargin
       }
@@ -116,7 +128,7 @@ object RPCClientGenerator extends HttpClientGenerator {
 
     def sendRequestArgs(m: ClientMethodDef): String = {
       Seq(
-        s""""${m.path}"""",
+        s"__m_${m.name}",
         m.clientCallParameters.mkString(", ")
       ).mkString(", ")
     }
@@ -131,7 +143,7 @@ object RPCClientGenerator extends HttpClientGenerator {
           val returnType = if (isAsync) s"Future[${m.returnType.fullTypeName}]" else m.returnType.fullTypeName
 
           s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
-             |  client.rpc[${m.typeArgString}](${sendRequestArgs(m)})
+             |  client.sendRPC(${sendRequestArgs(m)})
              |}""".stripMargin
         }
         .mkString("\n")

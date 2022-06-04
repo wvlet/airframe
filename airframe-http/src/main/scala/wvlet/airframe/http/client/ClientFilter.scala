@@ -25,8 +25,12 @@ import scala.concurrent.Future
   */
 trait ClientFilter {
   import ClientFilter._
-  def chain(req: Request, context: ClientContext): Response
-  def chainAsync(req: Request, context: ClientContext): Future[Response]
+  def chain(req: Request, context: ClientContext): Response = {
+    context.chain(req)
+  }
+  def chainAsync(req: Request, context: ClientContext): Future[Response] = {
+    context.chainAsync(req)
+  }
 
   def andThen(next: ClientFilter): ClientFilter = {
     this match {

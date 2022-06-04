@@ -24,10 +24,6 @@ import scala.language.experimental.macros
   * Scala 2 specific helper method to make an RPC request
   */
 trait SyncClientCompat { self: SyncClient =>
-  def rpc[Req, Resp](
-      resourcePath: String,
-      request: Req
-  ): Resp = macro HttpMacros.rpcSend[Req, Resp]
 
   /**
     * Read the response as a specified type
@@ -50,10 +46,6 @@ trait SyncClientCompat { self: SyncClient =>
 }
 
 trait AsyncClientCompat { self: AsyncClient =>
-  def rpc[RequestType, ResponseType](
-      resourcePath: String,
-      request: RequestType
-  ): Future[ResponseType] = macro HttpMacros.rpcSendAsync[RequestType, ResponseType]
 
   /**
     * Read the response as a specified type

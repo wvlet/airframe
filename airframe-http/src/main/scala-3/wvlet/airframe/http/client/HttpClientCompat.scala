@@ -23,19 +23,6 @@ import scala.concurrent.Future
   * Scala 3 specific helper method to make an RPC request
   */
 trait SyncClientCompat { self: SyncClient =>
-  inline def rpc[RequestType, ResponseType](
-      resourcePath: String,
-      request: RequestType
-  ): ResponseType = {
-    self
-      .sendRPC(
-        resourcePath,
-        Surface.of[RequestType],
-        request,
-        Surface.of[ResponseType]
-      ).asInstanceOf[ResponseType]
-  }
-
   /**
     * Read the response as a specified type
     * @param request
@@ -59,19 +46,6 @@ trait SyncClientCompat { self: SyncClient =>
 }
 
 trait AsyncClientCompat { self: AsyncClient =>
-  inline def rpc[RequestType, ResponseType](
-      resourcePath: String,
-      request: RequestType,
-  ): Future[ResponseType] = {
-    self
-      .sendRPC(
-        resourcePath,
-        Surface.of[RequestType],
-        request,
-        Surface.of[ResponseType]
-      ).asInstanceOf[Future[ResponseType]]
-  }
-
   inline def readAs[Resp](req: Request): Future[Resp] = {
     self.readAsInternal[Resp](req, Surface.of[Resp])
   }
