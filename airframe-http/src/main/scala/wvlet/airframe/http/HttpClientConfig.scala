@@ -15,20 +15,13 @@ package wvlet.airframe.http
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.CircuitBreaker
 import wvlet.airframe.control.Retry.RetryContext
-import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.client.{
-  AsyncClient,
-  AsyncClientImpl,
-  ClientFilter,
-  HttpClientBackend,
-  SyncClient,
-  SyncClientImpl
-}
+import wvlet.airframe.http.HttpMessage.Request
+import wvlet.airframe.http.client.{AsyncClient, ClientFilter, HttpClientBackend, SyncClient}
 import wvlet.airframe.rx.{Rx, RxStream}
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{ExecutionContext, Future}
 
 object HttpClientConfig {
   // Tell the IntelliJ that Compat object implements CompatAPI. This a workaround of IntelliJ, which cannot properly highlight cross-build project code:
@@ -36,8 +29,11 @@ object HttpClientConfig {
   private def compat: CompatApi = wvlet.airframe.http.Compat
 }
 
-import HttpClientConfig._
+import wvlet.airframe.http.HttpClientConfig._
 
+/**
+  * Contains only http channel related configurations in HttpClientConfig
+  */
 trait ChannelConfig {
   def connectTimeout: Duration
   def readTimeout: Duration
