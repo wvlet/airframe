@@ -26,7 +26,7 @@ object RPCHttpClientTest extends AirSpec {
 
   test("Create an RPCSyncClient") {
     val rpcClient = Http.client.newSyncClient(PUBLIC_REST_SERVICE)
-    val response  = rpcClient.rpc[TestRequest, TestResponse]("/post", TestRequest(1, "test"), identity)
+    val response  = rpcClient.rpc[TestRequest, TestResponse]("/post", TestRequest(1, "test"))
 
     // Test message
     debug(response)

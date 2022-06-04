@@ -17,7 +17,7 @@ import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Retry.MaxRetryException
 import wvlet.airframe.http.HttpMessage.Response
-import wvlet.airframe.http.{Http, HttpStatus}
+import wvlet.airframe.http.{Http, HttpClientException, HttpStatus}
 import wvlet.airspec.AirSpec
 import wvlet.log.Logger
 
@@ -69,7 +69,9 @@ object URLConnectionClientTest extends AirSpec {
 
     test("user-agent") {
       val resp =
-        client.sendSafe(Http.GET("/user-agent"), _.withUserAgent("airframe-http"))
+        client
+          .withRequestFilter(_.withUserAgent("airframe-http"))
+          .sendSafe(Http.GET("/user-agent"))
       MessageCodec.of[Map[String, Any]].fromJson(resp.contentString).get("user-agent") shouldBe Some("airframe-http")
     }
 
@@ -110,23 +112,15 @@ object URLConnectionClientTest extends AirSpec {
     }
   }
 
-  test(
-    "retry test",
-    design = Design.newDesign
-      .bind[SyncClient]
-      .toInstance(
-        Http.client
-          .withBackend(URLConnectionClientBackend)
-          .withJSONEncoding
-          .withRetryContext(_.withMaxRetry(1))
-          .newSyncClient(PUBLIC_REST_SERVICE)
-      )
-  ) { (client: SyncClient) =>
+  test("retry test") { (client: SyncClient) =>
     test("Handle 5xx retry") {
       Logger("wvlet.airframe.http.HttpClient").suppressWarnings {
-        intercept[MaxRetryException] {
-          client.send(Http.GET("/status/500"))
+        val e = intercept[HttpClientException] {
+          client
+            .withRetryContext(_.withMaxRetry(1))
+            .send(Http.GET("/status/500"))
         }
+        e.status shouldBe HttpStatus.InternalServerError_500
       }
     }
   }

@@ -23,11 +23,10 @@ import scala.language.experimental.macros
 /**
   * Scala 2 specific helper method to make an RPC request
   */
-trait RPCSyncClientBase { self: SyncClient =>
+trait SyncClientCompat { self: SyncClient =>
   def rpc[Req, Resp](
       resourcePath: String,
-      request: Req,
-      requestFilter: Request => Request
+      request: Req
   ): Resp = macro HttpMacros.rpcSend[Req, Resp]
 
   /**
@@ -44,38 +43,16 @@ trait RPCSyncClientBase { self: SyncClient =>
       request: Request
   ): Resp = macro HttpMacros.read0[Resp]
 
-  /**
-    * Read the response as a specified type
-    * @param request
-    * @tparam Resp
-    * @return
-    *   response translated to the specified type
-    *
-    * @throws HttpClientException
-    *   if failed to read or process the response
-    */
-  def readAs[Resp](
-      request: Request,
-      requestFilter: Request => Request
-  ): Resp = macro HttpMacros.read1[Resp]
-
   def call[Req, Resp](
       request: Request,
       requestContent: Req
   ): Resp = macro HttpMacros.call0[Req, Resp]
-
-  def call[Req, Resp](
-      request: Request,
-      requestContent: Req,
-      requestFilter: Request => Request
-  ): Resp = macro HttpMacros.call1[Req, Resp]
 }
 
-trait RPCAsyncClientBase { self: AsyncClient =>
+trait AsyncClientCompat { self: AsyncClient =>
   def rpc[RequestType, ResponseType](
       resourcePath: String,
-      request: RequestType,
-      requestFilter: Request => Request
+      request: RequestType
   ): Future[ResponseType] = macro HttpMacros.rpcSendAsync[RequestType, ResponseType]
 
   /**
@@ -89,26 +66,8 @@ trait RPCAsyncClientBase { self: AsyncClient =>
       request: Request
   ): Future[Resp] = macro HttpMacros.read0Async[Resp]
 
-  /**
-    * Read the response as a specified type
-    * @param request
-    * @tparam Resp
-    * @return
-    *   response translated to the specified type
-    */
-  def readAs[Resp](
-      request: Request,
-      requestFilter: Request => Request
-  ): Future[Resp] = macro HttpMacros.read1Async[Resp]
-
   def call[Req, Resp](
       request: Request,
       requestContent: Req
   ): Future[Resp] = macro HttpMacros.call0Async[Req, Resp]
-
-  def call[Req, Resp](
-      request: Request,
-      requestContent: Req,
-      requestFilter: Request => Request
-  ): Future[Resp] = macro HttpMacros.call1Async[Req, Resp]
 }

@@ -13,10 +13,27 @@
  */
 package wvlet.airframe.control
 
+import scala.concurrent.{ExecutionContext, Future, Promise}
+
 /**
   */
 object Compat {
   def sleep(millis: Long): Unit = {
     // do nothing in Scala.js as their is no way to implement sleep https://github.com/scala-js/scala-js/issues/1898
+  }
+
+  def scheduleAsync[A](waitMillis: Long)(body: => Future[A])(implicit ec: ExecutionContext): Future[A] = {
+    val promise = Promise[A]()
+    try {
+      scalajs.js.timers.setTimeout(waitMillis) {
+        body.onComplete { ret =>
+          promise.complete(ret)
+        }
+      }
+    } catch {
+      case e: Throwable => promise.failure(e)
+    }
+
+    promise.future
   }
 }

@@ -22,12 +22,16 @@ import wvlet.airframe.http.{HttpClient, HttpClientConfig, ServerAddress}
 trait HttpClientBackend {
   def defaultRequestRetryer: RetryContext = HttpClient.defaultHttpClientRetry[Request, Response]
 
-  def newSyncClient(serverAddress: ServerAddress, clientConfig: HttpClientConfig): SyncClient
+  def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel
+
+  def newSyncClient(serverAddress: ServerAddress, config: HttpClientConfig): SyncClient = {
+    new SyncClientImpl(newHttpChannel(serverAddress, config), config)
+  }
 
   def newAsyncClient(
       serverAddress: ServerAddress,
-      clientConfig: HttpClientConfig
+      config: HttpClientConfig
   ): AsyncClient = {
-    throw new UnsupportedOperationException("async client is not supported.")
+    new AsyncClientImpl(newHttpChannel(serverAddress, config), config)
   }
 }

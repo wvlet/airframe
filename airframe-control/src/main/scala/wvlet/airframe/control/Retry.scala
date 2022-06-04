@@ -16,6 +16,7 @@ package wvlet.airframe.control
 import wvlet.airframe.control.ResultClass.Failed
 import wvlet.log.LogSupport
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Random, Success, Try}
 
 /**
@@ -258,6 +259,19 @@ object Retry extends LogSupport {
       runInternal(Option(context), circuitBreaker)(body)
     }
 
+    private def classifyResult[A](result: A): ResultClass = {
+      val resultClass = result match {
+        case Success(x) =>
+          // Test whether the code block execution is succeeded or failed
+          resultClassifier(x)
+        case Failure(RetryableFailure(e)) =>
+          ResultClass.retryableFailure(e)
+        case Failure(e) =>
+          errorClassifier(e)
+      }
+      resultClass
+    }
+
     protected def runInternal[A](context: Option[Any], circuitBreaker: CircuitBreaker = CircuitBreaker.alwaysClosed)(
         body: => A
     ): A = {
@@ -273,16 +287,7 @@ object Retry extends LogSupport {
           circuitBreaker.verifyConnection
           body
         }
-        val resultClass = ret match {
-          case Success(x) =>
-            // Test whether the code block execution is succeeded or failed
-            resultClassifier(x)
-          case Failure(RetryableFailure(e)) =>
-            ResultClass.retryableFailure(e)
-          case Failure(e) =>
-            errorClassifier(e)
-        }
-
+        val resultClass = classifyResult(ret)
         resultClass match {
           case ResultClass.Succeeded =>
             circuitBreaker.recordSuccess
@@ -308,6 +313,46 @@ object Retry extends LogSupport {
         case None =>
           throw MaxRetryException(retryContext)
       }
+    }
+
+    def runAsyncWithContext[A](context: Any, circuitBreaker: CircuitBreaker = CircuitBreaker.alwaysClosed)(
+        body: => Future[A]
+    )(implicit ec: ExecutionContext): Future[A] = {
+      def loop(retryContext: RetryContext, isFirst: Boolean): Future[A] = {
+        if (!isFirst && !retryContext.canContinue) {
+          Future.failed(MaxRetryException(retryContext))
+        } else {
+          Future
+            .apply {
+              circuitBreaker.verifyConnection
+            }.flatMap { _ =>
+              body
+            }.transformWith { (ret: Try[A]) =>
+              val resultClass = classifyResult(ret)
+              resultClass match {
+                case ResultClass.Succeeded =>
+                  circuitBreaker.recordSuccess
+                  // Exit the loop
+                  Future.fromTry(ret)
+                case ResultClass.Failed(isRetryable, cause, extraWait) if isRetryable =>
+                  // Retryable error
+                  circuitBreaker.recordFailure(cause)
+                  // Add retry wait
+                  val nextRetry = retryContext.withExtraWait(extraWait).nextRetry(cause)
+                  Compat.scheduleAsync(nextRetry.nextWaitMillis) {
+                    loop(nextRetry, isFirst = false)
+                  }
+                case ResultClass.Failed(_, cause, _) =>
+                  // For regular non-retryable failures, we need to treat them as successful responses
+                  circuitBreaker.recordSuccess
+                  // Non-retryable error. Exit the loop with the exception
+                  Future.failed(cause)
+              }
+            }
+        }
+      }
+
+      loop(retryContext = init(Option(context)), isFirst = true)
     }
   }
 

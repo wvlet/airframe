@@ -37,10 +37,10 @@ object JavaAsyncClientTest extends AirSpec {
   override def design: Design =
     Design.newDesign
       .bind[AsyncClient].toInstance {
-        new JavaSyncClient(
-          ServerAddress(PUBLIC_REST_SERVICE),
-          Http.client.withJSONEncoding
-        ).toAsyncClient
+        Http.client
+          .withBackend(JavaHttpClientBackend)
+          .withJSONEncoding
+          .newAsyncClient(PUBLIC_REST_SERVICE)
       }
 
   test("java http sync client") { (client: AsyncClient) =>
@@ -68,7 +68,7 @@ object JavaAsyncClientTest extends AirSpec {
     test("call with GET") {
       // .
       client
-        .call[Person, Map[String, Any]](Http.GET("/get"), p, identity[Request](_))
+        .call[Person, Map[String, Any]](Http.GET("/get"), p)
         .map { m =>
           m("args") shouldBe Map("id" -> "1", "name" -> "leo")
         }
@@ -121,28 +121,22 @@ object JavaAsyncClientTest extends AirSpec {
     }
   }
 
-  test(
-    "retry test",
-    design = newDesign.bind[AsyncClient].toInstance {
-      new JavaSyncClient(
-        ServerAddress(PUBLIC_REST_SERVICE),
-        // Setting a short retry for the testing purpose
-        Http.client.withJSONEncoding.withRetryContext(_.withMaxRetry(1))
-      ).toAsyncClient
-    }
-  ) { (client: AsyncClient) =>
+  test("retry test") { (client: AsyncClient) =>
     test("handle max retry") {
-      client.send(Http.GET("/status/500")).transform { ret =>
-        ret match {
-          case Success(_) =>
-            Failure(new IllegalStateException("should not reach here"))
-          case Failure(e: HttpClientMaxRetryException) =>
-            e.status.isServerError shouldBe true
-            Success(())
-          case _ =>
-            ret
+      client
+        .withRetryContext(_.withMaxRetry(1))
+        .send(Http.GET("/status/500"))
+        .transform { ret =>
+          ret match {
+            case Success(_) =>
+              Failure(new IllegalStateException("should not reach here"))
+            case Failure(e: HttpClientMaxRetryException) =>
+              e.status.isServerError shouldBe true
+              Success(())
+            case _ =>
+              ret
+          }
         }
-      }
     }
   }
 }
