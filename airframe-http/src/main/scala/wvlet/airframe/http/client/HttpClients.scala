@@ -29,8 +29,8 @@ import scala.util.control.NonFatal
   * A low-level interface for sending HTTP requests without managing retries or filters
   */
 trait HttpChannel extends AutoCloseable {
-  def send(req: Request, config: HttpClientConfig): Response
-  def sendAsync(req: Request, config: HttpClientConfig): Future[Response]
+  def send(req: Request, requestConfig: HttpClientConfig): Response
+  def sendAsync(req: Request, requestConfig: HttpClientConfig): Future[Response]
 
   private[client] implicit def executionContext: ExecutionContext
 }

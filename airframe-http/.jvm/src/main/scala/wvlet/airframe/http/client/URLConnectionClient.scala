@@ -28,16 +28,13 @@ import scala.jdk.CollectionConverters._
 class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel {
   override private[client] implicit def executionContext: ExecutionContext = config.newExecutionContext
 
-  override def send(req: Request, config: HttpClientConfig): Response = {
-    // Apply the default filter first and then the given custom filter
-    val request = config.requestFilter(req)
-
+  override def send(request: Request, requestConfig: HttpClientConfig): Response = {
     val url = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
       else s"/${request.uri}"}"
 
     // Send the request with retry support. Setting the context request is necessary to properly show
     // the request path upon errors
-    config.retryContext.runWithContext(request) {
+    requestConfig.retryContext.runWithContext(request) {
       val conn0: HttpURLConnection =
         new java.net.URL(url).openConnection().asInstanceOf[HttpURLConnection]
       conn0.setRequestMethod(request.method)
@@ -54,12 +51,12 @@ class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfi
         }
       }
 
-      conn0.setReadTimeout(timeoutMillis(config.readTimeout))
-      conn0.setConnectTimeout(timeoutMillis(config.connectTimeout))
+      conn0.setReadTimeout(timeoutMillis(requestConfig.readTimeout))
+      conn0.setConnectTimeout(timeoutMillis(requestConfig.connectTimeout))
       conn0.setInstanceFollowRedirects(true)
 
       val conn    = conn0 // config.connectionFilter(conn0)
-      val content = req.contentBytes
+      val content = request.contentBytes
       if (content.nonEmpty) {
         conn.setDoOutput(true)
         Control.withResource(conn.getOutputStream()) { (out: OutputStream) =>
@@ -105,8 +102,8 @@ class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfi
     response.withContent(responseContentBytes)
   }
 
-  override def sendAsync(req: Request, config: HttpClientConfig): Future[Response] = {
-    Future.apply(send(req, config))
+  override def sendAsync(req: Request, requestConfig: HttpClientConfig): Future[Response] = {
+    Future.apply(send(req, requestConfig))
   }
 
   override def close(): Unit = {
