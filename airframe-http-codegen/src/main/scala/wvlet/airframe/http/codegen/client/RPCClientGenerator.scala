@@ -143,7 +143,7 @@ object RPCClientGenerator extends HttpClientGenerator {
           val returnType = if (isAsync) s"Future[${m.returnType.fullTypeName}]" else m.returnType.fullTypeName
 
           s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
-             |  client.sendRPC(${sendRequestArgs(m)})
+             |  client.rpc[${m.typeArgString}](${sendRequestArgs(m)})
              |}""".stripMargin
         }
         .mkString("\n")

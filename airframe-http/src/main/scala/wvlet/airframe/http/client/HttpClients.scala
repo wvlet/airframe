@@ -120,7 +120,7 @@ trait SyncClient extends SyncClientCompat with ClientFactory[SyncClient] with Au
     * @tparam Req
     * @return
     */
-  def sendRPC[Req](method: RPCMethod, requestContent: Req): Any = {
+  def rpc[Req, Resp](method: RPCMethod, requestContent: Req): Resp = {
     val request: Request =
       HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent)
 
@@ -129,7 +129,8 @@ trait SyncClient extends SyncClientCompat with ClientFactory[SyncClient] with Au
 
     // f Parse the RPC response
     if (response.status.isSuccessful) {
-      HttpClients.parseRPCResponse(config, response, method.responseSurface)
+      val ret = HttpClients.parseRPCResponse(config, response, method.responseSurface)
+      ret.asInstanceOf[Resp]
     } else {
       // Parse the RPC error message
       throw HttpClients.parseRPCException(response)
@@ -216,10 +217,10 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
       }
   }
 
-  def sendRPC[Req](
+  def rpc[Req, Resp](
       method: RPCMethod,
       requestContent: Req
-  ): Future[Any] = {
+  ): Future[Resp] = {
     Future {
       val request: Request = HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent)
       request
@@ -227,7 +228,8 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
       sendSafe(request)
         .map { (response: Response) =>
           if (response.status.isSuccessful) {
-            HttpClients.parseRPCResponse(config, response, method.responseSurface)
+            val ret = HttpClients.parseRPCResponse(config, response, method.responseSurface)
+            ret.asInstanceOf[Resp]
           } else {
             throw HttpClients.parseRPCException(response)
           }
