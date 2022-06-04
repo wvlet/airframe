@@ -86,6 +86,9 @@ object RPCClientGenerator extends HttpClientGenerator {
 
     def asyncClientClass: String =
       s"""class RPCAsyncClient(private val client:AsyncClient) extends wvlet.airframe.http.client.ClientFactory[RPCAsyncClient] with AutoCloseable {
+         |  override protected def build(newConfig: HttpClientConfig): RPCAsyncClient = {
+         |    new RPCAsyncClient(client.withConfig(_ => newConfig))
+         |  }
          |  override protected def config: HttpClientConfig = client.config
          |  override def close(): Unit = { client.close() }
          |  def getClient: AsyncClient = client
