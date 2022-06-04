@@ -99,7 +99,7 @@ To test sbt-airframe,
 $ cd (AIRFRAME_SRC_ROOT)
 $ ./sbt ++2.12.15 "projectJVM/publishLocal; projectJS/publishLocal"
 
-# Get the current AIRFRAME_VERSION. sbt-airframe plugin will read this value
+# Get the current AIRFRAME_VERSION. sbt-airframe plugin will read this environment variable
 $ export AIRFRAME_VERSION=$(./script/dynver.sh)
 
 # Run sbt scripted test 
