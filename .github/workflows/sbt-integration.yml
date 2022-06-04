@@ -34,8 +34,8 @@ jobs:
         run: echo ${AIRFRAME_VERSION}
       - name: Create a snapshot of Airframe
         run: ./sbt ++2.12.15 "projectJVM/publishLocal; projectJS/publishLocal"
-      - name: Create a snapshot of AirSpec
-        run: ../sbt "+airspecJVM/publishLocal; +airspecJS/publishLocal"
+#      - name: Create a snapshot of AirSpec
+#        run: ../sbt "+airspecJVM/publishLocal; +airspecJS/publishLocal"
         working-directory: ./airspec
       - name: Run sbt-airframe plugin tests
         run: AIRFRAME_VERSION=${AIRFRAME_VERSION} ./sbt scripted

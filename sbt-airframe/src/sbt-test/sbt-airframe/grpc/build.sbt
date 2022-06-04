@@ -1,8 +1,10 @@
 import wvlet.airframe.sbt.http.AirframeHttpPlugin
 
+val AIRSPEC_VERSION = "22.6.1"
+
 val buildSettings: Seq[Def.Setting[_]] = Seq(
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
-  libraryDependencies += "org.wvlet.airframe" %% "airspec" % sys.props("airframe.version") % "test"
+  libraryDependencies += "org.wvlet.airframe" %% "airspec" % AIRSPEC_VERSION % Test
 )
 ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
 

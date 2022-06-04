@@ -5,9 +5,11 @@ ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-parse
 
 ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
 
+val AIRSPEC_VERSION = "22.6.1"
+
 val buildSettings: Seq[Def.Setting[_]] = Seq(
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
-  libraryDependencies += "org.wvlet.airframe" %% "airspec" % "22.6.1" % Test
+  libraryDependencies += "org.wvlet.airframe" %% "airspec" % AIRSPEC_VERSION % Test
 )
 
 lazy val root =
