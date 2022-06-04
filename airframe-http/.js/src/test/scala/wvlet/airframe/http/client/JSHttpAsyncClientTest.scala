@@ -32,10 +32,9 @@ class JSHttpAsyncClientTest extends AirSpec {
   override def design: Design =
     Design.newDesign
       .bind[AsyncClient].toInstance {
-        new JSAsyncClient(
-          ServerAddress(PUBLIC_REST_SERVICE),
-          Http.client
-        )
+        Http.client
+          .withBackend(JSHttpClientBackend)
+          .newAsyncClient(PUBLIC_REST_SERVICE)
       }
 
   test("java http sync client") { (client: AsyncClient) =>
@@ -91,45 +90,42 @@ class JSHttpAsyncClientTest extends AirSpec {
     }
   }
 
-  test(
-    "retry test",
-    design = Design.newDesign
-      .bind[AsyncClient].toInstance(
-        new JSAsyncClient(
-          ServerAddress(PUBLIC_REST_SERVICE),
-          Http.client.withRetryContext(_.withMaxRetry(1))
-        )
-      )
-  ) { (client: AsyncClient) =>
+  test("retry test") { (client: AsyncClient) =>
     test("handle max retry") {
-      client.send(Http.GET("/status/500")).transform { ret =>
-        ret match {
-          case Success(_) =>
-            Failure(new IllegalStateException("should not reach here"))
-          case Failure(e: HttpClientMaxRetryException) =>
-            e.status.isServerError shouldBe true
-            Success(())
-          case _ =>
-            ret
+      client
+        .withRetryContext(_.withMaxRetry(1))
+        .send(Http.GET("/status/500")).transform { ret =>
+          ret match {
+            case Success(_) =>
+              Failure(new IllegalStateException("should not reach here"))
+            case Failure(e: HttpClientMaxRetryException) =>
+              e.status.isServerError shouldBe true
+              Success(())
+            case _ =>
+              ret
+          }
         }
-      }
     }
   }
 
-  test("circuit breaker test") {
-    val client = new JSAsyncClient(
-      ServerAddress(PUBLIC_REST_SERVICE),
-      Http.client.withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
-    )
-    client.send(Http.GET("/status/500")).transform { ret =>
-      ret match {
-        case Failure(e: CircuitBreakerOpenException) =>
-          // ok
-          Success(())
-        case other =>
-          fail(s"Unexpected response: ${other}")
-          ret
+  test("circuit breaker test") { (client: AsyncClient) =>
+    client
+      .withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
+      .send(Http.GET("/status/500")).transform { ret =>
+        ret match {
+          case Failure(e) =>
+            e.getCause match {
+              case c: CircuitBreakerOpenException =>
+                // ok
+                Success(())
+              case other =>
+                fail(s"Unexpected exception: ${other}")
+                ret
+            }
+          case other =>
+            fail(s"Unexpected response: ${other}")
+            ret
+        }
       }
-    }
   }
 }

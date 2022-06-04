@@ -32,7 +32,7 @@ class JSRPCClientTest extends AirSpec {
 
     // TODO: This test will be effective after the async test support in AirSpec 22.5.0
     client
-      .rpc[TestRequest, TestResponse]("/post", TestRequest(1, "test"), identity)
+      .rpc[TestRequest, TestResponse]("/post", TestRequest(1, "test"))
       .map { response =>
         debug(response)
         response.headers.get("Content-Type") shouldBe Some("application/msgpack")

@@ -35,6 +35,10 @@ trait HttpChannel extends AutoCloseable {
   private[client] implicit def executionContext: ExecutionContext
 }
 
+/**
+  * Interface for customizing config for each requests
+  * @tparam ClientImpl
+  */
 trait ClientFactory[ClientImpl] {
 
   protected def config: HttpClientConfig

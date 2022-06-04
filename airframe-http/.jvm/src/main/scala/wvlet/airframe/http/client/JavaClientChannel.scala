@@ -39,17 +39,16 @@ class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: 
 
   private def initClient(config: HttpClientConfig): HttpClient = {
     HttpClient
-            .newBuilder()
-            .followRedirects(Redirect.NORMAL)
-            // Note: We tried to set a custom executor here for Java HttpClient, but
-            // internally the executor will be shared between multiple HttpClients and closing the executor will block
-            // other http clients, so we do not use the custom executor here.
-            // .executor(new Executor {
-            //  override def execute(command: Runnable): Unit = executionContext.execute(command)
-            // })
-            .build()
+      .newBuilder()
+      .followRedirects(Redirect.NORMAL)
+      // Note: We tried to set a custom executor here for Java HttpClient, but
+      // internally the executor will be shared between multiple HttpClients and closing the executor will block
+      // other http clients, so we do not use the custom executor here.
+      // .executor(new Executor {
+      //  override def execute(command: Runnable): Unit = executionContext.execute(command)
+      // })
+      .build()
   }
-
 
   // Execution context only for async methods
   private[client] implicit val executionContext: ExecutionContext = config.newExecutionContext
@@ -66,7 +65,7 @@ class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: 
     }
   }
 
-  override def send(req: Request, config: HttpClientConfig): Response ={
+  override def send(req: Request, config: HttpClientConfig): Response = {
     // New Java's HttpRequest is immutable, so we can reuse the same request instance
     val httpRequest = buildRequest(serverAddress, req)
     val httpResponse: HttpResponse[InputStream] =
@@ -80,17 +79,15 @@ class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: 
   }
 
   private def buildRequest(
-          serverAddress: ServerAddress,
-          request: Request
+      serverAddress: ServerAddress,
+      request: Request
   ): HttpRequest = {
-    val uri = s"${serverAddress.uri}${
-      if (request.uri.startsWith("/")) request.uri
-      else s"/${request.uri}"
-    }"
+    val uri = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
+      else s"/${request.uri}"}"
 
     val requestBuilder = HttpRequest
-            .newBuilder(URI.create(uri))
-            .timeout(java.time.Duration.ofMillis(config.readTimeout.toMillis))
+      .newBuilder(URI.create(uri))
+      .timeout(java.time.Duration.ofMillis(config.readTimeout.toMillis))
 
     // Set HTTP request headers
     request.header.entries.foreach(h => requestBuilder.setHeader(h.key, h.value))
@@ -136,8 +133,9 @@ class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: 
       IO.readFully(in)
     }
 
-    Http.response(HttpStatus.ofCode(httpResponse.statusCode()))
-            .withHeader(header)
-            .withContent(HttpMessage.byteArrayMessage(body))
+    Http
+      .response(HttpStatus.ofCode(httpResponse.statusCode()))
+      .withHeader(header)
+      .withContent(HttpMessage.byteArrayMessage(body))
   }
 }

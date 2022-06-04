@@ -27,17 +27,14 @@ object JSHttpClientBackend extends HttpClientBackend {
       .withErrorClassifier(HttpClientException.classifyExecutionFailureScalaJS)
   }
 
+  override def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel = {
+    new JSClientChannel(serverAddress, config)
+  }
+
   override def newSyncClient(
       severAddress: ServerAddress,
       clientConfig: HttpClientConfig
   ): SyncClient = {
     throw new UnsupportedOperationException("sync client is not supported in Scala.js")
-  }
-
-  override def newAsyncClient(
-      serverAddress: ServerAddress,
-      clientConfig: HttpClientConfig
-  ): AsyncClient = {
-    new JSAsyncClient(serverAddress, clientConfig)
   }
 }

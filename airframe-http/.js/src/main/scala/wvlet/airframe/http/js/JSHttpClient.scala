@@ -19,7 +19,7 @@ import wvlet.airframe.control.{CircuitBreaker, Retry}
 import wvlet.airframe.http.HttpClient.defaultBeforeRetryAction
 import wvlet.airframe.http.HttpMessage._
 import wvlet.airframe.http._
-import wvlet.airframe.http.client.JSAsyncClient
+import wvlet.airframe.http.client.{AsyncClientImpl, JSClientChannel, JSHttpClientBackend}
 import wvlet.airframe.http.js.JSHttpClient.MessageEncoding
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.{Primitive, Surface}
@@ -145,11 +145,11 @@ case class JSHttpClientConfig(
 case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) extends LogSupport {
   private def codecFactory = config.codecFactory.withMapOutput
 
-  private val client = new JSAsyncClient(
-    serverAddress = config.serverAddress.getOrElse(ServerAddress.empty),
-    config = config.toHttpClientConfig
-  )
-  private implicit val ec: ExecutionContext = client.getExecutionContext
+  private val channel =
+    new JSClientChannel(config.serverAddress.getOrElse(ServerAddress.empty), config.toHttpClientConfig)
+  private val client = new AsyncClientImpl(channel, config.toHttpClientConfig)
+
+  private implicit val ec: ExecutionContext = channel.getExecutionContext
 
   /**
     * Modify the configuration based on the current configuration
@@ -161,7 +161,7 @@ case class JSHttpClient(config: JSHttpClientConfig = JSHttpClientConfig()) exten
   }
 
   def sendRaw(request: Request, requestFilter: Request => Request = identity): Future[Response] = {
-    client.send(request, requestFilter)
+    client.withRequestFilter(requestFilter).send(request)
   }
 
   def send[OperationResponse](

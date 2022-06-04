@@ -41,10 +41,9 @@ trait ClientFilter {
   }
 }
 
-
 object ClientFilter {
   object identity extends ClientFilter {
-    override def chain(req: Request, context: ClientContext): Response ={
+    override def chain(req: Request, context: ClientContext): Response = {
       context.chain(req)
     }
 
@@ -53,7 +52,7 @@ object ClientFilter {
     }
   }
 
-  private class AndThen(prev: ClientFilter, next:ClientFilter) extends ClientFilter {
+  private class AndThen(prev: ClientFilter, next: ClientFilter) extends ClientFilter {
     override def chain(req: Request, context: ClientContext): Response = {
       prev.chain(req, next.andThen(context))
     }
@@ -80,8 +79,8 @@ trait ClientContext {
 }
 
 object ClientContext {
-  def passThroughChannel(channel:HttpChannel, config: HttpClientConfig): ClientContext = new ClientContext {
-    override def chain(req: Request): Response = channel.send(req, config)
+  def passThroughChannel(channel: HttpChannel, config: HttpClientConfig): ClientContext = new ClientContext {
+    override def chain(req: Request): Response              = channel.send(req, config)
     override def chainAsync(req: Request): Future[Response] = channel.sendAsync(req, config)
   }
 

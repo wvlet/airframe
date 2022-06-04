@@ -24,14 +24,14 @@ trait HttpClientBackend {
 
   def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel
 
-  def newSyncClient(serverAddress: ServerAddress, clientConfig: HttpClientConfig): SyncClient = {
-    new SyncClientImpl(newHttpChannel(serverAddress, clientConfig), clientConfig)
+  def newSyncClient(serverAddress: ServerAddress, config: HttpClientConfig): SyncClient = {
+    new SyncClientImpl(newHttpChannel(serverAddress, config), config)
   }
 
   def newAsyncClient(
       serverAddress: ServerAddress,
-      clientConfig: HttpClientConfig
+      config: HttpClientConfig
   ): AsyncClient = {
-    new AsyncClientImpl(newHttpChannel(serverAddress, clientConfig), clientConfig)
+    new AsyncClientImpl(newHttpChannel(serverAddress, config), config)
   }
 }
