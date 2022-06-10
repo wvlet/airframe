@@ -13,7 +13,7 @@ addCommandAlias(
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val SCALA_2_12          = "2.12.15"
+val SCALA_2_12          = "2.12.16"
 val SCALA_2_13          = "2.13.8"
 val SCALA_3_0           = "3.1.2"
 val targetScalaVersions = SCALA_2_13 :: SCALA_2_12 :: Nil
