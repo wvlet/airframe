@@ -36,6 +36,10 @@ object ReflectSurfaceFactory extends LogSupport {
     new ConcurrentHashMap[TypeName, Seq[MethodSurface]].asScala
   private[surface] val typeMap = new ConcurrentHashMap[Surface, ru.Type].asScala
 
+  //private def surfaceCacheCheat = surfaceCache.asInstanceOf[scala.collection.convert.JavaCollectionWrappers.JConcurrentMapWrapper]
+  import language.reflectiveCalls
+  private def surfaceCacheCheat = surfaceCache.asInstanceOf[AnyRef { def underlying: ConcurrentHashMap[TypeName, Surface] }]
+
   private def belongsToScalaDefault(t: ru.Type) = {
     t match {
       case ru.TypeRef(prefix, _, _) =>
@@ -133,7 +137,11 @@ object ReflectSurfaceFactory extends LogSupport {
   }
 
   def apply(tpe: ru.Type): Surface = {
-    surfaceCache.getOrElseUpdate(fullTypeNameOf(tpe), new SurfaceFinder().surfaceOf(tpe))
+    val fullName = fullTypeNameOf(tpe)
+    surfaceCacheCheat.underlying.computeIfAbsent(fullName, fn => new SurfaceFinder().surfaceOf(tpe, fn)) match {
+      case null => LazySurface(resolveClass(tpe), fullName) // Recursive type
+      case surface => surface
+    }
   }
 
   def methodsOf(s: Surface): Seq[MethodSurface] = {
@@ -312,13 +320,17 @@ object ReflectSurfaceFactory extends LogSupport {
     }
 
     def surfaceOf(tpe: ru.Type): Surface = {
+      val fullName = fullTypeNameOf(tpe)
+      surfaceCacheCheat.underlying.computeIfAbsent(fullName, fn => surfaceOf(tpe, fn)) match {
+        case null => LazySurface(resolveClass(tpe), fullName) // Recursive type
+        case surface => surface
+      }
+    }
+
+    def surfaceOf(tpe: ru.Type, fullName: TypeName): Surface = {
       try {
-        val fullName = fullTypeNameOf(tpe)
-        if (surfaceCache.contains(fullName)) {
-          surfaceCache(fullName)
-        } else if (seen.contains(tpe)) {
-          // Recursive type
-          LazySurface(resolveClass(tpe), fullName)
+        if (seen.contains(tpe)) {
+          null // Recursive type
         } else {
           seen += tpe
           val m = surfaceFactories.orElse[ru.Type, Surface] { case _ =>
@@ -333,8 +345,6 @@ object ReflectSurfaceFactory extends LogSupport {
                 // Failed to create surface (Not found in cache)
                 AnyRefSurface
             }
-          // Cache if not yet cached
-          surfaceCache.getOrElseUpdate(fullName, surface)
           typeMap.getOrElseUpdate(surface, tpe)
           trace(s"surfaceOf(${tpe}) Surface: ${surface}, Surface class:${surface.getClass}, tpe: ${showRaw(tpe)}")
           surface
