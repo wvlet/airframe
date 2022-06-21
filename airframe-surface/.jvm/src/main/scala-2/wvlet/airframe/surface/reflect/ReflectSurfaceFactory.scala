@@ -133,7 +133,12 @@ object ReflectSurfaceFactory extends LogSupport {
   }
 
   def apply(tpe: ru.Type): Surface = {
-    surfaceCache.getOrElseUpdate(fullTypeNameOf(tpe), new SurfaceFinder().surfaceOf(tpe))
+    val tpeName = fullTypeNameOf(tpe)
+    if (!surfaceCache.contains(tpeName)) {
+      val surface = new SurfaceFinder().surfaceOf(tpe)
+      surfaceCache += tpeName -> surface
+    }
+    surfaceCache(fullTypeNameOf(tpe))
   }
 
   def methodsOf(s: Surface): Seq[MethodSurface] = {
@@ -149,11 +154,11 @@ object ReflectSurfaceFactory extends LogSupport {
 
   def methodsOfType(tpe: ru.Type, cls: Option[Class[_]] = None): Seq[MethodSurface] = {
     val name = fullTypeNameOf(tpe)
-    methodSurfaceCache.getOrElseUpdate(
-      name, {
-        new SurfaceFinder().createMethodSurfaceOf(tpe, cls)
-      }
-    )
+    if (!methodSurfaceCache.contains(name)) {
+      val methodSurface = new SurfaceFinder().createMethodSurfaceOf(tpe, cls)
+      methodSurfaceCache += name -> methodSurface
+    }
+    methodSurfaceCache(name)
   }
 
   def methodsOfClass(cls: Class[_]): Seq[MethodSurface] = {

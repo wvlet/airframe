@@ -103,7 +103,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           } else {
             fullTypeNameOf(t)
           }
-        '{ wvlet.airframe.surface.surfaceCache.getOrElseUpdate(${ Expr(cacheKey) }, ${ expr }) }
+        '{
+            val key = ${Expr(cacheKey)}
+            if(!wvlet.airframe.surface.surfaceCache.contains(key)) {
+              wvlet.airframe.surface.surfaceCache += key -> ${expr}
+            }
+            wvlet.airframe.surface.surfaceCache(key)
+         }
       }
       val surface = generator(t)
       memo += (t -> surface)
