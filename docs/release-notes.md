@@ -6,6 +6,38 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.6.2
+
+This version is mostly internal updates.
+
+- airframe-surface: Avoid recursive update of surface cache ([#2261](https://github.com/wvlet/airframe/issues/2261)) [[34918279e](https://github.com/wvlet/airframe/commit/34918279e)]
+- Update auth to 2.17.215 ([#2259](https://github.com/wvlet/airframe/issues/2259)) [[e9227e9b6](https://github.com/wvlet/airframe/commit/e9227e9b6)]
+- Update spark-sql to 3.3.0 ([#2251](https://github.com/wvlet/airframe/issues/2251)) [[1329010c1](https://github.com/wvlet/airframe/commit/1329010c1)]
+- Update trino-main to 386 ([#2253](https://github.com/wvlet/airframe/issues/2253)) [[f42dc2d4d](https://github.com/wvlet/airframe/commit/f42dc2d4d)]
+- Update okhttp to 4.10.0 ([#2247](https://github.com/wvlet/airframe/issues/2247)) [[a0b80cdb2](https://github.com/wvlet/airframe/commit/a0b80cdb2)]
+- Update swagger-parser to 2.1.1 ([#2256](https://github.com/wvlet/airframe/issues/2256)) [[ac2b0e400](https://github.com/wvlet/airframe/commit/ac2b0e400)]
+- Update msgpack-core to 0.9.2 ([#2258](https://github.com/wvlet/airframe/issues/2258)) [[2686c95ae](https://github.com/wvlet/airframe/commit/2686c95ae)]
+- Update airframe-http, ... to 22.6.1 ([#2248](https://github.com/wvlet/airframe/issues/2248)) [[67ca7d3b5](https://github.com/wvlet/airframe/commit/67ca7d3b5)]
+- Update scala-compiler, scala-library, ... to 2.12.16 ([#2245](https://github.com/wvlet/airframe/issues/2245)) [[3341ec55f](https://github.com/wvlet/airframe/commit/3341ec55f)]
+- Fix jdk11 version in CI ([#2244](https://github.com/wvlet/airframe/issues/2244)) [[ea9ffe8d6](https://github.com/wvlet/airframe/commit/ea9ffe8d6)]
+- Update postgresql to 42.4.0 ([#2242](https://github.com/wvlet/airframe/issues/2242)) [[ba65b7efc](https://github.com/wvlet/airframe/commit/ba65b7efc)]
+- Update auth to 2.17.208 ([#2243](https://github.com/wvlet/airframe/issues/2243)) [[08b82cdbc](https://github.com/wvlet/airframe/commit/08b82cdbc)]
+- Update .scala-steward.conf [[dd0a7f74c](https://github.com/wvlet/airframe/commit/dd0a7f74c)]
+- Update trino-main to 385 ([#2240](https://github.com/wvlet/airframe/issues/2240)) [[1505ac573](https://github.com/wvlet/airframe/commit/1505ac573)]
+- Update scala-ulid to 1.0.24 ([#2238](https://github.com/wvlet/airframe/issues/2238)) [[ddad6cc95](https://github.com/wvlet/airframe/commit/ddad6cc95)]
+- Update auth to 2.17.206 ([#2239](https://github.com/wvlet/airframe/issues/2239)) [[c2d0d850b](https://github.com/wvlet/airframe/commit/c2d0d850b)]
+- Use JDK17 for regular CI and JDK11 for releases ([#2235](https://github.com/wvlet/airframe/issues/2235)) [[9a046d1dd](https://github.com/wvlet/airframe/commit/9a046d1dd)]
+- airframe-http: Add RPCMethod for simplifying RPC client code ([#2234](https://github.com/wvlet/airframe/issues/2234)) [[de0bc2c78](https://github.com/wvlet/airframe/commit/de0bc2c78)]
+- Use only sed for dynver computation ([#2233](https://github.com/wvlet/airframe/issues/2233)) [[e33ce183e](https://github.com/wvlet/airframe/commit/e33ce183e)]
+- airframe-rpc: Add a new integration test with the new Http RPC client ([#2232](https://github.com/wvlet/airframe/issues/2232)) [[10ae968a7](https://github.com/wvlet/airframe/commit/10ae968a7)]
+- airframe-http: Http client interface clean up  ([#2231](https://github.com/wvlet/airframe/issues/2231)) [[439fb5b3b](https://github.com/wvlet/airframe/commit/439fb5b3b)]
+- Update trino-main to 384 ([#2229](https://github.com/wvlet/airframe/issues/2229)) [[cc822516d](https://github.com/wvlet/airframe/commit/cc822516d)]
+- airframe-http: Add HttpChannel and ClientFilter ([#2230](https://github.com/wvlet/airframe/issues/2230)) [[5613aa3b2](https://github.com/wvlet/airframe/commit/5613aa3b2)]
+- Update auth to 2.17.204 ([#2227](https://github.com/wvlet/airframe/issues/2227)) [[a060cd5e4](https://github.com/wvlet/airframe/commit/a060cd5e4)]
+- Update antlr4, antlr4-runtime to 4.10.1 ([#2216](https://github.com/wvlet/airframe/issues/2216)) [[a8fa16e53](https://github.com/wvlet/airframe/commit/a8fa16e53)]
+- Update airspec to 22.6.1 ([#2226](https://github.com/wvlet/airframe/issues/2226)) [[9f3372768](https://github.com/wvlet/airframe/commit/9f3372768)]
+- Update airframe-codec, airframe-control, ... to 22.6.1 ([#2225](https://github.com/wvlet/airframe/issues/2225)) [[c1722cd18](https://github.com/wvlet/airframe/commit/c1722cd18)]
+
 ## 22.6.1
 
 This is a bug fix release of airframe-http client.
