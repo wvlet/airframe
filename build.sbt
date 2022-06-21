@@ -9,7 +9,7 @@ val withDotty           = SCALA_3_0 :: targetScalaVersions
 // Add this for using snapshot versions
 // ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
 
-val AIRSPEC_VERSION                 = "22.6.1"
+val AIRSPEC_VERSION                 = "22.6.2"
 val SCALACHECK_VERSION              = "1.16.0"
 val MSGPACK_VERSION                 = "0.9.2"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.1.1"
