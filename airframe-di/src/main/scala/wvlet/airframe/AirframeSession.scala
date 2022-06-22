@@ -94,6 +94,16 @@ private[airframe] class AirframeSession(
     singletonHolder.get(t)
   }
 
+  private def getOrBuildSingleton(t: Surface, factory: => Any): Any = {
+    singletonHolder.get(t) match {
+      case Some(value) => value
+      case None =>
+        val singleton = factory
+        singletonHolder += t -> singleton
+        singleton
+    }
+  }
+
   def sessionId: Long = hashCode()
 
   def name: String =
@@ -299,7 +309,7 @@ private[airframe] class AirframeSession(
                 )
               case sb @ SingletonBinding(from, to, eager, sourceCode) if from != to =>
                 trace(s"[${name}] Found a singleton binding: ${from} => ${to}, defined at ${sourceCode}")
-                singletonHolder.getOrElseUpdate(
+                getOrBuildSingleton(
                   from,
                   registerInjectee(
                     from,
@@ -317,7 +327,7 @@ private[airframe] class AirframeSession(
                 )
               case sb @ SingletonBinding(from, to, eager, sourceCode) if from == to =>
                 trace(s"[${name}] Found a singleton binding: ${from}, defined at ${sourceCode}")
-                singletonHolder.getOrElseUpdate(
+                getOrBuildSingleton(
                   from,
                   registerInjectee(
                     bindTarget,
@@ -336,7 +346,7 @@ private[airframe] class AirframeSession(
                 }
 
                 if (provideSingleton) {
-                  singletonHolder.getOrElseUpdate(p.from, registerInjectee(p.from, p.from, buildWithProvider))
+                  getOrBuildSingleton(p.from, registerInjectee(p.from, p.from, buildWithProvider))
                 } else {
                   registerInjectee(p.from, p.from, buildWithProvider)
                 }
@@ -363,7 +373,7 @@ private[airframe] class AirframeSession(
           )
         } else {
           // Create a singleton if no binding is found
-          singletonHolder.getOrElseUpdate(
+          getOrBuildSingleton(
             tpe,
             registerInjectee(
               bindTarget,
