@@ -6,6 +6,12 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.6.3
+
+This version is a fix for a furture version of Scala 2.13
+
+- airframe-di: Fixes [#2265](https://github.com/wvlet/airframe/issues/2265) Avoid recursive update of ConcurrentHashMap ([#2266](https://github.com/wvlet/airframe/issues/2266)) [[c753611cc](https://github.com/wvlet/airframe/commit/c753611cc)]
+
 ## 22.6.2
 
 This version is mostly internal updates.
