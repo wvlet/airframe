@@ -363,11 +363,21 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
     }
   }
 
+  private def getOrUpdateSchema(surface: Surface, factory: => SchemaOrRef): SchemaOrRef = {
+    schemaCache.get(surface) match {
+      case Some(x) => x
+      case None =>
+        val v = factory
+        schemaCache += surface -> v
+        v
+    }
+  }
+
   def getOpenAPISchemaOfSurface(s: Surface, seen: Set[Surface]): SchemaOrRef = {
     if (seen.contains(s)) {
       SchemaRef(`$ref` = s"#/components/schemas/${schemaName(s)}")
     } else {
-      schemaCache.getOrElseUpdate(
+      getOrUpdateSchema(
         s, {
           debug(s"Find Open API Schema of ${s}")
           s match {
