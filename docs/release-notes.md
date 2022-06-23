@@ -6,6 +6,15 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.6.4
+
+This version has a minor fix for supporting upcoming Scala 2.13.9
+
+- openapi: Avoid recursive cache update to support future Scala 2.13.x ([#2269](https://github.com/wvlet/airframe/issues/2269)) [[8e3c80f74](https://github.com/wvlet/airframe/commit/8e3c80f74)]
+- Update auth to 2.17.216 ([#2264](https://github.com/wvlet/airframe/issues/2264)) [[55ba110cf](https://github.com/wvlet/airframe/commit/55ba110cf)]
+- Update airspec, sbt-airframe to 22.6.3 ([#2268](https://github.com/wvlet/airframe/issues/2268)) [[a3c111c25](https://github.com/wvlet/airframe/commit/a3c111c25)]
+- Update airframe-codec, airframe-control, ... to 22.6.3 ([#2267](https://github.com/wvlet/airframe/issues/2267)) [[9f2defaad](https://github.com/wvlet/airframe/commit/9f2defaad)]
+
 ## 22.6.3
 
 This version is a fix for a furture version of Scala 2.13
