@@ -364,12 +364,14 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
   }
 
   private def getOrUpdateSchema(surface: Surface, factory: => SchemaOrRef): SchemaOrRef = {
-    schemaCache.get(surface) match {
-      case Some(x) => x
-      case None =>
-        val v = factory
-        schemaCache += surface -> v
-        v
+    synchronized {
+      schemaCache.get(surface) match {
+        case Some(x) => x
+        case None =>
+          val v = factory
+          schemaCache += surface -> v
+          v
+      }
     }
   }
 
