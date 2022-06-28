@@ -682,7 +682,7 @@ lazy val rx =
     .jsSettings(
       jsBuildSettings,
       // For addressing the fairness issue of the global ExecutorContext https://github.com/scala-js/scala-js/issues/4129
-      libraryDependencies += "org.scala-js" %%% "scala-js-macrotask-executor" % "1.0.0"
+      libraryDependencies += "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.0"
     )
     .dependsOn(log)
 
