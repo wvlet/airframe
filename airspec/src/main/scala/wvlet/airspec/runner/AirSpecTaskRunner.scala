@@ -132,7 +132,7 @@ private[airspec] class AirSpecTaskRunner(
     val status = AirSpecException.classifyException(cause)
     // Unknown error
     val event =
-      AirSpecEvent(taskDef, "<spec>", status, new OptionalThrowable(cause), System.nanoTime() - startTimeNanos)
+      AirSpecEvent(taskDef, None, status, new OptionalThrowable(cause), System.nanoTime() - startTimeNanos)
     taskLogger.logEvent(event)
     eventHandler.handle(event)
   }
@@ -314,7 +314,7 @@ private[airspec] class AirSpecTaskRunner(
                 val status = AirSpecException.classifyException(ex)
                 (status, new OptionalThrowable(compat.findCause(ex)))
             }
-            val e = AirSpecEvent(taskDef, m.name, status, throwableOpt, durationNanos)
+            val e = AirSpecEvent(taskDef, Some(m.name), status, throwableOpt, durationNanos)
             taskLogger.logEvent(
               e,
               indentLevel = indentLevel,

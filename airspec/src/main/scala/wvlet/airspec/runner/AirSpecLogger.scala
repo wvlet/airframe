@@ -24,14 +24,23 @@ import wvlet.log.{ConsoleLogHandler, LogFormatter, LogLevel, Logger}
 
 private[airspec] case class AirSpecEvent(
     taskDef: TaskDef,
-    override val fullyQualifiedName: String,
+    // If None, it's a spec
+    testName: Option[String],
     override val status: Status,
     override val throwable: OptionalThrowable,
     durationNanos: Long
 ) extends Event {
+  override def fullyQualifiedName: String = {
+    testName.getOrElse(taskDef.fullyQualifiedName())
+  }
   override def fingerprint(): Fingerprint = taskDef.fingerprint()
-  override def selector(): Selector       = taskDef.selectors().head
-  override def duration(): Long           = TimeUnit.NANOSECONDS.toMillis(durationNanos)
+  override def selector(): Selector = {
+    testName match {
+      case Some(x) => new TestSelector(x)
+      case _       => taskDef.selectors.headOption.getOrElse(new SuiteSelector)
+    }
+  }
+  override def duration(): Long = TimeUnit.NANOSECONDS.toMillis(durationNanos)
 }
 
 /**
