@@ -6,6 +6,24 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.7.0
+
+This version upgrades Scala.js to 1.10.1, msgpack-core 0.9.3 (JDK17 support).
+AirSpec 22.7.0 fixes JUnit test report (test-repot.xml) output. 
+
+- Update fluency-core, fluency-fluentd, ... to 2.6.5 ([#2293](https://github.com/wvlet/airframe/issues/2293)) [[37d990ba5](https://github.com/wvlet/airframe/commit/37d990ba5)]
+- airspec: Fix [#2290](https://github.com/wvlet/airframe/issues/2290). Report test spec names to test-report.xml properly ([#2294](https://github.com/wvlet/airframe/issues/2294)) [[6457f9389](https://github.com/wvlet/airframe/commit/6457f9389)]
+- Update trino-main to 388 ([#2288](https://github.com/wvlet/airframe/issues/2288)) [[007703355](https://github.com/wvlet/airframe/commit/007703355)]
+- Update msgpack-core to 0.9.3 ([#2285](https://github.com/wvlet/airframe/issues/2285)) [[ccb849442](https://github.com/wvlet/airframe/commit/ccb849442)]
+- Update scala-js-macrotask-executor to 1.1.0 ([#2283](https://github.com/wvlet/airframe/issues/2283)) [[e9788aec7](https://github.com/wvlet/airframe/commit/e9788aec7)]
+- Update scalajs-test-interface to 1.10.1 ([#2281](https://github.com/wvlet/airframe/issues/2281)) [[996b9a8ed](https://github.com/wvlet/airframe/commit/996b9a8ed)]
+- Update protobuf-java to 3.21.2 ([#2275](https://github.com/wvlet/airframe/issues/2275)) [[18bcf2007](https://github.com/wvlet/airframe/commit/18bcf2007)]
+- openapi: Stabilize unit tests ([#2280](https://github.com/wvlet/airframe/issues/2280)) [[298b370ab](https://github.com/wvlet/airframe/commit/298b370ab)]
+- Update sbt-scalajs, scalajs-compiler, ... to 1.10.1 ([#2278](https://github.com/wvlet/airframe/issues/2278)) [[009cd5526](https://github.com/wvlet/airframe/commit/009cd5526)]
+- Update sbt-scoverage to 2.0.0 ([#2277](https://github.com/wvlet/airframe/issues/2277)) [[f10a1c6be](https://github.com/wvlet/airframe/commit/f10a1c6be)]
+- Update auth to 2.17.217 ([#2271](https://github.com/wvlet/airframe/issues/2271)) [[550cc1406](https://github.com/wvlet/airframe/commit/550cc1406)]
+- Update trino-main to 387 ([#2270](https://github.com/wvlet/airframe/issues/2270)) [[9758ec092](https://github.com/wvlet/airframe/commit/9758ec092)]
+
 ## 22.6.4
 
 This version has a minor fix for supporting upcoming Scala 2.13.9
