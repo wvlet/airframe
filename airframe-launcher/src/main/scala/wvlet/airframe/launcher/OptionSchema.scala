@@ -57,7 +57,7 @@ object ClassOptionSchema extends LogSupport {
     * Create an option schema from a given class definition
     */
   def apply(surface: Surface, path: Path = Path.current, argIndexOffset: Int = 0): ClassOptionSchema = {
-    var argCount = 0
+    var argCount = argIndexOffset
     val o        = Seq.newBuilder[CLOption]
     val a        = Seq.newBuilder[CLArgItem]
     for (p <- surface.params) {
@@ -67,11 +67,11 @@ object ClassOptionSchema extends LogSupport {
       val argAnnot = p.findAnnotationOf[argument]
 
       // @option
-      optAnnot.map { opt => o += new CLOption(nextPath, opt, p) }
+      optAnnot.foreach { opt => o += CLOption(nextPath, opt, p) }
 
       // @argument
-      argAnnot.map { arg =>
-        a += new CLArgument(nextPath, arg, argIndexOffset + argCount, p)
+      argAnnot.foreach { arg =>
+        a += CLArgument(nextPath, arg, argCount, p)
         argCount += 1
       }
 
@@ -103,7 +103,7 @@ object MethodOptionSchema {
     val o = Seq.newBuilder[CLOption]
     val a = Seq.newBuilder[CLArgItem]
 
-    var argIndex = argIndexOffset
+    var argCount = argIndexOffset
     for (p <- method.args) {
       val nextPath = path / p.name
       // Find options
@@ -114,15 +114,16 @@ object MethodOptionSchema {
         o += CLOption(Path(p.name), opt, p)
       }
       argAnnot.foreach { arg =>
-        a += (CLArgument(Path(p.name), arg, { argIndex += 1; argIndex }, p)).asInstanceOf[CLArgItem]
+        a += CLArgument(Path(p.name), arg, argCount, p)
+        argCount += 1
       }
 
       if (optAnnot.isEmpty || argAnnot.isEmpty) {
         // The method argument might be a nested object
-        val nested = ClassOptionSchema(p.surface, nextPath, argIndex)
+        val nested = ClassOptionSchema(p.surface, nextPath, argCount)
         o ++= nested.options
         a ++= nested.args
-        argIndex += nested.args.length
+        argCount += nested.args.length
       }
     }
     new MethodOptionSchema(method, o.result(), a.result().sortBy(_.argIndex))
