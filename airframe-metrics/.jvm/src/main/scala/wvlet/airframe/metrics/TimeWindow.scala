@@ -146,13 +146,15 @@ object TimeWindow extends LogSupport {
       .map(ZoneId.of(_))
       .getOrElse { ZoneId.of(zoneName) }
 
-    val offset = ZonedDateTime.now(zoneId).getOffset
-    withTimeZone(offset)
+    withTimeZone(zoneId)
   }
 
-  def withTimeZone(zoneId: ZoneOffset): TimeWindowBuilder = new TimeWindowBuilder(zoneId)
-  def withUTC: TimeWindowBuilder                          = withTimeZone(UTC)
-  def withSystemTimeZone: TimeWindowBuilder               = withTimeZone(systemTimeZone)
+  def withTimeZone(zoneId: ZoneId): TimeWindowBuilder = {
+    val offset = ZonedDateTime.now(zoneId).getOffset
+    new TimeWindowBuilder(offset)
+  }
+  def withUTC: TimeWindowBuilder            = withTimeZone(UTC)
+  def withSystemTimeZone: TimeWindowBuilder = withTimeZone(systemTimeZone)
 }
 
 class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime] = None) extends LogSupport {
