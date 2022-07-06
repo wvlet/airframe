@@ -31,7 +31,7 @@ object ArgProcessorTest {
   case class SubCmd(@option(prefix = "-p", description = "port number") port: Int) extends LogSupport {
     @command(description = "say hello")
     def hello(@option(prefix = "-t", description = "timeout sec") timeoutSec: Int = 10): Unit = {
-      info(s"hello: timeout=${timeoutSec}")
+      debug(s"hello: timeout=${timeoutSec}")
     }
   }
 
@@ -85,9 +85,12 @@ class ArgProcessorTest extends AirSpec {
   }
 
   test("should parse top-level arguments") {
-    val l = Launcher.of[Cmd]
-    l.execute("")
-    l.execute("-h")
+    val c = capture {
+      val l = Launcher.of[Cmd]
+      l.execute("")
+      l.execute("-h")
+    }
+    c.contains("My command")
   }
 
   test("should show global options") {

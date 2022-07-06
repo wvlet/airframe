@@ -173,7 +173,7 @@ object OptionParser extends LogSupport {
   *   leo
   */
 class OptionParser(val schema: OptionSchema) extends LogSupport {
-  def this(m: MethodSurface) = this(new MethodOptionSchema(m))
+  def this(m: MethodSurface) = this(MethodOptionSchema(m))
 
   import OptionParser._
 
