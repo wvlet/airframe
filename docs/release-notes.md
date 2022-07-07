@@ -6,6 +6,20 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.7.1
+
+This version includes minor updates and upgrades to Scala 3.1.3. 
+
+- airframe-metrics: Use ZoneId for TimeWindow.withTimeZone() instead of ZoneOffset ([#2298](https://github.com/wvlet/airframe/issues/2298)) [[2f0fb0d79](https://github.com/wvlet/airframe/commit/2f0fb0d79)]
+- airframe-launcher: Fixes [#2291](https://github.com/wvlet/airframe/issues/2291) support nested objects in command args ([#2297](https://github.com/wvlet/airframe/issues/2297)) [[e6003ef4d](https://github.com/wvlet/airframe/commit/e6003ef4d)]
+- Upgrade to Scala 3.1.3 ([#2284](https://github.com/wvlet/airframe/issues/2284)) [[e6c5abddc](https://github.com/wvlet/airframe/commit/e6c5abddc)]
+
+- Use Scala 2.12.16 for sbt-airframe build ([#2304](https://github.com/wvlet/airframe/issues/2304)) [[efc937137](https://github.com/wvlet/airframe/commit/efc937137)]
+- Update airframe-codec, airframe-control, ... to 22.7.0 ([#2303](https://github.com/wvlet/airframe/issues/2303)) [[b2afe579c](https://github.com/wvlet/airframe/commit/b2afe579c)]
+- Update airframe-codec, airframe-control, ... to 22.6.4 ([#2301](https://github.com/wvlet/airframe/issues/2301)) [[13f6ad130](https://github.com/wvlet/airframe/commit/13f6ad130)]
+- Update airspec to 22.7.0 ([#2302](https://github.com/wvlet/airframe/issues/2302)) [[6dc076354](https://github.com/wvlet/airframe/commit/6dc076354)]
+- Update airspec, sbt-airframe to 22.7.0 ([#2295](https://github.com/wvlet/airframe/issues/2295)) [[e3512d5ff](https://github.com/wvlet/airframe/commit/e3512d5ff)]
+
 ## 22.7.0
 
 This version upgrades Scala.js to 1.10.1, msgpack-core 0.9.3 (JDK17 support).
