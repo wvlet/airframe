@@ -9,7 +9,7 @@ val withDotty           = SCALA_3_0 :: targetScalaVersions
 // Add this for using snapshot versions
 // ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
 
-val AIRSPEC_VERSION                 = "22.7.0"
+val AIRSPEC_VERSION                 = "22.7.1"
 val SCALACHECK_VERSION              = "1.16.0"
 val MSGPACK_VERSION                 = "0.9.3"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.1.1"
@@ -115,7 +115,7 @@ val buildSettings = Seq[Setting[_]](
     if (scalaVersion.value.startsWith("3."))
       Seq.empty
     else
-      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.7.0")
+      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.8.0")
   }
 )
 
