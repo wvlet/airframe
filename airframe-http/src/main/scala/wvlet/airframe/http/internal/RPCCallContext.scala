@@ -11,14 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.examples.json
+package wvlet.airframe.http.internal
 
-/**
-  */
-object JSON_01_Parse extends App {
-  import wvlet.airframe.json.JSON
+import wvlet.airframe.surface.MethodSurface
 
-  val j    = JSON.parse("""{"id":1, "name":"leo"}""")
-  val id   = (j / "id").getValue
-  val name = (j / "name").getValue
+case class RPCCallContext(rpcInterfaceCls: Class[_], rpcMethodSurface: MethodSurface, rpcArgs: Seq[Any]) {
+  def withRPCArgs(rpcArgs: Seq[Any]): RPCCallContext = this.copy(rpcArgs = rpcArgs)
 }

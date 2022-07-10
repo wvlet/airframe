@@ -14,8 +14,8 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.http.internal.RPCCallContext
 import wvlet.airframe.surface.{MethodSurface, Parameter, Surface, TypeName}
-import wvlet.airframe.http.router.RPCCallContext
 import wvlet.airframe.ulid.ULID
 import wvlet.log.{AsyncHandler, LogFormatter, LogRecord, LogRotationHandler, LogTimestampFormatter}
 

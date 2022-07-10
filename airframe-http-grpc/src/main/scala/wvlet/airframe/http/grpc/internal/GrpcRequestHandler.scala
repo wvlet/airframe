@@ -16,9 +16,11 @@ package wvlet.airframe.http.grpc.internal
 import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
 import io.grpc.stub.{ClientCallStreamObserver, ServerCallStreamObserver, StreamObserver}
 import wvlet.airframe.codec.{MessageCodec, MessageCodecException, MessageCodecFactory}
+import wvlet.airframe.http
 import wvlet.airframe.http.RPCEncoding
 import wvlet.airframe.http.grpc.{GrpcContext, GrpcResponse}
-import wvlet.airframe.http.router.{HttpRequestMapper, RPCCallContext}
+import wvlet.airframe.http.internal.RPCCallContext
+import wvlet.airframe.http.router.HttpRequestMapper
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
 import wvlet.airframe.surface.{CName, MethodSurface, Surface}
