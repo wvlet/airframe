@@ -14,7 +14,7 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.{Design, newDesign}
-import wvlet.airframe.http.{ChannelConfig, Http, HttpMessage, HttpStatus, HttpSyncClient}
+import wvlet.airframe.http.{ChannelConfig, Http, HttpHeader, HttpMessage, HttpStatus, HttpSyncClient}
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
@@ -41,7 +41,16 @@ class ClientLoggingFilterTest extends AirSpec {
   }
 
   test("test") { (client: SyncClient) =>
-    client.send(Http.GET("/"))
+    test("GET") {
+      client.send(Http.GET("/"))
+    }
+
+    test("Exclude headers with sensitive information") {
+      client.send(Http.GET("/").withAuthorization("Bearer xxxxxx").withHeader(HttpHeader.Cookie, "yyyyyy"))
+      // small-letter headers
+      client.send(Http.GET("/").withHeader("authorization", "Bearer xxxxxx"))
+      client.send(Http.GET("/").withHeader("cookie", "xxxxxx"))
+    }
   }
 
 }

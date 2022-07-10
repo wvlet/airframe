@@ -70,11 +70,21 @@ object HttpLogs {
     Map("response_header" -> headerLogs(response.header))
   }
 
+  /**
+    * Http headers to be excluded from logging by dfeault
+    */
+  private val defaultExcludeHeaders: Set[String] = Set(
+    HttpHeader.Authorization,
+    HttpHeader.Cookie
+  ).map(_.toLowerCase)
+
   def headerLogs(headerMap: HttpMultiMap): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     for (e <- headerMap.entries) {
-      val v = headerMap.getAll(e.key).mkString(";")
-      m += sanitizeHeader(e.key) -> v
+      if (!defaultExcludeHeaders.contains(e.key.toLowerCase)) {
+        val v = headerMap.getAll(e.key).mkString(";")
+        m += sanitizeHeader(e.key) -> v
+      }
     }
     m.result()
   }
