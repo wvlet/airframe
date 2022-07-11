@@ -8,6 +8,7 @@ on:
       - '**.sbt'
       - '.scalafmt.conf'
       - '.github/workflows/test.yml'
+      - 'project/build.properties'
   push:
     branches:
       - master
@@ -16,6 +17,8 @@ on:
       - '**.java'
       - '**.sbt'
       - '.scalafmt.conf'
+      - '.github/workflows/test.yml'
+      - 'project/build.properties'
 
 jobs:
   code_format:
