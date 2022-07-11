@@ -197,7 +197,7 @@ object HttpLogs {
   private val headerSanitizeCache = new ConcurrentHashMap[String, String]().asScala
 
   private def sanitizeHeader(h: String): String = {
-    headerSanitizeCache.getOrElseUpdate(h, h.replaceAll("-", "_").toLowerCase(Locale.ENGLISH))
+    headerSanitizeCache.getOrElseUpdate(h, h.replaceAll("-", "_").toLowerCase())
   }
 
   def extractQueryString(uri: String): String = {
