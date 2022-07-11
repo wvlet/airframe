@@ -15,6 +15,8 @@ package wvlet.airframe.http
 
 import wvlet.airframe.surface.{MethodSurface, Surface, TypeName}
 
+import scala.collection.immutable.ListMap
+
 /**
   * RPC endpoint information
   * @param path
@@ -33,8 +35,7 @@ case class RPCMethod(
   /**
     * Generate a map representation of this method for logging purpose
     */
-  lazy val logData: Map[String, Any] = Map(
-    "path"          -> path,
+  def logData: ListMap[String, Any] = ListMap(
     "rpc_interface" -> rpcInterface,
     "rpc_method"    -> methodName
   )

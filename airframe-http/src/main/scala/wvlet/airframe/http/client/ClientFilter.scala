@@ -37,7 +37,12 @@ trait ClientFilter {
       case ClientFilter.identity =>
         next
       case _ =>
-        new ClientFilter.AndThen(this, next)
+        next match {
+          case ClientFilter.identity =>
+            this
+          case _ =>
+            new ClientFilter.AndThen(this, next)
+        }
     }
   }
   def andThen(context: ClientContext): ClientContext = {
@@ -78,8 +83,15 @@ object ClientFilter {
 }
 
 trait ClientContext {
+  private var props = Map.empty[String, Any]
   def chain(req: Request): Response
   def chainAsync(req: Request): Future[Response]
+  def setProperty(key: String, value: Any): Unit = {
+    props += key -> value
+  }
+  def getProperty(key: String): Option[Any] = {
+    props.get(key)
+  }
 }
 
 object ClientContext {

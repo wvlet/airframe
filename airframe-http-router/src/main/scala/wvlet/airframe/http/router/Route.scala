@@ -13,9 +13,10 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.Session
+import wvlet.airframe.{Session, http}
 import wvlet.airframe.codec.{MISSING_PARAMETER, MessageCodecException, MessageCodecFactory}
 import wvlet.airframe.http._
+import wvlet.airframe.http.internal.RPCCallContext
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airframe.surface.{MethodSurface, Surface}
@@ -67,10 +68,6 @@ trait Route {
       context: HttpContext[Req, Resp, F],
       codecFactory: MessageCodecFactory
   ): Option[Any]
-}
-
-case class RPCCallContext(rpcInterfaceCls: Class[_], rpcMethodSurface: MethodSurface, rpcArgs: Seq[Any]) {
-  def withRPCArgs(rpcArgs: Seq[Any]): RPCCallContext = this.copy(rpcArgs = rpcArgs)
 }
 
 /**
