@@ -89,6 +89,10 @@ object HttpLogs {
     m.result()
   }
 
+  def rpcMethodLogs(rpcMethod: RPCMethod): Map[String, Any] = {
+    rpcMethod.logData
+  }
+
   def rpcLogs(rpcContext: RPCCallContext): ListMap[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     m += "rpc_interface" -> TypeName.sanitizeTypeName(rpcContext.rpcInterfaceCls.getName)

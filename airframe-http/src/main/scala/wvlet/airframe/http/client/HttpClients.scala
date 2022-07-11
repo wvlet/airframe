@@ -18,6 +18,7 @@ import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException, Resu
 import wvlet.airframe.control.Retry.{MaxRetryException, RetryContext}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
+import wvlet.airframe.http.internal.RPCCallContext
 import wvlet.airframe.surface.Surface
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -51,6 +52,8 @@ trait SyncClient extends SyncClientCompat with ClientFactory[SyncClient] with Au
 
   private val circuitBreaker: CircuitBreaker = config.circuitBreaker
 
+  private def defaultClientContext: ClientContext = ClientContext.passThroughChannel(channel, config)
+
   /**
     * Send an HTTP request and get the response. It will throw an exception for non-successful responses. For example,
     * when receiving non-retryable status code (e.g., 4xx), it will throw HttpClientException. For server side failures
@@ -63,13 +66,13 @@ trait SyncClient extends SyncClientCompat with ClientFactory[SyncClient] with Au
     * @throws HttpClientException
     *   for non-retryable error is occurred
     */
-  def send(req: Request): Response = {
+  def send(req: Request, clientContext: ClientContext = defaultClientContext): Response = {
     val request = config.requestFilter(req)
 
     var lastResponse: Option[Response] = None
     try {
       config.retryContext.runWithContext(request, circuitBreaker) {
-        val resp = config.clientFilter.chain(request, ClientContext.passThroughChannel(channel, config))
+        val resp = config.clientFilter.chain(request, clientContext)
         lastResponse = Some(resp)
         resp
       }
@@ -85,9 +88,9 @@ trait SyncClient extends SyncClientCompat with ClientFactory[SyncClient] with Au
     *
     * After reaching the max retry count, it will return a the last response even for 5xx status code.
     */
-  def sendSafe(req: Request): Response = {
+  def sendSafe(req: Request, context: ClientContext = defaultClientContext): Response = {
     try {
-      send(req)
+      send(req, context)
     } catch {
       case e: HttpClientException =>
         e.response.toHttpResponse
@@ -125,9 +128,11 @@ trait SyncClient extends SyncClientCompat with ClientFactory[SyncClient] with Au
       HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent)
 
     // sendSafe method internally handles retries and HttpClientException, and then it returns the last response
-    val response: Response = sendSafe(request)
+    val context = ClientContext.passThroughChannel(channel, config)
+    context.setProperty("rpc_method", method)
+    val response: Response = sendSafe(request, context)
 
-    // f Parse the RPC response
+    // Parse the RPC response
     if (response.status.isSuccessful) {
       val ret = HttpClients.parseRPCResponse(config, response, method.responseSurface)
       ret.asInstanceOf[Resp]

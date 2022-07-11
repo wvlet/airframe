@@ -14,7 +14,8 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.{Design, newDesign}
-import wvlet.airframe.http.{ChannelConfig, Http, HttpHeader, HttpMessage, HttpStatus, HttpSyncClient}
+import wvlet.airframe.http.{ChannelConfig, Http, HttpHeader, HttpMessage, HttpStatus, HttpSyncClient, RPCMethod}
+import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
@@ -40,7 +41,7 @@ class ClientLoggingFilterTest extends AirSpec {
     }
   }
 
-  test("test") { (client: SyncClient) =>
+  test("test client-side logging") { (client: SyncClient) =>
     test("GET") {
       client.send(Http.GET("/"))
     }
@@ -50,6 +51,11 @@ class ClientLoggingFilterTest extends AirSpec {
       // small-letter headers
       client.send(Http.GET("/").withHeader("authorization", "Bearer xxxxxx"))
       client.send(Http.GET("/").withHeader("cookie", "xxxxxx"))
+    }
+
+    test("rpc logs") {
+      val m = RPCMethod("/rpc_method", "demo.RPCClass", "hello", Surface.of[Map[String, Any]], Surface.of[String])
+      client.rpc[Map[String, Any], String](m, Map("message" -> "world"))
     }
   }
 

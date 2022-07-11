@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.http.client
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.internal.HttpLogs
+import wvlet.airframe.http.RPCMethod
+import wvlet.airframe.http.internal.{HttpLogs, RPCCallContext}
 import wvlet.log.LogSupport
 
 import java.util.concurrent.TimeUnit
@@ -30,6 +31,11 @@ class ClientLoggingFilter extends ClientFilter with LogSupport {
     try {
       val resp = context.chain(req)
       m ++= HttpLogs.commonResponseLogs(resp)
+      context.getProperty("rpc_method") match {
+        case Some(rpcMethod: RPCMethod) =>
+          m ++= HttpLogs.rpcMethodLogs(rpcMethod)
+        case _ =>
+      }
       resp
     } catch {
       case e: Throwable =>

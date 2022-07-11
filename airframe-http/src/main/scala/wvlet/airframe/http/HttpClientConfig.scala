@@ -55,6 +55,7 @@ case class HttpClientConfig(
     readTimeout: Duration = Duration(90, TimeUnit.SECONDS),
     // Provide a thread executor for managing Scala Future responses
     executionContextProvider: HttpClientConfig => ExecutionContext = { _ => compat.defaultExecutionContext },
+    // loggingFilter: ClientFilter = ClientLoggingFilter,
     clientFilter: ClientFilter = ClientFilter.identity,
     /**
       * For converting Future[A] to Rx[A]. Use this method when you need to add a common error handler for Rx (e.g.,
