@@ -20,7 +20,6 @@ import wvlet.airframe.ulid.ULID
 import wvlet.log.LogTimestampFormatter
 
 import java.lang.reflect.InvocationTargetException
-import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
@@ -153,8 +152,9 @@ object HttpLogs {
     @tailrec
     def findCause(e: Throwable): Throwable = {
       e match {
-        case i: InvocationTargetException if i.getTargetException != null =>
-          findCause(i.getTargetException)
+        // InvocationTargetException is not available in Scala.js
+        case i: Exception if i.getClass.getName == "java.lang.reflect.InvocationTargetException" =>
+          findCause(i.getCause)
         case ee: ExecutionException if ee.getCause != null =>
           findCause(ee.getCause)
         case _ =>
