@@ -7,6 +7,7 @@ on:
       - '**.java'
       - '**.sbt'
       - '.github/workflows/sbt-integration.yml'
+      - 'project/build.properties'
   push:
     branches:
       - master
@@ -14,6 +15,8 @@ on:
       - '**.scala'
       - '**.java'
       - '**.sbt'
+      - '.github/workflows/sbt-integration.yml'
+      - 'project/build.properties'
 
 jobs:
   sbt_airframe:
@@ -33,7 +36,7 @@ jobs:
       - name: Check Airframe version
         run: echo ${AIRFRAME_VERSION}
       - name: Create a snapshot of Airframe
-        run: ./sbt ++2.12.15 "projectJVM/publishLocal; projectJS/publishLocal"
+        run: ./sbt ++2.12.16 "projectJVM/publishLocal; projectJS/publishLocal"
 #      - name: Create a snapshot of AirSpec
 #        run: ../sbt "+airspecJVM/publishLocal; +airspecJS/publishLocal"
 #        working-directory: ./airspec
