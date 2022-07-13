@@ -6,6 +6,22 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.7.2
+
+This version recompiles airframe for Java8 target.
+
+- Retarget to JDK8 ([#2320](https://github.com/wvlet/airframe/issues/2320)) [[411f510e0](https://github.com/wvlet/airframe/commit/411f510e0)]
+- Update sbt, sbt-dependency-tree, ... to 1.7.1 ([#2317](https://github.com/wvlet/airframe/issues/2317)) [[6dbd501e8](https://github.com/wvlet/airframe/commit/6dbd501e8)]
+- Update sbt, sbt-dependency-tree, ... to 1.7.0 ([#2314](https://github.com/wvlet/airframe/issues/2314)) [[713302a98](https://github.com/wvlet/airframe/commit/713302a98)]
+- airframe-http: Add a filter for http client logs ([#2315](https://github.com/wvlet/airframe/issues/2315)) [[199f0e950](https://github.com/wvlet/airframe/commit/199f0e950)]
+- Update airspec to 22.7.1 ([#2310](https://github.com/wvlet/airframe/issues/2310)) [[c3969131f](https://github.com/wvlet/airframe/commit/c3969131f)]
+- Ignore unstable tests ([#2313](https://github.com/wvlet/airframe/issues/2313)) [[9e7fea68f](https://github.com/wvlet/airframe/commit/9e7fea68f)]
+- Update scala-collection-compat to 2.8.0 ([#2311](https://github.com/wvlet/airframe/issues/2311)) [[81edbb08f](https://github.com/wvlet/airframe/commit/81edbb08f)]
+- Update airframe-codec, airframe-control, ... to 22.7.1 ([#2309](https://github.com/wvlet/airframe/issues/2309)) [[4517db953](https://github.com/wvlet/airframe/commit/4517db953)]
+- Update trino-main to 389 ([#2306](https://github.com/wvlet/airframe/issues/2306)) [[04ac827a1](https://github.com/wvlet/airframe/commit/04ac827a1)]
+- Use Scala 2.12.16 for testing ([#2308](https://github.com/wvlet/airframe/issues/2308)) [[0a2cdc133](https://github.com/wvlet/airframe/commit/0a2cdc133)]
+- Update airframe-codec, airframe-control, ... to 22.7.1 ([#2305](https://github.com/wvlet/airframe/issues/2305)) [[75e3aa13a](https://github.com/wvlet/airframe/commit/75e3aa13a)]
+
 ## 22.7.1
 
 This version includes minor updates and upgrades to Scala 3.1.3. 
