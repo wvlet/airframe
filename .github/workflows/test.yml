@@ -43,7 +43,7 @@ jobs:
         with:
           java-version: zulu@1.17
       - name: Scala 2.12 test
-        run: ./sbt ++2.12.16 projectJVM/test
+        run: ./sbt ++2.12 projectJVM/test
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v2
         if: always() # always run even if the previous step fails
@@ -113,7 +113,7 @@ jobs:
       - name: Node.js setup
         run: ./scripts/setup-scalajs.sh
       - name: Scala.js test
-        run: JVM_OPTS=-Xmx4g ./sbt ++2.12.16 projectJS/test
+        run: JVM_OPTS=-Xmx4g ./sbt ++2.12 projectJS/test
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v2
         if: always() # always run even if the previous step fails
