@@ -6,6 +6,16 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.7.3
+
+This version removes the absolute source code paths embedded to the compiled binaries when using airframe-log, airframe-di, airspec. This will reduce the generated class file size and protect the privacy of your local folder information.
+
+- Removing full source paths from the generated code  ([#2330](https://github.com/wvlet/airframe/issues/2330)) [[b10c9490e](https://github.com/wvlet/airframe/commit/b10c9490e)]
+- Update trino-main to 390 ([#2325](https://github.com/wvlet/airframe/issues/2325)) [[681c82780](https://github.com/wvlet/airframe/commit/681c82780)]
+- Use 2.12.x wildcard version in CI ([#2329](https://github.com/wvlet/airframe/issues/2329)) [[1090ccf00](https://github.com/wvlet/airframe/commit/1090ccf00)]
+- Update airframe-codec, airframe-control, ... to 22.7.2 ([#2323](https://github.com/wvlet/airframe/issues/2323)) [[7ba1b05ff](https://github.com/wvlet/airframe/commit/7ba1b05ff)]
+- Update airframe-codec, airframe-control, ... to 22.7.2 ([#2321](https://github.com/wvlet/airframe/issues/2321)) [[8f90e5079](https://github.com/wvlet/airframe/commit/8f90e5079)]
+
 ## 22.7.2
 
 This version recompiles airframe for Java8 target.
