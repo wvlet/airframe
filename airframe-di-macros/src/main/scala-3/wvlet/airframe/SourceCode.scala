@@ -40,7 +40,8 @@ object SourceCode {
     val line                        = Expr(pos.startLine)
     val column                      = Expr(pos.endColumn)
     val src                         = pos.sourceFile
-    val srcPath: java.nio.file.Path = java.nio.file.Paths.get(src.path).relativize(java.nio.file.Paths.get(""))
+    // Hidden because embedding the absolute path is not good for privacy and code size
+    // val srcPath: java.nio.file.Path = java.nio.file.Paths.get(src.path)
     val fileName                    = Expr(srcPath.getFileName().toString)
     '{ SourceCode("", ${ fileName }, ${ line } + 1, ${ column }) }
   }
