@@ -16,7 +16,14 @@ package wvlet.airframe
 /**
   * A hack to embed source code location where DI is used
   */
-case class SourceCode(filePath: String, fileName: String, line: Int, col: Int) {
+case class SourceCode(
+  // Deprecated and hidden because the filePath can be too long and may contain private directory paths.
+  // Removing this parameter causes binary incompatibility between AirSpec and Airframe, so preserving it here
+  private[airframe] val filePath: String,
+  fileName: String,
+  line: Int,
+  col: Int
+) {
   override def toString = s"${fileName}:${line}"
 }
 
@@ -33,9 +40,8 @@ object SourceCode {
     val line                        = Expr(pos.startLine)
     val column                      = Expr(pos.endColumn)
     val src                         = pos.sourceFile
-    val srcPath: java.nio.file.Path = java.nio.file.Paths.get(src.path)
-    val path                        = Expr(srcPath.toFile.getPath)
+    val srcPath: java.nio.file.Path = java.nio.file.Paths.get(src.path).relativize(java.nio.file.Paths.get(""))
     val fileName                    = Expr(srcPath.getFileName().toString)
-    '{ SourceCode(${ path }, ${ fileName }, ${ line } + 1, ${ column }) }
+    '{ SourceCode("", ${ fileName }, ${ line } + 1, ${ column }) }
   }
 }
