@@ -52,7 +52,7 @@ private[log] object LogMacros {
 
     def source = {
       val pos = c.enclosingPosition
-      q"wvlet.log.LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
+      q"wvlet.log.LogSource(${""}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
     }
 
     def log(level: c.Tree, message: c.universe.Tree): c.Tree = {

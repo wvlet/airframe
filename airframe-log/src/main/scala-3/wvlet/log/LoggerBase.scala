@@ -84,9 +84,10 @@ private[log] object LoggerMacros {
     val column                      = Expr(pos.endColumn)
     val src                         = pos.sourceFile
     val srcPath: java.nio.file.Path = java.nio.file.Paths.get(src.path)
-    val path                        = Expr(srcPath.toFile.getPath)
+    // Do not include the full source code paths for reducing the compiled binary size
+    //val path                        = Expr(srcPath.toFile.getPath)
     val fileName                    = Expr(srcPath.getFileName().toString)
-    '{ wvlet.log.LogSource(${ path }, ${ fileName }, ${ line } + 1, ${ column }) }
+    '{ wvlet.log.LogSource("", ${ fileName }, ${ line } + 1, ${ column }) }
   }
 
   def logImpl(logger: Expr[Logger], logLevel: Expr[LogLevel], message: Expr[Any])(using q: Quotes): Expr[Unit] = {

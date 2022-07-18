@@ -16,7 +16,14 @@ package wvlet.airframe
 /**
   * A hack to embed source code location where DI is used
   */
-case class SourceCode(filePath: String, fileName: String, line: Int, col: Int) {
+case class SourceCode(
+    // Deprecated and hidden because the filePath can be too long and may contain private directory paths.
+    // Removing this parameter causes binary incompatibility between AirSpec and Airframe, so preserving it here
+    private val filePath: String,
+    fileName: String,
+    line: Int,
+    col: Int
+) {
   override def toString = s"${fileName}:${line}"
 }
 

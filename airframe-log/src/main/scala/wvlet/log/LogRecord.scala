@@ -18,12 +18,11 @@ import java.util.{logging => jl}
 /**
   * Source code location where the log is
   *
-  * @param path
   * @param fileName
   * @param line
   * @param col
   */
-case class LogSource(path: String, fileName: String, line: Int, col: Int) {
+case class LogSource(private val filePath: String, fileName: String, line: Int, col: Int) {
   def fileLoc = s"${fileName}:${line}"
 }
 
