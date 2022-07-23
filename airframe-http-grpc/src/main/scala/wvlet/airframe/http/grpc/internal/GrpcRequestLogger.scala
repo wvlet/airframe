@@ -91,13 +91,12 @@ object GrpcRequestLogger extends LogSupport {
 
   private def logAttributes(a: Attributes): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
-    // A hack to extract client local/remote addresses from the string representation of an gRPC Attribute:
-    for (elems <- a.toString.stripPrefix("{").stripSuffix("}").split(",\\s+")) {
-      elems.split("=") match {
-        case Array(k, v) if k.endsWith("-addr") =>
-          m += HttpAccessLogWriter.sanitizeHeader(k) -> v.stripPrefix("/")
-        case _ =>
-      }
+    // Transport parameter keys become available since grpc-java 1.48.0
+    Option(a.get(io.grpc.Grpc.TRANSPORT_ATTR_LOCAL_ADDR)).foreach { addr =>
+      m += "local_addr" -> addr.toString.stripPrefix("/")
+    }
+    Option(a.get(io.grpc.Grpc.TRANSPORT_ATTR_REMOTE_ADDR)).foreach { addr =>
+      m += "remote_addr" -> addr.toString.stripPrefix("/")
     }
     m.result()
   }
