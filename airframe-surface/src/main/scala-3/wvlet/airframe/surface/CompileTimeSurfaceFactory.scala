@@ -104,12 +104,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             fullTypeNameOf(t)
           }
         '{
-            val key = ${Expr(cacheKey)}
-            if(!wvlet.airframe.surface.surfaceCache.contains(key)) {
-              wvlet.airframe.surface.surfaceCache += key -> ${expr}
-            }
-            wvlet.airframe.surface.surfaceCache(key)
-         }
+          val key = ${ Expr(cacheKey) }
+          if (!wvlet.airframe.surface.surfaceCache.contains(key)) {
+            wvlet.airframe.surface.surfaceCache += key -> ${ expr }
+          }
+          wvlet.airframe.surface.surfaceCache(key)
+        }
       }
       val surface = generator(t)
       memo += (t -> surface)
@@ -353,12 +353,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           case _ =>
             false
         }
-      case _ =>
+      case null =>
         false
     }
   }
 
-  private case class MethodArg(name: String, tpe: TypeRepr)
+  // TODO add defaultValue
+  private case class MethodArg(name: String, tpe: TypeRepr, isRequried: Boolean, isSecret: Boolean)
 
   private def methodArgsOf(t: TypeRepr, method: Symbol): List[MethodArg] = {
     val classTypeParams: List[TypeRepr] = t match {
@@ -380,7 +381,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         // println(s"type args: ${typeArgTable}")
         // tpeArgs for case fields, methodArgs for method arguments
         // E.g. case class Foo(a: String)(implicit b: Int)
-        (tpeArgs ++ methodArgs).map(_.tree).collect { case v: ValDef =>
+        (tpeArgs ++ methodArgs).map(x => (x, x.tree)).collect { case (s: Symbol, v: ValDef) =>
           // Substitue type param to actual types
           val resolved: TypeRepr = v.tpt.tpe match {
             case a: AppliedType =>
@@ -392,13 +393,26 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
               a.appliedTo(resolvedTypeArgs)
             case other => other
           }
-          MethodArg(v.name, resolved)
+          val isSecret   = hasSecretAnnotation(s)
+          val isRequired = hasRequiredAnnotation(s)
+          MethodArg(v.name, resolved, isRequired, isSecret)
         }
       case lst =>
-        lst.flatten.map(_.tree).collect { case v: ValDef =>
-          MethodArg(v.name, v.tpt.tpe)
+        lst.flatten.map(x => (x, x.tree)).collect { case (s: Symbol, v: ValDef) =>
+          val isSecret   = hasSecretAnnotation(s)
+          val isRequired = hasRequiredAnnotation(s)
+          MethodArg(v.name, v.tpt.tpe, isRequired, isSecret)
         }
     }
+  }
+
+  private def hasSecretAnnotation(s: Symbol): Boolean = {
+    val t = TypeRepr.of[wvlet.airframe.surface.secret]
+    s.hasAnnotation(t.typeSymbol)
+  }
+  private def hasRequiredAnnotation(s: Symbol): Boolean = {
+    val t = TypeRepr.of[wvlet.airframe.surface.required]
+    s.hasAnnotation(t.typeSymbol)
   }
 
   private def constructorParametersOf(t: TypeRepr): Expr[Seq[MethodParameter]] = {
@@ -426,6 +440,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     val paramExprs = for ((field, i) <- methodArgs.zipWithIndex) yield {
       val paramType = field.tpe
       val paramName = field.name
+
       // println(s"${paramName}: ${v.tpt.show} ${TypeRepr.of[Option[String]].show}")
       // TODO: Use StdMethodParameter when supportin Scala.js in Scala 3
       '{
