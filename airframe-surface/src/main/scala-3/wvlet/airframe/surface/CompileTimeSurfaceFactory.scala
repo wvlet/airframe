@@ -378,7 +378,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             case (td: TypeDef, i: Int) if i < classTypeParams.size =>
               td.name -> classTypeParams(i)
           }.toMap[String, TypeRepr]
-        println(s"type args: ${typeArgTable}")
+        // println(s"type args: ${typeArgTable}")
         // tpeArgs for case fields, methodArgs for method arguments
         // E.g. case class Foo(a: String)(implicit b: Int)
         (tpeArgs ++ methodArgs).map(x => (x, x.tree)).collect { case (s: Symbol, v: ValDef) =>
