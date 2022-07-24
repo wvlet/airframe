@@ -104,12 +104,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             fullTypeNameOf(t)
           }
         '{
-            val key = ${Expr(cacheKey)}
-            if(!wvlet.airframe.surface.surfaceCache.contains(key)) {
-              wvlet.airframe.surface.surfaceCache += key -> ${expr}
-            }
-            wvlet.airframe.surface.surfaceCache(key)
-         }
+          val key = ${ Expr(cacheKey) }
+          if (!wvlet.airframe.surface.surfaceCache.contains(key)) {
+            wvlet.airframe.surface.surfaceCache += key -> ${ expr }
+          }
+          wvlet.airframe.surface.surfaceCache(key)
+        }
       }
       val surface = generator(t)
       memo += (t -> surface)
@@ -393,17 +393,16 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
               a.appliedTo(resolvedTypeArgs)
             case other => other
           }
-          val isSecret = hasSecretAnnotation(s)
+          val isSecret   = hasSecretAnnotation(s)
           val isRequired = hasRequiredAnnotation(s)
           MethodArg(v.name, resolved, isRequired, isSecret)
         }
       case lst =>
-        lst.flatten.map(x => (x, x.tree)).collect {
-          case (s: Symbol, v: ValDef) =>
-            val isSecret = hasSecretAnnotation(s)
-            val isRequired = hasRequiredAnnotation(s)
-            MethodArg(v.name, v.tpt.tpe, isRequired, isSecret)
-          }
+        lst.flatten.map(x => (x, x.tree)).collect { case (s: Symbol, v: ValDef) =>
+          val isSecret   = hasSecretAnnotation(s)
+          val isRequired = hasRequiredAnnotation(s)
+          MethodArg(v.name, v.tpt.tpe, isRequired, isSecret)
+        }
     }
   }
 
