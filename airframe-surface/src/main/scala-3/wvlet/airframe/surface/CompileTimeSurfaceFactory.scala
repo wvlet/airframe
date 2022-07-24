@@ -409,11 +409,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
   private def hasSecretAnnotation(s: Symbol): Boolean = {
     val t = TypeRepr.of[wvlet.airframe.surface.secret]
-    s.getAnnotation(t.typeSymbol).nonEmpty
+    s.hasAnnotation(t.typeSymbol)
   }
   private def hasRequiredAnnotation(s: Symbol): Boolean = {
     val t = TypeRepr.of[wvlet.airframe.surface.required]
-    s.getAnnotation(t.typeSymbol).nonEmpty
+    s.hasAnnotation(t.typeSymbol)
   }
 
   private def constructorParametersOf(t: TypeRepr): Expr[Seq[MethodParameter]] = {
