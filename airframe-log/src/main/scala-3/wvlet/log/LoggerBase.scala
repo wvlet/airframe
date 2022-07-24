@@ -85,8 +85,8 @@ private[log] object LoggerMacros {
     val src                         = pos.sourceFile
     val srcPath: java.nio.file.Path = java.nio.file.Paths.get(src.path)
     // Do not include the full source code paths for reducing the compiled binary size
-    //val path                        = Expr(srcPath.toFile.getPath)
-    val fileName                    = Expr(srcPath.getFileName().toString)
+    // val path                        = Expr(srcPath.toFile.getPath)
+    val fileName = Expr(srcPath.getFileName().toString)
     '{ wvlet.log.LogSource("", ${ fileName }, ${ line } + 1, ${ column }) }
   }
 
