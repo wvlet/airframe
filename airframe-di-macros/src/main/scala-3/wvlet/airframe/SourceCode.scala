@@ -17,12 +17,12 @@ package wvlet.airframe
   * A hack to embed source code location where DI is used
   */
 case class SourceCode(
-  // Deprecated and hidden because the filePath can be too long and may contain private directory paths.
-  // Removing this parameter causes binary incompatibility between AirSpec and Airframe, so preserving it here
-  private[airframe] val filePath: String,
-  fileName: String,
-  line: Int,
-  col: Int
+    // Deprecated and hidden because the filePath can be too long and may contain private directory paths.
+    // Removing this parameter causes binary incompatibility between AirSpec and Airframe, so preserving it here
+    private[airframe] val filePath: String,
+    fileName: String,
+    line: Int,
+    col: Int
 ) {
   override def toString = s"${fileName}:${line}"
 }
@@ -36,10 +36,10 @@ object SourceCode {
 
   private def generateImpl(using q: Quotes): Expr[SourceCode] = {
     import q.reflect._
-    val pos                         = Position.ofMacroExpansion
-    val line                        = Expr(pos.startLine)
-    val column                      = Expr(pos.endColumn)
-    val src                         = pos.sourceFile
+    val pos    = Position.ofMacroExpansion
+    val line   = Expr(pos.startLine)
+    val column = Expr(pos.endColumn)
+    val src    = pos.sourceFile
     // Hidden because embedding the absolute path is not good for privacy and code size
     val srcPath: java.nio.file.Path = java.nio.file.Paths.get(src.path)
     val fileName                    = Expr(srcPath.getFileName().toString)
