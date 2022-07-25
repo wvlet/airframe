@@ -359,7 +359,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   // TODO add defaultValue
-  private case class MethodArg(name: String, tpe: TypeRepr, isRequried: Boolean, isSecret: Boolean)
+  private case class MethodArg(name: String, tpe: TypeRepr, defaultValueGetter:Option[Symbol], isRequired: Boolean, isSecret: Boolean)
 
   private def methodArgsOf(t: TypeRepr, method: Symbol): List[MethodArg] = {
     val classTypeParams: List[TypeRepr] = t match {
@@ -367,6 +367,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         a.args
       case _ =>
         List.empty[TypeRepr]
+    }
+
+    val defaultValueMethods = t.typeSymbol.companionClass.declaredMethods.filter { m =>
+      m.name.startsWith("apply$default$") || m.name.startsWith("$lessinit$greater$default$")
     }
 
     // println(s"==== method args of ${fullTypeNameOf(t)}")
@@ -395,13 +399,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           }
           val isSecret   = hasSecretAnnotation(s)
           val isRequired = hasRequiredAnnotation(s)
-          MethodArg(v.name, resolved, isRequired, isSecret)
+          MethodArg(v.name, resolved, None, isRequired, isSecret)
         }
       case lst =>
-        lst.flatten.map(x => (x, x.tree)).collect { case (s: Symbol, v: ValDef) =>
+        lst.flatten.zipWithIndex.map((x, i) => (x, i+1, x.tree)).collect { case (s: Symbol, i: Int, v: ValDef) =>
           val isSecret   = hasSecretAnnotation(s)
           val isRequired = hasRequiredAnnotation(s)
-          MethodArg(v.name, v.tpt.tpe, isRequired, isSecret)
+          val defaultValueGetter = defaultValueMethods.find(m => m.name.endsWith(s"$$${i}"))
+          MethodArg(v.name, v.tpt.tpe, defaultValueGetter, isRequired, isSecret)
         }
     }
   }
@@ -441,14 +446,25 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       val paramType = field.tpe
       val paramName = field.name
 
+      // Related example:
+      // https://github.com/lampepfl/dotty-macro-examples/blob/aed51833db652f67741089721765ad5a349f7383/defaultParamsInference/src/macro.scala
+      val defaultValue: Expr[Option[Any]] = field.defaultValueGetter match {
+         case Some(m) =>
+           val dv = Ref(m.owner.companionModule).select(m)
+           '{ Some(${dv.asExprOf[Any]}) }
+         case _ => '{None}
+      }
       // println(s"${paramName}: ${v.tpt.show} ${TypeRepr.of[Option[String]].show}")
       // TODO: Use StdMethodParameter when supportin Scala.js in Scala 3
       '{
-        wvlet.airframe.surface.reflect.RuntimeMethodParameter(
+        wvlet.airframe.surface.StdMethodParameter(
           method = ${ constructorRef },
           index = ${ Expr(i) },
           name = ${ Expr(paramName) },
-          surface = ${ surfaceOf(paramType) }
+          isRequired = ${ Expr(field.isRequired) },
+          isSecret = ${ Expr(field.isSecret) },
+          surface = ${ surfaceOf(paramType) },
+          defaultValue = ${ defaultValue }
         )
       }
     }
