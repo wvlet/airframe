@@ -27,12 +27,19 @@ object ParamTest {
 class ParamTest extends SurfaceSpec {
 
   test("have default value") {
-    // ...
     val s = Surface.of[ParamTest.A]
     val p = s.params.head
     assert(p.getDefaultValue == Option(-1))
     val p1 = s.params(1)
     assert(p1.getDefaultValue == Option(20))
+  }
+
+  test("public field access") {
+    // ...
+    val s  = Surface.of[ParamTest.B]
+    val p1 = s.params(0)
+    val v  = ParamTest.B(1, 2, 3)
+    assertEquals(p1.get(v), 1)
   }
 
   test("private field access") {

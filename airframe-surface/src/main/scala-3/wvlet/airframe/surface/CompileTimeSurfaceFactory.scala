@@ -454,7 +454,36 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
            '{ Some(${dv.asExprOf[Any]}) }
          case _ => '{None}
       }
-      // println(s"${paramName}: ${v.tpt.show} ${TypeRepr.of[Option[String]].show}")
+
+      // Generate a field accessor { (x:Any) => x.asInstanceOf[A].(field name) }
+      val paramIsAccessible = {
+         t.typeSymbol.fieldMember(paramName) match {
+            case nt if nt == Symbol.noSymbol => false
+            case m =>
+              !m.flags.is(Flags.Private) && !m.flags.is(Flags.Artifact)
+         }
+      }
+      // println(s"${paramName} ${paramIsAccessible}")
+
+      val accessor: Expr[Option[Any => Any]] = if (method.isClassConstructor && paramIsAccessible) {
+         val lambda = Lambda(
+           owner = Symbol.spliceOwner,
+           tpe = MethodType(List("x"))(_ => List(TypeRepr.of[Any]), _ => TypeRepr.of[Any]),
+           rhsFn = (sym, params) => {
+             val x = params.head.asInstanceOf[Term]
+             val expr = Select.unique(Select.unique(x, "asInstanceOf").appliedToType(t.widen), paramName)
+             expr.changeOwner(sym)
+           }
+         )
+         // println(t.typeSymbol.fieldMember(paramName).flags.show)
+         // println(paramType.typeSymbol.flags.show)
+         // println(lambda.show)
+         //println(lambda.show(using Printer.TreeStructure))
+         '{ Some(${lambda.asExprOf[Any=>Any]}) }
+        } else {
+         '{ None }
+      }
+
       // TODO: Use StdMethodParameter when supportin Scala.js in Scala 3
       '{
         wvlet.airframe.surface.StdMethodParameter(
@@ -464,7 +493,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           isRequired = ${ Expr(field.isRequired) },
           isSecret = ${ Expr(field.isSecret) },
           surface = ${ surfaceOf(paramType) },
-          defaultValue = ${ defaultValue }
+          defaultValue = ${ defaultValue },
+          accessor = ${ accessor }
         )
       }
     }
