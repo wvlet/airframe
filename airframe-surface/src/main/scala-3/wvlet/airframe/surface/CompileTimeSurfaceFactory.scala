@@ -359,7 +359,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   // TODO add defaultValue
-  private case class MethodArg(name: String, tpe: TypeRepr, defaultValueGetter:Option[Symbol], isRequired: Boolean, isSecret: Boolean)
+  private case class MethodArg(
+      name: String,
+      tpe: TypeRepr,
+      defaultValueGetter: Option[Symbol],
+      isRequired: Boolean,
+      isSecret: Boolean
+  )
 
   private def methodArgsOf(t: TypeRepr, method: Symbol): List[MethodArg] = {
     val classTypeParams: List[TypeRepr] = t match {
@@ -372,43 +378,43 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     val defaultValueMethods = t.typeSymbol.companionClass.declaredMethods.filter { m =>
       m.name.startsWith("apply$default$") || m.name.startsWith("$lessinit$greater$default$")
     }
-
     // println(s"==== method args of ${fullTypeNameOf(t)}")
-    method.paramSymss match {
+
+    // Build a table for resolving type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
+    val typeArgTable: Map[String, TypeRepr] = method.paramSymss match {
+      // tpeArgs for case fields, methodArgs for method arguments
       case List(tpeArgs, methodArgs) =>
-        // Resolve type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
         val typeArgTable = tpeArgs
           .map(_.tree).zipWithIndex.collect {
             case (td: TypeDef, i: Int) if i < classTypeParams.size =>
               td.name -> classTypeParams(i)
           }.toMap[String, TypeRepr]
         // println(s"type args: ${typeArgTable}")
-        // tpeArgs for case fields, methodArgs for method arguments
-        // E.g. case class Foo(a: String)(implicit b: Int)
-        (tpeArgs ++ methodArgs).map(x => (x, x.tree)).collect { case (s: Symbol, v: ValDef) =>
-          // Substitue type param to actual types
-          val resolved: TypeRepr = v.tpt.tpe match {
-            case a: AppliedType =>
-              val resolvedTypeArgs = a.args.map {
-                case p if p.typeSymbol.isTypeParam && typeArgTable.contains(p.typeSymbol.name) =>
-                  typeArgTable(p.typeSymbol.name)
-                case other => other
-              }
-              a.appliedTo(resolvedTypeArgs)
-            case other => other
-          }
-          val isSecret   = hasSecretAnnotation(s)
-          val isRequired = hasRequiredAnnotation(s)
-          MethodArg(v.name, resolved, None, isRequired, isSecret)
-        }
-      case lst =>
-        lst.flatten.zipWithIndex.map((x, i) => (x, i+1, x.tree)).collect { case (s: Symbol, i: Int, v: ValDef) =>
-          val isSecret   = hasSecretAnnotation(s)
-          val isRequired = hasRequiredAnnotation(s)
-          val defaultValueGetter = defaultValueMethods.find(m => m.name.endsWith(s"$$${i}"))
-          MethodArg(v.name, v.tpt.tpe, defaultValueGetter, isRequired, isSecret)
-        }
+        typeArgTable
+      case _ =>
+        Map.empty
     }
+
+    method.paramSymss.flatten.zipWithIndex
+      .map((x, i) => (x, i + 1, x.tree))
+      .collect { case (s: Symbol, i: Int, v: ValDef) =>
+        // E.g. case class Foo(a: String)(implicit b: Int)
+        // Substitue type param to actual types
+        val resolved: TypeRepr = v.tpt.tpe match {
+          case a: AppliedType =>
+            val resolvedTypeArgs = a.args.map {
+              case p if p.typeSymbol.isTypeParam && typeArgTable.contains(p.typeSymbol.name) =>
+                typeArgTable(p.typeSymbol.name)
+              case other => other
+            }
+            a.appliedTo(resolvedTypeArgs)
+          case other => other
+        }
+        val isSecret           = hasSecretAnnotation(s)
+        val isRequired         = hasRequiredAnnotation(s)
+        val defaultValueGetter = defaultValueMethods.find(m => m.name.endsWith(s"$$${i}"))
+        MethodArg(v.name, resolved, defaultValueGetter, isRequired, isSecret)
+      }
   }
 
   private def hasSecretAnnotation(s: Symbol): Boolean = {
@@ -449,40 +455,42 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       // Related example:
       // https://github.com/lampepfl/dotty-macro-examples/blob/aed51833db652f67741089721765ad5a349f7383/defaultParamsInference/src/macro.scala
       val defaultValue: Expr[Option[Any]] = field.defaultValueGetter match {
-         case Some(m) =>
-           val dv = Ref(m.owner.companionModule).select(m)
-           '{ Some(${dv.asExprOf[Any]}) }
-         case _ => '{None}
+        case Some(m) =>
+          val dv = Ref(m.owner.companionModule).select(m)
+          '{ Some(${ dv.asExprOf[Any] }) }
+        case _ => '{ None }
       }
 
       // Generate a field accessor { (x:Any) => x.asInstanceOf[A].(field name) }
       val paramIsAccessible = {
-         t.typeSymbol.fieldMember(paramName) match {
-            case nt if nt == Symbol.noSymbol => false
-            case m =>
-              !m.flags.is(Flags.Private) && !m.flags.is(Flags.Artifact)
-         }
+        t.typeSymbol.fieldMember(paramName) match {
+          case nt if nt == Symbol.noSymbol => false
+          case m =>
+            !m.flags.is(Flags.Private) && !m.flags.is(Flags.Artifact)
+        }
       }
       // println(s"${paramName} ${paramIsAccessible}")
 
+      /*
       val accessor: Expr[Option[Any => Any]] = if (method.isClassConstructor && paramIsAccessible) {
-         val lambda = Lambda(
-           owner = Symbol.spliceOwner,
-           tpe = MethodType(List("x"))(_ => List(TypeRepr.of[Any]), _ => TypeRepr.of[Any]),
-           rhsFn = (sym, params) => {
-             val x = params.head.asInstanceOf[Term]
-             val expr = Select.unique(Select.unique(x, "asInstanceOf").appliedToType(t), paramName)
-             expr.changeOwner(sym)
-           }
-         )
-         // println(t.typeSymbol.fieldMember(paramName).flags.show)
-         // println(paramType.typeSymbol.flags.show)
-         // println(lambda.show)
-         //println(lambda.show(using Printer.TreeStructure))
-         '{ Some(${lambda.asExprOf[Any=>Any]}) }
-        } else {
-         '{ None }
+        val lambda = Lambda(
+          owner = Symbol.spliceOwner,
+          tpe = MethodType(List("x"))(_ => List(TypeRepr.of[Any]), _ => TypeRepr.of[Any]),
+          rhsFn = (sym, params) => {
+            val x    = params.head.asInstanceOf[Term]
+            val expr = Select.unique(Select.unique(x, "asInstanceOf").appliedToType(t), paramName)
+            expr.changeOwner(sym)
+          }
+        )
+        // println(t.typeSymbol.fieldMember(paramName).flags.show)
+        // println(paramType.typeSymbol.flags.show)
+        // println(lambda.show)
+        // println(lambda.show(using Printer.TreeStructure))
+        '{ Some(${ lambda.asExprOf[Any => Any] }) }
+      } else {
+        '{ None }
       }
+       */
 
       // TODO: Use StdMethodParameter when supportin Scala.js in Scala 3
       '{
@@ -493,8 +501,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           isRequired = ${ Expr(field.isRequired) },
           isSecret = ${ Expr(field.isSecret) },
           surface = ${ surfaceOf(paramType) },
-          defaultValue = ${ defaultValue },
-          accessor = ${ accessor }
+          defaultValue = ${ defaultValue }
+          //accessor = ${ accessor }
         )
       }
     }
