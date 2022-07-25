@@ -16,6 +16,7 @@ private[surface] object CompileTimeSurfaceFactory {
     val flags       = t.typeSymbol.flags
     if (!flags.is(Flags.Static) && flags.is(Flags.NoInits)) {
       t.typeSymbol.maybeOwner match {
+        // For inner-class definitions
         case s: Symbol
             if !s.isNoSymbol &&
               s.isClassDef &&
@@ -80,7 +81,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private val memo = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
 
   private def surfaceOf(t: TypeRepr): Expr[Surface] = {
-    // println(s"surfaceOf ${fullTypeNameOf(t)}")
+    println(s"surfaceOf ${fullTypeNameOf(t)}, ${t}")
     if (seen.contains(t)) {
       if (memo.contains(t)) {
         memo(t)
@@ -170,6 +171,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private def aliasFactory: Factory = {
     case t if t.typeSymbol.isType && t.typeSymbol.isAliasType && !belongsToScalaDefault(t) =>
       val dealiased = t.dealias
+      // println(s"=== alias factory: ${t}, ${dealiased}, ${t.simplified}")
+      /*
       // t.dealias does not dealias for current implementation.
       // This workaround attempts to extract dealiased type from AST.
       val symbolInOwner = t.typeSymbol.maybeOwner.declarations.find(_.name.toString == t.typeSymbol.name.toString)
@@ -183,6 +186,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             surfaceOf(t.simplified)
           }
       }
+       */
+      val inner = if(t != dealiased) surfaceOf(dealiased) else surfaceOf(t.simplified)
       val s        = t.typeSymbol
       val name     = Expr(s.name)
       val fullName = Expr(fullTypeNameOf(t.asType))
@@ -465,13 +470,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       val paramIsAccessible = {
         t.typeSymbol.fieldMember(paramName) match {
           case nt if nt == Symbol.noSymbol => false
-          case m =>
-            !m.flags.is(Flags.Private) && !m.flags.is(Flags.Artifact)
+          case m if m.flags.is(Flags.Private) => false
+          case m if m.flags.is(Flags.Artifact) => false
+          case _ => true
         }
       }
       // println(s"${paramName} ${paramIsAccessible}")
+      println(s"${t.simplified.show}")
 
-      /*
       val accessor: Expr[Option[Any => Any]] = if (method.isClassConstructor && paramIsAccessible) {
         val lambda = Lambda(
           owner = Symbol.spliceOwner,
@@ -482,7 +488,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             expr.changeOwner(sym)
           }
         )
-        // println(t.typeSymbol.fieldMember(paramName).flags.show)
+        // println(t.typeSymbol)
         // println(paramType.typeSymbol.flags.show)
         // println(lambda.show)
         // println(lambda.show(using Printer.TreeStructure))
@@ -490,7 +496,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       } else {
         '{ None }
       }
-       */
 
       // TODO: Use StdMethodParameter when supportin Scala.js in Scala 3
       '{
@@ -501,8 +506,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           isRequired = ${ Expr(field.isRequired) },
           isSecret = ${ Expr(field.isSecret) },
           surface = ${ surfaceOf(paramType) },
-          defaultValue = ${ defaultValue }
-          //accessor = ${ accessor }
+          defaultValue = ${ defaultValue },
+          accessor = ${ accessor }
         )
       }
     }
