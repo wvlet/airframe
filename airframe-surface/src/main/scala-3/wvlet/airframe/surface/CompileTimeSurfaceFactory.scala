@@ -471,7 +471,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
            tpe = MethodType(List("x"))(_ => List(TypeRepr.of[Any]), _ => TypeRepr.of[Any]),
            rhsFn = (sym, params) => {
              val x = params.head.asInstanceOf[Term]
-             val expr = Select.unique(Select.unique(x, "asInstanceOf").appliedToType(t.widen), paramName)
+             val expr = Select.unique(Select.unique(x, "asInstanceOf").appliedToType(t), paramName)
              expr.changeOwner(sym)
            }
          )
