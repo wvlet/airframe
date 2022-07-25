@@ -97,7 +97,6 @@ class MethodSurfaceTest extends SurfaceSpec {
   }
 
   test("find method default parameter") {
-    // ...........
     val ms = Surface.methodsOf[D]
     val m  = ms.find(_.name == "hello").get
     assert(m.args.headOption.isDefined)

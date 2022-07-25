@@ -194,7 +194,6 @@ class RuntimeSurfaceTest extends SurfaceSpec {
   }
 
   test("access parameters") {
-    // ...
     val a = RuntimeSurface.of[A]
     assert(a.params(0).get(a0) == true)
     assert(a.params(3).get(a0) == 10)
