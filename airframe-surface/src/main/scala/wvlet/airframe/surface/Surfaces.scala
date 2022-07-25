@@ -92,9 +92,9 @@ trait MethodSurface extends ParameterBase {
 }
 
 /**
-  * Parameters of a Surface
+  * Parameters of a Surface. Renamed from StdMethodParameter to StaticMethodParameter for binary compatibility
   */
-case class StdMethodParameter(
+case class StaticMethodParameter(
     method: MethodRef,
     index: Int,
     name: String,

@@ -522,10 +522,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           '{ Some(${ lambda.asExprOf[Any => Any] }) }
       }
 
-      // Using StdMethodParameter when supportin Scala.js in Scala 3.
+      // Using StaticMethodParameter when supportin Scala.js in Scala 3.
       // TODO: Deprecate RuntimeMethodParameter
       '{
-        wvlet.airframe.surface.StdMethodParameter(
+        wvlet.airframe.surface.StaticMethodParameter(
           method = ${ constructorRef },
           index = ${ Expr(i) },
           name = ${ Expr(paramName) },

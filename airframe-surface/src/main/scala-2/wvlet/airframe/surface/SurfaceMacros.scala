@@ -507,7 +507,7 @@ private[surface] object SurfaceMacros {
         }
 
         val expr =
-          q"""wvlet.airframe.surface.StdMethodParameter(
+          q"""wvlet.airframe.surface.StaticMethodParameter(
             method = ${ref},
             index = ${index},
             name=${arg.name},
