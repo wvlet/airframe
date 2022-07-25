@@ -81,7 +81,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private val memo = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
 
   private def surfaceOf(t: TypeRepr): Expr[Surface] = {
-    // println(s"surfaceOf ${fullTypeNameOf(t)}, ${t}")
+    // println(s"surfaceOf ${fullTypeNameOf(t)}")
     if (seen.contains(t)) {
       if (memo.contains(t)) {
         memo(t)
@@ -172,12 +172,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     case t if t.typeSymbol.isType && t.typeSymbol.isAliasType && !belongsToScalaDefault(t) =>
       val dealiased = t.dealias
       // println(s"=== alias factory: ${t}, ${dealiased}, ${t.simplified}")
-      /*
-      // t.dealias does not dealias for current implementation (Probably fixed in Scala 3.1.3)
-      // This workaround attempts to extract dealiased type from AST.
       val symbolInOwner = t.typeSymbol.maybeOwner.declarations.find(_.name.toString == t.typeSymbol.name.toString)
       val inner = symbolInOwner.map(_.tree) match {
-        case Some(TypeDef(_, b: TypeTree)) =>
+        case Some(TypeDef(_, b: TypeTree)) if t == dealiased =>
+          // t.dealias does not dealias for path dependent types, so extracting the dealiased type from AST.
           surfaceOf(b.tpe)
         case _ =>
           if (t != dealiased) {
@@ -186,8 +184,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             surfaceOf(t.simplified)
           }
       }
-       */
-      val inner    = if (t != dealiased) surfaceOf(dealiased) else surfaceOf(t.simplified)
       val s        = t.typeSymbol
       val name     = Expr(s.name)
       val fullName = Expr(fullTypeNameOf(t.asType))
