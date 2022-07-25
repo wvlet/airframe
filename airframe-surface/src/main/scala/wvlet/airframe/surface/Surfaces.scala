@@ -102,11 +102,17 @@ case class StdMethodParameter(
     isSecret: Boolean,
     surface: Surface,
     private val defaultValue: Option[Any] = None,
-    accessor: Option[Any => Any] = None
+    accessor: Option[Any => Any] = None,
+    methodArgAccessor: Option[Any => Any] = None
 ) extends MethodParameter {
   override def toString: String             = s"${name}:${surface.name}"
   def get(x: Any): Any                      = accessor.map(a => a(x)).getOrElse(null)
   override def getDefaultValue: Option[Any] = defaultValue
+  override def getMethodArgDefaultValue(methodOwner: Any): Option[Any] = {
+    methodArgAccessor.map { acc =>
+      acc(methodOwner)
+    }
+  }
 }
 
 object Primitive {
