@@ -38,6 +38,8 @@ trait Surface extends Serializable {
 }
 
 object Surface {
+  private[surface] val scalaMajorVersion: Int = 2
+
   def of[A]: Surface = macro SurfaceMacros.surfaceOf[A]
   def methodsOf[A]: Seq[MethodSurface] = macro SurfaceMacros.methodSurfaceOf[A]
 }

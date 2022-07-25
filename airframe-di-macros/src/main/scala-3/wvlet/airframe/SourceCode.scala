@@ -19,7 +19,7 @@ package wvlet.airframe
 case class SourceCode(
     // Deprecated and hidden because the filePath can be too long and may contain private directory paths.
     // Removing this parameter causes binary incompatibility between AirSpec and Airframe, so preserving it here
-    private[airframe] val filePath: String,
+    private val filePath: String,
     fileName: String,
     line: Int,
     col: Int

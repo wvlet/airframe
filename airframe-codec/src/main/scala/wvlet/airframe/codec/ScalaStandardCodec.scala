@@ -15,7 +15,6 @@ package wvlet.airframe.codec
 
 import wvlet.airframe.msgpack.spi.Value.NilValue
 import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, ValueType}
-import wvlet.airframe.surface.Zero
 
 /**
   */
@@ -23,7 +22,7 @@ object ScalaStandardCodec {
   case class OptionCodec[A](elementCodec: MessageCodec[A]) extends MessageCodec[Option[A]] {
     override def pack(p: Packer, v: Option[A]): Unit = {
       v match {
-        case None =>
+        case null | None =>
           p.packNil
         case Some(x) =>
           elementCodec.pack(p, x)

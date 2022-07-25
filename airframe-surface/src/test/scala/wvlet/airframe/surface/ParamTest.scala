@@ -21,6 +21,9 @@ object ParamTest {
 
   def getter(x: Int): Int = x * 2
   case class A(id: Int = -1, p1: Int = getter(10))
+
+  type A1 = A
+
   case class B(pub: Int, private val priv1: Int, private val priv2: Int = 100)
 }
 
@@ -34,9 +37,25 @@ class ParamTest extends SurfaceSpec {
     assert(p1.getDefaultValue == Option(20))
   }
 
+  test("public field access") {
+    val s  = Surface.of[ParamTest.B]
+    val p1 = s.params(0)
+    val v  = ParamTest.B(1, 2, 3)
+    assertEquals(p1.get(v), 1)
+  }
+
+  test("access params through alias") {
+    val s               = Surface.of[ParamTest.A1]
+    val p1              = s.params(0)
+    val p2              = s.params(1)
+    val v: ParamTest.A1 = ParamTest.A(10, 20)
+    assertEquals(p1.get(v), 10)
+    assertEquals(p2.get(v), 20)
+  }
+
   test("private field access") {
-    if (isScalaJS) {
-      pendingUntil("Find a way to access private fields in Scala.js")
+    if (isScalaJS || Surface.scalaMajorVersion == 3) {
+      pendingUntil("Find a way to access private fields in Scala.js and Scala 3")
     }
     val s  = Surface.of[ParamTest.B]
     val p1 = s.params(0)

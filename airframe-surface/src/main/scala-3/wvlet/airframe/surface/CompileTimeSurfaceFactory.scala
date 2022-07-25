@@ -16,6 +16,7 @@ private[surface] object CompileTimeSurfaceFactory {
     val flags       = t.typeSymbol.flags
     if (!flags.is(Flags.Static) && flags.is(Flags.NoInits)) {
       t.typeSymbol.maybeOwner match {
+        // For inner-class definitions
         case s: Symbol
             if !s.isNoSymbol &&
               s.isClassDef &&
@@ -170,11 +171,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private def aliasFactory: Factory = {
     case t if t.typeSymbol.isType && t.typeSymbol.isAliasType && !belongsToScalaDefault(t) =>
       val dealiased = t.dealias
-      // t.dealias does not dealias for current implementation.
-      // This workaround attempts to extract dealiased type from AST.
+      // println(s"=== alias factory: ${t}, ${dealiased}, ${t.simplified}")
       val symbolInOwner = t.typeSymbol.maybeOwner.declarations.find(_.name.toString == t.typeSymbol.name.toString)
       val inner = symbolInOwner.map(_.tree) match {
-        case Some(TypeDef(_, b: TypeTree)) =>
+        case Some(TypeDef(_, b: TypeTree)) if t == dealiased =>
+          // t.dealias does not dealias for path dependent types, so extracting the dealiased type from AST.
           surfaceOf(b.tpe)
         case _ =>
           if (t != dealiased) {
@@ -359,7 +360,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   // TODO add defaultValue
-  private case class MethodArg(name: String, tpe: TypeRepr, isRequried: Boolean, isSecret: Boolean)
+  private case class MethodArg(
+      name: String,
+      tpe: TypeRepr,
+      defaultValueGetter: Option[Symbol],
+      defaultMethodArgGetter: Option[Symbol],
+      isRequired: Boolean,
+      isSecret: Boolean
+  )
 
   private def methodArgsOf(t: TypeRepr, method: Symbol): List[MethodArg] = {
     val classTypeParams: List[TypeRepr] = t match {
@@ -369,41 +377,55 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         List.empty[TypeRepr]
     }
 
+    val defaultValueMethods = t.typeSymbol.companionClass.declaredMethods.filter { m =>
+      m.name.startsWith("apply$default$") || m.name.startsWith("$lessinit$greater$default$")
+    }
+
     // println(s"==== method args of ${fullTypeNameOf(t)}")
-    method.paramSymss match {
+
+    // Build a table for resolving type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
+    val typeArgTable: Map[String, TypeRepr] = method.paramSymss match {
+      // tpeArgs for case fields, methodArgs for method arguments
       case List(tpeArgs, methodArgs) =>
-        // Resolve type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
         val typeArgTable = tpeArgs
           .map(_.tree).zipWithIndex.collect {
             case (td: TypeDef, i: Int) if i < classTypeParams.size =>
               td.name -> classTypeParams(i)
           }.toMap[String, TypeRepr]
         // println(s"type args: ${typeArgTable}")
-        // tpeArgs for case fields, methodArgs for method arguments
-        // E.g. case class Foo(a: String)(implicit b: Int)
-        (tpeArgs ++ methodArgs).map(x => (x, x.tree)).collect { case (s: Symbol, v: ValDef) =>
-          // Substitue type param to actual types
-          val resolved: TypeRepr = v.tpt.tpe match {
-            case a: AppliedType =>
-              val resolvedTypeArgs = a.args.map {
-                case p if p.typeSymbol.isTypeParam && typeArgTable.contains(p.typeSymbol.name) =>
-                  typeArgTable(p.typeSymbol.name)
-                case other => other
-              }
-              a.appliedTo(resolvedTypeArgs)
-            case other => other
-          }
-          val isSecret   = hasSecretAnnotation(s)
-          val isRequired = hasRequiredAnnotation(s)
-          MethodArg(v.name, resolved, isRequired, isSecret)
-        }
-      case lst =>
-        lst.flatten.map(x => (x, x.tree)).collect { case (s: Symbol, v: ValDef) =>
-          val isSecret   = hasSecretAnnotation(s)
-          val isRequired = hasRequiredAnnotation(s)
-          MethodArg(v.name, v.tpt.tpe, isRequired, isSecret)
-        }
+        typeArgTable
+      case _ =>
+        Map.empty
     }
+
+    method.paramSymss.flatten.zipWithIndex
+      .map((x, i) => (x, i + 1, x.tree))
+      .collect { case (s: Symbol, i: Int, v: ValDef) =>
+        // E.g. case class Foo(a: String)(implicit b: Int)
+        // Substitue type param to actual types
+        val resolved: TypeRepr = v.tpt.tpe match {
+          case a: AppliedType =>
+            val resolvedTypeArgs = a.args.map {
+              case p if p.typeSymbol.isTypeParam && typeArgTable.contains(p.typeSymbol.name) =>
+                typeArgTable(p.typeSymbol.name)
+              case other => other
+            }
+            a.appliedTo(resolvedTypeArgs)
+          case other => other
+        }
+        val isSecret           = hasSecretAnnotation(s)
+        val isRequired         = hasRequiredAnnotation(s)
+        val defaultValueGetter = defaultValueMethods.find(m => m.name.endsWith(s"$$${i}"))
+
+        val defaultMethodArgGetter = {
+          val targetMethodName = method.name + "$default$" + i
+          t.typeSymbol.declaredMethods.find { m =>
+            // println(s"=== target: ${m.name}, ${m.owner.name}")
+            m.name == targetMethodName
+          }
+        }
+        MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isRequired, isSecret)
+      }
   }
 
   private def hasSecretAnnotation(s: Symbol): Boolean = {
@@ -441,14 +463,74 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       val paramType = field.tpe
       val paramName = field.name
 
-      // println(s"${paramName}: ${v.tpt.show} ${TypeRepr.of[Option[String]].show}")
-      // TODO: Use StdMethodParameter when supportin Scala.js in Scala 3
+      // Related example:
+      // https://github.com/lampepfl/dotty-macro-examples/blob/aed51833db652f67741089721765ad5a349f7383/defaultParamsInference/src/macro.scala
+      val defaultValue: Expr[Option[Any]] = field.defaultValueGetter match {
+        case Some(m) =>
+          val dv = Ref(m.owner.companionModule).select(m)
+          '{ Some(${ dv.asExprOf[Any] }) }
+        case _ => '{ None }
+      }
+
+      // Generate a field accessor { (x:Any) => x.asInstanceOf[A].(field name) }
+      val paramIsAccessible = {
+        t.typeSymbol.fieldMember(paramName) match {
+          case nt if nt == Symbol.noSymbol     => false
+          case m if m.flags.is(Flags.Private)  => false
+          case m if m.flags.is(Flags.Artifact) => false
+          case _                               => true
+        }
+      }
+      // println(s"${paramName} ${paramIsAccessible}")
+
+      val accessor: Expr[Option[Any => Any]] = if (method.isClassConstructor && paramIsAccessible) {
+        val lambda = Lambda(
+          owner = Symbol.spliceOwner,
+          tpe = MethodType(List("x"))(_ => List(TypeRepr.of[Any]), _ => TypeRepr.of[Any]),
+          rhsFn = (sym, params) => {
+            val x    = params.head.asInstanceOf[Term]
+            val expr = Select.unique(Select.unique(x, "asInstanceOf").appliedToType(t), paramName)
+            expr.changeOwner(sym)
+          }
+        )
+        // println(t.typeSymbol)
+        // println(paramType.typeSymbol.flags.show)
+        // println(lambda.show)
+        // println(lambda.show(using Printer.TreeStructure))
+        '{ Some(${ lambda.asExprOf[Any => Any] }) }
+      } else {
+        '{ None }
+      }
+
+      val methodArgAccessor: Expr[Option[Any => Any]] = field.defaultMethodArgGetter match {
+        case None =>
+          '{ None }
+        case Some(m) =>
+          val lambda = Lambda(
+            owner = Symbol.spliceOwner,
+            tpe = MethodType(List("x"))(_ => List(TypeRepr.of[Any]), _ => TypeRepr.of[Any]),
+            rhsFn = (sym, params) => {
+              val x    = params.head.asInstanceOf[Term]
+              val expr = Select.unique(x, "asInstanceOf").appliedToType(t).select(m)
+              expr.changeOwner(sym)
+            }
+          )
+          '{ Some(${ lambda.asExprOf[Any => Any] }) }
+      }
+
+      // Using StaticMethodParameter when supportin Scala.js in Scala 3.
+      // TODO: Deprecate RuntimeMethodParameter
       '{
-        wvlet.airframe.surface.reflect.RuntimeMethodParameter(
+        wvlet.airframe.surface.StaticMethodParameter(
           method = ${ constructorRef },
           index = ${ Expr(i) },
           name = ${ Expr(paramName) },
-          surface = ${ surfaceOf(paramType) }
+          isRequired = ${ Expr(field.isRequired) },
+          isSecret = ${ Expr(field.isSecret) },
+          surface = ${ surfaceOf(paramType) },
+          defaultValue = ${ defaultValue },
+          accessor = ${ accessor },
+          methodArgAccessor = ${ methodArgAccessor }
         )
       }
     }

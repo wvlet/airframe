@@ -42,6 +42,8 @@ trait Surface extends Serializable {
   * Scala 3 implementation of Surface
   */
 object Surface {
+  private[surface] val scalaMajorVersion: Int = 3
+
   import scala.quoted._
 
   inline def of[A]: Surface                   = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
