@@ -337,7 +337,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           }
           else {
             val lookupTable = typeMappingTable(t, pc)
-            println(s"--- ${lookupTable}")
+            // println(s"--- ${lookupTable}")
             val typeArgs = pc.paramSymss.headOption.getOrElse(List.empty).map(_.tree).collect { case t:TypeDef =>
                lookupTable.getOrElse(t.name, TypeRepr.of[AnyRef])
             }
@@ -359,29 +359,19 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             tpe = MethodType(List("args"))(_ => List(TypeRepr.of[Seq[Any]]), _ => TypeRepr.of[Any]),
             rhsFn = (sym: Symbol, paramRefs: List[Tree]) => {
               val args = paramRefs.head.asExprOf[Seq[Any]].asTerm
-              /*
-              val (resolvedCstr, remaining) = argListList match {
-                case head :: tail if ts.typeMembers.nonEmpty =>
-                  // Constructor with type parameters
-                  println(s"==== ${targetType.typeArgs}")
-                  (cstr.appliedToTypes(head.map(_.tpe).toList), tail)
-                case _ =>
-                  (cstr, argListList)
-              }
-                */
               var index = 0
               val fn = argListList.foldLeft[Term](cstr) { (prev, argList) =>
                   val argExtractors = argList.map { a =>
                     // args(i+1)
                     val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(index)))
                     index += 1
-                    // TODO: Cast primitive values to target types
                     // args(i+1).asInstanceOf[A]
+                    // TODO: Cast primitive values to target types
                     Select.unique(extracted, "asInstanceOf").appliedToType(a.tpe)
                   }
                   Apply(prev, argExtractors.toList)
                 }
-              println(s"== ${fn.show}")
+              // println(s"== ${fn.show}")
               fn
             }
           )
@@ -480,7 +470,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     // Build a table for resolving type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
     val typeArgTable: Map[String, TypeRepr] = typeMappingTable(t, method)
 
-    val paramss = if(t.typeSymbol.typeMembers.nonEmpty) method.paramSymss.tail else method.paramSymss
+    val origParamSymss = method.paramSymss
+    val paramss = if(origParamSymss.nonEmpty && t.typeSymbol.typeMembers.nonEmpty) origParamSymss.tail else origParamSymss
 
     paramss.map { params =>
       params
