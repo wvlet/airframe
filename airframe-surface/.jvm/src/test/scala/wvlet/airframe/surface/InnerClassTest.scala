@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.surface
 
-import wvlet.airframe.surface.reflect.RuntimeGenericSurface
-
 /**
   */
 class InnerClassTest extends munit.FunSuite {
@@ -22,7 +20,6 @@ class InnerClassTest extends munit.FunSuite {
 
   test("pass inner class context to Surface") {
     val s = Surface.of[A]
-    println(s.asInstanceOf[RuntimeGenericSurface].outer.get.getClass())
     val a = s.objectFactory.map { x => x.newInstance(Seq(1, "leo")) }
     assertEquals(a, Some(A(1, "leo")))
   }
