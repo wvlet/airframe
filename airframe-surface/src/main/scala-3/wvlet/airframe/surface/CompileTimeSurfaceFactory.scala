@@ -303,32 +303,74 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       }
   }
 
+  private def typeMappingTable(t: TypeRepr, method: Symbol): Map[String, TypeRepr] = {
+    val classTypeParams: List[TypeRepr] = t match {
+        case a: AppliedType => a.args
+        case _ => List.empty[TypeRepr]
+    }
+
+    // Build a table for resolving type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
+    method.paramSymss match {
+      // tpeArgs for case fields, methodArgs for method arguments
+      case tpeArgs :: tail if t.typeSymbol.typeMembers.nonEmpty =>
+        val typeArgTable = tpeArgs.map(_.tree).zipWithIndex.collect {
+          case (td: TypeDef, i: Int) if i < classTypeParams.size =>
+            td.name -> classTypeParams(i)
+          }.toMap[String, TypeRepr]
+        // pri ntln(s"type args: ${typeArgTable}")
+        typeArgTable
+      case _ =>
+        Map.empty
+    }
+  }
+
+  // Get a constructor with its generic types are resolved
+  private def getResolvedConstructorOf(t: TypeRepr): Option[Term] = {
+    val ts = t.typeSymbol
+    ts.primaryConstructor match {
+        case pc if pc == Symbol.noSymbol =>
+          None
+        case pc =>
+          val cstr = Select.unique(New(TypeIdent(ts)), "<init>")
+          if(ts.typeMembers.isEmpty) {
+             Some(cstr)
+          }
+          else {
+            val lookupTable = typeMappingTable(t, pc)
+            println(s"--- ${lookupTable}")
+            val typeArgs = pc.paramSymss.headOption.getOrElse(List.empty).map(_.tree).collect { case t:TypeDef =>
+               lookupTable.getOrElse(t.name, TypeRepr.of[AnyRef])
+            }
+            Some(cstr.appliedToTypes(typeArgs))
+          }
+    }
+  }
+
   private def createObjectFactoryOf(targetType: TypeRepr): Option[Expr[ObjectFactory]] = {
     val ts    = targetType.typeSymbol
     val flags = ts.flags
     if (flags.is(Flags.Abstract) || flags.is(Flags.Module) || hasAbstractMethods(targetType)) {
       None
     } else {
-      ts.primaryConstructor match {
-        case pc if pc == Symbol.noSymbol => None
-        case pc =>
-          println(s"====== pc: ${pc.paramSymss}")
-          val cstr = Select.unique(New(TypeIdent(ts)), "<init>")
-          val argListList = methodArgsOf(targetType, pc)
+      getResolvedConstructorOf(targetType).map { cstr =>
+          val argListList = methodArgsOf(targetType, ts.primaryConstructor)
           val newClassFn = Lambda(
             owner = Symbol.spliceOwner,
             tpe = MethodType(List("args"))(_ => List(TypeRepr.of[Seq[Any]]), _ => TypeRepr.of[Any]),
             rhsFn = (sym: Symbol, paramRefs: List[Tree]) => {
               val args = paramRefs.head.asExprOf[Seq[Any]].asTerm
+              /*
               val (resolvedCstr, remaining) = argListList match {
                 case head :: tail if ts.typeMembers.nonEmpty =>
                   // Constructor with type parameters
+                  println(s"==== ${targetType.typeArgs}")
                   (cstr.appliedToTypes(head.map(_.tpe).toList), tail)
                 case _ =>
                   (cstr, argListList)
               }
+                */
               var index = 0
-              val fn = remaining.foldLeft[Term](resolvedCstr) { (prev, argList) =>
+              val fn = argListList.foldLeft[Term](cstr) { (prev, argList) =>
                   val argExtractors = argList.map { a =>
                     // args(i+1)
                     val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(index)))
@@ -348,7 +390,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
               override def newInstance(args: Seq[Any]): Any = { ${ newClassFn.asExprOf[Seq[Any] => Any] }(args) }
             }
           }
-          Some(expr)
+          expr
       }
     }
   }
@@ -417,7 +459,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     }
   }
 
-  // TODO add defaultValue
   private case class MethodArg(
       name: String,
       tpe: TypeRepr,
@@ -427,45 +468,28 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       isSecret: Boolean
   )
 
+
+
   private def methodArgsOf(t: TypeRepr, method: Symbol): List[List[MethodArg]] = {
-    val classTypeParams: List[TypeRepr] = t match {
-      case a: AppliedType =>
-        a.args
-      case _ =>
-        List.empty[TypeRepr]
-    }
+    // println(s"==== method args of ${fullTypeNameOf(t)}")
 
     val defaultValueMethods = t.typeSymbol.companionClass.declaredMethods.filter { m =>
       m.name.startsWith("apply$default$") || m.name.startsWith("$lessinit$greater$default$")
     }
 
-    // println(s"==== method args of ${fullTypeNameOf(t)}")
-
     // Build a table for resolving type parameters, e.g., class MyClass[A, B]  -> Map("A" -> TypeRepr, "B" -> TypeRepr)
-    val typeArgTable: Map[String, TypeRepr] = method.paramSymss match {
-      // tpeArgs for case fields, methodArgs for method arguments
-      case List(tpeArgs, methodArgs) =>
-        val typeArgTable = tpeArgs
-          .map(_.tree).zipWithIndex.collect {
-            case (td: TypeDef, i: Int) if i < classTypeParams.size =>
-              td.name -> classTypeParams(i)
-          }.toMap[String, TypeRepr]
-        // println(s"type args: ${typeArgTable}")
-        typeArgTable
-      case _ =>
-        Map.empty
-    }
+    val typeArgTable: Map[String, TypeRepr] = typeMappingTable(t, method)
 
-    method.paramSymss.map { params =>
+    val paramss = if(t.typeSymbol.typeMembers.nonEmpty) method.paramSymss.tail else method.paramSymss
+
+    paramss.map { params =>
       params
       .zipWithIndex
       .map((x, i) => (x, i + 1, x.tree))
-      .collect { case (s: Symbol, i: Int, d: Definition) =>
+      .collect { case (s: Symbol, i: Int, v: ValDef) =>
         // E.g. case class Foo(a: String)(implicit b: Int)
         // Substitue type param to actual types
-        val resolved: TypeRepr = d match {
-          case v: ValDef =>
-            v.tpt.tpe match {
+        val resolved: TypeRepr = v.tpt.tpe match {
               case a: AppliedType =>
                 val resolvedTypeArgs = a.args.map {
                   case p if p.typeSymbol.isTypeParam && typeArgTable.contains(p.typeSymbol.name) =>
@@ -479,10 +503,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
               case other =>
                 other
             }
-          case td: TypeDef if typeArgTable.contains(td.name) =>
-            typeArgTable(td.name)
-          case _ => TypeRepr.of[Any]
-        }
         val isSecret           = hasSecretAnnotation(s)
         val isRequired         = hasRequiredAnnotation(s)
         val defaultValueGetter = defaultValueMethods.find(m => m.name.endsWith(s"$$${i}"))
@@ -494,7 +514,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             m.name == targetMethodName
           }
         }
-        MethodArg(d.name, resolved, defaultValueGetter, defaultMethodArgGetter, isRequired, isSecret)
+        MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isRequired, isSecret)
       }
     }
   }

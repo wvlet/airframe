@@ -50,8 +50,10 @@ class RecursiveSurfaceTest extends SurfaceSpec {
   }
 
   test("support generic recursive type") {
+    // ......
     val c: Surface = Surface.of[TypedCons[String]]
     debug(s"TypeCons[String] ${c.getClass}")
+    warn(c.params.mkString(", "))
     assertEquals(c.toString, "TypedCons[String]")
 
     assertEquals(c.params.length, 2)
