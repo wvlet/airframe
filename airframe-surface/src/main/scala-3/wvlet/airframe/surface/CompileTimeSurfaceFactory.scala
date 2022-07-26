@@ -373,7 +373,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
               Apply(prev, argExtractors.toList)
             }
             // println(s"== ${fn.show}")
-            fn
+            fn.changeOwner(sym)
           }
         )
         val expr = '{
