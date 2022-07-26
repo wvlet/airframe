@@ -332,7 +332,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       case pc if pc == Symbol.noSymbol =>
         None
       case pc =>
-        //val cstr = Select.apply(New(TypeIdent(ts)), "<init>")
+        // val cstr = Select.apply(New(TypeIdent(ts)), "<init>")
         val cstr = New(Inferred(t)).select(pc)
         if (ts.typeMembers.isEmpty) {
           Some(cstr)
@@ -350,7 +350,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private def createObjectFactoryOf(targetType: TypeRepr): Option[Expr[ObjectFactory]] = {
     val ts    = targetType.typeSymbol
     val flags = ts.flags
-    if (flags.is(Flags.Abstract) || flags.is(Flags.Module) || hasAbstractMethods(targetType) || isPathDependentType(targetType)) {
+    if (
+      flags.is(Flags.Abstract) || flags.is(Flags.Module) || hasAbstractMethods(targetType) || isPathDependentType(
+        targetType
+      )
+    ) {
       None
     } else {
       getResolvedConstructorOf(targetType).map { cstr =>
@@ -393,7 +397,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private def isPathDependentType(t: TypeRepr): Boolean = {
     !t.typeSymbol.flags.is(Flags.Static) && (t match {
       case t: TypeBounds => true
-      case _ => false
+      case _             => false
     })
   }
 
