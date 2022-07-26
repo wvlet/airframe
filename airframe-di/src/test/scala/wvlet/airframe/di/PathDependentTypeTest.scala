@@ -20,6 +20,7 @@ import wvlet.airspec.AirSpec
   */
 class PathDependentTypeTest extends AirSpec {
   test("pass dependent types") {
+    // .....,.
     import PathDependentType._
     val s = Surface.of[JdbcProfile#Backend#Database]
 
