@@ -27,7 +27,6 @@ import wvlet.airframe.surface.ClassSurfaceTest._
 
 class ClassSurfaceTest extends SurfaceSpec {
   test("support multiple param blocks") {
-    // .....
     val a = check(Surface.of[A], "A")
     debug(a.params.mkString(", "))
 
