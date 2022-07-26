@@ -287,16 +287,59 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             .exists(p => p.exists && !p.flags.is(Flags.Private) && p.paramSymss.nonEmpty) =>
       val typeArgs     = typeArgsOf(t.simplified).map(surfaceOf(_))
       val methodParams = constructorParametersOf(t)
-      val isStatic     = !t.typeSymbol.flags.is(Flags.Local)
-      // TODO: This code doesn't work for Scala.js + Scala 3.0.0
+      // val isStatic     = !t.typeSymbol.flags.is(Flags.Local)
+      val factory = createObjectFactoryOf(t) match {
+        case Some(x) => '{ Some(${ x }) }
+        case None    => '{ None }
+      }
+
       '{
-        new wvlet.airframe.surface.reflect.RuntimeGenericSurface(
+        new wvlet.airframe.surface.GenericSurface(
           ${ clsOf(t) },
           ${ Expr.ofSeq(typeArgs) }.toIndexedSeq,
           params = ${ methodParams },
-          isStatic = ${ Expr(isStatic) }
+          objectFactory = ${ factory }
         )
       }
+  }
+
+  private def createObjectFactoryOf(targetType: TypeRepr): Option[Expr[ObjectFactory]] = {
+    val ts    = targetType.typeSymbol
+    val flags = ts.flags
+    if (flags.is(Flags.Abstract) || flags.is(Flags.Module) || hasAbstractMethods(targetType)) {
+      None
+    } else {
+      ts.primaryConstructor match {
+        case pc if pc == Symbol.noSymbol => None
+        case pc =>
+          val argList = methodArgsOf(targetType, pc)
+          val newClassFn = Lambda(
+            owner = Symbol.spliceOwner,
+            tpe = MethodType(List("args"))(_ => List(TypeRepr.of[Seq[Any]]), _ => TypeRepr.of[Any]),
+            rhsFn = (sym: Symbol, paramRefs: List[Tree]) => {
+              val args = paramRefs.head.asExprOf[Seq[Any]].asTerm
+              val argExtractors = argList.zipWithIndex.map { (a, i) =>
+                // args(i+1)
+                val extracted = Select.unique(args, "apply").appliedToArgs(List(Literal(IntConstant(i + 1))))
+                // args(i+1).asInstanceOf[A]
+                Select.unique(extracted, "asInstanceOf").appliedToType(a.tpe)
+              }
+              Apply(Select.unique(New(TypeIdent(ts)), "<init>"), argExtractors.toList)
+            }
+          )
+          Some(
+            '{
+              new wvlet.airframe.surface.ObjectFactory {
+                override def newInstance(args: Seq[Any]): Any = { ${ newClassFn.asExprOf[Seq[Any] => Any] }(args) }
+              }
+            }
+          )
+      }
+    }
+  }
+
+  private def hasAbstractMethods(t: TypeRepr): Boolean = {
+    t.typeSymbol.methodMembers.exists(_.flags.is(Flags.Abstract))
   }
 
   private def typeParameterFactory: Factory = {
