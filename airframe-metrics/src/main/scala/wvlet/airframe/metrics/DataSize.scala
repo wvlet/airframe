@@ -97,7 +97,7 @@ object DataSize {
 
   private val dataSizePattern = """^\s*(?<num>\d+(?:\.\d+)?)\s*(?<unit>[a-zA-Z]+)\s*$""".r
 
-  sealed class DataSizeUnit private[metrics] (val factor: Long, val unitString: String)
+  sealed abstract class DataSizeUnit(val factor: Long, val unitString: String)
   case object BYTE     extends DataSizeUnit(1L, "B")
   case object KILOBYTE extends DataSizeUnit(1L << 10, "kB")
   case object MEGABYTE extends DataSizeUnit(1L << 20, "MB")

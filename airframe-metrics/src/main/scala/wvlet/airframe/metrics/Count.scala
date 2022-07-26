@@ -75,7 +75,7 @@ object Count {
   val units             = List(ONE, THOUSAND, MILLION, BILLION, TRILLION, QUADRILLION)
   private val unitTable = units.map(x => x.unitString -> x).toMap[String, CountUnit]
 
-  sealed class CountUnit private[metrics] (val factor: Long, val unitString: String) {
+  sealed abstract class CountUnit(val factor: Long, val unitString: String) {
     override def toString = unitString
   }
   case object ONE         extends CountUnit(1L, "")
