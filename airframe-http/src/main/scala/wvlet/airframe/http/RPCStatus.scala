@@ -38,7 +38,7 @@ object RPCStatus {
   }.toMap
 
   // Default mapping from gRPC status code
-  private val grpcStatusCodeMapping = Map(
+  private lazy val grpcStatusCodeMapping = Map(
     GrpcStatus.OK_0                  -> RPCStatus.SUCCESS_S0,
     GrpcStatus.CANCELLED_1           -> RPCStatus.CANCELLED_U11,
     GrpcStatus.UNKNOWN_2             -> RPCStatus.UNKNOWN_I1,
