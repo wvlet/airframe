@@ -115,7 +115,7 @@ val buildSettings = Seq[Setting[_]](
     if (scalaVersion.value.startsWith("3."))
       Seq.empty
     else
-      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.8.0")
+      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.8.1")
   }
 )
 
