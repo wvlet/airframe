@@ -907,7 +907,7 @@ lazy val fluentd =
     .dependsOn(codecJVM, diJVM)
 
 def sqlRefLib = { scalaVersion: String =>
-  if (scalaVersion.startsWith("2.12")) {
+  if (scalaVersion.startsWith("2.13")) {
     Seq(
       // Include Spark just as a reference implementation
       "org.apache.spark" %% "spark-sql" % "3.3.0" % Test,

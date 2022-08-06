@@ -1,0 +1,171 @@
+E
+E, array(E)
+E, bigint
+K
+K, V
+T
+T, S, function(S,T,S), function(S,S,S)
+V
+V, K
+V, K, bigint
+V, bigint
+V, bigint, double
+array(E)
+array(E), E
+array(K), array(V)
+array(T), S, function(S,T,S), function(S,R)
+array(T), varchar
+array(T), varchar, varchar
+array(array(E))
+array(e)
+array(e), array(e)
+array(e), bigint
+array(e), bigint, bigint
+array(e), e
+array(geometry)
+array(row(k,v))
+array(t)
+array(t), array(t)
+array(t), function(t,boolean)
+array(t), function(t,t,integer)
+array(t), integer
+array(t), t
+bigint
+bigint, array(double)
+bigint, bigint
+bigint, bigint, bigint
+bigint, color
+bigint, double
+bigint, double, array(double)
+bigint, double, double
+bigint, double, double, double
+bigint, integer
+bigint, real
+bigint, real, double
+bigint, varchar, bigint
+bingtile
+boolean
+char(x)
+char(x), char(y)
+char(x), codepoints
+date
+date, date
+date, date, interval day to second
+date, date, interval year to month
+decimal(a_precision,a_scale), decimal(b_precision,b_scale)
+decimal(p,s)
+decimal(p,s), integer
+double
+double, array(double)
+double, bigint
+double, bigint, bigint
+double, bigint, color, color
+double, color
+double, color, color
+double, double
+double, double, array(double)
+double, double, double
+double, double, double, color, color
+double, double, double, double
+double, double, integer
+double, double, integer, double
+double, integer
+double, varchar(x)
+geometry
+geometry, double
+geometry, geometry
+geometry, integer
+hyperloglog
+integer
+integer, integer
+integer, integer, integer
+interval day to second
+interval year to month
+json
+json, bigint
+json, boolean
+json, double
+json, jsonpath
+json, varchar(x)
+kdbtree, geometry
+kdbtree, geometry, double
+map(K,V)
+map(K,V), K
+map(K,V), function(K,V,boolean)
+map(K,V1), map(K,V2), function(K,V1,V2,V3)
+map(k,v)
+map(varchar,double), map(varchar,double)
+qdigest(T)
+real
+real, array(double)
+real, double
+real, double, array(double)
+real, double, double
+real, double, double, double
+real, integer
+real, real
+setdigest
+setdigest, setdigest
+smallint
+smallint, integer
+smallint, smallint
+t
+t, bigint
+t, bigint, t
+t, double
+t, integer
+tdigest
+time(p)
+time(p) with time zone
+timestamp(p)
+timestamp(p) with time zone
+timestamp(p) with time zone, varchar(x)
+timestamp(p), timestamp(p), interval day to second
+timestamp(p), timestamp(p), interval year to month
+timestamp(p), varchar(x)
+tinyint
+tinyint, integer
+tinyint, tinyint
+varbinary
+varbinary, bigint
+varbinary, bigint, varbinary
+varbinary, varbinary
+varbinary, varchar(x)
+varchar
+varchar(1)
+varchar(x)
+varchar(x), bigint
+varchar(x), bigint, date
+varchar(x), bigint, time(p)
+varchar(x), bigint, time(p) with time zone
+varchar(x), bigint, timestamp(p)
+varchar(x), bigint, timestamp(p) with time zone
+varchar(x), bigint, varchar(y)
+varchar(x), boolean
+varchar(x), codepoints
+varchar(x), color
+varchar(x), date
+varchar(x), date, date
+varchar(x), double
+varchar(x), joniregexp
+varchar(x), joniregexp, bigint
+varchar(x), joniregexp, integer
+varchar(x), joniregexp, integer, integer
+varchar(x), joniregexp, varchar(y)
+varchar(x), jsonpath
+varchar(x), time(p)
+varchar(x), time(p) with time zone
+varchar(x), time(p) with time zone, time(p) with time zone
+varchar(x), time(p), time(p)
+varchar(x), timestamp(p)
+varchar(x), timestamp(p) with time zone
+varchar(x), timestamp(p) with time zone, timestamp(p) with time zone
+varchar(x), timestamp(p), timestamp(p)
+varchar(x), varchar(y)
+varchar(x), varchar(y), bigint
+varchar(x), varchar(y), varchar(z)
+varchar, array(varchar)
+varchar, double
+varchar, joniregexp, function(array(varchar),varchar(x))
+varchar, varchar
+varchar, varchar, bigint

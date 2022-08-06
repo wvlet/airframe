@@ -15,6 +15,7 @@
 package wvlet.airframe.sql.catalog
 import wvlet.airframe.sql.catalog.DataType._
 import wvlet.airspec.AirSpec
+import wvlet.log.io.{IOUtil, Resource}
 
 /**
   */
@@ -58,8 +59,30 @@ class DataTypeTest extends AirSpec {
     )
   }
 
+  test("parse varchar(x)") {
+    parse("varchar", StringType)
+    parse("varchar(x)", StringType)
+    parse("varchar(10)", StringType)
+  }
+
   test("return any type for unknwon types") {
     parse("unknown", AnyType)
     parse("map[bit,long]", MapType(AnyType, LongType))
+  }
+
+  test("parse various types") {
+    val types = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "types.txt").get).split("\n")
+    for (t <- types) {
+      debug(s"parse ${t}")
+      DataType.parse(t)
+    }
+  }
+
+  test("parse type args") {
+    val args = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "argtypes.txt").get).split("\n")
+    for (a <- args) {
+      debug(s"parse type args: ${a}")
+      DataType.parseArgs(a)
+    }
   }
 }

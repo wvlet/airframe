@@ -51,7 +51,7 @@ object DataType extends LogSupport {
       case "?"                                        => UnknownType
       case "any"                                      => AnyType
       case "null"                                     => NullType
-      case "string"                                   => StringType
+      case "string" | "varchar"                       => StringType
       case "byte" | "char" | "short" | "int" | "long" => LongType
       case "float" | "double"                         => DoubleType
       case "boolean"                                  => BooleanType
@@ -67,6 +67,10 @@ object DataType extends LogSupport {
   def parse(typeName: String): Option[DataType] = {
     DataTypeParser.parseDataType(typeName)
   }
+
+  def parseArgs(typeArgs: String): List[DataType] = {
+    DataTypeParser.parseDataTypeList(typeArgs)
+  }
 }
 
 object DataTypeParser extends RegexParsers with LogSupport {
@@ -80,6 +84,10 @@ object DataTypeParser extends RegexParsers with LogSupport {
     "decimal" ~ "(" ~ number ~ "," ~ number ~ ")" ^^ { case _ ~ _ ~ p ~ _ ~ s ~ _ =>
       DecimalType(p, s)
     }
+
+  private def varcharType: Parser[DataType] =
+    "varchar" ~ opt("(" ~ (typeName | number) ~ ")") ^^ { case _ => DataType.StringType }
+
   private def arrayType: Parser[DataType.ArrayType] =
     "array" ~ "[" ~ dataType ~ "]" ^^ { case _ ~ _ ~ x ~ _ =>
       ArrayType(x)
@@ -95,7 +103,9 @@ object DataTypeParser extends RegexParsers with LogSupport {
       DataType.RecordType(head +: tail.map(_._2).toSeq)
     }
 
-  def dataType: Parser[DataType] = decimalType | arrayType | mapType | recordType | primitiveType
+  def dataType: Parser[DataType] = decimalType | varcharType | arrayType | mapType | recordType | primitiveType
+
+  def typeArgs: Parser[List[DataType]] = repsep(dataType, ",")
 
   def parseDataType(s: String): Option[DataType] = {
     parseAll(dataType, s) match {
@@ -108,4 +118,17 @@ object DataTypeParser extends RegexParsers with LogSupport {
         None
     }
   }
+
+  def parseDataTypeList(s: String): List[DataType] = {
+    parseAll(typeArgs, s) match {
+      case Success(result, next) => result
+      case Error(msg, next) =>
+        warn(msg)
+        List.empty
+      case Failure(msg, next) =>
+        warn(msg)
+        List.empty
+    }
+  }
+
 }
