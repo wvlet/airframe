@@ -14,7 +14,7 @@
 
 package wvlet.airframe.sql.catalog
 import wvlet.log.LogSupport
-import wvlet.airframe.sql.catalog.DataType.{ArrayType, DecimalType}
+import wvlet.airframe.sql.catalog.DataType.{ArrayType, DecimalType, GenericType}
 
 import scala.util.parsing.combinator.RegexParsers
 
@@ -23,11 +23,32 @@ abstract class DataType(val typeName: String) {
   override def toString: String = typeName
 }
 
+sealed abstract trait DataTypeParam {
+  def typeName: String
+}
+case class NumericTypeParam(value: Int) extends DataTypeParam {
+  def typeName: String = s"${value}"
+}
+case class TypeVariable(name: String) extends DataTypeParam {
+  override def typeName: String = s"${name}"
+}
+
 case class NamedType(name: String, dataType: DataType) {
   def typeName: String = s"${name}:${dataType}"
 }
 
 object DataType extends LogSupport {
+
+  private def toTypeName(name: String, typeArgs: Seq[DataTypeParam]): String = {
+    if (typeArgs.isEmpty)
+      name
+    else {
+      s"${name}(${typeArgs.mkString(",")})"
+    }
+  }
+
+  case class GenericType(name: String, typeArgs: Seq[DataTypeParam]) extends DataType(toTypeName(name, typeArgs))
+
   case object UnknownType extends DataType("?")
   case object AnyType     extends DataType("any")
   case object NullType    extends DataType("null")
@@ -77,7 +98,7 @@ object DataTypeParser extends RegexParsers with LogSupport {
   override def skipWhitespace = true
 
   private def typeName: Parser[String] = "[a-zA-Z]+".r
-  private def number: Parser[Int]      = "[0-9]*".r ^^ { _.toInt }
+  private def number: Parser[Int]      = "[0-9]+".r ^^ { _.toInt }
 
   private def primitiveType: Parser[DataType] = typeName ^^ { DataType.primitiveTypeOf(_) }
   private def decimalType: Parser[DataType.DecimalType] =
@@ -106,6 +127,14 @@ object DataTypeParser extends RegexParsers with LogSupport {
   def dataType: Parser[DataType] = decimalType | varcharType | arrayType | mapType | recordType | primitiveType
 
   def typeArgs: Parser[List[DataType]] = repsep(dataType, ",")
+
+//  def typeParams: Parser[List[DataTypeParam]] = repsep(typeParam, ",")
+//
+//  def typeParam: Parser[DataTypeParam] = typeName ^^
+//
+//  def genericType: Parser[DataType] = typeName ~ opt(typeParams) ^^ { case name ~ optTypeParams =>
+//    GenericType(name, optTypeParams.getOrElse(Seq.empty))
+//  }
 
   def parseDataType(s: String): Option[DataType] = {
     parseAll(dataType, s) match {
