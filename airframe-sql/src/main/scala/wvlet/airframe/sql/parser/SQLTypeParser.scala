@@ -35,6 +35,9 @@ object SQLType {
   case class Field(name: String, sqlType: SQLType)
   case class RowType(fields: Seq[Field]) extends SQLType
 
+  case class TimeType(withTimeZone: Boolean, precision: Option[SQLTypeParam] = None)      extends SQLType
+  case class TimestampType(withTimeZone: Boolean, precision: Option[SQLTypeParam] = None) extends SQLType
+
   private def toTypeName(name: String, typeArgs: Seq[SQLTypeParam]): String = {
     if (typeArgs.isEmpty)
       name
@@ -72,28 +75,36 @@ object SQLTypeParser extends RegexParsers with LogSupport {
   private def typeName: Parser[String] = "[a-zA-Z_]([a-zA-Z0-9_]+)?".r
   private def number: Parser[Int]      = "[0-9]+".r ^^ { _.toInt }
 
-  def typeParams: Parser[List[SQLTypeParam]] = repsep(typeParam, ",")
+  private def typeParams: Parser[List[SQLTypeParam]] = repsep(typeParam, ",")
 
-  def typeParam: Parser[SQLTypeParam] = {
+  private def typeParam: Parser[SQLTypeParam] = {
     sqlType ^^ { case tpe => TypeParam(tpe) } |
       number ^^ { case num => NumericTypeParam(num) }
   }
 
-  def genericType: Parser[SQLType] = typeName ~ opt("(" ~ typeParams ~ ")") ^^ {
+  private def genericType: Parser[SQLType] = typeName ~ opt("(" ~ typeParams ~ ")") ^^ {
     case name ~ None                        => GenericType(name, Seq.empty)
     case name ~ Some(_ ~ optTypeParams ~ _) => GenericType(name, optTypeParams)
   }
 
-  def intervalDayTimeType: Parser[SQLType] = "interval" ~ typeName ~ "to" ~ typeName ^^ { case _ ~ from ~ _ ~ to =>
-    IntervalDayTimeType(from, to)
+  private def intervalDayTimeType: Parser[SQLType] = "interval" ~ typeName ~ "to" ~ typeName ^^ {
+    case _ ~ from ~ _ ~ to =>
+      IntervalDayTimeType(from, to)
   }
 
-  def rowType: Parser[SQLType] = "row" ~ "(" ~ repsep(field, ",") ~ ")" ^^ { case _ ~ _ ~ fields ~ _ =>
+  private def rowType: Parser[SQLType] = "row" ~ "(" ~ repsep(field, ",") ~ ")" ^^ { case _ ~ _ ~ fields ~ _ =>
     RowType(fields)
   }
-  def field: Parser[Field] = identifier ~ sqlType ^^ { case id ~ tpe => Field(id, tpe) }
+  private def field: Parser[Field] = identifier ~ sqlType ^^ { case id ~ tpe => Field(id, tpe) }
 
-  def sqlType: Parser[SQLType] = intervalDayTimeType | rowType | genericType
+  private def timeType: Parser[SQLType] = "time" ~ "(" ~ typeParam ~ ")" ~ opt("with time zone") ^^ {
+    case _ ~ _ ~ precision ~ _ ~ tz => TimeType(tz.isDefined, Some(precision))
+  }
+  private def timestampType: Parser[SQLType] = "timestamp" ~ "(" ~ typeParam ~ ")" ~ opt("with time zone") ^^ {
+    case _ ~ _ ~ precision ~ _ ~ tz => TimestampType(tz.isDefined, Some(precision))
+  }
+
+  def sqlType: Parser[SQLType] = intervalDayTimeType | rowType | timeType | timestampType | genericType
 
   def parseSQLType(s: String): SQLType = {
     parseAll(sqlType, s) match {
