@@ -106,6 +106,8 @@ object SQLTypeParser extends RegexParsers with LogSupport {
 
   def sqlType: Parser[SQLType] = intervalDayTimeType | rowType | timeType | timestampType | genericType
 
+  def sqlTypeArgs: Parser[List[SQLType]] = repsep(sqlType, ",")
+
   def parseSQLType(s: String): SQLType = {
     parseAll(sqlType, s) match {
       case Success(result, next) => result
@@ -116,4 +118,13 @@ object SQLTypeParser extends RegexParsers with LogSupport {
     }
   }
 
+  def parseSQLTypeArgs(args: String): Seq[SQLType] = {
+    parseAll(sqlTypeArgs, args) match {
+      case Success(result, next) => result
+      case Error(msg, next) =>
+        throw new SQLParseError(s"Failed to parse SQL type ${args}: ${msg}", 0, 0, null)
+      case Failure(msg, next) =>
+        throw new SQLParseError(s"Failed to parse SQL type ${args}: ${msg}", 0, 0, null)
+    }
+  }
 }
