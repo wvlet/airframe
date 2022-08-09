@@ -15,6 +15,7 @@
 package wvlet.airframe.sql.catalog
 import wvlet.airframe.sql.catalog.DataType._
 import wvlet.airspec.AirSpec
+import wvlet.log.io.{IOUtil, Resource}
 
 /**
   */
@@ -32,6 +33,7 @@ class DataTypeTest extends AirSpec {
     parse("int", LongType)
     parse("long", LongType)
     parse("float", DoubleType)
+    parse("real", DoubleType)
     parse("double", DoubleType)
     parse("boolean", BooleanType)
     parse("any", AnyType)
@@ -42,24 +44,31 @@ class DataTypeTest extends AirSpec {
     parse("json", JsonType)
     parse("binary", BinaryType)
     parse("timestamp", TimestampType)
-    parse("array[int]", ArrayType(LongType))
-    parse("array[array[string]]", ArrayType(ArrayType(StringType)))
-    parse("map[string,long]", MapType(StringType, LongType))
-    parse("map[string,array[string]]", MapType(StringType, ArrayType(StringType)))
+    parse("array(int)", ArrayType(LongType))
+    parse("array(array(string))", ArrayType(ArrayType(StringType)))
+    parse("map(string,long)", MapType(StringType, LongType))
+    parse("map(string,array(string))", MapType(StringType, ArrayType(StringType)))
     parse(
       """{id:long,name:string}""",
       DataType.RecordType(Seq(NamedType("id", LongType), NamedType("name", StringType)))
     )
     parse(
-      """{id:long,name:string,address:array[string]}""",
+      """{id:long,name:string,address:array(string)}""",
       DataType.RecordType(
         Seq(NamedType("id", LongType), NamedType("name", StringType), NamedType("address", ArrayType(StringType)))
       )
     )
   }
 
+  test("parse varchar(x)") {
+    parse("varchar", StringType)
+    parse("varchar(x)", StringType)
+    parse("varchar(10)", StringType)
+  }
+
   test("return any type for unknwon types") {
     parse("unknown", AnyType)
-    parse("map[bit,long]", MapType(AnyType, LongType))
+    parse("map(bit,long)", MapType(AnyType, LongType))
   }
+
 }

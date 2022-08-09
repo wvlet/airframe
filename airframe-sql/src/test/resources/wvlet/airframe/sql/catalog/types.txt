@@ -1,0 +1,84 @@
+E
+R
+S
+T
+V
+array(E)
+array(T)
+array(V)
+array(array(t))
+array(bigint)
+array(bingtile)
+array(date)
+array(double)
+array(e)
+array(geometry)
+array(integer)
+array(k)
+array(real)
+array(row(k,v))
+array(t)
+array(timestamp(p))
+array(v)
+array(varchar(x))
+bigint
+bingtile
+boolean
+char(u)
+char(x)
+color
+date
+decimal(1,0)
+decimal(38,0)
+decimal(p,s)
+decimal(r_precision,r_scale)
+decimal(rp,0)
+decimal(rp,rs)
+decimal(rp,s)
+double
+e
+geometry
+hyperloglog
+integer
+interval day to second
+interval year to month
+json
+map(K,V)
+map(K,V3)
+map(K,array(V))
+map(K,bigint)
+map(bigint,bigint)
+map(bigint,smallint)
+map(double,double)
+map(k,array(v))
+map(k,v)
+map(real,real)
+map(unknown,unknown)
+map(varchar,bigint)
+qdigest(T)
+qdigest(V)
+real
+row("x" integer,"y" integer)
+setdigest
+smallint
+t
+tdigest
+time(p)
+time(p) with time zone
+timestamp(3)
+timestamp(3) with time zone
+timestamp(9)
+timestamp(9) with time zone
+timestamp(p)
+timestamp(p) with time zone
+tinyint
+varbinary
+varchar
+varchar(1)
+varchar(16)
+varchar(35)
+varchar(41)
+varchar(u)
+varchar(x)
+varchar(y)
+varchar(z)
