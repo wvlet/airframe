@@ -28,6 +28,10 @@ object SQLType {
     }
   }
 
+  case class IntervalDayTimeType(from: String, to: String) extends SQLType {
+    override def toString: String = s"interval ${from} to ${to}"
+  }
+
   private def toTypeName(name: String, typeArgs: Seq[SQLTypeParam]): String = {
     if (typeArgs.isEmpty)
       name
@@ -44,40 +48,48 @@ object SQLType {
     override def toString: String = typeName
     def typeName: String          = s"${value}"
   }
-  case class TypeVariable(name: String) extends SQLTypeParam {
+  case class TypeParam(sqlType: SQLType) extends SQLTypeParam {
     override def toString: String = typeName
-    override def typeName: String = s"${name}"
+    override def typeName: String = s"${sqlType.toString}"
   }
 }
 
 import SQLType._
 
+/**
+  * A parser for generic SQL types that can be returned from Trino, other DBMS, etc.
+  */
 object SQLTypeParser extends RegexParsers with LogSupport {
+  override def skipWhitespace: Boolean = true
 
   private def typeName: Parser[String] = "[a-zA-Z_]([a-zA-Z0-9_]+)?".r
   private def number: Parser[Int]      = "[0-9]+".r ^^ { _.toInt }
 
   def typeParams: Parser[List[SQLTypeParam]] = repsep(typeParam, ",")
 
-  def typeParam: Parser[SQLTypeParam] = typeName ^^ { case name => TypeVariable(name) } |
-    number ^^ { case num => NumericTypeParam(num) }
+  def typeParam: Parser[SQLTypeParam] = {
+    sqlType ^^ { case tpe => TypeParam(tpe) } |
+      number ^^ { case num => NumericTypeParam(num) }
+  }
 
   def genericType: Parser[SQLType] = typeName ~ opt("(" ~ typeParams ~ ")") ^^ {
     case name ~ None                        => GenericType(name, Seq.empty)
     case name ~ Some(_ ~ optTypeParams ~ _) => GenericType(name, optTypeParams)
   }
 
-  def sqlType: Parser[SQLType] = genericType
+  def intervalDayTimeType: Parser[SQLType] = "interval" ~ typeName ~ "to" ~ typeName ^^ { case _ ~ from ~ _ ~ to =>
+    IntervalDayTimeType(from, to)
+  }
 
-  def parseSQLType(s: String): Option[SQLType] = {
+  def sqlType: Parser[SQLType] = intervalDayTimeType | genericType
+
+  def parseSQLType(s: String): SQLType = {
     parseAll(sqlType, s) match {
-      case Success(result, next) => Some(result)
+      case Success(result, next) => result
       case Error(msg, next) =>
-        warn(msg)
-        None
+        throw new SQLParseError(s"Failed to parse SQL type ${s}: ${msg}", 0, 0, null)
       case Failure(msg, next) =>
-        warn(msg)
-        None
+        throw new SQLParseError(s"Failed to parse SQL type ${s}: ${msg}", 0, 0, null)
     }
   }
 
