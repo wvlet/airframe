@@ -17,7 +17,7 @@ import wvlet.log.LogSupport
 
 import scala.util.parsing.combinator.RegexParsers
 
-trait SQLType
+sealed trait SQLType
 
 object SQLType {
   case class GenericType(name: String, typeArgs: Seq[SQLTypeParam]) extends SQLType {
@@ -31,6 +31,9 @@ object SQLType {
   case class IntervalDayTimeType(from: String, to: String) extends SQLType {
     override def toString: String = s"interval ${from} to ${to}"
   }
+
+  case class Field(name: String, sqlType: SQLType)
+  case class RowType(fields: Seq[Field]) extends SQLType
 
   private def toTypeName(name: String, typeArgs: Seq[SQLTypeParam]): String = {
     if (typeArgs.isEmpty)
@@ -62,6 +65,10 @@ import SQLType._
 object SQLTypeParser extends RegexParsers with LogSupport {
   override def skipWhitespace: Boolean = true
 
+  private def identifier: Parser[String] =
+    "\"" ~ typeName ~ "\"" ^^ { case _ ~ s ~ _ => s } |
+      typeName ^^ { case s => s }
+
   private def typeName: Parser[String] = "[a-zA-Z_]([a-zA-Z0-9_]+)?".r
   private def number: Parser[Int]      = "[0-9]+".r ^^ { _.toInt }
 
@@ -81,7 +88,12 @@ object SQLTypeParser extends RegexParsers with LogSupport {
     IntervalDayTimeType(from, to)
   }
 
-  def sqlType: Parser[SQLType] = intervalDayTimeType | genericType
+  def rowType: Parser[SQLType] = "row" ~ "(" ~ repsep(field, ",") ~ ")" ^^ { case _ ~ _ ~ fields ~ _ =>
+    RowType(fields)
+  }
+  def field: Parser[Field] = identifier ~ sqlType ^^ { case id ~ tpe => Field(id, tpe) }
+
+  def sqlType: Parser[SQLType] = intervalDayTimeType | rowType | genericType
 
   def parseSQLType(s: String): SQLType = {
     parseAll(sqlType, s) match {
