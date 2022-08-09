@@ -14,7 +14,7 @@
 
 package wvlet.airframe.sql.catalog
 import wvlet.log.LogSupport
-import wvlet.airframe.sql.catalog.DataType.{ArrayType, DecimalType, GenericType}
+import wvlet.airframe.sql.catalog.DataType.{ArrayType, DecimalType, StringType}
 
 import scala.util.parsing.combinator.RegexParsers
 
@@ -23,31 +23,11 @@ abstract class DataType(val typeName: String) {
   override def toString: String = typeName
 }
 
-sealed abstract trait DataTypeParam {
-  def typeName: String
-}
-case class NumericTypeParam(value: Int) extends DataTypeParam {
-  def typeName: String = s"${value}"
-}
-case class TypeVariable(name: String) extends DataTypeParam {
-  override def typeName: String = s"${name}"
-}
-
 case class NamedType(name: String, dataType: DataType) {
   def typeName: String = s"${name}:${dataType}"
 }
 
 object DataType extends LogSupport {
-
-  private def toTypeName(name: String, typeArgs: Seq[DataTypeParam]): String = {
-    if (typeArgs.isEmpty)
-      name
-    else {
-      s"${name}(${typeArgs.mkString(",")})"
-    }
-  }
-
-  case class GenericType(name: String, typeArgs: Seq[DataTypeParam]) extends DataType(toTypeName(name, typeArgs))
 
   case object UnknownType extends DataType("?")
   case object AnyType     extends DataType("any")
@@ -62,9 +42,9 @@ object DataType extends LogSupport {
   case object JsonType                     extends DataType("json")
   case object BinaryType                   extends DataType("binary")
   case object TimestampType                extends DataType("timestamp")
-  case class ArrayType(elemType: DataType) extends DataType(s"array[${elemType.typeName}]")
+  case class ArrayType(elemType: DataType) extends DataType(s"array(${elemType.typeName})")
   case class MapType(keyType: DataType, valueType: DataType)
-      extends DataType(s"map[${keyType.typeName},${valueType.typeName}]")
+      extends DataType(s"map(${keyType.typeName},${valueType.typeName})")
   case class RecordType(elems: Seq[NamedType]) extends DataType(s"{${elems.map(_.typeName).mkString(",")}}")
 
   def primitiveTypeOf(dataType: String): DataType = {
@@ -74,7 +54,7 @@ object DataType extends LogSupport {
       case "null"                                     => NullType
       case "string" | "varchar"                       => StringType
       case "byte" | "char" | "short" | "int" | "long" => LongType
-      case "float" | "double"                         => DoubleType
+      case "float" | "real" | "double"                => DoubleType
       case "boolean"                                  => BooleanType
       case "json"                                     => JsonType
       case "binary"                                   => BinaryType
@@ -97,7 +77,7 @@ object DataType extends LogSupport {
 object DataTypeParser extends RegexParsers with LogSupport {
   override def skipWhitespace = true
 
-  private def typeName: Parser[String] = "[a-zA-Z]+".r
+  private def typeName: Parser[String] = "[a-zA-Z_]([a-zA-Z0-9_]+)?".r
   private def number: Parser[Int]      = "[0-9]+".r ^^ { _.toInt }
 
   private def primitiveType: Parser[DataType] = typeName ^^ { DataType.primitiveTypeOf(_) }
@@ -107,14 +87,19 @@ object DataTypeParser extends RegexParsers with LogSupport {
     }
 
   private def varcharType: Parser[DataType] =
-    "varchar" ~ opt("(" ~ (typeName | number) ~ ")") ^^ { case _ => DataType.StringType }
+    "varchar" ~ opt("(" ~ (typeName | number) ~ ")") ^^ { case _ ~ _ =>
+      StringType
+    }
+
+  // private def timestampType: Parser[DataType] =
+//    "timestamp" ~ opt("")
 
   private def arrayType: Parser[DataType.ArrayType] =
-    "array" ~ "[" ~ dataType ~ "]" ^^ { case _ ~ _ ~ x ~ _ =>
+    "array" ~ "(" ~ dataType ~ ")" ^^ { case _ ~ _ ~ x ~ _ =>
       ArrayType(x)
     }
   private def mapType: Parser[DataType.MapType] =
-    "map" ~ "[" ~ dataType ~ "," ~ dataType ~ "]" ^^ { case _ ~ _ ~ k ~ _ ~ v ~ _ =>
+    "map" ~ "(" ~ dataType ~ "," ~ dataType ~ ")" ^^ { case _ ~ _ ~ k ~ _ ~ v ~ _ =>
       DataType.MapType(k, v)
     }
 
@@ -124,17 +109,10 @@ object DataTypeParser extends RegexParsers with LogSupport {
       DataType.RecordType(head +: tail.map(_._2).toSeq)
     }
 
-  def dataType: Parser[DataType] = decimalType | varcharType | arrayType | mapType | recordType | primitiveType
+  def dataType: Parser[DataType] =
+    decimalType | varcharType | arrayType | mapType | recordType | primitiveType
 
   def typeArgs: Parser[List[DataType]] = repsep(dataType, ",")
-
-//  def typeParams: Parser[List[DataTypeParam]] = repsep(typeParam, ",")
-//
-//  def typeParam: Parser[DataTypeParam] = typeName ^^
-//
-//  def genericType: Parser[DataType] = typeName ~ opt(typeParams) ^^ { case name ~ optTypeParams =>
-//    GenericType(name, optTypeParams.getOrElse(Seq.empty))
-//  }
 
   def parseDataType(s: String): Option[DataType] = {
     parseAll(dataType, s) match {

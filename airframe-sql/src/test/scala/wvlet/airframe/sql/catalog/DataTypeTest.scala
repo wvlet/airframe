@@ -33,6 +33,7 @@ class DataTypeTest extends AirSpec {
     parse("int", LongType)
     parse("long", LongType)
     parse("float", DoubleType)
+    parse("real", DoubleType)
     parse("double", DoubleType)
     parse("boolean", BooleanType)
     parse("any", AnyType)
@@ -43,16 +44,16 @@ class DataTypeTest extends AirSpec {
     parse("json", JsonType)
     parse("binary", BinaryType)
     parse("timestamp", TimestampType)
-    parse("array[int]", ArrayType(LongType))
-    parse("array[array[string]]", ArrayType(ArrayType(StringType)))
-    parse("map[string,long]", MapType(StringType, LongType))
-    parse("map[string,array[string]]", MapType(StringType, ArrayType(StringType)))
+    parse("array(int)", ArrayType(LongType))
+    parse("array(array(string))", ArrayType(ArrayType(StringType)))
+    parse("map(string,long)", MapType(StringType, LongType))
+    parse("map(string,array(string))", MapType(StringType, ArrayType(StringType)))
     parse(
       """{id:long,name:string}""",
       DataType.RecordType(Seq(NamedType("id", LongType), NamedType("name", StringType)))
     )
     parse(
-      """{id:long,name:string,address:array[string]}""",
+      """{id:long,name:string,address:array(string)}""",
       DataType.RecordType(
         Seq(NamedType("id", LongType), NamedType("name", StringType), NamedType("address", ArrayType(StringType)))
       )
@@ -67,22 +68,7 @@ class DataTypeTest extends AirSpec {
 
   test("return any type for unknwon types") {
     parse("unknown", AnyType)
-    parse("map[bit,long]", MapType(AnyType, LongType))
+    parse("map(bit,long)", MapType(AnyType, LongType))
   }
 
-  test("parse various types") {
-    val types = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "types.txt").get).split("\n")
-    for (t <- types) {
-      debug(s"parse ${t}")
-      DataType.parse(t)
-    }
-  }
-
-  test("parse type args") {
-    val args = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "argtypes.txt").get).split("\n")
-    for (a <- args) {
-      debug(s"parse type args: ${a}")
-      DataType.parseArgs(a)
-    }
-  }
 }
