@@ -24,18 +24,18 @@ trait FunctionCatalog {
 
 trait SQLFunction {
   def name: String
+  def args: Seq[SQLFunctionArg]
 }
 
 trait SQLFunctionArg {
-  def name: String
   def dataType: DataType
 }
 
-case class UnboundFunctionArgument(name: String, dataTypeName: String) extends SQLFunctionArg {
-  def bind(typeArg: DataType): BoundFunctionArgument = BoundFunctionArgument(name, typeArg)
+case class UnboundFunctionArgument(dataTypeName: String) extends SQLFunctionArg {
+  def bind(typeArg: DataType): BoundFunctionArgument = BoundFunctionArgument(typeArg)
   override def dataType: DataType                    = ???
 }
-case class BoundFunctionArgument(name: String, dataType: DataType)
+case class BoundFunctionArgument(dataType: DataType) extends SQLFunctionArg
 
 case class UnboundFunction(name: String, args: Seq[SQLFunctionArg]) extends SQLFunction {
   def bind(typeArgMap: Map[String, DataType]): BoundFunction = {
@@ -45,7 +45,7 @@ case class UnboundFunction(name: String, args: Seq[SQLFunctionArg]) extends SQLF
       case u: UnboundFunctionArgument =>
         typeArgMap.get(u.dataTypeName) match {
           case Some(dataType) =>
-            BoundFunctionArgument(name, dataType)
+            BoundFunctionArgument(dataType)
           case None =>
             throw SQLErrorCode.UnknownDataType.toException(
               s"unknown data type: ${u.dataTypeName}"
