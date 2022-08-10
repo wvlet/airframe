@@ -19,7 +19,7 @@ import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
 /**
-  * Resolve untyped [[LogicalPlan]] s and [[Expression]] s into typed ones.
+  * Resolve untyped [[LogicalPlan]]s and [[Expression]]s into typed ones.
   */
 object TypeResolver extends LogSupport {
 

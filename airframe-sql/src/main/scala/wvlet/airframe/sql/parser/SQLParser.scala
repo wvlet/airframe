@@ -14,6 +14,7 @@
 package wvlet.airframe.sql.parser
 
 import org.antlr.v4.runtime.{DefaultErrorStrategy, RecognitionException, _}
+import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.log.LogSupport
 import wvlet.airframe.sql.model.LogicalPlan
 
@@ -31,7 +32,11 @@ object SQLParser extends LogSupport {
           msg: String,
           e: RecognitionException
       ): Unit = {
-        throw new SQLParseError(msg, line, charPositionInLine, e)
+        throw SQLErrorCode.SyntaxError
+          .withMetadata(Map("line" -> line, "pos" -> charPositionInLine)).toException(
+            s"Parse error at line:${line}, pos:${charPositionInLine}. ${msg}",
+            e
+          )
       }
     }
 
@@ -67,6 +72,3 @@ object SQLParser extends LogSupport {
     SqlBaseParser.VOCABULARY.getDisplayName(t.getType)
   }
 }
-
-class SQLParseError(message: String, val line: Int, val pos: Int, cause: RecognitionException)
-    extends Exception(s"Parse error at line:${line}, pos:${pos}. ${message}", cause) {}

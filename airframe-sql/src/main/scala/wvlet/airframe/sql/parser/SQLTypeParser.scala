@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.sql.parser
 
+import wvlet.airframe.sql.SQLErrorCode
 import wvlet.log.LogSupport
 
 import scala.util.parsing.combinator.RegexParsers
@@ -112,9 +113,9 @@ object SQLTypeParser extends RegexParsers with LogSupport {
     parseAll(sqlType, s) match {
       case Success(result, next) => result
       case Error(msg, next) =>
-        throw new SQLParseError(s"Failed to parse SQL type ${s}: ${msg}", 0, 0, null)
+        throw SQLErrorCode.InvalidType.toException(s"Failed to parse SQL type ${s}: ${msg}")
       case Failure(msg, next) =>
-        throw new SQLParseError(s"Failed to parse SQL type ${s}: ${msg}", 0, 0, null)
+        throw SQLErrorCode.InvalidType.toException(s"Failed to parse SQL type ${s}: ${msg}")
     }
   }
 
@@ -122,9 +123,9 @@ object SQLTypeParser extends RegexParsers with LogSupport {
     parseAll(sqlTypeArgs, args) match {
       case Success(result, next) => result
       case Error(msg, next) =>
-        throw new SQLParseError(s"Failed to parse SQL type ${args}: ${msg}", 0, 0, null)
+        throw SQLErrorCode.InvalidType.toException(s"Failed to parse SQL type ${args}: ${msg}")
       case Failure(msg, next) =>
-        throw new SQLParseError(s"Failed to parse SQL type ${args}: ${msg}", 0, 0, null)
+        throw SQLErrorCode.InvalidType.toException(s"Failed to parse SQL type ${args}: ${msg}")
     }
   }
 }
