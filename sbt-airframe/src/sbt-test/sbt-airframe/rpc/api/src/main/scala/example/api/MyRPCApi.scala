@@ -6,7 +6,7 @@ import wvlet.log.LogSupport
 @RPC
 trait MyRPCApi extends LogSupport {
   import MyRPCApi._
-  def helloRPC(request:HelloRequest): HelloResponse = {
+  def helloRPC(request: HelloRequest): HelloResponse = {
     val message = s"Hello ${request.name}!"
     HelloResponse(message)
   }
@@ -14,6 +14,6 @@ trait MyRPCApi extends LogSupport {
 }
 
 object MyRPCApi {
-  case class HelloRequest(name:String)
-  case class HelloResponse(message:String)
+  case class HelloRequest(name: String)
+  case class HelloResponse(message: String)
 }
