@@ -13,14 +13,16 @@
  */
 
 package wvlet.airframe.sql.catalog
+import wvlet.airframe.sql.parser.SQLType
+import wvlet.airframe.sql.parser.SQLType.SQLTypeParam
 import wvlet.log.LogSupport
-import wvlet.airframe.sql.catalog.DataType.{ArrayType, DecimalType, StringType}
-
-import scala.util.parsing.combinator.RegexParsers
 
 abstract class DataType(val typeName: String) {
   def baseTypeName: String      = typeName
   override def toString: String = typeName
+  def isBound: Boolean          = true
+
+  def bind(typeArgMap: Map[String, DataType]): DataType = this
 }
 
 case class NamedType(name: String, dataType: DataType) {
@@ -28,6 +30,42 @@ case class NamedType(name: String, dataType: DataType) {
 }
 
 object DataType extends LogSupport {
+
+  /**
+    * UnboundType is a type with type variables
+    * @param name
+    */
+  case class UnboundType(name: String) extends DataType(name) {
+    override def isBound: Boolean = false
+    override def bind(typeArgMap: Map[String, DataType]): DataType = {
+      typeArgMap.get(name) match {
+        case Some(t) => t
+        case None    => this
+      }
+    }
+  }
+
+  case class GenericType(override val typeName: String, typeArgs: Seq[DataType]) extends DataType(typeName) {
+    override def isBound: Boolean = typeArgs.forall(_.isBound)
+
+    override def bind(typeArgMap: Map[String, DataType]): DataType = {
+      GenericType(typeName, typeArgs.map(_.bind(typeArgMap)))
+    }
+  }
+
+  case class IntervalDayTimeType(from: String, to: String) extends DataType(s"interval ${from} to ${to}")
+  case class TimeType(withTimeZone: Boolean = false, precision: Option[SQLTypeParam] = None)
+      extends DataType(toTypeName("time", precision.toSeq))
+  case class TimestampType(withTimeZone: Boolean = false, precision: Option[SQLTypeParam] = None)
+      extends DataType(toTypeName("timestamp", precision.toSeq))
+
+  private def toTypeName(name: String, typeArgs: Seq[SQLTypeParam]): String = {
+    if (typeArgs.isEmpty)
+      name
+    else {
+      s"${name}(${typeArgs.mkString(",")})"
+    }
+  }
 
   case object UnknownType extends DataType("?")
   case object AnyType     extends DataType("any")
@@ -41,11 +79,10 @@ object DataType extends LogSupport {
   }
   case object JsonType                     extends DataType("json")
   case object BinaryType                   extends DataType("binary")
-  case object TimestampType                extends DataType("timestamp")
   case class ArrayType(elemType: DataType) extends DataType(s"array(${elemType.typeName})")
   case class MapType(keyType: DataType, valueType: DataType)
       extends DataType(s"map(${keyType.typeName},${valueType.typeName})")
-  case class RecordType(elems: Seq[NamedType]) extends DataType(s"{${elems.map(_.typeName).mkString(",")}}")
+  case class RecordType(elems: Seq[NamedType]) extends DataType(s"row(${elems.map(_.typeName).mkString(",")})")
 
   def primitiveTypeOf(dataType: String): DataType = {
     dataType match {
@@ -58,7 +95,8 @@ object DataType extends LogSupport {
       case "boolean"                                  => BooleanType
       case "json"                                     => JsonType
       case "binary"                                   => BinaryType
-      case "timestamp"                                => TimestampType
+      case "time"                                     => TimeType(withTimeZone = false, precision = None)
+      case "timestamp"                                => TimestampType(withTimeZone = false, precision = None)
       case _ =>
         warn(s"Unknown type: ${dataType}. Using 'any' instead")
         AnyType
@@ -71,71 +109,6 @@ object DataType extends LogSupport {
 
   def parseArgs(typeArgs: String): List[DataType] = {
     DataTypeParser.parseDataTypeList(typeArgs)
-  }
-}
-
-object DataTypeParser extends RegexParsers with LogSupport {
-  override def skipWhitespace = true
-
-  private def typeName: Parser[String] = "[a-zA-Z_]([a-zA-Z0-9_]+)?".r
-  private def number: Parser[Int]      = "[0-9]+".r ^^ { _.toInt }
-
-  private def primitiveType: Parser[DataType] = typeName ^^ { DataType.primitiveTypeOf(_) }
-  private def decimalType: Parser[DataType.DecimalType] =
-    "decimal" ~ "(" ~ number ~ "," ~ number ~ ")" ^^ { case _ ~ _ ~ p ~ _ ~ s ~ _ =>
-      DecimalType(p, s)
-    }
-
-  private def varcharType: Parser[DataType] =
-    "varchar" ~ opt("(" ~ (typeName | number) ~ ")") ^^ { case _ ~ _ =>
-      StringType
-    }
-
-  // private def timestampType: Parser[DataType] =
-//    "timestamp" ~ opt("")
-
-  private def arrayType: Parser[DataType.ArrayType] =
-    "array" ~ "(" ~ dataType ~ ")" ^^ { case _ ~ _ ~ x ~ _ =>
-      ArrayType(x)
-    }
-  private def mapType: Parser[DataType.MapType] =
-    "map" ~ "(" ~ dataType ~ "," ~ dataType ~ ")" ^^ { case _ ~ _ ~ k ~ _ ~ v ~ _ =>
-      DataType.MapType(k, v)
-    }
-
-  private def namedType: Parser[NamedType] = typeName ~ ":" ~ dataType ^^ { case n ~ _ ~ t => NamedType(n, t) }
-  private def recordType: Parser[DataType.RecordType] =
-    "{" ~ namedType ~ rep("," ~ namedType) ~ "}" ^^ { case _ ~ head ~ tail ~ _ =>
-      DataType.RecordType(head +: tail.map(_._2).toSeq)
-    }
-
-  def dataType: Parser[DataType] =
-    decimalType | varcharType | arrayType | mapType | recordType | primitiveType
-
-  def typeArgs: Parser[List[DataType]] = repsep(dataType, ",")
-
-  def parseDataType(s: String): Option[DataType] = {
-    parseAll(dataType, s) match {
-      case Success(result, next) => Some(result)
-      case Error(msg, next) =>
-        warn(msg)
-        None
-      case Failure(msg, next) =>
-        warn(msg)
-        None
-    }
-  }
-
-  def parseDataTypeList(s: String): List[DataType] = {
-    parseAll(typeArgs, s) match {
-      case Success(result, next) => result
-      case Error(msg, next) =>
-        warn(msg)
-        List.empty
-      case Failure(msg, next) =>
-        warn(msg)
-        List.empty
-    }
   }
 
 }

@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.sql.catalog
 
+import wvlet.airframe.sql.catalog.DataType.UnboundType
+import wvlet.airframe.sql.parser.{SQLType, SQLTypeParser}
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 
 /**
@@ -24,36 +26,30 @@ trait FunctionCatalog {
 
 trait SQLFunction {
   def name: String
-  def args: Seq[SQLFunctionArg]
+  def args: Seq[DataType]
+  def returnType: DataType
 }
 
-trait SQLFunctionArg {
+trait SQLFunctionType {
   def dataType: DataType
 }
 
-case class UnboundFunctionArgument(dataTypeName: String) extends SQLFunctionArg {
-  def bind(typeArg: DataType): BoundFunctionArgument = BoundFunctionArgument(typeArg)
-  override def dataType: DataType                    = ???
+case class BoundFunction(name: String, args: Seq[DataType], returnType: DataType) extends SQLFunction {
+  require(args.forall(_.isBound), s"Found unbound arguments: ${this}")
+  require(returnType.isBound, s"return type: ${returnType} is not bound")
 }
-case class BoundFunctionArgument(dataType: DataType) extends SQLFunctionArg
 
-case class UnboundFunction(name: String, args: Seq[SQLFunctionArg]) extends SQLFunction {
+case class UnboundFunction(name: String, args: Seq[DataType], returnType: DataType) extends SQLFunction {
   def bind(typeArgMap: Map[String, DataType]): BoundFunction = {
-    val boundArgs: Seq[BoundFunctionArgument] = args.map {
-      case b: BoundFunctionArgument =>
-        b
-      case u: UnboundFunctionArgument =>
-        typeArgMap.get(u.dataTypeName) match {
-          case Some(dataType) =>
-            BoundFunctionArgument(dataType)
-          case None =>
-            throw SQLErrorCode.UnknownDataType.toException(
-              s"unknown data type: ${u.dataTypeName}"
-            )
-        }
-    }
-    BoundFunction(name, boundArgs)
+    BoundFunction(name, args.map(_.bind(typeArgMap)), returnType.bind(typeArgMap))
   }
 }
 
-case class BoundFunction(name: String, args: Seq[BoundFunctionArgument]) extends SQLFunction
+object UnboundFunction {
+  def parse(name: String, argTypeStr: String, returnTypeStr: String): SQLFunction = {
+    val argTypes = SQLTypeParser.parseSQLTypeArgs(argTypeStr)
+    val retTypes = SQLTypeParser.parseSQLType(returnTypeStr)
+    // TODO
+    null
+  }
+}

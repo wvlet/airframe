@@ -18,55 +18,11 @@ import wvlet.log.LogSupport
 
 import scala.util.parsing.combinator.RegexParsers
 
-sealed trait SQLType
-
-object SQLType {
-  case class GenericType(name: String, typeArgs: Seq[SQLTypeParam]) extends SQLType {
-    override def toString: String = {
-      if (typeArgs.isEmpty) name
-      else
-        s"${name}(${typeArgs.mkString(",")})"
-    }
-  }
-
-  case class IntervalDayTimeType(from: String, to: String) extends SQLType {
-    override def toString: String = s"interval ${from} to ${to}"
-  }
-
-  case class Field(name: String, sqlType: SQLType)
-  case class RowType(fields: Seq[Field]) extends SQLType
-
-  case class TimeType(withTimeZone: Boolean, precision: Option[SQLTypeParam] = None)      extends SQLType
-  case class TimestampType(withTimeZone: Boolean, precision: Option[SQLTypeParam] = None) extends SQLType
-
-  private def toTypeName(name: String, typeArgs: Seq[SQLTypeParam]): String = {
-    if (typeArgs.isEmpty)
-      name
-    else {
-      s"${name}(${typeArgs.mkString(",")})"
-    }
-  }
-
-  sealed abstract trait SQLTypeParam {
-    def typeName: String
-  }
-
-  case class NumericTypeParam(value: Int) extends SQLTypeParam {
-    override def toString: String = typeName
-    def typeName: String          = s"${value}"
-  }
-  case class TypeParam(sqlType: SQLType) extends SQLTypeParam {
-    override def toString: String = typeName
-    override def typeName: String = s"${sqlType.toString}"
-  }
-}
-
-import SQLType._
-
 /**
   * A parser for generic SQL types that can be returned from Trino, other DBMS, etc.
   */
 object SQLTypeParser extends RegexParsers with LogSupport {
+  import SQLType._
   override def skipWhitespace: Boolean = true
 
   private def identifier: Parser[String] =
