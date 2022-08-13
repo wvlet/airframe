@@ -11,13 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.sql.parser
+package wvlet.airframe.sql.catalog
 
-import wvlet.airframe.sql.catalog.DataTypeParser
 import wvlet.airspec.AirSpec
 import wvlet.log.io.{IOUtil, Resource}
 
-class SQLTypeParserTest extends AirSpec {
+class DataTypeParserTest extends AirSpec {
   test("parse various types") {
     val types = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "types.txt").get).split("\n")
     for (t <- types) {

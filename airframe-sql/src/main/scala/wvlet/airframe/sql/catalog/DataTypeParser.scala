@@ -55,7 +55,9 @@ object DataTypeParser extends RegexParsers with LogSupport {
     RecordType(fields)
   }
 
-  private def field: Parser[NamedType] = identifier ~ dataType ^^ { case id ~ tpe => NamedType(id, tpe) }
+  private def field: Parser[NamedType] =
+    identifier ~ dataType ^^ { case id ~ tpe => NamedType(id, tpe) }
+  // typeName ~ ":" ~ dataType ^^ { case n ~ _ ~ t => NamedType(n, t) }
 
   private def timeType: Parser[DataType] = "time" ~ "(" ~ typeParam ~ ")" ~ opt("with time zone") ^^ {
     case _ ~ _ ~ precision ~ _ ~ tz => TimeType(tz.isDefined, Some(precision))
@@ -65,19 +67,6 @@ object DataTypeParser extends RegexParsers with LogSupport {
     case _ ~ _ ~ precision ~ _ ~ tz => TimestampType(tz.isDefined, Some(precision))
   }
 
-  private def primitiveTypeName: Parser[String] = {
-    "any" | "null" |
-      "string" | "byte" | "char" |
-      "short" | "int" | "long" |
-      "float" | "real" | "double" |
-      "boolean" |
-      "json" |
-      "binary" |
-      "time" |
-      "timestamp"
-  }
-
-  private def primitiveType: Parser[DataType] = primitiveTypeName ^^ { DataType.primitiveTypeOf(_) }
   private def decimalType: Parser[DataType.DecimalType] =
     "decimal" ~ "(" ~ number ~ "," ~ number ~ ")" ^^ { case _ ~ _ ~ p ~ _ ~ s ~ _ =>
       DecimalType(p, s)
@@ -97,10 +86,11 @@ object DataTypeParser extends RegexParsers with LogSupport {
     }
   private def mapType: Parser[DataType.MapType] =
     "map" ~ "(" ~ dataType ~ "," ~ dataType ~ ")" ^^ { case _ ~ _ ~ k ~ _ ~ v ~ _ =>
-      DataType.MapType(k, v)
+      MapType(k, v)
     }
 
-  private def namedType: Parser[NamedType] = typeName ~ ":" ~ dataType ^^ { case n ~ _ ~ t => NamedType(n, t) }
+  private def unboundType: Parser[DataType.UnboundType] =
+    typeName ^^ { case tpe => UnboundType(tpe) }
 
   def dataType: Parser[DataType] =
     decimalType |
@@ -111,23 +101,22 @@ object DataTypeParser extends RegexParsers with LogSupport {
       intervalDayTimeType |
       arrayType |
       mapType |
-      recordType |
-      primitiveType |
-      genericType
+      genericType |
+      unboundType
 
   def typeArgs: Parser[List[DataType]] = repsep(dataType, ",")
 
   private def parseError(msg: String): SQLError = {
-    SQLErrorCode.InvalidType.toException(s"Failed to parse SQL Type: ${msg}")
+    SQLErrorCode.InvalidType.toException(s"Failed to parse DataType ${msg}")
   }
 
   private def parse[A](target: Parser[A], input: String): A = {
     parseAll(target, input) match {
       case Success(result, next) => result
       case Error(msg, next) =>
-        throw parseError(s"${input}: ${msg}")
+        throw parseError(s"'${input}': ${msg}")
       case Failure(msg, next) =>
-        throw parseError(s"${input}: ${msg}")
+        throw parseError(s"'${input}': ${msg}")
     }
   }
 

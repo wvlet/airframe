@@ -73,7 +73,8 @@ object DataType extends LogSupport {
     }
   }
 
-  case class GenericType(override val typeName: String, typeArgs: Seq[DataTypeParam]) extends DataType(typeName) {
+  case class GenericType(override val typeName: String, typeArgs: Seq[DataTypeParam])
+      extends DataType(toTypeName(typeName, typeArgs)) {
     override def isBound: Boolean = typeArgs.forall(_.isBound)
 
     override def bind(typeArgMap: Map[String, DataType]): DataType = {
@@ -114,15 +115,15 @@ object DataType extends LogSupport {
 
   def primitiveTypeOf(dataType: String): DataType = {
     dataType match {
-      case "?"                                        => UnknownType
-      case "any"                                      => AnyType
-      case "null"                                     => NullType
-      case "string" | "varchar"                       => StringType
-      case "byte" | "char" | "short" | "int" | "long" => LongType
-      case "float" | "real" | "double"                => DoubleType
-      case "boolean"                                  => BooleanType
-      case "json"                                     => JsonType
-      case "binary"                                   => BinaryType
+      case "?"                                                    => UnknownType
+      case "any"                                                  => AnyType
+      case "null"                                                 => NullType
+      case "string" | "varchar"                                   => StringType
+      case "byte" | "char" | "short" | "int" | "integer" | "long" => LongType
+      case "float" | "real" | "double"                            => DoubleType
+      case "boolean"                                              => BooleanType
+      case "json"                                                 => JsonType
+      case "binary"                                               => BinaryType
       case _ =>
         warn(s"Unknown type: ${dataType}")
         UnknownType
