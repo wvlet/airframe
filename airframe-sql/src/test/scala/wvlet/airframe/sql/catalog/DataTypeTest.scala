@@ -23,7 +23,7 @@ class DataTypeTest extends AirSpec {
   protected def parse(t: String, expected: DataType): Unit = {
     debug(s"parse ${t}")
     val parsed = DataType.parse(t)
-    parsed shouldBe Some(expected)
+    parsed shouldBe expected
   }
 
   test("parse DataType names") {
@@ -58,6 +58,10 @@ class DataTypeTest extends AirSpec {
         Seq(NamedType("id", LongType), NamedType("name", StringType), NamedType("address", ArrayType(StringType)))
       )
     )
+  }
+
+  test("parse char(x)") {
+    parse("char(x)", StringType)
   }
 
   test("parse varchar(x)") {
