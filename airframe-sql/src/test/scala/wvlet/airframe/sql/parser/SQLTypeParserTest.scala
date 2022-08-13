@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.sql.parser
 
+import wvlet.airframe.sql.catalog.DataTypeParser
 import wvlet.airspec.AirSpec
 import wvlet.log.io.{IOUtil, Resource}
 
@@ -20,7 +21,7 @@ class SQLTypeParserTest extends AirSpec {
   test("parse various types") {
     val types = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "types.txt").get).split("\n")
     for (t <- types) {
-      val dt = SQLTypeParser.parseSQLType(t)
+      val dt = DataTypeParser.parseDataType(t)
       debug(s"parse: ${t} -> ${dt}")
     }
   }
@@ -28,7 +29,7 @@ class SQLTypeParserTest extends AirSpec {
   test("parse type args") {
     val args = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "argtypes.txt").get).split("\n")
     for (a <- args) {
-      val dt = SQLTypeParser.parseSQLTypeArgs(a)
+      val dt = DataTypeParser.parseDataTypeList(a)
       debug(s"parse type args: ${a} -> ${dt}")
     }
   }

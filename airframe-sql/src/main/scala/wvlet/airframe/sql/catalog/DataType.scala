@@ -13,8 +13,6 @@
  */
 
 package wvlet.airframe.sql.catalog
-import wvlet.airframe.sql.parser.SQLType
-import wvlet.airframe.sql.parser.SQLType.SQLTypeParam
 import wvlet.log.LogSupport
 
 abstract class DataType(val typeName: String) {
@@ -32,6 +30,36 @@ case class NamedType(name: String, dataType: DataType) {
 object DataType extends LogSupport {
 
   /**
+    * DataType parameter for representing concrete types like timestamp(2), and abstract types like timestamp(p).
+    */
+  sealed trait DataTypeParam {
+    def typeName: String
+    def isBound: Boolean
+    def bind(typeArgMap: Map[String, DataType]): DataTypeParam
+  }
+  object DataTypeParam {
+    case class Numeric(value: Int) extends DataTypeParam {
+      override def toString: String = typeName
+      def typeName: String          = s"${value}"
+
+      override def isBound: Boolean                                       = true
+      override def bind(typeArgMap: Map[String, DataType]): DataTypeParam = this
+    }
+    case class Unbound(dataType: DataType) extends DataTypeParam {
+      override def toString: String = typeName
+      override def typeName: String = s"${dataType.toString}"
+      override def isBound: Boolean = dataType.isBound
+
+      override def bind(typeArgMap: Map[String, DataType]): DataTypeParam = {
+        dataType.bind(typeArgMap) match {
+          case dt if dt eq dataType => this
+          case dt                   => Unbound(dt)
+        }
+      }
+    }
+  }
+
+  /**
     * UnboundType is a type with type variables
     * @param name
     */
@@ -45,7 +73,7 @@ object DataType extends LogSupport {
     }
   }
 
-  case class GenericType(override val typeName: String, typeArgs: Seq[DataType]) extends DataType(typeName) {
+  case class GenericType(override val typeName: String, typeArgs: Seq[DataTypeParam]) extends DataType(typeName) {
     override def isBound: Boolean = typeArgs.forall(_.isBound)
 
     override def bind(typeArgMap: Map[String, DataType]): DataType = {
@@ -54,12 +82,12 @@ object DataType extends LogSupport {
   }
 
   case class IntervalDayTimeType(from: String, to: String) extends DataType(s"interval ${from} to ${to}")
-  case class TimeType(withTimeZone: Boolean = false, precision: Option[SQLTypeParam] = None)
+  case class TimeType(withTimeZone: Boolean = false, precision: Option[DataTypeParam] = None)
       extends DataType(toTypeName("time", precision.toSeq))
-  case class TimestampType(withTimeZone: Boolean = false, precision: Option[SQLTypeParam] = None)
+  case class TimestampType(withTimeZone: Boolean = false, precision: Option[DataTypeParam] = None)
       extends DataType(toTypeName("timestamp", precision.toSeq))
 
-  private def toTypeName(name: String, typeArgs: Seq[SQLTypeParam]): String = {
+  private def toTypeName(name: String, typeArgs: Seq[DataTypeParam]): String = {
     if (typeArgs.isEmpty)
       name
     else {
@@ -82,7 +110,7 @@ object DataType extends LogSupport {
   case class ArrayType(elemType: DataType) extends DataType(s"array(${elemType.typeName})")
   case class MapType(keyType: DataType, valueType: DataType)
       extends DataType(s"map(${keyType.typeName},${valueType.typeName})")
-  case class RecordType(elems: Seq[NamedType]) extends DataType(s"row(${elems.map(_.typeName).mkString(",")})")
+  case class RecordType(elems: Seq[NamedType]) extends DataType(s"record(${elems.map(_.typeName).mkString(",")})")
 
   def primitiveTypeOf(dataType: String): DataType = {
     dataType match {
@@ -95,15 +123,13 @@ object DataType extends LogSupport {
       case "boolean"                                  => BooleanType
       case "json"                                     => JsonType
       case "binary"                                   => BinaryType
-      case "time"                                     => TimeType(withTimeZone = false, precision = None)
-      case "timestamp"                                => TimestampType(withTimeZone = false, precision = None)
       case _ =>
-        warn(s"Unknown type: ${dataType}. Using 'any' instead")
-        AnyType
+        warn(s"Unknown type: ${dataType}")
+        UnknownType
     }
   }
 
-  def parse(typeName: String): Option[DataType] = {
+  def parse(typeName: String): DataType = {
     DataTypeParser.parseDataType(typeName)
   }
 

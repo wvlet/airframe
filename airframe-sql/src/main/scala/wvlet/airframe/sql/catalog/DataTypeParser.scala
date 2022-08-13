@@ -13,18 +13,71 @@
  */
 package wvlet.airframe.sql.catalog
 
-import wvlet.airframe.sql.catalog.DataType.{ArrayType, DecimalType, StringType}
+import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.log.LogSupport
 
 import scala.util.parsing.combinator.RegexParsers
 
 object DataTypeParser extends RegexParsers with LogSupport {
+
+  import DataType._
+
   override def skipWhitespace = true
 
   private def typeName: Parser[String] = "[a-zA-Z_]([a-zA-Z0-9_]+)?".r
-  private def number: Parser[Int]      = "[0-9]+".r ^^ { _.toInt }
 
-  private def primitiveType: Parser[DataType] = typeName ^^ { DataType.primitiveTypeOf(_) }
+  private def number: Parser[Int] = "[0-9]+".r ^^ {
+    _.toInt
+  }
+
+  private def identifier: Parser[String] =
+    "\"" ~ typeName ~ "\"" ^^ { case _ ~ s ~ _ => s } |
+      typeName ^^ { case s => s }
+
+  private def typeParams: Parser[List[DataTypeParam]] = repsep(typeParam, ",")
+
+  private def typeParam: Parser[DataTypeParam] = {
+    dataType ^^ { case tpe => DataTypeParam.Unbound(tpe) } |
+      number ^^ { case num => DataTypeParam.Numeric(num) }
+  }
+
+  private def genericType: Parser[DataType] = typeName ~ opt("(" ~ typeParams ~ ")") ^^ {
+    case name ~ None                        => GenericType(name, Seq.empty)
+    case name ~ Some(_ ~ optTypeParams ~ _) => GenericType(name, optTypeParams)
+  }
+
+  private def intervalDayTimeType: Parser[DataType] = "interval" ~ typeName ~ "to" ~ typeName ^^ {
+    case _ ~ from ~ _ ~ to =>
+      IntervalDayTimeType(from, to)
+  }
+
+  private def recordType: Parser[DataType] = "row" ~ "(" ~ repsep(field, ",") ~ ")" ^^ { case _ ~ _ ~ fields ~ _ =>
+    RecordType(fields)
+  }
+
+  private def field: Parser[NamedType] = identifier ~ dataType ^^ { case id ~ tpe => NamedType(id, tpe) }
+
+  private def timeType: Parser[DataType] = "time" ~ "(" ~ typeParam ~ ")" ~ opt("with time zone") ^^ {
+    case _ ~ _ ~ precision ~ _ ~ tz => TimeType(tz.isDefined, Some(precision))
+  }
+
+  private def timestampType: Parser[DataType] = "timestamp" ~ "(" ~ typeParam ~ ")" ~ opt("with time zone") ^^ {
+    case _ ~ _ ~ precision ~ _ ~ tz => TimestampType(tz.isDefined, Some(precision))
+  }
+
+  private def primitiveTypeName: Parser[String] = {
+    "any" | "null" |
+      "string" | "byte" | "char" |
+      "short" | "int" | "long" |
+      "float" | "real" | "double" |
+      "boolean" |
+      "json" |
+      "binary" |
+      "time" |
+      "timestamp"
+  }
+
+  private def primitiveType: Parser[DataType] = primitiveTypeName ^^ { DataType.primitiveTypeOf(_) }
   private def decimalType: Parser[DataType.DecimalType] =
     "decimal" ~ "(" ~ number ~ "," ~ number ~ ")" ^^ { case _ ~ _ ~ p ~ _ ~ s ~ _ =>
       DecimalType(p, s)
@@ -48,38 +101,37 @@ object DataTypeParser extends RegexParsers with LogSupport {
     }
 
   private def namedType: Parser[NamedType] = typeName ~ ":" ~ dataType ^^ { case n ~ _ ~ t => NamedType(n, t) }
-  private def recordType: Parser[DataType.RecordType] =
-    "{" ~ namedType ~ rep("," ~ namedType) ~ "}" ^^ { case _ ~ head ~ tail ~ _ =>
-      DataType.RecordType(head +: tail.map(_._2).toSeq)
-    }
 
   def dataType: Parser[DataType] =
-    decimalType | varcharType | arrayType | mapType | recordType | primitiveType
+    decimalType |
+      varcharType |
+      recordType |
+      timeType |
+      timestampType |
+      intervalDayTimeType |
+      arrayType |
+      mapType |
+      recordType |
+      primitiveType |
+      genericType
 
   def typeArgs: Parser[List[DataType]] = repsep(dataType, ",")
 
-  def parseDataType(s: String): Option[DataType] = {
-    parseAll(dataType, s) match {
-      case Success(result, next) => Some(result)
+  private def parseError(msg: String): SQLError = {
+    SQLErrorCode.InvalidType.toException(s"Failed to parse SQL Type: ${msg}")
+  }
+
+  private def parse[A](target: Parser[A], input: String): A = {
+    parseAll(target, input) match {
+      case Success(result, next) => result
       case Error(msg, next) =>
-        warn(msg)
-        None
+        throw parseError(s"${input}: ${msg}")
       case Failure(msg, next) =>
-        warn(msg)
-        None
+        throw parseError(s"${input}: ${msg}")
     }
   }
 
-  def parseDataTypeList(s: String): List[DataType] = {
-    parseAll(typeArgs, s) match {
-      case Success(result, next) => result
-      case Error(msg, next) =>
-        warn(msg)
-        List.empty
-      case Failure(msg, next) =>
-        warn(msg)
-        List.empty
-    }
-  }
+  def parseDataType(s: String): DataType           = parse(dataType, s)
+  def parseDataTypeList(s: String): List[DataType] = parse(typeArgs, s)
 
 }

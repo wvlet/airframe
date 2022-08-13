@@ -14,7 +14,6 @@
 package wvlet.airframe.sql.catalog
 
 import wvlet.airframe.sql.catalog.DataType.UnboundType
-import wvlet.airframe.sql.parser.{SQLType, SQLTypeParser}
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 
 /**
@@ -47,9 +46,8 @@ case class UnboundFunction(name: String, args: Seq[DataType], returnType: DataTy
 
 object UnboundFunction {
   def parse(name: String, argTypeStr: String, returnTypeStr: String): SQLFunction = {
-    val argTypes = SQLTypeParser.parseSQLTypeArgs(argTypeStr)
-    val retTypes = SQLTypeParser.parseSQLType(returnTypeStr)
-    // TODO
-    null
+    val argTypes = DataTypeParser.parseDataTypeList(argTypeStr)
+    val retType  = DataTypeParser.parseDataType(returnTypeStr)
+    UnboundFunction(name, argTypes, retType)
   }
 }
