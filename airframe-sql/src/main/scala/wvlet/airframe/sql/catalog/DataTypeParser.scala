@@ -92,8 +92,12 @@ object DataTypeParser extends RegexParsers with LogSupport {
   private def unboundType: Parser[DataType.UnboundType] =
     typeName ^^ { case tpe => UnboundType(tpe) }
 
-  def dataType: Parser[DataType] =
-    decimalType |
+  private def nullType: Parser[DataType] =
+    "null" ^^ { _ => NullType }
+
+  def dataType: Parser[DataType] = {
+    nullType |
+      decimalType |
       varcharType |
       recordType |
       timeType |
@@ -103,6 +107,7 @@ object DataTypeParser extends RegexParsers with LogSupport {
       mapType |
       genericType |
       unboundType
+  }
 
   def typeArgs: Parser[List[DataType]] = repsep(dataType, ",")
 
