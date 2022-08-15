@@ -39,7 +39,7 @@ object DataType extends LogSupport {
     * Constant type used for arguments of varchar(n), char(n), decimal(p, q), etc.
     */
   case class IntConstant(value: Int) extends DataType(s"${value}") with TypeParameter
-  case class TypeVariable(name: String) extends DataType(name) with TypeParameter {
+  case class TypeVariable(name: String) extends DataType(s"$$${name}") with TypeParameter {
     override def isBound: Boolean = false
     override def bind(typeArgMap: Map[String, DataType]): DataType = {
       typeArgMap.get(name) match {
@@ -58,6 +58,9 @@ object DataType extends LogSupport {
     }
   }
 
+  // calendar date (year, month, day)
+  case object DateType extends DataType("date")
+
   case class IntervalDayTimeType(from: String, to: String) extends DataType(s"interval ${from} to ${to}")
 
   sealed trait TimestampField
@@ -65,7 +68,7 @@ object DataType extends LogSupport {
     case object TIME      extends TimestampField
     case object TIMESTAMP extends TimestampField
   }
-  case class TimestampType(field: TimestampField, withTimeZone: Boolean = true, precision: Option[DataType] = None)
+  case class TimestampType(field: TimestampField, withTimeZone: Boolean, precision: Option[DataType] = None)
       extends DataType(
         typeNameOf(field.toString.toLowerCase, precision.toSeq) + (if (withTimeZone) " with time zone" else "")
       ) {
@@ -78,6 +81,35 @@ object DataType extends LogSupport {
     else {
       s"${name}(${typeArgs.mkString(",")})"
     }
+  }
+
+  private def primitiveTypes: Seq[DataType] = Seq(
+    AnyType,
+    NullType,
+    BooleanType,
+    ByteType,
+    ShortType,
+    IntegerType,
+    LongType,
+    FloatType,
+    RealType,
+    DoubleType,
+    StringType,
+    JsonType,
+    DateType,
+    BinaryType,
+    IpAddressType
+  )
+  private val primitiveTypeTable: Map[String, DataType] =
+    primitiveTypes.map(x => x.typeName -> x).toMap +
+      ("int"    -> IntegerType) +
+      ("bigint" -> IntegerType)
+
+  def isPrimitiveTypeName(s: String): Boolean = {
+    primitiveTypeTable.contains(s)
+  }
+  def getPrimitiveType(s: String): DataType = {
+    primitiveTypeTable.getOrElse(s, throw new IllegalArgumentException(s"Unknown primitive type name: ${s}"))
   }
 
   case object AnyType  extends DataType("any")
@@ -102,8 +134,11 @@ object DataType extends LogSupport {
     override def baseTypeName: String = "decimal"
   }
 
-  case object JsonType                     extends DataType("json")
-  case object BinaryType                   extends DataType("binary")
+  case object JsonType   extends DataType("json")
+  case object BinaryType extends DataType("binary")
+
+  case object IpAddressType extends DataType("ipaddress")
+
   case class ArrayType(elemType: DataType) extends DataType(s"array(${elemType.typeName})")
   case class MapType(keyType: DataType, valueType: DataType)
       extends DataType(s"map(${keyType.typeName},${valueType.typeName})")

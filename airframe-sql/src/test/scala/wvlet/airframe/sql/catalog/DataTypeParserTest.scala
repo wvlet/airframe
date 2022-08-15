@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.sql.catalog
 
+import wvlet.airframe.sql.catalog.DataType.TypeVariable
 import wvlet.airspec.AirSpec
 import wvlet.log.io.{IOUtil, Resource}
 
@@ -31,5 +32,10 @@ class DataTypeParserTest extends AirSpec {
       val dt = DataTypeParser.parseTypeList(a)
       debug(s"parse type args: ${a} -> ${dt}")
     }
+  }
+
+  test("parse type variable") {
+    val t = DataTypeParser.parse("V")
+    t shouldBe TypeVariable("V")
   }
 }

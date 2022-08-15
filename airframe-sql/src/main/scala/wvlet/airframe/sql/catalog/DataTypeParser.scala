@@ -42,7 +42,7 @@ object DataTypeParser extends RegexParsers with LogSupport {
   }
 
   private def genericType: Parser[DataType] = typeName ~ opt("(" ~ typeParams ~ ")") ^^ {
-    case name ~ None                        => GenericType(name, Seq.empty)
+    case name ~ None                        => TypeVariable(name)
     case name ~ Some(_ ~ optTypeParams ~ _) => GenericType(name, optTypeParams)
   }
 
@@ -89,9 +89,6 @@ object DataTypeParser extends RegexParsers with LogSupport {
       MapType(k, v)
     }
 
-  private def typeVariable: Parser[DataType] =
-    typeName ^^ { case name => TypeVariable(name) }
-
   private def nullType: Parser[DataType] =
     "null" ^^ { _ => NullType }
 
@@ -99,7 +96,7 @@ object DataTypeParser extends RegexParsers with LogSupport {
     "byte" ^^ { case _ =>
       DataType.ByteType
     } |
-      ("integer" | "int") ^^ { case _ => DataType.IntegerType } |
+      ("integer" | "int" | "bigint") ^^ { case _ => DataType.IntegerType } |
       "short" ^^ { case _ => DataType.ShortType } |
       "long" ^^ { case _ => DataType.LongType } |
       "float" ^^ { case _ => DataType.FloatType } |
@@ -126,14 +123,21 @@ object DataTypeParser extends RegexParsers with LogSupport {
   private def binaryType: Parser[DataType] = {
     "binary" ^^ { case _ => BinaryType }
   }
+  private def dateType: Parser[DataType] = {
+    "date" ^^ { case _ => DateType }
+  }
+  private def ipAddressType: Parser[DataType] = {
+    "ipaddress" ^^ { case _ => IpAddressType }
+  }
 
   private def primitiveType: Parser[DataType] = {
-    nullType | booleanType | numericType | stringType | anyType | jsonType | binaryType
+    typeName ^? { case str if DataType.isPrimitiveTypeName(str) => DataType.getPrimitiveType(str) }
+    // nullType | booleanType | numericType | stringType | anyType | jsonType | binaryType | dateType | ipAddressType
   }
 
   def dataType: Parser[DataType] = {
     // interval type needs to come first before primitive int, integer types
-    intervalDayTimeType | primitiveType | dataTypeWithParam | genericType | typeVariable
+    intervalDayTimeType | primitiveType | dataTypeWithParam | genericType
   }
 
   def dataTypeWithParam: Parser[DataType] = {

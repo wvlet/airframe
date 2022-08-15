@@ -23,9 +23,8 @@ class DataTypeTest extends AirSpec {
     parsed shouldBe expected
   }
 
-  test("parse DataType names") {
+  test("parse primitive types") {
     parse("byte", ByteType)
-    parse("char", GenericType("char"))
     parse("short", ShortType)
     parse("int", IntegerType)
     parse("long", LongType)
@@ -35,16 +34,49 @@ class DataTypeTest extends AirSpec {
     parse("boolean", BooleanType)
     parse("any", AnyType)
     parse("null", NullType)
+    parse("date", DateType)
+    parse("json", JsonType)
+    parse("binary", BinaryType)
+  }
+
+  test("parse Trino SQL types in https://trino.io/docs/current/language/types.html") {
+    parse("ipaddress", IpAddressType)
+  }
+
+  test("parse decimal types") {
     parse("decimal(10,2)", DecimalType(10, 2))
     parse("decimal(34,0)", DecimalType(34, 0))
     parse("decimal(34, 0)", DecimalType(34, 0))
-    parse("json", JsonType)
-    parse("binary", BinaryType)
-    parse("timestamp", GenericType("timestamp"))
+  }
+
+  test("parse timestamp types") {
+    parse(
+      "timestamp(1)",
+      TimestampType(TimestampField.TIMESTAMP, withTimeZone = false, precision = Some(IntConstant(1)))
+    )
+    parse(
+      "timestamp(2) with time zone",
+      TimestampType(TimestampField.TIMESTAMP, withTimeZone = true, precision = Some(IntConstant(2)))
+    )
+
+    parse(
+      "time(1)",
+      TimestampType(TimestampField.TIME, withTimeZone = false, precision = Some(IntConstant(1)))
+    )
+    parse(
+      "time(2) with time zone",
+      TimestampType(TimestampField.TIME, withTimeZone = true, precision = Some(IntConstant(2)))
+    )
+  }
+
+  test("parse array/map types") {
     parse("array(int)", ArrayType(IntegerType))
     parse("array(array(string))", ArrayType(ArrayType(StringType)))
     parse("map(string,long)", MapType(StringType, LongType))
     parse("map(string,array(string))", MapType(StringType, ArrayType(StringType)))
+  }
+
+  test("parse row types") {
     parse(
       """row(id long,name string)""",
       DataType.RecordType(Seq(NamedType("id", LongType), NamedType("name", StringType)))
