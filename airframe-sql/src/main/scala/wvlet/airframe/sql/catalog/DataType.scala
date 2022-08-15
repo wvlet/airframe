@@ -110,6 +110,7 @@ object DataType extends LogSupport {
 
   abstract class FractionType(override val typeName: String) extends NumericType(typeName)
   case object FloatType                                      extends FractionType("float")
+  case object RealType                                       extends FractionType("real")
   case object DoubleType                                     extends FractionType("double")
 
   case class CharType(length: Int)    extends DataType(s"char(${length})")

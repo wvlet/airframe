@@ -100,12 +100,16 @@ object DataTypeParser extends RegexParsers with LogSupport {
       DataType.ByteType
     } |
       ("int" | "integer") ^^ { case _ => DataType.IntegerType } |
-      "short" ^^ { case _ => DataType.ShortType }
-    "long" ^^ { case _ => DataType.LongType } |
+      "short" ^^ { case _ => DataType.ShortType } |
+      "long" ^^ { case _ => DataType.LongType } |
       "float" ^^ { case _ => DataType.FloatType } |
+      "real" ^^ { case _ => DataType.RealType } |
       "double" ^^ { case _ =>
         DataType.DoubleType
       }
+  }
+  private def booleanType: Parser[DataType] = {
+    "boolean" ^^ { case _ => BooleanType }
   }
 
   private def anyType: Parser[DataType] = {
@@ -119,7 +123,7 @@ object DataTypeParser extends RegexParsers with LogSupport {
   }
 
   private def primitiveType: Parser[DataType] = {
-    nullType | numericType | anyType | jsonType | binaryType
+    nullType | booleanType | numericType | anyType | jsonType | binaryType
   }
 
   def dataType: Parser[DataType] = {
