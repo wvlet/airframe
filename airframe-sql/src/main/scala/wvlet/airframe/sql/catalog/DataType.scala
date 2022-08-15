@@ -14,128 +14,175 @@
 
 package wvlet.airframe.sql.catalog
 import wvlet.log.LogSupport
-import wvlet.airframe.sql.catalog.DataType.{ArrayType, DecimalType, StringType}
 
-import scala.util.parsing.combinator.RegexParsers
+import javax.lang.model.`type`.PrimitiveType
 
-abstract class DataType(val typeName: String) {
-  def baseTypeName: String      = typeName
-  override def toString: String = typeName
-}
+abstract class DataType(val typeName: String, val typeParams: Seq[DataType]) {
+  override def toString: String = {
+    if (typeParams.isEmpty)
+      typeName
+    else {
+      s"${typeName}(${typeParams.mkString(",")})"
+    }
+  }
+  def baseTypeName: String = typeName
 
-case class NamedType(name: String, dataType: DataType) {
-  def typeName: String = s"${name}:${dataType}"
+  def isBound: Boolean                                  = typeParams.forall(_.isBound)
+  def bind(typeArgMap: Map[String, DataType]): DataType = this
 }
 
 object DataType extends LogSupport {
 
-  case object UnknownType extends DataType("?")
-  case object AnyType     extends DataType("any")
-  case object NullType    extends DataType("null")
-  case object BooleanType extends DataType("boolean")
-  case object StringType  extends DataType("string")
-  case object LongType    extends DataType("long")
-  case object DoubleType  extends DataType("double")
-  case class DecimalType(precision: Int, scale: Int) extends DataType(s"decimal(${precision},${scale})") {
-    override def baseTypeName: String = "decimal"
-  }
-  case object JsonType                     extends DataType("json")
-  case object BinaryType                   extends DataType("binary")
-  case object TimestampType                extends DataType("timestamp")
-  case class ArrayType(elemType: DataType) extends DataType(s"array(${elemType.typeName})")
-  case class MapType(keyType: DataType, valueType: DataType)
-      extends DataType(s"map(${keyType.typeName},${valueType.typeName})")
-  case class RecordType(elems: Seq[NamedType]) extends DataType(s"{${elems.map(_.typeName).mkString(",")}}")
+  case class NamedType(name: String, dataType: DataType) extends DataType(s"${name}:${dataType}", Seq.empty)
 
-  def primitiveTypeOf(dataType: String): DataType = {
-    dataType match {
-      case "?"                                        => UnknownType
-      case "any"                                      => AnyType
-      case "null"                                     => NullType
-      case "string" | "varchar"                       => StringType
-      case "byte" | "char" | "short" | "int" | "long" => LongType
-      case "float" | "real" | "double"                => DoubleType
-      case "boolean"                                  => BooleanType
-      case "json"                                     => JsonType
-      case "binary"                                   => BinaryType
-      case "timestamp"                                => TimestampType
-      case _ =>
-        warn(s"Unknown type: ${dataType}. Using 'any' instead")
-        AnyType
+  /**
+    * DataType parameter for representing concrete types like timestamp(2), and abstract types like timestamp(p).
+    */
+  sealed abstract class TypeParameter(name: String) extends DataType(typeName = name, typeParams = Seq.empty)
+
+  /**
+    * Constant type used for arguments of varchar(n), char(n), decimal(p, q), etc.
+    */
+  case class IntConstant(value: Int) extends TypeParameter(s"${value}")
+  case class TypeVariable(name: String) extends TypeParameter(s"$$${name}") {
+    override def isBound: Boolean = false
+    override def bind(typeArgMap: Map[String, DataType]): DataType = {
+      typeArgMap.get(name) match {
+        case Some(t) => t
+        case None    => this
+      }
     }
   }
 
-  def parse(typeName: String): Option[DataType] = {
-    DataTypeParser.parseDataType(typeName)
+  case class GenericType(override val typeName: String, override val typeParams: Seq[DataType] = Seq.empty)
+      extends DataType(typeName, typeParams) {
+    override def isBound: Boolean = typeParams.forall(_.isBound)
+    override def bind(typeArgMap: Map[String, DataType]): DataType = {
+      GenericType(typeName, typeParams.map(_.bind(typeArgMap)))
+    }
+  }
+
+  case class IntervalDayTimeType(from: String, to: String) extends DataType(s"interval", Seq.empty) {
+    override def toString: String = s"interval from ${from} to ${to}"
+  }
+
+  sealed trait TimestampField
+  object TimestampField {
+    case object TIME      extends TimestampField
+    case object TIMESTAMP extends TimestampField
+  }
+  case class TimestampType(field: TimestampField, withTimeZone: Boolean, precision: Option[DataType] = None)
+      extends DataType(field.toString.toLowerCase, precision.toSeq) {
+    override def toString: String = {
+      val base = super.toString
+      if (withTimeZone) {
+        s"${base} with time zone"
+      } else {
+        base
+      }
+    }
+  }
+
+  private def primitiveTypes: Seq[DataType] = Seq(
+    AnyType,
+    NullType,
+    BooleanType,
+    ByteType,
+    ShortType,
+    IntegerType,
+    LongType,
+    FloatType,
+    RealType,
+    DoubleType,
+    StringType,
+    JsonType,
+    DateType,
+    BinaryType
+  )
+  private val primitiveTypeTable: Map[String, DataType] =
+    primitiveTypes.map(x => x.typeName -> x).toMap ++
+      Map(
+        "int"      -> IntegerType,
+        "bigint"   -> IntegerType,
+        "tinyint"  -> ShortType,
+        "smallint" -> ShortType
+      )
+
+  /**
+    * data type names that will be mapped to GenericType
+    */
+  private val knownGenericTypeNames: Set[String] = Set(
+    "char",
+    "varchar",
+    "varbinary",
+    // trino-specific types
+    "bingtile",
+    "ipaddress",
+    "json",
+    "jsonpath",
+    "joniregexp",
+    "tdigest",
+    "qdigest",
+    "uuid",
+    "hyperloglog",
+    "geometry",
+    "p4hyperloglog",
+    // lambda
+    "function"
+  )
+
+  def isKnownGenericTypeName(s: String): Boolean = {
+    knownGenericTypeNames.contains(s)
+  }
+
+  def isPrimitiveTypeName(s: String): Boolean = {
+    primitiveTypeTable.contains(s)
+  }
+  def getPrimitiveType(s: String): DataType = {
+    primitiveTypeTable.getOrElse(s, throw new IllegalArgumentException(s"Unknown primitive type name: ${s}"))
+  }
+
+  abstract class PrimitiveType(name: String) extends DataType(name, Seq.empty)
+  // calendar date (year, month, day)
+  case object DateType extends PrimitiveType("date")
+
+  case object AnyType  extends PrimitiveType("any")
+  case object NullType extends PrimitiveType("null")
+
+  case object BooleanType                                   extends PrimitiveType("boolean")
+  abstract class NumericType(override val typeName: String) extends PrimitiveType(typeName)
+  case object ByteType                                      extends NumericType("byte")
+  case object ShortType                                     extends NumericType("short")
+  case object IntegerType                                   extends NumericType("integer")
+  case object LongType                                      extends NumericType("long")
+
+  abstract class FractionType(override val typeName: String) extends NumericType(typeName)
+  case object FloatType                                      extends FractionType("float")
+  case object RealType                                       extends FractionType("real")
+  case object DoubleType                                     extends FractionType("double")
+
+  case class CharType(length: Option[DataType])                extends DataType("char", length.toSeq)
+  case object StringType                                       extends PrimitiveType("string")
+  case class VarcharType(length: Option[DataType])             extends DataType("varchar", length.toSeq)
+  case class DecimalType(precision: DataType, scale: DataType) extends DataType("decimal", Seq(precision, scale))
+
+  object DecimalType {
+    def apply(precision: Int, scale: Int): DecimalType = DecimalType(IntConstant(precision), IntConstant(scale))
+  }
+
+  case object JsonType   extends PrimitiveType("json")
+  case object BinaryType extends PrimitiveType("binary")
+
+  case class ArrayType(elemType: DataType)                   extends DataType(s"array", Seq(elemType))
+  case class MapType(keyType: DataType, valueType: DataType) extends DataType(s"map", Seq(keyType, valueType))
+  case class RecordType(elems: Seq[DataType])                extends DataType("record", elems)
+
+  def parse(typeName: String): DataType = {
+    DataTypeParser.parse(typeName)
   }
 
   def parseArgs(typeArgs: String): List[DataType] = {
-    DataTypeParser.parseDataTypeList(typeArgs)
-  }
-}
-
-object DataTypeParser extends RegexParsers with LogSupport {
-  override def skipWhitespace = true
-
-  private def typeName: Parser[String] = "[a-zA-Z_]([a-zA-Z0-9_]+)?".r
-  private def number: Parser[Int]      = "[0-9]+".r ^^ { _.toInt }
-
-  private def primitiveType: Parser[DataType] = typeName ^^ { DataType.primitiveTypeOf(_) }
-  private def decimalType: Parser[DataType.DecimalType] =
-    "decimal" ~ "(" ~ number ~ "," ~ number ~ ")" ^^ { case _ ~ _ ~ p ~ _ ~ s ~ _ =>
-      DecimalType(p, s)
-    }
-
-  private def varcharType: Parser[DataType] =
-    "varchar" ~ opt("(" ~ (typeName | number) ~ ")") ^^ { case _ ~ _ =>
-      StringType
-    }
-
-  // private def timestampType: Parser[DataType] =
-//    "timestamp" ~ opt("")
-
-  private def arrayType: Parser[DataType.ArrayType] =
-    "array" ~ "(" ~ dataType ~ ")" ^^ { case _ ~ _ ~ x ~ _ =>
-      ArrayType(x)
-    }
-  private def mapType: Parser[DataType.MapType] =
-    "map" ~ "(" ~ dataType ~ "," ~ dataType ~ ")" ^^ { case _ ~ _ ~ k ~ _ ~ v ~ _ =>
-      DataType.MapType(k, v)
-    }
-
-  private def namedType: Parser[NamedType] = typeName ~ ":" ~ dataType ^^ { case n ~ _ ~ t => NamedType(n, t) }
-  private def recordType: Parser[DataType.RecordType] =
-    "{" ~ namedType ~ rep("," ~ namedType) ~ "}" ^^ { case _ ~ head ~ tail ~ _ =>
-      DataType.RecordType(head +: tail.map(_._2).toSeq)
-    }
-
-  def dataType: Parser[DataType] =
-    decimalType | varcharType | arrayType | mapType | recordType | primitiveType
-
-  def typeArgs: Parser[List[DataType]] = repsep(dataType, ",")
-
-  def parseDataType(s: String): Option[DataType] = {
-    parseAll(dataType, s) match {
-      case Success(result, next) => Some(result)
-      case Error(msg, next) =>
-        warn(msg)
-        None
-      case Failure(msg, next) =>
-        warn(msg)
-        None
-    }
-  }
-
-  def parseDataTypeList(s: String): List[DataType] = {
-    parseAll(typeArgs, s) match {
-      case Success(result, next) => result
-      case Error(msg, next) =>
-        warn(msg)
-        List.empty
-      case Failure(msg, next) =>
-        warn(msg)
-        List.empty
-    }
+    DataTypeParser.parseTypeList(typeArgs)
   }
 
 }

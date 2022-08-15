@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.sql.catalog
 
+import wvlet.airframe.sql.catalog.DataType.NamedType
 import wvlet.airframe.sql.model.Expression.QName
 
 object Catalog {

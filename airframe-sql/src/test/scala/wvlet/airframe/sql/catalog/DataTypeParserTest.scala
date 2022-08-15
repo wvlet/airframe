@@ -11,26 +11,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.sql.parser
+package wvlet.airframe.sql.catalog
 
+import wvlet.airframe.sql.catalog.DataType.TypeVariable
 import wvlet.airspec.AirSpec
 import wvlet.log.io.{IOUtil, Resource}
 
-class SQLTypeParserTest extends AirSpec {
-
+class DataTypeParserTest extends AirSpec {
   test("parse various types") {
     val types = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "types.txt").get).split("\n")
     for (t <- types) {
-      val dt = SQLTypeParser.parseSQLType(t)
+      val dt = DataTypeParser.parse(t)
       debug(s"parse: ${t} -> ${dt}")
     }
   }
 
-//  test("parse type args") {
-//    val args = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "argtypes.txt").get).split("\n")
-//    for (a <- args) {
-//      debug(s"parse type args: ${a}")
-//      DataType.parseArgs(a)
-//    }
-//  }//
+  test("parse type args") {
+    val args = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "argtypes.txt").get).split("\n")
+    for (a <- args) {
+      val dt = DataTypeParser.parseTypeList(a)
+      debug(s"parse type args: ${a} -> ${dt}")
+    }
+  }
+
+  test("parse type variable") {
+    val t = DataTypeParser.parse("V")
+    t shouldBe TypeVariable("V")
+  }
 }
