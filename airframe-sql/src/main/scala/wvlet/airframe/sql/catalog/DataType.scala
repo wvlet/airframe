@@ -73,8 +73,8 @@ object DataType extends LogSupport {
     }
   }
 
-  case class GenericType(override val typeName: String, typeArgs: Seq[DataTypeParam])
-      extends DataType(toTypeName(typeName, typeArgs)) {
+  case class GenericType(override val typeName: String, typeArgs: Seq[DataTypeParam] = Seq.empty)
+      extends DataType(typeNameOf(typeName, typeArgs)) {
     override def isBound: Boolean = typeArgs.forall(_.isBound)
 
     override def bind(typeArgMap: Map[String, DataType]): DataType = {
@@ -84,11 +84,11 @@ object DataType extends LogSupport {
 
   case class IntervalDayTimeType(from: String, to: String) extends DataType(s"interval ${from} to ${to}")
   case class TimeType(withTimeZone: Boolean = false, precision: Option[DataTypeParam] = None)
-      extends DataType(toTypeName("time", precision.toSeq))
+      extends DataType(typeNameOf("time", precision.toSeq))
   case class TimestampType(withTimeZone: Boolean = false, precision: Option[DataTypeParam] = None)
-      extends DataType(toTypeName("timestamp", precision.toSeq))
+      extends DataType(typeNameOf("timestamp", precision.toSeq))
 
-  private def toTypeName(name: String, typeArgs: Seq[DataTypeParam]): String = {
+  private def typeNameOf(name: String, typeArgs: Seq[DataTypeParam]): String = {
     if (typeArgs.isEmpty)
       name
     else {
@@ -99,13 +99,26 @@ object DataType extends LogSupport {
   case object UnknownType extends DataType("?")
   case object AnyType     extends DataType("any")
   case object NullType    extends DataType("null")
+
   case object BooleanType extends DataType("boolean")
-  case object StringType  extends DataType("string")
-  case object LongType    extends DataType("long")
-  case object DoubleType  extends DataType("double")
+
+  abstract class NumericType(override val typeName: String) extends DataType(typeName)
+  case object ByteType                                      extends NumericType("byte")
+  case object ShortType                                     extends NumericType("short")
+  case object IntegerType                                   extends NumericType("integer")
+  case object LongType                                      extends NumericType("long")
+
+  abstract class FractionType(override val typeName: String) extends NumericType(typeName)
+  case object FloatType                                      extends FractionType("float")
+  case object DoubleType                                     extends FractionType("double")
+
+  case class CharType(length: Int)    extends DataType(s"char(${length})")
+  case object StringType              extends DataType("string")
+  case class VarcharType(length: Int) extends DataType(s"varchar(${length})")
   case class DecimalType(precision: Int, scale: Int) extends DataType(s"decimal(${precision},${scale})") {
     override def baseTypeName: String = "decimal"
   }
+
   case object JsonType                     extends DataType("json")
   case object BinaryType                   extends DataType("binary")
   case class ArrayType(elemType: DataType) extends DataType(s"array(${elemType.typeName})")
@@ -131,11 +144,11 @@ object DataType extends LogSupport {
   }
 
   def parse(typeName: String): DataType = {
-    DataTypeParser.parseDataType(typeName)
+    DataTypeParser.parse(typeName)
   }
 
   def parseArgs(typeArgs: String): List[DataType] = {
-    DataTypeParser.parseDataTypeList(typeArgs)
+    DataTypeParser.parseTypeList(typeArgs)
   }
 
 }

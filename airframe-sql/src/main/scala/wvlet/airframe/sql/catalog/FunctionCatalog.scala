@@ -46,8 +46,8 @@ case class UnboundFunction(name: String, args: Seq[DataType], returnType: DataTy
 
 object UnboundFunction {
   def parse(name: String, argTypeStr: String, returnTypeStr: String): SQLFunction = {
-    val argTypes = DataTypeParser.parseDataTypeList(argTypeStr)
-    val retType  = DataTypeParser.parseDataType(returnTypeStr)
+    val argTypes = DataTypeParser.parseTypeList(argTypeStr)
+    val retType  = DataTypeParser.parse(returnTypeStr)
     UnboundFunction(name, argTypes, retType)
   }
 }

@@ -95,18 +95,39 @@ object DataTypeParser extends RegexParsers with LogSupport {
   private def nullType: Parser[DataType] =
     "null" ^^ { _ => NullType }
 
+  private def numericType: Parser[DataType] = {
+    "byte" ^^ { case _ =>
+      DataType.ByteType
+    } |
+      ("int" | "integer") ^^ { case _ => DataType.IntegerType } |
+      "short" ^^ { case _ => DataType.ShortType }
+    "long" ^^ { case _ => DataType.LongType } |
+      "float" ^^ { case _ => DataType.FloatType } |
+      "double" ^^ { case _ =>
+        DataType.DoubleType
+      }
+  }
+
+  private def anyType: Parser[DataType] = {
+    "any" ^^ { case _ => AnyType }
+  }
+  private def jsonType: Parser[DataType] = {
+    "json" ^^ { case _ => JsonType }
+  }
+  private def binaryType: Parser[DataType] = {
+    "binary" ^^ { case _ => BinaryType }
+  }
+
+  private def primitiveType: Parser[DataType] = {
+    nullType | numericType | anyType | jsonType | binaryType
+  }
+
   def dataType: Parser[DataType] = {
-    nullType |
-      decimalType |
-      varcharType |
-      recordType |
-      timeType |
-      timestampType |
-      intervalDayTimeType |
-      arrayType |
-      mapType |
-      genericType |
-      unboundType
+    primitiveType | dataTypeWithParam | genericType | unboundType
+  }
+
+  def dataTypeWithParam: Parser[DataType] = {
+    decimalType | varcharType | timeType | timestampType | intervalDayTimeType | arrayType | mapType | recordType
   }
 
   def typeArgs: Parser[List[DataType]] = repsep(dataType, ",")
@@ -125,7 +146,7 @@ object DataTypeParser extends RegexParsers with LogSupport {
     }
   }
 
-  def parseDataType(s: String): DataType           = parse(dataType, s)
-  def parseDataTypeList(s: String): List[DataType] = parse(typeArgs, s)
+  def parse(s: String): DataType               = parse(dataType, s)
+  def parseTypeList(s: String): List[DataType] = parse(typeArgs, s)
 
 }

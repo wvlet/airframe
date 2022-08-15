@@ -20,7 +20,7 @@ class DataTypeParserTest extends AirSpec {
   test("parse various types") {
     val types = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "types.txt").get).split("\n")
     for (t <- types) {
-      val dt = DataTypeParser.parseDataType(t)
+      val dt = DataTypeParser.parse(t)
       debug(s"parse: ${t} -> ${dt}")
     }
   }
@@ -28,7 +28,7 @@ class DataTypeParserTest extends AirSpec {
   test("parse type args") {
     val args = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "argtypes.txt").get).split("\n")
     for (a <- args) {
-      val dt = DataTypeParser.parseDataTypeList(a)
+      val dt = DataTypeParser.parseTypeList(a)
       debug(s"parse type args: ${a} -> ${dt}")
     }
   }

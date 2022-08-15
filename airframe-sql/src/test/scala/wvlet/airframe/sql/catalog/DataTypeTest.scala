@@ -28,8 +28,8 @@ class DataTypeTest extends AirSpec {
   }
 
   test("parse DataType names") {
-    parse("byte", LongType)
-    parse("char", LongType)
+    parse("byte", ByteType)
+    parse("char", GenericType("char"))
     parse("short", LongType)
     parse("int", LongType)
     parse("long", LongType)
