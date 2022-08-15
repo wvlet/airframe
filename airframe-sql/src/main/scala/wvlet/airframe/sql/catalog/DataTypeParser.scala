@@ -89,47 +89,6 @@ object DataTypeParser extends RegexParsers with LogSupport {
       MapType(k, v)
     }
 
-  private def nullType: Parser[DataType] =
-    "null" ^^ { _ => NullType }
-
-  private def numericType: Parser[DataType] = {
-    "byte" ^^ { case _ =>
-      DataType.ByteType
-    } |
-      ("integer" | "int" | "bigint") ^^ { case _ => DataType.IntegerType } |
-      "short" ^^ { case _ => DataType.ShortType } |
-      "long" ^^ { case _ => DataType.LongType } |
-      "float" ^^ { case _ => DataType.FloatType } |
-      "real" ^^ { case _ => DataType.RealType } |
-      "double" ^^ { case _ =>
-        DataType.DoubleType
-      }
-  }
-  private def booleanType: Parser[DataType] = {
-    "boolean" ^^ { case _ => BooleanType }
-  }
-
-  private def anyType: Parser[DataType] = {
-    "any" ^^ { case _ => AnyType }
-  }
-  private def jsonType: Parser[DataType] = {
-    // Trino has jsonpath
-    "jsonpath" ^^ { case _ => StringType } |
-      "json" ^^ { case _ => JsonType }
-  }
-  private def stringType: Parser[DataType] = {
-    "string" ^^ { case _ => StringType }
-  }
-  private def binaryType: Parser[DataType] = {
-    "binary" ^^ { case _ => BinaryType }
-  }
-  private def dateType: Parser[DataType] = {
-    "date" ^^ { case _ => DateType }
-  }
-  private def ipAddressType: Parser[DataType] = {
-    "ipaddress" ^^ { case _ => IpAddressType }
-  }
-
   private def primitiveType: Parser[DataType] = {
     typeName ^? { case str if DataType.isPrimitiveTypeName(str) => DataType.getPrimitiveType(str) }
     // nullType | booleanType | numericType | stringType | anyType | jsonType | binaryType | dateType | ipAddressType
