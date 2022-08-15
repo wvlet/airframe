@@ -41,9 +41,10 @@ object DataTypeParser extends RegexParsers with LogSupport {
       number ^^ { case num => DataType.IntConstant(num) }
   }
 
-  private def genericType: Parser[DataType] = typeName ~ opt("(" ~ typeParams ~ ")") ^^ {
-    case name ~ None                        => TypeVariable(name)
-    case name ~ Some(_ ~ optTypeParams ~ _) => GenericType(name, optTypeParams)
+  private def genericType: Parser[DataType] = typeName ~ opt("(" ~ typeParams ~ ")") ^? {
+    case name ~ Some(_ ~ optTypeParams ~ _) if isKnownGenericTypeName(name) => GenericType(name, optTypeParams)
+    case name ~ None if isKnownGenericTypeName(name)                        => GenericType(name)
+    case name ~ None                                                        => TypeVariable(name)
   }
 
   private def intervalDayTimeType: Parser[DataType] = "interval" ~ typeName ~ "to" ~ typeName ^^ {
@@ -55,8 +56,10 @@ object DataTypeParser extends RegexParsers with LogSupport {
     RecordType(fields)
   }
 
-  private def field: Parser[NamedType] =
-    identifier ~ dataType ^^ { case id ~ tpe => NamedType(id, tpe) }
+  private def field: Parser[DataType] = {
+    identifier ~ dataType ^^ { case id ~ tpe => NamedType(id, tpe) } |
+      dataType ^^ { case d => d }
+  }
   // typeName ~ ":" ~ dataType ^^ { case n ~ _ ~ t => NamedType(n, t) }
 
   private def timeType: Parser[DataType] = "time" ~ "(" ~ typeParam ~ ")" ~ opt("with time zone") ^^ {
@@ -68,17 +71,17 @@ object DataTypeParser extends RegexParsers with LogSupport {
   }
 
   private def decimalType: Parser[DataType.DecimalType] =
-    "decimal" ~ "(" ~ number ~ "," ~ number ~ ")" ^^ { case _ ~ _ ~ p ~ _ ~ s ~ _ =>
+    "decimal" ~ "(" ~ typeParam ~ "," ~ typeParam ~ ")" ^^ { case _ ~ _ ~ p ~ _ ~ s ~ _ =>
       DecimalType(p, s)
     }
 
   private def varcharType: Parser[DataType] =
-    "varchar" ~ opt("(" ~ (typeName | number) ~ ")") ^^ { case _ ~ _ =>
-      StringType
+    "varchar" ~ opt("(" ~ typeParam ~ ")") ^^ { case _ ~ t =>
+      t match {
+        case Some(_ ~ p ~ _) => VarcharType(Some(p))
+        case _               => VarcharType(None)
+      }
     }
-
-  // private def timestampType: Parser[DataType] =
-//    "timestamp" ~ opt("")
 
   private def arrayType: Parser[DataType.ArrayType] =
     "array" ~ "(" ~ dataType ~ ")" ^^ { case _ ~ _ ~ x ~ _ =>

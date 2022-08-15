@@ -96,18 +96,44 @@ object DataType extends LogSupport {
     DoubleType,
     StringType,
     JsonType,
-    JsonPathType,
     DateType,
-    BinaryType,
-    IpAddressType,
-    UUIDType
+    BinaryType
   )
   private val primitiveTypeTable: Map[String, DataType] =
     primitiveTypes.map(x => x.typeName -> x).toMap ++
       Map(
-        "int"    -> IntegerType,
-        "bigint" -> IntegerType
+        "int"      -> IntegerType,
+        "bigint"   -> IntegerType,
+        "tinyint"  -> ShortType,
+        "smallint" -> ShortType
       )
+
+  /**
+    * data type names that will be mapped to GenericType
+    */
+  private val knownGenericTypeNames: Set[String] = Set(
+    "char",
+    "varchar",
+    "varbinary",
+    // trino-specific types
+    "bingtile",
+    "ipaddress",
+    "json",
+    "jsonpath",
+    "joniregexp",
+    "tdigest",
+    "qdigest",
+    "uuid",
+    "hyperloglog",
+    "geometry",
+    "p4hyperloglog",
+    // lambda
+    "function"
+  )
+
+  def isKnownGenericTypeName(s: String): Boolean = {
+    knownGenericTypeNames.contains(s)
+  }
 
   def isPrimitiveTypeName(s: String): Boolean = {
     primitiveTypeTable.contains(s)
@@ -135,9 +161,9 @@ object DataType extends LogSupport {
   case object RealType                                       extends FractionType("real")
   case object DoubleType                                     extends FractionType("double")
 
-  case class CharType(length: DataType)                        extends DataType("char", Seq(length))
+  case class CharType(length: Option[DataType])                extends DataType("char", length.toSeq)
   case object StringType                                       extends PrimitiveType("string")
-  case class VarcharType(length: DataType)                     extends DataType("varchar", Seq(length))
+  case class VarcharType(length: Option[DataType])             extends DataType("varchar", length.toSeq)
   case class DecimalType(precision: DataType, scale: DataType) extends DataType("decimal", Seq(precision, scale))
 
   object DecimalType {
@@ -147,14 +173,9 @@ object DataType extends LogSupport {
   case object JsonType   extends PrimitiveType("json")
   case object BinaryType extends PrimitiveType("binary")
 
-  // Trino-specific types
-  case object IpAddressType extends PrimitiveType("ipaddress")
-  case object JsonPathType  extends PrimitiveType("jsonpath")
-  case object UUIDType      extends PrimitiveType("uuid")
-
   case class ArrayType(elemType: DataType)                   extends DataType(s"array", Seq(elemType))
   case class MapType(keyType: DataType, valueType: DataType) extends DataType(s"map", Seq(keyType, valueType))
-  case class RecordType(elems: Seq[NamedType])               extends DataType("record", elems.map(_.dataType))
+  case class RecordType(elems: Seq[DataType])                extends DataType("record", elems)
 
   def parse(typeName: String): DataType = {
     DataTypeParser.parse(typeName)

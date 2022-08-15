@@ -40,7 +40,7 @@ class DataTypeTest extends AirSpec {
   }
 
   test("parse Trino SQL types in https://trino.io/docs/current/language/types.html") {
-    parse("ipaddress", IpAddressType)
+    parse("ipaddress", GenericType("ipaddress"))
   }
 
   test("parse decimal types") {
@@ -94,8 +94,8 @@ class DataTypeTest extends AirSpec {
   }
 
   test("parse varchar(x)") {
-    parse("varchar", StringType)
-    parse("varchar(x)", StringType)
-    parse("varchar(10)", StringType)
+    parse("varchar", VarcharType(None))
+    parse("varchar(x)", VarcharType(Some(TypeVariable("x"))))
+    parse("varchar(10)", VarcharType(Some(IntConstant(10))))
   }
 }
