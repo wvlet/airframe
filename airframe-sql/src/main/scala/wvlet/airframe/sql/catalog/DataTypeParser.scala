@@ -118,12 +118,15 @@ object DataTypeParser extends RegexParsers with LogSupport {
   private def jsonType: Parser[DataType] = {
     "json" ^^ { case _ => JsonType }
   }
+  private def stringType: Parser[DataType] = {
+    "string" ^^ { case _ => StringType }
+  }
   private def binaryType: Parser[DataType] = {
     "binary" ^^ { case _ => BinaryType }
   }
 
   private def primitiveType: Parser[DataType] = {
-    nullType | booleanType | numericType | anyType | jsonType | binaryType
+    nullType | booleanType | numericType | stringType | anyType | jsonType | binaryType
   }
 
   def dataType: Parser[DataType] = {
