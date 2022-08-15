@@ -15,15 +15,11 @@
 package wvlet.airframe.sql.catalog
 import wvlet.airframe.sql.catalog.DataType._
 import wvlet.airspec.AirSpec
-import wvlet.log.io.{IOUtil, Resource}
 
-/**
-  */
 class DataTypeTest extends AirSpec {
   protected def parse(t: String, expected: DataType): Unit = {
     debug(s"parse ${t}")
     val parsed = DataType.parse(t)
-    debug(parsed.getClass)
     parsed shouldBe expected
   }
 

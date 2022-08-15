@@ -13,12 +13,12 @@
  */
 package wvlet.airframe.sql.catalog
 
-import wvlet.airframe.sql.catalog.DataType.UnboundType
+import wvlet.airframe.sql.catalog.DataType.TypeVariable
 import wvlet.airspec.AirSpec
 
 class FunctionCatalogTest extends AirSpec {
   test("bind unbound functions") {
-    val u = UnboundFunction("avg", Seq(UnboundType("V")), UnboundType("V"))
+    val u = UnboundFunction("avg", Seq(TypeVariable("V")), TypeVariable("V"))
     val b = u.bind(Map("V" -> DataType.LongType))
     b shouldBe BoundFunction("avg", Seq(DataType.LongType), DataType.LongType)
   }

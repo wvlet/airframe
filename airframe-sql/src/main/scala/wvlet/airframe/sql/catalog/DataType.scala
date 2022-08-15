@@ -16,10 +16,11 @@ package wvlet.airframe.sql.catalog
 import wvlet.log.LogSupport
 
 abstract class DataType(val typeName: String) {
-  def baseTypeName: String      = typeName
   override def toString: String = typeName
-  def isBound: Boolean          = true
+  def baseTypeName: String      = typeName
+  def typeParams: Seq[DataType] = Seq.empty
 
+  def isBound: Boolean                                  = typeParams.forall(_.isBound)
   def bind(typeArgMap: Map[String, DataType]): DataType = this
 }
 
@@ -32,38 +33,13 @@ object DataType extends LogSupport {
   /**
     * DataType parameter for representing concrete types like timestamp(2), and abstract types like timestamp(p).
     */
-  sealed trait DataTypeParam {
-    def typeName: String
-    def isBound: Boolean
-    def bind(typeArgMap: Map[String, DataType]): DataTypeParam
-  }
-  object DataTypeParam {
-    case class Numeric(value: Int) extends DataTypeParam {
-      override def toString: String = typeName
-      def typeName: String          = s"${value}"
-
-      override def isBound: Boolean                                       = true
-      override def bind(typeArgMap: Map[String, DataType]): DataTypeParam = this
-    }
-    case class Unbound(dataType: DataType) extends DataTypeParam {
-      override def toString: String = typeName
-      override def typeName: String = s"${dataType.toString}"
-      override def isBound: Boolean = dataType.isBound
-
-      override def bind(typeArgMap: Map[String, DataType]): DataTypeParam = {
-        dataType.bind(typeArgMap) match {
-          case dt if dt eq dataType => this
-          case dt                   => Unbound(dt)
-        }
-      }
-    }
-  }
+  sealed trait TypeParameter
 
   /**
-    * UnboundType is a type with type variables
-    * @param name
+    * Constant type used for arguments of varchar(n), char(n), decimal(p, q), etc.
     */
-  case class UnboundType(name: String) extends DataType(name) {
+  case class IntConstant(value: Int) extends DataType(s"${value}") with TypeParameter
+  case class TypeVariable(name: String) extends DataType(name) with TypeParameter {
     override def isBound: Boolean = false
     override def bind(typeArgMap: Map[String, DataType]): DataType = {
       typeArgMap.get(name) match {
@@ -73,22 +49,30 @@ object DataType extends LogSupport {
     }
   }
 
-  case class GenericType(override val typeName: String, typeArgs: Seq[DataTypeParam] = Seq.empty)
-      extends DataType(typeNameOf(typeName, typeArgs)) {
-    override def isBound: Boolean = typeArgs.forall(_.isBound)
+  case class GenericType(override val typeName: String, override val typeParams: Seq[DataType] = Seq.empty)
+      extends DataType(typeNameOf(typeName, typeParams)) {
+    override def isBound: Boolean = typeParams.forall(_.isBound)
 
     override def bind(typeArgMap: Map[String, DataType]): DataType = {
-      GenericType(typeName, typeArgs.map(_.bind(typeArgMap)))
+      GenericType(typeName, typeParams.map(_.bind(typeArgMap)))
     }
   }
 
   case class IntervalDayTimeType(from: String, to: String) extends DataType(s"interval ${from} to ${to}")
-  case class TimeType(withTimeZone: Boolean = false, precision: Option[DataTypeParam] = None)
-      extends DataType(typeNameOf("time", precision.toSeq))
-  case class TimestampType(withTimeZone: Boolean = false, precision: Option[DataTypeParam] = None)
-      extends DataType(typeNameOf("timestamp", precision.toSeq))
 
-  private def typeNameOf(name: String, typeArgs: Seq[DataTypeParam]): String = {
+  sealed trait TimestampField
+  object TimestampField {
+    case object TIME      extends TimestampField
+    case object TIMESTAMP extends TimestampField
+  }
+  case class TimestampType(field: TimestampField, withTimeZone: Boolean = true, precision: Option[DataType] = None)
+      extends DataType(
+        typeNameOf(field.toString.toLowerCase, precision.toSeq) + (if (withTimeZone) " with time zone" else "")
+      ) {
+    override def typeParams: Seq[DataType] = precision.toSeq
+  }
+
+  private def typeNameOf(name: String, typeArgs: Seq[DataType]): String = {
     if (typeArgs.isEmpty)
       name
     else {
@@ -96,12 +80,10 @@ object DataType extends LogSupport {
     }
   }
 
-  case object UnknownType extends DataType("?")
-  case object AnyType     extends DataType("any")
-  case object NullType    extends DataType("null")
+  case object AnyType  extends DataType("any")
+  case object NullType extends DataType("null")
 
-  case object BooleanType extends DataType("boolean")
-
+  case object BooleanType                                   extends DataType("boolean")
   abstract class NumericType(override val typeName: String) extends DataType(typeName)
   case object ByteType                                      extends NumericType("byte")
   case object ShortType                                     extends NumericType("short")

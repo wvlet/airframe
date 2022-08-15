@@ -13,9 +13,6 @@
  */
 package wvlet.airframe.sql.catalog
 
-import wvlet.airframe.sql.catalog.DataType.UnboundType
-import wvlet.airframe.sql.{SQLError, SQLErrorCode}
-
 /**
   * Manage the list of unbounded functions, whose types are not resolved yet.
   */

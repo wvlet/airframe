@@ -34,11 +34,11 @@ object DataTypeParser extends RegexParsers with LogSupport {
     "\"" ~ typeName ~ "\"" ^^ { case _ ~ s ~ _ => s } |
       typeName ^^ { case s => s }
 
-  private def typeParams: Parser[List[DataTypeParam]] = repsep(typeParam, ",")
+  private def typeParams: Parser[List[DataType]] = repsep(typeParam, ",")
 
-  private def typeParam: Parser[DataTypeParam] = {
-    dataType ^^ { case tpe => DataTypeParam.Unbound(tpe) } |
-      number ^^ { case num => DataTypeParam.Numeric(num) }
+  private def typeParam: Parser[DataType] = {
+    dataType ^^ { case tpe => tpe } |
+      number ^^ { case num => DataType.IntConstant(num) }
   }
 
   private def genericType: Parser[DataType] = typeName ~ opt("(" ~ typeParams ~ ")") ^^ {
@@ -60,11 +60,11 @@ object DataTypeParser extends RegexParsers with LogSupport {
   // typeName ~ ":" ~ dataType ^^ { case n ~ _ ~ t => NamedType(n, t) }
 
   private def timeType: Parser[DataType] = "time" ~ "(" ~ typeParam ~ ")" ~ opt("with time zone") ^^ {
-    case _ ~ _ ~ precision ~ _ ~ tz => TimeType(tz.isDefined, Some(precision))
+    case _ ~ _ ~ precision ~ _ ~ tz => TimestampType(TimestampField.TIME, tz.isDefined, Some(precision))
   }
 
   private def timestampType: Parser[DataType] = "timestamp" ~ "(" ~ typeParam ~ ")" ~ opt("with time zone") ^^ {
-    case _ ~ _ ~ precision ~ _ ~ tz => TimestampType(tz.isDefined, Some(precision))
+    case _ ~ _ ~ precision ~ _ ~ tz => TimestampType(TimestampField.TIMESTAMP, tz.isDefined, Some(precision))
   }
 
   private def decimalType: Parser[DataType.DecimalType] =
@@ -89,8 +89,8 @@ object DataTypeParser extends RegexParsers with LogSupport {
       MapType(k, v)
     }
 
-  private def unboundType: Parser[DataType.UnboundType] =
-    typeName ^^ { case tpe => UnboundType(tpe) }
+  private def typeVariable: Parser[DataType] =
+    typeName ^^ { case name => TypeVariable(name) }
 
   private def nullType: Parser[DataType] =
     "null" ^^ { _ => NullType }
@@ -133,7 +133,7 @@ object DataTypeParser extends RegexParsers with LogSupport {
 
   def dataType: Parser[DataType] = {
     // interval type needs to come first before primitive int, integer types
-    intervalDayTimeType | primitiveType | dataTypeWithParam | genericType | unboundType
+    intervalDayTimeType | primitiveType | dataTypeWithParam | genericType | typeVariable
   }
 
   def dataTypeWithParam: Parser[DataType] = {
