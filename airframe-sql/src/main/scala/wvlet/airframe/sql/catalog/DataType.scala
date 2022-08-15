@@ -127,23 +127,6 @@ object DataType extends LogSupport {
       extends DataType(s"map(${keyType.typeName},${valueType.typeName})")
   case class RecordType(elems: Seq[NamedType]) extends DataType(s"record(${elems.map(_.typeName).mkString(",")})")
 
-  def primitiveTypeOf(dataType: String): DataType = {
-    dataType match {
-      case "?"                                                    => UnknownType
-      case "any"                                                  => AnyType
-      case "null"                                                 => NullType
-      case "string" | "varchar"                                   => StringType
-      case "byte" | "char" | "short" | "int" | "integer" | "long" => LongType
-      case "float" | "real" | "double"                            => DoubleType
-      case "boolean"                                              => BooleanType
-      case "json"                                                 => JsonType
-      case "binary"                                               => BinaryType
-      case _ =>
-        warn(s"Unknown type: ${dataType}")
-        UnknownType
-    }
-  }
-
   def parse(typeName: String): DataType = {
     DataTypeParser.parse(typeName)
   }

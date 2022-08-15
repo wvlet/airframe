@@ -70,10 +70,4 @@ class DataTypeTest extends AirSpec {
     parse("varchar(x)", StringType)
     parse("varchar(10)", StringType)
   }
-
-  test("return any type for unknown types") {
-    parse("unknown", UnknownType)
-    parse("map(bit,long)", MapType(AnyType, LongType))
-  }
-
 }
