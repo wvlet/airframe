@@ -56,10 +56,10 @@ object SQLErrorCode {
       SQLError(errorCode, message, cause = Option(cause), metadata)
   }
 
-  case object UserError       extends SQLErrorCode(0x0_0000)
-  case object SyntaxError     extends SQLErrorCode(0x0_0001)
-  case object UnknownDataType extends SQLErrorCode(0x0_0002)
-  case object InvalidType     extends SQLErrorCode(0x0_0003)
+  case object UserError       extends SQLErrorCode(0x00000)
+  case object SyntaxError     extends SQLErrorCode(0x00001)
+  case object UnknownDataType extends SQLErrorCode(0x00002)
+  case object InvalidType     extends SQLErrorCode(0x00003)
 
-  case object InternalError extends SQLErrorCode(0x1_0000)
+  case object InternalError extends SQLErrorCode(0x10000)
 }
