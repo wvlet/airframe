@@ -54,7 +54,7 @@ class DataTypeTest extends AirSpec {
       DataType.RecordType(Seq(NamedType("id", LongType), NamedType("name", StringType)))
     )
     parse(
-      """row(id long,name string, address array(string))""",
+      """row(id long,name string,address array(string))""",
       DataType.RecordType(
         Seq(NamedType("id", LongType), NamedType("name", StringType), NamedType("address", ArrayType(StringType)))
       )

@@ -99,7 +99,7 @@ object DataTypeParser extends RegexParsers with LogSupport {
     "byte" ^^ { case _ =>
       DataType.ByteType
     } |
-      ("int" | "integer") ^^ { case _ => DataType.IntegerType } |
+      ("integer" | "int") ^^ { case _ => DataType.IntegerType } |
       "short" ^^ { case _ => DataType.ShortType } |
       "long" ^^ { case _ => DataType.LongType } |
       "float" ^^ { case _ => DataType.FloatType } |
@@ -116,7 +116,9 @@ object DataTypeParser extends RegexParsers with LogSupport {
     "any" ^^ { case _ => AnyType }
   }
   private def jsonType: Parser[DataType] = {
-    "json" ^^ { case _ => JsonType }
+    // Trino has jsonpath
+    "jsonpath" ^^ { case _ => StringType } |
+      "json" ^^ { case _ => JsonType }
   }
   private def stringType: Parser[DataType] = {
     "string" ^^ { case _ => StringType }
@@ -130,11 +132,12 @@ object DataTypeParser extends RegexParsers with LogSupport {
   }
 
   def dataType: Parser[DataType] = {
-    primitiveType | dataTypeWithParam | genericType | unboundType
+    // interval type needs to come first before primitive int, integer types
+    intervalDayTimeType | primitiveType | dataTypeWithParam | genericType | unboundType
   }
 
   def dataTypeWithParam: Parser[DataType] = {
-    decimalType | varcharType | timeType | timestampType | intervalDayTimeType | arrayType | mapType | recordType
+    decimalType | varcharType | timeType | timestampType | arrayType | mapType | recordType
   }
 
   def typeArgs: Parser[List[DataType]] = repsep(dataType, ",")
