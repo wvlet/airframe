@@ -85,13 +85,13 @@ case class GrpcContext(
     storage.get(key).asInstanceOf[Option[A]]
   }
 
-  override def httpRequest: Option[HttpMessage.Request] = {
+  override def httpRequest: HttpMessage.Request = {
     import scala.jdk.CollectionConverters._
     var request = Http.POST(s"/${descriptor.getFullMethodName}")
     for(k <- metadata.keys().asScala) {
       request = request.withHeader(k, metadata.get(Metadata.Key.of(k, Metadata.ASCII_STRING_MARSHALLER)))
     }
-    Some(request)
+    request
   }
 }
 

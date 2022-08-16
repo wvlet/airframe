@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
 import wvlet.airframe.Design
-import wvlet.airframe.http.{Endpoint, HttpContext, RPCContext, Router}
+import wvlet.airframe.http.{Endpoint, HttpContext, RPCContext, RPCStatus, Router}
 import wvlet.airspec.AirSpec
 
 /**
@@ -39,9 +39,20 @@ class ThreadLocalStorageTest extends AirSpec {
     }
 
     @Endpoint(path = "/rpc-context")
-    def context: String = {
+    def rpcContext: String = {
       RPCContext.current.getThreadLocal[String]("client_id").getOrElse("unknown")
     }
+
+    @Endpoint(path = "/rpc-header")
+    def rpcHeader: String = {
+      RPCContext.current.httpRequest.header.get("Authorization") match {
+        case Some(x) if x == "Bearer xxxx" =>
+          "Ok"
+        case None =>
+          throw RPCStatus.PERMISSION_DENIED_U14.newException(s"no auth header")
+      }
+    }
+
   }
 
   class TLSReaderFilter extends FinagleFilter {
@@ -90,6 +101,11 @@ class ThreadLocalStorageTest extends AirSpec {
     test("Get thread local from RPCContext") {
       val resp = client.get[String]("/rpc-context")
       resp shouldBe "xxxyyy"
+    }
+
+    test("Get request header from RPCContext") {
+      val resp = client.get[String]("/rpc-header", { req: Request => req.authorization = "Bearer xxxx"; req})
+      resp shouldBe "Ok"
     }
   }
 }

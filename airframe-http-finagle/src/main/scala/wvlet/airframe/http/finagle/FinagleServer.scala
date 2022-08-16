@@ -281,7 +281,7 @@ object FinagleServer extends LogSupport {
     new SimpleFilter[Request, Response] {
       override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
         FinagleBackend.withThreadLocalStore {
-          wvlet.airframe.http.Compat.attachRPCContext(FinagleRPCContext)
+          wvlet.airframe.http.Compat.attachRPCContext(FinagleRPCContext(request))
           service(request)
         }
       }

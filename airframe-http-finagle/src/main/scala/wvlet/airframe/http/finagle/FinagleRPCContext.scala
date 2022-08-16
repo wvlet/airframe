@@ -13,14 +13,19 @@
  */
 package wvlet.airframe.http.finagle
 
-import wvlet.airframe.http.RPCContext
+import com.twitter.finagle.http.Request
+import wvlet.airframe.http.{HttpMessage, RPCContext}
 
-object FinagleRPCContext extends RPCContext {
+case class FinagleRPCContext(request: Request) extends RPCContext {
   override def setThreadLocal[A](key: String, value: A): Unit = {
     FinagleBackend.setThreadLocal(key, value)
   }
 
   override def getThreadLocal[A](key: String): Option[A] = {
     FinagleBackend.getThreadLocal(key)
+  }
+
+  override def httpRequest: HttpMessage.Request = {
+    request.toHttpRequest
   }
 }

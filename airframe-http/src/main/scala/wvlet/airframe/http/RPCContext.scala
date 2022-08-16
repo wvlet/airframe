@@ -22,7 +22,7 @@ object RPCContext {
 }
 
 trait RPCContext {
-  def httpRequest: Option[HttpMessage.Request]
+  def httpRequest: HttpMessage.Request
   def setThreadLocal[A](key:String, value:A): Unit
   def getThreadLocal[A](key:String): Option[A]
 }
@@ -38,5 +38,5 @@ class RootRPCContext extends RPCContext {
     localStorage.get(key).asInstanceOf[Option[A]]
   }
 
-  override def httpRequest: Option[HttpMessage.Request] = None
+  override def httpRequest: HttpMessage.Request = Http.request("/dummy")
 }

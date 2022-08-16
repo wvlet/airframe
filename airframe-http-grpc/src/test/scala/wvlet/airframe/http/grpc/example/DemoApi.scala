@@ -39,7 +39,7 @@ trait DemoApi extends LogSupport {
     ctx.getThreadLocal[String]("client_id")
   }
 
-  def getRequest: Option[Request] = {
+  def getRequest: Request = {
     val ctx = RPCContext.current
     ctx.httpRequest
   }
@@ -190,11 +190,11 @@ object DemoApi extends LogSupport {
               .blockingUnaryCall(_channel, getRPCContextMethodDescriptor, getCallOptions, encode(m))
       resp.asInstanceOf[Option[String]]
     }
-    def getRequest: Option[Request] = {
+    def getRequest: Request = {
       val m = Map.empty[String, Any]
       val resp = ClientCalls
               .blockingUnaryCall(_channel, getRequestMethodDescriptor, getCallOptions, encode(m))
-      resp.asInstanceOf[Option[Request]]
+      resp.asInstanceOf[Request]
     }
 
     def hello(name: String): String = {

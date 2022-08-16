@@ -34,7 +34,7 @@ object GrpcContextTest extends AirSpec {
     }
 
     test("get http request from RPCContext") {
-      val request = client.getRequest.get
+      val request = client.getRequest
       request.path shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/getRequest"
       val headerMap = request.header
       headerMap.get("x-airframe-client-version") shouldBe defined
