@@ -17,7 +17,7 @@ import wvlet.airframe.http.{RPCContext, RootRPCContext}
 
 object LocalRPCContext {
   private val localContext = new ThreadLocal[RPCContext]()
-  private val rootContext = new RootRPCContext()
+  private val rootContext  = new RootRPCContext()
 
   def current: RPCContext = {
     Option(localContext.get()).getOrElse(rootContext)

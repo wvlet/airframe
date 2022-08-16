@@ -104,7 +104,11 @@ object DemoApi extends LogSupport {
   def demoClientId = "xxx-yyy"
 
   private def contextTestInterceptor = new ServerInterceptor {
-    override def interceptCall[ReqT, RespT](call: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): ServerCall.Listener[ReqT] = {
+    override def interceptCall[ReqT, RespT](
+        call: ServerCall[ReqT, RespT],
+        headers: Metadata,
+        next: ServerCallHandler[ReqT, RespT]
+    ): ServerCall.Listener[ReqT] = {
       val ctx = RPCContext.current
       ctx.setThreadLocal("client_id", demoClientId)
       next.startCall(call, headers)
@@ -187,13 +191,13 @@ object DemoApi extends LogSupport {
     def getRPCContext: Option[String] = {
       val m = Map.empty[String, Any]
       val resp = ClientCalls
-              .blockingUnaryCall(_channel, getRPCContextMethodDescriptor, getCallOptions, encode(m))
+        .blockingUnaryCall(_channel, getRPCContextMethodDescriptor, getCallOptions, encode(m))
       resp.asInstanceOf[Option[String]]
     }
     def getRequest: Request = {
       val m = Map.empty[String, Any]
       val resp = ClientCalls
-              .blockingUnaryCall(_channel, getRequestMethodDescriptor, getCallOptions, encode(m))
+        .blockingUnaryCall(_channel, getRequestMethodDescriptor, getCallOptions, encode(m))
       resp.asInstanceOf[Request]
     }
 

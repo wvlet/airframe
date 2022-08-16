@@ -57,6 +57,6 @@ object Compat extends CompatApi {
     ServerAddress.empty
   }
 
-  override def currentRPCContext: RPCContext = LocalRPCContext.current
+  override def currentRPCContext: RPCContext                     = LocalRPCContext.current
   override def attachRPCContext(context: RPCContext): RPCContext = LocalRPCContext.attach(context)
 }

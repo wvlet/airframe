@@ -104,7 +104,7 @@ class ThreadLocalStorageTest extends AirSpec {
     }
 
     test("Get request header from RPCContext") {
-      val resp = client.get[String]("/rpc-header", { req: Request => req.authorization = "Bearer xxxx"; req})
+      val resp = client.get[String]("/rpc-header", { req: Request => req.authorization = "Bearer xxxx"; req })
       resp shouldBe "Ok"
     }
   }

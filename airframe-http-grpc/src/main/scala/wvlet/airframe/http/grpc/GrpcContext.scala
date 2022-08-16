@@ -56,10 +56,10 @@ case class GrpcContext(
     attributes: Attributes,
     metadata: Metadata,
     descriptor: MethodDescriptor[_, _]
-) extends RPCContext with LogSupport {
-  private lazy val tls = ThreadLocal.withInitial[collection.mutable.Map[String, Any]](
-    () => mutable.Map.empty[String, Any]
-  )
+) extends RPCContext
+    with LogSupport {
+  private lazy val tls =
+    ThreadLocal.withInitial[collection.mutable.Map[String, Any]](() => mutable.Map.empty[String, Any])
 
   private def storage: collection.mutable.Map[String, Any] = {
     tls.get()
@@ -76,7 +76,6 @@ case class GrpcContext(
       RPCEncoding.MsgPack
   }
 
-
   override def setThreadLocal[A](key: String, value: A): Unit = {
     storage.put(key, value)
   }
@@ -88,11 +87,9 @@ case class GrpcContext(
   override def httpRequest: HttpMessage.Request = {
     import scala.jdk.CollectionConverters._
     var request = Http.POST(s"/${descriptor.getFullMethodName}")
-    for(k <- metadata.keys().asScala) {
+    for (k <- metadata.keys().asScala) {
       request = request.withHeader(k, metadata.get(Metadata.Key.of(k, Metadata.ASCII_STRING_MARSHALLER)))
     }
     request
   }
 }
-
-

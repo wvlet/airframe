@@ -22,13 +22,13 @@ object RPCContext {
 }
 
 trait RPCContext {
+
   /**
-    * Return the original http request that the RPC server received.
-    * This request may not contain the body
+    * Return the original http request that the RPC server received. This request may not contain the body
     */
   def httpRequest: HttpMessage.Request
-  def setThreadLocal[A](key:String, value:A): Unit
-  def getThreadLocal[A](key:String): Option[A]
+  def setThreadLocal[A](key: String, value: A): Unit
+  def getThreadLocal[A](key: String): Option[A]
 }
 
 class RootRPCContext extends RPCContext {

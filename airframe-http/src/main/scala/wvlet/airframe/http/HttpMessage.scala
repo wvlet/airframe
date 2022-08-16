@@ -141,10 +141,9 @@ object HttpMessage {
 
   object Message {
     def unapply(s: String): Option[Message] = {
-      if(s.isEmpty) {
+      if (s.isEmpty) {
         Some(EmptyMessage)
-      }
-      else {
+      } else {
         Some(StringMessage(s))
       }
     }
