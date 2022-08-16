@@ -103,8 +103,8 @@ object DataType extends LogSupport {
     primitiveTypes.map(x => x.typeName -> x).toMap ++
       Map(
         "int"      -> IntegerType,
-        "bigint"   -> IntegerType,
-        "tinyint"  -> ShortType,
+        "bigint"   -> LongType,
+        "tinyint"  -> ByteType,
         "smallint" -> ShortType
       )
 
