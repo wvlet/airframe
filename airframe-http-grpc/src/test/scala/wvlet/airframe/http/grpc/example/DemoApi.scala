@@ -101,10 +101,12 @@ trait DemoApi extends LogSupport {
 
 object DemoApi extends LogSupport {
 
+  def demoClientId = "xxx-yyy"
+
   private def contextTestInterceptor = new ServerInterceptor {
     override def interceptCall[ReqT, RespT](call: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): ServerCall.Listener[ReqT] = {
       val ctx = RPCContext.current
-      ctx.setThreadLocal("client_id", "xxx-yyy")
+      ctx.setThreadLocal("client_id", demoClientId)
       next.startCall(call, headers)
     }
   }

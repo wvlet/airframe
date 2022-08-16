@@ -30,7 +30,7 @@ object GrpcContextTest extends AirSpec {
 
     test("get context from RPCContext") {
       val ret = client.getRPCContext
-      ret shouldBe Some("xxx-yyy")
+      ret shouldBe Some(DemoApi.demoClientId)
     }
 
     test("get http request from RPCContext") {
