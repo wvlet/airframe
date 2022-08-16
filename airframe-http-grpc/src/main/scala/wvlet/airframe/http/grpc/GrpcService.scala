@@ -39,14 +39,15 @@ case class GrpcService(
       serverBuilder.addService(service)
     }
 
-    // Add an interceptor for remembering GrpcContext
-    serverBuilder.intercept(ContextTrackInterceptor)
-    // Add an interceptor for setting content-type response header
-    serverBuilder.intercept(GrpcResponseHeaderInterceptor)
-
+    // Add user-provided interceptors
     for (interceptor <- config.interceptors) {
       serverBuilder.intercept(interceptor)
     }
+    // Add an interceptor for setting content-type response header
+    serverBuilder.intercept(GrpcResponseHeaderInterceptor)
+    // Add an interceptor for remembering GrpcContext. This must happen at the root level
+    serverBuilder.intercept(ContextTrackInterceptor)
+
     val customServerBuilder = config.serverInitializer(serverBuilder)
     val server              = new GrpcServer(this, customServerBuilder.build())
     server.start

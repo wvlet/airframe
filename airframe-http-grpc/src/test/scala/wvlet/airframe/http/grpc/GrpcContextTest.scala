@@ -22,9 +22,24 @@ object GrpcContextTest extends AirSpec {
 
   override protected def design: Design = DemoApi.design
 
-  test("get context") { (client: DemoApiClient) =>
-    val ret = client.getContext
-    info(ret)
-    client.getContext
+  test("thread local context") { (client: DemoApiClient) =>
+    test("get context") {
+      val ret = client.getContext
+      info(ret)
+    }
+
+    test("get context from RPCContext") {
+      val ret = client.getRPCContext
+      ret shouldBe Some("xxx-yyy")
+    }
+
+    test("get http request from RPCContext") {
+      val request = client.getRequest.get
+      request.path shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/getRequest"
+      val headerMap = request.header
+      headerMap.get("x-airframe-client-version") shouldBe defined
+      headerMap.get("content-type") shouldBe defined
+      headerMap.get("user-agent") shouldBe defined
+    }
   }
 }

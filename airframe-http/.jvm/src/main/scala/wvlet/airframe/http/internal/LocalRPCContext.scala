@@ -11,22 +11,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.internal
 
-import wvlet.airframe.http.client.HttpClientBackend
+import wvlet.airframe.http.{RPCContext, RootRPCContext}
 
-import scala.concurrent.ExecutionContext
+object LocalRPCContext {
+  private val localContext = new ThreadLocal[RPCContext]()
+  private val rootContext = new RootRPCContext()
 
-/**
-  * An interface for using different implementation between Scala JVM and Scala.js
-  */
-trait CompatApi {
-  def urlEncode(s: String): String
+  def current: RPCContext = {
+    Option(localContext.get()).getOrElse(rootContext)
+  }
 
-  def hostServerAddress: ServerAddress
-  def defaultHttpClientBackend: HttpClientBackend
-  def defaultExecutionContext: ExecutionContext
-
-  def currentRPCContext: RPCContext
-  def attachRPCContext(context: RPCContext): RPCContext
+  /**
+    * Attach a new RPC context and return the previous context
+    */
+  def attach(newContext: RPCContext): RPCContext = {
+    val prev = current
+    localContext.set(newContext)
+    prev
+  }
 }

@@ -14,6 +14,7 @@
 package wvlet.airframe.http
 import java.net.URLEncoder
 import wvlet.airframe.http.client.{HttpClientBackend, JavaHttpClientBackend, URLConnectionClientBackend}
+import wvlet.airframe.http.internal.LocalRPCContext
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
@@ -55,4 +56,7 @@ object Compat extends CompatApi {
     // There is no notion of host server in JVM
     ServerAddress.empty
   }
+
+  override def currentRPCContext: RPCContext = LocalRPCContext.current
+  override def attachRPCContext(context: RPCContext): RPCContext = LocalRPCContext.attach(context)
 }

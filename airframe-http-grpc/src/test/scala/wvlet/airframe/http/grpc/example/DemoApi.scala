@@ -14,13 +14,14 @@
 package wvlet.airframe.http.grpc.example
 
 import io.grpc.stub.{AbstractBlockingStub, ClientCallStreamObserver, ClientCalls}
-import io.grpc.{CallOptions, Channel}
+import io.grpc.{CallOptions, Channel, Contexts, Metadata, ServerCall, ServerCallHandler, ServerInterceptor}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
 import wvlet.airframe.http.grpc._
 import wvlet.airframe.http.router.Route
-import wvlet.airframe.http.{Http, HttpStatus, RPC, RPCEncoding, RPCStatus, Router}
+import wvlet.airframe.http.{Http, HttpStatus, RPC, RPCContext, RPCEncoding, RPCStatus, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.log.LogSupport
@@ -31,6 +32,16 @@ trait DemoApi extends LogSupport {
     val ctx = GrpcContext.current
     debug(ctx)
     "Ok"
+  }
+
+  def getRPCContext: Option[String] = {
+    val ctx = RPCContext.current
+    ctx.getThreadLocal[String]("client_id")
+  }
+
+  def getRequest: Option[Request] = {
+    val ctx = RPCContext.current
+    ctx.httpRequest
   }
 
   def hello(name: String): String = {
@@ -88,11 +99,20 @@ trait DemoApi extends LogSupport {
   }
 }
 
-object DemoApi {
+object DemoApi extends LogSupport {
+
+  private def contextTestInterceptor = new ServerInterceptor {
+    override def interceptCall[ReqT, RespT](call: ServerCall[ReqT, RespT], headers: Metadata, next: ServerCallHandler[ReqT, RespT]): ServerCall.Listener[ReqT] = {
+      val ctx = RPCContext.current
+      ctx.setThreadLocal("client_id", "xxx-yyy")
+      next.startCall(call, headers)
+    }
+  }
 
   def design: Design = gRPC.server
     .withRouter(router)
     .withName("DemoApi")
+    .withInterceptor(contextTestInterceptor)
     .designWithChannel
     .bind[DemoApiClient].toProvider { (channel: Channel) => new DemoApiClient(channel) }
 
@@ -123,6 +143,10 @@ object DemoApi {
     private val codec = codecFactory.of[Map[String, Any]]
     private val getContextMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("getContext"), codecFactory)
+    private val getRPCContextMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("getRPCContext"), codecFactory)
+    private val getRequestMethodDescriptor =
+      GrpcServiceBuilder.buildMethodDescriptor(getRoute("getRequest"), codecFactory)
     private val helloMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("hello"), codecFactory)
     private val hello2MethodDescriptor =
@@ -158,6 +182,19 @@ object DemoApi {
         .blockingUnaryCall(_channel, getContextMethodDescriptor, getCallOptions, encode(m))
       resp.asInstanceOf[String]
     }
+    def getRPCContext: Option[String] = {
+      val m = Map.empty[String, Any]
+      val resp = ClientCalls
+              .blockingUnaryCall(_channel, getRPCContextMethodDescriptor, getCallOptions, encode(m))
+      resp.asInstanceOf[Option[String]]
+    }
+    def getRequest: Option[Request] = {
+      val m = Map.empty[String, Any]
+      val resp = ClientCalls
+              .blockingUnaryCall(_channel, getRequestMethodDescriptor, getCallOptions, encode(m))
+      resp.asInstanceOf[Option[Request]]
+    }
+
     def hello(name: String): String = {
       val m = Map("name" -> name)
       val resp = ClientCalls

@@ -26,7 +26,7 @@ import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.http.router.{ControllerProvider, ResponseHandler}
-import wvlet.airframe.http.{HttpBackend, HttpHeader, HttpMessage, HttpServerException, RPCException, Router}
+import wvlet.airframe.http.{HttpBackend, HttpHeader, HttpMessage, HttpServerException, RPCContext, RPCException, Router}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -281,6 +281,7 @@ object FinagleServer extends LogSupport {
     new SimpleFilter[Request, Response] {
       override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
         FinagleBackend.withThreadLocalStore {
+          wvlet.airframe.http.Compat.attachRPCContext(FinagleRPCContext)
           service(request)
         }
       }

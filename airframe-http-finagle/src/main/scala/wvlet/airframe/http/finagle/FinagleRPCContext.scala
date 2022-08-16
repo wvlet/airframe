@@ -11,22 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.finagle
 
-import wvlet.airframe.http.client.HttpClientBackend
+import wvlet.airframe.http.RPCContext
 
-import scala.concurrent.ExecutionContext
+object FinagleRPCContext extends RPCContext {
+  override def setThreadLocal[A](key: String, value: A): Unit = {
+    FinagleBackend.setThreadLocal(key, value)
+  }
 
-/**
-  * An interface for using different implementation between Scala JVM and Scala.js
-  */
-trait CompatApi {
-  def urlEncode(s: String): String
-
-  def hostServerAddress: ServerAddress
-  def defaultHttpClientBackend: HttpClientBackend
-  def defaultExecutionContext: ExecutionContext
-
-  def currentRPCContext: RPCContext
-  def attachRPCContext(context: RPCContext): RPCContext
+  override def getThreadLocal[A](key: String): Option[A] = {
+    FinagleBackend.getThreadLocal(key)
+  }
 }
