@@ -16,8 +16,9 @@ package wvlet.airframe.http
 import java.util.concurrent.ConcurrentHashMap
 
 object RPCContext {
-  /***
-    * Get the current thread-local RPCContext
+
+  /**
+    * * Get the current thread-local RPCContext
     * @since 22.8.0
     * @return
     */
@@ -29,8 +30,8 @@ object RPCContext {
 trait RPCContext {
 
   /**
-    * Return the original http request that the RPC server received.
-    * This request may not contain the body for performance reason.
+    * Return the original http request that the RPC server received. This request may not contain the body for
+    * performance reason.
     */
   def httpRequest: HttpMessage.Request
 
