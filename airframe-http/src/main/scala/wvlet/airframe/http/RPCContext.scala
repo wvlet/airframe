@@ -16,31 +16,55 @@ package wvlet.airframe.http
 import java.util.concurrent.ConcurrentHashMap
 
 object RPCContext {
+  /***
+    * Get the current thread-local RPCContext
+    * @since 22.8.0
+    * @return
+    */
   def current: RPCContext = {
-    wvlet.airframe.http.Compat.asInstanceOf[CompatApi].currentRPCContext
+    Compat.asInstanceOf[CompatApi].currentRPCContext
   }
 }
 
 trait RPCContext {
 
   /**
-    * Return the original http request that the RPC server received. This request may not contain the body
+    * Return the original http request that the RPC server received.
+    * This request may not contain the body for performance reason.
     */
   def httpRequest: HttpMessage.Request
+
+  /**
+    * Set a thread-local variable that is available only within the request scope.
+    * @param key
+    * @param value
+    * @tparam A
+    */
   def setThreadLocal[A](key: String, value: A): Unit
+
+  /**
+    * Get a thread-local variable that is available only within the request scope.
+    * @param key
+    * @tparam A
+    * @return
+    */
   def getThreadLocal[A](key: String): Option[A]
 }
 
+/**
+  * A dummy RPCContext
+  */
 class RootRPCContext extends RPCContext {
   import scala.jdk.CollectionConverters._
   private val localStorage = new ConcurrentHashMap[String, Any]().asScala
 
   override def setThreadLocal[A](key: String, value: A): Unit = {
-    localStorage.put(key, value)
+    // no-op
   }
   override def getThreadLocal[A](key: String): Option[A] = {
-    localStorage.get(key).asInstanceOf[Option[A]]
+    // no-op
+    None
   }
 
-  override def httpRequest: HttpMessage.Request = Http.request("/dummy")
+  override def httpRequest: HttpMessage.Request = ???
 }

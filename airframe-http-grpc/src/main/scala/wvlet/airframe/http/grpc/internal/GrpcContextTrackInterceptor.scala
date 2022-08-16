@@ -26,10 +26,11 @@ private[grpc] object ContextTrackInterceptor extends ServerInterceptor with LogS
       headers: Metadata,
       next: ServerCallHandler[ReqT, RespT]
   ): ServerCall.Listener[ReqT] = {
-    // Create a new context that conveys GrpcContext object.
-    val rpcContext = GrpcContext(Option(call.getAuthority), call.getAttributes, headers, call.getMethodDescriptor)
     // Tell airframe-http about the thread-local RPC context
+    val rpcContext = GrpcContext(Option(call.getAuthority), call.getAttributes, headers, call.getMethodDescriptor)
     wvlet.airframe.http.Compat.attachRPCContext(rpcContext)
+
+    // Create a new context that conveys GrpcContext object.
     val newContext = Context
       .current().withValue(
         GrpcContext.contextKey,

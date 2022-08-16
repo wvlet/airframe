@@ -457,7 +457,38 @@ serializing messages between server and clients. Even if the data type is slight
 the target type, for example, if the input data is "100", but the target type is Int, the input
 String "100" will be translated into an Int value `100` automatically.
 
+### RPCContext
+
+Since Airframe 22.8.0, airframe-rpc introduced `RPCContext` for reading and writing the thread-local storage, and referencing the original HTTP request: 
+
+```scala
+import wvlet.airframe.http._
+
+@RPC
+trait MyAPI {
+  def hello: String = {
+    // Read the thread-local storage
+    val userName = RPCContext.current.getThreadLocal[String]("context_user")
+    s"Hello ${userName}"
+  } 
+  
+  def authTest: String = {
+    // Read the original http request
+    RPCContext.current.httpRequest.authorization match {
+      case Some(auth) if isValidAuth(auth) => 
+        "Ok"  
+      case _ =>
+         throw RPCStatus.PERMISSION_DENIED_U14.newException(s"invalid user")
+    }
+  }
+}
+```
+
+RPCContext is available both for Finagle and gRPC backend.
+
 ### Receiving Raw HTTP Responses
+
+> ⚠️ Since Airframe 22.8.0, we no longer recommend adding Request as RPC parameters.  Use RPCContext.current.httpRequest instead
 
 If you need to manage HTTP request specific parameters (e.g., HTTP headers), you can add request
 object to the RPC arguments.
