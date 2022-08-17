@@ -28,8 +28,8 @@ object RPCContext {
 trait RPCContext {
 
   /**
-    * Return the original http request RPC server received. This request may not contain the full ruquest body for
-    * the performance reason.
+    * Return the original http request RPC server received. This request may not contain the full ruquest body for the
+    * performance reason.
     */
   def httpRequest: HttpMessage.Request
 
