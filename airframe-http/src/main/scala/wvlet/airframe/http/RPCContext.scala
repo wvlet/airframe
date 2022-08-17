@@ -63,6 +63,8 @@ class RootRPCContext extends RPCContext {
   }
 
   override def httpRequest: HttpMessage.Request = {
-    throw RPCStatus.UNIMPLEMENTED_U8.newException("RPCContext.httpRequest is not available outside the context of gRPC server")
+    throw RPCStatus.UNIMPLEMENTED_U8.newException(
+      "RPCContext.httpRequest is not available outside the context of gRPC server"
+    )
   }
 }
