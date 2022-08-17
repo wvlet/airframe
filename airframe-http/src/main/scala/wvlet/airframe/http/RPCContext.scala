@@ -51,9 +51,9 @@ trait RPCContext {
 }
 
 /**
-  * A dummy RPCContext
+  * An empty RPCContext
   */
-class RootRPCContext extends RPCContext {
+class EmptyRPCContext extends RPCContext {
   override def setThreadLocal[A](key: String, value: A): Unit = {
     // no-op
   }

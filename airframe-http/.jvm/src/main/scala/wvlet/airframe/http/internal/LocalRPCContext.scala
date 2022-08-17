@@ -13,11 +13,11 @@
  */
 package wvlet.airframe.http.internal
 
-import wvlet.airframe.http.{RPCContext, RootRPCContext}
+import wvlet.airframe.http.{RPCContext, EmptyRPCContext}
 
 object LocalRPCContext {
   private val localContext = new ThreadLocal[RPCContext]()
-  private val rootContext  = new RootRPCContext()
+  private val rootContext  = new EmptyRPCContext()
 
   def current: RPCContext = {
     Option(localContext.get()).getOrElse(rootContext)
