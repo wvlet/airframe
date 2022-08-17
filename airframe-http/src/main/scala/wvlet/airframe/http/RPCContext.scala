@@ -28,8 +28,8 @@ object RPCContext {
 trait RPCContext {
 
   /**
-    * Return the original http request that the RPC server received. This request may not contain the body for
-    * performance reason.
+    * Return the original http request RPC server received. This request may not contain the full ruquest body for
+    * the performance reason.
     */
   def httpRequest: HttpMessage.Request
 
@@ -64,7 +64,7 @@ class RootRPCContext extends RPCContext {
 
   override def httpRequest: HttpMessage.Request = {
     throw RPCStatus.UNIMPLEMENTED_U8.newException(
-      "RPCContext.httpRequest is not available outside the context of gRPC server"
+      "RPCContext.httpRequest is not available outside the context of RPC server"
     )
   }
 }

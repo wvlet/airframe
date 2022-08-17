@@ -16,6 +16,9 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.Request
 import wvlet.airframe.http.{HttpMessage, RPCContext}
 
+/**
+  * Finagle-specific RPCContext implementation, which leverages Finagle's own TLS
+  */
 case class FinagleRPCContext(request: Request) extends RPCContext {
   override def setThreadLocal[A](key: String, value: A): Unit = {
     FinagleBackend.setThreadLocal(key, value)

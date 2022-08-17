@@ -17,7 +17,6 @@ import io.grpc._
 import wvlet.airframe.http.{Http, HttpMessage, RPCContext, RPCEncoding}
 import wvlet.log.LogSupport
 
-import java.util.function.Supplier
 import scala.collection.mutable
 
 object GrpcContext {
@@ -58,6 +57,8 @@ case class GrpcContext(
     descriptor: MethodDescriptor[_, _]
 ) extends RPCContext
     with LogSupport {
+
+  // Grpc doesn't provide a mutable thread-local stage, so create our own TLS here.
   private lazy val tls =
     ThreadLocal.withInitial[collection.mutable.Map[String, Any]](() => mutable.Map.empty[String, Any])
 
