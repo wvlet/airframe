@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.http
 
-import java.util.concurrent.ConcurrentHashMap
-
 object RPCContext {
 
   /**
@@ -56,9 +54,6 @@ trait RPCContext {
   * A dummy RPCContext
   */
 class RootRPCContext extends RPCContext {
-  import scala.jdk.CollectionConverters._
-  private val localStorage = new ConcurrentHashMap[String, Any]().asScala
-
   override def setThreadLocal[A](key: String, value: A): Unit = {
     // no-op
   }
@@ -67,5 +62,7 @@ class RootRPCContext extends RPCContext {
     None
   }
 
-  override def httpRequest: HttpMessage.Request = ???
+  override def httpRequest: HttpMessage.Request = {
+    throw RPCStatus.UNIMPLEMENTED_U8.newException("RPCContext.httpRequest is not available outside the context of gRPC server")
+  }
 }
