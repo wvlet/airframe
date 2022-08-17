@@ -194,7 +194,7 @@ object GrpcStatus {
 
   // The operation is not implemented or is not supported/enabled in this
   // service. Intentionally mapping this to MethodNotAllowed_405 (non-retryable), instead of using a similar NotImplemented_501
-  // so as not to make it a cretryable error.
+  // so as not to make it a retryable error.
   case object UNIMPLEMENTED_12 extends GrpcStatus(code = 12, HttpStatus.MethodNotAllowed_405)
 
   // Internal errors.  This means that some invariants expected by the

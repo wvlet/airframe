@@ -13,18 +13,51 @@
  */
 package wvlet.airframe.http.grpc
 
+import io.grpc.{CallCredentials, Metadata}
 import wvlet.airframe.Design
 import wvlet.airframe.http.grpc.example.DemoApi
 import wvlet.airframe.http.grpc.example.DemoApi.DemoApiClient
 import wvlet.airspec.AirSpec
 
+import java.util.concurrent.Executor
+
 object GrpcContextTest extends AirSpec {
 
   override protected def design: Design = DemoApi.design
 
-  test("get context") { (client: DemoApiClient) =>
-    val ret = client.getContext
-    info(ret)
-    client.getContext
+  test("thread local context") { (client: DemoApiClient) =>
+    test("get context") {
+      val ret = client.getContext
+      info(ret)
+    }
+
+    test("get context from RPCContext") {
+      val ret = client.getRPCContext
+      ret shouldBe Some(DemoApi.demoClientId)
+    }
+
+    test("get http request from RPCContext") {
+      // Set authorization header
+      val cred = new CallCredentials {
+        override def applyRequestMetadata(
+            requestInfo: CallCredentials.RequestInfo,
+            appExecutor: Executor,
+            applier: CallCredentials.MetadataApplier
+        ): Unit = {
+          val m = new Metadata()
+          m.put(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), "Bearer xxxx-yyyy")
+          applier.apply(m)
+        }
+        override def thisUsesUnstableApi(): Unit = {}
+      }
+      val request = client.withCallCredentials(cred).getRequest
+      request.path shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/getRequest"
+
+      val headerMap = request.header
+      headerMap.get("x-airframe-client-version") shouldBe defined
+      headerMap.get("content-type") shouldBe defined
+      headerMap.get("user-agent") shouldBe defined
+      headerMap.get("authorization") shouldBe Some("Bearer xxxx-yyyy")
+    }
   }
 }

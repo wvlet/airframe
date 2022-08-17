@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
 import wvlet.airframe.Design
-import wvlet.airframe.http.{Endpoint, HttpContext, Router}
+import wvlet.airframe.http.{Endpoint, HttpContext, RPCContext, RPCStatus, Router}
 import wvlet.airspec.AirSpec
 
 /**
@@ -32,6 +32,27 @@ class ThreadLocalStorageTest extends AirSpec {
     def read(context: FinagleContext): String = {
       context.getThreadLocal[String]("client_id").getOrElse("unknown")
     }
+
+    @Endpoint(path = "/local")
+    def local: String = {
+      FinagleBackend.getThreadLocal[String]("client_id").getOrElse("unknown")
+    }
+
+    @Endpoint(path = "/rpc-context")
+    def rpcContext: String = {
+      RPCContext.current.getThreadLocal[String]("client_id").getOrElse("unknown")
+    }
+
+    @Endpoint(path = "/rpc-header")
+    def rpcHeader: String = {
+      RPCContext.current.httpRequest.header.get("Authorization") match {
+        case Some(x) if x == "Bearer xxxx" =>
+          "Ok"
+        case None =>
+          throw RPCStatus.PERMISSION_DENIED_U14.newException(s"no auth header")
+      }
+    }
+
   }
 
   class TLSReaderFilter extends FinagleFilter {
@@ -70,6 +91,21 @@ class ThreadLocalStorageTest extends AirSpec {
     test("read thread-local data set by the parent filter") {
       val resp = client.get[String]("/read")
       resp shouldBe "xxxyyy"
+    }
+
+    test("Get thread local") {
+      val resp = client.get[String]("/local")
+      resp shouldBe "xxxyyy"
+    }
+
+    test("Get thread local from RPCContext") {
+      val resp = client.get[String]("/rpc-context")
+      resp shouldBe "xxxyyy"
+    }
+
+    test("Get request header from RPCContext") {
+      val resp = client.get[String]("/rpc-header", { req: Request => req.authorization = "Bearer xxxx"; req })
+      resp shouldBe "Ok"
     }
   }
 }

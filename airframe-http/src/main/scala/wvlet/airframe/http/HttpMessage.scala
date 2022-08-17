@@ -139,6 +139,16 @@ object HttpMessage {
     def toContentBytes: Array[Byte]
   }
 
+  object Message {
+    def unapply(s: String): Option[Message] = {
+      if (s.isEmpty) {
+        Some(EmptyMessage)
+      } else {
+        Some(StringMessage(s))
+      }
+    }
+  }
+
   case object EmptyMessage extends Message {
     override def isEmpty: Boolean            = true
     override def toContentString: String     = ""

@@ -55,4 +55,7 @@ private object Compat extends CompatApi {
   override def defaultExecutionContext: ExecutionContext = {
     org.scalajs.macrotaskexecutor.MacrotaskExecutor.Implicits.global
   }
+
+  override def currentRPCContext: RPCContext                     = ???
+  override def attachRPCContext(context: RPCContext): RPCContext = ???
 }

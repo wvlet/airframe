@@ -14,7 +14,10 @@
 package wvlet.airframe.http.grpc
 
 import io.grpc._
-import wvlet.airframe.http.RPCEncoding
+import wvlet.airframe.http.{Http, HttpMessage, RPCContext, RPCEncoding}
+import wvlet.log.LogSupport
+
+import scala.collection.mutable
 
 object GrpcContext {
   private[grpc] val contextKey = Context.key[GrpcContext]("grpc_context")
@@ -52,7 +55,17 @@ case class GrpcContext(
     attributes: Attributes,
     metadata: Metadata,
     descriptor: MethodDescriptor[_, _]
-) {
+) extends RPCContext
+    with LogSupport {
+
+  // Grpc doesn't provide a mutable thread-local stage, so create our own TLS here.
+  private lazy val tls =
+    ThreadLocal.withInitial[collection.mutable.Map[String, Any]](() => mutable.Map.empty[String, Any])
+
+  private def storage: collection.mutable.Map[String, Any] = {
+    tls.get()
+  }
+
   // Return the accept header
   def accept: String = metadata.accept
   def encoding: RPCEncoding = accept match {
@@ -64,4 +77,20 @@ case class GrpcContext(
       RPCEncoding.MsgPack
   }
 
+  override def setThreadLocal[A](key: String, value: A): Unit = {
+    storage.put(key, value)
+  }
+
+  override def getThreadLocal[A](key: String): Option[A] = {
+    storage.get(key).asInstanceOf[Option[A]]
+  }
+
+  override def httpRequest: HttpMessage.Request = {
+    import scala.jdk.CollectionConverters._
+    var request = Http.POST(s"/${descriptor.getFullMethodName}")
+    for (k <- metadata.keys().asScala) {
+      request = request.withHeader(k, metadata.get(Metadata.Key.of(k, Metadata.ASCII_STRING_MARSHALLER)))
+    }
+    request
+  }
 }
