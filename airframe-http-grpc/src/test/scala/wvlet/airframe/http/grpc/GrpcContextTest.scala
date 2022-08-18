@@ -20,6 +20,7 @@ import wvlet.airframe.http.grpc.example.DemoApi.DemoApiClient
 import wvlet.airspec.AirSpec
 
 import java.util.concurrent.Executor
+import scala.collection.parallel.CollectionConverters._
 
 object GrpcContextTest extends AirSpec {
 
@@ -28,12 +29,14 @@ object GrpcContextTest extends AirSpec {
   test("thread local context") { (client: DemoApiClient) =>
     test("get context") {
       val ret = client.getContext
-      info(ret)
+      debug(ret)
     }
 
     test("get context from RPCContext") {
-      val ret = client.getRPCContext
-      ret shouldBe Some(DemoApi.demoClientId)
+      for (i <- (1 to 100).par) {
+        val ret = client.getRPCContext
+        ret shouldBe Some(DemoApi.demoClientId)
+      }
     }
 
     test("get http request from RPCContext") {
