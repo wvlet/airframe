@@ -35,7 +35,7 @@ object LocalRPCContext {
     if (previousContext != rootContext) {
       localContext.set(previousContext)
     } else {
-      // Avoid preserving the root thread information TLS
+      // Avoid preserving the root thread information in the TLS
       localContext.set(null)
     }
   }
