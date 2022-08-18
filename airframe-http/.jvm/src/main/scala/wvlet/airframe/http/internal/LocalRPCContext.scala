@@ -17,7 +17,7 @@ import wvlet.airframe.http.{RPCContext, EmptyRPCContext}
 
 object LocalRPCContext {
   private val localContext = new ThreadLocal[RPCContext]()
-  private val rootContext  = new EmptyRPCContext()
+  private val rootContext  = EmptyRPCContext
 
   def current: RPCContext = {
     Option(localContext.get()).getOrElse(rootContext)
@@ -30,5 +30,13 @@ object LocalRPCContext {
     val prev = current
     localContext.set(newContext)
     prev
+  }
+  def detach(previousContext: RPCContext): Unit = {
+    if (previousContext != rootContext) {
+      localContext.set(previousContext)
+    } else {
+      // Avoid preserving the root thread information in the TLS
+      localContext.set(null)
+    }
   }
 }

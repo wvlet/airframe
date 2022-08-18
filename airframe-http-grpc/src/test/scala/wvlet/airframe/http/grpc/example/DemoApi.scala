@@ -14,11 +14,20 @@
 package wvlet.airframe.http.grpc.example
 
 import io.grpc.stub.{AbstractBlockingStub, ClientCallStreamObserver, ClientCalls}
-import io.grpc.{CallOptions, Channel, Contexts, Metadata, ServerCall, ServerCallHandler, ServerInterceptor}
+import io.grpc.{
+  CallOptions,
+  Channel,
+  Contexts,
+  ForwardingServerCallListener,
+  Metadata,
+  ServerCall,
+  ServerCallHandler,
+  ServerInterceptor
+}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.HttpMessage.Request
-import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
+import wvlet.airframe.http.grpc.internal.{GrpcServiceBuilder, WrappedServerCallListener}
 import wvlet.airframe.http.grpc._
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{Http, HttpStatus, RPC, RPCContext, RPCEncoding, RPCStatus, Router}
@@ -109,9 +118,17 @@ object DemoApi extends LogSupport {
         headers: Metadata,
         next: ServerCallHandler[ReqT, RespT]
     ): ServerCall.Listener[ReqT] = {
-      val ctx = RPCContext.current
-      ctx.setThreadLocal("client_id", demoClientId)
-      next.startCall(call, headers)
+
+      new WrappedServerCallListener[Unit, ReqT](
+        onInit = {
+          val ctx = RPCContext.current
+          ctx.setThreadLocal("client_id", demoClientId)
+        },
+        onDetach = { _ =>
+          // do nothing
+        },
+        next.startCall(call, headers)
+      )
     }
   }
 

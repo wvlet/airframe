@@ -29,4 +29,5 @@ trait CompatApi {
 
   def currentRPCContext: RPCContext
   def attachRPCContext(context: RPCContext): RPCContext
+  def detachRPCContext(previous: RPCContext): Unit
 }
