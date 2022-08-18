@@ -33,7 +33,7 @@ object GrpcContextTest extends AirSpec {
     }
 
     test("get context from RPCContext") {
-      for (i <- (1 to 100).par) {
+      for (i <- (1 to 10).par) {
         val ret = client.getRPCContext
         ret shouldBe Some(DemoApi.demoClientId)
       }
