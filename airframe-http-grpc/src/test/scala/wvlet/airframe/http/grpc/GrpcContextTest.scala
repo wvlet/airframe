@@ -20,7 +20,7 @@ import wvlet.airframe.http.grpc.example.DemoApi.DemoApiClient
 import wvlet.airspec.AirSpec
 
 import java.util.concurrent.Executor
-import scala.collection.parallel.CollectionConverters._
+import scala.collection.parallel.ParSeq
 
 object GrpcContextTest extends AirSpec {
 
@@ -33,7 +33,7 @@ object GrpcContextTest extends AirSpec {
     }
 
     test("get context from RPCContext") {
-      for (i <- (1 to 10).par) {
+      for (i <- ParSeq(1 to 10)) {
         val ret = client.getRPCContext
         ret shouldBe Some(DemoApi.demoClientId)
       }
