@@ -59,5 +59,5 @@ object Compat extends CompatApi {
 
   override def currentRPCContext: RPCContext                     = LocalRPCContext.current
   override def attachRPCContext(context: RPCContext): RPCContext = LocalRPCContext.attach(context)
-  override def detachRPCContext(previous: RPCContext): Unit = LocalRPCContext.detach(previous)
+  override def detachRPCContext(previous: RPCContext): Unit      = LocalRPCContext.detach(previous)
 }

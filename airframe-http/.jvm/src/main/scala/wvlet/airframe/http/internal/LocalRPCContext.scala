@@ -32,10 +32,9 @@ object LocalRPCContext {
     prev
   }
   def detach(previousContext: RPCContext): Unit = {
-    if(previousContext != rootContext) {
+    if (previousContext != rootContext) {
       localContext.set(previousContext)
-    }
-    else {
+    } else {
       // Avoid preserving the root thread information TLS
       localContext.set(null)
     }
