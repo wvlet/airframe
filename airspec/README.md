@@ -19,7 +19,7 @@ $ ../sbt
 > publishAllLocal
 
 // Publish a snapshot of AirSpec for Scala 2.12, 2.13 to Sonatype
-> publishSnapshot
+> publishSnapshots
 
 // Building individual projects
 > airspecJVM/compile
