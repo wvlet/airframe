@@ -29,11 +29,6 @@ object GrpcContext {
     * @return
     */
   def current: Option[GrpcContext] = Option(contextKey.get())
-  private[grpc] def init: Unit = {
-    current.foreach {
-      wvlet.airframe.http.Compat.attachRPCContext(_)
-    }
-  }
 
   private[grpc] def currentEncoding = current.map(_.encoding).getOrElse(RPCEncoding.MsgPack)
 
