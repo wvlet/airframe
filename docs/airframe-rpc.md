@@ -140,7 +140,7 @@ Finagle
 ```
 
 To access the RPC server, we need to generate an RPC client from the RPC interface definition. We
-can use an RPC client `hello.api.v1.ServiceSyncClient`  generated
+can use an RPC client `hello.api.v1.ServiceRPC` interface generated
 by [sbt-airframe](#sbt-airframe-plugin), which reads an RPC interface code and generates HTTP client
 code for calling RPC methods.
 
@@ -150,7 +150,8 @@ Now, you are ready to call remote Scala methods:
 import hello.api.v1._
 
 // Create an RPC client
-val client = new ServiceSyncClient(Http.client.newSyncClient("localhost:8080"))
+
+val client = ServiceRPC.newRPCSyncClient(Http.client.newSyncClient("localhost:8080"))
 
 // Your first RPC call!
 client.myService.hello(Person(id = 1, name = "leo")) // "Hello leo (id=1)!"
@@ -219,7 +220,7 @@ lazy val server =
       buildSettings,
       libraryDependencies ++= Seq(
         "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION,
-        // Add this for using gRPC
+        // [For gRPC] Use airframe-http-grpc instead of Finagle
         "org.wvlet.airframe" %% "airframe-http-grpc" % AIRFRAME_VERSION
       )
     )
@@ -232,14 +233,14 @@ lazy val client =
     .enablePlugins(AirframeHttpPlugin)
     .settings(
       buildSettings,
-      // Generates both ServiceSyncClient and ServiceClient (async)
-      airframeHttpClients := Seq("myapp.app.v1:sync", "myapp.app.v1:async"),
+      // Generate an RPC client for myapp.app.v1 package
+      airframeHttpClients := Seq("myapp.app.v1:rpc"),
       // Enable debug logging of sbt-airframe
       airframeHttpGeneratorOption := "-l debug",
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION,
         // Add this for using gRPC
         "org.wvlet.airframe" %% "airframe-http-grpc" % AIRFRAME_VERSION
+      )
    )
    .dependsOn(apiJVM)
 
@@ -250,8 +251,8 @@ lazy val ui =
     .enablePlugins(ScalaJSPlugin, AirframeHttpPlugin)
     .settings(
       buildSettings,
-      // sbt-airframe generates Scala.js HTTP client: ServiceJSClient(Rx) with this setting:
-      airframeHttpClients := Seq("myapp.app.v1:scalajs"),
+      // Scala.js only supports async clients
+      airframeHttpClients := Seq("myapp.app.v1:rpc"),
       // Enable debug logging of sbt-airframe
       airframeHttpGeneratorOption := "-l debug"
     )
@@ -283,27 +284,38 @@ __build.sbt__
 ```scala
 enablePlugins(AirframeHttpPlugin)
 
-airframeHttpClients := Seq("hello.api.v1:sync")
+airframeHttpClients := Seq("hello.api.v1:rpc")
 ```
+
+With this setting, sbt-airframe generates `hello.api.v1.ServiceRPC` class. You can create RPC clients from this class with `.newSyncClient(...)` and `.newAsyncClient(...)`. Sync clients are blocking RPC clients, which wait until the method recevies RPC responses from the RPC server. Async clients returns `Future[_]` response type so that you can do other jobs while waiting the response. The generated client code can be found in `target/scala-(scala version)/src_managed/(api package)/` folder.
+
+To rename the generated client name, append the desired class name followed by comma:
+```scala
+airframeHttpClients := Seq("hello.api.v1:rpc:HelloRPC")
+```
+This example generates `hello.api.v1.HelloRPC` class.
+
+#### Supported RPC Client Types
 
 Supported client types are:
 
-- __sync__: Create a sync HTTP client (ServiceSyncClient) for Scala (JVM)
-- __async__: Create an async HTTP client (ServiceClient) for Scala (JVM) using Future
-  abstraction (`F`). The `F` can be `scala.concurrent.Future` or twitter-util's Future.
-- __scalajs__:  Create an RPC client (ServiceClientJS)
+- __rpc__ : Create a default RPC client class for Scala JVM (sync and async) and Scala.js (async-only)
 - __grpc__: Create gRPC client (ServiceGrpc: SyncClient, AsyncClient)
 
-To support other types of clients, see the examples
-of [HTTP code generators](https://github.com/wvlet/airframe/blob/master/airframe-http-codegen/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClientGenerator.scala)
-. This code reads a Router definition of RPC interfaces, and generate client code for calling RPC
-endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would
+
+- __sync__: (legacy client. Use rpc instead) Create a sync HTTP client (ServiceSyncClient) for Scala (JVM)
+- __async__: (legacy client. Use rpc instead) Create an async HTTP client (ServiceClient) for Scala (JVM) using Future
+  abstraction (`F`). The `F` can be `scala.concurrent.Future` or twitter-util's Future.
+- __scalajs__:  (legacy client. Use rpc instead) Create an RPC client (ServiceClientJS)
+
+Internally, sbt-airframe generates these clients using [HTTP code generators](https://github.com/wvlet/airframe/blob/master/airframe-http-codegen/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClientGenerator.scala). This code reads a Router definition of RPC interfaces, and generate client code for calling RPC endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would
 like to add Open API spec generator so that many programming languages can be used with Airframe
 RPC.
 
-The generated client code can be found in `target/scala-2.12/src_managed/(api package)/` folder.
 
 #### sbt-airframe commands
+
+When you change your API interface, run `airframeHttpReload` command to update your RPC client: 
 
 ```scala
 # Regenerate the generated client code.Use this if RPC interface has changed
@@ -342,6 +354,13 @@ With this configuration, Open API spec will be generated when running `package` 
 > package
 ```
 
+Or you can manually trigger OpenAPI file generation:
+
+```scala
+> airframeHttpOpenAPIGenerate
+```
+
+
 It will generate `target/openapi.yaml` file.
 
 ### RPC Logging
@@ -367,9 +386,9 @@ use cases would be adding an authentication filter for RPC calls:
 
 ```scala
 import wvlet.airframe.http._
-import wvlet.ariframe.http.finagle._
+import wvlet.airframe.http.HttpMessage.{Request,Response}
 
-object AuthFilter extends FinagleFilter with LogSupport {
+object AuthFilter extends Http.Filter {
   def apply(request: Request, context: Context): Future[Response] = {
     val auth = request.authorization
     if (isValidAuth(auth)) {
@@ -378,7 +397,7 @@ object AuthFilter extends FinagleFilter with LogSupport {
     }
     else {
       // Reject the request
-      Future.value(Response(Version.Http11, Status.Forbidden))
+      throw RPCStatus.UNAUTHENTICATED_U13.newException("Invalid user")
     }
   }
 }
@@ -502,6 +521,93 @@ trait MyAPI {
   def rpc1(p1: String, p2: Int, request: Request): Response
 }
 ```
+
+### Reporting Errors with RPCStatus
+
+Airframe RPC provides predefined [RPCStatus](https://github.com/wvlet/airframe/blob/master/airframe-http/src/main/scala/wvlet/airframe/http/RPCStatus.scala) code for reporting application errors at ease. In your RPC implementation, use one of the RPCStatus codes and create an exception with `.newException(...)` method to report an error:
+
+
+```scala
+import wvlet.airframe.http._
+
+@RPC
+trait MyApp {
+  def helloRPC(msg: String): String = {
+    // This will report the error code, error message, and the stack trace inside the response body.
+    // See the table below to see the http status code that will be returned to the client.
+    throw RPCStatus.INVALID_REQUEST_U1.newException("Unexpected message")
+  }
+}
+```
+
+If necessary, you can pass an application specific error code `appErrorCode` and more detailed metadata in the form of `Map[String, Any]` using the `.newException` arguments. Note: This metadata needs to be serializable. See [Object Serialization](#object-serialization) section. These error details will be reported to the RPC server log and to the HTTP response body. The stacktrace of the exception will be reported as well. If you need to hide such a stack trace from the error message for security reasons (e.g., rejecting requests in an authentication filter), call `.newException(...).noStackTrace` to hide the stack trace.
+
+Exceptions created from RPCStatus will be mapped to an appropriate HTTP status code. If the backend is gRPC, it will be mapped to the corresponding gRPC status code as well. RPCStatus covers all existing gRPC status code and frequently used HTTP status code. The mapping table between RPCStatus and Grpc/HTTP status code is shown below:
+
+| RPCStatus | Type | gRPC Status           | Http Status |
+|------------|------|-----------------------|-------------|
+| SUCCESS_S0 | SUCCESS | OK_0                  | 200: OK |
+| USER_ERROR_U0 | USER_ERROR | INVALID_ARGUMENT_3    | 400: Bad Request |
+| INVALID_REQUEST_U1 | USER_ERROR | INVALID_ARGUMENT_3    | 400: Bad Request |
+| INVALID_ARGUMENT_U2 | USER_ERROR | INVALID_ARGUMENT_3    | 400: Bad Request |
+| SYNTAX_ERROR_U3 | USER_ERROR | INVALID_ARGUMENT_3    | 400: Bad Request |
+| OUT_OF_RANGE_U4 | USER_ERROR | OUT_OF_RANGE_11       | 400: Bad Request |
+| NOT_FOUND_U5 | USER_ERROR | NOT_FOUND_5           | 404: Not Found |
+| ALREADY_EXISTS_U6 | USER_ERROR | ALREADY_EXISTS_6      | 409: Conflict |
+| NOT_SUPPORTED_U7 | USER_ERROR | UNIMPLEMENTED_12      | 405: Method Not Allowed |
+| UNIMPLEMENTED_U8 | USER_ERROR | UNIMPLEMENTED_12      | 405: Method Not Allowed |
+| UNEXPECTED_STATE_U9 | USER_ERROR | FAILED_PRECONDITION_9 | 400: Bad Request |
+| INCONSISTENT_STATE_U10 | USER_ERROR | FAILED_PRECONDITION_9 | 400: Bad Request |
+| CANCELLED_U11 | USER_ERROR | CANCELLED_1           | 499: Client Closed Request |
+| ABORTED_U12 | USER_ERROR | ABORTED_10            | 409: Conflict |
+| UNAUTHENTICATED_U13 | USER_ERROR | UNAUTHENTICATED_16    | 401: Unauthorized |
+| PERMISSION_DENIED_U14 | USER_ERROR | PERMISSION_DENIED_7   | 403: Forbidden |
+| INTERNAL_ERROR_I0 | INTERNAL_ERROR | INTERNAL_13           | 500: Internal Server Error |
+| UNKNOWN_I1 | INTERNAL_ERROR | UNKNOWN_2             | 500: Internal Server Error |
+| UNAVAILABLE_I2 | INTERNAL_ERROR | UNAVAILABLE_14        | 503: Service Unavailable |
+| TIMEOUT_I3 | INTERNAL_ERROR | DEADLINE_EXCEEDED_4   | 504: Gateway Timeout |
+| DEADLINE_EXCEEDED_I4 | INTERNAL_ERROR | DEADLINE_EXCEEDED_4   | 504: Gateway Timeout |
+| INTERRUPTED_I5 | INTERNAL_ERROR | INTERNAL_13           | 500: Internal Server Error |
+| SERVICE_STARTING_UP_I6 | INTERNAL_ERROR | UNAVAILABLE_14        | 503: Service Unavailable |
+| SERVICE_SHUTTING_DOWN_I7 | INTERNAL_ERROR | UNAVAILABLE_14        | 503: Service Unavailable |
+| DATA_LOSS_I8 | INTERNAL_ERROR | DATA_LOSS_15          | 500: Internal Server Error |
+| RESOURCE_EXHAUSTED_R0 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| OUT_OF_MEMORY_R1 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_RATE_LIMIT_R2 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_CPU_LIMIT_R3 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_MEMORY_LIMIT_R4 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_TIME_LIMIT_R5 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_DATA_SIZE_LIMIT_R6 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_STORAGE_LIMIT_R7 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_BUDGET_R8 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+
+
+### RPC Request Retry
+
+Generally speaking, the RPC client can retry the request upon RPCStatus with INTERNAL_ERROR type. If RESOURCE_EXHAUSTED error type is returned, the client should wait a bit until the server-side resource becomes available. USER_ERROR is not retryable in general. The generated RPC clients has a built-in request retry mechanism (default is Jitter retry upto 15 retries) based on the returned HTTP status code from the RPC server.
+
+You can configure the retry method (e.g., retry count) when building an HTTP client. For example, you can increase the number of retries like this:
+
+```scala
+val httpClient = Http.client.withRetryContext(_.withMaxRetry(100)).newSyncClient("localhost:8080")
+val rpcClient = ServiceRPC.newSyncClient(httpClient)
+```
+
+
+### Reading RPCException at the client
+
+To read the RPCStatus and error details at the RPC client side, catch [RPCException](https://github.com/wvlet/airframe/blob/master/airframe-http/src/main/scala/wvlet/airframe/http/RPCException.scala):
+
+```scala
+try {
+  rpcClient.hello(...)
+}
+catch {
+  case e: RPCException =>
+    // Read the error message from the RPC server
+}
+```
+
 
 ### Other Tips
 

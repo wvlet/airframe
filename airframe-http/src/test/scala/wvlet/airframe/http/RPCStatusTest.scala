@@ -89,4 +89,15 @@ class RPCStatusTest extends AirSpec {
     }
   }
 
+  test("Generate Markdown Table") {
+    val list = RPCStatus.all.map { x =>
+      s"| ${x.name} | ${x.statusType} | ${x.grpcStatus} | ${x.httpStatus.code}: ${x.httpStatus.reason} |"
+    }
+    val header =
+      s"""| RPCStatus | Type | gRPC Status | Http Status |
+       >|------------|------|-------------|-------------|""".stripMargin('>')
+
+    debug(s"${header}\n${list.mkString("\n")}")
+  }
+
 }
