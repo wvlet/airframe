@@ -6,6 +6,45 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.8.0
+
+- airframe-rpc: Added [RPCContext](https://wvlet.org/airframe/docs/airframe-rpc#rpccontext) to access the original HTTP request and thread-local storage.
+- airframe-rpc: Added RPCStatus.(code).newException to report errors to RPC clients. See also https://wvlet.org/airframe/docs/airframe-rpc for more details.
+
+Other updates: 
+
+- airframe-rpc: Add RPCStatus and RPC client documentation ([#2375](https://github.com/wvlet/airframe/issues/2375)) [[196433a38](https://github.com/wvlet/airframe/commit/196433a38)]
+- Update trino-main to 393 ([#2372](https://github.com/wvlet/airframe/issues/2372)) [[090f88e3d](https://github.com/wvlet/airframe/commit/090f88e3d)]
+- airframe-grpc: Fix thread local storage ([#2373](https://github.com/wvlet/airframe/issues/2373)) [[216a3099c](https://github.com/wvlet/airframe/commit/216a3099c)]
+- Update README.md to fix ([#2374](https://github.com/wvlet/airframe/issues/2374)) [[78fb5686c](https://github.com/wvlet/airframe/commit/78fb5686c)]
+- Update postgresql to 42.4.2 ([#2371](https://github.com/wvlet/airframe/issues/2371)) [[0b6136e5c](https://github.com/wvlet/airframe/commit/0b6136e5c)]
+- airframe-rpc: [#2368](https://github.com/wvlet/airframe/issues/2368) Add RPCContext to access thread-local storage and http request ([#2369](https://github.com/wvlet/airframe/issues/2369)) [[4f7ac2ceb](https://github.com/wvlet/airframe/commit/4f7ac2ceb)]
+- Update swagger-parser to 2.1.2 ([#2367](https://github.com/wvlet/airframe/issues/2367)) [[7127ac2f8](https://github.com/wvlet/airframe/commit/7127ac2f8)]
+- airframe-sql: Support generic data types ([#2365](https://github.com/wvlet/airframe/issues/2365)) [[f62047af8](https://github.com/wvlet/airframe/commit/f62047af8)]
+- Update scalafmt-core to 3.5.9 ([#2366](https://github.com/wvlet/airframe/issues/2366)) [[bf28f3b10](https://github.com/wvlet/airframe/commit/bf28f3b10)]
+- Update protobuf-java to 3.21.5 ([#2364](https://github.com/wvlet/airframe/issues/2364)) [[a6054800b](https://github.com/wvlet/airframe/commit/a6054800b)]
+- airframe-sql: Add SQL type name parser ([#2363](https://github.com/wvlet/airframe/issues/2363)) [[40a63bb7a](https://github.com/wvlet/airframe/commit/40a63bb7a)]
+- Update hadoop-aws, hadoop-client to 3.3.4 ([#2358](https://github.com/wvlet/airframe/issues/2358)) [[78e6a0f41](https://github.com/wvlet/airframe/commit/78e6a0f41)]
+- Update sqlite-jdbc to 3.39.2.0 ([#2357](https://github.com/wvlet/airframe/issues/2357)) [[0422e6106](https://github.com/wvlet/airframe/commit/0422e6106)]
+- Update trino-main to 392 ([#2355](https://github.com/wvlet/airframe/issues/2355)) [[93ef71f8f](https://github.com/wvlet/airframe/commit/93ef71f8f)]
+- Update postgresql to 42.4.1 ([#2356](https://github.com/wvlet/airframe/issues/2356)) [[404353335](https://github.com/wvlet/airframe/commit/404353335)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.48.1 ([#2354](https://github.com/wvlet/airframe/issues/2354)) [[08791e92c](https://github.com/wvlet/airframe/commit/08791e92c)]
+- Update finagle-core, finagle-http, ... to 22.7.0 ([#2349](https://github.com/wvlet/airframe/issues/2349)) [[7c647a08d](https://github.com/wvlet/airframe/commit/7c647a08d)]
+- Update scala-collection-compat to 2.8.1 ([#2350](https://github.com/wvlet/airframe/issues/2350)) [[20ce92670](https://github.com/wvlet/airframe/commit/20ce92670)]
+- Update sbt-mdoc to 2.3.3 ([#2351](https://github.com/wvlet/airframe/issues/2351)) [[385f9a4a4](https://github.com/wvlet/airframe/commit/385f9a4a4)]
+- Update protobuf-java to 3.21.4 ([#2348](https://github.com/wvlet/airframe/issues/2348)) [[1dfb248cd](https://github.com/wvlet/airframe/commit/1dfb248cd)]
+- airframe-grpc: Fix NPE in Scala 3 ([#2346](https://github.com/wvlet/airframe/issues/2346)) [[a3f5e1c73](https://github.com/wvlet/airframe/commit/a3f5e1c73)]
+- airframe-surface: Use GenericSurface for Scala 3 + Scala.js ([#2345](https://github.com/wvlet/airframe/issues/2345)) [[2fb5f8d22](https://github.com/wvlet/airframe/commit/2fb5f8d22)]
+- airframe-surface: Read default parameters in Scala 3  ([#2344](https://github.com/wvlet/airframe/issues/2344)) [[75193e4fd](https://github.com/wvlet/airframe/commit/75193e4fd)]
+- Add Scala 3 format check ([#2343](https://github.com/wvlet/airframe/issues/2343)) [[5419e65db](https://github.com/wvlet/airframe/commit/5419e65db)]
+- airframe-surface: Read annotation in Scala 3 macros ([#2341](https://github.com/wvlet/airframe/issues/2341)) [[2e045057f](https://github.com/wvlet/airframe/commit/2e045057f)]
+- Update/grpc netty shaded 1.48.0 ([#2340](https://github.com/wvlet/airframe/issues/2340)) [[f697078e2](https://github.com/wvlet/airframe/commit/f697078e2)]
+- Update protobuf-java to 3.21.3 ([#2335](https://github.com/wvlet/airframe/issues/2335)) [[0cd29c7d6](https://github.com/wvlet/airframe/commit/0cd29c7d6)]
+- Update trino-main to 391 ([#2339](https://github.com/wvlet/airframe/issues/2339)) [[3ca0cfef8](https://github.com/wvlet/airframe/commit/3ca0cfef8)]
+- Update airframe-http, ... to 22.7.3 ([#2333](https://github.com/wvlet/airframe/issues/2333)) [[da9432d3b](https://github.com/wvlet/airframe/commit/da9432d3b)]
+- Upgrade to airframe/airspec 22.7.3 ([#2332](https://github.com/wvlet/airframe/issues/2332)) [[cd6622d4d](https://github.com/wvlet/airframe/commit/cd6622d4d)]
+- Update airframe-codec, airframe-control, ... to 22.7.3 ([#2331](https://github.com/wvlet/airframe/issues/2331)) [[188cb691b](https://github.com/wvlet/airframe/commit/188cb691b)]
+
 ## 22.7.3
 
 This version removes the absolute source code paths embedded to the compiled binaries when using airframe-log, airframe-di, airspec. This will reduce the generated class file size and protect the privacy of your local folder information.
