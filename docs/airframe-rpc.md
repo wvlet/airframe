@@ -503,6 +503,69 @@ trait MyAPI {
 }
 ```
 
+### Reporting Errors with RPCStatus
+
+Airframe RPC provides predefined [RPCStatus](https://github.com/wvlet/airframe/blob/master/airframe-http/src/main/scala/wvlet/airframe/http/RPCStatus.scala) code for reporting application errors at ease. In your RPC implementation, use one of the RPCStatus codes and create fan exception message with `.newException(...)` method to report an error:
+
+
+```scala
+import wvlet.airframe.http._
+
+@RPC
+trait MyApp {
+  def helloRPC(msg: String): String = {
+    // This will report the error code, error message, and the stack trace inside the response body.
+    // See the table below to see the http status code that will be returned to the client.
+    throw RPCStatus.INVALID_REQUEST_U1.newException("Unexpected message")
+  }
+}
+```
+
+If necessary, you can pass an application specific error code `appErrorCode` and more detailed metadata in the form of `Map[String, Any]` to the `.newException` arguments, which will be reported to RPC server log and in the HTTP response body. The stacktrace of the exception will be reported as well. If you need to hide such stack trace from the error message, call `.newException(...).noStackTrace` to hide the stack trace.
+
+Exceptions created from RPCStatus will be mapped to an appropriate HTTP status code. If the backend is gRPC, it will be mapped to the corresponding gRPC status code as well. RPCStatus covers all existing gRPC status code and frequently used HTTP status code.
+
+The mapping table between RPCStatus and Grpc/HTTP status code is shown below:
+
+| RPCStatus | Type | gRPC Status           | Http Status |
+|------------|------|-----------------------|-------------|
+| SUCCESS_S0 | SUCCESS | OK_0                  | 200: OK |
+| USER_ERROR_U0 | USER_ERROR | INVALID_ARGUMENT_3    | 400: Bad Request |
+| INVALID_REQUEST_U1 | USER_ERROR | INVALID_ARGUMENT_3    | 400: Bad Request |
+| INVALID_ARGUMENT_U2 | USER_ERROR | INVALID_ARGUMENT_3    | 400: Bad Request |
+| SYNTAX_ERROR_U3 | USER_ERROR | INVALID_ARGUMENT_3    | 400: Bad Request |
+| OUT_OF_RANGE_U4 | USER_ERROR | OUT_OF_RANGE_11       | 400: Bad Request |
+| NOT_FOUND_U5 | USER_ERROR | NOT_FOUND_5           | 404: Not Found |
+| ALREADY_EXISTS_U6 | USER_ERROR | ALREADY_EXISTS_6      | 409: Conflict |
+| NOT_SUPPORTED_U7 | USER_ERROR | UNIMPLEMENTED_12      | 405: Method Not Allowed |
+| UNIMPLEMENTED_U8 | USER_ERROR | UNIMPLEMENTED_12      | 405: Method Not Allowed |
+| UNEXPECTED_STATE_U9 | USER_ERROR | FAILED_PRECONDITION_9 | 400: Bad Request |
+| INCONSISTENT_STATE_U10 | USER_ERROR | FAILED_PRECONDITION_9 | 400: Bad Request |
+| CANCELLED_U11 | USER_ERROR | CANCELLED_1           | 499: Client Closed Request |
+| ABORTED_U12 | USER_ERROR | ABORTED_10            | 409: Conflict |
+| UNAUTHENTICATED_U13 | USER_ERROR | UNAUTHENTICATED_16    | 401: Unauthorized |
+| PERMISSION_DENIED_U14 | USER_ERROR | PERMISSION_DENIED_7   | 403: Forbidden |
+| INTERNAL_ERROR_I0 | INTERNAL_ERROR | INTERNAL_13           | 500: Internal Server Error |
+| UNKNOWN_I1 | INTERNAL_ERROR | UNKNOWN_2             | 500: Internal Server Error |
+| UNAVAILABLE_I2 | INTERNAL_ERROR | UNAVAILABLE_14        | 503: Service Unavailable |
+| TIMEOUT_I3 | INTERNAL_ERROR | DEADLINE_EXCEEDED_4   | 504: Gateway Timeout |
+| DEADLINE_EXCEEDED_I4 | INTERNAL_ERROR | DEADLINE_EXCEEDED_4   | 504: Gateway Timeout |
+| INTERRUPTED_I5 | INTERNAL_ERROR | INTERNAL_13           | 500: Internal Server Error |
+| SERVICE_STARTING_UP_I6 | INTERNAL_ERROR | UNAVAILABLE_14        | 503: Service Unavailable |
+| SERVICE_SHUTTING_DOWN_I7 | INTERNAL_ERROR | UNAVAILABLE_14        | 503: Service Unavailable |
+| DATA_LOSS_I8 | INTERNAL_ERROR | DATA_LOSS_15          | 500: Internal Server Error |
+| RESOURCE_EXHAUSTED_R0 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| OUT_OF_MEMORY_R1 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_RATE_LIMIT_R2 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_CPU_LIMIT_R3 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_MEMORY_LIMIT_R4 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_TIME_LIMIT_R5 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_DATA_SIZE_LIMIT_R6 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_STORAGE_LIMIT_R7 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+| EXCEEDED_BUDGET_R8 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
+
+
+
 ### Other Tips
 
 Airframe RPC is built on top of Airframe HTTP framework.
