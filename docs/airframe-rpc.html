@@ -179,14 +179,15 @@ following code starts an RPC web server at <code>http://localhost:8080/</code>:<
   }
 </code></pre>
 <p>To access the RPC server, we need to generate an RPC client from the RPC interface definition. We
-can use an RPC client <code>hello.api.v1.ServiceSyncClient</code>  generated
+can use an RPC client <code>hello.api.v1.ServiceRPC</code> interface generated
 by <a href="#sbt-airframe-plugin">sbt-airframe</a>, which reads an RPC interface code and generates HTTP client
 code for calling RPC methods.</p>
 <p>Now, you are ready to call remote Scala methods:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> hello.api.v1._
 
 <span class="hljs-comment">// Create an RPC client</span>
-<span class="hljs-keyword">val</span> client = <span class="hljs-keyword">new</span> <span class="hljs-type">ServiceSyncClient</span>(<span class="hljs-type">Http</span>.client.newSyncClient(<span class="hljs-string">"localhost:8080"</span>))
+
+<span class="hljs-keyword">val</span> client = <span class="hljs-type">ServiceRPC</span>.newRPCSyncClient(<span class="hljs-type">Http</span>.client.newSyncClient(<span class="hljs-string">"localhost:8080"</span>))
 
 <span class="hljs-comment">// Your first RPC call!</span>
 client.myService.hello(<span class="hljs-type">Person</span>(id = <span class="hljs-number">1</span>, name = <span class="hljs-string">"leo"</span>)) <span class="hljs-comment">// "Hello leo (id=1)!"</span>
@@ -243,7 +244,7 @@ addSbtPlugin(<span class="hljs-string">"org.portable-scala"</span> % <span class
       buildSettings,
       libraryDependencies ++= <span class="hljs-type">Seq</span>(
         <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-finagle"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>,
-        <span class="hljs-comment">// Add this for using gRPC</span>
+        <span class="hljs-comment">// [For gRPC] Use airframe-http-grpc instead of Finagle</span>
         <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-grpc"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>
       )
     )
@@ -256,14 +257,14 @@ addSbtPlugin(<span class="hljs-string">"org.portable-scala"</span> % <span class
     .enablePlugins(<span class="hljs-type">AirframeHttpPlugin</span>)
     .settings(
       buildSettings,
-      <span class="hljs-comment">// Generates both ServiceSyncClient and ServiceClient (async)</span>
-      airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"myapp.app.v1:sync"</span>, <span class="hljs-string">"myapp.app.v1:async"</span>),
+      <span class="hljs-comment">// Generate an RPC client for myapp.app.v1 package</span>
+      airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"myapp.app.v1:rpc"</span>),
       <span class="hljs-comment">// Enable debug logging of sbt-airframe</span>
       airframeHttpGeneratorOption := <span class="hljs-string">"-l debug"</span>,
       libraryDependencies ++= <span class="hljs-type">Seq</span>(
-        <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-finagle"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>,
         <span class="hljs-comment">// Add this for using gRPC</span>
         <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-grpc"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>
+      )
    )
    .dependsOn(apiJVM)
 
@@ -274,8 +275,8 @@ addSbtPlugin(<span class="hljs-string">"org.portable-scala"</span> % <span class
     .enablePlugins(<span class="hljs-type">ScalaJSPlugin</span>, <span class="hljs-type">AirframeHttpPlugin</span>)
     .settings(
       buildSettings,
-      <span class="hljs-comment">// sbt-airframe generates Scala.js HTTP client: ServiceJSClient(Rx) with this setting:</span>
-      airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"myapp.app.v1:scalajs"</span>),
+      <span class="hljs-comment">// Scala.js only supports async clients</span>
+      airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"myapp.app.v1:rpc"</span>),
       <span class="hljs-comment">// Enable debug logging of sbt-airframe</span>
       airframeHttpGeneratorOption := <span class="hljs-string">"-l debug"</span>
     )
@@ -295,24 +296,30 @@ is <code>&lt;RPC package name&gt;:&lt;client type&gt;(:&lt;target package name&g
 <p><strong>build.sbt</strong></p>
 <pre><code class="hljs css language-scala">enablePlugins(<span class="hljs-type">AirframeHttpPlugin</span>)
 
-airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"hello.api.v1:sync"</span>)
+airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"hello.api.v1:rpc"</span>)
 </code></pre>
+<p>With this setting, sbt-airframe generates <code>hello.api.v1.ServiceRPC</code> class. You can create RPC clients from this class with <code>.newSyncClient(...)</code> and <code>.newAsyncClient(...)</code>. Sync clients are blocking RPC clients, which wait until the method recevies RPC responses from the RPC server. Async clients returns <code>Future[_]</code> response type so that you can do other jobs while waiting the response. The generated client code can be found in <code>target/scala-(scala version)/src_managed/(api package)/</code> folder.</p>
+<p>To rename the generated client name, append the desired class name followed by comma:</p>
+<pre><code class="hljs css language-scala">airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"hello.api.v1:rpc:HelloRPC"</span>)
+</code></pre>
+<p>This example generates <code>hello.api.v1.HelloRPC</code> class.</p>
+<h4><a class="anchor" aria-hidden="true" id="supported-rpc-client-types"></a><a href="#supported-rpc-client-types" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Supported RPC Client Types</h4>
 <p>Supported client types are:</p>
 <ul>
-<li><strong>sync</strong>: Create a sync HTTP client (ServiceSyncClient) for Scala (JVM)</li>
-<li><strong>async</strong>: Create an async HTTP client (ServiceClient) for Scala (JVM) using Future
-abstraction (<code>F</code>). The <code>F</code> can be <code>scala.concurrent.Future</code> or twitter-util's Future.</li>
-<li><strong>scalajs</strong>:  Create an RPC client (ServiceClientJS)</li>
+<li><strong>rpc</strong> : Create a default RPC client class for Scala JVM (sync and async) and Scala.js (async-only)</li>
 <li><strong>grpc</strong>: Create gRPC client (ServiceGrpc: SyncClient, AsyncClient)</li>
 </ul>
-<p>To support other types of clients, see the examples
-of <a href="https://github.com/wvlet/airframe/blob/master/airframe-http-codegen/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClientGenerator.scala">HTTP code generators</a>
-. This code reads a Router definition of RPC interfaces, and generate client code for calling RPC
-endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would
+<ul>
+<li><strong>sync</strong>: (legacy client. Use rpc instead) Create a sync HTTP client (ServiceSyncClient) for Scala (JVM)</li>
+<li><strong>async</strong>: (legacy client. Use rpc instead) Create an async HTTP client (ServiceClient) for Scala (JVM) using Future
+abstraction (<code>F</code>). The <code>F</code> can be <code>scala.concurrent.Future</code> or twitter-util's Future.</li>
+<li><strong>scalajs</strong>:  (legacy client. Use rpc instead) Create an RPC client (ServiceClientJS)</li>
+</ul>
+<p>Internally, sbt-airframe generates these clients using <a href="https://github.com/wvlet/airframe/blob/master/airframe-http-codegen/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClientGenerator.scala">HTTP code generators</a>. This code reads a Router definition of RPC interfaces, and generate client code for calling RPC endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would
 like to add Open API spec generator so that many programming languages can be used with Airframe
 RPC.</p>
-<p>The generated client code can be found in <code>target/scala-2.12/src_managed/(api package)/</code> folder.</p>
 <h4><a class="anchor" aria-hidden="true" id="sbt-airframe-commands"></a><a href="#sbt-airframe-commands" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>sbt-airframe commands</h4>
+<p>When you change your API interface, run <code>airframeHttpReload</code> command to update your RPC client:</p>
 <pre><code class="hljs css language-scala"># <span class="hljs-type">Regenerate</span> the generated client code.<span class="hljs-type">Use</span> <span class="hljs-keyword">this</span> <span class="hljs-keyword">if</span> <span class="hljs-type">RPC</span> interface has changed
 &gt; airframeHttpReload
 
@@ -341,6 +348,9 @@ airframeHttpOpenAPIConfig := <span class="hljs-type">OpenAPIConfig</span>(
 <p>With this configuration, Open API spec will be generated when running <code>package</code> task:</p>
 <pre><code class="hljs css language-scala">&gt; <span class="hljs-keyword">package</span>
 </code></pre>
+<p>Or you can manually trigger OpenAPI file generation:</p>
+<pre><code class="hljs css language-scala">&gt; airframeHttpOpenAPIGenerate
+</code></pre>
 <p>It will generate <code>target/openapi.yaml</code> file.</p>
 <h3><a class="anchor" aria-hidden="true" id="rpc-logging"></a><a href="#rpc-logging" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>RPC Logging</h3>
 <p>Airframe RPC stores HTTP access logs to <code>log/http-access.json</code> by default. This json logs contains
@@ -358,9 +368,9 @@ HTTP request related parameters and RPC-specific fields described below:</p>
 <p>Airframe RPC can chain arbitrary HTTP request filters before processing HTTP requests. Most typical
 use cases would be adding an authentication filter for RPC calls:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http._
-<span class="hljs-keyword">import</span> wvlet.ariframe.http.finagle._
+<span class="hljs-keyword">import</span> wvlet.airframe.http.<span class="hljs-type">HttpMessage</span>.{<span class="hljs-type">Request</span>,<span class="hljs-type">Response</span>}
 
-<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">AuthFilter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">FinagleFilter</span> <span class="hljs-keyword">with</span> <span class="hljs-title">LogSupport</span> </span>{
+<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">AuthFilter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Http</span>.<span class="hljs-title">Filter</span> </span>{
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">apply</span></span>(request: <span class="hljs-type">Request</span>, context: <span class="hljs-type">Context</span>): <span class="hljs-type">Future</span>[<span class="hljs-type">Response</span>] = {
     <span class="hljs-keyword">val</span> auth = request.authorization
     <span class="hljs-keyword">if</span> (isValidAuth(auth)) {
@@ -369,7 +379,7 @@ use cases would be adding an authentication filter for RPC calls:</p>
     }
     <span class="hljs-keyword">else</span> {
       <span class="hljs-comment">// Reject the request</span>
-      <span class="hljs-type">Future</span>.value(<span class="hljs-type">Response</span>(<span class="hljs-type">Version</span>.<span class="hljs-type">Http11</span>, <span class="hljs-type">Status</span>.<span class="hljs-type">Forbidden</span>))
+      <span class="hljs-keyword">throw</span> <span class="hljs-type">RPCStatus</span>.<span class="hljs-type">UNAUTHENTICATED_U13</span>.newException(<span class="hljs-string">"Invalid user"</span>)
     }
   }
 }
@@ -477,6 +487,78 @@ object to the RPC arguments.</p>
 <span class="hljs-meta">@RPC</span>
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyAPI</span> </span>{
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">rpc1</span></span>(p1: <span class="hljs-type">String</span>, p2: <span class="hljs-type">Int</span>, request: <span class="hljs-type">Request</span>): <span class="hljs-type">Response</span>
+}
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="reporting-errors-with-rpcstatus"></a><a href="#reporting-errors-with-rpcstatus" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Reporting Errors with RPCStatus</h3>
+<p>Airframe RPC provides predefined <a href="https://github.com/wvlet/airframe/blob/master/airframe-http/src/main/scala/wvlet/airframe/http/RPCStatus.scala">RPCStatus</a> code for reporting application errors at ease. In your RPC implementation, use one of the RPCStatus codes and create an exception with <code>.newException(...)</code> method to report an error:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http._
+
+<span class="hljs-meta">@RPC</span>
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyApp</span> </span>{
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">helloRPC</span></span>(msg: <span class="hljs-type">String</span>): <span class="hljs-type">String</span> = {
+    <span class="hljs-comment">// This will report the error code, error message, and the stack trace inside the response body.</span>
+    <span class="hljs-comment">// See the table below to see the http status code that will be returned to the client.</span>
+    <span class="hljs-keyword">throw</span> <span class="hljs-type">RPCStatus</span>.<span class="hljs-type">INVALID_REQUEST_U1</span>.newException(<span class="hljs-string">"Unexpected message"</span>)
+  }
+}
+</code></pre>
+<p>If necessary, you can pass an application specific error code <code>appErrorCode</code> and more detailed metadata in the form of <code>Map[String, Any]</code> using the <code>.newException</code> arguments. Note: This metadata needs to be serializable. See <a href="#object-serialization">Object Serialization</a> section. These error details will be reported to the RPC server log and to the HTTP response body. The stacktrace of the exception will be reported as well. If you need to hide such a stack trace from the error message for security reasons (e.g., rejecting requests in an authentication filter), call <code>.newException(...).noStackTrace</code> to hide the stack trace.</p>
+<p>Exceptions created from RPCStatus will be mapped to an appropriate HTTP status code. If the backend is gRPC, it will be mapped to the corresponding gRPC status code as well. RPCStatus covers all existing gRPC status code and frequently used HTTP status code. The mapping table between RPCStatus and Grpc/HTTP status code is shown below:</p>
+<table>
+<thead>
+<tr><th>RPCStatus</th><th>Type</th><th>gRPC Status</th><th>Http Status</th></tr>
+</thead>
+<tbody>
+<tr><td>SUCCESS_S0</td><td>SUCCESS</td><td>OK_0</td><td>200: OK</td></tr>
+<tr><td>USER_ERROR_U0</td><td>USER_ERROR</td><td>INVALID_ARGUMENT_3</td><td>400: Bad Request</td></tr>
+<tr><td>INVALID_REQUEST_U1</td><td>USER_ERROR</td><td>INVALID_ARGUMENT_3</td><td>400: Bad Request</td></tr>
+<tr><td>INVALID_ARGUMENT_U2</td><td>USER_ERROR</td><td>INVALID_ARGUMENT_3</td><td>400: Bad Request</td></tr>
+<tr><td>SYNTAX_ERROR_U3</td><td>USER_ERROR</td><td>INVALID_ARGUMENT_3</td><td>400: Bad Request</td></tr>
+<tr><td>OUT_OF_RANGE_U4</td><td>USER_ERROR</td><td>OUT_OF_RANGE_11</td><td>400: Bad Request</td></tr>
+<tr><td>NOT_FOUND_U5</td><td>USER_ERROR</td><td>NOT_FOUND_5</td><td>404: Not Found</td></tr>
+<tr><td>ALREADY_EXISTS_U6</td><td>USER_ERROR</td><td>ALREADY_EXISTS_6</td><td>409: Conflict</td></tr>
+<tr><td>NOT_SUPPORTED_U7</td><td>USER_ERROR</td><td>UNIMPLEMENTED_12</td><td>405: Method Not Allowed</td></tr>
+<tr><td>UNIMPLEMENTED_U8</td><td>USER_ERROR</td><td>UNIMPLEMENTED_12</td><td>405: Method Not Allowed</td></tr>
+<tr><td>UNEXPECTED_STATE_U9</td><td>USER_ERROR</td><td>FAILED_PRECONDITION_9</td><td>400: Bad Request</td></tr>
+<tr><td>INCONSISTENT_STATE_U10</td><td>USER_ERROR</td><td>FAILED_PRECONDITION_9</td><td>400: Bad Request</td></tr>
+<tr><td>CANCELLED_U11</td><td>USER_ERROR</td><td>CANCELLED_1</td><td>499: Client Closed Request</td></tr>
+<tr><td>ABORTED_U12</td><td>USER_ERROR</td><td>ABORTED_10</td><td>409: Conflict</td></tr>
+<tr><td>UNAUTHENTICATED_U13</td><td>USER_ERROR</td><td>UNAUTHENTICATED_16</td><td>401: Unauthorized</td></tr>
+<tr><td>PERMISSION_DENIED_U14</td><td>USER_ERROR</td><td>PERMISSION_DENIED_7</td><td>403: Forbidden</td></tr>
+<tr><td>INTERNAL_ERROR_I0</td><td>INTERNAL_ERROR</td><td>INTERNAL_13</td><td>500: Internal Server Error</td></tr>
+<tr><td>UNKNOWN_I1</td><td>INTERNAL_ERROR</td><td>UNKNOWN_2</td><td>500: Internal Server Error</td></tr>
+<tr><td>UNAVAILABLE_I2</td><td>INTERNAL_ERROR</td><td>UNAVAILABLE_14</td><td>503: Service Unavailable</td></tr>
+<tr><td>TIMEOUT_I3</td><td>INTERNAL_ERROR</td><td>DEADLINE_EXCEEDED_4</td><td>504: Gateway Timeout</td></tr>
+<tr><td>DEADLINE_EXCEEDED_I4</td><td>INTERNAL_ERROR</td><td>DEADLINE_EXCEEDED_4</td><td>504: Gateway Timeout</td></tr>
+<tr><td>INTERRUPTED_I5</td><td>INTERNAL_ERROR</td><td>INTERNAL_13</td><td>500: Internal Server Error</td></tr>
+<tr><td>SERVICE_STARTING_UP_I6</td><td>INTERNAL_ERROR</td><td>UNAVAILABLE_14</td><td>503: Service Unavailable</td></tr>
+<tr><td>SERVICE_SHUTTING_DOWN_I7</td><td>INTERNAL_ERROR</td><td>UNAVAILABLE_14</td><td>503: Service Unavailable</td></tr>
+<tr><td>DATA_LOSS_I8</td><td>INTERNAL_ERROR</td><td>DATA_LOSS_15</td><td>500: Internal Server Error</td></tr>
+<tr><td>RESOURCE_EXHAUSTED_R0</td><td>RESOURCE_EXHAUSTED</td><td>RESOURCE_EXHAUSTED_8</td><td>429: Too Many Requests</td></tr>
+<tr><td>OUT_OF_MEMORY_R1</td><td>RESOURCE_EXHAUSTED</td><td>RESOURCE_EXHAUSTED_8</td><td>429: Too Many Requests</td></tr>
+<tr><td>EXCEEDED_RATE_LIMIT_R2</td><td>RESOURCE_EXHAUSTED</td><td>RESOURCE_EXHAUSTED_8</td><td>429: Too Many Requests</td></tr>
+<tr><td>EXCEEDED_CPU_LIMIT_R3</td><td>RESOURCE_EXHAUSTED</td><td>RESOURCE_EXHAUSTED_8</td><td>429: Too Many Requests</td></tr>
+<tr><td>EXCEEDED_MEMORY_LIMIT_R4</td><td>RESOURCE_EXHAUSTED</td><td>RESOURCE_EXHAUSTED_8</td><td>429: Too Many Requests</td></tr>
+<tr><td>EXCEEDED_TIME_LIMIT_R5</td><td>RESOURCE_EXHAUSTED</td><td>RESOURCE_EXHAUSTED_8</td><td>429: Too Many Requests</td></tr>
+<tr><td>EXCEEDED_DATA_SIZE_LIMIT_R6</td><td>RESOURCE_EXHAUSTED</td><td>RESOURCE_EXHAUSTED_8</td><td>429: Too Many Requests</td></tr>
+<tr><td>EXCEEDED_STORAGE_LIMIT_R7</td><td>RESOURCE_EXHAUSTED</td><td>RESOURCE_EXHAUSTED_8</td><td>429: Too Many Requests</td></tr>
+<tr><td>EXCEEDED_BUDGET_R8</td><td>RESOURCE_EXHAUSTED</td><td>RESOURCE_EXHAUSTED_8</td><td>429: Too Many Requests</td></tr>
+</tbody>
+</table>
+<h3><a class="anchor" aria-hidden="true" id="rpc-request-retry"></a><a href="#rpc-request-retry" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>RPC Request Retry</h3>
+<p>Generally speaking, the RPC client can retry the request upon RPCStatus with INTERNAL_ERROR type. If RESOURCE_EXHAUSTED error type is returned, the client should wait a bit until the server-side resource becomes available. USER_ERROR is not retryable in general. The generated RPC clients has a built-in request retry mechanism (default is Jitter retry upto 15 retries) based on the returned HTTP status code from the RPC server.</p>
+<p>You can configure the retry method (e.g., retry count) when building an HTTP client. For example, you can increase the number of retries like this:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> httpClient = <span class="hljs-type">Http</span>.client.withRetryContext(_.withMaxRetry(<span class="hljs-number">100</span>)).newSyncClient(<span class="hljs-string">"localhost:8080"</span>)
+<span class="hljs-keyword">val</span> rpcClient = <span class="hljs-type">ServiceRPC</span>.newSyncClient(httpClient)
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="reading-rpcexception-at-the-client"></a><a href="#reading-rpcexception-at-the-client" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Reading RPCException at the client</h3>
+<p>To read the RPCStatus and error details at the RPC client side, catch <a href="https://github.com/wvlet/airframe/blob/master/airframe-http/src/main/scala/wvlet/airframe/http/RPCException.scala">RPCException</a>:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">try</span> {
+  rpcClient.hello(...)
+}
+<span class="hljs-keyword">catch</span> {
+  <span class="hljs-keyword">case</span> e: <span class="hljs-type">RPCException</span> =&gt;
+    <span class="hljs-comment">// Read the error message from the RPC server</span>
 }
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="other-tips"></a><a href="#other-tips" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Other Tips</h3>
@@ -724,7 +806,7 @@ $ echo -n $'\<span class="hljs-keyword">x</span><span class="hljs-number">00</sp
 <pre><code class="hljs">$ curl -v <span class="hljs-params">--raw</span> <span class="hljs-params">--http2-prior-knowledge</span> -X POST  -H <span class="hljs-string">"content-type: application/grpc"</span> -H <span class="hljs-string">"TE: trailers"</span> <span class="hljs-params">--data-binary</span> @hello.mspack <span class="hljs-params">--output</span> - http:<span class="hljs-string">//localhost</span><span class="hljs-function">:8080</span>/greeter.api.GreeterApi/hello
 </code></pre>
 <p>With <code>accept: application/json</code> header, JSON string can be passed instead of MessagePack. In this case, the response message format will be <code>{&quot;response&quot;:(RPC result)}</code>.</p>
-</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-di"><span class="arrow-prev">← </span><span>airframe-di: Dependency Injection</span></a><a class="docs-next button" href="/airframe/docs/airframe-http"><span>airframe-http: Creating REST Service</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#why-airframe-rpc">Why Airframe RPC?</a></li><li><a href="#airframe-rpc-overview">Airframe RPC: Overview</a></li><li><a href="#usage">Usage</a><ul class="toc-headings"><li><a href="#basic-project-structure">Basic Project Structure</a></li><li><a href="#sbt-airframe-plugin">sbt-airframe plugin</a></li><li><a href="#open-api">Open API</a></li><li><a href="#rpc-logging">RPC Logging</a></li><li><a href="#rpc-filters">RPC Filters</a></li><li><a href="#di-integration">DI Integration</a></li><li><a href="#object-serialization">Object Serialization</a></li><li><a href="#rpccontext">RPCContext</a></li><li><a href="#receiving-raw-http-responses">Receiving Raw HTTP Responses</a></li><li><a href="#other-tips">Other Tips</a></li></ul></li><li><a href="#airframe-grpc">Airframe gRPC</a><ul class="toc-headings"><li><a href="#defining-grpc-api">Defining gRPC API</a></li><li><a href="#generating-grpc-client">Generating gRPC client</a></li><li><a href="#starting-an-airframe-grpc-server">Starting An Airframe gRPC Server</a></li><li><a href="#grpc-client">gRPC Client</a></li><li><a href="#grpc-streaming">gRPC Streaming</a></li><li><a href="#launching-multiple-grpc-servers">Launching Multiple gRPC Servers</a></li><li><a href="#reading-grpc-metadata">Reading gRPC Metadata</a></li></ul></li><li><a href="#rpc-internals">RPC Internals</a><ul class="toc-headings"><li><a href="#rpc-protocol">RPC Protocol</a></li><li><a href="#rpc-protocol-http2-for-grpc">RPC Protocol (HTTP/2 for gRPC)</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2022 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-di"><span class="arrow-prev">← </span><span>airframe-di: Dependency Injection</span></a><a class="docs-next button" href="/airframe/docs/airframe-http"><span>airframe-http: Creating REST Service</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#why-airframe-rpc">Why Airframe RPC?</a></li><li><a href="#airframe-rpc-overview">Airframe RPC: Overview</a></li><li><a href="#usage">Usage</a><ul class="toc-headings"><li><a href="#basic-project-structure">Basic Project Structure</a></li><li><a href="#sbt-airframe-plugin">sbt-airframe plugin</a></li><li><a href="#open-api">Open API</a></li><li><a href="#rpc-logging">RPC Logging</a></li><li><a href="#rpc-filters">RPC Filters</a></li><li><a href="#di-integration">DI Integration</a></li><li><a href="#object-serialization">Object Serialization</a></li><li><a href="#rpccontext">RPCContext</a></li><li><a href="#receiving-raw-http-responses">Receiving Raw HTTP Responses</a></li><li><a href="#reporting-errors-with-rpcstatus">Reporting Errors with RPCStatus</a></li><li><a href="#rpc-request-retry">RPC Request Retry</a></li><li><a href="#reading-rpcexception-at-the-client">Reading RPCException at the client</a></li><li><a href="#other-tips">Other Tips</a></li></ul></li><li><a href="#airframe-grpc">Airframe gRPC</a><ul class="toc-headings"><li><a href="#defining-grpc-api">Defining gRPC API</a></li><li><a href="#generating-grpc-client">Generating gRPC client</a></li><li><a href="#starting-an-airframe-grpc-server">Starting An Airframe gRPC Server</a></li><li><a href="#grpc-client">gRPC Client</a></li><li><a href="#grpc-streaming">gRPC Streaming</a></li><li><a href="#launching-multiple-grpc-servers">Launching Multiple gRPC Servers</a></li><li><a href="#reading-grpc-metadata">Reading gRPC Metadata</a></li></ul></li><li><a href="#rpc-internals">RPC Internals</a><ul class="toc-headings"><li><a href="#rpc-protocol">RPC Protocol</a></li><li><a href="#rpc-protocol-http2-for-grpc">RPC Protocol (HTTP/2 for gRPC)</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2022 wvlet.org</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.fbAsyncInit = function() {FB.init({appId:'3112325918843547',xfbml:true,version:'v2.7'});};(function(d, s, id){var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) {return;}js = d.createElement(s); js.id = id;js.src = '//connect.facebook.net/en_US/sdk.js';fjs.parentNode.insertBefore(js, fjs);}(document, 'script','facebook-jssdk'));
                 </script><script>window.twttr=(function(d,s, id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return t;js=d.createElement(s);js.id=id;js.src='https://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js, fjs);t._e = [];t.ready = function(f) {t._e.push(f);};return t;}(document, 'script', 'twitter-wjs'));</script><script>
                 document.addEventListener('keyup', function(e) {
                   if (e.target !== document.body) {
