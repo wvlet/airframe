@@ -289,9 +289,17 @@ airframeHttpClients := Seq("hello.api.v1:rpc")
 
 With this setting, sbt-airframe generates `hello.api.v1.ServiceRPC` class. You can create RPC clients from this class with `.newSyncClient(...)` and `.newAsyncClient(...)`. Sync clients are blocking RPC clients, which wait until the method recevies RPC responses from the RPC server. Async clients returns `Future[_]` response type so that you can do other jobs while waiting the response. The generated client code can be found in `target/scala-(scala version)/src_managed/(api package)/` folder.
 
+To rename the generated client name, append the desired class name followed by comma:
+```scala
+airframeHttpClients := Seq("hello.api.v1:rpc:HelloRPC")
+```
+This example generates `hello.api.v1.HelloRPC` class.
+
+#### Supported RPC Client Types
+
 Supported client types are:
 
-- __rpc__ : Create a default RPC client class for Scala JVM and Scala.js
+- __rpc__ : Create a default RPC client class for Scala JVM (sync and async) and Scala.js (async-only)
 - __grpc__: Create gRPC client (ServiceGrpc: SyncClient, AsyncClient)
 
 
