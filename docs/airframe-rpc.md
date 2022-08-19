@@ -581,7 +581,17 @@ Exceptions created from RPCStatus will be mapped to an appropriate HTTP status c
 | EXCEEDED_STORAGE_LIMIT_R7 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
 | EXCEEDED_BUDGET_R8 | RESOURCE_EXHAUSTED | RESOURCE_EXHAUSTED_8  | 429: Too Many Requests |
 
-Generally speaking, the RPC client can retry the request upon INTERNAL_ERROR errors. If RESOURCE_EXHAUSTED error type is returned, the client should wait a bit until the server-side resource becomes available. USER_ERROR is not retriable.
+
+### RPC Request Retry
+
+Generally speaking, the RPC client can retry the request upon RPCStatus with INTERNAL_ERROR type. If RESOURCE_EXHAUSTED error type is returned, the client should wait a bit until the server-side resource becomes available. USER_ERROR is not retryable in general. The generated RPC clients has a built-in request retry mechanism (default is Jitter retry upto 15 retries) based on the returned HTTP status code from the RPC server.
+
+You can configure the retry method (e.g., retry count) when building an HTTP client. For example, you can increase the number of retries like this:
+
+```scala
+val httpClient = Http.client.withRetryContext(_.withMaxRetry(100)).newSyncClient("localhost:8080")
+val rpcClient = ServiceRPC.newSyncClient(httpClient)
+```
 
 
 ### Reading RPCException at the client
