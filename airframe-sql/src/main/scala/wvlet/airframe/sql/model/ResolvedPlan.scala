@@ -14,14 +14,14 @@
 package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.analyzer.QuerySignatureConfig
-import wvlet.airframe.sql.catalog.Catalog.DbTable
+import wvlet.airframe.sql.catalog.Catalog.CatalogTable
 import wvlet.airframe.sql.catalog.DataType
 import wvlet.airframe.sql.model.Expression.QName
 import wvlet.airframe.sql.model.LogicalPlan.Relation
 
 /**
   */
-case class TableScan(name: QName, table: DbTable, columns: Seq[String]) extends Relation with LeafPlan {
+case class TableScan(name: QName, table: CatalogTable, columns: Seq[String]) extends Relation with LeafPlan {
   override def inputAttributes: Seq[Attribute] = Seq.empty
   override def outputAttributes: Seq[Attribute] = {
     columns.flatMap { col =>

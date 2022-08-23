@@ -13,9 +13,15 @@
  */
 package wvlet.airframe.sql.analyzer
 
+import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airspec.AirSpec
 
 class TypeResolverTest extends AirSpec {
+
+  private val catalog1 = Catalog(
+
+      CatalogTable()
+    )
 
   test("resolve relation") {
 
