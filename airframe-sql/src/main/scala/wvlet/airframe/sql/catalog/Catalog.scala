@@ -23,10 +23,12 @@ object Catalog {
 
   def withTable(tbl: DbTable): Catalog = Catalog(Seq(tbl))
 
-  case class TableSchema(columns: Seq[NamedType]) {
-    def addColumn(name: String, dataType: DataType): TableSchema =
-      this.copy(columns = columns :+ NamedType(name, dataType))
+  case class TableSchema(columns: Seq[TableColumn]) {
+    def addColumn(name: String, dataType: DataType, metadata: Map[String, Any] = Map.empty): TableSchema =
+      this.copy(columns = columns :+ TableColumn(name, dataType, metadata))
   }
+
+  case class TableColumn(name: String, dataType: DataType, metadata: Map[String, Any] = Map.empty) {}
 
   case class DbTable(db: String = "default", name: String, schema: TableSchema) {
     def fullName: String = s"${db}.${name}"

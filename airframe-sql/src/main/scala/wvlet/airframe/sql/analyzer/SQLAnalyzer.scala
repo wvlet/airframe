@@ -38,9 +38,9 @@ object SQLAnalyzer extends LogSupport {
   }
 
   def analyze(plan: LogicalPlan, database: String, catalog: Catalog): LogicalPlan = {
-    if (plan.resolved) {
+    if (plan.resolved)
       plan
-    } else {
+    else {
       val analyzerContext =
         AnalyzerContext(database = database, catalog = catalog, parentAttributes = plan.outputAttributes)
       debug(s"Unresolved plan:\n${plan.pp}")
