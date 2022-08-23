@@ -64,12 +64,13 @@ object Catalog {
     * @param description
     * @param metadata
     */
-  case class Database(name: String, description: String, properties: Map[String, Any] = Map.empty)
+  case class Database(name: String, description: String = "", properties: Map[String, Any] = Map.empty)
 
   case class Table(
       database: Option[String],
       name: String,
       schema: TableSchema,
+      description: String = "",
       properties: Map[String, Any] = Map.empty
   ) {
     def fullName: String = s"${database.map(db => s"${db}.").getOrElse("")}.${name}"

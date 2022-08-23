@@ -18,12 +18,5 @@ import wvlet.airspec.AirSpec
 
 class TypeResolverTest extends AirSpec {
 
-  private val catalog1 = Catalog(
-
-      CatalogTable()
-    )
-
-  test("resolve relation") {
-
-  }
+  test("resolve relation") {}
 }

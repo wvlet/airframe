@@ -13,29 +13,44 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.sql.catalog.{Catalog, DataType}
+import wvlet.airframe.sql.catalog.Catalog.{CreateMode, TableColumn, TableSchema}
+import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airspec.AirSpec
 
 /**
   */
 class SQLAnalyzerTest extends AirSpec {
-  val tbl1 =
-    Catalog
-      .table("public", "a")
-      .addColumn("id", DataType.LongType)
-      .addColumn("name", DataType.StringType)
-      .addColumn("address", DataType.StringType)
+  private lazy val tbl1 = Catalog.Table(
+    Some("public"),
+    "a",
+    TableSchema(
+      Seq(
+        TableColumn("id", DataType.LongType),
+        TableColumn("name", DataType.StringType),
+        TableColumn("address", DataType.StringType)
+      )
+    )
+  )
 
-  val tbl2 =
-    Catalog
-      .table("public", "b")
-      .addColumn("id", DataType.LongType)
-      .addColumn("phone", DataType.StringType)
+  private lazy val tbl2 =
+    Catalog.Table(
+      Some("public"),
+      "b",
+      TableSchema(
+        Seq(
+          TableColumn("id", DataType.LongType),
+          TableColumn("phone", DataType.StringType)
+        )
+      )
+    )
 
-  val catalog =
-    Catalog
-      .withTable(tbl1)
-      .addTable(tbl2)
+  private lazy val catalog = {
+    val c = new InMemoryCatalog("default", None, Seq.empty)
+    c.createDatabase(Catalog.Database("public"), CreateMode.CREATE_IF_NOT_EXISTS)
+    c.createTable("public", tbl1, CreateMode.CREATE_IF_NOT_EXISTS)
+    c.createTable("public", tbl2, CreateMode.CREATE_IF_NOT_EXISTS)
+    c
+  }
 
   test("resolve input/output types") {
     val plan = SQLAnalyzer.analyze("select id, name from a", "public", catalog)
