@@ -57,6 +57,11 @@ trait Catalog {
 
 object Catalog {
 
+  def newTable(database: String, table: String, schema: TableSchema): Table = {
+    Table(database = Some(database), name = table, schema = schema)
+  }
+  def newSchema: TableSchema = TableSchema(columns = Seq.empty)
+
   /**
     * A database defined in the catalog
     *

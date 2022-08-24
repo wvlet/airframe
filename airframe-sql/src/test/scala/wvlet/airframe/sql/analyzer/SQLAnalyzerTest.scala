@@ -13,35 +13,29 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.sql.catalog.Catalog.{CreateMode, TableColumn, TableSchema}
+import wvlet.airframe.sql.catalog.Catalog.CreateMode
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airspec.AirSpec
 
 /**
   */
 class SQLAnalyzerTest extends AirSpec {
-  private lazy val tbl1 = Catalog.Table(
-    Some("public"),
+  private lazy val tbl1 = Catalog.newTable(
+    "public",
     "a",
-    TableSchema(
-      Seq(
-        TableColumn("id", DataType.LongType),
-        TableColumn("name", DataType.StringType),
-        TableColumn("address", DataType.StringType)
-      )
-    )
+    Catalog.newSchema
+      .addColumn("id", DataType.LongType)
+      .addColumn("name", DataType.StringType)
+      .addColumn("address", DataType.StringType)
   )
 
   private lazy val tbl2 =
-    Catalog.Table(
-      Some("public"),
+    Catalog.newTable(
+      "public",
       "b",
-      TableSchema(
-        Seq(
-          TableColumn("id", DataType.LongType),
-          TableColumn("phone", DataType.StringType)
-        )
-      )
+      Catalog.newSchema
+        .addColumn("id", DataType.LongType)
+        .addColumn("phone", DataType.StringType)
     )
 
   private lazy val catalog = {
