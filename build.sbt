@@ -13,14 +13,14 @@ val AIRSPEC_VERSION                 = "22.7.3"
 val SCALACHECK_VERSION              = "1.16.0"
 val MSGPACK_VERSION                 = "0.9.3"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.1.1"
-val SQLITE_JDBC_VERSION             = "3.39.2.0"
+val SQLITE_JDBC_VERSION             = "3.39.2.1"
 val SLF4J_VERSION                   = "1.7.36"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
 val SCALAJS_DOM_VERSION             = "2.2.0"
 val FINAGLE_VERSION                 = "22.7.0"
 val FLUENCY_VERSION                 = "2.6.5"
-val GRPC_VERSION                    = "1.48.1"
+val GRPC_VERSION                    = "1.49.0"
 val JMH_VERSION                     = "1.35"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 val PARQUET_VERSION                 = "1.12.3"
@@ -657,7 +657,7 @@ lazy val jdbc =
       description := "JDBC connection pool service",
       libraryDependencies ++= Seq(
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
-        "org.postgresql" % "postgresql"  % "42.4.2",
+        "org.postgresql" % "postgresql"  % "42.5.0",
         "com.zaxxer"     % "HikariCP"    % "5.0.1",
         // For routing slf4j log to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
