@@ -18,12 +18,28 @@ import wvlet.airframe.sql.model._
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.log.LogSupport
 
-abstract class AnalysisException(message: String) extends Exception(message)
-case class TableNotFound(name: String)            extends AnalysisException(s"Table ${name} not found")
+/**
+  * Propagate context
+  * @param database
+  *   context database
+  * @param catalog
+  * @param parentAttributes
+  *   attributes used in the parent relation. This is used for pruning unnecessary columns output attributes
+  */
+case class AnalyzerContext(
+    database: String,
+    catalog: Catalog,
+    parentAttributes: Option[Seq[Attribute]] = None
+) {
 
-case class AnalyzerContext(database: String, catalog: Catalog, parentAttributes: Seq[Attribute]) {
+  /**
+    * Update the relation attributes used in the plan.
+    *
+    * @param parentAttributes
+    * @return
+    */
   def withAttributes(parentAttributes: Seq[Attribute]) =
-    this.copy(parentAttributes = parentAttributes)
+    this.copy(parentAttributes = Some(parentAttributes))
 }
 
 /**
@@ -42,7 +58,7 @@ object SQLAnalyzer extends LogSupport {
       plan
     else {
       val analyzerContext =
-        AnalyzerContext(database = database, catalog = catalog, parentAttributes = plan.outputAttributes)
+        AnalyzerContext(database = database, catalog = catalog, parentAttributes = Some(plan.outputAttributes))
       debug(s"Unresolved plan:\n${plan.pp}")
 
       val resolvedPlan = TypeResolver.typerRules

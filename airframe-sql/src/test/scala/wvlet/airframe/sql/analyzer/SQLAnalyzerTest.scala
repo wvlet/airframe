@@ -41,8 +41,8 @@ class SQLAnalyzerTest extends AirSpec {
   private lazy val catalog = {
     val c = new InMemoryCatalog("default", None, Seq.empty)
     c.createDatabase(Catalog.Database("public"), CreateMode.CREATE_IF_NOT_EXISTS)
-    c.createTable("public", tbl1, CreateMode.CREATE_IF_NOT_EXISTS)
-    c.createTable("public", tbl2, CreateMode.CREATE_IF_NOT_EXISTS)
+    c.createTable(tbl1, CreateMode.CREATE_IF_NOT_EXISTS)
+    c.createTable(tbl2, CreateMode.CREATE_IF_NOT_EXISTS)
     c
   }
 

@@ -32,7 +32,7 @@ trait Catalog {
   def findTable(database: String, table: String): Option[Catalog.Table]
   def getTable(database: String, table: String): Catalog.Table
   def tableExists(database: String, table: String): Boolean
-  def createTable(database: String, table: Catalog.Table, createMode: CreateMode): Unit
+  def createTable(table: Catalog.Table, createMode: CreateMode): Unit
 
   def findFromQName(contextDatabase: String, qname: QName): Option[Catalog.Table] = {
     qname.parts match {
@@ -78,7 +78,8 @@ object Catalog {
       description: String = "",
       properties: Map[String, Any] = Map.empty
   ) {
-    def fullName: String = s"${database.map(db => s"${db}.").getOrElse("")}.${name}"
+    def withDatabase(db: String): Table = copy(database = Some(db))
+    def fullName: String                = s"${database.map(db => s"${db}.").getOrElse("")}.${name}"
   }
 
   case class TableSchema(columns: Seq[TableColumn]) {
@@ -184,7 +185,10 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
     }
   }
 
-  override def createTable(database: String, table: Catalog.Table, createMode: CreateMode): Unit = {
+  override def createTable(table: Catalog.Table, createMode: CreateMode): Unit = {
+    val database = table.database.getOrElse {
+      throw SQLErrorCode.InvalidArgument.toException(s"Missing database for create table request: ${table.name}")
+    }
     synchronized {
       val d = getDatabaseHolder(database)
       d.tables.get(table.name) match {

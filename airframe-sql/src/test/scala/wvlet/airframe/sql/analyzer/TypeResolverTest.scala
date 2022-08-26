@@ -13,10 +13,48 @@
  */
 package wvlet.airframe.sql.analyzer
 
+import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
+import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
+import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airspec.AirSpec
 
 class TypeResolverTest extends AirSpec {
 
-  test("resolve relation") {}
+  private def demoCatalog: Catalog = {
+    val catalog = new InMemoryCatalog(
+      "global",
+      None,
+      Seq.empty
+    )
+
+    catalog.createDatabase(
+      Catalog.Database("default"),
+      CreateMode.CREATE_IF_NOT_EXISTS
+    )
+    catalog.createTable(
+      Catalog.newTable(
+        "default",
+        "a",
+        Catalog.newSchema
+          .addColumn("id", DataType.LongType, properties = Map("tag" -> Seq("personal_identifier")))
+          .addColumn("name", DataType.StringType, properties = Map("tag" -> Seq("private")))
+      ),
+      CreateMode.CREATE_IF_NOT_EXISTS
+    )
+    catalog
+  }
+
+  private def analyze(sql: String) = {
+    val plan            = SQLParser.parse(sql)
+    val analyzerContext = AnalyzerContext("default", demoCatalog).withAttributes(plan.outputAttributes)
+
+    val rewriter: PlanRewriter = TypeResolver.resolveTableRef(analyzerContext)
+    plan.transform(rewriter)
+  }
+
+  test("resolve all columns") {
+    val p = analyze("select * from a")
+    debug(p)
+  }
 }

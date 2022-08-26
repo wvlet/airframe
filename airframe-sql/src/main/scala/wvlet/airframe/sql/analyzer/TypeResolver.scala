@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.analyzer
+import wvlet.airframe.sql.SQLErrorCode
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.{PlanRewriter, Rule}
 import wvlet.airframe.sql.model.Expression._
 import wvlet.airframe.sql.model.LogicalPlan.{Filter, Project, Relation}
@@ -39,7 +40,7 @@ object TypeResolver extends LogSupport {
         trace(s"Found ${dbTable}")
         TableScan(qname, dbTable, dbTable.schema.columns.map(_.name))
       case None =>
-        throw TableNotFound(qname.toString)
+        throw SQLErrorCode.TableNotFound.toException(s"Table ${context.database}.${qname} not found")
     }
   }
 
