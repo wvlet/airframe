@@ -16,10 +16,28 @@ package wvlet.airframe.sql.analyzer
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
+import wvlet.airframe.sql.model.Expression.{And, Eq, LongLiteral}
+import wvlet.airframe.sql.model.LogicalPlan.{Filter, Project}
+import wvlet.airframe.sql.model.{Expression, LogicalPlan, LogicalPlanPrinter, ResolvedAttribute}
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airspec.AirSpec
 
 class TypeResolverTest extends AirSpec {
+
+  private val tableA = Catalog.newTable(
+    "default",
+    "A",
+    Catalog.newSchema
+      .addColumn("id", DataType.LongType, properties = Map("tag" -> Seq("personal_identifier")))
+      .addColumn("name", DataType.StringType, properties = Map("tag" -> Seq("private")))
+  )
+  private val tableB = Catalog.newTable(
+    "default",
+    "B",
+    Catalog.newSchema
+      .addColumn("id", DataType.LongType, properties = Map("tag" -> Seq("personal_identifier")))
+      .addColumn("name", DataType.StringType, properties = Map("tag" -> Seq("private")))
+  )
 
   private def demoCatalog: Catalog = {
     val catalog = new InMemoryCatalog(
@@ -28,33 +46,84 @@ class TypeResolverTest extends AirSpec {
       Seq.empty
     )
 
-    catalog.createDatabase(
-      Catalog.Database("default"),
-      CreateMode.CREATE_IF_NOT_EXISTS
-    )
-    catalog.createTable(
-      Catalog.newTable(
-        "default",
-        "a",
-        Catalog.newSchema
-          .addColumn("id", DataType.LongType, properties = Map("tag" -> Seq("personal_identifier")))
-          .addColumn("name", DataType.StringType, properties = Map("tag" -> Seq("private")))
-      ),
-      CreateMode.CREATE_IF_NOT_EXISTS
-    )
+    catalog.createDatabase(Catalog.Database("default"), CreateMode.CREATE_IF_NOT_EXISTS)
+    catalog.createTable(tableA, CreateMode.CREATE_IF_NOT_EXISTS)
+    catalog.createTable(tableB, CreateMode.CREATE_IF_NOT_EXISTS)
     catalog
   }
 
-  private def analyze(sql: String) = {
-    val plan            = SQLParser.parse(sql)
+  private def analyzeSingle(sql: String, rule: AnalyzerContext => PlanRewriter): LogicalPlan = {
+    analyze(sql, List(rule))
+  }
+
+  private def analyze(
+      sql: String,
+      rules: List[AnalyzerContext => PlanRewriter] = TypeResolver.typerRules
+  ): LogicalPlan = {
+    val plan = SQLParser.parse(sql)
+    debug(s"original plan:\n${plan.pp}")
     val analyzerContext = AnalyzerContext("default", demoCatalog).withAttributes(plan.outputAttributes)
 
-    val rewriter: PlanRewriter = TypeResolver.resolveTableRef(analyzerContext)
-    plan.transform(rewriter)
+    val resolvedPlan = rules.foldLeft(plan) { (targetPlan, rule) =>
+      val rewriter: PlanRewriter = rule(analyzerContext)
+      val newPlan                = targetPlan.transform(rewriter)
+      newPlan
+    }
+
+    debug(s"new plan:\n${resolvedPlan.pp}")
+    resolvedPlan
   }
 
-  test("resolve all columns") {
-    val p = analyze("select * from a")
-    debug(p)
+  test("resolveTableRef") {
+    test("resolve all columns") {
+      val p = analyzeSingle("select * from A", TypeResolver.resolveTableRef)
+      p.inputAttributes shouldBe Seq(
+        ResolvedAttribute(tableA, "id", DataType.LongType),
+        ResolvedAttribute(tableA, "name", DataType.StringType)
+      )
+    }
+
+    test("resolve the right table") {
+      val p = analyzeSingle("select * from B", TypeResolver.resolveTableRef)
+      p.inputAttributes shouldBe Seq(
+        ResolvedAttribute(tableB, "id", DataType.LongType),
+        ResolvedAttribute(tableB, "name", DataType.StringType)
+      )
+    }
   }
+
+  test("resolveRelation") {
+
+    test("resolve filter") {
+      val p = analyze(s"select * from A where id = 1")
+      p.inputAttributes shouldBe Seq(
+        ResolvedAttribute(tableA, "id", DataType.LongType),
+        ResolvedAttribute(tableA, "name", DataType.StringType)
+      )
+      p.children.headOption shouldBe defined
+      p.children.head.expressions shouldBe List(
+        Expression.Eq(
+          ResolvedAttribute(tableA, "id", DataType.LongType),
+          Expression.LongLiteral(1)
+        )
+      )
+    }
+
+    test("resolve filter") {
+      val p = analyze(s"select A.id id_a, B.id id_b from A, B where A.id = 1 and B.id = 2")
+      p match {
+        case Project(Filter(_, And(Eq(a, LongLiteral(1)), Eq(b, LongLiteral(2)))), _) =>
+          a shouldBe ResolvedAttribute(tableA, "id", DataType.LongType)
+          b shouldBe ResolvedAttribute(tableB, "id", DataType.LongType)
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+    }
+
+    test("resolve union") {
+      val p = analyze("select * from A union all select * from B")
+      // TODO merging same column names from different tables
+    }
+
+  }
+
 }

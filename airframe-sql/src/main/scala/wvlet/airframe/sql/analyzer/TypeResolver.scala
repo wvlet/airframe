@@ -38,7 +38,7 @@ object TypeResolver extends LogSupport {
     context.catalog.findFromQName(context.database, qname) match {
       case Some(dbTable) =>
         trace(s"Found ${dbTable}")
-        TableScan(qname, dbTable, dbTable.schema.columns.map(_.name))
+        TableScan(dbTable, dbTable.schema.columns.map(_.name))
       case None =>
         throw SQLErrorCode.TableNotFound.toException(s"Table ${context.database}.${qname} not found")
     }
@@ -62,8 +62,8 @@ object TypeResolver extends LogSupport {
         resolveExpression(expr, inputAttributes) match {
           case r: ResolvedAttribute if alias.isEmpty =>
             resolvedColumns += r
-          case r: ResolvedAttribute if alias.nonEmpty =>
-            resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType)
+//          case r: ResolvedAttribute if alias.nonEmpty =>
+//            resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType)
           case expr =>
             resolvedColumns += SingleColumn(expr, alias)
         }

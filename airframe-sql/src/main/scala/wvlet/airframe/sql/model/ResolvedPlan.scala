@@ -16,21 +16,20 @@ package wvlet.airframe.sql.model
 import wvlet.airframe.sql.analyzer.QuerySignatureConfig
 import wvlet.airframe.sql.catalog.Catalog
 import wvlet.airframe.sql.catalog.DataType
-import wvlet.airframe.sql.model.Expression.QName
 import wvlet.airframe.sql.model.LogicalPlan.Relation
 
 /**
   */
-case class TableScan(name: QName, table: Catalog.Table, columns: Seq[String]) extends Relation with LeafPlan {
+case class TableScan(table: Catalog.Table, columns: Seq[String]) extends Relation with LeafPlan {
   override def inputAttributes: Seq[Attribute] = Seq.empty
   override def outputAttributes: Seq[Attribute] = {
     columns.flatMap { col =>
-      table.schema.columns.find(_.name == col).map { c => ResolvedAttribute(c.name, c.dataType) }
+      table.schema.columns.find(_.name == col).map { c => ResolvedAttribute(table, c.name, c.dataType) }
     }
   }
   override def sig(config: QuerySignatureConfig): String = {
     if (config.embedTableNames) {
-      name.toString
+      table.fullName
     } else {
       "T"
     }
@@ -39,7 +38,7 @@ case class TableScan(name: QName, table: Catalog.Table, columns: Seq[String]) ex
   override lazy val resolved = true
 }
 
-case class ResolvedAttribute(name: String, dataType: DataType) extends Attribute {
-  override def toString      = s"${name}:${dataType}"
+case class ResolvedAttribute(table: Catalog.Table, name: String, dataType: DataType) extends Attribute {
+  override def toString      = s"${table.name}.${name}:${dataType}"
   override lazy val resolved = true
 }
