@@ -46,9 +46,9 @@ object TypeResolver extends LogSupport {
 
   def resolveRelation(context: AnalyzerContext): PlanRewriter = {
     case filter @ Filter(child, filterExpr) =>
-      filter.transformExpressions { case x: Expression => resolveExpression(x, filter.inputAttributes) }
+      filter.transformExpressions { case x: Expression => resolveExpression(context, x, filter.inputAttributes) }
     case r: Relation =>
-      r.transformExpressions { case x: Expression => resolveExpression(x, r.inputAttributes) }
+      r.transformExpressions { case x: Expression => resolveExpression(context, x, r.inputAttributes) }
   }
 
   def resolveColumns(context: AnalyzerContext): PlanRewriter = { case p @ Project(child, columns) =>
@@ -59,7 +59,7 @@ object TypeResolver extends LogSupport {
         // TODO check (prefix).* to resolve attributes
         resolvedColumns ++= inputAttributes
       case SingleColumn(expr, alias) =>
-        resolveExpression(expr, inputAttributes) match {
+        resolveExpression(context, expr, inputAttributes) match {
           case r: ResolvedAttribute if alias.isEmpty =>
             resolvedColumns += r
 //          case r: ResolvedAttribute if alias.nonEmpty =>
@@ -77,19 +77,38 @@ object TypeResolver extends LogSupport {
   /**
     * Resolve untyped expressions
     */
-  def resolveExpression(expr: Expression, inputAttributes: Seq[Attribute]): Expression = {
+  def resolveExpression(context: AnalyzerContext, expr: Expression, inputAttributes: Seq[Attribute]): Expression = {
+    def findInputAttribute(name: String): Option[Attribute] = {
+      QName(name) match {
+        case QName(Seq(t1, c1)) =>
+          val attrs = inputAttributes.collect {
+            case a @ ResolvedAttribute(t, c, _) if t.name == t1 && c == c1 => a
+          }
+          if (attrs.size > 1) {
+            throw SQLErrorCode.SyntaxError.toException(s"${name} is ambiguous")
+          }
+          attrs.headOption
+        case QName(Seq(c1)) =>
+          val attrs = inputAttributes.collect {
+            case a @ ResolvedAttribute(_, c, _) if c == c1 => a
+          }
+          if (attrs.size > 1) {
+            throw SQLErrorCode.SyntaxError.toException(s"${name} is ambiguous")
+          }
+          attrs.headOption
+        case _ =>
+          None
+      }
+    }
+
     expr match {
       case i: Identifier =>
-        inputAttributes
-          .find(attr => attr.name == i.value)
-          .getOrElse(i)
+        findInputAttribute(i.value).getOrElse(i)
       case u @ UnresolvedAttribute(name) =>
-        val attrName = QName(name).parts.last
-        inputAttributes
-          .find(attr => attr.name == attrName)
-          .getOrElse(u)
+        findInputAttribute(name).getOrElse(u)
       case _ =>
         expr
     }
   }
+
 }

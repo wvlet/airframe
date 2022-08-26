@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.sql.analyzer
 
+import wvlet.airframe.sql.{SQLError, SQLErrorCode}
+import wvlet.airframe.sql.SQLErrorCode.SyntaxError
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
@@ -94,7 +96,7 @@ class TypeResolverTest extends AirSpec {
 
   test("resolveRelation") {
 
-    test("resolve filter") {
+    test("resolve a filter") {
       val p = analyze(s"select * from A where id = 1")
       p.inputAttributes shouldBe Seq(
         ResolvedAttribute(tableA, "id", DataType.LongType),
@@ -109,7 +111,7 @@ class TypeResolverTest extends AirSpec {
       )
     }
 
-    test("resolve filter") {
+    test("resolve a filter condition for multiple tables") {
       val p = analyze(s"select A.id id_a, B.id id_b from A, B where A.id = 1 and B.id = 2")
       p match {
         case Project(Filter(_, And(Eq(a, LongLiteral(1)), Eq(b, LongLiteral(2)))), _) =>
@@ -117,6 +119,13 @@ class TypeResolverTest extends AirSpec {
           b shouldBe ResolvedAttribute(tableB, "id", DataType.LongType)
         case _ => fail(s"unexpected plan:\n${p.pp}")
       }
+    }
+
+    test("detect ambiguous column references") {
+      val ex = intercept[SQLError] {
+        analyze(s"select * from A, B where id = 1")
+      }
+      ex.errorCode shouldBe SQLErrorCode.SyntaxError
     }
 
     test("resolve union") {
