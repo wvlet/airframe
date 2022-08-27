@@ -49,13 +49,13 @@ class SQLAnalyzerTest extends AirSpec {
   test("resolve input/output types") {
     val plan = SQLAnalyzer.analyze("select id, name from a", "public", catalog)
     plan.resolved shouldBe true
-    plan.outputAttributes.mkString(",") shouldBe "id:long,name:string"
+    plan.outputAttributes.mkString(",") shouldBe "a.id:long,a.name:string"
   }
 
   test("resolve select *") {
     val plan = SQLAnalyzer.analyze("select * from a", "public", catalog)
     plan.resolved shouldBe true
-    plan.outputAttributes.mkString(",") shouldBe "id:long,name:string,address:string"
+    plan.outputAttributes.mkString(",") shouldBe "a.id:long,a.name:string,a.address:string"
   }
 
   test("resolve select with alias") {
@@ -71,7 +71,7 @@ class SQLAnalyzerTest extends AirSpec {
       catalog
     )
     plan.resolved shouldBe true
-    plan.outputAttributes.mkString(",") shouldBe "id:long,name:string,address:string,person_id:string"
+    plan.outputAttributes.mkString(",") shouldBe "a.id:long,a.name:string,a.address:string,person_id:string"
   }
 
 }

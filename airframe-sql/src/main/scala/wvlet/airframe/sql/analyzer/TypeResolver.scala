@@ -29,6 +29,7 @@ object TypeResolver extends LogSupport {
     TypeResolver.resolveTableRef _ ::
       TypeResolver.resolveRelation _ ::
       TypeResolver.resolveColumns _ ::
+      TypeResolver.resolveUnion _ ::
       Nil
 
   /**
@@ -68,8 +69,8 @@ object TypeResolver extends LogSupport {
         resolveExpression(expr, inputAttributes) match {
           case r: ResolvedAttribute if alias.isEmpty =>
             resolvedColumns += r
-//          case r: ResolvedAttribute if alias.nonEmpty =>
-//            resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType)
+          case r: ResolvedAttribute if alias.nonEmpty =>
+            resolvedColumns += ResolvedAttribute(None, alias.get.sqlExpr, r.dataType)
           case expr =>
             resolvedColumns += SingleColumn(expr, alias)
         }
@@ -88,7 +89,8 @@ object TypeResolver extends LogSupport {
       QName(name) match {
         case QName(Seq(t1, c1)) =>
           val attrs = inputAttributes.collect {
-            case a @ ResolvedAttribute(t, c, _) if t.name == t1 && c == c1 => a
+            case a @ ResolvedAttribute(Some(t), c, _) if t.name == t1 && c == c1 => a
+            case a @ ResolvedAttribute(None, c, _) if c == c1                    => a
           }
           if (attrs.size > 1) {
             throw SQLErrorCode.SyntaxError.toException(s"${name} is ambiguous")

@@ -80,16 +80,16 @@ class TypeResolverTest extends AirSpec {
     test("resolve all columns") {
       val p = analyzeSingle("select * from A", TypeResolver.resolveTableRef)
       p.inputAttributes shouldBe Seq(
-        ResolvedAttribute(tableA, "id", DataType.LongType),
-        ResolvedAttribute(tableA, "name", DataType.StringType)
+        ResolvedAttribute(Some(tableA), "id", DataType.LongType),
+        ResolvedAttribute(Some(tableA), "name", DataType.StringType)
       )
     }
 
     test("resolve the right table") {
       val p = analyzeSingle("select * from B", TypeResolver.resolveTableRef)
       p.inputAttributes shouldBe Seq(
-        ResolvedAttribute(tableB, "id", DataType.LongType),
-        ResolvedAttribute(tableB, "name", DataType.StringType)
+        ResolvedAttribute(Some(tableB), "id", DataType.LongType),
+        ResolvedAttribute(Some(tableB), "name", DataType.StringType)
       )
     }
   }
@@ -99,13 +99,13 @@ class TypeResolverTest extends AirSpec {
     test("resolve a filter") {
       val p = analyze(s"select * from A where id = 1")
       p.inputAttributes shouldBe Seq(
-        ResolvedAttribute(tableA, "id", DataType.LongType),
-        ResolvedAttribute(tableA, "name", DataType.StringType)
+        ResolvedAttribute(Some(tableA), "id", DataType.LongType),
+        ResolvedAttribute(Some(tableA), "name", DataType.StringType)
       )
       p.children.headOption shouldBe defined
       p.children.head.expressions shouldBe List(
         Expression.Eq(
-          ResolvedAttribute(tableA, "id", DataType.LongType),
+          ResolvedAttribute(Some(tableA), "id", DataType.LongType),
           Expression.LongLiteral(1)
         )
       )
@@ -115,8 +115,8 @@ class TypeResolverTest extends AirSpec {
       val p = analyze(s"select A.id id_a, B.id id_b from A, B where A.id = 1 and B.id = 2")
       p match {
         case Project(Filter(_, And(Eq(a, LongLiteral(1)), Eq(b, LongLiteral(2)))), _) =>
-          a shouldBe ResolvedAttribute(tableA, "id", DataType.LongType)
-          b shouldBe ResolvedAttribute(tableB, "id", DataType.LongType)
+          a shouldBe ResolvedAttribute(Some(tableA), "id", DataType.LongType)
+          b shouldBe ResolvedAttribute(Some(tableB), "id", DataType.LongType)
         case _ => fail(s"unexpected plan:\n${p.pp}")
       }
     }
