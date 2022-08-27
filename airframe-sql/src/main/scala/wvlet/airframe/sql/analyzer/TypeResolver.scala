@@ -15,7 +15,7 @@ package wvlet.airframe.sql.analyzer
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.{PlanRewriter, Rule}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{Filter, Project, Relation}
+import wvlet.airframe.sql.model.LogicalPlan.{Filter, Project, Relation, Union}
 import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
@@ -46,9 +46,15 @@ object TypeResolver extends LogSupport {
 
   def resolveRelation(context: AnalyzerContext): PlanRewriter = {
     case filter @ Filter(child, filterExpr) =>
-      filter.transformExpressions { case x: Expression => resolveExpression(context, x, filter.inputAttributes) }
+      filter.transformExpressions { case x: Expression => resolveExpression(x, filter.inputAttributes) }
     case r: Relation =>
-      r.transformExpressions { case x: Expression => resolveExpression(context, x, r.inputAttributes) }
+      r.transformExpressions { case x: Expression => resolveExpression(x, r.inputAttributes) }
+  }
+
+  def resolveUnion(context: AnalyzerContext): PlanRewriter = {
+    // TODO: merge union columns
+    case u @ Union(rels) =>
+      u
   }
 
   def resolveColumns(context: AnalyzerContext): PlanRewriter = { case p @ Project(child, columns) =>
@@ -59,7 +65,7 @@ object TypeResolver extends LogSupport {
         // TODO check (prefix).* to resolve attributes
         resolvedColumns ++= inputAttributes
       case SingleColumn(expr, alias) =>
-        resolveExpression(context, expr, inputAttributes) match {
+        resolveExpression(expr, inputAttributes) match {
           case r: ResolvedAttribute if alias.isEmpty =>
             resolvedColumns += r
 //          case r: ResolvedAttribute if alias.nonEmpty =>
@@ -77,7 +83,7 @@ object TypeResolver extends LogSupport {
   /**
     * Resolve untyped expressions
     */
-  def resolveExpression(context: AnalyzerContext, expr: Expression, inputAttributes: Seq[Attribute]): Expression = {
+  def resolveExpression(expr: Expression, inputAttributes: Seq[Attribute]): Expression = {
     def findInputAttribute(name: String): Option[Attribute] = {
       QName(name) match {
         case QName(Seq(t1, c1)) =>
