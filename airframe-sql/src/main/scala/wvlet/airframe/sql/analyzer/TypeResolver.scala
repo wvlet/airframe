@@ -41,7 +41,7 @@ object TypeResolver extends LogSupport {
     */
   def resolveAggregationIndexes(context: AnalyzerContext): PlanRewriter = {
     case a @ Aggregate(child, selectItems, groupingKeys, having) =>
-      val resolvedGroupingKeys: Seq[GroupingKey] = groupingKeys.map {
+      val resolvedGroupingKeys: List[GroupingKey] = groupingKeys.map {
         case GroupingKey(LongLiteral(i)) if i <= selectItems.length =>
           // Use a simpler form of attributes
           val keyItem = selectItems(i.toInt - 1) match {
