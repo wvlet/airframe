@@ -26,19 +26,26 @@ import wvlet.airspec.AirSpec
 
 class TypeResolverTest extends AirSpec {
 
+  private val a1 = TableColumn("id", DataType.LongType, properties = Map("tag" -> Seq("personal_identifier")))
+  private val a2 = TableColumn("name", DataType.StringType, properties = Map("tag" -> Seq("private")))
+
   private val tableA = Catalog.newTable(
     "default",
     "A",
     Catalog.newSchema
-      .addColumn("id", DataType.LongType, properties = Map("tag" -> Seq("personal_identifier")))
-      .addColumn("name", DataType.StringType, properties = Map("tag" -> Seq("private")))
+      .addColumn(a1)
+      .addColumn(a2)
   )
+
+  private val b1 = TableColumn("id", DataType.LongType, properties = Map("tag" -> Seq("personal_identifier")))
+  private val b2 = TableColumn("name", DataType.StringType, properties = Map("tag" -> Seq("private")))
+
   private val tableB = Catalog.newTable(
     "default",
     "B",
     Catalog.newSchema
-      .addColumn("id", DataType.LongType, properties = Map("tag" -> Seq("personal_identifier")))
-      .addColumn("name", DataType.StringType, properties = Map("tag" -> Seq("private")))
+      .addColumn(b1)
+      .addColumn(b2)
   )
 
   private def demoCatalog: Catalog = {
@@ -80,16 +87,16 @@ class TypeResolverTest extends AirSpec {
     test("resolve all columns") {
       val p = analyzeSingle("select * from A", TypeResolver.resolveTableRef)
       p.inputAttributes shouldBe Seq(
-        ResolvedAttribute("id", DataType.LongType, Some(tableA)),
-        ResolvedAttribute("name", DataType.StringType, Some(tableA))
+        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
+        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
       )
     }
 
     test("resolve the right table") {
       val p = analyzeSingle("select * from B", TypeResolver.resolveTableRef)
       p.inputAttributes shouldBe Seq(
-        ResolvedAttribute("id", DataType.LongType, Some(tableB)),
-        ResolvedAttribute("name", DataType.StringType, Some(tableB))
+        ResolvedAttribute("id", DataType.LongType, Some(tableB), Some(b1)),
+        ResolvedAttribute("name", DataType.StringType, Some(tableB), Some(b2))
       )
     }
   }
@@ -99,13 +106,13 @@ class TypeResolverTest extends AirSpec {
     test("resolve a filter") {
       val p = analyze(s"select * from A where id = 1")
       p.inputAttributes shouldBe Seq(
-        ResolvedAttribute("id", DataType.LongType, Some(tableA)),
-        ResolvedAttribute("name", DataType.StringType, Some(tableA))
+        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
+        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
       )
       p.children.headOption shouldBe defined
       p.children.head.expressions shouldBe List(
         Expression.Eq(
-          ResolvedAttribute("id", DataType.LongType, Some(tableA)),
+          ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
           Expression.LongLiteral(1)
         )
       )
@@ -115,8 +122,8 @@ class TypeResolverTest extends AirSpec {
       val p = analyze(s"select A.id id_a, B.id id_b from A, B where A.id = 1 and B.id = 2")
       p match {
         case Project(Filter(_, And(Eq(a, LongLiteral(1)), Eq(b, LongLiteral(2)))), _) =>
-          a shouldBe ResolvedAttribute("id", DataType.LongType, Some(tableA))
-          b shouldBe ResolvedAttribute("id", DataType.LongType, Some(tableB))
+          a shouldBe ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1))
+          b shouldBe ResolvedAttribute("id", DataType.LongType, Some(tableB), Some(b1))
         case _ => fail(s"unexpected plan:\n${p.pp}")
       }
     }
@@ -142,9 +149,9 @@ class TypeResolverTest extends AirSpec {
         case Aggregate(
               _,
               _,
-              List(GroupingKey(ResolvedAttribute("id", DataType.LongType, Some(tbl)))),
+              List(GroupingKey(ResolvedAttribute("id", DataType.LongType, Some(`tableA`), Some(`a1`)))),
               _
-            ) if tbl == tableA =>
+            ) =>
 
         case _ =>
           fail(s"unexpected plan: ${p}")
@@ -157,9 +164,9 @@ class TypeResolverTest extends AirSpec {
         case Aggregate(
               _,
               _,
-              List(GroupingKey(ResolvedAttribute("id", DataType.LongType, Some(tbl)))),
+              List(GroupingKey(ResolvedAttribute("id", DataType.LongType, Some(`tableA`), Some(`a1`)))),
               _
-            ) if tbl == tableA =>
+            ) =>
         case _ =>
           fail(s"unexpected plan: ${p}")
       }
@@ -172,11 +179,11 @@ class TypeResolverTest extends AirSpec {
               _,
               _,
               List(
-                GroupingKey(ResolvedAttribute("id", DataType.LongType, Some(tbl1))),
-                GroupingKey(ResolvedAttribute("name", DataType.StringType, Some(tbl2)))
+                GroupingKey(ResolvedAttribute("id", DataType.LongType, Some(`tableA`), Some(a1))),
+                GroupingKey(ResolvedAttribute("name", DataType.StringType, Some(`tableA`), Some(a2)))
               ),
               _
-            ) if tbl1 == tableA && tbl2 == tableA =>
+            ) =>
         case _ =>
           fail(s"unexpected plan: ${p}")
       }

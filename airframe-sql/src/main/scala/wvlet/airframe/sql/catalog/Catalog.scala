@@ -83,6 +83,9 @@ object Catalog {
   }
 
   case class TableSchema(columns: Seq[TableColumn]) {
+    def addColumn(c: TableColumn): TableSchema = {
+      this.copy(columns = columns :+ c)
+    }
     def addColumn(name: String, dataType: DataType, properties: Map[String, Any] = Map.empty): TableSchema =
       this.copy(columns = columns :+ TableColumn(name, dataType, properties))
   }

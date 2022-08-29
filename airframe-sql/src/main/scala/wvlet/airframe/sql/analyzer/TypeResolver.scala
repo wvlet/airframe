@@ -94,7 +94,7 @@ object TypeResolver extends LogSupport {
           case r: ResolvedAttribute if alias.isEmpty =>
             resolvedColumns += r
           case r: ResolvedAttribute if alias.nonEmpty =>
-            resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType, None)
+            resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType, None, None)
           case expr =>
             resolvedColumns += SingleColumn(expr, alias)
         }
@@ -113,8 +113,8 @@ object TypeResolver extends LogSupport {
       QName(name) match {
         case QName(Seq(t1, c1)) =>
           val attrs = inputAttributes.collect {
-            case a @ ResolvedAttribute(c, _, Some(t)) if t.name == t1 && c == c1 => a
-            case a @ ResolvedAttribute(c, _, None) if c == c1                    => a
+            case a @ ResolvedAttribute(c, _, Some(t), _) if t.name == t1 && c == c1 => a
+            case a @ ResolvedAttribute(c, _, None, _) if c == c1                    => a
           }
           if (attrs.size > 1) {
             throw SQLErrorCode.SyntaxError.toException(s"${name} is ambiguous")
@@ -122,7 +122,7 @@ object TypeResolver extends LogSupport {
           attrs.headOption
         case QName(Seq(c1)) =>
           val attrs = inputAttributes.collect {
-            case a @ ResolvedAttribute(c, _, _) if c == c1 => a
+            case a @ ResolvedAttribute(c, _, _, _) if c == c1 => a
           }
           if (attrs.size > 1) {
             throw SQLErrorCode.SyntaxError.toException(s"${name} is ambiguous")

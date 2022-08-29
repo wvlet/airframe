@@ -24,7 +24,7 @@ case class TableScan(table: Catalog.Table, columns: Seq[String]) extends Relatio
   override def inputAttributes: Seq[Attribute] = Seq.empty
   override def outputAttributes: Seq[Attribute] = {
     columns.flatMap { col =>
-      table.schema.columns.find(_.name == col).map { c => ResolvedAttribute(c.name, c.dataType, Some(table)) }
+      table.schema.columns.find(_.name == col).map { c => ResolvedAttribute(c.name, c.dataType, Some(table), Some(c)) }
     }
   }
   override def sig(config: QuerySignatureConfig): String = {
@@ -38,7 +38,12 @@ case class TableScan(table: Catalog.Table, columns: Seq[String]) extends Relatio
   override lazy val resolved = true
 }
 
-case class ResolvedAttribute(name: String, dataType: DataType, sourceTable: Option[Catalog.Table]) extends Attribute {
+case class ResolvedAttribute(
+    name: String,
+    dataType: DataType,
+    sourceTable: Option[Catalog.Table],
+    sourceColumn: Option[Catalog.TableColumn]
+) extends Attribute {
   override def toString      = s"${sourceTable.map(t => s"${t.name}.${name}").getOrElse(name)}:${dataType}"
   override lazy val resolved = true
 }
