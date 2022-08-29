@@ -123,7 +123,7 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
       databases.get(name) match {
         case Some(d) => d
         case None =>
-          throw SQLErrorCode.DatabaseNotFound.toException(s"database ${name} is not found")
+          throw SQLErrorCode.DatabaseNotFound.newException(s"database ${name} is not found")
       }
     }
   }
@@ -144,7 +144,7 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
             case CreateMode.CREATE_IF_NOT_EXISTS =>
             // ok
             case CreateMode.FAIL_IF_EXISTS =>
-              throw SQLErrorCode.DatabaseAlreadyExists.toException(s"database ${newDatabase.name} already exists")
+              throw SQLErrorCode.DatabaseAlreadyExists.newException(s"database ${newDatabase.name} already exists")
           }
         case None =>
           databases += newDatabase.name -> DatabaseHolder(newDatabase)
@@ -174,7 +174,7 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
         case Some(tbl) =>
           tbl
         case None =>
-          throw SQLErrorCode.TableNotFound.toException(s"table ${database}.${table} is not found")
+          throw SQLErrorCode.TableNotFound.newException(s"table ${database}.${table} is not found")
       }
     }
   }
@@ -190,7 +190,7 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
 
   override def createTable(table: Catalog.Table, createMode: CreateMode): Unit = {
     val database = table.database.getOrElse {
-      throw SQLErrorCode.InvalidArgument.toException(s"Missing database for create table request: ${table.name}")
+      throw SQLErrorCode.InvalidArgument.newException(s"Missing database for create table request: ${table.name}")
     }
     synchronized {
       val d = getDatabaseHolder(database)
@@ -200,7 +200,7 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
             case CreateMode.CREATE_IF_NOT_EXISTS =>
             // ok
             case CreateMode.FAIL_IF_EXISTS =>
-              throw SQLErrorCode.TableAlreadyExists.toException(s"table ${database}.${table.name} already exists")
+              throw SQLErrorCode.TableAlreadyExists.newException(s"table ${database}.${table.name} already exists")
           }
         case None =>
           d.tables += table.name -> table

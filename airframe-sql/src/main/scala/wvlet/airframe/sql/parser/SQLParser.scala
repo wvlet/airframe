@@ -33,7 +33,7 @@ object SQLParser extends LogSupport {
           e: RecognitionException
       ): Unit = {
         throw SQLErrorCode.SyntaxError
-          .withMetadata(Map("line" -> line, "pos" -> charPositionInLine)).toException(
+          .withMetadata(Map("line" -> line, "pos" -> charPositionInLine)).newException(
             s"Parse error at line:${line}, pos:${charPositionInLine}. ${msg}",
             e
           )

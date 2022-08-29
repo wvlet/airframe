@@ -66,7 +66,7 @@ object TypeResolver extends LogSupport {
         // Expand all table columns first, which will be pruned later by Optimizer
         TableScan(dbTable, dbTable.schema.columns)
       case None =>
-        throw SQLErrorCode.TableNotFound.toException(s"Table ${context.database}.${qname} not found")
+        throw SQLErrorCode.TableNotFound.newException(s"Table ${context.database}.${qname} not found")
     }
   }
 
@@ -118,7 +118,7 @@ object TypeResolver extends LogSupport {
             case a @ ResolvedAttribute(c, _, None, _) if c == c1                    => a
           }
           if (attrs.size > 1) {
-            throw SQLErrorCode.SyntaxError.toException(s"${name} is ambiguous")
+            throw SQLErrorCode.SyntaxError.newException(s"${name} is ambiguous")
           }
           attrs.headOption
         case QName(Seq(c1)) =>
@@ -126,7 +126,7 @@ object TypeResolver extends LogSupport {
             case a @ ResolvedAttribute(c, _, _, _) if c == c1 => a
           }
           if (attrs.size > 1) {
-            throw SQLErrorCode.SyntaxError.toException(s"${name} is ambiguous")
+            throw SQLErrorCode.SyntaxError.newException(s"${name} is ambiguous")
           }
           attrs.headOption
         case _ =>
