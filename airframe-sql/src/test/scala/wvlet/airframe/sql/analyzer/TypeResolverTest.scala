@@ -116,7 +116,7 @@ class TypeResolverTest extends AirSpec {
       p match {
         case Project(Filter(_, And(Eq(a, LongLiteral(1)), Eq(b, LongLiteral(2)))), _) =>
           a shouldBe ResolvedAttribute("id", DataType.LongType, Some(tableA))
-          b shouldBe ResolvedAttribute("id", DataType.LongType, Some(tableA))
+          b shouldBe ResolvedAttribute("id", DataType.LongType, Some(tableB))
         case _ => fail(s"unexpected plan:\n${p.pp}")
       }
     }
