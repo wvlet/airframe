@@ -77,6 +77,11 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     }
   }
 
+  /**
+    * Iterate through LogicalPlans and apply matching rules for transformation
+    * @param rule
+    * @return
+    */
   def transform(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
     val newNode: LogicalPlan = rule.applyOrElse(this, identity[LogicalPlan])
     if (newNode.eq(this)) {
@@ -279,8 +284,8 @@ object LogicalPlan {
 
   case class Aggregate(
       child: Relation,
-      selectItems: Seq[Attribute],
-      groupingKeys: Seq[GroupingKey],
+      selectItems: List[Attribute],
+      groupingKeys: List[GroupingKey],
       having: Option[Expression]
   ) extends UnaryRelation
       with Selection {

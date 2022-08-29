@@ -33,6 +33,11 @@ object Optimizer extends LogSupport {
     newAttributes.toSet
   }
 
+  /**
+    * Recursively prune columns that are not used for the final projection
+    * @param context
+    * @return
+    */
   def pruneColumns(context: AnalyzerContext): PlanRewriter = {
     case p @ Project(child, selectItems) =>
       val newContext = context.withAttributes(selectItems)
@@ -41,11 +46,17 @@ object Optimizer extends LogSupport {
       pruneRelationColumns(r, context.withAttributes(r.outputAttributes))
   }
 
+  /**
+    * @param relation
+    * @param context
+    * @return
+    */
   def pruneRelationColumns(relation: Relation, context: AnalyzerContext): Relation = {
     relation match {
-      case t @ TableScan(name, table, columns) =>
-        val accessedColumns = columns.filter { col => context.parentAttributes.exists(x => x.name == col) }
-        TableScan(name, table, accessedColumns)
+      case t @ TableScan(table, columns) if context.parentAttributes.nonEmpty =>
+        val parentAttributes = context.parentAttributes.get
+        val accessedColumns  = columns.filter { col => parentAttributes.exists(x => x.name == col.name) }
+        TableScan(table, accessedColumns)
       case _ => relation
     }
   }

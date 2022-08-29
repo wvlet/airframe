@@ -13,47 +13,207 @@
  */
 package wvlet.airframe.sql.catalog
 
-import wvlet.airframe.sql.catalog.DataType.NamedType
+import wvlet.airframe.sql.SQLErrorCode
+import wvlet.airframe.sql.catalog.Catalog.CreateMode
 import wvlet.airframe.sql.model.Expression.QName
+
+trait Catalog {
+
+  def catalogName: String
+
+  def namespace: Option[String]
+
+  def listDatabases: Seq[String]
+  def getDatabase(database: String): Catalog.Database
+  def databaseExists(database: String): Boolean
+  def createDatabase(catalogDatabase: Catalog.Database, createMode: CreateMode): Unit
+
+  def listTables(database: String): Seq[String]
+  def findTable(database: String, table: String): Option[Catalog.Table]
+  def getTable(database: String, table: String): Catalog.Table
+  def tableExists(database: String, table: String): Boolean
+  def createTable(table: Catalog.Table, createMode: CreateMode): Unit
+
+  def findFromQName(contextDatabase: String, qname: QName): Option[Catalog.Table] = {
+    qname.parts match {
+      case catalog :: db :: tbl =>
+        if (catalog == catalogName) {
+          findTable(db, tbl.mkString("."))
+        } else {
+          None
+        }
+      case db :: tbl =>
+        findTable(db, tbl.mkString("."))
+      case _ =>
+        findTable(contextDatabase, qname.toString)
+    }
+  }
+
+  def listFunctions: Seq[SQLFunction]
+}
+
+//case class DatabaseIdentifier(database: String, catalog: Option[String])
+//case class TableIdentifier(table: String, database: Option[String], catalog: Option[String])
 
 object Catalog {
 
-  def schema: TableSchema                      = TableSchema(Seq.empty)
-  def table(db: String, name: String): DbTable = DbTable(db, name, TableSchema(Seq.empty))
+  def newTable(database: String, table: String, schema: TableSchema): Table = {
+    Table(database = Some(database), name = table, schema = schema)
+  }
+  def newSchema: TableSchema = TableSchema(columns = Seq.empty)
 
-  def withTable(tbl: DbTable): Catalog = Catalog(Seq(tbl))
+  /**
+    * A database defined in the catalog
+    *
+    * @param name
+    * @param description
+    * @param metadata
+    */
+  case class Database(name: String, description: String = "", properties: Map[String, Any] = Map.empty)
 
-  case class TableSchema(columns: Seq[NamedType]) {
-    def addColumn(name: String, dataType: DataType): TableSchema =
-      this.copy(columns = columns :+ NamedType(name, dataType))
+  case class Table(
+      database: Option[String],
+      name: String,
+      schema: TableSchema,
+      description: String = "",
+      properties: Map[String, Any] = Map.empty
+  ) {
+    def withDatabase(db: String): Table = copy(database = Some(db))
+    def fullName: String                = s"${database.map(db => s"${db}.").getOrElse("")}.${name}"
   }
 
-  case class DbTable(db: String = "default", name: String, schema: TableSchema) {
-    def fullName: String = s"${db}.${name}"
-
-    def addColumn(name: String, dataType: DataType) = this.copy(schema = schema.addColumn(name, dataType))
-
-    def withDatabase(db: String)        = this.copy(db = db)
-    def withName(name: String)          = this.copy(name = name)
-    def withSchema(schema: TableSchema) = this.copy(schema = schema)
-  }
-
-  case class Catalog(databases: Seq[DbTable]) {
-    def addTable(tbl: DbTable): Catalog = Catalog(databases :+ tbl)
-
-    def findTable(database: String, tableName: String): Option[DbTable] = {
-      databases.find(x => x.db == database && x.name == tableName)
+  case class TableSchema(columns: Seq[TableColumn]) {
+    def addColumn(c: TableColumn): TableSchema = {
+      this.copy(columns = columns :+ c)
     }
+    def addColumn(name: String, dataType: DataType, properties: Map[String, Any] = Map.empty): TableSchema =
+      this.copy(columns = columns :+ TableColumn(name, dataType, properties))
+  }
 
-    def findFromQName(contextDatabase: String, qname: QName): Option[DbTable] = {
-      qname.parts match {
-        case connector :: db :: tbl =>
-          findTable(db, tbl.mkString("."))
-        case db :: tbl =>
-          findTable(db, tbl.mkString("."))
-        case _ =>
-          findTable(contextDatabase, qname.toString)
+  case class TableColumn(name: String, dataType: DataType, properties: Map[String, Any] = Map.empty)
+
+  sealed trait CreateMode
+
+  object CreateMode {
+    object CREATE_IF_NOT_EXISTS extends CreateMode
+    object FAIL_IF_EXISTS       extends CreateMode
+  }
+
+}
+
+class InMemoryCatalog(val catalogName: String, val namespace: Option[String], functions: Seq[SQLFunction])
+    extends Catalog {
+
+  // database name -> DatabaseHolder
+  private val databases = collection.mutable.Map.empty[String, DatabaseHolder]
+
+  private case class DatabaseHolder(db: Catalog.Database) {
+    // table name -> table holder
+    val tables = collection.mutable.Map.empty[String, Catalog.Table]
+  }
+
+  override def listDatabases: Seq[String] = {
+    synchronized {
+      databases.values.map(_.db.name).toSeq
+    }
+  }
+
+  private def getDatabaseHolder(name: String): DatabaseHolder = {
+    synchronized {
+      databases.get(name) match {
+        case Some(d) => d
+        case None =>
+          throw SQLErrorCode.DatabaseNotFound.newException(s"database ${name} is not found")
       }
     }
   }
+
+  override def getDatabase(database: String): Catalog.Database = {
+    getDatabaseHolder(database).db
+  }
+
+  override def databaseExists(database: String): Boolean = {
+    databases.get(database).nonEmpty
+  }
+
+  override def createDatabase(newDatabase: Catalog.Database, createMode: CreateMode): Unit = {
+    synchronized {
+      databases.get(newDatabase.name) match {
+        case Some(_) =>
+          createMode match {
+            case CreateMode.CREATE_IF_NOT_EXISTS =>
+            // ok
+            case CreateMode.FAIL_IF_EXISTS =>
+              throw SQLErrorCode.DatabaseAlreadyExists.newException(s"database ${newDatabase.name} already exists")
+          }
+        case None =>
+          databases += newDatabase.name -> DatabaseHolder(newDatabase)
+      }
+    }
+  }
+
+  override def listTables(database: String): Seq[String] = {
+    synchronized {
+      val db = getDatabaseHolder(database)
+      db.tables.values.map(_.name).toSeq
+    }
+  }
+
+  override def findTable(database: String, table: String): Option[Catalog.Table] = {
+    synchronized {
+      databases.get(database).flatMap { d =>
+        d.tables.get(table)
+      }
+    }
+  }
+
+  override def getTable(database: String, table: String): Catalog.Table = {
+    synchronized {
+      val db = getDatabaseHolder(database)
+      db.tables.get(table) match {
+        case Some(tbl) =>
+          tbl
+        case None =>
+          throw SQLErrorCode.TableNotFound.newException(s"table ${database}.${table} is not found")
+      }
+    }
+  }
+
+  override def tableExists(database: String, table: String): Boolean = {
+    synchronized {
+      databases.get(database) match {
+        case None    => false
+        case Some(d) => d.tables.contains(table)
+      }
+    }
+  }
+
+  override def createTable(table: Catalog.Table, createMode: CreateMode): Unit = {
+    val database = table.database.getOrElse {
+      throw SQLErrorCode.InvalidArgument.newException(s"Missing database for create table request: ${table.name}")
+    }
+    synchronized {
+      val d = getDatabaseHolder(database)
+      d.tables.get(table.name) match {
+        case Some(tbl) =>
+          createMode match {
+            case CreateMode.CREATE_IF_NOT_EXISTS =>
+            // ok
+            case CreateMode.FAIL_IF_EXISTS =>
+              throw SQLErrorCode.TableAlreadyExists.newException(s"table ${database}.${table.name} already exists")
+          }
+        case None =>
+          d.tables += table.name -> table
+      }
+    }
+  }
+
+  //    def findTable(database: String, tableName: String): Option[CatalogTable] = {
+  //      databases.find(x => x.db == database && x.name == tableName)
+  //    }
+  //
+
+  //  }
+
+  override def listFunctions: Seq[SQLFunction] = functions
 }

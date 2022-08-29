@@ -204,13 +204,13 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
         EmptyRelation
     }
 
-    val selectItem: Seq[Attribute] = ctx
+    val selectItem: List[Attribute] = ctx
       .selectItem()
       .asScala
       .map { x =>
         visit(x).asInstanceOf[Attribute]
       }
-      .toSeq
+      .toList
 
     val withAggregation = {
       if (ctx.groupBy() == null) {
@@ -240,7 +240,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
             .map { x =>
               GroupingKey(expression(x))
             }
-            .toSeq
+            .toList
 
         // having
         val having = Option(ctx.having).map(expression(_))

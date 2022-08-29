@@ -12,9 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.analyzer
+import wvlet.airframe.sql.SQLErrorCode
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.{PlanRewriter, Rule}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{Filter, Project, Relation}
+import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project, Relation, Union}
 import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
@@ -25,10 +26,35 @@ object TypeResolver extends LogSupport {
 
   val typerRules: List[Rule] =
     // First resolve all input table types
-    TypeResolver.resolveTableRef _ ::
+    TypeResolver.resolveAggregationIndexes _ ::
+      TypeResolver.resolveTableRef _ ::
       TypeResolver.resolveRelation _ ::
       TypeResolver.resolveColumns _ ::
+      TypeResolver.resolveUnion _ ::
       Nil
+
+  /**
+    * Translate select i1, i2, ... group by 1, 2, ... query into select i1, i2, ... group by i1, i2
+    *
+    * @param context
+    * @return
+    */
+  def resolveAggregationIndexes(context: AnalyzerContext): PlanRewriter = {
+    case a @ Aggregate(child, selectItems, groupingKeys, having) =>
+      val resolvedGroupingKeys: List[GroupingKey] = groupingKeys.map {
+        case GroupingKey(LongLiteral(i)) if i <= selectItems.length =>
+          // Use a simpler form of attributes
+          val keyItem = selectItems(i.toInt - 1) match {
+            case SingleColumn(expr, alias) =>
+              expr
+            case other =>
+              other
+          }
+          GroupingKey(keyItem)
+        case other => other
+      }
+      Aggregate(child, selectItems, resolvedGroupingKeys, having)
+  }
 
   /**
     * Resolve TableRefs with concrete TableScans using the table schema in the catalog.
@@ -37,9 +63,10 @@ object TypeResolver extends LogSupport {
     context.catalog.findFromQName(context.database, qname) match {
       case Some(dbTable) =>
         trace(s"Found ${dbTable}")
-        TableScan(qname, dbTable, dbTable.schema.columns.map(_.name))
+        // Expand all table columns first, which will be pruned later by Optimizer
+        TableScan(dbTable, dbTable.schema.columns)
       case None =>
-        throw TableNotFound(qname.toString)
+        throw SQLErrorCode.TableNotFound.newException(s"Table ${context.database}.${qname} not found")
     }
   }
 
@@ -48,6 +75,12 @@ object TypeResolver extends LogSupport {
       filter.transformExpressions { case x: Expression => resolveExpression(x, filter.inputAttributes) }
     case r: Relation =>
       r.transformExpressions { case x: Expression => resolveExpression(x, r.inputAttributes) }
+  }
+
+  def resolveUnion(context: AnalyzerContext): PlanRewriter = {
+    // TODO: merge union columns
+    case u @ Union(rels) =>
+      u
   }
 
   def resolveColumns(context: AnalyzerContext): PlanRewriter = { case p @ Project(child, columns) =>
@@ -62,7 +95,7 @@ object TypeResolver extends LogSupport {
           case r: ResolvedAttribute if alias.isEmpty =>
             resolvedColumns += r
           case r: ResolvedAttribute if alias.nonEmpty =>
-            resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType)
+            resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType, None, None)
           case expr =>
             resolvedColumns += SingleColumn(expr, alias)
         }
@@ -77,18 +110,38 @@ object TypeResolver extends LogSupport {
     * Resolve untyped expressions
     */
   def resolveExpression(expr: Expression, inputAttributes: Seq[Attribute]): Expression = {
+    def findInputAttribute(name: String): Option[Attribute] = {
+      QName(name) match {
+        case QName(Seq(t1, c1)) =>
+          val attrs = inputAttributes.collect {
+            case a @ ResolvedAttribute(c, _, Some(t), _) if t.name == t1 && c == c1 => a
+            case a @ ResolvedAttribute(c, _, None, _) if c == c1                    => a
+          }
+          if (attrs.size > 1) {
+            throw SQLErrorCode.SyntaxError.newException(s"${name} is ambiguous")
+          }
+          attrs.headOption
+        case QName(Seq(c1)) =>
+          val attrs = inputAttributes.collect {
+            case a @ ResolvedAttribute(c, _, _, _) if c == c1 => a
+          }
+          if (attrs.size > 1) {
+            throw SQLErrorCode.SyntaxError.newException(s"${name} is ambiguous")
+          }
+          attrs.headOption
+        case _ =>
+          None
+      }
+    }
+
     expr match {
       case i: Identifier =>
-        inputAttributes
-          .find(attr => attr.name == i.value)
-          .getOrElse(i)
+        findInputAttribute(i.value).getOrElse(i)
       case u @ UnresolvedAttribute(name) =>
-        val attrName = QName(name).parts.last
-        inputAttributes
-          .find(attr => attr.name == attrName)
-          .getOrElse(u)
+        findInputAttribute(name).getOrElse(u)
       case _ =>
         expr
     }
   }
+
 }

@@ -14,23 +14,27 @@
 package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.analyzer.QuerySignatureConfig
-import wvlet.airframe.sql.catalog.Catalog.DbTable
+import wvlet.airframe.sql.catalog.Catalog
 import wvlet.airframe.sql.catalog.DataType
-import wvlet.airframe.sql.model.Expression.QName
 import wvlet.airframe.sql.model.LogicalPlan.Relation
 
 /**
+  * The lowest level operator to access a table
+  * @param table
+  *   source table
+  * @param columns
+  *   projectec columns
   */
-case class TableScan(name: QName, table: DbTable, columns: Seq[String]) extends Relation with LeafPlan {
+case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn]) extends Relation with LeafPlan {
   override def inputAttributes: Seq[Attribute] = Seq.empty
   override def outputAttributes: Seq[Attribute] = {
-    columns.flatMap { col =>
-      table.schema.columns.find(_.name == col).map { c => ResolvedAttribute(c.name, c.dataType) }
+    columns.map { col =>
+      ResolvedAttribute(col.name, col.dataType, Some(table), Some(col))
     }
   }
   override def sig(config: QuerySignatureConfig): String = {
     if (config.embedTableNames) {
-      name.toString
+      table.fullName
     } else {
       "T"
     }
@@ -39,7 +43,12 @@ case class TableScan(name: QName, table: DbTable, columns: Seq[String]) extends 
   override lazy val resolved = true
 }
 
-case class ResolvedAttribute(name: String, dataType: DataType) extends Attribute {
-  override def toString      = s"${name}:${dataType}"
+case class ResolvedAttribute(
+    name: String,
+    dataType: DataType,
+    sourceTable: Option[Catalog.Table],
+    sourceColumn: Option[Catalog.TableColumn]
+) extends Attribute {
+  override def toString      = s"${sourceTable.map(t => s"${t.name}.${name}").getOrElse(name)}:${dataType}"
   override lazy val resolved = true
 }
