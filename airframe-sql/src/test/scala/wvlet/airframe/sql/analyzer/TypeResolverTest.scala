@@ -179,8 +179,8 @@ class TypeResolverTest extends AirSpec {
               _,
               _,
               List(
-                GroupingKey(ResolvedAttribute("id", DataType.LongType, Some(`tableA`), Some(a1))),
-                GroupingKey(ResolvedAttribute("name", DataType.StringType, Some(`tableA`), Some(a2)))
+                GroupingKey(ResolvedAttribute("id", DataType.LongType, Some(`tableA`), Some(`a1`))),
+                GroupingKey(ResolvedAttribute("name", DataType.StringType, Some(`tableA`), Some(`a2`)))
               ),
               _
             ) =>
