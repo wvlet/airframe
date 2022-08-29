@@ -59,13 +59,12 @@ case class ResolvedAttribute(
   * @param name
   * @param outputColumns
   */
-case class UnresolvedCTERelationRef(name: String) extends Relation with LeafPlan {
+case class CTERelationRef(name: String, outputColumns: Seq[Attribute]) extends Relation with LeafPlan {
   override def sig(config: QuerySignatureConfig): String = {
     if (config.embedTableNames)
       name
     else
       "T"
   }
-  override lazy val resolved = false
-  override def outputAttributes: Seq[Attribute] = ???
+  override def outputAttributes: Seq[Attribute] = outputColumns
 }

@@ -13,21 +13,28 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.sql.model.LogicalPlan
-import wvlet.airframe.sql.model.LogicalPlan.{Query, With}
+import wvlet.airframe.sql.model.{CTERelationRef, LogicalPlan}
+import wvlet.airframe.sql.model.LogicalPlan.{Query, Relation, With, WithQuery}
 import wvlet.log.LogSupport
 
 object CTEResolver extends LogSupport {
 
   def resolveCTE(analyzerContext: AnalyzerContext, p: LogicalPlan): LogicalPlan = {
-    p.transform { case q @ Query(With(_, queryDefs), body) =>
-      queryDefs.map { x =>
-        val pair = x.name.value -> x.query
-        info(x.query.resolved)
-        info(x.query.outputAttributes)
+    p.transform { case q @ Query(With(recursive, queryDefs), body) =>
+      var currentContext = analyzerContext
+      val resolvedQueries = queryDefs.map { x =>
+        val resolvedQuery: Relation = TypeResolver.resolve(currentContext, x.query) match {
+          case r: Relation => r
+          case other       =>
+            // This should not happen in general
+            x.query
+        }
+        currentContext = currentContext.withOuterQuery(x.name.value, resolvedQuery)
+        // TODO generate output columns
+        WithQuery(x.name, resolvedQuery, None)
       }
-      q
+      val newBody = TypeResolver.resolve(currentContext, body).asInstanceOf[Relation]
+      Query(With(recursive, resolvedQueries), newBody)
     }
   }
-
 }

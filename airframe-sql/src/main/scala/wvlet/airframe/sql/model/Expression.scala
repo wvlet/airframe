@@ -112,7 +112,8 @@ object Expression {
 
   // Qualified name (QName), such as table and column names
   case class QName(parts: Seq[String]) extends LeafExpression {
-    override def toString: String = parts.mkString(".")
+    def fullName: String          = parts.mkString(".")
+    override def toString: String = fullName
   }
   object QName {
     def apply(s: String): QName = {

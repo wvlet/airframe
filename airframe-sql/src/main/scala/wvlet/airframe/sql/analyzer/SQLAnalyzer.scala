@@ -14,6 +14,7 @@
 package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.sql.catalog.Catalog
+import wvlet.airframe.sql.model.LogicalPlan.Relation
 import wvlet.airframe.sql.model._
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.log.LogSupport
@@ -29,7 +30,8 @@ import wvlet.log.LogSupport
 case class AnalyzerContext(
     database: String,
     catalog: Catalog,
-    parentAttributes: Option[Seq[Attribute]] = None
+    parentAttributes: Option[Seq[Attribute]] = None,
+    outerQueries: Map[String, LogicalPlan] = Map.empty
 ) {
 
   /**
@@ -38,8 +40,15 @@ case class AnalyzerContext(
     * @param parentAttributes
     * @return
     */
-  def withAttributes(parentAttributes: Seq[Attribute]) =
+  def withAttributes(parentAttributes: Seq[Attribute]): AnalyzerContext =
     this.copy(parentAttributes = Some(parentAttributes))
+
+  /**
+    * Add an outer query (e.g., WITH query) to the context
+    */
+  def withOuterQuery(name: String, relation: LogicalPlan): AnalyzerContext = {
+    this.copy(outerQueries = outerQueries + (name -> relation))
+  }
 }
 
 /**

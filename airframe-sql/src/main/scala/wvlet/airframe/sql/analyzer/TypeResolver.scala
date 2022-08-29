@@ -88,7 +88,13 @@ object TypeResolver extends LogSupport {
         // Expand all table columns first, which will be pruned later by Optimizer
         TableScan(dbTable, dbTable.schema.columns)
       case None =>
-        throw SQLErrorCode.TableNotFound.newException(s"Table ${context.database}.${qname} not found")
+        // Search CTE
+        context.outerQueries.get(qname.fullName) match {
+          case Some(cte) =>
+            CTERelationRef(qname.fullName, cte.outputAttributes)
+          case None =>
+            throw SQLErrorCode.TableNotFound.newException(s"Table ${context.database}.${qname} not found")
+        }
     }
   }
 
