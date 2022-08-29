@@ -63,7 +63,8 @@ object TypeResolver extends LogSupport {
     context.catalog.findFromQName(context.database, qname) match {
       case Some(dbTable) =>
         trace(s"Found ${dbTable}")
-        TableScan(dbTable, dbTable.schema.columns.map(_.name))
+        // Expand all table columns first, which will be pruned later by Optimizer
+        TableScan(dbTable, dbTable.schema.columns)
       case None =>
         throw SQLErrorCode.TableNotFound.toException(s"Table ${context.database}.${qname} not found")
     }

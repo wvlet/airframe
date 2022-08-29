@@ -19,12 +19,17 @@ import wvlet.airframe.sql.catalog.DataType
 import wvlet.airframe.sql.model.LogicalPlan.Relation
 
 /**
+  * The lowest level operator to access a table
+  * @param table
+  *   source table
+  * @param columns
+  *   projectec columns
   */
-case class TableScan(table: Catalog.Table, columns: Seq[String]) extends Relation with LeafPlan {
+case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn]) extends Relation with LeafPlan {
   override def inputAttributes: Seq[Attribute] = Seq.empty
   override def outputAttributes: Seq[Attribute] = {
-    columns.flatMap { col =>
-      table.schema.columns.find(_.name == col).map { c => ResolvedAttribute(c.name, c.dataType, Some(table), Some(c)) }
+    columns.map { col =>
+      ResolvedAttribute(col.name, col.dataType, Some(table), Some(col))
     }
   }
   override def sig(config: QuerySignatureConfig): String = {
