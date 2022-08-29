@@ -55,7 +55,7 @@ object Optimizer extends LogSupport {
     relation match {
       case t @ TableScan(table, columns) if context.parentAttributes.nonEmpty =>
         val parentAttributes = context.parentAttributes.get
-        val accessedColumns  = columns.filter { col => parentAttributes.exists(x => x.name == col) }
+        val accessedColumns  = columns.filter { col => parentAttributes.exists(x => x.name == col.name) }
         TableScan(table, accessedColumns)
       case _ => relation
     }
