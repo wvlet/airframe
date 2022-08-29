@@ -15,7 +15,7 @@ package wvlet.airframe.sql.analyzer
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.{PlanRewriter, Rule}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{Filter, Project, Relation, Union}
+import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project, Relation, Union}
 import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
@@ -26,11 +26,35 @@ object TypeResolver extends LogSupport {
 
   val typerRules: List[Rule] =
     // First resolve all input table types
-    TypeResolver.resolveTableRef _ ::
+    TypeResolver.resolveAggregationIndexes _ ::
+      TypeResolver.resolveTableRef _ ::
       TypeResolver.resolveRelation _ ::
       TypeResolver.resolveColumns _ ::
       TypeResolver.resolveUnion _ ::
       Nil
+
+  /**
+    * Translate select i1, i2, ... group by 1, 2, ... query into select i1, i2, ... group by i1, i2
+    *
+    * @param context
+    * @return
+    */
+  def resolveAggregationIndexes(context: AnalyzerContext): PlanRewriter = {
+    case a @ Aggregate(child, selectItems, groupingKeys, having) =>
+      val resolvedGroupingKeys: Seq[GroupingKey] = groupingKeys.map {
+        case GroupingKey(LongLiteral(i)) if i <= selectItems.length =>
+          // Use a simpler form of attributes
+          val keyItem = selectItems(i.toInt - 1) match {
+            case SingleColumn(expr, alias) =>
+              expr
+            case other =>
+              other
+          }
+          GroupingKey(keyItem)
+        case other => other
+      }
+      Aggregate(child, selectItems, resolvedGroupingKeys, having)
+  }
 
   /**
     * Resolve TableRefs with concrete TableScans using the table schema in the catalog.

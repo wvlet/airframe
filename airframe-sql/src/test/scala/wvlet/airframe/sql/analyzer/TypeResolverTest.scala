@@ -141,10 +141,10 @@ class TypeResolverTest extends AirSpec {
       p match {
         case Aggregate(
               _,
-              List(SingleColumn(_, _), _),
-              List(GroupingKey(ResolvedAttribute(Some(tableA), "id", DataType.LongType))),
+              _,
+              List(GroupingKey(ResolvedAttribute(Some(tbl), "id", DataType.LongType))),
               _
-            ) =>
+            ) if tbl == tableA =>
 
         case _ =>
           fail(s"unexpected plan: ${p}")
@@ -156,10 +156,27 @@ class TypeResolverTest extends AirSpec {
       p match {
         case Aggregate(
               _,
-              List(SingleColumn(_, _), _),
-              List(GroupingKey(ResolvedAttribute(Some(tableA), "id", DataType.LongType))),
+              _,
+              List(GroupingKey(ResolvedAttribute(Some(tbl), "id", DataType.LongType))),
               _
-            ) =>
+            ) if tbl == tableA =>
+        case _ =>
+          fail(s"unexpected plan: ${p}")
+      }
+    }
+
+    test("group by multiple keys") {
+      val p = analyze("select id, name, count(*) from A group by 1, 2")
+      p match {
+        case Aggregate(
+              _,
+              _,
+              List(
+                GroupingKey(ResolvedAttribute(Some(tbl1), "id", DataType.LongType)),
+                GroupingKey(ResolvedAttribute(Some(tbl2), "name", DataType.StringType))
+              ),
+              _
+            ) if tbl1 == tableA && tbl2 == tableA =>
         case _ =>
           fail(s"unexpected plan: ${p}")
       }
