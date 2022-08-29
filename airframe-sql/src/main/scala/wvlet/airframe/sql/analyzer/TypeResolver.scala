@@ -15,7 +15,7 @@ package wvlet.airframe.sql.analyzer
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.{PlanRewriter, Rule}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project, Relation, Union}
+import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project, Query, Relation, Union}
 import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
@@ -24,14 +24,25 @@ import wvlet.log.LogSupport
   */
 object TypeResolver extends LogSupport {
 
-  val typerRules: List[Rule] =
+  def typerRules: List[Rule] =
     // First resolve all input table types
     TypeResolver.resolveAggregationIndexes _ ::
+      TypeResolver.resolveCTETableRef _ ::
       TypeResolver.resolveTableRef _ ::
       TypeResolver.resolveRelation _ ::
       TypeResolver.resolveColumns _ ::
       TypeResolver.resolveUnion _ ::
       Nil
+
+  def resolve(analyzerContext: AnalyzerContext, plan: LogicalPlan): LogicalPlan = {
+    val resolvedPlan = TypeResolver.typerRules
+      .foldLeft(plan) { (targetPlan, rule) =>
+        val r = rule.apply(analyzerContext)
+        // Recursively transform the tree
+        targetPlan.transform(r)
+      }
+    resolvedPlan
+  }
 
   /**
     * Translate select i1, i2, ... group by 1, 2, ... query into select i1, i2, ... group by i1, i2
@@ -54,6 +65,17 @@ object TypeResolver extends LogSupport {
         case other => other
       }
       Aggregate(child, selectItems, resolvedGroupingKeys, having)
+  }
+
+  /**
+    * Resolve TableRefs in a query inside WITH statement with CTERelationRef
+    * @param context
+    * @return
+    */
+  def resolveCTETableRef(context: AnalyzerContext): PlanRewriter = { case q @ Query(withQuery, body) =>
+    val newPlan = CTEResolver.resolveCTE(context, q)
+    warn(newPlan.pp)
+    newPlan
   }
 
   /**

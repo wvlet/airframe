@@ -52,3 +52,20 @@ case class ResolvedAttribute(
   override def toString      = s"${sourceTable.map(t => s"${t.name}.${name}").getOrElse(name)}:${dataType}"
   override lazy val resolved = true
 }
+
+/**
+  * For WITH cte as (...)
+  * @param id
+  * @param name
+  * @param outputColumns
+  */
+case class UnresolvedCTERelationRef(name: String) extends Relation with LeafPlan {
+  override def sig(config: QuerySignatureConfig): String = {
+    if (config.embedTableNames)
+      name
+    else
+      "T"
+  }
+  override lazy val resolved = false
+  override def outputAttributes: Seq[Attribute] = ???
+}

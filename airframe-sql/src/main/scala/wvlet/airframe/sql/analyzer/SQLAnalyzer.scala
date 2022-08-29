@@ -61,12 +61,7 @@ object SQLAnalyzer extends LogSupport {
         AnalyzerContext(database = database, catalog = catalog, parentAttributes = Some(plan.outputAttributes))
       debug(s"Unresolved plan:\n${plan.pp}")
 
-      val resolvedPlan = TypeResolver.typerRules
-        .foldLeft(plan) { (targetPlan, rule) =>
-          val r = rule.apply(analyzerContext)
-          // Recursively transform the tree
-          targetPlan.transform(r)
-        }
+      val resolvedPlan = TypeResolver.resolve(analyzerContext, plan)
       debug(s"Resolved plan:\n${resolvedPlan.pp}")
 
       val optimizedPlan = Optimizer.optimizerRules.foldLeft(resolvedPlan) { (targetPlan, rule) =>

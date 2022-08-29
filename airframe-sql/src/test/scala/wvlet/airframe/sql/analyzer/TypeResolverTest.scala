@@ -189,4 +189,10 @@ class TypeResolverTest extends AirSpec {
       }
     }
   }
+
+  test("resolve CTE (WITH statement) queries") {
+    test("parse WITH statement") {
+      analyze("with q1 as (select id from A) select id from q1")
+    }
+  }
 }
