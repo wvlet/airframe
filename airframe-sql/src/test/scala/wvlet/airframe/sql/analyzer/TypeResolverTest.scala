@@ -18,8 +18,8 @@ import wvlet.airframe.sql.SQLErrorCode.SyntaxError
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
-import wvlet.airframe.sql.model.Expression.{And, Eq, LongLiteral}
-import wvlet.airframe.sql.model.LogicalPlan.{Filter, Project}
+import wvlet.airframe.sql.model.Expression.{And, Eq, GroupingKey, LongLiteral, SingleColumn}
+import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project}
 import wvlet.airframe.sql.model.{Expression, LogicalPlan, LogicalPlanPrinter, ResolvedAttribute}
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airspec.AirSpec
@@ -133,7 +133,36 @@ class TypeResolverTest extends AirSpec {
       // TODO merging same column names from different tables
       pending("merge UNION columns")
     }
-
   }
 
+  test("resolve aggregation queries") {
+    test("group by column name") {
+      val p = analyze("select id, count(*) from A group by id")
+      p match {
+        case Aggregate(
+              _,
+              List(SingleColumn(_, _), _),
+              List(GroupingKey(ResolvedAttribute(Some(tableA), "id", DataType.LongType))),
+              _
+            ) =>
+
+        case _ =>
+          fail(s"unexpected plan: ${p}")
+      }
+    }
+
+    test("group by index") {
+      val p = analyze("select id, count(*) from A group by 1")
+      p match {
+        case Aggregate(
+              _,
+              List(SingleColumn(_, _), _),
+              List(GroupingKey(ResolvedAttribute(Some(tableA), "id", DataType.LongType))),
+              _
+            ) =>
+        case _ =>
+          fail(s"unexpected plan: ${p}")
+      }
+    }
+  }
 }
