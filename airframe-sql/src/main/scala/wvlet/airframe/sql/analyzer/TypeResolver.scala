@@ -110,9 +110,13 @@ object TypeResolver extends LogSupport {
   }
 
   def resolveColumns(context: AnalyzerContext): PlanRewriter = { case p @ Project(child, columns) =>
-    val inputAttributes = child.outputAttributes
+    val resolvedColumns = resolveOutputColumns(child.outputAttributes, columns)
+    Project(child, resolvedColumns)
+  }
+
+  private def resolveOutputColumns(inputAttributes: Seq[Attribute], outputColumns: Seq[Attribute]): Seq[Attribute] = {
     val resolvedColumns = Seq.newBuilder[Attribute]
-    columns.map {
+    outputColumns.map {
       case a: AllColumns =>
         // TODO check (prefix).* to resolve attributes
         resolvedColumns ++= inputAttributes
@@ -121,15 +125,24 @@ object TypeResolver extends LogSupport {
           case r: ResolvedAttribute if alias.isEmpty =>
             resolvedColumns += r
           case r: ResolvedAttribute if alias.nonEmpty =>
-            resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType, None, None)
+            resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType, r.sourceTable, r.sourceColumn)
           case expr =>
             resolvedColumns += SingleColumn(expr, alias)
         }
       case other =>
         resolvedColumns += other
     }
+    resolvedColumns.result()
+  }
 
-    Project(child, resolvedColumns.result())
+  def resolveAttribute(attribute: Attribute): Attribute = {
+    attribute match {
+      case SingleColumn(r: ResolvedAttribute, None) =>
+        r
+      case SingleColumn(r: ResolvedAttribute, Some(alias: Identifier)) =>
+        r.withAlias(alias.value)
+      case other => other
+    }
   }
 
   /**

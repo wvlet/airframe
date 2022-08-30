@@ -66,6 +66,6 @@ object SQLErrorCode {
   case object TableAlreadyExists    extends SQLErrorCode(0x0007)
   case object CatalogNotFound       extends SQLErrorCode(0x0008)
   case object InvalidArgument       extends SQLErrorCode(0x0009)
-
-  case object InternalError extends SQLErrorCode(0x10000)
+  case object UnsupportedSyntax     extends SQLErrorCode(0x0010)
+  case object InternalError         extends SQLErrorCode(0x10000)
 }

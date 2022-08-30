@@ -203,6 +203,11 @@ class TypeResolverTest extends AirSpec {
 
     test("parse WITH statement with column aliases") {
       val p = analyze("with q1(p1, p2) as (select id, name from A) select * from q1")
+      p.outputAttributes.toList shouldBe List(
+        // The output should use aliases from the source columns
+        ResolvedAttribute("p1", DataType.LongType, Some(tableA), Some(a1)),
+        ResolvedAttribute("p2", DataType.StringType, Some(tableA), Some(a2))
+      )
     }
   }
 }
