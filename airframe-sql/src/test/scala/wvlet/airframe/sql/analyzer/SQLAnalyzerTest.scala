@@ -15,6 +15,7 @@ package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.sql.catalog.Catalog.CreateMode
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
+import wvlet.airframe.sql.model.ResolvedAttribute
 import wvlet.airspec.AirSpec
 
 /**
@@ -49,19 +50,28 @@ class SQLAnalyzerTest extends AirSpec {
   test("resolve input/output types") {
     val plan = SQLAnalyzer.analyze("select id, name from a", "public", catalog)
     plan.resolved shouldBe true
-    plan.outputAttributes.mkString(",") shouldBe "a.id:long,a.name:string"
+    plan.outputAttributes.toList shouldBe List(
+      ResolvedAttribute("id", DataType.LongType, Some(tbl1), Some(tbl1.column("id"))),
+      ResolvedAttribute("name", DataType.StringType, Some(tbl1), Some(tbl1.column("name")))
+    )
   }
 
   test("resolve select *") {
     val plan = SQLAnalyzer.analyze("select * from a", "public", catalog)
     plan.resolved shouldBe true
-    plan.outputAttributes.mkString(",") shouldBe "a.id:long,a.name:string,a.address:string"
+    plan.outputAttributes.toList shouldBe List(
+      ResolvedAttribute("id", DataType.LongType, Some(tbl1), Some(tbl1.column("id"))),
+      ResolvedAttribute("name", DataType.StringType, Some(tbl1), Some(tbl1.column("name"))),
+      ResolvedAttribute("address", DataType.StringType, Some(tbl1), Some(tbl1.column("address")))
+    )
   }
 
   test("resolve select with alias") {
     val plan = SQLAnalyzer.analyze("select id as person_id from a", "public", catalog)
     plan.resolved shouldBe true
-    plan.outputAttributes.mkString(",") shouldBe "person_id:long"
+    plan.outputAttributes.toList shouldBe List(
+      ResolvedAttribute("person_id", DataType.LongType, Some(tbl1), Some(tbl1.column("id")))
+    )
   }
 
   test("resolve join attributes") {
@@ -71,7 +81,12 @@ class SQLAnalyzerTest extends AirSpec {
       catalog
     )
     plan.resolved shouldBe true
-    plan.outputAttributes.mkString(",") shouldBe "a.id:long,a.name:string,a.address:string,person_id:string"
+    plan.outputAttributes.toList shouldBe List(
+      ResolvedAttribute("id", DataType.LongType, Some(tbl1), Some(tbl1.column("id"))),
+      ResolvedAttribute("name", DataType.StringType, Some(tbl1), Some(tbl1.column("name"))),
+      ResolvedAttribute("address", DataType.StringType, Some(tbl1), Some(tbl1.column("address"))),
+      ResolvedAttribute("person_id", DataType.StringType, Some(tbl2), Some(tbl2.column("phone")))
+    )
   }
 
 }

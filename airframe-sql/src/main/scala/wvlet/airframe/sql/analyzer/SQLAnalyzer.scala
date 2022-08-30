@@ -29,7 +29,8 @@ import wvlet.log.LogSupport
 case class AnalyzerContext(
     database: String,
     catalog: Catalog,
-    parentAttributes: Option[Seq[Attribute]] = None
+    parentAttributes: Option[Seq[Attribute]] = None,
+    outerQueries: Map[String, LogicalPlan] = Map.empty
 ) {
 
   /**
@@ -38,8 +39,15 @@ case class AnalyzerContext(
     * @param parentAttributes
     * @return
     */
-  def withAttributes(parentAttributes: Seq[Attribute]) =
+  def withAttributes(parentAttributes: Seq[Attribute]): AnalyzerContext =
     this.copy(parentAttributes = Some(parentAttributes))
+
+  /**
+    * Add an outer query (e.g., WITH query) to the context
+    */
+  def withOuterQuery(name: String, relation: LogicalPlan): AnalyzerContext = {
+    this.copy(outerQueries = outerQueries + (name -> relation))
+  }
 }
 
 /**
@@ -61,12 +69,7 @@ object SQLAnalyzer extends LogSupport {
         AnalyzerContext(database = database, catalog = catalog, parentAttributes = Some(plan.outputAttributes))
       debug(s"Unresolved plan:\n${plan.pp}")
 
-      val resolvedPlan = TypeResolver.typerRules
-        .foldLeft(plan) { (targetPlan, rule) =>
-          val r = rule.apply(analyzerContext)
-          // Recursively transform the tree
-          targetPlan.transform(r)
-        }
+      val resolvedPlan = TypeResolver.resolve(analyzerContext, plan)
       debug(s"Resolved plan:\n${resolvedPlan.pp}")
 
       val optimizedPlan = Optimizer.optimizerRules.foldLeft(resolvedPlan) { (targetPlan, rule) =>

@@ -49,6 +49,38 @@ case class ResolvedAttribute(
     sourceTable: Option[Catalog.Table],
     sourceColumn: Option[Catalog.TableColumn]
 ) extends Attribute {
-  override def toString      = s"${sourceTable.map(t => s"${t.name}.${name}").getOrElse(name)}:${dataType}"
+  require(sourceTable.nonEmpty == sourceColumn.nonEmpty, "sourceTable and sourceColumn must be set together")
+
+  def withAlias(newName: String): ResolvedAttribute = {
+    this.copy(name = newName)
+  }
+
+  override def toString = {
+    (sourceTable, sourceColumn) match {
+      case (Some(t), Some(c)) if c.name == name =>
+        s"${t.name}.${name}:${dataType}"
+      case (Some(t), Some(c)) =>
+        s"${name}:${dataType} <- ${t.name}.${c.name}"
+      case _ =>
+        s"${name}:${dataType}"
+    }
+    // s"${sourceTable.map(t => s"${t.name}.${name}").getOrElse(name)}:${dataType}"
+  }
   override lazy val resolved = true
+}
+
+/**
+  * For WITH cte as (...)
+  * @param id
+  * @param name
+  * @param outputColumns
+  */
+case class CTERelationRef(name: String, outputColumns: Seq[Attribute]) extends Relation with LeafPlan {
+  override def sig(config: QuerySignatureConfig): String = {
+    if (config.embedTableNames)
+      name
+    else
+      "T"
+  }
+  override def outputAttributes: Seq[Attribute] = outputColumns
 }

@@ -80,6 +80,10 @@ object Catalog {
   ) {
     def withDatabase(db: String): Table = copy(database = Some(db))
     def fullName: String                = s"${database.map(db => s"${db}.").getOrElse("")}.${name}"
+
+    def column(name: String): TableColumn = schema.columns.find(_.name == name).getOrElse {
+      throw SQLErrorCode.ColumnNotFound.newException(s"Column ${name} is not found in ${fullName}")
+    }
   }
 
   case class TableSchema(columns: Seq[TableColumn]) {

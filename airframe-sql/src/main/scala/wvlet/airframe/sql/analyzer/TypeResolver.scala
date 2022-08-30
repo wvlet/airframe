@@ -15,7 +15,7 @@ package wvlet.airframe.sql.analyzer
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.{PlanRewriter, Rule}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project, Relation, Union}
+import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project, Query, Relation, Union}
 import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
@@ -24,14 +24,25 @@ import wvlet.log.LogSupport
   */
 object TypeResolver extends LogSupport {
 
-  val typerRules: List[Rule] =
+  def typerRules: List[Rule] =
     // First resolve all input table types
     TypeResolver.resolveAggregationIndexes _ ::
+      TypeResolver.resolveCTETableRef _ ::
       TypeResolver.resolveTableRef _ ::
       TypeResolver.resolveRelation _ ::
       TypeResolver.resolveColumns _ ::
       TypeResolver.resolveUnion _ ::
       Nil
+
+  def resolve(analyzerContext: AnalyzerContext, plan: LogicalPlan): LogicalPlan = {
+    val resolvedPlan = TypeResolver.typerRules
+      .foldLeft(plan) { (targetPlan, rule) =>
+        val r = rule.apply(analyzerContext)
+        // Recursively transform the tree
+        targetPlan.transform(r)
+      }
+    resolvedPlan
+  }
 
   /**
     * Translate select i1, i2, ... group by 1, 2, ... query into select i1, i2, ... group by i1, i2
@@ -57,6 +68,15 @@ object TypeResolver extends LogSupport {
   }
 
   /**
+    * Resolve TableRefs in a query inside WITH statement with CTERelationRef
+    * @param context
+    * @return
+    */
+  def resolveCTETableRef(context: AnalyzerContext): PlanRewriter = { case q @ Query(withQuery, body) =>
+    CTEResolver.resolveCTE(context, q)
+  }
+
+  /**
     * Resolve TableRefs with concrete TableScans using the table schema in the catalog.
     */
   def resolveTableRef(context: AnalyzerContext): PlanRewriter = { case plan @ LogicalPlan.TableRef(qname) =>
@@ -66,7 +86,13 @@ object TypeResolver extends LogSupport {
         // Expand all table columns first, which will be pruned later by Optimizer
         TableScan(dbTable, dbTable.schema.columns)
       case None =>
-        throw SQLErrorCode.TableNotFound.newException(s"Table ${context.database}.${qname} not found")
+        // Search CTE
+        context.outerQueries.get(qname.fullName) match {
+          case Some(cte) =>
+            CTERelationRef(qname.fullName, cte.outputAttributes)
+          case None =>
+            throw SQLErrorCode.TableNotFound.newException(s"Table ${context.database}.${qname} not found")
+        }
     }
   }
 
@@ -84,9 +110,13 @@ object TypeResolver extends LogSupport {
   }
 
   def resolveColumns(context: AnalyzerContext): PlanRewriter = { case p @ Project(child, columns) =>
-    val inputAttributes = child.outputAttributes
+    val resolvedColumns = resolveOutputColumns(child.outputAttributes, columns)
+    Project(child, resolvedColumns)
+  }
+
+  private def resolveOutputColumns(inputAttributes: Seq[Attribute], outputColumns: Seq[Attribute]): Seq[Attribute] = {
     val resolvedColumns = Seq.newBuilder[Attribute]
-    columns.map {
+    outputColumns.map {
       case a: AllColumns =>
         // TODO check (prefix).* to resolve attributes
         resolvedColumns ++= inputAttributes
@@ -95,15 +125,24 @@ object TypeResolver extends LogSupport {
           case r: ResolvedAttribute if alias.isEmpty =>
             resolvedColumns += r
           case r: ResolvedAttribute if alias.nonEmpty =>
-            resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType, None, None)
+            resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType, r.sourceTable, r.sourceColumn)
           case expr =>
             resolvedColumns += SingleColumn(expr, alias)
         }
       case other =>
         resolvedColumns += other
     }
+    resolvedColumns.result()
+  }
 
-    Project(child, resolvedColumns.result())
+  def resolveAttribute(attribute: Attribute): Attribute = {
+    attribute match {
+      case SingleColumn(r: ResolvedAttribute, None) =>
+        r
+      case SingleColumn(r: ResolvedAttribute, Some(alias: Identifier)) =>
+        r.withAlias(alias.value)
+      case other => other
+    }
   }
 
   /**

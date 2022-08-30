@@ -189,4 +189,25 @@ class TypeResolverTest extends AirSpec {
       }
     }
   }
+
+  test("resolve CTE (WITH statement) queries") {
+    test("parse WITH statement") {
+      val p = analyze("with q1 as (select id from A) select id from q1")
+      p.outputAttributes.toList shouldBe List(ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)))
+    }
+
+    test("parse multiple WITH sub queries") {
+      val p = analyze("with q1 as (select id, name from A), q2 as (select name from q1) select * from q2")
+      p.outputAttributes.toList shouldBe List(ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2)))
+    }
+
+    test("parse WITH statement with column aliases") {
+      val p = analyze("with q1(p1, p2) as (select id, name from A) select * from q1")
+      p.outputAttributes.toList shouldBe List(
+        // The output should use aliases from the source columns
+        ResolvedAttribute("p1", DataType.LongType, Some(tableA), Some(a1)),
+        ResolvedAttribute("p2", DataType.StringType, Some(tableA), Some(a2))
+      )
+    }
+  }
 }
