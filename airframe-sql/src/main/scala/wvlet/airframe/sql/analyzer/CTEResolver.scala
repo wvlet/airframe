@@ -13,8 +13,10 @@
  */
 package wvlet.airframe.sql.analyzer
 
+import wvlet.airframe.sql.SQLErrorCode
+import wvlet.airframe.sql.model.Expression.SingleColumn
 import wvlet.airframe.sql.model.{CTERelationRef, LogicalPlan}
-import wvlet.airframe.sql.model.LogicalPlan.{Query, Relation, With, WithQuery}
+import wvlet.airframe.sql.model.LogicalPlan.{Project, Query, Relation, With, WithQuery}
 import wvlet.log.LogSupport
 
 object CTEResolver extends LogSupport {
@@ -29,9 +31,22 @@ object CTEResolver extends LogSupport {
             // This should not happen in general
             x.query
         }
-        currentContext = currentContext.withOuterQuery(x.name.value, resolvedQuery)
-        // TODO generate output columns
-        WithQuery(x.name, resolvedQuery, None)
+        val cteBody = x.columnNames match {
+          case None          => resolvedQuery
+          case Some(aliases) =>
+            // When there are aliases, WITH q(p1, p2, ...) as (select ....)
+            if (resolvedQuery.outputAttributes.size != aliases.size) {
+              throw SQLErrorCode.SyntaxError.newException(
+                s"A wrong number of columns ${aliases.size} is used for WITH statement: ${x.name.value}"
+              )
+            }
+            val selectItems = resolvedQuery.outputAttributes.zip(aliases).map { case (col, alias) =>
+              SingleColumn(col, Some(alias))
+            }
+            Project(resolvedQuery, selectItems)
+        }
+        currentContext = currentContext.withOuterQuery(x.name.value, cteBody)
+        WithQuery(x.name, resolvedQuery, x.columnNames)
       }
       val newBody = TypeResolver.resolve(currentContext, body).asInstanceOf[Relation]
       Query(With(recursive, resolvedQueries), newBody)

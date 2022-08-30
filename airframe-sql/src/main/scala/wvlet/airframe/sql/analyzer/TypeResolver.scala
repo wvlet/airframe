@@ -73,9 +73,7 @@ object TypeResolver extends LogSupport {
     * @return
     */
   def resolveCTETableRef(context: AnalyzerContext): PlanRewriter = { case q @ Query(withQuery, body) =>
-    val newPlan = CTEResolver.resolveCTE(context, q)
-    warn(newPlan.pp)
-    newPlan
+    CTEResolver.resolveCTE(context, q)
   }
 
   /**

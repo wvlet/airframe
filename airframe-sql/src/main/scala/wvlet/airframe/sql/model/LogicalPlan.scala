@@ -333,7 +333,16 @@ object LogicalPlan {
     override def sig(config: QuerySignatureConfig) = ""
     override def child: LogicalPlan                = query
     override def inputAttributes: Seq[Attribute]   = query.inputAttributes
-    override def outputAttributes: Seq[Attribute]  = query.outputAttributes
+    override def outputAttributes: Seq[Attribute] = {
+      columnNames match {
+        case Some(aliases) =>
+          query.outputAttributes.zip(aliases).map { case (in, alias) =>
+            SingleColumn(in, Some(alias))
+          }
+        case None =>
+          query.outputAttributes
+      }
+    }
   }
 
 // Joins

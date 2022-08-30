@@ -14,7 +14,6 @@
 package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.sql.catalog.Catalog
-import wvlet.airframe.sql.model.LogicalPlan.Relation
 import wvlet.airframe.sql.model._
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.log.LogSupport
