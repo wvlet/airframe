@@ -210,4 +210,11 @@ class TypeResolverTest extends AirSpec {
       )
     }
   }
+
+  test("resolve join attributes") {
+    test("join with USING") {
+      val p = analyze("select id, A.name from A join B using(id)")
+
+    }
+  }
 }

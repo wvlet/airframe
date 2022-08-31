@@ -15,7 +15,7 @@ package wvlet.airframe.sql.analyzer
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.{PlanRewriter, Rule}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project, Query, Relation, Union}
+import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Join, Project, Query, Relation, Union}
 import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
@@ -29,19 +29,29 @@ object TypeResolver extends LogSupport {
     TypeResolver.resolveAggregationIndexes _ ::
       TypeResolver.resolveCTETableRef _ ::
       TypeResolver.resolveTableRef _ ::
-      TypeResolver.resolveRelation _ ::
+      TypeResolver.resolveJoin _ ::
+      TypeResolver.resolveRegularRelation _ ::
       TypeResolver.resolveColumns _ ::
       TypeResolver.resolveUnion _ ::
       Nil
 
   def resolve(analyzerContext: AnalyzerContext, plan: LogicalPlan): LogicalPlan = {
     val resolvedPlan = TypeResolver.typerRules
-      .foldLeft(plan) { (targetPlan, rule) =>
+      .foldLeft(plan.asInstanceOf[LogicalPlan]) { (targetPlan, rule) =>
         val r = rule.apply(analyzerContext)
         // Recursively transform the tree
         targetPlan.transform(r)
       }
     resolvedPlan
+  }
+
+  def resolveRelation(analyzerContext: AnalyzerContext, plan: LogicalPlan): Relation = {
+    val resolvedPlan = resolve(analyzerContext, plan)
+    resolvedPlan match {
+      case r: Relation => r
+      case other =>
+        throw SQLErrorCode.InvalidArgument.newException(s"${plan} isn't a relation")
+    }
   }
 
   /**
@@ -96,7 +106,44 @@ object TypeResolver extends LogSupport {
     }
   }
 
-  def resolveRelation(context: AnalyzerContext): PlanRewriter = {
+  private def concat(expr: Seq[Expression])(merger: (Expression, Expression) => Expression): Expression = {
+    require(expr.length > 0)
+    if (expr.length == 1) {
+      expr.head
+    } else {
+      expr.tail.foldLeft(expr.head) { case (prev, next) =>
+        merger(prev, next)
+      }
+    }
+  }
+
+  private def concatWithAnd(expr: Seq[Expression]): Expression = {
+    concat(expr) { case (a, b) => And(a, b) }
+  }
+  private def concatWithEq(expr: Seq[Expression]): Expression = {
+    concat(expr) { case (a, b) => Eq(a, b) }
+  }
+
+  def resolveJoin(context: AnalyzerContext): PlanRewriter = {
+    case j @ Join(joinType, left, right, u @ JoinUsing(joinKeys)) =>
+      // from A join B using(c1, c2, ...)
+      val resolvedJoin = Join(joinType, resolveRelation(context, left), resolveRelation(context, right), u)
+      val resolvedJoinKeys = joinKeys.map { k =>
+        findMatchInInputAttributes(k, resolvedJoin.inputAttributes) match {
+          case Nil =>
+            throw SQLErrorCode.ColumnNotFound.newException(s"join key column: ${k.sqlExpr} is not found")
+          case head :: Nil =>
+            head
+          case multipleKeys if multipleKeys.length > 1 =>
+            concatWithEq(multipleKeys)
+        }
+      }
+      val updated = j.withCond(JoinOn(concatWithAnd(resolvedJoinKeys)))
+      warn(updated.pp)
+      updated
+  }
+
+  def resolveRegularRelation(context: AnalyzerContext): PlanRewriter = {
     case filter @ Filter(child, filterExpr) =>
       filter.transformExpressions { case x: Expression => resolveExpression(x, filter.inputAttributes) }
     case r: Relation =>
@@ -145,41 +192,44 @@ object TypeResolver extends LogSupport {
     }
   }
 
-  /**
-    * Resolve untyped expressions
-    */
-  def resolveExpression(expr: Expression, inputAttributes: Seq[Attribute]): Expression = {
-    def findInputAttribute(name: String): Option[Attribute] = {
+  def findMatchInInputAttributes(expr: Expression, inputAttributes: Seq[Attribute]): List[Expression] = {
+    def lookup(name: String): List[Attribute] = {
       QName(name) match {
         case QName(Seq(t1, c1)) =>
           val attrs = inputAttributes.collect {
             case a @ ResolvedAttribute(c, _, Some(t), _) if t.name == t1 && c == c1 => a
             case a @ ResolvedAttribute(c, _, None, _) if c == c1                    => a
           }
-          if (attrs.size > 1) {
-            throw SQLErrorCode.SyntaxError.newException(s"${name} is ambiguous")
-          }
-          attrs.headOption
+          attrs.toList
         case QName(Seq(c1)) =>
           val attrs = inputAttributes.collect {
             case a @ ResolvedAttribute(c, _, _, _) if c == c1 => a
           }
-          if (attrs.size > 1) {
-            throw SQLErrorCode.SyntaxError.newException(s"${name} is ambiguous")
-          }
-          attrs.headOption
+          attrs.toList
         case _ =>
-          None
+          List.empty
       }
     }
 
     expr match {
       case i: Identifier =>
-        findInputAttribute(i.value).getOrElse(i)
+        lookup(i.value)
       case u @ UnresolvedAttribute(name) =>
-        findInputAttribute(name).getOrElse(u)
+        lookup(name)
       case _ =>
-        expr
+        List(expr)
+    }
+  }
+
+  /**
+    * Resolve untyped expressions
+    */
+  def resolveExpression(expr: Expression, inputAttributes: Seq[Attribute]): Expression = {
+    findMatchInInputAttributes(expr, inputAttributes) match {
+      case lst if lst.length > 1 =>
+        throw SQLErrorCode.SyntaxError.newException(s"${expr.sqlExpr} is ambiguous")
+      case lst =>
+        lst.headOption.getOrElse(expr)
     }
   }
 

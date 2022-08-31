@@ -355,6 +355,8 @@ object LogicalPlan {
     override def inputAttributes: Seq[Attribute] =
       left.outputAttributes ++ right.outputAttributes
     override def outputAttributes: Seq[Attribute] = inputAttributes
+
+    def withCond(cond: JoinCriteria): Join = this.copy(cond = cond)
   }
   sealed abstract class JoinType(val symbol: String)
 // Exact match (= equi join)
