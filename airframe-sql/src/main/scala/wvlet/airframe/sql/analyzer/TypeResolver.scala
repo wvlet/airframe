@@ -192,6 +192,12 @@ object TypeResolver extends LogSupport {
     }
   }
 
+  /**
+    * Find matching expressions in the inputAttributes
+    * @param expr
+    * @param inputAttributes
+    * @return
+    */
   def findMatchInInputAttributes(expr: Expression, inputAttributes: Seq[Attribute]): List[Expression] = {
     def lookup(name: String): List[Attribute] = {
       QName(name) match {
