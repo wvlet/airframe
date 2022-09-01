@@ -29,7 +29,7 @@ object TypeResolver extends LogSupport {
     TypeResolver.resolveAggregationIndexes _ ::
       TypeResolver.resolveCTETableRef _ ::
       TypeResolver.resolveTableRef _ ::
-      TypeResolver.resolveJoin _ ::
+      TypeResolver.resolveJoinUsing _ ::
       TypeResolver.resolveRegularRelation _ ::
       TypeResolver.resolveColumns _ ::
       TypeResolver.resolveUnion _ ::
@@ -124,7 +124,7 @@ object TypeResolver extends LogSupport {
     concat(expr) { case (a, b) => Eq(a, b) }
   }
 
-  def resolveJoin(context: AnalyzerContext): PlanRewriter = {
+  def resolveJoinUsing(context: AnalyzerContext): PlanRewriter = {
     case j @ Join(joinType, left, right, u @ JoinUsing(joinKeys)) =>
       // from A join B using(c1, c2, ...)
       val resolvedJoin = Join(joinType, resolveRelation(context, left), resolveRelation(context, right), u)
