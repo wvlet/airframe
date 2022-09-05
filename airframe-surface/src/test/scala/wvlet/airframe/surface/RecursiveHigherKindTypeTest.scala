@@ -37,8 +37,6 @@ class RecursiveHigherKindTypeTest extends SurfaceSpec {
   import Holder.BySkinny
 
   test("support recursive higher kind types") {
-    // ....
-
     val s = Surface.of[Holder[BySkinny]]
     assertEquals(s.name, "Holder[BySkinny]")
     assertEquals(s.isAlias, false)
