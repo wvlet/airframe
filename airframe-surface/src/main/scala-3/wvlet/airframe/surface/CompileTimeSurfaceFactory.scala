@@ -657,24 +657,69 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     methodsOf(TypeRepr.of(using t))
   }
 
-  private def methodsOf(t: TypeRepr): Expr[Seq[MethodSurface]] = {
-    val localMethods = localMethodsOf(t).distinct
+  private val methodMemo = scala.collection.mutable.Map[TypeRepr, Expr[Seq[MethodSurface]]]()
+  private val methodSeen = scala.collection.mutable.Set[TypeRepr]()
 
-    val methodSurfaces = localMethods.map(m => (m, m.tree)).collect { case (m, df: DefDef) =>
-      val mod   = Expr(modifierBitMaskOf(m))
-      val owner = surfaceOf(t)
-      val name  = Expr(m.name)
-      // println(s"======= ${df.returnTpt.show}")
-      val ret = surfaceOf(df.returnTpt.tpe)
-      // println(s"==== method of: ${ret.show}")
-      val args = methodParametersOf(t, m)
-      // TODO: This code doesn't work for Scala.js + Scala 3.0.0
-      '{
-        wvlet.airframe.surface.reflect
-          .ReflectMethodSurface(${ mod }, ${ owner }, ${ name }, ${ ret }, ${ args }.toIndexedSeq)
+  private def methodsOf(targetType: TypeRepr): Expr[Seq[MethodSurface]] = {
+      if(methodMemo.contains(targetType))
+        methodMemo(targetType)
+      else if (seen.contains(targetType)) {
+        sys.error(s"recurcive type in method: ${targetType.typeSymbol.fullName}")
       }
-    }
-    Expr.ofSeq(methodSurfaces)
+      else {
+        methodSeen += targetType
+        val localMethods = localMethodsOf(targetType).distinct
+        val methodSurfaces = localMethods.map(m => (m, m.tree)).collect { case (m, df: DefDef) =>
+          val mod   = Expr(modifierBitMaskOf(m))
+          val owner = surfaceOf(targetType)
+          val name  = Expr(m.name)
+          // println(s"======= ${df.returnTpt.show}")
+          val ret = surfaceOf(df.returnTpt.tpe)
+          // println(s"==== method of: ${ret.show}")
+          val args = methodArgsOf(targetType, m).flatten
+          val params = methodParametersOf(targetType, m)
+          val methodCaller = createMethodCaller(targetType, m, args)
+          // TODO: This code doesn't work for Scala.js + Scala 3.0.0
+          //'{
+          //    wvlet.airframe.surface.reflect
+          //      .ReflectMethodSurface(${ mod }, ${ owner },  ${ name }, ${ ret }, ${ params }.toIndexedSeq)
+          //}
+          '{
+              ClassMethodSurface(${ mod }, ${ owner },  ${ name }, ${ ret }, ${ params }.toIndexedSeq, ${methodCaller})
+          }
+        }
+        val expr = Expr.ofSeq(methodSurfaces)
+        methodMemo += targetType -> expr
+        expr
+      }
+  }
+
+  private def createMethodCaller(t: TypeRepr, m: Symbol, methodArgs: Seq[MethodArg]): Expr[Option[(Any, Seq[Any])=>Any]] = {
+    // { (x: Any, args: Seq[Any]) => x.asInstnceOf[t].(method)(.. args) }
+    val lambda = Lambda(
+      owner = Symbol.spliceOwner,
+      tpe = MethodType(List("x", "args"))(_ => List(TypeRepr.of[Any], TypeRepr.of[Seq[Any]]), _ => t),
+      rhsFn = (sym, params) => {
+        val x    = params(0).asInstanceOf[Term]
+        val args = params(1).asInstanceOf[Term]
+        val expr = Select.unique(x, "asInstanceOf").appliedToType(t).select(m)
+        if(methodArgs.size == 0) {
+          expr.changeOwner(sym)
+        }
+        else {
+          val argList = methodArgs.zipWithIndex.map { case (arg, i) =>
+              // args(i+1)
+              val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(i)))
+              // args(i+1).asInstanceOf[A]
+              // TODO: Cast primitive values to target types
+              Select.unique(extracted, "asInstanceOf").appliedToType(arg.tpe)
+          }
+          val newExpr = expr.appliedToArgs(argList.toList)
+          newExpr.changeOwner(sym)
+        }
+      }
+    )
+    '{ Some(${lambda.asExprOf[(Any, Seq[Any])=>Any]}) }
   }
 
   private def localMethodsOf(t: TypeRepr): Seq[Symbol] = {
