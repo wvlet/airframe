@@ -415,10 +415,25 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     case r: Refinement =>
       newGenericSurfaceOf(r.info)
     case t if hasStringUnapply(t) =>
+      // Build EnumSurface.apply code
+      // EnumSurface(classOf[t], { (cl: Class[_], s: String) => (companion object).unapply(s).asInstanceOf[Option[Any]] }
+      val unapplyMethod = getStringUnapply(t).get
+      val m             = Ref(t.typeSymbol.companionModule).select(unapplyMethod)
+      val newFn = Lambda(
+        owner = Symbol.spliceOwner,
+        tpe = MethodType(List("cl", "s"))(
+          _ => List(TypeRepr.of[Class[_]], TypeRepr.of[String]),
+          _ => TypeRepr.of[Option[Any]]
+        ),
+        rhsFn = (sym: Symbol, paramRefs: List[Tree]) => {
+          val strVarRef = paramRefs(1).asExprOf[String].asTerm
+          Select.unique(Apply(m, List(strVarRef)), "asInstanceOf").appliedToType(TypeRepr.of[Option[Any]])
+        }
+      )
       '{
         EnumSurface(
           ${ clsOf(t) },
-          { (cl: Class[_], s: String) => wvlet.airframe.surface.reflect.TypeConverter.convertToCls(s, cl) }
+          ${ newFn.asExprOf[(Class[_], String) => Option[Any]] }
         )
       }
     case t =>
@@ -438,23 +453,28 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   private def hasStringUnapply(t: TypeRepr): Boolean = {
+    getStringUnapply(t).isDefined
+  }
+
+  private def getStringUnapply(t: TypeRepr): Option[Symbol] = {
     t.typeSymbol.companionClass match {
       case cp: Symbol =>
-        cp.methodMember("unapply").headOption.map(_.tree) match {
+        val methodOpt = cp.methodMember("unapply").headOption
+        methodOpt.map(_.tree) match {
           case Some(m: DefDef) if m.paramss.size == 1 && hasOptionReturnType(m, t) =>
             val args: List[ParamClause] = m.paramss
             args.headOption.flatMap(_.params.headOption) match {
               // Is the first argument type String? def unapply(s: String)
               case Some(v: ValDef) if v.tpt.tpe =:= TypeRepr.of[String] =>
-                true
+                methodOpt
               case _ =>
-                false
+                None
             }
           case _ =>
-            false
+            None
         }
       case null =>
-        false
+        None
     }
   }
 
