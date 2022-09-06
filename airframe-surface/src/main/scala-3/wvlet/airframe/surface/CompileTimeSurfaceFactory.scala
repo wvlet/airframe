@@ -675,15 +675,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           val name  = Expr(m.name)
           // println(s"======= ${df.returnTpt.show}")
           val ret = surfaceOf(df.returnTpt.tpe)
-          // println(s"==== method of: ${ret.show}")
+          println(s"==== method of: def ${m.name}: ${df.returnTpt.show}")
           val params = methodParametersOf(targetType, m)
           val args = methodArgsOf(targetType, m).flatten
           val methodCaller = createMethodCaller(targetType, m, args)
-          // TODO: This code doesn't work for Scala.js + Scala 3.0.0
-          //'{
-          //    wvlet.airframe.surface.reflect
-          //      .ReflectMethodSurface(${ mod }, ${ owner },  ${ name }, ${ ret }, ${ params }.toIndexedSeq)
-          //}
           '{
               ClassMethodSurface(${ mod }, ${ owner },  ${ name }, ${ ret }, ${ params }.toIndexedSeq, ${methodCaller})
           }
@@ -695,10 +690,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   private def createMethodCaller(t: TypeRepr, m: Symbol, methodArgs: Seq[MethodArg]): Expr[Option[(Any, Seq[Any])=>Any]] = {
-    // { (x: Any, args: Seq[Any]) => x.asInstnceOf[t].(method)(.. args) }
+    // { (x: Any, args: Seq[Any]) => x.asInstanceOf[t].(method)(.. args) }
     val lambda = Lambda(
       owner = Symbol.spliceOwner,
-      tpe = MethodType(List("x", "args"))(_ => List(TypeRepr.of[Any], TypeRepr.of[Seq[Any]]), _ => t),
+      tpe = MethodType(List("x", "args"))(_ => List(TypeRepr.of[Any], TypeRepr.of[Seq[Any]]), _ => TypeRepr.of[Any]),
       rhsFn = (sym, params) => {
         val x    = params(0).asInstanceOf[Term]
         val args = params(1).asInstanceOf[Term]
@@ -753,7 +748,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     !x.flags.is(Flags.Synthetic) &&
     !x.flags.is(Flags.Artifact) &&
     x.fullName != "scala.Any" &&
-    x.fullName != "java.lang.Object"
+    x.fullName != "java.lang.Object" &&
+    // Exclude caes class methods
+    x.fullName != "scala.Product"
   }
 
   private def isOwnedByTargetClass(m: Symbol, t: TypeRepr): Boolean = {
