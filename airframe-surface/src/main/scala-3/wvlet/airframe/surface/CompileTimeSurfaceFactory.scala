@@ -676,8 +676,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           // println(s"======= ${df.returnTpt.show}")
           val ret = surfaceOf(df.returnTpt.tpe)
           // println(s"==== method of: ${ret.show}")
-          val args = methodArgsOf(targetType, m).flatten
           val params = methodParametersOf(targetType, m)
+          val args = methodArgsOf(targetType, m).flatten
           val methodCaller = createMethodCaller(targetType, m, args)
           // TODO: This code doesn't work for Scala.js + Scala 3.0.0
           //'{
