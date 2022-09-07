@@ -214,7 +214,10 @@ class TypeResolverTest extends AirSpec {
   test("resolve join attributes") {
     test("join with USING") {
       val p = analyze("select id, A.name from A join B using(id)")
-
+      p.outputAttributes shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
+        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+      )
     }
   }
 }

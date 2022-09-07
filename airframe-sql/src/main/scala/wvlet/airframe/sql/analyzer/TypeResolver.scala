@@ -106,7 +106,6 @@ object TypeResolver extends LogSupport {
     }
   }
 
-
   def resolveJoinUsing(context: AnalyzerContext): PlanRewriter = {
     case j @ Join(joinType, left, right, u @ JoinUsing(joinKeys)) =>
       // from A join B using(c1, c2, ...)

@@ -176,10 +176,10 @@ object Expression {
   }
 
   /**
-   * Join condition used only when join keys are resolved
-   * @param leftKey
-   * @param rightKey
-   */
+    * Join condition used only when join keys are resolved
+    * @param leftKey
+    * @param rightKey
+    */
   case class JoinOnEq(keys: Seq[Expression]) extends JoinCriteria with LeafExpression {
     override def children: Seq[Expression] = keys
   }
