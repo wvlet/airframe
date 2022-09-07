@@ -106,40 +106,20 @@ object TypeResolver extends LogSupport {
     }
   }
 
-  private def concat(expr: Seq[Expression])(merger: (Expression, Expression) => Expression): Expression = {
-    require(expr.length > 0)
-    if (expr.length == 1) {
-      expr.head
-    } else {
-      expr.tail.foldLeft(expr.head) { case (prev, next) =>
-        merger(prev, next)
-      }
-    }
-  }
-
-  private def concatWithAnd(expr: Seq[Expression]): Expression = {
-    concat(expr) { case (a, b) => And(a, b) }
-  }
-  private def concatWithEq(expr: Seq[Expression]): Expression = {
-    concat(expr) { case (a, b) => Eq(a, b) }
-  }
 
   def resolveJoinUsing(context: AnalyzerContext): PlanRewriter = {
     case j @ Join(joinType, left, right, u @ JoinUsing(joinKeys)) =>
       // from A join B using(c1, c2, ...)
       val resolvedJoin = Join(joinType, resolveRelation(context, left), resolveRelation(context, right), u)
-      val resolvedJoinKeys = joinKeys.map { k =>
+      val resolvedJoinKeys: Seq[Expression] = joinKeys.flatMap { k =>
         findMatchInInputAttributes(k, resolvedJoin.inputAttributes) match {
           case Nil =>
             throw SQLErrorCode.ColumnNotFound.newException(s"join key column: ${k.sqlExpr} is not found")
-          case head :: Nil =>
-            head
-          case multipleKeys if multipleKeys.length > 1 =>
-            concatWithEq(multipleKeys)
+          case other =>
+            other
         }
       }
-      val updated = j.withCond(JoinOn(concatWithAnd(resolvedJoinKeys)))
-      warn(updated.pp)
+      val updated = j.withCond(JoinOnEq(resolvedJoinKeys))
       updated
   }
 

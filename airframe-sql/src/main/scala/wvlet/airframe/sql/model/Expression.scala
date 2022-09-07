@@ -106,6 +106,24 @@ trait Attribute extends LeafExpression {
 object Expression {
   import wvlet.airframe.sql.model.LogicalPlan.Relation
 
+  private def concat(expr: Seq[Expression])(merger: (Expression, Expression) => Expression): Expression = {
+    require(expr.length > 0)
+    if (expr.length == 1) {
+      expr.head
+    } else {
+      expr.tail.foldLeft(expr.head) { case (prev, next) =>
+        merger(prev, next)
+      }
+    }
+  }
+
+  private def concatWithAnd(expr: Seq[Expression]): Expression = {
+    concat(expr) { case (a, b) => And(a, b) }
+  }
+  private def concatWithEq(expr: Seq[Expression]): Expression = {
+    concat(expr) { case (a, b) => Eq(a, b) }
+  }
+
   /**
     */
   case class ParenthesizedExpression(child: Expression) extends UnaryExpression
@@ -155,6 +173,15 @@ object Expression {
   }
   case class JoinOn(expr: Expression) extends JoinCriteria with UnaryExpression {
     override def child: Expression = expr
+  }
+
+  /**
+   * Join condition used only when join keys are resolved
+   * @param leftKey
+   * @param rightKey
+   */
+  case class JoinOnEq(keys: Seq[Expression]) extends JoinCriteria with LeafExpression {
+    override def children: Seq[Expression] = keys
   }
 
   case class AllColumns(prefix: Option[QName]) extends Attribute {

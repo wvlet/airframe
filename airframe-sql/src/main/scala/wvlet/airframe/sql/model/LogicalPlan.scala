@@ -354,7 +354,14 @@ object LogicalPlan {
     }
     override def inputAttributes: Seq[Attribute] =
       left.outputAttributes ++ right.outputAttributes
-    override def outputAttributes: Seq[Attribute] = inputAttributes
+    override def outputAttributes: Seq[Attribute] = {
+      cond match {
+        case JoinOnEq(keys) =>
+          // Remove join key duplication here
+          inputAttributes.filter(x => !keys.tail.contains(x))
+        case _ => inputAttributes
+      }
+    }
 
     def withCond(cond: JoinCriteria): Join = this.copy(cond = cond)
   }
