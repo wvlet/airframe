@@ -673,7 +673,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         val name  = Expr(m.name)
         // println(s"======= ${df.returnTpt.show}")
         val ret = surfaceOf(df.returnTpt.tpe)
-        println(s"==== method of: def ${m.name}: ${df.returnTpt}")
+        // println(s"==== method of: def ${m.name}")
         val params       = methodParametersOf(targetType, m)
         val args         = methodArgsOf(targetType, m).flatten
         val methodCaller = createMethodCaller(targetType, m, args)
@@ -700,13 +700,21 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       methodArgs: Seq[MethodArg]
   ): Expr[Option[(Any, Seq[Any]) => Any]] = {
     // { (x: Any, args: Seq[Any]) => x.asInstanceOf[t].(method)(.. args) }
+    val typeParams: List[ParamClause] = m.tree match {
+      case df:DefDef =>
+        println(s"----------- ${m.name}[${df.paramss.size}]")
+        df.paramss
+      case _ =>
+        List.empty
+    }
+    println(s"===== ${typeParams.map(_.params).mkString("\n  ")}")
+
     val lambda = Lambda(
       owner = Symbol.spliceOwner,
       tpe = MethodType(List("x", "args"))(_ => List(TypeRepr.of[Any], TypeRepr.of[Seq[Any]]), _ => TypeRepr.of[Any]),
       rhsFn = (sym, params) => {
         val x    = params(0).asInstanceOf[Term]
         val args = params(1).asInstanceOf[Term]
-        // println(s"========= here1: ${x}")
         val expr = Select.unique(x, "asInstanceOf").appliedToType(objectType).select(m)
         val argList = methodArgs.zipWithIndex.map { case (arg, i) =>
           // args(i).asInstanceOf[ArgType]
@@ -716,10 +724,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         if (argList.isEmpty) {
           expr.changeOwner(sym)
         } else {
-          println(s"========= here2: ${expr.show}")
+          //println(s"========= here2: ${expr.show}")
           // TODO Fix for generic type methods
           val newExpr = expr.appliedToArgs(argList.toList)
-          println(s"============ here3 ${newExpr.show}")
+          //println(s"============ here3 ${newExpr.show}")
           newExpr.changeOwner(sym)
         }
       }
