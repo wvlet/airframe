@@ -661,35 +661,44 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private val methodSeen = scala.collection.mutable.Set[TypeRepr]()
 
   private def methodsOf(targetType: TypeRepr): Expr[Seq[MethodSurface]] = {
-      if(methodMemo.contains(targetType))
-        methodMemo(targetType)
-      else if (seen.contains(targetType)) {
-        sys.error(s"recurcive type in method: ${targetType.typeSymbol.fullName}")
-      }
-      else {
-        methodSeen += targetType
-        val localMethods = localMethodsOf(targetType).distinct
-        val methodSurfaces = localMethods.map(m => (m, m.tree)).collect { case (m, df: DefDef) =>
-          val mod   = Expr(modifierBitMaskOf(m))
-          val owner = surfaceOf(targetType)
-          val name  = Expr(m.name)
-          // println(s"======= ${df.returnTpt.show}")
-          val ret = surfaceOf(df.returnTpt.tpe)
-          println(s"==== method of: def ${m.name}: ${df.returnTpt.show}")
-          val params = methodParametersOf(targetType, m)
-          val args = methodArgsOf(targetType, m).flatten
-          val methodCaller = createMethodCaller(targetType, m, args)
-          '{
-              ClassMethodSurface(${ mod }, ${ owner },  ${ name }, ${ ret }, ${ params }.toIndexedSeq, ${methodCaller})
-          }
+    if (methodMemo.contains(targetType)) methodMemo(targetType)
+    else if (seen.contains(targetType)) {
+      sys.error(s"recurcive type in method: ${targetType.typeSymbol.fullName}")
+    } else {
+      methodSeen += targetType
+      val localMethods = localMethodsOf(targetType).distinct
+      val methodSurfaces = localMethods.map(m => (m, m.tree)).collect { case (m, df: DefDef) =>
+        val mod   = Expr(modifierBitMaskOf(m))
+        val owner = surfaceOf(targetType)
+        val name  = Expr(m.name)
+        // println(s"======= ${df.returnTpt.show}")
+        val ret = surfaceOf(df.returnTpt.tpe)
+        println(s"==== method of: def ${m.name}: ${df.returnTpt}")
+        val params       = methodParametersOf(targetType, m)
+        val args         = methodArgsOf(targetType, m).flatten
+        val methodCaller = createMethodCaller(targetType, m, args)
+        '{
+          ClassMethodSurface(${ mod }, ${ owner }, ${ name }, ${ ret }, ${ params }.toIndexedSeq, ${ methodCaller })
         }
-        val expr = Expr.ofSeq(methodSurfaces)
-        methodMemo += targetType -> expr
-        expr
       }
+      val expr = Expr.ofSeq(methodSurfaces)
+      methodMemo += targetType -> expr
+      expr
+    }
   }
 
-  private def createMethodCaller(t: TypeRepr, m: Symbol, methodArgs: Seq[MethodArg]): Expr[Option[(Any, Seq[Any])=>Any]] = {
+  private def isTypeParam(t: TypeRepr): Boolean = {
+    t match {
+      case TypeRef(prefix, typeName) if prefix.toString == "NoPrefix" => true
+      case _                                                          => false
+    }
+  }
+
+  private def createMethodCaller(
+      objectType: TypeRepr,
+      m: Symbol,
+      methodArgs: Seq[MethodArg]
+  ): Expr[Option[(Any, Seq[Any]) => Any]] = {
     // { (x: Any, args: Seq[Any]) => x.asInstanceOf[t].(method)(.. args) }
     val lambda = Lambda(
       owner = Symbol.spliceOwner,
@@ -697,24 +706,25 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       rhsFn = (sym, params) => {
         val x    = params(0).asInstanceOf[Term]
         val args = params(1).asInstanceOf[Term]
-        val expr = Select.unique(x, "asInstanceOf").appliedToType(t).select(m)
-        if(methodArgs.size == 0) {
-          expr.changeOwner(sym)
+        // println(s"========= here1: ${x}")
+        val expr = Select.unique(x, "asInstanceOf").appliedToType(objectType).select(m)
+        val argList = methodArgs.zipWithIndex.map { case (arg, i) =>
+          // args(i).asInstanceOf[ArgType]
+          val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(i)))
+          Select.unique(extracted, "asInstanceOf").appliedToType(arg.tpe)
         }
-        else {
-          val argList = methodArgs.zipWithIndex.map { case (arg, i) =>
-              // args(i+1)
-              val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(i)))
-              // args(i+1).asInstanceOf[A]
-              // TODO: Cast primitive values to target types
-              Select.unique(extracted, "asInstanceOf").appliedToType(arg.tpe)
-          }
+        if (argList.isEmpty) {
+          expr.changeOwner(sym)
+        } else {
+          println(s"========= here2: ${expr.show}")
+          // TODO Fix for generic type methods
           val newExpr = expr.appliedToArgs(argList.toList)
+          println(s"============ here3 ${newExpr.show}")
           newExpr.changeOwner(sym)
         }
       }
     )
-    '{ Some(${lambda.asExprOf[(Any, Seq[Any])=>Any]}) }
+    '{ Some(${ lambda.asExprOf[(Any, Seq[Any]) => Any] }) }
   }
 
   private def localMethodsOf(t: TypeRepr): Seq[Symbol] = {
