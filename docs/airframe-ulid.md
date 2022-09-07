@@ -70,6 +70,9 @@ val ulid: ULID = ULID.newULID
 println(ulid)             // 01F3J0G1M4WQRBHGZ6HCF6JA0K
 println(ulid.epochMillis) // 1618733434500
 
+// You can generate a ULID string at ease with newULIDString
+ULID.newULIDString
+
 // Parse the string representation of ULIDs 
 val ulid2 = ULID.fromString("01F3J0G1MD4QX7Z5QB148QNH4R")
 ulid2.epochMillis // 1618733434509
@@ -77,8 +80,14 @@ ulid2.epochMillis // 1618733434509
 // Parse the binary representation of ULIDs
 ULID.fromBytes(...)
 
+
+// Create an ULID from a given unixtime (milliseconds)
+val unixTimeMillis = System.currentTimeMillis() - 1000
+ULID.ofMillis(unixTimeMillis)
+
 // Create an ULID from a given unixtime (48-bits, milliseconds) and a random value (80-bits) 
 ULID.of(unixTimeMillis, randHi, randLow)
+
 ```
 
 
