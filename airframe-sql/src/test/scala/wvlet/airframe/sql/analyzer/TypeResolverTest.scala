@@ -235,5 +235,9 @@ class TypeResolverTest extends AirSpec {
         ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
       )
     }
+
+    test("3-way joins") {
+      pending("TODO")
+    }
   }
 }

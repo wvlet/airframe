@@ -37,10 +37,11 @@ object TypeResolver extends LogSupport {
 
   def resolve(analyzerContext: AnalyzerContext, plan: LogicalPlan): LogicalPlan = {
     val resolvedPlan = TypeResolver.typerRules
-      .foldLeft(plan.asInstanceOf[LogicalPlan]) { (targetPlan, rule) =>
+      .foldLeft(plan) { (targetPlan, rule) =>
         val r = rule.apply(analyzerContext)
         // Recursively transform the tree
-        targetPlan.transform(r)
+        val resolved = targetPlan.transform(r)
+        resolved
       }
     resolvedPlan
   }
@@ -48,7 +49,8 @@ object TypeResolver extends LogSupport {
   def resolveRelation(analyzerContext: AnalyzerContext, plan: LogicalPlan): Relation = {
     val resolvedPlan = resolve(analyzerContext, plan)
     resolvedPlan match {
-      case r: Relation => r
+      case r: Relation =>
+        r
       case other =>
         throw SQLErrorCode.InvalidArgument.newException(s"${plan} isn't a relation")
     }
@@ -118,7 +120,7 @@ object TypeResolver extends LogSupport {
             other
         }
       }
-      val updated = j.withCond(JoinOnEq(resolvedJoinKeys))
+      val updated = resolvedJoin.withCond(JoinOnEq(resolvedJoinKeys))
       updated
     case j @ Join(joinType, left, right, u @ JoinOn(Eq(leftKey, rightKey))) =>
       val resolvedJoin = Join(joinType, resolveRelation(context, left), resolveRelation(context, right), u)
@@ -130,7 +132,7 @@ object TypeResolver extends LogSupport {
             other
         }
       }
-      val updated = j.withCond(JoinOnEq(resolvedJoinKeys))
+      val updated = resolvedJoin.withCond(JoinOnEq(resolvedJoinKeys))
       updated
   }
 
@@ -149,10 +151,18 @@ object TypeResolver extends LogSupport {
 
   def resolveColumns(context: AnalyzerContext): PlanRewriter = { case p @ Project(child, columns) =>
     val resolvedColumns = resolveOutputColumns(child.outputAttributes, columns)
-    Project(child, resolvedColumns)
+    val resolved        = Project(child, resolvedColumns)
+    resolved
   }
 
+  /**
+    * Resolve output columns by looking up the inputAttributes
+    * @param inputAttributes
+    * @param outputColumns
+    * @return
+    */
   private def resolveOutputColumns(inputAttributes: Seq[Attribute], outputColumns: Seq[Attribute]): Seq[Attribute] = {
+
     val resolvedColumns = Seq.newBuilder[Attribute]
     outputColumns.map {
       case a: AllColumns =>
@@ -170,7 +180,8 @@ object TypeResolver extends LogSupport {
       case other =>
         resolvedColumns += other
     }
-    resolvedColumns.result()
+    val output = resolvedColumns.result()
+    output
   }
 
   def resolveAttribute(attribute: Attribute): Attribute = {
