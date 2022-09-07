@@ -210,4 +210,34 @@ class TypeResolverTest extends AirSpec {
       )
     }
   }
+
+  test("resolve join attributes") {
+    test("join with USING") {
+      val p = analyze("select id, A.name from A join B using(id)")
+      p.outputAttributes shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
+        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+      )
+    }
+
+    test("join with on") {
+      val p = analyze("select id, A.name from A join B on A.id = B.id")
+      p.outputAttributes shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
+        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+      )
+    }
+
+    test("join with different column names") {
+      val p = analyze("select pid, name from A join (select id pid from B) on A.id = B.pid")
+      p.outputAttributes shouldBe List(
+        ResolvedAttribute("pid", DataType.LongType, Some(tableB), Some(b1)),
+        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+      )
+    }
+
+    test("3-way joins") {
+      pending("TODO")
+    }
+  }
 }

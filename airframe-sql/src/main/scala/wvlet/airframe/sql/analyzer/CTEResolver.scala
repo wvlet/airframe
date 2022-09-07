@@ -32,12 +32,7 @@ object CTEResolver extends LogSupport {
 
       var currentContext = analyzerContext
       val resolvedQueries = queryDefs.map { x =>
-        val resolvedQuery: Relation = TypeResolver.resolve(currentContext, x.query) match {
-          case r: Relation => r
-          case other       =>
-            // This should not happen in general
-            x.query
-        }
+        val resolvedQuery: Relation = TypeResolver.resolveRelation(currentContext, x.query)
         val cteBody = x.columnNames match {
           case None =>
             resolvedQuery
@@ -58,7 +53,7 @@ object CTEResolver extends LogSupport {
         // cteBody already has renaming with projection, no need to propagate column name aliases
         WithQuery(x.name, cteBody, None)
       }
-      val newBody = TypeResolver.resolve(currentContext, body).asInstanceOf[Relation]
+      val newBody = TypeResolver.resolveRelation(currentContext, body)
       Query(With(recursive, resolvedQueries), newBody)
     }
   }

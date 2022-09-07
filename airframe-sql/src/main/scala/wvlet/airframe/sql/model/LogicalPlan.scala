@@ -354,7 +354,17 @@ object LogicalPlan {
     }
     override def inputAttributes: Seq[Attribute] =
       left.outputAttributes ++ right.outputAttributes
-    override def outputAttributes: Seq[Attribute] = inputAttributes
+    override def outputAttributes: Seq[Attribute] = {
+      cond match {
+        case je: JoinOnEq =>
+          // Remove join key duplication here
+          val dups = je.duplicateKeys
+          inputAttributes.filter(x => !dups.contains(x))
+        case _ => inputAttributes
+      }
+    }
+
+    def withCond(cond: JoinCriteria): Join = this.copy(cond = cond)
   }
   sealed abstract class JoinType(val symbol: String)
 // Exact match (= equi join)
