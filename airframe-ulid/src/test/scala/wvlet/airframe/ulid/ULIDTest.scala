@@ -116,6 +116,11 @@ class ULIDTest extends AirSpec with PropertyCheck {
     } finally {
       ULID.useDefaultULIDGenerator
     }
+  }
 
+  test("generate ULID from a given unix time") {
+    val unixTime = System.currentTimeMillis() - 10000
+    val u        = ULID.ofMillis(unixTime)
+    u.epochMillis shouldBe unixTime
   }
 }

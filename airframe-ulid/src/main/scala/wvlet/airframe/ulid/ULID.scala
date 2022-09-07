@@ -152,6 +152,15 @@ object ULID {
   def newULIDString: String = _generator.newULIDString
 
   /**
+    * Create a new ULID from a given unix time in milli seconds
+    * @param unixTimeMillis
+    * @return
+    */
+  def ofMillis(unixTimeMillis: Long): ULID = {
+    ULID(_generator.newULIDFromMillis(unixTimeMillis))
+  }
+
+  /**
     * Create a new ULID from a given string of size 26
     */
   def apply(ulidString: String): ULID = fromString(ulidString)
@@ -262,10 +271,13 @@ object ULID {
       */
     def newULIDString: String = {
       val unixTimeMillis: Long = currentTimeInMillis
+      newULIDFromMillis(unixTimeMillis)
+    }
+
+    def newULIDFromMillis(unixTimeMillis: Long): String = {
       if (unixTimeMillis > MaxTime) {
         throw new IllegalStateException(f"unixtime should be less than: ${MaxTime}%,d: ${unixTimeMillis}%,d")
       }
-
       // Add a guard so that only a single-thread can generate ULID based on the previous value
       synchronized {
         val (hi, low)    = lastValue.get()
