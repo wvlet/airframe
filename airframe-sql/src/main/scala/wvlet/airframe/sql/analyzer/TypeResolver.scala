@@ -120,6 +120,18 @@ object TypeResolver extends LogSupport {
       }
       val updated = j.withCond(JoinOnEq(resolvedJoinKeys))
       updated
+    case j @ Join(joinType, left, right, u @ JoinOn(Eq(leftKey, rightKey))) =>
+      val resolvedJoin = Join(joinType, resolveRelation(context, left), resolveRelation(context, right), u)
+      val resolvedJoinKeys: Seq[Expression] = Seq(leftKey, rightKey).flatMap { k =>
+        findMatchInInputAttributes(k, resolvedJoin.inputAttributes) match {
+          case Nil =>
+            throw SQLErrorCode.ColumnNotFound.newException(s"join key column: ${k.sqlExpr} is not found")
+          case other =>
+            other
+        }
+      }
+      val updated = j.withCond(JoinOnEq(resolvedJoinKeys))
+      updated
   }
 
   def resolveRegularRelation(context: AnalyzerContext): PlanRewriter = {

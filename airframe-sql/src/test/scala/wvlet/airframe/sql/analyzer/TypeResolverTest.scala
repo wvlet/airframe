@@ -219,5 +219,13 @@ class TypeResolverTest extends AirSpec {
         ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
       )
     }
+
+    test("join with on") {
+      val p = analyze("select id, A.name from A join B on A.id = B.id")
+      p.outputAttributes shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
+        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+      )
+    }
   }
 }

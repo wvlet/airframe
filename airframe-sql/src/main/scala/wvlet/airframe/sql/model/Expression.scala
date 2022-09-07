@@ -106,7 +106,7 @@ trait Attribute extends LeafExpression {
 object Expression {
   import wvlet.airframe.sql.model.LogicalPlan.Relation
 
-  private def concat(expr: Seq[Expression])(merger: (Expression, Expression) => Expression): Expression = {
+  def concat(expr: Seq[Expression])(merger: (Expression, Expression) => Expression): Expression = {
     require(expr.length > 0)
     if (expr.length == 1) {
       expr.head
@@ -117,10 +117,10 @@ object Expression {
     }
   }
 
-  private def concatWithAnd(expr: Seq[Expression]): Expression = {
+  def concatWithAnd(expr: Seq[Expression]): Expression = {
     concat(expr) { case (a, b) => And(a, b) }
   }
-  private def concatWithEq(expr: Seq[Expression]): Expression = {
+  def concatWithEq(expr: Seq[Expression]): Expression = {
     concat(expr) { case (a, b) => Eq(a, b) }
   }
 
@@ -181,6 +181,24 @@ object Expression {
     * @param rightKey
     */
   case class JoinOnEq(keys: Seq[Expression]) extends JoinCriteria with LeafExpression {
+    require(keys.forall(_.resolved), s"all keys of JoinOnEq must be resolved: ${keys}")
+
+    /**
+      * Report duplicate name join keys, which can be excluded from the parent
+      * @return
+      */
+    def duplicateKeys: Seq[Expression] = {
+      // remove duplicate column names
+      var seen = Set.empty[String]
+      val uniqueNameKeys = keys.collect {
+        case r: ResolvedAttribute if !seen.contains(r.name) =>
+          seen += r.name
+          r
+      }
+      keys.collect {
+        case x if !uniqueNameKeys.contains(x) => x
+      }
+    }
     override def children: Seq[Expression] = keys
   }
 
