@@ -118,6 +118,9 @@ libraryDependencies ++= <span class="hljs-string">"org.wvlet.airframe"</span> %%
 println(ulid)             <span class="hljs-comment">// 01F3J0G1M4WQRBHGZ6HCF6JA0K</span>
 println(ulid.epochMillis) <span class="hljs-comment">// 1618733434500</span>
 
+<span class="hljs-comment">// You can generate a ULID string at ease with newULIDString</span>
+<span class="hljs-type">ULID</span>.newULIDString
+
 <span class="hljs-comment">// Parse the string representation of ULIDs </span>
 <span class="hljs-keyword">val</span> ulid2 = <span class="hljs-type">ULID</span>.fromString(<span class="hljs-string">"01F3J0G1MD4QX7Z5QB148QNH4R"</span>)
 ulid2.epochMillis <span class="hljs-comment">// 1618733434509</span>
@@ -125,8 +128,14 @@ ulid2.epochMillis <span class="hljs-comment">// 1618733434509</span>
 <span class="hljs-comment">// Parse the binary representation of ULIDs</span>
 <span class="hljs-type">ULID</span>.fromBytes(...)
 
+
+<span class="hljs-comment">// Create an ULID from a given unixtime (milliseconds)</span>
+<span class="hljs-keyword">val</span> unixTimeMillis = <span class="hljs-type">System</span>.currentTimeMillis() - <span class="hljs-number">1000</span>
+<span class="hljs-type">ULID</span>.ofMillis(unixTimeMillis)
+
 <span class="hljs-comment">// Create an ULID from a given unixtime (48-bits, milliseconds) and a random value (80-bits) </span>
 <span class="hljs-type">ULID</span>.of(unixTimeMillis, randHi, randLow)
+
 </code></pre>
 <p>ULID.newULID will produce <a href="https://github.com/ulid/spec#monotonicity">monotonically increasing ULIDs</a> in a thread-safe manner. If ULIDs are generated within the same millisecond, airframe-ulid will increment the random part of ULID by 1 to enforce the ordering:</p>
 <pre><code class="hljs"><span class="hljs-number">01</span>F3HZ9V4BHVHJMMETE0MFBQKH
