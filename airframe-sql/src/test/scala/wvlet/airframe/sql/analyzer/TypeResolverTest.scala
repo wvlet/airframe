@@ -240,4 +240,10 @@ class TypeResolverTest extends AirSpec {
       pending("TODO")
     }
   }
+
+  test("resolve UDF inputs") {
+    test("aggregation query") {
+      val p = analyze("select id, max(name) from A")
+    }
+  }
 }
