@@ -83,7 +83,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     traverseExpressions(new PartialFunction[Expression, Unit] {
       override def isDefinedAt(x: Expression): Boolean = cond.isDefinedAt(x)
       override def apply(v1: Expression): Unit = {
-        if(cond.apply(v1)) {
+        if (cond.apply(v1)) {
           l += v1
         }
       }

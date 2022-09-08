@@ -241,11 +241,11 @@ class TypeResolverTest extends AirSpec {
   }
 
   test("resolve UDF inputs") {
-    def analyzeAndCollectFunctions(sql: String): List[Expression] ={
+    def analyzeAndCollectFunctions(sql: String): List[Expression] = {
       val p = analyze(sql)
       val exprs = p.collectExpressions.collect {
         case f: FunctionCall => f
-        case c: Cast => c
+        case c: Cast         => c
       }
       exprs
     }
@@ -258,7 +258,7 @@ class TypeResolverTest extends AirSpec {
     val r2 = ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
 
     test("simple function") {
-      val fns = analyzeAndCollectFunctions("select max(id) from A")
+      val fns   = analyzeAndCollectFunctions("select max(id) from A")
       val attrs = fns.flatMap(collectResolvedInputArgs)
       attrs shouldBe List(r1)
     }
@@ -267,9 +267,9 @@ class TypeResolverTest extends AirSpec {
       val fns = analyzeAndCollectFunctions("select max(cast(id as double)) from A")
       fns match {
         case List(
-          f @ FunctionCall("max", _, _, _, _),
-          c @ Cast(_, "double", _)
-        ) =>
+              f @ FunctionCall("max", _, _, _, _),
+              c @ Cast(_, "double", _)
+            ) =>
           collectResolvedInputArgs(f) shouldBe List(r1)
           collectResolvedInputArgs(c) shouldBe List(r1)
         case other =>
