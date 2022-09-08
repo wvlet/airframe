@@ -112,11 +112,15 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     newObj.asInstanceOf[this.type]
   }
 
-  def collectExpressions: List[Expression] = {
+  /**
+    * List all input expressions to the plan
+    * @return
+    */
+  def inputExpressions: List[Expression] = {
     def recursiveCollect(arg: Any): List[Expression] =
       arg match {
         case e: Expression  => e :: e.collectSubExpressions
-        case l: LogicalPlan => l.collectExpressions
+        case l: LogicalPlan => l.inputExpressions
         case Some(x)        => recursiveCollect(x)
         case s: Seq[_]      => s.flatMap(recursiveCollect _).toList
         case other: AnyRef  => Nil
@@ -124,6 +128,24 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
       }
 
     productIterator.flatMap(recursiveCollect).toList
+  }
+
+  /**
+    * Collect from all input expressions and report matching expressions
+    * @param rule
+    * @return
+    */
+  def collectExpressions(cond: PartialFunction[Expression, Boolean]): List[Expression] = {
+    val l = List.newBuilder[Expression]
+    traverseExpressions(new PartialFunction[Expression, Unit] {
+      override def isDefinedAt(x: Expression): Boolean = cond.isDefinedAt(x)
+      override def apply(v1: Expression): Unit = {
+        if (cond.apply(v1)) {
+          l += v1
+        }
+      }
+    })
+    l.result()
   }
 
   def traverseExpressions[U](rule: PartialFunction[Expression, U]): Unit = {

@@ -51,7 +51,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     def recursiveCollect(arg: Any): List[Expression] =
       arg match {
         case e: Expression  => e :: e.collectSubExpressions
-        case l: LogicalPlan => l.collectExpressions
+        case l: LogicalPlan => l.inputExpressions
         case Some(x)        => recursiveCollect(x)
         case s: Seq[_]      => s.flatMap(recursiveCollect _).toList
         case other: AnyRef  => Nil
@@ -76,6 +76,19 @@ sealed trait Expression extends TreeNode[Expression] with Product {
       rule.apply(this)
     }
     productIterator.foreach(recursiveTraverse)
+  }
+
+  def collectExpressions(cond: PartialFunction[Expression, Boolean]): List[Expression] = {
+    val l = List.newBuilder[Expression]
+    traverseExpressions(new PartialFunction[Expression, Unit] {
+      override def isDefinedAt(x: Expression): Boolean = cond.isDefinedAt(x)
+      override def apply(v1: Expression): Unit = {
+        if (cond.apply(v1)) {
+          l += v1
+        }
+      }
+    })
+    l.result()
   }
 
   lazy val resolved: Boolean    = resolvedChildren

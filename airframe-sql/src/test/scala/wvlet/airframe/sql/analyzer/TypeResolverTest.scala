@@ -14,11 +14,10 @@
 package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
-import wvlet.airframe.sql.SQLErrorCode.SyntaxError
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
-import wvlet.airframe.sql.model.Expression.{And, Eq, GroupingKey, LongLiteral, SingleColumn}
+import wvlet.airframe.sql.model.Expression.{And, Cast, Eq, FunctionCall, GroupingKey, LongLiteral, SingleColumn}
 import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project}
 import wvlet.airframe.sql.model.{Expression, LogicalPlan, LogicalPlanPrinter, ResolvedAttribute}
 import wvlet.airframe.sql.parser.SQLParser
@@ -238,6 +237,49 @@ class TypeResolverTest extends AirSpec {
 
     test("3-way joins") {
       pending("TODO")
+    }
+  }
+
+  test("resolve UDF inputs") {
+    def analyzeAndCollectFunctions(sql: String): List[Expression] = {
+      val p = analyze(sql)
+      val exprs = p.collectExpressions {
+        case f: FunctionCall => true
+        case c: Cast         => true
+      }
+      exprs
+    }
+
+    def collectResolvedInputArgs(e: Expression): List[Expression] = {
+      e.collectExpressions { case r: ResolvedAttribute => true }
+    }
+
+    val r1 = ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1))
+    val r2 = ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+
+    test("simple function") {
+      val fns   = analyzeAndCollectFunctions("select max(id) from A")
+      val attrs = fns.flatMap(collectResolvedInputArgs)
+      attrs shouldBe List(r1)
+    }
+
+    test("function args with cast") {
+      val fns = analyzeAndCollectFunctions("select max(cast(id as double)) from A")
+      fns match {
+        case List(
+              f @ FunctionCall("max", _, _, _, _),
+              c @ Cast(_, "double", _)
+            ) =>
+          collectResolvedInputArgs(f) shouldBe List(r1)
+          collectResolvedInputArgs(c) shouldBe List(r1)
+        case other =>
+          fail(s"Unexpected functions: ${other}")
+      }
+    }
+
+    test("aggregation query") {
+      val fns = analyzeAndCollectFunctions("select id, max(name) from A group by id")
+      fns.flatMap(collectResolvedInputArgs) shouldBe List(r2)
     }
   }
 }
