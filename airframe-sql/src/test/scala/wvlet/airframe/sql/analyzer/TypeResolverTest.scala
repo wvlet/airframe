@@ -243,9 +243,9 @@ class TypeResolverTest extends AirSpec {
   test("resolve UDF inputs") {
     def analyzeAndCollectFunctions(sql: String): List[Expression] = {
       val p = analyze(sql)
-      val exprs = p.collectExpressions.collect {
-        case f: FunctionCall => f
-        case c: Cast         => c
+      val exprs = p.collectExpressions {
+        case f: FunctionCall => true
+        case c: Cast         => true
       }
       exprs
     }

@@ -51,7 +51,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     def recursiveCollect(arg: Any): List[Expression] =
       arg match {
         case e: Expression  => e :: e.collectSubExpressions
-        case l: LogicalPlan => l.collectExpressions
+        case l: LogicalPlan => l.inputExpressions
         case Some(x)        => recursiveCollect(x)
         case s: Seq[_]      => s.flatMap(recursiveCollect _).toList
         case other: AnyRef  => Nil
