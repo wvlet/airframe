@@ -14,7 +14,6 @@
 package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
-import wvlet.airframe.sql.SQLErrorCode.SyntaxError
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
@@ -242,8 +241,11 @@ class TypeResolverTest extends AirSpec {
   }
 
   test("resolve UDF inputs") {
+    test("simple function") {
+      val p = analyze("select max(id) from A")
+    }
     test("aggregation query") {
-      val p = analyze("select id, max(name) from A")
+      val p = analyze("select id, max(name) from A group by id")
     }
   }
 }
