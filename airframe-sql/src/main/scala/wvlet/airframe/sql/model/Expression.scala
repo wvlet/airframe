@@ -78,6 +78,19 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     productIterator.foreach(recursiveTraverse)
   }
 
+  def collectExpressions(cond: PartialFunction[Expression, Boolean]): List[Expression] = {
+    val l = List.newBuilder[Expression]
+    traverseExpressions(new PartialFunction[Expression, Unit] {
+      override def isDefinedAt(x: Expression): Boolean = cond.isDefinedAt(x)
+      override def apply(v1: Expression): Unit = {
+        if(cond.apply(v1)) {
+          l += v1
+        }
+      }
+    })
+    l.result()
+  }
+
   lazy val resolved: Boolean    = resolvedChildren
   def resolvedChildren: Boolean = children.forall(_.resolved) && resolvedInputs
   def resolvedInputs: Boolean   = true
