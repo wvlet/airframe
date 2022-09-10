@@ -77,6 +77,11 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     }
   }
 
+  /**
+    * Iterate through LogicalPlans and apply matching rules for transformation
+    * @param rule
+    * @return
+    */
   def transform(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
     val newNode: LogicalPlan = rule.applyOrElse(this, identity[LogicalPlan])
     if (newNode.eq(this)) {
@@ -107,11 +112,15 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     newObj.asInstanceOf[this.type]
   }
 
-  def collectExpressions: List[Expression] = {
+  /**
+    * List all input expressions to the plan
+    * @return
+    */
+  def inputExpressions: List[Expression] = {
     def recursiveCollect(arg: Any): List[Expression] =
       arg match {
         case e: Expression  => e :: e.collectSubExpressions
-        case l: LogicalPlan => l.collectExpressions
+        case l: LogicalPlan => l.inputExpressions
         case Some(x)        => recursiveCollect(x)
         case s: Seq[_]      => s.flatMap(recursiveCollect _).toList
         case other: AnyRef  => Nil
@@ -119,6 +128,24 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
       }
 
     productIterator.flatMap(recursiveCollect).toList
+  }
+
+  /**
+    * Collect from all input expressions and report matching expressions
+    * @param rule
+    * @return
+    */
+  def collectExpressions(cond: PartialFunction[Expression, Boolean]): List[Expression] = {
+    val l = List.newBuilder[Expression]
+    traverseExpressions(new PartialFunction[Expression, Unit] {
+      override def isDefinedAt(x: Expression): Boolean = cond.isDefinedAt(x)
+      override def apply(v1: Expression): Unit = {
+        if (cond.apply(v1)) {
+          l += v1
+        }
+      }
+    })
+    l.result()
   }
 
   def traverseExpressions[U](rule: PartialFunction[Expression, U]): Unit = {
@@ -279,8 +306,8 @@ object LogicalPlan {
 
   case class Aggregate(
       child: Relation,
-      selectItems: Seq[Attribute],
-      groupingKeys: Seq[GroupingKey],
+      selectItems: List[Attribute],
+      groupingKeys: List[GroupingKey],
       having: Option[Expression]
   ) extends UnaryRelation
       with Selection {
@@ -328,7 +355,16 @@ object LogicalPlan {
     override def sig(config: QuerySignatureConfig) = ""
     override def child: LogicalPlan                = query
     override def inputAttributes: Seq[Attribute]   = query.inputAttributes
-    override def outputAttributes: Seq[Attribute]  = query.outputAttributes
+    override def outputAttributes: Seq[Attribute] = {
+      columnNames match {
+        case Some(aliases) =>
+          query.outputAttributes.zip(aliases).map { case (in, alias) =>
+            SingleColumn(in, Some(alias))
+          }
+        case None =>
+          query.outputAttributes
+      }
+    }
   }
 
 // Joins
@@ -340,7 +376,17 @@ object LogicalPlan {
     }
     override def inputAttributes: Seq[Attribute] =
       left.outputAttributes ++ right.outputAttributes
-    override def outputAttributes: Seq[Attribute] = inputAttributes
+    override def outputAttributes: Seq[Attribute] = {
+      cond match {
+        case je: JoinOnEq =>
+          // Remove join key duplication here
+          val dups = je.duplicateKeys
+          inputAttributes.filter(x => !dups.contains(x))
+        case _ => inputAttributes
+      }
+    }
+
+    def withCond(cond: JoinCriteria): Join = this.copy(cond = cond)
   }
   sealed abstract class JoinType(val symbol: String)
 // Exact match (= equi join)

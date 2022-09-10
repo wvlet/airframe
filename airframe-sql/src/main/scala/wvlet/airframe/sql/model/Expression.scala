@@ -51,7 +51,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     def recursiveCollect(arg: Any): List[Expression] =
       arg match {
         case e: Expression  => e :: e.collectSubExpressions
-        case l: LogicalPlan => l.collectExpressions
+        case l: LogicalPlan => l.inputExpressions
         case Some(x)        => recursiveCollect(x)
         case s: Seq[_]      => s.flatMap(recursiveCollect _).toList
         case other: AnyRef  => Nil
@@ -76,6 +76,19 @@ sealed trait Expression extends TreeNode[Expression] with Product {
       rule.apply(this)
     }
     productIterator.foreach(recursiveTraverse)
+  }
+
+  def collectExpressions(cond: PartialFunction[Expression, Boolean]): List[Expression] = {
+    val l = List.newBuilder[Expression]
+    traverseExpressions(new PartialFunction[Expression, Unit] {
+      override def isDefinedAt(x: Expression): Boolean = cond.isDefinedAt(x)
+      override def apply(v1: Expression): Unit = {
+        if (cond.apply(v1)) {
+          l += v1
+        }
+      }
+    })
+    l.result()
   }
 
   lazy val resolved: Boolean    = resolvedChildren
@@ -106,13 +119,32 @@ trait Attribute extends LeafExpression {
 object Expression {
   import wvlet.airframe.sql.model.LogicalPlan.Relation
 
+  def concat(expr: Seq[Expression])(merger: (Expression, Expression) => Expression): Expression = {
+    require(expr.length > 0)
+    if (expr.length == 1) {
+      expr.head
+    } else {
+      expr.tail.foldLeft(expr.head) { case (prev, next) =>
+        merger(prev, next)
+      }
+    }
+  }
+
+  def concatWithAnd(expr: Seq[Expression]): Expression = {
+    concat(expr) { case (a, b) => And(a, b) }
+  }
+  def concatWithEq(expr: Seq[Expression]): Expression = {
+    concat(expr) { case (a, b) => Eq(a, b) }
+  }
+
   /**
     */
   case class ParenthesizedExpression(child: Expression) extends UnaryExpression
 
   // Qualified name (QName), such as table and column names
   case class QName(parts: Seq[String]) extends LeafExpression {
-    override def toString: String = parts.mkString(".")
+    def fullName: String          = parts.mkString(".")
+    override def toString: String = fullName
   }
   object QName {
     def apply(s: String): QName = {
@@ -154,6 +186,33 @@ object Expression {
   }
   case class JoinOn(expr: Expression) extends JoinCriteria with UnaryExpression {
     override def child: Expression = expr
+  }
+
+  /**
+    * Join condition used only when join keys are resolved
+    * @param leftKey
+    * @param rightKey
+    */
+  case class JoinOnEq(keys: Seq[Expression]) extends JoinCriteria with LeafExpression {
+    require(keys.forall(_.resolved), s"all keys of JoinOnEq must be resolved: ${keys}")
+
+    /**
+      * Report duplicate name join keys, which can be excluded from the parent
+      * @return
+      */
+    def duplicateKeys: Seq[Expression] = {
+      // remove duplicate column names
+      var seen = Set.empty[String]
+      val uniqueNameKeys = keys.collect {
+        case r: ResolvedAttribute if !seen.contains(r.name) =>
+          seen += r.name
+          r
+      }
+      keys.collect {
+        case x if !uniqueNameKeys.contains(x) => x
+      }
+    }
+    override def children: Seq[Expression] = keys
   }
 
   case class AllColumns(prefix: Option[QName]) extends Attribute {

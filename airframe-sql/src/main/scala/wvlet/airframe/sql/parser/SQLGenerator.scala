@@ -211,6 +211,7 @@ object SQLGenerator extends LogSupport {
           case NaturalJoin        => ""
           case JoinUsing(columns) => s" USING (${columns.map(_.sqlExpr).mkString(", ")})"
           case JoinOn(expr)       => s" ON ${printExpression(expr)}"
+          case JoinOnEq(keys)     => s" ON ${printExpression(Expression.concatWithEq(keys))}"
         }
         joinType match {
           case InnerJoin      => s"${l} JOIN ${r}${c}"

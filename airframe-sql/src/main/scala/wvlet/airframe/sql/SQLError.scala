@@ -35,9 +35,9 @@ case class SQLError(
     )
 
 sealed abstract class SQLErrorCode(val code: Int) {
-  def toException(message: String): SQLError = SQLErrorBuilder(errorCode = this).toException(message)
-  def toException(message: String, cause: Throwable) =
-    SQLErrorBuilder(errorCode = this).withCause(cause).toException(message)
+  def newException(message: String): SQLError = SQLErrorBuilder(errorCode = this).newException(message)
+  def newException(message: String, cause: Throwable) =
+    SQLErrorBuilder(errorCode = this).withCause(cause).newException(message)
 
   def withCause(e: Throwable): SQLErrorBuilder = SQLErrorBuilder(errorCode = this, cause = Option(e))
   def withMetadata(metadata: Map[String, Any]) = SQLErrorBuilder(errorCode = this, metadata = metadata)
@@ -51,15 +51,22 @@ object SQLErrorCode {
   ) {
     def withCause(e: Throwable): SQLErrorBuilder                  = this.copy(cause = Option(e))
     def withMetadata(metadata: Map[String, Any]): SQLErrorBuilder = this.copy(metadata = metadata)
-    def toException(message: String): SQLError                    = SQLError(errorCode, message, cause, metadata)
-    def toException(message: String, cause: Throwable): SQLError =
+    def newException(message: String): SQLError                   = SQLError(errorCode, message, cause, metadata)
+    def newException(message: String, cause: Throwable): SQLError =
       SQLError(errorCode, message, cause = Option(cause), metadata)
   }
 
-  case object UserError       extends SQLErrorCode(0x00000)
-  case object SyntaxError     extends SQLErrorCode(0x00001)
-  case object UnknownDataType extends SQLErrorCode(0x00002)
-  case object InvalidType     extends SQLErrorCode(0x00003)
-
-  case object InternalError extends SQLErrorCode(0x10000)
+  case object UserError             extends SQLErrorCode(0x0000)
+  case object SyntaxError           extends SQLErrorCode(0x0001)
+  case object UnknownDataType       extends SQLErrorCode(0x0002)
+  case object InvalidType           extends SQLErrorCode(0x0003)
+  case object DatabaseNotFound      extends SQLErrorCode(0x0004)
+  case object TableNotFound         extends SQLErrorCode(0x0005)
+  case object ColumnNotFound        extends SQLErrorCode(0x0006)
+  case object DatabaseAlreadyExists extends SQLErrorCode(0x0007)
+  case object TableAlreadyExists    extends SQLErrorCode(0x0008)
+  case object CatalogNotFound       extends SQLErrorCode(0x0009)
+  case object InvalidArgument       extends SQLErrorCode(0x0010)
+  case object UnsupportedSyntax     extends SQLErrorCode(0x0011)
+  case object InternalError         extends SQLErrorCode(0x10000)
 }

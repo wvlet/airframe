@@ -2,7 +2,7 @@ import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
 val SCALA_2_12          = "2.12.16"
 val SCALA_2_13          = "2.13.8"
-val SCALA_3_0           = "3.1.3"
+val SCALA_3_0           = "3.2.0"
 val targetScalaVersions = SCALA_2_13 :: SCALA_2_12 :: Nil
 val withDotty           = SCALA_3_0 :: targetScalaVersions
 
@@ -13,18 +13,18 @@ val AIRSPEC_VERSION                 = "22.7.3"
 val SCALACHECK_VERSION              = "1.16.0"
 val MSGPACK_VERSION                 = "0.9.3"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.1.1"
-val SQLITE_JDBC_VERSION             = "3.39.2.1"
+val SQLITE_JDBC_VERSION             = "3.39.3.0"
 val SLF4J_VERSION                   = "1.7.36"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
-val SCALAJS_DOM_VERSION             = "2.2.0"
+val SCALAJS_DOM_VERSION             = "2.3.0"
 val FINAGLE_VERSION                 = "22.7.0"
 val FLUENCY_VERSION                 = "2.6.5"
 val GRPC_VERSION                    = "1.49.0"
 val JMH_VERSION                     = "1.35"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 val PARQUET_VERSION                 = "1.12.3"
-val SNAKE_YAML_VERSION              = "1.30"
+val SNAKE_YAML_VERSION              = "1.31"
 
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
@@ -912,7 +912,7 @@ def sqlRefLib = { scalaVersion: String =>
       // Include Spark just as a reference implementation
       "org.apache.spark" %% "spark-sql" % "3.3.0" % Test,
       // Include Trino as a reference implementation
-      "io.trino" % "trino-main" % "393" % Test
+      "io.trino" % "trino-main" % "395" % Test
     )
   } else {
     Seq.empty
@@ -948,7 +948,7 @@ lazy val sql =
     .settings(
       name                       := "airframe-sql",
       description                := "SQL parser & analyzer",
-      Antlr4 / antlr4Version     := "4.10.1",
+      Antlr4 / antlr4Version     := "4.11.1",
       Antlr4 / antlr4PackageName := Some("wvlet.airframe.sql.parser"),
       Antlr4 / antlr4GenListener := true,
       Antlr4 / antlr4GenVisitor  := true,

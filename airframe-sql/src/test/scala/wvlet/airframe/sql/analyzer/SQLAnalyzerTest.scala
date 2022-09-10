@@ -13,46 +13,65 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.sql.catalog.{Catalog, DataType}
+import wvlet.airframe.sql.catalog.Catalog.CreateMode
+import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
+import wvlet.airframe.sql.model.ResolvedAttribute
 import wvlet.airspec.AirSpec
 
 /**
   */
 class SQLAnalyzerTest extends AirSpec {
-  val tbl1 =
-    Catalog
-      .table("public", "a")
+  private lazy val tbl1 = Catalog.newTable(
+    "public",
+    "a",
+    Catalog.newSchema
       .addColumn("id", DataType.LongType)
       .addColumn("name", DataType.StringType)
       .addColumn("address", DataType.StringType)
+  )
 
-  val tbl2 =
-    Catalog
-      .table("public", "b")
-      .addColumn("id", DataType.LongType)
-      .addColumn("phone", DataType.StringType)
+  private lazy val tbl2 =
+    Catalog.newTable(
+      "public",
+      "b",
+      Catalog.newSchema
+        .addColumn("id", DataType.LongType)
+        .addColumn("phone", DataType.StringType)
+    )
 
-  val catalog =
-    Catalog
-      .withTable(tbl1)
-      .addTable(tbl2)
+  private lazy val catalog = {
+    val c = new InMemoryCatalog("default", None, Seq.empty)
+    c.createDatabase(Catalog.Database("public"), CreateMode.CREATE_IF_NOT_EXISTS)
+    c.createTable(tbl1, CreateMode.CREATE_IF_NOT_EXISTS)
+    c.createTable(tbl2, CreateMode.CREATE_IF_NOT_EXISTS)
+    c
+  }
 
   test("resolve input/output types") {
     val plan = SQLAnalyzer.analyze("select id, name from a", "public", catalog)
     plan.resolved shouldBe true
-    plan.outputAttributes.mkString(",") shouldBe "id:long,name:string"
+    plan.outputAttributes.toList shouldBe List(
+      ResolvedAttribute("id", DataType.LongType, Some(tbl1), Some(tbl1.column("id"))),
+      ResolvedAttribute("name", DataType.StringType, Some(tbl1), Some(tbl1.column("name")))
+    )
   }
 
   test("resolve select *") {
     val plan = SQLAnalyzer.analyze("select * from a", "public", catalog)
     plan.resolved shouldBe true
-    plan.outputAttributes.mkString(",") shouldBe "id:long,name:string,address:string"
+    plan.outputAttributes.toList shouldBe List(
+      ResolvedAttribute("id", DataType.LongType, Some(tbl1), Some(tbl1.column("id"))),
+      ResolvedAttribute("name", DataType.StringType, Some(tbl1), Some(tbl1.column("name"))),
+      ResolvedAttribute("address", DataType.StringType, Some(tbl1), Some(tbl1.column("address")))
+    )
   }
 
   test("resolve select with alias") {
     val plan = SQLAnalyzer.analyze("select id as person_id from a", "public", catalog)
     plan.resolved shouldBe true
-    plan.outputAttributes.mkString(",") shouldBe "person_id:long"
+    plan.outputAttributes.toList shouldBe List(
+      ResolvedAttribute("person_id", DataType.LongType, Some(tbl1), Some(tbl1.column("id")))
+    )
   }
 
   test("resolve join attributes") {
@@ -62,7 +81,12 @@ class SQLAnalyzerTest extends AirSpec {
       catalog
     )
     plan.resolved shouldBe true
-    plan.outputAttributes.mkString(",") shouldBe "id:long,name:string,address:string,person_id:string"
+    plan.outputAttributes.toList shouldBe List(
+      ResolvedAttribute("id", DataType.LongType, Some(tbl1), Some(tbl1.column("id"))),
+      ResolvedAttribute("name", DataType.StringType, Some(tbl1), Some(tbl1.column("name"))),
+      ResolvedAttribute("address", DataType.StringType, Some(tbl1), Some(tbl1.column("address"))),
+      ResolvedAttribute("person_id", DataType.StringType, Some(tbl2), Some(tbl2.column("phone")))
+    )
   }
 
 }

@@ -1,6 +1,5 @@
 package wvlet.airframe.surface
 import scala.quoted._
-import dotty.tools.dotc.core.{Types as DottyTypes}
 
 private[surface] object CompileTimeSurfaceFactory {
 
@@ -91,19 +90,23 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     } else {
       seen += t
       // For debugging
-      // println(s"[${typeNameOf(t)}]\n  ${t}")
+      // println(s"[${typeNameOf(t)}]\n  ${t}\nfull type name: ${fullTypeNameOf(t)}\nclass: ${t.getClass}")
       val generator = factory.andThen { expr =>
-        val cacheKey =
-          if (typeNameOf(t) == "scala.Any" && classOf[DottyTypes.TypeBounds].isAssignableFrom(t.getClass)) {
-            // Distinguish scala.Any and type bounds (such as _)
-            s"${fullTypeNameOf(t)} for ${t}"
-          } else if (typeNameOf(t) == "scala.Any" && classOf[DottyTypes.TypeParamRef].isAssignableFrom(t.getClass)) {
-            // This ensure different cache key for each Type Parameter (such as T and U).
-            // This is required because fullTypeNameOf of every Type Parameters is `scala.Any`.
-            s"${fullTypeNameOf(t)} for ${t}"
-          } else {
-            fullTypeNameOf(t)
+        val cacheKey = if (typeNameOf(t) == "scala.Any") {
+          t match {
+            case ParamRef(TypeLambda(typeNames, _, _), _) =>
+              // Distinguish scala.Any and type bounds (such as _)
+              s"${fullTypeNameOf(t)} for ${t}"
+            case TypeBounds(_, _) =>
+              // This ensures different cache key for each Type Parameter (such as T and U).
+              // This is required because fullTypeNameOf of every Type Parameters is `scala.Any`.
+              s"${fullTypeNameOf(t)} for ${t}"
+            case _ =>
+              fullTypeNameOf(t)
           }
+        } else {
+          fullTypeNameOf(t)
+        }
         '{
           val key = ${ Expr(cacheKey) }
           if (!wvlet.airframe.surface.surfaceCache.contains(key)) {
@@ -130,7 +133,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       javaEnumFactory orElse
       exisitentialTypeFactory orElse
       genericTypeWithConstructorFactory orElse
-      typeParameterFactory orElse
       genericTypeFactory
   }
 
@@ -208,14 +210,15 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       val args     = a.args.map(surfaceOf(_))
       // TODO support type erasure instead of using AnyRefSurface
       '{ HigherKindedTypeSurface(${ Expr(name) }, ${ Expr(fullName) }, AnyRefSurface, ${ Expr.ofSeq(args) }) }
+    case p @ ParamRef(TypeLambda(typeNames, _, _), _) =>
+      val name     = typeNames.mkString(",")
+      val fullName = fullTypeNameOf(p)
+      '{ HigherKindedTypeSurface(${ Expr(name) }, ${ Expr(fullName) }, AnyRefSurface, Seq.empty) }
   }
 
   private def typeArgsOf(t: TypeRepr): List[TypeRepr] = {
     t match {
       case a: AppliedType =>
-        a.args
-      // TODO: Dealiasing should be done before ?
-      case DottyTypes.TypeAlias(DottyTypes.HKTypeLambda(_, a: AppliedType)) =>
         a.args
       case other =>
         List.empty
@@ -401,12 +404,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     })
   }
 
-  private def typeParameterFactory: Factory = {
-    case p: DottyTypes.ParamRef if (fullTypeNameOf(p) == "Any") =>
-      val paramName = Expr(p.paramName.toString)
-      '{ HigherKindedTypeSurface(${ paramName }, ${ paramName }, AnyRefSurface, Nil) }
-  }
-
   private def genericTypeFactory: Factory = {
     case a: AppliedType =>
       val typeArgs = a.args.map(surfaceOf(_))
@@ -418,10 +415,25 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     case r: Refinement =>
       newGenericSurfaceOf(r.info)
     case t if hasStringUnapply(t) =>
+      // Build EnumSurface.apply code
+      // EnumSurface(classOf[t], { (cl: Class[_], s: String) => (companion object).unapply(s).asInstanceOf[Option[Any]] }
+      val unapplyMethod = getStringUnapply(t).get
+      val m             = Ref(t.typeSymbol.companionModule).select(unapplyMethod)
+      val newFn = Lambda(
+        owner = Symbol.spliceOwner,
+        tpe = MethodType(List("cl", "s"))(
+          _ => List(TypeRepr.of[Class[_]], TypeRepr.of[String]),
+          _ => TypeRepr.of[Option[Any]]
+        ),
+        rhsFn = (sym: Symbol, paramRefs: List[Tree]) => {
+          val strVarRef = paramRefs(1).asExprOf[String].asTerm
+          Select.unique(Apply(m, List(strVarRef)), "asInstanceOf").appliedToType(TypeRepr.of[Option[Any]])
+        }
+      )
       '{
         EnumSurface(
           ${ clsOf(t) },
-          { (cl: Class[_], s: String) => wvlet.airframe.surface.reflect.TypeConverter.convertToCls(s, cl) }
+          ${ newFn.asExprOf[(Class[_], String) => Option[Any]] }
         )
       }
     case t =>
@@ -441,23 +453,28 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   private def hasStringUnapply(t: TypeRepr): Boolean = {
+    getStringUnapply(t).isDefined
+  }
+
+  private def getStringUnapply(t: TypeRepr): Option[Symbol] = {
     t.typeSymbol.companionClass match {
       case cp: Symbol =>
-        cp.methodMember("unapply").headOption.map(_.tree) match {
+        val methodOpt = cp.methodMember("unapply").headOption
+        methodOpt.map(_.tree) match {
           case Some(m: DefDef) if m.paramss.size == 1 && hasOptionReturnType(m, t) =>
             val args: List[ParamClause] = m.paramss
             args.headOption.flatMap(_.params.headOption) match {
               // Is the first argument type String? def unapply(s: String)
               case Some(v: ValDef) if v.tpt.tpe =:= TypeRepr.of[String] =>
-                true
+                methodOpt
               case _ =>
-                false
+                None
             }
           case _ =>
-            false
+            None
         }
       case null =>
-        false
+        None
     }
   }
 

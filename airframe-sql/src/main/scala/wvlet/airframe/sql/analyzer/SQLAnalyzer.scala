@@ -13,17 +13,41 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.sql.catalog.Catalog.Catalog
+import wvlet.airframe.sql.catalog.Catalog
 import wvlet.airframe.sql.model._
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.log.LogSupport
 
-abstract class AnalysisException(message: String) extends Exception(message)
-case class TableNotFound(name: String)            extends AnalysisException(s"Table ${name} not found")
+/**
+  * Propagate context
+  * @param database
+  *   context database
+  * @param catalog
+  * @param parentAttributes
+  *   attributes used in the parent relation. This is used for pruning unnecessary columns output attributes
+  */
+case class AnalyzerContext(
+    database: String,
+    catalog: Catalog,
+    parentAttributes: Option[Seq[Attribute]] = None,
+    outerQueries: Map[String, LogicalPlan] = Map.empty
+) {
 
-case class AnalyzerContext(database: String, catalog: Catalog, parentAttributes: Seq[Attribute]) {
-  def withAttributes(parentAttributes: Seq[Attribute]) =
-    this.copy(parentAttributes = parentAttributes)
+  /**
+    * Update the relation attributes used in the plan.
+    *
+    * @param parentAttributes
+    * @return
+    */
+  def withAttributes(parentAttributes: Seq[Attribute]): AnalyzerContext =
+    this.copy(parentAttributes = Some(parentAttributes))
+
+  /**
+    * Add an outer query (e.g., WITH query) to the context
+    */
+  def withOuterQuery(name: String, relation: LogicalPlan): AnalyzerContext = {
+    this.copy(outerQueries = outerQueries + (name -> relation))
+  }
 }
 
 /**
@@ -38,19 +62,14 @@ object SQLAnalyzer extends LogSupport {
   }
 
   def analyze(plan: LogicalPlan, database: String, catalog: Catalog): LogicalPlan = {
-    if (plan.resolved) {
+    if (plan.resolved)
       plan
-    } else {
+    else {
       val analyzerContext =
-        AnalyzerContext(database = database, catalog = catalog, parentAttributes = plan.outputAttributes)
+        AnalyzerContext(database = database, catalog = catalog, parentAttributes = Some(plan.outputAttributes))
       debug(s"Unresolved plan:\n${plan.pp}")
 
-      val resolvedPlan = TypeResolver.typerRules
-        .foldLeft(plan) { (targetPlan, rule) =>
-          val r = rule.apply(analyzerContext)
-          // Recursively transform the tree
-          targetPlan.transform(r)
-        }
+      val resolvedPlan = TypeResolver.resolve(analyzerContext, plan)
       debug(s"Resolved plan:\n${resolvedPlan.pp}")
 
       val optimizedPlan = Optimizer.optimizerRules.foldLeft(resolvedPlan) { (targetPlan, rule) =>
