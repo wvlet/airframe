@@ -27,6 +27,7 @@ object TypeResolver extends LogSupport {
   def typerRules: List[Rule] =
     // First resolve all input table types
     TypeResolver.resolveAggregationIndexes _ ::
+      TypeResolver.resolveAggregationKeys _ ::
       TypeResolver.resolveCTETableRef _ ::
       TypeResolver.resolveTableRef _ ::
       TypeResolver.resolveJoinUsing _ ::
@@ -74,9 +75,23 @@ object TypeResolver extends LogSupport {
               other
           }
           GroupingKey(keyItem)
-        case other => other
+        case other =>
+          other
       }
       Aggregate(child, selectItems, resolvedGroupingKeys, having)
+  }
+
+  /**
+    * Resolve group by keys
+    * @param context
+    * @return
+    */
+  def resolveAggregationKeys(context: AnalyzerContext): PlanRewriter = {
+    case a @ Aggregate(child, selectItems, groupingKeys, having) =>
+      val resolvedChild        = resolveRelation(context, child)
+      val inputAttributes      = resolvedChild.outputAttributes
+      val resolvedGroupingKeys = groupingKeys.map(x => GroupingKey(resolveExpression(x.child, inputAttributes)))
+      Aggregate(resolvedChild, selectItems, resolvedGroupingKeys, having)
   }
 
   /**
