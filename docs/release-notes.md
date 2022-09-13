@@ -6,6 +6,34 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.9.0
+
+Added SQL type resolver to airframe-sql and improved Scala 3 compatibility of airframe-surface. 
+
+- airframe-sql: Resolve aggregation keys properly ([#2406](https://github.com/wvlet/airframe/issues/2406)) [[bfdac25bf](https://github.com/wvlet/airframe/commit/bfdac25bf)]
+- airframe-sql: Resolve function inputs ([#2401](https://github.com/wvlet/airframe/issues/2401)) [[7965e3f13](https://github.com/wvlet/airframe/commit/7965e3f13)]
+- airframe-sql: Resolve joins ([#2389](https://github.com/wvlet/airframe/issues/2389)) [[f874b8917](https://github.com/wvlet/airframe/commit/f874b8917)]
+- airframe-sql: Propagate column metadata ([#2376](https://github.com/wvlet/airframe/issues/2376)) [[d6d36b471](https://github.com/wvlet/airframe/commit/d6d36b471)]
+- airframe-ulid: [#2106](https://github.com/wvlet/airframe/issues/2106) Add ULID.ofMillis(unix time milliseconds) ([#2400](https://github.com/wvlet/airframe/issues/2400)) [[23c1b3a65](https://github.com/wvlet/airframe/commit/23c1b3a65)]
+- airframe-surface: [#2396](https://github.com/wvlet/airframe/issues/2396) Build EnumSurface without reflection ([#2398](https://github.com/wvlet/airframe/issues/2398)) [[4eab8bd91](https://github.com/wvlet/airframe/commit/4eab8bd91)]
+- airframe-surface: Scala3 higher-kind type support ([#2395](https://github.com/wvlet/airframe/issues/2395)) [[a1ce6845e](https://github.com/wvlet/airframe/commit/a1ce6845e)]
+- Update snakeyaml to 1.32 ([#2404](https://github.com/wvlet/airframe/issues/2404)) [[d1697b04e](https://github.com/wvlet/airframe/commit/d1697b04e)]
+- Update sqlite-jdbc to 3.39.3.0 ([#2403](https://github.com/wvlet/airframe/issues/2403)) [[665556f0f](https://github.com/wvlet/airframe/commit/665556f0f)]
+- Update trino-main to 395 ([#2402](https://github.com/wvlet/airframe/issues/2402)) [[8c0ce6f6b](https://github.com/wvlet/airframe/commit/8c0ce6f6b)]
+- airspec: Upgrade to Scala 3.2.0 ([#2394](https://github.com/wvlet/airframe/issues/2394)) [[ab39f2427](https://github.com/wvlet/airframe/commit/ab39f2427)]
+- Update antlr4, antlr4-runtime to 4.11.1 ([#2392](https://github.com/wvlet/airframe/issues/2392)) [[9f5654ec6](https://github.com/wvlet/airframe/commit/9f5654ec6)]
+- Update sbt-scalajs-bundler to 0.21.0 ([#2388](https://github.com/wvlet/airframe/issues/2388)) [[a7b95a91e](https://github.com/wvlet/airframe/commit/a7b95a91e)]
+- Update scalajs-dom to 2.3.0 ([#2387](https://github.com/wvlet/airframe/issues/2387)) [[6b40ca536](https://github.com/wvlet/airframe/commit/6b40ca536)]
+- Upgrade to Scala 3.2.0 ([#2393](https://github.com/wvlet/airframe/issues/2393)) [[e9ce3466b](https://github.com/wvlet/airframe/commit/e9ce3466b)]
+- Update sbt-scoverage to 2.0.2 ([#2362](https://github.com/wvlet/airframe/issues/2362)) [[f9f871120](https://github.com/wvlet/airframe/commit/f9f871120)]
+- Update trino-main to 394 ([#2386](https://github.com/wvlet/airframe/issues/2386)) [[43b63cb0d](https://github.com/wvlet/airframe/commit/43b63cb0d)]
+- airframe-sql: Resolve CTE query types ([#2385](https://github.com/wvlet/airframe/issues/2385)) [[b5c14034b](https://github.com/wvlet/airframe/commit/b5c14034b)]
+- Update snakeyaml to 1.31 ([#2383](https://github.com/wvlet/airframe/issues/2383)) [[87dfef611](https://github.com/wvlet/airframe/commit/87dfef611)]
+- Update sqlite-jdbc to 3.39.2.1 ([#2382](https://github.com/wvlet/airframe/issues/2382)) [[a8f417273](https://github.com/wvlet/airframe/commit/a8f417273)]
+- Update postgresql to 42.5.0 ([#2381](https://github.com/wvlet/airframe/issues/2381)) [[d70ca2230](https://github.com/wvlet/airframe/commit/d70ca2230)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.49.0 ([#2380](https://github.com/wvlet/airframe/issues/2380)) [[6f250895d](https://github.com/wvlet/airframe/commit/6f250895d)]
+- Update airframe-codec, airframe-control, ... to 22.8.0 ([#2377](https://github.com/wvlet/airframe/issues/2377)) [[519af3963](https://github.com/wvlet/airframe/commit/519af3963)]
+
 ## 22.8.0
 
 - airframe-rpc: Added [RPCContext](https://wvlet.org/airframe/docs/airframe-rpc#rpccontext) to access the original HTTP request and thread-local storage.
