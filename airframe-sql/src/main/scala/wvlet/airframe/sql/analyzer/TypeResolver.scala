@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.analyzer
+import org.yaml.snakeyaml.emitter.ScalarAnalysis
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.{PlanRewriter, Rule}
 import wvlet.airframe.sql.model.Expression._
@@ -29,6 +30,7 @@ object TypeResolver extends LogSupport {
     TypeResolver.resolveAggregationIndexes _ ::
       TypeResolver.resolveCTETableRef _ ::
       TypeResolver.resolveTableRef _ ::
+      TypeResolver.resolveAggregationInputs _ ::
       TypeResolver.resolveJoinUsing _ ::
       TypeResolver.resolveRegularRelation _ ::
       TypeResolver.resolveColumns _ ::
@@ -64,6 +66,7 @@ object TypeResolver extends LogSupport {
     */
   def resolveAggregationIndexes(context: AnalyzerContext): PlanRewriter = {
     case a @ Aggregate(child, selectItems, groupingKeys, having) =>
+      val resolvedChild = resolve(context, child)
       val resolvedGroupingKeys: List[GroupingKey] = groupingKeys.map {
         case GroupingKey(LongLiteral(i)) if i <= selectItems.length =>
           // Use a simpler form of attributes
@@ -74,9 +77,20 @@ object TypeResolver extends LogSupport {
               other
           }
           GroupingKey(keyItem)
-        case other => other
+        case other =>
+          other
       }
       Aggregate(child, selectItems, resolvedGroupingKeys, having)
+  }
+
+  def resolveAggregationInputs(context: AnalyzerContext): PlanRewriter = {
+    case a @ Aggregate(child, selectItems, groupingKeys, having) =>
+      val resolvedChild        = resolveRelation(context, child)
+      val inputAttributes      = resolvedChild.outputAttributes
+      val resolvedSelectItems  = selectItems.map(resolveAttribute(_))
+      val resolvedGroupingKeys = groupingKeys.map(x => GroupingKey(resolveExpression(x.child, inputAttributes)))
+      val resolvedHaving       = having.map(resolveExpression(_, inputAttributes))
+      Aggregate(resolvedChild, resolvedSelectItems, resolvedGroupingKeys, resolvedHaving)
   }
 
   /**

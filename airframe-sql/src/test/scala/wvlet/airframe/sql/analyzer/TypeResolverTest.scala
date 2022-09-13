@@ -187,6 +187,24 @@ class TypeResolverTest extends AirSpec {
           fail(s"unexpected plan: ${p}")
       }
     }
+
+    test("group by with renamed keys") {
+      val p = analyze("select xxx, count(*) from (select id as xxx from A) group by 1")
+      p match {
+        case Aggregate(
+              _,
+              _,
+              List(
+                GroupingKey(
+                  ResolvedAttribute("xxx", DataType.LongType, Some(`tableA`), Some(`a1`))
+                )
+              ),
+              _
+            ) =>
+        case _ =>
+          fail(s"unexpected plan: ${p}")
+      }
+    }
   }
 
   test("resolve CTE (WITH statement) queries") {
