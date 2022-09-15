@@ -226,6 +226,14 @@ class TypeResolverTest extends AirSpec {
         ResolvedAttribute("p2", DataType.StringType, Some(tableA), Some(a2))
       )
     }
+
+    test("parse WITH statement referenced in grouping indexes") {
+      val p = analyze("""WITH X AS (
+        |  SELECT id FROM A
+        |)
+        |SELECT max(id), COUNT(*)
+        |FROM X GROUP BY 1""".stripMargin)
+    }
   }
 
   test("resolve join attributes") {

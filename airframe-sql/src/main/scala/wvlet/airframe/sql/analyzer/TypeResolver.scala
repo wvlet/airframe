@@ -24,17 +24,19 @@ import wvlet.log.LogSupport
   */
 object TypeResolver extends LogSupport {
 
-  def typerRules: List[Rule] =
+  def typerRules: List[Rule] = {
     // First resolve all input table types
-    TypeResolver.resolveAggregationIndexes _ ::
+    // CTE Table Refs must be resolved before resolving aggregation indexes
+    TypeResolver.resolveCTETableRef _ ::
+      TypeResolver.resolveAggregationIndexes _ ::
       TypeResolver.resolveAggregationKeys _ ::
-      TypeResolver.resolveCTETableRef _ ::
       TypeResolver.resolveTableRef _ ::
       TypeResolver.resolveJoinUsing _ ::
       TypeResolver.resolveRegularRelation _ ::
       TypeResolver.resolveColumns _ ::
       TypeResolver.resolveUnion _ ::
       Nil
+  }
 
   def resolve(analyzerContext: AnalyzerContext, plan: LogicalPlan): LogicalPlan = {
     val resolvedPlan = TypeResolver.typerRules
