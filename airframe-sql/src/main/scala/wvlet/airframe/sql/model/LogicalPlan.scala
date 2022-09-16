@@ -78,6 +78,29 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   }
 
   /**
+    * Recursively traverse plan nodes and apply the given function to LogicalPlan nodes
+    * @param f
+    */
+  def traverse[U](f: PartialFunction[LogicalPlan, U]): Unit = {
+    def recursiveTraverse(arg: Any): Unit =
+      arg match {
+        case e: Expression =>
+        case l: LogicalPlan => {
+          if (f.isDefinedAt(l)) {
+            f.apply(l)
+          }
+          l.productIterator.foreach(recursiveTraverse)
+        }
+        case Some(x)       => Some(recursiveTraverse(x))
+        case s: Seq[_]     => s.map(recursiveTraverse _)
+        case other: AnyRef =>
+        case null          =>
+      }
+
+    recursiveTraverse(this)
+  }
+
+  /**
     * Iterate through LogicalPlans and apply matching rules for transformation
     * @param rule
     * @return
