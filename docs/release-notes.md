@@ -6,6 +6,21 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.9.1
+
+Upgrade to Scala.js 1.11.0.
+
+- Update sbt-scalajs, scalajs-compiler, ... to 1.11.0 ([#2417](https://github.com/wvlet/airframe/issues/2417)) [[b4e8cb8c8](https://github.com/wvlet/airframe/commit/b4e8cb8c8)]
+- Update scalajs-test-interface to 1.11.0 ([#2419](https://github.com/wvlet/airframe/issues/2419)) [[f0cd8583b](https://github.com/wvlet/airframe/commit/f0cd8583b)]
+- airframe-sql: Fix QName lookup from catalog ([#2421](https://github.com/wvlet/airframe/issues/2421)) [[2b0f9a056](https://github.com/wvlet/airframe/commit/2b0f9a056)]
+- airframe-sql: Add LogicalPlan.traverse ([#2420](https://github.com/wvlet/airframe/issues/2420)) [[fccca7e15](https://github.com/wvlet/airframe/commit/fccca7e15)]
+- airframe-sql: Resolve CTE before resolving group indexes ([#2414](https://github.com/wvlet/airframe/issues/2414)) [[346ac97d0](https://github.com/wvlet/airframe/commit/346ac97d0)]
+- Update circe-parser to 0.14.3 ([#2415](https://github.com/wvlet/airframe/issues/2415)) [[f0915b751](https://github.com/wvlet/airframe/commit/f0915b751)]
+- Update trino-main to 396 ([#2416](https://github.com/wvlet/airframe/issues/2416)) [[8e0c1c204](https://github.com/wvlet/airframe/commit/8e0c1c204)]
+- Update scalacheck to 1.17.0 ([#2418](https://github.com/wvlet/airframe/issues/2418)) [[1b873989a](https://github.com/wvlet/airframe/commit/1b873989a)]
+- Update sbt-scoverage to 2.0.3 ([#2412](https://github.com/wvlet/airframe/issues/2412)) [[687a6f75a](https://github.com/wvlet/airframe/commit/687a6f75a)]
+- Update protobuf-java to 3.21.6 ([#2409](https://github.com/wvlet/airframe/issues/2409)) [[b9bc27c27](https://github.com/wvlet/airframe/commit/b9bc27c27)]
+
 ## 22.9.0
 
 Added SQL type resolver to airframe-sql and improved Scala 3 compatibility of airframe-surface. 
