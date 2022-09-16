@@ -10,7 +10,7 @@ val withDotty           = SCALA_3_0 :: targetScalaVersions
 // ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
 
 val AIRSPEC_VERSION                 = "22.9.0"
-val SCALACHECK_VERSION              = "1.16.0"
+val SCALACHECK_VERSION              = "1.17.0"
 val MSGPACK_VERSION                 = "0.9.3"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.1.1"
 val SQLITE_JDBC_VERSION             = "3.39.3.0"
