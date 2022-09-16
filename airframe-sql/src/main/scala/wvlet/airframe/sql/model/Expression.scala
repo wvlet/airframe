@@ -142,14 +142,14 @@ object Expression {
   case class ParenthesizedExpression(child: Expression) extends UnaryExpression
 
   // Qualified name (QName), such as table and column names
-  case class QName(parts: Seq[String]) extends LeafExpression {
+  case class QName(parts: List[String]) extends LeafExpression {
     def fullName: String          = parts.mkString(".")
     override def toString: String = fullName
   }
   object QName {
     def apply(s: String): QName = {
       // TODO handle quotation
-      QName(s.split("\\.").toSeq)
+      QName(s.split("\\.").toList)
     }
   }
 

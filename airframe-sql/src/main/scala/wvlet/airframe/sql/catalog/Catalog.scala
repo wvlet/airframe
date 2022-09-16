@@ -16,8 +16,9 @@ package wvlet.airframe.sql.catalog
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.airframe.sql.catalog.Catalog.CreateMode
 import wvlet.airframe.sql.model.Expression.QName
+import wvlet.log.LogSupport
 
-trait Catalog {
+trait Catalog extends LogSupport {
 
   def catalogName: String
 
@@ -36,14 +37,14 @@ trait Catalog {
 
   def findFromQName(contextDatabase: String, qname: QName): Option[Catalog.Table] = {
     qname.parts match {
-      case catalog :: db :: tbl =>
+      case catalog :: db :: tbl :: Nil =>
         if (catalog == catalogName) {
-          findTable(db, tbl.mkString("."))
+          findTable(db, tbl)
         } else {
           None
         }
-      case db :: tbl =>
-        findTable(db, tbl.mkString("."))
+      case db :: tbl :: Nil =>
+        findTable(db, tbl)
       case _ =>
         findTable(contextDatabase, qname.toString)
     }

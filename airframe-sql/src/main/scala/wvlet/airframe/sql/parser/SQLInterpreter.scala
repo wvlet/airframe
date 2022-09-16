@@ -339,7 +339,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   }
 
   override def visitQualifiedName(ctx: QualifiedNameContext): QName = {
-    QName(ctx.identifier().asScala.map(_.getText).toSeq)
+    QName(ctx.identifier().asScala.map(_.getText).toList)
   }
 
   override def visitDereference(ctx: DereferenceContext): Attribute = {
