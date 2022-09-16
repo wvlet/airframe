@@ -98,6 +98,14 @@ class TypeResolverTest extends AirSpec {
         ResolvedAttribute("name", DataType.StringType, Some(tableB), Some(b2))
       )
     }
+
+    test("resolve database.table name format") {
+      val p = analyzeSingle("select * from default.A", TypeResolver.resolveTableRef)
+      p.inputAttributes shouldBe Seq(
+        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
+        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+      )
+    }
   }
 
   test("resolveRelation") {
