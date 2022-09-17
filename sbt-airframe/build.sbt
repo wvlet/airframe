@@ -3,7 +3,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val AIRFRAME_VERSION = sys.env.getOrElse("AIRFRAME_VERSION", "22.9.0")
 val AIRSPEC_VERSION  = "22.9.0"
-val SCALA_2_12       = "2.12.16"
+val SCALA_2_12       = "2.12.17"
 
 ThisBuild / organization := "org.wvlet.airframe"
 
