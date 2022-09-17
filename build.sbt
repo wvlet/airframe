@@ -1,6 +1,6 @@
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
-val SCALA_2_12          = "2.12.16"
+val SCALA_2_12          = "2.12.17"
 val SCALA_2_13          = "2.13.8"
 val SCALA_3_0           = "3.2.0"
 val targetScalaVersions = SCALA_2_13 :: SCALA_2_12 :: Nil
