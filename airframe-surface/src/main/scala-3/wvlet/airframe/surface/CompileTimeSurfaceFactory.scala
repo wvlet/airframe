@@ -727,7 +727,15 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             Select.unique(extracted, "asInstanceOf").appliedToType(arg.tpe)
         }
         if (argList.isEmpty) {
-          expr.changeOwner(sym)
+          val newExpr = m.tree match {
+            case d: DefDef if d.trailingParamss.nonEmpty =>
+              // An empty arg method, e.g., def methodName()
+              expr.appliedToNone
+            case _ =>
+              // No arg method, e.g., def methodName: Unit
+              expr
+          }
+          newExpr.changeOwner(sym)
         } else {
           // Bind to function arguments
           val newExpr = if (methodTypeParams.isEmpty) {
@@ -736,7 +744,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             // For generic functions, type params also need to be applied
             val dummyTypeParams = methodTypeParams.map(x => TypeRepr.of[Any])
             // println(s"---> ${m.name} type param count: ${methodTypeParams.size}, arg size: ${argList.size}")
-            // println(s"===> ${methodArgs.map(_.tpe.show).mkString("\n")}")
             expr
               .appliedToTypes(dummyTypeParams)
               .appliedToArgs(argList.toList)
