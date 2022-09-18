@@ -50,7 +50,6 @@ import wvlet.airframe.surface.MethodExamples._
   */
 class MethodSurfaceTest extends SurfaceSpec {
 
-  /*
   test("list methods") {
     val m = Surface.methodsOf[A]
     debug(m.mkString("\n"))
@@ -113,5 +112,4 @@ class MethodSurfaceTest extends SurfaceSpec {
     val msg = m.call(d, "world")
     assertEquals(msg, "world")
   }
-   */
 }
