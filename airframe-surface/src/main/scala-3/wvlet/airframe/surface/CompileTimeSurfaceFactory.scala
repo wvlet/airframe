@@ -525,7 +525,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           }
           val isSecret           = hasSecretAnnotation(s)
           val isRequired         = hasRequiredAnnotation(s)
-          val isImplicit = s.flags.is(Flags.Implicit)
+          val isImplicit         = s.flags.is(Flags.Implicit)
           val defaultValueGetter = defaultValueMethods.find(m => m.name.endsWith(s"$$${i}"))
 
           val defaultMethodArgGetter = {
@@ -735,8 +735,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           } else {
             // For generic functions, type params also need to be applied
             val dummyTypeParams = methodTypeParams.map(x => TypeRepr.of[Any])
-            //println(s"---> ${m.name} type param count: ${methodTypeParams.size}, arg size: ${argList.size}")
-            //println(s"===> ${methodArgs.map(_.tpe.show).mkString("\n")}")
+            // println(s"---> ${m.name} type param count: ${methodTypeParams.size}, arg size: ${argList.size}")
+            // println(s"===> ${methodArgs.map(_.tpe.show).mkString("\n")}")
             expr
               .appliedToTypes(dummyTypeParams)
               .appliedToArgs(argList.toList)
