@@ -483,6 +483,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       tpe: TypeRepr,
       defaultValueGetter: Option[Symbol],
       defaultMethodArgGetter: Option[Symbol],
+      isImplicit: Boolean,
       isRequired: Boolean,
       isSecret: Boolean
   )
@@ -506,6 +507,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         .map((x, i) => (x, i + 1, x.tree))
         .collect { case (s: Symbol, i: Int, v: ValDef) =>
           // E.g. case class Foo(a: String)(implicit b: Int)
+          // println(s"=== ${v.show} ${s.flags.show} ${s.flags.is(Flags.Implicit)}")
           // Substitue type param to actual types
           val resolved: TypeRepr = v.tpt.tpe match {
             case a: AppliedType =>
@@ -523,6 +525,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           }
           val isSecret           = hasSecretAnnotation(s)
           val isRequired         = hasRequiredAnnotation(s)
+          val isImplicit = s.flags.is(Flags.Implicit)
           val defaultValueGetter = defaultValueMethods.find(m => m.name.endsWith(s"$$${i}"))
 
           val defaultMethodArgGetter = {
@@ -532,7 +535,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
               m.name == targetMethodName
             }
           }
-          MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isRequired, isSecret)
+          MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isImplicit, isRequired, isSecret)
         }
     }
   }
@@ -716,10 +719,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         val x    = params(0).asInstanceOf[Term]
         val args = params(1).asInstanceOf[Term]
         val expr = Select.unique(x, "asInstanceOf").appliedToType(objectType).select(m)
-        val argList = methodArgs.zipWithIndex.map { case (arg, i) =>
-          // args(i).asInstanceOf[ArgType]
-          val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(i)))
-          Select.unique(extracted, "asInstanceOf").appliedToType(arg.tpe)
+        val argList = methodArgs.zipWithIndex.collect {
+          // If the arg is implicit, no need to explicitly bind it
+          case (arg, i) if !arg.isImplicit =>
+            // args(i).asInstanceOf[ArgType]
+            val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(i)))
+            Select.unique(extracted, "asInstanceOf").appliedToType(arg.tpe)
         }
         if (argList.isEmpty) {
           expr.changeOwner(sym)
@@ -730,6 +735,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           } else {
             // For generic functions, type params also need to be applied
             val dummyTypeParams = methodTypeParams.map(x => TypeRepr.of[Any])
+            //println(s"---> ${m.name} type param count: ${methodTypeParams.size}, arg size: ${argList.size}")
+            //println(s"===> ${methodArgs.map(_.tpe.show).mkString("\n")}")
             expr
               .appliedToTypes(dummyTypeParams)
               .appliedToArgs(argList.toList)
