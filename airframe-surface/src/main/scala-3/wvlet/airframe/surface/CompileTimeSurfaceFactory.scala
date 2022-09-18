@@ -699,15 +699,15 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       m: Symbol,
       methodArgs: Seq[MethodArg]
   ): Expr[Option[(Any, Seq[Any]) => Any]] = {
-    // { (x: Any, args: Seq[Any]) => x.asInstanceOf[t].(method)(.. args) }
-    val typeParams: List[ParamClause] = m.tree match {
-      case df:DefDef =>
-        println(s"----------- ${m.name}[${df.paramss.size}]")
-        df.paramss
+    // Build { (x: Any, args: Seq[Any]) => x.asInstanceOf[t].<method>(.. args) }
+    val methodTypeParams: List[TypeParamClause] = m.tree match {
+      case df: DefDef =>
+        df.paramss.collect { case t: TypeParamClause =>
+          t
+        }
       case _ =>
         List.empty
     }
-    println(s"===== ${typeParams.map(_.params).mkString("\n  ")}")
 
     val lambda = Lambda(
       owner = Symbol.spliceOwner,
@@ -724,10 +724,16 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         if (argList.isEmpty) {
           expr.changeOwner(sym)
         } else {
-          //println(s"========= here2: ${expr.show}")
-          // TODO Fix for generic type methods
-          val newExpr = expr.appliedToArgs(argList.toList)
-          //println(s"============ here3 ${newExpr.show}")
+          // Bind to function arguments
+          val newExpr = if (methodTypeParams.isEmpty) {
+            expr.appliedToArgs(argList.toList)
+          } else {
+            // For generic functions, type params also need to be applied
+            val dummyTypeParams = methodTypeParams.map(x => TypeRepr.of[Any])
+            expr
+              .appliedToTypes(dummyTypeParams)
+              .appliedToArgs(argList.toList)
+          }
           newExpr.changeOwner(sym)
         }
       }
