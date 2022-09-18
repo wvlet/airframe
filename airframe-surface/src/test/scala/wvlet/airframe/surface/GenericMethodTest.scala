@@ -22,10 +22,13 @@ object GenericMethodTest {
 class GenericMethodTest extends SurfaceSpec {
   import GenericMethodTest._
 
-  // .....
   test("generic method") {
     val methods = Surface.methodsOf[A]
     assertEquals(methods.size, 1)
+    val m = methods(0)
+
+    val obj = new GenericMethodTest.A
+    assertEquals(m.call(obj, "dummy"), "hello")
   }
 
 }
