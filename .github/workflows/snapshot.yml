@@ -38,5 +38,4 @@ jobs:
           SONATYPE_PASSWORD: '${{ secrets.SONATYPE_PASS }}'
         run: |
           ../sbt publishSnapshots
-          DOTTY=true ../sbt airspecJVM/publish
         working-directory: ./airspec
