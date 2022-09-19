@@ -73,7 +73,7 @@ package object finagle {
   def finagleClientDesign: Design = {
     Design.newDesign
       .bind[FinagleClient]
-      .toProvider { server: FinagleServer =>
+      .toProvider { (server: FinagleServer) =>
         Finagle.client.newClient(server.localAddress)
       }
   }
@@ -81,7 +81,7 @@ package object finagle {
   def finagleSyncClientDesign: Design = {
     Design.newDesign
       .bind[FinagleSyncClient]
-      .toProvider { server: FinagleServer =>
+      .toProvider { (server: FinagleServer) =>
         Finagle.client.newSyncClient(server.localAddress)
       }
   }

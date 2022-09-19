@@ -315,10 +315,8 @@ object FinagleServer extends LogSupport {
 /**
   * A factory to create new finagle server
   */
-trait FinagleServerFactory extends AutoCloseable with LogSupport {
+class FinagleServerFactory(session: Session) extends AutoCloseable with LogSupport {
   private var createdServers = List.empty[FinagleServer]
-
-  private val session = bind[Session]
 
   /**
     * Override this method to customize Finagle Server configuration.

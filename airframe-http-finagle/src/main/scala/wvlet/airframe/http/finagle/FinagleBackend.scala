@@ -48,7 +48,7 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] with LogSup
       override def apply(request: Request, context: Context): Future[Response] = {
         filter(
           request,
-          Service.mk { req: Request =>
+          Service.mk { (req: Request) =>
             context(req)
           }
         )

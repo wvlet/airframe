@@ -1,10 +1,10 @@
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
 val SCALA_2_12          = "2.12.17"
-val SCALA_2_13          = "2.13.8"
-val SCALA_3_0           = "3.2.0"
+val SCALA_2_13          = "2.13.9"
+val SCALA_3             = "3.2.0"
 val uptoScala2          = SCALA_2_13 :: SCALA_2_12 :: Nil
-val targetScalaVersions = SCALA_3_0 :: uptoScala2
+val targetScalaVersions = SCALA_3 :: uptoScala2
 
 // Add this for using snapshot versions
 // ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
@@ -63,10 +63,7 @@ val DOTTY = sys.env.isDefinedAt("DOTTY")
 
 // If DOTTY is set, use Scala 3 by default. This is for the convenience of working on Scala 3 projects
 ThisBuild / scalaVersion := {
-  if (DOTTY)
-    SCALA_3_0
-  else
-    SCALA_2_13
+  SCALA_3
 }
 
 ThisBuild / organization := "org.wvlet.airframe"
@@ -104,7 +101,8 @@ val buildSettings = Seq[Setting[_]](
     } else {
       Seq(
         // Necessary for tracking source code range in airframe-rx demo
-        "-Yrangepos"
+        "-Yrangepos",
+        "-Ytasty-reader"
       )
     }
   },
@@ -121,6 +119,7 @@ val buildSettings = Seq[Setting[_]](
 )
 
 val scala2Only = Seq[Setting[_]](
+  scalaVersion       := SCALA_2_13,
   crossScalaVersions := uptoScala2
 )
 
@@ -749,16 +748,15 @@ lazy val finagle =
   project
     .in(file("airframe-http-finagle"))
     .settings(buildSettings)
-    .settings(scala2Only)
     .settings(
       name        := "airframe-http-finagle",
       description := "REST API binding for Finagle",
       // Finagle doesn't support Scala 2.13 yet
       libraryDependencies ++= Seq(
-        "com.twitter" %% "finagle-http"        % FINAGLE_VERSION,
-        "com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION,
-        "com.twitter" %% "finagle-netty4"      % FINAGLE_VERSION,
-        "com.twitter" %% "finagle-core"        % FINAGLE_VERSION,
+        ("com.twitter" %% "finagle-http"        % FINAGLE_VERSION).cross(CrossVersion.for3Use2_13),
+        ("com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION).cross(CrossVersion.for3Use2_13),
+        ("com.twitter" %% "finagle-netty4"      % FINAGLE_VERSION).cross(CrossVersion.for3Use2_13),
+        ("com.twitter" %% "finagle-core"        % FINAGLE_VERSION).cross(CrossVersion.for3Use2_13),
         // Redirecting slf4j log in Finagle to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION,
         // Use a version that fixes [CVE-2017-18640]
@@ -1006,7 +1004,7 @@ lazy val dottyTest =
     .settings(
       name               := "airframe-dotty-test",
       description        := "test for dotty",
-      scalaVersion       := SCALA_3_0,
-      crossScalaVersions := List(SCALA_3_0)
+      scalaVersion       := SCALA_3,
+      crossScalaVersions := List(SCALA_3)
     )
     .dependsOn(logJVM, surfaceJVM, diJVM, codecJVM)
