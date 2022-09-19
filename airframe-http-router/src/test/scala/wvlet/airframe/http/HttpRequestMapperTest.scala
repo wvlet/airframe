@@ -15,7 +15,6 @@ package wvlet.airframe.http
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.router.{HttpRequestMapper, Route}
-import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future

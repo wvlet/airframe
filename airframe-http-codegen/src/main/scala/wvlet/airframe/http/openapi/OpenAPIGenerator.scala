@@ -21,7 +21,6 @@ import wvlet.airframe.json.Json
 import wvlet.airframe.metrics.{Count, DataSize, ElapsedTime}
 import wvlet.airframe.msgpack.spi.{MsgPack, Value}
 import wvlet.airframe.surface._
-import wvlet.airframe.surface.reflect.{ReflectMethodSurface, ReflectTypeUtil}
 import wvlet.airframe.ulid.ULID
 import wvlet.log.LogSupport
 import wvlet.airframe.surface.reflect._
