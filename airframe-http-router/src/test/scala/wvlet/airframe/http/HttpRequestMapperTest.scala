@@ -68,7 +68,7 @@ object HttpRequestMapperTest extends AirSpec {
   ): Seq[Any] = {
     val args = HttpRequestMapper.buildControllerMethodArgs[HttpMessage.Request, HttpMessage.Response, Future](
       controller = api,
-      methodSurface = route.methodSurface.asInstanceOf[ReflectMethodSurface],
+      methodSurface = route.methodSurface,
       request = requestFilter(Http.request(method, route.path)),
       context = mockContext,
       params = Map.empty,

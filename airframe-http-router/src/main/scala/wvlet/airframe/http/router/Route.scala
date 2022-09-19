@@ -78,7 +78,7 @@ case class ControllerRoute(
     controllerSurface: Surface,
     method: String,
     path: String,
-    methodSurface: ReflectMethodSurface,
+    methodSurface: MethodSurface,
     isRPC: Boolean
 ) extends Route
     with LogSupport {

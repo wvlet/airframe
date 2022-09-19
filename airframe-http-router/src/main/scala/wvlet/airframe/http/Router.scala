@@ -145,7 +145,7 @@ case class Router(
             .map { m =>
               (m, m.findAnnotationOf[Endpoint])
             }
-            .collect { case (m: ReflectMethodSurface, Some(endPoint)) =>
+            .collect { case (m: MethodSurface, Some(endPoint)) =>
               val endpointInterfaceCls =
                 controllerSurface
                   .findAnnotationOwnerOf[Endpoint]

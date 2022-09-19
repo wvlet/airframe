@@ -19,9 +19,8 @@ import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
 import wvlet.airframe.msgpack.spi.Value.MapValue
 import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack, Value, ValueFactory}
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.surface.{CName, MethodParameter, MethodSurface, OptionSurface, Surface, Zero}
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
-import wvlet.airframe.surface.{CName, MethodParameter, OptionSurface, Zero}
 import wvlet.log.LogSupport
 
 import scala.language.higherKinds
@@ -39,7 +38,7 @@ object HttpRequestMapper extends LogSupport {
       // This instance is necessary to retrieve the default method argument values
       controller: Any,
       // The target method surface to call
-      methodSurface: ReflectMethodSurface,
+      methodSurface: MethodSurface,
       request: Req,
       context: HttpContext[Req, Resp, F],
       // Additional parameters
