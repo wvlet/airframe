@@ -105,6 +105,9 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
 
   protected def isScalaJS: Boolean = compat.isScalaJs
 
+  protected def isScala2: Boolean = scalaMajorVersion == 2
+  protected def isScala3: Boolean = scalaMajorVersion == 3
+
   /**
     * Provide a platform-independent execution context for async testing
     */

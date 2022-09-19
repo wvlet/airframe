@@ -39,6 +39,19 @@ class CommonSpec extends AirSpec {
     inGitHubAction
     inCI
   }
+
+  test("scala major version") {
+    scalaMajorVersion match {
+      case 2 =>
+        isScala2 shouldBe true
+        isScala3 shouldBe false
+      case 3 =>
+        isScala2 shouldBe false
+        isScala3 shouldBe true
+      case other =>
+        throw new IllegalStateException(s"Unknown scala major version: ${other}")
+    }
+  }
 }
 
 object ObjSpec extends AirSpec {
