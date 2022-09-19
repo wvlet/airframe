@@ -108,7 +108,7 @@ class JSMatcherTest extends AirSpec {
     }
 
     test("diffent vals with null or undefined") {
-      if(isScalaJS && isScala3) {
+      if (isScalaJS && isScala3) {
         pending("A bug in Scala 3 compiler fails to produce null/undefined fields: #2426")
       }
       val c = new js.Object() {
