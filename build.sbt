@@ -141,6 +141,9 @@ val noPublish = Seq(
   publishArtifact := false,
   publish         := {},
   publishLocal    := {},
+  publish / skip  := true,
+  // This must be Nil to use crossScalaVersions of individual modules in `+ projectJVM/xxxx` tasks
+  crossScalaVersions := Nil,
   // Explicitly skip the doc task because protobuf related Java files causes no type found error
   Compile / doc / sources                := Seq.empty,
   Compile / packageDoc / publishArtifact := false
@@ -225,37 +228,25 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
 // For community-build
 lazy val communityBuild =
   project
-    .settings(
-      noPublish,
-      crossScalaVersions := targetScalaVersions
-    )
+    .settings(noPublish)
     .aggregate(communityBuildProjects: _*)
 
 // For Scala 2.12
 lazy val projectJVM =
   project
-    .settings(
-      noPublish,
-      crossScalaVersions := targetScalaVersions
-    )
+    .settings(noPublish)
     .aggregate(jvmProjects: _*)
 
 lazy val projectJS =
   project
-    .settings(
-      noPublish,
-      crossScalaVersions := targetScalaVersions
-    )
+    .settings(noPublish)
     .aggregate(jsProjects: _*)
 
 // A scoped project only for Dotty (Scala 3).
 // This is a workaround as projectJVM/test shows compile errors for non Scala 3 ready projects
 lazy val projectDotty =
   project
-    .settings(
-      noPublish,
-      crossScalaVersions := Seq(SCALA_3_0)
-    )
+    .settings(noPublish)
     .aggregate(
       diMacrosJVM,
       diJVM,
@@ -270,6 +261,8 @@ lazy val projectDotty =
       httpRouter,
       // Surface.of(Class[_]) needs to be supported
       // httpCodeGen
+      // Finagle is used in the http recorder
+      // httpRecorder
       // // Finagle isn't supporting Scala 3
       // httpFinagle,
       // grpc,
@@ -792,6 +785,7 @@ lazy val httpRecorder =
   project
     .in(file("airframe-http-recorder"))
     .settings(buildSettings)
+    .settings(scala2Only)
     .settings(
       name        := "airframe-http-recorder",
       description := "Http Response Recorder",
