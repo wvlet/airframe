@@ -6,6 +6,18 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.9.2
+
+From this version, AirSpec testing library supports Scala 3 + Scala.js! 
+
+- airspec: Support Scala3 + scala.js ([#2427](https://github.com/wvlet/airframe/issues/2427)) [[3a73e4352](https://github.com/wvlet/airframe/commit/3a73e4352)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.49.1 ([#2425](https://github.com/wvlet/airframe/issues/2425)) [[33ab4afab](https://github.com/wvlet/airframe/commit/33ab4afab)]
+- airframe-surface: Scala 3 support without reflection ([#2399](https://github.com/wvlet/airframe/issues/2399)) [[568de2fcf](https://github.com/wvlet/airframe/commit/568de2fcf)]
+- Update airframe-codec, airframe-control, ... to 22.9.1 ([#2424](https://github.com/wvlet/airframe/issues/2424)) [[387cefbff](https://github.com/wvlet/airframe/commit/387cefbff)]
+- Update scala-compiler, scala-library, ... to 2.12.17 ([#2423](https://github.com/wvlet/airframe/issues/2423)) [[92b6b93aa](https://github.com/wvlet/airframe/commit/92b6b93aa)]
+- Remove unnecessary snapshoht step [[93ca3ac40](https://github.com/wvlet/airframe/commit/93ca3ac40)]
+- Upgrade to Scala 2.12.17 ([#2422](https://github.com/wvlet/airframe/issues/2422)) [[83c0323cf](https://github.com/wvlet/airframe/commit/83c0323cf)]
+
 ## 22.9.1
 
 Upgrade to Scala.js 1.11.0.
