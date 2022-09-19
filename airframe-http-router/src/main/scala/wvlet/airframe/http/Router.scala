@@ -145,7 +145,7 @@ case class Router(
             .map { m =>
               (m, m.findAnnotationOf[Endpoint])
             }
-            .collect { case (m: ReflectMethodSurface, Some(endPoint)) =>
+            .collect { case (m: MethodSurface, Some(endPoint)) =>
               val endpointInterfaceCls =
                 controllerSurface
                   .findAnnotationOwnerOf[Endpoint]
@@ -175,11 +175,11 @@ case class Router(
               (m, m.findAnnotationOf[RPC])
             }
             .collect {
-              case (m: ReflectMethodSurface, Some(rpc)) =>
+              case (m: MethodSurface, Some(rpc)) =>
                 val path =
                   if (rpc.path().nonEmpty) rpc.path() else s"/${m.name}"
                 ControllerRoute(rpcInterfaceCls, controllerSurface, HttpMethod.POST, prefixPath + path, m, isRPC = true)
-              case (m: ReflectMethodSurface, None) =>
+              case (m: MethodSurface, None) =>
                 ControllerRoute(
                   rpcInterfaceCls,
                   controllerSurface,

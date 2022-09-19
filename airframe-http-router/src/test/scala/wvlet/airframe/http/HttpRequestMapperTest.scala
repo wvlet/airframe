@@ -15,7 +15,6 @@ package wvlet.airframe.http
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.router.{HttpRequestMapper, Route}
-import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future
@@ -68,7 +67,7 @@ object HttpRequestMapperTest extends AirSpec {
   ): Seq[Any] = {
     val args = HttpRequestMapper.buildControllerMethodArgs[HttpMessage.Request, HttpMessage.Response, Future](
       controller = api,
-      methodSurface = route.methodSurface.asInstanceOf[ReflectMethodSurface],
+      methodSurface = route.methodSurface,
       request = requestFilter(Http.request(method, route.path)),
       context = mockContext,
       params = Map.empty,

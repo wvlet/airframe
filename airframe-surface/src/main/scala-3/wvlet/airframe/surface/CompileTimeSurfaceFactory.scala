@@ -483,6 +483,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       tpe: TypeRepr,
       defaultValueGetter: Option[Symbol],
       defaultMethodArgGetter: Option[Symbol],
+      isImplicit: Boolean,
       isRequired: Boolean,
       isSecret: Boolean
   )
@@ -506,6 +507,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         .map((x, i) => (x, i + 1, x.tree))
         .collect { case (s: Symbol, i: Int, v: ValDef) =>
           // E.g. case class Foo(a: String)(implicit b: Int)
+          // println(s"=== ${v.show} ${s.flags.show} ${s.flags.is(Flags.Implicit)}")
           // Substitue type param to actual types
           val resolved: TypeRepr = v.tpt.tpe match {
             case a: AppliedType =>
@@ -523,6 +525,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           }
           val isSecret           = hasSecretAnnotation(s)
           val isRequired         = hasRequiredAnnotation(s)
+          val isImplicit         = s.flags.is(Flags.Implicit)
           val defaultValueGetter = defaultValueMethods.find(m => m.name.endsWith(s"$$${i}"))
 
           val defaultMethodArgGetter = {
@@ -532,7 +535,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
               m.name == targetMethodName
             }
           }
-          MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isRequired, isSecret)
+          MethodArg(v.name, resolved, defaultValueGetter, defaultMethodArgGetter, isImplicit, isRequired, isSecret)
         }
     }
   }
@@ -657,24 +660,99 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     methodsOf(TypeRepr.of(using t))
   }
 
-  private def methodsOf(t: TypeRepr): Expr[Seq[MethodSurface]] = {
-    val localMethods = localMethodsOf(t).distinct
+  private val methodMemo = scala.collection.mutable.Map[TypeRepr, Expr[Seq[MethodSurface]]]()
+  private val methodSeen = scala.collection.mutable.Set[TypeRepr]()
 
-    val methodSurfaces = localMethods.map(m => (m, m.tree)).collect { case (m, df: DefDef) =>
-      val mod   = Expr(modifierBitMaskOf(m))
-      val owner = surfaceOf(t)
-      val name  = Expr(m.name)
-      // println(s"======= ${df.returnTpt.show}")
-      val ret = surfaceOf(df.returnTpt.tpe)
-      // println(s"==== method of: ${ret.show}")
-      val args = methodParametersOf(t, m)
-      // TODO: This code doesn't work for Scala.js + Scala 3.0.0
-      '{
-        wvlet.airframe.surface.reflect
-          .ReflectMethodSurface(${ mod }, ${ owner }, ${ name }, ${ ret }, ${ args }.toIndexedSeq)
+  private def methodsOf(targetType: TypeRepr): Expr[Seq[MethodSurface]] = {
+    if (methodMemo.contains(targetType)) methodMemo(targetType)
+    else if (seen.contains(targetType)) {
+      sys.error(s"recurcive type in method: ${targetType.typeSymbol.fullName}")
+    } else {
+      methodSeen += targetType
+      val localMethods = localMethodsOf(targetType).distinct
+      val methodSurfaces = localMethods.map(m => (m, m.tree)).collect { case (m, df: DefDef) =>
+        val mod   = Expr(modifierBitMaskOf(m))
+        val owner = surfaceOf(targetType)
+        val name  = Expr(m.name)
+        // println(s"======= ${df.returnTpt.show}")
+        val ret = surfaceOf(df.returnTpt.tpe)
+        // println(s"==== method of: def ${m.name}")
+        val params       = methodParametersOf(targetType, m)
+        val args         = methodArgsOf(targetType, m).flatten
+        val methodCaller = createMethodCaller(targetType, m, args)
+        '{
+          ClassMethodSurface(${ mod }, ${ owner }, ${ name }, ${ ret }, ${ params }.toIndexedSeq, ${ methodCaller })
+        }
       }
+      val expr = Expr.ofSeq(methodSurfaces)
+      methodMemo += targetType -> expr
+      expr
     }
-    Expr.ofSeq(methodSurfaces)
+  }
+
+  private def isTypeParam(t: TypeRepr): Boolean = {
+    t match {
+      case TypeRef(prefix, typeName) if prefix.toString == "NoPrefix" => true
+      case _                                                          => false
+    }
+  }
+
+  private def createMethodCaller(
+      objectType: TypeRepr,
+      m: Symbol,
+      methodArgs: Seq[MethodArg]
+  ): Expr[Option[(Any, Seq[Any]) => Any]] = {
+    // Build { (x: Any, args: Seq[Any]) => x.asInstanceOf[t].<method>(.. args) }
+    val methodTypeParams: List[TypeParamClause] = m.tree match {
+      case df: DefDef =>
+        df.paramss.collect { case t: TypeParamClause =>
+          t
+        }
+      case _ =>
+        List.empty
+    }
+
+    val lambda = Lambda(
+      owner = Symbol.spliceOwner,
+      tpe = MethodType(List("x", "args"))(_ => List(TypeRepr.of[Any], TypeRepr.of[Seq[Any]]), _ => TypeRepr.of[Any]),
+      rhsFn = (sym, params) => {
+        val x    = params(0).asInstanceOf[Term]
+        val args = params(1).asInstanceOf[Term]
+        val expr = Select.unique(x, "asInstanceOf").appliedToType(objectType).select(m)
+        val argList = methodArgs.zipWithIndex.collect {
+          // If the arg is implicit, no need to explicitly bind it
+          case (arg, i) if !arg.isImplicit =>
+            // args(i).asInstanceOf[ArgType]
+            val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(i)))
+            Select.unique(extracted, "asInstanceOf").appliedToType(arg.tpe)
+        }
+        if (argList.isEmpty) {
+          val newExpr = m.tree match {
+            case d: DefDef if d.trailingParamss.nonEmpty =>
+              // An empty arg method, e.g., def methodName()
+              expr.appliedToNone
+            case _ =>
+              // No arg method, e.g., def methodName: Unit
+              expr
+          }
+          newExpr.changeOwner(sym)
+        } else {
+          // Bind to function arguments
+          val newExpr = if (methodTypeParams.isEmpty) {
+            expr.appliedToArgs(argList.toList)
+          } else {
+            // For generic functions, type params also need to be applied
+            val dummyTypeParams = methodTypeParams.map(x => TypeRepr.of[Any])
+            // println(s"---> ${m.name} type param count: ${methodTypeParams.size}, arg size: ${argList.size}")
+            expr
+              .appliedToTypes(dummyTypeParams)
+              .appliedToArgs(argList.toList)
+          }
+          newExpr.changeOwner(sym)
+        }
+      }
+    )
+    '{ Some(${ lambda.asExprOf[(Any, Seq[Any]) => Any] }) }
   }
 
   private def localMethodsOf(t: TypeRepr): Seq[Symbol] = {
@@ -708,7 +786,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     !x.flags.is(Flags.Synthetic) &&
     !x.flags.is(Flags.Artifact) &&
     x.fullName != "scala.Any" &&
-    x.fullName != "java.lang.Object"
+    x.fullName != "java.lang.Object" &&
+    // Exclude caes class methods
+    x.fullName != "scala.Product"
   }
 
   private def isOwnedByTargetClass(m: Symbol, t: TypeRepr): Boolean = {

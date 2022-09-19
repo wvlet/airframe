@@ -18,7 +18,6 @@ import wvlet.airframe.codec.{MISSING_PARAMETER, MessageCodecException, MessageCo
 import wvlet.airframe.http._
 import wvlet.airframe.http.internal.RPCCallContext
 import wvlet.airframe.rx.Rx
-import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
@@ -78,7 +77,7 @@ case class ControllerRoute(
     controllerSurface: Surface,
     method: String,
     path: String,
-    methodSurface: ReflectMethodSurface,
+    methodSurface: MethodSurface,
     isRPC: Boolean
 ) extends Route
     with LogSupport {
