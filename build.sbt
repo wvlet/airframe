@@ -61,7 +61,7 @@ ThisBuild / usePipelining := false
 // A build configuration switch for working on Dotty migration. This needs to be removed eventually
 val DOTTY = sys.env.isDefinedAt("DOTTY")
 
-// If DOTTY is set, use Scala 3 by default
+// If DOTTY is set, use Scala 3 by default. This is for the convenience of working on Scala 3 projects
 ThisBuild / scalaVersion := { if (DOTTY) SCALA_3_0 else SCALA_2_13 }
 
 ThisBuild / organization := "org.wvlet.airframe"
@@ -234,7 +234,8 @@ lazy val projectJS =
     .settings(noPublish)
     .aggregate(jsProjects: _*)
 
-// For Dotty (Scala 3)
+// A scoped project only for Dotty (Scala 3).
+// This is a workaround as projectJVM/test shows compile errors for non Scala 3 ready projects
 lazy val projectDotty =
   project
     .settings(
@@ -812,6 +813,7 @@ lazy val benchmark =
     // Necessary for generating /META-INF/BenchmarkList
     .enablePlugins(JmhPlugin, PackPlugin)
     .settings(buildSettings)
+    .settings(scala2Only)
     .settings(noPublish)
     .settings(
       name     := "airframe-benchmark",
