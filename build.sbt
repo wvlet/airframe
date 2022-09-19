@@ -3,8 +3,8 @@ import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 val SCALA_2_12          = "2.12.17"
 val SCALA_2_13          = "2.13.8"
 val SCALA_3_0           = "3.2.0"
-val targetScalaVersions = SCALA_2_13 :: SCALA_2_12 :: Nil
-val withDotty           = SCALA_3_0 :: targetScalaVersions
+val uptoScala2          = SCALA_2_13 :: SCALA_2_12 :: Nil
+val targetScalaVersions = SCALA_3_0 :: uptoScala2
 
 // Add this for using snapshot versions
 // ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
@@ -60,14 +60,15 @@ ThisBuild / usePipelining := false
 
 // A build configuration switch for working on Dotty migration. This needs to be removed eventually
 val DOTTY = sys.env.isDefinedAt("DOTTY")
-// For debugging
-// val DOTTY = true
 
-// Switch to DOTTY at the build level as we still have projects not ready for Scala 3
+// If DOTTY is set, use Scala 3 by default. This is for the convenience of working on Scala 3 projects
 ThisBuild / scalaVersion := {
-  if (DOTTY) SCALA_3_0
-  else SCALA_2_13
+  if (DOTTY)
+    SCALA_3_0
+  else
+    SCALA_2_13
 }
+
 ThisBuild / organization := "org.wvlet.airframe"
 
 // Use dynamic snapshot version strings for non tagged versions
@@ -89,7 +90,7 @@ val buildSettings = Seq[Setting[_]](
   ),
   // Exclude compile-time only projects. This is a workaround for bloop,
   // which cannot resolve Optional dependencies nor compile-internal dependencies.
-  pomPostProcess     := excludePomDependency(Seq("airspec_2.12", "airspec_2.13")),
+  pomPostProcess     := excludePomDependency(Seq("airspec_2.12", "airspec_2.13", "airspec_3")),
   crossScalaVersions := targetScalaVersions,
   crossPaths         := true,
   publishMavenStyle  := true,
@@ -119,6 +120,10 @@ val buildSettings = Seq[Setting[_]](
   }
 )
 
+val scala2Only = Seq[Setting[_]](
+  crossScalaVersions := uptoScala2
+)
+
 // Do not run tests concurrently to avoid JMX registration failures
 val runTestSequentially = Seq[Setting[_]](Test / parallelExecution := false)
 
@@ -126,7 +131,6 @@ val runTestSequentially = Seq[Setting[_]](Test / parallelExecution := false)
 ThisBuild / publishTo := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
-  crossScalaVersions := targetScalaVersions,
   // #2117 For using java.util.UUID.randomUUID() in Scala.js
   libraryDependencies += ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0" % Test)
     .cross(CrossVersion.for3Use2_13),
@@ -137,6 +141,9 @@ val noPublish = Seq(
   publishArtifact := false,
   publish         := {},
   publishLocal    := {},
+  publish / skip  := true,
+  // This must be Nil to use crossScalaVersions of individual modules in `+ projectJVM/xxxx` tasks
+  crossScalaVersions := Nil,
   // Explicitly skip the doc task because protobuf related Java files causes no type found error
   Compile / doc / sources                := Seq.empty,
   Compile / packageDoc / publishArtifact := false
@@ -200,7 +207,7 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
   examples
 )
 
-// Scala.js build (only for Scala 2.12 + 2.13)
+// Scala.js build (Scala 2.12, 2.13, and 3.x)
 lazy val jsProjects: Seq[ProjectReference] = Seq(
   logJS,
   surfaceJS,
@@ -212,8 +219,8 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   jsonJS,
   msgpackJS,
   codecJS,
-  rxJS,
   httpJS,
+  rxJS,
   rxHtmlJS,
   widgetJS
 )
@@ -221,36 +228,25 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
 // For community-build
 lazy val communityBuild =
   project
-    .settings(
-      noPublish,
-      crossScalaVersions := targetScalaVersions
-    )
+    .settings(noPublish)
     .aggregate(communityBuildProjects: _*)
 
 // For Scala 2.12
 lazy val projectJVM =
   project
-    .settings(
-      noPublish,
-      crossScalaVersions := targetScalaVersions
-    )
+    .settings(noPublish)
     .aggregate(jvmProjects: _*)
 
 lazy val projectJS =
   project
-    .settings(
-      noPublish,
-      crossScalaVersions := targetScalaVersions
-    )
+    .settings(noPublish)
     .aggregate(jsProjects: _*)
 
-// For Dotty (Scala 3)
+// A scoped project only for Dotty (Scala 3).
+// This is a workaround as projectJVM/test shows compile errors for non Scala 3 ready projects
 lazy val projectDotty =
   project
-    .settings(
-      noPublish,
-      crossScalaVersions := Seq(SCALA_3_0)
-    )
+    .settings(noPublish)
     .aggregate(
       diMacrosJVM,
       diJVM,
@@ -259,11 +255,14 @@ lazy val projectDotty =
       canvas,
       controlJVM,
       config,
-      // codec uses Scala reflection
       codecJVM,
       fluentd,
       httpJVM,
       httpRouter,
+      // Surface.of(Class[_]) needs to be supported
+      // httpCodeGen
+      // Finagle is used in the http recorder
+      // httpRecorder
       // // Finagle isn't supporting Scala 3
       // httpFinagle,
       // grpc,
@@ -275,7 +274,6 @@ lazy val projectDotty =
       jsonJVM,
       parquet,
       rxJVM,
-      // rx-html uses Scala Macros
       rxHtmlJVM,
       sql,
       ulidJVM
@@ -335,7 +333,6 @@ lazy val di =
     .crossType(CrossType.Pure)
     .in(file("airframe-di"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings)
     .settings(
       name        := "airframe",
       description := "Dependency injection library tailored to Scala",
@@ -366,32 +363,6 @@ def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: Stri
     }
 }
 
-def dottyCrossBuildSettings: Seq[Setting[_]] = {
-  Seq(
-    crossScalaVersions := {
-      if (DOTTY) withDotty else targetScalaVersions
-    }
-    // This setting becomes unnecessary as sbt-crossproject support Scala version specific folders
-//    Compile / unmanagedSourceDirectories := {
-//      val origDirs = (Compile / unmanagedSourceDirectories).value
-//      val newDirs = crossBuildSources(
-//        scalaBinaryVersion.value,
-//        baseDirectory.value.getParent
-//      )
-//      (origDirs ++ newDirs).distinct
-//    },
-//    Test / unmanagedSourceDirectories := {
-//      val origDirs = (Test / unmanagedSourceDirectories).value
-//      val newDirs = crossBuildSources(
-//        scalaBinaryVersion.value,
-//        baseDirectory.value.getParent,
-//        srcType = "test"
-//      )
-//      (origDirs ++ newDirs).distinct
-//    }
-  )
-}
-
 // Airframe DI needs to call macro methods, so we needed to split the project into DI and DI macros.
 // This project sources and classes will be embedded to airframe.jar, so we don't publish airframe-di-macros
 lazy val diMacros =
@@ -399,7 +370,6 @@ lazy val diMacros =
     .crossType(CrossType.Pure)
     .in(file("airframe-di-macros"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings)
     .settings(
       name        := "airframe-di-macros",
       description := "Macros for Airframe Di"
@@ -441,7 +411,6 @@ lazy val surface =
     .crossType(CrossType.Pure)
     .in(file("airframe-surface"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings)
     .settings(
       name                                         := "airframe-surface",
       description                                  := "A library for extracting object structure surface",
@@ -560,7 +529,6 @@ lazy val log: sbtcrossproject.CrossProject =
     .crossType(CrossType.Pure)
     .in(file("airframe-log"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings)
     .settings(
       name        := "airframe-log",
       description := "Fancy logger for Scala",
@@ -626,7 +594,6 @@ lazy val codec =
     .crossType(CrossType.Pure)
     .in(file("airframe-codec"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings)
     .settings(
       // TODO: #1698 Avoid "illegal multithreaded access to ContextBase error" on Scala 3
       // Tests in this project are sequentially executed
@@ -695,7 +662,6 @@ lazy val http =
     .enablePlugins(BuildInfoPlugin)
     .in(file("airframe-http"))
     .settings(buildSettings)
-    .settings(dottyCrossBuildSettings)
     .settings(
       name             := "airframe-http",
       description      := "REST and RPC Framework",
@@ -740,11 +706,12 @@ lazy val httpCodeGen =
     .in(file("airframe-http-codegen"))
     .enablePlugins(PackPlugin)
     .settings(buildSettings)
+    .settings(scala2Only)
     .settings(
       name               := "airframe-http-codegen",
       description        := "REST and RPC code generator",
       packMain           := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
-      packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13"),
+      packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13", "airspec_3"),
       libraryDependencies ++= Seq(
         // Use swagger-parser only for validating YAML format in tests
         "io.swagger.parser.v3" % "swagger-parser" % "2.1.2" % Test,
@@ -762,6 +729,7 @@ lazy val grpc =
   project
     .in(file("airframe-http-grpc"))
     .settings(buildSettings)
+    .settings(scala2Only)
     .settings(
       name        := "airframe-http-grpc",
       description := "Airframe HTTP gRPC backend",
@@ -781,6 +749,7 @@ lazy val finagle =
   project
     .in(file("airframe-http-finagle"))
     .settings(buildSettings)
+    .settings(scala2Only)
     .settings(
       name        := "airframe-http-finagle",
       description := "REST API binding for Finagle",
@@ -802,6 +771,7 @@ lazy val okhttp =
   project
     .in(file("airframe-http-okhttp"))
     .settings(buildSettings)
+    .settings(scala2Only)
     .settings(
       name        := "airframe-http-okhttp",
       description := "REST API binding for OkHttp",
@@ -815,6 +785,7 @@ lazy val httpRecorder =
   project
     .in(file("airframe-http-recorder"))
     .settings(buildSettings)
+    .settings(scala2Only)
     .settings(
       name        := "airframe-http-recorder",
       description := "Http Response Recorder",
@@ -851,6 +822,7 @@ lazy val benchmark =
     .enablePlugins(JmhPlugin, PackPlugin)
     .settings(buildSettings)
     .settings(noPublish)
+    .settings(scala2Only)
     .settings(
       name     := "airframe-benchmark",
       packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
@@ -1010,6 +982,7 @@ lazy val examples =
     .settings(
       name        := "airframe-examples",
       description := "Airframe examples",
+      crossScalaVersions ++= targetScalaVersions,
       libraryDependencies ++= Seq(
       )
     )

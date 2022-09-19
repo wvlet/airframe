@@ -69,7 +69,7 @@ object JSHttpClient {
     Retry
       .withBackOff(maxRetry = 3)
       .withResultClassifier(HttpClientException.classifyHttpResponse[Response])
-      .withErrorClassifier { e: Throwable => Retry.nonRetryableFailure(e) }
+      .withErrorClassifier { (e: Throwable) => Retry.nonRetryableFailure(e) }
       .beforeRetry(defaultBeforeRetryAction[Request])
   }
 }
@@ -85,7 +85,7 @@ case class JSHttpClientConfig(
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
     // The default circuit breaker, which will be open after 5 consecutive failures
     circuitBreaker: CircuitBreaker = CircuitBreaker.withConsecutiveFailures(5),
-    rxConverter: Future[_] => RxStream[_] = { f: Future[_] =>
+    rxConverter: Future[_] => RxStream[_] = { (f: Future[_]) =>
       Rx.future(f)(scala.scalajs.concurrent.JSExecutionContext.queue)
     }
 ) {

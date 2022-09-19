@@ -14,6 +14,7 @@
 package wvlet.airframe.rx.html.widget.ui.bootstrap
 
 import wvlet.airframe.rx.html.RxElement
+import wvlet.airframe.rx.html._
 import wvlet.airframe.rx.html.all.{button, cls, disabled, tpe}
 import wvlet.log.LogSupport
 

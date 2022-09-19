@@ -31,7 +31,6 @@ jobs:
           SONATYPE_PASSWORD: '${{ secrets.SONATYPE_PASS }}'
         run: |
           ./sbt publishSnapshots
-          DOTTY=true ./sbt projectDotty/publish
       - name: Publish snapshots of AirSpec
         env:
           SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
