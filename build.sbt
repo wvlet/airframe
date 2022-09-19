@@ -821,8 +821,8 @@ lazy val benchmark =
     // Necessary for generating /META-INF/BenchmarkList
     .enablePlugins(JmhPlugin, PackPlugin)
     .settings(buildSettings)
-    .settings(scala2Only)
     .settings(noPublish)
+    .settings(scala2Only)
     .settings(
       name     := "airframe-benchmark",
       packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
@@ -982,6 +982,7 @@ lazy val examples =
     .settings(
       name        := "airframe-examples",
       description := "Airframe examples",
+      crossScalaVersions ++= targetScalaVersions,
       libraryDependencies ++= Seq(
       )
     )
