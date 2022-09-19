@@ -15,6 +15,7 @@ package wvlet.airframe.rx.html
 
 import org.scalajs.dom
 import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.html._
 import wvlet.airframe.rx.html.all._
 import wvlet.airspec._
 
@@ -86,7 +87,7 @@ class HtmlRenderingTest extends AirSpec {
   }
 
   test("add onclick") {
-    val d = button("hello", onclick { e: dom.MouseEvent => println("clicked") })
+    val d = button("hello", onclick { (e: dom.MouseEvent) => println("clicked") })
     render(d)
   }
 

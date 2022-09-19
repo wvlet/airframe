@@ -58,8 +58,11 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 // Disable the pipelining available since sbt-1.4.0. It caused compilation failure
 ThisBuild / usePipelining := false
 
-// Use Scala 2.13 by default
-ThisBuild / scalaVersion := SCALA_2_13
+// A build configuration switch for working on Dotty migration. This needs to be removed eventually
+val DOTTY = sys.env.isDefinedAt("DOTTY")
+
+// If DOTTY is set, use Scala 3 by default
+ThisBuild / scalaVersion := { if (DOTTY) SCALA_3_0 else SCALA_2_13 }
 
 ThisBuild / organization := "org.wvlet.airframe"
 
@@ -250,6 +253,8 @@ lazy val projectDotty =
       fluentd,
       httpJVM,
       httpRouter,
+      // Surface.of(Class[_]) needs to be supported
+      // httpCodeGen
       // // Finagle isn't supporting Scala 3
       // httpFinagle,
       // grpc,
@@ -693,11 +698,12 @@ lazy val httpCodeGen =
     .in(file("airframe-http-codegen"))
     .enablePlugins(PackPlugin)
     .settings(buildSettings)
+    .settings(scala2Only)
     .settings(
       name               := "airframe-http-codegen",
       description        := "REST and RPC code generator",
       packMain           := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
-      packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13"),
+      packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13", "airspec_3"),
       libraryDependencies ++= Seq(
         // Use swagger-parser only for validating YAML format in tests
         "io.swagger.parser.v3" % "swagger-parser" % "2.1.2" % Test,
@@ -757,6 +763,7 @@ lazy val okhttp =
   project
     .in(file("airframe-http-okhttp"))
     .settings(buildSettings)
+    .settings(scala2Only)
     .settings(
       name        := "airframe-http-okhttp",
       description := "REST API binding for OkHttp",
