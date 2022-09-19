@@ -211,6 +211,27 @@ As you modify this property file, a background thread automatically reads this l
 
 For more details, see the [documentation](https://wvlet.org/airframe/docs/airframe-log.html) of airframe-log.
 
+## Detecting Runtime Environment
+
+For detecting the running environment of tests, the following methods are available: 
+
+- inCI: Boolean
+- inTravisCI: Boolean
+- inCircleCI: Boolean
+- inGitHubAction: Boolean
+- isScalaJS: Boolean
+- isScala2: Boolean
+- isScala3: Boolean
+- scalaMajorVersion: Int
+
+For example:
+```scala
+test("scala-3 specific tests") {
+  if(isScala3) {
+    scalaMajorVersion shoudlBe 3 
+  }  
+}
+```
 
 ## Async Testing
 

@@ -96,47 +96,63 @@ class JSMatcherTest extends AirSpec {
   }
 
   test("not equal if different value") {
-    val a = new js.Object() {
-      val a = 1
+    test("different vals") {
+      val a = new js.Object() {
+        val a = 1
+      }
+      val b = new js.Object() {
+        val a = 2
+      }
+      a shouldNotBe b
+      b shouldNotBe a
     }
-    val b = new js.Object() {
-      val a = 2
-    }
-    a shouldNotBe b
-    b shouldNotBe a
 
-    val c = new js.Object() {
-      val a = null
+    test("diffent vals with null or undefined") {
+      if (isScalaJS && isScala3) {
+        pending("A bug in Scala 3 compiler fails to produce null/undefined fields: #2426")
+      }
+      val c = new js.Object() {
+        val a = null
+      }
+      val d = new js.Object() {
+        val a = js.undefined
+      }
+      c shouldNotBe d
+      d shouldNotBe c
     }
-    val d = new js.Object() {
-      val a = js.undefined
-    }
-    c shouldNotBe d
-    d shouldNotBe c
 
-    new HasStringFoo("foo") shouldNotBe new HasStringFoo("bar")
+    test("different params") {
+      new HasStringFoo("foo") shouldNotBe new HasStringFoo("bar")
+    }
   }
 
   test("not equal if having extra key") {
-    val a = new js.Object() {
-      val a     = 1
-      val extra = 42
+    test("different params") {
+      val a = new js.Object() {
+        val a     = 1
+        val extra = 42
+      }
+      val b = new js.Object() {
+        val a = 1
+      }
+      a shouldNotBe b
+      b shouldNotBe a
     }
-    val b = new js.Object() {
-      val a = 1
-    }
-    a shouldNotBe b
-    b shouldNotBe a
 
-    val c = new js.Object() {
-      val a     = 1
-      val extra = js.undefined
+    test("different params with null or undefined") {
+      if (isScalaJS && isScala3) {
+        pending("A bug in Scala 3 compiler fails to produce null/undefined fields: #2426")
+      }
+      val c = new js.Object() {
+        val a     = 1
+        val extra = js.undefined
+      }
+      val d = new js.Object() {
+        val a = 1
+      }
+      c shouldNotBe d
+      d shouldNotBe c
     }
-    val d = new js.Object() {
-      val a = 1
-    }
-    c shouldNotBe d
-    d shouldNotBe c
   }
 
   test("equal if both is null") {

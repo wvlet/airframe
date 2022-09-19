@@ -13,6 +13,8 @@ import scala.reflect.ClassTag
   */
 private[airspec] trait AirSpecSpiCompat {
 
+  protected def scalaMajorVersion: Int = 2
+
   /**
     * This will add Scala.js support to the AirSpec.
     *

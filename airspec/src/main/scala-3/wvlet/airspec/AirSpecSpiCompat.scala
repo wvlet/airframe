@@ -9,6 +9,8 @@ import scala.reflect.ClassTag
 /**
   */
 private[airspec] trait AirSpecSpiCompat { self: AirSpecSpi =>
+  protected def scalaMajorVersion: Int = 3
+
   protected def scalaJsSupport: Unit = {
     wvlet.log
       .Logger("wvlet.airspec").warn(
