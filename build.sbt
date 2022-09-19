@@ -62,7 +62,12 @@ ThisBuild / usePipelining := false
 val DOTTY = sys.env.isDefinedAt("DOTTY")
 
 // If DOTTY is set, use Scala 3 by default. This is for the convenience of working on Scala 3 projects
-ThisBuild / scalaVersion := { if (DOTTY) SCALA_3_0 else SCALA_2_13 }
+ThisBuild / scalaVersion := {
+  if (DOTTY)
+    SCALA_3_0
+  else
+    SCALA_2_13
+}
 
 ThisBuild / organization := "org.wvlet.airframe"
 
@@ -199,7 +204,7 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
   examples
 )
 
-// Scala.js build (only for Scala 2.12 + 2.13)
+// Scala.js build (Scala 2.12, 2.13, and 3.x)
 lazy val jsProjects: Seq[ProjectReference] = Seq(
   logJS,
   surfaceJS,
@@ -211,8 +216,8 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   jsonJS,
   msgpackJS,
   codecJS,
-  rxJS,
   httpJS,
+  rxJS,
   rxHtmlJS,
   widgetJS
 )
@@ -220,18 +225,27 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
 // For community-build
 lazy val communityBuild =
   project
-    .settings(noPublish)
+    .settings(
+      noPublish,
+      crossScalaVersions := targetScalaVersions
+    )
     .aggregate(communityBuildProjects: _*)
 
 // For Scala 2.12
 lazy val projectJVM =
   project
-    .settings(noPublish)
+    .settings(
+      noPublish,
+      crossScalaVersions := targetScalaVersions
+    )
     .aggregate(jvmProjects: _*)
 
 lazy val projectJS =
   project
-    .settings(noPublish)
+    .settings(
+      noPublish,
+      crossScalaVersions := targetScalaVersions
+    )
     .aggregate(jsProjects: _*)
 
 // A scoped project only for Dotty (Scala 3).
