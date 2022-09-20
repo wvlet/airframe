@@ -63,7 +63,10 @@ val DOTTY = sys.env.isDefinedAt("DOTTY")
 
 // If DOTTY is set, use Scala 3 by default. This is for the convenience of working on Scala 3 projects
 ThisBuild / scalaVersion := {
-  SCALA_3
+  if (DOTTY)
+    SCALA_3
+  else
+    SCALA_2_13
 }
 
 ThisBuild / organization := "org.wvlet.airframe"
@@ -748,6 +751,7 @@ lazy val finagle =
   project
     .in(file("airframe-http-finagle"))
     .settings(buildSettings)
+    .settings(scala2Only)
     .settings(
       name        := "airframe-http-finagle",
       description := "REST API binding for Finagle",

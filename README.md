@@ -36,15 +36,24 @@ Airframe https://wvlet.org/airframe is a collection of [lightweight building blo
 <p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px"></p>
 
 
-## Build
+## For Developers
 
-### Dotty (Scala 3.0) 
+### Dotty (Scala 3)
 
-For developing with Dotty, use DOTTY=true environment variable:
+For developing with Dotty (Scala 3), use DOTTY=true environment variable:
 ```
 $ DOTTY=true ./sbt
 > logJVM/test
 ```
+
+Or use `++ 3` in the sbt console:
+```
+# Switch to Scala 3
+> ++ 3
+```
+
+For starting a migration of some project to Scala 3, create a PR that removes `.settings(scala2Only)` from build.sbt to use Scala 3 in the project, and add the project to `projectDotty`. After all tests pass, the PR can be merged.
+
 
 Here is the list of milestones for Dotty support: [#1077](https://github.com/wvlet/airframe/issues/1077)
 
