@@ -93,7 +93,7 @@ case class FinagleClientConfig(
   def asyncClientDesign: Design = {
     Design.newDesign
       .bind[FinagleClient]
-      .toProvider { server: FinagleServer =>
+      .toProvider { (server: FinagleServer) =>
         this.newClient(server.localAddress)
       }
   }
@@ -101,7 +101,7 @@ case class FinagleClientConfig(
   def syncClientDesign: Design = {
     Design.newDesign
       .bind[FinagleSyncClient]
-      .toProvider { server: FinagleServer =>
+      .toProvider { (server: FinagleServer) =>
         this.newSyncClient(server.localAddress)
       }
   }
@@ -371,7 +371,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
 /**
   */
 object FinagleClient extends LogSupport {
-  def defaultInitClient: Http.Client => Http.Client = { x: Http.Client =>
+  def defaultInitClient: Http.Client => Http.Client = { (x: Http.Client) =>
     x.withSessionQualifier.noFailureAccrual
   }
   def defaultRetryContext: RetryContext = {
