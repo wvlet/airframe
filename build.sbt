@@ -104,8 +104,7 @@ val buildSettings = Seq[Setting[_]](
     } else {
       Seq(
         // Necessary for tracking source code range in airframe-rx demo
-        "-Yrangepos",
-        "-Ytasty-reader"
+        "-Yrangepos"
       )
     }
   },
