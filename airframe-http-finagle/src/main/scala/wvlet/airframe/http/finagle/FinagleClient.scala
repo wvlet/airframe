@@ -26,7 +26,6 @@ import wvlet.airframe.http.HttpResponseBodyCodec
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
-import scala.reflect.runtime.{universe => ru}
 import scala.util.control.NonFatal
 
 case class FinagleClientConfig(
@@ -92,16 +91,14 @@ case class FinagleClientConfig(
 
   def asyncClientDesign: Design = {
     Design.newDesign
-      .bind[FinagleClient]
-      .toProvider { (server: FinagleServer) =>
+      .bind[FinagleClient].toProvider { (server: FinagleServer) =>
         this.newClient(server.localAddress)
       }
   }
 
   def syncClientDesign: Design = {
     Design.newDesign
-      .bind[FinagleSyncClient]
-      .toProvider { (server: FinagleServer) =>
+      .bind[FinagleSyncClient].toProvider { (server: FinagleServer) =>
         this.newSyncClient(server.localAddress)
       }
   }
@@ -115,9 +112,7 @@ case class FinagleClientConfig(
   }
 }
 
-class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
-    extends HttpClient[Future, http.Request, http.Response]
-    with LogSupport {
+class FinagleClient(address: ServerAddress, config: FinagleClientConfig) extends FinagleClientBase with LogSupport {
 
   // Use the bridged scheduler by default to avoid blocking at Await.result in SyncClient.
   // The forkjoin scheduler was unstable in CI
@@ -198,174 +193,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   }
 
   // make sure using Map output
-  private val codecFactory  = config.codecFactory.withMapOutput
-  private val responseCodec = new HttpResponseBodyCodec[Response]
-
-  private def convert[A: ru.TypeTag](response: Future[Response]): Future[A] = {
-    if (implicitly[ru.TypeTag[A]] == ru.typeTag[Response]) {
-      // Can return the response as is
-      response.asInstanceOf[Future[A]]
-    } else {
-      // Need a conversion
-      val codec = codecFactory.of[A]
-      response
-        .map { r =>
-          val msgpack = responseCodec.toMsgPack(r)
-          try {
-            codec.unpack(msgpack)
-          } catch {
-            case NonFatal(e) =>
-              val msg =
-                s"Failed to parse the response body ${r}: ${r.contentString}"
-              warn(msg)
-              throw new HttpClientException(
-                r,
-                HttpStatus.ofCode(r.statusCode),
-                msg,
-                e
-              )
-          }
-        }
-    }
-  }
-
-  private def toJson[Resource: ru.TypeTag](resource: Resource): String = {
-    val resourceCodec = codecFactory.of[Resource]
-    // TODO: Support non-json content body
-    val json = resourceCodec.toJson(resource)
-    json
-  }
-
-  override def get[Resource: ru.TypeTag](
-      resourcePath: String,
-      requestFilter: Request => Request = identity
-  ): Future[Resource] = {
-    convert[Resource](send(newRequest(HttpMethod.GET, resourcePath), requestFilter))
-  }
-
-  override def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](
-      resourcePath: String,
-      resourceRequest: ResourceRequest,
-      requestFilter: Request => Request = identity
-  ): Future[Resource] = {
-
-    val resourceSurface = Surface.of[ResourceRequest]
-    val path            = HttpClient.buildResourceUri(resourcePath, resourceRequest, resourceSurface)
-    convert[Resource](send(newRequest(HttpMethod.GET, path), requestFilter))
-  }
-  override def list[OperationResponse: ru.TypeTag](
-      resourcePath: String,
-      requestFilter: Request => Request = identity
-  ): Future[OperationResponse] = {
-    convert[OperationResponse](send(newRequest(HttpMethod.GET, resourcePath), requestFilter))
-  }
-
-  override def post[Resource: ru.TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request = identity
-  ): Future[Resource] = {
-    val r = newRequest(HttpMethod.POST, resourcePath)
-    r.setContentTypeJson()
-    r.setContentString(toJson(resource))
-    convert[Resource](send(r, requestFilter))
-  }
-  override def postRaw[Resource: ru.TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request = identity
-  ): Future[http.Response] = {
-    postOps[Resource, http.Response](resourcePath, resource, requestFilter)
-  }
-  override def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request = identity
-  ): Future[OperationResponse] = {
-    val r = newRequest(HttpMethod.POST, resourcePath)
-    r.setContentTypeJson()
-    r.setContentString(toJson(resource))
-    convert[OperationResponse](send(r, requestFilter))
-  }
-
-  override def put[Resource: ru.TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request = identity
-  ): Future[Resource] = {
-    val r = newRequest(HttpMethod.PUT, resourcePath)
-    r.setContentTypeJson()
-    r.setContentString(toJson(resource))
-    convert[Resource](send(r, requestFilter))
-  }
-  override def putRaw[Resource: ru.TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request = identity
-  ): Future[http.Response] = {
-    putOps[Resource, http.Response](resourcePath, resource, requestFilter)
-  }
-  override def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request = identity
-  ): Future[OperationResponse] = {
-    val r = newRequest(HttpMethod.PUT, resourcePath)
-    r.setContentTypeJson()
-    r.setContentString(toJson(resource))
-    convert[OperationResponse](send(r, requestFilter))
-  }
-
-  override def delete[OperationResponse: ru.TypeTag](
-      resourcePath: String,
-      requestFilter: Request => Request = identity
-  ): Future[OperationResponse] = {
-    convert[OperationResponse](send(newRequest(HttpMethod.DELETE, resourcePath), requestFilter))
-  }
-  override def deleteRaw(
-      resourcePath: String,
-      requestFilter: Request => Request = identity
-  ): Future[http.Response] = {
-    delete[http.Response](resourcePath, requestFilter)
-  }
-  override def deleteOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request = identity
-  ): Future[OperationResponse] = {
-    val r = newRequest(HttpMethod.DELETE, resourcePath)
-    r.setContentTypeJson()
-    r.setContentString(toJson(resource))
-    convert[OperationResponse](send(r, requestFilter))
-  }
-
-  override def patch[Resource: ru.TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request = identity
-  ): Future[Resource] = {
-    val r = newRequest(HttpMethod.PATCH, resourcePath)
-    r.setContentTypeJson()
-    r.setContentString(toJson(resource))
-    convert[Resource](send(r, requestFilter))
-  }
-  override def patchRaw[Resource: ru.TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request = identity
-  ): Future[http.Response] = {
-    patchOps[Resource, http.Response](resourcePath, resource, requestFilter)
-  }
-  override def patchOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
-      resourcePath: String,
-      resource: Resource,
-      requestFilter: Request => Request = identity
-  ): Future[OperationResponse] = {
-    val r = newRequest(HttpMethod.PATCH, resourcePath)
-    r.setContentTypeJson()
-    r.setContentString(toJson(resource))
-    convert[OperationResponse](send(r, requestFilter))
-  }
+  override protected val codecFactory = config.codecFactory.withMapOutput
 }
 
 /**

@@ -80,7 +80,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private val memo = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
 
   private def surfaceOf(t: TypeRepr): Expr[Surface] = {
-    // println(s"surfaceOf ${fullTypeNameOf(t)}")
+    //println(s"surfaceOf ${fullTypeNameOf(t)}")
     if (seen.contains(t)) {
       if (memo.contains(t)) {
         memo(t)
@@ -362,6 +362,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     } else {
       getResolvedConstructorOf(targetType).map { cstr =>
         val argListList = methodArgsOf(targetType, ts.primaryConstructor)
+        println(s"arg list of ${targetType.show}: ${argListList.flatten.map(x => s"${x.name}: ${x.tpe.show}").mkString(", ")}")
         val newClassFn = Lambda(
           owner = Symbol.spliceOwner,
           tpe = MethodType(List("args"))(_ => List(TypeRepr.of[Seq[Any]]), _ => TypeRepr.of[Any]),
@@ -379,7 +380,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
               }
               Apply(prev, argExtractors.toList)
             }
-            // println(s"== ${fn.show}")
+            //println(s"== ${fn.show}")
             fn.changeOwner(sym)
           }
         )
