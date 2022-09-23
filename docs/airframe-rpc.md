@@ -66,7 +66,7 @@ endpoint definitions, and successfully created Airframe RPC, which works both fo
 Scala.js, on top of [technology stack of 20+ Airframe modules](index.md).
 
 Although Airframe RPC is a relatively new project started at March 2020
-inside [Arm Treasure Data](https://www.treasuredata.com/), this project has proved various
+inside [Treasure Data](https://www.treasuredata.com/), this project has proved various
 advantages. For example:
 
 - __Free from REST__. We can just use Scala's functional interface for defining
