@@ -33,9 +33,15 @@ case class RuntimeMethodParameter(
   override def toString: String = s"${name}:${surface.name}"
 
   private lazy val field: jl.reflect.Field = Try {
-    method.owner.getDeclaredField(name)
+    // Escape quoted parameter names
+    // TODO There migfht be other cases. Need a more generic method
+    val paramName = name
+      .replaceAll("-", "\\$minus")
+      .replaceAll("\\+", "\\$plus")
+      .replaceAll("=", "\\$eq")
+    method.owner.getDeclaredField(paramName)
   }.getOrElse {
-    // private fields in case classes can have special field names if default paramters are defined.
+    // private fields in case classes can have special field names if default parameters are defined.
     // https://github.com/wvlet/airframe/issues/901
     val privateFieldName = method.owner.getName.replaceAll("\\.", "\\$") + s"$$$$${name}"
     method.owner.getDeclaredField(privateFieldName)

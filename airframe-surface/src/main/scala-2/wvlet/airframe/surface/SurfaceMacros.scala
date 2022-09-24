@@ -351,9 +351,11 @@ private[surface] object SurfaceMacros {
         isRequired: Boolean,
         isSecret: Boolean
     ) {
-      def name: Literal         = Literal(Constant(paramName.name.decodedName.toString))
-      private def paramNameTerm = TermName(paramName.name.decodedName.toString)
-      def typeSurface: c.Tree   = surfaceOf(tpe)
+      def name: Literal = Literal(Constant(paramName.name.decodedName.toString))
+      private def paramNameTerm = {
+        TermName(paramName.name.encodedName.toString)
+      }
+      def typeSurface: c.Tree = surfaceOf(tpe)
 
       def isPrivateParam(t: c.Type): Boolean = {
         t.member(paramName.name) match {
