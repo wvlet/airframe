@@ -58,6 +58,69 @@ object RPCStatus {
     GrpcStatus.UNAUTHENTICATED_16    -> RPCStatus.UNAUTHENTICATED_U13
   )
 
+  import HttpStatus._
+  private lazy val httpStatusMapping: Map[HttpStatus, RPCStatus] = Map(
+    Unknown_000                       -> UNKNOWN_I1,
+    Continue_100                      -> UNKNOWN_I1,
+    SwitchingProtocols_101            -> UNKNOWN_I1,
+    Processing_102                    -> UNKNOWN_I1,
+    Ok_200                            -> SUCCESS_S0,
+    Created_201                       -> SUCCESS_S0,
+    Accepted_202                      -> SUCCESS_S0,
+    NonAuthoritativeInformation_203   -> SUCCESS_S0,
+    NoContent_204                     -> SUCCESS_S0,
+    ResetContent_205                  -> SUCCESS_S0,
+    PartialContent_206                -> SUCCESS_S0,
+    MultiStatus_207                   -> SUCCESS_S0,
+    MultipleChoices_300               -> NOT_FOUND_U5,
+    MovedPermanently_301              -> NOT_FOUND_U5,
+    Found_302                         -> NOT_FOUND_U5,
+    SeeOther_303                      -> NOT_FOUND_U5,
+    NotModified_304                   -> NOT_FOUND_U5,
+    UseProxy_305                      -> NOT_FOUND_U5,
+    TemporaryRedirect_307             -> NOT_FOUND_U5,
+    PermanentRedirect_308             -> NOT_FOUND_U5,
+    BadRequest_400                    -> INVALID_REQUEST_U1,
+    Unauthorized_401                  -> UNAUTHENTICATED_U13,
+    PaymentRequired_402               -> EXCEEDED_BUDGET_R8,
+    Forbidden_403                     -> PERMISSION_DENIED_U14,
+    NotFound_404                      -> NOT_FOUND_U5,
+    MethodNotAllowed_405              -> NOT_SUPPORTED_U7,
+    NotAcceptable_406                 -> NOT_SUPPORTED_U7,
+    ProxyAuthenticationRequired_407   -> UNAUTHENTICATED_U13,
+    RequestTimeout_408                -> DEADLINE_EXCEEDED_I4,
+    Conflict_409                      -> ABORTED_U12,
+    Gone_410                          -> NOT_FOUND_U5,
+    LengthRequired_411                -> INVALID_ARGUMENT_U2,
+    PreconditionFailed_412            -> UNEXPECTED_STATE_U9,
+    RequestEntityTooLarge_413         -> INVALID_ARGUMENT_U2,
+    RequestURITooLong_414             -> INVALID_ARGUMENT_U2,
+    UnsupportedMediaType_415          -> NOT_SUPPORTED_U7,
+    RequestedRangeNotSatisfiable_416  -> OUT_OF_RANGE_U4,
+    ExpectationFailed_417             -> UNEXPECTED_STATE_U9,
+    EnhanceYourCalm_420               -> RESOURCE_EXHAUSTED_R0,
+    UnprocessableEntity_422           -> INVALID_REQUEST_U1,
+    Locked_423                        -> UNEXPECTED_STATE_U9,
+    FailedDependency_424              -> UNEXPECTED_STATE_U9,
+    UnorderedCollection_425           -> INVALID_ARGUMENT_U2,
+    UpgradeRequired_426               -> UNEXPECTED_STATE_U9,
+    PreconditionRequired_428          -> UNEXPECTED_STATE_U9,
+    TooManyRequests_429               -> RESOURCE_EXHAUSTED_R0,
+    RequestHeaderFieldsTooLarge_431   -> INVALID_ARGUMENT_U2,
+    UnavailableForLegalReasons_451    -> PERMISSION_DENIED_U14,
+    ClientClosedRequest_499           -> CANCELLED_U11,
+    InternalServerError_500           -> INTERNAL_ERROR_I0,
+    NotImplemented_501                -> UNIMPLEMENTED_U8,
+    BadGateway_502                    -> UNAVAILABLE_I2,
+    ServiceUnavailable_503            -> UNAVAILABLE_I2,
+    GatewayTimeout_504                -> DEADLINE_EXCEEDED_I4,
+    HttpVersionNotSupported_505       -> NOT_SUPPORTED_U7,
+    VariantAlsoNegotiates_506         -> INTERNAL_ERROR_I0,
+    InsufficientStorage_507           -> EXCEEDED_STORAGE_LIMIT_R7,
+    NotExtended_510                   -> INTERNAL_ERROR_I0,
+    NetworkAuthenticationRequired_511 -> UNAUTHENTICATED_U13
+  )
+
   def unapply(s: String): Option[RPCStatus] = {
     Try(ofCode(s.toInt)).toOption
   }
@@ -88,6 +151,25 @@ object RPCStatus {
       grpcStatusCode,
       throw new IllegalArgumentException(s"Invalid gRPC status code: ${grpcStatusCode}")
     )
+  }
+
+  /**
+    * Mapping HttpStatus to RPCStatus. This is useful when mapping third-party API statuses into RPCStatus
+    */
+  def fromHttpStatus(httpStatus: HttpStatus): RPCStatus = {
+    httpStatusMapping.get(httpStatus) match {
+      case Some(status) => status
+      case _ =>
+        if (httpStatus.isSuccessful) {
+          RPCStatus.SUCCESS_S0
+        } else if (httpStatus.isClientError) {
+          RPCStatus.USER_ERROR_U0
+        } else if (httpStatus.isServerError) {
+          RPCStatus.INTERNAL_ERROR_I0
+        } else {
+          RPCStatus.UNKNOWN_I1
+        }
+    }
   }
 
   def all: Seq[RPCStatus] =
