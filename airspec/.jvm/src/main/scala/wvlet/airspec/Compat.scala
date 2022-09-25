@@ -65,10 +65,17 @@ private[airspec] object Compat extends CompatApi {
   private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     Try(classLoader.loadClass(fullyQualifiedName).getDeclaredConstructor().newInstance()) match {
       case Success(x) => Some(x)
-      case Failure(e: InvocationTargetException)
-          if classOf[spi.AirSpecException].isAssignableFrom(e.getCause.getClass) =>
-        throw e
-      case _ => None
+      case Failure(e: InvocationTargetException) if e.getCause != null =>
+        if (classOf[spi.AirSpecException].isAssignableFrom(e.getCause.getClass)) {
+          // For assertion failrues, throw it as is
+          throw e
+        } else {
+          // For other failures when instantiating the object, throw the cause
+          throw e.getCause
+        }
+      case _ =>
+        // Ignore other types of failures, which should not happen in general
+        None
     }
   }
 
