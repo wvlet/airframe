@@ -15,10 +15,10 @@ AirSpec uses pure Scala functions for writing test cases. This style requires no
 ```scala
 $ ../sbt
 
-// Publish a local snapshot of AirSpec for Scala 2.12, 2.13
+// Publish a local snapshot of AirSpec for Scala 2.12, 2.13, and Scala 3
 > publishAllLocal
 
-// Publish a snapshot of AirSpec for Scala 2.12, 2.13 to Sonatype
+// Publish a snapshot of AirSpec for Scala 2.12, 2.13, and Scala 3 to Sonatype
 > publishSnapshots
 
 // Building individual projects
@@ -31,16 +31,17 @@ $ ../sbt
 > airspecJS/publishLocal
 ```
 
-For Scala 3, launch sbt with DOTTY=true environment variable:
+For Scala 3, select Scala 3 compiler
 
 ```scala
-$ DOTTY=true ../sbt
+$ ../sbt
+# Select Scala 3
+> ++ 3
 ```
 
-
-Scals.js + Scala 3 version is not natively built, but you can use AirSpec by importing it with `.cross(CrossVersion.for3Use2_13)`:
+Scals.js + Scala 3 version is build natively, you can use AirSpec by importing it without using `.cross(CrossVersion.for3Use2_13)`:
 
 ```scala
-libraryDependencies +=
- ("org.wvlet.airframe" %% "airspec" % AIRSPEC_VERSION).cross(CrossVersion.for3Use2_13)
+# Scala 3 + Scala.js
+libraryDependencies += "org.wvlet.airframe" %%% "airspec" % AIRSPEC_VERSION % Test
 ```
