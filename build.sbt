@@ -24,7 +24,7 @@ val GRPC_VERSION                    = "1.49.1"
 val JMH_VERSION                     = "1.35"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 val PARQUET_VERSION                 = "1.12.3"
-val SNAKE_YAML_VERSION              = "1.32"
+val SNAKE_YAML_VERSION              = "1.33"
 
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
