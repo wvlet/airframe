@@ -93,7 +93,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '19'
-      - name: Scala 2.13 + JDK11 test
+      - name: Scala 2.13 + JDK19 test
         run: ./sbt ++2.13 projectJVM/test
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v2
