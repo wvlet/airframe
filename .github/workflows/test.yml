@@ -84,6 +84,22 @@ jobs:
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report Scala 2.13 + JDK11
+  test_2_13_latest_jdk:
+    name: Scala 2.13 + JDK19
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: olafurpg/setup-scala@v11
+        with:
+          java-version: zulu@1.19
+      - name: Scala 2.13 + JDK11 test
+        run: ./sbt ++2.13 projectJVM/test
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v2
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/target/test-reports/TEST-*.xml'
+          check_name: Test Report Scala 2.13 + JDK19
   test_3:
     name: Scala 3.x (Dotty)
     runs-on: ubuntu-latest
