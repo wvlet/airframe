@@ -16,7 +16,7 @@ package wvlet.airspec
 import java.lang.reflect.InvocationTargetException
 import sbt.testing.Fingerprint
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
-import wvlet.log.Logger
+import wvlet.log.{LogSupport, Logger}
 
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
@@ -29,7 +29,7 @@ import scala.concurrent.ExecutionContext
 
 /**
   */
-private[airspec] object Compat extends CompatApi {
+private[airspec] object Compat extends CompatApi with LogSupport {
   override def isScalaJs = false
 
   override private[airspec] val executionContext: ExecutionContext =
@@ -42,13 +42,11 @@ private[airspec] object Compat extends CompatApi {
 
   private[airspec] def getFingerprint(fullyQualifiedName: String, classLoader: ClassLoader): Option[Fingerprint] = {
     Try(findCompanionObjectOf(fullyQualifiedName, classLoader)).toOption
-      .flatMap { x =>
-        x match {
-          case spec: AirSpecSpi =>
-            Some(AirSpecObjectFingerPrint)
-          case _ =>
-            None
-        }
+      .flatMap {
+        case Some(spec: AirSpecSpi) =>
+          Some(AirSpecObjectFingerPrint)
+        case other =>
+          None
       }
       .orElse {
         Try(classLoader.loadClass(fullyQualifiedName)).toOption

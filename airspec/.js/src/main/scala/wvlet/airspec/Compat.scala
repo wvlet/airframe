@@ -43,8 +43,8 @@ private[airspec] object Compat extends CompatApi with LogSupport {
     Try(findCompanionObjectOf(fullyQualifiedName, classLoader)).toOption
       .flatMap { x =>
         x match {
-          case spec: AirSpecSpi => Some(AirSpecObjectFingerPrint)
-          case _                => None
+          case Some(spec: AirSpecSpi) => Some(AirSpecObjectFingerPrint)
+          case _                      => None
         }
       }
       .orElse {
