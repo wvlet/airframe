@@ -19,6 +19,8 @@ import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 import scala.language.implicitConversions
+import scala.annotation.experimental
+import wvlet.airframe.DISupport
 
 /**
   */
@@ -44,4 +46,27 @@ package object airframe {
     traitFactoryCache.getOrElseUpdate(s, factory)
   }
 
+  inline def registerTraitFactory[A]: Unit = ${ registerTraitFactoryImpl[A] }
+
+  import scala.quoted._
+
+  @experimental def registerTraitFactoryImpl[A](using tpe: Type[A], q: Quotes): Expr[Unit] = {
+    import quotes._
+    import quotes.reflect._
+
+    val name = "$anon"
+    val parents = List(TypeTree.of[Object], TypeTree.of[A], TypeTree.of[DISupport])
+    val cls = Symbol.newClass(Symbol.spliceOwner, name, parents = parents.map(_.tpe), _ => List.empty[Symbol], selfType = None)
+    println(s"${cls.tree.show}")
+
+    // { (s: Session) => new A with DISupport { def session = s } }
+    val t = TypeRepr.of[A]
+      '{
+        val s = Surface.of[A]
+        ()
+        //{ (ss: Session) => new A with DISupport {
+        //        override def session: Session = ss
+        //      }}
+      }
+  }
 }
