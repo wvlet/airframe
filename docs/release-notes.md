@@ -6,6 +6,30 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.9.3
+
+This version includes JDK19 support for Scala 2.13 and several bug fixes. 
+
+- airframe-rpc: Use a short class name when an RPC path prefix is given ([#2452](https://github.com/wvlet/airframe/issues/2452)) [[c73aa46fe](https://github.com/wvlet/airframe/commit/c73aa46fe)]
+- airspec: Fixes [#2370](https://github.com/wvlet/airframe/issues/2370). Support running specs extending objects ([#2446](https://github.com/wvlet/airframe/issues/2446)) [[c9352ab76](https://github.com/wvlet/airframe/commit/c9352ab76)]
+- airspec: Show exceptions during test class initialization failures ([#2445](https://github.com/wvlet/airframe/issues/2445)) [[375d3e200](https://github.com/wvlet/airframe/commit/375d3e200)]
+- Add JDK19 support CI ([#2448](https://github.com/wvlet/airframe/issues/2448)) [[14b663873](https://github.com/wvlet/airframe/commit/14b663873)]
+- airframe-http: Add RPCStatus.fromHttpStatus(http status) ([#2444](https://github.com/wvlet/airframe/issues/2444)) [[0ebae131b](https://github.com/wvlet/airframe/commit/0ebae131b)]
+- Update sbt-mdoc to 2.3.5 ([#2451](https://github.com/wvlet/airframe/issues/2451)) [[17324b7a3](https://github.com/wvlet/airframe/commit/17324b7a3)]
+- Update swagger-parser to 2.1.3 ([#2450](https://github.com/wvlet/airframe/issues/2450)) [[320c551ca](https://github.com/wvlet/airframe/commit/320c551ca)]
+- Update AirSpec developer doc [[2573061ec](https://github.com/wvlet/airframe/commit/2573061ec)]
+- Update snakeyaml to 1.33 ([#2447](https://github.com/wvlet/airframe/issues/2447)) [[15fea6947](https://github.com/wvlet/airframe/commit/15fea6947)]
+- airframe-surface: [#2442](https://github.com/wvlet/airframe/issues/2442) Support special symbols (-, +, =) in quoted params ([#2443](https://github.com/wvlet/airframe/issues/2443)) [[dcbf70948](https://github.com/wvlet/airframe/commit/dcbf70948)]
+- Update airframe-rpc.md [[8d3356c0c](https://github.com/wvlet/airframe/commit/8d3356c0c)]
+- Update sbt-mdoc to 2.3.4 ([#2441](https://github.com/wvlet/airframe/issues/2441)) [[505e04306](https://github.com/wvlet/airframe/commit/505e04306)]
+- Update scala-compiler, scala-library, ... to 2.13.9 ([#2439](https://github.com/wvlet/airframe/issues/2439)) [[fc9e92c64](https://github.com/wvlet/airframe/commit/fc9e92c64)]
+- Update trino-main to 397 ([#2438](https://github.com/wvlet/airframe/issues/2438)) [[14513fa90](https://github.com/wvlet/airframe/commit/14513fa90)]
+- Update sbt-scoverage to 2.0.4 ([#2433](https://github.com/wvlet/airframe/issues/2433)) [[f86d2689e](https://github.com/wvlet/airframe/commit/f86d2689e)]
+- airframe-finagle: Toward Scala 3 support ([#2432](https://github.com/wvlet/airframe/issues/2432)) [[bcc942310](https://github.com/wvlet/airframe/commit/bcc942310)]
+- Support Scala 3 cross-build ([#2431](https://github.com/wvlet/airframe/issues/2431)) [[f8c95bfd0](https://github.com/wvlet/airframe/commit/f8c95bfd0)]
+- Update sbt-airframe to 22.9.2 ([#2429](https://github.com/wvlet/airframe/issues/2429)) [[bc52a0dcb](https://github.com/wvlet/airframe/commit/bc52a0dcb)]
+- Update airframe-codec, airframe-control, ... to 22.9.2 ([#2428](https://github.com/wvlet/airframe/issues/2428)) [[1fd191877](https://github.com/wvlet/airframe/commit/1fd191877)]
+
 ## 22.9.2
 
 From this version, AirSpec testing library supports Scala 3 + Scala.js! 
