@@ -30,8 +30,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface RPC {
     /**
      * An uri beginning from / (slash).
-     * <p>
-     * If no path is specified, the class and function names will be used for defining HTTP endpoint path
+     *
+     * If no path is specified, the full class path name and function names will be used for defining HTTP endpoint path.
+     * For example, `/example.myapp.(class name)/(method name)`.
+     *
+     * If a path is given (e.g., /v1), the RPC endpoint will be `/v1/(class name)/(method name)`
      */
     String path() default "";
     String description() default "";

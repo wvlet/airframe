@@ -608,7 +608,6 @@ catch {
 }
 ```
 
-
 ### Other Tips
 
 Airframe RPC is built on top of Airframe HTTP framework.
