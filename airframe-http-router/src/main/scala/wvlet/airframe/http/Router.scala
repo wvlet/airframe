@@ -161,13 +161,14 @@ case class Router(
             }
         case (None, Some(rpc)) =>
           val rpcInterfaceCls = Router.findRPCInterfaceCls(controllerSurface)
-          val serviceFullName = rpcInterfaceCls.getName
-            .replaceAll("\\$anon\\$", "")
-            .replaceAll("\\$", ".")
+
+          def sanitize(s: String): String = {
+            s.replaceAll("\\$anon\\$", "").replaceAll("\\$", ".")
+          }
           val prefixPath = if (rpc.path().isEmpty) {
-            s"/${serviceFullName}"
+            s"/${sanitize(rpcInterfaceCls.getName)}"
           } else {
-            s"${rpc.path()}/${serviceFullName}"
+            s"${rpc.path()}/${sanitize(rpcInterfaceCls.getSimpleName)}"
           }
           val routes = controllerMethodSurfaces
             .filter(_.isPublic)
@@ -176,9 +177,16 @@ case class Router(
             }
             .collect {
               case (m: MethodSurface, Some(rpc)) =>
-                val path =
+                val methodPath =
                   if (rpc.path().nonEmpty) rpc.path() else s"/${m.name}"
-                ControllerRoute(rpcInterfaceCls, controllerSurface, HttpMethod.POST, prefixPath + path, m, isRPC = true)
+                ControllerRoute(
+                  rpcInterfaceCls,
+                  controllerSurface,
+                  HttpMethod.POST,
+                  prefixPath + methodPath,
+                  m,
+                  isRPC = true
+                )
               case (m: MethodSurface, None) =>
                 ControllerRoute(
                   rpcInterfaceCls,
