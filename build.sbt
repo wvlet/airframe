@@ -200,6 +200,7 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
   jdbc,
   fluentd,
   finagle,
+  netty,
   okhttp,
   httpRecorder,
   benchmark,
@@ -725,6 +726,19 @@ lazy val httpCodeGen =
       publishPackArchiveTgz
     )
     .dependsOn(httpRouter, launcher)
+
+lazy val netty =
+  project
+    .in(file("airframe-http-netty"))
+    .settings(buildSettings)
+    .settings(
+      name        := "airframe-http-netty",
+      description := "Airframe HTTP Netty backend",
+      libraryDependencies ++= Seq(
+        "io.netty" % "netty-all" % "4.1.82.Final"
+      )
+    )
+    .dependsOn(httpRouter, rxJVM)
 
 lazy val grpc =
   project
