@@ -76,7 +76,7 @@ case class NettyServerConfig(
 class NettyServer(config: NettyServerConfig, session: Session) extends AutoCloseable with LogSupport {
 
   private val bossGroup = {
-    val tf = ThreadUtil.newDaemonThreadFactory("airframe-http-netty-boss")
+    val tf = ThreadUtil.newDaemonThreadFactory("airframe-netty-boss")
     if (config.canUseEpoll) {
       new EpollEventLoopGroup(1, tf)
     } else {
@@ -84,7 +84,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     }
   }
   private val workerGroup = {
-    val tf         = ThreadUtil.newDaemonThreadFactory("airframe-http-netty-worker")
+    val tf         = ThreadUtil.newDaemonThreadFactory("airframe-netty-worker")
     val numWorkers = math.max(4, (Runtime.getRuntime.availableProcessors().toDouble / 3).ceil.toInt)
     if (config.canUseEpoll) {
       new EpollEventLoopGroup(numWorkers, tf)
@@ -117,6 +117,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     b.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)
 
     // b.option(ChannelOption.AUTO_READ, Boolean.box(false))
+
     // b.childOption(ChannelOption.SO_SNDBUF, Int.box(1024 * 1024))
     // b.childOption(ChannelOption.SO_RCVBUF, Int.box(32 * 1024))
 
