@@ -21,14 +21,16 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel._
 import io.netty.handler.codec.http._
 import io.netty.handler.stream.ChunkedWriteHandler
+import io.netty.util.ReferenceCountUtil
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.HttpBackend.DefaultBackend
 import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, EmptyMessage, Request, Response, StringMessage}
 import wvlet.airframe.{Design, Session}
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher, ResponseHandler, Route}
-import wvlet.airframe.http.{Http, HttpStatus, Router}
+import wvlet.airframe.http.{Http, HttpBackend, HttpRequestAdapter, HttpStatus, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -36,7 +38,8 @@ import wvlet.log.io.IOUtil
 import scala.jdk.CollectionConverters._
 import java.util.function.Consumer
 import javax.annotation.PostConstruct
-import scala.concurrent.{ExecutionContext, Future}
+import scala.collection.mutable
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success}
 
 case class NettyServerConfig(
@@ -113,12 +116,10 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
     config.router,
     config.controllerProvider,
     // TODO Use Rx-based backend
-    DefaultBackend,
+    NettyBackend,
     new NettyResponseHandler,
     MessageCodecFactory.defaultFactoryForJSON
   )
-
-  private implicit val executionContext: ExecutionContext = DefaultBackend.executionContext
 
   override def channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest): Unit = {
     var req: wvlet.airframe.http.HttpMessage.Request = msg.method() match {
@@ -131,6 +132,7 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
       case HttpMethod.OPTIONS => Http.request(wvlet.airframe.http.HttpMethod.OPTIONS, msg.uri())
       case _                  => ???
     }
+
     msg.headers().names().asScala.map { x =>
       req = req.withHeader(x, msg.headers().get(x))
     }
@@ -140,28 +142,35 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
     requestBody.getBytes(requestBody.readerIndex(), buf)
     req = req.withContent(buf)
 
-    val futureResponse = dispatcher.apply(
+    val rxResponse: Rx[Response] = dispatcher.apply(
       req,
-      DefaultBackend.newContext { (request: Request) =>
-        Future.apply(Http.response(HttpStatus.NotFound_404))
+      NettyBackend.newContext { (request: Request) =>
+        Rx.single(Http.response(HttpStatus.NotFound_404))
       }
     )
 
-    futureResponse.onComplete {
-      case Success(response) =>
-        val nettyResponse = toNettyResponse(response)
-        ctx.write(nettyResponse)
-        ctx.flush()
-        ctx.close()
-      case Failure(ex) =>
+    RxRunner.run(rxResponse) {
+      case OnNext(v) =>
+        val nettyResponse = toNettyResponse(v.asInstanceOf[Response])
+        writeResponse(msg, ctx, nettyResponse)
+      case OnError(ex) =>
         warn(ex)
         val resp = new DefaultHttpResponse(
           HttpVersion.HTTP_1_1,
           HttpResponseStatus.valueOf(HttpStatus.InternalServerError_500.code)
         )
-        ctx.writeAndFlush(resp)
-        ctx.close()
+        writeResponse(msg, ctx, resp)
+      case OnCompletion =>
     }
+  }
+
+  private def writeResponse(req: FullHttpRequest, ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
+    val isKeepAlive = HttpUtil.isKeepAlive(req)
+    if (isKeepAlive) {
+      resp.headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)
+    }
+    ctx.writeAndFlush(resp)
+    ctx.close()
   }
 
   private def toNettyResponse(response: Response): DefaultHttpResponse = {
@@ -172,7 +181,7 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
       new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode), buf)
     }
     response.header.entries.foreach { e =>
-      r.headers().set(e.value, e.key)
+      r.headers().set(e.key, e.value)
     }
     r
   }
@@ -236,5 +245,68 @@ class NettyResponseHandler extends ResponseHandler[Request, Response] with LogSu
     } else {
       Http.response(HttpStatus.Ok_200)
     }
+  }
+}
+
+object NettyBackend extends HttpBackend[Request, Response, Rx] {
+  override protected implicit val httpRequestAdapter: HttpRequestAdapter[Request] =
+    wvlet.airframe.http.HttpMessage.HttpMessageRequestAdapter
+
+  override def name: String = "netty"
+
+  override def newResponse(status: HttpStatus, content: String): Response = {
+    Http.response(status).withContent(content)
+  }
+
+  override def toFuture[A](a: A): Rx[A] = {
+    Rx.single(a)
+  }
+
+  override def toFuture[A](a: Future[A], e: ExecutionContext): Rx[A] = {
+    Rx.future(a)(e)
+  }
+
+  override def toScalaFuture[A](a: Rx[A]): Future[A] = {
+    val promise: Promise[A] = Promise()
+    a.toRxStream
+      .map { x =>
+        promise.success(x)
+      }
+      .recover { case e: Throwable => promise.failure(e) }
+    promise.future
+  }
+
+  override def wrapException(e: Throwable): Rx[Response] = {
+    Rx.exception(e)
+  }
+
+  override def isFutureType(x: Class[_]): Boolean = {
+    classOf[Rx[_]].isAssignableFrom(x)
+  }
+
+  override def isRawResponseType(x: Class[_]): Boolean = {
+    classOf[Response].isAssignableFrom(x)
+  }
+
+  override def mapF[A, B](f: Rx[A], body: A => B): Rx[B] = {
+    f.toRxStream.map(body)
+  }
+
+  private lazy val tls =
+    ThreadLocal.withInitial[collection.mutable.Map[String, Any]](() => mutable.Map.empty[String, Any])
+
+  private def storage: collection.mutable.Map[String, Any] = tls.get()
+
+  override def withThreadLocalStore(request: => Rx[Response]): Rx[Response] = {
+    //
+    request
+  }
+
+  override def setThreadLocal[A](key: String, value: A): Unit = {
+    storage.put(key, value)
+  }
+
+  override def getThreadLocal[A](key: String): Option[A] = {
+    storage.get(key).asInstanceOf[Option[A]]
   }
 }

@@ -34,7 +34,9 @@ object NettyRPCServerTest extends AirSpec {
   }
 
   test("Start an RPC server") { (client: SyncClient) =>
-    val resp = client.send(Http.POST("/v1/MyRPC/helloNetty").withJson("""{"msg":"Netty"}}"""))
-    resp.message.toContentString shouldBe "Hello Netty!"
+    for (i <- 0 to 10) {
+      val resp = client.send(Http.POST("/v1/MyRPC/helloNetty").withJson("""{"msg":"Netty"}}"""))
+      resp.message.toContentString shouldBe "Hello Netty!"
+    }
   }
 }
