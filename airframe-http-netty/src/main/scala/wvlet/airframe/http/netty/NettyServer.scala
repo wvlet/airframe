@@ -14,7 +14,7 @@
 package wvlet.airframe.http.netty
 
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.buffer.Unpooled
+import io.netty.buffer.{PooledByteBufAllocator, Unpooled}
 import io.netty.channel._
 import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel}
 import io.netty.channel.nio.NioEventLoopGroup
@@ -23,8 +23,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.unix.UnixChannelOption
 import io.netty.handler.codec.http._
 import io.netty.handler.stream.ChunkedWriteHandler
-import io.netty.handler.timeout.IdleStateHandler
 import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
@@ -45,6 +45,10 @@ case class NettyServerConfig(
     useEpoll: Boolean = true
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
+
+  private[netty] def canUseEpoll: Boolean = {
+    useEpoll && Epoll.isAvailable
+  }
 
   def withRouter(router: Router): NettyServerConfig = {
     this.copy(router = router)
@@ -70,19 +74,22 @@ case class NettyServerConfig(
 }
 
 class NettyServer(config: NettyServerConfig, session: Session) extends AutoCloseable with LogSupport {
+
   private val bossGroup = {
-    if (config.useEpoll && Epoll.isAvailable) {
-      new EpollEventLoopGroup(1)
+    val tf = ThreadUtil.newDaemonThreadFactory("airframe-http-netty-boss")
+    if (config.canUseEpoll) {
+      new EpollEventLoopGroup(1, tf)
     } else {
-      new NioEventLoopGroup(1)
+      new NioEventLoopGroup(1, tf)
     }
   }
   private val workerGroup = {
+    val tf         = ThreadUtil.newDaemonThreadFactory("airframe-http-netty-worker")
     val numWorkers = math.max(4, (Runtime.getRuntime.availableProcessors().toDouble / 3).ceil.toInt)
-    if (config.useEpoll && Epoll.isAvailable) {
-      new EpollEventLoopGroup(numWorkers)
+    if (config.canUseEpoll) {
+      new EpollEventLoopGroup(numWorkers, tf)
     } else {
-      new NioEventLoopGroup(numWorkers)
+      new NioEventLoopGroup(numWorkers, tf)
     }
   }
   private var channelFuture: Option[ChannelFuture] = None
@@ -102,13 +109,21 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
       b.channel(classOf[NioServerSocketChannel])
     }
     // b.channel(classOf[LocalServerChannel])
+    b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Int.box(TimeUnit.SECONDS.toMillis(1).toInt))
     b.option(ChannelOption.SO_REUSEADDR, Boolean.box(true))
     b.option(ChannelOption.SO_BACKLOG, Int.box(1024))
     b.childOption(ChannelOption.SO_KEEPALIVE, Boolean.box(true))
     b.childOption(ChannelOption.TCP_NODELAY, Boolean.box(true))
     b.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)
+
+    // b.option(ChannelOption.AUTO_READ, Boolean.box(false))
     // b.childOption(ChannelOption.SO_SNDBUF, Int.box(1024 * 1024))
     // b.childOption(ChannelOption.SO_RCVBUF, Int.box(32 * 1024))
+
+    val allocator = PooledByteBufAllocator.DEFAULT
+    b.option(ChannelOption.ALLOCATOR, allocator)
+    b.childOption(ChannelOption.ALLOCATOR, allocator)
+
     b.childHandler(new ChannelInitializer[SocketChannel] {
       override def initChannel(ch: SocketChannel): Unit = {
         val pipeline = ch.pipeline()
@@ -120,7 +135,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
         pipeline.addLast(new ChunkedWriteHandler())
         // pipeline.addLast(new HttpServerExpectContinueHandler)
         pipeline.addLast(new HttpServerKeepAliveHandler())
-        pipeline.addLast(new HttpRequestHandler(config, session))
+        pipeline.addLast(new NetthRequestHandler(config, session))
       }
     })
 
@@ -133,88 +148,4 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     bossGroup.shutdownGracefully()
     channelFuture.foreach(_.channel().closeFuture().sync())
   }
-}
-
-class HttpRequestHandler(config: NettyServerConfig, session: Session)
-    extends SimpleChannelInboundHandler[FullHttpRequest]
-    with LogSupport {
-
-  private val dispatcher = HttpRequestDispatcher.newDispatcher(
-    session = session,
-    config.router,
-    config.controllerProvider,
-    NettyBackend,
-    new NettyResponseHandler,
-    MessageCodecFactory.defaultFactoryForJSON
-  )
-
-  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
-    warn(cause)
-    ctx.close()
-  }
-
-  override def channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest): Unit = {
-    var req: wvlet.airframe.http.HttpMessage.Request = msg.method().name() match {
-      case HttpMethod.GET     => Http.GET(msg.uri())
-      case HttpMethod.POST    => Http.POST(msg.uri())
-      case HttpMethod.PUT     => Http.PUT(msg.uri())
-      case HttpMethod.DELETE  => Http.DELETE(msg.uri())
-      case HttpMethod.PATCH   => Http.PATCH(msg.uri())
-      case HttpMethod.TRACE   => Http.request(wvlet.airframe.http.HttpMethod.TRACE, msg.uri())
-      case HttpMethod.OPTIONS => Http.request(wvlet.airframe.http.HttpMethod.OPTIONS, msg.uri())
-      case _                  => ???
-    }
-
-    msg.headers().names().asScala.map { x =>
-      req = req.withHeader(x, msg.headers().get(x))
-    }
-    val requestBody     = msg.content()
-    val requestBodySize = requestBody.readableBytes()
-    if (requestBodySize > 0) {
-      val buf = new Array[Byte](requestBodySize)
-      requestBody.getBytes(requestBody.readerIndex(), buf)
-      req = req.withContent(buf)
-    }
-
-    val rxResponse: Rx[Response] = dispatcher.apply(
-      req,
-      NettyBackend.newContext { (request: Request) =>
-        Rx.single(Http.response(HttpStatus.NotFound_404))
-      }
-    )
-
-    RxRunner.run(rxResponse) {
-      case OnNext(v) =>
-        val nettyResponse = toNettyResponse(v.asInstanceOf[Response])
-        writeResponse(ctx, nettyResponse)
-      case OnError(ex) =>
-        warn(ex)
-        val resp = new DefaultHttpResponse(
-          HttpVersion.HTTP_1_1,
-          HttpResponseStatus.valueOf(HttpStatus.InternalServerError_500.code)
-        )
-        writeResponse(ctx, resp)
-      case OnCompletion =>
-    }
-  }
-
-  private def writeResponse(ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
-    ctx.writeAndFlush(resp).addListener(ChannelFutureListener.CLOSE)
-  }
-
-  private def toNettyResponse(response: Response): DefaultHttpResponse = {
-    val r = if (response.message.isEmpty) {
-      new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode))
-    } else {
-      val buf = Unpooled.wrappedBuffer(response.message.toContentBytes)
-      val res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode), buf)
-      HttpUtil.setContentLength(res, buf.readableBytes())
-      res
-    }
-    response.header.entries.foreach { e =>
-      r.headers().set(e.key, e.value)
-    }
-    r
-  }
-
 }

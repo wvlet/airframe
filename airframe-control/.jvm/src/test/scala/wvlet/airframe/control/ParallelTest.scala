@@ -33,7 +33,7 @@ class ParallelTest extends AirSpec {
       startTime(i - 1) = System.currentTimeMillis()
       counter.incrementAndGet()
       while (counter.get() < 3) {
-        Thread.sleep(0)
+        ThreadUtil.sleep(0)
       }
       i * 2
     }
