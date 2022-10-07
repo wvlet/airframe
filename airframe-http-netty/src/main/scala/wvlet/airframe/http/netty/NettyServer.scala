@@ -19,6 +19,9 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel._
+import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel}
+import io.netty.channel.local.LocalServerChannel
+import io.netty.channel.unix.UnixChannelOption
 import io.netty.handler.codec.http._
 import io.netty.handler.stream.ChunkedWriteHandler
 import io.netty.util.ReferenceCountUtil
@@ -45,7 +48,8 @@ import scala.util.{Failure, Success}
 case class NettyServerConfig(
     serverPort: Option[Int] = None,
     controllerProvider: ControllerProvider = ControllerProvider.defaultControllerProvider,
-    router: Router = Router.empty
+    router: Router = Router.empty,
+    useEpoll: Boolean = true
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -73,8 +77,16 @@ case class NettyServerConfig(
 }
 
 class NettyServer(config: NettyServerConfig, session: Session) extends AutoCloseable with LogSupport {
-  private val bossGroup                            = new NioEventLoopGroup(1)
-  private val workerGroup                          = new NioEventLoopGroup()
+  private val bossGroup = {
+    if (config.useEpoll && Epoll.isAvailable) {
+      new EpollEventLoopGroup(1)
+    } else {
+      new NioEventLoopGroup(1)
+    }
+  }
+  private val workerGroup = {
+    new NioEventLoopGroup(math.max(4, (Runtime.getRuntime.availableProcessors().toDouble / 3).ceil.toInt))
+  }
   private var channelFuture: Option[ChannelFuture] = None
 
   def localAddress: String = s"localhost:${config.port}"
@@ -84,14 +96,25 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     info(s"Starting server at ${localAddress}")
     val b = new ServerBootstrap()
     b.group(bossGroup, workerGroup)
-    b.channel(classOf[NioServerSocketChannel])
+    if (config.useEpoll && Epoll.isAvailable) {
+      b.channel(classOf[EpollServerSocketChannel])
+      b.option(UnixChannelOption.SO_REUSEPORT, Boolean.box(true))
+    } else {
+      b.channel(classOf[NioServerSocketChannel])
+    }
+    // b.channel(classOf[LocalServerChannel])
+    b.option(ChannelOption.SO_REUSEADDR, Boolean.box(true))
+    b.option(ChannelOption.SO_BACKLOG, Int.box(1000))
     b.childOption(ChannelOption.SO_KEEPALIVE, Boolean.box(true))
+    b.childOption(ChannelOption.TCP_NODELAY, Boolean.box(true))
     b.childHandler(new ChannelInitializer[SocketChannel] {
       override def initChannel(ch: SocketChannel): Unit = {
         val pipeline = ch.pipeline()
         pipeline.addLast(new HttpServerCodec())
-        pipeline.addLast(new HttpObjectAggregator(65536))
+        pipeline.addLast(new HttpContentCompressor())
         pipeline.addLast(new ChunkedWriteHandler())
+        pipeline.addLast(new HttpServerKeepAliveHandler())
+        pipeline.addLast(new HttpObjectAggregator(65536))
         pipeline.addLast(new HttpRequestHandler(config, session))
       }
     })
@@ -115,7 +138,6 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
     session = session,
     config.router,
     config.controllerProvider,
-    // TODO Use Rx-based backend
     NettyBackend,
     new NettyResponseHandler,
     MessageCodecFactory.defaultFactoryForJSON
@@ -165,10 +187,10 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
   }
 
   private def writeResponse(req: FullHttpRequest, ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
-    val isKeepAlive = HttpUtil.isKeepAlive(req)
-    if (isKeepAlive) {
-      resp.headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)
-    }
+//    val isKeepAlive = HttpUtil.isKeepAlive(req)
+//    if (isKeepAlive) {
+//      resp.headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)
+//    }
     ctx.writeAndFlush(resp)
     ctx.close()
   }
@@ -267,6 +289,7 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] {
   }
 
   override def toScalaFuture[A](a: Rx[A]): Future[A] = {
+    ???
     val promise: Promise[A] = Promise()
     a.toRxStream
       .map { x =>
