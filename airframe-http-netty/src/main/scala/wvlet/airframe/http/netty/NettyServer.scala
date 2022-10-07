@@ -36,7 +36,7 @@ import wvlet.log.io.IOUtil
 import scala.jdk.CollectionConverters._
 import java.util.function.Consumer
 import javax.annotation.PostConstruct
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 case class NettyServerConfig(
@@ -118,7 +118,7 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
     MessageCodecFactory.defaultFactoryForJSON
   )
 
-  private implicit val executionContext = DefaultBackend.executionContext
+  private implicit val executionContext: ExecutionContext = DefaultBackend.executionContext
 
   override def channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest): Unit = {
     var req: wvlet.airframe.http.HttpMessage.Request = msg.method() match {
