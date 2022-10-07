@@ -14,7 +14,7 @@
 package wvlet.airframe.http.netty
 
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.buffer.{PooledByteBufAllocator, Unpooled}
+import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel._
 import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel}
 import io.netty.channel.nio.NioEventLoopGroup
@@ -23,20 +23,16 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.unix.UnixChannelOption
 import io.netty.handler.codec.http._
 import io.netty.handler.stream.ChunkedWriteHandler
-import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.ThreadUtil
-import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http._
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
-import wvlet.airframe.http.{HttpMethod, _}
-import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
+import wvlet.airframe.http.router.ControllerProvider
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
-import scala.jdk.CollectionConverters._
 
 case class NettyServerConfig(
     serverPort: Option[Int] = None,
@@ -92,7 +88,8 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
       new NioEventLoopGroup(numWorkers, tf)
     }
   }
-  private var channelFuture: Option[ChannelFuture] = None
+
+  private var channelFuture: Option[Channel] = None
 
   val localAddress: String = s"localhost:${config.port}"
 
@@ -140,13 +137,13 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
       }
     })
 
-    channelFuture = Some(b.bind(config.port).sync())
+    channelFuture = Some(b.bind(config.port).sync().channel())
   }
 
   override def close(): Unit = {
     info(s"Closing server at ${localAddress}")
-    workerGroup.shutdownGracefully()
-    bossGroup.shutdownGracefully()
-    channelFuture.foreach(_.channel().closeFuture().sync())
+    workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
+    bossGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
+    channelFuture.foreach(_.close().await(1, TimeUnit.SECONDS))
   }
 }

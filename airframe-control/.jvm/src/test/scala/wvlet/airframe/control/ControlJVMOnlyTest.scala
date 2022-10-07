@@ -30,12 +30,12 @@ class ControlJVMOnlyTest extends AirSpec {
     cb.isConnected shouldBe true
 
     // 1/2
-    ThreadUtil.sleep(200)
+    Thread.sleep(200)
     cb.recordFailure(e)
     cb.isConnected shouldBe false
 
     // 1/3
-    ThreadUtil.sleep(200)
+    Thread.sleep(200)
     cb.recordFailure(e)
     cb.isConnected shouldBe false
 
