@@ -99,20 +99,18 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     b.option(ChannelOption.SO_BACKLOG, Int.box(1024))
     b.childOption(ChannelOption.SO_KEEPALIVE, Boolean.box(true))
     b.childOption(ChannelOption.TCP_NODELAY, Boolean.box(true))
-    b.childOption(ChannelOption.SO_SNDBUF, Int.box(1024 * 1024))
-    b.childOption(ChannelOption.SO_RCVBUF, Int.box(32 * 1024))
+    b.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT)
+    // b.childOption(ChannelOption.SO_SNDBUF, Int.box(1024 * 1024))
+    // b.childOption(ChannelOption.SO_RCVBUF, Int.box(32 * 1024))
     b.childHandler(new ChannelInitializer[SocketChannel] {
       override def initChannel(ch: SocketChannel): Unit = {
         val pipeline = ch.pipeline()
 
-        val sourceCodec = new HttpServerCodec()
-        pipeline.addLast(sourceCodec)
-        // TODO: HTTP2 support
-        // pipeline.addLast(new HttpServerUpgradeHandler(sourceCodec, upgradeCodecFactory))
+        pipeline.addLast(new HttpServerCodec())
         pipeline.addLast(new HttpObjectAggregator(65536))
         pipeline.addLast(new HttpContentCompressor())
         pipeline.addLast(new ChunkedWriteHandler())
-        pipeline.addLast(new HttpServerExpectContinueHandler)
+        // pipeline.addLast(new HttpServerExpectContinueHandler)
         pipeline.addLast(new HttpServerKeepAliveHandler())
         pipeline.addLast(new HttpRequestHandler(config, session))
       }
@@ -141,10 +139,6 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
     new NettyResponseHandler,
     MessageCodecFactory.defaultFactoryForJSON
   )
-
-  override def channelReadComplete(ctx: ChannelHandlerContext): Unit = {
-    ctx.flush()
-  }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     warn(cause)
@@ -184,25 +178,20 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
     RxRunner.run(rxResponse) {
       case OnNext(v) =>
         val nettyResponse = toNettyResponse(v.asInstanceOf[Response])
-        writeResponse(msg, ctx, nettyResponse)
+        writeResponse(ctx, nettyResponse)
       case OnError(ex) =>
         warn(ex)
         val resp = new DefaultHttpResponse(
           HttpVersion.HTTP_1_1,
           HttpResponseStatus.valueOf(HttpStatus.InternalServerError_500.code)
         )
-        writeResponse(msg, ctx, resp)
+        writeResponse(ctx, resp)
       case OnCompletion =>
     }
   }
 
-  private def writeResponse(req: FullHttpRequest, ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
-//    val isKeepAlive = HttpUtil.isKeepAlive(req)
-//    if (isKeepAlive) {
-//      resp.headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)
-//    }
+  private def writeResponse(ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
     ctx.writeAndFlush(resp).addListener(ChannelFutureListener.CLOSE)
-    // ctx.close()
   }
 
   private def toNettyResponse(response: Response): DefaultHttpResponse = {
