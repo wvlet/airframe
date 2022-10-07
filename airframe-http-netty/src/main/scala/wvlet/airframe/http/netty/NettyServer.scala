@@ -155,6 +155,11 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
         ctx.close()
       case Failure(ex) =>
         warn(ex)
+        val resp = new DefaultHttpResponse(
+          HttpVersion.HTTP_1_1,
+          HttpResponseStatus.valueOf(HttpStatus.InternalServerError_500.code)
+        )
+        ctx.writeAndFlush(resp)
         ctx.close()
     }
   }
