@@ -35,8 +35,8 @@ class ServiceSyncClient[Req, Resp](private val client: HttpSyncClient[Req, Resp]
 }
 
 class NewServiceSyncClient(private val client: SyncClient) extends AutoCloseable {
-  override def close(): Unit               = { client.close() }
-  def getClient: SyncClient = client
+  override def close(): Unit = { client.close() }
+  def getClient: SyncClient  = client
   object Greeter {
     def hello(name: String): String = {
       client.call[Map[String, Any], String](

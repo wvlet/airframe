@@ -37,7 +37,7 @@ class ServiceClient[F[_], Req, Resp](private val client: HttpClient[F, Req, Resp
 }
 
 class NewServiceAsyncClient(private val client: AsyncClient) extends AutoCloseable {
-  override def close(): Unit               = { client.close() }
+  override def close(): Unit = { client.close() }
   def getClient: AsyncClient = client
   object Greeter {
     def hello(name: String): Future[String] = {
