@@ -16,6 +16,8 @@ package wvlet.airframe.benchmark.http
 /**
   */
 import wvlet.airframe.http._
+import wvlet.airframe.http.client.SyncClient
+
 import scala.collection.immutable.Map
 
 class ServiceSyncClient[Req, Resp](private val client: HttpSyncClient[Req, Resp]) extends AutoCloseable {
@@ -27,6 +29,19 @@ class ServiceSyncClient[Req, Resp](private val client: HttpSyncClient[Req, Resp]
         resourcePath = s"/wvlet.airframe.benchmark.http.Greeter/hello",
         Map("name" -> name),
         requestFilter = requestFilter
+      )
+    }
+  }
+}
+
+class NewServiceSyncClient(private val client: SyncClient) extends AutoCloseable {
+  override def close(): Unit = { client.close() }
+  def getClient: SyncClient  = client
+  object Greeter {
+    def hello(name: String): String = {
+      client.call[Map[String, Any], String](
+        Http.POST("/wvlet.airframe.benchmark.http.Greeter/hello"),
+        Map("name" -> name)
       )
     }
   }

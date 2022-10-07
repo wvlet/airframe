@@ -200,6 +200,7 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
   jdbc,
   fluentd,
   finagle,
+  netty,
   okhttp,
   httpRecorder,
   benchmark,
@@ -726,6 +727,19 @@ lazy val httpCodeGen =
     )
     .dependsOn(httpRouter, launcher)
 
+lazy val netty =
+  project
+    .in(file("airframe-http-netty"))
+    .settings(buildSettings)
+    .settings(
+      name        := "airframe-http-netty",
+      description := "Airframe HTTP Netty backend",
+      libraryDependencies ++= Seq(
+        "io.netty" % "netty-all" % "4.1.82.Final"
+      )
+    )
+    .dependsOn(httpRouter, rxJVM)
+
 lazy val grpc =
   project
     .in(file("airframe-http-grpc"))
@@ -858,7 +872,7 @@ lazy val benchmark =
       // publishing .tgz
       // publishPackArchiveTgz
     )
-    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, httpCodeGen, finagle, grpc, ulidJVM)
+    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, httpCodeGen, finagle, netty, grpc, ulidJVM)
 
 lazy val fluentd =
   project

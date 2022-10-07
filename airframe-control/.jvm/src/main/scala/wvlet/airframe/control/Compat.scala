@@ -13,8 +13,7 @@
  */
 package wvlet.airframe.control
 
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{ScheduledThreadPoolExecutor, ThreadFactory, TimeUnit}
+import java.util.concurrent.{ScheduledThreadPoolExecutor, TimeUnit}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
 /**
@@ -24,23 +23,8 @@ object Compat {
     Thread.sleep(millis)
   }
 
-  private val threadFactoryId = new AtomicInteger()
-
-  /**
-    * A thread factory for creating a daemon thread so as not to block JVM shutdown
-    */
-  private class DefaultThreadFactory extends ThreadFactory {
-    private val factoryId = threadFactoryId.getAndIncrement()
-    private val threadId  = new AtomicInteger()
-    override def newThread(r: Runnable): Thread = {
-      val threadName = s"airframe-control-${factoryId}:${threadId.getAndIncrement()}"
-      val thread     = new Thread(null, r, threadName)
-      thread.setName(threadName)
-      thread.setDaemon(true)
-      thread
-    }
-  }
-  private lazy val scheduledExecutor = new ScheduledThreadPoolExecutor(2, new DefaultThreadFactory)
+  private lazy val scheduledExecutor =
+    new ScheduledThreadPoolExecutor(2, ThreadUtil.newDaemonThreadFactory("airframe-control"))
 
   def scheduleAsync[A](waitMillis: Long)(body: => Future[A])(implicit ec: ExecutionContext): Future[A] = {
     val promise = Promise[A]()

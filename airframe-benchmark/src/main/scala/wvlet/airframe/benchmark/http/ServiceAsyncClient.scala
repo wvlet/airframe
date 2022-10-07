@@ -16,8 +16,11 @@ package wvlet.airframe.benchmark.http
 /**
   */
 import wvlet.airframe.http._
+import wvlet.airframe.http.client.{AsyncClient, SyncClient}
+
 import scala.language.higherKinds
 import scala.collection.immutable.Map
+import scala.concurrent.Future
 
 class ServiceClient[F[_], Req, Resp](private val client: HttpClient[F, Req, Resp]) extends AutoCloseable {
   override def close(): Unit              = { client.close() }
@@ -28,6 +31,19 @@ class ServiceClient[F[_], Req, Resp](private val client: HttpClient[F, Req, Resp
         resourcePath = s"/wvlet.airframe.benchmark.http.Greeter/hello",
         Map("name" -> name),
         requestFilter = requestFilter
+      )
+    }
+  }
+}
+
+class NewServiceAsyncClient(private val client: AsyncClient) extends AutoCloseable {
+  override def close(): Unit = { client.close() }
+  def getClient: AsyncClient = client
+  object Greeter {
+    def hello(name: String): Future[String] = {
+      client.call[Map[String, Any], String](
+        Http.POST("/wvlet.airframe.benchmark.http.Greeter/hello"),
+        Map("name" -> name)
       )
     }
   }

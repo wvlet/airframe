@@ -12,9 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.benchmark.http
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{Executors, TimeUnit}
-
 import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
@@ -29,6 +26,9 @@ import wvlet.airframe.http.finagle.{Finagle, FinagleClient, FinagleServer, Finag
 import wvlet.airframe.http.grpc.gRPC
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
+
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{Executors, TimeUnit}
 
 object HttpBenchmark {
   final val asyncIteration = 100
@@ -48,7 +48,7 @@ class AirframeFinagle extends LogSupport {
       .withRouter(Greeter.router)
       .noLoggingFilter
       .designWithSyncClient
-      .bind[FinagleClient].toProvider { server: FinagleServer =>
+      .bind[FinagleClient].toProvider { (server: FinagleServer) =>
         Finagle.client.newClient(server.localAddress)
       }
       .withProductionMode
@@ -68,12 +68,15 @@ class AirframeFinagle extends LogSupport {
   @TearDown
   def teardown: Unit = {
     session.foreach(_.shutdown)
+    client.close()
+    asyncClient.close()
   }
 
   @Benchmark
   def rpcSync(blackhole: Blackhole): Unit = {
     blackhole.consume(client.Greeter.hello("RPC"))
   }
+
   @Benchmark
   @OperationsPerInvocation(asyncIteration)
   def rpcAsync(blackhole: Blackhole): Unit = {

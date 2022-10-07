@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.control.ThreadUtil
+
 import java.net.URLEncoder
 import wvlet.airframe.http.client.{HttpClientBackend, JavaHttpClientBackend, URLConnectionClientBackend}
 import wvlet.airframe.http.internal.LocalRPCContext
@@ -49,7 +51,9 @@ object Compat extends CompatApi {
 
   override def defaultExecutionContext: ExecutionContext = {
     // We should not use scala.concurrent.ExecutionContext.global as it might be closed
-    ExecutionContext.fromExecutorService(Executors.newCachedThreadPool(new DefaultThreadFactory))
+    ExecutionContext.fromExecutorService(
+      Executors.newCachedThreadPool(ThreadUtil.newDaemonThreadFactory("airframe-http"))
+    )
   }
 
   override def hostServerAddress: ServerAddress = {
