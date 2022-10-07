@@ -13,12 +13,12 @@
  */
 package wvlet.airframe.benchmark.netty
 
-import org.openjdk.jmh.annotations.{Benchmark, BenchmarkMode, Mode, OutputTimeUnit, Scope, Setup, State, TearDown}
+import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
-import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewServiceSyncClient}
+import wvlet.airframe.benchmark.http.{Greeter, NewServiceSyncClient}
 import wvlet.airframe.http.Http
-import wvlet.airframe.http.client.{AsyncClient, SyncClient}
+import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.log.LogSupport
 
@@ -37,7 +37,7 @@ class AirframeRPCNetty extends LogSupport {
       .bind[SyncClient].toProvider { (server: NettyServer) =>
         Http.client.newSyncClient(server.localAddress)
       }
-//      .bind[AsyncClient].toProvider { (server: NettyServer) =>
+      //      .bind[AsyncClient].toProvider { (server: NettyServer) =>
 //        Http.client.newAsyncClient(server.localAddress)
 //      }
       .withProductionMode

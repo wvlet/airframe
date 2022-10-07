@@ -14,36 +14,27 @@
 package wvlet.airframe.http.netty
 
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.buffer.{ByteBuf, Unpooled}
+import io.netty.buffer.Unpooled
+import io.netty.channel._
+import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel}
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
-import io.netty.channel._
-import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel}
-import io.netty.channel.local.LocalServerChannel
 import io.netty.channel.unix.UnixChannelOption
 import io.netty.handler.codec.http._
 import io.netty.handler.stream.ChunkedWriteHandler
-import io.netty.util.ReferenceCountUtil
-import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
-import wvlet.airframe.http.HttpBackend.DefaultBackend
-import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, EmptyMessage, Request, Response, StringMessage}
-import wvlet.airframe.{Design, Session}
+import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher, ResponseHandler, Route}
-import wvlet.airframe.http.{Http, HttpBackend, HttpRequestAdapter, HttpStatus, Router}
-import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
+import wvlet.airframe.http.{HttpMethod, _}
 import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
-import wvlet.airframe.surface.{Primitive, Surface}
+import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
-import scala.jdk.CollectionConverters._
-import java.util.function.Consumer
 import javax.annotation.PostConstruct
-import scala.collection.mutable
-import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.{Failure, Success}
+import scala.jdk.CollectionConverters._
 
 case class NettyServerConfig(
     serverPort: Option[Int] = None,
@@ -89,13 +80,14 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
   }
   private var channelFuture: Option[ChannelFuture] = None
 
-  def localAddress: String = s"localhost:${config.port}"
+  val localAddress: String = s"localhost:${config.port}"
 
   @PostConstruct
   def start: Unit = {
     info(s"Starting server at ${localAddress}")
     val b = new ServerBootstrap()
     b.group(bossGroup, workerGroup)
+
     if (config.useEpoll && Epoll.isAvailable) {
       b.channel(classOf[EpollServerSocketChannel])
       b.option(UnixChannelOption.SO_REUSEPORT, Boolean.box(true))
@@ -104,17 +96,24 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     }
     // b.channel(classOf[LocalServerChannel])
     b.option(ChannelOption.SO_REUSEADDR, Boolean.box(true))
-    b.option(ChannelOption.SO_BACKLOG, Int.box(1000))
+    b.option(ChannelOption.SO_BACKLOG, Int.box(1024))
     b.childOption(ChannelOption.SO_KEEPALIVE, Boolean.box(true))
     b.childOption(ChannelOption.TCP_NODELAY, Boolean.box(true))
+    b.childOption(ChannelOption.SO_SNDBUF, Int.box(1024 * 1024))
+    b.childOption(ChannelOption.SO_RCVBUF, Int.box(32 * 1024))
     b.childHandler(new ChannelInitializer[SocketChannel] {
       override def initChannel(ch: SocketChannel): Unit = {
         val pipeline = ch.pipeline()
-        pipeline.addLast(new HttpServerCodec())
+
+        val sourceCodec = new HttpServerCodec()
+        pipeline.addLast(sourceCodec)
+        // TODO: HTTP2 support
+        // pipeline.addLast(new HttpServerUpgradeHandler(sourceCodec, upgradeCodecFactory))
+        pipeline.addLast(new HttpObjectAggregator(65536))
         pipeline.addLast(new HttpContentCompressor())
         pipeline.addLast(new ChunkedWriteHandler())
+        pipeline.addLast(new HttpServerExpectContinueHandler)
         pipeline.addLast(new HttpServerKeepAliveHandler())
-        pipeline.addLast(new HttpObjectAggregator(65536))
         pipeline.addLast(new HttpRequestHandler(config, session))
       }
     })
@@ -143,8 +142,17 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
     MessageCodecFactory.defaultFactoryForJSON
   )
 
+  override def channelReadComplete(ctx: ChannelHandlerContext): Unit = {
+    ctx.flush()
+  }
+
+  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
+    warn(cause)
+    ctx.close()
+  }
+
   override def channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest): Unit = {
-    var req: wvlet.airframe.http.HttpMessage.Request = msg.method() match {
+    var req: wvlet.airframe.http.HttpMessage.Request = msg.method().name() match {
       case HttpMethod.GET     => Http.GET(msg.uri())
       case HttpMethod.POST    => Http.POST(msg.uri())
       case HttpMethod.PUT     => Http.PUT(msg.uri())
@@ -160,9 +168,11 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
     }
     val requestBody     = msg.content()
     val requestBodySize = requestBody.readableBytes()
-    val buf             = new Array[Byte](requestBodySize)
-    requestBody.getBytes(requestBody.readerIndex(), buf)
-    req = req.withContent(buf)
+    if (requestBodySize > 0) {
+      val buf = new Array[Byte](requestBodySize)
+      requestBody.getBytes(requestBody.readerIndex(), buf)
+      req = req.withContent(buf)
+    }
 
     val rxResponse: Rx[Response] = dispatcher.apply(
       req,
@@ -191,8 +201,8 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
 //    if (isKeepAlive) {
 //      resp.headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)
 //    }
-    ctx.writeAndFlush(resp)
-    ctx.close()
+    ctx.writeAndFlush(resp).addListener(ChannelFutureListener.CLOSE)
+    // ctx.close()
   }
 
   private def toNettyResponse(response: Response): DefaultHttpResponse = {
@@ -200,7 +210,9 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
       new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode))
     } else {
       val buf = Unpooled.wrappedBuffer(response.message.toContentBytes)
-      new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode), buf)
+      val res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode), buf)
+      HttpUtil.setContentLength(res, buf.readableBytes())
+      res
     }
     response.header.entries.foreach { e =>
       r.headers().set(e.key, e.value)
@@ -208,128 +220,4 @@ class HttpRequestHandler(config: NettyServerConfig, session: Session)
     r
   }
 
-}
-
-class NettyResponseHandler extends ResponseHandler[Request, Response] with LogSupport {
-  private def codecFactory = MessageCodecFactory.defaultFactoryForJSON
-
-  override def toHttpResponse[A](route: Route, request: Request, responseSurface: Surface, a: A): Response = {
-    a match {
-      case null =>
-        newResponse(route, request, responseSurface)
-      case r: Response =>
-        r
-      case b: MsgPack if request.acceptsMsgPack =>
-        newResponse(route, request, responseSurface).withContentTypeMsgPack
-          .withContent(b)
-      case s: String if !request.acceptsMsgPack =>
-        newResponse(route, request, responseSurface)
-          .withContent(s)
-      case _ =>
-        val rs = codecFactory.of(responseSurface)
-        val msgpack: Array[Byte] = rs match {
-          case m: MessageCodec[_] =>
-            m.asInstanceOf[MessageCodec[A]].toMsgPack(a)
-          case _ =>
-            throw new IllegalArgumentException(s"Unknown codec: ${rs}")
-        }
-
-        // Return application/x-msgpack content type
-        if (request.acceptsMsgPack) {
-          newResponse(route, request, responseSurface).withContentTypeMsgPack
-            .withContent(msgpack)
-        } else {
-          val json = JSONCodec.unpackMsgPack(msgpack)
-          json match {
-            case Some(j) =>
-              newResponse(route, request, responseSurface)
-                .withJson(json.get)
-            case None =>
-              Http.response(HttpStatus.InternalServerError_500)
-          }
-        }
-    }
-  }
-
-  private def newResponse(route: Route, request: Request, responseSurface: Surface): Response = {
-    if (responseSurface == Primitive.Unit) {
-      request.method match {
-        case wvlet.airframe.http.HttpMethod.POST if route.isRPC =>
-          // For RPC, return 200 even for POST
-          Http.response(HttpStatus.Ok_200)
-        case wvlet.airframe.http.HttpMethod.POST | wvlet.airframe.http.HttpMethod.PUT =>
-          Http.response(HttpStatus.Created_201)
-        case wvlet.airframe.http.HttpMethod.DELETE =>
-          Http.response(HttpStatus.NoContent_204)
-        case _ =>
-          Http.response(HttpStatus.Ok_200)
-      }
-    } else {
-      Http.response(HttpStatus.Ok_200)
-    }
-  }
-}
-
-object NettyBackend extends HttpBackend[Request, Response, Rx] {
-  override protected implicit val httpRequestAdapter: HttpRequestAdapter[Request] =
-    wvlet.airframe.http.HttpMessage.HttpMessageRequestAdapter
-
-  override def name: String = "netty"
-
-  override def newResponse(status: HttpStatus, content: String): Response = {
-    Http.response(status).withContent(content)
-  }
-
-  override def toFuture[A](a: A): Rx[A] = {
-    Rx.single(a)
-  }
-
-  override def toFuture[A](a: Future[A], e: ExecutionContext): Rx[A] = {
-    Rx.future(a)(e)
-  }
-
-  override def toScalaFuture[A](a: Rx[A]): Future[A] = {
-    ???
-    val promise: Promise[A] = Promise()
-    a.toRxStream
-      .map { x =>
-        promise.success(x)
-      }
-      .recover { case e: Throwable => promise.failure(e) }
-    promise.future
-  }
-
-  override def wrapException(e: Throwable): Rx[Response] = {
-    Rx.exception(e)
-  }
-
-  override def isFutureType(x: Class[_]): Boolean = {
-    classOf[Rx[_]].isAssignableFrom(x)
-  }
-
-  override def isRawResponseType(x: Class[_]): Boolean = {
-    classOf[Response].isAssignableFrom(x)
-  }
-
-  override def mapF[A, B](f: Rx[A], body: A => B): Rx[B] = {
-    f.toRxStream.map(body)
-  }
-
-  private lazy val tls =
-    ThreadLocal.withInitial[collection.mutable.Map[String, Any]](() => mutable.Map.empty[String, Any])
-
-  private def storage: collection.mutable.Map[String, Any] = tls.get()
-
-  override def withThreadLocalStore(request: => Rx[Response]): Rx[Response] = {
-    //
-    request
-  }
-
-  override def setThreadLocal[A](key: String, value: A): Unit = {
-    storage.put(key, value)
-  }
-
-  override def getThreadLocal[A](key: String): Option[A] = {
-    storage.get(key).asInstanceOf[Option[A]]
-  }
 }
