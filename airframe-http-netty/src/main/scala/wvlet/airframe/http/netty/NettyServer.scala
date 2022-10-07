@@ -23,6 +23,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.unix.UnixChannelOption
 import io.netty.handler.codec.http._
 import io.netty.handler.stream.ChunkedWriteHandler
+import io.netty.handler.timeout.IdleStateHandler
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.client.SyncClient
@@ -33,6 +34,7 @@ import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
+import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 import scala.jdk.CollectionConverters._
 
@@ -76,7 +78,12 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     }
   }
   private val workerGroup = {
-    new NioEventLoopGroup(math.max(4, (Runtime.getRuntime.availableProcessors().toDouble / 3).ceil.toInt))
+    val numWorkers = math.max(4, (Runtime.getRuntime.availableProcessors().toDouble / 3).ceil.toInt)
+    if (config.useEpoll && Epoll.isAvailable) {
+      new EpollEventLoopGroup(numWorkers)
+    } else {
+      new NioEventLoopGroup(numWorkers)
+    }
   }
   private var channelFuture: Option[ChannelFuture] = None
 
@@ -106,7 +113,8 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
       override def initChannel(ch: SocketChannel): Unit = {
         val pipeline = ch.pipeline()
 
-        pipeline.addLast(new HttpServerCodec())
+        // pipeline.addLast(new IdleStateHandler(1, 1, 60, TimeUnit.SECONDS))
+        pipeline.addLast(new HttpServerCodec()) // 4096, 8192, Int.MaxValue, false))
         pipeline.addLast(new HttpObjectAggregator(65536))
         pipeline.addLast(new HttpContentCompressor())
         pipeline.addLast(new ChunkedWriteHandler())

@@ -16,13 +16,16 @@ package wvlet.airframe.benchmark.netty
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
-import wvlet.airframe.benchmark.http.{Greeter, NewServiceSyncClient}
+import wvlet.airframe.benchmark.http.HttpBenchmark.asyncIteration
+import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewServiceSyncClient}
 import wvlet.airframe.http.Http
-import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.client.{AsyncClient, SyncClient}
 import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.log.LogSupport
 
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{Executors, TimeUnit}
+import scala.concurrent.ExecutionContext
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
@@ -37,17 +40,17 @@ class AirframeRPCNetty extends LogSupport {
       .bind[SyncClient].toProvider { (server: NettyServer) =>
         Http.client.newSyncClient(server.localAddress)
       }
-      //      .bind[AsyncClient].toProvider { (server: NettyServer) =>
-//        Http.client.newAsyncClient(server.localAddress)
-//      }
+      .bind[AsyncClient].toProvider { (server: NettyServer) =>
+        Http.client.newAsyncClient(server.localAddress)
+      }
       .withProductionMode
 
   private var session: Option[Session] = None
 
-  private var client: NewServiceSyncClient = null
-  // private var asyncClient: NewServiceAsyncClient = null
+  private var client: NewServiceSyncClient       = null
+  private var asyncClient: NewServiceAsyncClient = null
 
-  // private val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
+  private val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
 
   @Setup
   def setup: Unit = {
@@ -55,15 +58,15 @@ class AirframeRPCNetty extends LogSupport {
     s.start
     session = Some(s)
     client = new NewServiceSyncClient(s.build[SyncClient])
-    // asyncClient = new NewServiceAsyncClient(s.build[AsyncClient])
+    asyncClient = new NewServiceAsyncClient(s.build[AsyncClient])
   }
 
   @TearDown
   def teardown: Unit = {
     session.foreach(_.shutdown)
-    client.close()
+    // client.close()
     // asyncClient.close()
-    // ec.shutdownNow()
+    ec.shutdownNow()
   }
 
   @Benchmark
@@ -71,18 +74,18 @@ class AirframeRPCNetty extends LogSupport {
     blackhole.consume(client.Greeter.hello("RPC"))
   }
 
-  //  @Benchmark
-  //  @OperationsPerInvocation(asyncIteration)
-  //  def rpcAsync(blackhole: Blackhole): Unit = {
-  //    val counter = new AtomicInteger(0)
-  //    val futures = for (i <- 0 until asyncIteration) yield {
-  //      asyncClient.Greeter
-  //        .hello("RPC").onComplete { x =>
-  //          counter.incrementAndGet()
-  //        }(ec)
-  //    }
-  //    while (counter.get() != asyncIteration) {
-  //      Thread.sleep(0)
-  //    }
-  //  }
+//  @Benchmark
+//  @OperationsPerInvocation(asyncIteration)
+//  def rpcAsync(blackhole: Blackhole): Unit = {
+//    val counter = new AtomicInteger(0)
+//    val futures = for (i <- 0 until asyncIteration) yield {
+//      asyncClient.Greeter
+//        .hello("RPC").onComplete { x =>
+//          counter.incrementAndGet()
+//        }(ec)
+//    }
+//    while (counter.get() != asyncIteration) {
+//      Thread.sleep(0)
+//    }
+//  }
 }
