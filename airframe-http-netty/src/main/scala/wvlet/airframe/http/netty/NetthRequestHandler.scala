@@ -32,6 +32,10 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
     ctx.close()
   }
 
+  override def channelReadComplete(ctx: ChannelHandlerContext): Unit = {
+    ctx.flush()
+  }
+
   override def channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest): Unit = {
     var req: wvlet.airframe.http.HttpMessage.Request = msg.method().name() match {
       case HttpMethod.GET     => Http.GET(msg.uri())
@@ -65,20 +69,31 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
     RxRunner.run(rxResponse) {
       case OnNext(v) =>
         val nettyResponse = toNettyResponse(v.asInstanceOf[Response])
-        writeResponse(ctx, nettyResponse)
+        writeResponse(msg, ctx, nettyResponse)
       case OnError(ex) =>
         warn(ex)
         val resp = new DefaultHttpResponse(
           HttpVersion.HTTP_1_1,
           HttpResponseStatus.valueOf(HttpStatus.InternalServerError_500.code)
         )
-        writeResponse(ctx, resp)
+        writeResponse(msg, ctx, resp)
       case OnCompletion =>
     }
   }
 
-  private def writeResponse(ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
-    ctx.writeAndFlush(resp).addListener(ChannelFutureListener.CLOSE)
+  private def writeResponse(req: HttpRequest, ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
+    val keepAlive = HttpUtil.isKeepAlive(req)
+    if (keepAlive) {
+      if (!req.protocolVersion().isKeepAliveDefault) {
+        resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)
+      }
+    } else {
+      resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
+    }
+    val f = ctx.write(resp)
+    if (!keepAlive) {
+      f.addListener(ChannelFutureListener.CLOSE)
+    }
   }
 
   private def toNettyResponse(response: Response): DefaultHttpResponse = {
@@ -90,8 +105,9 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
       HttpUtil.setContentLength(res, buf.readableBytes())
       res
     }
+    val h = r.headers()
     response.header.entries.foreach { e =>
-      r.headers().set(e.key, e.value)
+      h.set(e.key, e.value)
     }
     r
   }

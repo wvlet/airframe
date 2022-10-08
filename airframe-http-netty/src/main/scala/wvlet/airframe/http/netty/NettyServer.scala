@@ -126,15 +126,13 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     b.childOption(ChannelOption.ALLOCATOR, allocator)
 
     b.childHandler(new ChannelInitializer[Channel] {
-
-      private[this] val activeConnections = new AtomicLong()
-      private val maxConnections          = 10
-
-      private val closeListener = new ChannelFutureListener {
-        override def operationComplete(future: ChannelFuture): Unit = {
-          activeConnections.decrementAndGet()
-        }
-      }
+      // private[this] val activeConnections = new AtomicLong()
+      // private val maxConnections          = 50
+      //      private val closeListener = new ChannelFutureListener {
+      //        override def operationComplete(future: ChannelFuture): Unit = {
+      //          activeConnections.decrementAndGet()
+      //        }
+      //      }
 
       private val dispatcher = {
         HttpRequestDispatcher.newDispatcher(
@@ -148,26 +146,23 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
       }
 
       override def initChannel(ch: Channel): Unit = {
-        val numConns = activeConnections.incrementAndGet()
-        if (numConns > maxConnections) {
-          logger.warn(s"Too many connections: ${numConns}")
-          activeConnections.decrementAndGet()
-          ch.close()
-        } else {
-          ch.closeFuture().addListener(closeListener)
+        //        val numConns = activeConnections.incrementAndGet()
+        //        if (numConns > maxConnections) {
+        //          activeConnections.decrementAndGet()
+        //          ch.close()
+        //        } else {
+        //          ch.closeFuture().addListener(closeListener)
 
-          val pipeline = ch.pipeline()
+        val pipeline = ch.pipeline()
 
-          // pipeline.addLast(new IdleStateHandler(1, 1, 60, TimeUnit.SECONDS))
-          // pipeline.addLast(new NettyIOTransport(ch))
-          pipeline.addLast(new HttpServerCodec()) // 4096, 8192, Int.MaxValue, false))
-          pipeline.addLast(new HttpObjectAggregator(65536))
-          pipeline.addLast(new HttpContentCompressor())
-          pipeline.addLast(new HttpServerExpectContinueHandler)
-          pipeline.addLast(new HttpServerKeepAliveHandler())
-          pipeline.addLast(new ChunkedWriteHandler())
-          pipeline.addLast(new NetthRequestHandler(config, dispatcher))
-        }
+        // pipeline.addLast(new IdleStateHandler(1, 1, 60, TimeUnit.SECONDS))
+        pipeline.addLast(new HttpServerCodec()) // 4096, 8192, Int.MaxValue, false))
+        // pipeline.addLast(new HttpServerKeepAliveHandler())
+        pipeline.addLast(new HttpObjectAggregator(Int.MaxValue))
+        pipeline.addLast(new HttpContentCompressor())
+        pipeline.addLast(new HttpServerExpectContinueHandler)
+        pipeline.addLast(new ChunkedWriteHandler())
+        pipeline.addLast(new NetthRequestHandler(config, dispatcher))
       }
     })
 

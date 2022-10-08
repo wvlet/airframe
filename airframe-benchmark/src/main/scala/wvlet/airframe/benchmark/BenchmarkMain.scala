@@ -94,7 +94,7 @@ class BenchmarkMain(
       .warmupIterations(warmupIteration)
       .warmupTime(TimeValue.milliseconds(warmupTime.toMillis.toLong))
       .measurementTime(TimeValue.milliseconds(measurementTime.toMillis.toLong))
-      .include(targetPackage.map(x => s".*${x}.*").getOrElse(".*"))
+      .include(targetPackage.map(x => s".*\\.${x}\\..*").getOrElse(".*"))
 
     resultFormat.map { rf => opt = opt.resultFormat(ResultFormatType.valueOf(rf.toUpperCase())) }
 

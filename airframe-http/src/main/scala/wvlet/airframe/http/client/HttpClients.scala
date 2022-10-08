@@ -21,7 +21,7 @@ import wvlet.airframe.http._
 import wvlet.airframe.http.internal.RPCCallContext
 import wvlet.airframe.surface.Surface
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
 
@@ -152,6 +152,8 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
   private[client] implicit val executionContext: ExecutionContext
   private val circuitBreaker: CircuitBreaker = config.circuitBreaker
 
+  private def defaultClientContext: ClientContext = ClientContext.passThroughChannel(channel, config)
+
   /**
     * Send an HTTP request and get the response in Scala Future type.
     *
@@ -161,22 +163,48 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
     *
     * If it exceeds the number of max retry attempts, it will return Future[HttpClientMaxRetryException].
     */
-  def send(req: Request): Future[Response] = {
-    val request                        = config.requestFilter(req)
-    var lastResponse: Option[Response] = None
-    config.retryContext
-      .runAsyncWithContext(request, circuitBreaker) {
-        config.clientFilter
-          .chainAsync(request, ClientContext.passThroughChannel(channel, config))
-          .map { resp =>
-            // Remember the last response for error reporting purpose
-            lastResponse = Some(resp)
-            resp
+  def send(req: Request, clientContext: ClientContext = defaultClientContext): Future[Response] = {
+    val p = Promise[Response]()
+    try {
+      executionContext.execute(new Runnable {
+        override def run(): Unit = {
+          var lastResponse: Option[Response] = None
+          try {
+            try {
+              config.retryContext.runWithContext(req, circuitBreaker) {
+                val resp = config.clientFilter.chain(req, clientContext)
+                lastResponse = Some(resp)
+                p.success(resp)
+                resp
+              }
+            } catch {
+              HttpClients.defaultHttpClientErrorHandler(lastResponse)
+            }
+          } catch {
+            case e: Throwable => p.failure(e)
           }
-      }
-      .recover {
-        HttpClients.defaultHttpClientErrorHandler(lastResponse)
-      }
+        }
+      })
+    } catch {
+      case e: Throwable => p.failure(e)
+    }
+    p.future
+//
+//    val request                        = config.requestFilter(req)
+//    var lastResponse: Option[Response] = None
+//    config.retryContext
+//      .runAsyncWithContext(request, circuitBreaker) {
+//        config.clientFilter
+//          .chainAsync(request, ClientContext.passThroughChannel(channel, config))
+//          .map { resp =>
+//            // Remember the last response for error reporting purpose
+//            lastResponse = Some(resp)
+//            resp
+//          }
+//      }
+//      .recover {
+//        HttpClients.defaultHttpClientErrorHandler(lastResponse)
+//      }
   }
 
   /**
