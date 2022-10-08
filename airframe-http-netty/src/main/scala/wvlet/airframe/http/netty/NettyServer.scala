@@ -32,6 +32,7 @@ import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 import javax.annotation.PostConstruct
 
 case class NettyServerConfig(
@@ -123,17 +124,37 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     b.childOption(ChannelOption.ALLOCATOR, allocator)
 
     b.childHandler(new ChannelInitializer[SocketChannel] {
-      override def initChannel(ch: SocketChannel): Unit = {
-        val pipeline = ch.pipeline()
 
-        // pipeline.addLast(new IdleStateHandler(1, 1, 60, TimeUnit.SECONDS))
-        pipeline.addLast(new HttpServerCodec()) // 4096, 8192, Int.MaxValue, false))
-        pipeline.addLast(new HttpObjectAggregator(65536))
-        pipeline.addLast(new HttpContentCompressor())
-        pipeline.addLast(new ChunkedWriteHandler())
-        // pipeline.addLast(new HttpServerExpectContinueHandler)
-        pipeline.addLast(new HttpServerKeepAliveHandler())
-        pipeline.addLast(new NetthRequestHandler(config, session))
+      private[this] val activeConnections = new AtomicLong()
+      private val maxConnections          = 10
+
+      private val closeListener = new ChannelFutureListener {
+        override def operationComplete(future: ChannelFuture): Unit = {
+          activeConnections.decrementAndGet()
+        }
+      }
+
+      override def initChannel(ch: SocketChannel): Unit = {
+        val numConns = activeConnections.incrementAndGet()
+        if (numConns > maxConnections) {
+          logger.warn(s"Too many connections: ${numConns}")
+          activeConnections.decrementAndGet()
+          ch.close()
+        } else {
+          ch.closeFuture().addListener(closeListener)
+
+          val pipeline = ch.pipeline()
+
+          // pipeline.addLast(new IdleStateHandler(1, 1, 60, TimeUnit.SECONDS))
+          // pipeline.addLast(new NettyIOTransport(ch))
+          pipeline.addLast(new HttpServerCodec()) // 4096, 8192, Int.MaxValue, false))
+          pipeline.addLast(new HttpObjectAggregator(65536))
+          pipeline.addLast(new HttpContentCompressor())
+          pipeline.addLast(new ChunkedWriteHandler())
+          // pipeline.addLast(new HttpServerExpectContinueHandler)
+          pipeline.addLast(new HttpServerKeepAliveHandler())
+          pipeline.addLast(new NetthRequestHandler(config, session))
+        }
       }
     })
 
