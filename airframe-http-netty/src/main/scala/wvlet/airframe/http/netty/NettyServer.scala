@@ -17,9 +17,7 @@ import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel._
 import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel}
-import io.netty.channel.local.LocalServerChannel
 import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.unix.UnixChannelOption
 import io.netty.handler.codec.http._
@@ -34,7 +32,6 @@ import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicLong
 import javax.annotation.PostConstruct
 
 case class NettyServerConfig(
