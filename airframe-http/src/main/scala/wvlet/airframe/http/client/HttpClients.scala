@@ -21,7 +21,7 @@ import wvlet.airframe.http._
 import wvlet.airframe.http.internal.RPCCallContext
 import wvlet.airframe.surface.Surface
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
 
@@ -162,6 +162,7 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
     * If it exceeds the number of max retry attempts, it will return Future[HttpClientMaxRetryException].
     */
   def send(req: Request): Future[Response] = {
+    // TODO This part needs to be more non-blocking
     val request                        = config.requestFilter(req)
     var lastResponse: Option[Response] = None
     config.retryContext

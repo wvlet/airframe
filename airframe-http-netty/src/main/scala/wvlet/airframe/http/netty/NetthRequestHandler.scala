@@ -15,40 +15,25 @@ package wvlet.airframe.http.netty
 
 import io.netty.buffer.Unpooled
 import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, SimpleChannelInboundHandler}
-import io.netty.handler.codec.http.{
-  DefaultFullHttpResponse,
-  DefaultHttpResponse,
-  FullHttpRequest,
-  HttpResponseStatus,
-  HttpUtil,
-  HttpVersion
-}
-import wvlet.airframe.Session
-import wvlet.airframe.codec.MessageCodecFactory
+import io.netty.handler.codec.http._
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.router.HttpRequestDispatcher
 import wvlet.airframe.http.{Http, HttpMethod, HttpStatus}
 import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 
-class NetthRequestHandler(config: NettyServerConfig, session: Session)
+class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Filter)
     extends SimpleChannelInboundHandler[FullHttpRequest]
     with LogSupport {
-
-  private val dispatcher = HttpRequestDispatcher.newDispatcher(
-    session = session,
-    config.router,
-    config.controllerProvider,
-    NettyBackend,
-    new NettyResponseHandler,
-    MessageCodecFactory.defaultFactoryForJSON
-  )
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     warn(cause)
     ctx.close()
+  }
+
+  override def channelReadComplete(ctx: ChannelHandlerContext): Unit = {
+    ctx.flush()
   }
 
   override def channelRead0(ctx: ChannelHandlerContext, msg: FullHttpRequest): Unit = {
@@ -84,20 +69,31 @@ class NetthRequestHandler(config: NettyServerConfig, session: Session)
     RxRunner.run(rxResponse) {
       case OnNext(v) =>
         val nettyResponse = toNettyResponse(v.asInstanceOf[Response])
-        writeResponse(ctx, nettyResponse)
+        writeResponse(msg, ctx, nettyResponse)
       case OnError(ex) =>
         warn(ex)
         val resp = new DefaultHttpResponse(
           HttpVersion.HTTP_1_1,
           HttpResponseStatus.valueOf(HttpStatus.InternalServerError_500.code)
         )
-        writeResponse(ctx, resp)
+        writeResponse(msg, ctx, resp)
       case OnCompletion =>
     }
   }
 
-  private def writeResponse(ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
-    ctx.writeAndFlush(resp).addListener(ChannelFutureListener.CLOSE)
+  private def writeResponse(req: HttpRequest, ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
+    val keepAlive = HttpUtil.isKeepAlive(req)
+    if (keepAlive) {
+      if (!req.protocolVersion().isKeepAliveDefault) {
+        resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)
+      }
+    } else {
+      resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
+    }
+    val f = ctx.write(resp)
+    if (!keepAlive) {
+      f.addListener(ChannelFutureListener.CLOSE)
+    }
   }
 
   private def toNettyResponse(response: Response): DefaultHttpResponse = {
@@ -109,8 +105,9 @@ class NetthRequestHandler(config: NettyServerConfig, session: Session)
       HttpUtil.setContentLength(res, buf.readableBytes())
       res
     }
+    val h = r.headers()
     response.header.entries.foreach { e =>
-      r.headers().set(e.key, e.value)
+      h.set(e.key, e.value)
     }
     r
   }

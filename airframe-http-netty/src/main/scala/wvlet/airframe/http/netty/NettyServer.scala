@@ -18,15 +18,15 @@ import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel._
 import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel}
 import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.unix.UnixChannelOption
 import io.netty.handler.codec.http._
 import io.netty.handler.stream.ChunkedWriteHandler
+import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http._
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.router.ControllerProvider
+import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -122,18 +122,44 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     b.option(ChannelOption.ALLOCATOR, allocator)
     b.childOption(ChannelOption.ALLOCATOR, allocator)
 
-    b.childHandler(new ChannelInitializer[SocketChannel] {
-      override def initChannel(ch: SocketChannel): Unit = {
+    b.childHandler(new ChannelInitializer[Channel] {
+      // private[this] val activeConnections = new AtomicLong()
+      // private val maxConnections          = 50
+      //      private val closeListener = new ChannelFutureListener {
+      //        override def operationComplete(future: ChannelFuture): Unit = {
+      //          activeConnections.decrementAndGet()
+      //        }
+      //      }
+
+      private val dispatcher = {
+        HttpRequestDispatcher.newDispatcher(
+          session = session,
+          config.router,
+          config.controllerProvider,
+          NettyBackend,
+          new NettyResponseHandler,
+          MessageCodecFactory.defaultFactoryForJSON
+        )
+      }
+
+      override def initChannel(ch: Channel): Unit = {
+        //        val numConns = activeConnections.incrementAndGet()
+        //        if (numConns > maxConnections) {
+        //          activeConnections.decrementAndGet()
+        //          ch.close()
+        //        } else {
+        //          ch.closeFuture().addListener(closeListener)
+
         val pipeline = ch.pipeline()
 
         // pipeline.addLast(new IdleStateHandler(1, 1, 60, TimeUnit.SECONDS))
         pipeline.addLast(new HttpServerCodec()) // 4096, 8192, Int.MaxValue, false))
-        pipeline.addLast(new HttpObjectAggregator(65536))
+        // pipeline.addLast(new HttpServerKeepAliveHandler())
+        pipeline.addLast(new HttpObjectAggregator(Int.MaxValue))
         pipeline.addLast(new HttpContentCompressor())
+        pipeline.addLast(new HttpServerExpectContinueHandler)
         pipeline.addLast(new ChunkedWriteHandler())
-        // pipeline.addLast(new HttpServerExpectContinueHandler)
-        pipeline.addLast(new HttpServerKeepAliveHandler())
-        pipeline.addLast(new NetthRequestHandler(config, session))
+        pipeline.addLast(new NetthRequestHandler(config, dispatcher))
       }
     })
 
