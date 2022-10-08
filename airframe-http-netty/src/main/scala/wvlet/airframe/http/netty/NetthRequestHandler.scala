@@ -15,36 +15,17 @@ package wvlet.airframe.http.netty
 
 import io.netty.buffer.Unpooled
 import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, SimpleChannelInboundHandler}
-import io.netty.handler.codec.http.{
-  DefaultFullHttpResponse,
-  DefaultHttpResponse,
-  FullHttpRequest,
-  HttpResponseStatus,
-  HttpUtil,
-  HttpVersion
-}
-import wvlet.airframe.Session
-import wvlet.airframe.codec.MessageCodecFactory
+import io.netty.handler.codec.http._
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.router.HttpRequestDispatcher
 import wvlet.airframe.http.{Http, HttpMethod, HttpStatus}
 import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 
-class NetthRequestHandler(config: NettyServerConfig, session: Session)
+class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Filter)
     extends SimpleChannelInboundHandler[FullHttpRequest]
     with LogSupport {
-
-  private val dispatcher = HttpRequestDispatcher.newDispatcher(
-    session = session,
-    config.router,
-    config.controllerProvider,
-    NettyBackend,
-    new NettyResponseHandler,
-    MessageCodecFactory.defaultFactoryForJSON
-  )
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     warn(cause)
