@@ -16,6 +16,8 @@ package wvlet.airframe.jmx
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
+import java.lang.management.ManagementFactory
+import javax.management.ObjectName
 import scala.util.Random
 
 @JMX(description = "A example MBean object")
@@ -53,6 +55,12 @@ class JMXRegistryTest extends AirSpec {
     val b = new SampleMBean
     agent.register(b)
 
+    val mbeanServer = ManagementFactory.getPlatformMBeanServer
+    val mbean       = mbeanServer.getMBeanInfo(new ObjectName("wvlet.airframe.jmx:name=SampleMBean"))
+    val attrs       = mbean.getAttributes
+    attrs.length shouldBe 1
+    attrs(0).getName shouldBe "freeMemory"
+
     if (!JMXUtil.isAtLeastJava9) {
       val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=SampleMBean")
       debug(m)
@@ -66,6 +74,12 @@ class JMXRegistryTest extends AirSpec {
     val f = new FieldMBean(1, "apple")
     agent.register(f)
 
+    val mbeanServer = ManagementFactory.getPlatformMBeanServer
+    val mbean       = mbeanServer.getMBeanInfo(new ObjectName("wvlet.airframe.jmx:name=FieldMBean"))
+    mbean.getAttributes.length shouldBe 2
+    mbeanServer.getAttribute(new ObjectName("wvlet.airframe.jmx:name=FieldMBean"), "a") shouldBe 1
+    mbeanServer.getAttribute(new ObjectName("wvlet.airframe.jmx:name=FieldMBean"), "b") shouldBe "apple"
+
     if (!JMXUtil.isAtLeastJava9) {
       val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=FieldMBean")
       info(m)
@@ -78,6 +92,19 @@ class JMXRegistryTest extends AirSpec {
   test("handle nested JMX MBean") {
     val n = new NestedMBean
     agent.register(n)
+
+    val mbeanServer = ManagementFactory.getPlatformMBeanServer
+    val mbean       = mbeanServer.getMBeanInfo(new ObjectName("wvlet.airframe.jmx:name=NestedMBean"))
+    mbean.getAttributes.length shouldBe 2
+    mbeanServer
+      .getAttribute(
+        new ObjectName("wvlet.airframe.jmx:name=NestedMBean"),
+        "stat.count"
+      ).toString.toInt <= 10 shouldBe true
+    mbeanServer.getAttribute(
+      new ObjectName("wvlet.airframe.jmx:name=NestedMBean"),
+      "stat.state"
+    ) shouldBe "nested JMX bean"
 
     if (!JMXUtil.isAtLeastJava9) {
       val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=NestedMBean")
