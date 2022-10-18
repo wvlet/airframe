@@ -1,7 +1,7 @@
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
 val SCALA_2_12          = "2.12.17"
-val SCALA_2_13          = "2.13.9"
+val SCALA_2_13          = "2.13.10"
 val SCALA_3             = "3.2.0"
 val uptoScala2          = SCALA_2_13 :: SCALA_2_12 :: Nil
 val targetScalaVersions = SCALA_3 :: uptoScala2
@@ -20,7 +20,7 @@ val JS_JAVA_TIME_VERSION            = "1.0.0"
 val SCALAJS_DOM_VERSION             = "2.3.0"
 val FINAGLE_VERSION                 = "22.7.0"
 val FLUENCY_VERSION                 = "2.7.0"
-val GRPC_VERSION                    = "1.49.2"
+val GRPC_VERSION                    = "1.50.0"
 val JMH_VERSION                     = "1.35"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 val PARQUET_VERSION                 = "1.12.3"
@@ -522,7 +522,7 @@ val logDependencies = { scalaVersion: String =>
 
 val logJVMDependencies = Seq(
   // For rotating log files
-  "ch.qos.logback" % "logback-core" % "1.2.11"
+  "ch.qos.logback" % "logback-core" % "1.3.4"
 )
 
 // airframe-log should have minimum dependencies
@@ -863,7 +863,7 @@ lazy val benchmark =
         // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
         // For grpc-java
         "io.grpc"             % "grpc-protobuf" % GRPC_VERSION,
-        "com.google.protobuf" % "protobuf-java" % "3.21.7",
+        "com.google.protobuf" % "protobuf-java" % "3.21.8",
         "com.chatwork"       %% "scala-ulid"    % "1.0.24"
       )
       //      Compile / PB.targets := Seq(
@@ -918,7 +918,7 @@ lazy val parquet =
         "org.apache.hadoop"  % "hadoop-client"  % "3.3.4" % Provided,
         // For S3 support
         "org.apache.hadoop"      % "hadoop-aws" % "3.3.4"    % Provided,
-        "software.amazon.awssdk" % "auth"       % "2.17.217" % Provided,
+        "software.amazon.awssdk" % "auth"       % "2.17.293" % Provided,
         // For Apple Silicon (M1)
         "org.xerial.snappy"  % "snappy-java"  % "1.1.8.4",
         "org.slf4j"          % "slf4j-jdk14"  % SLF4J_VERSION   % Optional,
