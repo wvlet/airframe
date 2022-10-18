@@ -128,10 +128,11 @@ class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: 
     // Read HTTP response headers
     val header: HttpMultiMap = {
       val h = HttpMultiMap.newBuilder
-      httpResponse.headers().map().asScala.map { case (key, values) =>
-        values.asScala.foreach { v =>
-          h.add(key, v)
-        }
+      httpResponse.headers().map().asScala.map {
+        case (key, values) if !key.startsWith(":") =>
+          values.asScala.foreach { v =>
+            h.add(key, v)
+          }
       }
       h.result()
     }
