@@ -20,7 +20,7 @@ val JS_JAVA_TIME_VERSION            = "1.0.0"
 val SCALAJS_DOM_VERSION             = "2.3.0"
 val FINAGLE_VERSION                 = "22.7.0"
 val FLUENCY_VERSION                 = "2.6.5"
-val GRPC_VERSION                    = "1.49.1"
+val GRPC_VERSION                    = "1.49.2"
 val JMH_VERSION                     = "1.35"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 val PARQUET_VERSION                 = "1.12.3"
@@ -716,7 +716,7 @@ lazy val httpCodeGen =
       packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13", "airspec_3"),
       libraryDependencies ++= Seq(
         // Use swagger-parser only for validating YAML format in tests
-        "io.swagger.parser.v3" % "swagger-parser" % "2.1.3" % Test,
+        "io.swagger.parser.v3" % "swagger-parser" % "2.1.5" % Test,
         // Swagger includes dependency to SLF4J, so redirect slf4j logs to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION % Test,
         // For gRPC route scanner test
@@ -735,7 +735,7 @@ lazy val netty =
       name        := "airframe-http-netty",
       description := "Airframe HTTP Netty backend",
       libraryDependencies ++= Seq(
-        "io.netty" % "netty-all" % "4.1.82.Final"
+        "io.netty" % "netty-all" % "4.1.84.Final"
       )
     )
     .dependsOn(httpRouter, rxJVM)
@@ -899,7 +899,7 @@ def sqlRefLib = { scalaVersion: String =>
       // Include Spark just as a reference implementation
       "org.apache.spark" %% "spark-sql" % "3.3.0" % Test,
       // Include Trino as a reference implementation
-      "io.trino" % "trino-main" % "398" % Test
+      "io.trino" % "trino-main" % "400" % Test
     )
   } else {
     Seq.empty
