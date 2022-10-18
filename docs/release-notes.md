@@ -6,6 +6,40 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.10.0
+
+Upgrade to Scala 2.13.10 to address [a regression in Scala 2.13.9](https://github.com/scala/scala/pull/10155).
+And also, an experimental module airframe-http-netty is added to support REST/RPC server in Scala 3.
+
+- Update fluency-core, fluency-fluentd, ... to 2.7.0 ([#2458](https://github.com/wvlet/airframe/issues/2458)) [[f4982c6f0](https://github.com/wvlet/airframe/commit/f4982c6f0)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.50.0 ([#2485](https://github.com/wvlet/airframe/issues/2485)) [[024fea0b6](https://github.com/wvlet/airframe/commit/024fea0b6)]
+- Update protobuf-java to 3.21.8 ([#2484](https://github.com/wvlet/airframe/issues/2484)) [[3ca772199](https://github.com/wvlet/airframe/commit/3ca772199)]
+- Upgrade to logback-core 1.3.4 ([#2483](https://github.com/wvlet/airframe/issues/2483)) [[d7263e53a](https://github.com/wvlet/airframe/commit/d7263e53a)]
+- Update auth to 2.17.293 ([#2481](https://github.com/wvlet/airframe/issues/2481)) [[e59cf9ad3](https://github.com/wvlet/airframe/commit/e59cf9ad3)]
+- Update scala-compiler, scala-library, ... to 2.13.10 ([#2476](https://github.com/wvlet/airframe/issues/2476)) [[e4bc9684a](https://github.com/wvlet/airframe/commit/e4bc9684a)]
+- Update sbt-scoverage to 2.0.5 ([#2480](https://github.com/wvlet/airframe/issues/2480)) [[ab681912a](https://github.com/wvlet/airframe/commit/ab681912a)]
+- Update scalafmt-core to 3.6.0 ([#2479](https://github.com/wvlet/airframe/issues/2479)) [[833afd613](https://github.com/wvlet/airframe/commit/833afd613)]
+- Update sbt-mdoc to 2.3.6 ([#2478](https://github.com/wvlet/airframe/issues/2478)) [[d2809f4a7](https://github.com/wvlet/airframe/commit/d2809f4a7)]
+- Update sbt, sbt-dependency-tree, ... to 1.7.2 ([#2477](https://github.com/wvlet/airframe/issues/2477)) [[969aa7b2d](https://github.com/wvlet/airframe/commit/969aa7b2d)]
+- Update trino-main to 400 ([#2475](https://github.com/wvlet/airframe/issues/2475)) [[dcd91c32a](https://github.com/wvlet/airframe/commit/dcd91c32a)]
+- Update swagger-parser to 2.1.5 ([#2474](https://github.com/wvlet/airframe/issues/2474)) [[46646185b](https://github.com/wvlet/airframe/commit/46646185b)]
+- Remove unnecessary scala-steward PR labels ([#2482](https://github.com/wvlet/airframe/issues/2482)) [[c7ca2cf1b](https://github.com/wvlet/airframe/commit/c7ca2cf1b)]
+- Update netty-all to 4.1.84.Final ([#2473](https://github.com/wvlet/airframe/issues/2473)) [[6513cd85e](https://github.com/wvlet/airframe/commit/6513cd85e)]
+- Update grpc-netty-shaded, grpc-protobuf, ... to 1.49.2 ([#2472](https://github.com/wvlet/airframe/issues/2472)) [[5c9538aba](https://github.com/wvlet/airframe/commit/5c9538aba)]
+- Bump codecov/codecov-action from 1 to 3 ([#2469](https://github.com/wvlet/airframe/issues/2469)) [[73a073146](https://github.com/wvlet/airframe/commit/73a073146)]
+- Bump actions/upload-artifact from 1 to 3 ([#2470](https://github.com/wvlet/airframe/issues/2470)) [[0b48cf403](https://github.com/wvlet/airframe/commit/0b48cf403)]
+- Enable Dependabot for enabling Github Action updates ([#2468](https://github.com/wvlet/airframe/issues/2468)) [[bdf3c2267](https://github.com/wvlet/airframe/commit/bdf3c2267)]
+- Upgrade to checkout@v3, setup-java@v3, setup-node@v3, action-junit-report@v3 ([#2466](https://github.com/wvlet/airframe/issues/2466)) [[0e8312cf8](https://github.com/wvlet/airframe/commit/0e8312cf8)]
+- Fix MatchError in excluding pseudo headers of JDK's http client ([#2467](https://github.com/wvlet/airframe/issues/2467)) [[64a5e7626](https://github.com/wvlet/airframe/commit/64a5e7626)]
+- Exclude pseudo headers from response of JDK's http client ([#2465](https://github.com/wvlet/airframe/issues/2465)) [[5067e85d3](https://github.com/wvlet/airframe/commit/5067e85d3)]
+- Registered MBean doesn't have any attributes ([#2464](https://github.com/wvlet/airframe/issues/2464)) [[c035218a8](https://github.com/wvlet/airframe/commit/c035218a8)]
+- airframe-netty: Performance optimziation ([#2462](https://github.com/wvlet/airframe/issues/2462)) [[9514866f8](https://github.com/wvlet/airframe/commit/9514866f8)]
+- airframe-http-netty: Add an experimental Netty-backed HTTP server implementation ([#2460](https://github.com/wvlet/airframe/issues/2460)) [[41b2ca7fb](https://github.com/wvlet/airframe/commit/41b2ca7fb)]
+- Update trino-main to 398 ([#2457](https://github.com/wvlet/airframe/issues/2457)) [[18c9331c2](https://github.com/wvlet/airframe/commit/18c9331c2)]
+- Update protobuf-java to 3.21.7 ([#2456](https://github.com/wvlet/airframe/issues/2456)) [[2c591b1b4](https://github.com/wvlet/airframe/commit/2c591b1b4)]
+- Update json4s-jackson to 4.0.6 ([#2455](https://github.com/wvlet/airframe/issues/2455)) [[71f239ac4](https://github.com/wvlet/airframe/commit/71f239ac4)]
+- Update airframe-codec, airframe-control, ... to 22.9.3 ([#2453](https://github.com/wvlet/airframe/issues/2453)) [[307eee124](https://github.com/wvlet/airframe/commit/307eee124)]
+
 ## 22.9.3
 
 This version includes JDK19 support for Scala 2.13 and several bug fixes. 
