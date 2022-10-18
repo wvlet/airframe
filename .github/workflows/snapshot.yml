@@ -24,7 +24,7 @@ jobs:
       - run: git fetch --tags
       - uses: actions/setup-java@v3
         with:
-	  distribution: 'zulu'
+          distribution: 'zulu'
           java-version: '11'
       - name: Publish snapshots
         env:
