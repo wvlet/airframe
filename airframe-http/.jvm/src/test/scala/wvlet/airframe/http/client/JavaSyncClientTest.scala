@@ -39,6 +39,7 @@ class JavaSyncClientTest extends AirSpec {
       val resp = client.send(Http.GET("/get?id=1&name=leo"))
       resp.status shouldBe HttpStatus.Ok_200
       resp.isContentTypeJson shouldBe true
+      resp.getHeader(":status") shouldBe None // Pseudo headers should be excluded
       val json = JSON.parse(resp.message.toContentString).toJSON
       val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
       m("args") shouldBe Map("id" -> "1", "name" -> "leo")

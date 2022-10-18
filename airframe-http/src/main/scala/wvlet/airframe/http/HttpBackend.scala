@@ -117,8 +117,12 @@ object HttpBackend {
       f.map(body)
     }
     override def withThreadLocalStore(request: => Future[HttpMessage.Response]): Future[HttpMessage.Response] = ???
-    override def setThreadLocal[A](key: String, value: A): Unit                                               = ???
-    override def getThreadLocal[A](key: String): Option[A]                                                    = ???
+    override def setThreadLocal[A](key: String, value: A): Unit = {
+      // no-op
+    }
+    override def getThreadLocal[A](key: String): Option[A] = {
+      None
+    }
   }
 
 }

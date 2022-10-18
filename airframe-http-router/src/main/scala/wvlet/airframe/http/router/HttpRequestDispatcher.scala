@@ -15,7 +15,6 @@ package wvlet.airframe.http.router
 
 import wvlet.airframe.Session
 import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.http.HttpBackend.DefaultBackend
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
 

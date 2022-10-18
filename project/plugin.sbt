@@ -4,7 +4,7 @@ ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" 
 
 addSbtPlugin("org.xerial.sbt"     % "sbt-sonatype"             % "3.9.13")
 addSbtPlugin("com.github.sbt"     % "sbt-pgp"                  % "2.1.2")
-addSbtPlugin("org.scoverage"      % "sbt-scoverage"            % "2.0.4")
+addSbtPlugin("org.scoverage"      % "sbt-scoverage"            % "2.0.5")
 addSbtPlugin("org.scalameta"      % "sbt-scalafmt"             % "2.4.6")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.2.0")
 addSbtPlugin("com.eed3si9n"       % "sbt-buildinfo"            % "0.11.0")
@@ -23,7 +23,7 @@ libraryDependencies ++= (
 addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.1.1")
 
 // Documentation
-addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.3.5")
+addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.3.6")
 
 // For generating Lexer/Parser from ANTLR4 grammar (.g4)
 addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.3")

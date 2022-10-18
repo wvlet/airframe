@@ -25,7 +25,6 @@ trait JMXRegistry extends JMXMBeanServerService with JMXRegistryCompat with LogS
   private var registeredMBean = Set.empty[ObjectName]
 
   def register[A](mbean: JMXMBean, obj: A): Unit = {
-    val mbean       = JMXMBean.of(obj)
     val cl          = obj.getClass
     val packageName = cl.getPackage.getName
     val name        = s"${packageName}:name=${JMXRegistry.getSimpleClassName(cl)}"

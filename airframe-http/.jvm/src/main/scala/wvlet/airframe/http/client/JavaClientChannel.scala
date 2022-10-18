@@ -24,9 +24,10 @@ import java.net.http.HttpClient.Redirect
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
 import java.net.http.{HttpClient, HttpRequest, HttpResponse}
-import java.util.concurrent.ExecutorService
+import java.util.concurrent.{CompletionStage, ExecutorService}
+import java.util.function.Consumer
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.jdk.CollectionConverters._
 
 /**
@@ -75,7 +76,22 @@ class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: 
   }
 
   override def sendAsync(req: Request, channelConfig: ChannelConfig): Future[Response] = {
-    Future.apply(send(req, channelConfig))
+    val httpRequest = buildRequest(serverAddress, req, channelConfig)
+
+    val p = Promise[Response]()
+    try {
+      javaHttpClient
+        .sendAsync(httpRequest, BodyHandlers.ofInputStream())
+        .thenAccept(new Consumer[HttpResponse[InputStream]] {
+          override def accept(r: HttpResponse[InputStream]): Unit = {
+            val resp = readResponse(r)
+            p.success(resp)
+          }
+        })
+    } catch {
+      case e: Throwable => p.failure(e)
+    }
+    p.future
   }
 
   private def buildRequest(
@@ -112,9 +128,11 @@ class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: 
     // Read HTTP response headers
     val header: HttpMultiMap = {
       val h = HttpMultiMap.newBuilder
-      httpResponse.headers().map().asScala.map { case (key, values) =>
-        values.asScala.foreach { v =>
-          h.add(key, v)
+      httpResponse.headers().map().asScala.foreach { case (key, values) =>
+        if (!key.startsWith(":")) {
+          values.asScala.foreach { v =>
+            h.add(key, v)
+          }
         }
       }
       h.result()
