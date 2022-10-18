@@ -28,7 +28,7 @@ jobs:
           name: airframe-coverage
           file: ./projectJVM/target/scala-2.13/scoverage-report/scoverage.xml
       - name: Archive code coverage results
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: code-coverage-report
           path: ./projectJVM/target/scala-2.13/scoverage-report
