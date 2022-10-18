@@ -18,7 +18,7 @@ jobs:
       - run: git fetch --tags -f
       - uses: actions/setup-java@v3
         with:
-          distrubution: 'zulu'
+          distribution: 'zulu'
           java-version: '11'
       - name: Setup GPG
         env:

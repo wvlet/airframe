@@ -19,7 +19,7 @@ jobs:
       # Install OpenJDK 11
       - uses: actions/setup-java@v3
         with:
-          distrubution: 'zulu'
+          distribution: 'zulu'
           java-version: '11'
       - name: Setup GPG
         env:
