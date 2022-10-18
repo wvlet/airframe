@@ -30,3 +30,15 @@ template: |
   $CHANGES
 
   **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
+
+
+autolabeler:
+  - label: 'doc'
+    files:
+      - '*.md'
+  - label: 'bug'
+    title:
+      - '/fix/i'
+  - label: 'deprecation'
+    title:
+      - '/deprecate/i'
