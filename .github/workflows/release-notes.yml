@@ -15,7 +15,7 @@ jobs:
       - id: prep
         run: |
           release_version=$(echo ${{ github.ref }} | sed -e 's/[^0-9]//g')
-          echo "::set-output name=release_version::$release_version"
+          echo "release_version=${release_version}" >> $GITHUB_ENV
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -25,6 +25,6 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
           body:
-            'Release notes: https://wvlet.org/airframe/docs/release-notes#${{ steps.prep.outputs.release_version }}'
+            'Release notes: https://wvlet.org/airframe/docs/release-notes#${{ env.release_version }}'
           draft: false
           prerelease: false
