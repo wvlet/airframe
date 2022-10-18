@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
-          distriubtion: 'temurin'
+          distribution: 'temurin'
           java-version: '17'
       - name: Scala 2.13 test with coverage report
         run: ./sbt "; coverage; projectJVM/test; projectJVM/coverageReport; projectJVM/coverageAggregate"
