@@ -25,7 +25,7 @@ jobs:
     name: Code format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: scalafmt
         run: ./sbt scalafmtCheckAll
       - name: scalafmt in Scala 3
@@ -40,8 +40,8 @@ jobs:
     name: Scala 2.12
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v11
+      - uses: actions/checkout@v3
+      - uses: olafurpg/setup-scala@v13
         with:
           java-version: zulu@1.17
       - name: Scala 2.12 test
@@ -56,8 +56,8 @@ jobs:
     name: Scala 2.13
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v11
+      - uses: actions/checkout@v3
+      - uses: olafurpg/setup-scala@v13
         with:
           java-version: zulu@1.17
       - name: Scala 2.13 test
@@ -72,8 +72,8 @@ jobs:
     name: Scala 2.13 + JDK11
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v11
+      - uses: actions/checkout@v3
+      - uses: olafurpg/setup-scala@v13
         with:
           java-version: zulu@1.11
       - name: Scala 2.13 + JDK11 test
@@ -88,7 +88,7 @@ jobs:
     name: Scala 2.13 + JDK19
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
@@ -105,8 +105,8 @@ jobs:
     name: Scala 3.x (Dotty)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v11
+      - uses: actions/checkout@v3
+      - uses: olafurpg/setup-scala@v13
         with:
           java-version: zulu@1.17
       - name: Scala 3.x test
@@ -122,8 +122,8 @@ jobs:
     name: Scala.js / Scala 2.12
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v11
+      - uses: actions/checkout@v3
+      - uses: olafurpg/setup-scala@v13
         with:
           java-version: zulu@1.17
       - uses: actions/setup-node@v2
@@ -143,8 +143,8 @@ jobs:
     name: Scala.js / Scala 2.13
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v11
+      - uses: actions/checkout@v3
+      - uses: olafurpg/setup-scala@v13
         with:
           java-version: zulu@1.17
       - uses: actions/setup-node@v2
@@ -164,8 +164,8 @@ jobs:
     name: Scala.js / Scala 3
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v11
+      - uses: actions/checkout@v3
+      - uses: olafurpg/setup-scala@v13
         with:
           java-version: zulu@1.17
       - uses: actions/setup-node@v2
@@ -185,8 +185,8 @@ jobs:
     name: AirSpec
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: olafurpg/setup-scala@v11
+      - uses: actions/checkout@v3
+      - uses: olafurpg/setup-scala@v13
         with:
           java-version: zulu@1.17
       - name: Scala JVM and Scala.js Test
