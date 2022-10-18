@@ -23,7 +23,7 @@ jobs:
           java-version: '17'
       - name: Scala 2.13 test with coverage report
         run: ./sbt "; coverage; projectJVM/test; projectJVM/coverageReport; projectJVM/coverageAggregate"
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v3
         with:
           name: airframe-coverage
           file: ./projectJVM/target/scala-2.13/scoverage-report/scoverage.xml
