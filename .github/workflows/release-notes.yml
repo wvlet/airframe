@@ -25,6 +25,6 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
           body:
-            'Release notes: https://wvlet.org/airframe/docs/release-notes#${{ steps.prep.outputs.release_version }}'
+            'Release notes: https://wvlet.org/airframe/docs/release-notes#${{ env.release_version }}'
           draft: false
           prerelease: false
