@@ -57,6 +57,23 @@ For starting a migration of some project to Scala 3, create a PR that removes `.
 
 Here is the list of milestones for Dotty support: [#1077](https://github.com/wvlet/airframe/issues/1077)
 
+### Releasing
+
+For every commit merged to the master branch, a draft of the [release note](https://github.com/wvlet/airframe/releases) will be updated with [release-drafter](https://github.com/release-drafter/release-drafter).
+
+To publish a new version, first, create a new release tag as follows:
+
+```sh
+$ git switch master
+$ git pull
+$ ruby ./script/release.rb
+```
+This step will update docs/release-noteds.md and push a new git tag to the GitHub.
+After that, GitHub actions for releading artifacts to Sonatype will be triggered automatically.
+
+Next, edit and publish the draft of [the release note](https://github.com/wvlet/airframe/releases).
+If necessary, adjust the version number and target tag.
+
 ## LICENSE
 
 [Apache v2](https://github.com/wvlet/airframe/blob/master/LICENSE)
