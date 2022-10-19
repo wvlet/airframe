@@ -6,6 +6,10 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.10.1
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v22.10.1)
+
 ## 22.10.0
 
 Upgrade to Scala 2.13.10 to address [a regression in Scala 2.13.9](https://github.com/scala/scala/pull/10155).
