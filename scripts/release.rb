@@ -25,18 +25,9 @@ next_version = STDIN.gets.chomp
 
 next_version = default_version if next_version.empty?
 
-logs = `git log #{last_tag}..HEAD --pretty=format:'%h %s'`
-logs = logs.gsub(/\#([0-9]+)/, "[#\\1](#{PREFIX}/issues/\\1)")
-
 new_release_notes = []
 new_release_notes <<= "\#\# #{next_version}\n\n"
-new_release_notes <<= logs.split(/\n/)
-  .reject{|line| line.include?("#{last_version} release notes")}
-  .map{|x|
-    m = x.match(/(^[0-9a-f]+)\s+(.*)/)
-    rev = m[1]
-    "- #{m[2]} [[#{rev}](#{PREFIX}/commit/#{rev})]\n"
-  }
+new_release_notes <<= "[Release notes](https://github.com/wvlet/airframe/releases/tag/v#{next_version})\n"
 
 TMP_RELEASE_NOTES_FILE = "target/release_notes_#{next_version}.md"
 File.delete(TMP_RELEASE_NOTES_FILE) if File.exists?(TMP_RELEASE_NOTES_FILE)
