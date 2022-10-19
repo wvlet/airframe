@@ -15,6 +15,7 @@ categories:
     label:
       - 'library-update'
       - 'sbt-plugin-update'
+      - 'dependencies'
   - title: '🛠  Internal Updates'
     label:
       - 'internal'
