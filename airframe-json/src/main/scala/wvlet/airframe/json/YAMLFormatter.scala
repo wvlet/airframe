@@ -41,21 +41,21 @@ object YAMLFormatter {
     def toYaml: String                          = lines.result().mkString("\n")
     private var contextStack: List[YamlContext] = Nil
 
-    private def indent: String = {
-      "  " * (contextStack.length - 1)
+    private def indent(levelOffset: Int = 0): String = {
+      "  " * (contextStack.length - 1 + levelOffset)
     }
 
     private def emitKey(k: String): Unit = {
-      lines += s"${indent}${quoteKey(k)}:"
+      lines += s"${indent()}${quoteKey(k)}:"
     }
     private def emitKeyValue(k: String, v: JSONValue): Unit = {
-      lines += s"${indent}${quoteKey(k)}: ${quoteValue(v)}"
+      lines += s"${indent()}${quoteKey(k)}: ${quoteValue(v)}"
     }
     private def emitArrayKeyValue(k: String, v: JSONValue): Unit = {
       lines += s"${"  " * (contextStack.length - 2)}- ${quoteKey(k)}: ${quoteValue(v)}"
     }
     private def emitArrayElement(v: JSONValue): Unit = {
-      lines += s"${indent}- ${quoteValue(v)}"
+      lines += s"${indent()}- ${quoteValue(v)}"
     }
     private def quoteKey(k: String): String = {
       def isNumber(k: String): Boolean = {
@@ -71,6 +71,18 @@ object YAMLFormatter {
         k
     }
 
+    private def blockString(s: String): String = {
+      s.split("\n")
+        .map { line =>
+          if (line.isEmpty) {
+            ""
+          } else {
+            s"${indent(1)}${line}"
+          }
+        }
+        .mkString("\n")
+    }
+
     private def quoteValue(v: JSONValue): String = {
       val letterPattern = """[\w]+""".r
       def isLetter(s: String): Boolean = {
@@ -79,12 +91,18 @@ object YAMLFormatter {
           case _               => false
         }
       }
+      def hasNewLine(s: String): Boolean      = s.contains('\n')
+      def hasSingleQuotes(s: String): Boolean = s.contains("'")
 
+      val str = v.toString
       v match {
-        case s: JSONString if !isLetter(s.toString) =>
-          s"'${s.toString}'"
-        case other =>
-          v.toString
+        case s: JSONString if hasNewLine(str) || hasSingleQuotes(str) =>
+          // output literal
+          s"|\n${blockString(str)}"
+        case s: JSONString if !isLetter(str) =>
+          s"'${str}'"
+        case _ =>
+          str
       }
     }
 

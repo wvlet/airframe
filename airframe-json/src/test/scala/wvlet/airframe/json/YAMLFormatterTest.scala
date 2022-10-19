@@ -87,6 +87,17 @@ class YAMLFormatterTest extends AirSpec {
                |    c: 2
                |  - b: 3
                |    c: 4""".stripMargin
+    ),
+    Test(
+      json = """{"description":"multi-line\nstrings"}""",
+      yaml = """description: |
+          |  multi-line
+          |  strings""".stripMargin
+    ),
+    Test(
+      json = """{"description":"with quote(')"}""",
+      yaml = """description: |
+          |  with quote(')""".stripMargin
     )
   )
 
