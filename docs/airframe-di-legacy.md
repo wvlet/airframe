@@ -467,12 +467,12 @@ import javax.annotation.{PostConstruct, PreDestroy}
 
 trait MyService {
   @PostConstruct
-  def init {
+  def init = {
     // Called when the object is initialized. The same behavior with onInit
   }
 
   @PreDestroy
-  def stop {
+  def stop = {
     // Called when session.shutdown is called. The same with onShutdown.
   }
 }
@@ -584,7 +584,7 @@ trait Dispatcher {
     case _ => bind[DefaultHandler]
   }
 
-  def dispatch(path:String, request:Request): String =  {
+  def dispatch(path:String, request:Request): String = {
      dispatcher(path).handle(request)
   }
 }
@@ -859,7 +859,7 @@ trait ThreadPool {
 
   def submit[U](body: => U) {
     executorService.submit(new Runnable {
-      def run { body }
+      def run = { body }
     }
   }
 }
