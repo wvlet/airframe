@@ -106,11 +106,13 @@ object JMXMBean extends JMXMBeanCompat with LogSupport {
     new JMXMBean(obj.asInstanceOf[AnyRef], mbeanInfo, mbeanParams)
   }
 
-  private def getDescription(h: ParameterBase): String = {
-    h match {
-      case p: Parameter     => p.findAnnotationOf[aj.JMX].map(_.description()).getOrElse("")
-      case m: MethodSurface => m.findAnnotationOf[aj.JMX].map(_.description()).getOrElse("")
-    }
+  private def getJMXAnnotationInfo(h: ParameterBase): (String, String) = {
+    (h match {
+      case p: Parameter     => p.findAnnotationOf[aj.JMX]
+      case m: MethodSurface => m.findAnnotationOf[aj.JMX]
+    }).map { a =>
+      (a.name, a.description())
+    }.getOrElse("", "")
   }
 
   private def collectMBeanParameters(
@@ -123,7 +125,10 @@ object JMXMBean extends JMXMBeanCompat with LogSupport {
     )
 
     jmxParams.flatMap { p =>
-      val paramName = parent.map(x => s"${x.name}.${p.name}").getOrElse(p.name)
+      val (name, description) = getJMXAnnotationInfo(p)
+      val attrName            = if (name.isEmpty) p.name else name
+      val paramName           = parent.map(x => s"${x.name}.${attrName}").getOrElse(attrName)
+
       if (isNestedMBean(p)) {
         collectMBeanParameters(
           Some(p),
@@ -133,7 +138,6 @@ object JMXMBean extends JMXMBeanCompat with LogSupport {
           Seq.empty
         )
       } else {
-        val description = getDescription(p)
         Seq(
           parent match {
             case Some(pt) =>
