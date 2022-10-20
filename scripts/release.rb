@@ -29,6 +29,7 @@ new_release_notes = []
 new_release_notes <<= "\#\# #{next_version}\n\n"
 new_release_notes <<= "[Release notes](https://github.com/wvlet/airframe/releases/tag/v#{next_version})\n"
 
+system("mkdir -p target")
 TMP_RELEASE_NOTES_FILE = "target/release_notes_#{next_version}.md"
 File.delete(TMP_RELEASE_NOTES_FILE) if File.exists?(TMP_RELEASE_NOTES_FILE)
 File.write("#{TMP_RELEASE_NOTES_FILE}.tmp", new_release_notes.join)
