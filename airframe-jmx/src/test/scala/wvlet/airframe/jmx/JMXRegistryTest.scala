@@ -28,6 +28,14 @@ class SampleMBean {
   }
 }
 
+@JMX(description = "A example MBean object")
+class NamedMBean {
+  @JMX(name = "memory.free", description = "free memory size")
+  def freeMemory: Long = {
+    Runtime.getRuntime.freeMemory()
+  }
+}
+
 case class FieldMBean(@JMX a: Int, @JMX b: String)
 
 class NestedMBean {
@@ -66,6 +74,25 @@ class JMXRegistryTest extends AirSpec {
       debug(m)
 
       val a = agent.getMBeanAttribute("wvlet.airframe.jmx:name=SampleMBean", "freeMemory")
+      debug(a)
+    }
+  }
+
+  test("specify property name by annotation") {
+    val b = new NamedMBean
+    agent.register(b)
+
+    val mbeanServer = ManagementFactory.getPlatformMBeanServer
+    val mbean       = mbeanServer.getMBeanInfo(new ObjectName("wvlet.airframe.jmx:name=NamedMBean"))
+    val attrs       = mbean.getAttributes
+    attrs.length shouldBe 1
+    attrs(0).getName shouldBe "memory.free"
+
+    if (!JMXUtil.isAtLeastJava9) {
+      val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=NamedMBean")
+      debug(m)
+
+      val a = agent.getMBeanAttribute("wvlet.airframe.jmx:name=named", "memory.free")
       debug(a)
     }
   }
