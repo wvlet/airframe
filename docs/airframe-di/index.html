@@ -244,12 +244,12 @@ design
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyService</span> </span>{
   <span class="hljs-meta">@PostConstruct</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">init</span> </span>{
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">init</span> </span>= {
     <span class="hljs-comment">// Called when the object is initialized. The same behavior with onInit</span>
   }
 
   <span class="hljs-meta">@PreDestroy</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">stop</span> </span>{
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">stop</span> </span>= {
     <span class="hljs-comment">// Called when session.shutdown is called. The same with onShutdown.</span>
   }
 }
@@ -422,7 +422,7 @@ bind[<span class="hljs-type">Map</span>[_,_]]
     <span class="hljs-keyword">case</span> _ =&gt; defaultHandler
   }
 
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">dispatch</span></span>(path:<span class="hljs-type">String</span>, request:<span class="hljs-type">Request</span>): <span class="hljs-type">String</span> =  {
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">dispatch</span></span>(path:<span class="hljs-type">String</span>, request:<span class="hljs-type">Request</span>): <span class="hljs-type">String</span> = {
      dispatcher(path).handle(request)
   }
 }
@@ -512,7 +512,7 @@ display the lifecycle of AirframeSession and the injected objects:</p>
 
 <span class="hljs-comment">// bind configurations</span>
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">App</span>(<span class="hljs-params">config: <span class="hljs-type">Config</span>, server: <span class="hljs-type">Server</span></span>) </span>{
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">run</span> </span>{
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">run</span> </span>= {
     sever.launch(config.host, config.port)
   }
 }

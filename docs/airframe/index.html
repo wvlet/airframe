@@ -361,12 +361,12 @@ design
 
 <span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyService</span> </span>{
   <span class="hljs-meta">@PostConstruct</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">init</span> </span>{
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">init</span> </span>= {
     <span class="hljs-comment">// Called when the object is initialized. The same behavior with onInit</span>
   }
 
   <span class="hljs-meta">@PreDestroy</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">stop</span> </span>{
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">stop</span> </span>= {
     <span class="hljs-comment">// Called when session.shutdown is called. The same with onShutdown.</span>
   }
 }
@@ -454,7 +454,7 @@ bind[<span class="hljs-type">Map</span>[_,_]]
     <span class="hljs-keyword">case</span> _ =&gt; bind[<span class="hljs-type">DefaultHandler</span>]
   }
 
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">dispatch</span></span>(path:<span class="hljs-type">String</span>, request:<span class="hljs-type">Request</span>): <span class="hljs-type">String</span> =  {
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">dispatch</span></span>(path:<span class="hljs-type">String</span>, request:<span class="hljs-type">Request</span>): <span class="hljs-type">String</span> = {
      dispatcher(path).handle(request)
   }
 }
@@ -676,7 +676,7 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
 
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">submit</span></span>[<span class="hljs-type">U</span>](body: =&gt; <span class="hljs-type">U</span>) {
     executorService.submit(<span class="hljs-keyword">new</span> <span class="hljs-type">Runnable</span> {
-      <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">run</span> </span>{ body }
+      <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">run</span> </span>= { body }
     }
   }
 }
