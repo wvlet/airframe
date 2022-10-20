@@ -66,7 +66,7 @@ To publish a new version, first, create a new release tag as follows:
 ```sh
 $ git switch master
 $ git pull
-$ ruby ./script/release.rb
+$ ruby ./scripts/release.rb
 ```
 This step will update docs/release-noteds.md and push a new git tag to the GitHub.
 After that, GitHub actions for releading artifacts to Sonatype will be triggered automatically.
