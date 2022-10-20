@@ -257,12 +257,12 @@ import javax.annotation.{PostConstruct, PreDestroy}
 
 trait MyService {
   @PostConstruct
-  def init {
+  def init = {
     // Called when the object is initialized. The same behavior with onInit
   }
 
   @PreDestroy
-  def stop {
+  def stop = {
     // Called when session.shutdown is called. The same with onShutdown.
   }
 }
@@ -482,7 +482,7 @@ class Dispatcher(infoHandler:InfoHandler, defaultHandler:DefaultHanlder) {
     case _ => defaultHandler
   }
 
-  def dispatch(path:String, request:Request): String =  {
+  def dispatch(path:String, request:Request): String = {
      dispatcher(path).handle(request)
   }
 }
@@ -604,7 +604,7 @@ case class Config(host:String, port:Int)
 
 // bind configurations
 class App(config: Config, server: Server) {
-  def run {
+  def run = {
     sever.launch(config.host, config.port)
   }
 }
