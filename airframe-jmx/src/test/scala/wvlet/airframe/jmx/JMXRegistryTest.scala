@@ -92,7 +92,7 @@ class JMXRegistryTest extends AirSpec {
       val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=NamedMBean")
       debug(m)
 
-      val a = agent.getMBeanAttribute("wvlet.airframe.jmx:name=named", "memory.free")
+      val a = agent.getMBeanAttribute("wvlet.airframe.jmx:name=NamedMBean", "memory.free")
       debug(a)
     }
   }
