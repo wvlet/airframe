@@ -1,4 +1,3 @@
-
 ---
 id: airframe-ulid
 title: airframe-ulid: ULID Generator
