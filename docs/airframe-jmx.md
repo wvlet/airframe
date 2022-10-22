@@ -51,7 +51,7 @@ To report nested parameters, add `@JMX` to parameters as well:
 class NestedMBean {
   @JMX(description = "nested stat")
   def stat: Stat = {
-    new Stat(Random.nextInt(10), "nested JMX bean")
+    Stat(Random.nextInt(10), "nested JMX bean")
   }
 }
 
@@ -59,6 +59,19 @@ case class Stat(@JMX count: Int, @JMX state: String)
 ```
 In this example, `stat.count` and `stat.state` will be reported.
 
+
+## Specify parameter names explicitly
+
+Parameter names are automatically generated but also can be specified explicitly.
+```scala
+@JMX(description = "A example MBean object")
+class NamedMBean {
+  @JMX(name = "memory.free", description = "free memory size")
+  def freeMemory: Long = {
+    Runtime.getRuntime.freeMemory()
+  }
+}
+```
 
 ## Launching JMX Registry
 
