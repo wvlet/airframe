@@ -41,7 +41,7 @@ case class FieldMBean(@JMX a: Int, @JMX b: String)
 class NestedMBean {
   @JMX(description = "nested stat")
   def stat: Stat = {
-    new Stat(Random.nextInt(10), "nested JMX bean")
+    Stat(Random.nextInt(10), "nested JMX bean")
   }
 }
 
