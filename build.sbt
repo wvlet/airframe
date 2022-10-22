@@ -173,25 +173,25 @@ lazy val root =
 
 // JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12.
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
-  diMacrosJVM,
-  diJVM,
-  surfaceJVM,
-  logJVM,
+  diMacros.jvm,
+  di.jvm,
+  surface.jvm,
+  log.jvm,
   canvas,
   config,
-  controlJVM,
+  control.jvm,
   jmx,
   launcher,
-  metricsJVM,
-  codecJVM,
-  msgpackJVM,
-  rxJVM,
-  httpJVM,
+  metrics.jvm,
+  codec.jvm,
+  msgpack.jvm,
+  rx.jvm,
+  http.jvm,
   httpRouter,
   httpCodeGen,
   grpc,
-  jsonJVM,
-  rxHtmlJVM,
+  json.jvm,
+  rxHtml.jvm,
   parquet
 )
 
@@ -205,25 +205,25 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
   httpRecorder,
   benchmark,
   sql,
-  ulidJVM,
+  ulid.jvm,
   examples
 )
 
 // Scala.js build (Scala 2.12, 2.13, and 3.x)
 lazy val jsProjects: Seq[ProjectReference] = Seq(
-  logJS,
-  surfaceJS,
-  diMacrosJS,
-  diJS,
-  metricsJS,
-  controlJS,
-  ulidJS,
-  jsonJS,
-  msgpackJS,
-  codecJS,
-  httpJS,
-  rxJS,
-  rxHtmlJS,
+  log.js,
+  surface.js,
+  diMacros.js,
+  di.js,
+  metrics.js,
+  control.js,
+  ulid.js,
+  json.js,
+  msgpack.js,
+  codec.js,
+  http.js,
+  rx.js,
+  rxHtml.js,
   widgetJS
 )
 
@@ -250,16 +250,16 @@ lazy val projectDotty =
   project
     .settings(noPublish)
     .aggregate(
-      diMacrosJVM,
-      diJVM,
-      logJVM,
-      surfaceJVM,
+      diMacros.jvm,
+      di.jvm,
+      log.jvm,
+      surface.jvm,
       canvas,
-      controlJVM,
+      control.jvm,
       config,
-      codecJVM,
+      codec.jvm,
       fluentd,
-      httpJVM,
+      http.jvm,
       httpRouter,
       // Surface.of(Class[_]) needs to be supported
       // httpCodeGen
@@ -271,14 +271,14 @@ lazy val projectDotty =
       jdbc,
       jmx,
       launcher,
-      metricsJVM,
-      msgpackJVM,
-      jsonJVM,
+      metrics.jvm,
+      msgpack.jvm,
+      json.jvm,
       parquet,
-      rxJVM,
-      rxHtmlJVM,
+      rx.jvm,
+      rxHtml.jvm,
       sql,
-      ulidJVM
+      ulid.jvm
     )
 
 lazy val docs =
@@ -354,9 +354,6 @@ lazy val di =
       diMacros
     )
 
-lazy val diJVM = di.jvm
-lazy val diJS  = di.js
-
 def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: String = "main"): Seq[sbt.File] = {
   val scalaMajorVersion = scalaBinaryVersion.split("\\.").head
   for (suffix <- Seq("", s"-${scalaBinaryVersion}", s"-${scalaMajorVersion}").distinct)
@@ -378,9 +375,6 @@ lazy val diMacros =
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log, surface)
-
-lazy val diMacrosJVM = diMacros.jvm
-lazy val diMacrosJS  = diMacros.js
 
 // // To use airframe in other airframe modules, we need to reference airframeMacros project
 // lazy val airframeMacrosJVMRef = airframeMacrosJVM % Optional
@@ -429,9 +423,6 @@ lazy val surface =
     .jsSettings(jsBuildSettings)
     .dependsOn(log)
 
-lazy val surfaceJVM = surface.jvm
-lazy val surfaceJS  = surface.js
-
 lazy val canvas =
   project
     .in(file("airframe-canvas"))
@@ -440,7 +431,7 @@ lazy val canvas =
       name        := "airframe-canvas",
       description := "Airframe off-heap memory library"
     )
-    .dependsOn(logJVM, controlJVM % Test)
+    .dependsOn(log.jvm, control.jvm % Test)
 
 lazy val config =
   project
@@ -453,7 +444,7 @@ lazy val config =
         "org.yaml" % "snakeyaml" % SNAKE_YAML_VERSION
       )
     )
-    .dependsOn(diJVM, codecJVM)
+    .dependsOn(di.jvm, codec.jvm)
 
 lazy val control =
   crossProject(JVMPlatform, JSPlatform)
@@ -466,9 +457,6 @@ lazy val control =
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log)
-
-lazy val controlJVM = control.jvm
-lazy val controlJS  = control.js
 
 lazy val ulid =
   crossProject(JVMPlatform, JSPlatform)
@@ -486,9 +474,6 @@ lazy val ulid =
     )
     .dependsOn(log % Test)
 
-lazy val ulidJVM = ulid.jvm
-lazy val ulidJS  = ulid.js
-
 lazy val jmx =
   project
     .in(file("airframe-jmx"))
@@ -499,7 +484,7 @@ lazy val jmx =
       // Do not run tests concurrently to avoid JMX registration failures
       runTestSequentially
     )
-    .dependsOn(surfaceJVM)
+    .dependsOn(surface.jvm)
 
 lazy val launcher =
   project
@@ -509,7 +494,7 @@ lazy val launcher =
       name        := "airframe-launcher",
       description := "Command-line program launcher"
     )
-    .dependsOn(surfaceJVM, controlJVM, codecJVM)
+    .dependsOn(surface.jvm, control.jvm, codec.jvm)
 
 val logDependencies = { scalaVersion: String =>
   scalaVersion match {
@@ -551,9 +536,6 @@ lazy val log: sbtcrossproject.CrossProject =
       )
     )
 
-lazy val logJVM = log.jvm
-lazy val logJS  = log.js
-
 lazy val metrics =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
@@ -565,9 +547,6 @@ lazy val metrics =
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log, surface)
-
-lazy val metricsJVM = metrics.jvm
-lazy val metricsJS  = metrics.js
 
 lazy val msgpack =
   crossProject(JVMPlatform, JSPlatform)
@@ -587,9 +566,6 @@ lazy val msgpack =
         ("org.scala-js" %%% "scalajs-java-time" % JS_JAVA_TIME_VERSION).cross(CrossVersion.for3Use2_13)
     )
     .dependsOn(log, json)
-
-lazy val msgpackJVM = msgpack.jvm
-lazy val msgpackJS  = msgpack.js
 
 lazy val codec =
   crossProject(JVMPlatform, JSPlatform)
@@ -614,9 +590,6 @@ lazy val codec =
     )
     .dependsOn(log, surface, msgpack, metrics, json, control, ulid)
 
-lazy val codecJVM = codec.jvm
-lazy val codecJS  = codec.js
-
 lazy val jdbc =
   project
     .in(file("airframe-jdbc"))
@@ -632,7 +605,7 @@ lazy val jdbc =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(diJVM, controlJVM, config)
+    .dependsOn(di.jvm, control.jvm, config)
 
 lazy val rx =
   crossProject(JVMPlatform, JSPlatform)
@@ -654,9 +627,6 @@ lazy val rx =
       libraryDependencies += "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.0"
     )
     .dependsOn(log)
-
-lazy val rxJVM = rx.jvm
-lazy val rxJS  = rx.js
 
 lazy val http =
   crossProject(JVMPlatform, JSPlatform)
@@ -690,9 +660,6 @@ lazy val http =
     )
     .dependsOn(rx, control, surface, json, codec)
 
-lazy val httpJVM = http.jvm
-lazy val httpJS  = http.js
-
 lazy val httpRouter =
   project
     .in(file("airframe-http-router"))
@@ -701,7 +668,7 @@ lazy val httpRouter =
       name        := "airframe-http-router",
       description := "Request routing library"
     )
-    .dependsOn(diJVM, httpJVM)
+    .dependsOn(di.jvm, http.jvm)
 
 lazy val httpCodeGen =
   project
@@ -738,7 +705,7 @@ lazy val netty =
         "io.netty" % "netty-all" % "4.1.84.Final"
       )
     )
-    .dependsOn(httpRouter, rxJVM)
+    .dependsOn(httpRouter, rx.jvm)
 
 lazy val grpc =
   project
@@ -755,7 +722,7 @@ lazy val grpc =
         "org.slf4j"         % "slf4j-jdk14"       % SLF4J_VERSION % Test
       )
     )
-    .dependsOn(httpRouter, rxJVM)
+    .dependsOn(httpRouter, rx.jvm)
 
 // Workaround for com.twitter:util-core_2.12:21.4.0 (depends on 1.1.2)
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-parser-combinators" % "always"
@@ -794,7 +761,7 @@ lazy val okhttp =
         "com.squareup.okhttp3" % "okhttp" % "4.10.0"
       )
     )
-    .dependsOn(httpJVM, finagle % Test)
+    .dependsOn(http.jvm, finagle % Test)
 
 lazy val httpRecorder =
   project
@@ -813,7 +780,7 @@ lazy val httpRecorder =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, metricsJVM, controlJVM, finagle, jdbc)
+    .dependsOn(codec.jvm, metrics.jvm, control.jvm, finagle, jdbc)
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)
@@ -826,9 +793,6 @@ lazy val json =
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log)
-
-lazy val jsonJVM = json.jvm
-lazy val jsonJS  = json.js
 
 lazy val benchmark =
   project
@@ -872,7 +836,7 @@ lazy val benchmark =
       // publishing .tgz
       // publishPackArchiveTgz
     )
-    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, httpCodeGen, finagle, netty, grpc, ulidJVM)
+    .dependsOn(msgpack.jvm, json.jvm, metrics.jvm, launcher, httpCodeGen, finagle, netty, grpc, ulid.jvm)
 
 lazy val fluentd =
   project
@@ -891,7 +855,7 @@ lazy val fluentd =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, diJVM)
+    .dependsOn(codec.jvm, di.jvm)
 
 def sqlRefLib = { scalaVersion: String =>
   if (scalaVersion.startsWith("2.13")) {
@@ -925,7 +889,7 @@ lazy val parquet =
         "org.apache.parquet" % "parquet-avro" % PARQUET_VERSION % Test
       )
     )
-    .dependsOn(codecJVM, sql)
+    .dependsOn(codec.jvm, sql)
 
 lazy val sql =
   project
@@ -944,7 +908,7 @@ lazy val sql =
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       ) ++ sqlRefLib(scalaVersion.value)
     )
-    .dependsOn(msgpackJVM, surfaceJVM, config, launcher)
+    .dependsOn(msgpack.jvm, surface.jvm, config, launcher)
 
 lazy val rxHtml =
   crossProject(JVMPlatform, JSPlatform)
@@ -970,9 +934,6 @@ lazy val rxHtml =
     )
     .dependsOn(log, rx, surface)
 
-lazy val rxHtmlJVM = rxHtml.jvm
-lazy val rxHtmlJS  = rxHtml.js
-
 lazy val widgetJS =
   project
     .enablePlugins(ScalaJSPlugin) // , ScalaJSBundlerPlugin)
@@ -987,7 +948,7 @@ lazy val widgetJS =
       // useYarn := true
       //      npmDependencies in Test += "node" -> "12.14.1"
     )
-    .dependsOn(logJS, rxHtmlJS)
+    .dependsOn(log.js, rxHtml.js)
 
 lazy val examples =
   project
@@ -1002,10 +963,10 @@ lazy val examples =
       )
     )
     .dependsOn(
-      codecJVM,
+      codec.jvm,
       config,
-      diJVM,
-      diMacrosJVM,
+      di.jvm,
+      diMacros.jvm,
       launcher,
       jmx,
       jdbc,
@@ -1024,4 +985,4 @@ lazy val dottyTest =
       scalaVersion       := SCALA_3,
       crossScalaVersions := List(SCALA_3)
     )
-    .dependsOn(logJVM, surfaceJVM, diJVM, codecJVM)
+    .dependsOn(log.jvm, surface.jvm, di.jvm, codec.jvm)
