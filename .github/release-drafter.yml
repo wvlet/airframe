@@ -14,6 +14,7 @@ categories:
   - title: '⛓  Dependency Updates'
     label:
       - 'library-update'
+      - 'test-library-upadte'
       - 'sbt-plugin-update'
       - 'dependencies'
   - title: '🛠  Internal Updates'
