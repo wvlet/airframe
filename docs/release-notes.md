@@ -6,6 +6,12 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.10.3
+
+This version upgrades to Scala 3.2.1 for Scala 2.13.10 compatibility through TASTy reader.
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v22.10.3)
+
 ## 22.10.2
 
 [Release notes](https://github.com/wvlet/airframe/releases/tag/v22.10.2)
