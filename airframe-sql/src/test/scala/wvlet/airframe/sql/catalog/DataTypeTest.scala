@@ -76,6 +76,8 @@ class DataTypeTest extends AirSpec {
     parse("array<array<string>>", ArrayType(ArrayType(StringType)))
     parse("map(string,long)", MapType(StringType, LongType))
     parse("map(string,array(string))", MapType(StringType, ArrayType(StringType)))
+    parse("map<string,long>", MapType(StringType, LongType))
+    parse("map<string,array<string>>", MapType(StringType, ArrayType(StringType)))
   }
 
   test("parse row types") {
