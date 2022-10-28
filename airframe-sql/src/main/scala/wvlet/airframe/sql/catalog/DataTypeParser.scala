@@ -86,7 +86,11 @@ object DataTypeParser extends RegexParsers with LogSupport {
   private def arrayType: Parser[DataType.ArrayType] =
     "array" ~ "(" ~ dataType ~ ")" ^^ { case _ ~ _ ~ x ~ _ =>
       ArrayType(x)
-    }
+    } |
+      "array" ~ "<" ~ dataType ~ ">" ^^ { case _ ~ _ ~ x ~ _ =>
+        ArrayType(x)
+      }
+
   private def mapType: Parser[DataType.MapType] =
     "map" ~ "(" ~ dataType ~ "," ~ dataType ~ ")" ^^ { case _ ~ _ ~ k ~ _ ~ v ~ _ =>
       MapType(k, v)
