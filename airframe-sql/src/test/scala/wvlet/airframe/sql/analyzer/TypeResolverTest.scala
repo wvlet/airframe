@@ -261,6 +261,22 @@ class TypeResolverTest extends AirSpec {
       )
     }
 
+    test("join with on condition for aliased columns") {
+      val p = analyze("select id, a.name from A a join B b on a.id = b.id")
+      p.outputAttributes shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
+        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+      )
+    }
+
+    test("join with on condition for qualified columns") {
+      val p = analyze("select id, default.A.name from default.A join default.B on default.A.id = default.B.id")
+      p.outputAttributes shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
+        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+      )
+    }
+
     test("join with different column names") {
       val p = analyze("select pid, name from A join (select id pid from B) on A.id = B.pid")
       p.outputAttributes shouldBe List(
