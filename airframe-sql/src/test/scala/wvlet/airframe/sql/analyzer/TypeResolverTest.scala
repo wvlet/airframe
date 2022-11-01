@@ -239,6 +239,23 @@ class TypeResolverTest extends AirSpec {
     }
   }
 
+  test("resolve alias") {
+    test("rename table") {
+      val p = analyze("select a.id from A a")
+      p.outputAttributes shouldBe List(
+        ra1.withQualifier("a")
+      )
+    }
+
+    test("rename table and select *") {
+      val p = analyze("select * from A a")
+      p.outputAttributes shouldBe List(
+        ra1.withQualifier("a"),
+        ra2.withQualifier("a")
+      )
+    }
+  }
+
   test("resolve join attributes") {
     test("join with USING") {
       val p = analyze("select id, A.name from A join B using(id)")
@@ -257,11 +274,10 @@ class TypeResolverTest extends AirSpec {
     }
 
     test("join with on condition for aliased columns") {
-      warn(s"----------")
       val p = analyze("select id, a.name from A a join B b on a.id = b.id")
       p.outputAttributes shouldBe List(
-        ra1,
-        ra2
+        ra1.withQualifier("a"),
+        ra2.withQualifier("a")
       )
     }
 

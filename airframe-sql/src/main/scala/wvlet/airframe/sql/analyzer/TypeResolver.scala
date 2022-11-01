@@ -244,8 +244,8 @@ object TypeResolver extends LogSupport {
     * @param inputAttributes
     * @return
     */
-  def findMatchInInputAttributes(expr: Expression, inputAttributes: Seq[Attribute]): List[Expression] = {
-    debug(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
+  private def findMatchInInputAttributes(expr: Expression, inputAttributes: Seq[Attribute]): List[Expression] = {
+    trace(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
     def lookup(name: String): List[Attribute] = {
       QName(name) match {
         case QName(Seq(t1, c1)) =>

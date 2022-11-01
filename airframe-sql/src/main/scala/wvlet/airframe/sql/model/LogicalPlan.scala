@@ -250,8 +250,9 @@ object LogicalPlan {
 
     override def inputAttributes: Seq[Attribute] = child.inputAttributes
     override def outputAttributes: Seq[Attribute] = {
-
-      child.outputAttributes
+      child.outputAttributes.map { a =>
+        a.withQualifier(alias.value)
+      }
     }
   }
 

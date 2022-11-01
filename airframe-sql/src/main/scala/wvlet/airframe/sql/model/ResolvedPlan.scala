@@ -59,10 +59,12 @@ case class ResolvedAttribute(
   }
 
   override def toString = {
-    (sourceTable, sourceColumn) match {
-      case (Some(t), Some(c)) if c.name == name =>
+    (qualifier, sourceTable, sourceColumn) match {
+      case (Some(q), Some(t), Some(c)) =>
+        s"${q}.${name}:${dataType} <- ${t.name}.${c.name}"
+      case (None, Some(t), Some(c)) if c.name == name =>
         s"${t.name}.${name}:${dataType}"
-      case (Some(t), Some(c)) =>
+      case (None, Some(t), Some(c)) =>
         s"${name}:${dataType} <- ${t.name}.${c.name}"
       case _ =>
         s"${name}:${dataType}"
