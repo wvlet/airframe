@@ -59,7 +59,10 @@ case class ResolvedAttribute(
 
   def relationName: Option[String] = qualifier.orElse(sourceTable.map(_.name))
 
-  def hasMatch(tableName: String, columnName: String): Boolean = {
+  /**
+    * Returns true if this resolved attribute matches with a given table name and colum name
+    */
+  def matchesWith(tableName: String, columnName: String): Boolean = {
     relationName match {
       case Some(tbl) =>
         tbl == tableName && columnName == name
