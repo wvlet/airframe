@@ -13,14 +13,14 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
-import wvlet.airframe.sql.model.Expression.{And, Cast, Eq, FunctionCall, GroupingKey, LongLiteral, SingleColumn}
+import wvlet.airframe.sql.model.Expression._
 import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project}
-import wvlet.airframe.sql.model.{Expression, LogicalPlan, LogicalPlanPrinter, ResolvedAttribute}
+import wvlet.airframe.sql.model.{Expression, LogicalPlan, ResolvedAttribute}
 import wvlet.airframe.sql.parser.SQLParser
+import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
 
 class TypeResolverTest extends AirSpec {

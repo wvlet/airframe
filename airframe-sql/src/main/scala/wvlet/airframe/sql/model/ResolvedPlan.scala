@@ -14,8 +14,7 @@
 package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.analyzer.QuerySignatureConfig
-import wvlet.airframe.sql.catalog.Catalog
-import wvlet.airframe.sql.catalog.DataType
+import wvlet.airframe.sql.catalog.{Catalog, DataType}
 import wvlet.airframe.sql.model.LogicalPlan.Relation
 
 /**

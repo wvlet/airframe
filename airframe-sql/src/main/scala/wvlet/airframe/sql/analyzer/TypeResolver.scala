@@ -15,17 +15,7 @@ package wvlet.airframe.sql.analyzer
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.{PlanRewriter, Rule}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{
-  Aggregate,
-  AliasedRelation,
-  Filter,
-  Join,
-  Project,
-  Query,
-  Relation,
-  TableRef,
-  Union
-}
+import wvlet.airframe.sql.model.LogicalPlan._
 import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
