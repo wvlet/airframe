@@ -248,9 +248,8 @@ object LogicalPlan {
       extends UnaryRelation {
     override def sig(config: QuerySignatureConfig): String = child.sig(config)
 
-    override def inputAttributes: Seq[Attribute]  = child.inputAttributes
+    override def inputAttributes: Seq[Attribute] = child.inputAttributes
     override def outputAttributes: Seq[Attribute] = {
-
 
       child.outputAttributes
     }
