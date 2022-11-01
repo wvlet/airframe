@@ -29,7 +29,7 @@ case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn]) ex
   override def inputAttributes: Seq[Attribute] = Seq.empty
   override def outputAttributes: Seq[Attribute] = {
     columns.map { col =>
-      ResolvedAttribute(col.name, col.dataType, Some(table), Some(col))
+      ResolvedAttribute(col.name, col.dataType, None, Some(table), Some(col))
     }
   }
   override def sig(config: QuerySignatureConfig): String = {
@@ -43,9 +43,12 @@ case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn]) ex
   override lazy val resolved = true
 }
 
+case class Alias(name: String, resolvedAttribute: ResolvedAttribute)
+
 case class ResolvedAttribute(
     name: String,
     dataType: DataType,
+    qualifier: Option[String],
     sourceTable: Option[Catalog.Table],
     sourceColumn: Option[Catalog.TableColumn]
 ) extends Attribute {
@@ -67,6 +70,10 @@ case class ResolvedAttribute(
     // s"${sourceTable.map(t => s"${t.name}.${name}").getOrElse(name)}:${dataType}"
   }
   override lazy val resolved = true
+
+  override def withQualifier(newQualifier: String): Attribute = {
+    this.copy(qualifier = Some(newQualifier))
+  }
 }
 
 /**

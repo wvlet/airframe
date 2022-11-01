@@ -82,29 +82,25 @@ class TypeResolverTest extends AirSpec {
     resolvedPlan
   }
 
+  private val ra1 = ResolvedAttribute("id", DataType.LongType, None, Some(tableA), Some(a1))
+  private val ra2 = ResolvedAttribute("name", DataType.StringType, None, Some(tableA), Some(a2))
+  private val rb1 = ResolvedAttribute("id", DataType.LongType, None, Some(tableB), Some(b1))
+  private val rb2 = ResolvedAttribute("name", DataType.StringType, None, Some(tableB), Some(b2))
+
   test("resolveTableRef") {
     test("resolve all columns") {
       val p = analyzeSingle("select * from A", TypeResolver.resolveTableRef)
-      p.inputAttributes shouldBe Seq(
-        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
-        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
-      )
+      p.inputAttributes shouldBe Seq(ra1, ra2)
     }
 
     test("resolve the right table") {
       val p = analyzeSingle("select * from B", TypeResolver.resolveTableRef)
-      p.inputAttributes shouldBe Seq(
-        ResolvedAttribute("id", DataType.LongType, Some(tableB), Some(b1)),
-        ResolvedAttribute("name", DataType.StringType, Some(tableB), Some(b2))
-      )
+      p.inputAttributes shouldBe Seq(rb1, rb2)
     }
 
     test("resolve database.table name format") {
       val p = analyzeSingle("select * from default.A", TypeResolver.resolveTableRef)
-      p.inputAttributes shouldBe Seq(
-        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
-        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
-      )
+      p.inputAttributes shouldBe Seq(ra1, ra2)
     }
   }
 
@@ -112,14 +108,11 @@ class TypeResolverTest extends AirSpec {
 
     test("resolve a filter") {
       val p = analyze(s"select * from A where id = 1")
-      p.inputAttributes shouldBe Seq(
-        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
-        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
-      )
+      p.inputAttributes shouldBe Seq(ra1, ra2)
       p.children.headOption shouldBe defined
       p.children.head.expressions shouldBe List(
         Expression.Eq(
-          ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
+          ra1,
           Expression.LongLiteral(1)
         )
       )
@@ -129,8 +122,8 @@ class TypeResolverTest extends AirSpec {
       val p = analyze(s"select A.id id_a, B.id id_b from A, B where A.id = 1 and B.id = 2")
       p match {
         case Project(Filter(_, And(Eq(a, LongLiteral(1)), Eq(b, LongLiteral(2)))), _) =>
-          a shouldBe ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1))
-          b shouldBe ResolvedAttribute("id", DataType.LongType, Some(tableB), Some(b1))
+          a shouldBe ra1
+          b shouldBe rb1
         case _ => fail(s"unexpected plan:\n${p.pp}")
       }
     }
@@ -156,7 +149,7 @@ class TypeResolverTest extends AirSpec {
         case Aggregate(
               _,
               _,
-              List(GroupingKey(ResolvedAttribute("id", DataType.LongType, Some(`tableA`), Some(`a1`)))),
+              List(GroupingKey(ra1)),
               _
             ) =>
 
@@ -171,7 +164,7 @@ class TypeResolverTest extends AirSpec {
         case Aggregate(
               _,
               _,
-              List(GroupingKey(ResolvedAttribute("id", DataType.LongType, Some(`tableA`), Some(`a1`)))),
+              List(GroupingKey(ra1)),
               _
             ) =>
         case _ =>
@@ -186,8 +179,8 @@ class TypeResolverTest extends AirSpec {
               _,
               _,
               List(
-                GroupingKey(ResolvedAttribute("id", DataType.LongType, Some(`tableA`), Some(`a1`))),
-                GroupingKey(ResolvedAttribute("name", DataType.StringType, Some(`tableA`), Some(`a2`)))
+                GroupingKey(ra1),
+                GroupingKey(ra2)
               ),
               _
             ) =>
@@ -204,7 +197,7 @@ class TypeResolverTest extends AirSpec {
               _,
               List(
                 GroupingKey(
-                  ResolvedAttribute("xxx", DataType.LongType, Some(`tableA`), Some(`a1`))
+                  ResolvedAttribute("xxx", DataType.LongType, None, Some(`tableA`), Some(`a1`))
                 )
               ),
               _
@@ -218,20 +211,22 @@ class TypeResolverTest extends AirSpec {
   test("resolve CTE (WITH statement) queries") {
     test("parse WITH statement") {
       val p = analyze("with q1 as (select id from A) select id from q1")
-      p.outputAttributes.toList shouldBe List(ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)))
+      p.outputAttributes.toList shouldBe List(ResolvedAttribute("id", DataType.LongType, None, Some(tableA), Some(a1)))
     }
 
     test("parse multiple WITH sub queries") {
       val p = analyze("with q1 as (select id, name from A), q2 as (select name from q1) select * from q2")
-      p.outputAttributes.toList shouldBe List(ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2)))
+      p.outputAttributes.toList shouldBe List(
+        ResolvedAttribute("name", DataType.StringType, None, Some(tableA), Some(a2))
+      )
     }
 
     test("parse WITH statement with column aliases") {
       val p = analyze("with q1(p1, p2) as (select id, name from A) select * from q1")
       p.outputAttributes.toList shouldBe List(
         // The output should use aliases from the source columns
-        ResolvedAttribute("p1", DataType.LongType, Some(tableA), Some(a1)),
-        ResolvedAttribute("p2", DataType.StringType, Some(tableA), Some(a2))
+        ResolvedAttribute("p1", DataType.LongType, None, Some(tableA), Some(a1)),
+        ResolvedAttribute("p2", DataType.StringType, None, Some(tableA), Some(a2))
       )
     }
 
@@ -248,40 +243,41 @@ class TypeResolverTest extends AirSpec {
     test("join with USING") {
       val p = analyze("select id, A.name from A join B using(id)")
       p.outputAttributes shouldBe List(
-        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
-        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+        ra1,
+        ra2
       )
     }
 
     test("join with on") {
       val p = analyze("select id, A.name from A join B on A.id = B.id")
       p.outputAttributes shouldBe List(
-        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
-        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+        ra1,
+        ra2
       )
     }
 
     test("join with on condition for aliased columns") {
+      warn(s"----------")
       val p = analyze("select id, a.name from A a join B b on a.id = b.id")
       p.outputAttributes shouldBe List(
-        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
-        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+        ra1,
+        ra2
       )
     }
 
     test("join with on condition for qualified columns") {
       val p = analyze("select id, default.A.name from default.A join default.B on default.A.id = default.B.id")
       p.outputAttributes shouldBe List(
-        ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1)),
-        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+        ra1,
+        ra2
       )
     }
 
     test("join with different column names") {
       val p = analyze("select pid, name from A join (select id pid from B) on A.id = B.pid")
       p.outputAttributes shouldBe List(
-        ResolvedAttribute("pid", DataType.LongType, Some(tableB), Some(b1)),
-        ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
+        ResolvedAttribute("pid", DataType.LongType, None, Some(tableB), Some(b1)),
+        ResolvedAttribute("name", DataType.StringType, None, Some(tableA), Some(a2))
       )
     }
 
@@ -304,13 +300,10 @@ class TypeResolverTest extends AirSpec {
       e.collectExpressions { case r: ResolvedAttribute => true }
     }
 
-    val r1 = ResolvedAttribute("id", DataType.LongType, Some(tableA), Some(a1))
-    val r2 = ResolvedAttribute("name", DataType.StringType, Some(tableA), Some(a2))
-
     test("simple function") {
       val fns   = analyzeAndCollectFunctions("select max(id) from A")
       val attrs = fns.flatMap(collectResolvedInputArgs)
-      attrs shouldBe List(r1)
+      attrs shouldBe List(ra1)
     }
 
     test("function args with cast") {
@@ -320,8 +313,8 @@ class TypeResolverTest extends AirSpec {
               f @ FunctionCall("max", _, _, _, _),
               c @ Cast(_, "double", _)
             ) =>
-          collectResolvedInputArgs(f) shouldBe List(r1)
-          collectResolvedInputArgs(c) shouldBe List(r1)
+          collectResolvedInputArgs(f) shouldBe List(ra1)
+          collectResolvedInputArgs(c) shouldBe List(ra1)
         case other =>
           fail(s"Unexpected functions: ${other}")
       }
@@ -329,7 +322,7 @@ class TypeResolverTest extends AirSpec {
 
     test("aggregation query") {
       val fns = analyzeAndCollectFunctions("select id, max(name) from A group by id")
-      fns.flatMap(collectResolvedInputArgs) shouldBe List(r2)
+      fns.flatMap(collectResolvedInputArgs) shouldBe List(ra2)
     }
   }
 }

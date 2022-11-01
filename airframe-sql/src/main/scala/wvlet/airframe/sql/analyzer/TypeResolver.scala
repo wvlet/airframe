@@ -15,7 +15,17 @@ package wvlet.airframe.sql.analyzer
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.{PlanRewriter, Rule}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Join, Project, Query, Relation, Union}
+import wvlet.airframe.sql.model.LogicalPlan.{
+  Aggregate,
+  AliasedRelation,
+  Filter,
+  Join,
+  Project,
+  Query,
+  Relation,
+  TableRef,
+  Union
+}
 import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
@@ -28,6 +38,7 @@ object TypeResolver extends LogSupport {
     // First resolve all input table types
     // CTE Table Refs must be resolved before resolving aggregation indexes
     TypeResolver.resolveCTETableRef _ ::
+      TypeResolver.resolveAliases _ ::
       TypeResolver.resolveAggregationIndexes _ ::
       TypeResolver.resolveAggregationKeys _ ::
       TypeResolver.resolveTableRef _ ::
@@ -49,6 +60,12 @@ object TypeResolver extends LogSupport {
     resolvedPlan
   }
 
+  /**
+    * An entry point of TypeResolver for transforming a Relation to Relation
+    * @param analyzerContext
+    * @param plan
+    * @return
+    */
   def resolveRelation(analyzerContext: AnalyzerContext, plan: LogicalPlan): Relation = {
     val resolvedPlan = resolve(analyzerContext, plan)
     resolvedPlan match {
@@ -71,7 +88,7 @@ object TypeResolver extends LogSupport {
         case GroupingKey(LongLiteral(i)) if i <= selectItems.length =>
           // Use a simpler form of attributes
           val keyItem = selectItems(i.toInt - 1) match {
-            case SingleColumn(expr, alias) =>
+            case SingleColumn(expr, _, _) =>
               expr
             case other =>
               other
@@ -94,6 +111,10 @@ object TypeResolver extends LogSupport {
       val inputAttributes      = resolvedChild.outputAttributes
       val resolvedGroupingKeys = groupingKeys.map(x => GroupingKey(resolveExpression(x.child, inputAttributes)))
       Aggregate(resolvedChild, selectItems, resolvedGroupingKeys, having)
+  }
+
+  def resolveAliases(context: AnalyzerContext): PlanRewriter = { case plan =>
+    plan
   }
 
   /**
@@ -185,12 +206,18 @@ object TypeResolver extends LogSupport {
       case a: AllColumns =>
         // TODO check (prefix).* to resolve attributes
         resolvedColumns ++= inputAttributes
-      case SingleColumn(expr, alias) =>
+      case SingleColumn(expr, alias, _) =>
         resolveExpression(expr, inputAttributes) match {
           case r: ResolvedAttribute if alias.isEmpty =>
             resolvedColumns += r
           case r: ResolvedAttribute if alias.nonEmpty =>
-            resolvedColumns += ResolvedAttribute(alias.get.sqlExpr, r.dataType, r.sourceTable, r.sourceColumn)
+            resolvedColumns += ResolvedAttribute(
+              alias.get.sqlExpr,
+              r.dataType,
+              r.qualifier,
+              r.sourceTable,
+              r.sourceColumn
+            )
           case expr =>
             resolvedColumns += SingleColumn(expr, alias)
         }
@@ -203,9 +230,9 @@ object TypeResolver extends LogSupport {
 
   def resolveAttribute(attribute: Attribute): Attribute = {
     attribute match {
-      case SingleColumn(r: ResolvedAttribute, None) =>
+      case SingleColumn(r: ResolvedAttribute, None, _) =>
         r
-      case SingleColumn(r: ResolvedAttribute, Some(alias: Identifier)) =>
+      case SingleColumn(r: ResolvedAttribute, Some(alias: Identifier), _) =>
         r.withAlias(alias.value)
       case other => other
     }
@@ -218,17 +245,20 @@ object TypeResolver extends LogSupport {
     * @return
     */
   def findMatchInInputAttributes(expr: Expression, inputAttributes: Seq[Attribute]): List[Expression] = {
+    debug(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
     def lookup(name: String): List[Attribute] = {
       QName(name) match {
         case QName(Seq(t1, c1)) =>
           val attrs = inputAttributes.collect {
-            case a @ ResolvedAttribute(c, _, Some(t), _) if t.name == t1 && c == c1 => a
-            case a @ ResolvedAttribute(c, _, None, _) if c == c1                    => a
+            case a @ ResolvedAttribute(c, _, None, Some(t), _) if t.name == t1 && c == c1 => a
+            // table name alias
+            case a @ ResolvedAttribute(c, _, Some(ref), _, _) if ref == t1 && c == c1 => a
+            case a @ ResolvedAttribute(c, _, _, None, _) if c == c1                   => a
           }
           attrs.toList
         case QName(Seq(c1)) =>
           val attrs = inputAttributes.collect {
-            case a @ ResolvedAttribute(c, _, _, _) if c == c1 => a
+            case a @ ResolvedAttribute(c, _, _, _, _) if c == c1 => a
           }
           attrs.toList
         case _ =>
