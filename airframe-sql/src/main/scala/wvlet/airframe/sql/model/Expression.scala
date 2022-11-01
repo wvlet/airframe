@@ -226,18 +226,14 @@ object Expression {
     override def children: Seq[Expression] = keys
   }
 
-  case class AllColumns(prefix: Option[QName]) extends Attribute {
-    override def name: String              = prefix.map(x => s"${x}.*").getOrElse("*")
-    override def children: Seq[Expression] = prefix.toSeq
+  case class AllColumns(qualifier: Option[QName]) extends Attribute {
+    override def name: String              = qualifier.map(x => s"${x}.*").getOrElse("*")
+    override def children: Seq[Expression] = qualifier.toSeq
     override def toString                  = s"AllColumns(${name})"
     override lazy val resolved             = false
 
     override def withQualifier(newQualifier: String): Attribute = {
-      prefix match {
-        case Some(p) if p.fullName.startsWith(newQualifier) => this
-        case Some(p)                                        => AllColumns(Some(QName(s"${newQualifier}.${p.fullName}")))
-        case _                                              => AllColumns(Some(QName(newQualifier)))
-      }
+      this.copy(qualifier = Some(QName(newQualifier)))
     }
   }
   case class SingleColumn(expr: Expression, alias: Option[Expression], qualifier: Option[String] = None)

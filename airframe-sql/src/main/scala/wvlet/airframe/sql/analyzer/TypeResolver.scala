@@ -28,7 +28,6 @@ object TypeResolver extends LogSupport {
     // First resolve all input table types
     // CTE Table Refs must be resolved before resolving aggregation indexes
     TypeResolver.resolveCTETableRef _ ::
-      TypeResolver.resolveAliases _ ::
       TypeResolver.resolveAggregationIndexes _ ::
       TypeResolver.resolveAggregationKeys _ ::
       TypeResolver.resolveTableRef _ ::
@@ -102,10 +101,6 @@ object TypeResolver extends LogSupport {
       val resolvedGroupingKeys =
         groupingKeys.map(x => GroupingKey(resolveExpression(context, x.child, inputAttributes)))
       Aggregate(resolvedChild, selectItems, resolvedGroupingKeys, having)
-  }
-
-  def resolveAliases(context: AnalyzerContext): PlanRewriter = { case plan =>
-    plan
   }
 
   /**
