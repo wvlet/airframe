@@ -58,6 +58,17 @@ case class ResolvedAttribute(
     this.copy(name = newName)
   }
 
+  def relationName: Option[String] = qualifier.orElse(sourceTable.map(_.name))
+
+  def hasMatch(tableName: String, columnName: String): Boolean = {
+    relationName match {
+      case Some(tbl) =>
+        tbl == tableName && columnName == name
+      case None =>
+        columnName == name
+    }
+  }
+
   override def toString = {
     (qualifier, sourceTable, sourceColumn) match {
       case (Some(q), Some(t), Some(c)) =>

@@ -90,18 +90,25 @@ class TypeResolverTest extends AirSpec {
   test("resolveTableRef") {
     test("resolve all columns") {
       val p = analyzeSingle("select * from A", TypeResolver.resolveTableRef)
-      p.inputAttributes shouldBe Seq(ra1, ra2)
+      p.inputAttributes shouldBe List(ra1, ra2)
     }
 
     test("resolve the right table") {
       val p = analyzeSingle("select * from B", TypeResolver.resolveTableRef)
-      p.inputAttributes shouldBe Seq(rb1, rb2)
+      p.inputAttributes shouldBe List(rb1, rb2)
     }
 
     test("resolve database.table name format") {
       val p = analyzeSingle("select * from default.A", TypeResolver.resolveTableRef)
-      p.inputAttributes shouldBe Seq(ra1, ra2)
+      p.inputAttributes shouldBe List(ra1, ra2)
     }
+  }
+
+  test("resolve full table name") {
+    val p = analyze("select default.A.id from A")
+    p.outputAttributes shouldBe List(
+      ra1
+    )
   }
 
   test("resolveRelation") {
@@ -239,7 +246,7 @@ class TypeResolverTest extends AirSpec {
     }
   }
 
-  test("resolve alias") {
+  test("resolve aliases") {
     test("rename table") {
       val p = analyze("select a.id from A a")
       p.outputAttributes shouldBe List(
