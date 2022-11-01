@@ -232,7 +232,13 @@ object Expression {
     override def toString                  = s"AllColumns(${name})"
     override lazy val resolved             = false
 
-    override def withQualifier(newQualifier: String): Attribute = ???
+    override def withQualifier(newQualifier: String): Attribute = {
+      prefix match {
+        case Some(p) if p.fullName.startsWith(newQualifier) => this
+        case Some(p)                                        => AllColumns(Some(QName(s"${newQualifier}.${p.fullName}")))
+        case _                                              => AllColumns(Some(QName(newQualifier)))
+      }
+    }
   }
   case class SingleColumn(expr: Expression, alias: Option[Expression], qualifier: Option[String] = None)
       extends Attribute {
