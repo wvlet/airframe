@@ -348,7 +348,7 @@ object SQLGenerator extends LogSupport {
         printExpression(k)
       case ParenthesizedExpression(expr) =>
         s"(${printExpression(expr)})"
-      case SingleColumn(ex, alias) =>
+      case SingleColumn(ex, alias, _) =>
         val col = printExpression(ex)
         alias
           .map(x => s"${col} AS ${printExpression(x)}")

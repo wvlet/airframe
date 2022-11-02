@@ -14,8 +14,7 @@
 package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.analyzer.QuerySignatureConfig
-import wvlet.airframe.sql.catalog.Catalog
-import wvlet.airframe.sql.catalog.DataType
+import wvlet.airframe.sql.catalog.{Catalog, DataType}
 import wvlet.airframe.sql.model.LogicalPlan.Relation
 
 /**
@@ -29,7 +28,7 @@ case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn]) ex
   override def inputAttributes: Seq[Attribute] = Seq.empty
   override def outputAttributes: Seq[Attribute] = {
     columns.map { col =>
-      ResolvedAttribute(col.name, col.dataType, Some(table), Some(col))
+      ResolvedAttribute(col.name, col.dataType, None, Some(table), Some(col))
     }
   }
   override def sig(config: QuerySignatureConfig): String = {
@@ -43,9 +42,12 @@ case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn]) ex
   override lazy val resolved = true
 }
 
+case class Alias(name: String, resolvedAttribute: ResolvedAttribute)
+
 case class ResolvedAttribute(
     name: String,
     dataType: DataType,
+    qualifier: Option[String],
     sourceTable: Option[Catalog.Table],
     sourceColumn: Option[Catalog.TableColumn]
 ) extends Attribute {
@@ -55,11 +57,27 @@ case class ResolvedAttribute(
     this.copy(name = newName)
   }
 
+  def relationName: Option[String] = qualifier.orElse(sourceTable.map(_.name))
+
+  /**
+    * Returns true if this resolved attribute matches with a given table name and colum name
+    */
+  def matchesWith(tableName: String, columnName: String): Boolean = {
+    relationName match {
+      case Some(tbl) =>
+        tbl == tableName && columnName == name
+      case None =>
+        columnName == name
+    }
+  }
+
   override def toString = {
-    (sourceTable, sourceColumn) match {
-      case (Some(t), Some(c)) if c.name == name =>
+    (qualifier, sourceTable, sourceColumn) match {
+      case (Some(q), Some(t), Some(c)) =>
+        s"${q}.${name}:${dataType} <- ${t.name}.${c.name}"
+      case (None, Some(t), Some(c)) if c.name == name =>
         s"${t.name}.${name}:${dataType}"
-      case (Some(t), Some(c)) =>
+      case (None, Some(t), Some(c)) =>
         s"${name}:${dataType} <- ${t.name}.${c.name}"
       case _ =>
         s"${name}:${dataType}"
@@ -67,6 +85,10 @@ case class ResolvedAttribute(
     // s"${sourceTable.map(t => s"${t.name}.${name}").getOrElse(name)}:${dataType}"
   }
   override lazy val resolved = true
+
+  override def withQualifier(newQualifier: String): Attribute = {
+    this.copy(qualifier = Some(newQualifier))
+  }
 }
 
 /**

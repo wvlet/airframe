@@ -14,6 +14,8 @@
 
 package wvlet.airframe.sql.model
 
+import wvlet.airframe.sql.model.Expression.QName
+
 import java.util.Locale
 
 /**
@@ -114,6 +116,13 @@ trait BinaryExpression extends Expression {
   */
 trait Attribute extends LeafExpression {
   def name: String
+
+  /**
+    * Set an alias for the table or subquery.
+    * @param newQualifier
+    * @return
+    */
+  def withQualifier(newQualifier: String): Attribute
 }
 
 object Expression {
@@ -156,6 +165,8 @@ object Expression {
   case class UnresolvedAttribute(name: String) extends Attribute {
     override def toString      = s"UnresolvedAttribute(${name})"
     override lazy val resolved = false
+
+    override def withQualifier(newQualifier: String): Attribute = this
   }
 
   sealed trait Identifier extends LeafExpression {
@@ -215,16 +226,25 @@ object Expression {
     override def children: Seq[Expression] = keys
   }
 
-  case class AllColumns(prefix: Option[QName]) extends Attribute {
-    override def name: String              = prefix.map(x => s"${x}.*").getOrElse("*")
-    override def children: Seq[Expression] = prefix.toSeq
+  case class AllColumns(qualifier: Option[QName]) extends Attribute {
+    override def name: String              = qualifier.map(x => s"${x}.*").getOrElse("*")
+    override def children: Seq[Expression] = qualifier.toSeq
     override def toString                  = s"AllColumns(${name})"
     override lazy val resolved             = false
+
+    override def withQualifier(newQualifier: String): Attribute = {
+      this.copy(qualifier = Some(QName(newQualifier)))
+    }
   }
-  case class SingleColumn(expr: Expression, alias: Option[Expression]) extends Attribute {
+  case class SingleColumn(expr: Expression, alias: Option[Expression], qualifier: Option[String] = None)
+      extends Attribute {
     override def name: String              = alias.getOrElse(expr).toString
     override def children: Seq[Expression] = Seq(expr) ++ alias.toSeq
     override def toString = s"SingleColumn(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
+
+    override def withQualifier(newQualifier: String): Attribute = {
+      this.copy(qualifier = Some(newQualifier))
+    }
   }
 
   case class SortItem(sortKey: Expression, ordering: Option[SortOrdering] = None, nullOrdering: Option[NullOrdering])

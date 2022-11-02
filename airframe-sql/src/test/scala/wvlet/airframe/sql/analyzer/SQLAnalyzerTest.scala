@@ -51,8 +51,8 @@ class SQLAnalyzerTest extends AirSpec {
     val plan = SQLAnalyzer.analyze("select id, name from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("id", DataType.LongType, Some(tbl1), Some(tbl1.column("id"))),
-      ResolvedAttribute("name", DataType.StringType, Some(tbl1), Some(tbl1.column("name")))
+      ResolvedAttribute("id", DataType.LongType, None, Some(tbl1), Some(tbl1.column("id"))),
+      ResolvedAttribute("name", DataType.StringType, None, Some(tbl1), Some(tbl1.column("name")))
     )
   }
 
@@ -60,9 +60,9 @@ class SQLAnalyzerTest extends AirSpec {
     val plan = SQLAnalyzer.analyze("select * from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("id", DataType.LongType, Some(tbl1), Some(tbl1.column("id"))),
-      ResolvedAttribute("name", DataType.StringType, Some(tbl1), Some(tbl1.column("name"))),
-      ResolvedAttribute("address", DataType.StringType, Some(tbl1), Some(tbl1.column("address")))
+      ResolvedAttribute("id", DataType.LongType, None, Some(tbl1), Some(tbl1.column("id"))),
+      ResolvedAttribute("name", DataType.StringType, None, Some(tbl1), Some(tbl1.column("name"))),
+      ResolvedAttribute("address", DataType.StringType, None, Some(tbl1), Some(tbl1.column("address")))
     )
   }
 
@@ -70,7 +70,7 @@ class SQLAnalyzerTest extends AirSpec {
     val plan = SQLAnalyzer.analyze("select id as person_id from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("person_id", DataType.LongType, Some(tbl1), Some(tbl1.column("id")))
+      ResolvedAttribute("person_id", DataType.LongType, None, Some(tbl1), Some(tbl1.column("id")))
     )
   }
 
@@ -82,10 +82,10 @@ class SQLAnalyzerTest extends AirSpec {
     )
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("id", DataType.LongType, Some(tbl1), Some(tbl1.column("id"))),
-      ResolvedAttribute("name", DataType.StringType, Some(tbl1), Some(tbl1.column("name"))),
-      ResolvedAttribute("address", DataType.StringType, Some(tbl1), Some(tbl1.column("address"))),
-      ResolvedAttribute("person_id", DataType.StringType, Some(tbl2), Some(tbl2.column("phone")))
+      ResolvedAttribute("id", DataType.LongType, None, Some(tbl1), Some(tbl1.column("id"))),
+      ResolvedAttribute("name", DataType.StringType, None, Some(tbl1), Some(tbl1.column("name"))),
+      ResolvedAttribute("address", DataType.StringType, None, Some(tbl1), Some(tbl1.column("address"))),
+      ResolvedAttribute("person_id", DataType.StringType, None, Some(tbl2), Some(tbl2.column("phone")))
     )
   }
 

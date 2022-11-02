@@ -248,8 +248,12 @@ object LogicalPlan {
       extends UnaryRelation {
     override def sig(config: QuerySignatureConfig): String = child.sig(config)
 
-    override def inputAttributes: Seq[Attribute]  = child.inputAttributes
-    override def outputAttributes: Seq[Attribute] = child.outputAttributes
+    override def inputAttributes: Seq[Attribute] = child.inputAttributes
+    override def outputAttributes: Seq[Attribute] = {
+      child.outputAttributes.map { a =>
+        a.withQualifier(alias.value)
+      }
+    }
   }
 
   case class Values(rows: Seq[Expression]) extends Relation with LeafPlan {
