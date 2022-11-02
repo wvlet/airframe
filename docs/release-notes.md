@@ -6,6 +6,14 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 22.11.0
+
+This version upgrades slf4j to 2.0.x series. No application code change is necessary, but 
+if you are using an slf4j binder, the binder needs to be upgraded to the version that support slf4j-api 2.0.x. 
+See [slf4j FAQ](https://www.slf4j.org/faq.html#changesInVersion200) for more details.
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v22.11.0)
+
 ## 22.10.4
 
 [Release notes](https://github.com/wvlet/airframe/releases/tag/v22.10.4)
