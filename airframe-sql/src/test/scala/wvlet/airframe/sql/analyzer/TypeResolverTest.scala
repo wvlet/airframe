@@ -263,6 +263,14 @@ class TypeResolverTest extends AirSpec {
     }
   }
 
+  test("error on resolving join keys") {
+    val e = intercept[SQLError] {
+      analyze("select id, a.name from A a join B b on a.pid = b.id")
+    }
+    e.errorCode shouldBe SQLErrorCode.ColumnNotFound
+    e.message.contains("UnresolvedAttribute") shouldBe false
+  }
+
   test("resolve join attributes") {
     test("join with USING") {
       val p = analyze("select id, A.name from A join B using(id)")
