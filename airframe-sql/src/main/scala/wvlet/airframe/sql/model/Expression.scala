@@ -163,8 +163,9 @@ object Expression {
   }
 
   case class UnresolvedAttribute(name: String) extends Attribute {
-    override def toString      = s"UnresolvedAttribute(${name})"
-    override lazy val resolved = false
+    override def toString        = s"UnresolvedAttribute(${name})"
+    override def sqlExpr: String = name
+    override lazy val resolved   = false
 
     override def withQualifier(newQualifier: String): Attribute = this
   }
