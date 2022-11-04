@@ -16,6 +16,7 @@ package wvlet.airframe.http.client
 import wvlet.airframe.http.{Http, RPCMethod}
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
+import wvlet.airframe.http.HttpHeader.MediaType
 
 object RPCHttpClientTest extends AirSpec {
 
@@ -32,7 +33,7 @@ object RPCHttpClientTest extends AirSpec {
 
     // Test message
     debug(response)
-    response.headers.get("Content-Type") shouldBe Some("application/msgpack")
+    response.headers.get("Content-Type") shouldBe Some(MediaType.ApplicationJson)
   }
 
 }
