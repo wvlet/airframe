@@ -44,7 +44,7 @@ trait ChannelConfig {
 case class HttpClientConfig(
     backend: HttpClientBackend = compat.defaultHttpClientBackend,
     requestFilter: Request => Request = identity,
-    rpcEncoding: RPCEncoding = RPCEncoding.MsgPack,
+    rpcEncoding: RPCEncoding = RPCEncoding.JSON,
     retryContext: RetryContext = compat.defaultHttpClientBackend.defaultRequestRetryer,
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
     // The default circuit breaker, which will be open after 5 consecutive failures
