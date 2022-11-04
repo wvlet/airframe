@@ -15,6 +15,7 @@ package wvlet.airframe.http
 
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
+import wvlet.airframe.http.HttpHeader.MediaType
 import wvlet.airframe.msgpack.spi.Value
 
 import java.nio.charset.StandardCharsets
@@ -28,9 +29,9 @@ sealed trait RPCEncoding {
 }
 
 object RPCEncoding {
-  // Note on why we use appliaction/msgpack https://github.com/msgpack/msgpack/issues/194
-  val ApplicationMsgPack = "application/msgpack"
-  val ApplicationJson    = "application/json"
+  // Note on why we use application/msgpack https://github.com/msgpack/msgpack/issues/194
+  val ApplicationMsgPack = MediaType.ApplicationMsgPack
+  val ApplicationJson    = MediaType.ApplicationJson
 
   case object MsgPack extends RPCEncoding {
     override def applicationType: String = ApplicationMsgPack
