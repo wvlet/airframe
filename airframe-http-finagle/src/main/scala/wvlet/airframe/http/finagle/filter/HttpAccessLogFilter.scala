@@ -18,7 +18,7 @@ import com.twitter.util.Future
 import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter._
 import wvlet.airframe.http.finagle.{FinagleBackend, FinagleServer}
-import wvlet.airframe.http.internal.{HttpLogs, RPCCallContext}
+import wvlet.airframe.http.internal.{HttpLogger, RPCCallContext}
 import wvlet.airframe.http.{HttpAccessLogWriter, HttpBackend, HttpHeader, HttpStatus}
 
 import java.util.concurrent.TimeUnit
@@ -205,7 +205,7 @@ object HttpAccessLogFilter {
     FinagleBackend.getThreadLocal(HttpBackend.TLS_KEY_RPC).foreach { (x: Any) =>
       x match {
         case c @ RPCCallContext(rpcInterface, methodSurface, args) =>
-          m ++= HttpLogs.rpcLogs(c)
+          m ++= HttpLogger.rpcLogs(c)
         case _ =>
       }
     }

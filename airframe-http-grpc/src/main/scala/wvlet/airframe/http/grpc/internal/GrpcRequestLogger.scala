@@ -17,7 +17,7 @@ import io.grpc.{Attributes, Metadata, MethodDescriptor}
 import wvlet.airframe.http.BuildInfo
 import wvlet.airframe.http.HttpAccessLogWriter
 import wvlet.airframe.http.grpc.GrpcContext
-import wvlet.airframe.http.internal.{HttpLogs, RPCCallContext}
+import wvlet.airframe.http.internal.{HttpLogger, RPCCallContext}
 import wvlet.log.LogSupport
 
 import scala.collection.immutable.ListMap
@@ -38,16 +38,16 @@ class DefaultGrpcRequestLogger(serverName: String, logWriter: HttpAccessLogWrite
 
   }
   def logError(e: Throwable, grpcContext: Option[GrpcContext], rpcCallContext: RPCCallContext): Unit = {
-    val m = logDefault(grpcContext, rpcCallContext) ++ HttpLogs.errorLogs(e)
+    val m = logDefault(grpcContext, rpcCallContext) ++ HttpLogger.errorLogs(e)
     logWriter.write(m)
   }
 
   private def logDefault(grpcContext: Option[GrpcContext], rpcCallContext: RPCCallContext): Map[String, Any] = {
     val m = {
-      HttpLogs.unixTimeLogs() ++
+      HttpLogger.unixTimeLogs() ++
         ListMap("server_name" -> serverName, "x_airframe_server_version" -> BuildInfo.version) ++
         GrpcRequestLogger.logGrpcContext(grpcContext) ++
-        HttpLogs.rpcLogs(rpcCallContext)
+        HttpLogger.rpcLogs(rpcCallContext)
     }
     m
   }

@@ -13,9 +13,7 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.http.HttpBackend.DefaultBackend
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.client.SyncClient
 
 import java.time.{Instant, ZoneId, ZoneOffset}
 import java.time.format.DateTimeFormatter

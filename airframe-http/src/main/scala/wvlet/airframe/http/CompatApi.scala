@@ -14,6 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.http.client.HttpClientBackend
+import wvlet.airframe.http.internal.HttpLogWriter
 
 import scala.concurrent.ExecutionContext
 
@@ -26,6 +27,7 @@ trait CompatApi {
   def hostServerAddress: ServerAddress
   def defaultHttpClientBackend: HttpClientBackend
   def defaultExecutionContext: ExecutionContext
+  def defaultHttpLogWriter: HttpLogWriter
 
   def currentRPCContext: RPCContext
   def attachRPCContext(context: RPCContext): RPCContext

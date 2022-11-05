@@ -14,7 +14,7 @@
 package wvlet.airframe.http.client
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.RPCMethod
-import wvlet.airframe.http.internal.{HttpLogs, RPCCallContext}
+import wvlet.airframe.http.internal.{HttpLogger, RPCCallContext}
 import wvlet.log.LogSupport
 
 import java.util.concurrent.TimeUnit
@@ -26,20 +26,20 @@ class ClientLoggingFilter extends ClientFilter with LogSupport {
     val baseTime = System.currentTimeMillis()
     val start    = System.nanoTime()
     val m        = ListMap.newBuilder[String, Any]
-    m ++= HttpLogs.unixTimeLogs(baseTime)
-    m ++= HttpLogs.commonRequestLogs(req)
+    m ++= HttpLogger.unixTimeLogs(baseTime)
+    m ++= HttpLogger.commonRequestLogs(req)
     try {
       val resp = context.chain(req)
-      m ++= HttpLogs.commonResponseLogs(resp)
+      m ++= HttpLogger.commonResponseLogs(resp)
       context.getProperty("rpc_method") match {
         case Some(rpcMethod: RPCMethod) =>
-          m ++= HttpLogs.rpcMethodLogs(rpcMethod)
+          m ++= HttpLogger.rpcMethodLogs(rpcMethod)
         case _ =>
       }
       resp
     } catch {
       case e: Throwable =>
-        m ++= HttpLogs.errorLogs(e)
+        m ++= HttpLogger.errorLogs(e)
         throw e
     } finally {
       val end           = System.nanoTime()

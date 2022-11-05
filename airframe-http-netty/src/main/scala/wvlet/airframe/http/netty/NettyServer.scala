@@ -26,6 +26,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http._
 import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.internal.HttpLogger
 import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
@@ -38,6 +39,7 @@ case class NettyServerConfig(
     serverPort: Option[Int] = None,
     controllerProvider: ControllerProvider = ControllerProvider.defaultControllerProvider,
     router: Router = Router.empty,
+    httpLogger: HttpLogger = HttpLogger.defaultHttpLogger,
     useEpoll: Boolean = true
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)

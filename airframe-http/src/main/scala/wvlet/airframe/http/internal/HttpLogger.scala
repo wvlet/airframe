@@ -19,14 +19,30 @@ import wvlet.airframe.surface.{Parameter, Surface, TypeName}
 import wvlet.airframe.ulid.ULID
 import wvlet.log.LogTimestampFormatter
 
-import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.ConcurrentHashMap
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.concurrent.ExecutionException
 import scala.util.Try
 
-object HttpLogs {
+case class HttpLoggerConfig(
+    // Additional HTTP headers excluded from logs. Authorization, ProxyAuthorization, Cookie headers will be removed by default
+    excludeHeaders: Set[String] = Set.empty,
+
+
+    fileName: String = "log/http_access.json",
+    maxFiles: Int = 100,
+    maxSize: Long = 100 * 1024 * 1024
+) {
+  def withHttpLogWriter(httpLogWriter: HttpLogWriter): HttpLoggerConfig = this.copy(httpLogWriter = httpLogWriter)
+  def withExcludeHeaders(excludeHeaders: Set[String]): HttpLoggerConfig = this.copy(excludeHeaders = excludeHeaders)
+}
+
+class HttpLogger(config: HttpLoggerConfig) {}
+
+object HttpLogger {
+
+  def defaultHttpLogger = new HttpLogger(HttpLoggerConfig())
 
   def unixTimeLogs(currentTimeMillis: Long = System.currentTimeMillis()): ListMap[String, Any] = {
     // Unix time
@@ -70,10 +86,11 @@ object HttpLogs {
   }
 
   /**
-    * Http headers to be excluded from logging by dfeault
+    * Http headers to be excluded from logging by default
     */
   private val defaultExcludeHeaders: Set[String] = Set(
     HttpHeader.Authorization,
+    HttpHeader.ProxyAuthorization,
     HttpHeader.Cookie
   ).map(_.toLowerCase)
 

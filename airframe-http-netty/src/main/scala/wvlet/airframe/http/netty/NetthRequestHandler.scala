@@ -17,10 +17,11 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http._
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{Http, HttpMethod, HttpStatus}
+import wvlet.airframe.http.{Http, HttpMethod, HttpStatus, ServerAddress}
 import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.log.LogSupport
 
+import java.net.InetSocketAddress
 import scala.jdk.CollectionConverters._
 
 class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Filter)
@@ -46,6 +47,12 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
       case HttpMethod.TRACE   => Http.request(wvlet.airframe.http.HttpMethod.TRACE, msg.uri())
       case HttpMethod.OPTIONS => Http.request(wvlet.airframe.http.HttpMethod.OPTIONS, msg.uri())
       case _                  => ???
+    }
+
+    ctx.channel().remoteAddress() match {
+      case x: InetSocketAddress =>
+        req = req.withRemoteAddress(ServerAddress(s"${x.getAddress}:${x.getPort}"))
+      case _ =>
     }
 
     msg.headers().names().asScala.map { x =>
