@@ -30,8 +30,8 @@ class JSONHttpLogWriter(config: HttpLoggerConfig) extends HttpLogWriter {
   private val asyncLogHandler = new AsyncHandler(
     new LogRotationHandler(
       fileName = config.fileName,
-      maxNumberOfFiles = config.maxFiles,
-      maxSizeInBytes = config.maxSize,
+      maxNumberOfFiles = config.maxNumFiles,
+      maxSizeInBytes = config.maxFileSize,
       formatter = JSONLogFormatter,
       logFileExt = ".json"
     )

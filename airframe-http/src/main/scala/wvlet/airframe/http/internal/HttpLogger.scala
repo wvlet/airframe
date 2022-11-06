@@ -29,14 +29,34 @@ case class HttpLoggerConfig(
     // TODO
     httpLogWriter: HttpLogWriter = null, // Compat.defaultHttpLogWriter,
     // Additional HTTP headers excluded from logs. Authorization, ProxyAuthorization, Cookie headers will be removed by default
-    excludeHeaders: Set[String] = Set.empty,
+    excludeHeaders: Set[String] = HttpLogger.defaultExcludeHeaders,
+    logFilter: Map[String, Any] => Map[String, Any] = identity,
+    //
     fileName: String = "log/http_access.json",
-    maxFiles: Int = 100,
-    maxSize: Long = 100 * 1024 * 1024
+    // The max number of files to preserve in the local disk
+    maxNumFiles: Int = 100,
+    // The max file size for log rotation. The default is 100MB
+    maxFileSize: Long = 100 * 1024 * 1024
 ) {
   def withHttpLogWriter(httpLogWriter: HttpLogWriter): HttpLoggerConfig = this.copy(httpLogWriter = httpLogWriter)
-  def withExcludeHeaders(excludeHeaders: Set[String]): HttpLoggerConfig = this.copy(excludeHeaders = excludeHeaders)
 
+  /**
+    * Add request/response headers to exclude from logging
+    */
+  def addExcludeHeaders(excludeHeaders: Set[String]): HttpLoggerConfig =
+    this.copy(excludeHeaders = this.excludeHeaders ++ excludeHeaders)
+
+  /**
+    * A filter for customizing log contents before write
+    */
+  def withLogFilter(logFilter: Map[String, Any] => Map[String, Any]): HttpLoggerConfig =
+    this.copy(logFilter = logFilter)
+
+  def withMaxNumFiles(maxNumFiles: Int): HttpLoggerConfig  = this.copy(maxNumFiles = maxNumFiles)
+  def withMaxFileSize(maxFileSize: Long): HttpLoggerConfig = this.copy(maxFileSize = maxFileSize)
+
+  def newClientLogger: HttpLogger = ???
+  def newServerLogger: HttpLogger = ???
 }
 
 class HttpLogger(config: HttpLoggerConfig) {}
@@ -89,11 +109,11 @@ object HttpLogger {
   /**
     * Http headers to be excluded from logging by default
     */
-  private val defaultExcludeHeaders: Set[String] = Set(
+  private[http] val defaultExcludeHeaders: Set[String] = Set(
     HttpHeader.Authorization,
     HttpHeader.ProxyAuthorization,
     HttpHeader.Cookie
-  ).map(_.toLowerCase)
+  )
 
   def headerLogs(headerMap: HttpMultiMap): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
