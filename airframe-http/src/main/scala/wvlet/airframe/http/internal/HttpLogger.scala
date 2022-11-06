@@ -31,7 +31,6 @@ case class HttpLoggerConfig(
     // Additional HTTP headers excluded from logs. Authorization, ProxyAuthorization, Cookie headers will be removed by default
     excludeHeaders: Set[String] = HttpLogger.defaultExcludeHeaders,
     logFilter: Map[String, Any] => Map[String, Any] = identity,
-    //
     fileName: String = "log/http_access.json",
     // The max number of files to preserve in the local disk
     maxNumFiles: Int = 100,
@@ -45,6 +44,11 @@ case class HttpLoggerConfig(
     */
   def addExcludeHeaders(excludeHeaders: Set[String]): HttpLoggerConfig =
     this.copy(excludeHeaders = this.excludeHeaders ++ excludeHeaders)
+
+  /**
+    * Set a file name for log-rotation.
+    */
+  def withLogFileName(fileName: String): HttpLoggerConfig = this.copy(fileName = fileName)
 
   /**
     * A filter for customizing log contents before write
@@ -190,11 +194,11 @@ object HttpLogger {
     @tailrec
     def findCause(e: Throwable): Throwable = {
       e match {
-        // InvocationTargetException is not available in Scala.js
-        case i: Exception if i.getClass.getName == "java.lang.reflect.InvocationTargetException" =>
-          findCause(i.getCause)
         case ee: ExecutionException if ee.getCause != null =>
           findCause(ee.getCause)
+        // InvocationTargetException is not available in Scala.js, so use the name based lookup
+        case i: Exception if i.getClass.getName == "java.lang.reflect.InvocationTargetException" =>
+          findCause(i.getCause)
         case _ =>
           e
       }
