@@ -16,7 +16,7 @@ import wvlet.airframe.control.ThreadUtil
 
 import java.net.URLEncoder
 import wvlet.airframe.http.client.{HttpClientBackend, JavaHttpClientBackend, URLConnectionClientBackend}
-import wvlet.airframe.http.internal.LocalRPCContext
+import wvlet.airframe.http.internal.{HttpLogWriter, LocalRPCContext}
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
@@ -64,4 +64,6 @@ object Compat extends CompatApi {
   override def currentRPCContext: RPCContext                     = LocalRPCContext.current
   override def attachRPCContext(context: RPCContext): RPCContext = LocalRPCContext.attach(context)
   override def detachRPCContext(previous: RPCContext): Unit      = LocalRPCContext.detach(previous)
+
+  override def defaultHttpLogWriter: HttpLogWriter = ???
 }

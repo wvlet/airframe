@@ -35,6 +35,7 @@ case class HttpAccessLogConfig(
 )
 
 /**
+  * @deprecated
   */
 trait HttpAccessLogWriter extends AutoCloseable {
   def write(log: Map[String, Any]): Unit
@@ -54,40 +55,8 @@ object HttpAccessLogWriter {
     *
     * @param httpAccessLogConfig
     */
-  class JSONHttpAccessLogWriter(httpAccessLogConfig: HttpAccessLogConfig = HttpAccessLogConfig())
-      extends HttpAccessLogWriter {
-
-    private val mapCodec = MessageCodec.of[Map[String, Any]]
-
-    object JSONLogFormatter extends LogFormatter {
-      override def formatLog(r: LogRecord): String = {
-        val m = r.getMessage
-        m
-      }
-    }
-
-    // Use an async handler to perform logging in a background thread
-    private val asyncLogHandler = new AsyncHandler(
-      new LogRotationHandler(
-        fileName = httpAccessLogConfig.fileName,
-        maxNumberOfFiles = httpAccessLogConfig.maxFiles,
-        maxSizeInBytes = httpAccessLogConfig.maxSize,
-        formatter = JSONLogFormatter,
-        logFileExt = ".json"
-      )
-    )
-
-    override def write(log: Map[String, Any]): Unit = {
-      // Generate one-liner JSON log
-      // TODO: Handle too large log data (e.g., binary data)
-      val json = mapCodec.toJson(log)
-      asyncLogHandler.publish(new java.util.logging.LogRecord(Level.INFO, json))
-    }
-
-    override def close(): Unit = {
-      asyncLogHandler.close()
-    }
-  }
+  @deprecated("Use HttpLogWriter instead", since = "22.11.1")
+  class JSONHttpAccessLogWriter(httpAccessLogConfig: HttpAccessLogConfig = HttpAccessLogConfig()) {}
 
   /**
     * In-memory log writer for testing purpose. Not for production use.

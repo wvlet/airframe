@@ -21,6 +21,9 @@ import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
 
+/**
+  * TODO: Extract this logic into airframe-http
+  */
 class NettyResponseHandler extends ResponseHandler[Request, Response] with LogSupport {
   private def codecFactory = MessageCodecFactory.defaultFactoryForJSON
 

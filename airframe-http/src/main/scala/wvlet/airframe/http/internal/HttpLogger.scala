@@ -26,16 +26,17 @@ import scala.concurrent.ExecutionException
 import scala.util.Try
 
 case class HttpLoggerConfig(
+    // TODO
+    httpLogWriter: HttpLogWriter = null, // Compat.defaultHttpLogWriter,
     // Additional HTTP headers excluded from logs. Authorization, ProxyAuthorization, Cookie headers will be removed by default
     excludeHeaders: Set[String] = Set.empty,
-
-
     fileName: String = "log/http_access.json",
     maxFiles: Int = 100,
     maxSize: Long = 100 * 1024 * 1024
 ) {
   def withHttpLogWriter(httpLogWriter: HttpLogWriter): HttpLoggerConfig = this.copy(httpLogWriter = httpLogWriter)
   def withExcludeHeaders(excludeHeaders: Set[String]): HttpLoggerConfig = this.copy(excludeHeaders = excludeHeaders)
+
 }
 
 class HttpLogger(config: HttpLoggerConfig) {}

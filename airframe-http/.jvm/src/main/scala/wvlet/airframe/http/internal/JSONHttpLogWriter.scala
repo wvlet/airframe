@@ -13,8 +13,38 @@
  */
 package wvlet.airframe.http.internal
 
-class JSONHttpLogWriter() extends HttpLogWriter {
-  override def write(log: Map[String, Any]): Unit = ???
+import wvlet.airframe.codec.MessageCodec
+import wvlet.log.{AsyncHandler, LogFormatter, LogRecord, LogRotationHandler}
 
-  override def close(): Unit = ???
+class JSONHttpLogWriter(config: HttpLoggerConfig) extends HttpLogWriter {
+  private val mapCodec = MessageCodec.of[Map[String, Any]]
+
+  object JSONLogFormatter extends LogFormatter {
+    override def formatLog(r: LogRecord): String = {
+      val m = r.getMessage
+      m
+    }
+  }
+
+  // Use an async handler to perform logging in a background thread
+  private val asyncLogHandler = new AsyncHandler(
+    new LogRotationHandler(
+      fileName = config.fileName,
+      maxNumberOfFiles = config.maxFiles,
+      maxSizeInBytes = config.maxSize,
+      formatter = JSONLogFormatter,
+      logFileExt = ".json"
+    )
+  )
+
+  override def write(log: Map[String, Any]): Unit = {
+    // Generate one-liner JSON log
+    // TODO: Handle too large log data (e.g., binary data)
+    val json = mapCodec.toJson(log)
+    asyncLogHandler.publish(new java.util.logging.LogRecord(java.util.logging.Level.INFO, json))
+  }
+
+  override def close(): Unit = {
+    asyncLogHandler.close()
+  }
 }
