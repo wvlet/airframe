@@ -1,6 +1,6 @@
 ---
 id: airframe-jdbc
-title: airframe-jdbc: JDBC Connection Pool 
+title: "airframe-jdbc: JDBC Connection Pool"
 ---
 
 airframe-jdbc is a reusable JDBC connection pool implementation with Airframe. 

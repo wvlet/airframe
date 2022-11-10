@@ -1,6 +1,6 @@
 ---
 id: airframe-jmx
-title: airframe-jmx: JMX Application Monitor
+title: "airframe-jmx: JMX Application Monitor"
 ---
 
 airframe-jmx enables exposing application information through JMX so that you can check the running state of an application outside JVM. For example, you can

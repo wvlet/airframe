@@ -1,7 +1,7 @@
 ---
 id: airspec
 layout: docs
-title: AirSpec: Testing Framework
+title: "AirSpec: Testing Framework"
 ---
 
 [AirSpec](https://github.com/wvlet/airframe/tree/master/airspec) is a new functional testing framework for Scala and Scala.js.

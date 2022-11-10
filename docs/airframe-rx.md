@@ -1,6 +1,6 @@
 ---
 id: airframe-rx
-title: airframe-rx: ReactiveX interface
+title: "airframe-rx: ReactiveX interface"
 ---
 
 airframe-rx is a lightweight [ReactiveX](http://reactivex.io/) implementation for Scala and Scala.js, which can be used for:

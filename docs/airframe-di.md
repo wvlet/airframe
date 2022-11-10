@@ -1,7 +1,7 @@
 ---
 id: airframe-di
 layout: docs
-title: airframe-di: Dependency Injection
+title: "airframe-di: Dependency Injection"
 ---
 Airframe DI is a dependency-injection library designed for Scala. Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; Instead of manually passing all necessary objects (dependencies) into the constructor argument, DI framework builds the object on behalf of you.
 

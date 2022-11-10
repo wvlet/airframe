@@ -151,7 +151,7 @@ codec.fromJson(json) // Person(2, "Bob")
 
 Mapping between MessagePack and objects can be performed by combining codecs for individual parameter types:
 
-![schema](../img/airframe-codec/schema-on-read.png)
+![schema](/img/airframe-codec/schema-on-read.png)
 
 ### Querying JSON and MessagePack Data 
 
@@ -215,7 +215,7 @@ Mapping from HTTP responses to case classes is handled by [airframe-codec](airfr
 
 ### RPC 
 
-![rpc](../img/airframe-rpc/rpc-overview.png)
+![rpc](/img/airframe-rpc/rpc-overview.png)
 
 
 [Airframe RPC](airframe-rpc.md) is a framework built on top of [airframe-http](airframe-http.md) for using Scala as a unified RPC interface between servers and clients. You can use plain Scala interfaces for building RPC servers and clients, and it provides seamless RPC communication using schema-on-read codec. Not only Scala JVM, Airframe RPC also supports Scala.js.  
@@ -275,7 +275,7 @@ usage: myapp [options]
 
 ### Application Config Flow
 
-![config](../img/immutable_config.png)
+![config](/img/immutable_config.png)
 
 [airframe-config](airframe-config.md) supports YAML-based application configurations and provides 
 immutable config objects that can be injected through DI. Partially overriding configurations is also asupported.

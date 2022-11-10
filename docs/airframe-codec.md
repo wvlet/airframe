@@ -1,7 +1,7 @@
 ---
 id: airframe-codec
 layout: docs
-title: airframe-codec: Schema-On-Read Object Serializer
+title: "airframe-codec: Schema-On-Read Object Serializer"
 ---
 
 airframe-codec is an [MessagePack](https://msgpack.org)-based schema-on-read data serializer for Scala and Scala.js.
@@ -98,7 +98,7 @@ codec.fromJson(json) // Person(2, "Bob")
 
 Mapping between MessagePack and objects can be performed by combining codecs for individual parameter types:
 
-![schema](../img/airframe-codec/schema-on-read.png)
+![schema](/img/airframe-codec/schema-on-read.png)
 
 ## Querying JSON and MessagePack Data 
 

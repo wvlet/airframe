@@ -6,7 +6,7 @@ title: Airframe RPC
 Airframe RPC is a framework for building RPC services by using Scala as a unified interface between
 servers and clients.
 
-![overview](../img/airframe-rpc/rpc-overview.png)
+![overview](/img/airframe-rpc/rpc-overview.png)
 
 **Airframe RPC Features**:
 

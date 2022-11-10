@@ -1,6 +1,6 @@
 ---
 id: airframe-surface
-title: airframe-surface: Object Shape Inspector
+title: "airframe-surface: Object Shape Inspector"
 ---
 
 airframe-surface enables reading type information, such as:

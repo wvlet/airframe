@@ -102,7 +102,7 @@ class Index extends React.Component {
             <Container
                 padding={['bottom', 'top']}
                 background="light"
-                className="threeColumn">
+                className="twoColumn">
                 <div>
                     <img width='200px' src={`${baseUrl}img/logos/airframe-logo-tr.png`} alt="Project Logo"/>
                 </div>
@@ -110,7 +110,7 @@ class Index extends React.Component {
         );
 
         const Features = ({background = 'light'}) => (
-            <Block layout="threeColumn">
+            <Block layout="twoColumn">
                 {[
                     {
                         content: '[Airframe RPC](docs/airframe-rpc) supports seamless integration of server and clients using Scala as RPC interfaces.',

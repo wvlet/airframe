@@ -2138,10 +2138,7 @@ internal changes:
 
 ## 0.74
 
-- Airframe now has its brand logo!
-<p>
-<img src="https://github.com/wvlet/airframe/raw/master/logos/airframe_icon_small.png" alt="logo" width="150px">
-</p>
+- Airframe now has its [brand logo](https://github.com/wvlet/airframe/raw/master/logos/airframe_icon_small.png)!
 
 -  airframe-launcher: Fix sub method command help message [[3b22d74](https://github.com/wvlet/airframe/commit/3b22d74)]
 -  Deprecate in-trait bindInstance[X] ([#317](https://github.com/wvlet/airframe/issues/317)) [[1f15aef](https://github.com/wvlet/airframe/commit/1f15aef)]
