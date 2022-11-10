@@ -6,7 +6,11 @@ module.exports={
   "organizationName": "wvlet",
   "projectName": "airframe",
   "scripts": [
-    "https://buttons.github.io/buttons.js"
+    "https://buttons.github.io/buttons.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"
+  ],
+  "stylesheets": [
+    'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css'
   ],
   "favicon": "img/favicon.ico",
   "customFields": {

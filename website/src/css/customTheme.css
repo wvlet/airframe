@@ -7,3 +7,248 @@
   --ifm-color-primary-darker: #06364D;
   --ifm-color-primary-darkest: #052D40;
 }
+
+@import url('https://fonts.googleapis.com/css?family=Roboto+Mono');
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
+/*
+p {
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+strong {
+    color: #333333;
+    font-weight: 800;
+}
+
+pre {
+    margin-top: 0px;
+    line-height: 1.4em;
+}
+
+.docs #page-content-wrapper section pre {
+    margin-top: 0px;
+}
+
+.docs #page-content-wrapper section pre .hljs {
+    margin-top: 0px;
+    padding: 10px;
+}
+
+.docs #page-content-wrapper section pre {
+    background-color: #121225;
+    color: #cccccc;
+}
+
+.edit-button {
+
+}
+
+.jumbotron {
+    padding-top: 150px;
+    padding-bottom: 20px;
+
+    background-attachment: scroll;
+    background: url("../img/jumbotron_pattern.png") no-repeat center;
+    background-color: #143F56;
+}
+
+.jumbotron h1 {
+    font-size: 32px;
+}
+
+.docs #wrapper {
+    max-width: 1800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.docs #sidebar-wrapper {
+    left: initial;
+}
+
+.icon-wrapper, .text-center, .hidden-xs, #sidebar li, .edit-button {
+    font-family: Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+*/
+
+article p img {
+  display: inline;
+}
+
+.headerTitleWithLogo {
+  font-weight: normal;
+}
+
+.nav-home img {
+  max-width: unset;
+}
+
+.postHeader .postHeaderTitle a {
+  color: #494949;
+}
+
+.imageAlignTop .blockImage {
+  max-width: 350px;
+  vertical-align: center;
+}
+
+.blockContent {
+  text-align: left;
+}
+
+.hero {
+  background-attachment: scroll;
+  background: url(/img/jumbotron_pattern.png) no-repeat center;
+  color: white;
+  background-color: #00394f;
+}
+
+.homeSplashFade h1, .homeSplashFade h2, .homeSplashFade h3, .homeSplashFade .button {
+  color: white;
+}
+
+.homeSplashFade .projectTitle {
+  font-size: 250%;
+}
+
+.homeSplashFade .button {
+  border: 1px solid white;
+}
+
+.mainContainer h1, .mainContainer h2, .mainContainer h3, .mainContainer h4, .mainContainer h5, .mainContainer h6 {
+  color: #332F34;
+}
+
+.mainContainer {
+  /*
+font-family: Georgia, 'goudy old style', 'minion pro', 'bell mt', 'Hiragino Kaku Gothic ProN', serif, "ヒラギノ角ゴ ProN W3", "メイリオ", Meiryo;
+  font-size: 17px;
+       */
+  line-height: 1.4;
+  color: #534F54;
+}
+
+.mainContainer a {
+  color: #1e909f;
+}
+
+table th {
+  font-weight: bold;
+  background: #eef0ee;
+}
+
+td code {
+  background: transparent;
+  padding: unset;
+}
+
+.nav-footer {
+  background: #07405b;
+}
+
+.button {
+  text-transform: unset;
+}
+
+/*
+code, kbd, pre, samp {
+    font-family: 'Roboto Mono', Menlo, Consolas, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, sans-serif;
+}
+
+
+
+.sidebar-nav > li a.active {
+    background-color: #345F76;
+}
+
+table td, table th {
+    font-size: 13px;
+}
+
+*/
+pre .hljs {
+  padding: 10px;
+}
+
+.hljs {
+  padding: 10px;
+  background-color: #333333;
+}
+
+
+.hljs-comment,
+.hljs-quote {
+  color: #f1c2a2;
+}
+
+/* Ocean Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+  color: #d04754;
+}
+
+/* Ocean Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-meta,
+.hljs-link {
+  color: #99b2e8;
+}
+
+.hljs-params {
+  color: #f2b9d9;
+}
+
+/* Ocean Yellow */
+.hljs-subst,
+.hljs-attribute {
+  color: #f1ce88;
+}
+
+/* Ocean Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+  color: #f5b2a8;
+}
+
+/* Ocean Blue */
+.hljs-title,
+.hljs-section {
+  color: #21c5d2;
+}
+
+/* Ocean Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+  color: #c192bd;
+}
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  color: #c8cdd6;
+  padding: 0.5em;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+

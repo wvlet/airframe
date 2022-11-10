@@ -1,6 +1,5 @@
 ---
 id: index
-layout: docs
 title: Overview
 ---
 
