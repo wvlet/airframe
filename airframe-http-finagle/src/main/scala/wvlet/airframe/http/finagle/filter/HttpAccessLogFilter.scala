@@ -129,7 +129,10 @@ case class HttpAccessLogFilter(
 
 object HttpAccessLogFilter {
 
-  def default: HttpAccessLogFilter                        = new HttpAccessLogFilter()
+  def default: HttpAccessLogFilter = new HttpAccessLogFilter()
+  def withCustomExcludeHeader(excludeHeaders: Set[String]): HttpAccessLogFilter = new HttpAccessLogFilter(
+    excludeHeaders = excludeHeaders
+  )
   def traceLoggingFilter: SimpleFilter[Request, Response] = FinagleServer.defaultRequestLogger
 
   type HttpRequestLogger  = Request => Map[String, Any]
@@ -197,7 +200,7 @@ object HttpAccessLogFilter {
     m.result()
   }
 
-  def responseHeaderLogger(response: Response) = headerLogger(response.headerMap, Some("response_"))
+  def responseHeaderLogger(response: Response): Map[String, Any] = headerLogger(response.headerMap, Some("response_"))
 
   def errorLogger(request: Request, e: Throwable): Map[String, Any] = HttpAccessLogWriter.errorLog(e)
   def rpcLogger(request: Request): Map[String, Any] = {
