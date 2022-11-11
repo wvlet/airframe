@@ -329,3 +329,7 @@ object ULID {
   }
 
 }
+
+case class ResourceID(prefix: String, ulid: ULID, delimiter: Char = ':') {
+  override def toString: String = s"$prefix$delimiter$ulid"
+}
