@@ -48,11 +48,6 @@ pre {
     font-size: 32px;
 }
 
-.docs #wrapper {
-    max-width: 1800px;
-    margin-left: auto;
-    margin-right: auto;
-}
 
 .docs #sidebar-wrapper {
     left: initial;
@@ -63,6 +58,12 @@ pre {
 }
 
 */
+
+
+
+.separateOnPageNav .wrapper, .separateOnPageNav .headerWrapper.wrapper {
+   max-width: 1600px;
+}
 
 article p img {
     display: inline;
