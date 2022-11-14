@@ -126,7 +126,7 @@ class ULIDTest extends AirSpec with PropertyCheck {
 
   test("resourceID") {
     val ulid = ULID.of(ULID.MinTime, 0, 0)
-    ResourceID(prefix = "abcde", ulid = ulid).toString shouldBe "abcde:00000000000000000000000000"
-    ResourceID(prefix = "abcde", ulid = ulid, delimiter = '/').toString shouldBe "abcde/00000000000000000000000000"
+    PrefixedULID(prefix = "abcde", ulid = ulid).toString shouldBe "abcde:00000000000000000000000000"
+    PrefixedULID(prefix = "abcde", ulid = ulid, delimiter = '/').toString shouldBe "abcde/00000000000000000000000000"
   }
 }
