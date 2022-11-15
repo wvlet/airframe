@@ -179,8 +179,12 @@ object SQLGenerator extends LogSupport {
           }.mkString(", ")
         s += printRelation(body)
         s.result().mkString(" ")
+      case c: CTERelationRef =>
+        c.name
       case TableRef(t) =>
         printExpression(t)
+      case t: TableScan =>
+        t.table.fullName
       case Limit(in, l) =>
         val s = seqBuilder
         s += printRelation(in, context)
