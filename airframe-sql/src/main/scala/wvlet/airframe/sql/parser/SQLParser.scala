@@ -14,7 +14,7 @@
 package wvlet.airframe.sql.parser
 
 import org.antlr.v4.runtime.{DefaultErrorStrategy, RecognitionException, _}
-import wvlet.airframe.sql.{SQLError, SQLErrorCode}
+import wvlet.airframe.sql.SQLErrorCode
 import wvlet.log.LogSupport
 import wvlet.airframe.sql.model.LogicalPlan
 
@@ -40,7 +40,7 @@ object SQLParser extends LogSupport {
       }
     }
 
-  def parse(sql: String): LogicalPlan = {
+  def parse(sql: String, withNodeLocation: Boolean = true): LogicalPlan = {
     trace(s"parse: ${sql}")
     val parser = new SqlBaseParser(tokenStream(sql))
 
@@ -58,7 +58,7 @@ object SQLParser extends LogSupport {
 
     val ctx = parser.singleStatement()
     trace(ctx.toStringTree(parser))
-    val interpreter = new SQLInterpreter
+    val interpreter = new SQLInterpreter(withNodeLocation)
     interpreter.interpret(ctx)
   }
 

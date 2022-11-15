@@ -49,11 +49,11 @@ object ParquetQueryPlanner extends LogSupport {
       val queryPlan   = ParquetQueryPlan(sql)
 
       logicalPlan match {
-        case Project(input, Seq(AllColumns(None))) =>
+        case Project(input, Seq(AllColumns(None, _)), _) =>
           parseRelation(input, queryPlan).selectAllColumns
-        case Project(input, selectItems) =>
+        case Project(input, selectItems, _) =>
           val columns = selectItems.map {
-            case SingleColumn(id: Identifier, _, _) =>
+            case SingleColumn(id: Identifier, _, _, _) =>
               id.value
             case other =>
               throw new IllegalArgumentException(s"Invalid select item: ${other}")
@@ -66,9 +66,9 @@ object ParquetQueryPlanner extends LogSupport {
 
     private def parseRelation(relation: Relation, currentPlan: ParquetQueryPlan): ParquetQueryPlan = {
       relation match {
-        case TableRef(QName(Seq("_"))) =>
+        case TableRef(QName(Seq("_"), _), _) =>
           currentPlan
-        case Filter(input, expr) =>
+        case Filter(input, expr, _) =>
           val pred = buildCondition(expr)
           parseRelation(input, currentPlan).predicate(pred)
       }
@@ -83,17 +83,17 @@ object ParquetQueryPlanner extends LogSupport {
 
     private def buildCondition(expr: Expression): FilterPredicate = {
       expr match {
-        case ParenthesizedExpression(a) =>
+        case ParenthesizedExpression(a, _) =>
           buildCondition(a)
-        case Not(a) =>
+        case Not(a, _) =>
           FilterApi.not(buildCondition(a))
-        case And(a, b) =>
+        case And(a, b, _) =>
           FilterApi.and(buildCondition(a), buildCondition(b))
-        case Or(a, b) =>
+        case Or(a, b, _) =>
           FilterApi.or(buildCondition(a), buildCondition(b))
         // Parquet's FilterApi requires resolving value type when building operators, so we need to enumerate all possible patterns here
         // Eq
-        case op @ Eq(a: Identifier, l: Literal) =>
+        case op @ Eq(a: Identifier, l: Literal, _) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
               FilterApi.eq(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(l.stringValue))
@@ -112,7 +112,7 @@ object ParquetQueryPlanner extends LogSupport {
             case _ =>
               throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
-        case op @ NotEq(a: Identifier, l: Literal) =>
+        case op @ NotEq(a: Identifier, l: Literal, _) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
               FilterApi.notEq(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(l.stringValue))
@@ -131,7 +131,7 @@ object ParquetQueryPlanner extends LogSupport {
             case _ =>
               throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
-        case op @ LessThan(a: Identifier, l: Literal) =>
+        case op @ LessThan(a: Identifier, l: Literal, _) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
               FilterApi.lt(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(l.stringValue))
@@ -148,7 +148,7 @@ object ParquetQueryPlanner extends LogSupport {
             case _ =>
               throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
-        case op @ LessThanOrEq(a: Identifier, l: Literal) =>
+        case op @ LessThanOrEq(a: Identifier, l: Literal, _) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
               FilterApi.ltEq(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(l.stringValue))
@@ -165,7 +165,7 @@ object ParquetQueryPlanner extends LogSupport {
             case _ =>
               throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
-        case op @ GreaterThan(a: Identifier, l: Literal) =>
+        case op @ GreaterThan(a: Identifier, l: Literal, _) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
               FilterApi.gt(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(l.stringValue))
@@ -182,7 +182,7 @@ object ParquetQueryPlanner extends LogSupport {
             case _ =>
               throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
-        case op @ GreaterThanOrEq(a: Identifier, l: Literal) =>
+        case op @ GreaterThanOrEq(a: Identifier, l: Literal, _) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
               FilterApi.gtEq(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(l.stringValue))
@@ -199,9 +199,11 @@ object ParquetQueryPlanner extends LogSupport {
             case _ =>
               throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
-        case Between(a: Identifier, b, c) =>
-          buildCondition(And(GreaterThanOrEq(a, b), LessThanOrEq(a, c)))
-        case op @ IsNull(a: Identifier) =>
+        case op @ Between(a: Identifier, b, c, _) =>
+          buildCondition(
+            And(GreaterThanOrEq(a, b, op.nodeLocation), LessThanOrEq(a, c, op.nodeLocation), op.nodeLocation)
+          )
+        case op @ IsNull(a: Identifier, _) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
               FilterApi.eq(FilterApi.intColumn(a.value), null.asInstanceOf[java.lang.Integer])
@@ -220,7 +222,7 @@ object ParquetQueryPlanner extends LogSupport {
             case _ =>
               throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
-        case op @ IsNotNull(a: Identifier) =>
+        case op @ IsNotNull(a: Identifier, _) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
               FilterApi.notEq(FilterApi.intColumn(a.value), null.asInstanceOf[java.lang.Integer])

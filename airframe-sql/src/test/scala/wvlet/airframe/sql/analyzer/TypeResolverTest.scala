@@ -18,7 +18,7 @@ import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.model.Expression._
 import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project}
-import wvlet.airframe.sql.model.{Expression, LogicalPlan, ResolvedAttribute}
+import wvlet.airframe.sql.model.{Expression, LogicalPlan, NodeLocation, ResolvedAttribute}
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
@@ -82,10 +82,10 @@ class TypeResolverTest extends AirSpec {
     resolvedPlan
   }
 
-  private val ra1 = ResolvedAttribute("id", DataType.LongType, None, Some(tableA), Some(a1))
-  private val ra2 = ResolvedAttribute("name", DataType.StringType, None, Some(tableA), Some(a2))
-  private val rb1 = ResolvedAttribute("id", DataType.LongType, None, Some(tableB), Some(b1))
-  private val rb2 = ResolvedAttribute("name", DataType.StringType, None, Some(tableB), Some(b2))
+  private val ra1 = ResolvedAttribute("id", DataType.LongType, None, Some(tableA), Some(a1), None)
+  private val ra2 = ResolvedAttribute("name", DataType.StringType, None, Some(tableA), Some(a2), None)
+  private val rb1 = ResolvedAttribute("id", DataType.LongType, None, Some(tableB), Some(b1), None)
+  private val rb2 = ResolvedAttribute("name", DataType.StringType, None, Some(tableB), Some(b2), None)
 
   test("resolveTableRef") {
     test("resolve all columns") {
@@ -120,7 +120,8 @@ class TypeResolverTest extends AirSpec {
       p.children.head.expressions shouldBe List(
         Expression.Eq(
           ra1,
-          Expression.LongLiteral(1)
+          Expression.LongLiteral(1, Some(NodeLocation(1, 28))),
+          Some(NodeLocation(1, 26))
         )
       )
     }
@@ -128,7 +129,7 @@ class TypeResolverTest extends AirSpec {
     test("resolve a filter condition for multiple tables") {
       val p = analyze(s"select A.id id_a, B.id id_b from A, B where A.id = 1 and B.id = 2")
       p match {
-        case Project(Filter(_, And(Eq(a, LongLiteral(1)), Eq(b, LongLiteral(2)))), _) =>
+        case Project(Filter(_, And(Eq(a, LongLiteral(1, _), _), Eq(b, LongLiteral(2, _), _), _), _), _, _) =>
           a shouldBe ra1
           b shouldBe rb1
         case _ => fail(s"unexpected plan:\n${p.pp}")
@@ -156,7 +157,8 @@ class TypeResolverTest extends AirSpec {
         case Aggregate(
               _,
               _,
-              List(GroupingKey(ra1)),
+              List(GroupingKey(ra1, _)),
+              _,
               _
             ) =>
 
@@ -171,8 +173,9 @@ class TypeResolverTest extends AirSpec {
         case Aggregate(
               _,
               _,
-              List(GroupingKey(ra1)),
-              _
+              List(GroupingKey(ra1, None)),
+              _,
+              Some(NodeLocation(1, 1))
             ) =>
         case _ =>
           fail(s"unexpected plan: ${p}")
@@ -186,10 +189,11 @@ class TypeResolverTest extends AirSpec {
               _,
               _,
               List(
-                GroupingKey(ra1),
-                GroupingKey(ra2)
+                GroupingKey(ra1, None),
+                GroupingKey(ra2, None)
               ),
-              _
+              _,
+              Some(NodeLocation(1, 1))
             ) =>
         case _ =>
           fail(s"unexpected plan: ${p}")
@@ -204,10 +208,12 @@ class TypeResolverTest extends AirSpec {
               _,
               List(
                 GroupingKey(
-                  ResolvedAttribute("xxx", DataType.LongType, None, Some(`tableA`), Some(`a1`))
+                  ResolvedAttribute("xxx", DataType.LongType, None, Some(`tableA`), Some(`a1`), None),
+                  None
                 )
               ),
-              _
+              _,
+              Some(NodeLocation(1, 1))
             ) =>
         case _ =>
           fail(s"unexpected plan: ${p}")
@@ -218,13 +224,15 @@ class TypeResolverTest extends AirSpec {
   test("resolve CTE (WITH statement) queries") {
     test("parse WITH statement") {
       val p = analyze("with q1 as (select id from A) select id from q1")
-      p.outputAttributes.toList shouldBe List(ResolvedAttribute("id", DataType.LongType, None, Some(tableA), Some(a1)))
+      p.outputAttributes.toList shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, None, Some(tableA), Some(a1), None)
+      )
     }
 
     test("parse multiple WITH sub queries") {
       val p = analyze("with q1 as (select id, name from A), q2 as (select name from q1) select * from q2")
       p.outputAttributes.toList shouldBe List(
-        ResolvedAttribute("name", DataType.StringType, None, Some(tableA), Some(a2))
+        ResolvedAttribute("name", DataType.StringType, None, Some(tableA), Some(a2), None)
       )
     }
 
@@ -232,8 +240,8 @@ class TypeResolverTest extends AirSpec {
       val p = analyze("with q1(p1, p2) as (select id, name from A) select * from q1")
       p.outputAttributes.toList shouldBe List(
         // The output should use aliases from the source columns
-        ResolvedAttribute("p1", DataType.LongType, None, Some(tableA), Some(a1)),
-        ResolvedAttribute("p2", DataType.StringType, None, Some(tableA), Some(a2))
+        ResolvedAttribute("p1", DataType.LongType, None, Some(tableA), Some(a1), None),
+        ResolvedAttribute("p2", DataType.StringType, None, Some(tableA), Some(a2), None)
       )
     }
 
@@ -307,8 +315,8 @@ class TypeResolverTest extends AirSpec {
     test("join with different column names") {
       val p = analyze("select pid, name from A join (select id pid from B) on A.id = B.pid")
       p.outputAttributes shouldBe List(
-        ResolvedAttribute("pid", DataType.LongType, None, Some(tableB), Some(b1)),
-        ResolvedAttribute("name", DataType.StringType, None, Some(tableA), Some(a2))
+        ResolvedAttribute("pid", DataType.LongType, None, Some(tableB), Some(b1), None),
+        ResolvedAttribute("name", DataType.StringType, None, Some(tableA), Some(a2), None)
       )
     }
 
@@ -341,8 +349,8 @@ class TypeResolverTest extends AirSpec {
       val fns = analyzeAndCollectFunctions("select max(cast(id as double)) from A")
       fns match {
         case List(
-              f @ FunctionCall("max", _, _, _, _),
-              c @ Cast(_, "double", _)
+              f @ FunctionCall("max", _, _, _, _, Some(NodeLocation(1, 8))),
+              c @ Cast(_, "double", _, Some(NodeLocation(1, 12)))
             ) =>
           collectResolvedInputArgs(f) shouldBe List(ra1)
           collectResolvedInputArgs(c) shouldBe List(ra1)

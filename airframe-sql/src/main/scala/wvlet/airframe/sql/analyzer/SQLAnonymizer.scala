@@ -81,13 +81,13 @@ object SQLAnonymizer extends LogSupport {
       // Target: Identifier, Literal, UnresolvedAttribute, Table (QName)
       plan.traverseExpressions {
         case i: Identifier =>
-          m += i -> UnquotedIdentifier(identifierTable.lookup(i.value))
+          m += i -> UnquotedIdentifier(identifierTable.lookup(i.value), i.nodeLocation)
         case s: StringLiteral =>
-          m += s -> StringLiteral(stringLiteralTable.lookup(s.value))
+          m += s -> StringLiteral(stringLiteralTable.lookup(s.value), s.nodeLocation)
         case q: QName =>
-          m += q -> QName(q.parts.map(qnameTable.lookup))
+          m += q -> QName(q.parts.map(qnameTable.lookup), q.nodeLocation)
         case u: UnresolvedAttribute =>
-          val v = UnresolvedAttribute(u.name.split("\\.").toSeq.map(qnameTable.lookup).mkString("."))
+          val v = UnresolvedAttribute(u.name.split("\\.").toSeq.map(qnameTable.lookup).mkString("."), u.nodeLocation)
           m += u -> v
       }
       this

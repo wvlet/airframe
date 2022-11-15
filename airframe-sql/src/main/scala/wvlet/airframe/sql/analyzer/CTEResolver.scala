@@ -25,7 +25,7 @@ import wvlet.log.LogSupport
 object CTEResolver extends LogSupport {
 
   def resolveCTE(analyzerContext: AnalyzerContext, p: LogicalPlan): LogicalPlan = {
-    p.transform { case q @ Query(With(recursive, queryDefs), body) =>
+    p.transform { case q @ Query(w @ With(recursive, queryDefs, _), body, _) =>
       if (recursive) {
         throw SQLErrorCode.UnsupportedSyntax.newException(s"recursive WITH statement is not supported")
       }
@@ -45,16 +45,16 @@ object CTEResolver extends LogSupport {
             }
             // Add a projection for renaming columns
             val selectItems = resolvedQuery.outputAttributes.zip(aliases).map { case (col, alias) =>
-              TypeResolver.resolveAttribute(SingleColumn(col, Some(alias)))
+              TypeResolver.resolveAttribute(SingleColumn(col, Some(alias), None, col.nodeLocation))
             }
-            Project(resolvedQuery, selectItems)
+            Project(resolvedQuery, selectItems, resolvedQuery.nodeLocation)
         }
         currentContext = currentContext.withOuterQuery(x.name.value, cteBody)
         // cteBody already has renaming with projection, no need to propagate column name aliases
-        WithQuery(x.name, cteBody, None)
+        WithQuery(x.name, cteBody, None, q.nodeLocation)
       }
       val newBody = TypeResolver.resolveRelation(currentContext, body)
-      Query(With(recursive, resolvedQueries), newBody)
+      Query(With(recursive, resolvedQueries, w.nodeLocation), newBody, q.nodeLocation)
     }
   }
 }

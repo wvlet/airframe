@@ -28,26 +28,26 @@ class InOutTableFinder {
 
   def process(m: LogicalPlan, context: TableScanContext): Unit = {
     m match {
-      case CreateTableAs(table, _, _, query) =>
+      case CreateTableAs(table, _, _, query, _) =>
         val target = TargetTable(table.sqlExpr)
         g += target
         process(query, context.withOutputTable(target))
-      case InsertInto(table, _, query) =>
+      case InsertInto(table, _, query, _) =>
         val target = TargetTable(table.toString)
         g += target
         process(query, context.withOutputTable(target))
-      case Query(withQuery, body) =>
+      case Query(withQuery, body, _) =>
         for (query <- withQuery.queries) {
           val ref = Alias(query.name.value)
           g += ref
           process(body, context.withOutputTable(ref))
         }
-      case DropTable(table, _) =>
+      case DropTable(table, _, _) =>
         val target = TargetTable(table.toString)
         g += target
-      case RenameTable(from, to) =>
+      case RenameTable(from, to, _) =>
         g += Edge(SourceTable(from.toString), TargetTable(to.toString))
-      case TableRef(name) =>
+      case TableRef(name, _) =>
         val src = SourceTable(name.toString)
         context.target match {
           case Some(x) =>

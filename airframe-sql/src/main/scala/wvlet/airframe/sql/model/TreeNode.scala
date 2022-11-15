@@ -18,4 +18,7 @@ package wvlet.airframe.sql.model
   */
 trait TreeNode[Elem <: TreeNode[Elem]] {
   def children: Seq[Elem]
+  def nodeLocation: Option[NodeLocation]
 }
+
+case class NodeLocation(line: Int, column: Int)
