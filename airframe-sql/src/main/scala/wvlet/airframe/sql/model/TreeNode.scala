@@ -15,7 +15,20 @@
 package wvlet.airframe.sql.model
 
 /**
+  * A base class for LogicalPlan and Expression
   */
 trait TreeNode[Elem <: TreeNode[Elem]] {
   def children: Seq[Elem]
+
+  /**
+    * @return
+    *   the code location in the SQL text if available
+    */
+  def nodeLocation: Option[NodeLocation]
 }
+
+case class NodeLocation(
+    line: Int,
+    // column position in the line (1-origin)
+    column: Int
+)

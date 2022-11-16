@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.sql
 
-import sun.jvm.hotspot.oops.Metadata
 import wvlet.airframe.sql.SQLErrorCode.SQLErrorBuilder
+import wvlet.airframe.sql.model.NodeLocation
 
 /**
   * A common error definition around SQL processing
@@ -28,6 +28,7 @@ case class SQLError(
     errorCode: SQLErrorCode,
     message: String,
     cause: Option[Throwable] = None,
+    location: Option[NodeLocation] = None,
     metadata: Map[String, Any] = Map.empty
 ) extends Exception(
       s"[${errorCode}] ${message}",
@@ -35,25 +36,35 @@ case class SQLError(
     )
 
 sealed abstract class SQLErrorCode(val code: Int) {
-  def newException(message: String): SQLError = SQLErrorBuilder(errorCode = this).newException(message)
-  def newException(message: String, cause: Throwable) =
-    SQLErrorBuilder(errorCode = this).withCause(cause).newException(message)
+  def newException(message: String, nodeLocation: Option[NodeLocation]): SQLError =
+    SQLErrorBuilder(errorCode = this).newException(buildMessage(message, nodeLocation), nodeLocation)
+  def newException(message: String, cause: Throwable, nodeLocation: Option[NodeLocation]): SQLError =
+    SQLErrorBuilder(errorCode = this).withCause(cause).newException(buildMessage(message, nodeLocation), nodeLocation)
 
-  def withCause(e: Throwable): SQLErrorBuilder = SQLErrorBuilder(errorCode = this, cause = Option(e))
-  def withMetadata(metadata: Map[String, Any]) = SQLErrorBuilder(errorCode = this, metadata = metadata)
+  def withCause(e: Throwable): SQLErrorBuilder                  = SQLErrorBuilder(errorCode = this, cause = Option(e))
+  def withMetadata(metadata: Map[String, Any]): SQLErrorBuilder = SQLErrorBuilder(errorCode = this, metadata = metadata)
+
+  private def buildMessage(message: String, nodeLocation: Option[NodeLocation]): String = {
+    nodeLocation match {
+      case Some(l) => s"line ${l.line}:${l.column} ${message}"
+      case None    => message
+    }
+  }
 }
 
 object SQLErrorCode {
   case class SQLErrorBuilder(
       errorCode: SQLErrorCode,
       cause: Option[Throwable] = None,
+      nodeLocation: Option[NodeLocation] = None,
       metadata: Map[String, Any] = Map.empty
   ) {
     def withCause(e: Throwable): SQLErrorBuilder                  = this.copy(cause = Option(e))
     def withMetadata(metadata: Map[String, Any]): SQLErrorBuilder = this.copy(metadata = metadata)
-    def newException(message: String): SQLError                   = SQLError(errorCode, message, cause, metadata)
-    def newException(message: String, cause: Throwable): SQLError =
-      SQLError(errorCode, message, cause = Option(cause), metadata)
+    def newException(message: String, nodeLocation: Option[NodeLocation]): SQLError =
+      SQLError(errorCode, message, cause, nodeLocation, metadata)
+    def newException(message: String, cause: Throwable, nodeLocation: Option[NodeLocation]): SQLError =
+      SQLError(errorCode, message, cause = Option(cause), nodeLocation, metadata)
   }
 
   case object UserError             extends SQLErrorCode(0x0000)

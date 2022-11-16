@@ -39,9 +39,9 @@ object Optimizer extends LogSupport {
     * @return
     */
   def pruneColumns(context: AnalyzerContext): PlanRewriter = {
-    case p @ Project(child, selectItems) =>
+    case p @ Project(child, selectItems, _) =>
       val newContext = context.withAttributes(selectItems)
-      Project(pruneRelationColumns(child, newContext), selectItems)
+      Project(pruneRelationColumns(child, newContext), selectItems, p.nodeLocation)
     case r: Relation =>
       pruneRelationColumns(r, context.withAttributes(r.outputAttributes))
   }
@@ -53,10 +53,10 @@ object Optimizer extends LogSupport {
     */
   def pruneRelationColumns(relation: Relation, context: AnalyzerContext): Relation = {
     relation match {
-      case t @ TableScan(table, columns) if context.parentAttributes.nonEmpty =>
+      case t @ TableScan(table, columns, _) if context.parentAttributes.nonEmpty =>
         val parentAttributes = context.parentAttributes.get
         val accessedColumns  = columns.filter { col => parentAttributes.exists(x => x.name == col.name) }
-        TableScan(table, accessedColumns)
+        TableScan(table, accessedColumns, t.nodeLocation)
       case _ => relation
     }
   }

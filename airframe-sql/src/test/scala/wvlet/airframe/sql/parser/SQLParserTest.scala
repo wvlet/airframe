@@ -29,13 +29,13 @@ class SQLParserTest extends AirSpec {
     */
   protected def roundtrip(q: TestQuery): Unit = {
     debug(s"roundtrip test:\n${q.sql}")
-    val m1        = SQLParser.parse(q.sql)
+    val m1        = SQLParser.parse(q.sql, false)
     val planTree1 = m1.pp
     debug(planTree1)
 
     val printSql = SQLGenerator.print(m1)
     debug(printSql)
-    val m2        = SQLParser.parse(printSql)
+    val m2        = SQLParser.parse(printSql, false)
     val planTree2 = m2.pp
     debug(planTree2)
     try {

@@ -83,7 +83,7 @@ object Catalog {
     def fullName: String                = s"${database.map(db => s"${db}.").getOrElse("")}${name}"
 
     def column(name: String): TableColumn = schema.columns.find(_.name == name).getOrElse {
-      throw SQLErrorCode.ColumnNotFound.newException(s"Column ${name} is not found in ${fullName}")
+      throw SQLErrorCode.ColumnNotFound.newException(s"Column ${name} is not found in ${fullName}", None)
     }
   }
 
@@ -128,7 +128,7 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
       databases.get(name) match {
         case Some(d) => d
         case None =>
-          throw SQLErrorCode.DatabaseNotFound.newException(s"database ${name} is not found")
+          throw SQLErrorCode.DatabaseNotFound.newException(s"database ${name} is not found", None)
       }
     }
   }
@@ -149,7 +149,10 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
             case CreateMode.CREATE_IF_NOT_EXISTS =>
             // ok
             case CreateMode.FAIL_IF_EXISTS =>
-              throw SQLErrorCode.DatabaseAlreadyExists.newException(s"database ${newDatabase.name} already exists")
+              throw SQLErrorCode.DatabaseAlreadyExists.newException(
+                s"database ${newDatabase.name} already exists",
+                None
+              )
           }
         case None =>
           databases += newDatabase.name -> DatabaseHolder(newDatabase)
@@ -179,7 +182,7 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
         case Some(tbl) =>
           tbl
         case None =>
-          throw SQLErrorCode.TableNotFound.newException(s"table ${database}.${table} is not found")
+          throw SQLErrorCode.TableNotFound.newException(s"table ${database}.${table} is not found", None)
       }
     }
   }
@@ -195,7 +198,7 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
 
   override def createTable(table: Catalog.Table, createMode: CreateMode): Unit = {
     val database = table.database.getOrElse {
-      throw SQLErrorCode.InvalidArgument.newException(s"Missing database for create table request: ${table.name}")
+      throw SQLErrorCode.InvalidArgument.newException(s"Missing database for create table request: ${table.name}", None)
     }
     synchronized {
       val d = getDatabaseHolder(database)
@@ -205,7 +208,10 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
             case CreateMode.CREATE_IF_NOT_EXISTS =>
             // ok
             case CreateMode.FAIL_IF_EXISTS =>
-              throw SQLErrorCode.TableAlreadyExists.newException(s"table ${database}.${table.name} already exists")
+              throw SQLErrorCode.TableAlreadyExists.newException(
+                s"table ${database}.${table.name} already exists",
+                None
+              )
           }
         case None =>
           d.tables += table.name -> table

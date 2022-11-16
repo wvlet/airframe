@@ -110,7 +110,7 @@ object DataTypeParser extends RegexParsers with LogSupport {
   def typeArgs: Parser[List[DataType]] = repsep(dataType, ",")
 
   private def parseError(msg: String): SQLError = {
-    SQLErrorCode.InvalidType.newException(s"Failed to parse DataType ${msg}")
+    SQLErrorCode.InvalidType.newException(s"Failed to parse DataType ${msg}", None)
   }
 
   private def parse[A](target: Parser[A], input: String): A = {

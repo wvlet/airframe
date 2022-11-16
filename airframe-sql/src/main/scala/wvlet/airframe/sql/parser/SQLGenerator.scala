@@ -36,14 +36,14 @@ object SQLGenerator extends LogSupport {
 
   def print(m: LogicalPlan): String = {
     m match {
-      case InsertInto(table, aliases, query) =>
+      case InsertInto(table, aliases, query, _) =>
         val b = seqBuilder
         b += "INSERT INTO"
         b += printExpression(table)
         aliases.map { x => b += s"(${x.map(printExpression).mkString(", ")})" }
         b += printRelation(query)
         b.result().mkString(" ")
-      case Delete(table, condOpt) =>
+      case Delete(table, condOpt, _) =>
         val b = seqBuilder
         b += "DELETE FROM"
         b += printExpression(table)
@@ -61,14 +61,14 @@ object SQLGenerator extends LogSupport {
   private def findNonEmpty(in: Relation): Option[Relation] = {
     // Look for FROM clause candidates inside Project/Aggregate/Filter nodes
     in match {
-      case EmptyRelation => None
-      case other         => Some(other)
+      case EmptyRelation(_) => None
+      case other            => Some(other)
     }
   }
 
   private def collectFilterExpression(stack: List[Relation]): Seq[Expression] = {
     // We need to terminate traversal at Project/Aggregate node because these will create another SELECT statement.
-    stack.reverse.collect { case f @ Filter(in, filterExpr) =>
+    stack.reverse.collect { case f @ Filter(in, filterExpr, _) =>
       filterExpr
     }
   }
@@ -76,11 +76,11 @@ object SQLGenerator extends LogSupport {
   private def printSetOperation(s: SetOperation, context: List[Relation]): String = {
     val isDistinct = containsDistinctPlan(context)
     val op = s match {
-      case Union(relations) =>
+      case Union(relations, _) =>
         if (isDistinct) "UNION" else "UNION ALL"
-      case Except(left, right) =>
+      case Except(left, right, _) =>
         if (isDistinct) "EXCEPT" else "EXCEPT ALL"
-      case Intersect(relations) =>
+      case Intersect(relations, _) =>
         if (isDistinct) "INTERSECT" else "INTERSECT ALL"
     }
     s.children.map(printRelation).mkString(s" ${op} ")
@@ -95,7 +95,7 @@ object SQLGenerator extends LogSupport {
 
   private def collectChildFilters(r: Relation): List[Filter] = {
     r match {
-      case f @ Filter(in, _) =>
+      case f @ Filter(in, _, _) =>
         f :: collectChildFilters(in)
       case other =>
         Nil
@@ -126,21 +126,21 @@ object SQLGenerator extends LogSupport {
     }
 
     val filterSet = s match {
-      case Project(_, _) =>
+      case Project(_, _, _) =>
         // Merge parent and child Filters
         collectFilterExpression(context) ++ collectFilterExpression(childFilters)
-      case Aggregate(_, _, _, _) =>
+      case Aggregate(_, _, _, _, _) =>
         // We cannot push down parent Filters
         collectFilterExpression(childFilters)
     }
     if (filterSet.nonEmpty) {
       b += "WHERE"
-      val cond = filterSet.reduce((f1, f2) => And(f1, f2))
+      val cond = filterSet.reduce((f1, f2) => And(f1, f2, None))
       b += printExpression(cond)
     }
 
     s match {
-      case Aggregate(_, _, groupingKeys, having) =>
+      case Aggregate(_, _, groupingKeys, having, _) =>
         b += s"GROUP BY ${groupingKeys.map(printExpression).mkString(", ")}"
         having.map { h =>
           b += "HAVING"
@@ -158,15 +158,15 @@ object SQLGenerator extends LogSupport {
       case s: SetOperation =>
         // Need to pass the context to disginguish union/union all, etc.
         printSetOperation(s, context)
-      case Filter(in, filterExpr) =>
+      case Filter(in, filterExpr, _) =>
         printRelation(in, r :: context)
-      case Distinct(in) =>
+      case Distinct(in, _) =>
         printRelation(in, r :: context)
-      case p @ Project(in, selectItems) =>
+      case p @ Project(in, selectItems, _) =>
         printSelection(p, context)
-      case a @ Aggregate(in, selectItems, groupingKeys, having) =>
+      case a @ Aggregate(in, selectItems, groupingKeys, having, _) =>
         printSelection(a, context)
-      case Query(withQuery, body) =>
+      case Query(withQuery, body, _) =>
         val s = seqBuilder
         s += "WITH"
         if (withQuery.recursive) {
@@ -181,41 +181,41 @@ object SQLGenerator extends LogSupport {
         s.result().mkString(" ")
       case c: CTERelationRef =>
         c.name
-      case TableRef(t) =>
+      case TableRef(t, _) =>
         printExpression(t)
       case t: TableScan =>
         t.table.fullName
-      case Limit(in, l) =>
+      case Limit(in, l, _) =>
         val s = seqBuilder
         s += printRelation(in, context)
         s += s"LIMIT ${l.sqlExpr}"
         s.result().mkString(" ")
-      case Sort(in, orderBy) =>
+      case Sort(in, orderBy, _) =>
         val s = seqBuilder
         s += printRelation(in, context)
         s += "ORDER BY"
         s += orderBy.map(x => printExpression(x)).mkString(", ")
         s.result().mkString(" ")
-      case ParenthesizedRelation(r) =>
+      case ParenthesizedRelation(r, _) =>
         s"(${printRelation(r, context)})"
-      case AliasedRelation(relation, alias, columnNames) =>
+      case AliasedRelation(relation, alias, columnNames, _) =>
         val r = printRelation(relation, context)
         val c = columnNames.map(x => s"(${x.mkString(", ")})").getOrElse("")
         relation match {
-          case TableRef(x)              => s"${r} AS ${alias.sqlExpr}${c}"
-          case ParenthesizedRelation(x) => s"${r} AS ${alias.sqlExpr}${c}"
-          case Unnest(_, _)             => s"${r} AS ${alias.sqlExpr}${c}"
-          case Lateral(_)               => s"${r} AS ${alias.sqlExpr}${c}"
-          case _                        => s"(${r}) AS ${alias.sqlExpr}${c}"
+          case TableRef(x, _)              => s"${r} AS ${alias.sqlExpr}${c}"
+          case ParenthesizedRelation(x, _) => s"${r} AS ${alias.sqlExpr}${c}"
+          case Unnest(_, _, _)             => s"${r} AS ${alias.sqlExpr}${c}"
+          case Lateral(_, _)               => s"${r} AS ${alias.sqlExpr}${c}"
+          case _                           => s"(${r}) AS ${alias.sqlExpr}${c}"
         }
-      case Join(joinType, left, right, cond) =>
+      case Join(joinType, left, right, cond, _) =>
         val l = printRelation(left)
         val r = printRelation(right)
         val c = cond match {
-          case NaturalJoin        => ""
-          case JoinUsing(columns) => s" USING (${columns.map(_.sqlExpr).mkString(", ")})"
-          case JoinOn(expr)       => s" ON ${printExpression(expr)}"
-          case JoinOnEq(keys)     => s" ON ${printExpression(Expression.concatWithEq(keys))}"
+          case NaturalJoin(_)        => ""
+          case JoinUsing(columns, _) => s" USING (${columns.map(_.sqlExpr).mkString(", ")})"
+          case JoinOn(expr, _)       => s" ON ${printExpression(expr)}"
+          case JoinOnEq(keys, _)     => s" ON ${printExpression(Expression.concatWithEq(keys))}"
         }
         joinType match {
           case InnerJoin      => s"${l} JOIN ${r}${c}"
@@ -225,21 +225,21 @@ object SQLGenerator extends LogSupport {
           case CrossJoin      => s"${l} CROSS JOIN ${r}${c}"
           case ImplicitJoin   => s"${l}, ${r}${c}"
         }
-      case Values(exprs) =>
+      case Values(exprs, _) =>
         s"(VALUES ${exprs.map(printExpression _).mkString(", ")})"
-      case Unnest(cols, ord) =>
+      case Unnest(cols, ord, _) =>
         val b = seqBuilder
         b += s"UNNEST (${cols.map(printExpression).mkString(", ")})"
         if (ord) {
           b += "WITH ORDINALITY"
         }
         b.result().mkString(" ")
-      case Lateral(q) =>
+      case Lateral(q, _) =>
         val b = seqBuilder
         b += "LATERAL"
         b += s"(${printRelation(q)})"
         b.result().mkString(" ")
-      case LateralView(in, exprs, tableAlias, columnAliases) =>
+      case LateralView(in, exprs, tableAlias, columnAliases, _) =>
         val b = seqBuilder
         b += printRelation(in)
         b += "LATERAL VIEW explode ("
@@ -255,11 +255,11 @@ object SQLGenerator extends LogSupport {
 
   def printDDL(e: DDL): String = {
     e match {
-      case CreateSchema(name, ifNotExists, propsOpt) =>
+      case CreateSchema(name, ifNotExists, propsOpt, _) =>
         val e = if (ifNotExists) "IF NOT EXISTS " else ""
         val w = propsOpt.map(props => s" WITH (${props.map(printExpression).mkString(", ")})").getOrElse("")
         s"CREATE SCHEMA ${e}${name.sqlExpr}${w}"
-      case DropSchema(name, ifExists, cascade) =>
+      case DropSchema(name, ifExists, cascade, _) =>
         val s = Seq.newBuilder[String]
         s += "DROP SCHEMA"
         if (ifExists) {
@@ -270,19 +270,19 @@ object SQLGenerator extends LogSupport {
           s += "CASCADE"
         }
         s.result().mkString(" ")
-      case RenameSchema(from, to) =>
+      case RenameSchema(from, to, _) =>
         s"ALTER SCHEMA ${from.sqlExpr} RENAME TO ${to.sqlExpr}"
-      case CreateTable(name, ifNotExists, tableElements) =>
-        val e     = if (ifNotExists) " IF NOT EXISTS " else ""
+      case CreateTable(name, ifNotExists, tableElements, _) =>
+        val e     = if (ifNotExists) "IF NOT EXISTS " else ""
         val elems = tableElements.map(printExpression).mkString(", ")
         s"CREATE TABLE ${e}${name} (${elems})"
-      case CreateTableAs(name, ifNotExists, columnAliases, query) =>
-        val e = if (ifNotExists) " IF NOT EXISTS " else ""
+      case CreateTableAs(name, ifNotExists, columnAliases, query, _) =>
+        val e = if (ifNotExists) "IF NOT EXISTS " else ""
         val aliases =
           columnAliases
             .map { x => s"(${x.map(printExpression).mkString(", ")})" }.getOrElse("")
         s"CREATE TABLE ${e}${name.sqlExpr}${aliases} AS ${print(query)}"
-      case DropTable(table, ifExists) =>
+      case DropTable(table, ifExists, _) =>
         val b = Seq.newBuilder[String]
         b += "DROP TABLE"
         if (ifExists) {
@@ -290,14 +290,14 @@ object SQLGenerator extends LogSupport {
         }
         b += printExpression(table)
         b.result().mkString(" ")
-      case RenameTable(from, to) =>
+      case RenameTable(from, to, _) =>
         val b = seqBuilder
         b += "ALTER TABLE"
         b += printExpression(from)
         b += "RENAME TO"
         b += printExpression(to)
         b.result().mkString(" ")
-      case RenameColumn(table, from, to) =>
+      case RenameColumn(table, from, to, _) =>
         val b = seqBuilder
         b += "ALTER TABLE"
         b += printExpression(table)
@@ -306,21 +306,21 @@ object SQLGenerator extends LogSupport {
         b += "TO"
         b += printExpression(to)
         b.result().mkString(" ")
-      case DropColumn(table, col) =>
+      case DropColumn(table, col, _) =>
         val b = seqBuilder
         b += "ALTER TABLE"
         b += printExpression(table)
         b += "DROP COLUMN"
         b += printExpression(col)
         b.result().mkString(" ")
-      case AddColumn(table, colDef) =>
+      case AddColumn(table, colDef, _) =>
         val b = seqBuilder
         b += "ALTER TABLE"
         b += printExpression(table)
         b += "ADD COLUMN"
         b += printExpression(colDef)
         b.result().mkString(" ")
-      case CreateView(name, replace, query) =>
+      case CreateView(name, replace, query, _) =>
         val b = seqBuilder
         b += "CREATE"
         if (replace) {
@@ -331,7 +331,7 @@ object SQLGenerator extends LogSupport {
         b += "AS"
         b += print(query)
         b.result().mkString(" ")
-      case DropView(name, ifExists) =>
+      case DropView(name, ifExists, _) =>
         val b = seqBuilder
         b += "DROP VIEW"
         if (ifExists) {
@@ -348,25 +348,25 @@ object SQLGenerator extends LogSupport {
         i.sqlExpr
       case l: Literal =>
         l.sqlExpr
-      case GroupingKey(k) =>
+      case GroupingKey(k, _) =>
         printExpression(k)
-      case ParenthesizedExpression(expr) =>
+      case ParenthesizedExpression(expr, _) =>
         s"(${printExpression(expr)})"
-      case SingleColumn(ex, alias, _) =>
+      case SingleColumn(ex, alias, _, _) =>
         val col = printExpression(ex)
         alias
           .map(x => s"${col} AS ${printExpression(x)}")
           .getOrElse(col)
-      case AllColumns(prefix) =>
+      case AllColumns(prefix, _) =>
         prefix.map(p => s"${p}.*").getOrElse("*")
       case a: Attribute =>
         a.name
-      case SortItem(key, ordering, nullOrdering) =>
+      case SortItem(key, ordering, nullOrdering, _) =>
         val k  = printExpression(key)
         val o  = ordering.map(x => s" ${x}").getOrElse("")
         val no = nullOrdering.map(x => s" ${x}").getOrElse("")
         s"${k}${o}${no}"
-      case FunctionCall(name, args, distinct, filter, window) =>
+      case FunctionCall(name, args, distinct, filter, window, _) =>
         val argList = args.map(printExpression(_)).mkString(", ")
         val d       = if (distinct) "DISTINCT " else ""
         val wd = window
@@ -385,22 +385,22 @@ object SQLGenerator extends LogSupport {
           }
           .getOrElse("")
         s"${name}(${d}${argList})${wd}"
-      case QName(parts) =>
+      case QName(parts, _) =>
         parts.mkString(".")
-      case Cast(expr, tpe, tryCast) =>
+      case Cast(expr, tpe, tryCast, _) =>
         val cmd = if (tryCast) "TRY_CAST" else "CAST"
         s"${cmd}(${printExpression(expr)} AS ${tpe})"
       case c: ConditionalExpression =>
         printConditionalExpression(c)
-      case ArithmeticBinaryExpr(tpe, left, right) =>
+      case ArithmeticBinaryExpr(tpe, left, right, _) =>
         s"${printExpression(left)} ${tpe.symbol} ${printExpression(right)}"
-      case ArithmeticUnaryExpr(sign, value) =>
+      case ArithmeticUnaryExpr(sign, value, _) =>
         s"${sign.symbol} ${printExpression(value)}"
-      case Exists(subQuery) =>
+      case Exists(subQuery, _) =>
         s"EXISTS(${printExpression(subQuery)})"
-      case SubQueryExpression(query) =>
+      case SubQueryExpression(query, _) =>
         s"(${printRelation(query)})"
-      case CaseExpr(operand, whenClauses, defaultValue) =>
+      case CaseExpr(operand, whenClauses, defaultValue, _) =>
         val s = Seq.newBuilder[String]
         s += "CASE"
         operand.map(x => s += printExpression(x))
@@ -418,20 +418,20 @@ object SQLGenerator extends LogSupport {
         s.result().mkString(" ")
       case w: WindowFrame =>
         w.toString
-      case SchemaProperty(k, v) =>
+      case SchemaProperty(k, v, _) =>
         s"${k.sqlExpr} = ${v.sqlExpr}"
-      case ColumnDef(name, tpe) =>
+      case ColumnDef(name, tpe, _) =>
         s"${printExpression(name)} ${printExpression(tpe)}"
-      case ColumnType(tpe) =>
+      case ColumnType(tpe, _) =>
         tpe
-      case ColumnDefLike(table, includeProperties) =>
+      case ColumnDefLike(table, includeProperties, _) =>
         val inc = if (includeProperties) "INCLUDING" else "EXCLUDING"
         s"LIKE ${printExpression(table)} ${inc} PROPERTIES"
-      case ArrayConstructor(values) =>
+      case ArrayConstructor(values, _) =>
         s"ARRAY[${values.map(printExpression).mkString(", ")}]"
-      case RowConstructor(values) =>
+      case RowConstructor(values, _) =>
         s"(${values.map(printExpression).mkString(", ")})"
-      case Parameter(index) =>
+      case Parameter(index, _) =>
         "?"
       case other => unknown(other)
     }
@@ -439,48 +439,48 @@ object SQLGenerator extends LogSupport {
 
   def printConditionalExpression(c: ConditionalExpression): String = {
     c match {
-      case NoOp => ""
-      case Eq(a, b) =>
+      case NoOp(_) => ""
+      case Eq(a, b, _) =>
         s"${printExpression(a)} = ${printExpression(b)}"
-      case NotEq(a, b) =>
+      case NotEq(a, b, _) =>
         s"${printExpression(a)} <> ${printExpression(b)}"
-      case And(a, b) =>
+      case And(a, b, _) =>
         s"${printExpression(a)} AND ${printExpression(b)}"
-      case Or(a, b) =>
+      case Or(a, b, _) =>
         s"${printExpression(a)} OR ${printExpression(b)}"
-      case Not(e) =>
+      case Not(e, _) =>
         s"NOT ${printExpression(e)}"
-      case LessThan(a, b) =>
+      case LessThan(a, b, _) =>
         s"${printExpression(a)} < ${printExpression(b)}"
-      case LessThanOrEq(a, b) =>
+      case LessThanOrEq(a, b, _) =>
         s"${printExpression(a)} <= ${printExpression(b)}"
-      case GreaterThan(a, b) =>
+      case GreaterThan(a, b, _) =>
         s"${printExpression(a)} > ${printExpression(b)}"
-      case GreaterThanOrEq(a, b) =>
+      case GreaterThanOrEq(a, b, _) =>
         s"${printExpression(a)} >= ${printExpression(b)}"
-      case Between(e, a, b) =>
+      case Between(e, a, b, _) =>
         s"${printExpression(e)} BETWEEN ${printExpression(a)} and ${printExpression(b)}"
-      case IsNull(a) =>
+      case IsNull(a, _) =>
         s"${printExpression(a)} IS NULL"
-      case IsNotNull(a) =>
+      case IsNotNull(a, _) =>
         s"${printExpression(a)} IS NOT NULL"
-      case In(a, list) =>
+      case In(a, list, _) =>
         val in = list.map(x => printExpression(x)).mkString(", ")
         s"${printExpression(a)} IN (${in})"
-      case NotIn(a, list) =>
+      case NotIn(a, list, _) =>
         val in = list.map(x => printExpression(x)).mkString(", ")
         s"${printExpression(a)} NOT IN (${in})"
-      case InSubQuery(a, in) =>
+      case InSubQuery(a, in, _) =>
         s"${printExpression(a)} IN (${printRelation(in)})"
-      case NotInSubQuery(a, in) =>
+      case NotInSubQuery(a, in, _) =>
         s"${printExpression(a)} NOT IN (${printRelation(in)})"
-      case Like(a, e) =>
+      case Like(a, e, _) =>
         s"${printExpression(a)} LIKE ${printExpression(e)}"
-      case NotLike(a, e) =>
+      case NotLike(a, e, _) =>
         s"${printExpression(a)} NOT LIKE ${printExpression(e)}"
-      case DistinctFrom(a, e) =>
+      case DistinctFrom(a, e, _) =>
         s"${printExpression(a)} IS DISTINCT FROM ${printExpression(e)}"
-      case NotDistinctFrom(a, e) =>
+      case NotDistinctFrom(a, e, _) =>
         s"${printExpression(a)} IS NOT DISTINCT FROM ${printExpression(e)}"
       case other => unknown(other)
     }

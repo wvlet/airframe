@@ -24,11 +24,20 @@ import wvlet.airframe.sql.model.LogicalPlan.Relation
   * @param columns
   *   projectec columns
   */
-case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn]) extends Relation with LeafPlan {
+case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn], nodeLocation: Option[NodeLocation])
+    extends Relation
+    with LeafPlan {
   override def inputAttributes: Seq[Attribute] = Seq.empty
   override def outputAttributes: Seq[Attribute] = {
     columns.map { col =>
-      ResolvedAttribute(col.name, col.dataType, None, Some(table), Some(col))
+      ResolvedAttribute(
+        col.name,
+        col.dataType,
+        None,
+        Some(table),
+        Some(col),
+        None // ResolvedAttribute always has no NodeLocation
+      )
     }
   }
   override def sig(config: QuerySignatureConfig): String = {
@@ -49,7 +58,8 @@ case class ResolvedAttribute(
     dataType: DataType,
     qualifier: Option[String],
     sourceTable: Option[Catalog.Table],
-    sourceColumn: Option[Catalog.TableColumn]
+    sourceColumn: Option[Catalog.TableColumn],
+    nodeLocation: Option[NodeLocation]
 ) extends Attribute {
   require(sourceTable.nonEmpty == sourceColumn.nonEmpty, "sourceTable and sourceColumn must be set together")
 
@@ -97,7 +107,9 @@ case class ResolvedAttribute(
   * @param name
   * @param outputColumns
   */
-case class CTERelationRef(name: String, outputColumns: Seq[Attribute]) extends Relation with LeafPlan {
+case class CTERelationRef(name: String, outputColumns: Seq[Attribute], nodeLocation: Option[NodeLocation])
+    extends Relation
+    with LeafPlan {
   override def sig(config: QuerySignatureConfig): String = {
     if (config.embedTableNames)
       name
