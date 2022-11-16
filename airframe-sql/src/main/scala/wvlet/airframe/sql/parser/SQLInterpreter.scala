@@ -227,8 +227,8 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
     val withAggregation = {
       if (ctx.groupBy() == null) {
-        // No aggregation
-        // TODO distinct check
+        // No aggregation in the query
+        // Check the presence of distinct
         val p = Project(inputRelation, selectItem, getLocation(ctx))
         val distinct = Option(ctx.setQuantifier())
           .map(visitSetQuantifier(_).isDistinct)
@@ -280,7 +280,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
               // TODO resolve join types
               Some(
                 Join(ImplicitJoin, l, right, NaturalJoin(l.nodeLocation), l.nodeLocation)
-              ) // TODO nodeLocation is correct?
+              ) // TODO nodeLocation is correct? => Maybe not, but giving a close location is ok for now
           }
         }
       }
@@ -428,15 +428,16 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     val v = expression(ctx.str()).asInstanceOf[StringLiteral].value
 
     if (ctx.DOUBLE_PRECISION() != null) {
-      // TODO
+      // TODO Parse double-type precision properly
       GenericLiteral("DOUBLE", v, getLocation(ctx))
     } else {
       val tpe = ctx.identifier().getText
       tpe.toLowerCase match {
         case "time"      => TimeLiteral(v, getLocation(ctx))
         case "timestamp" => TimestampLiteral(v, getLocation(ctx))
-        case "decimal"   => DecimalLiteral(v, getLocation(ctx))
-        case "char"      => CharLiteral(v, getLocation(ctx))
+        // TODO Parse decimal-type precision properly
+        case "decimal" => DecimalLiteral(v, getLocation(ctx))
+        case "char"    => CharLiteral(v, getLocation(ctx))
         case other =>
           GenericLiteral(tpe, v, getLocation(ctx))
       }

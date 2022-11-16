@@ -16,7 +16,7 @@ package wvlet.airframe.sql.parser
 import org.antlr.v4.runtime.{DefaultErrorStrategy, RecognitionException, _}
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.log.LogSupport
-import wvlet.airframe.sql.model.LogicalPlan
+import wvlet.airframe.sql.model.{LogicalPlan, NodeLocation}
 
 /**
   * SQL -> Token -> ANTLR parzse tree -> LogicalPlan
@@ -32,10 +32,13 @@ object SQLParser extends LogSupport {
           msg: String,
           e: RecognitionException
       ): Unit = {
+        val location = NodeLocation(line, charPositionInLine)
         throw SQLErrorCode.SyntaxError
-          .withMetadata(Map("line" -> line, "pos" -> charPositionInLine)).newException(
-            s"Parse error at line:${line}, pos:${charPositionInLine}. ${msg}",
-            e
+          .withMetadata(Map("line" -> line, "pos" -> charPositionInLine))
+          .newException(
+            s"Parse error at line ${line}:${charPositionInLine}. ${msg}",
+            e,
+            Some(location)
           )
       }
     }
