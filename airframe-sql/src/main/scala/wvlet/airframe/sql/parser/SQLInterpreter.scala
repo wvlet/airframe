@@ -15,6 +15,7 @@ package wvlet.airframe.sql.parser
 
 import org.antlr.v4.runtime.{ParserRuleContext, Token}
 import org.antlr.v4.runtime.tree.TerminalNode
+import wvlet.airframe.sql.SQLErrorCode
 import wvlet.log.LogSupport
 import wvlet.airframe.sql.model._
 import wvlet.airframe.sql.model.LogicalPlan._
@@ -242,7 +243,10 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
         val gb = ctx.groupBy()
         assert(gb != null)
         if (inputRelation.isInstanceOf[EmptyRelation]) {
-          throw new IllegalArgumentException("group by statement requires input relation")
+          throw SQLErrorCode.SyntaxError.newException(
+            "group by statement requires input relation",
+            inputRelation.nodeLocation
+          )
         }
 
         // group by

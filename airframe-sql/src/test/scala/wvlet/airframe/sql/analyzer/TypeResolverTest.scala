@@ -252,6 +252,28 @@ class TypeResolverTest extends AirSpec {
         |SELECT max(id), COUNT(*)
         |FROM X GROUP BY 1""".stripMargin)
     }
+
+    test("fail due to a wrong number of columns") {
+      val e = intercept[SQLError] {
+        val p = analyze("""WITH X(id, name) AS (
+            |  SELECT id FROM A
+            |)
+            |SELECT id, name
+            |FROM X""".stripMargin)
+      }
+      e.message shouldBe "line 1:6 A wrong number of columns 2 is used for WITH statement: X"
+    }
+
+    test("fail to resolve CTE") {
+      val e = intercept[SQLError] {
+        val p = analyze("""WITH X AS (
+            |  SELECT id FROM A
+            |)
+            |SELECT id
+            |FROM Y""".stripMargin)
+      }
+      e.message shouldBe "line 5:6 Table default.Y not found"
+    }
   }
 
   test("resolve aliases") {

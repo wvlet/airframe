@@ -15,6 +15,7 @@ package wvlet.airframe.sql
 
 import sun.jvm.hotspot.oops.Metadata
 import wvlet.airframe.sql.SQLErrorCode.SQLErrorBuilder
+import wvlet.airframe.sql.model.NodeLocation
 
 /**
   * A common error definition around SQL processing
@@ -35,12 +36,20 @@ case class SQLError(
     )
 
 sealed abstract class SQLErrorCode(val code: Int) {
-  def newException(message: String): SQLError = SQLErrorBuilder(errorCode = this).newException(message)
-  def newException(message: String, cause: Throwable) =
-    SQLErrorBuilder(errorCode = this).withCause(cause).newException(message)
+  def newException(message: String, nodeLocation: Option[NodeLocation]): SQLError =
+    SQLErrorBuilder(errorCode = this).newException(buildMessage(message, nodeLocation))
+  def newException(message: String, cause: Throwable, nodeLocation: Option[NodeLocation]): SQLError =
+    SQLErrorBuilder(errorCode = this).withCause(cause).newException(buildMessage(message, nodeLocation))
 
-  def withCause(e: Throwable): SQLErrorBuilder = SQLErrorBuilder(errorCode = this, cause = Option(e))
-  def withMetadata(metadata: Map[String, Any]) = SQLErrorBuilder(errorCode = this, metadata = metadata)
+  def withCause(e: Throwable): SQLErrorBuilder                  = SQLErrorBuilder(errorCode = this, cause = Option(e))
+  def withMetadata(metadata: Map[String, Any]): SQLErrorBuilder = SQLErrorBuilder(errorCode = this, metadata = metadata)
+
+  private def buildMessage(message: String, nodeLocation: Option[NodeLocation]): String = {
+    nodeLocation match {
+      case Some(l) => s"line ${l.line}:${l.column} $message"
+      case None    => message
+    }
+  }
 }
 
 object SQLErrorCode {

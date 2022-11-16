@@ -61,7 +61,7 @@ object TypeResolver extends LogSupport {
       case r: Relation =>
         r
       case other =>
-        throw SQLErrorCode.InvalidArgument.newException(s"${plan} isn't a relation")
+        throw SQLErrorCode.InvalidArgument.newException(s"${plan} isn't a relation", plan.nodeLocation)
     }
   }
 
@@ -130,7 +130,10 @@ object TypeResolver extends LogSupport {
           case Some(cte) =>
             CTERelationRef(qname.fullName, cte.outputAttributes, plan.nodeLocation)
           case None =>
-            throw SQLErrorCode.TableNotFound.newException(s"Table ${context.database}.${qname} not found")
+            throw SQLErrorCode.TableNotFound.newException(
+              s"Table ${context.database}.${qname} not found",
+              plan.nodeLocation
+            )
         }
     }
   }
@@ -143,7 +146,10 @@ object TypeResolver extends LogSupport {
       val resolvedJoinKeys: Seq[Expression] = joinKeys.flatMap { k =>
         findMatchInInputAttributes(context, k, resolvedJoin.inputAttributes) match {
           case Nil =>
-            throw SQLErrorCode.ColumnNotFound.newException(s"join key column: ${k.sqlExpr} is not found")
+            throw SQLErrorCode.ColumnNotFound.newException(
+              s"join key column: ${k.sqlExpr} is not found",
+              k.nodeLocation
+            )
           case other =>
             other
         }
@@ -156,7 +162,10 @@ object TypeResolver extends LogSupport {
       val resolvedJoinKeys: Seq[Expression] = Seq(leftKey, rightKey).flatMap { k =>
         findMatchInInputAttributes(context, k, resolvedJoin.inputAttributes) match {
           case Nil =>
-            throw SQLErrorCode.ColumnNotFound.newException(s"join key column: ${k.sqlExpr} is not found")
+            throw SQLErrorCode.ColumnNotFound.newException(
+              s"join key column: ${k.sqlExpr} is not found",
+              k.nodeLocation
+            )
           case other =>
             other
         }
@@ -281,7 +290,7 @@ object TypeResolver extends LogSupport {
   def resolveExpression(context: AnalyzerContext, expr: Expression, inputAttributes: Seq[Attribute]): Expression = {
     findMatchInInputAttributes(context, expr, inputAttributes) match {
       case lst if lst.length > 1 =>
-        throw SQLErrorCode.SyntaxError.newException(s"${expr.sqlExpr} is ambiguous")
+        throw SQLErrorCode.SyntaxError.newException(s"${expr.sqlExpr} is ambiguous", expr.nodeLocation)
       case lst =>
         lst.headOption.getOrElse(expr)
     }
