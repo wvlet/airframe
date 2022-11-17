@@ -226,17 +226,31 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
       .toList
 
     val withAggregation = {
+      val having = Option(ctx.having).map(expression(_))
+
       if (ctx.groupBy() == null) {
         // No aggregation in the query
         // Check the presence of distinct
-        val p = Project(inputRelation, selectItem, getLocation(ctx))
         val distinct = Option(ctx.setQuantifier())
           .map(visitSetQuantifier(_).isDistinct)
           .getOrElse(false)
-        if (distinct) {
-          Distinct(p, p.nodeLocation)
-        } else {
-          p
+
+        having match {
+          case Some(h) =>
+            // Aggregation without grouping keys
+            if (distinct) {
+              Aggregate(Distinct(inputRelation, getLocation(ctx)), selectItem, List.empty, Some(h), getLocation(ctx))
+            } else {
+              Aggregate(inputRelation, selectItem, List.empty, Some(h), getLocation(ctx))
+            }
+          case None =>
+            // Regular aggregate
+            val p = Project(inputRelation, selectItem, getLocation(ctx))
+            if (distinct) {
+              Distinct(p, p.nodeLocation)
+            } else {
+              p
+            }
         }
       } else {
         // aggregation
@@ -260,7 +274,6 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
             .toList
 
         // having
-        val having = Option(ctx.having).map(expression(_))
         Aggregate(inputRelation, selectItem, groupByKeys, having, getLocation(ctx))
       }
     }

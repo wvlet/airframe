@@ -54,4 +54,13 @@ class SQLGeneratorTest extends AirSpec {
     val sql          = SQLGenerator.print(resolvedPlan)
     sql shouldBe "WITH p AS (SELECT id FROM default.A) SELECT id FROM p"
   }
+
+  test("generate aggregation without grouping keys") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze("select count(1) from A having count(distinct id) > 10", "default", demoCatalog)
+    val sql = SQLGenerator.print(resolvedPlan).toLowerCase
+
+    sql.contains("group by") shouldBe false
+    sql.contains("having count(distinct id) > 10") shouldBe true
+  }
 }
