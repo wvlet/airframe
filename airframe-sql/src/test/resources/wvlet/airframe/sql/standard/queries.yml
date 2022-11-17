@@ -190,3 +190,5 @@
       select count(1) c1
 - sql: |
       select 1 as c1
+- sql: |
+      select count(1) from t having count(distinct id) > 5

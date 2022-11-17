@@ -141,7 +141,9 @@ object SQLGenerator extends LogSupport {
 
     s match {
       case Aggregate(_, _, groupingKeys, having, _) =>
-        b += s"GROUP BY ${groupingKeys.map(printExpression).mkString(", ")}"
+        if (groupingKeys.nonEmpty) {
+          b += s"GROUP BY ${groupingKeys.map(printExpression).mkString(", ")}"
+        }
         having.map { h =>
           b += "HAVING"
           b += printExpression(h)
