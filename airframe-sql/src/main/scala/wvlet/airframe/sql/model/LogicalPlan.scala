@@ -482,8 +482,9 @@ object LogicalPlan {
       val in = relations.map(_.sig(config)).mkString(",")
       s"U(${in})"
     }
-    override def inputAttributes: Seq[Attribute] =
-      relations.head.inputAttributes
+    override def inputAttributes: Seq[Attribute] = {
+      relations.flatMap(_.inputAttributes)
+    }
     override def outputAttributes: Seq[Attribute] =
       relations.head.outputAttributes
   }
