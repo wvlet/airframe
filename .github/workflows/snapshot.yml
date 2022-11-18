@@ -26,6 +26,20 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '11'
+      - name: Get Airframe version
+        run: echo "AIRFRAME_VERSION=$(./scripts/dynver.sh)" >> $GITHUB_ENV
+      - name: Check Airframe version
+        run: echo ${AIRFRAME_VERSION}
+      - name: Post version number to Slack
+        id: slack
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          # wvlet dev-snapshot channel
+          channel-id: 'C04CC79BZ7A'
+          # For posting a simple plain text message
+          slack-message: "Publishing a snapshot version of airframe: ${AIRFRAME_VERSION}"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       - name: Publish snapshots
         env:
           SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
