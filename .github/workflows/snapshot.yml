@@ -37,7 +37,7 @@ jobs:
           # wvlet dev-snapshot channel
           channel-id: 'C04CC79BZ7A'
           # For posting a simple plain text message
-          slack-message: "Publishing a snapshot version: ${AIRFRAME_VERSION}"
+          slack-message: "Publishing a snapshot version of airframe: ${AIRFRAME_VERSION}"
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       - name: Publish snapshots
