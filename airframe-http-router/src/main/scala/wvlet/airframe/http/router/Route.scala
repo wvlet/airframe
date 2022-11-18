@@ -125,9 +125,9 @@ case class ControllerRoute(
       methodSurface.call(controller, methodArgs: _*)
     } catch {
       case e: IllegalArgumentException =>
-        throw new HttpServerException(HttpStatus.BadRequest_400, s"${request} failed: ${e.getMessage}", e)
+        throw RPCStatus.INVALID_REQUEST_U1.newException(s"${request} failed: ${e.getMessage}", e)
       case e: MessageCodecException if e.errorCode == MISSING_PARAMETER =>
-        throw new HttpServerException(HttpStatus.BadRequest_400, e.message, e)
+        throw RPCStatus.INVALID_REQUEST_U1.newException(e.message, e)
     }
   }
 
