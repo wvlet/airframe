@@ -643,4 +643,9 @@ object Expression {
 
   // Aggregation
   case class GroupingKey(child: Expression, nodeLocation: Option[NodeLocation]) extends UnaryExpression
+
+  // Dummy expression to represent UNION column that has multiple input sources
+  case class UnionColumn(inputs: Seq[Expression], nodeLocation: Option[NodeLocation]) extends Expression {
+    override def children: Seq[Expression] = inputs
+  }
 }

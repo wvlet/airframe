@@ -34,7 +34,6 @@ object TypeResolver extends LogSupport {
       TypeResolver.resolveJoinUsing _ ::
       TypeResolver.resolveRegularRelation _ ::
       TypeResolver.resolveColumns _ ::
-      TypeResolver.resolveUnion _ ::
       Nil
   }
 
@@ -179,12 +178,6 @@ object TypeResolver extends LogSupport {
       filter.transformExpressions { case x: Expression => resolveExpression(context, x, filter.inputAttributes) }
     case r: Relation =>
       r.transformExpressions { case x: Expression => resolveExpression(context, x, r.inputAttributes) }
-  }
-
-  def resolveUnion(context: AnalyzerContext): PlanRewriter = {
-    // TODO: merge union columns
-    case u @ Union(rels, _) =>
-      u
   }
 
   def resolveColumns(context: AnalyzerContext): PlanRewriter = { case p @ Project(child, columns, _) =>

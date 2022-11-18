@@ -485,8 +485,16 @@ object LogicalPlan {
     override def inputAttributes: Seq[Attribute] = {
       relations.flatMap(_.inputAttributes)
     }
-    override def outputAttributes: Seq[Attribute] =
-      relations.head.outputAttributes
+    override def outputAttributes: Seq[Attribute] = {
+      relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
+        SingleColumn(
+          UnionColumn(relations.map(_.outputAttributes(i)), output.nodeLocation),
+          None,
+          None,
+          output.nodeLocation
+        )
+      }
+    }
   }
 
   case class Unnest(columns: Seq[Expression], withOrdinality: Boolean, nodeLocation: Option[NodeLocation])

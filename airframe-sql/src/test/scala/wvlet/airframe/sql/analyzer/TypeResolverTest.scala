@@ -145,8 +145,11 @@ class TypeResolverTest extends AirSpec {
 
     test("resolve union") {
       val p = analyze("select * from A union all select * from B")
-      // TODO merging same column names from different tables
-      pending("merge UNION columns")
+      p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
+      p.outputAttributes shouldBe List(
+        SingleColumn(UnionColumn(List(ra1, rb1), None), None, None, None),
+        SingleColumn(UnionColumn(List(ra2, rb2), None), None, None, None)
+      )
     }
   }
 
