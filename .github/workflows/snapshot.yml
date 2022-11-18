@@ -30,7 +30,7 @@ jobs:
         run: echo "AIRFRAME_VERSION=$(./scripts/dynver.sh)" >> $GITHUB_ENV
       - name: Check Airframe version
         run: echo ${AIRFRAME_VERSION}
-      - name: Post vertion to a Slack channel
+      - name: Post version number to Slack
         id: slack
         uses: slackapi/slack-github-action@v1.23.0
         with:
