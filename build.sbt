@@ -507,7 +507,7 @@ val logDependencies = { scalaVersion: String =>
 
 val logJVMDependencies = Seq(
   // For rotating log files
-  "ch.qos.logback" % "logback-core" % "1.3.4"
+  "ch.qos.logback" % "logback-core" % "1.3.5"
 )
 
 // airframe-log should have minimum dependencies
