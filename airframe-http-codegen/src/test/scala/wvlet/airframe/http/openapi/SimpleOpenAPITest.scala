@@ -29,6 +29,7 @@ object SimpleOpenAPITest extends AirSpec {
 
   private val openApiConfig =
     OpenAPIGeneratorConfig(basePackages = Seq("wvlet.airframe.http.openapi.SimpleOpenAPITest"))
+
   private def openApiGenerator(router: Router) = OpenAPI.ofRouter(router, openApiConfig)
 
   test("yaml") {
@@ -73,6 +74,7 @@ object SimpleOpenAPITest extends AirSpec {
   @RPC
   trait CollectionApi {
     def getSeq: Seq[MyObj]
+
     def getEither: Either[Throwable, MyObj]
   }
 
@@ -94,8 +96,8 @@ object SimpleOpenAPITest extends AirSpec {
 
     yaml.contains("""$ref: '#/components/schemas/wvlet.airframe.ulid.ULID'""".stripMargin) shouldBe true
     yaml.contains("""  schemas:
-                    |    wvlet.airframe.ulid.ULID:
-                    |      type: string""".stripMargin) shouldBe true
+        |    wvlet.airframe.ulid.ULID:
+        |      type: string""".stripMargin) shouldBe true
   }
 
   @RPC
@@ -148,13 +150,30 @@ object SimpleOpenAPITest extends AirSpec {
     def hello(myParam: MyParam = MyParam(-1)): Unit = {}
   }
 
-  test("param with default value should be optional") {
+  test("param with a default value should be optional") {
     val r       = Router.of[OptionalParamTestApi]
     val openapi = openApiGenerator(r)
-    debug(openapi.toYAML)
     val path =
       openapi.paths.get("/wvlet.airframe.http.openapi.SimpleOpenAPITest.OptionalParamTestApi/hello").get("post")
     val schema = path.requestBody.get.content("application/json").schema.asInstanceOf[Schema]
     schema.required shouldBe empty
+  }
+
+  case class HelloRequest(param: MyParam = MyParam(10))
+
+  @RPC
+  trait OptionalParamTestApi2 {
+    def hello(pp: HelloRequest): Unit
+  }
+
+  test("param with a default value in a request object should be optional") {
+    val r       = Router.of[OptionalParamTestApi2]
+    val openapi = openApiGenerator(r)
+    debug(openapi.toYAML)
+    val path =
+      openapi.paths.get("/wvlet.airframe.http.openapi.SimpleOpenAPITest.OptionalParamTestApi2/hello").get("post")
+
+    // TODO MyParam needs to be referenced inside the component
+    val schema = path.requestBody.get.content("application/json").schema.asInstanceOf[Schema]
   }
 }
