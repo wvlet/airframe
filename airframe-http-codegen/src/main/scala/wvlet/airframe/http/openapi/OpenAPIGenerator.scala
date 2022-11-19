@@ -21,14 +21,15 @@ import wvlet.airframe.json.Json
 import wvlet.airframe.metrics.{Count, DataSize, ElapsedTime}
 import wvlet.airframe.msgpack.spi.{MsgPack, Value}
 import wvlet.airframe.surface._
+import wvlet.airframe.surface.reflect._
 import wvlet.airframe.ulid.ULID
 import wvlet.log.LogSupport
-import wvlet.airframe.surface.reflect._
 
 import java.time.Instant
 import java.util.Locale
 import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import scala.collection.immutable.ListMap
+import scala.util.Try
 
 case class OpenAPIGeneratorConfig(
     basePackages: Seq[String] = Seq.empty,
@@ -137,9 +138,31 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
     b.result()
   }
 
-  private def requiredParams(params: Seq[wvlet.airframe.surface.Parameter]): Option[Seq[String]] = {
+  private def requiredParams(
+      methodOwner: Option[Any],
+      params: Seq[wvlet.airframe.surface.Parameter]
+  ): Option[Seq[String]] = {
     val required = params
-      .filter(p => p.isRequired || !(p.getDefaultValue.nonEmpty || p.surface.isOption))
+      .filter { p =>
+        if (p.isRequired) {
+          true
+        } else if (p.surface.isOption) {
+          false
+        } else {
+          // If there is default value, the parameter can be optional
+          p match {
+            case m: MethodParameter =>
+              // Use Java runtime-reflection to get the default value of this method parameter
+              val rp = RuntimeMethodParameter(m.method, m.index, m.name, m.surface)
+              methodOwner
+                .flatMap { owner => rp.getMethodArgDefaultValue(owner) }
+                .orElse { p.getDefaultValue }
+                .isEmpty
+            case _ =>
+              p.getDefaultValue.isEmpty
+          }
+        }
+      }
       .map(_.name)
     if (required.isEmpty) None
     else Some(required)
@@ -211,11 +234,21 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
       }
       componentTypes.map(s => registerComponent(s))
 
+      // Need to instantiate the controller to resolve default method parameter values
       // Generate schema for the user HTTP request body
+
+      val controllerSurface = route.controllerSurface
+      val methodOwner = Try {
+        controllerSurface.objectFactory
+          .map(_.newInstance(Seq.empty))
+          .get
+      }.orElse {
+        Try(controllerSurface.rawType.getDeclaredConstructor().newInstance())
+      }.toOption
       val requestMediaType = MediaType(
         schema = Schema(
           `type` = "object",
-          required = requiredParams(routeAnalysis.userInputParameters),
+          required = requiredParams(methodOwner, routeAnalysis.userInputParameters),
           properties = Some(
             routeAnalysis.httpClientCallInputs.map { p =>
               p.name -> getOpenAPISchemaOfParameter(p, componentTypes)
@@ -486,7 +519,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
               Schema(
                 `type` = "object",
                 description = g.findAnnotationOf[description].map(_.value()),
-                required = requiredParams(g.params),
+                required = requiredParams(None, g.params),
                 properties = if (properties.isEmpty) None else Some(properties)
               )
             case s if s.isAlias =>

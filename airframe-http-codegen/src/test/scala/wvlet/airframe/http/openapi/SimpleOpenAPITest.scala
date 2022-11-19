@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.openapi
+import wvlet.airframe.http.openapi.OpenAPI.Schema
 import wvlet.airframe.http.{RPC, Router, description}
 import wvlet.airframe.ulid.ULID
 import wvlet.airspec.AirSpec
@@ -119,7 +120,7 @@ object SimpleOpenAPITest extends AirSpec {
     val r    = Router.of[DescriptionTestApi]
     val yaml = openApiGenerator(r).toYAML
 
-    info(yaml)
+    debug(yaml)
     yaml.contains("description: 'sample method'") shouldBe true
     yaml.contains("description: 'custom parameter 1'") shouldBe true
     yaml.contains("description: 'method1 response'") shouldBe true
@@ -137,5 +138,23 @@ object SimpleOpenAPITest extends AirSpec {
           |  'single-quoted' description""".stripMargin
       )
     }
+  }
+
+  case class MyParam(id: Int)
+
+  // Note: RPC interface needs to be a class to resolve method default parameters
+  @RPC
+  class OptionalParamTestApi {
+    def hello(myParam: MyParam = MyParam(-1)): Unit = {}
+  }
+
+  test("param with default value should be optional") {
+    val r       = Router.of[OptionalParamTestApi]
+    val openapi = openApiGenerator(r)
+    debug(openapi.toYAML)
+    val path =
+      openapi.paths.get("/wvlet.airframe.http.openapi.SimpleOpenAPITest.OptionalParamTestApi/hello").get("post")
+    val schema = path.requestBody.get.content("application/json").schema.asInstanceOf[Schema]
+    schema.required shouldBe empty
   }
 }

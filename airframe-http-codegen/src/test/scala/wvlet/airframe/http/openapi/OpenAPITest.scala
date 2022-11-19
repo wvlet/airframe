@@ -533,8 +533,12 @@ class OpenAPITest extends AirSpec {
     //      .setContents(new java.awt.datatransfer.StringSelection(yaml), null)
 
     fragments.foreach { x =>
-      debug(x)
-      yaml.contains(x) shouldBe true
+      try {
+        yaml.contains(x) shouldBe true
+      } catch {
+        case e: Throwable =>
+          fail(s"Match failure for:\n${x}")
+      }
     }
 
     // Parsing test
