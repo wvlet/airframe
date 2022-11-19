@@ -22,9 +22,10 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     * @tparam B
     * @return
     */
-  @deprecated("Use toSingletonOf[X] instead. This method will not be available in Scala 3", "21.5.1")
+  @deprecated("Use to[X] instead. This method will not be available in Scala 3", "21.5.1")
   def toInstanceOf[B <: A]: DesignWithContext[B] = macro binderToImpl[B]
 
+  @deprecated("Use to[X] instead. This method will not be available in Scala 3", "21.5.1")
   def toSingletonOf[B <: A]: DesignWithContext[B] = macro binderToSingletonOfImpl[B]
 
   def toEagerSingletonOf[B <: A]: DesignWithContext[B] = macro binderToEagerSingletonOfImpl[B]
