@@ -105,6 +105,9 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         Seq(s)
       case s if s.isPrimitive || Router.isHttpResponse(s) =>
         Seq.empty
+      case s if s == Surface.of[Any] =>
+        // Any will be handled as a string
+        Seq.empty
       case s if s.isSeq || s.isOption || Router.isFinagleReader(s) =>
         extractNonPrimitiveSurfaces(s.typeArgs(0), seen)
       case s: ArraySurface =>

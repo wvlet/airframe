@@ -537,7 +537,7 @@ class OpenAPITest extends AirSpec {
         yaml.contains(x) shouldBe true
       } catch {
         case e: Throwable =>
-          fail(s"Match failure for:\n${x}")
+          fail(s"Missing YAML fragment for:\n${x}")
       }
     }
 
