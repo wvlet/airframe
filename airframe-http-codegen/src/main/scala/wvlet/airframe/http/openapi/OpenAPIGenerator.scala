@@ -16,7 +16,6 @@ import wvlet.airframe.codec.GenericException
 import wvlet.airframe.http.codegen.RouteAnalyzer
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.openapi.OpenAPI.Response
-import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{HttpMethod, HttpStatus, Router, description}
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
@@ -156,7 +155,7 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
         } else {
           // If there is default value, the parameter can be optional
           p match {
-            case m: MethodParameter =>
+            case m: MethodParameter if m.getDefaultValue.isEmpty =>
               // Use Java runtime-reflection to get the default value of this method parameter
               val rp = RuntimeMethodParameter(m.method, m.index, m.name, m.surface)
               methodOwner
@@ -199,7 +198,8 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
   }
 
   def buildFromRouter(router: Router): OpenAPI = {
-    val referencedSchemas = Map.newBuilder[String, SchemaOrRef]
+    // Use ListMap to preserve the component order
+    val referencedSchemas = ListMap.newBuilder[String, SchemaOrRef]
 
     // Analyze all routes
     val analyzedRoutes: List[RouteAnalysisResult] = router.routes.map(r => RouteAnalyzer.analyzeRoute(r)).toList
@@ -226,7 +226,8 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
           referencedSchemas += schemaName(s) -> getOpenAPISchemaOfSurface(s, componentTypes - s)
       }
     }
-    componentTypes.map(s => registerComponent(s))
+    // Register components in the alphabetical order
+    componentTypes.toSeq.sortBy(_.fullName).map(s => registerComponent(s))
 
     val paths: Seq[(String, Map[String, PathItem])] = analyzedRoutes.map { routeAnalysis =>
       val route = routeAnalysis.route
@@ -377,8 +378,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
       path -> Map(httpMethod -> pathItem)
     }
 
-    val schemas = referencedSchemas.result()
-
+    val schemas     = referencedSchemas.result()
     val mergedPaths = mergePaths(paths)
 
     OpenAPI(
