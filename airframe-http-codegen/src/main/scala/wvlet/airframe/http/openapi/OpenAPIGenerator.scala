@@ -14,7 +14,9 @@
 package wvlet.airframe.http.openapi
 import wvlet.airframe.codec.GenericException
 import wvlet.airframe.http.codegen.RouteAnalyzer
+import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.openapi.OpenAPI.Response
+import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{HttpMethod, HttpStatus, Router, description}
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
@@ -196,9 +198,35 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
   def buildFromRouter(router: Router): OpenAPI = {
     val referencedSchemas = Map.newBuilder[String, SchemaOrRef]
 
-    val paths: Seq[(String, Map[String, PathItem])] = for (route <- router.routes) yield {
-      val routeAnalysis = RouteAnalyzer.analyzeRoute(route)
-      trace(routeAnalysis)
+    // Analyze all routes
+    val analyzedRoutes: List[RouteAnalysisResult] = router.routes.map(r => RouteAnalyzer.analyzeRoute(r)).toList
+
+    // Extract all component types
+    val componentTypes: Set[Surface] = analyzedRoutes
+      .flatMap { routeAnalysis =>
+        routeAnalysis.userInputParameters.map(_.surface) ++
+          routeAnalysis.httpClientCallInputs.map(_.surface) ++
+          Seq(routeAnalysis.route.returnTypeSurface)
+      }
+      .flatMap(surface => extractNonPrimitiveSurfaces(surface, Set.empty))
+      .distinct
+      .toSet
+
+    // Register components in advance for creating reference links
+    def registerComponent(s: Surface): Unit = {
+      s match {
+        case s if isPrimitiveTypeFamily(s) =>
+        // Do not register schema
+        case _ =>
+          trace(s"Register a component: ${s}")
+          // Register the component for the first time, but reference other components
+          referencedSchemas += schemaName(s) -> getOpenAPISchemaOfSurface(s, componentTypes - s)
+      }
+    }
+    componentTypes.map(s => registerComponent(s))
+
+    val paths: Seq[(String, Map[String, PathItem])] = analyzedRoutes.map { routeAnalysis =>
+      val route = routeAnalysis.route
 
       // Replace path parameters into
       val path = "/" + route.pathComponents
@@ -214,29 +242,8 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
         }
         .mkString("/")
 
-      // Collect all component types
-      val componentTypes = (routeAnalysis.userInputParameters.map(_.surface) ++
-        routeAnalysis.httpClientCallInputs.map(_.surface) ++
-        Seq(route.returnTypeSurface))
-        .flatMap(p => extractNonPrimitiveSurfaces(p, Set.empty))
-        .distinct
-        .toSet
-
-      // Register a component for creating a reference link
-      def registerComponent(s: Surface): Unit = {
-        s match {
-          case s if isPrimitiveTypeFamily(s) =>
-          // Do not register schema
-          case _ =>
-            trace(s"Register a component: ${s}")
-            referencedSchemas += schemaName(s) -> getOpenAPISchemaOfSurface(s, Set.empty)
-        }
-      }
-      componentTypes.map(s => registerComponent(s))
-
       // Need to instantiate the controller to resolve default method parameter values
       // Generate schema for the user HTTP request body
-
       val controllerSurface = route.controllerSurface
       val methodOwner = Try {
         controllerSurface.objectFactory

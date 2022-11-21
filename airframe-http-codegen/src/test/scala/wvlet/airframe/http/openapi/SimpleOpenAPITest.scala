@@ -159,7 +159,8 @@ object SimpleOpenAPITest extends AirSpec {
     schema.required shouldBe empty
   }
 
-  case class HelloRequest(param: MyParam = MyParam(10))
+  case class HelloRequest(param: HelloParam = HelloParam(10))
+  case class HelloParam(id: Int)
 
   @RPC
   trait OptionalParamTestApi2 {
