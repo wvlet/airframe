@@ -170,11 +170,27 @@ object SimpleOpenAPITest extends AirSpec {
   test("param with a default value in a request object should be optional") {
     val r       = Router.of[OptionalParamTestApi2]
     val openapi = openApiGenerator(r)
-    debug(openapi.toYAML)
     val path =
       openapi.paths.get("/wvlet.airframe.http.openapi.SimpleOpenAPITest.OptionalParamTestApi2/hello").get("post")
 
     // TODO MyParam needs to be referenced inside the component
     val schema = path.requestBody.get.content("application/json").schema.asInstanceOf[Schema]
+  }
+
+  case class OptParam(n: Long = 10, b: Boolean = false)
+  @RPC
+  trait PrimOptTestApi {
+    def hello(p: OptParam): Unit
+  }
+
+  test("primitive parameters with default values should be optional") {
+    val r       = Router.of[PrimOptTestApi]
+    val openapi = openApiGenerator(r)
+    debug(openapi.toYAML)
+    val path =
+      openapi.paths.get("/wvlet.airframe.http.openapi.SimpleOpenAPITest.PrimOptTestApi/hello").get("post")
+
+    val schema = openapi.components.get.schemas.head.head._2.asInstanceOf[Schema]
+    schema.required shouldBe empty
   }
 }
