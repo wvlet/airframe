@@ -25,6 +25,7 @@ import scala.language.higherKinds
 object RouteAnalyzer {
 
   case class RouteAnalysisResult(
+      route: Route,
       // A path string generator code using string interpolation
       pathString: String,
       // User-input parameters for the client method
@@ -92,6 +93,7 @@ object RouteAnalyzer {
     }
 
     RouteAnalysisResult(
+      route = route,
       pathString = path,
       userInputParameters = clientSideArgs,
       pathOnlyArgs

@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.openapi
+import wvlet.airframe.http.openapi.OpenAPI.Schema
 import wvlet.airframe.http.{RPC, Router, description}
 import wvlet.airframe.ulid.ULID
 import wvlet.airspec.AirSpec
@@ -28,6 +29,7 @@ object SimpleOpenAPITest extends AirSpec {
 
   private val openApiConfig =
     OpenAPIGeneratorConfig(basePackages = Seq("wvlet.airframe.http.openapi.SimpleOpenAPITest"))
+
   private def openApiGenerator(router: Router) = OpenAPI.ofRouter(router, openApiConfig)
 
   test("yaml") {
@@ -72,6 +74,7 @@ object SimpleOpenAPITest extends AirSpec {
   @RPC
   trait CollectionApi {
     def getSeq: Seq[MyObj]
+
     def getEither: Either[Throwable, MyObj]
   }
 
@@ -93,8 +96,8 @@ object SimpleOpenAPITest extends AirSpec {
 
     yaml.contains("""$ref: '#/components/schemas/wvlet.airframe.ulid.ULID'""".stripMargin) shouldBe true
     yaml.contains("""  schemas:
-                    |    wvlet.airframe.ulid.ULID:
-                    |      type: string""".stripMargin) shouldBe true
+        |    wvlet.airframe.ulid.ULID:
+        |      type: string""".stripMargin) shouldBe true
   }
 
   @RPC
@@ -119,7 +122,7 @@ object SimpleOpenAPITest extends AirSpec {
     val r    = Router.of[DescriptionTestApi]
     val yaml = openApiGenerator(r).toYAML
 
-    info(yaml)
+    debug(yaml)
     yaml.contains("description: 'sample method'") shouldBe true
     yaml.contains("description: 'custom parameter 1'") shouldBe true
     yaml.contains("description: 'method1 response'") shouldBe true
@@ -137,5 +140,41 @@ object SimpleOpenAPITest extends AirSpec {
           |  'single-quoted' description""".stripMargin
       )
     }
+  }
+
+  case class MyParam(id: Int)
+
+  // Note: RPC interface needs to be a class to resolve method default parameters
+  @RPC
+  class OptionalParamTestApi {
+    def hello(myParam: MyParam = MyParam(-1)): Unit = {}
+  }
+
+  test("param with a default value should be optional") {
+    val r       = Router.of[OptionalParamTestApi]
+    val openapi = openApiGenerator(r)
+    val path =
+      openapi.paths.get("/wvlet.airframe.http.openapi.SimpleOpenAPITest.OptionalParamTestApi/hello").get("post")
+    val schema = path.requestBody.get.content("application/json").schema.asInstanceOf[Schema]
+    schema.required shouldBe empty
+  }
+
+  case class HelloRequest(param: HelloParam = HelloParam(10))
+  case class HelloParam(id: Int)
+
+  @RPC
+  trait OptionalParamTestApi2 {
+    def hello(pp: HelloRequest): Unit
+  }
+
+  test("param with a default value in a request object should be optional") {
+    val r       = Router.of[OptionalParamTestApi2]
+    val openapi = openApiGenerator(r)
+    debug(openapi.toYAML)
+    val path =
+      openapi.paths.get("/wvlet.airframe.http.openapi.SimpleOpenAPITest.OptionalParamTestApi2/hello").get("post")
+
+    // TODO MyParam needs to be referenced inside the component
+    val schema = path.requestBody.get.content("application/json").schema.asInstanceOf[Schema]
   }
 }
