@@ -31,7 +31,6 @@ jobs:
       - name: Check Airframe version
         run: echo ${AIRFRAME_VERSION}
       - name: Post version number to Slack
-        id: slack
         uses: slackapi/slack-github-action@v1.23.0
         with:
           # wvlet dev-snapshot channel
@@ -53,7 +52,6 @@ jobs:
           ../sbt publishSnapshots
         working-directory: ./airspec
       - name: Notify the completion to Slack
-        id: slack
         uses: slackapi/slack-github-action@v1.23.0
         with:
           # wvlet dev-snapshot channel
