@@ -284,7 +284,7 @@ object RPCStatus {
   case object CANCELLED_U11 extends RPCStatus(USER_ERROR, GrpcStatus.CANCELLED_1)
 
   /**
-    * The request is aborted (e.g., dead-lock, transaction conflicts, etc.) The client should retry the request it a
+    * The request is aborted (e.g., dead-lock, transaction conflicts, etc.) The client should retry the request at a
     * higher-level.
     */
   case object ABORTED_U12 extends RPCStatus(USER_ERROR, GrpcStatus.ABORTED_10)
