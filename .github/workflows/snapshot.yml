@@ -36,8 +36,7 @@ jobs:
         with:
           # wvlet dev-snapshot channel
           channel-id: 'C04CC79BZ7A'
-          # For posting a simple plain text message
-          slack-message: "Publishing a snapshot version of airframe: ${{ env.AIRFRAME_VERSION }}"
+          slack-message: "Publishing a snapshot version of airframe: `${{ env.AIRFRAME_VERSION }}`"
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       - name: Publish snapshots
@@ -53,3 +52,12 @@ jobs:
         run: |
           ../sbt publishSnapshots
         working-directory: ./airspec
+      - name: Notify the completion to Slack
+        id: slack
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          # wvlet dev-snapshot channel
+          channel-id: 'C04CC79BZ7A'
+          slack-message: "Published a snapshot version of airframe: `${{ env.AIRFRAME_VERSION }}`"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

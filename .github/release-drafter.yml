@@ -23,7 +23,7 @@ categories:
       - 'kaizen'
   - title: '📚 Docs'
     labels:
-      - 'doc'    
+      - 'doc'
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 
 template: |
@@ -41,6 +41,9 @@ autolabeler:
   - label: 'bug'
     title:
       - '/fix/i'
+  - label: 'internal'
+    title:
+      - '/internal/i'
   - label: 'deprecation'
     title:
       - '/deprecate/i'
