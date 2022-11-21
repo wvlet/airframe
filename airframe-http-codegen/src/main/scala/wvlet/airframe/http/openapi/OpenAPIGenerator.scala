@@ -152,10 +152,13 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
           true
         } else if (p.surface.isOption) {
           false
-        } else {
+        } else if (p.getDefaultValue.nonEmpty) {
           // If there is default value, the parameter can be optional
+          false
+        } else {
+          // Java run-time reflection is necessary for extracting the default value of a method parameter
           p match {
-            case m: MethodParameter if m.getDefaultValue.isEmpty =>
+            case m: MethodParameter =>
               // Use Java runtime-reflection to get the default value of this method parameter
               val rp = RuntimeMethodParameter(m.method, m.index, m.name, m.surface)
               methodOwner
