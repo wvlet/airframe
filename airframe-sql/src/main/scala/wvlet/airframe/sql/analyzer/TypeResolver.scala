@@ -216,6 +216,8 @@ object TypeResolver extends LogSupport {
               r.sourceColumn,
               r.nodeLocation
             )
+          case u: UnionColumn =>
+            resolvedColumns ++= u.inputs.map(_.asInstanceOf[ResolvedAttribute])
           case expr =>
             resolvedColumns += SingleColumn(expr, alias, None, nodeLocation)
         }
@@ -251,17 +253,26 @@ object TypeResolver extends LogSupport {
     def lookup(name: String): List[Attribute] = {
       QName(name, None) match {
         case QName(Seq(db, t1, c1), _) if context.database == db =>
-          inputAttributes.collect {
-            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a
-          }.toList
+          inputAttributes
+            .collect {
+              case a: ResolvedAttribute if a.matchesWith(t1, c1) => Seq(a)
+              case SingleColumn(u: UnionColumn, _, _, _) =>
+                u.inputs.map(_.asInstanceOf[ResolvedAttribute]).filter(_.matchesWith(t1, c1)).distinct
+            }.toList.flatten
         case QName(Seq(t1, c1), _) =>
-          inputAttributes.collect {
-            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a
-          }.toList
+          inputAttributes
+            .collect {
+              case a: ResolvedAttribute if a.matchesWith(t1, c1) => Seq(a)
+              case SingleColumn(u: UnionColumn, _, _, _) =>
+                u.inputs.map(_.asInstanceOf[ResolvedAttribute]).filter(_.matchesWith(t1, c1)).distinct
+            }.toList.flatten
         case QName(Seq(c1), _) =>
-          inputAttributes.collect {
-            case a: ResolvedAttribute if a.name == c1 => a
-          }.toList
+          inputAttributes
+            .collect {
+              case a: ResolvedAttribute if a.name == c1 => Seq(a)
+              case SingleColumn(u: UnionColumn, _, _, _) =>
+                u.inputs.map(_.asInstanceOf[ResolvedAttribute]).filter(_.name == c1).distinct
+            }.toList.flatten
         case _ =>
           List.empty
       }
@@ -272,6 +283,10 @@ object TypeResolver extends LogSupport {
         lookup(i.value)
       case u @ UnresolvedAttribute(name, _) =>
         lookup(name)
+      case u: UnionColumn =>
+        u.inputs.flatMap { expr =>
+          findMatchInInputAttributes(context, expr, inputAttributes)
+        }.toList
       case _ =>
         List(expr)
     }
@@ -282,8 +297,9 @@ object TypeResolver extends LogSupport {
     */
   def resolveExpression(context: AnalyzerContext, expr: Expression, inputAttributes: Seq[Attribute]): Expression = {
     findMatchInInputAttributes(context, expr, inputAttributes) match {
+      // TODO How to handle both ambiguous columns and union columns?
       case lst if lst.length > 1 =>
-        throw SQLErrorCode.SyntaxError.newException(s"${expr.sqlExpr} is ambiguous", expr.nodeLocation)
+        UnionColumn(lst, None)
       case lst =>
         lst.headOption.getOrElse(expr)
     }
