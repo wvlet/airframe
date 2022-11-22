@@ -117,7 +117,56 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   }
 
   /**
+    * Transform matching pattern only once.
+    * @param rule
+    * @return
+    */
+  def transformOnce(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
+    val newNode: LogicalPlan = rule.applyOrElse(this, identity[LogicalPlan])
+    if (newNode.eq(this)) {
+      transformChildren(rule)
+    } else {
+      // The root node was transformed
+      newNode
+    }
+  }
+
+  /**
+    * Transform child node only once
+    *
+    * @param rule
+    * @return
+    */
+  def transformChildren(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
+    var changed = false
+
+    def recursiveTransform(arg: Any): AnyRef =
+      arg match {
+        case e: Expression => e
+        case l: LogicalPlan => {
+          val newPlan = rule.applyOrElse(l, identity[LogicalPlan])
+          if (!newPlan.eq(l)) {
+            changed = true
+          }
+          newPlan
+        }
+        case Some(x)       => Some(recursiveTransform(x))
+        case s: Seq[_]     => s.map(recursiveTransform _)
+        case other: AnyRef => other
+        case null          => null
+      }
+
+    val newArgs = productIterator.map(recursiveTransform).toIndexedSeq
+    if (changed) {
+      copyInstance(newArgs)
+    } else {
+      this
+    }
+  }
+
+  /**
     * Transform only the child nodes.
+    *
     * @param rule
     * @return
     */
