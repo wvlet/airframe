@@ -31,6 +31,7 @@ jobs:
       - name: Check Airframe version
         run: echo ${AIRFRAME_VERSION}
       - name: Post version number to Slack
+        id: slack
         uses: slackapi/slack-github-action@v1.23.0
         with:
           # wvlet dev-snapshot channel
@@ -56,6 +57,8 @@ jobs:
         with:
           # wvlet dev-snapshot channel
           channel-id: 'C04CC79BZ7A'
-          slack-message: "Published a snapshot version of airframe: `${{ env.AIRFRAME_VERSION }}`"
+          # Update the thread
+          update-ts: ${{ steps.slack.outputs.ts }}
+          slack-message: "[done] Published a snapshot version of airframe: `${{ env.AIRFRAME_VERSION }}`"
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
