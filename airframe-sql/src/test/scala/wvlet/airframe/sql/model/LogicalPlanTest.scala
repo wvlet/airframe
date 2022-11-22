@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.sql.model
 
-import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project, TableRef}
+import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Limit, Project, TableRef}
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airspec.AirSpec
 
@@ -32,5 +32,15 @@ class LogicalPlanTest extends AirSpec {
         visited += 1000
     }
     visited shouldBe 1111
+  }
+
+  test("Transform children") {
+    val l = SQLParser.parse("select * from (select a from x limit 10)")
+    val newPlan = l.transformChildren { case l: Limit =>
+      l.child
+    }
+    newPlan.traverse { case l: Limit =>
+      fail(s"Should not have limit")
+    }
   }
 }
