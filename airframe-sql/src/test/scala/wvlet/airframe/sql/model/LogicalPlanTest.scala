@@ -43,4 +43,16 @@ class LogicalPlanTest extends AirSpec {
       fail(s"Should not have limit")
     }
   }
+
+  test("transform once") {
+    val l = SQLParser.parse("select * from (select * from (select a from x limit 10) limit 100)")
+    val newPlan = l.transformOnce { case l: Limit =>
+      l.child
+    }
+    var count = 0
+    newPlan.traverse { case l: Limit =>
+      count += 1
+    }
+    count shouldBe 1
+  }
 }

@@ -117,7 +117,27 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   }
 
   /**
-    * Transform only the child nodes.
+    * Traverse the tree until finding the nodes matching the pattern. All nodes found from the root will be transformed,
+    * and no further recursive match will occur from the transformed nodes.
+    *
+    * If you want to continue the transformation for the child nodes, use [[transformChildren]] or
+    * [[transformChildrenOnce]] inside the rule.
+    * @param rule
+    * @return
+    */
+  def transformOnce(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
+    val newNode: LogicalPlan = rule.applyOrElse(this, identity[LogicalPlan])
+    if (newNode.eq(this)) {
+      transformChildrenOnce(rule)
+    } else {
+      // The root node was transformed
+      newNode
+    }
+  }
+
+  /**
+    * Transform child node only once
+    *
     * @param rule
     * @return
     */
@@ -129,6 +149,39 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
         case e: Expression => e
         case l: LogicalPlan => {
           val newPlan = rule.applyOrElse(l, identity[LogicalPlan])
+          if (!newPlan.eq(l)) {
+            changed = true
+          }
+          newPlan
+        }
+        case Some(x)       => Some(recursiveTransform(x))
+        case s: Seq[_]     => s.map(recursiveTransform _)
+        case other: AnyRef => other
+        case null          => null
+      }
+
+    val newArgs = productIterator.map(recursiveTransform).toIndexedSeq
+    if (changed) {
+      copyInstance(newArgs)
+    } else {
+      this
+    }
+  }
+
+  /**
+    * Apply [[transformOnce]] for all child nodes.
+    *
+    * @param rule
+    * @return
+    */
+  def transformChildrenOnce(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
+    var changed = false
+
+    def recursiveTransform(arg: Any): AnyRef =
+      arg match {
+        case e: Expression => e
+        case l: LogicalPlan => {
+          val newPlan = l.transformOnce(rule)
           if (!newPlan.eq(l)) {
             changed = true
           }
