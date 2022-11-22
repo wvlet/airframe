@@ -34,6 +34,54 @@ class LogicalPlanTest extends AirSpec {
     visited shouldBe 1111
   }
 
+  test("traverse child plan nodes") {
+    val l       = SQLParser.parse("select * from (select a, b from x where time > 0 group by 1, 2)")
+    var visited = 0
+    l.traverseChildren {
+      case a: Aggregate =>
+        visited += 1
+      case f: Filter =>
+        visited += 10
+      case p: Project =>
+        visited += 100
+      case t: TableRef =>
+        visited += 1000
+    }
+    visited shouldBe 1011
+  }
+
+  test("traverseOnce") {
+    val l       = SQLParser.parse("select * from (select a, b from x where time > 0 group by 1, 2)")
+    var visited = 0
+    l.traverseOnce {
+      case a: Aggregate =>
+        visited += 1
+      case f: Filter =>
+        visited += 10
+      case p: Project =>
+        visited += 100
+      case t: TableRef =>
+        visited += 1000
+    }
+    visited shouldBe 100
+  }
+
+  test("traverseChildrenOnce") {
+    val l       = SQLParser.parse("select * from (select a, b from x where time > 0 group by 1, 2)")
+    var visited = 0
+    l.traverseChildrenOnce {
+      case a: Aggregate =>
+        visited += 1
+      case f: Filter =>
+        visited += 10
+      case p: Project =>
+        visited += 100
+      case t: TableRef =>
+        visited += 1000
+    }
+    visited shouldBe 1
+  }
+
   test("Transform children") {
     val l = SQLParser.parse("select * from (select a from x limit 10)")
     val newPlan = l.transformChildren { case l: Limit =>
