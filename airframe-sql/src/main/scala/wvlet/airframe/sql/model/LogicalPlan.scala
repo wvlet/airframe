@@ -78,19 +78,22 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   }
 
   private def recursiveTraverse[U](f: PartialFunction[LogicalPlan, U])(arg: Any): Unit = {
-    arg match {
-      case e: Expression =>
-      case l: LogicalPlan => {
-        if (f.isDefinedAt(l)) {
-          f.apply(l)
+    def loop(v: Any): Unit = {
+      v match {
+        case e: Expression =>
+        case l: LogicalPlan => {
+          if (f.isDefinedAt(l)) {
+            f.apply(l)
+          }
+          l.productIterator.foreach(x => loop(x))
         }
-        l.productIterator.foreach(x => recursiveTraverse(f)(x))
+        case Some(x)       => Some(loop(x))
+        case s: Seq[_]     => s.map(x => loop(x))
+        case other: AnyRef =>
+        case null          =>
       }
-      case Some(x)       => Some(recursiveTraverse(f)(x))
-      case s: Seq[_]     => s.map(x => recursiveTraverse(f)(x))
-      case other: AnyRef =>
-      case null          =>
     }
+    loop(arg)
   }
 
   /**
@@ -112,20 +115,23 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   }
 
   private def recursiveTraverseOnce[U](f: PartialFunction[LogicalPlan, U])(arg: Any): Unit = {
-    arg match {
-      case e: Expression =>
-      case l: LogicalPlan => {
-        if (f.isDefinedAt(l)) {
-          f.apply(l)
-        } else {
-          l.productIterator.foreach(x => recursiveTraverseOnce(f)(x))
+    def loop(v: Any): Unit = {
+      v match {
+        case e: Expression =>
+        case l: LogicalPlan => {
+          if (f.isDefinedAt(l)) {
+            f.apply(l)
+          } else {
+            l.productIterator.foreach(x => loop(x))
+          }
         }
+        case Some(x)       => Some(loop(x))
+        case s: Seq[_]     => s.map(x => loop(x))
+        case other: AnyRef =>
+        case null          =>
       }
-      case Some(x)       => Some(recursiveTraverseOnce(f)(x))
-      case s: Seq[_]     => s.map(x => recursiveTraverseOnce(f)(x))
-      case other: AnyRef =>
-      case null          =>
     }
+    loop(arg)
   }
 
   /**
