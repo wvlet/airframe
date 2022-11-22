@@ -117,14 +117,18 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   }
 
   /**
-    * Transform matching pattern only once.
+    * Traverse the tree until finding the nodes matching the pattern. All nodes found from the root will be transformed,
+    * and no further recursive match will occur from the transformed nodes.
+    *
+    * If you want to continue the transformation for the child nodes, use [[transformChildren]] or
+    * [[transformChildrenOnce]] inside the rule.
     * @param rule
     * @return
     */
   def transformOnce(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
     val newNode: LogicalPlan = rule.applyOrElse(this, identity[LogicalPlan])
     if (newNode.eq(this)) {
-      transformChildren(rule)
+      transformChildrenOnce(rule)
     } else {
       // The root node was transformed
       newNode
@@ -165,19 +169,19 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   }
 
   /**
-    * Transform only the child nodes.
+    * Apply [[transformOnce]] for all child nodes.
     *
     * @param rule
     * @return
     */
-  def transformChildren(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
+  def transformChildrenOnce(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
     var changed = false
 
     def recursiveTransform(arg: Any): AnyRef =
       arg match {
         case e: Expression => e
         case l: LogicalPlan => {
-          val newPlan = rule.applyOrElse(l, identity[LogicalPlan])
+          val newPlan = l.transformOnce(rule)
           if (!newPlan.eq(l)) {
             changed = true
           }
