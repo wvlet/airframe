@@ -77,27 +77,74 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     }
   }
 
+  private def recursiveTraverse[U](f: PartialFunction[LogicalPlan, U])(arg: Any): Unit = {
+    arg match {
+      case e: Expression =>
+      case l: LogicalPlan => {
+        if (f.isDefinedAt(l)) {
+          f.apply(l)
+        }
+        l.productIterator.foreach(x => recursiveTraverse(f)(x))
+      }
+      case Some(x)       => Some(recursiveTraverse(f)(x))
+      case s: Seq[_]     => s.map(x => recursiveTraverse(f)(x))
+      case other: AnyRef =>
+      case null          =>
+    }
+  }
+
   /**
     * Recursively traverse plan nodes and apply the given function to LogicalPlan nodes
-    * @param f
+    *
+    * @param rule
     */
-  def traverse[U](f: PartialFunction[LogicalPlan, U]): Unit = {
-    def recursiveTraverse(arg: Any): Unit =
-      arg match {
-        case e: Expression =>
-        case l: LogicalPlan => {
-          if (f.isDefinedAt(l)) {
-            f.apply(l)
-          }
-          l.productIterator.foreach(recursiveTraverse)
-        }
-        case Some(x)       => Some(recursiveTraverse(x))
-        case s: Seq[_]     => s.map(recursiveTraverse _)
-        case other: AnyRef =>
-        case null          =>
-      }
+  def traverse[U](rule: PartialFunction[LogicalPlan, U]): Unit = {
+    recursiveTraverse(rule)(this)
+  }
 
-    recursiveTraverse(this)
+  /**
+    * Recursively traverse the child plan nodes and apply the given function to LogicalPlan nodes
+    *
+    * @param rule
+    */
+  def traverseChildren[U](rule: PartialFunction[LogicalPlan, U]): Unit = {
+    productIterator.foreach(child => recursiveTraverse(rule)(child))
+  }
+
+  private def recursiveTraverseOnce[U](f: PartialFunction[LogicalPlan, U])(arg: Any): Unit = {
+    arg match {
+      case e: Expression =>
+      case l: LogicalPlan => {
+        if (f.isDefinedAt(l)) {
+          f.apply(l)
+        } else {
+          l.productIterator.foreach(x => recursiveTraverseOnce(f)(x))
+        }
+      }
+      case Some(x)       => Some(recursiveTraverseOnce(f)(x))
+      case s: Seq[_]     => s.map(x => recursiveTraverseOnce(f)(x))
+      case other: AnyRef =>
+      case null          =>
+    }
+  }
+
+  /**
+    * Recursively traverse the plan nodes until the rule matches.
+    *
+    * @param rule
+    * @tparam U
+    */
+  def traverseOnce[U](rule: PartialFunction[LogicalPlan, U]): Unit = {
+    recursiveTraverseOnce(rule)(this)
+  }
+
+  /**
+    * Recursively traverse the child plan nodes until the rule matches.
+    * @param rule
+    * @tparam U
+    */
+  def traverseChildrenOnce[U](rule: PartialFunction[LogicalPlan, U]): Unit = {
+    productIterator.foreach(child => recursiveTraverseOnce(rule)(child))
   }
 
   /**
