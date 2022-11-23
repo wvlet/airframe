@@ -15,7 +15,7 @@ package wvlet.airframe.codec
 import wvlet.airframe.json.JSON
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject, JSONString}
 import wvlet.airframe.surface.Surface
-import wvlet.airframe.ulid.ULID
+import wvlet.airframe.ulid.{PrefixedULID, ULID}
 
 /**
   */
@@ -216,5 +216,14 @@ class ScalaStandardCodecTest extends CodecSpec {
     val msgpack = codec.toMsgPack(ulid)
     val ulid1   = codec.fromMsgPack(msgpack)
     ulid shouldBe ulid1
+  }
+
+  test("support PrefixedULID") {
+    val codec         = MessageCodec.of[PrefixedULID]
+    val ulid          = ULID.newULID
+    val prefixedULID  = PrefixedULID(prefix = "abc", ulid)
+    val msgpack       = codec.toMsgPack(prefixedULID)
+    val prefixedULID1 = codec.fromMsgPack(msgpack)
+    prefixedULID shouldBe prefixedULID1
   }
 }

@@ -13,16 +13,15 @@
  */
 package wvlet.airframe.codec
 
-import java.time.Instant
-import java.util.Base64
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
 import wvlet.airframe.msgpack.spi.Value.ExtensionValue
 import wvlet.airframe.msgpack.spi._
 import wvlet.airframe.surface.{Primitive, Surface}
-import wvlet.airframe.ulid.ULID
+import wvlet.airframe.ulid.{PrefixedULID, ULID}
 
-import java.util.concurrent.ConcurrentHashMap
+import java.time.Instant
+import java.util.Base64
 import scala.util.Try
 
 /**
@@ -946,6 +945,7 @@ object PrimitiveCodec {
         case v: Instant      => p.packTimestamp(v)
         case ps: PackSupport => ps.pack(p)
         case v: ULID         => ULIDCodec.pack(p, v)
+        case v: PrefixedULID => PrefixedULIDCodec.pack(p, v)
         // Arrays
         case v: Array[String]  => StringArrayCodec.pack(p, v)
         case v: Array[Boolean] => BooleanArrayCodec.pack(p, v)
