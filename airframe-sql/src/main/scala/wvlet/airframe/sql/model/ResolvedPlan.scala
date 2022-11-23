@@ -52,7 +52,9 @@ case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn], no
 
 case class Alias(name: String, resolvedAttribute: ResolvedAttribute)
 
-case class SourceColumn(table: Catalog.Table, column: Catalog.TableColumn)
+case class SourceColumn(table: Catalog.Table, column: Catalog.TableColumn) {
+  def fullName: String = s"${table.name}.${column.name}"
+}
 
 case class ResolvedAttribute(
     name: String,
@@ -88,14 +90,12 @@ case class ResolvedAttribute(
     (qualifier, sourceColumns) match {
       case (Some(q), columns) if columns.nonEmpty =>
         columns
-          .map { c =>
-            s"${c.table.name}.${c.column.name}"
-          }.mkString(s"${q},${name}:${dataType} <- ", ", ", "")
+          .map(_.fullName)
+          .mkString(s"${q},${name}:${dataType} <- ", ", ", "")
       case (None, columns) if columns.nonEmpty =>
         columns
-          .map { c =>
-            s"${c.table.name}.${c.column.name}"
-          }.mkString(s"${name}:${dataType} <- ", ", ", "")
+          .map(_.fullName)
+          .mkString(s"${name}:${dataType} <- ", ", ", "")
       case _ =>
         s"${name}:${dataType}"
     }
