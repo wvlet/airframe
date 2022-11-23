@@ -18,7 +18,7 @@ import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.model.Expression._
 import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project}
-import wvlet.airframe.sql.model.{Expression, LogicalPlan, NodeLocation, ResolvedAttribute}
+import wvlet.airframe.sql.model.{Expression, LogicalPlan, NodeLocation, ResolvedAttribute, SourceColumn}
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
@@ -82,10 +82,10 @@ class TypeResolverTest extends AirSpec {
     resolvedPlan
   }
 
-  private val ra1 = ResolvedAttribute("id", DataType.LongType, None, Some(tableA), Some(a1), None)
-  private val ra2 = ResolvedAttribute("name", DataType.StringType, None, Some(tableA), Some(a2), None)
-  private val rb1 = ResolvedAttribute("id", DataType.LongType, None, Some(tableB), Some(b1), None)
-  private val rb2 = ResolvedAttribute("name", DataType.StringType, None, Some(tableB), Some(b2), None)
+  private val ra1 = ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tableA, a1)), None)
+  private val ra2 = ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tableA, a2)), None)
+  private val rb1 = ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tableB, b1)), None)
+  private val rb2 = ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tableB, b2)), None)
 
   test("resolveTableRef") {
     test("resolve all columns") {
@@ -144,11 +144,30 @@ class TypeResolverTest extends AirSpec {
     }
 
     test("resolve union") {
+      val p = analyze("select id from A union all select id from B")
+      p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
+      p.outputAttributes shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, None, ra1.sourceColumns ++ rb1.sourceColumns, None)
+      )
+    }
+
+    test("resolve union with select *") {
       val p = analyze("select * from A union all select * from B")
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
       p.outputAttributes shouldBe List(
-        SingleColumn(UnionColumn(List(ra1, rb1), None), None, None, None),
-        SingleColumn(UnionColumn(List(ra2, rb2), None), None, None, None)
+        ResolvedAttribute("id", DataType.LongType, None, ra1.sourceColumns ++ rb1.sourceColumns, None),
+        ResolvedAttribute("name", DataType.StringType, None, ra2.sourceColumns ++ rb2.sourceColumns, None)
+      )
+    }
+
+    test("resolve aggregation key with union") {
+      val p = analyze("select count(*), id from (select * from A union all select * from B) group by id")
+      p.asInstanceOf[Aggregate].groupingKeys(0).child shouldBe ResolvedAttribute(
+        "id",
+        DataType.LongType,
+        None,
+        ra1.sourceColumns ++ rb1.sourceColumns,
+        None
       )
     }
   }
@@ -211,7 +230,7 @@ class TypeResolverTest extends AirSpec {
               _,
               List(
                 GroupingKey(
-                  ResolvedAttribute("xxx", DataType.LongType, None, Some(`tableA`), Some(`a1`), None),
+                  ResolvedAttribute("xxx", DataType.LongType, None, Seq(SourceColumn(`tableA`, `a1`)), None),
                   None
                 )
               ),
@@ -228,14 +247,14 @@ class TypeResolverTest extends AirSpec {
     test("parse WITH statement") {
       val p = analyze("with q1 as (select id from A) select id from q1")
       p.outputAttributes.toList shouldBe List(
-        ResolvedAttribute("id", DataType.LongType, None, Some(tableA), Some(a1), None)
+        ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tableA, a1)), None)
       )
     }
 
     test("parse multiple WITH sub queries") {
       val p = analyze("with q1 as (select id, name from A), q2 as (select name from q1) select * from q2")
       p.outputAttributes.toList shouldBe List(
-        ResolvedAttribute("name", DataType.StringType, None, Some(tableA), Some(a2), None)
+        ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tableA, a2)), None)
       )
     }
 
@@ -243,8 +262,8 @@ class TypeResolverTest extends AirSpec {
       val p = analyze("with q1(p1, p2) as (select id, name from A) select * from q1")
       p.outputAttributes.toList shouldBe List(
         // The output should use aliases from the source columns
-        ResolvedAttribute("p1", DataType.LongType, None, Some(tableA), Some(a1), None),
-        ResolvedAttribute("p2", DataType.StringType, None, Some(tableA), Some(a2), None)
+        ResolvedAttribute("p1", DataType.LongType, None, Seq(SourceColumn(tableA, a1)), None),
+        ResolvedAttribute("p2", DataType.StringType, None, Seq(SourceColumn(tableA, a2)), None)
       )
     }
 
@@ -340,8 +359,8 @@ class TypeResolverTest extends AirSpec {
     test("join with different column names") {
       val p = analyze("select pid, name from A join (select id pid from B) on A.id = B.pid")
       p.outputAttributes shouldBe List(
-        ResolvedAttribute("pid", DataType.LongType, None, Some(tableB), Some(b1), None),
-        ResolvedAttribute("name", DataType.StringType, None, Some(tableA), Some(a2), None)
+        ResolvedAttribute("pid", DataType.LongType, None, Seq(SourceColumn(tableB, b1)), None),
+        ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tableA, a2)), None)
       )
     }
 

@@ -424,7 +424,7 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute]          = Nil
   }
 
-  // Deduplicate (duplicate elimination) the input releation
+  // Deduplicate (duplicate elimination) the input relation
   case class Distinct(child: Relation, nodeLocation: Option[NodeLocation]) extends UnaryRelation {
     override def sig(config: QuerySignatureConfig): String =
       s"E(${child.sig(config)})"
@@ -456,7 +456,7 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute]   = Nil
   }
 
-// This node can be a pivot node for generating a SELECT statament
+// This node can be a pivot node for generating a SELECT statement
   sealed trait Selection extends UnaryRelation {
     def selectItems: Seq[Attribute]
   }
@@ -613,7 +613,11 @@ object LogicalPlan {
     override def inputAttributes: Seq[Attribute]  = left.inputAttributes
     override def outputAttributes: Seq[Attribute] = left.outputAttributes
   }
-  case class Union(relations: Seq[Relation], nodeLocation: Option[NodeLocation]) extends SetOperation {
+  case class Union(
+      relations: Seq[Relation],
+      resolvedOutputs: Option[Seq[Attribute]],
+      nodeLocation: Option[NodeLocation]
+  ) extends SetOperation {
     override def children: Seq[Relation] = relations
     override def toString = {
       s"Union(${relations.mkString(",")})"
@@ -626,13 +630,15 @@ object LogicalPlan {
       relations.flatMap(_.inputAttributes)
     }
     override def outputAttributes: Seq[Attribute] = {
-      relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
-        SingleColumn(
-          UnionColumn(relations.map(_.outputAttributes(i)), output.nodeLocation),
-          None,
-          None,
-          output.nodeLocation
-        )
+      resolvedOutputs.getOrElse {
+        relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
+          SingleColumn(
+            UnionColumn(relations.map(_.outputAttributes(i)), output.nodeLocation),
+            None,
+            None,
+            output.nodeLocation
+          )
+        }
       }
     }
   }

@@ -124,7 +124,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     val base = if (ctx.INTERSECT() != null) {
       Intersect(children, getLocation(ctx.INTERSECT()))
     } else if (ctx.UNION() != null) {
-      Union(children, getLocation(ctx.UNION()))
+      Union(children, None, getLocation(ctx.UNION()))
     } else if (ctx.EXCEPT() != null) {
       Except(children(0), children(1), getLocation(ctx.EXCEPT()))
     } else {

@@ -34,6 +34,7 @@ object TypeResolver extends LogSupport {
       TypeResolver.resolveJoinUsing _ ::
       TypeResolver.resolveRegularRelation _ ::
       TypeResolver.resolveColumns _ ::
+      TypeResolver.resolveUnion _ ::
       Nil
   }
 
@@ -176,6 +177,7 @@ object TypeResolver extends LogSupport {
   def resolveRegularRelation(context: AnalyzerContext): PlanRewriter = {
     case filter @ Filter(child, filterExpr, _) =>
       filter.transformExpressions { case x: Expression => resolveExpression(context, x, filter.inputAttributes) }
+    case u: Union => u // UNION is resolved later by resolveUnion()
     case r: Relation =>
       r.transformExpressions { case x: Expression => resolveExpression(context, x, r.inputAttributes) }
   }
@@ -186,8 +188,20 @@ object TypeResolver extends LogSupport {
     resolved
   }
 
+  def resolveUnion(context: AnalyzerContext): PlanRewriter = { case u @ Union(_, None, _) =>
+    val resolvedOutputs = u.outputAttributes.collect { case SingleColumn(UnionColumn(inputs, _), _, _, _) =>
+      val resolved = inputs
+        .map { expr =>
+          resolveExpression(context, expr, u.inputAttributes)
+        }.collect { case a: ResolvedAttribute => a }
+      resolved.head.copy(sourceColumns = resolved.flatMap(_.sourceColumns))
+    }
+    u.copy(resolvedOutputs = Some(resolvedOutputs))
+  }
+
   /**
     * Resolve output columns by looking up the inputAttributes
+    *
     * @param inputAttributes
     * @param outputColumns
     * @return
@@ -212,8 +226,7 @@ object TypeResolver extends LogSupport {
               alias.get.sqlExpr,
               r.dataType,
               r.qualifier,
-              r.sourceTable,
-              r.sourceColumn,
+              r.sourceColumns,
               r.nodeLocation
             )
           case expr =>

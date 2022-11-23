@@ -15,7 +15,7 @@ package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.sql.catalog.Catalog.CreateMode
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
-import wvlet.airframe.sql.model.{NodeLocation, ResolvedAttribute}
+import wvlet.airframe.sql.model.{NodeLocation, ResolvedAttribute, SourceColumn}
 import wvlet.airspec.AirSpec
 
 /**
@@ -51,8 +51,8 @@ class SQLAnalyzerTest extends AirSpec {
     val plan = SQLAnalyzer.analyze("select id, name from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("id", DataType.LongType, None, Some(tbl1), Some(tbl1.column("id")), None),
-      ResolvedAttribute("name", DataType.StringType, None, Some(tbl1), Some(tbl1.column("name")), None)
+      ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tbl1, tbl1.column("id"))), None),
+      ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tbl1, tbl1.column("name"))), None)
     )
   }
 
@@ -60,9 +60,9 @@ class SQLAnalyzerTest extends AirSpec {
     val plan = SQLAnalyzer.analyze("select * from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("id", DataType.LongType, None, Some(tbl1), Some(tbl1.column("id")), None),
-      ResolvedAttribute("name", DataType.StringType, None, Some(tbl1), Some(tbl1.column("name")), None),
-      ResolvedAttribute("address", DataType.StringType, None, Some(tbl1), Some(tbl1.column("address")), None)
+      ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tbl1, tbl1.column("id"))), None),
+      ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tbl1, tbl1.column("name"))), None),
+      ResolvedAttribute("address", DataType.StringType, None, Seq(SourceColumn(tbl1, tbl1.column("address"))), None)
     )
   }
 
@@ -70,7 +70,7 @@ class SQLAnalyzerTest extends AirSpec {
     val plan = SQLAnalyzer.analyze("select id as person_id from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("person_id", DataType.LongType, None, Some(tbl1), Some(tbl1.column("id")), None)
+      ResolvedAttribute("person_id", DataType.LongType, None, Seq(SourceColumn(tbl1, tbl1.column("id"))), None)
     )
   }
 
@@ -82,10 +82,10 @@ class SQLAnalyzerTest extends AirSpec {
     )
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("id", DataType.LongType, None, Some(tbl1), Some(tbl1.column("id")), None),
-      ResolvedAttribute("name", DataType.StringType, None, Some(tbl1), Some(tbl1.column("name")), None),
-      ResolvedAttribute("address", DataType.StringType, None, Some(tbl1), Some(tbl1.column("address")), None),
-      ResolvedAttribute("person_id", DataType.StringType, None, Some(tbl2), Some(tbl2.column("phone")), None)
+      ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tbl1, tbl1.column("id"))), None),
+      ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tbl1, tbl1.column("name"))), None),
+      ResolvedAttribute("address", DataType.StringType, None, Seq(SourceColumn(tbl1, tbl1.column("address"))), None),
+      ResolvedAttribute("person_id", DataType.StringType, None, Seq(SourceColumn(tbl2, tbl2.column("phone"))), None)
     )
   }
 

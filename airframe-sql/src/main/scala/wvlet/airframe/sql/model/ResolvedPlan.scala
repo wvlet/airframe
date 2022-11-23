@@ -34,8 +34,7 @@ case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn], no
         col.name,
         col.dataType,
         None,
-        Some(table),
-        Some(col),
+        Seq(SourceColumn(table, col)),
         None // ResolvedAttribute always has no NodeLocation
       )
     }
@@ -53,46 +52,53 @@ case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn], no
 
 case class Alias(name: String, resolvedAttribute: ResolvedAttribute)
 
+case class SourceColumn(table: Catalog.Table, column: Catalog.TableColumn) {
+  def fullName: String = s"${table.name}.${column.name}"
+}
+
 case class ResolvedAttribute(
     name: String,
     dataType: DataType,
     qualifier: Option[String],
-    sourceTable: Option[Catalog.Table],
-    sourceColumn: Option[Catalog.TableColumn],
+    sourceColumns: Seq[SourceColumn],
     nodeLocation: Option[NodeLocation]
 ) extends Attribute {
-  require(sourceTable.nonEmpty == sourceColumn.nonEmpty, "sourceTable and sourceColumn must be set together")
 
   def withAlias(newName: String): ResolvedAttribute = {
     this.copy(name = newName)
   }
 
-  def relationName: Option[String] = qualifier.orElse(sourceTable.map(_.name))
+  def relationNames: Seq[String] = qualifier match {
+    case Some(q) => Seq(q)
+    case _       => sourceColumns.map(_.table.name)
+  }
 
   /**
     * Returns true if this resolved attribute matches with a given table name and colum name
     */
   def matchesWith(tableName: String, columnName: String): Boolean = {
-    relationName match {
-      case Some(tbl) =>
-        tbl == tableName && columnName == name
-      case None =>
-        columnName == name
+    relationNames match {
+      case Nil => columnName == name
+      case tableNames =>
+        tableNames.exists { tbl =>
+          tbl == tableName && columnName == name
+        }
     }
   }
 
   override def toString = {
-    (qualifier, sourceTable, sourceColumn) match {
-      case (Some(q), Some(t), Some(c)) =>
-        s"${q}.${name}:${dataType} <- ${t.name}.${c.name}"
-      case (None, Some(t), Some(c)) if c.name == name =>
-        s"${t.name}.${name}:${dataType}"
-      case (None, Some(t), Some(c)) =>
-        s"${name}:${dataType} <- ${t.name}.${c.name}"
+    (qualifier, sourceColumns) match {
+      case (Some(q), columns) if columns.nonEmpty =>
+        columns
+          .map(_.fullName)
+          .mkString(s"${q},${name}:${dataType} <- ", ", ", "")
+      case (None, columns) if columns.nonEmpty =>
+        columns
+          .map(_.fullName)
+          .mkString(s"${name}:${dataType} <- ", ", ", "")
       case _ =>
         s"${name}:${dataType}"
     }
-    // s"${sourceTable.map(t => s"${t.name}.${name}").getOrElse(name)}:${dataType}"
   }
   override lazy val resolved = true
 
