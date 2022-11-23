@@ -31,7 +31,7 @@ case class HttpLoggerConfig(
     // Additional HTTP headers excluded from logs. Authorization, ProxyAuthorization, Cookie headers will be removed by default
     excludeHeaders: Set[String] = HttpLogger.defaultExcludeHeaders,
     logFilter: Map[String, Any] => Map[String, Any] = identity,
-    fileName: String = "log/http_access.json",
+    logFileName: String = "log/http_access.json",
     // The max number of files to preserve in the local disk
     maxNumFiles: Int = 100,
     // The max file size for log rotation. The default is 100MB
@@ -48,7 +48,7 @@ case class HttpLoggerConfig(
   /**
     * Set a file name for log-rotation.
     */
-  def withLogFileName(fileName: String): HttpLoggerConfig = this.copy(fileName = fileName)
+  def withLogFileName(fileName: String): HttpLoggerConfig = this.copy(logFileName = fileName)
 
   /**
     * A filter for customizing log contents before write
@@ -59,11 +59,11 @@ case class HttpLoggerConfig(
   def withMaxNumFiles(maxNumFiles: Int): HttpLoggerConfig  = this.copy(maxNumFiles = maxNumFiles)
   def withMaxFileSize(maxFileSize: Long): HttpLoggerConfig = this.copy(maxFileSize = maxFileSize)
 
-  def newClientLogger: HttpLogger = ???
-  def newServerLogger: HttpLogger = ???
+  def newClientLogger(name: String): HttpLogger = ???
+  def newServerLogger(name: String): HttpLogger = ???
 }
 
-class HttpLogger(config: HttpLoggerConfig) {}
+class HttpLogger(name: String, config: HttpLoggerConfig) {}
 
 object HttpLogger {
 
@@ -87,6 +87,12 @@ object HttpLogger {
     if (queryString.nonEmpty) {
       m += "query_string" -> queryString
     }
+
+    request.remoteAddress.foreach { addr =>
+      m += "remote_host" -> addr.hostAndPort
+      m += "remote_port" -> addr.port
+    }
+
     m ++= requestHeaderLogs(request)
     m.result()
   }

@@ -212,6 +212,7 @@ trait HttpRequestAdapter[Req] {
       .withHeader(headerOf(request))
       .withContent(messageOf(request))
   }
+  def remoteAddressOf(request: Req): Option[ServerAddress]
   def wrap(request: Req): HttpRequest[Req]
 }
 

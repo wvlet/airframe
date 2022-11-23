@@ -29,7 +29,7 @@ class JSONHttpLogWriter(config: HttpLoggerConfig) extends HttpLogWriter {
   // Use an async handler to perform logging in a background thread
   private val asyncLogHandler = new AsyncHandler(
     new LogRotationHandler(
-      fileName = config.fileName,
+      fileName = config.logFileName,
       maxNumberOfFiles = config.maxNumFiles,
       maxSizeInBytes = config.maxFileSize,
       formatter = JSONLogFormatter,

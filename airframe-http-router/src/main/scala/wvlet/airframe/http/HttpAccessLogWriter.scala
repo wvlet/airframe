@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http.internal.RPCCallContext
+import wvlet.airframe.http.internal.{HttpLoggerConfig, JSONHttpLogWriter, RPCCallContext}
 import wvlet.airframe.surface.{MethodSurface, Parameter, Surface, TypeName}
 import wvlet.airframe.ulid.ULID
 import wvlet.log.{AsyncHandler, LogFormatter, LogRecord, LogRotationHandler, LogTimestampFormatter}
@@ -28,6 +28,7 @@ import scala.collection.immutable.ListMap
 import scala.concurrent.ExecutionException
 import scala.util.Try
 
+@deprecated("Use wvlet.http.HttpLoggerConfig instead", since = "22.12.0")
 case class HttpAccessLogConfig(
     fileName: String = "log/http_access.json",
     maxFiles: Int = 100,
@@ -55,8 +56,13 @@ object HttpAccessLogWriter {
     *
     * @param httpAccessLogConfig
     */
-  @deprecated("Use HttpLogWriter instead", since = "22.11.1")
-  class JSONHttpAccessLogWriter(httpAccessLogConfig: HttpAccessLogConfig = HttpAccessLogConfig()) {}
+  @deprecated("Use HttpLogWriter instead", since = "22.12.0")
+  class JSONHttpAccessLogWriter(httpAccessLogConfig: HttpAccessLogConfig = HttpAccessLogConfig())
+      extends AutoCloseable {
+    private val logWriter = new JSONHttpLogWriter(HttpLoggerConfig())
+
+    override def close(): Unit = ???
+  }
 
   /**
     * In-memory log writer for testing purpose. Not for production use.
