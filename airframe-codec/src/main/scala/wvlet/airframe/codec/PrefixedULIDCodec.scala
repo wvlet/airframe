@@ -14,7 +14,7 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
-import wvlet.airframe.ulid.{PrefixedULID, ULID}
+import wvlet.airframe.ulid.PrefixedULID
 
 /**
   */
@@ -30,10 +30,7 @@ object PrefixedULIDCodec extends MessageCodec[PrefixedULID] {
       case ValueType.STRING =>
         val s = u.unpackString
         try {
-          val pos    = s.lastIndexOf(PrefixedULID.DELIMITER)
-          val prefix = s.substring(0, pos)
-          val ulid   = ULID.fromString(s.substring(pos + 1))
-          v.setObject(PrefixedULID(prefix, ulid))
+          v.setObject(PrefixedULID.fromString(s))
         } catch {
           case e: IllegalArgumentException =>
             v.setError(e)

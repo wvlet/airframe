@@ -14,7 +14,7 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
-import wvlet.airframe.ulid.{PrefixedULID, ULID}
+import wvlet.airframe.ulid.ULID
 
 /**
   */

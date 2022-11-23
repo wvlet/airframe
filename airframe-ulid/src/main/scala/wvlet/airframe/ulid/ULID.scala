@@ -14,7 +14,7 @@
 package wvlet.airframe.ulid
 import java.time.Instant
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
+import java.util.concurrent.atomic.AtomicReference
 import scala.util.Random
 
 /**
