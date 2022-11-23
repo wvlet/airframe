@@ -18,8 +18,8 @@ import wvlet.airframe.ulid.{PrefixedULID, ULID}
 
 /**
   */
-object ULIDCodec extends MessageCodec[ULID] {
-  override def pack(p: Packer, v: ULID): Unit = {
+object PrefixedULIDCodec extends MessageCodec[PrefixedULID] {
+  override def pack(p: Packer, v: PrefixedULID): Unit = {
     p.packString(v.toString)
   }
   override def unpack(
@@ -30,7 +30,10 @@ object ULIDCodec extends MessageCodec[ULID] {
       case ValueType.STRING =>
         val s = u.unpackString
         try {
-          v.setObject(ULID.fromString(s))
+          val pos    = s.lastIndexOf(PrefixedULID.DELIMITER)
+          val prefix = s.substring(0, pos)
+          val ulid   = ULID.fromString(s.substring(pos + 1))
+          v.setObject(PrefixedULID(prefix, ulid))
         } catch {
           case e: IllegalArgumentException =>
             v.setError(e)

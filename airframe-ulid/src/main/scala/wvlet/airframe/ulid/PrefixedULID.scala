@@ -13,6 +13,10 @@
  */
 package wvlet.airframe.ulid
 
-case class PrefixedULID(prefix: String, ulid: ULID, delimiter: Char = ':') {
-  override def toString: String = s"${prefix}${delimiter}${ulid}"
+object PrefixedULID {
+  val DELIMITER = ':'
+}
+
+case class PrefixedULID(prefix: String, ulid: ULID) {
+  override def toString: String = s"${prefix}${PrefixedULID.DELIMITER}${ulid}"
 }
