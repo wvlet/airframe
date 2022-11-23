@@ -76,7 +76,7 @@ object SQLGenerator extends LogSupport {
   private def printSetOperation(s: SetOperation, context: List[Relation]): String = {
     val isDistinct = containsDistinctPlan(context)
     val op = s match {
-      case Union(relations, _) =>
+      case Union(relations, _, _) =>
         if (isDistinct) "UNION" else "UNION ALL"
       case Except(left, right, _) =>
         if (isDistinct) "EXCEPT" else "EXCEPT ALL"
