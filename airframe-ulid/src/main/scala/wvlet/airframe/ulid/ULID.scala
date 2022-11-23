@@ -169,6 +169,7 @@ object ULID {
     * Create a new ULID from a given string of size 26
     */
   def fromString(ulid: String): ULID = {
+    require(ulid != null, "The input ULID string was null")
     require(ulid.length == 26, s"ULID must have 26 characters: ${ulid} (length: ${ulid.length})")
     require(CrockfordBase32.isValidBase32(ulid), s"Invalid Base32 character is found in ${ulid}")
     new ULID(ulid)

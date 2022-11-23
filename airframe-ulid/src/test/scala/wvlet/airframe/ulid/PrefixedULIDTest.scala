@@ -42,6 +42,12 @@ class PrefixedULIDTest extends AirSpec with PropertyCheck {
     }
   }
 
+  test("handle NPE") {
+    intercept[IllegalArgumentException] {
+      PrefixedULID.fromString(null)
+    }
+  }
+
   test("Allow an empty prefix") {
     val ulid = ULID.newULID
     val p    = PrefixedULID.fromString(s":${ulid}")

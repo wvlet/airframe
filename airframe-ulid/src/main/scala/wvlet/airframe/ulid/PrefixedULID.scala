@@ -20,13 +20,15 @@ object PrefixedULID {
     PrefixedULID(prefix, ULID.newULID)
   }
   def newPrefixedULIDString(prefix: String): String = {
-    s"${prefix}:${ULID.newULIDString}"
+    s"${prefix}${PrefixedULID.DELIMITER}${ULID.newULIDString}"
   }
 
   /**
     * Parse the given PrefixedULID string
     */
   def fromString(s: String): PrefixedULID = {
+    require(s != null, "The input PrefixedULID string was null")
+    require(s.length >= 27, s"PrefixedULID must have 26 (ulid) + 1 (delimiter) characters: ${s} (length: ${s.length}) ")
     val pos = s.lastIndexOf(PrefixedULID.DELIMITER)
     if (pos == -1) {
       throw new IllegalArgumentException(

@@ -83,6 +83,12 @@ class ULIDTest extends AirSpec with PropertyCheck {
     }
   }
 
+  test("handle NPE in ULID.fromString") {
+    intercept[IllegalArgumentException] {
+      ULID.fromString(null)
+    }
+  }
+
   test("equals/hashCode") {
     val ulid1 = ULID.newULID
     val ulid2 = ULID.fromString(ulid1.toString)
