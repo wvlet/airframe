@@ -124,7 +124,9 @@ object SQLGenerator extends LogSupport {
       b += "FROM"
       f match {
         case _: Selection =>
-          b += "(" + printRelation(f) + ")"
+          b += s"(${printRelation(f)})"
+        case _: SetOperation =>
+          b += s"(${printRelation(f)})"
         case _ =>
           b += printRelation(f)
       }
