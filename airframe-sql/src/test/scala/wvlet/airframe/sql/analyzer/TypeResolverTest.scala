@@ -327,15 +327,15 @@ class TypeResolverTest extends AirSpec {
     test("join with USING") {
       val p = analyze("select id, A.name from A join B using(id)")
       p.outputAttributes shouldBe List(
-        ra1,
-        ra2
+        ResolvedAttribute("id", DataType.LongType, None, ra1.sourceColumns ++ rb1.sourceColumns, None),
+        ResolvedAttribute("name", DataType.StringType, None, ra2.sourceColumns, None)
       )
     }
 
     test("join with on") {
       val p = analyze("select id, A.name from A join B on A.id = B.id")
       p.outputAttributes shouldBe List(
-        ra1,
+        ResolvedAttribute("id", DataType.LongType, None, ra1.sourceColumns ++ rb1.sourceColumns, None),
         ra2
       )
     }
@@ -343,7 +343,7 @@ class TypeResolverTest extends AirSpec {
     test("join with on condition for aliased columns") {
       val p = analyze("select id, a.name from A a join B b on a.id = b.id")
       p.outputAttributes shouldBe List(
-        ra1.withQualifier("a"),
+        ResolvedAttribute("id", DataType.LongType, Some("a"), ra1.sourceColumns ++ rb1.sourceColumns, None),
         ra2.withQualifier("a")
       )
     }
@@ -351,7 +351,7 @@ class TypeResolverTest extends AirSpec {
     test("join with on condition for qualified columns") {
       val p = analyze("select id, default.A.name from default.A join default.B on default.A.id = default.B.id")
       p.outputAttributes shouldBe List(
-        ra1,
+        ResolvedAttribute("id", DataType.LongType, None, ra1.sourceColumns ++ rb1.sourceColumns, None),
         ra2
       )
     }
@@ -362,6 +362,11 @@ class TypeResolverTest extends AirSpec {
         ResolvedAttribute("pid", DataType.LongType, None, Seq(SourceColumn(tableB, b1)), None),
         ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tableA, a2)), None)
       )
+    }
+
+    test("refer to duplicated key of equi join") {
+      val p = analyze("select B.id from A inner join B on A.id = B.id")
+      p.outputAttributes shouldBe List(rb1)
     }
 
     test("3-way joins") {

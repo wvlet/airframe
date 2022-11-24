@@ -568,9 +568,15 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = {
       cond match {
         case je: JoinOnEq =>
-          // Remove join key duplication here
-          val dups = je.duplicateKeys
-          inputAttributes.filter(x => !dups.contains(x))
+          // Aggregates duplicated keys
+          val dups         = je.duplicateKeys
+          val uniqueInputs = inputAttributes.filter(x => !dups.contains(x))
+          uniqueInputs.map {
+            case r: ResolvedAttribute =>
+              val dupAttrs = dups.collect { case x: ResolvedAttribute if x.name == r.name => x }
+              r.copy(sourceColumns = r.sourceColumns ++ dupAttrs.flatMap(_.sourceColumns))
+            case r => r
+          }
         case _ => inputAttributes
       }
     }
