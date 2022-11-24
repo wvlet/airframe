@@ -17,7 +17,7 @@ import io.grpc.stub.ServerCalls
 import io.grpc.{MethodDescriptor, ServerServiceDefinition}
 import wvlet.airframe.Session
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
-import wvlet.airframe.http.Router
+import wvlet.airframe.http.{RPCMethod, Router}
 import wvlet.airframe.http.grpc.{
   GrpcMethod,
   GrpcRequestMarshaller,
@@ -28,7 +28,7 @@ import wvlet.airframe.http.grpc.{
 }
 import wvlet.airframe.http.router.Route
 import wvlet.airframe.msgpack.spi.MsgPack
-import wvlet.airframe.surface.{MethodParameter, MethodSurface, Surface}
+import wvlet.airframe.surface.{MethodParameter, MethodSurface, Surface, TypeName}
 import wvlet.airframe.rx._
 
 import java.util.concurrent.ExecutorService
@@ -117,9 +117,17 @@ object GrpcServiceBuilder {
           for ((r, m) <- routeAndMethods) {
             val controller      = session.getInstanceOf(r.controllerSurface)
             val rpcInterfaceCls = Router.findRPCInterfaceCls(r.controllerSurface)
+            val rpcMethod = RPCMethod(
+              path = r.path,
+              rpcInterface = TypeName.sanitizeTypeName(rpcInterfaceCls.getName),
+              methodName = r.methodSurface.name,
+              // No need to bind requestSurface in the server side
+              requestSurface = Surface.of[Array[Byte]],
+              responseSurface = r.returnTypeSurface
+            )
             val requestHandler =
               new GrpcRequestHandler(
-                rpcInterfaceCls,
+                rpcMethod,
                 controller,
                 r.methodSurface,
                 config.codecFactory,

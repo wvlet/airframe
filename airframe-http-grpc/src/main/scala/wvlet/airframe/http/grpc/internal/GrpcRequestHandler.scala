@@ -17,7 +17,7 @@ import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, Ser
 import io.grpc.stub.{ClientCallStreamObserver, ServerCallStreamObserver, StreamObserver}
 import wvlet.airframe.codec.{MessageCodec, MessageCodecException, MessageCodecFactory}
 import wvlet.airframe.http
-import wvlet.airframe.http.RPCEncoding
+import wvlet.airframe.http.{RPCEncoding, RPCMethod, RPCStatus}
 import wvlet.airframe.http.grpc.{GrpcContext, GrpcResponse}
 import wvlet.airframe.http.internal.RPCCallContext
 import wvlet.airframe.http.router.HttpRequestMapper
@@ -38,7 +38,7 @@ import scala.util.{Failure, Success, Try}
   * This handler receives a MessagePack Map value for an RPC request, and call the corresponding controller method
   */
 class GrpcRequestHandler(
-    rpcInterfaceCls: Class[_],
+    rpcMethod: RPCMethod,
     // Controller instance
     controller: Any,
     // Controller method to call for RPC
@@ -48,9 +48,8 @@ class GrpcRequestHandler(
     requestLogger: GrpcRequestLogger
 ) extends LogSupport {
 
-  private val argCodecs = methodSurface.args.map(a => codecFactory.of(a.surface))
-
-  private val rpcContext = RPCCallContext(rpcInterfaceCls, methodSurface, Seq.empty)
+  private val argCodecs  = methodSurface.args.map(a => codecFactory.of(a.surface))
+  private val rpcContext = RPCCallContext(rpcMethod, Seq.empty)
 
   /**
     * Read the input value (MessagePack or Json) and convert to MessagePack Value
@@ -74,7 +73,7 @@ class GrpcRequestHandler(
         case m: MapValue =>
           m
         case _ =>
-          val e = new IllegalArgumentException(s"Request data is not a MapValue: ${value}")
+          val e = RPCStatus.INVALID_REQUEST_U1.newException(s"Request data is not a MapValue: ${value}")
           reportError(e)
           requestLogger.logError(e, grpcContext, rpcContext)
           throw e

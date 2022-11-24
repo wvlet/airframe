@@ -51,10 +51,10 @@ case class HttpLoggerConfig(
   def withLogFileName(fileName: String): HttpLoggerConfig = this.copy(logFileName = fileName)
 
   /**
-    * A filter for customizing log contents before write
+    * Add a filter for customizing log contents before write
     */
-  def withLogFilter(logFilter: Map[String, Any] => Map[String, Any]): HttpLoggerConfig =
-    this.copy(logFilter = logFilter)
+  def addLogFilter(newLogFilter: Map[String, Any] => Map[String, Any]): HttpLoggerConfig =
+    this.copy(logFilter = logFilter.andThen(newLogFilter))
 
   def withMaxNumFiles(maxNumFiles: Int): HttpLoggerConfig  = this.copy(maxNumFiles = maxNumFiles)
   def withMaxFileSize(maxFileSize: Long): HttpLoggerConfig = this.copy(maxFileSize = maxFileSize)
@@ -63,13 +63,36 @@ case class HttpLoggerConfig(
   def newServerLogger(name: String): HttpLogger = ???
 }
 
-class HttpLogger(name: String, config: HttpLoggerConfig) {}
-
 object HttpLogger {
 
-  def defaultHttpLogger = new HttpLogger(HttpLoggerConfig())
+  /**
+    * Http headers to be excluded from logging by default
+    */
+  val defaultExcludeHeaders: Set[String] = Set(
+    HttpHeader.Authorization,
+    HttpHeader.ProxyAuthorization,
+    HttpHeader.Cookie
+  )
+}
 
-  def unixTimeLogs(currentTimeMillis: Long = System.currentTimeMillis()): ListMap[String, Any] = {
+class HttpLogger(name: String, config: HttpLoggerConfig, writer: HttpLogWriter) {
+
+  private val excludeHeaders = HttpLogger.defaultExcludeHeaders ++ config.excludeHeaders
+
+  def requestLogs(request: Request): ListMap[String, Any] = {
+    val m = ListMap.newBuilder[String, Any]
+    m ++= unixTimeLogs()
+    m ++= commonRequestLogs(request)
+    m ++= rpcLogs
+    m.result()
+  }
+
+  def responseLogs(response: Response): ListMap[String, Any] = {
+    val m = ListMap.newBuilder[String, Any]
+    m ++= commonResponseLogs(response)
+  }
+
+  private def unixTimeLogs(currentTimeMillis: Long = System.currentTimeMillis()): ListMap[String, Any] = {
     // Unix time
     ListMap(
       "time"          -> (currentTimeMillis / 1000L),
@@ -78,7 +101,8 @@ object HttpLogger {
       "event_time" -> LogTimestampFormatter.formatTimestampWithNoSpaace(currentTimeMillis)
     )
   }
-  def commonRequestLogs(request: Request): Map[String, Any] = {
+
+  private def commonRequestLogs(request: Request): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     m += "method" -> request.method.toString
     m += "path"   -> request.path
@@ -97,7 +121,7 @@ object HttpLogger {
     m.result()
   }
 
-  def commonResponseLogs(response: Response): Map[String, Any] = {
+  private def commonResponseLogs(response: Response): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     m += "status_code"      -> response.statusCode
     m += "status_code_name" -> response.status.reason
@@ -108,27 +132,18 @@ object HttpLogger {
     m.result()
   }
 
-  def requestHeaderLogs(request: Request): Map[String, Any] = {
+  private def requestHeaderLogs(request: Request): Map[String, Any] = {
     Map("request_header" -> headerLogs(request.header))
   }
 
-  def responseHeaderLogs(response: Response): Map[String, Any] = {
+  private def responseHeaderLogs(response: Response): Map[String, Any] = {
     Map("response_header" -> headerLogs(response.header))
   }
 
-  /**
-    * Http headers to be excluded from logging by default
-    */
-  private[http] val defaultExcludeHeaders: Set[String] = Set(
-    HttpHeader.Authorization,
-    HttpHeader.ProxyAuthorization,
-    HttpHeader.Cookie
-  )
-
-  def headerLogs(headerMap: HttpMultiMap): Map[String, Any] = {
+  private def headerLogs(headerMap: HttpMultiMap): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     for (e <- headerMap.entries) {
-      if (!defaultExcludeHeaders.contains(e.key.toLowerCase)) {
+      if (!excludeHeaders.contains(e.key.toLowerCase)) {
         val v = headerMap.getAll(e.key).mkString(";")
         m += sanitizeHeader(e.key) -> v
       }
@@ -136,24 +151,24 @@ object HttpLogger {
     m.result()
   }
 
-  def rpcMethodLogs(rpcMethod: RPCMethod): Map[String, Any] = {
-    rpcMethod.logData
-  }
+  private def rpcLogs: ListMap[String, Any] = {
+    RPCContext.current.getThreadLocal(HttpBackend.TLS_KEY_RPC) match {
+      case Some(c: RPCCallContext) =>
+        val m = ListMap.newBuilder[String, Any]
+        m ++= rpcContext.rpcMethod.logData
+        m += "rpc_class" -> rpcContext.rpcClassName
 
-  def rpcLogs(rpcContext: RPCCallContext): ListMap[String, Any] = {
-    val m = ListMap.newBuilder[String, Any]
-    m += "rpc_interface" -> TypeName.sanitizeTypeName(rpcContext.rpcInterfaceCls.getName)
-    m += "rpc_class"     -> rpcContext.rpcMethodSurface.owner.fullName
-    m += "rpc_method"    -> rpcContext.rpcMethodSurface.name
-
-    val rpcArgs = extractRpcArgLog(rpcContext)
-    if (rpcArgs.nonEmpty) {
-      m += "rpc_args" -> rpcArgs
+        val rpcArgs = extractRpcArgLog(rpcContext)
+        if (rpcArgs.nonEmpty) {
+          m += "rpc_args" -> rpcArgs
+        }
+        m.result()
+      case _ =>
+        ListMap.empty
     }
-    m.result()
   }
 
-  private[http] def extractRpcArgLog(rpcContext: RPCCallContext): ListMap[String, Any] = {
+  private def extractRpcArgLog(rpcContext: RPCCallContext): ListMap[String, Any] = {
 
     def traverseObject(s: Surface, arg: Any): ListMap[String, Any] = {
       val builder = ListMap.newBuilder[String, Any]
@@ -192,7 +207,7 @@ object HttpLogger {
     rpcArgsBuilder.result()
   }
 
-  private[http] def errorLogs(e: Throwable): ListMap[String, Any] = {
+  private def errorLogs(e: Throwable): ListMap[String, Any] = {
 
     /**
       * Find the root cause of the exception from wrapped exception classes

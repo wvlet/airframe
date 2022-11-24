@@ -13,8 +13,15 @@
  */
 package wvlet.airframe.http.internal
 
+import wvlet.airframe.http.RPCMethod
 import wvlet.airframe.surface.MethodSurface
 
-case class RPCCallContext(rpcInterfaceCls: Class[_], rpcMethodSurface: MethodSurface, rpcArgs: Seq[Any]) {
+case class RPCCallContext(
+    rpcMethod: RPCMethod,
+    // The full class name of the RPC implementation class
+    rpcClassName: String,
+    rpcMethodSurface: MethodSurface,
+    rpcArgs: Seq[Any]
+) {
   def withRPCArgs(rpcArgs: Seq[Any]): RPCCallContext = this.copy(rpcArgs = rpcArgs)
 }
