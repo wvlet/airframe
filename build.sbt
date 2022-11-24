@@ -809,7 +809,7 @@ lazy val benchmark =
       // java.lang.RuntimeException: ERROR: Unable to find the resource: /META-INF/BenchmarkList
       turbo := false,
       // Generate JMH benchmark cord before packaging and testing
-      pack                  := pack.dependsOn(Test / compile).value,
+      Compile / pack        := (Compile / pack).dependsOn(Test / compile).value,
       Jmh / sourceDirectory := (Compile / sourceDirectory).value,
       Jmh / compile         := (Jmh / compile).triggeredBy(Compile / compile).value,
       Test / compile        := ((Test / compile).dependsOn(Jmh / compile)).value,
