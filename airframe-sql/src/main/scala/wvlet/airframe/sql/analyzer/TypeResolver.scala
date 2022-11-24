@@ -265,11 +265,11 @@ object TypeResolver extends LogSupport {
       QName(name, None) match {
         case QName(Seq(db, t1, c1), _) if context.database == db =>
           inputAttributes.collect {
-            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a
+            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.ofSourceColumn(t1, c1).getOrElse(a)
           }.toList
         case QName(Seq(t1, c1), _) =>
           inputAttributes.collect {
-            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a
+            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.ofSourceColumn(t1, c1).getOrElse(a)
           }.toList
         case QName(Seq(c1), _) =>
           inputAttributes.collect {
