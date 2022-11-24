@@ -49,6 +49,12 @@ class SQLGeneratorTest extends AirSpec {
     sql shouldBe "SELECT id, name FROM default.A"
   }
 
+  test("print resolved subquery plan") {
+    val resolvedPlan = SQLAnalyzer.analyze("select id from (select id from A)", "default", demoCatalog)
+    val sql          = SQLGenerator.print(resolvedPlan)
+    sql shouldBe "SELECT id FROM (SELECT id FROM default.A)"
+  }
+
   test("print resolved CTE plan") {
     val resolvedPlan = SQLAnalyzer.analyze("with p as (select id from A) select * from p", "default", demoCatalog)
     val sql          = SQLGenerator.print(resolvedPlan)

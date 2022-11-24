@@ -122,7 +122,12 @@ object SQLGenerator extends LogSupport {
 
     findNonEmpty(nonFilterChild).map { f =>
       b += "FROM"
-      b += printRelation(f)
+      f match {
+        case _: Selection =>
+          b += "(" + printRelation(f) + ")"
+        case _ =>
+          b += printRelation(f)
+      }
     }
 
     val filterSet = s match {
