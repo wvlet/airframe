@@ -17,7 +17,7 @@ import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Project}
+import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Distinct, Filter, Intersect, Project}
 import wvlet.airframe.sql.model.{Expression, LogicalPlan, NodeLocation, ResolvedAttribute, SourceColumn}
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
@@ -169,6 +169,18 @@ class TypeResolverTest extends AirSpec {
         ra1.sourceColumns ++ rb1.sourceColumns,
         None
       )
+    }
+
+    test("resolve intersect") {
+      val p = analyze("select id from A intersect select id from B") // => Distinct(Intersect(...))
+      p match {
+        case Distinct(i @ Intersect(_, _, _), _) =>
+          i.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
+          i.outputAttributes shouldBe List(
+            ResolvedAttribute("id", DataType.LongType, None, ra1.sourceColumns ++ rb1.sourceColumns, None)
+          )
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
     }
   }
 

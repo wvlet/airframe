@@ -80,7 +80,7 @@ object SQLGenerator extends LogSupport {
         if (isDistinct) "UNION" else "UNION ALL"
       case Except(left, right, _) =>
         if (isDistinct) "EXCEPT" else "EXCEPT ALL"
-      case Intersect(relations, _) =>
+      case Intersect(relations, _, _) =>
         if (isDistinct) "INTERSECT" else "INTERSECT ALL"
     }
     s.children.map(printRelation).mkString(s" ${op} ")

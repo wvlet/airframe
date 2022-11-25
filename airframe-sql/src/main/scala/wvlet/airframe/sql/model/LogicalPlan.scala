@@ -601,15 +601,31 @@ object LogicalPlan {
   sealed trait SetOperation extends Relation {
     override def children: Seq[Relation]
   }
-  case class Intersect(relations: Seq[Relation], nodeLocation: Option[NodeLocation]) extends SetOperation {
+  case class Intersect(
+      relations: Seq[Relation],
+      resolvedOutputs: Option[Seq[Attribute]],
+      nodeLocation: Option[NodeLocation]
+  ) extends SetOperation {
     override def children: Seq[Relation] = relations
     override def sig(config: QuerySignatureConfig): String = {
       s"IX(${relations.map(_.sig(config)).mkString(",")})"
     }
     override def inputAttributes: Seq[Attribute] =
-      relations.head.inputAttributes
-    override def outputAttributes: Seq[Attribute] =
-      relations.head.outputAttributes
+      relations.flatMap(_.inputAttributes)
+    override def outputAttributes: Seq[Attribute] = {
+      val out = resolvedOutputs.getOrElse {
+        relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
+          SingleColumn(
+            UnionColumn(relations.map(_.outputAttributes(i)), output.nodeLocation),
+            None,
+            None,
+            output.nodeLocation
+          )
+        }
+      }
+      println("** out: " + out)
+      out
+    }
   }
   case class Except(left: Relation, right: Relation, nodeLocation: Option[NodeLocation]) extends SetOperation {
     override def children: Seq[Relation] = Seq(left, right)
