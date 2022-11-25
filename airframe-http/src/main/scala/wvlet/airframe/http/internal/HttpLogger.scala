@@ -73,26 +73,8 @@ object HttpLogger {
     HttpHeader.ProxyAuthorization,
     HttpHeader.Cookie
   )
-}
 
-class HttpLogger(name: String, config: HttpLoggerConfig, writer: HttpLogWriter) {
-
-  private val excludeHeaders = HttpLogger.defaultExcludeHeaders ++ config.excludeHeaders
-
-  def requestLogs(request: Request): ListMap[String, Any] = {
-    val m = ListMap.newBuilder[String, Any]
-    m ++= unixTimeLogs()
-    m ++= commonRequestLogs(request)
-    m ++= rpcLogs
-    m.result()
-  }
-
-  def responseLogs(response: Response): ListMap[String, Any] = {
-    val m = ListMap.newBuilder[String, Any]
-    m ++= commonResponseLogs(response)
-  }
-
-  private def unixTimeLogs(currentTimeMillis: Long = System.currentTimeMillis()): ListMap[String, Any] = {
+  def unixTimeLogs(currentTimeMillis: Long = System.currentTimeMillis()): ListMap[String, Any] = {
     // Unix time
     ListMap(
       "time"          -> (currentTimeMillis / 1000L),
@@ -102,7 +84,7 @@ class HttpLogger(name: String, config: HttpLoggerConfig, writer: HttpLogWriter) 
     )
   }
 
-  private def commonRequestLogs(request: Request): Map[String, Any] = {
+  def commonRequestLogs(request: Request): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     m += "method" -> request.method.toString
     m += "path"   -> request.path
@@ -121,7 +103,7 @@ class HttpLogger(name: String, config: HttpLoggerConfig, writer: HttpLogWriter) 
     m.result()
   }
 
-  private def commonResponseLogs(response: Response): Map[String, Any] = {
+  def commonResponseLogs(response: Response): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     m += "status_code"      -> response.statusCode
     m += "status_code_name" -> response.status.reason
@@ -140,7 +122,7 @@ class HttpLogger(name: String, config: HttpLoggerConfig, writer: HttpLogWriter) 
     Map("response_header" -> headerLogs(response.header))
   }
 
-  private def headerLogs(headerMap: HttpMultiMap): Map[String, Any] = {
+  private def headerLogs(headerMap: HttpMultiMap, excludeHeaders: Set[String]): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     for (e <- headerMap.entries) {
       if (!excludeHeaders.contains(e.key.toLowerCase)) {
@@ -149,6 +131,72 @@ class HttpLogger(name: String, config: HttpLoggerConfig, writer: HttpLogWriter) 
       }
     }
     m.result()
+  }
+
+  def errorLogs(e: Throwable): ListMap[String, Any] = {
+
+    /**
+      * Find the root cause of the exception from wrapped exception classes
+      */
+    @tailrec
+    def findCause(e: Throwable): Throwable = {
+      e match {
+        case ee: ExecutionException if ee.getCause != null =>
+          findCause(ee.getCause)
+        // InvocationTargetException is not available in Scala.js, so use the name based lookup
+        case i: Exception if i.getClass.getName == "java.lang.reflect.InvocationTargetException" =>
+          findCause(i.getCause)
+        case _ =>
+          e
+      }
+    }
+
+    val m = ListMap.newBuilder[String, Any]
+    // Resolve the cause of the exception
+    findCause(e) match {
+      case null =>
+      // no-op
+      case se: HttpServerException =>
+        // If the cause is provided, record it. Otherwise, recording the status_code is sufficient.
+        if (se.getCause != null) {
+          val rootCause = findCause(se.getCause)
+          m += "exception"         -> rootCause
+          m += "exception_message" -> rootCause.getMessage
+        }
+      // TODO customize RPC error logs?
+      // case re: RPCException =>
+      //
+      case other =>
+        m += "exception"         -> other
+        m += "exception_message" -> other.getMessage
+    }
+    m.result()
+  }
+
+  private def sanitize(s: String): String = {
+    s.map {
+      case '\n' => "\\n"
+      case '\r' => "\\r"
+      case '\t' => "\\t"
+      case c    => c
+    }.mkString
+  }
+
+  import scala.jdk.CollectionConverters._
+
+  private val headerSanitizeCache = new ConcurrentHashMap[String, String]().asScala
+
+  private def sanitizeHeader(h: String): String = {
+    headerSanitizeCache.getOrElseUpdate(h, h.replaceAll("-", "_").toLowerCase())
+  }
+
+  def extractQueryString(uri: String): String = {
+    val qPos = uri.indexOf('?')
+    if (qPos < 0 || qPos == uri.length - 1) {
+      ""
+    } else {
+      uri.substring(qPos + 1, uri.length)
+    }
   }
 
   private def rpcLogs: ListMap[String, Any] = {
@@ -206,70 +254,25 @@ class HttpLogger(name: String, config: HttpLoggerConfig, writer: HttpLogWriter) 
     }
     rpcArgsBuilder.result()
   }
+}
 
-  private def errorLogs(e: Throwable): ListMap[String, Any] = {
+class HttpLogger(name: String, config: HttpLoggerConfig, writer: HttpLogWriter) {
+  import HttpLogger._
 
-    /**
-      * Find the root cause of the exception from wrapped exception classes
-      */
-    @tailrec
-    def findCause(e: Throwable): Throwable = {
-      e match {
-        case ee: ExecutionException if ee.getCause != null =>
-          findCause(ee.getCause)
-        // InvocationTargetException is not available in Scala.js, so use the name based lookup
-        case i: Exception if i.getClass.getName == "java.lang.reflect.InvocationTargetException" =>
-          findCause(i.getCause)
-        case _ =>
-          e
-      }
-    }
+  private val excludeHeaders: Set[String] =
+    (HttpLogger.defaultExcludeHeaders ++ config.excludeHeaders).map(_.toLowerCase).toSet[String]
 
+  def requestLogs(request: Request): ListMap[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
-    // Resolve the cause of the exception
-    findCause(e) match {
-      case null =>
-      // no-op
-      case se: HttpServerException =>
-        // If the cause is provided, record it. Otherwise, recording the status_code is sufficient.
-        if (se.getCause != null) {
-          val rootCause = findCause(se.getCause)
-          m += "exception"         -> rootCause
-          m += "exception_message" -> rootCause.getMessage
-        }
-      // TODO customize RPC error logs?
-      // case re: RPCException =>
-      //
-      case other =>
-        m += "exception"         -> other
-        m += "exception_message" -> other.getMessage
-    }
+    m ++= unixTimeLogs()
+    m ++= commonRequestLogs(request)
+    m ++= rpcLogs
     m.result()
   }
 
-  private def sanitize(s: String): String = {
-    s.map {
-      case '\n' => "\\n"
-      case '\r' => "\\r"
-      case '\t' => "\\t"
-      case c    => c
-    }.mkString
-  }
-
-  import scala.jdk.CollectionConverters._
-  private val headerSanitizeCache = new ConcurrentHashMap[String, String]().asScala
-
-  private def sanitizeHeader(h: String): String = {
-    headerSanitizeCache.getOrElseUpdate(h, h.replaceAll("-", "_").toLowerCase())
-  }
-
-  def extractQueryString(uri: String): String = {
-    val qPos = uri.indexOf('?')
-    if (qPos < 0 || qPos == uri.length - 1) {
-      ""
-    } else {
-      uri.substring(qPos + 1, uri.length)
-    }
+  def responseLogs(response: Response): ListMap[String, Any] = {
+    val m = ListMap.newBuilder[String, Any]
+    m ++= commonResponseLogs(response)
   }
 
 }
