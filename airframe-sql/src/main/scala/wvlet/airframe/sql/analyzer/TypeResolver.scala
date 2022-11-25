@@ -35,6 +35,7 @@ object TypeResolver extends LogSupport {
       TypeResolver.resolveRegularRelation _ ::
       TypeResolver.resolveColumns _ ::
       TypeResolver.resolveUnion _ ::
+      TypeResolver.resolveIntersect _ ::
       Nil
   }
 
@@ -177,7 +178,8 @@ object TypeResolver extends LogSupport {
   def resolveRegularRelation(context: AnalyzerContext): PlanRewriter = {
     case filter @ Filter(child, filterExpr, _) =>
       filter.transformExpressions { case x: Expression => resolveExpression(context, x, filter.inputAttributes) }
-    case u: Union => u // UNION is resolved later by resolveUnion()
+    case u: Union     => u // UNION is resolved later by resolveUnion()
+    case u: Intersect => u // INTERSECT is resolved later by resolveIntersect()
     case r: Relation =>
       r.transformExpressions { case x: Expression => resolveExpression(context, x, r.inputAttributes) }
   }
@@ -186,6 +188,17 @@ object TypeResolver extends LogSupport {
     val resolvedColumns = resolveOutputColumns(context, child.outputAttributes, columns)
     val resolved        = Project(child, resolvedColumns, p.nodeLocation)
     resolved
+  }
+
+  def resolveIntersect(context: AnalyzerContext): PlanRewriter = { case u @ Intersect(_, None, _) =>
+    val resolvedOutputs = u.outputAttributes.collect { case SingleColumn(UnionColumn(inputs, _), _, _, _) =>
+      val resolved = inputs
+        .map { expr =>
+          resolveExpression(context, expr, u.inputAttributes)
+        }.collect { case a: ResolvedAttribute => a }
+      resolved.head.copy(sourceColumns = resolved.flatMap(_.sourceColumns))
+    }
+    u.copy(resolvedOutputs = Some(resolvedOutputs))
   }
 
   def resolveUnion(context: AnalyzerContext): PlanRewriter = { case u @ Union(_, None, _) =>
@@ -296,6 +309,7 @@ object TypeResolver extends LogSupport {
   def resolveExpression(context: AnalyzerContext, expr: Expression, inputAttributes: Seq[Attribute]): Expression = {
     findMatchInInputAttributes(context, expr, inputAttributes) match {
       case lst if lst.length > 1 =>
+        trace(s"${expr} -> ${lst}")
         throw SQLErrorCode.SyntaxError.newException(s"${expr.sqlExpr} is ambiguous", expr.nodeLocation)
       case lst =>
         lst.headOption.getOrElse(expr)
