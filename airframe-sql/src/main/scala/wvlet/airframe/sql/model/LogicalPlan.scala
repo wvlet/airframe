@@ -623,7 +623,6 @@ object LogicalPlan {
           )
         }
       }
-      println("** out: " + out)
       out
     }
   }
