@@ -309,7 +309,7 @@ object TypeResolver extends LogSupport {
   def resolveExpression(context: AnalyzerContext, expr: Expression, inputAttributes: Seq[Attribute]): Expression = {
     findMatchInInputAttributes(context, expr, inputAttributes) match {
       case lst if lst.length > 1 =>
-        println(expr + " -> " + lst)
+        trace(s"${expr} -> ${lst}")
         throw SQLErrorCode.SyntaxError.newException(s"${expr.sqlExpr} is ambiguous", expr.nodeLocation)
       case lst =>
         lst.headOption.getOrElse(expr)
