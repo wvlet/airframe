@@ -156,7 +156,7 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
   def take(n: Long): RxStream[A] = TakeOp(this, n)
 
   /**
-    * Emit the first item of the source within each sampling period. This is useful, for example, to prevent
+    * Emit the first item of the source within each sampling period. For example, this is useful to prevent
     * double-clicks of buttons.
     */
   def throttleFirst(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): RxStream[A] =
