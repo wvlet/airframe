@@ -23,7 +23,7 @@ import scala.util.Try
 class RxVar[A](private var currentValue: A) extends RxStream[A] with RxVarOps[A] {
   override def toString: String                        = s"RxVar(${currentValue})"
   override def parents: Seq[Rx[_]]                     = Seq.empty
-  private var subscribers: ArrayBuffer[RxEvent => Any] = ArrayBuffer.empty
+  private val subscribers: ArrayBuffer[RxEvent => Any] = ArrayBuffer.empty
 
   override def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOptionVar[X] =
     new RxOptionVar(this.asInstanceOf[RxVar[Option[X]]])
@@ -70,7 +70,7 @@ class RxVar[A](private var currentValue: A) extends RxStream[A] with RxVarOps[A]
     * Stop updating this variable and send OnCompletion event to the downstream subscribers. After this method is
     * called, the behavior of the downstream subscribers is undefined for further updates of this variable.
     */
-  def stop(): Unit = {
+  override def stop(): Unit = {
     propagateEvent(OnCompletion)
   }
 
@@ -122,4 +122,9 @@ trait RxVarOps[A] {
 
   def foreachEvent[U](effect: RxEvent => U): Cancelable
 
+  /**
+    * Stop updating this variable and send OnCompletion event to the downstream subscribers. After this method is
+    * called, the behavior of the downstream subscribers is undefined for further updates of this variable.
+    */
+  def stop(): Unit
 }
