@@ -22,7 +22,7 @@ import scala.util.control.NonFatal
   * [[RxContext]] is a service interface for processing request and returning `Rx[Response]`.
   */
 trait RxContext {
-  protected def backend: HttpBackend[Request, Response, Rx]
+  private[http] def backend: HttpBackend[Request, Response, Rx]
 
   /**
     * @param request
