@@ -140,7 +140,7 @@ class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarO
     variable.setException(e)
   }
 
-  override def stop(): Unit ={
+  override def stop(): Unit = {
     variable.stop()
   }
 }
