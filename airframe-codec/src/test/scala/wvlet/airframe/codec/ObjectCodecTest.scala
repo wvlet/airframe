@@ -44,7 +44,7 @@ object ObjectCodecTest {
 class ObjectCodecTest extends CodecSpec {
   import wvlet.airframe.codec.ObjectCodecTest._
 
-  val codec = MessageCodec.of[A1].asInstanceOf[ObjectCodec[A1]]
+  val codec = MessageCodec.of[A1].asInstanceOf[ObjectMapCodec[A1]]
 
   test("support reading map value") {
     val v: A1  = A1(1, 2, 3, 4, 5, 6, true, "str")
