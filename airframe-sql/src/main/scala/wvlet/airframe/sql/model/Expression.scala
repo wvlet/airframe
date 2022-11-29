@@ -239,6 +239,7 @@ object Expression {
   }
   case class SingleColumn(
       expr: Expression,
+      // quoted or unquoted string 
       alias: Option[String],
       qualifier: Option[String] = None,
       nodeLocation: Option[NodeLocation]
