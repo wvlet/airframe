@@ -263,6 +263,13 @@ class TypeResolverTest extends AirSpec {
       )
     }
 
+    test("resolve CTE redundant column alias") {
+      val p = analyze("with q1 as (select id as id from A) select id from q1")
+      p.outputAttributes.toList shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tableA, a1)), None)
+      )
+    }
+
     test("parse multiple WITH sub queries") {
       val p = analyze("with q1 as (select id, name from A), q2 as (select name from q1) select * from q2")
       p.outputAttributes.toList shouldBe List(

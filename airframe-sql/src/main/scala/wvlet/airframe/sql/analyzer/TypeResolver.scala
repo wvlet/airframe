@@ -236,7 +236,7 @@ object TypeResolver extends LogSupport {
             resolvedColumns += r
           case r: ResolvedAttribute if alias.nonEmpty =>
             resolvedColumns += ResolvedAttribute(
-              alias.get.sqlExpr,
+              alias.get,
               r.dataType,
               r.qualifier,
               r.sourceColumns,
@@ -256,8 +256,8 @@ object TypeResolver extends LogSupport {
     attribute match {
       case SingleColumn(r: ResolvedAttribute, None, _, _) =>
         r
-      case SingleColumn(r: ResolvedAttribute, Some(alias: Identifier), _, _) =>
-        r.withAlias(alias.value)
+      case SingleColumn(r: ResolvedAttribute, Some(alias), _, _) =>
+        r.withAlias(alias)
       case other => other
     }
   }
@@ -273,8 +273,8 @@ object TypeResolver extends LogSupport {
       expr: Expression,
       inputAttributes: Seq[Attribute]
   ): List[Expression] = {
-    trace(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
-    def lookup(name: String): List[Attribute] = {
+    info(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
+    def lookup(name: String): List[Expression] = {
       QName(name, None) match {
         case QName(Seq(db, t1, c1), _) if context.database == db =>
           inputAttributes.collect {

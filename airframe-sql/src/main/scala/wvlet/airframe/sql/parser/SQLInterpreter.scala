@@ -396,7 +396,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     val alias = Option(ctx.AS())
       .map(x => expression(ctx.identifier()))
       .orElse(Option(ctx.identifier()).map(expression(_)))
-    SingleColumn(expression(ctx.expression()), alias, None, getLocation(ctx))
+    SingleColumn(expression(ctx.expression()), alias.map(_.sqlExpr), None, getLocation(ctx))
   }
 
   override def visitExpression(ctx: ExpressionContext): Expression = {

@@ -539,7 +539,7 @@ object LogicalPlan {
           query.outputAttributes.zip(aliases).map { case (in, alias) =>
             SingleColumn(
               in,
-              Some(alias),
+              Some(alias.sqlExpr),
               None,
               alias.nodeLocation // TODO Is alias.nodeLocation suitable as NodeLocation for this?
             )

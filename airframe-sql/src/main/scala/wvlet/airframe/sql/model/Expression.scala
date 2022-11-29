@@ -239,12 +239,12 @@ object Expression {
   }
   case class SingleColumn(
       expr: Expression,
-      alias: Option[Expression],
+      alias: Option[String],
       qualifier: Option[String] = None,
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
     override def name: String              = alias.getOrElse(expr).toString
-    override def children: Seq[Expression] = Seq(expr) ++ alias.toSeq
+    override def children: Seq[Expression] = Seq(expr)
     override def toString = s"SingleColumn(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
 
     override def withQualifier(newQualifier: String): Attribute = {
