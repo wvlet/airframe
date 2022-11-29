@@ -46,7 +46,7 @@ object CTEResolver extends LogSupport {
             }
             // Add a projection for renaming columns
             val selectItems = resolvedQuery.outputAttributes.zip(aliases).map { case (col, alias) =>
-              TypeResolver.resolveAttribute(SingleColumn(col, Some(alias), None, col.nodeLocation))
+              TypeResolver.resolveAttribute(SingleColumn(col, Some(alias.sqlExpr), None, col.nodeLocation))
             }
             Project(resolvedQuery, selectItems, resolvedQuery.nodeLocation)
         }

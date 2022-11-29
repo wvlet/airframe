@@ -364,7 +364,7 @@ object SQLGenerator extends LogSupport {
       case SingleColumn(ex, alias, _, _) =>
         val col = printExpression(ex)
         alias
-          .map(x => s"${col} AS ${printExpression(x)}")
+          .map(x => s"${col} AS ${x}")
           .getOrElse(col)
       case AllColumns(prefix, _) =>
         prefix.map(p => s"${p}.*").getOrElse("*")
