@@ -273,7 +273,7 @@ object TypeResolver extends LogSupport {
       expr: Expression,
       inputAttributes: Seq[Attribute]
   ): List[Expression] = {
-    info(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
+    debug(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
     def lookup(name: String): List[Expression] = {
       QName(name, None) match {
         case QName(Seq(db, t1, c1), _) if context.database == db =>
