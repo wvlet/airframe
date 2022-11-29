@@ -169,6 +169,11 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     }
   }
 
+  def transformUp(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
+    val newNode = this.mapChildren(_.transformUp(rule))
+    rule.applyOrElse(newNode, identity[LogicalPlan])
+  }
+
   /**
     * Traverse the tree until finding the nodes matching the pattern. All nodes found from the root will be transformed,
     * and no further recursive match will occur from the transformed nodes.
