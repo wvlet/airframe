@@ -43,8 +43,8 @@ object TypeResolver extends LogSupport {
     val resolvedPlan = TypeResolver.typerRules
       .foldLeft(plan) { (targetPlan, rule) =>
         val r = rule.apply(analyzerContext)
-        // Recursively transform the tree
-        val resolved = targetPlan.transform(r)
+        // Recursively transform the tree form bottom to up
+        val resolved = targetPlan.transformUp(r)
         resolved
       }
     resolvedPlan
@@ -274,18 +274,20 @@ object TypeResolver extends LogSupport {
       inputAttributes: Seq[Attribute]
   ): List[Expression] = {
     debug(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
+    val resolvedAttributes = inputAttributes.map(resolveAttribute)
+
     def lookup(name: String): List[Expression] = {
       QName(name, None) match {
         case QName(Seq(db, t1, c1), _) if context.database == db =>
-          inputAttributes.collect {
+          resolvedAttributes.collect {
             case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.ofSourceColumn(t1, c1).getOrElse(a)
           }.toList
         case QName(Seq(t1, c1), _) =>
-          inputAttributes.collect {
+          resolvedAttributes.collect {
             case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.ofSourceColumn(t1, c1).getOrElse(a)
           }.toList
         case QName(Seq(c1), _) =>
-          inputAttributes.collect {
+          resolvedAttributes.collect {
             case a: ResolvedAttribute if a.name == c1 => a
           }.toList
         case _ =>
