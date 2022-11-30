@@ -281,14 +281,17 @@ object TypeResolver extends LogSupport {
         case QName(Seq(db, t1, c1), _) if context.database == db =>
           resolvedAttributes.collect {
             case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.ofSourceColumn(t1, c1).getOrElse(a)
+            case c: SingleColumn if c.qualifier.contains(t1) && c.alias.contains(c1) => c.expr
           }.toList
         case QName(Seq(t1, c1), _) =>
           resolvedAttributes.collect {
             case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.ofSourceColumn(t1, c1).getOrElse(a)
+            case c: SingleColumn if c.qualifier.contains(t1) && c.alias.contains(c1) => c.expr
           }.toList
         case QName(Seq(c1), _) =>
           resolvedAttributes.collect {
-            case a: ResolvedAttribute if a.name == c1 => a
+            case a: ResolvedAttribute if a.name == c1    => a
+            case c: SingleColumn if c.alias.contains(c1) => c.expr
           }.toList
         case _ =>
           List.empty
