@@ -53,7 +53,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
 
   def mapChildren(f: LogicalPlan => LogicalPlan): LogicalPlan = {
     var changed = false
-    def recursiveTransform(arg: Any): AnyRef =
+    def transformElement(arg: Any): AnyRef =
       arg match {
         case e: Expression => e
         case l: LogicalPlan => {
@@ -63,13 +63,13 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
           }
           newPlan
         }
-        case Some(x)       => Some(recursiveTransform(x))
-        case s: Seq[_]     => s.map(recursiveTransform _)
+        case Some(x)       => Some(transformElement(x))
+        case s: Seq[_]     => s.map(transformElement _)
         case other: AnyRef => other
         case null          => null
       }
 
-    val newArgs = productIterator.map(recursiveTransform).toIndexedSeq
+    val newArgs = productIterator.map(transformElement).toIndexedSeq
     if (changed) {
       copyInstance(newArgs)
     } else {
