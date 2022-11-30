@@ -259,21 +259,21 @@ class TypeResolverTest extends AirSpec {
     test("parse WITH statement") {
       val p = analyze("with q1 as (select id from A) select id from q1")
       p.outputAttributes.toList shouldBe List(
-        ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tableA, a1)), None)
+        ResolvedAttribute("id", DataType.LongType, Some("q1"), Seq(SourceColumn(tableA, a1)), None)
       )
     }
 
     test("resolve CTE redundant column alias") {
       val p = analyze("with q1 as (select id as id from A) select id from q1")
       p.outputAttributes.toList shouldBe List(
-        ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tableA, a1)), None)
+        ResolvedAttribute("id", DataType.LongType, Some("q1"), Seq(SourceColumn(tableA, a1)), None)
       )
     }
 
     test("parse multiple WITH sub queries") {
       val p = analyze("with q1 as (select id, name from A), q2 as (select name from q1) select * from q2")
       p.outputAttributes.toList shouldBe List(
-        ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tableA, a2)), None)
+        ResolvedAttribute("name", DataType.StringType, Some("q2"), Seq(SourceColumn(tableA, a2)), None)
       )
     }
 
@@ -281,8 +281,8 @@ class TypeResolverTest extends AirSpec {
       val p = analyze("with q1(p1, p2) as (select id, name from A) select * from q1")
       p.outputAttributes.toList shouldBe List(
         // The output should use aliases from the source columns
-        ResolvedAttribute("p1", DataType.LongType, None, Seq(SourceColumn(tableA, a1)), None),
-        ResolvedAttribute("p2", DataType.StringType, None, Seq(SourceColumn(tableA, a2)), None)
+        ResolvedAttribute("p1", DataType.LongType, Some("q1"), Seq(SourceColumn(tableA, a1)), None),
+        ResolvedAttribute("p2", DataType.StringType, Some("q1"), Seq(SourceColumn(tableA, a2)), None)
       )
     }
 
@@ -292,6 +292,30 @@ class TypeResolverTest extends AirSpec {
         |)
         |SELECT max(id), COUNT(*)
         |FROM X GROUP BY 1""".stripMargin)
+    }
+
+    test("resolve join keys from CTEs") {
+      val p = analyze("""with q1 as (
+          |select * from A
+          |),
+          |q2 as (
+          |select * from A
+          |)
+          |select q1.id from q1 inner join q2 ON q1.name = q2.name""".stripMargin)
+      p.outputAttributes shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, Some("q1"), ra1.sourceColumns, None)
+      )
+
+      val joinKeys = p
+        .collectExpressions { case _: JoinOnEq =>
+          true
+        }.map(_.asInstanceOf[JoinOnEq].keys)
+      joinKeys shouldBe List(
+        List(
+          ResolvedAttribute("name", DataType.StringType, Some("q1"), ra2.sourceColumns, None),
+          ResolvedAttribute("name", DataType.StringType, Some("q2"), ra2.sourceColumns, None)
+        )
+      )
     }
 
     test("fail due to a wrong number of columns") {

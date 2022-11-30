@@ -129,7 +129,7 @@ object TypeResolver extends LogSupport {
         // Search CTE
         context.outerQueries.get(qname.fullName) match {
           case Some(cte) =>
-            CTERelationRef(qname.fullName, cte.outputAttributes, plan.nodeLocation)
+            CTERelationRef(qname.fullName, cte.outputAttributes.map(_.withQualifier(qname.fullName)), plan.nodeLocation)
           case None =>
             throw SQLErrorCode.TableNotFound.newException(
               s"Table ${context.database}.${qname} not found",
