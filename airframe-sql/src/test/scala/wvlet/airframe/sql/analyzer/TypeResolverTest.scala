@@ -17,8 +17,18 @@ import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Distinct, Filter, Intersect, Join, Project}
-import wvlet.airframe.sql.model.{Expression, LogicalPlan, NodeLocation, ResolvedAttribute, SourceColumn}
+import wvlet.airframe.sql.model.LogicalPlan.{
+  Aggregate,
+  Distinct,
+  Filter,
+  Intersect,
+  Join,
+  Project,
+  Query,
+  With,
+  WithQuery
+}
+import wvlet.airframe.sql.model.{CTERelationRef, Expression, LogicalPlan, NodeLocation, ResolvedAttribute, SourceColumn}
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
@@ -504,6 +514,47 @@ class TypeResolverTest extends AirSpec {
             ResolvedAttribute("id", DataType.LongType, Some("y"), rb1.sourceColumns, None)
           )
         case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+    }
+  }
+
+  test("resolve expression column") {
+    test("resolve expression column from sub query") {
+      val p = analyze("SELECT id, name FROM (SELECT id + 1 as id, name FROM A) a WHERE a.id = 99")
+
+      p.outputAttributes.toList match {
+        case List(SingleColumn(ArithmeticBinaryExpr(Add, c1, LongLiteral(1, _), _), _, _, _), c2) =>
+          List(c1, c2) shouldBe List(ra1, ra2)
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+
+      p match {
+        case Project(filter @ Filter(_, _, _), _, _) =>
+          filter.filterExpr match {
+            case Eq(ArithmeticBinaryExpr(Add, c, LongLiteral(1, _), _), LongLiteral(99, _), _) => c shouldBe ra1
+            case _ => fail(s"unexpected plan:\n${p.pp}")
+          }
+      }
+    }
+
+    test("resolve expression column from CTE") {
+      val p = analyze("WITH q1 AS (SELECT id + 1 as id, name FROM A) SELECT id, name FROM q1 WHERE q1.id = 99")
+
+      p.outputAttributes.toList match {
+        case List(SingleColumn(ArithmeticBinaryExpr(Add, c1, LongLiteral(1, _), _), _, _, _), c2) =>
+          List(c1, c2) shouldBe List(
+            ra1,
+            ResolvedAttribute("name", DataType.StringType, Some("q1"), ra2.sourceColumns, None)
+          )
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+
+      p match {
+        case Query(With(_, _, _), Project(filter @ Filter(CTERelationRef(_, _, _), _, _), _, _), _) =>
+          filter.filterExpr match {
+            case Eq(ArithmeticBinaryExpr(Add, c, LongLiteral(1, _), _), LongLiteral(99, _), _) => c shouldBe ra1
+            case _ => fail(s"unexpected plan:\n${p.pp}")
+          }
       }
     }
   }
