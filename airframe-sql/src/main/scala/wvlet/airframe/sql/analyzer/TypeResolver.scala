@@ -43,8 +43,8 @@ object TypeResolver extends LogSupport {
     val resolvedPlan = TypeResolver.typerRules
       .foldLeft(plan) { (targetPlan, rule) =>
         val r = rule.apply(analyzerContext)
-        // Recursively transform the tree
-        val resolved = targetPlan.transform(r)
+        // Recursively transform the tree form bottom to up
+        val resolved = targetPlan.transformUp(r)
         resolved
       }
     resolvedPlan
@@ -129,7 +129,7 @@ object TypeResolver extends LogSupport {
         // Search CTE
         context.outerQueries.get(qname.fullName) match {
           case Some(cte) =>
-            CTERelationRef(qname.fullName, cte.outputAttributes, plan.nodeLocation)
+            CTERelationRef(qname.fullName, cte.outputAttributes.map(_.withQualifier(qname.fullName)), plan.nodeLocation)
           case None =>
             throw SQLErrorCode.TableNotFound.newException(
               s"Table ${context.database}.${qname} not found",
@@ -236,7 +236,7 @@ object TypeResolver extends LogSupport {
             resolvedColumns += r
           case r: ResolvedAttribute if alias.nonEmpty =>
             resolvedColumns += ResolvedAttribute(
-              alias.get.sqlExpr,
+              alias.get,
               r.dataType,
               r.qualifier,
               r.sourceColumns,
@@ -256,8 +256,8 @@ object TypeResolver extends LogSupport {
     attribute match {
       case SingleColumn(r: ResolvedAttribute, None, _, _) =>
         r
-      case SingleColumn(r: ResolvedAttribute, Some(alias: Identifier), _, _) =>
-        r.withAlias(alias.value)
+      case SingleColumn(r: ResolvedAttribute, Some(alias), _, _) =>
+        r.withAlias(alias)
       case other => other
     }
   }
@@ -273,20 +273,25 @@ object TypeResolver extends LogSupport {
       expr: Expression,
       inputAttributes: Seq[Attribute]
   ): List[Expression] = {
-    trace(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
-    def lookup(name: String): List[Attribute] = {
+    debug(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
+    val resolvedAttributes = inputAttributes.map(resolveAttribute)
+
+    def lookup(name: String): List[Expression] = {
       QName(name, None) match {
         case QName(Seq(db, t1, c1), _) if context.database == db =>
-          inputAttributes.collect {
+          resolvedAttributes.collect {
             case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.ofSourceColumn(t1, c1).getOrElse(a)
+            case c: SingleColumn if c.qualifier.contains(t1) && c.alias.contains(c1) => c.expr
           }.toList
         case QName(Seq(t1, c1), _) =>
-          inputAttributes.collect {
+          resolvedAttributes.collect {
             case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.ofSourceColumn(t1, c1).getOrElse(a)
+            case c: SingleColumn if c.qualifier.contains(t1) && c.alias.contains(c1) => c.expr
           }.toList
         case QName(Seq(c1), _) =>
-          inputAttributes.collect {
-            case a: ResolvedAttribute if a.name == c1 => a
+          resolvedAttributes.collect {
+            case a: ResolvedAttribute if a.name == c1    => a
+            case c: SingleColumn if c.alias.contains(c1) => c.expr
           }.toList
         case _ =>
           List.empty

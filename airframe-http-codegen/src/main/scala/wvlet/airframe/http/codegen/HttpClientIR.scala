@@ -301,7 +301,7 @@ object HttpClientIR extends LogSupport {
       var requestModelClassDef: Option[ClientRequestModelClassDef] = None
 
       if (httpClientCallInputs.isEmpty) {
-        if (route.method == HttpMethod.POST) {
+        if (route.httpMethod == HttpMethod.POST) {
           // For RPC calls without any input, embed an empty json
           clientCallParams += "Map.empty[String, Any]"
           typeArgBuilder += Surface.of[Map[String, Any]]
@@ -370,7 +370,7 @@ object HttpClientIR extends LogSupport {
       val typeArgs = typeArgBuilder.result()
 
       ClientMethodDef(
-        httpMethod = route.method,
+        httpMethod = route.httpMethod,
         isOpsRequest = typeArgs.size > 1,
         name = name,
         typeArgs = typeArgs,

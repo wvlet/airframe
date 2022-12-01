@@ -49,6 +49,7 @@ package object okhttp {
     override def contentTypeOf(request: Request): Option[String] = Option(request.body()).map(_.contentType().toString)
     override def wrap(request: Request): HttpRequest[Request]    = OkHttpRequestWrapper(request)
     override def requestType: Class[Request]                     = classOf[Request]
+    override def remoteAddressOf(request: Request): Option[ServerAddress] = None
   }
 
   implicit class OkHttpResponseWrapper(val raw: Response) extends HttpResponse[Response] {

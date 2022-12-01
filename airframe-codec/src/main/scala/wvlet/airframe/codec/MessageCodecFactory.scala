@@ -5,7 +5,7 @@ import wvlet.log.LogSupport
 
 /**
   */
-case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageCodecFinder, mapOutput: Boolean = false)
+case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageCodecFinder, mapOutput: Boolean = true)
     extends ScalaCompat.MessageCodecFactoryBase
     with LogSupport {
   private[this] var cache = Map.empty[Surface, MessageCodec[_]]

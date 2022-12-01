@@ -206,13 +206,13 @@ trait HttpRequestAdapter[Req] {
   def pathComponentsOf(request: Req): IndexedSeq[String] = {
     pathOf(request).replaceFirst("/", "").split("/").toIndexedSeq
   }
+  def remoteAddressOf(request: Req): Option[ServerAddress]
   def httpRequestOf(request: Req): HttpMessage.Request = {
     Http
       .request(methodOf(request), uriOf(request))
       .withHeader(headerOf(request))
       .withContent(messageOf(request))
   }
-  def remoteAddressOf(request: Req): Option[ServerAddress]
   def wrap(request: Req): HttpRequest[Req]
 }
 

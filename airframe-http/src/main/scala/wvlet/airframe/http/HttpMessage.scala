@@ -278,11 +278,12 @@ object HttpMessage {
     override def pathOf(request: Request): String        = request.path
     override def queryOf(request: Request): HttpMultiMap = request.query
 
-    override def headerOf(request: Request): HttpMultiMap        = request.header
-    override def messageOf(request: Request): Message            = request.message
-    override def contentTypeOf(request: Request): Option[String] = request.contentType
-    override def httpRequestOf(request: Request): Request        = request
-    override def wrap(request: Request): HttpRequest[Request]    = new HttpMessageRequestWrapper(request)
+    override def headerOf(request: Request): HttpMultiMap                 = request.header
+    override def messageOf(request: Request): Message                     = request.message
+    override def contentTypeOf(request: Request): Option[String]          = request.contentType
+    override def httpRequestOf(request: Request): Request                 = request
+    override def remoteAddressOf(request: Request): Option[ServerAddress] = request.remoteAddress
+    override def wrap(request: Request): HttpRequest[Request]             = new HttpMessageRequestWrapper(request)
   }
 
   implicit object HttpMessageResponseAdapter extends HttpResponseAdapter[Response] { self =>

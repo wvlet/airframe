@@ -99,7 +99,7 @@ object HttpLogger {
       m += "remote_port" -> addr.port
     }
 
-    m ++= requestHeaderLogs(request)
+    m ++= requestHeaderLogs(request, defaultExcludeHeaders)
     m.result()
   }
 
@@ -110,17 +110,10 @@ object HttpLogger {
     response.contentLength.foreach {
       m += "response_content_length" -> _
     }
-    m ++= responseHeaderLogs(response)
+    m ++= responseHeaderLogs(response, defaultExcludeHeaders)
     m.result()
   }
 
-  private def requestHeaderLogs(request: Request): Map[String, Any] = {
-    Map("request_header" -> headerLogs(request.header))
-  }
-
-  private def responseHeaderLogs(response: Response): Map[String, Any] = {
-    Map("response_header" -> headerLogs(response.header))
-  }
 
   private def headerLogs(headerMap: HttpMultiMap, excludeHeaders: Set[String]): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
@@ -133,7 +126,63 @@ object HttpLogger {
     m.result()
   }
 
-  def errorLogs(e: Throwable): ListMap[String, Any] = {
+  def rpcMethodLogs(rpcMethod: RPCMethod): Map[String, Any] = {
+    rpcMethod.logData
+  }
+
+  def rpcLogs(rpcContext: RPCCallContext): ListMap[String, Any] = {
+    val m = ListMap.newBuilder[String, Any]
+    m += "rpc_interface" -> rpcContext.rpcInterfaceName
+    m += "rpc_class"     -> rpcContext.rpcClassName
+    m += "rpc_method"    -> rpcContext.rpcMethodName
+
+    val rpcArgs = extractRpcArgLog(rpcContext)
+    if (rpcArgs.nonEmpty) {
+      m += "rpc_args" -> rpcArgs
+    }
+    m.result()
+  }
+
+  private[http] def extractRpcArgLog(rpcContext: RPCCallContext): ListMap[String, Any] = {
+
+    def traverseObject(s: Surface, arg: Any): ListMap[String, Any] = {
+      val builder = ListMap.newBuilder[String, Any]
+      s.params
+        .foreach { p =>
+          Try(builder ++= traverseParam(p, p.get(arg)))
+        }
+      builder.result()
+    }
+
+    def traverseParam(p: Parameter, arg: Any): ListMap[String, Any] = {
+      arg match {
+        case r: HttpMessage.Request =>
+          ListMap.empty
+        case r if p.surface.fullName == "com.twitter.finagle.http.Request" =>
+          ListMap.empty
+        case c: HttpContext[_, _, _] =>
+          ListMap.empty
+        case _ if p.isSecret =>
+          ListMap.empty
+        case u: ULID =>
+          // Fixes https://github.com/wvlet/airframe/issues/1715
+          ListMap(p.name -> u)
+        case _ if p.surface.params.length > 0 =>
+          ListMap(p.name -> traverseObject(p.surface, arg))
+        case _ =>
+          ListMap(p.name -> arg)
+      }
+    }
+
+    val rpcArgsBuilder = ListMap.newBuilder[String, Any]
+    // Exclude request context objects, which will be duplicates of request parameter logs
+    for ((p, arg) <- rpcContext.rpcMethodSurface.args.zip(rpcContext.rpcArgs)) {
+      rpcArgsBuilder ++= traverseParam(p, arg)
+    }
+    rpcArgsBuilder.result()
+  }
+
+  private[http] def errorLogs(e: Throwable): ListMap[String, Any] = {
 
     /**
       * Find the root cause of the exception from wrapped exception classes
@@ -214,45 +263,6 @@ object HttpLogger {
       case _ =>
         ListMap.empty
     }
-  }
-
-  private def extractRpcArgLog(rpcContext: RPCCallContext): ListMap[String, Any] = {
-
-    def traverseObject(s: Surface, arg: Any): ListMap[String, Any] = {
-      val builder = ListMap.newBuilder[String, Any]
-      s.params
-        .foreach { p =>
-          Try(builder ++= traverseParam(p, p.get(arg)))
-        }
-      builder.result()
-    }
-
-    def traverseParam(p: Parameter, arg: Any): ListMap[String, Any] = {
-      arg match {
-        case r: HttpMessage.Request =>
-          ListMap.empty
-        case r if p.surface.fullName == "com.twitter.finagle.http.Request" =>
-          ListMap.empty
-        case c: HttpContext[_, _, _] =>
-          ListMap.empty
-        case _ if p.isSecret =>
-          ListMap.empty
-        case u: ULID =>
-          // Fixes https://github.com/wvlet/airframe/issues/1715
-          ListMap(p.name -> u)
-        case _ if p.surface.params.length > 0 =>
-          ListMap(p.name -> traverseObject(p.surface, arg))
-        case _ =>
-          ListMap(p.name -> arg)
-      }
-    }
-
-    val rpcArgsBuilder = ListMap.newBuilder[String, Any]
-    // Exclude request context objects, which will be duplicates of request parameter logs
-    for ((p, arg) <- rpcContext.rpcMethodSurface.args.zip(rpcContext.rpcArgs)) {
-      rpcArgsBuilder ++= traverseParam(p, arg)
-    }
-    rpcArgsBuilder.result()
   }
 }
 

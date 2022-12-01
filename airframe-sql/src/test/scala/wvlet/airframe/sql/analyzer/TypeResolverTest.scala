@@ -17,8 +17,18 @@ import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Distinct, Filter, Intersect, Project}
-import wvlet.airframe.sql.model.{Expression, LogicalPlan, NodeLocation, ResolvedAttribute, SourceColumn}
+import wvlet.airframe.sql.model.LogicalPlan.{
+  Aggregate,
+  Distinct,
+  Filter,
+  Intersect,
+  Join,
+  Project,
+  Query,
+  With,
+  WithQuery
+}
+import wvlet.airframe.sql.model.{CTERelationRef, Expression, LogicalPlan, NodeLocation, ResolvedAttribute, SourceColumn}
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
@@ -74,7 +84,7 @@ class TypeResolverTest extends AirSpec {
 
     val resolvedPlan = rules.foldLeft(plan) { (targetPlan, rule) =>
       val rewriter: PlanRewriter = rule(analyzerContext)
-      val newPlan                = targetPlan.transform(rewriter)
+      val newPlan                = targetPlan.transformUp(rewriter)
       newPlan
     }
 
@@ -259,14 +269,21 @@ class TypeResolverTest extends AirSpec {
     test("parse WITH statement") {
       val p = analyze("with q1 as (select id from A) select id from q1")
       p.outputAttributes.toList shouldBe List(
-        ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tableA, a1)), None)
+        ResolvedAttribute("id", DataType.LongType, Some("q1"), Seq(SourceColumn(tableA, a1)), None)
+      )
+    }
+
+    test("resolve CTE redundant column alias") {
+      val p = analyze("with q1 as (select id as id from A) select id from q1")
+      p.outputAttributes.toList shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, Some("q1"), Seq(SourceColumn(tableA, a1)), None)
       )
     }
 
     test("parse multiple WITH sub queries") {
       val p = analyze("with q1 as (select id, name from A), q2 as (select name from q1) select * from q2")
       p.outputAttributes.toList shouldBe List(
-        ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tableA, a2)), None)
+        ResolvedAttribute("name", DataType.StringType, Some("q2"), Seq(SourceColumn(tableA, a2)), None)
       )
     }
 
@@ -274,8 +291,8 @@ class TypeResolverTest extends AirSpec {
       val p = analyze("with q1(p1, p2) as (select id, name from A) select * from q1")
       p.outputAttributes.toList shouldBe List(
         // The output should use aliases from the source columns
-        ResolvedAttribute("p1", DataType.LongType, None, Seq(SourceColumn(tableA, a1)), None),
-        ResolvedAttribute("p2", DataType.StringType, None, Seq(SourceColumn(tableA, a2)), None)
+        ResolvedAttribute("p1", DataType.LongType, Some("q1"), Seq(SourceColumn(tableA, a1)), None),
+        ResolvedAttribute("p2", DataType.StringType, Some("q1"), Seq(SourceColumn(tableA, a2)), None)
       )
     }
 
@@ -285,6 +302,30 @@ class TypeResolverTest extends AirSpec {
         |)
         |SELECT max(id), COUNT(*)
         |FROM X GROUP BY 1""".stripMargin)
+    }
+
+    test("resolve join keys from CTEs") {
+      val p = analyze("""with q1 as (
+          |select * from A
+          |),
+          |q2 as (
+          |select * from A
+          |)
+          |select q1.id from q1 inner join q2 ON q1.name = q2.name""".stripMargin)
+      p.outputAttributes shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, Some("q1"), ra1.sourceColumns, None)
+      )
+
+      val joinKeys = p
+        .collectExpressions { case _: JoinOnEq =>
+          true
+        }.map(_.asInstanceOf[JoinOnEq].keys)
+      joinKeys shouldBe List(
+        List(
+          ResolvedAttribute("name", DataType.StringType, Some("q1"), ra2.sourceColumns, None),
+          ResolvedAttribute("name", DataType.StringType, Some("q2"), ra2.sourceColumns, None)
+        )
+      )
     }
 
     test("fail due to a wrong number of columns") {
@@ -423,6 +464,98 @@ class TypeResolverTest extends AirSpec {
     test("aggregation query") {
       val fns = analyzeAndCollectFunctions("select id, max(name) from A group by id")
       fns.flatMap(collectResolvedInputArgs) shouldBe List(ra2)
+    }
+  }
+
+  test("resolve sub queries in FROM clause") {
+    test("resolve a sub query") {
+      val p = analyze("SELECT id, name FROM (SELECT id, name FROM A)")
+      p.outputAttributes.toList shouldBe List(ra1, ra2)
+    }
+
+    test("resolve a sub query with column aliases") {
+      val p = analyze("SELECT p1, p2 FROM (SELECT id as p1, name as p2 FROM A)")
+      p.outputAttributes.toList shouldBe List(
+        ResolvedAttribute("p1", DataType.LongType, None, ra1.sourceColumns, None),
+        ResolvedAttribute("p2", DataType.StringType, None, ra2.sourceColumns, None)
+      )
+    }
+
+    test("resolve a sub query with SELECT *") {
+      val p = analyze("SELECT id, name FROM (SELECT * FROM A)")
+      p.outputAttributes.toList shouldBe List(ra1, ra2)
+    }
+
+    test("resolve a sub query with table alias") {
+      val p = analyze("SELECT a.id, a.name FROM (SELECT id, name FROM A) a")
+      p.outputAttributes.toList shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, Some("a"), ra1.sourceColumns, None),
+        ResolvedAttribute("name", DataType.StringType, Some("a"), ra2.sourceColumns, None)
+      )
+    }
+
+    test("resolve nested sub queries") {
+      val p = analyze("SELECT id, name FROM (SELECT id, name FROM (SELECT id, name FROM A))")
+      p.outputAttributes.toList shouldBe List(ra1, ra2)
+    }
+
+    test("resolve join keys from nested sub queries") {
+      val p = analyze("""select * from
+          |(select id from (select id from A)) x
+          |inner join
+          |(select id from (select id from B)) y on x.id = y.id""".stripMargin)
+      p.outputAttributes.toList shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, Some("x"), ra1.sourceColumns ++ rb1.sourceColumns, None)
+      )
+      p match {
+        case Project(Join(_, _, _, join: JoinOnEq, _), _, _) =>
+          join.keys shouldBe List(
+            ResolvedAttribute("id", DataType.LongType, Some("x"), ra1.sourceColumns, None),
+            ResolvedAttribute("id", DataType.LongType, Some("y"), rb1.sourceColumns, None)
+          )
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+    }
+  }
+
+  test("resolve expression column") {
+    test("resolve expression column from sub query") {
+      val p = analyze("SELECT id, name FROM (SELECT id + 1 as id, name FROM A) a WHERE a.id = 99")
+
+      p.outputAttributes.toList match {
+        case List(SingleColumn(ArithmeticBinaryExpr(Add, c1, LongLiteral(1, _), _), _, _, _), c2) =>
+          List(c1, c2) shouldBe List(ra1, ra2)
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+
+      p match {
+        case Project(filter @ Filter(_, _, _), _, _) =>
+          filter.filterExpr match {
+            case Eq(ArithmeticBinaryExpr(Add, c, LongLiteral(1, _), _), LongLiteral(99, _), _) => c shouldBe ra1
+            case _ => fail(s"unexpected plan:\n${p.pp}")
+          }
+      }
+    }
+
+    test("resolve expression column from CTE") {
+      val p = analyze("WITH q1 AS (SELECT id + 1 as id, name FROM A) SELECT id, name FROM q1 WHERE q1.id = 99")
+
+      p.outputAttributes.toList match {
+        case List(SingleColumn(ArithmeticBinaryExpr(Add, c1, LongLiteral(1, _), _), _, _, _), c2) =>
+          List(c1, c2) shouldBe List(
+            ra1,
+            ResolvedAttribute("name", DataType.StringType, Some("q1"), ra2.sourceColumns, None)
+          )
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+
+      p match {
+        case Query(With(_, _, _), Project(filter @ Filter(CTERelationRef(_, _, _), _, _), _, _), _) =>
+          filter.filterExpr match {
+            case Eq(ArithmeticBinaryExpr(Add, c, LongLiteral(1, _), _), LongLiteral(99, _), _) => c shouldBe ra1
+            case _ => fail(s"unexpected plan:\n${p.pp}")
+          }
+      }
     }
   }
 }

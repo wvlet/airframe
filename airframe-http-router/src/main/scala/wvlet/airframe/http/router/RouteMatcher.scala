@@ -50,7 +50,7 @@ object RouteMatcher extends LogSupport {
     */
   class RouteMatcherByHttpMethodTypes(routes: Seq[Route]) extends RouteMatcher {
     private val routesByMethod: Map[String, RouteMatcher] = {
-      for ((method, lst) <- routes.groupBy(_.method)) yield {
+      for ((method, lst) <- routes.groupBy(_.httpMethod)) yield {
         method -> new FastRouteMatcher(method, lst)
       }
     }

@@ -1,6 +1,9 @@
 name-template: 'v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
 categories:
+  - title: '🔥 Breaking Changes'
+    labels:
+      - 'breaking'
   - title: '🚀 Features'
     labels:
       - 'feature'
@@ -11,16 +14,16 @@ categories:
   - title: '👋 Deprecated'
     labels:
       - 'deprecation'
-  - title: '⛓  Dependency Updates'
-    label:
+  - title: '🔗 Dependency Updates'
+    labels:
       - 'library-update'
-      - 'test-library-update'
-      - 'sbt-plugin-update'
       - 'dependencies'
   - title: '🛠  Internal Updates'
-    label:
+    labels:
       - 'internal'
       - 'kaizen'
+      - 'test-library-update'
+      - 'sbt-plugin-update'
   - title: '📚 Docs'
     labels:
       - 'doc'
