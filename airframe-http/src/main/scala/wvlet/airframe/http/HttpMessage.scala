@@ -197,7 +197,8 @@ object HttpMessage {
       // Path and query string beginning from "/"
       uri: String = "/",
       header: HttpMultiMap = HttpMultiMap.empty,
-      message: Message = EmptyMessage
+      message: Message = EmptyMessage,
+      remoteAddress: Option[ServerAddress] = None
   ) extends HttpMessage[Request] {
     override def toString: String = s"Request(${method},${uri},${header})"
 
@@ -217,9 +218,10 @@ object HttpMessage {
       */
     def query: HttpMultiMap = extractQueryFromUri(uri)
 
-    def withFilter(f: Request => Request): Request = f(this)
-    def withMethod(method: String): Request        = this.copy(method = method)
-    def withUri(uri: String): Request              = this.copy(uri = uri)
+    def withFilter(f: Request => Request): Request               = f(this)
+    def withMethod(method: String): Request                      = this.copy(method = method)
+    def withUri(uri: String): Request                            = this.copy(uri = uri)
+    def withRemoteAddress(remoteAddress: ServerAddress): Request = this.copy(remoteAddress = Some(remoteAddress))
 
     override protected def copyWith(newHeader: HttpMultiMap): Request = this.copy(header = newHeader)
     override protected def copyWith(newMessage: Message): Request     = this.copy(message = newMessage)
@@ -276,11 +278,12 @@ object HttpMessage {
     override def pathOf(request: Request): String        = request.path
     override def queryOf(request: Request): HttpMultiMap = request.query
 
-    override def headerOf(request: Request): HttpMultiMap        = request.header
-    override def messageOf(request: Request): Message            = request.message
-    override def contentTypeOf(request: Request): Option[String] = request.contentType
-    override def httpRequestOf(request: Request): Request        = request
-    override def wrap(request: Request): HttpRequest[Request]    = new HttpMessageRequestWrapper(request)
+    override def headerOf(request: Request): HttpMultiMap                 = request.header
+    override def messageOf(request: Request): Message                     = request.message
+    override def contentTypeOf(request: Request): Option[String]          = request.contentType
+    override def httpRequestOf(request: Request): Request                 = request
+    override def remoteAddressOf(request: Request): Option[ServerAddress] = request.remoteAddress
+    override def wrap(request: Request): HttpRequest[Request]             = new HttpMessageRequestWrapper(request)
   }
 
   implicit object HttpMessageResponseAdapter extends HttpResponseAdapter[Response] { self =>
