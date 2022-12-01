@@ -106,6 +106,9 @@ package object finagle {
       request.contentType
     override def requestType: Class[Request]     = classOf[Request]
     override def uriOf(request: Request): String = request.uri
+    override def remoteAddressOf(request: Request): Option[ServerAddress] = {
+      Some(ServerAddress(s"${request.remoteAddress}:${request.remotePort}"))
+    }
     override def wrap(request: Request): HttpRequest[Request] =
       new FinagleHttpRequestWrapper(request)
   }
