@@ -27,10 +27,10 @@ class HttpClientGeneratorTest extends AirSpec {
   test("build router") {
     debug(router)
 
-    val r = router.routes.find(x => x.method == HttpMethod.GET && x.path == "/v1/resources/:id")
+    val r = router.routes.find(x => x.httpMethod == HttpMethod.GET && x.path == "/v1/resources/:id")
     r shouldBe defined
 
-    val q = router.routes.find(x => x.method == HttpMethod.GET && x.path == "/v1/query")
+    val q = router.routes.find(x => x.httpMethod == HttpMethod.GET && x.path == "/v1/query")
     q shouldBe defined
   }
 

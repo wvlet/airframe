@@ -204,7 +204,7 @@ object HttpAccessLogFilter {
     val m = ListMap.newBuilder[String, Any]
     FinagleBackend.getThreadLocal(HttpBackend.TLS_KEY_RPC).foreach { (x: Any) =>
       x match {
-        case c @ RPCCallContext(rpcInterface, methodSurface, args) =>
+        case c @ RPCCallContext(rpcMethod, methodSurface, args) =>
           m ++= HttpLogs.rpcLogs(c)
         case _ =>
       }

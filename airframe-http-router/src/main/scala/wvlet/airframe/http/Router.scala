@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.http.router._
-import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodSurface, Surface}
+import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodSurface, Surface, TypeName}
 import wvlet.log.LogSupport
 
 import scala.annotation.tailrec
@@ -150,11 +150,18 @@ case class Router(
                 controllerSurface
                   .findAnnotationOwnerOf[Endpoint]
                   .getOrElse(controllerSurface.rawType)
+
+              val rpcMethod = RPCMethod(
+                path = prefixPath + endPoint.path(),
+                rpcInterfaceName = TypeName.sanitizeTypeName(endpointInterfaceCls.getName),
+                methodName = m.name,
+                requestSurface = Surface.of[Array[Byte]],
+                responseSurface = m.returnType
+              )
               ControllerRoute(
-                endpointInterfaceCls,
+                rpcMethod,
                 controllerSurface,
                 endPoint.method(),
-                prefixPath + endPoint.path(),
                 m,
                 isRPC = false
               )
@@ -175,27 +182,37 @@ case class Router(
             .map { m =>
               (m, m.findAnnotationOf[RPC])
             }
-            .collect {
-              case (m: MethodSurface, Some(rpc)) =>
-                val methodPath =
-                  if (rpc.path().nonEmpty) rpc.path() else s"/${m.name}"
-                ControllerRoute(
-                  rpcInterfaceCls,
-                  controllerSurface,
-                  HttpMethod.POST,
-                  prefixPath + methodPath,
-                  m,
-                  isRPC = true
-                )
-              case (m: MethodSurface, None) =>
-                ControllerRoute(
-                  rpcInterfaceCls,
-                  controllerSurface,
-                  HttpMethod.POST,
-                  prefixPath + s"/${m.name}",
-                  m,
-                  isRPC = true
-                )
+            .collect { case (m: MethodSurface, rpcAnnot) =>
+              val rpcMethod = rpcAnnot match {
+                case Some(rpc) =>
+                  val methodPath =
+                    if (rpc.path().nonEmpty) rpc.path()
+                    else s"/${m.name}"
+                  RPCMethod(
+                    path = prefixPath + methodPath,
+                    rpcInterfaceName = TypeName.sanitizeTypeName(rpcInterfaceCls.getName),
+                    methodName = m.name,
+                    // No need to bind requestSurface in the server side
+                    requestSurface = Surface.of[Array[Byte]],
+                    responseSurface = m.returnType
+                  )
+                case None =>
+                  RPCMethod(
+                    path = s"${prefixPath}/${m.name}",
+                    rpcInterfaceName = TypeName.sanitizeTypeName(rpcInterfaceCls.getName),
+                    methodName = m.name,
+                    // No need to bind requestSurface in the server side
+                    requestSurface = Surface.of[Array[Byte]],
+                    responseSurface = m.returnType
+                  )
+              }
+              ControllerRoute(
+                rpcMethod,
+                controllerSurface,
+                HttpMethod.POST,
+                m,
+                isRPC = true
+              )
             }
           routes
       }

@@ -34,11 +34,11 @@ object ApiRouterTest extends AirSpec {
 
     r.routes shouldNotBe empty
     val x = r.routes.head
-    x.method shouldBe HttpMethod.GET
+    x.httpMethod shouldBe HttpMethod.GET
     x.path shouldBe "/v1/hello"
     x match {
       case c: ControllerRoute =>
-        c.rpcInterfaceCls shouldBe classOf[MyApi]
+        c.rpcMethod.rpcInterfaceName shouldBe "wvlet.airframe.http.ApiRouterTest.MyApi"
       case _ =>
         fail("cannot reach here")
     }

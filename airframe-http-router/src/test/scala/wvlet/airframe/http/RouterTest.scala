@@ -39,7 +39,7 @@ class RouterTest extends AirSpec {
     trace(r.routes)
     r.routes.filter(_.path == "/user/:id").size shouldBe 3
     r.routes.forall(_.isRPC == false) shouldBe true
-    val post = r.routes.find(p => p.path == "/user" && p.method == HttpMethod.POST)
+    val post = r.routes.find(p => p.path == "/user" && p.httpMethod == HttpMethod.POST)
     post shouldBe defined
   }
 
@@ -109,27 +109,27 @@ class RouterTest extends AirSpec {
     val r = router.findRoute(Http.GET("/user/1"))
     debug(r)
     r shouldBe defined
-    r.get.route.method shouldBe HttpMethod.GET
+    r.get.route.httpMethod shouldBe HttpMethod.GET
 
     val r2 = router.findRoute(Http.POST("/user"))
     debug(r2)
     r2 shouldBe defined
-    r2.get.route.method shouldBe HttpMethod.POST
+    r2.get.route.httpMethod shouldBe HttpMethod.POST
 
     val r3 = router.findRoute(Http.PUT("/user/2"))
     debug(r3)
     r3 shouldBe defined
-    r3.get.route.method shouldBe HttpMethod.PUT
+    r3.get.route.httpMethod shouldBe HttpMethod.PUT
 
     val r4 = router.findRoute(Http.DELETE("/user/3"))
     debug(r4)
     r4 shouldBe defined
-    r4.get.route.method shouldBe HttpMethod.DELETE
+    r4.get.route.httpMethod shouldBe HttpMethod.DELETE
 
     val r5 = router.findRoute(Http.GET("/v1/config/info"))
     debug(r5)
     r5 shouldBe defined
-    r5.get.route.method shouldBe HttpMethod.GET
+    r5.get.route.httpMethod shouldBe HttpMethod.GET
 
     val r6 = router.findRoute(Http.GET("/v1/config/xxxx/info"))
     debug(r6)

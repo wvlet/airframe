@@ -150,7 +150,7 @@ object HttpAccessLogWriter {
 
   private[http] def rpcLog(rpcContext: RPCCallContext): ListMap[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
-    m += "rpc_interface" -> TypeName.sanitizeTypeName(rpcContext.rpcInterfaceCls.getName)
+    m += "rpc_interface" -> TypeName.sanitizeTypeName(rpcContext.rpcInterfaceName)
     m += "rpc_class"     -> rpcContext.rpcMethodSurface.owner.fullName
     m += "rpc_method"    -> rpcContext.rpcMethodSurface.name
 

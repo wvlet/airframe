@@ -16,6 +16,8 @@ package wvlet.airframe.http.grpc.internal
 import io.grpc.stub.ServerCalls.{BidiStreamingMethod, ClientStreamingMethod, ServerStreamingMethod, UnaryMethod}
 import io.grpc.stub.{ClientCallStreamObserver, ServerCallStreamObserver, StreamObserver}
 import wvlet.airframe.codec.{MessageCodec, MessageCodecException, MessageCodecFactory}
+import wvlet.airframe.http
+import wvlet.airframe.http.{RPCEncoding, RPCMethod}
 import wvlet.airframe.http.grpc.{GrpcContext, GrpcResponse}
 import wvlet.airframe.http.internal.RPCCallContext
 import wvlet.airframe.http.router.HttpRequestMapper
@@ -37,7 +39,7 @@ import scala.util.{Failure, Success, Try}
   * This handler receives a MessagePack Map value for an RPC request, and call the corresponding controller method
   */
 class GrpcRequestHandler(
-    rpcInterfaceCls: Class[_],
+    rpcMethod: RPCMethod,
     // Controller instance
     controller: Any,
     // Controller method to call for RPC
@@ -49,7 +51,7 @@ class GrpcRequestHandler(
 
   private val argCodecs = methodSurface.args.map(a => codecFactory.of(a.surface))
 
-  private val rpcContext = RPCCallContext(rpcInterfaceCls, methodSurface, Seq.empty)
+  private val rpcContext = RPCCallContext(rpcMethod, methodSurface, Seq.empty)
 
   /**
     * Read the input value (MessagePack or Json) and convert to MessagePack Value

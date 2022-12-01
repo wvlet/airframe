@@ -94,9 +94,9 @@ object HttpLogs {
 
   def rpcLogs(rpcContext: RPCCallContext): ListMap[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
-    m += "rpc_interface" -> TypeName.sanitizeTypeName(rpcContext.rpcInterfaceCls.getName)
-    m += "rpc_class"     -> rpcContext.rpcMethodSurface.owner.fullName
-    m += "rpc_method"    -> rpcContext.rpcMethodSurface.name
+    m += "rpc_interface" -> rpcContext.rpcInterfaceName
+    m += "rpc_class"     -> rpcContext.rpcClassName
+    m += "rpc_method"    -> rpcContext.rpcMethodName
 
     val rpcArgs = extractRpcArgLog(rpcContext)
     if (rpcArgs.nonEmpty) {
