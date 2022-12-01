@@ -27,7 +27,7 @@ import scala.language.higherKinds
   * A mapping from an HTTP endpoint to a corresponding method (or function)
   */
 trait Route {
-  def method: String
+  def httpMethod: String
   def methodSurface: MethodSurface
 
   def serviceName: String
@@ -73,10 +73,9 @@ trait Route {
   * Define mappings from an HTTP request to a controller method which has the Endpoint annotation
   */
 case class ControllerRoute(
-    rpcInterfaceCls: Class[_],
+    rpcMethod: RPCMethod,
     controllerSurface: Surface,
-    method: String,
-    path: String,
+    httpMethod: String,
     methodSurface: MethodSurface,
     isRPC: Boolean
 ) extends Route
@@ -86,12 +85,15 @@ case class ControllerRoute(
     s"Invalid route path: ${path}. EndPoint path must start with a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}"
   )
 
-  override def toString =
-    s"${method} ${path} -> ${methodSurface.name}(${methodSurface.args
+  def path: String = rpcMethod.path
+
+  override def toString = {
+    s"${httpMethod} ${path} -> ${methodSurface.name}(${methodSurface.args
         .map(x => s"${x.name}:${x.surface}").mkString(", ")}): ${methodSurface.returnType}"
+  }
 
   override lazy val serviceName: String = {
-    rpcInterfaceCls.getName.replaceAll("\\$anon\\$", "").replaceAll("\\$", ".")
+    rpcMethod.rpcInterfaceName.replaceAll("\\$anon\\$", "").replaceAll("\\$", ".")
   }
 
   override def returnTypeSurface: Surface = methodSurface.returnType
@@ -120,7 +122,7 @@ case class ControllerRoute(
         )
       } finally {
         // Ensure recording RPC method arguments
-        context.setThreadLocal(HttpBackend.TLS_KEY_RPC, RPCCallContext(rpcInterfaceCls, methodSurface, methodArgs))
+        context.setThreadLocal(HttpBackend.TLS_KEY_RPC, RPCCallContext(rpcMethod, methodSurface, methodArgs))
       }
       methodSurface.call(controller, methodArgs: _*)
     } catch {

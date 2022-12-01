@@ -26,7 +26,7 @@ import scala.collection.immutable.ListMap
 case class RPCMethod(
     // RPC endpoint path starting with '/'
     path: String,
-    rpcInterface: String,
+    rpcInterfaceName: String,
     methodName: String,
     requestSurface: Surface,
     responseSurface: Surface
@@ -36,7 +36,7 @@ case class RPCMethod(
     * Generate a map representation of this method for logging purpose
     */
   def logData: ListMap[String, Any] = ListMap(
-    "rpc_interface" -> rpcInterface,
+    "rpc_interface" -> rpcInterfaceName,
     "rpc_method"    -> methodName
   )
 }

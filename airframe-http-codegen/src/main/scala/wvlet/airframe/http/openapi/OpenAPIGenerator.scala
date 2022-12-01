@@ -271,7 +271,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
         )
       )
       val requestBodyContent: Map[String, MediaType] = {
-        if (route.method == HttpMethod.GET) {
+        if (route.httpMethod == HttpMethod.GET) {
           // GET should have no request body
           Map.empty
         } else {
@@ -314,7 +314,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
         }
       // URL query string parameters
       val queryParameters: Seq[ParameterOrRef] =
-        if (route.method == HttpMethod.GET) {
+        if (route.httpMethod == HttpMethod.GET) {
           routeAnalysis.httpClientCallInputs.map { p =>
             toParameter(p, In.query)
           }
@@ -323,7 +323,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
         }
       val pathAndQueryParameters = pathParameters ++ queryParameters
 
-      val httpMethod = route.method.toLowerCase(Locale.ENGLISH)
+      val httpMethod = route.httpMethod.toLowerCase(Locale.ENGLISH)
 
       val content: Map[String, MediaType] =
         if (route.returnTypeSurface == Primitive.Unit) {

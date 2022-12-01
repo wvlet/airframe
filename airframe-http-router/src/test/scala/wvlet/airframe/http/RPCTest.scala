@@ -35,12 +35,12 @@ object RPCTest extends AirSpec {
 
     val m1 = r.routes.find(_.path == "/v1/MyRPCService/hello")
     m1 shouldBe defined
-    m1.get.method shouldBe HttpMethod.POST
+    m1.get.httpMethod shouldBe HttpMethod.POST
     m1.get.methodSurface.name shouldBe "hello"
 
     val m2 = r.routes.find(_.path == "/v1/MyRPCService/book")
     m2 shouldBe defined
-    m2.get.method shouldBe HttpMethod.POST
+    m2.get.httpMethod shouldBe HttpMethod.POST
     m2.get.methodSurface.name shouldBe "book"
   }
 
@@ -55,7 +55,7 @@ object RPCTest extends AirSpec {
     val m = r.routes.find(_.path == "/wvlet.airframe.http.RPCTest.MyRPCService2/hello")
     m shouldBe defined
 
-    m.get.method shouldBe HttpMethod.POST
+    m.get.httpMethod shouldBe HttpMethod.POST
     m.get.methodSurface.name shouldBe "hello"
   }
 
@@ -70,7 +70,7 @@ object RPCTest extends AirSpec {
     debug(r)
     val m = r.routes.find(_.path == "/v1/MyRPCService3/hello_world")
     m shouldBe defined
-    m.get.method shouldBe HttpMethod.POST
+    m.get.httpMethod shouldBe HttpMethod.POST
     m.get.methodSurface.name shouldBe "hello"
   }
 
