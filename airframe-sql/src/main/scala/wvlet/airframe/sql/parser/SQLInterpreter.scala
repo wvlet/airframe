@@ -389,7 +389,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   override def visitSelectAll(ctx: SelectAllContext): Attribute = {
     // TODO parse qName
     ctx.qualifiedName()
-    AllColumns(None, getLocation(ctx))
+    AllColumns(None, None, getLocation(ctx))
   }
 
   override def visitSelectSingle(ctx: SelectSingleContext): Attribute = {
@@ -729,7 +729,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     if (ctx.ASTERISK() != null) {
       FunctionCall(
         name,
-        Seq(AllColumns(None, getLocation(ctx))),
+        Seq(AllColumns(None, None, getLocation(ctx))),
         isDistinct,
         filter,
         over,

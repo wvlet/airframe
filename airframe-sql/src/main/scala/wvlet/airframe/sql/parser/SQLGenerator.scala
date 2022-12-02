@@ -366,7 +366,7 @@ object SQLGenerator extends LogSupport {
         alias
           .map(x => s"${col} AS ${x}")
           .getOrElse(col)
-      case AllColumns(prefix, _) =>
+      case AllColumns(prefix, _, _) =>
         prefix.map(p => s"${p}.*").getOrElse("*")
       case a: Attribute =>
         a.name

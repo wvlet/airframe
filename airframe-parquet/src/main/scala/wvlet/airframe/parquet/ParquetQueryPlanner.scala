@@ -49,7 +49,7 @@ object ParquetQueryPlanner extends LogSupport {
       val queryPlan   = ParquetQueryPlan(sql)
 
       logicalPlan match {
-        case Project(input, Seq(AllColumns(None, _)), _) =>
+        case Project(input, Seq(AllColumns(None, _, _)), _) =>
           parseRelation(input, queryPlan).selectAllColumns
         case Project(input, selectItems, _) =>
           val columns = selectItems.map {

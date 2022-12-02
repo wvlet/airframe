@@ -314,6 +314,12 @@ object TypeResolver extends LogSupport {
         lookup(i.value)
       case u @ UnresolvedAttribute(name, _) =>
         lookup(name)
+      case a @ AllColumns(_, None, _) =>
+        val sourceTables = inputAttributes
+          .collect { case r: ResolvedAttribute =>
+            r.sourceColumns.map(_.table)
+          }.flatten.distinct
+        List(a.copy(sourceTables = Some(sourceTables)))
       case _ =>
         List(expr)
     }
