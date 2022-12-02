@@ -257,6 +257,7 @@ object TypeResolver extends LogSupport {
   def resolveAttribute(attribute: Attribute): Attribute = {
     attribute match {
       case SingleColumn(r: ResolvedAttribute, alias, qualifier, _) =>
+        // Preserve column alias and qualifiers
         r.pipe { attr =>
           alias match {
             case Some(x) => attr.withAlias(x)
