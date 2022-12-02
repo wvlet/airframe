@@ -242,6 +242,15 @@ class TypeResolverTest extends AirSpec {
         case _ =>
           fail(s"unexpected plan: ${p}")
       }
+
+      test("resolve qualified column used in GROUP BY clause") {
+        val p = analyze("SELECT a.cnt, a.name FROM (SELECT count(id) cnt, name FROM A GROUP BY name) a")
+        p.outputAttributes match {
+          case List(SingleColumn(FunctionCall("count", Seq(c1), _, _, _, _), _, _, _), c2) =>
+            List(c1, c2) shouldBe List(ra1, ra2.withQualifier("a"))
+          case _ => fail(s"unexpected plan:\n${p.pp}")
+        }
+      }
     }
 
     test("group by with renamed keys") {
@@ -312,9 +321,7 @@ class TypeResolverTest extends AirSpec {
           |select * from A
           |)
           |select q1.id from q1 inner join q2 ON q1.name = q2.name""".stripMargin)
-      p.outputAttributes shouldBe List(
-        ResolvedAttribute("id", DataType.LongType, Some("q1"), ra1.sourceColumns, None)
-      )
+      p.outputAttributes shouldBe List(ra1.withQualifier("q1"))
 
       val joinKeys = p
         .collectExpressions { case _: JoinOnEq =>
@@ -322,8 +329,8 @@ class TypeResolverTest extends AirSpec {
         }.map(_.asInstanceOf[JoinOnEq].keys)
       joinKeys shouldBe List(
         List(
-          ResolvedAttribute("name", DataType.StringType, Some("q1"), ra2.sourceColumns, None),
-          ResolvedAttribute("name", DataType.StringType, Some("q2"), ra2.sourceColumns, None)
+          ra2.withQualifier("q1"),
+          ra2.withQualifier("q2")
         )
       )
     }
@@ -381,7 +388,7 @@ class TypeResolverTest extends AirSpec {
       val p = analyze("select id, A.name from A join B using(id)")
       p.outputAttributes shouldBe List(
         ResolvedAttribute("id", DataType.LongType, None, ra1.sourceColumns ++ rb1.sourceColumns, None),
-        ResolvedAttribute("name", DataType.StringType, None, ra2.sourceColumns, None)
+        ra2
       )
     }
 
@@ -475,10 +482,7 @@ class TypeResolverTest extends AirSpec {
 
     test("resolve a sub query with column aliases") {
       val p = analyze("SELECT p1, p2 FROM (SELECT id as p1, name as p2 FROM A)")
-      p.outputAttributes.toList shouldBe List(
-        ResolvedAttribute("p1", DataType.LongType, None, ra1.sourceColumns, None),
-        ResolvedAttribute("p2", DataType.StringType, None, ra2.sourceColumns, None)
-      )
+      p.outputAttributes.toList shouldBe List(ra1.copy(name = "p1"), ra2.copy(name = "p2"))
     }
 
     test("resolve a sub query with SELECT *") {
@@ -489,8 +493,8 @@ class TypeResolverTest extends AirSpec {
     test("resolve a sub query with table alias") {
       val p = analyze("SELECT a.id, a.name FROM (SELECT id, name FROM A) a")
       p.outputAttributes.toList shouldBe List(
-        ResolvedAttribute("id", DataType.LongType, Some("a"), ra1.sourceColumns, None),
-        ResolvedAttribute("name", DataType.StringType, Some("a"), ra2.sourceColumns, None)
+        ra1.withQualifier("a"),
+        ra2.withQualifier("a")
       )
     }
 
@@ -510,8 +514,8 @@ class TypeResolverTest extends AirSpec {
       p match {
         case Project(Join(_, _, _, join: JoinOnEq, _), _, _) =>
           join.keys shouldBe List(
-            ResolvedAttribute("id", DataType.LongType, Some("x"), ra1.sourceColumns, None),
-            ResolvedAttribute("id", DataType.LongType, Some("y"), rb1.sourceColumns, None)
+            ra1.withQualifier("x"),
+            rb1.withQualifier("y")
           )
         case _ => fail(s"unexpected plan:\n${p.pp}")
       }
@@ -524,7 +528,7 @@ class TypeResolverTest extends AirSpec {
 
       p.outputAttributes.toList match {
         case List(SingleColumn(ArithmeticBinaryExpr(Add, c1, LongLiteral(1, _), _), _, _, _), c2) =>
-          List(c1, c2) shouldBe List(ra1, ra2)
+          List(c1, c2) shouldBe List(ra1, ra2.withQualifier("a"))
         case _ => fail(s"unexpected plan:\n${p.pp}")
       }
 
@@ -542,10 +546,7 @@ class TypeResolverTest extends AirSpec {
 
       p.outputAttributes.toList match {
         case List(SingleColumn(ArithmeticBinaryExpr(Add, c1, LongLiteral(1, _), _), _, _, _), c2) =>
-          List(c1, c2) shouldBe List(
-            ra1,
-            ResolvedAttribute("name", DataType.StringType, Some("q1"), ra2.sourceColumns, None)
-          )
+          List(c1, c2) shouldBe List(ra1, ra2.withQualifier("q1"))
         case _ => fail(s"unexpected plan:\n${p.pp}")
       }
 

@@ -19,6 +19,8 @@ import wvlet.airframe.sql.model.LogicalPlan._
 import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
+import scala.util.chaining.scalaUtilChainingOps
+
 /**
   * Resolve untyped [[LogicalPlan]]s and [[Expression]]s into typed ones.
   */
@@ -254,10 +256,19 @@ object TypeResolver extends LogSupport {
 
   def resolveAttribute(attribute: Attribute): Attribute = {
     attribute match {
-      case SingleColumn(r: ResolvedAttribute, None, _, _) =>
-        r
-      case SingleColumn(r: ResolvedAttribute, Some(alias), _, _) =>
-        r.withAlias(alias)
+      case SingleColumn(r: ResolvedAttribute, alias, qualifier, _) =>
+        // Preserve column alias and qualifiers
+        r.pipe { attr =>
+          alias match {
+            case Some(x) => attr.withAlias(x)
+            case None    => attr
+          }
+        }.pipe { attr =>
+            qualifier match {
+              case Some(x) => attr.withQualifier(x)
+              case None    => attr
+            }
+          }
       case other => other
     }
   }
