@@ -340,7 +340,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   def resolvedChildren: Boolean = children.forall(_.resolved)
 
   def unresolvedExpressions: Seq[Expression] = {
-    collectExpressions(!_.resolved)
+    collectExpressions { case x: Expression => !x.resolved }
   }
 }
 
