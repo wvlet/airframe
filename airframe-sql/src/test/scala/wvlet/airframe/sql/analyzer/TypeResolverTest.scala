@@ -17,9 +17,9 @@ import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Distinct, Filter, Intersect, Join, Project, Query, With}
+import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Distinct, Except, Filter, Intersect, Join, Project, Query, With}
 import wvlet.airframe.sql.model.{CTERelationRef, Expression, LogicalPlan, NodeLocation, ResolvedAttribute, SourceColumn}
-import wvlet.airframe.sql.parser.SQLParser
+import wvlet.airframe.sql.parser.{SQLGenerator, SQLParser}
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
 
@@ -145,39 +145,119 @@ class TypeResolverTest extends AirSpec {
     test("resolve union") {
       val p = analyze("select id from A union all select id from B")
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
-      p.outputAttributes shouldBe List(
-        ResolvedAttribute("id", DataType.LongType, None, ra1.sourceColumns ++ rb1.sourceColumns, None)
-      )
+      p.outputAttributes shouldBe List(SingleColumn(MultiColumn(List(ra1, rb1), None), None, None, None))
     }
 
     test("resolve union with select *") {
       val p = analyze("select * from A union all select * from B")
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
       p.outputAttributes shouldBe List(
-        ResolvedAttribute("id", DataType.LongType, None, ra1.sourceColumns ++ rb1.sourceColumns, None),
-        ResolvedAttribute("name", DataType.StringType, None, ra2.sourceColumns ++ rb2.sourceColumns, None)
+        SingleColumn(MultiColumn(List(ra1, rb1), None), None, None, None),
+        SingleColumn(MultiColumn(List(ra2, rb2), None), None, None, None)
+      )
+    }
+
+    test("resolve select * from union sub query") {
+      val p = analyze("select * from (select * from A union all select * from B)")
+      p.inputAttributes shouldBe List(
+        SingleColumn(MultiColumn(List(ra1, rb1), None), None, None, None),
+        SingleColumn(MultiColumn(List(ra2, rb2), None), None, None, None)
+      )
+      p.outputAttributes shouldBe List(
+        SingleColumn(MultiColumn(List(ra1, rb1), None), None, None, None),
+        SingleColumn(MultiColumn(List(ra2, rb2), None), None, None, None)
+      )
+    }
+
+    test("resolve union with column alias") {
+      val p = analyze("select p1 from (select id as p1 from A union all select id from B)")
+      p.inputAttributes shouldBe List(
+        SingleColumn(MultiColumn(List(ra1.withAlias("p1"), rb1), None), None, None, None)
+      )
+      p.outputAttributes shouldBe List(
+        SingleColumn(
+          MultiColumn(List(ra1.copy(name = "p1"), rb1), None),
+          None,
+          None,
+          Some(NodeLocation(1, 8))
+        )
+      )
+    }
+
+    test("resolve union with column alias and qualifier") {
+      val p = analyze("select q1.p1 from (select id as p1 from A union all select id from B) q1")
+      println(SQLGenerator.print(p))
+      p.inputAttributes shouldBe List(
+        SingleColumn(MultiColumn(List(ra1.withAlias("p1"), rb1), None), None, Some("q1"), None)
+      )
+      p.inputAttributes shouldBe List(
+        SingleColumn(
+          MultiColumn(List(ra1.copy(name = "p1"), rb1), None),
+          None,
+          Some("q1"),
+          None
+        )
+      )
+      p.outputAttributes shouldBe List(
+        SingleColumn(
+          MultiColumn(List(ra1.copy(name = "p1"), rb1), None),
+          None,
+          None,
+          Some(NodeLocation(1, 8))
+        )
       )
     }
 
     test("resolve aggregation key with union") {
       val p = analyze("select count(*), id from (select * from A union all select * from B) group by id")
-      p.asInstanceOf[Aggregate].groupingKeys(0).child shouldBe ResolvedAttribute(
-        "id",
-        DataType.LongType,
-        None,
-        ra1.sourceColumns ++ rb1.sourceColumns,
-        None
+      p.asInstanceOf[Aggregate].groupingKeys(0).child shouldBe MultiColumn(List(ra1, rb1), None)
+    }
+
+    test("resolve union with expression") {
+      val p = analyze("select id + 1 from A union all select id + 1 from B")
+      p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
+      p.outputAttributes shouldBe List(
+        SingleColumn(
+          MultiColumn(
+            List(
+              SingleColumn(
+                ArithmeticBinaryExpr(Add, ra1, LongLiteral(1, Some(NodeLocation(1, 13))), Some(NodeLocation(1, 8))),
+                None,
+                None,
+                Some(NodeLocation(1, 8))
+              ),
+              SingleColumn(
+                ArithmeticBinaryExpr(Add, rb1, LongLiteral(1, Some(NodeLocation(1, 44))), Some(NodeLocation(1, 39))),
+                None,
+                None,
+                Some(NodeLocation(1, 39))
+              )
+            ),
+            Some(NodeLocation(1, 8))
+          ),
+          None,
+          None,
+          Some(NodeLocation(1, 8))
+        )
       )
     }
 
     test("resolve intersect") {
       val p = analyze("select id from A intersect select id from B") // => Distinct(Intersect(...))
       p match {
-        case Distinct(i @ Intersect(_, _, _), _) =>
+        case Distinct(i @ Intersect(_, _), _) =>
           i.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
-          i.outputAttributes shouldBe List(
-            ResolvedAttribute("id", DataType.LongType, None, ra1.sourceColumns ++ rb1.sourceColumns, None)
-          )
+          i.outputAttributes shouldBe List(SingleColumn(MultiColumn(List(ra1, rb1), None), None, None, None))
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+    }
+
+    test("resolve except") {
+      val p = analyze("select id from A except select id from B") // => Distinct(Except(...))
+      p match {
+        case Distinct(e @ Except(_, _, _), _) =>
+          e.inputAttributes shouldBe List(ra1, ra2) // TODO ra2 shouldn't be included?
+          e.outputAttributes shouldBe List(ra1)
         case _ => fail(s"unexpected plan:\n${p.pp}")
       }
     }
@@ -594,6 +674,27 @@ class TypeResolverTest extends AirSpec {
       p.outputAttributes match {
         case List(SingleColumn(FunctionCall("count", Seq(c @ AllColumns(_, _, _)), _, _, _, _), _, _, _)) =>
           c.sourceTables shouldBe Some(Seq(tableA))
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+    }
+
+    test("resolve count(*) in Union") {
+      val p = analyze("select count(*) as cnt from A union all select count(*) as cnt from B")
+      p.outputAttributes match {
+        case List(SingleColumn(m: MultiColumn, _, _, _)) =>
+          m.inputs.size shouldBe 2
+          m.inputs(0).asInstanceOf[SingleColumn].expr match {
+            case f: FunctionCall if f.name == "count" =>
+              f.args.size shouldBe 1
+              f.args(0).asInstanceOf[AllColumns].sourceTables shouldBe Some(Seq(tableA))
+            case _ => fail(s"unexpected plan:\n${p.pp}")
+          }
+          m.inputs(1).asInstanceOf[SingleColumn].expr match {
+            case f: FunctionCall if f.name == "count" =>
+              f.args.size shouldBe 1
+              f.args(0).asInstanceOf[AllColumns].sourceTables shouldBe Some(Seq(tableB))
+            case _ => fail(s"unexpected plan:\n${p.pp}")
+          }
         case _ => fail(s"unexpected plan:\n${p.pp}")
       }
     }

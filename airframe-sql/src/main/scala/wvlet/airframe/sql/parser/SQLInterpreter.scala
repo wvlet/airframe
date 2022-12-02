@@ -122,9 +122,9 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
       .map(visitSetQuantifier(_).isDistinct)
       .getOrElse(true)
     val base = if (ctx.INTERSECT() != null) {
-      Intersect(children, None, getLocation(ctx.INTERSECT()))
+      Intersect(children, getLocation(ctx.INTERSECT()))
     } else if (ctx.UNION() != null) {
-      Union(children, None, getLocation(ctx.UNION()))
+      Union(children, getLocation(ctx.UNION()))
     } else if (ctx.EXCEPT() != null) {
       Except(children(0), children(1), getLocation(ctx.EXCEPT()))
     } else {

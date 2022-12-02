@@ -76,11 +76,11 @@ object SQLGenerator extends LogSupport {
   private def printSetOperation(s: SetOperation, context: List[Relation]): String = {
     val isDistinct = containsDistinctPlan(context)
     val op = s match {
-      case Union(relations, _, _) =>
+      case Union(relations, _) =>
         if (isDistinct) "UNION" else "UNION ALL"
       case Except(left, right, _) =>
         if (isDistinct) "EXCEPT" else "EXCEPT ALL"
-      case Intersect(relations, _, _) =>
+      case Intersect(relations, _) =>
         if (isDistinct) "INTERSECT" else "INTERSECT ALL"
     }
     s.children.map(printRelation).mkString(s" ${op} ")
@@ -366,6 +366,8 @@ object SQLGenerator extends LogSupport {
         alias
           .map(x => s"${col} AS ${x}")
           .getOrElse(col)
+      case MultiColumn(inputs, _) =>
+        inputs.collectFirst { case a: Attribute => a }.map(printExpression).getOrElse(unknown(e))
       case AllColumns(prefix, _, _) =>
         prefix.map(p => s"${p}.*").getOrElse("*")
       case a: Attribute =>

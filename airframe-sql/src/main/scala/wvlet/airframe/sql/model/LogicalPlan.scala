@@ -546,6 +546,7 @@ object LogicalPlan {
       columnNames match {
         case Some(aliases) =>
           query.outputAttributes.zip(aliases).map { case (in, alias) =>
+            // TODO No need to re-wrap by SingleColumn for ResolvedAttribute, SingleColumn and MultiColumn?
             SingleColumn(
               in,
               Some(alias.sqlExpr),
@@ -612,7 +613,6 @@ object LogicalPlan {
   }
   case class Intersect(
       relations: Seq[Relation],
-      resolvedOutputs: Option[Seq[Attribute]],
       nodeLocation: Option[NodeLocation]
   ) extends SetOperation {
     override def children: Seq[Relation] = relations
@@ -622,17 +622,19 @@ object LogicalPlan {
     override def inputAttributes: Seq[Attribute] =
       relations.flatMap(_.inputAttributes)
     override def outputAttributes: Seq[Attribute] = {
-      val out = resolvedOutputs.getOrElse {
-        relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
-          SingleColumn(
-            UnionColumn(relations.map(_.outputAttributes(i)), output.nodeLocation),
-            None,
-            None,
-            output.nodeLocation
-          )
-        }
+      relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
+        SingleColumn(
+          MultiColumn(relations.map(_.outputAttributes(i)), output.nodeLocation),
+          None,
+//          output match {
+//            case s: SingleColumn      => s.alias
+//            case r: ResolvedAttribute => Some(r.name)
+//            case _                    => None
+//          },
+          None,
+          output.nodeLocation
+        )
       }
-      out
     }
   }
   case class Except(left: Relation, right: Relation, nodeLocation: Option[NodeLocation]) extends SetOperation {
@@ -645,7 +647,6 @@ object LogicalPlan {
   }
   case class Union(
       relations: Seq[Relation],
-      resolvedOutputs: Option[Seq[Attribute]],
       nodeLocation: Option[NodeLocation]
   ) extends SetOperation {
     override def children: Seq[Relation] = relations
@@ -660,15 +661,17 @@ object LogicalPlan {
       relations.flatMap(_.inputAttributes)
     }
     override def outputAttributes: Seq[Attribute] = {
-      resolvedOutputs.getOrElse {
-        relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
-          SingleColumn(
-            UnionColumn(relations.map(_.outputAttributes(i)), output.nodeLocation),
-            None,
-            None,
-            output.nodeLocation
-          )
-        }
+      relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
+        SingleColumn(
+          MultiColumn(relations.map(_.outputAttributes(i)), output.nodeLocation),
+          None,
+          output match {
+            case r: ResolvedAttribute => r.qualifier
+            case c: SingleColumn      => c.qualifier
+            case a: AllColumns        => a.qualifier.map(_.toString)
+          },
+          output.nodeLocation
+        )
       }
     }
   }
