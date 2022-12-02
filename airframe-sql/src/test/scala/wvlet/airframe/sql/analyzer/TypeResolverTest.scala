@@ -69,7 +69,7 @@ class TypeResolverTest extends AirSpec {
       rules: List[AnalyzerContext => PlanRewriter] = TypeResolver.typerRules
   ): LogicalPlan = {
     val plan = SQLParser.parse(sql)
-    debug(s"original plan:\n${plan.pp}")
+    trace(s"original plan:\n${plan.pp}")
     val analyzerContext = AnalyzerContext("default", demoCatalog).withAttributes(plan.outputAttributes)
 
     val resolvedPlan = rules.foldLeft(plan) { (targetPlan, rule) =>
@@ -78,8 +78,15 @@ class TypeResolverTest extends AirSpec {
       newPlan
     }
 
-    debug(s"new plan:\n${resolvedPlan.pp}")
+    trace(s"new plan:\n${resolvedPlan.pp}")
+    shouldBeResolved(resolvedPlan)
     resolvedPlan
+  }
+
+  private def shouldBeResolved(p: LogicalPlan): Unit = {
+    if (!p.resolved) {
+      fail(s"Unresolved\n[plan]\n${p.pp}\n[unresolved expressions]\n${p.unresolvedExpressions.mkString("\n")}")
+    }
   }
 
   private val ra1 = ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tableA, a1)), None)

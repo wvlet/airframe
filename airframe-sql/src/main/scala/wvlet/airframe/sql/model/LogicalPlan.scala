@@ -338,6 +338,10 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   // True if all input attributes are resolved.
   lazy val resolved: Boolean    = expressions.forall(_.resolved) && resolvedChildren
   def resolvedChildren: Boolean = children.forall(_.resolved)
+
+  def unresolvedExpressions: Seq[Expression] = {
+    collectExpressions(!_.resolved)
+  }
 }
 
 trait LeafPlan extends LogicalPlan {

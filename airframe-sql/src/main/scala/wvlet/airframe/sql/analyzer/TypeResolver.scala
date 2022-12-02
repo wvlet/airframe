@@ -284,7 +284,7 @@ object TypeResolver extends LogSupport {
       expr: Expression,
       inputAttributes: Seq[Attribute]
   ): List[Expression] = {
-    debug(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
+    trace(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
     val resolvedAttributes = inputAttributes.map(resolveAttribute)
 
     def lookup(name: String): List[Expression] = {
