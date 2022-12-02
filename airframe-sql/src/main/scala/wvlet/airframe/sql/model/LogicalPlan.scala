@@ -370,8 +370,8 @@ object LogicalPlan {
 
   private def isSelectAll(selectItems: Seq[Attribute]): Boolean = {
     selectItems.exists {
-      case AllColumns(x, _) => true
-      case _                => false
+      case AllColumns(x, _, _) => true
+      case _                   => false
     }
   }
 

@@ -17,17 +17,7 @@ import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{
-  Aggregate,
-  Distinct,
-  Filter,
-  Intersect,
-  Join,
-  Project,
-  Query,
-  With,
-  WithQuery
-}
+import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Distinct, Filter, Intersect, Join, Project, Query, With}
 import wvlet.airframe.sql.model.{CTERelationRef, Expression, LogicalPlan, NodeLocation, ResolvedAttribute, SourceColumn}
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
@@ -555,6 +545,56 @@ class TypeResolverTest extends AirSpec {
             case Eq(ArithmeticBinaryExpr(Add, c, LongLiteral(1, _), _), LongLiteral(99, _), _) => c shouldBe ra1
             case _ => fail(s"unexpected plan:\n${p.pp}")
           }
+      }
+    }
+  }
+
+  test("resolve count(*)") {
+    test("resolve simple count(*)") {
+      val p = analyze("select count(*) from A")
+      p.outputAttributes match {
+        case List(SingleColumn(FunctionCall("count", Seq(c @ AllColumns(_, _, _)), _, _, _, _), _, _, _)) =>
+          c.sourceTables shouldBe Some(Seq(tableA))
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+    }
+
+    test("resolve count(*) in expression") {
+      val p = analyze("select count(*) + 1 from A")
+      p.outputAttributes match {
+        case List(
+              SingleColumn(
+                ArithmeticBinaryExpr(
+                  _,
+                  FunctionCall("count", Seq(c @ AllColumns(_, _, _)), _, _, _, _),
+                  LongLiteral(1, _),
+                  _
+                ),
+                _,
+                _,
+                _
+              )
+            ) =>
+          c.sourceTables shouldBe Some(Seq(tableA))
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+    }
+
+    test("resolve count(*) in sub query") {
+      val p = analyze("select cnt from (select count(*) as cnt from A)")
+      p.outputAttributes match {
+        case List(SingleColumn(FunctionCall("count", Seq(c @ AllColumns(_, _, _)), _, _, _, _), _, _, _)) =>
+          c.sourceTables shouldBe Some(Seq(tableA))
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+    }
+
+    test("resolve count(*) in CTE") {
+      val p = analyze("WITH q AS (select count(*) as cnt from A) select cnt from q")
+      p.outputAttributes match {
+        case List(SingleColumn(FunctionCall("count", Seq(c @ AllColumns(_, _, _)), _, _, _, _), _, _, _)) =>
+          c.sourceTables shouldBe Some(Seq(tableA))
+        case _ => fail(s"unexpected plan:\n${p.pp}")
       }
     }
   }

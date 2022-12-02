@@ -14,6 +14,8 @@
 
 package wvlet.airframe.sql.model
 
+import wvlet.airframe.sql.catalog.Catalog
+
 import java.util.Locale
 
 /**
@@ -227,11 +229,21 @@ object Expression {
     override def children: Seq[Expression] = keys
   }
 
-  case class AllColumns(qualifier: Option[QName], nodeLocation: Option[NodeLocation]) extends Attribute {
+  case class AllColumns(
+      qualifier: Option[QName],
+      sourceTables: Option[Seq[Catalog.Table]],
+      nodeLocation: Option[NodeLocation]
+  ) extends Attribute {
     override def name: String              = qualifier.map(x => s"${x}.*").getOrElse("*")
     override def children: Seq[Expression] = qualifier.toSeq
-    override def toString                  = s"AllColumns(${name})"
-    override lazy val resolved             = false
+    override def toString = {
+      sourceTables match {
+        case Some(tables) => s"AllColumns(${tables.map(t => s"${t.name}.*").mkString(", ")})"
+        case None         => s"AllColumns(${name})"
+      }
+    }
+
+    override lazy val resolved = sourceTables.isDefined
 
     override def withQualifier(newQualifier: String): Attribute = {
       this.copy(qualifier = Some(QName(newQualifier, nodeLocation)))
