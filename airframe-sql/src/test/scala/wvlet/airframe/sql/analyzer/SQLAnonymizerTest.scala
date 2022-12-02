@@ -24,15 +24,15 @@ import wvlet.airspec.AirSpec
 class SQLAnonymizerTest extends AirSpec {
   protected def process(q: TestQuery, dict: Map[Expression, Expression]): Unit = {
     val l = SQLParser.parse(q.sql)
-    debug(q.sql)
+    trace(q.sql)
     trace(l.pp)
 
     val anonymizedPlan = SQLAnonymizer.anonymize(l, dict)
-    debug(anonymizedPlan.pp)
+    trace(anonymizedPlan.pp)
     val anonymizedSQL = SQLGenerator.print(anonymizedPlan)
-    debug(anonymizedSQL)
+    trace(anonymizedSQL)
     val sig = QuerySignature.of(anonymizedSQL)
-    debug(sig)
+    trace(sig)
   }
 
   protected def processQueries(input: Seq[TestQuery]): Unit = {

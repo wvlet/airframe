@@ -25,24 +25,24 @@ class QuerySignatureTest extends AirSpec {
   test("Find input/output tables") {
     SQLBenchmark.allQueries.foreach { sql =>
       val g = TableGraph.of(sql.sql)
-      debug(g)
+      trace(g)
     }
   }
 
   test("Generate signature") {
     SQLBenchmark.allQueries.foreach { sql =>
       val s = QuerySignature.of(sql.sql)
-      debug(s)
+      trace(s)
     }
   }
 
   test("parse q72.sql") {
     val sql = SQLBenchmark.tpcDS_("q72")
-    debug(sql)
+    trace(sql)
     val p = SQLParser.parse(sql.sql)
-    debug(p)
+    trace(p)
     val sig = QuerySignature.of(sql.sql)
-    debug(sig)
+    trace(sig)
   }
 
   val embedTableNames = QuerySignatureConfig(embedTableNames = true)

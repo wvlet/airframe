@@ -57,7 +57,7 @@ object SQLAnalyzer extends LogSupport {
   type Rule         = (AnalyzerContext) => PlanRewriter
 
   def analyze(sql: String, database: String, catalog: Catalog): LogicalPlan = {
-    debug(s"analyze:\n${sql}")
+    trace(s"analyze:\n${sql}")
     analyze(SQLParser.parse(sql), database, catalog)
   }
 
@@ -67,10 +67,10 @@ object SQLAnalyzer extends LogSupport {
     else {
       val analyzerContext =
         AnalyzerContext(database = database, catalog = catalog, parentAttributes = Some(plan.outputAttributes))
-      debug(s"Unresolved plan:\n${plan.pp}")
+      trace(s"Unresolved plan:\n${plan.pp}")
 
       val resolvedPlan = TypeResolver.resolve(analyzerContext, plan)
-      debug(s"Resolved plan:\n${resolvedPlan.pp}")
+      trace(s"Resolved plan:\n${resolvedPlan.pp}")
 
       val optimizedPlan = Optimizer.optimizerRules.foldLeft(resolvedPlan) { (targetPlan, rule) =>
         val r = rule.apply(analyzerContext)
@@ -78,7 +78,7 @@ object SQLAnalyzer extends LogSupport {
         targetPlan.transform(r)
       }
 
-      debug(s"new plan:\n${optimizedPlan.pp}")
+      trace(s"new plan:\n${optimizedPlan.pp}")
       optimizedPlan
     }
   }

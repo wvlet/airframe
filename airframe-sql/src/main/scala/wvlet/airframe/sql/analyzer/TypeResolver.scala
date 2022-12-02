@@ -42,7 +42,11 @@ object TypeResolver extends LogSupport {
   }
 
   def resolve(analyzerContext: AnalyzerContext, plan: LogicalPlan): LogicalPlan = {
-    val resolvedPlan = TypeResolver.typerRules
+    resolve(analyzerContext, plan, typerRules)
+  }
+
+  private[sql] def resolve(analyzerContext: AnalyzerContext, plan: LogicalPlan, rules: List[Rule]): LogicalPlan = {
+    val resolvedPlan = rules
       .foldLeft(plan) { (targetPlan, rule) =>
         val r = rule.apply(analyzerContext)
         // Recursively transform the tree form bottom to up
@@ -284,7 +288,7 @@ object TypeResolver extends LogSupport {
       expr: Expression,
       inputAttributes: Seq[Attribute]
   ): List[Expression] = {
-    debug(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
+    trace(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
     val resolvedAttributes = inputAttributes.map(resolveAttribute)
 
     def lookup(name: String): List[Expression] = {

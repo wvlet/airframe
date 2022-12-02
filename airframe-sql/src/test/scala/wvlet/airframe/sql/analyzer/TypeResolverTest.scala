@@ -60,26 +60,25 @@ class TypeResolverTest extends AirSpec {
     catalog
   }
 
-  private def analyzeSingle(sql: String, rule: AnalyzerContext => PlanRewriter): LogicalPlan = {
-    analyze(sql, List(rule))
-  }
-
   private def analyze(
       sql: String,
       rules: List[AnalyzerContext => PlanRewriter] = TypeResolver.typerRules
   ): LogicalPlan = {
     val plan = SQLParser.parse(sql)
-    debug(s"original plan:\n${plan.pp}")
+    trace(s"original plan:\n${plan.pp}")
     val analyzerContext = AnalyzerContext("default", demoCatalog).withAttributes(plan.outputAttributes)
-
-    val resolvedPlan = rules.foldLeft(plan) { (targetPlan, rule) =>
-      val rewriter: PlanRewriter = rule(analyzerContext)
-      val newPlan                = targetPlan.transformUp(rewriter)
-      newPlan
-    }
-
-    debug(s"new plan:\n${resolvedPlan.pp}")
+    val resolvedPlan    = TypeResolver.resolve(analyzerContext, plan, rules)
+    trace(s"new plan:\n${resolvedPlan.pp}")
+    shouldBeResolved(resolvedPlan)
     resolvedPlan
+  }
+
+  private def shouldBeResolved(p: LogicalPlan): Unit = {
+    if (!p.resolved) {
+      fail(
+        s"Found unresolved expressions in:\n[plan]\n${p.pp}\n[unresolved expressions]\n${p.unresolvedExpressions.mkString("\n")}"
+      )
+    }
   }
 
   private val ra1 = ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tableA, a1)), None)
@@ -89,17 +88,17 @@ class TypeResolverTest extends AirSpec {
 
   test("resolveTableRef") {
     test("resolve all columns") {
-      val p = analyzeSingle("select * from A", TypeResolver.resolveTableRef)
+      val p = analyze("select * from A")
       p.inputAttributes shouldBe List(ra1, ra2)
     }
 
     test("resolve the right table") {
-      val p = analyzeSingle("select * from B", TypeResolver.resolveTableRef)
+      val p = analyze("select * from B")
       p.inputAttributes shouldBe List(rb1, rb2)
     }
 
     test("resolve database.table name format") {
-      val p = analyzeSingle("select * from default.A", TypeResolver.resolveTableRef)
+      val p = analyze("select * from default.A")
       p.inputAttributes shouldBe List(ra1, ra2)
     }
   }
