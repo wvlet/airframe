@@ -23,10 +23,10 @@ import java.util.Locale
 sealed trait Expression extends TreeNode[Expression] with Product {
   def sqlExpr: String = toString()
 
-  private def createInstance(args: Iterator[AnyRef]): this.type = {
+  private def createInstance(args: Iterator[AnyRef]): Expression = {
     // TODO Build this LogicalPlan using Surface
     val primaryConstructor = this.getClass.getDeclaredConstructors()(0)
-    primaryConstructor.newInstance(args.toArray[AnyRef]: _*).asInstanceOf[this.type]
+    primaryConstructor.newInstance(args.toArray[AnyRef]: _*).asInstanceOf[Expression]
   }
 
   /**
@@ -52,7 +52,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
 
     // Next, apply the rule to child nodes
     if (newExpr.productArity == 0) {
-      newExpr.asInstanceOf[this.type]
+      newExpr
     } else {
       val newArgs = newExpr.productIterator.map(recursiveTransform)
       newExpr.createInstance(newArgs)
@@ -85,7 +85,7 @@ sealed trait Expression extends TreeNode[Expression] with Product {
 
     // Finally, apply the rule to itself
     rule
-      .applyOrElse(newExpr, identity[Expression]).asInstanceOf[this.type]
+      .applyOrElse(newExpr, identity[Expression])
   }
 
   def collectSubExpressions: List[Expression] = {
