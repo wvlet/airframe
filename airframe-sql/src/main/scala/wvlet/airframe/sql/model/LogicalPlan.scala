@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.sql.model
 import wvlet.airframe.sql.analyzer.QuerySignatureConfig
-import wvlet.log.LogSupport
 
 trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   def modelName: String = {
