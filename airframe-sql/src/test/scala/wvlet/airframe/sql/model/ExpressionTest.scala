@@ -40,7 +40,7 @@ class ExpressionTest extends AirSpec {
     val f1 = FunctionCall("count_a", Seq.empty, false, None, None, None)
     val f2 = FunctionCall("count_b", Seq(f1), false, None, None, None)
 
-    var count = new AtomicInteger(0)
+    val count = new AtomicInteger(0)
     val newExpr = f2.transformExpression {
       case f: FunctionCall if f.functionName == "count_a" =>
         FunctionCall(s"count_a${count.getAndIncrement()}", f.args, false, None, None, None)
@@ -79,7 +79,7 @@ class ExpressionTest extends AirSpec {
     val f1 = FunctionCall("count_a", Seq.empty, false, None, None, None)
     val f2 = FunctionCall("count_b", Seq(f1), false, None, None, None)
 
-    var count = new AtomicInteger(0)
+    val count = new AtomicInteger(0)
     val newExpr = f2.transformUpExpression {
       case f: FunctionCall if f.functionName == "count_a" =>
         FunctionCall(s"count_a${count.getAndIncrement()}", f.args, false, None, None, None)
