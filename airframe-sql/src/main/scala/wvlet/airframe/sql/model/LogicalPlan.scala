@@ -286,14 +286,11 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
 
     // Transform child expressions first
     val newPlan = transformChildExpressions(rule)
-    if (!(this eq newPlan)) {
-      changed = true
-    }
     val newArgs = newPlan.productIterator.map(loopOnlyPlan).toSeq
     if (changed) {
       copyInstance(newArgs)
     } else {
-      this
+      newPlan
     }
   }
 
