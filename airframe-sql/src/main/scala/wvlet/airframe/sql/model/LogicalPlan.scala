@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.sql.model
 import wvlet.airframe.sql.analyzer.QuerySignatureConfig
+import wvlet.log.LogSupport
 
 trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   def modelName: String = {
@@ -259,19 +260,112 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     }
   }
 
+  /**
+    * Recursively transform all nested expressions
+    * @param rule
+    * @return
+    */
   def transformExpressions(rule: PartialFunction[Expression, Expression]): LogicalPlan = {
-    def recursiveTransform(arg: Any): AnyRef =
+    var changed = false
+    def loopOnlyPlan(arg: Any): AnyRef = {
       arg match {
-        case e: Expression  => e.transformExpression(rule)
-        case l: LogicalPlan => l.transformExpressions(rule)
-        case Some(x)        => Some(recursiveTransform(x))
-        case s: Seq[_]      => s.map(recursiveTransform _)
+        case e: Expression => e
+        case l: LogicalPlan =>
+          val newPlan = l.transformExpressions(rule)
+          if (l eq newPlan) {
+            l
+          } else {
+            changed = true
+            newPlan
+          }
+        case Some(x)       => Some(loopOnlyPlan(x))
+        case s: Seq[_]     => s.map(loopOnlyPlan _)
+        case other: AnyRef => other
+        case null          => null
+      }
+    }
+
+    // Transform child expressions first
+    val newPlan = transformChildExpressions(rule)
+    if (!(this eq newPlan)) {
+      changed = true
+    }
+    val newArgs = newPlan.productIterator.map(loopOnlyPlan).toSeq
+    if (changed) {
+      copyInstance(newArgs)
+    } else {
+      this
+    }
+  }
+
+  /**
+    * Depth-first transformation of expression
+    *
+    * @param rule
+    * @return
+    */
+  def transformUpExpressions(rule: PartialFunction[Expression, Expression]): LogicalPlan = {
+    var changed = false
+    def iter(arg: Any): AnyRef =
+      arg match {
+        case e: Expression =>
+          val newExpr = e.transformUpExpression(rule)
+          if (e eq newExpr) {
+            e
+          } else {
+            changed = true
+            newExpr
+          }
+        case l: LogicalPlan =>
+          val newPlan = l.transformUpExpressions(rule)
+          if (l eq newPlan) l
+          else {
+            changed = true
+            newPlan
+          }
+        case Some(x)       => Some(iter(x))
+        case s: Seq[_]     => s.map(iter _)
+        case other: AnyRef => other
+        case null          => null
+      }
+
+    val newArgs = productIterator.map(iter).toIndexedSeq
+    if (changed) {
+      copyInstance(newArgs)
+    } else {
+      this
+    }
+  }
+
+  /**
+    * Transform only child expressions
+    * @param rule
+    * @return
+    */
+  def transformChildExpressions(rule: PartialFunction[Expression, Expression]): LogicalPlan = {
+    var changed = false
+    def iterOnce(arg: Any): AnyRef =
+      arg match {
+        case e: Expression =>
+          val newExpr = rule.applyOrElse(e, identity[Expression])
+          if (e eq newExpr) {
+            e
+          } else {
+            changed = true
+            newExpr
+          }
+        case l: LogicalPlan => l
+        case Some(x)        => Some(iterOnce(x))
+        case s: Seq[_]      => s.map(iterOnce _)
         case other: AnyRef  => other
         case null           => null
       }
 
-    val newArgs = productIterator.map(recursiveTransform).toIndexedSeq
-    copyInstance(newArgs)
+    val newArgs = productIterator.map(iterOnce).toIndexedSeq
+    if (changed)
+      copyInstance(newArgs)
+    else
+      this
   }
 
   protected def copyInstance(newArgs: Seq[AnyRef]): this.type = {

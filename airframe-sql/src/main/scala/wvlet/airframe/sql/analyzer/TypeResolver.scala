@@ -183,11 +183,11 @@ object TypeResolver extends LogSupport {
 
   def resolveRegularRelation(context: AnalyzerContext): PlanRewriter = {
     case filter @ Filter(child, filterExpr, _) =>
-      filter.transformExpressions { case x: Expression => resolveExpression(context, x, filter.inputAttributes) }
+      filter.transformUpExpressions { case x: Expression => resolveExpression(context, x, filter.inputAttributes) }
     case u: Union     => u // UNION is resolved later by resolveUnion()
     case u: Intersect => u // INTERSECT is resolved later by resolveIntersect()
     case r: Relation =>
-      r.transformExpressions { case x: Expression => resolveExpression(context, x, r.inputAttributes) }
+      r.transformUpExpressions { case x: Expression => resolveExpression(context, x, r.inputAttributes) }
   }
 
   def resolveColumns(context: AnalyzerContext): PlanRewriter = { case p @ Project(child, columns, _) =>
