@@ -36,8 +36,6 @@ object TypeResolver extends LogSupport {
       TypeResolver.resolveJoinUsing _ ::
       TypeResolver.resolveRegularRelation _ ::
       TypeResolver.resolveColumns _ ::
-      TypeResolver.resolveUnion _ ::
-      TypeResolver.resolveIntersect _ ::
       Nil
   }
 
@@ -196,28 +194,6 @@ object TypeResolver extends LogSupport {
     resolved
   }
 
-  def resolveIntersect(context: AnalyzerContext): PlanRewriter = { case u @ Intersect(_, None, _) =>
-    val resolvedOutputs = u.outputAttributes.collect { case SingleColumn(UnionColumn(inputs, _), _, _, _) =>
-      val resolved = inputs
-        .map { expr =>
-          resolveExpression(context, expr, u.inputAttributes)
-        }.collect { case a: ResolvedAttribute => a }
-      resolved.head.copy(sourceColumns = resolved.flatMap(_.sourceColumns))
-    }
-    u.copy(resolvedOutputs = Some(resolvedOutputs))
-  }
-
-  def resolveUnion(context: AnalyzerContext): PlanRewriter = { case u @ Union(_, None, _) =>
-    val resolvedOutputs = u.outputAttributes.collect { case SingleColumn(UnionColumn(inputs, _), _, _, _) =>
-      val resolved = inputs
-        .map { expr =>
-          resolveExpression(context, expr, u.inputAttributes)
-        }.collect { case a: ResolvedAttribute => a }
-      resolved.head.copy(sourceColumns = resolved.flatMap(_.sourceColumns))
-    }
-    u.copy(resolvedOutputs = Some(resolvedOutputs))
-  }
-
   /**
     * Resolve output columns by looking up the inputAttributes
     *
@@ -241,13 +217,7 @@ object TypeResolver extends LogSupport {
           case r: ResolvedAttribute if alias.isEmpty =>
             resolvedColumns += r
           case r: ResolvedAttribute if alias.nonEmpty =>
-            resolvedColumns += ResolvedAttribute(
-              alias.get,
-              r.dataType,
-              r.qualifier,
-              r.sourceColumns,
-              r.nodeLocation
-            )
+            resolvedColumns += r.withAlias(alias.get)
           case expr =>
             resolvedColumns += SingleColumn(expr, alias, None, nodeLocation)
         }
@@ -296,17 +266,17 @@ object TypeResolver extends LogSupport {
         case QName(Seq(db, t1, c1), _) if context.database == db =>
           resolvedAttributes.collect {
             case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.ofSourceColumn(t1, c1).getOrElse(a)
-            case c: SingleColumn if c.qualifier.contains(t1) && c.alias.contains(c1) => c.expr
+            case c: SingleColumn if c.matchesWith(t1, c1)      => c.expr
           }.toList
         case QName(Seq(t1, c1), _) =>
           resolvedAttributes.collect {
             case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.ofSourceColumn(t1, c1).getOrElse(a)
-            case c: SingleColumn if c.qualifier.contains(t1) && c.alias.contains(c1) => c.expr
+            case c: SingleColumn if c.matchesWith(t1, c1)      => c.expr
           }.toList
         case QName(Seq(c1), _) =>
           resolvedAttributes.collect {
-            case a: ResolvedAttribute if a.name == c1    => a
-            case c: SingleColumn if c.alias.contains(c1) => c.expr
+            case a: ResolvedAttribute if a.name == c1 => a
+            case c: SingleColumn if c.matchesWith(c1) => c.expr
           }.toList
         case _ =>
           List.empty

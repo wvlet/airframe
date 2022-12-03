@@ -263,6 +263,28 @@ object Expression {
     override def withQualifier(newQualifier: String): Attribute = {
       this.copy(qualifier = Some(newQualifier))
     }
+
+    def matchesWith(tableName: String, columnName: String): Boolean = {
+      qualifier.contains(tableName) && matchesWith(columnName)
+    }
+
+    def matchesWith(columnName: String): Boolean = {
+      alias.contains(columnName) || matchesWithMultiColumn(columnName)
+    }
+
+    private def matchesWithMultiColumn(columnName: String): Boolean = {
+      expr match {
+        case MultiColumn(inputs, _) =>
+          inputs.collectFirst { case r: ResolvedAttribute => r }.exists(_.name == columnName)
+        case _ => false
+      }
+    }
+  }
+  case class MultiColumn(
+      inputs: Seq[Expression],
+      nodeLocation: Option[NodeLocation]
+  ) extends Expression {
+    override def children: Seq[Expression] = inputs
   }
 
   case class SortItem(
@@ -656,9 +678,4 @@ object Expression {
 
   // Aggregation
   case class GroupingKey(child: Expression, nodeLocation: Option[NodeLocation]) extends UnaryExpression
-
-  // Dummy expression to represent UNION column that has multiple input sources
-  case class UnionColumn(inputs: Seq[Expression], nodeLocation: Option[NodeLocation]) extends Expression {
-    override def children: Seq[Expression] = inputs
-  }
 }
