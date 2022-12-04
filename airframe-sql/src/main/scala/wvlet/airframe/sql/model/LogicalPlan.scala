@@ -626,12 +626,11 @@ object LogicalPlan {
         SingleColumn(
           MultiColumn(relations.map(_.outputAttributes(i)), output.nodeLocation),
           None,
-//          output match {
-//            case s: SingleColumn      => s.alias
-//            case r: ResolvedAttribute => Some(r.name)
-//            case _                    => None
-//          },
-          None,
+          output match {
+            case r: ResolvedAttribute => r.qualifier
+            case c: SingleColumn      => c.qualifier
+            case _                    => None
+          },
           output.nodeLocation
         )
       }
@@ -668,7 +667,7 @@ object LogicalPlan {
           output match {
             case r: ResolvedAttribute => r.qualifier
             case c: SingleColumn      => c.qualifier
-            case a: AllColumns        => a.qualifier.map(_.toString)
+            case _                    => None
           },
           output.nodeLocation
         )
