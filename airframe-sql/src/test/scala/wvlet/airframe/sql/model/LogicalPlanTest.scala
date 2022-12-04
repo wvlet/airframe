@@ -13,9 +13,12 @@
  */
 package wvlet.airframe.sql.model
 
+import wvlet.airframe.sql.model.Expression.SingleColumn
 import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Filter, Limit, Project, TableRef}
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airspec.AirSpec
+
+import java.util.concurrent.atomic.AtomicInteger
 
 class LogicalPlanTest extends AirSpec {
   test("traverse plan nodes") {
@@ -102,5 +105,57 @@ class LogicalPlanTest extends AirSpec {
       count += 1
     }
     count shouldBe 1
+  }
+
+  test("transform only child expressions") {
+    val l = SQLParser.parse("select a from (select a from t)")
+    val newPlan = l.transformChildExpressions { case s: SingleColumn =>
+      s.withAlias("x")
+    }
+    newPlan.expressions.collect {
+      case s: SingleColumn if s.alias == Some("x") => true
+    }.nonEmpty shouldBe true
+  }
+
+  test("transform all expressions") {
+    val l = SQLParser.parse("select a from (select a from t)")
+    val newPlan = l.transformExpressions { case s: SingleColumn =>
+      s.withAlias("x")
+    }
+    newPlan.collectExpressions {
+      case s: SingleColumn if s.alias == Some("x") => true
+    }.size shouldBe 2
+  }
+
+  test("transform down child expressions") {
+    val count = new AtomicInteger(0)
+    val l     = SQLParser.parse("select a from (select b from t)")
+    val newPlan = l.transformExpressions { case s: SingleColumn =>
+      s.withAlias(s"x${count.getAndIncrement()}")
+    }
+
+    newPlan.expressions.collect {
+      case s: SingleColumn if s.alias == Some("x0") => true
+    }.nonEmpty shouldBe true
+
+    newPlan.children.head.expressions.collect {
+      case s: SingleColumn if s.alias == Some("x1") => true
+    }.nonEmpty shouldBe true
+  }
+
+  test("transform up child expressions") {
+    val count = new AtomicInteger(0)
+    val l     = SQLParser.parse("select a from (select b from t)")
+    val newPlan = l.transformUpExpressions { case s: SingleColumn =>
+      s.withAlias(s"x${count.getAndIncrement()}")
+    }
+
+    newPlan.expressions.collect {
+      case s: SingleColumn if s.alias == Some("x1") => true
+    }.nonEmpty shouldBe true
+
+    newPlan.children.head.expressions.collect {
+      case s: SingleColumn if s.alias == Some("x0") => true
+    }.nonEmpty shouldBe true
   }
 }

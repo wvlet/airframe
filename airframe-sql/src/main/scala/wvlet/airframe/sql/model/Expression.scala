@@ -23,8 +23,19 @@ import java.util.Locale
 sealed trait Expression extends TreeNode[Expression] with Product {
   def sqlExpr: String = toString()
 
-  def transformExpression(rule: PartialFunction[Expression, Expression]): this.type = {
-    def recursiveTransform(arg: Any): AnyRef =
+  private def createInstance(args: Iterator[AnyRef]): Expression = {
+    // TODO Build this LogicalPlan using Surface
+    val primaryConstructor = this.getClass.getDeclaredConstructors()(0)
+    primaryConstructor.newInstance(args.toArray[AnyRef]: _*).asInstanceOf[Expression]
+  }
+
+  /**
+    * Recursively transform the expression in breadth-first order
+    * @param rule
+    * @return
+    */
+  def transformExpression(rule: PartialFunction[Expression, Expression]): Expression = {
+    def recursiveTransform(arg: Any): AnyRef = {
       arg match {
         case e: Expression  => e.transformExpression(rule)
         case l: LogicalPlan => l.transformExpressions(rule)
@@ -33,20 +44,48 @@ sealed trait Expression extends TreeNode[Expression] with Product {
         case other: AnyRef  => other
         case null           => null
       }
+    }
 
+    // First apply the rule to itself
+    val newExpr: Expression = rule
+      .applyOrElse(this, identity[Expression])
+
+    // Next, apply the rule to child nodes
+    if (newExpr.productArity == 0) {
+      newExpr
+    } else {
+      val newArgs = newExpr.productIterator.map(recursiveTransform)
+      newExpr.createInstance(newArgs)
+    }
+  }
+
+  /**
+    * Recursively transform the expression in depth-first order
+    * @param rule
+    * @return
+    */
+  def transformUpExpression(rule: PartialFunction[Expression, Expression]): Expression = {
+    def iter(arg: Any): AnyRef =
+      arg match {
+        case e: Expression  => e.transformUpExpression(rule)
+        case l: LogicalPlan => l.transformUpExpressions(rule)
+        case Some(x)        => Some(iter(x))
+        case s: Seq[_]      => s.map(iter _)
+        case other: AnyRef  => other
+        case null           => null
+      }
+
+    // Apply the rule first to child nodes
     val newExpr = if (productArity == 0) {
       this
     } else {
-      val newArgs = productIterator.map(recursiveTransform).toArray[AnyRef]
-
-      // TODO Build this LogicalPlan using Surface
-      val primaryConstructor = this.getClass.getDeclaredConstructors()(0)
-      primaryConstructor.newInstance(newArgs: _*).asInstanceOf[this.type]
+      val newArgs = productIterator.map(iter)
+      createInstance(newArgs)
     }
 
-    // Apply the rule to itself
+    // Finally, apply the rule to itself
     rule
-      .applyOrElse(newExpr, { (x: Expression) => x }).asInstanceOf[this.type]
+      .applyOrElse(newExpr, identity[Expression])
   }
 
   def collectSubExpressions: List[Expression] = {
@@ -260,6 +299,15 @@ object Expression {
     override def children: Seq[Expression] = Seq(expr)
     override def toString = s"SingleColumn(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
 
+    override def sqlExpr: String = {
+      alias match {
+        case None    => expr.sqlExpr
+        case Some(a) => s"${expr.sqlExpr} as ${a}"
+      }
+    }
+    def withAlias(newAlias: String): SingleColumn = {
+      this.copy(alias = Some(newAlias))
+    }
     override def withQualifier(newQualifier: String): Attribute = {
       this.copy(qualifier = Some(newQualifier))
     }
