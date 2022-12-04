@@ -17,7 +17,18 @@ import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Distinct, Except, Filter, Intersect, Join, Project, Query, With}
+import wvlet.airframe.sql.model.LogicalPlan.{
+  Aggregate,
+  Distinct,
+  Except,
+  Filter,
+  Intersect,
+  Join,
+  Project,
+  Query,
+  Sort,
+  With
+}
 import wvlet.airframe.sql.model.{CTERelationRef, Expression, LogicalPlan, NodeLocation, ResolvedAttribute, SourceColumn}
 import wvlet.airframe.sql.parser.{SQLGenerator, SQLParser}
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
@@ -495,7 +506,9 @@ class TypeResolverTest extends AirSpec {
 
     test("refer to duplicated key of equi join") {
       val p = analyze("select B.id from A inner join B on A.id = B.id")
-      p.outputAttributes shouldBe List(rb1)
+      p.outputAttributes shouldBe List(
+        ResolvedAttribute("id", DataType.LongType, None, ra1.sourceColumns ++ rb1.sourceColumns, None)
+      )
     }
 
     test("3-way joins") {
@@ -697,6 +710,56 @@ class TypeResolverTest extends AirSpec {
           }
         case _ => fail(s"unexpected plan:\n${p.pp}")
       }
+    }
+  }
+
+  test("resolve order by") {
+    test("resolve simple order by") {
+      val p = analyze("""SELECT id, name FROM A ORDER BY id""".stripMargin)
+      p.asInstanceOf[Sort].orderBy shouldBe List(
+        SortItem(
+          ra1,
+          None,
+          None,
+          Some(NodeLocation(1, 33))
+        )
+      )
+    }
+
+    test("resolve order by alias") {
+      val p = analyze("""SELECT * FROM (SELECT id as p1, name FROM A) ORDER BY p1""".stripMargin)
+      p.asInstanceOf[Sort].orderBy shouldBe List(
+        SortItem(
+          ra1.copy(name = "p1"),
+          None,
+          None,
+          Some(NodeLocation(1, 55))
+        )
+      )
+    }
+
+    test("resolve order by index") {
+      val p = analyze("""SELECT id, name FROM A ORDER BY 1""".stripMargin)
+      p.asInstanceOf[Sort].orderBy shouldBe List(
+        SortItem(
+          ra1,
+          None,
+          None,
+          Some(NodeLocation(1, 33))
+        )
+      )
+    }
+
+    test("resolve order by with duplicated join key") {
+      val p = analyze("""SELECT A.id FROM A INNER JOIN B on A.id = B.id ORDER BY B.id DESC""".stripMargin)
+      p.asInstanceOf[Sort].orderBy shouldBe List(
+        SortItem(
+          ResolvedAttribute("id", DataType.LongType, None, ra1.sourceColumns ++ rb1.sourceColumns, None),
+          Some(Descending),
+          None,
+          Some(NodeLocation(1, 57))
+        )
+      )
     }
   }
 }
