@@ -19,7 +19,7 @@ import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.model.Expression._
 import wvlet.airframe.sql.model.LogicalPlan.{Aggregate, Distinct, Except, Filter, Intersect, Join, Project, Query, With}
 import wvlet.airframe.sql.model.{CTERelationRef, Expression, LogicalPlan, NodeLocation, ResolvedAttribute, SourceColumn}
-import wvlet.airframe.sql.parser.{SQLGenerator, SQLParser}
+import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
 
@@ -186,7 +186,6 @@ class TypeResolverTest extends AirSpec {
 
     test("resolve union with column alias and qualifier") {
       val p = analyze("select q1.p1 from (select id as p1 from A union all select id from B) q1")
-      println(SQLGenerator.print(p))
       p.inputAttributes shouldBe List(
         SingleColumn(MultiColumn(List(ra1.withAlias("p1"), rb1), None), None, Some("q1"), None)
       )
@@ -260,6 +259,38 @@ class TypeResolverTest extends AirSpec {
           e.outputAttributes shouldBe List(ra1)
         case _ => fail(s"unexpected plan:\n${p.pp}")
       }
+    }
+
+    test("resolve select from values") {
+      val p = analyze("SELECT * FROM (VALUES (1, 'one'), (2, 'two'), (3, 'three')) AS t (id, name)")
+      p.outputAttributes shouldBe List(
+        SingleColumn(
+          MultiColumn(
+            List(
+              LongLiteral(1, Some(NodeLocation(1, 24))),
+              LongLiteral(2, Some(NodeLocation(1, 36))),
+              LongLiteral(3, Some(NodeLocation(1, 48)))
+            ),
+            None
+          ),
+          Some("id"),
+          Some("t"),
+          None
+        ),
+        SingleColumn(
+          MultiColumn(
+            List(
+              StringLiteral("one", Some(NodeLocation(1, 27))),
+              StringLiteral("two", Some(NodeLocation(1, 39))),
+              StringLiteral("three", Some(NodeLocation(1, 51)))
+            ),
+            None
+          ),
+          Some("name"),
+          Some("t"),
+          None
+        )
+      )
     }
   }
 

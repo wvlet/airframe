@@ -334,7 +334,8 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
     ctx.identifier() match {
       case i: IdentifierContext =>
-        AliasedRelation(r, visitIdentifier(i), None, getLocation(ctx))
+        val columnNames = Option(ctx.columnAliases()).map(_.identifier().asScala.map(_.getText).toSeq)
+        AliasedRelation(r, visitIdentifier(i), columnNames, getLocation(ctx))
       case other =>
         r
     }
