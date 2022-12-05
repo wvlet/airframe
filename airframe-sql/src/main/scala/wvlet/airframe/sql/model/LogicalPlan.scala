@@ -790,9 +790,14 @@ object LogicalPlan {
 
   case class Unnest(columns: Seq[Expression], withOrdinality: Boolean, nodeLocation: Option[NodeLocation])
       extends Relation {
-    override def children: Seq[LogicalPlan]       = Seq.empty
-    override def inputAttributes: Seq[Attribute]  = Seq.empty // TODO
-    override def outputAttributes: Seq[Attribute] = Seq.empty // TODO
+    override def children: Seq[LogicalPlan]      = Seq.empty
+    override def inputAttributes: Seq[Attribute] = Seq.empty // TODO
+    override def outputAttributes: Seq[Attribute] = {
+      columns.map {
+        case a: ArrayConstructor => SingleColumn(MultiColumn(a.values, None), None, None, a.nodeLocation)
+        case other               => SingleColumn(other, None, None, other.nodeLocation)
+      }
+    }
     override def sig(config: QuerySignatureConfig): String =
       s"Un[${columns.length}]"
   }
