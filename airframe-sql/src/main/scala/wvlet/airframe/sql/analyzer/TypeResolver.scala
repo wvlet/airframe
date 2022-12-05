@@ -36,6 +36,7 @@ object TypeResolver extends LogSupport {
       TypeResolver.resolveSortItems _ ::
       TypeResolver.resolveTableRef _ ::
       TypeResolver.resolveJoinUsing _ ::
+      TypeResolver.resolveSubquery _ ::
       TypeResolver.resolveRegularRelation _ ::
       TypeResolver.resolveColumns _ ::
       Nil
@@ -202,6 +203,14 @@ object TypeResolver extends LogSupport {
       }
       val updated = resolvedJoin.withCond(JoinOnEq(resolvedJoinKeys, u.expr.nodeLocation))
       updated
+  }
+
+  def resolveSubquery(context: AnalyzerContext): PlanRewriter = { case filter @ Filter(child, filterExpr, _) =>
+    filter.transformUpExpressions {
+      case q: InSubQuery         => q.copy(in = resolveRelation(context, q.in))
+      case q: NotInSubQuery      => q.copy(in = resolveRelation(context, q.in))
+      case q: SubQueryExpression => q.copy(query = resolveRelation(context, q.query))
+    }
   }
 
   def resolveRegularRelation(context: AnalyzerContext): PlanRewriter = {

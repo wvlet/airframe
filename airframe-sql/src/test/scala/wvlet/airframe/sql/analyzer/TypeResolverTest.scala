@@ -635,6 +635,49 @@ class TypeResolverTest extends AirSpec {
     }
   }
 
+  test("resolve sub queries in WHERE clause") {
+    test("resolve a sub query in IN") {
+      val p = analyze("SELECT id FROM A WHERE A.id IN (SELECT * FROM B WHERE id = 1)")
+      p match {
+        case Project(Filter(_, InSubQuery(_, Project(f: Filter, _, _), _), _), _, _) =>
+          f.filterExpr shouldBe Eq(rb1, LongLiteral(1, Some(NodeLocation(1, 60))), Some(NodeLocation(1, 58)))
+          f.outputAttributes shouldBe List(rb1, rb2)
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+    }
+
+    test("resolve a sub query in NOT IN") {
+      val p = analyze("SELECT id FROM A WHERE A.id NOT IN (SELECT * FROM B WHERE id = 1)")
+      p match {
+        case Project(Filter(_, NotInSubQuery(_, Project(f: Filter, _, _), _), _), _, _) =>
+          f.filterExpr shouldBe Eq(rb1, LongLiteral(1, Some(NodeLocation(1, 64))), Some(NodeLocation(1, 62)))
+          f.outputAttributes shouldBe List(rb1, rb2)
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+    }
+
+    test("resolve a sub query in EXISTS") {
+      val p = analyze("SELECT id FROM A WHERE EXISTS (SELECT * FROM B WHERE B.id = A.id)")
+      p match {
+        case Project(Filter(_, Exists(SubQueryExpression(Project(f: Filter, _, _), _), _), _), _, _) =>
+          f.filterExpr shouldBe Eq(rb1, ra1, Some(NodeLocation(1, 59)))
+          f.outputAttributes shouldBe List(rb1, rb2)
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+    }
+
+    test("resolve a scalar sub query") {
+      val p = analyze("SELECT id FROM A WHERE id = (SELECT max(id) FROM B WHERE name = 'one')")
+      p match {
+        case Project(Filter(_, Eq(left, SubQueryExpression(Project(f: Filter, _, _), _), _), _), _, _) =>
+          left shouldBe ra1
+          f.filterExpr shouldBe Eq(rb2, StringLiteral("one", Some(NodeLocation(1, 65))), Some(NodeLocation(1, 63)))
+          f.outputAttributes shouldBe List(rb1, rb2)
+        case _ => fail(s"unexpected plan:\n${p.pp}")
+      }
+    }
+  }
+
   test("resolve expression column") {
     test("resolve expression column from sub query") {
       val p = analyze("SELECT id, name FROM (SELECT id + 1 as id, name FROM A) a WHERE a.id = 99")
