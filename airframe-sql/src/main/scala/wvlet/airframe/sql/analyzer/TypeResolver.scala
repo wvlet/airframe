@@ -110,7 +110,12 @@ object TypeResolver extends LogSupport {
           val e = resolveExpression(context, x.child, inputAttributes)
           GroupingKey(e, e.nodeLocation)
         })
-      Aggregate(resolvedChild, selectItems, resolvedGroupingKeys, having, a.nodeLocation)
+      val resolvedHaving = having.map {
+        _.transformUpExpression { case x: Expression =>
+          resolveExpression(context, x, a.outputAttributes)
+        }
+      }
+      Aggregate(resolvedChild, selectItems, resolvedGroupingKeys, resolvedHaving, a.nodeLocation)
   }
 
   def resolveSortItemIndexes(context: AnalyzerContext): PlanRewriter = { case s @ Sort(child, sortItems, _) =>

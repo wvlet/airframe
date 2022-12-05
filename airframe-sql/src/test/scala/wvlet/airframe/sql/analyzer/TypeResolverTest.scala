@@ -312,11 +312,11 @@ class TypeResolverTest extends AirSpec {
         case Aggregate(
               _,
               _,
-              List(GroupingKey(ra1, _)),
+              List(GroupingKey(key1, _)),
               _,
               _
             ) =>
-
+          key1 shouldBe ra1
         case _ =>
           fail(s"unexpected plan: ${p}")
       }
@@ -328,10 +328,11 @@ class TypeResolverTest extends AirSpec {
         case Aggregate(
               _,
               _,
-              List(GroupingKey(ra1, None)),
+              List(GroupingKey(key1, None)),
               _,
               Some(NodeLocation(1, 1))
             ) =>
+          key1 shouldBe ra1
         case _ =>
           fail(s"unexpected plan: ${p}")
       }
@@ -344,12 +345,14 @@ class TypeResolverTest extends AirSpec {
               _,
               _,
               List(
-                GroupingKey(ra1, None),
-                GroupingKey(ra2, None)
+                GroupingKey(key1, None),
+                GroupingKey(key2, None)
               ),
               _,
               Some(NodeLocation(1, 1))
             ) =>
+          key1 shouldBe ra1
+          key2 shouldBe ra2
         case _ =>
           fail(s"unexpected plan: ${p}")
       }
@@ -379,6 +382,30 @@ class TypeResolverTest extends AirSpec {
               _,
               Some(NodeLocation(1, 1))
             ) =>
+        case _ =>
+          fail(s"unexpected plan: ${p}")
+      }
+    }
+
+    test("resolve having") {
+      val p = analyze("select id, count(*) cnt from A group by id having cnt > 10")
+      p match {
+        case Aggregate(
+              _,
+              _,
+              List(GroupingKey(key1, _)),
+              Some(GreaterThan(col, LongLiteral(10, _), _)),
+              _
+            ) =>
+          key1 shouldBe ra1
+          col shouldBe FunctionCall(
+            "count",
+            Seq(AllColumns(None, Some(Seq(tableA)), Some(NodeLocation(1, 12)))),
+            false,
+            None,
+            None,
+            Some(NodeLocation(1, 12))
+          )
         case _ =>
           fail(s"unexpected plan: ${p}")
       }
