@@ -32,6 +32,8 @@ object TypeResolver extends LogSupport {
     TypeResolver.resolveCTETableRef _ ::
       TypeResolver.resolveAggregationIndexes _ ::
       TypeResolver.resolveAggregationKeys _ ::
+      TypeResolver.resolveSortItemIndexes _ ::
+      TypeResolver.resolveSortItems _ ::
       TypeResolver.resolveTableRef _ ::
       TypeResolver.resolveJoinUsing _ ::
       TypeResolver.resolveRegularRelation _ ::
@@ -109,6 +111,29 @@ object TypeResolver extends LogSupport {
           GroupingKey(e, e.nodeLocation)
         })
       Aggregate(resolvedChild, selectItems, resolvedGroupingKeys, having, a.nodeLocation)
+  }
+
+  def resolveSortItemIndexes(context: AnalyzerContext): PlanRewriter = { case s @ Sort(child, sortItems, _) =>
+    val resolvedSortItems = sortItems.map {
+      case sortItem @ SortItem(LongLiteral(i, _), _, _, _) =>
+        val sortKey = child.outputAttributes(i.toInt - 1) match {
+          case SingleColumn(expr, _, _, _) => expr
+          case other                       => other
+        }
+        sortItem.copy(sortKey = sortKey)
+      case other => other
+    }
+    s.copy(orderBy = resolvedSortItems)
+  }
+
+  def resolveSortItems(context: AnalyzerContext): PlanRewriter = { case s @ Sort(child, sortItems, _) =>
+    val resolvedChild   = resolveRelation(context, child)
+    val inputAttributes = resolvedChild.outputAttributes
+    val resolvedSortItems = sortItems.map { sortItem =>
+      val e = resolveExpression(context, sortItem.sortKey, inputAttributes)
+      sortItem.copy(sortKey = e)
+    }
+    s.copy(orderBy = resolvedSortItems)
   }
 
   /**
@@ -265,12 +290,12 @@ object TypeResolver extends LogSupport {
       QName(name, None) match {
         case QName(Seq(db, t1, c1), _) if context.database == db =>
           resolvedAttributes.collect {
-            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.ofSourceColumn(t1, c1).getOrElse(a)
+            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a
             case c: SingleColumn if c.matchesWith(t1, c1)      => c.expr
           }.toList
         case QName(Seq(t1, c1), _) =>
           resolvedAttributes.collect {
-            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.ofSourceColumn(t1, c1).getOrElse(a)
+            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a
             case c: SingleColumn if c.matchesWith(t1, c1)      => c.expr
           }.toList
         case QName(Seq(c1), _) =>
