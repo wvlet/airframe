@@ -493,8 +493,21 @@ object LogicalPlan {
 
     override def inputAttributes: Seq[Attribute] = child.inputAttributes
     override def outputAttributes: Seq[Attribute] = {
-      child.outputAttributes.map { a =>
+      val attrs = child.outputAttributes.map { a =>
         a.withQualifier(alias.value)
+      }
+      columnNames match {
+        case Some(columnNames) =>
+          attrs.zip(columnNames).map { case (a, columnName) =>
+            a.withQualifier(alias.value) match {
+              case r: ResolvedAttribute   => r.copy(name = columnName)
+              case s: SingleColumn        => s.copy(alias = Some(columnName))
+              case u: UnresolvedAttribute => u.copy(name = columnName)
+              case others                 => others
+            }
+          }
+        case None =>
+          attrs
       }
     }
   }
@@ -503,8 +516,18 @@ object LogicalPlan {
     override def sig(config: QuerySignatureConfig): String = {
       s"V[${rows.length}]"
     }
-    override def outputAttributes: Seq[Attribute] =
-      (0 until rows.size).map(x => UnresolvedAttribute(s"i${x}", None))
+    override def outputAttributes: Seq[Attribute] = {
+      val values = rows.map { row =>
+        row match {
+          case r: RowConstructor => r.values
+          case other             => Seq(other)
+        }
+      }
+      val columns = (0 until values.head.size).map { i =>
+        SingleColumn(MultiColumn(values.map(_(i)), None), None, None, None)
+      }
+      columns
+    }
   }
 
   case class TableRef(name: QName, nodeLocation: Option[NodeLocation]) extends Relation with LeafPlan {
