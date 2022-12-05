@@ -40,6 +40,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     def collectExpression(x: Any): Seq[Expression] = {
       x match {
         case e: Expression  => e :: Nil
+        case p: LogicalPlan => p.expressions
         case Some(x)        => collectExpression(x)
         case s: Iterable[_] => s.flatMap(collectExpression _).toSeq
         case other          => Nil
