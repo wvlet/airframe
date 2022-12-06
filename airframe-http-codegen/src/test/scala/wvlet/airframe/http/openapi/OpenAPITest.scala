@@ -302,7 +302,14 @@ class OpenAPITest extends AirSpec {
         |          in: query
         |          required: true
         |          schema:
-        |            type: string""".stripMargin,
+        |            type: string
+        |            - name: opt1
+        |        - name: p2
+        |          in: query
+        |          required: false
+        |          schema:
+        |            type: string
+        |            default: foo""".stripMargin,
       """  /v1/post1:
         |    post:
         |      summary: post1
