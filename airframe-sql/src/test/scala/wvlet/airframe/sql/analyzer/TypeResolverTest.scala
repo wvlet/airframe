@@ -152,7 +152,41 @@ class TypeResolverTest extends AirSpec {
       }
       ex.errorCode shouldBe SQLErrorCode.SyntaxError
     }
+  }
 
+  test("resolve select from values") {
+    val p = analyze("SELECT * FROM (VALUES (1, 'one'), (2, 'two'), (3, 'three')) AS t (id, name)")
+    p.outputAttributes shouldBe List(
+      SingleColumn(
+        MultiColumn(
+          List(
+            LongLiteral(1, Some(NodeLocation(1, 24))),
+            LongLiteral(2, Some(NodeLocation(1, 36))),
+            LongLiteral(3, Some(NodeLocation(1, 48)))
+          ),
+          None
+        ),
+        Some("id"),
+        Some("t"),
+        None
+      ),
+      SingleColumn(
+        MultiColumn(
+          List(
+            StringLiteral("one", Some(NodeLocation(1, 27))),
+            StringLiteral("two", Some(NodeLocation(1, 39))),
+            StringLiteral("three", Some(NodeLocation(1, 51)))
+          ),
+          None
+        ),
+        Some("name"),
+        Some("t"),
+        None
+      )
+    )
+  }
+
+  test("resolve set operations") {
     test("resolve union") {
       val p = analyze("select id from A union all select id from B")
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
@@ -270,38 +304,6 @@ class TypeResolverTest extends AirSpec {
           e.outputAttributes shouldBe List(ra1)
         case _ => fail(s"unexpected plan:\n${p.pp}")
       }
-    }
-
-    test("resolve select from values") {
-      val p = analyze("SELECT * FROM (VALUES (1, 'one'), (2, 'two'), (3, 'three')) AS t (id, name)")
-      p.outputAttributes shouldBe List(
-        SingleColumn(
-          MultiColumn(
-            List(
-              LongLiteral(1, Some(NodeLocation(1, 24))),
-              LongLiteral(2, Some(NodeLocation(1, 36))),
-              LongLiteral(3, Some(NodeLocation(1, 48)))
-            ),
-            None
-          ),
-          Some("id"),
-          Some("t"),
-          None
-        ),
-        SingleColumn(
-          MultiColumn(
-            List(
-              StringLiteral("one", Some(NodeLocation(1, 27))),
-              StringLiteral("two", Some(NodeLocation(1, 39))),
-              StringLiteral("three", Some(NodeLocation(1, 51)))
-            ),
-            None
-          ),
-          Some("name"),
-          Some("t"),
-          None
-        )
-      )
     }
   }
 
@@ -859,6 +861,53 @@ class TypeResolverTest extends AirSpec {
           Some(Descending),
           None,
           Some(NodeLocation(1, 57))
+        )
+      )
+    }
+  }
+
+  test("resolve UNNEST") {
+    test("resolve UNNEST array column") {
+      val p = analyze("SELECT id, n FROM A CROSS JOIN UNNEST (name) AS t (n)")
+      p.outputAttributes shouldBe List(ra1, ra2.copy(name = "n", qualifier = Some("t")))
+    }
+
+    test("resolve UNNEST array") {
+      val p = analyze("""SELECT id, t.key, t.value FROM A
+          |CROSS JOIN UNNEST (
+          |  array['c1', 'c2', 'c3'],
+          |  array[1, 2, 3]
+          |) AS t (key, value)
+          |""".stripMargin)
+
+      println(p.outputAttributes)
+      p.outputAttributes shouldBe List(
+        ra1,
+        SingleColumn(
+          MultiColumn(
+            List(
+              StringLiteral("c1", Some(NodeLocation(3, 9))),
+              StringLiteral("c2", Some(NodeLocation(3, 15))),
+              StringLiteral("c3", Some(NodeLocation(3, 21)))
+            ),
+            None
+          ),
+          None,
+          None,
+          Some(NodeLocation(1, 12))
+        ),
+        SingleColumn(
+          MultiColumn(
+            List(
+              LongLiteral(1, Some(NodeLocation(4, 9))),
+              LongLiteral(2, Some(NodeLocation(4, 12))),
+              LongLiteral(3, Some(NodeLocation(4, 15)))
+            ),
+            None
+          ),
+          None,
+          None,
+          Some(NodeLocation(1, 19))
         )
       )
     }
