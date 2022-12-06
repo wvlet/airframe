@@ -212,7 +212,7 @@ class ShouldBeTest extends AirSpec {
     val s = a shouldMatch {
       case s: String if s == "hello" => s
     }
-    // Should match should return a matched result
+    // shouldMatch returns the matched result
     s shouldBe "hello"
   }
 

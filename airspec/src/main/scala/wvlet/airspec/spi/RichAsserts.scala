@@ -186,7 +186,7 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
       pattern.applyOrElse(
         value,
         { (a: A) =>
-          throw AssertionFailure(s"${pp(value)} doesn't match a given pattern", code)
+          throw AssertionFailure(s"${pp(value)} doesn't match the given pattern", code)
         }
       )
     }
