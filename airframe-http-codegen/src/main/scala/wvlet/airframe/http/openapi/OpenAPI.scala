@@ -16,7 +16,7 @@ package wvlet.airframe.http.openapi
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.openapi.OpenAPI._
-import wvlet.airframe.json.YAMLFormatter
+import wvlet.airframe.json.{JSON, YAMLFormatter}
 import wvlet.airframe.surface.{Union2, Union3}
 
 case class OpenAPI(
@@ -98,6 +98,12 @@ object OpenAPI {
       allowEmptyValue: Option[Boolean] = None
   ) extends Union2[Parameter, ParameterRef] {
     override def getElementClass = classOf[Parameter]
+
+    def toJSON: String = Parameter.codec.toJson(this)
+    def toYAML: String = YAMLFormatter.toYaml(toJSON)
+  }
+  object Parameter {
+    private val codec = MessageCodecFactory.defaultFactoryForJSON.of[Parameter]
   }
 
   case class ParameterRef(
@@ -150,6 +156,7 @@ object OpenAPI {
 
   case class Schema(
       `type`: String,
+      default: Option[String] = None,
       format: Option[String] = None,
       description: Option[String] = None,
       required: Option[Seq[String]] = None,

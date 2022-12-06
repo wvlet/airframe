@@ -14,7 +14,8 @@
 package wvlet.airframe.surface.reflect
 
 import java.{lang => jl}
-
+import java.lang.invoke.MethodHandles
+import java.lang.reflect.Method
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
 
@@ -58,7 +59,29 @@ case class RuntimeMethodParameter(
   }
 
   def getDefaultValue: Option[Any] = {
-    ReflectTypeUtil.companionObject(method.owner).flatMap { companion =>
+    // This supports a case that method owner is a Trait. In that case, Scala compiler encodes method default parameter
+    // into a default method in an Interface, instead of companion object.
+    // To fetch the default value, it is required to invoke the special method on an instance of the Trait.
+    // So we need to instantiate the Trait, by building a Proxy object that implements the Trait.
+    val maybeTraitMethod =
+      findInstanceMethod("%s$default$%d".format(this.method.name, index + 1)).filter(_.getDeclaringClass.isInterface)
+    val maybeValueFromInstanceMethod = maybeTraitMethod.map { m =>
+      val classConstructor = classOf[MethodHandles.Lookup].getDeclaredConstructor(classOf[Class[_]], classOf[Int])
+      classConstructor.setAccessible(true)
+      val proxyInstance = java.lang.reflect.Proxy.newProxyInstance(
+        m.getDeclaringClass.getClassLoader,
+        Array(m.getDeclaringClass),
+        (proxy: Any, method: Method, args: Array[AnyRef]) => {
+          val accessModifiers = MethodHandles.Lookup.PUBLIC | MethodHandles.Lookup.PRIVATE
+          val lookup          = classConstructor.newInstance(method.getDeclaringClass, accessModifiers)
+          val methodHandle    = lookup.unreflectSpecial(method, method.getDeclaringClass).bindTo(proxy)
+          methodHandle.invokeWithArguments(args: _*)
+        }
+      )
+      m.invoke(proxyInstance)
+    }
+
+    maybeValueFromInstanceMethod.orElse(ReflectTypeUtil.companionObject(method.owner).flatMap { companion =>
       def findMethod(name: String) = {
         try {
           Some(ReflectTypeUtil.cls(companion).getDeclaredMethod(name))
@@ -76,7 +99,7 @@ case class RuntimeMethodParameter(
         case e: Throwable =>
           None
       }
-    }
+    })
   }
 
   override def getMethodArgDefaultValue(methodOwner: Any): Option[Any] = {
@@ -99,4 +122,6 @@ case class RuntimeMethodParameter(
     val annots = this.findAnnotationOf[secret]
     annots.isDefined
   }
+
+  private def findInstanceMethod(name: String) = Try(method.owner.getMethod(name)).toOption
 }

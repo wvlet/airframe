@@ -13,9 +13,12 @@
  */
 package wvlet.airframe.http.openapi
 import example.openapi.{OpenAPIEndpointExample, OpenAPIRPCExample, OpenAPISmallExample}
+
 import io.swagger.v3.parser.OpenAPIV3Parser
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.HttpCodeGenerator
+import wvlet.airframe.http.openapi.OpenAPI.Parameter
+import wvlet.airframe.http.openapi.OpenAPI.Schema
 import wvlet.airspec.AirSpec
 
 /**
@@ -145,6 +148,7 @@ class OpenAPITest extends AirSpec {
         |          format: float
         |        x5:
         |          type: number
+        |          default: '1.0'
         |          format: double
         |        x6:
         |          type: array
@@ -174,8 +178,9 @@ class OpenAPITest extends AirSpec {
     )
 
     fragments.foreach { x =>
-      debug(s"checking\n${x}")
-      yaml.contains(x) shouldBe true
+      if (!yaml.contains(x)) {
+        fail(s"Missing YAML fragment for:\n${x}")
+      }
     }
   }
 
@@ -303,7 +308,6 @@ class OpenAPITest extends AirSpec {
         |          required: true
         |          schema:
         |            type: string
-        |            - name: opt1
         |        - name: p2
         |          in: query
         |          required: false
@@ -538,6 +542,25 @@ class OpenAPITest extends AirSpec {
     // Use this code snippet for ease of testing at https://editor.swagger.io/
     // java.awt.Toolkit.getDefaultToolkit.getSystemClipboard
     //      .setContents(new java.awt.datatransfer.StringSelection(yaml), null)
+
+    openapi.paths.get("/v1/get3/{id}").flatMap(_.get("get")).flatMap(_.parameters).flatMap(_.lastOption).map { s =>
+      s match {
+        case s: Parameter              => s.toYAML
+        case OpenAPI.ParameterRef(ref) => s"OpenAPI.ParameterRef($ref)"
+        case _                         => "otherwise"
+      }
+    } shouldBe Some("""name: p2
+        |in: query
+        |required: false
+        |schema:
+        |  type: string
+        |  default: foo
+        |allowEmptyValue: true""".stripMargin)
+
+    ((openapi.components.flatMap(_.schemas).get("OpenAPIEndpointExample.EndpointRequest")) match {
+      case s: OpenAPI.Schema => s.properties.flatMap(_.get("x9"))
+      case _                 => None
+    }) shouldBe Some(Schema("integer", default = None, format = Some("int32")))
 
     fragments.foreach { x =>
       try {

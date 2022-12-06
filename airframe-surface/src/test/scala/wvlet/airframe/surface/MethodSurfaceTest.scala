@@ -42,6 +42,10 @@ object MethodExamples {
   class D {
     def hello(v: String = "hello"): String = v
   }
+
+  trait E {
+    def hello(v: String = "default"): String
+  }
 }
 
 import wvlet.airframe.surface.MethodExamples._
@@ -111,5 +115,22 @@ class MethodSurfaceTest extends SurfaceSpec {
 
     val msg = m.call(d, "world")
     assertEquals(msg, "world")
+  }
+
+  test("find method default parameter in trait") {
+    val ms = Surface.methodsOf[E]
+    val m  = ms.find(_.name == "hello").get
+    assert(m.args.headOption.isDefined)
+    val h = m.args.head
+    if (!isScalaJS) {
+      assertEquals(h.getDefaultValue, Some("default"))
+
+      val d = new E {
+        override def hello(v: String = "yay"): String = v
+      }
+      val v = h.getMethodArgDefaultValue(d)
+      // Scala.js doesn't support reading default method arguments
+      assertEquals(v, Some("yay"))
+    }
   }
 }
