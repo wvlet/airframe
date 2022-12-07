@@ -206,4 +206,22 @@ class ShouldBeTest extends AirSpec {
     checkEqual(a, null)
     checkNotEqual("a", null)
   }
+
+  test("support shouldMatch") {
+    val a: String = "hello"
+    val s = a shouldMatch {
+      case s: String if s == "hello" => s
+    }
+    // shouldMatch returns the matched result
+    s shouldBe "hello"
+  }
+
+  test("support shouldMatch failure") {
+    val a: String = "hello"
+    intercept[AssertionFailure] {
+      a shouldMatch {
+        case s: String if s != "hello" =>
+      }
+    }
+  }
 }

@@ -88,7 +88,7 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     case (a: Product, b: Product)         => check(a == b)
   }
 
-  implicit protected class ShouldBe(val value: Any) {
+  implicit protected class ShouldBe[A](val value: A) {
     protected def matchFailure(expected: Any, code: SourceCode): AssertionFailure = {
       AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
     }
@@ -180,6 +180,15 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
         case _ =>
           throw AssertionFailure(s"${pp(value)} should not be the same instance as ${pp(expected)}", code)
       }
+    }
+
+    def shouldMatch[U](pattern: PartialFunction[A, U])(implicit code: SourceCode): U = {
+      pattern.applyOrElse(
+        value,
+        { (a: A) =>
+          throw AssertionFailure(s"${pp(value)} doesn't match the given pattern", code)
+        }
+      )
     }
   }
 }

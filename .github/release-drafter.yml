@@ -41,6 +41,9 @@ autolabeler:
   - label: 'doc'
     files:
       - '*.md'
+  - label: 'feature'
+    title:
+      - '/(support|add)/i'
   - label: 'bug'
     title:
       - '/fix/i'
