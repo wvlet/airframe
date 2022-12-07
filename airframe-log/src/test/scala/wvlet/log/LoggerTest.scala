@@ -108,6 +108,10 @@ class LoggerTest extends Spec {
     Logger.setDefaultFormatter(SourceCodeLogFormatter)
     new MyAppClass
   }
+  test("support plain source code log format") {
+    Logger.setDefaultFormatter(PlainSourceCodeLogFormatter)
+    new MyAppClass
+  }
   test("support log with thread name") {
     Logger.setDefaultFormatter(ThreadLogFormatter)
     new MyAppClass
