@@ -86,22 +86,16 @@ case class ResolvedAttribute(
     }
   }
 
-  def ofSourceColumn(table: String, column: String): Option[ResolvedAttribute] = {
-    sourceColumns.find(s => s.table.name == table && s.column.name == column).map { c =>
-      copy(sourceColumns = Seq(c))
-    }
-  }
-
   override def toString = {
     (qualifier, sourceColumns) match {
       case (Some(q), columns) if columns.nonEmpty =>
         columns
           .map(_.fullName)
-          .mkString(s"${q},${name}:${dataType} <- ", ", ", "")
+          .mkString(s"${q},${name}:${dataType} <- [", ", ", "]")
       case (None, columns) if columns.nonEmpty =>
         columns
           .map(_.fullName)
-          .mkString(s"${name}:${dataType} <- ", ", ", "")
+          .mkString(s"${name}:${dataType} <- [", ", ", "]")
       case _ =>
         s"${name}:${dataType}"
     }
