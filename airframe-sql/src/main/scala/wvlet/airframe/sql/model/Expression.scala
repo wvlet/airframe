@@ -313,23 +313,40 @@ object Expression {
     }
 
     def matchesWith(tableName: String, columnName: String): Boolean = {
-      qualifier.contains(tableName) && matchesWith(columnName)
+      (qualifier.contains(tableName) && matchesWith(columnName)) || matchesWithMultiColumn(tableName, columnName)
     }
 
     def matchesWith(columnName: String): Boolean = {
       alias.contains(columnName) || matchesWithMultiColumn(columnName)
     }
 
+    private def matchesWithMultiColumn(tableName: String, columnName: String): Boolean = {
+      expr match {
+        case MultiColumn(inputs, _, _) =>
+          inputs.exists {
+            case r: ResolvedAttribute => r.matchesWith(tableName, columnName)
+            case s: SingleColumn      => s.matchesWith(tableName, columnName)
+            case _                    => false
+          }
+        case _ => false
+      }
+    }
+
     private def matchesWithMultiColumn(columnName: String): Boolean = {
       expr match {
-        case MultiColumn(inputs, _) =>
-          inputs.collectFirst { case r: ResolvedAttribute => r }.exists(_.name == columnName)
+        case MultiColumn(inputs, name, _) =>
+          name.contains(columnName) || inputs.exists {
+            case r: ResolvedAttribute => r.name == columnName
+            case s: SingleColumn      => s.matchesWith(columnName)
+            case _                    => false
+          }
         case _ => false
       }
     }
   }
   case class MultiColumn(
       inputs: Seq[Expression],
+      name: Option[String],
       nodeLocation: Option[NodeLocation]
   ) extends Expression {
     override def children: Seq[Expression] = inputs

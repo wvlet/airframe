@@ -219,7 +219,11 @@ object SQLGenerator extends LogSupport {
         }
       case Join(joinType, left, right, cond, _) =>
         val l = printRelation(left)
-        val r = printRelation(right)
+        val r = right match {
+          case _: Selection    => s"(${printRelation(right)})"
+          case _: SetOperation => s"(${printRelation(right)})"
+          case _               => printRelation(right)
+        }
         val c = cond match {
           case NaturalJoin(_)        => ""
           case JoinUsing(columns, _) => s" USING (${columns.map(_.sqlExpr).mkString(", ")})"
@@ -366,10 +370,15 @@ object SQLGenerator extends LogSupport {
         alias
           .map(x => s"${col} AS ${x}")
           .getOrElse(col)
-      case MultiColumn(inputs, _) =>
-        inputs.collectFirst { case a: Attribute => a }.map(printExpression).getOrElse(unknown(e))
+      case MultiColumn(inputs, name, _) =>
+        name match {
+          case Some(name) => name
+          case None       => inputs.collectFirst { case a: Attribute => a }.map(printExpression).getOrElse(unknown(e))
+        }
       case AllColumns(prefix, _, _) =>
         prefix.map(p => s"${p}.*").getOrElse("*")
+      case ResolvedAttribute(name, _, Some(qualifier), _, _) =>
+        s"${qualifier}.${name}"
       case a: Attribute =>
         a.name
       case SortItem(key, ordering, nullOrdering, _) =>

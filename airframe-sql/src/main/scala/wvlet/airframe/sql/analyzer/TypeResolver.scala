@@ -251,12 +251,12 @@ object TypeResolver extends LogSupport {
       case a: AllColumns =>
         // TODO check (prefix).* to resolve attributes
         resolvedColumns ++= inputAttributes
-      case SingleColumn(expr, alias, _, nodeLocation) =>
+      case SingleColumn(expr, alias, qualifier, nodeLocation) =>
         resolveExpression(context, expr, inputAttributes) match {
           case r: ResolvedAttribute if alias.isEmpty =>
             resolvedColumns += r
           case r: ResolvedAttribute if alias.nonEmpty =>
-            resolvedColumns += r.withAlias(alias.get)
+            resolvedColumns += SingleColumn(r, alias, None, nodeLocation)
           case expr =>
             resolvedColumns += SingleColumn(expr, alias, None, nodeLocation)
         }
@@ -297,19 +297,18 @@ object TypeResolver extends LogSupport {
       expr: Expression,
       inputAttributes: Seq[Attribute]
   ): List[Expression] = {
-    trace(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes}")
     val resolvedAttributes = inputAttributes.map(resolveAttribute)
 
     def lookup(name: String): List[Expression] = {
       QName(name, None) match {
         case QName(Seq(db, t1, c1), _) if context.database == db =>
           resolvedAttributes.collect {
-            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a
+            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.withQualifier(t1)
             case c: SingleColumn if c.matchesWith(t1, c1)      => c.expr
           }.toList
         case QName(Seq(t1, c1), _) =>
           resolvedAttributes.collect {
-            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a
+            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.withQualifier(t1)
             case c: SingleColumn if c.matchesWith(t1, c1)      => c.expr
           }.toList
         case QName(Seq(c1), _) =>
@@ -322,7 +321,7 @@ object TypeResolver extends LogSupport {
       }
     }
 
-    expr match {
+    val results = expr match {
       case i: Identifier =>
         lookup(i.value)
       case u @ UnresolvedAttribute(name, _) =>
@@ -336,6 +335,8 @@ object TypeResolver extends LogSupport {
       case _ =>
         List(expr)
     }
+    trace(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes} -> ${results}")
+    results
   }
 
   /**

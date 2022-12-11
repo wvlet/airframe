@@ -12,7 +12,11 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.model
-import wvlet.airframe.sql.analyzer.QuerySignatureConfig
+import com.sun.jdi.LongType
+import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, TypeResolver}
+import wvlet.airframe.sql.catalog.DataType
+
+import java.util.UUID
 
 trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   def modelName: String = {
@@ -525,7 +529,7 @@ object LogicalPlan {
         }
       }
       val columns = (0 until values.head.size).map { i =>
-        SingleColumn(MultiColumn(values.map(_(i)), None), None, None, None)
+        SingleColumn(MultiColumn(values.map(_(i)), None, None), None, None, None)
       }
       columns
     }
@@ -596,7 +600,7 @@ object LogicalPlan {
 
     // TODO
     override def outputAttributes: Seq[Attribute] = {
-      selectItems
+      selectItems.map(TypeResolver.resolveAttribute)
     }
   }
 
@@ -665,7 +669,7 @@ object LogicalPlan {
               in,
               Some(alias.sqlExpr),
               None,
-              alias.nodeLocation // TODO Is alias.nodeLocation suitable as NodeLocation for this?
+              alias.nodeLocation
             )
           }
         case None =>
@@ -687,8 +691,15 @@ object LogicalPlan {
     override def sig(config: QuerySignatureConfig): String = {
       s"${joinType.symbol}(${left.sig(config)},${right.sig(config)})"
     }
-    override def inputAttributes: Seq[Attribute] =
-      left.outputAttributes ++ right.outputAttributes
+    override def inputAttributes: Seq[Attribute] = {
+      (getRelationName(left) match {
+        case Some(q: String) => left.outputAttributes.map(_.withQualifier(q))
+        case None            => left.outputAttributes
+      }) ++ (getRelationName(right) match {
+        case Some(q: String) => right.outputAttributes.map(_.withQualifier(q))
+        case None            => right.outputAttributes
+      })
+    }
     override def outputAttributes: Seq[Attribute] = {
       cond match {
         case je: JoinOnEq =>
@@ -698,7 +709,11 @@ object LogicalPlan {
           uniqueInputs.map {
             case r: ResolvedAttribute =>
               val dupAttrs = dups.collect { case x: ResolvedAttribute if x.name == r.name => x }
-              r.copy(sourceColumns = r.sourceColumns ++ dupAttrs.flatMap(_.sourceColumns))
+              if (dupAttrs.isEmpty) {
+                r
+              } else {
+                SingleColumn(MultiColumn(Seq(r) ++ dupAttrs, None, None), None, None, None)
+              }
             case r => r
           }
         case _ => inputAttributes
@@ -707,6 +722,17 @@ object LogicalPlan {
 
     def withCond(cond: JoinCriteria): Join = this.copy(cond = cond)
   }
+
+  private def getRelationName(r: Relation): Option[String] = {
+    r match {
+      case r: AliasedRelation => Some(r.alias.sqlExpr)
+      case r: TableScan       => Some(r.table.name)
+      case r: TableRef        => Some(r.name.sqlExpr)
+      case r: CTERelationRef  => Some(r.name)
+      case _                  => None
+    }
+  }
+
   sealed abstract class JoinType(val symbol: String)
 // Exact match (= equi join)
   case object InnerJoin extends JoinType("J")
@@ -738,7 +764,11 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = {
       relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
         SingleColumn(
-          MultiColumn(relations.map(_.outputAttributes(i)), output.nodeLocation),
+          MultiColumn(
+            relations.map(_.outputAttributes(i)),
+            Some(output.name),
+            output.nodeLocation
+          ),
           None,
           output match {
             case r: ResolvedAttribute => r.qualifier
@@ -776,7 +806,7 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = {
       relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
         SingleColumn(
-          MultiColumn(relations.map(_.outputAttributes(i)), output.nodeLocation),
+          MultiColumn(relations.map(_.outputAttributes(i)), Some(output.name), output.nodeLocation),
           None,
           output match {
             case r: ResolvedAttribute => r.qualifier
@@ -795,8 +825,10 @@ object LogicalPlan {
     override def inputAttributes: Seq[Attribute] = Seq.empty // TODO
     override def outputAttributes: Seq[Attribute] = {
       columns.map {
-        case a: ArrayConstructor => SingleColumn(MultiColumn(a.values, None), None, None, a.nodeLocation)
-        case other               => SingleColumn(other, None, None, other.nodeLocation)
+        case _: ArrayConstructor =>
+          ResolvedAttribute(UUID.randomUUID().toString, DataType.AnyType, None, Nil, None) // TODO data type
+        case other =>
+          SingleColumn(other, None, None, other.nodeLocation)
       }
     }
     override def sig(config: QuerySignatureConfig): String =
