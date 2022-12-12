@@ -248,9 +248,9 @@ object TypeResolver extends LogSupport {
 
     val resolvedColumns = Seq.newBuilder[Attribute]
     outputColumns.map {
-      case a: AllColumns =>
-        // TODO check (prefix).* to resolve attributes
-        resolvedColumns ++= inputAttributes
+//      case a: AllColumns =>
+//        // TODO check (prefix).* to resolve attributes
+//        resolvedColumns ++= inputAttributes
       case SingleColumn(expr, alias, qualifier, nodeLocation) =>
         resolveExpression(context, expr, inputAttributes) match {
           case r: ResolvedAttribute if alias.isEmpty =>
@@ -299,27 +299,49 @@ object TypeResolver extends LogSupport {
   ): List[Expression] = {
     val resolvedAttributes = inputAttributes.map(resolveAttribute)
 
+    def matchedColumn(matched: Seq[Expression], name: String): Expression = {
+      matched match {
+        case attrs if attrs.size == 1 => attrs.head
+        case attrs                    => MultiColumn(attrs, Some(name), None)
+      }
+    }
+
     def lookup(name: String): List[Expression] = {
       QName(name, None) match {
         case QName(Seq(db, t1, c1), _) if context.database == db =>
           resolvedAttributes.collect {
             case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.withQualifier(t1)
-            case c: SingleColumn if c.matchesWith(t1, c1)      => c.expr
+            case c: SingleColumn if c.matchesWith(t1, c1) =>
+              c.expr match {
+                case m: MultiColumn => matchedColumn(m.matched(t1, c1), s"${t1}.${c1}")
+                case other          => other
+              }
+            case c: AllColumns if c.matchesWith(t1, c1) => matchedColumn(c.matched(t1, c1), s"${t1}.${c1}")
           }.toList
         case QName(Seq(t1, c1), _) =>
           resolvedAttributes.collect {
             case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.withQualifier(t1)
-            case c: SingleColumn if c.matchesWith(t1, c1)      => c.expr
+            case c: SingleColumn if c.matchesWith(t1, c1) =>
+              c.expr match {
+                case m: MultiColumn => matchedColumn(m.matched(t1, c1), s"${t1}.${c1}")
+                case other          => other
+              }
+            case c: AllColumns if c.matchesWith(t1, c1) => matchedColumn(c.matched(t1, c1), s"${t1}.${c1}")
           }.toList
         case QName(Seq(c1), _) =>
           resolvedAttributes.collect {
-            case a: ResolvedAttribute if a.name == c1 => a
-            case c: SingleColumn if c.matchesWith(c1) => c.expr
+            case a: ResolvedAttribute if a.matchesWith(c1) => a
+            case c: SingleColumn if c.matchesWith(c1) =>
+              c.expr match {
+                case m: MultiColumn => matchedColumn(m.matched(c1), c1)
+                case other          => other
+              }
+            case c: AllColumns if c.matchesWith(c1) => matchedColumn(c.matched(c1), c1)
           }.toList
         case _ =>
           List.empty
       }
-    }
+    }.distinct
 
     val results = expr match {
       case i: Identifier =>
@@ -327,11 +349,15 @@ object TypeResolver extends LogSupport {
       case u @ UnresolvedAttribute(name, _) =>
         lookup(name)
       case a @ AllColumns(_, None, _) =>
-        val sourceTables = inputAttributes
-          .collect { case r: ResolvedAttribute =>
-            r.sourceColumns.map(_.table)
-          }.flatten.distinct
-        List(a.copy(sourceTables = Some(sourceTables)))
+        val sourceAttributes = inputAttributes.flatMap { attrs =>
+          attrs
+            .collectExpressions { case _: ResolvedAttribute =>
+              true
+            }.map { r =>
+              r.asInstanceOf[ResolvedAttribute]
+            }
+        }.distinct
+        List(a.copy(resolvedAttributes = Some(sourceAttributes)))
       case _ =>
         List(expr)
     }
