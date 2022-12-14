@@ -66,16 +66,25 @@ case class RuntimeMethodParameter(
     val maybeTraitMethod =
       findInstanceMethod("%s$default$%d".format(this.method.name, index + 1)).filter(_.getDeclaringClass.isInterface)
     val maybeValueFromInstanceMethod = maybeTraitMethod.map { m =>
-      val classConstructor = classOf[MethodHandles.Lookup].getDeclaredConstructor(classOf[Class[_]], classOf[Int])
-      classConstructor.setAccessible(true)
       val proxyInstance = java.lang.reflect.Proxy.newProxyInstance(
         m.getDeclaringClass.getClassLoader,
         Array(m.getDeclaringClass),
         (proxy: Any, method: Method, args: Array[AnyRef]) => {
-          // Explicit type cast can be dropped if we drop Scala 2.12
-          val accessModifiers =
-            (MethodHandles.Lookup.PUBLIC | MethodHandles.Lookup.PRIVATE).asInstanceOf[java.lang.Integer]
-          val lookup       = classConstructor.newInstance(method.getDeclaringClass, accessModifiers)
+          val lookup =
+            try {
+              val classConstructor =
+                classOf[MethodHandles.Lookup].getDeclaredConstructor(classOf[Class[_]], classOf[Int])
+              classConstructor.setAccessible(true)
+              // Explicit type cast can be dropped if we drop Scala 2.12
+              val accessModifiers =
+                (MethodHandles.Lookup.PUBLIC | MethodHandles.Lookup.PRIVATE).asInstanceOf[java.lang.Integer]
+              classConstructor.newInstance(method.getDeclaringClass, accessModifiers)
+            } catch {
+              case _: NoSuchMethodException =>
+                // In JDK 17+, Lookup's private constructor is gone.
+                // An instance returned by lookup() factory works.
+                MethodHandles.lookup()
+            }
           val methodHandle = lookup.unreflectSpecial(method, method.getDeclaringClass).bindTo(proxy)
           methodHandle.invokeWithArguments(args: _*)
         }
