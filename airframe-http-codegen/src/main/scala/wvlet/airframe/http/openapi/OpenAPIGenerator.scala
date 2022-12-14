@@ -301,7 +301,7 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
               registerComponent(p.surface)
               Some(SchemaRef(s"#/components/schemas/${schemaName(p.surface)}"))
             },
-            allowEmptyValue = if (p.getDefaultValue.nonEmpty) Some(true) else None
+            allowEmptyValue = optDefaultValue.map(_ => true)
           )
         } else {
           ParameterRef(s"#/components/parameters/${schemaName(p.surface)}")

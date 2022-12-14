@@ -543,25 +543,6 @@ class OpenAPITest extends AirSpec {
     // java.awt.Toolkit.getDefaultToolkit.getSystemClipboard
     //      .setContents(new java.awt.datatransfer.StringSelection(yaml), null)
 
-    openapi.paths.get("/v1/get3/{id}").flatMap(_.get("get")).flatMap(_.parameters).flatMap(_.lastOption).map { s =>
-      s match {
-        case s: Parameter              => s.toYAML
-        case OpenAPI.ParameterRef(ref) => s"OpenAPI.ParameterRef($ref)"
-        case _                         => "otherwise"
-      }
-    } shouldBe Some("""name: p2
-        |in: query
-        |required: false
-        |schema:
-        |  type: string
-        |  default: foo
-        |allowEmptyValue: true""".stripMargin)
-
-    ((openapi.components.flatMap(_.schemas).get("OpenAPIEndpointExample.EndpointRequest")) match {
-      case s: OpenAPI.Schema => s.properties.flatMap(_.get("x9"))
-      case _                 => None
-    }) shouldBe Some(Schema("integer", default = None, format = Some("int32")))
-
     fragments.foreach { x =>
       try {
         yaml.contains(x) shouldBe true
