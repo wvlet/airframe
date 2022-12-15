@@ -270,15 +270,17 @@ object Expression {
 
   case class AllColumns(
       qualifier: Option[QName],
-      resolvedAttributes: Option[Seq[ResolvedAttribute]],
+      columns: Option[Seq[Attribute]],
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
     override def name: String              = qualifier.map(x => s"${x}.*").getOrElse("*")
     override def children: Seq[Expression] = qualifier.toSeq
     override def toString = {
-      resolvedAttributes match {
+      columns match {
         case Some(attrs) if attrs.nonEmpty =>
-          val tables = attrs.flatMap(_.sourceColumns.map(_.table)).distinct
+          val tables = attrs.collect { case a: ResolvedAttribute =>
+            a.sourceColumns.map(_.table)
+          }.flatten.distinct
           s"AllColumns(${tables.map(t => s"${t.name}.*").mkString(", ")})"
         case _ => s"AllColumns(${name})"
       }
@@ -289,7 +291,7 @@ object Expression {
     }
 
     def matchesWith(columnName: String): Boolean = {
-      resolvedAttributes.exists(_.exists(_.name == columnName))
+      columns.exists(_.exists(_.name == columnName))
     }
 
     def matched(tableName: String, columnName: String): Seq[Expression] = {
@@ -297,10 +299,10 @@ object Expression {
     }
 
     def matched(columnName: String): Seq[Expression] = {
-      resolvedAttributes.toSeq.flatMap(_.filter(_.name == columnName))
+      columns.toSeq.flatMap(_.filter(_.name == columnName))
     }
 
-    override lazy val resolved = resolvedAttributes.isDefined
+    override lazy val resolved = columns.isDefined
 
     override def withQualifier(newQualifier: String): Attribute = {
       this.copy(qualifier = Some(QName(newQualifier, nodeLocation)))

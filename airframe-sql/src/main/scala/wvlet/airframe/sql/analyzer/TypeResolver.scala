@@ -253,6 +253,8 @@ object TypeResolver extends LogSupport {
 //        resolvedColumns ++= inputAttributes
       case SingleColumn(expr, alias, qualifier, nodeLocation) =>
         resolveExpression(context, expr, inputAttributes) match {
+          case s: SingleColumn =>
+            resolvedColumns += s
           case r: ResolvedAttribute if alias.isEmpty =>
             resolvedColumns += r
           case r: ResolvedAttribute if alias.nonEmpty =>
@@ -345,19 +347,14 @@ object TypeResolver extends LogSupport {
 
     val results = expr match {
       case i: Identifier =>
-        lookup(i.value)
+        lookup(i.value).map {
+          case a: Attribute => a
+          case expr => SingleColumn(expr, Some(i.value), None, expr.nodeLocation)
+        }
       case u @ UnresolvedAttribute(name, _) =>
         lookup(name)
       case a @ AllColumns(_, None, _) =>
-        val sourceAttributes = inputAttributes.flatMap { attrs =>
-          attrs
-            .collectExpressions { case _: ResolvedAttribute =>
-              true
-            }.map { r =>
-              r.asInstanceOf[ResolvedAttribute]
-            }
-        }.distinct
-        List(a.copy(resolvedAttributes = Some(sourceAttributes)))
+        List(a.copy(columns = Some(inputAttributes)))
       case _ =>
         List(expr)
     }
