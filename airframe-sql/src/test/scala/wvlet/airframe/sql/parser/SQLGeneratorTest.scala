@@ -59,8 +59,7 @@ class SQLGeneratorTest extends AirSpec {
     val resolvedPlan =
       SQLAnalyzer.analyze("select id from (select id from A union all select id from A)", "default", demoCatalog)
     val sql = SQLGenerator.print(resolvedPlan)
-    // TODO Remove unnecessary alias in outside SELECT clause
-    sql shouldBe "SELECT id AS id FROM (SELECT id FROM default.A UNION ALL SELECT id FROM default.A)"
+    sql shouldBe "SELECT id FROM (SELECT id FROM default.A UNION ALL SELECT id FROM default.A)"
   }
 
   test("print resolved CTE plan") {

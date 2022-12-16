@@ -278,9 +278,10 @@ object Expression {
     override def toString = {
       columns match {
         case Some(attrs) if attrs.nonEmpty =>
-          val tables = attrs.collect { case a: ResolvedAttribute =>
-            a.sourceColumns.map(_.table)
-          }.flatten.distinct
+          val tables = attrs
+            .collect { case a: ResolvedAttribute =>
+              a.sourceColumns.map(_.table)
+            }.flatten.distinct
           s"AllColumns(${tables.map(t => s"${t.name}.*").mkString(", ")})"
         case _ => s"AllColumns(${name})"
       }
@@ -398,6 +399,7 @@ object Expression {
       nodeLocation: Option[NodeLocation]
   ) extends Expression {
     override def children: Seq[Expression] = inputs
+    override def toString: String = s"MultiColumn(${inputs.mkString(", ")}${name.map(" as " + _).getOrElse("")})"
 
     def matched(tableName: String, columnName: String): Seq[Expression] = {
       if (name.contains(s"${tableName}.${columnName}")) {
