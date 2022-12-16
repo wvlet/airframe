@@ -596,8 +596,8 @@ class TypeResolverTest extends AirSpec {
       }
       joins shouldMatch {
         case List(
-              JoinOnEq(List(c1, c2), _),
-              JoinOnEq(List(c3, c4), _)
+              JoinOnEq(Seq(c1, c2), _),
+              JoinOnEq(Seq(c3, c4), _)
             ) =>
           c1 shouldBe ra1.withQualifier("a")
           c2 shouldBe rb1.withQualifier("b")
