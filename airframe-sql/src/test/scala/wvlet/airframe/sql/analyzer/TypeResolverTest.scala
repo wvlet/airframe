@@ -549,6 +549,30 @@ class TypeResolverTest extends AirSpec {
       }
     }
 
+    test("resolve USING with 3 tables") {
+      val p = analyze("""select a.id, count(1)
+          |from A a
+          |join B b using (id)
+          |join B c using (name)
+          |group by a.id
+          |having count(1) > 160
+          |""".stripMargin)
+
+      val joins = p.collectExpressions { case _: JoinOnEq =>
+        true
+      }
+      joins shouldMatch {
+        case List(
+              JoinOnEq(Seq(c1, c2), _),
+              JoinOnEq(Seq(c3, c4), _)
+            ) =>
+          c1 shouldBe ra1.withQualifier("a")
+          c2 shouldBe rb1.withQualifier("b")
+          c3 shouldBe ra2.withQualifier("a")
+          c4 shouldBe rb2.withQualifier("c")
+      }
+    }
+
     test("join with on") {
       val p = analyze("select id, A.name from A join B on A.id = B.id")
       p.outputAttributes shouldMatch {
