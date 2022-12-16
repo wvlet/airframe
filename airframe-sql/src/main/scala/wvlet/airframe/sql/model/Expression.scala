@@ -29,9 +29,14 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     * * Returns "(name):(type)" of this attribute
     */
   def typeDescription: String = s"${attributeName}:${dataTypeName}"
-  def attributeName: String   = "?"
-  def dataTypeName: String    = dataType.typeName
-  def dataType: DataType      = DataType.UnknownType
+
+  /**
+    * Column name without qualifier
+    * @return
+    */
+  def attributeName: String = "?"
+  def dataTypeName: String  = dataType.typeName
+  def dataType: DataType    = DataType.UnknownType
 
   private def createInstance(args: Iterator[AnyRef]): Expression = {
     // TODO Build this LogicalPlan using Surface
