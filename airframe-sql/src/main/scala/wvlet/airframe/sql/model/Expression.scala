@@ -14,6 +14,8 @@
 
 package wvlet.airframe.sql.model
 
+import wvlet.airframe.sql.catalog.DataType
+import wvlet.airframe.sql.catalog.DataType.{AnyType, ArrayType, RecordType, TimestampField, TypeVariable}
 import wvlet.log.LogSupport
 
 import java.util.Locale
@@ -26,9 +28,10 @@ sealed trait Expression extends TreeNode[Expression] with Product {
   /**
     * * Returns "(name):(type)" of this attribute
     */
-  def typeDescription: String = s"${attributeName}:${typeName}"
+  def typeDescription: String = s"${attributeName}:${dataTypeName}"
   def attributeName: String   = "?"
-  def typeName: String        = "?"
+  def dataTypeName: String    = dataType.typeName
+  def dataType: DataType      = DataType.UnknownType
 
   private def createInstance(args: Iterator[AnyRef]): Expression = {
     // TODO Build this LogicalPlan using Surface
@@ -162,7 +165,6 @@ trait BinaryExpression extends Expression {
   */
 trait Attribute extends LeafExpression {
   def name: String
-
   override def attributeName: String = name
 
   /**
@@ -338,13 +340,13 @@ object Expression {
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
     override def name: String = alias.getOrElse(expr.attributeName)
-    override def typeName: String = {
-      expr.typeName
+    override def dataTypeName: String = {
+      expr.dataTypeName
     }
     override def typeDescription: String = {
       alias match {
         case Some(name) =>
-          s"${name}:${expr.typeName}"
+          s"${name}:${expr.dataTypeName}"
         case _ =>
           expr.typeDescription
       }
@@ -432,13 +434,16 @@ object Expression {
       nodeLocation: Option[NodeLocation]
   ) extends Expression
       with LogSupport {
+    require(inputs.nonEmpty, s"The inputs of MultiColumn should not be empty: ${this}")
+
     override def children: Seq[Expression] = inputs
 
     override def attributeName: String = {
-      name.orElse(inputs.headOption.map(_.attributeName)).getOrElse("?")
+      name.getOrElse(inputs.head.attributeName)
     }
-    override def typeName: String = {
-      inputs.headOption.map(_.typeName).getOrElse("?")
+
+    override def dataType: DataType = {
+      inputs.head.dataType
     }
 
     override def toString: String = s"MultiColumn(${inputs.mkString(", ")}${name.map(" as " + _).getOrElse("")})"
@@ -625,11 +630,11 @@ object Expression {
     override def children: Seq[Expression] = Seq(a) ++ list
   }
   case class InSubQuery(a: Expression, in: Relation, nodeLocation: Option[NodeLocation]) extends ConditionalExpression {
-    override def children: Seq[Expression] = Seq(a) ++ in.expressions
+    override def children: Seq[Expression] = Seq(a) ++ in.childExpressions
   }
   case class NotInSubQuery(a: Expression, in: Relation, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression {
-    override def children: Seq[Expression] = Seq(a) ++ in.expressions
+    override def children: Seq[Expression] = Seq(a) ++ in.childExpressions
   }
   case class Like(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
@@ -714,11 +719,13 @@ object Expression {
     def stringValue: String
   }
   case class NullLiteral(nodeLocation: Option[NodeLocation]) extends Literal with LeafExpression {
+    override def dataType: DataType  = DataType.NullType
     override def stringValue: String = "null"
     override def sqlExpr: String     = "NULL"
     override def toString: String    = "Literal(NULL)"
   }
   sealed trait BooleanLiteral extends Literal {
+    override def dataType: DataType = DataType.BooleanType
     def booleanValue: Boolean
   }
   case class TrueLiteral(nodeLocation: Option[NodeLocation]) extends BooleanLiteral with LeafExpression {
@@ -734,36 +741,43 @@ object Expression {
     override def booleanValue: Boolean = false
   }
   case class StringLiteral(value: String, nodeLocation: Option[NodeLocation]) extends Literal with LeafExpression {
+    override def dataType: DataType  = DataType.StringType
     override def stringValue: String = value
     override def sqlExpr: String     = s"'${value}'"
     override def toString            = s"Literal('${value}')"
   }
   case class TimeLiteral(value: String, nodeLocation: Option[NodeLocation]) extends Literal with LeafExpression {
+    override def dataType: DataType  = DataType.TimestampType(TimestampField.TIME, false)
     override def stringValue: String = value
     override def sqlExpr             = s"TIME '${value}'"
     override def toString            = s"Literal(TIME '${value}')"
   }
   case class TimestampLiteral(value: String, nodeLocation: Option[NodeLocation]) extends Literal with LeafExpression {
+    override def dataType: DataType  = DataType.TimestampType(TimestampField.TIMESTAMP, false)
     override def stringValue: String = value
     override def sqlExpr             = s"TIMESTAMP '${value}'"
     override def toString            = s"Literal(TIMESTAMP '${value}')"
   }
   case class DecimalLiteral(value: String, nodeLocation: Option[NodeLocation]) extends Literal with LeafExpression {
+    override def dataType: DataType  = DataType.DecimalType(TypeVariable("precision"), TypeVariable("scale"))
     override def stringValue: String = value
     override def sqlExpr             = s"DECIMAL '${value}'"
     override def toString            = s"Literal(DECIMAL '${value}')"
   }
   case class CharLiteral(value: String, nodeLocation: Option[NodeLocation]) extends Literal with LeafExpression {
+    override def dataType: DataType  = DataType.CharType(None)
     override def stringValue: String = value
     override def sqlExpr             = s"CHAR '${value}'"
     override def toString            = s"Literal(CHAR '${value}')"
   }
   case class DoubleLiteral(value: Double, nodeLocation: Option[NodeLocation]) extends Literal with LeafExpression {
+    override def dataType: DataType  = DataType.DoubleType
     override def stringValue: String = value.toString
     override def sqlExpr             = value.toString
     override def toString            = s"Literal(${value.toString})"
   }
   case class LongLiteral(value: Long, nodeLocation: Option[NodeLocation]) extends Literal with LeafExpression {
+    override def dataType: DataType  = DataType.LongType
     override def stringValue: String = value.toString
     override def sqlExpr             = value.toString
     override def toString            = s"Literal(${value.toString})"
@@ -810,10 +824,21 @@ object Expression {
 
   // Value constructor
   case class ArrayConstructor(values: Seq[Expression], nodeLocation: Option[NodeLocation]) extends Expression {
+    override def dataType: DataType = {
+      val elemTypes = values.map(_.dataType).distinct
+      if (elemTypes.size == 1) {
+        ArrayType(elemTypes.head)
+      } else {
+        ArrayType(AnyType)
+      }
+    }
     override def children: Seq[Expression] = values
   }
 
   case class RowConstructor(values: Seq[Expression], nodeLocation: Option[NodeLocation]) extends Expression {
+    override def dataType: DataType = {
+      RecordType(values.map(_.dataType))
+    }
     override def children: Seq[Expression] = values
   }
 
@@ -832,7 +857,7 @@ object Expression {
   // 1-origin parameter
   case class Parameter(index: Int, nodeLocation: Option[NodeLocation]) extends LeafExpression
   case class SubQueryExpression(query: Relation, nodeLocation: Option[NodeLocation]) extends Expression {
-    override def children: Seq[Expression] = query.expressions
+    override def children: Seq[Expression] = query.childExpressions
   }
 
   case class Cast(expr: Expression, tpe: String, tryCast: Boolean = false, nodeLocation: Option[NodeLocation])

@@ -34,7 +34,7 @@ object LogicalPlanPrinter extends LogSupport {
       case EmptyRelation(_) =>
       // print nothing
       case _ =>
-        val ws = " " * level
+        val ws = "  " * level
 
         val inputAttrs  = m.inputAttributes
         val outputAttrs = m.outputAttributes
@@ -45,7 +45,7 @@ object LogicalPlanPrinter extends LogSupport {
           } else {
             def printAttr(s: Seq[Attribute]): String = {
               val lst = s.map(_.typeDescription).mkString(", ")
-              if (s.size > 1) {
+              if (s.size > 1 || s.size == 1) {
                 s"(${lst})"
               } else {
                 lst
@@ -59,7 +59,7 @@ object LogicalPlanPrinter extends LogSupport {
             out.println(prefix)
           case _ =>
             out.println(s"${prefix}")
-            val attrWs  = " " * (level + 1)
+            val attrWs  = "  " * (level + 1)
             val attrStr = attr.map(x => s"${attrWs}- ${x}").mkString("\n")
             out.println(attrStr)
         }

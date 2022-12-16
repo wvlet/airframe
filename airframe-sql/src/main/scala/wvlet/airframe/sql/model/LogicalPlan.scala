@@ -35,29 +35,10 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   def children: Seq[LogicalPlan]
 
   /**
-    * Expressions associated to this LogicalPlan node
+    * Return child expressions associated to this LogicalPlan node
     *
     * @return
-    */
-  def expressions: Seq[Expression] = {
-    def collectExpression(x: Any): Seq[Expression] = {
-      x match {
-        case e: Expression  => e :: Nil
-        case p: LogicalPlan => p.expressions
-        case Some(x)        => collectExpression(x)
-        case s: Iterable[_] => s.flatMap(collectExpression _).toSeq
-        case other          => Nil
-      }
-    }
-
-    productIterator.flatMap { x =>
-      collectExpression(x)
-    }.toSeq
-  }
-
-  /**
-    * Returns direct child expressions in this LogicalPlan node parmeters
-    * @return
+    *   child expressions of this node
     */
   def childExpressions: Seq[Expression] = {
     def collectExpression(x: Any): Seq[Expression] = {
@@ -450,7 +431,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   def outputAttributes: Seq[Attribute]
 
   // True if all input attributes are resolved.
-  lazy val resolved: Boolean    = expressions.forall(_.resolved) && resolvedChildren
+  lazy val resolved: Boolean    = childExpressions.forall(_.resolved) && resolvedChildren
   def resolvedChildren: Boolean = children.forall(_.resolved)
 
   def unresolvedExpressions: Seq[Expression] = {

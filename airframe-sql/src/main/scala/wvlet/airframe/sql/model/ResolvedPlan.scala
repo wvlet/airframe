@@ -58,7 +58,7 @@ case class SourceColumn(table: Catalog.Table, column: Catalog.TableColumn) {
 
 case class ResolvedAttribute(
     name: String,
-    dataType: DataType,
+    override val dataType: DataType,
     qualifier: Option[String],
     sourceColumns: Seq[SourceColumn],
     nodeLocation: Option[NodeLocation]
@@ -94,7 +94,7 @@ case class ResolvedAttribute(
     s"${qualifier.map(x => s"${x}.").getOrElse(".")}.${name}"
   }
 
-  override def typeName: String = dataType.toString
+  override def dataTypeName: String = dataType.toString
 
   override def typeDescription: String = {
     s"${name}:${dataType}"

@@ -112,7 +112,7 @@ class LogicalPlanTest extends AirSpec {
     val newPlan = l.transformChildExpressions { case s: SingleColumn =>
       s.withAlias("x")
     }
-    newPlan.expressions.collect {
+    newPlan.childExpressions.collect {
       case s: SingleColumn if s.alias == Some("x") => true
     }.nonEmpty shouldBe true
   }
@@ -134,11 +134,11 @@ class LogicalPlanTest extends AirSpec {
       s.withAlias(s"x${count.getAndIncrement()}")
     }
 
-    newPlan.expressions.collect {
+    newPlan.childExpressions.collect {
       case s: SingleColumn if s.alias == Some("x0") => true
     }.nonEmpty shouldBe true
 
-    newPlan.children.head.expressions.collect {
+    newPlan.children.head.childExpressions.collect {
       case s: SingleColumn if s.alias == Some("x1") => true
     }.nonEmpty shouldBe true
   }
@@ -150,11 +150,11 @@ class LogicalPlanTest extends AirSpec {
       s.withAlias(s"x${count.getAndIncrement()}")
     }
 
-    newPlan.expressions.collect {
+    newPlan.childExpressions.collect {
       case s: SingleColumn if s.alias == Some("x1") => true
     }.nonEmpty shouldBe true
 
-    newPlan.children.head.expressions.collect {
+    newPlan.children.head.childExpressions.collect {
       case s: SingleColumn if s.alias == Some("x0") => true
     }.nonEmpty shouldBe true
   }
