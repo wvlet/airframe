@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.model
-import com.sun.jdi.LongType
 import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, TypeResolver}
 import wvlet.airframe.sql.catalog.DataType
 
@@ -21,7 +20,7 @@ import java.util.UUID
 trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   def modelName: String = {
     val n = this.getClass.getSimpleName
-    if (n.endsWith("$")) n.substring(0, n.length - 1) else n
+    n.stripSuffix("$")
   }
 
   def pp: String = {
@@ -45,6 +44,26 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
       x match {
         case e: Expression  => e :: Nil
         case p: LogicalPlan => p.expressions
+        case Some(x)        => collectExpression(x)
+        case s: Iterable[_] => s.flatMap(collectExpression _).toSeq
+        case other          => Nil
+      }
+    }
+
+    productIterator.flatMap { x =>
+      collectExpression(x)
+    }.toSeq
+  }
+
+  /**
+    * Returns direct child expressions in this LogicalPlan node parmeters
+    * @return
+    */
+  def childExpressions: Seq[Expression] = {
+    def collectExpression(x: Any): Seq[Expression] = {
+      x match {
+        case e: Expression  => e :: Nil
+        case p: LogicalPlan => Nil
         case Some(x)        => collectExpression(x)
         case s: Iterable[_] => s.flatMap(collectExpression _).toSeq
         case other          => Nil

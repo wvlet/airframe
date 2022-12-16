@@ -36,10 +36,24 @@ object LogicalPlanPrinter extends LogSupport {
       case _ =>
         val ws = " " * level
 
-        val inputAttr  = m.inputAttributes.mkString(", ")
-        val outputAttr = m.outputAttributes.mkString(", ")
-        val attr       = m.expressions.map(_.toString)
-        val prefix     = s"${ws}[${m.modelName}]: (${inputAttr}) => (${outputAttr})"
+        val inputAttrs  = m.inputAttributes
+        val outputAttrs = m.outputAttributes
+        val attr        = m.childExpressions.map(_.toString)
+        val functionSig =
+          if (inputAttrs.isEmpty && outputAttrs.isEmpty) {
+            ""
+          } else {
+            def printAttr(s: Seq[Attribute]): String = {
+              val lst = s.map(_.typeDescription).mkString(", ")
+              if (s.size > 1) {
+                s"(${lst})"
+              } else {
+                lst
+              }
+            }
+            s": ${printAttr(inputAttrs)} => ${printAttr(outputAttrs)}"
+          }
+        val prefix = s"${ws}[${m.modelName}]${functionSig}"
         attr.length match {
           case 0 =>
             out.println(prefix)

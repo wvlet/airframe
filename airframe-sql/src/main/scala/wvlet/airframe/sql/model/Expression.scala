@@ -14,7 +14,7 @@
 
 package wvlet.airframe.sql.model
 
-import wvlet.airframe.sql.catalog.Catalog
+import wvlet.log.LogSupport
 
 import java.util.Locale
 
@@ -22,6 +22,13 @@ import java.util.Locale
   */
 sealed trait Expression extends TreeNode[Expression] with Product {
   def sqlExpr: String = toString()
+
+  /**
+    * * Returns "(name):(type)" of this attribute
+    */
+  def typeDescription: String = s"${attributeName}:${typeName}"
+  def attributeName: String   = "?"
+  def typeName: String        = "?"
 
   private def createInstance(args: Iterator[AnyRef]): Expression = {
     // TODO Build this LogicalPlan using Surface
@@ -156,6 +163,8 @@ trait BinaryExpression extends Expression {
 trait Attribute extends LeafExpression {
   def name: String
 
+  override def attributeName: String = name
+
   /**
     * Set an alias for the table or subquery.
     * @param newQualifier
@@ -202,15 +211,17 @@ object Expression {
   }
 
   case class UnresolvedAttribute(name: String, nodeLocation: Option[NodeLocation]) extends Attribute {
-    override def toString        = s"UnresolvedAttribute(${name})"
-    override def sqlExpr: String = name
-    override lazy val resolved   = false
+    override def toString: String        = s"UnresolvedAttribute(${name})"
+    override def typeDescription: String = s"${name}:?"
+    override def sqlExpr: String         = name
+    override lazy val resolved           = false
 
     override def withQualifier(newQualifier: String): Attribute = this
   }
 
   sealed trait Identifier extends LeafExpression {
     def value: String
+    override def attributeName: String = value
   }
   case class DigitId(value: String, nodeLocation: Option[NodeLocation]) extends Identifier {
     override def sqlExpr: String  = value
@@ -275,6 +286,16 @@ object Expression {
   ) extends Attribute {
     override def name: String              = qualifier.map(x => s"${x}.*").getOrElse("*")
     override def children: Seq[Expression] = qualifier.toSeq
+
+    override def typeDescription: String = {
+      columns
+        .map { c =>
+          c.map(_.typeDescription).mkString(", ")
+        }
+        .getOrElse {
+          s"${qualifier.map(q => s"${q.sqlExpr}").getOrElse("")}*"
+        }
+    }
     override def toString = {
       columns match {
         case Some(attrs) if attrs.nonEmpty =>
@@ -316,7 +337,19 @@ object Expression {
       qualifier: Option[String] = None,
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
-    override def name: String              = alias.getOrElse(expr).toString
+    override def name: String = alias.getOrElse(expr.attributeName)
+    override def typeName: String = {
+      expr.typeName
+    }
+    override def typeDescription: String = {
+      alias match {
+        case Some(name) =>
+          s"${name}:${expr.typeName}"
+        case _ =>
+          expr.typeDescription
+      }
+    }
+
     override def children: Seq[Expression] = Seq(expr)
     override def toString = s"SingleColumn(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
 
@@ -397,8 +430,17 @@ object Expression {
       inputs: Seq[Expression],
       name: Option[String],
       nodeLocation: Option[NodeLocation]
-  ) extends Expression {
+  ) extends Expression
+      with LogSupport {
     override def children: Seq[Expression] = inputs
+
+    override def attributeName: String = {
+      name.orElse(inputs.headOption.map(_.attributeName)).getOrElse("?")
+    }
+    override def typeName: String = {
+      inputs.headOption.map(_.typeName).getOrElse("?")
+    }
+
     override def toString: String = s"MultiColumn(${inputs.mkString(", ")}${name.map(" as " + _).getOrElse("")})"
 
     def matched(tableName: String, columnName: String): Seq[Expression] = {

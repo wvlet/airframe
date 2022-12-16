@@ -75,13 +75,10 @@ class TypeResolverTest extends AirSpec {
       sql: String,
       rules: List[AnalyzerContext => PlanRewriter] = TypeResolver.typerRules
   ): LogicalPlan = {
-    trace(s"original sql:\n${sql}")
-    trace(s"original plan:\n${SQLParser.parse(sql).pp}")
-
     val resolvedPlan = resolvePlan(sql, rules)
     val resolvedSql  = generateSql(resolvedPlan)
-    trace(s"new plan:\n${resolvedPlan.pp}")
-    trace(s"new sql:\n${resolvedSql}")
+    debug(s"[original]\n${sql}\n\n[resolved]\n${resolvedSql}")
+    trace(s"[original plan]\n${SQLParser.parse(sql).pp}\n[resolved plan]\n${resolvedPlan.pp}")
 
     // Round-trip plan should be able to be resolved
     resolvePlan(resolvedSql, rules)

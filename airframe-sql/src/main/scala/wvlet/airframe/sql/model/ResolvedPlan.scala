@@ -90,18 +90,30 @@ case class ResolvedAttribute(
     name == columnName
   }
 
+  override def attributeName: String = {
+    s"${qualifier.map(x => s"${x}.").getOrElse(".")}.${name}"
+  }
+
+  override def typeName: String = dataType.toString
+
+  override def typeDescription: String = {
+    s"${name}:${dataType}"
+  }
+
+  override def sqlExpr: String = attributeName
+
   override def toString = {
     (qualifier, sourceColumns) match {
       case (Some(q), columns) if columns.nonEmpty =>
         columns
           .map(_.fullName)
-          .mkString(s"${q},${name}:${dataType} <- [", ", ", "]")
+          .mkString(s"${q},${typeDescription} <- [", ", ", "]")
       case (None, columns) if columns.nonEmpty =>
         columns
           .map(_.fullName)
-          .mkString(s"${name}:${dataType} <- [", ", ", "]")
+          .mkString(s"${typeDescription} <- [", ", ", "]")
       case _ =>
-        s"${name}:${dataType}"
+        s"${typeDescription}"
     }
   }
   override lazy val resolved = true
