@@ -90,16 +90,6 @@ case class ResolvedAttribute(
     name == columnName
   }
 
-  override def attributeName: String = {
-    s"${qualifier.map(x => s"${x}.").getOrElse(".")}.${name}"
-  }
-
-  override def dataTypeName: String = dataType.toString
-
-  override def typeDescription: String = {
-    s"${name}:${dataType}"
-  }
-
   override def sqlExpr: String = attributeName
 
   override def toString = {

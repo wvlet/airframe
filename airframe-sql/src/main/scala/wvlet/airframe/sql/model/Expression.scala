@@ -213,10 +213,9 @@ object Expression {
   }
 
   case class UnresolvedAttribute(name: String, nodeLocation: Option[NodeLocation]) extends Attribute {
-    override def toString: String        = s"UnresolvedAttribute(${name})"
-    override def typeDescription: String = s"${name}:?"
-    override def sqlExpr: String         = name
-    override lazy val resolved           = false
+    override def toString: String = s"UnresolvedAttribute(${name})"
+    override def sqlExpr: String  = name
+    override lazy val resolved    = false
 
     override def withQualifier(newQualifier: String): Attribute = this
   }
@@ -295,7 +294,7 @@ object Expression {
           c.map(_.typeDescription).mkString(", ")
         }
         .getOrElse {
-          s"${qualifier.map(q => s"${q.sqlExpr}").getOrElse("")}*"
+          s"${qualifier.map(q => s"${q.fullName}.").getOrElse("")}*"
         }
     }
     override def toString = {
@@ -824,13 +823,16 @@ object Expression {
 
   // Value constructor
   case class ArrayConstructor(values: Seq[Expression], nodeLocation: Option[NodeLocation]) extends Expression {
-    override def dataType: DataType = {
+    def elementType: DataType = {
       val elemTypes = values.map(_.dataType).distinct
       if (elemTypes.size == 1) {
-        ArrayType(elemTypes.head)
+        elemTypes.head
       } else {
-        ArrayType(AnyType)
+        AnyType
       }
+    }
+    override def dataType: DataType = {
+      ArrayType(elementType)
     }
     override def children: Seq[Expression] = values
   }

@@ -989,8 +989,8 @@ class TypeResolverTest extends AirSpec {
 
       p.outputAttributes shouldBe List(
         ra1.withQualifier("A"),
-        ResolvedAttribute("key", DataType.AnyType, Some("t"), Nil, None),
-        ResolvedAttribute("value", DataType.AnyType, Some("t"), Nil, None)
+        ResolvedAttribute("key", DataType.StringType, Some("t"), Nil, None),
+        ResolvedAttribute("value", DataType.LongType, Some("t"), Nil, None)
       )
     }
   }

@@ -45,7 +45,7 @@ object LogicalPlanPrinter extends LogSupport {
           } else {
             def printAttr(s: Seq[Attribute]): String = {
               val lst = s.map(_.typeDescription).mkString(", ")
-              if (s.size > 1 || s.size == 1) {
+              if (s.size >= 1) {
                 s"(${lst})"
               } else {
                 lst
