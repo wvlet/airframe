@@ -123,7 +123,7 @@ class MethodSurfaceTest extends SurfaceSpec {
     assert(m.args.headOption.isDefined)
     val h = m.args.head
     // FIXME: Fix StaticMethodParameter in CompileTimeSurfaceFactory for Scala 3
-    if (!isScalaJS && !isScala3) {
+    if (!isScalaJS && !isScala3JVM) {
       assertEquals(h.getDefaultValue, Some("default"))
 
       val d = new E {
