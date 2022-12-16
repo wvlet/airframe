@@ -15,7 +15,8 @@ package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.sql.catalog.Catalog.CreateMode
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
-import wvlet.airframe.sql.model.{ResolvedAttribute, SourceColumn}
+import wvlet.airframe.sql.model.Expression.AllColumns
+import wvlet.airframe.sql.model.{NodeLocation, ResolvedAttribute, SourceColumn}
 import wvlet.airspec.AirSpec
 
 /**
@@ -60,9 +61,23 @@ class SQLAnalyzerTest extends AirSpec {
     val plan = SQLAnalyzer.analyze("select * from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tbl1, tbl1.column("id"))), None),
-      ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tbl1, tbl1.column("name"))), None),
-      ResolvedAttribute("address", DataType.StringType, None, Seq(SourceColumn(tbl1, tbl1.column("address"))), None)
+      AllColumns(
+        None,
+        Some(
+          Seq(
+            ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tbl1, tbl1.column("id"))), None),
+            ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tbl1, tbl1.column("name"))), None),
+            ResolvedAttribute(
+              "address",
+              DataType.StringType,
+              None,
+              Seq(SourceColumn(tbl1, tbl1.column("address"))),
+              None
+            )
+          )
+        ),
+        Some(NodeLocation(1, 8))
+      )
     )
   }
 

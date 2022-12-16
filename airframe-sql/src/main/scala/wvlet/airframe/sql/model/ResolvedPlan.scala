@@ -81,9 +81,13 @@ case class ResolvedAttribute(
       case Nil => columnName == name
       case tableNames =>
         tableNames.exists { tbl =>
-          tbl == tableName && columnName == name
+          tbl == tableName && matchesWith(columnName)
         }
     }
+  }
+
+  def matchesWith(columnName: String): Boolean = {
+    name == columnName
   }
 
   override def toString = {

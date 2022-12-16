@@ -270,19 +270,40 @@ object Expression {
 
   case class AllColumns(
       qualifier: Option[QName],
-      sourceTables: Option[Seq[Catalog.Table]],
+      columns: Option[Seq[Attribute]],
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
     override def name: String              = qualifier.map(x => s"${x}.*").getOrElse("*")
     override def children: Seq[Expression] = qualifier.toSeq
     override def toString = {
-      sourceTables match {
-        case Some(tables) => s"AllColumns(${tables.map(t => s"${t.name}.*").mkString(", ")})"
-        case None         => s"AllColumns(${name})"
+      columns match {
+        case Some(attrs) if attrs.nonEmpty =>
+          val tables = attrs
+            .collect { case a: ResolvedAttribute =>
+              a.sourceColumns.map(_.table)
+            }.flatten.distinct
+          s"AllColumns(${tables.map(t => s"${t.name}.*").mkString(", ")})"
+        case _ => s"AllColumns(${name})"
       }
     }
 
-    override lazy val resolved = sourceTables.isDefined
+    def matchesWith(tableName: String, columnName: String): Boolean = {
+      qualifier.exists(_.sqlExpr == tableName) && matchesWith(columnName)
+    }
+
+    def matchesWith(columnName: String): Boolean = {
+      columns.exists(_.exists(_.name == columnName))
+    }
+
+    def matched(tableName: String, columnName: String): Seq[Expression] = {
+      if (qualifier.exists(_.sqlExpr == tableName)) matched(columnName) else Nil
+    }
+
+    def matched(columnName: String): Seq[Expression] = {
+      columns.toSeq.flatMap(_.filter(_.name == columnName))
+    }
+
+    override lazy val resolved = columns.isDefined
 
     override def withQualifier(newQualifier: String): Attribute = {
       this.copy(qualifier = Some(QName(newQualifier, nodeLocation)))
@@ -320,12 +341,39 @@ object Expression {
       alias.contains(columnName) || matchesWithMultiColumn(columnName)
     }
 
+    def matched(tableName: String, columnName: String): Seq[Expression] = {
+      if (qualifier.contains(tableName) && matchesWith(columnName)) {
+        Seq(this)
+      } else if (expr.isInstanceOf[MultiColumn]) {
+        val m = expr.asInstanceOf[MultiColumn]
+        if (m.name.contains(s"${tableName}.${columnName}")) {
+          Seq(m)
+        } else {
+          m.matched(tableName, columnName)
+        }
+      } else Nil
+    }
+
+    def matched(columnName: String): Seq[Expression] = {
+      if (alias.contains(columnName)) {
+        Seq(this)
+      } else if (expr.isInstanceOf[MultiColumn]) {
+        val m = expr.asInstanceOf[MultiColumn]
+        if (m.name.contains(columnName)) {
+          Seq(m)
+        } else {
+          m.matched(columnName)
+        }
+      } else Nil
+    }
+
     private def matchesWithMultiColumn(tableName: String, columnName: String): Boolean = {
       expr match {
         case MultiColumn(inputs, _, _) =>
           inputs.exists {
             case r: ResolvedAttribute => r.matchesWith(tableName, columnName)
             case s: SingleColumn      => s.matchesWith(tableName, columnName)
+            case s: AllColumns        => s.matchesWith(tableName, columnName)
             case _                    => false
           }
         case _ => false
@@ -338,6 +386,7 @@ object Expression {
           name.contains(columnName) || inputs.exists {
             case r: ResolvedAttribute => r.name == columnName
             case s: SingleColumn      => s.matchesWith(columnName)
+            case s: AllColumns        => s.matchesWith(columnName)
             case _                    => false
           }
         case _ => false
@@ -350,6 +399,31 @@ object Expression {
       nodeLocation: Option[NodeLocation]
   ) extends Expression {
     override def children: Seq[Expression] = inputs
+    override def toString: String = s"MultiColumn(${inputs.mkString(", ")}${name.map(" as " + _).getOrElse("")})"
+
+    def matched(tableName: String, columnName: String): Seq[Expression] = {
+      if (name.contains(s"${tableName}.${columnName}")) {
+        Seq(this)
+      } else {
+        inputs.collect {
+          case r: ResolvedAttribute                                    => Seq(r)
+          case s: SingleColumn if s.matchesWith(tableName, columnName) => s.matched(tableName, columnName)
+          case s: AllColumns if s.matchesWith(tableName, columnName)   => s.matched(tableName, columnName)
+        }.flatten
+      }
+    }
+
+    def matched(columnName: String): Seq[Expression] = {
+      if (name.contains(columnName)) {
+        Seq(this)
+      } else {
+        inputs.collect {
+          case r: ResolvedAttribute                         => Seq(r)
+          case s: SingleColumn if s.matchesWith(columnName) => s.matched(columnName)
+          case s: AllColumns if s.matchesWith(columnName)   => s.matched(columnName)
+        }.flatten
+      }
+    }
   }
 
   case class SortItem(

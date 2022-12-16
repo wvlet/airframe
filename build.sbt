@@ -14,13 +14,13 @@ val SCALACHECK_VERSION              = "1.17.0"
 val MSGPACK_VERSION                 = "0.9.3"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.1.1"
 val SQLITE_JDBC_VERSION             = "3.40.0.0"
-val SLF4J_VERSION                   = "2.0.5"
+val SLF4J_VERSION                   = "2.0.6"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
 val SCALAJS_DOM_VERSION             = "2.3.0"
 val FINAGLE_VERSION                 = "22.7.0"
 val FLUENCY_VERSION                 = "2.7.0"
-val GRPC_VERSION                    = "1.51.0"
+val GRPC_VERSION                    = "1.51.1"
 val JMH_VERSION                     = "1.36"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 val PARQUET_VERSION                 = "1.12.3"
@@ -827,7 +827,7 @@ lazy val benchmark =
         // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
         // For grpc-java
         "io.grpc"             % "grpc-protobuf" % GRPC_VERSION,
-        "com.google.protobuf" % "protobuf-java" % "3.21.11",
+        "com.google.protobuf" % "protobuf-java" % "3.21.12",
         "com.chatwork"       %% "scala-ulid"    % "1.0.24"
       )
       //      Compile / PB.targets := Seq(

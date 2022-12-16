@@ -46,7 +46,7 @@ class SQLGeneratorTest extends AirSpec {
   test("print resolved plan") {
     val resolvedPlan = SQLAnalyzer.analyze("select * from A", "default", demoCatalog)
     val sql          = SQLGenerator.print(resolvedPlan)
-    sql shouldBe "SELECT id, name FROM default.A"
+    sql shouldBe "SELECT * FROM default.A"
   }
 
   test("print resolved subquery plan") {
@@ -65,7 +65,7 @@ class SQLGeneratorTest extends AirSpec {
   test("print resolved CTE plan") {
     val resolvedPlan = SQLAnalyzer.analyze("with p as (select id from A) select * from p", "default", demoCatalog)
     val sql          = SQLGenerator.print(resolvedPlan)
-    sql shouldBe "WITH p AS (SELECT id FROM default.A) SELECT p.id FROM p"
+    sql shouldBe "WITH p AS (SELECT id FROM default.A) SELECT * FROM p"
   }
 
   test("generate aggregation without grouping keys") {
