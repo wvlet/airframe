@@ -17,7 +17,8 @@ package wvlet.airframe.surface
   * Provide AirSpec-like helper
   */
 trait AirSpecBridge extends munit.Assertions {
-  def isScalaJS: Boolean = AirSpecBridgeCompat.isScalaJS
+  def isScalaJS: Boolean   = AirSpecBridgeCompat.isScalaJS
+  def isScala3JVM: Boolean = AirSpecBridgeCompat.isScala3JVM
   def pendingUntil(msg: String): Unit = {
     assume(false, msg)
   }

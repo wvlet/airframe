@@ -13,9 +13,12 @@
  */
 package wvlet.airframe.http.openapi
 import example.openapi.{OpenAPIEndpointExample, OpenAPIRPCExample, OpenAPISmallExample}
+
 import io.swagger.v3.parser.OpenAPIV3Parser
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.HttpCodeGenerator
+import wvlet.airframe.http.openapi.OpenAPI.Parameter
+import wvlet.airframe.http.openapi.OpenAPI.Schema
 import wvlet.airspec.AirSpec
 
 /**
@@ -145,6 +148,7 @@ class OpenAPITest extends AirSpec {
         |          format: float
         |        x5:
         |          type: number
+        |          default: '1.0'
         |          format: double
         |        x6:
         |          type: array
@@ -174,8 +178,9 @@ class OpenAPITest extends AirSpec {
     )
 
     fragments.foreach { x =>
-      debug(s"checking\n${x}")
-      yaml.contains(x) shouldBe true
+      if (!yaml.contains(x)) {
+        fail(s"Missing YAML fragment for:\n${x}")
+      }
     }
   }
 
@@ -302,7 +307,13 @@ class OpenAPITest extends AirSpec {
         |          in: query
         |          required: true
         |          schema:
-        |            type: string""".stripMargin,
+        |            type: string
+        |        - name: p2
+        |          in: query
+        |          required: false
+        |          schema:
+        |            type: string
+        |            default: foo""".stripMargin,
       """  /v1/post1:
         |    post:
         |      summary: post1

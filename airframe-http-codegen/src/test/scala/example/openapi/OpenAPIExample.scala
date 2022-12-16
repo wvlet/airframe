@@ -63,7 +63,7 @@ trait OpenAPIEndpointExample {
   def get2(id: Int, name: String): Unit
 
   @Endpoint(method = HttpMethod.GET, path = "/v1/get3/:id")
-  def get3(id: Int, p1: String): Unit
+  def get3(id: Int, p1: String, p2: String = "foo"): Unit
 
   @Endpoint(method = HttpMethod.POST, path = "/v1/post1")
   def post1(): Unit

@@ -150,6 +150,7 @@ object OpenAPI {
 
   case class Schema(
       `type`: String,
+      default: Option[String] = None,
       format: Option[String] = None,
       description: Option[String] = None,
       required: Option[Seq[String]] = None,

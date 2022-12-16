@@ -14,5 +14,6 @@
 package wvlet.airframe.surface
 
 object AirSpecBridgeCompat {
-  val isScalaJS: Boolean = false
+  val isScalaJS: Boolean   = false
+  val isScala3JVM: Boolean = true
 }

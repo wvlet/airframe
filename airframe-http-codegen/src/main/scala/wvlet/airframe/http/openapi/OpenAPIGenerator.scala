@@ -289,18 +289,19 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
       // Http response type
       def toParameter(p: MethodParameter, in: In): ParameterOrRef = {
         if (p.surface.isPrimitive) {
+          val optDefaultValue = p.getDefaultValue
           Parameter(
             name = p.name,
             in = in,
             description = p.findAnnotationOf[description].map(_.value()),
-            required = true,
+            required = optDefaultValue.isEmpty,
             schema = if (isPrimitiveTypeFamily(p.surface)) {
               Some(getOpenAPISchemaOfParameter(p, componentTypes))
             } else {
               registerComponent(p.surface)
               Some(SchemaRef(s"#/components/schemas/${schemaName(p.surface)}"))
             },
-            allowEmptyValue = if (p.getDefaultValue.nonEmpty) Some(true) else None
+            allowEmptyValue = optDefaultValue.map(_ => true)
           )
         } else {
           ParameterRef(s"#/components/parameters/${schemaName(p.surface)}")
@@ -403,6 +404,10 @@ class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
     schema match {
       case s: Schema =>
         s.withDescription(p.findAnnotationOf[description].map(_.value))
+          .copy(default = {
+            // Do not produce "default: None". This may happen if `opt: Option[Int] = None`
+            p.getDefaultValue.filter(_ != None).map(_.toString)
+          })
       case _ =>
         schema
     }
