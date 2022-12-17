@@ -15,15 +15,7 @@
 package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.catalog.DataType
-import wvlet.airframe.sql.catalog.DataType.{
-  AnyType,
-  ArrayType,
-  EmbeddedRecordType,
-  NamedType,
-  RecordType,
-  TimestampField,
-  TypeVariable
-}
+import wvlet.airframe.sql.catalog.DataType._
 import wvlet.log.LogSupport
 
 import java.util.Locale
@@ -360,14 +352,6 @@ object Expression {
     override def dataTypeName: String = {
       expr.dataTypeName
     }
-    override def typeDescription: String = {
-      alias match {
-        case Some(name) =>
-          s"${name}:${expr.dataTypeName}"
-        case _ =>
-          expr.typeDescription
-      }
-    }
 
     override def children: Seq[Expression] = Seq(expr)
     override def toString = s"SingleColumn(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
@@ -586,6 +570,9 @@ object Expression {
       window: Option[Window],
       nodeLocation: Option[NodeLocation]
   ) extends Expression {
+    // TODO: Resolve the function return type using a function catalog
+    // override def dataType: DataType = super.dataType
+
     override def children: Seq[Expression] = args ++ filter.toSeq ++ window.toSeq
     def functionName: String               = name.toString.toLowerCase(Locale.US)
     override def toString = s"FunctionCall(${name}, ${args.mkString(", ")}, distinct:${isDistinct}, window:${window})"
