@@ -15,7 +15,15 @@
 package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.catalog.DataType
-import wvlet.airframe.sql.catalog.DataType.{AnyType, ArrayType, RecordType, TimestampField, TypeVariable}
+import wvlet.airframe.sql.catalog.DataType.{
+  AnyType,
+  ArrayType,
+  EmbeddedRecordType,
+  NamedType,
+  RecordType,
+  TimestampField,
+  TypeVariable
+}
 import wvlet.log.LogSupport
 
 import java.util.Locale
@@ -28,14 +36,21 @@ sealed trait Expression extends TreeNode[Expression] with Product {
   /**
     * * Returns "(name):(type)" of this attribute
     */
-  def typeDescription: String = s"${attributeName}:${dataTypeName}"
+  def typeDescription: String = {
+    dataType match {
+      case e: EmbeddedRecordType =>
+        e.typeDescription
+      case _ =>
+        s"${attributeName}:${dataTypeName}"
+    }
+  }
 
   /**
     * Column name without qualifier
     * @return
     */
   def attributeName: String = "?"
-  def dataTypeName: String  = dataType.typeName
+  def dataTypeName: String  = dataType.typeDescription
   def dataType: DataType    = DataType.UnknownType
 
   private def createInstance(args: Iterator[AnyRef]): Expression = {
@@ -289,19 +304,17 @@ object Expression {
       qualifier: Option[QName],
       columns: Option[Seq[Attribute]],
       nodeLocation: Option[NodeLocation]
-  ) extends Attribute {
-    override def name: String              = qualifier.map(x => s"${x}.*").getOrElse("*")
+  ) extends Attribute
+      with LogSupport {
+    override def name: String              = "*"
     override def children: Seq[Expression] = qualifier.toSeq
 
-    override def typeDescription: String = {
+    override def dataType: DataType = {
       columns
-        .map { c =>
-          c.map(_.typeDescription).mkString(", ")
-        }
-        .getOrElse {
-          s"${qualifier.map(q => s"${q.fullName}.").getOrElse("")}*"
-        }
+        .map(cols => EmbeddedRecordType(cols.map(x => NamedType(x.name, x.dataType))))
+        .getOrElse(DataType.UnknownType)
     }
+
     override def toString = {
       columns match {
         case Some(attrs) if attrs.nonEmpty =>
@@ -844,7 +857,7 @@ object Expression {
 
   case class RowConstructor(values: Seq[Expression], nodeLocation: Option[NodeLocation]) extends Expression {
     override def dataType: DataType = {
-      RecordType(values.map(_.dataType))
+      EmbeddedRecordType(values.map(_.dataType))
     }
     override def children: Seq[Expression] = values
   }

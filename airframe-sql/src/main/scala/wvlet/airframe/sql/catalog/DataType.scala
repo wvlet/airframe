@@ -16,14 +16,13 @@ package wvlet.airframe.sql.catalog
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.log.LogSupport
 
-import javax.lang.model.`type`.PrimitiveType
-
 abstract class DataType(val typeName: String, val typeParams: Seq[DataType]) {
-  override def toString: String = {
+  override def toString: String = typeDescription
+  def typeDescription: String = {
     if (typeParams.isEmpty)
       typeName
     else {
-      s"${typeName}(${typeParams.mkString(",")})"
+      s"${typeName}(${typeParams.mkString(", ")})"
     }
   }
   def baseTypeName: String = typeName
@@ -186,6 +185,15 @@ object DataType extends LogSupport {
   case class ArrayType(elemType: DataType)                   extends DataType(s"array", Seq(elemType))
   case class MapType(keyType: DataType, valueType: DataType) extends DataType(s"map", Seq(keyType, valueType))
   case class RecordType(elems: Seq[DataType])                extends DataType("record", elems)
+
+  /**
+    * For describing the type of 'select *'
+    */
+  case class EmbeddedRecordType(elems: Seq[DataType]) extends DataType("*", elems) {
+    override def typeDescription: String = {
+      elems.map(_.typeDescription).mkString(", ")
+    }
+  }
 
   def parse(typeName: String): DataType = {
     DataTypeParser.parse(typeName)

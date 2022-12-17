@@ -13,8 +13,10 @@
  */
 
 package wvlet.airframe.sql.model
-import java.io.{PrintWriter, StringWriter}
+import wvlet.airframe.sql.catalog.DataType.RecordType
+import wvlet.airframe.sql.model.Expression.AllColumns
 
+import java.io.{PrintWriter, StringWriter}
 import wvlet.log.LogSupport
 import wvlet.airframe.sql.model.LogicalPlan.EmptyRelation
 
@@ -44,7 +46,9 @@ object LogicalPlanPrinter extends LogSupport {
             ""
           } else {
             def printAttr(s: Seq[Attribute]): String = {
-              val lst = s.map(_.typeDescription).mkString(", ")
+              val lst = s
+                .map(_.typeDescription)
+                .mkString(", ")
               if (s.size >= 1) {
                 s"(${lst})"
               } else {
