@@ -13,8 +13,10 @@
  */
 
 package wvlet.airframe.sql.model
-import java.io.{PrintWriter, StringWriter}
+import wvlet.airframe.sql.catalog.DataType.RecordType
+import wvlet.airframe.sql.model.Expression.AllColumns
 
+import java.io.{PrintWriter, StringWriter}
 import wvlet.log.LogSupport
 import wvlet.airframe.sql.model.LogicalPlan.EmptyRelation
 
@@ -34,18 +36,34 @@ object LogicalPlanPrinter extends LogSupport {
       case EmptyRelation(_) =>
       // print nothing
       case _ =>
-        val ws = " " * level
+        val ws = "  " * level
 
-        val inputAttr  = m.inputAttributes.mkString(", ")
-        val outputAttr = m.outputAttributes.mkString(", ")
-        val attr       = m.expressions.map(_.toString)
-        val prefix     = s"${ws}[${m.modelName}]: (${inputAttr}) => (${outputAttr})"
+        val inputAttrs  = m.inputAttributes
+        val outputAttrs = m.outputAttributes
+        val attr        = m.childExpressions.map(_.toString)
+        val functionSig =
+          if (inputAttrs.isEmpty && outputAttrs.isEmpty) {
+            ""
+          } else {
+            def printAttr(s: Seq[Attribute]): String = {
+              val lst = s
+                .map(_.typeDescription)
+                .mkString(", ")
+              if (s.size >= 1) {
+                s"(${lst})"
+              } else {
+                lst
+              }
+            }
+            s": ${printAttr(inputAttrs)} => ${printAttr(outputAttrs)}"
+          }
+        val prefix = s"${ws}[${m.modelName}]${functionSig}"
         attr.length match {
           case 0 =>
             out.println(prefix)
           case _ =>
             out.println(s"${prefix}")
-            val attrWs  = " " * (level + 1)
+            val attrWs  = "  " * (level + 1)
             val attrStr = attr.map(x => s"${attrWs}- ${x}").mkString("\n")
             out.println(attrStr)
         }

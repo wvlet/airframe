@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.model
-import com.sun.jdi.LongType
 import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, TypeResolver}
 import wvlet.airframe.sql.catalog.DataType
 
@@ -21,7 +20,7 @@ import java.util.UUID
 trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   def modelName: String = {
     val n = this.getClass.getSimpleName
-    if (n.endsWith("$")) n.substring(0, n.length - 1) else n
+    n.stripSuffix("$")
   }
 
   def pp: String = {
@@ -36,15 +35,16 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   def children: Seq[LogicalPlan]
 
   /**
-    * Expressions associated to this LogicalPlan node
+    * Return child expressions associated to this LogicalPlan node
     *
     * @return
+    *   child expressions of this node
     */
-  def expressions: Seq[Expression] = {
+  def childExpressions: Seq[Expression] = {
     def collectExpression(x: Any): Seq[Expression] = {
       x match {
         case e: Expression  => e :: Nil
-        case p: LogicalPlan => p.expressions
+        case p: LogicalPlan => Nil
         case Some(x)        => collectExpression(x)
         case s: Iterable[_] => s.flatMap(collectExpression _).toSeq
         case other          => Nil
@@ -431,7 +431,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   def outputAttributes: Seq[Attribute]
 
   // True if all input attributes are resolved.
-  lazy val resolved: Boolean    = expressions.forall(_.resolved) && resolvedChildren
+  lazy val resolved: Boolean    = childExpressions.forall(_.resolved) && resolvedChildren
   def resolvedChildren: Boolean = children.forall(_.resolved)
 
   def unresolvedExpressions: Seq[Expression] = {
@@ -825,8 +825,8 @@ object LogicalPlan {
     override def inputAttributes: Seq[Attribute] = Seq.empty // TODO
     override def outputAttributes: Seq[Attribute] = {
       columns.map {
-        case _: ArrayConstructor =>
-          ResolvedAttribute(UUID.randomUUID().toString, DataType.AnyType, None, Nil, None) // TODO data type
+        case arr: ArrayConstructor =>
+          ResolvedAttribute(UUID.randomUUID().toString, arr.elementType, None, Nil, None)
         case other =>
           SingleColumn(other, None, None, other.nodeLocation)
       }

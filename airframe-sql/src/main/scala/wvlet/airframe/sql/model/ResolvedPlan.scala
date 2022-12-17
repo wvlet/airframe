@@ -58,7 +58,7 @@ case class SourceColumn(table: Catalog.Table, column: Catalog.TableColumn) {
 
 case class ResolvedAttribute(
     name: String,
-    dataType: DataType,
+    override val dataType: DataType,
     qualifier: Option[String],
     sourceColumns: Seq[SourceColumn],
     nodeLocation: Option[NodeLocation]
@@ -90,18 +90,20 @@ case class ResolvedAttribute(
     name == columnName
   }
 
+  override def sqlExpr: String = attributeName
+
   override def toString = {
     (qualifier, sourceColumns) match {
       case (Some(q), columns) if columns.nonEmpty =>
         columns
           .map(_.fullName)
-          .mkString(s"${q},${name}:${dataType} <- [", ", ", "]")
+          .mkString(s"${q},${typeDescription} <- [", ", ", "]")
       case (None, columns) if columns.nonEmpty =>
         columns
           .map(_.fullName)
-          .mkString(s"${name}:${dataType} <- [", ", ", "]")
+          .mkString(s"${typeDescription} <- [", ", ", "]")
       case _ =>
-        s"${name}:${dataType}"
+        s"${typeDescription}"
     }
   }
   override lazy val resolved = true

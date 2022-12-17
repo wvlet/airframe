@@ -75,13 +75,10 @@ class TypeResolverTest extends AirSpec {
       sql: String,
       rules: List[AnalyzerContext => PlanRewriter] = TypeResolver.typerRules
   ): LogicalPlan = {
-    trace(s"original sql:\n${sql}")
-    trace(s"original plan:\n${SQLParser.parse(sql).pp}")
-
     val resolvedPlan = resolvePlan(sql, rules)
     val resolvedSql  = generateSql(resolvedPlan)
-    trace(s"new plan:\n${resolvedPlan.pp}")
-    trace(s"new sql:\n${resolvedSql}")
+    debug(s"[original]\n${sql}\n\n[resolved]\n${resolvedSql}")
+    trace(s"[original plan]\n${SQLParser.parse(sql).pp}\n[resolved plan]\n${resolvedPlan.pp}")
 
     // Round-trip plan should be able to be resolved
     resolvePlan(resolvedSql, rules)
@@ -150,7 +147,7 @@ class TypeResolverTest extends AirSpec {
       val p = analyze(s"select * from A where id = 1")
       p.inputAttributes shouldBe Seq(ra1, ra2)
       p.children.headOption shouldBe defined
-      p.children.head.expressions shouldBe List(
+      p.children.head.childExpressions shouldBe List(
         Expression.Eq(
           ra1,
           Expression.LongLiteral(1, Some(NodeLocation(1, 28))),
@@ -266,39 +263,48 @@ class TypeResolverTest extends AirSpec {
         c1 shouldBe ra1
         c2 shouldBe rb1
       }
-
     }
 
     test("resolve union with expression") {
       val p = analyze("select id + 1 from A union all select id + 1 from B")
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
-      p.outputAttributes shouldBe List(
-        SingleColumn(
-          MultiColumn(
-            List(
+      p.outputAttributes shouldMatch {
+        case List(
               SingleColumn(
-                ArithmeticBinaryExpr(Add, ra1, LongLiteral(1, Some(NodeLocation(1, 13))), Some(NodeLocation(1, 8))),
+                MultiColumn(
+                  List(
+                    SingleColumn(
+                      ArithmeticBinaryExpr(
+                        Add,
+                        `ra1`,
+                        LongLiteral(1, Some(NodeLocation(1, 13))),
+                        Some(NodeLocation(1, 8))
+                      ),
+                      None,
+                      None,
+                      Some(NodeLocation(1, 8))
+                    ),
+                    SingleColumn(
+                      ArithmeticBinaryExpr(
+                        Add,
+                        `rb1`,
+                        LongLiteral(1, Some(NodeLocation(1, 44))),
+                        Some(NodeLocation(1, 39))
+                      ),
+                      None,
+                      None,
+                      Some(NodeLocation(1, 39))
+                    )
+                  ),
+                  _, // TODO should be None
+                  Some(NodeLocation(1, 8))
+                ),
                 None,
                 None,
                 Some(NodeLocation(1, 8))
-              ),
-              SingleColumn(
-                ArithmeticBinaryExpr(Add, rb1, LongLiteral(1, Some(NodeLocation(1, 44))), Some(NodeLocation(1, 39))),
-                None,
-                None,
-                Some(NodeLocation(1, 39))
               )
-            ),
-            Some(
-              "ArithmeticBinaryExpr(Add,id:long <- [A.id],Literal(1),Some(NodeLocation(1,8)))"
-            ), // TODO should be None
-            Some(NodeLocation(1, 8))
-          ),
-          None,
-          None,
-          Some(NodeLocation(1, 8))
-        )
-      )
+            ) =>
+      }
     }
 
     test("resolve intersect") {
@@ -983,8 +989,8 @@ class TypeResolverTest extends AirSpec {
 
       p.outputAttributes shouldBe List(
         ra1.withQualifier("A"),
-        ResolvedAttribute("key", DataType.AnyType, Some("t"), Nil, None),
-        ResolvedAttribute("value", DataType.AnyType, Some("t"), Nil, None)
+        ResolvedAttribute("key", DataType.StringType, Some("t"), Nil, None),
+        ResolvedAttribute("value", DataType.LongType, Some("t"), Nil, None)
       )
     }
   }

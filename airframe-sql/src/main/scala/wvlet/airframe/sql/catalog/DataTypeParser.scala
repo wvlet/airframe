@@ -72,7 +72,7 @@ object DataTypeParser extends RegexParsers with LogSupport {
 
   private def decimalType: Parser[DataType.DecimalType] =
     "decimal" ~ "(" ~ typeParam ~ "," ~ typeParam ~ ")" ^^ { case _ ~ _ ~ p ~ _ ~ s ~ _ =>
-      DecimalType(p, s)
+      DecimalType.of(p, s)
     }
 
   private def varcharType: Parser[DataType] =
@@ -94,7 +94,8 @@ object DataTypeParser extends RegexParsers with LogSupport {
   }
 
   private def primitiveType: Parser[DataType] = {
-    typeName ^? { case str if DataType.isPrimitiveTypeName(str) => DataType.getPrimitiveType(str) }
+    typeName ^? { case str if DataType.isPrimitiveTypeName(str) => DataType.getPrimitiveType(str) } |
+      "?" ^? { case _ => UnknownType }
     // nullType | booleanType | numericType | stringType | anyType | jsonType | binaryType | dateType | ipAddressType
   }
 

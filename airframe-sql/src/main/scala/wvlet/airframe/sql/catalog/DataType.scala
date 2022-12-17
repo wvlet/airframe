@@ -13,16 +13,16 @@
  */
 
 package wvlet.airframe.sql.catalog
+import wvlet.airframe.sql.SQLErrorCode
 import wvlet.log.LogSupport
 
-import javax.lang.model.`type`.PrimitiveType
-
 abstract class DataType(val typeName: String, val typeParams: Seq[DataType]) {
-  override def toString: String = {
+  override def toString: String = typeDescription
+  def typeDescription: String = {
     if (typeParams.isEmpty)
       typeName
     else {
-      s"${typeName}(${typeParams.mkString(",")})"
+      s"${typeName}(${typeParams.mkString(", ")})"
     }
   }
   def baseTypeName: String = typeName
@@ -146,8 +146,9 @@ object DataType extends LogSupport {
   // calendar date (year, month, day)
   case object DateType extends PrimitiveType("date")
 
-  case object AnyType  extends PrimitiveType("any")
-  case object NullType extends PrimitiveType("null")
+  case object UnknownType extends PrimitiveType("?")
+  case object AnyType     extends PrimitiveType("any")
+  case object NullType    extends PrimitiveType("null")
 
   case object BooleanType                                   extends PrimitiveType("boolean")
   abstract class NumericType(override val typeName: String) extends PrimitiveType(typeName)
@@ -161,13 +162,21 @@ object DataType extends LogSupport {
   case object RealType                                       extends FractionType("real")
   case object DoubleType                                     extends FractionType("double")
 
-  case class CharType(length: Option[DataType])                extends DataType("char", length.toSeq)
-  case object StringType                                       extends PrimitiveType("string")
-  case class VarcharType(length: Option[DataType])             extends DataType("varchar", length.toSeq)
-  case class DecimalType(precision: DataType, scale: DataType) extends DataType("decimal", Seq(precision, scale))
+  case class CharType(length: Option[DataType])    extends DataType("char", length.toSeq)
+  case object StringType                           extends PrimitiveType("string")
+  case class VarcharType(length: Option[DataType]) extends DataType("varchar", length.toSeq)
+  case class DecimalType(precision: TypeParameter, scale: TypeParameter)
+      extends DataType("decimal", Seq(precision, scale))
 
   object DecimalType {
-    def apply(precision: Int, scale: Int): DecimalType = DecimalType(IntConstant(precision), IntConstant(scale))
+    def of(precision: Int, scale: Int): DecimalType = DecimalType(IntConstant(precision), IntConstant(scale))
+    def of(precision: DataType, scale: DataType): DecimalType = {
+      (precision, scale) match {
+        case (p: TypeParameter, s: TypeParameter) => DecimalType(p, s)
+        case _ =>
+          throw SQLErrorCode.InvalidType.newException(s"Invalid DecimalType parameters (${precision}, ${scale})", None)
+      }
+    }
   }
 
   case object JsonType   extends PrimitiveType("json")
@@ -176,6 +185,15 @@ object DataType extends LogSupport {
   case class ArrayType(elemType: DataType)                   extends DataType(s"array", Seq(elemType))
   case class MapType(keyType: DataType, valueType: DataType) extends DataType(s"map", Seq(keyType, valueType))
   case class RecordType(elems: Seq[DataType])                extends DataType("record", elems)
+
+  /**
+    * For describing the type of 'select *'
+    */
+  case class EmbeddedRecordType(elems: Seq[DataType]) extends DataType("*", elems) {
+    override def typeDescription: String = {
+      elems.map(_.typeDescription).mkString(", ")
+    }
+  }
 
   def parse(typeName: String): DataType = {
     DataTypeParser.parse(typeName)
