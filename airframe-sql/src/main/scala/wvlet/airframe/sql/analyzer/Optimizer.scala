@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.analyzer
-import wvlet.airframe.sql.analyzer.SQLAnalyzer.{PlanRewriter, Rule}
+import wvlet.airframe.sql.analyzer.RewriteRule.PlanRewriter
 import wvlet.airframe.sql.model.LogicalPlan.{Project, Relation}
 import wvlet.airframe.sql.model.{Attribute, Expression, TableScan}
 import wvlet.log.LogSupport
@@ -21,8 +21,8 @@ import wvlet.log.LogSupport
   */
 object Optimizer extends LogSupport {
 
-  val optimizerRules: List[Rule] = {
-    Optimizer.pruneColumns _ ::
+  val optimizerRules: List[RewriteRule] = {
+    Optimizer.pruneColumns ::
       Nil
   }
 
@@ -38,12 +38,14 @@ object Optimizer extends LogSupport {
     * @param context
     * @return
     */
-  def pruneColumns(context: AnalyzerContext): PlanRewriter = {
-    case p @ Project(child, selectItems, _) =>
-      val newContext = context.withAttributes(selectItems)
-      Project(pruneRelationColumns(child, newContext), selectItems, p.nodeLocation)
-    case r: Relation =>
-      pruneRelationColumns(r, context.withAttributes(r.outputAttributes))
+  object pruneColumns extends RewriteRule {
+    def apply(context: AnalyzerContext): PlanRewriter = {
+      case p @ Project(child, selectItems, _) =>
+        val newContext = context.withAttributes(selectItems)
+        Project(pruneRelationColumns(child, newContext), selectItems, p.nodeLocation)
+      case r: Relation =>
+        pruneRelationColumns(r, context.withAttributes(r.outputAttributes))
+    }
   }
 
   /**

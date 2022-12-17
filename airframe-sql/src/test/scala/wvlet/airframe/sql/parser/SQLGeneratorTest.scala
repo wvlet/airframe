@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.sql.parser
 
-import wvlet.airframe.sql.analyzer.{SQLAnalyzer, TypeResolver}
+import wvlet.airframe.sql.analyzer.{SQLAnalyzer, RewriteRule}
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.catalog.Catalog.{CreateMode, TableColumn}
 import wvlet.airspec.AirSpec

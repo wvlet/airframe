@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.sql.analyzer.SQLAnalyzer.PlanRewriter
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.model.Expression._
@@ -33,6 +32,7 @@ import wvlet.airframe.sql.model.{CTERelationRef, Expression, LogicalPlan, NodeLo
 import wvlet.airframe.sql.parser.{SQLGenerator, SQLParser}
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
+import wvlet.log.Logger
 
 class TypeResolverTest extends AirSpec {
 
@@ -73,20 +73,22 @@ class TypeResolverTest extends AirSpec {
 
   private def analyze(
       sql: String,
-      rules: List[AnalyzerContext => PlanRewriter] = TypeResolver.typerRules
+      rules: List[RewriteRule] = TypeResolver.typerRules
   ): LogicalPlan = {
     val resolvedPlan = resolvePlan(sql, rules)
     val resolvedSql  = generateSql(resolvedPlan)
     debug(s"[original]\n${sql}\n\n[resolved]\n${resolvedSql}")
     trace(s"[original plan]\n${SQLParser.parse(sql).pp}\n[resolved plan]\n${resolvedPlan.pp}")
 
-    // Round-trip plan should be able to be resolved
-    resolvePlan(resolvedSql, rules)
-
+    // Suppress rewrite rule logs in the second run
+    Logger("wvlet.airframe.sql.analyzer.RewriteRule").suppressLogs {
+      // Round-trip plan should be able to be resolved
+      resolvePlan(resolvedSql, rules)
+    }
     resolvedPlan
   }
 
-  private def resolvePlan(sql: String, rules: List[AnalyzerContext => PlanRewriter]): LogicalPlan = {
+  private def resolvePlan(sql: String, rules: List[RewriteRule]): LogicalPlan = {
     val plan            = SQLParser.parse(sql)
     val analyzerContext = AnalyzerContext("default", demoCatalog).withAttributes(plan.outputAttributes)
     val resolvedPlan    = TypeResolver.resolve(analyzerContext, plan, rules)
@@ -912,5 +914,15 @@ class TypeResolverTest extends AirSpec {
     p.outputAttributes shouldMatch {
       case List(AllColumns(None, Some(List(SingleColumn(LongLiteral(1, _), None, None, _))), _)) => ()
     }
+  }
+
+  test("resolve nested aggregations") {
+    pending("#2646")
+    val p = analyze("""select name, count(*) cnt from (
+        |  select id, arbitrary(name) name from A
+        |  group by 1
+        |)
+        |group by 1
+        |""".stripMargin)
   }
 }

@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.model
-import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, TypeResolver}
+import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, RewriteRule, TypeResolver}
 import wvlet.airframe.sql.catalog.DataType
 
 import java.util.UUID
