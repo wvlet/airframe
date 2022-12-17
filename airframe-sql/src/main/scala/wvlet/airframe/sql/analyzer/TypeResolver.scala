@@ -19,6 +19,7 @@ import wvlet.airframe.sql.model.LogicalPlan._
 import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
+import scala.collection.immutable.ListSet
 import scala.util.chaining.scalaUtilChainingOps
 
 /**
@@ -386,12 +387,19 @@ object TypeResolver extends LogSupport {
           case m: MultiColumn => m
           // retain alias for select column
           case f: FunctionCall =>
+            // Extract source columns
+            val src = Set.newBuilder[SourceColumn]
+            f.traverseExpressions { case r: ResolvedAttribute =>
+              src ++= r.sourceColumns
+            }
+            val sourceColumn = src.result().toSeq
             // Do not pull-up function calls
             ResolvedAttribute(
               i.value,
               f.dataType,
               None,
-              Seq.empty,
+              // Propagate source columns
+              sourceColumn,
               None
             )
           case expr =>
