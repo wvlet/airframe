@@ -350,9 +350,15 @@ class TypeResolverTest extends AirSpec {
     test("resolve having") {
       val p = analyze("select id, count(*) cnt from A group by id having cnt > 10")
       p shouldMatch {
-        case Aggregate(_, _, List(GroupingKey(`ra1`, _)), Some(GreaterThan(col, LongLiteral(10, _), _)), _) =>
-          col shouldMatch { case ResolvedAttribute("cnt", DataType.LongType, _, sourceColumns, _) =>
-          }
+        case Aggregate(
+              _,
+              List(c1, c2 @ SingleColumn(f: FunctionCall, _, _, _)),
+              List(GroupingKey(`ra1`, _)),
+              Some(GreaterThan(col, LongLiteral(10, _), _)),
+              _
+            ) if c1.name == "id" && c2.name == "cnt" && f.functionName == "count" =>
+          f.args shouldMatch { case List(AllColumns(_, Some(Seq(`ra1`, `ra2`)), _)) => }
+          col shouldMatch { case ResolvedAttribute("cnt", DataType.LongType, _, sourceColumns, _) => }
       }
     }
   }
