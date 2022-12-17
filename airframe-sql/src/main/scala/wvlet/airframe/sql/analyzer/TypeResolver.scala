@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.sql.analyzer
 import wvlet.airframe.sql.SQLErrorCode
-import wvlet.airframe.sql.analyzer.SQLAnalyzer.{PlanRewriter, Rule}
+import wvlet.airframe.sql.analyzer.RewriteRule.PlanRewriter
 import wvlet.airframe.sql.model.Expression._
 import wvlet.airframe.sql.model.LogicalPlan._
 import wvlet.airframe.sql.model._
@@ -26,19 +26,19 @@ import scala.util.chaining.scalaUtilChainingOps
   */
 object TypeResolver extends LogSupport {
 
-  def typerRules: List[Rule] = {
+  def typerRules: List[RewriteRule] = {
     // First resolve all input table types
     // CTE Table Refs must be resolved before resolving aggregation indexes
-    TypeResolver.resolveCTETableRef _ ::
-      TypeResolver.resolveAggregationIndexes _ ::
-      TypeResolver.resolveAggregationKeys _ ::
-      TypeResolver.resolveSortItemIndexes _ ::
-      TypeResolver.resolveSortItems _ ::
-      TypeResolver.resolveTableRef _ ::
-      TypeResolver.resolveJoinUsing _ ::
-      TypeResolver.resolveSubquery _ ::
-      TypeResolver.resolveRegularRelation _ ::
-      TypeResolver.resolveColumns _ ::
+    TypeResolver.resolveCTETableRef ::
+      TypeResolver.resolveAggregationIndexes ::
+      TypeResolver.resolveAggregationKeys ::
+      TypeResolver.resolveSortItemIndexes ::
+      TypeResolver.resolveSortItems ::
+      TypeResolver.resolveTableRef ::
+      TypeResolver.resolveJoinUsing ::
+      TypeResolver.resolveSubquery ::
+      TypeResolver.resolveRegularRelation ::
+      TypeResolver.resolveColumns ::
       Nil
   }
 
@@ -46,13 +46,14 @@ object TypeResolver extends LogSupport {
     resolve(analyzerContext, plan, typerRules)
   }
 
-  private[sql] def resolve(analyzerContext: AnalyzerContext, plan: LogicalPlan, rules: List[Rule]): LogicalPlan = {
+  private[sql] def resolve(
+      analyzerContext: AnalyzerContext,
+      plan: LogicalPlan,
+      rules: List[RewriteRule]
+  ): LogicalPlan = {
     val resolvedPlan = rules
       .foldLeft(plan) { (targetPlan, rule) =>
-        val r = rule.apply(analyzerContext)
-        // Recursively transform the tree form bottom to up
-        val resolved = targetPlan.transformUp(r)
-        resolved
+        rule.transform(targetPlan, analyzerContext)
       }
     resolvedPlan
   }
@@ -79,22 +80,24 @@ object TypeResolver extends LogSupport {
     * @param context
     * @return
     */
-  def resolveAggregationIndexes(context: AnalyzerContext): PlanRewriter = {
-    case a @ Aggregate(child, selectItems, groupingKeys, having, _) =>
-      val resolvedGroupingKeys: List[GroupingKey] = groupingKeys.map {
-        case k @ GroupingKey(LongLiteral(i, _), _) if i <= selectItems.length =>
-          // Use a simpler form of attributes
-          val keyItem = selectItems(i.toInt - 1) match {
-            case SingleColumn(expr, _, _, _) =>
-              expr
-            case other =>
-              other
-          }
-          GroupingKey(keyItem, k.nodeLocation)
-        case other =>
-          other
-      }
-      Aggregate(child, selectItems, resolvedGroupingKeys, having, a.nodeLocation)
+  object resolveAggregationIndexes extends RewriteRule {
+    def apply(context: AnalyzerContext): PlanRewriter = {
+      case a @ Aggregate(child, selectItems, groupingKeys, having, _) =>
+        val resolvedGroupingKeys: List[GroupingKey] = groupingKeys.map {
+          case k @ GroupingKey(LongLiteral(i, _), _) if i <= selectItems.length =>
+            // Use a simpler form of attributes
+            val keyItem = selectItems(i.toInt - 1) match {
+              case SingleColumn(expr, _, _, _) =>
+                expr
+              case other =>
+                other
+            }
+            GroupingKey(keyItem, k.nodeLocation)
+          case other =>
+            other
+        }
+        Aggregate(child, selectItems, resolvedGroupingKeys, having, a.nodeLocation)
+    }
   }
 
   /**
@@ -102,44 +105,50 @@ object TypeResolver extends LogSupport {
     * @param context
     * @return
     */
-  def resolveAggregationKeys(context: AnalyzerContext): PlanRewriter = {
-    case a @ Aggregate(child, selectItems, groupingKeys, having, _) =>
+  object resolveAggregationKeys extends RewriteRule {
+    def apply(context: AnalyzerContext): PlanRewriter = {
+      case a @ Aggregate(child, selectItems, groupingKeys, having, _) =>
+        val resolvedChild   = resolveRelation(context, child)
+        val inputAttributes = resolvedChild.outputAttributes
+        val resolvedGroupingKeys =
+          groupingKeys.map(x => {
+            val e = resolveExpression(context, x.child, inputAttributes, false)
+            GroupingKey(e, e.nodeLocation)
+          })
+        val resolvedHaving = having.map {
+          _.transformUpExpression { case x: Expression =>
+            resolveExpression(context, x, a.outputAttributes, false)
+          }
+        }
+        Aggregate(resolvedChild, selectItems, resolvedGroupingKeys, resolvedHaving, a.nodeLocation)
+    }
+  }
+
+  object resolveSortItemIndexes extends RewriteRule {
+    def apply(context: AnalyzerContext): PlanRewriter = { case s @ Sort(child, sortItems, _) =>
+      val resolvedSortItems = sortItems.map {
+        case sortItem @ SortItem(LongLiteral(i, _), _, _, _) =>
+          val sortKey = child.outputAttributes(i.toInt - 1) match {
+            case SingleColumn(expr, _, _, _) => expr
+            case other                       => other
+          }
+          sortItem.copy(sortKey = sortKey)
+        case other => other
+      }
+      s.copy(orderBy = resolvedSortItems)
+    }
+  }
+
+  object resolveSortItems extends RewriteRule {
+    def apply(context: AnalyzerContext): PlanRewriter = { case s @ Sort(child, sortItems, _) =>
       val resolvedChild   = resolveRelation(context, child)
       val inputAttributes = resolvedChild.outputAttributes
-      val resolvedGroupingKeys =
-        groupingKeys.map(x => {
-          val e = resolveExpression(context, x.child, inputAttributes, false)
-          GroupingKey(e, e.nodeLocation)
-        })
-      val resolvedHaving = having.map {
-        _.transformUpExpression { case x: Expression =>
-          resolveExpression(context, x, a.outputAttributes, false)
-        }
+      val resolvedSortItems = sortItems.map { sortItem =>
+        val e = resolveExpression(context, sortItem.sortKey, inputAttributes, false)
+        sortItem.copy(sortKey = e)
       }
-      Aggregate(resolvedChild, selectItems, resolvedGroupingKeys, resolvedHaving, a.nodeLocation)
-  }
-
-  def resolveSortItemIndexes(context: AnalyzerContext): PlanRewriter = { case s @ Sort(child, sortItems, _) =>
-    val resolvedSortItems = sortItems.map {
-      case sortItem @ SortItem(LongLiteral(i, _), _, _, _) =>
-        val sortKey = child.outputAttributes(i.toInt - 1) match {
-          case SingleColumn(expr, _, _, _) => expr
-          case other                       => other
-        }
-        sortItem.copy(sortKey = sortKey)
-      case other => other
+      s.copy(orderBy = resolvedSortItems)
     }
-    s.copy(orderBy = resolvedSortItems)
-  }
-
-  def resolveSortItems(context: AnalyzerContext): PlanRewriter = { case s @ Sort(child, sortItems, _) =>
-    val resolvedChild   = resolveRelation(context, child)
-    val inputAttributes = resolvedChild.outputAttributes
-    val resolvedSortItems = sortItems.map { sortItem =>
-      val e = resolveExpression(context, sortItem.sortKey, inputAttributes, false)
-      sortItem.copy(sortKey = e)
-    }
-    s.copy(orderBy = resolvedSortItems)
   }
 
   /**
@@ -147,92 +156,108 @@ object TypeResolver extends LogSupport {
     * @param context
     * @return
     */
-  def resolveCTETableRef(context: AnalyzerContext): PlanRewriter = { case q @ Query(withQuery, body, _) =>
-    CTEResolver.resolveCTE(context, q)
+  object resolveCTETableRef extends RewriteRule {
+    def apply(context: AnalyzerContext): PlanRewriter = { case q @ Query(withQuery, body, _) =>
+      CTEResolver.resolveCTE(context, q)
+    }
   }
 
   /**
     * Resolve TableRefs with concrete TableScans using the table schema in the catalog.
     */
-  def resolveTableRef(context: AnalyzerContext): PlanRewriter = { case plan @ LogicalPlan.TableRef(qname, _) =>
-    context.catalog.findFromQName(context.database, qname) match {
-      case Some(dbTable) =>
-        trace(s"Found ${dbTable}")
-        // Expand all table columns first, which will be pruned later by Optimizer
-        TableScan(dbTable, dbTable.schema.columns, plan.nodeLocation)
-      case None =>
-        // Search CTE
-        context.outerQueries.get(qname.fullName) match {
-          case Some(cte) =>
-            CTERelationRef(qname.fullName, cte.outputAttributes.map(_.withQualifier(qname.fullName)), plan.nodeLocation)
-          case None =>
-            throw SQLErrorCode.TableNotFound.newException(
-              s"Table ${context.database}.${qname} not found",
-              plan.nodeLocation
-            )
-        }
+  object resolveTableRef extends RewriteRule {
+    def apply(context: AnalyzerContext): PlanRewriter = { case plan @ LogicalPlan.TableRef(qname, _) =>
+      context.catalog.findFromQName(context.database, qname) match {
+        case Some(dbTable) =>
+          trace(s"Found ${dbTable}")
+          // Expand all table columns first, which will be pruned later by Optimizer
+          TableScan(dbTable, dbTable.schema.columns, plan.nodeLocation)
+        case None =>
+          // Search CTE
+          context.outerQueries.get(qname.fullName) match {
+            case Some(cte) =>
+              CTERelationRef(
+                qname.fullName,
+                cte.outputAttributes.map(_.withQualifier(qname.fullName)),
+                plan.nodeLocation
+              )
+            case None =>
+              throw SQLErrorCode.TableNotFound.newException(
+                s"Table ${context.database}.${qname} not found",
+                plan.nodeLocation
+              )
+          }
+      }
     }
   }
 
-  def resolveJoinUsing(context: AnalyzerContext): PlanRewriter = {
-    case j @ Join(joinType, left, right, u @ JoinUsing(joinKeys, _), _) =>
-      // from A join B using(c1, c2, ...)
-      val resolvedJoin =
-        Join(joinType, resolveRelation(context, left), resolveRelation(context, right), u, j.nodeLocation)
-      val resolvedJoinKeys: Seq[Expression] = joinKeys.flatMap { k =>
-        findMatchInInputAttributes(context, k, resolvedJoin.inputAttributes, false) match {
-          case x if x.size < 2 =>
-            throw SQLErrorCode.ColumnNotFound.newException(
-              s"join key column: ${k.sqlExpr} is not found",
-              k.nodeLocation
-            )
-          case other =>
-            Seq(other.head, other.last)
+  object resolveJoinUsing extends RewriteRule {
+    def apply(context: AnalyzerContext): PlanRewriter = {
+      case j @ Join(joinType, left, right, u @ JoinUsing(joinKeys, _), _) =>
+        // from A join B using(c1, c2, ...)
+        val resolvedJoin =
+          Join(joinType, resolveRelation(context, left), resolveRelation(context, right), u, j.nodeLocation)
+        val resolvedJoinKeys: Seq[Expression] = joinKeys.flatMap { k =>
+          findMatchInInputAttributes(context, k, resolvedJoin.inputAttributes, false) match {
+            case x if x.size < 2 =>
+              throw SQLErrorCode.ColumnNotFound.newException(
+                s"join key column: ${k.sqlExpr} is not found",
+                k.nodeLocation
+              )
+            case other =>
+              Seq(other.head, other.last)
+          }
         }
-      }
-      val updated = resolvedJoin.withCond(JoinOnEq(resolvedJoinKeys, u.nodeLocation))
-      updated
-    case j @ Join(joinType, left, right, u @ JoinOn(Eq(leftKey, rightKey, _), _), _) =>
-      val resolvedJoin =
-        Join(joinType, resolveRelation(context, left), resolveRelation(context, right), u, j.nodeLocation)
-      val resolvedJoinKeys: Seq[Expression] = Seq(leftKey, rightKey).flatMap { k =>
-        findMatchInInputAttributes(context, k, resolvedJoin.inputAttributes, false) match {
-          case Nil =>
-            throw SQLErrorCode.ColumnNotFound.newException(
-              s"join key column: ${k.sqlExpr} is not found",
-              k.nodeLocation
-            )
-          case other =>
-            other
+        val updated = resolvedJoin.withCond(JoinOnEq(resolvedJoinKeys, u.nodeLocation))
+        updated
+      case j @ Join(joinType, left, right, u @ JoinOn(Eq(leftKey, rightKey, _), _), _) =>
+        val resolvedJoin =
+          Join(joinType, resolveRelation(context, left), resolveRelation(context, right), u, j.nodeLocation)
+        val resolvedJoinKeys: Seq[Expression] = Seq(leftKey, rightKey).flatMap { k =>
+          findMatchInInputAttributes(context, k, resolvedJoin.inputAttributes, false) match {
+            case Nil =>
+              throw SQLErrorCode.ColumnNotFound.newException(
+                s"join key column: ${k.sqlExpr} is not found",
+                k.nodeLocation
+              )
+            case other =>
+              other
+          }
         }
-      }
-      val updated = resolvedJoin.withCond(JoinOnEq(resolvedJoinKeys, u.expr.nodeLocation))
-      updated
-  }
-
-  def resolveSubquery(context: AnalyzerContext): PlanRewriter = { case filter @ Filter(child, filterExpr, _) =>
-    filter.transformUpExpressions {
-      case q: InSubQuery         => q.copy(in = resolveRelation(context, q.in))
-      case q: NotInSubQuery      => q.copy(in = resolveRelation(context, q.in))
-      case q: SubQueryExpression => q.copy(query = resolveRelation(context, q.query))
+        val updated = resolvedJoin.withCond(JoinOnEq(resolvedJoinKeys, u.expr.nodeLocation))
+        updated
     }
   }
 
-  def resolveRegularRelation(context: AnalyzerContext): PlanRewriter = {
-    case filter @ Filter(child, filterExpr, _) =>
-      filter.transformUpExpressions { case x: Expression =>
-        resolveExpression(context, x, filter.inputAttributes, true)
+  object resolveSubquery extends RewriteRule {
+    def apply(context: AnalyzerContext): PlanRewriter = { case filter @ Filter(child, filterExpr, _) =>
+      filter.transformUpExpressions {
+        case q: InSubQuery         => q.copy(in = resolveRelation(context, q.in))
+        case q: NotInSubQuery      => q.copy(in = resolveRelation(context, q.in))
+        case q: SubQueryExpression => q.copy(query = resolveRelation(context, q.query))
       }
-    case u: Union     => u // UNION is resolved later by resolveUnion()
-    case u: Intersect => u // INTERSECT is resolved later by resolveIntersect()
-    case r: Relation =>
-      r.transformUpExpressions { case x: Expression => resolveExpression(context, x, r.inputAttributes, true) }
+    }
   }
 
-  def resolveColumns(context: AnalyzerContext): PlanRewriter = { case p @ Project(child, columns, _) =>
-    val resolvedColumns = resolveOutputColumns(context, child.outputAttributes, columns)
-    val resolved        = Project(child, resolvedColumns, p.nodeLocation)
-    resolved
+  object resolveRegularRelation extends RewriteRule {
+    def apply(context: AnalyzerContext): PlanRewriter = {
+      case filter @ Filter(child, filterExpr, _) =>
+        filter.transformUpExpressions { case x: Expression =>
+          resolveExpression(context, x, filter.inputAttributes, true)
+        }
+      case u: Union     => u // UNION is resolved later by resolveUnion()
+      case u: Intersect => u // INTERSECT is resolved later by resolveIntersect()
+      case r: Relation =>
+        r.transformUpExpressions { case x: Expression => resolveExpression(context, x, r.inputAttributes, true) }
+    }
+  }
+
+  object resolveColumns extends RewriteRule {
+    def apply(context: AnalyzerContext): PlanRewriter = { case p @ Project(child, columns, _) =>
+      val resolvedColumns = resolveOutputColumns(context, child.outputAttributes, columns)
+      val resolved        = Project(child, resolvedColumns, p.nodeLocation)
+      resolved
+    }
   }
 
   /**
@@ -296,7 +321,7 @@ object TypeResolver extends LogSupport {
     * @param inputAttributes
     * @return
     */
-  private def findMatchInInputAttributes(
+  def findMatchInInputAttributes(
       context: AnalyzerContext,
       expr: Expression,
       inputAttributes: Seq[Attribute],

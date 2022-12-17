@@ -53,8 +53,6 @@ case class AnalyzerContext(
 /**
   */
 object SQLAnalyzer extends LogSupport {
-  type PlanRewriter = PartialFunction[LogicalPlan, LogicalPlan]
-  type Rule         = (AnalyzerContext) => PlanRewriter
 
   def analyze(sql: String, database: String, catalog: Catalog): LogicalPlan = {
     trace(s"analyze:\n${sql}")
