@@ -32,6 +32,7 @@ import wvlet.airframe.sql.model.{CTERelationRef, Expression, LogicalPlan, NodeLo
 import wvlet.airframe.sql.parser.{SQLGenerator, SQLParser}
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
+import wvlet.log.Logger
 
 class TypeResolverTest extends AirSpec {
 
@@ -79,9 +80,11 @@ class TypeResolverTest extends AirSpec {
     debug(s"[original]\n${sql}\n\n[resolved]\n${resolvedSql}")
     trace(s"[original plan]\n${SQLParser.parse(sql).pp}\n[resolved plan]\n${resolvedPlan.pp}")
 
-    // Round-trip plan should be able to be resolved
-    resolvePlan(resolvedSql, rules)
-
+    // Suppress rewrite rule logs in the second run
+    Logger("wvlet.airframe.sql.analyzer.RewriteRule").suppressLogs {
+      // Round-trip plan should be able to be resolved
+      resolvePlan(resolvedSql, rules)
+    }
     resolvedPlan
   }
 
