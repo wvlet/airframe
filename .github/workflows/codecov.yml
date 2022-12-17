@@ -2,6 +2,13 @@ name: Coverage
 
 on:
   pull_request:
+    paths:
+      - '**.scala'
+      - '**.java'
+      - '**.sbt'
+      - '**/codecov.yml'  
+      - '.scalafmt.conf'
+      - 'project/build.properties'      
   push:
     branches:
       - master
@@ -10,6 +17,8 @@ on:
       - '**.java'
       - '**.sbt'
       - '**/codecov.yml'
+      - '.scalafmt.conf'
+      - 'project/build.properties'      
 
 jobs:
   coverage:
