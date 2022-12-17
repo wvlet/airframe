@@ -351,8 +351,7 @@ class TypeResolverTest extends AirSpec {
       val p = analyze("select id, count(*) cnt from A group by id having cnt > 10")
       p shouldMatch {
         case Aggregate(_, _, List(GroupingKey(`ra1`, _)), Some(GreaterThan(col, LongLiteral(10, _), _)), _) =>
-          col shouldMatch {
-            case FunctionCall("count", Seq(AllColumns(None, Some(Seq(`ra1`, `ra2`)), _)), false, None, None, _) => ()
+          col shouldMatch { case ResolvedAttribute("cnt", DataType.LongType, _, _, _) =>
           }
       }
     }
@@ -750,17 +749,13 @@ class TypeResolverTest extends AirSpec {
 
     test("resolve count(*) in sub query") {
       val p = analyze("select cnt from (select count(*) as cnt from A)")
-      p.outputAttributes shouldMatch {
-        case List(SingleColumn(FunctionCall("count", Seq(c @ AllColumns(_, _, _)), _, _, _, _), _, _, _)) =>
-          c.columns shouldBe Some(Seq(ra1, ra2))
+      p.outputAttributes shouldMatch { case List(ResolvedAttribute("cnt", DataType.LongType, _, _, _)) =>
       }
     }
 
     test("resolve count(*) in CTE") {
       val p = analyze("WITH q AS (select count(*) as cnt from A) select cnt from q")
-      p.outputAttributes shouldMatch {
-        case List(SingleColumn(FunctionCall("count", Seq(c @ AllColumns(_, _, _)), _, _, _, _), _, _, _)) =>
-          c.columns shouldBe Some(Seq(ra1, ra2))
+      p.outputAttributes shouldMatch { case List(ResolvedAttribute("cnt", DataType.LongType, None, _, _)) =>
       }
     }
 
@@ -917,12 +912,14 @@ class TypeResolverTest extends AirSpec {
   }
 
   test("resolve nested aggregations") {
-    pending("#2646")
     val p = analyze("""select name, count(*) cnt from (
         |  select id, arbitrary(name) name from A
         |  group by 1
         |)
         |group by 1
         |""".stripMargin)
+    p.outputAttributes shouldMatch {
+      case List(c1: SingleColumn, c2: SingleColumn) if c1.name == "name" && c2.name == "cnt" =>
+    }
   }
 }

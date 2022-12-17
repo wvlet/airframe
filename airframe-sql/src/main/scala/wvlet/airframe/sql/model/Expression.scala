@@ -570,8 +570,14 @@ object Expression {
       window: Option[Window],
       nodeLocation: Option[NodeLocation]
   ) extends Expression {
-    // TODO: Resolve the function return type using a function catalog
-    // override def dataType: DataType = super.dataType
+    override def dataType: DataType = {
+      if (functionName == "count") {
+        DataType.LongType
+      } else {
+        // TODO: Resolve the function return type using a function catalog
+        DataType.UnknownType
+      }
+    }
 
     override def children: Seq[Expression] = args ++ filter.toSeq ++ window.toSeq
     def functionName: String               = name.toString.toLowerCase(Locale.US)

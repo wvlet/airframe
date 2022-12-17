@@ -83,6 +83,7 @@ object TypeResolver extends LogSupport {
   object resolveAggregationIndexes extends RewriteRule {
     def apply(context: AnalyzerContext): PlanRewriter = {
       case a @ Aggregate(child, selectItems, groupingKeys, having, _) =>
+        var changed = false
         val resolvedGroupingKeys: List[GroupingKey] = groupingKeys.map {
           case k @ GroupingKey(LongLiteral(i, _), _) if i <= selectItems.length =>
             // Use a simpler form of attributes
@@ -92,11 +93,16 @@ object TypeResolver extends LogSupport {
               case other =>
                 other
             }
+            changed = true
             GroupingKey(keyItem, k.nodeLocation)
           case other =>
             other
         }
-        Aggregate(child, selectItems, resolvedGroupingKeys, having, a.nodeLocation)
+        if (changed) {
+          Aggregate(child, selectItems, resolvedGroupingKeys, having, a.nodeLocation)
+        } else {
+          a
+        }
     }
   }
 
@@ -379,7 +385,20 @@ object TypeResolver extends LogSupport {
           case a: Attribute   => a
           case m: MultiColumn => m
           // retain alias for select column
-          case expr => if (isSelectItem) SingleColumn(expr, Some(i.value), None, expr.nodeLocation) else expr
+          case f: FunctionCall =>
+            // Do not pull-up function calls
+            ResolvedAttribute(
+              i.value,
+              f.dataType,
+              None,
+              Seq.empty,
+              None
+            )
+          case expr =>
+            if (isSelectItem)
+              SingleColumn(expr, Some(i.value), None, expr.nodeLocation)
+            else
+              expr
         }
       case u @ UnresolvedAttribute(name, _) =>
         lookup(name)
