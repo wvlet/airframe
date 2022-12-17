@@ -19,7 +19,6 @@ import wvlet.airframe.sql.model.LogicalPlan._
 import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
-import scala.collection.immutable.ListSet
 import scala.util.chaining.scalaUtilChainingOps
 
 /**
