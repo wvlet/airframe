@@ -321,7 +321,7 @@ object TypeResolver extends LogSupport {
     * @param inputAttributes
     * @return
     */
-  def findMatchInInputAttributes(
+  private def findMatchInInputAttributes(
       context: AnalyzerContext,
       expr: Expression,
       inputAttributes: Seq[Attribute],
@@ -395,7 +395,7 @@ object TypeResolver extends LogSupport {
   /**
     * Resolve untyped expressions
     */
-  def resolveExpression(
+  private def resolveExpression(
       context: AnalyzerContext,
       expr: Expression,
       inputAttributes: Seq[Attribute],
