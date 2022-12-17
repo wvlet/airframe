@@ -357,7 +357,9 @@ class TypeResolverTest extends AirSpec {
               Some(GreaterThan(col, LongLiteral(10, _), _)),
               _
             ) if c1.name == "id" && c2.name == "cnt" && f.functionName == "count" =>
-          f.args shouldMatch { case List(AllColumns(_, Some(Seq(`ra1`, `ra2`)), _)) => }
+          f.args shouldMatch { case List(AllColumns(_, Some(cols), _)) =>
+            cols.toSet shouldBe Set(ra1, ra2)
+          }
           col shouldMatch { case ResolvedAttribute("cnt", DataType.LongType, _, sourceColumns, _) => }
       }
     }
