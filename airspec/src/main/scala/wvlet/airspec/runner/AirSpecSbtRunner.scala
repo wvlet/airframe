@@ -58,17 +58,11 @@ private[airspec] object AirSpecSbtRunner extends LogSupport {
   }
 
   case class AirSpecConfig(args: Array[String]) {
-    lazy val pattern: Option[Regex] = {
+    val specMatcher: AirSpecMatcher = {
       // For now, we only support regex-based test name matcher using the first argument
-      args.find(x => !x.startsWith("-")).flatMap { p =>
-        try {
-          // Support wildcard (*) for convenience
-          Some(s"(?i)${p.replaceAll("\\*", ".*")}".r)
-        } catch {
-          case e: Throwable =>
-            logger.warn(s"Invalid regular expression ${p}: ${e.getMessage}")
-            None
-        }
+      args.find(x => !x.startsWith("-")) match {
+        case Some(p) => new AirSpecMatcher(p)
+        case None    => AirSpecMatcher.all
       }
     }
   }

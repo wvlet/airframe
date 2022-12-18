@@ -66,4 +66,10 @@ class AirSpecMatcherTest extends AirSpec {
     val m = new AirSpecMatcher("hello/nested/B")
     specs.filter(m.matchWith(_)) shouldBe List(t1, t2, t4)
   }
+
+  test("skip when only a middle test name is given") {
+    val m = new AirSpecMatcher("nested")
+    specs.filter(m.matchWith(_)) shouldBe empty
+  }
+
 }

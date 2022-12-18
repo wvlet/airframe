@@ -15,27 +15,41 @@ package wvlet.airspec.runner
 
 import wvlet.log.LogSupport
 
+import scala.util.matching.Regex
+
 /**
-  * Find specs matching the pattern
+  * Find test specs matching the pattern
   */
 class AirSpecMatcher(pattern: String) extends LogSupport {
 
-  private val regexPatterns = pattern
+  private val regexPatterns: Seq[Regex] = pattern
     .split("/")
     .map(_.replaceAll("\\*", ".*"))
-    .map(x => s"(?i)${x}".r)
+    .map { x =>
+      try {
+        s"(?i)${x}".r
+      } catch {
+        case e: Throwable =>
+          throw new IllegalArgumentException(s"Invalid regex pattern: ${x}")
+      }
+    }
     .toSeq
 
-  def matchWith(specName: String): Boolean = matchWith(specName.split("/").toSeq)
-
   /**
-    * @param specName
-    *   a list of test spec names
+    * '/ (slash)'-separated task names
+    * @param taskName
     * @return
     */
-  def matchWith(specName: Seq[String]): Boolean = {
+  def matchWith(taskName: String): Boolean = matchWith(taskName.split("/").toSeq)
 
-    specName.zipAll(regexPatterns, "", "(?i).*".r).forall { case (part, regex) =>
+  /**
+    * @param taskName
+    *   task name (from parent to the current test name)
+    * @return
+    *   true if the specName matches with the pre-defined pattern
+    */
+  def matchWith(taskName: Seq[String]): Boolean = {
+    taskName.zipAll(regexPatterns, "", "(?i).*".r).forall { case (part, regex) =>
       if (part.isEmpty) {
         true
       } else {
