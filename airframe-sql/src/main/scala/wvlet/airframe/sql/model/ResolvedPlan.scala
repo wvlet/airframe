@@ -60,6 +60,8 @@ case class ResolvedAttribute(
     name: String,
     override val dataType: DataType,
     qualifier: Option[String],
+    // If this attribute directly refers to table column(s), source columns will be set.
+    // It may have multiple SourceColumns when table columns are merged with UNION and Set operations
     sourceColumns: Seq[SourceColumn],
     nodeLocation: Option[NodeLocation]
 ) extends Attribute {

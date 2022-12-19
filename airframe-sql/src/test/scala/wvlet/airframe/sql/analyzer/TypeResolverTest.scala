@@ -760,16 +760,12 @@ class TypeResolverTest extends AirSpec {
 
     test("resolve count(*) in sub query") {
       val p = analyze("select cnt from (select count(*) as cnt from A)")
-      p.outputAttributes shouldMatch { case List(ResolvedAttribute("cnt", DataType.LongType, _, sourceColumns, _)) =>
-        sourceColumns.toSet shouldBe (ra1.sourceColumns ++ ra2.sourceColumns).toSet
-      }
+      p.outputAttributes shouldMatch { case List(ResolvedAttribute("cnt", DataType.LongType, _, _, _)) => }
     }
 
     test("resolve count(*) in CTE") {
       val p = analyze("WITH q AS (select count(*) as cnt from A) select cnt from q")
-      p.outputAttributes shouldMatch { case List(ResolvedAttribute("cnt", DataType.LongType, None, sourceColumns, _)) =>
-        sourceColumns.toSet shouldBe (ra1.sourceColumns ++ ra2.sourceColumns).toSet
-      }
+      p.outputAttributes shouldMatch { case List(ResolvedAttribute("cnt", DataType.LongType, None, _, _)) => }
     }
 
     test("resolve count(*) in Union") {
