@@ -241,7 +241,8 @@ private[airspec] class AirSpecTaskRunner(
           parentContext = parentContext,
           currentSpec = spec,
           testName = m.name,
-          currentSession = childSession
+          currentSession = childSession,
+          config = config
         )
       spec.pushContext(context)
       context
