@@ -199,16 +199,20 @@ testFrameworks += <span class="hljs-keyword">new</span> <span class="hljs-type">
 <pre><code class="hljs css language-scala">$ sbt
 
 &gt; test                                   # <span class="hljs-type">Run</span> all tests
-&gt; testOnly -- (pattern)                  # <span class="hljs-type">Run</span> all test matching the pattern (<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">name</span> <span class="hljs-title">or</span> <span class="hljs-title">test</span> <span class="hljs-title">name</span>)</span>
+&gt; testOnly -- (pattern)                  # <span class="hljs-type">Run</span> all test matching the pattern (/-delimtied test name)
 &gt; testOnly -- (<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">pattern</span>)<span class="hljs-title">*</span>(<span class="hljs-params">pattern</span>)  <span class="hljs-title">#</span> <span class="hljs-title">Search</span> <span class="hljs-title">both</span> <span class="hljs-title">class</span> <span class="hljs-title">and</span> <span class="hljs-title">test</span> <span class="hljs-title">names</span></span>
 
 # sbt<span class="hljs-symbol">'s</span> <span class="hljs-keyword">default</span> test functionalities:
 &gt; testQuick                              # <span class="hljs-type">Run</span> only previously failed test specs
 &gt; testOnly (<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">name</span>)                  <span class="hljs-title">#</span> <span class="hljs-title">Run</span> <span class="hljs-title">tests</span> <span class="hljs-title">only</span> <span class="hljs-title">in</span> <span class="hljs-title">specific</span> <span class="hljs-title">classes</span> <span class="hljs-title">matching</span> <span class="hljs-title">a</span> <span class="hljs-title">pattern</span> (<span class="hljs-params">wildcard is supported</span>)</span>
 </code></pre>
-<p><code>pattern</code> is used for partial matching with test names. It also supports wildcard (<code>*</code>) and regular expressions (experimental).
-Basically AirSpec will find matches from the list of all <code>(test class full name):(test function name)</code> strings.
-Cases of test names will be ignored in the search.</p>
+<p>The <code>pattern</code> is a slash (<code>/</code>)-separated test names. You can also use wildcard (<code>*</code>) and regular expressions in the pattern. If the test cases are nested, AirSpec represents test names as <code>(parent test name)/(child test name)/...</code>. so you can run specific nested test with patterns like:</p>
+<pre><code class="hljs css language-scala">test(<span class="hljs-string">"test A"</span>) { <span class="hljs-comment">// Matches with 'test A'. All child tests will be executed</span>
+  test(<span class="hljs-string">"1"</span>) { ... }  <span class="hljs-comment">// Matches with 'test A/1' </span>
+  test(<span class="hljs-string">"2"</span>) { ... } <span class="hljs-comment">// Matches with 'test A/2'</span>
+}
+</code></pre>
+<p>Test names will be checked as case-insensitive partial match, so you only need to specify substrings of test names like <code>A</code>, <code>A/1</code>, 'a/2', etc. to simplify the pattern matching.</p>
 <p><img src="https://wvlet.org/airframe/img/airspec/airspec.png" alt="image"></p>
 <h3><a class="anchor" aria-hidden="true" id="disable-parallel-test-execution"></a><a href="#disable-parallel-test-execution" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Disable Parallel Test Execution</h3>
 <p>sbt 1.x or higher runs tests in parallel. This is fast, but it messes up console log messages.
