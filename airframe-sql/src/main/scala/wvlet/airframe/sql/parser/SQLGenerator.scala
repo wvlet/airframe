@@ -370,7 +370,7 @@ object SQLGenerator extends LogSupport {
         alias
           .map(x => s"${col} AS ${x}")
           .getOrElse(col)
-      case MultiColumn(inputs, name, _) =>
+      case MultiColumn(inputs, name, _, _) =>
         name match {
           case Some(name) => name
           case None       => inputs.collectFirst { case a: Attribute => a }.map(printExpression).getOrElse(unknown(e))

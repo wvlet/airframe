@@ -37,6 +37,10 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     }
   }
 
+  def typeDescriptionWithNodeType: String = {
+    s"[${this.getClass.getSimpleName.replaceAll("$", "")}] ${typeDescription}"
+  }
+
   /**
     * Column name without qualifier
     * @return
@@ -310,12 +314,11 @@ object Expression {
     override def toString = {
       columns match {
         case Some(attrs) if attrs.nonEmpty =>
-          val tables = attrs
-            .collect { case a: ResolvedAttribute =>
-              a.sourceColumns.map(_.table)
-            }.flatten.distinct
-          s"AllColumns(${tables.map(t => s"${t.name}.*").mkString(", ")})"
-        case _ => s"AllColumns(${name})"
+          // Show the detailed node type for the ease of debugging
+          val inputs = attrs.map(_.typeDescriptionWithNodeType).mkString(", ")
+          s"AllColumns(${inputs})"
+        case _ =>
+          s"AllColumns(${qualifier.map(q => s"${q}.").getOrElse("")}*)"
       }
     }
 
@@ -348,10 +351,8 @@ object Expression {
       qualifier: Option[String] = None,
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
-    override def name: String = alias.getOrElse(expr.attributeName)
-    override def dataTypeName: String = {
-      expr.dataTypeName
-    }
+    override def name: String       = alias.getOrElse(expr.attributeName)
+    override def dataType: DataType = expr.dataType
 
     override def children: Seq[Expression] = Seq(expr)
     override def toString = s"SingleColumn(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
@@ -382,7 +383,7 @@ object Expression {
         Seq(this)
       } else if (expr.isInstanceOf[MultiColumn]) {
         val m = expr.asInstanceOf[MultiColumn]
-        if (m.name.contains(s"${tableName}.${columnName}")) {
+        if (m.alias.contains(s"${tableName}.${columnName}")) {
           Seq(m)
         } else {
           m.matched(tableName, columnName)
@@ -395,7 +396,7 @@ object Expression {
         Seq(this)
       } else if (expr.isInstanceOf[MultiColumn]) {
         val m = expr.asInstanceOf[MultiColumn]
-        if (m.name.contains(columnName)) {
+        if (m.alias.contains(columnName)) {
           Seq(m)
         } else {
           m.matched(columnName)
@@ -405,7 +406,7 @@ object Expression {
 
     private def matchesWithMultiColumn(tableName: String, columnName: String): Boolean = {
       expr match {
-        case MultiColumn(inputs, _, _) =>
+        case MultiColumn(inputs, _, _, _) =>
           inputs.exists {
             case r: ResolvedAttribute => r.matchesWith(tableName, columnName)
             case s: SingleColumn      => s.matchesWith(tableName, columnName)
@@ -418,7 +419,7 @@ object Expression {
 
     private def matchesWithMultiColumn(columnName: String): Boolean = {
       expr match {
-        case MultiColumn(inputs, name, _) =>
+        case MultiColumn(inputs, name, _, _) =>
           name.contains(columnName) || inputs.exists {
             case r: ResolvedAttribute => r.name == columnName
             case s: SingleColumn      => s.matchesWith(columnName)
@@ -429,28 +430,39 @@ object Expression {
       }
     }
   }
+
+  /**
+    * A single column merged from multiple input expressions (e.g., union, join)
+    * @param inputs
+    * @param alias
+    * @param nodeLocation
+    */
   case class MultiColumn(
       inputs: Seq[Expression],
-      name: Option[String],
+      alias: Option[String],
+      qualifier: Option[String],
       nodeLocation: Option[NodeLocation]
-  ) extends Expression
-      with LogSupport {
+  ) extends Attribute {
     require(inputs.nonEmpty, s"The inputs of MultiColumn should not be empty: ${this}")
 
     override def children: Seq[Expression] = inputs
 
-    override def attributeName: String = {
-      name.getOrElse(inputs.head.attributeName)
+    override def name: String = {
+      alias.getOrElse(inputs.head.attributeName)
+    }
+
+    override def withQualifier(newQualifier: String): Attribute = {
+      this.copy(qualifier = Some(newQualifier))
     }
 
     override def dataType: DataType = {
       inputs.head.dataType
     }
 
-    override def toString: String = s"MultiColumn(${inputs.mkString(", ")}${name.map(" as " + _).getOrElse("")})"
+    override def toString: String = s"MultiColumn(${inputs.mkString(", ")}${alias.map(" as " + _).getOrElse("")})"
 
     def matched(tableName: String, columnName: String): Seq[Expression] = {
-      if (name.contains(s"${tableName}.${columnName}")) {
+      if (alias.contains(s"${tableName}.${columnName}")) {
         Seq(this)
       } else {
         inputs.collect {
@@ -462,7 +474,7 @@ object Expression {
     }
 
     def matched(columnName: String): Seq[Expression] = {
-      if (name.contains(columnName)) {
+      if (alias.contains(columnName)) {
         Seq(this)
       } else {
         inputs.collect {
