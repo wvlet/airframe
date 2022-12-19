@@ -114,17 +114,17 @@ object TypeResolver extends LogSupport {
   object resolveAggregationKeys extends RewriteRule {
     def apply(context: AnalyzerContext): PlanRewriter = {
       case a @ Aggregate(child, selectItems, groupingKeys, having, _) =>
-        val resolvedChild   = resolveRelation(context, child)
-        val inputAttributes = resolvedChild.outputAttributes
+        val resolvedChild         = resolveRelation(context, child)
+        val childOutputAttributes = resolvedChild.outputAttributes
         val resolvedGroupingKeys =
           groupingKeys.map(x => {
-            val e = resolveExpression(context, x.child, inputAttributes, false)
+            val e = resolveExpression(context, x.child, childOutputAttributes, false)
             GroupingKey(e, e.nodeLocation)
           })
         val resolvedHaving = having.map {
           _.transformUpExpression { case x: Expression =>
             // Having recognize attributes only from the input relation
-            resolveExpression(context, x, resolvedChild.outputAttributes, false)
+            resolveExpression(context, x, childOutputAttributes, false)
           }
         }
         Aggregate(resolvedChild, selectItems, resolvedGroupingKeys, resolvedHaving, a.nodeLocation)
