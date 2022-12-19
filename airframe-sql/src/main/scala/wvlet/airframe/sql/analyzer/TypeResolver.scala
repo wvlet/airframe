@@ -380,6 +380,16 @@ object TypeResolver extends LogSupport {
       }
     }.distinct
 
+    def toResolvedAttribute(name: String, expr: Expression): ResolvedAttribute = {
+      ResolvedAttribute(
+        name,
+        expr.dataType,
+        None,
+        Seq.empty,
+        expr.nodeLocation
+      )
+    }
+
     val results = expr match {
       case i: Identifier =>
         lookup(i.value).map {
@@ -387,19 +397,21 @@ object TypeResolver extends LogSupport {
           case a: Attribute   => a
           case m: MultiColumn => m
           case expr           =>
-            // Resolve expr as ResolvedAttribute
-            ResolvedAttribute(
-              i.value,
-              expr.dataType,
-              None,
-              Seq.empty,
-              expr.nodeLocation
-            )
+            // Resolve expr as ResolvedAttribute so as not to pull-up too much details
+            toResolvedAttribute(i.value, expr)
         }
       case u @ UnresolvedAttribute(name, _) =>
         lookup(name)
       case a @ AllColumns(_, None, _) =>
-        List(a.copy(columns = Some(inputAttributes)))
+        val allColumns = inputAttributes.map {
+          case a: Attribute =>
+            // This path preserves column tags
+            a
+          case other =>
+            // Resolve expr as ResolvedAttribute so as not to pull-up too much details
+            toResolvedAttribute(other.name, other)
+        }
+        List(a.copy(columns = Some(allColumns)))
       case _ =>
         List(expr)
     }
