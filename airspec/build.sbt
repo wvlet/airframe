@@ -146,7 +146,7 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   */
 val airspecLogDependencies  = Seq("airframe-log")
 val airspecCoreDependencies = Seq("airframe-di-macros", "airframe-surface")
-val airspecDependencies     = Seq("airframe-di", "airframe-metrics")
+val airspecDependencies     = Seq("airframe-di", "airframe-metrics", "airframe-rx")
 
 // Setting keys for AirSpec
 val airspecDependsOn =
