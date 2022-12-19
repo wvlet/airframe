@@ -348,7 +348,7 @@ class TypeResolverTest extends AirSpec {
     }
 
     test("resolve having") {
-      val p = analyze("select id, count(*) cnt from A group by id having cnt > 10")
+      val p = analyze("select id, count(*) cnt from A group by id having count(*) > 10")
       p shouldMatch {
         case Aggregate(
               _,
@@ -360,7 +360,10 @@ class TypeResolverTest extends AirSpec {
           f.args shouldMatch { case List(AllColumns(_, Some(cols), _)) =>
             cols.toSet shouldBe Set(ra1, ra2)
           }
-          col shouldMatch { case ResolvedAttribute("cnt", DataType.LongType, _, sourceColumns, _) => }
+          col shouldMatch { case FunctionCall("count", Seq(ac: AllColumns), false, _, _, _) =>
+            ac.columns shouldNotBe empty
+            ac.columns.get.collect { case r: ResolvedAttribute => r }.toSet shouldBe Set(ra1, ra2)
+          }
       }
     }
   }

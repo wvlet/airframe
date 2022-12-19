@@ -123,7 +123,8 @@ object TypeResolver extends LogSupport {
           })
         val resolvedHaving = having.map {
           _.transformUpExpression { case x: Expression =>
-            resolveExpression(context, x, a.outputAttributes, false)
+            // Having recognize attributes only from the input relation
+            resolveExpression(context, x, resolvedChild.outputAttributes, false)
           }
         }
         Aggregate(resolvedChild, selectItems, resolvedGroupingKeys, resolvedHaving, a.nodeLocation)
@@ -382,23 +383,17 @@ object TypeResolver extends LogSupport {
     val results = expr match {
       case i: Identifier =>
         lookup(i.value).map {
+          // No need to resolve Attribute expressions
           case a: Attribute   => a
           case m: MultiColumn => m
           // retain alias for select column
           case f: FunctionCall =>
-            // Extract source columns
-            val src = Set.newBuilder[SourceColumn]
-            f.traverseExpressions { case r: ResolvedAttribute =>
-              src ++= r.sourceColumns
-            }
-            val sourceColumn = src.result().toSeq
             // Do not pull-up function calls
             ResolvedAttribute(
               i.value,
               f.dataType,
               None,
-              // Propagate source columns
-              sourceColumn,
+              Seq.empty,
               None
             )
           case expr =>
