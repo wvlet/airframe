@@ -699,10 +699,11 @@ class TypeResolverTest extends AirSpec {
     test("resolve expression column from sub query") {
       val p = analyze("SELECT id, name FROM (SELECT id + 1 as id, name FROM A) a WHERE a.id = 99")
 
-      p.outputAttributes.toList match {
-        case List(SingleColumn(ArithmeticBinaryExpr(Add, c1, LongLiteral(1, _), _), _, _, _), c2) =>
-          List(c1, c2) shouldBe List(ra1, ra2.withQualifier("a"))
-        case _ => fail(s"unexpected plan:\n${p.pp}")
+      p.outputAttributes.toList shouldMatch {
+        case List(
+              ResolvedAttribute("id", DataType.LongType, _, _, _),
+              ResolvedAttribute("name", DataType.StringType, Some("a"), _, _)
+            ) =>
       }
 
       p shouldMatch { case Project(filter @ Filter(_, _, _), _, _) =>
@@ -714,10 +715,11 @@ class TypeResolverTest extends AirSpec {
 
     test("resolve expression column from CTE") {
       val p = analyze("WITH q1 AS (SELECT id + 1 as id, name FROM A) SELECT id, name FROM q1 WHERE q1.id = 99")
-
       p.outputAttributes.toList shouldMatch {
-        case List(SingleColumn(ArithmeticBinaryExpr(Add, c1, LongLiteral(1, _), _), _, _, _), c2) =>
-          List(c1, c2) shouldBe List(ra1, ra2.withQualifier("q1"))
+        case List(
+              ResolvedAttribute("id", DataType.LongType, _, _, _),
+              ResolvedAttribute("name", DataType.StringType, Some("q1"), _, _)
+            ) =>
       }
 
       p match {
@@ -908,7 +910,7 @@ class TypeResolverTest extends AirSpec {
 
   test("resolve select 1 from subquery") {
     val p = analyze("select cnt from (select cnt from (select 1 as cnt))")
-    p.outputAttributes shouldMatch { case List(SingleColumn(LongLiteral(1, _), Some("cnt"), None, _)) =>
+    p.outputAttributes shouldMatch { case List(ResolvedAttribute(cnt, DataType.LongType, _, _, _)) =>
       ()
     }
   }

@@ -386,23 +386,15 @@ object TypeResolver extends LogSupport {
           // No need to resolve Attribute expressions
           case a: Attribute   => a
           case m: MultiColumn => m
-          // retain alias for select column
-          case f: FunctionCall =>
-            // Do not pull-up function calls
+          case expr           =>
+            // Resolve expr as ResolvedAttribute
             ResolvedAttribute(
               i.value,
-              f.dataType,
+              expr.dataType,
               None,
               Seq.empty,
-              None
+              expr.nodeLocation
             )
-          case expr =>
-            // TODO Resolve expr as ResolvedAttribute
-            if (isSelectItem) {
-              SingleColumn(expr, Some(i.value), None, expr.nodeLocation)
-            } else {
-              expr
-            }
         }
       case u @ UnresolvedAttribute(name, _) =>
         lookup(name)

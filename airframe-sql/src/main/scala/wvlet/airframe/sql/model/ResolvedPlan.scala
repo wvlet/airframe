@@ -99,7 +99,7 @@ case class ResolvedAttribute(
       case (Some(q), columns) if columns.nonEmpty =>
         columns
           .map(_.fullName)
-          .mkString(s"${q},${typeDescription} <- [", ", ", "]")
+          .mkString(s"${q}.${typeDescription} <- [", ", ", "]")
       case (None, columns) if columns.nonEmpty =>
         columns
           .map(_.fullName)

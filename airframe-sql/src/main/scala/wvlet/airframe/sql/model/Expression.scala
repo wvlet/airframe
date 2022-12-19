@@ -703,7 +703,16 @@ object Expression {
       right: Expression,
       nodeLocation: Option[NodeLocation]
   ) extends ArithmeticExpression
-      with BinaryExpression
+      with BinaryExpression {
+    override def dataType: DataType = {
+      if (left.dataType == right.dataType) {
+        left.dataType
+      } else {
+        // TODO type escalation e.g., (Double) op (Long) -> (Double)
+        DataType.UnknownType
+      }
+    }
+  }
   case class ArithmeticUnaryExpr(sign: Sign, child: Expression, nodeLocation: Option[NodeLocation])
       extends ArithmeticExpression
       with UnaryExpression
