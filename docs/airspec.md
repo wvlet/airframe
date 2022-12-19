@@ -157,7 +157,7 @@ AirSpec supports pattern matching for running only specific tests:
 $ sbt
 
 > test                                   # Run all tests
-> testOnly -- (pattern)                  # Run all test matching the pattern (class name or test name)
+> testOnly -- (pattern)                  # Run all test matching the pattern (/-delimtied test name)
 > testOnly -- (class pattern)*(pattern)  # Search both class and test names
 
 # sbt's default test functionalities:
@@ -165,9 +165,16 @@ $ sbt
 > testOnly (class name)                  # Run tests only in specific classes matching a pattern (wildcard is supported)
 ```
 
-`pattern` is used for partial matching with test names. It also supports wildcard (`*`) and regular expressions (experimental).
-Basically AirSpec will find matches from the list of all `(test class full name):(test function name)` strings.
-Cases of test names will be ignored in the search.
+The `pattern` is a slash (`/`)-separated test names. You can also use wildcard (`*`) and regular expressions in the pattern. If the test cases are nested, AirSpec represents test names as `(parent test name)/(child test name)/...`. so you can run specific nested test with patterns like:   
+
+```scala
+test("test A") { // Matches with 'test A'. All child tests will be executed
+  test("1") { ... }  // Matches with 'test A/1' 
+  test("2") { ... } // Matches with 'test A/2'
+}
+```
+
+Test names will be checked as case-insensitive partial match, so you only need to specify substrings of test names like `A`, `A/1`, 'a/2', etc. to simplify the pattern matching. 
 
 ![image](https://wvlet.org/airframe/img/airspec/airspec.png)
 

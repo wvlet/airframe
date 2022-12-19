@@ -79,19 +79,7 @@ private[airspec] class AirSpecTaskRunner(
       warn(s"No test definition is found in ${name}. Add at least one test(...) method call.")
     }
 
-    val selectedSpecs =
-      config.pattern match {
-        case Some(regex) =>
-          // Find matching methods
-          testDefs.filter { m =>
-            // Concatenate (parent class name)? + class name + method name for handy search
-            val fullName = s"${specName(None, spec)}.${m.name}"
-            regex.findFirstIn(fullName).isDefined
-          }
-        case None =>
-          testDefs
-      }
-
+    val selectedSpecs = testDefs.filter(task => config.specMatcher.matchWith(task.name))
     selectedSpecs
   }
 
@@ -253,7 +241,8 @@ private[airspec] class AirSpecTaskRunner(
           parentContext = parentContext,
           currentSpec = spec,
           testName = m.name,
-          currentSession = childSession
+          currentSession = childSession,
+          config = config
         )
       spec.pushContext(context)
       context

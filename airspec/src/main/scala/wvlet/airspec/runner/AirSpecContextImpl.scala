@@ -15,6 +15,7 @@ package wvlet.airspec.runner
 
 import wvlet.airframe.Session
 import wvlet.airframe.surface.Surface
+import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
 import wvlet.airspec.spi.AirSpecContext
 import wvlet.airspec.{AirSpecDef, AirSpecSpi}
 import wvlet.log.LogSupport
@@ -29,7 +30,8 @@ private[airspec] class AirSpecContextImpl(
     val parentContext: Option[AirSpecContext],
     val currentSpec: AirSpecSpi,
     val testName: String = "<init>",
-    val currentSession: Session
+    val currentSession: Session,
+    val config: AirSpecConfig
 ) extends AirSpecContext
     with LogSupport {
 
@@ -46,12 +48,22 @@ private[airspec] class AirSpecContextImpl(
   }
 
   override protected[airspec] def runSingle(testDef: AirSpecDef): Unit = {
-    // Lazily generate Futures for child tasks
-    val taskResult: () => Future[Unit] = { () =>
-      taskExecutor.runSingle(Some(this), currentSession, currentSpec, testDef, isLocal = true, design = testDef.design)
-    }
-    synchronized {
-      childTestList += taskResult
+    val testPath = s"${fullTestName}/${testDef.name}".stripPrefix("/")
+    if (config.specMatcher.matchWith(testPath)) {
+      // Lazily generate Futures for child tasks
+      val taskResult: () => Future[Unit] = { () =>
+        taskExecutor.runSingle(
+          Some(this),
+          currentSession,
+          currentSpec,
+          testDef,
+          isLocal = true,
+          design = testDef.design
+        )
+      }
+      synchronized {
+        childTestList += taskResult
+      }
     }
   }
 

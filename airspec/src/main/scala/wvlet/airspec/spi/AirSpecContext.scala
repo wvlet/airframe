@@ -46,6 +46,13 @@ trait AirSpecContext {
     s"${parent}${specName}"
   }
 
+  def fullTestName: String = {
+    parentContext match {
+      case Some(p) => s"${p.fullTestName}/${testName}"
+      case None    => testName
+    }
+  }
+
   /**
     * Get the test method name currently running. For a global context, this will return '<init>'.
     */
