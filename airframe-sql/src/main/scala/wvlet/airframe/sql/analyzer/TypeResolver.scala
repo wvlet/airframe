@@ -397,10 +397,12 @@ object TypeResolver extends LogSupport {
               None
             )
           case expr =>
-            if (isSelectItem)
+            // TODO Resolve expr as ResolvedAttribute
+            if (isSelectItem) {
               SingleColumn(expr, Some(i.value), None, expr.nodeLocation)
-            else
+            } else {
               expr
+            }
         }
       case u @ UnresolvedAttribute(name, _) =>
         lookup(name)
