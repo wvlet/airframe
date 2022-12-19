@@ -283,7 +283,7 @@ private[airspec] class AirSpecTaskRunner(
                   p.success(())
                 }
             }
-            p.future.transform { x: Try[_] =>
+            p.future.transform { (x: Try[_]) =>
               // Ensure stopping Rx subscription
               c.cancel
               x
