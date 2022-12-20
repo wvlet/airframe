@@ -157,8 +157,8 @@ AirSpec supports pattern matching for running only specific tests:
 $ sbt
 
 > test                                   # Run all tests
-> testOnly -- (pattern)                  # Run all test matching the pattern (/-delimtied test name)
-> testOnly -- (class pattern)*(pattern)  # Search both class and test names
+> testOnly -- (pattern)                  # Run all test matching the pattern 
+> testOnly -- (pattern)/(pattern)        # Run nested tests matching the nested pattern (/ is a dlimiter)
 
 # sbt's default test functionalities:
 > testQuick                              # Run only previously failed test specs
