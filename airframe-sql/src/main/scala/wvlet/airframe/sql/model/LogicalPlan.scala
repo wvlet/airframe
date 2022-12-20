@@ -766,7 +766,7 @@ object LogicalPlan {
         val head       = columns.head
         val qualifiers = columns.map(_.qualifier).distinct
         MultiColumn(
-          inputs = columns,
+          inputs = columns.toSeq,
           alias = Some(head.name),
           qualifier = {
             // If all of the qualifiers are the same, use it.
@@ -778,7 +778,7 @@ object LogicalPlan {
           },
           None
         )
-      }
+      }.toSeq
     }
   }
 

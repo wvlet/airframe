@@ -181,27 +181,26 @@ class TypeResolverTest extends AirSpec {
       )
     }
 
+    test("u2: resolve union from the same source") {
+      val p = analyze("select id from A union all select id from A")
+      p.inputAttributes shouldBe List(ra1, ra2, ra1, ra2)
+      p.outputAttributes shouldBe List(
+        MultiColumn(List(ra1, ra1), Some("id"), Some("A"), None)
+      )
+    }
+
     test("resolve union with select *") {
       val p = analyze("select * from A union all select * from B")
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
       p.outputAttributes shouldMatch {
-        case List(
-              SingleColumn(
-                MultiColumn(
-                  List(
-                    AllColumns(None, Some(Seq(`ra1`, `ra2`)), _),
-                    AllColumns(None, Some(Seq(`rb1`, `rb2`)), _)
-                  ),
-                  Some("*"),
-                  None,
-                  _
-                ),
-                None,
+        case Seq(
+              MultiColumn(
+                Seq(AllColumns(None, Some(Seq(`ra1`, `ra2`)), _), AllColumns(None, Some(Seq(`rb1`, `rb2`)), _)),
+                Some("*"),
                 None,
                 _
               )
             ) =>
-          ()
       }
     }
 
@@ -229,16 +228,14 @@ class TypeResolverTest extends AirSpec {
     }
 
     test("resolve union with column alias") {
-      val p = analyze("select p1 from (select id as p1 from A union all select id from B)")
-      p.inputAttributes shouldMatch {
-        case List(SingleColumn(MultiColumn(List(c1, c2), Some("p1"), _, _), None, None, _)) =>
-          c1 shouldBe ra1.withAlias("p1")
-          c2 shouldBe rb1
+      val p = analyze("select p1 from (select id as p1 from A union all select id as p1 from B)")
+      p.inputAttributes shouldMatch { case Seq(MultiColumn(Seq(c1, c2), Some("p1"), _, _)) =>
+        c1 shouldBe ra1.withAlias("p1")
+        c2 shouldBe rb1.withAlias("p1")
       }
-      p.outputAttributes shouldMatch {
-        case List(SingleColumn(MultiColumn(List(c1, c2), Some("p1"), _, _), None, None, _)) =>
-          c1 shouldBe ra1.withAlias("p1")
-          c2 shouldBe rb1
+      p.outputAttributes shouldMatch { case Seq(MultiColumn(Seq(c1, c2), Some("p1"), _, _)) =>
+        c1 shouldBe ra1.withAlias("p1")
+        c2 shouldBe rb1.withAlias("p1")
       }
     }
 
@@ -266,23 +263,17 @@ class TypeResolverTest extends AirSpec {
     test("resolve union with expression") {
       val p = analyze("select id + 1 from A union all select id + 1 from B")
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
-      p.outputAttributes shouldMatch {
-        case List(
-              SingleColumn(
-                MultiColumn(
-                  List(
-                    SingleColumn(ArithmeticBinaryExpr(Add, `ra1`, LongLiteral(1, _), _), None, None, _),
-                    SingleColumn(ArithmeticBinaryExpr(Add, `rb1`, LongLiteral(1, _), _), None, None, _)
-                  ),
-                  _, // TODO should be None
-                  _,
-                  _
-                ),
-                None,
-                None,
-                _
-              )
+      p.outputAttributes.head shouldMatch {
+        case MultiColumn(
+              Seq(
+                SingleColumn(ArithmeticBinaryExpr(Add, `ra1`, LongLiteral(1, _), _), None, None, _),
+                SingleColumn(ArithmeticBinaryExpr(Add, `rb1`, LongLiteral(1, _), _), None, None, _)
+              ),
+              _,
+              _,
+              _
             ) =>
+
       }
     }
 
@@ -290,9 +281,7 @@ class TypeResolverTest extends AirSpec {
       val p = analyze("select id from A intersect select id from B") // => Distinct(Intersect(...))
       p shouldMatch { case Distinct(i @ Intersect(_, _), _) =>
         i.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
-        i.outputAttributes shouldMatch {
-          case List(SingleColumn(MultiColumn(List(`ra1`, `rb1`), Some("id"), _, _), None, None, _)) => ()
-        }
+        i.outputAttributes shouldMatch { case Seq(MultiColumn(Seq(`ra1`, `rb1`), Some("id"), _, _)) => }
       }
     }
 
