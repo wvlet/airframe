@@ -199,8 +199,8 @@ testFrameworks += <span class="hljs-keyword">new</span> <span class="hljs-type">
 <pre><code class="hljs css language-scala">$ sbt
 
 &gt; test                                   # <span class="hljs-type">Run</span> all tests
-&gt; testOnly -- (pattern)                  # <span class="hljs-type">Run</span> all test matching the pattern (/-delimtied test name)
-&gt; testOnly -- (<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">pattern</span>)<span class="hljs-title">*</span>(<span class="hljs-params">pattern</span>)  <span class="hljs-title">#</span> <span class="hljs-title">Search</span> <span class="hljs-title">both</span> <span class="hljs-title">class</span> <span class="hljs-title">and</span> <span class="hljs-title">test</span> <span class="hljs-title">names</span></span>
+&gt; testOnly -- (pattern)                  # <span class="hljs-type">Run</span> all test matching the pattern 
+&gt; testOnly -- (pattern)/(pattern)        # <span class="hljs-type">Run</span> nested tests matching the nested pattern (/ is a dlimiter)
 
 # sbt<span class="hljs-symbol">'s</span> <span class="hljs-keyword">default</span> test functionalities:
 &gt; testQuick                              # <span class="hljs-type">Run</span> only previously failed test specs
