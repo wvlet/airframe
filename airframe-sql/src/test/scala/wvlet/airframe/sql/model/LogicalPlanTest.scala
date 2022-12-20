@@ -113,7 +113,7 @@ class LogicalPlanTest extends AirSpec {
       s.withAlias("x")
     }
     newPlan.childExpressions.collect {
-      case s: SingleColumn if s.alias == Some("x") => true
+      case s: Attribute if s.alias == Some("x") => true
     }.nonEmpty shouldBe true
   }
 
@@ -123,7 +123,7 @@ class LogicalPlanTest extends AirSpec {
       s.withAlias("x")
     }
     newPlan.collectExpressions {
-      case s: SingleColumn if s.alias == Some("x") => true
+      case s: Attribute if s.alias == Some("x") => true
     }.size shouldBe 2
   }
 
@@ -135,11 +135,11 @@ class LogicalPlanTest extends AirSpec {
     }
 
     newPlan.childExpressions.collect {
-      case s: SingleColumn if s.alias == Some("x0") => true
+      case s: Attribute if s.alias == Some("x0") => true
     }.nonEmpty shouldBe true
 
     newPlan.children.head.childExpressions.collect {
-      case s: SingleColumn if s.alias == Some("x1") => true
+      case s: Attribute if s.alias == Some("x1") => true
     }.nonEmpty shouldBe true
   }
 
@@ -151,11 +151,11 @@ class LogicalPlanTest extends AirSpec {
     }
 
     newPlan.childExpressions.collect {
-      case s: SingleColumn if s.alias == Some("x1") => true
+      case s: Attribute if s.alias == Some("x1") => true
     }.nonEmpty shouldBe true
 
     newPlan.children.head.childExpressions.collect {
-      case s: SingleColumn if s.alias == Some("x0") => true
+      case s: Attribute if s.alias == Some("x0") => true
     }.nonEmpty shouldBe true
   }
 }

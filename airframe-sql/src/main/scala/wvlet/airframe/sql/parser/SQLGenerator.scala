@@ -118,7 +118,7 @@ object SQLGenerator extends LogSupport {
     if (containsDistinctPlan(context)) {
       b += "DISTINCT"
     }
-    b += (s.selectItems.map(printExpression).mkString(", "))
+    b += (s.selectItems.map(printSelectItem).mkString(", "))
 
     findNonEmpty(nonFilterChild).map { f =>
       b += "FROM"
@@ -193,7 +193,7 @@ object SQLGenerator extends LogSupport {
       case TableRef(t, _) =>
         printExpression(t)
       case t: TableScan =>
-        t.table.fullName
+        t.fullName
       case Limit(in, l, _) =>
         val s = seqBuilder
         s += printRelation(in, context)
@@ -225,10 +225,11 @@ object SQLGenerator extends LogSupport {
           case _               => printRelation(right)
         }
         val c = cond match {
-          case NaturalJoin(_)        => ""
-          case JoinUsing(columns, _) => s" USING (${columns.map(_.sqlExpr).mkString(", ")})"
-          case JoinOn(expr, _)       => s" ON ${printExpression(expr)}"
-          case JoinOnEq(keys, _)     => s" ON ${printExpression(Expression.concatWithEq(keys))}"
+          case NaturalJoin(_)                => ""
+          case JoinUsing(columns, _)         => s" USING (${columns.map(_.sqlExpr).mkString(", ")})"
+          case ResolvedJoinUsing(columns, _) => s" USING (${columns.map(_.fullName).mkString(", ")})"
+          case JoinOn(expr, _)               => s" ON ${printExpression(expr)}"
+          case JoinOnEq(keys, _)             => s" ON ${printExpression(Expression.concatWithEq(keys))}"
         }
         joinType match {
           case InnerJoin      => s"${l} JOIN ${r}${c}"
@@ -355,6 +356,15 @@ object SQLGenerator extends LogSupport {
     }
   }
 
+  def printSelectItem(e: Expression): String = {
+    e match {
+      case a: ResolvedAttribute =>
+        a.sqlExpr
+      case other =>
+        printExpression(other)
+    }
+  }
+
   def printExpression(e: Expression): String = {
     e match {
       case i: Identifier =>
@@ -365,22 +375,17 @@ object SQLGenerator extends LogSupport {
         printExpression(k)
       case ParenthesizedExpression(expr, _) =>
         s"(${printExpression(expr)})"
-      case SingleColumn(ex, alias, _, _) =>
-        val col = printExpression(ex)
-        alias
-          .map(x => s"${col} AS ${x}")
-          .getOrElse(col)
-      case MultiColumn(inputs, name, _, _) =>
-        name match {
-          case Some(name) => name
-          case None       => inputs.collectFirst { case a: Attribute => a }.map(printExpression).getOrElse(unknown(e))
-        }
+      case a: Alias =>
+        val e = printExpression(a.expr)
+        s"${e} AS ${a.name}"
+      case SingleColumn(ex, _, _) =>
+        printExpression(ex)
+      case m: MultiSourceColumn =>
+        m.sqlExpr
       case AllColumns(prefix, _, _) =>
         prefix.map(p => s"${p}.*").getOrElse("*")
-      case ResolvedAttribute(name, _, Some(qualifier), _, _) =>
-        s"${qualifier}.${name}"
       case a: Attribute =>
-        a.name
+        a.fullName
       case SortItem(key, ordering, nullOrdering, _) =>
         val k  = printExpression(key)
         val o  = ordering.map(x => s" ${x}").getOrElse("")

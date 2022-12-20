@@ -55,10 +55,10 @@ object Optimizer extends LogSupport {
     */
   def pruneRelationColumns(relation: Relation, context: AnalyzerContext): Relation = {
     relation match {
-      case t @ TableScan(table, columns, _) if context.parentAttributes.nonEmpty =>
+      case t @ TableScan(fullName, table, columns, _) if context.parentAttributes.nonEmpty =>
         val parentAttributes = context.parentAttributes.get
         val accessedColumns  = columns.filter { col => parentAttributes.exists(x => x.name == col.name) }
-        TableScan(table, accessedColumns, t.nodeLocation)
+        TableScan(fullName, table, accessedColumns, t.nodeLocation)
       case _ => relation
     }
   }
