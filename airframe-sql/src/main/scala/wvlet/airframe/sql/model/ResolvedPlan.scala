@@ -71,31 +71,34 @@ case class ResolvedAttribute(
     s"${qualifier.map(q => s"${q}.").getOrElse("")}${name}"
   }
 
+  override def alias: Option[String] = Some(name)
   def withAlias(newName: String): ResolvedAttribute = {
     this.copy(name = newName)
   }
+
+  override def inputColumns: Seq[Attribute] = Seq(this)
 
   def relationNames: Seq[String] = qualifier match {
     case Some(q) => Seq(q)
     case _       => sourceColumns.map(_.table.name)
   }
 
-  /**
-    * Returns true if this resolved attribute matches with a given table name and colum name
-    */
-  def matchesWith(tableName: String, columnName: String): Boolean = {
-    relationNames match {
-      case Nil => columnName == name
-      case tableNames =>
-        tableNames.exists { tbl =>
-          tbl == tableName && matchesWith(columnName)
-        }
-    }
-  }
-
-  def matchesWith(columnName: String): Boolean = {
-    name == columnName
-  }
+//  /**
+//    * Returns true if this resolved attribute matches with a given table name and colum name
+//    */
+//  def matchesWith(tableName: String, columnName: String): Boolean = {
+//    relationNames match {
+//      case Nil => columnName == name
+//      case tableNames =>
+//        tableNames.exists { tbl =>
+//          tbl == tableName && matchesWith(columnName)
+//        }
+//    }
+//  }
+//
+//  def matchesWith(columnName: String): Boolean = {
+//    name == columnName
+//  }
 
   override def toString = {
     (qualifier, sourceColumns) match {

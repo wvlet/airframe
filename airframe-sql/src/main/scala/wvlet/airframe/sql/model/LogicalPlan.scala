@@ -530,7 +530,7 @@ object LogicalPlan {
         }
       }
       val columns = (0 until values.head.size).map { i =>
-        SingleColumn(MultiColumn(values.map(_(i)), None, None, None), None, None, None)
+        SingleColumn(MultiSourceColumn(values.map(_(i)), None, None, None), None, None, None)
       }
       columns
     }
@@ -713,7 +713,7 @@ object LogicalPlan {
               if (dupAttrs.isEmpty) {
                 r
               } else {
-                SingleColumn(MultiColumn(Seq(r) ++ dupAttrs, None, None, None), None, None, None)
+                SingleColumn(MultiSourceColumn(Seq(r) ++ dupAttrs, None, None, None), None, None, None)
               }
             case r => r
           }
@@ -765,7 +765,7 @@ object LogicalPlan {
       sameColumnList.map { columns =>
         val head       = columns.head
         val qualifiers = columns.map(_.qualifier).distinct
-        MultiColumn(
+        MultiSourceColumn(
           inputs = columns.toSeq,
           alias = Some(head.name),
           qualifier = {

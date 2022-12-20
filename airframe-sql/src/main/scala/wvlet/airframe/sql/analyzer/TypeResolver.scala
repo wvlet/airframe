@@ -335,49 +335,19 @@ object TypeResolver extends LogSupport {
   ): List[Expression] = {
     val resolvedAttributes = inputAttributes.map(resolveAttribute)
 
-    def matchedColumn(matched: Seq[Expression], name: String): Expression = {
-      matched match {
-        case attrs if attrs.size == 1 => attrs.head
-        case attrs                    => MultiColumn(attrs, Some(name), None, None)
-      }
-    }
-
     def lookup(name: String): List[Expression] = {
-      QName(name, None) match {
-        case QName(Seq(db, t1, c1), _) if context.database == db =>
-          resolvedAttributes.collect {
-            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.withQualifier(t1)
-            case c: SingleColumn if c.matchesWith(t1, c1) =>
-              c.expr match {
-                case m: MultiColumn => matchedColumn(m.matched(t1, c1), s"${t1}.${c1}")
-                case other          => other
-              }
-            case c: AllColumns if c.matchesWith(t1, c1) => matchedColumn(c.matched(t1, c1), s"${t1}.${c1}")
-          }.toList
-        case QName(Seq(t1, c1), _) =>
-          resolvedAttributes.collect {
-            case a: ResolvedAttribute if a.matchesWith(t1, c1) => a.withQualifier(t1)
-            case c: SingleColumn if c.matchesWith(t1, c1) =>
-              c.expr match {
-                case m: MultiColumn => matchedColumn(m.matched(t1, c1), s"${t1}.${c1}")
-                case other          => other
-              }
-            case c: AllColumns if c.matchesWith(t1, c1) => matchedColumn(c.matched(t1, c1), s"${t1}.${c1}")
-          }.toList
-        case QName(Seq(c1), _) =>
-          resolvedAttributes.collect {
-            case a: ResolvedAttribute if a.matchesWith(c1) => a
-            case c: SingleColumn if c.matchesWith(c1) =>
-              c.expr match {
-                case m: MultiColumn => matchedColumn(m.matched(c1), c1)
-                case other          => other
-              }
-            case c: AllColumns if c.matchesWith(c1) => matchedColumn(c.matched(c1), c1)
-          }.toList
-        case _ =>
-          List.empty
+      val resolvedExprs = List.newBuilder[Expression]
+      ColumnPath.fromQName(context.database, name) match {
+        case Some(columnPath) =>
+          resolvedAttributes.foreach {
+            case a: Attribute =>
+              resolvedExprs ++= a.matched(columnPath)
+            case _ =>
+          }
+        case None =>
       }
-    }.distinct
+      resolvedExprs.result()
+    }
 
     def toResolvedAttribute(name: String, expr: Expression): ResolvedAttribute = {
       ResolvedAttribute(
@@ -405,10 +375,10 @@ object TypeResolver extends LogSupport {
         // Resolve the inputs of AllColumn as ResolvedAttribute
         // so as not to pull up too much details
         val allColumns = resolvedAttributes.map {
-          case s @ SingleColumn(m: MultiColumn, alias, qualifier, _) =>
+          case s @ SingleColumn(m: MultiSourceColumn, alias, qualifier, _) =>
             // Pull-up MultiColumn to simplify the expression
             m.copy(alias = m.alias.orElse(s.alias), qualifier = qualifier)
-          case m: MultiColumn =>
+          case m: MultiSourceColumn =>
             // MultiColumn is already resolved
             m
           case r: ResolvedAttribute =>
@@ -421,6 +391,7 @@ object TypeResolver extends LogSupport {
       case _ =>
         List(expr)
     }
+
     trace(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes} -> ${results}")
     results
   }
