@@ -16,7 +16,7 @@ package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.catalog.DataType
 import wvlet.airframe.sql.catalog.DataType._
-import wvlet.airframe.sql.model.Expression.{MultiSourceColumn, SingleColumn}
+import wvlet.airframe.sql.model.Expression.{AllColumns, MultiSourceColumn, SingleColumn}
 import wvlet.log.LogSupport
 
 import java.util.Locale
@@ -36,10 +36,6 @@ sealed trait Expression extends TreeNode[Expression] with Product {
       case _ =>
         s"${attributeName}:${dataTypeName}"
     }
-  }
-
-  def typeDescriptionWithNodeType: String = {
-    s"[${this.getClass.getSimpleName.replaceAll("$", "")}] ${typeDescription}"
   }
 
   /**
@@ -187,7 +183,7 @@ case class ColumnPath(database: Option[String], table: Option[String], columnNam
 
 object ColumnPath {
   def fromQName(contextDatabase: String, name: String): Option[ColumnPath] = {
-    // TODO Should we handle quaotation in the name or just reject?
+    // TODO Should we handle quotation in the name or just reject?
     name.split("\\.").toList match {
       case List(db, t, c) if db == contextDatabase =>
         Some(ColumnPath(Some(db), Some(t), c))
@@ -208,8 +204,9 @@ trait Attribute extends LeafExpression with LogSupport {
   override def attributeName: String = name
   def name: String
   def fullName: String = {
-    s"${qualifier.map(q => s"${q}.").getOrElse("")}${name}"
+    s"${prefix}${name}"
   }
+  def prefix: String = qualifier.map(q => s"${q}.").getOrElse("")
 
   // (database name)?.(table name)
   def qualifier: Option[String]
@@ -229,7 +226,7 @@ trait Attribute extends LeafExpression with LogSupport {
   def withAlias(newAlias: String): Attribute = withAlias(Some(newAlias))
   def withAlias(newAlias: Option[String]): Attribute
 
-  protected def inputColumns: Seq[Attribute] = {
+  protected[sql] def inputColumns: Seq[Attribute] = {
     children.map {
       case a: Attribute  => a
       case u: Expression => SingleColumn(u, alias, qualifier, None)
@@ -243,14 +240,18 @@ trait Attribute extends LeafExpression with LogSupport {
     */
   def matchesWith(columnPath: ColumnPath): Boolean = {
     def matchesWith(columnName: String): Boolean = {
-      inputColumns.exists(_.name == columnName)
+      inputColumns.exists {
+        case a: AllColumns =>
+          a.inputColumns.exists(_.name == columnName)
+        case a: Attribute =>
+          a.name == columnName
+      }
     }
 
     columnPath.table match {
       // TODO handle (catalog).(database).(table) names in the qualifier
       case Some(tableName) =>
         qualifier.exists(_ == tableName) && matchesWith(columnPath.columnName)
-
       case None =>
         matchesWith(columnPath.columnName)
     }
@@ -262,7 +263,12 @@ trait Attribute extends LeafExpression with LogSupport {
     */
   def matched(columnPath: ColumnPath): Option[Attribute] = {
     def findMatched(columnName: String): Seq[Attribute] = {
-      inputColumns.filter(_.name == columnName)
+      inputColumns.collect {
+        case a: AllColumns =>
+          a.inputColumns.filter(_.name == columnName)
+        case a: Attribute if a.name == columnName =>
+          Seq(a)
+      }.flatten
     }
 
     val result: Seq[Attribute] = columnPath.table match {
@@ -432,12 +438,15 @@ object Expression {
       this.copy(qualifier = newQualifier)
     }
 
-    override def inputColumns: Seq[Attribute] = columns.getOrElse(Seq.empty)
+    override def inputColumns: Seq[Attribute] = {
+      columns.getOrElse(Seq.empty)
+    }
 
     override def toString = {
       columns match {
         case Some(attrs) if attrs.nonEmpty =>
-          val inputs = attrs.map(_.typeDescription).mkString(", ")
+          val inputs = attrs
+            .map(a => s"${a.fullName}:${a.dataTypeName}").mkString(", ")
           s"AllColumns(${inputs})"
         case _ =>
           s"AllColumns(${fullName})"

@@ -29,7 +29,15 @@ import wvlet.airframe.sql.model.LogicalPlan.{
   Sort,
   With
 }
-import wvlet.airframe.sql.model.{CTERelationRef, Expression, LogicalPlan, NodeLocation, ResolvedAttribute, SourceColumn}
+import wvlet.airframe.sql.model.{
+  CTERelationRef,
+  ColumnPath,
+  Expression,
+  LogicalPlan,
+  NodeLocation,
+  ResolvedAttribute,
+  SourceColumn
+}
 import wvlet.airframe.sql.parser.{SQLGenerator, SQLParser}
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
@@ -247,10 +255,9 @@ class TypeResolverTest extends AirSpec {
     }
 
     test("ru4: resolve aggregation key with union") {
-      val p = analyze("select count(*), id from (select * from A union all select * from B) group by id")
-      p.asInstanceOf[Aggregate].groupingKeys(0).child shouldMatch {
-        case MultiSourceColumn(List(`ra1`, `rb1`), Some("id"), _, _) => ()
-      }
+      val p   = analyze("select count(*), id from (select * from A union all select * from B) group by id")
+      val agg = p shouldMatch { case a: Aggregate => a }
+      agg.groupingKeys(0).child shouldMatch { case MultiSourceColumn(Seq(`ra1`, `rb1`), Some("id"), _, _) => }
     }
 
     test("resolve union with expression") {

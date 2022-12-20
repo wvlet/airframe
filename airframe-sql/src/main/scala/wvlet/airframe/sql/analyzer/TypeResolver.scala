@@ -366,7 +366,7 @@ object TypeResolver extends LogSupport {
         val allColumns = resolvedAttributes.map {
           case s @ SingleColumn(m: MultiSourceColumn, alias, qualifier, _) =>
             // Pull-up MultiColumn to simplify the expression
-            m.copy(alias = m.alias.orElse(s.alias), qualifier = qualifier)
+            m.copy(alias = m.alias.orElse(s.alias)).setQualifierIfEmpty(qualifier)
           case m: MultiSourceColumn =>
             // MultiColumn is already resolved
             m
