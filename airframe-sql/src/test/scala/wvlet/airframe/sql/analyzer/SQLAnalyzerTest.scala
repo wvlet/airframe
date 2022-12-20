@@ -52,8 +52,8 @@ class SQLAnalyzerTest extends AirSpec {
     val plan = SQLAnalyzer.analyze("select id, name from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tbl1, tbl1.column("id"))), None),
-      ResolvedAttribute("name", DataType.StringType, None, Some(SourceColumn(tbl1, tbl1.column("name"))), None)
+      ResolvedAttribute("id", DataType.LongType, Some("a"), Some(SourceColumn(tbl1, tbl1.column("id"))), None),
+      ResolvedAttribute("name", DataType.StringType, Some("a"), Some(SourceColumn(tbl1, tbl1.column("name"))), None)
     )
   }
 
@@ -65,12 +65,18 @@ class SQLAnalyzerTest extends AirSpec {
         None,
         Some(
           Seq(
-            ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tbl1, tbl1.column("id"))), None),
-            ResolvedAttribute("name", DataType.StringType, None, Some(SourceColumn(tbl1, tbl1.column("name"))), None),
+            ResolvedAttribute("id", DataType.LongType, Some("a"), Some(SourceColumn(tbl1, tbl1.column("id"))), None),
+            ResolvedAttribute(
+              "name",
+              DataType.StringType,
+              Some("a"),
+              Some(SourceColumn(tbl1, tbl1.column("name"))),
+              None
+            ),
             ResolvedAttribute(
               "address",
               DataType.StringType,
-              None,
+              Some("a"),
               Some(SourceColumn(tbl1, tbl1.column("address"))),
               None
             )
@@ -85,13 +91,14 @@ class SQLAnalyzerTest extends AirSpec {
     val plan = SQLAnalyzer.analyze("select id as person_id from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
+      // Attribute should not have a qualifier
       ResolvedAttribute("person_id", DataType.LongType, None, Some(SourceColumn(tbl1, tbl1.column("id"))), None)
     )
   }
 
   test("resolve join attributes") {
     val plan = SQLAnalyzer.analyze(
-      "select a.id, a.name, a.address, b.phone as person_id from a, b where a.id = b.id",
+      "select a.id, a.name, a.address, b.phone as phone_num from a, b where a.id = b.id",
       "public",
       catalog
     )
@@ -107,9 +114,9 @@ class SQLAnalyzerTest extends AirSpec {
         None
       ),
       ResolvedAttribute(
-        "person_id",
+        "phone_num",
         DataType.StringType,
-        Some("b"),
+        None, // This must be None because it's renamed from b.phone as phone_num
         Some(SourceColumn(tbl2, tbl2.column("phone"))),
         None
       )

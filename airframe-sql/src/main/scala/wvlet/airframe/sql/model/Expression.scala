@@ -221,8 +221,18 @@ trait Attribute extends LeafExpression {
     */
   def withQualifier(newQualifier: String): Attribute
 
+  def withQualifier(newQualifier: Option[String]): Attribute = {
+    newQualifier match {
+      case Some(q) => withQualifier(q)
+      case None    => this
+    }
+  }
+
   def alias: Option[String]
   def withAlias(newAlias: String): Attribute
+  def withAlias(newAlias: Option[String]): Attribute = {
+    newAlias.map{ alias => withAlias(alias) }.getOrElse(this)
+  }
 
   protected def inputColumns: Seq[Attribute] = {
     children.map {
@@ -263,19 +273,16 @@ trait Attribute extends LeafExpression {
     val result: Seq[Attribute] = columnPath.table match {
       // TODO handle (catalog).(database).(table) names in the qualifier
       case Some(tableName) =>
-        if (qualifier.exists(_ == tableName)) findMatched(columnPath.columnName) else Nil
+        if (qualifier.exists(_ == tableName)) {
+          findMatched(columnPath.columnName).map(_.withQualifier(qualifier))
+        } else Nil
       case None =>
         findMatched(columnPath.columnName)
     }
     if (result.size > 1) {
       Some(MultiSourceColumn(result, Some(columnPath.columnName), qualifier = qualifier, None))
     } else {
-      result.headOption.map { a =>
-        qualifier match {
-          case Some(q) => a.withQualifier(q)
-          case _       => a
-        }
-      }
+      result.headOption
     }
   }
 

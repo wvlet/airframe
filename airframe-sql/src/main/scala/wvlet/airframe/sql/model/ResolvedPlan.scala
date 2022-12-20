@@ -16,6 +16,7 @@ package wvlet.airframe.sql.model
 import wvlet.airframe.sql.analyzer.QuerySignatureConfig
 import wvlet.airframe.sql.catalog.{Catalog, DataType}
 import wvlet.airframe.sql.model.LogicalPlan.Relation
+import wvlet.log.LogSupport
 
 /**
   * The lowest level operator to access a table
@@ -64,7 +65,8 @@ case class ResolvedAttribute(
     // If this attribute directly refers to a table column, its source column will be set.
     sourceColumn: Option[SourceColumn],
     nodeLocation: Option[NodeLocation]
-) extends Attribute {
+) extends Attribute
+    with LogSupport {
 
   override def sqlExpr: String = {
     s"${qualifier.map(q => s"${q}.").getOrElse("")}${name}"
@@ -72,18 +74,31 @@ case class ResolvedAttribute(
 
   override def alias: Option[String] = Some(name)
   def withAlias(newName: String): ResolvedAttribute = {
-    this.copy(name = newName)
+    if (isRawColumn && sourceColumn.exists(_.column.name != newName)) {
+      // When renaming from the source column name, qualifier should be removed
+      this.copy(name = newName, qualifier = None)
+    } else {
+      this.copy(name = newName)
+    }
   }
+  private def isRawColumn: Boolean = {
+    (qualifier, sourceColumn) match {
+      case (Some(q), Some(src)) =>
+        q == src.table.name && name == src.column.name
+      case (None, Some(src)) =>
+        src.column.name == name
+      case _ =>
+        false
+    }
+  }
+
   override def withQualifier(newQualifier: String): Attribute = {
     this.copy(qualifier = Some(newQualifier))
   }
 
   override def inputColumns: Seq[Attribute] = Seq(this)
 
-  def relationNames: Seq[String] = qualifier match {
-    case Some(q) => Seq(q)
-    case _       => sourceColumn.map(_.table.name).toSeq
-  }
+  def relationName: Option[String] = qualifier.orElse(sourceColumn.map(_.table.name))
 
 //  /**
 //    * Returns true if this resolved attribute matches with a given table name and colum name
