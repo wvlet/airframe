@@ -93,4 +93,24 @@ class SQLGeneratorTest extends AirSpec {
     sql.contains("on a.id = b.id") shouldBe true
   }
 
+  test("generate join with keys with qualifier") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze(
+        """select count(*)
+          |  from
+          |    (select * from A) t1
+          |  join
+          |    (select * from A) t2
+          |  on t1.id = t2.id
+          |""".stripMargin,
+        "default",
+        demoCatalog
+      )
+
+    val sql = SQLGenerator.print(resolvedPlan)
+    info(sql)
+    info(resolvedPlan.pp)
+    sql.contains("ON t1.id = t2.id") shouldBe true
+  }
+
 }

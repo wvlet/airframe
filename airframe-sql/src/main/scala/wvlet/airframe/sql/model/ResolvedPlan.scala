@@ -33,7 +33,7 @@ case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn], no
       ResolvedAttribute(
         col.name,
         col.dataType,
-        None,
+        Some(table.name),
         Seq(SourceColumn(table, col)),
         None // ResolvedAttribute always has no NodeLocation
       )
@@ -59,12 +59,17 @@ case class SourceColumn(table: Catalog.Table, column: Catalog.TableColumn) {
 case class ResolvedAttribute(
     name: String,
     override val dataType: DataType,
+    // table name
     qualifier: Option[String],
     // If this attribute directly refers to table column(s), source columns will be set.
     // It may have multiple SourceColumns when table columns are merged with UNION and Set operations
     sourceColumns: Seq[SourceColumn],
     nodeLocation: Option[NodeLocation]
 ) extends Attribute {
+
+  override def sqlExpr: String = {
+    s"${qualifier.map(q => s"${q}.").getOrElse("")}${name}"
+  }
 
   def withAlias(newName: String): ResolvedAttribute = {
     this.copy(name = newName)
@@ -91,8 +96,6 @@ case class ResolvedAttribute(
   def matchesWith(columnName: String): Boolean = {
     name == columnName
   }
-
-  override def sqlExpr: String = attributeName
 
   override def toString = {
     (qualifier, sourceColumns) match {

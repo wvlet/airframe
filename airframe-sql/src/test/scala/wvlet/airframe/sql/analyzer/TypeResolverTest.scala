@@ -21,6 +21,7 @@ import wvlet.airframe.sql.model.LogicalPlan.{
   Distinct,
   Except,
   Filter,
+  InnerJoin,
   Intersect,
   Join,
   Project,
@@ -114,10 +115,10 @@ class TypeResolverTest extends AirSpec {
     SQLGenerator.print(p)
   }
 
-  private val ra1 = ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tableA, a1)), None)
-  private val ra2 = ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tableA, a2)), None)
-  private val rb1 = ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tableB, b1)), None)
-  private val rb2 = ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tableB, b2)), None)
+  private val ra1 = ResolvedAttribute("id", DataType.LongType, Some("A"), Seq(SourceColumn(tableA, a1)), None)
+  private val ra2 = ResolvedAttribute("name", DataType.StringType, Some("A"), Seq(SourceColumn(tableA, a2)), None)
+  private val rb1 = ResolvedAttribute("id", DataType.LongType, Some("B"), Seq(SourceColumn(tableB, b1)), None)
+  private val rb2 = ResolvedAttribute("name", DataType.StringType, Some("B"), Seq(SourceColumn(tableB, b2)), None)
 
   test("resolveTableRef") {
     test("resolve all columns") {
@@ -917,6 +918,21 @@ class TypeResolverTest extends AirSpec {
         |""".stripMargin)
     p.outputAttributes shouldMatch {
       case List(c1: SingleColumn, c2: SingleColumn) if c1.name == "name" && c2.name == "cnt" =>
+    }
+  }
+
+  test("resolve join keys with qualifiers") {
+    val p = analyze("""select count(*)
+      |  from
+      |    (select * from A) t1
+      |  join
+      |    (select * from B) t2
+      |  on t1.id = t2.id
+      |""".stripMargin)
+
+    p shouldMatch { case Project(Join(InnerJoin, _, _, JoinOnEq(Seq(k1, k2), _), _), _, _) =>
+      debug(k1.sqlExpr)
+      debug(k2.sqlExpr)
     }
   }
 }

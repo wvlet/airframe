@@ -314,8 +314,7 @@ object Expression {
     override def toString = {
       columns match {
         case Some(attrs) if attrs.nonEmpty =>
-          // Show the detailed node type for the ease of debugging
-          val inputs = attrs.map(_.typeDescriptionWithNodeType).mkString(", ")
+          val inputs = attrs.map(_.typeDescription).mkString(", ")
           s"AllColumns(${inputs})"
         case _ =>
           s"AllColumns(${qualifier.map(q => s"${q}.").getOrElse("")}*)"
