@@ -599,8 +599,8 @@ object LogicalPlan {
       s"P[${proj}](${child.sig(config)})"
     }
 
-    // TODO
     override def outputAttributes: Seq[Attribute] = {
+      // TODO Remove redundant resolution
       selectItems.map(TypeResolver.resolveAttribute)
     }
   }

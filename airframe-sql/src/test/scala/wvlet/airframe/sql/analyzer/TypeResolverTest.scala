@@ -224,11 +224,11 @@ class TypeResolverTest extends AirSpec {
 
     test("ru2: resolve union with column alias") {
       val p = analyze("select p1 from (select id as p1 from A union all select id as p1 from B)")
-      p.inputAttributes shouldMatch { case Seq(MultiSourceColumn(Seq(c1, c2), Some("p1"), _, _)) =>
+      p.inputAttributes shouldMatch { case Seq(MultiSourceColumn(Seq(c1, c2), Some("p1"), None, _)) =>
         c1 shouldBe ra1.withAlias("p1")
         c2 shouldBe rb1.withAlias("p1")
       }
-      p.outputAttributes shouldMatch { case Seq(MultiSourceColumn(Seq(c1, c2), Some("p1"), _, _)) =>
+      p.outputAttributes shouldMatch { case Seq(MultiSourceColumn(Seq(c1, c2), None, None, _)) =>
         c1 shouldBe ra1.withAlias("p1")
         c2 shouldBe rb1.withAlias("p1")
       }
@@ -236,17 +236,17 @@ class TypeResolverTest extends AirSpec {
 
     test("ru3: resolve union with column alias and qualifier") {
       val p = analyze("select q1.p1 from (select id as p1 from A union all select id as p1 from B) q1")
-      p.inputAttributes shouldMatch { case List(MultiSourceColumn(List(c1, c2), Some("p1"), _, _)) =>
+      p.inputAttributes shouldMatch { case Seq(MultiSourceColumn(Seq(c1, c2), Some("p1"), _, _)) =>
         c1 shouldBe ra1.withAlias("p1")
         c2 shouldBe rb1.withAlias("p1")
       }
-      p.outputAttributes shouldMatch { case List(MultiSourceColumn(List(c1, c2), Some("q1.p1"), _, _)) =>
-        c1 shouldBe ra1.withAlias("p1")
-        c2 shouldBe rb1.withAlias("p1")
+      p.outputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), None, Some("q1"), _)) =>
+        c1 shouldBe ra1.withAlias("p1").withQualifier("q1")
+        c2 shouldBe rb1.withAlias("p1").withQualifier("q1")
       }
     }
 
-    test("resolve aggregation key with union") {
+    test("ru4: resolve aggregation key with union") {
       val p = analyze("select count(*), id from (select * from A union all select * from B) group by id")
       p.asInstanceOf[Aggregate].groupingKeys(0).child shouldMatch {
         case MultiSourceColumn(List(`ra1`, `rb1`), Some("id"), _, _) => ()

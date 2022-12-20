@@ -204,7 +204,7 @@ object ColumnPath {
 /**
   * Attribute is used for column names of relational table inputs and outputs
   */
-trait Attribute extends LeafExpression {
+trait Attribute extends LeafExpression with LogSupport {
   override def attributeName: String = name
   def name: String
   def fullName: String = {
@@ -215,6 +215,15 @@ trait Attribute extends LeafExpression {
   def qualifier: Option[String]
   def withQualifier(newQualifier: String): Attribute = withQualifier(Some(newQualifier))
   def withQualifier(newQualifier: Option[String]): Attribute
+
+  /**
+    * Set the qualifier if the current qualifier is empty
+    * @param newQualifier
+    * @return
+    */
+  def setQualifierIfEmpty(newQualifier: Option[String]): Attribute = {
+    withQualifier(qualifier.orElse(newQualifier))
+  }
 
   def alias: Option[String]
   def withAlias(newAlias: String): Attribute = withAlias(Some(newAlias))
@@ -266,7 +275,13 @@ trait Attribute extends LeafExpression {
         findMatched(columnPath.columnName)
     }
     if (result.size > 1) {
-      Some(MultiSourceColumn(result, Some(columnPath.columnName), qualifier = qualifier, None))
+      val q = if (result.forall(_.qualifier == result.head.qualifier)) {
+        // Preserve the qualifier
+        result.head.qualifier
+      } else {
+        qualifier
+      }
+      Some(MultiSourceColumn(result, Some(columnPath.columnName), qualifier = q, None))
     } else {
       result.headOption
     }

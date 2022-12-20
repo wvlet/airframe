@@ -298,14 +298,15 @@ object TypeResolver extends LogSupport {
         resolvedColumns += other
     }
     val output = resolvedColumns.result()
-    output
+    // Run one-more resolution (e.g., SingleColumn -> ResolvedAttribute)
+    output.map(resolveAttribute)
   }
 
   def resolveAttribute(attribute: Attribute): Attribute = {
     attribute match {
-      case SingleColumn(r: ResolvedAttribute, alias, qualifier, _) =>
+      case SingleColumn(a: Attribute, alias, qualifier, _) =>
         // Preserve column alias and qualifiers
-        r.withAlias(alias).withQualifier(qualifier)
+        a.withAlias(alias).setQualifierIfEmpty(qualifier)
       case other => other
     }
   }
