@@ -173,11 +173,11 @@ class TypeResolverTest extends AirSpec {
   }
 
   test("resolve set operations") {
-    test("resolve union") {
+    test("u1: resolve union") {
       val p = analyze("select id from A union all select id from B")
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
       p.outputAttributes shouldBe List(
-        SingleColumn(MultiColumn(List(ra1, rb1), Some("id"), None, None), None, None, None)
+        MultiColumn(List(ra1, rb1), Some("id"), None, None)
       )
     }
 

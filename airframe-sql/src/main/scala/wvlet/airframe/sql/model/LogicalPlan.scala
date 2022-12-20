@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.model
+import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, RewriteRule, TypeResolver}
 import wvlet.airframe.sql.catalog.DataType
 
@@ -750,7 +751,37 @@ object LogicalPlan {
 
   sealed trait SetOperation extends Relation {
     override def children: Seq[Relation]
+
+    override def outputAttributes: Seq[Attribute] = mergeOutputAttributes
+    protected def mergeOutputAttributes: Seq[Attribute] = {
+      // Collect all input attributes
+      val outputAttributes: IndexedSeq[IndexedSeq[Attribute]] =
+        children.map(_.outputAttributes.toIndexedSeq).toIndexedSeq
+
+      // Transpose a set of relation columns into a list of same columns
+      // relations: (Ra(a1, a2, ...), Rb(b1, b2, ...))
+      // column lists: ((a1, b1, ...), (a2, b2, ...)
+      val sameColumnList = outputAttributes.transpose
+      sameColumnList.map { columns =>
+        val head       = columns.head
+        val qualifiers = columns.map(_.qualifier).distinct
+        MultiColumn(
+          inputs = columns,
+          alias = Some(head.name),
+          qualifier = {
+            // If all of the qualifiers are the same, use it.
+            if (qualifiers.size == 1) {
+              qualifiers.head
+            } else {
+              None
+            }
+          },
+          None
+        )
+      }
+    }
   }
+
   case class Intersect(
       relations: Seq[Relation],
       nodeLocation: Option[NodeLocation]
@@ -761,26 +792,8 @@ object LogicalPlan {
     }
     override def inputAttributes: Seq[Attribute] =
       relations.flatMap(_.inputAttributes)
-    override def outputAttributes: Seq[Attribute] = {
-      relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
-        SingleColumn(
-          MultiColumn(
-            relations.map(_.outputAttributes(i)),
-            Some(output.name),
-            None,
-            output.nodeLocation
-          ),
-          None,
-          output match {
-            case r: ResolvedAttribute => r.qualifier
-            case c: SingleColumn      => c.qualifier
-            case _                    => None
-          },
-          output.nodeLocation
-        )
-      }
-    }
   }
+
   case class Except(left: Relation, right: Relation, nodeLocation: Option[NodeLocation]) extends SetOperation {
     override def children: Seq[Relation] = Seq(left, right)
     override def sig(config: QuerySignatureConfig): String = {
@@ -789,6 +802,7 @@ object LogicalPlan {
     override def inputAttributes: Seq[Attribute]  = left.inputAttributes
     override def outputAttributes: Seq[Attribute] = left.outputAttributes
   }
+
   case class Union(
       relations: Seq[Relation],
       nodeLocation: Option[NodeLocation]
@@ -803,20 +817,6 @@ object LogicalPlan {
     }
     override def inputAttributes: Seq[Attribute] = {
       relations.flatMap(_.inputAttributes)
-    }
-    override def outputAttributes: Seq[Attribute] = {
-      relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
-        SingleColumn(
-          MultiColumn(relations.map(_.outputAttributes(i)), Some(output.name), None, output.nodeLocation),
-          None,
-          output match {
-            case r: ResolvedAttribute => r.qualifier
-            case c: SingleColumn      => c.qualifier
-            case _                    => None
-          },
-          output.nodeLocation
-        )
-      }
     }
   }
 

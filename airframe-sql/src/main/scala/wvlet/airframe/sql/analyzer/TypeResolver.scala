@@ -393,8 +393,9 @@ object TypeResolver extends LogSupport {
       case i: Identifier =>
         lookup(i.value).map {
           // No need to resolve Attribute expressions
-          case a: Attribute => a
-          case expr         =>
+          case a: Attribute =>
+            a
+          case expr =>
             // Resolve expr as ResolvedAttribute so as not to pull-up too much details
             toResolvedAttribute(i.value, expr)
         }

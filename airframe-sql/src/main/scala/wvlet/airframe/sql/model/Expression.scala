@@ -181,6 +181,11 @@ trait BinaryExpression extends Expression {
   */
 trait Attribute extends LeafExpression {
   def name: String
+  def fullName: String = {
+    s"${qualifier.map(q => s"${q}.").getOrElse("")}${name}"
+  }
+
+  def qualifier: Option[String]
   override def attributeName: String = name
 
   /**
@@ -233,6 +238,7 @@ object Expression {
     override def sqlExpr: String  = name
     override lazy val resolved    = false
 
+    override def qualifier: Option[String]                      = None
     override def withQualifier(newQualifier: String): Attribute = this
   }
 
@@ -297,13 +303,13 @@ object Expression {
   }
 
   case class AllColumns(
-      qualifier: Option[QName],
+      override val qualifier: Option[String],
       columns: Option[Seq[Attribute]],
       nodeLocation: Option[NodeLocation]
   ) extends Attribute
       with LogSupport {
     override def name: String              = "*"
-    override def children: Seq[Expression] = qualifier.toSeq
+    override def children: Seq[Expression] = columns.getOrElse(Seq.empty)
 
     override def dataType: DataType = {
       columns
@@ -317,12 +323,12 @@ object Expression {
           val inputs = attrs.map(_.typeDescription).mkString(", ")
           s"AllColumns(${inputs})"
         case _ =>
-          s"AllColumns(${qualifier.map(q => s"${q}.").getOrElse("")}*)"
+          s"AllColumns(${fullName})"
       }
     }
 
     def matchesWith(tableName: String, columnName: String): Boolean = {
-      qualifier.exists(_.sqlExpr == tableName) && matchesWith(columnName)
+      qualifier.exists(_ == tableName) && matchesWith(columnName)
     }
 
     def matchesWith(columnName: String): Boolean = {
@@ -330,7 +336,7 @@ object Expression {
     }
 
     def matched(tableName: String, columnName: String): Seq[Expression] = {
-      if (qualifier.exists(_.sqlExpr == tableName)) matched(columnName) else Nil
+      if (qualifier.exists(_ == tableName)) matched(columnName) else Nil
     }
 
     def matched(columnName: String): Seq[Expression] = {
@@ -340,7 +346,7 @@ object Expression {
     override lazy val resolved = columns.isDefined
 
     override def withQualifier(newQualifier: String): Attribute = {
-      this.copy(qualifier = Some(QName(newQualifier, nodeLocation)))
+      this.copy(qualifier = Some(newQualifier))
     }
   }
   case class SingleColumn(
@@ -354,7 +360,7 @@ object Expression {
     override def dataType: DataType = expr.dataType
 
     override def children: Seq[Expression] = Seq(expr)
-    override def toString = s"SingleColumn(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
+    override def toString                  = s"SingleColumn(${fullName} := ${expr})"
 
     override def sqlExpr: String = {
       alias match {
@@ -458,7 +464,7 @@ object Expression {
       inputs.head.dataType
     }
 
-    override def toString: String = s"MultiColumn(${inputs.mkString(", ")}${alias.map(" as " + _).getOrElse("")})"
+    override def toString: String = s"MultiColumn(${fullName} := ${inputs.mkString(", ")})"
 
     def matched(tableName: String, columnName: String): Seq[Expression] = {
       if (alias.contains(s"${tableName}.${columnName}")) {
