@@ -548,7 +548,7 @@ object Expression {
   ) extends Attribute {
     require(inputs.nonEmpty, s"The inputs of MultiSourceColumn should not be empty: ${this}")
 
-    override def toString: String          = s"MultiSourceColumn(${fullName} := ${inputs.mkString(", ")})"
+    override def toString: String          = s"MultiSourceColumn(${fullName} := {${inputs.mkString(", ")}})"
     override def children: Seq[Expression] = inputs
 
     override def name: String = {

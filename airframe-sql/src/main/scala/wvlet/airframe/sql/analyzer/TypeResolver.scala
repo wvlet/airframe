@@ -354,7 +354,7 @@ object TypeResolver extends LogSupport {
         name,
         expr.dataType,
         None,
-        Seq.empty,
+        None,
         expr.nodeLocation
       )
     }

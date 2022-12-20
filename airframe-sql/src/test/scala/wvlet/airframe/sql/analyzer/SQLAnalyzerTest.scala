@@ -52,8 +52,8 @@ class SQLAnalyzerTest extends AirSpec {
     val plan = SQLAnalyzer.analyze("select id, name from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tbl1, tbl1.column("id"))), None),
-      ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tbl1, tbl1.column("name"))), None)
+      ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tbl1, tbl1.column("id"))), None),
+      ResolvedAttribute("name", DataType.StringType, None, Some(SourceColumn(tbl1, tbl1.column("name"))), None)
     )
   }
 
@@ -65,13 +65,13 @@ class SQLAnalyzerTest extends AirSpec {
         None,
         Some(
           Seq(
-            ResolvedAttribute("id", DataType.LongType, None, Seq(SourceColumn(tbl1, tbl1.column("id"))), None),
-            ResolvedAttribute("name", DataType.StringType, None, Seq(SourceColumn(tbl1, tbl1.column("name"))), None),
+            ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tbl1, tbl1.column("id"))), None),
+            ResolvedAttribute("name", DataType.StringType, None, Some(SourceColumn(tbl1, tbl1.column("name"))), None),
             ResolvedAttribute(
               "address",
               DataType.StringType,
               None,
-              Seq(SourceColumn(tbl1, tbl1.column("address"))),
+              Some(SourceColumn(tbl1, tbl1.column("address"))),
               None
             )
           )
@@ -85,7 +85,7 @@ class SQLAnalyzerTest extends AirSpec {
     val plan = SQLAnalyzer.analyze("select id as person_id from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("person_id", DataType.LongType, None, Seq(SourceColumn(tbl1, tbl1.column("id"))), None)
+      ResolvedAttribute("person_id", DataType.LongType, None, Some(SourceColumn(tbl1, tbl1.column("id"))), None)
     )
   }
 
@@ -97,20 +97,20 @@ class SQLAnalyzerTest extends AirSpec {
     )
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("id", DataType.LongType, Some("a"), Seq(SourceColumn(tbl1, tbl1.column("id"))), None),
-      ResolvedAttribute("name", DataType.StringType, Some("a"), Seq(SourceColumn(tbl1, tbl1.column("name"))), None),
+      ResolvedAttribute("id", DataType.LongType, Some("a"), Some(SourceColumn(tbl1, tbl1.column("id"))), None),
+      ResolvedAttribute("name", DataType.StringType, Some("a"), Some(SourceColumn(tbl1, tbl1.column("name"))), None),
       ResolvedAttribute(
         "address",
         DataType.StringType,
         Some("a"),
-        Seq(SourceColumn(tbl1, tbl1.column("address"))),
+        Some(SourceColumn(tbl1, tbl1.column("address"))),
         None
       ),
       ResolvedAttribute(
         "person_id",
         DataType.StringType,
         Some("b"),
-        Seq(SourceColumn(tbl2, tbl2.column("phone"))),
+        Some(SourceColumn(tbl2, tbl2.column("phone"))),
         None
       )
     )

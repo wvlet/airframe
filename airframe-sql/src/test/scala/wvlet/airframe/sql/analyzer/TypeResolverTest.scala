@@ -115,10 +115,10 @@ class TypeResolverTest extends AirSpec {
     SQLGenerator.print(p)
   }
 
-  private val ra1 = ResolvedAttribute("id", DataType.LongType, Some("A"), Seq(SourceColumn(tableA, a1)), None)
-  private val ra2 = ResolvedAttribute("name", DataType.StringType, Some("A"), Seq(SourceColumn(tableA, a2)), None)
-  private val rb1 = ResolvedAttribute("id", DataType.LongType, Some("B"), Seq(SourceColumn(tableB, b1)), None)
-  private val rb2 = ResolvedAttribute("name", DataType.StringType, Some("B"), Seq(SourceColumn(tableB, b2)), None)
+  private val ra1 = ResolvedAttribute("id", DataType.LongType, Some("A"), Some(SourceColumn(tableA, a1)), None)
+  private val ra2 = ResolvedAttribute("name", DataType.StringType, Some("A"), Some(SourceColumn(tableA, a2)), None)
+  private val rb1 = ResolvedAttribute("id", DataType.LongType, Some("B"), Some(SourceColumn(tableB, b1)), None)
+  private val rb2 = ResolvedAttribute("name", DataType.StringType, Some("B"), Some(SourceColumn(tableB, b2)), None)
 
   test("resolveTableRef") {
     test("resolve all columns") {
@@ -852,8 +852,8 @@ class TypeResolverTest extends AirSpec {
 
       p.outputAttributes shouldBe List(
         ra1.withQualifier("A"),
-        ResolvedAttribute("key", DataType.StringType, Some("t"), Nil, None),
-        ResolvedAttribute("value", DataType.LongType, Some("t"), Nil, None)
+        ResolvedAttribute("key", DataType.StringType, Some("t"), None, None),
+        ResolvedAttribute("value", DataType.LongType, Some("t"), None, None)
       )
     }
   }

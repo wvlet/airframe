@@ -827,7 +827,7 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = {
       columns.map {
         case arr: ArrayConstructor =>
-          ResolvedAttribute(UUID.randomUUID().toString, arr.elementType, None, Nil, None)
+          ResolvedAttribute(UUID.randomUUID().toString, arr.elementType, None, None, None)
         case other =>
           SingleColumn(other, None, None, other.nodeLocation)
       }

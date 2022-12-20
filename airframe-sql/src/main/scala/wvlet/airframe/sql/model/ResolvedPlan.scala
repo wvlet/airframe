@@ -34,7 +34,7 @@ case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn], no
         col.name,
         col.dataType,
         Some(table.name),
-        Seq(SourceColumn(table, col)),
+        Some(SourceColumn(table, col)),
         None // ResolvedAttribute always has no NodeLocation
       )
     }
@@ -61,9 +61,8 @@ case class ResolvedAttribute(
     override val dataType: DataType,
     // table name
     qualifier: Option[String],
-    // If this attribute directly refers to table column(s), source columns will be set.
-    // It may have multiple SourceColumns when table columns are merged with UNION and Set operations
-    sourceColumns: Seq[SourceColumn],
+    // If this attribute directly refers to a table column, its source column will be set.
+    sourceColumn: Option[SourceColumn],
     nodeLocation: Option[NodeLocation]
 ) extends Attribute {
 
@@ -75,12 +74,15 @@ case class ResolvedAttribute(
   def withAlias(newName: String): ResolvedAttribute = {
     this.copy(name = newName)
   }
+  override def withQualifier(newQualifier: String): Attribute = {
+    this.copy(qualifier = Some(newQualifier))
+  }
 
   override def inputColumns: Seq[Attribute] = Seq(this)
 
   def relationNames: Seq[String] = qualifier match {
     case Some(q) => Seq(q)
-    case _       => sourceColumns.map(_.table.name)
+    case _       => sourceColumn.map(_.table.name).toSeq
   }
 
 //  /**
@@ -101,7 +103,7 @@ case class ResolvedAttribute(
 //  }
 
   override def toString = {
-    (qualifier, sourceColumns) match {
+    (qualifier, sourceColumn) match {
       case (Some(q), columns) if columns.nonEmpty =>
         columns
           .map(_.fullName)
@@ -115,10 +117,6 @@ case class ResolvedAttribute(
     }
   }
   override lazy val resolved = true
-
-  override def withQualifier(newQualifier: String): Attribute = {
-    this.copy(qualifier = Some(newQualifier))
-  }
 }
 
 /**
