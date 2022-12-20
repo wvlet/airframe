@@ -240,16 +240,14 @@ class TypeResolverTest extends AirSpec {
     }
 
     test("resolve union with column alias and qualifier") {
-      val p = analyze("select q1.p1 from (select id as p1 from A union all select id from B) q1")
-      p.inputAttributes shouldMatch {
-        case List(SingleColumn(MultiColumn(List(c1, c2), Some("p1"), _, _), None, Some("q1"), _)) =>
-          c1 shouldBe ra1.withAlias("p1")
-          c2 shouldBe rb1
+      val p = analyze("select q1.p1 from (select id as p1 from A union all select id as p1 from B) q1")
+      p.inputAttributes shouldMatch { case List(MultiColumn(List(c1, c2), Some("p1"), _, _)) =>
+        c1 shouldBe ra1.withAlias("p1")
+        c2 shouldBe rb1.withAlias("p1")
       }
-      p.outputAttributes shouldMatch {
-        case List(SingleColumn(MultiColumn(List(c1, c2), Some("q1.p1"), _, _), None, None, _)) =>
-          c1 shouldBe ra1.withAlias("p1")
-          c2 shouldBe rb1
+      p.outputAttributes shouldMatch { case List(MultiColumn(List(c1, c2), Some("q1.p1"), _, _)) =>
+        c1 shouldBe ra1.withAlias("p1")
+        c2 shouldBe rb1.withAlias("p1")
       }
     }
 
@@ -539,7 +537,7 @@ class TypeResolverTest extends AirSpec {
       val p = analyze("select pid, name from A join (select id pid from B) on A.id = B.pid")
       p.outputAttributes shouldMatch {
         case List(
-              ResolvedAttribute("pid", DataType.LongType, None, Seq(SourceColumn(`tableB`, `b1`)), _),
+              ResolvedAttribute("pid", DataType.LongType, Some("B"), Seq(SourceColumn(`tableB`, `b1`)), _),
               ResolvedAttribute("name", DataType.StringType, Some("A"), Seq(SourceColumn(`tableA`, `a2`)), _)
             ) =>
           ()
