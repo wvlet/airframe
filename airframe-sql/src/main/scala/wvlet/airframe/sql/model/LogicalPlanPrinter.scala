@@ -57,7 +57,14 @@ object LogicalPlanPrinter extends LogSupport {
             }
             s": ${printAttr(inputAttrs)} => ${printAttr(outputAttrs)}"
           }
-        val prefix = s"${ws}[${m.modelName}]${functionSig}"
+
+        val prefix = m match {
+          case t: TableScan =>
+            s"${ws}[${m.modelName}] ${t.table.fullName}${functionSig}"
+          case _ =>
+            s"${ws}[${m.modelName}]${functionSig}"
+        }
+
         attr.length match {
           case 0 =>
             out.println(prefix)

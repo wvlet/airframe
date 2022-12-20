@@ -529,7 +529,7 @@ object LogicalPlan {
         }
       }
       val columns = (0 until values.head.size).map { i =>
-        SingleColumn(MultiColumn(values.map(_(i)), None, None), None, None, None)
+        SingleColumn(MultiColumn(values.map(_(i)), None, None, None), None, None, None)
       }
       columns
     }
@@ -712,7 +712,7 @@ object LogicalPlan {
               if (dupAttrs.isEmpty) {
                 r
               } else {
-                SingleColumn(MultiColumn(Seq(r) ++ dupAttrs, None, None), None, None, None)
+                SingleColumn(MultiColumn(Seq(r) ++ dupAttrs, None, None, None), None, None, None)
               }
             case r => r
           }
@@ -767,6 +767,7 @@ object LogicalPlan {
           MultiColumn(
             relations.map(_.outputAttributes(i)),
             Some(output.name),
+            None,
             output.nodeLocation
           ),
           None,
@@ -806,7 +807,7 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = {
       relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
         SingleColumn(
-          MultiColumn(relations.map(_.outputAttributes(i)), Some(output.name), output.nodeLocation),
+          MultiColumn(relations.map(_.outputAttributes(i)), Some(output.name), None, output.nodeLocation),
           None,
           output match {
             case r: ResolvedAttribute => r.qualifier

@@ -83,6 +83,7 @@ object TypeResolver extends LogSupport {
   object resolveAggregationIndexes extends RewriteRule {
     def apply(context: AnalyzerContext): PlanRewriter = {
       case a @ Aggregate(child, selectItems, groupingKeys, having, _) =>
+        var changed = false
         val resolvedGroupingKeys: List[GroupingKey] = groupingKeys.map {
           case k @ GroupingKey(LongLiteral(i, _), _) if i <= selectItems.length =>
             // Use a simpler form of attributes
@@ -92,11 +93,16 @@ object TypeResolver extends LogSupport {
               case other =>
                 other
             }
+            changed = true
             GroupingKey(keyItem, k.nodeLocation)
           case other =>
             other
         }
-        Aggregate(child, selectItems, resolvedGroupingKeys, having, a.nodeLocation)
+        if (changed) {
+          Aggregate(child, selectItems, resolvedGroupingKeys, having, a.nodeLocation)
+        } else {
+          a
+        }
     }
   }
 
@@ -108,16 +114,17 @@ object TypeResolver extends LogSupport {
   object resolveAggregationKeys extends RewriteRule {
     def apply(context: AnalyzerContext): PlanRewriter = {
       case a @ Aggregate(child, selectItems, groupingKeys, having, _) =>
-        val resolvedChild   = resolveRelation(context, child)
-        val inputAttributes = resolvedChild.outputAttributes
+        val resolvedChild         = resolveRelation(context, child)
+        val childOutputAttributes = resolvedChild.outputAttributes
         val resolvedGroupingKeys =
           groupingKeys.map(x => {
-            val e = resolveExpression(context, x.child, inputAttributes, false)
+            val e = resolveExpression(context, x.child, childOutputAttributes)
             GroupingKey(e, e.nodeLocation)
           })
         val resolvedHaving = having.map {
           _.transformUpExpression { case x: Expression =>
-            resolveExpression(context, x, a.outputAttributes, false)
+            // Having recognize attributes only from the input relation
+            resolveExpression(context, x, childOutputAttributes)
           }
         }
         Aggregate(resolvedChild, selectItems, resolvedGroupingKeys, resolvedHaving, a.nodeLocation)
@@ -144,7 +151,7 @@ object TypeResolver extends LogSupport {
       val resolvedChild   = resolveRelation(context, child)
       val inputAttributes = resolvedChild.outputAttributes
       val resolvedSortItems = sortItems.map { sortItem =>
-        val e = resolveExpression(context, sortItem.sortKey, inputAttributes, false)
+        val e = resolveExpression(context, sortItem.sortKey, inputAttributes)
         sortItem.copy(sortKey = e)
       }
       s.copy(orderBy = resolvedSortItems)
@@ -198,7 +205,7 @@ object TypeResolver extends LogSupport {
         val resolvedJoin =
           Join(joinType, resolveRelation(context, left), resolveRelation(context, right), u, j.nodeLocation)
         val resolvedJoinKeys: Seq[Expression] = joinKeys.flatMap { k =>
-          findMatchInInputAttributes(context, k, resolvedJoin.inputAttributes, false) match {
+          findMatchInInputAttributes(context, k, resolvedJoin.inputAttributes) match {
             case x if x.size < 2 =>
               throw SQLErrorCode.ColumnNotFound.newException(
                 s"join key column: ${k.sqlExpr} is not found",
@@ -214,7 +221,7 @@ object TypeResolver extends LogSupport {
         val resolvedJoin =
           Join(joinType, resolveRelation(context, left), resolveRelation(context, right), u, j.nodeLocation)
         val resolvedJoinKeys: Seq[Expression] = Seq(leftKey, rightKey).flatMap { k =>
-          findMatchInInputAttributes(context, k, resolvedJoin.inputAttributes, false) match {
+          findMatchInInputAttributes(context, k, resolvedJoin.inputAttributes) match {
             case Nil =>
               throw SQLErrorCode.ColumnNotFound.newException(
                 s"join key column: ${k.sqlExpr} is not found",
@@ -243,12 +250,12 @@ object TypeResolver extends LogSupport {
     def apply(context: AnalyzerContext): PlanRewriter = {
       case filter @ Filter(child, filterExpr, _) =>
         filter.transformUpExpressions { case x: Expression =>
-          resolveExpression(context, x, filter.inputAttributes, true)
+          resolveExpression(context, x, filter.inputAttributes)
         }
       case u: Union     => u // UNION is resolved later by resolveUnion()
       case u: Intersect => u // INTERSECT is resolved later by resolveIntersect()
       case r: Relation =>
-        r.transformUpExpressions { case x: Expression => resolveExpression(context, x, r.inputAttributes, true) }
+        r.transformUpExpressions { case x: Expression => resolveExpression(context, x, r.inputAttributes) }
     }
   }
 
@@ -279,7 +286,7 @@ object TypeResolver extends LogSupport {
 //        // TODO check (prefix).* to resolve attributes
 //        resolvedColumns ++= inputAttributes
       case SingleColumn(expr, alias, qualifier, nodeLocation) =>
-        resolveExpression(context, expr, inputAttributes, true) match {
+        resolveExpression(context, expr, inputAttributes) match {
           case s: SingleColumn =>
             resolvedColumns += s
           case r: ResolvedAttribute if alias.isEmpty =>
@@ -324,15 +331,14 @@ object TypeResolver extends LogSupport {
   private def findMatchInInputAttributes(
       context: AnalyzerContext,
       expr: Expression,
-      inputAttributes: Seq[Attribute],
-      isSelectItem: Boolean
+      inputAttributes: Seq[Attribute]
   ): List[Expression] = {
     val resolvedAttributes = inputAttributes.map(resolveAttribute)
 
     def matchedColumn(matched: Seq[Expression], name: String): Expression = {
       matched match {
         case attrs if attrs.size == 1 => attrs.head
-        case attrs                    => MultiColumn(attrs, Some(name), None)
+        case attrs                    => MultiColumn(attrs, Some(name), None, None)
       }
     }
 
@@ -373,18 +379,44 @@ object TypeResolver extends LogSupport {
       }
     }.distinct
 
+    def toResolvedAttribute(name: String, expr: Expression): ResolvedAttribute = {
+      ResolvedAttribute(
+        name,
+        expr.dataType,
+        None,
+        Seq.empty,
+        expr.nodeLocation
+      )
+    }
+
     val results = expr match {
       case i: Identifier =>
         lookup(i.value).map {
-          case a: Attribute   => a
-          case m: MultiColumn => m
-          // retain alias for select column
-          case expr => if (isSelectItem) SingleColumn(expr, Some(i.value), None, expr.nodeLocation) else expr
+          // No need to resolve Attribute expressions
+          case a: Attribute => a
+          case expr         =>
+            // Resolve expr as ResolvedAttribute so as not to pull-up too much details
+            toResolvedAttribute(i.value, expr)
         }
       case u @ UnresolvedAttribute(name, _) =>
         lookup(name)
       case a @ AllColumns(_, None, _) =>
-        List(a.copy(columns = Some(inputAttributes)))
+        // Resolve the inputs of AllColumn as ResolvedAttribute
+        // so as not to pull up too much details
+        val allColumns = resolvedAttributes.map {
+          case s @ SingleColumn(m: MultiColumn, alias, qualifier, _) =>
+            // Pull-up MultiColumn to simplify the expression
+            m.copy(alias = m.alias.orElse(s.alias), qualifier = qualifier)
+          case m: MultiColumn =>
+            // MultiColumn is already resolved
+            m
+          case r: ResolvedAttribute =>
+            // This path preserves already resolved column tags
+            r
+          case other =>
+            toResolvedAttribute(other.name, other)
+        }
+        List(a.copy(columns = Some(allColumns)))
       case _ =>
         List(expr)
     }
@@ -398,10 +430,9 @@ object TypeResolver extends LogSupport {
   private def resolveExpression(
       context: AnalyzerContext,
       expr: Expression,
-      inputAttributes: Seq[Attribute],
-      isSelectItem: Boolean
+      inputAttributes: Seq[Attribute]
   ): Expression = {
-    findMatchInInputAttributes(context, expr, inputAttributes, isSelectItem) match {
+    findMatchInInputAttributes(context, expr, inputAttributes) match {
       case lst if lst.length > 1 =>
         trace(s"${expr} -> ${lst}")
         throw SQLErrorCode.SyntaxError.newException(s"${expr.sqlExpr} is ambiguous", expr.nodeLocation)
