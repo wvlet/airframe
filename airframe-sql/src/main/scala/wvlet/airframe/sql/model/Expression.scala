@@ -213,26 +213,12 @@ trait Attribute extends LeafExpression {
 
   // (database name)?.(table name)
   def qualifier: Option[String]
-
-  /**
-    * Set an alias for the table or subquery.
-    * @param newQualifier
-    * @return
-    */
-  def withQualifier(newQualifier: String): Attribute
-
-  def withQualifier(newQualifier: Option[String]): Attribute = {
-    newQualifier match {
-      case Some(q) => withQualifier(q)
-      case None    => this
-    }
-  }
+  def withQualifier(newQualifier: String): Attribute = withQualifier(Some(newQualifier))
+  def withQualifier(newQualifier: Option[String]): Attribute
 
   def alias: Option[String]
-  def withAlias(newAlias: String): Attribute
-  def withAlias(newAlias: Option[String]): Attribute = {
-    newAlias.map{ alias => withAlias(alias) }.getOrElse(this)
-  }
+  def withAlias(newAlias: String): Attribute = withAlias(Some(newAlias))
+  def withAlias(newAlias: Option[String]): Attribute
 
   protected def inputColumns: Seq[Attribute] = {
     children.map {
@@ -338,11 +324,12 @@ object Expression {
         None
       }
     }
-    override def withQualifier(newQualifier: String): UnresolvedAttribute = {
-      this.copy(name = s"${newQualifier}.${parts.last}")
+    override def withQualifier(newQualifier: Option[String]): UnresolvedAttribute = {
+      val q = newQualifier.map(q => s"${q}.").getOrElse("")
+      this.copy(name = s"${q}${parts.last}")
     }
-    override def alias: Option[String]                  = None
-    override def withAlias(newAlias: String): Attribute = this
+    override def alias: Option[String]                          = None
+    override def withAlias(newAlias: Option[String]): Attribute = this
 
     override def inputColumns: Seq[Attribute] = Seq.empty
   }
@@ -422,9 +409,12 @@ object Expression {
     }
 
     override def alias: Option[String] = None
-    override def withAlias(newAlias: String): Attribute = {
+    override def withAlias(newAlias: Option[String]): Attribute = {
       // no-op as we cannot assign an alias to multiple columns
       this
+    }
+    override def withQualifier(newQualifier: Option[String]): Attribute = {
+      this.copy(qualifier = newQualifier)
     }
 
     override def inputColumns: Seq[Attribute] = columns.getOrElse(Seq.empty)
@@ -440,10 +430,6 @@ object Expression {
     }
 
     override lazy val resolved = columns.isDefined
-
-    override def withQualifier(newQualifier: String): Attribute = {
-      this.copy(qualifier = Some(newQualifier))
-    }
   }
 
   /**
@@ -470,14 +456,14 @@ object Expression {
     override def sqlExpr: String = {
       alias match {
         case None    => expr.sqlExpr
-        case Some(a) => s"${expr.sqlExpr} as ${a}"
+        case Some(a) => s"${expr.sqlExpr} AS ${a}"
       }
     }
-    override def withAlias(newAlias: String): SingleColumn = {
-      this.copy(alias = Some(newAlias))
+    override def withAlias(newAlias: Option[String]): SingleColumn = {
+      this.copy(alias = newAlias)
     }
-    override def withQualifier(newQualifier: String): Attribute = {
-      this.copy(qualifier = Some(newQualifier))
+    override def withQualifier(newQualifier: Option[String]): Attribute = {
+      this.copy(qualifier = newQualifier)
     }
 
 //    def matchesWith(tableName: String, columnName: String): Boolean = {
@@ -566,11 +552,11 @@ object Expression {
       inputs.head.dataType
     }
 
-    override def withQualifier(newQualifier: String): Attribute = {
-      this.copy(qualifier = Some(newQualifier))
+    override def withQualifier(newQualifier: Option[String]): Attribute = {
+      this.copy(qualifier = newQualifier)
     }
-    override def withAlias(newAlias: String): MultiSourceColumn = {
-      this.copy(alias = Some(newAlias))
+    override def withAlias(newAlias: Option[String]): MultiSourceColumn = {
+      this.copy(alias = newAlias)
     }
 
 //    def matched(tableName: String, columnName: String): Seq[Expression] = {
