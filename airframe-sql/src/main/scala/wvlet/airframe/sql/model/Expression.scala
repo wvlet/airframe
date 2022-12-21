@@ -332,22 +332,16 @@ object Expression {
     }
   }
 
-  case class UnresolvedAttribute(name: String, nodeLocation: Option[NodeLocation]) extends Attribute {
-    private val parts: Seq[String] = name.split("\\.").toSeq
-    override def toString: String  = s"UnresolvedAttribute(${name})"
-    override def sqlExpr: String   = name
-    override lazy val resolved     = false
-
-    override def qualifier: Option[String] = {
-      if (parts.size > 1) {
-        Some(parts.dropRight(1).mkString("."))
-      } else {
-        None
-      }
-    }
+  case class UnresolvedAttribute(
+      override val qualifier: Option[String],
+      name: String,
+      nodeLocation: Option[NodeLocation]
+  ) extends Attribute {
+    override def toString: String = s"UnresolvedAttribute(${fullName})"
+    override def sqlExpr: String  = name
+    override lazy val resolved    = false
     override def withQualifier(newQualifier: Option[String]): UnresolvedAttribute = {
-      val q = newQualifier.map(q => s"${q}.").getOrElse("")
-      this.copy(name = s"${q}${parts.last}")
+      this.copy(qualifier = newQualifier)
     }
     override def alias: Option[String]                          = None
     override def withAlias(newAlias: Option[String]): Attribute = this

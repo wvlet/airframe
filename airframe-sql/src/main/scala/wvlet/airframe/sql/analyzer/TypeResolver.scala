@@ -338,28 +338,24 @@ object TypeResolver extends LogSupport {
       resolvedExprs.result()
     }
 
-    def toResolvedAttribute(name: String, expr: Expression): ResolvedAttribute = {
-      ResolvedAttribute(
-        name,
-        expr.dataType,
-        None,
-        None,
-        expr.nodeLocation
-      )
+    def toResolvedAttribute(name: String, expr: Expression): Attribute = {
+      expr match {
+        case s: SingleColumn =>
+          ResolvedAttribute(name, s.dataType, s.qualifier, None, expr.nodeLocation)
+        case a: Attribute =>
+          // No need to resolve Attribute expressions
+          a
+        case other =>
+          // Resolve expr as ResolvedAttribute so as not to pull-up too much details
+          ResolvedAttribute(name, other.dataType, None, None, expr.nodeLocation)
+      }
     }
 
     val results = expr match {
       case i: Identifier =>
-        lookup(i.value).map {
-          // No need to resolve Attribute expressions
-          case a: Attribute =>
-            a
-          case expr =>
-            // Resolve expr as ResolvedAttribute so as not to pull-up too much details
-            toResolvedAttribute(i.value, expr)
-        }
-      case u @ UnresolvedAttribute(name, _) =>
-        lookup(name)
+        lookup(i.value).map(toResolvedAttribute(i.value, _))
+      case u @ UnresolvedAttribute(qual, name, _) =>
+        lookup(name).map(toResolvedAttribute(name, _).withQualifier(qual))
       case a @ AllColumns(_, None, _) =>
         // Resolve the inputs of AllColumn as ResolvedAttribute
         // so as not to pull up too much details

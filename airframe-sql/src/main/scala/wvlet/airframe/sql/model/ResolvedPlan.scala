@@ -134,7 +134,7 @@ case class ResolvedAttribute(
           .map(_.fullName)
           .mkString(s"${typeDescription} <- [", ", ", "]")
       case _ =>
-        s"${typeDescription}"
+        s"${prefix}${typeDescription}"
     }
   }
   override lazy val resolved = true

@@ -108,8 +108,6 @@ class SQLGeneratorTest extends AirSpec {
       )
 
     val sql = SQLGenerator.print(resolvedPlan)
-    info(sql)
-    info(resolvedPlan.pp)
     sql.contains("ON t1.id = t2.id") shouldBe true
   }
 

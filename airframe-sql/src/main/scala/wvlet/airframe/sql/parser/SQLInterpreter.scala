@@ -384,7 +384,8 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   override def visitDereference(ctx: DereferenceContext): Attribute = {
-    UnresolvedAttribute(s"${ctx.base.getText}.${ctx.fieldName.getText}", getLocation(ctx))
+    val qualifier = if (ctx.base.getText.isEmpty) None else Some(ctx.base.getText)
+    UnresolvedAttribute(qualifier, ctx.fieldName.getText, getLocation(ctx))
   }
 
   override def visitSelectAll(ctx: SelectAllContext): Attribute = {

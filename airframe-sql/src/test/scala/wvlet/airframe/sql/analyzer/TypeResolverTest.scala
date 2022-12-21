@@ -316,11 +316,11 @@ class TypeResolverTest extends AirSpec {
       }
     }
 
-    test("resolve qualified column used in GROUP BY clause") {
+    test("a1: resolve qualified column used in GROUP BY clause") {
       val p = analyze("SELECT a.cnt, a.name FROM (SELECT count(id) cnt, name FROM A GROUP BY name) a")
-      p.outputAttributes shouldMatch {
-        case List(SingleColumn(FunctionCall("count", Seq(c1), _, _, _, _), _, _, _), c2) =>
-          List(c1, c2) shouldBe List(ra1, ra2.withQualifier("a"))
+      p.outputAttributes shouldMatch { case Seq(c1, c2) =>
+        c1 shouldMatch { case ResolvedAttribute("cnt", DataType.LongType, Some("a"), None, _) => }
+        c2 shouldBe ra2.withQualifier("a")
       }
     }
 

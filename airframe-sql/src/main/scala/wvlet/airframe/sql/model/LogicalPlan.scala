@@ -15,6 +15,7 @@ package wvlet.airframe.sql.model
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, RewriteRule, TypeResolver}
 import wvlet.airframe.sql.catalog.DataType
+import wvlet.log.LogSupport
 
 import java.util.UUID
 
@@ -502,19 +503,20 @@ object LogicalPlan {
       val attrs = child.outputAttributes.map { a =>
         a.withQualifier(alias.value)
       }
-      columnNames match {
-        case Some(columnNames) =>
-          attrs.zip(columnNames).map { case (a, columnName) =>
-            a.withQualifier(alias.value) match {
-              case r: ResolvedAttribute   => r.copy(name = columnName)
-              case s: SingleColumn        => s.copy(alias = Some(columnName))
-              case u: UnresolvedAttribute => u.copy(name = columnName)
-              case others                 => others
-            }
-          }
-        case None =>
-          attrs
-      }
+//      val result = columnNames match {
+//        case Some(columnNames) =>
+//          attrs.zip(columnNames).map { case (a, columnName) =>
+//            a.withQualifier(alias.value) match {
+//              case r: ResolvedAttribute   => r.copy(name = columnName)
+//              case s: SingleColumn        => s.copy(alias = Some(columnName))
+//              case u: UnresolvedAttribute => u.copy(name = columnName)
+//              case others                 => others
+//            }
+//          }
+//        case None =>
+//          attrs
+//      }
+      attrs
     }
   }
 
@@ -850,7 +852,7 @@ object LogicalPlan {
       nodeLocation: Option[NodeLocation]
   ) extends UnaryRelation {
     override def outputAttributes: Seq[Attribute] =
-      columnAliases.map(x => UnresolvedAttribute(x.value, None))
+      columnAliases.map(x => UnresolvedAttribute(Some(tableAlias.value), x.value, None))
     override def sig(config: QuerySignatureConfig): String =
       s"LV(${child.sig(config)})"
   }
