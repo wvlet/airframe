@@ -225,10 +225,11 @@ object SQLGenerator extends LogSupport {
           case _               => printRelation(right)
         }
         val c = cond match {
-          case NaturalJoin(_)        => ""
-          case JoinUsing(columns, _) => s" USING (${columns.map(_.sqlExpr).mkString(", ")})"
-          case JoinOn(expr, _)       => s" ON ${printExpression(expr)}"
-          case JoinOnEq(keys, _)     => s" ON ${printExpression(Expression.concatWithEq(keys))}"
+          case NaturalJoin(_)                => ""
+          case JoinUsing(columns, _)         => s" USING (${columns.map(_.sqlExpr).mkString(", ")})"
+          case ResolvedJoinUsing(columns, _) => s" USING (${columns.map(_.fullName).mkString(", ")})"
+          case JoinOn(expr, _)               => s" ON ${printExpression(expr)}"
+          case JoinOnEq(keys, _)             => s" ON ${printExpression(Expression.concatWithEq(keys))}"
         }
         joinType match {
           case InnerJoin      => s"${l} JOIN ${r}${c}"

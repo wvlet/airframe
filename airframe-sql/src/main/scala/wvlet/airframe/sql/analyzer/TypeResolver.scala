@@ -214,7 +214,28 @@ object TypeResolver extends LogSupport {
               Seq(other.head, other.last)
           }
         }
-        val updated = resolvedJoin.withCond(JoinOnEq(resolvedJoinKeys, u.nodeLocation))
+
+        val joinKeyOrder = joinKeys.map(_.value).zipWithIndex.map(x => x._1 -> x._2).toMap[String, Int]
+
+        // Merge the same name join keys as MultiSourceColumn
+        // TODO Extract this as a method in Attribute object
+        val mergedJoinKeys = resolvedJoinKeys
+          .groupBy(_.attributeName).map { case (name, keys) =>
+            val resolvedKeys = keys.flatMap {
+              case SingleColumn(r: ResolvedAttribute, qual, _) =>
+                Seq(r.withQualifier(qual))
+              case m: MultiSourceColumn =>
+                m.inputs
+              case other =>
+                Seq(other)
+            }
+            MultiSourceColumn(resolvedKeys, None, None)
+          }
+          .toSeq
+          // Preserve the original USING(k1, k2, ...) order
+          .sortBy(x => joinKeyOrder(x.name))
+
+        val updated = resolvedJoin.withCond(ResolvedJoinUsing(mergedJoinKeys, None))
         updated
       case j @ Join(joinType, left, right, u @ JoinOn(Eq(leftKey, rightKey, _), _), _) =>
         val resolvedJoin =

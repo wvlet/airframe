@@ -702,6 +702,12 @@ object LogicalPlan {
     }
     override def outputAttributes: Seq[Attribute] = {
       cond match {
+        case ju: ResolvedJoinUsing =>
+          val joinKeys = ju.keys
+          val otherAttributes = inputAttributes.filter { x =>
+            !joinKeys.exists(jk => jk.name == x.name)
+          }
+          joinKeys ++ otherAttributes
         case je: JoinOnEq =>
           // Aggregates duplicated keys
           val dups         = je.duplicateKeys

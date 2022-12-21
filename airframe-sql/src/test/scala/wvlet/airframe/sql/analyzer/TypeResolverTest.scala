@@ -499,17 +499,20 @@ class TypeResolverTest extends AirSpec {
           |having count(1) > 160
           |""".stripMargin)
 
-      val joins = p.collectExpressions { case _: JoinOnEq =>
+      val joinKeys = p.collectExpressions { case u: ResolvedJoinUsing =>
         true
       }
-      joins shouldMatch { case List(JoinOnEq(Seq(c1, c2), _), JoinOnEq(Seq(c3, c4), _)) =>
-        c1 shouldBe ra1.withQualifier("a")
-        c2 shouldBe rb1.withQualifier("b")
-        c3 shouldMatch { case MultiSourceColumn(Seq(e1, e2), _, _) =>
-          e1 shouldBe ra1.withQualifier("a")
-          e2 shouldBe rb1.withQualifier("b")
-        }
-        c4 shouldBe rc1.withQualifier("c")
+      joinKeys shouldMatch {
+        case List(
+              ResolvedJoinUsing(Seq(MultiSourceColumn(Seq(c1, c2), _, _)), _),
+              ResolvedJoinUsing(Seq(MultiSourceColumn(Seq(c3, c4, c5), _, _)), _)
+            ) =>
+          c1 shouldBe ra1.withQualifier("a")
+          c2 shouldBe rb1.withQualifier("b")
+
+          c3 shouldBe ra1.withQualifier("a")
+          c4 shouldBe rb1.withQualifier("b")
+          c5 shouldBe rc1.withQualifier("c")
       }
     }
 
