@@ -29,7 +29,7 @@ class ExpressionTest extends AirSpec {
 
     val newExpr = expr.transformExpression {
       case s @ SingleColumn(f: FunctionCall, _, _) if f.functionName == "count" =>
-        s.withAlias("xxx")
+        s.withQualifier("xxx")
     }
 
     newExpr shouldBe SingleColumn(f, Some("xxx"), None)
@@ -67,7 +67,7 @@ class ExpressionTest extends AirSpec {
 
     val newExpr = expr.transformUpExpression {
       case s @ SingleColumn(f: FunctionCall, _, _) if f.functionName == "count" =>
-        s.withAlias("xxx")
+        s.withQualifier("xxx")
     }
 
     newExpr shouldBe SingleColumn(f, Some("xxx"), None)
