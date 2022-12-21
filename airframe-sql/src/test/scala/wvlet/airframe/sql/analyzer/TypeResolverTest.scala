@@ -719,7 +719,7 @@ class TypeResolverTest extends AirSpec {
     }
   }
 
-  test("resolve count(*)") {
+  test("count: resolve count(*)") {
     test("resolve simple count(*)") {
       val p = analyze("select count(*) from A")
       p.outputAttributes shouldMatch {
@@ -754,24 +754,22 @@ class TypeResolverTest extends AirSpec {
 
     test("resolve count(*) in CTE") {
       val p = analyze("WITH q AS (select count(*) as cnt from A) select cnt from q")
-      p.outputAttributes shouldMatch { case List(ResolvedAttribute("cnt", DataType.LongType, None, _, _)) => }
+      p.outputAttributes shouldMatch { case List(ResolvedAttribute("cnt", DataType.LongType, Some("q"), _, _)) => }
     }
 
     test("resolve count(*) in Union") {
       val p = analyze("select count(*) as cnt from A union all select count(*) as cnt from B")
-      p.outputAttributes shouldMatch { case List(SingleColumn(m: MultiSourceColumn, _, _)) =>
+      p.outputAttributes shouldMatch { case Seq(m: MultiSourceColumn) =>
         m.inputs.size shouldBe 2
-        m.inputs(0).asInstanceOf[SingleColumn].expr match {
-          case f: FunctionCall if f.name == "count" =>
+        m.inputs(0) shouldMatch {
+          case Alias(_, "cnt", SingleColumn(f: FunctionCall, _, _), _) if f.functionName == "count" =>
             f.args.size shouldBe 1
             f.args(0).asInstanceOf[AllColumns].columns shouldBe Some(Seq(ra1, ra2))
-          case _ => fail(s"unexpected plan:\n${p.pp}")
         }
-        m.inputs(1).asInstanceOf[SingleColumn].expr match {
-          case f: FunctionCall if f.name == "count" =>
+        m.inputs(1) shouldMatch {
+          case Alias(_, "cnt", SingleColumn(f: FunctionCall, _, _), _) if f.functionName == "count" =>
             f.args.size shouldBe 1
             f.args(0).asInstanceOf[AllColumns].columns shouldBe Some(Seq(rb1, rb2))
-          case _ => fail(s"unexpected plan:\n${p.pp}")
         }
       }
     }
@@ -793,7 +791,7 @@ class TypeResolverTest extends AirSpec {
                 _
               )
             ) =>
-          ac.columns shouldMatch { case Some(List(m @ MultiSourceColumn(List(`ra1`, `rb1`), _, _))) =>
+          ac.columns shouldMatch { case Some(Seq(m @ MultiSourceColumn(Seq(`ra1`, `rb1`), _, _))) =>
             m.name shouldBe "id"
           }
       }
