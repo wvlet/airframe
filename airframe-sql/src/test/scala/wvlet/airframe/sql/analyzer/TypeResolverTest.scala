@@ -482,7 +482,7 @@ class TypeResolverTest extends AirSpec {
   test("join: resolve join attributes") {
     test("j1: join with USING") {
       val p = analyze("select id, A.name from A join B using(id)")
-      p.outputAttributes shouldMatch { case List(m @ MultiSourceColumn(List(c1, c2), _, _), c3) =>
+      p.outputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), _, _), c3) =>
         m.name shouldBe "id"
         c1 shouldBe ra1.withQualifier("A")
         c2 shouldBe rb1.withQualifier("B")
