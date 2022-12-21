@@ -683,7 +683,7 @@ class TypeResolverTest extends AirSpec {
     }
   }
 
-  test("resolve expression column") {
+  test("exp: resolve expression column") {
     test("resolve expression column from sub query") {
       val p = analyze("SELECT id, name FROM (SELECT id + 1 as id, name FROM A) a WHERE a.id = 99")
 
@@ -695,8 +695,9 @@ class TypeResolverTest extends AirSpec {
       }
 
       p shouldMatch { case Project(filter @ Filter(_, _, _), _, _) =>
-        filter.filterExpr shouldMatch {
-          case Eq(ArithmeticBinaryExpr(Add, `ra1`, LongLiteral(1, _), _), LongLiteral(99, _), _) => ()
+        filter.filterExpr shouldMatch { case Eq(r: Attribute, LongLiteral(99, _), _) =>
+          // a.id is transformed (with +1), so no need to propagate column tags
+          r.fullName shouldBe "a.id"
         }
       }
     }
@@ -712,8 +713,9 @@ class TypeResolverTest extends AirSpec {
 
       p match {
         case Query(With(_, _, _), Project(filter @ Filter(CTERelationRef(_, _, _), _, _), _, _), _) =>
-          filter.filterExpr shouldMatch {
-            case Eq(ArithmeticBinaryExpr(Add, `ra1`, LongLiteral(1, _), _), LongLiteral(99, _), _) => ()
+          filter.filterExpr shouldMatch { case Eq(r: Attribute, LongLiteral(99, _), _) =>
+            // q1.id is transformed (with +1), so no need to propagate column tags
+            r.fullName shouldBe "q1.id"
           }
       }
     }
