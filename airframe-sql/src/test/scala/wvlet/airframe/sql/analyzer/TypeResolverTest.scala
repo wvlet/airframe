@@ -248,7 +248,7 @@ class TypeResolverTest extends AirSpec {
         c1 shouldBe ra1.withAlias("p1")
         c2 shouldBe rb1.withAlias("p1")
       }
-      p.outputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), None, Some("q1"), _)) =>
+      p.outputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), None, None, _)) =>
         c1 shouldBe ra1.withAlias("p1").withQualifier("q1")
         c2 shouldBe rb1.withAlias("p1").withQualifier("q1")
       }
