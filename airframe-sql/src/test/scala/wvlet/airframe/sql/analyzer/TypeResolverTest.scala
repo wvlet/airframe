@@ -527,11 +527,11 @@ class TypeResolverTest extends AirSpec {
     }
 
     test("j6: join with different column names") {
-      val p = analyze("select pid, name from A join (select id pid from B) on A.id = B.pid")
+      val p = analyze("select pid, name from A join (select id as pid from B) on A.id = pid")
       p.outputAttributes shouldMatch {
         case List(
-              ResolvedAttribute("pid", DataType.LongType, Some("B"), Seq(SourceColumn(`tableB`, `b1`)), _),
-              ResolvedAttribute("name", DataType.StringType, Some("A"), Seq(SourceColumn(`tableA`, `a2`)), _)
+              ResolvedAttribute("pid", DataType.LongType, None, Some(SourceColumn(`tableB`, `b1`)), _),
+              ResolvedAttribute("name", DataType.StringType, Some("A"), Some(SourceColumn(`tableA`, `a2`)), _)
             ) =>
           ()
       }
