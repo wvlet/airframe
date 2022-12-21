@@ -908,7 +908,8 @@ lazy val sql =
       Antlr4 / antlr4GenVisitor  := true,
       libraryDependencies ++= Seq(
         // For parsing DataType strings
-        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
+        "org.scala-lang.modules"   %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
+        "com.github.vertical-blank" % "sql-formatter"            % "2.0.3"
       ) ++ sqlRefLib(scalaVersion.value)
     )
     .dependsOn(msgpack.jvm, surface.jvm, config, launcher)
