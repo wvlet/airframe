@@ -559,14 +559,18 @@ class TypeResolverTest extends AirSpec {
 
     test("j7: refer to duplicated key of equi join") {
       val p = analyze("select B.id from A inner join B on A.id = B.id")
-      p.outputAttributes shouldMatch { case List(SingleColumn(MultiSourceColumn(List(c1, c2), _, _), None, _)) =>
-        c1 shouldBe ra1.withQualifier("A")
-        c2 shouldBe rb1.withQualifier("B")
+      p.outputAttributes shouldMatch {
+        case List(ResolvedAttribute("id", DataType.LongType, Some("B"), Some(SourceColumn(`tableB`, `b1`)), _)) =>
       }
     }
 
-    test("3-way joins") {
-      pending("TODO")
+    test("j8: 3-way joins") {
+      val p = analyze("select A.id, B.id, C.id from A join B on A.id = B.id join C on B.id = C.id")
+      p.outputAttributes shouldMatch { case List(c1, c2, c3) =>
+        c1 shouldBe ra1.withQualifier("A")
+        c2 shouldBe rb1.withQualifier("B")
+        c3 shouldBe rc1.withQualifier("C")
+      }
     }
   }
 

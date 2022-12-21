@@ -707,21 +707,24 @@ object LogicalPlan {
           val otherAttributes = inputAttributes.filter { x =>
             !joinKeys.exists(jk => jk.name == x.name)
           }
+          // report join keys (merged) and other attributes
           joinKeys ++ otherAttributes
         case je: JoinOnEq =>
-          // Aggregates duplicated keys
-          val dups         = je.duplicateKeys
-          val uniqueInputs = inputAttributes.filter(x => !dups.contains(x))
-          uniqueInputs.map {
-            case r: ResolvedAttribute =>
-              val dupAttrs = dups.collect { case x: ResolvedAttribute if x.name == r.name => x }
-              if (dupAttrs.isEmpty) {
-                r
-              } else {
-                MultiSourceColumn(Seq(r) ++ dupAttrs, None, None)
-              }
-            case r => r
-          }
+          inputAttributes
+
+        //         // Aggregates duplicated keys
+//          val dups         = je.duplicateKeys
+//          val uniqueInputs = inputAttributes.filter(x => !dups.contains(x))
+//          uniqueInputs.map {
+//            case r: ResolvedAttribute =>
+//              val dupAttrs = dups.collect { case x: ResolvedAttribute if x.name == r.name => x }
+//              if (dupAttrs.isEmpty) {
+//                r
+//              } else {
+//                MultiSourceColumn(Seq(r) ++ dupAttrs, None, None)
+//              }
+//            case r => r
+//          }
         case _ => inputAttributes
       }
     }
