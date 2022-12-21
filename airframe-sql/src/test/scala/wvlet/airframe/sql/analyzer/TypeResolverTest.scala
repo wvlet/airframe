@@ -361,23 +361,17 @@ class TypeResolverTest extends AirSpec {
   }
 
   test("resolve CTE (WITH statement) queries") {
-    test("parse WITH statement") {
+    test("w1: parse WITH statement") {
       val p = analyze("with q1 as (select id from A) select id from q1")
       p.outputAttributes.toList shouldMatch {
-        case List(
-              ResolvedAttribute("id", DataType.LongType, Some("q1"), Seq(SourceColumn(`tableA`, `a1`)), _)
-            ) =>
-          ()
+        case List(ResolvedAttribute("id", DataType.LongType, Some("q1"), Some(SourceColumn(`tableA`, `a1`)), _)) =>
       }
     }
 
     test("resolve CTE redundant column alias") {
       val p = analyze("with q1 as (select id as id from A) select id from q1")
       p.outputAttributes.toList shouldMatch {
-        case List(
-              ResolvedAttribute("id", DataType.LongType, Some("q1"), Seq(SourceColumn(`tableA`, `a1`)), _)
-            ) =>
-          ()
+        case List(ResolvedAttribute("id", DataType.LongType, Some("q1"), Some(SourceColumn(`tableA`, `a1`)), _)) =>
       }
     }
 
@@ -414,13 +408,13 @@ class TypeResolverTest extends AirSpec {
           |select * from A
           |)
           |select q1.id from q1 inner join q2 ON q1.name = q2.name""".stripMargin)
-      p.outputAttributes shouldBe List(ra1)
+      p.outputAttributes shouldBe List(ra1.withQualifier("q1"))
 
       val joinKeys = p
         .collectExpressions { case _: JoinOnEq =>
           true
         }.map(_.asInstanceOf[JoinOnEq].keys)
-      joinKeys shouldBe List(List(ra2, ra2))
+      joinKeys shouldBe List(List(ra2.withQualifier("q1"), ra2.withQualifier("q2")))
     }
 
     test("fail due to a wrong number of columns") {
