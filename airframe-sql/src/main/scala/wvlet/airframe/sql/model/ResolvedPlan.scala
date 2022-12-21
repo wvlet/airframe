@@ -78,35 +78,6 @@ case class ResolvedAttribute(
   override def withQualifier(newQualifier: Option[String]): Attribute = {
     this.copy(qualifier = newQualifier)
   }
-
-  // private def isAlias: Boolean       = sourceColumn.exists(_.column.name != name)
-//  override def alias: Option[String] = if (isAlias) Some(name) else None
-//
-//  override def withAlias(newAlias: Option[String]): Attribute = {
-//    newAlias match {
-//      case Some(newName) =>
-//        this.copy(name = newName)
-////        if (isRawColumn && sourceColumn.exists(_.column.name != newName)) {
-////          // When renaming from the source column name, qualifier should be removed
-////          this.copy(name = newName, qualifier = None)
-////        } else {
-////          this.copy(name = newName)
-////        }
-//      case None => this
-//    }
-//  }
-
-  private def isRawColumn: Boolean = {
-    (qualifier, sourceColumn) match {
-      case (Some(q), Some(src)) =>
-        q == src.table.name && name == src.column.name
-      case (None, Some(src)) =>
-        src.column.name == name
-      case _ =>
-        false
-    }
-  }
-
   override def inputColumns: Seq[Attribute] = Seq(this)
 
   override def toString = {

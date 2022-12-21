@@ -12,10 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.model
-import wvlet.airframe.sql.{SQLError, SQLErrorCode}
-import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, RewriteRule, TypeResolver}
-import wvlet.airframe.sql.catalog.DataType
-import wvlet.log.LogSupport
+import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, TypeResolver}
 
 import java.util.UUID
 
@@ -709,23 +706,9 @@ object LogicalPlan {
           }
           // report join keys (merged) and other attributes
           joinKeys ++ otherAttributes
-        case je: JoinOnEq =>
+        case _ =>
+          // Report including duplicated name columns
           inputAttributes
-
-        //         // Aggregates duplicated keys
-//          val dups         = je.duplicateKeys
-//          val uniqueInputs = inputAttributes.filter(x => !dups.contains(x))
-//          uniqueInputs.map {
-//            case r: ResolvedAttribute =>
-//              val dupAttrs = dups.collect { case x: ResolvedAttribute if x.name == r.name => x }
-//              if (dupAttrs.isEmpty) {
-//                r
-//              } else {
-//                MultiSourceColumn(Seq(r) ++ dupAttrs, None, None)
-//              }
-//            case r => r
-//          }
-        case _ => inputAttributes
       }
     }
 

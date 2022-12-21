@@ -321,7 +321,6 @@ object TypeResolver extends LogSupport {
       }
       // Run one-more resolution (e.g., SingleColumn -> ResolvedAttribute)
       val output = resolvedColumns.result().map(resolveAttribute)
-      // warn(s"resolveOutputColumns:\n[original]\n${outputColumns}\n[result]\n${output}")
       output
     }
   }
