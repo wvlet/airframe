@@ -393,8 +393,8 @@ class TypeResolverTest extends AirSpec {
       p.outputAttributes.toList shouldMatch {
         // The output should use aliases from the source columns
         case List(AllColumns(None, Some(Seq(c1, c2)), _)) =>
-          c1 shouldBe ra1.copy(name = "p1", qualifier = Some("q1"))
-          c2 shouldBe ra2.copy(name = "p2", qualifier = Some("q1"))
+          c1 shouldMatch { case Alias(Some("q1"), "p1", `ra1`, _) => }
+          c2 shouldMatch { case Alias(Some("q1"), "p2", `ra2`, _) => }
       }
     }
 
