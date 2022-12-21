@@ -147,8 +147,9 @@ object TypeResolver extends LogSupport {
 
   object resolveSortItems extends RewriteRule {
     def apply(context: AnalyzerContext): PlanRewriter = { case s @ Sort(child, sortItems, _) =>
-      val resolvedChild   = resolveRelation(context, child)
-      val inputAttributes = resolvedChild.outputAttributes
+      val resolvedChild = resolveRelation(context, child)
+      // Sort can access the input relation of the child
+      val inputAttributes = resolvedChild.inputAttributes
       val resolvedSortItems = sortItems.map { sortItem =>
         val e = resolveExpression(context, sortItem.sortKey, inputAttributes)
         sortItem.copy(sortKey = e)

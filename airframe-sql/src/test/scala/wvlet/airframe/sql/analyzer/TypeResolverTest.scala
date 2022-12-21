@@ -610,23 +610,23 @@ class TypeResolverTest extends AirSpec {
     }
   }
 
-  test("resolve sub queries in FROM clause") {
-    test("resolve a sub query") {
+  test("sub query: resolve sub queries in FROM clause") {
+    test("n1: resolve a sub query") {
       val p = analyze("SELECT id, name FROM (SELECT id, name FROM A)")
       p.outputAttributes.toList shouldBe List(ra1, ra2)
     }
 
-    test("resolve a sub query with column aliases") {
+    test("n2: resolve a sub query with column aliases") {
       val p = analyze("SELECT p1, p2 FROM (SELECT id as p1, name as p2 FROM A)")
       p.outputAttributes.toList shouldBe List(ra1.copy(name = "p1"), ra2.copy(name = "p2"))
     }
 
-    test("resolve a sub query with SELECT *") {
+    test("n3: resolve a sub query with SELECT *") {
       val p = analyze("SELECT id, name FROM (SELECT * FROM A)")
       p.outputAttributes.toList shouldBe List(ra1, ra2)
     }
 
-    test("resolve a sub query with table alias") {
+    test("n4: resolve a sub query with table alias") {
       val p = analyze("SELECT a.id, a.name FROM (SELECT id, name FROM A) a")
       p.outputAttributes.toList shouldBe List(
         ra1.withQualifier("a"),
@@ -634,26 +634,21 @@ class TypeResolverTest extends AirSpec {
       )
     }
 
-    test("resolve nested sub queries") {
+    test("n5: resolve nested sub queries") {
       val p = analyze("SELECT id, name FROM (SELECT id, name FROM (SELECT id, name FROM A))")
       p.outputAttributes.toList shouldBe List(ra1, ra2)
     }
 
-    test("resolve join keys from nested sub queries") {
+    test("n6: resolve join keys from nested sub queries") {
       val p = analyze("""select * from
           |(select id from (select id from A)) x
           |inner join
           |(select id from (select id from B)) y on x.id = y.id""".stripMargin)
-      p.outputAttributes.toList shouldMatch {
-        case List(
-              AllColumns(
-                None,
-                Some(Seq(MultiSourceColumn(List(c1, c2), None, _))),
-                _
-              )
-            ) =>
-          c1 shouldBe ra1.copy(qualifier = Some("x"))
-          c2 shouldBe rb1.copy(qualifier = Some("y"))
+      p.outputAttributes shouldMatch { case Seq(AllColumns(_, Some(c), _)) =>
+        c shouldMatch { case List(c1, c2) =>
+          c1 shouldBe ra1.withQualifier("x")
+          c2 shouldBe rb1.withQualifier("y")
+        }
       }
       p shouldMatch { case Project(Join(_, _, _, join: JoinOnEq, _), _, _) =>
         join.keys shouldBe List(
@@ -845,10 +840,8 @@ class TypeResolverTest extends AirSpec {
 
     test("s4: resolve order by with duplicated join key") {
       val p = analyze("""SELECT A.id FROM A INNER JOIN B on A.id = B.id ORDER BY B.id DESC""".stripMargin)
-      p.asInstanceOf[Sort].orderBy.toList shouldMatch {
-        case List(SortItem(MultiSourceColumn(List(c1, c2), _, _), Some(Descending), None, _)) =>
-          c1 shouldBe ra1.withQualifier("A")
-          c2 shouldBe rb1.withQualifier("B")
+      p.asInstanceOf[Sort].orderBy.toList shouldMatch { case List(SortItem(c1, Some(Descending), None, _)) =>
+        c1 shouldBe rb1.withQualifier("B")
       }
     }
   }
