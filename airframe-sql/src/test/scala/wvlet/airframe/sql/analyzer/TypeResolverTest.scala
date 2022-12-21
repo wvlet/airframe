@@ -123,10 +123,10 @@ class TypeResolverTest extends AirSpec {
     SQLGenerator.print(p)
   }
 
-  private val ra1 = ResolvedAttribute("id", DataType.LongType, Some("A"), Some(SourceColumn(tableA, a1)), None)
-  private val ra2 = ResolvedAttribute("name", DataType.StringType, Some("A"), Some(SourceColumn(tableA, a2)), None)
-  private val rb1 = ResolvedAttribute("id", DataType.LongType, Some("B"), Some(SourceColumn(tableB, b1)), None)
-  private val rb2 = ResolvedAttribute("name", DataType.StringType, Some("B"), Some(SourceColumn(tableB, b2)), None)
+  private val ra1 = ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tableA, a1)), None)
+  private val ra2 = ResolvedAttribute("name", DataType.StringType, None, Some(SourceColumn(tableA, a2)), None)
+  private val rb1 = ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tableB, b1)), None)
+  private val rb2 = ResolvedAttribute("name", DataType.StringType, None, Some(SourceColumn(tableB, b2)), None)
 
   test("resolveTableRef") {
     test("resolve all columns") {
@@ -148,7 +148,7 @@ class TypeResolverTest extends AirSpec {
   test("resolve full table name") {
     val p = analyze("select default.A.id from A")
     p.outputAttributes shouldBe List(
-      ra1.withQualifier("A")
+      ra1.withQualifier("default.A")
     )
   }
 

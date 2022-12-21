@@ -193,7 +193,7 @@ object SQLGenerator extends LogSupport {
       case TableRef(t, _) =>
         printExpression(t)
       case t: TableScan =>
-        t.table.fullName
+        t.fullName
       case Limit(in, l, _) =>
         val s = seqBuilder
         s += printRelation(in, context)

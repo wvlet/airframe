@@ -20,13 +20,20 @@ import wvlet.log.LogSupport
 
 /**
   * The lowest level operator to access a table
+  * @param fullName
+  *   original table reference name in SQL. Used for generating SQL text
+  *
   * @param table
   *   source table
   * @param columns
   *   projectec columns
   */
-case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn], nodeLocation: Option[NodeLocation])
-    extends Relation
+case class TableScan(
+    fullName: String,
+    table: Catalog.Table,
+    columns: Seq[Catalog.TableColumn],
+    nodeLocation: Option[NodeLocation]
+) extends Relation
     with LeafPlan {
   override def inputAttributes: Seq[Attribute] = Seq.empty
   override def outputAttributes: Seq[Attribute] = {
@@ -34,7 +41,7 @@ case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn], no
       ResolvedAttribute(
         col.name,
         col.dataType,
-        Some(table.name),
+        None, // This must be None first
         Some(SourceColumn(table, col)),
         None // ResolvedAttribute always has no NodeLocation
       )
@@ -60,7 +67,7 @@ case class SourceColumn(table: Catalog.Table, column: Catalog.TableColumn) {
 case class ResolvedAttribute(
     name: String,
     override val dataType: DataType,
-    // table name
+    // user-given qualifier
     qualifier: Option[String],
     // If this attribute directly refers to a table column, its source column will be set.
     sourceColumn: Option[SourceColumn],
@@ -70,7 +77,7 @@ case class ResolvedAttribute(
 
   override def sqlExpr: String = {
     if (isAlias && sourceColumn.isDefined) {
-      s"${prefix}${sourceColumn.get.column.name} AS ${name}"
+      s"${prefix}${sourceColumn.get.fullName} AS ${name}"
     } else {
       s"${prefix}${name}"
     }
@@ -129,18 +136,24 @@ case class ResolvedAttribute(
 //  }
 
   override def toString = {
-    (qualifier, sourceColumn) match {
-      case (Some(q), columns) if columns.nonEmpty =>
-        columns
-          .map(_.fullName)
-          .mkString(s"${q}.${typeDescription} <- [", ", ", "]")
-      case (None, columns) if columns.nonEmpty =>
-        columns
-          .map(_.fullName)
-          .mkString(s"${typeDescription} <- [", ", ", "]")
-      case _ =>
+    sourceColumn match {
+      case Some(c) =>
+        s"${prefix}${typeDescription} <- ${c.fullName}"
+      case None =>
         s"${prefix}${typeDescription}"
     }
+//    (qualifier, sourceColumn) match {
+//      case (Some(q), columns) if columns.nonEmpty =>
+//        columns
+//          .map(_.fullName)
+//          .mkString(s"${q}.${typeDescription} <- [", ", ", "]")
+//      case (None, columns) if columns.nonEmpty =>
+//        columns
+//          .map(_.fullName)
+//          .mkString(s"${typeDescription} <- [", ", ", "]")
+//      case _ =>
+//        s"${prefix}${typeDescription}"
+//    }
   }
   override lazy val resolved = true
 }

@@ -182,9 +182,9 @@ trait BinaryExpression extends Expression {
 case class ColumnPath(database: Option[String], table: Option[String], columnName: String)
 
 object ColumnPath {
-  def fromQName(contextDatabase: String, name: String): Option[ColumnPath] = {
+  def fromQName(contextDatabase: String, fullName: String): Option[ColumnPath] = {
     // TODO Should we handle quotation in the name or just reject?
-    name.split("\\.").toList match {
+    fullName.split("\\.").toList match {
       case List(db, t, c) if db == contextDatabase =>
         Some(ColumnPath(Some(db), Some(t), c))
       case List(t, c) =>
@@ -208,7 +208,7 @@ trait Attribute extends LeafExpression with LogSupport {
   }
   def prefix: String = qualifier.map(q => s"${q}.").getOrElse("")
 
-  // (database name)?.(table name)
+  // (database name)?.(table name) given in the original SQL
   def qualifier: Option[String]
   def withQualifier(newQualifier: String): Attribute = withQualifier(Some(newQualifier))
   def withQualifier(newQualifier: Option[String]): Attribute

@@ -176,7 +176,7 @@ object TypeResolver extends LogSupport {
         case Some(dbTable) =>
           trace(s"Found ${dbTable}")
           // Expand all table columns first, which will be pruned later by Optimizer
-          TableScan(dbTable, dbTable.schema.columns, plan.nodeLocation)
+          TableScan(qname.fullName, dbTable, dbTable.schema.columns, plan.nodeLocation)
         case None =>
           // Search CTE
           context.outerQueries.get(qname.fullName) match {
@@ -354,15 +354,15 @@ object TypeResolver extends LogSupport {
     val results = expr match {
       case i: Identifier =>
         lookup(i.value).map(toResolvedAttribute(i.value, _)).distinct
-      case u @ UnresolvedAttribute(qual, name, _) =>
-        lookup(name).map(toResolvedAttribute(name, _).withQualifier(qual)).distinct
+      case u @ UnresolvedAttribute(qualifier, name, _) =>
+        lookup(u.fullName).map(toResolvedAttribute(name, _).withQualifier(qualifier)).distinct
       case a @ AllColumns(_, None, _) =>
         // Resolve the inputs of AllColumn as ResolvedAttribute
         // so as not to pull up too much details
         val allColumns = resolvedAttributes.map {
           case s @ SingleColumn(m: MultiSourceColumn, alias, qualifier, _) =>
             // Pull-up MultiColumn to simplify the expression
-            m.copy(alias = m.alias.orElse(s.alias)).setQualifierIfEmpty(qualifier)
+            m.withAlias(alias).withQualifier(qualifier)
           case m: MultiSourceColumn =>
             // MultiColumn is already resolved
             m
@@ -391,7 +391,7 @@ object TypeResolver extends LogSupport {
   ): Expression = {
     findMatchInInputAttributes(context, expr, inputAttributes) match {
       case lst if lst.length > 1 =>
-        trace(s"${expr} -> ${lst}")
+        trace(s"${expr} is ambiguous in ${lst}")
         throw SQLErrorCode.SyntaxError.newException(s"${expr.sqlExpr} is ambiguous", expr.nodeLocation)
       case lst =>
         lst.headOption.getOrElse(expr)
