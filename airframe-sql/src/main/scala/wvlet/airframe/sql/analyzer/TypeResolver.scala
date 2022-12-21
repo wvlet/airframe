@@ -30,13 +30,13 @@ object TypeResolver extends LogSupport {
     TypeResolver.resolveCTETableRef ::
       TypeResolver.resolveAggregationIndexes ::
       TypeResolver.resolveAggregationKeys ::
-      TypeResolver.resolveSortItemIndexes ::
-      TypeResolver.resolveSortItems ::
       TypeResolver.resolveTableRef ::
       TypeResolver.resolveJoinUsing ::
       TypeResolver.resolveSubquery ::
       TypeResolver.resolveRegularRelation ::
       TypeResolver.resolveColumns ::
+      TypeResolver.resolveSortItemIndexes ::
+      TypeResolver.resolveSortItems ::
       Nil
   }
 

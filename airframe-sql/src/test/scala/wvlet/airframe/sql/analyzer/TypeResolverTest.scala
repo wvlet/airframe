@@ -834,7 +834,7 @@ class TypeResolverTest extends AirSpec {
       val p = analyze("""SELECT id, name FROM A ORDER BY 1""".stripMargin)
       p.asInstanceOf[Sort].orderBy.toList shouldMatch { case List(SortItem(c, None, None, _)) =>
         c.attributeName shouldBe "id"
-        c.dataType shouldBe DataType.StringType
+        c.dataType shouldBe DataType.LongType
       }
     }
 
