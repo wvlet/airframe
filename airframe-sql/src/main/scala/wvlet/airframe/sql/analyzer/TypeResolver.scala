@@ -134,8 +134,9 @@ object TypeResolver extends LogSupport {
       val resolvedSortItems = sortItems.map {
         case sortItem @ SortItem(LongLiteral(i, _), _, _, _) =>
           val sortKey = child.outputAttributes(i.toInt - 1) match {
-            case SingleColumn(expr, _, _) => expr
-            case other                    => other
+            case a: Attribute =>
+              toResolvedAttribute(a.name, a)
+            case other => other
           }
           sortItem.copy(sortKey = sortKey)
         case other => other
@@ -303,7 +304,7 @@ object TypeResolver extends LogSupport {
     }
   }
 
-  private def resolveAttribute(attribute: Attribute): Attribute = {
+  def resolveAttribute(attribute: Attribute): Attribute = {
     attribute match {
       case a @ Alias(name, attr: Attribute, _) =>
         val resolved = resolveAttribute(attr)
@@ -319,8 +320,24 @@ object TypeResolver extends LogSupport {
     }
   }
 
+  private def toResolvedAttribute(name: String, expr: Expression): Attribute = {
+    expr match {
+      case a: Alias =>
+        ResolvedAttribute(a.name, a.expr.dataType, a.qualifier, None, a.nodeLocation)
+      case s: SingleColumn =>
+        ResolvedAttribute(name, s.dataType, s.qualifier, None, expr.nodeLocation)
+      case a: Attribute =>
+        // No need to resolve Attribute expressions
+        a
+      case other =>
+        // Resolve expr as ResolvedAttribute so as not to pull-up too much details
+        ResolvedAttribute(name, other.dataType, None, None, expr.nodeLocation)
+    }
+  }
+
   /**
     * Find matching expressions in the inputAttributes
+    *
     * @param expr
     * @param inputAttributes
     * @return
@@ -344,19 +361,6 @@ object TypeResolver extends LogSupport {
         case None =>
       }
       resolvedExprs.result()
-    }
-
-    def toResolvedAttribute(name: String, expr: Expression): Attribute = {
-      expr match {
-        case s: SingleColumn =>
-          ResolvedAttribute(name, s.dataType, s.qualifier, None, expr.nodeLocation)
-        case a: Attribute =>
-          // No need to resolve Attribute expressions
-          a
-        case other =>
-          // Resolve expr as ResolvedAttribute so as not to pull-up too much details
-          ResolvedAttribute(name, other.dataType, None, None, expr.nodeLocation)
-      }
     }
 
     val results = expr match {

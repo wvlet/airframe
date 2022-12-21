@@ -603,7 +603,7 @@ object LogicalPlan {
 
     override def outputAttributes: Seq[Attribute] = {
       // TODO Remove redundant resolution
-      selectItems // .map(TypeResolver.resolveAttribute)
+      selectItems.map(TypeResolver.resolveAttribute)
     }
   }
 

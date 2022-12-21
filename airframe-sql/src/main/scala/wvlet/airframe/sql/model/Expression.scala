@@ -215,7 +215,7 @@ trait Attribute extends LeafExpression with LogSupport {
   def setQualifierIfEmpty(newQualifier: Option[String]): Attribute = {
     qualifier match {
       case Some(q) => this
-      case None => this.withQualifier(newQualifier)
+      case None    => this.withQualifier(newQualifier)
     }
   }
 
@@ -228,13 +228,17 @@ trait Attribute extends LeafExpression with LogSupport {
   }
   def withAlias(newAlias: String): Attribute = withAlias(Some(newAlias))
   def withAlias(newAlias: Option[String]): Attribute = {
-
     newAlias match {
       case None => this
       case Some(alias) =>
         this match {
-          case a: Alias => a.copy(name = alias)
-          case other    => Alias(alias, other, None)
+          case a: Alias =>
+            if (name != alias) a.copy(name = alias) else a
+          case other if other.name == alias =>
+            // No need to have alias
+            other
+          case other =>
+            Alias(alias, other, None)
         }
     }
   }
@@ -522,6 +526,8 @@ object Expression {
 
     override def toString: String          = s"${fullName}:${dataTypeName} := {${inputs.mkString(", ")}}"
     override def children: Seq[Expression] = inputs
+
+    override def sqlExpr: String = fullName
 
     override def name: String = {
       inputs.head.attributeName
