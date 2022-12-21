@@ -554,7 +554,7 @@ class TypeResolverTest extends AirSpec {
       }
     }
 
-    test("refer to duplicated key of equi join") {
+    test("j7: refer to duplicated key of equi join") {
       val p = analyze("select B.id from A inner join B on A.id = B.id")
       p.outputAttributes shouldMatch { case List(SingleColumn(MultiSourceColumn(List(c1, c2), _, _), None, _)) =>
         c1 shouldBe ra1.withQualifier("A")
@@ -814,15 +814,15 @@ class TypeResolverTest extends AirSpec {
     }
   }
 
-  test("resolve order by") {
-    test("resolve simple order by") {
+  test("sort: resolve order by") {
+    test("s1: resolve simple order by") {
       val p = analyze("""SELECT id, name FROM A ORDER BY id""".stripMargin)
       p.asInstanceOf[Sort].orderBy.toList shouldMatch { case List(SortItem(`ra1`, None, None, _)) =>
         ()
       }
     }
 
-    test("resolve order by alias") {
+    test("s2: resolve order by alias") {
       val p = analyze("""SELECT * FROM (SELECT id as p1, name FROM A) ORDER BY p1""".stripMargin)
       p.asInstanceOf[Sort].orderBy.toList shouldMatch { case List(SortItem(c, None, None, _)) =>
         c.attributeName shouldBe "p1"
@@ -830,7 +830,7 @@ class TypeResolverTest extends AirSpec {
       }
     }
 
-    test("resolve order by index") {
+    test("s3: resolve order by index") {
       val p = analyze("""SELECT id, name FROM A ORDER BY 1""".stripMargin)
       p.asInstanceOf[Sort].orderBy.toList shouldMatch { case List(SortItem(c, None, None, _)) =>
         c.attributeName shouldBe "id"
@@ -838,7 +838,7 @@ class TypeResolverTest extends AirSpec {
       }
     }
 
-    test("resolve order by with duplicated join key") {
+    test("s4: resolve order by with duplicated join key") {
       val p = analyze("""SELECT A.id FROM A INNER JOIN B on A.id = B.id ORDER BY B.id DESC""".stripMargin)
       p.asInstanceOf[Sort].orderBy.toList shouldMatch {
         case List(SortItem(MultiSourceColumn(List(c1, c2), _, _), Some(Descending), None, _)) =>

@@ -395,8 +395,8 @@ object TypeResolver extends LogSupport {
     }
 
     trace(
-      s"findMatchInInputAttributes:\n[input]\n${expr}\n\n[output]\n${results
-          .mkString(", ")}\n\n[inputAttributes]:\n ${inputAttributes.mkString("\n ")}"
+      s"[findMatchInInputAttributes]\n - input:  ${expr}\n - output: ${results
+          .mkString(", ")}\n[inputAttributes]:\n ${inputAttributes.mkString("\n ")}"
     )
     results
   }
