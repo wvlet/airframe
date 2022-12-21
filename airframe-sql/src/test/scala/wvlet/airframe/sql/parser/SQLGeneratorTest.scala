@@ -46,26 +46,26 @@ class SQLGeneratorTest extends AirSpec {
   test("print resolved plan") {
     val resolvedPlan = SQLAnalyzer.analyze("select * from A", "default", demoCatalog)
     val sql          = SQLGenerator.print(resolvedPlan)
-    sql shouldBe "SELECT * FROM default.A"
+    sql shouldBe "SELECT * FROM A"
   }
 
   test("print resolved subquery plan") {
     val resolvedPlan = SQLAnalyzer.analyze("select id from (select id from A)", "default", demoCatalog)
     val sql          = SQLGenerator.print(resolvedPlan)
-    sql shouldBe "SELECT id FROM (SELECT A.id FROM default.A)"
+    sql shouldBe "SELECT id FROM (SELECT id FROM A)"
   }
 
   test("print resolved UNION subquery plan") {
     val resolvedPlan =
       SQLAnalyzer.analyze("select id from (select id from A union all select id from A)", "default", demoCatalog)
     val sql = SQLGenerator.print(resolvedPlan)
-    sql shouldBe "SELECT id FROM (SELECT A.id FROM default.A UNION ALL SELECT A.id FROM default.A)"
+    sql shouldBe "SELECT id FROM (SELECT id FROM A UNION ALL SELECT id FROM A)"
   }
 
   test("print resolved CTE plan") {
     val resolvedPlan = SQLAnalyzer.analyze("with p as (select id from A) select * from p", "default", demoCatalog)
     val sql          = SQLGenerator.print(resolvedPlan)
-    sql shouldBe "WITH p AS (SELECT A.id FROM default.A) SELECT * FROM p"
+    sql shouldBe "WITH p AS (SELECT id FROM A) SELECT * FROM p"
   }
 
   test("generate aggregation without grouping keys") {
@@ -74,7 +74,7 @@ class SQLGeneratorTest extends AirSpec {
     val sql = SQLGenerator.print(resolvedPlan)
 
     sql.contains("GROUP BY") shouldBe false
-    sql.contains("HAVING count(DISTINCT A.id) > 10") shouldBe true
+    sql.contains("HAVING count(DISTINCT id) > 10") shouldBe true
   }
 
   test("generate select with column alias") {
@@ -82,7 +82,7 @@ class SQLGeneratorTest extends AirSpec {
       SQLAnalyzer.analyze("select id as xid from A", "default", demoCatalog)
     val sql = SQLGenerator.print(resolvedPlan)
 
-    sql.contains("SELECT id AS xid FROM default.A") shouldBe true
+    sql.contains("SELECT id AS xid FROM A") shouldBe true
   }
 
   test("generate join with USING") {

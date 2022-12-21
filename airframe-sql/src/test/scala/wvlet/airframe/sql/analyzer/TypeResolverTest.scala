@@ -193,7 +193,7 @@ class TypeResolverTest extends AirSpec {
       val p = analyze("select id from A union all select id from A")
       p.inputAttributes shouldBe List(ra1, ra2, ra1, ra2)
       p.outputAttributes shouldBe List(
-        MultiSourceColumn(List(ra1, ra1), Some("id"), Some("A"), None)
+        MultiSourceColumn(List(ra1, ra1), Some("id"), None, None)
       )
     }
 

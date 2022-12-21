@@ -77,7 +77,7 @@ case class ResolvedAttribute(
 
   override def sqlExpr: String = {
     if (isAlias && sourceColumn.isDefined) {
-      s"${prefix}${sourceColumn.get.fullName} AS ${name}"
+      s"${prefix}${sourceColumn.get.column.name} AS ${name}"
     } else {
       s"${prefix}${name}"
     }
