@@ -68,6 +68,17 @@ class TypeResolverTest extends AirSpec {
       .addColumn(b2)
   )
 
+  private val c1 = TableColumn("id", DataType.LongType, properties = Map("tag" -> Seq("personal_identifier")))
+  private val c2 = TableColumn("name", DataType.StringType, properties = Map("tag" -> Seq("private")))
+
+  private val tableC = Catalog.newTable(
+    "default",
+    "C",
+    Catalog.newSchema
+      .addColumn(c1)
+      .addColumn(c2)
+  )
+
   private def demoCatalog: Catalog = {
     val catalog = new InMemoryCatalog(
       "global",
@@ -78,6 +89,7 @@ class TypeResolverTest extends AirSpec {
     catalog.createDatabase(Catalog.Database("default"), CreateMode.CREATE_IF_NOT_EXISTS)
     catalog.createTable(tableA, CreateMode.CREATE_IF_NOT_EXISTS)
     catalog.createTable(tableB, CreateMode.CREATE_IF_NOT_EXISTS)
+    catalog.createTable(tableC, CreateMode.CREATE_IF_NOT_EXISTS)
     catalog
   }
 
@@ -128,6 +140,8 @@ class TypeResolverTest extends AirSpec {
   private val ra2 = ResolvedAttribute("name", DataType.StringType, None, Some(SourceColumn(tableA, a2)), None)
   private val rb1 = ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tableB, b1)), None)
   private val rb2 = ResolvedAttribute("name", DataType.StringType, None, Some(SourceColumn(tableB, b2)), None)
+  private val rc1 = ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tableC, c1)), None)
+  private val rc2 = ResolvedAttribute("name", DataType.StringType, None, Some(SourceColumn(tableC, c2)), None)
 
   test("resolveTableRef") {
     test("resolve all columns") {
@@ -477,11 +491,11 @@ class TypeResolverTest extends AirSpec {
     }
 
     test("j2: resolve USING with 3 tables") {
-      val p = analyze("""select a.id, count(1)
+      val p = analyze("""select id, count(1)
           |from A a
           |join B b using (id)
-          |join B c using (name)
-          |group by a.id
+          |join C c using (id)
+          |group by id
           |having count(1) > 160
           |""".stripMargin)
 
@@ -491,8 +505,11 @@ class TypeResolverTest extends AirSpec {
       joins shouldMatch { case List(JoinOnEq(Seq(c1, c2), _), JoinOnEq(Seq(c3, c4), _)) =>
         c1 shouldBe ra1.withQualifier("a")
         c2 shouldBe rb1.withQualifier("b")
-        c3 shouldBe ra2.withQualifier("a")
-        c4 shouldBe rb2.withQualifier("c")
+        c3 shouldMatch { case MultiSourceColumn(Seq(e1, e2), _, _) =>
+          e1 shouldBe ra1.withQualifier("a")
+          e2 shouldBe rb1.withQualifier("b")
+        }
+        c4 shouldBe rc1.withQualifier("c")
       }
     }
 
