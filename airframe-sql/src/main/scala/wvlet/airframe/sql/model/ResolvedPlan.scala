@@ -69,10 +69,15 @@ case class ResolvedAttribute(
     with LogSupport {
 
   override def sqlExpr: String = {
-    s"${qualifier.map(q => s"${q}.").getOrElse("")}${name}"
+    if (isAlias && sourceColumn.isDefined) {
+      s"${prefix}${sourceColumn.get.column.name} AS ${name}"
+    } else {
+      s"${prefix}${name}"
+    }
   }
 
-  override def alias: Option[String] = Some(name)
+  private def isAlias: Boolean       = sourceColumn.exists(_.column.name != name)
+  override def alias: Option[String] = if (isAlias) Some(name) else None
 
   override def withAlias(newAlias: Option[String]): Attribute = {
     newAlias match {

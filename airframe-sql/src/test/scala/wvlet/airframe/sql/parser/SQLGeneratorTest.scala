@@ -80,9 +80,9 @@ class SQLGeneratorTest extends AirSpec {
   test("generate select with column alias") {
     val resolvedPlan =
       SQLAnalyzer.analyze("select id as xid from A", "default", demoCatalog)
-    val sql = SQLGenerator.print(resolvedPlan).toLowerCase
+    val sql = SQLGenerator.print(resolvedPlan)
 
-    sql.contains("select a.id as xid") shouldBe true
+    sql.contains("SELECT id AS xid FROM default.A") shouldBe true
   }
 
   test("generate join with USING") {
@@ -108,6 +108,7 @@ class SQLGeneratorTest extends AirSpec {
       )
 
     val sql = SQLGenerator.print(resolvedPlan)
+    warn(sql)
     sql.contains("ON t1.id = t2.id") shouldBe true
   }
 

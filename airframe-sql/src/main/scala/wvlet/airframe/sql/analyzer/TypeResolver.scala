@@ -305,8 +305,8 @@ object TypeResolver extends LogSupport {
   def resolveAttribute(attribute: Attribute): Attribute = {
     attribute match {
       case SingleColumn(a: Attribute, alias, qualifier, _) =>
-        // Preserve column alias and qualifiers
-        a.withAlias(alias).setQualifierIfEmpty(qualifier)
+        // Optimizes the nested attributes, but preserves column alias and qualifier in the parent
+        a.withAlias(alias).withQualifier(qualifier)
       case other => other
     }
   }
@@ -353,9 +353,9 @@ object TypeResolver extends LogSupport {
 
     val results = expr match {
       case i: Identifier =>
-        lookup(i.value).map(toResolvedAttribute(i.value, _))
+        lookup(i.value).map(toResolvedAttribute(i.value, _)).distinct
       case u @ UnresolvedAttribute(qual, name, _) =>
-        lookup(name).map(toResolvedAttribute(name, _).withQualifier(qual))
+        lookup(name).map(toResolvedAttribute(name, _).withQualifier(qual)).distinct
       case a @ AllColumns(_, None, _) =>
         // Resolve the inputs of AllColumn as ResolvedAttribute
         // so as not to pull up too much details

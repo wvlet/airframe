@@ -324,7 +324,7 @@ class TypeResolverTest extends AirSpec {
       }
     }
 
-    test("group by with renamed keys") {
+    test("a2: group by with renamed keys") {
       val p = analyze("select xxx, count(*) from (select id as xxx from A) group by 1")
       p shouldMatch {
         case Aggregate(

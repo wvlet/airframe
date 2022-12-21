@@ -118,7 +118,7 @@ object SQLGenerator extends LogSupport {
     if (containsDistinctPlan(context)) {
       b += "DISTINCT"
     }
-    b += (s.selectItems.map(printExpression).mkString(", "))
+    b += (s.selectItems.map(printSelectItem).mkString(", "))
 
     findNonEmpty(nonFilterChild).map { f =>
       b += "FROM"
@@ -355,6 +355,15 @@ object SQLGenerator extends LogSupport {
     }
   }
 
+  def printSelectItem(e: Expression): String = {
+    e match {
+      case a: ResolvedAttribute =>
+        a.sqlExpr
+      case other =>
+        printExpression(other)
+    }
+  }
+
   def printExpression(e: Expression): String = {
     e match {
       case i: Identifier =>
@@ -377,10 +386,8 @@ object SQLGenerator extends LogSupport {
         }
       case AllColumns(prefix, _, _) =>
         prefix.map(p => s"${p}.*").getOrElse("*")
-      case ResolvedAttribute(name, _, Some(qualifier), _, _) =>
-        s"${qualifier}.${name}"
       case a: Attribute =>
-        a.name
+        a.fullName
       case SortItem(key, ordering, nullOrdering, _) =>
         val k  = printExpression(key)
         val o  = ordering.map(x => s" ${x}").getOrElse("")
