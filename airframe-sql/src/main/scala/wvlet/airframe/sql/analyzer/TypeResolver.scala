@@ -280,7 +280,7 @@ object TypeResolver extends LogSupport {
     ): Seq[Attribute] = {
       val resolvedColumns = Seq.newBuilder[Attribute]
       outputColumns.map {
-        case a @ Alias(name, expr, _) =>
+        case a @ Alias(qualifier, name, expr, _) =>
           val resolved = resolveExpression(context, expr, inputAttributes)
           if (expr eq resolved) {
             resolvedColumns += a
@@ -306,7 +306,7 @@ object TypeResolver extends LogSupport {
 
   def resolveAttribute(attribute: Attribute): Attribute = {
     attribute match {
-      case a @ Alias(name, attr: Attribute, _) =>
+      case a @ Alias(qualifier, name, attr: Attribute, _) =>
         val resolved = resolveAttribute(attr)
         if (attr eq resolved) {
           a

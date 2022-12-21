@@ -238,7 +238,7 @@ trait Attribute extends LeafExpression with LogSupport {
             // No need to have alias
             other
           case other =>
-            Alias(alias, other, None)
+            Alias(qualifier, alias, other, None)
         }
     }
   }
@@ -246,7 +246,7 @@ trait Attribute extends LeafExpression with LogSupport {
   protected[sql] def inputColumns: Seq[Attribute] = {
     children.map {
       case a: Attribute  => a
-      case u: Expression => SingleColumn(u, qualifier, None)
+      case u: Expression => SingleColumn(u, qualifier, u.nodeLocation)
     }
   }
 
@@ -304,6 +304,7 @@ trait Attribute extends LeafExpression with LogSupport {
       case None =>
         findMatched(columnPath.columnName)
     }
+
     if (result.size > 1) {
       val q = if (result.forall(_.qualifier == result.head.qualifier)) {
         // Preserve the qualifier
@@ -467,22 +468,25 @@ object Expression {
   }
 
   case class Alias(
-      override val name: String,
+      qualifier: Option[String],
+      name: String,
       expr: Expression,
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
-    override def qualifier: Option[String] = None
+    override protected[sql] def inputColumns: Seq[Attribute] = Seq(this)
+    override def children: Seq[Expression]                   = Seq(expr)
+
     override def withQualifier(newQualifier: Option[String]): Attribute = {
-      this
+      this.copy(qualifier = newQualifier)
     }
 
     override def toString: String = {
-      s"<${name}> := ${expr}"
+      s"<${fullName}> := ${expr}"
     }
     override def dataType: DataType = expr.dataType
 
     override def sqlExpr: String = {
-      s"${expr.sqlExpr} AS ${name}"
+      s"${expr.sqlExpr} AS ${fullName}"
     }
   }
 
@@ -502,8 +506,9 @@ object Expression {
     override def name: String       = expr.attributeName
     override def dataType: DataType = expr.dataType
 
-    override def children: Seq[Expression] = Seq(expr)
-    override def toString                  = s"${fullName}:${dataTypeName} := ${expr}"
+    override def inputColumns: Seq[Attribute] = Seq(this)
+    override def children: Seq[Expression]    = Seq(expr)
+    override def toString                     = s"${fullName}:${dataTypeName} := ${expr}"
 
     override def sqlExpr: String = expr.sqlExpr
     override def withQualifier(newQualifier: Option[String]): Attribute = {

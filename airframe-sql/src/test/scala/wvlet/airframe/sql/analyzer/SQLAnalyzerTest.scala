@@ -92,7 +92,7 @@ class SQLAnalyzerTest extends AirSpec {
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldMatch {
       // Attribute should not have a qualifier
-      case List(Alias("person_id", r, _)) => {
+      case List(Alias(_, "person_id", r, _)) => {
         r.attributeName shouldBe "id"
         r.dataType shouldBe DataType.LongType
       }
@@ -125,7 +125,7 @@ class SQLAnalyzerTest extends AirSpec {
         Some(SourceColumn(tbl1, tbl1.column("address"))),
         None
       )
-    attr(3) shouldMatch { case Alias("phone_num", a, _) =>
+    attr(3) shouldMatch { case Alias(_, "phone_num", a, _) =>
       a shouldMatch { case ResolvedAttribute("phone", DataType.StringType, _, _, _) =>
       // c shouldBe SourceColumn(tbl2, tbl2.column("phone"))
       }
