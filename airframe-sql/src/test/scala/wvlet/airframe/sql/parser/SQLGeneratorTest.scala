@@ -90,7 +90,7 @@ class SQLGeneratorTest extends AirSpec {
       SQLAnalyzer.analyze("select id from A inner join A as B using (id)", "default", demoCatalog)
     val sql = SQLGenerator.print(resolvedPlan).toLowerCase
 
-    sql.contains("on a.id = b.id") shouldBe true
+    sql.contains("using (id)") shouldBe true
   }
 
   test("generate join with keys with qualifier") {
