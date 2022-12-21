@@ -146,7 +146,7 @@ class TypeResolverTest extends AirSpec {
   }
 
   test("resolve full table name") {
-    val p = analyze("select default.A.id from A")
+    val p = analyze("select default.A.id from default.A")
     p.outputAttributes shouldBe List(
       ra1.withQualifier("default.A")
     )

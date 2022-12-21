@@ -183,7 +183,7 @@ case class ColumnPath(database: Option[String], table: Option[String], columnNam
 
 object ColumnPath {
   def fromQName(contextDatabase: String, fullName: String): Option[ColumnPath] = {
-    // TODO Should we handle quotation in the name or just reject?
+    // TODO Should we handle quotation in the name or just reject such strings?
     fullName.split("\\.").toList match {
       case List(db, t, c) if db == contextDatabase =>
         Some(ColumnPath(Some(db), Some(t), c))
@@ -276,7 +276,14 @@ trait Attribute extends LeafExpression with LogSupport {
       case Some(tableName) =>
         if (qualifier.exists(_ == tableName)) {
           findMatched(columnPath.columnName).map(_.withQualifier(qualifier))
-        } else Nil
+        } else {
+          this match {
+            case r: ResolvedAttribute if r.sourceColumn.nonEmpty && r.sourceColumn.get.table.name == tableName =>
+              findMatched(columnPath.columnName)
+            case _ =>
+              Nil
+          }
+        }
       case None =>
         findMatched(columnPath.columnName)
     }
