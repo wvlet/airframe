@@ -496,40 +496,37 @@ class TypeResolverTest extends AirSpec {
       }
     }
 
-    test("join with on") {
+    test("j3: join with on") {
       val p = analyze("select id, A.name from A join B on A.id = B.id")
-      p.outputAttributes shouldMatch {
-        case List(SingleColumn(m @ MultiSourceColumn(List(c1, c2), _, _), None, _), c3) =>
-          m.name shouldBe "id"
-          c1 shouldBe ra1.withQualifier("A")
-          c2 shouldBe rb1.withQualifier("B")
-          c3 shouldBe ra2.withQualifier("A")
+      p.outputAttributes shouldMatch { case List(m @ MultiSourceColumn(List(c1, c2), _, _), c3) =>
+        m.name shouldBe "id"
+        c1 shouldBe ra1.withQualifier("A")
+        c2 shouldBe rb1.withQualifier("B")
+        c3 shouldBe ra2.withQualifier("A")
       }
     }
 
-    test("join with on condition for aliased columns") {
+    test("j4: join with on condition for aliased columns") {
       val p = analyze("select id, a.name from A a join B b on a.id = b.id")
-      p.outputAttributes shouldMatch {
-        case List(SingleColumn(m @ MultiSourceColumn(List(c1, c2), _, _), None, _), c3) =>
-          m.name shouldBe "id"
-          c1 shouldBe ra1.withQualifier("a")
-          c2 shouldBe rb1.withQualifier("b")
-          c3 shouldBe ra2.withQualifier("a")
+      p.outputAttributes shouldMatch { case List(m @ MultiSourceColumn(List(c1, c2), _, _), c3) =>
+        m.name shouldBe "id"
+        c1 shouldBe ra1.withQualifier("a")
+        c2 shouldBe rb1.withQualifier("b")
+        c3 shouldBe ra2.withQualifier("a")
       }
     }
 
-    test("join with on condition for qualified columns") {
+    test("j5: join with on condition for qualified columns") {
       val p = analyze("select id, default.A.name from default.A join default.B on default.A.id = default.B.id")
-      p.outputAttributes shouldMatch {
-        case List(SingleColumn(m @ MultiSourceColumn(List(c1, c2), _, _), None, _), c3) =>
-          m.name shouldBe "id"
-          c1 shouldBe ra1.withQualifier("A")
-          c2 shouldBe rb1.withQualifier("B")
-          c3 shouldBe ra2.withQualifier("A")
+      p.outputAttributes shouldMatch { case List(m @ MultiSourceColumn(List(c1, c2), _, _), c3) =>
+        m.name shouldBe "id"
+        c1 shouldBe ra1.withQualifier("A")
+        c2 shouldBe rb1.withQualifier("B")
+        c3 shouldBe ra2.withQualifier("A")
       }
     }
 
-    test("join with different column names") {
+    test("j6: join with different column names") {
       val p = analyze("select pid, name from A join (select id pid from B) on A.id = B.pid")
       p.outputAttributes shouldMatch {
         case List(
