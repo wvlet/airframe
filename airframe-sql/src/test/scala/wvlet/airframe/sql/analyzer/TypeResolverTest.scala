@@ -465,19 +465,18 @@ class TypeResolverTest extends AirSpec {
     e.message.contains("UnresolvedAttribute") shouldBe false
   }
 
-  test("resolve join attributes") {
-    test("join with USING") {
+  test("join: resolve join attributes") {
+    test("j1: join with USING") {
       val p = analyze("select id, A.name from A join B using(id)")
-      p.outputAttributes shouldMatch {
-        case List(SingleColumn(m @ MultiSourceColumn(List(c1, c2), _, _), None, _), c3) =>
-          m.name shouldBe "id"
-          c1 shouldBe ra1.withQualifier("A")
-          c2 shouldBe rb1.withQualifier("B")
-          c3 shouldBe ra2.withQualifier("A")
+      p.outputAttributes shouldMatch { case List(m @ MultiSourceColumn(List(c1, c2), _, _), c3) =>
+        m.name shouldBe "id"
+        c1 shouldBe ra1.withQualifier("A")
+        c2 shouldBe rb1.withQualifier("B")
+        c3 shouldBe ra2.withQualifier("A")
       }
     }
 
-    test("resolve USING with 3 tables") {
+    test("j2: resolve USING with 3 tables") {
       val p = analyze("""select a.id, count(1)
           |from A a
           |join B b using (id)
