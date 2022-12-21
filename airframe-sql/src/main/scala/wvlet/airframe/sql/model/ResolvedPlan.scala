@@ -58,8 +58,6 @@ case class TableScan(
   override lazy val resolved = true
 }
 
-case class Alias(name: String, resolvedAttribute: ResolvedAttribute)
-
 case class SourceColumn(table: Catalog.Table, column: Catalog.TableColumn) {
   def fullName: String = s"${table.name}.${column.name}"
 }
@@ -75,29 +73,28 @@ case class ResolvedAttribute(
 ) extends Attribute
     with LogSupport {
 
-  override def sqlExpr: String = {
-    if (isAlias && sourceColumn.isDefined) {
-      s"${prefix}${sourceColumn.get.column.name} AS ${name}"
-    } else {
-      s"${prefix}${name}"
-    }
+  override def sqlExpr: String = s"${prefix}${name}"
+
+  override def withQualifier(newQualifier: Option[String]): Attribute = {
+    this.copy(qualifier = newQualifier)
   }
 
-  private def isAlias: Boolean       = sourceColumn.exists(_.column.name != name)
-  override def alias: Option[String] = if (isAlias) Some(name) else None
-
-  override def withAlias(newAlias: Option[String]): Attribute = {
-    newAlias match {
-      case Some(newName) =>
-        if (isRawColumn && sourceColumn.exists(_.column.name != newName)) {
-          // When renaming from the source column name, qualifier should be removed
-          this.copy(name = newName, qualifier = None)
-        } else {
-          this.copy(name = newName)
-        }
-      case None => this
-    }
-  }
+  // private def isAlias: Boolean       = sourceColumn.exists(_.column.name != name)
+//  override def alias: Option[String] = if (isAlias) Some(name) else None
+//
+//  override def withAlias(newAlias: Option[String]): Attribute = {
+//    newAlias match {
+//      case Some(newName) =>
+//        this.copy(name = newName)
+////        if (isRawColumn && sourceColumn.exists(_.column.name != newName)) {
+////          // When renaming from the source column name, qualifier should be removed
+////          this.copy(name = newName, qualifier = None)
+////        } else {
+////          this.copy(name = newName)
+////        }
+//      case None => this
+//    }
+//  }
 
   private def isRawColumn: Boolean = {
     (qualifier, sourceColumn) match {
@@ -110,50 +107,15 @@ case class ResolvedAttribute(
     }
   }
 
-  override def withQualifier(newQualifier: Option[String]): Attribute = {
-    this.copy(qualifier = newQualifier)
-  }
-
   override def inputColumns: Seq[Attribute] = Seq(this)
-
-  def relationName: Option[String] = qualifier.orElse(sourceColumn.map(_.table.name))
-
-//  /**
-//    * Returns true if this resolved attribute matches with a given table name and colum name
-//    */
-//  def matchesWith(tableName: String, columnName: String): Boolean = {
-//    relationNames match {
-//      case Nil => columnName == name
-//      case tableNames =>
-//        tableNames.exists { tbl =>
-//          tbl == tableName && matchesWith(columnName)
-//        }
-//    }
-//  }
-//
-//  def matchesWith(columnName: String): Boolean = {
-//    name == columnName
-//  }
 
   override def toString = {
     sourceColumn match {
       case Some(c) =>
-        s"${prefix}${typeDescription} <- ${c.fullName}"
+        s"*${prefix}${typeDescription} <- ${c.fullName}"
       case None =>
-        s"${prefix}${typeDescription}"
+        s"*${prefix}${typeDescription}"
     }
-//    (qualifier, sourceColumn) match {
-//      case (Some(q), columns) if columns.nonEmpty =>
-//        columns
-//          .map(_.fullName)
-//          .mkString(s"${q}.${typeDescription} <- [", ", ", "]")
-//      case (None, columns) if columns.nonEmpty =>
-//        columns
-//          .map(_.fullName)
-//          .mkString(s"${typeDescription} <- [", ", ", "]")
-//      case _ =>
-//        s"${prefix}${typeDescription}"
-//    }
   }
   override lazy val resolved = true
 }

@@ -86,7 +86,7 @@ object TypeResolver extends LogSupport {
           case k @ GroupingKey(LongLiteral(i, _), _) if i <= selectItems.length =>
             // Use a simpler form of attributes
             val keyItem = selectItems(i.toInt - 1) match {
-              case SingleColumn(expr, _, _, _) =>
+              case SingleColumn(expr, _, _) =>
                 expr
               case other =>
                 other
@@ -134,8 +134,8 @@ object TypeResolver extends LogSupport {
       val resolvedSortItems = sortItems.map {
         case sortItem @ SortItem(LongLiteral(i, _), _, _, _) =>
           val sortKey = child.outputAttributes(i.toInt - 1) match {
-            case SingleColumn(expr, _, _, _) => expr
-            case other                       => other
+            case SingleColumn(expr, _, _) => expr
+            case other                    => other
           }
           sortItem.copy(sortKey = sortKey)
         case other => other
@@ -259,54 +259,48 @@ object TypeResolver extends LogSupport {
 
   object resolveColumns extends RewriteRule {
     def apply(context: AnalyzerContext): PlanRewriter = { case p @ Project(child, columns, _) =>
-      val resolvedColumns = resolveOutputColumns(context, child.outputAttributes, columns)
-      val resolved        = Project(child, resolvedColumns, p.nodeLocation)
+      val resolvedChild   = resolveRelation(context, child)
+      val resolvedColumns = resolveOutputColumns(context, resolvedChild.outputAttributes, columns)
+      val resolved        = Project(resolvedChild, resolvedColumns, p.nodeLocation)
       resolved
     }
-  }
 
-  /**
-    * Resolve output columns by looking up the inputAttributes
-    *
-    * @param inputAttributes
-    * @param outputColumns
-    * @return
-    */
-  private def resolveOutputColumns(
-      context: AnalyzerContext,
-      inputAttributes: Seq[Attribute],
-      outputColumns: Seq[Attribute]
-  ): Seq[Attribute] = {
-
-    val resolvedColumns = Seq.newBuilder[Attribute]
-    outputColumns.map {
-//      case a: AllColumns =>
-//        // TODO check (prefix).* to resolve attributes
-//        resolvedColumns ++= inputAttributes
-      case SingleColumn(expr, alias, qualifier, nodeLocation) =>
-        resolveExpression(context, expr, inputAttributes) match {
-          case s: SingleColumn =>
-            resolvedColumns += s
-          case r: ResolvedAttribute if alias.isEmpty =>
-            resolvedColumns += r
-          case r: ResolvedAttribute if alias.nonEmpty =>
-            resolvedColumns += SingleColumn(r, alias, None, nodeLocation)
-          case expr =>
-            resolvedColumns += SingleColumn(expr, alias, None, nodeLocation)
-        }
-      case other =>
-        resolvedColumns += other
+    /**
+      * Resolve output columns by looking up the inputAttributes
+      *
+      * @param inputAttributes
+      * @param outputColumns
+      * @return
+      */
+    private def resolveOutputColumns(
+        context: AnalyzerContext,
+        inputAttributes: Seq[Attribute],
+        outputColumns: Seq[Attribute]
+    ): Seq[Attribute] = {
+      val resolvedColumns = Seq.newBuilder[Attribute]
+      outputColumns.map {
+        case s @ SingleColumn(expr, qualifier, nodeLocation) =>
+          resolveExpression(context, expr, inputAttributes) match {
+            case a: Attribute =>
+              resolvedColumns += a.withQualifier(qualifier)
+            case resolved =>
+              resolvedColumns += s.copy(expr = resolved)
+          }
+        case other =>
+          resolvedColumns += other
+      }
+      // Run one-more resolution (e.g., SingleColumn -> ResolvedAttribute)
+      val output = resolvedColumns.result().map(resolveAttribute)
+      // warn(s"resolveOutputColumns:\n[original]\n${outputColumns}\n[result]\n${output}")
+      output
     }
-    val output = resolvedColumns.result()
-    // Run one-more resolution (e.g., SingleColumn -> ResolvedAttribute)
-    output.map(resolveAttribute)
   }
 
   def resolveAttribute(attribute: Attribute): Attribute = {
     attribute match {
-      case SingleColumn(a: Attribute, alias, qualifier, _) =>
-        // Optimizes the nested attributes, but preserves column alias and qualifier in the parent
-        a.withAlias(alias).withQualifier(qualifier)
+//      case SingleColumn(a: Attribute, qualifier, _) if a.resolved =>
+//        // Optimizes the nested attributes, but preserves column alias and qualifier in the parent
+//        a.withAlias(alias).withQualifier(qualifier)
       case other => other
     }
   }
@@ -360,15 +354,9 @@ object TypeResolver extends LogSupport {
         // Resolve the inputs of AllColumn as ResolvedAttribute
         // so as not to pull up too much details
         val allColumns = resolvedAttributes.map {
-          case s @ SingleColumn(m: MultiSourceColumn, alias, qualifier, _) =>
-            // Pull-up MultiColumn to simplify the expression
-            m.withAlias(alias).withQualifier(qualifier)
-          case m: MultiSourceColumn =>
-            // MultiColumn is already resolved
-            m
-          case r: ResolvedAttribute =>
-            // This path preserves already resolved column tags
-            r
+          case a: Attribute =>
+            // Attribute can be used as is
+            a
           case other =>
             toResolvedAttribute(other.name, other)
         }
@@ -377,7 +365,10 @@ object TypeResolver extends LogSupport {
         List(expr)
     }
 
-    trace(s"findMatchInInputAttributes: ${expr}, inputAttributes: ${inputAttributes} -> ${results}")
+    trace(
+      s"findMatchInInputAttributes:\n[input]\n${expr}\n\n[output]\n${results
+          .mkString(", ")}\n\n[inputAttributes]:\n ${inputAttributes.mkString("\n ")}"
+    )
     results
   }
 

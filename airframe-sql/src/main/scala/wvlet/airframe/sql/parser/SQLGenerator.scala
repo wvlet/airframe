@@ -374,16 +374,13 @@ object SQLGenerator extends LogSupport {
         printExpression(k)
       case ParenthesizedExpression(expr, _) =>
         s"(${printExpression(expr)})"
-      case SingleColumn(ex, alias, _, _) =>
-        val col = printExpression(ex)
-        alias
-          .map(x => s"${col} AS ${x}")
-          .getOrElse(col)
-      case MultiSourceColumn(inputs, name, _, _) =>
-        name match {
-          case Some(name) => name
-          case None       => inputs.collectFirst { case a: Attribute => a }.map(printExpression).getOrElse(unknown(e))
-        }
+      case a: Alias =>
+        val e = printExpression(a.expr)
+        s"${e} AS ${a.name}"
+      case SingleColumn(ex, _, _) =>
+        printExpression(ex)
+      case m: MultiSourceColumn =>
+        m.sqlExpr
       case AllColumns(prefix, _, _) =>
         prefix.map(p => s"${p}.*").getOrElse("*")
       case a: Attribute =>

@@ -185,7 +185,7 @@ class TypeResolverTest extends AirSpec {
       val p = analyze("select id from A union all select id from B")
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
       p.outputAttributes shouldBe List(
-        MultiSourceColumn(List(ra1, rb1), Some("id"), None, None)
+        MultiSourceColumn(List(ra1, rb1), None, None)
       )
     }
 
@@ -193,7 +193,7 @@ class TypeResolverTest extends AirSpec {
       val p = analyze("select id from A union all select id from A")
       p.inputAttributes shouldBe List(ra1, ra2, ra1, ra2)
       p.outputAttributes shouldBe List(
-        MultiSourceColumn(List(ra1, ra1), Some("id"), None, None)
+        MultiSourceColumn(List(ra1, ra1), None, None)
       )
     }
 
@@ -204,7 +204,6 @@ class TypeResolverTest extends AirSpec {
         case Seq(
               MultiSourceColumn(
                 Seq(AllColumns(None, Some(Seq(`ra1`, `ra2`)), _), AllColumns(None, Some(Seq(`rb1`, `rb2`)), _)),
-                Some("*"),
                 None,
                 _
               )
@@ -221,7 +220,6 @@ class TypeResolverTest extends AirSpec {
                   AllColumns(None, Some(Seq(`ra1`, `ra2`)), _),
                   AllColumns(None, Some(Seq(`rb1`, `rb2`)), _)
                 ),
-                Some("*"),
                 None,
                 _
               )
@@ -232,11 +230,12 @@ class TypeResolverTest extends AirSpec {
 
     test("ru2: resolve union with column alias") {
       val p = analyze("select p1 from (select id as p1 from A union all select id as p1 from B)")
-      p.inputAttributes shouldMatch { case Seq(MultiSourceColumn(Seq(c1, c2), Some("p1"), None, _)) =>
+      p.inputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), None, _)) =>
+        m.name shouldBe "p1"
         c1 shouldBe ra1.withAlias("p1")
         c2 shouldBe rb1.withAlias("p1")
       }
-      p.outputAttributes shouldMatch { case Seq(MultiSourceColumn(Seq(c1, c2), None, None, _)) =>
+      p.outputAttributes shouldMatch { case Seq(MultiSourceColumn(Seq(c1, c2), None, _)) =>
         c1 shouldBe ra1.withAlias("p1")
         c2 shouldBe rb1.withAlias("p1")
       }
@@ -244,11 +243,12 @@ class TypeResolverTest extends AirSpec {
 
     test("ru3: resolve union with column alias and qualifier") {
       val p = analyze("select q1.p1 from (select id as p1 from A union all select id as p1 from B) q1")
-      p.inputAttributes shouldMatch { case Seq(MultiSourceColumn(Seq(c1, c2), Some("p1"), _, _)) =>
+      p.inputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), _, _)) =>
+        m.name shouldBe "p1"
         c1 shouldBe ra1.withAlias("p1")
         c2 shouldBe rb1.withAlias("p1")
       }
-      p.outputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), None, None, _)) =>
+      p.outputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), None, _)) =>
         c1 shouldBe ra1.withAlias("p1").withQualifier("q1")
         c2 shouldBe rb1.withAlias("p1").withQualifier("q1")
       }
@@ -257,7 +257,9 @@ class TypeResolverTest extends AirSpec {
     test("ru4: resolve aggregation key with union") {
       val p   = analyze("select count(*), id from (select * from A union all select * from B) group by id")
       val agg = p shouldMatch { case a: Aggregate => a }
-      agg.groupingKeys(0).child shouldMatch { case MultiSourceColumn(Seq(`ra1`, `rb1`), Some("id"), _, _) => }
+      agg.groupingKeys(0).child shouldMatch { case m @ MultiSourceColumn(Seq(`ra1`, `rb1`), _, _) =>
+        m.name shouldBe "id"
+      }
     }
 
     test("resolve union with expression") {
@@ -266,10 +268,9 @@ class TypeResolverTest extends AirSpec {
       p.outputAttributes.head shouldMatch {
         case MultiSourceColumn(
               Seq(
-                SingleColumn(ArithmeticBinaryExpr(Add, `ra1`, LongLiteral(1, _), _), None, None, _),
-                SingleColumn(ArithmeticBinaryExpr(Add, `rb1`, LongLiteral(1, _), _), None, None, _)
+                SingleColumn(ArithmeticBinaryExpr(Add, `ra1`, LongLiteral(1, _), _), None, _),
+                SingleColumn(ArithmeticBinaryExpr(Add, `rb1`, LongLiteral(1, _), _), None, _)
               ),
-              _,
               _,
               _
             ) =>
@@ -281,7 +282,9 @@ class TypeResolverTest extends AirSpec {
       val p = analyze("select id from A intersect select id from B") // => Distinct(Intersect(...))
       p shouldMatch { case Distinct(i @ Intersect(_, _), _) =>
         i.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
-        i.outputAttributes shouldMatch { case Seq(MultiSourceColumn(Seq(`ra1`, `rb1`), Some("id"), _, _)) => }
+        i.outputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(`ra1`, `rb1`), _, _)) =>
+          m.name shouldBe "id"
+        }
       }
     }
 
@@ -347,7 +350,7 @@ class TypeResolverTest extends AirSpec {
       p shouldMatch {
         case Aggregate(
               _,
-              List(c1, c2 @ SingleColumn(f: FunctionCall, _, _, _)),
+              List(c1, c2 @ SingleColumn(f: FunctionCall, _, _)),
               List(GroupingKey(`ra1`, _)),
               Some(GreaterThan(col, LongLiteral(10, _), _)),
               _
@@ -478,7 +481,8 @@ class TypeResolverTest extends AirSpec {
     test("join with USING") {
       val p = analyze("select id, A.name from A join B using(id)")
       p.outputAttributes shouldMatch {
-        case List(SingleColumn(MultiSourceColumn(List(c1, c2), Some("id"), _, _), None, None, _), c3) =>
+        case List(SingleColumn(m @ MultiSourceColumn(List(c1, c2), _, _), None, _), c3) =>
+          m.name shouldBe "id"
           c1 shouldBe ra1.withQualifier("A")
           c2 shouldBe rb1.withQualifier("B")
           c3 shouldBe ra2.withQualifier("A")
@@ -508,7 +512,8 @@ class TypeResolverTest extends AirSpec {
     test("join with on") {
       val p = analyze("select id, A.name from A join B on A.id = B.id")
       p.outputAttributes shouldMatch {
-        case List(SingleColumn(MultiSourceColumn(List(c1, c2), Some("id"), _, _), None, None, _), c3) =>
+        case List(SingleColumn(m @ MultiSourceColumn(List(c1, c2), _, _), None, _), c3) =>
+          m.name shouldBe "id"
           c1 shouldBe ra1.withQualifier("A")
           c2 shouldBe rb1.withQualifier("B")
           c3 shouldBe ra2.withQualifier("A")
@@ -518,7 +523,8 @@ class TypeResolverTest extends AirSpec {
     test("join with on condition for aliased columns") {
       val p = analyze("select id, a.name from A a join B b on a.id = b.id")
       p.outputAttributes shouldMatch {
-        case List(SingleColumn(MultiSourceColumn(List(c1, c2), Some("id"), _, _), None, None, _), c3) =>
+        case List(SingleColumn(m @ MultiSourceColumn(List(c1, c2), _, _), None, _), c3) =>
+          m.name shouldBe "id"
           c1 shouldBe ra1.withQualifier("a")
           c2 shouldBe rb1.withQualifier("b")
           c3 shouldBe ra2.withQualifier("a")
@@ -528,7 +534,8 @@ class TypeResolverTest extends AirSpec {
     test("join with on condition for qualified columns") {
       val p = analyze("select id, default.A.name from default.A join default.B on default.A.id = default.B.id")
       p.outputAttributes shouldMatch {
-        case List(SingleColumn(MultiSourceColumn(List(c1, c2), Some("id"), _, _), None, None, _), c3) =>
+        case List(SingleColumn(m @ MultiSourceColumn(List(c1, c2), _, _), None, _), c3) =>
+          m.name shouldBe "id"
           c1 shouldBe ra1.withQualifier("A")
           c2 shouldBe rb1.withQualifier("B")
           c3 shouldBe ra2.withQualifier("A")
@@ -548,10 +555,9 @@ class TypeResolverTest extends AirSpec {
 
     test("refer to duplicated key of equi join") {
       val p = analyze("select B.id from A inner join B on A.id = B.id")
-      p.outputAttributes shouldMatch {
-        case List(SingleColumn(MultiSourceColumn(List(c1, c2), Some("B.id"), _, _), None, None, _)) =>
-          c1 shouldBe ra1.withQualifier("A")
-          c2 shouldBe rb1.withQualifier("B")
+      p.outputAttributes shouldMatch { case List(SingleColumn(MultiSourceColumn(List(c1, c2), _, _), None, _)) =>
+        c1 shouldBe ra1.withQualifier("A")
+        c2 shouldBe rb1.withQualifier("B")
       }
     }
 
@@ -636,7 +642,7 @@ class TypeResolverTest extends AirSpec {
         case List(
               AllColumns(
                 None,
-                Some(Seq(MultiSourceColumn(List(c1, c2), None, _, _))),
+                Some(Seq(MultiSourceColumn(List(c1, c2), None, _))),
                 _
               )
             ) =>
@@ -730,7 +736,7 @@ class TypeResolverTest extends AirSpec {
     test("resolve simple count(*)") {
       val p = analyze("select count(*) from A")
       p.outputAttributes shouldMatch {
-        case List(SingleColumn(FunctionCall("count", Seq(c @ AllColumns(_, _, _)), _, _, _, _), _, _, _)) =>
+        case List(SingleColumn(FunctionCall("count", Seq(c @ AllColumns(_, _, _)), _, _, _, _), _, _)) =>
           c.columns shouldBe Some(Seq(ra1, ra2))
       }
     }
@@ -746,7 +752,6 @@ class TypeResolverTest extends AirSpec {
                   LongLiteral(1, _),
                   _
                 ),
-                _,
                 _,
                 _
               )
@@ -767,7 +772,7 @@ class TypeResolverTest extends AirSpec {
 
     test("resolve count(*) in Union") {
       val p = analyze("select count(*) as cnt from A union all select count(*) as cnt from B")
-      p.outputAttributes shouldMatch { case List(SingleColumn(m: MultiSourceColumn, _, _, _)) =>
+      p.outputAttributes shouldMatch { case List(SingleColumn(m: MultiSourceColumn, _, _)) =>
         m.inputs.size shouldBe 2
         m.inputs(0).asInstanceOf[SingleColumn].expr match {
           case f: FunctionCall if f.name == "count" =>
@@ -798,11 +803,11 @@ class TypeResolverTest extends AirSpec {
                   _
                 ),
                 None,
-                None,
                 _
               )
             ) =>
-          ac.columns shouldMatch { case Some(List(MultiSourceColumn(List(`ra1`, `rb1`), Some("id"), _, _))) =>
+          ac.columns shouldMatch { case Some(List(m @ MultiSourceColumn(List(`ra1`, `rb1`), _, _))) =>
+            m.name shouldBe "id"
           }
       }
     }
@@ -833,7 +838,7 @@ class TypeResolverTest extends AirSpec {
     test("resolve order by with duplicated join key") {
       val p = analyze("""SELECT A.id FROM A INNER JOIN B on A.id = B.id ORDER BY B.id DESC""".stripMargin)
       p.asInstanceOf[Sort].orderBy.toList shouldMatch {
-        case List(SortItem(MultiSourceColumn(List(c1, c2), Some("B.id"), _, _), Some(Descending), None, _)) =>
+        case List(SortItem(MultiSourceColumn(List(c1, c2), _, _), Some(Descending), None, _)) =>
           c1 shouldBe ra1.withQualifier("A")
           c2 shouldBe rb1.withQualifier("B")
       }
@@ -873,14 +878,15 @@ class TypeResolverTest extends AirSpec {
               None,
               Some(
                 Seq(
-                  MultiSourceColumn(_, Some("id"), Some("t"), _),
-                  MultiSourceColumn(_, Some("name"), Some("t"), _)
+                  m1 @ MultiSourceColumn(_, Some("t"), _),
+                  m2 @ MultiSourceColumn(_, Some("t"), _)
                 )
               ),
               _
             )
           ) =>
-        ()
+        m1.name shouldBe "id"
+        m2.name shouldBe "name"
     }
   }
 

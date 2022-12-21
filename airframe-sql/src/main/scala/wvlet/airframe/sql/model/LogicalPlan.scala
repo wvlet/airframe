@@ -532,7 +532,7 @@ object LogicalPlan {
         }
       }
       val columns = (0 until values.head.size).map { i =>
-        SingleColumn(MultiSourceColumn(values.map(_(i)), None, None, None), None, None, None)
+        MultiSourceColumn(values.map(_(i)), None, None)
       }
       columns
     }
@@ -670,10 +670,9 @@ object LogicalPlan {
             // TODO No need to re-wrap by SingleColumn for ResolvedAttribute, SingleColumn and MultiColumn?
             SingleColumn(
               in,
-              Some(alias.sqlExpr),
               None,
               alias.nodeLocation
-            )
+            ).withAlias(alias.value)
           }
         case None =>
           query.outputAttributes
@@ -715,7 +714,7 @@ object LogicalPlan {
               if (dupAttrs.isEmpty) {
                 r
               } else {
-                SingleColumn(MultiSourceColumn(Seq(r) ++ dupAttrs, None, None, None), None, None, None)
+                MultiSourceColumn(Seq(r) ++ dupAttrs, None, None)
               }
             case r => r
           }
@@ -769,7 +768,6 @@ object LogicalPlan {
         val qualifiers = columns.map(_.qualifier).distinct
         MultiSourceColumn(
           inputs = columns.toSeq,
-          alias = Some(head.name),
           qualifier = {
             // If all of the qualifiers are the same, use it.
             if (qualifiers.size == 1) {
@@ -779,7 +777,7 @@ object LogicalPlan {
             }
           },
           None
-        )
+        ).withAlias(head.name)
       }.toSeq
     }
   }
@@ -831,7 +829,7 @@ object LogicalPlan {
         case arr: ArrayConstructor =>
           ResolvedAttribute(UUID.randomUUID().toString, arr.elementType, None, None, None)
         case other =>
-          SingleColumn(other, None, None, other.nodeLocation)
+          SingleColumn(other, None, other.nodeLocation)
       }
     }
     override def sig(config: QuerySignatureConfig): String =

@@ -213,23 +213,30 @@ trait Attribute extends LeafExpression with LogSupport {
   def withQualifier(newQualifier: String): Attribute = withQualifier(Some(newQualifier))
   def withQualifier(newQualifier: Option[String]): Attribute
 
-  /**
-    * Set the qualifier if the current qualifier is empty
-    * @param newQualifier
-    * @return
-    */
-  def setQualifierIfEmpty(newQualifier: Option[String]): Attribute = {
-    withQualifier(qualifier.orElse(newQualifier))
+  import Expression.Alias
+  def alias: Option[String] = {
+    this match {
+      case a: Expression.Alias => Some(a.name)
+      case _                   => None
+    }
   }
-
-  def alias: Option[String]
   def withAlias(newAlias: String): Attribute = withAlias(Some(newAlias))
-  def withAlias(newAlias: Option[String]): Attribute
+  def withAlias(newAlias: Option[String]): Attribute = {
+
+    newAlias match {
+      case None => this
+      case Some(alias) =>
+        this match {
+          case a: Alias => a.copy(name = alias)
+          case other    => Alias(alias, other, None)
+        }
+    }
+  }
 
   protected[sql] def inputColumns: Seq[Attribute] = {
     children.map {
       case a: Attribute  => a
-      case u: Expression => SingleColumn(u, alias, qualifier, None)
+      case u: Expression => SingleColumn(u, qualifier, None)
     }
   }
 
@@ -294,7 +301,7 @@ trait Attribute extends LeafExpression with LogSupport {
       } else {
         qualifier
       }
-      Some(MultiSourceColumn(result, Some(columnPath.columnName), qualifier = q, None))
+      Some(MultiSourceColumn(result, qualifier = q, None))
     } else {
       result.headOption
     }
@@ -350,9 +357,6 @@ object Expression {
     override def withQualifier(newQualifier: Option[String]): UnresolvedAttribute = {
       this.copy(qualifier = newQualifier)
     }
-    override def alias: Option[String]                          = None
-    override def withAlias(newAlias: Option[String]): Attribute = this
-
     override def inputColumns: Seq[Attribute] = Seq.empty
   }
 
@@ -430,11 +434,6 @@ object Expression {
         .getOrElse(DataType.UnknownType)
     }
 
-    override def alias: Option[String] = None
-    override def withAlias(newAlias: Option[String]): Attribute = {
-      // no-op as we cannot assign an alias to multiple columns
-      this
-    }
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
     }
@@ -457,6 +456,26 @@ object Expression {
     override lazy val resolved = columns.isDefined
   }
 
+  case class Alias(
+      override val name: String,
+      expr: Expression,
+      nodeLocation: Option[NodeLocation]
+  ) extends Attribute {
+    override def qualifier: Option[String] = None
+    override def withQualifier(newQualifier: Option[String]): Attribute = {
+      this
+    }
+
+    override def toString: String = {
+      s"${name} := ${expr.sqlExpr}"
+    }
+    override def dataType: DataType = expr.dataType
+
+    override def sqlExpr: String = {
+      s"${expr.sqlExpr} AS ${name}"
+    }
+  }
+
   /**
     * An attribute that produces a single column value with a given expression.
     *
@@ -467,89 +486,19 @@ object Expression {
     */
   case class SingleColumn(
       expr: Expression,
-      // quoted or unquoted string
-      override val alias: Option[String],
       qualifier: Option[String] = None,
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
-    override def name: String       = alias.getOrElse(expr.attributeName)
+    override def name: String       = expr.attributeName
     override def dataType: DataType = expr.dataType
 
     override def children: Seq[Expression] = Seq(expr)
-    override def toString                  = s"SingleColumn(${fullName} := ${expr})"
+    override def toString                  = s"SingleColumn(${fullName}:${dataTypeName} := ${expr})"
 
-    override def sqlExpr: String = {
-      alias match {
-        case None    => expr.sqlExpr
-        case Some(a) => s"${expr.sqlExpr} AS ${a}"
-      }
-    }
-    override def withAlias(newAlias: Option[String]): SingleColumn = {
-      this.copy(alias = newAlias)
-    }
+    override def sqlExpr: String = expr.sqlExpr
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
     }
-
-//    def matchesWith(tableName: String, columnName: String): Boolean = {
-//      (qualifier.contains(tableName) && matchesWith(columnName)) || matchesWithMultiColumn(tableName, columnName)
-//    }
-//
-//    def matchesWith(columnName: String): Boolean = {
-//      alias.contains(columnName) || matchesWithMultiColumn(columnName)
-//    }
-//
-//    def matched(tableName: String, columnName: String): Seq[Expression] = {
-//      if (qualifier.contains(tableName) && matchesWith(columnName)) {
-//        Seq(this)
-//      } else if (expr.isInstanceOf[MultiColumn]) {
-//        val m = expr.asInstanceOf[MultiColumn]
-//        if (m.alias.contains(s"${tableName}.${columnName}")) {
-//          Seq(m)
-//        } else {
-//          m.matched(tableName, columnName)
-//        }
-//      } else Nil
-//    }
-//
-//    def matched(columnName: String): Seq[Expression] = {
-//      if (alias.contains(columnName)) {
-//        Seq(this)
-//      } else if (expr.isInstanceOf[MultiColumn]) {
-//        val m = expr.asInstanceOf[MultiColumn]
-//        if (m.alias.contains(columnName)) {
-//          Seq(m)
-//        } else {
-//          m.matched(columnName)
-//        }
-//      } else Nil
-//    }
-//
-//    private def matchesWithMultiColumn(tableName: String, columnName: String): Boolean = {
-//      expr match {
-//        case MultiColumn(inputs, _, _, _) =>
-//          inputs.exists {
-//            case r: ResolvedAttribute => r.matchesWith(tableName, columnName)
-//            case s: SingleColumn      => s.matchesWith(tableName, columnName)
-//            case s: AllColumns        => s.matchesWith(tableName, columnName)
-//            case _                    => false
-//          }
-//        case _ => false
-//      }
-//    }
-//
-//    private def matchesWithMultiColumn(columnName: String): Boolean = {
-//      expr match {
-//        case MultiColumn(inputs, name, _, _) =>
-//          name.contains(columnName) || inputs.exists {
-//            case r: ResolvedAttribute => r.name == columnName
-//            case s: SingleColumn      => s.matchesWith(columnName)
-//            case s: AllColumns        => s.matchesWith(columnName)
-//            case _                    => false
-//          }
-//        case _ => false
-//      }
-//    }
   }
 
   /**
@@ -560,7 +509,6 @@ object Expression {
     */
   case class MultiSourceColumn(
       inputs: Seq[Expression],
-      override val alias: Option[String],
       qualifier: Option[String],
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
@@ -570,9 +518,8 @@ object Expression {
     override def children: Seq[Expression] = inputs
 
     override def name: String = {
-      alias.getOrElse(inputs.head.attributeName)
+      inputs.head.attributeName
     }
-
     override def dataType: DataType = {
       inputs.head.dataType
     }
@@ -580,33 +527,6 @@ object Expression {
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
     }
-    override def withAlias(newAlias: Option[String]): MultiSourceColumn = {
-      this.copy(alias = newAlias)
-    }
-
-//    def matched(tableName: String, columnName: String): Seq[Expression] = {
-//      if (alias.contains(s"${tableName}.${columnName}")) {
-//        Seq(this)
-//      } else {
-//        inputs.collect {
-//          case r: ResolvedAttribute                                    => Seq(r)
-//          case s: SingleColumn if s.matchesWith(tableName, columnName) => s.matched(tableName, columnName)
-//          case s: AllColumns if s.matchesWith(tableName, columnName)   => s.matched(tableName, columnName)
-//        }.flatten
-//      }
-//    }
-//
-//    def matched(columnName: String): Seq[Expression] = {
-//      if (alias.contains(columnName)) {
-//        Seq(this)
-//      } else {
-//        inputs.collect {
-//          case r: ResolvedAttribute                         => Seq(r)
-//          case s: SingleColumn if s.matchesWith(columnName) => s.matched(columnName)
-//          case s: AllColumns if s.matchesWith(columnName)   => s.matched(columnName)
-//        }.flatten
-//      }
-//    }
   }
 
   case class SortItem(
