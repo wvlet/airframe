@@ -329,24 +329,17 @@ class TypeResolverTest extends AirSpec {
     }
 
     test("a2: group by with renamed keys") {
-      val p = analyze("select xxx, count(*) from (select id as xxx from A) group by 1")
-      p shouldMatch {
-        case Aggregate(
-              _,
-              _,
-              List(
-                GroupingKey(
-                  ResolvedAttribute("xxx", DataType.LongType, None, Seq(SourceColumn(`tableA`, `a1`)), None),
-                  _
-                )
-              ),
-              _,
-              _
-            ) =>
+      val p   = analyze("select xxx, count(*) from (select id as xxx from A) group by 1")
+      val agg = p shouldMatch { case a: Aggregate => a }
+
+      agg.groupingKeys shouldMatch { case List(GroupingKey(r: Attribute, _)) =>
+        r shouldMatch { case ResolvedAttribute("xxx", DataType.LongType, _, c, _) =>
+          c shouldBe Some(SourceColumn(tableA, a1))
+        }
       }
     }
 
-    test("resolve having") {
+    test("a3: resolve having") {
       val p = analyze("select id, count(*) cnt from A group by id having count(*) > 10")
       p shouldMatch {
         case Aggregate(

@@ -28,13 +28,13 @@ object TypeResolver extends LogSupport {
     // First resolve all input table types
     // CTE Table Refs must be resolved before resolving aggregation indexes
     TypeResolver.resolveCTETableRef ::
-      TypeResolver.resolveAggregationIndexes ::
-      TypeResolver.resolveAggregationKeys ::
       TypeResolver.resolveTableRef ::
       TypeResolver.resolveJoinUsing ::
       TypeResolver.resolveSubquery ::
       TypeResolver.resolveRegularRelation ::
       TypeResolver.resolveColumns ::
+      TypeResolver.resolveAggregationIndexes ::
+      TypeResolver.resolveAggregationKeys ::
       TypeResolver.resolveSortItemIndexes ::
       TypeResolver.resolveSortItems ::
       Nil
@@ -321,17 +321,26 @@ object TypeResolver extends LogSupport {
   }
 
   private def toResolvedAttribute(name: String, expr: Expression): Attribute = {
+
+    def findSourceColumn(e: Expression): Option[SourceColumn] = {
+      e match {
+        case r: ResolvedAttribute =>
+          r.sourceColumn
+        case _ => None
+      }
+    }
+
     expr match {
       case a: Alias =>
-        ResolvedAttribute(a.name, a.expr.dataType, a.qualifier, None, a.nodeLocation)
+        ResolvedAttribute(a.name, a.expr.dataType, a.qualifier, findSourceColumn(a.expr), a.nodeLocation)
       case s: SingleColumn =>
-        ResolvedAttribute(name, s.dataType, s.qualifier, None, expr.nodeLocation)
+        ResolvedAttribute(name, s.dataType, s.qualifier, findSourceColumn(s.expr), s.nodeLocation)
       case a: Attribute =>
         // No need to resolve Attribute expressions
         a
       case other =>
         // Resolve expr as ResolvedAttribute so as not to pull-up too much details
-        ResolvedAttribute(name, other.dataType, None, None, expr.nodeLocation)
+        ResolvedAttribute(name, other.dataType, None, findSourceColumn(expr), other.nodeLocation)
     }
   }
 
