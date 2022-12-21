@@ -44,7 +44,7 @@ import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
 import wvlet.log.Logger
 
-class TypeResolverTest extends AirSpec {
+class TypeResolverTest extends AirSpec with ResolverTestHelper {
 
   private val a1 = TableColumn("id", DataType.LongType, properties = Map("tag" -> Seq("personal_identifier")))
   private val a2 = TableColumn("name", DataType.StringType, properties = Map("tag" -> Seq("private")))
@@ -79,7 +79,7 @@ class TypeResolverTest extends AirSpec {
       .addColumn(c2)
   )
 
-  private def demoCatalog: Catalog = {
+  override protected def demoCatalog: Catalog = {
     val catalog = new InMemoryCatalog(
       "global",
       None,
@@ -91,49 +91,6 @@ class TypeResolverTest extends AirSpec {
     catalog.createTable(tableB, CreateMode.CREATE_IF_NOT_EXISTS)
     catalog.createTable(tableC, CreateMode.CREATE_IF_NOT_EXISTS)
     catalog
-  }
-
-  private def analyze(
-      sql: String,
-      rules: List[RewriteRule] = TypeResolver.typerRules
-  ): LogicalPlan = {
-    val resolvedPlan = resolvePlan(sql, rules)
-    val resolvedSql  = generateSql(resolvedPlan)
-    debug(s"[original]\n${sql}\n\n[resolved]\n${resolvedSql}")
-    trace(s"[original plan]\n${SQLParser.parse(sql).pp}\n[resolved plan]\n${resolvedPlan.pp}")
-
-    // Suppress rewrite rule logs in the second run
-    Logger("wvlet.airframe.sql.analyzer.RewriteRule").suppressLogs {
-      // Round-trip plan should be able to be resolved
-      resolvePlan(resolvedSql, rules)
-    }
-    resolvedPlan
-  }
-
-  private def resolvePlan(sql: String, rules: List[RewriteRule]): LogicalPlan = {
-    val plan            = SQLParser.parse(sql)
-    val analyzerContext = AnalyzerContext("default", demoCatalog).withAttributes(plan.outputAttributes)
-    val resolvedPlan    = TypeResolver.resolve(analyzerContext, plan, rules)
-    shouldBeResolved(resolvedPlan, sql)
-    resolvedPlan
-  }
-
-  private def shouldBeResolved(p: LogicalPlan, sql: String): Unit = {
-    if (!p.resolved) {
-      fail(
-        s"""Found unresolved expressions in:
-           |[sql]
-           |${sql}
-           |[plan]
-           |${p.pp}
-           |[unresolved expressions]
-           |${p.unresolvedExpressions.mkString("\n")}""".stripMargin
-      )
-    }
-  }
-
-  private def generateSql(p: LogicalPlan): String = {
-    SQLGenerator.print(p)
   }
 
   private val ra1 = ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tableA, a1)), None)
