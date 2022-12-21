@@ -279,10 +279,17 @@ object TypeResolver extends LogSupport {
     ): Seq[Attribute] = {
       val resolvedColumns = Seq.newBuilder[Attribute]
       outputColumns.map {
+        case a @ Alias(name, expr, _) =>
+          val resolved = resolveExpression(context, expr, inputAttributes)
+          if (expr eq resolved) {
+            resolvedColumns += a
+          } else {
+            resolvedColumns += a.copy(expr = resolved)
+          }
         case s @ SingleColumn(expr, qualifier, nodeLocation) =>
           resolveExpression(context, expr, inputAttributes) match {
             case a: Attribute =>
-              resolvedColumns += a.withQualifier(qualifier)
+              resolvedColumns += a.setQualifierIfEmpty(qualifier)
             case resolved =>
               resolvedColumns += s.copy(expr = resolved)
           }
@@ -296,11 +303,18 @@ object TypeResolver extends LogSupport {
     }
   }
 
-  def resolveAttribute(attribute: Attribute): Attribute = {
+  private def resolveAttribute(attribute: Attribute): Attribute = {
     attribute match {
-//      case SingleColumn(a: Attribute, qualifier, _) if a.resolved =>
-//        // Optimizes the nested attributes, but preserves column alias and qualifier in the parent
-//        a.withAlias(alias).withQualifier(qualifier)
+      case a @ Alias(name, attr: Attribute, _) =>
+        val resolved = resolveAttribute(attr)
+        if (attr eq resolved) {
+          a
+        } else {
+          a.copy(expr = resolved)
+        }
+      case SingleColumn(a: Attribute, qualifier, _) =>
+        // Optimizes the nested attributes, but preserves qualifier in the parent
+        a.setQualifierIfEmpty(qualifier)
       case other => other
     }
   }
@@ -349,7 +363,7 @@ object TypeResolver extends LogSupport {
       case i: Identifier =>
         lookup(i.value).map(toResolvedAttribute(i.value, _)).distinct
       case u @ UnresolvedAttribute(qualifier, name, _) =>
-        lookup(u.fullName).map(toResolvedAttribute(name, _).withQualifier(qualifier)).distinct
+        lookup(u.fullName).map(toResolvedAttribute(name, _).setQualifierIfEmpty(qualifier)).distinct
       case a @ AllColumns(_, None, _) =>
         // Resolve the inputs of AllColumn as ResolvedAttribute
         // so as not to pull up too much details

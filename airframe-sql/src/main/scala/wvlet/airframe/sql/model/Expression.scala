@@ -212,6 +212,12 @@ trait Attribute extends LeafExpression with LogSupport {
   def qualifier: Option[String]
   def withQualifier(newQualifier: String): Attribute = withQualifier(Some(newQualifier))
   def withQualifier(newQualifier: Option[String]): Attribute
+  def setQualifierIfEmpty(newQualifier: Option[String]): Attribute = {
+    qualifier match {
+      case Some(q) => this
+      case None => this.withQualifier(newQualifier)
+    }
+  }
 
   import Expression.Alias
   def alias: Option[String] = {
@@ -467,7 +473,7 @@ object Expression {
     }
 
     override def toString: String = {
-      s"${name} := ${expr.sqlExpr}"
+      s"<${name}> := ${expr}"
     }
     override def dataType: DataType = expr.dataType
 
@@ -493,7 +499,7 @@ object Expression {
     override def dataType: DataType = expr.dataType
 
     override def children: Seq[Expression] = Seq(expr)
-    override def toString                  = s"SingleColumn(${fullName}:${dataTypeName} := ${expr})"
+    override def toString                  = s"${fullName}:${dataTypeName} := ${expr}"
 
     override def sqlExpr: String = expr.sqlExpr
     override def withQualifier(newQualifier: Option[String]): Attribute = {
@@ -514,7 +520,7 @@ object Expression {
   ) extends Attribute {
     require(inputs.nonEmpty, s"The inputs of MultiSourceColumn should not be empty: ${this}")
 
-    override def toString: String          = s"${fullName}:${dataTypeName} <- {${inputs.mkString(", ")}}"
+    override def toString: String          = s"${fullName}:${dataTypeName} := {${inputs.mkString(", ")}}"
     override def children: Seq[Expression] = inputs
 
     override def name: String = {

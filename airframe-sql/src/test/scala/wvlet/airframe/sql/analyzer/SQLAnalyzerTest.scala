@@ -15,7 +15,7 @@ package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.sql.catalog.Catalog.CreateMode
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
-import wvlet.airframe.sql.model.Expression.AllColumns
+import wvlet.airframe.sql.model.Expression.{Alias, AllColumns}
 import wvlet.airframe.sql.model.{NodeLocation, ResolvedAttribute, SourceColumn}
 import wvlet.airspec.AirSpec
 
@@ -52,8 +52,8 @@ class SQLAnalyzerTest extends AirSpec {
     val plan = SQLAnalyzer.analyze("select id, name from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("id", DataType.LongType, Some("a"), Some(SourceColumn(tbl1, tbl1.column("id"))), None),
-      ResolvedAttribute("name", DataType.StringType, Some("a"), Some(SourceColumn(tbl1, tbl1.column("name"))), None)
+      ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tbl1, tbl1.column("id"))), None),
+      ResolvedAttribute("name", DataType.StringType, None, Some(SourceColumn(tbl1, tbl1.column("name"))), None)
     )
   }
 
@@ -65,18 +65,18 @@ class SQLAnalyzerTest extends AirSpec {
         None,
         Some(
           Seq(
-            ResolvedAttribute("id", DataType.LongType, Some("a"), Some(SourceColumn(tbl1, tbl1.column("id"))), None),
+            ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tbl1, tbl1.column("id"))), None),
             ResolvedAttribute(
               "name",
               DataType.StringType,
-              Some("a"),
+              None,
               Some(SourceColumn(tbl1, tbl1.column("name"))),
               None
             ),
             ResolvedAttribute(
               "address",
               DataType.StringType,
-              Some("a"),
+              None,
               Some(SourceColumn(tbl1, tbl1.column("address"))),
               None
             )
@@ -90,10 +90,13 @@ class SQLAnalyzerTest extends AirSpec {
   test("resolve select with alias") {
     val plan = SQLAnalyzer.analyze("select id as person_id from a", "public", catalog)
     plan.resolved shouldBe true
-    plan.outputAttributes.toList shouldBe List(
+    plan.outputAttributes.toList shouldMatch {
       // Attribute should not have a qualifier
-      ResolvedAttribute("person_id", DataType.LongType, None, Some(SourceColumn(tbl1, tbl1.column("id"))), None)
-    )
+      case List(Alias("person_id", r, _)) => {
+        r.attributeName shouldBe "id"
+        r.dataType shouldBe DataType.LongType
+      }
+    }
   }
 
   test("resolve join attributes") {
@@ -103,24 +106,30 @@ class SQLAnalyzerTest extends AirSpec {
       catalog
     )
     plan.resolved shouldBe true
-    plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("id", DataType.LongType, Some("a"), Some(SourceColumn(tbl1, tbl1.column("id"))), None),
-      ResolvedAttribute("name", DataType.StringType, Some("a"), Some(SourceColumn(tbl1, tbl1.column("name"))), None),
+    val attr = plan.outputAttributes.toList
+    attr(0) shouldBe ResolvedAttribute(
+      "id",
+      DataType.LongType,
+      Some("a"),
+      Some(SourceColumn(tbl1, tbl1.column("id"))),
+      None
+    )
+    attr(1) shouldBe
+      ResolvedAttribute("name", DataType.StringType, Some("a"), Some(SourceColumn(tbl1, tbl1.column("name"))), None)
+
+    attr(2) shouldBe
       ResolvedAttribute(
         "address",
         DataType.StringType,
         Some("a"),
         Some(SourceColumn(tbl1, tbl1.column("address"))),
         None
-      ),
-      ResolvedAttribute(
-        "phone_num",
-        DataType.StringType,
-        None, // This must be None because it's renamed from b.phone as phone_num
-        Some(SourceColumn(tbl2, tbl2.column("phone"))),
-        None
       )
-    )
+    attr(3) shouldMatch { case Alias("phone_num", a, _) =>
+      a shouldMatch { case ResolvedAttribute("phone", DataType.StringType, _, _, _) =>
+      // c shouldBe SourceColumn(tbl2, tbl2.column("phone"))
+      }
+    }
   }
 
 }
