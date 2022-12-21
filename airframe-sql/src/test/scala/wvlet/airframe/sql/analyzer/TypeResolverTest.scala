@@ -344,11 +344,11 @@ class TypeResolverTest extends AirSpec {
       p shouldMatch {
         case Aggregate(
               _,
-              List(c1, c2 @ SingleColumn(f: FunctionCall, _, _)),
+              List(c1, Alias(_, "cnt", SingleColumn(f: FunctionCall, _, _), _)),
               List(GroupingKey(`ra1`, _)),
               Some(GreaterThan(col, LongLiteral(10, _), _)),
               _
-            ) if c1.name == "id" && c2.name == "cnt" && f.functionName == "count" =>
+            ) if c1.name == "id" && f.functionName == "count" =>
           f.args shouldMatch { case List(AllColumns(_, Some(cols), _)) =>
             cols.toSet shouldBe Set(ra1, ra2)
           }

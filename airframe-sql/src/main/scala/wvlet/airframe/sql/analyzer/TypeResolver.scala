@@ -326,6 +326,8 @@ object TypeResolver extends LogSupport {
       e match {
         case r: ResolvedAttribute =>
           r.sourceColumn
+        case a: Alias =>
+          findSourceColumn(a.expr)
         case _ => None
       }
     }
