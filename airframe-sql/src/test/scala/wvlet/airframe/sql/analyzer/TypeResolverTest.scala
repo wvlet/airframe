@@ -849,7 +849,7 @@ class TypeResolverTest extends AirSpec {
   test("resolve UNNEST") {
     test("resolve UNNEST array column") {
       val p = analyze("SELECT id, n FROM A CROSS JOIN UNNEST (name) AS t (n)")
-      p.outputAttributes shouldMatch { case List(c1, c2) =>
+      p.outputAttributes shouldMatch { case List(c1: Attribute, c2: Attribute) =>
         c1.fullName shouldBe "A.id"
         c2.fullName shouldBe "t.n"
       }
@@ -902,7 +902,7 @@ class TypeResolverTest extends AirSpec {
 
   test("resolve select * from (select 1)") {
     val p = analyze("select * from (select 1)")
-    p.outputAttributes shouldMatch { case List(AllColumns(None, Some(List(r)), _)) =>
+    p.outputAttributes shouldMatch { case List(AllColumns(None, Some(List(r: Attribute)), _)) =>
       r.dataType shouldBe DataType.LongType
     }
   }
