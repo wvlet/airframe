@@ -517,32 +517,30 @@ class TypeResolverTest extends AirSpec {
     }
 
     test("j3: join with on") {
-      val p = analyze("select id, A.name from A join B on A.id = B.id")
-      p.outputAttributes shouldMatch { case List(m @ MultiSourceColumn(List(c1, c2), _, _), c3) =>
-        m.name shouldBe "id"
+      val p = analyze("select A.id, A.name, B.name from A join B on A.id = B.id")
+      p.outputAttributes shouldMatch { case List(c1, c2, c3) =>
         c1 shouldBe ra1.withQualifier("A")
-        c2 shouldBe rb1.withQualifier("B")
-        c3 shouldBe ra2.withQualifier("A")
+        c2 shouldBe ra2.withQualifier("A")
+        c3 shouldBe rb2.withQualifier("B")
       }
     }
 
     test("j4: join with on condition for aliased columns") {
-      val p = analyze("select id, a.name from A a join B b on a.id = b.id")
-      p.outputAttributes shouldMatch { case List(m @ MultiSourceColumn(List(c1, c2), _, _), c3) =>
-        m.name shouldBe "id"
+      val p = analyze("select a.id, a.name, b.name from A a join B b on a.id = b.id")
+      p.outputAttributes shouldMatch { case List(c1, c2, c3) =>
         c1 shouldBe ra1.withQualifier("a")
-        c2 shouldBe rb1.withQualifier("b")
-        c3 shouldBe ra2.withQualifier("a")
+        c2 shouldBe ra2.withQualifier("a")
+        c3 shouldBe rb2.withQualifier("b")
       }
     }
 
     test("j5: join with on condition for qualified columns") {
-      val p = analyze("select id, default.A.name from default.A join default.B on default.A.id = default.B.id")
-      p.outputAttributes shouldMatch { case List(m @ MultiSourceColumn(List(c1, c2), _, _), c3) =>
-        m.name shouldBe "id"
+      val p =
+        analyze("select A.id, A.name, B.name from default.A join default.B on default.A.id = default.B.id")
+      p.outputAttributes shouldMatch { case List(c1, c2, c3) =>
         c1 shouldBe ra1.withQualifier("A")
-        c2 shouldBe rb1.withQualifier("B")
-        c3 shouldBe ra2.withQualifier("A")
+        c2 shouldBe ra2.withQualifier("A")
+        c3 shouldBe rb2.withQualifier("B")
       }
     }
 
