@@ -503,20 +503,18 @@ object LogicalPlan {
       val attrs = child.outputAttributes.map { a =>
         a.withQualifier(alias.value)
       }
-//      val result = columnNames match {
-//        case Some(columnNames) =>
-//          attrs.zip(columnNames).map { case (a, columnName) =>
-//            a.withQualifier(alias.value) match {
-//              case r: ResolvedAttribute   => r.copy(name = columnName)
-//              case s: SingleColumn        => s.copy(alias = Some(columnName))
-//              case u: UnresolvedAttribute => u.copy(name = columnName)
-//              case others                 => others
-//            }
-//          }
-//        case None =>
-//          attrs
-//      }
-      attrs
+      val result = columnNames match {
+        case Some(columnNames) =>
+          attrs.zip(columnNames).map { case (a, columnName) =>
+            a match {
+              case a: Attribute => a.withAlias(columnName)
+              case others       => others
+            }
+          }
+        case None =>
+          attrs
+      }
+      result
     }
   }
 

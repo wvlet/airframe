@@ -30,6 +30,7 @@ import wvlet.airframe.sql.model.LogicalPlan.{
   With
 }
 import wvlet.airframe.sql.model.{
+  Attribute,
   CTERelationRef,
   ColumnPath,
   Expression,
@@ -824,14 +825,16 @@ class TypeResolverTest extends AirSpec {
     test("resolve order by alias") {
       val p = analyze("""SELECT * FROM (SELECT id as p1, name FROM A) ORDER BY p1""".stripMargin)
       p.asInstanceOf[Sort].orderBy.toList shouldMatch { case List(SortItem(c, None, None, _)) =>
-        c shouldBe ra1.copy(name = "p1")
+        c.attributeName shouldBe "p1"
+        c.dataType shouldBe DataType.LongType
       }
     }
 
     test("resolve order by index") {
       val p = analyze("""SELECT id, name FROM A ORDER BY 1""".stripMargin)
-      p.asInstanceOf[Sort].orderBy.toList shouldMatch { case List(SortItem(`ra1`, None, None, _)) =>
-        ()
+      p.asInstanceOf[Sort].orderBy.toList shouldMatch { case List(SortItem(c, None, None, _)) =>
+        c.attributeName shouldBe "id"
+        c.dataType shouldBe DataType.StringType
       }
     }
 
@@ -848,10 +851,10 @@ class TypeResolverTest extends AirSpec {
   test("resolve UNNEST") {
     test("resolve UNNEST array column") {
       val p = analyze("SELECT id, n FROM A CROSS JOIN UNNEST (name) AS t (n)")
-      p.outputAttributes shouldBe List(
-        ra1.withQualifier("A"),
-        ra2.copy(name = "n", qualifier = Some("t"))
-      )
+      p.outputAttributes shouldMatch { case List(c1, c2) =>
+        c1.fullName shouldBe "A.id"
+        c2.fullName shouldBe "t.n"
+      }
     }
 
     test("resolve UNNEST array") {
@@ -878,15 +881,17 @@ class TypeResolverTest extends AirSpec {
               None,
               Some(
                 Seq(
-                  m1 @ MultiSourceColumn(_, Some("t"), _),
-                  m2 @ MultiSourceColumn(_, Some("t"), _)
+                  m1,
+                  m2
                 )
               ),
               _
             )
           ) =>
-        m1.name shouldBe "id"
-        m2.name shouldBe "name"
+        m1.fullName shouldBe "t.id"
+        m1.dataType shouldBe DataType.LongType
+        m2.fullName shouldBe "t.name"
+        m2.dataType shouldBe DataType.StringType
     }
   }
 
@@ -899,8 +904,8 @@ class TypeResolverTest extends AirSpec {
 
   test("resolve select * from (select 1)") {
     val p = analyze("select * from (select 1)")
-    p.outputAttributes shouldMatch {
-      case List(AllColumns(None, Some(List(ResolvedAttribute(_, DataType.LongType, _, _, _))), _)) =>
+    p.outputAttributes shouldMatch { case List(AllColumns(None, Some(List(r)), _)) =>
+      r.dataType shouldBe DataType.LongType
     }
   }
 
@@ -912,7 +917,7 @@ class TypeResolverTest extends AirSpec {
         |group by 1
         |""".stripMargin)
     p.outputAttributes shouldMatch {
-      case List(c1: SingleColumn, c2: SingleColumn) if c1.name == "name" && c2.name == "cnt" =>
+      case List(c1: Attribute, c2: Attribute) if c1.name == "name" && c2.name == "cnt" =>
     }
   }
 

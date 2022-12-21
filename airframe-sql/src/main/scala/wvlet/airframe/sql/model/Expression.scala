@@ -835,7 +835,7 @@ object Expression {
     override def dataType: DataType  = DataType.StringType
     override def stringValue: String = value
     override def sqlExpr: String     = s"'${value}'"
-    override def toString            = s"Literal('${value}')"
+    override def toString            = s"StringLiteral('${value}')"
   }
   case class TimeLiteral(value: String, nodeLocation: Option[NodeLocation]) extends Literal with LeafExpression {
     override def dataType: DataType  = DataType.TimestampType(TimestampField.TIME, false)
@@ -865,13 +865,13 @@ object Expression {
     override def dataType: DataType  = DataType.DoubleType
     override def stringValue: String = value.toString
     override def sqlExpr             = value.toString
-    override def toString            = s"Literal(${value.toString})"
+    override def toString            = s"DoubleLiteral(${value.toString})"
   }
   case class LongLiteral(value: Long, nodeLocation: Option[NodeLocation]) extends Literal with LeafExpression {
     override def dataType: DataType  = DataType.LongType
     override def stringValue: String = value.toString
     override def sqlExpr             = value.toString
-    override def toString            = s"Literal(${value.toString})"
+    override def toString            = s"LongLiteral(${value.toString})"
   }
   case class IntervalLiteral(
       value: String,
