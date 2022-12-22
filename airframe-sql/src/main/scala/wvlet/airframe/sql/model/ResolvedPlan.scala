@@ -73,6 +73,7 @@ case class ResolvedAttribute(
 ) extends Attribute
     with LogSupport {
 
+  override lazy val resolved   = true
   override def sqlExpr: String = s"${prefix}${name}"
 
   override def withQualifier(newQualifier: Option[String]): Attribute = {
@@ -88,7 +89,10 @@ case class ResolvedAttribute(
         s"*${prefix}${typeDescription}"
     }
   }
-  override lazy val resolved = true
+
+  override def sourceColumns: Seq[SourceColumn] = {
+    sourceColumn.toSeq
+  }
 }
 
 /**

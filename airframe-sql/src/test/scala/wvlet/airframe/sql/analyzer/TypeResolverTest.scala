@@ -885,9 +885,9 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       |  on t1.id = t2.id
       |""".stripMargin)
 
-    p shouldMatch { case Project(Join(InnerJoin, _, _, JoinOnEq(Seq(k1, k2), _), _), _, _) =>
-      debug(k1.sqlExpr)
-      debug(k2.sqlExpr)
+    p shouldMatch { case Project(Join(InnerJoin, _, _, JoinOnEq(Seq(k1: Attribute, k2: Attribute), _), _), _, _) =>
+      k1.fullName shouldBe "t1.id"
+      k2.fullName shouldBe "t2.id"
     }
   }
 }
