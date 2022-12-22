@@ -478,8 +478,8 @@ object Expression {
       expr: Expression,
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
-    override protected[sql] def inputColumns: Seq[Attribute] = Seq(this)
-    override def children: Seq[Expression]                   = Seq(expr)
+    override def inputColumns: Seq[Attribute] = Seq(this)
+    override def children: Seq[Expression]    = Seq(expr)
 
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
