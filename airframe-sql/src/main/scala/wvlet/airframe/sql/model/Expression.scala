@@ -248,6 +248,10 @@ trait Attribute extends LeafExpression with LogSupport {
     }
   }
 
+  /**
+    * Sub Attributes used to generate this Attribute
+    * @return
+    */
   def inputColumns: Seq[Attribute] = {
     children.map {
       case a: Attribute  => a
@@ -448,8 +452,17 @@ object Expression {
       nodeLocation: Option[NodeLocation]
   ) extends Attribute
       with LogSupport {
-    override def name: String              = "*"
-    override def children: Seq[Expression] = columns.getOrElse(Seq.empty)
+    override def name: String = "*"
+
+    override def children: Seq[Expression] = {
+      // AllColumns is a reference to the input attributes.
+      // Return empty so as not to traverse children from here.
+      Seq.empty
+    }
+    override def inputColumns: Seq[Attribute] = {
+      columns.getOrElse(Seq.empty)
+    }
+
     override def dataType: DataType = {
       columns
         .map(cols => EmbeddedRecordType(cols.map(x => NamedType(x.name, x.dataType))))
@@ -458,10 +471,6 @@ object Expression {
 
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
-    }
-
-    override def inputColumns: Seq[Attribute] = {
-      columns.getOrElse(Seq.empty)
     }
 
     override def toString = {
@@ -558,8 +567,19 @@ object Expression {
   ) extends Attribute {
     require(inputs.nonEmpty, s"The inputs of MultiSourceColumn should not be empty: ${this}")
 
-    override def toString: String          = s"${fullName}:${dataTypeName} := {${inputs.mkString(", ")}}"
-    override def children: Seq[Expression] = inputs
+    override def toString: String = s"${fullName}:${dataTypeName} := {${inputs.mkString(", ")}}"
+
+    override def inputColumns: Seq[Attribute] = {
+      inputs.map {
+        case a: Attribute => a
+        case e: Expression =>
+          SingleColumn(e, qualifier, e.nodeLocation)
+      }
+    }
+    override def children: Seq[Expression] = {
+      // MultiSourceColumn is a reference to the multiple columns. Do not traverse here
+      Seq.empty
+    }
 
     override def sqlExpr: String = fullName
 
