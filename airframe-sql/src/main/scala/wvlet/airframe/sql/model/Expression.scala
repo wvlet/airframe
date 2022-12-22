@@ -139,7 +139,8 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     if (rule.isDefinedAt(this)) {
       rule.apply(this)
     }
-    productIterator.foreach(recursiveTraverse)
+    // Unlike transform, this will traverse the selected children by the Expression
+    children.foreach(recursiveTraverse)
   }
 
   def collectExpressions(cond: PartialFunction[Expression, Boolean]): List[Expression] = {
