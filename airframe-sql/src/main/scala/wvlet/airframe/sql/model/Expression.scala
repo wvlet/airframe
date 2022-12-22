@@ -208,6 +208,11 @@ trait Attribute extends LeafExpression with LogSupport {
   }
   def prefix: String = qualifier.map(q => s"${q}.").getOrElse("")
 
+  /**
+    * Returns the unmodified source columns referenced by this Attribute
+    */
+  def sourceColumns: Seq[SourceColumn]
+
   // (database name)?.(table name) given in the original SQL
   def qualifier: Option[String]
   def withQualifier(newQualifier: String): Attribute = withQualifier(Some(newQualifier))
@@ -368,7 +373,8 @@ object Expression {
     override def withQualifier(newQualifier: Option[String]): UnresolvedAttribute = {
       this.copy(qualifier = newQualifier)
     }
-    override def inputColumns: Seq[Attribute] = Seq.empty
+    override def inputColumns: Seq[Attribute]     = Seq.empty
+    override def sourceColumns: Seq[SourceColumn] = Seq.empty
   }
 
   sealed trait Identifier extends LeafExpression {
@@ -469,6 +475,10 @@ object Expression {
       }
     }
 
+    override def sourceColumns: Seq[SourceColumn] = {
+      columns.map(_.flatMap(_.sourceColumns)).getOrElse(Seq.empty)
+    }
+
     override lazy val resolved = columns.isDefined
   }
 
@@ -492,6 +502,13 @@ object Expression {
 
     override def sqlExpr: String = {
       s"${expr.sqlExpr} AS ${fullName}"
+    }
+
+    override def sourceColumns: Seq[SourceColumn] = {
+      expr match {
+        case a: Attribute => a.sourceColumns
+        case _            => Seq.empty
+      }
     }
   }
 
@@ -518,6 +535,13 @@ object Expression {
     override def sqlExpr: String = expr.sqlExpr
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
+    }
+
+    override def sourceColumns: Seq[SourceColumn] = {
+      expr match {
+        case a: Attribute => a.sourceColumns
+        case _            => Seq.empty
+      }
     }
   }
 
@@ -548,6 +572,13 @@ object Expression {
 
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
+    }
+
+    override def sourceColumns: Seq[SourceColumn] = {
+      inputs.flatMap {
+        case a: Attribute => a.sourceColumns
+        case _            => Seq.empty
+      }
     }
   }
 
