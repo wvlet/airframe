@@ -597,8 +597,7 @@ object LogicalPlan {
     }
 
     override def outputAttributes: Seq[Attribute] = {
-      // TODO Remove redundant resolution
-      selectItems.map(TypeResolver.resolveAttribute)
+      selectItems
     }
   }
 
@@ -620,7 +619,9 @@ object LogicalPlan {
     override def toString =
       s"Aggregate[${groupingKeys.mkString(",")}](Select[${selectItems.mkString(", ")}(${child})"
 
-    override def outputAttributes: Seq[Attribute] = selectItems
+    override def outputAttributes: Seq[Attribute] = {
+      selectItems
+    }
   }
 
   case class Query(withQuery: With, body: Relation, nodeLocation: Option[NodeLocation]) extends Relation {
