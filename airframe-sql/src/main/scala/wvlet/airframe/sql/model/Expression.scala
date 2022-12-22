@@ -253,12 +253,7 @@ trait Attribute extends LeafExpression with LogSupport {
     * Sub Attributes used to generate this Attribute
     * @return
     */
-  def inputColumns: Seq[Attribute] = {
-    children.map {
-      case a: Attribute  => a
-      case u: Expression => SingleColumn(u, qualifier, u.nodeLocation)
-    }
-  }
+  def inputColumns: Seq[Attribute]
 
   /**
     * Return true if this Attribute matches with a given column path
@@ -290,12 +285,16 @@ trait Attribute extends LeafExpression with LogSupport {
     */
   def matched(columnPath: ColumnPath): Option[Attribute] = {
     def findMatched(columnName: String): Seq[Attribute] = {
-      inputColumns.collect {
-        case a: AllColumns =>
-          a.inputColumns.filter(_.name == columnName)
-        case a: Attribute if a.name == columnName =>
-          Seq(a)
-      }.flatten
+      if (this.name == columnName) {
+        Seq(this)
+      } else {
+        inputColumns.collect {
+          case a: AllColumns =>
+            a.inputColumns.filter(_.name == columnName)
+          case a: Attribute if a.name == columnName =>
+            Seq(a)
+        }.flatten
+      }
     }
 
     val result: Seq[Attribute] = columnPath.table match {

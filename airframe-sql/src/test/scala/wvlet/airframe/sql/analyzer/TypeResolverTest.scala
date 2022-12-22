@@ -16,33 +16,10 @@ package wvlet.airframe.sql.analyzer
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{
-  Aggregate,
-  Distinct,
-  Except,
-  Filter,
-  InnerJoin,
-  Intersect,
-  Join,
-  Project,
-  Query,
-  Sort,
-  With
-}
-import wvlet.airframe.sql.model.{
-  Attribute,
-  CTERelationRef,
-  ColumnPath,
-  Expression,
-  LogicalPlan,
-  NodeLocation,
-  ResolvedAttribute,
-  SourceColumn
-}
-import wvlet.airframe.sql.parser.{SQLGenerator, SQLParser}
+import wvlet.airframe.sql.model.LogicalPlan._
+import wvlet.airframe.sql.model._
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
-import wvlet.log.Logger
 
 class TypeResolverTest extends AirSpec with ResolverTestHelper {
 
@@ -210,6 +187,25 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       p.outputAttributes shouldMatch { case Seq(MultiSourceColumn(Seq(c1, c2), None, _)) =>
         c1 shouldBe ra1.withAlias("p1")
         c2 shouldBe rb1.withAlias("p1")
+      }
+    }
+
+    test("ru2a: resolve union with different column aliases") {
+      val p = analyze("select p1 from (select id as p1 from A union all select id from B)")
+      p.inputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), None, _)) =>
+        c1 shouldBe ra1.withAlias("p1")
+        c2 shouldBe rb1
+      }
+      p.outputAttributes shouldMatch { case Seq(MultiSourceColumn(Seq(c1, c2), None, _)) =>
+        c1 shouldBe ra1.withAlias("p1")
+        c2 shouldBe rb1
+      }
+    }
+    test(s"ru2b: resolve union with different aliases") {
+      intercept[SQLError] {
+        val p = analyze("select p2 from (select id as p1 from A union all select id as p2 from B)")
+        debug(p.inputAttributes)
+        debug(p.outputAttributes)
       }
     }
 
