@@ -243,7 +243,7 @@ trait Attribute extends LeafExpression with LogSupport {
     }
   }
 
-  protected[sql] def inputColumns: Seq[Attribute] = {
+  def inputColumns: Seq[Attribute] = {
     children.map {
       case a: Attribute  => a
       case u: Expression => SingleColumn(u, qualifier, u.nodeLocation)
