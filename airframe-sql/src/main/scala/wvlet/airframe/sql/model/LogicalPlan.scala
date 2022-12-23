@@ -12,8 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.model
-import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, RewriteRule, TypeResolver}
-import wvlet.airframe.sql.catalog.DataType
+import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, TypeResolver}
 
 import java.util.UUID
 
@@ -501,19 +500,18 @@ object LogicalPlan {
       val attrs = child.outputAttributes.map { a =>
         a.withQualifier(alias.value)
       }
-      columnNames match {
+      val result = columnNames match {
         case Some(columnNames) =>
           attrs.zip(columnNames).map { case (a, columnName) =>
-            a.withQualifier(alias.value) match {
-              case r: ResolvedAttribute   => r.copy(name = columnName)
-              case s: SingleColumn        => s.copy(alias = Some(columnName))
-              case u: UnresolvedAttribute => u.copy(name = columnName)
-              case others                 => others
+            a match {
+              case a: Attribute => a.withAlias(columnName)
+              case others       => others
             }
           }
         case None =>
           attrs
       }
+      result
     }
   }
 
@@ -529,7 +527,7 @@ object LogicalPlan {
         }
       }
       val columns = (0 until values.head.size).map { i =>
-        SingleColumn(MultiColumn(values.map(_(i)), None, None, None), None, None, None)
+        MultiSourceColumn(values.map(_(i)), None, None)
       }
       columns
     }
@@ -598,8 +596,8 @@ object LogicalPlan {
       s"P[${proj}](${child.sig(config)})"
     }
 
-    // TODO
     override def outputAttributes: Seq[Attribute] = {
+      // TODO Remove redundant resolution
       selectItems.map(TypeResolver.resolveAttribute)
     }
   }
@@ -667,10 +665,9 @@ object LogicalPlan {
             // TODO No need to re-wrap by SingleColumn for ResolvedAttribute, SingleColumn and MultiColumn?
             SingleColumn(
               in,
-              Some(alias.sqlExpr),
               None,
               alias.nodeLocation
-            )
+            ).withAlias(alias.value)
           }
         case None =>
           query.outputAttributes
@@ -702,21 +699,16 @@ object LogicalPlan {
     }
     override def outputAttributes: Seq[Attribute] = {
       cond match {
-        case je: JoinOnEq =>
-          // Aggregates duplicated keys
-          val dups         = je.duplicateKeys
-          val uniqueInputs = inputAttributes.filter(x => !dups.contains(x))
-          uniqueInputs.map {
-            case r: ResolvedAttribute =>
-              val dupAttrs = dups.collect { case x: ResolvedAttribute if x.name == r.name => x }
-              if (dupAttrs.isEmpty) {
-                r
-              } else {
-                SingleColumn(MultiColumn(Seq(r) ++ dupAttrs, None, None, None), None, None, None)
-              }
-            case r => r
+        case ju: ResolvedJoinUsing =>
+          val joinKeys = ju.keys
+          val otherAttributes = inputAttributes.filter { x =>
+            !joinKeys.exists(jk => jk.name == x.name)
           }
-        case _ => inputAttributes
+          // report join keys (merged) and other attributes
+          joinKeys ++ otherAttributes
+        case _ =>
+          // Report including duplicated name columns
+          inputAttributes
       }
     }
 
@@ -750,7 +742,36 @@ object LogicalPlan {
 
   sealed trait SetOperation extends Relation {
     override def children: Seq[Relation]
+
+    override def outputAttributes: Seq[Attribute] = mergeOutputAttributes
+    protected def mergeOutputAttributes: Seq[Attribute] = {
+      // Collect all input attributes
+      val outputAttributes: IndexedSeq[IndexedSeq[Attribute]] =
+        children.map(_.outputAttributes.toIndexedSeq).toIndexedSeq
+
+      // Transpose a set of relation columns into a list of same columns
+      // relations: (Ra(a1, a2, ...), Rb(b1, b2, ...))
+      // column lists: ((a1, b1, ...), (a2, b2, ...)
+      val sameColumnList = outputAttributes.transpose
+      sameColumnList.map { columns =>
+        val head       = columns.head
+        val qualifiers = columns.map(_.qualifier).distinct
+        MultiSourceColumn(
+          inputs = columns.toSeq,
+          qualifier = {
+            // If all of the qualifiers are the same, use it.
+            if (qualifiers.size == 1) {
+              qualifiers.head
+            } else {
+              None
+            }
+          },
+          None
+        ).withAlias(head.name)
+      }.toSeq
+    }
   }
+
   case class Intersect(
       relations: Seq[Relation],
       nodeLocation: Option[NodeLocation]
@@ -761,26 +782,8 @@ object LogicalPlan {
     }
     override def inputAttributes: Seq[Attribute] =
       relations.flatMap(_.inputAttributes)
-    override def outputAttributes: Seq[Attribute] = {
-      relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
-        SingleColumn(
-          MultiColumn(
-            relations.map(_.outputAttributes(i)),
-            Some(output.name),
-            None,
-            output.nodeLocation
-          ),
-          None,
-          output match {
-            case r: ResolvedAttribute => r.qualifier
-            case c: SingleColumn      => c.qualifier
-            case _                    => None
-          },
-          output.nodeLocation
-        )
-      }
-    }
   }
+
   case class Except(left: Relation, right: Relation, nodeLocation: Option[NodeLocation]) extends SetOperation {
     override def children: Seq[Relation] = Seq(left, right)
     override def sig(config: QuerySignatureConfig): String = {
@@ -789,6 +792,7 @@ object LogicalPlan {
     override def inputAttributes: Seq[Attribute]  = left.inputAttributes
     override def outputAttributes: Seq[Attribute] = left.outputAttributes
   }
+
   case class Union(
       relations: Seq[Relation],
       nodeLocation: Option[NodeLocation]
@@ -804,20 +808,6 @@ object LogicalPlan {
     override def inputAttributes: Seq[Attribute] = {
       relations.flatMap(_.inputAttributes)
     }
-    override def outputAttributes: Seq[Attribute] = {
-      relations.head.outputAttributes.zipWithIndex.map { case (output, i) =>
-        SingleColumn(
-          MultiColumn(relations.map(_.outputAttributes(i)), Some(output.name), None, output.nodeLocation),
-          None,
-          output match {
-            case r: ResolvedAttribute => r.qualifier
-            case c: SingleColumn      => c.qualifier
-            case _                    => None
-          },
-          output.nodeLocation
-        )
-      }
-    }
   }
 
   case class Unnest(columns: Seq[Expression], withOrdinality: Boolean, nodeLocation: Option[NodeLocation])
@@ -827,9 +817,9 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = {
       columns.map {
         case arr: ArrayConstructor =>
-          ResolvedAttribute(UUID.randomUUID().toString, arr.elementType, None, Nil, None)
+          ResolvedAttribute(UUID.randomUUID().toString, arr.elementType, None, None, None)
         case other =>
-          SingleColumn(other, None, None, other.nodeLocation)
+          SingleColumn(other, None, other.nodeLocation)
       }
     }
     override def sig(config: QuerySignatureConfig): String =
@@ -850,7 +840,7 @@ object LogicalPlan {
       nodeLocation: Option[NodeLocation]
   ) extends UnaryRelation {
     override def outputAttributes: Seq[Attribute] =
-      columnAliases.map(x => UnresolvedAttribute(x.value, None))
+      columnAliases.map(x => UnresolvedAttribute(Some(tableAlias.value), x.value, None))
     override def sig(config: QuerySignatureConfig): String =
       s"LV(${child.sig(config)})"
   }

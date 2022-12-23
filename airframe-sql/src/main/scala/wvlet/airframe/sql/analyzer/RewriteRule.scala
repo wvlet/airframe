@@ -15,7 +15,7 @@ package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.sql.analyzer.RewriteRule.PlanRewriter
 import wvlet.airframe.sql.model.LogicalPlan
-import wvlet.log.{LogSupport, Logger}
+import wvlet.log.{LogLevel, LogSupport, Logger}
 
 trait RewriteRule extends LogSupport {
   // Prepare a logger for debugging purpose
@@ -28,7 +28,7 @@ trait RewriteRule extends LogSupport {
     val rule = this.apply(context)
     // Recursively transform the tree form bottom to up
     val resolved = plan.transformUp(rule)
-    if (!(plan eq resolved)) {
+    if (localLogger.isEnabled(LogLevel.TRACE) && !(plan eq resolved) && plan != resolved) {
       localLogger.trace(s"transformed with ${name}:\n[before]\n${plan.pp}\n[after]\n${resolved.pp}")
     }
     resolved

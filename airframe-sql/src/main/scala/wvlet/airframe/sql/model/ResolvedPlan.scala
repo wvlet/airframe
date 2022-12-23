@@ -16,16 +16,24 @@ package wvlet.airframe.sql.model
 import wvlet.airframe.sql.analyzer.QuerySignatureConfig
 import wvlet.airframe.sql.catalog.{Catalog, DataType}
 import wvlet.airframe.sql.model.LogicalPlan.Relation
+import wvlet.log.LogSupport
 
 /**
   * The lowest level operator to access a table
+  * @param fullName
+  *   original table reference name in SQL. Used for generating SQL text
+  *
   * @param table
   *   source table
   * @param columns
   *   projectec columns
   */
-case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn], nodeLocation: Option[NodeLocation])
-    extends Relation
+case class TableScan(
+    fullName: String,
+    table: Catalog.Table,
+    columns: Seq[Catalog.TableColumn],
+    nodeLocation: Option[NodeLocation]
+) extends Relation
     with LeafPlan {
   override def inputAttributes: Seq[Attribute] = Seq.empty
   override def outputAttributes: Seq[Attribute] = {
@@ -33,8 +41,8 @@ case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn], no
       ResolvedAttribute(
         col.name,
         col.dataType,
-        None,
-        Seq(SourceColumn(table, col)),
+        None, // This must be None first
+        Some(SourceColumn(table, col)),
         None // ResolvedAttribute always has no NodeLocation
       )
     }
@@ -50,8 +58,6 @@ case class TableScan(table: Catalog.Table, columns: Seq[Catalog.TableColumn], no
   override lazy val resolved = true
 }
 
-case class Alias(name: String, resolvedAttribute: ResolvedAttribute)
-
 case class SourceColumn(table: Catalog.Table, column: Catalog.TableColumn) {
   def fullName: String = s"${table.name}.${column.name}"
 }
@@ -59,60 +65,30 @@ case class SourceColumn(table: Catalog.Table, column: Catalog.TableColumn) {
 case class ResolvedAttribute(
     name: String,
     override val dataType: DataType,
+    // user-given qualifier
     qualifier: Option[String],
-    // If this attribute directly refers to table column(s), source columns will be set.
-    // It may have multiple SourceColumns when table columns are merged with UNION and Set operations
-    sourceColumns: Seq[SourceColumn],
+    // If this attribute directly refers to a table column, its source column will be set.
+    sourceColumn: Option[SourceColumn],
     nodeLocation: Option[NodeLocation]
-) extends Attribute {
+) extends Attribute
+    with LogSupport {
 
-  def withAlias(newName: String): ResolvedAttribute = {
-    this.copy(name = newName)
+  override def sqlExpr: String = s"${prefix}${name}"
+
+  override def withQualifier(newQualifier: Option[String]): Attribute = {
+    this.copy(qualifier = newQualifier)
   }
-
-  def relationNames: Seq[String] = qualifier match {
-    case Some(q) => Seq(q)
-    case _       => sourceColumns.map(_.table.name)
-  }
-
-  /**
-    * Returns true if this resolved attribute matches with a given table name and colum name
-    */
-  def matchesWith(tableName: String, columnName: String): Boolean = {
-    relationNames match {
-      case Nil => columnName == name
-      case tableNames =>
-        tableNames.exists { tbl =>
-          tbl == tableName && matchesWith(columnName)
-        }
-    }
-  }
-
-  def matchesWith(columnName: String): Boolean = {
-    name == columnName
-  }
-
-  override def sqlExpr: String = attributeName
+  override def inputColumns: Seq[Attribute] = Seq(this)
 
   override def toString = {
-    (qualifier, sourceColumns) match {
-      case (Some(q), columns) if columns.nonEmpty =>
-        columns
-          .map(_.fullName)
-          .mkString(s"${q}.${typeDescription} <- [", ", ", "]")
-      case (None, columns) if columns.nonEmpty =>
-        columns
-          .map(_.fullName)
-          .mkString(s"${typeDescription} <- [", ", ", "]")
-      case _ =>
-        s"${typeDescription}"
+    sourceColumn match {
+      case Some(c) =>
+        s"*${prefix}${typeDescription} <- ${c.fullName}"
+      case None =>
+        s"*${prefix}${typeDescription}"
     }
   }
   override lazy val resolved = true
-
-  override def withQualifier(newQualifier: String): Attribute = {
-    this.copy(qualifier = Some(newQualifier))
-  }
 }
 
 /**

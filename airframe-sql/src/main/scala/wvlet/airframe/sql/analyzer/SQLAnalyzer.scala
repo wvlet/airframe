@@ -76,7 +76,7 @@ object SQLAnalyzer extends LogSupport {
         targetPlan.transform(r)
       }
 
-      trace(s"new plan:\n${optimizedPlan.pp}")
+      trace(s"Optimized plan:\n${optimizedPlan.pp}")
       optimizedPlan
     }
   }

@@ -46,43 +46,43 @@ class SQLGeneratorTest extends AirSpec {
   test("print resolved plan") {
     val resolvedPlan = SQLAnalyzer.analyze("select * from A", "default", demoCatalog)
     val sql          = SQLGenerator.print(resolvedPlan)
-    sql shouldBe "SELECT * FROM default.A"
+    sql shouldBe "SELECT * FROM A"
   }
 
   test("print resolved subquery plan") {
     val resolvedPlan = SQLAnalyzer.analyze("select id from (select id from A)", "default", demoCatalog)
     val sql          = SQLGenerator.print(resolvedPlan)
-    sql shouldBe "SELECT id FROM (SELECT id FROM default.A)"
+    sql shouldBe "SELECT id FROM (SELECT id FROM A)"
   }
 
   test("print resolved UNION subquery plan") {
     val resolvedPlan =
       SQLAnalyzer.analyze("select id from (select id from A union all select id from A)", "default", demoCatalog)
     val sql = SQLGenerator.print(resolvedPlan)
-    sql shouldBe "SELECT id FROM (SELECT id FROM default.A UNION ALL SELECT id FROM default.A)"
+    sql shouldBe "SELECT id FROM (SELECT id FROM A UNION ALL SELECT id FROM A)"
   }
 
   test("print resolved CTE plan") {
     val resolvedPlan = SQLAnalyzer.analyze("with p as (select id from A) select * from p", "default", demoCatalog)
     val sql          = SQLGenerator.print(resolvedPlan)
-    sql shouldBe "WITH p AS (SELECT id FROM default.A) SELECT * FROM p"
+    sql shouldBe "WITH p AS (SELECT id FROM A) SELECT * FROM p"
   }
 
   test("generate aggregation without grouping keys") {
     val resolvedPlan =
       SQLAnalyzer.analyze("select count(1) from A having count(distinct id) > 10", "default", demoCatalog)
-    val sql = SQLGenerator.print(resolvedPlan).toLowerCase
+    val sql = SQLGenerator.print(resolvedPlan)
 
-    sql.contains("group by") shouldBe false
-    sql.contains("having count(distinct id) > 10") shouldBe true
+    sql.contains("GROUP BY") shouldBe false
+    sql.contains("HAVING count(DISTINCT id) > 10") shouldBe true
   }
 
   test("generate select with column alias") {
     val resolvedPlan =
       SQLAnalyzer.analyze("select id as xid from A", "default", demoCatalog)
-    val sql = SQLGenerator.print(resolvedPlan).toLowerCase
+    val sql = SQLGenerator.print(resolvedPlan)
 
-    sql.contains("select id as xid") shouldBe true
+    sql.contains("SELECT id AS xid FROM A") shouldBe true
   }
 
   test("generate join with USING") {
@@ -90,7 +90,25 @@ class SQLGeneratorTest extends AirSpec {
       SQLAnalyzer.analyze("select id from A inner join A as B using (id)", "default", demoCatalog)
     val sql = SQLGenerator.print(resolvedPlan).toLowerCase
 
-    sql.contains("on a.id = b.id") shouldBe true
+    sql.contains("using (id)") shouldBe true
+  }
+
+  test("generate join with keys with qualifier") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze(
+        """select count(*)
+          |  from
+          |    (select * from A) t1
+          |  join
+          |    (select * from A) t2
+          |  on t1.id = t2.id
+          |""".stripMargin,
+        "default",
+        demoCatalog
+      )
+
+    val sql = SQLGenerator.print(resolvedPlan)
+    sql.contains("ON t1.id = t2.id") shouldBe true
   }
 
 }

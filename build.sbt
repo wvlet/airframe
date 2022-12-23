@@ -9,7 +9,7 @@ val targetScalaVersions = SCALA_3 :: uptoScala2
 // Add this for using snapshot versions
 // ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
 
-val AIRSPEC_VERSION                 = "22.12.4"
+val AIRSPEC_VERSION                 = "22.12.5"
 val SCALACHECK_VERSION              = "1.17.0"
 val MSGPACK_VERSION                 = "0.9.3"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.1.1"
@@ -133,8 +133,11 @@ ThisBuild / publishTo := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
   // #2117 For using java.util.UUID.randomUUID() in Scala.js
-  libraryDependencies += ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0" % Test)
-    .cross(CrossVersion.for3Use2_13),
+  libraryDependencies ++= Seq(
+    ("org.scala-js" %%% "scalajs-java-securerandom" % "1.0.0" % Test).cross(CrossVersion.for3Use2_13),
+    // TODO It should be included in AirSpec
+    "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.0" % Test
+  ),
   coverageEnabled := false
 )
 
