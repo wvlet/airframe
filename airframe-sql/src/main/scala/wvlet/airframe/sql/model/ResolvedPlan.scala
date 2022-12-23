@@ -113,4 +113,3 @@ case class CTERelationRef(name: String, outputColumns: Seq[Attribute], nodeLocat
   }
   override def outputAttributes: Seq[Attribute] = outputColumns
 }
-

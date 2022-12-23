@@ -748,8 +748,7 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = mergeOutputAttributes
     protected def mergeOutputAttributes: Seq[Attribute] = {
       // Collect all input attributes
-      val outputAttributes: IndexedSeq[IndexedSeq[Attribute]] =
-        children.map(_.outputAttributes.toIndexedSeq).toIndexedSeq
+      val outputAttributes: Seq[Seq[Attribute]] = children.flatMap(_.outputAttributes.map(_.inputColumns))
 
       // Transpose a set of relation columns into a list of same columns
       // relations: (Ra(a1, a2, ...), Rb(b1, b2, ...))
@@ -769,7 +768,9 @@ object LogicalPlan {
             }
           },
           None
-        ).withAlias(head.name)
+        )
+          // In set operations, if different column names are merged into one column, the first column name will be used
+          .withAlias(head.name)
         col
       }.toSeq
     }

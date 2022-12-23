@@ -262,7 +262,14 @@ trait Attribute extends LeafExpression with LogSupport {
     */
   def matchesWith(columnPath: ColumnPath): Boolean = {
     def matchesWith(columnName: String): Boolean = {
-      inputColumns.exists(_.name == columnName)
+      this match {
+        case a: AllColumns =>
+          a.inputColumns.exists(_.name == columnName)
+        case a: Attribute if a.name == columnName =>
+          true
+        case _ =>
+          false
+      }
     }
 
     columnPath.table match {
@@ -283,12 +290,10 @@ trait Attribute extends LeafExpression with LogSupport {
       this match {
         case a: AllColumns =>
           a.inputColumns.filter(_.name == columnName)
-        case a: Attribute =>
-          if (a.name == columnName) {
-            Seq(a)
-          } else {
-            Seq.empty
-          }
+        case a: Attribute if a.name == columnName =>
+          Seq(a)
+        case _ =>
+          Seq.empty
       }
     }
 

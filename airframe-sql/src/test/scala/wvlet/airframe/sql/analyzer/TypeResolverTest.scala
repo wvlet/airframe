@@ -152,11 +152,8 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
       p.outputAttributes shouldMatch {
         case Seq(
-              MultiSourceColumn(
-                Seq(AllColumns(None, Some(Seq(`ra1`, `ra2`)), _), AllColumns(None, Some(Seq(`rb1`, `rb2`)), _)),
-                None,
-                _
-              )
+              MultiSourceColumn(Seq(`ra1`, `rb1`), None, _),
+              MultiSourceColumn(Seq(`ra2`, `rb2`), None, _)
             ) =>
       }
     }
@@ -165,16 +162,23 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       val p = analyze("select * from (select * from A union all select * from B)")
       p.inputAttributes shouldMatch {
         case Seq(
-              MultiSourceColumn(
-                Seq(
-                  AllColumns(None, Some(Seq(`ra1`, `ra2`)), _),
-                  AllColumns(None, Some(Seq(`rb1`, `rb2`)), _)
-                ),
+              MultiSourceColumn(Seq(`ra1`, `rb1`), None, _),
+              MultiSourceColumn(Seq(`ra2`, `rb2`), None, _)
+            ) =>
+      }
+      p.outputAttributes shouldMatch {
+        case Seq(
+              AllColumns(
                 None,
+                Some(
+                  Seq(
+                    MultiSourceColumn(Seq(`ra1`, `rb1`), None, _),
+                    MultiSourceColumn(Seq(`ra2`, `rb2`), None, _)
+                  )
+                ),
                 _
               )
             ) =>
-          ()
       }
     }
 
