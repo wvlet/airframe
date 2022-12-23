@@ -285,7 +285,6 @@ object TypeResolver extends LogSupport {
       val resolvedChild   = resolveRelation(context, child)
       val resolvedColumns = resolveOutputColumns(context, resolvedChild.outputAttributes, columns)
       val resolved        = Project(resolvedChild, resolvedColumns, p.nodeLocation)
-
       resolved
     }
   }
@@ -404,7 +403,6 @@ object TypeResolver extends LogSupport {
         case Some(columnPath) =>
           resolvedAttributes.foreach {
             case a: Attribute =>
-              // warn(s"lookup ${columnPath} in ${a} ===> ${a.matched(columnPath)}")
               resolvedExprs ++= a.matched(columnPath)
             case _ =>
           }
