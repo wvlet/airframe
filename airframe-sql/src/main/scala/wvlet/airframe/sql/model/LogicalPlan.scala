@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.sql.model
 import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, TypeResolver}
+import wvlet.log.LogSupport
 
 import java.util.UUID
 
@@ -741,14 +742,13 @@ object LogicalPlan {
 // Where clause specifies join criteria
   case object ImplicitJoin extends JoinType("J")
 
-  sealed trait SetOperation extends Relation {
+  sealed trait SetOperation extends Relation with LogSupport {
     override def children: Seq[Relation]
 
     override def outputAttributes: Seq[Attribute] = mergeOutputAttributes
     protected def mergeOutputAttributes: Seq[Attribute] = {
       // Collect all input attributes
-      val outputAttributes: IndexedSeq[IndexedSeq[Attribute]] =
-        children.map(_.outputAttributes.toIndexedSeq).toIndexedSeq
+      val outputAttributes: Seq[Seq[Attribute]] = children.flatMap(_.outputAttributes.map(_.inputColumns))
 
       // Transpose a set of relation columns into a list of same columns
       // relations: (Ra(a1, a2, ...), Rb(b1, b2, ...))
@@ -757,7 +757,7 @@ object LogicalPlan {
       sameColumnList.map { columns =>
         val head       = columns.head
         val qualifiers = columns.map(_.qualifier).distinct
-        MultiSourceColumn(
+        val col = MultiSourceColumn(
           inputs = columns.toSeq,
           qualifier = {
             // If all of the qualifiers are the same, use it.
@@ -768,7 +768,10 @@ object LogicalPlan {
             }
           },
           None
-        ).withAlias(head.name)
+        )
+          // In set operations, if different column names are merged into one column, the first column name will be used
+          .withAlias(head.name)
+        col
       }.toSeq
     }
   }
