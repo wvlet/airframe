@@ -16,33 +16,11 @@ package wvlet.airframe.sql.analyzer
 import wvlet.airframe.sql.catalog.Catalog._
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan.{
-  Aggregate,
-  Distinct,
-  Except,
-  Filter,
-  InnerJoin,
-  Intersect,
-  Join,
-  Project,
-  Query,
-  Sort,
-  With
-}
-import wvlet.airframe.sql.model.{
-  Attribute,
-  CTERelationRef,
-  ColumnPath,
-  Expression,
-  LogicalPlan,
-  NodeLocation,
-  ResolvedAttribute,
-  SourceColumn
-}
-import wvlet.airframe.sql.parser.{SQLGenerator, SQLParser}
+import wvlet.airframe.sql.model.LogicalPlan._
+import wvlet.airframe.sql.model._
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
-import wvlet.log.Logger
+import wvlet.airspec.spi.AssertionFailure
 
 class TypeResolverTest extends AirSpec with ResolverTestHelper {
 
@@ -153,7 +131,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
   }
 
   test("resolve set operations") {
-    test("u1: resolve union") {
+    test("q1: resolve union") {
       val p = analyze("select id from A union all select id from B")
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
       p.outputAttributes shouldBe List(
@@ -161,7 +139,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       )
     }
 
-    test("u2: resolve union from the same source") {
+    test("q2: resolve union from the same source") {
       val p = analyze("select id from A union all select id from A")
       p.inputAttributes shouldBe List(ra1, ra2, ra1, ra2)
       p.outputAttributes shouldBe List(
@@ -169,16 +147,13 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       )
     }
 
-    test("resolve union with select *") {
+    test("q3: resolve union with select *") {
       val p = analyze("select * from A union all select * from B")
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
       p.outputAttributes shouldMatch {
         case Seq(
-              MultiSourceColumn(
-                Seq(AllColumns(None, Some(Seq(`ra1`, `ra2`)), _), AllColumns(None, Some(Seq(`rb1`, `rb2`)), _)),
-                None,
-                _
-              )
+              MultiSourceColumn(Seq(`ra1`, `rb1`), None, _),
+              MultiSourceColumn(Seq(`ra2`, `rb2`), None, _)
             ) =>
       }
     }
@@ -187,16 +162,23 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       val p = analyze("select * from (select * from A union all select * from B)")
       p.inputAttributes shouldMatch {
         case Seq(
-              MultiSourceColumn(
-                Seq(
-                  AllColumns(None, Some(Seq(`ra1`, `ra2`)), _),
-                  AllColumns(None, Some(Seq(`rb1`, `rb2`)), _)
-                ),
+              MultiSourceColumn(Seq(`ra1`, `rb1`), None, _),
+              MultiSourceColumn(Seq(`ra2`, `rb2`), None, _)
+            ) =>
+      }
+      p.outputAttributes shouldMatch {
+        case Seq(
+              AllColumns(
                 None,
+                Some(
+                  Seq(
+                    MultiSourceColumn(Seq(`ra1`, `rb1`), None, _),
+                    MultiSourceColumn(Seq(`ra2`, `rb2`), None, _)
+                  )
+                ),
                 _
               )
             ) =>
-          ()
       }
     }
 
@@ -213,6 +195,23 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       }
     }
 
+    test("ru2a: resolve union with different column aliases") {
+      val p = analyze("select p1 from (select id as p1 from A union all select id from B)")
+      p.inputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), None, _)) =>
+        c1 shouldBe ra1.withAlias("p1")
+        c2 shouldBe rb1
+      }
+      p.outputAttributes shouldMatch { case Seq(MultiSourceColumn(Seq(c1, c2), None, _)) =>
+        c1 shouldBe ra1.withAlias("p1")
+        c2 shouldBe rb1
+      }
+    }
+    test(s"ru2b: should fail to resolve overridden column name (p2) via union") {
+      intercept[AssertionFailure] {
+        analyze("select p2 from (select id as p1 from A union all select id as p2 from B)")
+      }
+    }
+
     test("ru3: resolve union with column alias and qualifier") {
       val p = analyze("select q1.p1 from (select id as p1 from A union all select id as p1 from B) q1")
       p.inputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), _, _)) =>
@@ -221,8 +220,8 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
         c2 shouldBe rb1.withAlias("p1")
       }
       p.outputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), Some("q1"), _)) =>
-        c1 shouldBe ra1.withAlias("p1").withQualifier("q1")
-        c2 shouldBe rb1.withAlias("p1").withQualifier("q1")
+        c1 shouldBe ra1.withAlias("p1")
+        c2 shouldBe rb1.withAlias("p1")
       }
     }
 
@@ -885,9 +884,9 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       |  on t1.id = t2.id
       |""".stripMargin)
 
-    p shouldMatch { case Project(Join(InnerJoin, _, _, JoinOnEq(Seq(k1, k2), _), _), _, _) =>
-      debug(k1.sqlExpr)
-      debug(k2.sqlExpr)
+    p shouldMatch { case Project(Join(InnerJoin, _, _, JoinOnEq(Seq(k1: Attribute, k2: Attribute), _), _), _, _) =>
+      k1.fullName shouldBe "t1.id"
+      k2.fullName shouldBe "t2.id"
     }
   }
 }

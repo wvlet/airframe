@@ -112,20 +112,20 @@ object TypeResolver extends LogSupport {
   object resolveAggregationKeys extends RewriteRule {
     def apply(context: AnalyzerContext): PlanRewriter = {
       case a @ Aggregate(child, selectItems, groupingKeys, having, _) =>
-        val resolvedChild         = resolveRelation(context, child)
-        val childOutputAttributes = resolvedChild.outputAttributes
+        val resolvedChild       = resolveRelation(context, child)
+        val resolvedSelectItems = resolveOutputColumns(context, resolvedChild.outputAttributes, selectItems)
         val resolvedGroupingKeys =
           groupingKeys.map(x => {
-            val e = resolveExpression(context, x.child, childOutputAttributes)
+            val e = resolveExpression(context, x.child, resolvedSelectItems)
             GroupingKey(e, e.nodeLocation)
           })
         val resolvedHaving = having.map {
           _.transformUpExpression { case x: Expression =>
             // Having recognize attributes only from the input relation
-            resolveExpression(context, x, childOutputAttributes)
+            resolveExpression(context, x, resolvedSelectItems)
           }
         }
-        Aggregate(resolvedChild, selectItems, resolvedGroupingKeys, resolvedHaving, a.nodeLocation)
+        Aggregate(resolvedChild, resolvedSelectItems.toList, resolvedGroupingKeys, resolvedHaving, a.nodeLocation)
     }
   }
 
@@ -287,42 +287,42 @@ object TypeResolver extends LogSupport {
       val resolved        = Project(resolvedChild, resolvedColumns, p.nodeLocation)
       resolved
     }
+  }
 
-    /**
-      * Resolve output columns by looking up the inputAttributes
-      *
-      * @param inputAttributes
-      * @param outputColumns
-      * @return
-      */
-    private def resolveOutputColumns(
-        context: AnalyzerContext,
-        inputAttributes: Seq[Attribute],
-        outputColumns: Seq[Attribute]
-    ): Seq[Attribute] = {
-      val resolvedColumns = Seq.newBuilder[Attribute]
-      outputColumns.map {
-        case a @ Alias(qualifier, name, expr, _) =>
-          val resolved = resolveExpression(context, expr, inputAttributes)
-          if (expr eq resolved) {
-            resolvedColumns += a
-          } else {
-            resolvedColumns += a.copy(expr = resolved)
-          }
-        case s @ SingleColumn(expr, qualifier, nodeLocation) =>
-          resolveExpression(context, expr, inputAttributes) match {
-            case a: Attribute =>
-              resolvedColumns += a.setQualifierIfEmpty(qualifier)
-            case resolved =>
-              resolvedColumns += s.copy(expr = resolved)
-          }
-        case other =>
-          resolvedColumns += other
-      }
-      // Run one-more resolution (e.g., SingleColumn -> ResolvedAttribute)
-      val output = resolvedColumns.result().map(resolveAttribute)
-      output
+  /**
+    * Resolve output columns by looking up the inputAttributes
+    *
+    * @param inputAttributes
+    * @param outputColumns
+    * @return
+    */
+  private def resolveOutputColumns(
+      context: AnalyzerContext,
+      inputAttributes: Seq[Attribute],
+      outputColumns: Seq[Attribute]
+  ): Seq[Attribute] = {
+    val resolvedColumns = Seq.newBuilder[Attribute]
+    outputColumns.map {
+      case a @ Alias(qualifier, name, expr, _) =>
+        val resolved = resolveExpression(context, expr, inputAttributes)
+        if (expr eq resolved) {
+          resolvedColumns += a
+        } else {
+          resolvedColumns += a.copy(expr = resolved)
+        }
+      case s @ SingleColumn(expr, qualifier, nodeLocation) =>
+        resolveExpression(context, expr, inputAttributes) match {
+          case a: Attribute =>
+            resolvedColumns += a.setQualifierIfEmpty(qualifier)
+          case resolved =>
+            resolvedColumns += s.copy(expr = resolved)
+        }
+      case other =>
+        resolvedColumns += other
     }
+    // Run one-more resolution (e.g., SingleColumn -> ResolvedAttribute)
+    val output = resolvedColumns.result().map(resolveAttribute)
+    output
   }
 
   def resolveAttribute(attribute: Attribute): Attribute = {
@@ -334,9 +334,25 @@ object TypeResolver extends LogSupport {
         } else {
           a.copy(expr = resolved)
         }
-      case SingleColumn(a: Attribute, qualifier, _) =>
+      case SingleColumn(a: Attribute, qualifier, _) if a.resolved =>
         // Optimizes the nested attributes, but preserves qualifier in the parent
         a.setQualifierIfEmpty(qualifier)
+      case m: MultiSourceColumn =>
+        var changed = false
+        val resolvedInputs = m.inputs.map {
+          case a: Attribute =>
+            val x = resolveAttribute(a)
+            if (!(x eq a)) {
+              changed = true
+            }
+            x
+          case other => other
+        }
+        if (changed) {
+          m.copy(inputs = resolvedInputs)
+        } else {
+          m
+        }
       case other => other
     }
   }

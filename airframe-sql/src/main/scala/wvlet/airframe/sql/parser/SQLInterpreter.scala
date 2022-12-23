@@ -91,12 +91,12 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   override def visitNamedQuery(ctx: NamedQueryContext): WithQuery = {
-    val name = visitIdentifier(ctx.name)
+    val name = visitIdentifier(ctx.name).toResolved
     val columnAliases = Option(ctx.columnAliases()).map { x =>
       x.identifier()
         .asScala
         .map { i =>
-          visitIdentifier(i)
+          visitIdentifier(i).toResolved
         }
         .toSeq
     }
@@ -335,7 +335,8 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     ctx.identifier() match {
       case i: IdentifierContext =>
         val columnNames = Option(ctx.columnAliases()).map(_.identifier().asScala.map(_.getText).toSeq)
-        AliasedRelation(r, visitIdentifier(i), columnNames, getLocation(ctx))
+        // table alias name is always resolved identifier
+        AliasedRelation(r, visitIdentifier(i).toResolved, columnNames, getLocation(ctx))
       case other =>
         r
     }

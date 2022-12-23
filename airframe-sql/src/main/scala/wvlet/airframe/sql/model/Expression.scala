@@ -139,7 +139,8 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     if (rule.isDefinedAt(this)) {
       rule.apply(this)
     }
-    productIterator.foreach(recursiveTraverse)
+    // Unlike transform, this will traverse the selected children by the Expression
+    children.foreach(recursiveTraverse)
   }
 
   def collectExpressions(cond: PartialFunction[Expression, Boolean]): List[Expression] = {
@@ -208,6 +209,11 @@ trait Attribute extends LeafExpression with LogSupport {
   }
   def prefix: String = qualifier.map(q => s"${q}.").getOrElse("")
 
+  /**
+    * Returns the unmodified source columns referenced by this Attribute
+    */
+  def sourceColumns: Seq[SourceColumn]
+
   // (database name)?.(table name) given in the original SQL
   def qualifier: Option[String]
   def withQualifier(newQualifier: String): Attribute = withQualifier(Some(newQualifier))
@@ -243,12 +249,11 @@ trait Attribute extends LeafExpression with LogSupport {
     }
   }
 
-  protected[sql] def inputColumns: Seq[Attribute] = {
-    children.map {
-      case a: Attribute  => a
-      case u: Expression => SingleColumn(u, qualifier, u.nodeLocation)
-    }
-  }
+  /**
+    * Sub Attributes used to generate this Attribute
+    * @return
+    */
+  def inputColumns: Seq[Attribute]
 
   /**
     * Return true if this Attribute matches with a given column path
@@ -257,11 +262,13 @@ trait Attribute extends LeafExpression with LogSupport {
     */
   def matchesWith(columnPath: ColumnPath): Boolean = {
     def matchesWith(columnName: String): Boolean = {
-      inputColumns.exists {
+      this match {
         case a: AllColumns =>
           a.inputColumns.exists(_.name == columnName)
-        case a: Attribute =>
-          a.name == columnName
+        case a: Attribute if a.name == columnName =>
+          true
+        case _ =>
+          false
       }
     }
 
@@ -280,12 +287,14 @@ trait Attribute extends LeafExpression with LogSupport {
     */
   def matched(columnPath: ColumnPath): Option[Attribute] = {
     def findMatched(columnName: String): Seq[Attribute] = {
-      inputColumns.collect {
+      this match {
         case a: AllColumns =>
           a.inputColumns.filter(_.name == columnName)
         case a: Attribute if a.name == columnName =>
           Seq(a)
-      }.flatten
+        case _ =>
+          Seq.empty
+      }
     }
 
     val result: Seq[Attribute] = columnPath.table match {
@@ -368,12 +377,22 @@ object Expression {
     override def withQualifier(newQualifier: Option[String]): UnresolvedAttribute = {
       this.copy(qualifier = newQualifier)
     }
-    override def inputColumns: Seq[Attribute] = Seq.empty
+    override def inputColumns: Seq[Attribute]     = Seq.empty
+    override def sourceColumns: Seq[SourceColumn] = Seq.empty
+
   }
 
   sealed trait Identifier extends LeafExpression {
     def value: String
-    override def attributeName: String = value
+    override def attributeName: String  = value
+    override lazy val resolved: Boolean = false
+    def toResolved: ResolvedIdentifier  = ResolvedIdentifier(this)
+  }
+  case class ResolvedIdentifier(id: Identifier) extends Identifier {
+    override def value: String                      = id.value
+    override def nodeLocation: Option[NodeLocation] = id.nodeLocation
+    override def sqlExpr: String                    = id.sqlExpr
+    override lazy val resolved: Boolean             = true
   }
   case class DigitId(value: String, nodeLocation: Option[NodeLocation]) extends Identifier {
     override def sqlExpr: String  = value
@@ -442,8 +461,17 @@ object Expression {
       nodeLocation: Option[NodeLocation]
   ) extends Attribute
       with LogSupport {
-    override def name: String              = "*"
-    override def children: Seq[Expression] = columns.getOrElse(Seq.empty)
+    override def name: String = "*"
+
+    override def children: Seq[Expression] = {
+      // AllColumns is a reference to the input attributes.
+      // Return empty so as not to traverse children from here.
+      Seq.empty
+    }
+    override def inputColumns: Seq[Attribute] = {
+      columns.getOrElse(Seq.empty)
+    }
+
     override def dataType: DataType = {
       columns
         .map(cols => EmbeddedRecordType(cols.map(x => NamedType(x.name, x.dataType))))
@@ -452,10 +480,6 @@ object Expression {
 
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
-    }
-
-    override def inputColumns: Seq[Attribute] = {
-      columns.getOrElse(Seq.empty)
     }
 
     override def toString = {
@@ -469,6 +493,10 @@ object Expression {
       }
     }
 
+    override def sourceColumns: Seq[SourceColumn] = {
+      columns.map(_.flatMap(_.sourceColumns)).getOrElse(Seq.empty)
+    }
+
     override lazy val resolved = columns.isDefined
   }
 
@@ -478,8 +506,8 @@ object Expression {
       expr: Expression,
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
-    override protected[sql] def inputColumns: Seq[Attribute] = Seq(this)
-    override def children: Seq[Expression]                   = Seq(expr)
+    override def inputColumns: Seq[Attribute] = Seq(this)
+    override def children: Seq[Expression]    = Seq(expr)
 
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
@@ -492,6 +520,13 @@ object Expression {
 
     override def sqlExpr: String = {
       s"${expr.sqlExpr} AS ${fullName}"
+    }
+
+    override def sourceColumns: Seq[SourceColumn] = {
+      expr match {
+        case a: Attribute => a.sourceColumns
+        case _            => Seq.empty
+      }
     }
   }
 
@@ -519,6 +554,13 @@ object Expression {
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
     }
+
+    override def sourceColumns: Seq[SourceColumn] = {
+      expr match {
+        case a: Attribute => a.sourceColumns
+        case _            => Seq.empty
+      }
+    }
   }
 
   /**
@@ -534,8 +576,19 @@ object Expression {
   ) extends Attribute {
     require(inputs.nonEmpty, s"The inputs of MultiSourceColumn should not be empty: ${this}")
 
-    override def toString: String          = s"${fullName}:${dataTypeName} := {${inputs.mkString(", ")}}"
-    override def children: Seq[Expression] = inputs
+    override def toString: String = s"${fullName}:${dataTypeName} := {${inputs.mkString(", ")}}"
+
+    override def inputColumns: Seq[Attribute] = {
+      inputs.map {
+        case a: Attribute => a
+        case e: Expression =>
+          SingleColumn(e, qualifier, e.nodeLocation)
+      }
+    }
+    override def children: Seq[Expression] = {
+      // MultiSourceColumn is a reference to the multiple columns. Do not traverse here
+      Seq.empty
+    }
 
     override def sqlExpr: String = fullName
 
@@ -548,6 +601,13 @@ object Expression {
 
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
+    }
+
+    override def sourceColumns: Seq[SourceColumn] = {
+      inputs.flatMap {
+        case a: Attribute => a.sourceColumns
+        case _            => Seq.empty
+      }
     }
   }
 

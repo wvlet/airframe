@@ -15,6 +15,8 @@ package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.sql.catalog.Catalog.{CreateMode, TableColumn}
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
+import wvlet.airframe.sql.model.LogicalPlan.Aggregate
+import wvlet.airframe.sql.model.ResolvedAttribute
 import wvlet.airspec.AirSpec
 
 class ResolveAggregationTest extends AirSpec with ResolverTestHelper {
@@ -43,12 +45,20 @@ class ResolveAggregationTest extends AirSpec with ResolverTestHelper {
   }
 
   test("resolve nested aggregation") {
-    analyze("""select B.max_id, count(*) from (
+    val plan = analyze("""select B.max_id, count(*) from (
       | select A.max_id, A.country from(
       |   select country, max(guid) max_id from users group by 1
       |  ) A
       |) B
       |group by 1""".stripMargin)
-  }
 
+    plan shouldMatch { case a: Aggregate =>
+      a.selectItems shouldMatch {
+        case Seq(
+              ResolvedAttribute("max_id", _, Some("B"), _, _),
+              _
+            ) =>
+      }
+    }
+  }
 }
