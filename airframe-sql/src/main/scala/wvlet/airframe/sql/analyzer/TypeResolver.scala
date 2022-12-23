@@ -287,7 +287,6 @@ object TypeResolver extends LogSupport {
       val resolved        = Project(resolvedChild, resolvedColumns, p.nodeLocation)
       resolved
     }
-  }
 
   /**
     * Resolve output columns by looking up the inputAttributes

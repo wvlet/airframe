@@ -379,6 +379,7 @@ object Expression {
     }
     override def inputColumns: Seq[Attribute]     = Seq.empty
     override def sourceColumns: Seq[SourceColumn] = Seq.empty
+
   }
 
   sealed trait Identifier extends LeafExpression {
