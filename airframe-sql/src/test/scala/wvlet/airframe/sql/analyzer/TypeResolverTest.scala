@@ -20,6 +20,7 @@ import wvlet.airframe.sql.model.LogicalPlan._
 import wvlet.airframe.sql.model._
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
+import wvlet.airspec.spi.AssertionFailure
 
 class TypeResolverTest extends AirSpec with ResolverTestHelper {
 
@@ -130,7 +131,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
   }
 
   test("resolve set operations") {
-    test("u1: resolve union") {
+    test("q1: resolve union") {
       val p = analyze("select id from A union all select id from B")
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
       p.outputAttributes shouldBe List(
@@ -138,7 +139,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       )
     }
 
-    test("u2: resolve union from the same source") {
+    test("q2: resolve union from the same source") {
       val p = analyze("select id from A union all select id from A")
       p.inputAttributes shouldBe List(ra1, ra2, ra1, ra2)
       p.outputAttributes shouldBe List(
@@ -146,7 +147,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       )
     }
 
-    test("resolve union with select *") {
+    test("q3: resolve union with select *") {
       val p = analyze("select * from A union all select * from B")
       p.inputAttributes shouldBe List(ra1, ra2, rb1, rb2)
       p.outputAttributes shouldMatch {
@@ -201,11 +202,9 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
         c2 shouldBe rb1
       }
     }
-    test(s"ru2b: resolve union with different aliases") {
-      intercept[SQLError] {
-        val p = analyze("select p2 from (select id as p1 from A union all select id as p2 from B)")
-        debug(p.inputAttributes)
-        debug(p.outputAttributes)
+    test(s"ru2b: should fail to resolve overridden column name (p2) via union") {
+      intercept[AssertionFailure] {
+        analyze("select p2 from (select id as p1 from A union all select id as p2 from B)")
       }
     }
 
@@ -217,8 +216,8 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
         c2 shouldBe rb1.withAlias("p1")
       }
       p.outputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), Some("q1"), _)) =>
-        c1 shouldBe ra1.withAlias("p1").withQualifier("q1")
-        c2 shouldBe rb1.withAlias("p1").withQualifier("q1")
+        c1 shouldBe ra1.withAlias("p1")
+        c2 shouldBe rb1.withAlias("p1")
       }
     }
 

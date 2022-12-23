@@ -262,12 +262,7 @@ trait Attribute extends LeafExpression with LogSupport {
     */
   def matchesWith(columnPath: ColumnPath): Boolean = {
     def matchesWith(columnName: String): Boolean = {
-      inputColumns.exists {
-        case a: AllColumns =>
-          a.inputColumns.exists(_.name == columnName)
-        case a: Attribute =>
-          a.name == columnName
-      }
+      inputColumns.exists(_.name == columnName)
     }
 
     columnPath.table match {
@@ -285,15 +280,15 @@ trait Attribute extends LeafExpression with LogSupport {
     */
   def matched(columnPath: ColumnPath): Option[Attribute] = {
     def findMatched(columnName: String): Seq[Attribute] = {
-      if (this.name == columnName) {
-        Seq(this)
-      } else {
-        inputColumns.collect {
-          case a: AllColumns =>
-            a.inputColumns.filter(_.name == columnName)
-          case a: Attribute if a.name == columnName =>
+      this match {
+        case a: AllColumns =>
+          a.inputColumns.filter(_.name == columnName)
+        case a: Attribute =>
+          if (a.name == columnName) {
             Seq(a)
-        }.flatten
+          } else {
+            Seq.empty
+          }
       }
     }
 
@@ -383,7 +378,15 @@ object Expression {
 
   sealed trait Identifier extends LeafExpression {
     def value: String
-    override def attributeName: String = value
+    override def attributeName: String  = value
+    override lazy val resolved: Boolean = false
+    def toResolved: ResolvedIdentifier  = ResolvedIdentifier(this)
+  }
+  case class ResolvedIdentifier(id: Identifier) extends Identifier {
+    override def value: String                      = id.value
+    override def nodeLocation: Option[NodeLocation] = id.nodeLocation
+    override def sqlExpr: String                    = id.sqlExpr
+    override lazy val resolved: Boolean             = true
   }
   case class DigitId(value: String, nodeLocation: Option[NodeLocation]) extends Identifier {
     override def sqlExpr: String  = value

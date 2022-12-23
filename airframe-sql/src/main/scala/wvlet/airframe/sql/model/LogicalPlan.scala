@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.sql.model
 import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, TypeResolver}
+import wvlet.log.LogSupport
 
 import java.util.UUID
 
@@ -741,7 +742,7 @@ object LogicalPlan {
 // Where clause specifies join criteria
   case object ImplicitJoin extends JoinType("J")
 
-  sealed trait SetOperation extends Relation {
+  sealed trait SetOperation extends Relation with LogSupport {
     override def children: Seq[Relation]
 
     override def outputAttributes: Seq[Attribute] = mergeOutputAttributes
@@ -757,7 +758,7 @@ object LogicalPlan {
       sameColumnList.map { columns =>
         val head       = columns.head
         val qualifiers = columns.map(_.qualifier).distinct
-        MultiSourceColumn(
+        val col = MultiSourceColumn(
           inputs = columns.toSeq,
           qualifier = {
             // If all of the qualifiers are the same, use it.
@@ -769,6 +770,7 @@ object LogicalPlan {
           },
           None
         ).withAlias(head.name)
+        col
       }.toSeq
     }
   }

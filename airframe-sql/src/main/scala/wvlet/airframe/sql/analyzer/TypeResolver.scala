@@ -404,6 +404,7 @@ object TypeResolver extends LogSupport {
         case Some(columnPath) =>
           resolvedAttributes.foreach {
             case a: Attribute =>
+              // warn(s"lookup ${columnPath} in ${a} ===> ${a.matched(columnPath)}")
               resolvedExprs ++= a.matched(columnPath)
             case _ =>
           }
