@@ -11,11 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.di
 
-/**
-  * A trait for embedding Session to user traits or classes
-  */
-trait DISupport {
-  def session(): Session
+import wvlet.airspec.AirSpec
+import scala.language.experimental
+
+object TraitFactoryTest extends AirSpec {
+
+  trait A
+
+  test("register trait factory") {
+    wvlet.airframe.registerTraitFactory[A]
+  }
 }
