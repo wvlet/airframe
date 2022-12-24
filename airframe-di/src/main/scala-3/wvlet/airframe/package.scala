@@ -58,9 +58,30 @@ package object airframe {
     val parents = List(TypeTree.of[Object], TypeTree.of[A], TypeTree.of[DISupport])
     val cls = Symbol.newClass(Symbol.spliceOwner, name, parents = parents.map(_.tpe), _ => List.empty[Symbol], selfType = None)
     println(s"${cls.tree.show}")
+    val clasDef = ClassDef(cls, parents, body = Nil)
+    val newCls = Typed(Apply(Select(New(TypeIdent(cls)), cls.primaryConstructor), Nil), TypeTree.of[A with DISupport])
+
+    //val exampleExpr = '{ (s: Session) => new Object with DISupport { def session: Session = s } }
+    //println("===========")
+    //println(exampleExpr.asTerm)
+
+    val body = Lambda(
+      owner = Symbol.spliceOwner,
+      tpe = MethodType(List("s"))(_ => List(TypeRepr.of[Session]), _ => TypeRepr.of[A]),
+      rhsFn = (sym: Symbol, paramRefs: List[Tree]) => {
+        val s = paramRefs.head.asExprOf[Session].asTerm
+        val fn = newCls
+        fn.changeOwner(sym)
+      }
+    )
+    println("=------------")
+    println(body.show)
+
+    //val fn = '{ (s: Session) => ${ newCls('s) } }
+
 
     // { (s: Session) => new A with DISupport { def session = s } }
-    val t = TypeRepr.of[A]
+
       '{
         val s = Surface.of[A]
         ()
