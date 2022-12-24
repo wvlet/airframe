@@ -17,5 +17,5 @@ package wvlet.airframe
   * A trait for embedding Session to user traits or classes
   */
 trait DISupport {
-  def session: Session
+  def session(): Session
 }

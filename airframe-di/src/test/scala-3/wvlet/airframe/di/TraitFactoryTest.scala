@@ -21,7 +21,6 @@ object TraitFactoryTest extends AirSpec {
   trait A
 
   test("register trait factory") {
-    // --
     wvlet.airframe.registerTraitFactory[A]
   }
 }
