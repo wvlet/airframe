@@ -761,7 +761,7 @@ lazy val okhttp =
         "com.squareup.okhttp3" % "okhttp" % "4.10.0"
       )
     )
-    .dependsOn(http.jvm, finagle % Test)
+    .dependsOn(http.jvm, netty % Test)
 
 lazy val httpRecorder =
   project

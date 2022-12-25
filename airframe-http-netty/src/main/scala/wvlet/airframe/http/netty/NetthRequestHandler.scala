@@ -51,7 +51,8 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 
     ctx.channel().remoteAddress() match {
       case x: InetSocketAddress =>
-        req = req.withRemoteAddress(ServerAddress(s"${x.getAddress}:${x.getPort}"))
+        // TODO This address might be IPv6
+        req = req.withRemoteAddress(ServerAddress(s"${x.getHostName}:${x.getPort}"))
       case _ =>
     }
 
@@ -78,7 +79,6 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
         val nettyResponse = toNettyResponse(v.asInstanceOf[Response])
         writeResponse(msg, ctx, nettyResponse)
       case OnError(ex) =>
-        warn(ex)
         val resp = new DefaultHttpResponse(
           HttpVersion.HTTP_1_1,
           HttpResponseStatus.valueOf(HttpStatus.InternalServerError_500.code)
