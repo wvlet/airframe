@@ -40,7 +40,7 @@ private[grpc] object GrpcResponseHeaderInterceptor extends ServerInterceptor {
             case _ =>
               responseHeaders.setContentType(RPCEncoding.ApplicationMsgPack)
           }
-          super.sendHeaders(responseHeaders);
+          delegate().sendHeaders(responseHeaders);
         }
       },
       requestHeaders

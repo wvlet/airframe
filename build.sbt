@@ -270,7 +270,7 @@ lazy val projectDotty =
       // httpRecorder
       // // Finagle isn't supporting Scala 3
       // httpFinagle,
-      // grpc,
+      grpc,
       jdbc,
       jmx,
       launcher,
@@ -714,7 +714,6 @@ lazy val grpc =
   project
     .in(file("airframe-http-grpc"))
     .settings(buildSettings)
-    .settings(scala2Only)
     .settings(
       name        := "airframe-http-grpc",
       description := "Airframe HTTP gRPC backend",

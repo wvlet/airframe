@@ -15,12 +15,46 @@ package wvlet.airframe.di
 
 import wvlet.airspec.AirSpec
 import scala.language.experimental
+import wvlet.airframe._
+import wvlet.airframe.surface.Surface
 
 object TraitFactoryTest extends AirSpec {
 
   trait A
 
   test("register trait factory") {
-    wvlet.airframe.registerTraitFactory[A]
+    registerTraitFactory[A]
+    traitFactoryCache.get(Surface.of[A]) shouldBe defined
   }
+
+  trait B {
+    def hello: Unit
+  }
+
+  test("do not create trait factory for abstract classes") {
+    registerTraitFactory[B]
+    // ---
+    traitFactoryCache.get(Surface.of[B]) shouldBe empty
+  }
+
+//  test("do not create trait for a local type") {
+//    trait Local
+//    registerTraitFactory[Local]
+//    traitFactoryCache.get(Surface.of[Local]) shouldBe empty
+//  }
+
+  class C
+
+  test("should not register trait factory for a simple class") {
+    registerTraitFactory[C]
+    traitFactoryCache.get(Surface.of[B]) shouldBe empty
+  }
+
+  class D(i: Int)
+
+  test("do not creat trait factroy for a class without any public constructor") {
+    registerTraitFactory[D]
+    traitFactoryCache.get(Surface.of[B]) shouldBe empty
+  }
+
 }
