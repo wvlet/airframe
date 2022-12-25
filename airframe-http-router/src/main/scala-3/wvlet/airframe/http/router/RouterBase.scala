@@ -43,22 +43,15 @@ private[router] object RouterObjectMacros {
     import quotes.reflect._
 
     if (TypeRepr.of[Controller] <:< TypeRepr.of[HttpFilterType]) {
-      // TODO registerTraitFactory
-      '{ Router(filterSurface = Some(Surface.of[Controller])) }
+      '{
+        wvlet.airframe.registerTraitFactory[Controller]
+        Router(filterSurface = Some(Surface.of[Controller]))
+      }
     } else {
-      // TODO registerTraitFactory
-      '{ Router.empty.add[Controller] }
+      '{
+        wvlet.airframe.registerTraitFactory[Controller]
+        Router.empty.add[Controller]
+      }
     }
   }
-
-//  def registerTraitFactory[T: Type](using quotes: Quotes): Expr[Unit] = {
-//    // TODO implement simlar thing method like AirframeMacros.shouldGenerateTrait
-//    // TODO instantiate an arbitrary trait https://github.com/lampepfl/dotty/issues/11685
-//    val t = Type.of[T].info
-//    '{ wvlet.airframe.getOrElseUpdateTraitFactoryCache(
-//        Surface.of[T],
-//        { (ss: Session) => (new ${t} {}).asInstanceOf[Any] }
-//      )
-//    }
-//  }
 }
