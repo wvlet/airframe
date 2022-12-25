@@ -14,6 +14,7 @@
 package wvlet.airframe.http.codegen
 import example.grpc.{AliasTest, Greeter}
 import example.rpc.RPCExample
+import wvlet.airframe.http.Router
 import wvlet.airspec.AirSpec
 
 /**
@@ -22,7 +23,11 @@ class GrpcClientGeneratorTest extends AirSpec {
 
   test("generate sync gRPC client") {
     val code = HttpCodeGenerator.generate(
-      RouteScanner.buildRouter(Seq(classOf[RPCExample])),
+      if (isScala3) {
+        Router.of[RPCExample]
+      } else {
+        RouteScanner.buildRouter(Seq(classOf[RPCExample]))
+      },
       HttpClientGeneratorConfig("example.api:grpc:example.api.client")
     )
     debug(code)
@@ -30,7 +35,11 @@ class GrpcClientGeneratorTest extends AirSpec {
 
   test("generate gRPC client") {
     val code = HttpCodeGenerator.generate(
-      RouteScanner.buildRouter(Seq(classOf[Greeter])),
+      if (isScala3) {
+        Router.of[Greeter]
+      } else {
+        RouteScanner.buildRouter(Seq(classOf[Greeter]))
+      },
       HttpClientGeneratorConfig("example.grpc:grpc")
     )
     debug(code)
@@ -38,7 +47,11 @@ class GrpcClientGeneratorTest extends AirSpec {
 
   test("resolve alias types") {
     val code = HttpCodeGenerator.generate(
-      RouteScanner.buildRouter(Seq(classOf[AliasTest])),
+      if (isScala3) {
+        Router.of[AliasTest]
+      } else {
+        RouteScanner.buildRouter(Seq(classOf[AliasTest]))
+      },
       HttpClientGeneratorConfig("example.grpc:grpc")
     )
     debug(code)

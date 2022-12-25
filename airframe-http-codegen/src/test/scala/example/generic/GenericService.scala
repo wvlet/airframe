@@ -31,7 +31,7 @@ trait GenericService[F[_]] {
   def ops(in: String): Future[Response]
 
   @Endpoint(path = "/v1/hello_ops2")
-  def ops2(in: String): F[Response]
+  def ops2(in2: String): F[Response]
 
 }
 
