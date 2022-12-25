@@ -770,7 +770,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           !x.flags.is(Flags.Synthetic) &&
           !x.flags.is(Flags.Macro) &&
           !x.flags.is(Flags.Implicit) &&
-          !x.flags.is(Flags.FieldAccessor)
+          !x.flags.is(Flags.FieldAccessor) &&
+          // Exclude methods from Java
+          !x.flags.is(Flags.JavaDefined)
         }
         .filter { x =>
           val name = x.name

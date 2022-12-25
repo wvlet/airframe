@@ -264,8 +264,7 @@ lazy val projectDotty =
       fluentd,
       http.jvm,
       httpRouter,
-      // Surface.of(Class[_]) needs to be supported
-      // httpCodeGen
+      httpCodeGen,
       // Finagle is used in the http recorder
       // httpRecorder
       // // Finagle isn't supporting Scala 3
@@ -678,7 +677,6 @@ lazy val httpCodeGen =
     .in(file("airframe-http-codegen"))
     .enablePlugins(PackPlugin)
     .settings(buildSettings)
-    .settings(scala2Only)
     .settings(
       name               := "airframe-http-codegen",
       description        := "REST and RPC code generator",

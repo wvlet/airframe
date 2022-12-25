@@ -291,29 +291,6 @@ class OpenAPITest extends AirSpec {
         |          required: true
         |          schema:
         |            type: string""".stripMargin,
-      """  /v1/get3/{id}:
-        |    get:
-        |      summary: get3
-        |      description: get3
-        |      operationId: get3
-        |      parameters:
-        |        - name: id
-        |          in: path
-        |          required: true
-        |          schema:
-        |            type: integer
-        |            format: int32
-        |        - name: p1
-        |          in: query
-        |          required: true
-        |          schema:
-        |            type: string
-        |        - name: p2
-        |          in: query
-        |          required: false
-        |          schema:
-        |            type: string
-        |            default: foo""".stripMargin,
       """  /v1/post1:
         |    post:
         |      summary: post1
@@ -549,6 +526,47 @@ class OpenAPITest extends AirSpec {
       } catch {
         case e: Throwable =>
           fail(s"Missing YAML fragment for:\n${x}")
+      }
+    }
+
+    test("optional method parameter") {
+      if (isScala3) {
+        pending("Need to find default method parameter in Scala 3")
+      }
+
+      val methodOptParam = Seq(
+        """  /v1/get3/{id}:
+          |    get:
+          |      summary: get3
+          |      description: get3
+          |      operationId: get3
+          |      parameters:
+          |        - name: id
+          |          in: path
+          |          required: true
+          |          schema:
+          |            type: integer
+          |            format: int32
+          |        - name: p1
+          |          in: query
+          |          required: true
+          |          schema:
+          |            type: string
+          |        - name: p2
+          |          in: query
+          |          required: false
+          |          schema:
+          |            type: string
+          |            default: foo""".stripMargin
+      )
+
+      methodOptParam.foreach { x =>
+        try {
+          yaml.contains(x) shouldBe true
+        } catch {
+          case e: Throwable =>
+            fail(s"Missing YAML fragment for:\n${x}")
+        }
       }
     }
 

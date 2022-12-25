@@ -14,6 +14,7 @@
 package wvlet.airframe.http.codegen
 import example.generic.{GenericRequestService, GenericService}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.Router
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future
@@ -22,8 +23,7 @@ import scala.concurrent.Future
   */
 class GenericServiceTest extends AirSpec {
 
-  private val router =
-    RouteScanner.buildRouter(Seq(classOf[GenericService[Future]]))
+  private val router = RouteScanner.buildRouter(Seq(classOf[GenericService[Future]]))
 
   test("support F and Future return values in async clients") {
     debug(router)
