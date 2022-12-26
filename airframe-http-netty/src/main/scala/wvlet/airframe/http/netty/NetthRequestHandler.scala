@@ -52,7 +52,7 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
     ctx.channel().remoteAddress() match {
       case x: InetSocketAddress =>
         // TODO This address might be IPv6
-        req = req.withRemoteAddress(ServerAddress(s"${x.getAddress.getHostAddress}:${x.getPort}"))
+        req = req.withRemoteAddress(ServerAddress(s"${x.getHostString}:${x.getPort}"))
       case _ =>
     }
 
