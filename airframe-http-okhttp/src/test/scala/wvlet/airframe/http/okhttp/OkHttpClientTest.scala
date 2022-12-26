@@ -16,7 +16,7 @@ case class User(id: Int, name: String, requestId: String) {
 case class UserRequest(id: Int, name: String)
 case class DeleteRequestBody(force: Boolean)
 
-trait FinagleClientTestApi extends LogSupport {
+trait NettyTestApi extends LogSupport {
   import wvlet.airframe.http.{Endpoint, HttpMethod}
 
   @Endpoint(method = HttpMethod.GET, path = "/")
@@ -27,7 +27,7 @@ trait FinagleClientTestApi extends LogSupport {
   private def getRequestId(request: Request): String = {
     request.header.getOrElse("X-Request-Id", "N/A")
   }
-  
+
   @Endpoint(method = HttpMethod.GET, path = "/user/:id")
   def get(id: Int, request: Request): User = {
     User(id, "leo", getRequestId(request))
@@ -93,7 +93,7 @@ trait FinagleClientTestApi extends LogSupport {
 }
 
 class OkHttpClientTest extends AirSpec {
-  private val r = Router.add[FinagleClientTestApi]
+  private val r = Router.add[NettyTestApi]
 
   override protected def design = {
     Netty.server.withRouter(r).designWithSyncClient

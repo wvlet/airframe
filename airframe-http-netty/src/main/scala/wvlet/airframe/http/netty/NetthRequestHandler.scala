@@ -52,7 +52,7 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
     ctx.channel().remoteAddress() match {
       case x: InetSocketAddress =>
         // TODO This address might be IPv6
-        req = req.withRemoteAddress(ServerAddress(s"${x.getHostName}:${x.getPort}"))
+        req = req.withRemoteAddress(ServerAddress(s"${x.getAddress.getHostAddress}:${x.getPort}"))
       case _ =>
     }
 
@@ -89,7 +89,7 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
   }
 
   private def writeResponse(req: HttpRequest, ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {
-    val keepAlive = HttpUtil.isKeepAlive(req)
+    val keepAlive = HttpStatus.ofCode(resp.status().code()).isSuccessful && HttpUtil.isKeepAlive(req)
     if (keepAlive) {
       if (!req.protocolVersion().isKeepAliveDefault) {
         resp.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)

@@ -81,7 +81,8 @@ object ServerAddress extends LogSupport {
       }
       ServerAddress(uri.getHost, port, scheme)
     } else {
-      val pos = address.indexOf(":")
+      // Take the last section separated by colon because the address might be IPv6
+      val pos = address.lastIndexOf(":")
       if (pos > 0) {
         val port = address.substring(pos + 1, address.length).toInt
         val scheme = port match {
