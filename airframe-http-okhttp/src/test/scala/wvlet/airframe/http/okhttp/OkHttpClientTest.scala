@@ -1,12 +1,13 @@
 package wvlet.airframe.http.okhttp
 
-import java.time.Duration
-
 import wvlet.airframe.control.Control.withResource
+import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.airframe.http.{HttpClientException, HttpClientMaxRetryException, HttpStatus, Router}
-import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig, newFinagleServerDesign}
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
+
+import java.time.Duration
 
 case class User(id: Int, name: String, requestId: String) {
   def withRequestId(newRequestId: String): User = User(id, name, newRequestId)
@@ -15,8 +16,7 @@ case class User(id: Int, name: String, requestId: String) {
 case class UserRequest(id: Int, name: String)
 case class DeleteRequestBody(force: Boolean)
 
-trait FinagleClientTestApi extends LogSupport {
-  import com.twitter.finagle.http.{Request, Response, Status}
+trait NettyTestApi extends LogSupport {
   import wvlet.airframe.http.{Endpoint, HttpMethod}
 
   @Endpoint(method = HttpMethod.GET, path = "/")
@@ -25,7 +25,7 @@ trait FinagleClientTestApi extends LogSupport {
   }
 
   private def getRequestId(request: Request): String = {
-    request.headerMap.getOrElse("X-Request-Id", "N/A")
+    request.header.getOrElse("X-Request-Id", "N/A")
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/user/:id")
@@ -71,12 +71,12 @@ trait FinagleClientTestApi extends LogSupport {
   @Endpoint(method = HttpMethod.GET, path = "/busy")
   def busy: Response = {
     trace("called busy method")
-    Response(Status.InternalServerError)
+    Response(HttpStatus.InternalServerError_500)
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/forbidden")
   def forbidden: Response = {
-    Response(Status.Forbidden)
+    Response(HttpStatus.Forbidden_403)
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/readtimeout")
@@ -87,19 +87,19 @@ trait FinagleClientTestApi extends LogSupport {
 
   @Endpoint(method = HttpMethod.GET, path = "/response")
   def rawResponse: Response = {
-    val r = Response(Status.Ok)
-    r.setContentString("raw response")
-    r
+    val r = Response(HttpStatus.Ok_200)
+    r.withContent("raw response")
   }
 }
 
 class OkHttpClientTest extends AirSpec {
-  val r = Router.add[FinagleClientTestApi]
+  private val r = Router.add[NettyTestApi]
 
-  override protected def design =
-    newFinagleServerDesign(FinagleServerConfig(name = "test-server", router = r))
+  override protected def design = {
+    Netty.server.withRouter(r).designWithSyncClient
+  }
 
-  test("create client") { (server: FinagleServer) =>
+  test("create client") { (server: NettyServer) =>
     def addRequestId(request: okhttp3.Request.Builder): okhttp3.Request.Builder = {
       request.addHeader("X-Request-Id", "10")
     }
@@ -183,7 +183,7 @@ class OkHttpClientTest extends AirSpec {
     }
   }
 
-  test("fail request") { (server: FinagleServer) =>
+  test("fail request") { (server: NettyServer) =>
     withResource(
       OkHttpClient.newClient(
         // Test for the full URI
@@ -216,7 +216,7 @@ class OkHttpClientTest extends AirSpec {
     }
   }
 
-  test("read timeout") { (server: FinagleServer) =>
+  test("read timeout") { (server: NettyServer) =>
     withResource(
       OkHttpClient.newClient(
         s"http://${server.localAddress}",
