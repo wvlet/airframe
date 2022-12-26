@@ -13,11 +13,9 @@
  */
 package wvlet.airframe.http.recorder
 
-import com.twitter.finagle.Service
-import com.twitter.finagle.http.{Request, Response, Status}
-import com.twitter.util.Future
-import wvlet.airframe.http.ServerAddress
-import wvlet.airframe.http.finagle.{Finagle, FinagleServer}
+import wvlet.airframe.http.{Http, ServerAddress}
+import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.netty.NettyServer
 import wvlet.log.LogSupport
 
 import java.util.Locale
@@ -35,8 +33,7 @@ case class HttpRecorderConfig(
     port: Option[Int] = None,
     // Used for computing hash key for matching requests
     requestMatcher: HttpRequestMatcher = new HttpRequestMatcher.DefaultHttpRequestMatcher(),
-    excludeHeaderFilterForRecording: (String, String) => Boolean = HttpRecorder.defaultExcludeHeaderFilterForRecording,
-    fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler
+    excludeHeaderFilterForRecording: (String, String) => Boolean = HttpRecorder.defaultExcludeHeaderFilterForRecording
 ) {
   private[http] def sqliteFilePath = s"${storageFolder}/${dbFileName}.sqlite"
 
@@ -74,9 +71,6 @@ case class HttpRecorderConfig(
   ): HttpRecorderConfig = {
     this.copy(excludeHeaderFilterForRecording = excludeHeaderFilterForRecording)
   }
-  def withFallBackHandler(fallBackHandler: Service[Request, Response]): HttpRecorderConfig = {
-    this.copy(fallBackHandler = fallBackHandler)
-  }
 }
 
 /**
@@ -90,13 +84,11 @@ object HttpRecorder extends LogSupport {
     key.toLowerCase(Locale.ENGLISH).contains("authorization")
   }
 
-  private def newDestClient(recorderConfig: HttpRecorderConfig): Service[Request, Response] = {
+  private def newDestClient(recorderConfig: HttpRecorderConfig): SyncClient = {
     debug(s"dest: ${recorderConfig.destAddress}")
-
-    Finagle.client
-      .withInitializer(_.withLabel("airframe-http-recorder-proxy"))
-      .newClient(recorderConfig.destAddress.hostAndPort)
-      .nativeClient
+    Http.client
+      .withName("airframe-http-recorder-proxy")
+      .newSyncClient(recorderConfig.destAddress.hostAndPort)
   }
 
   private def newRecordStoreForRecording(recorderConfig: HttpRecorderConfig, dropSession: Boolean): HttpRecordStore = {
@@ -143,7 +135,7 @@ object HttpRecorder extends LogSupport {
     * Creates an HTTP server that returns only recorded HTTP responses. If no matching record is found, use the given
     * fallback handler.
     */
-  def createServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
+  def createServer(recorderConfig: HttpRecorderConfig): NettyServer = {
     val recorder = new HttpRecordStore(recorderConfig)
     // Return the server instance as FinagleServer to avoid further recording
     val server = new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))

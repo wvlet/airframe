@@ -42,6 +42,7 @@ trait ChannelConfig {
 /**
   */
 case class HttpClientConfig(
+    name: String = "airframe-http-client",
     backend: HttpClientBackend = compat.defaultHttpClientBackend,
     requestFilter: Request => Request = identity,
     rpcEncoding: RPCEncoding = RPCEncoding.JSON,
@@ -66,6 +67,7 @@ case class HttpClientConfig(
       Rx.future(f)(compat.defaultExecutionContext)
     }
 ) extends ChannelConfig {
+
   def newSyncClient(serverAddress: String): SyncClient =
     backend.newSyncClient(ServerAddress(serverAddress), this)
 
@@ -77,6 +79,10 @@ case class HttpClientConfig(
     */
   def newJSClient: AsyncClient =
     backend.newAsyncClient(compat.hostServerAddress, this)
+
+  def withName(name: String): HttpClientConfig = {
+    this.copy(name = name)
+  }
 
   def withBackend(newBackend: HttpClientBackend): HttpClientConfig =
     this.copy(backend = newBackend)

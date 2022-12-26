@@ -13,10 +13,10 @@
  */
 package wvlet.airframe.http.recorder
 
-import java.util.Locale
-
-import com.twitter.finagle.http.{MediaType, Request}
+import wvlet.airframe.http.HttpMessage.Request
 import wvlet.log.LogSupport
+
+import java.util.Locale
 
 /**
   * Compute a hash key of the given HTTP request. This value will be used for DB indexes
@@ -68,15 +68,18 @@ object HttpRequestMatcher {
   }
 
   private def computeRequestPathHash(request: Request): Int = {
-    val contentHash = request.content.hashCode()
+    val contentHash = request.contentBytes.hashCode()
     s"${request.method.toString()}:${request.uri}:${contentHash}".hashCode
   }
 
   def filterHeaders(request: Request, excludePrefixes: Seq[String]): Map[String, String] = {
-    request.headerMap.toSeq.filterNot { x =>
-      val key = x._1.toLowerCase(Locale.ENGLISH)
-      excludePrefixes.exists(ex => key.startsWith(ex))
-    }.toMap
+    request.header.toSeq
+      .filterNot { x =>
+        val key = x.key.toLowerCase(Locale.ENGLISH)
+        excludePrefixes.exists(ex => key.startsWith(ex))
+      }
+      .map(x => x.key -> x.value)
+      .toMap
   }
 
   object PathOnlyMatcher extends HttpRequestMatcher {
