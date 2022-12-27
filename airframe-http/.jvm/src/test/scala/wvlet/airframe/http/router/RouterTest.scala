@@ -11,13 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.router
 
 import wvlet.airframe.Session
 import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.http.example.ControllerExample.User
-import wvlet.airframe.http.example._
-import wvlet.airframe.http.router.{ControllerProvider, RouteMatcher}
+import wvlet.airframe.http.router.example.ControllerExample.User
+import wvlet.airframe.http.router.example._
+import wvlet.airframe.http._
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 

@@ -14,8 +14,8 @@
 package wvlet.airframe.http.codegen
 
 import wvlet.airframe.http.{HttpContext, HttpContextBase, HttpMessage, HttpRequest}
-import wvlet.airframe.http.router.Route
 import wvlet.airframe.surface.{CName, MethodParameter}
+import wvlet.airframe.http.router.Route
 
 import scala.language.higherKinds
 

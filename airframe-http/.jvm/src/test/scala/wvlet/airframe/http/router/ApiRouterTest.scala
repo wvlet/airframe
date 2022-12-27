@@ -11,9 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.router
+
+import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
 import wvlet.airspec.AirSpec
-import wvlet.airframe.http.router.ControllerRoute
 
 /**
   */
@@ -38,7 +39,7 @@ object ApiRouterTest extends AirSpec {
     x.path shouldBe "/v1/hello"
     x match {
       case c: ControllerRoute =>
-        c.rpcMethod.rpcInterfaceName shouldBe "wvlet.airframe.http.ApiRouterTest.MyApi"
+        c.rpcMethod.rpcInterfaceName shouldBe "wvlet.airframe.http.router.ApiRouterTest.MyApi"
       case _ =>
         fail("cannot reach here")
     }

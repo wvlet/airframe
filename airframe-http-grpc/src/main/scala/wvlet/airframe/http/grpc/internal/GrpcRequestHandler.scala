@@ -20,8 +20,8 @@ import wvlet.airframe.http
 import wvlet.airframe.http.{RPCEncoding, RPCMethod}
 import wvlet.airframe.http.grpc.{GrpcContext, GrpcResponse}
 import wvlet.airframe.http.internal.RPCCallContext
-import wvlet.airframe.http.router.HttpRequestMapper
 import wvlet.airframe.http.{RPCEncoding, RPCStatus}
+import wvlet.airframe.http.router.{Route, HttpRequestMapper}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
 import wvlet.airframe.rx._

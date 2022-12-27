@@ -11,14 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.example
-import wvlet.airframe.http.Endpoint
+package wvlet.airframe.http.router.example
+import wvlet.airframe.http.{Endpoint, HttpMethod}
 
 /**
   */
-trait AmbiguousPathExample {
-  @Endpoint(path = "/v1/:key")
-  def get: Unit = {}
-  @Endpoint(path = "/v1/*path")
-  def path: Unit = {}
+trait SharedPathPrefix {
+  @Endpoint(path = "/v1/config", method = HttpMethod.GET)
+  def list: Seq[String] = {
+    Seq("a", "b")
+  }
+
+  @Endpoint(path = "/v1/config/app", method = HttpMethod.GET)
+  def appConfig: String = {
+    "app-config"
+  }
 }

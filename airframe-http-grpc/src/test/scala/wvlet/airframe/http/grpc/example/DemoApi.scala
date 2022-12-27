@@ -29,11 +29,11 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http.grpc.internal.{GrpcServiceBuilder, WrappedServerCallListener}
 import wvlet.airframe.http.grpc._
-import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{Http, HttpStatus, RPC, RPCContext, RPCEncoding, RPCStatus, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.log.LogSupport
+import wvlet.airframe.http.router.Route
 
 @RPC
 trait DemoApi extends LogSupport {

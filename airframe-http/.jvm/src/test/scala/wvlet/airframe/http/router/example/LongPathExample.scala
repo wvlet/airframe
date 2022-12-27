@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.example
+package wvlet.airframe.http.router.example
 
 import wvlet.airframe.http.{Endpoint, HttpMethod}
 
