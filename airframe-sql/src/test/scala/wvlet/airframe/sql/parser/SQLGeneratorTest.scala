@@ -111,4 +111,31 @@ class SQLGeneratorTest extends AirSpec {
     sql.contains("ON t1.id = t2.id") shouldBe true
   }
 
+  test("generate ORDER BY in sub-query") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze("select * from (select id from A order by id)", "default", demoCatalog)
+    val sql = SQLGenerator.print(resolvedPlan).toLowerCase
+    sql shouldBe "select * from (select id from a order by id)"
+  }
+
+  test("generate GROUP BY in sub-query") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze("select * from (select id, count(*) from A group by id)", "default", demoCatalog)
+    val sql = SQLGenerator.print(resolvedPlan).toLowerCase
+    sql shouldBe "select * from (select id, count(*) from a group by id)"
+  }
+
+  test("generate LIMIT in sub-query") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze("select * from (select id from A limit 10)", "default", demoCatalog)
+    val sql = SQLGenerator.print(resolvedPlan).toLowerCase
+    sql shouldBe "select * from (select id from a limit 10)"
+  }
+
+  test("generate DISTINCT in sub-query") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze("select * from (select distinct id from A)", "default", demoCatalog)
+    val sql = SQLGenerator.print(resolvedPlan).toLowerCase
+    sql shouldBe "select * from (select distinct id from a)"
+  }
 }
