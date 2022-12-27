@@ -127,6 +127,14 @@ object SQLGenerator extends LogSupport {
           b += s"(${printRelation(f)})"
         case _: SetOperation =>
           b += s"(${printRelation(f)})"
+        case _: Limit =>
+          b += s"(${printRelation(f)})"
+        case _: Filter =>
+          b += s"(${printRelation(f)})"
+        case _: Sort =>
+          b += s"(${printRelation(f)})"
+        case _: Distinct =>
+          b += s"(${printRelation(f)})"
         case _ =>
           b += printRelation(f)
       }
