@@ -139,6 +139,10 @@ class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarO
   override def setException(e: Throwable): Unit = {
     variable.setException(e)
   }
+
+  override def stop(): Unit = {
+    variable.stop()
+  }
 }
 
 case class RxOptionCacheOp[A](input: RxStreamCache[Option[A]]) extends RxOptionCache[A] {

@@ -17,11 +17,14 @@ import com.twitter.finagle.http
 import com.twitter.finagle.http.{HeaderMap, Request, Response}
 import com.twitter.io.Buf
 import com.twitter.io.Buf.ByteArray
-import com.twitter.util.Future
+import com.twitter.util.{Future, Return, Throw}
 import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, StringMessage}
 import wvlet.airframe.{Design, Session}
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
+import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.log.io.IOUtil
+
+import scala.util.{Failure, Success}
 
 /**
   */
@@ -206,5 +209,22 @@ package object finagle {
         resp.content = Buf.ByteArray.Owned(other.toContentBytes)
     }
     resp
+  }
+
+  /**
+    * Convert twitter Future into Rx
+    * @param twitterFuture
+    * @tparam A
+    * @return
+    */
+  def convertToRx[A](twitterFuture: Future[A]): RxStream[A] = {
+    val v = Rx.variable[Option[A]](None)
+    twitterFuture.respond {
+      case Return(x) =>
+        v := Some(x)
+        v.stop()
+      case Throw(e) => v.setException(e)
+    }
+    v.filter(_.isDefined).map(_.get)
   }
 }
