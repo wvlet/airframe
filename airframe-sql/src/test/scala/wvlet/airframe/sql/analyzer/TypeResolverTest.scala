@@ -621,6 +621,11 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
         )
       }
     }
+
+    test("resolve column in nested SELECT *") {
+      val p = analyze("select name from (select * from (select * from A))")
+      p.outputAttributes shouldMatch { case List(`ra2`) => () }
+    }
   }
 
   test("resolve sub queries in WHERE clause") {
