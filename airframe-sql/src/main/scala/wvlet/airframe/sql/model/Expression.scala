@@ -469,7 +469,14 @@ object Expression {
       Seq.empty
     }
     override def inputColumns: Seq[Attribute] = {
-      columns.getOrElse(Seq.empty)
+      columns match {
+        case Some(columns) =>
+          columns.flatMap {
+            case a: AllColumns => a.inputColumns
+            case a             => Seq(a)
+          }
+        case None => Nil
+      }
     }
 
     override def dataType: DataType = {
