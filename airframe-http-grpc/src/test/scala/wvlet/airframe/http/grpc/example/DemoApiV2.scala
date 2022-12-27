@@ -20,11 +20,11 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.grpc.example.DemoApiV2.{DemoMessage, DemoResponse}
 import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
 import wvlet.airframe.http.grpc.{GrpcClient, GrpcClientConfig, GrpcClientInterceptor, gRPC}
-import wvlet.airframe.http.router.Route
 import wvlet.airframe.http.{RPC, RPCEncoding, RPCStatus, Router}
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
+import wvlet.airframe.http.router.Route
 
 /**
   * Demo gRPC API used for GrpcClientTest

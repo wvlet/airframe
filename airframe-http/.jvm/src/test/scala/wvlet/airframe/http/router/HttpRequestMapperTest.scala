@@ -11,10 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.router
+
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.router.{HttpRequestMapper, Route}
+import wvlet.airframe.http._
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future

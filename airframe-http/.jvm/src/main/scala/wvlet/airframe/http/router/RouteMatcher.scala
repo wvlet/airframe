@@ -16,8 +16,8 @@ package wvlet.airframe.http.router
 import wvlet.airframe.Session
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http._
-import wvlet.airframe.http.router.Automaton.{DFA, NextNode}
 import wvlet.log.LogSupport
+import wvlet.airframe.http.router.Automaton._
 
 import scala.language.higherKinds
 
@@ -192,7 +192,7 @@ object RouteMatcher extends LogSupport {
 
   private val anyToken: String = "<*>"
 
-  private[http] def buildPathDFA(routes: Seq[Route]): DFA[Set[PathMapping], String] = {
+  private[http] def buildPathDFA(routes: Seq[Route]): Automaton.DFA[Set[PathMapping], String] = {
     // Convert http path patterns (Route) to mapping operations (List[PathMapping])
     def toPathMapping(r: Route, pathIndex: Int, prefix: String): List[PathMapping] = {
       if (pathIndex >= r.pathComponents.length) {

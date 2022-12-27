@@ -11,7 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.router
+
+import wvlet.airframe.http.{HttpMethod, RPC, Router}
 import wvlet.airspec.AirSpec
 
 /**
@@ -52,7 +54,7 @@ object RPCTest extends AirSpec {
   test("Create RPC interface without any path") {
     val r = Router.add[MyRPCService2]
     debug(r)
-    val m = r.routes.find(_.path == "/wvlet.airframe.http.RPCTest.MyRPCService2/hello")
+    val m = r.routes.find(_.path == "/wvlet.airframe.http.router.RPCTest.MyRPCService2/hello")
     m shouldBe defined
 
     m.get.httpMethod shouldBe HttpMethod.POST

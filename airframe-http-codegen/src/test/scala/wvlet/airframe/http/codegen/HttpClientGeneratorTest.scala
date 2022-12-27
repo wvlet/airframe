@@ -17,6 +17,7 @@ import example.api._
 import wvlet.airframe.http._
 import wvlet.airframe.http.codegen.client.{AsyncClientGenerator, GrpcClientGenerator}
 import wvlet.airspec.AirSpec
+import wvlet.airframe.http.Router
 
 /**
   */

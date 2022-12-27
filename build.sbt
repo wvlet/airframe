@@ -190,7 +190,6 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   msgpack.jvm,
   rx.jvm,
   http.jvm,
-  httpRouter,
   httpCodeGen,
   grpc,
   json.jvm,
@@ -263,7 +262,6 @@ lazy val projectDotty =
       codec.jvm,
       fluentd,
       http.jvm,
-      httpRouter,
       httpCodeGen,
       // Finagle is used in the http recorder
       // httpRecorder
@@ -660,17 +658,7 @@ lazy val http =
         "org.scala-js" %%% "scalajs-dom" % SCALAJS_DOM_VERSION
       )
     )
-    .dependsOn(rx, control, surface, json, codec)
-
-lazy val httpRouter =
-  project
-    .in(file("airframe-http-router"))
-    .settings(buildSettings)
-    .settings(
-      name        := "airframe-http-router",
-      description := "Request routing library"
-    )
-    .dependsOn(di.jvm, http.jvm)
+    .dependsOn(rx, control, surface, json, codec, di)
 
 lazy val httpCodeGen =
   project
@@ -693,7 +681,7 @@ lazy val httpCodeGen =
       // Published package is necessary for sbt-airframe
       publishPackArchiveTgz
     )
-    .dependsOn(httpRouter, launcher)
+    .dependsOn(http.jvm, launcher)
 
 lazy val netty =
   project
@@ -706,7 +694,7 @@ lazy val netty =
         "io.netty" % "netty-all" % "4.1.86.Final"
       )
     )
-    .dependsOn(httpRouter, rx.jvm)
+    .dependsOn(http.jvm, rx.jvm)
 
 lazy val grpc =
   project
@@ -722,7 +710,7 @@ lazy val grpc =
         "org.slf4j"         % "slf4j-jdk14"       % SLF4J_VERSION % Test
       )
     )
-    .dependsOn(httpRouter, rx.jvm)
+    .dependsOn(http.jvm, rx.jvm)
 
 // Workaround for com.twitter:util-core_2.12:21.4.0 (depends on 1.1.2)
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-parser-combinators" % "always"
@@ -747,7 +735,7 @@ lazy val finagle =
         "org.yaml" % "snakeyaml" % SNAKE_YAML_VERSION
       )
     )
-    .dependsOn(httpRouter)
+    .dependsOn(http.jvm)
 
 lazy val okhttp =
   project

@@ -14,17 +14,16 @@
 package wvlet.airframe.http.finagle
 
 import java.util.concurrent.atomic.AtomicBoolean
-
 import com.twitter.concurrent.AsyncStream
-import com.twitter.finagle.http._
+import com.twitter.finagle.http.{MediaType, Method, Request, Response, Status}
 import com.twitter.io.Buf.ByteArray
 import com.twitter.io.{Buf, Reader}
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
-import wvlet.airframe.http.router.{ResponseHandler, Route}
 import wvlet.airframe.http.{HttpMessage, HttpStatus}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
+import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher, ResponseHandler, Route}
 
 /**
   * Converting controller results into finagle http responses.

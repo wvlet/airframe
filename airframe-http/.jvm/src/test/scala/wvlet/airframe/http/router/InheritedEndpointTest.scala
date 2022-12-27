@@ -11,19 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.example
-import wvlet.airframe.http.{Endpoint, HttpMethod}
+package wvlet.airframe.http.router
 
-/**
-  */
-trait SharedPathPrefix {
-  @Endpoint(path = "/v1/config", method = HttpMethod.GET)
-  def list: Seq[String] = {
-    Seq("a", "b")
+import wvlet.airframe.http.{Endpoint, Router}
+import wvlet.airspec.AirSpec
+
+object InheritedEndpointTest extends AirSpec {
+
+  trait Base {
+    @Endpoint(path = "/hello")
+    def hello: String = "hello"
   }
+  trait MyApp extends Base
 
-  @Endpoint(path = "/v1/config/app", method = HttpMethod.GET)
-  def appConfig: String = {
-    "app-config"
+  test("find inherited endpoints") {
+    val router = Router.of[MyApp]
+    router.routes.find(_.path == "/hello") shouldBe defined
   }
 }

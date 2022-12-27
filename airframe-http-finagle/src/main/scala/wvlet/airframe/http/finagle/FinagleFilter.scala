@@ -18,8 +18,8 @@ import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
 import wvlet.airframe.Session
 import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.http.router.HttpRequestDispatcher
 import wvlet.airframe.http._
+import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher, ResponseHandler}
 
 /**
   * An wrapper of HttpFilter for Finagle backend implementation

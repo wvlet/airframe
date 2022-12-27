@@ -11,8 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
-import wvlet.airframe.http.router.ControllerRoute
+package wvlet.airframe.http.router
+
+import wvlet.airframe.http.{Endpoint, Http, Router}
 import wvlet.airspec.AirSpec
 
 /**
