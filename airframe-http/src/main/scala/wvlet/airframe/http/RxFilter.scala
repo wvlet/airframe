@@ -22,7 +22,7 @@ import scala.util.control.NonFatal
   * [[RxContext]] is a service interface for processing request and returning `Rx[Response]`.
   */
 trait RxContext {
-  private[http] def backend: HttpBackend[Request, Response, Rx]
+  private[http] def backend: RxHttpBackend
 
   /**
     * @param request
@@ -81,7 +81,7 @@ trait RxFilter {
 object RxFilter {
 
   private class FilterAndThenContext(filter: RxFilter, context: RxContext) extends RxContext {
-    override def backend: HttpBackend[Request, Response, Rx] = context.backend
+    override def backend: RxHttpBackend = context.backend
     override def apply(request: Request): Rx[Response] = {
       try {
         filter.apply(request, context)
