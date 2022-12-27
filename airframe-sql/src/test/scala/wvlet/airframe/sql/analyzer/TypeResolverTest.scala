@@ -278,15 +278,23 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
 
     test("group by index") {
       val p = analyze("select id, count(*) from A group by 1")
-      p shouldMatch { case Aggregate(_, _, List(GroupingKey(`ra1`, _)), _, _) =>
-        ()
+      p shouldMatch { case Aggregate(_, _, List(GroupingKey(c, _)), _, _) =>
+        c shouldBe ra1.copy(nodeLocation = c.nodeLocation)
+      }
+    }
+
+    test("group by index of column with alias") {
+      val p = analyze("select id as i, count(*) from A group by 1")
+      p shouldMatch { case Aggregate(_, _, List(GroupingKey(c, _)), _, _) =>
+        c shouldBe ra1.copy(name = "i")
       }
     }
 
     test("group by multiple keys") {
       val p = analyze("select id, name, count(*) from A group by 1, 2")
-      p shouldMatch { case Aggregate(_, _, List(GroupingKey(`ra1`, _), GroupingKey(`ra2`, _)), _, _) =>
-        ()
+      p shouldMatch { case Aggregate(_, _, List(GroupingKey(c1, _), GroupingKey(c2, _)), _, _) =>
+        c1 shouldBe ra1.copy(nodeLocation = c1.nodeLocation)
+        c2 shouldBe ra2.copy(nodeLocation = c2.nodeLocation)
       }
     }
 
