@@ -13,24 +13,20 @@
  */
 package wvlet.airframe.http.recorder
 
-import com.twitter.finagle.http.{Request, Response}
-import com.twitter.finagle.{Service, SimpleFilter}
-import com.twitter.util.Future
-import wvlet.airframe.http.finagle.FinagleServer.FinagleService
-import wvlet.airframe.http.finagle.{Finagle, FinagleServer, FinagleServerConfig}
+import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.netty.Netty
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 /**
   * A FinagleServer wrapper to close HttpRecordStore when the server terminates
   */
-class HttpRecorderServer(recordStore: HttpRecordStore, finagleService: FinagleService)
-    extends FinagleServer(
-      Finagle.server
-        .withName(s"[http-recorder] ${recordStore.recorderConfig.recorderName}")
-        .withPort(recordStore.recorderConfig.port.getOrElse(IOUtil.unusedPort)),
-      finagleService
-    ) {
+class HttpRecorderServer(recordStore: HttpRecordStore) {
+
+  private val server = Netty.server
+    // .withName(s"[http-recorder] ${recordStore.recorderConfig.recorderName}")
+    .withPort(recordStore.recorderConfig.port.getOrElse(IOUtil.unusedPort))
+
   def clearSession: Unit = {
     recordStore.clearSession
   }
@@ -65,12 +61,13 @@ class HttpRecorderServer(recordStore: HttpRecordStore, finagleService: FinagleSe
   }
 
   override def close(): Unit = {
-    super.close()
+
     recordStore.close()
   }
 }
 
 object HttpRecorderServer {
+
   def newRecordingService(recordStore: HttpRecordStore, destClient: Service[Request, Response]): FinagleService = {
     new RecordingFilter(recordStore) andThen destClient
   }

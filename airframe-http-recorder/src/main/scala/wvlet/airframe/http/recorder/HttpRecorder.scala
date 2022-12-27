@@ -71,6 +71,9 @@ case class HttpRecorderConfig(
   ): HttpRecorderConfig = {
     this.copy(excludeHeaderFilterForRecording = excludeHeaderFilterForRecording)
   }
+
+
+
 }
 
 /**
