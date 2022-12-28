@@ -448,8 +448,8 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       val p = analyze("select id, A.name from A join B using(id)")
       p.outputAttributes shouldMatch { case Seq(m @ MultiSourceColumn(Seq(c1, c2), _, _), c3) =>
         m.name shouldBe "id"
-        c1 shouldBe ra1.withQualifier("A")
-        c2 shouldBe rb1.withQualifier("B")
+        c1 shouldBe ra1
+        c2 shouldBe rb1
         c3 shouldBe ra2.withQualifier("A")
       }
     }
@@ -513,7 +513,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       p.outputAttributes shouldMatch {
         case List(
               ResolvedAttribute("pid", DataType.LongType, None, Some(SourceColumn(`tableB`, `b1`)), _),
-              ResolvedAttribute("name", DataType.StringType, Some("A"), Some(SourceColumn(`tableA`, `a2`)), _)
+              ResolvedAttribute("name", DataType.StringType, None, Some(SourceColumn(`tableA`, `a2`)), _)
             ) =>
           ()
       }
@@ -819,7 +819,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     test("resolve UNNEST array column") {
       val p = analyze("SELECT id, n FROM A CROSS JOIN UNNEST (name) AS t (n)")
       p.outputAttributes shouldMatch { case List(c1: Attribute, c2: Attribute) =>
-        c1.fullName shouldBe "A.id"
+        c1.fullName shouldBe "id"
         c2.fullName shouldBe "t.n"
       }
     }
@@ -833,7 +833,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
           |""".stripMargin)
 
       p.outputAttributes shouldBe List(
-        ra1.withQualifier("A"),
+        ra1,
         ResolvedAttribute("key", DataType.StringType, Some("t"), None, None),
         ResolvedAttribute("value", DataType.LongType, Some("t"), None, None)
       )
