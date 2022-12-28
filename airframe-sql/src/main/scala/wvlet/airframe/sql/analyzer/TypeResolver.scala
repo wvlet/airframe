@@ -86,9 +86,12 @@ object TypeResolver extends LogSupport {
           case k @ GroupingKey(LongLiteral(i, _), _) if i <= selectItems.length =>
             // Use a simpler form of attributes
             val keyItem = selectItems(i.toInt - 1) match {
-              case a: Attribute =>
-                toResolvedAttribute(a.name, a)
-              case other => other
+              case SingleColumn(expr, _, _) =>
+                expr
+              case Alias(_, _, expr, _) =>
+                expr
+              case other =>
+                other
             }
             changed = true
             GroupingKey(keyItem, k.nodeLocation)
@@ -364,8 +367,6 @@ object TypeResolver extends LogSupport {
           r.sourceColumn
         case a: Alias =>
           findSourceColumn(a.expr)
-        case s: SingleColumn =>
-          findSourceColumn(s.expr)
         case _ => None
       }
     }
