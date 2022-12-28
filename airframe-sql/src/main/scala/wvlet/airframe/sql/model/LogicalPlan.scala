@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.model
-import wvlet.airframe.sql.analyzer.{QuerySignatureConfig, TypeResolver}
+import wvlet.airframe.sql.analyzer.{QuerySignatureConfig}
 import wvlet.log.LogSupport
 
 import java.util.UUID
@@ -691,13 +691,7 @@ object LogicalPlan {
       s"${joinType.symbol}(${left.sig(config)},${right.sig(config)})"
     }
     override def inputAttributes: Seq[Attribute] = {
-      (getRelationName(left) match {
-        case Some(q: String) => left.outputAttributes.map(_.withQualifier(q))
-        case None            => left.outputAttributes
-      }) ++ (getRelationName(right) match {
-        case Some(q: String) => right.outputAttributes.map(_.withQualifier(q))
-        case None            => right.outputAttributes
-      })
+      left.outputAttributes ++ right.outputAttributes
     }
     override def outputAttributes: Seq[Attribute] = {
       cond match {
@@ -715,16 +709,6 @@ object LogicalPlan {
     }
 
     def withCond(cond: JoinCriteria): Join = this.copy(cond = cond)
-  }
-
-  private def getRelationName(r: Relation): Option[String] = {
-    r match {
-      case r: AliasedRelation => Some(r.alias.sqlExpr)
-      case r: TableScan       => Some(r.table.name)
-      case r: TableRef        => Some(r.name.sqlExpr)
-      case r: CTERelationRef  => Some(r.name)
-      case _                  => None
-    }
   }
 
   sealed abstract class JoinType(val symbol: String)

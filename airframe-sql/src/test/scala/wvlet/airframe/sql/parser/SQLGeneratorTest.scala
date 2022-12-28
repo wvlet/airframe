@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.sql.parser
 
-import wvlet.airframe.sql.analyzer.{SQLAnalyzer, RewriteRule}
+import wvlet.airframe.sql.analyzer.SQLAnalyzer
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
 import wvlet.airframe.sql.catalog.Catalog.{CreateMode, TableColumn}
 import wvlet.airspec.AirSpec
@@ -23,12 +23,23 @@ class SQLGeneratorTest extends AirSpec {
   private val a1 = TableColumn("id", DataType.LongType, properties = Map("tag" -> Seq("personal_identifier")))
   private val a2 = TableColumn("name", DataType.StringType, properties = Map("tag" -> Seq("private")))
 
+  private val b1 = TableColumn("id", DataType.LongType, properties = Map("tag" -> Seq("personal_identifier")))
+  private val b2 = TableColumn("country", DataType.StringType, properties = Map("tag" -> Seq("private")))
+
   private val tableA = Catalog.newTable(
     "default",
     "A",
     Catalog.newSchema
       .addColumn(a1)
       .addColumn(a2)
+  )
+
+  private val tableB = Catalog.newTable(
+    "default",
+    "B",
+    Catalog.newSchema
+      .addColumn(b1)
+      .addColumn(b2)
   )
 
   private def demoCatalog: Catalog = {
@@ -40,6 +51,7 @@ class SQLGeneratorTest extends AirSpec {
 
     catalog.createDatabase(Catalog.Database("default"), CreateMode.CREATE_IF_NOT_EXISTS)
     catalog.createTable(tableA, CreateMode.CREATE_IF_NOT_EXISTS)
+    catalog.createTable(tableB, CreateMode.CREATE_IF_NOT_EXISTS)
     catalog
   }
 
@@ -137,5 +149,12 @@ class SQLGeneratorTest extends AirSpec {
       SQLAnalyzer.analyze("select * from (select distinct id from A)", "default", demoCatalog)
     val sql = SQLGenerator.print(resolvedPlan).toLowerCase
     sql shouldBe "select * from (select distinct id from a)"
+  }
+
+  test("generate JOIN + SELECT * in sub-query") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze("select country from (select * from A inner join B using (id))", "default", demoCatalog)
+    val sql = SQLGenerator.print(resolvedPlan).toLowerCase
+    sql shouldBe "select country from (select * from a join b using (id))"
   }
 }
