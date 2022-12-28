@@ -249,6 +249,17 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       }
     }
 
+    test("resolve aliased column from Union in sub-query") {
+      val p = analyze(
+        """select max_id, count(*) from (
+          |  select name, max(id) max_id from A group by 1
+          |  union all
+          |  select name, max(id) max_id from A group by 1
+          |)
+          |group by 1
+          |""".stripMargin)
+    }
+
     test("resolve intersect") {
       val p = analyze("select id from A intersect select id from B") // => Distinct(Intersect(...))
       p shouldMatch { case Distinct(i @ Intersect(_, _), _) =>
