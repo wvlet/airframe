@@ -302,7 +302,7 @@ lazy val airspecDeps =
       Compile / packageSrc / mappings ++= (airspecCoreJS / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
         // Necessary for async testing
-        "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.0"
+        "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1"
       )
     )
     .dependsOn(airspecCore)
@@ -352,7 +352,7 @@ lazy val airspec =
         ("org.scala-js"        %% "scalajs-test-interface" % scalaJSVersion).cross(CrossVersion.for3Use2_13),
         ("org.portable-scala" %%% "portable-scala-reflect" % "1.1.2").cross(CrossVersion.for3Use2_13),
         // Needed to be explicitly included here for running Scala.js tests successfully
-        "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.0"
+        "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1"
       )
     )
     // This should be Optional dependency, but using Provided dependency for bloop which doesn't support Optional.
