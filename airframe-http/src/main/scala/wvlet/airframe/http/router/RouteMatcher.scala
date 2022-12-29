@@ -18,7 +18,6 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
 import wvlet.airframe.http.router.Automaton._
-
 import scala.language.higherKinds
 
 case class RouteMatch(route: Route, params: Map[String, String]) {

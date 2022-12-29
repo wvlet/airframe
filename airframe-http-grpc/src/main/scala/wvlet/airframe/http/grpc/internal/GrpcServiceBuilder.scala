@@ -26,7 +26,6 @@ import wvlet.airframe.http.grpc.{
   GrpcServerConfig,
   GrpcService
 }
-import wvlet.airframe.http.router.{Route, HttpRequestMapper}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.surface.{MethodParameter, MethodSurface, Surface, TypeName}
 import wvlet.airframe.rx._

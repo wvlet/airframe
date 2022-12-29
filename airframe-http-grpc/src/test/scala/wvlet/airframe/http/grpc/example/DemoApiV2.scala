@@ -24,7 +24,6 @@ import wvlet.airframe.http.{RPC, RPCEncoding, RPCStatus, Router}
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
-import wvlet.airframe.http.router.Route
 
 /**
   * Demo gRPC API used for GrpcClientTest

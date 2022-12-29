@@ -33,7 +33,6 @@ import wvlet.airframe.http.{Http, HttpStatus, RPC, RPCContext, RPCEncoding, RPCS
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.log.LogSupport
-import wvlet.airframe.http.router.Route
 
 @RPC
 trait DemoApi extends LogSupport {

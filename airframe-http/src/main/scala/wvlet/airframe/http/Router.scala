@@ -13,14 +13,13 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.http.router.Automaton.DFA
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
 
-import wvlet.airframe.http.router.{Route, RouteMatcher, ControllerRoute, RouteMatch}
 import scala.annotation.tailrec
 import scala.language.experimental.macros
 import scala.language.higherKinds
+import wvlet.airframe.http.router._
 
 /**
   * Router defines mappings from HTTP requests to Routes.

@@ -22,7 +22,6 @@ import wvlet.airframe.http.codegen.client.HttpClientGenerator.fullTypeNameOf
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface, TypeName}
 import wvlet.log.LogSupport
-import wvlet.airframe.http.router.{Route, HttpRequestMapper}
 
 /**
   * Generate an intermediate representation (IR) of Scala HTTP client code from a given airframe-http interface

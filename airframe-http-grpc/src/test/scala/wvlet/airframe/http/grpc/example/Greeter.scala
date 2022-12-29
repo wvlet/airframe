@@ -17,7 +17,6 @@ import io.grpc.{CallOptions, Channel}
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
 import wvlet.airframe.http.{RPC, Router}
-import wvlet.airframe.http.router.Route
 
 /**
   */

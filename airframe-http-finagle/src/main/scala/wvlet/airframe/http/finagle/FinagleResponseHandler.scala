@@ -23,7 +23,6 @@ import wvlet.airframe.http.{HttpMessage, HttpStatus}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
-import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher, ResponseHandler, Route}
 
 /**
   * Converting controller results into finagle http responses.
