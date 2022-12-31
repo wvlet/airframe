@@ -56,6 +56,9 @@ case class TableScan(
     }
   }
 
+  override def toString: String =
+    s"TableScan(name:${fullName}, table:${table.fullName}, columns:[${columns.mkString(", ")}])"
+
   override lazy val resolved = true
 }
 
@@ -110,6 +113,9 @@ case class CTERelationRef(name: String, outputColumns: Seq[Attribute], nodeLocat
       name
     else
       "T"
+  }
+  override def toString: String = {
+    s"CTERelationRef[${name}](${outputColumns.mkString(", ")})"
   }
   override def outputAttributes: Seq[Attribute] = outputColumns
 }
