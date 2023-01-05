@@ -17,7 +17,7 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http._
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{Http, HttpMethod, HttpStatus, ServerAddress}
+import wvlet.airframe.http.{Http, HttpMethod, HttpServerException, HttpStatus, ServerAddress}
 import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.log.LogSupport
 
@@ -79,10 +79,14 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
         val nettyResponse = toNettyResponse(v.asInstanceOf[Response])
         writeResponse(msg, ctx, nettyResponse)
       case OnError(ex) =>
-        val resp = new DefaultHttpResponse(
-          HttpVersion.HTTP_1_1,
-          HttpResponseStatus.valueOf(HttpStatus.InternalServerError_500.code)
-        )
+        val resp = ex match {
+          case ex: HttpServerException => toNettyResponse(ex.toResponse)
+          case _ =>
+            new DefaultHttpResponse(
+              HttpVersion.HTTP_1_1,
+              HttpResponseStatus.valueOf(HttpStatus.InternalServerError_500.code)
+            )
+        }
         writeResponse(msg, ctx, resp)
       case OnCompletion =>
     }
