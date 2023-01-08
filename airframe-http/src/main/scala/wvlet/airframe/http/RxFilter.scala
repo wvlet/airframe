@@ -19,9 +19,9 @@ import wvlet.airframe.rx.Rx
 import scala.util.control.NonFatal
 
 /**
-  * [[RxContext]] is a service interface for processing request and returning `Rx[Response]`.
+  * [[RxService]] is a service interface for processing request and returning `Rx[Response]`.
   */
-trait RxContext {
+trait RxService {
   private[http] def backend: RxHttpBackend
 
   /**
@@ -46,7 +46,7 @@ trait RxContext {
 }
 
 /**
-  * An [[RxFilter]] is a filter for receiving the response from the context service via `context.apply(request)`, and
+  * An [[RxFilter]] is a filter for receiving the response from the service via `service.apply(request)`, and
   * transforming it into another `Rx[Response]`.
   */
 trait RxFilter {
@@ -54,10 +54,10 @@ trait RxFilter {
   /**
     * Implement this method to create your own filter.
     * @param request
-    * @param context
+    * @param service
     * @return
     */
-  def apply(request: Request, context: RxContext): Rx[Response]
+  def apply(request: Request, service: RxService): Rx[Response]
 
   /**
     * Chain to the next filter.
@@ -70,17 +70,17 @@ trait RxFilter {
 
   /**
     * Terminates the filter at the context.
-    * @param context
+    * @param service
     * @return
     */
-  def andThen(context: RxContext): RxContext = {
-    new RxFilter.FilterAndThenContext(this, context)
+  def andThen(service: RxService): RxService = {
+    new RxFilter.FilterAndThenService(this, service)
   }
 }
 
 object RxFilter {
 
-  private class FilterAndThenContext(filter: RxFilter, context: RxContext) extends RxContext {
+  private class FilterAndThenService(filter: RxFilter, context: RxService) extends RxService {
     override def backend: RxHttpBackend = context.backend
     override def apply(request: Request): Rx[Response] = {
       try {
@@ -92,9 +92,9 @@ object RxFilter {
   }
 
   private class AndThen(prev: RxFilter, next: RxFilter) extends RxFilter {
-    override def apply(request: Request, context: RxContext): Rx[Response] = {
+    override def apply(request: Request, service: RxService): Rx[Response] = {
       try {
-        prev.apply(request, next.andThen(context))
+        prev.apply(request, next.andThen(service))
       } catch {
         case NonFatal(e) => Rx.exception(e)
       }
