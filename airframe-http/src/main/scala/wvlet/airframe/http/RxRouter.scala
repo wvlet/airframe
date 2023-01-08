@@ -13,53 +13,107 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.surface.TypeName.sanitizeTypeName
 import wvlet.airframe.surface.{MethodSurface, Surface}
 
 case class RxFilterDef(filter: RxFilter, filterSurface: Surface) {
-  def name: String = filterSurface.rawType.getClass.getSimpleName
+  def name: String = sanitizeTypeName(filterSurface.rawType.getClass.getSimpleName)
 }
 
-case class RxRouter(
-    parent: Option[RxRouter] = None,
-    controllerSurface: Option[Surface] = None,
-    methodSurfaces: Seq[MethodSurface] = Seq.empty,
-    siblings: Seq[RxRouter] = Seq.empty,
-    filter: Option[RxFilterDef] = None
-) extends RxRouterBase {
+sealed trait RxRouter {
+  def name: String
+  def parent: Option[RxRouter]
+  def isLeaf: Boolean
+  def isNode: Boolean
 
-  def withParent(parent: RxRouter): RxRouter = {
-    this.copy(parent = Some(parent))
-  }
-
-  def name: String = {
-    controllerSurface
-      .orElse(filter.map(_.name))
-      .getOrElse(f"${hashCode()}%x")
-      .toString
-  }
-
-  def andThen(next: RxRouter): RxRouter = {
-    siblings.size match {
-      case s if s <= 1 =>
-        next.withParent(this)
-      case other =>
-        throw new IllegalStateException(
-          s"Cannot add child router ${next.name} to ${this.name} if it already has multiple siblings"
-        )
+  def withParent(parent: RxRouter): RxRouter
+  def root: RxRouter = {
+    parent match {
+      case Some(p) => p.root
+      case None    => this
     }
   }
 
-  def add(router: RxRouter): RxRouter = {
-    this.copy(siblings = siblings :+ router.withParent(this))
-  }
-
-  def addInternal(controllerSurface: Surface, methodSurfaces: Seq[MethodSurface]): RxRouter = {
-    add(RxRouter(None, Some(controllerSurface), methodSurfaces))
-  }
 }
 
+
+//  /**
+//    * Chain a router and return the context router
+//    * @param next
+//    * @return
+//    */
+//  def andThen(next: RxRouter): RxRouter = {
+//    siblings.size match {
+//      case s if s <= 1 =>
+//        next.withParent(this)
+//      case other =>
+//        throw new IllegalStateException(
+//          s"Cannot add child router ${next.name} to ${this.name} if it already has multiple siblings"
+//        )
+//    }
+//  }
+//
+//  def add(router: RxRouter): RxRouter = {
+//    this.copy(siblings = siblings :+ router.withParent(this))
+//  }
+//
+//  def addInternal(controllerSurface: Surface, methodSurfaces: Seq[MethodSurface]): RxRouter = {
+//    add(RxRouter(None, Some(controllerSurface), methodSurfaces))
+//  }
+//}
+
 object RxRouter extends RxRouterObjectBase {
-  def empty: RxRouter = RxRouter(None)
+
+  case object EmptyNode extends RxRouter {
+    override def name: String = "empty"
+    override def withParent(parent: RxRouter): RxRouter = throw new UnsupportedOperationException(
+      "Adding parent to empty node is not supported"
+    )
+    override def parent: Option[RxRouter] = None
+    override def isLeaf: Boolean          = true
+    override def isNode: Boolean          = false
+  }
+
+  case class RxFilterNode(
+      override val parent: Option[RxRouter],
+      filterDef: RxFilterDef
+  ) extends RxRouter {
+
+    override def name: String = {
+      filterDef.name
+    }
+
+    override def withParent(parent: RxRouter): RxFilterNode = {
+      this.copy(parent = Some(parent))
+    }
+    override def isLeaf: Boolean         = false
+    override def isNode: Boolean         = true
+
+    def andThen(next: RxRouter): RxRouter = {
+      next.withParent(this)
+    }
+  }
+
+  case class RxRouterLeaf(
+      override val parent: Option[RxRouter],
+      controllerSurface: Surface,
+      methodSurfaces: Seq[MethodSurface],
+      override val siblings: Seq[RxRouter]
+  ) extends RxRouter {
+    override def name: String    = controllerSurface.name
+    override def isLeaf: Boolean = true
+    override def isNode: Boolean = false
+
+    def withSibling(sibling: RxRouter): RxRouterLeaf = {
+      this.copy(siblings = siblings :+ sibling.withParent(this))
+    }
+
+    def add(router: RxRouter): RxRouterLeaf = {
+      withSibling(router)
+    }
+  }
+
+  def empty: RxRouter = EmptyNode
 
   def merge(routers: RxRouter*): RxRouter = {
     routers.toSeq.reduce { (r1, r2) => r1.add(r2) }
