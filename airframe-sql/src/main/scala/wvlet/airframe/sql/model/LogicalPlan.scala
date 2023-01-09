@@ -495,6 +495,14 @@ object LogicalPlan {
       nodeLocation: Option[NodeLocation]
   ) extends UnaryRelation {
     override def sig(config: QuerySignatureConfig): String = child.sig(config)
+    override def toString: String = {
+      columnNames match {
+        case Some(columnNames) =>
+          s"AliasedRelation[${alias}](Select[${columnNames.mkString(", ")}](${child}))"
+        case None =>
+          s"AliasedRelation[${alias}](${child})"
+      }
+    }
 
     override def inputAttributes: Seq[Attribute] = child.inputAttributes
     override def outputAttributes: Seq[Attribute] = {
@@ -520,6 +528,7 @@ object LogicalPlan {
     override def sig(config: QuerySignatureConfig): String = {
       s"V[${rows.length}]"
     }
+    override def toString: String = s"Values(${rows.mkString(", ")})"
     override def outputAttributes: Seq[Attribute] = {
       val values = rows.map { row =>
         row match {
@@ -542,6 +551,7 @@ object LogicalPlan {
         "T"
       }
     }
+    override def toString: String                 = s"TableRef(${name})"
     override def outputAttributes: Seq[Attribute] = Nil
     override lazy val resolved: Boolean           = false
   }
@@ -554,24 +564,28 @@ object LogicalPlan {
   case class Distinct(child: Relation, nodeLocation: Option[NodeLocation]) extends UnaryRelation {
     override def sig(config: QuerySignatureConfig): String =
       s"E(${child.sig(config)})"
+    override def toString: String                 = s"Distinct(${child})"
     override def outputAttributes: Seq[Attribute] = child.outputAttributes
   }
 
   case class Sort(child: Relation, orderBy: Seq[SortItem], nodeLocation: Option[NodeLocation]) extends UnaryRelation {
     override def sig(config: QuerySignatureConfig): String =
       s"O[${orderBy.length}](${child.sig(config)})"
+    override def toString: String                 = s"Sort[${orderBy.mkString(", ")}](${child})"
     override def outputAttributes: Seq[Attribute] = child.outputAttributes
   }
 
   case class Limit(child: Relation, limit: LongLiteral, nodeLocation: Option[NodeLocation]) extends UnaryRelation {
     override def sig(config: QuerySignatureConfig): String =
       s"L(${child.sig(config)})"
+    override def toString: String                 = s"Limit[${limit.value}](${child})"
     override def outputAttributes: Seq[Attribute] = child.outputAttributes
   }
 
   case class Filter(child: Relation, filterExpr: Expression, nodeLocation: Option[NodeLocation]) extends UnaryRelation {
     override def sig(config: QuerySignatureConfig): String =
       s"F(${child.sig(config)})"
+    override def toString: String                 = s"Filter[${filterExpr}](${child})"
     override def outputAttributes: Seq[Attribute] = child.outputAttributes
   }
 
@@ -579,6 +593,7 @@ object LogicalPlan {
     // Need to override this method so as not to create duplicate case object instances
     override def copyInstance(newArgs: Seq[AnyRef]) = this
     override def sig(config: QuerySignatureConfig)  = ""
+    override def toString: String                   = s"EmptyRelation()"
     override def outputAttributes: Seq[Attribute]   = Nil
   }
 
@@ -596,6 +611,7 @@ object LogicalPlan {
         else s"${selectItems.length}"
       s"P[${proj}](${child.sig(config)})"
     }
+    override def toString: String = s"Project[${selectItems.mkString(", ")}](${child})"
 
     override def outputAttributes: Seq[Attribute] = {
       selectItems
@@ -618,7 +634,7 @@ object LogicalPlan {
     }
 
     override def toString =
-      s"Aggregate[${groupingKeys.mkString(",")}](Select[${selectItems.mkString(", ")}(${child})"
+      s"Aggregate[${groupingKeys.mkString(",")}](Select[${selectItems.mkString(", ")}](${child}))"
 
     override def outputAttributes: Seq[Attribute] = {
       selectItems
@@ -641,14 +657,20 @@ object LogicalPlan {
 
       s"W[${wq_s}](${body.sig(config)})"
     }
+
+    override def toString: String = s"Query(with:${withQuery}, body:${body})"
+
     override def inputAttributes: Seq[Attribute]  = body.inputAttributes
     override def outputAttributes: Seq[Attribute] = body.outputAttributes
   }
   case class With(recursive: Boolean, queries: Seq[WithQuery], nodeLocation: Option[NodeLocation]) extends LogicalPlan {
     override def sig(config: QuerySignatureConfig) = ""
-    override def children: Seq[LogicalPlan]        = queries
-    override def inputAttributes: Seq[Attribute]   = ???
-    override def outputAttributes: Seq[Attribute]  = ???
+    override def toString: String = {
+      s"With(recursive:${recursive}, ${queries.mkString(", ")})"
+    }
+    override def children: Seq[LogicalPlan]       = queries
+    override def inputAttributes: Seq[Attribute]  = ???
+    override def outputAttributes: Seq[Attribute] = ???
   }
   case class WithQuery(
       name: Identifier,
@@ -658,8 +680,16 @@ object LogicalPlan {
   ) extends LogicalPlan
       with UnaryPlan {
     override def sig(config: QuerySignatureConfig) = ""
-    override def child: LogicalPlan                = query
-    override def inputAttributes: Seq[Attribute]   = query.inputAttributes
+    override def toString: String = {
+      columnNames match {
+        case Some(columnNames) =>
+          s"WithQuery[${name}](Select[${columnNames.mkString(", ")}](${query}))"
+        case None =>
+          s"WithQuery[${name}](${query})"
+      }
+    }
+    override def child: LogicalPlan              = query
+    override def inputAttributes: Seq[Attribute] = query.inputAttributes
     override def outputAttributes: Seq[Attribute] = {
       columnNames match {
         case Some(aliases) =>
@@ -690,6 +720,7 @@ object LogicalPlan {
     override def sig(config: QuerySignatureConfig): String = {
       s"${joinType.symbol}(${left.sig(config)},${right.sig(config)})"
     }
+    override def toString: String = s"${joinType}[${cond}](left:${left}, right:${right})"
     override def inputAttributes: Seq[Attribute] = {
       left.outputAttributes ++ right.outputAttributes
     }
@@ -765,6 +796,9 @@ object LogicalPlan {
       nodeLocation: Option[NodeLocation]
   ) extends SetOperation {
     override def children: Seq[Relation] = relations
+    override def toString = {
+      s"Intersect(${relations.mkString(", ")})"
+    }
     override def sig(config: QuerySignatureConfig): String = {
       s"IX(${relations.map(_.sig(config)).mkString(",")})"
     }
@@ -774,6 +808,9 @@ object LogicalPlan {
 
   case class Except(left: Relation, right: Relation, nodeLocation: Option[NodeLocation]) extends SetOperation {
     override def children: Seq[Relation] = Seq(left, right)
+    override def toString = {
+      s"Except(${left}, ${right})"
+    }
     override def sig(config: QuerySignatureConfig): String = {
       s"EX(${left.sig(config)},${right.sig(config)})"
     }
@@ -812,6 +849,9 @@ object LogicalPlan {
     }
     override def sig(config: QuerySignatureConfig): String =
       s"Un[${columns.length}]"
+    override def toString = {
+      s"Unnest(withOrdinality:${withOrdinality}, ${columns.mkString(",")})"
+    }
   }
   case class Lateral(query: Relation, nodeLocation: Option[NodeLocation]) extends UnaryRelation {
     override def child: Relation = query

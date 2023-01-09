@@ -16,7 +16,7 @@ package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.catalog.DataType
 import wvlet.airframe.sql.catalog.DataType._
-import wvlet.airframe.sql.model.Expression.{AllColumns, MultiSourceColumn, SingleColumn}
+import wvlet.airframe.sql.model.Expression.{AllColumns, MultiSourceColumn}
 import wvlet.log.LogSupport
 
 import java.util.Locale
@@ -172,6 +172,7 @@ trait BinaryExpression extends Expression {
   def left: Expression
   def right: Expression
   override def children: Seq[Expression] = Seq(left, right)
+  override def toString: String          = s"${getClass.getSimpleName}(left:${left}, right:${right})"
 }
 
 /**
@@ -411,8 +412,10 @@ object Expression {
     override def toString = s"""Id("${value}")"""
   }
 
-  sealed trait JoinCriteria                                  extends Expression
-  case class NaturalJoin(nodeLocation: Option[NodeLocation]) extends JoinCriteria with LeafExpression
+  sealed trait JoinCriteria extends Expression
+  case class NaturalJoin(nodeLocation: Option[NodeLocation]) extends JoinCriteria with LeafExpression {
+    override def toString: String = "NaturalJoin"
+  }
   case class JoinUsing(columns: Seq[Identifier], nodeLocation: Option[NodeLocation]) extends JoinCriteria {
     override def children: Seq[Expression] = columns
     override def toString: String          = s"JoinUsing(${columns.mkString(",")})"
@@ -424,35 +427,19 @@ object Expression {
   }
   case class JoinOn(expr: Expression, nodeLocation: Option[NodeLocation]) extends JoinCriteria with UnaryExpression {
     override def child: Expression = expr
+    override def toString: String  = s"JoinOn(${expr})"
   }
 
   /**
     * Join condition used only when join keys are resolved
-    * @param leftKey
-    * @param rightKey
     */
   case class JoinOnEq(keys: Seq[Expression], nodeLocation: Option[NodeLocation])
       extends JoinCriteria
       with LeafExpression {
     require(keys.forall(_.resolved), s"all keys of JoinOnEq must be resolved: ${keys}")
 
-    /**
-      * Report duplicate name join keys, which can be excluded from the parent
-      * @return
-      */
-    def duplicateKeys: Seq[Expression] = {
-      // remove duplicate column names
-      var seen = Set.empty[String]
-      val uniqueNameKeys = keys.collect {
-        case r: ResolvedAttribute if !seen.contains(r.name) =>
-          seen += r.name
-          r
-      }
-      keys.collect {
-        case x if !uniqueNameKeys.contains(x) => x
-      }
-    }
     override def children: Seq[Expression] = keys
+    override def toString: String          = s"JoinOnEq(${keys.mkString(", ")})"
   }
 
   case class AllColumns(
@@ -541,7 +528,6 @@ object Expression {
     * An attribute that produces a single column value with a given expression.
     *
     * @param expr
-    * @param alias
     * @param qualifier
     * @param nodeLocation
     */
@@ -573,7 +559,7 @@ object Expression {
   /**
     * A single column merged from multiple input expressions (e.g., union, join)
     * @param inputs
-    * @param alias
+    * @param qualifier
     * @param nodeLocation
     */
   case class MultiSourceColumn(
@@ -626,6 +612,7 @@ object Expression {
   ) extends Expression
       with UnaryExpression {
     override def child: Expression = sortKey
+    override def toString: String  = s"SortItem(sortKey:${sortKey}, ordering:${ordering}, nullOrdering:${nullOrdering})"
   }
 
   // Sort ordering
@@ -655,6 +642,8 @@ object Expression {
       nodeLocation: Option[NodeLocation]
   ) extends Expression {
     override def children: Seq[Expression] = partitionBy ++ orderBy ++ frame.toSeq
+    override def toString: String =
+      s"Window(partitionBy:${partitionBy.mkString(", ")}, orderBy:${orderBy.mkString(", ")}, frame:${frame})"
   }
 
   sealed trait FrameType
@@ -771,24 +760,32 @@ object Expression {
   }
   case class IsNull(child: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with UnaryExpression
+      with UnaryExpression {
+    override def toString: String = s"IsNull(${child})"
+  }
   case class IsNotNull(child: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with UnaryExpression
+      with UnaryExpression {
+    override def toString: String = s"IsNotNull(${child})"
+  }
   case class In(a: Expression, list: Seq[Expression], nodeLocation: Option[NodeLocation])
       extends ConditionalExpression {
     override def children: Seq[Expression] = Seq(a) ++ list
+    override def toString: String          = s"In(${a} <in> [${list.mkString(", ")}])"
   }
   case class NotIn(a: Expression, list: Seq[Expression], nodeLocation: Option[NodeLocation])
       extends ConditionalExpression {
     override def children: Seq[Expression] = Seq(a) ++ list
+    override def toString: String          = s"NotIn(${a} <not in> [${list.mkString(", ")}])"
   }
   case class InSubQuery(a: Expression, in: Relation, nodeLocation: Option[NodeLocation]) extends ConditionalExpression {
     override def children: Seq[Expression] = Seq(a) ++ in.childExpressions
+    override def toString: String          = s"InSubQuery(${a} <in> ${in})"
   }
   case class NotInSubQuery(a: Expression, in: Relation, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression {
     override def children: Seq[Expression] = Seq(a) ++ in.childExpressions
+    override def toString: String          = s"NotInSubQuery(${a} <not in> ${in})"
   }
   case class Like(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
@@ -856,6 +853,9 @@ object Expression {
         DataType.UnknownType
       }
     }
+    override def toString: String = {
+      s"${exprType}(left:$left, right:$right)"
+    }
   }
   case class ArithmeticUnaryExpr(sign: Sign, child: Expression, nodeLocation: Option[NodeLocation])
       extends ArithmeticExpression
@@ -868,6 +868,7 @@ object Expression {
   // Set quantifier
   sealed trait SetQuantifier extends LeafExpression {
     def isDistinct: Boolean
+    override def toString: String = getClass.getSimpleName
   }
   case class All(nodeLocation: Option[NodeLocation]) extends SetQuantifier {
     override def isDistinct: Boolean = false
@@ -999,6 +1000,7 @@ object Expression {
       ArrayType(elementType)
     }
     override def children: Seq[Expression] = values
+    override def toString: String          = s"Array(${values.mkString(", ")})"
   }
 
   case class RowConstructor(values: Seq[Expression], nodeLocation: Option[NodeLocation]) extends Expression {
@@ -1006,6 +1008,7 @@ object Expression {
       EmbeddedRecordType(values.map(_.dataType))
     }
     override def children: Seq[Expression] = values
+    override def toString: String          = s"Row(${values.mkString(", ")})"
   }
 
   abstract sealed class CurrentTimeBase(name: String, precision: Option[Int]) extends LeafExpression
@@ -1049,5 +1052,7 @@ object Expression {
   }
 
   // Aggregation
-  case class GroupingKey(child: Expression, nodeLocation: Option[NodeLocation]) extends UnaryExpression
+  case class GroupingKey(child: Expression, nodeLocation: Option[NodeLocation]) extends UnaryExpression {
+    override def toString: String = s"GroupingKey($child)"
+  }
 }
