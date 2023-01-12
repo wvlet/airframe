@@ -255,15 +255,17 @@ object TypeResolver extends LogSupport {
       case j @ Join(joinType, left, right, u @ JoinOn(Eq(leftKey, rightKey, _), _), _) =>
         val resolvedJoin =
           Join(joinType, resolveRelation(context, left), resolveRelation(context, right), u, j.nodeLocation)
-        val resolvedJoinKeys: Seq[Expression] = Seq(leftKey, rightKey).flatMap { k =>
-          findMatchInInputAttributes(context, k, resolvedJoin.inputAttributes) match {
-            case Nil =>
-              throw SQLErrorCode.ColumnNotFound.newException(
-                s"join key column: ${k.sqlExpr} is not found",
-                k.nodeLocation
-              )
-            case other =>
-              other
+        val resolvedJoinKeys: Seq[Expression] = Seq(leftKey, rightKey).map { k =>
+          k.transformUpExpression { expr =>
+            findMatchInInputAttributes(context, expr, resolvedJoin.inputAttributes) match {
+              case Nil =>
+                throw SQLErrorCode.ColumnNotFound.newException(
+                  s"join key column: ${k.sqlExpr} is not found",
+                  k.nodeLocation
+                )
+              case other =>
+                other.head
+            }
           }
         }
         val updated = resolvedJoin.withCond(JoinOnEq(resolvedJoinKeys, u.expr.nodeLocation))
