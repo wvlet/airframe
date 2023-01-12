@@ -550,6 +550,16 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
         c3 shouldBe rc1.withQualifier("C")
       }
     }
+
+    test("j9: join on with function") {
+      val p = analyze("select A.id from A join B on A.id = substr(B.id, 0, 2)")
+      p shouldMatch { case Project(Join(_, _, _, JoinOnEq(Seq(c1, c2), _), _), _, _) =>
+        c1 shouldBe ra1.withQualifier("A")
+        c2 shouldMatch { case FunctionCall("substr", args, false, None, None, _) =>
+          args(0) shouldBe rb1.withQualifier("B")
+        }
+      }
+    }
   }
 
   test("resolve UDF inputs") {
