@@ -264,6 +264,12 @@ object TypeResolver extends LogSupport {
                   k.nodeLocation
                 )
               case other =>
+                if (other.size > 1) {
+                  throw SQLErrorCode.SyntaxError.newException(
+                    s"ambiguous join condition: ${expr} matches with [${other.mkString(", ")}]",
+                    k.nodeLocation
+                  )
+                }
                 other.head
             }
           }
