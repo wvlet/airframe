@@ -52,6 +52,50 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     primaryConstructor.newInstance(args.toArray[AnyRef]: _*).asInstanceOf[Expression]
   }
 
+  def transformPlan(rule: PartialFunction[LogicalPlan, LogicalPlan]): Expression = {
+    def recursiveTransform(arg: Any): AnyRef = {
+      arg match {
+        case e: Expression  => e.transformPlan(rule)
+        case l: LogicalPlan => l.transform(rule)
+        case Some(x)        => Some(recursiveTransform(x))
+        case s: Seq[_]      => s.map(recursiveTransform _)
+        case other: AnyRef  => other
+        case null           => null
+      }
+    }
+
+    val newArgs = productIterator.map(recursiveTransform)
+    createInstance(newArgs)
+  }
+
+  def traversePlan[U](rule: PartialFunction[LogicalPlan, U]): Unit = {
+    def recursiveTraverse(arg: Any): Unit = {
+      arg match {
+        case e: Expression  => e.traversePlan(rule)
+        case l: LogicalPlan => l.traverse(rule)
+        case Some(x)        => Some(recursiveTraverse(x))
+        case s: Seq[_]      => s.map(recursiveTraverse _)
+        case other: AnyRef  =>
+        case null           =>
+      }
+    }
+    productIterator.foreach(recursiveTraverse)
+  }
+
+  def traversePlanOnce[U](rule: PartialFunction[LogicalPlan, U]): Unit = {
+    def recursiveTraverse(arg: Any): Unit = {
+      arg match {
+        case e: Expression  => e.traversePlanOnce(rule)
+        case l: LogicalPlan => l.traverseOnce(rule)
+        case Some(x)        => Some(recursiveTraverse(x))
+        case s: Seq[_]      => s.map(recursiveTraverse _)
+        case other: AnyRef  =>
+        case null           =>
+      }
+    }
+    productIterator.foreach(recursiveTraverse)
+  }
+
   /**
     * Recursively transform the expression in breadth-first order
     * @param rule

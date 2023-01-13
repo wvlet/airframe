@@ -60,7 +60,15 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     var changed = false
     def transformElement(arg: Any): AnyRef =
       arg match {
-        case e: Expression => e
+        case e: Expression => {
+          val newExpr = e.transformPlan { case x =>
+            f(x)
+          }
+          if (!newExpr.eq(e)) {
+            changed = true
+          }
+          newExpr
+        }
         case l: LogicalPlan => {
           val newPlan = f(l)
           if (!newPlan.eq(l)) {
@@ -85,7 +93,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   private def recursiveTraverse[U](f: PartialFunction[LogicalPlan, U])(arg: Any): Unit = {
     def loop(v: Any): Unit = {
       v match {
-        case e: Expression =>
+        case e: Expression => e.traversePlan(f)
         case l: LogicalPlan => {
           if (f.isDefinedAt(l)) {
             f.apply(l)
@@ -122,7 +130,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   private def recursiveTraverseOnce[U](f: PartialFunction[LogicalPlan, U])(arg: Any): Unit = {
     def loop(v: Any): Unit = {
       v match {
-        case e: Expression =>
+        case e: Expression => e.traversePlanOnce(f)
         case l: LogicalPlan => {
           if (f.isDefinedAt(l)) {
             f.apply(l)
@@ -207,7 +215,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   def transformChildren(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
     var changed = false
 
-    def recursiveTransform(arg: Any): AnyRef =
+    def transformElement(arg: Any): AnyRef =
       arg match {
         case e: Expression => e
         case l: LogicalPlan => {
@@ -217,13 +225,13 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
           }
           newPlan
         }
-        case Some(x)       => Some(recursiveTransform(x))
-        case s: Seq[_]     => s.map(recursiveTransform _)
+        case Some(x)       => Some(transformElement(x))
+        case s: Seq[_]     => s.map(transformElement _)
         case other: AnyRef => other
         case null          => null
       }
 
-    val newArgs = productIterator.map(recursiveTransform).toIndexedSeq
+    val newArgs = productIterator.map(transformElement).toIndexedSeq
     if (changed) {
       copyInstance(newArgs)
     } else {

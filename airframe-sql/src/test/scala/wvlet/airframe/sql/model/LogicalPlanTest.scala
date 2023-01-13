@@ -158,4 +158,21 @@ class LogicalPlanTest extends AirSpec {
       case s: Attribute if s.alias == Some("x0") => true
     }.nonEmpty shouldBe true
   }
+
+  test("Transform in-expression sub-query") {
+    val l     = SQLParser.parse("select * from x where id in (select id from y limit 1)")
+    var found = false
+    l.traverse { case l: Limit =>
+      found = true
+    }
+    found shouldBe true
+
+    val newPlan = l.transform { case l: Limit =>
+      l.child
+    }
+
+    newPlan.traverse { case l: Limit =>
+      fail(s"Should not have limit")
+    }
+  }
 }
