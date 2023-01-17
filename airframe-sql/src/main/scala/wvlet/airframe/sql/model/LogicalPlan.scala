@@ -771,7 +771,7 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = mergeOutputAttributes
     protected def mergeOutputAttributes: Seq[Attribute] = {
       // Collect all input attributes
-      val outputAttributes: Seq[Seq[Attribute]] = children.flatMap(_.outputAttributes.map(_.inputColumns))
+      val outputAttributes: Seq[Seq[Attribute]] = children.map(_.outputAttributes.flatMap(_.inputColumns))
 
       // Transpose a set of relation columns into a list of same columns
       // relations: (Ra(a1, a2, ...), Rb(b1, b2, ...))

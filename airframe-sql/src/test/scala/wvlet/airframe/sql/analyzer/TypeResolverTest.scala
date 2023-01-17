@@ -245,7 +245,16 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
               _,
               _
             ) =>
+      }
+    }
 
+    test("resolve multiple columns from union") {
+      val p = analyze("select id, name from (select id, name from A union all select id, name from B)")
+      p.outputAttributes shouldMatch {
+        case Seq(
+              MultiSourceColumn(Seq(`ra1`, `rb1`), None, _),
+              MultiSourceColumn(Seq(`ra2`, `rb2`), None, _)
+            ) =>
       }
     }
 
