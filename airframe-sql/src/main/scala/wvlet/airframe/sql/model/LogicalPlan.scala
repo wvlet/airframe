@@ -739,7 +739,7 @@ object LogicalPlan {
           val joinKeys = ju.keys
           val otherAttributes = inputAttributes
             // Expand AllColumns here
-            .flatMap(_.inputColumns)
+            .flatMap(_.outputColumns)
             .filter { x =>
               !joinKeys.exists(jk => jk.name == x.name)
             }
