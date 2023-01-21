@@ -83,7 +83,8 @@ case class ResolvedAttribute(
   override def withQualifier(newQualifier: Option[String]): Attribute = {
     this.copy(qualifier = newQualifier)
   }
-  override def inputColumns: Seq[Attribute] = Seq(this)
+  override def inputColumns: Seq[Attribute]  = Seq(this)
+  override def outputColumns: Seq[Attribute] = inputColumns
 
   override def toString = {
     sourceColumn match {

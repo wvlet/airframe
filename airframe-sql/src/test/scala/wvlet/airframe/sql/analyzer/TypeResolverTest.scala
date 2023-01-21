@@ -945,4 +945,8 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       k2.fullName shouldBe "t2.id"
     }
   }
+
+  test("resolve a join key propagated through select *") {
+    val p = analyze("select id from A join (select * from B) using(id)")
+  }
 }

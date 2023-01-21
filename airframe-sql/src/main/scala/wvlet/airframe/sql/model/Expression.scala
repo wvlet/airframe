@@ -295,10 +295,14 @@ trait Attribute extends LeafExpression with LogSupport {
   }
 
   /**
-    * Sub Attributes used to generate this Attribute
-    * @return
+    * Return columns used for generating this attribute
     */
   def inputColumns: Seq[Attribute]
+
+  /**
+    * Return columns generated from this attribute
+    */
+  def outputColumns: Seq[Attribute]
 
   /**
     * Return true if this Attribute matches with a given column path
@@ -423,6 +427,7 @@ object Expression {
       this.copy(qualifier = newQualifier)
     }
     override def inputColumns: Seq[Attribute]     = Seq.empty
+    override def outputColumns: Seq[Attribute]    = Seq.empty
     override def sourceColumns: Seq[SourceColumn] = Seq.empty
 
   }
@@ -509,6 +514,7 @@ object Expression {
         case None => Nil
       }
     }
+    override def outputColumns: Seq[Attribute] = inputColumns
 
     override def dataType: DataType = {
       columns
@@ -544,8 +550,10 @@ object Expression {
       expr: Expression,
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
-    override def inputColumns: Seq[Attribute] = Seq(this)
-    override def children: Seq[Expression]    = Seq(expr)
+    override def inputColumns: Seq[Attribute]  = Seq(this)
+    override def outputColumns: Seq[Attribute] = inputColumns
+
+    override def children: Seq[Expression] = Seq(expr)
 
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
@@ -583,9 +591,11 @@ object Expression {
     override def name: String       = expr.attributeName
     override def dataType: DataType = expr.dataType
 
-    override def inputColumns: Seq[Attribute] = Seq(this)
-    override def children: Seq[Expression]    = Seq(expr)
-    override def toString                     = s"${fullName}:${dataTypeName} := ${expr}"
+    override def inputColumns: Seq[Attribute]  = Seq(this)
+    override def outputColumns: Seq[Attribute] = inputColumns
+
+    override def children: Seq[Expression] = Seq(expr)
+    override def toString                  = s"${fullName}:${dataTypeName} := ${expr}"
 
     override def sqlExpr: String = expr.sqlExpr
     override def withQualifier(newQualifier: Option[String]): Attribute = {
@@ -622,6 +632,8 @@ object Expression {
           SingleColumn(e, qualifier, e.nodeLocation)
       }
     }
+    override def outputColumns: Seq[Attribute] = Seq(this)
+
     override def children: Seq[Expression] = {
       // MultiSourceColumn is a reference to the multiple columns. Do not traverse here
       Seq.empty

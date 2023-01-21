@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.analyzer
-import wvlet.airframe.sql.SQLErrorCode
+import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airframe.sql.analyzer.RewriteRule.PlanRewriter
 import wvlet.airframe.sql.model.Expression._
 import wvlet.airframe.sql.model.LogicalPlan._
@@ -51,7 +51,13 @@ object TypeResolver extends LogSupport {
   ): LogicalPlan = {
     val resolvedPlan = rules
       .foldLeft(plan) { (targetPlan, rule) =>
-        rule.transform(targetPlan, analyzerContext)
+        try {
+          rule.transform(targetPlan, analyzerContext)
+        } catch {
+          case e: SQLError =>
+            debug(s"Failed to resolve with: ${rule.name}\n${targetPlan.pp}")
+            throw e
+        }
       }
     resolvedPlan
   }
@@ -471,7 +477,10 @@ object TypeResolver extends LogSupport {
     findMatchInInputAttributes(context, expr, inputAttributes) match {
       case lst if lst.length > 1 =>
         trace(s"${expr} is ambiguous in ${lst}")
-        throw SQLErrorCode.SyntaxError.newException(s"${expr.sqlExpr} is ambiguous", expr.nodeLocation)
+        throw SQLErrorCode.SyntaxError.newException(
+          s"${expr.sqlExpr} is ambiguous:\n- ${lst.mkString("\n- ")}",
+          expr.nodeLocation
+        )
       case lst =>
         lst.headOption.getOrElse(expr)
     }
