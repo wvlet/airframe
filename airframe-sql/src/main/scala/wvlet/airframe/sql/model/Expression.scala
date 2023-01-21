@@ -295,8 +295,7 @@ trait Attribute extends LeafExpression with LogSupport {
   }
 
   /**
-    * Sub Attributes used to generate this Attribute
-    * @return
+    * Return columns generated from this Attribute
     */
   def inputColumns: Seq[Attribute]
 
