@@ -569,6 +569,13 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
         }
       }
     }
+
+    test("self-join with USING") {
+      val p = analyze("select * from A join A using(id)")
+      p.outputAttributes shouldMatch { case Seq(a @ AllColumns(None, Some(columns), _)) =>
+        columns shouldBe Seq(MultiSourceColumn(Seq(ra1, ra1), None, None), ra2, ra2)
+      }
+    }
   }
 
   test("resolve UDF inputs") {
