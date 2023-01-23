@@ -441,9 +441,9 @@ object TypeResolver extends LogSupport {
 
     val results = expr match {
       case i: Identifier =>
-        lookup(i.value).map(toResolvedAttribute(i.value, _)).distinct
+        lookup(i.value).map(toResolvedAttribute(i.value, _))
       case u @ UnresolvedAttribute(qualifier, name, _) =>
-        lookup(u.fullName).map(toResolvedAttribute(name, _).setQualifierIfEmpty(qualifier)).distinct
+        lookup(u.fullName).map(toResolvedAttribute(name, _).setQualifierIfEmpty(qualifier))
       case a @ AllColumns(_, None, _) =>
         // Resolve the inputs of AllColumn as ResolvedAttribute
         // so as not to pull up too much details
