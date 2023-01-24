@@ -409,7 +409,6 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   }
 
   override def visitExpression(ctx: ExpressionContext): Expression = {
-    trace(s"expr: ${print(ctx)}")
     val b: BooleanExpressionContext = ctx.booleanExpression()
     b match {
       case lb: LogicalBinaryContext =>
