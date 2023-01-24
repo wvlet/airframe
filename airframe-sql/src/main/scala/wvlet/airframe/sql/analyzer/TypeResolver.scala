@@ -343,7 +343,7 @@ object TypeResolver extends LogSupport {
       case s @ SingleColumn(expr, qualifier, nodeLocation) =>
         resolveExpression(context, expr, inputAttributes) match {
           case a: Attribute =>
-            resolvedColumns += a.setQualifierIfEmpty(qualifier)
+            resolvedColumns += a.withQualifier(qualifier)
           case resolved =>
             resolvedColumns += s.copy(expr = resolved)
         }
@@ -445,7 +445,7 @@ object TypeResolver extends LogSupport {
       case i: Identifier =>
         lookup(i.value).map(toResolvedAttribute(i.value, _))
       case u @ UnresolvedAttribute(qualifier, name, _) =>
-        lookup(u.fullName).map(toResolvedAttribute(name, _).setQualifierIfEmpty(qualifier))
+        lookup(u.fullName).map(toResolvedAttribute(name, _).withQualifier(qualifier))
       case a @ AllColumns(_, None, _) =>
         // Resolve the inputs of AllColumn as ResolvedAttribute
         // so as not to pull up too much details

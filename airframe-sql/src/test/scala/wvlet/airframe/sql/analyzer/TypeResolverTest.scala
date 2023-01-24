@@ -867,15 +867,15 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
   }
 
   test("resolve UNNEST") {
-    test("resolve UNNEST array column") {
+    test("un1: resolve UNNEST array column") {
       val p = analyze("SELECT id, n FROM A CROSS JOIN UNNEST (name) AS t (n)")
       p.outputAttributes shouldMatch { case List(c1: Attribute, c2: Attribute) =>
         c1.fullName shouldBe "id"
-        c2.fullName shouldBe "t.n"
+        c2.fullName shouldBe "n"
       }
     }
 
-    test("resolve UNNEST array") {
+    test("un2: resolve UNNEST array") {
       val p = analyze("""SELECT id, t.key, t.value FROM A
           |CROSS JOIN UNNEST (
           |  array['c1', 'c2', 'c3'],
@@ -956,5 +956,14 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
 
   test("resolve a join key propagated through select *") {
     val p = analyze("select id from A join (select * from B) using(id)")
+  }
+
+  test("resolve join with select *") {
+    val p = analyze("""select id from (
+                      |  select * from
+                      |    (select id from A) t1 join
+                      |    (select name from B) t2
+                      |    on t1.id = t2.name
+                      |)""".stripMargin)
   }
 }
