@@ -420,7 +420,7 @@ object Expression {
       name: String,
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
-    override def toString: String = s"UnresolvedAttribute(${qualifier}, ${fullName})"
+    override def toString: String = s"UnresolvedAttribute(${fullName})"
     override def sqlExpr: String  = name
     override lazy val resolved    = false
     override def withQualifier(newQualifier: Option[String]): UnresolvedAttribute = {
