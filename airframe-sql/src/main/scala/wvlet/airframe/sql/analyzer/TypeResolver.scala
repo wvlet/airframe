@@ -94,6 +94,8 @@ object TypeResolver extends LogSupport {
             val keyItem = resolveIndex(i.toInt - 1, selectItems)
             changed = true
             ResolvedGroupingKey(Some(i.toInt), keyItem, k.nodeLocation)
+          case r: ResolvedGroupingKey =>
+            r
           case other =>
             ResolvedGroupingKey(None, other.child, other.nodeLocation)
         }
@@ -129,10 +131,10 @@ object TypeResolver extends LogSupport {
         val resolvedChild       = resolveRelation(context, child)
         val resolvedSelectItems = resolveOutputColumns(context, resolvedChild.outputAttributes, selectItems)
         val resolvedGroupingKeys =
-          groupingKeys.map(x => {
-            val e = resolveExpression(context, x.child, resolvedSelectItems)
-            ResolvedGroupingKey(x.index, e, e.nodeLocation)
-          })
+          groupingKeys.map { k =>
+            val e = resolveExpression(context, k.child, resolvedSelectItems)
+            ResolvedGroupingKey(k.index, e, e.nodeLocation)
+          }
         val resolvedHaving = having.map {
           _.transformUpExpression { case x: Expression =>
             // Having recognize attributes only from the input relation
