@@ -269,7 +269,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
             .asScala
             .map { x =>
               val e = expression(x)
-              GroupingKey(e, e.nodeLocation)
+              UnresolvedGroupingKey(e, e.nodeLocation)
             }
             .toList
 

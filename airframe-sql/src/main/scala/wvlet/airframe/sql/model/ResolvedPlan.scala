@@ -15,7 +15,7 @@ package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.analyzer.QuerySignatureConfig
 import wvlet.airframe.sql.catalog.{Catalog, DataType}
-import wvlet.airframe.sql.model.Expression.Identifier
+import wvlet.airframe.sql.model.Expression.GroupingKey
 import wvlet.airframe.sql.model.LogicalPlan.Relation
 import wvlet.log.LogSupport
 
@@ -119,4 +119,10 @@ case class CTERelationRef(name: String, outputColumns: Seq[Attribute], nodeLocat
     s"CTERelationRef[${name}](${outputColumns.mkString(", ")})"
   }
   override def outputAttributes: Seq[Attribute] = outputColumns
+}
+
+case class ResolvedGroupingKey(index: Option[Int], child: Expression, nodeLocation: Option[NodeLocation])
+    extends GroupingKey {
+  override def toString: String       = s"ResolvedGroupingKey(${index.map(i => s"${i}:").getOrElse("")}${child})"
+  override lazy val resolved: Boolean = true
 }
