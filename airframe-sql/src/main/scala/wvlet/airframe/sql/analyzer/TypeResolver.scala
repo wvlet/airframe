@@ -89,13 +89,15 @@ object TypeResolver extends LogSupport {
       case a @ Aggregate(child, selectItems, groupingKeys, having, _) =>
         var changed = false
         val resolvedGroupingKeys: List[GroupingKey] = groupingKeys.map {
-          case k @ GroupingKey(LongLiteral(i, _), _) if i <= selectItems.length =>
+          case k @ UnresolvedGroupingKey(LongLiteral(i, _), _) if i <= selectItems.length =>
             // Use a simpler form of attributes
             val keyItem = resolveIndex(i.toInt - 1, selectItems)
             changed = true
-            GroupingKey(keyItem, k.nodeLocation)
+            ResolvedGroupingKey(Some(i.toInt), keyItem, k.nodeLocation)
+          case r: ResolvedGroupingKey =>
+            r
           case other =>
-            other
+            ResolvedGroupingKey(None, other.child, other.nodeLocation)
         }
         if (changed) {
           Aggregate(child, selectItems, resolvedGroupingKeys, having, a.nodeLocation)
@@ -129,10 +131,10 @@ object TypeResolver extends LogSupport {
         val resolvedChild       = resolveRelation(context, child)
         val resolvedSelectItems = resolveOutputColumns(context, resolvedChild.outputAttributes, selectItems)
         val resolvedGroupingKeys =
-          groupingKeys.map(x => {
-            val e = resolveExpression(context, x.child, resolvedSelectItems)
-            GroupingKey(e, e.nodeLocation)
-          })
+          groupingKeys.map { k =>
+            val e = resolveExpression(context, k.child, resolvedSelectItems)
+            ResolvedGroupingKey(k.index, e, e.nodeLocation)
+          }
         val resolvedHaving = having.map {
           _.transformUpExpression { case x: Expression =>
             // Having recognize attributes only from the input relation

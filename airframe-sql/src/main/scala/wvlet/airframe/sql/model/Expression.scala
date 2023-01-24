@@ -1108,7 +1108,21 @@ object Expression {
   }
 
   // Aggregation
-  case class GroupingKey(child: Expression, nodeLocation: Option[NodeLocation]) extends UnaryExpression {
-    override def toString: String = s"GroupingKey($child)"
+  trait GroupingKey extends UnaryExpression {
+    def index: Option[Int]
+    def child: Expression
+    override def sqlExpr: String = {
+      index match {
+        case Some(i) => s"${i}"
+        case _       => child.sqlExpr
+      }
+    }
   }
+
+  case class UnresolvedGroupingKey(child: Expression, nodeLocation: Option[NodeLocation]) extends GroupingKey {
+    override def index: Option[Int]     = None
+    override def toString: String       = s"GroupingKey(${index.map(i => s"${i}:").getOrElse("")}${child})"
+    override lazy val resolved: Boolean = false
+  }
+
 }

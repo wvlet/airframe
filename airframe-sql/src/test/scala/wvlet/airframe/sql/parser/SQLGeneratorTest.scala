@@ -157,4 +157,12 @@ class SQLGeneratorTest extends AirSpec {
     val sql = SQLGenerator.print(resolvedPlan).toLowerCase
     sql shouldBe "select country from (select * from a join b using (id))"
   }
+
+  test("preserve aggregate indexes") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze("select id, country, count(*) from A group by 1, 2", "default", demoCatalog)
+    val sql = SQLGenerator.print(resolvedPlan).toLowerCase
+    sql shouldBe "select id, country, count(*) from a group by 1, 2"
+  }
+
 }

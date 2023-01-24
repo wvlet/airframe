@@ -280,34 +280,34 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
   test("resolve aggregation queries") {
     test("group by column name") {
       val p = analyze("select id, count(*) from A group by id")
-      p shouldMatch { case Aggregate(_, _, List(GroupingKey(`ra1`, _)), _, _) =>
+      p shouldMatch { case Aggregate(_, _, List(ResolvedGroupingKey(None, `ra1`, _)), _, _) =>
         ()
       }
     }
 
     test("group by index") {
       val p = analyze("select id, count(*) from A group by 1")
-      p shouldMatch { case Aggregate(_, _, List(GroupingKey(c, _)), _, _) =>
+      p shouldMatch { case Aggregate(_, _, List(ResolvedGroupingKey(Some(1), c, _)), _, _) =>
         c shouldBe ra1.copy(nodeLocation = c.nodeLocation)
       }
     }
 
     test("group by index with select *") {
       val p = analyze("select *, count(*) from (select id from A) group by 1")
-      p shouldMatch { case Aggregate(_, _, List(GroupingKey(c, _)), _, _) =>
+      p shouldMatch { case Aggregate(_, _, List(ResolvedGroupingKey(Some(1), c, _)), _, _) =>
         c shouldBe ra1.copy(nodeLocation = c.nodeLocation)
       }
     }
 
     test("group by index of column with alias") {
       val p = analyze("select id as i, count(*) from A group by 1")
-      p shouldMatch { case Aggregate(_, _, List(GroupingKey(SingleColumn(`ra1`, _, _), _)), _, _) =>
+      p shouldMatch { case Aggregate(_, _, List(ResolvedGroupingKey(Some(1), SingleColumn(`ra1`, _, _), _)), _, _) =>
       }
     }
 
     test("group by index of expression") {
       val p = analyze("select substr(name, 1, 2), count(*) from A group by 1")
-      p shouldMatch { case Aggregate(_, _, List(GroupingKey(c, _)), _, _) =>
+      p shouldMatch { case Aggregate(_, _, List(ResolvedGroupingKey(Some(1), c, _)), _, _) =>
         c shouldMatch { case f: FunctionCall =>
           f.name shouldBe "substr"
           f.args.head shouldBe ra2
@@ -317,9 +317,10 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
 
     test("group by multiple keys") {
       val p = analyze("select id, name, count(*) from A group by 1, 2")
-      p shouldMatch { case Aggregate(_, _, List(GroupingKey(c1, _), GroupingKey(c2, _)), _, _) =>
-        c1 shouldBe ra1.copy(nodeLocation = c1.nodeLocation)
-        c2 shouldBe ra2.copy(nodeLocation = c2.nodeLocation)
+      p shouldMatch {
+        case Aggregate(_, _, List(ResolvedGroupingKey(Some(1), c1, _), ResolvedGroupingKey(Some(2), c2, _)), _, _) =>
+          c1 shouldBe ra1.copy(nodeLocation = c1.nodeLocation)
+          c2 shouldBe ra2.copy(nodeLocation = c2.nodeLocation)
       }
     }
 
@@ -335,7 +336,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       val p   = analyze("select xxx, count(*) from (select id as xxx from A) group by 1")
       val agg = p shouldMatch { case a: Aggregate => a }
 
-      agg.groupingKeys shouldMatch { case List(GroupingKey(r: Attribute, _)) =>
+      agg.groupingKeys shouldMatch { case List(ResolvedGroupingKey(Some(1), r: Attribute, _)) =>
         r shouldMatch { case ResolvedAttribute("xxx", DataType.LongType, _, c, _) =>
           c shouldBe Some(SourceColumn(tableA, a1))
         }
@@ -348,7 +349,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
         case Aggregate(
               _,
               List(c1, Alias(_, "cnt", SingleColumn(f: FunctionCall, _, _), _)),
-              List(GroupingKey(`ra1`, _)),
+              List(ResolvedGroupingKey(None, `ra1`, _)),
               Some(GreaterThan(col, LongLiteral(10, _), _)),
               _
             ) if c1.name == "id" && f.functionName == "count" =>
