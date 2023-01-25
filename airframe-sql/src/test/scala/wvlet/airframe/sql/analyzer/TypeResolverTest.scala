@@ -364,18 +364,18 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     }
   }
 
-  test("resolve CTE (WITH statement) queries") {
+  test("CTE: resolve CTE (WITH statement) queries") {
     test("w1: parse WITH statement") {
       val p = analyze("with q1 as (select id from A) select id from q1")
       p.outputAttributes.toList shouldMatch {
-        case List(ResolvedAttribute("id", DataType.LongType, Some("q1"), Some(SourceColumn(`tableA`, `a1`)), _)) =>
+        case List(ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(`tableA`, `a1`)), _)) =>
       }
     }
 
-    test("resolve CTE redundant column alias") {
+    test("w2: resolve CTE redundant column alias") {
       val p = analyze("with q1 as (select id as id from A) select id from q1")
       p.outputAttributes.toList shouldMatch {
-        case List(ResolvedAttribute("id", DataType.LongType, Some("q1"), Some(SourceColumn(`tableA`, `a1`)), _)) =>
+        case List(ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(`tableA`, `a1`)), _)) =>
       }
     }
 
@@ -715,8 +715,8 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
 
       p.outputAttributes.toList shouldMatch {
         case List(
-              ResolvedAttribute("id", DataType.LongType, _, _, _),
-              ResolvedAttribute("name", DataType.StringType, Some("a"), _, _)
+              ResolvedAttribute("id", DataType.LongType, None, _, _),
+              ResolvedAttribute("name", DataType.StringType, None, _, _)
             ) =>
       }
 
@@ -733,7 +733,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       p.outputAttributes.toList shouldMatch {
         case List(
               ResolvedAttribute("id", DataType.LongType, _, _, _),
-              ResolvedAttribute("name", DataType.StringType, Some("q1"), _, _)
+              ResolvedAttribute("name", DataType.StringType, None, _, _)
             ) =>
       }
 
@@ -782,7 +782,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
 
     test("resolve count(*) in CTE") {
       val p = analyze("WITH q AS (select count(*) as cnt from A) select cnt from q")
-      p.outputAttributes shouldMatch { case List(ResolvedAttribute("cnt", DataType.LongType, Some("q"), _, _)) => }
+      p.outputAttributes shouldMatch { case List(ResolvedAttribute("cnt", DataType.LongType, None, _, _)) => }
     }
 
     test("resolve count(*) in Union") {
@@ -867,15 +867,15 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
   }
 
   test("resolve UNNEST") {
-    test("resolve UNNEST array column") {
+    test("un1: resolve UNNEST array column") {
       val p = analyze("SELECT id, n FROM A CROSS JOIN UNNEST (name) AS t (n)")
       p.outputAttributes shouldMatch { case List(c1: Attribute, c2: Attribute) =>
         c1.fullName shouldBe "id"
-        c2.fullName shouldBe "t.n"
+        c2.fullName shouldBe "n"
       }
     }
 
-    test("resolve UNNEST array") {
+    test("un2: resolve UNNEST array") {
       val p = analyze("""SELECT id, t.key, t.value FROM A
           |CROSS JOIN UNNEST (
           |  array['c1', 'c2', 'c3'],
@@ -956,5 +956,14 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
 
   test("resolve a join key propagated through select *") {
     val p = analyze("select id from A join (select * from B) using(id)")
+  }
+
+  test("resolve join with select *") {
+    val p = analyze("""select id from (
+                      |  select * from
+                      |    (select id from A) t1 join
+                      |    (select name from B) t2
+                      |    on t1.id = t2.name
+                      |)""".stripMargin)
   }
 }
