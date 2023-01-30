@@ -60,9 +60,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
   private def getLocation(node: TerminalNode): Option[NodeLocation] = getLocation(node.getSymbol)
 
   def interpret(ctx: ParserRuleContext): LogicalPlan = {
-    trace(s"interpret: ${print(ctx)}")
     val m = ctx.accept(this)
-    trace(m)
     m.asInstanceOf[LogicalPlan]
   }
 
@@ -158,7 +156,9 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     if (ctx.limit == null) {
       withSort
     } else {
-      Option(ctx.INTEGER_VALUE())
+      Option(ctx.limit)
+        .map(_.rowCount())
+        .map(_.INTEGER_VALUE())
         .map { limit =>
           val l = LongLiteral(limit.getText.toLong, getLocation(limit))
           Limit(withSort, l, getLocation(ctx.limit))
@@ -265,7 +265,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
         // group by
         val groupByKeys =
-          gb.expression()
+          gb.groupingElement()
             .asScala
             .map { x =>
               val e = expression(x)
@@ -899,7 +899,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
   override def visitDropColumn(ctx: DropColumnContext): LogicalPlan = {
     val table = visitQualifiedName(ctx.tableName)
-    val c     = visitIdentifier(ctx.column)
+    val c     = visitQualifiedName(ctx.column)
     DropColumn(table, c, getLocation(ctx))
   }
 

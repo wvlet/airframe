@@ -929,7 +929,7 @@ object LogicalPlan {
       extends DDL {
     override def sig(config: QuerySignatureConfig) = "RC"
   }
-  case class DropColumn(table: QName, column: Identifier, nodeLocation: Option[NodeLocation]) extends DDL {
+  case class DropColumn(table: QName, column: QName, nodeLocation: Option[NodeLocation]) extends DDL {
     override def sig(config: QuerySignatureConfig) = "DC"
   }
   case class AddColumn(table: QName, column: ColumnDef, nodeLocation: Option[NodeLocation]) extends DDL {
