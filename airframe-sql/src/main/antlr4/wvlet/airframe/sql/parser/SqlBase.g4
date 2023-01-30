@@ -260,22 +260,20 @@ querySpecification
     ;
 
 groupBy
-    : setQuantifier? // groupingElement (',' groupingElement)*
+    : setQuantifier? groupingElement (',' groupingElement)*
     ;
 
-/*
 groupingElement
     : groupingSet                                            #singleGroupingSet
-    | ROLLUP '(' (expression (',' expression)*)? ')'         #rollup
-    | CUBE '(' (expression (',' expression)*)? ')'           #cube
-    | GROUPING SETS '(' groupingSet (',' groupingSet)* ')'   #multipleGroupingSets
+//  | ROLLUP '(' (expression (',' expression)*)? ')'         #rollup
+//  | CUBE '(' (expression (',' expression)*)? ')'           #cube
+//  | GROUPING SETS '(' groupingSet (',' groupingSet)* ')'   #multipleGroupingSets
     ;
 
 groupingSet
     : '(' (expression (',' expression)*)? ')'
     | expression
     ;
-*/
 
 windowDefinition
     : name=identifier AS '(' windowSpecification ')'
