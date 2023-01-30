@@ -54,19 +54,19 @@ statement
     | ALTER SCHEMA qualifiedName RENAME TO identifier                  #renameSchema
     | ALTER SCHEMA qualifiedName SET AUTHORIZATION principal           #setSchemaAuthorization
     | CREATE TABLE (IF NOT EXISTS)? qualifiedName columnAliases?
-        (COMMENT string)?
+        (COMMENT str)?
         (WITH properties)? AS (query | '('query')')
         (WITH (NO)? DATA)?                                             #createTableAsSelect
     | CREATE TABLE (IF NOT EXISTS)? qualifiedName
         '(' tableElement (',' tableElement)* ')'
-         (COMMENT string)?
+         (COMMENT str)?
          (WITH properties)?                                            #createTable
     | DROP TABLE (IF EXISTS)? qualifiedName                            #dropTable
     | INSERT INTO qualifiedName columnAliases? query                   #insertInto
     | DELETE FROM qualifiedName (WHERE booleanExpression)?             #delete
     | TRUNCATE TABLE qualifiedName                                     #truncateTable
-    | COMMENT ON TABLE qualifiedName IS (string | NULL)                #commentTable
-    | COMMENT ON COLUMN qualifiedName IS (string | NULL)               #commentColumn
+    | COMMENT ON TABLE qualifiedName IS (str | NULL)                #commentTable
+    | COMMENT ON COLUMN qualifiedName IS (str | NULL)               #commentColumn
     | ALTER TABLE (IF EXISTS)? from=qualifiedName
         RENAME TO to=qualifiedName                                     #renameTable
     | ALTER TABLE (IF EXISTS)? tableName=qualifiedName
@@ -85,10 +85,10 @@ statement
     | ANALYZE qualifiedName (WITH properties)?                         #analyze
     | CREATE (OR REPLACE)? MATERIALIZED VIEW
         (IF NOT EXISTS)? qualifiedName
-        (COMMENT string)?
+        (COMMENT str)?
         (WITH properties)? AS query                                    #createMaterializedView
     | CREATE (OR REPLACE)? VIEW qualifiedName
-        (COMMENT string)?
+        (COMMENT str)?
         (SECURITY (DEFINER | INVOKER))? AS query                       #createView
     | REFRESH MATERIALIZED VIEW qualifiedName                          #refreshMaterializedView
     | DROP MATERIALIZED VIEW (IF EXISTS)? qualifiedName                #dropMaterializedView
@@ -140,13 +140,13 @@ statement
     | SHOW CREATE VIEW qualifiedName                                   #showCreateView
     | SHOW CREATE MATERIALIZED VIEW qualifiedName                      #showCreateMaterializedView
     | SHOW TABLES ((FROM | IN) qualifiedName)?
-        (LIKE pattern=string (ESCAPE escape=string)?)?                 #showTables
+        (LIKE pattern=str (ESCAPE escape=str)?)?                 #showTables
     | SHOW SCHEMAS ((FROM | IN) identifier)?
-        (LIKE pattern=string (ESCAPE escape=string)?)?                 #showSchemas
+        (LIKE pattern=str (ESCAPE escape=str)?)?                 #showSchemas
     | SHOW CATALOGS
-        (LIKE pattern=string (ESCAPE escape=string)?)?                 #showCatalogs
+        (LIKE pattern=str (ESCAPE escape=str)?)?                 #showCatalogs
     | SHOW COLUMNS (FROM | IN) qualifiedName?
-        (LIKE pattern=string (ESCAPE escape=string)?)?                 #showColumns
+        (LIKE pattern=str (ESCAPE escape=str)?)?                 #showColumns
     | SHOW STATS FOR qualifiedName                                     #showStats
     | SHOW STATS FOR '(' query ')'                                     #showStatsForQuery
     | SHOW CURRENT? ROLES ((FROM | IN) identifier)?                    #showRoles
@@ -154,9 +154,9 @@ statement
     | DESCRIBE qualifiedName                                           #showColumns
     | DESC qualifiedName                                               #showColumns
     | SHOW FUNCTIONS
-        (LIKE pattern=string (ESCAPE escape=string)?)?                 #showFunctions
+        (LIKE pattern=str (ESCAPE escape=str)?)?                 #showFunctions
     | SHOW SESSION
-        (LIKE pattern=string (ESCAPE escape=string)?)?                 #showSession
+        (LIKE pattern=str (ESCAPE escape=str)?)?                 #showSession
     | SET SESSION qualifiedName EQ expression                          #setSession
     | RESET SESSION qualifiedName                                      #resetSession
     | START TRANSACTION (transactionMode (',' transactionMode)*)?      #startTransaction
@@ -190,7 +190,7 @@ tableElement
     ;
 
 columnDefinition
-    : identifier type (NOT NULL)? (COMMENT string)? (WITH properties)?
+    : identifier type (NOT NULL)? (COMMENT str)? (WITH properties)?
     ;
 
 likeClause
@@ -341,7 +341,7 @@ trimsSpecification
 
 listAggOverflowBehavior
     : ERROR
-    | TRUNCATE string? listaggCountIndication
+    | TRUNCATE str? listaggCountIndication
     ;
 
 listaggCountIndication
@@ -448,17 +448,17 @@ valueExpression
 primaryExpression
     : NULL                                                                                #nullLiteral
     | interval                                                                            #intervalLiteral
-    | identifier string                                                                   #typeConstructor
-    | DOUBLE PRECISION string                                                             #typeConstructor
+    | identifier str                                                                   #typeConstructor
+    | DOUBLE PRECISION str                                                             #typeConstructor
     | number                                                                              #numericLiteral
     | booleanValue                                                                        #booleanLiteral
-    | string                                                                              #stringLiteral
+    | str                                                                              #stringLiteral
     | BINARY_LITERAL                                                                      #binaryLiteral
     | QUESTION_MARK                                                                       #parameter
     | POSITION '(' valueExpression IN valueExpression ')'                                 #position
     | '(' expression (',' expression)+ ')'                                                #rowConstructor
     | ROW '(' expression (',' expression)* ')'                                            #rowConstructor
-    | name=LISTAGG '(' setQuantifier? expression (',' string)?
+    | name=LISTAGG '(' setQuantifier? expression (',' str)?
         (ON OVERFLOW listAggOverflowBehavior)? ')'
         (WITHIN GROUP '(' ORDER BY sortItem (',' sortItem)* ')')                          #listagg
     | processingMode? qualifiedName '(' (label=identifier '.')? ASTERISK ')'
@@ -508,14 +508,14 @@ nullTreatment
     | RESPECT NULLS
     ;
 
-string
+str
     : STRING                                #basicStringLiteral
     | UNICODE_STRING (UESCAPE STRING)?      #unicodeStringLiteral
     ;
 
 timeZoneSpecifier
     : TIME ZONE interval  #timeZoneInterval
-    | TIME ZONE string    #timeZoneString
+    | TIME ZONE str    #timeZoneString
     ;
 
 comparisonOperator
@@ -531,7 +531,7 @@ booleanValue
     ;
 
 interval
-    : INTERVAL sign=(PLUS | MINUS)? string from=intervalField (TO to=intervalField)?
+    : INTERVAL sign=(PLUS | MINUS)? str from=intervalField (TO to=intervalField)?
     ;
 
 intervalField

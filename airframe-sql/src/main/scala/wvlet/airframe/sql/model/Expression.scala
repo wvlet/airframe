@@ -1081,6 +1081,12 @@ object Expression {
   case class SchemaProperty(key: Identifier, value: Expression, nodeLocation: Option[NodeLocation]) extends Expression {
     override def children: Seq[Expression] = Seq(key, value)
   }
+
+  case object DEFAULT extends LeafExpression {
+    override def nodeLocation: Option[NodeLocation] = None
+  }
+
+
   sealed trait TableElement extends Expression
   case class ColumnDef(columnName: Identifier, tpe: ColumnType, nodeLocation: Option[NodeLocation])
       extends TableElement

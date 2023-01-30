@@ -798,10 +798,16 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     val ifNotExists = Option(ctx.EXISTS()).map(_ => true).getOrElse(false)
     val props = Option(ctx.properties())
       .map(
-        _.property().asScala
+        _.propertyAssignments()
+          .property().asScala
           .map { p =>
-            val key   = visitIdentifier(p.identifier())
-            val value = expression(p.expression())
+            val key = visitIdentifier(p.identifier())
+            val value = p.propertyValue() match {
+              case d: DefaultPropertyValueContext =>
+                Expression.DEFAULT
+              case n: NonDefaultPropertyValueContext =>
+                expression(n.expression())
+            }
             SchemaProperty(key, value, getLocation(p))
           }.toSeq
       )
