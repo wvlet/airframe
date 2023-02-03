@@ -208,7 +208,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
 
     // case object for pattern matching of options that take arguments
     object OptionWithArgument {
-      private val pattern = """^(-{1,2}\w+)([:=](\w+))?""".r
+      private val pattern = """^(-{1,2}\w[\w-]*)([:=](\w+))?""".r
 
       def unapply(s: List[String]): Option[WithArg] = {
         findMatch(pattern, s.head) flatMap { m =>
