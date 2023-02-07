@@ -102,6 +102,25 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     )
   }
 
+  test("resolve double-quoted identifies") {
+    val p1 = analyze("select id from \"A\"")
+    p1.outputAttributes shouldBe List(ra1)
+
+    val p2 = analyze("select id from \"default\".\"A\"")
+    p2.outputAttributes shouldBe List(ra1)
+
+    val p3 = analyze("select \"id\" from \"default\".\"A\"")
+    p3.outputAttributes shouldBe List(ra1)
+
+    val p4 = analyze("select \"A\".\"id\" from \"default\".\"A\"")
+    p4.outputAttributes shouldBe List(ra1.withQualifier("A"))
+
+    val p5 = analyze("select \"default\".\"A\".\"id\" from \"default\".\"A\"")
+    p5.outputAttributes shouldBe List(
+      ra1.withQualifier("default.A")
+    )
+  }
+
   test("resolveRelation") {
 
     test("resolve a filter") {
