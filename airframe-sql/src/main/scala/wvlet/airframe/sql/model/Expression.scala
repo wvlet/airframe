@@ -410,8 +410,13 @@ object Expression {
   }
   object QName {
     def apply(s: String, nodeLocation: Option[NodeLocation]): QName = {
-      // TODO handle quotation
-      QName(s.split("\\.").toList, nodeLocation)
+      QName(s.split("\\.").map(unquote).toList, nodeLocation)
+    }
+
+    def unquote(s: String): String = {
+      if (s.startsWith("\"") && s.endsWith("\"")) {
+        s.substring(1, s.length - 1)
+      } else s
     }
   }
 
