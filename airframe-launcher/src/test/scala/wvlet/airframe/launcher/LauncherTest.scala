@@ -54,6 +54,7 @@ class LauncherTest extends AirSpec {
     help.contains("--help") shouldBe true
     help.contains("-l") shouldBe true
     help.contains("--log-level") shouldBe true
+    help.contains("--show-message") shouldBe true
   }
 
   test("display full options in help") {
@@ -67,9 +68,10 @@ class LauncherTest extends AirSpec {
 
   test("parse double hyphen options") {
     capture {
-      val l = Launcher.execute[GlobalOption]("--help --log-level debug")
+      val l = Launcher.execute[GlobalOption]("--help --log-level debug --show-message")
       l.help shouldBe true
       l.loglevel shouldBe Some(LogLevel.DEBUG)
+      l.showMessage shouldBe true
     }
   }
 
@@ -265,6 +267,7 @@ object LauncherTest {
   case class GlobalOption(
       @option(prefix = "-h,--help", description = "display help messages", isHelp = true) help: Boolean = false,
       @option(prefix = "-l,--log-level", description = "log level") loglevel: Option[LogLevel] = None,
+      @option(prefix = "--show-message") showMessage: Boolean = false,
       var started: Boolean = false
   ) extends LogSupport {
     trace("started GlobalOption command")
