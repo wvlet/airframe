@@ -165,4 +165,10 @@ class SQLGeneratorTest extends AirSpec {
     sql shouldBe "select id, country, count(*) from a group by 1, 2"
   }
 
+  test("aliased relation") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze("select * from A as t1", "default", demoCatalog)
+    val sql = SQLGenerator.print(resolvedPlan).toLowerCase
+    sql shouldBe "select * from a as t1"
+  }
 }
