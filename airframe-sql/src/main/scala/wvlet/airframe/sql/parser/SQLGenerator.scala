@@ -220,6 +220,7 @@ object SQLGenerator extends LogSupport {
         val c = columnNames.map(x => s"(${x.mkString(", ")})").getOrElse("")
         relation match {
           case TableRef(x, _)              => s"${r} AS ${alias.sqlExpr}${c}"
+          case TableScan(x, _, _, _)       => s"${r} AS ${alias.sqlExpr}${c}"
           case ParenthesizedRelation(x, _) => s"${r} AS ${alias.sqlExpr}${c}"
           case Unnest(_, _, _)             => s"${r} AS ${alias.sqlExpr}${c}"
           case Lateral(_, _)               => s"${r} AS ${alias.sqlExpr}${c}"
