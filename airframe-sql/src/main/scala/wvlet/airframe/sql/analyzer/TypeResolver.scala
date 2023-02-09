@@ -24,32 +24,34 @@ import wvlet.log.LogSupport
   */
 object TypeResolver extends LogSupport {
 
-  def typerRules: List[RewriteRule] = {
-    // First resolve all input table types
-    // CTE Table Refs must be resolved before resolving aggregation indexes
-    TypeResolver.resolveCTETableRef ::
-      TypeResolver.resolveTableRef ::
-      TypeResolver.resolveJoinUsing ::
-      TypeResolver.resolveSubquery ::
-      TypeResolver.resolveRegularRelation ::
-      TypeResolver.resolveColumns ::
-      TypeResolver.resolveAggregationIndexes ::
-      TypeResolver.resolveAggregationKeys ::
-      TypeResolver.resolveSortItemIndexes ::
-      TypeResolver.resolveSortItems ::
+  def preProcessingRules: List[RewriteRule] = {
+    unresolveAllColumns ::
       Nil
   }
 
-  def resolve(analyzerContext: AnalyzerContext, plan: LogicalPlan): LogicalPlan = {
-    resolve(analyzerContext, plan, typerRules)
+  def typerRules: List[RewriteRule] = {
+    // CTE Table Refs must be resolved before resolving aggregation indexes
+    resolveCTETableRef ::
+      // Resolve all input table types
+      resolveTableRef ::
+      resolveJoinUsing ::
+      resolveSubquery ::
+      resolveRegularRelation ::
+      resolveColumns ::
+      resolveAggregationIndexes ::
+      resolveAggregationKeys ::
+      resolveSortItemIndexes ::
+      resolveSortItems ::
+      Nil
   }
 
-  private[sql] def resolve(
+  def resolve(
       analyzerContext: AnalyzerContext,
       plan: LogicalPlan,
-      rules: List[RewriteRule]
+      rules: List[RewriteRule] = typerRules,
+      preProcessingRules: List[RewriteRule] = preProcessingRules
   ): LogicalPlan = {
-    val resolvedPlan = rules
+    val resolvedPlan = (preProcessingRules ::: rules)
       .foldLeft(plan) { (targetPlan, rule) =>
         try {
           rule.transform(targetPlan, analyzerContext)
@@ -69,12 +71,25 @@ object TypeResolver extends LogSupport {
     * @return
     */
   def resolveRelation(analyzerContext: AnalyzerContext, plan: LogicalPlan): Relation = {
-    val resolvedPlan = resolve(analyzerContext, plan)
+    val resolvedPlan = resolve(analyzerContext, plan, typerRules, Nil)
     resolvedPlan match {
       case r: Relation =>
         r
       case other =>
         throw SQLErrorCode.InvalidArgument.newException(s"${plan} isn't a relation", plan.nodeLocation)
+    }
+  }
+
+  /**
+    * Unresolve previously resolved AllColumns to handle cases when sub queries are rewritten after AllColumns are
+    * resolved
+    */
+  object unresolveAllColumns extends RewriteRule {
+    def apply(context: AnalyzerContext): PlanRewriter = { case r: Relation =>
+      r.transformExpressions {
+        case a: AllColumns if a.columns.nonEmpty =>
+          a.copy(columns = None)
+      }
     }
   }
 

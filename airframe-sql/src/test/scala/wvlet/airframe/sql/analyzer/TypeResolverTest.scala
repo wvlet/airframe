@@ -985,4 +985,17 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
                       |    on t1.id = t2.name
                       |)""".stripMargin)
   }
+
+  test("unresolve AllColumns after rewrite") {
+    val sql = "select * from A"
+    val p   = analyze(sql)
+    // Drop some column by adding a projection
+    val rewritten = p.transformOnce { case t: TableScan =>
+      Project(t, Seq(ra1), None)
+    }
+    val resolved = TypeResolver.resolve(defaultAnalyzerContext, rewritten)
+    resolved shouldMatch { case Project(_, List(AllColumns(None, Some(List(c)), _)), _) =>
+      c shouldBe ra1
+    }
+  }
 }
