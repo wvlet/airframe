@@ -122,7 +122,7 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
 
     def updateDatabase(database: Catalog.Database): DatabaseHolder = {
       val newDb = DatabaseHolder(database)
-      newDb.tables.addAll(tables)
+      newDb.tables ++= tables
       newDb
     }
   }
