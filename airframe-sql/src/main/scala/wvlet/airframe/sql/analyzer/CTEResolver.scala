@@ -14,9 +14,8 @@
 package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.sql.SQLErrorCode
-import wvlet.airframe.sql.model.Expression.SingleColumn
-import wvlet.airframe.sql.model.{CTERelationRef, LogicalPlan}
-import wvlet.airframe.sql.model.LogicalPlan.{Project, Query, Relation, With, WithQuery}
+import wvlet.airframe.sql.model.LogicalPlan
+import wvlet.airframe.sql.model.LogicalPlan._
 import wvlet.log.LogSupport
 
 /**
