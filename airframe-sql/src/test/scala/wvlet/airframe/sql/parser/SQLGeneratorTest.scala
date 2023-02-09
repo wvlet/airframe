@@ -171,4 +171,11 @@ class SQLGeneratorTest extends AirSpec {
     val sql = SQLGenerator.print(resolvedPlan).toLowerCase
     sql shouldBe "select * from a as t1"
   }
+
+  test("CTE with column names") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze("with t1 (xid) as (select id as pid from A) select xid from t1", "default", demoCatalog)
+    val sql = SQLGenerator.print(resolvedPlan).toLowerCase
+    sql shouldBe "with t1 as (select id as xid from (select id as pid from a)) select xid from t1"
+  }
 }
