@@ -51,6 +51,10 @@ trait Catalog extends LogSupport {
   }
 
   def listFunctions: Seq[SQLFunction]
+
+  def updateTableSchema(database: String, table: String, schema: Catalog.TableSchema): Unit
+  def updateTableProperties(database: String, table: String, properties: Map[String, Any]): Unit
+  def updateDatabaseProperties(database: String, properties: Map[String, Any]): Unit
 }
 
 //case class DatabaseIdentifier(database: String, catalog: Option[String])
@@ -115,6 +119,12 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
   private case class DatabaseHolder(db: Catalog.Database) {
     // table name -> table holder
     val tables = collection.mutable.Map.empty[String, Catalog.Table]
+
+    def updateDatabase(database: Catalog.Database): DatabaseHolder = {
+      val newDb = DatabaseHolder(database)
+      newDb.tables.addAll(tables)
+      newDb
+    }
   }
 
   override def listDatabases: Seq[String] = {
@@ -219,12 +229,36 @@ class InMemoryCatalog(val catalogName: String, val namespace: Option[String], fu
     }
   }
 
-  //    def findTable(database: String, tableName: String): Option[CatalogTable] = {
-  //      databases.find(x => x.db == database && x.name == tableName)
-  //    }
-  //
-
-  //  }
-
   override def listFunctions: Seq[SQLFunction] = functions
+
+  private def updateTable(database: String, table: String)(updater: Catalog.Table => Catalog.Table): Unit = {
+    synchronized {
+      val d = getDatabaseHolder(database)
+      d.tables.get(table) match {
+        case Some(oldTbl) =>
+          d.tables += table -> updater(oldTbl)
+        case None =>
+          throw SQLErrorCode.TableNotFound.newException(s"table ${database}.${table} is not found", None)
+      }
+    }
+  }
+
+  override def updateTableSchema(database: String, table: String, schema: Catalog.TableSchema): Unit = {
+    updateTable(database, table)(tbl => tbl.copy(schema = schema))
+  }
+
+  override def updateTableProperties(database: String, table: String, properties: Map[String, Any]): Unit = {
+    updateTable(database, table)(tbl => tbl.copy(properties = properties))
+  }
+
+  override def updateDatabaseProperties(database: String, properties: Map[String, Any]): Unit = {
+    synchronized {
+      databases.get(database) match {
+        case Some(db) =>
+          databases += database -> db.updateDatabase(db.db.copy(properties = properties))
+        case None =>
+          throw SQLErrorCode.DatabaseNotFound.newException(s"database ${database} is not found", None)
+      }
+    }
+  }
 }
