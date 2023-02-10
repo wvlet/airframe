@@ -122,22 +122,7 @@ object SQLGenerator extends LogSupport {
 
     findNonEmpty(nonFilterChild).map { f =>
       b += "FROM"
-      f match {
-        case _: Selection =>
-          b += s"(${printRelation(f)})"
-        case _: SetOperation =>
-          b += s"(${printRelation(f)})"
-        case _: Limit =>
-          b += s"(${printRelation(f)})"
-        case _: Filter =>
-          b += s"(${printRelation(f)})"
-        case _: Sort =>
-          b += s"(${printRelation(f)})"
-        case _: Distinct =>
-          b += s"(${printRelation(f)})"
-        case _ =>
-          b += printRelation(f)
-      }
+      b += printRelationWithParenthesesIfNecessary(f)
     }
 
     val filterSet = s match {
@@ -227,12 +212,8 @@ object SQLGenerator extends LogSupport {
           case _                           => s"(${r}) AS ${alias.sqlExpr}${c}"
         }
       case Join(joinType, left, right, cond, _) =>
-        val l = printRelation(left)
-        val r = right match {
-          case _: Selection    => s"(${printRelation(right)})"
-          case _: SetOperation => s"(${printRelation(right)})"
-          case _               => printRelation(right)
-        }
+        val l = printRelationWithParenthesesIfNecessary(left)
+        val r = printRelationWithParenthesesIfNecessary(right)
         val c = cond match {
           case NaturalJoin(_)                => ""
           case JoinUsing(columns, _)         => s" USING (${columns.map(_.sqlExpr).mkString(", ")})"
@@ -273,6 +254,18 @@ object SQLGenerator extends LogSupport {
         b += columnAliases.map(printExpression).mkString(", ")
         b.result().mkString(" ")
       case other => unknown(other)
+    }
+  }
+
+  def printRelationWithParenthesesIfNecessary(r: Relation): String = {
+    r match {
+      case _: Selection    => s"(${printRelation(r)})"
+      case _: SetOperation => s"(${printRelation(r)})"
+      case _: Limit        => s"(${printRelation(r)})"
+      case _: Filter       => s"(${printRelation(r)})"
+      case _: Sort         => s"(${printRelation(r)})"
+      case _: Distinct     => s"(${printRelation(r)})"
+      case _               => printRelation(r)
     }
   }
 
