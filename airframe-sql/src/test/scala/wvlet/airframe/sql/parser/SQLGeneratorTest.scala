@@ -178,4 +178,12 @@ class SQLGeneratorTest extends AirSpec {
     val sql = SQLGenerator.print(resolvedPlan).toLowerCase
     sql shouldBe "with t1 as (select id as xid from (select id as pid from a)) select xid from t1"
   }
+
+  test("join with sub query at left side") {
+    val resolvedPlan =
+      SQLAnalyzer.analyze("select * from (select * from A) inner join A using (id)", "default", demoCatalog)
+
+    val sql = SQLGenerator.print(resolvedPlan).toLowerCase
+    sql shouldBe "select * from (select * from a) join a using (id)"
+  }
 }
