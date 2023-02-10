@@ -22,10 +22,16 @@ import wvlet.log.Logger
 trait ResolverTestHelper { self: AirSpec =>
   protected def demoCatalog: Catalog
 
-  protected def resolvePlan(sql: String, rules: List[RewriteRule]): LogicalPlan = {
+  protected def defaultAnalyzerContext = AnalyzerContext("default", demoCatalog)
+
+  protected def resolvePlan(
+      sql: String,
+      rules: List[RewriteRule],
+      preProcessingRules: List[RewriteRule]
+  ): LogicalPlan = {
     val plan            = SQLParser.parse(sql)
-    val analyzerContext = AnalyzerContext("default", demoCatalog).withAttributes(plan.outputAttributes)
-    val resolvedPlan    = TypeResolver.resolve(analyzerContext, plan, rules)
+    val analyzerContext = defaultAnalyzerContext.withAttributes(plan.outputAttributes)
+    val resolvedPlan    = TypeResolver.resolve(analyzerContext, plan, rules, preProcessingRules)
     shouldBeResolved(resolvedPlan, sql)
     resolvedPlan
   }
@@ -46,18 +52,21 @@ trait ResolverTestHelper { self: AirSpec =>
 
   protected def analyze(
       sql: String,
-      rules: List[RewriteRule] = TypeResolver.typerRules
+      rules: List[RewriteRule] = TypeResolver.typerRules,
+      preProcessingRules: List[RewriteRule] = TypeResolver.preProcessingRules
   ): LogicalPlan = {
-    val resolvedPlan = resolvePlan(sql, rules)
+    val resolvedPlan = resolvePlan(sql, rules, preProcessingRules)
     val resolvedSql  = generateSql(resolvedPlan)
     debug(s"[original]\n${sql}\n\n[resolved]\n${resolvedSql}")
     trace(s"[original plan]\n${SQLParser.parse(sql).pp}\n[resolved plan]\n${resolvedPlan.pp}")
 
-    // Suppress rewrite rule logs in the second run
+    // Test TypeResolver again for consistency check by suppressing rewrite rule logs
     Logger("wvlet.airframe.sql.analyzer.RewriteRule").suppressLogs {
       // Round-trip plan should be able to be resolved
-      resolvePlan(resolvedSql, rules)
+      resolvePlan(resolvedSql, rules, preProcessingRules = Nil)
     }
+
+    // Return the first resolved plan
     resolvedPlan
   }
 
