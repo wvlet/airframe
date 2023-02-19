@@ -519,7 +519,12 @@ object Expression {
         case None => Nil
       }
     }
-    override def outputColumns: Seq[Attribute] = inputColumns
+    override def outputColumns: Seq[Attribute] = {
+      qualifier match {
+        case Some(x) => inputColumns.map(_.withQualifier(x))
+        case None    => inputColumns
+      }
+    }
 
     override def dataType: DataType = {
       columns

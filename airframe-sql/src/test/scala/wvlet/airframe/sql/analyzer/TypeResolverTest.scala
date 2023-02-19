@@ -998,4 +998,9 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       c shouldBe ra1
     }
   }
+
+  test("Resolve qualified AllColumns") {
+    val p = analyze("select t2.name from A t1 inner join (select * from B) t2 using (id)")
+    p.outputAttributes shouldBe List(rb2.withQualifier("t2"))
+  }
 }
