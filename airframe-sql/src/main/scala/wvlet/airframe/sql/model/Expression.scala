@@ -520,10 +520,7 @@ object Expression {
       }
     }
     override def outputColumns: Seq[Attribute] = {
-      qualifier match {
-        case Some(x) => inputColumns.map(_.withQualifier(x))
-        case None    => inputColumns
-      }
+      inputColumns.map(_.withQualifier(qualifier))
     }
 
     override def dataType: DataType = {
