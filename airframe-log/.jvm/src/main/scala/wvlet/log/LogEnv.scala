@@ -78,6 +78,9 @@ private[log] object LogEnv extends LogEnvBase {
     try {
       Some(ManagementFactory.getPlatformMBeanServer)
     } catch {
+      case e: ClassNotFoundException =>
+        // Pre-registered wvlet.log.AirframeLogManager might not be found when reloading the project in IntelliJ, so skip this error.
+        None
       case e: Throwable =>
         // Show an error once without using the logger itself
         e.printStackTrace()
