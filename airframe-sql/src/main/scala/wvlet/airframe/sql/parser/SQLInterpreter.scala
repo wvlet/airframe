@@ -396,8 +396,8 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
   override def visitSelectAll(ctx: SelectAllContext): Attribute = {
     // TODO parse qName
-    ctx.qualifiedName()
-    AllColumns(None, None, getLocation(ctx))
+    val qualifier = Option(ctx.qualifiedName()).map(_.getText)
+    AllColumns(qualifier, None, getLocation(ctx))
   }
 
   override def visitSelectSingle(ctx: SelectSingleContext): Attribute = {
