@@ -384,8 +384,8 @@ object SQLGenerator extends LogSupport {
         printExpression(ex)
       case m: MultiSourceColumn =>
         m.sqlExpr
-      case AllColumns(prefix, _, _) =>
-        prefix.map(p => s"${p}.*").getOrElse("*")
+      case a: AllColumns =>
+        a.fullName
       case a: Attribute =>
         a.fullName
       case SortItem(key, ordering, nullOrdering, _) =>

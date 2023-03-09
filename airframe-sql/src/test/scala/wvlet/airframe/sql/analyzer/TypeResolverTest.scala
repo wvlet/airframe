@@ -1003,4 +1003,11 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     val p = analyze("select t2.name from A t1 inner join (select * from B) t2 using (id)")
     p.outputAttributes shouldBe List(rb2.withQualifier("t2"))
   }
+
+  test("Preserve qualifier after join") {
+    val p = analyze("select t1.* from A t1 inner join B t2 on t1.id = t2.id")
+    p.outputAttributes shouldMatch {
+      case List(a: AllColumns) if a.qualifier == Some("t1") =>
+    }
+  }
 }
