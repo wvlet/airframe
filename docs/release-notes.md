@@ -6,6 +6,12 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 23.3.0
+
+This version includes fixes for supporting sbtn (sbt native client) 
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.3.0)
+
 ## 23.2.5
 
 [Release notes](https://github.com/wvlet/airframe/releases/tag/v23.2.5)
