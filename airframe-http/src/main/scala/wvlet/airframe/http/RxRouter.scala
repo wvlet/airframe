@@ -23,19 +23,19 @@ case class RxFilterDef(filter: RxFilter, filterSurface: Surface) {
 sealed trait RxRouter {
   def name: String
   def parent: Option[RxRouter]
+  def children: Seq[RxRouter]
+
   def isLeaf: Boolean
   def isNode: Boolean
 
   def withParent(parent: RxRouter): RxRouter
+
+  def isRoot: Boolean = parent.isEmpty
+
   def root: RxRouter = {
-    parent match {
-      case Some(p) => p.root
-      case None    => this
-    }
+    parent.map(_.root).getOrElse(this)
   }
-
 }
-
 
 //  /**
 //    * Chain a router and return the context router
@@ -64,6 +64,8 @@ sealed trait RxRouter {
 
 object RxRouter extends RxRouterObjectBase {
 
+  def empty: RxRouter = EmptyNode
+
   case object EmptyNode extends RxRouter {
     override def name: String = "empty"
     override def withParent(parent: RxRouter): RxRouter = throw new UnsupportedOperationException(
@@ -72,6 +74,8 @@ object RxRouter extends RxRouterObjectBase {
     override def parent: Option[RxRouter] = None
     override def isLeaf: Boolean          = true
     override def isNode: Boolean          = false
+
+    override def children: Seq[RxRouter] = Seq.empty
   }
 
   case class RxFilterNode(
@@ -86,36 +90,32 @@ object RxRouter extends RxRouterObjectBase {
     override def withParent(parent: RxRouter): RxFilterNode = {
       this.copy(parent = Some(parent))
     }
-    override def isLeaf: Boolean         = false
-    override def isNode: Boolean         = true
+    override def isLeaf: Boolean = false
+    override def isNode: Boolean = true
+
+    override def children: Seq[RxRouter] = Seq.empty
 
     def andThen(next: RxRouter): RxRouter = {
       next.withParent(this)
     }
+
   }
 
   case class RxRouterLeaf(
       override val parent: Option[RxRouter],
       controllerSurface: Surface,
-      methodSurfaces: Seq[MethodSurface],
-      override val siblings: Seq[RxRouter]
+      methodSurfaces: Seq[MethodSurface]
   ) extends RxRouter {
     override def name: String    = controllerSurface.name
     override def isLeaf: Boolean = true
     override def isNode: Boolean = false
 
-    def withSibling(sibling: RxRouter): RxRouterLeaf = {
-      this.copy(siblings = siblings :+ sibling.withParent(this))
-    }
+    override def children: Seq[RxRouter] = Seq.empty
 
-    def add(router: RxRouter): RxRouterLeaf = {
-      withSibling(router)
-    }
+    override def withParent(parent: RxRouter): RxRouter = this.copy(parent = Some(parent))
   }
 
-  def empty: RxRouter = EmptyNode
-
-  def merge(routers: RxRouter*): RxRouter = {
-    routers.toSeq.reduce { (r1, r2) => r1.add(r2) }
-  }
+//  def merge(routers: RxRouter*): RxRouter = {
+//    routers.toSeq.reduce { (r1, r2) => r1.add(r2) }
+//  }
 }

@@ -43,16 +43,16 @@ object RxRouterTest extends AirSpec {
   }
 
   test("creat a new RxRouter") {
-    val r = RxRouter.merge(
-      MyApi.router,
-      MyApi2.router
-    )
-
+    RxRouter
+      .add(MyApi.router)
+      .add(MyApi2.router)
     info(r)
   }
 
   test("Add filter") {
     RxRouter
+      .andThenFilter[AuthFilter]
+      .add
       .filter[AuthFilter]
       .andThen(RxRouter.merge(MyApi.router, MyApi2.router))
   }
