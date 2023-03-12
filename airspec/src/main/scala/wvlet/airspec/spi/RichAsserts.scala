@@ -14,9 +14,9 @@
 package wvlet.airspec.spi
 
 import java.util
-
 import wvlet.airframe.SourceCode
 import wvlet.airspec.AirSpecSpi
+import wvlet.airspec.internal.diff.{Diff, DiffUtils}
 import wvlet.airspec.spi.Asserts._
 import wvlet.log.LogSupport
 
@@ -90,7 +90,8 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
 
   implicit protected class ShouldBe[A](val value: A) {
     protected def matchFailure(expected: Any, code: SourceCode): AssertionFailure = {
-      AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
+      val diff = new Diff(pp(value), pp(expected)).createDiffOnlyReport()
+      AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}\n${diff}", code)
     }
     protected def unmatchFailure(unexpected: Any, code: SourceCode): AssertionFailure = {
       AssertionFailure(s"${pp(value)} matched with ${pp(unexpected)}", code)
