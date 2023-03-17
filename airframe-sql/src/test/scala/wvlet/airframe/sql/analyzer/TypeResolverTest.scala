@@ -999,7 +999,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     }
   }
 
-  test("Resolve qualified AllColumns") {
+  test("Resolve AllColumns in qualified sub-query") {
     val p = analyze("select t2.name from A t1 inner join (select * from B) t2 using (id)")
     p.outputAttributes shouldBe List(rb2.withQualifier("t2"))
   }
@@ -1008,6 +1008,16 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     val p = analyze("select t1.* from A t1 inner join B t2 on t1.id = t2.id")
     p.outputAttributes shouldMatch {
       case List(a: AllColumns) if a.qualifier == Some("t1") =>
+        a.columns shouldBe Some(Seq(ra1.withQualifier("t1"), ra2.withQualifier("t1")))
     }
   }
+
+  test("Preserve qualifier after join using") {
+    val p = analyze("select t1.* from A t1 inner join (select * from B) t2 using (id)")
+    p.outputAttributes shouldMatch {
+      case List(a: AllColumns) if a.qualifier == Some("t1") =>
+        a.columns shouldBe Some(Seq(ra2.withQualifier("t1"))) // "id" is not contained
+    }
+  }
+
 }
