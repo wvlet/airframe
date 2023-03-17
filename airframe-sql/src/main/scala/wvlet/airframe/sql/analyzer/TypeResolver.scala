@@ -471,10 +471,10 @@ object TypeResolver extends LogSupport {
           case other =>
             toResolvedAttribute(other.name, other)
         }
-        List(a.copy(columns = Some(qualifier match {
+        List(a.copy(columns = Some((qualifier match {
           case Some(q) => allColumns.filter(_.qualifier.contains(q))
           case None    => allColumns
-        })))
+        }).map(_.withQualifier(None)))))
       case _ =>
         List(expr)
     }
