@@ -26,6 +26,12 @@ object HttpRequestMapperTest extends AirSpec {
   case class NestedRequest(name: String, msg: String)
   case class NestedRequest2(id: Int)
 
+  case class RequestValidator(message: String) {
+    if (message != "ok") {
+      throw RPCStatus.INVALID_REQUEST_U1.newException(s"Unexpected message: ${message}")
+    }
+  }
+
   @RPC
   trait MyApi {
     def rpc1(p1: String): Unit                    = {}
@@ -39,8 +45,9 @@ object HttpRequestMapperTest extends AirSpec {
         context: HttpContext[Request, Response, Future],
         req: HttpRequest[Request]
     ): Unit = {}
-    def rpc8(p1: Int): Unit         = {}
-    def rpc9(p1: Option[Int]): Unit = {}
+    def rpc8(p1: Int): Unit              = {}
+    def rpc9(p1: Option[Int]): Unit      = {}
+    def rpc10(r: RequestValidator): Unit = {}
   }
 
   trait MyApi2 {
@@ -201,7 +208,7 @@ object HttpRequestMapperTest extends AirSpec {
       mapArgs(r, { r => r.withUri(s"${r.uri}?p1=abc") })
     }
   }
-
+-
   test("throw an error on incompatible type in request body") {
     val r = findRoute("rpc8")
     intercept[IllegalArgumentException] {
@@ -223,6 +230,14 @@ object HttpRequestMapperTest extends AirSpec {
       val args = mapArgs(r, { r => r.withJson("""{"p1":[1]}""") })
       warn(args)
     }
+  }
+
+  test("rpc10: throw an RPCException when serializing request object") {
+    val r = findRoute("rpc10")
+    val e = intercept[RPCException] {
+      mapArgs(r, _.withJson("""{"r":{"message":"xxx"}}"""))
+    }
+    e.status shouldBe RPCStatus.INVALID_REQUEST_U1
   }
 
   test("construct objects using query parameters for GET") {
