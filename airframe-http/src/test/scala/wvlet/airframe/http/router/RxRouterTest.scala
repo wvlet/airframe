@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 
@@ -37,13 +38,13 @@ object RxRouterTest extends AirSpec {
   }
 
   trait AuthFilter extends RxFilter {
-    override def apply(request: HttpMessage.Request, service: RxService): Rx[HttpMessage.Response] = {
-      service(request.withHeader("X-Airframe-Test", "xxx"))
+    override def apply(request: HttpMessage.Request, nextService: RxService): Rx[HttpMessage.Response] = {
+      nextService(request.withHeader("X-Airframe-Test", "xxx"))
     }
   }
 
   test("creat a new RxRouter") {
-    RxRouter
+    val r = RxRouter
       .add(MyApi.router)
       .add(MyApi2.router)
     info(r)
@@ -51,10 +52,10 @@ object RxRouterTest extends AirSpec {
 
   test("Add filter") {
     RxRouter
-      .andThenFilter[AuthFilter]
-      .add
       .filter[AuthFilter]
-      .andThen(RxRouter.merge(MyApi.router, MyApi2.router))
+      .andThen(
+        MyApi.router + MyApi2.router
+      )
   }
 
 }

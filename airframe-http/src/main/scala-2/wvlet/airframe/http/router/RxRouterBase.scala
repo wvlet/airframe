@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.http.router.RxRouter
+
 import scala.language.experimental.macros
 
 class RxRouterBase { self: RxRouter =>
