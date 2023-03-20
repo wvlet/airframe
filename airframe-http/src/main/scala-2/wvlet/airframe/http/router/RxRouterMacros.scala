@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.router
 
 import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}

@@ -11,9 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.router
 
-import wvlet.airframe.http.router.RxRouter
+import wvlet.airframe.http.{HttpMessage, RPC, RxFilter, RxEndpoint}
 import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 
@@ -38,8 +38,8 @@ object RxRouterTest extends AirSpec {
   }
 
   trait AuthFilter extends RxFilter {
-    override def apply(request: HttpMessage.Request, nextService: RxService): Rx[HttpMessage.Response] = {
-      nextService(request.withHeader("X-Airframe-Test", "xxx"))
+    override def apply(request: HttpMessage.Request, endpoint: RxEndpoint): Rx[HttpMessage.Response] = {
+      endpoint(request.withHeader("X-Airframe-Test", "xxx"))
     }
   }
 

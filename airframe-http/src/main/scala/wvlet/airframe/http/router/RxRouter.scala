@@ -11,8 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.router
 
+import wvlet.airframe.http.RxFilter
 import wvlet.airframe.surface.TypeName.sanitizeTypeName
 import wvlet.airframe.surface.{MethodSurface, Surface}
 
