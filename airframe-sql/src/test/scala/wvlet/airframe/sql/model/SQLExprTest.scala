@@ -100,4 +100,18 @@ class SQLExprTest extends AirSpec {
     )
     f.sqlExpr shouldBe "count(x) OVER (PARTITION BY y ORDER BY x)"
   }
+
+  test("array_agg(name) FILTER (WHERE name IS NOT NULL)") {
+    val f = FunctionCall(
+      "array_agg",
+      Seq(newIdentifier("name")),
+      isDistinct = false,
+      filter = Some(
+        Expression.IsNotNull(newIdentifier("name"), None)
+      ),
+      None,
+      None
+    )
+    f.sqlExpr shouldBe "array_agg(name) FILTER (WHERE name IS NOT NULL)"
+  }
 }
