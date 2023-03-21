@@ -411,7 +411,8 @@ object SQLGenerator extends LogSupport {
             s" OVER (${s.result().mkString(" ")})"
           }
           .getOrElse("")
-        s"${name}(${d}${argList})${wd}"
+        val f = filter.map(x => s" FILTER (WHERE ${printExpression(x)})").getOrElse("")
+        s"${name}(${d}${argList})${f}${wd}"
       case QName(parts, _) =>
         parts.mkString(".")
       case Cast(expr, tpe, tryCast, _) =>
