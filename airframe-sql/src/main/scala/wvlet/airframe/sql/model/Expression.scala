@@ -399,6 +399,18 @@ object Expression {
     concat(expr) { case (a, b) => Eq(a, b, None) }
   }
 
+  def newIdentifier(x: String): Identifier = {
+    if (x.startsWith("`") && x.endsWith("`")) {
+      BackQuotedIdentifier(x.stripPrefix("`").stripSuffix("`"), None)
+    } else if (x.startsWith("\"") && x.endsWith("\"")) {
+      QuotedIdentifier(x.stripPrefix("\"").stripSuffix("\""), None)
+    } else if (x.matches("[0-9]+")) {
+      DigitId(x, None)
+    } else {
+      UnquotedIdentifier(x, None)
+    }
+  }
+
   /**
     */
   case class ParenthesizedExpression(child: Expression, nodeLocation: Option[NodeLocation]) extends UnaryExpression
@@ -675,7 +687,13 @@ object Expression {
   ) extends Expression
       with UnaryExpression {
     override def child: Expression = sortKey
-    override def toString: String  = s"SortItem(sortKey:${sortKey}, ordering:${ordering}, nullOrdering:${nullOrdering})"
+
+    override def sqlExpr: String = {
+      val o = ordering.map(x => s" ${x.toString}").getOrElse("")
+      val n = nullOrdering.map(x => s" ${x.toString}").getOrElse("")
+      s"${sortKey.sqlExpr}${o}${n}"
+    }
+    override def toString: String = s"SortItem(sortKey:${sortKey}, ordering:${ordering}, nullOrdering:${nullOrdering})"
   }
 
   // Sort ordering
@@ -705,6 +723,21 @@ object Expression {
       nodeLocation: Option[NodeLocation]
   ) extends Expression {
     override def children: Seq[Expression] = partitionBy ++ orderBy ++ frame.toSeq
+
+    override def sqlExpr: String = {
+      val s = Seq.newBuilder[String]
+      if (partitionBy.nonEmpty) {
+        s += "PARTITION BY"
+        s += partitionBy.map(_.sqlExpr).mkString(", ")
+      }
+      if (orderBy.nonEmpty) {
+        s += "ORDER BY"
+        s += orderBy.map(_.sqlExpr).mkString(", ")
+      }
+      frame.map(x => s += x.toString)
+      s" OVER (${s.result().mkString(" ")})"
+    }
+
     override def toString: String =
       s"Window(partitionBy:${partitionBy.mkString(", ")}, orderBy:${orderBy.mkString(", ")}, frame:${frame})"
   }
@@ -777,6 +810,13 @@ object Expression {
 
     override def children: Seq[Expression] = args ++ filter.toSeq ++ window.toSeq
     def functionName: String               = name.toString.toLowerCase(Locale.US)
+
+    override def sqlExpr: String = {
+      val argList   = args.map(_.sqlExpr).mkString(", ")
+      val argPrefix = if (isDistinct) "DISTINCT " else ""
+      val wd        = window.map(_.sqlExpr).getOrElse("")
+      s"${name}(${argPrefix}${argList})${wd}"
+    }
     override def toString = s"FunctionCall(${name}, ${args.mkString(", ")}, distinct:${isDistinct}, window:${window})"
   }
   case class LambdaExpr(body: Expression, args: Seq[String], nodeLocation: Option[NodeLocation])
