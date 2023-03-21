@@ -62,7 +62,7 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
     }
   }
 
-  private def closeInternal(): Unit = {
+  override def close(): Unit = {
     if (closed.compareAndSet(false, true)) {
       flush()
       // Wake up the poller thread
@@ -71,10 +71,6 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
       }
       executor.shutdown()
     }
-  }
-
-  override def close(): Unit = {
-    closeInternal()
   }
 
   def awaitTermination(timeout: Int = 10, timeUnit: TimeUnit = TimeUnit.MILLISECONDS): Unit = {

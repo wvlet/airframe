@@ -16,7 +16,7 @@ class AsyncHandlerTest extends Spec with Timer {
 
     val handler = new AsyncHandler(buf)
     withResource(handler) { h =>
-      val logger = Logger("wvlet.log.asynctest")
+      val logger = Logger("internal.asynctest")
       logger.addHandler(h)
       logger.setLogLevel(LogLevel.INFO)
 
@@ -29,7 +29,7 @@ class AsyncHandlerTest extends Spec with Timer {
 
     handler.awaitTermination()
     val logs = buf.logs
-    assert(logs.size == 2)
+    logs.size shouldBe 2
     assert(logs(0) == l1)
     assert(logs(1) == l2)
   }
