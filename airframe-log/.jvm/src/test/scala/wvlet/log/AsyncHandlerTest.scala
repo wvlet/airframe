@@ -11,24 +11,27 @@ import wvlet.log.io.Timer
 class AsyncHandlerTest extends Spec with Timer {
   test("start background thread") {
     val buf = new BufferedLogHandler(BareFormatter)
-    withResource(new AsyncHandler(buf)) { h =>
+    val l1  = "hello async logger"
+    val l2  = "log output will be processed in a background thread"
+
+    val handler = new AsyncHandler(buf)
+    withResource(handler) { h =>
       val logger = Logger("wvlet.log.asynctest")
       logger.addHandler(h)
       logger.setLogLevel(LogLevel.INFO)
 
-      val l1 = "hello async logger"
-      val l2 = "log output will be processed in a background thread"
       logger.info(l1)
       logger.warn(l2)
       logger.debug(l1) // should be ignored
 
       h.flush()
-
-      val logs = buf.logs
-      assert(logs.size == 2)
-      assert(logs(0) == l1)
-      assert(logs(1) == l2)
     }
+
+    handler.awaitTermination()
+    val logs = buf.logs
+    assert(logs.size == 2)
+    assert(logs(0) == l1)
+    assert(logs(1) == l2)
   }
 
   test("not block at the logging code") {

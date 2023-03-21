@@ -3,7 +3,7 @@ package wvlet.log
 import java.io.Flushable
 import java.util
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.{Executors, ThreadFactory}
+import java.util.concurrent.{Executors, ThreadFactory, TimeUnit}
 import java.util.{logging => jl}
 
 /**
@@ -62,7 +62,7 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
     }
   }
 
-  override def close(): Unit = {
+  private def closeInternal(): Unit = {
     if (closed.compareAndSet(false, true)) {
       flush()
       // Wake up the poller thread
@@ -70,6 +70,16 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
         isNotEmpty.signalAll()
       }
       executor.shutdown()
+    }
+  }
+
+  override def close(): Unit = {
+    closeInternal()
+  }
+
+  def awaitTermination(timeout: Int = 10, timeUnit: TimeUnit = TimeUnit.MILLISECONDS): Unit = {
+    while (!executor.awaitTermination(timeout, timeUnit)) {
+      Thread.sleep(timeUnit.toMillis(timeout))
     }
   }
 }
