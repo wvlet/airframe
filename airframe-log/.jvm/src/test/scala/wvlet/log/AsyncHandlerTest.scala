@@ -1,23 +1,23 @@
 package wvlet.log
 
 import java.util.concurrent.{ExecutorService, Executors, TimeUnit}
-
-import wvlet.log.LogFormatter.BareFormatter
+import wvlet.log.LogFormatter.{BareFormatter, ThreadLogFormatter}
 import wvlet.log.io.IOUtil._
 import wvlet.log.io.Timer
 
 /**
   */
 class AsyncHandlerTest extends Spec with Timer {
+
   test("start background thread") {
-    val buf = new BufferedLogHandler(BareFormatter)
+    val buf = new BufferedLogHandler(ThreadLogFormatter)
     val l1  = "hello async logger"
     val l2  = "log output will be processed in a background thread"
 
     val handler = new AsyncHandler(buf)
     withResource(handler) { h =>
       val logger = Logger("internal.asynctest")
-      logger.addHandler(h)
+      logger.resetHandler(h)
       logger.setLogLevel(LogLevel.INFO)
 
       logger.info(l1)
@@ -27,11 +27,11 @@ class AsyncHandlerTest extends Spec with Timer {
       h.flush()
     }
 
-    handler.awaitTermination()
+    handler.closeAndAwaitTermination()
     val logs = buf.logs
     logs.size shouldBe 2
-    assert(logs(0) == l1)
-    assert(logs(1) == l2)
+    logs(0).contains(l1) shouldBe true
+    logs(1).contains(l2) shouldBe true
   }
 
   test("not block at the logging code") {
