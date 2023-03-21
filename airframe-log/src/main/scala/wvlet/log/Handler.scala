@@ -42,7 +42,8 @@ class BufferedLogHandler(formatter: LogFormatter) extends jl.Handler {
   override def flush(): Unit = {}
   override def publish(record: jl.LogRecord): Unit =
     synchronized {
-      buf += formatter.format(record)
+      val log = formatter.format(record)
+      buf += log
     }
   override def close(): Unit = {
     // do nothing
