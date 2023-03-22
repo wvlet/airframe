@@ -107,10 +107,7 @@ class JSMatcherTest extends AirSpec {
       b shouldNotBe a
     }
 
-    test("diffent vals with null or undefined") {
-      if (isScalaJS && isScala3) {
-        pending("A bug in Scala 3 compiler fails to produce null/undefined fields: #2426")
-      }
+    test("different vals with null or undefined") {
       val c = new js.Object() {
         val a = null
       }
@@ -140,9 +137,6 @@ class JSMatcherTest extends AirSpec {
     }
 
     test("different params with null or undefined") {
-      if (isScalaJS && isScala3) {
-        pending("A bug in Scala 3 compiler fails to produce null/undefined fields: #2426")
-      }
       val c = new js.Object() {
         val a     = 1
         val extra = js.undefined

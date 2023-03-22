@@ -401,7 +401,7 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     test("parse multiple WITH sub queries") {
       val p = analyze("with q1 as (select id, name from A), q2 as (select name from q1) select * from q2")
       p.outputAttributes.toList shouldMatch { case List(AllColumns(None, Some(Seq(c)), _)) =>
-        c shouldBe ra2.copy(qualifier = Some("q2"))
+        c shouldBe ra2
       }
     }
 
@@ -410,8 +410,8 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       p.outputAttributes.toList shouldMatch {
         // The output should use aliases from the source columns
         case List(AllColumns(None, Some(Seq(c1, c2)), _)) =>
-          c1 shouldMatch { case Alias(Some("q1"), "p1", `ra1`, _) => }
-          c2 shouldMatch { case Alias(Some("q1"), "p2", `ra2`, _) => }
+          c1 shouldMatch { case Alias(None, "p1", `ra1`, _) => }
+          c2 shouldMatch { case Alias(None, "p2", `ra2`, _) => }
       }
     }
 
@@ -474,8 +474,8 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     test("rename table and select *") {
       val p = analyze("select * from A a")
       p.outputAttributes shouldMatch { case List(AllColumns(None, Some(Seq(c1, c2)), _)) =>
-        c1 shouldBe ra1.copy(qualifier = Some("a"))
-        c2 shouldBe ra2.copy(qualifier = Some("a"))
+        c1 shouldBe ra1
+        c2 shouldBe ra2
       }
     }
   }
@@ -672,8 +672,8 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
           |(select id from (select id from B)) y on x.id = y.id""".stripMargin)
       p.outputAttributes shouldMatch { case Seq(AllColumns(_, Some(c), _)) =>
         c shouldMatch { case List(c1, c2) =>
-          c1 shouldBe ra1.withQualifier("x")
-          c2 shouldBe rb1.withQualifier("y")
+          c1 shouldBe ra1
+          c2 shouldBe rb1
         }
       }
       p shouldMatch { case Project(Join(_, _, _, join: JoinOnEq, _), _, _) =>
@@ -925,9 +925,9 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
               _
             )
           ) =>
-        m1.fullName shouldBe "t.id"
+        m1.fullName shouldBe "id"
         m1.dataType shouldBe DataType.LongType
-        m2.fullName shouldBe "t.name"
+        m2.fullName shouldBe "name"
         m2.dataType shouldBe DataType.StringType
     }
   }
@@ -999,8 +999,34 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     }
   }
 
-  test("Resolve qualified AllColumns") {
+  test("Resolve AllColumns in qualified sub-query") {
     val p = analyze("select t2.name from A t1 inner join (select * from B) t2 using (id)")
     p.outputAttributes shouldBe List(rb2.withQualifier("t2"))
   }
+
+  test("Preserve qualifier after join") {
+    val p = analyze("select t1.* from A t1 inner join B t2 on t1.id = t2.id")
+    p.outputAttributes shouldMatch {
+      case List(a: AllColumns) if a.qualifier == Some("t1") =>
+        a.columns shouldBe Some(Seq(ra1, ra2))
+    }
+  }
+
+  test("Preserve qualifier after join using") {
+    val p = analyze("select t1.* from A t1 inner join (select * from B) t2 using (id)")
+    p.outputAttributes shouldMatch {
+      case List(a: AllColumns) if a.qualifier == Some("t1") =>
+        a.columns shouldBe Some(Seq(ra2)) // "id" is not contained
+    }
+  }
+
+  test("Resolve grouping key from qualified AllColumns") {
+    val p = analyze(
+      "select name, count(*) from (select t1.* from A t1 inner join (select * from B) t2 using (id)) group by name"
+    )
+    p shouldMatch { case Aggregate(_, _, Seq(key), _, _) =>
+      key.child shouldBe ra2
+    }
+  }
+
 }

@@ -16,7 +16,8 @@ package wvlet.airframe.sbt.http
 import java.io.{File, FileInputStream}
 import java.nio.file.Files
 import java.util.zip.GZIPInputStream
-import coursier.core.{Extension, Publication}
+import coursier._
+import coursier.core.Extension
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.utils.IOUtils
 import sbt._
@@ -126,26 +127,18 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           // Download airframe-http.tgz with coursier
           import coursier._
           val moduleName = s"airframe-http-codegen_${scalaBinaryVersion.value}"
-          val d = new Dependency(
-            module = Module(
-              Organization("org.wvlet.airframe"),
-              ModuleName(moduleName)
-            ),
-            version = airframeHttpVersion.value,
-            configuration = coursier.core.Configuration.empty,
-            exclusions = Set.empty,
-            publication = Publication("", Type("arch"), Extension("tar.gz"), coursier.Classifier.empty),
-            optional = false,
-            transitive = false
-          )
-          debug(s"Downloading ${d} with Coursier")
+          val d =
+            Dependency(
+              Module(Organization("org.wvlet.airframe"), ModuleName(moduleName)),
+              airframeHttpVersion.value
+            )
+              .withPublication("", Type("arch"), Extension("tar.gz"))
 
+          debug(s"Downloading ${d} with Coursier")
           val files =
             Fetch()
               .addDependencies(d)
-              .addRepositories(
-                Repositories.sonatype("snapshots")
-              )
+              .addRepositories(Repositories.sonatype("snapshots"))
               .allArtifactTypes() // This line is necessary to choose a specific publication (arch, tar.gz)
               .run()
 

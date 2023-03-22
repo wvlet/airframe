@@ -13,8 +13,8 @@ val AIRSPEC_VERSION                 = "22.12.5"
 val SCALACHECK_VERSION              = "1.17.0"
 val MSGPACK_VERSION                 = "0.9.3"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.2.0"
-val SQLITE_JDBC_VERSION             = "3.41.0.0"
-val SLF4J_VERSION                   = "2.0.6"
+val SQLITE_JDBC_VERSION             = "3.41.0.1"
+val SLF4J_VERSION                   = "2.0.7"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
 val SCALAJS_DOM_VERSION             = "2.4.0"
@@ -507,7 +507,7 @@ val logDependencies = { scalaVersion: String =>
 
 val logJVMDependencies = Seq(
   // For rotating log files
-  "ch.qos.logback" % "logback-core" % "1.3.5"
+  "ch.qos.logback" % "logback-core" % "1.3.6"
 )
 
 // airframe-log should have minimum dependencies
@@ -599,7 +599,7 @@ lazy val jdbc =
       description := "JDBC connection pool service",
       libraryDependencies ++= Seq(
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
-        "org.postgresql" % "postgresql"  % "42.5.4",
+        "org.postgresql" % "postgresql"  % "42.6.0",
         "com.zaxxer"     % "HikariCP"    % "5.0.1",
         // For routing slf4j log to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
@@ -691,7 +691,7 @@ lazy val netty =
       name        := "airframe-http-netty",
       description := "Airframe HTTP Netty backend",
       libraryDependencies ++= Seq(
-        "io.netty" % "netty-all" % "4.1.89.Final"
+        "io.netty" % "netty-all" % "4.1.90.Final"
       )
     )
     .dependsOn(http.jvm, rx.jvm)
@@ -810,12 +810,12 @@ lazy val benchmark =
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION,
         // Used only for json benchmark
         "org.json4s" %% "json4s-jackson" % "4.0.6",
-        "io.circe"   %% "circe-parser"   % "0.14.4",
+        "io.circe"   %% "circe-parser"   % "0.14.5",
         // For ScalaPB
         // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
         // For grpc-java
         "io.grpc"             % "grpc-protobuf" % GRPC_VERSION,
-        "com.google.protobuf" % "protobuf-java" % "3.22.0",
+        "com.google.protobuf" % "protobuf-java" % "3.22.2",
         "com.chatwork"       %% "scala-ulid"    % "1.0.24"
       )
       //      Compile / PB.targets := Seq(
@@ -851,7 +851,7 @@ def sqlRefLib = { scalaVersion: String =>
       // Include Spark just as a reference implementation
       "org.apache.spark" %% "spark-sql" % "3.3.2" % Test,
       // Include Trino as a reference implementation
-      "io.trino" % "trino-main" % "408" % Test
+      "io.trino" % "trino-main" % "410" % Test
     )
   } else {
     Seq.empty
@@ -887,7 +887,7 @@ lazy val sql =
     .settings(
       name                       := "airframe-sql",
       description                := "SQL parser & analyzer",
-      Antlr4 / antlr4Version     := "4.11.1",
+      Antlr4 / antlr4Version     := "4.12.0",
       Antlr4 / antlr4PackageName := Some("wvlet.airframe.sql.parser"),
       Antlr4 / antlr4GenListener := true,
       Antlr4 / antlr4GenVisitor  := true,

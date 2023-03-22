@@ -3,15 +3,15 @@ package wvlet.log
 import java.io.Flushable
 import java.util
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.{Executors, ThreadFactory}
+import java.util.concurrent.{Executors, ThreadFactory, TimeUnit}
 import java.util.{logging => jl}
 
 /**
-  * Logging using background thread
+  * Logging using a background thread
   */
 class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCloseable with Flushable {
   private val executor = {
-    Executors.newCachedThreadPool(
+    Executors.newSingleThreadExecutor(
       new ThreadFactory {
         override def newThread(r: Runnable): Thread = {
           val t = new Thread(r, "AirframeLogAsyncHandler")
@@ -47,7 +47,10 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
     val records = Seq.newBuilder[jl.LogRecord]
     guard {
       while (!queue.isEmpty) {
-        records += queue.pollFirst()
+        val record = queue.pollFirst()
+        if (record != null) {
+          records += record
+        }
       }
     }
 
@@ -63,13 +66,21 @@ class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCl
   }
 
   override def close(): Unit = {
+    flush()
+
     if (closed.compareAndSet(false, true)) {
-      flush()
       // Wake up the poller thread
       guard {
         isNotEmpty.signalAll()
       }
-      executor.shutdown()
+      executor.shutdownNow()
+    }
+  }
+
+  def closeAndAwaitTermination(timeout: Int = 10, timeUnit: TimeUnit = TimeUnit.MILLISECONDS): Unit = {
+    close()
+    while (!executor.awaitTermination(timeout, timeUnit)) {
+      Thread.sleep(timeUnit.toMillis(timeout))
     }
   }
 }

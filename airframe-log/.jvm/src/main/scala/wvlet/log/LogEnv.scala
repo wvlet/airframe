@@ -1,8 +1,9 @@
 package wvlet.log
-import java.io.{FileDescriptor, FileOutputStream, PrintStream}
-import java.lang.management.ManagementFactory
-import javax.management.{InstanceAlreadyExistsException, ObjectName, MBeanServer}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
+
+import java.io.PrintStream
+import java.lang.management.ManagementFactory
+import javax.management.{InstanceAlreadyExistsException, MBeanServer, ObjectName}
 
 /**
   */
@@ -10,12 +11,15 @@ private[log] object LogEnv extends LogEnvBase {
   override def isScalaJS: Boolean        = false
   override def defaultLogLevel: LogLevel = LogLevel.INFO
 
-  override lazy val defaultConsoleOutput: PrintStream = {
+  override val defaultConsoleOutput: PrintStream = {
     // Note: In normal circumstances, using System.err here is fine, but
     // System.err can be replaced with other implementation
     // (e.g., airlift.Logging, which is used in Trino https://github.com/airlift/airlift/blob/master/log-manager/src/main/java/io/airlift/log/Logging.java),
-    // so we create a stderr stream explicitly here.
-    new PrintStream(new FileOutputStream(FileDescriptor.err))
+    // If that happens, we may need to create a stderr stream explicitly like this
+    // new PrintStream(new FileOutputStream(FileDescriptor.err))
+
+    // Use the standard System.err for sbtn native client
+    System.err
   }
   override def defaultHandler: java.util.logging.Handler = {
     new ConsoleLogHandler(SourceCodeLogFormatter)
@@ -35,7 +39,6 @@ private[log] object LogEnv extends LogEnvBase {
 
     // When class is an anonymous trait
     if (name.contains("$anon$")) {
-      import collection.JavaConverters._
       val interfaces = cl.getInterfaces
       if (interfaces != null && interfaces.length > 0) {
         // Use the first interface name instead of the anonymous name
@@ -75,6 +78,9 @@ private[log] object LogEnv extends LogEnvBase {
     try {
       Some(ManagementFactory.getPlatformMBeanServer)
     } catch {
+      case e: ClassNotFoundException =>
+        // Pre-registered wvlet.log.AirframeLogManager might not be found when reloading the project in IntelliJ, so skip this error.
+        None
       case e: Throwable =>
         // Show an error once without using the logger itself
         e.printStackTrace()
