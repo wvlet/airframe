@@ -77,16 +77,25 @@ class SQLExprTest extends AirSpec {
     check("a IS NULL")
     check("a IS NOT NULL")
     check("a LIKE b")
+    check("a LIKE 'hello%'")
     check("a NOT LIKE b")
     check("a IN (1, 2, 3)")
     check("a NOT IN (1, 2, 3)")
     check("a BETWEEN 1 AND 10")
     check("a NOT BETWEEN 1 AND 10")
+    check("a IS DISTINCT FROM b")
+    check("a IS NOT DISTINCT FROM b")
   }
 
   test("complex expressions") {
     check("a + b * c")
     check("a + b * c + d")
     check("a + b * c + d * e")
+  }
+
+  test("in sub query") {
+    check("a IN (SELECT * FROM t)")
+    check("a NOT IN (SELECT * FROM t)")
+
   }
 }
