@@ -840,10 +840,10 @@ object Expression {
       with BinaryExpression {
     override def operatorName: String = "="
   }
-  case class NotEq(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
+  case class NotEq(left: Expression, right: Expression, operatorName: String, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
       with BinaryExpression {
-    override def operatorName: String = "!="
+    require(operatorName == "<>" || operatorName == "!=", "NotEq.operatorName must be either <> or !=")
   }
   case class And(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
@@ -880,11 +880,18 @@ object Expression {
       with BinaryExpression {
     override def operatorName: String = ">="
   }
+
   case class Between(e: Expression, a: Expression, b: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression {
     override def children: Seq[Expression] = Seq(e, a, b)
     override def sqlExpr: String           = s"${e.sqlExpr} BETWEEN ${a.sqlExpr} AND ${b.sqlExpr}"
   }
+  case class NotBetween(e: Expression, a: Expression, b: Expression, nodeLocation: Option[NodeLocation])
+      extends ConditionalExpression {
+    override def children: Seq[Expression] = Seq(e, a, b)
+    override def sqlExpr: String           = s"${e.sqlExpr} NOT BETWEEN ${a.sqlExpr} AND ${b.sqlExpr}"
+  }
+
   case class IsNull(child: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
       with UnaryExpression {

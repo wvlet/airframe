@@ -44,7 +44,7 @@ class SQLExprTest extends AirSpec {
         SQLParser.parseExpression(sql).sqlExpr shouldBe sql
       } catch {
         case e: AssertionFailure =>
-          warn(SQLParser.parseExpression(sql))
+          error(s"Failed to generate a proper SQL expression for:\n${SQLParser.parseExpression(sql)}")
           throw e
       }
     }
@@ -69,6 +69,7 @@ class SQLExprTest extends AirSpec {
     check("a OR b")
     check("a = b")
     check("a != b")
+    check("a <> b")
     check("a < b")
     check("a <= b")
     check("a > b")

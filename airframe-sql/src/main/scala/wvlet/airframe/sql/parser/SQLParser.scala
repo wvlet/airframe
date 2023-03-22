@@ -65,19 +65,16 @@ object SQLParser extends LogSupport {
     interpreter.interpret(ctx)
   }
 
-  def parseExpression(sqlFragment: String): Expression =
-  {
+  def parseExpression(sqlFragment: String): Expression = {
     trace(s"parse: ${sqlFragment}")
     val parser = new SqlBaseParser(tokenStream(sqlFragment))
 
     // Do not drop mismatched token
-    parser.setErrorHandler(new DefaultErrorStrategy
-    {
+    parser.setErrorHandler(new DefaultErrorStrategy {
       override def recoverInline(recognizer: Parser): Token =
         if (nextTokensContext == null) {
           throw new InputMismatchException(recognizer)
-        }
-        else {
+        } else {
           throw new InputMismatchException(recognizer, nextTokensState, nextTokensContext)
         }
     })

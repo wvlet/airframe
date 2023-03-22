@@ -470,8 +470,8 @@ object SQLGenerator extends LogSupport {
       case NoOp(_) => ""
       case Eq(a, b, _) =>
         s"${printExpression(a)} = ${printExpression(b)}"
-      case NotEq(a, b, _) =>
-        s"${printExpression(a)} <> ${printExpression(b)}"
+      case NotEq(a, b, operatorName, _) =>
+        s"${printExpression(a)} ${operatorName} ${printExpression(b)}"
       case And(a, b, _) =>
         s"${printExpression(a)} AND ${printExpression(b)}"
       case Or(a, b, _) =>
@@ -488,6 +488,8 @@ object SQLGenerator extends LogSupport {
         s"${printExpression(a)} >= ${printExpression(b)}"
       case Between(e, a, b, _) =>
         s"${printExpression(e)} BETWEEN ${printExpression(a)} and ${printExpression(b)}"
+      case NotBetween(e, a, b, _) =>
+        s"${printExpression(e)} NOT BETWEEN ${printExpression(a)} and ${printExpression(b)}"
       case IsNull(a, _) =>
         s"${printExpression(a)} IS NULL"
       case IsNotNull(a, _) =>
