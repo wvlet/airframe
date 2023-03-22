@@ -66,6 +66,13 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     m.asInstanceOf[LogicalPlan]
   }
 
+  def interpretExpression(ctx: ParserRuleContext): Expression ={
+    trace(s"interpret: ${print(ctx)}")
+    val m = ctx.accept(this)
+    trace(m)
+    m.asInstanceOf[Expression]
+  }
+
   override def visitSingleStatement(ctx: SingleStatementContext): LogicalPlan = {
     visit(ctx.statement()).asInstanceOf[LogicalPlan]
   }

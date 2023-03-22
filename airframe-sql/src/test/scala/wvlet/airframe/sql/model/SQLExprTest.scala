@@ -14,7 +14,9 @@
 package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.model.Expression.{FunctionCall, SortItem, Window, newIdentifier}
+import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airspec.AirSpec
+import wvlet.airspec.spi.AssertionFailure
 
 class SQLExprTest extends AirSpec {
 
@@ -36,82 +38,54 @@ class SQLExprTest extends AirSpec {
     qd.sqlExpr shouldBe "\"database\""
   }
 
-  test("func(a, b, c)") {
-    val f = FunctionCall(
-      "func",
-      Seq(newIdentifier("a"), newIdentifier("b"), newIdentifier("c")),
-      isDistinct = false,
-      None,
-      None,
-      None
-    )
-    f.sqlExpr shouldBe "func(a, b, c)"
+  private def check(sql: String): Unit = {
+    test(sql) {
+      try {
+        SQLParser.parseExpression(sql).sqlExpr shouldBe sql
+      } catch {
+        case e: AssertionFailure =>
+          warn(SQLParser.parseExpression(sql))
+          throw e
+      }
+    }
   }
 
-  test("count(x)") {
-    val f = FunctionCall("count", Seq(newIdentifier("x")), isDistinct = false, None, None, None)
-    f.sqlExpr shouldBe "count(x)"
+  test("Expression.sqlExpr") {
+    check("func(a, b, c)")
+    check("count(x)")
+    check("count(DISTINCT x)")
+    check("count(x) OVER ()")
+    check("count(x) OVER (PARTITION BY y)")
+    check("count(x) OVER (PARTITION BY y ORDER BY x)")
+    check("array_agg(name) FILTER (WHERE name IS NOT NULL)")
   }
 
-  test("count(DISTINCT x)") {
-    val f = FunctionCall("count", Seq(newIdentifier("x")), isDistinct = true, None, None, None)
-    f.sqlExpr shouldBe "count(DISTINCT x)"
+  test("binary expression") {
+    check("1 + 2")
+    check("a - b")
+    check("a * b")
+    check("a / b")
+    check("a AND b")
+    check("a OR b")
+    check("a = b")
+    check("a != b")
+    check("a < b")
+    check("a <= b")
+    check("a > b")
+    check("a >= b")
+    check("a IS NULL")
+    check("a IS NOT NULL")
+    check("a LIKE b")
+    check("a NOT LIKE b")
+    check("a IN (1, 2, 3)")
+    check("a NOT IN (1, 2, 3)")
+    check("a BETWEEN 1 AND 10")
+    check("a NOT BETWEEN 1 AND 10")
   }
 
-  test("count(x) over ()") {
-    val f = FunctionCall(
-      "count",
-      Seq(newIdentifier("x")),
-      isDistinct = false,
-      None,
-      window = Some(Window(Seq.empty, Seq.empty, None, None)),
-      None
-    )
-    f.sqlExpr shouldBe "count(x) OVER ()"
-  }
-
-  test("count(x) over (partition by y)") {
-    val f = FunctionCall(
-      "count",
-      Seq(newIdentifier("x")),
-      isDistinct = false,
-      None,
-      window = Some(Window(Seq(newIdentifier("y")), Seq.empty, None, None)),
-      None
-    )
-    f.sqlExpr shouldBe "count(x) OVER (PARTITION BY y)"
-  }
-
-  test("count(x) over (partition by y order by x)") {
-    val f = FunctionCall(
-      "count",
-      Seq(newIdentifier("x")),
-      isDistinct = false,
-      None,
-      window = Some(
-        Window(
-          Seq(newIdentifier("y")),
-          Seq(SortItem(newIdentifier("x"), None, None, None)),
-          None,
-          None
-        )
-      ),
-      None
-    )
-    f.sqlExpr shouldBe "count(x) OVER (PARTITION BY y ORDER BY x)"
-  }
-
-  test("array_agg(name) FILTER (WHERE name IS NOT NULL)") {
-    val f = FunctionCall(
-      "array_agg",
-      Seq(newIdentifier("name")),
-      isDistinct = false,
-      filter = Some(
-        Expression.IsNotNull(newIdentifier("name"), None)
-      ),
-      None,
-      None
-    )
-    f.sqlExpr shouldBe "array_agg(name) FILTER (WHERE name IS NOT NULL)"
+  test("complex expressions") {
+    check("a + b * c")
+    check("a + b * c + d")
+    check("a + b * c + d * e")
   }
 }

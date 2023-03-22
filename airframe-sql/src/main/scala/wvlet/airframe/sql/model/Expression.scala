@@ -883,6 +883,7 @@ object Expression {
   case class Between(e: Expression, a: Expression, b: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression {
     override def children: Seq[Expression] = Seq(e, a, b)
+    override def sqlExpr: String           = s"${e.sqlExpr} BETWEEN ${a.sqlExpr} AND ${b.sqlExpr}"
   }
   case class IsNull(child: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression

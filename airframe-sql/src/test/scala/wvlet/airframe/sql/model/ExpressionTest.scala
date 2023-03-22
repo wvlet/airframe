@@ -14,6 +14,7 @@
 package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.model.Expression.{FunctionCall, SingleColumn, UnquotedIdentifier}
+import wvlet.airframe.sql.parser.SQLParser
 import wvlet.airspec.AirSpec
 
 import java.util.concurrent.atomic.AtomicInteger
