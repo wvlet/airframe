@@ -444,7 +444,7 @@ object TypeResolver extends LogSupport {
 
     def lookup(name: String): List[Expression] = {
       val resolvedExprs = List.newBuilder[Expression]
-      ColumnPath.fromQName(context.database, name) match {
+      ColumnPath.fromQName(name) match {
         case Some(columnPath) =>
           resolvedAttributes.foreach {
             case a: Attribute =>

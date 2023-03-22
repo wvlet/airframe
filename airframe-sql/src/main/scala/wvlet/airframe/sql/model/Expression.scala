@@ -232,10 +232,10 @@ trait BinaryExpression extends Expression {
 case class ColumnPath(database: Option[String], table: Option[String], columnName: String)
 
 object ColumnPath {
-  def fromQName(contextDatabase: String, fullName: String): Option[ColumnPath] = {
+  def fromQName(fullName: String): Option[ColumnPath] = {
     // TODO Should we handle quotation in the name or just reject such strings?
     fullName.split("\\.").toList match {
-      case List(db, t, c) if db == contextDatabase =>
+      case List(db, t, c) =>
         Some(ColumnPath(Some(db), Some(t), c))
       case List(t, c) =>
         Some(ColumnPath(None, Some(t), c))
