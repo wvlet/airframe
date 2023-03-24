@@ -1043,10 +1043,17 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
   }
 
   test("Resolve column name fully qualified with non-default database name in join condition") {
-    val p = analyze(
+    analyze(
       """select default.A.name from default.A
         |inner join shared.D on A.id = shared.D.id""".stripMargin
     )
+    val e = intercept[SQLError] {
+      analyze(
+        """select default.A.name from default.A
+          |inner join shared.D on A.id = shared.A.id""".stripMargin
+      )
+    }
+    e.message.contains("join key column: id is not found") shouldBe true
   }
 
 }
