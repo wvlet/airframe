@@ -9,11 +9,11 @@ val targetScalaVersions = SCALA_3 :: uptoScala2
 // Add this for using snapshot versions
 // ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
 
-val AIRSPEC_VERSION                 = "22.12.5"
+val AIRSPEC_VERSION                 = "23.3.4"
 val SCALACHECK_VERSION              = "1.17.0"
 val MSGPACK_VERSION                 = "0.9.3"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.2.0"
-val SQLITE_JDBC_VERSION             = "3.41.0.1"
+val SQLITE_JDBC_VERSION             = "3.41.2.1"
 val SLF4J_VERSION                   = "2.0.7"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
@@ -867,9 +867,9 @@ lazy val parquet =
       description := "Parquet columnar format reader/writer support",
       libraryDependencies ++= Seq(
         "org.apache.parquet" % "parquet-hadoop" % PARQUET_VERSION,
-        "org.apache.hadoop"  % "hadoop-client"  % "3.3.4" % Provided,
+        "org.apache.hadoop"  % "hadoop-client"  % "3.3.5" % Provided,
         // For S3 support
-        "org.apache.hadoop"      % "hadoop-aws" % "3.3.4"   % Provided,
+        "org.apache.hadoop"      % "hadoop-aws" % "3.3.5"  % Provided,
         "software.amazon.awssdk" % "auth"       % "2.20.15" % Provided,
         // For Apple Silicon (M1)
         "org.xerial.snappy"  % "snappy-java"  % "1.1.9.1",

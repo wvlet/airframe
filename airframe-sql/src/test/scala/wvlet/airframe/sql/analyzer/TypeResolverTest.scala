@@ -57,6 +57,17 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       .addColumn(c2)
   )
 
+  private val d1 = TableColumn("id", DataType.LongType, properties = Map("tag" -> Seq("personal_identifier")))
+  private val d2 = TableColumn("name", DataType.StringType, properties = Map("tag" -> Seq("private")))
+
+  private val tableD = Catalog.newTable(
+    "shared",
+    "D",
+    Catalog.newSchema
+      .addColumn(d1)
+      .addColumn(d2)
+  )
+
   override protected def demoCatalog: Catalog = {
     val catalog = new InMemoryCatalog(
       "global",
@@ -68,6 +79,8 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     catalog.createTable(tableA, CreateMode.CREATE_IF_NOT_EXISTS)
     catalog.createTable(tableB, CreateMode.CREATE_IF_NOT_EXISTS)
     catalog.createTable(tableC, CreateMode.CREATE_IF_NOT_EXISTS)
+    catalog.createDatabase(Catalog.Database("shared"), CreateMode.CREATE_IF_NOT_EXISTS)
+    catalog.createTable(tableD, CreateMode.CREATE_IF_NOT_EXISTS)
     catalog
   }
 
@@ -1027,6 +1040,20 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     p shouldMatch { case Aggregate(_, _, Seq(key), _, _) =>
       key.child shouldBe ra2
     }
+  }
+
+  test("Resolve column name fully qualified with non-default database name in join condition") {
+    analyze(
+      """select default.A.name from default.A
+        |inner join shared.D on A.id = shared.D.id""".stripMargin
+    )
+    val e = intercept[SQLError] {
+      analyze(
+        """select default.A.name from default.A
+          |inner join shared.D on A.id = shared.A.id""".stripMargin
+      )
+    }
+    e.message.contains("join key column: id is not found") shouldBe true
   }
 
 }

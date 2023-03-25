@@ -14,6 +14,7 @@
 
 package wvlet.airframe.sql.model
 
+import wvlet.airframe.sql.analyzer.AnalyzerContext
 import wvlet.airframe.sql.catalog.DataType
 import wvlet.airframe.sql.catalog.DataType._
 import wvlet.airframe.sql.model.Expression.{AllColumns, MultiSourceColumn}
@@ -232,10 +233,10 @@ trait BinaryExpression extends Expression {
 case class ColumnPath(database: Option[String], table: Option[String], columnName: String)
 
 object ColumnPath {
-  def fromQName(contextDatabase: String, fullName: String): Option[ColumnPath] = {
+  def fromQName(fullName: String): Option[ColumnPath] = {
     // TODO Should we handle quotation in the name or just reject such strings?
     fullName.split("\\.").toList match {
-      case List(db, t, c) if db == contextDatabase =>
+      case List(db, t, c) =>
         Some(ColumnPath(Some(db), Some(t), c))
       case List(t, c) =>
         Some(ColumnPath(None, Some(t), c))
@@ -338,33 +339,52 @@ trait Attribute extends LeafExpression with LogSupport {
     * If a given column name matches with this Attribute, return this. If there are multiple candidate attributes (e.g.,
     * via Join, Union), return MultiSourceAttribute.
     */
-  def matched(columnPath: ColumnPath): Option[Attribute] = {
-    def findMatched(columnName: String): Seq[Attribute] = {
-      this match {
-        case a: AllColumns =>
-          a.inputColumns.filter(_.name == columnName)
-        case a: Attribute if a.name == columnName =>
-          Seq(a)
-        case _ =>
-          Seq.empty
-      }
-    }
-
-    val result: Seq[Attribute] = columnPath.table match {
-      // TODO handle (catalog).(database).(table) names in the qualifier
-      case Some(tableName) =>
-        if (qualifier.exists(_ == tableName)) {
-          findMatched(columnPath.columnName).map(_.withQualifier(qualifier))
-        } else {
+  def matched(columnPath: ColumnPath, context: AnalyzerContext): Option[Attribute] = {
+    def findMatched(tableName: Option[String], columnName: String): Seq[Attribute] = {
+      tableName match {
+        case Some(tableName) =>
           this match {
-            case r: ResolvedAttribute if r.sourceColumn.nonEmpty && r.sourceColumn.get.table.name == tableName =>
-              findMatched(columnPath.columnName)
+            case r: ResolvedAttribute if r.sourceColumn.exists(_.table.name == tableName) =>
+              findMatched(None, columnName)
             case _ =>
               Nil
           }
+        case None =>
+          this match {
+            case a: AllColumns =>
+              a.inputColumns.filter(_.name == columnName)
+            case a: Attribute if a.name == columnName =>
+              Seq(a)
+            case _ =>
+              Seq.empty
+          }
+      }
+    }
+
+    val result: Seq[Attribute] = columnPath match {
+      // TODO handle (catalog).(database).(table) names in the qualifier
+      case ColumnPath(Some(databaseName), Some(tableName), columnName) =>
+        if (databaseName == context.database) {
+          if (qualifier.exists(_ == tableName)) {
+            findMatched(None, columnName).map(_.withQualifier(qualifier))
+          } else {
+            findMatched(Some(tableName), columnName)
+          }
+        } else {
+          this match {
+            case r: ResolvedAttribute if r.sourceColumn.exists(_.table.database.contains(databaseName)) =>
+              findMatched(Some(tableName), columnName)
+            case _ => Nil
+          }
         }
-      case None =>
-        findMatched(columnPath.columnName)
+      case ColumnPath(None, Some(tableName), columnName) =>
+        if (qualifier.exists(_ == tableName)) {
+          findMatched(None, columnName).map(_.withQualifier(qualifier))
+        } else {
+          findMatched(Some(tableName), columnName)
+        }
+      case ColumnPath(_, _, columnName) =>
+        findMatched(None, columnName)
     }
 
     if (result.size > 1) {
