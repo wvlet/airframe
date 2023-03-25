@@ -1,0 +1,14 @@
+pull_request_rules:
+  - name: Automatic merge Scala Steward PRs
+    conditions:
+      - author=xerial-bot
+      - check-success~=.*
+      - or:
+        - title~=^Update airframe-
+        - title~=^Update sbt-airframe
+        - title~=^Update airspec
+        - label=sbt-plugin-update
+        - label=test-library-update
+    actions:
+      merge:
+        method: squash
