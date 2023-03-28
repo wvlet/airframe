@@ -18,7 +18,6 @@ import wvlet.airframe.http.RxFilter
 import scala.language.experimental.macros
 
 class RxRouterBase { self: RxRouter =>
-
   def add[Controller]: RxRouter = macro RxRouterMacros.add[Controller]
 
 }

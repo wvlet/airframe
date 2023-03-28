@@ -77,30 +77,3 @@ object RxFilter {
     }
   }
 }
-
-/**
-  * [[RxEndpoint]] is a terminal for processing requests and returns `Rx[Response]`.
-  */
-trait RxEndpoint {
-  private[http] def backend: RxHttpBackend
-
-  /**
-    * @param request
-    * @return
-    */
-  def apply(request: Request): Rx[Response]
-
-  /**
-    * Set a thread-local parameter
-    */
-  def setThreadLocal[A](key: String, value: A): Unit = {
-    backend.setThreadLocal(key, value)
-  }
-
-  /**
-    * Get a thread-local parameter
-    */
-  def getThreadLocal[A](key: String): Option[A] = {
-    backend.getThreadLocal(key)
-  }
-}

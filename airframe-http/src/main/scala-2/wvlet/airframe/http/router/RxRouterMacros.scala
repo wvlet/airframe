@@ -38,7 +38,7 @@ private[http] object RxRouterMacros {
     q"""
      {
        wvlet.airframe.registerTraitFactory[${t}]
-       RxRouter.empty.addInternal(wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
+       RxRouter.EndpointNode(None, wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
      }
    """
   }
@@ -51,7 +51,7 @@ private[http] object RxRouterMacros {
       q"""
        {
          wvlet.airframe.registerTraitFactory[${t}]
-         RxRouter.empty.addInternal(wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
+         RxRouter.FilterNode(None, wvlet.airframe.surface.Surface.of[${t}])
        }
      """
     } else {
