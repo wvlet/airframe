@@ -442,13 +442,13 @@ object TypeResolver extends LogSupport {
   ): List[Expression] = {
     val resolvedAttributes = inputAttributes.map(resolveAttribute)
 
-    def lookup(name: String): List[Expression] = {
+    def lookup(name: String, context: AnalyzerContext): List[Expression] = {
       val resolvedExprs = List.newBuilder[Expression]
-      ColumnPath.fromQName(context.database, name) match {
+      ColumnPath.fromQName(name) match {
         case Some(columnPath) =>
           resolvedAttributes.foreach {
             case a: Attribute =>
-              resolvedExprs ++= a.matched(columnPath)
+              resolvedExprs ++= a.matched(columnPath, context)
             case _ =>
           }
         case None =>
@@ -458,10 +458,10 @@ object TypeResolver extends LogSupport {
 
     val results = expr match {
       case i: Identifier =>
-        lookup(i.value).map(toResolvedAttribute(i.value, _))
+        lookup(i.value, context).map(toResolvedAttribute(i.value, _))
       case u @ UnresolvedAttribute(qualifier, name, _) =>
-        lookup(u.fullName).map(toResolvedAttribute(name, _).withQualifier(qualifier))
-      case a @ AllColumns(_, None, _) =>
+        lookup(u.fullName, context).map(toResolvedAttribute(name, _).withQualifier(qualifier))
+      case a @ AllColumns(qualifier, None, _) =>
         // Resolve the inputs of AllColumn as ResolvedAttribute
         // so as not to pull up too much details
         val allColumns = resolvedAttributes.map {
@@ -471,7 +471,10 @@ object TypeResolver extends LogSupport {
           case other =>
             toResolvedAttribute(other.name, other)
         }
-        List(a.copy(columns = Some(allColumns)))
+        List(a.copy(columns = Some((qualifier match {
+          case Some(q) => allColumns.filter(_.qualifier.contains(q))
+          case None    => allColumns
+        }).map(_.withQualifier(None)))))
       case _ =>
         List(expr)
     }

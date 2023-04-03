@@ -1,0 +1,25 @@
+pull_request_rules:
+  - name: Automatic merge Scala Steward PRs
+    conditions:
+      - author=xerial-bot
+      - check-success=Coverage test
+      - check-success=sbt-airframe
+      - check-success=Code format
+      - check-success=Scala 2.12
+      - check-success=Scala 2.13 
+      - check-success=Scala 2.13 
+      - check-success=Scala 3.x (Dotty)
+      - check-success=Scala.js / Scala 2.12
+      - check-success=Scala.js / Scala 2.13
+      - check-success=Scala.js / Scala 3
+      - check-success=AirSpec
+      - or:
+        - title~=^Update airframe-
+        - title~=^Update sbt-airframe
+        - title~=^Update airspec
+        - title~=^Update scalafmt-core
+        - label=sbt-plugin-update
+        - label=test-library-update
+    actions:
+      merge:
+        method: squash
