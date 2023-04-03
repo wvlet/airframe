@@ -374,7 +374,7 @@ object SQLGenerator extends LogSupport {
       case l: Literal =>
         l.sqlExpr
       case g: GroupingKey =>
-        printExpression(g.child)
+        g.index.getOrElse(printExpression(g.child)).toString
       case ParenthesizedExpression(expr, _) =>
         s"(${printExpression(expr)})"
       case a: Alias =>
