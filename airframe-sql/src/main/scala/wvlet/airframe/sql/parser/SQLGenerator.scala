@@ -374,7 +374,7 @@ object SQLGenerator extends LogSupport {
       case l: Literal =>
         l.sqlExpr
       case g: GroupingKey =>
-        g.sqlExpr
+        printExpression(g.child)
       case ParenthesizedExpression(expr, _) =>
         s"(${printExpression(expr)})"
       case a: Alias =>
@@ -412,6 +412,8 @@ object SQLGenerator extends LogSupport {
           }
           .getOrElse("")
         s"${name}(${d}${argList})${wd}"
+      case Extract(interval, expr, _) =>
+        s"EXTRACT(${interval} FROM ${printExpression(expr)})"
       case QName(parts, _) =>
         parts.mkString(".")
       case Cast(expr, tpe, tryCast, _) =>
