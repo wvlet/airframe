@@ -691,7 +691,7 @@ lazy val netty =
       name        := "airframe-http-netty",
       description := "Airframe HTTP Netty backend",
       libraryDependencies ++= Seq(
-        "io.netty" % "netty-all" % "4.1.90.Final"
+        "io.netty" % "netty-all" % "4.1.91.Final"
       )
     )
     .dependsOn(http.jvm, rx.jvm)
@@ -869,7 +869,7 @@ lazy val parquet =
         "org.apache.parquet" % "parquet-hadoop" % PARQUET_VERSION,
         "org.apache.hadoop"  % "hadoop-client"  % "3.3.5" % Provided,
         // For S3 support
-        "org.apache.hadoop"      % "hadoop-aws" % "3.3.5"  % Provided,
+        "org.apache.hadoop"      % "hadoop-aws" % "3.3.5"   % Provided,
         "software.amazon.awssdk" % "auth"       % "2.20.15" % Provided,
         // For Apple Silicon (M1)
         "org.xerial.snappy"  % "snappy-java"  % "1.1.9.1",
