@@ -54,7 +54,9 @@ object RxRouterTest extends AirSpec {
     RxRouter
       .filter[AuthFilter]
       .andThen(
-        MyApi.router + MyApi2.router
+        RxRouter
+          .add(MyApi.router)
+          .add(MyApi2.router)
       )
   }
 

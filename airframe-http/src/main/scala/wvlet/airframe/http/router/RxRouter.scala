@@ -13,17 +13,13 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.http.RxFilter
 import wvlet.airframe.surface.{MethodSurface, Surface}
 
 trait RxRouter {
   def name: String
-  def parent: Option[RxRoute]
 
-  def isRoot: Boolean = parent.isEmpty
-  def root: RxRouter = {
-    parent.map(_.root).getOrElse(this)
-  }
+  def filter: Option[RxRouteFilter]
+  def routes: List[RxRouter]
 
   /**
     * Add a sibling router to this node
@@ -31,50 +27,58 @@ trait RxRouter {
     * @return
     */
   def add(router: RxRouter): RxRouter = ???
-
-  def +(router: RxRouter): RxRouter = add(router)
+  def +(router: RxRouter): RxRouter   = add(router)
 }
 
-case class RxRoute(
-    filter: List[RxFilter] = Nil,
-    children: List[RxRouter] = Nil,
+case class RxRouteFilter(
+  parent: Option[RxRouteFilter],
+  filterSurface: Surface
 )
+  extends RxRouteFilterBase
+{
+  def name: String = filterSurface.name
 
-
-object RxRouter extends RxRouterObjectBase {
-  def add(router: RxRouter): RxRouter = ???
-
-
-  case class RxRouteFilter(
-    parent: Option[RxRouteFilter],
-    filterSurface: Surface
-  ) {
-    def name: String = filterSurface.name
-
-    def withParent(parent: RxRouteFilter): RxRouteFilter ={
-      this.copy(parent = Some(parent))
-    }
-    def andThen(next: RxRouteFilter): RxRouteFilter = {
-      next.copy(parent = Some(this))
-    }
-    def andThen(next: EndpointNode): EndpointNode = {
-      next.copy(parent = Some(this))
-    }
+  def andThen(next: RxRouteFilter): RxRouteFilter =
+  {
+    next.copy(parent = Some(this))
   }
 
-  case class EndpointNode(
-      override val parent: Option[RxRouteFilter],
+  def andThen(next: RxEndpointNode): RxRouter =
+  {
+    next.copy(filter = Some(this))
+  }
+}
+
+object RxRouter extends RxRouterObjectBase {
+
+  def add(router: RxRouter): RxRouter = RxRouterLeaf(
+    filter = None,
+    routes = List(router)
+  )
+
+
+  case class RxRouteCollection(
+      override val filter: Option[RxRouteFilter] = None,
+      routes: List[RxRouter]
+  ) extends RxRouter {
+    // TODO
+    override def name: String = ???
+  }
+
+  case class RxEndpointNode(
+      override val filter: Option[RxRouteFilter] = None,
       controllerSurface: Surface,
       methodSurfaces: Seq[MethodSurface]
   ) extends RxRouter {
-    override def name: String    = controllerSurface.name
-    override def isLeaf: Boolean = true
-    override def isNode: Boolean = false
+    override def name: String = controllerSurface.name
 
-    override def children: Seq[RxRouter] = Seq.empty
+    override def routes: List[RxRouter] = List.empty
+
+    override def add(router: RxRouter): RxRouter = {
+      RxRouterLeaf(
+        filter = this.filter,
+        routes = List(this, router)
+      )
+    }
   }
-
-//  def merge(routers: RxRouter*): RxRouter = {
-//    routers.toSeq.reduce { (r1, r2) => r1.add(r2) }
-//  }
 }

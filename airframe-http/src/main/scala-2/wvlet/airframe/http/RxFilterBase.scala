@@ -11,22 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.router
+package wvlet.airframe.http
 
-import wvlet.airframe.http.RxFilter
+import wvlet.airframe.http.router.RxRouterMacros
 
 import scala.language.experimental.macros
 
-class RxRouterBase { self: RxRouter =>
-  def add[Controller]: RxRouter = macro RxRouterMacros.add[Controller]
-
-}
-
-trait RxRouterObjectBase {
-  def of[Controller]: RxRouter = macro RxRouterMacros.of[Controller]
-  def filter[Filter <: RxFilter]: RxRouter = macro RxRouterMacros.filter[Filter]
-}
-
-trait RxRouteFilterBase {
-  def andThen[Filter <: RxFilter]: RxFilter = macro RxRouterMacros.andThenFilter[Filter]
+trait RxFilterBase {
+  def of[Filter]: RxFilter = macro RxRouterMacros.filter[Filter]
 }

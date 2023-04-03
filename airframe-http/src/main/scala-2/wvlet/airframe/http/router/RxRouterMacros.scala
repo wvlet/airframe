@@ -38,7 +38,7 @@ private[http] object RxRouterMacros {
     q"""
      {
        wvlet.airframe.registerTraitFactory[${t}]
-       RxRouter.EndpointNode(None, wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
+       RxRouter.RxEndpointNode(None, wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
      }
    """
   }
@@ -51,9 +51,27 @@ private[http] object RxRouterMacros {
       q"""
        {
          wvlet.airframe.registerTraitFactory[${t}]
-         RxRouter.FilterNode(None, wvlet.airframe.surface.Surface.of[${t}])
+         wvlet.airframe.http.router.RxRouteFilter(None, wvlet.airframe.surface.Surface.of[${t}])
        }
      """
+    } else {
+      c.error(c.enclosingPosition, s"${t} is not a RxFilter type")
+      q""""""
+    }
+  }
+
+  def andThenFilter[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import c.universe._
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+
+    if (t <:< c.typeTag[wvlet.airframe.http.RxFilter].tpe) {
+      q"""
+     {
+       wvlet.airframe.registerTraitFactory[${t}]
+       val next = wvlet.airframe.http.router.RxRouteFilter(None, wvlet.airframe.surface.Surface.of[${t}])
+       ${c.prefix}.andThen(next)
+     }
+   """
     } else {
       c.error(c.enclosingPosition, s"${t} is not a RxFilter type")
       q""""""
