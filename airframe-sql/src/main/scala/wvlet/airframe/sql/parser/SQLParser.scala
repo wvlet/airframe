@@ -16,7 +16,7 @@ package wvlet.airframe.sql.parser
 import org.antlr.v4.runtime.{DefaultErrorStrategy, RecognitionException, _}
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.log.LogSupport
-import wvlet.airframe.sql.model.{LogicalPlan, NodeLocation}
+import wvlet.airframe.sql.model.{Expression, LogicalPlan, NodeLocation}
 
 /**
   * SQL -> Token -> ANTLR parzse tree -> LogicalPlan
@@ -63,6 +63,28 @@ object SQLParser extends LogSupport {
     trace(ctx.toStringTree(parser))
     val interpreter = new SQLInterpreter(withNodeLocation)
     interpreter.interpret(ctx)
+  }
+
+  def parseExpression(sqlFragment: String): Expression = {
+    trace(s"parse: ${sqlFragment}")
+    val parser = new SqlBaseParser(tokenStream(sqlFragment))
+
+    // Do not drop mismatched token
+    parser.setErrorHandler(new DefaultErrorStrategy {
+      override def recoverInline(recognizer: Parser): Token =
+        if (nextTokensContext == null) {
+          throw new InputMismatchException(recognizer)
+        } else {
+          throw new InputMismatchException(recognizer, nextTokensState, nextTokensContext)
+        }
+    })
+    parser.removeErrorListeners()
+    parser.addErrorListener(createLexerErrorListener)
+
+    val ctx = parser.expression()
+    trace(ctx.toStringTree(parser))
+    val interpreter = new SQLInterpreter(true)
+    interpreter.interpretExpression(ctx)
   }
 
   def tokenStream(sql: String): CommonTokenStream = {

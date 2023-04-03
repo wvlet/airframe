@@ -66,6 +66,13 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     m.asInstanceOf[LogicalPlan]
   }
 
+  def interpretExpression(ctx: ParserRuleContext): Expression = {
+    trace(s"interpret: ${print(ctx)}")
+    val m = ctx.accept(this)
+    trace(m)
+    m.asInstanceOf[Expression]
+  }
+
   override def visitSingleStatement(ctx: SingleStatementContext): LogicalPlan = {
     visit(ctx.statement()).asInstanceOf[LogicalPlan]
   }
@@ -538,7 +545,11 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
           if (n.NOT() == null) IsNull(e, getLocation(n))
           else IsNotNull(e, getLocation(n))
         case b: BetweenContext =>
-          Between(e, expression(b.lower), expression(b.upper), getLocation(b))
+          if (b.NOT() != null) {
+            NotBetween(e, expression(b.lower), expression(b.upper), getLocation(b))
+          } else {
+            Between(e, expression(b.lower), expression(b.upper), getLocation(b))
+          }
         case i: InSubqueryContext =>
           val subQuery = visitQuery(i.query())
           if (i.NOT() == null) InSubQuery(e, subQuery, getLocation(i))
@@ -610,7 +621,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
       case SqlBaseParser.GTE =>
         GreaterThanOrEq(left, right, getLocation(ctx.comparisonOperator()))
       case SqlBaseParser.NEQ =>
-        NotEq(left, right, getLocation(ctx.comparisonOperator()))
+        NotEq(left, right, op.getText, getLocation(ctx.comparisonOperator()))
     }
   }
 
