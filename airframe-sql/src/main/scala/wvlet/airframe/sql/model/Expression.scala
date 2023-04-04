@@ -1258,6 +1258,7 @@ object Expression {
 
   case class Extract(interval: IntervalField, expr: Expression, nodeLocation: Option[NodeLocation]) extends Expression {
     override def children: Seq[Expression] = Seq(expr)
+    override def sqlExpr: String = s"EXTRACT(${interval.sqlExpr} FROM ${expr.sqlExpr})"
     override def toString = s"Extract(interval:${interval}, ${expr})"
   }
 
