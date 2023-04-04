@@ -413,6 +413,8 @@ object SQLGenerator extends LogSupport {
           .getOrElse("")
         val f = filter.map(x => s" FILTER (WHERE ${printExpression(x)})").getOrElse("")
         s"${name}(${d}${argList})${f}${wd}"
+      case Extract(interval, expr, _) =>
+        s"EXTRACT(${interval} FROM ${printExpression(expr)})"
       case QName(parts, _) =>
         parts.mkString(".")
       case Cast(expr, tpe, tryCast, _) =>
