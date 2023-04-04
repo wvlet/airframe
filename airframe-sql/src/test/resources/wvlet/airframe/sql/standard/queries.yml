@@ -192,3 +192,35 @@
       select 1 as c1
 - sql: |
       select count(1) from t having count(distinct id) > 5
+- sql: | 
+      select EXTRACT(YEAR FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(QUARTER FROM FROM_UNIXTIME(time)), COUNT(*) FROM a GROUP BY EXTRACT(QUARTER FROM FROM_UNIXTIME(time))
+- sql: |
+      select EXTRACT(MONTH FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(WEEK FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(DAY FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(DAY_OF_WEEK FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(DOW FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(DAY_OF_YEAR FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(DOY FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(YEAR_OF_WEEK FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(YOW FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(HOUR FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(MINUTE FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(SECOND FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(TIMEZONE_HOUR FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
+- sql: |
+      select EXTRACT(timezone_minute FROM FROM_UNIXTIME(time)), COUNT(*) FROM a

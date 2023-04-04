@@ -808,6 +808,27 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     }
   }
 
+  override def visitExtract(ctx: SqlBaseParser.ExtractContext): Expression = {
+    val intervalLocation = getLocation(ctx.identifier())
+    val expr             = expression(ctx.valueExpression())
+    ctx.identifier().getText().toUpperCase() match {
+      case "YEAR"                 => Extract(Year(intervalLocation), expr, getLocation(ctx))
+      case "QUARTER"              => Extract(Quarter(intervalLocation), expr, getLocation(ctx))
+      case "MONTH"                => Extract(Month(intervalLocation), expr, getLocation(ctx))
+      case "WEEK"                 => Extract(Week(intervalLocation), expr, getLocation(ctx))
+      case "DAY" | "DAY_OF_MONTH" => Extract(Day(intervalLocation), expr, getLocation(ctx))
+      case "DAY_OF_WEEK" | "DOW"  => Extract(DayOfWeek(intervalLocation), expr, getLocation(ctx))
+      case "DAY_OF_YEAR" | "DOY"  => Extract(DayOfYear(intervalLocation), expr, getLocation(ctx))
+      case "YEAR_OF_WEEK" | "YOW" => Extract(YearOfWeek(intervalLocation), expr, getLocation(ctx))
+      case "HOUR"                 => Extract(Hour(intervalLocation), expr, getLocation(ctx))
+      case "MINUTE"               => Extract(Minute(intervalLocation), expr, getLocation(ctx))
+      case "SECOND"               => Extract(Second(intervalLocation), expr, getLocation(ctx))
+      case "TIMEZONE_HOUR"        => Extract(TimezoneHour(intervalLocation), expr, getLocation(ctx))
+      case "TIMEZONE_MINUTE"      => Extract(TimezoneMinute(intervalLocation), expr, getLocation(ctx))
+      case _                      => throw unknown(ctx)
+    }
+  }
+
   override def visitArrayConstructor(ctx: ArrayConstructorContext): Expression = {
     val elems = ctx.expression().asScala.map(expression(_)).toSeq
     ArrayConstructor(elems, getLocation(ctx))
