@@ -1148,25 +1148,25 @@ object Expression {
   sealed trait IntervalField extends LeafExpression {
     override def toString(): String = getClass.getSimpleName
   }
-  case class Year(nodeLocation: Option[NodeLocation])            extends IntervalField
-  case class Quarter(nodeLocation: Option[NodeLocation])         extends IntervalField
-  case class Month(nodeLocation: Option[NodeLocation])           extends IntervalField
-  case class Week(nodeLocation: Option[NodeLocation])            extends IntervalField
-  case class Day(nodeLocation: Option[NodeLocation])             extends IntervalField
-  case class DayOfWeek(nodeLocation: Option[NodeLocation])       extends IntervalField {
+  case class Year(nodeLocation: Option[NodeLocation])    extends IntervalField
+  case class Quarter(nodeLocation: Option[NodeLocation]) extends IntervalField
+  case class Month(nodeLocation: Option[NodeLocation])   extends IntervalField
+  case class Week(nodeLocation: Option[NodeLocation])    extends IntervalField
+  case class Day(nodeLocation: Option[NodeLocation])     extends IntervalField
+  case class DayOfWeek(nodeLocation: Option[NodeLocation]) extends IntervalField {
     override def toString(): String = "day_of_week"
   }
-  case class DayOfYear(nodeLocation: Option[NodeLocation])     extends IntervalField {
+  case class DayOfYear(nodeLocation: Option[NodeLocation]) extends IntervalField {
     override def toString(): String = "day_of_year"
   }
-  case class YearOfWeek(nodeLocation: Option[NodeLocation])    extends IntervalField {
+  case class YearOfWeek(nodeLocation: Option[NodeLocation]) extends IntervalField {
     override def toString(): String = "year_of_week"
   }
-  case class Hour(nodeLocation: Option[NodeLocation])            extends IntervalField
-  case class Minute(nodeLocation: Option[NodeLocation])          extends IntervalField
-  case class Second(nodeLocation: Option[NodeLocation])          extends IntervalField
+  case class Hour(nodeLocation: Option[NodeLocation])   extends IntervalField
+  case class Minute(nodeLocation: Option[NodeLocation]) extends IntervalField
+  case class Second(nodeLocation: Option[NodeLocation]) extends IntervalField
 
-  case class TimezoneHour(nodeLocation: Option[NodeLocation])    extends IntervalField {
+  case class TimezoneHour(nodeLocation: Option[NodeLocation]) extends IntervalField {
     override def toString(): String = "timezone_hour"
   }
   case class TimezoneMinute(nodeLocation: Option[NodeLocation]) extends IntervalField {
@@ -1258,8 +1258,8 @@ object Expression {
 
   case class Extract(interval: IntervalField, expr: Expression, nodeLocation: Option[NodeLocation]) extends Expression {
     override def children: Seq[Expression] = Seq(expr)
-    override def sqlExpr: String = s"EXTRACT(${interval.sqlExpr} FROM ${expr.sqlExpr})"
-    override def toString = s"Extract(interval:${interval}, ${expr})"
+    override def sqlExpr: String           = s"EXTRACT(${interval.sqlExpr} FROM ${expr.sqlExpr})"
+    override def toString                  = s"Extract(interval:${interval}, ${expr})"
   }
 
 }
