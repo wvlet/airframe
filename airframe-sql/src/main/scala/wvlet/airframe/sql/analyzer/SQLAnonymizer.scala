@@ -42,7 +42,11 @@ object SQLAnonymizer extends LogSupport {
     SQLGenerator.print(anonymizedPlan)
   }
 
-  def anonymize(plan: LogicalPlan, anonymizationRule: PartialFunction[Expression, Expression]): LogicalPlan = {
+  def anonymize(plan: LogicalPlan, dict: Map[Expression, Expression]): LogicalPlan = {
+    val anonymizationRule: PartialFunction[Expression, Expression] = {
+      case x if dict.contains(x) =>
+        dict(x)
+    }
     // Target: Identifier, Literal, UnresolvedAttribute, Table
     plan.transformExpressions(anonymizationRule)
   }
