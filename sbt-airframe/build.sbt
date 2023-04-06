@@ -11,7 +11,7 @@ ThisBuild / organization := "org.wvlet.airframe"
 ThisBuild / dynverSonatypeSnapshots := true
 // Use coursier friendly version separator
 ThisBuild / dynverSeparator := "-"
-ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
+ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 val buildSettings = Seq[Setting[_]](
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
@@ -59,8 +59,8 @@ lazy val sbtAirframe =
       description      := "sbt plugin for helping programming with Airframe",
       scalaVersion     := SCALA_2_12,
       libraryDependencies ++= Seq(
-        "io.get-coursier"    %% "coursier"              % "2.0.16",
-        "org.apache.commons"  % "commons-compress"      % "1.22",
+        "io.get-coursier"    %% "coursier"              % "2.1.0",
+        "org.apache.commons"  % "commons-compress"      % "1.23.0",
         "org.wvlet.airframe" %% "airframe-control"      % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-codec"        % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-log"          % AIRFRAME_VERSION,

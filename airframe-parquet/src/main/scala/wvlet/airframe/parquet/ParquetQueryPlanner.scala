@@ -112,7 +112,7 @@ object ParquetQueryPlanner extends LogSupport {
             case _ =>
               throw new IllegalArgumentException(s"Unknown column ${a.value}: ${op}")
           }
-        case op @ NotEq(a: Identifier, l: Literal, _) =>
+        case op @ NotEq(a: Identifier, l: Literal, _, _) =>
           findParameterType(a.value) match {
             case Some(PrimitiveTypeName.INT32) =>
               FilterApi.notEq(FilterApi.intColumn(a.value), java.lang.Integer.valueOf(l.stringValue))

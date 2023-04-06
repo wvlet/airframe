@@ -30,12 +30,12 @@ class ResourceTest extends AirSpec {
   }
 
   test("find resources from jar files") {
-    info("find files from a jar file")
+    debug("find files from a jar file")
 
     val l = Resource.listResources("scala.io", { (s: String) => s.endsWith(".class") })
     assert(l.size > 0)
     for (each <- l) {
-      info(each)
+      debug(each)
       assert(each.url.toString.contains("/scala/io"))
     }
   }

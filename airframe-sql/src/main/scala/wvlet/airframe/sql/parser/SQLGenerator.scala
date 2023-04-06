@@ -384,8 +384,8 @@ object SQLGenerator extends LogSupport {
         printExpression(ex)
       case m: MultiSourceColumn =>
         m.sqlExpr
-      case AllColumns(prefix, _, _) =>
-        prefix.map(p => s"${p}.*").getOrElse("*")
+      case a: AllColumns =>
+        a.fullName
       case a: Attribute =>
         a.fullName
       case SortItem(key, ordering, nullOrdering, _) =>
@@ -411,7 +411,10 @@ object SQLGenerator extends LogSupport {
             s" OVER (${s.result().mkString(" ")})"
           }
           .getOrElse("")
-        s"${name}(${d}${argList})${wd}"
+        val f = filter.map(x => s" FILTER (WHERE ${printExpression(x)})").getOrElse("")
+        s"${name}(${d}${argList})${f}${wd}"
+      case Extract(interval, expr, _) =>
+        s"EXTRACT(${interval} FROM ${printExpression(expr)})"
       case QName(parts, _) =>
         parts.mkString(".")
       case Cast(expr, tpe, tryCast, _) =>
@@ -469,8 +472,8 @@ object SQLGenerator extends LogSupport {
       case NoOp(_) => ""
       case Eq(a, b, _) =>
         s"${printExpression(a)} = ${printExpression(b)}"
-      case NotEq(a, b, _) =>
-        s"${printExpression(a)} <> ${printExpression(b)}"
+      case NotEq(a, b, operatorName, _) =>
+        s"${printExpression(a)} ${operatorName} ${printExpression(b)}"
       case And(a, b, _) =>
         s"${printExpression(a)} AND ${printExpression(b)}"
       case Or(a, b, _) =>
@@ -487,6 +490,8 @@ object SQLGenerator extends LogSupport {
         s"${printExpression(a)} >= ${printExpression(b)}"
       case Between(e, a, b, _) =>
         s"${printExpression(e)} BETWEEN ${printExpression(a)} and ${printExpression(b)}"
+      case NotBetween(e, a, b, _) =>
+        s"${printExpression(e)} NOT BETWEEN ${printExpression(a)} and ${printExpression(b)}"
       case IsNull(a, _) =>
         s"${printExpression(a)} IS NULL"
       case IsNotNull(a, _) =>

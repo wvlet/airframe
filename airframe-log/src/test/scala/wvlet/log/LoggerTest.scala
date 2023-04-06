@@ -131,7 +131,7 @@ class LoggerTest extends Spec {
     Logger.setDefaultFormatter(SourceCodeLogFormatter)
     capture {
       val l = Logger("org.sample")
-      info(s"logger name: ${l.getName}")
+      debug(s"logger name: ${l.getName}")
       l.info("hello logger")
     }
   }

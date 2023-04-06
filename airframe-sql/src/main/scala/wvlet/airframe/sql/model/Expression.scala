@@ -14,9 +14,11 @@
 
 package wvlet.airframe.sql.model
 
+import wvlet.airframe.sql.analyzer.AnalyzerContext
 import wvlet.airframe.sql.catalog.DataType
 import wvlet.airframe.sql.catalog.DataType._
 import wvlet.airframe.sql.model.Expression.{AllColumns, MultiSourceColumn}
+import wvlet.airframe.sql.parser.SQLGenerator
 import wvlet.log.LogSupport
 
 import java.util.Locale
@@ -215,6 +217,9 @@ trait UnaryExpression extends Expression {
 trait BinaryExpression extends Expression {
   def left: Expression
   def right: Expression
+  protected def operatorName: String
+
+  override def sqlExpr: String           = s"${left.sqlExpr} ${operatorName} ${right.sqlExpr}"
   override def children: Seq[Expression] = Seq(left, right)
   override def toString: String          = s"${getClass.getSimpleName}(left:${left}, right:${right})"
 }
@@ -228,10 +233,10 @@ trait BinaryExpression extends Expression {
 case class ColumnPath(database: Option[String], table: Option[String], columnName: String)
 
 object ColumnPath {
-  def fromQName(contextDatabase: String, fullName: String): Option[ColumnPath] = {
+  def fromQName(fullName: String): Option[ColumnPath] = {
     // TODO Should we handle quotation in the name or just reject such strings?
     fullName.split("\\.").toList match {
-      case List(db, t, c) if db == contextDatabase =>
+      case List(db, t, c) =>
         Some(ColumnPath(Some(db), Some(t), c))
       case List(t, c) =>
         Some(ColumnPath(None, Some(t), c))
@@ -334,33 +339,52 @@ trait Attribute extends LeafExpression with LogSupport {
     * If a given column name matches with this Attribute, return this. If there are multiple candidate attributes (e.g.,
     * via Join, Union), return MultiSourceAttribute.
     */
-  def matched(columnPath: ColumnPath): Option[Attribute] = {
-    def findMatched(columnName: String): Seq[Attribute] = {
-      this match {
-        case a: AllColumns =>
-          a.inputColumns.filter(_.name == columnName)
-        case a: Attribute if a.name == columnName =>
-          Seq(a)
-        case _ =>
-          Seq.empty
-      }
-    }
-
-    val result: Seq[Attribute] = columnPath.table match {
-      // TODO handle (catalog).(database).(table) names in the qualifier
-      case Some(tableName) =>
-        if (qualifier.exists(_ == tableName)) {
-          findMatched(columnPath.columnName).map(_.withQualifier(qualifier))
-        } else {
+  def matched(columnPath: ColumnPath, context: AnalyzerContext): Option[Attribute] = {
+    def findMatched(tableName: Option[String], columnName: String): Seq[Attribute] = {
+      tableName match {
+        case Some(tableName) =>
           this match {
-            case r: ResolvedAttribute if r.sourceColumn.nonEmpty && r.sourceColumn.get.table.name == tableName =>
-              findMatched(columnPath.columnName)
+            case r: ResolvedAttribute if r.sourceColumn.exists(_.table.name == tableName) =>
+              findMatched(None, columnName)
             case _ =>
               Nil
           }
+        case None =>
+          this match {
+            case a: AllColumns =>
+              a.inputColumns.filter(_.name == columnName)
+            case a: Attribute if a.name == columnName =>
+              Seq(a)
+            case _ =>
+              Seq.empty
+          }
+      }
+    }
+
+    val result: Seq[Attribute] = columnPath match {
+      // TODO handle (catalog).(database).(table) names in the qualifier
+      case ColumnPath(Some(databaseName), Some(tableName), columnName) =>
+        if (databaseName == context.database) {
+          if (qualifier.exists(_ == tableName)) {
+            findMatched(None, columnName).map(_.withQualifier(qualifier))
+          } else {
+            findMatched(Some(tableName), columnName)
+          }
+        } else {
+          this match {
+            case r: ResolvedAttribute if r.sourceColumn.exists(_.table.database.contains(databaseName)) =>
+              findMatched(Some(tableName), columnName)
+            case _ => Nil
+          }
         }
-      case None =>
-        findMatched(columnPath.columnName)
+      case ColumnPath(None, Some(tableName), columnName) =>
+        if (qualifier.exists(_ == tableName)) {
+          findMatched(None, columnName).map(_.withQualifier(qualifier))
+        } else {
+          findMatched(Some(tableName), columnName)
+        }
+      case ColumnPath(_, _, columnName) =>
+        findMatched(None, columnName)
     }
 
     if (result.size > 1) {
@@ -397,6 +421,18 @@ object Expression {
   }
   def concatWithEq(expr: Seq[Expression]): Expression = {
     concat(expr) { case (a, b) => Eq(a, b, None) }
+  }
+
+  def newIdentifier(x: String): Identifier = {
+    if (x.startsWith("`") && x.endsWith("`")) {
+      BackQuotedIdentifier(x.stripPrefix("`").stripSuffix("`"), None)
+    } else if (x.startsWith("\"") && x.endsWith("\"")) {
+      QuotedIdentifier(x.stripPrefix("\"").stripSuffix("\""), None)
+    } else if (x.matches("[0-9]+")) {
+      DigitId(x, None)
+    } else {
+      UnquotedIdentifier(x, None)
+    }
   }
 
   /**
@@ -675,7 +711,13 @@ object Expression {
   ) extends Expression
       with UnaryExpression {
     override def child: Expression = sortKey
-    override def toString: String  = s"SortItem(sortKey:${sortKey}, ordering:${ordering}, nullOrdering:${nullOrdering})"
+
+    override def sqlExpr: String = {
+      val o = ordering.map(x => s" ${x.toString}").getOrElse("")
+      val n = nullOrdering.map(x => s" ${x.toString}").getOrElse("")
+      s"${sortKey.sqlExpr}${o}${n}"
+    }
+    override def toString: String = s"SortItem(sortKey:${sortKey}, ordering:${ordering}, nullOrdering:${nullOrdering})"
   }
 
   // Sort ordering
@@ -705,6 +747,21 @@ object Expression {
       nodeLocation: Option[NodeLocation]
   ) extends Expression {
     override def children: Seq[Expression] = partitionBy ++ orderBy ++ frame.toSeq
+
+    override def sqlExpr: String = {
+      val s = Seq.newBuilder[String]
+      if (partitionBy.nonEmpty) {
+        s += "PARTITION BY"
+        s += partitionBy.map(_.sqlExpr).mkString(", ")
+      }
+      if (orderBy.nonEmpty) {
+        s += "ORDER BY"
+        s += orderBy.map(_.sqlExpr).mkString(", ")
+      }
+      frame.map(x => s += x.toString)
+      s" OVER (${s.result().mkString(" ")})"
+    }
+
     override def toString: String =
       s"Window(partitionBy:${partitionBy.mkString(", ")}, orderBy:${orderBy.mkString(", ")}, frame:${frame})"
   }
@@ -777,6 +834,14 @@ object Expression {
 
     override def children: Seq[Expression] = args ++ filter.toSeq ++ window.toSeq
     def functionName: String               = name.toString.toLowerCase(Locale.US)
+
+    override def sqlExpr: String = {
+      val argList   = args.map(_.sqlExpr).mkString(", ")
+      val argPrefix = if (isDistinct) "DISTINCT " else ""
+      val f         = filter.map(x => s" FILTER (WHERE ${x.sqlExpr})").getOrElse("")
+      val wd        = window.map(_.sqlExpr).getOrElse("")
+      s"${name}(${argPrefix}${argList})${f}${wd}"
+    }
     override def toString = s"FunctionCall(${name}, ${args.mkString(", ")}, distinct:${isDistinct}, window:${window})"
   }
   case class LambdaExpr(body: Expression, args: Seq[String], nodeLocation: Option[NodeLocation])
@@ -792,76 +857,116 @@ object Expression {
   case class NoOp(nodeLocation: Option[NodeLocation]) extends ConditionalExpression with LeafExpression
   case class Eq(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with BinaryExpression
-  case class NotEq(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
+      with BinaryExpression {
+    override def operatorName: String = "="
+  }
+  case class NotEq(left: Expression, right: Expression, operatorName: String, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with BinaryExpression
+      with BinaryExpression {
+    require(operatorName == "<>" || operatorName == "!=", "NotEq.operatorName must be either <> or !=")
+  }
   case class And(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with BinaryExpression
+      with BinaryExpression {
+    override def operatorName: String = "AND"
+  }
   case class Or(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with BinaryExpression
+      with BinaryExpression {
+    override def operatorName: String = "OR"
+  }
   case class Not(child: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with UnaryExpression
+      with UnaryExpression {
+    override def sqlExpr: String = s"NOT ${child.sqlExpr}"
+  }
   case class LessThan(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with BinaryExpression
+      with BinaryExpression {
+    override def operatorName: String = "<"
+  }
   case class LessThanOrEq(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with BinaryExpression
+      with BinaryExpression {
+    override def operatorName: String = "<="
+  }
   case class GreaterThan(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with BinaryExpression
+      with BinaryExpression {
+    override def operatorName: String = ">"
+  }
   case class GreaterThanOrEq(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with BinaryExpression
+      with BinaryExpression {
+    override def operatorName: String = ">="
+  }
+
   case class Between(e: Expression, a: Expression, b: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression {
     override def children: Seq[Expression] = Seq(e, a, b)
+    override def sqlExpr: String           = s"${e.sqlExpr} BETWEEN ${a.sqlExpr} AND ${b.sqlExpr}"
   }
+  case class NotBetween(e: Expression, a: Expression, b: Expression, nodeLocation: Option[NodeLocation])
+      extends ConditionalExpression {
+    override def children: Seq[Expression] = Seq(e, a, b)
+    override def sqlExpr: String           = s"${e.sqlExpr} NOT BETWEEN ${a.sqlExpr} AND ${b.sqlExpr}"
+  }
+
   case class IsNull(child: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
       with UnaryExpression {
+    override def sqlExpr: String  = s"${child.sqlExpr} IS NULL"
     override def toString: String = s"IsNull(${child})"
   }
   case class IsNotNull(child: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
       with UnaryExpression {
+    override def sqlExpr: String  = s"${child.sqlExpr} IS NOT NULL"
     override def toString: String = s"IsNotNull(${child})"
   }
   case class In(a: Expression, list: Seq[Expression], nodeLocation: Option[NodeLocation])
       extends ConditionalExpression {
     override def children: Seq[Expression] = Seq(a) ++ list
+    override def sqlExpr: String           = s"${a.sqlExpr} IN (${list.map(_.sqlExpr).mkString(", ")})"
     override def toString: String          = s"In(${a} <in> [${list.mkString(", ")}])"
   }
   case class NotIn(a: Expression, list: Seq[Expression], nodeLocation: Option[NodeLocation])
       extends ConditionalExpression {
     override def children: Seq[Expression] = Seq(a) ++ list
+    override def sqlExpr: String           = s"${a.sqlExpr} NOT IN (${list.map(_.sqlExpr).mkString(", ")})"
     override def toString: String          = s"NotIn(${a} <not in> [${list.mkString(", ")}])"
   }
   case class InSubQuery(a: Expression, in: Relation, nodeLocation: Option[NodeLocation]) extends ConditionalExpression {
     override def children: Seq[Expression] = Seq(a) ++ in.childExpressions
+    override def sqlExpr: String           = s"${a.sqlExpr} IN (${SQLGenerator.printRelation(in)})"
     override def toString: String          = s"InSubQuery(${a} <in> ${in})"
   }
   case class NotInSubQuery(a: Expression, in: Relation, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression {
     override def children: Seq[Expression] = Seq(a) ++ in.childExpressions
+    override def sqlExpr: String           = s"${a.sqlExpr} NOT IN (${SQLGenerator.printRelation(in)})"
     override def toString: String          = s"NotInSubQuery(${a} <not in> ${in})"
   }
   case class Like(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with BinaryExpression
+      with BinaryExpression {
+    override def operatorName: String = "LIKE"
+  }
   case class NotLike(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with BinaryExpression
+      with BinaryExpression {
+    override def operatorName: String = "NOT LIKE"
+  }
   case class DistinctFrom(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with BinaryExpression
+      with BinaryExpression {
+    override def operatorName: String = "IS DISTINCT FROM"
+  }
   case class NotDistinctFrom(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
-      with BinaryExpression
+      with BinaryExpression {
+    override def operatorName: String = "IS NOT DISTINCT FROM"
+  }
 
   case class IfExpr(
       cond: ConditionalExpression,
@@ -916,6 +1021,7 @@ object Expression {
         DataType.UnknownType
       }
     }
+    override def operatorName: String = exprType.symbol
     override def toString: String = {
       s"${exprType}(left:$left, right:$right)"
     }
@@ -1042,12 +1148,30 @@ object Expression {
   sealed trait IntervalField extends LeafExpression {
     override def toString(): String = getClass.getSimpleName
   }
-  case class Year(nodeLocation: Option[NodeLocation])   extends IntervalField
-  case class Month(nodeLocation: Option[NodeLocation])  extends IntervalField
-  case class Day(nodeLocation: Option[NodeLocation])    extends IntervalField
+  case class Year(nodeLocation: Option[NodeLocation])    extends IntervalField
+  case class Quarter(nodeLocation: Option[NodeLocation]) extends IntervalField
+  case class Month(nodeLocation: Option[NodeLocation])   extends IntervalField
+  case class Week(nodeLocation: Option[NodeLocation])    extends IntervalField
+  case class Day(nodeLocation: Option[NodeLocation])     extends IntervalField
+  case class DayOfWeek(nodeLocation: Option[NodeLocation]) extends IntervalField {
+    override def toString(): String = "day_of_week"
+  }
+  case class DayOfYear(nodeLocation: Option[NodeLocation]) extends IntervalField {
+    override def toString(): String = "day_of_year"
+  }
+  case class YearOfWeek(nodeLocation: Option[NodeLocation]) extends IntervalField {
+    override def toString(): String = "year_of_week"
+  }
   case class Hour(nodeLocation: Option[NodeLocation])   extends IntervalField
   case class Minute(nodeLocation: Option[NodeLocation]) extends IntervalField
   case class Second(nodeLocation: Option[NodeLocation]) extends IntervalField
+
+  case class TimezoneHour(nodeLocation: Option[NodeLocation]) extends IntervalField {
+    override def toString(): String = "timezone_hour"
+  }
+  case class TimezoneMinute(nodeLocation: Option[NodeLocation]) extends IntervalField {
+    override def toString(): String = "timezone_minute"
+  }
 
   // Value constructor
   case class ArrayConstructor(values: Seq[Expression], nodeLocation: Option[NodeLocation]) extends Expression {
@@ -1130,6 +1254,12 @@ object Expression {
     override def index: Option[Int]     = None
     override def toString: String       = s"GroupingKey(${index.map(i => s"${i}:").getOrElse("")}${child})"
     override lazy val resolved: Boolean = false
+  }
+
+  case class Extract(interval: IntervalField, expr: Expression, nodeLocation: Option[NodeLocation]) extends Expression {
+    override def children: Seq[Expression] = Seq(expr)
+    override def sqlExpr: String           = s"EXTRACT(${interval.sqlExpr} FROM ${expr.sqlExpr})"
+    override def toString                  = s"Extract(interval:${interval}, ${expr})"
   }
 
 }

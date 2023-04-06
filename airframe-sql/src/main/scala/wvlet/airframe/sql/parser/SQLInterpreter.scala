@@ -66,6 +66,13 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     m.asInstanceOf[LogicalPlan]
   }
 
+  def interpretExpression(ctx: ParserRuleContext): Expression = {
+    trace(s"interpret: ${print(ctx)}")
+    val m = ctx.accept(this)
+    trace(m)
+    m.asInstanceOf[Expression]
+  }
+
   override def visitSingleStatement(ctx: SingleStatementContext): LogicalPlan = {
     visit(ctx.statement()).asInstanceOf[LogicalPlan]
   }
@@ -396,8 +403,8 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
   override def visitSelectAll(ctx: SelectAllContext): Attribute = {
     // TODO parse qName
-    ctx.qualifiedName()
-    AllColumns(None, None, getLocation(ctx))
+    val qualifier = Option(ctx.qualifiedName()).map(_.getText)
+    AllColumns(qualifier, None, getLocation(ctx))
   }
 
   override def visitSelectSingle(ctx: SelectSingleContext): Attribute = {
@@ -538,7 +545,11 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
           if (n.NOT() == null) IsNull(e, getLocation(n))
           else IsNotNull(e, getLocation(n))
         case b: BetweenContext =>
-          Between(e, expression(b.lower), expression(b.upper), getLocation(b))
+          if (b.NOT() != null) {
+            NotBetween(e, expression(b.lower), expression(b.upper), getLocation(b))
+          } else {
+            Between(e, expression(b.lower), expression(b.upper), getLocation(b))
+          }
         case i: InSubqueryContext =>
           val subQuery = visitQuery(i.query())
           if (i.NOT() == null) InSubQuery(e, subQuery, getLocation(i))
@@ -610,7 +621,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
       case SqlBaseParser.GTE =>
         GreaterThanOrEq(left, right, getLocation(ctx.comparisonOperator()))
       case SqlBaseParser.NEQ =>
-        NotEq(left, right, getLocation(ctx.comparisonOperator()))
+        NotEq(left, right, op.getText, getLocation(ctx.comparisonOperator()))
     }
   }
 
@@ -794,6 +805,27 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
       Second(getLocation(ctx.SECOND()))
     } else {
       throw unknown(ctx)
+    }
+  }
+
+  override def visitExtract(ctx: SqlBaseParser.ExtractContext): Expression = {
+    val intervalLocation = getLocation(ctx.identifier())
+    val expr             = expression(ctx.valueExpression())
+    ctx.identifier().getText().toUpperCase() match {
+      case "YEAR"                 => Extract(Year(intervalLocation), expr, getLocation(ctx))
+      case "QUARTER"              => Extract(Quarter(intervalLocation), expr, getLocation(ctx))
+      case "MONTH"                => Extract(Month(intervalLocation), expr, getLocation(ctx))
+      case "WEEK"                 => Extract(Week(intervalLocation), expr, getLocation(ctx))
+      case "DAY" | "DAY_OF_MONTH" => Extract(Day(intervalLocation), expr, getLocation(ctx))
+      case "DAY_OF_WEEK" | "DOW"  => Extract(DayOfWeek(intervalLocation), expr, getLocation(ctx))
+      case "DAY_OF_YEAR" | "DOY"  => Extract(DayOfYear(intervalLocation), expr, getLocation(ctx))
+      case "YEAR_OF_WEEK" | "YOW" => Extract(YearOfWeek(intervalLocation), expr, getLocation(ctx))
+      case "HOUR"                 => Extract(Hour(intervalLocation), expr, getLocation(ctx))
+      case "MINUTE"               => Extract(Minute(intervalLocation), expr, getLocation(ctx))
+      case "SECOND"               => Extract(Second(intervalLocation), expr, getLocation(ctx))
+      case "TIMEZONE_HOUR"        => Extract(TimezoneHour(intervalLocation), expr, getLocation(ctx))
+      case "TIMEZONE_MINUTE"      => Extract(TimezoneMinute(intervalLocation), expr, getLocation(ctx))
+      case _                      => throw unknown(ctx)
     }
   }
 
