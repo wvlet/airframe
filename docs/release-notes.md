@@ -6,6 +6,10 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 23.4.0
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.4.0)
+
 ## 23.3.4
 
 [Release notes](https://github.com/wvlet/airframe/releases/tag/v23.3.4)
