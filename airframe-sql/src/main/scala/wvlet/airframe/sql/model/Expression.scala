@@ -345,7 +345,7 @@ trait Attribute extends LeafExpression with LogSupport {
         case Some(tableName) =>
           this match {
             case r: ResolvedAttribute
-                if r.qualifier.orElse(r.sourceColumn.map(_.table).map(_.name)).contains(tableName) =>
+                if r.qualifier.orElse(r.sourceColumn.map(_.table.name)).contains(tableName) =>
               findMatched(None, columnName)
             case _ =>
               Nil
