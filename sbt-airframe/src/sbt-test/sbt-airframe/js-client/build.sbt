@@ -1,7 +1,7 @@
-ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
+ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 lazy val root =
-  project.aggregate(spiJS, clientJS)
+  project.aggregate(spi.js, client.js)
 
 lazy val spi =
   crossProject(JSPlatform, JVMPlatform)
@@ -10,8 +10,6 @@ lazy val spi =
     .settings(
       libraryDependencies += "org.wvlet.airframe" %%% "airframe-http" % sys.props("airframe.version")
     )
-
-lazy val spiJS = spi.js
 
 lazy val client =
   crossProject(JSPlatform)
@@ -29,4 +27,3 @@ lazy val client =
     )
     .dependsOn(spi)
 
-lazy val clientJS = client.js
