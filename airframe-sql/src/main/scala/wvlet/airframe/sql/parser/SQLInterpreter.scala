@@ -776,6 +776,17 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     }
   }
 
+  override def visitSubstring(ctx: SubstringContext): Any = {
+    FunctionCall(
+      ctx.SUBSTRING().getText,
+      ctx.valueExpression.asScala.map(expression(_)).toSeq,
+      isDistinct = false,
+      Option.empty,
+      Option.empty,
+      getLocation(ctx)
+    )
+  }
+
   override def visitSetQuantifier(ctx: SetQuantifierContext): SetQuantifier = {
     if (ctx.DISTINCT() != null) {
       DistinctSet(getLocation(ctx))

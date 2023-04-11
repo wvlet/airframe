@@ -225,4 +225,6 @@
 - sql: |
       select EXTRACT(timezone_minute FROM FROM_UNIXTIME(time)), COUNT(*) FROM a
 - sql: |
+      select SUBSTRING(a FROM 1 FOR 5) FROM b
+- sql: |
       select user_agent || 'x', count(*) from impression group by 1
