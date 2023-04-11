@@ -1,4 +1,4 @@
-ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
+ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 enablePlugins(AirframeHttpPlugin)
 

@@ -1,4 +1,4 @@
-ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
+ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 sys.props.get("plugin.version") match {
   case Some(x) => addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % x)
