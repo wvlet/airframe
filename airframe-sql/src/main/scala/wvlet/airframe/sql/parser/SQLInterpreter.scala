@@ -536,6 +536,17 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     visitQueryNoWith(ctx.queryNoWith())
   }
 
+  override def visitConcatenation(ctx: ConcatenationContext): Expression = {
+    FunctionCall(
+      "concat",
+      ctx.valueExpression().asScala.map(expression(_)).toSeq,
+      isDistinct = false,
+      Option.empty,
+      Option.empty,
+      getLocation(ctx)
+    )
+  }
+
   override def visitPredicated(ctx: PredicatedContext): Expression = {
     val e = expression(ctx.valueExpression)
     if (ctx.predicate != null) {
