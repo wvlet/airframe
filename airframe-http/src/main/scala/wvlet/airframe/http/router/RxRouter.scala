@@ -67,7 +67,7 @@ object RxRouter extends RxRouterObjectBase {
   ) extends RxRouter {
     override def name: String = controllerSurface.name
 
-    override def routes: List[RxRouter] = List.empty
+    override def routes: List[RxRouter] = List(this)
 
     override def add(router: RxRouter): RxRouter = {
       MultiNode(filter = filter, routes = List(this, router))

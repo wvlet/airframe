@@ -13,14 +13,14 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.http.{HttpMessage, RPC, RxFilter, RxEndpoint}
+import wvlet.airframe.http.{HttpMessage, RPC, RxEndpoint, RxFilter, RxRPC}
 import wvlet.airframe.rx.Rx
+import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 object RxRouterTest extends AirSpec {
 
-  @RPC
-  trait MyApi {
+  trait MyApi extends RxRPC {
     def hello: String = "hello"
   }
 
@@ -28,8 +28,7 @@ object RxRouterTest extends AirSpec {
     def router: RxRouter = RxRouter.of[MyApi]
   }
 
-  @RPC
-  trait MyApi2 {
+  trait MyApi2 extends RxRPC {
     def hello2: String = "hello2"
   }
 
@@ -43,22 +42,50 @@ object RxRouterTest extends AirSpec {
     }
   }
 
+  test("create a single route RxRouter") {
+    val r = RxRouter.of[MyApi]
+    r.routes.size shouldBe 1
+    r.filter shouldBe empty
+
+    r.routes(0) shouldMatch { case RxRouter.EndpointNode(filter, controllerSurface, methodSurfaces) =>
+      filter shouldBe empty
+      controllerSurface shouldBe Surface.of[MyApi]
+      methodSurfaces.size shouldBe 1
+    }
+  }
+
   test("creat a new RxRouter") {
     val r = RxRouter
       .add(MyApi.router)
       .add(MyApi2.router)
-    info(r)
+
+    r.routes.size shouldBe 2
+    r.filter shouldBe empty
+
+    r.routes(0) shouldMatch { case RxRouter.EndpointNode(filter, controllerSurface, methodSurfaces) =>
+      filter shouldBe empty
+      controllerSurface shouldBe Surface.of[MyApi]
+      methodSurfaces.size shouldBe 1
+    }
+
+    r.routes(1) shouldMatch { case RxRouter.EndpointNode(filter, controllerSurface, methodSurfaces) =>
+      filter shouldBe empty
+      controllerSurface shouldBe Surface.of[MyApi2]
+      methodSurfaces.size shouldBe 1
+    }
   }
 
   test("Add filter") {
-    RxRouter
+    val r = RxRouter
       .filter[AuthFilter]
       .andThen(
         RxRouter
           .add(MyApi.router)
           .add(MyApi2.router)
       )
-  }
 
-  // ..
+    r.routes.size shouldBe 2
+    r.filter shouldBe defined
+    r.filter.get.filterSurface shouldBe Surface.of[AuthFilter]
+  }
 }
