@@ -30,6 +30,7 @@ object RxRouterTest extends AirSpec {
 
   trait MyApi2 extends RxRPC {
     def hello2: String = "hello2"
+    def hello3: String = "hello3"
   }
 
   object MyApi2 {
@@ -42,6 +43,13 @@ object RxRouterTest extends AirSpec {
     }
   }
 
+  trait LogFilter extends RxFilter {
+    override def apply(request: HttpMessage.Request, endpoint: RxEndpoint): Rx[HttpMessage.Response] = {
+      // do some logging
+      endpoint.apply(request)
+    }
+  }
+
   test("create a single route RxRouter") {
     val r = RxRouter.of[MyApi]
     r.routes.size shouldBe 1
@@ -51,10 +59,11 @@ object RxRouterTest extends AirSpec {
       filter shouldBe empty
       controllerSurface shouldBe Surface.of[MyApi]
       methodSurfaces.size shouldBe 1
+      methodSurfaces(0).name shouldBe "hello"
     }
   }
 
-  test("creat a new RxRouter") {
+  test("combine multiple routers") {
     val r = RxRouter
       .add(MyApi.router)
       .add(MyApi2.router)
@@ -66,16 +75,19 @@ object RxRouterTest extends AirSpec {
       filter shouldBe empty
       controllerSurface shouldBe Surface.of[MyApi]
       methodSurfaces.size shouldBe 1
+      methodSurfaces(0).name shouldBe "hello"
     }
 
     r.routes(1) shouldMatch { case RxRouter.EndpointNode(filter, controllerSurface, methodSurfaces) =>
       filter shouldBe empty
       controllerSurface shouldBe Surface.of[MyApi2]
-      methodSurfaces.size shouldBe 1
+      methodSurfaces.size shouldBe 2
+      methodSurfaces(0).name shouldBe "hello2"
+      methodSurfaces(1).name shouldBe "hello3"
     }
   }
 
-  test("Add filter") {
+  test("Add a filter") {
     val r = RxRouter
       .filter[AuthFilter]
       .andThen(
@@ -87,5 +99,75 @@ object RxRouterTest extends AirSpec {
     r.routes.size shouldBe 2
     r.filter shouldBe defined
     r.filter.get.filterSurface shouldBe Surface.of[AuthFilter]
+
+    r.routes(0) shouldMatch { case RxRouter.EndpointNode(filter, controllerSurface, methodSurfaces) =>
+      filter shouldBe empty
+      controllerSurface shouldBe Surface.of[MyApi]
+      methodSurfaces.size shouldBe 1
+      methodSurfaces(0).name shouldBe "hello"
+    }
+
+    r.routes(1) shouldMatch { case RxRouter.EndpointNode(filter, controllerSurface, methodSurfaces) =>
+      filter shouldBe empty
+      controllerSurface shouldBe Surface.of[MyApi2]
+      methodSurfaces.size shouldBe 2
+      methodSurfaces(0).name shouldBe "hello2"
+      methodSurfaces(1).name shouldBe "hello3"
+    }
+  }
+
+  test("Add multiple filters") {
+    val r = RxRouter
+      .filter[AuthFilter]
+      .andThen[LogFilter]
+      .andThen(MyApi.router)
+
+    r.routes.size shouldBe 1
+    r.filter shouldBe defined
+    r.filter.get.filterSurface shouldBe Surface.of[LogFilter]
+    r.filter.get.parent shouldBe defined
+    r.filter.get.parent.get.filterSurface shouldBe Surface.of[AuthFilter]
+
+    r.routes(0) shouldMatch { case RxRouter.EndpointNode(filter, controllerSurface, methodSurfaces) =>
+      filter shouldBe r.filter
+      controllerSurface shouldBe Surface.of[MyApi]
+      methodSurfaces.size shouldBe 1
+      methodSurfaces(0).name shouldBe "hello"
+    }
+  }
+
+  test("Use different filters to different routes") {
+    val r = RxRouter
+      .add(
+        RxRouter
+          .filter[AuthFilter]
+          .andThen(MyApi.router)
+      )
+      .add(
+        RxRouter
+          .filter[LogFilter]
+          .andThen(MyApi2.router)
+      )
+
+    r.routes.size shouldBe 2
+    r.filter shouldBe empty
+
+    r.routes(0) shouldMatch { case RxRouter.EndpointNode(filter, controllerSurface, methodSurfaces) =>
+      filter shouldBe defined
+      filter.get.filterSurface shouldBe Surface.of[AuthFilter]
+      controllerSurface shouldBe Surface.of[MyApi]
+      methodSurfaces.size shouldBe 1
+      methodSurfaces(0).name shouldBe "hello"
+    }
+
+    r.routes(1) shouldMatch { case RxRouter.EndpointNode(filter, controllerSurface, methodSurfaces) =>
+      filter shouldBe defined
+      filter.get.filterSurface shouldBe Surface.of[LogFilter]
+      filter.get.parent shouldBe empty
+      controllerSurface shouldBe Surface.of[MyApi2]
+      methodSurfaces.size shouldBe 2
+      methodSurfaces(0).name shouldBe "hello2"
+      methodSurfaces(1).name shouldBe "hello3"
+    }
   }
 }
