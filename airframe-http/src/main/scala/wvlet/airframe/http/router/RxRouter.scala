@@ -70,7 +70,7 @@ object RxRouter extends RxRouterObjectBase {
     override def routes: List[RxRouter] = List(this)
 
     override def add(router: RxRouter): RxRouter = {
-      MultiNode(filter = filter, routes = List(this, router))
+      MultiNode(filter = filter, routes = List(this.copy(filter = None), router))
     }
   }
 

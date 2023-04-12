@@ -16,8 +16,8 @@ package wvlet.airframe.http
 import wvlet.airframe.http.router.Automaton.DFA
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
+import wvlet.airframe.http.router.{ControllerRoute, Route, RouteMatch, RouteMatcher, RxRouter}
 
-import wvlet.airframe.http.router.{Route, RouteMatcher, ControllerRoute, RouteMatch}
 import scala.annotation.tailrec
 import scala.language.experimental.macros
 import scala.language.higherKinds
@@ -323,5 +323,52 @@ object Router extends router.RouterObjectBase with LogSupport {
       .getOrElse(controllerSurface.rawType)
 
     rpcInterfaceCls
+  }
+
+  private def extractRPCRoutes(
+      controllerSurface: Surface,
+      controllerMethodSurfaces: Seq[MethodSurface],
+      pathPrefix: String = ""
+  ): Seq[Route] = {
+    val rpcInterfaceCls = controllerSurface.rawType
+    val routes =
+      controllerMethodSurfaces.collect { m: MethodSurface =>
+        val methodPath = s"/${m.name}"
+        val rpcMethod = RPCMethod(
+          path = pathPrefix + methodPath,
+          rpcInterfaceName = TypeName.sanitizeTypeName(rpcInterfaceCls.getName),
+          methodName = m.name,
+          // No need to bind requestSurface in the server side
+          requestSurface = Surface.of[Array[Byte]],
+          responseSurface = m.returnType
+        )
+
+        ControllerRoute(
+          rpcMethod,
+          controllerSurface,
+          HttpMethod.POST,
+          m,
+          isRPC = true
+        )
+      }
+    routes
+  }
+
+  def fromRxRouter(router: RxRouter): Router = {
+    val routes = router.routes.map { r =>
+
+        exttractRPCRoutes(
+          r.controllerSurface,
+          r.
+
+
+              rpcMethod,
+        r.controllerSurface,
+        r.method,
+        r.methodSurface,
+        isRPC = true
+      )
+    }
+    new Router(localRoutes = routes)
   }
 }
