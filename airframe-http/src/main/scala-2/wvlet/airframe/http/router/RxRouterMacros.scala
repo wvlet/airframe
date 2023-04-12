@@ -18,19 +18,6 @@ import scala.reflect.macros.{blackbox => sm}
 
 private[http] object RxRouterMacros {
 
-  def add[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-
-    q"""
-       {
-         val r = ${c.prefix}
-         wvlet.airframe.registerTraitFactory[${t}]
-         r.addInternal(wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
-       }
-     """
-  }
-
   def of[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
@@ -38,7 +25,7 @@ private[http] object RxRouterMacros {
     q"""
      {
        wvlet.airframe.registerTraitFactory[${t}]
-       RxRouter.RxEndpointNode(None, wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
+       wvlet.airframe.http.router.RxRouter.EndpointNode(None, wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
      }
    """
   }
@@ -51,7 +38,7 @@ private[http] object RxRouterMacros {
       q"""
        {
          wvlet.airframe.registerTraitFactory[${t}]
-         wvlet.airframe.http.router.RxRouteFilter(None, wvlet.airframe.surface.Surface.of[${t}])
+         wvlet.airframe.http.router.RxRouter.FilterNode(None, wvlet.airframe.surface.Surface.of[${t}])
        }
      """
     } else {
@@ -68,7 +55,7 @@ private[http] object RxRouterMacros {
       q"""
      {
        wvlet.airframe.registerTraitFactory[${t}]
-       val next = wvlet.airframe.http.router.RxRouteFilter(None, wvlet.airframe.surface.Surface.of[${t}])
+       val next = wvlet.airframe.http.router.RxRouter.FilterNode(None, wvlet.airframe.surface.Surface.of[${t}])
        ${c.prefix}.andThen(next)
      }
    """

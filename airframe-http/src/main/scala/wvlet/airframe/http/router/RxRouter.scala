@@ -18,55 +18,50 @@ import wvlet.airframe.surface.{MethodSurface, Surface}
 trait RxRouter {
   def name: String
 
-  def filter: Option[RxRouteFilter]
+  def filter: Option[RxRouter.FilterNode]
+
   def routes: List[RxRouter]
 
   /**
     * Add a sibling router to this node
+    *
     * @param router
     * @return
     */
-  def add(router: RxRouter): RxRouter = ???
-  def +(router: RxRouter): RxRouter   = add(router)
-}
-
-case class RxRouteFilter(
-  parent: Option[RxRouteFilter],
-  filterSurface: Surface
-)
-  extends RxRouteFilterBase
-{
-  def name: String = filterSurface.name
-
-  def andThen(next: RxRouteFilter): RxRouteFilter =
-  {
-    next.copy(parent = Some(this))
-  }
-
-  def andThen(next: RxEndpointNode): RxRouter =
-  {
-    next.copy(filter = Some(this))
-  }
+  def add(router: RxRouter): RxRouter
+  def +(router: RxRouter): RxRouter = add(router)
 }
 
 object RxRouter extends RxRouterObjectBase {
 
-  def add(router: RxRouter): RxRouter = RxRouterLeaf(
+  def add(router: RxRouter): RxRouter = RxRouter.MultiNode(
     filter = None,
     routes = List(router)
   )
 
-
-  case class RxRouteCollection(
-      override val filter: Option[RxRouteFilter] = None,
-      routes: List[RxRouter]
+  /**
+    * A collection of multiple routes
+    * @param filter
+    * @param routes
+    */
+  case class MultiNode(
+      override val filter: Option[FilterNode] = None,
+      override val routes: List[RxRouter]
   ) extends RxRouter {
-    // TODO
-    override def name: String = ???
+    override def name: String = f"${this.hashCode()}%08x"
+    override def add(router: RxRouter): RxRouter = {
+      this.copy(routes = routes :+ router)
+    }
   }
 
-  case class RxEndpointNode(
-      override val filter: Option[RxRouteFilter] = None,
+  /**
+    * A single endpoint node
+    * @param filter
+    * @param controllerSurface
+    * @param methodSurfaces
+    */
+  case class EndpointNode(
+      override val filter: Option[FilterNode] = None,
       controllerSurface: Surface,
       methodSurfaces: Seq[MethodSurface]
   ) extends RxRouter {
@@ -75,10 +70,32 @@ object RxRouter extends RxRouterObjectBase {
     override def routes: List[RxRouter] = List.empty
 
     override def add(router: RxRouter): RxRouter = {
-      RxRouterLeaf(
-        filter = this.filter,
-        routes = List(this, router)
-      )
+      MultiNode(filter = filter, routes = List(this, router))
+    }
+  }
+
+  /**
+    * Filter node of RxRouter
+    * @param parent
+    * @param filterSurface
+    */
+  case class FilterNode(
+      parent: Option[FilterNode],
+      filterSurface: Surface
+  ) extends RxRouteFilterBase {
+    def name: String = filterSurface.name
+
+    def andThen(next: FilterNode): FilterNode = {
+      next.copy(parent = Some(this))
+    }
+
+    def andThen(next: RxRouter): RxRouter = {
+      next match {
+        case r: MultiNode =>
+          r.copy(filter = Some(this))
+        case r: EndpointNode =>
+          r.copy(filter = Some(this))
+      }
     }
   }
 }
