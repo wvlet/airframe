@@ -1061,4 +1061,9 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     p.outputAttributes.toList shouldBe List(ra2.withQualifier("A"))
   }
 
+  test("Resolve identifiers with no regards to case sensitivity") {
+    analyze("select A.id from A JOIN B ON A.id = B.id GROUP BY a.id")
+    // No ambiguity error
+  }
+
 }
