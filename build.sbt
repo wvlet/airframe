@@ -1,5 +1,6 @@
 import xerial.sbt.pack.PackPlugin.publishPackArchiveTgz
 
+// scala versions
 val SCALA_2_12          = "2.12.17"
 val SCALA_2_13          = "2.13.10"
 val SCALA_3             = "3.2.2"
