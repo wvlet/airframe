@@ -15,7 +15,6 @@ permissions:
 jobs:
   update_PR_labels:
     permissions:
-      contents: write
       # write permission is required for autolabeler
       # otherwise, read permission is required at least
       pull-requests: write
