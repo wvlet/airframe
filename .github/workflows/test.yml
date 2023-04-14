@@ -133,7 +133,7 @@ jobs:
           java-version: '17'
       - uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
       - name: Node.js setup
         run: ./scripts/setup-scalajs.sh
       - name: Scala.js test
@@ -155,7 +155,7 @@ jobs:
           java-version: '17'
       - uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
       - name: Node.js setup
         run: ./scripts/setup-scalajs.sh
       - name: Scala.js test
@@ -177,7 +177,7 @@ jobs:
           java-version: '17'
       - uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
       - name: Node.js setup
         run: ./scripts/setup-scalajs.sh
       - name: Scala.js test
