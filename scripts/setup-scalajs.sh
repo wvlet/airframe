@@ -1,3 +1,3 @@
 #!/bin/sh
 
-npm install jsdom@20.0.0
+npm install jsdom@21.X
