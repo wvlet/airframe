@@ -85,12 +85,20 @@ object RxRouterTest extends AirSpec {
       methodSurfaces(1).name shouldBe "hello3"
     }
 
-    val s1 = Surface.of[MyApi]
-    val s2 = Surface.of[MyApi2]
-    val m1 = Surface.methodsOf[MyApi]
-    val m2 = Surface.methodsOf[MyApi2]
-    r.routes(0) shouldMatch { case RxRoute(None, `s1`, `m1`) => }
-    r.routes(1) shouldMatch { case RxRoute(None, `s2`, `m2`) => }
+    r.routes(0) shouldMatch { case RxRoute(None, s1, m1) =>
+      s1 shouldBe Surface.of[MyApi]
+      m1(0).name shouldBe "hello"
+    }
+    r.routes(1) shouldMatch { case RxRoute(None, s2, m2) =>
+      s2 shouldBe Surface.of[MyApi2]
+      m2(0).name shouldBe "hello2"
+      m2(1).name shouldBe "hello3"
+    }
+  }
+
+  test("Create a filter") {
+    val f = RxRouter.filter[AuthFilter]
+    f.filterSurface shouldBe Surface.of[AuthFilter]
   }
 
   test("Add a filter") {

@@ -54,7 +54,7 @@ trait RxFilter {
   }
 }
 
-object RxFilter extends RxFilterBase {
+object RxFilter {
 
   private class FilterAndThenEndpoint(filter: RxFilter, nextService: RxEndpoint) extends RxEndpoint {
     override def backend: RxHttpBackend = nextService.backend

@@ -332,7 +332,7 @@ object Router extends router.RouterObjectBase with LogSupport {
   ): Seq[Route] = {
     val rpcInterfaceCls = controllerSurface.rawType
     val routes =
-      controllerMethodSurfaces.collect { m: MethodSurface =>
+      controllerMethodSurfaces.collect { (m: MethodSurface) =>
         val methodPath = s"/${m.name}"
         val rpcMethod = RPCMethod(
           path = pathPrefix + methodPath,
