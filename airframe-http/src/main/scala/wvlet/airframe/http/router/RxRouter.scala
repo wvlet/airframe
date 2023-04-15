@@ -13,14 +13,15 @@
  */
 package wvlet.airframe.http.router
 
+import wvlet.airframe.http.router.RxRouter.FilterNode
 import wvlet.airframe.surface.{MethodSurface, Surface}
 
 trait RxRouter {
   def name: String
+  def filter: Option[FilterNode]
+  def children: List[RxRouter]
 
-  def filter: Option[RxRouter.FilterNode]
-
-  def routes: List[RxRouter]
+  def routes: List[RxRoute]
 
   /**
     * Add a sibling router to this node
@@ -30,48 +31,89 @@ trait RxRouter {
     */
   def add(router: RxRouter): RxRouter
   def +(router: RxRouter): RxRouter = add(router)
+
+  def wrapWithFilter(parentFilter: FilterNode): RxRouter
+
+  override def toString: String = printNode(0)
+
+  private def printNode(indentLevel: Int): String = {
+    val s  = Seq.newBuilder[String]
+    val ws = " " * (indentLevel * 2)
+    s += s"${ws}- Router[${name}]"
+
+    for (r <- children) {
+      s += s"${ws}  + ${r}"
+    }
+    for (c <- children) {
+      s += c.printNode(indentLevel + 1)
+    }
+    s.result().mkString("\n")
+  }
+}
+
+case class RxRoute(filter: Option[FilterNode], controllerSurface: Surface, methodSurfaces: Seq[MethodSurface]) {
+  def wrapWithFilter(parentFilter: Option[FilterNode]): RxRoute = {
+    this.copy(filter = parentFilter match {
+      case None    => filter
+      case Some(f) => f.andThenOpt(filter)
+    })
+  }
 }
 
 object RxRouter extends RxRouterObjectBase {
 
-  def add(router: RxRouter): RxRouter = RxRouter.MultiNode(
+  def add(router: RxRouter): RxRouter = RxRouter.StemNode(
     filter = None,
-    routes = List(router)
+    children = List(router)
   )
 
   /**
     * A collection of multiple routes
     * @param filter
-    * @param routes
+    * @param children
     */
-  case class MultiNode(
+  case class StemNode(
       override val filter: Option[FilterNode] = None,
-      override val routes: List[RxRouter]
+      override val children: List[RxRouter]
   ) extends RxRouter {
     override def name: String = f"${this.hashCode()}%08x"
     override def add(router: RxRouter): RxRouter = {
-      this.copy(routes = routes :+ router)
+      this.copy(children = children :+ router)
+    }
+    override def wrapWithFilter(parentFilter: FilterNode): RxRouter = {
+      this.copy(filter = parentFilter.andThenOpt(filter))
+    }
+
+    override def routes: List[RxRoute] = {
+      children.flatMap { c =>
+        c.routes.map { r =>
+          r.wrapWithFilter(filter)
+        }
+      }
     }
   }
 
   /**
-    * A single endpoint node
+    * A single endpoint node without any filter
     * @param filter
     * @param controllerSurface
     * @param methodSurfaces
     */
   case class EndpointNode(
-      override val filter: Option[FilterNode] = None,
       controllerSurface: Surface,
       methodSurfaces: Seq[MethodSurface]
   ) extends RxRouter {
-    override def name: String = controllerSurface.name
-
-    override def routes: List[RxRouter] = List(this)
-
+    override def name: String               = controllerSurface.name
+    override def filter: Option[FilterNode] = None
+    override def children: List[RxRouter]   = Nil
     override def add(router: RxRouter): RxRouter = {
-      MultiNode(filter = filter, routes = List(this.copy(filter = None), router))
+      StemNode(children = List(this, router))
     }
+    override def wrapWithFilter(parentFilter: FilterNode): RxRouter = {
+      StemNode(filter = Some(parentFilter), children = List(this))
+    }
+    override def routes: List[RxRoute] =
+      List(RxRoute(None, controllerSurface, methodSurfaces))
   }
 
   /**
@@ -88,14 +130,14 @@ object RxRouter extends RxRouterObjectBase {
     def andThen(next: FilterNode): FilterNode = {
       next.copy(parent = Some(this))
     }
-
-    def andThen(next: RxRouter): RxRouter = {
+    def andThenOpt(next: Option[FilterNode]): Option[FilterNode] = {
       next match {
-        case r: MultiNode =>
-          r.copy(filter = Some(this))
-        case r: EndpointNode =>
-          r.copy(filter = Some(this))
+        case Some(f) => Some(this.andThen(f))
+        case None    => Some(this)
       }
+    }
+    def andThen(next: RxRouter): RxRouter = {
+      next.wrapWithFilter(this)
     }
   }
 }

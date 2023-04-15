@@ -25,7 +25,7 @@ private[http] object RxRouterMacros {
     q"""
      {
        wvlet.airframe.registerTraitFactory[${t}]
-       wvlet.airframe.http.router.RxRouter.EndpointNode(None, wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
+       wvlet.airframe.http.router.RxRouter.EndpointNode(wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
      }
    """
   }

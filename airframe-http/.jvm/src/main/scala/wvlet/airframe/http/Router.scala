@@ -355,20 +355,20 @@ object Router extends router.RouterObjectBase with LogSupport {
   }
 
   def fromRxRouter(router: RxRouter): Router = {
-    val routes = router.routes.map { r =>
-
-        exttractRPCRoutes(
-          r.controllerSurface,
-          r.
-
-
-              rpcMethod,
-        r.controllerSurface,
-        r.method,
-        r.methodSurface,
-        isRPC = true
-      )
-    }
-    new Router(localRoutes = routes)
+//    val routes = router.children.map { r =>
+//      r
+//
+//
+//      exttractRPCRoutes(
+//        r.controllerSurface,
+//
+//        r.controllerSurface,
+//        r.method,
+//        r.methodSurface,
+//        isRPC = true
+//      )
+//    }
+//    new Router(localRoutes = routes)
+    ???
   }
 }
