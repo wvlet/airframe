@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.router
 
+import wvlet.airframe.http.router.RxRouter.StemNode
 import wvlet.airframe.http.{HttpMessage, RPC, RxEndpoint, RxFilter, RxRPC}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
@@ -180,17 +181,43 @@ object RxRouterTest extends AirSpec {
     r.children.size shouldBe 2
     r.filter shouldBe empty
 
-    r.children(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces) =>
-      // filter.get.filterSurface shouldBe Surface.of[AuthFilter]
+    r.children(0) shouldMatch { case StemNode(filter, child) =>
+      filter shouldBe defined
+      filter.get shouldMatch { case RxRouter.FilterNode(parent, filterSurface) =>
+        parent shouldBe empty
+        filterSurface shouldBe Surface.of[AuthFilter]
+      }
+      child(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces) =>
+        controllerSurface shouldBe Surface.of[MyApi]
+        methodSurfaces.size shouldBe 1
+        methodSurfaces(0).name shouldBe "hello"
+      }
+    }
+
+    r.children(1) shouldMatch { case StemNode(filter, child) =>
+      filter shouldBe defined
+      filter.get shouldMatch { case RxRouter.FilterNode(parent, filterSurface) =>
+        parent shouldBe empty
+        filterSurface shouldBe Surface.of[LogFilter]
+      }
+      child(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces) =>
+        controllerSurface shouldBe Surface.of[MyApi2]
+        methodSurfaces.size shouldBe 2
+        methodSurfaces(0).name shouldBe "hello2"
+        methodSurfaces(1).name shouldBe "hello3"
+      }
+    }
+
+    r.routes(0) shouldMatch { case RxRoute(Some(filter), controllerSurface, methodSurfaces) =>
+      filter.filterSurface shouldBe Surface.of[AuthFilter]
+      filter.parent shouldBe empty
       controllerSurface shouldBe Surface.of[MyApi]
       methodSurfaces.size shouldBe 1
       methodSurfaces(0).name shouldBe "hello"
     }
-
-    r.children(1) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces) =>
-      // filter shouldBe defined
-      // filter.get.filterSurface shouldBe Surface.of[LogFilter]
-      // filter.get.parent shouldBe empty
+    r.routes(1) shouldMatch { case RxRoute(Some(filter), controllerSurface, methodSurfaces) =>
+      filter.filterSurface shouldBe Surface.of[LogFilter]
+      filter.parent shouldBe empty
       controllerSurface shouldBe Surface.of[MyApi2]
       methodSurfaces.size shouldBe 2
       methodSurfaces(0).name shouldBe "hello2"
