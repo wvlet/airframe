@@ -65,9 +65,10 @@ object RxRouterTest extends AirSpec {
   }
 
   test("combine multiple routers") {
-    val r = RxRouter
-      .add(MyApi.router)
-      .add(MyApi2.router)
+    val r = RxRouter.of(
+      MyApi.router,
+      MyApi2.router
+    )
 
     r.children.size shouldBe 2
     r.filter shouldBe empty
@@ -105,9 +106,8 @@ object RxRouterTest extends AirSpec {
     val r = RxRouter
       .filter[AuthFilter]
       .andThen(
-        RxRouter
-          .add(MyApi.router)
-          .add(MyApi2.router)
+        MyApi.router,
+        MyApi2.router
       )
 
     r.children.size shouldBe 2
@@ -174,17 +174,14 @@ object RxRouterTest extends AirSpec {
   }
 
   test("Use different filters to different routes") {
-    val r = RxRouter
-      .add(
-        RxRouter
-          .filter[AuthFilter]
-          .andThen(MyApi.router)
-      )
-      .add(
-        RxRouter
-          .filter[LogFilter]
-          .andThen(MyApi2.router)
-      )
+    val r = RxRouter.of(
+      RxRouter
+        .filter[AuthFilter]
+        .andThen(MyApi.router),
+      RxRouter
+        .filter[LogFilter]
+        .andThen(MyApi2.router)
+    )
 
     r.children.size shouldBe 2
     r.filter shouldBe empty

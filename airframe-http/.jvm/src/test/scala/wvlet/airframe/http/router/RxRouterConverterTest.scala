@@ -39,6 +39,10 @@ class RxRouterConverterTest extends AirSpec {
     }
   }
 
+  trait MyApi2 extends RxRPC {
+    def hello2: String = "hello2"
+  }
+
   test("Convert RxRouter to Router") {
     val r = Router.fromRxRouter(MyApi.router)
     r.routes.size shouldBe 1
@@ -82,6 +86,40 @@ class RxRouterConverterTest extends AirSpec {
     l0.path shouldBe "/hello"
     l0.httpMethod shouldBe HttpMethod.POST
     l0.controllerSurface shouldBe Surface.of[MyApi]
+  }
+
+  test("multiple APIs") {
+    val rxRouter = RxRouter.of(
+      RxRouter.of[MyApi],
+      RxRouter.of[MyApi2]
+    )
+
+    val r = Router.fromRxRouter(rxRouter)
+    r.routes.size shouldBe 2
+    val r0 = r.routes(0)
+    r0.path shouldBe "/hello"
+    r0.controllerSurface shouldBe Surface.of[MyApi]
+    val r1 = r.routes(1)
+    r1.path shouldBe "/hello2"
+    r1.controllerSurface shouldBe Surface.of[MyApi2]
+  }
+
+  test("multiple APIs with a filter") {
+    val rxRouter = RxRouter
+      .filter[AuthFilter].andThen(
+        RxRouter.of[MyApi],
+        RxRouter.of[MyApi2]
+      )
+
+    val r = Router.fromRxRouter(rxRouter)
+    r.filterSurface shouldBe Some(Surface.of[AuthFilter])
+    r.routes.size shouldBe 2
+    val r0 = r.routes(0)
+    r0.path shouldBe "/hello"
+    r0.controllerSurface shouldBe Surface.of[MyApi]
+    val r1 = r.routes(1)
+    r1.path shouldBe "/hello2"
+    r1.controllerSurface shouldBe Surface.of[MyApi2]
   }
 
 }
