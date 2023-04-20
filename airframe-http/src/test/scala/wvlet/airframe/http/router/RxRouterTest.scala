@@ -14,7 +14,7 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.http.router.RxRouter.StemNode
-import wvlet.airframe.http.{HttpMessage, RPC, RxEndpoint, RxFilter, RxRPC}
+import wvlet.airframe.http.{HttpMessage, RxEndpoint, RxFilter, RxRPC}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec

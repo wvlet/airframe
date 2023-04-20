@@ -332,7 +332,7 @@ object Router extends router.RouterObjectBase with LogSupport {
       pathPrefix: String = ""
   ): Seq[Route] = {
     val rpcInterfaceCls = controllerSurface.rawType
-    val routes =
+    val routes: Seq[Route] =
       controllerMethodSurfaces.map { (m: MethodSurface) =>
         val methodPath = s"/${m.name}"
         val rpcMethod = RPCMethod(
@@ -394,19 +394,4 @@ object Router extends router.RouterObjectBase with LogSupport {
     }
     newRouter
   }
-
-//    val routes = router.children.map { r =>
-//      r
-//
-//
-//      exttractRPCRoutes(
-//        r.controllerSurface,
-//
-//        r.controllerSurface,
-//        r.method,
-//        r.methodSurface,
-//        isRPC = true
-//      )
-//    }
-//    new Router(localRoutes = routes)
 }
