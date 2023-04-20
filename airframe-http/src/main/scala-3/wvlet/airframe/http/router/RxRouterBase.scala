@@ -18,15 +18,15 @@ import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.surface.Surface
 
 trait RxRouterObjectBase {
-    inline def of[Controller <: RxRPC]: RxRouter = {
-      wvlet.airframe.registerTraitFactory[Controller]
-      RxRouter.EndpointNode(Surface.of[Controller], Surface.methodsOf[Controller])
-    }
+  inline def of[Controller <: RxRPC]: RxRouter = {
+    wvlet.airframe.registerTraitFactory[Controller]
+    RxRouter.EndpointNode(Surface.of[Controller], Surface.methodsOf[Controller])
+  }
 
-    inline def filter[Filter <: RxFilter]: RxRouter.FilterNode = {
-      wvlet.airframe.registerTraitFactory[Filter]
-      RxRouter.FilterNode(None, Surface.of[Filter])
-    }
+  inline def filter[Filter <: RxFilter]: RxRouter.FilterNode = {
+    wvlet.airframe.registerTraitFactory[Filter]
+    RxRouter.FilterNode(None, Surface.of[Filter])
+  }
 }
 
 trait RxRouteFilterBase { self: RxRouter.FilterNode =>
