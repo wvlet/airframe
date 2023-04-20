@@ -20,6 +20,7 @@ import wvlet.airframe.control.Control
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.codegen.client.{AsyncClientGenerator, HttpClientGenerator}
 import wvlet.airframe.http.openapi.{OpenAPI, OpenAPIGeneratorConfig}
+import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.launcher.Launcher
 import wvlet.log.io.IOUtil
 import wvlet.log.{LogLevel, LogSupport, Logger}
@@ -84,6 +85,12 @@ object HttpClientGeneratorConfig {
   * Generate HTTP client code for Scala, Scala.js targets using a given IR
   */
 object HttpCodeGenerator extends LogSupport {
+
+  def generate(rxRouter: RxRouter, config: HttpClientGeneratorConfig): String = {
+    val router = Router.fromRxRouter(rxRouter)
+    generate(router, config)
+  }
+
   def generate(
       router: Router,
       config: HttpClientGeneratorConfig
