@@ -68,9 +68,6 @@ object RxRouter extends RxRouterObjectBase {
       override val children: List[RxRouter]
   ) extends RxRouter {
     override def name: String = f"${this.hashCode()}%08x"
-//    override def add(router: RxRouter): RxRouter = {
-//      this.copy(children = children :+ router)
-//    }
     override def wrapWithFilter(parentFilter: FilterNode): RxRouter = {
       this.copy(filter = parentFilter.andThenOpt(filter))
     }
@@ -97,9 +94,6 @@ object RxRouter extends RxRouterObjectBase {
     override def name: String               = controllerSurface.name
     override def filter: Option[FilterNode] = None
     override def children: List[RxRouter]   = Nil
-//    override def add(router: RxRouter): RxRouter = {
-//      StemNode(children = List(this, router))
-//    }
     override def wrapWithFilter(parentFilter: FilterNode): RxRouter = {
       StemNode(filter = Some(parentFilter), children = List(this))
     }

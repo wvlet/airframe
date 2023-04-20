@@ -669,7 +669,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       sys.error(s"recurcive type in method: ${targetType.typeSymbol.fullName}")
     } else {
       methodSeen += targetType
-      val localMethods = localMethodsOf(targetType).distinct
+      val localMethods = localMethodsOf(targetType).zipWithIndex
+        .distinctBy(_._1)
+        // Preserve the original order
+        .sortBy(_._2)
+        .map(_._1)
       val methodSurfaces = localMethods.map(m => (m, m.tree)).collect { case (m, df: DefDef) =>
         val mod   = Expr(modifierBitMaskOf(m))
         val owner = surfaceOf(targetType)
