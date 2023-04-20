@@ -13,11 +13,11 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.http.{RxFilter, RxRPC}
+import wvlet.airframe.http.RxFilter
 import scala.language.experimental.macros
 
 trait RxRouterObjectBase {
-  def of[Controller <: RxRPC]: RxRouter = macro RxRouterMacros.of[Controller]
+  def of[Controller]: RxRouter = macro RxRouterMacros.of[Controller]
   def filter[Filter <: RxFilter]: RxRouter.FilterNode = macro RxRouterMacros.filter[Filter]
 }
 
