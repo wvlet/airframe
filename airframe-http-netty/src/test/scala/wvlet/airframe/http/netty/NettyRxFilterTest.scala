@@ -36,26 +36,40 @@ object NettyRxFilterTest extends AirSpec {
     }
   }
 
-  private def router = RxRouter.filter[AuthFilter].andThen(RxRouter.of[MyRPC])
-
-  override protected def design: Design = {
-    Netty.server
-      .withRouter(router)
-      .designWithSyncClient
+  class ExFilter extends RxFilter {
+    override def apply(request: HttpMessage.Request, endpoint: RxEndpoint): Rx[HttpMessage.Response] = {
+      throw RPCStatus.UNAUTHENTICATED_U13.newException("authentication failed")
+    }
   }
 
-  test("Run server with filter") { (client: SyncClient) =>
-    test("when no auth header") {
+  private def router1 = RxRouter
+    .filter[AuthFilter].andThen(RxRouter.of[MyRPC])
+
+  private def router2 = RxRouter
+    .filter[ExFilter].andThen(RxRouter.of[MyRPC])
+
+  test("Run server with auth filter", design = Netty.server.withRouter(router1).designWithSyncClient) {
+    (client: SyncClient) =>
+      test("when no auth header") {
+        val ex = intercept[RPCException] {
+          client.send(Http.POST("/hello").withJson("""{"msg":"Netty"}"""))
+        }
+        ex.status shouldBe RPCStatus.UNAUTHENTICATED_U13
+        ex.message shouldBe "authentication failed"
+      }
+
+      test("with auth header") {
+        val resp = client.send(Http.POST("/hello").withJson("""{"msg":"Netty"}""").withAuthorization("Bearer xxxx"))
+        resp.contentString shouldBe "Hello Netty!"
+      }
+  }
+
+  test("throw RPCException in a filter", design = Netty.server.withRouter(router2).designWithSyncClient) {
+    (client: SyncClient) =>
       val ex = intercept[RPCException] {
         client.send(Http.POST("/hello").withJson("""{"msg":"Netty"}"""))
       }
       ex.status shouldBe RPCStatus.UNAUTHENTICATED_U13
       ex.message shouldBe "authentication failed"
-    }
-
-    test("with auth header") {
-      val resp = client.send(Http.POST("/hello").withJson("""{"msg":"Netty"}""").withAuthorization("Bearer xxxx"))
-      resp.contentString shouldBe "Hello Netty!"
-    }
   }
 }
