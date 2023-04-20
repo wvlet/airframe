@@ -14,14 +14,14 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.Design
-import wvlet.airframe.http.{Http, RxRPC}
+import wvlet.airframe.http.Http
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.router.RxRouter
 import wvlet.airspec.AirSpec
 
 class NettyRxRPCServerTest extends AirSpec {
 
-  class MyRPC extends RxRPC {
+  class MyRPC {
     def helloNetty(msg: String): String  = s"Hello ${msg}!"
     def helloNetty2(msg: String): String = s"Hello ${msg}2!"
   }
