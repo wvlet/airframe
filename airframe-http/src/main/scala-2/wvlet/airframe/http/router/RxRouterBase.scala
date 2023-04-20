@@ -14,9 +14,6 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.http.{RxFilter, RxRPC}
-import wvlet.airframe.http.router.RxRouterMacros
-import wvlet.airframe.http.router.RxRouter
-
 import scala.language.experimental.macros
 
 trait RxRouterObjectBase {
