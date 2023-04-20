@@ -14,13 +14,25 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{Http, HttpBackend, HttpRequestAdapter, HttpStatus}
+import wvlet.airframe.http.{
+  Http,
+  HttpBackend,
+  HttpFilter,
+  HttpRequestAdapter,
+  HttpStatus,
+  RPCStatus,
+  RxEndpoint,
+  RxFilter
+}
 import wvlet.airframe.rx.Rx
+import wvlet.log.LogSupport
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
-object NettyBackend extends HttpBackend[Request, Response, Rx] {
+object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport { self =>
+  private val rxBackend = new RxNettyBackend
+
   override protected implicit val httpRequestAdapter: HttpRequestAdapter[Request] =
     wvlet.airframe.http.HttpMessage.HttpMessageRequestAdapter
 
@@ -46,6 +58,31 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] {
       }
       .recover { case e: Throwable => promise.failure(e) }
     promise.future
+  }
+
+  override def filterAdapter[M[_]](filter: HttpFilter[_, _, M]): NettyBackend.Filter = {
+    filter match {
+      case f: NettyBackend.Filter => f
+      case other =>
+        throw RPCStatus.UNIMPLEMENTED_U8.newException(s"unsupported filter type: ${other.getClass}")
+    }
+  }
+
+  override def rxFilterAdapter(filter: RxFilter): NettyBackend.Filter = {
+    new NettyBackend.Filter {
+      override protected def backend: HttpBackend[Request, Response, Rx] = self
+      override def apply(request: Request, context: NettyBackend.Context): Rx[Response] = {
+        filter(
+          request,
+          new RxEndpoint {
+            override private[http] def backend: RxNettyBackend = rxBackend
+            override def apply(request: Request): Rx[Response] = {
+              context(request)
+            }
+          }
+        )
+      }
+    }
   }
 
   override def wrapException(e: Throwable): Rx[Response] = {

@@ -251,8 +251,15 @@ object HttpClients {
       lastResponse: Option[Response]
   ): PartialFunction[Throwable, Nothing] = {
     case e: HttpClientException =>
-      // Throw as is for known client exception
-      throw e
+      val resp = e.response.toHttpResponse
+      resp.getHeader(HttpHeader.xAirframeRPCStatus) match {
+        case Some(status) =>
+          // Throw RPCException if RPCStatus code is given
+          throw parseRPCException(e.response.toHttpResponse)
+        case None =>
+          // Throw as is for known client exception
+          throw e
+      }
     case e: CircuitBreakerOpenException =>
       val resp = lastResponse.getOrElse(Http.response(HttpStatus.ServiceUnavailable_503))
       throw new HttpClientException(

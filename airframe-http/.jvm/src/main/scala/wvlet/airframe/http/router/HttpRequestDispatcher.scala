@@ -90,7 +90,16 @@ object HttpRequestDispatcher extends LogSupport {
         router.filterSurface
           .map(fs => controllerProvider.findController(session, fs))
           .filter(_.isDefined)
-          .map(_.get.asInstanceOf[HttpFilter[Req, Resp, F]])
+          .map { filter =>
+            filter.get match {
+              case legacyFilter: HttpFilter[Req, Resp, F] =>
+                legacyFilter
+              case rxFilter: RxFilter =>
+                backend.rxFilterAdapter(rxFilter)
+              case other =>
+                throw RPCStatus.UNIMPLEMENTED_U8.newException(s"Invalid filter type: ${other.getClass.getName}")
+            }
+          }
           .orElse {
             router.filterInstance
               .asInstanceOf[Option[HttpFilter[Req, Resp, F]]]

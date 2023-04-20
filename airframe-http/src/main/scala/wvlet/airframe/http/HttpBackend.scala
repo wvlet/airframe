@@ -65,6 +65,8 @@ trait HttpBackend[Req, Resp, F[_]] {
   // Wrap the given filter to a backend-specific filter
   def filterAdapter[M[_]](filter: HttpFilter[_, _, M]): Filter = ???
 
+  def rxFilterAdapter(filter: RxFilter): Filter = ???
+
   // Create a new default context that process the given request
   def newContext(body: Req => F[Resp]): Context =
     HttpContext.newContext[Req, Resp, F](self, body)
