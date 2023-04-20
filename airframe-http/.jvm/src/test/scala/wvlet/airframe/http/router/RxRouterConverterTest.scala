@@ -122,4 +122,27 @@ class RxRouterConverterTest extends AirSpec {
     r1.controllerSurface shouldBe Surface.of[MyApi2]
   }
 
+  test("multiple APIs with shared and different filters") {
+    val rxRouter = RxRouter
+      .filter[AuthFilter].andThen(
+        RxRouter.of[MyApi],
+        RxRouter
+          .filter[LogFilter]
+          .andThen(RxRouter.of[MyApi2])
+      )
+
+    val r = Router.fromRxRouter(rxRouter)
+    r.filterSurface shouldBe Some(Surface.of[AuthFilter])
+    r.routes.size shouldBe 2
+    val r0 = r.routes(0)
+    r0.path shouldBe "/hello"
+    r0.controllerSurface shouldBe Surface.of[MyApi]
+    val r1 = r.routes(1)
+    r1.path shouldBe "/hello2"
+    r1.controllerSurface shouldBe Surface.of[MyApi2]
+
+    r.children.size shouldBe 2
+    r.children(0).filterSurface shouldBe None
+    r.children(1).filterSurface shouldBe Some(Surface.of[LogFilter])
+  }
 }
