@@ -14,10 +14,11 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.http.router.Automaton.DFA
+import wvlet.airframe.http.router.RxRouter.{EndpointNode, FilterNode, StemNode}
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
+import wvlet.airframe.http.router.{ControllerRoute, Route, RouteMatch, RouteMatcher, RxRouter}
 
-import wvlet.airframe.http.router.{Route, RouteMatcher, ControllerRoute, RouteMatch}
 import scala.annotation.tailrec
 import scala.language.experimental.macros
 import scala.language.higherKinds
@@ -323,5 +324,74 @@ object Router extends router.RouterObjectBase with LogSupport {
       .getOrElse(controllerSurface.rawType)
 
     rpcInterfaceCls
+  }
+
+  private def extractRPCRoutes(
+      controllerSurface: Surface,
+      controllerMethodSurfaces: Seq[MethodSurface],
+      pathPrefix: String = ""
+  ): Seq[Route] = {
+    val rpcInterfaceCls = controllerSurface.rawType
+    val routes: Seq[Route] =
+      controllerMethodSurfaces.sortBy(_.name).map { (m: MethodSurface) =>
+        val methodPath = s"/${m.name}"
+        val rpcMethod = RPCMethod(
+          path = pathPrefix + methodPath,
+          rpcInterfaceName = TypeName.sanitizeTypeName(rpcInterfaceCls.getName),
+          methodName = m.name,
+          // No need to bind requestSurface in the server side
+          requestSurface = Surface.of[Array[Byte]],
+          responseSurface = m.returnType
+        )
+
+        ControllerRoute(
+          rpcMethod,
+          controllerSurface,
+          HttpMethod.POST,
+          m,
+          isRPC = true
+        )
+      }
+    routes
+  }
+
+  def fromRxRouter(router: RxRouter): Router = {
+    val newRouter = router match {
+      case e: EndpointNode =>
+        val routes = extractRPCRoutes(
+          e.controllerSurface,
+          e.methodSurfaces
+        )
+        Router(surface = Some(e.controllerSurface), localRoutes = routes)
+      case s: StemNode =>
+        s.filter match {
+          case None =>
+            Router(
+              children = s.children.map(fromRxRouter)
+            )
+          case Some(f) =>
+            def wrapWithFilter(parent: Option[FilterNode], r: Router): Router = {
+              parent match {
+                case None =>
+                  r
+                case Some(p) =>
+                  wrapWithFilter(
+                    p.parent,
+                    Router(
+                      children = Seq(r),
+                      filterSurface = Some(p.filterSurface)
+                    )
+                  )
+              }
+            }
+
+            val leafRouter = Router(
+              children = s.children.map(fromRxRouter),
+              filterSurface = s.filter.map(_.filterSurface)
+            )
+            wrapWithFilter(f.parent, leafRouter)
+        }
+    }
+    newRouter
   }
 }

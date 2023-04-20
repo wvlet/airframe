@@ -19,45 +19,21 @@ import wvlet.airframe.rx.Rx
 import scala.util.control.NonFatal
 
 /**
-  * [[RxContext]] is a service interface for processing request and returning `Rx[Response]`.
-  */
-trait RxContext {
-  private[http] def backend: RxHttpBackend
-
-  /**
-    * @param request
-    * @return
-    */
-  def apply(request: Request): Rx[Response]
-
-  /**
-    * Set a thread-local parameter
-    */
-  def setThreadLocal[A](key: String, value: A): Unit = {
-    backend.setThreadLocal(key, value)
-  }
-
-  /**
-    * Get a thread-local parameter
-    */
-  def getThreadLocal[A](key: String): Option[A] = {
-    backend.getThreadLocal(key)
-  }
-}
-
-/**
-  * An [[RxFilter]] is a filter for receiving the response from the context service via `context.apply(request)`, and
+  * An [[RxFilter]] is a filter for receiving the response from the endpoin via `endpoint.apply(request)`, and
   * transforming it into another `Rx[Response]`.
   */
 trait RxFilter {
 
   /**
-    * Implement this method to create your own filter.
+    * Apply a filter before sending the request to the endpoint, and handle its response before returning the client.
+    *
+    * To implement your own filter, override this method.
+    *
     * @param request
-    * @param context
+    * @param endpoint
     * @return
     */
-  def apply(request: Request, context: RxContext): Rx[Response]
+  def apply(request: Request, endpoint: RxEndpoint): Rx[Response]
 
   /**
     * Chain to the next filter.
@@ -69,22 +45,22 @@ trait RxFilter {
   }
 
   /**
-    * Terminates the filter at the context.
-    * @param context
+    * Bridge this filter to the endpoint.
+    * @param endpoint
     * @return
     */
-  def andThen(context: RxContext): RxContext = {
-    new RxFilter.FilterAndThenContext(this, context)
+  def andThen(endpoint: RxEndpoint): RxEndpoint = {
+    new RxFilter.FilterAndThenEndpoint(this, endpoint)
   }
 }
 
 object RxFilter {
 
-  private class FilterAndThenContext(filter: RxFilter, context: RxContext) extends RxContext {
-    override def backend: RxHttpBackend = context.backend
+  private class FilterAndThenEndpoint(filter: RxFilter, nextService: RxEndpoint) extends RxEndpoint {
+    override def backend: RxHttpBackend = nextService.backend
     override def apply(request: Request): Rx[Response] = {
       try {
-        filter.apply(request, context)
+        filter.apply(request, nextService)
       } catch {
         case NonFatal(e) => Rx.exception(e)
       }
@@ -92,9 +68,9 @@ object RxFilter {
   }
 
   private class AndThen(prev: RxFilter, next: RxFilter) extends RxFilter {
-    override def apply(request: Request, context: RxContext): Rx[Response] = {
+    override def apply(request: Request, endpoint: RxEndpoint): Rx[Response] = {
       try {
-        prev.apply(request, next.andThen(context))
+        prev.apply(request, next.andThen(endpoint))
       } catch {
         case NonFatal(e) => Rx.exception(e)
       }
