@@ -14,13 +14,13 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.http.HttpMessage.Request
-import wvlet.airframe.http.{HttpMethod, Router, RxEndpoint, RxFilter, RxRPC}
+import wvlet.airframe.http.{HttpMethod, Router, RxEndpoint, RxFilter}
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 class RxRouterConverterTest extends AirSpec {
 
-  trait MyApi extends RxRPC {
+  trait MyApi {
     def hello: String = "hello"
   }
 
@@ -39,7 +39,7 @@ class RxRouterConverterTest extends AirSpec {
     }
   }
 
-  trait MyApi2 extends RxRPC {
+  trait MyApi2 {
     def hello2: String = "hello2"
   }
 

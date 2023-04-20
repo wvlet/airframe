@@ -14,14 +14,14 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.http.router.RxRouter.StemNode
-import wvlet.airframe.http.{HttpMessage, RxEndpoint, RxFilter, RxRPC}
+import wvlet.airframe.http.{HttpMessage, RxEndpoint, RxFilter}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 object RxRouterTest extends AirSpec {
 
-  trait MyApi extends RxRPC {
+  trait MyApi {
     def hello: String = "hello"
   }
 
@@ -29,7 +29,7 @@ object RxRouterTest extends AirSpec {
     def router: RxRouter = RxRouter.of[MyApi]
   }
 
-  trait MyApi2 extends RxRPC {
+  trait MyApi2 {
     def hello2: String = "hello2"
     def hello3: String = "hello3"
   }

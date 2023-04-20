@@ -22,7 +22,7 @@ import wvlet.airframe.http.codegen.client.HttpClientGenerator.fullTypeNameOf
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface, TypeName}
 import wvlet.log.LogSupport
-import wvlet.airframe.http.router.{Route, HttpRequestMapper}
+import wvlet.airframe.http.router.{HttpRequestMapper, Route, RxRouter}
 
 /**
   * Generate an intermediate representation (IR) of Scala HTTP client code from a given airframe-http interface
@@ -252,6 +252,10 @@ object HttpClientIR extends LogSupport {
   }
 
   private case class PathVariableParam(name: String, param: MethodParameter)
+
+  def buildIR(rxRouter: RxRouter, config: HttpClientGeneratorConfig): ClientSourceDef = {
+    buildIR(Router.fromRxRouter(rxRouter), config)
+  }
 
   /**
     * Building an intermediate representation of the client code
