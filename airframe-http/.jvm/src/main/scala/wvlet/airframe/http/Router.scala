@@ -14,6 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.http.router.Automaton.DFA
+import wvlet.airframe.http.router.RxRouter.{EndpointNode, FilterNode, StemNode}
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
 import wvlet.airframe.http.router.{ControllerRoute, Route, RouteMatch, RouteMatcher, RxRouter}
@@ -355,6 +356,45 @@ object Router extends router.RouterObjectBase with LogSupport {
   }
 
   def fromRxRouter(router: RxRouter): Router = {
+    val newRouter = router match {
+      case e: EndpointNode =>
+        val routes = extractRPCRoutes(
+          e.controllerSurface,
+          e.methodSurfaces
+        )
+        Router(surface = Some(e.controllerSurface), localRoutes = routes)
+      case s: StemNode =>
+        s.filter match {
+          case None =>
+            Router(
+              children = s.children.map(fromRxRouter)
+            )
+          case Some(f) =>
+            def wrapWithFilter(parent: Option[FilterNode], r: Router): Router = {
+              parent match {
+                case None =>
+                  r
+                case Some(p) =>
+                  wrapWithFilter(
+                    p.parent,
+                    Router(
+                      children = Seq(r),
+                      filterSurface = Some(p.filterSurface)
+                    )
+                  )
+              }
+            }
+
+            val leafRouter = Router(
+              children = s.children.map(fromRxRouter),
+              filterSurface = s.filter.map(_.filterSurface)
+            )
+            wrapWithFilter(f.parent, leafRouter)
+        }
+    }
+    newRouter
+  }
+
 //    val routes = router.children.map { r =>
 //      r
 //
@@ -369,6 +409,4 @@ object Router extends router.RouterObjectBase with LogSupport {
 //      )
 //    }
 //    new Router(localRoutes = routes)
-    ???
-  }
 }

@@ -41,9 +41,6 @@ trait RxRouter {
     val ws = " " * (indentLevel * 2)
     s += s"${ws}- Router[${name}]"
 
-    for (r <- children) {
-      s += s"${ws}  + ${r}"
-    }
     for (c <- children) {
       s += c.printNode(indentLevel + 1)
     }
