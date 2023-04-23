@@ -11,19 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.codegen
+package wvlet.airframe.http.router
 
-import wvlet.airframe.http.router.RxRouter
-import wvlet.airspec.AirSpec
-
-class RPCClientGeneratorTest extends AirSpec {
-  private val router: RxRouter = {
-    RouteScanner.buildRxRouter(Seq("example.rpc"), Thread.currentThread().getContextClassLoader)
-  }
-
-  test("generate RPC client") {
-    val config = HttpClientGeneratorConfig("example.rpc:rpc")
-    val code   = HttpCodeGenerator.generate(router, config)
-    debug(code)
-  }
+/**
+  * An interface used for RPC clients (sbt-airframe) to discover the default router for the RPC endpoint.
+  *
+  * Example usage:
+  * {{{
+  *   trait MyRPC {
+  *     def hello(name:String) : String
+  *   }
+  *
+  *   object MyRPC extends RxRouterProvider {
+  *     // sbt-airframe will generate an RPC client using this router
+  *     override def router: RxRouter = RxRouter.of[MyRPC]
+  *   }
+  * }}}
+  */
+trait RxRouterProvider {
+  def router: RxRouter
 }

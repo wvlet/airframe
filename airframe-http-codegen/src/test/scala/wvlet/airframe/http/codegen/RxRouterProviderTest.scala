@@ -16,14 +16,14 @@ package wvlet.airframe.http.codegen
 import wvlet.airframe.http.router.RxRouter
 import wvlet.airspec.AirSpec
 
-class RPCClientGeneratorTest extends AirSpec {
+class RxRouterProviderTest extends AirSpec {
+
   private val router: RxRouter = {
     RouteScanner.buildRxRouter(Seq("example.rpc"), Thread.currentThread().getContextClassLoader)
   }
 
-  test("generate RPC client") {
-    val config = HttpClientGeneratorConfig("example.rpc:rpc")
-    val code   = HttpCodeGenerator.generate(router, config)
-    debug(code)
+  test("Build router from RxRouterProvider") {
+    router.children.size shouldBe 2
+    router.routes.size > 0 shouldBe true
   }
 }

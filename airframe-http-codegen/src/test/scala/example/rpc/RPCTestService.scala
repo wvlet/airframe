@@ -13,6 +13,7 @@
  */
 package example.rpc
 import wvlet.airframe.http.RPC
+import wvlet.airframe.http.router.{RxRouter, RxRouterProvider}
 
 /**
   */
@@ -22,7 +23,9 @@ trait RPCTestService {
   def addUser(request: CreateUserRequest): User
 }
 
-object RPCTestService {
+object RPCTestService extends RxRouterProvider {
+  override def router: RxRouter = RxRouter.of[RPCTestService]
+
   case class CreateUserRequest(id: String, name: String)
   case class User(id: String, name: String)
 }
@@ -41,7 +44,9 @@ trait RPCExample {
   def rpcWithOptionOfComplexType(p1: Option[RPCRequest]): Unit
 }
 
-object RPCExample {
+object RPCExample extends RxRouterProvider {
+  override def router: RxRouter = RxRouter.of[RPCExample]
+
   case class RPCRequest(
       x1: Int,
       x2: Long,

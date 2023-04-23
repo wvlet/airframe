@@ -20,6 +20,7 @@ trait RxRouter {
   def name: String
   def filter: Option[FilterNode]
   def children: List[RxRouter]
+  def isLeaf: Boolean
 
   def routes: List[RxRoute]
 
@@ -32,6 +33,15 @@ trait RxRouter {
     val ws = " " * (indentLevel * 2)
     s += s"${ws}- Router[${name}]"
 
+    if (isLeaf) {
+      for (r <- routes) {
+        val rstr = r.toString
+        rstr.split("\n").map { x =>
+          s += s"${ws}  + ${x}"
+        }
+      }
+    }
+
     for (c <- children) {
       s += c.printNode(indentLevel + 1)
     }
@@ -40,6 +50,14 @@ trait RxRouter {
 }
 
 case class RxRoute(filter: Option[FilterNode], controllerSurface: Surface, methodSurfaces: Seq[MethodSurface]) {
+  override def toString: String = {
+    val s = Seq.newBuilder[String]
+    for (m <- methodSurfaces) {
+      s += s"${m.name}(${m.args.map(x => s"${x.name}:${x.surface}").mkString(", ")}): ${m.returnType}"
+    }
+    s.result().mkString("\n")
+  }
+
   def wrapWithFilter(parentFilter: Option[FilterNode]): RxRoute = {
     this.copy(filter = parentFilter match {
       case None    => filter
@@ -72,6 +90,8 @@ object RxRouter extends RxRouterObjectBase {
       this.copy(filter = parentFilter.andThenOpt(filter))
     }
 
+    override def isLeaf: Boolean = false
+
     override def routes: List[RxRoute] = {
       children.flatMap { c =>
         c.routes.map { r =>
@@ -94,6 +114,8 @@ object RxRouter extends RxRouterObjectBase {
     override def name: String               = controllerSurface.name
     override def filter: Option[FilterNode] = None
     override def children: List[RxRouter]   = Nil
+    override def isLeaf: Boolean            = true
+
     override def wrapWithFilter(parentFilter: FilterNode): RxRouter = {
       StemNode(filter = Some(parentFilter), children = List(this))
     }

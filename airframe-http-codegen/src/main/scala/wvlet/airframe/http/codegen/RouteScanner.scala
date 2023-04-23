@@ -12,7 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
+import wvlet.airframe.http.router.{RxRouter, RxRouterProvider}
 import wvlet.airframe.http.{Endpoint, RPC, Router}
+import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.log.LogSupport
 
 import scala.util.{Success, Try}
@@ -39,11 +41,38 @@ object RouteScanner extends LogSupport {
     }
   }
 
+  def buildRxRouter(targetPackages: Seq[String], classLoader: ClassLoader): RxRouter = {
+    // We need to use our own class loader as sbt's layered classloader cannot find application classes
+    withClassLoader(classLoader) {
+      val lst = ClassScanner.scanClasses(classLoader, targetPackages)
+      trace(s"classes: ${lst.mkString(", ")}")
+      val b = Seq.newBuilder[Class[RxRouterProvider]]
+      lst.foreach { x =>
+        Try(classLoader.loadClass(x)) match {
+          case Success(cl) if classOf[RxRouterProvider].isAssignableFrom(cl) =>
+            b += cl.asInstanceOf[Class[RxRouterProvider]]
+          case _ =>
+        }
+      }
+
+      val rxRouterProviderClasses = b.result()
+      val routers = for {
+        providerCls      <- rxRouterProviderClasses
+        rxRouterProvider <- ReflectTypeUtil.companionObject(providerCls).map(_.asInstanceOf[RxRouterProvider])
+      } yield {
+        rxRouterProvider.router
+      }
+
+      RxRouter.of(routers: _*)
+    }
+  }
+
   /**
     * Find Airframe HTTP interfaces and build a Router object
     * @param targetPackages
     * @param classLoader
     */
+  @deprecated("Use buildRxRouter instead", since = "23.5.0")
   def buildRouter(targetPackages: Seq[String], classLoader: ClassLoader): Router = {
     trace(s"buildRouter: ${targetPackages}")
 
