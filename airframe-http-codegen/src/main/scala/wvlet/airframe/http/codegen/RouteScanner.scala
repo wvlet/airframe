@@ -46,22 +46,22 @@ object RouteScanner extends LogSupport {
     withClassLoader(classLoader) {
       val lst = ClassScanner.scanClasses(classLoader, targetPackages)
       trace(s"classes: ${lst.mkString(", ")}")
-      val b = Seq.newBuilder[Class[RxRouterProvider]]
+      val rxRouterProviderClasses = Seq.newBuilder[Class[RxRouterProvider]]
       lst.foreach { x =>
         Try(classLoader.loadClass(x)) match {
           case Success(cl) if classOf[RxRouterProvider].isAssignableFrom(cl) =>
-            b += cl.asInstanceOf[Class[RxRouterProvider]]
+            rxRouterProviderClasses += cl.asInstanceOf[Class[RxRouterProvider]]
           case _ =>
         }
       }
 
-      val rxRouterProviderClasses = b.result()
-      val routers = for {
-        providerCls      <- rxRouterProviderClasses
-        rxRouterProvider <- ReflectTypeUtil.companionObject(providerCls).map(_.asInstanceOf[RxRouterProvider])
-      } yield {
-        rxRouterProvider.router
-      }
+      val routers = rxRouterProviderClasses
+        .result()
+        .map { cl => ReflectTypeUtil.companionObject(cl) }
+        .collect { case Some(obj) => obj }
+        .collect { case rxRouterProvider: RxRouterProvider =>
+          rxRouterProvider.router
+        }
 
       RxRouter.of(routers: _*)
     }
