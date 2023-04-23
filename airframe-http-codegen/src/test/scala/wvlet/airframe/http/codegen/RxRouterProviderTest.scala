@@ -23,7 +23,7 @@ class RxRouterProviderTest extends AirSpec {
   }
 
   test("Build router from RxRouterProvider") {
+    router.children.size shouldBe 2
     router.routes.size > 0 shouldBe true
-    debug(router)
   }
 }
