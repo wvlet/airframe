@@ -20,6 +20,7 @@ import wvlet.airframe.http.Router
 import wvlet.airframe.http.HttpAccessLogWriter
 import wvlet.airspec.AirSpec
 import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.log.Logger
 
 import scala.util.{Failure, Try}
 
@@ -43,10 +44,12 @@ object GrpcErrorLogTest extends AirSpec {
     }
   }
 
+  private val router = Router.of[DemoApiDebug]
+
   protected override def design = {
     gRPC.server
       .withName("demo-api-debug")
-      .withRouter(Router.add[DemoApiDebug])
+      .withRouter(router)
       .withRequestLoggerProvider { (config: GrpcServerConfig) =>
         GrpcRequestLogger
           .newLogger(config.name, inMemoryLogWriter)
@@ -65,6 +68,7 @@ object GrpcErrorLogTest extends AirSpec {
   }
 
   test("request logger test") { (client: DemoApiClient) =>
+    debug(router)
     test("unary method error log") {
       val logs = captureAll {
         client.hello("gRPC")

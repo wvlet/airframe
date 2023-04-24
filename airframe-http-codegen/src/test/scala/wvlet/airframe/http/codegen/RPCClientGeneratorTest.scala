@@ -18,7 +18,7 @@ import wvlet.airspec.AirSpec
 
 class RPCClientGeneratorTest extends AirSpec {
   private val router: RxRouter = {
-    RouteScanner.buildRxRouter(Seq("example.rpc"), Thread.currentThread().getContextClassLoader)
+    RouteScanner.buildRxRouter(Seq("example.rpc"))
   }
 
   test("generate RPC client") {
