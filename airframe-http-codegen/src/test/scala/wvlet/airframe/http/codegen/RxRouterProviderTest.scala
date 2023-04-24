@@ -19,7 +19,7 @@ import wvlet.airspec.AirSpec
 class RxRouterProviderTest extends AirSpec {
 
   private val router: RxRouter = {
-    RouteScanner.buildRxRouter(Seq("example.rpc"), Thread.currentThread().getContextClassLoader)
+    RouteScanner.buildRxRouter(Seq("example.rpc"))
   }
 
   test("Build router from RxRouterProvider") {

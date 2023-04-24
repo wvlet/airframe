@@ -14,6 +14,7 @@
 package wvlet.airframe.http.codegen
 import wvlet.airframe.http.router.{RxRouter, RxRouterProvider}
 import wvlet.airframe.http.{Endpoint, RPC, Router}
+import wvlet.airframe.surface.TypeName
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.log.LogSupport
 
@@ -41,6 +42,10 @@ object RouteScanner extends LogSupport {
     }
   }
 
+  private[codegen] def buildRxRouter(targetPackages: Seq[String]): RxRouter = {
+    buildRxRouter(targetPackages, Thread.currentThread().getContextClassLoader)
+  }
+
   def buildRxRouter(targetPackages: Seq[String], classLoader: ClassLoader): RxRouter = {
     // We need to use our own class loader as sbt's layered classloader cannot find application classes
     withClassLoader(classLoader) {
@@ -60,9 +65,15 @@ object RouteScanner extends LogSupport {
         .map { cl => ReflectTypeUtil.companionObject(cl) }
         .collect { case Some(obj) => obj }
         .collect { case rxRouterProvider: RxRouterProvider =>
+          debug(s"Found an RxRouterProvider: ${TypeName.sanitizeTypeName(rxRouterProvider.getClass.getName)}")
           rxRouterProvider.router
         }
 
+      if (routers.isEmpty) {
+        error(
+          s"No router definition is found. Make sure implementing RxRouterProvider in your api objects"
+        )
+      }
       RxRouter.of(routers: _*)
     }
   }
@@ -91,6 +102,7 @@ object RouteScanner extends LogSupport {
     }
   }
 
+  @deprecated("Use buildRxRouter instead", since = "23.5.0")
   private[codegen] def buildRouter(classes: Seq[Class[_]]): Router = {
     var router = Router.empty
     // Find classes with @RPC or @Endpoint annotations.
