@@ -499,8 +499,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     val typeArgTable: Map[String, TypeRepr] = typeMappingTable(t, method)
 
     val origParamSymss = method.paramSymss
-    val paramss =
-      if (origParamSymss.nonEmpty && t.typeSymbol.typeMembers.nonEmpty) origParamSymss.tail else origParamSymss
+    val typeMembers    = t.typeSymbol.typeMembers.filterNot(_.flags.is(Flags.Module))
+    val paramss = {
+      if (origParamSymss.nonEmpty && typeMembers.nonEmpty)
+        origParamSymss.tail
+      else {
+        origParamSymss
+      }
+    }
 
     paramss.map { params =>
       params.zipWithIndex
