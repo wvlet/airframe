@@ -5,10 +5,11 @@ ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-parse
 
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
-val AIRSPEC_VERSION = "23.4.2"
+val AIRSPEC_VERSION = "23.4.3"
 
 val buildSettings: Seq[Def.Setting[_]] = Seq(
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
+  crossScalaVersions                          := Seq("2.12.17", "2.13.10", "3.2.2"),
   libraryDependencies += "org.wvlet.airframe" %% "airspec" % AIRSPEC_VERSION % Test
 )
 
@@ -34,7 +35,7 @@ lazy val server =
         "example.api:rpc:example.api.MyRPCClient"
       ),
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %% "airframe-http-finagle" % sys.props("airframe.version")
+        "org.wvlet.airframe" %% "airframe-http-netty" % sys.props("airframe.version")
       )
     )
     .dependsOn(api)
