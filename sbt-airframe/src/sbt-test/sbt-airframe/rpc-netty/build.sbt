@@ -9,8 +9,7 @@ val AIRSPEC_VERSION = "23.4.3"
 
 val buildSettings: Seq[Def.Setting[_]] = Seq(
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
-  scalaVersion                                := "3.2.2",
-  crossScalaVersions                          := Seq("3.2.2"), // Seq("2.12.17", "2.13.10", "3.2.2"),
+  crossScalaVersions                          := Seq("2.12.17", "2.13.10", "3.2.2"),
   libraryDependencies += "org.wvlet.airframe" %% "airspec" % AIRSPEC_VERSION % Test
 )
 

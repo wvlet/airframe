@@ -12,12 +12,10 @@ import example.api.MyRPCClient.RPCSyncClient
 class MyRPCTest extends AirSpec {
 
   override protected def design: Design = {
-    Design
-      .newDesign
-      .add(Netty.server.withRouter(MyRPCApi.router).design)
+    Netty.server.withRouter(MyRPCApi.router).design
       .bind[RPCSyncClient].toProvider[NettyServer] { (server: NettyServer) =>
-        MyRPCClient.newRPCSyncClient(Http.client.newSyncClient(server.localAddress))
-      }
+      MyRPCClient.newRPCSyncClient(Http.client.newSyncClient(server.localAddress))
+    }
   }
 
   test("Access RPC") { (client: RPCSyncClient) =>
