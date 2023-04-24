@@ -117,8 +117,9 @@ object HttpRequestDispatcher extends LogSupport {
 
       val m = Map.newBuilder[Route, RouteFilter[Req, Resp, F]]
       for (route <- router.localRoutes) {
-        val controllerOpt =
+        val controllerOpt = router.controllerInstance.orElse {
           controllerProvider.findController(session, route.controllerSurface)
+        }
         if (controllerOpt.isEmpty) {
           throw new IllegalStateException(s"Missing controller. Add ${route.controllerSurface} to the design")
         }

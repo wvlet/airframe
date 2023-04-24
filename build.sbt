@@ -263,8 +263,7 @@ lazy val projectDotty =
       fluentd,
       http.jvm,
       httpCodeGen,
-      // Finagle is used in the http recorder
-      // httpRecorder
+      httpRecorder,
       // // Finagle isn't supporting Scala 3
       // httpFinagle,
       grpc,

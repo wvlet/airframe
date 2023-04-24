@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.router
 
+import wvlet.airframe.http.RxEndpoint
 import wvlet.airframe.http.router.RxRouter.FilterNode
 import wvlet.airframe.surface.{MethodSurface, Surface}
 
@@ -68,6 +69,14 @@ case class RxRoute(filter: Option[FilterNode], controllerSurface: Surface, metho
 
 object RxRouter extends RxRouterObjectBase {
 
+  def of(endpoint: RxEndpoint): RxRouter = {
+    EndpointNode(
+      controllerSurface = Surface.of[RedirectToRxEndpoint],
+      methodSurfaces = Surface.methodsOf[RedirectToRxEndpoint],
+      controllerInstance = Some(endpoint)
+    )
+  }
+
   def of(routers: RxRouter*): RxRouter = {
     if (routers.size == 1) {
       routers.head
@@ -109,7 +118,8 @@ object RxRouter extends RxRouterObjectBase {
     */
   case class EndpointNode(
       controllerSurface: Surface,
-      methodSurfaces: Seq[MethodSurface]
+      methodSurfaces: Seq[MethodSurface],
+      controllerInstance: Option[Any] = None
   ) extends RxRouter {
     override def name: String               = controllerSurface.name
     override def filter: Option[FilterNode] = None
@@ -121,6 +131,18 @@ object RxRouter extends RxRouterObjectBase {
     }
     override def routes: List[RxRoute] =
       List(RxRoute(None, controllerSurface, methodSurfaces))
+  }
+
+  case class RxEndpointNode(endpoint: RxEndpoint) extends RxRouter {
+    override def name: String               = f"${this.hashCode()}%08x"
+    override def filter: Option[FilterNode] = None
+    override def children: List[RxRouter]   = Nil
+    override def isLeaf: Boolean            = true
+    override def wrapWithFilter(parentFilter: FilterNode): RxRouter = {
+      StemNode(filter = Some(parentFilter), children = List(this))
+    }
+
+    override def routes: List[RxRoute] = List.empty
   }
 
   /**

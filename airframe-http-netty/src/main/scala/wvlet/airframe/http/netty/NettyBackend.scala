@@ -22,15 +22,16 @@ import wvlet.airframe.http.{
   HttpStatus,
   RPCStatus,
   RxEndpoint,
-  RxFilter
+  RxFilter,
+  RxHttpBackend
 }
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.log.LogSupport
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
-object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport { self =>
+object NettyBackend extends HttpBackend[Request, Response, RxStream] with LogSupport { self =>
   private val rxBackend = new RxNettyBackend
 
   override protected implicit val httpRequestAdapter: HttpRequestAdapter[Request] =
@@ -42,15 +43,25 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
     Http.response(status).withContent(content)
   }
 
-  override def toFuture[A](a: A): Rx[A] = {
+  def newRxEndpoint[U](body: Request => RxStream[Response], onClose: () => U = { () => }): RxEndpoint = new RxEndpoint {
+    override private[http] def backend: RxHttpBackend = rxBackend
+    override def apply(request: Request): RxStream[Response] = {
+      body(request)
+    }
+    override def close(): Unit = {
+      onClose()
+    }
+  }
+
+  override def toFuture[A](a: A): RxStream[A] = {
     Rx.single(a)
   }
 
-  override def toFuture[A](a: Future[A], e: ExecutionContext): Rx[A] = {
+  override def toFuture[A](a: Future[A], e: ExecutionContext): RxStream[A] = {
     Rx.future(a)(e)
   }
 
-  override def toScalaFuture[A](a: Rx[A]): Future[A] = {
+  override def toScalaFuture[A](a: RxStream[A]): Future[A] = {
     val promise: Promise[A] = Promise()
     a.toRxStream
       .map { x =>
@@ -70,22 +81,23 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
 
   override def rxFilterAdapter(filter: RxFilter): NettyBackend.Filter = {
     new NettyBackend.Filter {
-      override protected def backend: HttpBackend[Request, Response, Rx] = self
-      override def apply(request: Request, context: NettyBackend.Context): Rx[Response] = {
+      override protected def backend: HttpBackend[Request, Response, RxStream] = self
+      override def apply(request: Request, context: NettyBackend.Context): RxStream[Response] = {
         filter(
           request,
           new RxEndpoint {
             override private[http] def backend: RxNettyBackend = rxBackend
-            override def apply(request: Request): Rx[Response] = {
+            override def apply(request: Request): RxStream[Response] = {
               context(request)
             }
+            override def close(): Unit = {}
           }
         )
       }
     }
   }
 
-  override def wrapException(e: Throwable): Rx[Response] = {
+  override def wrapException(e: Throwable): RxStream[Response] = {
     Rx.exception(e)
   }
 
@@ -97,8 +109,8 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
     classOf[Response].isAssignableFrom(x)
   }
 
-  override def mapF[A, B](f: Rx[A], body: A => B): Rx[B] = {
-    f.toRxStream.map(body)
+  override def mapF[A, B](f: RxStream[A], body: A => B): RxStream[B] = {
+    f.map(body)
   }
 
   private lazy val tls =
@@ -106,7 +118,7 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
 
   private def storage: collection.mutable.Map[String, Any] = tls.get()
 
-  override def withThreadLocalStore(request: => Rx[Response]): Rx[Response] = {
+  override def withThreadLocalStore(request: => RxStream[Response]): RxStream[Response] = {
     //
     request
   }

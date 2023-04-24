@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.{Rx, RxStream}
 
 import scala.util.control.NonFatal
 
@@ -33,7 +33,7 @@ trait RxFilter {
     * @param endpoint
     * @return
     */
-  def apply(request: Request, endpoint: RxEndpoint): Rx[Response]
+  def apply(request: Request, endpoint: RxEndpoint): RxStream[Response]
 
   /**
     * Chain to the next filter.
@@ -58,17 +58,21 @@ object RxFilter {
 
   private class FilterAndThenEndpoint(filter: RxFilter, nextService: RxEndpoint) extends RxEndpoint {
     override def backend: RxHttpBackend = nextService.backend
-    override def apply(request: Request): Rx[Response] = {
+    override def apply(request: Request): RxStream[Response] = {
       try {
         filter.apply(request, nextService)
       } catch {
         case NonFatal(e) => Rx.exception(e)
       }
     }
+
+    override def close(): Unit = {
+      nextService.close()
+    }
   }
 
   private class AndThen(prev: RxFilter, next: RxFilter) extends RxFilter {
-    override def apply(request: Request, endpoint: RxEndpoint): Rx[Response] = {
+    override def apply(request: Request, endpoint: RxEndpoint): RxStream[Response] = {
       try {
         prev.apply(request, next.andThen(endpoint))
       } catch {

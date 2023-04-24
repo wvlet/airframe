@@ -13,12 +13,13 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.Router.extractEndpointRoutes
 import wvlet.airframe.http.router.Automaton.DFA
-import wvlet.airframe.http.router.RxRouter.{EndpointNode, FilterNode, StemNode}
+import wvlet.airframe.http.router.RxRouter.{EndpointNode, FilterNode, RxEndpointNode, StemNode}
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
-import wvlet.airframe.http.router.{ControllerRoute, Route, RouteMatch, RouteMatcher, RxRouter}
+import wvlet.airframe.http.router.{ControllerRoute, RedirectToRxEndpoint, Route, RouteMatch, RouteMatcher, RxRouter}
 
 import scala.annotation.tailrec
 import scala.language.experimental.macros
@@ -42,7 +43,8 @@ case class Router(
     children: Seq[Router] = Seq.empty,
     localRoutes: Seq[Route] = Seq.empty,
     filterSurface: Option[Surface] = None,
-    filterInstance: Option[HttpFilterType] = None
+    filterInstance: Option[HttpFilterType] = None,
+    controllerInstance: Option[Any] = None
 ) extends router.RouterBase
     with LogSupport {
   def isEmpty = this eq Router.empty
@@ -363,7 +365,7 @@ object Router extends router.RouterObjectBase with LogSupport {
               e.methodSurfaces
             )
         }
-        Router(surface = Some(e.controllerSurface), localRoutes = routes)
+        Router(surface = Some(e.controllerSurface), localRoutes = routes, controllerInstance = e.controllerInstance)
       case s: StemNode =>
         s.filter match {
           case None =>

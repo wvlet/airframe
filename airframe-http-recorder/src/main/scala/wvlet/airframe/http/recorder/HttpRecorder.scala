@@ -13,9 +13,10 @@
  */
 package wvlet.airframe.http.recorder
 
-import wvlet.airframe.http.{Http, ServerAddress}
+import wvlet.airframe.http.{Http, HttpMessage, HttpStatus, RxEndpoint, ServerAddress}
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.netty.NettyServer
+import wvlet.airframe.http.netty.{NettyBackend, NettyServer}
+import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.log.LogSupport
 
 import java.util.Locale
@@ -33,7 +34,8 @@ case class HttpRecorderConfig(
     port: Option[Int] = None,
     // Used for computing hash key for matching requests
     requestMatcher: HttpRequestMatcher = new HttpRequestMatcher.DefaultHttpRequestMatcher(),
-    excludeHeaderFilterForRecording: (String, String) => Boolean = HttpRecorder.defaultExcludeHeaderFilterForRecording
+    excludeHeaderFilterForRecording: (String, String) => Boolean = HttpRecorder.defaultExcludeHeaderFilterForRecording,
+    fallBackHandler: RxEndpoint = HttpRecorder.defaultFallBackHandler
 ) {
   private[http] def sqliteFilePath = s"${storageFolder}/${dbFileName}.sqlite"
 
@@ -72,8 +74,6 @@ case class HttpRecorderConfig(
     this.copy(excludeHeaderFilterForRecording = excludeHeaderFilterForRecording)
   }
 
-
-
 }
 
 /**
@@ -92,6 +92,18 @@ object HttpRecorder extends LogSupport {
     Http.client
       .withName("airframe-http-recorder-proxy")
       .newSyncClient(recorderConfig.destAddress.hostAndPort)
+  }
+
+  private def destProxyEndpoint(recorderConfig: HttpRecorderConfig): RxEndpoint = {
+    val client = newDestClient(recorderConfig)
+    NettyBackend.newRxEndpoint(
+      body = { (request: HttpMessage.Request) =>
+        Rx.single(client.sendSafe(request))
+      },
+      onClose = { () =>
+        client.close()
+      }
+    )
   }
 
   private def newRecordStoreForRecording(recorderConfig: HttpRecorderConfig, dropSession: Boolean): HttpRecordStore = {
@@ -114,7 +126,7 @@ object HttpRecorder extends LogSupport {
     val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
     val server = new HttpRecorderServer(
       recorder,
-      HttpRecorderServer.newRecordProxyService(recorder, newDestClient(recorderConfig))
+      HttpRecorderServer.newRecordProxyService(recorder, destProxyEndpoint(recorderConfig))
     )
     server.start
     server
@@ -129,7 +141,10 @@ object HttpRecorder extends LogSupport {
   ): HttpRecorderServer = {
     val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
     val server =
-      new HttpRecorderServer(recorder, HttpRecorderServer.newRecordingService(recorder, newDestClient(recorderConfig)))
+      new HttpRecorderServer(
+        recorder,
+        HttpRecorderServer.newRecordingService(recorder, destProxyEndpoint(recorderConfig))
+      )
     server.start
     server
   }
@@ -138,7 +153,7 @@ object HttpRecorder extends LogSupport {
     * Creates an HTTP server that returns only recorded HTTP responses. If no matching record is found, use the given
     * fallback handler.
     */
-  def createServer(recorderConfig: HttpRecorderConfig): NettyServer = {
+  def createServer(recorderConfig: HttpRecorderConfig): HttpRecorderServer = {
     val recorder = new HttpRecordStore(recorderConfig)
     // Return the server instance as FinagleServer to avoid further recording
     val server = new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
@@ -157,11 +172,13 @@ object HttpRecorder extends LogSupport {
     server
   }
 
-  def defaultFallBackHandler = {
-    Service.mk { request: Request =>
-      val r = Response(Status.NotFound)
-      r.contentString = s"${request.uri} is not found"
-      Future.value(r)
+  def defaultFallBackHandler: RxEndpoint = NettyBackend.newRxEndpoint(
+    body = { (request: HttpMessage.Request) =>
+      Rx.const(
+        Http
+          .response(HttpStatus.NotFound_404)
+          .withContent(s"${request.uri} is not found")
+      )
     }
-  }
+  )
 }
