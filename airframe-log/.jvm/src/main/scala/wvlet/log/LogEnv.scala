@@ -3,7 +3,9 @@ import wvlet.log.LogFormatter.SourceCodeLogFormatter
 
 import java.io.PrintStream
 import java.lang.management.ManagementFactory
+import java.lang.reflect.InvocationTargetException
 import javax.management.{InstanceAlreadyExistsException, MBeanServer, ObjectName}
+import scala.util.control.NonFatal
 
 /**
   */
@@ -78,12 +80,8 @@ private[log] object LogEnv extends LogEnvBase {
     try {
       Some(ManagementFactory.getPlatformMBeanServer)
     } catch {
-      case e: ClassNotFoundException =>
+      case NonFatal(e) =>
         // Pre-registered wvlet.log.AirframeLogManager might not be found when reloading the project in IntelliJ, so skip this error.
-        None
-      case e: Throwable =>
-        // Show an error once without using the logger itself
-        e.printStackTrace()
         None
     }
   }
