@@ -3,7 +3,6 @@ import wvlet.log.LogFormatter.SourceCodeLogFormatter
 
 import java.io.PrintStream
 import java.lang.management.ManagementFactory
-import java.lang.reflect.InvocationTargetException
 import javax.management.{InstanceAlreadyExistsException, MBeanServer, ObjectName}
 import scala.util.control.NonFatal
 
