@@ -13,14 +13,14 @@
  */
 package wvlet.airframe.http.netty
 
-import wvlet.airframe.Design
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.{Http, HttpMessage, RPCException, RPCStatus, RxEndpoint, RxFilter}
+import wvlet.airframe.http.{Http, HttpMessage, RPC, RPCException, RPCStatus, RxEndpoint, RxFilter}
 import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 
 object NettyRxFilterTest extends AirSpec {
+  @RPC
   class MyRPC {
     def hello(msg: String): String = s"Hello ${msg}!"
   }
@@ -52,14 +52,21 @@ object NettyRxFilterTest extends AirSpec {
     (client: SyncClient) =>
       test("when no auth header") {
         val ex = intercept[RPCException] {
-          client.send(Http.POST("/hello").withJson("""{"msg":"Netty"}"""))
+          client.send(
+            Http.POST("/wvlet.airframe.http.netty.NettyRxFilterTest.MyRPC/hello").withJson("""{"msg":"Netty"}""")
+          )
         }
         ex.status shouldBe RPCStatus.UNAUTHENTICATED_U13
         ex.message shouldBe "authentication failed"
       }
 
       test("with auth header") {
-        val resp = client.send(Http.POST("/hello").withJson("""{"msg":"Netty"}""").withAuthorization("Bearer xxxx"))
+        val resp = client.send(
+          Http
+            .POST("/wvlet.airframe.http.netty.NettyRxFilterTest.MyRPC/hello").withJson(
+              """{"msg":"Netty"}"""
+            ).withAuthorization("Bearer xxxx")
+        )
         resp.contentString shouldBe "Hello Netty!"
       }
   }
@@ -67,7 +74,9 @@ object NettyRxFilterTest extends AirSpec {
   test("throw RPCException in a filter", design = Netty.server.withRouter(router2).designWithSyncClient) {
     (client: SyncClient) =>
       val ex = intercept[RPCException] {
-        client.send(Http.POST("/hello").withJson("""{"msg":"Netty"}"""))
+        client.send(
+          Http.POST("/wvlet.airframe.http.netty.NettyRxFilterTest.MyRPC/hello").withJson("""{"msg":"Netty"}""")
+        )
       }
       ex.status shouldBe RPCStatus.UNAUTHENTICATED_U13
       ex.message shouldBe "authentication failed"

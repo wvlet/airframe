@@ -14,13 +14,14 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.Design
-import wvlet.airframe.http.Http
+import wvlet.airframe.http.{Http, RPC}
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.router.RxRouter
 import wvlet.airspec.AirSpec
 
 class NettyRxRPCServerTest extends AirSpec {
 
+  @RPC
   class MyRPC {
     def helloNetty(msg: String): String  = s"Hello ${msg}!"
     def helloNetty2(msg: String): String = s"Hello ${msg}2!"
@@ -35,10 +36,14 @@ class NettyRxRPCServerTest extends AirSpec {
   }
 
   test("Start an RPC server using RxRouter") { (client: SyncClient) =>
-    val resp = client.send(Http.POST("/helloNetty").withJson("""{"msg":"Netty"}"""))
+    val resp = client.send(
+      Http.POST("/wvlet.airframe.http.netty.NettyRxRPCServerTest.MyRPC/helloNetty").withJson("""{"msg":"Netty"}""")
+    )
     resp.message.toContentString shouldBe "Hello Netty!"
 
-    val resp2 = client.send(Http.POST("/helloNetty2").withJson("""{"msg":"Netty"}"""))
+    val resp2 = client.send(
+      Http.POST("/wvlet.airframe.http.netty.NettyRxRPCServerTest.MyRPC/helloNetty2").withJson("""{"msg":"Netty"}""")
+    )
     resp2.message.toContentString shouldBe "Hello Netty2!"
   }
 }
