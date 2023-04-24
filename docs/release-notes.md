@@ -6,6 +6,12 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 23.4.3
+
+More Scala 3 support in airframe-http-netty and introduced a new RxRouter interface 
+for locating RPC definitions. 
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v24.4.3)
+
 ## 23.4.2
 
 [Release notes](https://github.com/wvlet/airframe/releases/tag/v23.4.2)
