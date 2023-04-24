@@ -16,7 +16,7 @@ package wvlet.airframe.http.recorder
 import wvlet.airframe.{Design, Session}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.{RxEndpoint, RxFilter}
-import wvlet.airframe.http.netty.{Netty, NettyServerConfig}
+import wvlet.airframe.http.netty.{Netty, NettyServer, NettyServerConfig}
 import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.log.LogSupport
@@ -32,7 +32,11 @@ class HttpRecorderServer(recordStore: HttpRecordStore, endpoint: RxEndpoint) ext
     .withPort(recordStore.recorderConfig.port.getOrElse(IOUtil.unusedPort))
     .withRouter(RxRouter.of(endpoint))
 
-  private var diSession: Option[Session] = None
+  private var diSession: Option[Session]  = None
+  private var server: Option[NettyServer] = None
+
+  def localAddress: String =
+    server.map(_.localAddress).getOrElse(throw new IllegalStateException("Server is not yet started"))
 
   def clearSession: Unit = {
     recordStore.clearSession
@@ -70,7 +74,7 @@ class HttpRecorderServer(recordStore: HttpRecordStore, endpoint: RxEndpoint) ext
   def start: Unit = {
     diSession.foreach(_.close())
     diSession = Some(Design.empty.newSession)
-    serverConfig.newServer(diSession.get)
+    server = Some(serverConfig.newServer(diSession.get))
   }
 
   override def close(): Unit = {
