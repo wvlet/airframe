@@ -137,13 +137,13 @@ case class Router(
 
     val newRoutes: Seq[ControllerRoute] = {
       (endpointOpt, rpcOpt) match {
-        case (Some(endpoint), Some(rpcOpt)) =>
+        case (Some(_), Some(_)) =>
           throw new IllegalArgumentException(
             s"Cannot define both of @Endpoint and @RPC annotations: ${controllerSurface}"
           )
         case (_, None) =>
           extractEndpointRoutes(controllerSurface, controllerMethodSurfaces)
-        case (None, Some(rpc)) =>
+        case (_, Some(rpc)) =>
           Router.extractRPCRoutes(controllerSurface, controllerMethodSurfaces)
       }
     }
@@ -300,7 +300,7 @@ object Router extends router.RouterObjectBase with LogSupport {
       controllerSurface: Surface,
       controllerMethodSurfaces: Seq[MethodSurface]
   ): Seq[ControllerRoute] = {
-    val rpcInterfaceCls = controllerSurface.rawType
+    val rpcInterfaceCls = findRPCInterfaceCls(controllerSurface)
     val rpcOpt          = controllerSurface.findAnnotationOf[RPC]
 
     val prefixPath = rpcOpt match {
@@ -312,7 +312,13 @@ object Router extends router.RouterObjectBase with LogSupport {
 
     val routes: Seq[ControllerRoute] =
       controllerMethodSurfaces.sortBy(_.name).map { (m: MethodSurface) =>
-        val methodPath = s"/${m.name}"
+        val pathRpcOpt = m.findAnnotationOf[RPC]
+        val methodPath = pathRpcOpt match {
+          case Some(rpc) if rpc.path().nonEmpty =>
+            s"${rpc.path()}"
+          case _ =>
+            s"/${m.name}"
+        }
         val rpcMethod = RPCMethod(
           path = prefixPath + methodPath,
           rpcInterfaceName = TypeName.sanitizeTypeName(rpcInterfaceCls.getName),
@@ -333,6 +339,9 @@ object Router extends router.RouterObjectBase with LogSupport {
     routes
   }
 
+  /**
+    * Convert a new RxRouter instance into the legacy Router for compatibility
+    */
   def fromRxRouter(router: RxRouter): Router = {
     val newRouter = router match {
       case e: EndpointNode =>

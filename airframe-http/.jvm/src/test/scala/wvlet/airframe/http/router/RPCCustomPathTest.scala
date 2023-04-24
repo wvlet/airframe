@@ -18,7 +18,7 @@ import wvlet.airspec.AirSpec
 
 /**
   */
-object RPCTest extends AirSpec {
+object RPCCustomPathTest extends AirSpec {
 
   case class BookRequest(id: String)
   case class Book(id: String, name: String)
@@ -54,7 +54,7 @@ object RPCTest extends AirSpec {
   test("Create RPC interface without any path") {
     val r = Router.add[MyRPCService2]
     debug(r)
-    val m = r.routes.find(_.path == "/wvlet.airframe.http.router.RPCTest.MyRPCService2/hello")
+    val m = r.routes.find(_.path == "/wvlet.airframe.http.router.RPCCustomPathTest.MyRPCService2/hello")
     m shouldBe defined
 
     m.get.httpMethod shouldBe HttpMethod.POST

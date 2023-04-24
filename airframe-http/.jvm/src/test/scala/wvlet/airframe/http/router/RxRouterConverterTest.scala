@@ -14,12 +14,13 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.http.HttpMessage.Request
-import wvlet.airframe.http.{HttpMethod, Router, RxEndpoint, RxFilter}
+import wvlet.airframe.http.{HttpMethod, RPC, Router, RxEndpoint, RxFilter}
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 class RxRouterConverterTest extends AirSpec {
 
+  @RPC
   trait MyApi {
     def hello: String = "hello"
   }
@@ -39,6 +40,7 @@ class RxRouterConverterTest extends AirSpec {
     }
   }
 
+  @RPC
   trait MyApi2 {
     def hello2: String = "hello2"
   }
@@ -47,7 +49,7 @@ class RxRouterConverterTest extends AirSpec {
     val r = Router.fromRxRouter(MyApi.router)
     r.routes.size shouldBe 1
     val r0 = r.routes(0)
-    r0.path shouldBe "/hello"
+    r0.path shouldBe "/wvlet.airframe.http.router.RxRouterConverterTest.MyApi/hello"
     r0.httpMethod shouldBe HttpMethod.POST
     r0.controllerSurface shouldBe Surface.of[MyApi]
   }
@@ -60,7 +62,7 @@ class RxRouterConverterTest extends AirSpec {
     r.filterSurface shouldBe Some(Surface.of[AuthFilter])
 
     val r0 = r.routes(0)
-    r0.path shouldBe "/hello"
+    r0.path shouldBe "/wvlet.airframe.http.router.RxRouterConverterTest.MyApi/hello"
     r0.httpMethod shouldBe HttpMethod.POST
     r0.controllerSurface shouldBe Surface.of[MyApi]
   }
@@ -83,7 +85,7 @@ class RxRouterConverterTest extends AirSpec {
     val rc1 = rc0.children(0)
     rc1.localRoutes.size shouldBe 1
     val l0 = rc1.localRoutes(0)
-    l0.path shouldBe "/hello"
+    l0.path shouldBe "/wvlet.airframe.http.router.RxRouterConverterTest.MyApi/hello"
     l0.httpMethod shouldBe HttpMethod.POST
     l0.controllerSurface shouldBe Surface.of[MyApi]
   }
@@ -97,10 +99,10 @@ class RxRouterConverterTest extends AirSpec {
     val r = Router.fromRxRouter(rxRouter)
     r.routes.size shouldBe 2
     val r0 = r.routes(0)
-    r0.path shouldBe "/hello"
+    r0.path shouldBe "/wvlet.airframe.http.router.RxRouterConverterTest.MyApi/hello"
     r0.controllerSurface shouldBe Surface.of[MyApi]
     val r1 = r.routes(1)
-    r1.path shouldBe "/hello2"
+    r1.path shouldBe "/wvlet.airframe.http.router.RxRouterConverterTest.MyApi2/hello2"
     r1.controllerSurface shouldBe Surface.of[MyApi2]
   }
 
@@ -115,10 +117,10 @@ class RxRouterConverterTest extends AirSpec {
     r.filterSurface shouldBe Some(Surface.of[AuthFilter])
     r.routes.size shouldBe 2
     val r0 = r.routes(0)
-    r0.path shouldBe "/hello"
+    r0.path shouldBe "/wvlet.airframe.http.router.RxRouterConverterTest.MyApi/hello"
     r0.controllerSurface shouldBe Surface.of[MyApi]
     val r1 = r.routes(1)
-    r1.path shouldBe "/hello2"
+    r1.path shouldBe "/wvlet.airframe.http.router.RxRouterConverterTest.MyApi2/hello2"
     r1.controllerSurface shouldBe Surface.of[MyApi2]
   }
 
@@ -135,10 +137,10 @@ class RxRouterConverterTest extends AirSpec {
     r.filterSurface shouldBe Some(Surface.of[AuthFilter])
     r.routes.size shouldBe 2
     val r0 = r.routes(0)
-    r0.path shouldBe "/hello"
+    r0.path shouldBe "/wvlet.airframe.http.router.RxRouterConverterTest.MyApi/hello"
     r0.controllerSurface shouldBe Surface.of[MyApi]
     val r1 = r.routes(1)
-    r1.path shouldBe "/hello2"
+    r1.path shouldBe "/wvlet.airframe.http.router.RxRouterConverterTest.MyApi2/hello2"
     r1.controllerSurface shouldBe Surface.of[MyApi2]
 
     r.children.size shouldBe 2
