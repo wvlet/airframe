@@ -84,6 +84,10 @@ object RPCClientBindingTest extends AirSpec {
         MyRPCClient.newRPCSyncClient(Http.client.newSyncClient(server.localAddress))
       }
 
+  test("Create a surface of an RPC client") {
+    Surface.of[RPCSyncClient]
+  }
+
   test("Start an RPC server with a client") { (client: RPCSyncClient) =>
     client.MyRPCApi.helloRPC(HelloRequest("Netty")).msg shouldBe "Hello Netty!"
   }
