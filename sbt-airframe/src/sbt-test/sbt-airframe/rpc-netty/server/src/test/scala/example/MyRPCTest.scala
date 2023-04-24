@@ -2,8 +2,8 @@ package example
 
 import wvlet.airspec.AirSpec
 import wvlet.airframe._
-import wvlet.airframe.http.{Http, Router}
-import wvlet.airframe.http.finagle.{Finagle, FinagleServer}
+import wvlet.airframe.http.Http
+import wvlet.airframe.http.netty.{Netty, NettyServer}
 import example.api.MyRPCApi
 import example.api.MyRPCApi.{HelloRequest, HelloResponse}
 import example.api.MyRPCClient
@@ -11,12 +11,10 @@ import example.api.MyRPCClient.RPCSyncClient
 
 class MyRPCTest extends AirSpec {
 
-  private val router = Router.of[MyRPCApi]
-
   override protected def design: Design = {
-    Finagle.server
-      .withRouter(router).design
-      .bind[RPCSyncClient].toProvider { (server: FinagleServer) =>
+    Netty.server
+      .withRouter(MyRPCApi.router).design
+      .bind[RPCSyncClient].toProvider { (server: NettyServer) =>
         MyRPCClient.newRPCSyncClient(Http.client.newSyncClient(server.localAddress))
       }
   }

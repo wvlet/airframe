@@ -35,7 +35,7 @@ lazy val server =
         "example.api:rpc:example.api.MyRPCClient"
       ),
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %% "airframe-http-finagle" % sys.props("airframe.version")
+        "org.wvlet.airframe" %% "airframe-http-netty" % sys.props("airframe.version")
       )
     )
     .dependsOn(api)
