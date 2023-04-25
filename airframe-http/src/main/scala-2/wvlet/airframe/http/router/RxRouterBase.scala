@@ -13,14 +13,14 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.http.RxFilter
+import wvlet.airframe.http.RxHttpFilter
 import scala.language.experimental.macros
 
 trait RxRouterObjectBase {
   def of[Controller]: RxRouter = macro RxRouterMacros.of[Controller]
-  def filter[Filter <: RxFilter]: RxRouter.FilterNode = macro RxRouterMacros.filter[Filter]
+  def filter[Filter <: RxHttpFilter]: RxRouter.FilterNode = macro RxRouterMacros.filter[Filter]
 }
 
 trait RxRouteFilterBase {
-  def andThen[Filter <: RxFilter]: RxRouter.FilterNode = macro RxRouterMacros.andThenFilter[Filter]
+  def andThen[Filter <: RxHttpFilter]: RxRouter.FilterNode = macro RxRouterMacros.andThenFilter[Filter]
 }

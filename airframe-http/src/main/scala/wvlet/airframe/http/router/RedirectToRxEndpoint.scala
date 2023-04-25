@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.http.{Endpoint, HttpMessage, RPCContext, RxEndpoint}
+import wvlet.airframe.http.{Endpoint, HttpMessage, RPCContext, RxHttpEndpoint}
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
@@ -21,7 +21,7 @@ import wvlet.log.LogSupport
   * An Http endpoint definition for bypassing the request to the given endpoint
   * @param endpoint
   */
-class RedirectToRxEndpoint(endpoint: RxEndpoint) extends LogSupport {
+class RedirectToRxEndpoint(endpoint: RxHttpEndpoint) extends LogSupport {
   @Endpoint(path = "/*path")
   def process(): Rx[HttpMessage.Response] = {
     val req = RPCContext.current.httpRequest

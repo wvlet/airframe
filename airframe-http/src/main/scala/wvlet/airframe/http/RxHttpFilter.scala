@@ -20,10 +20,10 @@ import wvlet.log.LogSupport
 import scala.util.control.NonFatal
 
 /**
-  * An [[RxFilter]] is a filter for receiving the response from the endpoin via `endpoint.apply(request)`, and
+  * An [[RxHttpFilter]] is a filter for receiving the response from the endpoint via `endpoint.apply(request)`, and
   * transforming it into another `Rx[Response]`.
   */
-trait RxFilter {
+trait RxHttpFilter {
 
   /**
     * Apply a filter before sending the request to the endpoint, and handle its response before returning the client.
@@ -34,15 +34,15 @@ trait RxFilter {
     * @param endpoint
     * @return
     */
-  def apply(request: Request, endpoint: RxEndpoint): Rx[Response]
+  def apply(request: Request, endpoint: RxHttpEndpoint): Rx[Response]
 
   /**
     * Chain to the next filter.
     * @param nextFilter
     * @return
     */
-  def andThen(nextFilter: RxFilter): RxFilter = {
-    new RxFilter.AndThen(this, nextFilter)
+  def andThen(nextFilter: RxHttpFilter): RxHttpFilter = {
+    new RxHttpFilter.AndThen(this, nextFilter)
   }
 
   /**
@@ -50,15 +50,16 @@ trait RxFilter {
     * @param endpoint
     * @return
     */
-  def andThen(endpoint: RxEndpoint): RxEndpoint = {
-    new RxFilter.FilterAndThenEndpoint(this, endpoint)
+  def andThen(endpoint: RxHttpEndpoint): RxHttpEndpoint = {
+    new RxHttpFilter.FilterAndThenEndpoint(this, endpoint)
   }
 }
 
-object RxFilter {
+object RxHttpFilter {
 
-  private class FilterAndThenEndpoint(filter: RxFilter, nextService: RxEndpoint) extends RxEndpoint with LogSupport {
-    override def backend: RxHttpBackend = nextService.backend
+  private class FilterAndThenEndpoint(filter: RxHttpFilter, nextService: RxHttpEndpoint)
+      extends RxHttpEndpoint
+      with LogSupport {
     override def apply(request: Request): Rx[Response] = {
       try {
         val ret = filter.apply(request, nextService)
@@ -74,8 +75,8 @@ object RxFilter {
     }
   }
 
-  private class AndThen(prev: RxFilter, next: RxFilter) extends RxFilter {
-    override def apply(request: Request, endpoint: RxEndpoint): Rx[Response] = {
+  private class AndThen(prev: RxHttpFilter, next: RxHttpFilter) extends RxHttpFilter {
+    override def apply(request: Request, endpoint: RxHttpEndpoint): Rx[Response] = {
       try {
         prev.apply(request, next.andThen(endpoint))
       } catch {

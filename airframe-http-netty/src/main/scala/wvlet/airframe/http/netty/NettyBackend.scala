@@ -33,16 +33,6 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
     Http.response(status).withContent(content)
   }
 
-  def newRxEndpoint[U](body: Request => Rx[Response], onClose: () => U = { () => }): RxEndpoint = new RxEndpoint {
-    override private[http] def backend: RxHttpBackend = rxBackend
-    override def apply(request: Request): Rx[Response] = {
-      body(request)
-    }
-    override def close(): Unit = {
-      onClose()
-    }
-  }
-
   override def toFuture[A](a: A): Rx[A] = {
     Rx.single(a)
   }
@@ -63,20 +53,19 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
 
   override def filterAdapter[M[_]](filter: HttpFilter[_, _, M]): NettyBackend.Filter = {
     filter match {
-      case f: NettyBackend.Filter => f
+      case f: NettyBackend.Filter @unchecked => f
       case other =>
         throw RPCStatus.UNIMPLEMENTED_U8.newException(s"unsupported filter type: ${other.getClass}")
     }
   }
 
-  override def rxFilterAdapter(filter: RxFilter): NettyBackend.Filter = {
+  override def rxFilterAdapter(filter: RxHttpFilter): NettyBackend.Filter = {
     new NettyBackend.Filter {
       override protected def backend: HttpBackend[Request, Response, Rx] = self
       override def apply(request: Request, context: NettyBackend.Context): Rx[Response] = {
         filter(
           request,
-          new RxEndpoint {
-            override private[http] def backend: RxNettyBackend = rxBackend
+          new RxHttpEndpoint {
             override def apply(request: Request): Rx[Response] = {
               context(request)
             }

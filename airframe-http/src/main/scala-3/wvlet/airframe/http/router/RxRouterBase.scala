@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.http.RxFilter
+import wvlet.airframe.http.RxHttpFilter
 import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.surface.Surface
 
@@ -23,14 +23,14 @@ trait RxRouterObjectBase {
     RxRouter.EndpointNode(Surface.of[Controller], Surface.methodsOf[Controller], None)
   }
 
-  inline def filter[Filter <: RxFilter]: RxRouter.FilterNode = {
+  inline def filter[Filter <: RxHttpFilter]: RxRouter.FilterNode = {
     wvlet.airframe.registerTraitFactory[Filter]
     RxRouter.FilterNode(None, Surface.of[Filter])
   }
 }
 
 trait RxRouteFilterBase { self: RxRouter.FilterNode =>
-  inline def andThen[Filter <: RxFilter]: RxRouter.FilterNode = {
+  inline def andThen[Filter <: RxHttpFilter]: RxRouter.FilterNode = {
     wvlet.airframe.registerTraitFactory[Filter]
     val next = RxRouter.FilterNode(None, Surface.of[Filter])
     self.andThen(next)

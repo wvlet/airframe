@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.http.RxEndpoint
+import wvlet.airframe.http.RxHttpEndpoint
 import wvlet.airframe.http.router.RxRouter.FilterNode
 import wvlet.airframe.surface.{MethodSurface, Surface}
 
@@ -69,7 +69,7 @@ case class RxRoute(filter: Option[FilterNode], controllerSurface: Surface, metho
 
 object RxRouter extends RxRouterObjectBase {
 
-  def of(endpoint: RxEndpoint): RxRouter = {
+  def of(endpoint: RxHttpEndpoint): RxRouter = {
     EndpointNode(
       controllerSurface = Surface.of[RedirectToRxEndpoint],
       methodSurfaces = Surface.methodsOf[RedirectToRxEndpoint],
@@ -133,7 +133,7 @@ object RxRouter extends RxRouterObjectBase {
       List(RxRoute(None, controllerSurface, methodSurfaces))
   }
 
-  case class RxEndpointNode(endpoint: RxEndpoint) extends RxRouter {
+  case class RxEndpointNode(endpoint: RxHttpEndpoint) extends RxRouter {
     override def name: String               = f"${this.hashCode()}%08x"
     override def filter: Option[FilterNode] = None
     override def children: List[RxRouter]   = Nil

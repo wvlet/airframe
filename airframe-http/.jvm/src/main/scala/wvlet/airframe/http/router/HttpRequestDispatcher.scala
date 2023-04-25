@@ -91,9 +91,9 @@ object HttpRequestDispatcher extends LogSupport {
           .filter(_.isDefined)
           .map { filter =>
             filter.get match {
-              case legacyFilter: HttpFilter[Req, Resp, F] =>
+              case legacyFilter: HttpFilter[Req, Resp, F] @unchecked =>
                 legacyFilter
-              case rxFilter: RxFilter =>
+              case rxFilter: RxHttpFilter =>
                 backend.rxFilterAdapter(rxFilter)
               case other =>
                 throw RPCStatus.UNIMPLEMENTED_U8.newException(s"Invalid filter type: ${other.getClass.getName}")

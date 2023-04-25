@@ -15,7 +15,7 @@ package wvlet.airframe.http.recorder
 
 import wvlet.airframe.{Design, Session}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{RxEndpoint, RxFilter}
+import wvlet.airframe.http.{RxHttpEndpoint, RxHttpFilter}
 import wvlet.airframe.http.netty.{Netty, NettyServer, NettyServerConfig}
 import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.rx.{Rx, RxStream}
@@ -25,7 +25,7 @@ import wvlet.log.io.IOUtil
 /**
   * A FinagleServer wrapper to close HttpRecordStore when the server terminates
   */
-class HttpRecorderServer(recordStore: HttpRecordStore, endpoint: RxEndpoint) extends AutoCloseable {
+class HttpRecorderServer(recordStore: HttpRecordStore, endpoint: RxHttpEndpoint) extends AutoCloseable {
 
   private val serverConfig: NettyServerConfig = Netty.server
     .withName(s"[http-recorder] ${recordStore.recorderConfig.recorderName}")
@@ -86,11 +86,11 @@ class HttpRecorderServer(recordStore: HttpRecordStore, endpoint: RxEndpoint) ext
 
 object HttpRecorderServer {
 
-  def newRecordingService(recordStore: HttpRecordStore, destClient: RxEndpoint): RxEndpoint = {
+  def newRecordingService(recordStore: HttpRecordStore, destClient: RxHttpEndpoint): RxHttpEndpoint = {
     new RecordingFilter(recordStore) andThen destClient
   }
 
-  def newReplayService(recordStore: HttpRecordStore): RxEndpoint = {
+  def newReplayService(recordStore: HttpRecordStore): RxHttpEndpoint = {
     new ReplayFilter(recordStore) andThen recordStore.recorderConfig.fallBackHandler
   }
 
@@ -98,15 +98,15 @@ object HttpRecorderServer {
     * A request filter for replaying responses for known requests, and sending the requests to the destination server
     * for unknown requests.
     */
-  def newRecordProxyService(recordStore: HttpRecordStore, destClient: RxEndpoint): RxEndpoint = {
+  def newRecordProxyService(recordStore: HttpRecordStore, destClient: RxHttpEndpoint): RxHttpEndpoint = {
     new ReplayFilter(recordStore) andThen new RecordingFilter(recordStore) andThen destClient
   }
 
   /**
     * An HTTP request filter for recording HTTP responses
     */
-  class RecordingFilter(recordStore: HttpRecordStore) extends RxFilter with LogSupport {
-    override def apply(request: Request, endpoint: RxEndpoint): Rx[Response] = {
+  class RecordingFilter(recordStore: HttpRecordStore) extends RxHttpFilter with LogSupport {
+    override def apply(request: Request, endpoint: RxHttpEndpoint): Rx[Response] = {
       // Rewrite the target host for proxying
       val newRequest = request.noHost
       endpoint(newRequest).toRxStream.map { response =>
@@ -122,8 +122,8 @@ object HttpRecorderServer {
   /**
     * An HTTP request filter for returning recorded HTTP responses
     */
-  class ReplayFilter(recordStore: HttpRecordStore) extends RxFilter with LogSupport {
-    override def apply(request: Request, service: RxEndpoint): Rx[Response] = {
+  class ReplayFilter(recordStore: HttpRecordStore) extends RxHttpFilter with LogSupport {
+    override def apply(request: Request, service: RxHttpEndpoint): Rx[Response] = {
       // Rewrite the target host for proxying
       val newRequest = request.withHost(recordStore.recorderConfig.destAddress.hostAndPort)
       recordStore.findNext(newRequest) match {

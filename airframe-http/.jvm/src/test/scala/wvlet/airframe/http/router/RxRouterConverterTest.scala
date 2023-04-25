@@ -14,7 +14,7 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.http.HttpMessage.Request
-import wvlet.airframe.http.{HttpMethod, RPC, Router, RxEndpoint, RxFilter}
+import wvlet.airframe.http.{HttpMethod, RPC, Router, RxHttpEndpoint, RxHttpFilter}
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
@@ -29,13 +29,13 @@ class RxRouterConverterTest extends AirSpec {
     def router: RxRouter = RxRouter.of[MyApi]
   }
 
-  trait AuthFilter extends RxFilter {
-    def apply(request: Request, endpoint: RxEndpoint) = {
+  trait AuthFilter extends RxHttpFilter {
+    def apply(request: Request, endpoint: RxHttpEndpoint) = {
       endpoint.apply(request)
     }
   }
-  trait LogFilter extends RxFilter {
-    def apply(request: Request, endpoint: RxEndpoint) = {
+  trait LogFilter extends RxHttpFilter {
+    def apply(request: Request, endpoint: RxHttpEndpoint) = {
       endpoint.apply(request)
     }
   }

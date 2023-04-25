@@ -109,7 +109,7 @@ case class ControllerRoute(
       codecFactory: MessageCodecFactory
   ): Any = {
     controller match {
-      case endpoint: RxEndpoint =>
+      case endpoint: RxHttpEndpoint =>
         val adapter = implicitly[HttpRequestAdapter[Req]]
         endpoint.apply(adapter.httpRequestOf(request))
       case _ =>
