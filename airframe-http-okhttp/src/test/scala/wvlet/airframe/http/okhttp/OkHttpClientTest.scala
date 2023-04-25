@@ -53,7 +53,6 @@ trait NettyTestApi extends LogSupport {
 
   @Endpoint(method = HttpMethod.POST, path = "/user")
   def create(newUser: User, request: Request): User = {
-    warn(newUser)
     newUser.withRequestId(getRequestId(request))
   }
 

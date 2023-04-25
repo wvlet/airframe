@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.http.okhttp
 
-import okhttp3.{HttpUrl, Request}
-import wvlet.airframe.http.{ChannelConfig, HttpClientConfig, HttpMessage, ServerAddress}
+import okhttp3.{HttpUrl, MediaType, Request, RequestBody}
+import wvlet.airframe.http.{ChannelConfig, HttpClientConfig, HttpMessage, HttpMethod, ServerAddress}
 import wvlet.airframe.http.client.HttpChannel
 import wvlet.log.LogSupport
 
@@ -36,8 +36,7 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
   }
 
   override def send(req: HttpMessage.Request, channelConfig: ChannelConfig): HttpMessage.Response = {
-    info(req)
-    val request: okhttp3.Request = buildRequest(req)
+    val request: okhttp3.Request = convertRequest(req)
 
     var newClient = this.client
     if (
@@ -57,7 +56,7 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
 
   override def sendAsync(req: HttpMessage.Request, channelConfig: ChannelConfig): Future[HttpMessage.Response] = ???
 
-  private def buildRequest(request: HttpMessage.Request): okhttp3.Request = {
+  private def convertRequest(request: HttpMessage.Request): okhttp3.Request = {
     val query = request.query
     val queryParams: String = if (query.isEmpty) {
       null
@@ -73,9 +72,18 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
       .encodedPath(request.path)
       .encodedQuery(queryParams)
       .build()
-    val resp = new okhttp3.Request.Builder().url(url)
+    var resp = new okhttp3.Request.Builder().url(url)
     request.header.entries.foreach { x =>
-      resp.addHeader(x.key, x.value)
+      resp = resp.addHeader(x.key, x.value)
+    }
+    request.method match {
+      case HttpMethod.GET | _ if request.message.isEmpty =>
+        resp = resp.method(request.method, null)
+      case _ =>
+        resp = resp.method(
+          request.method,
+          RequestBody.create(request.contentType.map(MediaType.parse(_)).orNull, request.contentBytes)
+        )
     }
     resp.build()
   }
