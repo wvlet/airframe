@@ -16,10 +16,11 @@ import org.scalajs.dom
 import org.scalajs.dom.ext.Ajax.InputData
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http._
+import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import java.nio.ByteBuffer
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.ExecutionContext
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 import scala.util.Try
 
@@ -44,7 +45,7 @@ class JSClientChannel(serverAddress: ServerAddress, private[client] val config: 
   override def sendAsync(
       request: HttpMessage.Request,
       channelConfig: ChannelConfig
-  ): Future[HttpMessage.Response] = {
+  ): Rx[HttpMessage.Response] = {
 
     val xhr = new dom.XMLHttpRequest()
 
@@ -59,7 +60,7 @@ class JSClientChannel(serverAddress: ServerAddress, private[client] val config: 
     // Setting the header must be called after xhr.open(...)
     request.header.entries.foreach { x => xhr.setRequestHeader(x.key, x.value) }
 
-    val promise           = Promise[Response]()
+    val promise           = Rx.variable[Option[Response]](None)
     val data: Array[Byte] = request.contentBytes
     if (data.isEmpty) {
       xhr.send()
@@ -100,12 +101,11 @@ class JSClientChannel(serverAddress: ServerAddress, private[client] val config: 
           }
         }
         trace(s"Get response: ${resp}")
-        promise.success(resp)
+        promise.set(Some(resp))
       }
     }
 
-    val future = promise.future
-    future
+    promise.filter(_.isDefined).map(_.get)
   }
 
 }

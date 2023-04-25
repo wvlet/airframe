@@ -41,6 +41,7 @@ class JSHttpAsyncClientTest extends AirSpec {
     test("GET") {
       client
         .send(Http.GET("/get?id=1&name=leo"))
+        .toRxStream
         .map { resp =>
           resp.status shouldBe HttpStatus.Ok_200
           resp.isContentTypeJson shouldBe true
@@ -52,41 +53,41 @@ class JSHttpAsyncClientTest extends AirSpec {
 
     test("POST") {
       val data = """{"id":1,"name":"leo"}"""
-      client.send(Http.POST("/post").withContent(data)).map { resp =>
-        resp.status shouldBe HttpStatus.Ok_200
-        resp.isContentTypeJson shouldBe true
-        val json = JSON.parse(resp.message.toContentString).toJSON
-        val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
-        m("data") shouldBe data
-        m("json") shouldBe Map("id" -> 1, "name" -> "leo")
-      }
+      client
+        .send(Http.POST("/post").withContent(data))
+        .toRxStream
+        .map { resp =>
+          resp.status shouldBe HttpStatus.Ok_200
+          resp.isContentTypeJson shouldBe true
+          val json = JSON.parse(resp.message.toContentString).toJSON
+          val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
+          m("data") shouldBe data
+          m("json") shouldBe Map("id" -> 1, "name" -> "leo")
+        }
     }
 
     test("404") {
-      client.sendSafe(Http.GET("/status/404")).transform { ret =>
-        ret match {
+      client
+        .sendSafe(Http.GET("/status/404"))
+        .toRxStream
+        .transform {
           case Success(resp) =>
             resp.status shouldBe HttpStatus.NotFound_404
-            ret
           case _ =>
             fail(s"Cannot reach here")
-            ret
         }
-      }
     }
 
     test("404 with HttpClientException") {
-      client.send(Http.GET("/status/404")).transform { ret =>
-        ret match {
-          case Success(_) =>
-            Failure(new IllegalStateException("should not reach here"))
+      client
+        .send(Http.GET("/status/404"))
+        .toRxStream
+        .transform {
           case Failure(e: HttpClientException) =>
             e.status shouldBe HttpStatus.NotFound_404
-            Success(())
-          case Failure(e: Throwable) =>
-            ret
+          case _ =>
+            fail(s"should not reach here")
         }
-      }
     }
   }
 
@@ -94,16 +95,13 @@ class JSHttpAsyncClientTest extends AirSpec {
     test("handle max retry") {
       client
         .withRetryContext(_.withMaxRetry(1))
-        .send(Http.GET("/status/500")).transform { ret =>
-          ret match {
-            case Success(_) =>
-              Failure(new IllegalStateException("should not reach here"))
-            case Failure(e: HttpClientMaxRetryException) =>
-              e.status.isServerError shouldBe true
-              Success(())
-            case _ =>
-              ret
-          }
+        .send(Http.GET("/status/500"))
+        .toRxStream
+        .transform {
+          case Failure(e: HttpClientMaxRetryException) =>
+            e.status.isServerError shouldBe true
+          case _ =>
+            fail("should not reach here")
         }
     }
   }
@@ -111,21 +109,19 @@ class JSHttpAsyncClientTest extends AirSpec {
   test("circuit breaker test") { (client: AsyncClient) =>
     client
       .withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
-      .send(Http.GET("/status/500")).transform { ret =>
-        ret match {
-          case Failure(e) =>
-            e.getCause match {
-              case c: CircuitBreakerOpenException =>
-                // ok
-                Success(())
-              case other =>
-                fail(s"Unexpected exception: ${other}")
-                ret
-            }
-          case other =>
-            fail(s"Unexpected response: ${other}")
-            ret
-        }
+      .send(Http.GET("/status/500"))
+      .toRxStream
+      .transform {
+        case Failure(e) =>
+          e.getCause match {
+            case c: CircuitBreakerOpenException =>
+              // ok
+              Success(())
+            case other =>
+              fail(s"Unexpected exception: ${other}")
+          }
+        case other =>
+          fail(s"Unexpected response: ${other}")
       }
   }
 }

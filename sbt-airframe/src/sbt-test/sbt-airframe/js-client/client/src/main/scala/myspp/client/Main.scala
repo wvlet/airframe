@@ -4,14 +4,12 @@ import myapp.spi._
 
 object Main {
 
-  val jsClient  = new ServiceJSClient()
-  val rpcClient = new ServiceJSClientRx()
+  val rpcClient  = ServiceRPC.newRPCAsyncClient(Http.client.newJSClient)
 
   import MyRPC._
 
-  // JS client
-  jsClient.MyRPC.hello(System.currentTimeMillis(), HelloRequest())
-
   // RPC client that returns Rx[X] type
-  rpcClient.MyRPC.hello(System.currentTimeMillis(), HelloRequest())
+  rpcClient.MyRPC.hello(System.currentTimeMillis(), HelloRequest()).run {
+    case x => println(x)
+  }
 }

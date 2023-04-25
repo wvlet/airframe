@@ -18,7 +18,7 @@ lazy val client =
     .enablePlugins(AirframeHttpPlugin)
     .settings(
       airframeHttpGeneratorOption := "-l trace",
-      airframeHttpClients         := Seq("myapp.spi:scalajs")
+      airframeHttpClients         := Seq("myapp.spi:rpc")
     )
     .jsSettings(
       libraryDependencies ++= Seq(
@@ -26,4 +26,3 @@ lazy val client =
       )
     )
     .dependsOn(spi)
-
