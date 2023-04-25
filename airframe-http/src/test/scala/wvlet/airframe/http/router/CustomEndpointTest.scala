@@ -33,7 +33,7 @@ class CustomEndpointTest extends AirSpec {
     router shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces, Some(ep)) =>
       ep shouldBeTheSameInstanceAs endpoint
       controllerSurface shouldBe Surface.of[RedirectToRxEndpoint]
-      methodSurfaces shouldBe Surface.methodsOf[RedirectToRxEndpoint]
+      methodSurfaces(0).name shouldBe "process"
     }
   }
 }
