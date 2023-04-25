@@ -6,6 +6,16 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 23.4.5
+
+This release enhances AirSpec (shouldContain, shouldNotContain, flaky {...} block, etc.) and introduces a
+breaking interface change for customizing test-scoped design: `test(name, design: Design => Design)` 
+
+- This release also removes scalajs HTTP client genration in sbt-airframe. Now Http.client.newJSClient can be used instead. 
+- Async HTTP clients will use Rx[X] return types from this release. 
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.4.5)
+
 ## 23.4.4
 
 Migration to Scala 3 has been completed, except airframe-finagle. 
