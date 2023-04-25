@@ -263,8 +263,7 @@ lazy val projectDotty =
       fluentd,
       http.jvm,
       httpCodeGen,
-      // Finagle is used in the http recorder
-      // httpRecorder
+      httpRecorder,
       // // Finagle isn't supporting Scala 3
       // httpFinagle,
       grpc,
@@ -755,20 +754,13 @@ lazy val httpRecorder =
   project
     .in(file("airframe-http-recorder"))
     .settings(buildSettings)
-    .settings(scala2Only)
     .settings(
       name        := "airframe-http-recorder",
       description := "Http Response Recorder",
-      // Finagle doesn't support Scala 2.13 yet
       libraryDependencies ++= Seq(
-        "com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION,
-        "com.twitter" %% "finagle-netty4"      % FINAGLE_VERSION,
-        "com.twitter" %% "finagle-core"        % FINAGLE_VERSION,
-        // Redirecting slf4j log in Finagle to airframe-log
-        "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codec.jvm, metrics.jvm, control.jvm, finagle, jdbc)
+    .dependsOn(codec.jvm, metrics.jvm, control.jvm, netty, jdbc)
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)

@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 
 case class NettyServerConfig(
+    name: String = "airframe-http-netty",
     serverPort: Option[Int] = None,
     controllerProvider: ControllerProvider = ControllerProvider.defaultControllerProvider,
     router: Router = Router.empty,
@@ -46,6 +47,12 @@ case class NettyServerConfig(
     useEpoll && Epoll.isAvailable
   }
 
+  def withName(name: String): NettyServerConfig = {
+    this.copy(name = name)
+  }
+  def withPort(port: Int): NettyServerConfig = {
+    this.copy(serverPort = Some(port))
+  }
   @deprecated("Use withRouter(RxRouter) instead", "23.4.3")
   def withRouter(router: Router): NettyServerConfig = {
     this.copy(router = router)

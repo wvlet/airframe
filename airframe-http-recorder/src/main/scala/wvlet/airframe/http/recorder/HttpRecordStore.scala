@@ -16,17 +16,16 @@ package wvlet.airframe.http.recorder
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.Base64
-import com.twitter.finagle.http.{MediaType, Request, Response}
-import com.twitter.io.Buf
 import org.yaml.snakeyaml.{DumperOptions, Yaml}
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.http.HttpHeader.MediaType
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.jdbc.{DbConfig, SQLiteConnectionPool}
 import wvlet.airframe.metrics.TimeWindow
 import wvlet.log.LogSupport
 
 import java.nio.charset.StandardCharsets
 import java.sql.ResultSet
-
 import scala.jdk.CollectionConverters._
 
 /**
@@ -165,7 +164,9 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     val rh = recorderConfig.requestMatcher.computeHash(request)
 
     val httpHeadersForRecording: Seq[(String, String)] =
-      request.headerMap.toSeq.filterNot { x => recorderConfig.excludeHeaderFilterForRecording(x._1, x._2) }
+      request.header.entries.filterNot { x => recorderConfig.excludeHeaderFilterForRecording(x.key, x.value) }.map {
+        x => (x.key, x.value)
+      }
     val entry = HttpRecord(
       recorderConfig.sessionName,
       requestHash = rh,
@@ -173,10 +174,10 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
       destHost = recorderConfig.destAddress.hostAndPort,
       path = request.uri,
       requestHeader = httpHeadersForRecording,
-      requestBody = HttpRecordStore.encodeToBase64(request.content),
+      requestBody = HttpRecordStore.encodeToBase64(request.contentBytes),
       responseCode = response.statusCode,
-      responseHeader = response.headerMap.toSeq,
-      responseBody = HttpRecordStore.encodeToBase64(response.content),
+      responseHeader = response.header.entries.map(x => (x.key, x.value)),
+      responseBody = HttpRecordStore.encodeToBase64(response.contentBytes),
       createdAt = Instant.now()
     )
 
@@ -271,12 +272,9 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
 }
 
 object HttpRecordStore {
-  def encodeToBase64(content: Buf): String = {
-    val buf = new Array[Byte](content.length)
-    content.write(buf, 0)
-
+  def encodeToBase64(content: Array[Byte]): String = {
     val encoder = Base64.getEncoder
-    encoder.encodeToString(buf)
+    encoder.encodeToString(content)
   }
 
   def decodeFromBase64(base64String: String): Array[Byte] = {

@@ -13,24 +13,31 @@
  */
 package wvlet.airframe.http.recorder
 
-import com.twitter.finagle.http.{Request, Response}
-import com.twitter.finagle.{Service, SimpleFilter}
-import com.twitter.util.Future
-import wvlet.airframe.http.finagle.FinagleServer.FinagleService
-import wvlet.airframe.http.finagle.{Finagle, FinagleServer, FinagleServerConfig}
+import wvlet.airframe.{Design, Session}
+import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.{RxEndpoint, RxFilter}
+import wvlet.airframe.http.netty.{Netty, NettyServer, NettyServerConfig}
+import wvlet.airframe.http.router.RxRouter
+import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 /**
   * A FinagleServer wrapper to close HttpRecordStore when the server terminates
   */
-class HttpRecorderServer(recordStore: HttpRecordStore, finagleService: FinagleService)
-    extends FinagleServer(
-      Finagle.server
-        .withName(s"[http-recorder] ${recordStore.recorderConfig.recorderName}")
-        .withPort(recordStore.recorderConfig.port.getOrElse(IOUtil.unusedPort)),
-      finagleService
-    ) {
+class HttpRecorderServer(recordStore: HttpRecordStore, endpoint: RxEndpoint) extends AutoCloseable {
+
+  private val serverConfig: NettyServerConfig = Netty.server
+    .withName(s"[http-recorder] ${recordStore.recorderConfig.recorderName}")
+    .withPort(recordStore.recorderConfig.port.getOrElse(IOUtil.unusedPort))
+    .withRouter(RxRouter.of(endpoint))
+
+  private var diSession: Option[Session]  = None
+  private var server: Option[NettyServer] = None
+
+  def localAddress: String =
+    server.map(_.localAddress).getOrElse(throw new IllegalStateException("Server is not yet started"))
+
   def clearSession: Unit = {
     recordStore.clearSession
   }
@@ -64,37 +71,45 @@ class HttpRecorderServer(recordStore: HttpRecordStore, finagleService: FinagleSe
       }
   }
 
+  def start: Unit = {
+    diSession.foreach(_.close())
+    diSession = Some(Design.empty.newSession)
+    server = Some(serverConfig.newServer(diSession.get))
+  }
+
   override def close(): Unit = {
-    super.close()
+    diSession.foreach(_.shutdown)
+    endpoint.close()
     recordStore.close()
   }
 }
 
 object HttpRecorderServer {
-  def newRecordingService(recordStore: HttpRecordStore, destClient: Service[Request, Response]): FinagleService = {
+
+  def newRecordingService(recordStore: HttpRecordStore, destClient: RxEndpoint): RxEndpoint = {
     new RecordingFilter(recordStore) andThen destClient
   }
 
-  def newReplayService(recordStore: HttpRecordStore): FinagleService = {
-    new ReplayFilter(recordStore) andThen new FallbackService(recordStore)
+  def newReplayService(recordStore: HttpRecordStore): RxEndpoint = {
+    new ReplayFilter(recordStore) andThen recordStore.recorderConfig.fallBackHandler
   }
 
   /**
     * A request filter for replaying responses for known requests, and sending the requests to the destination server
     * for unknown requests.
     */
-  def newRecordProxyService(recordStore: HttpRecordStore, destClient: Service[Request, Response]): FinagleService = {
+  def newRecordProxyService(recordStore: HttpRecordStore, destClient: RxEndpoint): RxEndpoint = {
     new ReplayFilter(recordStore) andThen new RecordingFilter(recordStore) andThen destClient
   }
 
   /**
     * An HTTP request filter for recording HTTP responses
     */
-  class RecordingFilter(recordStore: HttpRecordStore) extends SimpleFilter[Request, Response] with LogSupport {
-    override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
+  class RecordingFilter(recordStore: HttpRecordStore) extends RxFilter with LogSupport {
+    override def apply(request: Request, endpoint: RxEndpoint): Rx[Response] = {
       // Rewrite the target host for proxying
-      request.host = recordStore.recorderConfig.destAddress.hostAndPort
-      service(request).map { response =>
+      val newRequest = request.noHost
+      endpoint(newRequest).toRxStream.map { response =>
         trace(s"Recording the response for ${request}")
         // Record the result
         recordStore.record(request, response)
@@ -107,29 +122,24 @@ object HttpRecorderServer {
   /**
     * An HTTP request filter for returning recorded HTTP responses
     */
-  class ReplayFilter(recordStore: HttpRecordStore) extends SimpleFilter[Request, Response] with LogSupport {
-    override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
+  class ReplayFilter(recordStore: HttpRecordStore) extends RxFilter with LogSupport {
+    override def apply(request: Request, service: RxEndpoint): Rx[Response] = {
       // Rewrite the target host for proxying
-      request.host = recordStore.recorderConfig.destAddress.hostAndPort
-      recordStore.findNext(request) match {
+      val newRequest = request.withHost(recordStore.recorderConfig.destAddress.hostAndPort)
+      recordStore.findNext(newRequest) match {
         case Some(record) =>
           // Replay the recorded response
           trace(s"Found a recorded response: ${record.summary}")
-          val r = record.toResponse
-          // Add an HTTP header to indicate that the response is a recorded one
-          r.headerMap.put("X-Airframe-Record-Time", record.createdAt.toString)
-          Future.value(r)
+          Rx.single(
+            record.toResponse
+              // Add an HTTP header to indicate that the response is a recorded one
+              .withHeader("X-Airframe-Record-Time", record.createdAt.toString)
+          )
         case None =>
           trace(s"No recording is found for ${request}")
           // Fallback to the default handler
           service(request)
       }
-    }
-  }
-
-  class FallbackService(recordStore: HttpRecordStore) extends Service[Request, Response] {
-    override def apply(request: Request): Future[Response] = {
-      recordStore.recorderConfig.fallBackHandler(request)
     }
   }
 }

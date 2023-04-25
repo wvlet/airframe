@@ -93,8 +93,9 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
                 logger.warn(s"Failed to serialize RPCException: ${e}", ex)
             }
             toNettyResponse(resp)
-          case ex: HttpServerException => toNettyResponse(ex.toResponse)
-          case _ =>
+          case ex: HttpServerException =>
+            toNettyResponse(ex.toResponse)
+          case other =>
             new DefaultHttpResponse(
               HttpVersion.HTTP_1_1,
               HttpResponseStatus.valueOf(HttpStatus.InternalServerError_500.code)

@@ -14,17 +14,8 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{
-  Http,
-  HttpBackend,
-  HttpFilter,
-  HttpRequestAdapter,
-  HttpStatus,
-  RPCStatus,
-  RxEndpoint,
-  RxFilter
-}
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.http._
+import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.log.LogSupport
 
 import scala.collection.mutable
@@ -40,6 +31,16 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
 
   override def newResponse(status: HttpStatus, content: String): Response = {
     Http.response(status).withContent(content)
+  }
+
+  def newRxEndpoint[U](body: Request => Rx[Response], onClose: () => U = { () => }): RxEndpoint = new RxEndpoint {
+    override private[http] def backend: RxHttpBackend = rxBackend
+    override def apply(request: Request): Rx[Response] = {
+      body(request)
+    }
+    override def close(): Unit = {
+      onClose()
+    }
   }
 
   override def toFuture[A](a: A): Rx[A] = {
@@ -79,6 +80,7 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
             override def apply(request: Request): Rx[Response] = {
               context(request)
             }
+            override def close(): Unit = {}
           }
         )
       }

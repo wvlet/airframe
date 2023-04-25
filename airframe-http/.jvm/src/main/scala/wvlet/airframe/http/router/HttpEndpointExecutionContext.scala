@@ -57,7 +57,7 @@ class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
         futureValueSurface.rawType match {
           // If X is the backend Response type, return as is:
           case valueCls if backend.isRawResponseType(valueCls) =>
-            // Use Finagle Future
+            // Use Backend Future (e.g., Finagle Future or Rx)
             result.asInstanceOf[F[Resp]]
           case other =>
             // If X is other type, convert X into an HttpResponse

@@ -14,7 +14,8 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.{OnNext, Rx, RxStream}
+import wvlet.log.LogSupport
 
 import scala.util.control.NonFatal
 
@@ -56,14 +57,20 @@ trait RxFilter {
 
 object RxFilter {
 
-  private class FilterAndThenEndpoint(filter: RxFilter, nextService: RxEndpoint) extends RxEndpoint {
+  private class FilterAndThenEndpoint(filter: RxFilter, nextService: RxEndpoint) extends RxEndpoint with LogSupport {
     override def backend: RxHttpBackend = nextService.backend
     override def apply(request: Request): Rx[Response] = {
       try {
-        filter.apply(request, nextService)
+        val ret = filter.apply(request, nextService)
+        ret
       } catch {
-        case NonFatal(e) => Rx.exception(e)
+        case NonFatal(e) =>
+          Rx.exception(e)
       }
+    }
+
+    override def close(): Unit = {
+      nextService.close()
     }
   }
 
