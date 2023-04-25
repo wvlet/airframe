@@ -26,7 +26,7 @@ trait RxEndpoint extends AutoCloseable {
     * @param request
     * @return
     */
-  def apply(request: Request): RxStream[Response]
+  def apply(request: Request): Rx[Response]
 
   /**
     * Set a thread-local parameter

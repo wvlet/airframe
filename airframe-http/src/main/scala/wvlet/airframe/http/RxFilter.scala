@@ -34,7 +34,7 @@ trait RxFilter {
     * @param endpoint
     * @return
     */
-  def apply(request: Request, endpoint: RxEndpoint): RxStream[Response]
+  def apply(request: Request, endpoint: RxEndpoint): Rx[Response]
 
   /**
     * Chain to the next filter.
@@ -59,7 +59,7 @@ object RxFilter {
 
   private class FilterAndThenEndpoint(filter: RxFilter, nextService: RxEndpoint) extends RxEndpoint with LogSupport {
     override def backend: RxHttpBackend = nextService.backend
-    override def apply(request: Request): RxStream[Response] = {
+    override def apply(request: Request): Rx[Response] = {
       try {
         val ret = filter.apply(request, nextService)
         ret
@@ -75,7 +75,7 @@ object RxFilter {
   }
 
   private class AndThen(prev: RxFilter, next: RxFilter) extends RxFilter {
-    override def apply(request: Request, endpoint: RxEndpoint): RxStream[Response] = {
+    override def apply(request: Request, endpoint: RxEndpoint): Rx[Response] = {
       try {
         prev.apply(request, next.andThen(endpoint))
       } catch {
