@@ -73,13 +73,13 @@ object RxRouterTest extends AirSpec {
     r.children.size shouldBe 2
     r.filter shouldBe empty
 
-    r.children(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces) =>
+    r.children(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces, None) =>
       controllerSurface shouldBe Surface.of[MyApi]
       methodSurfaces.size shouldBe 1
       methodSurfaces(0).name shouldBe "hello"
     }
 
-    r.children(1) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces) =>
+    r.children(1) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces, None) =>
       controllerSurface shouldBe Surface.of[MyApi2]
       methodSurfaces.size shouldBe 2
       methodSurfaces(0).name shouldBe "hello2"
@@ -114,13 +114,13 @@ object RxRouterTest extends AirSpec {
     r.filter shouldBe defined
     r.filter.get.filterSurface shouldBe Surface.of[AuthFilter]
 
-    r.children(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces) =>
+    r.children(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces, None) =>
       controllerSurface shouldBe Surface.of[MyApi]
       methodSurfaces.size shouldBe 1
       methodSurfaces(0).name shouldBe "hello"
     }
 
-    r.children(1) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces) =>
+    r.children(1) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces, None) =>
       controllerSurface shouldBe Surface.of[MyApi2]
       methodSurfaces.size shouldBe 2
       methodSurfaces(0).name shouldBe "hello2"
@@ -156,7 +156,7 @@ object RxRouterTest extends AirSpec {
     r.filter.get.parent shouldBe defined
     r.filter.get.parent.get.filterSurface shouldBe Surface.of[AuthFilter]
 
-    r.children(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces) =>
+    r.children(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces, None) =>
       controllerSurface shouldBe Surface.of[MyApi]
       methodSurfaces.size shouldBe 1
       methodSurfaces(0).name shouldBe "hello"
@@ -192,7 +192,7 @@ object RxRouterTest extends AirSpec {
         parent shouldBe empty
         filterSurface shouldBe Surface.of[AuthFilter]
       }
-      child(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces) =>
+      child(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces, None) =>
         controllerSurface shouldBe Surface.of[MyApi]
         methodSurfaces.size shouldBe 1
         methodSurfaces(0).name shouldBe "hello"
@@ -205,7 +205,7 @@ object RxRouterTest extends AirSpec {
         parent shouldBe empty
         filterSurface shouldBe Surface.of[LogFilter]
       }
-      child(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces) =>
+      child(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces, None) =>
         controllerSurface shouldBe Surface.of[MyApi2]
         methodSurfaces.size shouldBe 2
         methodSurfaces(0).name shouldBe "hello2"
