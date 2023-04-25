@@ -6,6 +6,13 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 23.4.4
+
+Migration to Scala 3 has been completed, except airframe-finagle. 
+For Scala 3, we can use airframe-http with the Netty-based HTTP server.
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.4.4)
+
 ## 23.4.3
 
 More Scala 3 support in airframe-http-netty and introduced a new RxRouter interface 
