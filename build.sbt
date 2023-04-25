@@ -264,6 +264,7 @@ lazy val projectDotty =
       http.jvm,
       httpCodeGen,
       httpRecorder,
+      okhttp,
       // // Finagle isn't supporting Scala 3
       // httpFinagle,
       grpc,
@@ -740,7 +741,6 @@ lazy val okhttp =
   project
     .in(file("airframe-http-okhttp"))
     .settings(buildSettings)
-    .settings(scala2Only)
     .settings(
       name        := "airframe-http-okhttp",
       description := "REST API binding for OkHttp",

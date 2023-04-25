@@ -52,7 +52,7 @@ class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: 
   }
 
   // Execution context only for async methods
-  private[client] implicit val executionContext: ExecutionContext = config.newExecutionContext
+  override private[client] implicit val executionContext: ExecutionContext = config.newExecutionContext
 
   override def close(): Unit = {
     // It seems Java Http Client has no close() method
