@@ -14,11 +14,7 @@
 package myapp.spi
 
 import wvlet.airframe.http._
-
-trait MyService {
-  @Endpoint(method = HttpMethod.GET, path = "/v1/hello/:id")
-  def hello(id: Int): String
-}
+improt wvlet.airframe.http.{RxRouter, RxRouterProvider}
 
 @RPC
 trait MyRPC {
@@ -26,6 +22,8 @@ trait MyRPC {
   def hello(time: Long, request: HelloRequest): String
 }
 
-object MyRPC {
+object MyRPC extends RxRouterProvider {
+  override def router: RxRouter = RxRouter.of[MyRPC]
+
   case class HelloRequest()
 }
