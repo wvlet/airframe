@@ -13,13 +13,13 @@
  */
 package wvlet.airframe.http.okhttp
 
-import okhttp3.{HttpUrl, MediaType, Request, RequestBody}
-import wvlet.airframe.http.{ChannelConfig, HttpClientConfig, HttpMessage, HttpMethod, ServerAddress}
+import okhttp3.{HttpUrl, MediaType, RequestBody}
 import wvlet.airframe.http.client.HttpChannel
+import wvlet.airframe.http._
+import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.{ExecutionContext, Future}
 
 class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel with LogSupport {
   private[this] val client = {
@@ -53,7 +53,7 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
     response.toHttpResponse
   }
 
-  override def sendAsync(req: HttpMessage.Request, channelConfig: ChannelConfig): Future[HttpMessage.Response] = ???
+  override def sendAsync(req: HttpMessage.Request, channelConfig: ChannelConfig): Rx[HttpMessage.Response] = ???
 
   private def convertRequest(request: HttpMessage.Request): okhttp3.Request = {
     val query = request.query

@@ -33,6 +33,7 @@ import scala.util.Try
   * @tparam Req
   * @tparam Resp
   */
+@deprecated("Use wvlet.airframe.http.client.Sync/AsyncClient", "24.5.0")
 trait HttpClient[F[_], Req, Resp] extends HttpClientBase[F, Req, Resp] with AutoCloseable {
 
   /**

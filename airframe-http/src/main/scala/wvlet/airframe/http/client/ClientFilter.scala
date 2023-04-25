@@ -15,6 +15,7 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.http.HttpClientConfig
 import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.rx.Rx
 
 import scala.concurrent.Future
 
@@ -28,7 +29,7 @@ trait ClientFilter {
   def chain(req: Request, context: ClientContext): Response = {
     context.chain(req)
   }
-  def chainAsync(req: Request, context: ClientContext): Future[Response] = {
+  def chainAsync(req: Request, context: ClientContext): Rx[Response] = {
     context.chainAsync(req)
   }
 
@@ -56,7 +57,7 @@ object ClientFilter {
       context.chain(req)
     }
 
-    override def chainAsync(req: Request, context: ClientContext): Future[Response] = {
+    override def chainAsync(req: Request, context: ClientContext): Rx[Response] = {
       context.chainAsync(req)
     }
   }
@@ -66,7 +67,7 @@ object ClientFilter {
       prev.chain(req, next.andThen(context))
     }
 
-    override def chainAsync(req: Request, context: ClientContext): Future[Response] = {
+    override def chainAsync(req: Request, context: ClientContext): Rx[Response] = {
       prev.chainAsync(req, next.andThen(context))
     }
   }
@@ -76,7 +77,7 @@ object ClientFilter {
       filter.chain(req, nextContext)
     }
 
-    override def chainAsync(req: Request): Future[Response] = {
+    override def chainAsync(req: Request): Rx[Response] = {
       filter.chainAsync(req, nextContext)
     }
   }
@@ -85,7 +86,7 @@ object ClientFilter {
 trait ClientContext {
   private var props = Map.empty[String, Any]
   def chain(req: Request): Response
-  def chainAsync(req: Request): Future[Response]
+  def chainAsync(req: Request): Rx[Response]
   def setProperty(key: String, value: Any): Unit = {
     props += key -> value
   }
@@ -96,8 +97,8 @@ trait ClientContext {
 
 object ClientContext {
   def passThroughChannel(channel: HttpChannel, config: HttpClientConfig): ClientContext = new ClientContext {
-    override def chain(req: Request): Response              = channel.send(req, config)
-    override def chainAsync(req: Request): Future[Response] = channel.sendAsync(req, config)
+    override def chain(req: Request): Response          = channel.send(req, config)
+    override def chainAsync(req: Request): Rx[Response] = channel.sendAsync(req, config)
   }
 
 }

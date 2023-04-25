@@ -15,6 +15,7 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.http.ChannelConfig
 import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.rx.Rx
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -30,7 +31,7 @@ trait HttpChannel extends AutoCloseable {
     * @return
     */
   def send(req: Request, channelConfig: ChannelConfig): Response
-  def sendAsync(req: Request, channelConfig: ChannelConfig): Future[Response]
+  def sendAsync(req: Request, channelConfig: ChannelConfig): Rx[Response]
 
   private[client] implicit def executionContext: ExecutionContext = ???
 }

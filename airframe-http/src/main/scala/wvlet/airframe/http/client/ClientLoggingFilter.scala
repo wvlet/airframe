@@ -14,12 +14,12 @@
 package wvlet.airframe.http.client
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.RPCMethod
-import wvlet.airframe.http.internal.{HttpLogs, RPCCallContext}
+import wvlet.airframe.http.internal.HttpLogs
+import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import java.util.concurrent.TimeUnit
 import scala.collection.immutable.ListMap
-import scala.concurrent.Future
 
 class ClientLoggingFilter extends ClientFilter with LogSupport {
   override def chain(req: Request, context: ClientContext): Response = {
@@ -50,7 +50,7 @@ class ClientLoggingFilter extends ClientFilter with LogSupport {
     }
   }
 
-  override def chainAsync(req: Request, context: ClientContext): Future[Response] = {
+  override def chainAsync(req: Request, context: ClientContext): Rx[Response] = {
     context.chainAsync(req)
   }
 }

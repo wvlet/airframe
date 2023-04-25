@@ -51,7 +51,6 @@ object HttpClientGenerator extends LogSupport {
     Seq(
       AsyncClientGenerator,
       SyncClientGenerator,
-      ScalaJSClientGenerator,
       RPCClientGenerator,
       GrpcClientGenerator
     )

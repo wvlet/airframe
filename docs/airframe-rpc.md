@@ -302,11 +302,9 @@ Supported client types are:
 - __rpc__ : Create a default RPC client class for Scala JVM (sync and async) and Scala.js (async-only)
 - __grpc__: Create gRPC client (ServiceGrpc: SyncClient, AsyncClient)
 
-
 - __sync__: (legacy client. Use rpc instead) Create a sync HTTP client (ServiceSyncClient) for Scala (JVM)
 - __async__: (legacy client. Use rpc instead) Create an async HTTP client (ServiceClient) for Scala (JVM) using Future
   abstraction (`F`). The `F` can be `scala.concurrent.Future` or twitter-util's Future.
-- __scalajs__:  (legacy client. Use rpc instead) Create an RPC client (ServiceClientJS)
 
 Internally, sbt-airframe generates these clients using [HTTP code generators](https://github.com/wvlet/airframe/blob/master/airframe-http-codegen/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClientGenerator.scala). This code reads a Router definition of RPC interfaces, and generate client code for calling RPC endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would
 like to add Open API spec generator so that many programming languages can be used with Airframe

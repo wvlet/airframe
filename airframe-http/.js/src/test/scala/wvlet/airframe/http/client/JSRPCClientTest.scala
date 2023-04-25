@@ -35,6 +35,7 @@ class JSRPCClientTest extends AirSpec {
     val m = RPCMethod("/post", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
     client
       .rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))
+      .toRxStream
       .map { response =>
         debug(response)
         response.headers.get("Content-Type") shouldBe Some(MediaType.ApplicationJson)
