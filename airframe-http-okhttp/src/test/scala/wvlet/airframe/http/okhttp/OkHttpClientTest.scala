@@ -107,11 +107,11 @@ class OkHttpClientTest extends AirSpec {
       }
   }
 
-  test("create client") { (client: SyncClient) =>
-    def addRequestId(request: HttpMultiMap): HttpMultiMap = {
-      request.add("X-Request-Id", "10")
-    }
+  def addRequestId: HttpMultiMap => HttpMultiMap = { (request: HttpMultiMap) =>
+    request.add("X-Request-Id", "10")
+  }
 
+  test("create client") { (client: SyncClient) =>
     // Sending an implementation specific Request type
     val ret = client.send(Http.GET("/")).contentString
     ret shouldBe "Ok"
