@@ -139,6 +139,8 @@ testFrameworks += <span class="hljs-keyword">new</span> <span class="hljs-type">
 <tr><td><code>x shouldBeTheSameInstanceAs y</code></td><td>check x eq y; x and y are the same object instance</td></tr>
 <tr><td><code>x shouldNotBeTheSameInstanceAs y</code></td><td>check x ne y; x and y should not be the same instance</td></tr>
 <tr><td><code>x shouldMatch { case .. =&gt; }</code></td><td>check x matches given patterns</td></tr>
+<tr><td><code>x shouldContain y</code></td><td>check x contains given value y</td></tr>
+<tr><td><code>x shouldNotContain y</code></td><td>check x doesn't contain a given value y</td></tr>
 <tr><td><code>fail(&quot;reason&quot;)</code></td><td>fail the test if this code path should not be reached</td></tr>
 <tr><td><code>ignore(&quot;reason&quot;)</code></td><td>ignore this test execution.</td></tr>
 <tr><td><code>cancel(&quot;reason&quot;)</code></td><td>cancel the test (e.g., due to set up failure)</td></tr>
@@ -191,6 +193,13 @@ testFrameworks += <span class="hljs-keyword">new</span> <span class="hljs-type">
     <span class="hljs-type">Seq</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>) shouldMatch {
       <span class="hljs-keyword">case</span> <span class="hljs-type">Seq</span>(<span class="hljs-number">1</span>, _) =&gt; <span class="hljs-comment">// ok </span>
     }
+    
+    <span class="hljs-comment">// Containment check</span>
+    <span class="hljs-string">"hello world"</span> shouldContain <span class="hljs-string">"world"</span>
+    <span class="hljs-type">Seq</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>) shouldContain <span class="hljs-number">1</span>
+    
+    <span class="hljs-string">"hello world"</span> shouldNotContain <span class="hljs-string">"!!"</span>
+    <span class="hljs-type">Seq</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>) shouldNotContain <span class="hljs-number">4</span>
   }
 }
 </code></pre>
