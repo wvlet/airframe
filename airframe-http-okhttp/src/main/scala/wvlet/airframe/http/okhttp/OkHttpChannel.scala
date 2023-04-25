@@ -16,10 +16,12 @@ package wvlet.airframe.http.okhttp
 import okhttp3.{HttpUrl, Request}
 import wvlet.airframe.http.{ChannelConfig, HttpClientConfig, HttpMessage, ServerAddress}
 import wvlet.airframe.http.client.HttpChannel
+import wvlet.log.LogSupport
+
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{ExecutionContext, Future}
 
-class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel {
+class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel with LogSupport {
   private[this] val client = {
     new okhttp3.OkHttpClient.Builder()
       .readTimeout(config.readTimeout.toMillis, TimeUnit.MILLISECONDS)
@@ -34,21 +36,22 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
   }
 
   override def send(req: HttpMessage.Request, channelConfig: ChannelConfig): HttpMessage.Response = {
+    info(req)
     val request: okhttp3.Request = buildRequest(req)
 
-    var client = this.client
+    var newClient = this.client
     if (
       channelConfig.connectTimeout != config.connectTimeout ||
       channelConfig.readTimeout != config.readTimeout
     ) {
-      client = client
+      newClient = newClient
         .newBuilder()
         .connectTimeout(channelConfig.connectTimeout.toMillis, TimeUnit.MILLISECONDS)
         .readTimeout(channelConfig.readTimeout.toMillis, TimeUnit.MILLISECONDS)
         .build()
     }
 
-    val response = client.newCall(request).execute()
+    val response = newClient.newCall(request).execute()
     response.toHttpResponse
   }
 
@@ -61,7 +64,7 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
     } else {
       query.entries
         .map { x =>
-          x.key -> x.value
+          s"${x.key}=${x.value}"
         }.mkString("&")
     }
 

@@ -13,11 +13,14 @@
  */
 package wvlet.airframe.http.okhttp
 
+import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.client.{HttpChannel, HttpClientBackend}
-import wvlet.airframe.http.{Http, HttpClientConfig, ServerAddress}
+import wvlet.airframe.http.{Http, HttpClient, HttpClientConfig, ServerAddress}
 
 object OkHttp {
-  def client: HttpClientConfig = Http.client.withBackend(OkHttpBackend)
+  def client: HttpClientConfig =
+    Http.client
+      .withBackend(OkHttpBackend)
 }
 
 object OkHttpBackend extends HttpClientBackend {

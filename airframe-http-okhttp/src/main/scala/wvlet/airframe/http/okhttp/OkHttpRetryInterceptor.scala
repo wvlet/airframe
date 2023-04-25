@@ -15,12 +15,13 @@ class OkHttpRetryInterceptor(retry: RetryContext) extends Interceptor {
 
     val (resultClass, response) = Try(chain.proceed(request)) match {
       case Success(r) =>
-        val res = inMemoryResponse(r)
+        val orig = inMemoryResponse(r)
+        val res  = orig.toHttpResponse
         try {
-          retryContext.resultClassifier(res) -> Some(res)
+          retryContext.resultClassifier(res) -> Some(orig)
         } catch {
           case NonFatal(e) =>
-            retryContext.errorClassifier(e) -> Some(res)
+            retryContext.errorClassifier(e) -> Some(orig)
         }
       case Failure(e) =>
         retryContext.errorClassifier(e) -> None
@@ -47,7 +48,7 @@ class OkHttpRetryInterceptor(retry: RetryContext) extends Interceptor {
     }
   }
 
-  private def inMemoryResponse(response: Response) = {
+  private def inMemoryResponse(response: okhttp3.Response) = {
     Option(response.body)
       .map { body =>
         // The only stateful object is a body's source, which is a one-shot value and then must be closed.

@@ -53,6 +53,7 @@ trait NettyTestApi extends LogSupport {
 
   @Endpoint(method = HttpMethod.POST, path = "/user")
   def create(newUser: User, request: Request): User = {
+    warn(newUser)
     newUser.withRequestId(getRequestId(request))
   }
 
@@ -210,10 +211,12 @@ class OkHttpClientTest extends AirSpec {
     "fail request",
     design = Design.newDesign
       .bind[SyncClient].toProvider { (server: NettyServer) =>
-        OkHttp.client.newSyncClient(
-          // Test for the full URI
-          s"http://${server.localAddress}"
-        )
+        OkHttp.client
+          .withRetryContext(_.withMaxRetry(3))
+          .newSyncClient(
+            // Test for the full URI
+            s"http://${server.localAddress}"
+          )
       }
   ) { (client: SyncClient) =>
     warn("Starting http client failure tests")
@@ -221,7 +224,7 @@ class OkHttpClientTest extends AirSpec {
     {
       // Test max retry failure
       val ex = intercept[HttpClientMaxRetryException] {
-        client.readAs[String](Http.GET("/busy"))
+        client.send(Http.GET("/busy"))
       }
       warn(ex.getMessage)
       ex.retryContext.retryCount shouldBe 3
@@ -233,7 +236,7 @@ class OkHttpClientTest extends AirSpec {
     {
       // Non retryable response
       val cause = intercept[HttpClientException] {
-        client.readAs[String](Http.GET("/forbidden"))
+        client.send(Http.GET("/forbidden"))
       }
       warn(cause.getMessage)
       cause.status shouldBe HttpStatus.Forbidden_403
