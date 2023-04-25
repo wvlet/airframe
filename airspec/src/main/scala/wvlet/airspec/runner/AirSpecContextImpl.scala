@@ -58,7 +58,7 @@ private[airspec] class AirSpecContextImpl(
           currentSpec,
           testDef,
           isLocal = true,
-          design = testDef.design
+          design = testDef.design(wvlet.airframe.Design.empty)
         )
       }
       synchronized {

@@ -409,11 +409,8 @@ class OverrideTest extends AirSpec {
   test("before overriding the design") { (s:String) =>
     s shouldBe "hello"
 
-    // Override a design
-    val childDesign = newDesign
-      .bind[String].toInstance("hello child")
-
-    test("override the design", design = childDesign) { cs: String =>
+    // Override the design only for this test method
+    test("override the design", design = _.bind[String].toInstance("hello child")) { (cs: String) =>
       cs shouldBe "hello child"
     }
   }

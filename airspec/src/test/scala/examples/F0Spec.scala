@@ -38,7 +38,7 @@ object F0Spec extends AirSpec {
     Nil
   }
 
-  test("one-arg", design = newDesign.bind[String].toInstance("hello")) { (s: String) =>
+  test("one-arg", design = _.bind[String].toInstance("hello")) { (s: String) =>
     f1.incrementAndGet()
   }
 
