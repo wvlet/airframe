@@ -56,6 +56,9 @@ trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
     copyWith(newHeader)
   }
 
+  def withHeader(f: HttpMultiMap => HttpMultiMap): Raw = {
+    copyWith(f(header))
+  }
   def addHeader(key: String, value: String): Raw = {
     copyWith(header.add(key, value))
   }

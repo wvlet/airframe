@@ -27,7 +27,7 @@ class JSClientChannel(serverAddress: ServerAddress, private[client] val config: 
     extends HttpChannel
     with LogSupport {
 
-  private[client] implicit val executionContext: ExecutionContext = config.newExecutionContext
+  override private[client] implicit val executionContext: ExecutionContext = config.newExecutionContext
 
   /**
     * Provide the underlying ExecutionContext. This is only for internal-use

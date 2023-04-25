@@ -32,5 +32,5 @@ trait HttpChannel extends AutoCloseable {
   def send(req: Request, channelConfig: ChannelConfig): Response
   def sendAsync(req: Request, channelConfig: ChannelConfig): Future[Response]
 
-  private[client] implicit def executionContext: ExecutionContext
+  private[client] implicit def executionContext: ExecutionContext = ???
 }

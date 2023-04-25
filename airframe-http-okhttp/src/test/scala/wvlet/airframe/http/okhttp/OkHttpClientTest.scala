@@ -1,13 +1,16 @@
 package wvlet.airframe.http.okhttp
 
+import wvlet.airframe.Design
 import wvlet.airframe.control.Control.withResource
+import wvlet.airframe.http.{Http, HttpClientException, HttpClientMaxRetryException, HttpMultiMap, HttpStatus, Router}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.netty.{Netty, NettyServer}
-import wvlet.airframe.http.{HttpClientException, HttpClientMaxRetryException, HttpStatus, Router}
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
-import java.time.Duration
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
 
 case class User(id: Int, name: String, requestId: String) {
   def withRequestId(newRequestId: String): User = User(id, name, newRequestId)
@@ -71,12 +74,12 @@ trait NettyTestApi extends LogSupport {
   @Endpoint(method = HttpMethod.GET, path = "/busy")
   def busy: Response = {
     trace("called busy method")
-    Response(HttpStatus.InternalServerError_500)
+    Http.response(HttpStatus.InternalServerError_500)
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/forbidden")
   def forbidden: Response = {
-    Response(HttpStatus.Forbidden_403)
+    Http.response(HttpStatus.Forbidden_403)
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/readtimeout")
@@ -87,7 +90,7 @@ trait NettyTestApi extends LogSupport {
 
   @Endpoint(method = HttpMethod.GET, path = "/response")
   def rawResponse: Response = {
-    val r = Response(HttpStatus.Ok_200)
+    val r = Http.response(HttpStatus.Ok_200)
     r.withContent("raw response")
   }
 }
@@ -96,152 +99,175 @@ class OkHttpClientTest extends AirSpec {
   private val r = Router.add[NettyTestApi]
 
   override protected def design = {
-    Netty.server.withRouter(r).designWithSyncClient
-  }
-
-  test("create client") { (server: NettyServer) =>
-    def addRequestId(request: okhttp3.Request.Builder): okhttp3.Request.Builder = {
-      request.addHeader("X-Request-Id", "10")
-    }
-
-    withResource(OkHttpClient.newClient(server.localAddress)) { client =>
-      // Sending an implementation specific Request type
-      val ret = client.send(new okhttp3.Request.Builder().url(s"http://${server.localAddress}/")).contentString
-      ret shouldBe "Ok"
-
-      // Using HTTP request wrappers
-      client.get[User]("/user/1") shouldBe User(1, "leo", "N/A")
-      client.getResource[UserRequest, User]("/user/info", UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
-      client.getResource[UserRequest, User]("/user/info2", UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
-      client.getOps[UserRequest, User]("/user/info2", UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
-      client.list[Seq[User]]("/user") shouldBe Seq(User(1, "leo", "N/A"))
-
-      client.post[User]("/user", User(2, "yui", "N/A")) shouldBe User(2, "yui", "N/A")
-      client.postOps[User, User]("/user", User(2, "yui", "N/A")) shouldBe User(2, "yui", "N/A")
-
-      client.put[User]("/user", User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
-      client.putOps[User, User]("/user", User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
-
-      client.patch[User]("/user", User(20, "joy", "N/A")) shouldBe User(20, "joy", "N/A")
-      client.patchOps[User, User]("/user", User(20, "joy", "N/A")) shouldBe User(20, "joy", "N/A")
-
-      client.delete[User]("/user/1") shouldBe User(1, "xxx", "N/A")
-      client.deleteOps[DeleteRequestBody, User]("/user/1", DeleteRequestBody(true)) shouldBe User(1, "xxx", "N/A")
-
-      // Get a response as is
-      client.get[okhttp3.Response]("/response").contentString shouldBe "raw response"
-
-      // Using a custom HTTP header
-      client.get[User]("/user/1", addRequestId) shouldBe User(1, "leo", "10")
-      client.getResource[UserRequest, User]("/user/info", UserRequest(2, "kai"), addRequestId) shouldBe User(
-        2,
-        "kai",
-        "10"
-      )
-      client.getResource[UserRequest, User]("/user/info2", UserRequest(2, "kai"), addRequestId) shouldBe User(
-        2,
-        "kai",
-        "10"
-      )
-
-      client.list[Seq[User]]("/user", addRequestId) shouldBe Seq(User(1, "leo", "10"))
-
-      client.post[User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
-      client.postOps[User, User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
-      client
-        .postRaw[User](
-          "/user",
-          User(2, "yui", "N/A"),
-          addRequestId
-        ).contentString shouldBe """{"id":2,"name":"yui","requestId":"10"}"""
-
-      client.put[User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
-      client.putOps[User, User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
-      client
-        .putRaw[User](
-          "/user",
-          User(10, "aina", "N/A"),
-          addRequestId
-        ).contentString shouldBe """{"id":10,"name":"aina","requestId":"10"}"""
-
-      client.patch[User]("/user", User(20, "joy", "N/A"), addRequestId) shouldBe User(20, "joy", "10")
-      client.patchOps[User, User]("/user", User(20, "joy", "N/A"), addRequestId) shouldBe User(20, "joy", "10")
-      client
-        .patchRaw[User](
-          "/user",
-          User(20, "joy", "N/A"),
-          addRequestId
-        ).contentString shouldBe """{"id":20,"name":"joy","requestId":"10"}"""
-
-      client.delete[User]("/user/1", addRequestId) shouldBe User(1, "xxx", "10")
-      client.deleteOps[DeleteRequestBody, User]("/user/1", DeleteRequestBody(true), addRequestId) shouldBe User(
-        1,
-        "xxx",
-        "10"
-      )
-      client.deleteRaw("/user/1", addRequestId).contentString shouldBe """{"id":1,"name":"xxx","requestId":"10"}"""
-    }
-  }
-
-  test("fail request") { (server: NettyServer) =>
-    withResource(
-      OkHttpClient.newClient(
-        // Test for the full URI
-        s"http://${server.localAddress}",
-        OkHttpClientConfig().withMaxRetry(3).withBackOff(initialIntervalMillis = 1)
-      )
-    ) { client =>
-      warn("Starting http client failure tests")
-
-      {
-        // Test max retry failure
-        val ex = intercept[HttpClientMaxRetryException] {
-          client.get[String]("/busy")
-        }
-        warn(ex.getMessage)
-        ex.retryContext.retryCount shouldBe 3
-        ex.retryContext.maxRetry shouldBe 3
-        val cause = ex.retryContext.lastError.asInstanceOf[HttpClientException]
-        cause.status shouldBe HttpStatus.InternalServerError_500
+    Netty.server
+      .withRouter(r).design
+      .bind[SyncClient].toProvider { (server: NettyServer) =>
+        OkHttp.client.newSyncClient(server.localAddress)
       }
-
-      {
-        // Non retryable response
-        val cause = intercept[HttpClientException] {
-          client.get[String]("/forbidden")
-        }
-        warn(cause.getMessage)
-        cause.status shouldBe HttpStatus.Forbidden_403
-      }
-    }
   }
 
-  test("read timeout") { (server: NettyServer) =>
-    withResource(
-      OkHttpClient.newClient(
-        s"http://${server.localAddress}",
-        OkHttpClientConfig(timeout = Duration.ofMillis(10)).withMaxRetry(1)
-      )
-    ) { client =>
-      warn("Starting a read timeout test")
+  test("create client") { (client: SyncClient) =>
+    def addRequestId(request: HttpMultiMap): HttpMultiMap = {
+      request.add("X-Request-Id", "10")
+    }
 
+    // Sending an implementation specific Request type
+    val ret = client.send(Http.GET("/")).contentString
+    ret shouldBe "Ok"
+
+    // Using HTTP request wrappers
+    client.readAs[User](Http.GET("/user/1")) shouldBe User(1, "leo", "N/A")
+    client.call[UserRequest, User](Http.GET("/user/info"), UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
+    client.call[UserRequest, User](Http.GET("/user/info2"), UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
+    client.readAs[Seq[User]](Http.GET("/user")) shouldBe Seq(User(1, "leo", "N/A"))
+
+    client.call[User, User](Http.POST("/user"), User(2, "yui", "N/A")) shouldBe User(2, "yui", "N/A")
+    client.call[User, User](Http.PUT("/user"), User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
+    client.call[User, User](Http.PATCH("/user"), User(20, "joy", "N/A")) shouldBe User(20, "joy", "N/A")
+
+    client.readAs[User](Http.DELETE("/user/1")) shouldBe User(1, "xxx", "N/A")
+    client.call[DeleteRequestBody, User](Http.DELETE("/user/1"), DeleteRequestBody(true)) shouldBe User(1, "xxx", "N/A")
+
+    // Get a response as is
+    client.send(Http.GET("/response")).contentString shouldBe "raw response"
+
+    // Using a custom HTTP header
+    client.readAs[User](Http.GET("/user/1").withHeader(addRequestId)) shouldBe User(1, "leo", "10")
+    client.call[UserRequest, User](
+      Http.GET("/user/info").withHeader(addRequestId),
+      UserRequest(2, "kai")
+    ) shouldBe User(
+      2,
+      "kai",
+      "10"
+    )
+    client.call[UserRequest, User](
+      Http.GET("/user/info2").withHeader(addRequestId),
+      UserRequest(2, "kai")
+    ) shouldBe User(
+      2,
+      "kai",
+      "10"
+    )
+
+    client.readAs[Seq[User]](Http.GET("/user").withHeader(addRequestId)) shouldBe Seq(User(1, "leo", "10"))
+
+    client.call[User, User](Http.POST("/user").withHeader(addRequestId), User(2, "yui", "N/A")) shouldBe User(
+      2,
+      "yui",
+      "10"
+    )
+    client.call[User, User](Http.POST("/user").withHeader(addRequestId), User(2, "yui", "N/A")) shouldBe User(
+      2,
+      "yui",
+      "10"
+    )
+    client
+      .call[User, Response](
+        Http.POST("/user").withHeader(addRequestId),
+        User(2, "yui", "N/A")
+      ).contentString shouldBe """{"id":2,"name":"yui","requestId":"10"}"""
+
+    client
+      .call[User, User](Http.PUT("/user").withHeader(addRequestId), User(10, "aina", "N/A")) shouldBe User(
+      10,
+      "aina",
+      "10"
+    )
+    client
+      .call[User, Response](
+        Http.PUT("/user").withHeader(addRequestId),
+        User(10, "aina", "N/A")
+      ).contentString shouldBe """{"id":10,"name":"aina","requestId":"10"}"""
+
+    client.call[User, User](Http.PATCH("/user").withHeader(addRequestId), User(20, "joy", "N/A")) shouldBe User(
+      20,
+      "joy",
+      "10"
+    )
+    client
+      .call[User, Response](
+        Http.PATCH("/user").withHeader(addRequestId),
+        User(20, "joy", "N/A")
+      ).contentString shouldBe """{"id":20,"name":"joy","requestId":"10"}"""
+
+    client.readAs[User](Http.DELETE("/user/1").withHeader(addRequestId)) shouldBe User(1, "xxx", "10")
+    client.call[DeleteRequestBody, User](
+      Http.DELETE("/user/1").withHeader(addRequestId),
+      DeleteRequestBody(true)
+    ) shouldBe User(
+      1,
+      "xxx",
+      "10"
+    )
+    client
+      .send(
+        Http.DELETE("/user/1").withHeader(addRequestId)
+      ).contentString shouldBe """{"id":1,"name":"xxx","requestId":"10"}"""
+  }
+
+  test(
+    "fail request",
+    design = Design.newDesign
+      .bind[SyncClient].toProvider { (server: NettyServer) =>
+        OkHttp.client.newSyncClient(
+          // Test for the full URI
+          s"http://${server.localAddress}"
+        )
+      }
+  ) { (client: SyncClient) =>
+    warn("Starting http client failure tests")
+
+    {
+      // Test max retry failure
       val ex = intercept[HttpClientMaxRetryException] {
-        // sleeps for 3 seconds, which means a timeout happens
-        client.get[String]("/readtimeout")
+        client.readAs[String](Http.GET("/busy"))
       }
       warn(ex.getMessage)
-      ex.retryContext.retryCount shouldBe 1
-      ex.retryContext.maxRetry shouldBe 1
-      ex.retryContext.lastError.getClass shouldBe classOf[java.net.SocketTimeoutException]
+      ex.retryContext.retryCount shouldBe 3
+      ex.retryContext.maxRetry shouldBe 3
+      val cause = ex.retryContext.lastError.asInstanceOf[HttpClientException]
+      cause.status shouldBe HttpStatus.InternalServerError_500
     }
+
+    {
+      // Non retryable response
+      val cause = intercept[HttpClientException] {
+        client.readAs[String](Http.GET("/forbidden"))
+      }
+      warn(cause.getMessage)
+      cause.status shouldBe HttpStatus.Forbidden_403
+    }
+  }
+
+  test(
+    "read timeout",
+    design = Design.newDesign.bind[SyncClient].toProvider { (server: NettyServer) =>
+      OkHttp.client
+        .withReadTimeout(Duration(10, TimeUnit.MILLISECONDS))
+        .withRetryContext(_.withMaxRetry(1))
+        .newSyncClient(s"http://${server.localAddress}")
+    }
+  ) { (client: SyncClient) =>
+    warn("Starting a read timeout test")
+
+    val ex = intercept[HttpClientMaxRetryException] {
+      // sleeps for 3 seconds, which means a timeout happens
+      client.readAs[String](Http.GET("/readtimeout"))
+    }
+    warn(ex.getMessage)
+    ex.retryContext.retryCount shouldBe 1
+    ex.retryContext.maxRetry shouldBe 1
+    ex.retryContext.lastError.getClass shouldBe classOf[java.net.SocketTimeoutException]
   }
 
   test("support https request") {
-    withResource(OkHttpClient.newClient("https://wvlet.org")) { client =>
-      val page = client.get[String]("/airframe/")
+    withResource(OkHttp.client.newSyncClient("https://wvlet.org")) { client =>
+      val page = client.readAs[String](Http.GET("/airframe/"))
       trace(page)
       page.contains("<html") shouldBe true
     }
+    1
   }
 
 }

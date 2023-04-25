@@ -53,7 +53,9 @@ class OkHttpRetryInterceptor(retry: RetryContext) extends Interceptor {
         // The only stateful object is a body's source, which is a one-shot value and then must be closed.
         // Replace it with a byte array in memory so that we can pass the response along.
         val r = response
-          .newBuilder().body(ResponseBody.create(body.contentType, Try(body.bytes).getOrElse(Array.empty))).build()
+          .newBuilder()
+          .body(ResponseBody.create(body.contentType, Try(body.bytes).getOrElse(Array.empty[Byte])))
+          .build()
         body.close()
         r
       }.getOrElse {

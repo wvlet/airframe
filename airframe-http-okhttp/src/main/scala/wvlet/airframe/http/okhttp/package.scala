@@ -61,7 +61,7 @@ package object okhttp {
     override def statusCodeOf(res: Response): Int = res.code()
     override def messageOf(resp: Response): Message = {
       new LazyByteArrayMessage({
-        val bytes = Option(resp.body()).map(_.bytes()).getOrElse(Array.empty)
+        val bytes = Option(resp.body()).map(_.bytes()).getOrElse(Array.empty[Byte])
         bytes
       })
     }
