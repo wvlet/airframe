@@ -306,14 +306,11 @@ airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-stri
 <h4><a class="anchor" aria-hidden="true" id="supported-rpc-client-types"></a><a href="#supported-rpc-client-types" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Supported RPC Client Types</h4>
 <p>Supported client types are:</p>
 <ul>
-<li><strong>rpc</strong> : Create a default RPC client class for Scala JVM (sync and async) and Scala.js (async-only)</li>
-<li><strong>grpc</strong>: Create gRPC client (ServiceGrpc: SyncClient, AsyncClient)</li>
-</ul>
-<ul>
-<li><strong>sync</strong>: (legacy client. Use rpc instead) Create a sync HTTP client (ServiceSyncClient) for Scala (JVM)</li>
-<li><strong>async</strong>: (legacy client. Use rpc instead) Create an async HTTP client (ServiceClient) for Scala (JVM) using Future
-abstraction (<code>F</code>). The <code>F</code> can be <code>scala.concurrent.Future</code> or twitter-util's Future.</li>
-<li><strong>scalajs</strong>:  (legacy client. Use rpc instead) Create an RPC client (ServiceClientJS)</li>
+<li><p><strong>rpc</strong> : Create a default RPC client class for Scala JVM (sync and async) and Scala.js (async-only)</p></li>
+<li><p><strong>grpc</strong>: Create gRPC client (ServiceGrpc: SyncClient, AsyncClient)</p></li>
+<li><p><strong>sync</strong>: (legacy client. Use rpc instead) Create a sync HTTP client (ServiceSyncClient) for Scala (JVM)</p></li>
+<li><p><strong>async</strong>: (legacy client. Use rpc instead) Create an async HTTP client (ServiceClient) for Scala (JVM) using Future
+abstraction (<code>F</code>). The <code>F</code> can be <code>scala.concurrent.Future</code> or twitter-util's Future.</p></li>
 </ul>
 <p>Internally, sbt-airframe generates these clients using <a href="https://github.com/wvlet/airframe/blob/master/airframe-http-codegen/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClientGenerator.scala">HTTP code generators</a>. This code reads a Router definition of RPC interfaces, and generate client code for calling RPC endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would
 like to add Open API spec generator so that many programming languages can be used with Airframe
