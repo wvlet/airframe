@@ -34,7 +34,7 @@ private[http] object RxRouterMacros {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
 
-    if (t <:< c.typeTag[wvlet.airframe.http.RxFilter].tpe) {
+    if (t <:< c.typeTag[wvlet.airframe.http.RxHttpFilter].tpe) {
       q"""
        {
          wvlet.airframe.registerTraitFactory[${t}]
@@ -51,7 +51,7 @@ private[http] object RxRouterMacros {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
 
-    if (t <:< c.typeTag[wvlet.airframe.http.RxFilter].tpe) {
+    if (t <:< c.typeTag[wvlet.airframe.http.RxHttpFilter].tpe) {
       q"""
      {
        wvlet.airframe.registerTraitFactory[${t}]

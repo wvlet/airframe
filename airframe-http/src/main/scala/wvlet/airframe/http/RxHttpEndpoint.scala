@@ -17,28 +17,14 @@ import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.rx.{Rx, RxStream}
 
 /**
-  * [[RxEndpoint]] is a terminal for processing requests and returns `Rx[Response]`.
+  * [[RxHttpEndpoint]] is a terminal for processing requests and returns `Rx[Response]`.
   */
-trait RxEndpoint extends AutoCloseable {
-  private[http] def backend: RxHttpBackend
+trait RxHttpEndpoint extends AutoCloseable {
 
   /**
     * @param request
     * @return
     */
   def apply(request: Request): Rx[Response]
-
-  /**
-    * Set a thread-local parameter
-    */
-  def setThreadLocal[A](key: String, value: A): Unit = {
-    backend.setThreadLocal(key, value)
-  }
-
-  /**
-    * Get a thread-local parameter
-    */
-  def getThreadLocal[A](key: String): Option[A] = {
-    backend.getThreadLocal(key)
-  }
+  override def close(): Unit = {}
 }

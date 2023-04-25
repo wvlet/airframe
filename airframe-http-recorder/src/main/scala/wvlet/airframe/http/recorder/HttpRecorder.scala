@@ -14,7 +14,7 @@
 package wvlet.airframe.http.recorder
 
 import wvlet.airframe.http.HttpMessage.EmptyMessage
-import wvlet.airframe.http.{Http, HttpHeader, HttpMessage, HttpStatus, RxEndpoint, ServerAddress}
+import wvlet.airframe.http.{Http, HttpHeader, HttpMessage, HttpStatus, RxHttpEndpoint, ServerAddress}
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.netty.{NettyBackend, NettyServer}
 import wvlet.airframe.rx.{Rx, RxStream}
@@ -36,7 +36,7 @@ case class HttpRecorderConfig(
     // Used for computing hash key for matching requests
     requestMatcher: HttpRequestMatcher = new HttpRequestMatcher.DefaultHttpRequestMatcher(),
     excludeHeaderFilterForRecording: (String, String) => Boolean = HttpRecorder.defaultExcludeHeaderFilterForRecording,
-    fallBackHandler: RxEndpoint = HttpRecorder.defaultFallBackHandler
+    fallBackHandler: RxHttpEndpoint = HttpRecorder.defaultFallBackHandler
 ) {
   private[http] def sqliteFilePath = s"${storageFolder}/${dbFileName}.sqlite"
 
@@ -95,10 +95,10 @@ object HttpRecorder extends LogSupport {
       .newSyncClient(recorderConfig.destAddress.hostAndPort)
   }
 
-  private def destProxyEndpoint(recorderConfig: HttpRecorderConfig): RxEndpoint = {
+  private def destProxyEndpoint(recorderConfig: HttpRecorderConfig): RxHttpEndpoint = {
     val client = newDestClient(recorderConfig)
-    NettyBackend.newRxEndpoint(
-      body = { (request: HttpMessage.Request) =>
+    new RxHttpEndpoint {
+      override def apply(request: HttpMessage.Request): Rx[HttpMessage.Response] = {
         // Remove Netty-specific headers added when relaying the request
         var newRequest = request
           // TODO Support HTTP2
@@ -112,11 +112,11 @@ object HttpRecorder extends LogSupport {
         }
         val ret = Rx.single(client.send(newRequest))
         ret
-      },
-      onClose = { () =>
+      }
+      override def close(): Unit = {
         client.close()
       }
-    )
+    }
   }
 
   private def newRecordStoreForRecording(recorderConfig: HttpRecorderConfig, dropSession: Boolean): HttpRecordStore = {
@@ -185,13 +185,13 @@ object HttpRecorder extends LogSupport {
     server
   }
 
-  def defaultFallBackHandler: RxEndpoint = NettyBackend.newRxEndpoint(
-    body = { (request: HttpMessage.Request) =>
+  def defaultFallBackHandler: RxHttpEndpoint = new RxHttpEndpoint {
+    override def apply(request: HttpMessage.Request): Rx[HttpMessage.Response] = {
       Rx.const(
         Http
           .response(HttpStatus.NotFound_404)
           .withContent(s"${request.uri} is not found")
       )
     }
-  )
+  }
 }

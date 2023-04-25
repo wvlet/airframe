@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.http.{Http, HttpMessage, RxEndpoint}
+import wvlet.airframe.http.{Http, HttpMessage, RxHttpEndpoint}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
@@ -21,9 +21,7 @@ import wvlet.airspec.AirSpec
 class CustomEndpointTest extends AirSpec {
 
   test("build route with custom endpoint") {
-    val endpoint = new RxEndpoint {
-      override private[http] def backend = ???
-      override def close(): Unit         = {}
+    val endpoint = new RxHttpEndpoint {
       override def apply(request: HttpMessage.Request): Rx[HttpMessage.Response] = {
         Rx.single(Http.response())
       }

@@ -14,7 +14,7 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.{Http, HttpMessage, RPC, RPCException, RPCStatus, RxEndpoint, RxFilter}
+import wvlet.airframe.http.{Http, HttpMessage, RPC, RPCException, RPCStatus, RxHttpEndpoint, RxHttpFilter}
 import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
@@ -25,8 +25,8 @@ object NettyRxFilterTest extends AirSpec {
     def hello(msg: String): String = s"Hello ${msg}!"
   }
 
-  class AuthFilter extends RxFilter {
-    override def apply(request: HttpMessage.Request, endpoint: RxEndpoint): Rx[HttpMessage.Response] = {
+  class AuthFilter extends RxHttpFilter {
+    override def apply(request: HttpMessage.Request, endpoint: RxHttpEndpoint): Rx[HttpMessage.Response] = {
       request.authorization match {
         case Some(auth) if auth == "Bearer xxxx" =>
           endpoint(request)
@@ -36,8 +36,8 @@ object NettyRxFilterTest extends AirSpec {
     }
   }
 
-  class ExFilter extends RxFilter {
-    override def apply(request: HttpMessage.Request, endpoint: RxEndpoint): Rx[HttpMessage.Response] = {
+  class ExFilter extends RxHttpFilter {
+    override def apply(request: HttpMessage.Request, endpoint: RxHttpEndpoint): Rx[HttpMessage.Response] = {
       throw RPCStatus.UNAUTHENTICATED_U13.newException("authentication failed")
     }
   }

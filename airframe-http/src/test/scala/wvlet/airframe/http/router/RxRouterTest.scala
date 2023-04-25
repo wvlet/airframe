@@ -14,7 +14,7 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.http.router.RxRouter.StemNode
-import wvlet.airframe.http.{HttpMessage, RxEndpoint, RxFilter}
+import wvlet.airframe.http.{HttpMessage, RxHttpEndpoint, RxHttpFilter}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
@@ -38,14 +38,14 @@ object RxRouterTest extends AirSpec {
     def router: RxRouter = RxRouter.of[MyApi2]
   }
 
-  trait AuthFilter extends RxFilter {
-    override def apply(request: HttpMessage.Request, endpoint: RxEndpoint): Rx[HttpMessage.Response] = {
+  trait AuthFilter extends RxHttpFilter {
+    override def apply(request: HttpMessage.Request, endpoint: RxHttpEndpoint): Rx[HttpMessage.Response] = {
       endpoint(request.withHeader("X-Airframe-Test", "xxx"))
     }
   }
 
-  trait LogFilter extends RxFilter {
-    override def apply(request: HttpMessage.Request, endpoint: RxEndpoint): Rx[HttpMessage.Response] = {
+  trait LogFilter extends RxHttpFilter {
+    override def apply(request: HttpMessage.Request, endpoint: RxHttpEndpoint): Rx[HttpMessage.Response] = {
       // do some logging
       endpoint.apply(request)
     }
