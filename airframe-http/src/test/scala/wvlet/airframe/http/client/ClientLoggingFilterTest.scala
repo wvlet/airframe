@@ -15,6 +15,7 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.{Design, newDesign}
 import wvlet.airframe.http.{ChannelConfig, Http, HttpHeader, HttpMessage, HttpStatus, HttpSyncClient, RPCMethod}
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
@@ -28,7 +29,7 @@ class ClientLoggingFilterTest extends AirSpec {
       Http.response(HttpStatus.Ok_200).withJson("""{"message":"hello"}""")
     }
 
-    override def sendAsync(req: HttpMessage.Request, channelConfig: ChannelConfig): Future[HttpMessage.Response] = ???
+    override def sendAsync(req: HttpMessage.Request, channelConfig: ChannelConfig): Rx[HttpMessage.Response] = ???
 
     override private[client] implicit def executionContext: ExecutionContext = ???
     override def close(): Unit                                               = {}

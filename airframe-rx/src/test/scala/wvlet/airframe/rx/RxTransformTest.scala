@@ -18,9 +18,36 @@ import wvlet.airspec.AirSpec
 import scala.util.{Failure, Success, Try}
 
 class RxTransformTest extends AirSpec {
+
   test("Rx.transform") {
     Rx.single("success")
-      .transformWith {
+      .transform {
+        case Success(x) => x
+        case Failure(e) => "recovered"
+      }.map {
+        case "success" =>
+        // ok. do nothing
+        case other =>
+          fail(s"Unexpected: ${other}")
+      }
+  }
+
+  test("Rx.transform failure") {
+    Rx.exception(new Exception("failed"))
+      .transform {
+        case Success(x) => x
+        case Failure(e) => "recovered"
+      }.map {
+        case "recovered" =>
+        // ok. do nothing
+        case other =>
+          fail(s"Unexpected: ${other}")
+      }
+  }
+
+  test("Rx.transformRx") {
+    Rx.single("success")
+      .transformRx {
         case Success(x) => Rx.single(x)
         case Failure(e) => Rx.single("recovered")
       }.map {
@@ -30,9 +57,9 @@ class RxTransformTest extends AirSpec {
           fail(s"Unexpected: ${other}")
       }
   }
-  test("Rx.transform Try") {
+  test("Rx.transformRx Try") {
     Rx.fromTry(Success("success"))
-      .transformWith {
+      .transformRx {
         case Success(x) => Rx.single(x)
         case Failure(e) => Rx.single("recovered")
       }.map {
@@ -43,9 +70,9 @@ class RxTransformTest extends AirSpec {
       }
   }
 
-  test("Rx.transform failure") {
+  test("Rx.transformRx failure") {
     Rx.exception(new Exception("failed"))
-      .transformWith {
+      .transformRx {
         case Success(x) => Rx.single(x)
         case Failure(e) => Rx.single("recovered")
       }.map {
@@ -56,9 +83,9 @@ class RxTransformTest extends AirSpec {
       }
   }
 
-  test("Rx.transform Try(failure)") {
+  test("Rx.transformRx Try(failure)") {
     Rx.fromTry(Failure(new Exception("failed")))
-      .transformWith {
+      .transformRx {
         case Success(x) => Rx.single(x)
         case Failure(e) => Rx.single("recovered")
       }.map {

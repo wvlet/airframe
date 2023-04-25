@@ -17,6 +17,7 @@ import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.control.IO
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
+import wvlet.airframe.rx.Rx
 
 import java.io.InputStream
 import java.net.URI
@@ -75,23 +76,23 @@ class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: 
     readResponse(httpResponse)
   }
 
-  override def sendAsync(req: Request, channelConfig: ChannelConfig): Future[Response] = {
-    val httpRequest = buildRequest(serverAddress, req, channelConfig)
-
-    val p = Promise[Response]()
+  override def sendAsync(req: Request, channelConfig: ChannelConfig): Rx[Response] = {
+    val v = Rx.variable[Option[Response]](None)
     try {
+      val httpRequest = buildRequest(serverAddress, req, channelConfig)
       javaHttpClient
         .sendAsync(httpRequest, BodyHandlers.ofInputStream())
         .thenAccept(new Consumer[HttpResponse[InputStream]] {
           override def accept(r: HttpResponse[InputStream]): Unit = {
             val resp = readResponse(r)
-            p.success(resp)
+            v.set(Some(resp))
           }
         })
     } catch {
-      case e: Throwable => p.failure(e)
+      case e: Throwable =>
+        v.setException(e)
     }
-    p.future
+    v.filter(_.isDefined).map(_.get)
   }
 
   private def buildRequest(

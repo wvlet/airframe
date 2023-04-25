@@ -16,6 +16,7 @@ package wvlet.airframe.http.client
 import wvlet.airframe.control.{Control, IO}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
+import wvlet.airframe.rx.Rx
 
 import java.io.{IOException, InputStream, OutputStream}
 import java.net.HttpURLConnection
@@ -98,8 +99,8 @@ class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfi
     response.withContent(responseContentBytes)
   }
 
-  override def sendAsync(req: Request, channelConfig: ChannelConfig): Future[Response] = {
-    Future.apply(send(req, channelConfig))
+  override def sendAsync(req: Request, channelConfig: ChannelConfig): Rx[Response] = {
+    Rx.single(send(req, channelConfig))
   }
 
   override def close(): Unit = {

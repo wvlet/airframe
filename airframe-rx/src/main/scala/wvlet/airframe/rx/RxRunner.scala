@@ -146,7 +146,27 @@ class RxRunner(
               effect(other)
           }
         }
-      case TransformWithOp(in, f) =>
+      case TransformOp(in, f) =>
+        val tryFunc = f.asInstanceOf[Try[_] => _]
+        run(in) {
+          case OnNext(x) =>
+            Try(tryFunc(Success(x))) match {
+              case Success(x) =>
+                effect(OnNext(x))
+              case Failure(e) =>
+                effect(OnError(e))
+            }
+          case OnError(e) =>
+            Try(tryFunc(Failure(e))) match {
+              case Success(x) =>
+                effect(OnNext(x))
+              case Failure(e) =>
+                effect(OnError(e))
+            }
+          case other =>
+            effect(other)
+        }
+      case TransformRxOp(in, f) =>
         val tryFunc = f.asInstanceOf[Try[_] => Rx[_]]
         // A place holder for properly cancel the subscription against the result of Try[_] => Rx[_]
         var c1: Cancelable = Cancelable.empty

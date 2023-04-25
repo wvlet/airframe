@@ -326,7 +326,7 @@ object Retry extends LogSupport {
         } else {
           Rx.single(circuitBreaker.verifyConnection)
             .flatMap(_ => body)
-            .transformWith { (ret: Try[A]) =>
+            .transformRx { (ret: Try[A]) =>
               val resultClass = classifyResult(ret)
               resultClass match {
                 case ResultClass.Succeeded =>
