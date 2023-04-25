@@ -2,8 +2,10 @@ package wvlet.airframe.http
 
 import okhttp3.{Headers, MediaType, Request, Response}
 import okio.{Buffer, BufferedSink}
-import wvlet.airframe.http.HttpMessage.{LazyByteArrayMessage, Message}
+import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, EmptyMessage, LazyByteArrayMessage, Message}
+import wvlet.log.LogSupport
 
+import java.io.EOFException
 import scala.jdk.CollectionConverters._
 
 package object okhttp {
@@ -52,22 +54,30 @@ package object okhttp {
     override def remoteAddressOf(request: Request): Option[ServerAddress] = None
   }
 
-  implicit class OkHttpResponseWrapper(val raw: Response) extends HttpResponse[Response] {
+  implicit class OkHttpResponseWrapper(val raw: okhttp3.Response) extends HttpResponse[okhttp3.Response] {
     override protected def adapter: HttpResponseAdapter[Response] = OkHttpResponseAdapter
     override def toRaw: Response                                  = raw
   }
 
-  implicit object OkHttpResponseAdapter extends HttpResponseAdapter[Response] {
-    override def statusCodeOf(res: Response): Int = res.code()
-    override def messageOf(resp: Response): Message = {
-      new LazyByteArrayMessage({
-        val bytes = Option(resp.body()).map(_.bytes()).getOrElse(Array.empty[Byte])
-        bytes
-      })
+  implicit object OkHttpResponseAdapter extends HttpResponseAdapter[okhttp3.Response] with LogSupport {
+    override def statusCodeOf(res: okhttp3.Response): Int = {
+      res.code()
     }
-    override def contentTypeOf(res: Response): Option[String] = Option(res.body()).map(_.contentType().toString)
-    override def wrap(resp: Response): HttpResponse[Response] = OkHttpResponseWrapper(resp)
-    override def headerOf(resp: Response): HttpMultiMap = {
+    override def messageOf(resp: okhttp3.Response): Message = {
+      try {
+        Option(resp.body()).map(_.bytes()) match {
+          case Some(bytes) => ByteArrayMessage(bytes)
+          case _           => EmptyMessage
+        }
+      } catch {
+        case e: EOFException =>
+          // Reading okhttp response may fail with EOFException
+          EmptyMessage
+      }
+    }
+    override def contentTypeOf(res: okhttp3.Response): Option[String] = Option(res.body()).map(_.contentType().toString)
+    override def wrap(resp: okhttp3.Response): HttpResponse[okhttp3.Response] = OkHttpResponseWrapper(resp)
+    override def headerOf(resp: okhttp3.Response): HttpMultiMap = {
       var h = toHttpMultiMap(resp.headers())
       // OkHttp may place Content-Type and Content-Length headers separately from headers()
       for (b <- Option(resp.body)) {

@@ -26,7 +26,6 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
     new okhttp3.OkHttpClient.Builder()
       .readTimeout(config.readTimeout.toMillis, TimeUnit.MILLISECONDS)
       .connectTimeout(config.connectTimeout.toMillis, TimeUnit.MILLISECONDS)
-      .addInterceptor(new OkHttpRetryInterceptor(config.retryContext))
       .build()
   }
 

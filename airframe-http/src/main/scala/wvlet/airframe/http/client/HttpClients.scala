@@ -20,6 +20,7 @@ import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
 import wvlet.airframe.http.internal.RPCCallContext
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
@@ -244,7 +245,7 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
   }
 }
 
-object HttpClients {
+object HttpClients extends LogSupport {
   private val responseBodyCodec = new HttpResponseBodyCodec[Response]
 
   private[client] def defaultHttpClientErrorHandler(
