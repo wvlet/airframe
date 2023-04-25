@@ -27,7 +27,7 @@ import scala.util.{Random, Using}
 /**
   */
 class HttpRecorderTest extends AirSpec {
-  private def orderInsensitveHash(m: Map[String, String]): Int = {
+  private def orderInsensitveHash(m: Map[String, Seq[String]]): Int = {
     m.map { x => s"${x._1}:${x._2}".hashCode }
       .reduce { (xor, next) => xor ^ next }
   }
@@ -68,9 +68,9 @@ class HttpRecorderTest extends AirSpec {
 
     response.status shouldBe replayResponse.status
     replayResponse.getHeader("X-Airframe-Record-Time") shouldBe defined
-//    orderInsensitveHash(response.header.toMultiMap) shouldBe orderInsensitveHash(
-//      (replayResponse.header.toMultiMap -= "X-Airframe-Record-Time").toMap
-//    )
+    orderInsensitveHash(response.header.toMultiMap) shouldBe orderInsensitveHash(
+      replayResponse.header.remove("X-Airframe-Record-Time").toMultiMap
+    )
     response.contentString shouldBe replayResponse.contentString
 
     // Check non-recorded response

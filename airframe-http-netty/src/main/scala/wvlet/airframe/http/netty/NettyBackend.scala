@@ -87,7 +87,7 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
     }
   }
 
-  override def wrapException(e: Throwable): RxStream[Response] = {
+  override def wrapException(e: Throwable): Rx[Response] = {
     Rx.exception(e)
   }
 
