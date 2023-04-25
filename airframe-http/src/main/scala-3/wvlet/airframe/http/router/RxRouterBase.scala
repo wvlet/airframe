@@ -20,7 +20,7 @@ import wvlet.airframe.surface.Surface
 trait RxRouterObjectBase {
   inline def of[Controller]: RxRouter = {
     wvlet.airframe.registerTraitFactory[Controller]
-    RxRouter.EndpointNode(Surface.of[Controller], Surface.methodsOf[Controller])
+    RxRouter.EndpointNode(Surface.of[Controller], Surface.methodsOf[Controller], None)
   }
 
   inline def filter[Filter <: RxFilter]: RxRouter.FilterNode = {
