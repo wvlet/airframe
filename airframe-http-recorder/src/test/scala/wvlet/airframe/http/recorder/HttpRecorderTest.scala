@@ -22,7 +22,7 @@ import wvlet.airframe.http.recorder.HttpRequestMatcher.PathOnlyMatcher
 import wvlet.airframe.json._
 import wvlet.airspec.AirSpec
 
-import scala.util.Random
+import scala.util.{Random, Using}
 
 /**
   */
@@ -33,7 +33,7 @@ class HttpRecorderTest extends AirSpec {
   }
 
   private def withClient[U](localAddr: String)(body: SyncClient => U): U = {
-    val client = Http.client.newSyncClient(localAddr)
+    val client = Http.client.withRetryContext(_.noRetry).newSyncClient(localAddr)
     try {
       body(client)
     } finally {
@@ -41,17 +41,25 @@ class HttpRecorderTest extends AirSpec {
     }
   }
 
+  test("https connection") {
+    Using.resource(Http.client.newSyncClient("wvlet.org:443")) { client =>
+      val req  = Http.GET("/airframe/")
+      val resp = client.send(req)
+      debug(resp)
+    }
+  }
+
   test("start HTTP recorder") {
     val recorderConfig =
       HttpRecorderConfig(recorderName = "wvlet.org", destUri = "https://wvlet.org", sessionName = "airframe")
     val path = "/airframe/"
+
     val response: Response =
       withResource(HttpRecorder.createRecordingServer(recorderConfig, dropExistingSession = true)) { server =>
         withClient(server.localAddress) { client =>
           client.send(Http.GET(path))
         }
       }
-
     val replayResponse: Response = withResource(HttpRecorder.createServer(recorderConfig)) { server =>
       withClient(server.localAddress) { client =>
         client.send(Http.GET(path))

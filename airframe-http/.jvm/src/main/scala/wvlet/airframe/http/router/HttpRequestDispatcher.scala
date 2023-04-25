@@ -52,7 +52,6 @@ object HttpRequestDispatcher extends LogSupport {
         case Some(routeMatch) =>
           // Find a filter for the matched route
           val routeFilter = routingTable.findFilter(routeMatch.route)
-
           // Create a new context for processing the matched route with the controller
           val context =
             new HttpEndpointExecutionContext(backend, routeMatch, responseHandler, routeFilter.controller, codecFactory)

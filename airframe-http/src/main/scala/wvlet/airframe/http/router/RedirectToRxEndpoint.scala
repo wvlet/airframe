@@ -15,14 +15,17 @@ package wvlet.airframe.http.router
 
 import wvlet.airframe.http.{Endpoint, HttpMessage, RPCContext, RxEndpoint}
 import wvlet.airframe.rx.RxStream
+import wvlet.log.LogSupport
 
 /**
   * An Http endpoint definition for bypassing the request to the given endpoint
   * @param endpoint
   */
-class RedirectToRxEndpoint(endpoint: RxEndpoint) {
+class RedirectToRxEndpoint(endpoint: RxEndpoint) extends LogSupport {
   @Endpoint(path = "/*path")
   def process(): RxStream[HttpMessage.Response] = {
-    endpoint.apply(RPCContext.current.httpRequest)
+    val req = RPCContext.current.httpRequest
+    warn(s"process ${req}")
+    endpoint.apply(req)
   }
 }

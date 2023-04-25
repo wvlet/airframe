@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.http.recorder
 
-import wvlet.airframe.http.{Http, HttpMessage, HttpStatus, RxEndpoint, ServerAddress}
+import wvlet.airframe.http.HttpMessage.EmptyMessage
+import wvlet.airframe.http.{Http, HttpHeader, HttpMessage, HttpStatus, RxEndpoint, ServerAddress}
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.netty.{NettyBackend, NettyServer}
 import wvlet.airframe.rx.{Rx, RxStream}
@@ -88,7 +89,7 @@ object HttpRecorder extends LogSupport {
   }
 
   private def newDestClient(recorderConfig: HttpRecorderConfig): SyncClient = {
-    debug(s"dest: ${recorderConfig.destAddress}")
+    debug(s"dest: ${recorderConfig.destAddress.hostAndPort}")
     Http.client
       .withName("airframe-http-recorder-proxy")
       .newSyncClient(recorderConfig.destAddress.hostAndPort)
@@ -98,7 +99,19 @@ object HttpRecorder extends LogSupport {
     val client = newDestClient(recorderConfig)
     NettyBackend.newRxEndpoint(
       body = { (request: HttpMessage.Request) =>
-        Rx.single(client.sendSafe(request))
+        // Remove Netty-specific headers added when relaying the request
+        var newRequest = request
+          // TODO Support HTTP2
+          .removeHeader("HTTP2-Settings")
+          .removeHeader(HttpHeader.Upgrade)
+          .removeHeader(HttpHeader.Connection)
+          .noHost
+
+        if (newRequest.message == EmptyMessage) {
+          newRequest = newRequest.removeHeader(HttpHeader.ContentLength)
+        }
+        val ret = Rx.single(client.send(newRequest))
+        ret
       },
       onClose = { () =>
         client.close()

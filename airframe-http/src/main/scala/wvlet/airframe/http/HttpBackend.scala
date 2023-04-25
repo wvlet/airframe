@@ -41,7 +41,8 @@ trait HttpBackend[Req, Resp, F[_]] {
     try {
       body
     } catch {
-      case NonFatal(e) => wrapException(e)
+      case NonFatal(e) =>
+        wrapException(e)
     }
   }
 

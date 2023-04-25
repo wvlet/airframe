@@ -108,7 +108,7 @@ object HttpRecorderServer {
   class RecordingFilter(recordStore: HttpRecordStore) extends RxFilter with LogSupport {
     override def apply(request: Request, endpoint: RxEndpoint): RxStream[Response] = {
       // Rewrite the target host for proxying
-      val newRequest = request.withHost(recordStore.recorderConfig.destAddress.hostAndPort)
+      val newRequest = request.noHost
       endpoint(newRequest).map { response =>
         trace(s"Recording the response for ${request}")
         // Record the result
