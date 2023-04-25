@@ -159,7 +159,7 @@ class HttpRecorderTest extends AirSpec {
     val binaryResponse = Http
       .response()
       .withContentType(HttpHeader.MediaType.OctetStream)
-      .withContent(binaryRequestData)
+      .withContent(binaryResponseData)
       .withContentLength(binaryResponseData.length)
 
     val request = Http
@@ -176,7 +176,7 @@ class HttpRecorderTest extends AirSpec {
 
         // Check binary response
         val r = record.toResponse
-        r.contentLength shouldBe 1024
+        r.contentLength shouldBe Some(1024)
         val arr = r.contentBytes
         arr shouldBe binaryResponseData
     }
@@ -220,7 +220,7 @@ class HttpRecorderTest extends AirSpec {
       Random.nextBytes(binaryResponseData)
       val response2 = Response()
         .withContentType(HttpHeader.MediaType.OctetStream)
-        .withContent(binaryRequestData)
+        .withContent(binaryResponseData)
         .withContentLength(binaryResponseData.length)
 
       val request2 = Http

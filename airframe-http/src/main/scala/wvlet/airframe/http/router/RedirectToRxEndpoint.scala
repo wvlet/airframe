@@ -25,7 +25,6 @@ class RedirectToRxEndpoint(endpoint: RxEndpoint) extends LogSupport {
   @Endpoint(path = "/*path")
   def process(): RxStream[HttpMessage.Response] = {
     val req = RPCContext.current.httpRequest
-    warn(s"process ${req}")
     endpoint.apply(req)
   }
 }

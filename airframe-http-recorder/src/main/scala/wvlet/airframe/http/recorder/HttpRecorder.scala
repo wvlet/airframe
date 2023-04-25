@@ -107,7 +107,7 @@ object HttpRecorder extends LogSupport {
           .removeHeader(HttpHeader.Connection)
           .noHost
 
-        if (newRequest.message == EmptyMessage) {
+        if (newRequest.message.isEmpty) {
           newRequest = newRequest.removeHeader(HttpHeader.ContentLength)
         }
         val ret = Rx.single(client.send(newRequest))
