@@ -14,7 +14,7 @@
 package wvlet.airframe.http.codegen
 import wvlet.airframe.http.router.{RxRouter, RxRouterProvider}
 import wvlet.airframe.http.{Endpoint, RPC, Router}
-import wvlet.airframe.surface.TypeName
+import wvlet.airframe.surface.{Surface, TypeName}
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.log.LogSupport
 
@@ -49,6 +49,9 @@ object RouteScanner extends LogSupport {
   def buildRxRouter(targetPackages: Seq[String], classLoader: ClassLoader): RxRouter = {
     // We need to use our own class loader as sbt's layered classloader cannot find application classes
     withClassLoader(classLoader) {
+      // Call Surface here to make sure that the surface registry is initialized inside the classloader
+      val dummy = Surface.of[Int]
+
       val lst = ClassScanner.scanClasses(classLoader, targetPackages)
       trace(s"classes: ${lst.mkString(", ")}")
       val rxRouterProviderClasses = Seq.newBuilder[Class[RxRouterProvider]]
