@@ -411,11 +411,8 @@ override <code>protected def design:Design</code> or <code>protected def localDe
   test(<span class="hljs-string">"before overriding the design"</span>) { (s:<span class="hljs-type">String</span>) =&gt;
     s shouldBe <span class="hljs-string">"hello"</span>
 
-    <span class="hljs-comment">// Override a design</span>
-    <span class="hljs-keyword">val</span> childDesign = newDesign
-      .bind[<span class="hljs-type">String</span>].toInstance(<span class="hljs-string">"hello child"</span>)
-
-    test(<span class="hljs-string">"override the design"</span>, design = childDesign) { cs: <span class="hljs-type">String</span> =&gt;
+    <span class="hljs-comment">// Override the design only for this test method</span>
+    test(<span class="hljs-string">"override the design"</span>, design = _.bind[<span class="hljs-type">String</span>].toInstance(<span class="hljs-string">"hello child"</span>)) { (cs: <span class="hljs-type">String</span>) =&gt;
       cs shouldBe <span class="hljs-string">"hello child"</span>
     }
   }
