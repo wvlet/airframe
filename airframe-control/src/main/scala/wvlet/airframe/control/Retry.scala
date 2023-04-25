@@ -15,7 +15,9 @@ package wvlet.airframe.control
 
 import wvlet.airframe.control.ResultClass.Failed
 import wvlet.log.LogSupport
+import wvlet.airframe.rx.Rx
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Random, Success, Try}
 
@@ -316,37 +318,33 @@ object Retry extends LogSupport {
     }
 
     def runAsyncWithContext[A](context: Any, circuitBreaker: CircuitBreaker = CircuitBreaker.alwaysClosed)(
-        body: => Future[A]
-    )(implicit ec: ExecutionContext): Future[A] = {
-      def loop(retryContext: RetryContext, isFirst: Boolean): Future[A] = {
+        body: => Rx[A]
+    ): Rx[A] = {
+      def loop(retryContext: RetryContext, isFirst: Boolean): Rx[A] = {
         if (!isFirst && !retryContext.canContinue) {
-          Future.failed(MaxRetryException(retryContext))
+          Rx.exception(MaxRetryException(retryContext))
         } else {
-          Future
-            .apply {
-              circuitBreaker.verifyConnection
-            }.flatMap { _ =>
-              body
-            }.transformWith { (ret: Try[A]) =>
+          Rx.single(circuitBreaker.verifyConnection)
+            .flatMap(_ => body)
+            .transformWith { (ret: Try[A]) =>
               val resultClass = classifyResult(ret)
               resultClass match {
                 case ResultClass.Succeeded =>
                   circuitBreaker.recordSuccess
                   // Exit the loop
-                  Future.fromTry(ret)
+                  Rx.fromTry(ret)
                 case ResultClass.Failed(isRetryable, cause, extraWait) if isRetryable =>
                   // Retryable error
                   circuitBreaker.recordFailure(cause)
                   // Add retry wait
                   val nextRetry = retryContext.withExtraWait(extraWait).nextRetry(cause)
-                  Compat.scheduleAsync(nextRetry.nextWaitMillis) {
-                    loop(nextRetry, isFirst = false)
-                  }
+                  Rx.delay(nextRetry.nextWaitMillis, TimeUnit.MILLISECONDS)
+                    .flatMap(_ => loop(nextRetry, isFirst = true))
                 case ResultClass.Failed(_, cause, _) =>
                   // For regular non-retryable failures, we need to treat them as successful responses
                   circuitBreaker.recordSuccess
                   // Non-retryable error. Exit the loop with the exception
-                  Future.failed(cause)
+                  Rx.exception(cause)
               }
             }
         }

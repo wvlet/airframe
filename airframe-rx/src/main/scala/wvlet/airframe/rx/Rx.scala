@@ -133,6 +133,10 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     this.flatMap(a => Rx.future(f(a)))
   }
 
+  def transformWith[B](f: Try[A] => Rx[B]): RxStream[B] = {
+    TransformWithOp(this, f)
+  }
+
   def concat[A1 >: A](other: Rx[A1]): RxStream[A1] = Rx.concat(this, other)
   def lastOption: RxOption[A]                      = LastOp(this).toOption
 
@@ -216,6 +220,8 @@ object Rx extends LogSupport {
     * Create a sequence of values from Seq[A]
     */
   def fromSeq[A](lst: => Seq[A]): RxStream[A] = SeqOp(LazyF0(lst))
+
+  def fromTry[A](t: Try[A]): RxStream[A] = TryOp(t)
 
   /**
     * Create a sequence of values
@@ -302,6 +308,9 @@ object Rx extends LogSupport {
   }
   case class TryOp[A](v: Try[A]) extends RxStream[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
+  }
+  case class TransformWithOp[A, B](input: Rx[A], f: Try[A] => Rx[B]) extends RxStream[B] {
+    override def parents: Seq[Rx[_]] = Seq(input)
   }
 
   case class MapOp[A, B](input: Rx[A], f: A => B)          extends UnaryRx[A, B]

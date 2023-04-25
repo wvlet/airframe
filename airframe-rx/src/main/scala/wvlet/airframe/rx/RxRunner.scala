@@ -146,6 +146,46 @@ class RxRunner(
               effect(other)
           }
         }
+      case TransformWithOp(in, f) =>
+        val tryFunc = f.asInstanceOf[Try[_] => Rx[_]]
+        // A place holder for properly cancel the subscription against the result of Try[_] => Rx[_]
+        var c1: Cancelable = Cancelable.empty
+
+        def evalRx(rxb: Rx[_]): RxResult = {
+          c1.cancel
+          c1 = run(rxb) {
+            case OnNext(x) =>
+              effect(OnNext(x))
+            case OnCompletion =>
+              RxResult.Continue
+            case OnError(e) =>
+              effect(OnError(e))
+          }
+          RxResult.Continue
+        }
+
+        // Call f: Try[_] => Rx[_] using the input
+        val c2: Cancelable = run(in) {
+          case OnNext(x) =>
+            Try(tryFunc(Success(x))) match {
+              case Success(rxb) =>
+                evalRx(rxb)
+              case Failure(e) =>
+                effect(OnError(e))
+            }
+          case OnError(e) =>
+            Try(tryFunc(Failure(e))) match {
+              case Success(rxb) =>
+                evalRx(rxb)
+              case Failure(e) =>
+                effect(OnError(e))
+            }
+          case other =>
+            effect(other)
+        }
+        Cancelable { () =>
+          c1.cancel; c2.cancel
+        }
       case ConcatOp(first, next) =>
         var c1 = Cancelable.empty
         val c2 = run(first) {

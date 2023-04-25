@@ -456,7 +456,7 @@ lazy val control =
       description := "A library for controlling program flows and retrying"
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(log)
+    .dependsOn(log, rx)
 
 lazy val ulid =
   crossProject(JVMPlatform, JSPlatform)
