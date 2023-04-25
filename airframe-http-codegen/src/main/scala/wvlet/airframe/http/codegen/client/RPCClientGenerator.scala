@@ -34,6 +34,7 @@ object RPCClientGenerator extends HttpClientGenerator {
          |import wvlet.airframe.http._
          |import wvlet.airframe.http.client.{SyncClient, AsyncClient}
          |import wvlet.airframe.surface.Surface
+         |import wvlet.airframe.rx.Rx
          |
          |${obj}""".stripMargin
 
@@ -140,7 +141,7 @@ object RPCClientGenerator extends HttpClientGenerator {
             m.inputParameters
               .map(x => s"${x.name}: ${x.surface.fullTypeName}")
 
-          val returnType = if (isAsync) s"Future[${m.returnType.fullTypeName}]" else m.returnType.fullTypeName
+          val returnType = if (isAsync) s"Rx[${m.returnType.fullTypeName}]" else m.returnType.fullTypeName
 
           s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
              |  client.rpc[${m.typeArgString}](${sendRequestArgs(m)})

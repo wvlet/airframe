@@ -1,10 +1,11 @@
 package myapp.client
 
 import myapp.spi._
+import wvlet.airframe.http.Http
 
 object Main {
 
-  val rpcClient  = ServiceRPC.newRPCAsyncClient(Http.client.newJSClient)
+  val rpcClient = ServiceRPC.newRPCAsyncClient(Http.client.newJSClient)
 
   import MyRPC._
 
