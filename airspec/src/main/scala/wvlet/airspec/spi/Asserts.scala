@@ -17,6 +17,7 @@ import wvlet.airframe.SourceCode
 import wvlet.airspec.AirSpecSpi
 
 import scala.reflect.ClassTag
+import scala.util.control.NonFatal
 
 object Asserts {
   private[airspec] sealed trait TestResult
@@ -79,6 +80,24 @@ trait Asserts { this: AirSpecSpi =>
 
   protected def skip(reason: String = "skipped")(implicit code: SourceCode): Unit = {
     throw Skipped(reason, code)
+  }
+
+  /**
+    * Mark a part of test code as flaky. All failures inside this block will be reported as skipped.
+    * @param block
+    * @param code
+    * @tparam U
+    * @return
+    */
+  protected def flaky[U](block: => U)(implicit code: SourceCode): U = {
+    try {
+      block
+    } catch {
+      case e: AirSpecFailureBase =>
+        throw Skipped(s"[flaky test]: ${e.message}", e.code)
+      case NonFatal(e) =>
+        throw Skipped(s"[flaky test]: ${e.getMessage}", code)
+    }
   }
 
   protected def intercept[E <: Throwable: ClassTag](block: => Unit)(implicit code: SourceCode): E = {

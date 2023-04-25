@@ -269,6 +269,23 @@ class AsyncTest extends AirSpec {
 
 ```
 
+## Flaky Tests
+
+If your test cases are flaky, i.e., failing occasionally, you can wrap the text code with `flaky` block to mark failures inside the block as 'skipped'. You may need to check the skipped test reports to see if they are really flaky or not:
+
+```scala
+import wvlet.airspec._
+
+class MyTest extends AirSpec {
+  test("performance test") {
+    val elaplsed_time = xxx // measure something
+    flaky {
+       elapsed_time < 100 shouldBe true
+    }
+  }
+}
+
+```
 
 ## Dependency Injection with Airframe DI
 
