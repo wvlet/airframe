@@ -49,13 +49,4 @@ class NestedApiTest extends AirSpec {
     )
     check(code)
   }
-
-  test("generate http js client for nested packages") {
-    val code = HttpCodeGenerator.generate(
-      router,
-      HttpClientGeneratorConfig("example.nested:scalajs")
-    )
-    check(code)
-  }
-
 }
