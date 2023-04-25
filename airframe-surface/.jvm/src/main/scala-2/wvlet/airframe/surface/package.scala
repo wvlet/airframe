@@ -22,7 +22,8 @@ import scala.jdk.CollectionConverters._
 /**
   */
 package object surface {
-  val surfaceCache = new ConcurrentHashMap[String, Surface]().asScala
+  val surfaceCache       = new ConcurrentHashMap[String, Surface]().asScala
+  val methodSurfaceCache = new ConcurrentHashMap[String, Seq[MethodSurface]]().asScala
 
   def getCached(fullName: String): Surface = ReflectSurfaceFactory.get(fullName)
   def newCacheMap[A, B]: mutable.Map[A, B] = new mutable.WeakHashMap[A, B]()

@@ -6,6 +6,7 @@ import scala.jdk.CollectionConverters._
 
 package object surface {
   val surfaceCache = new ConcurrentHashMap[String, Surface]().asScala
+  val methodSurfaceCache = new ConcurrentHashMap[String, Seq[MethodSurface]]().asScala
 
   def getCached(fullName: String): Surface = {
     surfaceCache(fullName)
