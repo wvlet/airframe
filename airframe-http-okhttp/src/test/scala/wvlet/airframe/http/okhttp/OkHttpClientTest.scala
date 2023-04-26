@@ -209,16 +209,15 @@ class OkHttpClientTest extends AirSpec {
 
   test(
     "fail request",
-    design = Design.newDesign
-      .bind[SyncClient].toProvider { (server: NettyServer) =>
-        OkHttp.client
-          .withRetryContext(_.withMaxRetry(3))
-          .noCircuitBreaker
-          .newSyncClient(
-            // Test for the full URI
-            s"http://${server.localAddress}"
-          )
-      }
+    design = _.bind[SyncClient].toProvider { (server: NettyServer) =>
+      OkHttp.client
+        .withRetryContext(_.withMaxRetry(3))
+        .noCircuitBreaker
+        .newSyncClient(
+          // Test for the full URI
+          s"http://${server.localAddress}"
+        )
+    }
   ) { (client: SyncClient) =>
     warn("Starting http client failure tests")
 
@@ -245,7 +244,7 @@ class OkHttpClientTest extends AirSpec {
 
   test(
     "read timeout",
-    design = Design.newDesign.bind[SyncClient].toProvider { (server: NettyServer) =>
+    design = _.bind[SyncClient].toProvider { (server: NettyServer) =>
       OkHttp.client
         .withReadTimeout(Duration(10, TimeUnit.MILLISECONDS))
         .withRetryContext(_.withMaxRetry(1))

@@ -74,9 +74,8 @@ object RxTest extends AirSpec {
     v.get shouldBe 2
   }
 
-  test("bind rx", design = Design.newDesign.bind[RxVar[String]].toInstance(Rx.variable("Hello"))) {
-    (v: RxVar[String]) =>
-      v.get shouldBe "Hello"
+  test("bind rx", design = _.bind[RxVar[String]].toInstance(Rx.variable("Hello"))) { (v: RxVar[String]) =>
+    v.get shouldBe "Hello"
   }
 
   test("force update RxVar") {
