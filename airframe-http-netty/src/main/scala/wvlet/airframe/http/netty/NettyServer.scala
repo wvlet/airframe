@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 
 case class NettyServerConfig(
-    name: String = "airframe-http-netty",
+    name: String = "default",
     serverPort: Option[Int] = None,
     controllerProvider: ControllerProvider = ControllerProvider.defaultControllerProvider,
     router: Router = Router.empty,
@@ -112,7 +112,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
 
   @PostConstruct
   def start: Unit = {
-    info(s"Starting server at ${localAddress}")
+    info(s"Starting ${config.name} server at ${localAddress}")
     val b = new ServerBootstrap()
     b.group(bossGroup, workerGroup)
 
@@ -184,12 +184,16 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
   }
 
   override def close(): Unit = {
-    info(s"Closing server at ${localAddress}")
+    info(s"Stopping ${config.name} server at ${localAddress}")
     workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
     bossGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
     channelFuture.foreach(_.close().await(1, TimeUnit.SECONDS))
   }
 
+  /**
+    * Await and block until the server terminates. If the server is already terminated (via close()), this method
+    * returns immediately.
+    */
   def awaitTermination(): Unit = {
     channelFuture.foreach(_.closeFuture().sync())
   }
