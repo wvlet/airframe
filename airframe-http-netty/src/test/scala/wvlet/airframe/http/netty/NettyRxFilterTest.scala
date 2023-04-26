@@ -48,7 +48,7 @@ object NettyRxFilterTest extends AirSpec {
   private def router2 = RxRouter
     .filter[ExFilter].andThen(RxRouter.of[MyRPC])
 
-  test("Run server with auth filter", design = Netty.server.withRouter(router1).designWithSyncClient) {
+  test("Run server with auth filter", design = _.add(Netty.server.withRouter(router1).designWithSyncClient)) {
     (client: SyncClient) =>
       test("when no auth header") {
         val ex = intercept[RPCException] {
@@ -71,7 +71,7 @@ object NettyRxFilterTest extends AirSpec {
       }
   }
 
-  test("throw RPCException in a filter", design = Netty.server.withRouter(router2).designWithSyncClient) {
+  test("throw RPCException in a filter", design = _.add(Netty.server.withRouter(router2).designWithSyncClient)) {
     (client: SyncClient) =>
       val ex = intercept[RPCException] {
         client.send(
