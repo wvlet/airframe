@@ -5,6 +5,8 @@ ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-parse
 
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
+ThisBuild / scalaVersion := "2.13.10"
+
 lazy val root =
   project.aggregate(spi, server)
 

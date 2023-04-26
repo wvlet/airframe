@@ -9,9 +9,11 @@ val AIRSPEC_VERSION = "23.4.5"
 
 val buildSettings: Seq[Def.Setting[_]] = Seq(
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
-  crossScalaVersions                          := Seq("2.12.17", "2.13.10", "3.2.2"),
   libraryDependencies += "org.wvlet.airframe" %% "airspec" % AIRSPEC_VERSION % Test
 )
+
+ThisBuild / scalaVersion       := "2.13.10"
+ThisBuild / crossScalaVersions := Seq("2.13.10", "3.2.2")
 
 lazy val root =
   project.aggregate(api, server)

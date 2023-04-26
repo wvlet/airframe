@@ -19,6 +19,8 @@ class MyRPCTest extends AirSpec {
   }
 
   test("Access RPC") { (client: RPCSyncClient) =>
-    client.MyRPCApi.helloRPC(HelloRequest("Airframe")) shouldBe HelloResponse("Hello Airframe!")
+    val ret = client.MyRPCApi.helloRPC(HelloRequest("Airframe"))
+    info(ret)
+    ret shouldBe HelloResponse("Hello Airframe!")
   }
 }

@@ -38,6 +38,12 @@ addCommandAlias(
   s"+ projectJVM/publishLocal; + projectJS/publishLocal;"
 )
 
+// [Development purpose] publish all sbt-airframe related artifacts to local repo
+addCommandAlias(
+  "publishSbtDevLocal",
+  s"+ projectJVM/publishLocal; ++ 2.13; projectJS/publishLocal; ++ 3; projectJS/publishLocal"
+)
+
 addCommandAlias(
   "publishJSSigned",
   s"+ projectJS/publishSigned"
