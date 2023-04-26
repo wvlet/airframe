@@ -14,7 +14,6 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
 import wvlet.airframe.{Design, newDesign}

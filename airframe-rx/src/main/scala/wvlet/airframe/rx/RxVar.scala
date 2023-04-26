@@ -20,7 +20,7 @@ import scala.util.Try
 /**
   * A reactive variable supporting update and propagation of the updated value to the chained operators
   */
-class RxVar[A](private var currentValue: A, skipTheFirstValue: Boolean = false) extends RxStream[A] with RxVarOps[A] {
+class RxVar[A](private var currentValue: A) extends RxStream[A] with RxVarOps[A] {
   override def toString: String                        = s"RxVar(${currentValue})"
   override def parents: Seq[Rx[_]]                     = Seq.empty
   private val subscribers: ArrayBuffer[RxEvent => Any] = ArrayBuffer.empty
@@ -46,9 +46,7 @@ class RxVar[A](private var currentValue: A, skipTheFirstValue: Boolean = false) 
   override def foreachEvent[U](effect: RxEvent => U): Cancelable = {
     // Register a subscriber for propagating future changes
     subscribers += effect
-    if (!skipTheFirstValue) {
-      effect(OnNext(currentValue))
-    }
+    effect(OnNext(currentValue))
     Cancelable { () =>
       // Unsubscribe if cancelled
       subscribers -= effect

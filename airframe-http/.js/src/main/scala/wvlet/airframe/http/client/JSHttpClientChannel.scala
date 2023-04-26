@@ -25,7 +25,7 @@ import scala.concurrent.{ExecutionContext, Promise, TimeoutException}
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 import scala.util.Try
 
-class JSClientChannel(serverAddress: ServerAddress, private[client] val config: HttpClientConfig)
+class JSHttpClientChannel(serverAddress: ServerAddress, private[client] val config: HttpClientConfig)
     extends HttpChannel
     with LogSupport {
 
@@ -108,7 +108,7 @@ class JSClientChannel(serverAddress: ServerAddress, private[client] val config: 
             resp = resp.withContent(dst)
           }
         }
-        debug(s"Get response: ${resp}")
+        trace(s"Get response: ${resp}")
         promise.success(resp)
       }
     }
