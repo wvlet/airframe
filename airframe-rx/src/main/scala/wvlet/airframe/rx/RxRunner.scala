@@ -85,7 +85,6 @@ class RxRunner(
     * @tparam A
     */
   def run[A](rx: Rx[A])(effect: RxEvent => RxResult): Cancelable = {
-    info(s"Run ${rx}")
     rx match {
       case MapOp(in, f) =>
         run(in) {

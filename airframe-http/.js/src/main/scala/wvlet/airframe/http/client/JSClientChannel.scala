@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.http.client
 import org.scalajs.dom
-import org.scalajs.dom.Request
 import org.scalajs.dom.ext.Ajax.InputData
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http._
@@ -21,7 +20,8 @@ import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import java.nio.ByteBuffer
-import scala.concurrent.{ExecutionContext, Promise}
+import java.io.IOException
+import scala.concurrent.{ExecutionContext, Promise, TimeoutException}
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 import scala.util.Try
 
@@ -53,14 +53,7 @@ class JSClientChannel(serverAddress: ServerAddress, private[client] val config: 
     val path = if (request.uri.startsWith("/")) request.uri else s"/${request.uri}"
     val uri  = s"${serverAddress.uri}${path}"
 
-    try {
-      val req = new dom.Request(path)
-    } catch {
-      case e: Throwable =>
-        warn(s"Failed to create a request: ${e}")
-    }
-
-    warn(s"Sending request: ${request}: ${uri}")
+    trace(s"Sending request: ${request}: ${uri}")
     xhr.open(request.method, uri)
     xhr.responseType = "arraybuffer"
     xhr.timeout = 0
@@ -68,7 +61,15 @@ class JSClientChannel(serverAddress: ServerAddress, private[client] val config: 
     // Setting the header must be called after xhr.open(...)
     request.header.entries.foreach { x => xhr.setRequestHeader(x.key, x.value) }
 
-    val promise           = Promise[Response]()
+    val promise = Promise[Response]()
+
+    xhr.onerror = { (e: dom.Event) =>
+      promise.failure(new IOException(s"Request failed for unknown reason: ${request}"))
+    }
+    xhr.ontimeout = { (e: dom.Event) =>
+      promise.failure(new TimeoutException(s"Request timed out: ${request}"))
+    }
+
     val data: Array[Byte] = request.contentBytes
     if (data.isEmpty) {
       xhr.send()
@@ -107,13 +108,10 @@ class JSClientChannel(serverAddress: ServerAddress, private[client] val config: 
             resp = resp.withContent(dst)
           }
         }
-        warn(s"Get response: ${resp}")
+        debug(s"Get response: ${resp}")
         promise.success(resp)
       }
     }
-
-    warn(s"== here")
     Rx.future(promise.future)
   }
-
 }
