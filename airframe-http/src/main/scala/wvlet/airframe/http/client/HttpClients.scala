@@ -209,19 +209,18 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
       responseSurface: Surface,
       requestContent: Req
   ): Rx[Resp] = {
-    Rx.single(HttpClients.prepareRequest(config, req, requestSurface, requestContent))
-      .flatMap { newRequest =>
-        send(newRequest).toRxStream.map { resp =>
-          HttpClients.parseResponse[Resp](config, responseSurface, resp)
-        }
-      }
+    val newRequest = HttpClients.prepareRequest(config, req, requestSurface, requestContent)
+    send(newRequest).toRxStream.map { resp =>
+      HttpClients.parseResponse[Resp](config, responseSurface, resp)
+    }
   }
 
   def rpc[Req, Resp](
       method: RPCMethod,
       requestContent: Req
   ): Rx[Resp] = {
-    Rx.single(HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent))
+    Rx
+      .fromTry(Try(HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent)))
       .flatMap { (request: Request) =>
         sendSafe(request).toRxStream
           .map { (response: Response) =>

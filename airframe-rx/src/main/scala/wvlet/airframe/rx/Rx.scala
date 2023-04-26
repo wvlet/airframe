@@ -222,14 +222,14 @@ trait RxStreamCache[A] extends RxStream[A] {
 object Rx extends LogSupport {
   def const[A](v: => A): RxStream[A]          = single(v)
   def single[A](v: => A): RxStream[A]         = SingleOp(LazyF0(v))
-  def exception[A](e: Throwable): RxStream[A] = TryOp(Failure[A](e))
+  def exception[A](e: Throwable): RxStream[A] = fromTry(Failure[A](e))
 
   /**
     * Create a sequence of values from Seq[A]
     */
   def fromSeq[A](lst: => Seq[A]): RxStream[A] = SeqOp(LazyF0(lst))
 
-  def fromTry[A](t: Try[A]): RxStream[A] = TryOp(t)
+  def fromTry[A](t: Try[A]): RxStream[A] = TryOp(LazyF0(t))
 
   /**
     * Create a sequence of values
@@ -314,7 +314,7 @@ object Rx extends LogSupport {
   case class SeqOp[A](lst: LazyF0[Seq[A]]) extends RxStream[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
-  case class TryOp[A](v: Try[A]) extends RxStream[A] {
+  case class TryOp[A](v: LazyF0[Try[A]]) extends RxStream[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
   case class TransformRxOp[A, B](input: Rx[A], f: Try[A] => Rx[B]) extends RxStream[B] {

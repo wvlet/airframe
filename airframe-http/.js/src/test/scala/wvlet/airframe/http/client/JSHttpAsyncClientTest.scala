@@ -25,7 +25,7 @@ import scala.util.{Failure, Success}
 
 class JSHttpAsyncClientTest extends AirSpec {
   private implicit val ec: ExecutionContext = defaultExecutionContext
-
+  
   // Use a public REST test server
   private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
 

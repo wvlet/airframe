@@ -15,6 +15,7 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.http.HttpHeader.MediaType
 import wvlet.airframe.http.{Http, HttpClientConfig, RPCMethod}
+import wvlet.airframe.rx.{Rx, RxRunner}
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
@@ -33,13 +34,17 @@ class JSRPCClientTest extends AirSpec {
     val client = Http.client.newAsyncClient(PUBLIC_REST_SERVICE)
 
     val m = RPCMethod("/post", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
-    client
+    val rx = client
       .rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))
       .toRxStream
       .map { response =>
-        debug(response)
         response.headers.get("Content-Type") shouldBe Some(MediaType.ApplicationJson)
+        response
       }
+
+    RxRunner.runContinuously(rx) { ev =>
+      warn(s"-- ${ev}")
+    }
   }
 
   test("create RPC client") {

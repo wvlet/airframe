@@ -22,7 +22,7 @@ class RxBlockingQueue[A] extends RxSource[A] {
 
   private val blockingQueue = new LinkedBlockingQueue[RxEvent]()
 
-  def add(event: RxEvent): Unit = {
+  override def add(event: RxEvent): Unit = {
     blockingQueue.add(event)
   }
   override def next: RxEvent = {

@@ -324,7 +324,7 @@ object Retry extends LogSupport {
         if (!isFirst && !retryContext.canContinue) {
           Rx.exception(MaxRetryException(retryContext))
         } else {
-          Rx.single(circuitBreaker.verifyConnection)
+          Rx.fromTry(Try(circuitBreaker.verifyConnection))
             .flatMap(_ => body)
             .transformRx { (ret: Try[A]) =>
               val resultClass = classifyResult(ret)
@@ -339,7 +339,7 @@ object Retry extends LogSupport {
                   // Add retry wait
                   val nextRetry = retryContext.withExtraWait(extraWait).nextRetry(cause)
                   Rx.delay(nextRetry.nextWaitMillis, TimeUnit.MILLISECONDS)
-                    .flatMap(_ => loop(nextRetry, isFirst = true))
+                    .flatMap(_ => loop(nextRetry, isFirst = false))
                 case ResultClass.Failed(_, cause, _) =>
                   // For regular non-retryable failures, we need to treat them as successful responses
                   circuitBreaker.recordSuccess
