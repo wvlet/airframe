@@ -14,6 +14,9 @@
 package examples
 
 import wvlet.airspec.AirSpec
+import wvlet.airframe.rx.Rx
+
+import scala.concurrent.Future
 
 class FlakyBlockTest extends AirSpec {
   test("flaky test") {
@@ -27,6 +30,22 @@ class FlakyBlockTest extends AirSpec {
   test("flaky assertion") {
     flaky {
       scala.util.Random.nextInt(3) shouldBe 0
+    }
+  }
+
+  test("flaky async Rx") {
+    flaky {
+      Rx.const(scala.util.Random.nextInt(3))
+        .map(_ shouldBe 0)
+    }
+  }
+
+  test("flaky async Future") {
+    implicit val ec = scala.concurrent.ExecutionContext.global
+    flaky {
+      Future
+        .apply(scala.util.Random.nextInt(3))
+        .map(_ shouldBe 0)
     }
   }
 }

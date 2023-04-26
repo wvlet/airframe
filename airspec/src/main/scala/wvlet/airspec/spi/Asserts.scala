@@ -14,8 +14,10 @@
 package wvlet.airspec.spi
 
 import wvlet.airframe.SourceCode
+import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpecSpi
 
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 
@@ -91,12 +93,30 @@ trait Asserts { this: AirSpecSpi =>
     */
   protected def flaky[U](block: => U)(implicit code: SourceCode): U = {
     try {
-      block
+      block match {
+        case f: Future[_] =>
+          f.recoverWith {
+            case e: AirSpecFailureBase =>
+              Future.failed(Skipped(s"[flaky] ${e.message}", e.code))
+            case NonFatal(e) =>
+              Future.failed(Skipped(s"[flaky] ${e.getMessage}", code))
+          }(wvlet.airspec.compat.executionContext)
+            .asInstanceOf[U]
+        case rx: Rx[_] =>
+          rx.recoverWith {
+            case e: AirSpecFailureBase =>
+              Rx.exception(Skipped(s"[flaky] ${e.message}", e.code))
+            case NonFatal(e) =>
+              Rx.exception(Skipped(s"[flaky] ${e.getMessage}", code))
+          }.asInstanceOf[U]
+        case other =>
+          other
+      }
     } catch {
       case e: AirSpecFailureBase =>
-        throw Skipped(s"[flaky test]: ${e.message}", e.code)
+        throw Skipped(s"[flaky] ${e.message}", e.code)
       case NonFatal(e) =>
-        throw Skipped(s"[flaky test]: ${e.getMessage}", code)
+        throw Skipped(s"[flaky] ${e.getMessage}", code)
     }
   }
 
