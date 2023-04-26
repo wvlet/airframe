@@ -86,8 +86,14 @@ class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: 
           override def accept(r: HttpResponse[InputStream]): Unit = {
             val resp = readResponse(r)
             v.set(Some(resp))
+            // Close the variable as it will have no further update
+            v.stop()
           }
         })
+        .exceptionally { (ex: Throwable) =>
+          v.setException(ex)
+          null
+        }
     } catch {
       case e: Throwable =>
         v.setException(e)

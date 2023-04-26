@@ -275,6 +275,8 @@ object Rx extends LogSupport {
     val v = Rx.variable[Option[A]](None)
     f.foreach { x =>
       v := Some(x)
+      // Send OnCompletion event to the variable as the value will have no more update
+      v.stop()
     }
     f.onComplete {
       case Success(_) =>
