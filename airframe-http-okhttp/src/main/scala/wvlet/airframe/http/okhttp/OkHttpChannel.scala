@@ -19,6 +19,7 @@ import wvlet.airframe.http._
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel with LogSupport {
@@ -34,9 +35,7 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
     client.connectionPool().evictAll()
   }
 
-  override def send(req: HttpMessage.Request, channelConfig: ChannelConfig): HttpMessage.Response = {
-    val request: okhttp3.Request = convertRequest(req)
-
+  private def prepareClient(channelConfig: ChannelConfig): okhttp3.OkHttpClient = {
     var newClient = this.client
     if (
       channelConfig.connectTimeout != config.connectTimeout ||
@@ -48,12 +47,33 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
         .readTimeout(channelConfig.readTimeout.toMillis, TimeUnit.MILLISECONDS)
         .build()
     }
+    newClient
+  }
 
-    val response = newClient.newCall(request).execute()
+  override def send(req: HttpMessage.Request, channelConfig: ChannelConfig): HttpMessage.Response = {
+    val request: okhttp3.Request = convertRequest(req)
+
+    val newClient = prepareClient(channelConfig)
+    val response  = newClient.newCall(request).execute()
     response.toHttpResponse
   }
 
-  override def sendAsync(req: HttpMessage.Request, channelConfig: ChannelConfig): Rx[HttpMessage.Response] = ???
+  override def sendAsync(req: HttpMessage.Request, channelConfig: ChannelConfig): Rx[HttpMessage.Response] = {
+    val request: okhttp3.Request = convertRequest(req)
+    val newClient                = prepareClient(channelConfig)
+    val v                        = Rx.variable[Option[HttpMessage.Response]](None)
+    newClient
+      .newCall(request).enqueue(new okhttp3.Callback {
+        override def onFailure(call: okhttp3.Call, e: IOException): Unit = {
+          v.setException(e)
+        }
+        override def onResponse(call: okhttp3.Call, response: okhttp3.Response): Unit = {
+          v.set(Some(response.toHttpResponse))
+          v.stop()
+        }
+      })
+    v.filter(_.isDefined).map(_.get)
+  }
 
   private def convertRequest(request: HttpMessage.Request): okhttp3.Request = {
     val query = request.query

@@ -57,7 +57,7 @@ trait AsyncClientCompat { self: AsyncClient =>
     */
   def readAs[Resp](
       request: Request
-  ): Future[Resp] = macro HttpMacros.read0Async[Resp]
+  ): Rx[Resp] = macro HttpMacros.read0Async[Resp]
 
   def call[Req, Resp](
       request: Request,
