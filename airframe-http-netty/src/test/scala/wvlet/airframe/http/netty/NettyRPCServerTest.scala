@@ -16,7 +16,10 @@ package wvlet.airframe.http.netty
 import wvlet.airframe.Design
 import wvlet.airframe.http.{Http, RPC, Router}
 import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
+
+import java.util.concurrent.TimeUnit
 
 object NettyRPCServerTest extends AirSpec {
 
@@ -36,5 +39,15 @@ object NettyRPCServerTest extends AirSpec {
   test("Start an RPC server") { (client: SyncClient) =>
     val resp = client.send(Http.POST("/v1/MyRPC/helloNetty").withJson("""{"msg":"Netty"}}"""))
     resp.message.toContentString shouldBe "Hello Netty!"
+  }
+
+  test("await server test") { (server: NettyServer) =>
+    Rx.delay(100, TimeUnit.MILLISECONDS).map(_ => server.close())
+      .join(Rx.single(() => server.awaitTermination()))
+  }
+
+  test("close and await") { (server: NettyServer) =>
+    server.close()
+    server.awaitTermination()
   }
 }
