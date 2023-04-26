@@ -220,16 +220,27 @@ trait RxStreamCache[A] extends RxStream[A] {
 }
 
 object Rx extends LogSupport {
-  def const[A](v: => A): RxStream[A]          = single(v)
+
+  /**
+    * Provide a constant value by immediately evaluating the given input
+    */
+  def const[A](v: => A): RxStream[A] = {
+    // wrap the value with Try to propaget exception through Rx
+    fromTry(Try(v))
+  }
+
+  /**
+    * Create a lazily evaluated single value
+    */
   def single[A](v: => A): RxStream[A]         = SingleOp(LazyF0(v))
-  def exception[A](e: Throwable): RxStream[A] = TryOp(Failure[A](e))
+  def exception[A](e: Throwable): RxStream[A] = fromTry(Failure[A](e))
 
   /**
     * Create a sequence of values from Seq[A]
     */
   def fromSeq[A](lst: => Seq[A]): RxStream[A] = SeqOp(LazyF0(lst))
 
-  def fromTry[A](t: Try[A]): RxStream[A] = TryOp(t)
+  def fromTry[A](t: Try[A]): RxStream[A] = TryOp(LazyF0(t))
 
   /**
     * Create a sequence of values
@@ -275,6 +286,8 @@ object Rx extends LogSupport {
     val v = Rx.variable[Option[A]](None)
     f.foreach { x =>
       v := Some(x)
+      // Send OnCompletion event to the variable as the value will have no more update
+      v.stop()
     }
     f.onComplete {
       case Success(_) =>
@@ -314,7 +327,7 @@ object Rx extends LogSupport {
   case class SeqOp[A](lst: LazyF0[Seq[A]]) extends RxStream[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
-  case class TryOp[A](v: Try[A]) extends RxStream[A] {
+  case class TryOp[A](v: LazyF0[Try[A]]) extends RxStream[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
   case class TransformRxOp[A, B](input: Rx[A], f: Try[A] => Rx[B]) extends RxStream[B] {

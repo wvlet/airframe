@@ -52,19 +52,8 @@ class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: 
       .build()
   }
 
-  // Execution context only for async methods
-  override private[client] implicit val executionContext: ExecutionContext = config.newExecutionContext
-
   override def close(): Unit = {
     // It seems Java Http Client has no close() method
-
-    // Only close the execution context for Future async support
-    executionContext match {
-      case e: ExecutorService =>
-        // Close the thread pool
-        e.shutdownNow()
-      case _ =>
-    }
   }
 
   override def send(req: Request, channelConfig: ChannelConfig): Response = {
@@ -86,8 +75,14 @@ class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: 
           override def accept(r: HttpResponse[InputStream]): Unit = {
             val resp = readResponse(r)
             v.set(Some(resp))
+            // Close the variable as it will have no further update
+            v.stop()
           }
         })
+        .exceptionally { (ex: Throwable) =>
+          v.setException(ex)
+          null
+        }
     } catch {
       case e: Throwable =>
         v.setException(e)

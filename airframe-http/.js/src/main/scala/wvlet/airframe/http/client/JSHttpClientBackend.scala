@@ -28,7 +28,7 @@ object JSHttpClientBackend extends HttpClientBackend {
   }
 
   override def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel = {
-    new JSClientChannel(serverAddress, config)
+    new JSHttpClientChannel(serverAddress, config)
   }
 
   override def newSyncClient(

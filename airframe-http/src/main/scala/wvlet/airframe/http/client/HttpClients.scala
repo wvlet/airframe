@@ -22,7 +22,6 @@ import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
@@ -36,8 +35,7 @@ class SyncClientImpl(protected val channel: HttpChannel, val config: HttpClientC
 }
 
 class AsyncClientImpl(protected val channel: HttpChannel, val config: HttpClientConfig) extends AsyncClient {
-  override private[client] implicit val executionContext: ExecutionContext = channel.executionContext
-  override protected def build(newConfig: HttpClientConfig): AsyncClient   = new AsyncClientImpl(channel, newConfig)
+  override protected def build(newConfig: HttpClientConfig): AsyncClient = new AsyncClientImpl(channel, newConfig)
   override def close(): Unit = {
     channel.close()
   }
@@ -150,7 +148,6 @@ trait SyncClient extends SyncClientCompat with ClientFactory[SyncClient] with Au
 trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with AutoCloseable {
   protected def channel: HttpChannel
   def config: HttpClientConfig
-  private[client] implicit val executionContext: ExecutionContext
   private val circuitBreaker: CircuitBreaker = config.circuitBreaker
 
   /**
@@ -209,8 +206,9 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
       responseSurface: Surface,
       requestContent: Req
   ): Rx[Resp] = {
-    Rx.single(HttpClients.prepareRequest(config, req, requestSurface, requestContent))
-      .flatMap { newRequest =>
+    Rx
+      .const(HttpClients.prepareRequest(config, req, requestSurface, requestContent))
+      .flatMap { (newRequest: Request) =>
         send(newRequest).toRxStream.map { resp =>
           HttpClients.parseResponse[Resp](config, responseSurface, resp)
         }
@@ -221,7 +219,8 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
       method: RPCMethod,
       requestContent: Req
   ): Rx[Resp] = {
-    Rx.single(HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent))
+    Rx
+      .const(HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent))
       .flatMap { (request: Request) =>
         sendSafe(request).toRxStream
           .map { (response: Response) =>

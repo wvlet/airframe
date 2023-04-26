@@ -20,8 +20,6 @@ import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
-import scala.concurrent.{ExecutionContext, Future}
-
 class ClientLoggingFilterTest extends AirSpec {
 
   class DummyHttpChannel extends HttpChannel with LogSupport {
@@ -30,9 +28,7 @@ class ClientLoggingFilterTest extends AirSpec {
     }
 
     override def sendAsync(req: HttpMessage.Request, channelConfig: ChannelConfig): Rx[HttpMessage.Response] = ???
-
-    override private[client] implicit def executionContext: ExecutionContext = ???
-    override def close(): Unit                                               = {}
+    override def close(): Unit                                                                               = {}
   }
 
   protected override def design: Design = {

@@ -18,11 +18,10 @@ import wvlet.airframe.http.{Http, HttpClientConfig, RPCMethod}
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
-import scala.concurrent.ExecutionContext
-
-class JSRPCClientTest extends AirSpec {
-
-  private implicit val ec: ExecutionContext = defaultExecutionContext
+object JSRPCClientTest extends AirSpec {
+  case class Person(id: Int, name: String)
+  private val p     = Person(1, "leo")
+  private val pJson = """{"id":1,"name":"leo"}"""
 
   // Use a public REST test server
   private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
@@ -32,14 +31,28 @@ class JSRPCClientTest extends AirSpec {
   test("Create an Async RPCClient") {
     val client = Http.client.newAsyncClient(PUBLIC_REST_SERVICE)
 
-    val m = RPCMethod("/post", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
-    client
-      .rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))
-      .toRxStream
-      .map { response =>
-        debug(response)
-        response.headers.get("Content-Type") shouldBe Some(MediaType.ApplicationJson)
-      }
+    test("rpc") {
+      val m = RPCMethod("/post", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
+      client
+        .rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))
+        .toRxStream
+        .map { response =>
+          info(response)
+          response.headers.get("Content-Type") shouldBe Some(MediaType.ApplicationJson)
+          response
+        }
+    }
+
+    test("call") {
+      client
+        .call[Person, Map[String, Any]](Http.POST("/post"), p)
+        .toRxStream
+        .map { m =>
+          info(m)
+          m("data") shouldBe pJson
+          m("json") shouldBe Map("id" -> 1, "name" -> "leo")
+        }
+    }
   }
 
   test("create RPC client") {

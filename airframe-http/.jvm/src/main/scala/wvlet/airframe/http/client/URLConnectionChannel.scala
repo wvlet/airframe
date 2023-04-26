@@ -20,15 +20,11 @@ import wvlet.airframe.rx.Rx
 
 import java.io.{IOException, InputStream, OutputStream}
 import java.net.HttpURLConnection
-import java.util.concurrent.ExecutorService
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters._
 
 class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel {
-  override private[client] implicit def executionContext: ExecutionContext = config.newExecutionContext
-
   override def send(request: Request, channelConfig: ChannelConfig): Response = {
     val url = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
       else s"/${request.uri}"}"
@@ -104,10 +100,6 @@ class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfi
   }
 
   override def close(): Unit = {
-    executionContext match {
-      case e: ExecutorService =>
-        e.shutdownNow()
-      case _ =>
-    }
+    // Nothing to close for URLConnection
   }
 }

@@ -3,7 +3,7 @@ package wvlet.airframe.http.okhttp
 import wvlet.airframe.Design
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.client.{AsyncClient, SyncClient}
 import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.http._
@@ -105,13 +105,30 @@ class OkHttpClientTest extends AirSpec {
       .bind[SyncClient].toProvider { (server: NettyServer) =>
         OkHttp.client.newSyncClient(server.localAddress)
       }
+      .bind[AsyncClient].toProvider { (server: NettyServer) =>
+        OkHttp.client.newAsyncClient(server.localAddress)
+      }
   }
 
   def addRequestId: HttpMultiMap => HttpMultiMap = { (request: HttpMultiMap) =>
     request.add("X-Request-Id", "10")
   }
 
-  test("create client") { (client: SyncClient) =>
+  test("create async client") { (client: AsyncClient) =>
+    test("readAs") {
+      client.readAs[String](Http.GET("/")).toRxStream.map { v =>
+        v shouldBe "Ok"
+      }
+    }
+
+    test("call") {
+      client.call[UserRequest, User](Http.GET("/user/info"), UserRequest(2, "kai")).toRxStream.map { v =>
+        v shouldBe User(2, "kai", "N/A")
+      }
+    }
+  }
+
+  test("create sync client") { (client: SyncClient) =>
     // Sending an implementation specific Request type
     val ret = client.send(Http.GET("/")).contentString
     ret shouldBe "Ok"
@@ -271,5 +288,4 @@ class OkHttpClientTest extends AirSpec {
     }
     1
   }
-
 }
