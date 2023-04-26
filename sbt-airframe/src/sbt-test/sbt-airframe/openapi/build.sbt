@@ -5,6 +5,9 @@ enablePlugins(AirframeHttpPlugin)
 name    := "Open API Test"
 version := "1.0.0"
 
+ThisBuild / scalaVersion       := "2.13.10"
+ThisBuild / crossScalaVersions := Seq("2.13.10", "3.2.2")
+
 airframeHttpOpenAPIPackages := Seq("example.api")
 airframeHttpOpts            := "-l debug"
 libraryDependencies ++= Seq(
