@@ -37,7 +37,7 @@ jobs:
       - name: Check Airframe version
         run: echo ${AIRFRAME_VERSION}
       - name: Create a snapshot of Airframe
-        run: ./sbt "++ 2.13; publishCurrentLocal; ++ 3; publishCurrentLocal"
+        run: ./sbt publishSbtDevLocal
       - name: Run sbt-airframe plugin tests
         run: AIRFRAME_VERSION=${AIRFRAME_VERSION} ./sbt scripted
         working-directory: ./sbt-airframe
