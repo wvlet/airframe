@@ -6,6 +6,12 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 23.4.6
+
+A bug fix release around HTTP clients in Scala.js
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.4.6)
+
 ## 23.4.5
 
 This release enhances AirSpec (shouldContain, shouldNotContain, flaky {...} block, etc.) and introduces a
