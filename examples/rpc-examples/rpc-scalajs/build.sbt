@@ -26,8 +26,8 @@ lazy val server =
     .in(file("server"))
     .settings(
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION,
-        "org.wvlet.airframe" %% "airframe-launcher"     % AIRFRAME_VERSION
+        "org.wvlet.airframe" %% "airframe-http-netty" % AIRFRAME_VERSION,
+        "org.wvlet.airframe" %% "airframe-launcher"   % AIRFRAME_VERSION
       )
     )
     .dependsOn(apiJVM)
@@ -39,7 +39,7 @@ lazy val ui =
     .settings(
       airframeHttpOpenAPIPackages     := Seq("example.api"),
       scalaJSUseMainModuleInitializer := true,
-      airframeHttpClients             := Seq("example.api:scalajs"),
+      airframeHttpClients             := Seq("example.api:rpc"),
       libraryDependencies ++= Seq(
         "org.wvlet.airframe" %%% "airframe-rx-html" % AIRFRAME_VERSION
       )

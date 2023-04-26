@@ -6,7 +6,7 @@ Compile:
 ```
 $ sbt
 > compile
-> ui/fastOptJS
+> ui/fastLinkJS
 ```
 
 Start a server:

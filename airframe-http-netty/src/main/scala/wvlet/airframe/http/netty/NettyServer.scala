@@ -78,6 +78,12 @@ case class NettyServerConfig(
         Http.client.newSyncClient(server.localAddress)
       }
   }
+
+  def start[U](body: NettyServer => U): U = {
+    this.design.run[NettyServer, U] { server =>
+      body(server)
+    }
+  }
 }
 
 class NettyServer(config: NettyServerConfig, session: Session) extends AutoCloseable with LogSupport {
@@ -182,5 +188,9 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
     bossGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
     channelFuture.foreach(_.close().await(1, TimeUnit.SECONDS))
+  }
+
+  def awaitTermination(): Unit = {
+    channelFuture.foreach(_.closeFuture().sync())
   }
 }
