@@ -48,8 +48,10 @@ class MainUI extends RxElement with RPCService {
       myButton(
         onclick -> { e: MouseEvent =>
           info(s"Clicked")
-          rpc(_.HelloApi.hello("RPC"))
-            .foreach { resp =>
+          client.HelloApi
+            .hello("RPC")
+            .toRxStream
+            .map { resp =>
               info(s"RPC result: ${resp}")
               message := resp
             }

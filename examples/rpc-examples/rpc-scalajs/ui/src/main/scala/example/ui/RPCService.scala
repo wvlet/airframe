@@ -13,8 +13,9 @@
  */
 package example.ui
 
-import example.api.ServiceJSClient
+import example.api.ServiceRPC
 import wvlet.log.LogSupport
+import wvlet.airframe.http.Http
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -22,18 +23,5 @@ import scala.util.{Failure, Success}
 /**
   */
 trait RPCService extends LogSupport {
-  protected implicit val queue = scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-
-  protected val client = new ServiceJSClient()
-
-  def rpc[U](body: ServiceJSClient => Future[U]): Future[U] = {
-    val future = body(client)
-    future.onComplete {
-      case Success(v) =>
-      case Failure(e) =>
-        warn(e)
-    }
-    future
-  }
-
+  protected val client = ServiceRPC.newRPCAsyncClient(Http.client.newJSClient)
 }
