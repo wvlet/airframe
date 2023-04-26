@@ -207,7 +207,7 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
       requestContent: Req
   ): Rx[Resp] = {
     Rx
-      .fromTry(Try(HttpClients.prepareRequest(config, req, requestSurface, requestContent)))
+      .const(HttpClients.prepareRequest(config, req, requestSurface, requestContent))
       .flatMap { (newRequest: Request) =>
         send(newRequest).toRxStream.map { resp =>
           HttpClients.parseResponse[Resp](config, responseSurface, resp)
@@ -220,7 +220,7 @@ trait AsyncClient extends AsyncClientCompat with ClientFactory[AsyncClient] with
       requestContent: Req
   ): Rx[Resp] = {
     Rx
-      .fromTry(Try(HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent)))
+      .const(HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent))
       .flatMap { (request: Request) =>
         sendSafe(request).toRxStream
           .map { (response: Response) =>

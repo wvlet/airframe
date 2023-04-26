@@ -37,7 +37,7 @@ object JSRPCClientTest extends AirSpec {
         .rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))
         .toRxStream
         .map { response =>
-          debug(response)
+          info(response)
           response.headers.get("Content-Type") shouldBe Some(MediaType.ApplicationJson)
           response
         }
@@ -48,6 +48,7 @@ object JSRPCClientTest extends AirSpec {
         .call[Person, Map[String, Any]](Http.POST("/post"), p)
         .toRxStream
         .map { m =>
+          info(m)
           m("data") shouldBe pJson
           m("json") shouldBe Map("id" -> 1, "name" -> "leo")
         }

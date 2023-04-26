@@ -220,7 +220,18 @@ trait RxStreamCache[A] extends RxStream[A] {
 }
 
 object Rx extends LogSupport {
-  def const[A](v: => A): RxStream[A]          = single(v)
+
+  /**
+    * Provide a constant value by immediately evaluating the given input
+    */
+  def const[A](v: => A): RxStream[A] = {
+    // wrap the value with Try to propaget exception through Rx
+    fromTry(Try(v))
+  }
+
+  /**
+    * Create a lazily evaluated single value
+    */
   def single[A](v: => A): RxStream[A]         = SingleOp(LazyF0(v))
   def exception[A](e: Throwable): RxStream[A] = fromTry(Failure[A](e))
 
