@@ -4,6 +4,7 @@ import wvlet.airspec._
 import wvlet.airframe._
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.airframe.http._
+import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.http.grpc.gRPC
 import wvlet.airframe.http.grpc.GrpcServer
 import io.grpc.ManagedChannelBuilder
@@ -23,30 +24,30 @@ object GreeterApiTest extends AirSpec {
       message.map { x => s"Hello ${x}!" }
     }
   }
-  private val router = Router.of[GreeterApiImpl]
+  private val router = RxRouter.of[GreeterApiImpl]
 
   protected override def design = {
     gRPC.server
-      .withRouter(router).design
-      .bind[ManagedChannel].toProvider { server: GrpcServer =>
+      .withRouter(Router.fromRxRouter(router)).design
+      .bind[ManagedChannel].toProvider { (server: GrpcServer) =>
         ManagedChannelBuilder.forTarget(server.localAddress).usePlaintext().build()
       }
       .onShutdown(_.shutdownNow)
-      .bind[ServiceGrpc.SyncClient].toProvider { channel: ManagedChannel =>
+      .bind[ServiceGrpc.SyncClient].toProvider { (channel: ManagedChannel) =>
         ServiceGrpc.newSyncClient(channel)
       }
-      .bind[ServiceGrpc.AsyncClient].toProvider { channel: ManagedChannel =>
+      .bind[ServiceGrpc.AsyncClient].toProvider { (channel: ManagedChannel) =>
         ServiceGrpc.newAsyncClient(channel)
       }
   }
 
-  test("test unary RPC") { syncClient: ServiceGrpc.SyncClient =>
+  test("test unary RPC") { (syncClient: ServiceGrpc.SyncClient) =>
     val ret = syncClient.GreeterApi.sayHello("Airframe gRPC")
     info(s"sync response: ${ret}")
     ret shouldBe "Hello Airframe gRPC!"
   }
 
-  test("test async unary RPC") { asyncClient: ServiceGrpc.AsyncClient =>
+  test("test async unary RPC") { (asyncClient: ServiceGrpc.AsyncClient) =>
     asyncClient.GreeterApi.sayHello(
       "Airframe gRPC",
       new StreamObserver[String] {
@@ -63,7 +64,7 @@ object GreeterApiTest extends AirSpec {
     )
   }
 
-  test("test async server-streaming RPC") { asyncClient: ServiceGrpc.AsyncClient =>
+  test("test async server-streaming RPC") { (asyncClient: ServiceGrpc.AsyncClient) =>
     asyncClient.GreeterApi.serverStreaming(
       "Airframe gRPC",
       new StreamObserver[String] {
@@ -80,7 +81,7 @@ object GreeterApiTest extends AirSpec {
     )
   }
 
-  test("test async client-streaming RPC") { asyncClient: ServiceGrpc.AsyncClient =>
+  test("test async client-streaming RPC") { (asyncClient: ServiceGrpc.AsyncClient) =>
     val requestObserver = asyncClient.GreeterApi.clientStreaming(
       new StreamObserver[String] {
         def onNext(v: String): Unit = {
@@ -99,7 +100,7 @@ object GreeterApiTest extends AirSpec {
     requestObserver.onCompleted()
   }
 
-  test("test async bidi-streaming RPC") { asyncClient: ServiceGrpc.AsyncClient =>
+  test("test async bidi-streaming RPC") { (asyncClient: ServiceGrpc.AsyncClient) =>
     val requestObserver = asyncClient.GreeterApi.bidiStreaming(
       new StreamObserver[String] {
         def onNext(v: String): Unit = {
@@ -118,7 +119,7 @@ object GreeterApiTest extends AirSpec {
     requestObserver.onCompleted()
   }
 
-  test("test streaming") { syncClient: ServiceGrpc.SyncClient =>
+  test("test streaming") { (syncClient: ServiceGrpc.SyncClient) =>
     val r1 = syncClient.GreeterApi.serverStreaming("gRPC")
     r1.toSeq shouldBe Seq("Hello gRPC!", "See you gRPC!")
 
