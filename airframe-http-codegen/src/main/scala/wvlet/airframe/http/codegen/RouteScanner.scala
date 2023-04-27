@@ -12,8 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
-import wvlet.airframe.http.router.{RxRouter, RxRouterProvider}
-import wvlet.airframe.http.{Endpoint, RPC, Router}
+import wvlet.airframe.http.{Endpoint, RPC, Router, RxRouter, RxRouterProvider}
 import wvlet.airframe.surface.{Surface, TypeName}
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.log.LogSupport

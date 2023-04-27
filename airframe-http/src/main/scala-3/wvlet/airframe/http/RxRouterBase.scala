@@ -14,7 +14,7 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.http.RxHttpFilter
-import wvlet.airframe.http.router.RxRouter
+import wvlet.airframe.http.RxRouter
 import wvlet.airframe.surface.Surface
 
 trait RxRouterObjectBase {

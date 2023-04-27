@@ -14,9 +14,8 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.Design
-import wvlet.airframe.http.{Http, RPC}
+import wvlet.airframe.http.{Http, RPC, RxRouter}
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.router.RxRouter
 import wvlet.airspec.AirSpec
 
 class NettyRxRPCServerTest extends AirSpec {

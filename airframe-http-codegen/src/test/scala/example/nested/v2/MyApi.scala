@@ -14,8 +14,7 @@
 package example.nested.v2
 
 import example.nested.v2.MyApi.{HelloRequest, HelloResponse}
-import wvlet.airframe.http.RPC
-import wvlet.airframe.http.router.{RxRouter, RxRouterProvider}
+import wvlet.airframe.http.{RPC, RxRouter, RxRouterProvider}
 
 /**
   */

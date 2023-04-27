@@ -16,10 +16,10 @@ package wvlet.airframe.http
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.Router.extractEndpointRoutes
 import wvlet.airframe.http.router.Automaton.DFA
-import wvlet.airframe.http.router.RxRouter.{EndpointNode, FilterNode, RxEndpointNode, StemNode}
+import wvlet.airframe.http.RxRouter.{EndpointNode, FilterNode, RxEndpointNode, StemNode}
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
-import wvlet.airframe.http.router.{ControllerRoute, RedirectToRxEndpoint, Route, RouteMatch, RouteMatcher, RxRouter}
+import wvlet.airframe.http.router.{ControllerRoute, RedirectToRxEndpoint, Route, RouteMatch, RouteMatcher}
 
 import scala.annotation.tailrec
 import scala.language.experimental.macros

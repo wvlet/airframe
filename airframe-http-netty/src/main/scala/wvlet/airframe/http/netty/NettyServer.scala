@@ -26,7 +26,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http._
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher, RxRouter}
+import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil

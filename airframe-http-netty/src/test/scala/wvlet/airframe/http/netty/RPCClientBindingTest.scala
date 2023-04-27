@@ -17,7 +17,6 @@ import wvlet.airframe.http._
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.netty.MyRPCClient.RPCSyncClient
 import wvlet.airframe.http.netty.RPCClientBindingTest.MyApi.{HelloRequest, HelloResponse}
-import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 

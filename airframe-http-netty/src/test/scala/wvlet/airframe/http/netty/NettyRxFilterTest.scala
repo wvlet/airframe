@@ -14,8 +14,7 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.{Http, HttpMessage, RPC, RPCException, RPCStatus, RxHttpEndpoint, RxHttpFilter}
-import wvlet.airframe.http.router.RxRouter
+import wvlet.airframe.http.{Http, HttpMessage, RPC, RPCException, RPCStatus, RxHttpEndpoint, RxHttpFilter, RxRouter}
 import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 
