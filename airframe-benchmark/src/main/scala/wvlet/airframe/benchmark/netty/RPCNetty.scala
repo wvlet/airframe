@@ -19,7 +19,7 @@ import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
 import wvlet.airframe.benchmark.http.HttpBenchmark.asyncIteration
 import wvlet.airframe.benchmark.http.{Greeter, NewServiceSyncClient, ServiceClient}
-import wvlet.airframe.http.Http
+import wvlet.airframe.http._
 import wvlet.airframe.http.client.{AsyncClient, SyncClient}
 import wvlet.airframe.http.finagle.{Finagle, FinagleClient}
 import wvlet.airframe.http.netty.{Netty, NettyServer}
