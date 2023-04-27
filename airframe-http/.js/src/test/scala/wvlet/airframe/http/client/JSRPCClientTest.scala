@@ -32,26 +32,30 @@ object JSRPCClientTest extends AirSpec {
     val client = Http.client.newAsyncClient(PUBLIC_REST_SERVICE)
 
     test("rpc") {
-      val m = RPCMethod("/post", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
-      client
-        .rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))
-        .toRxStream
-        .map { response =>
-          info(response)
-          response.headers.get("Content-Type") shouldBe Some(MediaType.ApplicationJson)
-          response
-        }
+      flaky {
+        val m = RPCMethod("/post", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
+        client
+          .rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))
+          .toRxStream
+          .map { response =>
+            info(response)
+            response.headers.get("Content-Type") shouldBe Some(MediaType.ApplicationJson)
+            response
+          }
+      }
     }
 
     test("call") {
-      client
-        .call[Person, Map[String, Any]](Http.POST("/post"), p)
-        .toRxStream
-        .map { m =>
-          info(m)
-          m("data") shouldBe pJson
-          m("json") shouldBe Map("id" -> 1, "name" -> "leo")
-        }
+      flaky {
+        client
+          .call[Person, Map[String, Any]](Http.POST("/post"), p)
+          .toRxStream
+          .map { m =>
+            info(m)
+            m("data") shouldBe pJson
+            m("json") shouldBe Map("id" -> 1, "name" -> "leo")
+          }
+      }
     }
   }
 
