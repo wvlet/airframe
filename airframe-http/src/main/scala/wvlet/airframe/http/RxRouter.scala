@@ -11,21 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.router
+package wvlet.airframe.http
 
-import wvlet.airframe.http.RxHttpEndpoint
-import wvlet.airframe.http.router.RxRouter.FilterNode
+import wvlet.airframe.http.router.{RedirectToRxEndpoint, RxRoute}
 import wvlet.airframe.surface.{MethodSurface, Surface}
 
 trait RxRouter {
   def name: String
-  def filter: Option[FilterNode]
+  def filter: Option[RxRouter.FilterNode]
   def children: List[RxRouter]
   def isLeaf: Boolean
 
   def routes: List[RxRoute]
 
-  def wrapWithFilter(parentFilter: FilterNode): RxRouter
+  def wrapWithFilter(parentFilter: RxRouter.FilterNode): RxRouter
 
   override def toString: String = printNode(0)
 
@@ -47,23 +46,6 @@ trait RxRouter {
       s += c.printNode(indentLevel + 1)
     }
     s.result().mkString("\n")
-  }
-}
-
-case class RxRoute(filter: Option[FilterNode], controllerSurface: Surface, methodSurfaces: Seq[MethodSurface]) {
-  override def toString: String = {
-    val s = Seq.newBuilder[String]
-    for (m <- methodSurfaces) {
-      s += s"${m.name}(${m.args.map(x => s"${x.name}:${x.surface}").mkString(", ")}): ${m.returnType}"
-    }
-    s.result().mkString("\n")
-  }
-
-  def wrapWithFilter(parentFilter: Option[FilterNode]): RxRoute = {
-    this.copy(filter = parentFilter match {
-      case None    => filter
-      case Some(f) => f.andThenOpt(filter)
-    })
   }
 }
 

@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.codegen
 
-import wvlet.airframe.http.router.RxRouter
+import wvlet.airframe.http.RxRouter
 import wvlet.airspec.AirSpec
 
 class RxRouterProviderTest extends AirSpec {

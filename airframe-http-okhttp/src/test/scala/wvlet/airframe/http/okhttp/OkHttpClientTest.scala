@@ -5,7 +5,6 @@ import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.client.{AsyncClient, SyncClient}
 import wvlet.airframe.http.netty.{Netty, NettyServer}
-import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.http._
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport

@@ -11,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.router
+package wvlet.airframe.http
 
 import wvlet.airframe.http.RxHttpFilter
-import wvlet.airframe.http.router.RxRouter
+import wvlet.airframe.http.RxRouter
 import wvlet.airframe.surface.Surface
 
 trait RxRouterObjectBase {

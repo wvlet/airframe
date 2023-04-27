@@ -11,8 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.router
-
+package wvlet.airframe.http
 import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
 
@@ -25,7 +24,7 @@ private[http] object RxRouterMacros {
     q"""
      {
        wvlet.airframe.registerTraitFactory[${t}]
-       wvlet.airframe.http.router.RxRouter.EndpointNode(wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
+       wvlet.airframe.http.RxRouter.EndpointNode(wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
      }
    """
   }
@@ -38,7 +37,7 @@ private[http] object RxRouterMacros {
       q"""
        {
          wvlet.airframe.registerTraitFactory[${t}]
-         wvlet.airframe.http.router.RxRouter.FilterNode(None, wvlet.airframe.surface.Surface.of[${t}])
+         wvlet.airframe.http.RxRouter.FilterNode(None, wvlet.airframe.surface.Surface.of[${t}])
        }
      """
     } else {
@@ -55,7 +54,7 @@ private[http] object RxRouterMacros {
       q"""
      {
        wvlet.airframe.registerTraitFactory[${t}]
-       val next = wvlet.airframe.http.router.RxRouter.FilterNode(None, wvlet.airframe.surface.Surface.of[${t}])
+       val next = wvlet.airframe.http.RxRouter.FilterNode(None, wvlet.airframe.surface.Surface.of[${t}])
        ${c.prefix}.andThen(next)
      }
    """

@@ -11,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.router
+package wvlet.airframe.http
 
-import wvlet.airframe.http.router.RxRouter.StemNode
-import wvlet.airframe.http.{HttpMessage, RxHttpEndpoint, RxHttpFilter}
+import wvlet.airframe.http.RxRouter.StemNode
+import wvlet.airframe.http.router.RxRoute
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec

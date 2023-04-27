@@ -11,23 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.router
+package wvlet.airframe.http
+import scala.language.experimental.macros
 
-/**
-  * An interface used for RPC clients (sbt-airframe) to discover the default router for the RPC endpoint.
-  *
-  * Example usage:
-  * {{{
-  *   trait MyRPC {
-  *     def hello(name:String) : String
-  *   }
-  *
-  *   object MyRPC extends RxRouterProvider {
-  *     // sbt-airframe will generate an RPC client using this router
-  *     override def router: RxRouter = RxRouter.of[MyRPC]
-  *   }
-  * }}}
-  */
-trait RxRouterProvider {
-  def router: RxRouter
+trait RxRouterObjectBase {
+  def of[Controller]: RxRouter = macro RxRouterMacros.of[Controller]
+  def filter[Filter <: RxHttpFilter]: RxRouter.FilterNode = macro RxRouterMacros.filter[Filter]
+}
+
+trait RxRouteFilterBase {
+  def andThen[Filter <: RxHttpFilter]: RxRouter.FilterNode = macro RxRouterMacros.andThenFilter[Filter]
 }

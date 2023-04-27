@@ -26,7 +26,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http._
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher, RxRouter}
+import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -52,10 +52,6 @@ case class NettyServerConfig(
   }
   def withPort(port: Int): NettyServerConfig = {
     this.copy(serverPort = Some(port))
-  }
-  @deprecated("Use withRouter(RxRouter) instead", "23.4.3")
-  def withRouter(router: Router): NettyServerConfig = {
-    this.copy(router = router)
   }
   def withRouter(rxRouter: RxRouter): NettyServerConfig = {
     this.copy(router = Router.fromRxRouter(rxRouter))

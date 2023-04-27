@@ -17,10 +17,9 @@ import java.io.{File, FileWriter}
 import java.net.URLClassLoader
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Control
-import wvlet.airframe.http.Router
+import wvlet.airframe.http.{Router, RxRouter}
 import wvlet.airframe.http.codegen.client.{AsyncClientGenerator, HttpClientGenerator}
 import wvlet.airframe.http.openapi.{OpenAPI, OpenAPIGeneratorConfig}
-import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.launcher.Launcher
 import wvlet.log.io.IOUtil
 import wvlet.log.{LogLevel, LogSupport, Logger}

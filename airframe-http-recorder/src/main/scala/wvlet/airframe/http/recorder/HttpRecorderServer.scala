@@ -15,9 +15,8 @@ package wvlet.airframe.http.recorder
 
 import wvlet.airframe.{Design, Session}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{RxHttpEndpoint, RxHttpFilter}
+import wvlet.airframe.http.{RxHttpEndpoint, RxHttpFilter, RxRouter}
 import wvlet.airframe.http.netty.{Netty, NettyServer, NettyServerConfig}
-import wvlet.airframe.http.router.RxRouter
 import wvlet.airframe.rx.{Rx, RxStream}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
