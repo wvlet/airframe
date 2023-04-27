@@ -53,10 +53,6 @@ case class NettyServerConfig(
   def withPort(port: Int): NettyServerConfig = {
     this.copy(serverPort = Some(port))
   }
-  @deprecated("Use withRouter(RxRouter) instead", "23.4.3")
-  def withRouter(router: Router): NettyServerConfig = {
-    this.copy(router = router)
-  }
   def withRouter(rxRouter: RxRouter): NettyServerConfig = {
     this.copy(router = Router.fromRxRouter(rxRouter))
   }

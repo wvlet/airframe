@@ -25,7 +25,16 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
-import wvlet.airframe.http.{HttpBackend, HttpHeader, HttpMessage, HttpServerException, RPCContext, RPCException, Router, RxRouter}
+import wvlet.airframe.http.{
+  HttpBackend,
+  HttpHeader,
+  HttpMessage,
+  HttpServerException,
+  RPCContext,
+  RPCException,
+  Router,
+  RxRouter
+}
 import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher, ResponseHandler}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -64,9 +73,14 @@ case class FinagleServerConfig(
   def withPort(port: Int): FinagleServerConfig = {
     this.copy(serverPort = Some(port))
   }
+  @deprecated("Use withRouter(RxRouter)", "23.5.0")
   def withRouter(router: Router): FinagleServerConfig = {
     this.copy(router = router)
   }
+  def withRouter(router: RxRouter): FinagleServerConfig = {
+    this.copy(router = Router.fromRxRouter(router))
+  }
+
   def withCustomCodec(p: PartialFunction[Surface, MessageCodec[_]]): FinagleServerConfig = {
     this.copy(customCodec = p)
   }

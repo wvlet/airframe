@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 package example.api
-import wvlet.airframe.http.RPC
-import wvlet.airframe.http.router.{RxRouter,RxRouterProvider}
+import wvlet.airframe.http._
+
 /**
   */
 @RPC

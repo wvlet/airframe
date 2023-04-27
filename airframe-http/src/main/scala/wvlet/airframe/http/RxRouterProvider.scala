@@ -18,6 +18,9 @@ package wvlet.airframe.http
   *
   * Example usage:
   * {{{
+  *   import wvlet.airframe.http._
+  *
+  *   @RPC
   *   trait MyRPC {
   *     def hello(name:String) : String
   *   }

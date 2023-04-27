@@ -14,7 +14,6 @@
 package myapp.spi
 
 import wvlet.airframe.http._
-import wvlet.airframe.http.router.{RxRouter, RxRouterProvider}
 
 @RPC
 trait MyRPC {
