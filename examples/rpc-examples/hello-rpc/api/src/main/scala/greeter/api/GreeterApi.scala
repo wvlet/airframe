@@ -1,6 +1,7 @@
 package greeter.api
 
 import wvlet.airframe.http.RPC
+import wvlet.airframe.http.router.{RxRouter,RxRouterProvider}
 import wvlet.log.LogSupport
 
 @RPC
@@ -10,3 +11,8 @@ class GreeterApi extends LogSupport {
     s"Hello ${name}!"
   }
 }
+
+object GreterApi extends RxRouterProvider {
+  override def router: RxRouter = RxRouter.of[GreeterApi]
+}
+

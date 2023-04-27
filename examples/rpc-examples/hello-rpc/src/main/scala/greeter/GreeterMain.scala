@@ -13,14 +13,13 @@
  */
 package greeter
 
-import greeter.api.{GreeterApi, ServiceGrpc, ServiceSyncClient}
-import io.grpc.{ManagedChannel, ManagedChannelBuilder}
-import wvlet.airframe.control.Control.withResource
-import wvlet.airframe.http.Router
-import wvlet.airframe.http.finagle.Finagle
-import wvlet.airframe.http.grpc.gRPC
+import greeter.api.{GreeterApi, GreeterRPC}
+import wvlet.airframe.http.Http
+import wvlet.airframe.http.router.RxRouter
+import wvlet.airframe.http.netty.Netty
 import wvlet.airframe.launcher.{Launcher, command, option}
 import wvlet.log.{LogSupport, Logger}
+import scala.util.Using
 
 /**
   */
@@ -38,62 +37,30 @@ class GreeterMain(
 ) extends LogSupport {
   Logger.init
 
-  private def router = Router.of[GreeterApi]
+  private def router = RxRouter.of[GreeterApi]
 
   @command(isDefault = true)
   def default: Unit = {
     info(s"Type --help to see the list of commands")
   }
 
-  @command(description = "Start a Finagle server")
-  def finagleServer: Unit = {
-    Finagle.server
+  @command(description = "Start an RPC server")
+  def server: Unit = {
+    Netty.server
       .withRouter(router)
       .withPort(port)
       .start { server =>
-        server.waitServerTermination
+        server.awaitTermination()
       }
   }
 
-  @command(description = "Make Finagle RPC requests")
-  def finagleClient(@option(prefix = "-n", description = "request count") n: Int = 3): Unit = {
-    withResource(
-      new ServiceSyncClient(
-        Finagle.client
-          .newSyncClient(s"localhost:${port}")
-      )
-    ) { client =>
+  @command(description = "Make RPC requests")
+  def client(@option(prefix = "-n", description = "request count") n: Int = 3): Unit = {
+    Using.resource(GreeterRPC.newRPCSyncClient(Http.client.newSyncClient(s"localhost:${port}"))) { client =>
       for (i <- 0 until n) {
         val response = client.GreeterApi.hello(s"RPC${i}")
         info(s"Received: ${response}")
       }
     }
   }
-
-  @command(description = "Start a gRPC server")
-  def grpcServer: Unit = {
-    gRPC.server
-      .withRouter(router)
-      .withPort(port)
-      .start { server =>
-        server.awaitTermination
-      }
-  }
-
-  @command(description = "Make gRPC requests")
-  def grpcClient(@option(prefix = "-n", description = "request count") n: Int = 3): Unit = {
-    val channel: ManagedChannel =
-      ManagedChannelBuilder
-        .forTarget(s"localhost:${port}")
-        .usePlaintext()
-        .build()
-
-    val client = ServiceGrpc.newSyncClient(channel)
-    for (i <- 0 until n) {
-      val response = client.GreeterApi.hello(s"RPC${i}")
-      info(s"Received: ${response}")
-    }
-    channel.shutdownNow()
-  }
-
 }
