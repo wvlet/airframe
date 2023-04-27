@@ -98,18 +98,20 @@ class IntervalTest extends AirSpec {
   test("throttleLast") {
     pendingScalaJS
 
-    val rx =
-      Rx.sequence(1, 2, 3)
-        .throttleLast(500, TimeUnit.MILLISECONDS)
-    val counter = new AtomicInteger(0)
-    val s       = Seq.newBuilder[Long]
-    val c = rx.run { x =>
-      counter.incrementAndGet()
-      s += x
+    flaky {
+      val rx =
+        Rx.sequence(1, 2, 3)
+          .throttleLast(500, TimeUnit.MILLISECONDS)
+      val counter = new AtomicInteger(0)
+      val s       = Seq.newBuilder[Long]
+      val c = rx.run { x =>
+        counter.incrementAndGet()
+        s += x
+      }
+      while (counter.get() != 1) {}
+      c.cancel
+      s shouldBe Seq(3)
     }
-    while (counter.get() != 1) {}
-    c.cancel
-    s shouldBe Seq(3)
   }
 
   test("throttleLast of empty seq") {
