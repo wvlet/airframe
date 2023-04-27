@@ -352,9 +352,10 @@ object RxTest extends AirSpec {
       case Some(v) =>
         p.success(v)
       case None =>
-        p.failure(new IllegalStateException())
+        if (!p.isCompleted) {
+          p.failure(new IllegalStateException())
+        }
     }
-
     p.future.foreach { x => x shouldBe 1 }
   }
 
