@@ -64,10 +64,14 @@ class JSHttpClientChannel(serverAddress: ServerAddress, private[client] val conf
     val promise = Promise[Response]()
 
     xhr.onerror = { (e: dom.Event) =>
-      promise.failure(new IOException(s"Request failed for unknown reason: ${request}"))
+      if (!promise.isCompleted) {
+        promise.failure(new IOException(s"Request failed for unknown reason: ${request}"))
+      }
     }
     xhr.ontimeout = { (e: dom.Event) =>
-      promise.failure(new TimeoutException(s"Request timed out: ${request}"))
+      if (!promise.isCompleted) {
+        promise.failure(new TimeoutException(s"Request timed out: ${request}"))
+      }
     }
 
     val data: Array[Byte] = request.contentBytes
@@ -109,7 +113,9 @@ class JSHttpClientChannel(serverAddress: ServerAddress, private[client] val conf
           }
         }
         trace(s"Get response: ${resp}")
-        promise.success(resp)
+        if (!promise.isCompleted) {
+          promise.success(resp)
+        }
       }
     }
     Rx.future(promise.future)
