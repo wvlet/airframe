@@ -31,7 +31,15 @@ class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfi
 
     val conn0: HttpURLConnection =
       new java.net.URL(url).openConnection().asInstanceOf[HttpURLConnection]
-    conn0.setRequestMethod(request.method)
+
+    request.method match {
+      case HttpMethod.PATCH =>
+        // URLConnection doesn't support patch, so we need to use POST endpoint + X-HTTP-Method-Override header
+        conn0.setRequestMethod(HttpMethod.POST)
+        conn0.setRequestProperty("X-HTTP-Method-Override", HttpMethod.PATCH)
+      case _ =>
+        conn0.setRequestMethod(request.method)
+    }
     for (e <- request.header.entries) {
       conn0.setRequestProperty(e.key, e.value)
     }
