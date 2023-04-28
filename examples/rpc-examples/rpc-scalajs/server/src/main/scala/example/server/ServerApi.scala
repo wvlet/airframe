@@ -25,7 +25,7 @@ class ServerApi {
 
   private val staticContent = StaticContent
     .fromDirectory("ui/public")
-    .fromDirectory("ui/target/scala-2.13")
+    .fromDirectory("ui/target/scala-3.2.2")
 
   @Endpoint(path = "/ui/*path")
   def pages(path: String) = {

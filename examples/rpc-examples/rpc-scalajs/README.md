@@ -5,7 +5,6 @@ Hello RPC ScalaJS
 Compile:
 ```
 $ sbt
-> compile
 > ui/fastLinkJS
 ```
 

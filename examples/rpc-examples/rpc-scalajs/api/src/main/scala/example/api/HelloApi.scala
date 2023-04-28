@@ -13,8 +13,7 @@ t * See the License for the specific language governing permissions and
  */
 package example.api
 
-import wvlet.airframe.http.RPC
-import wvlet.airframe.http.router.{RxRouter,RxRouterProvider}
+import wvlet.airframe.http._
 
 @RPC
 trait HelloApi {

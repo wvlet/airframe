@@ -13,7 +13,7 @@
  */
 package example.server
 
-import wvlet.airframe.http.router.RxRouter
+import wvlet.airframe.http._
 import wvlet.airframe.launcher.{Launcher, command, option}
 import wvlet.log.{LogSupport, Logger}
 import wvlet.airframe.http.netty.{Netty,NettyServer}
@@ -56,7 +56,7 @@ class ServerMain(
       .withName("example-server")
       .design
       .build { (server: NettyServer) =>
-        // server.awaitTermination
+        server.awaitTermination()
       }
   }
 }

@@ -19,6 +19,7 @@ import wvlet.airframe.rx.{Rx, RxOption}
 import wvlet.airframe.rx.html.{DOMRenderer, RxElement}
 
 import scala.scalajs.js.annotation.JSExport
+import wvlet.airframe.rx.html._
 import wvlet.airframe.rx.html.all._
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
@@ -28,7 +29,7 @@ object ExampleUI extends LogSupport {
 
   @JSExport
   def main(args: Array[String]): Unit = {
-    Logger.setDefaultLogLevel(LogLevel.DEBUG)
+    Logger.setDefaultLogLevel(LogLevel.TRACE)
     info("Starting UI")
     debug("debug log")
 
@@ -44,10 +45,11 @@ class MainUI extends RxElement with RPCService {
   private def myButton = button(cls -> "btn btn-primary")
 
   override def render: RxElement = {
+    client.HelloApi.hello("RPC").run { _ => }
+
     div(
       myButton(
-        onclick -> { e: MouseEvent =>
-          info(s"Clicked")
+        onclick -> { (e: MouseEvent) =>
           client.HelloApi
             .hello("RPC")
             .toRxStream
