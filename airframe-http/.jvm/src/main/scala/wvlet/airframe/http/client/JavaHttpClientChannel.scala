@@ -36,7 +36,8 @@ import scala.jdk.CollectionConverters._
   * @param serverAddress
   * @param config
   */
-class JavaClientChannel(serverAddress: ServerAddress, private[http] val config: HttpClientConfig) extends HttpChannel {
+class JavaHttpClientChannel(serverAddress: ServerAddress, private[http] val config: HttpClientConfig)
+    extends HttpChannel {
   private val javaHttpClient: HttpClient = initClient(config)
 
   private def initClient(config: HttpClientConfig): HttpClient = {

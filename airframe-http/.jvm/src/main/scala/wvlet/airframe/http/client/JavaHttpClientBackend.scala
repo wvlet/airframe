@@ -16,6 +16,6 @@ import wvlet.airframe.http.{HttpClientConfig, ServerAddress}
 
 object JavaHttpClientBackend extends HttpClientBackend {
   override def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel = {
-    new JavaClientChannel(serverAddress, config)
+    new JavaHttpClientChannel(serverAddress, config)
   }
 }

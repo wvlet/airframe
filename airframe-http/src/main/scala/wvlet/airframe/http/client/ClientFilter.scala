@@ -17,8 +17,6 @@ import wvlet.airframe.http.HttpClientConfig
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.rx.Rx
 
-import scala.concurrent.Future
-
 /**
   * Http client request and response interceptor interface.
   *
