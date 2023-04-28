@@ -233,7 +233,7 @@ object DOMRenderer extends LogSupport {
   }
 
   private implicit class RichDomNode(node: dom.Node) {
-    def setEventListener[A](key: String, listener: A => Cancelable): Cancelable = {
+    def setEventListener[A, U](key: String, listener: A => U): Cancelable = {
       val dyn = node.asInstanceOf[js.Dynamic]
 //      var c1  = Cancelable.empty
 //      val newListener = { (e: A) =>
