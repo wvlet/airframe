@@ -23,7 +23,7 @@ import org.scalajs.dom.MouseEvent
 
 class OnClickTest extends AirSpec {
 
-  test("onclick -> Rx") {
+  test("Evaluate onclick -> Rx return value") {
     var clicked       = 0
     var rxEvalCounter = 0
     val (node, c) = DOMRenderer.render {
@@ -45,6 +45,10 @@ class OnClickTest extends AirSpec {
     clicked shouldBe 2
     rxEvalCounter shouldBe 2
 
+    // After canceling the subscription, the event handler should not be called
     c.cancel
+    elem.click()
+    clicked shouldBe 2
+    rxEvalCounter shouldBe 2
   }
 }
