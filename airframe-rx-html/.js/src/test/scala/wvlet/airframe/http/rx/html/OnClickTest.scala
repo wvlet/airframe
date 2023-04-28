@@ -24,19 +24,26 @@ import org.scalajs.dom.MouseEvent
 class OnClickTest extends AirSpec {
 
   test("onclick -> Rx") {
-    var counter = 0
+    var clicked       = 0
+    var rxEvalCounter = 0
     val (node, c) = DOMRenderer.render {
       div(
         onclick -> { (e: MouseEvent) =>
-          Rx.single("clicked").map { _ =>
-            counter += 1
+          clicked += 1
+          Rx.single {
+            rxEvalCounter += 1
           }
         }
       )
     }
     val elem = node.asInstanceOf[HTMLElement]
     elem.click()
-    counter shouldBe 1
+    clicked shouldBe 1
+    rxEvalCounter shouldBe 1
+
+    elem.click()
+    clicked shouldBe 2
+    rxEvalCounter shouldBe 2
 
     c.cancel
   }
