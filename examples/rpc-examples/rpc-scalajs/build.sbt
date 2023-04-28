@@ -25,6 +25,8 @@ lazy val server =
   project
     .in(file("server"))
     .settings(
+      // For using the project root as a working folder
+      reStart / baseDirectory := (ThisBuild / baseDirectory).value,
       libraryDependencies ++= Seq(
         "org.wvlet.airframe" %% "airframe-http-netty" % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-launcher"   % AIRFRAME_VERSION

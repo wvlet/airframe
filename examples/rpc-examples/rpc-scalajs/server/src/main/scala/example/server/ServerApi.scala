@@ -23,6 +23,8 @@ class ServerApi {
   @Endpoint(path = "/v1/info")
   def serverInfo: ServerInfo = ServerInfo()
 
+  println(new java.io.File(".").getAbsolutePath)
+
   private val staticContent = StaticContent
     .fromDirectory("ui/public")
     .fromDirectory("ui/target/scala-3.2.2")

@@ -45,8 +45,6 @@ class MainUI extends RxElement with RPCService {
   private def myButton = button(cls -> "btn btn-primary")
 
   override def render: RxElement = {
-    client.HelloApi.hello("RPC").run { _ => }
-
     div(
       myButton(
         onclick -> { (e: MouseEvent) =>
