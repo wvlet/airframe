@@ -193,11 +193,11 @@ object DOMRenderer extends LogSupport {
         // case r: RxElement =>
         //
         case f: Function0[_] =>
-          val listener = { (_: dom.Event) => f() } // .andThen(v => traverse(v))
+          val listener = { (_: dom.Event) => f() }.andThen(v => Cancelable.empty)
           node.setEventListener(a.name, listener)
         case f: Function1[dom.Node @unchecked, _] =>
-          // val listener = f.andThen(v => traverse(v))
-          node.setEventListener(a.name, f)
+          val listener = f.andThen(v => Cancelable.empty)
+          node.setEventListener(a.name, listener)
         case _ =>
           val value = v match {
             case true => ""
@@ -233,7 +233,7 @@ object DOMRenderer extends LogSupport {
   }
 
   private implicit class RichDomNode(node: dom.Node) {
-    def setEventListener[A, U](key: String, listener: A => U): Cancelable = {
+    def setEventListener[A](key: String, listener: A => Cancelable): Cancelable = {
       val dyn = node.asInstanceOf[js.Dynamic]
 //      var c1  = Cancelable.empty
 //      val newListener = { (e: A) =>
