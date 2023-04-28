@@ -19,12 +19,11 @@ import wvlet.airframe.rx.{Rx, RxStream}
 /**
   * [[RxHttpEndpoint]] is a terminal for processing requests and returns `Rx[Response]`.
   */
-trait RxHttpEndpoint extends AutoCloseable {
+trait RxHttpEndpoint {
 
   /**
     * @param request
     * @return
     */
   def apply(request: Request): Rx[Response]
-  override def close(): Unit = {}
 }

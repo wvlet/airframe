@@ -14,8 +14,8 @@
 package wvlet.airframe.http.okhttp
 
 import wvlet.airframe.control.Retry.RetryContext
-import wvlet.airframe.http.client.{HttpChannel, HttpClientBackend}
-import wvlet.airframe.http.{Http, HttpClient, HttpClientConfig, ServerAddress}
+import wvlet.airframe.http.client.{HttpChannel, HttpClientBackend, HttpClientConfig}
+import wvlet.airframe.http.{Http, HttpClient, ServerAddress}
 
 object OkHttp {
   def client: HttpClientConfig =

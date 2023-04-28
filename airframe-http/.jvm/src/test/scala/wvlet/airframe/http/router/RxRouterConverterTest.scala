@@ -30,13 +30,13 @@ class RxRouterConverterTest extends AirSpec {
   }
 
   trait AuthFilter extends RxHttpFilter {
-    def apply(request: Request, endpoint: RxHttpEndpoint) = {
-      endpoint.apply(request)
+    def apply(request: Request, next: RxHttpEndpoint) = {
+      next.apply(request)
     }
   }
   trait LogFilter extends RxHttpFilter {
-    def apply(request: Request, endpoint: RxHttpEndpoint) = {
-      endpoint.apply(request)
+    def apply(request: Request, next: RxHttpEndpoint) = {
+      next.apply(request)
     }
   }
 

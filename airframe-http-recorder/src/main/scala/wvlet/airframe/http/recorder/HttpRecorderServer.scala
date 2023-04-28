@@ -105,10 +105,10 @@ object HttpRecorderServer {
     * An HTTP request filter for recording HTTP responses
     */
   class RecordingFilter(recordStore: HttpRecordStore) extends RxHttpFilter with LogSupport {
-    override def apply(request: Request, endpoint: RxHttpEndpoint): Rx[Response] = {
+    override def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
       // Rewrite the target host for proxying
       val newRequest = request.noHost
-      endpoint(newRequest).toRxStream.map { response =>
+      next(newRequest).toRxStream.map { response =>
         trace(s"Recording the response for ${request}")
         // Record the result
         recordStore.record(request, response)
@@ -122,7 +122,7 @@ object HttpRecorderServer {
     * An HTTP request filter for returning recorded HTTP responses
     */
   class ReplayFilter(recordStore: HttpRecordStore) extends RxHttpFilter with LogSupport {
-    override def apply(request: Request, service: RxHttpEndpoint): Rx[Response] = {
+    override def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
       // Rewrite the target host for proxying
       val newRequest = request.withHost(recordStore.recorderConfig.destAddress.hostAndPort)
       recordStore.findNext(newRequest) match {
@@ -137,7 +137,7 @@ object HttpRecorderServer {
         case None =>
           trace(s"No recording is found for ${request}")
           // Fallback to the default handler
-          service(request)
+          next(request)
       }
     }
   }

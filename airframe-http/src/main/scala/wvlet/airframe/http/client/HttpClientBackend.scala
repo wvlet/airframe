@@ -15,7 +15,7 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{HttpClient, HttpClientConfig, ServerAddress}
+import wvlet.airframe.http.{HttpClient, ServerAddress}
 
 /**
   */

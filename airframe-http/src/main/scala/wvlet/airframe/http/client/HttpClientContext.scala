@@ -14,29 +14,24 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.http.RxHttpEndpoint
+import wvlet.airframe.rx.{Rx, RxEvent}
 
-import scala.concurrent.duration.Duration
-
-/**
-  * Contains only http channel related configurations in HttpClientConfig
-  */
-trait HttpChannelConfig {
-  def connectTimeout: Duration
-  def readTimeout: Duration
+trait HttpClientContext extends RxHttpEndpoint {
+  private var props = Map.empty[String, Any]
+  def setProperty(key: String, value: Any): Unit = {
+    props += key -> value
+  }
+  def getProperty(key: String): Option[Any] = {
+    props.get(key)
+  }
 }
 
-/**
-  * A low-level interface for sending HTTP requests without managing retries or filters
-  */
-trait HttpChannel extends AutoCloseable {
+object HttpClientContext {
+  def passThroughChannel(channel: HttpChannel, config: HttpClientConfig): HttpClientContext = new HttpClientContext {
+    override def apply(request: Request): Rx[Response] = {
+      channel.sendAsync(request, config)
+    }
+  }
 
-  /**
-    * Send the request without modification.
-    * @param req
-    * @param channelConfig
-    * @return
-    */
-  def send(req: Request, channelConfig: HttpChannelConfig): Response
-  def sendAsync(req: Request, channelConfig: HttpChannelConfig): Rx[Response]
 }

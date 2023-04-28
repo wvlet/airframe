@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.http.{Http, HttpClientConfig, RPCMethod}
+import wvlet.airframe.http.{Http, RPCMethod}
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 

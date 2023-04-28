@@ -13,44 +13,45 @@
  */
 package wvlet.airframe.http.client
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.RPCMethod
 import wvlet.airframe.http.internal.HttpLogs
+import wvlet.airframe.http.{RPCContext, RPCMethod, RxHttpEndpoint, RxHttpFilter}
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import java.util.concurrent.TimeUnit
 import scala.collection.immutable.ListMap
 
-class ClientLoggingFilter extends ClientFilter with LogSupport {
-  override def chain(req: Request, context: ClientContext): Response = {
+class HttpClientLoggingFilter extends RxHttpFilter with LogSupport {
+  override def apply(req: Request, next: RxHttpEndpoint): Rx[Response] = {
     val baseTime = System.currentTimeMillis()
     val start    = System.nanoTime()
     val m        = ListMap.newBuilder[String, Any]
     m ++= HttpLogs.unixTimeLogs(baseTime)
     m ++= HttpLogs.commonRequestLogs(req)
-    try {
-      val resp = context.chain(req)
-      m ++= HttpLogs.commonResponseLogs(resp)
-      context.getProperty("rpc_method") match {
-        case Some(rpcMethod: RPCMethod) =>
-          m ++= HttpLogs.rpcMethodLogs(rpcMethod)
-        case _ =>
-      }
-      resp
-    } catch {
-      case e: Throwable =>
-        m ++= HttpLogs.errorLogs(e)
-        throw e
-    } finally {
+
+    def recordDuration: Unit = {
       val end           = System.nanoTime()
       val durationMills = TimeUnit.NANOSECONDS.toMillis(end - start)
       m += "duration_ms" -> durationMills
       m += "end_time_ms" -> (baseTime + durationMills)
       trace(m.result())
     }
-  }
 
-  override def chainAsync(req: Request, context: ClientContext): Rx[Response] = {
-    context.chainAsync(req)
+    next
+      .apply(req)
+      .toRxStream
+      .map { resp =>
+        m ++= HttpLogs.commonResponseLogs(resp)
+        RPCContext.current.getThreadLocal[RPCMethod]("rpc_method").map { rpcMethod =>
+          m ++= HttpLogs.rpcMethodLogs(rpcMethod)
+        }
+        recordDuration
+        resp
+      }
+      .recoverWith { case e: Throwable =>
+        m ++= HttpLogs.errorLogs(e)
+        recordDuration
+        Rx.exception(e)
+      }
   }
 }

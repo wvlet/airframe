@@ -13,6 +13,10 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.http.HttpMessage.Request
+
+import java.util.concurrent.ConcurrentHashMap
+
 object RPCContext {
 
   /**
@@ -32,6 +36,8 @@ trait RPCContext {
     * performance reason.
     */
   def httpRequest: HttpMessage.Request
+
+  def rpcMethod: RPCMethod
 
   /**
     * Set a thread-local variable that is available only within the request scope.
@@ -67,4 +73,13 @@ object EmptyRPCContext extends RPCContext {
       "RPCContext.httpRequest is not available outside the context of RPC server"
     )
   }
+}
+
+case class LocalRPCContext(httpRequest: Request, rpcMethod: RPCMethod) extends RPCContext {
+  private var props = new ConcurrentHashMap[String, Option[A]]()
+  override def setThreadLocal[A](key: String, value: A): Unit = {
+
+  }
+
+  override def getThreadLocal[A](key: String): Option[A] = ???
 }
