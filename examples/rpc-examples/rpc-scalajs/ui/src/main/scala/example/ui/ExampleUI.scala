@@ -48,6 +48,7 @@ class MainUI extends RxElement with RPCService {
     div(
       myButton(
         onclick -> { (e: MouseEvent) =>
+          info(s"clicked")
           client.HelloApi
             .hello("RPC")
             .toRxStream

@@ -43,7 +43,7 @@ lazy val ui =
       scalaJSUseMainModuleInitializer := true,
       airframeHttpClients             := Seq("example.api:rpc"),
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %%% "airframe-rx-html" % "23.4.7-6-81cd2861-20230427-2204-SNAPSHOT"
+        "org.wvlet.airframe" %%% "airframe-rx-html" % "23.4.7-7-5dcf2967-SNAPSHOT"
       )
     )
     .dependsOn(apiJS)

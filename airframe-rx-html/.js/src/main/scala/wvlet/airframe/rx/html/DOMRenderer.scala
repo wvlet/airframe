@@ -237,7 +237,6 @@ object DOMRenderer extends LogSupport {
       val dyn = node.asInstanceOf[js.Dynamic]
       var c1  = Cancelable.empty
       val newListener = { (e: A) =>
-        c1.cancel
         c1 = listener(e)
       }
       dyn.updateDynamic(key)(newListener)
