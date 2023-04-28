@@ -65,7 +65,7 @@ class MainUI extends RxElement with LogSupport {
         "Click: RPC call"
       ),
       message.map { x =>
-        div(s"Received a message: ${x}")
+        div(s"Received an RPC response: ${x}")
       }
     )
   }
