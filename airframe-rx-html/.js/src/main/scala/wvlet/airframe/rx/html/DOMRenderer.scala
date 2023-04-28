@@ -239,7 +239,7 @@ object DOMRenderer extends LogSupport {
       val newListener = { (e: A) =>
         c1 = listener(e)
       }
-      dyn.updateDynamic(key)(newListener)
+      dyn.updateDynamic(key)(listener)
       Cancelable { () =>
         c1.cancel
         dyn.updateDynamic(key)(null)
