@@ -31,12 +31,6 @@ class JSHttpClientChannel(serverAddress: ServerAddress, private[client] val conf
 
   private[client] implicit val executionContext: ExecutionContext = config.newExecutionContext
 
-  /**
-    * Provide the underlying ExecutionContext. This is only for internal-use
-    * @return
-    */
-  private[http] def getExecutionContext: ExecutionContext = executionContext
-
   override def close(): Unit = {
     // nothing to do
   }

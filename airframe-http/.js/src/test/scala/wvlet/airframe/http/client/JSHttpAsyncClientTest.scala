@@ -16,8 +16,9 @@ package wvlet.airframe.http.client
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
-import wvlet.airframe.http.{Http, HttpClientException, HttpClientMaxRetryException, HttpStatus, ServerAddress}
+import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
+import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.ExecutionContext
@@ -27,7 +28,7 @@ class JSHttpAsyncClientTest extends AirSpec {
   private implicit val ec: ExecutionContext = defaultExecutionContext
 
   // Use a public REST test server
-  private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
+  private val PUBLIC_REST_SERVICE = "https://jsonplaceholder.typicode.com/"
 
   override def design: Design =
     Design.newDesign
@@ -41,14 +42,15 @@ class JSHttpAsyncClientTest extends AirSpec {
     test("GET") {
       flaky {
         client
-          .send(Http.GET("/get?id=1&name=leo"))
+          .send(Http.GET("/posts/1"))
           .toRxStream
           .map { resp =>
             resp.status shouldBe HttpStatus.Ok_200
             resp.isContentTypeJson shouldBe true
             val json = JSON.parse(resp.message.toContentString).toJSON
             val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
-            m("args") shouldBe Map("id" -> "1", "name" -> "leo")
+            m("userId") shouldBe 1
+            m("id") shouldBe 1
           }
       }
     }
@@ -57,15 +59,14 @@ class JSHttpAsyncClientTest extends AirSpec {
       flaky {
         val data = """{"id":1,"name":"leo"}"""
         client
-          .send(Http.POST("/post").withContent(data))
+          .send(Http.POST("/posts").withContent(data))
           .toRxStream
           .map { resp =>
-            resp.status shouldBe HttpStatus.Ok_200
+            resp.status shouldBe HttpStatus.Created_201
             resp.isContentTypeJson shouldBe true
             val json = JSON.parse(resp.message.toContentString).toJSON
             val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
-            m("data") shouldBe data
-            m("json") shouldBe Map("id" -> 1, "name" -> "leo")
+            m("id") shouldBe 101
           }
       }
     }
@@ -104,6 +105,12 @@ class JSHttpAsyncClientTest extends AirSpec {
       flaky {
         client
           .withRetryContext(_.withMaxRetry(1))
+          .withClientFilter(new ClientFilter {
+            override def chainAsync(req: HttpMessage.Request, context: ClientContext): Rx[HttpMessage.Response] = {
+              // Return a dummy response
+              Rx.single(Http.response(HttpStatus.InternalServerError_500))
+            }
+          })
           .send(Http.GET("/status/500"))
           .toRxStream
           .transform {
@@ -120,6 +127,12 @@ class JSHttpAsyncClientTest extends AirSpec {
     flaky {
       client
         .withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
+        .withClientFilter(new ClientFilter {
+          override def chainAsync(req: HttpMessage.Request, context: ClientContext): Rx[HttpMessage.Response] = {
+            // Return a dummy response
+            Rx.single(Http.response(HttpStatus.InternalServerError_500))
+          }
+        })
         .send(Http.GET("/status/500"))
         .toRxStream
         .transform {
