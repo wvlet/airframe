@@ -29,7 +29,6 @@ class OnClickTest extends AirSpec {
       div(
         onclick -> { (e: MouseEvent) =>
           Rx.single("clicked").map { _ =>
-            info("clicked")
             counter += 1
           }
         }
@@ -37,8 +36,8 @@ class OnClickTest extends AirSpec {
     }
     val elem = node.asInstanceOf[HTMLElement]
     elem.click()
+    counter shouldBe 1
 
     c.cancel
-    counter shouldBe 1
   }
 }
