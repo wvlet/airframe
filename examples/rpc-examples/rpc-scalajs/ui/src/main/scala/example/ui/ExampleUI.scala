@@ -13,12 +13,15 @@
  */
 package example.ui
 
+import example.api.ServiceRPC
 import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
+import wvlet.airframe.http._
 import wvlet.airframe.rx.{Rx, RxOption}
 import wvlet.airframe.rx.html.{DOMRenderer, RxElement}
 
 import scala.scalajs.js.annotation.JSExport
+import wvlet.airframe.rx.html._
 import wvlet.airframe.rx.html.all._
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
@@ -33,33 +36,36 @@ object ExampleUI extends LogSupport {
     debug("debug log")
 
     val main = dom.document.getElementById("main")
-
     DOMRenderer.renderTo(main, new MainUI)
   }
 }
 
-class MainUI extends RxElement with RPCService {
+class MainUI extends RxElement with LogSupport {
+  // Prepare an RPC client
+  private val rpcClient = ServiceRPC.newRPCAsyncClient(Http.client.newJSClient)
   private val message = Rx.variable("N/A")
 
   private def myButton = button(cls -> "btn btn-primary")
+  private var counter = 0
 
   override def render: RxElement = {
     div(
+      style -> "padding: 5px",
       myButton(
-        onclick -> { e: MouseEvent =>
-          info(s"Clicked")
-          client.HelloApi
-            .hello("RPC")
+        onclick -> { (e: MouseEvent) =>
+          counter += 1
+          debug(s"Sending an RPC request")
+          rpcClient.HelloApi
+            .hello(s"RPC ${counter}")
             .toRxStream
             .map { resp =>
-              info(s"RPC result: ${resp}")
               message := resp
             }
         },
-        "Click Me!"
+        "Click: RPC call"
       ),
       message.map { x =>
-        div(s"Message: ${x}")
+        div(s"Received an RPC response: ${x}")
       }
     )
   }

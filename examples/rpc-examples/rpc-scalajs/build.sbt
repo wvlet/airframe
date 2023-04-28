@@ -1,7 +1,7 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val AIRFRAME_VERSION = "23.4.7"
-ThisBuild / scalaVersion := "2.13.10"
+ThisBuild / scalaVersion := "3.2.2"
 
 lazy val rpcExample =
   project
@@ -25,6 +25,8 @@ lazy val server =
   project
     .in(file("server"))
     .settings(
+      // For using the project root as a working folder
+      reStart / baseDirectory := (ThisBuild / baseDirectory).value,
       libraryDependencies ++= Seq(
         "org.wvlet.airframe" %% "airframe-http-netty" % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-launcher"   % AIRFRAME_VERSION
