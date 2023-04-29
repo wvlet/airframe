@@ -42,7 +42,7 @@ class HttpClientLoggingFilter extends RxHttpFilter with LogSupport {
       .toRxStream
       .map { resp =>
         m ++= HttpLogs.commonResponseLogs(resp)
-        RPCContext.current.getThreadLocal[RPCMethod]("rpc_method").map { rpcMethod =>
+        RPCContext.current.getRPCMethod.foreach { rpcMethod =>
           m ++= HttpLogs.rpcMethodLogs(rpcMethod)
         }
         recordDuration

@@ -130,16 +130,20 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
       HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent)
 
     // sendSafe method internally handles retries and HttpClientException, and then it returns the last response
-    Compat.attachRPCContext(RPCContext(method))
-    val response: Response = sendSafe(request)
+    val prevContext = Compat.attachRPCContext(LocalRPCContext(request, Some(method)))
+    try {
+      val response: Response = sendSafe(request)
 
-    // Parse the RPC response
-    if (response.status.isSuccessful) {
-      val ret = HttpClients.parseRPCResponse(config, response, method.responseSurface)
-      ret.asInstanceOf[Resp]
-    } else {
-      // Parse the RPC error message
-      throw HttpClients.parseRPCException(response)
+      // Parse the RPC response
+      if (response.status.isSuccessful) {
+        val ret = HttpClients.parseRPCResponse(config, response, method.responseSurface)
+        ret.asInstanceOf[Resp]
+      } else {
+        // Parse the RPC error message
+        throw HttpClients.parseRPCException(response)
+      }
+    } finally {
+      Compat.detachRPCContext(prevContext)
     }
   }
 }

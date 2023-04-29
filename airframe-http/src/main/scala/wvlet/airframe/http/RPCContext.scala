@@ -37,7 +37,7 @@ trait RPCContext {
     */
   def httpRequest: HttpMessage.Request
 
-  def rpcMethod: RPCMethod
+  def getRPCMethod: Option[RPCMethod]
 
   /**
     * Set a thread-local variable that is available only within the request scope.
@@ -67,19 +67,27 @@ object EmptyRPCContext extends RPCContext {
     // no-op
     None
   }
+  override def getRPCMethod: Option[RPCMethod] = None
 
   override def httpRequest: HttpMessage.Request = {
     throw RPCStatus.UNIMPLEMENTED_U8.newException(
-      "RPCContext.httpRequest is not available outside the context of RPC server"
+      "RPCContext.httpRequest is not available outside the context of RPC call"
     )
   }
 }
 
-case class LocalRPCContext(httpRequest: Request, rpcMethod: RPCMethod) extends RPCContext {
-  private var props = new ConcurrentHashMap[String, Option[A]]()
-  override def setThreadLocal[A](key: String, value: A): Unit = {
+case class LocalRPCContext(httpRequest: Request, rpcMethod: Option[RPCMethod]) extends RPCContext {
+  import scala.jdk.CollectionConverters._
 
+  private val props = new ConcurrentHashMap[String, Any]().asScala
+
+  override def getRPCMethod: Option[RPCMethod] = rpcMethod
+
+  override def setThreadLocal[A](key: String, value: A): Unit = {
+    props.put(key, value)
   }
 
-  override def getThreadLocal[A](key: String): Option[A] = ???
+  override def getThreadLocal[A](key: String): Option[A] = {
+    props.get(key).asInstanceOf[Option[A]]
+  }
 }
