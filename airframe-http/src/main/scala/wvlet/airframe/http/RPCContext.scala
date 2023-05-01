@@ -13,9 +13,7 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.http.HttpMessage.Request
-
-import java.util.concurrent.ConcurrentHashMap
+import wvlet.airframe.http.Compat
 
 object RPCContext {
 
@@ -73,21 +71,5 @@ object EmptyRPCContext extends RPCContext {
     throw RPCStatus.UNIMPLEMENTED_U8.newException(
       "RPCContext.httpRequest is not available outside the context of RPC call"
     )
-  }
-}
-
-case class LocalRPCContext(httpRequest: Request, rpcMethod: Option[RPCMethod]) extends RPCContext {
-  import scala.jdk.CollectionConverters._
-
-  private val props = new ConcurrentHashMap[String, Any]().asScala
-
-  override def getRPCMethod: Option[RPCMethod] = rpcMethod
-
-  override def setThreadLocal[A](key: String, value: A): Unit = {
-    props.put(key, value)
-  }
-
-  override def getThreadLocal[A](key: String): Option[A] = {
-    props.get(key).asInstanceOf[Option[A]]
   }
 }

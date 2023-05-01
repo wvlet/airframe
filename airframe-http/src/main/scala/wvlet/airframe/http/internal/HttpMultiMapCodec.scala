@@ -11,8 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.internal
+
 import wvlet.airframe.codec.{MessageCodec, MessageContext}
+import wvlet.airframe.http.HttpMultiMap
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 
 /**

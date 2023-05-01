@@ -13,18 +13,23 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.http.RPCMethod
+import wvlet.airframe.http.RxHttpFilter
 
 /**
-  * Provide a request context
-  * @param rpcMethod
+  * A filter for intercepting HTTP requests by using
   */
-case class HttpClientContext(
-    rpcMethod: Option[RPCMethod],
-    rpcInput: Option[Any]
-)
+trait HttpClientFilter { self =>
+  def apply(context: HttpClientContext): RxHttpFilter
 
-object HttpClientContext {
-  object empty extends HttpClientContext(None, None)
+  def andThen(next: HttpClientFilter): HttpClientFilter = new HttpClientFilter {
+    override def apply(context: HttpClientContext): RxHttpFilter = {
+      self.apply(context).andThen(next(context))
+    }
+  }
 }
 
+object HttpClientFilter {
+  def identity: HttpClientFilter = new HttpClientFilter {
+    override def apply(context: HttpClientContext): RxHttpFilter = RxHttpFilter.identity
+  }
+}

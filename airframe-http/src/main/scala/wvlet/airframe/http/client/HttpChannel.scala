@@ -27,7 +27,8 @@ trait HttpChannelConfig {
 }
 
 /**
-  * A low-level interface for sending HTTP requests without managing retries or filters
+  * A low-level interface for sending HTTP requests without managing retries nor filters. This interface abstracts away
+  * the backend implementation (e.g., Java Http client, Ajax client, OkHttp client, etc)
   */
 trait HttpChannel extends AutoCloseable {
 

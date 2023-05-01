@@ -14,44 +14,54 @@
 package wvlet.airframe.http.client
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.internal.HttpLogs
-import wvlet.airframe.http.{RPCContext, RPCMethod, RxHttpEndpoint, RxHttpFilter}
+import wvlet.airframe.http.{RxHttpEndpoint, RxHttpFilter}
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import java.util.concurrent.TimeUnit
 import scala.collection.immutable.ListMap
 
-class HttpClientLoggingFilter extends RxHttpFilter with LogSupport {
-  override def apply(req: Request, next: RxHttpEndpoint): Rx[Response] = {
-    val baseTime = System.currentTimeMillis()
-    val start    = System.nanoTime()
-    val m        = ListMap.newBuilder[String, Any]
-    m ++= HttpLogs.unixTimeLogs(baseTime)
-    m ++= HttpLogs.commonRequestLogs(req)
+/**
+  * A client-side filter for logging HTTP requests and responses
+  */
+object HttpClientLoggingFilter extends HttpClientFilter with LogSupport {
+  def apply(context: HttpClientContext): RxHttpFilter = new RxHttpFilter {
+    override def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
+      val baseTime = System.currentTimeMillis()
+      val start    = System.nanoTime()
+      val m        = ListMap.newBuilder[String, Any]
+      m ++= HttpLogs.unixTimeLogs(baseTime)
+      m ++= HttpLogs.commonRequestLogs(request)
 
-    def recordDuration: Unit = {
-      val end           = System.nanoTime()
-      val durationMills = TimeUnit.NANOSECONDS.toMillis(end - start)
-      m += "duration_ms" -> durationMills
-      m += "end_time_ms" -> (baseTime + durationMills)
-      trace(m.result())
-    }
+      def recordDuration: Unit = {
+        val end           = System.nanoTime()
+        val durationMills = TimeUnit.NANOSECONDS.toMillis(end - start)
+        m += "duration_ms" -> durationMills
+        m += "end_time_ms" -> (baseTime + durationMills)
+        logger.trace(m.result())
+      }
 
-    next
-      .apply(req)
-      .toRxStream
-      .map { resp =>
-        m ++= HttpLogs.commonResponseLogs(resp)
-        RPCContext.current.getRPCMethod.foreach { rpcMethod =>
-          m ++= HttpLogs.rpcMethodLogs(rpcMethod)
+      context.rpcMethod.map { rpc =>
+        m ++= HttpLogs.rpcMethodLogs(rpc)
+      }
+      // TODO Record rpc args
+      next
+        .apply(request)
+        .toRxStream
+        .map { resp =>
+          m ++= HttpLogs.commonResponseLogs(resp)
+          context.rpcMethod.foreach { rpcMethod =>
+            m ++= HttpLogs.rpcMethodLogs(rpcMethod)
+          }
+          recordDuration
+          resp
         }
-        recordDuration
-        resp
-      }
-      .recoverWith { case e: Throwable =>
-        m ++= HttpLogs.errorLogs(e)
-        recordDuration
-        Rx.exception(e)
-      }
+        .recoverWith { case e: Throwable =>
+          m ++= HttpLogs.errorLogs(e)
+          recordDuration
+          Rx.exception(e)
+        }
+    }
   }
 }
+

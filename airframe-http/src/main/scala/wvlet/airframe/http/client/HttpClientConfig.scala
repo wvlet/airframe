@@ -18,6 +18,7 @@ import wvlet.airframe.control.CircuitBreaker
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http.{Compat, RPCEncoding, RxHttpFilter, ServerAddress}
+import wvlet.airframe.http.client.HttpClientFilter
 import wvlet.airframe.rx.{Rx, RxStream}
 
 import java.util.concurrent.TimeUnit
@@ -39,7 +40,8 @@ case class HttpClientConfig(
     connectTimeout: Duration = Duration(90, TimeUnit.SECONDS),
     // timeout applied when receiving data from the target host
     readTimeout: Duration = Duration(90, TimeUnit.SECONDS),
-    rxHttpFilter: RxHttpFilter = RxHttpFilter.identity,
+    clientFilter: HttpClientFilter = HttpClientFilter.identity,
+    loggingFilter: HttpClientFilter = HttpClientLoggingFilter,
     /**
       * For converting Future[A] to Rx[A]. Use this method when you need to add a common error handler for Rx (e.g.,
       * with Rx.recover). This is mainly used in generated RPC clients for Scala.js
@@ -50,6 +52,10 @@ case class HttpClientConfig(
       Rx.future(f)(Compat.defaultExecutionContext)
     }
 ) extends HttpChannelConfig {
+
+  private[http] def allClientFilter: HttpClientFilter = {
+    loggingFilter.andThen(clientFilter)
+  }
 
   def newSyncClient(serverAddress: String): SyncClient =
     backend.newSyncClient(ServerAddress(serverAddress), this)
@@ -104,14 +110,33 @@ case class HttpClientConfig(
   }
 
   /**
-    * Add a new RxHttpFilter. This filter is useful for adding a common error handling logic for the Rx[Response].
+    * Add a new HttpClientFilter. This filter is useful for adding a common error handling logic for the Rx[Response].
     * @param filter
     * @return
     */
-  def withRxHttpFilter(filter: RxHttpFilter): HttpClientConfig = {
-    this.copy(rxHttpFilter = rxHttpFilter.andThen(filter))
+  def withClientFilter(filter: HttpClientFilter): HttpClientConfig = {
+    this.copy(clientFilter = clientFilter.andThen(filter))
   }
-  def noRxHttpFilter: HttpClientConfig = this.copy(rxHttpFilter = RxHttpFilter.identity)
+
+  /**
+    * Remove any client-side filter
+    */
+  def noClientFilter: HttpClientConfig = this.copy(clientFilter = HttpClientFilter.identity)
+
+  /**
+    * Set a custom client-side logging filter
+    */
+  def withLoggingFilter(filter: HttpClientFilter): HttpClientConfig = {
+    this.copy(loggingFilter = filter)
+  }
+
+  /**
+    * Disable http-client side logging
+    * @return
+    */
+  def noLogging: HttpClientConfig = {
+    this.copy(loggingFilter = HttpClientFilter.identity)
+  }
 
   /**
     * Set a converter from Future[A] to Rx[A]

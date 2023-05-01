@@ -18,6 +18,7 @@ import wvlet.airframe.control.Retry.MaxRetryException
 import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
+import wvlet.airframe.http.internal.{HttpResponseBodyCodec, RPCCallContext}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -63,13 +64,14 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
     * @throws HttpClientException
     *   for non-retryable error is occurred
     */
-  def send(req: Request): Response = {
+  def send(req: Request, context: HttpClientContext = HttpClientContext.empty): Response = {
     val request = config.requestFilter(req)
 
     var lastResponse: Option[Response] = None
     try {
       config.retryContext.runWithContext(request, circuitBreaker) {
-        config.rxHttpFilter
+        config
+          .allClientFilter(context)
           .andThen(req => Rx.single(channel.send(req, config)))
           .apply(request)
           .toRxStream
@@ -90,9 +92,9 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
     *
     * After reaching the max retry count, it will return a the last response even for 5xx status code.
     */
-  def sendSafe(req: Request): Response = {
+  def sendSafe(req: Request, context: HttpClientContext = HttpClientContext.empty): Response = {
     try {
-      send(req)
+      send(req, context)
     } catch {
       case e: HttpClientException =>
         e.response.toHttpResponse
@@ -129,21 +131,20 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
     val request: Request =
       HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent)
 
+    val context = HttpClientContext(
+      rpcMethod = Some(method),
+      rpcInput = Some(requestContent)
+    )
     // sendSafe method internally handles retries and HttpClientException, and then it returns the last response
-    val prevContext = Compat.attachRPCContext(LocalRPCContext(request, Some(method)))
-    try {
-      val response: Response = sendSafe(request)
+    val response: Response = sendSafe(request, context = context)
 
-      // Parse the RPC response
-      if (response.status.isSuccessful) {
-        val ret = HttpClients.parseRPCResponse(config, response, method.responseSurface)
-        ret.asInstanceOf[Resp]
-      } else {
-        // Parse the RPC error message
-        throw HttpClients.parseRPCException(response)
-      }
-    } finally {
-      Compat.detachRPCContext(prevContext)
+    // Parse the RPC response
+    if (response.status.isSuccessful) {
+      val ret = HttpClients.parseRPCResponse(config, response, method.responseSurface)
+      ret.asInstanceOf[Resp]
+    } else {
+      // Parse the RPC error message
+      throw HttpClients.parseRPCException(response)
     }
   }
 }
@@ -165,12 +166,13 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
     *
     * If it exceeds the number of max retry attempts, it will return Rx[HttpClientMaxRetryException].
     */
-  def send(req: Request): Rx[Response] = {
+  def send(req: Request, context: HttpClientContext = HttpClientContext.empty): Rx[Response] = {
     val request                        = config.requestFilter(req)
     var lastResponse: Option[Response] = None
     config.retryContext
       .runAsyncWithContext(request, circuitBreaker) {
-        config.rxHttpFilter
+        config
+          .allClientFilter(context)
           .andThen(req => channel.sendAsync(req, config))
           .apply(request)
           .toRxStream
@@ -191,8 +193,8 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
     * @param req
     * @return
     */
-  def sendSafe(req: Request): Rx[Response] = {
-    send(req).toRxStream.recover { case e: HttpClientException =>
+  def sendSafe(req: Request, context: HttpClientContext = HttpClientContext.empty): Rx[Response] = {
+    send(req, context).toRxStream.recover { case e: HttpClientException =>
       e.response.toHttpResponse
     }
   }
@@ -228,7 +230,11 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
     Rx
       .const(HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent))
       .flatMap { (request: Request) =>
-        sendSafe(request).toRxStream
+        val context = HttpClientContext(
+          rpcMethod = Some(method),
+          rpcInput = Some(requestContent)
+        )
+        sendSafe(request, context).toRxStream
           .map { (response: Response) =>
             if (response.status.isSuccessful) {
               val ret = HttpClients.parseRPCResponse(config, response, method.responseSurface)
