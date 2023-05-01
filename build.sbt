@@ -41,7 +41,7 @@ addCommandAlias(
 // [Development purpose] publish all sbt-airframe related artifacts to local repo
 addCommandAlias(
   "publishSbtDevLocal",
-  s"++ 2.12; projectJVM/publishLocal; ++ 3; projectJVM/publishLocal; projectJS/publishLocal"
+  s"++ 2.12; projectJVM/publishLocal; ++ 3; projectDotty/publishLocal; projectJS/publishLocal"
 )
 
 addCommandAlias(
