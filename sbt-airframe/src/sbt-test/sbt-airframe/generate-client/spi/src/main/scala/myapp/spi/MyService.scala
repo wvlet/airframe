@@ -9,3 +9,7 @@ trait MyService {
   @Endpoint(method = HttpMethod.GET, path = "/v1/books")
   def books(limit: Int = 100): String
 }
+
+object MyService extends RxRouterProvider {
+  def router: RxRouter = RxRouter.of[MyService]
+}

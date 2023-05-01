@@ -13,7 +13,9 @@ trait MyRPC {
   def createPageWithId(id: Int, createPageRequest: CreatePageRequest): String
 }
 
-object MyRPC {
+object MyRPC extends RxRotuerProvider {
+  override def router: RxRouter = RxRouter.of[MyRPC]
+
   case class World(name: String)
   case class CreatePageRequest(name: String)
 }

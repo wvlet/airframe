@@ -1,11 +1,11 @@
 package myapp.server
 
-import wvlet.airframe.http.Router
-import wvlet.airframe.http.finagle._
+import wvlet.airframe.http._
+import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.netty.Netty
 import wvlet.log.LogSupport
 import myapp.spi.MyService
 import myapp.spi.MyRPC._
-import com.twitter.util.Await
 
 class MyServiceImpl extends myapp.spi.MyService {
   override def hello(id: Int): String    = s"hello ${id}"
@@ -22,31 +22,23 @@ class MyRPCImpl extends myapp.spi.MyRPC {
 object MyServer extends LogSupport {
 
   def main(args: Array[String]): Unit = {
-    val router = Router.add[MyServiceImpl].add[MyRPCImpl]
+    val router = RxRouter.of(
+        RxRouter.of[MyServiceImpl],
+        RxRouter.of[MyRPCImpl]
+    )
     info(router)
 
     val d =
-      newFinagleServerDesign(router = router)
-        .add(finagleClientDesign)
+      Netty
+        .server
+        .withRouter(router)
+        .designWithSyncClient
 
-    d.build[FinagleClient] { finagleClient =>
-      val client = new myapp.spi.ServiceClient(finagleClient)
-      val future = client.MyService.hello(100).map { v =>
-        logger.info(v)
-        assert(v == "hello 100")
-      }
-      Await.result(future)
-
-      val syncClient = new myapp.spi.ServiceSyncClient(finagleClient.syncClient)
+    d.build[SyncClient] { httpClient =>
+      val syncClient = myapp.spi.ServiceRPC.newSyncClient(httpClient)
       val ret        = syncClient.MyService.hello(101)
       info(ret)
       assert(ret == "hello 101")
-
-      val future2 = client.MyService.books(10).map { v =>
-        logger.info(v)
-        assert(v == s"10 books")
-      }
-      Await.result(future2)
 
       val ret2 = syncClient.MyRPC.world()
       info(ret2)
