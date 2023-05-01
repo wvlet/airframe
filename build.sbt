@@ -41,7 +41,7 @@ addCommandAlias(
 // [Development purpose] publish all sbt-airframe related artifacts to local repo
 addCommandAlias(
   "publishSbtDevLocal",
-  s"+ projectJVM/publishLocal; ++ 2.13; projectJS/publishLocal; ++ 3; projectJS/publishLocal"
+  s"++ 2.12; projectJVM/publishLocal; ++ 3; projectDotty/publishLocal; projectJS/publishLocal"
 )
 
 addCommandAlias(
@@ -268,6 +268,7 @@ lazy val projectDotty =
       codec.jvm,
       fluentd,
       http.jvm,
+      netty,
       httpCodeGen,
       httpRecorder,
       okhttp,

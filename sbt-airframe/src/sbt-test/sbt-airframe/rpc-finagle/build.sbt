@@ -5,7 +5,7 @@ ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-parse
 
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
-ThisBuild / scalaVersion := "2.13.10"
+ThisBuild / scalaVersion := "2.12.17"
 
 val AIRSPEC_VERSION = "23.4.5"
 
