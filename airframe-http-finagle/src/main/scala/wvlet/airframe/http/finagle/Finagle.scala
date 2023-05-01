@@ -17,7 +17,7 @@ package wvlet.airframe.http.finagle
   * An entry point for building customized Finagle services
   */
 object Finagle {
-  @deprecated("Use Http.client.newAsyncClient", "23.5.0")
+  @deprecated("Use Http.client", "23.5.0")
   def client: FinagleClientConfig = FinagleClientConfig()
   def server: FinagleServerConfig = FinagleServerConfig()
 

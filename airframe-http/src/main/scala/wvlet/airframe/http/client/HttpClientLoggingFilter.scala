@@ -65,3 +65,4 @@ object HttpClientLoggingFilter extends HttpClientFilter with LogSupport {
     }
   }
 }
+
