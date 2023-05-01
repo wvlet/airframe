@@ -268,6 +268,7 @@ lazy val projectDotty =
       codec.jvm,
       fluentd,
       http.jvm,
+      netty,
       httpCodeGen,
       httpRecorder,
       okhttp,
