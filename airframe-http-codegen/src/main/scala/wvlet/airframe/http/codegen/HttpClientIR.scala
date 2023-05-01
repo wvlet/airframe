@@ -170,7 +170,8 @@ object HttpClientIR extends LogSupport {
       returnType: Surface,
       path: String,
       // A case class definition for wrapping HTTP request parameters
-      requestModelClassDef: Option[ClientRequestModelClassDef] = None
+      requestModelClassDef: Option[ClientRequestModelClassDef] = None,
+      isRPC: Boolean
   ) extends ClientCodeIR {
     def typeArgString =
       typeArgs
@@ -382,7 +383,8 @@ object HttpClientIR extends LogSupport {
         clientCallParameters = clientCallParams.result(),
         path = analysis.pathString,
         returnType = unwrapFuture(route.returnTypeSurface),
-        requestModelClassDef = requestModelClassDef
+        requestModelClassDef = requestModelClassDef,
+        isRPC = route.isRPC
       )
     }
 

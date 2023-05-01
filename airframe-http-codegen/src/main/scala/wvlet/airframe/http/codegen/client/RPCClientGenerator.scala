@@ -128,10 +128,14 @@ object RPCClientGenerator extends HttpClientGenerator {
     }
 
     def sendRequestArgs(m: ClientMethodDef): String = {
-      Seq(
-        s"__m_${m.name}",
-        m.clientCallParameters.mkString(", ")
-      ).mkString(", ")
+      val b = Seq.newBuilder[String]
+      if (m.isRPC) {
+        b += s"__m_${m.name}"
+      } else {
+        b += s"""resourcePath = "${m.path}""""
+      }
+      b ++= m.clientCallParameters
+      b.result().mkString(", ")
     }
 
     def rpcMethods(svc: ClientServiceDef, isAsync: Boolean): String = {
@@ -141,10 +145,11 @@ object RPCClientGenerator extends HttpClientGenerator {
             m.inputParameters
               .map(x => s"${x.name}: ${x.surface.fullTypeName}")
 
+          val methodName = if (m.isRPC) "rpc" else m.clientMethodName
           val returnType = if (isAsync) s"Rx[${m.returnType.fullTypeName}]" else m.returnType.fullTypeName
 
           s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
-             |  client.rpc[${m.typeArgString}](${sendRequestArgs(m)})
+             |  client.${methodName}[${m.typeArgString}](${sendRequestArgs(m)})
              |}""".stripMargin
         }
         .mkString("\n")
