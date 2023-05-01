@@ -32,7 +32,7 @@ object RPCClientGenerator extends HttpClientGenerator {
          |
          |import scala.concurrent.Future
          |import wvlet.airframe.http._
-         |import wvlet.airframe.http.client.{SyncClient, AsyncClient}
+         |import wvlet.airframe.http.client.{HttpClientConfig, SyncClient, AsyncClient}
          |import wvlet.airframe.surface.Surface
          |import wvlet.airframe.rx.Rx
          |
@@ -85,7 +85,7 @@ object RPCClientGenerator extends HttpClientGenerator {
     }
 
     def syncClientClass: String =
-      s"""class RPCSyncClient(client:SyncClient) extends wvlet.airframe.http.client.ClientFactory[RPCSyncClient] with AutoCloseable {
+      s"""class RPCSyncClient(client:SyncClient) extends wvlet.airframe.http.client.HttpClientFactory[RPCSyncClient] with AutoCloseable {
          |  override protected def build(newConfig: HttpClientConfig): RPCSyncClient = {
          |    new RPCSyncClient(client.withConfig(_ => newConfig))
          |  }
@@ -98,7 +98,7 @@ object RPCClientGenerator extends HttpClientGenerator {
          |""".stripMargin
 
     def asyncClientClass: String =
-      s"""class RPCAsyncClient(client:AsyncClient) extends wvlet.airframe.http.client.ClientFactory[RPCAsyncClient] with AutoCloseable {
+      s"""class RPCAsyncClient(client:AsyncClient) extends wvlet.airframe.http.client.HttpClientFactory[RPCAsyncClient] with AutoCloseable {
          |  override protected def build(newConfig: HttpClientConfig): RPCAsyncClient = {
          |    new RPCAsyncClient(client.withConfig(_ => newConfig))
          |  }
