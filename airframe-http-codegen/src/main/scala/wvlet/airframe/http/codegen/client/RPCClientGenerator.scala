@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen.client
+import wvlet.airframe.http.{Http, HttpMethod}
 import wvlet.airframe.http.codegen.HttpClientIR
 import wvlet.airframe.http.codegen.HttpClientIR.{ClientMethodDef, ClientServiceDef}
 import wvlet.airframe.http.codegen.client.HttpClientGenerator.RichSurface
@@ -129,11 +130,7 @@ object RPCClientGenerator extends HttpClientGenerator {
 
     def sendRequestArgs(m: ClientMethodDef): String = {
       val b = Seq.newBuilder[String]
-      if (m.isRPC) {
-        b += s"__m_${m.name}"
-      } else {
-        b += s"""resourcePath = "${m.path}""""
-      }
+      b += s"__m_${m.name}"
       b ++= m.clientCallParameters
       b.result().mkString(", ")
     }
@@ -145,12 +142,28 @@ object RPCClientGenerator extends HttpClientGenerator {
             m.inputParameters
               .map(x => s"${x.name}: ${x.surface.fullTypeName}")
 
-          val methodName = if (m.isRPC) "rpc" else m.clientMethodName
           val returnType = if (isAsync) s"Rx[${m.returnType.fullTypeName}]" else m.returnType.fullTypeName
-
-          s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
-             |  client.${methodName}[${m.typeArgString}](${sendRequestArgs(m)})
-             |}""".stripMargin
+          if (m.isRPC) {
+            s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
+               |  client.rpc[${m.typeArgString}](${sendRequestArgs(m)})
+               |}""".stripMargin
+          } else {
+            // For @Endpoint calls
+            m.httpMethod match {
+              case HttpMethod.GET =>
+                s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
+                   |  client.readAs[${m.returnType.fullTypeName}](Http.GET(${m.path}))
+                   |}""".stripMargin
+              case _ =>
+                val args = Seq.newBuilder[String]
+                args += s"Http.${m.httpMethod}(${m.path})"
+                args += m.path
+                args ++= m.clientCallParameters
+                s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
+                   |  client.call[${m.typeArgString}](${args.result().mkString(", ")})
+                   |}""".stripMargin
+            }
+          }
         }
         .mkString("\n")
     }
