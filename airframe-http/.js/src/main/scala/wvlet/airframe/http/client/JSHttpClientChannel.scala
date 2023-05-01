@@ -29,7 +29,7 @@ class JSHttpClientChannel(serverAddress: ServerAddress, private[client] val conf
     extends HttpChannel
     with LogSupport {
 
-  private[client] implicit val executionContext: ExecutionContext = config.newExecutionContext
+  private[client] implicit val executionContext: ExecutionContext = Compat.defaultExecutionContext
 
   override def close(): Unit = {
     // nothing to do

@@ -35,8 +35,6 @@ trait RPCContext {
     */
   def httpRequest: HttpMessage.Request
 
-  def getRPCMethod: Option[RPCMethod]
-
   /**
     * Set a thread-local variable that is available only within the request scope.
     * @param key
@@ -65,8 +63,6 @@ object EmptyRPCContext extends RPCContext {
     // no-op
     None
   }
-  override def getRPCMethod: Option[RPCMethod] = None
-
   override def httpRequest: HttpMessage.Request = {
     throw RPCStatus.UNIMPLEMENTED_U8.newException(
       "RPCContext.httpRequest is not available outside the context of RPC call"

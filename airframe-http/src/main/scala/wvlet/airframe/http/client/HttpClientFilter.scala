@@ -32,4 +32,8 @@ object HttpClientFilter {
   def identity: HttpClientFilter = new HttpClientFilter {
     override def apply(context: HttpClientContext): RxHttpFilter = RxHttpFilter.identity
   }
+
+  def wrap(filter: RxHttpFilter): HttpClientFilter = new HttpClientFilter {
+    override def apply(context: HttpClientContext): RxHttpFilter = filter
+  }
 }

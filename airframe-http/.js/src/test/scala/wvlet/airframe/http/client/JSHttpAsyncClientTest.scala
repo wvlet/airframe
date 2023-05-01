@@ -105,8 +105,8 @@ class JSHttpAsyncClientTest extends AirSpec {
       flaky {
         client
           .withRetryContext(_.withMaxRetry(1))
-          .withClientFilter(new ClientFilter {
-            override def chainAsync(req: HttpMessage.Request, context: HttpClientContext): Rx[HttpMessage.Response] = {
+          .withClientFilter(new RxHttpFilter {
+            override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {
               // Return a dummy response
               Rx.single(Http.response(HttpStatus.InternalServerError_500))
             }
@@ -127,8 +127,8 @@ class JSHttpAsyncClientTest extends AirSpec {
     flaky {
       client
         .withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
-        .withClientFilter(new ClientFilter {
-          override def chainAsync(req: HttpMessage.Request, context: HttpClientContext): Rx[HttpMessage.Response] = {
+        .withClientFilter(new RxHttpFilter {
+          override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {
             // Return a dummy response
             Rx.single(Http.response(HttpStatus.InternalServerError_500))
           }

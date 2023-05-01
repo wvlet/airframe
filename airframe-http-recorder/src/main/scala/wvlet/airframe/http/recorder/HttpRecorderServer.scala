@@ -78,7 +78,6 @@ class HttpRecorderServer(recordStore: HttpRecordStore, endpoint: RxHttpEndpoint)
 
   override def close(): Unit = {
     diSession.foreach(_.shutdown)
-    endpoint.close()
     recordStore.close()
   }
 }

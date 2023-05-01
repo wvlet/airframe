@@ -84,7 +84,7 @@ object GrpcErrorLogTest extends AirSpec {
       log("rpc_method") shouldBe "hello"
       log("rpc_args") shouldBe Map("name" -> "gRPC")
       log.contains("time") shouldBe true
-      log.contains("event_time") shouldBe true
+      log.contains("event_timestamp") shouldBe true
       log("grpc_method_type") shouldBe "UNARY"
 
       log.contains("local_addr") shouldBe true
@@ -109,7 +109,7 @@ object GrpcErrorLogTest extends AirSpec {
       log("rpc_method") shouldBe "helloClientStreaming"
       log.get("rpc_args") shouldBe empty
       log.contains("time") shouldBe true
-      log.contains("event_time") shouldBe true
+      log.contains("event_timestamp") shouldBe true
       log("grpc_method_type") shouldBe "CLIENT_STREAMING"
 
       log.contains("local_addr") shouldBe true
@@ -134,7 +134,7 @@ object GrpcErrorLogTest extends AirSpec {
       log("rpc_method") shouldBe "helloBidiStreaming"
       log.get("rpc_args") shouldBe empty
       log.contains("time") shouldBe true
-      log.contains("event_time") shouldBe true
+      log.contains("event_timestamp") shouldBe true
       log("grpc_method_type") shouldBe "BIDI_STREAMING"
 
       log.contains("local_addr") shouldBe true

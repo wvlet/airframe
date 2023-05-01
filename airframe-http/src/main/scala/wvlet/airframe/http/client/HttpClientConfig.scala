@@ -119,6 +119,16 @@ case class HttpClientConfig(
   }
 
   /**
+    * Add a new RxClientFilter. This filter is useful for adding a common error handling logic for the Rx[Response].
+    *
+    * @param filter
+    * @return
+    */
+  def withClientFilter(filter: RxHttpFilter): HttpClientConfig = {
+    this.copy(clientFilter = clientFilter.andThen(HttpClientFilter.wrap(filter)))
+  }
+
+  /**
     * Remove any client-side filter
     */
   def noClientFilter: HttpClientConfig = this.copy(clientFilter = HttpClientFilter.identity)
