@@ -25,10 +25,8 @@ import java.net.http.HttpClient.Redirect
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
 import java.net.http.{HttpClient, HttpRequest, HttpResponse}
-import java.util.concurrent.{CompletionStage, ExecutorService}
 import java.util.function.Consumer
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
-import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.jdk.CollectionConverters._
 
 /**
@@ -57,7 +55,7 @@ class JavaHttpClientChannel(serverAddress: ServerAddress, private[http] val conf
     // It seems Java Http Client has no close() method
   }
 
-  override def send(req: Request, channelConfig: ChannelConfig): Response = {
+  override def send(req: Request, channelConfig: HttpChannelConfig): Response = {
     // New Java's HttpRequest is immutable, so we can reuse the same request instance
     val httpRequest = buildRequest(serverAddress, req, channelConfig)
     val httpResponse: HttpResponse[InputStream] =
@@ -66,7 +64,7 @@ class JavaHttpClientChannel(serverAddress: ServerAddress, private[http] val conf
     readResponse(httpResponse)
   }
 
-  override def sendAsync(req: Request, channelConfig: ChannelConfig): Rx[Response] = {
+  override def sendAsync(req: Request, channelConfig: HttpChannelConfig): Rx[Response] = {
     val v = Rx.variable[Option[Response]](None)
     try {
       val httpRequest = buildRequest(serverAddress, req, channelConfig)
@@ -94,7 +92,7 @@ class JavaHttpClientChannel(serverAddress: ServerAddress, private[http] val conf
   private def buildRequest(
       serverAddress: ServerAddress,
       request: Request,
-      channelConfig: ChannelConfig
+      channelConfig: HttpChannelConfig
   ): HttpRequest = {
     val uri = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
       else s"/${request.uri}"}"

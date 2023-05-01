@@ -11,20 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.okhttp
+package wvlet.airframe.http.client
 
-import wvlet.airframe.control.Retry.RetryContext
-import wvlet.airframe.http.client.{HttpChannel, HttpClientBackend, HttpClientConfig}
-import wvlet.airframe.http.{Http, HttpClient, ServerAddress}
+import wvlet.airframe.http.RPCMethod
 
-object OkHttp {
-  def client: HttpClientConfig =
-    Http.client
-      .withBackend(OkHttpBackend)
-}
+/**
+  * Provide a request context
+  * @param rpcMethod
+  */
+case class HttpClientContext(
+    clientName: String,
+    rpcMethod: Option[RPCMethod] = None,
+    rpcInput: Option[Any] = None
+)
 
-object OkHttpBackend extends HttpClientBackend {
-  def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel = {
-    new OkHttpChannel(serverAddress, config)
-  }
+object HttpClientContext {
+  object empty extends HttpClientContext("default", None, None)
 }

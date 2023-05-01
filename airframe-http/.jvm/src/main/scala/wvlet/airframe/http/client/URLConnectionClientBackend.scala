@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.client
-import wvlet.airframe.http.{HttpClientConfig, ServerAddress}
+import wvlet.airframe.http.{ServerAddress}
 
 /**
   */

@@ -15,8 +15,8 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.control.CircuitBreaker
 import wvlet.airframe.control.Retry.RetryContext
-import wvlet.airframe.http.HttpClientConfig
 import wvlet.airframe.http.HttpMessage.Request
+import wvlet.airframe.http.RxHttpFilter
 
 import scala.concurrent.duration.Duration
 
@@ -25,7 +25,7 @@ import scala.concurrent.duration.Duration
   *
   * @tparam ClientImpl
   */
-trait ClientFactory[ClientImpl] {
+trait HttpClientFactory[ClientImpl] {
 
   protected def config: HttpClientConfig
 
@@ -39,8 +39,14 @@ trait ClientFactory[ClientImpl] {
   def withRequestFilter(requestFilter: Request => Request): ClientImpl = {
     build(config.withRequestFilter(requestFilter))
   }
-  def withClientFilter(filter: ClientFilter): ClientImpl = {
+  def withClientFilter(filter: HttpClientFilter): ClientImpl = {
     build(config.withClientFilter(filter))
+  }
+  def withClientFilter(filter: RxHttpFilter): ClientImpl = {
+    build(config.withClientFilter(filter))
+  }
+  def withLoggingFilter(filter: HttpClientFilter): ClientImpl = {
+    build(config.withLoggingFilter(filter))
   }
   def withRetryContext(filter: RetryContext => RetryContext): ClientImpl = {
     build(config.withRetryContext(filter))

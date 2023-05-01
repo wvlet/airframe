@@ -14,7 +14,7 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.http._
-import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.client.{HttpClientConfig, SyncClient}
 import wvlet.airframe.http.netty.MyRPCClient.RPCSyncClient
 import wvlet.airframe.http.netty.RPCClientBindingTest.MyApi.{HelloRequest, HelloResponse}
 import wvlet.airframe.surface.Surface
@@ -37,7 +37,7 @@ object MyRPCClient {
   }
 
   class RPCSyncClient(client: SyncClient)
-      extends wvlet.airframe.http.client.ClientFactory[RPCSyncClient]
+      extends wvlet.airframe.http.client.HttpClientFactory[RPCSyncClient]
       with AutoCloseable {
     override protected def build(newConfig: HttpClientConfig): RPCSyncClient = {
       new RPCSyncClient(client.withConfig(_ => newConfig))

@@ -17,6 +17,7 @@ import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.internal.HttpResponseBodyCodec
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport

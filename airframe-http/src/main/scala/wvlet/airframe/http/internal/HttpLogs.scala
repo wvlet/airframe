@@ -19,7 +19,6 @@ import wvlet.airframe.surface.{Parameter, Surface, TypeName}
 import wvlet.airframe.ulid.ULID
 import wvlet.log.LogTimestampFormatter
 
-import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.ConcurrentHashMap
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
@@ -34,7 +33,7 @@ object HttpLogs {
       "time"          -> (currentTimeMillis / 1000L),
       "start_time_ms" -> currentTimeMillis,
       // timestamp with ms resolution and zone offset
-      "event_time" -> LogTimestampFormatter.formatTimestampWithNoSpaace(currentTimeMillis)
+      "event_timestamp" -> LogTimestampFormatter.formatTimestampWithNoSpaace(currentTimeMillis)
     )
   }
   def commonRequestLogs(request: Request): Map[String, Any] = {
@@ -45,6 +44,9 @@ object HttpLogs {
     val queryString = extractQueryString(request.uri)
     if (queryString.nonEmpty) {
       m += "query_string" -> queryString
+    }
+    request.remoteAddress.foreach { remoteAddr =>
+      m += "remote_address" -> remoteAddr.hostAndPort
     }
     m ++= requestHeaderLogs(request)
     m.result()
@@ -57,6 +59,14 @@ object HttpLogs {
     response.contentLength.foreach {
       m += "response_content_length" -> _
     }
+
+    response.getHeader(HttpHeader.xAirframeRPCStatus).foreach { rpcStatus =>
+      Try(RPCStatus.ofCode(rpcStatus.toInt)).foreach { status =>
+        m += "rpc_status"      -> status.code
+        m += "rpc_status_name" -> status.name
+      }
+    }
+
     m ++= responseHeaderLogs(response)
     m.result()
   }

@@ -14,27 +14,29 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.{Design, newDesign}
-import wvlet.airframe.http.{ChannelConfig, Http, HttpHeader, HttpMessage, HttpStatus, HttpSyncClient, RPCMethod}
+import wvlet.airframe.http.{Http, HttpHeader, HttpMessage, HttpStatus, HttpSyncClient, RPCMethod, RPCStatus}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
-class ClientLoggingFilterTest extends AirSpec {
+class HttpClientLoggingFilterTest extends AirSpec {
 
   class DummyHttpChannel extends HttpChannel with LogSupport {
-    override def send(req: HttpMessage.Request, channelConfig: ChannelConfig): HttpMessage.Response = {
-      Http.response(HttpStatus.Ok_200).withJson("""{"message":"hello"}""")
+    override def send(req: HttpMessage.Request, channelConfig: HttpChannelConfig): HttpMessage.Response = {
+      Http
+        .response(HttpStatus.Ok_200).withJson("""{"message":"hello"}""")
+        .withHeader(HttpHeader.xAirframeRPCStatus, RPCStatus.SUCCESS_S0.code.toString)
     }
 
-    override def sendAsync(req: HttpMessage.Request, channelConfig: ChannelConfig): Rx[HttpMessage.Response] = ???
-    override def close(): Unit                                                                               = {}
+    override def sendAsync(req: HttpMessage.Request, channelConfig: HttpChannelConfig): Rx[HttpMessage.Response] = ???
+    override def close(): Unit                                                                                   = {}
   }
 
   protected override def design: Design = {
     newDesign.bind[SyncClient].toInstance {
-      val filter = new ClientLoggingFilter
-      new SyncClientImpl(new DummyHttpChannel, Http.client.withClientFilter(filter))
+      val filter = HttpClientLoggingFilter
+      new SyncClientImpl(new DummyHttpChannel, Http.client.withLoggingFilter(filter))
     }
   }
 

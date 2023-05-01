@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.http.Compat
+
 object RPCContext {
 
   /**
@@ -61,10 +63,9 @@ object EmptyRPCContext extends RPCContext {
     // no-op
     None
   }
-
   override def httpRequest: HttpMessage.Request = {
     throw RPCStatus.UNIMPLEMENTED_U8.newException(
-      "RPCContext.httpRequest is not available outside the context of RPC server"
+      "RPCContext.httpRequest is not available outside the context of RPC call"
     )
   }
 }

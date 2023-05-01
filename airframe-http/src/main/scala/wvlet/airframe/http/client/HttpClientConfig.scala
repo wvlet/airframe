@@ -11,42 +11,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.client
+
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.CircuitBreaker
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.Request
-import wvlet.airframe.http.client.{AsyncClient, ClientFilter, HttpClientBackend, SyncClient}
+import wvlet.airframe.http.{Compat, RPCEncoding, RxHttpFilter, ServerAddress}
+import wvlet.airframe.http.client.HttpClientFilter
 import wvlet.airframe.rx.{Rx, RxStream}
 
 import java.util.concurrent.TimeUnit
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ExecutionContext, Future}
-
-object HttpClientConfig {
-  // Tell the IntelliJ that Compat object implements CompatAPI. This a workaround of IntelliJ, which cannot properly highlight cross-build project code:
-  // https://youtrack.jetbrains.com/issue/SCL-19567/Support-of-CrossType-Full-wanted
-  private def compat: CompatApi = wvlet.airframe.http.Compat
-}
-
-import wvlet.airframe.http.HttpClientConfig._
-
-/**
-  * Contains only http channel related configurations in HttpClientConfig
-  */
-trait ChannelConfig {
-  def connectTimeout: Duration
-  def readTimeout: Duration
-}
 
 /**
   */
 case class HttpClientConfig(
     name: String = "airframe-http-client",
-    backend: HttpClientBackend = compat.defaultHttpClientBackend,
+    backend: HttpClientBackend = Compat.defaultHttpClientBackend,
     requestFilter: Request => Request = identity,
     rpcEncoding: RPCEncoding = RPCEncoding.JSON,
-    retryContext: RetryContext = compat.defaultHttpClientBackend.defaultRequestRetryer,
+    retryContext: RetryContext = Compat.defaultHttpClientBackend.defaultRequestRetryer,
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
     // The default circuit breaker, which will be open after 5 consecutive failures
     circuitBreaker: CircuitBreaker = CircuitBreaker.withConsecutiveFailures(5),
@@ -54,19 +40,22 @@ case class HttpClientConfig(
     connectTimeout: Duration = Duration(90, TimeUnit.SECONDS),
     // timeout applied when receiving data from the target host
     readTimeout: Duration = Duration(90, TimeUnit.SECONDS),
-    // Provide a thread executor for managing Scala Future responses
-    executionContextProvider: HttpClientConfig => ExecutionContext = { _ => compat.defaultExecutionContext },
-    // loggingFilter: ClientFilter = ClientLoggingFilter,
-    clientFilter: ClientFilter = ClientFilter.identity,
+    clientFilter: HttpClientFilter = HttpClientFilter.identity,
+    loggingFilter: HttpClientFilter = HttpClientLoggingFilter,
     /**
       * For converting Future[A] to Rx[A]. Use this method when you need to add a common error handler for Rx (e.g.,
       * with Rx.recover). This is mainly used in generated RPC clients for Scala.js
       */
+    @deprecated("Use rxFilter instead", "23.5.0")
     rxConverter: Future[_] => RxStream[_] = { (f: Future[_]) =>
       // TODO: This execution context needs to reference a global one if we need to use it in Scala JVM
-      Rx.future(f)(compat.defaultExecutionContext)
+      Rx.future(f)(Compat.defaultExecutionContext)
     }
-) extends ChannelConfig {
+) extends HttpChannelConfig {
+
+  private[http] def allClientFilter: HttpClientFilter = {
+    loggingFilter.andThen(clientFilter)
+  }
 
   def newSyncClient(serverAddress: String): SyncClient =
     backend.newSyncClient(ServerAddress(serverAddress), this)
@@ -78,7 +67,7 @@ case class HttpClientConfig(
     * Create a default Async client for Scala.js in web browsers
     */
   def newJSClient: AsyncClient =
-    backend.newAsyncClient(compat.hostServerAddress, this)
+    backend.newAsyncClient(Compat.hostServerAddress, this)
 
   def withName(name: String): HttpClientConfig = {
     this.copy(name = name)
@@ -88,7 +77,7 @@ case class HttpClientConfig(
     this.copy(backend = newBackend)
 
   /**
-    * Add a custom request filter
+    * Add a custom request filter, e.g., for adding Authentication headers
     * @param newRequestFilter
     * @return
     */
@@ -113,13 +102,6 @@ case class HttpClientConfig(
   def noCircuitBreaker: HttpClientConfig = {
     this.copy(circuitBreaker = CircuitBreaker.alwaysClosed)
   }
-
-  def withExecutionContextProvider(provider: HttpClientConfig => ExecutionContext): HttpClientConfig = {
-    this.copy(executionContextProvider = provider)
-  }
-
-  def newExecutionContext: ExecutionContext = executionContextProvider(this)
-
   def withConnectTimeout(duration: Duration): HttpClientConfig = {
     this.copy(connectTimeout = duration)
   }
@@ -128,18 +110,48 @@ case class HttpClientConfig(
   }
 
   /**
-    * Add a new client filter
+    * Add a new HttpClientFilter. This filter is useful for adding a common error handling logic for the Rx[Response].
     * @param filter
     * @return
     */
-  def withClientFilter(filter: ClientFilter): HttpClientConfig = {
+  def withClientFilter(filter: HttpClientFilter): HttpClientConfig = {
     this.copy(clientFilter = clientFilter.andThen(filter))
   }
-  def noClientFilter: HttpClientConfig = this.copy(clientFilter = ClientFilter.identity)
+
+  /**
+    * Add a new RxClientFilter. This filter is useful for adding a common error handling logic for the Rx[Response].
+    *
+    * @param filter
+    * @return
+    */
+  def withClientFilter(filter: RxHttpFilter): HttpClientConfig = {
+    this.copy(clientFilter = clientFilter.andThen(HttpClientFilter.wrap(filter)))
+  }
+
+  /**
+    * Remove any client-side filter
+    */
+  def noClientFilter: HttpClientConfig = this.copy(clientFilter = HttpClientFilter.identity)
+
+  /**
+    * Set a custom client-side logging filter
+    */
+  def withLoggingFilter(filter: HttpClientFilter): HttpClientConfig = {
+    this.copy(loggingFilter = filter)
+  }
+
+  /**
+    * Disable http-client side logging
+    * @return
+    */
+  def noLogging: HttpClientConfig = {
+    this.copy(loggingFilter = HttpClientFilter.identity)
+  }
 
   /**
     * Set a converter from Future[A] to Rx[A]
     */
+  @deprecated("Use withRxHttpFilter instead", "23.5.0")
   def withRxConverter(f: Future[_] => RxStream[_]): HttpClientConfig = {
     this.copy(rxConverter = f)
   }

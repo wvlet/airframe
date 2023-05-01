@@ -14,7 +14,7 @@
 package wvlet.airframe.http.okhttp
 
 import okhttp3.{HttpUrl, MediaType, RequestBody}
-import wvlet.airframe.http.client.HttpChannel
+import wvlet.airframe.http.client.{HttpChannelConfig, HttpChannel, HttpClientConfig}
 import wvlet.airframe.http._
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
@@ -35,7 +35,7 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
     client.connectionPool().evictAll()
   }
 
-  private def prepareClient(channelConfig: ChannelConfig): okhttp3.OkHttpClient = {
+  private def prepareClient(channelConfig: HttpChannelConfig): okhttp3.OkHttpClient = {
     var newClient = this.client
     if (
       channelConfig.connectTimeout != config.connectTimeout ||
@@ -50,7 +50,7 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
     newClient
   }
 
-  override def send(req: HttpMessage.Request, channelConfig: ChannelConfig): HttpMessage.Response = {
+  override def send(req: HttpMessage.Request, channelConfig: HttpChannelConfig): HttpMessage.Response = {
     val request: okhttp3.Request = convertRequest(req)
 
     val newClient = prepareClient(channelConfig)
@@ -58,7 +58,7 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
     response.toHttpResponse
   }
 
-  override def sendAsync(req: HttpMessage.Request, channelConfig: ChannelConfig): Rx[HttpMessage.Response] = {
+  override def sendAsync(req: HttpMessage.Request, channelConfig: HttpChannelConfig): Rx[HttpMessage.Response] = {
     val request: okhttp3.Request = convertRequest(req)
     val newClient                = prepareClient(channelConfig)
     val v                        = Rx.variable[Option[HttpMessage.Response]](None)

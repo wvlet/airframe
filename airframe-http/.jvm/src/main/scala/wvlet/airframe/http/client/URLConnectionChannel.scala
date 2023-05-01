@@ -25,7 +25,7 @@ import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters._
 
 class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel {
-  override def send(request: Request, channelConfig: ChannelConfig): Response = {
+  override def send(request: Request, channelConfig: HttpChannelConfig): Response = {
     val url = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
       else s"/${request.uri}"}"
 
@@ -103,7 +103,7 @@ class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfi
     response.withContent(responseContentBytes)
   }
 
-  override def sendAsync(req: Request, channelConfig: ChannelConfig): Rx[Response] = {
+  override def sendAsync(req: Request, channelConfig: HttpChannelConfig): Rx[Response] = {
     Rx.single(send(req, channelConfig))
   }
 

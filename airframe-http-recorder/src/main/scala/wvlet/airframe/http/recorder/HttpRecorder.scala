@@ -113,9 +113,6 @@ object HttpRecorder extends LogSupport {
         val ret = Rx.single(client.send(newRequest))
         ret
       }
-      override def close(): Unit = {
-        client.close()
-      }
     }
   }
 

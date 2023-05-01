@@ -29,17 +29,17 @@ class JSHttpClientChannel(serverAddress: ServerAddress, private[client] val conf
     extends HttpChannel
     with LogSupport {
 
-  private[client] implicit val executionContext: ExecutionContext = config.newExecutionContext
+  private[client] implicit val executionContext: ExecutionContext = Compat.defaultExecutionContext
 
   override def close(): Unit = {
     // nothing to do
   }
 
-  override def send(request: HttpMessage.Request, channelConfig: ChannelConfig): HttpMessage.Response = ???
+  override def send(request: HttpMessage.Request, channelConfig: HttpChannelConfig): HttpMessage.Response = ???
 
   override def sendAsync(
       request: HttpMessage.Request,
-      channelConfig: ChannelConfig
+      channelConfig: HttpChannelConfig
   ): Rx[HttpMessage.Response] = {
 
     val xhr = new dom.XMLHttpRequest()

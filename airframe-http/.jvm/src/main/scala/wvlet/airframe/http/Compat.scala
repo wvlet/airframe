@@ -13,11 +13,10 @@
  */
 package wvlet.airframe.http
 import wvlet.airframe.control.ThreadUtil
-
-import java.net.URLEncoder
-import wvlet.airframe.http.client.{HttpClientBackend, JavaHttpClientBackend, URLConnectionClientBackend}
+import wvlet.airframe.http.client.{HttpClientBackend, JavaHttpClientBackend}
 import wvlet.airframe.http.internal.LocalRPCContext
 
+import java.net.URLEncoder
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
 import scala.concurrent.ExecutionContext

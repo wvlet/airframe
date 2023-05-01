@@ -22,7 +22,7 @@ import wvlet.airframe.Design
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http._
-import wvlet.airframe.http.HttpResponseBodyCodec
+import wvlet.airframe.http.internal.HttpResponseBodyCodec
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 

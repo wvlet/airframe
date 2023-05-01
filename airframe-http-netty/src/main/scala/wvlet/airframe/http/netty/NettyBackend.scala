@@ -69,7 +69,6 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
             override def apply(request: Request): Rx[Response] = {
               context(request)
             }
-            override def close(): Unit = {}
           }
         )
       }

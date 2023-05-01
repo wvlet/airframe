@@ -25,10 +25,10 @@ object NettyRxFilterTest extends AirSpec {
   }
 
   class AuthFilter extends RxHttpFilter {
-    override def apply(request: HttpMessage.Request, endpoint: RxHttpEndpoint): Rx[HttpMessage.Response] = {
+    override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {
       request.authorization match {
         case Some(auth) if auth == "Bearer xxxx" =>
-          endpoint(request)
+          next(request)
         case _ =>
           Rx.exception(RPCStatus.UNAUTHENTICATED_U13.newException("authentication failed"))
       }
@@ -36,7 +36,7 @@ object NettyRxFilterTest extends AirSpec {
   }
 
   class ExFilter extends RxHttpFilter {
-    override def apply(request: HttpMessage.Request, endpoint: RxHttpEndpoint): Rx[HttpMessage.Response] = {
+    override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {
       throw RPCStatus.UNAUTHENTICATED_U13.newException("authentication failed")
     }
   }

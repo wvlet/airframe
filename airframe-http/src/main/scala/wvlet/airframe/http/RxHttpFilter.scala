@@ -31,10 +31,10 @@ trait RxHttpFilter {
     * To implement your own filter, override this method.
     *
     * @param request
-    * @param endpoint
+    * @param next
     * @return
     */
-  def apply(request: Request, endpoint: RxHttpEndpoint): Rx[Response]
+  def apply(request: Request, next: RxHttpEndpoint): Rx[Response]
 
   /**
     * Chain to the next filter.
@@ -56,29 +56,32 @@ trait RxHttpFilter {
 }
 
 object RxHttpFilter {
+  object identity extends RxHttpFilter {
+    override def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
+      next(request)
+    }
+    override def andThen(nextFilter: RxHttpFilter): RxHttpFilter   = nextFilter
+    override def andThen(endpoint: RxHttpEndpoint): RxHttpEndpoint = endpoint
+  }
 
-  private class FilterAndThenEndpoint(filter: RxHttpFilter, nextService: RxHttpEndpoint)
+  private class FilterAndThenEndpoint(filter: RxHttpFilter, next: RxHttpEndpoint)
       extends RxHttpEndpoint
       with LogSupport {
     override def apply(request: Request): Rx[Response] = {
       try {
-        val ret = filter.apply(request, nextService)
+        val ret = filter.apply(request, next)
         ret
       } catch {
         case NonFatal(e) =>
           Rx.exception(e)
       }
     }
-
-    override def close(): Unit = {
-      nextService.close()
-    }
   }
 
   private class AndThen(prev: RxHttpFilter, next: RxHttpFilter) extends RxHttpFilter {
-    override def apply(request: Request, endpoint: RxHttpEndpoint): Rx[Response] = {
+    override def apply(request: Request, nextEndpoint: RxHttpEndpoint): Rx[Response] = {
       try {
-        prev.apply(request, next.andThen(endpoint))
+        prev.apply(request, next.andThen(nextEndpoint))
       } catch {
         case NonFatal(e) => Rx.exception(e)
       }

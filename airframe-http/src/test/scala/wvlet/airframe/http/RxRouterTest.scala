@@ -39,15 +39,15 @@ object RxRouterTest extends AirSpec {
   }
 
   trait AuthFilter extends RxHttpFilter {
-    override def apply(request: HttpMessage.Request, endpoint: RxHttpEndpoint): Rx[HttpMessage.Response] = {
-      endpoint(request.withHeader("X-Airframe-Test", "xxx"))
+    override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {
+      next(request.withHeader("X-Airframe-Test", "xxx"))
     }
   }
 
   trait LogFilter extends RxHttpFilter {
-    override def apply(request: HttpMessage.Request, endpoint: RxHttpEndpoint): Rx[HttpMessage.Response] = {
+    override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {
       // do some logging
-      endpoint.apply(request)
+      next.apply(request)
     }
   }
 

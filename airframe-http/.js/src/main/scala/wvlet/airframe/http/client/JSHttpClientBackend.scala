@@ -15,7 +15,7 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.control.Retry
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{HttpClient, HttpClientConfig, HttpClientException, ServerAddress}
+import wvlet.airframe.http.{HttpClient, HttpClientException, ServerAddress}
 
 object JSHttpClientBackend extends HttpClientBackend {
 
