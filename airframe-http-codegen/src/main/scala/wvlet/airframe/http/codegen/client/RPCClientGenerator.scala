@@ -152,11 +152,11 @@ object RPCClientGenerator extends HttpClientGenerator {
             m.httpMethod match {
               case HttpMethod.GET =>
                 s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
-                   |  client.readAs[${m.returnType.fullTypeName}](Http.GET("${m.path}"))
+                   |  client.readAs[${m.returnType.fullTypeName}](Http.GET(s"${m.path}"))
                    |}""".stripMargin
               case _ =>
                 val args = Seq.newBuilder[String]
-                args += s"""Http.${m.httpMethod}("${m.path}")"""
+                args += s"""Http.${m.httpMethod}(s"${m.path}")"""
                 args ++= m.clientCallParameters
                 s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
                    |  client.call[${m.typeArgString}](${args.result().mkString(", ")})

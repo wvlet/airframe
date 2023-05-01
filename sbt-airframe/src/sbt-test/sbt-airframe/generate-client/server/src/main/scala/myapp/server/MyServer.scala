@@ -35,7 +35,7 @@ object MyServer extends LogSupport {
         .designWithSyncClient
 
     d.build[SyncClient] { httpClient =>
-      val syncClient = myapp.spi.ServiceRPC.newSyncClient(httpClient)
+      val syncClient = myapp.spi.ServiceRPC.newRPCSyncClient(httpClient)
       val ret        = syncClient.MyService.hello(101)
       info(ret)
       assert(ret == "hello 101")
