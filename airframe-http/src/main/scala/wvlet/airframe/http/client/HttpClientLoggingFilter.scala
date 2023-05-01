@@ -30,6 +30,7 @@ object HttpClientLoggingFilter extends HttpClientFilter with LogSupport {
       val baseTime = System.currentTimeMillis()
       val start    = System.nanoTime()
       val m        = ListMap.newBuilder[String, Any]
+      m += "client_name" -> context.clientName
       m ++= HttpLogs.unixTimeLogs(baseTime)
       m ++= HttpLogs.commonRequestLogs(request)
 
@@ -64,4 +65,3 @@ object HttpClientLoggingFilter extends HttpClientFilter with LogSupport {
     }
   }
 }
-

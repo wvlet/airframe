@@ -20,11 +20,11 @@ import wvlet.airframe.http.RPCMethod
   * @param rpcMethod
   */
 case class HttpClientContext(
-    rpcMethod: Option[RPCMethod],
-    rpcInput: Option[Any]
+    clientName: String,
+    rpcMethod: Option[RPCMethod] = None,
+    rpcInput: Option[Any] = None
 )
 
 object HttpClientContext {
-  object empty extends HttpClientContext(None, None)
+  object empty extends HttpClientContext("default", None, None)
 }
-

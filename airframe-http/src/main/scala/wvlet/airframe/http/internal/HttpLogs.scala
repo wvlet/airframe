@@ -45,6 +45,9 @@ object HttpLogs {
     if (queryString.nonEmpty) {
       m += "query_string" -> queryString
     }
+    request.remoteAddress.foreach { remoteAddr =>
+      m += "remote_address" -> remoteAddr.hostAndPort
+    }
     m ++= requestHeaderLogs(request)
     m.result()
   }

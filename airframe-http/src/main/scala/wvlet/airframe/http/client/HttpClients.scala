@@ -105,7 +105,7 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
       req: Request,
       responseSurface: Surface
   ): Resp = {
-    val resp: Response = send(req)
+    val resp: Response = send(req, HttpClientContext(config.name))
     HttpClients.parseResponse[Resp](config, responseSurface, resp)
   }
 
@@ -116,7 +116,7 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
       requestContent: Req
   ): Resp = {
     val newRequest     = HttpClients.prepareRequest(config, req, requestSurface, requestContent)
-    val resp: Response = send(newRequest)
+    val resp: Response = send(newRequest, HttpClientContext(config.name))
     HttpClients.parseResponse[Resp](config, responseSurface, resp)
   }
 
@@ -132,6 +132,7 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
       HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent)
 
     val context = HttpClientContext(
+      clientName = config.name,
       rpcMethod = Some(method),
       rpcInput = Some(requestContent)
     )
@@ -217,7 +218,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
     Rx
       .const(HttpClients.prepareRequest(config, req, requestSurface, requestContent))
       .flatMap { (newRequest: Request) =>
-        send(newRequest).toRxStream.map { resp =>
+        send(newRequest, HttpClientContext(config.name)).toRxStream.map { resp =>
           HttpClients.parseResponse[Resp](config, responseSurface, resp)
         }
       }
@@ -231,6 +232,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
       .const(HttpClients.prepareRPCRequest(config, method.path, method.requestSurface, requestContent))
       .flatMap { (request: Request) =>
         val context = HttpClientContext(
+          clientName = config.name,
           rpcMethod = Some(method),
           rpcInput = Some(requestContent)
         )
