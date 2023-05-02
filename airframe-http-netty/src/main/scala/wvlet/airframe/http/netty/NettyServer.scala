@@ -43,7 +43,9 @@ case class NettyServerConfig(
     router: Router = Router.empty,
     useEpoll: Boolean = true,
     httpLoggerConfig: HttpLoggerConfig = HttpLoggerConfig(logFileName = "log/http_server.json"),
-    httpLogger: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) => new LogRotationHttpLogger(config) },
+    httpLoggerProvider: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) =>
+      new LogRotationHttpLogger(config)
+    },
     loggingFilter: HttpLogger => RxHttpFilter = { new HttpServerLoggingFilter(_) }
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
@@ -61,14 +63,14 @@ case class NettyServerConfig(
   def withRouter(rxRouter: RxRouter): NettyServerConfig = {
     this.copy(router = Router.fromRxRouter(rxRouter))
   }
-  def withHttpLoggerConfig(config: HttpLoggerConfig): NettyServerConfig = {
-    this.copy(httpLoggerConfig = config)
+  def withHttpLoggerConfig(f: HttpLoggerConfig => HttpLoggerConfig): NettyServerConfig = {
+    this.copy(httpLoggerConfig = f(httpLoggerConfig))
   }
   def withHttpLogger(loggerProvider: HttpLoggerConfig => HttpLogger): NettyServerConfig = {
-    this.copy(httpLogger = loggerProvider)
+    this.copy(httpLoggerProvider = loggerProvider)
   }
   def noHttpLogger: NettyServerConfig = {
-    this.copy(httpLogger = HttpLogger.emptyLogger(_))
+    this.copy(httpLoggerProvider = HttpLogger.emptyLogger(_))
   }
 
   def newServer(session: Session): NettyServer = {
@@ -96,7 +98,7 @@ case class NettyServerConfig(
   }
 
   def newHttpLogger: HttpLogger = {
-    httpLogger(httpLoggerConfig.addExtraTags(ListMap("server_name" -> name)))
+    httpLoggerProvider(httpLoggerConfig.addExtraTags(ListMap("server_name" -> name)))
   }
 }
 

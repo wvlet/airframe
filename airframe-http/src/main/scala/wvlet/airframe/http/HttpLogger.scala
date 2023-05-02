@@ -23,7 +23,7 @@ import wvlet.log.LogSupport
 trait HttpLogger extends AutoCloseable {
   def config: HttpLoggerConfig
 
-  def write(log: Map[String, Any]): Unit = {
+  final def write(log: Map[String, Any]): Unit = {
     writeInternal(config.logFilter(config.extraTags ++ log))
   }
   protected def writeInternal(log: Map[String, Any]): Unit

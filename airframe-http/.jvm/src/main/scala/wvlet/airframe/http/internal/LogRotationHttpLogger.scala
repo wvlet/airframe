@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.http.internal
 
-import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.{HttpLogger, HttpLoggerConfig}
 import wvlet.log.{AsyncHandler, LogFormatter, LogRecord, LogRotationHandler}
 
@@ -25,8 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean
   * @param httpAccessLogConfig
   */
 class LogRotationHttpLogger(val config: HttpLoggerConfig) extends HttpLogger {
-  private val mapCodec = MessageCodec.of[Map[String, Any]]
-  private val closed   = new AtomicBoolean(false)
+  private val closed = new AtomicBoolean(false)
 
   object MessageOnlyLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {

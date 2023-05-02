@@ -26,7 +26,7 @@ import scala.concurrent.duration.Duration
 /**
   */
 case class HttpClientConfig(
-    name: String = "airframe-http-client",
+    name: String = "default",
     backend: HttpClientBackend = Compat.defaultHttpClientBackend,
     requestFilter: Request => Request = identity,
     rpcEncoding: RPCEncoding = RPCEncoding.JSON,
@@ -40,7 +40,7 @@ case class HttpClientConfig(
     readTimeout: Duration = Duration(90, TimeUnit.SECONDS),
     clientFilter: HttpClientFilter = HttpClientFilter.identity,
     httpLoggerConfig: HttpLoggerConfig = HttpLoggerConfig(logFileName = "log/http_client.json"),
-    httpLogger: HttpLoggerConfig => HttpLogger = Compat.defaultHttpClientLoggerFactory,
+    httpLoggerProvider: HttpLoggerConfig => HttpLogger = Compat.defaultHttpClientLoggerFactory,
     loggingFilter: HttpLogger => HttpClientFilter = { (l: HttpLogger) => new HttpClientLoggingFilter(l) }
 ) extends HttpChannelConfig {
 
@@ -121,10 +121,12 @@ case class HttpClientConfig(
   def noClientFilter: HttpClientConfig = this.copy(clientFilter = HttpClientFilter.identity)
 
   /**
-    * Set a custom client-side logging filter
+    * Customize logger configuration
+    * @param f
+    * @return
     */
-  def withLoggingFilter(filter: HttpLogger => HttpClientFilter): HttpClientConfig = {
-    this.copy(loggingFilter = filter)
+  def withLoggerConfig(f: HttpLoggerConfig => HttpLoggerConfig): HttpClientConfig = {
+    this.copy(httpLoggerConfig = f(httpLoggerConfig))
   }
 
   /**
@@ -133,7 +135,7 @@ case class HttpClientConfig(
     */
   def noLogging: HttpClientConfig = {
     this.copy(
-      httpLogger = { HttpLogger.emptyLogger(_) },
+      httpLoggerProvider = { HttpLogger.emptyLogger(_) },
       loggingFilter = { _ => HttpClientFilter.identity }
     )
   }
@@ -143,16 +145,16 @@ case class HttpClientConfig(
     */
   def withDebugConsoleLogger: HttpClientConfig = {
     this.copy(
-      httpLogger = { _.consoleLogger }
+      httpLoggerProvider = { _.consoleLogger }
     )
   }
 
-  def withHttpLogger(logger: HttpLoggerConfig => HttpLogger): HttpClientConfig = {
-    this.copy(httpLogger = logger)
+  def withHttpLogger(loggerProvider: HttpLoggerConfig => HttpLogger): HttpClientConfig = {
+    this.copy(httpLoggerProvider = loggerProvider)
   }
 
   def newHttpLogger: HttpLogger = {
-    httpLogger(httpLoggerConfig.addExtraTags(ListMap("client_name" -> name)))
+    httpLoggerProvider(httpLoggerConfig.addExtraTags(ListMap("client_name" -> name)))
   }
 
   def newLoggingFilter(logger: HttpLogger): HttpClientFilter = {
