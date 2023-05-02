@@ -43,7 +43,7 @@ case class NettyServerConfig(
     useEpoll: Boolean = true,
     httpLoggerConfig: HttpLoggerConfig = HttpLoggerConfig(logFileName = "log/http_server.json"),
     httpLogger: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) => new LogRotationHttpLogger(config) },
-    loggingFilter: RxHttpFilter = HttpServerLoggingFilter.default
+    loggingFilter: HttpLogger => RxHttpFilter = { new HttpServerLoggingFilter(_) }
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -67,7 +67,7 @@ case class NettyServerConfig(
     this.copy(httpLogger = loggerProvider)
   }
   def noHttpLogger: NettyServerConfig = {
-    this.copy(httpLogger = { _ => HttpLogger.emptyLogger })
+    this.copy(httpLogger = HttpLogger.emptyLogger(_))
   }
 
   def newServer(session: Session): NettyServer = {
@@ -97,7 +97,8 @@ case class NettyServerConfig(
 
 class NettyServer(config: NettyServerConfig, session: Session) extends AutoCloseable with LogSupport {
 
-  private val httpLogger: HttpLogger = config.httpLogger(config.httpLoggerConfig)
+  private val httpLogger: HttpLogger      = config.httpLogger(config.httpLoggerConfig)
+  private val loggingFilter: RxHttpFilter = config.loggingFilter(httpLogger)
 
   private val bossGroup = {
     val tf = ThreadUtil.newDaemonThreadFactory("airframe-netty-boss")

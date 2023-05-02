@@ -15,11 +15,13 @@ package wvlet.airframe.http.internal
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
+import wvlet.airframe.http.client.HttpClientContext
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.{Parameter, Surface, TypeName}
 import wvlet.airframe.ulid.ULID
 import wvlet.log.LogTimestampFormatter
 
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.concurrent.ExecutionException
@@ -29,6 +31,50 @@ import scala.util.Try
   * Internal utilities for HTTP request/response logging
   */
 object HttpLogs {
+
+  def reportLog(
+      httpLogger: HttpLogger,
+      excludeHeaders: HttpMultiMap,
+      request: Request,
+      next: RxHttpEndpoint,
+      clientContext: Option[HttpClientContext] = None
+  ): Rx[Response] = {
+    val baseTime = System.currentTimeMillis()
+    val start    = System.nanoTime()
+    val m        = ListMap.newBuilder[String, Any]
+    m ++= unixTimeLogs(baseTime)
+    m ++= commonRequestLogs(request)
+    m ++= requestHeaderLogs(request, excludeHeaders)
+
+    def reportLogs: Unit = {
+      val end           = System.nanoTime()
+      val durationMills = TimeUnit.NANOSECONDS.toMillis(end - start)
+      m += "duration_ms" -> durationMills
+      m += "end_time_ms" -> (baseTime + durationMills)
+
+      // Finally, write the log
+      httpLogger.write(m.result())
+    }
+
+    clientContext.foreach {
+      _.rpcMethod.map { rpc => m ++= rpcMethodLogs(rpc) }
+    }
+    // TODO Record rpc args
+    next
+      .apply(request)
+      .toRxStream
+      .map { resp =>
+        m ++= commonResponseLogs(resp)
+        m ++= responseHeaderLogs(resp, excludeHeaders)
+        reportLogs
+        resp
+      }
+      .recoverWith { case e: Throwable =>
+        m ++= errorLogs(e)
+        reportLogs
+        Rx.exception(e)
+      }
+  }
 
   def unixTimeLogs(currentTimeMillis: Long = System.currentTimeMillis()): ListMap[String, Any] = {
     // Unix time

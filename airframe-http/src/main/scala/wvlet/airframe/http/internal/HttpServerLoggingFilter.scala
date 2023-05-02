@@ -13,15 +13,13 @@
  */
 package wvlet.airframe.http.internal
 
-import wvlet.airframe.http.{HttpMessage, RxHttpEndpoint, RxHttpFilter}
+import wvlet.airframe.http.{HttpLogger, HttpMessage, HttpMultiMap, RxHttpEndpoint, RxHttpFilter}
 import wvlet.airframe.rx.Rx
 
-class HttpServerLoggingFilter extends RxHttpFilter {
-  override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {
-    next(request)
-  }
-}
+class HttpServerLoggingFilter(httpLogger: HttpLogger) extends RxHttpFilter {
+  private val excludeHeaders = HttpMultiMap.fromHeaderNames(httpLogger.config.excludeHeaders)
 
-object HttpServerLoggingFilter {
-  def default: HttpServerLoggingFilter = new HttpServerLoggingFilter()
+  override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {
+    HttpLogs.reportLog(httpLogger, excludeHeaders, request, next, None)
+  }
 }

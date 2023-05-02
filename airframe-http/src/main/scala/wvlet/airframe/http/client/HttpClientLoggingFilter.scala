@@ -18,9 +18,6 @@ import wvlet.airframe.http.{HttpLogger, HttpLoggerConfig, HttpMultiMap, RxHttpEn
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
-import java.util.concurrent.TimeUnit
-import scala.collection.immutable.ListMap
-
 /**
   * A client-side filter for logging HTTP requests and responses
   */
@@ -34,42 +31,7 @@ class HttpClientLoggingFilter(httpLogger: HttpLogger) extends HttpClientFilter w
 
   def apply(context: HttpClientContext): RxHttpFilter = new RxHttpFilter {
     override def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
-      val baseTime = System.currentTimeMillis()
-      val start    = System.nanoTime()
-      val m        = ListMap.newBuilder[String, Any]
-      m += "client_name" -> context.clientName
-      m ++= HttpLogs.unixTimeLogs(baseTime)
-      m ++= HttpLogs.commonRequestLogs(request)
-      m ++= HttpLogs.requestHeaderLogs(request, excludeHeaders)
-
-      def reportLogs: Unit = {
-        val end           = System.nanoTime()
-        val durationMills = TimeUnit.NANOSECONDS.toMillis(end - start)
-        m += "duration_ms" -> durationMills
-        m += "end_time_ms" -> (baseTime + durationMills)
-
-        // Finally, write the log
-        httpLogger.write(m.result())
-      }
-
-      context.rpcMethod.map { rpc =>
-        m ++= HttpLogs.rpcMethodLogs(rpc)
-      }
-      // TODO Record rpc args
-      next
-        .apply(request)
-        .toRxStream
-        .map { resp =>
-          m ++= HttpLogs.commonResponseLogs(resp)
-          m ++= HttpLogs.responseHeaderLogs(resp, excludeHeaders)
-          reportLogs
-          resp
-        }
-        .recoverWith { case e: Throwable =>
-          m ++= HttpLogs.errorLogs(e)
-          reportLogs
-          Rx.exception(e)
-        }
+      HttpLogs.reportLog(httpLogger, excludeHeaders, request, next, Some(context))
     }
   }
 }
