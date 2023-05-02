@@ -13,9 +13,22 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.codec.MessageCodec
+import wvlet.log.LogSupport
+
+/**
+  * Interface for writing HTTP request/response logs
+  */
+trait HttpLogger extends AutoCloseable {
+  def write(log: Map[String, Any]): Unit
+}
+
+/**
+  * Http logger configuration
+  */
 case class HttpLoggerConfig(
-    // The log file name. The default is log/http-access.log
-    logFileName: String = "log/http-access.log",
+    // The log file name. The default is log/http_access.json
+    logFileName: String = "log/http_access.json",
     /**
       * Case-insensitive list of HTTP headers that need to be excluded from the logs. For example, Authorization,
       * ProxyAuthorization, Cookie headers will be removed by default
@@ -23,11 +36,19 @@ case class HttpLoggerConfig(
     excludeHeaders: Set[String] = HttpLogger.defaultExcludeHeaders,
     // A filter for customizing the log contents
     logFilter: Map[String, Any] => Map[String, Any] = identity,
+    logFormatter: Map[String, Any] => String = HttpLogger.jsonFormatter,
     // The max number of log files to preserve in the local disk
     maxNumFiles: Int = 100,
     // The max file size for log rotation. The default is 100MB
     maxFileSize: Long = 100 * 1024 * 1024
 ) {
+  def logFileExtension: String = {
+    logFileName.lastIndexOf(".") match {
+      case -1  => ""
+      case pos => logFileName.substring(pos)
+    }
+  }
+
   def withLogFileName(fileName: String): HttpLoggerConfig = this.copy(logFileName = fileName)
 
   /**
@@ -43,14 +64,61 @@ case class HttpLoggerConfig(
     this.copy(logFilter = logFilter.andThen(newLogFilter))
   }
 
-  def withMaxNumFiles(maxNumFiles: Int): HttpLoggerConfig  = this.copy(maxNumFiles = maxNumFiles)
-  def withMaxFileSize(maxFileSize: Long): HttpLoggerConfig = this.copy(maxFileSize = maxFileSize)
+  def withLogFormatter(formatter: Map[String, Any] => String): HttpLoggerConfig = this.copy(logFormatter = formatter)
+  def withMaxNumFiles(maxNumFiles: Int): HttpLoggerConfig                       = this.copy(maxNumFiles = maxNumFiles)
+  def withMaxFileSize(maxFileSize: Long): HttpLoggerConfig                      = this.copy(maxFileSize = maxFileSize)
 }
 
-object HttpLogger {
+object HttpLogger extends LogSupport {
   def defaultExcludeHeaders: Set[String] = Set(
     HttpHeader.Authorization,
     HttpHeader.ProxyAuthorization,
     HttpHeader.Cookie
   )
+
+  def emptyLogger: HttpLogger = new HttpLogger {
+    override def write(log: Map[String, Any]): Unit = {}
+    override def close(): Unit                      = {}
+  }
+
+  /**
+    * A log writer that writes logs to an in-memory buffer. This is useful for testing purpose.
+    */
+  def inMemoryLogger: InMemoryHttpLogger = new InMemoryHttpLogger()
+
+  /**
+    * In-memory log writer for testing purpose. Not for production use.
+    */
+  class InMemoryHttpLogger extends HttpLogger {
+    private val logs = Seq.newBuilder[Map[String, Any]]
+
+    def getLogs: Seq[Map[String, Any]] = logs.result()
+
+    def clear(): Unit = {
+      logs.clear()
+    }
+
+    override def write(log: Map[String, Any]): Unit = {
+      synchronized {
+        logs += log
+      }
+    }
+
+    override def close(): Unit = {
+      // no-op
+    }
+  }
+
+  private val mapCodec = MessageCodec.of[Map[String, Any]]
+  def jsonFormatter: Map[String, Any] => String = { (log: Map[String, Any]) =>
+    mapCodec.toJson(log)
+  }
+
+  class ConsoleHttpLogger extends HttpLogger {
+    override def write(log: Map[String, Any]): Unit = {
+      logger.debug(jsonFormatter(log))
+    }
+
+    override def close(): Unit = {}
+  }
 }

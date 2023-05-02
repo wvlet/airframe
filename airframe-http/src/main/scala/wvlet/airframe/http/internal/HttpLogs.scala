@@ -25,6 +25,9 @@ import scala.collection.immutable.ListMap
 import scala.concurrent.ExecutionException
 import scala.util.Try
 
+/**
+  * Internal utilities for HTTP request/response logging
+  */
 object HttpLogs {
 
   def unixTimeLogs(currentTimeMillis: Long = System.currentTimeMillis()): ListMap[String, Any] = {

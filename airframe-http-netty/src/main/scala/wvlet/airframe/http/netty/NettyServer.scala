@@ -26,6 +26,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http._
 import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.internal.LogRotationHttpLogger
 import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
@@ -39,7 +40,9 @@ case class NettyServerConfig(
     serverPort: Option[Int] = None,
     controllerProvider: ControllerProvider = ControllerProvider.defaultControllerProvider,
     router: Router = Router.empty,
-    useEpoll: Boolean = true
+    useEpoll: Boolean = true,
+    httpLoggerConfig: HttpLoggerConfig = HttpLoggerConfig(logFileName = "log/http-server.log"),
+    httpLogger: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) => new LogRotationHttpLogger(config) }
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -56,12 +59,21 @@ case class NettyServerConfig(
   def withRouter(rxRouter: RxRouter): NettyServerConfig = {
     this.copy(router = Router.fromRxRouter(rxRouter))
   }
+  def withHttpLoggerConfig(config: HttpLoggerConfig): NettyServerConfig = {
+    this.copy(httpLoggerConfig = config)
+  }
+  def withHttpLogger(loggerProvider: HttpLoggerConfig => HttpLogger): NettyServerConfig = {
+    this.copy(httpLogger = loggerProvider)
+  }
+  def noHttpLogger: NettyServerConfig = {
+    this.copy(httpLogger = { _ => HttpLogger.emptyLogger })
+  }
+
   def newServer(session: Session): NettyServer = {
     val s = new NettyServer(this, session)
     s.start
     s
   }
-
   def design: Design = {
     Design.newDesign
       .bind[NettyServerConfig].toInstance(this)
@@ -83,6 +95,8 @@ case class NettyServerConfig(
 }
 
 class NettyServer(config: NettyServerConfig, session: Session) extends AutoCloseable with LogSupport {
+
+  private val httpLogger: HttpLogger = config.httpLogger(config.httpLoggerConfig)
 
   private val bossGroup = {
     val tf = ThreadUtil.newDaemonThreadFactory("airframe-netty-boss")
@@ -183,6 +197,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     info(s"Stopping ${config.name} server at ${localAddress}")
     workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
     bossGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
+    httpLogger.close()
     channelFuture.foreach(_.close().await(1, TimeUnit.SECONDS))
   }
 
