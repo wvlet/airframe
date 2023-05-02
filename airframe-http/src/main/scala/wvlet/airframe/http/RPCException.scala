@@ -38,14 +38,22 @@ case class RPCException(
     metadata: Map[String, Any] = Map.empty
 ) extends Exception(s"[${status}] ${message}", cause.getOrElse(null)) {
 
-  private var _includeStackTrace: Boolean = true
+  private var _includeStackTrace: Option[Boolean] = None
 
   /**
     * Do not embed stacktrace and the cause objects in the RPC exception error response
     */
   def noStackTrace: RPCException = {
-    _includeStackTrace = false
+    _includeStackTrace = Some(false)
     this
+  }
+
+  def shouldReportStackTrace: Boolean = {
+    _includeStackTrace match {
+      case Some(b) => b
+      case None =>
+        status.shouldReportStackTrace
+    }
   }
 
   def toMessage: RPCErrorMessage = {
@@ -53,8 +61,8 @@ case class RPCException(
       code = status.code,
       codeName = status.name,
       message = message,
-      stackTrace = if (_includeStackTrace) Some(GenericException.extractStackTrace(this)) else None,
-      cause = if (_includeStackTrace) cause else None,
+      stackTrace = if (shouldReportStackTrace) Some(GenericException.extractStackTrace(this)) else None,
+      cause = if (shouldReportStackTrace) cause else None,
       appErrorCode = appErrorCode,
       metadata = metadata
     )

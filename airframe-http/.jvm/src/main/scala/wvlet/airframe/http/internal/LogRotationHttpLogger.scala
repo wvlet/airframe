@@ -47,7 +47,7 @@ class LogRotationHttpLogger(val config: HttpLoggerConfig) extends HttpLogger {
     )
   )
 
-  override def write(log: Map[String, Any]): Unit = {
+  override protected def writeInternal(log: Map[String, Any]): Unit = {
     val msg = config.logFormatter(log)
     if (!closed.get()) {
       asyncLogHandler.publish(new java.util.logging.LogRecord(java.util.logging.Level.INFO, msg))

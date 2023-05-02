@@ -23,7 +23,10 @@ import wvlet.log.LogSupport
 trait HttpLogger extends AutoCloseable {
   def config: HttpLoggerConfig
 
-  def write(log: Map[String, Any]): Unit
+  def write(log: Map[String, Any]): Unit = {
+    writeInternal(config.logFilter(config.extraTags ++ log))
+  }
+  protected def writeInternal(log: Map[String, Any]): Unit
 }
 
 /**
@@ -37,6 +40,8 @@ case class HttpLoggerConfig(
       * ProxyAuthorization, Cookie headers will be removed by default
       */
     excludeHeaders: Set[String] = HttpLogger.defaultExcludeHeaders,
+    // Extra tags to be added to the log entries
+    extraTags: Map[String, Any] = Map.empty,
     // A filter for customizing the log contents
     logFilter: Map[String, Any] => Map[String, Any] = identity,
     // A formatter for converting log entries Map[String, Any] into a string line. The default behavior is producing JSON lines
@@ -52,6 +57,11 @@ case class HttpLoggerConfig(
       case pos => logFileName.substring(pos)
     }
   }
+
+  /**
+    * Add extra tags to the log entries
+    */
+  def addExtraTags(tags: Map[String, Any]): HttpLoggerConfig = this.copy(extraTags = extraTags ++ tags)
 
   def withLogFileName(fileName: String): HttpLoggerConfig = this.copy(logFileName = fileName)
 
@@ -92,9 +102,9 @@ object HttpLogger extends LogSupport {
   )
 
   def emptyLogger(inputConfig: HttpLoggerConfig): HttpLogger = new HttpLogger {
-    override def config: HttpLoggerConfig           = inputConfig
-    override def write(log: Map[String, Any]): Unit = {}
-    override def close(): Unit                      = {}
+    override def config: HttpLoggerConfig                             = inputConfig
+    override protected def writeInternal(log: Map[String, Any]): Unit = {}
+    override def close(): Unit                                        = {}
   }
 
   /**
@@ -109,7 +119,7 @@ object HttpLogger extends LogSupport {
       logs.clear()
     }
 
-    override def write(log: Map[String, Any]): Unit = {
+    override protected def writeInternal(log: Map[String, Any]): Unit = {
       synchronized {
         logs += log
       }
@@ -126,7 +136,7 @@ object HttpLogger extends LogSupport {
   }
 
   class ConsoleHttpLogger(val config: HttpLoggerConfig) extends HttpLogger {
-    override def write(log: Map[String, Any]): Unit = {
+    override protected def writeInternal(log: Map[String, Any]): Unit = {
       val msg = config.logFormatter(log)
       logger.debug(msg)
     }

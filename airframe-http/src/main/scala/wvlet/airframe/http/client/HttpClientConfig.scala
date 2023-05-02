@@ -20,6 +20,7 @@ import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http._
 
 import java.util.concurrent.TimeUnit
+import scala.collection.immutable.ListMap
 import scala.concurrent.duration.Duration
 
 /**
@@ -151,7 +152,7 @@ case class HttpClientConfig(
   }
 
   def newHttpLogger: HttpLogger = {
-    httpLogger(httpLoggerConfig)
+    httpLogger(httpLoggerConfig.addExtraTags(ListMap("client_name" -> name)))
   }
 
   def newLoggingFilter(logger: HttpLogger): HttpClientFilter = {

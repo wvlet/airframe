@@ -47,13 +47,8 @@ object HttpLogs {
     m ++= requestHeaderLogs(request, excludeHeaders)
 
     def reportLogs: Unit = {
-      val end           = System.nanoTime()
-      val durationMills = TimeUnit.NANOSECONDS.toMillis(end - start)
-      m += "duration_ms" -> durationMills
-      m += "end_time_ms" -> (baseTime + durationMills)
-
       // Finally, write the log
-      httpLogger.write(m.result())
+      httpLogger.write(httpLogger.config.logFilter(m.result()))
     }
 
     clientContext.foreach {
@@ -64,16 +59,27 @@ object HttpLogs {
       .apply(request)
       .toRxStream
       .map { resp =>
+        m ++= durationLogs(baseTime, start)
         m ++= commonResponseLogs(resp)
         m ++= responseHeaderLogs(resp, excludeHeaders)
         reportLogs
         resp
       }
       .recoverWith { case e: Throwable =>
+        m ++= durationLogs(baseTime, start)
         m ++= errorLogs(e)
         reportLogs
         Rx.exception(e)
       }
+  }
+
+  def durationLogs(baseTime: Long, sinceNano: Long): ListMap[String, Any] = {
+    val end           = System.nanoTime()
+    val durationMills = TimeUnit.NANOSECONDS.toMillis(end - sinceNano)
+    ListMap(
+      "end_time_ms" -> (baseTime + durationMills),
+      "duration_ms" -> durationMills
+    )
   }
 
   def unixTimeLogs(currentTimeMillis: Long = System.currentTimeMillis()): ListMap[String, Any] = {
@@ -110,19 +116,33 @@ object HttpLogs {
 
     response.getHeader(HttpHeader.xAirframeRPCStatus).foreach { rpcStatus =>
       Try(RPCStatus.ofCode(rpcStatus.toInt)).foreach { status =>
-        m += "rpc_status"      -> status.code
-        m += "rpc_status_name" -> status.name
+        m ++= rpcStatusLogs(status)
       }
     }
     m.result()
   }
 
+  def rpcStatusLogs(status: RPCStatus): Map[String, Any] = {
+    ListMap(
+      "rpc_status"      -> status.code,
+      "rpc_status_name" -> status.name
+    )
+  }
+
   def requestHeaderLogs(request: Request, excludeHeaders: HttpMultiMap): Map[String, Any] = {
-    Map("request_header" -> headerLogs(request.header, excludeHeaders))
+    val m = headerLogs(request.header, excludeHeaders)
+    if (m.isEmpty)
+      Map.empty
+    else
+      Map("request_header" -> m)
   }
 
   def responseHeaderLogs(response: Response, excludeHeaders: HttpMultiMap): Map[String, Any] = {
-    Map("response_header" -> headerLogs(response.header, excludeHeaders))
+    val m = headerLogs(response.header, excludeHeaders)
+    if (m.isEmpty)
+      Map.empty
+    else
+      Map("response_header" -> m)
   }
 
   def headerLogs(headerMap: HttpMultiMap, excludeHeaders: HttpMultiMap): Map[String, Any] = {
@@ -219,15 +239,19 @@ object HttpLogs {
         // If the cause is provided, record it. Otherwise, recording the status_code is sufficient.
         if (se.getCause != null) {
           val rootCause = findCause(se.getCause)
-          m += "exception"         -> rootCause
           m += "exception_message" -> rootCause.getMessage
+          m += "exception"         -> rootCause
         }
-      // TODO customize RPC error logs?
-      // case re: RPCException =>
-      //
+      case re: RPCException =>
+        // Customize RPC error logs
+        m ++= rpcStatusLogs(re.status)
+        m += "exception_message" -> re.getMessage
+        if (re.shouldReportStackTrace) {
+          m += "exception" -> re
+        }
       case other =>
-        m += "exception"         -> other
         m += "exception_message" -> other.getMessage
+        m += "exception"         -> other
     }
     m.result()
   }

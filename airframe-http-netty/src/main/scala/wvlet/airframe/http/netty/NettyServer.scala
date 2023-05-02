@@ -34,6 +34,7 @@ import wvlet.log.io.IOUtil
 
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
+import scala.collection.immutable.ListMap
 
 case class NettyServerConfig(
     name: String = "default",
@@ -93,11 +94,15 @@ case class NettyServerConfig(
       body(server)
     }
   }
+
+  def newHttpLogger: HttpLogger = {
+    httpLogger(httpLoggerConfig.addExtraTags(ListMap("server_name" -> name)))
+  }
 }
 
 class NettyServer(config: NettyServerConfig, session: Session) extends AutoCloseable with LogSupport {
 
-  private val httpLogger: HttpLogger      = config.httpLogger(config.httpLoggerConfig)
+  private val httpLogger: HttpLogger      = config.newHttpLogger
   private val loggingFilter: RxHttpFilter = config.loggingFilter(httpLogger)
 
   private val bossGroup = {
@@ -161,14 +166,18 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
       //      }
 
       private val dispatcher = {
-        HttpRequestDispatcher.newDispatcher(
-          session = session,
-          config.router,
-          config.controllerProvider,
-          NettyBackend,
-          new NettyResponseHandler,
-          MessageCodecFactory.defaultFactoryForJSON
-        )
+        NettyBackend
+          .rxFilterAdapter(loggingFilter)
+          .andThen(
+            HttpRequestDispatcher.newDispatcher(
+              session = session,
+              config.router,
+              config.controllerProvider,
+              NettyBackend,
+              new NettyResponseHandler,
+              MessageCodecFactory.defaultFactoryForJSON
+            )
+          )
       }
 
       override def initChannel(ch: Channel): Unit = {
