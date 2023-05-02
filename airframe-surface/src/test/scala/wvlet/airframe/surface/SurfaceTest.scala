@@ -240,4 +240,10 @@ class SurfaceTest extends SurfaceSpec {
     Surface.of[BigInt]
     Surface.of[BigInteger]
   }
+
+  test("Map[String, Any]") {
+    val s   = Surface.of[Map[String, Any]]
+    val any = s.typeArgs(1)
+    assertEquals(any.fullName, "scala.Any")
+  }
 }

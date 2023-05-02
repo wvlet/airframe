@@ -20,7 +20,6 @@ class RPCClientGeneratorTest extends AirSpec {
   private val router: RxRouter = {
     RouteScanner.buildRxRouter(Seq("example.rpc"))
   }
-
   test("generate RPC client") {
     val config = HttpClientGeneratorConfig("example.rpc:rpc")
     val code   = HttpCodeGenerator.generate(router, config)
