@@ -3,19 +3,29 @@ import wvlet.log.LogFormatter.SourceCodeLogFormatter
 
 import java.io.PrintStream
 import java.lang.management.ManagementFactory
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.management.{InstanceAlreadyExistsException, MBeanServer, ObjectName}
 import scala.util.control.NonFatal
 
 /**
   */
 private[log] object LogEnv extends LogEnvBase {
+
+  private val initialized = new AtomicBoolean(false)
   override def initLogManager(): Unit = {
     // Set a custom LogManager to show log messages even in shutdown hooks
-    sys.props.put("java.util.logging.manager", "wvlet.log.AirframeLogManager")
+    val key = "java.util.logging.manager"
+    sys.props.put(key, "wvlet.log.AirframeLogManager")
 
-    // For unregistering log manager https://github.com/wvlet/airframe/issues/2914
-    sys.addShutdownHook {
-      sys.props.remove("java.util.logging.manager")
+    if (initialized.compareAndSet(false, true)) {
+      // For unregistering log manager https://github.com/wvlet/airframe/issues/2914
+      sys.addShutdownHook {
+        sys.props.get(key) match {
+          case Some(v) if v == "wvlet.log.AirframeLogManager" =>
+            sys.props.remove("java.util.logging.manager")
+          case _ =>
+        }
+      }
     }
   }
 
@@ -89,7 +99,7 @@ private[log] object LogEnv extends LogEnvBase {
     try {
       Some(ManagementFactory.getPlatformMBeanServer)
     } catch {
-      case e: Throwable =>
+      case NonFatal(e) =>
         // Pre-registered wvlet.log.AirframeLogManager might not be found when reloading the project in IntelliJ, so skip this error.
         None
     }
