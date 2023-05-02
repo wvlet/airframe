@@ -3,12 +3,32 @@ import wvlet.log.LogFormatter.SourceCodeLogFormatter
 
 import java.io.PrintStream
 import java.lang.management.ManagementFactory
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.management.{InstanceAlreadyExistsException, MBeanServer, ObjectName}
 import scala.util.control.NonFatal
 
 /**
   */
 private[log] object LogEnv extends LogEnvBase {
+
+  private val initialized = new AtomicBoolean(false)
+  override def initLogManager(): Unit = {
+    // Set a custom LogManager to show log messages even in shutdown hooks
+    val managerKey = "java.util.logging.manager"
+    sys.props.put(managerKey, "wvlet.log.AirframeLogManager")
+
+    if (initialized.compareAndSet(false, true)) {
+      // For unregistering log manager https://github.com/wvlet/airframe/issues/2914
+      sys.addShutdownHook {
+        sys.props.get(managerKey) match {
+          case Some(v) if v == "wvlet.log.AirframeLogManager" =>
+            sys.props.remove(managerKey)
+          case _ =>
+        }
+      }
+    }
+  }
+
   override def isScalaJS: Boolean        = false
   override def defaultLogLevel: LogLevel = LogLevel.INFO
 
