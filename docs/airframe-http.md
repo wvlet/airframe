@@ -410,23 +410,92 @@ The generated HTTP access log files can be processed in Fluentd. For example, if
 
 # HTTP Clients
 
-airframe-http has several HTTP client implementations (FinagleClient, OkHttp client, URLConnection client, etc.).
+airframe-http has several HTTP client implementations (Java's http client, Finagle, OkHttp client, URLConnection client, etc.).
+The http client has a built-in retry logic (for 5xx http status code, connection failures) and circuit breakers. 
 
-## Simple Http Client (No extra dependency)
+## Default Http Client 
 
+```scala
+import wvlet.airframe.http._
+import wvlet.airframe.http.HttpMessage.{Request,Response}
+
+// Creating a default HTTP client
+val client = Http.client.newSyncClient("http://localhost:8080")
+
+// Send a new GET request
+// Note: Use client.send(Http.xxx) for throwing HttpClientException upon 4xx, 5xx errors
+val response = client.sendSafe(Http.GET("/v1/info"))
+
+// Simple a request and receives a raw http response. You can customize headers too:
+val r: Response = client.send(Http.GET("/path").withHeader(....))
+
+// Send POST request with JSON body and read the response as an MyObj object
+case class MyObj(id: Int, name: String)
+val myobj = client.readAs[MyObj](Http.POST("/path2").withJson(...))
+
+// Send an object data as the request body, and receive the response as ResponseType object
+// JSON/MessagePack data will be transformed internally
+val resp: ResponseType = client.call[RequestType, ResponseType](Http.POST("/path3"), requestDataObj) 
+
+```
+
+## Customizing HTTP clients
+
+You can customize various configuration of the http clients:
+```scala
+Http.client
+  // Add an HTTP header
+  .withRequestFilter(_.withAuthorization("Bearer xxx"))
+  // Change the number of retry
+  .withRetryContext(_.withMaxRetry(10)) 
+  // Set a connection timeout
+  .withConnectionTimeout(Duration(60, TimeUnit.SECONDS))
+  .newSyncClient("http://localhost:8080")
+```
+
+## Rx-based async client
+
+An async-http client is a new addition since 23.5.0 and is useful when chaining responses from remote servers or rendering DOM in Scala.js using RPC responses.
+
+```scala
+val client = Http.client.newAsyncClient("https://...") 
+val rx = client.send(Http.GET("...")) // Returns Rx[HttpMessage.Response]
+rx.toRxStream.map(x => x.contentString) // Returns Rx[String]
+```
+
+`Rx[A]` value will not trigger any execution until it is evaluated by the other framework (e.g., airframe-http RPC, airframe-rx-http, AirSpec test runner, etc.)
+
+In case you need to explicitly extract a value from the response, you can use `rx.run { event => ...}` 
+
+### URLConnection client for Java 8 
+
+For compatibility with Java 8, you can use URLConnection-based client:
 ```scala
 import wvlet.airframe.http.Http
 
-// Creating a URLConnection based client
-val client = Http.client.newSyncClient("http://localhost:8080")
-val response = client.sendSafe(Http.request("/v1/info"))
-// Use client.send(Request) for throwing HttpClientException upon 4xx, 5xx errors
+val client = Http.client
+  .withBackend(URLConnectionClientBackend)
+  .newSyncClient("http://localhost:8080")
+```
+Note: URLConnection-based client cannot send PATCH requests due to [a bug of JDK](https://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch)
+
+## OkHttp Client
+
+```scala
+libraryDependencies += "org.wvlet.airframe" %% "airframe-http-okhttp" % (version)
 ```
 
-Note: URLConnection-based client cannot send PATCH requests due to [a bug of JDK](https://stackoverflow.com/questions/25163131/httpurlconnection-invalid-http-method-patch)
+```scala
+import wvlet.airframe.http.okhttp.OkHttp
+// Create an OkHttp-based sync http client
+val client = OkHttp.client.newSyncClient(host_name)
+```
 
 
 ## Finagle Http Client
+
+(deprecated. Use Http.client instead)
+
 ```scala
 import wvlet.airframe.http.finagle.Finagle
 
@@ -436,17 +505,4 @@ Finagle.client.newClient("http://localhost:8080")
 // a Finagle-based sync client
 Finagle.client.newSyncClient(host_name)
 ```
-
-## OkHttp Client
-
-
-```scala
-libraryDependencies += "org.wvlet.airframe" %% "airframe-http-okhttp" % (version)
-```
-
-```scala
-// Create an OkHttp-based sync http client
-OkHttpClient.newClient(host_name, config...)
-```
-
 
