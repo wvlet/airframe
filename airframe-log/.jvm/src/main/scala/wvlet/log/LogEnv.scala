@@ -9,6 +9,16 @@ import scala.util.control.NonFatal
 /**
   */
 private[log] object LogEnv extends LogEnvBase {
+  override def initLogManager(): Unit = {
+    // Set a custom LogManager to show log messages even in shutdown hooks
+    sys.props.put("java.util.logging.manager", "wvlet.log.AirframeLogManager")
+
+    // For unregistering log manager https://github.com/wvlet/airframe/issues/2914
+    sys.addShutdownHook {
+      sys.props.remove("java.util.logging.manager")
+    }
+  }
+
   override def isScalaJS: Boolean        = false
   override def defaultLogLevel: LogLevel = LogLevel.INFO
 
