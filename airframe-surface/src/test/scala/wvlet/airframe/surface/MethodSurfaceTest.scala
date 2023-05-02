@@ -146,8 +146,8 @@ class MethodSurfaceTest extends SurfaceSpec {
         val arg = m.args(0)
         val p1  = arg.surface.typeArgs(1)
         assertEquals(p1.fullName, "scala.Any")
-      case None =>
-        fail("mapInput method not found")
+      case _ =>
+        fail("F.mapInput method not found")
     }
   }
 }
