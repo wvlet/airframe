@@ -35,6 +35,14 @@ object HttpMultiMap {
     }
     def result(): HttpMultiMap = m
   }
+
+  def fromHeaderNames(headerNames: Iterable[String]): HttpMultiMap = {
+    val b = newBuilder
+    for (h <- headerNames) {
+      b += (h -> "")
+    }
+    b.result()
+  }
 }
 
 /**
@@ -129,6 +137,10 @@ case class HttpMultiMap(private val underlying: Map[String, Any] = Map.empty) {
     // NOTE: Using case insensitive search is O(N) for every insert and look-up, but practically it's not so bad as
     // the number of HTTP headers is not so large.
     underlying.find(_._1.equalsIgnoreCase(key)).map(_._2)
+  }
+
+  def contains(key: String): Boolean = {
+    caseInsensitiveSearch(key).isDefined
   }
 
   def get(key: String): Option[String] = {

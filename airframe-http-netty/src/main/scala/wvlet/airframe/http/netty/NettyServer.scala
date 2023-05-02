@@ -26,6 +26,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http._
 import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.internal.{HttpServerLoggingFilter, LogRotationHttpLogger}
 import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
@@ -33,13 +34,19 @@ import wvlet.log.io.IOUtil
 
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
+import scala.collection.immutable.ListMap
 
 case class NettyServerConfig(
     name: String = "default",
     serverPort: Option[Int] = None,
     controllerProvider: ControllerProvider = ControllerProvider.defaultControllerProvider,
     router: Router = Router.empty,
-    useEpoll: Boolean = true
+    useEpoll: Boolean = true,
+    httpLoggerConfig: HttpLoggerConfig = HttpLoggerConfig(logFileName = "log/http_server.json"),
+    httpLoggerProvider: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) =>
+      new LogRotationHttpLogger(config)
+    },
+    loggingFilter: HttpLogger => RxHttpFilter = { new HttpServerLoggingFilter(_) }
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -56,12 +63,21 @@ case class NettyServerConfig(
   def withRouter(rxRouter: RxRouter): NettyServerConfig = {
     this.copy(router = Router.fromRxRouter(rxRouter))
   }
+  def withHttpLoggerConfig(f: HttpLoggerConfig => HttpLoggerConfig): NettyServerConfig = {
+    this.copy(httpLoggerConfig = f(httpLoggerConfig))
+  }
+  def withHttpLogger(loggerProvider: HttpLoggerConfig => HttpLogger): NettyServerConfig = {
+    this.copy(httpLoggerProvider = loggerProvider)
+  }
+  def noHttpLogger: NettyServerConfig = {
+    this.copy(httpLoggerProvider = HttpLogger.emptyLogger(_))
+  }
+
   def newServer(session: Session): NettyServer = {
     val s = new NettyServer(this, session)
     s.start
     s
   }
-
   def design: Design = {
     Design.newDesign
       .bind[NettyServerConfig].toInstance(this)
@@ -80,9 +96,16 @@ case class NettyServerConfig(
       body(server)
     }
   }
+
+  def newHttpLogger: HttpLogger = {
+    httpLoggerProvider(httpLoggerConfig.addExtraTags(ListMap("server_name" -> name)))
+  }
 }
 
 class NettyServer(config: NettyServerConfig, session: Session) extends AutoCloseable with LogSupport {
+
+  private val httpLogger: HttpLogger      = config.newHttpLogger
+  private val loggingFilter: RxHttpFilter = config.loggingFilter(httpLogger)
 
   private val bossGroup = {
     val tf = ThreadUtil.newDaemonThreadFactory("airframe-netty-boss")
@@ -145,14 +168,18 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
       //      }
 
       private val dispatcher = {
-        HttpRequestDispatcher.newDispatcher(
-          session = session,
-          config.router,
-          config.controllerProvider,
-          NettyBackend,
-          new NettyResponseHandler,
-          MessageCodecFactory.defaultFactoryForJSON
-        )
+        NettyBackend
+          .rxFilterAdapter(loggingFilter)
+          .andThen(
+            HttpRequestDispatcher.newDispatcher(
+              session = session,
+              config.router,
+              config.controllerProvider,
+              NettyBackend,
+              new NettyResponseHandler,
+              MessageCodecFactory.defaultFactoryForJSON
+            )
+          )
       }
 
       override def initChannel(ch: Channel): Unit = {
@@ -183,6 +210,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     info(s"Stopping ${config.name} server at ${localAddress}")
     workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
     bossGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
+    httpLogger.close()
     channelFuture.foreach(_.close().await(1, TimeUnit.SECONDS))
   }
 

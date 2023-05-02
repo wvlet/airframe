@@ -13,10 +13,10 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.{Design, newDesign}
-import wvlet.airframe.http.{Http, HttpHeader, HttpMessage, HttpStatus, HttpSyncClient, RPCMethod, RPCStatus}
+import wvlet.airframe.http._
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.{Design, newDesign}
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
@@ -35,8 +35,7 @@ class HttpClientLoggingFilterTest extends AirSpec {
 
   protected override def design: Design = {
     newDesign.bind[SyncClient].toInstance {
-      val filter = HttpClientLoggingFilter
-      new SyncClientImpl(new DummyHttpChannel, Http.client.withLoggingFilter(filter))
+      new SyncClientImpl(new DummyHttpChannel, Http.client.withDebugConsoleLogger)
     }
   }
 

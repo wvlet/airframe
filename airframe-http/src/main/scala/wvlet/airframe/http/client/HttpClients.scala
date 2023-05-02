@@ -31,6 +31,7 @@ class SyncClientImpl(protected val channel: HttpChannel, val config: HttpClientC
     new SyncClientImpl(channel, newConfig)
   }
   override def close(): Unit = {
+    super.close()
     channel.close()
   }
 }
@@ -38,6 +39,7 @@ class SyncClientImpl(protected val channel: HttpChannel, val config: HttpClientC
 class AsyncClientImpl(protected val channel: HttpChannel, val config: HttpClientConfig) extends AsyncClient {
   override protected def build(newConfig: HttpClientConfig): AsyncClient = new AsyncClientImpl(channel, newConfig)
   override def close(): Unit = {
+    super.close()
     channel.close()
   }
 }
@@ -50,7 +52,13 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
   protected def channel: HttpChannel
   def config: HttpClientConfig
 
-  private val circuitBreaker: CircuitBreaker = config.circuitBreaker
+  private val clientLogger: HttpLogger        = config.newHttpLogger
+  private val loggingFilter: HttpClientFilter = config.newLoggingFilter(clientLogger)
+  private val circuitBreaker: CircuitBreaker  = config.circuitBreaker
+
+  override def close(): Unit = {
+    clientLogger.close()
+  }
 
   /**
     * Send an HTTP request and get the response. It will throw an exception for non-successful responses. For example,
@@ -70,8 +78,9 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
     var lastResponse: Option[Response] = None
     try {
       config.retryContext.runWithContext(request, circuitBreaker) {
-        config
-          .allClientFilter(context)
+        loggingFilter
+          .andThen(config.clientFilter)
+          .apply(context)
           .andThen(req => Rx.single(channel.send(req, config)))
           .apply(request)
           .toRxStream
@@ -156,7 +165,14 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
 trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] with AutoCloseable {
   protected def channel: HttpChannel
   def config: HttpClientConfig
-  private val circuitBreaker: CircuitBreaker = config.circuitBreaker
+
+  private val httpLogger: HttpLogger          = config.newHttpLogger
+  private val loggingFilter: HttpClientFilter = config.newLoggingFilter(httpLogger)
+  private val circuitBreaker: CircuitBreaker  = config.circuitBreaker
+
+  override def close(): Unit = {
+    httpLogger.close()
+  }
 
   /**
     * Send an HTTP request and get the response in Rx[Response] type.
@@ -172,8 +188,9 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
     var lastResponse: Option[Response] = None
     config.retryContext
       .runAsyncWithContext(request, circuitBreaker) {
-        config
-          .allClientFilter(context)
+        loggingFilter
+          .andThen(config.clientFilter)
+          .apply(context)
           .andThen(req => channel.sendAsync(req, config))
           .apply(request)
           .toRxStream

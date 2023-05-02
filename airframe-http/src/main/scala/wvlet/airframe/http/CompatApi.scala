@@ -26,6 +26,7 @@ private[http] trait CompatApi {
   def hostServerAddress: ServerAddress
   def defaultHttpClientBackend: HttpClientBackend
   def defaultExecutionContext: ExecutionContext
+  def defaultHttpClientLoggerFactory: HttpLoggerConfig => HttpLogger
 
   def currentRPCContext: RPCContext
   def attachRPCContext(context: RPCContext): RPCContext

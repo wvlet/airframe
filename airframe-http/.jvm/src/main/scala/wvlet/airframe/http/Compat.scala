@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http.client.{HttpClientBackend, JavaHttpClientBackend}
-import wvlet.airframe.http.internal.LocalRPCContext
+import wvlet.airframe.http.internal.{LocalRPCContext, LogRotationHttpLogger}
 
 import java.net.URLEncoder
 import java.util.concurrent.atomic.AtomicInteger
@@ -53,6 +53,9 @@ object Compat extends CompatApi {
     ExecutionContext.fromExecutorService(
       Executors.newCachedThreadPool(ThreadUtil.newDaemonThreadFactory("airframe-http"))
     )
+  }
+  override def defaultHttpClientLoggerFactory: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) =>
+    new LogRotationHttpLogger(config)
   }
 
   override def hostServerAddress: ServerAddress = {

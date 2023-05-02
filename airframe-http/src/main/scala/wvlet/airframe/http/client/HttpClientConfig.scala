@@ -17,18 +17,16 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.CircuitBreaker
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.Request
-import wvlet.airframe.http.{Compat, RPCEncoding, RxHttpFilter, ServerAddress}
-import wvlet.airframe.http.client.HttpClientFilter
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.http._
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.Future
+import scala.collection.immutable.ListMap
 import scala.concurrent.duration.Duration
 
 /**
   */
 case class HttpClientConfig(
-    name: String = "airframe-http-client",
+    name: String = "default",
     backend: HttpClientBackend = Compat.defaultHttpClientBackend,
     requestFilter: Request => Request = identity,
     rpcEncoding: RPCEncoding = RPCEncoding.JSON,
@@ -41,21 +39,10 @@ case class HttpClientConfig(
     // timeout applied when receiving data from the target host
     readTimeout: Duration = Duration(90, TimeUnit.SECONDS),
     clientFilter: HttpClientFilter = HttpClientFilter.identity,
-    loggingFilter: HttpClientFilter = HttpClientLoggingFilter,
-    /**
-      * For converting Future[A] to Rx[A]. Use this method when you need to add a common error handler for Rx (e.g.,
-      * with Rx.recover). This is mainly used in generated RPC clients for Scala.js
-      */
-    @deprecated("Use rxFilter instead", "23.5.0")
-    rxConverter: Future[_] => RxStream[_] = { (f: Future[_]) =>
-      // TODO: This execution context needs to reference a global one if we need to use it in Scala JVM
-      Rx.future(f)(Compat.defaultExecutionContext)
-    }
+    httpLoggerConfig: HttpLoggerConfig = HttpLoggerConfig(logFileName = "log/http_client.json"),
+    httpLoggerProvider: HttpLoggerConfig => HttpLogger = Compat.defaultHttpClientLoggerFactory,
+    loggingFilter: HttpLogger => HttpClientFilter = { (l: HttpLogger) => new HttpClientLoggingFilter(l) }
 ) extends HttpChannelConfig {
-
-  private[http] def allClientFilter: HttpClientFilter = {
-    loggingFilter.andThen(clientFilter)
-  }
 
   def newSyncClient(serverAddress: String): SyncClient =
     backend.newSyncClient(ServerAddress(serverAddress), this)
@@ -134,10 +121,12 @@ case class HttpClientConfig(
   def noClientFilter: HttpClientConfig = this.copy(clientFilter = HttpClientFilter.identity)
 
   /**
-    * Set a custom client-side logging filter
+    * Customize logger configuration
+    * @param f
+    * @return
     */
-  def withLoggingFilter(filter: HttpClientFilter): HttpClientConfig = {
-    this.copy(loggingFilter = filter)
+  def withLoggerConfig(f: HttpLoggerConfig => HttpLoggerConfig): HttpClientConfig = {
+    this.copy(httpLoggerConfig = f(httpLoggerConfig))
   }
 
   /**
@@ -145,14 +134,30 @@ case class HttpClientConfig(
     * @return
     */
   def noLogging: HttpClientConfig = {
-    this.copy(loggingFilter = HttpClientFilter.identity)
+    this.copy(
+      httpLoggerProvider = { HttpLogger.emptyLogger(_) },
+      loggingFilter = { _ => HttpClientFilter.identity }
+    )
   }
 
   /**
-    * Set a converter from Future[A] to Rx[A]
+    * Use Debug Console http logging
     */
-  @deprecated("Use withRxHttpFilter instead", "23.5.0")
-  def withRxConverter(f: Future[_] => RxStream[_]): HttpClientConfig = {
-    this.copy(rxConverter = f)
+  def withDebugConsoleLogger: HttpClientConfig = {
+    this.copy(
+      httpLoggerProvider = { _.consoleLogger }
+    )
+  }
+
+  def withHttpLogger(loggerProvider: HttpLoggerConfig => HttpLogger): HttpClientConfig = {
+    this.copy(httpLoggerProvider = loggerProvider)
+  }
+
+  def newHttpLogger: HttpLogger = {
+    httpLoggerProvider(httpLoggerConfig.addExtraTags(ListMap("client_name" -> name)))
+  }
+
+  def newLoggingFilter(logger: HttpLogger): HttpClientFilter = {
+    loggingFilter(logger)
   }
 }
