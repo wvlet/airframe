@@ -32,7 +32,7 @@ object HttpClientGenerator extends LogSupport {
     s match {
       case p if p.isPrimitive && !p.isAlias =>
         p.name
-      case a if a.fullName == "scala.Any" =>
+      case a if a.fullName == "scala.Any" || a.fullName == "java.lang.Object" =>
         "Any"
       case p if p.isOption =>
         s"Option[${p.typeArgs.map(fullTypeNameOf(_)).mkString(", ")}]"

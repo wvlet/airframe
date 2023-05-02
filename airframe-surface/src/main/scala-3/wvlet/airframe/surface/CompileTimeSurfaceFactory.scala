@@ -405,6 +405,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   private def genericTypeFactory: Factory = {
+    case t if t =:= TypeRepr.of[Any] =>
+      '{ Alias("Any", "scala.Any", AnyRefSurface) }
     case a: AppliedType =>
       val typeArgs = a.args.map(surfaceOf(_))
       '{ new GenericSurface(${ clsOf(a) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
