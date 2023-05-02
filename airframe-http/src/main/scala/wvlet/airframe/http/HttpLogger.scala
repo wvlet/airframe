@@ -14,12 +14,15 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.http.HttpLogger.{ConsoleHttpLogger, InMemoryHttpLogger}
 import wvlet.log.LogSupport
 
 /**
   * Interface for writing HTTP request/response logs
   */
 trait HttpLogger extends AutoCloseable {
+  def config: HttpLoggerConfig
+
   def write(log: Map[String, Any]): Unit
 }
 
@@ -36,6 +39,7 @@ case class HttpLoggerConfig(
     excludeHeaders: Set[String] = HttpLogger.defaultExcludeHeaders,
     // A filter for customizing the log contents
     logFilter: Map[String, Any] => Map[String, Any] = identity,
+    // A formatter for converting log entries Map[String, Any] into a string line. The default behavior is producing JSON lines
     logFormatter: Map[String, Any] => String = HttpLogger.jsonFormatter,
     // The max number of log files to preserve in the local disk
     maxNumFiles: Int = 100,
@@ -67,6 +71,17 @@ case class HttpLoggerConfig(
   def withLogFormatter(formatter: Map[String, Any] => String): HttpLoggerConfig = this.copy(logFormatter = formatter)
   def withMaxNumFiles(maxNumFiles: Int): HttpLoggerConfig                       = this.copy(maxNumFiles = maxNumFiles)
   def withMaxFileSize(maxFileSize: Long): HttpLoggerConfig                      = this.copy(maxFileSize = maxFileSize)
+
+  /**
+    * A log writer that writes logs to an in-memory buffer. Use this only for testing purpose.
+    */
+  def inMemoryLogger: HttpLogger = new InMemoryHttpLogger(this)
+
+  /**
+    * A log writer that writes logs to the console with debug-level logs
+    */
+  def consoleLogger: HttpLogger = new ConsoleHttpLogger(this)
+
 }
 
 object HttpLogger extends LogSupport {
@@ -76,20 +91,16 @@ object HttpLogger extends LogSupport {
     HttpHeader.Cookie
   )
 
-  def emptyLogger: HttpLogger = new HttpLogger {
+  def emptyLogger(inputConfig: HttpLoggerConfig): HttpLogger = new HttpLogger {
+    override def config: HttpLoggerConfig           = inputConfig
     override def write(log: Map[String, Any]): Unit = {}
     override def close(): Unit                      = {}
   }
 
   /**
-    * A log writer that writes logs to an in-memory buffer. This is useful for testing purpose.
-    */
-  def inMemoryLogger: InMemoryHttpLogger = new InMemoryHttpLogger()
-
-  /**
     * In-memory log writer for testing purpose. Not for production use.
     */
-  class InMemoryHttpLogger extends HttpLogger {
+  class InMemoryHttpLogger(val config: HttpLoggerConfig) extends HttpLogger {
     private val logs = Seq.newBuilder[Map[String, Any]]
 
     def getLogs: Seq[Map[String, Any]] = logs.result()
@@ -114,9 +125,10 @@ object HttpLogger extends LogSupport {
     mapCodec.toJson(log)
   }
 
-  class ConsoleHttpLogger extends HttpLogger {
+  class ConsoleHttpLogger(val config: HttpLoggerConfig) extends HttpLogger {
     override def write(log: Map[String, Any]): Unit = {
-      logger.debug(jsonFormatter(log))
+      val msg = config.logFormatter(log)
+      logger.debug(msg)
     }
 
     override def close(): Unit = {}

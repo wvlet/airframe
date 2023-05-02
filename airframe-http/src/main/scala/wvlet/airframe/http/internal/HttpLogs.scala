@@ -51,7 +51,6 @@ object HttpLogs {
     request.remoteAddress.foreach { remoteAddr =>
       m += "remote_address" -> remoteAddr.hostAndPort
     }
-    m ++= requestHeaderLogs(request)
     m.result()
   }
 
@@ -69,31 +68,21 @@ object HttpLogs {
         m += "rpc_status_name" -> status.name
       }
     }
-
-    m ++= responseHeaderLogs(response)
     m.result()
   }
 
-  def requestHeaderLogs(request: Request): Map[String, Any] = {
-    Map("request_header" -> headerLogs(request.header))
+  def requestHeaderLogs(request: Request, excludeHeaders: HttpMultiMap): Map[String, Any] = {
+    Map("request_header" -> headerLogs(request.header, excludeHeaders))
   }
 
-  def responseHeaderLogs(response: Response): Map[String, Any] = {
-    Map("response_header" -> headerLogs(response.header))
+  def responseHeaderLogs(response: Response, excludeHeaders: HttpMultiMap): Map[String, Any] = {
+    Map("response_header" -> headerLogs(response.header, excludeHeaders))
   }
 
-  /**
-    * Http headers to be excluded from logging by dfeault
-    */
-  private val defaultExcludeHeaders: Set[String] = Set(
-    HttpHeader.Authorization,
-    HttpHeader.Cookie
-  ).map(_.toLowerCase)
-
-  def headerLogs(headerMap: HttpMultiMap): Map[String, Any] = {
+  def headerLogs(headerMap: HttpMultiMap, excludeHeaders: HttpMultiMap): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     for (e <- headerMap.entries) {
-      if (!defaultExcludeHeaders.contains(e.key.toLowerCase)) {
+      if (!excludeHeaders.contains(e.key.toLowerCase)) {
         val v = headerMap.getAll(e.key).mkString(";")
         m += sanitizeHeader(e.key) -> v
       }

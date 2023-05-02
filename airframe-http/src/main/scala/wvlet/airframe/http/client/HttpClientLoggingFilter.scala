@@ -14,7 +14,7 @@
 package wvlet.airframe.http.client
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.internal.HttpLogs
-import wvlet.airframe.http.{RxHttpEndpoint, RxHttpFilter}
+import wvlet.airframe.http.{HttpLogger, HttpLoggerConfig, HttpMultiMap, RxHttpEndpoint, RxHttpFilter}
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
@@ -24,7 +24,14 @@ import scala.collection.immutable.ListMap
 /**
   * A client-side filter for logging HTTP requests and responses
   */
-object HttpClientLoggingFilter extends HttpClientFilter with LogSupport {
+class HttpClientLoggingFilter(httpLogger: HttpLogger) extends HttpClientFilter with AutoCloseable with LogSupport {
+
+  private val excludeHeaders = HttpMultiMap.fromHeaderNames(httpLogger.config.excludeHeaders)
+
+  override def close(): Unit = {
+    httpLogger.close()
+  }
+
   def apply(context: HttpClientContext): RxHttpFilter = new RxHttpFilter {
     override def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
       val baseTime = System.currentTimeMillis()
@@ -33,13 +40,16 @@ object HttpClientLoggingFilter extends HttpClientFilter with LogSupport {
       m += "client_name" -> context.clientName
       m ++= HttpLogs.unixTimeLogs(baseTime)
       m ++= HttpLogs.commonRequestLogs(request)
+      m ++= HttpLogs.requestHeaderLogs(request, excludeHeaders)
 
-      def recordDuration: Unit = {
+      def reportLogs: Unit = {
         val end           = System.nanoTime()
         val durationMills = TimeUnit.NANOSECONDS.toMillis(end - start)
         m += "duration_ms" -> durationMills
         m += "end_time_ms" -> (baseTime + durationMills)
-        logger.trace(m.result())
+
+        // Finally, write the log
+        httpLogger.write(m.result())
       }
 
       context.rpcMethod.map { rpc =>
@@ -51,15 +61,13 @@ object HttpClientLoggingFilter extends HttpClientFilter with LogSupport {
         .toRxStream
         .map { resp =>
           m ++= HttpLogs.commonResponseLogs(resp)
-          context.rpcMethod.foreach { rpcMethod =>
-            m ++= HttpLogs.rpcMethodLogs(rpcMethod)
-          }
-          recordDuration
+          m ++= HttpLogs.responseHeaderLogs(resp, excludeHeaders)
+          reportLogs
           resp
         }
         .recoverWith { case e: Throwable =>
           m ++= HttpLogs.errorLogs(e)
-          recordDuration
+          reportLogs
           Rx.exception(e)
         }
     }

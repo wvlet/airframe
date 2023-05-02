@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean
   *
   * @param httpAccessLogConfig
   */
-class LogRotationHttpLogger(config: HttpLoggerConfig) extends HttpLogger {
+class LogRotationHttpLogger(val config: HttpLoggerConfig) extends HttpLogger {
   private val mapCodec = MessageCodec.of[Map[String, Any]]
   private val closed   = new AtomicBoolean(false)
 

@@ -45,9 +45,6 @@ trait HttpClientFactory[ClientImpl] {
   def withClientFilter(filter: RxHttpFilter): ClientImpl = {
     build(config.withClientFilter(filter))
   }
-  def withLoggingFilter(filter: HttpClientFilter): ClientImpl = {
-    build(config.withLoggingFilter(filter))
-  }
   def withRetryContext(filter: RetryContext => RetryContext): ClientImpl = {
     build(config.withRetryContext(filter))
   }

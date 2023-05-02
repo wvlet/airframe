@@ -26,7 +26,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http._
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.internal.LogRotationHttpLogger
+import wvlet.airframe.http.internal.{HttpServerLoggingFilter, LogRotationHttpLogger}
 import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
@@ -41,8 +41,9 @@ case class NettyServerConfig(
     controllerProvider: ControllerProvider = ControllerProvider.defaultControllerProvider,
     router: Router = Router.empty,
     useEpoll: Boolean = true,
-    httpLoggerConfig: HttpLoggerConfig = HttpLoggerConfig(logFileName = "log/http-server.log"),
-    httpLogger: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) => new LogRotationHttpLogger(config) }
+    httpLoggerConfig: HttpLoggerConfig = HttpLoggerConfig(logFileName = "log/http_server.json"),
+    httpLogger: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) => new LogRotationHttpLogger(config) },
+    loggingFilter: RxHttpFilter = HttpServerLoggingFilter.default
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
