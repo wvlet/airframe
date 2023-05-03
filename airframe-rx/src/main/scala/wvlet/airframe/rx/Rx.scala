@@ -145,6 +145,14 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     TransformOp(this, f)
   }
 
+  /**
+    * Transform the input value by wrapping it with Try regardless of success or failure. This is useful when you need
+    * to add a post-processing step after handling success and failure cases.
+    */
+  def transformTry[B](f: Try[A] => Try[B]): RxStream[B] = {
+    TransformTryOp(this, f)
+  }
+
   def concat[A1 >: A](other: Rx[A1]): RxStream[A1] = Rx.concat(this, other)
   def lastOption: RxOption[A]                      = LastOp(this).toOption
 
@@ -336,6 +344,11 @@ object Rx extends LogSupport {
   case class TransformOp[A, B](input: Rx[A], f: Try[A] => B) extends RxStream[B] {
     override def parents: Seq[Rx[_]] = Seq(input)
   }
+
+  case class TransformTryOp[A, B](input: Rx[A], f: Try[A] => Try[B]) extends RxStream[B] {
+    override def parents: Seq[Rx[_]] = Seq(input)
+  }
+
   case class MapOp[A, B](input: Rx[A], f: A => B)          extends UnaryRx[A, B]
   case class FlatMapOp[A, B](input: Rx[A], f: A => Rx[B])  extends UnaryRx[A, B]
   case class FilterOp[A](input: Rx[A], cond: A => Boolean) extends UnaryRx[A, A]
