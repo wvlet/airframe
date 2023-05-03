@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.rx.html
 import org.scalajs.dom
-import wvlet.airframe.rx.{Cancelable, Rx, RxStream}
+import wvlet.airframe.rx.{Cancelable, Rx}
 import wvlet.log.LogSupport
 
 import scala.scalajs.js

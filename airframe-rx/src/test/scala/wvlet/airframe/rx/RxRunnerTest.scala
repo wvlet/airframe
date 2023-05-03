@@ -22,7 +22,7 @@ object RxRunnerTest extends AirSpec {
     test("last") {
       val rx            = Rx.sequence(1, 2).lastOption.map[Int] { x => throw ex }
       var c: Cancelable = Cancelable.empty
-      RxRunner.run(rx) {
+      RxRunner.runOps(rx) {
         case OnError(e) =>
           e shouldBeTheSameInstanceAs ex
         case OnCompletion =>

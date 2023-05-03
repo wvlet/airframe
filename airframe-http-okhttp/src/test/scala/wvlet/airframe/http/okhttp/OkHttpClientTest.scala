@@ -115,13 +115,13 @@ class OkHttpClientTest extends AirSpec {
 
   test("create async client") { (client: AsyncClient) =>
     test("readAs") {
-      client.readAs[String](Http.GET("/")).toRxStream.map { v =>
+      client.readAs[String](Http.GET("/")).toRx.map { v =>
         v shouldBe "Ok"
       }
     }
 
     test("call") {
-      client.call[UserRequest, User](Http.GET("/user/info"), UserRequest(2, "kai")).toRxStream.map { v =>
+      client.call[UserRequest, User](Http.GET("/user/info"), UserRequest(2, "kai")).toRx.map { v =>
         v shouldBe User(2, "kai", "N/A")
       }
     }

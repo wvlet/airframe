@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.rx.{OnNext, Rx, RxStream}
+import wvlet.airframe.rx.{OnNext, Rx}
 import wvlet.log.LogSupport
 
 import scala.util.control.NonFatal

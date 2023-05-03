@@ -17,7 +17,7 @@ import wvlet.airframe.http.HttpMessage.EmptyMessage
 import wvlet.airframe.http.{Http, HttpHeader, HttpMessage, HttpStatus, RxHttpEndpoint, ServerAddress}
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.netty.{NettyBackend, NettyServer}
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import java.util.Locale

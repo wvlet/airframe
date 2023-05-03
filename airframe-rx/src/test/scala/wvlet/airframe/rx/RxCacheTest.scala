@@ -18,16 +18,16 @@ import wvlet.airspec.AirSpec
 import java.util.concurrent.TimeUnit
 
 class RxCacheTest extends AirSpec {
-  private def evalStream(rx: Rx[_]): Seq[RxEvent] = {
+  private def evalStream(rx: RxOps[_]): Seq[RxEvent] = {
     val events = Seq.newBuilder[RxEvent]
-    val c      = RxRunner.runContinuously(rx)(events += _)
+    val c      = RxRunner.runOpsContinuously(rx)(events += _)
     c.cancel
     events.result()
   }
 
   test("cache") {
-    val v                      = Rx.variable(1)
-    val rx: RxStreamCache[Int] = v.map(x => x * 10).cache
+    val v                = Rx.variable(1)
+    val rx: RxCache[Int] = v.map(x => x * 10).cache
     rx.getCurrent shouldBe empty
     evalStream(rx) shouldBe Seq(OnNext(10))
 

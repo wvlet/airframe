@@ -21,22 +21,20 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
 
-trait Rx[+A] {
+trait RxOps[+A] {
   def parents: Seq[Rx[_]]
+
+  def toRx: Rx[A]
 
   /**
     * Recover from a known error and emit a replacement value
     */
-  def recover[U](f: PartialFunction[Throwable, U]): RxStream[U] = RecoverOp(this, f)
+  def recover[U](f: PartialFunction[Throwable, U]): Rx[U] = RecoverOp(this.toRx, f)
 
   /**
     * Recover from a known error and emit replacement values from a given Rx
     */
-  def recoverWith[A](f: PartialFunction[Throwable, Rx[A]]): RxStream[A] = RecoverWithOp(this, f)
-
-  def toRxStream: RxStream[A]
-
-  def subscribe[U](subscriber: A => U): Cancelable = runContinuously(subscriber)
+  def recoverWith[A](f: PartialFunction[Throwable, Rx[A]]): Rx[A] = RecoverWithOp(this.toRx, f)
 
   /**
     * Evaluate this Rx[A] and apply the given effect function. Once OnError(e) or OnCompletion is observed, it will stop
@@ -47,7 +45,7 @@ trait Rx[+A] {
     * @return
     */
   def run[U](effect: A => U): Cancelable = {
-    RxRunner.run(this) {
+    RxRunner.runOps(this) {
       case OnNext(v) =>
         effect(v.asInstanceOf[A])
       case OnError(e) =>
@@ -61,7 +59,7 @@ trait Rx[+A] {
     * Keep evaluating Rx[A] even if OnError(e) or OnCompletion is reported. This is useful for keep processing streams.
     */
   def runContinuously[U](effect: A => U): Cancelable = {
-    RxRunner.runContinuously(this) {
+    RxRunner.runOpsContinuously(this) {
       case OnNext(v) =>
         effect(v.asInstanceOf[A])
       case OnError(e) =>
@@ -71,40 +69,46 @@ trait Rx[+A] {
     }
   }
 
-  /**
-    * Materialize the stream as Seq[A]. This works only for the finite stream and for Scala JVM.
-    */
-  def toSeq: Seq[A] = {
-    compat.toSeq(this)
-  }
+  def subscribe[U](subscriber: A => U): Cancelable = runContinuously(subscriber)
 }
 
 /**
   * The base reactive stream interface that can receive events from upstream operators and chain next actions using
   * Scala-collection like operators (e.g., map, filter, etc.)
   */
-trait RxStream[+A] extends Rx[A] with LogSupport {
+trait Rx[+A] extends RxOps[A] {
+  def map[B](f: A => B): Rx[B] = {
+    Rx.MapOp(this.toRx, f)
+  }
+
+  /**
+    * Materialize the stream as Seq[A]. This works only for the finite stream and for Scala JVM.
+    */
+  def toSeq: Seq[A] = {
+    compat.toSeq(this)
+  }
+
   import Rx._
 
-  override def toRxStream: RxStream[A] = this
+  override def toRx: Rx[A] = this
   def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(
-    this.asInstanceOf[RxStream[Option[X]]]
+    this.asInstanceOf[Rx[Option[X]]]
   )
 
-  def withName(name: String): RxStream[A] = NamedOp(this, name)
+  def withName(name: String): Rx[A] = NamedOp(this, name)
 
-  def map[B](f: A => B): RxStream[B]           = MapOp[A, B](this, f)
-  def flatMap[B](f: A => Rx[B]): RxStream[B]   = FlatMapOp(this, f)
-  def filter(f: A => Boolean): RxStream[A]     = FilterOp(this, f)
-  def withFilter(f: A => Boolean): RxStream[A] = FilterOp(this, f)
+  // def map[B](f: A => B): Rx[B]           = MapOp[A, B](this, f)
+  def flatMap[B](f: A => Rx[B]): Rx[B]   = FlatMapOp(this, f)
+  def filter(f: A => Boolean): Rx[A]     = FilterOp(this, f)
+  def withFilter(f: A => Boolean): Rx[A] = FilterOp(this, f)
 
   /**
     * Combine two Rx streams to form a sequence of pairs. This will emit a new pair when both of the streams are
     * updated.
     */
-  def zip[B](other: Rx[B]): RxStream[(A, B)]                             = Rx.zip(this, other)
-  def zip[B, C](b: Rx[B], c: Rx[C]): RxStream[(A, B, C)]                 = Rx.zip(this, b, c)
-  def zip[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): RxStream[(A, B, C, D)] = Rx.zip(this, b, c, d)
+  def zip[B](other: Rx[B]): Rx[(A, B)]                             = Rx.zip(this, other)
+  def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Rx.zip(this, b, c)
+  def zip[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Rx.zip(this, b, c, d)
 
   /**
     * Emit a new output if one of Rx[A] or Rx[B] is changed.
@@ -114,9 +118,9 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     * Using joins will be more intuitive than nesting multiple Rx operators like Rx[A].map { x => ... Rx[B].map { ...}
     * }.
     */
-  def join[B](other: Rx[B]): RxStream[(A, B)]                             = Rx.join(this, other)
-  def join[B, C](b: Rx[B], c: Rx[C]): RxStream[(A, B, C)]                 = Rx.join(this, b, c)
-  def join[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): RxStream[(A, B, C, D)] = Rx.join(this, b, c, d)
+  def join[B](other: Rx[B]): Rx[(A, B)]                             = Rx.join(this, other)
+  def join[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Rx.join(this, b, c)
+  def join[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Rx.join(this, b, c, d)
 
   /**
     * Combine Rx stream and Future operators.
@@ -129,7 +133,7 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     *   .map { (rpcReturnValue) => ... } // Use the Future response
     * }}}
     */
-  def andThen[B](f: A => Future[B])(implicit ex: ExecutionContext): RxStream[B] = {
+  def andThen[B](f: A => Future[B])(implicit ex: ExecutionContext): Rx[B] = {
     this.flatMap(a => Rx.future(f(a)))
   }
 
@@ -137,11 +141,11 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     * Transform the input value by wrapping it with Try regardless of success or failure. This is useful when you need
     * to handle both success and failure cases in the same way.
     */
-  def transformRx[B](f: Try[A] => Rx[B]): RxStream[B] = {
+  def transformRx[B](f: Try[A] => Rx[B]): Rx[B] = {
     TransformRxOp(this, f)
   }
 
-  def transform[B](f: Try[A] => B): RxStream[B] = {
+  def transform[B](f: Try[A] => B): Rx[B] = {
     TransformOp(this, f)
   }
 
@@ -149,12 +153,12 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     * Transform the input value by wrapping it with Try regardless of success or failure. This is useful when you need
     * to add a post-processing step after handling success and failure cases.
     */
-  def transformTry[B](f: Try[A] => Try[B]): RxStream[B] = {
+  def transformTry[B](f: Try[A] => Try[B]): Rx[B] = {
     TransformTryOp(this, f)
   }
 
-  def concat[A1 >: A](other: Rx[A1]): RxStream[A1] = Rx.concat(this, other)
-  def lastOption: RxOption[A]                      = LastOp(this).toOption
+  def concat[A1 >: A](other: Rx[A1]): Rx[A1] = Rx.concat(this, other)
+  def lastOption: RxOption[A]                = LastOp(this).toOption
 
   /**
     * Cache the last item, and emit the cached value if available.
@@ -167,49 +171,49 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     *
     * v.map { x => ... } </code>
     */
-  def cache[A1 >: A]: RxStreamCache[A1] = CacheOp(this)
+  def cache[A1 >: A]: RxCache[A1] = CacheOp(this)
 
   /**
     * Take an event up to <i>n</i> elements. This may receive fewer events than n if the upstream operator completes
     * before generating <i>n</i> elements.
     */
-  def take(n: Long): RxStream[A] = TakeOp(this, n)
+  def take(n: Long): Rx[A] = TakeOp(this, n)
 
   /**
     * Emit the first item of the source within each sampling period. For example, this is useful to prevent
     * double-clicks of buttons.
     */
-  def throttleFirst(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): RxStream[A] =
+  def throttleFirst(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): Rx[A] =
     ThrottleFirstOp[A](this, timeWindow, unit)
 
   /**
     * Emit the most recent item of the source within periodic time intervals.
     */
-  def throttleLast(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): RxStream[A] =
+  def throttleLast(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): Rx[A] =
     ThrottleLastOp[A](this, timeWindow, unit)
 
   /**
     * Emit the most recent item of the source within periodic time intervals.
     */
-  def sample(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): RxStream[A] =
+  def sample(timeWindow: Long, unit: TimeUnit = TimeUnit.MILLISECONDS): Rx[A] =
     ThrottleLastOp[A](this, timeWindow, unit)
 
   /**
     * Emit the given item first before returning the items from the source.
     */
-  def startWith[A1 >: A](a: A1): RxStream[A1] = Rx.concat(Rx.single(a), this)
+  def startWith[A1 >: A](a: A1): Rx[A1] = Rx.concat(Rx.single(a), this)
 
   /**
     * Emit the given items first before returning the items from the source.
     */
-  def startWith[A1 >: A](lst: Seq[A1]): RxStream[A1] = Rx.concat(Rx.fromSeq(lst), this)
+  def startWith[A1 >: A](lst: Seq[A1]): Rx[A1] = Rx.concat(Rx.fromSeq(lst), this)
 }
 
 /**
-  * RxStream[A] with a caching capability
+  * Rx[A] with a caching capability
   * @tparam A
   */
-trait RxStreamCache[A] extends RxStream[A] {
+trait RxCache[A] extends Rx[A] {
 
   /**
     * Get the current cached value if exists
@@ -219,12 +223,12 @@ trait RxStreamCache[A] extends RxStream[A] {
   /**
     * Discard the cached value after the given duration.
     */
-  def expireAfterWrite(time: Long, unit: TimeUnit): RxStreamCache[A]
+  def expireAfterWrite(time: Long, unit: TimeUnit): RxCache[A]
 
   /**
     * Set a custom ticker. Use this only for testing purpose
     */
-  def withTicker(ticker: Ticker): RxStreamCache[A]
+  def withTicker(ticker: Ticker): RxCache[A]
 }
 
 object Rx extends LogSupport {
@@ -232,7 +236,7 @@ object Rx extends LogSupport {
   /**
     * Provide a constant value by immediately evaluating the given input
     */
-  def const[A](v: => A): RxStream[A] = {
+  def const[A](v: => A): Rx[A] = {
     // wrap the value with Try to propaget exception through Rx
     fromTry(Try(v))
   }
@@ -240,21 +244,21 @@ object Rx extends LogSupport {
   /**
     * Create a lazily evaluated single value
     */
-  def single[A](v: => A): RxStream[A]         = SingleOp(LazyF0(v))
-  def exception[A](e: Throwable): RxStream[A] = fromTry(Failure[A](e))
+  def single[A](v: => A): Rx[A]         = SingleOp(LazyF0(v))
+  def exception[A](e: Throwable): Rx[A] = fromTry(Failure[A](e))
 
   /**
     * Create a sequence of values from Seq[A]
     */
-  def fromSeq[A](lst: => Seq[A]): RxStream[A] = SeqOp(LazyF0(lst))
+  def fromSeq[A](lst: => Seq[A]): Rx[A] = SeqOp(LazyF0(lst))
 
-  def fromTry[A](t: Try[A]): RxStream[A] = TryOp(LazyF0(t))
+  def fromTry[A](t: Try[A]): Rx[A] = TryOp(LazyF0(t))
 
   /**
     * Create a sequence of values
     */
-  def sequence[A](values: A*): RxStream[A] = fromSeq(values)
-  def empty[A]: RxStream[A]                = fromSeq(Seq.empty)
+  def sequence[A](values: A*): Rx[A] = fromSeq(values)
+  def empty[A]: Rx[A]                = fromSeq(Seq.empty)
 
   @deprecated(message = "Use Rx.variable instead", since = "20.9.2")
   def apply[A](v: A): RxVar[A]                        = variable(v)
@@ -263,32 +267,32 @@ object Rx extends LogSupport {
   def option[A](v: => Option[A]): RxOption[A]         = RxOptionOp(single(v))
   val none: RxOption[Nothing]                         = RxOptionOp(single(None))
 
-  def join[A, B](a: Rx[A], b: Rx[B]): RxStream[(A, B)]                                 = JoinOp(a, b)
-  def join[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]): RxStream[(A, B, C)]                 = Join3Op(a, b, c)
-  def join[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]): RxStream[(A, B, C, D)] = Join4Op(a, b, c, d)
+  def join[A, B](a: Rx[A], b: Rx[B]): Rx[(A, B)]                                 = JoinOp(a, b)
+  def join[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Join3Op(a, b, c)
+  def join[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Join4Op(a, b, c, d)
 
-  def zip[A, B](a: Rx[A], b: Rx[B]): RxStream[(A, B)]                                 = ZipOp(a, b)
-  def zip[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]): RxStream[(A, B, C)]                 = Zip3Op(a, b, c)
-  def zip[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]): RxStream[(A, B, C, D)] = Zip4Op(a, b, c, d)
+  def zip[A, B](a: Rx[A], b: Rx[B]): Rx[(A, B)]                                 = ZipOp(a, b)
+  def zip[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Zip3Op(a, b, c)
+  def zip[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Zip4Op(a, b, c, d)
 
-  def concat[A, A1 >: A](a: Rx[A], b: Rx[A1]): RxStream[A1] = ConcatOp(a, b)
+  def concat[A, A1 >: A](a: Rx[A], b: Rx[A1]): Rx[A1] = ConcatOp(a, b)
 
   /**
     * Periodically trigger an event and report the interval millis. After running Rx with an interval, the cancel method
     * must be called to stop the timer: <code> val c = Rx.interval(...).run { x => ... } c.cancel </code>
     */
-  def interval(interval: Long, unit: TimeUnit): RxStream[Long] = IntervalOp(interval, unit)
-  def intervalMillis(intervalMillis: Long): RxStream[Long]     = interval(intervalMillis, TimeUnit.MILLISECONDS)
+  def interval(interval: Long, unit: TimeUnit): Rx[Long] = IntervalOp(interval, unit)
+  def intervalMillis(intervalMillis: Long): Rx[Long]     = interval(intervalMillis, TimeUnit.MILLISECONDS)
 
   /**
     * Emits 0 once after the give delay period.
     */
-  def timer(interval: Long, unit: TimeUnit): RxStream[Long] = TimerOp(interval, unit)
+  def timer(interval: Long, unit: TimeUnit): Rx[Long] = TimerOp(interval, unit)
 
   /**
     * Emits 0 once after the give delay period.
     */
-  def delay(interval: Long, unit: TimeUnit): RxStream[Long] = timer(interval, unit)
+  def delay(interval: Long, unit: TimeUnit): Rx[Long] = timer(interval, unit)
 
   private def futureToRx[A](f: Future[A])(implicit ec: ExecutionContext): RxVar[Option[A]] = {
     val v = Rx.variable[Option[A]](None)
@@ -319,62 +323,62 @@ object Rx extends LogSupport {
   /**
     * Mapping a Scala Future into Rx that emits a value when the future is completed.
     */
-  def future[A](f: Future[A])(implicit ec: ExecutionContext): RxStream[A] = {
+  def future[A](f: Future[A])(implicit ec: ExecutionContext): Rx[A] = {
     val v = futureToRx(f)(ec)
     v.filter(_.isDefined).map(_.get)
   }
 
-  abstract class UnaryRx[I, A] extends RxStream[A] {
+  abstract class UnaryRx[I, A] extends Rx[A] {
     def input: Rx[I]
     override def parents: Seq[Rx[_]] = Seq(input)
   }
 
-  case class SingleOp[A](v: LazyF0[A]) extends RxStream[A] {
+  case class SingleOp[A](v: LazyF0[A]) extends Rx[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
-  case class SeqOp[A](lst: LazyF0[Seq[A]]) extends RxStream[A] {
+  case class SeqOp[A](lst: LazyF0[Seq[A]]) extends Rx[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
-  case class TryOp[A](v: LazyF0[Try[A]]) extends RxStream[A] {
+  case class TryOp[A](v: LazyF0[Try[A]]) extends Rx[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
-  case class TransformRxOp[A, B](input: Rx[A], f: Try[A] => Rx[B]) extends RxStream[B] {
+  case class TransformRxOp[A, B](input: Rx[A], f: Try[A] => Rx[B]) extends Rx[B] {
     override def parents: Seq[Rx[_]] = Seq(input)
   }
-  case class TransformOp[A, B](input: Rx[A], f: Try[A] => B) extends RxStream[B] {
+  case class TransformOp[A, B](input: Rx[A], f: Try[A] => B) extends Rx[B] {
     override def parents: Seq[Rx[_]] = Seq(input)
   }
 
-  case class TransformTryOp[A, B](input: Rx[A], f: Try[A] => Try[B]) extends RxStream[B] {
+  case class TransformTryOp[A, B](input: Rx[A], f: Try[A] => Try[B]) extends Rx[B] {
     override def parents: Seq[Rx[_]] = Seq(input)
   }
 
   case class MapOp[A, B](input: Rx[A], f: A => B)          extends UnaryRx[A, B]
   case class FlatMapOp[A, B](input: Rx[A], f: A => Rx[B])  extends UnaryRx[A, B]
   case class FilterOp[A](input: Rx[A], cond: A => Boolean) extends UnaryRx[A, A]
-  case class ZipOp[A, B](a: Rx[A], b: Rx[B]) extends RxStream[(A, B)] {
+  case class ZipOp[A, B](a: Rx[A], b: Rx[B]) extends Rx[(A, B)] {
     override def parents: Seq[Rx[_]] = Seq(a, b)
   }
-  case class Zip3Op[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]) extends RxStream[(A, B, C)] {
+  case class Zip3Op[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]) extends Rx[(A, B, C)] {
     override def parents: Seq[Rx[_]] = Seq(a, b, c)
   }
-  case class Zip4Op[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]) extends RxStream[(A, B, C, D)] {
+  case class Zip4Op[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]) extends Rx[(A, B, C, D)] {
     override def parents: Seq[Rx[_]] = Seq(a, b, c, d)
   }
-  case class JoinOp[A, B](a: Rx[A], b: Rx[B]) extends RxStream[(A, B)] {
+  case class JoinOp[A, B](a: Rx[A], b: Rx[B]) extends Rx[(A, B)] {
     override def parents: Seq[Rx[_]] = Seq(a, b)
   }
-  case class Join3Op[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]) extends RxStream[(A, B, C)] {
+  case class Join3Op[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]) extends Rx[(A, B, C)] {
     override def parents: Seq[Rx[_]] = Seq(a, b, c)
   }
-  case class Join4Op[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]) extends RxStream[(A, B, C, D)] {
+  case class Join4Op[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]) extends Rx[(A, B, C, D)] {
     override def parents: Seq[Rx[_]] = Seq(a, b, c, d)
   }
 
-  case class ConcatOp[A](first: Rx[A], next: Rx[A]) extends RxStream[A] {
+  case class ConcatOp[A](first: Rx[A], next: Rx[A]) extends Rx[A] {
     override def parents: Seq[Rx[_]] = Seq(first, next)
   }
-  case class LastOp[A](input: Rx[A]) extends RxStream[Option[A]] {
+  case class LastOp[A](input: Rx[A]) extends Rx[Option[A]] {
     override def parents: Seq[Rx[_]] = Seq(input)
   }
   case class NamedOp[A](input: Rx[A], name: String) extends UnaryRx[A, A] {
@@ -383,14 +387,14 @@ object Rx extends LogSupport {
   case class RecoverOp[A, U](input: Rx[A], f: PartialFunction[Throwable, U])         extends UnaryRx[A, U]
   case class RecoverWithOp[A, U](input: Rx[A], f: PartialFunction[Throwable, Rx[U]]) extends UnaryRx[A, U]
 
-  case class IntervalOp(interval: Long, unit: TimeUnit) extends RxStream[Long] {
+  case class IntervalOp(interval: Long, unit: TimeUnit) extends Rx[Long] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
-  case class TimerOp(interval: Long, unit: TimeUnit) extends RxStream[Long] {
+  case class TimerOp(interval: Long, unit: TimeUnit) extends Rx[Long] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
 
-  case class TakeOp[A](input: Rx[A], n: Long) extends RxStream[A] {
+  case class TakeOp[A](input: Rx[A], n: Long) extends Rx[A] {
     override def parents: Seq[Rx[_]] = Seq(input)
   }
   case class ThrottleFirstOp[A](input: Rx[A], interval: Long, unit: TimeUnit) extends UnaryRx[A, A]
@@ -403,16 +407,16 @@ object Rx extends LogSupport {
       expirationAfterWriteNanos: Option[Long] = None,
       ticker: Ticker = Ticker.systemTicker
   ) extends UnaryRx[A, A]
-      with RxStreamCache[A] {
+      with RxCache[A] {
     override def getCurrent: Option[A] = lastValue
-    override def expireAfterWrite(time: Long, unit: TimeUnit): RxStreamCache[A] = {
+    override def expireAfterWrite(time: Long, unit: TimeUnit): RxCache[A] = {
       this.copy(expirationAfterWriteNanos = Some(unit.toNanos(time)))
     }
 
     /**
       * Set a custom ticker. Use this only for testing purpose
       */
-    override def withTicker(ticker: Ticker): RxStreamCache[A] = {
+    override def withTicker(ticker: Ticker): RxCache[A] = {
       this.copy(ticker = ticker)
     }
   }

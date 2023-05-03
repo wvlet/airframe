@@ -43,7 +43,7 @@ class JSHttpAsyncClientTest extends AirSpec {
       flaky {
         client
           .send(Http.GET("/posts/1"))
-          .toRxStream
+          .toRx
           .map { resp =>
             resp.status shouldBe HttpStatus.Ok_200
             resp.isContentTypeJson shouldBe true
@@ -60,7 +60,7 @@ class JSHttpAsyncClientTest extends AirSpec {
         val data = """{"id":1,"name":"leo"}"""
         client
           .send(Http.POST("/posts").withContent(data))
-          .toRxStream
+          .toRx
           .map { resp =>
             resp.status shouldBe HttpStatus.Created_201
             resp.isContentTypeJson shouldBe true
@@ -75,7 +75,7 @@ class JSHttpAsyncClientTest extends AirSpec {
       flaky {
         client
           .sendSafe(Http.GET("/status/404"))
-          .toRxStream
+          .toRx
           .transform {
             case Success(resp) =>
               resp.status shouldBe HttpStatus.NotFound_404
@@ -89,7 +89,7 @@ class JSHttpAsyncClientTest extends AirSpec {
       flaky {
         client
           .send(Http.GET("/status/404"))
-          .toRxStream
+          .toRx
           .transform {
             case Failure(e: HttpClientException) =>
               e.status shouldBe HttpStatus.NotFound_404
@@ -112,7 +112,7 @@ class JSHttpAsyncClientTest extends AirSpec {
             }
           })
           .send(Http.GET("/status/500"))
-          .toRxStream
+          .toRx
           .transform {
             case Failure(e: HttpClientMaxRetryException) =>
               e.status.isServerError shouldBe true
@@ -134,7 +134,7 @@ class JSHttpAsyncClientTest extends AirSpec {
           }
         })
         .send(Http.GET("/status/500"))
-        .toRxStream
+        .toRx
         .transform {
           case Failure(e) =>
             e.getCause match {

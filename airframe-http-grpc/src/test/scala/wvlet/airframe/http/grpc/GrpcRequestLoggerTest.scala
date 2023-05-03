@@ -18,7 +18,7 @@ import wvlet.airframe.http.HttpAccessLogWriter
 import wvlet.airframe.http.grpc.example.DemoApi
 import wvlet.airframe.http.grpc.example.DemoApi.DemoApiClient
 import wvlet.airframe.http.grpc.internal.GrpcRequestLogger
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 
 import scala.util.{Failure, Try}

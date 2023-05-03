@@ -136,7 +136,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[Response] = {
       val context = new NettyRPCContext(request)
       wvlet.airframe.http.Compat.attachRPCContext(context)
-      next(request).toRxStream
+      next(request).toRx
         // TODO use transformTry
         .transformRx { v =>
           wvlet.airframe.http.Compat.detachRPCContext(context)

@@ -46,7 +46,7 @@ object JavaAsyncClientTest extends AirSpec {
     test("GET") {
       client
         .send(Http.GET("/get?id=1&name=leo"))
-        .toRxStream
+        .toRx
         .map { resp =>
           resp.status shouldBe HttpStatus.Ok_200
           resp.isContentTypeJson shouldBe true
@@ -60,7 +60,7 @@ object JavaAsyncClientTest extends AirSpec {
       // .
       client
         .call[Person, Map[String, Any]](Http.GET("/get"), p)
-        .toRxStream
+        .toRx
         .map { m =>
           m("args") shouldBe Map("id" -> "1", "name" -> "leo")
         }
@@ -70,7 +70,7 @@ object JavaAsyncClientTest extends AirSpec {
       // .
       client
         .call[Person, Map[String, Any]](Http.GET("/get"), p)
-        .toRxStream
+        .toRx
         .map { m =>
           m("args") shouldBe Map("id" -> "1", "name" -> "leo")
         }
@@ -80,7 +80,7 @@ object JavaAsyncClientTest extends AirSpec {
       val data = """{"id":1,"name":"leo"}"""
       client
         .send(Http.POST("/post").withContent(data))
-        .toRxStream
+        .toRx
         .map { resp =>
           resp.status shouldBe HttpStatus.Ok_200
           resp.isContentTypeJson shouldBe true
@@ -94,7 +94,7 @@ object JavaAsyncClientTest extends AirSpec {
     test("call with POST") {
       client
         .call[Person, Map[String, Any]](Http.POST("/post"), p)
-        .toRxStream
+        .toRx
         .map { m =>
           m("data") shouldBe pJson
           m("json") shouldBe Map("id" -> 1, "name" -> "leo")
@@ -104,7 +104,7 @@ object JavaAsyncClientTest extends AirSpec {
     test("404") {
       client
         .sendSafe(Http.GET("/status/404"))
-        .toRxStream
+        .toRx
         .transform {
           case Success(resp) =>
             resp.status shouldBe HttpStatus.NotFound_404
@@ -116,7 +116,7 @@ object JavaAsyncClientTest extends AirSpec {
     test("404 with HttpClientException") {
       client
         .send(Http.GET("/status/404"))
-        .toRxStream
+        .toRx
         .transform {
           case Failure(e: HttpClientException) =>
             e.status shouldBe HttpStatus.NotFound_404
@@ -132,7 +132,7 @@ object JavaAsyncClientTest extends AirSpec {
       client
         .withRetryContext(_.withMaxRetry(1))
         .send(Http.GET("/status/500"))
-        .toRxStream
+        .toRx
         .transform {
           case Failure(e: HttpClientMaxRetryException) =>
             e.status.isServerError shouldBe true
