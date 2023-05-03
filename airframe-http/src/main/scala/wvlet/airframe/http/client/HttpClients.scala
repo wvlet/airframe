@@ -83,7 +83,6 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
           .apply(context)
           .andThen(req => Rx.single(channel.send(req, config)))
           .apply(request)
-          .toRx
           .run { resp =>
             lastResponse = Some(resp)
           }
