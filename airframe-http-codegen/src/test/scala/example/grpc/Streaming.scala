@@ -13,19 +13,19 @@
  */
 package example.grpc
 import wvlet.airframe.http.RPC
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.rx.Rx
 
 /**
   */
 @RPC
 trait Streaming {
-  def serverStreaming(name: String): RxStream[String] = {
+  def serverStreaming(name: String): Rx[String] = {
     Rx.sequence("Hello", "See You").map(x => s"${x} ${name}!")
   }
-  def clientStreaming(input: RxStream[String]): String = {
+  def clientStreaming(input: Rx[String]): String = {
     input.toSeq.mkString(", ")
   }
-  def bidiStreaming(input: RxStream[String]): RxStream[String] = {
+  def bidiStreaming(input: Rx[String]): Rx[String] = {
     input.map(x => s"Hello ${x}!")
   }
 }

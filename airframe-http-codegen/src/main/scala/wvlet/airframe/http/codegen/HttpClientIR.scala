@@ -19,7 +19,7 @@ import wvlet.airframe.http.{HttpMethod, Router, RxRouter}
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.codegen.client.HttpClientGenerator
 import wvlet.airframe.http.codegen.client.HttpClientGenerator.fullTypeNameOf
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface, TypeName}
 import wvlet.log.LogSupport
 import wvlet.airframe.http.router.{HttpRequestMapper, Route}

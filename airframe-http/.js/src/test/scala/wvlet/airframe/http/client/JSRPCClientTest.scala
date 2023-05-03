@@ -34,7 +34,7 @@ object JSRPCClientTest extends AirSpec {
         val m = RPCMethod("/posts", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
         client
           .rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))
-          .toRxStream
+          .toRx
           .map { response =>
             debug(response)
             response shouldBe TestResponse(1, "test")
@@ -46,7 +46,7 @@ object JSRPCClientTest extends AirSpec {
       flaky {
         client
           .call[Person, Map[String, Any]](Http.POST("/posts"), p)
-          .toRxStream
+          .toRx
           .map { m =>
             debug(m)
             m shouldBe Map("id" -> 101, "name" -> "leo")

@@ -66,7 +66,7 @@ object HttpLogs {
 
     next
       .apply(request)
-      .toRxStream
+      .toRx
       .map { resp =>
         m ++= durationLogs(baseTime, start)
         rpcCallLogs()

@@ -17,7 +17,7 @@ import wvlet.airframe.{Design, Session}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.{RxHttpEndpoint, RxHttpFilter, RxRouter}
 import wvlet.airframe.http.netty.{Netty, NettyServer, NettyServerConfig}
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
@@ -107,7 +107,7 @@ object HttpRecorderServer {
     override def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
       // Rewrite the target host for proxying
       val newRequest = request.noHost
-      next(newRequest).toRxStream.map { response =>
+      next(newRequest).toRx.map { response =>
         trace(s"Recording the response for ${request}")
         // Record the result
         recordStore.record(request, response)

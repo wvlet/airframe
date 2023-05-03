@@ -15,7 +15,7 @@ package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import scala.collection.mutable
@@ -43,7 +43,7 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
 
   override def toScalaFuture[A](a: Rx[A]): Future[A] = {
     val promise: Promise[A] = Promise()
-    a.toRxStream
+    a.toRx
       .map { x =>
         promise.success(x)
       }
@@ -88,7 +88,7 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
   }
 
   override def mapF[A, B](f: Rx[A], body: A => B): Rx[B] = {
-    f.toRxStream.map(body)
+    f.toRx.map(body)
   }
 
   private lazy val tls =

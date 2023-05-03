@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.rx.Rx
 
 /**
   * [[RxHttpEndpoint]] is a terminal for processing requests and returns `Rx[Response]`.

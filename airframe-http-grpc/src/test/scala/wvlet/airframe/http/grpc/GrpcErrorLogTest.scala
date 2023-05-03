@@ -19,7 +19,7 @@ import wvlet.airframe.http.grpc.internal.GrpcRequestLogger
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.HttpAccessLogWriter
 import wvlet.airspec.AirSpec
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.rx.Rx
 import wvlet.log.Logger
 
 import scala.util.{Failure, Try}
@@ -35,11 +35,11 @@ object GrpcErrorLogTest extends AirSpec {
       throw new IllegalArgumentException(s"invalid message: ${name}")
     }
 
-    override def helloClientStreaming(input: RxStream[String]): String = {
+    override def helloClientStreaming(input: Rx[String]): String = {
       throw new UnsupportedOperationException(s"N/A")
     }
 
-    override def helloBidiStreaming(input: RxStream[String]): RxStream[String] = {
+    override def helloBidiStreaming(input: Rx[String]): Rx[String] = {
       throw new UnsupportedOperationException(s"N/A")
     }
   }

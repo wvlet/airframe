@@ -18,10 +18,10 @@ import java.util.concurrent.TimeUnit
 
 /**
   */
-trait RxOption[+A] extends Rx[Option[A]] {
-  protected def in: RxStream[Option[A]]
+trait RxOption[+A] extends RxOps[Option[A]] {
+  protected def in: Rx[Option[A]]
 
-  override def toRxStream: RxStream[Option[A]] = transform {
+  def toRx: Rx[Option[A]] = transform {
     case Some(x) => Some(x)
     case None    => None
   }
@@ -37,13 +37,14 @@ trait RxOption[+A] extends Rx[Option[A]] {
     RxOptionOp[B](
       transformRx {
         case Some(x) =>
-          f(x).toRxStream.map(Option(_))
-        case None => Rx.none
+          f(x).toRx.map(Option(_))
+        case None =>
+          Rx.none.toRx
       }
     )
   }
 
-  def transform[B](f: Option[A] => B): RxStream[B] = {
+  def transform[B](f: Option[A] => B): Rx[B] = {
     MapOp(
       in,
       { (x: Option[A]) =>
@@ -52,7 +53,7 @@ trait RxOption[+A] extends Rx[Option[A]] {
     )
   }
 
-  def transformRx[B](f: Option[A] => Rx[B]): RxStream[B] = {
+  def transformRx[B](f: Option[A] => Rx[B]): Rx[B] = {
     in.flatMap(f)
   }
 
@@ -61,7 +62,7 @@ trait RxOption[+A] extends Rx[Option[A]] {
       FlatMapOp(
         in,
         { (x: Option[A]) =>
-          f(x)
+          f(x).toRx
         }
       )
     )
@@ -78,14 +79,14 @@ trait RxOption[+A] extends Rx[Option[A]] {
     )
   }
 
-  def getOrElse[A1 >: A](default: => A1): RxStream[A1] = {
+  def getOrElse[A1 >: A](default: => A1): Rx[A1] = {
     transform {
       case Some(v) => v
       case None    => default
     }
   }
 
-  def getOrElseRx[A1 >: A](default: => Rx[A1]): RxStream[A1] = {
+  def getOrElseRx[A1 >: A](default: => Rx[A1]): Rx[A1] = {
     transformRx {
       case Some(v) => Rx.single(v.asInstanceOf[A1])
       case None    => default
@@ -99,7 +100,8 @@ trait RxOption[+A] extends Rx[Option[A]] {
   def filter(f: A => Boolean): RxOption[A]     = transformOption(_.filter(f))
   def withFilter(f: A => Boolean): RxOption[A] = filter(f)
 
-  def cache[A1 >: A]: RxOptionCache[A1] = RxOptionCacheOp(CacheOp(this))
+  def cache[A1 >: A]: RxOptionCache[A1] = RxOptionCacheOp(CacheOp(this.toRx))
+
 }
 
 /**
@@ -112,7 +114,7 @@ trait RxOptionCache[A] extends RxOption[A] {
   def withTicker(ticker: Ticker): RxOptionCache[A]
 }
 
-case class RxOptionOp[+A](override protected val in: RxStream[Option[A]]) extends RxOption[A] {
+case class RxOptionOp[+A](override protected val in: Rx[Option[A]]) extends RxOption[A] {
   override def parents: Seq[Rx[_]] = Seq(in)
 }
 
@@ -121,9 +123,9 @@ case class RxOptionOp[+A](override protected val in: RxStream[Option[A]]) extend
   * @tparam A
   */
 class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarOps[Option[A]] {
-  override def toString: String                  = s"RxOptionVar(${variable.get})"
-  override protected def in: RxStream[Option[A]] = variable
-  override def parents: Seq[Rx[_]]               = Seq(in)
+  override def toString: String            = s"RxOptionVar(${variable.get})"
+  override protected def in: Rx[Option[A]] = variable
+  override def parents: Seq[Rx[_]]         = Seq(in)
 
   override def get: Option[A] = variable.get
   override def foreach[U](f: Option[A] => U): Cancelable = {
@@ -145,10 +147,10 @@ class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarO
   }
 }
 
-case class RxOptionCacheOp[A](input: RxStreamCache[Option[A]]) extends RxOptionCache[A] {
-  override def getCurrent: Option[A]             = input.getCurrent.flatten
-  override protected def in: RxStream[Option[A]] = input.toRxStream
-  override def parents: Seq[Rx[_]]               = input.parents
+case class RxOptionCacheOp[A](input: RxCache[Option[A]]) extends RxOptionCache[A] {
+  override def getCurrent: Option[A]       = input.getCurrent.flatten
+  override protected def in: Rx[Option[A]] = input.toRx
+  override def parents: Seq[Rx[_]]         = input.parents
 
   override def expireAfterWrite(time: Long, unit: TimeUnit): RxOptionCache[A] =
     this.copy(input = input.expireAfterWrite(time, unit))

@@ -476,7 +476,7 @@ object RxTest extends AirSpec {
     }
 
     // (test name, input, expected value on success)
-    def newTests(rx: RxStream[Int]): Seq[(String, Rx[Any], Any)] =
+    def newTests(rx: Rx[Int]): Seq[(String, Rx[Any], Any)] =
       Seq(
         ("single", rx, Seq(1)),
         ("map", rx.map(x => x * 2), Seq(2)),
