@@ -21,7 +21,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
 
-trait RxOps[+A] {
+trait RxOps[+A] { self =>
   def parents: Seq[Rx[_]]
 
   def toRx: Rx[A]
@@ -45,7 +45,7 @@ trait RxOps[+A] {
     * @return
     */
   def run[U](effect: A => U): Cancelable = {
-    RxRunner.runOps(this) {
+    RxRunner.run(self) {
       case OnNext(v) =>
         effect(v.asInstanceOf[A])
       case OnError(e) =>
@@ -59,7 +59,7 @@ trait RxOps[+A] {
     * Keep evaluating Rx[A] even if OnError(e) or OnCompletion is reported. This is useful for keep processing streams.
     */
   def runContinuously[U](effect: A => U): Cancelable = {
-    RxRunner.runOpsContinuously(this) {
+    RxRunner.runContinuously(this) {
       case OnNext(v) =>
         effect(v.asInstanceOf[A])
       case OnError(e) =>

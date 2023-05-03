@@ -43,7 +43,7 @@ object RxRunner extends LogSupport {
   // This runner will not report OnCompleiton event
   private val continuousRunner = new RxRunner(continuous = true)
 
-  def runOps[A, U](rx: RxOps[A])(effect: RxEvent => U): Cancelable =
+  def run[A, U](rx: RxOps[A])(effect: RxEvent => U): Cancelable = {
     defaultRunner.run(rx) { ev =>
       ev match {
         case v @ OnNext(_) =>
@@ -54,10 +54,9 @@ object RxRunner extends LogSupport {
           RxResult.Stop
       }
     }
+  }
 
-  def run[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable = runOps(rx)(effect)
-
-  def runOpsContinuously[A, U](rx: RxOps[A])(effect: RxEvent => U): Cancelable =
+  def runContinuously[A, U](rx: RxOps[A])(effect: RxEvent => U): Cancelable = {
     continuousRunner.run(rx) { ev =>
       ev match {
         case v @ OnNext(_) =>
@@ -68,11 +67,7 @@ object RxRunner extends LogSupport {
           RxResult.Stop
       }
     }
-
-  def runContinuously[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable = {
-    runOpsContinuously(rx)(effect)
   }
-
 }
 
 class RxRunner(

@@ -192,7 +192,6 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
           .apply(context)
           .andThen(req => channel.sendAsync(req, config))
           .apply(request)
-          .toRx
           .map { resp =>
             // Remember the last response for error reporting purpose
             lastResponse = Some(resp)
