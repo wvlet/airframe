@@ -9,7 +9,7 @@ val targetScalaVersions = SCALA_3 :: uptoScala2
 // Add this for using snapshot versions
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
-val AIRSPEC_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "23.4.8-14-32555d5f-SNAPSHOT")
+val AIRSPEC_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "23.4.8-15-992164d0-SNAPSHOT")
 val SCALACHECK_VERSION              = "1.17.0"
 val MSGPACK_VERSION                 = "0.9.3"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.3.0"
