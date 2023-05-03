@@ -37,7 +37,8 @@ object HttpLogs {
       excludeHeaders: HttpMultiMap,
       request: Request,
       next: RxHttpEndpoint,
-      clientContext: Option[HttpClientContext] = None
+      clientContext: Option[HttpClientContext] = None,
+      rpcContext: Option[RPCContext] = None
   ): Rx[Response] = {
     val baseTime = System.currentTimeMillis()
     val start    = System.nanoTime()
@@ -51,15 +52,24 @@ object HttpLogs {
       httpLogger.write(httpLogger.config.logFilter(m.result()))
     }
 
+    def rpcCallLogs(): Unit = {
+      // RPC call context will be set to a TLS after dispatching an event
+      // TODO Pass RPC call context without using TLS
+      rpcContext.flatMap(_.rpcCallContext).foreach { rcc =>
+        m ++= rpcLogs(rcc)
+      }
+    }
+
     clientContext.foreach {
       _.rpcMethod.map { rpc => m ++= rpcMethodLogs(rpc) }
     }
-    // TODO Record rpc args
+
     next
       .apply(request)
       .toRxStream
       .map { resp =>
         m ++= durationLogs(baseTime, start)
+        rpcCallLogs()
         m ++= commonResponseLogs(resp)
         m ++= responseHeaderLogs(resp, excludeHeaders)
         reportLogs
@@ -67,6 +77,7 @@ object HttpLogs {
       }
       .recoverWith { case e: Throwable =>
         m ++= durationLogs(baseTime, start)
+        rpcCallLogs()
         m ++= errorLogs(e)
         reportLogs
         Rx.exception(e)

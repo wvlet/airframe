@@ -24,10 +24,12 @@ import io.netty.handler.codec.http._
 import io.netty.handler.stream.ChunkedWriteHandler
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.ThreadUtil
-import wvlet.airframe.http._
+import wvlet.airframe.http.HttpMessage.Response
+import wvlet.airframe.http.{HttpMessage, _}
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.internal.{HttpServerLoggingFilter, LogRotationHttpLogger}
 import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -35,6 +37,7 @@ import wvlet.log.io.IOUtil
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 import scala.collection.immutable.ListMap
+import scala.util.{Failure, Success, Try}
 
 case class NettyServerConfig(
     name: String = "default",
@@ -129,6 +132,18 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
 
   val localAddress: String = s"localhost:${config.port}"
 
+  private def attachContextFilter = new RxHttpFilter {
+    override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[Response] = {
+      val context = new NettyRPCContext(request)
+      wvlet.airframe.http.Compat.attachRPCContext(context)
+      next(request).toRxStream
+        .transformTry { v =>
+          wvlet.airframe.http.Compat.detachRPCContext(context)
+          v
+        }
+    }
+  }
+
   @PostConstruct
   def start: Unit = {
     info(s"Starting ${config.name} server at ${localAddress}")
@@ -169,7 +184,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
 
       private val dispatcher = {
         NettyBackend
-          .rxFilterAdapter(loggingFilter)
+          .rxFilterAdapter(attachContextFilter.andThen(loggingFilter))
           .andThen(
             HttpRequestDispatcher.newDispatcher(
               session = session,
