@@ -145,6 +145,10 @@ trait RxStream[+A] extends Rx[A] with LogSupport {
     TransformOp(this, f)
   }
 
+  /**
+    * Transform the input value by wrapping it with Try regardless of success or failure. This is useful when you need
+    * to add a post-processing step after handling success and failure cases.
+    */
   def transformTry[B](f: Try[A] => Try[B]): RxStream[B] = {
     TransformTryOp(this, f)
   }
