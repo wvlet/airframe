@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 class RxCacheTest extends AirSpec {
   private def evalStream(rx: RxOps[_]): Seq[RxEvent] = {
     val events = Seq.newBuilder[RxEvent]
-    val c      = RxRunner.runOpsContinuously(rx)(events += _)
+    val c      = RxRunner.runContinuously(rx)(events += _)
     c.cancel
     events.result()
   }

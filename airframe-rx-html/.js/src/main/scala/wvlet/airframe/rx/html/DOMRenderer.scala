@@ -13,11 +13,10 @@
  */
 package wvlet.airframe.rx.html
 import org.scalajs.dom
-import wvlet.airframe.rx.{Cancelable, Rx}
+import wvlet.airframe.rx.{Cancelable, Rx, RxOps}
 import wvlet.log.LogSupport
 
 import scala.scalajs.js
-import scala.util.Try
 
 /**
   * Convert HtmlNodes into DOM elements for Scala.js.
@@ -84,7 +83,7 @@ object DOMRenderer extends LogSupport {
           val c    = e.traverseModifiers(m => renderTo(elem, m))
           node.mountHere(elem, anchor)
           c
-        case rx: Rx[_] =>
+        case rx: RxOps[_] =>
           val (start, end) = node.createMountSection()
           var c1           = Cancelable.empty
           val c2 = rx.subscribe { value =>
@@ -181,7 +180,7 @@ object DOMRenderer extends LogSupport {
           Cancelable.empty
         case Some(x) =>
           traverse(x)
-        case rx: Rx[_] =>
+        case rx: RxOps[_] =>
           var c1 = Cancelable.empty
           val c2 = rx.run { value =>
             // Cancel the previous binding
@@ -237,7 +236,7 @@ object DOMRenderer extends LogSupport {
       */
     private def eval(v: Any): Cancelable = {
       v match {
-        case rx: Rx[_] =>
+        case rx: RxOps[_] =>
           rx.run { _ => }
         case Some(v) =>
           eval(v)
