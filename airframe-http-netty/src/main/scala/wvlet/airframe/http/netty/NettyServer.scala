@@ -137,9 +137,15 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
       val context = new NettyRPCContext(request)
       wvlet.airframe.http.Compat.attachRPCContext(context)
       next(request).toRxStream
-        .transformTry { v =>
+        // TODO use transformTry
+        .transformRx { v =>
           wvlet.airframe.http.Compat.detachRPCContext(context)
-          v
+          v match {
+            case Success(v) =>
+              Rx.single(v)
+            case Failure(e) =>
+              Rx.exception(e)
+          }
         }
     }
   }
