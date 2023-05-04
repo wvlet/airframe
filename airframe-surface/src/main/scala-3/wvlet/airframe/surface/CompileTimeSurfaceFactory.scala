@@ -80,7 +80,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private val memo = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
 
   private def surfaceOf(t: TypeRepr): Expr[Surface] = {
-    // println(s"surfaceOf ${fullTypeNameOf(t)}")
     if (seen.contains(t)) {
       if (memo.contains(t)) {
         memo(t)
