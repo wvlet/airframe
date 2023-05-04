@@ -20,20 +20,6 @@ import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 /**
   */
 class HttpResponseBodyCodec[Resp: HttpResponseAdapter] extends MessageCodec[HttpResponse[_]] {
-
-  private def parseJsonLikeString(p: Packer, json: String): Unit = {
-    trace(s"response json: ${json}")
-    if (json.startsWith("{") || json.startsWith("[")) {
-      // JSON -> MsgPack
-      JSONCodec.pack(p, json)
-    } else {
-      if (json.nonEmpty) {
-        // Return as a plain string
-        p.packString(json)
-      }
-    }
-  }
-
   override def pack(p: Packer, v: HttpResponse[_]): Unit = {
     v.contentType match {
       case Some("application/msgpack") | Some("application/x-msgpack") =>
@@ -43,10 +29,17 @@ class HttpResponseBodyCodec[Resp: HttpResponseAdapter] extends MessageCodec[Http
       case Some(x) if x.startsWith("application/json") =>
         // JSON -> MsgPack
         val json = v.contentString
-        parseJsonLikeString(p, json)
+        trace(s"response: ${json}")
+        JSONCodec.pack(p, json)
       case _ =>
         val content = v.contentString
-        parseJsonLikeString(p, content)
+        if (content.startsWith("{") || content.startsWith("[")) {
+          // JSON -> MsgPack
+          trace(s"response: ${content}")
+          JSONCodec.pack(p, content)
+        } else {
+          p.packString(content)
+        }
     }
   }
   override def unpack(u: Unpacker, v: MessageContext): Unit = ???
