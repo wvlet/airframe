@@ -65,6 +65,8 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       taskKey[Seq[String]]("class loader for dependent classes")
     val airframeHttpBinaryDir =
       taskKey[File]("Download Airframe HTTP binary to this location")
+    val airframeHttpOutDir =
+      taskKey[File]("Output directory for the generated clients. The default is Compile / sourceManaged")
     val airframeHttpVersion = settingKey[String]("airframe-http version to use")
     val airframeHttpReload  = taskKey[Seq[File]]("refresh generated clients")
     val airframeHttpOpts =
@@ -192,6 +194,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           airframeHttpGenerateClient
         )
         .value,
+      airframeHttpOutDir := (Compile / sourceManaged).value,
       airframeHttpGenerateClient := {
         val targetDir = airframeHttpWorkDir.value
         val baseDir   = targetDir.relativeTo(file(".")).getOrElse(targetDir)
@@ -201,7 +204,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           s"${airframeHttpOpts.value} ${airframeHttpGeneratorOption.value}"
         val commandLineOpts = HttpCodeGeneratorOption(
           classpath = airframeHttpClasspass.value,
-          outDir = (Compile / sourceManaged).value,
+          outDir = airframeHttpOutDir.value,
           targetDir = targetDir,
           targets = airframeHttpClients.value
         )
