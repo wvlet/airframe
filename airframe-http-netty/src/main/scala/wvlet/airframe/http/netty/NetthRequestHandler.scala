@@ -102,6 +102,7 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
               HttpResponseStatus.valueOf(HttpStatus.InternalServerError_500.code)
             )
             HttpUtil.setContentLength(resp, 0)
+            resp
         }
         writeResponse(msg, ctx, resp)
       case OnCompletion =>
