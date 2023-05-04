@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe
+
 import java.io.EOFException
 import java.lang.reflect.InvocationTargetException
 import java.net._
@@ -21,6 +23,7 @@ import javax.net.ssl.{SSLException, SSLHandshakeException, SSLKeyException, SSLP
 import wvlet.airframe.control.{CircuitBreakerOpenException, ResultClass, Retry}
 import wvlet.airframe.control.ResultClass.{Failed, Succeeded, nonRetryableFailure, retryableFailure}
 import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.http.client.HttpClients
 import wvlet.log.LogSupport
 
 import scala.annotation.tailrec
@@ -61,12 +64,18 @@ case class HttpClientMaxRetryException(
   */
 object HttpClientException extends LogSupport {
   private def requestFailure[Resp](response: Resp)(implicit adapter: HttpResponseAdapter[Resp]): HttpClientException = {
-    val status  = adapter.statusOf(response)
-    val content = adapter.contentStringOf(response)
-    if (content == null || content.isEmpty) {
-      new HttpClientException(adapter.wrap(response), status)
+    val status                  = adapter.statusOf(response)
+    val isRPCException: Boolean = adapter.headerOf(response).get(HttpHeader.xAirframeRPCStatus).isDefined
+    if (isRPCException) {
+      val cause = HttpClients.parseRPCException(adapter.httpResponseOf(response))
+      new HttpClientException(adapter.wrap(response), status, cause)
     } else {
-      new HttpClientException(adapter.wrap(response), status, s"Request failed: ${content}")
+      val content = adapter.contentStringOf(response)
+      if (content == null || content.isEmpty || isRPCException) {
+        new HttpClientException(adapter.wrap(response), status)
+      } else {
+        new HttpClientException(adapter.wrap(response), status, s"Request failed: ${content}")
+      }
     }
   }
 
