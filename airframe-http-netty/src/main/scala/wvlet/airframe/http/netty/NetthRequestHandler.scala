@@ -17,7 +17,16 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http._
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{Http, HttpHeader, HttpMethod, HttpServerException, HttpStatus, RPCException, ServerAddress}
+import wvlet.airframe.http.{
+  Http,
+  HttpHeader,
+  HttpMethod,
+  HttpServerException,
+  HttpStatus,
+  RPCException,
+  RPCStatus,
+  ServerAddress
+}
 import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.log.LogSupport
 
@@ -80,33 +89,32 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
         writeResponse(msg, ctx, nettyResponse)
       case OnError(ex) =>
         val resp = ex match {
-          case e: RPCException =>
-            var resp = Http
-              .response(e.status.httpStatus)
-              .addHeader(HttpHeader.xAirframeRPCStatus, e.status.code.toString)
-            try {
-              // Embed RPCError into the response body
-              resp = resp.withJson(e.toJson)
-            } catch {
-              case ex: Throwable =>
-                // Show warning
-                logger.warn(s"Failed to serialize RPCException: ${e}", ex)
-            }
-            toNettyResponse(resp)
           case ex: HttpServerException =>
             toNettyResponse(ex.toResponse)
+          case e: RPCException =>
+            toNettyResponse(rpcExceptionResponse(e))
           case other =>
-            warn(other)
-            val resp = new DefaultFullHttpResponse(
-              HttpVersion.HTTP_1_1,
-              HttpResponseStatus.valueOf(HttpStatus.InternalServerError_500.code)
-            )
-            HttpUtil.setContentLength(resp, 0)
-            resp
+            val ex = RPCStatus.INTERNAL_ERROR_I0.newException(other.getMessage, other)
+            toNettyResponse(rpcExceptionResponse(ex))
         }
         writeResponse(msg, ctx, resp)
       case OnCompletion =>
     }
+  }
+
+  private def rpcExceptionResponse(e: RPCException): Response = {
+    var resp = Http
+      .response(e.status.httpStatus)
+      .addHeader(HttpHeader.xAirframeRPCStatus, e.status.code.toString)
+    try {
+      // Embed RPCError into the response body
+      resp = resp.withJson(e.toJson)
+    } catch {
+      case ex: Throwable =>
+        // Show warning
+        logger.warn(s"Failed to serialize RPCException: ${e}", ex)
+    }
+    resp
   }
 
   private def writeResponse(req: HttpRequest, ctx: ChannelHandlerContext, resp: DefaultHttpResponse): Unit = {

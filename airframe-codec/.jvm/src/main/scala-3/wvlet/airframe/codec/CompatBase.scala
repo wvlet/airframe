@@ -18,7 +18,10 @@ import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 trait CompatBase {
   inline def codecOf[A]: MessageCodec[A] = ${ CompatBase.codecOf[A] }
   // TODO Implementation
-  def surfaceOfClass(cl: Class[_]): Surface = ReflectSurfaceFactory.ofClass(cl)
+  def surfaceOfClass(cl: Class[_]): Option[Surface] = {
+    None
+    // ReflectSurfaceFactory.ofClass(cl)
+  }
 }
 
 private[codec] object CompatBase {

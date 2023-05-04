@@ -49,14 +49,15 @@ object Compat extends CompatBase {
       codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON
   ): Option[MessageCodec[_]] = {
     // Finding the surface using reflection
-    val surface = surfaceOfClass(cl)
-    codecFactory.of(surface) match {
-      case o: ObjectCodecBase if o.paramCodec.isEmpty =>
-        // If the codec is an ObjectCodec without any parameters,
-        // it will produce empty json object ({}), so we cannot use it
-        None
-      case codec =>
-        Some(codec)
+    surfaceOfClass(cl).flatMap { surface =>
+      codecFactory.of(surface) match {
+        case o: ObjectCodecBase if o.paramCodec.isEmpty =>
+          // If the codec is an ObjectCodec without any parameters,
+          // it will produce empty json object ({}), so we cannot use it
+          None
+        case codec =>
+          Some(codec)
+      }
     }
   }
 
