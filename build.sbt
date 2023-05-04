@@ -945,7 +945,6 @@ lazy val examples =
     .settings(
       name        := "airframe-examples",
       description := "Airframe examples",
-      crossScalaVersions ++= targetScalaVersions,
       libraryDependencies ++= Seq(
       )
     )
@@ -973,3 +972,29 @@ lazy val dottyTest =
       crossScalaVersions := List(SCALA_3)
     )
     .dependsOn(log.jvm, surface.jvm, di.jvm, codec.jvm)
+
+lazy val integrationTestApi =
+  project
+    .in(file("airframe-integration-test-api"))
+    .settings(buildSettings)
+    .settings(noPublish)
+    .settings(
+      name        := "airframe-integration-test",
+      description := "APIs for integration test"
+    )
+    .dependsOn(http.jvm)
+
+lazy val integrationTest =
+  project
+    .in(file("airframe-integration-test"))
+    .enablePlugins(AirframeHttpPlugin)
+    .settings(buildSettings)
+    .settings(noPublish)
+    .settings(
+      name                := "airframe-integration-test",
+      description         := "integration test project",
+      airframeHttpClients := Seq("wvlet.airframe.test.api:rpc"),
+      // A workaround because class loader layering causes reading Scala 2.12 classes in sbt-airframe in Scala 3
+      classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
+    )
+    .dependsOn(integrationTestApi, netty)

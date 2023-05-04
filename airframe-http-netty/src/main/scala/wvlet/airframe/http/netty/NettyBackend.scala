@@ -52,11 +52,7 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
   }
 
   override def filterAdapter[M[_]](filter: HttpFilter[_, _, M]): NettyBackend.Filter = {
-    filter match {
-      case f: NettyBackend.Filter @unchecked => f
-      case other =>
-        throw RPCStatus.UNIMPLEMENTED_U8.newException(s"unsupported filter type: ${other.getClass}")
-    }
+    filter.asInstanceOf[NettyBackend.Filter]
   }
 
   override def rxFilterAdapter(filter: RxHttpFilter): NettyBackend.Filter = {

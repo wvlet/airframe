@@ -9,6 +9,10 @@ addSbtPlugin("org.scalameta"      % "sbt-scalafmt"             % "2.5.0")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.3.1")
 addSbtPlugin("com.eed3si9n"       % "sbt-buildinfo"            % "0.11.0")
 
+// For integration testing
+val SBT_AIRFRAME_VERSION = sys.env.getOrElse("SBT_AIRFRAME_VERSION", "23.5.0")
+addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % SBT_AIRFRAME_VERSION)
+
 addDependencyTreePlugin
 
 // For Scala.js
