@@ -231,7 +231,7 @@ class HttpCodeGenerator(
           touch(routerHashFile)
           writeFile(outputFile, code)
         } else {
-          info(s"${path} is up-to-date")
+          debug(s"${path} is up-to-date")
         }
         outputFile
       }
