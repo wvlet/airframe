@@ -16,6 +16,7 @@ package wvlet.airframe.test.api
 import wvlet.airframe.Design
 import wvlet.airframe.http.{Http, RxRouter}
 import wvlet.airframe.http.netty.{Netty, NettyServer}
+import wvlet.airframe.test.api.Status
 import wvlet.airspec.AirSpec
 
 class HelloRPCTest extends AirSpec {
@@ -33,14 +34,27 @@ class HelloRPCTest extends AirSpec {
       }
   }
 
-  test("call RPC") { (client: ServiceRPC.RPCSyncClient) =>
-    client.HelloRPC.hello("RPC") shouldBe "Hello RPC!"
-  }
+  test("rpc") { (server: NettyServer) =>
+    test("sync client") { (client: ServiceRPC.RPCSyncClient) =>
+      test("String response") {
+        client.HelloRPC.hello("RPC") shouldBe "Hello RPC!"
+      }
 
-  test("call RPC async") { (client: ServiceRPC.RPCAsyncClient) =>
-    client.HelloRPC.hello("RPC").map { ret =>
-      ret shouldBe "Hello RPC!"
+      test("case object response") {
+        client.HelloRPC.serverStatus() shouldBe Status.OK
+      }
+
+      test("case object input") {
+        client.HelloRPC.ackStatus(Status.OK) shouldBe Status.OK
+      }
     }
+
+    test("async client") { (client: ServiceRPC.RPCAsyncClient) =>
+      client.HelloRPC.hello("RPC").map { ret =>
+        ret shouldBe "Hello RPC!"
+      }
+    }
+
   }
 
 }

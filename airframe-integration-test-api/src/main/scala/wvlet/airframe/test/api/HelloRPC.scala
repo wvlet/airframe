@@ -18,8 +18,33 @@ import wvlet.airframe.http._
 @RPC
 trait HelloRPC {
   def hello(name: String): String
+  def serverStatus: Status
+  def ackStatus(status: Status): Status
 }
 
 object HelloRPC extends RxRouterProvider {
   override def router: RxRouter = RxRouter.of[HelloRPC]
+
+}
+
+sealed trait Status {
+  def isDone: Boolean
+
+  def name: String = toString
+}
+
+object Status {
+  case object OK extends Status {
+    override def isDone: Boolean = true
+  }
+
+  case object NG extends Status {
+    override def isDone: Boolean = true
+  }
+
+  def all: Seq[Status] = Seq(OK, NG)
+
+  def unapply(s: String): Option[Status] = {
+    all.find(_.toString == s)
+  }
 }
