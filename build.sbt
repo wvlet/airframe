@@ -214,7 +214,9 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
   benchmark,
   sql,
   ulid.jvm,
-  examples
+  examples,
+  integrationTestApi,
+  integrationTest
 )
 
 // Scala.js build (Scala 2.12, 2.13, and 3.x)
@@ -943,9 +945,9 @@ lazy val examples =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      name        := "airframe-examples",
-      description := "Airframe examples",
-      crossScalaVersions ++= targetScalaVersions,
+      name               := "airframe-examples",
+      description        := "Airframe examples",
+      crossScalaVersions := targetScalaVersions,
       libraryDependencies ++= Seq(
       )
     )
@@ -973,3 +975,29 @@ lazy val dottyTest =
       crossScalaVersions := List(SCALA_3)
     )
     .dependsOn(log.jvm, surface.jvm, di.jvm, codec.jvm)
+
+lazy val integrationTestApi =
+  project
+    .in(file("airframe-integration-test-api"))
+    .settings(buildSettings)
+    .settings(noPublish)
+    .settings(
+      name               := "airframe-integration-test-api",
+      description        := "APIs for integration test",
+      crossScalaVersions := targetScalaVersions
+    )
+    .dependsOn(http.jvm)
+
+lazy val integrationTest =
+  project
+    .in(file("airframe-integration-test"))
+    .enablePlugins(AirframeHttpPlugin)
+    .settings(buildSettings)
+    .settings(noPublish)
+    .settings(
+      name                := "airframe-integration-test",
+      description         := "integration test project",
+      crossScalaVersions  := targetScalaVersions,
+      airframeHttpClients := Seq("wvlet.airframe.test.api:rpc")
+    )
+    .dependsOn(integrationTestApi, netty)
