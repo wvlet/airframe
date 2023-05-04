@@ -72,7 +72,7 @@ case class Router(
     val s = Seq.newBuilder[String]
 
     val ws   = " " * (indentLevel * 2)
-    val name = getRouterName.map(routerName => s"[${x}]").getOrElse("")
+    val name = getRouterName.map(routerName => s"[${routerName}]").getOrElse("")
     s += s"${ws}- Router${name}"
 
     for (r <- localRoutes) {
