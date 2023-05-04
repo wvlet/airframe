@@ -38,6 +38,7 @@ class JSONParserTest extends AirSpec {
   test("parse any json values") {
     val v = JSON.parseAny("null")
     v shouldBe JSONNull
+    JSON.parseAny("0") shouldBe JSONLong(0L)
     JSON.parseAny("1") shouldBe JSONLong(1L)
     JSON.parseAny("1.23") shouldBe JSONDouble(1.23)
     JSON.parseAny("[]") shouldBe JSONArray(IndexedSeq.empty)

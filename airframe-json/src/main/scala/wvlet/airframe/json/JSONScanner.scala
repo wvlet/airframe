@@ -342,7 +342,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
 
     if (ch == '0') {
       cursor += 1
-      ch = s(cursor)
+      ch = cursorChar
     } else if ('1' <= ch && ch <= '9') {
       while ('0' <= ch && ch <= '9') {
         cursor += 1
