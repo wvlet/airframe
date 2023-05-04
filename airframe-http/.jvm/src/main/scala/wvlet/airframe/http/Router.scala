@@ -63,7 +63,7 @@ case class Router(
 
   private def getRouterName: Option[String] = {
     surface
-      .orElse(filterSurface)
+      .orElse(filterSurface.map(_.name))
       .orElse(filterInstance.map(_.getClass.getSimpleName))
       .map(_.toString)
   }
