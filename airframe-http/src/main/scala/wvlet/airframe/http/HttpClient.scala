@@ -173,12 +173,7 @@ object HttpClient extends LogSupport {
         val adapter = implicitly[HttpRequestAdapter[Req]]
         val req     = r.asInstanceOf[Req]
         val path    = adapter.pathOf(req)
-        ctx.lastError.getCause match {
-          case re: RPCException =>
-            s"Request to ${path} is failed: ${re.getMessage}"
-          case _ =>
-            s"Request to ${path} is failed: ${ctx.lastError.getMessage}"
-        }
+        s"Request to ${path} is failed: ${ctx.lastError.getMessage}"
       case _ =>
         s"Request is failed: ${ctx.lastError.getMessage}"
     }

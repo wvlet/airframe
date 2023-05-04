@@ -96,10 +96,12 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
           case ex: HttpServerException =>
             toNettyResponse(ex.toResponse)
           case other =>
-            new DefaultHttpResponse(
+            warn(other)
+            val resp = new DefaultFullHttpResponse(
               HttpVersion.HTTP_1_1,
               HttpResponseStatus.valueOf(HttpStatus.InternalServerError_500.code)
             )
+            HttpUtil.setContentLength(resp, 0)
         }
         writeResponse(msg, ctx, resp)
       case OnCompletion =>
