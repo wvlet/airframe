@@ -19,8 +19,13 @@ trait CompatBase {
   inline def codecOf[A]: MessageCodec[A] = ${ CompatBase.codecOf[A] }
   // TODO Implementation
   def surfaceOfClass(cl: Class[_]): Option[Surface] = {
-    None
+
+    /**
+      * [Unstable] TastySurfaceFactory.ofClass(cl) often causes 'illegal multithreaded access to ContextBase' error, so
+      * avoid using it in Scala 3
+      */
     // ReflectSurfaceFactory.ofClass(cl)
+    None
   }
 }
 
