@@ -112,7 +112,7 @@ trait MessageCodec[A] extends LogSupport {
       }
     } catch {
       case e: InsufficientBufferException =>
-        warn(e.getMessage)
+        warn(e.getMessage, e)
         trace(e)
         None
     }

@@ -14,17 +14,18 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.codec.PrimitiveCodec.UnitCodec
 import wvlet.airframe.control.Retry.MaxRetryException
 import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
-import wvlet.airframe.http.internal.{HttpResponseBodyCodec, RPCCallContext}
+import wvlet.airframe.http.internal.HttpResponseBodyCodec
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
+import scala.util.Try
 import scala.util.control.NonFatal
-import scala.util.{Failure, Success, Try}
 
 class SyncClientImpl(protected val channel: HttpChannel, val config: HttpClientConfig) extends SyncClient {
   override protected def build(newConfig: HttpClientConfig): SyncClient = {
@@ -347,10 +348,15 @@ object HttpClients extends LogSupport {
       resp.asInstanceOf[Resp]
     } else {
       try {
-        val msgpack        = responseBodyCodec.toMsgPack(resp)
-        val codec          = config.codecFactory.ofSurface(responseSurface)
-        val responseObject = codec.fromMsgPack(msgpack)
-        responseObject.asInstanceOf[Resp]
+        val msgpack = responseBodyCodec.toMsgPack(resp)
+        val codec   = config.codecFactory.ofSurface(responseSurface)
+        codec match {
+          case UnitCodec =>
+            null.asInstanceOf[Resp]
+          case _ =>
+            val responseObject = codec.fromMsgPack(msgpack)
+            responseObject.asInstanceOf[Resp]
+        }
       } catch {
         case e: Throwable =>
           throw new HttpClientException(
@@ -392,10 +398,15 @@ object HttpClients extends LogSupport {
       response
     } else {
       try {
-        val msgpack        = responseBodyCodec.toMsgPack(response)
-        val codec          = config.codecFactory.ofSurface(responseSurface)
-        val responseObject = codec.fromMsgPack(msgpack)
-        responseObject
+        val msgpack = responseBodyCodec.toMsgPack(response)
+        val codec   = config.codecFactory.ofSurface(responseSurface)
+        codec match {
+          case UnitCodec =>
+            null
+          case _ =>
+            val responseObject = codec.fromMsgPack(msgpack)
+            responseObject
+        }
       } catch {
         case e: Throwable =>
           throw RPCStatus.DATA_LOSS_I8.newException(

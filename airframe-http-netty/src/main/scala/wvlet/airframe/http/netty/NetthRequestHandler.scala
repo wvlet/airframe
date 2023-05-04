@@ -123,11 +123,15 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
 
   private def toNettyResponse(response: Response): DefaultHttpResponse = {
     val r = if (response.message.isEmpty) {
-      new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode))
+      val res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode))
+      // Need to set the content length properly to return the response in Netty
+      HttpUtil.setContentLength(res, 0)
+      res
     } else {
-      val buf = Unpooled.wrappedBuffer(response.message.toContentBytes)
+      val contents = response.message.toContentBytes
+      val buf      = Unpooled.wrappedBuffer(contents)
       val res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode), buf)
-      HttpUtil.setContentLength(res, buf.readableBytes())
+      HttpUtil.setContentLength(res, contents.size)
       res
     }
     val h = r.headers()
