@@ -122,6 +122,23 @@ jobs:
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report Scala 3.x
+  test_integration:
+    name: Scala 3 integration test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Scala 3 integration test
+        run: ./sbt "++ 3; integrationTest"
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v3
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/target/test-reports/TEST-*.xml'
+          check_name: Test Report Integration Test
   test_js:
     name: Scala.js / Scala 2.12
     runs-on: ubuntu-latest
