@@ -979,7 +979,7 @@ lazy val integrationTestApi =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      name        := "airframe-integration-test",
+      name        := "airframe-integration-test-api",
       description := "APIs for integration test"
     )
     .dependsOn(http.jvm)
