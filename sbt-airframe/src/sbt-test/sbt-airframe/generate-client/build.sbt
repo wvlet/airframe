@@ -22,7 +22,7 @@ lazy val server =
     .in(file("server"))
     .enablePlugins(AirframeHttpPlugin)
     .settings(
-      airframeHttpGeneratorOption := "-l trace",
+      airframeHttpGeneratorOption := "-l debug",
       airframeHttpClients := Seq(
         "myapp.spi:rpc"
       ),

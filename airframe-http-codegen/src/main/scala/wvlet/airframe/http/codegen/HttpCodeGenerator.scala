@@ -187,7 +187,7 @@ class HttpCodeGenerator(
   }
 
   private def buildRouter(apiPackageNames: Seq[String], classLoader: URLClassLoader): Router = {
-    info(s"Target API packages: ${apiPackageNames.mkString(", ")}")
+    debug(s"Target API packages: ${apiPackageNames.mkString(", ")}")
     val rxRouter = RouteScanner.buildRxRouter(apiPackageNames, classLoader)
     if (rxRouter.routes.isEmpty) {
       warn(s"Scanning classes implementing @RPC or @Endpoint from the classpath...")
@@ -202,7 +202,7 @@ class HttpCodeGenerator(
       @argument(description = "HttpCodeGeneratorOption in JSON file")
       jsonFilePath: String
   ): Unit = {
-    info(s"Reading JSON option file: ${jsonFilePath}")
+    debug(s"Reading JSON option file: ${jsonFilePath}")
     val option = MessageCodec.of[HttpCodeGeneratorOption].fromJson(IOUtil.readAsString(jsonFilePath))
     generate(option)
   }
@@ -226,12 +226,12 @@ class HttpCodeGenerator(
         val routerHashFile = new File(option.targetDir, f"router-${config.clientType.name}-${routerHash}%07x.update")
         if (!outputFile.exists() || !routerHashFile.exists()) {
           info(f"Router for package ${config.apiPackageName}:\n${routerStr}")
-          info(s"Generating a ${config.clientType.name} client code: ${path}")
+          info(s"Generating ${config.clientType.name} client code: ${path}")
           val code = HttpCodeGenerator.generate(router, config)
           touch(routerHashFile)
           writeFile(outputFile, code)
         } else {
-          info(s"${outputFile} is up-to-date")
+          debug(s"${path} is up-to-date")
         }
         outputFile
       }
