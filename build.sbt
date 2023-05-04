@@ -998,8 +998,6 @@ lazy val integrationTest =
       name                := "airframe-integration-test",
       description         := "integration test project",
       crossScalaVersions  := targetScalaVersions,
-      airframeHttpClients := Seq("wvlet.airframe.test.api:rpc"),
-      // A workaround because class loader layering causes reading Scala 2.12 classes in sbt-airframe in Scala 3
-      classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
+      airframeHttpClients := Seq("wvlet.airframe.test.api:rpc")
     )
     .dependsOn(integrationTestApi, netty)
