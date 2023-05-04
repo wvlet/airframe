@@ -214,7 +214,9 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
   benchmark,
   sql,
   ulid.jvm,
-  examples
+  examples,
+  integrationTestApi,
+  integrationTest
 )
 
 // Scala.js build (Scala 2.12, 2.13, and 3.x)
@@ -943,8 +945,9 @@ lazy val examples =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      name        := "airframe-examples",
-      description := "Airframe examples",
+      name               := "airframe-examples",
+      description        := "Airframe examples",
+      crossScalaVersions := targetScalaVersions,
       libraryDependencies ++= Seq(
       )
     )
@@ -979,8 +982,9 @@ lazy val integrationTestApi =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      name        := "airframe-integration-test-api",
-      description := "APIs for integration test"
+      name               := "airframe-integration-test-api",
+      description        := "APIs for integration test",
+      crossScalaVersions := targetScalaVersions
     )
     .dependsOn(http.jvm)
 
@@ -993,6 +997,7 @@ lazy val integrationTest =
     .settings(
       name                := "airframe-integration-test",
       description         := "integration test project",
+      crossScalaVersions  := targetScalaVersions,
       airframeHttpClients := Seq("wvlet.airframe.test.api:rpc"),
       // A workaround because class loader layering causes reading Scala 2.12 classes in sbt-airframe in Scala 3
       classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
