@@ -206,7 +206,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           targets = airframeHttpClients.value
         )
 
-        val result: Seq[File] = if (!cacheFile.exists) {
+        val result: Seq[File] = {
           debug(s"airframe-http directory: ${binDir}")
           val commandLineOptsJson = MessageCodec.of[HttpCodeGeneratorOption].toJson(commandLineOpts)
           trace(s"airframe-http code-generator option:\n${commandLineOptsJson}")
@@ -219,11 +219,12 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           IO.write(cacheFile, json)
           // Return generated files
           seqFileCodec.unpackJson(json).getOrElse(Seq.empty)
-        } else {
-          debug(s"Using cached client")
-          val json = IO.read(cacheFile)
-          seqFileCodec.fromJson(json)
         }
+        //        else {
+        //          debug(s"Using cached client")
+        //          val json = IO.read(cacheFile)
+        //          seqFileCodec.fromJson(json)
+        //        }
         result
       },
       airframeHttpOpts := "",
