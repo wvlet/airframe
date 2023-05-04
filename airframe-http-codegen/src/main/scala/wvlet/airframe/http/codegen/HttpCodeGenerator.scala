@@ -187,7 +187,7 @@ class HttpCodeGenerator(
   }
 
   private def buildRouter(apiPackageNames: Seq[String], classLoader: URLClassLoader): Router = {
-    info(s"Target API packages: ${apiPackageNames.mkString(", ")}")
+    debug(s"Target API packages: ${apiPackageNames.mkString(", ")}")
     val rxRouter = RouteScanner.buildRxRouter(apiPackageNames, classLoader)
     if (rxRouter.routes.isEmpty) {
       warn(s"Scanning classes implementing @RPC or @Endpoint from the classpath...")
@@ -202,7 +202,7 @@ class HttpCodeGenerator(
       @argument(description = "HttpCodeGeneratorOption in JSON file")
       jsonFilePath: String
   ): Unit = {
-    info(s"Reading JSON option file: ${jsonFilePath}")
+    debug(s"Reading JSON option file: ${jsonFilePath}")
     val option = MessageCodec.of[HttpCodeGeneratorOption].fromJson(IOUtil.readAsString(jsonFilePath))
     generate(option)
   }
@@ -231,7 +231,7 @@ class HttpCodeGenerator(
           touch(routerHashFile)
           writeFile(outputFile, code)
         } else {
-          info(s"${outputFile} is up-to-date")
+          info(s"${path} is up-to-date")
         }
         outputFile
       }
