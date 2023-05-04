@@ -226,7 +226,7 @@ class HttpCodeGenerator(
         val routerHashFile = new File(option.targetDir, f"router-${config.clientType.name}-${routerHash}%07x.update")
         if (!outputFile.exists() || !routerHashFile.exists()) {
           info(f"Router for package ${config.apiPackageName}:\n${routerStr}")
-          info(s"Generating a ${config.clientType.name} client code: ${path}")
+          info(s"Generating ${config.clientType.name} client code: ${path}")
           val code = HttpCodeGenerator.generate(router, config)
           touch(routerHashFile)
           writeFile(outputFile, code)
