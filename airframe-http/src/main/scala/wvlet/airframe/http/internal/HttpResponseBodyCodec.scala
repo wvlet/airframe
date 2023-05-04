@@ -28,9 +28,6 @@ class HttpResponseBodyCodec[Resp: HttpResponseAdapter] extends MessageCodec[Http
       JSONCodec.pack(p, json)
     } else {
       if (json.nonEmpty) {
-        // At least one message is required
-        p.packNil
-      } else {
         // Return as a plain string
         p.packString(json)
       }
