@@ -22,5 +22,5 @@ import scala.reflect.runtime.universe._
   */
 trait CompatBase {
   def codecOf[A: TypeTag]: MessageCodec[A]  = MessageCodecFactory.defaultFactory.of[A]
-  def surfaceOfClass(cl: Class[_]): Option[Surface] = Some(ReflectSurfaceFactory.ofClass(cl))
+  def surfaceOfClass(cl: Class[_]): Surface = ReflectSurfaceFactory.ofClass(cl)
 }

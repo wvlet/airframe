@@ -18,15 +18,7 @@ import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 trait CompatBase {
   inline def codecOf[A]: MessageCodec[A] = ${ CompatBase.codecOf[A] }
   // TODO Implementation
-  def surfaceOfClass(cl: Class[_]): Option[Surface] = {
-
-    /**
-      * [Unstable] TastySurfaceFactory.ofClass(cl) often causes 'illegal multithreaded access to ContextBase' error, so
-      * avoid using it in Scala 3
-      */
-    // ReflectSurfaceFactory.ofClass(cl)
-    None
-  }
+  def surfaceOfClass(cl: Class[_]): Surface = ReflectSurfaceFactory.ofClass(cl)
 }
 
 private[codec] object CompatBase {
