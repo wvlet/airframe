@@ -14,6 +14,7 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.codec.PrimitiveCodec.UnitCodec
 import wvlet.airframe.control.Retry.MaxRetryException
 import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
@@ -347,10 +348,15 @@ object HttpClients extends LogSupport {
       resp.asInstanceOf[Resp]
     } else {
       try {
-        val msgpack        = responseBodyCodec.toMsgPack(resp)
-        val codec          = config.codecFactory.ofSurface(responseSurface)
-        val responseObject = codec.fromMsgPack(msgpack)
-        responseObject.asInstanceOf[Resp]
+        val msgpack = responseBodyCodec.toMsgPack(resp)
+        val codec   = config.codecFactory.ofSurface(responseSurface)
+        codec match {
+          case UnitCodec =>
+            null.asInstanceOf[Resp]
+          case _ =>
+            val responseObject = codec.fromMsgPack(msgpack)
+            responseObject.asInstanceOf[Resp]
+        }
       } catch {
         case e: Throwable =>
           throw new HttpClientException(
@@ -392,10 +398,15 @@ object HttpClients extends LogSupport {
       response
     } else {
       try {
-        val msgpack        = responseBodyCodec.toMsgPack(response)
-        val codec          = config.codecFactory.ofSurface(responseSurface)
-        val responseObject = codec.fromMsgPack(msgpack)
-        responseObject
+        val msgpack = responseBodyCodec.toMsgPack(response)
+        val codec   = config.codecFactory.ofSurface(responseSurface)
+        codec match {
+          case UnitCodec =>
+            null
+          case _ =>
+            val responseObject = codec.fromMsgPack(msgpack)
+            responseObject
+        }
       } catch {
         case e: Throwable =>
           throw RPCStatus.DATA_LOSS_I8.newException(
