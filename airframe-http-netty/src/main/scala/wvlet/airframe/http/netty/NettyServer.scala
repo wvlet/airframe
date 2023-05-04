@@ -35,6 +35,7 @@ import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.annotation.PostConstruct
 import scala.collection.immutable.ListMap
 import scala.util.{Failure, Success, Try}
@@ -150,8 +151,21 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     }
   }
 
+  private val started = new AtomicBoolean(false)
+  private val stopped = new AtomicBoolean(false)
+
   @PostConstruct
   def start: Unit = {
+    if (stopped.get()) {
+      throw new IllegalStateException(s"Server ${config.name} is already closed")
+    }
+
+    if (started.compareAndSet(false, true)) {
+      startInternal
+    }
+  }
+
+  private def startInternal: Unit = {
     info(s"Starting ${config.name} server at ${localAddress}")
     val b = new ServerBootstrap()
     b.group(bossGroup, workerGroup)
@@ -227,12 +241,18 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     channelFuture = Some(b.bind(config.port).sync().channel())
   }
 
+  def stop(): Unit = {
+    if (stopped.compareAndSet(false, true)) {
+      info(s"Stopping ${config.name} server at ${localAddress}")
+      workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
+      bossGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
+      httpLogger.close()
+      channelFuture.foreach(_.close().await(1, TimeUnit.SECONDS))
+    }
+  }
+
   override def close(): Unit = {
-    info(s"Stopping ${config.name} server at ${localAddress}")
-    workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
-    bossGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
-    httpLogger.close()
-    channelFuture.foreach(_.close().await(1, TimeUnit.SECONDS))
+    stop()
   }
 
   /**
