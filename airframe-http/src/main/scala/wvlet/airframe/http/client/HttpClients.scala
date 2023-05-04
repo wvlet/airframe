@@ -19,13 +19,13 @@ import wvlet.airframe.control.Retry.MaxRetryException
 import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
-import wvlet.airframe.http.internal.{HttpResponseBodyCodec, RPCCallContext}
+import wvlet.airframe.http.internal.HttpResponseBodyCodec
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
+import scala.util.Try
 import scala.util.control.NonFatal
-import scala.util.{Failure, Success, Try}
 
 class SyncClientImpl(protected val channel: HttpChannel, val config: HttpClientConfig) extends SyncClient {
   override protected def build(newConfig: HttpClientConfig): SyncClient = {

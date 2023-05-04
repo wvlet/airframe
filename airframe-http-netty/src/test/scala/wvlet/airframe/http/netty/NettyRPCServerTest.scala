@@ -27,6 +27,7 @@ object NettyRPCServerTest extends AirSpec {
   class MyRPC {
     def helloNetty(msg: String): String = s"Hello ${msg}!"
     def unitResponse(): Unit            = {}
+    def intResponse(): Int              = 1
   }
 
   private def router = RxRouter.of[MyRPC]
@@ -46,6 +47,11 @@ object NettyRPCServerTest extends AirSpec {
     test("Unit response") {
       val resp = client.send(Http.POST("/v1/MyRPC/unitResponse"))
       resp.message.toContentString shouldBe empty
+    }
+
+    test("Int response") {
+      val resp = client.send(Http.POST("/v1/MyRPC/intResponse"))
+      resp.message.toContentString shouldBe "1"
     }
   }
 
