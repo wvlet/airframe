@@ -272,9 +272,9 @@ case object AnyRefSurface extends GenericSurface(classOf[AnyRef]) {
   * @param objectFactory
   */
 class GenericSurface(
-    val rawType: Class[_],
-    val typeArgs: Seq[Surface] = Seq.empty,
-    val params: Seq[Parameter] = Seq.empty,
+    override val rawType: Class[_],
+    override val typeArgs: Seq[Surface] = Seq.empty,
+    override val params: Seq[Parameter] = Seq.empty,
     override val objectFactory: Option[ObjectFactory] = None
 ) extends Surface {
   private def getClassName: String = {
@@ -287,7 +287,7 @@ class GenericSurface(
     }
   }
 
-  def name: String = {
+  override def name: String = {
     val clsName = TypeName.sanitizeTypeName(getClassName)
     val s = if (typeArgs.isEmpty) {
       clsName
@@ -297,7 +297,7 @@ class GenericSurface(
     TypeName.sanitizeTypeName(s)
   }
 
-  def fullName: String = {
+  override def fullName: String = {
     val clsName = TypeName.sanitizeTypeName(rawType.getName)
     val s = if (typeArgs.isEmpty) {
       clsName
@@ -307,9 +307,9 @@ class GenericSurface(
     TypeName.sanitizeTypeName(s)
   }
 
-  def isOption: Boolean    = false
-  def isAlias: Boolean     = false
-  def isPrimitive: Boolean = false
+  override def isOption: Boolean    = false
+  override def isAlias: Boolean     = false
+  override def isPrimitive: Boolean = false
 
   override def toString: String = name
 
@@ -328,7 +328,7 @@ class GenericSurface(
   * Surface placeholder for supporting recursive types
   * @param rawType
   */
-case class LazySurface(rawType: Class[_], fullName: String) extends Surface {
+case class LazySurface(override val rawType: Class[_], fullName: String) extends Surface {
   // Resolved the final type from the full surface name
   protected def ref: Surface = wvlet.airframe.surface.getCached(fullName)
 
