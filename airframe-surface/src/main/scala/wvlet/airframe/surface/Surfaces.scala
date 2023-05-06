@@ -145,7 +145,7 @@ object Primitive {
 
   def apply(cl: Class[_]): PrimitiveSurface = primitiveTable(cl)
 
-  sealed abstract class PrimitiveSurface(rawType: Class[_]) extends GenericSurface(rawType) {
+  sealed abstract class PrimitiveSurface(override val rawType: Class[_]) extends GenericSurface(rawType) {
     override def isPrimitive: Boolean = true
   }
 
