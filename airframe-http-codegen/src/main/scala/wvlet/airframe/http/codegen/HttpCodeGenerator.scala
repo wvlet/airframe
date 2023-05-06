@@ -222,14 +222,13 @@ class HttpCodeGenerator(
 
         val router         = buildRouter(Seq(config.apiPackageName), cl)
         val routerStr      = router.toString
-        val routerHash     = routerStr.hashCode
-        val routerHashFile = new File(option.targetDir, f"router-${config.clientType.name}-${routerHash}%07x.update")
-        if (!outputFile.exists() || !routerHashFile.exists()) {
+        val routerCode     = HttpCodeGenerator.generate(router, config)
+        val routerHash     = routerCode.hashCode
+        val outputFileHash = if (outputFile.exists()) IOUtil.readAsString(outputFile).hashCode else 0
+        if (!outputFile.exists() || routerHash != outputFileHash) {
           info(f"Router for package ${config.apiPackageName}:\n${routerStr}")
           info(s"Generating ${config.clientType.name} client code: ${path}")
-          val code = HttpCodeGenerator.generate(router, config)
-          touch(routerHashFile)
-          writeFile(outputFile, code)
+          writeFile(outputFile, routerCode)
         } else {
           debug(s"${path} is up-to-date")
         }
@@ -264,12 +263,6 @@ class HttpCodeGenerator(
     debug(schema)
     info(s"Writing OpenAPI spec ${option.formatType} to ${option.outFile.getPath}")
     writeFile(option.outFile, schema)
-  }
-
-  private def touch(f: File): Unit = {
-    if (!f.createNewFile()) {
-      f.setLastModified(System.currentTimeMillis())
-    }
   }
 
   private def writeFile(outputFile: File, data: String): Unit = {
