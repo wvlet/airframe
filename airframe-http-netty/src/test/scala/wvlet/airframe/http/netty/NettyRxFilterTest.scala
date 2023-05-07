@@ -14,7 +14,17 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.{Http, HttpMessage, RPC, RPCException, RPCStatus, RxHttpEndpoint, RxHttpFilter, RxRouter}
+import wvlet.airframe.http.{
+  Http,
+  HttpClientException,
+  HttpMessage,
+  RPC,
+  RPCException,
+  RPCStatus,
+  RxHttpEndpoint,
+  RxHttpFilter,
+  RxRouter
+}
 import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 
@@ -50,13 +60,15 @@ object NettyRxFilterTest extends AirSpec {
   test("Run server with auth filter", design = _.add(Netty.server.withRouter(router1).designWithSyncClient)) {
     (client: SyncClient) =>
       test("when no auth header") {
-        val ex = intercept[RPCException] {
+        val e = intercept[HttpClientException] {
           client.send(
             Http.POST("/wvlet.airframe.http.netty.NettyRxFilterTest.MyRPC/hello").withJson("""{"msg":"Netty"}""")
           )
         }
-        ex.status shouldBe RPCStatus.UNAUTHENTICATED_U13
-        ex.message shouldBe "authentication failed"
+        e.getCause shouldMatch { case ex: RPCException =>
+          ex.status shouldBe RPCStatus.UNAUTHENTICATED_U13
+          ex.message shouldBe "authentication failed"
+        }
       }
 
       test("with auth header") {
@@ -72,12 +84,14 @@ object NettyRxFilterTest extends AirSpec {
 
   test("throw RPCException in a filter", design = _.add(Netty.server.withRouter(router2).designWithSyncClient)) {
     (client: SyncClient) =>
-      val ex = intercept[RPCException] {
+      val e = intercept[HttpClientException] {
         client.send(
           Http.POST("/wvlet.airframe.http.netty.NettyRxFilterTest.MyRPC/hello").withJson("""{"msg":"Netty"}""")
         )
       }
-      ex.status shouldBe RPCStatus.UNAUTHENTICATED_U13
-      ex.message shouldBe "authentication failed"
+      e.getCause shouldMatch { case ex: RPCException =>
+        ex.status shouldBe RPCStatus.UNAUTHENTICATED_U13
+        ex.message shouldBe "authentication failed"
+      }
   }
 }

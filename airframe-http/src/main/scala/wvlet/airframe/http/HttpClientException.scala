@@ -67,7 +67,7 @@ object HttpClientException extends LogSupport {
     val status                  = adapter.statusOf(response)
     val isRPCException: Boolean = adapter.headerOf(response).get(HttpHeader.xAirframeRPCStatus).isDefined
     if (isRPCException) {
-      val cause = HttpClients.parseRPCException(adapter.httpResponseOf(response))
+      val cause = RPCException.fromResponse(adapter.httpResponseOf(response))
       new HttpClientException(adapter.wrap(response), status, cause)
     } else {
       val content = adapter.contentStringOf(response)

@@ -135,6 +135,9 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
     * @param request
     * @tparam Req
     * @return
+    *
+    * @throws RPCException
+    *   when RPC request fails
     */
   def rpc[Req, Resp](method: RPCMethod, requestContent: Req): Resp = {
     val request: Request =
@@ -154,7 +157,7 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
       ret.asInstanceOf[Resp]
     } else {
       // Parse the RPC error message
-      throw HttpClients.parseRPCException(response)
+      throw RPCException.fromResponse(response)
     }
   }
 }
@@ -240,6 +243,16 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
       }
   }
 
+  /**
+    * @param method
+    * @param requestContent
+    * @tparam Req
+    * @tparam Resp
+    * @return
+    *
+    * @throws RPCException
+    *   when RPC request fails
+    */
   def rpc[Req, Resp](
       method: RPCMethod,
       requestContent: Req
@@ -258,7 +271,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
               val ret = HttpClients.parseRPCResponse(config, response, method.responseSurface)
               ret.asInstanceOf[Resp]
             } else {
-              throw HttpClients.parseRPCException(response)
+              throw RPCException.fromResponse(response)
             }
           }
       }
@@ -276,7 +289,8 @@ object HttpClients extends LogSupport {
       resp.getHeader(HttpHeader.xAirframeRPCStatus) match {
         case Some(status) =>
           // Throw RPCException if RPCStatus code is given
-          throw parseRPCException(e.response.toHttpResponse)
+          val ex = RPCException.fromResponse(e.response.toHttpResponse)
+          throw new HttpClientException(resp, ex.status.httpStatus, ex.message, ex)
         case None =>
           // Throw as is for known client exception
           throw e
@@ -414,23 +428,6 @@ object HttpClients extends LogSupport {
             e
           )
       }
-    }
-  }
-
-  private[http] def parseRPCException(response: Response): RPCException = {
-    response
-      .getHeader(HttpHeader.xAirframeRPCStatus)
-      .flatMap(x => Try(x.toInt).toOption) match {
-      case Some(rpcStatus) =>
-        try {
-          val msgpack = responseBodyCodec.toMsgPack(response)
-          RPCException.fromMsgPack(msgpack)
-        } catch {
-          case e: Throwable =>
-            RPCStatus.ofCode(rpcStatus).newException(s"Failed to parse the RPC error details: ${e.getMessage}", e)
-        }
-      case None =>
-        RPCStatus.DATA_LOSS_I8.newException(s"Invalid RPC response: ${response}")
     }
   }
 

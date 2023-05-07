@@ -164,11 +164,13 @@ object HttpMessage {
   }
 
   case class StringMessage(content: String) extends Message {
+    override def isEmpty: Boolean            = content.isEmpty
     override def toString: String            = content
     override def toContentString: String     = content
     override def toContentBytes: Array[Byte] = content.getBytes(StandardCharsets.UTF_8)
   }
   case class ByteArrayMessage(content: Array[Byte]) extends Message {
+    override def isEmpty: Boolean = content.isEmpty
     override def toString: String = toContentString
     override def toContentString: String = {
       new String(content, StandardCharsets.UTF_8)
@@ -179,6 +181,7 @@ object HttpMessage {
   class LazyByteArrayMessage(contentReader: => Array[Byte]) extends Message {
     // Use lazy evaluation of content body to avoid unnecessary data copy
     private lazy val content: Array[Byte] = contentReader
+    override def isEmpty: Boolean         = content.isEmpty
     override def toString: String         = toContentString
     override def toContentString: String = {
       new String(content, StandardCharsets.UTF_8)

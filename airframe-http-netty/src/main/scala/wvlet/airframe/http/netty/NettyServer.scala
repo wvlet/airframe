@@ -27,7 +27,7 @@ import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.{HttpMessage, _}
 import wvlet.airframe.http.client.{AsyncClient, SyncClient}
-import wvlet.airframe.http.internal.{HttpServerLoggingFilter, LogRotationHttpLogger}
+import wvlet.airframe.http.internal.{RPCLoggingFilter, LogRotationHttpLogger, RPCResponseFilter}
 import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.{Design, Session}
@@ -50,7 +50,7 @@ case class NettyServerConfig(
     httpLoggerProvider: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) =>
       new LogRotationHttpLogger(config)
     },
-    loggingFilter: HttpLogger => RxHttpFilter = { new HttpServerLoggingFilter(_) }
+    loggingFilter: HttpLogger => RxHttpFilter = { new RPCLoggingFilter(_) }
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -204,7 +204,11 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
 
       private val dispatcher = {
         NettyBackend
-          .rxFilterAdapter(attachContextFilter.andThen(loggingFilter))
+          .rxFilterAdapter(
+            attachContextFilter
+              .andThen(loggingFilter)
+              .andThen(RPCResponseFilter)
+          )
           .andThen(
             HttpRequestDispatcher.newDispatcher(
               session = session,
