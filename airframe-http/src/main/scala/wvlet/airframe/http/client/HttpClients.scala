@@ -135,6 +135,9 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
     * @param request
     * @tparam Req
     * @return
+    *
+    * @throws RPCException
+    *   when RPC request fails
     */
   def rpc[Req, Resp](method: RPCMethod, requestContent: Req): Resp = {
     val request: Request =
@@ -240,6 +243,16 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
       }
   }
 
+  /**
+    * @param method
+    * @param requestContent
+    * @tparam Req
+    * @tparam Resp
+    * @return
+    *
+    * @throws RPCException
+    *   when RPC request fails
+    */
   def rpc[Req, Resp](
       method: RPCMethod,
       requestContent: Req
