@@ -42,11 +42,11 @@ object RPCResponseFilter extends RxHttpFilter with LogSupport {
           e match {
             case ex: HttpServerException =>
               val re = RPCStatus.fromHttpStatus(ex.status).newException(ex.getMessage, ex.getCause)
-              rpcExceptionResponse(re)
+              re.toResponse
             case ex: RPCException =>
-              rpcExceptionResponse(ex)
+              ex.toResponse
             case other =>
-              rpcExceptionResponse(RPCStatus.INTERNAL_ERROR_I0.newException(other.getMessage, other))
+              RPCStatus.INTERNAL_ERROR_I0.newException(other.getMessage, other).toResponse
           }
       }
   }
@@ -59,22 +59,5 @@ object RPCResponseFilter extends RxHttpFilter with LogSupport {
         val status = RPCStatus.fromHttpStatus(resp.status)
         resp.addHeader(HttpHeader.xAirframeRPCStatus, status.code.toString)
     }
-  }
-
-  private[http] def rpcExceptionResponse(e: RPCException): HttpMessage.Response = {
-    var resp = Http
-      .response(e.status.httpStatus)
-      .addHeader(HttpHeader.xAirframeRPCStatus, e.status.code.toString)
-
-    try {
-      // Embed RPCError into the response body
-      val jsonBody = e.toJson
-      resp = resp.withJson(e.toJson)
-    } catch {
-      case ex: Throwable =>
-        // Show warning
-        logger.warn(s"Failed to serialize RPCException: ${e}", ex)
-    }
-    resp
   }
 }

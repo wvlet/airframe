@@ -19,6 +19,8 @@ import wvlet.airframe.http.RPCException.rpcErrorMessageCodec
 import wvlet.airframe.http.internal.HttpResponseBodyCodec
 import wvlet.airframe.json.Json
 import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.log.LogSupport
+
 import scala.util.Try
 
 /**
@@ -39,7 +41,8 @@ case class RPCException(
     appErrorCode: Option[Int] = None,
     // [optional] Application-specific metadata
     metadata: Map[String, Any] = Map.empty
-) extends Exception(s"[${status}] ${message}", cause.getOrElse(null)) {
+) extends Exception(s"[${status}] ${message}", cause.getOrElse(null))
+    with LogSupport {
 
   private var _includeStackTrace: Option[Boolean] = None
 
@@ -77,6 +80,25 @@ case class RPCException(
 
   def toMsgPack: MsgPack = {
     rpcErrorMessageCodec.toMsgPack(toMessage)
+  }
+
+  /**
+    * Convert this exception to an HTTP response
+    */
+  def toResponse: HttpMessage.Response = {
+    var resp = Http
+      .response(status.httpStatus)
+      .addHeader(HttpHeader.xAirframeRPCStatus, status.code.toString)
+
+    try {
+      // Embed RPCError into the response body
+      resp = resp.withJson(toJson)
+    } catch {
+      case ex: Throwable =>
+        // Show warning
+        warn(s"Failed to serialize RPCException: ${this}", ex)
+    }
+    resp
   }
 }
 

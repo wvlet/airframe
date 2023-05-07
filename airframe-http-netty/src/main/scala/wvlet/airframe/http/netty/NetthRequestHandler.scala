@@ -89,7 +89,7 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
         val nettyResponse = toNettyResponse(v.asInstanceOf[Response])
         writeResponse(msg, ctx, nettyResponse)
       case OnError(ex) =>
-        val resp = RPCResponseFilter.rpcExceptionResponse(RPCStatus.INTERNAL_ERROR_I0.newException(ex.getMessage, ex))
+        val resp          = RPCStatus.INTERNAL_ERROR_I0.newException(ex.getMessage, ex).toResponse
         val nettyResponse = toNettyResponse(resp)
         writeResponse(msg, ctx, nettyResponse)
       case OnCompletion =>
