@@ -17,7 +17,10 @@ import wvlet.airframe.http.{HttpLogger, HttpMessage, HttpMultiMap, RPCContext, R
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
-class HttpServerLoggingFilter(httpLogger: HttpLogger) extends RxHttpFilter with LogSupport {
+/**
+  * Report HTTP/RPC request/response logs to the given logger
+  */
+class RPCLoggingFilter(httpLogger: HttpLogger) extends RxHttpFilter with LogSupport {
   private val excludeHeaders = HttpMultiMap.fromHeaderNames(httpLogger.config.excludeHeaders)
 
   override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {

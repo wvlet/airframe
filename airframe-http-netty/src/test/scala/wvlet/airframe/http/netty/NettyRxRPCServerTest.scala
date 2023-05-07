@@ -14,7 +14,7 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.Design
-import wvlet.airframe.http.{Http, RPC, RxRouter}
+import wvlet.airframe.http.{Http, HttpHeader, RPC, RPCStatus, RxRouter}
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airspec.AirSpec
 
@@ -39,10 +39,12 @@ class NettyRxRPCServerTest extends AirSpec {
       Http.POST("/wvlet.airframe.http.netty.NettyRxRPCServerTest.MyRPC/helloNetty").withJson("""{"msg":"Netty"}""")
     )
     resp.message.toContentString shouldBe "Hello Netty!"
+    resp.getHeader(HttpHeader.xAirframeRPCStatus) shouldBe Some(RPCStatus.SUCCESS_S0.code.toString)
 
     val resp2 = client.send(
       Http.POST("/wvlet.airframe.http.netty.NettyRxRPCServerTest.MyRPC/helloNetty2").withJson("""{"msg":"Netty"}""")
     )
     resp2.message.toContentString shouldBe "Hello Netty2!"
+    resp2.getHeader(HttpHeader.xAirframeRPCStatus) shouldBe Some(RPCStatus.SUCCESS_S0.code.toString)
   }
 }
