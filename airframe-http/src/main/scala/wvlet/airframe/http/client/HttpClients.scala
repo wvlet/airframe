@@ -423,8 +423,13 @@ object HttpClients extends LogSupport {
       .flatMap(x => Try(x.toInt).toOption) match {
       case Some(rpcStatus) =>
         try {
-          val msgpack = responseBodyCodec.toMsgPack(response)
-          RPCException.fromMsgPack(msgpack)
+          if (response.message.isEmpty) {
+            val status = RPCStatus.ofCode(rpcStatus)
+            status.newException(status.name)
+          } else {
+            val msgpack = responseBodyCodec.toMsgPack(response)
+            RPCException.fromMsgPack(msgpack)
+          }
         } catch {
           case e: Throwable =>
             RPCStatus.ofCode(rpcStatus).newException(s"Failed to parse the RPC error details: ${e.getMessage}", e)

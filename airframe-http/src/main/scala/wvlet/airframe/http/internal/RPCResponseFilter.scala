@@ -41,7 +41,8 @@ object RPCResponseFilter extends RxHttpFilter with LogSupport {
         case Failure(e) =>
           e match {
             case ex: HttpServerException =>
-              setRPCStatus(ex.toResponse)
+              val re = RPCStatus.fromHttpStatus(ex.status).newException(ex.getMessage, ex.getCause)
+              rpcExceptionResponse(re)
             case ex: RPCException =>
               rpcExceptionResponse(ex)
             case other =>
@@ -54,7 +55,7 @@ object RPCResponseFilter extends RxHttpFilter with LogSupport {
     resp.getHeader(HttpHeader.xAirframeRPCStatus) match {
       case Some(status) =>
         resp
-      case _ =>
+      case None =>
         val status = RPCStatus.fromHttpStatus(resp.status)
         resp.addHeader(HttpHeader.xAirframeRPCStatus, status.code.toString)
     }
@@ -64,8 +65,10 @@ object RPCResponseFilter extends RxHttpFilter with LogSupport {
     var resp = Http
       .response(e.status.httpStatus)
       .addHeader(HttpHeader.xAirframeRPCStatus, e.status.code.toString)
+
     try {
       // Embed RPCError into the response body
+      val jsonBody = e.toJson
       resp = resp.withJson(e.toJson)
     } catch {
       case ex: Throwable =>
