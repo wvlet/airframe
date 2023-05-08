@@ -22,6 +22,8 @@ import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
 import wvlet.airframe.benchmark.http.protojava.ProtoJavaGreeter
+import wvlet.airframe.http.Http
+import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.finagle.{Finagle, FinagleClient, FinagleServer, FinagleSyncClient}
 import wvlet.airframe.http.grpc.gRPC
 import wvlet.log.LogSupport
@@ -51,9 +53,13 @@ class AirframeFinagle extends LogSupport {
       .bind[FinagleClient].toProvider { (server: FinagleServer) =>
         Finagle.client.newClient(server.localAddress)
       }
+      .bind[SyncClient].toProvider { (server: FinagleServer) =>
+        Http.client.noLogging.newSyncClient(server.localAddress)
+      }
       .withProductionMode
   private var session: Option[Session]                              = None
   private var client: ServiceSyncClient[Request, Response]          = null
+  private var syncClient: NewServiceSyncClient                      = null
   private var asyncClient: ServiceClient[Future, Request, Response] = null
 
   @Setup
@@ -62,6 +68,7 @@ class AirframeFinagle extends LogSupport {
     s.start
     session = Some(s)
     client = new ServiceSyncClient(s.build[FinagleSyncClient])
+    syncClient = new NewServiceSyncClient(s.build[SyncClient])
     asyncClient = new ServiceClient(s.build[FinagleClient])
   }
 
@@ -69,12 +76,18 @@ class AirframeFinagle extends LogSupport {
   def teardown: Unit = {
     session.foreach(_.shutdown)
     client.close()
+    syncClient.close()
     asyncClient.close()
   }
 
   @Benchmark
   def rpcSync(blackhole: Blackhole): Unit = {
     blackhole.consume(client.Greeter.hello("RPC"))
+  }
+
+  @Benchmark
+  def rpcSyncDefault(blackhole: Blackhole): Unit = {
+    blackhole.consume(syncClient.Greeter.hello("RPC"))
   }
 
   @Benchmark
