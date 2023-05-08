@@ -41,3 +41,6 @@ scalacOptions ++= Seq("-deprecation", "-feature")
 // Only for ScalaPB benchmark
 //addSbtPlugin("com.thesamet"                    % "sbt-protoc"     % "0.99.34")
 //libraryDependencies += "com.thesamet.scalapb" %% "compilerplugin" % "0.10.8"
+
+// Binary compatibility checker
+addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.2")

@@ -26,6 +26,8 @@ val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
 val PARQUET_VERSION                 = "1.13.0"
 val SNAKE_YAML_VERSION              = "1.33"
 
+val AIRFRAME_BINARY_COMPAT_VERSION = "23.5.3"
+
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
   "publishSnapshots",
@@ -96,10 +98,18 @@ val buildSettings = Seq[Setting[_]](
   ),
   // Exclude compile-time only projects. This is a workaround for bloop,
   // which cannot resolve Optional dependencies nor compile-internal dependencies.
-  pomPostProcess     := excludePomDependency(Seq("airspec_2.12", "airspec_2.13", "airspec_3")),
-  crossScalaVersions := targetScalaVersions,
-  crossPaths         := true,
-  publishMavenStyle  := true,
+  pomPostProcess        := excludePomDependency(Seq("airspec_2.12", "airspec_2.13", "airspec_3")),
+  crossScalaVersions    := targetScalaVersions,
+  crossPaths            := true,
+  publishMavenStyle     := true,
+  mimaPreviousArtifacts := Set("org.wvlet.airframe" %%% s"${name.value}" % AIRFRAME_BINARY_COMPAT_VERSION),
+  mimaFailOnNoPrevious  := false,
+  mimaBinaryIssueFilters ++= {
+    import com.typesafe.tools.mima.core._
+    Seq(
+      ProblemFilters.exclude[MissingClassProblem]("wvlet.airframe.http.internal.*")
+    )
+  },
   javacOptions ++= Seq("-source", "8", "-target", "8"),
   scalacOptions ++= Seq(
     "-feature",
@@ -156,7 +166,9 @@ val noPublish = Seq(
   crossScalaVersions := Nil,
   // Explicitly skip the doc task because protobuf related Java files causes no type found error
   Compile / doc / sources                := Seq.empty,
-  Compile / packageDoc / publishArtifact := false
+  Compile / packageDoc / publishArtifact := false,
+  // Do not check binary compatibility for unpublished projects
+  mimaPreviousArtifacts := Set.empty
 )
 
 Global / excludeLintKeys ++= Set(sonatypeProfileName, sonatypeSessionName)
@@ -180,40 +192,40 @@ lazy val root =
     )
     .aggregate((jvmProjects ++ jsProjects): _*)
 
-// JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12.
+// JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12 and Scala 3
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
-  diMacros.jvm,
-  di.jvm,
-  surface.jvm,
-  log.jvm,
   canvas,
   config,
   control.jvm,
-  jmx,
-  launcher,
-  metrics.jvm,
   codec.jvm,
-  msgpack.jvm,
-  rx.jvm,
+  diMacros.jvm,
+  di.jvm,
+  fluentd,
+  grpc,
   http.jvm,
   httpCodeGen,
-  grpc,
+  httpRecorder,
+  jdbc,
+  jmx,
   json.jvm,
+  log.jvm,
+  launcher,
+  metrics.jvm,
+  msgpack.jvm,
+  netty,
+  okhttp,
+  parquet,
+  rx.jvm,
   rxHtml.jvm,
-  parquet
+  surface.jvm,
+  ulid.jvm
 )
 
 // Other JVM projects supporting Scala 2.12 - Scala 2.13
 lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[ProjectReference](
-  jdbc,
-  fluentd,
   finagle,
-  netty,
-  okhttp,
-  httpRecorder,
   benchmark,
   sql,
-  ulid.jvm,
   examples,
   integrationTestApi,
   integrationTest
