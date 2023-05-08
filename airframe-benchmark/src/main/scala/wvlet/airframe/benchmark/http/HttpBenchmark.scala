@@ -132,17 +132,19 @@ class AirframeGrpc extends LogSupport {
   def rpcAsync(blackhole: Blackhole): Unit = {
     val counter = new AtomicInteger(0)
     for (i <- 0 until asyncIteration) {
-      asyncClient.Greeter.hello(
-        "RPC",
-        new StreamObserver[String] {
-          override def onNext(v: String): Unit = {
-            blackhole.consume(v)
+      blackhole.consume(
+        asyncClient.Greeter.hello(
+          "RPC",
+          new StreamObserver[String] {
+            override def onNext(v: String): Unit = {
+              blackhole.consume(v)
+            }
+            override def onError(t: Throwable): Unit = {}
+            override def onCompleted(): Unit = {
+              counter.incrementAndGet()
+            }
           }
-          override def onError(t: Throwable): Unit = {}
-          override def onCompleted(): Unit = {
-            counter.incrementAndGet()
-          }
-        }
+        )
       )
     }
     while (counter.get() != asyncIteration) {

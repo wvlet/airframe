@@ -18,11 +18,12 @@ import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
 import wvlet.airframe.benchmark.http.HttpBenchmark.asyncIteration
-import wvlet.airframe.benchmark.http.{Greeter, NewServiceSyncClient, ServiceClient}
+import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewServiceSyncClient, ServiceClient}
 import wvlet.airframe.http._
 import wvlet.airframe.http.client.{AsyncClient, SyncClient}
 import wvlet.airframe.http.finagle.{Finagle, FinagleClient}
 import wvlet.airframe.http.netty.{Netty, NettyServer}
+import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -37,25 +38,20 @@ class AirframeRPCNetty extends LogSupport {
   private val design =
     Netty.server
       .withRouter(Greeter.router)
-      // .noLoggingFilter
+      .noLogging
       .design
       .bind[SyncClient].toProvider { (server: NettyServer) =>
-        Http.client.newSyncClient(server.localAddress)
+        Http.client.noLogging.newSyncClient(server.localAddress)
       }
       .bind[AsyncClient].toProvider { (server: NettyServer) =>
-        Http.client.newAsyncClient(server.localAddress)
-      }
-      .bind[FinagleClient].toProvider { (server: NettyServer) =>
-        Finagle.client.newClient(server.localAddress)
+        Http.client.noLogging.newAsyncClient(server.localAddress)
       }
       .withProductionMode
 
   private var session: Option[Session] = None
 
-  private var client: NewServiceSyncClient = null
-  // private var asyncClient: NewServiceAsyncClient = null
-  private var asyncClient: ServiceClient[Future, com.twitter.finagle.http.Request, com.twitter.finagle.http.Response] =
-    null
+  private var client: NewServiceSyncClient       = null
+  private var asyncClient: NewServiceAsyncClient = null
 
   private val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
 
@@ -65,8 +61,7 @@ class AirframeRPCNetty extends LogSupport {
     s.start
     session = Some(s)
     client = new NewServiceSyncClient(s.build[SyncClient])
-    // asyncClient = new NewServiceAsyncClient(s.build[AsyncClient])
-    asyncClient = new ServiceClient(s.build[FinagleClient])
+    asyncClient = new NewServiceAsyncClient(s.build[AsyncClient])
   }
 
   @TearDown
@@ -82,31 +77,22 @@ class AirframeRPCNetty extends LogSupport {
     blackhole.consume(client.Greeter.hello("RPC"))
   }
 
-  // TODO: AsyncClient with JavaClientChannel can be faster
-//  @Benchmark
-//  @OperationsPerInvocation(asyncIteration)
-//  def rpcAsync(blackhole: Blackhole): Unit = {
-//    val counter = new AtomicInteger(0)
-//    val futures = for (i <- 0 until asyncIteration) yield {
-//      asyncClient.Greeter
-//        .hello("RPC").onComplete { x =>
-//          counter.incrementAndGet()
-//        }(ec)
-//    }
-//    while (counter.get() != asyncIteration) {
-//      Thread.sleep(0)
-//    }
-//  }
-
   @Benchmark
   @OperationsPerInvocation(asyncIteration)
   def rpcAsync(blackhole: Blackhole): Unit = {
     val counter = new AtomicInteger(0)
-    val futures = for (i <- 0 until asyncIteration) yield {
-      asyncClient.Greeter
-        .hello("RPC").foreach { x =>
+    for (i <- 0 until asyncIteration) {
+      val rx = asyncClient.Greeter
+        .hello("RPC").map { x =>
           counter.incrementAndGet()
         }
+      blackhole.consume(
+        ec.submit {
+          new Runnable {
+            override def run(): Unit = rx.run(_ => ())
+          }
+        }
+      )
     }
     while (counter.get() != asyncIteration) {
       Thread.sleep(0)
