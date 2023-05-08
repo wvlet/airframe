@@ -73,8 +73,11 @@ case class NettyServerConfig(
   def withHttpLogger(loggerProvider: HttpLoggerConfig => HttpLogger): NettyServerConfig = {
     this.copy(httpLoggerProvider = loggerProvider)
   }
-  def noHttpLogger: NettyServerConfig = {
-    this.copy(httpLoggerProvider = HttpLogger.emptyLogger(_))
+  def noLogging: NettyServerConfig = {
+    this.copy(
+      loggingFilter = { _ => RxHttpFilter.identity },
+      httpLoggerProvider = HttpLogger.emptyLogger(_)
+    )
   }
 
   def newServer(session: Session): NettyServer = {
