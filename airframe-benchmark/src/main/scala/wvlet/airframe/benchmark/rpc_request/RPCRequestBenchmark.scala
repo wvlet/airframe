@@ -13,21 +13,19 @@
  */
 package wvlet.airframe.benchmark.rpc_request
 
-import org.openjdk.jmh.annotations.{Benchmark, BenchmarkMode, Mode, OutputTimeUnit, Scope, Setup, State, TearDown}
+import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
-import wvlet.airframe.Session
+import wvlet.airframe.benchmark.http.Greeter
 import wvlet.airframe.benchmark.http.Greeter.GreeterResponse
-import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewServiceSyncClient}
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http.{Http, HttpMessage, HttpStatus, RPCMethod, RxHttpFilter}
-import wvlet.airframe.http.client.{AsyncClient, HttpChannel, HttpChannelConfig, HttpClients, SyncClient, SyncClientImpl}
-import wvlet.airframe.http.netty.{Netty, NettyRequestHandler, NettyServer}
+import wvlet.airframe.http.client.{HttpChannel, HttpChannelConfig, HttpClients, SyncClientImpl}
+import wvlet.airframe.http.netty.NettyRequestHandler
+import wvlet.airframe.http._
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
-import java.util.concurrent.{Executors, TimeUnit}
-import scala.concurrent.ExecutionContext
+import java.util.concurrent.TimeUnit
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
@@ -62,13 +60,11 @@ class RPCRequestBenchmark extends LogSupport {
     }
   }
 
-  private val strSurface = Surface.of[String]
   @Benchmark
   def rpcNettyResponseBuilder(blackhole: Blackhole): Unit = {
     blackhole.consume {
-      val resp          = Http.response(HttpStatus.Ok_200).withJson("""{"message":"Hello, RPC"}""")
-      val nettyResponse = NettyRequestHandler.toNettyResponse(resp)
-      HttpClients.parseRPCResponse(noNetworkRPCClient.config, resp, strSurface)
+      val resp = Http.response(HttpStatus.Ok_200, """{"message":"Hello, RPC"}""")
+      NettyRequestHandler.toNettyResponse(resp)
     }
   }
 
