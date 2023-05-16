@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.benchmark.http_request
+package wvlet.airframe.benchmark.rpc_request
 
 import org.openjdk.jmh.annotations.{Benchmark, BenchmarkMode, Mode, OutputTimeUnit, Scope, Setup, State, TearDown}
 import org.openjdk.jmh.infra.Blackhole

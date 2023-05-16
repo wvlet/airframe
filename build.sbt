@@ -801,7 +801,6 @@ lazy val benchmark =
     .enablePlugins(JmhPlugin, PackPlugin)
     .settings(buildSettings)
     .settings(noPublish)
-    .settings(scala2Only)
     .settings(
       name     := "airframe-benchmark",
       packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
@@ -836,7 +835,7 @@ lazy val benchmark =
       // publishing .tgz
       // publishPackArchiveTgz
     )
-    .dependsOn(msgpack.jvm, json.jvm, metrics.jvm, launcher, httpCodeGen, finagle, netty, grpc, ulid.jvm)
+    .dependsOn(msgpack.jvm, json.jvm, metrics.jvm, launcher, httpCodeGen, netty, grpc, ulid.jvm)
 
 lazy val fluentd =
   project
