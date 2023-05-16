@@ -16,6 +16,7 @@ package wvlet.airframe.benchmark.http_request
 import org.openjdk.jmh.annotations.{Benchmark, BenchmarkMode, Mode, OutputTimeUnit, Scope, Setup, State, TearDown}
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
+import wvlet.airframe.benchmark.http.Greeter.GreeterResponse
 import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewServiceSyncClient}
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.{Http, HttpMessage, HttpStatus, RPCMethod, RxHttpFilter}
@@ -36,9 +37,11 @@ class RPCRequestBenchmark extends LogSupport {
 
   private val noNetworkRPCClient = new SyncClientImpl(
     new HttpChannel {
+      private val responseCodec = MessageCodec.of[GreeterResponse]
+
       override def send(req: HttpMessage.Request, channelConfig: HttpChannelConfig): HttpMessage.Response = {
         val ret = emptyServer.hello(req.message.toContentString)
-        Http.response(HttpStatus.Ok_200).withJsonOf(ret)
+        Http.response(HttpStatus.Ok_200).withJson(responseCodec.toJson(ret))
       }
       override def sendAsync(req: HttpMessage.Request, channelConfig: HttpChannelConfig): Rx[HttpMessage.Response] = ???
       override def close(): Unit                                                                                   = {}
@@ -71,7 +74,7 @@ class RPCRequestBenchmark extends LogSupport {
     }
   }
 
-  private val codec = MessageCodec.of[Map[String, Any]]
+  private val requestCodec = MessageCodec.of[Map[String, Any]]
 
   @Benchmark
   def rpcRequestWithJsonSer(blackhole: Blackhole): Unit = {
@@ -79,7 +82,7 @@ class RPCRequestBenchmark extends LogSupport {
       val resp = noNetworkRPCClient.send(
         Http
           .POST("/wvlet.airframe.benchmark.http.Greeter/hello")
-          .withJsonOf(codec.toJson(Map("name" -> "RPC")))
+          .withJsonOf(requestCodec.toJson(Map("name" -> "RPC")))
       )
       HttpClients.parseRPCResponse(noNetworkRPCClient.config, resp, Surface.of[String])
     }
