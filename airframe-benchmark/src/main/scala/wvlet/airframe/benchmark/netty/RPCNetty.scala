@@ -13,17 +13,14 @@
  */
 package wvlet.airframe.benchmark.netty
 
-import com.twitter.util.Future
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
 import wvlet.airframe.benchmark.http.HttpBenchmark.asyncIteration
-import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewServiceSyncClient, ServiceClient}
+import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewServiceSyncClient}
 import wvlet.airframe.http._
 import wvlet.airframe.http.client.{AsyncClient, SyncClient}
-import wvlet.airframe.http.finagle.{Finagle, FinagleClient}
 import wvlet.airframe.http.netty.{Netty, NettyServer}
-import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -52,6 +49,7 @@ class AirframeRPCNetty extends LogSupport {
 
   private var client: NewServiceSyncClient       = null
   private var asyncClient: NewServiceAsyncClient = null
+  private val emptyServer                        = new Greeter
 
   private val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
 
