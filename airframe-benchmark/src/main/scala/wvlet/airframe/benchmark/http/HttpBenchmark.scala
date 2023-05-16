@@ -38,72 +38,7 @@ object HttpBenchmark {
 
 import wvlet.airframe.benchmark.http.HttpBenchmark._
 
-/**
-  */
-@State(Scope.Benchmark)
-@BenchmarkMode(Array(Mode.Throughput))
-@OutputTimeUnit(TimeUnit.SECONDS)
-class AirframeFinagle extends LogSupport {
 
-  private val design =
-    Finagle.server
-      .withRouter(Greeter.router)
-      .noLoggingFilter
-      .designWithSyncClient
-      .bind[FinagleClient].toProvider { (server: FinagleServer) =>
-        Finagle.client.newClient(server.localAddress)
-      }
-      .bind[SyncClient].toProvider { (server: FinagleServer) =>
-        Http.client.noLogging.newSyncClient(server.localAddress)
-      }
-      .withProductionMode
-  private var session: Option[Session]                              = None
-  private var client: ServiceSyncClient[Request, Response]          = null
-  private var syncClient: NewServiceSyncClient                      = null
-  private var asyncClient: ServiceClient[Future, Request, Response] = null
-
-  @Setup
-  def setup: Unit = {
-    val s = design.newSession
-    s.start
-    session = Some(s)
-    client = new ServiceSyncClient(s.build[FinagleSyncClient])
-    syncClient = new NewServiceSyncClient(s.build[SyncClient])
-    asyncClient = new ServiceClient(s.build[FinagleClient])
-  }
-
-  @TearDown
-  def teardown: Unit = {
-    session.foreach(_.shutdown)
-    client.close()
-    syncClient.close()
-    asyncClient.close()
-  }
-
-  @Benchmark
-  def rpcSync(blackhole: Blackhole): Unit = {
-    blackhole.consume(client.Greeter.hello("RPC"))
-  }
-
-  @Benchmark
-  def rpcSyncDefault(blackhole: Blackhole): Unit = {
-    blackhole.consume(syncClient.Greeter.hello("RPC"))
-  }
-
-  @Benchmark
-  @OperationsPerInvocation(asyncIteration)
-  def rpcAsync(blackhole: Blackhole): Unit = {
-    val counter = new AtomicInteger(0)
-    val futures = for (i <- 0 until asyncIteration) yield {
-      asyncClient.Greeter.hello("RPC").onSuccess { x =>
-        counter.incrementAndGet()
-      }
-    }
-    while (counter.get() != asyncIteration) {
-      Thread.sleep(0)
-    }
-  }
-}
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))

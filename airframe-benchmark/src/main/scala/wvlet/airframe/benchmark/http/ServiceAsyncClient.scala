@@ -18,6 +18,7 @@ package wvlet.airframe.benchmark.http
 import wvlet.airframe.http._
 import wvlet.airframe.http.client.AsyncClient
 import wvlet.airframe.rx.Rx
+import wvlet.airframe.surface.Surface
 
 import scala.language.higherKinds
 
@@ -39,9 +40,17 @@ class NewServiceAsyncClient(private val client: AsyncClient) extends AutoCloseab
   override def close(): Unit = { client.close() }
   def getClient: AsyncClient = client
   object Greeter {
+    private val rpcMethod = RPCMethod(
+      path = "/wvlet.airframe.benchmark.http.Greeter/hello",
+      rpcInterfaceName = "Greeter",
+      methodName = "hello",
+      requestSurface = Surface.of[Map[String, Any]],
+      responseSurface = Surface.of[String]
+    )
+
     def hello(name: String): Rx[String] = {
-      client.call[Map[String, Any], String](
-        Http.POST("/wvlet.airframe.benchmark.http.Greeter/hello"),
+      client.rpc[Map[String, Any], String](
+        rpcMethod,
         Map("name" -> name)
       )
     }

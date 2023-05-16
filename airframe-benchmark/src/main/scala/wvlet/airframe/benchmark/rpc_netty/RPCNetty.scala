@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.benchmark.netty
+package wvlet.airframe.benchmark.rpc_netty
 
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
