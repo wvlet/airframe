@@ -49,7 +49,6 @@ class AirframeRPCNetty extends LogSupport {
 
   private var client: NewServiceSyncClient       = null
   private var asyncClient: NewServiceAsyncClient = null
-  private val emptyServer                        = new Greeter
 
   private val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
 
