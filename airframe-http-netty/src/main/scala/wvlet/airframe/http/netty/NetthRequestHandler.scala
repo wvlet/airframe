@@ -33,6 +33,7 @@ import wvlet.log.LogSupport
 
 import java.net.InetSocketAddress
 import scala.jdk.CollectionConverters._
+import NettyRequestHandler._
 
 class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Filter)
     extends SimpleChannelInboundHandler[FullHttpRequest]
@@ -111,7 +112,10 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
     }
   }
 
-  private def toNettyResponse(response: Response): DefaultHttpResponse = {
+}
+
+object NettyRequestHandler {
+  def toNettyResponse(response: Response): DefaultFullHttpResponse = {
     val r = if (response.message.isEmpty) {
       val res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(response.statusCode))
       // Need to set the content length properly to return the response in Netty
@@ -130,5 +134,4 @@ class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Fi
     }
     r
   }
-
 }

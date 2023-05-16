@@ -21,7 +21,7 @@ import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewService
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.{Http, HttpMessage, HttpStatus, RPCMethod, RxHttpFilter}
 import wvlet.airframe.http.client.{AsyncClient, HttpChannel, HttpChannelConfig, HttpClients, SyncClient, SyncClientImpl}
-import wvlet.airframe.http.netty.{Netty, NettyServer}
+import wvlet.airframe.http.netty.{Netty, NettyRequestHandler, NettyServer}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -62,29 +62,13 @@ class RPCRequestBenchmark extends LogSupport {
     }
   }
 
+  private val strSurface = Surface.of[String]
   @Benchmark
-  def rpcRequestNoCodec(blackhole: Blackhole): Unit = {
+  def rpcNettyResponseBuilder(blackhole: Blackhole): Unit = {
     blackhole.consume {
-      val resp = noNetworkRPCClient.send(
-        Http
-          .POST("/wvlet.airframe.benchmark.http.Greeter/hello")
-          .withJson("""{"name":"RPC"}""")
-      )
-      HttpClients.parseRPCResponse(noNetworkRPCClient.config, resp, Surface.of[String])
-    }
-  }
-
-  private val requestCodec = MessageCodec.of[Map[String, Any]]
-
-  @Benchmark
-  def rpcRequestWithJsonSer(blackhole: Blackhole): Unit = {
-    blackhole.consume {
-      val resp = noNetworkRPCClient.send(
-        Http
-          .POST("/wvlet.airframe.benchmark.http.Greeter/hello")
-          .withJsonOf(requestCodec.toJson(Map("name" -> "RPC")))
-      )
-      HttpClients.parseRPCResponse(noNetworkRPCClient.config, resp, Surface.of[String])
+      val resp          = Http.response(HttpStatus.Ok_200).withJson("""{"message":"Hello, RPC"}""")
+      val nettyResponse = NettyRequestHandler.toNettyResponse(resp)
+      HttpClients.parseRPCResponse(noNetworkRPCClient.config, resp, strSurface)
     }
   }
 
