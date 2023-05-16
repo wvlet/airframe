@@ -11,19 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.benchmark.netty
+package wvlet.airframe.benchmark.rpc_netty
 
-import com.twitter.util.Future
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
 import wvlet.airframe.benchmark.http.HttpBenchmark.asyncIteration
-import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewServiceSyncClient, ServiceClient}
+import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewServiceSyncClient}
 import wvlet.airframe.http._
 import wvlet.airframe.http.client.{AsyncClient, SyncClient}
-import wvlet.airframe.http.finagle.{Finagle, FinagleClient}
 import wvlet.airframe.http.netty.{Netty, NettyServer}
-import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -41,10 +38,10 @@ class AirframeRPCNetty extends LogSupport {
       .noLogging
       .design
       .bind[SyncClient].toProvider { (server: NettyServer) =>
-        Http.client.noLogging.newSyncClient(server.localAddress)
+        Http.client.noLogging.noClientFilter.newSyncClient(server.localAddress)
       }
       .bind[AsyncClient].toProvider { (server: NettyServer) =>
-        Http.client.noLogging.newAsyncClient(server.localAddress)
+        Http.client.noLogging.noClientFilter.newAsyncClient(server.localAddress)
       }
       .withProductionMode
 

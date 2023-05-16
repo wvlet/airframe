@@ -407,7 +407,11 @@ object HttpClients extends LogSupport {
     }
   }
 
-  private[http] def parseRPCResponse(config: HttpClientConfig, response: Response, responseSurface: Surface): Any = {
+  private[airframe] def parseRPCResponse(
+      config: HttpClientConfig,
+      response: Response,
+      responseSurface: Surface
+  ): Any = {
     if (classOf[Response].isAssignableFrom(responseSurface.rawType)) {
       response
     } else {
