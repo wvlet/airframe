@@ -12,93 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.benchmark.http
-import com.google.common.util.concurrent.{FutureCallback, Futures}
-import com.twitter.finagle.http.{Request, Response}
-import com.twitter.util.Future
-import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
-import io.grpc.stub.StreamObserver
-import io.grpc.{Channel, ManagedChannelBuilder}
-import org.openjdk.jmh.annotations._
-import org.openjdk.jmh.infra.Blackhole
-import wvlet.airframe.Session
-import wvlet.airframe.benchmark.http.protojava.ProtoJavaGreeter
-import wvlet.airframe.http.Http
-import wvlet.airframe.http.client.SyncClient
-import wvlet.airframe.http.finagle.{Finagle, FinagleClient, FinagleServer, FinagleSyncClient}
-import wvlet.airframe.http.grpc.gRPC
-import wvlet.log.LogSupport
-import wvlet.log.io.IOUtil
-
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{Executors, TimeUnit}
 
 object HttpBenchmark {
   final val asyncIteration = 100
-}
-
-import wvlet.airframe.benchmark.http.HttpBenchmark._
-
-
-
-@State(Scope.Benchmark)
-@BenchmarkMode(Array(Mode.Throughput))
-@OutputTimeUnit(TimeUnit.SECONDS)
-class AirframeGrpc extends LogSupport {
-
-  private val design =
-    gRPC.server
-      .withRouter(Greeter.router)
-      .noRequestLogging
-      .designWithChannel
-      .withProductionMode
-  private var session: Option[Session]             = None
-  private var client: ServiceGrpc.SyncClient       = null
-  private var asyncClient: ServiceGrpc.AsyncClient = null
-
-  @Setup
-  def setup: Unit = {
-    val s = design.newSession
-    s.start
-    val channel = s.build[Channel]
-    session = Some(s)
-    client = ServiceGrpc.newSyncClient(channel)
-    asyncClient = ServiceGrpc.newAsyncClient(channel)
-  }
-
-  @TearDown
-  def teardown: Unit = {
-    session.foreach(_.shutdown)
-  }
-
-  @Benchmark
-  def rpcSync(blackhole: Blackhole): Unit = {
-    blackhole.consume(client.Greeter.hello("RPC"))
-  }
-
-  @Benchmark
-  @OperationsPerInvocation(asyncIteration)
-  def rpcAsync(blackhole: Blackhole): Unit = {
-    val counter = new AtomicInteger(0)
-    for (i <- 0 until asyncIteration) {
-      blackhole.consume(
-        asyncClient.Greeter.hello(
-          "RPC",
-          new StreamObserver[String] {
-            override def onNext(v: String): Unit = {
-              blackhole.consume(v)
-            }
-            override def onError(t: Throwable): Unit = {}
-            override def onCompleted(): Unit = {
-              counter.incrementAndGet()
-            }
-          }
-        )
-      )
-    }
-    while (counter.get() != asyncIteration) {
-      Thread.sleep(0)
-    }
-  }
 }
 
 //@State(Scope.Benchmark)
@@ -148,5 +64,3 @@ class AirframeGrpc extends LogSupport {
 //    }
 //  }
 //}
-
-

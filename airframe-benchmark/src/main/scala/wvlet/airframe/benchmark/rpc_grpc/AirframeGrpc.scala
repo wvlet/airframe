@@ -11,62 +11,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.benchmark.rpc_netty
+package wvlet.airframe.benchmark.rpc_grpc
 
+import io.grpc.Channel
+import io.grpc.stub.StreamObserver
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
 import wvlet.airframe.benchmark.http.HttpBenchmark.asyncIteration
-import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewServiceSyncClient}
-import wvlet.airframe.http._
-import wvlet.airframe.http.client.{AsyncClient, SyncClient}
-import wvlet.airframe.http.netty.{Netty, NettyServer}
+import wvlet.airframe.benchmark.http.{Greeter, ServiceGrpc}
+import wvlet.airframe.http.grpc.gRPC
 import wvlet.log.LogSupport
 
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{Executors, TimeUnit}
-import scala.concurrent.ExecutionContext
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
-class AirframeRPCNetty extends LogSupport {
+class AirframeGrpc extends LogSupport {
 
   private val design =
-    Netty.server
+    gRPC.server
       .withRouter(Greeter.router)
-      .noLogging
-      .design
-      .bind[SyncClient].toProvider { (server: NettyServer) =>
-        Http.client.noLogging.noClientFilter.newSyncClient(server.localAddress)
-      }
-      .bind[AsyncClient].toProvider { (server: NettyServer) =>
-        Http.client.noLogging.noClientFilter.newAsyncClient(server.localAddress)
-      }
+      .noRequestLogging
+      .designWithChannel
       .withProductionMode
-
-  private var session: Option[Session] = None
-
-  private var client: NewServiceSyncClient       = null
-  private var asyncClient: NewServiceAsyncClient = null
-
-  private val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
+  private var session: Option[Session]             = None
+  private var client: ServiceGrpc.SyncClient       = null
+  private var asyncClient: ServiceGrpc.AsyncClient = null
 
   @Setup
   def setup: Unit = {
     val s = design.newSession
     s.start
+    val channel = s.build[Channel]
     session = Some(s)
-    client = new NewServiceSyncClient(s.build[SyncClient])
-    asyncClient = new NewServiceAsyncClient(s.build[AsyncClient])
+    client = ServiceGrpc.newSyncClient(channel)
+    asyncClient = ServiceGrpc.newAsyncClient(channel)
   }
 
   @TearDown
   def teardown: Unit = {
     session.foreach(_.shutdown)
-    client.close()
-    asyncClient.close()
-    ec.shutdownNow()
   }
 
   @Benchmark
@@ -79,16 +66,19 @@ class AirframeRPCNetty extends LogSupport {
   def rpcAsync(blackhole: Blackhole): Unit = {
     val counter = new AtomicInteger(0)
     for (i <- 0 until asyncIteration) {
-      val rx = asyncClient.Greeter
-        .hello("RPC").map { x =>
-          counter.incrementAndGet()
-        }
       blackhole.consume(
-        ec.submit {
-          new Runnable {
-            override def run(): Unit = rx.run(_ => ())
+        asyncClient.Greeter.hello(
+          "RPC",
+          new StreamObserver[String] {
+            override def onNext(v: String): Unit = {
+              blackhole.consume(v)
+            }
+            override def onError(t: Throwable): Unit = {}
+            override def onCompleted(): Unit = {
+              counter.incrementAndGet()
+            }
           }
-        }
+        )
       )
     }
     while (counter.get() != asyncIteration) {
