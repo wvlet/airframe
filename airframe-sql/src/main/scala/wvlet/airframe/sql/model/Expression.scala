@@ -344,8 +344,7 @@ trait Attribute extends LeafExpression with LogSupport {
       tableName match {
         case Some(tableName) =>
           this match {
-            case r: ResolvedAttribute
-                if r.qualifier.orElse(r.sourceColumn.map(_.table.name)).exists(_.equalsIgnoreCase(tableName)) =>
+            case r: ResolvedAttribute if r.qualifier.orElse(r.sourceColumn.map(_.table.name)).contains(tableName) =>
               findMatched(None, columnName)
             case _ =>
               Nil
@@ -353,8 +352,8 @@ trait Attribute extends LeafExpression with LogSupport {
         case None =>
           this match {
             case a: AllColumns =>
-              a.inputColumns.filter(_.name.equalsIgnoreCase(columnName))
-            case a: Attribute if a.name.equalsIgnoreCase(columnName) =>
+              a.inputColumns.filter(_.name == columnName)
+            case a: Attribute if a.name == columnName =>
               Seq(a)
             case _ =>
               Seq.empty
@@ -365,8 +364,8 @@ trait Attribute extends LeafExpression with LogSupport {
     val result: Seq[Attribute] = columnPath match {
       // TODO handle (catalog).(database).(table) names in the qualifier
       case ColumnPath(Some(databaseName), Some(tableName), columnName) =>
-        if (qualifier.contains(tableName)) {
-          if (qualifier.contains(tableName)) {
+        if (databaseName == context.database) {
+          if (qualifier.exists(_ == tableName)) {
             findMatched(None, columnName).map(_.withQualifier(qualifier))
           } else {
             findMatched(Some(tableName), columnName)
