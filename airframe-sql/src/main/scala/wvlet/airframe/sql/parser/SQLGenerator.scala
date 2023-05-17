@@ -186,7 +186,7 @@ object SQLGenerator extends LogSupport {
       case TableRef(t, _) =>
         printExpression(t)
       case t: TableScan =>
-        t.fullName
+        printNameWithQuotationsIfNeeded(t.fullName)
       case Limit(in, l, _) =>
         val s = seqBuilder
         s += printRelation(in, context)
@@ -361,7 +361,7 @@ object SQLGenerator extends LogSupport {
   def printSelectItem(e: Expression): String = {
     e match {
       case a: ResolvedAttribute =>
-        a.sqlExpr
+        printNameWithQuotationsIfNeeded(a.sqlExpr)
       case other =>
         printExpression(other)
     }
@@ -379,7 +379,7 @@ object SQLGenerator extends LogSupport {
         s"(${printExpression(expr)})"
       case a: Alias =>
         val e = printExpression(a.expr)
-        s"${e} AS ${a.name}"
+        s"${e} AS ${printNameWithQuotationsIfNeeded(a.name)}"
       case SingleColumn(ex, _, _) =>
         printExpression(ex)
       case m: MultiSourceColumn =>
@@ -387,7 +387,7 @@ object SQLGenerator extends LogSupport {
       case a: AllColumns =>
         a.fullName
       case a: Attribute =>
-        a.fullName
+        printNameWithQuotationsIfNeeded(a.fullName)
       case SortItem(key, ordering, nullOrdering, _) =>
         val k  = printExpression(key)
         val o  = ordering.map(x => s" ${x}").getOrElse("")
@@ -516,5 +516,12 @@ object SQLGenerator extends LogSupport {
         s"${printExpression(a)} IS NOT DISTINCT FROM ${printExpression(e)}"
       case other => unknown(other)
     }
+  }
+
+  private def printNameWithQuotationsIfNeeded(name: String): String = {
+    name
+      .split('.')
+      .map(x => if (x.matches("^[a-zA-Z0-9]*$")) x else s"\"$x\"")
+      .mkString(".")
   }
 }
