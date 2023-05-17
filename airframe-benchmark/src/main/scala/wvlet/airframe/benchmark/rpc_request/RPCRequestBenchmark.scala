@@ -68,6 +68,14 @@ class RPCRequestBenchmark extends LogSupport {
     }
   }
 
+  @Benchmark
+  def rpcNettyResponseBuilderImmutable(blackhole: Blackhole): Unit = {
+    blackhole.consume {
+      val resp = Http.response(HttpStatus.Ok_200).withJson("""{"message":"Hello, RPC"}""")
+      NettyRequestHandler.toNettyResponse(resp)
+    }
+  }
+
   private val rpcMethod = RPCMethod(
     path = "/wvlet.airframe.benchmark.http.Greeter/hello",
     rpcInterfaceName = "Greeter",
