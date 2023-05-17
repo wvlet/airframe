@@ -801,10 +801,10 @@ lazy val benchmark =
     .enablePlugins(JmhPlugin, PackPlugin)
     .settings(buildSettings)
     .settings(noPublish)
-    .settings(scala2Only)
     .settings(
-      name     := "airframe-benchmark",
-      packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
+      crossScalaVersions := targetScalaVersions,
+      name               := "airframe-benchmark",
+      packMain           := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
       // Turbo mode didn't work with this error:
       // java.lang.RuntimeException: ERROR: Unable to find the resource: /META-INF/BenchmarkList
       turbo := false,
@@ -836,7 +836,7 @@ lazy val benchmark =
       // publishing .tgz
       // publishPackArchiveTgz
     )
-    .dependsOn(msgpack.jvm, json.jvm, metrics.jvm, launcher, httpCodeGen, finagle, netty, grpc, ulid.jvm)
+    .dependsOn(msgpack.jvm, json.jvm, metrics.jvm, launcher, httpCodeGen, netty, grpc, ulid.jvm)
 
 lazy val fluentd =
   project

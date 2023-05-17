@@ -11,23 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.benchmark.http_request
+package wvlet.airframe.benchmark.rpc_request
 
-import org.openjdk.jmh.annotations.{Benchmark, BenchmarkMode, Mode, OutputTimeUnit, Scope, Setup, State, TearDown}
+import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
-import wvlet.airframe.Session
+import wvlet.airframe.benchmark.http.Greeter
 import wvlet.airframe.benchmark.http.Greeter.GreeterResponse
-import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewServiceSyncClient}
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http.{Http, HttpMessage, HttpStatus, RPCMethod, RxHttpFilter}
-import wvlet.airframe.http.client.{AsyncClient, HttpChannel, HttpChannelConfig, HttpClients, SyncClient, SyncClientImpl}
-import wvlet.airframe.http.netty.{Netty, NettyServer}
+import wvlet.airframe.http.client.{HttpChannel, HttpChannelConfig, HttpClients, SyncClientImpl}
+import wvlet.airframe.http.netty.NettyRequestHandler
+import wvlet.airframe.http._
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
-import java.util.concurrent.{Executors, TimeUnit}
-import scala.concurrent.ExecutionContext
+import java.util.concurrent.TimeUnit
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
@@ -63,28 +61,18 @@ class RPCRequestBenchmark extends LogSupport {
   }
 
   @Benchmark
-  def rpcRequestNoCodec(blackhole: Blackhole): Unit = {
+  def rpcNettyResponseBuilder(blackhole: Blackhole): Unit = {
     blackhole.consume {
-      val resp = noNetworkRPCClient.send(
-        Http
-          .POST("/wvlet.airframe.benchmark.http.Greeter/hello")
-          .withJson("""{"name":"RPC"}""")
-      )
-      HttpClients.parseRPCResponse(noNetworkRPCClient.config, resp, Surface.of[String])
+      val resp = Http.response(HttpStatus.Ok_200, """{"message":"Hello, RPC"}""")
+      NettyRequestHandler.toNettyResponse(resp)
     }
   }
 
-  private val requestCodec = MessageCodec.of[Map[String, Any]]
-
   @Benchmark
-  def rpcRequestWithJsonSer(blackhole: Blackhole): Unit = {
+  def rpcNettyResponseBuilderImmutable(blackhole: Blackhole): Unit = {
     blackhole.consume {
-      val resp = noNetworkRPCClient.send(
-        Http
-          .POST("/wvlet.airframe.benchmark.http.Greeter/hello")
-          .withJsonOf(requestCodec.toJson(Map("name" -> "RPC")))
-      )
-      HttpClients.parseRPCResponse(noNetworkRPCClient.config, resp, Surface.of[String])
+      val resp = Http.response(HttpStatus.Ok_200).withJson("""{"message":"Hello, RPC"}""")
+      NettyRequestHandler.toNettyResponse(resp)
     }
   }
 
