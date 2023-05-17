@@ -361,7 +361,7 @@ object SQLGenerator extends LogSupport {
   def printSelectItem(e: Expression): String = {
     e match {
       case a: ResolvedAttribute =>
-        printNameWithQuotationsIfNeeded(a.sqlExpr)
+        a.sqlExpr
       case other =>
         printExpression(other)
     }
@@ -519,10 +519,6 @@ object SQLGenerator extends LogSupport {
   }
 
   private def printNameWithQuotationsIfNeeded(name: String): String = {
-    name
-      .split('.')
-      // Support 2.12: https://github.com/scala/bug/issues/6476
-      .map(x => if (x.matches("^[a-zA-Z0-9_]*$")) x else '"' + x + '"')
-      .mkString(".")
+    QName.apply(name, None).sqlExpr
   }
 }
