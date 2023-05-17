@@ -802,8 +802,9 @@ lazy val benchmark =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      name     := "airframe-benchmark",
-      packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
+      crossScalaVersions := targetScalaVersions,
+      name               := "airframe-benchmark",
+      packMain           := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
       // Turbo mode didn't work with this error:
       // java.lang.RuntimeException: ERROR: Unable to find the resource: /META-INF/BenchmarkList
       turbo := false,
