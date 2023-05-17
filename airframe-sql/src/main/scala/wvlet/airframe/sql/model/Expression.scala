@@ -545,8 +545,6 @@ object Expression {
       with LogSupport {
     override def name: String = "*"
 
-    override def sqlExpr: String = name
-
     override def children: Seq[Expression] = {
       // AllColumns is a reference to the input attributes.
       // Return empty so as not to traverse children from here.
