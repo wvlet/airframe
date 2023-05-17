@@ -521,7 +521,8 @@ object SQLGenerator extends LogSupport {
   private def printNameWithQuotationsIfNeeded(name: String): String = {
     name
       .split('.')
-      .map(x => if (x.matches("^[a-zA-Z0-9]*$")) x else s"\"$x\"")
+      // Support 2.12: https://github.com/scala/bug/issues/6476
+      .map(x => if (x.matches("^[a-zA-Z0-9]*$")) x else '"' + x + '"')
       .mkString(".")
   }
 }
