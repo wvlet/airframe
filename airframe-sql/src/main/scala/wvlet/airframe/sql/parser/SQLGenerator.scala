@@ -522,7 +522,7 @@ object SQLGenerator extends LogSupport {
     name
       .split('.')
       // Support 2.12: https://github.com/scala/bug/issues/6476
-      .map(x => if (x.matches("^[a-zA-Z0-9]*$")) x else '"' + x + '"')
+      .map(x => if (x.matches("^[a-zA-Z0-9_]*$")) x else '"' + x + '"')
       .mkString(".")
   }
 }
