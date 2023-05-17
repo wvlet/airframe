@@ -15,7 +15,7 @@ package wvlet.airframe.http.grpc
 
 import io.grpc._
 import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.http.Router
+import wvlet.airframe.http.{Router, RxRouter}
 import wvlet.airframe.http.grpc.internal.{GrpcRequestLogger, GrpcServiceBuilder}
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
@@ -45,9 +45,12 @@ case class GrpcServerConfig(
 ) extends LogSupport {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
-  def withName(name: String): GrpcServerConfig     = this.copy(name = name)
-  def withPort(port: Int): GrpcServerConfig        = this.copy(serverPort = Some(port))
-  def withRouter(router: Router): GrpcServerConfig = this.copy(router = router)
+  def withName(name: String): GrpcServerConfig = this.copy(name = name)
+  def withPort(port: Int): GrpcServerConfig    = this.copy(serverPort = Some(port))
+
+  @deprecated("Use withRouter(RxRouter)", "23.5.0")
+  def withRouter(router: Router): GrpcServerConfig   = this.copy(router = router)
+  def withRouter(router: RxRouter): GrpcServerConfig = this.copy(router = Router.fromRxRouter(router))
 
   /**
     * Use this method to customize gRPC server, e.g., setting tracer, add transport filter, etc.

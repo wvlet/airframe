@@ -1,5 +1,7 @@
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
+ThisBuild / scalaVersion := "3.2.2"
+
 lazy val root =
   project.aggregate(spi.js, client.js)
 
@@ -18,7 +20,7 @@ lazy val client =
     .enablePlugins(AirframeHttpPlugin)
     .settings(
       airframeHttpGeneratorOption := "-l trace",
-      airframeHttpClients         := Seq("myapp.spi:scalajs")
+      airframeHttpClients         := Seq("myapp.spi:rpc")
     )
     .jsSettings(
       libraryDependencies ++= Seq(
@@ -26,4 +28,3 @@ lazy val client =
       )
     )
     .dependsOn(spi)
-

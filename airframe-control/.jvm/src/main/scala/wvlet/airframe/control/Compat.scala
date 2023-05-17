@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.control
 
+import wvlet.airframe.rx.Rx
+
 import java.util.concurrent.{ScheduledThreadPoolExecutor, TimeUnit}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
@@ -21,28 +23,5 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 object Compat {
   def sleep(millis: Long): Unit = {
     Thread.sleep(millis)
-  }
-
-  private lazy val scheduledExecutor =
-    new ScheduledThreadPoolExecutor(2, ThreadUtil.newDaemonThreadFactory("airframe-control"))
-
-  def scheduleAsync[A](waitMillis: Long)(body: => Future[A])(implicit ec: ExecutionContext): Future[A] = {
-    val promise = Promise[A]()
-    try {
-      scheduledExecutor.schedule(
-        new Runnable {
-          override def run(): Unit = {
-            body.onComplete { ret =>
-              promise.complete(ret)
-            }
-          }
-        },
-        waitMillis,
-        TimeUnit.MILLISECONDS
-      )
-    } catch {
-      case e: Throwable => promise.failure(e)
-    }
-    promise.future
   }
 }

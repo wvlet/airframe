@@ -16,25 +16,30 @@ package wvlet.airframe.http.client
 import wvlet.airframe.control.{Control, IO}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
+import wvlet.airframe.rx.Rx
 
 import java.io.{IOException, InputStream, OutputStream}
 import java.net.HttpURLConnection
-import java.util.concurrent.ExecutorService
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters._
 
 class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel {
-  override private[client] implicit def executionContext: ExecutionContext = config.newExecutionContext
-
-  override def send(request: Request, channelConfig: ChannelConfig): Response = {
+  override def send(request: Request, channelConfig: HttpChannelConfig): Response = {
     val url = s"${serverAddress.uri}${if (request.uri.startsWith("/")) request.uri
       else s"/${request.uri}"}"
 
     val conn0: HttpURLConnection =
       new java.net.URL(url).openConnection().asInstanceOf[HttpURLConnection]
-    conn0.setRequestMethod(request.method)
+
+    request.method match {
+      case HttpMethod.PATCH =>
+        // URLConnection doesn't support patch, so we need to use POST endpoint + X-HTTP-Method-Override header
+        conn0.setRequestMethod(HttpMethod.POST)
+        conn0.setRequestProperty("X-HTTP-Method-Override", HttpMethod.PATCH)
+      case _ =>
+        conn0.setRequestMethod(request.method)
+    }
     for (e <- request.header.entries) {
       conn0.setRequestProperty(e.key, e.value)
     }
@@ -98,15 +103,11 @@ class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfi
     response.withContent(responseContentBytes)
   }
 
-  override def sendAsync(req: Request, channelConfig: ChannelConfig): Future[Response] = {
-    Future.apply(send(req, channelConfig))
+  override def sendAsync(req: Request, channelConfig: HttpChannelConfig): Rx[Response] = {
+    Rx.single(send(req, channelConfig))
   }
 
   override def close(): Unit = {
-    executionContext match {
-      case e: ExecutorService =>
-        e.shutdownNow()
-      case _ =>
-    }
+    // Nothing to close for URLConnection
   }
 }

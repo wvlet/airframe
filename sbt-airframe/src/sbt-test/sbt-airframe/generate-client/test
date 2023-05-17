@@ -1,2 +1,4 @@
 > compile
+# cache test
+> compile
 > server/run

@@ -74,9 +74,8 @@ object RxTest extends AirSpec {
     v.get shouldBe 2
   }
 
-  test("bind rx", design = Design.newDesign.bind[RxVar[String]].toInstance(Rx.variable("Hello"))) {
-    (v: RxVar[String]) =>
-      v.get shouldBe "Hello"
+  test("bind rx", design = _.bind[RxVar[String]].toInstance(Rx.variable("Hello"))) { (v: RxVar[String]) =>
+    v.get shouldBe "Hello"
   }
 
   test("force update RxVar") {
@@ -353,10 +352,11 @@ object RxTest extends AirSpec {
       case Some(v) =>
         p.success(v)
       case None =>
-        p.failure(new IllegalStateException())
+        if (!p.isCompleted) {
+          p.failure(new IllegalStateException())
+        }
     }
-
-    p.future.foreach { x => x shouldBe Some(1) }
+    p.future.foreach { x => x shouldBe 1 }
   }
 
   test("from Future[Exception]") {
@@ -476,7 +476,7 @@ object RxTest extends AirSpec {
     }
 
     // (test name, input, expected value on success)
-    def newTests(rx: RxStream[Int]): Seq[(String, Rx[Any], Any)] =
+    def newTests(rx: Rx[Int]): Seq[(String, Rx[Any], Any)] =
       Seq(
         ("single", rx, Seq(1)),
         ("map", rx.map(x => x * 2), Seq(2)),

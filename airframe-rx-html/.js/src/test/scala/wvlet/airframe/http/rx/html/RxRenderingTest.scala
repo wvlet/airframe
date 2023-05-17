@@ -14,7 +14,7 @@
 package wvlet.airframe.http.rx.html
 
 import org.scalajs.dom.HTMLElement
-import wvlet.airframe.rx.{Cancelable, Rx, RxStream}
+import wvlet.airframe.rx.{Cancelable, Rx}
 import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxElement}
 import wvlet.airspec.AirSpec
 import wvlet.airframe.rx.html._
@@ -26,7 +26,7 @@ object RxRenderingTest extends AirSpec {
 
   private def render(v: Any): (HTMLElement, Cancelable) = {
     val (n, c) = v match {
-      case rx: RxStream[RxElement] @unchecked =>
+      case rx: Rx[RxElement] @unchecked =>
         DOMRenderer.render(div(rx))
       case other: RxElement =>
         DOMRenderer.render(other)

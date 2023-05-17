@@ -1,12 +1,16 @@
 package example.api
 
-import wvlet.airframe.http.RPC
-import wvlet.airframe.rx.RxStream
+import wvlet.airframe.http._
+import wvlet.airframe.rx.Rx
 
 @RPC
 trait GreeterApi {
   def sayHello(message: String): String
-  def serverStreaming(message: String): RxStream[String]
-  def clientStreaming(message: RxStream[String]): String
-  def bidiStreaming(message: RxStream[String]): RxStream[String]
+  def serverStreaming(message: String): Rx[String]
+  def clientStreaming(message: Rx[String]): String
+  def bidiStreaming(message: Rx[String]): Rx[String]
+}
+
+object GreeterApi extends RxRouterProvider {
+  override def router: RxRouter = RxRouter.of[GreeterApi]
 }

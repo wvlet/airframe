@@ -59,7 +59,13 @@ private[airspec] class AirSpecTask(
       continuation: Array[sbt.testing.Task] => Unit
   ): Unit = {
     implicit val ec = wvlet.airspec.Compat.executionContext
-    new AirSpecTaskRunner(taskDef, config, taskLogger, eventHandler, classLoader).runTask
-      .foreach(_ => continuation(Array.empty))
+    try {
+      new AirSpecTaskRunner(taskDef, config, taskLogger, eventHandler, classLoader).runTask
+        .foreach(_ => continuation(Array.empty))
+    } catch {
+      case e: Throwable =>
+        logger.error(s"Test execution failed unexpectedly: ${e.getMessage}", e)
+        continuation(Array.empty)
+    }
   }
 }

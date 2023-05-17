@@ -26,26 +26,24 @@ libraryDependencies += "org.wvlet.airframe" %% "airframe-http-recorder" %% (vers
 ### Record & Replay
 
 ```scala
-
 import wvlet.airframe.control.Control._
+import wvlet.airframe.http.{Http,HttpStatus}
 import wvlet.airframe.http.recorder.{HttpRecorder,HttpRecorderConfig}
 import wvlet.airframe.http.finagle.FinagleClient
-import com.twitter.finagle.http.Status
-import com.twitter.finagle.http.{Request,Response}
 
 // Create a proxy server that will record responses for matching requests,
 // and make actual requests the destination for non-recorded requests.
 val recorderConfig = HttpRecorderConfig(destUri = "https://www.google.com")
 withResource(HttpRecorder.createRecorderProxy(recorderConfig)) { server =>
 
-  // Create an HTTP client. This example uses Finagle's http client implementation
-  val client = FinagleClient.newSyncClient(server.localAddress)  // "localhost:(port number)"
+  // Create an HTTP client
+  val client = Http.client.newSyncClient(server.localAddress)  // "localhost:(port number)"
 
   // Requests to the local server will be recorded
-  val response = client.send(Request("/"))
+  val response = client.send(Http.GET("/"))
 
   // You can record your own dummy responses
-  server.record(Request("/dummy"), Response(Status.NotFound))
+  server.record(Http.GET("/dummy"), Http.response(HttpStatus.NotFound_404))
 }
 
 
@@ -55,7 +53,7 @@ withResource(HttpRecorder.createRecordOnlyServer(recorderConfig)) { server =>
   // Requests to the local server will be recorded
 
   // If necessary, add custom request-response pairs
-  server.recordIfNotExists(Request("/dummy"), Response(Status.Ok))
+  server.recordIfNotExists(Http.GET("/dummy"), Http.response(HttpStatus.Ok_200))
 }
 
 // Create a replay server that returns recorded responses for matching requests 
@@ -69,16 +67,15 @@ withResource(HttpRecorder.createReplayOnlyServer(recorderConfig)) { server =>
 ### Programmable HttpRecorderServer
 
 ```scala
+import wvlet.airframe.http.Http
 import wvlet.airframe.http.recorder._
 import wvlet.airframe.control.Control._
-import com.twitter.finagle.http.{Request,Response}
 
 val recorderConfig = HttpRecorderConfig(sessionName="my-recording")
 val response = withResource(HttpRecorder.createProgrammableServer(recorderConfig)) { server =>
   // Add custom server responses
-  val request = Request("/index.html")
-  val response = Response()
-  response.setContentString("Hello World!")
+  val request = Http.GET("/index.html")
+  val response = Http.response().withContent("Hello World!")
   server.record(request, response)
 
   val addr = server.localAddress // "localhost:(port number)"
@@ -107,5 +104,6 @@ withResource(HttpRecorder.createInMemoryServer(config)) { server =>
 ```
 
 ## Related Projects
+
 - [VCR](https://github.com/vcr/vcr) (for Ruby)
 - [Betamax](https://github.com/betamaxteam/betamax) (no longer maintained)

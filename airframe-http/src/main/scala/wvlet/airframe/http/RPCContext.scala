@@ -13,6 +13,9 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.http.Compat
+import wvlet.airframe.http.internal.RPCCallContext
+
 object RPCContext {
 
   /**
@@ -32,6 +35,10 @@ trait RPCContext {
     * performance reason.
     */
   def httpRequest: HttpMessage.Request
+
+  def rpcCallContext: Option[RPCCallContext] = {
+    getThreadLocal[RPCCallContext](HttpBackend.TLS_KEY_RPC)
+  }
 
   /**
     * Set a thread-local variable that is available only within the request scope.
@@ -61,10 +68,9 @@ object EmptyRPCContext extends RPCContext {
     // no-op
     None
   }
-
   override def httpRequest: HttpMessage.Request = {
     throw RPCStatus.UNIMPLEMENTED_U8.newException(
-      "RPCContext.httpRequest is not available outside the context of RPC server"
+      "RPCContext.httpRequest is not available outside the context of RPC call"
     )
   }
 }

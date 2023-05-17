@@ -80,7 +80,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private val memo = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
 
   private def surfaceOf(t: TypeRepr): Expr[Surface] = {
-    // println(s"surfaceOf ${fullTypeNameOf(t)}")
     if (seen.contains(t)) {
       if (memo.contains(t)) {
         memo(t)
@@ -405,6 +404,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   private def genericTypeFactory: Factory = {
+    case t if t =:= TypeRepr.of[Any] =>
+      '{ Alias("Any", "scala.Any", AnyRefSurface) }
     case a: AppliedType =>
       val typeArgs = a.args.map(surfaceOf(_))
       '{ new GenericSurface(${ clsOf(a) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
@@ -499,8 +500,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     val typeArgTable: Map[String, TypeRepr] = typeMappingTable(t, method)
 
     val origParamSymss = method.paramSymss
-    val paramss =
-      if (origParamSymss.nonEmpty && t.typeSymbol.typeMembers.nonEmpty) origParamSymss.tail else origParamSymss
+    val typeMembers    = t.typeSymbol.typeMembers.filterNot(_.flags.is(Flags.Module))
+    val paramss = {
+      if (origParamSymss.nonEmpty && typeMembers.nonEmpty)
+        origParamSymss.tail
+      else {
+        origParamSymss
+      }
+    }
 
     paramss.map { params =>
       params.zipWithIndex
@@ -669,7 +676,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       sys.error(s"recurcive type in method: ${targetType.typeSymbol.fullName}")
     } else {
       methodSeen += targetType
-      val localMethods = localMethodsOf(targetType).distinct
+      val localMethods = localMethodsOf(targetType).distinct.sortBy(_.name)
       val methodSurfaces = localMethods.map(m => (m, m.tree)).collect { case (m, df: DefDef) =>
         val mod   = Expr(modifierBitMaskOf(m))
         val owner = surfaceOf(targetType)

@@ -27,8 +27,17 @@ $ ./bin/airframe-benchmark bench msgpack
 # Run JSON benchmark
 $ ./bin/airframe-benchmark bench json
 
-# Run Airframe HTTP/RPC benchmark
-$ ./bin/airframe-benchmark bench http
+# Run Airframe RPC benchmark
+$ ./bin/airframe-benchmark bench rpc_netty
+$ ./bin/airframe-benchmark bench rpc_finagle
+$ ./bin/airframe-benchmark bench rpc_grpc
+
+# Pure grpc-java performance
+$ ./bin/airframe-benchmark bench grpc_java
+
+# Run Airframe RPC request builder benchmark
+$ ./bin/airframe-benchmark bench rpc_request
+
 
 # Run MessagePack benchmaark and write the results to a json file
 # Run MessagePack benchmark

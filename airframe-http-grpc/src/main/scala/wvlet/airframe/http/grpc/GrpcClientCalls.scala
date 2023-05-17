@@ -16,7 +16,7 @@ import io.grpc.stub.{MetadataUtils, StreamObserver}
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.RPCEncoding
 import wvlet.airframe.msgpack.spi.MsgPack
-import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner, RxStream}
+import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner}
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
@@ -27,7 +27,7 @@ import scala.util.{Failure, Success, Try}
 object GrpcClientCalls extends LogSupport {
 
   trait BlockingStreamObserver[A] extends StreamObserver[Any] {
-    def toRx: RxStream[A]
+    def toRx: Rx[A]
   }
 
   def blockingResponseObserver[A]: BlockingStreamObserver[A] =

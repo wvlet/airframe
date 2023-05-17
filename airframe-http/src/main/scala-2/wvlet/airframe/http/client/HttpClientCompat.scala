@@ -16,6 +16,7 @@ package wvlet.airframe.http.client
 import wvlet.airframe.http.HttpClientException
 import wvlet.airframe.http.HttpMessage.Request
 import wvlet.airframe.http.impl.HttpMacros
+import wvlet.airframe.rx.Rx
 
 import scala.concurrent.Future
 import scala.language.experimental.macros
@@ -56,10 +57,10 @@ trait AsyncClientCompat { self: AsyncClient =>
     */
   def readAs[Resp](
       request: Request
-  ): Future[Resp] = macro HttpMacros.read0Async[Resp]
+  ): Rx[Resp] = macro HttpMacros.read0Async[Resp]
 
   def call[Req, Resp](
       request: Request,
       requestContent: Req
-  ): Future[Resp] = macro HttpMacros.call0Async[Req, Resp]
+  ): Rx[Resp] = macro HttpMacros.call0Async[Req, Resp]
 }

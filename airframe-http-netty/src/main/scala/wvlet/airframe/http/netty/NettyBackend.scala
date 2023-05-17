@@ -14,13 +14,16 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{Http, HttpBackend, HttpRequestAdapter, HttpStatus}
+import wvlet.airframe.http._
 import wvlet.airframe.rx.Rx
+import wvlet.log.LogSupport
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
-object NettyBackend extends HttpBackend[Request, Response, Rx] {
+object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport { self =>
+  private val rxBackend = new RxNettyBackend
+
   override protected implicit val httpRequestAdapter: HttpRequestAdapter[Request] =
     wvlet.airframe.http.HttpMessage.HttpMessageRequestAdapter
 
@@ -40,12 +43,32 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] {
 
   override def toScalaFuture[A](a: Rx[A]): Future[A] = {
     val promise: Promise[A] = Promise()
-    a.toRxStream
+    a.toRx
       .map { x =>
         promise.success(x)
       }
       .recover { case e: Throwable => promise.failure(e) }
     promise.future
+  }
+
+  override def filterAdapter[M[_]](filter: HttpFilter[_, _, M]): NettyBackend.Filter = {
+    filter.asInstanceOf[NettyBackend.Filter]
+  }
+
+  override def rxFilterAdapter(filter: RxHttpFilter): NettyBackend.Filter = {
+    new NettyBackend.Filter {
+      override protected def backend: HttpBackend[Request, Response, Rx] = self
+      override def apply(request: Request, context: NettyBackend.Context): Rx[Response] = {
+        filter(
+          request,
+          new RxHttpEndpoint {
+            override def apply(request: Request): Rx[Response] = {
+              context(request)
+            }
+          }
+        )
+      }
+    }
   }
 
   override def wrapException(e: Throwable): Rx[Response] = {
@@ -61,7 +84,7 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] {
   }
 
   override def mapF[A, B](f: Rx[A], body: A => B): Rx[B] = {
-    f.toRxStream.map(body)
+    f.toRx.map(body)
   }
 
   private lazy val tls =

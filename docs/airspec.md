@@ -78,25 +78,27 @@ This `test` syntax is useful for writing nested tests or customizing the design 
 
 AirSpec supports basic assertions listed below:
 
-| syntax                             | meaning                                                                           |
-|------------------------------------|-----------------------------------------------------------------------------------|
-| `assert(x == y)`                   | check x equals to y                                                               |
-| `assertEquals(a, b, delta)`        | check the equality of Float (or Double) values by allowing some delta difference  |
-| `intercept[E] { ... }`             | Catch an exception of type `E` to check an expected exception is thrown           |
-| `x shouldBe y`                     | check x == y. This supports matching collections like Seq, Array (with deepEqual) |
-| `x shouldNotBe y`                  | check x != y                                                                      |
-| `x shouldNotBe null`               | shouldBe, shouldNotBe supports null check                                         |
-| `x shouldBe defined`               | check x.isDefined == true, when x is Option or Seq                                |
-| `x shouldBe empty`                 | check x.isEmpty == true, when x is Option or Seq                                  |
-| `x shouldBeTheSameInstanceAs y`    | check x eq y; x and y are the same object instance                                |
-| `x shouldNotBeTheSameInstanceAs y` | check x ne y; x and y should not be the same instance                             |
-| `x shouldMatch { case .. => }`     | check x matches given patterns                                                    | 
-| `fail("reason")`                   | fail the test if this code path should not be reached                             |
-| `ignore("reason")`                 | ignore this test execution.                                                       |
-| `cancel("reason")`                 | cancel the test (e.g., due to set up failure)                                     |
-| `pending("reason")`                | pending the test execution (e.g., when hitting an unknown issue)                  |
-| `pendingUntil("reason")`           | pending until fixing some blocking issues                                         |
-| `skip("reason")`                   | Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js)     |
+| syntax                              | meaning                                                                             |
+|-------------------------------------|-------------------------------------------------------------------------------------|
+| `assert(x == y)`                    | check x equals to y                                                                 |
+| `assertEquals(a, b, delta)`         | check the equality of Float (or Double) values by allowing some delta difference    |
+| `intercept[E] { ... }`              | Catch an exception of type `E` to check an expected exception is thrown             |
+| `x shouldBe y`                      | check x == y. This supports matching collections like Seq, Array (with deepEqual)   |
+| `x shouldNotBe y`                   | check x != y                                                                        |
+| `x shouldNotBe null`                | shouldBe, shouldNotBe supports null check                                           |
+| `x shouldBe defined`                | check x.isDefined == true, when x is Option or Seq                                  |
+| `x shouldBe empty`                  | check x.isEmpty == true, when x is Option or Seq                                    |
+| `x shouldBeTheSameInstanceAs y`     | check x eq y; x and y are the same object instance                                  |
+| `x shouldNotBeTheSameInstanceAs y`  | check x ne y; x and y should not be the same instance                               |
+| `x shouldMatch { case .. => }`      | check x matches given patterns                                                      |
+| `x shouldContain y`                 | check x contains given value y                                                      |
+| `x shouldNotContain y`              | check x doesn't contain a given value y                                             |
+| `fail("reason")`                    | fail the test if this code path should not be reached                               |
+| `ignore("reason")`                  | ignore this test execution.                                                         |
+| `cancel("reason")`                  | cancel the test (e.g., due to set up failure)                                       |
+| `pending("reason")`                 | pending the test execution (e.g., when hitting an unknown issue)                    |
+| `pendingUntil("reason")`            | pending until fixing some blocking issues                                           |
+| `skip("reason")`                    | Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js)       |
 
 AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.
 
@@ -146,6 +148,13 @@ class MyTest extends AirSpec {
     Seq(1, 2) shouldMatch {
       case Seq(1, _) => // ok 
     }
+    
+    // Containment check
+    "hello world" shouldContain "world"
+    Seq(1, 2, 3) shouldContain 1
+    
+    "hello world" shouldNotContain "!!"
+    Seq(1, 2, 3) shouldNotContain 4
   }
 }
 ```
@@ -269,6 +278,23 @@ class AsyncTest extends AirSpec {
 
 ```
 
+## Flaky Tests
+
+If your test cases are flaky, i.e., failing occasionally, you can wrap the text code with `flaky` block to mark failures inside the block as 'skipped'. You may need to check the skipped test reports to see if they are really flaky or not:
+
+```scala
+import wvlet.airspec._
+
+class MyTest extends AirSpec {
+  test("performance test") {
+    val elaplsed_time = xxx // measure something
+    flaky {
+       elapsed_time < 100 shouldBe true
+    }
+  }
+}
+
+```
 
 ## Dependency Injection with Airframe DI
 
@@ -383,11 +409,8 @@ class OverrideTest extends AirSpec {
   test("before overriding the design") { (s:String) =>
     s shouldBe "hello"
 
-    // Override a design
-    val childDesign = newDesign
-      .bind[String].toInstance("hello child")
-
-    test("override the design", design = childDesign) { cs: String =>
+    // Override the design only for this test method
+    test("override the design", design = _.bind[String].toInstance("hello child")) { (cs: String) =>
       cs shouldBe "hello child"
     }
   }

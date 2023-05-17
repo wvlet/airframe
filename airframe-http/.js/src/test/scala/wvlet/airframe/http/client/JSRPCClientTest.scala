@@ -13,32 +13,46 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.http.HttpHeader.MediaType
-import wvlet.airframe.http.{Http, HttpClientConfig, RPCMethod}
+import wvlet.airframe.http.{Http, RPCMethod}
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
-import scala.concurrent.ExecutionContext
-
-class JSRPCClientTest extends AirSpec {
-
-  private implicit val ec: ExecutionContext = defaultExecutionContext
+object JSRPCClientTest extends AirSpec {
+  case class Person(id: Int, name: String)
+  private val p = Person(1, "leo")
 
   // Use a public REST test server
-  private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
-  case class TestRequest(id: Int, name: String)
-  case class TestResponse(url: String, headers: Map[String, Any])
+  private val PUBLIC_REST_SERVICE = "https://jsonplaceholder.typicode.com"
+  case class TestRequest(userId: Int, name: String)
+  case class TestResponse(userId: Int, name: String)
 
   test("Create an Async RPCClient") {
     val client = Http.client.newAsyncClient(PUBLIC_REST_SERVICE)
 
-    val m = RPCMethod("/post", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
-    client
-      .rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))
-      .map { response =>
-        debug(response)
-        response.headers.get("Content-Type") shouldBe Some(MediaType.ApplicationJson)
+    test("rpc") {
+      flaky {
+        val m = RPCMethod("/posts", "example.Api", "test", Surface.of[TestRequest], Surface.of[TestResponse])
+        client
+          .rpc[TestRequest, TestResponse](m, TestRequest(1, "test"))
+          .toRx
+          .map { response =>
+            debug(response)
+            response shouldBe TestResponse(1, "test")
+          }
       }
+    }
+
+    test("call") {
+      flaky {
+        client
+          .call[Person, Map[String, Any]](Http.POST("/posts"), p)
+          .toRx
+          .map { m =>
+            debug(m)
+            m shouldBe Map("id" -> 101, "name" -> "leo")
+          }
+      }
+    }
   }
 
   test("create RPC client") {

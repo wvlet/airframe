@@ -41,7 +41,8 @@ trait HttpBackend[Req, Resp, F[_]] {
     try {
       body
     } catch {
-      case NonFatal(e) => wrapException(e)
+      case NonFatal(e) =>
+        wrapException(e)
     }
   }
 
@@ -64,6 +65,8 @@ trait HttpBackend[Req, Resp, F[_]] {
 
   // Wrap the given filter to a backend-specific filter
   def filterAdapter[M[_]](filter: HttpFilter[_, _, M]): Filter = ???
+
+  def rxFilterAdapter(filter: RxHttpFilter): Filter = ???
 
   // Create a new default context that process the given request
   def newContext(body: Req => F[Resp]): Context =

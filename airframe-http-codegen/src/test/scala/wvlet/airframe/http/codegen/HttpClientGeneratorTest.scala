@@ -109,27 +109,6 @@ class HttpClientGeneratorTest extends AirSpec {
     code.contains("class ServiceSyncClient[Req, Resp]")
   }
 
-  test("generate Scala.js client") {
-    val code = HttpCodeGenerator.generate(
-      router,
-      HttpClientGeneratorConfig("example.api:scalajs:example.api.client.js")
-    )
-    debug(code)
-    code.contains("package example.api.client.js") shouldBe true
-    code.contains("class ServiceJSClient") shouldBe true
-
-    test("Map client parameters to GET query strings") {
-      code.contains("def getBooks(limit: Int") shouldBe true
-      code.contains("""Map("limit" -> limit, "sort" -> sort)""") shouldBe true
-    }
-    code.contains("import java.lang.Object") shouldBe false
-
-    test("generate ServiceJSClientRx") {
-      code.contains("class ServiceJSClientRx") shouldBe true
-      code.contains(": RxStream[scala.collection.Seq[example.Book]] = ")
-    }
-  }
-
   test("scan classes") {
     skip("This is a test used only for debugging")
     val urls = Array[java.net.URL](

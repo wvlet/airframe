@@ -65,6 +65,8 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
       taskKey[Seq[String]]("class loader for dependent classes")
     val airframeHttpBinaryDir =
       taskKey[File]("Download Airframe HTTP binary to this location")
+    val airframeHttpOutDir =
+      taskKey[File]("Output directory for the generated clients. The default is Compile / sourceManaged")
     val airframeHttpVersion = settingKey[String]("airframe-http version to use")
     val airframeHttpReload  = taskKey[Seq[File]]("refresh generated clients")
     val airframeHttpOpts =
@@ -192,21 +194,21 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           airframeHttpGenerateClient
         )
         .value,
+      airframeHttpOutDir := (Compile / sourceManaged).value,
       airframeHttpGenerateClient := {
         val targetDir = airframeHttpWorkDir.value
         val baseDir   = targetDir.relativeTo(file(".")).getOrElse(targetDir)
-        val cacheFile = baseDir / cacheFileName
         val binDir    = airframeHttpBinaryDir.value
         val opts =
           s"${airframeHttpOpts.value} ${airframeHttpGeneratorOption.value}"
         val commandLineOpts = HttpCodeGeneratorOption(
           classpath = airframeHttpClasspass.value,
-          outDir = (Compile / sourceManaged).value,
+          outDir = airframeHttpOutDir.value,
           targetDir = targetDir,
           targets = airframeHttpClients.value
         )
 
-        val result: Seq[File] = if (!cacheFile.exists) {
+        val result: Seq[File] = {
           debug(s"airframe-http directory: ${binDir}")
           val commandLineOptsJson = MessageCodec.of[HttpCodeGeneratorOption].toJson(commandLineOpts)
           trace(s"airframe-http code-generator option:\n${commandLineOptsJson}")
@@ -216,13 +218,8 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
           debug(cmd)
           val json: String = cmd.!!
           debug(s"client generator result: ${json}")
-          IO.write(cacheFile, json)
           // Return generated files
           seqFileCodec.unpackJson(json).getOrElse(Seq.empty)
-        } else {
-          debug(s"Using cached client")
-          val json = IO.read(cacheFile)
-          seqFileCodec.fromJson(json)
         }
         result
       },

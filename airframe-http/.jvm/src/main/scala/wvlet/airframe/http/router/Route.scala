@@ -108,28 +108,34 @@ case class ControllerRoute(
       context: HttpContext[Req, Resp, F],
       codecFactory: MessageCodecFactory
   ): Any = {
-    var methodArgs: Seq[Any] = Seq.empty
-    try {
-      try {
-        methodArgs = HttpRequestMapper.buildControllerMethodArgs(
-          controller,
-          methodSurface,
-          request,
-          context,
-          params,
-          codecFactory,
-          isRPC = isRPC
-        )
-      } finally {
-        // Ensure recording RPC method arguments
-        context.setThreadLocal(HttpBackend.TLS_KEY_RPC, RPCCallContext(rpcMethod, methodSurface, methodArgs))
-      }
-      methodSurface.call(controller, methodArgs: _*)
-    } catch {
-      case e: IllegalArgumentException =>
-        throw RPCStatus.INVALID_REQUEST_U1.newException(s"${request} failed: ${e.getMessage}", e)
-      case e: MessageCodecException if e.errorCode == MISSING_PARAMETER =>
-        throw RPCStatus.INVALID_REQUEST_U1.newException(e.message, e)
+    controller match {
+      case endpoint: RxHttpEndpoint =>
+        val adapter = implicitly[HttpRequestAdapter[Req]]
+        endpoint.apply(adapter.httpRequestOf(request))
+      case _ =>
+        var methodArgs: Seq[Any] = Seq.empty
+        try {
+          try {
+            methodArgs = HttpRequestMapper.buildControllerMethodArgs(
+              controller,
+              methodSurface,
+              request,
+              context,
+              params,
+              codecFactory,
+              isRPC = isRPC
+            )
+          } finally {
+            // Ensure recording RPC method arguments
+            context.setThreadLocal(HttpBackend.TLS_KEY_RPC, RPCCallContext(rpcMethod, methodSurface, methodArgs))
+          }
+          methodSurface.call(controller, methodArgs: _*)
+        } catch {
+          case e: IllegalArgumentException =>
+            throw RPCStatus.INVALID_REQUEST_U1.newException(s"${request} failed: ${e.getMessage}", e)
+          case e: MessageCodecException if e.errorCode == MISSING_PARAMETER =>
+            throw RPCStatus.INVALID_REQUEST_U1.newException(e.message, e)
+        }
     }
   }
 

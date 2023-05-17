@@ -14,7 +14,7 @@
 package example.nested.v2
 
 import example.nested.v2.MyApi.{HelloRequest, HelloResponse}
-import wvlet.airframe.http.RPC
+import wvlet.airframe.http.{RPC, RxRouter, RxRouterProvider}
 
 /**
   */
@@ -23,7 +23,8 @@ trait MyApi {
   def hello(request: HelloRequest): HelloResponse = HelloResponse("hello v2")
 }
 
-object MyApi {
+object MyApi extends RxRouterProvider {
+  override def router: RxRouter = RxRouter.of[MyApi]
   case class HelloRequest(name: String)
   case class HelloResponse(message: String, version: String = "v2")
 }

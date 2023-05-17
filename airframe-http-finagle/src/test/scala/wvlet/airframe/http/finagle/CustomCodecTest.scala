@@ -57,11 +57,12 @@ object CustomCodecTest extends AirSpec {
 
   test(
     s"custom codec",
-    design = Finagle.server
-      .withRouter(Router.add[MyApi])
-      .withCustomCodec(Map(Surface.of[Suit] -> SuitCodec))
-      .design
-      .add(Finagle.client.syncClientDesign)
+    design = _.add(
+      Finagle.server
+        .withRouter(Router.add[MyApi])
+        .withCustomCodec(Map(Surface.of[Suit] -> SuitCodec))
+        .design
+    ).add(Finagle.client.syncClientDesign)
   ) { client: FinagleSyncClient =>
     client.send(Request("/hello?suit=Spade")).contentString shouldBe "Spade"
     client.send(Request("/hello?suit=Heart")).contentString shouldBe "Heart"

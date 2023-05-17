@@ -16,8 +16,9 @@ package wvlet.airframe.http.client
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
-import wvlet.airframe.http.{Http, HttpClientException, HttpClientMaxRetryException, HttpStatus, ServerAddress}
+import wvlet.airframe.http._
 import wvlet.airframe.json.JSON
+import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.ExecutionContext
@@ -27,7 +28,7 @@ class JSHttpAsyncClientTest extends AirSpec {
   private implicit val ec: ExecutionContext = defaultExecutionContext
 
   // Use a public REST test server
-  private val PUBLIC_REST_SERVICE = "https://httpbin.org/"
+  private val PUBLIC_REST_SERVICE = "https://jsonplaceholder.typicode.com/"
 
   override def design: Design =
     Design.newDesign
@@ -39,80 +40,96 @@ class JSHttpAsyncClientTest extends AirSpec {
 
   test("java http sync client") { (client: AsyncClient) =>
     test("GET") {
-      client
-        .send(Http.GET("/get?id=1&name=leo"))
-        .map { resp =>
-          resp.status shouldBe HttpStatus.Ok_200
-          resp.isContentTypeJson shouldBe true
-          val json = JSON.parse(resp.message.toContentString).toJSON
-          val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
-          m("args") shouldBe Map("id" -> "1", "name" -> "leo")
-        }
+      flaky {
+        client
+          .send(Http.GET("/posts/1"))
+          .map { resp =>
+            resp.status shouldBe HttpStatus.Ok_200
+            resp.isContentTypeJson shouldBe true
+            val json = JSON.parse(resp.message.toContentString).toJSON
+            val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
+            m("userId") shouldBe 1
+            m("id") shouldBe 1
+          }
+      }
     }
 
     test("POST") {
-      val data = """{"id":1,"name":"leo"}"""
-      client.send(Http.POST("/post").withContent(data)).map { resp =>
-        resp.status shouldBe HttpStatus.Ok_200
-        resp.isContentTypeJson shouldBe true
-        val json = JSON.parse(resp.message.toContentString).toJSON
-        val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
-        m("data") shouldBe data
-        m("json") shouldBe Map("id" -> 1, "name" -> "leo")
+      flaky {
+        val data = """{"id":1,"name":"leo"}"""
+        client
+          .send(Http.POST("/posts").withContent(data))
+          .map { resp =>
+            resp.status shouldBe HttpStatus.Created_201
+            resp.isContentTypeJson shouldBe true
+            val json = JSON.parse(resp.message.toContentString).toJSON
+            val m    = MessageCodec.of[Map[String, Any]].fromJson(json)
+            m("id") shouldBe 101
+          }
       }
     }
 
     test("404") {
-      client.sendSafe(Http.GET("/status/404")).transform { ret =>
-        ret match {
-          case Success(resp) =>
-            resp.status shouldBe HttpStatus.NotFound_404
-            ret
-          case _ =>
-            fail(s"Cannot reach here")
-            ret
-        }
+      flaky {
+        client
+          .sendSafe(Http.GET("/status/404"))
+          .transform {
+            case Success(resp) =>
+              resp.status shouldBe HttpStatus.NotFound_404
+            case _ =>
+              fail(s"Cannot reach here")
+          }
       }
     }
 
     test("404 with HttpClientException") {
-      client.send(Http.GET("/status/404")).transform { ret =>
-        ret match {
-          case Success(_) =>
-            Failure(new IllegalStateException("should not reach here"))
-          case Failure(e: HttpClientException) =>
-            e.status shouldBe HttpStatus.NotFound_404
-            Success(())
-          case Failure(e: Throwable) =>
-            ret
-        }
+      flaky {
+        client
+          .send(Http.GET("/status/404"))
+          .transform {
+            case Failure(e: HttpClientException) =>
+              e.status shouldBe HttpStatus.NotFound_404
+            case _ =>
+              fail(s"should not reach here")
+          }
       }
     }
   }
 
   test("retry test") { (client: AsyncClient) =>
     test("handle max retry") {
-      client
-        .withRetryContext(_.withMaxRetry(1))
-        .send(Http.GET("/status/500")).transform { ret =>
-          ret match {
-            case Success(_) =>
-              Failure(new IllegalStateException("should not reach here"))
+      flaky {
+        client
+          .withRetryContext(_.withMaxRetry(1))
+          .withClientFilter(new RxHttpFilter {
+            override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {
+              // Return a dummy response
+              Rx.single(Http.response(HttpStatus.InternalServerError_500))
+            }
+          })
+          .send(Http.GET("/status/500"))
+          .transform {
             case Failure(e: HttpClientMaxRetryException) =>
               e.status.isServerError shouldBe true
-              Success(())
             case _ =>
-              ret
+              fail("should not reach here")
           }
-        }
+      }
     }
   }
 
   test("circuit breaker test") { (client: AsyncClient) =>
-    client
-      .withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
-      .send(Http.GET("/status/500")).transform { ret =>
-        ret match {
+    flaky {
+      client
+        .withCircuitBreaker(_ => CircuitBreaker.withConsecutiveFailures(1))
+        .withClientFilter(new RxHttpFilter {
+          override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {
+            // Return a dummy response
+            Rx.single(Http.response(HttpStatus.InternalServerError_500))
+          }
+        })
+        .send(Http.GET("/status/500"))
+        .transform {
           case Failure(e) =>
             e.getCause match {
               case c: CircuitBreakerOpenException =>
@@ -120,12 +137,10 @@ class JSHttpAsyncClientTest extends AirSpec {
                 Success(())
               case other =>
                 fail(s"Unexpected exception: ${other}")
-                ret
             }
           case other =>
             fail(s"Unexpected response: ${other}")
-            ret
         }
-      }
+    }
   }
 }

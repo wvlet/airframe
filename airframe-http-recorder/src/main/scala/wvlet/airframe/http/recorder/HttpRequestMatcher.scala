@@ -13,10 +13,10 @@
  */
 package wvlet.airframe.http.recorder
 
-import java.util.Locale
-
-import com.twitter.finagle.http.{MediaType, Request}
+import wvlet.airframe.http.HttpMessage.{EmptyMessage, Request}
 import wvlet.log.LogSupport
+
+import java.util.Locale
 
 /**
   * Compute a hash key of the given HTTP request. This value will be used for DB indexes
@@ -25,7 +25,7 @@ trait HttpRequestMatcher {
   def computeHash(request: Request): Int
 }
 
-object HttpRequestMatcher {
+object HttpRequestMatcher extends LogSupport {
   // Http headers to ignore for request hashing purposes
   def defaultExcludeHeaderPrefixes: Seq[String] =
     Seq(
@@ -38,7 +38,9 @@ object HttpRequestMatcher {
       "user-agent",     // User-agent can be arbitrary
       "x-http2-",       // Finagle add x-http2- headers
       "pragma",         // Jersey client may add this header
-      "cache-control"   // cache-control intention is usually unrelated to specifying the resource
+      "cache-control",  // cache-control intention is usually unrelated to specifying the resource
+      "http2-settings", // Netty addres HTTP/2 settings
+      "upgrade"         // Netty also adds Upgrade request header
     )
 
   def newRequestMatcher(extraHeadersToExclude: Seq[String]): HttpRequestMatcher = {
@@ -68,15 +70,19 @@ object HttpRequestMatcher {
   }
 
   private def computeRequestPathHash(request: Request): Int = {
-    val contentHash = request.content.hashCode()
-    s"${request.method.toString()}:${request.uri}:${contentHash}".hashCode
+    val contentHash = request.message.contentHash
+    val stem        = s"${request.method.toString()}:${request.uri}:${contentHash}"
+    stem.hashCode
   }
 
   def filterHeaders(request: Request, excludePrefixes: Seq[String]): Map[String, String] = {
-    request.headerMap.toSeq.filterNot { x =>
-      val key = x._1.toLowerCase(Locale.ENGLISH)
-      excludePrefixes.exists(ex => key.startsWith(ex))
-    }.toMap
+    request.header.entries
+      .filterNot { x =>
+        val key = x.key.toLowerCase(Locale.ENGLISH).trim
+        excludePrefixes.exists(ex => key.startsWith(ex))
+      }
+      .map(x => x.key -> x.value)
+      .toMap
   }
 
   object PathOnlyMatcher extends HttpRequestMatcher {

@@ -7,6 +7,11 @@ case class Person(id: Int, name: String) {
   def hello: String = "hello"
 }
 
+sealed trait Status
+object Status {
+  case object Ok extends Status
+}
+
 class TastySurfaceFactoryTest extends munit.FunSuite with AirSpecBridge with LogSupport {
 
   test("of[A]") {
@@ -26,5 +31,10 @@ class TastySurfaceFactoryTest extends munit.FunSuite with AirSpecBridge with Log
     pending("runtime error is shown")
     val m = TastySurfaceFactory.methodsOfClass(classOf[Person])
     debug(m.mkString(", "))
+  }
+
+  test("case object") {
+    TastySurfaceFactory.ofClass(classOf[Status])
+    TastySurfaceFactory.ofClass(classOf[Status.Ok.type])
   }
 }

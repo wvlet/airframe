@@ -24,12 +24,18 @@ object RPCErrorHandlingTest {
 
   @RPC
   trait DemoApi {
+    def userError: String = {
+      throw RPCStatus.INVALID_REQUEST_U1.newException("invalid request", metadata = Map("retry_count" -> 3))
+    }
+    def authCheck: String = {
+      throw RPCStatus.UNAUTHENTICATED_U13.newException("not authenticated")
+    }
+
     def permissionCheck: String = {
       throw RPCStatus.PERMISSION_DENIED_U14.newException("permission denied", metadata = Map("retry_count" -> 3))
     }
-
-    def authCheck: String = {
-      throw RPCStatus.UNAUTHENTICATED_U13.newException("not authenticated").noStackTrace
+    def userErrorNoStackTrace: String = {
+      throw RPCStatus.INVALID_ARGUMENT_U2.newException("invalid argument").noStackTrace
     }
   }
 
@@ -46,16 +52,16 @@ class RPCErrorHandlingTest extends AirSpec {
     warn("Running RPC exception test. Some warning messages will be shown")
 
     test("with stack trace in msgpack") {
-      val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/permissionCheck")
+      val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/userError")
 
       val resp = client.sendSafe(req)
 
       val errorMsgPack = resp.contentBytes
       val ex           = RPCException.fromMsgPack(errorMsgPack)
 
-      resp.statusCode shouldBe RPCStatus.PERMISSION_DENIED_U14.httpStatus.code
-      ex.status shouldBe RPCStatus.PERMISSION_DENIED_U14
-      ex.message shouldBe "permission denied"
+      resp.statusCode shouldBe RPCStatus.INVALID_REQUEST_U1.httpStatus.code
+      ex.status shouldBe RPCStatus.INVALID_REQUEST_U1
+      ex.message shouldBe "invalid request"
       ex.metadata shouldBe Map("retry_count" -> 3)
 
       val s = new StringWriter
@@ -63,20 +69,20 @@ class RPCErrorHandlingTest extends AirSpec {
       ex.printStackTrace(p)
       p.flush()
       val stackTrace = s.toString
-      stackTrace.contains("DemoApi.permissionCheck") shouldBe true
+      stackTrace.contains("DemoApi.userError") shouldBe true
     }
 
     test("with stack trace") {
-      val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/permissionCheck")
+      val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/userError")
       req.accept = HttpHeader.MediaType.ApplicationJson
       val resp = client.sendSafe(req)
 
       val errorJson = resp.getContentString()
       val ex        = RPCException.fromJson(errorJson)
 
-      resp.statusCode shouldBe RPCStatus.PERMISSION_DENIED_U14.httpStatus.code
-      ex.status shouldBe RPCStatus.PERMISSION_DENIED_U14
-      ex.message shouldBe "permission denied"
+      resp.statusCode shouldBe RPCStatus.INVALID_REQUEST_U1.httpStatus.code
+      ex.status shouldBe RPCStatus.INVALID_REQUEST_U1
+      ex.message shouldBe "invalid request"
       ex.metadata shouldBe Map("retry_count" -> 3)
 
       val s = new StringWriter
@@ -84,10 +90,10 @@ class RPCErrorHandlingTest extends AirSpec {
       ex.printStackTrace(p)
       p.flush()
       val stackTrace = s.toString
-      stackTrace.contains("DemoApi.permissionCheck") shouldBe true
+      stackTrace.contains("DemoApi.userError") shouldBe true
     }
 
-    test("without stack trace") {
+    test("no stack trace for UNAUTHENTICATED_U13") {
       val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/authCheck")
       req.accept = HttpHeader.MediaType.ApplicationJson
       val resp = client.sendSafe(req)
@@ -104,7 +110,53 @@ class RPCErrorHandlingTest extends AirSpec {
       ex.printStackTrace(p)
       p.flush()
       val stackTrace = s.toString
+
+      //
       stackTrace.contains("DemoApi.authCheck") shouldBe false
+    }
+
+    test("no stack trace for PERMISSION_DENIED_U14") {
+      val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/permissionCheck")
+      req.accept = HttpHeader.MediaType.ApplicationJson
+      val resp = client.sendSafe(req)
+
+      val errorJson = resp.getContentString()
+      val ex        = RPCException.fromJson(errorJson)
+
+      resp.statusCode shouldBe RPCStatus.PERMISSION_DENIED_U14.httpStatus.code
+      ex.status shouldBe RPCStatus.PERMISSION_DENIED_U14
+      ex.message shouldBe "permission denied"
+      ex.metadata shouldBe Map("retry_count" -> 3)
+
+      val s = new StringWriter
+      val p = new PrintWriter(s)
+      ex.printStackTrace(p)
+      p.flush()
+      val stackTrace = s.toString
+
+      stackTrace.contains("DemoApi.permissionCheck") shouldBe false
+    }
+
+    test("exclude stack trace") {
+      val req = Request(Method.Post, "/wvlet.airframe.http.finagle.RPCErrorHandlingTest.DemoApi/userErrorNoStackTrace")
+      req.accept = HttpHeader.MediaType.ApplicationJson
+      val resp = client.sendSafe(req)
+
+      val errorJson = resp.getContentString()
+      val ex        = RPCException.fromJson(errorJson)
+
+      resp.statusCode shouldBe RPCStatus.INVALID_ARGUMENT_U2.httpStatus.code
+      ex.status shouldBe RPCStatus.INVALID_ARGUMENT_U2
+      ex.message shouldBe "invalid argument"
+
+      val s = new StringWriter
+      val p = new PrintWriter(s)
+      ex.printStackTrace(p)
+      p.flush()
+      val stackTrace = s.toString
+
+      // No stack trace
+      stackTrace.contains("DemoApi.userErrorNoStackTrace") shouldBe false
     }
   }
 

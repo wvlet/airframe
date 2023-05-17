@@ -103,7 +103,7 @@ class FluencyTest extends AirSpec {
 
   test(
     "test extended time",
-    design = fluentd.withFluentdLogger(port = fluentdPort, ackResponseMode = false, useExtendedEventTime = true)
+    design = _.add(fluentd.withFluentdLogger(port = fluentdPort, ackResponseMode = false, useExtendedEventTime = true))
   ) { (f: MetricLoggerFactory) =>
     val l = f.getLogger
     l.emit("mytag", Map("data" -> "hello"))
