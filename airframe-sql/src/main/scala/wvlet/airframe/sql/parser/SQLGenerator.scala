@@ -184,7 +184,7 @@ object SQLGenerator extends LogSupport {
       case c: CTERelationRef =>
         c.name
       case TableRef(t, _) =>
-        printExpression(t)
+        printNameWithQuotationsIfNeeded(t.fullName)
       case t: TableScan =>
         printNameWithQuotationsIfNeeded(t.fullName)
       case Limit(in, l, _) =>

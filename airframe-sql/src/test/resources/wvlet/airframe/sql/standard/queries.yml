@@ -228,3 +228,5 @@
       select SUBSTRING(a FROM 1 FOR 5) FROM b
 - sql: |
       select user_agent || 'x', count(*) from impression group by 1
+- sql: |
+      select * FROM "café"
