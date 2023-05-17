@@ -19,7 +19,8 @@ import wvlet.airframe.http.grpc.internal.GrpcRequestLogger
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.HttpAccessLogWriter
 import wvlet.airspec.AirSpec
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.rx.Rx
+import wvlet.log.Logger
 
 import scala.util.{Failure, Try}
 
@@ -34,19 +35,21 @@ object GrpcErrorLogTest extends AirSpec {
       throw new IllegalArgumentException(s"invalid message: ${name}")
     }
 
-    override def helloClientStreaming(input: RxStream[String]): String = {
+    override def helloClientStreaming(input: Rx[String]): String = {
       throw new UnsupportedOperationException(s"N/A")
     }
 
-    override def helloBidiStreaming(input: RxStream[String]): RxStream[String] = {
+    override def helloBidiStreaming(input: Rx[String]): Rx[String] = {
       throw new UnsupportedOperationException(s"N/A")
     }
   }
 
+  private val router = Router.of[DemoApiDebug]
+
   protected override def design = {
     gRPC.server
       .withName("demo-api-debug")
-      .withRouter(Router.add[DemoApiDebug])
+      .withRouter(router)
       .withRequestLoggerProvider { (config: GrpcServerConfig) =>
         GrpcRequestLogger
           .newLogger(config.name, inMemoryLogWriter)
@@ -65,6 +68,7 @@ object GrpcErrorLogTest extends AirSpec {
   }
 
   test("request logger test") { (client: DemoApiClient) =>
+    debug(router)
     test("unary method error log") {
       val logs = captureAll {
         client.hello("gRPC")
@@ -80,7 +84,7 @@ object GrpcErrorLogTest extends AirSpec {
       log("rpc_method") shouldBe "hello"
       log("rpc_args") shouldBe Map("name" -> "gRPC")
       log.contains("time") shouldBe true
-      log.contains("event_time") shouldBe true
+      log.contains("event_timestamp") shouldBe true
       log("grpc_method_type") shouldBe "UNARY"
 
       log.contains("local_addr") shouldBe true
@@ -105,7 +109,7 @@ object GrpcErrorLogTest extends AirSpec {
       log("rpc_method") shouldBe "helloClientStreaming"
       log.get("rpc_args") shouldBe empty
       log.contains("time") shouldBe true
-      log.contains("event_time") shouldBe true
+      log.contains("event_timestamp") shouldBe true
       log("grpc_method_type") shouldBe "CLIENT_STREAMING"
 
       log.contains("local_addr") shouldBe true
@@ -130,7 +134,7 @@ object GrpcErrorLogTest extends AirSpec {
       log("rpc_method") shouldBe "helloBidiStreaming"
       log.get("rpc_args") shouldBe empty
       log.contains("time") shouldBe true
-      log.contains("event_time") shouldBe true
+      log.contains("event_timestamp") shouldBe true
       log("grpc_method_type") shouldBe "BIDI_STREAMING"
 
       log.contains("local_addr") shouldBe true

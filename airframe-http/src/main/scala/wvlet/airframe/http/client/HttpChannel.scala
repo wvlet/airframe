@@ -13,13 +13,22 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.http.ChannelConfig
 import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.rx.Rx
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.Duration
 
 /**
-  * A low-level interface for sending HTTP requests without managing retries or filters
+  * Contains only http channel related configurations in HttpClientConfig
+  */
+trait HttpChannelConfig {
+  def connectTimeout: Duration
+  def readTimeout: Duration
+}
+
+/**
+  * A low-level interface for sending HTTP requests without managing retries nor filters. This interface abstracts away
+  * the backend implementation (e.g., Java Http client, Ajax client, OkHttp client, etc)
   */
 trait HttpChannel extends AutoCloseable {
 
@@ -29,8 +38,6 @@ trait HttpChannel extends AutoCloseable {
     * @param channelConfig
     * @return
     */
-  def send(req: Request, channelConfig: ChannelConfig): Response
-  def sendAsync(req: Request, channelConfig: ChannelConfig): Future[Response]
-
-  private[client] implicit def executionContext: ExecutionContext
+  def send(req: Request, channelConfig: HttpChannelConfig): Response
+  def sendAsync(req: Request, channelConfig: HttpChannelConfig): Rx[Response]
 }

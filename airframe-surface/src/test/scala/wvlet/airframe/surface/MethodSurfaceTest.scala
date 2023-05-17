@@ -46,6 +46,10 @@ object MethodExamples {
   trait E {
     def hello(v: String = "default"): String
   }
+
+  trait F {
+    def mapInput(m: Map[String, Any]): Unit
+  }
 }
 
 import wvlet.airframe.surface.MethodExamples._
@@ -132,6 +136,18 @@ class MethodSurfaceTest extends SurfaceSpec {
       val v = h.getMethodArgDefaultValue(d)
       // Scala.js doesn't support reading default method arguments
       assertEquals(v, Some("yay"))
+    }
+  }
+
+  test("find Any surface from Map[String, Any] method surface") {
+    val ms = Surface.methodsOf[F]
+    ms.find(_.name == "mapInput") match {
+      case Some(m) if m.args.size == 1 =>
+        val arg = m.args(0)
+        val p1  = arg.surface.typeArgs(1)
+        assertEquals(p1.fullName, "scala.Any")
+      case _ =>
+        fail("F.mapInput method not found")
     }
   }
 }

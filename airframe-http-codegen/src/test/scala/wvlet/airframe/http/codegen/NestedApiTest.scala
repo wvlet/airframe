@@ -24,9 +24,11 @@ class NestedApiTest extends AirSpec {
     code.contains("Seq[example.nested.v1.MyApi.Message]]") shouldBe true
   }
 
+  private val router = RouteScanner.buildRxRouter(Seq("example.nested"))
+
   test("generate gRPC client for nested packages") {
     val code = HttpCodeGenerator.generate(
-      RouteScanner.buildRouter(Seq(classOf[example.nested.v1.MyApi], classOf[example.nested.v2.MyApi])),
+      router,
       HttpClientGeneratorConfig("example.nested:grpc")
     )
     check(code)
@@ -34,7 +36,7 @@ class NestedApiTest extends AirSpec {
 
   test("generate http client for nested packages") {
     val code = HttpCodeGenerator.generate(
-      RouteScanner.buildRouter(Seq(classOf[example.nested.v1.MyApi], classOf[example.nested.v2.MyApi])),
+      router,
       HttpClientGeneratorConfig("example.nested:sync")
     )
     check(code)
@@ -42,18 +44,9 @@ class NestedApiTest extends AirSpec {
 
   test("generate http async client for nested packages") {
     val code = HttpCodeGenerator.generate(
-      RouteScanner.buildRouter(Seq(classOf[example.nested.v1.MyApi], classOf[example.nested.v2.MyApi])),
+      router,
       HttpClientGeneratorConfig("example.nested:async")
     )
     check(code)
   }
-
-  test("generate http js client for nested packages") {
-    val code = HttpCodeGenerator.generate(
-      RouteScanner.buildRouter(Seq(classOf[example.nested.v1.MyApi], classOf[example.nested.v2.MyApi])),
-      HttpClientGeneratorConfig("example.nested:scalajs")
-    )
-    check(code)
-  }
-
 }

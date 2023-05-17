@@ -15,11 +15,16 @@ package wvlet.airframe
 
 import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 
+import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable
+import scala.jdk.CollectionConverters._
 
 /**
   */
 package object surface {
+  val surfaceCache       = new ConcurrentHashMap[String, Surface]().asScala
+  val methodSurfaceCache = new ConcurrentHashMap[String, Seq[MethodSurface]]().asScala
+
   def getCached(fullName: String): Surface = ReflectSurfaceFactory.get(fullName)
   def newCacheMap[A, B]: mutable.Map[A, B] = new mutable.WeakHashMap[A, B]()
 }

@@ -17,6 +17,7 @@ import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.internal.HttpResponseBodyCodec
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -33,6 +34,7 @@ import scala.util.Try
   * @tparam Req
   * @tparam Resp
   */
+@deprecated("Use wvlet.airframe.http.client.Sync/AsyncClient", "24.5.0")
 trait HttpClient[F[_], Req, Resp] extends HttpClientBase[F, Req, Resp] with AutoCloseable {
 
   /**

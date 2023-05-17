@@ -13,10 +13,10 @@
  */
 package example.server
 
-import wvlet.airframe.http.Router
-import wvlet.airframe.http.finagle.Finagle
+import wvlet.airframe.http._
 import wvlet.airframe.launcher.{Launcher, command, option}
 import wvlet.log.{LogSupport, Logger}
+import wvlet.airframe.http.netty.{Netty,NettyServer}
 
 /**
   */
@@ -44,17 +44,19 @@ class ServerMain(
       port: Int = 8080
   ): Unit = {
 
-    val router = Router
-      .add[HelloApiImpl]
-      .add[ServerApi]
+    val router = RxRouter.of(
+      RxRouter.of[HelloApiImpl],
+      RxRouter.of[ServerApi]
+    )
     info(router)
 
-    Finagle.server
+    Netty.server
       .withRouter(router)
       .withPort(port)
       .withName("example-server")
-      .start { server =>
-        server.waitServerTermination
+      .design
+      .build { (server: NettyServer) =>
+        server.awaitTermination()
       }
   }
 }

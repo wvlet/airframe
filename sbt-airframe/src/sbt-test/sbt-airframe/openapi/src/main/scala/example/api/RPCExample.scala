@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package example.api
-import wvlet.airframe.http.RPC
+import wvlet.airframe.http._
 
 /**
   */
@@ -30,7 +30,8 @@ trait OpenAPIRPCExample {
   def rpcWithOptionOfComplexType(p1: Option[RPCRequest]): Unit
 }
 
-object OpenAPIRPCExample {
+object OpenAPIRPCExample extends RxRouterProvider {
+  override def router: RxRouter = RxRouter.of[OpenAPIRPCExample]
   case class RPCRequest(
       x1: Int,
       x2: Long,

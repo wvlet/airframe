@@ -15,7 +15,7 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.control.Retry
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{HttpClient, HttpClientConfig, HttpClientException, ServerAddress}
+import wvlet.airframe.http.{HttpClient, HttpClientException, ServerAddress}
 
 object JSHttpClientBackend extends HttpClientBackend {
 
@@ -28,7 +28,7 @@ object JSHttpClientBackend extends HttpClientBackend {
   }
 
   override def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel = {
-    new JSClientChannel(serverAddress, config)
+    new JSHttpClientChannel(serverAddress, config)
   }
 
   override def newSyncClient(

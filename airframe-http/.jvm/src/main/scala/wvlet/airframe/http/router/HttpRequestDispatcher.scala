@@ -52,7 +52,6 @@ object HttpRequestDispatcher extends LogSupport {
         case Some(routeMatch) =>
           // Find a filter for the matched route
           val routeFilter = routingTable.findFilter(routeMatch.route)
-
           // Create a new context for processing the matched route with the controller
           val context =
             new HttpEndpointExecutionContext(backend, routeMatch, responseHandler, routeFilter.controller, codecFactory)
@@ -90,7 +89,16 @@ object HttpRequestDispatcher extends LogSupport {
         router.filterSurface
           .map(fs => controllerProvider.findController(session, fs))
           .filter(_.isDefined)
-          .map(_.get.asInstanceOf[HttpFilter[Req, Resp, F]])
+          .map { filter =>
+            filter.get match {
+              case legacyFilter: HttpFilter[Req, Resp, F] @unchecked =>
+                legacyFilter
+              case rxFilter: RxHttpFilter =>
+                backend.rxFilterAdapter(rxFilter)
+              case other =>
+                throw RPCStatus.UNIMPLEMENTED_U8.newException(s"Invalid filter type: ${other.getClass.getName}")
+            }
+          }
           .orElse {
             router.filterInstance
               .asInstanceOf[Option[HttpFilter[Req, Resp, F]]]
@@ -108,8 +116,9 @@ object HttpRequestDispatcher extends LogSupport {
 
       val m = Map.newBuilder[Route, RouteFilter[Req, Resp, F]]
       for (route <- router.localRoutes) {
-        val controllerOpt =
+        val controllerOpt = router.controllerInstance.orElse {
           controllerProvider.findController(session, route.controllerSurface)
+        }
         if (controllerOpt.isEmpty) {
           throw new IllegalStateException(s"Missing controller. Add ${route.controllerSurface} to the design")
         }

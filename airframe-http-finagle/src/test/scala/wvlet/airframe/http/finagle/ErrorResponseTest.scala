@@ -33,7 +33,7 @@ object ErrorResponseTest extends AirSpec {
 
   test(
     "Return error response using JSON/MsgPack",
-    design = Finagle.server.withRouter(Router.of[MyApp]).design + Finagle.client.syncClientDesign
+    design = _ + Finagle.server.withRouter(Router.of[MyApp]).design + Finagle.client.syncClientDesign
   ) { client: FinagleSyncClient =>
     warn(s"Running an error response test")
 

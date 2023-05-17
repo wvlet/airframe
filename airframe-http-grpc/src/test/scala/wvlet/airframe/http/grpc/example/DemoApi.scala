@@ -31,7 +31,7 @@ import wvlet.airframe.http.grpc.internal.{GrpcServiceBuilder, WrappedServerCallL
 import wvlet.airframe.http.grpc._
 import wvlet.airframe.http.{Http, HttpStatus, RPC, RPCContext, RPCEncoding, RPCStatus, Router}
 import wvlet.airframe.msgpack.spi.MsgPack
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 import wvlet.airframe.http.router.Route
 
@@ -61,15 +61,15 @@ trait DemoApi extends LogSupport {
     s"Hello ${name}! (id:${id})"
   }
 
-  def helloStreaming(name: String): RxStream[String] = {
+  def helloStreaming(name: String): Rx[String] = {
     Rx.sequence("Hello", "Bye").map(x => s"${x} ${name}!")
   }
 
-  def helloClientStreaming(input: RxStream[String]): String = {
+  def helloClientStreaming(input: Rx[String]): String = {
     input.toSeq.mkString(", ")
   }
 
-  def helloBidiStreaming(input: RxStream[String]): RxStream[String] = {
+  def helloBidiStreaming(input: Rx[String]): Rx[String] = {
     input.map(x => s"Hello ${x}!")
   }
 

@@ -56,6 +56,9 @@ trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
     copyWith(newHeader)
   }
 
+  def withHeader(f: HttpMultiMap => HttpMultiMap): Raw = {
+    copyWith(f(header))
+  }
   def addHeader(key: String, value: String): Raw = {
     copyWith(header.add(key, value))
   }
@@ -107,6 +110,7 @@ trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
   def withDate(date: Instant)                           = withHeader(HttpHeader.Date, formatInstant(date))
   def withExpires(expires: String): Raw                 = withHeader(HttpHeader.Expires, expires)
   def withHost(host: String): Raw                       = withHeader(HttpHeader.Host, host)
+  def noHost: Raw                                       = removeHeader(HttpHeader.Host)
   def withLastModified(lastModified: String): Raw       = withHeader(HttpHeader.LastModified, lastModified)
   def withReferer(referer: String): Raw                 = withHeader(HttpHeader.Referer, referer)
   def withUserAgent(userAgent: String): Raw             = withHeader(HttpHeader.UserAgent, userAgent)
@@ -137,6 +141,7 @@ object HttpMessage {
     def nonEmpty: Boolean = !isEmpty
     def toContentString: String
     def toContentBytes: Array[Byte]
+    def contentHash: Int = toContentBytes.hashCode()
   }
 
   object Message {
@@ -149,18 +154,23 @@ object HttpMessage {
     }
   }
 
+  private val emptyContent = Array.empty[Byte]
+
   case object EmptyMessage extends Message {
     override def isEmpty: Boolean            = true
     override def toContentString: String     = ""
-    override def toContentBytes: Array[Byte] = Array.empty
+    override def toContentBytes: Array[Byte] = emptyContent
+    override def contentHash: Int            = 0
   }
 
   case class StringMessage(content: String) extends Message {
+    override def isEmpty: Boolean            = content.isEmpty
     override def toString: String            = content
     override def toContentString: String     = content
     override def toContentBytes: Array[Byte] = content.getBytes(StandardCharsets.UTF_8)
   }
   case class ByteArrayMessage(content: Array[Byte]) extends Message {
+    override def isEmpty: Boolean = content.isEmpty
     override def toString: String = toContentString
     override def toContentString: String = {
       new String(content, StandardCharsets.UTF_8)
@@ -171,6 +181,7 @@ object HttpMessage {
   class LazyByteArrayMessage(contentReader: => Array[Byte]) extends Message {
     // Use lazy evaluation of content body to avoid unnecessary data copy
     private lazy val content: Array[Byte] = contentReader
+    override def isEmpty: Boolean         = content.isEmpty
     override def toString: String         = toContentString
     override def toContentString: String = {
       new String(content, StandardCharsets.UTF_8)

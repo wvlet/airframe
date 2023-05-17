@@ -3,6 +3,9 @@ changelog:
     - title: '🔥 Breaking Changes'
       labels:
         - 'breaking'
+    - title: '👋 Deprecated'
+      labels:
+        - 'deprecation'
     - title: '🚀 Features'
       labels:
         - 'feature'
@@ -10,9 +13,6 @@ changelog:
     - title: '🐛 Bug Fixes'
       labels:
         - 'bug'
-    - title: '👋 Deprecated'
-      labels:
-        - 'deprecation'
     - title: '🔗 Dependency Updates'
       labels:
         - 'library-update'

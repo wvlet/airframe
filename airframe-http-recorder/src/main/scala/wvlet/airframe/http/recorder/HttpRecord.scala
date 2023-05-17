@@ -12,15 +12,15 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.recorder
-import java.sql.{Connection, ResultSet}
-import java.time.Instant
-
-import com.twitter.finagle.http.{Response, Status, Version}
-import com.twitter.io.Buf
 import wvlet.airframe.codec._
 import wvlet.airframe.control.Control.withResource
+import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.recorder.HttpRecord.headerCodec
+import wvlet.airframe.http.{Http, HttpStatus}
 import wvlet.log.LogSupport
+
+import java.sql.{Connection, ResultSet}
+import java.time.Instant
 
 /**
   * HTTP response record that will be stored to the database
@@ -43,14 +43,14 @@ case class HttpRecord(
   }
 
   def toResponse: Response = {
-    val r = Response(Version.Http11, Status.fromCode(responseCode))
-
-    responseHeader.foreach { x => r.headerMap.set(x._1, x._2) }
+    var r = Http.response(HttpStatus.ofCode(responseCode))
+    responseHeader.foreach { x => r = r.withHeader(x._1, x._2) }
 
     // Decode binary contents with Base64
     val contentBytes = HttpRecordStore.decodeFromBase64(responseBody)
-    r.content = Buf.ByteArray.Owned(contentBytes)
-    r.contentLength = contentBytes.length
+    r = r
+      .withContent(contentBytes)
+      .withContentLength(contentBytes.length)
     r
   }
 

@@ -13,9 +13,9 @@
  */
 package wvlet.airframe.http.recorder
 
-import com.twitter.finagle.http.{Request, Response}
 import wvlet.airframe.Design
-import wvlet.airframe.http.finagle.{FinagleClient, FinagleSyncClient}
+import wvlet.airframe.http.Http
+import wvlet.airframe.http.client.SyncClient
 import wvlet.airspec.AirSpec
 
 /**
@@ -27,28 +27,32 @@ class PathOnlyMatcherTest extends AirSpec {
       .bind[HttpRecorderServer].toInstance(HttpRecorder.createInMemoryServer(config))
       .onStart { recorder => // Record responses
         {
-          val req = Request("/hello")
-          req.headerMap.put("Accept-Encoding", "gzip")
-          val resp = Response()
-          resp.contentString = "hello"
+          val req = Http
+            .GET("/hello")
+            .withHeader("Accept-Encoding", "gzip")
+          val resp = Http
+            .response()
+            .withContent("hello")
           recorder.recordIfNotExists(req, resp)
         }
 
         {
-          val r = Request("/hello-hello")
-          r.headerMap.put("Accept-Encoding", "gzip")
-          val resp = Response()
-          resp.contentString = "hello-hello"
+          val r = Http
+            .GET("/hello-hello")
+            .withHeader("Accept-Encoding", "gzip")
+          val resp = Http
+            .response()
+            .withContent("hello-hello")
           recorder.recordIfNotExists(r, resp)
         }
       }
-      .bind[FinagleSyncClient].toProvider { recorder: HttpRecorderServer =>
-        FinagleClient.newSyncClient(recorder.localAddress)
+      .bind[SyncClient].toProvider { (recorder: HttpRecorderServer) =>
+        Http.client.newSyncClient(recorder.localAddress)
       }
   }
 
-  test("support simple path matcher") { (client: FinagleSyncClient) =>
-    client.get[String]("/hello") shouldBe "hello"
-    client.get[String]("/hello-hello") shouldBe "hello-hello"
+  test("support simple path matcher") { (client: SyncClient) =>
+    client.readAs[String](Http.GET("/hello")) shouldBe "hello"
+    client.readAs[String](Http.GET("/hello-hello")) shouldBe "hello-hello"
   }
 }

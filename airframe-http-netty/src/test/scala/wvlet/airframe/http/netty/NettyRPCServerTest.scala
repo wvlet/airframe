@@ -14,18 +14,23 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.Design
-import wvlet.airframe.http.{Http, RPC, Router}
+import wvlet.airframe.http._
 import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
+
+import java.util.concurrent.TimeUnit
 
 object NettyRPCServerTest extends AirSpec {
 
   @RPC(path = "/v1")
   class MyRPC {
     def helloNetty(msg: String): String = s"Hello ${msg}!"
+    def unitResponse(): Unit            = {}
+    def intResponse(): Int              = 1
   }
 
-  private def router = Router.of[MyRPC]
+  private def router = RxRouter.of[MyRPC]
 
   override protected def design: Design = {
     Netty.server
@@ -34,7 +39,29 @@ object NettyRPCServerTest extends AirSpec {
   }
 
   test("Start an RPC server") { (client: SyncClient) =>
-    val resp = client.send(Http.POST("/v1/MyRPC/helloNetty").withJson("""{"msg":"Netty"}}"""))
-    resp.message.toContentString shouldBe "Hello Netty!"
+    test("hello RPC") {
+      val resp = client.send(Http.POST("/v1/MyRPC/helloNetty").withJson("""{"msg":"Netty"}}"""))
+      resp.message.toContentString shouldBe "Hello Netty!"
+    }
+
+    test("Unit response") {
+      val resp = client.send(Http.POST("/v1/MyRPC/unitResponse"))
+      resp.message.toContentString shouldBe empty
+    }
+
+    test("Int response") {
+      val resp = client.send(Http.POST("/v1/MyRPC/intResponse"))
+      resp.message.toContentString shouldBe "1"
+    }
+  }
+
+  test("await server test") { (server: NettyServer) =>
+    Rx.delay(100, TimeUnit.MILLISECONDS).map(_ => server.close())
+      .join(Rx.single(() => server.awaitTermination()))
+  }
+
+  test("close and await") { (server: NettyServer) =>
+    server.close()
+    server.awaitTermination()
   }
 }

@@ -48,7 +48,7 @@ class TestSyntaxSpec extends AirSpec {
     m shouldBe "hello 10 true"
   }
 
-  test("local design override", design = newDesign.bind[String].toInstance("world")) { (s: String) =>
+  test("local design override", design = _.bind[String].toInstance("world")) { (s: String) =>
     debug(s"arg: ${s}")
     s shouldBe "world"
   }

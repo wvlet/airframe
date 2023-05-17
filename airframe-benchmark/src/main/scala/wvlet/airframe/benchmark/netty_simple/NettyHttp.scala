@@ -43,13 +43,27 @@ import io.netty.handler.codec.http.{
   HttpVersion
 }
 import io.netty.handler.stream.ChunkedWriteHandler
-import org.openjdk.jmh.annotations.{Benchmark, BenchmarkMode, Mode, OutputTimeUnit, Scope, Setup, State, TearDown}
+import org.openjdk.jmh.annotations.{
+  Benchmark,
+  BenchmarkMode,
+  Mode,
+  OperationsPerInvocation,
+  OutputTimeUnit,
+  Scope,
+  Setup,
+  State,
+  TearDown
+}
 import org.openjdk.jmh.infra.Blackhole
+import wvlet.airframe.benchmark.http.HttpBenchmark
+import wvlet.airframe.benchmark.http.HttpBenchmark.asyncIteration
 import wvlet.airframe.http.Http
-import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.client.{AsyncClient, SyncClient}
 import wvlet.log.io.IOUtil
 
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{Executors, TimeUnit}
+import scala.concurrent.ExecutionContext
 
 object NettyHttp {
 
@@ -133,27 +147,61 @@ object NettyHttp {
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class NettyHttp {
+
   import NettyHttp._
 
   private val port   = IOUtil.unusedPort
   private val server = new Server(port)
 
-  private var client: SyncClient = _
+  private var client: SyncClient       = _
+  private var asyncClient: AsyncClient = _
+
+  private val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
 
   @Setup
   def setup: Unit = {
     server.start
-    client = Http.client.newSyncClient(s"localhost:${port}")
+    client = Http.client.noLogging.newSyncClient(s"localhost:${port}")
+    asyncClient = Http.client.noLogging.newAsyncClient(s"localhost:${port}")
   }
 
   @TearDown
   def teardown: Unit = {
     server.close
     client.close()
+    asyncClient.close()
+    ec.shutdownNow()
   }
 
   @Benchmark
   def rpcSync(blackhole: Blackhole): Unit = {
     blackhole.consume(client.send(Http.POST("/").withJson("""{"name":"Netty"}""")))
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(asyncIteration)
+  def rpcAsync(blackhole: Blackhole): Unit = {
+    val counter = new AtomicInteger(0)
+
+    blackhole.consume {
+      for (i <- 0 until HttpBenchmark.asyncIteration) {
+        val rx = asyncClient
+          .send(Http.POST("/").withJson("""{"name":"Netty"}"""))
+          .map { _ =>
+            counter.incrementAndGet()
+          }
+
+        ec.submit {
+          new Runnable {
+            override def run(): Unit = {
+              rx.run(_ => ())
+            }
+          }
+        }
+      }
+      while (counter.get() != HttpBenchmark.asyncIteration) {
+        Thread.sleep(0)
+      }
+    }
   }
 }

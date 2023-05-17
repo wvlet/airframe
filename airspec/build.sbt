@@ -90,7 +90,7 @@ val buildSettings = Seq[Setting[_]](
     if (scalaVersion.value.startsWith("3."))
       Seq.empty
     else
-      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.9.0")
+      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.10.0")
   }
 )
 
@@ -213,7 +213,7 @@ lazy val airspecLog =
       airspecJVMBuildSettings,
       libraryDependencies ++= Seq(
         // For rotating log files
-        "ch.qos.logback" % "logback-core" % "1.3.6"
+        "ch.qos.logback" % "logback-core" % "1.3.7"
       )
     )
     .jsSettings(

@@ -24,21 +24,33 @@ import io.netty.handler.codec.http._
 import io.netty.handler.stream.ChunkedWriteHandler
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.ThreadUtil
-import wvlet.airframe.http._
-import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.HttpMessage.Response
+import wvlet.airframe.http.{HttpMessage, _}
+import wvlet.airframe.http.client.{AsyncClient, SyncClient}
+import wvlet.airframe.http.internal.{RPCLoggingFilter, LogRotationHttpLogger, RPCResponseFilter}
 import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.annotation.PostConstruct
+import scala.collection.immutable.ListMap
+import scala.util.{Failure, Success, Try}
 
 case class NettyServerConfig(
+    name: String = "default",
     serverPort: Option[Int] = None,
     controllerProvider: ControllerProvider = ControllerProvider.defaultControllerProvider,
     router: Router = Router.empty,
-    useEpoll: Boolean = true
+    useEpoll: Boolean = true,
+    httpLoggerConfig: HttpLoggerConfig = HttpLoggerConfig(logFileName = "log/http_server.json"),
+    httpLoggerProvider: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) =>
+      new LogRotationHttpLogger(config)
+    },
+    loggingFilter: HttpLogger => RxHttpFilter = { new RPCLoggingFilter(_) }
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -46,15 +58,33 @@ case class NettyServerConfig(
     useEpoll && Epoll.isAvailable
   }
 
-  def withRouter(router: Router): NettyServerConfig = {
-    this.copy(router = router)
+  def withName(name: String): NettyServerConfig = {
+    this.copy(name = name)
   }
+  def withPort(port: Int): NettyServerConfig = {
+    this.copy(serverPort = Some(port))
+  }
+  def withRouter(rxRouter: RxRouter): NettyServerConfig = {
+    this.copy(router = Router.fromRxRouter(rxRouter))
+  }
+  def withHttpLoggerConfig(f: HttpLoggerConfig => HttpLoggerConfig): NettyServerConfig = {
+    this.copy(httpLoggerConfig = f(httpLoggerConfig))
+  }
+  def withHttpLogger(loggerProvider: HttpLoggerConfig => HttpLogger): NettyServerConfig = {
+    this.copy(httpLoggerProvider = loggerProvider)
+  }
+  def noLogging: NettyServerConfig = {
+    this.copy(
+      loggingFilter = { _ => RxHttpFilter.identity },
+      httpLoggerProvider = HttpLogger.emptyLogger(_)
+    )
+  }
+
   def newServer(session: Session): NettyServer = {
     val s = new NettyServer(this, session)
     s.start
     s
   }
-
   def design: Design = {
     Design.newDesign
       .bind[NettyServerConfig].toInstance(this)
@@ -67,9 +97,22 @@ case class NettyServerConfig(
         Http.client.newSyncClient(server.localAddress)
       }
   }
+
+  def start[U](body: NettyServer => U): U = {
+    this.design.run[NettyServer, U] { server =>
+      body(server)
+    }
+  }
+
+  def newHttpLogger: HttpLogger = {
+    httpLoggerProvider(httpLoggerConfig.addExtraTags(ListMap("server_name" -> name)))
+  }
 }
 
 class NettyServer(config: NettyServerConfig, session: Session) extends AutoCloseable with LogSupport {
+
+  private val httpLogger: HttpLogger      = config.newHttpLogger
+  private val loggingFilter: RxHttpFilter = config.loggingFilter(httpLogger)
 
   private val bossGroup = {
     val tf = ThreadUtil.newDaemonThreadFactory("airframe-netty-boss")
@@ -93,9 +136,40 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
 
   val localAddress: String = s"localhost:${config.port}"
 
+  private def attachContextFilter = new RxHttpFilter {
+    override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[Response] = {
+      val context = new NettyRPCContext(request)
+      wvlet.airframe.http.Compat.attachRPCContext(context)
+      next(request).toRx
+        // TODO use transformTry
+        .transformRx { v =>
+          wvlet.airframe.http.Compat.detachRPCContext(context)
+          v match {
+            case Success(v) =>
+              Rx.single(v)
+            case Failure(e) =>
+              Rx.exception(e)
+          }
+        }
+    }
+  }
+
+  private val started = new AtomicBoolean(false)
+  private val stopped = new AtomicBoolean(false)
+
   @PostConstruct
   def start: Unit = {
-    info(s"Starting server at ${localAddress}")
+    if (stopped.get()) {
+      throw new IllegalStateException(s"Server ${config.name} is already closed")
+    }
+
+    if (started.compareAndSet(false, true)) {
+      startInternal
+    }
+  }
+
+  private def startInternal: Unit = {
+    info(s"Starting ${config.name} server at ${localAddress}")
     val b = new ServerBootstrap()
     b.group(bossGroup, workerGroup)
 
@@ -132,14 +206,22 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
       //      }
 
       private val dispatcher = {
-        HttpRequestDispatcher.newDispatcher(
-          session = session,
-          config.router,
-          config.controllerProvider,
-          NettyBackend,
-          new NettyResponseHandler,
-          MessageCodecFactory.defaultFactoryForJSON
-        )
+        NettyBackend
+          .rxFilterAdapter(
+            attachContextFilter
+              .andThen(loggingFilter)
+              .andThen(RPCResponseFilter)
+          )
+          .andThen(
+            HttpRequestDispatcher.newDispatcher(
+              session = session,
+              config.router,
+              config.controllerProvider,
+              NettyBackend,
+              new NettyResponseHandler,
+              MessageCodecFactory.defaultFactoryForJSON
+            )
+          )
       }
 
       override def initChannel(ch: Channel): Unit = {
@@ -166,10 +248,25 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     channelFuture = Some(b.bind(config.port).sync().channel())
   }
 
+  def stop(): Unit = {
+    if (stopped.compareAndSet(false, true)) {
+      info(s"Stopping ${config.name} server at ${localAddress}")
+      workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
+      bossGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
+      httpLogger.close()
+      channelFuture.foreach(_.close().await(1, TimeUnit.SECONDS))
+    }
+  }
+
   override def close(): Unit = {
-    info(s"Closing server at ${localAddress}")
-    workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
-    bossGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
-    channelFuture.foreach(_.close().await(1, TimeUnit.SECONDS))
+    stop()
+  }
+
+  /**
+    * Await and block until the server terminates. If the server is already terminated (via close()), this method
+    * returns immediately.
+    */
+  def awaitTermination(): Unit = {
+    channelFuture.foreach(_.closeFuture().sync())
   }
 }

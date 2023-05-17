@@ -625,6 +625,8 @@ private[surface] object SurfaceMacros {
     }
 
     private val genericSurfaceFactory: SurfaceFactory = {
+      case t if t =:= typeOf[Any] =>
+        q"wvlet.airframe.surface.Alias(${"Any"}, ${"scala.Any"}, wvlet.airframe.surface.AnyRefSurface)"
       case t @ TypeRef(prefix, symbol, args) if !args.isEmpty =>
         val typeArgs = typeArgsOf(t).map(surfaceOf(_))
         q"new wvlet.airframe.surface.GenericSurface(classOf[$t], typeArgs = IndexedSeq(..$typeArgs))"

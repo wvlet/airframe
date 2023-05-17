@@ -26,7 +26,7 @@ class NettyResponseHandler extends ResponseHandler[Request, Response] with LogSu
 
   override def toHttpResponse[A](route: Route, request: Request, responseSurface: Surface, a: A): Response = {
     a match {
-      case null =>
+      case null | () => // null or Unit response
         newResponse(route, request, responseSurface)
       case r: Response =>
         r
@@ -41,7 +41,7 @@ class NettyResponseHandler extends ResponseHandler[Request, Response] with LogSu
         val msgpack: Array[Byte] = rs match {
           case m: MessageCodec[_] =>
             m.asInstanceOf[MessageCodec[A]].toMsgPack(a)
-          case _ =>
+          case null =>
             throw new IllegalArgumentException(s"Unknown codec: ${rs}")
         }
 
@@ -50,13 +50,17 @@ class NettyResponseHandler extends ResponseHandler[Request, Response] with LogSu
           newResponse(route, request, responseSurface).withContentTypeMsgPack
             .withContent(msgpack)
         } else {
-          val json = JSONCodec.unpackMsgPack(msgpack)
-          json match {
-            case Some(j) =>
-              newResponse(route, request, responseSurface)
-                .withJson(json.get)
-            case None =>
-              Http.response(HttpStatus.InternalServerError_500)
+          if (msgpack.length == 0) {
+            newResponse(route, request, responseSurface)
+          } else {
+            val json = JSONCodec.unpackMsgPack(msgpack)
+            json match {
+              case Some(j) =>
+                newResponse(route, request, responseSurface)
+                  .withJson(json.get)
+              case None =>
+                Http.response(HttpStatus.InternalServerError_500)
+            }
           }
         }
     }

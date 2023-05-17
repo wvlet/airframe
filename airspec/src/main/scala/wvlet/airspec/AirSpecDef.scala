@@ -8,7 +8,7 @@ import wvlet.airspec.spi.{AirSpecContext, MissingTestDependency}
 private[airspec] sealed trait AirSpecDef {
   def name: String
 
-  def design: Design
+  def design: Design => Design
   def run(context: AirSpecContext, session: Session): Any
 
   protected def resolveArg(
@@ -35,8 +35,8 @@ private[airspec] sealed trait AirSpecDef {
 }
 
 private[airspec] case class MethodAirSpecDef(methodSurface: MethodSurface) extends AirSpecDef {
-  override def name: String   = methodSurface.name
-  override def design: Design = Design.empty
+  override def name: String             = methodSurface.name
+  override def design: Design => Design = identity
 
   override def run(context: AirSpecContext, session: Session): Any = {
     // Build a list of method arguments
@@ -48,8 +48,12 @@ private[airspec] case class MethodAirSpecDef(methodSurface: MethodSurface) exten
   }
 }
 
-private[airspec] case class AirSpecDefF0[R](name: String, design: Design, returnType: Surface, body: LazyF0[R])
-    extends AirSpecDef {
+private[airspec] case class AirSpecDefF0[R](
+    name: String,
+    design: Design => Design,
+    returnType: Surface,
+    body: LazyF0[R]
+) extends AirSpecDef {
   override def run(context: AirSpecContext, session: Session): Any = {
     body.eval
   }
@@ -57,7 +61,7 @@ private[airspec] case class AirSpecDefF0[R](name: String, design: Design, return
 
 private[airspec] case class AirSpecDefF1[D1, R](
     name: String,
-    design: Design,
+    design: Design => Design,
     dep1Type: Surface,
     returnType: Surface,
     body: D1 => R
@@ -71,7 +75,7 @@ private[airspec] case class AirSpecDefF1[D1, R](
 
 private[airspec] case class AirSpecDefF2[D1, D2, R](
     name: String,
-    design: Design,
+    design: Design => Design,
     dep1Type: Surface,
     dep2Type: Surface,
     returnType: Surface,
@@ -87,7 +91,7 @@ private[airspec] case class AirSpecDefF2[D1, D2, R](
 
 private[airspec] case class AirSpecDefF3[D1, D2, D3, R](
     name: String,
-    design: Design,
+    design: Design => Design,
     dep1Type: Surface,
     dep2Type: Surface,
     dep3Type: Surface,
@@ -105,7 +109,7 @@ private[airspec] case class AirSpecDefF3[D1, D2, D3, R](
 
 private[airspec] case class AirSpecDefF4[D1, D2, D3, D4, R](
     name: String,
-    design: Design,
+    design: Design => Design,
     dep1Type: Surface,
     dep2Type: Surface,
     dep3Type: Surface,
@@ -125,7 +129,7 @@ private[airspec] case class AirSpecDefF4[D1, D2, D3, D4, R](
 
 private[airspec] case class AirSpecDefF5[D1, D2, D3, D4, D5, R](
     name: String,
-    design: Design,
+    design: Design => Design,
     dep1Type: Surface,
     dep2Type: Surface,
     dep3Type: Surface,

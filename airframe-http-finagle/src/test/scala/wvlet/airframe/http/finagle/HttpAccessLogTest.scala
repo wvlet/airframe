@@ -87,7 +87,7 @@ object HttpAccessLogTest extends AirSpec {
 
   test(
     "Record access logs",
-    design = Finagle.server
+    design = _ + Finagle.server
       .withLoggingFilter(new HttpAccessLogFilter(httpAccessLogWriter = inMemoryLogWriter))
       .withRouter(router)
       .design
@@ -209,11 +209,11 @@ object HttpAccessLogTest extends AirSpec {
 
   test(
     "JSON access log",
-    design = newDesign.bind[Resource[File]].toInstance(Resource.newTempFile("target/http_access_log_test.json"))
+    design = _.bind[Resource[File]].toInstance(Resource.newTempFile("target/http_access_log_test.json"))
   ) { file: Resource[File] =>
     test(
       "Write logs in JSON",
-      design = Finagle.server
+      design = _ + Finagle.server
         .withRouter(router)
         .withLoggingFilter(
           new HttpAccessLogFilter(

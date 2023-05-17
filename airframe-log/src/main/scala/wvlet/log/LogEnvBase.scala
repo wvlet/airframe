@@ -5,6 +5,10 @@ import java.io.PrintStream
 /**
   */
 private[log] trait LogEnvBase {
+  def initLogManager(): Unit = {
+    // do nothing by default
+  }
+
   def isScalaJS: Boolean
   def defaultLogLevel: LogLevel
   def defaultHandler: java.util.logging.Handler

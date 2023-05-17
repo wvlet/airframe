@@ -17,7 +17,7 @@ import java.io.{File, FileWriter}
 import java.net.URLClassLoader
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Control
-import wvlet.airframe.http.Router
+import wvlet.airframe.http.{Router, RxRouter}
 import wvlet.airframe.http.codegen.client.{AsyncClientGenerator, HttpClientGenerator}
 import wvlet.airframe.http.openapi.{OpenAPI, OpenAPIGeneratorConfig}
 import wvlet.airframe.launcher.Launcher
@@ -84,6 +84,12 @@ object HttpClientGeneratorConfig {
   * Generate HTTP client code for Scala, Scala.js targets using a given IR
   */
 object HttpCodeGenerator extends LogSupport {
+
+  def generate(rxRouter: RxRouter, config: HttpClientGeneratorConfig): String = {
+    val router = Router.fromRxRouter(rxRouter)
+    generate(router, config)
+  }
+
   def generate(
       router: Router,
       config: HttpClientGeneratorConfig
@@ -181,9 +187,14 @@ class HttpCodeGenerator(
   }
 
   private def buildRouter(apiPackageNames: Seq[String], classLoader: URLClassLoader): Router = {
-    info(s"Target API packages: ${apiPackageNames.mkString(", ")}")
-    val router = RouteScanner.buildRouter(apiPackageNames, classLoader)
-    router
+    debug(s"Target API packages: ${apiPackageNames.mkString(", ")}")
+    val rxRouter = RouteScanner.buildRxRouter(apiPackageNames, classLoader)
+    if (rxRouter.routes.isEmpty) {
+      warn(s"Scanning classes implementing @RPC or @Endpoint from the classpath...")
+      RouteScanner.buildRouter(apiPackageNames, classLoader)
+    } else {
+      Router.fromRxRouter(rxRouter)
+    }
   }
 
   @command(description = "Generate HTTP client code using a JSON configuration file")
@@ -191,7 +202,7 @@ class HttpCodeGenerator(
       @argument(description = "HttpCodeGeneratorOption in JSON file")
       jsonFilePath: String
   ): Unit = {
-    info(s"Reading JSON option file: ${jsonFilePath}")
+    debug(s"Reading JSON option file: ${jsonFilePath}")
     val option = MessageCodec.of[HttpCodeGeneratorOption].fromJson(IOUtil.readAsString(jsonFilePath))
     generate(option)
   }
@@ -211,16 +222,15 @@ class HttpCodeGenerator(
 
         val router         = buildRouter(Seq(config.apiPackageName), cl)
         val routerStr      = router.toString
-        val routerHash     = routerStr.hashCode
-        val routerHashFile = new File(option.targetDir, f"router-${config.clientType.name}-${routerHash}%07x.update")
-        if (!outputFile.exists() || !routerHashFile.exists()) {
+        val routerCode     = HttpCodeGenerator.generate(router, config)
+        val routerHash     = routerCode.hashCode
+        val outputFileHash = if (outputFile.exists()) IOUtil.readAsString(outputFile).hashCode else 0
+        if (!outputFile.exists() || routerHash != outputFileHash) {
           info(f"Router for package ${config.apiPackageName}:\n${routerStr}")
-          info(s"Generating a ${config.clientType.name} client code: ${path}")
-          val code = HttpCodeGenerator.generate(router, config)
-          touch(routerHashFile)
-          writeFile(outputFile, code)
+          info(s"Generating ${config.clientType.name} client code: ${path}")
+          writeFile(outputFile, routerCode)
         } else {
-          info(s"${outputFile} is up-to-date")
+          debug(s"${path} is up-to-date")
         }
         outputFile
       }
@@ -253,12 +263,6 @@ class HttpCodeGenerator(
     debug(schema)
     info(s"Writing OpenAPI spec ${option.formatType} to ${option.outFile.getPath}")
     writeFile(option.outFile, schema)
-  }
-
-  private def touch(f: File): Unit = {
-    if (!f.createNewFile()) {
-      f.setLastModified(System.currentTimeMillis())
-    }
   }
 
   private def writeFile(outputFile: File, data: String): Unit = {

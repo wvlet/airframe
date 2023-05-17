@@ -15,14 +15,14 @@ package wvlet.airframe.http.codegen
 
 import java.util.Locale
 import wvlet.airframe.http.Router.unwrapFuture
-import wvlet.airframe.http.{HttpMethod, Router}
+import wvlet.airframe.http.{HttpMethod, Router, RxRouter}
 import wvlet.airframe.http.codegen.RouteAnalyzer.RouteAnalysisResult
 import wvlet.airframe.http.codegen.client.HttpClientGenerator
 import wvlet.airframe.http.codegen.client.HttpClientGenerator.fullTypeNameOf
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.{GenericSurface, HigherKindedTypeSurface, MethodParameter, Parameter, Surface, TypeName}
 import wvlet.log.LogSupport
-import wvlet.airframe.http.router.{Route, HttpRequestMapper}
+import wvlet.airframe.http.router.{HttpRequestMapper, Route}
 
 /**
   * Generate an intermediate representation (IR) of Scala HTTP client code from a given airframe-http interface
@@ -170,7 +170,8 @@ object HttpClientIR extends LogSupport {
       returnType: Surface,
       path: String,
       // A case class definition for wrapping HTTP request parameters
-      requestModelClassDef: Option[ClientRequestModelClassDef] = None
+      requestModelClassDef: Option[ClientRequestModelClassDef] = None,
+      isRPC: Boolean
   ) extends ClientCodeIR {
     def typeArgString =
       typeArgs
@@ -252,6 +253,10 @@ object HttpClientIR extends LogSupport {
   }
 
   private case class PathVariableParam(name: String, param: MethodParameter)
+
+  def buildIR(rxRouter: RxRouter, config: HttpClientGeneratorConfig): ClientSourceDef = {
+    buildIR(Router.fromRxRouter(rxRouter), config)
+  }
 
   /**
     * Building an intermediate representation of the client code
@@ -378,7 +383,8 @@ object HttpClientIR extends LogSupport {
         clientCallParameters = clientCallParams.result(),
         path = analysis.pathString,
         returnType = unwrapFuture(route.returnTypeSurface),
-        requestModelClassDef = requestModelClassDef
+        requestModelClassDef = requestModelClassDef,
+        isRPC = route.isRPC
       )
     }
 

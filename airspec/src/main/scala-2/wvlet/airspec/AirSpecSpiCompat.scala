@@ -29,7 +29,7 @@ private[airspec] trait AirSpecSpiCompat {
   }
 }
 
-class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design) {
+class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design => Design) {
   def apply[R](body: => R): Unit = macro AirSpecMacros.test0Impl[R]
   def apply[D1, R](body: D1 => R): Unit = macro AirSpecMacros.test1Impl[D1, R]
   def apply[D1, D2, R](body: (D1, D2) => R): Unit = macro AirSpecMacros.test2Impl[D1, D2, R]

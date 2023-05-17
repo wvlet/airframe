@@ -5,6 +5,8 @@ ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-parse
 
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
+ThisBuild / scalaVersion := "3.2.2"
+
 lazy val root =
   project.aggregate(spi, server)
 
@@ -20,13 +22,12 @@ lazy val server =
     .in(file("server"))
     .enablePlugins(AirframeHttpPlugin)
     .settings(
-      airframeHttpGeneratorOption := "-l trace",
+      airframeHttpGeneratorOption := "-l debug",
       airframeHttpClients := Seq(
-        "myapp.spi",
-        "myapp.spi:sync"
+        "myapp.spi:rpc"
       ),
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %% "airframe-http-finagle" % sys.props("airframe.version")
+        "org.wvlet.airframe" %% "airframe-http-netty" % sys.props("airframe.version")
       )
     )
     .dependsOn(spi)

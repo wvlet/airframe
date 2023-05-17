@@ -8,7 +8,7 @@ import wvlet.log.LogSupport
 case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageCodecFinder, mapOutput: Boolean = true)
     extends ScalaCompat.MessageCodecFactoryBase
     with LogSupport {
-  private[this] var cache = Map.empty[Surface, MessageCodec[_]]
+  private[this] var cache = Map.empty[String, MessageCodec[_]]
 
   def withCodecs(additionalCodecs: Map[Surface, MessageCodec[_]]): MessageCodecFactory = {
     this.copy(codecFinder = codecFinder orElse MessageCodecFinder.newCodecFinder(additionalCodecs))
@@ -49,8 +49,9 @@ case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageC
 
   def ofSurface(surface: Surface, seen: Set[Surface] = Set.empty): MessageCodec[_] = {
     // TODO Create a fast object codec with code generation (e.g., Scala macros)
-    if (cache.contains(surface)) {
-      cache(surface)
+    val surfaceName = surface.fullName
+    if (cache.contains(surfaceName)) {
+      cache(surfaceName)
     } else if (seen.contains(surface)) {
       LazyCodec(surface, this)
     } else {
@@ -65,7 +66,7 @@ case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageC
           }
           .apply(surface)
 
-      cache += surface -> codec
+      cache += surfaceName -> codec
       codec
     }
   }

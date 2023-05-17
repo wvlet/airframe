@@ -21,7 +21,7 @@ import com.twitter.util.{Future, Return, Throw}
 import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, StringMessage}
 import wvlet.airframe.{Design, Session}
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.rx.Rx
 import wvlet.log.io.IOUtil
 
 import scala.util.{Failure, Success}
@@ -217,7 +217,7 @@ package object finagle {
     * @tparam A
     * @return
     */
-  def convertToRx[A](twitterFuture: Future[A]): RxStream[A] = {
+  def convertToRx[A](twitterFuture: Future[A]): Rx[A] = {
     val v = Rx.variable[Option[A]](None)
     twitterFuture.respond {
       case Return(x) =>
