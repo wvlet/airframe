@@ -365,7 +365,7 @@ trait Attribute extends LeafExpression with LogSupport {
     val result: Seq[Attribute] = columnPath match {
       // TODO handle (catalog).(database).(table) names in the qualifier
       case ColumnPath(Some(databaseName), Some(tableName), columnName) =>
-        if (databaseName == context.database) {
+        if (qualifier.contains(tableName)) {
           if (qualifier.contains(tableName)) {
             findMatched(None, columnName).map(_.withQualifier(qualifier))
           } else {
