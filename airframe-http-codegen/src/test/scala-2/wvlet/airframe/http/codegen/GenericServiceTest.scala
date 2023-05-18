@@ -14,7 +14,6 @@
 package wvlet.airframe.http.codegen
 import example.generic.{GenericRequestService, GenericService}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.Router
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future
@@ -41,18 +40,6 @@ class GenericServiceTest extends AirSpec {
     code.contains(": String = {") shouldBe true
     code.contains(": Int = {") shouldBe true
     code.contains("import wvlet.airframe.http.HttpMessage.Response") shouldBe false
-  }
-
-  test("support F and Future return values in Scala.js clients") {
-    debug(router)
-
-    val code = HttpCodeGenerator.generate(router, HttpClientGeneratorConfig("example.generic:scalajs"))
-    code.contains(": Future[String] = {") shouldBe true
-    code.contains("Surface.of[String]") shouldBe true
-    code.contains(": Future[Int] = {") shouldBe true
-    code.contains("Surface.of[Int]") shouldBe true
-    code.contains("import wvlet.airframe.http.HttpMessage.Response") shouldBe false
-    code.contains("import wvlet.airframe.http.HttpMessage.Request") shouldBe true
   }
 
   test("abstract request type") {

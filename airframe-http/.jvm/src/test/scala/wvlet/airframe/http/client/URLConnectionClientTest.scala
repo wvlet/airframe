@@ -15,7 +15,6 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.control.Retry.MaxRetryException
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.{Http, HttpClientException, HttpStatus}
 import wvlet.airspec.AirSpec
@@ -80,12 +79,11 @@ object URLConnectionClientTest extends AirSpec {
       resp.status shouldBe HttpStatus.Ok_200
     }
 
-    //    test("patch") {
-    //      ignore("URLConnection doesn't support patch, so we need to use POST endpoint + X-HTTP-Method-Override header")
-    //      check(client.patchRaw[Person]("/post", p))
-    //      check(client.patchOps[Person, Map[String, Any]]("/post", p))
-    //    }
-    //
+    test("patch") {
+      // URLConnection doesn't support patch, so it internally uses POST endpoint + X-HTTP-Method-Override header
+      check(client.call[Person, Map[String, Any]](Http.PATCH("/post"), p))
+    }
+
     test("call with Response return value") {
       check(client.call[Person, Response](Http.POST("/post"), p))
       check(client.call[Person, Response](Http.PUT("/put"), p))
@@ -115,12 +113,14 @@ object URLConnectionClientTest extends AirSpec {
   test("retry test") { (client: SyncClient) =>
     test("Handle 5xx retry") {
       Logger("wvlet.airframe.http.HttpClient").suppressWarnings {
-        val e = intercept[HttpClientException] {
-          client
-            .withRetryContext(_.withMaxRetry(1))
-            .send(Http.GET("/status/500"))
+        flaky {
+          val e = intercept[HttpClientException] {
+            client
+              .withRetryContext(_.withMaxRetry(1))
+              .send(Http.GET("/status/500"))
+          }
+          e.status shouldBe HttpStatus.InternalServerError_500
         }
-        e.status shouldBe HttpStatus.InternalServerError_500
       }
     }
   }

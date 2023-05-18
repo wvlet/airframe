@@ -29,6 +29,8 @@ trait RouterBase {
 }
 
 trait RouterObjectBase {
+  @deprecated("Use RxRouter.of[Controller] instead", "23.5.0")
   def of[Controller]: Router = macro RouterMacros.of[Controller]
+  @deprecated("Use RxRouter.of[Controller] instead", "23.5.0")
   def add[Controller]: Router = macro RouterMacros.of[Controller]
 }

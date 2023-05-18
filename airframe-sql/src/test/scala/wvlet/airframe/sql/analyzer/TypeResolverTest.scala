@@ -1056,4 +1056,18 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     e.message.contains("join key column: id is not found") shouldBe true
   }
 
+  test("Resolve fully-qualified equi self-join") {
+    val p = analyze("select A.name from A inner join (select name from A) t2 on A.name = t2.name")
+    p.outputAttributes.toList shouldBe List(ra2.withQualifier("A"))
+  }
+
+  test("Resolve identifiers with no regards to case sensitivity") {
+    analyze("select A.id from A JOIN B ON A.id = B.id GROUP BY a.id")
+    // No ambiguity error
+  }
+
+  test("Resolve quoted identifiers") {
+    analyze("select \"prénom\" from (select name as \"prénom\" from A)")
+    // No error
+  }
 }

@@ -164,6 +164,44 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
       }
     }
 
+    def shouldContain(expected: Any)(implicit code: SourceCode): Unit = {
+      value match {
+        case v: String =>
+          if (!v.contains(expected.toString)) {
+            throw AssertionFailure(s"${pp(value)} doesn't contain ${pp(expected)}", code)
+          }
+        case v: Iterable[_] =>
+          if (!v.exists(_ == expected)) {
+            throw AssertionFailure(s"${pp(value)} doesn't contain ${pp(expected)}", code)
+          }
+        case v: Array[_] =>
+          if (!v.exists(_ == expected)) {
+            throw AssertionFailure(s"${pp(value)} doesn't contain ${pp(expected)}", code)
+          }
+        case _ =>
+          throw AssertionFailure(s"${pp(value)} is not an Iterable", code)
+      }
+    }
+
+    def shouldNotContain(expected: Any)(implicit code: SourceCode): Unit = {
+      value match {
+        case v: String =>
+          if (v.contains(expected.toString)) {
+            throw AssertionFailure(s"${pp(value)} contains ${pp(expected)}", code)
+          }
+        case v: Iterable[_] =>
+          if (v.exists(_ == expected)) {
+            throw AssertionFailure(s"${pp(value)} contains ${pp(expected)}", code)
+          }
+        case v: Array[_] =>
+          if (v.exists(_ == expected)) {
+            throw AssertionFailure(s"${pp(value)} contains ${pp(expected)}", code)
+          }
+        case _ =>
+          throw AssertionFailure(s"${pp(value)} is not an Iterable", code)
+      }
+    }
+
     def shouldBeTheSameInstanceAs(expected: Any)(implicit code: SourceCode): Unit = {
       (value, expected) match {
         case (a: AnyRef, b: AnyRef) if a eq b =>

@@ -437,6 +437,13 @@ sealed abstract class RPCStatus(
   def isSuccess: Boolean = statusType == RPCStatusType.SUCCESS
   def isFailure: Boolean = !isSuccess
 
+  def shouldReportStackTrace: Boolean = {
+    this match {
+      case UNAUTHENTICATED_U13 | PERMISSION_DENIED_U14 => false
+      case _                                           => true
+    }
+  }
+
   /**
     * Integer-based error code
     */

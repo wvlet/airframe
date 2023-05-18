@@ -16,6 +16,7 @@ package wvlet.airframe.http.client
 import wvlet.airframe.http.HttpClientException
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.rx.Rx
 
 import scala.concurrent.Future
 
@@ -47,14 +48,14 @@ trait SyncClientCompat { self: SyncClient =>
 }
 
 trait AsyncClientCompat { self: AsyncClient =>
-  inline def readAs[Resp](req: Request): Future[Resp] = {
+  inline def readAs[Resp](req: Request): Rx[Resp] = {
     self.readAsInternal[Resp](req, Surface.of[Resp])
   }
 
   inline def call[Req, Resp](
       req: Request,
       requestContent: Req
-  ): Future[Resp] = {
+  ): Rx[Resp] = {
     self.callInternal[Req, Resp](req, Surface.of[Req], Surface.of[Resp], requestContent)
   }
 }

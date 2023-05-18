@@ -29,8 +29,8 @@ object TastySurfaceFactory extends LogSupport {
           debug(tastyType)
           val f = new CompileTimeSurfaceFactory(using quotes)
           tastyType match {
-            case t if t.show == "<none>.<none>" =>
-              // Example use case is MessageCodec.of[Any].
+            case t if t.show.endsWith(".<none>") =>
+              // Example use case is MessageCodec.of[Any] or case objects
               f.surfaceFromClass(cl)
             case _ =>
               f.surfaceOf(tastyType.asType)

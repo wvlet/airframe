@@ -1,9 +1,11 @@
-ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
+ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 enablePlugins(AirframeHttpPlugin)
 
 name    := "Open API Test"
 version := "1.0.0"
+
+ThisBuild / scalaVersion := "3.2.2"
 
 airframeHttpOpenAPIPackages := Seq("example.api")
 airframeHttpOpts            := "-l debug"

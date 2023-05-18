@@ -97,14 +97,13 @@ To test sbt-airframe,
 ```scala
 # Create a snapshto version of Aiframe for Scala 2.12
 $ cd (AIRFRAME_SRC_ROOT)
-$ ./sbt ++2.12.15 "projectJVM/publishLocal; projectJS/publishLocal"
+$ ./sbt publishAllLocal
 
-# Get the current AIRFRAME_VERSION. sbt-airframe plugin will read this environment variable
-$ export AIRFRAME_VERSION=$(./script/dynver.sh)
 
 # Run sbt scripted test 
 $ cd sbt-airframe
+# Need to set the current AIRFRAME_VERSION. sbt-airframe plugin will read this environment variable
+$ AIRFRAME_VERSION=$(../script/dynver.sh) ../sbt
 # Run a target scripted test
-$ ./sbt 
 > scripted sbt-airframe/(test project name)
 ```

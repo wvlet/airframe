@@ -14,11 +14,13 @@
 package example.server
 
 import example.api.HelloApi
+import wvlet.log.LogSupport
 
 /**
   */
-class HelloApiImpl extends HelloApi {
+class HelloApiImpl extends HelloApi with LogSupport {
   override def hello(message: String): String = {
+    info(s"Recevied RPC request: ${message}")
     s"Hello ${message}!!"
   }
 }

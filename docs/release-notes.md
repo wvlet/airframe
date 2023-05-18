@@ -6,6 +6,77 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 23.5.4
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.5.4)
+
+## 23.5.3
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.5.3)
+
+## 23.5.2
+
+The previous 23.5.1 is not available due to a release failure. This version is the same with 23.5.2 except the build process.
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.5.2)
+
+## 23.5.1
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.5.1)
+
+## 23.5.0
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.5.0)
+
+## 23.4.8
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.4.8)
+
+## 23.4.7
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.4.7)
+
+## 23.4.6
+
+A bug fix release around HTTP clients in Scala.js
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.4.6)
+
+## 23.4.5
+
+This release enhances AirSpec (shouldContain, shouldNotContain, flaky {...} block, etc.) and introduces a
+breaking interface change for customizing test-scoped design: `test(name, design: Design => Design)` 
+
+- This release also removes scalajs HTTP client genration in sbt-airframe. Now Http.client.newJSClient can be used instead. 
+- Async HTTP clients will use Rx[X] return types from this release. 
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.4.5)
+
+## 23.4.4
+
+Migration to Scala 3 has been completed, except airframe-finagle. 
+For Scala 3, we can use airframe-http with the Netty-based HTTP server.
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.4.4)
+
+## 23.4.3
+
+More Scala 3 support in airframe-http-netty and introduced a new RxRouter interface 
+for locating RPC definitions. 
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v24.4.3)
+
+## 23.4.2
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.4.2)
+
+## 23.4.1
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.4.1)
+
+## 23.4.0
+
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.4.0)
+
 ## 23.3.4
 
 [Release notes](https://github.com/wvlet/airframe/releases/tag/v23.3.4)

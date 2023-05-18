@@ -203,7 +203,7 @@ private[airspec] class AirSpecTaskRunner(
   ): Future[Unit] = {
     trace(s"[${spec.specName}] run test: ${m.name}")
     // Configure the test-local design
-    val childDesign    = design + m.design
+    val childDesign    = m.design(design)
     val startTimeNanos = System.nanoTime()
 
     val testName    = s"${spec.specName}:${m.name}"

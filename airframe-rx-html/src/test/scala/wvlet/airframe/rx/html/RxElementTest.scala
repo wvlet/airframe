@@ -68,10 +68,10 @@ class RxElementTest extends AirSpec {
 
     new RxElement() {
       // Specifying map target type as .map[RxElement] is necessary to avoid
-      // type resolution to RxStream[Object]
+      // type resolution to Rx[Object]
       override def render: RxElement = v.map[RxElement] {
         case true =>
-          w.map { i => span(i) } // RxStream[RxElement] is embeddable as RxElement
+          w.map { i => span(i) } // Rx[RxElement] is embeddable as RxElement
         case false =>
           span("N/A") // RxElement
       }

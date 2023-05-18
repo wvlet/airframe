@@ -1,5 +1,5 @@
-val AIRFRAME_VERSION = "23.3.4"
-ThisBuild / scalaVersion := "2.13.10"
+val AIRFRAME_VERSION = "23.5.3"
+ThisBuild / scalaVersion := "3.2.2"
 
 // RPC API definition. This project should contain only RPC interfaces
 lazy val api =
@@ -17,12 +17,11 @@ lazy val greeter =
     .enablePlugins(AirframeHttpPlugin, PackPlugin)
     .settings(
       // Generates HTTP clients
-      airframeHttpClients         := Seq("greeter.api:sync", "greeter.api:grpc"),
+      airframeHttpClients         := Seq("greeter.api:rpc:GreeterRPC"),
       airframeHttpGeneratorOption := "-l debug",
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION,
-        "org.wvlet.airframe" %% "airframe-http-grpc"    % AIRFRAME_VERSION,
-        "org.wvlet.airframe" %% "airframe-launcher"     % AIRFRAME_VERSION
+        "org.wvlet.airframe" %% "airframe-http-netty" % AIRFRAME_VERSION,
+        "org.wvlet.airframe" %% "airframe-launcher"   % AIRFRAME_VERSION
       )
     )
     .dependsOn(api)

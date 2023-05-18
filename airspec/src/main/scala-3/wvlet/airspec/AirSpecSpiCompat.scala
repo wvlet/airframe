@@ -19,7 +19,8 @@ private[airspec] trait AirSpecSpiCompat { self: AirSpecSpi =>
   }
 }
 
-class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design) extends wvlet.log.LogSupport {
+class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design => Design)
+    extends wvlet.log.LogSupport {
   inline def apply[R](body: => R): Unit                  = ${ AirSpecMacros.test0Impl[R]('this, 'body) }
   inline def apply[D1, R](body: D1 => R): Unit           = ${ AirSpecMacros.test1Impl[R, D1]('this, 'body) }
   inline def apply[D1, D2, R](body: (D1, D2) => R): Unit = ${ AirSpecMacros.test2Impl[R, D1, D2]('this, 'body) }

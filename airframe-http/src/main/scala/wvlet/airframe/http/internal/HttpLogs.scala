@@ -15,18 +15,83 @@ package wvlet.airframe.http.internal
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
+import wvlet.airframe.http.client.HttpClientContext
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.{Parameter, Surface, TypeName}
 import wvlet.airframe.ulid.ULID
 import wvlet.log.LogTimestampFormatter
 
-import java.lang.reflect.InvocationTargetException
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.concurrent.ExecutionException
 import scala.util.Try
 
+/**
+  * Internal utilities for HTTP request/response logging
+  */
 object HttpLogs {
+
+  def reportLog(
+      httpLogger: HttpLogger,
+      excludeHeaders: HttpMultiMap,
+      request: Request,
+      next: RxHttpEndpoint,
+      clientContext: Option[HttpClientContext] = None,
+      rpcContext: Option[RPCContext] = None
+  ): Rx[Response] = {
+    val baseTime = System.currentTimeMillis()
+    val start    = System.nanoTime()
+    val m        = ListMap.newBuilder[String, Any]
+    m ++= unixTimeLogs(baseTime)
+    m ++= commonRequestLogs(request)
+    m ++= requestHeaderLogs(request, excludeHeaders)
+
+    def reportLogs: Unit = {
+      // Finally, write the log
+      httpLogger.write(httpLogger.config.logFilter(m.result()))
+    }
+
+    def rpcCallLogs(): Unit = {
+      // RPC call context will be set to a TLS after dispatching an event
+      // TODO Pass RPC call context without using TLS
+      rpcContext.flatMap(_.rpcCallContext).foreach { rcc =>
+        m ++= rpcLogs(rcc)
+      }
+    }
+
+    clientContext.foreach {
+      _.rpcMethod.map { rpc => m ++= rpcMethodLogs(rpc) }
+    }
+
+    next
+      .apply(request)
+      .toRx
+      .map { resp =>
+        m ++= durationLogs(baseTime, start)
+        rpcCallLogs()
+        m ++= commonResponseLogs(resp)
+        m ++= responseHeaderLogs(resp, excludeHeaders)
+        reportLogs
+        resp
+      }
+      .recoverWith { case e: Throwable =>
+        m ++= durationLogs(baseTime, start)
+        rpcCallLogs()
+        m ++= errorLogs(e)
+        reportLogs
+        Rx.exception(e)
+      }
+  }
+
+  def durationLogs(baseTime: Long, sinceNano: Long): ListMap[String, Any] = {
+    val end           = System.nanoTime()
+    val durationMills = TimeUnit.NANOSECONDS.toMillis(end - sinceNano)
+    ListMap(
+      "end_time_ms" -> (baseTime + durationMills),
+      "duration_ms" -> durationMills
+    )
+  }
 
   def unixTimeLogs(currentTimeMillis: Long = System.currentTimeMillis()): ListMap[String, Any] = {
     // Unix time
@@ -34,7 +99,7 @@ object HttpLogs {
       "time"          -> (currentTimeMillis / 1000L),
       "start_time_ms" -> currentTimeMillis,
       // timestamp with ms resolution and zone offset
-      "event_time" -> LogTimestampFormatter.formatTimestampWithNoSpaace(currentTimeMillis)
+      "event_timestamp" -> LogTimestampFormatter.formatTimestampWithNoSpaace(currentTimeMillis)
     )
   }
   def commonRequestLogs(request: Request): Map[String, Any] = {
@@ -46,7 +111,9 @@ object HttpLogs {
     if (queryString.nonEmpty) {
       m += "query_string" -> queryString
     }
-    m ++= requestHeaderLogs(request)
+    request.remoteAddress.foreach { remoteAddr =>
+      m += "remote_address" -> remoteAddr.hostAndPort
+    }
     m.result()
   }
 
@@ -57,30 +124,42 @@ object HttpLogs {
     response.contentLength.foreach {
       m += "response_content_length" -> _
     }
-    m ++= responseHeaderLogs(response)
+
+    response.getHeader(HttpHeader.xAirframeRPCStatus).foreach { rpcStatus =>
+      Try(RPCStatus.ofCode(rpcStatus.toInt)).foreach { status =>
+        m ++= rpcStatusLogs(status)
+      }
+    }
     m.result()
   }
 
-  def requestHeaderLogs(request: Request): Map[String, Any] = {
-    Map("request_header" -> headerLogs(request.header))
+  def rpcStatusLogs(status: RPCStatus): Map[String, Any] = {
+    ListMap(
+      "rpc_status"      -> status.code,
+      "rpc_status_name" -> status.name
+    )
   }
 
-  def responseHeaderLogs(response: Response): Map[String, Any] = {
-    Map("response_header" -> headerLogs(response.header))
+  def requestHeaderLogs(request: Request, excludeHeaders: HttpMultiMap): Map[String, Any] = {
+    val m = headerLogs(request.header, excludeHeaders)
+    if (m.isEmpty)
+      Map.empty
+    else
+      Map("request_header" -> m)
   }
 
-  /**
-    * Http headers to be excluded from logging by dfeault
-    */
-  private val defaultExcludeHeaders: Set[String] = Set(
-    HttpHeader.Authorization,
-    HttpHeader.Cookie
-  ).map(_.toLowerCase)
+  def responseHeaderLogs(response: Response, excludeHeaders: HttpMultiMap): Map[String, Any] = {
+    val m = headerLogs(response.header, excludeHeaders)
+    if (m.isEmpty)
+      Map.empty
+    else
+      Map("response_header" -> m)
+  }
 
-  def headerLogs(headerMap: HttpMultiMap): Map[String, Any] = {
+  def headerLogs(headerMap: HttpMultiMap, excludeHeaders: HttpMultiMap): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]
     for (e <- headerMap.entries) {
-      if (!defaultExcludeHeaders.contains(e.key.toLowerCase)) {
+      if (!excludeHeaders.contains(e.key.toLowerCase)) {
         val v = headerMap.getAll(e.key).mkString(";")
         m += sanitizeHeader(e.key) -> v
       }
@@ -171,15 +250,19 @@ object HttpLogs {
         // If the cause is provided, record it. Otherwise, recording the status_code is sufficient.
         if (se.getCause != null) {
           val rootCause = findCause(se.getCause)
-          m += "exception"         -> rootCause
           m += "exception_message" -> rootCause.getMessage
+          m += "exception"         -> rootCause
         }
-      // TODO customize RPC error logs?
-      // case re: RPCException =>
-      //
+      case re: RPCException =>
+        // Customize RPC error logs
+        m ++= rpcStatusLogs(re.status)
+        m += "exception_message" -> re.getMessage
+        if (re.shouldReportStackTrace) {
+          m += "exception" -> re
+        }
       case other =>
-        m += "exception"         -> other
         m += "exception_message" -> other.getMessage
+        m += "exception"         -> other
     }
     m.result()
   }

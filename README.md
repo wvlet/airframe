@@ -59,7 +59,7 @@ Here is the list of milestones for Dotty support: [#1077](https://github.com/wvl
 
 ### Releasing
 
-For every commit merged to the master branch, a draft of the [release note](https://github.com/wvlet/airframe/releases) will be updated with [release-drafter](https://github.com/release-drafter/release-drafter).
+For every PR, [release-drafter](https://github.com/release-drafter/release-drafter) will automatically label PRs using the rules defined in [.github/release-drafter.yml](https://github.com/wvlet/airframe/blob/master/.github/release-drafter.yml). 
 
 To publish a new version, first, create a new release tag as follows:
 
@@ -68,13 +68,11 @@ $ git switch master
 $ git pull
 $ ruby ./scripts/release.rb
 ```
-This step will update docs/release-noteds.md and push a new git tag to the GitHub.
-After that, GitHub actions for releading artifacts to Sonatype will be triggered automatically.
+This step will update docs/release-noteds.md, push a new git tag to the GitHub, and
+create a new [GitHub relese note](https://github.com/wvlet/airframe/releases).
+After that, the artifacts will be published to Sonatype (a.k.a. Maven Central). It usually takes 10-30 minutes. 
 
-Next, edit and publish the draft of [the release note](https://github.com/wvlet/airframe/releases).
-If necessary, adjust the version number and target tag. 
-
-Do not create a new tag from GitHub release pages, because it will not trigger the GitHub Actions for the release.
+Note: Do not create a new tag from GitHub release pages, because it will not trigger the GitHub Actions for the release.
 
 ## LICENSE
 

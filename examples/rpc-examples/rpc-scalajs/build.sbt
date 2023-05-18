@@ -1,7 +1,7 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val AIRFRAME_VERSION = "23.3.4"
-ThisBuild / scalaVersion := "2.13.10"
+val AIRFRAME_VERSION = "23.5.3"
+ThisBuild / scalaVersion := "3.2.2"
 
 lazy val rpcExample =
   project
@@ -25,9 +25,11 @@ lazy val server =
   project
     .in(file("server"))
     .settings(
+      // For using the project root as a working folder
+      reStart / baseDirectory := (ThisBuild / baseDirectory).value,
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION,
-        "org.wvlet.airframe" %% "airframe-launcher"     % AIRFRAME_VERSION
+        "org.wvlet.airframe" %% "airframe-http-netty" % AIRFRAME_VERSION,
+        "org.wvlet.airframe" %% "airframe-launcher"   % AIRFRAME_VERSION
       )
     )
     .dependsOn(apiJVM)
@@ -39,7 +41,7 @@ lazy val ui =
     .settings(
       airframeHttpOpenAPIPackages     := Seq("example.api"),
       scalaJSUseMainModuleInitializer := true,
-      airframeHttpClients             := Seq("example.api:scalajs"),
+      airframeHttpClients             := Seq("example.api:rpc"),
       libraryDependencies ++= Seq(
         "org.wvlet.airframe" %%% "airframe-rx-html" % AIRFRAME_VERSION
       )

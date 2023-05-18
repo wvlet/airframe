@@ -2,17 +2,21 @@
 // sbt-scoverage upgraded to scala-xml 2.1.0, but other sbt-plugins and Scala compilier 2.12 uses scala-xml 1.x.x
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always"
 
-addSbtPlugin("org.xerial.sbt"     % "sbt-sonatype"             % "3.9.18")
+addSbtPlugin("org.xerial.sbt"     % "sbt-sonatype"             % "3.9.21")
 addSbtPlugin("com.github.sbt"     % "sbt-pgp"                  % "2.2.1")
 addSbtPlugin("org.scoverage"      % "sbt-scoverage"            % "2.0.7")
 addSbtPlugin("org.scalameta"      % "sbt-scalafmt"             % "2.5.0")
-addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.2.0")
+addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.3.1")
 addSbtPlugin("com.eed3si9n"       % "sbt-buildinfo"            % "0.11.0")
+
+// For integration testing
+val SBT_AIRFRAME_VERSION = sys.env.getOrElse("SBT_AIRFRAME_VERSION", "23.5.3")
+addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % SBT_AIRFRAME_VERSION)
 
 addDependencyTreePlugin
 
 // For Scala.js
-val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.13.0")
+val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.13.1")
 addSbtPlugin("org.scala-js"  % "sbt-scalajs"         % SCALAJS_VERSION)
 addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.21.1")
 libraryDependencies ++= (
@@ -37,3 +41,6 @@ scalacOptions ++= Seq("-deprecation", "-feature")
 // Only for ScalaPB benchmark
 //addSbtPlugin("com.thesamet"                    % "sbt-protoc"     % "0.99.34")
 //libraryDependencies += "com.thesamet.scalapb" %% "compilerplugin" % "0.10.8"
+
+// Binary compatibility checker
+addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "1.1.2")

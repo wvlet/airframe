@@ -13,11 +13,14 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.http.HttpMessage.Response
+import wvlet.airframe.http.Router.extractEndpointRoutes
 import wvlet.airframe.http.router.Automaton.DFA
+import wvlet.airframe.http.RxRouter.{EndpointNode, FilterNode, RxEndpointNode, StemNode}
 import wvlet.airframe.surface._
 import wvlet.log.LogSupport
+import wvlet.airframe.http.router.{ControllerRoute, RedirectToRxEndpoint, Route, RouteMatch, RouteMatcher}
 
-import wvlet.airframe.http.router.{Route, RouteMatcher, ControllerRoute, RouteMatch}
 import scala.annotation.tailrec
 import scala.language.experimental.macros
 import scala.language.higherKinds
@@ -40,7 +43,8 @@ case class Router(
     children: Seq[Router] = Seq.empty,
     localRoutes: Seq[Route] = Seq.empty,
     filterSurface: Option[Surface] = None,
-    filterInstance: Option[HttpFilterType] = None
+    filterInstance: Option[HttpFilterType] = None,
+    controllerInstance: Option[Any] = None
 ) extends router.RouterBase
     with LogSupport {
   def isEmpty = this eq Router.empty
@@ -57,19 +61,19 @@ case class Router(
 
   override def toString: String = printNode(0)
 
-  private def routerName: String = {
+  private def getRouterName: Option[String] = {
     surface
-      .orElse(filterSurface)
+      .orElse(filterSurface.map(_.name))
       .orElse(filterInstance.map(_.getClass.getSimpleName))
-      .getOrElse(f"${hashCode()}%x")
-      .toString
+      .map(_.toString)
   }
 
   private def printNode(indentLevel: Int): String = {
     val s = Seq.newBuilder[String]
 
-    val ws = " " * (indentLevel * 2)
-    s += s"${ws}- Router[${routerName}]"
+    val ws   = " " * (indentLevel * 2)
+    val name = getRouterName.map(routerName => s"[${routerName}]").getOrElse("")
+    s += s"${ws}- Router${name}"
 
     for (r <- localRoutes) {
       s += s"${ws}  + ${r}"
@@ -135,87 +139,14 @@ case class Router(
 
     val newRoutes: Seq[ControllerRoute] = {
       (endpointOpt, rpcOpt) match {
-        case (Some(endpoint), Some(rpcOpt)) =>
+        case (Some(_), Some(_)) =>
           throw new IllegalArgumentException(
             s"Cannot define both of @Endpoint and @RPC annotations: ${controllerSurface}"
           )
         case (_, None) =>
-          val prefixPath = endpointOpt.map(_.path()).getOrElse("")
-          // Add methods annotated with @Endpoint
-          controllerMethodSurfaces
-            .map { m =>
-              (m, m.findAnnotationOf[Endpoint])
-            }
-            .collect { case (m: MethodSurface, Some(endPoint)) =>
-              val endpointInterfaceCls =
-                controllerSurface
-                  .findAnnotationOwnerOf[Endpoint]
-                  .getOrElse(controllerSurface.rawType)
-
-              val rpcMethod = RPCMethod(
-                path = prefixPath + endPoint.path(),
-                rpcInterfaceName = TypeName.sanitizeTypeName(endpointInterfaceCls.getName),
-                methodName = m.name,
-                requestSurface = Surface.of[Array[Byte]],
-                responseSurface = m.returnType
-              )
-              ControllerRoute(
-                rpcMethod,
-                controllerSurface,
-                endPoint.method(),
-                m,
-                isRPC = false
-              )
-            }
-        case (None, Some(rpc)) =>
-          val rpcInterfaceCls = Router.findRPCInterfaceCls(controllerSurface)
-
-          def sanitize(s: String): String = {
-            s.replaceAll("\\$anon\\$", "").replaceAll("\\$", ".")
-          }
-          val prefixPath = if (rpc.path().isEmpty) {
-            s"/${sanitize(rpcInterfaceCls.getName)}"
-          } else {
-            s"${rpc.path()}/${sanitize(rpcInterfaceCls.getSimpleName)}"
-          }
-          val routes = controllerMethodSurfaces
-            .filter(_.isPublic)
-            .map { m =>
-              (m, m.findAnnotationOf[RPC])
-            }
-            .collect { case (m: MethodSurface, rpcAnnot) =>
-              val rpcMethod = rpcAnnot match {
-                case Some(rpc) =>
-                  val methodPath =
-                    if (rpc.path().nonEmpty) rpc.path()
-                    else s"/${m.name}"
-                  RPCMethod(
-                    path = prefixPath + methodPath,
-                    rpcInterfaceName = TypeName.sanitizeTypeName(rpcInterfaceCls.getName),
-                    methodName = m.name,
-                    // No need to bind requestSurface in the server side
-                    requestSurface = Surface.of[Array[Byte]],
-                    responseSurface = m.returnType
-                  )
-                case None =>
-                  RPCMethod(
-                    path = s"${prefixPath}/${m.name}",
-                    rpcInterfaceName = TypeName.sanitizeTypeName(rpcInterfaceCls.getName),
-                    methodName = m.name,
-                    // No need to bind requestSurface in the server side
-                    requestSurface = Surface.of[Array[Byte]],
-                    responseSurface = m.returnType
-                  )
-              }
-              ControllerRoute(
-                rpcMethod,
-                controllerSurface,
-                HttpMethod.POST,
-                m,
-                isRPC = true
-              )
-            }
-          routes
+          extractEndpointRoutes(controllerSurface, controllerMethodSurfaces)
+        case (_, Some(rpc)) =>
+          Router.extractRPCRoutes(controllerSurface, controllerMethodSurfaces)
       }
     }
 
@@ -323,5 +254,149 @@ object Router extends router.RouterObjectBase with LogSupport {
       .getOrElse(controllerSurface.rawType)
 
     rpcInterfaceCls
+  }
+
+  private def sanitizePath(s: String): String = {
+    s.replaceAll("\\$anon\\$", "").replaceAll("\\$", ".")
+  }
+
+  // Import ReflectSurface to find method annotations (RPC or Endpoint)
+  import wvlet.airframe.surface.reflect._
+
+  private def extractEndpointRoutes(
+      controllerSurface: Surface,
+      controllerMethodSurfaces: Seq[MethodSurface]
+  ): Seq[ControllerRoute] = {
+    val endpointOpt = controllerSurface.findAnnotationOf[Endpoint]
+
+    val prefixPath = endpointOpt.map(_.path()).getOrElse("")
+    // Add methods annotated with @Endpoint
+    controllerMethodSurfaces
+      .map { m =>
+        (m, m.findAnnotationOf[Endpoint])
+      }
+      .collect { case (m: MethodSurface, Some(endPoint)) =>
+        val endpointInterfaceCls =
+          controllerSurface
+            .findAnnotationOwnerOf[Endpoint]
+            .getOrElse(controllerSurface.rawType)
+
+        val rpcMethod = RPCMethod(
+          path = prefixPath + endPoint.path(),
+          rpcInterfaceName = TypeName.sanitizeTypeName(endpointInterfaceCls.getName),
+          methodName = m.name,
+          requestSurface = Surface.of[Array[Byte]],
+          responseSurface = m.returnType
+        )
+        ControllerRoute(
+          rpcMethod,
+          controllerSurface,
+          endPoint.method(),
+          m,
+          isRPC = false
+        )
+      }
+  }
+
+  private def extractRPCRoutes(
+      controllerSurface: Surface,
+      controllerMethodSurfaces: Seq[MethodSurface]
+  ): Seq[ControllerRoute] = {
+    val rpcInterfaceCls = findRPCInterfaceCls(controllerSurface)
+    val rpcOpt          = controllerSurface.findAnnotationOf[RPC]
+
+    val prefixPath = rpcOpt match {
+      case Some(rpc) if rpc.path().nonEmpty =>
+        s"${rpc.path()}/${sanitizePath(rpcInterfaceCls.getSimpleName)}"
+      case _ =>
+        s"/${sanitizePath(rpcInterfaceCls.getName)}"
+    }
+
+    val routes: Seq[ControllerRoute] =
+      controllerMethodSurfaces.sortBy(_.name).map { (m: MethodSurface) =>
+        val pathRpcOpt = m.findAnnotationOf[RPC]
+        val methodPath = pathRpcOpt match {
+          case Some(rpc) if rpc.path().nonEmpty =>
+            s"${rpc.path()}"
+          case _ =>
+            s"/${m.name}"
+        }
+        val rpcMethod = RPCMethod(
+          path = prefixPath + methodPath,
+          rpcInterfaceName = TypeName.sanitizeTypeName(rpcInterfaceCls.getName),
+          methodName = m.name,
+          // No need to bind requestSurface in the server side
+          requestSurface = Surface.of[Array[Byte]],
+          responseSurface = m.returnType
+        )
+
+        ControllerRoute(
+          rpcMethod,
+          controllerSurface,
+          HttpMethod.POST,
+          m,
+          isRPC = true
+        )
+      }
+    routes
+  }
+
+  /**
+    * Convert a new RxRouter instance into the legacy Router for compatibility
+    */
+  def fromRxRouter(router: RxRouter): Router = {
+    val newRouter = router match {
+      case e: EndpointNode =>
+        val endpointOpt = e.controllerSurface.findAnnotationOf[Endpoint]
+        val rpcOpt      = e.controllerSurface.findAnnotationOf[RPC]
+        val routes = (endpointOpt, rpcOpt) match {
+          case (Some(_), Some(_)) =>
+            throw new IllegalArgumentException(
+              s"Both @Endpoint and @RPC are defined in ${e.controllerSurface.fullName}"
+            )
+          case (_, None) =>
+            extractEndpointRoutes(
+              e.controllerSurface,
+              e.methodSurfaces
+            )
+          case (None, Some(_)) =>
+            extractRPCRoutes(
+              e.controllerSurface,
+              e.methodSurfaces
+            )
+        }
+        Router(surface = Some(e.controllerSurface), localRoutes = routes, controllerInstance = e.controllerInstance)
+      case s: StemNode =>
+        s.filter match {
+          case None =>
+            Router(
+              children = s.children.map(fromRxRouter)
+            )
+          case Some(f) =>
+            def wrapWithFilter(parent: Option[FilterNode], r: Router): Router = {
+              parent match {
+                case None =>
+                  r
+                case Some(p) =>
+                  wrapWithFilter(
+                    p.parent,
+                    Router(
+                      children = Seq(r),
+                      filterSurface = Some(p.filterSurface)
+                    )
+                  )
+              }
+            }
+
+            val leafRouter = Router(
+              children = s.children.map(fromRxRouter),
+              filterSurface = s.filter.map(_.filterSurface)
+            )
+            wrapWithFilter(f.parent, leafRouter)
+        }
+    }
+    // Check whether the route is valid or not
+    newRouter.verifyRoutes
+    newRouter
   }
 }

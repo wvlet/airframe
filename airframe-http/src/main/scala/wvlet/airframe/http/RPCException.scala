@@ -14,9 +14,14 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.codec.{GenericException, GenericStackTraceElement, MessageCodec}
+import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.RPCException.rpcErrorMessageCodec
+import wvlet.airframe.http.internal.HttpResponseBodyCodec
 import wvlet.airframe.json.Json
 import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.log.LogSupport
+
+import scala.util.Try
 
 /**
   * RPCException provides a backend-independent (e.g., Finagle or gRPC) RPC error reporting mechanism. Create this
@@ -36,16 +41,25 @@ case class RPCException(
     appErrorCode: Option[Int] = None,
     // [optional] Application-specific metadata
     metadata: Map[String, Any] = Map.empty
-) extends Exception(s"[${status}] ${message}", cause.getOrElse(null)) {
+) extends Exception(s"[${status}] ${message}", cause.getOrElse(null))
+    with LogSupport {
 
-  private var _includeStackTrace: Boolean = true
+  private var _includeStackTrace: Option[Boolean] = None
 
   /**
     * Do not embed stacktrace and the cause objects in the RPC exception error response
     */
   def noStackTrace: RPCException = {
-    _includeStackTrace = false
+    _includeStackTrace = Some(false)
     this
+  }
+
+  def shouldReportStackTrace: Boolean = {
+    _includeStackTrace match {
+      case Some(b) => b
+      case None =>
+        status.shouldReportStackTrace
+    }
   }
 
   def toMessage: RPCErrorMessage = {
@@ -53,8 +67,8 @@ case class RPCException(
       code = status.code,
       codeName = status.name,
       message = message,
-      stackTrace = if (_includeStackTrace) Some(GenericException.extractStackTrace(this)) else None,
-      cause = if (_includeStackTrace) cause else None,
+      stackTrace = if (shouldReportStackTrace) Some(GenericException.extractStackTrace(this)) else None,
+      cause = if (shouldReportStackTrace) cause else None,
       appErrorCode = appErrorCode,
       metadata = metadata
     )
@@ -66,6 +80,25 @@ case class RPCException(
 
   def toMsgPack: MsgPack = {
     rpcErrorMessageCodec.toMsgPack(toMessage)
+  }
+
+  /**
+    * Convert this exception to an HTTP response
+    */
+  def toResponse: HttpMessage.Response = {
+    var resp = Http
+      .response(status.httpStatus)
+      .addHeader(HttpHeader.xAirframeRPCStatus, status.code.toString)
+
+    try {
+      // Embed RPCError into the response body
+      resp = resp.withJson(toJson)
+    } catch {
+      case ex: Throwable =>
+        // Show warning
+        warn(s"Failed to serialize RPCException: ${this}", ex)
+    }
+    resp
   }
 }
 
@@ -112,5 +145,29 @@ object RPCException {
   def fromMsgPack(msgpack: MsgPack): RPCException = {
     val m = rpcErrorMessageCodec.fromMsgPack(msgpack)
     fromRPCErrorMessage(m)
+  }
+
+  def fromResponse(response: HttpMessage.Response): RPCException = {
+    val responseBodyCodec = new HttpResponseBodyCodec[Response]
+
+    response
+      .getHeader(HttpHeader.xAirframeRPCStatus)
+      .flatMap(x => Try(x.toInt).toOption) match {
+      case Some(rpcStatus) =>
+        try {
+          if (response.message.isEmpty) {
+            val status = RPCStatus.ofCode(rpcStatus)
+            status.newException(status.name)
+          } else {
+            val msgpack = responseBodyCodec.toMsgPack(response)
+            RPCException.fromMsgPack(msgpack)
+          }
+        } catch {
+          case e: Throwable =>
+            RPCStatus.ofCode(rpcStatus).newException(s"Failed to parse the RPC error details: ${e.getMessage}", e)
+        }
+      case None =>
+        RPCStatus.DATA_LOSS_I8.newException(s"Invalid RPC response: ${response}")
+    }
   }
 }

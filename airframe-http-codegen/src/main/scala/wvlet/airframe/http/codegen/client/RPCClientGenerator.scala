@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen.client
+import wvlet.airframe.http.{Http, HttpMethod}
 import wvlet.airframe.http.codegen.HttpClientIR
 import wvlet.airframe.http.codegen.HttpClientIR.{ClientMethodDef, ClientServiceDef}
 import wvlet.airframe.http.codegen.client.HttpClientGenerator.RichSurface
@@ -32,8 +33,9 @@ object RPCClientGenerator extends HttpClientGenerator {
          |
          |import scala.concurrent.Future
          |import wvlet.airframe.http._
-         |import wvlet.airframe.http.client.{SyncClient, AsyncClient}
+         |import wvlet.airframe.http.client.{HttpClientConfig, SyncClient, AsyncClient}
          |import wvlet.airframe.surface.Surface
+         |import wvlet.airframe.rx.Rx
          |
          |${obj}""".stripMargin
 
@@ -84,7 +86,7 @@ object RPCClientGenerator extends HttpClientGenerator {
     }
 
     def syncClientClass: String =
-      s"""class RPCSyncClient(client:SyncClient) extends wvlet.airframe.http.client.ClientFactory[RPCSyncClient] with AutoCloseable {
+      s"""class RPCSyncClient(client:SyncClient) extends wvlet.airframe.http.client.HttpClientFactory[RPCSyncClient] with AutoCloseable {
          |  override protected def build(newConfig: HttpClientConfig): RPCSyncClient = {
          |    new RPCSyncClient(client.withConfig(_ => newConfig))
          |  }
@@ -97,7 +99,7 @@ object RPCClientGenerator extends HttpClientGenerator {
          |""".stripMargin
 
     def asyncClientClass: String =
-      s"""class RPCAsyncClient(client:AsyncClient) extends wvlet.airframe.http.client.ClientFactory[RPCAsyncClient] with AutoCloseable {
+      s"""class RPCAsyncClient(client:AsyncClient) extends wvlet.airframe.http.client.HttpClientFactory[RPCAsyncClient] with AutoCloseable {
          |  override protected def build(newConfig: HttpClientConfig): RPCAsyncClient = {
          |    new RPCAsyncClient(client.withConfig(_ => newConfig))
          |  }
@@ -127,10 +129,10 @@ object RPCClientGenerator extends HttpClientGenerator {
     }
 
     def sendRequestArgs(m: ClientMethodDef): String = {
-      Seq(
-        s"__m_${m.name}",
-        m.clientCallParameters.mkString(", ")
-      ).mkString(", ")
+      val b = Seq.newBuilder[String]
+      b += s"__m_${m.name}"
+      b ++= m.clientCallParameters
+      b.result().mkString(", ")
     }
 
     def rpcMethods(svc: ClientServiceDef, isAsync: Boolean): String = {
@@ -140,11 +142,27 @@ object RPCClientGenerator extends HttpClientGenerator {
             m.inputParameters
               .map(x => s"${x.name}: ${x.surface.fullTypeName}")
 
-          val returnType = if (isAsync) s"Future[${m.returnType.fullTypeName}]" else m.returnType.fullTypeName
-
-          s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
-             |  client.rpc[${m.typeArgString}](${sendRequestArgs(m)})
-             |}""".stripMargin
+          val returnType = if (isAsync) s"Rx[${m.returnType.fullTypeName}]" else m.returnType.fullTypeName
+          if (m.isRPC) {
+            s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
+               |  client.rpc[${m.typeArgString}](${sendRequestArgs(m)})
+               |}""".stripMargin
+          } else {
+            // For @Endpoint calls
+            m.httpMethod match {
+              case HttpMethod.GET =>
+                s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
+                   |  client.readAs[${m.returnType.fullTypeName}](Http.GET(s"${m.path}"))
+                   |}""".stripMargin
+              case _ =>
+                val args = Seq.newBuilder[String]
+                args += s"""Http.${m.httpMethod}(s"${m.path}")"""
+                args ++= m.clientCallParameters
+                s"""def ${m.name}(${inputArgs.mkString(", ")}): ${returnType} = {
+                   |  client.call[${m.typeArgString}](${args.result().mkString(", ")})
+                   |}""".stripMargin
+            }
+          }
         }
         .mkString("\n")
     }

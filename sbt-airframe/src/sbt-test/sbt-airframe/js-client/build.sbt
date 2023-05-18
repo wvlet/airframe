@@ -1,7 +1,9 @@
-ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
+ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
+
+ThisBuild / scalaVersion := "3.2.2"
 
 lazy val root =
-  project.aggregate(spiJS, clientJS)
+  project.aggregate(spi.js, client.js)
 
 lazy val spi =
   crossProject(JSPlatform, JVMPlatform)
@@ -11,8 +13,6 @@ lazy val spi =
       libraryDependencies += "org.wvlet.airframe" %%% "airframe-http" % sys.props("airframe.version")
     )
 
-lazy val spiJS = spi.js
-
 lazy val client =
   crossProject(JSPlatform)
     .crossType(CrossType.Pure)
@@ -20,7 +20,7 @@ lazy val client =
     .enablePlugins(AirframeHttpPlugin)
     .settings(
       airframeHttpGeneratorOption := "-l trace",
-      airframeHttpClients         := Seq("myapp.spi:scalajs")
+      airframeHttpClients         := Seq("myapp.spi:rpc")
     )
     .jsSettings(
       libraryDependencies ++= Seq(
@@ -28,5 +28,3 @@ lazy val client =
       )
     )
     .dependsOn(spi)
-
-lazy val clientJS = client.js

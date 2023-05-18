@@ -206,8 +206,7 @@ class Logger(
 }
 
 object Logger {
-  // Set a custom LogManager to show log messages even in shutdown hooks
-  sys.props.put("java.util.logging.manager", "wvlet.log.AirframeLogManager")
+  LogEnv.initLogManager()
 
   import scala.jdk.CollectionConverters._
 

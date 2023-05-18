@@ -42,6 +42,10 @@ trait ResourceApi {
   }
 }
 
+object ResourceApi extends RxRouterProvider {
+  override def router: RxRouter = RxRouter.of[ResourceApi]
+}
+
 case class Query(id: String, sql: String)
 case class CreateQueryRequest(request_id: String = UUID.randomUUID().toString, sql: String)
 case class QueryResultResponse(id: String, nextToken: String)
@@ -58,4 +62,8 @@ trait QueryApi {
 
   @Endpoint(method = HttpMethod.POST, path = "/v1/query")
   def newQuery(createQueryRequest: CreateQueryRequest): QueryResultResponse
+}
+
+object QueryApi extends RxRouterProvider {
+  override def router: RxRouter = RxRouter.of[ResourceApi]
 }

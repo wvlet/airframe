@@ -19,7 +19,7 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.grpc.internal.GrpcException
 import wvlet.airframe.http.{RPCEncoding, RPCException, RPCStatus}
 import wvlet.airframe.msgpack.spi.MsgPack
-import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner, RxStream}
+import wvlet.airframe.rx.{Cancelable, OnCompletion, OnError, OnNext, Rx, RxBlockingQueue, RxRunner}
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
@@ -74,9 +74,9 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
   def serverStreamingCall[Req, Resp](
       method: GrpcMethod[Req, Resp],
       request: Req
-  ): RxStream[Resp] = {
+  ): Rx[Resp] = {
     val requestBody: Array[Byte] = prepareRPCRequestBody(method, request)
-    val responseObserver         = new RxStreamObserver[Resp]
+    val responseObserver         = new RxObserver[Resp]
     ClientCalls.asyncServerStreamingCall[MsgPack, Resp](
       getChannel.newCall(method.descriptor, config.callOptions),
       requestBody,
@@ -87,7 +87,7 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
 
   def clientStreamingCall[Req, Resp](
       method: GrpcMethod[Req, Resp],
-      request: RxStream[Req]
+      request: Rx[Req]
   ): Resp = {
     val responseObserver = GrpcClient.blockingRxResponseObserver[Resp]
     val requestObserver = ClientCalls.asyncClientStreamingCall(
@@ -105,8 +105,8 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
 
   def bidiStreamingCall[Req, Resp](
       method: GrpcMethod[Req, Resp],
-      request: RxStream[Req]
-  ): RxStream[Resp] = {
+      request: Rx[Req]
+  ): Rx[Resp] = {
     val responseObserver = GrpcClient.blockingRxResponseObserver[Resp]
     val requestObserver = ClientCalls.asyncBidiStreamingCall(
       getChannel.newCall(method.descriptor, config.callOptions),
@@ -191,12 +191,12 @@ class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
 
 object GrpcClient extends LogSupport {
 
-  trait BlockingRxStreamObserver[A] extends StreamObserver[A] {
-    def toRx: RxStream[A]
+  trait BlockingRxObserver[A] extends StreamObserver[A] {
+    def toRx: Rx[A]
   }
 
-  private def blockingRxResponseObserver[A]: BlockingRxStreamObserver[A] =
-    new BlockingRxStreamObserver[A] {
+  private def blockingRxResponseObserver[A]: BlockingRxObserver[A] =
+    new BlockingRxObserver[A] {
       val toRx: RxBlockingQueue[A] = new RxBlockingQueue[A]
       override def onNext(v: A): Unit = {
         toRx.add(OnNext(v))
@@ -209,7 +209,7 @@ object GrpcClient extends LogSupport {
       }
     }
 
-  private class RxStreamObserver[A] extends StreamObserver[A] {
+  private class RxObserver[A] extends StreamObserver[A] {
     val toRx: RxBlockingQueue[A] = new RxBlockingQueue[A]
     override def onNext(v: A): Unit = {
       toRx.add(OnNext(v))

@@ -20,12 +20,13 @@ import scala.concurrent.ExecutionContext
 /**
   * An interface for using different implementation between Scala JVM and Scala.js
   */
-trait CompatApi {
+private[http] trait CompatApi {
   def urlEncode(s: String): String
 
   def hostServerAddress: ServerAddress
   def defaultHttpClientBackend: HttpClientBackend
   def defaultExecutionContext: ExecutionContext
+  def defaultHttpClientLoggerFactory: HttpLoggerConfig => HttpLogger
 
   def currentRPCContext: RPCContext
   def attachRPCContext(context: RPCContext): RPCContext

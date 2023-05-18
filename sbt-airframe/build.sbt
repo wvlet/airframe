@@ -1,8 +1,8 @@
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val AIRFRAME_VERSION = sys.env.getOrElse("AIRFRAME_VERSION", "23.1.3")
-val AIRSPEC_VERSION  = "22.12.1"
+val AIRFRAME_VERSION = sys.env.getOrElse("AIRFRAME_VERSION", "23.5.3")
+val AIRSPEC_VERSION  = "23.4.8"
 val SCALA_2_12       = "2.12.17"
 
 ThisBuild / organization := "org.wvlet.airframe"
@@ -59,7 +59,7 @@ lazy val sbtAirframe =
       description      := "sbt plugin for helping programming with Airframe",
       scalaVersion     := SCALA_2_12,
       libraryDependencies ++= Seq(
-        "io.get-coursier"    %% "coursier"              % "2.1.0",
+        "io.get-coursier"    %% "coursier"              % "2.1.4",
         "org.apache.commons"  % "commons-compress"      % "1.23.0",
         "org.wvlet.airframe" %% "airframe-control"      % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-codec"        % AIRFRAME_VERSION,

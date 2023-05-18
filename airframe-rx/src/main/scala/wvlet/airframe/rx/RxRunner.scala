@@ -43,7 +43,7 @@ object RxRunner extends LogSupport {
   // This runner will not report OnCompleiton event
   private val continuousRunner = new RxRunner(continuous = true)
 
-  def run[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable =
+  def run[A, U](rx: RxOps[A])(effect: RxEvent => U): Cancelable = {
     defaultRunner.run(rx) { ev =>
       ev match {
         case v @ OnNext(_) =>
@@ -54,8 +54,9 @@ object RxRunner extends LogSupport {
           RxResult.Stop
       }
     }
+  }
 
-  def runContinuously[A, U](rx: Rx[A])(effect: RxEvent => U): Cancelable =
+  def runContinuously[A, U](rx: RxOps[A])(effect: RxEvent => U): Cancelable = {
     continuousRunner.run(rx) { ev =>
       ev match {
         case v @ OnNext(_) =>
@@ -66,6 +67,7 @@ object RxRunner extends LogSupport {
           RxResult.Stop
       }
     }
+  }
 }
 
 class RxRunner(
@@ -84,7 +86,7 @@ class RxRunner(
     *   this must return [[RxResult.Stop]].
     * @tparam A
     */
-  def run[A](rx: Rx[A])(effect: RxEvent => RxResult): Cancelable = {
+  def run[A](rx: RxOps[A])(effect: RxEvent => RxResult): Cancelable = {
     rx match {
       case MapOp(in, f) =>
         run(in) {
@@ -108,7 +110,7 @@ class RxRunner(
               case Success(rxb) =>
                 // This code is necessary to properly cancel the effect if this operator is evaluated before
                 c1.cancel
-                c1 = run(rxb.asInstanceOf[Rx[A]]) {
+                c1 = run(rxb) {
                   case n @ OnNext(x) =>
                     toContinue = effect(n)
                     toContinue
@@ -145,6 +147,90 @@ class RxRunner(
             case other =>
               effect(other)
           }
+        }
+      case TransformOp(in, f) =>
+        val tryFunc = f.asInstanceOf[Try[_] => _]
+        run(in) { ev =>
+          ev match {
+            case OnNext(x) =>
+              Try(tryFunc(Success(x))) match {
+                case Success(x) =>
+                  effect(OnNext(x))
+                case Failure(e) =>
+                  effect(OnError(e))
+              }
+            case OnError(e) =>
+              Try(tryFunc(Failure(e))) match {
+                case Success(x) =>
+                  effect(OnNext(x))
+                case Failure(e) =>
+                  effect(OnError(e))
+              }
+            case other =>
+              effect(other)
+          }
+        }
+      case TransformTryOp(in, f) =>
+        val tryFunc = f.asInstanceOf[Try[_] => Try[_]]
+        run(in) { ev =>
+          ev match {
+            case OnNext(x) =>
+              tryFunc(Success(x)) match {
+                case Success(x) =>
+                  effect(OnNext(x))
+                case Failure(e) =>
+                  effect(OnError(e))
+              }
+            case OnError(e) =>
+              tryFunc(Failure(e)) match {
+                case Success(x) =>
+                  effect(OnNext(x))
+                case Failure(e) =>
+                  effect(OnError(e))
+              }
+            case other =>
+              effect(other)
+          }
+        }
+      case TransformRxOp(in, f) =>
+        val tryFunc = f.asInstanceOf[Try[_] => Rx[_]]
+        // A place holder for properly cancel the subscription against the result of Try[_] => Rx[_]
+        var c1: Cancelable = Cancelable.empty
+
+        def evalRx(rxb: Rx[_]): RxResult = {
+          c1.cancel
+          c1 = run(rxb) {
+            case OnNext(x) =>
+              effect(OnNext(x))
+            case OnCompletion =>
+              RxResult.Continue
+            case OnError(e) =>
+              effect(OnError(e))
+          }
+          RxResult.Continue
+        }
+
+        // Call f: Try[_] => Rx[_] using the input
+        val c2: Cancelable = run(in) {
+          case OnNext(x) =>
+            Try(tryFunc(Success(x))) match {
+              case Success(rxb) =>
+                evalRx(rxb)
+              case Failure(e) =>
+                effect(OnError(e))
+            }
+          case OnError(e) =>
+            Try(tryFunc(Failure(e))) match {
+              case Success(rxb) =>
+                evalRx(rxb)
+              case Failure(e) =>
+                effect(OnError(e))
+            }
+          case other =>
+            effect(other)
+        }
+        Cancelable { () =>
+          c1.cancel; c2.cancel
         }
       case ConcatOp(first, next) =>
         var c1 = Cancelable.empty
@@ -312,7 +398,7 @@ class RxRunner(
       case NamedOp(input, name) =>
         run(input)(effect)
       case TryOp(e) =>
-        e match {
+        e.eval match {
           case Success(x) =>
             effect(OnNext(x))
           case Failure(e) =>
@@ -370,8 +456,10 @@ class RxRunner(
         }
       case SingleOp(v) =>
         Try(effect(OnNext(v.eval))) match {
-          case Success(c) => effect(OnCompletion)
-          case Failure(e) => effect(OnError(e))
+          case Success(c) =>
+            effect(OnCompletion)
+          case Failure(e) =>
+            effect(OnError(e))
         }
         Cancelable.empty
       case SeqOp(inputList) =>

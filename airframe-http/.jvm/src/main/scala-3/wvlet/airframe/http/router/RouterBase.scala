@@ -30,8 +30,10 @@ trait RouterBase { self: Router =>
 }
 
 trait RouterObjectBase {
+  @deprecated("Use RxRouter.of[Controller] instead", "23.5.0")
   inline def of[Controller]: Router = ${ RouterObjectMacros.routerOf[Controller] }
 
+  @deprecated("Use RxRouter.of[Controller] instead", "23.5.0")
   inline def add[Controller]: Router = ${ RouterObjectMacros.routerOf[Controller] }
 }
 

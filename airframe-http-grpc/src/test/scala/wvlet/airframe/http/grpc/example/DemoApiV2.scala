@@ -21,7 +21,7 @@ import wvlet.airframe.http.grpc.example.DemoApiV2.{DemoMessage, DemoResponse}
 import wvlet.airframe.http.grpc.internal.GrpcServiceBuilder
 import wvlet.airframe.http.grpc.{GrpcClient, GrpcClientConfig, GrpcClientInterceptor, gRPC}
 import wvlet.airframe.http.{RPC, RPCEncoding, RPCStatus, Router}
-import wvlet.airframe.rx.{Rx, RxStream}
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 import wvlet.airframe.http.router.Route
@@ -49,7 +49,7 @@ trait DemoApiV2 extends LogSupport {
     }
   }
 
-  def clientStreaming(input: RxStream[DemoMessage]): String = {
+  def clientStreaming(input: Rx[DemoMessage]): String = {
     val x = input.toSeq
     x.map(_.name).map {
         case "XXX" =>
@@ -60,7 +60,7 @@ trait DemoApiV2 extends LogSupport {
       .mkString(", ")
   }
 
-  def bidiStreaming(input: RxStream[DemoMessage]): RxStream[DemoResponse] = {
+  def bidiStreaming(input: Rx[DemoMessage]): Rx[DemoResponse] = {
     input.map(x =>
       x.name match {
         case "XXX" =>
@@ -138,7 +138,7 @@ object DemoApiV2 {
       client.asyncUnaryCall(helloMethod, Map("name" -> name), observer)
     }
 
-    def serverStreaming(name: String): RxStream[String] = {
+    def serverStreaming(name: String): Rx[String] = {
       client.serverStreamingCall(serverStreamingMethod, Map("name" -> name))
     }
 
@@ -146,7 +146,7 @@ object DemoApiV2 {
       client.asyncServerStreamingCall(serverStreamingMethod, Map("name" -> name), observer)
     }
 
-    def clientStreaming(input: RxStream[DemoMessage]): String = {
+    def clientStreaming(input: Rx[DemoMessage]): String = {
       client.clientStreamingCall(clientStreamingMethod, input)
     }
 
@@ -154,7 +154,7 @@ object DemoApiV2 {
       client.asyncClientStreamingCall(clientStreamingMethod, observer)
     }
 
-    def bidiStreaming(input: RxStream[DemoMessage]): RxStream[DemoResponse] = {
+    def bidiStreaming(input: Rx[DemoMessage]): Rx[DemoResponse] = {
       client.bidiStreamingCall(bidiStreamingMethod, input)
     }
 

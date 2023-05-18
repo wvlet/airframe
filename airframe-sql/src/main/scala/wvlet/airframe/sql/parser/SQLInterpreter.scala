@@ -409,15 +409,15 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
   override def visitSelectSingle(ctx: SelectSingleContext): Attribute = {
     val alias = Option(ctx.AS())
-      .map(x => expression(ctx.identifier()))
-      .orElse(Option(ctx.identifier()).map(expression(_)))
+      .map(_ => visitIdentifier(ctx.identifier()))
+      .orElse(Option(ctx.identifier()).map(visitIdentifier))
     val child = expression(ctx.expression())
     val qualifier = child match {
       case a: Attribute => a.qualifier
       case _            => None
     }
     SingleColumn(child, qualifier, getLocation(ctx))
-      .withAlias(alias.map(_.sqlExpr))
+      .withAlias(alias.map(_.value))
   }
 
   override def visitExpression(ctx: ExpressionContext): Expression = {
@@ -534,6 +534,17 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
   override def visitSubquery(ctx: SubqueryContext): LogicalPlan = {
     visitQueryNoWith(ctx.queryNoWith())
+  }
+
+  override def visitConcatenation(ctx: ConcatenationContext): Expression = {
+    FunctionCall(
+      "concat",
+      ctx.valueExpression().asScala.map(expression(_)).toSeq,
+      isDistinct = false,
+      Option.empty,
+      Option.empty,
+      getLocation(ctx)
+    )
   }
 
   override def visitPredicated(ctx: PredicatedContext): Expression = {
@@ -763,6 +774,17 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
       val args = ctx.expression().asScala.map(expression(_)).toSeq
       FunctionCall(name, args, isDistinct, filter, over, getLocation(ctx))
     }
+  }
+
+  override def visitSubstring(ctx: SubstringContext): Any = {
+    FunctionCall(
+      ctx.SUBSTRING().getText,
+      ctx.valueExpression.asScala.map(expression(_)).toSeq,
+      isDistinct = false,
+      Option.empty,
+      Option.empty,
+      getLocation(ctx)
+    )
   }
 
   override def visitSetQuantifier(ctx: SetQuantifierContext): SetQuantifier = {

@@ -15,7 +15,7 @@ package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.analyzer.QuerySignatureConfig
 import wvlet.airframe.sql.catalog.{Catalog, DataType}
-import wvlet.airframe.sql.model.Expression.GroupingKey
+import wvlet.airframe.sql.model.Expression.{GroupingKey, QName}
 import wvlet.airframe.sql.model.LogicalPlan.Relation
 import wvlet.log.LogSupport
 
@@ -78,7 +78,7 @@ case class ResolvedAttribute(
     with LogSupport {
 
   override lazy val resolved   = true
-  override def sqlExpr: String = s"${prefix}${name}"
+  override def sqlExpr: String = QName.apply(fullName, None).sqlExpr
 
   override def withQualifier(newQualifier: Option[String]): Attribute = {
     this.copy(qualifier = newQualifier)

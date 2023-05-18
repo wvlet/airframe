@@ -17,7 +17,7 @@ package wvlet.airframe.sql.model
 import wvlet.airframe.sql.analyzer.AnalyzerContext
 import wvlet.airframe.sql.catalog.DataType
 import wvlet.airframe.sql.catalog.DataType._
-import wvlet.airframe.sql.model.Expression.{AllColumns, MultiSourceColumn}
+import wvlet.airframe.sql.model.Expression.{AllColumns, MultiSourceColumn, QName}
 import wvlet.airframe.sql.parser.SQLGenerator
 import wvlet.log.LogSupport
 
@@ -344,7 +344,8 @@ trait Attribute extends LeafExpression with LogSupport {
       tableName match {
         case Some(tableName) =>
           this match {
-            case r: ResolvedAttribute if r.sourceColumn.exists(_.table.name == tableName) =>
+            case r: ResolvedAttribute
+                if r.qualifier.orElse(r.sourceColumn.map(_.table.name)).exists(_.equalsIgnoreCase(tableName)) =>
               findMatched(None, columnName)
             case _ =>
               Nil
@@ -352,8 +353,8 @@ trait Attribute extends LeafExpression with LogSupport {
         case None =>
           this match {
             case a: AllColumns =>
-              a.inputColumns.filter(_.name == columnName)
-            case a: Attribute if a.name == columnName =>
+              a.inputColumns.filter(_.name.equalsIgnoreCase(columnName))
+            case a: Attribute if a.name.equalsIgnoreCase(columnName) =>
               Seq(a)
             case _ =>
               Seq.empty
@@ -365,7 +366,7 @@ trait Attribute extends LeafExpression with LogSupport {
       // TODO handle (catalog).(database).(table) names in the qualifier
       case ColumnPath(Some(databaseName), Some(tableName), columnName) =>
         if (databaseName == context.database) {
-          if (qualifier.exists(_ == tableName)) {
+          if (qualifier.contains(tableName)) {
             findMatched(None, columnName).map(_.withQualifier(qualifier))
           } else {
             findMatched(Some(tableName), columnName)
@@ -430,6 +431,9 @@ object Expression {
       QuotedIdentifier(x.stripPrefix("\"").stripSuffix("\""), None)
     } else if (x.matches("[0-9]+")) {
       DigitId(x, None)
+    } else if (!x.matches("[0-9a-zA-Z_]*")) {
+      // Quotations are needed with special characters to generate valid SQL
+      QuotedIdentifier(x, None)
     } else {
       UnquotedIdentifier(x, None)
     }
@@ -443,6 +447,7 @@ object Expression {
   case class QName(parts: List[String], nodeLocation: Option[NodeLocation]) extends LeafExpression {
     def fullName: String          = parts.mkString(".")
     override def toString: String = fullName
+    override def sqlExpr: String  = parts.map(Expression.newIdentifier).map(_.sqlExpr).mkString(".")
   }
   object QName {
     def apply(s: String, nodeLocation: Option[NodeLocation]): QName = {
@@ -608,7 +613,7 @@ object Expression {
     override def dataType: DataType = expr.dataType
 
     override def sqlExpr: String = {
-      s"${expr.sqlExpr} AS ${fullName}"
+      s"${expr.sqlExpr} AS ${QName.apply(fullName, None).sqlExpr}"
     }
 
     override def sourceColumns: Seq[SourceColumn] = {

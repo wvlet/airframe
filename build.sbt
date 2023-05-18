@@ -7,24 +7,26 @@ val uptoScala2          = SCALA_2_13 :: SCALA_2_12 :: Nil
 val targetScalaVersions = SCALA_3 :: uptoScala2
 
 // Add this for using snapshot versions
-// ThisBuild / resolvers += Resolver.sonatypeRepo("snapshots")
+ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
-val AIRSPEC_VERSION                 = "23.3.4"
+val AIRSPEC_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "23.5.3")
 val SCALACHECK_VERSION              = "1.17.0"
 val MSGPACK_VERSION                 = "0.9.3"
-val SCALA_PARSER_COMBINATOR_VERSION = "2.2.0"
+val SCALA_PARSER_COMBINATOR_VERSION = "2.3.0"
 val SQLITE_JDBC_VERSION             = "3.41.2.1"
 val SLF4J_VERSION                   = "2.0.7"
 val JS_JAVA_LOGGING_VERSION         = "1.0.0"
 val JS_JAVA_TIME_VERSION            = "1.0.0"
-val SCALAJS_DOM_VERSION             = "2.4.0"
+val SCALAJS_DOM_VERSION             = "2.5.0"
 val FINAGLE_VERSION                 = "22.12.0"
 val FLUENCY_VERSION                 = "2.7.0"
 val GRPC_VERSION                    = "1.52.0"
 val JMH_VERSION                     = "1.36"
 val JAVAX_ANNOTATION_API_VERSION    = "1.3.2"
-val PARQUET_VERSION                 = "1.13.0"
+val PARQUET_VERSION                 = "1.13.1"
 val SNAKE_YAML_VERSION              = "1.33"
+
+val AIRFRAME_BINARY_COMPAT_VERSION = "23.5.3"
 
 // A short cut for publishing snapshots to Sonatype
 addCommandAlias(
@@ -36,6 +38,12 @@ addCommandAlias(
 addCommandAlias(
   "publishAllLocal",
   s"+ projectJVM/publishLocal; + projectJS/publishLocal;"
+)
+
+// [Development purpose] publish all sbt-airframe related artifacts to local repo
+addCommandAlias(
+  "publishSbtDevLocal",
+  s"++ 2.12; projectJVM/publishLocal; ++ 3; projectDotty/publishLocal; projectJS/publishLocal"
 )
 
 addCommandAlias(
@@ -90,10 +98,18 @@ val buildSettings = Seq[Setting[_]](
   ),
   // Exclude compile-time only projects. This is a workaround for bloop,
   // which cannot resolve Optional dependencies nor compile-internal dependencies.
-  pomPostProcess     := excludePomDependency(Seq("airspec_2.12", "airspec_2.13", "airspec_3")),
-  crossScalaVersions := targetScalaVersions,
-  crossPaths         := true,
-  publishMavenStyle  := true,
+  pomPostProcess        := excludePomDependency(Seq("airspec_2.12", "airspec_2.13", "airspec_3")),
+  crossScalaVersions    := targetScalaVersions,
+  crossPaths            := true,
+  publishMavenStyle     := true,
+  mimaPreviousArtifacts := Set("org.wvlet.airframe" %%% s"${name.value}" % AIRFRAME_BINARY_COMPAT_VERSION),
+  mimaFailOnNoPrevious  := false,
+  mimaBinaryIssueFilters ++= {
+    import com.typesafe.tools.mima.core._
+    Seq(
+      ProblemFilters.exclude[MissingClassProblem]("wvlet.airframe.http.internal.*")
+    )
+  },
   javacOptions ++= Seq("-source", "8", "-target", "8"),
   scalacOptions ++= Seq(
     "-feature",
@@ -116,7 +132,7 @@ val buildSettings = Seq[Setting[_]](
     if (scalaVersion.value.startsWith("3."))
       Seq.empty
     else
-      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.9.0")
+      Seq("org.scala-lang.modules" %%% "scala-collection-compat" % "2.10.0")
   }
 )
 
@@ -150,7 +166,9 @@ val noPublish = Seq(
   crossScalaVersions := Nil,
   // Explicitly skip the doc task because protobuf related Java files causes no type found error
   Compile / doc / sources                := Seq.empty,
-  Compile / packageDoc / publishArtifact := false
+  Compile / packageDoc / publishArtifact := false,
+  // Do not check binary compatibility for unpublished projects
+  mimaPreviousArtifacts := Set.empty
 )
 
 Global / excludeLintKeys ++= Set(sonatypeProfileName, sonatypeSessionName)
@@ -174,41 +192,43 @@ lazy val root =
     )
     .aggregate((jvmProjects ++ jsProjects): _*)
 
-// JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12.
+// JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12 and Scala 3
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
-  diMacros.jvm,
-  di.jvm,
-  surface.jvm,
-  log.jvm,
   canvas,
   config,
   control.jvm,
-  jmx,
-  launcher,
-  metrics.jvm,
   codec.jvm,
-  msgpack.jvm,
-  rx.jvm,
+  diMacros.jvm,
+  di.jvm,
+  fluentd,
+  grpc,
   http.jvm,
   httpCodeGen,
-  grpc,
+  httpRecorder,
+  jdbc,
+  jmx,
   json.jvm,
+  log.jvm,
+  launcher,
+  metrics.jvm,
+  msgpack.jvm,
+  netty,
+  okhttp,
+  parquet,
+  rx.jvm,
   rxHtml.jvm,
-  parquet
+  surface.jvm,
+  ulid.jvm
 )
 
 // Other JVM projects supporting Scala 2.12 - Scala 2.13
 lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[ProjectReference](
-  jdbc,
-  fluentd,
   finagle,
-  netty,
-  okhttp,
-  httpRecorder,
   benchmark,
   sql,
-  ulid.jvm,
-  examples
+  examples,
+  integrationTestApi,
+  integrationTest
 )
 
 // Scala.js build (Scala 2.12, 2.13, and 3.x)
@@ -262,9 +282,10 @@ lazy val projectDotty =
       codec.jvm,
       fluentd,
       http.jvm,
+      netty,
       httpCodeGen,
-      // Finagle is used in the http recorder
-      // httpRecorder
+      httpRecorder,
+      okhttp,
       // // Finagle isn't supporting Scala 3
       // httpFinagle,
       grpc,
@@ -408,9 +429,8 @@ lazy val surface =
     .in(file("airframe-surface"))
     .settings(buildSettings)
     .settings(
-      name                                         := "airframe-surface",
-      description                                  := "A library for extracting object structure surface",
-      libraryDependencies -= "org.wvlet.airframe" %%% "airspec" % AIRSPEC_VERSION % Test,
+      name        := "airframe-surface",
+      description := "A library for extracting object structure surface",
       // TODO: This is a temporaly solution. Use AirSpec after Scala 3 support of Surface is completed
       libraryDependencies += "org.scalameta" %%% "munit" % "0.7.29" % Test,
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
@@ -456,7 +476,7 @@ lazy val control =
       description := "A library for controlling program flows and retrying"
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(log)
+    .dependsOn(log, rx)
 
 lazy val ulid =
   crossProject(JVMPlatform, JSPlatform)
@@ -507,7 +527,7 @@ val logDependencies = { scalaVersion: String =>
 
 val logJVMDependencies = Seq(
   // For rotating log files
-  "ch.qos.logback" % "logback-core" % "1.3.6"
+  "ch.qos.logback" % "logback-core" % "1.3.7"
 )
 
 // airframe-log should have minimum dependencies
@@ -672,7 +692,7 @@ lazy val httpCodeGen =
       packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13", "airspec_3"),
       libraryDependencies ++= Seq(
         // Use swagger-parser only for validating YAML format in tests
-        "io.swagger.parser.v3" % "swagger-parser" % "2.1.13" % Test,
+        "io.swagger.parser.v3" % "swagger-parser" % "2.1.14" % Test,
         // Swagger includes dependency to SLF4J, so redirect slf4j logs to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION % Test,
         // For gRPC route scanner test
@@ -691,7 +711,7 @@ lazy val netty =
       name        := "airframe-http-netty",
       description := "Airframe HTTP Netty backend",
       libraryDependencies ++= Seq(
-        "io.netty" % "netty-all" % "4.1.91.Final"
+        "io.netty" % "netty-all" % "4.1.92.Final"
       )
     )
     .dependsOn(http.jvm, rx.jvm)
@@ -741,12 +761,11 @@ lazy val okhttp =
   project
     .in(file("airframe-http-okhttp"))
     .settings(buildSettings)
-    .settings(scala2Only)
     .settings(
       name        := "airframe-http-okhttp",
       description := "REST API binding for OkHttp",
       libraryDependencies ++= Seq(
-        "com.squareup.okhttp3" % "okhttp" % "4.10.0"
+        "com.squareup.okhttp3" % "okhttp" % "4.11.0"
       )
     )
     .dependsOn(http.jvm, netty % Test)
@@ -755,20 +774,13 @@ lazy val httpRecorder =
   project
     .in(file("airframe-http-recorder"))
     .settings(buildSettings)
-    .settings(scala2Only)
     .settings(
       name        := "airframe-http-recorder",
       description := "Http Response Recorder",
-      // Finagle doesn't support Scala 2.13 yet
       libraryDependencies ++= Seq(
-        "com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION,
-        "com.twitter" %% "finagle-netty4"      % FINAGLE_VERSION,
-        "com.twitter" %% "finagle-core"        % FINAGLE_VERSION,
-        // Redirecting slf4j log in Finagle to airframe-log
-        "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codec.jvm, metrics.jvm, control.jvm, finagle, jdbc)
+    .dependsOn(codec.jvm, metrics.jvm, control.jvm, netty, jdbc)
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)
@@ -789,10 +801,10 @@ lazy val benchmark =
     .enablePlugins(JmhPlugin, PackPlugin)
     .settings(buildSettings)
     .settings(noPublish)
-    .settings(scala2Only)
     .settings(
-      name     := "airframe-benchmark",
-      packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
+      crossScalaVersions := targetScalaVersions,
+      name               := "airframe-benchmark",
+      packMain           := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
       // Turbo mode didn't work with this error:
       // java.lang.RuntimeException: ERROR: Unable to find the resource: /META-INF/BenchmarkList
       turbo := false,
@@ -815,7 +827,7 @@ lazy val benchmark =
         // "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
         // For grpc-java
         "io.grpc"             % "grpc-protobuf" % GRPC_VERSION,
-        "com.google.protobuf" % "protobuf-java" % "3.22.2",
+        "com.google.protobuf" % "protobuf-java" % "3.23.1",
         "com.chatwork"       %% "scala-ulid"    % "1.0.24"
       )
       //      Compile / PB.targets := Seq(
@@ -824,7 +836,7 @@ lazy val benchmark =
       // publishing .tgz
       // publishPackArchiveTgz
     )
-    .dependsOn(msgpack.jvm, json.jvm, metrics.jvm, launcher, httpCodeGen, finagle, netty, grpc, ulid.jvm)
+    .dependsOn(msgpack.jvm, json.jvm, metrics.jvm, launcher, httpCodeGen, netty, grpc, ulid.jvm)
 
 lazy val fluentd =
   project
@@ -849,9 +861,9 @@ def sqlRefLib = { scalaVersion: String =>
   if (scalaVersion.startsWith("2.13")) {
     Seq(
       // Include Spark just as a reference implementation
-      "org.apache.spark" %% "spark-sql" % "3.3.2" % Test,
+      "org.apache.spark" %% "spark-sql" % "3.4.0" % Test,
       // Include Trino as a reference implementation
-      "io.trino" % "trino-main" % "412" % Test
+      "io.trino" % "trino-main" % "418" % Test
     )
   } else {
     Seq.empty
@@ -945,9 +957,9 @@ lazy val examples =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      name        := "airframe-examples",
-      description := "Airframe examples",
-      crossScalaVersions ++= targetScalaVersions,
+      name               := "airframe-examples",
+      description        := "Airframe examples",
+      crossScalaVersions := targetScalaVersions,
       libraryDependencies ++= Seq(
       )
     )
@@ -975,3 +987,29 @@ lazy val dottyTest =
       crossScalaVersions := List(SCALA_3)
     )
     .dependsOn(log.jvm, surface.jvm, di.jvm, codec.jvm)
+
+lazy val integrationTestApi =
+  project
+    .in(file("airframe-integration-test-api"))
+    .settings(buildSettings)
+    .settings(noPublish)
+    .settings(
+      name               := "airframe-integration-test-api",
+      description        := "APIs for integration test",
+      crossScalaVersions := targetScalaVersions
+    )
+    .dependsOn(http.jvm)
+
+lazy val integrationTest =
+  project
+    .in(file("airframe-integration-test"))
+    .enablePlugins(AirframeHttpPlugin)
+    .settings(buildSettings)
+    .settings(noPublish)
+    .settings(
+      name                := "airframe-integration-test",
+      description         := "integration test project",
+      crossScalaVersions  := targetScalaVersions,
+      airframeHttpClients := Seq("wvlet.airframe.test.api:rpc")
+    )
+    .dependsOn(integrationTestApi, netty)
