@@ -17,7 +17,7 @@ package wvlet.airframe.sql.model
 import wvlet.airframe.sql.analyzer.AnalyzerContext
 import wvlet.airframe.sql.catalog.DataType
 import wvlet.airframe.sql.catalog.DataType._
-import wvlet.airframe.sql.model.Expression.{AllColumns, MultiSourceColumn}
+import wvlet.airframe.sql.model.Expression.{AllColumns, MultiSourceColumn, QName}
 import wvlet.airframe.sql.parser.SQLGenerator
 import wvlet.log.LogSupport
 
@@ -431,6 +431,9 @@ object Expression {
       QuotedIdentifier(x.stripPrefix("\"").stripSuffix("\""), None)
     } else if (x.matches("[0-9]+")) {
       DigitId(x, None)
+    } else if (!x.matches("[0-9a-zA-Z_]*")) {
+      // Quotations are needed with special characters to generate valid SQL
+      QuotedIdentifier(x, None)
     } else {
       UnquotedIdentifier(x, None)
     }
@@ -444,6 +447,7 @@ object Expression {
   case class QName(parts: List[String], nodeLocation: Option[NodeLocation]) extends LeafExpression {
     def fullName: String          = parts.mkString(".")
     override def toString: String = fullName
+    override def sqlExpr: String  = parts.map(Expression.newIdentifier).map(_.sqlExpr).mkString(".")
   }
   object QName {
     def apply(s: String, nodeLocation: Option[NodeLocation]): QName = {
@@ -609,7 +613,7 @@ object Expression {
     override def dataType: DataType = expr.dataType
 
     override def sqlExpr: String = {
-      s"${expr.sqlExpr} AS ${fullName}"
+      s"${expr.sqlExpr} AS ${QName.apply(fullName, None).sqlExpr}"
     }
 
     override def sourceColumns: Seq[SourceColumn] = {

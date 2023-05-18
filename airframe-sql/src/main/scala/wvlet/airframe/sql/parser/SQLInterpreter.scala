@@ -409,15 +409,15 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
   override def visitSelectSingle(ctx: SelectSingleContext): Attribute = {
     val alias = Option(ctx.AS())
-      .map(x => expression(ctx.identifier()))
-      .orElse(Option(ctx.identifier()).map(expression(_)))
+      .map(_ => visitIdentifier(ctx.identifier()))
+      .orElse(Option(ctx.identifier()).map(visitIdentifier))
     val child = expression(ctx.expression())
     val qualifier = child match {
       case a: Attribute => a.qualifier
       case _            => None
     }
     SingleColumn(child, qualifier, getLocation(ctx))
-      .withAlias(alias.map(_.sqlExpr))
+      .withAlias(alias.map(_.value))
   }
 
   override def visitExpression(ctx: ExpressionContext): Expression = {

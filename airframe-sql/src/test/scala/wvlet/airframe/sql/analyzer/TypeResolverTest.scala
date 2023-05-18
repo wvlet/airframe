@@ -1066,4 +1066,8 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
     // No ambiguity error
   }
 
+  test("Resolve quoted identifiers") {
+    analyze("select \"prénom\" from (select name as \"prénom\" from A)")
+    // No error
+  }
 }
