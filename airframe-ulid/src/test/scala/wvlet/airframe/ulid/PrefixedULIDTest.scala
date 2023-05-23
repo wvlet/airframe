@@ -16,8 +16,6 @@ package wvlet.airframe.ulid
 import wvlet.airspec.AirSpec
 import wvlet.airspec.spi.PropertyCheck
 
-/**
-  */
 class PrefixedULIDTest extends AirSpec with PropertyCheck {
 
   test("basic") {
@@ -66,6 +64,9 @@ class PrefixedULIDTest extends AirSpec with PropertyCheck {
     p.startsWith("P:") shouldBe true
     // The suffix should be a valid ULID
     ULID.fromString(p.stripPrefix("P:"))
+
+    // Return a dummy value as a  workaround for #2977: compilation failure before AirSpec 23.5.5
+    true
   }
 
   test("have an order") {
