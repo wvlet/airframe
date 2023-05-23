@@ -6,6 +6,11 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 23.5.5
+
+This is an upgrade to support the latest Scala 3.3.0 
+[Release notes](https://github.com/wvlet/airframe/releases/tag/v23.5.5)
+
 ## 23.5.4
 
 [Release notes](https://github.com/wvlet/airframe/releases/tag/v23.5.4)
