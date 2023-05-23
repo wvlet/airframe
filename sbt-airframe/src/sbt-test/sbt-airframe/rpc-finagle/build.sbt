@@ -7,7 +7,7 @@ ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
 ThisBuild / scalaVersion := "2.12.17"
 
-val AIRSPEC_VERSION = sys.env.getOrElse("AIRSPEC_VERSION", "23.5.3")
+val AIRSPEC_VERSION = sys.env.getOrElse("AIRSPEC_VERSION", "23.5.5")
 
 val buildSettings: Seq[Def.Setting[_]] = Seq(
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
