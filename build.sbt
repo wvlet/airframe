@@ -828,7 +828,7 @@ lazy val benchmark =
         // For grpc-java
         "io.grpc"             % "grpc-protobuf" % GRPC_VERSION,
         "com.google.protobuf" % "protobuf-java" % "3.23.1",
-        "com.chatwork"       %% "scala-ulid"    % "1.0.24"
+        ("com.chatwork"      %% "scala-ulid"    % "1.0.24").cross(CrossVersion.for3Use2_13)
       )
       //      Compile / PB.targets := Seq(
       //        scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"

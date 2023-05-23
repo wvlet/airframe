@@ -13,7 +13,7 @@ private[surface] object CompileTimeSurfaceFactory {
     val surfaceExpr = f.surfaceOf(tpe)
     val t           = TypeRepr.of[A]
     val flags       = t.typeSymbol.flags
-    if (!flags.is(Flags.Static) && flags.is(Flags.NoInits)) {
+    if (!flags.is(Flags.JavaStatic) && flags.is(Flags.NoInits)) {
       t.typeSymbol.maybeOwner match {
         // For inner-class definitions
         case s: Symbol
@@ -397,7 +397,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   private def isPathDependentType(t: TypeRepr): Boolean = {
-    !t.typeSymbol.flags.is(Flags.Static) && (t match {
+    !t.typeSymbol.flags.is(Flags.JavaStatic) && (t match {
       case t: TypeBounds => true
       case _             => false
     })
@@ -500,9 +500,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     val typeArgTable: Map[String, TypeRepr] = typeMappingTable(t, method)
 
     val origParamSymss = method.paramSymss
-    val typeMembers    = t.typeSymbol.typeMembers.filterNot(_.flags.is(Flags.Module))
+
+    val declaredTypes = t.typeSymbol.declaredTypes.filterNot(_.flags.is(Flags.Module))
     val paramss = {
-      if (origParamSymss.nonEmpty && typeMembers.nonEmpty)
+      if (origParamSymss.nonEmpty && declaredTypes.nonEmpty)
         origParamSymss.tail
       else {
         origParamSymss
@@ -816,7 +817,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     if (m.flags.is(Flags.Protected)) {
       mod |= MethodModifier.PROTECTED
     }
-    if (m.flags.is(Flags.Static)) {
+    if (m.flags.is(Flags.JavaStatic)) {
       mod |= MethodModifier.STATIC
     }
     if (m.flags.is(Flags.Final)) {
