@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.http.{Http, HttpMessage, RxHttpEndpoint, RxRouter}
+import wvlet.airframe.http._
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
@@ -31,7 +31,19 @@ class CustomEndpointTest extends AirSpec {
     router shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces, Some(ep)) =>
       ep shouldBeTheSameInstanceAs endpoint
       controllerSurface shouldBe Surface.of[RedirectToRxEndpoint]
-      methodSurfaces(0).name shouldBe "process"
+
+      val expectedMethods = Set(
+        HttpMethod.GET.toLowerCase,
+        HttpMethod.POST.toLowerCase,
+        HttpMethod.PATCH.toLowerCase,
+        HttpMethod.DELETE.toLowerCase,
+        HttpMethod.PUT.toLowerCase,
+        HttpMethod.OPTIONS.toLowerCase,
+        HttpMethod.TRACE.toLowerCase,
+        HttpMethod.HEAD.toLowerCase
+      )
+
+      methodSurfaces.map(_.name).toSet == expectedMethods
     }
   }
 }
