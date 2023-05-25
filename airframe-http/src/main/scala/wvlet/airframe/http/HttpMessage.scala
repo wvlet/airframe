@@ -18,6 +18,7 @@ import wvlet.airframe.msgpack.spi.MsgPack
 
 import java.nio.charset.StandardCharsets
 import java.time.Instant
+import java.util
 import scala.language.experimental.macros
 
 trait HttpMessage[Raw] extends HttpMessageBase[Raw] {
@@ -141,7 +142,7 @@ object HttpMessage {
     def nonEmpty: Boolean = !isEmpty
     def toContentString: String
     def toContentBytes: Array[Byte]
-    def contentHash: Int = toContentBytes.hashCode()
+    def contentHash: Int = util.Arrays.hashCode(toContentBytes)
   }
 
   object Message {

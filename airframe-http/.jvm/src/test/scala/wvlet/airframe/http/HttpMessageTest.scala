@@ -14,6 +14,8 @@
 package wvlet.airframe.http
 import wvlet.airspec.AirSpec
 
+import java.nio.charset.StandardCharsets
+
 /**
   */
 class HttpMessageTest extends AirSpec {
@@ -159,5 +161,13 @@ class HttpMessageTest extends AirSpec {
     r.accept shouldBe Seq(HttpHeader.MediaType.ApplicationMsgPack)
     r.acceptsMsgPack shouldBe true
     r.acceptsJson shouldBe false
+  }
+
+  test("hashcode of the body gets computed correctly") {
+    val json = "{\"drink\": \"coffee\"}";
+    val req1 = Http.request("/drinks").withContent(json)
+    val req2 = Http.request("/drinks").withContent(json.getBytes(StandardCharsets.UTF_8))
+
+    req1.message.contentHash shouldBe req2.message.contentHash
   }
 }
