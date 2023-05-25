@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.http.{Endpoint, HttpMessage, RPCContext, RxHttpEndpoint}
+import wvlet.airframe.http.{Endpoint, HttpMessage, HttpMethod, RPCContext, RxHttpEndpoint}
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
@@ -22,8 +22,31 @@ import wvlet.log.LogSupport
   * @param endpoint
   */
 class RedirectToRxEndpoint(endpoint: RxHttpEndpoint) extends LogSupport {
-  @Endpoint(path = "/*path")
-  def process(): Rx[HttpMessage.Response] = {
+  @Endpoint(path = "/*path", method = HttpMethod.GET)
+  def get(): Rx[HttpMessage.Response] = process()
+
+  @Endpoint(path = "/*path", method = HttpMethod.POST)
+  def post(): Rx[HttpMessage.Response] = process()
+
+  @Endpoint(path = "/*path", method = HttpMethod.PUT)
+  def put(): Rx[HttpMessage.Response] = process()
+
+  @Endpoint(path = "/*path", method = HttpMethod.HEAD)
+  def head(): Rx[HttpMessage.Response] = process()
+
+  @Endpoint(path = "/*path", method = HttpMethod.PATCH)
+  def patch(): Rx[HttpMessage.Response] = process()
+
+  @Endpoint(path = "/*path", method = HttpMethod.DELETE)
+  def delete(): Rx[HttpMessage.Response] = process()
+
+  @Endpoint(path = "/*path", method = HttpMethod.OPTIONS)
+  def options(): Rx[HttpMessage.Response] = process()
+
+  @Endpoint(path = "/*path", method = HttpMethod.TRACE)
+  def trace(): Rx[HttpMessage.Response] = process()
+
+  private def process(): Rx[HttpMessage.Response] = {
     val req = RPCContext.current.httpRequest
     endpoint.apply(req)
   }
