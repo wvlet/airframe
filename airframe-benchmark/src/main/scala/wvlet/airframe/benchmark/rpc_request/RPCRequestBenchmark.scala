@@ -61,35 +61,82 @@ class RPCRequestBenchmark extends LogSupport {
   }
 
   @Benchmark
-  def rpcNettyResponseBuilder(blackhole: Blackhole): Unit = {
+  def rpcRequestBuilderRaw(blackhole: Blackhole): Unit = {
     blackhole.consume {
-      val resp = Http.response(HttpStatus.Ok_200, """{"message":"Hello, RPC"}""")
-      NettyRequestHandler.toNettyResponse(resp)
+      wvlet.airframe.http
+        .Request(
+          method = HttpMethod.POST,
+          uri = "/wvlet.airframe.benchmark.http.Greeter/hello",
+          header = HttpMultiMap(
+            Map(
+              HttpHeader.ContentLength -> "20",
+              HttpHeader.Date          -> "2020-01-01",
+              HttpHeader.UserAgent     -> "airframe",
+              HttpHeader.ContentType   -> HttpHeader.MediaType.ApplicationJson
+            )
+          ),
+          message = HttpMessage.StringMessage("""{"message":"Hello, RPC"}""")
+        )
     }
   }
 
   @Benchmark
-  def rpcNettyResponseBuilderImmutable(blackhole: Blackhole): Unit = {
+  def rpcRequestBuilder(blackhole: Blackhole): Unit = {
     blackhole.consume {
-      val resp = Http.response(HttpStatus.Ok_200).withJson("""{"message":"Hello, RPC"}""")
-      NettyRequestHandler.toNettyResponse(resp)
+      wvlet.airframe.http
+        .Request(HttpMethod.POST, "/wvlet.airframe.benchmark.http.Greeter/hello").withJson(
+          """{"message":"Hello, RPC"}"""
+        ).withAcceptMsgPack
+        .withContentLength(20)
+        .withDate("2020-01-01")
+        .withUserAgent("airframe")
     }
   }
 
-  private val rpcMethod = RPCMethod(
-    path = "/wvlet.airframe.benchmark.http.Greeter/hello",
-    rpcInterfaceName = "Greeter",
-    methodName = "hello",
-    requestSurface = Surface.of[Map[String, Any]],
-    responseSurface = Surface.of[String]
-  )
   @Benchmark
-  def rpcRequestWithRPCMethod(blackhole: Blackhole): Unit = {
+  def rpcRequestBuilderLegacy(blackhole: Blackhole): Unit = {
     blackhole.consume {
-      noNetworkRPCClient.rpc[Map[String, Any], String](
-        rpcMethod,
-        Map("name" -> "RPC")
-      )
+      Http
+        .request(HttpMethod.POST, "/wvlet.airframe.benchmark.http.Greeter/hello").withJson(
+          """{"message":"Hello, RPC"}"""
+        )
+        .withAcceptMsgPack
+        .withContentLength(20)
+        .withDate("2020-01-01")
+        .withUserAgent("airframe")
     }
   }
+
+//  @Benchmark
+//  def rpcNettyResponseBuilder(blackhole: Blackhole): Unit = {
+//    blackhole.consume {
+//      val resp = Http.response(HttpStatus.Ok_200, """{"message":"Hello, RPC"}""")
+//      NettyRequestHandler.toNettyResponse(resp)
+//    }
+//  }
+//
+//  @Benchmark
+//  def rpcNettyResponseBuilderImmutable(blackhole: Blackhole): Unit = {
+//    blackhole.consume {
+//      val resp = Http.response(HttpStatus.Ok_200).withJson("""{"message":"Hello, RPC"}""")
+//      NettyRequestHandler.toNettyResponse(resp)
+//    }
+//  }
+//
+//  private val rpcMethod = RPCMethod(
+//    path = "/wvlet.airframe.benchmark.http.Greeter/hello",
+//    rpcInterfaceName = "Greeter",
+//    methodName = "hello",
+//    requestSurface = Surface.of[Map[String, Any]],
+//    responseSurface = Surface.of[String]
+//  )
+//  @Benchmark
+//  def rpcRequestWithRPCMethod(blackhole: Blackhole): Unit = {
+//    blackhole.consume {
+//      noNetworkRPCClient.rpc[Map[String, Any], String](
+//        rpcMethod,
+//        Map("name" -> "RPC")
+//      )
+//    }
+//  }
 }
