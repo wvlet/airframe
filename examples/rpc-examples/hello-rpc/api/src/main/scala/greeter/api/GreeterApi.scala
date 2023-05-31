@@ -14,4 +14,3 @@ class GreeterApi extends LogSupport {
 object GreterApi extends RxRouterProvider {
   override def router: RxRouter = RxRouter.of[GreeterApi]
 }
-

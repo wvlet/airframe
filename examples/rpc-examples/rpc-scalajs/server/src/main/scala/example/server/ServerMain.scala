@@ -16,7 +16,7 @@ package example.server
 import wvlet.airframe.http._
 import wvlet.airframe.launcher.{Launcher, command, option}
 import wvlet.log.{LogSupport, Logger}
-import wvlet.airframe.http.netty.{Netty,NettyServer}
+import wvlet.airframe.http.netty.{Netty, NettyServer}
 
 /**
   */

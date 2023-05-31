@@ -23,14 +23,13 @@ object MyServer extends LogSupport {
 
   def main(args: Array[String]): Unit = {
     val router = RxRouter.of(
-        RxRouter.of[MyServiceImpl],
-        RxRouter.of[MyRPCImpl]
+      RxRouter.of[MyServiceImpl],
+      RxRouter.of[MyRPCImpl]
     )
     info(router)
 
     val d =
-      Netty
-        .server
+      Netty.server
         .withRouter(router)
         .designWithSyncClient
 

@@ -10,7 +10,7 @@ object Main {
   import MyRPC._
 
   // RPC client that returns Rx[X] type
-  rpcClient.MyRPC.hello(System.currentTimeMillis(), HelloRequest()).run {
-    case x => println(x)
+  rpcClient.MyRPC.hello(System.currentTimeMillis(), HelloRequest()).run { case x =>
+    println(x)
   }
 }

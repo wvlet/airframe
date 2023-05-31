@@ -43,10 +43,10 @@ object ExampleUI extends LogSupport {
 class MainUI extends RxElement with LogSupport {
   // Prepare an RPC client
   private val rpcClient = ServiceRPC.newRPCAsyncClient(Http.client.newJSClient)
-  private val message = Rx.variable("N/A")
+  private val message   = Rx.variable("N/A")
 
   private def myButton = button(cls -> "btn btn-primary")
-  private var counter = 0
+  private var counter  = 0
 
   override def render: RxElement = {
     div(
