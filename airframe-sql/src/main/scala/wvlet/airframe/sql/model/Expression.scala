@@ -48,10 +48,10 @@ sealed trait Expression extends TreeNode[Expression] with Product {
   def dataTypeName: String  = dataType.typeDescription
   def dataType: DataType    = DataType.UnknownType
 
-  private def createInstance(args: Iterator[AnyRef]): Expression = {
-    // TODO Build this LogicalPlan using Surface
+  protected def copyInstance(newArgs: Seq[AnyRef]): this.type = {
     val primaryConstructor = this.getClass.getDeclaredConstructors()(0)
-    primaryConstructor.newInstance(args.toArray[AnyRef]: _*).asInstanceOf[Expression]
+    val newObj             = primaryConstructor.newInstance(newArgs: _*)
+    newObj.asInstanceOf[this.type]
   }
 
   def transformPlan(rule: PartialFunction[LogicalPlan, LogicalPlan]): Expression = {
@@ -66,8 +66,8 @@ sealed trait Expression extends TreeNode[Expression] with Product {
       }
     }
 
-    val newArgs = productIterator.map(recursiveTransform)
-    createInstance(newArgs)
+    val newArgs = productIterator.map(recursiveTransform).toIndexedSeq
+    copyInstance(newArgs)
   }
 
   def traversePlan[U](rule: PartialFunction[LogicalPlan, U]): Unit = {
@@ -104,27 +104,39 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     * @return
     */
   def transformExpression(rule: PartialFunction[Expression, Expression]): Expression = {
-    def recursiveTransform(arg: Any): AnyRef = {
+    var changed = false
+    def recursiveTransform(arg: Any): AnyRef =
       arg match {
-        case e: Expression  => e.transformExpression(rule)
-        case l: LogicalPlan => l.transformExpressions(rule)
-        case Some(x)        => Some(recursiveTransform(x))
-        case s: Seq[_]      => s.map(recursiveTransform _)
-        case other: AnyRef  => other
-        case null           => null
+        case e: Expression =>
+          val newPlan = e.transformExpression(rule)
+          if (e eq newPlan) e
+          else {
+            changed = true
+            newPlan
+          }
+        case l: LogicalPlan =>
+          val newPlan = l.transformExpressions(rule)
+          if (l eq newPlan) l
+          else {
+            changed = true
+            newPlan
+          }
+        case Some(x)       => Some(recursiveTransform(x))
+        case s: Seq[_]     => s.map(recursiveTransform)
+        case other: AnyRef => other
+        case null          => null
       }
-    }
 
     // First apply the rule to itself
     val newExpr: Expression = rule
       .applyOrElse(this, identity[Expression])
 
     // Next, apply the rule to child nodes
-    if (newExpr.productArity == 0) {
-      newExpr
+    val newArgs = newExpr.productIterator.map(recursiveTransform).toIndexedSeq
+    if (changed) {
+      newExpr.copyInstance(newArgs)
     } else {
-      val newArgs = newExpr.productIterator.map(recursiveTransform)
-      newExpr.createInstance(newArgs)
+      newExpr
     }
   }
 
@@ -134,22 +146,35 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     * @return
     */
   def transformUpExpression(rule: PartialFunction[Expression, Expression]): Expression = {
+    var changed = false
     def iter(arg: Any): AnyRef =
       arg match {
-        case e: Expression  => e.transformUpExpression(rule)
-        case l: LogicalPlan => l.transformUpExpressions(rule)
-        case Some(x)        => Some(iter(x))
-        case s: Seq[_]      => s.map(iter _)
-        case other: AnyRef  => other
-        case null           => null
+        case e: Expression =>
+          val newPlan = e.transformUpExpression(rule)
+          if (e eq newPlan) e
+          else {
+            changed = true
+            newPlan
+          }
+        case l: LogicalPlan =>
+          val newPlan = l.transformUpExpressions(rule)
+          if (l eq newPlan) l
+          else {
+            changed = true
+            newPlan
+          }
+        case Some(x)       => Some(iter(x))
+        case s: Seq[_]     => s.map(iter)
+        case other: AnyRef => other
+        case null          => null
       }
 
     // Apply the rule first to child nodes
-    val newExpr = if (productArity == 0) {
-      this
+    val newArgs = productIterator.map(iter).toIndexedSeq
+    val newExpr = if (changed) {
+      copyInstance(newArgs)
     } else {
-      val newArgs = productIterator.map(iter)
-      createInstance(newArgs)
+      this
     }
 
     // Finally, apply the rule to itself
