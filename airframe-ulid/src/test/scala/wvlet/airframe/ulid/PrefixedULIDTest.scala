@@ -65,7 +65,7 @@ class PrefixedULIDTest extends AirSpec with PropertyCheck {
     // The suffix should be a valid ULID
     ULID.fromString(p.stripPrefix("P:"))
 
-    // Return a dummy value as a  workaround for #2977: compilation failure before AirSpec 23.5.5
+    // Return a dummy value as a  workaround for #2977: compilation failure before AirSpec 23.5.7
     true
   }
 
