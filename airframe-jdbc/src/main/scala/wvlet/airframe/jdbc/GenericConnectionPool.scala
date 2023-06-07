@@ -36,6 +36,7 @@ class GenericConnectionPool(val config: DbConfig) extends ConnectionPool {
         if (config.postgres.useSSL) {
           connectionPoolConfig.addDataSourceProperty("ssl", "true")
           connectionPoolConfig.addDataSourceProperty("sslfactory", config.postgres.sslFactory)
+          connectionPoolConfig.addDataSourceProperty("sslmode", config.postgres.sslmode)
         }
     }
 

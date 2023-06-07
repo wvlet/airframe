@@ -64,6 +64,7 @@ class DbConfigTest extends AirSpec {
       .withPassword("xxx")
     p.jdbcPort shouldBe 5432
     p.jdbcDriverName shouldBe "org.postgresql.Driver"
+    p.jdbcUrl shouldBe "jdbc:postgresql://localhost/public"
 
     val presto =
       c.withType("presto")
