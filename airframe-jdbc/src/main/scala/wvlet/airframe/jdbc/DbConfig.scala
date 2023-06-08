@@ -125,7 +125,7 @@ case class PostgreSQLConfig(
     // SSL configuration for using RDS
     useSSL: Boolean = true,
     sslFactory: String = "org.postgresql.ssl.NonValidatingFactory",
-    sslmode: String = "verify-full"
+    sslmode: String = "prefer"
 )
 
 case class ConnectionPoolConfig(
