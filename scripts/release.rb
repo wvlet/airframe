@@ -21,5 +21,10 @@ next_version = STDIN.gets.chomp
 
 next_version = default_version if next_version.empty?
 
+def run(cmd)
+  puts cmd
+  system cmd
+end
+
 run "git tag -a -m \"Airframe #{next_version}\" v#{next_version}"
 run "git push --follow-tags"
