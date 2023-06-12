@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.sql.catalog
 
+import wvlet.airframe.sql.Assertion._
+
 /**
   * Manage the list of unbounded functions, whose types are not resolved yet.
   */
@@ -31,8 +33,8 @@ trait SQLFunctionType {
 }
 
 case class BoundFunction(name: String, args: Seq[DataType], returnType: DataType) extends SQLFunction {
-  require(args.forall(_.isBound), s"Found unbound arguments: ${this}")
-  require(returnType.isBound, s"return type: ${returnType} is not bound")
+  require(args.forall(_.isBound), s"Found unbound arguments: ${this}", None)
+  require(returnType.isBound, s"return type: ${returnType} is not bound", None)
 }
 
 case class UnboundFunction(name: String, args: Seq[DataType], returnType: DataType) extends SQLFunction {

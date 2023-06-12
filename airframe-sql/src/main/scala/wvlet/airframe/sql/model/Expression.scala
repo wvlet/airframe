@@ -17,8 +17,9 @@ package wvlet.airframe.sql.model
 import wvlet.airframe.sql.analyzer.AnalyzerContext
 import wvlet.airframe.sql.catalog.DataType
 import wvlet.airframe.sql.catalog.DataType._
-import wvlet.airframe.sql.model.Expression.{AllColumns, MultiSourceColumn, QName}
+import wvlet.airframe.sql.model.Expression.{AllColumns, MultiSourceColumn}
 import wvlet.airframe.sql.parser.SQLGenerator
+import wvlet.airframe.sql.Assertion._
 import wvlet.log.LogSupport
 
 import java.util.Locale
@@ -432,7 +433,7 @@ object Expression {
   import wvlet.airframe.sql.model.LogicalPlan.Relation
 
   def concat(expr: Seq[Expression])(merger: (Expression, Expression) => Expression): Expression = {
-    require(expr.length > 0)
+    require(expr.length > 0, None)
     if (expr.length == 1) {
       expr.head
     } else {
@@ -556,7 +557,7 @@ object Expression {
   case class JoinOnEq(keys: Seq[Expression], nodeLocation: Option[NodeLocation])
       extends JoinCriteria
       with LeafExpression {
-    require(keys.forall(_.resolved), s"all keys of JoinOnEq must be resolved: ${keys}")
+    require(keys.forall(_.resolved), s"all keys of JoinOnEq must be resolved: ${keys}", nodeLocation)
 
     override def children: Seq[Expression] = keys
     override def toString: String          = s"JoinOnEq(${keys.mkString(", ")})"
@@ -694,7 +695,7 @@ object Expression {
       qualifier: Option[String],
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
-    require(inputs.nonEmpty, s"The inputs of MultiSourceColumn should not be empty: ${this}")
+    require(inputs.nonEmpty, s"The inputs of MultiSourceColumn should not be empty: ${this}", nodeLocation)
 
     override def toString: String = s"${fullName}:${dataTypeName} := {${inputs.mkString(", ")}}"
 
@@ -893,7 +894,7 @@ object Expression {
   case class NotEq(left: Expression, right: Expression, operatorName: String, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression
       with BinaryExpression {
-    require(operatorName == "<>" || operatorName == "!=", "NotEq.operatorName must be either <> or !=")
+    require(operatorName == "<>" || operatorName == "!=", "NotEq.operatorName must be either <> or !=", nodeLocation)
   }
   case class And(left: Expression, right: Expression, nodeLocation: Option[NodeLocation])
       extends ConditionalExpression

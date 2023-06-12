@@ -67,6 +67,7 @@ object SQLErrorCode {
       SQLError(errorCode, message, cause = Option(cause), nodeLocation, metadata)
   }
 
+  // User errors that are not retryable in general
   case object UserError             extends SQLErrorCode(0x0000)
   case object SyntaxError           extends SQLErrorCode(0x0001)
   case object UnknownDataType       extends SQLErrorCode(0x0002)
@@ -79,5 +80,23 @@ object SQLErrorCode {
   case object CatalogNotFound       extends SQLErrorCode(0x0009)
   case object InvalidArgument       extends SQLErrorCode(0x0010)
   case object UnsupportedSyntax     extends SQLErrorCode(0x0011)
-  case object InternalError         extends SQLErrorCode(0x10000)
+  case object RequirementFailed     extends SQLErrorCode(0x0012)
+
+  // Internal errors that are usually retryable
+  case object InternalError extends SQLErrorCode(0x10000)
+}
+
+/**
+  * Methods for assertion replacing Predef.require() that throws SQLError instead of IllegalArgumentException.
+  */
+object Assertion {
+  def require(requirement: Boolean, message: => Any, nodeLocation: Option[NodeLocation]): Unit = {
+    if (!requirement)
+      throw SQLErrorCode.RequirementFailed.newException(s"requirement failed: ${message}", nodeLocation)
+  }
+
+  def require(requirement: Boolean, nodeLocation: Option[NodeLocation]): Unit = {
+    if (!requirement)
+      throw SQLErrorCode.RequirementFailed.newException("requirement failed", nodeLocation)
+  }
 }
