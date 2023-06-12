@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.sql.model
 
+import wvlet.airframe.sql.SQLError
 import wvlet.airframe.sql.model.Expression.{FunctionCall, SingleColumn, UnquotedIdentifier}
 import wvlet.airspec.AirSpec
 
@@ -95,4 +96,10 @@ class ExpressionTest extends AirSpec {
     )
   }
 
+  test("internal verification throws SQLError") {
+    val e = intercept[SQLError] {
+      Expression.concat(Nil) { (e1, e2) => Expression.concatWithAnd(Seq(e1, e2)) }
+    }
+    e.message shouldBe "requirement failed"
+  }
 }

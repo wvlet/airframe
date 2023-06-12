@@ -81,3 +81,18 @@ object SQLErrorCode {
   case object UnsupportedSyntax     extends SQLErrorCode(0x0011)
   case object InternalError         extends SQLErrorCode(0x10000)
 }
+
+/**
+  * Methods for assertion replacing Predef.require() that throws SQLError instead of IllegalArgumentException.
+  */
+object Assertion {
+  def require(requirement: Boolean, message: => Any, nodeLocation: Option[NodeLocation]): Unit = {
+    if (!requirement)
+      throw SQLErrorCode.InternalError.newException(s"requirement failed: ${message}", nodeLocation)
+  }
+
+  def require(requirement: Boolean, nodeLocation: Option[NodeLocation]): Unit = {
+    if (!requirement)
+      throw SQLErrorCode.InternalError.newException("requirement failed", nodeLocation)
+  }
+}
