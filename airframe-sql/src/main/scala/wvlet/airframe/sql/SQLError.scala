@@ -88,11 +88,11 @@ object SQLErrorCode {
 object Assertion {
   def require(requirement: Boolean, message: => Any, nodeLocation: Option[NodeLocation]): Unit = {
     if (!requirement)
-      throw SQLErrorCode.InternalError.newException(s"requirement failed: ${message}", nodeLocation)
+      throw SQLErrorCode.UserError.newException(s"requirement failed: ${message}", nodeLocation)
   }
 
   def require(requirement: Boolean, nodeLocation: Option[NodeLocation]): Unit = {
     if (!requirement)
-      throw SQLErrorCode.InternalError.newException("requirement failed", nodeLocation)
+      throw SQLErrorCode.UserError.newException("requirement failed", nodeLocation)
   }
 }
