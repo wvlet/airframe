@@ -195,7 +195,8 @@ class HtmlTest extends AirSpec {
     import svgAttrs._
     svg(
       circle(
-        color -> ""
+        color -> "",
+        svgTags.title("circle description")
       )
     )
   }

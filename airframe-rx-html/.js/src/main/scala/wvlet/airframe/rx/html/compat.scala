@@ -18,7 +18,7 @@ import org.scalajs.dom
   */
 object compat {
   trait PlatformEmbeddableNode {
-    @inline implicit def embedHtmlElement[A <: dom.Element]: EmbeddableNode[A] = null
+    @inline implicit def embedHtmlElement[A <: dom.Element]: RxEmbedding.EmbeddableNode[A] = null
   }
   type UIEvent    = dom.UIEvent
   type MouseEvent = dom.MouseEvent
