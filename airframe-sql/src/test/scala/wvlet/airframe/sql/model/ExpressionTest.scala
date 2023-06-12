@@ -100,7 +100,7 @@ class ExpressionTest extends AirSpec {
     val e = intercept[SQLError] {
       Expression.concat(Nil) { (e1, e2) => Expression.concatWithAnd(Seq(e1, e2)) }
     }
-    e.errorCode shouldBe SQLErrorCode.UserError
+    e.errorCode shouldBe SQLErrorCode.RequirementFailed
     e.message shouldBe "requirement failed"
   }
 }
