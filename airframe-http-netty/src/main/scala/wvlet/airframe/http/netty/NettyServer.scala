@@ -241,7 +241,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
         pipeline.addLast(new HttpContentCompressor())
         pipeline.addLast(new HttpServerExpectContinueHandler)
         pipeline.addLast(new ChunkedWriteHandler())
-        pipeline.addLast(new NetthRequestHandler(config, dispatcher))
+        pipeline.addLast(new NettyRequestHandler(config, dispatcher))
       }
     })
 
