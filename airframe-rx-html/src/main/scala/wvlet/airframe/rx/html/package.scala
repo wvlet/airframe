@@ -13,64 +13,21 @@
  */
 package wvlet.airframe.rx
 
+import wvlet.airframe.rx.html.{HtmlAttributeOf, HtmlElement, HtmlEventHandlerOf, Namespace}
+import wvlet.log.LogSupport
+
 /**
   */
-package object html extends HtmlCompat with RxEmbeddingSupport {
+package object html extends HtmlCompat with RxEmbedding {
 
   object tags       extends Tags
   object tags_extra extends TagsExtra
   object attrs      extends Attrs
 
-  object all extends Tags with Attrs with RxEmbeddingSupport
+  object all extends Tags with Attrs with RxEmbedding
 
   object svgTags  extends SvgTags
   object svgAttrs extends SvgAttrs
-
-  trait HtmlNode {
-    def when(cond: => Boolean): HtmlNode = {
-      if (cond) this else HtmlNode.empty
-    }
-    def unless(cond: => Boolean): HtmlNode = {
-      if (cond) HtmlNode.empty else this
-    }
-  }
-
-  // HtmlNode -> Element -> HtmlElement
-  //          -> HtmlAttribute
-
-  object HtmlNode {
-    object empty extends HtmlNode
-  }
-
-  case class HtmlAttribute(name: String, v: Any, ns: Namespace = Namespace.xhtml, append: Boolean = false)
-      extends HtmlNode
-
-  class HtmlAttributeOf(name: String, namespace: Namespace = Namespace.xhtml) {
-    def apply[V: EmbeddableAttribute](v: V): HtmlNode = HtmlAttribute(name, v, namespace)
-    def ->[V: EmbeddableAttribute](v: V): HtmlNode    = apply(v)
-    def add[V: EmbeddableAttribute](v: V): HtmlNode   = HtmlAttribute(name, v, namespace, append = true)
-    def +=[V: EmbeddableAttribute](v: V): HtmlNode    = add(v)
-    def noValue: HtmlNode                             = HtmlAttribute(name, true, namespace)
-  }
-
-  class HtmlEventHandlerOf[E](name: String, namespace: Namespace = Namespace.xhtml) {
-    def apply[U](v: E => U): HtmlNode  = HtmlAttribute(name, v, namespace)
-    def ->[U](v: E => U): HtmlNode     = apply(v)
-    def apply[U](v: () => U): HtmlNode = HtmlAttribute(name, v, namespace)
-    def ->[U](v: () => U): HtmlNode    = apply(v)
-    def noValue: HtmlNode              = HtmlAttribute(name, false, namespace)
-  }
-
-  case class EntityRef(ref: String) extends HtmlNode
-
-  // TODO embed namespace properly to DOM
-  case class Namespace(uri: String)
-
-  object Namespace {
-    val xhtml: Namespace = Namespace("http://www.w3.org/1999/xhtml")
-    val svg: Namespace   = Namespace("http://www.w3.org/2000/svg")
-    val svgXLink         = Namespace("http://www.w3.org/1999/xlink")
-  }
 
   def tag(name: String): HtmlElement            = new HtmlElement(name)
   def tagOf(name: String, namespace: Namespace) = new HtmlElement(name, namespace)
@@ -86,4 +43,15 @@ package object html extends HtmlCompat with RxEmbeddingSupport {
 
   private[rx] case class RxCode(rxElements: Seq[RxElement], sourceCode: String)
 
+  /**
+    * Holder for embedding various types as tag contents
+    *
+    * @param v
+    */
+  private[html] case class Embedded(v: Any) extends RxElement with LogSupport {
+    override def render: RxElement = {
+      warn(s"render is called for ${v}")
+      ???
+    }
+  }
 }

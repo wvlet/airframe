@@ -15,7 +15,6 @@ package wvlet.airframe.rx.html
 
 import org.scalajs.dom
 import wvlet.airframe.rx.Rx
-import wvlet.airframe.rx.html._
 import wvlet.airframe.rx.html.all._
 import wvlet.airspec._
 

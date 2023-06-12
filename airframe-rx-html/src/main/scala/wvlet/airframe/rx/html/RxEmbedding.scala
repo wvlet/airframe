@@ -14,18 +14,21 @@
 package wvlet.airframe.rx.html
 
 import wvlet.airframe.rx.{Rx, RxOption}
-import wvlet.airframe.rx.html.compat
-import wvlet.log.LogSupport
 
 import scala.annotation.implicitNotFound
 import scala.language.higherKinds
 import scala.language.implicitConversions
 
-trait RxEmbeddingSupport {
-  @implicitNotFound(msg = "Unsupported type as an attribute value")
-  trait EmbeddableAttribute[X]
+trait RxEmbedding {
+  import RxEmbedding._
+  implicit def embedAsNode[A: EmbeddableNode](v: A): RxElement = Embedded(v)
+}
 
-  object EmbeddableAttribute {
+object RxEmbedding {
+  @implicitNotFound(msg = "Unsupported type as an attribute value")
+  private[html] trait EmbeddableAttribute[X]
+
+  private[html] object EmbeddableAttribute {
     type EA[A] = EmbeddableAttribute[A]
     @inline implicit def embedNone: EA[None.type]                            = null
     @inline implicit def embedBoolean: EA[Boolean]                           = null
@@ -43,9 +46,9 @@ trait RxEmbeddingSupport {
   }
 
   @implicitNotFound(msg = "Unsupported type as an HtmlNode")
-  trait EmbeddableNode[A]
+  private[html] trait EmbeddableNode[A]
 
-  object EmbeddableNode extends compat.PlatformEmbeddableNode {
+  private[html] object EmbeddableNode extends compat.PlatformEmbeddableNode {
     type EN[A] = EmbeddableNode[A]
     @inline implicit def embedNil: EN[Nil.type]                              = null
     @inline implicit def embedNone: EN[None.type]                            = null
@@ -65,17 +68,4 @@ trait RxEmbeddingSupport {
     @inline implicit def embedOption[C[x] <: Option[x], A: EN]: EN[C[A]]     = null
   }
 
-  /**
-    * Holder for embedding various types as tag contents
-    *
-    * @param v
-    */
-  case class Embedded(v: Any) extends RxElement with LogSupport {
-    override def render: RxElement = {
-      warn(s"render is called for ${v}")
-      ???
-    }
-  }
-
-  implicit def embedAsNode[A: EmbeddableNode](v: A): RxElement = Embedded(v)
 }
