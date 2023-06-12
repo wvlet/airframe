@@ -35,7 +35,7 @@ import java.net.InetSocketAddress
 import scala.jdk.CollectionConverters._
 import NettyRequestHandler._
 
-class NetthRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Filter)
+class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Filter)
     extends SimpleChannelInboundHandler[FullHttpRequest]
     with LogSupport {
 
