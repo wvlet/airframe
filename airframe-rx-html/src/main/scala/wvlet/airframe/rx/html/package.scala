@@ -12,21 +12,16 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx
-import wvlet.log.LogSupport
-
-import scala.annotation.implicitNotFound
-import scala.language.higherKinds
-import scala.language.implicitConversions
 
 /**
   */
-package object html extends HtmlCompat {
+package object html extends HtmlCompat with RxEmbeddingSupport {
 
   object tags       extends Tags
   object tags_extra extends TagsExtra
   object attrs      extends Attrs
 
-  object all extends Tags with Attrs
+  object all extends Tags with Attrs with RxEmbeddingSupport
 
   object svgTags  extends SvgTags
   object svgAttrs extends SvgAttrs
@@ -77,67 +72,17 @@ package object html extends HtmlCompat {
     val svgXLink         = Namespace("http://www.w3.org/1999/xlink")
   }
 
-  def tag(name: String): HtmlElement                                        = new HtmlElement(name)
-  def tagOf(name: String, namespace: Namespace)                             = new HtmlElement(name, namespace)
-  def attr(name: String): HtmlAttributeOf                                   = new HtmlAttributeOf(name)
-  def attr(name: String, namespace: Namespace): HtmlAttributeOf             = new HtmlAttributeOf(name, namespace)
-  def attributeOf(name: String): HtmlAttributeOf                            = attr(name)
+  def tag(name: String): HtmlElement            = new HtmlElement(name)
+  def tagOf(name: String, namespace: Namespace) = new HtmlElement(name, namespace)
+
+  def attr(name: String): HtmlAttributeOf                       = new HtmlAttributeOf(name)
+  def attr(name: String, namespace: Namespace): HtmlAttributeOf = new HtmlAttributeOf(name, namespace)
+  def attributeOf(name: String): HtmlAttributeOf                = attr(name)
+
+  def svgTag(name: String) = new HtmlElement(name, Namespace.svg)
+
   def handler[T](name: String): HtmlEventHandlerOf[T]                       = new HtmlEventHandlerOf[T](name)
   def handler[T](name: String, namespace: Namespace): HtmlEventHandlerOf[T] = new HtmlEventHandlerOf[T](name, namespace)
-
-  @implicitNotFound(msg = "Unsupported type as an attribute value")
-  trait EmbeddableAttribute[X]
-  object EmbeddableAttribute {
-    type EA[A] = EmbeddableAttribute[A]
-    @inline implicit def embedNone: EA[None.type]                            = null
-    @inline implicit def embedBoolean: EA[Boolean]                           = null
-    @inline implicit def embedInt: EA[Int]                                   = null
-    @inline implicit def embedLong: EA[Long]                                 = null
-    @inline implicit def embedString: EA[String]                             = null
-    @inline implicit def embedFloat: EA[Float]                               = null
-    @inline implicit def embedDouble: EA[Double]                             = null
-    @inline implicit def embedF0[U]: EA[() => U]                             = null
-    @inline implicit def embedF1[I, U]: EA[I => U]                           = null
-    @inline implicit def embedOption[C[x] <: Option[x], A: EA]: EA[C[A]]     = null
-    @inline implicit def embedRx[C[x] <: Rx[x], A: EA]: EA[C[A]]             = null
-    @inline implicit def embedRxOption[C[x] <: RxOption[x], A: EA]: EA[C[A]] = null
-    @inline implicit def embedSeq[C[x] <: Iterable[x], A: EA]: EA[C[A]]      = null
-  }
-
-  @implicitNotFound(msg = "Unsupported type as an HtmlNode")
-  trait EmbeddableNode[A]
-  object EmbeddableNode extends compat.PlatformEmbeddableNode {
-    type EN[A] = EmbeddableNode[A]
-    @inline implicit def embedNil: EN[Nil.type]                              = null
-    @inline implicit def embedNone: EN[None.type]                            = null
-    @inline implicit def embedBoolean: EN[Boolean]                           = null
-    @inline implicit def embedInt: EN[Int]                                   = null
-    @inline implicit def embedChar: EN[Char]                                 = null
-    @inline implicit def embedShort: EN[Short]                               = null
-    @inline implicit def embedByte: EN[Byte]                                 = null
-    @inline implicit def embedLong: EN[Long]                                 = null
-    @inline implicit def embedFloat: EN[Float]                               = null
-    @inline implicit def embedDouble: EN[Double]                             = null
-    @inline implicit def embedString: EN[String]                             = null
-    @inline implicit def embedHtmlNode[A <: HtmlNode]: EN[A]                 = null
-    @inline implicit def embedRx[C[x] <: Rx[x], A: EN]: EN[C[A]]             = null
-    @inline implicit def embedRxOption[C[x] <: RxOption[x], A: EN]: EN[C[A]] = null
-    @inline implicit def embedSeq[C[x] <: Iterable[x], A: EN]: EN[C[A]]      = null
-    @inline implicit def embedOption[C[x] <: Option[x], A: EN]: EN[C[A]]     = null
-  }
-
-  /**
-    * Holder for embedding various types as tag contents
-    * @param v
-    */
-  case class Embedded(v: Any) extends RxElement with LogSupport {
-    override def render: RxElement = {
-      warn(s"render is called for ${v}")
-      ???
-    }
-  }
-
-  implicit def embedAsNode[A: EmbeddableNode](v: A): RxElement = Embedded(v)
 
   private[rx] case class RxCode(rxElements: Seq[RxElement], sourceCode: String)
 

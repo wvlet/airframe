@@ -18,7 +18,7 @@ package wvlet.airframe.rx.html
   */
 trait SvgTags {
 
-  private def tag(name: String) = tagOf(name, namespace = Namespace.svg)
+  private def tag(name: String) = svgTag(name)
 
   /**
     * The altGlyph element allows sophisticated selection of the glyphs used to render its child character data.
@@ -579,6 +579,13 @@ trait SvgTags {
     * MDN
     */
   lazy val tref = tag("tref")
+
+  /**
+    * The title element provides an accessible, short-text description of any SVG container element or graphics element.
+    *
+    * MDN
+    */
+  lazy val title = tag("title")
 
   /**
     * Within a text element, text and font properties and the current text position can be adjusted with absolute or
