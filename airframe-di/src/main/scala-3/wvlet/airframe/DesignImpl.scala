@@ -10,6 +10,7 @@ import wvlet.log.LogSupport
   */
 private[airframe] trait DesignImpl extends LogSupport { self: Design =>
   inline def bind[A]: Binder[A] = {
+    registerTraitFactory[A]
     new Binder(self, Surface.of[A], SourceCode()).asInstanceOf[Binder[A]]
   }
 
