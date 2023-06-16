@@ -41,9 +41,15 @@ case class DbConfig(
     `type` match {
       case "sqlite" =>
         s"jdbc:sqlite:${database}"
+      case "duckdb" =>
+        s"jdbc:duckdb:${database}"
       case _ =>
         s"jdbc:${`type`}://${host.getOrElse("localhost")}${port.map(p => s":${p}").getOrElse("")}/${database}"
     }
+  }
+
+  def newConnectionPool: ConnectionPool = {
+    ConnectionPool(this)
   }
 
   def withType(newType: String): DbConfig = {
@@ -89,6 +95,7 @@ case class DbConfig(
       case _ =>
         `type` match {
           case "sqlite"     => "org.sqlite.JDBC"
+          case "duckdb"     => "org.duckdb.DuckDBDriver"
           case "postgresql" => "org.postgresql.Driver"
           case "mysql"      => "com.mysql.jdbc.Driver"
           case other =>
@@ -113,6 +120,10 @@ case class DbConfig(
 
   def withSQLiteConfig(dbFilePath: String): DbConfig = {
     this.copy(`type` = "sqlite", host = None, database = dbFilePath)
+  }
+
+  def withDuckDBConfig(dbFilePath: String): DbConfig = {
+    this.copy(`type` = "duckdb", host = None, database = dbFilePath)
   }
 
   // Add PostgreSQL-specific configuration
@@ -141,8 +152,9 @@ case class ConnectionPoolConfig(
 }
 
 object DbConfig {
-  def of(dbType: String): DbConfig     = DbConfig(`type` = dbType)
-  def ofSQLite(path: String): DbConfig = DbConfig().withSQLiteConfig(path)
+  def of(dbType: String): DbConfig          = DbConfig(`type` = dbType)
+  def ofSQLite(path: String): DbConfig      = DbConfig().withSQLiteConfig(path)
+  def ofDuckDB(path: String = ""): DbConfig = DbConfig().withDuckDBConfig(path)
   def ofPostgreSQL(host: String = "localhost", port: Int = 5432, database: String): DbConfig =
     DbConfig(host = Option(host), database = database, port = Some(port))
       .withPostgreSQLConfig(PostgreSQLConfig())
