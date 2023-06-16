@@ -74,6 +74,10 @@ After that, the artifacts will be published to Sonatype (a.k.a. Maven Central). 
 
 Note: Do not create a new tag from GitHub release pages, because it will not trigger the GitHub Actions for the release.
 
+### Binary Compabibility
+
+When changing some interfaces, binary compatibility should be checked so as not to break applications using older versions of Airframe. In build.sbt, set AIRFRAME_BINARY_COMPAT_VERSION to the previous version of Airframe as a comparison target. Then run `sbt mimaReportBinaryIssues` to check the binary compatibility.
+
 ## LICENSE
 
 [Apache v2](https://github.com/wvlet/airframe/blob/master/LICENSE)
