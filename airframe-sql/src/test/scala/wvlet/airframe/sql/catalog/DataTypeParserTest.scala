@@ -18,11 +18,18 @@ import wvlet.airspec.AirSpec
 import wvlet.log.io.{IOUtil, Resource}
 
 class DataTypeParserTest extends AirSpec {
+  private def knownTypes = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "types.txt").get).split("\n")
+
   test("parse various types") {
-    val types = IOUtil.readAsString(Resource.find("wvlet.airframe.sql.catalog", "types.txt").get).split("\n")
-    for (t <- types) {
+    for (t <- knownTypes) {
       val dt = DataTypeParser.parse(t)
       trace(s"parse: ${t} -> ${dt}")
+    }
+  }
+
+  test("parse with DataType.unapply") {
+    for (t <- knownTypes) {
+      DataType.unapply(t)
     }
   }
 
