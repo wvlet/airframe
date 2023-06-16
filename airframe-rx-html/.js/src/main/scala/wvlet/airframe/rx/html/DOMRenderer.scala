@@ -170,6 +170,41 @@ object DOMRenderer extends LogSupport {
     traverse(htmlNode, anchor = None)
   }
 
+  private def removeStringFromAttributeValue(
+      attrValue: String,
+      toRemove: String
+  ): String = {
+    if (attrValue == null) {
+      ""
+    } else {
+      attrValue
+        .split("""\s+""")
+        .filter(x => x != toRemove)
+        .mkString(" ")
+    }
+  }
+
+  private def removeStyleValue(
+      styleValue: String,
+      toRemove: String
+  ): String = {
+    if (styleValue == null) {
+      ""
+    } else {
+      val targetValueToRemove = toRemove.trim
+
+      import scala.util.chaining._
+      styleValue.trim
+        .split(""";\s*""")
+        .map(x => s"${x};")
+        .filter(x => x != targetValueToRemove)
+        .mkString("; ")
+        .pipe { x =>
+          if (x.nonEmpty) s"${x};" else x
+        }
+    }
+  }
+
   private def addAttribute(node: dom.Node, a: HtmlAttribute): Cancelable = {
     val htmlNode = node.asInstanceOf[dom.html.Html]
 
@@ -208,7 +243,12 @@ object DOMRenderer extends LogSupport {
               } else {
                 htmlNode.style.cssText = value
               }
-              Cancelable.empty
+              Cancelable { () =>
+                if (htmlNode != null && value.nonEmpty) {
+                  val newAttributeValue = removeStyleValue(htmlNode.style.cssText, value)
+                  htmlNode.style.cssText = newAttributeValue
+                }
+              }
             case _ =>
               def setAttribute(newAttrValue: String): Unit = {
                 a.ns match {
@@ -229,17 +269,14 @@ object DOMRenderer extends LogSupport {
 
               Cancelable { () =>
                 if (htmlNode != null && htmlNode.hasAttribute(a.name)) {
-                  htmlNode.getAttribute(a.name) match {
-                    case v if v != null =>
-                      // remove the value from v
-                      val newAttrValue =
-                        v.replace(value, "")
-                          .split("""\s+""")
-                          .map(elm => elm.trim)
-                          .mkString(" ")
-                      htmlNode.removeAttribute(a.name)
-                      setAttribute(newAttrValue)
-                    case _ =>
+                  val v = htmlNode.getAttribute(a.name)
+                  if (v != null) {
+                    // remove the appended value
+                    val newAttrValue = removeStringFromAttributeValue(v, value)
+
+                    // Replace the attribute value with the new one
+                    htmlNode.removeAttribute(a.name)
+                    setAttribute(newAttrValue)
                   }
                 }
               }
