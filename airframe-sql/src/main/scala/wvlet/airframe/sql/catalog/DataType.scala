@@ -16,6 +16,8 @@ package wvlet.airframe.sql.catalog
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.log.LogSupport
 
+import scala.util.Try
+
 abstract class DataType(val typeName: String, val typeParams: Seq[DataType]) {
   override def toString: String = typeDescription
   def typeDescription: String = {
@@ -32,6 +34,10 @@ abstract class DataType(val typeName: String, val typeParams: Seq[DataType]) {
 }
 
 object DataType extends LogSupport {
+
+  def unapply(str: String): Option[DataType] = {
+    Try(DataTypeParser.parse(str)).toOption
+  }
 
   case class NamedType(name: String, dataType: DataType) extends DataType(s"${name}:${dataType}", Seq.empty)
 

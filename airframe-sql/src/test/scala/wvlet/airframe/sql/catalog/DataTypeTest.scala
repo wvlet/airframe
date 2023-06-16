@@ -21,6 +21,7 @@ class DataTypeTest extends AirSpec {
     trace(s"parse ${t}")
     val parsed = DataType.parse(t)
     parsed shouldBe expected
+    DataType.unapply(t) shouldBe Some(expected)
   }
 
   test("parse primitive types") {
