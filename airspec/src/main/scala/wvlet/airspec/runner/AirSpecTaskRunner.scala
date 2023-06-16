@@ -144,8 +144,7 @@ private[airspec] class AirSpecTaskRunner(
 
     def startSession: Session = {
       // Configure the global spec design
-      var d = Design
-        .newDesign
+      var d = Design.newDesign
         // Workaround for: https://github.com/wvlet/airframe/issues/1845
         // .bind[Int].toInstance(0)
         .noLifeCycleLogging

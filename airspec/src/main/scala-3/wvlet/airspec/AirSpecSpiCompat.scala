@@ -96,13 +96,13 @@ private[airspec] object AirSpecMacros {
       case '{ $x: t } if TypeRepr.of[t] =:= TypeRepr.of[Nil.type] || TypeRepr.of[t] <:< TypeRepr.of[Seq[_]] =>
         '{
           import AirSpecTestBuilder._
-          ${ self }.addF0(Surface.of[R], LazyF0.apply({ ${body} }))
+          ${ self }.addF0(Surface.of[R], LazyF0.apply(${ body }))
         }
       case _ =>
-      '{
-        import AirSpecTestBuilder._
-        ${ self }.addF1(Surface.of[D1], Surface.of[R], ${ body })
-      }
+        '{
+          import AirSpecTestBuilder._
+          ${ self }.addF1(Surface.of[D1], Surface.of[R], ${ body })
+        }
     }
   }
 
