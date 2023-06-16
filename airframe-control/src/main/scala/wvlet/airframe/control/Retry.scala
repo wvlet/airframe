@@ -81,7 +81,7 @@ object Retry extends LogSupport {
       lastError = NOT_STARTED,
       retryCount = 0,
       maxRetry = 3,
-      retryWaitStrategy = new ExponentialBackOff(retryConfig),
+      retryWaitStrategy = new Jitter(retryConfig),
       nextWaitMillis = retryConfig.initialIntervalMillis,
       baseWaitMillis = retryConfig.initialIntervalMillis,
       extraWaitMillis = 0
