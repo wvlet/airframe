@@ -241,4 +241,42 @@ object RxRenderingTest extends AirSpec {
     c.cancel
   }
 
+  test("append cls attribute") {
+    val selected = Rx.variable("home")
+    val e = new RxElement {
+      override def render: RxElement = {
+        div(
+          cls -> "item",
+          selected.map(x => (cls += "active").when(x == "home")),
+          cls += "text-primary",
+          selected
+        )
+      }
+    }
+
+    val (n, c) = render(e)
+    n.outerHTML shouldBe """<div class="item active text-primary">home</div>"""
+    selected := "about"
+    // The atrribute should be removed properly
+    n.outerHTML shouldBe """<div class="item text-primary">about</div>"""
+  }
+
+  test("append style attribute") {
+    val selected = Rx.variable("home")
+    val e = new RxElement {
+      override def render: RxElement = {
+        div(
+          style -> "color: white;",
+          selected.map(x => (style += "font-size: 10px;").when(x == "home")),
+          selected
+        )
+      }
+    }
+
+    val (n, c) = render(e)
+    n.outerHTML shouldBe """<div style="color: white; font-size: 10px;">home</div>"""
+    selected := "about"
+    // The atrribute should be removed properly
+    n.outerHTML shouldBe """<div style="color: white;">about</div>"""
+  }
 }
