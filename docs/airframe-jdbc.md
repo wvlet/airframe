@@ -8,6 +8,7 @@ airframe-jdbc is a reusable JDBC connection pool implementation with Airframe.
 Currently we are supporting these databases:
 
 - **sqlite**: SQLite
+- **duckdb**: DuckDB
 - **postgres**: PostgreSQL (e.g., [AWS RDS](https://aws.amazon.com/rds/))
 - Generic JDBC drivers
 
@@ -56,6 +57,23 @@ connectionPool.executeQuery("select * from test") { rs =>
 
 // Close the created connection pools
 factory.close()
+
+```
+
+### Using DuckDB
+
+[DuckDB](https://duckdb.org/docs/) is a tiny embedded OLAP database, which can read CSV, JSON, Parquet (columnar file format), etc.
+
+```scala
+import scala.util.Using
+
+Using.resource(DbConfig.ofDuckDB().newConnectionPool) { pool =>
+   pool.query("select id, name from `sample.parquet`") { rs =>
+     val id = rs.getInt(1)
+     val name = rs.getString(2)
+     // ...
+   }
+}
 
 ```
 

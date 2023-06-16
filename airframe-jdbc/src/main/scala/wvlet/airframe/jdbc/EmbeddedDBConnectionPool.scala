@@ -19,9 +19,9 @@ import java.sql.{Connection, DriverManager}
 import wvlet.log.Guard
 
 /**
-  * SQLite doesn't work well with HikariCP, so creating a simple one here
+  * SQLite or DuckDB doesn't work well with HikariCP, so creating a simple one here
   */
-class SQLiteConnectionPool(val config: DbConfig) extends ConnectionPool with Guard {
+class EmbeddedDBConnectionPool(val config: DbConfig) extends ConnectionPool with Guard {
   private var conn: Connection = newConnection
 
   private def newConnection: Connection = {
@@ -35,7 +35,7 @@ class SQLiteConnectionPool(val config: DbConfig) extends ConnectionPool with Gua
 
     val jdbcUrl = config.jdbcUrl
     info(s"Opening ${jdbcUrl}")
-    // We need to explicitly load sqlite-jdbc to cope with SBT's peculiar class loader
+    // We need to explicitly load sqlite-jdbc or DuckDB to cope with SBT's peculiar class loader
     Class.forName(config.jdbcDriverName)
     val conn = DriverManager.getConnection(jdbcUrl)
     conn.setAutoCommit(true)

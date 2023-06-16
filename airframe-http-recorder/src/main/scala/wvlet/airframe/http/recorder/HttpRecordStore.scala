@@ -20,7 +20,7 @@ import org.yaml.snakeyaml.{DumperOptions, Yaml}
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.HttpHeader.MediaType
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.jdbc.{DbConfig, SQLiteConnectionPool}
+import wvlet.airframe.jdbc.{DbConfig, EmbeddedDBConnectionPool}
 import wvlet.airframe.metrics.TimeWindow
 import wvlet.log.LogSupport
 
@@ -37,7 +37,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
   private val requestCounter = scala.collection.mutable.Map.empty[Int, AtomicInteger]
   private val connectionPool = {
     val dbFilePath = if (inMemory) ":memory:" else recorderConfig.sqliteFilePath
-    new SQLiteConnectionPool(DbConfig.ofSQLite(dbFilePath))
+    new EmbeddedDBConnectionPool(DbConfig.ofSQLite(dbFilePath))
   }
   private def recordTableName = recorderConfig.recordTableName
 

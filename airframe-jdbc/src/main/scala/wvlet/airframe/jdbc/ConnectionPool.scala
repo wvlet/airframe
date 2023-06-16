@@ -21,7 +21,8 @@ import wvlet.log.io.IOUtil.withResource
 object ConnectionPool {
   def apply(config: DbConfig): ConnectionPool = {
     val pool: ConnectionPool = config.`type` match {
-      case "sqlite" => new SQLiteConnectionPool(config)
+      case "sqlite" | "duckdb" =>
+        new EmbeddedDBConnectionPool(config)
       case other =>
         new GenericConnectionPool(config)
     }
@@ -67,6 +68,42 @@ trait ConnectionPool extends LogSupport with AutoCloseable {
       }
     }
   }
+
+  /**
+    * Run the given SQL and pass the each row result to the rowHandler function. The caller doesn't need to explicitly
+    * call ResultSet.next() to iterate the result.
+    * @param sql
+    * @param rowHandler
+    * @tparam U
+    * @return
+    */
+  def query[U](sql: String)(rowHandler: ResultSet => U): Unit = {
+    executeQuery(sql) { rs =>
+      while (rs.next()) {
+        rowHandler(rs)
+      }
+    }
+  }
+
+  /**
+    * Run the given SQL and pass a single result row to the handler. The caller doesn't need to call rs.next()
+    * explicitly.
+    */
+  def querySingle[U](sql: String)(rowHandler: ResultSet => U): Unit = {
+    withConnection { conn =>
+      withResource(conn.createStatement()) { stmt =>
+        debug(s"execute query: ${sql}")
+        withResource(stmt.executeQuery(sql)) { rs =>
+          if (rs.next()) {
+            rowHandler(rs)
+          } else {
+            throw new NoSuchElementException(s"No result found for ${sql}")
+          }
+        }
+      }
+    }
+  }
+
   def executeUpdate(sql: String): Int = {
     // TODO Add update retry
     withConnection { conn =>
