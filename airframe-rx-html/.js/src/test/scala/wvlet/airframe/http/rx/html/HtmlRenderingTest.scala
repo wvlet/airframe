@@ -23,11 +23,17 @@ class HtmlRenderingTest extends AirSpec {
   def render(node: RxElement): String = {
     val txt = DOMRenderer.render(node) match {
       case (elem: dom.Element, c) =>
-        c.cancel
-        elem.outerHTML
+        try {
+          elem.outerHTML
+        } finally {
+          c.cancel
+        }
       case (other, c) =>
-        c.cancel
-        other.innerText
+        try {
+          other.innerText
+        } finally {
+          c.cancel
+        }
     }
     debug(txt)
     txt

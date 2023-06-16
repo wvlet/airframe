@@ -210,18 +210,39 @@ object DOMRenderer extends LogSupport {
               }
               Cancelable.empty
             case _ =>
+              def setAttribute(newAttrValue: String): Unit = {
+                a.ns match {
+                  case Namespace.xhtml =>
+                    htmlNode.setAttribute(a.name, newAttrValue)
+                  case ns =>
+                    // e.g., SVG attributes
+                    htmlNode.setAttributeNS(ns.uri, a.name, newAttrValue)
+                }
+              }
+
               val newAttrValue = if (a.append && htmlNode.hasAttribute(a.name)) {
                 s"${htmlNode.getAttribute(a.name)} ${value}"
               } else {
                 value
               }
-              a.ns match {
-                case Namespace.xhtml =>
-                  htmlNode.setAttribute(a.name, newAttrValue)
-                case ns =>
-                  htmlNode.setAttributeNS(ns.uri, a.name, newAttrValue)
+              setAttribute(newAttrValue)
+
+              Cancelable { () =>
+                if (htmlNode != null && htmlNode.hasAttribute(a.name)) {
+                  htmlNode.getAttribute(a.name) match {
+                    case v if v != null =>
+                      // remove the value from v
+                      val newAttrValue =
+                        v.replace(value, "")
+                          .split("""\s+""")
+                          .map(elm => elm.trim)
+                          .mkString(" ")
+                      htmlNode.removeAttribute(a.name)
+                      setAttribute(newAttrValue)
+                    case _ =>
+                  }
+                }
               }
-              Cancelable.empty
           }
       }
     }
