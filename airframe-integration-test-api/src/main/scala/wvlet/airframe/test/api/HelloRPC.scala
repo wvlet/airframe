@@ -17,14 +17,22 @@ import wvlet.airframe.http._
 
 @RPC
 trait HelloRPC {
+  import HelloRPC._
+
   def hello(name: String): String
   def serverStatus: Status
   def ackStatus(status: Status): Status
+  def variousParams(params: VariousParams): VariousParams
 }
 
 object HelloRPC extends RxRouterProvider {
   override def router: RxRouter = RxRouter.of[HelloRPC]
 
+  case class VariousParams(
+      p1: Long,
+      p2: Boolean,
+      p3: Double
+  )
 }
 
 sealed trait Status {

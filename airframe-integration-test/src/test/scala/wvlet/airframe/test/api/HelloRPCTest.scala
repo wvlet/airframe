@@ -16,6 +16,7 @@ package wvlet.airframe.test.api
 import wvlet.airframe.Design
 import wvlet.airframe.http.{Http, RxRouter}
 import wvlet.airframe.http.netty.{Netty, NettyServer}
+import wvlet.airframe.test.api.HelloRPC.VariousParams
 import wvlet.airframe.test.api.Status
 import wvlet.airspec.AirSpec
 
@@ -46,6 +47,11 @@ class HelloRPCTest extends AirSpec {
 
       test("case object input") {
         client.HelloRPC.ackStatus(Status.OK) shouldBe Status.OK
+      }
+
+      test("case class with various data types") {
+        val resp = client.HelloRPC.variousParams(VariousParams(p1 = 1L, p2 = true, p3 = 1.0))
+        resp shouldBe VariousParams(p1 = 1L, p2 = true, p3 = 1.0)
       }
     }
 
