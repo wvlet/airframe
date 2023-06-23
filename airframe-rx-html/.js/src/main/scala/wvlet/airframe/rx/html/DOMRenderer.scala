@@ -250,6 +250,15 @@ object DOMRenderer extends LogSupport {
                 }
               }
             case _ =>
+              def removeAttribute(): Unit = {
+                a.ns match {
+                  case Namespace.xhtml =>
+                    htmlNode.removeAttribute(a.name)
+                  case ns =>
+                    htmlNode.removeAttributeNS(ns.uri, a.name)
+                }
+              }
+
               def setAttribute(newAttrValue: String): Unit = {
                 a.ns match {
                   case Namespace.xhtml =>
@@ -265,7 +274,9 @@ object DOMRenderer extends LogSupport {
               } else {
                 value
               }
-              setAttribute(newAttrValue)
+              if (newAttrValue.nonEmpty) {
+                setAttribute(newAttrValue)
+              }
 
               Cancelable { () =>
                 if (htmlNode != null && htmlNode.hasAttribute(a.name)) {
@@ -275,8 +286,10 @@ object DOMRenderer extends LogSupport {
                     val newAttrValue = removeStringFromAttributeValue(v, value)
 
                     // Replace the attribute value with the new one
-                    htmlNode.removeAttribute(a.name)
-                    setAttribute(newAttrValue)
+                    removeAttribute()
+                    if (newAttrValue.nonEmpty) {
+                      setAttribute(newAttrValue)
+                    }
                   }
                 }
               }
