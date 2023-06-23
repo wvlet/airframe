@@ -274,9 +274,7 @@ object DOMRenderer extends LogSupport {
               } else {
                 value
               }
-              if (newAttrValue.nonEmpty) {
-                setAttribute(newAttrValue)
-              }
+              setAttribute(newAttrValue)
 
               Cancelable { () =>
                 if (htmlNode != null && htmlNode.hasAttribute(a.name)) {
