@@ -279,4 +279,23 @@ object RxRenderingTest extends AirSpec {
     // The atrribute should be removed properly
     n.outerHTML shouldBe """<div style="color: white;">about</div>"""
   }
+
+  test("append and completely remove cls attribute") {
+    val selected = Rx.variable("home")
+    val e = new RxElement {
+      override def render: RxElement = {
+        div(
+          selected.map(x => (cls += "active").when(x == "home")),
+          selected
+        )
+      }
+    }
+
+    val (n, c) = render(e)
+    n.outerHTML shouldBe """<div class="active">home</div>"""
+    selected := "about"
+    // The atrribute should be totally removed
+    n.outerHTML shouldBe """<div>about</div>"""
+  }
+
 }
