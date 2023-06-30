@@ -100,7 +100,7 @@ class StaticContentTest extends AirSpec {
     check("/html/asset/test.js", "application/javascript")
     check("/html/asset/airframe_icon_small.png", "image/png")
 
-  // TODO add more coverage
+    // TODO add more coverage
   }
 
   test("read binary file") { (client: FinagleSyncClient) =>

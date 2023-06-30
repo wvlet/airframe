@@ -36,7 +36,7 @@ object Http_01_Interface extends App {
   design.build[FinagleServer] { server =>
     val serverAddress = server.localAddress
 
-  // Wait server termination
-  // server.waitServerTermination
+    // Wait server termination
+    // server.waitServerTermination
   }
 }

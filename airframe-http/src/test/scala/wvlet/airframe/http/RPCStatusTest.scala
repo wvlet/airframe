@@ -75,10 +75,10 @@ class RPCStatusTest extends AirSpec {
       val v = ValueCodec.fromMsgPack(msgpack)
       v shouldBe Value.LongValue(x.code)
 
-    // TODO Support unapply(v: Value) is supported in airframe-codec
-    // val codec = MessageCodec.of[RPCStatus]
-    // val s1    = codec.fromMsgPack(msgpack)
-    // info(s1)
+      // TODO Support unapply(v: Value) is supported in airframe-codec
+      // val codec = MessageCodec.of[RPCStatus]
+      // val s1    = codec.fromMsgPack(msgpack)
+      // info(s1)
     }
   }
 
