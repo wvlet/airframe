@@ -29,8 +29,8 @@ import scala.util.Try
 /**
   * Mapping HTTP requests to RPC/Endpoint method call arguments.
   *
-  * http request (path parameters, query parameters, request body (json or msgpack data))
-  * -> rpc function call arguments (p1:t1, p2:t2, ...)
+  * http request (path parameters, query parameters, request body (json or msgpack data)) -> rpc function call arguments
+  * (p1:t1, p2:t2, ...)
   */
 object HttpRequestMapper extends LogSupport {
 

@@ -65,7 +65,7 @@ object ParquetStatsReader extends LogSupport {
         val colName = col.getPath.mkString(".")
         val tpe     = col.getPrimitiveType
         colName -> Statistics.createStats(tpe)
-      // We need to specify explicit map element types for Scala 2.12
+        // We need to specify explicit map element types for Scala 2.12
       }.toMap[String, Statistics[_]]
 
     val uncompressedSize = new ColumnMetric()

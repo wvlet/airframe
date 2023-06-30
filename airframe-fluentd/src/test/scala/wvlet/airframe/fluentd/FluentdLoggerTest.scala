@@ -35,8 +35,8 @@ class FluentdLoggerTest extends AirSpec {
 
     d.build[MetricLoggerFactory] { f =>
       val logger = f.getLogger
-    // Just test the client initialization
-    // More complete test can be found at FluencyTest
+      // Just test the client initialization
+      // More complete test can be found at FluencyTest
     }
   }
 
