@@ -35,8 +35,8 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
   def beforeRender: Unit = {}
 
   /**
-    * Called right after mounting this RxElement to the document.
-    * Override this method to define a custom event hook after rendering.
+    * Called right after mounting this RxElement to the document. Override this method to define a custom event hook
+    * after rendering.
     */
   def onMount: Unit = {}
 
