@@ -35,6 +35,12 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
   def beforeRender: Unit = {}
 
   /**
+    * Called right after mounting this RxElement to the document. Override this method to define a custom event hook
+    * after rendering.
+    */
+  def onMount: Unit = {}
+
+  /**
     * Called right before unmounting (deleting) this RxElement from DOM.
     *
     * This is a good place to remove any background process or manually added event listeners.
@@ -63,6 +69,7 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
     }
     Cancelable.merge(cancelables)
   }
+
 }
 
 object RxElement {

@@ -30,7 +30,7 @@ class RxWidgetTest extends AirSpec {
   }
 
   private def render(elem: RxElement): String = {
-    val (dom, c) = DOMRenderer.render(elem)
+    val (dom, c) = DOMRenderer.createNode(elem)
     val html = dom match {
       case x: org.scalajs.dom.Element =>
         x.outerHTML

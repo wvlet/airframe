@@ -21,7 +21,7 @@ import wvlet.airspec._
 class HtmlRenderingTest extends AirSpec {
 
   def render(node: RxElement): String = {
-    val txt = DOMRenderer.render(node) match {
+    val txt = DOMRenderer.createNode(node) match {
       case (elem: dom.Element, c) =>
         try {
           elem.outerHTML
