@@ -59,6 +59,7 @@ object DOMRenderer extends LogSupport {
         case r: RxElement =>
           r.beforeRender
           val (n, c) = traverse(r.render)
+          r.afterRender
           (n, Cancelable.merge(Cancelable(() => r.beforeUnmount), c))
         case d: dom.Node =>
           (d, Cancelable.empty)
@@ -106,6 +107,7 @@ object DOMRenderer extends LogSupport {
           val c1   = renderTo(node, rx.render)
           val elem = node.lastChild
           val c2   = rx.traverseModifiers(m => renderTo(elem, m))
+          rx.afterRender
           node.mountHere(elem, anchor)
           Cancelable.merge(Cancelable(() => rx.beforeUnmount), Cancelable.merge(c1, c2))
         case s: String =>

@@ -67,13 +67,18 @@ object RxRenderingTest extends AirSpec {
   }
 
   test("beforeRender/beforeUnmount") {
-    var a = 0
-    var b = 0
+    var a                = 0
+    var b                = 0
+    var afterRenderCount = 0
 
     val v = Rx.variable(1)
     val r = new RxElement {
       override def beforeRender: Unit = {
         a += 1
+      }
+
+      override def afterRender: Unit = {
+        afterRenderCount += 1
       }
       override def beforeUnmount: Unit = {
         b += 1
@@ -82,31 +87,40 @@ object RxRenderingTest extends AirSpec {
     }
 
     a shouldBe 0
+    afterRenderCount shouldBe 0
     val (n, c) = render(r)
     n.outerHTML shouldBe "<span>hello 1</span>"
     a shouldBe 1
+    afterRenderCount shouldBe 1
     b shouldBe 0
 
     // Updating inner element should not trigger on render
     v := 2
     a shouldBe 1
+    afterRenderCount shouldBe 1
     b shouldBe 0
     n.outerHTML shouldBe "<span>hello 2</span>"
 
     // unmounting
     c.cancel
     a shouldBe 1
+    afterRenderCount shouldBe 1
     b shouldBe 1
   }
 
   test("beforeRender/beforeUnmount for RxElement(...)") {
-    var a = 0
-    var b = 0
+    var a                = 0
+    var b                = 0
+    var afterRenderCount = 0
 
     val v = Rx.variable(1)
     val r = new RxElement {
       override def beforeRender: Unit = {
         a += 1
+      }
+
+      override def afterRender: Unit = {
+        afterRenderCount += 1
       }
       override def beforeUnmount: Unit = {
         b += 1
@@ -115,35 +129,44 @@ object RxRenderingTest extends AirSpec {
     }
 
     a shouldBe 0
+    afterRenderCount shouldBe 0
 
     val rw     = RxElement(r)
     val (n, c) = render(rw)
     n.outerHTML shouldBe "<span>hello 1</span>"
     a shouldBe 1
+    afterRenderCount shouldBe 1
     b shouldBe 0
 
     // Updating inner element should not trigger on render
     v := 2
     a shouldBe 1
+    afterRenderCount shouldBe 1
     b shouldBe 0
     n.outerHTML shouldBe "<span>hello 2</span>"
 
     // unmounting
     c.cancel
     a shouldBe 1
+    afterRenderCount shouldBe 1
     b shouldBe 1
   }
 
   test("nested beforeRender/beforeUnmount") {
-    var a = false
-    var b = false
+    var a               = false
+    var b               = false
+    var afterRenderFlag = false
 
-    var a1 = false
-    var b1 = false
+    var a1               = false
+    var b1               = false
+    var afterRenderFlag1 = false
 
     val nested = new RxElement {
       override def beforeRender: Unit = {
         a1 = true
+      }
+      override def afterRender: Unit = {
+        afterRenderFlag = true
       }
       override def beforeUnmount: Unit = {
         b1 = true
@@ -155,6 +178,9 @@ object RxRenderingTest extends AirSpec {
       override def beforeRender: Unit = {
         a = true
       }
+      override def afterRender: Unit = {
+        afterRenderFlag1 = true
+      }
       override def beforeUnmount: Unit = {
         b = true
       }
@@ -164,11 +190,16 @@ object RxRenderingTest extends AirSpec {
     val (n, c) = render(r)
     a shouldBe true
     b shouldBe false
+    afterRenderFlag shouldBe true
     a1 shouldBe true
     b1 shouldBe false
+    afterRenderFlag shouldBe true
+
     c.cancel
     b shouldBe true
     b1 shouldBe true
+    afterRenderFlag shouldBe true
+    afterRenderFlag1 shouldBe true
   }
 
   test("rendering attributes with Rx") {
