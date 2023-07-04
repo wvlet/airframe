@@ -14,8 +14,6 @@
 package wvlet.airframe.rx.html
 
 /**
- * A trait for adding different methods between Scala JVM and Scala.js
- */
-trait HtmlNodeBase {
-
-}
+  * A trait for adding different methods between Scala JVM and Scala.js
+  */
+trait HtmlNodeBase {}
