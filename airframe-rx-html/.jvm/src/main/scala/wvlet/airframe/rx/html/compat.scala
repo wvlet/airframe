@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.rx.html
 
+import wvlet.airframe.rx.Cancelable
+
 /**
   */
 object compat {

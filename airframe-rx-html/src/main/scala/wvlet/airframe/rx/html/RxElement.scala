@@ -37,7 +37,7 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
   /**
     * Called right after rendering this RxElement. Override this method to define a custom event hook after rendering.
     */
-  def afterRender: Unit = {}
+  def onRender: Unit = {}
 
   /**
     * Called right before unmounting (deleting) this RxElement from DOM.
@@ -68,6 +68,7 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
     }
     Cancelable.merge(cancelables)
   }
+
 }
 
 object RxElement {

@@ -12,20 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.html
-import org.scalajs.dom
-import wvlet.airframe.rx.Cancelable
 
 /**
-  */
-object compat {
-  trait PlatformEmbeddableNode {
-    @inline implicit def embedHtmlElement[A <: dom.Element]: RxEmbedding.EmbeddableNode[A] = null
-  }
-  type UIEvent    = dom.UIEvent
-  type MouseEvent = dom.MouseEvent
-  type WheelEvent = dom.WheelEvent
+ * A trait for adding different methods between Scala JVM and Scala.js
+ */
+trait HtmlNodeBase {
 
-  def renderTo(nodeId: String, e: RxElement): Cancelable = {
-    DOMRenderer.renderToNode(nodeId, e)
-  }
 }

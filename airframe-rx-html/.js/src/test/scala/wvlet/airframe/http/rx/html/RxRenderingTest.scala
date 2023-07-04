@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.rx.html
 
-import org.scalajs.dom.HTMLElement
+import org.scalajs.dom.{HTMLElement, document}
 import wvlet.airframe.rx.{Cancelable, Rx}
 import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxElement}
 import wvlet.airspec.AirSpec
@@ -77,7 +77,7 @@ object RxRenderingTest extends AirSpec {
         a += 1
       }
 
-      override def afterRender: Unit = {
+      override def onRender: Unit = {
         afterRenderCount += 1
       }
       override def beforeUnmount: Unit = {
@@ -119,7 +119,7 @@ object RxRenderingTest extends AirSpec {
         a += 1
       }
 
-      override def afterRender: Unit = {
+      override def onRender: Unit = {
         afterRenderCount += 1
       }
       override def beforeUnmount: Unit = {
@@ -165,7 +165,7 @@ object RxRenderingTest extends AirSpec {
       override def beforeRender: Unit = {
         a1 = true
       }
-      override def afterRender: Unit = {
+      override def onRender: Unit = {
         afterRenderFlag = true
       }
       override def beforeUnmount: Unit = {
@@ -178,7 +178,7 @@ object RxRenderingTest extends AirSpec {
       override def beforeRender: Unit = {
         a = true
       }
-      override def afterRender: Unit = {
+      override def onRender: Unit = {
         afterRenderFlag1 = true
       }
       override def beforeUnmount: Unit = {
@@ -270,6 +270,40 @@ object RxRenderingTest extends AirSpec {
     color := "black"
     n.outerHTML shouldBe """<div style="color: black;" class="color-black"></div>"""
     c.cancel
+  }
+
+  test("render attributes with onRender hook") {
+    var updated = false
+
+    def findSpan000 = Option(document.getElementById("span000"))
+
+    val label = new RxElement() {
+      override def onRender: Unit = {
+        logger.debug(s"onRender span: ${findSpan000}")
+        findSpan000.foreach { e =>
+          e.setAttribute("class", "active")
+          updated = true
+        }
+      }
+      override def render: RxElement = {
+        logger.debug(s"render span: ${findSpan000}")
+        span(id -> "span000")
+      }
+    }
+
+    val main = new RxElement {
+      override def onRender: Unit = {
+        logger.debug("onRender main")
+      }
+      override def render: RxElement = {
+        logger.debug(s"render main: ${findSpan000}")
+        div(
+          label
+        )
+      }
+    }
+    val c = main.renderTo("main")
+    updated shouldBe true
   }
 
   test("append cls attribute") {

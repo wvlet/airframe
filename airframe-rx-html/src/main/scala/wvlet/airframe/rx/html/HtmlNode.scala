@@ -14,7 +14,7 @@
 package wvlet.airframe.rx.html
 import wvlet.airframe.rx.html.RxEmbedding._
 
-trait HtmlNode {
+trait HtmlNode extends HtmlNodeBase {
   def when(cond: => Boolean): HtmlNode = {
     if (cond) this else HtmlNode.empty
   }

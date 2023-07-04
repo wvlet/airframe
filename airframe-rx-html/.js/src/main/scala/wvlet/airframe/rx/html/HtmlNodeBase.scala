@@ -12,20 +12,20 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.html
-import org.scalajs.dom
+
 import wvlet.airframe.rx.Cancelable
 
-/**
-  */
-object compat {
-  trait PlatformEmbeddableNode {
-    @inline implicit def embedHtmlElement[A <: dom.Element]: RxEmbedding.EmbeddableNode[A] = null
-  }
-  type UIEvent    = dom.UIEvent
-  type MouseEvent = dom.MouseEvent
-  type WheelEvent = dom.WheelEvent
+trait HtmlNodeBase { self: HtmlNode =>
 
-  def renderTo(nodeId: String, e: RxElement): Cancelable = {
-    DOMRenderer.renderToNode(nodeId, e)
+  /**
+    * (Scala.js only) Render this element to the DOM node of the given ID. If the corresponding DOM node is not found,
+    * this method will create a new DOM node.
+    *
+    * @param nodeId
+    * @return
+    *   a Cancelable object to clean up the rendered elements
+    */
+  def renderTo(nodeId: String): Cancelable = {
+    compat.renderTo(nodeId, this)
   }
 }

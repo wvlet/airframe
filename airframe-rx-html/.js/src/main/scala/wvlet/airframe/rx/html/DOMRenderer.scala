@@ -28,6 +28,26 @@ import scala.scalajs.js
   */
 object DOMRenderer extends LogSupport {
 
+  /**
+    * Render HtmlNode to a div element with the gien id in the document. If the node doesn't exist, this method will
+    * create a new div element.
+    *
+    * @param nodeId
+    * @param htmlNode
+    * @return
+    */
+  def renderToNode(nodeId: String, htmlNode: HtmlNode): Cancelable = {
+    // Insert main node if not exists
+    val node = dom.document.getElementById(nodeId) match {
+      case null =>
+        val elem = dom.document.createElement("div")
+        elem.setAttribute("id", nodeId)
+        dom.document.body.appendChild(elem)
+      case other => other
+    }
+    renderTo(node, htmlNode)
+  }
+
   def renderToHtml(node: dom.Node): String = {
     node match {
       case e: dom.Element =>
@@ -45,6 +65,12 @@ object DOMRenderer extends LogSupport {
     elem
   }
 
+  /**
+    * @deprecated
+    *   Use [[RxElement.renderTo]] or [[renderTo]]
+    * @param e
+    * @return
+    */
   def render(e: RxElement): (dom.Node, Cancelable) = {
     def traverse(v: Any): (dom.Node, Cancelable) = {
       v match {
@@ -59,7 +85,7 @@ object DOMRenderer extends LogSupport {
         case r: RxElement =>
           r.beforeRender
           val (n, c) = traverse(r.render)
-          r.afterRender
+          r.onRender
           (n, Cancelable.merge(Cancelable(() => r.beforeUnmount), c))
         case d: dom.Node =>
           (d, Cancelable.empty)
@@ -74,14 +100,42 @@ object DOMRenderer extends LogSupport {
   private def newTextNode(s: String): dom.Text = dom.document.createTextNode(s)
 
   def renderTo(node: dom.Node, htmlNode: HtmlNode, modifier: dom.Node => dom.Node = identity): Cancelable = {
+    val context = new RenderingContext()
+    val c       = renderToInternal(context, node, htmlNode, modifier)
+    context.onFinish()
+    c
+  }
 
+  /**
+    * A class for collecting onRender hooks so that we can call onRender hooks after DOM nodes are mounted on the
+    * document.
+    */
+  private class RenderingContext() {
+    private val onRenderHooks = List.newBuilder[() => Unit]
+
+    def onFinish(): Unit = {
+      onRenderHooks.result().foreach { f => f() }
+    }
+
+    def addOnRenderHook(f: () => Unit): RenderingContext = {
+      onRenderHooks += f
+      this
+    }
+  }
+
+  private def renderToInternal(
+      context: RenderingContext,
+      node: dom.Node,
+      htmlNode: HtmlNode,
+      modifier: dom.Node => dom.Node = identity
+  ): Cancelable = {
     def traverse(v: Any, anchor: Option[dom.Node]): Cancelable = {
       v match {
         case HtmlNode.empty =>
           Cancelable.empty
         case e: HtmlElement =>
           val elem = createNode(e)
-          val c    = e.traverseModifiers(m => renderTo(elem, m))
+          val c    = e.traverseModifiers(m => renderToInternal(context, elem, m))
           node.mountHere(elem, anchor)
           c
         case rx: RxOps[_] =>
@@ -104,11 +158,11 @@ object DOMRenderer extends LogSupport {
           traverse(e.v, anchor)
         case rx: RxElement =>
           rx.beforeRender
-          val c1   = renderTo(node, rx.render)
+          val c1   = renderToInternal(context, node, rx.render)
           val elem = node.lastChild
-          val c2   = rx.traverseModifiers(m => renderTo(elem, m))
-          rx.afterRender
+          val c2   = rx.traverseModifiers(m => renderToInternal(context, elem, m))
           node.mountHere(elem, anchor)
+          context.addOnRenderHook(() => rx.onRender)
           Cancelable.merge(Cancelable(() => rx.beforeUnmount), Cancelable.merge(c1, c2))
         case s: String =>
           val textNode = newTextNode(s)
