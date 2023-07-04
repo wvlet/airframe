@@ -27,9 +27,9 @@ object RxRenderingTest extends AirSpec {
   private def render(v: Any): (HTMLElement, Cancelable) = {
     val (n, c) = v match {
       case rx: Rx[RxElement] @unchecked =>
-        DOMRenderer.render(div(rx))
+        DOMRenderer.createNode(div(rx))
       case other: RxElement =>
-        DOMRenderer.render(other)
+        DOMRenderer.createNode(other)
     }
     (n.asInstanceOf[HTMLElement], c)
   }

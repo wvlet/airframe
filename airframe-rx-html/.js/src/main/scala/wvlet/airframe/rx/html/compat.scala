@@ -24,8 +24,4 @@ object compat {
   type UIEvent    = dom.UIEvent
   type MouseEvent = dom.MouseEvent
   type WheelEvent = dom.WheelEvent
-
-  def renderTo(nodeId: String, e: RxElement): Cancelable = {
-    DOMRenderer.renderToNode(nodeId, e)
-  }
 }

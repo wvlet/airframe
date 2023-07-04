@@ -35,9 +35,10 @@ object DOMRenderer extends LogSupport {
     * @param nodeId
     * @param htmlNode
     * @return
+    *   A pair of the rendered DOM node and a Cancelable object to clean up the rendered elements
     */
-  def renderToNode(nodeId: String, htmlNode: HtmlNode): Cancelable = {
-    // Insert main node if not exists
+  def renderToNode(nodeId: String, htmlNode: HtmlNode): (dom.Node, Cancelable) = {
+    // Insert a DOM node if it doesn't exists
     val node = dom.document.getElementById(nodeId) match {
       case null =>
         val elem = dom.document.createElement("div")
@@ -45,7 +46,7 @@ object DOMRenderer extends LogSupport {
         dom.document.body.appendChild(elem)
       case other => other
     }
-    renderTo(node, htmlNode)
+    (node, renderTo(node, htmlNode))
   }
 
   def renderToHtml(node: dom.Node): String = {
@@ -66,12 +67,12 @@ object DOMRenderer extends LogSupport {
   }
 
   /**
-    * @deprecated
-    *   Use [[RxElement.renderTo]] or [[renderTo]]
+    * Create a new DOM node from the given RxElement
     * @param e
     * @return
+    *   A pair of the rendered DOM node and a Cancelable object to clean up the rendered elements
     */
-  def render(e: RxElement): (dom.Node, Cancelable) = {
+  def createNode(e: RxElement): (dom.Node, Cancelable) = {
     def traverse(v: Any): (dom.Node, Cancelable) = {
       v match {
         case h: HtmlElement =>

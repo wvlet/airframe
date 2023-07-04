@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.rx.html
 
+import org.scalajs.dom
 import wvlet.airframe.rx.Cancelable
 
 trait HtmlNodeBase { self: HtmlNode =>
@@ -23,9 +24,9 @@ trait HtmlNodeBase { self: HtmlNode =>
     *
     * @param nodeId
     * @return
-    *   a Cancelable object to clean up the rendered elements
+    *   A pair of DOM node and a Cancelable object to clean up the rendered elements
     */
-  def renderTo(nodeId: String): Cancelable = {
-    compat.renderTo(nodeId, this)
+  def renderTo(nodeId: String): (dom.Node, Cancelable) = {
+    DOMRenderer.renderToNode(nodeId, this)
   }
 }

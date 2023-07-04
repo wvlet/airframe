@@ -26,7 +26,7 @@ class OnClickTest extends AirSpec {
   test("Evaluate onclick -> Rx return value") {
     var clicked       = 0
     var rxEvalCounter = 0
-    val (node, c) = DOMRenderer.render {
+    val (node, c) = DOMRenderer.createNode {
       div(
         onclick -> { (e: MouseEvent) =>
           clicked += 1
