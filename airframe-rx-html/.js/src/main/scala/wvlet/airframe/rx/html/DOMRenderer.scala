@@ -29,8 +29,8 @@ import scala.scalajs.js
 object DOMRenderer extends LogSupport {
 
   /**
-    * Render HtmlNode to a div element with the gien id in the document. If the node doesn't exist, this method will
-    * create a new div element.
+    * Render HtmlNode to a div element with the given id in the document. If the node doesn't exist, this method will
+    * create a new div element with the nodeId.
     *
     * @param nodeId
     * @param htmlNode

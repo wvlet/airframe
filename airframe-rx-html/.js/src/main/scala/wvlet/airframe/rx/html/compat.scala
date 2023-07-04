@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.rx.html
 import org.scalajs.dom
-import wvlet.airframe.rx.Cancelable
 
 /**
   */
