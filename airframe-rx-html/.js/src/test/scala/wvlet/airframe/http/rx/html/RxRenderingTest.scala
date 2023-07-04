@@ -77,7 +77,7 @@ object RxRenderingTest extends AirSpec {
         a += 1
       }
 
-      override def onRender: Unit = {
+      override def onMount: Unit = {
         afterRenderCount += 1
       }
       override def beforeUnmount: Unit = {
@@ -119,7 +119,7 @@ object RxRenderingTest extends AirSpec {
         a += 1
       }
 
-      override def onRender: Unit = {
+      override def onMount: Unit = {
         afterRenderCount += 1
       }
       override def beforeUnmount: Unit = {
@@ -165,7 +165,7 @@ object RxRenderingTest extends AirSpec {
       override def beforeRender: Unit = {
         a1 = true
       }
-      override def onRender: Unit = {
+      override def onMount: Unit = {
         afterRenderFlag = true
       }
       override def beforeUnmount: Unit = {
@@ -178,7 +178,7 @@ object RxRenderingTest extends AirSpec {
       override def beforeRender: Unit = {
         a = true
       }
-      override def onRender: Unit = {
+      override def onMount: Unit = {
         afterRenderFlag1 = true
       }
       override def beforeUnmount: Unit = {
@@ -272,13 +272,13 @@ object RxRenderingTest extends AirSpec {
     c.cancel
   }
 
-  test("render attributes with onRender hook") {
+  test("render attributes with onMount hook") {
     var updated = false
 
     def findSpan000 = Option(document.getElementById("span000"))
 
     val label = new RxElement() {
-      override def onRender: Unit = {
+      override def onMount: Unit = {
         logger.debug(s"onRender span: ${findSpan000}")
         findSpan000.foreach { e =>
           e.setAttribute("class", "active")
@@ -292,7 +292,7 @@ object RxRenderingTest extends AirSpec {
     }
 
     val main = new RxElement {
-      override def onRender: Unit = {
+      override def onMount: Unit = {
         logger.debug("onRender main")
       }
       override def render: RxElement = {
