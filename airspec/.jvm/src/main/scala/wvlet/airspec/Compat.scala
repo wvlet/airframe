@@ -24,7 +24,8 @@ import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.airspec.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
 import wvlet.airspec.spi.{AirSpecException, Asserts}
 
-import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{Executors, ThreadFactory}
 import scala.concurrent.ExecutionContext
 
 /**
@@ -33,7 +34,26 @@ private[airspec] object Compat extends CompatApi with LogSupport {
   override def isScalaJs = false
 
   override private[airspec] val executionContext: ExecutionContext =
-    ExecutionContext.fromExecutorService(Executors.newSingleThreadExecutor())
+    ExecutionContext.fromExecutorService(Executors.newCachedThreadPool(newDaemonThreadFactory("airspec-executor")))
+
+  /**
+    * Create a thread factory for daemon threads, which do not block JVM shutdown
+    *
+    * @param name
+    *   the name of the new thread group. New threads will be named (name)-1, (name)-2, etc.
+    */
+  private def newDaemonThreadFactory(name: String): ThreadFactory = new ThreadFactory {
+    private val group: ThreadGroup = new ThreadGroup(Thread.currentThread().getThreadGroup(), name)
+    private val threadNumber       = new AtomicInteger(1)
+
+    override def newThread(r: Runnable): Thread = {
+      val threadName = s"${name}-${threadNumber.getAndIncrement()}"
+      val thread     = new Thread(group, r, threadName)
+      thread.setName(threadName)
+      thread.setDaemon(true)
+      thread
+    }
+  }
 
   private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     val cls = classLoader.loadClass(fullyQualifiedName)
