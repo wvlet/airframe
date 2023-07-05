@@ -53,19 +53,19 @@ object Cancelable extends LogSupport {
         } else {
           Cancelable { () =>
             val failures =
-              nonEmpty.map(c => Try(c.cancel) )
-                      .collect {
-                        case Failure(ex) =>
-                          warn(ex)
-                          ex
-                      }
+              nonEmpty
+                .map(c => Try(c.cancel))
+                .collect { case Failure(ex) =>
+                  warn(ex)
+                  ex
+                }
             failures.size match {
               case 0 => // ok
               case 1 =>
                 throw failures.head
               case n if n > 1 =>
                 warn(s"Multiple exception occurred while cancelling")
-                for(f <- failures.tail) {
+                for (f <- failures.tail) {
                   warn(f)
                 }
                 throw failures.head
