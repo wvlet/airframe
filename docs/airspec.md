@@ -195,6 +195,31 @@ If you prefer sequential test execution, set `parallelExecution in Test` to fals
 ```scala
 parallelExecution in Test := false
 ```
+ 
+## Running Tests with scala-cli
+
+For quickly writing tests, you can use [scala-cli](https://scala-cli.virtuslab.org/docs/commands/test). Add AirSpec configurations with `//> using` directive as follows:
+
+**MyApp.test.scala**
+
+```scala
+//> using test.dep org.wvlet.airframe::airspec:(version)
+//> using testFramework "wvlet.airspec.Framework"
+import wvlet.airspec.AirSpec
+
+class MyAppTest extends AirSpec {
+  test("foo") {
+    // ...
+  }
+}
+```
+
+You can run the above test with `scala-cli test` command:
+```sh
+$ scala-cli test MyApp.test.scala
+MyAppTest:
+ - foo 83.42ms
+```
 
 ## Logging Your Tests
 
