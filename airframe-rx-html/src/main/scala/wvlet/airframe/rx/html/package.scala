@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.rx
 
-import wvlet.airframe.rx.html.{HtmlAttributeOf, HtmlElement, HtmlEventHandlerOf, Namespace}
 import wvlet.log.LogSupport
 
 /**
@@ -42,6 +41,22 @@ package object html extends HtmlCompat with RxEmbedding {
   def handler[T](name: String, namespace: Namespace): HtmlEventHandlerOf[T] = new HtmlEventHandlerOf[T](name, namespace)
 
   private[rx] case class RxCode(rxElements: Seq[RxElement], sourceCode: String)
+
+  /**
+    * Render an element only when the condition is true
+    *
+    * @param cond
+    * @param body
+    * @return
+    *   rendered element or empty
+    */
+  def when(cond: Boolean, body: => HtmlNode): HtmlNode = {
+    if (cond) {
+      body
+    } else {
+      HtmlNode.empty
+    }
+  }
 
   /**
     * Holder for embedding various types as tag contents

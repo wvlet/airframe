@@ -62,6 +62,7 @@ trait TagsExtra {
   def head: HtmlElement = tag("head")
   // Defines a header for a document or section
   def header: HtmlElement = tag("header")
+
   // Defines a thematic change in the content
 
   // Defines marked/highlighted text

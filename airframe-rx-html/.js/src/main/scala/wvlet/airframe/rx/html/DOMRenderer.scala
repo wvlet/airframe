@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.rx.html
 import org.scalajs.dom
-import wvlet.airframe.rx.{Cancelable, Rx, RxOps}
+import wvlet.airframe.rx.{Cancelable, OnNext, Rx, RxOps, RxRunner}
 import wvlet.log.LogSupport
 
 import scala.scalajs.js
@@ -142,12 +142,17 @@ object DOMRenderer extends LogSupport {
         case rx: RxOps[_] =>
           val (start, end) = node.createMountSection()
           var c1           = Cancelable.empty
-          val c2 = rx.subscribe { value =>
+          val c2 = RxRunner.runContinuously(rx) { ev =>
             // Remove the previous binding from the DOM
             node.clearMountSection(start, end)
             // Cancel the previous binding
             c1.cancel
-            c1 = traverse(value, Some(start))
+            ev match {
+              case OnNext(value) =>
+                c1 = traverse(value, Some(start))
+              case other =>
+                c1 = Cancelable.empty
+            }
           }
           Cancelable.merge(c1, c2)
         case a: HtmlAttribute =>
@@ -215,10 +220,10 @@ object DOMRenderer extends LogSupport {
         case Some(x) =>
           traverse(x, anchor)
         case s: Iterable[_] =>
-          val cancellables = for (el <- s) yield {
+          val cancelables = for (el <- s) yield {
             traverse(el, anchor)
           }
-          Cancelable.merge(cancellables)
+          Cancelable.merge(cancelables)
         case other =>
           throw new IllegalArgumentException(s"unsupported class ${other}")
       }
@@ -274,15 +279,17 @@ object DOMRenderer extends LogSupport {
           traverse(x)
         case rx: RxOps[_] =>
           var c1 = Cancelable.empty
-          val c2 = rx.run { value =>
+          val c2 = RxRunner.runContinuously(rx) { ev =>
             // Cancel the previous binding
             c1.cancel
-            c1 = traverse(value)
+            ev match {
+              case OnNext(value) =>
+                c1 = traverse(value)
+              case other =>
+                c1 = Cancelable.empty
+            }
           }
           Cancelable.merge(c1, c2)
-        // TODO: Add RxElement rendering
-        // case r: RxElement =>
-        //
         case f: Function0[_] =>
           node.setEventListener(a.name, { (_: dom.Event) => f() })
         case f: Function1[dom.Node @unchecked, _] =>
@@ -301,7 +308,7 @@ object DOMRenderer extends LogSupport {
                 htmlNode.style.cssText = value
               }
               Cancelable { () =>
-                if (htmlNode != null && value.nonEmpty) {
+                if (htmlNode != null && a.append && value.nonEmpty) {
                   val newAttributeValue = removeStyleValue(htmlNode.style.cssText, value)
                   htmlNode.style.cssText = newAttributeValue
                 }
@@ -332,9 +339,8 @@ object DOMRenderer extends LogSupport {
                 value
               }
               setAttribute(newAttrValue)
-
               Cancelable { () =>
-                if (htmlNode != null && htmlNode.hasAttribute(a.name)) {
+                if (htmlNode != null && a.append && htmlNode.hasAttribute(a.name)) {
                   val v = htmlNode.getAttribute(a.name)
                   if (v != null) {
                     // remove the appended value

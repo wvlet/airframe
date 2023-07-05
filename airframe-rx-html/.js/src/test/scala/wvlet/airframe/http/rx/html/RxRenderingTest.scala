@@ -14,7 +14,7 @@
 package wvlet.airframe.http.rx.html
 
 import org.scalajs.dom.{HTMLElement, document}
-import wvlet.airframe.rx.{Cancelable, Rx}
+import wvlet.airframe.rx.{Cancelable, Rx, html}
 import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxElement}
 import wvlet.airspec.AirSpec
 import wvlet.airframe.rx.html._
@@ -306,13 +306,32 @@ object RxRenderingTest extends AirSpec {
     updated shouldBe true
   }
 
+  test("refresh attribute with RxVar") {
+    val show = Rx.variable(true)
+    val e = new RxElement {
+      override def render: RxElement = {
+        div(
+          show.when(_ == true).map(_ => cls += "active")
+        )
+      }
+    }
+    val (n, c) = render(e)
+    n.outerHTML shouldBe """<div class="active"></div>"""
+    show := false
+    n.outerHTML shouldBe """<div></div>"""
+    show := true
+    n.outerHTML shouldBe """<div class="active"></div>"""
+  }
+
   test("append cls attribute") {
     val selected = Rx.variable("home")
     val e = new RxElement {
       override def render: RxElement = {
         div(
           cls -> "item",
-          selected.map(x => (cls += "active").when(x == "home")),
+          selected.when(_ == "home").map { x =>
+            cls += "active"
+          },
           cls += "text-primary",
           selected
         )
@@ -332,7 +351,7 @@ object RxRenderingTest extends AirSpec {
       override def render: RxElement = {
         div(
           style -> "color: white;",
-          selected.map(x => (style += "font-size: 10px;").when(x == "home")),
+          selected.when(_ == "home").map(_ => style += "font-size: 10px;"),
           selected
         )
       }
@@ -350,7 +369,7 @@ object RxRenderingTest extends AirSpec {
     val e = new RxElement {
       override def render: RxElement = {
         div(
-          selected.map(x => (cls += "active").when(x == "home")),
+          selected.when(_ == "home").map(x => cls += "active"),
           selected
         )
       }
