@@ -139,8 +139,8 @@ class RxRunner(
                 case Success(true) =>
                   effect(OnNext(x))
                 case Success(false) =>
-                  // Skip unmatched element
-                  RxResult.Continue
+                  // Notify the completion of the stream
+                  effect(OnCompletion)
                 case Failure(e) =>
                   effect(OnError(e))
               }

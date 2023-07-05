@@ -100,7 +100,15 @@ trait Rx[+A] extends RxOps[A] {
   // def map[B](f: A => B): Rx[B]           = MapOp[A, B](this, f)
   def flatMap[B](f: A => Rx[B]): Rx[B]   = FlatMapOp(this, f)
   def filter(f: A => Boolean): Rx[A]     = FilterOp(this, f)
+
   def withFilter(f: A => Boolean): Rx[A] = FilterOp(this, f)
+
+  /**
+   * An alias of filter
+   * @param conf
+   * @return
+   */
+  def when(cond: A => Boolean): Rx[A] = FilterOp(this, cond)
 
   /**
     * Combine two Rx streams to form a sequence of pairs. This will emit a new pair when both of the streams are

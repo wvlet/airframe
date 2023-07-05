@@ -14,6 +14,7 @@
 package wvlet.airframe.rx.html
 
 import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.html._
 import wvlet.airframe.rx.html.all._
 import wvlet.airframe.rx.html.svgTags._
 import wvlet.airspec.AirSpec
@@ -39,10 +40,10 @@ class HtmlTest extends AirSpec {
       None,
       Rx.variable(1),
       Iterable("a", "b", "c"),
-      (cls -> "main").when(1 == 1),
-      (cls -> "main2").unless(1 == 1),
-      (cls -> "main").when(1 != 1),
-      (cls -> "main2").unless(1 != 1)
+      when(1 == 1, cls -> "main"),
+      when(1 != 1, cls -> "main2"),
+      when(1 != 1, cls -> "main"),
+      when(1 == 1, cls -> "main2")
     )
   }
 

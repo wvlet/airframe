@@ -13,7 +13,10 @@
  */
 package wvlet.airframe.rx
 
-import scala.util.Try
+import wvlet.log.LogSupport
+
+import scala.util.{Failure, Try}
+import scala.util.control.NonFatal
 
 /**
   */
@@ -21,7 +24,7 @@ trait Cancelable {
   def cancel: Unit = {}
 }
 
-object Cancelable {
+object Cancelable extends LogSupport {
   val empty: Cancelable = new Cancelable {}
 
   def apply(canceller: () => Unit): Cancelable =
@@ -39,15 +42,35 @@ object Cancelable {
     }
   }
 
-  def merge(lst: Iterable[Cancelable]): Cancelable = {
+  def merge(it: Iterable[Cancelable]): Cancelable = {
+    val lst = it.toIndexedSeq
     lst.size match {
       case 1 => lst.head
       case _ =>
-        val nonEmpty = lst.filter(_ != Cancelable.empty).toIndexedSeq
+        val nonEmpty = lst.filter(_ != Cancelable.empty)
         if (nonEmpty.isEmpty) {
           Cancelable.empty
         } else {
-          Cancelable { () => nonEmpty.map { c => Try(c.cancel) } }
+          Cancelable { () =>
+            val failures =
+              nonEmpty.map(c => Try(c.cancel) )
+                      .collect {
+                        case Failure(ex) =>
+                          warn(ex)
+                          ex
+                      }
+            failures.size match {
+              case 0 => // ok
+              case 1 =>
+                throw failures.head
+              case n if n > 1 =>
+                warn(s"Multiple exception occurred while cancelling")
+                for(f <- failures.tail) {
+                  warn(f)
+                }
+                throw failures.head
+            }
+          }
         }
     }
   }
