@@ -141,6 +141,8 @@ class RxRunner(
                 case Success(false) =>
                   // Notify the completion of the stream
                   effect(OnCompletion)
+                  // But continue subcription to the upstream
+                  RxResult.Continue
                 case Failure(e) =>
                   effect(OnError(e))
               }
