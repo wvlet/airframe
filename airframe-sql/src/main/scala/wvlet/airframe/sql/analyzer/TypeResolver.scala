@@ -380,8 +380,7 @@ object TypeResolver extends LogSupport {
           a.copy(expr = resolved)
         }
       case SingleColumn(a: Attribute, qualifier, _) if a.resolved =>
-        // Optimizes the nested attributes, but preserves qualifier in the parent
-        a.setQualifierIfEmpty(qualifier)
+        a.withQualifier(qualifier)
       case m: MultiSourceColumn =>
         var changed = false
         val resolvedInputs = m.inputs.map {
