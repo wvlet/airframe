@@ -514,9 +514,7 @@ object LogicalPlan {
 
     override def inputAttributes: Seq[Attribute] = child.inputAttributes
     override def outputAttributes: Seq[Attribute] = {
-      val attrs = child.outputAttributes.map { a =>
-        a.withQualifier(alias.value)
-      }
+      val attrs = child.outputAttributes
       val result = columnNames match {
         case Some(columnNames) =>
           attrs.zip(columnNames).map { case (a, columnName) =>

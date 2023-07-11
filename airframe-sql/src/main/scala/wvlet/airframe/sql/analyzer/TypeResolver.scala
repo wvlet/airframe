@@ -222,7 +222,7 @@ object TypeResolver extends LogSupport {
             case Some(cte) =>
               CTERelationRef(
                 qname.fullName,
-                cte.outputAttributes.map(_.withQualifier(qname.fullName)),
+                cte.outputAttributes,
                 plan.nodeLocation
               )
             case None =>

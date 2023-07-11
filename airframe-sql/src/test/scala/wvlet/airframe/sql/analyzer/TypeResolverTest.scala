@@ -1072,17 +1072,21 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
   }
 
   test("resolve CTE in AliasedRelation") {
-    val p1 = analyze("with t1 as (select id from A) select id from (select id from t1) t2")
-    p1.outputAttributes shouldMatch { case List(col: ResolvedAttribute) =>
-      col.fullName shouldBe "id"
-      col.sourceColumn.head.fullName shouldBe "A.id"
+    test("resolve SingleColumn(id)") {
+      val p1 = analyze("with t1 as (select id from A) select id from (select id from t1) t2")
+      p1.outputAttributes shouldMatch { case List(col: ResolvedAttribute) =>
+        col.fullName shouldBe "id"
+        col.sourceColumn.head.fullName shouldBe "A.id"
+      }
     }
 
-    val p2 = analyze("with t1 as (select id from A) select count(id) from (select id from t1) t2")
-    p2.outputAttributes shouldMatch {
-      case List(SingleColumn(FunctionCall("count", Seq(col: ResolvedAttribute), _, _, _, _), _, _)) =>
-        col.fullName shouldBe "t2.id"
-        col.sourceColumn.head.fullName shouldBe "A.id"
+    test("resolve id inside a function") {
+      val p2 = analyze("with t1 as (select id from A) select count(id) from (select id from t1) t2")
+      p2.outputAttributes shouldMatch {
+        case List(SingleColumn(FunctionCall("count", Seq(col: ResolvedAttribute), _, _, _, _), _, _)) =>
+          col.fullName shouldBe "id"
+          col.sourceColumn.head.fullName shouldBe "A.id"
+      }
     }
   }
 }
