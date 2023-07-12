@@ -55,7 +55,7 @@ class ResolveAggregationTest extends AirSpec with ResolverTestHelper {
     plan shouldMatch { case a: Aggregate =>
       a.selectItems shouldMatch {
         case Seq(
-              ResolvedAttribute("max_id", _, Some("B"), _, _),
+              ResolvedAttribute("max_id", _, Some("B"), _, _, _),
               _
             ) =>
       }

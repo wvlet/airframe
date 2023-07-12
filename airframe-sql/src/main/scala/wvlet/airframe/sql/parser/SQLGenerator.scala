@@ -380,7 +380,7 @@ object SQLGenerator extends LogSupport {
       case a: Alias =>
         val e = printExpression(a.expr)
         s"${e} AS ${printNameWithQuotationsIfNeeded(a.name)}"
-      case SingleColumn(ex, _, _) =>
+      case SingleColumn(ex, _, _, _) =>
         printExpression(ex)
       case m: MultiSourceColumn =>
         m.sqlExpr

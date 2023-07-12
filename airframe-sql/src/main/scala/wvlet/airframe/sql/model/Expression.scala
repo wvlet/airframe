@@ -23,6 +23,7 @@ import wvlet.airframe.sql.Assertion._
 import wvlet.log.LogSupport
 
 import java.util.Locale
+import scala.annotation.tailrec
 
 /**
   */
@@ -294,12 +295,6 @@ trait Attribute extends LeafExpression with LogSupport {
   def qualifier: Option[String]
   def withQualifier(newQualifier: String): Attribute = withQualifier(Some(newQualifier))
   def withQualifier(newQualifier: Option[String]): Attribute
-  def setQualifierIfEmpty(newQualifier: Option[String]): Attribute = {
-    qualifier match {
-      case Some(q) => this
-      case None    => this.withQualifier(newQualifier)
-    }
-  }
 
   import Expression.Alias
   def alias: Option[String] = {
@@ -320,10 +315,14 @@ trait Attribute extends LeafExpression with LogSupport {
             // No need to have alias
             other
           case other =>
-            Alias(qualifier, alias, other, None)
+            Alias(qualifier, alias, other, other.tableAlias, None)
         }
     }
   }
+
+  def tableAlias: Option[String]
+  def withTableAlias(tableAlias: String): Attribute = withTableAlias(Some(tableAlias))
+  def withTableAlias(tableAlias: Option[String]): Attribute
 
   /**
     * Return columns used for generating this attribute
@@ -355,7 +354,7 @@ trait Attribute extends LeafExpression with LogSupport {
     columnPath.table match {
       // TODO handle (catalog).(database).(table) names in the qualifier
       case Some(tableName) =>
-        qualifier.exists(_ == tableName) && matchesWith(columnPath.columnName)
+        (qualifier.contains(tableName) || tableAlias.contains(tableName)) && matchesWith(columnPath.columnName)
       case None =>
         matchesWith(columnPath.columnName)
     }
@@ -366,12 +365,15 @@ trait Attribute extends LeafExpression with LogSupport {
     * via Join, Union), return MultiSourceAttribute.
     */
   def matched(columnPath: ColumnPath, context: AnalyzerContext): Option[Attribute] = {
+    @tailrec
     def findMatched(tableName: Option[String], columnName: String): Seq[Attribute] = {
       tableName match {
         case Some(tableName) =>
           this match {
             case r: ResolvedAttribute
-                if r.qualifier.orElse(r.sourceColumn.map(_.table.name)).exists(_.equalsIgnoreCase(tableName)) =>
+                if r.qualifier
+                  .orElse(tableAlias)
+                  .orElse(r.sourceColumn.map(_.table.name)).exists(_.equalsIgnoreCase(tableName)) =>
               findMatched(None, columnName)
             case _ =>
               Nil
@@ -394,6 +396,8 @@ trait Attribute extends LeafExpression with LogSupport {
         if (databaseName == context.database) {
           if (qualifier.contains(tableName)) {
             findMatched(None, columnName).map(_.withQualifier(qualifier))
+          } else if (tableAlias.contains(tableName)) {
+            findMatched(None, columnName)
           } else {
             findMatched(Some(tableName), columnName)
           }
@@ -405,8 +409,10 @@ trait Attribute extends LeafExpression with LogSupport {
           }
         }
       case ColumnPath(None, Some(tableName), columnName) =>
-        if (qualifier.exists(_ == tableName)) {
+        if (qualifier.contains(tableName)) {
           findMatched(None, columnName).map(_.withQualifier(qualifier))
+        } else if (tableAlias.contains(tableName)) {
+          findMatched(None, columnName)
         } else {
           findMatched(Some(tableName), columnName)
         }
@@ -421,7 +427,7 @@ trait Attribute extends LeafExpression with LogSupport {
       } else {
         qualifier
       }
-      Some(MultiSourceColumn(result, qualifier = q, None))
+      Some(MultiSourceColumn(result, qualifier = q, None, None))
     } else {
       result.headOption
     }
@@ -490,6 +496,7 @@ object Expression {
   case class UnresolvedAttribute(
       override val qualifier: Option[String],
       name: String,
+      tableAlias: Option[String],
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
     override def toString: String = s"UnresolvedAttribute(${fullName})"
@@ -497,6 +504,9 @@ object Expression {
     override lazy val resolved    = false
     override def withQualifier(newQualifier: Option[String]): UnresolvedAttribute = {
       this.copy(qualifier = newQualifier)
+    }
+    override def withTableAlias(tableAlias: Option[String]): Attribute = {
+      this.copy(tableAlias = tableAlias)
     }
     override def inputColumns: Seq[Attribute]     = Seq.empty
     override def outputColumns: Seq[Attribute]    = Seq.empty
@@ -566,6 +576,7 @@ object Expression {
   case class AllColumns(
       override val qualifier: Option[String],
       columns: Option[Seq[Attribute]],
+      tableAlias: Option[String],
       nodeLocation: Option[NodeLocation]
   ) extends Attribute
       with LogSupport {
@@ -587,7 +598,7 @@ object Expression {
       }
     }
     override def outputColumns: Seq[Attribute] = {
-      inputColumns.map(_.withQualifier(qualifier))
+      inputColumns.map(_.withTableAlias(tableAlias).withQualifier(qualifier))
     }
 
     override def dataType: DataType = {
@@ -598,6 +609,9 @@ object Expression {
 
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
+    }
+    override def withTableAlias(tableAlias: Option[String]): Attribute = {
+      this.copy(tableAlias = tableAlias)
     }
 
     override def toString = {
@@ -622,6 +636,7 @@ object Expression {
       qualifier: Option[String],
       name: String,
       expr: Expression,
+      tableAlias: Option[String],
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
     override def inputColumns: Seq[Attribute]  = Seq(this)
@@ -631,6 +646,10 @@ object Expression {
 
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
+    }
+
+    override def withTableAlias(tableAlias: Option[String]): Attribute = {
+      this.copy(tableAlias = tableAlias)
     }
 
     override def toString: String = {
@@ -659,7 +678,8 @@ object Expression {
     */
   case class SingleColumn(
       expr: Expression,
-      qualifier: Option[String] = None,
+      qualifier: Option[String],
+      tableAlias: Option[String],
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
     override def name: String       = expr.attributeName
@@ -674,6 +694,9 @@ object Expression {
     override def sqlExpr: String = expr.sqlExpr
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
+    }
+    override def withTableAlias(tableAlias: Option[String]): Attribute = {
+      this.copy(tableAlias = tableAlias)
     }
 
     override def sourceColumns: Seq[SourceColumn] = {
@@ -693,6 +716,7 @@ object Expression {
   case class MultiSourceColumn(
       inputs: Seq[Expression],
       qualifier: Option[String],
+      tableAlias: Option[String],
       nodeLocation: Option[NodeLocation]
   ) extends Attribute {
     require(inputs.nonEmpty, s"The inputs of MultiSourceColumn should not be empty: ${this}", nodeLocation)
@@ -703,7 +727,7 @@ object Expression {
       inputs.map {
         case a: Attribute => a
         case e: Expression =>
-          SingleColumn(e, qualifier, e.nodeLocation)
+          SingleColumn(e, qualifier, None, e.nodeLocation)
       }
     }
     override def outputColumns: Seq[Attribute] = Seq(this)
@@ -724,6 +748,9 @@ object Expression {
 
     override def withQualifier(newQualifier: Option[String]): Attribute = {
       this.copy(qualifier = newQualifier)
+    }
+    override def withTableAlias(tableAlias: Option[String]): Attribute = {
+      this.copy(tableAlias = tableAlias)
     }
 
     override def sourceColumns: Seq[SourceColumn] = {

@@ -477,8 +477,8 @@ object LogicalPlan {
 
   private def isSelectAll(selectItems: Seq[Attribute]): Boolean = {
     selectItems.exists {
-      case AllColumns(x, _, _) => true
-      case _                   => false
+      case AllColumns(x, _, _, _) => true
+      case _                      => false
     }
   }
 
@@ -514,9 +514,7 @@ object LogicalPlan {
 
     override def inputAttributes: Seq[Attribute] = child.inputAttributes
     override def outputAttributes: Seq[Attribute] = {
-      val attrs = child.outputAttributes.map { a =>
-        a.withQualifier(alias.value)
-      }
+      val attrs = child.outputAttributes.map(_.withTableAlias(alias.value))
       val result = columnNames match {
         case Some(columnNames) =>
           attrs.zip(columnNames).map { case (a, columnName) =>
@@ -545,7 +543,7 @@ object LogicalPlan {
         }
       }
       val columns = (0 until values.head.size).map { i =>
-        MultiSourceColumn(values.map(_(i)), None, None)
+        MultiSourceColumn(values.map(_(i)), None, None, None)
       }
       columns
     }
@@ -706,6 +704,7 @@ object LogicalPlan {
             SingleColumn(
               in,
               None,
+              None,
               alias.nodeLocation
             ).withAlias(alias.value)
           }
@@ -794,6 +793,7 @@ object LogicalPlan {
               None
             }
           },
+          None,
           None
         )
           // In set operations, if different column names are merged into one column, the first column name will be used
@@ -854,9 +854,9 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = {
       columns.map {
         case arr: ArrayConstructor =>
-          ResolvedAttribute(UUID.randomUUID().toString, arr.elementType, None, None, None)
+          ResolvedAttribute(UUID.randomUUID().toString, arr.elementType, None, None, None, None)
         case other =>
-          SingleColumn(other, None, other.nodeLocation)
+          SingleColumn(other, None, None, other.nodeLocation)
       }
     }
     override def sig(config: QuerySignatureConfig): String =
@@ -880,7 +880,7 @@ object LogicalPlan {
       nodeLocation: Option[NodeLocation]
   ) extends UnaryRelation {
     override def outputAttributes: Seq[Attribute] =
-      columnAliases.map(x => UnresolvedAttribute(Some(tableAlias.value), x.value, None))
+      columnAliases.map(x => UnresolvedAttribute(Some(tableAlias.value), x.value, None, None))
     override def sig(config: QuerySignatureConfig): String =
       s"LV(${child.sig(config)})"
   }

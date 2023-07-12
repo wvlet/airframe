@@ -44,6 +44,7 @@ case class TableScan(
         col.dataType,
         None, // This must be None first
         Some(SourceColumn(table, col)),
+        None,
         None // ResolvedAttribute always has no NodeLocation
       )
     }
@@ -73,6 +74,7 @@ case class ResolvedAttribute(
     qualifier: Option[String],
     // If this attribute directly refers to a table column, its source column will be set.
     sourceColumn: Option[SourceColumn],
+    tableAlias: Option[String],
     nodeLocation: Option[NodeLocation]
 ) extends Attribute
     with LogSupport {
@@ -83,6 +85,10 @@ case class ResolvedAttribute(
   override def withQualifier(newQualifier: Option[String]): Attribute = {
     this.copy(qualifier = newQualifier)
   }
+  override def withTableAlias(tableAlias: Option[String]): Attribute = {
+    this.copy(tableAlias = tableAlias)
+  }
+
   override def inputColumns: Seq[Attribute]  = Seq(this)
   override def outputColumns: Seq[Attribute] = inputColumns
 

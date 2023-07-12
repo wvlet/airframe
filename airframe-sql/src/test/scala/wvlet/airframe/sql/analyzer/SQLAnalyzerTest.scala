@@ -52,8 +52,8 @@ class SQLAnalyzerTest extends AirSpec {
     val plan = SQLAnalyzer.analyze("select id, name from a", "public", catalog)
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldBe List(
-      ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tbl1, tbl1.column("id"))), None),
-      ResolvedAttribute("name", DataType.StringType, None, Some(SourceColumn(tbl1, tbl1.column("name"))), None)
+      ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tbl1, tbl1.column("id"))), None, None),
+      ResolvedAttribute("name", DataType.StringType, None, Some(SourceColumn(tbl1, tbl1.column("name"))), None, None)
     )
   }
 
@@ -65,12 +65,13 @@ class SQLAnalyzerTest extends AirSpec {
         None,
         Some(
           Seq(
-            ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tbl1, tbl1.column("id"))), None),
+            ResolvedAttribute("id", DataType.LongType, None, Some(SourceColumn(tbl1, tbl1.column("id"))), None, None),
             ResolvedAttribute(
               "name",
               DataType.StringType,
               None,
               Some(SourceColumn(tbl1, tbl1.column("name"))),
+              None,
               None
             ),
             ResolvedAttribute(
@@ -78,10 +79,12 @@ class SQLAnalyzerTest extends AirSpec {
               DataType.StringType,
               None,
               Some(SourceColumn(tbl1, tbl1.column("address"))),
+              None,
               None
             )
           )
         ),
+        None,
         Some(NodeLocation(1, 8))
       )
     )
@@ -92,7 +95,7 @@ class SQLAnalyzerTest extends AirSpec {
     plan.resolved shouldBe true
     plan.outputAttributes.toList shouldMatch {
       // Attribute should not have a qualifier
-      case List(Alias(_, "person_id", r, _)) => {
+      case List(Alias(_, "person_id", r, _, _)) => {
         r.attributeName shouldBe "id"
         r.dataType shouldBe DataType.LongType
       }
@@ -112,10 +115,18 @@ class SQLAnalyzerTest extends AirSpec {
       DataType.LongType,
       Some("a"),
       Some(SourceColumn(tbl1, tbl1.column("id"))),
+      None,
       None
     )
     attr(1) shouldBe
-      ResolvedAttribute("name", DataType.StringType, Some("a"), Some(SourceColumn(tbl1, tbl1.column("name"))), None)
+      ResolvedAttribute(
+        "name",
+        DataType.StringType,
+        Some("a"),
+        Some(SourceColumn(tbl1, tbl1.column("name"))),
+        None,
+        None
+      )
 
     attr(2) shouldBe
       ResolvedAttribute(
@@ -123,10 +134,11 @@ class SQLAnalyzerTest extends AirSpec {
         DataType.StringType,
         Some("a"),
         Some(SourceColumn(tbl1, tbl1.column("address"))),
+        None,
         None
       )
-    attr(3) shouldMatch { case Alias(_, "phone_num", a, _) =>
-      a shouldMatch { case ResolvedAttribute("phone", DataType.StringType, _, _, _) =>
+    attr(3) shouldMatch { case Alias(_, "phone_num", a, _, _) =>
+      a shouldMatch { case ResolvedAttribute("phone", DataType.StringType, _, _, _, _) =>
       // c shouldBe SourceColumn(tbl2, tbl2.column("phone"))
       }
     }
