@@ -398,13 +398,13 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
 
     val name = QName.unquote(ctx.fieldName.getText)
 
-    UnresolvedAttribute(qualifier, name, getLocation(ctx))
+    UnresolvedAttribute(qualifier, name, None, getLocation(ctx))
   }
 
   override def visitSelectAll(ctx: SelectAllContext): Attribute = {
     // TODO parse qName
     val qualifier = Option(ctx.qualifiedName()).map(_.getText)
-    AllColumns(qualifier, None, getLocation(ctx))
+    AllColumns(qualifier, None, None, getLocation(ctx))
   }
 
   override def visitSelectSingle(ctx: SelectSingleContext): Attribute = {
@@ -416,7 +416,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
       case a: Attribute => a.qualifier
       case _            => None
     }
-    SingleColumn(child, qualifier, getLocation(ctx))
+    SingleColumn(child, qualifier, None, getLocation(ctx))
       .withAlias(alias.map(_.value))
   }
 
@@ -764,7 +764,7 @@ class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisito
     if (ctx.ASTERISK() != null) {
       FunctionCall(
         name,
-        Seq(AllColumns(None, None, getLocation(ctx))),
+        Seq(AllColumns(None, None, None, getLocation(ctx))),
         isDistinct,
         filter,
         over,

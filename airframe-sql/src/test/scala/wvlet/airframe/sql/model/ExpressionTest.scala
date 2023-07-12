@@ -25,15 +25,16 @@ class ExpressionTest extends AirSpec {
     val expr = SingleColumn(
       f,
       None,
+      None,
       None
     )
 
     val newExpr = expr.transformExpression {
-      case s @ SingleColumn(f: FunctionCall, _, _) if f.functionName == "count" =>
+      case s @ SingleColumn(f: FunctionCall, _, _, _) if f.functionName == "count" =>
         s.withQualifier("xxx")
     }
 
-    newExpr shouldBe SingleColumn(f, Some("xxx"), None)
+    newExpr shouldBe SingleColumn(f, Some("xxx"), None, None)
   }
 
   test("transform up in breadth-first order") {
@@ -63,15 +64,16 @@ class ExpressionTest extends AirSpec {
     val expr = SingleColumn(
       f,
       None,
+      None,
       None
     )
 
     val newExpr = expr.transformUpExpression {
-      case s @ SingleColumn(f: FunctionCall, _, _) if f.functionName == "count" =>
+      case s @ SingleColumn(f: FunctionCall, _, _, _) if f.functionName == "count" =>
         s.withQualifier("xxx")
     }
 
-    newExpr shouldBe SingleColumn(f, Some("xxx"), None)
+    newExpr shouldBe SingleColumn(f, Some("xxx"), None, None)
   }
 
   test("transform up in depth-first order") {

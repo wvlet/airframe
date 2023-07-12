@@ -93,7 +93,7 @@ object SQLAnonymizer extends LogSupport {
           } else {
             None
           }
-          val v = UnresolvedAttribute(qualifier, parts.last, u.nodeLocation)
+          val v = UnresolvedAttribute(qualifier, parts.last, None, u.nodeLocation)
           m += u -> v
       }
       this
