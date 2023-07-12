@@ -19,6 +19,8 @@ import wvlet.airframe.sql.model.LogicalPlan._
 import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
+import scala.annotation.tailrec
+
 /**
   * Resolve untyped [[LogicalPlan]]s and [[Expression]]s into typed ones.
   */
@@ -95,9 +97,6 @@ object TypeResolver extends LogSupport {
 
   /**
     * Translate select i1, i2, ... group by 1, 2, ... query into select i1, i2, ... group by i1, i2
-    *
-    * @param context
-    * @return
     */
   object resolveAggregationIndexes extends RewriteRule {
     def apply(context: AnalyzerContext): PlanRewriter = {
@@ -137,8 +136,6 @@ object TypeResolver extends LogSupport {
 
   /**
     * Resolve group by keys
-    * @param context
-    * @return
     */
   object resolveAggregationKeys extends RewriteRule {
     def apply(context: AnalyzerContext): PlanRewriter = {
@@ -171,6 +168,7 @@ object TypeResolver extends LogSupport {
       s.copy(orderBy = resolvedSortItems)
     }
 
+    @tailrec
     private def resolveIndex(index: Int, inputs: Seq[Attribute]): Expression = {
       inputs(index) match {
         case a: AllColumns =>
@@ -197,8 +195,6 @@ object TypeResolver extends LogSupport {
 
   /**
     * Resolve TableRefs in a query inside WITH statement with CTERelationRef
-    * @param context
-    * @return
     */
   object resolveCTETableRef extends RewriteRule {
     def apply(context: AnalyzerContext): PlanRewriter = { case q @ Query(withQuery, body, _) =>
@@ -402,6 +398,7 @@ object TypeResolver extends LogSupport {
   }
 
   private def toResolvedAttribute(name: String, expr: Expression): Attribute = {
+    @tailrec
     def findSourceColumn(e: Expression): Option[SourceColumn] = {
       e match {
         case r: ResolvedAttribute => r.sourceColumn
