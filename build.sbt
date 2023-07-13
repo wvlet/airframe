@@ -885,7 +885,7 @@ lazy val parquet =
         "org.apache.hadoop"      % "hadoop-aws" % "3.3.6"   % Provided,
         "software.amazon.awssdk" % "auth"       % "2.20.75" % Provided,
         // For Apple Silicon (M1)
-        "org.xerial.snappy"  % "snappy-java"  % "1.1.10.1",
+        "org.xerial.snappy"  % "snappy-java"  % "1.1.10.2",
         "org.slf4j"          % "slf4j-jdk14"  % SLF4J_VERSION   % Optional,
         "org.apache.parquet" % "parquet-avro" % PARQUET_VERSION % Test
       )
