@@ -6,6 +6,7 @@ on:
       - '**.scala'
       - '**.java'
       - '**.sbt'
+      - '.scalafmt.conf'
       - '.github/workflows/sbt-integration.yml'
       - 'project/build.properties'
   push:
@@ -15,6 +16,7 @@ on:
       - '**.scala'
       - '**.java'
       - '**.sbt'
+      - '.scalafmt.conf'
       - '.github/workflows/sbt-integration.yml'
       - 'project/build.properties'
 
