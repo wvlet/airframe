@@ -292,6 +292,35 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       }
     }
 
+    test("resolve cascaded unions") {
+      val p1 = analyze("select id from A union all select id from B union all select id from C")
+      p1.inputAttributes shouldBe List(ra1, ra2, rb1, rb2, rc1, rc2)
+      p1.outputAttributes shouldBe List(
+        MultiSourceColumn(List(ra1, rb1, rc1), None, None, None)
+      )
+
+      val p2 =
+        analyze("select id from A union all select id from B union all select id from C union all select id from A")
+      p2.inputAttributes shouldBe List(ra1, ra2, rb1, rb2, rc1, rc2, ra1, ra2)
+      p2.outputAttributes shouldBe List(
+        MultiSourceColumn(List(ra1, rb1, rc1, ra1), None, None, None)
+      )
+    }
+
+    test("fail to resolve union if columns are inconsistent") {
+      val e1 = intercept[SQLError] {
+        analyze("select id, name from A union all select id from B")
+      }
+      e1.errorCode shouldBe SQLErrorCode.RequirementFailed
+      e1.getMessage shouldContain "All relations in set operation must have the same number of columns"
+
+      val e2 = intercept[SQLError] {
+        analyze("select id, name from A union all select id, name from B union all select id from C")
+      }
+      e2.errorCode shouldBe SQLErrorCode.RequirementFailed
+      e2.getMessage shouldContain "All relations in set operation must have the same number of columns"
+    }
+
     test("resolve intersect") {
       val p = analyze("select id from A intersect select id from B") // => Distinct(Intersect(...))
       p shouldMatch { case Distinct(i @ Intersect(_, _), _) =>
