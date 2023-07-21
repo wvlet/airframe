@@ -305,6 +305,25 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       p2.outputAttributes shouldBe List(
         MultiSourceColumn(List(ra1, rb1, rc1, ra1), None, None, None)
       )
+
+      val p3 =
+        analyze(
+          "select id from (select id from (select id, name from A) union all select id from B) union all select id from C"
+        )
+      p3.inputAttributes shouldBe List(MultiSourceColumn(List(ra1, rb1), None, None, None), rc1, rc2)
+      p3.outputAttributes shouldBe List(
+        MultiSourceColumn(List(MultiSourceColumn(List(ra1, rb1), None, None, None), rc1), None, None, None)
+      )
+    }
+
+    test("resolve union with literal value") {
+      val p = analyze("select 1 union all select id from A")
+      p.inputAttributes shouldBe List(ra1, ra2)
+      p.outputAttributes shouldMatch {
+        case List(
+              MultiSourceColumn(List(SingleColumn(LongLiteral(1, _), None, None, _), `ra1`), None, None, None)
+            ) =>
+      }
     }
 
     test("fail to resolve union if columns are inconsistent") {

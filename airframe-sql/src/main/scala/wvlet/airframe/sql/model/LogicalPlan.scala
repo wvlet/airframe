@@ -778,7 +778,15 @@ object LogicalPlan {
       def collectInputAttributes(rels: Seq[Relation], result: Seq[Seq[Attribute]] = Nil): Seq[Seq[Attribute]] = {
         rels.flatMap {
           case s: SetOperation => collectInputAttributes(s.children, result)
-          case x               => result :+ x.outputAttributes.flatMap(_.inputColumns)
+          case other =>
+            result :+ other.outputAttributes.flatMap {
+              case a: AllColumns => a.inputColumns
+              case other =>
+                other.inputColumns match {
+                  case Seq(i) => Seq(i)
+                  case inputs => Seq(MultiSourceColumn(inputs, None, None, None))
+                }
+            }
         }
       }
 
