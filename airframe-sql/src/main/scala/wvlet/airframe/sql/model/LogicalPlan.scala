@@ -775,18 +775,18 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = mergeOutputAttributes
     protected def mergeOutputAttributes: Seq[Attribute] = {
       // Collect all input attributes
-      def collectInputAttributes(rels: Seq[Relation], result: Seq[Seq[Attribute]] = Nil): Seq[Seq[Attribute]] = {
+      def collectInputAttributes(rels: Seq[Relation]): Seq[Seq[Attribute]] = {
         rels.flatMap {
-          case s: SetOperation => collectInputAttributes(s.children, result)
+          case s: SetOperation => collectInputAttributes(s.children)
           case other =>
-            result :+ other.outputAttributes.flatMap {
+            Seq(other.outputAttributes.flatMap {
               case a: AllColumns => a.inputColumns
               case other =>
                 other.inputColumns match {
-                  case Seq(i) => Seq(i)
-                  case inputs => Seq(MultiSourceColumn(inputs, None, None, None))
+                  case x if x.length <= 1 => x
+                  case inputs             => Seq(MultiSourceColumn(inputs, None, None, None))
                 }
-            }
+            })
         }
       }
 
