@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.sql.model
 import wvlet.airframe.sql.analyzer.{QuerySignatureConfig}
+import wvlet.airframe.sql.Assertion._
 import wvlet.log.LogSupport
 
 import java.util.UUID
@@ -774,7 +775,29 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = mergeOutputAttributes
     protected def mergeOutputAttributes: Seq[Attribute] = {
       // Collect all input attributes
-      val outputAttributes: Seq[Seq[Attribute]] = children.map(_.outputAttributes.flatMap(_.inputColumns))
+      def collectInputAttributes(rels: Seq[Relation]): Seq[Seq[Attribute]] = {
+        rels.flatMap {
+          case s: SetOperation => collectInputAttributes(s.children)
+          case other =>
+            Seq(other.outputAttributes.flatMap {
+              case a: AllColumns => a.inputColumns
+              case other =>
+                other.inputColumns match {
+                  case x if x.length <= 1 => x
+                  case inputs             => Seq(MultiSourceColumn(inputs, None, None, None))
+                }
+            })
+        }
+      }
+
+      val outputAttributes: Seq[Seq[Attribute]] = collectInputAttributes(children)
+
+      // Verify all relations have the same number of columns
+      require(
+        outputAttributes.map(_.size).distinct.size == 1,
+        "All relations in set operation must have the same number of columns",
+        nodeLocation
+      )
 
       // Transpose a set of relation columns into a list of same columns
       // relations: (Ra(a1, a2, ...), Rb(b1, b2, ...))
