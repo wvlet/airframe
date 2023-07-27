@@ -41,7 +41,10 @@ trait Tags {
   lazy val cite: HtmlElement = tag("cite")
   // Defines a piece of computer code
   lazy val code: HtmlElement = tag("code")
-  lazy val dd: HtmlElement   = tag("dd")
+  // Contains a set of <option> elements that represent the permissible or
+  // recommended options available to choose from within other controls.
+  lazy val datalist: HtmlElement = tag("datalist")
+  lazy val dd: HtmlElement       = tag("dd")
   // Defines text that has been deleted from a document
   lazy val del: HtmlElement = tag("del")
   // Defines additional details that the user can view or hide
