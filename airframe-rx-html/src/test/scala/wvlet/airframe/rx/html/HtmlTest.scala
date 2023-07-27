@@ -201,4 +201,12 @@ class HtmlTest extends AirSpec {
       )
     )
   }
+
+  test("datalist") {
+    datalist(
+      id -> "fruit",
+      option(value -> "apple"),
+      option(value -> "banana")
+    )
+  }
 }
