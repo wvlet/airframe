@@ -18,28 +18,26 @@ package wvlet.airframe.rx.html
   */
 trait SvgTags {
 
-  private def tag(name: String) = svgTag(name)
-
   /**
     * The altGlyph element allows sophisticated selection of the glyphs used to render its child character data.
     *
     * MDN
     */
-  lazy val altGlyph = tag("altGlyph")
+  lazy val altGlyph = svgTag("altGlyph")
 
   /**
     * The altGlyphDef element defines a substitution representation for glyphs.
     *
     * MDN
     */
-  lazy val altGlyphDef = tag("altGlyphDef")
+  lazy val altGlyphDef = svgTag("altGlyphDef")
 
   /**
     * The altGlyphItem element provides a set of candidates for glyph substitution by the altGlyph element.
     *
     * MDN
     */
-  lazy val altGlyphItem = tag("altGlyphItem")
+  lazy val altGlyphItem = svgTag("altGlyphItem")
 
   /**
     * The animate element is put inside a shape element and defines how an attribute of an element changes over the
@@ -47,14 +45,14 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val animate = tag("animate")
+  lazy val animate = svgTag("animate")
 
   /**
     * The animateMotion element causes a referenced element to move along a motion path.
     *
     * MDN
     */
-  lazy val animateMotion = tag("animateMotion")
+  lazy val animateMotion = svgTag("animateMotion")
 
   /**
     * The animateTransform element animates a transformation attribute on a target element, thereby allowing animations
@@ -62,14 +60,14 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val animateTransform = tag("animateTransform")
+  lazy val animateTransform = svgTag("animateTransform")
 
   /**
     * The circle element is an SVG basic shape, used to create circles based on a center point and a radius.
     *
     * MDN
     */
-  lazy val circle = tag("circle")
+  lazy val circle = svgTag("circle")
 
   /**
     * The clipping path restricts the region to which paint can be applied. Conceptually, any parts of the drawing that
@@ -77,14 +75,14 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val clipPath = tag("clipPath")
+  lazy val clipPath = svgTag("clipPath")
 
   /**
     * The element allows describing the color profile used for the image.
     *
     * MDN
     */
-  lazy val `color-profile` = tag("`color-profile`")
+  lazy val `color-profile` = svgTag("`color-profile`")
 
   /**
     * The cursor element can be used to define a platform-independent custom cursor. A recommended approach for defining
@@ -92,8 +90,10 @@ trait SvgTags {
     * image and identifies the exact position within the image which is the pointer position (i.e., the hot spot).
     *
     * MDN
+    *
+    * cursor has been reprecated
     */
-  lazy val cursor = tag("cursor")
+  // lazy val cursor = svgTag("cursor")
 
   /**
     * SVG allows graphical objects to be defined for later reuse. It is recommended that, wherever possible, referenced
@@ -103,7 +103,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val defs = tag("defs")
+  lazy val defs = svgTag("defs")
 
   /**
     * Each container element or graphics element in an SVG drawing can supply a desc description string where the
@@ -114,7 +114,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val desc = tag("desc")
+  lazy val desc = svgTag("desc")
 
   /**
     * The ellipse element is an SVG basic shape, used to create ellipses based on a center coordinate, and both their x
@@ -125,7 +125,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val ellipse = tag("ellipse")
+  lazy val ellipse = svgTag("ellipse")
 
   /**
     * The feBlend filter composes two objects together ruled by a certain blending mode. This is similar to what is
@@ -133,7 +133,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feBlend = tag("feBlend")
+  lazy val feBlend = svgTag("feBlend")
 
   /**
     * This filter changes colors based on a transformation matrix. Every pixel's color value (represented by an
@@ -141,7 +141,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feColorMatrix = tag("feColorMatrix")
+  lazy val feColorMatrix = svgTag("feColorMatrix")
 
   /**
     * The color of each pixel is modified by changing each channel (R, G, B, and A) to the result of what the children
@@ -149,7 +149,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feComponentTransfer = tag("feComponentTransfer")
+  lazy val feComponentTransfer = svgTag("feComponentTransfer")
 
   /**
     * This filter primitive performs the combination of two input images pixel-wise in image space using one of the
@@ -158,7 +158,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feComposite = tag("feComposite")
+  lazy val feComposite = svgTag("feComposite")
 
   /**
     * the feConvolveMatrix element applies a matrix convolution filter effect. A convolution combines pixels in the
@@ -167,7 +167,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feConvolveMatrix = tag("feConvolveMatrix")
+  lazy val feConvolveMatrix = svgTag("feConvolveMatrix")
 
   /**
     * This filter primitive lights an image using the alpha channel as a bump map. The resulting image, which is an RGBA
@@ -175,14 +175,14 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feDiffuseLighting = tag("feDiffuseLighting")
+  lazy val feDiffuseLighting = svgTag("feDiffuseLighting")
 
   /**
     * This filter primitive uses the pixels values from the image from in2 to spatially displace the image from in.
     *
     * MDN
     */
-  lazy val feDisplacementMap = tag("feDisplacementMap")
+  lazy val feDisplacementMap = svgTag("feDisplacementMap")
 
   /**
     * This filter primitive define a distant light source that can be used within a lighting filter primitive:
@@ -190,14 +190,14 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feDistantLighting = tag("feDistantLighting")
+  lazy val feDistantLighting = svgTag("feDistantLighting")
 
   /**
     * The filter fills the filter subregion with the color and opacity defined by flood-color and flood-opacity.
     *
     * MDN
     */
-  lazy val feFlood = tag("feFlood")
+  lazy val feFlood = svgTag("feFlood")
 
   /**
     * This filter primitive defines the transfer function for the alpha component of the input graphic of its parent
@@ -205,7 +205,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feFuncA = tag("feFuncA")
+  lazy val feFuncA = svgTag("feFuncA")
 
   /**
     * This filter primitive defines the transfer function for the blue component of the input graphic of its parent
@@ -213,7 +213,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feFuncB = tag("feFuncB")
+  lazy val feFuncB = svgTag("feFuncB")
 
   /**
     * This filter primitive defines the transfer function for the green component of the input graphic of its parent
@@ -221,7 +221,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feFuncG = tag("feFuncG")
+  lazy val feFuncG = svgTag("feFuncG")
 
   /**
     * This filter primitive defines the transfer function for the red component of the input graphic of its parent
@@ -229,14 +229,14 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feFuncR = tag("feFuncR")
+  lazy val feFuncR = svgTag("feFuncR")
 
   /**
     * The filter blurs the input image by the amount specified in stdDeviation, which defines the bell-curve.
     *
     * MDN
     */
-  lazy val feGaussianBlur = tag("feGaussianBlur")
+  lazy val feGaussianBlur = svgTag("feGaussianBlur")
 
   /**
     * The feImage filter fetches image data from an external source and provides the pixel data as output (meaning, if
@@ -244,7 +244,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feImage = tag("feImage")
+  lazy val feImage = svgTag("feImage")
 
   /**
     * The feMerge filter allows filter effects to be applied concurrently instead of sequentially. This is achieved by
@@ -252,14 +252,14 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feMerge = tag("feMerge")
+  lazy val feMerge = svgTag("feMerge")
 
   /**
     * The feMergeNode takes the result of another filter to be processed by its parent feMerge.
     *
     * MDN
     */
-  lazy val feMergeNode = tag("feMergeNode")
+  lazy val feMergeNode = svgTag("feMergeNode")
 
   /**
     * This filter is used to erode or dilate the input image. It's usefulness lies especially in fattening or thinning
@@ -267,7 +267,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feMorphology = tag("feMorphology")
+  lazy val feMorphology = svgTag("feMorphology")
 
   /**
     * The input image as a whole is offset by the values specified in the dx and dy attributes. It's used in creating
@@ -275,8 +275,8 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feOffset     = tag("feOffset")
-  lazy val fePointLight = tag("fePointLight")
+  lazy val feOffset     = svgTag("feOffset")
+  lazy val fePointLight = svgTag("fePointLight")
 
   /**
     * This filter primitive lights a source graphic using the alpha channel as a bump map. The resulting image is an
@@ -287,18 +287,18 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feSpecularLighting = tag("feSpecularLighting")
+  lazy val feSpecularLighting = svgTag("feSpecularLighting")
 
   /**
     */
-  lazy val feSpotlight = tag("feSpotlight")
+  lazy val feSpotlight = svgTag("feSpotlight")
 
   /**
     * An input image is tiled and the result used to fill a target. The effect is similar to the one of a pattern.
     *
     * MDN
     */
-  lazy val feTile = tag("feTile")
+  lazy val feTile = svgTag("feTile")
 
   /**
     * This filter primitive creates an image using the Perlin turbulence function. It allows the synthesis of artificial
@@ -306,7 +306,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val feTurbulance = tag("feTurbulance")
+  lazy val feTurbulance = svgTag("feTurbulance")
 
   /**
     * The filter element serves as container for atomic filter operations. It is never rendered directly. A filter is
@@ -314,35 +314,37 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val filter = tag("filter")
+  lazy val filter = svgTag("filter")
 
   /**
     * The font element defines a font to be used for text layout.
     *
     * MDN
+    *
+    * font tag is deprecated
     */
-  lazy val font = tag("font")
+  // lazy val font = svgTag("font")
 
   /**
     * The font-face element corresponds to the CSS @font-face declaration. It defines a font's outer properties.
     *
     * MDN
     */
-  lazy val `font-face` = tag("`font-face`")
+  lazy val `font-face` = svgTag("`font-face`")
 
   /**
     * The font-face-format element describes the type of font referenced by its parent font-face-uri.
     *
     * MDN
     */
-  lazy val `font-face-format` = tag("`font-face-format`")
+  lazy val `font-face-format` = svgTag("`font-face-format`")
 
   /**
     * The font-face-name element points to a locally installed copy of this font, identified by its name.
     *
     * MDN
     */
-  lazy val `font-face-name` = tag("`font-face-name`")
+  lazy val `font-face-name` = svgTag("`font-face-name`")
 
   /**
     * The font-face-src element corresponds to the src property in CSS @font-face descriptions. It serves as container
@@ -351,14 +353,14 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val `font-face-src` = tag("`font-face-src`")
+  lazy val `font-face-src` = svgTag("`font-face-src`")
 
   /**
     * The font-face-uri element points to a remote definition of the current font.
     *
     * MDN
     */
-  lazy val `font-face-uri` = tag("`font-face-uri`")
+  lazy val `font-face-uri` = svgTag("`font-face-uri`")
 
   /**
     * The foreignObject element allows for inclusion of a foreign XML namespace which has its graphical content drawn by
@@ -366,7 +368,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val foreignObject = tag("foreignObject")
+  lazy val foreignObject = svgTag("foreignObject")
 
   /**
     * The g element is a container used to group objects. Transformations applied to the g element are performed on all
@@ -375,21 +377,21 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val g = tag("g")
+  lazy val g = svgTag("g")
 
   /**
     * A glyph defines a single glyph in an SVG font.
     *
     * MDN
     */
-  lazy val glyph = tag("glyph")
+  lazy val glyph = svgTag("glyph")
 
   /**
     * The glyphRef element provides a single possible glyph to the referencing altGlyph substitution.
     *
     * MDN
     */
-  lazy val glyphRef = tag("glyphRef")
+  lazy val glyphRef = svgTag("glyphRef")
 
   /**
     * The horizontal distance between two glyphs can be fine-tweaked with an hkern Element. This process is known as
@@ -397,28 +399,28 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val hkern = tag("hkern")
+  lazy val hkern = svgTag("hkern")
 
   /**
     * The SVG Image Element (image) allows a raster image into be included in an SVG document.
     *
     * MDN
     */
-  lazy val image = tag("image")
+  lazy val image = svgTag("image")
 
   /**
     * The line element is an SVG basic shape, used to create a line connecting two points.
     *
     * MDN
     */
-  lazy val line = tag("line")
+  lazy val line = svgTag("line")
 
   /**
     * linearGradient lets authors define linear gradients to fill or stroke graphical elements.
     *
     * MDN
     */
-  lazy val linearGradient = tag("linearGradient")
+  lazy val linearGradient = svgTag("linearGradient")
 
   /**
     * The marker element defines the graphics that is to be used for drawing arrowheads or polymarkers on a given path,
@@ -426,7 +428,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val marker = tag("marker")
+  lazy val marker = svgTag("marker")
 
   /**
     * In SVG, you can specify that any other graphics object or g element can be used as an alpha mask for compositing
@@ -435,7 +437,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val mask = tag("mask")
+  lazy val mask = svgTag("mask")
 
   /**
     * Metadata is structured data about data. Metadata which is included with SVG content should be specified within
@@ -444,14 +446,14 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val metadata = tag("metadata")
+  lazy val metadata = svgTag("metadata")
 
   /**
     * The missing-glyph's content is rendered, if for a given character the font doesn't define an appropriate glyph.
     *
     * MDN
     */
-  lazy val `missing-glyph` = tag("`missing-glyph`")
+  lazy val `missing-glyph` = svgTag("`missing-glyph`")
 
   /**
     * the mpath sub-element for the animateMotion element provides the ability to reference an external path element as
@@ -459,13 +461,13 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val mpath = tag("mpath")
+  lazy val mpath = svgTag("mpath")
 
   /**
     * The path element is the generic element to define a shape. All the basic shapes can be created with a path
     * element.
     */
-  lazy val path = tag("path")
+  lazy val path = svgTag("path")
 
   /**
     * A pattern is used to fill or stroke an object using a pre-defined graphic object which can be replicated ("tiled")
@@ -475,14 +477,14 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val pattern = tag("pattern")
+  lazy val pattern = svgTag("pattern")
 
   /**
     * The polygon element defines a closed shape consisting of a set of connected straight line segments.
     *
     * MDN
     */
-  lazy val polygon = tag("polygon")
+  lazy val polygon = svgTag("polygon")
 
   /**
     * The polyline element is an SVG basic shape, used to create a series of straight lines connecting several points.
@@ -490,14 +492,14 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val polyline = tag("polyline")
+  lazy val polyline = svgTag("polyline")
 
   /**
     * radialGradient lets authors define radial gradients to fill or stroke graphical elements.
     *
     * MDN
     */
-  lazy val radialGradient = tag("radialGradient")
+  lazy val radialGradient = svgTag("radialGradient")
 
   /**
     * The rect element is an SVG basic shape, used to create rectangles based on the position of a corner and their
@@ -505,7 +507,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val rect = tag("rect")
+  lazy val rect = svgTag("rect")
 
   /**
     * The set element provides a simple means of just setting the value of an attribute for a specified duration. It
@@ -515,7 +517,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val set = tag("set")
+  lazy val set = svgTag("set")
 
   /**
     * The ramp of colors to use on a gradient is defined by the stop elements that are child elements to either the
@@ -523,7 +525,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val stop = tag("stop")
+  lazy val stop = svgTag("stop")
 
   /**
     * When it is not the root element, the svg element can be used to nest a standalone SVG fragment inside the current
@@ -532,7 +534,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val svg = tag("svg")
+  lazy val svg = svgTag("svg")
 
   /**
     * The switch element evaluates the requiredFeatures, requiredExtensions and systemLanguage attributes on its direct
@@ -542,7 +544,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val switch = tag("switch")
+  lazy val switch = svgTag("switch")
 
   /**
     * The symbol element is used to define graphical template objects which can be instantiated by a use element. The
@@ -553,7 +555,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val symbol = tag("symbol")
+  lazy val symbol = svgTag("symbol")
 
   /**
     * The text element defines a graphics element consisting of text. Note that it is possible to apply a gradient,
@@ -561,7 +563,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val text = tag("text")
+  lazy val text = svgTag("text")
 
   /**
     * In addition to text drawn in a straight line, SVG also includes the ability to place text along the shape of a
@@ -570,7 +572,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val textPath = tag("textPath")
+  lazy val textPath = svgTag("textPath")
 
   /**
     * The textual content for a text can be either character data directly embedded within the text element or the
@@ -578,14 +580,16 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val tref = tag("tref")
+  lazy val tref = svgTag("tref")
 
   /**
     * The title element provides an accessible, short-text description of any SVG container element or graphics element.
     *
     * MDN
+    *
+    * Note: This name conflicts with HTML title attribute
     */
-  lazy val title = tag("title")
+  lazy val title = svgTag("title")
 
   /**
     * Within a text element, text and font properties and the current text position can be adjusted with absolute or
@@ -593,7 +597,7 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val tspan = tag("tspan")
+  lazy val tspan = svgTag("tspan")
 
   /**
     * The use element takes nodes from within the SVG document, and duplicates them somewhere else. The effect is the
@@ -604,14 +608,14 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val use = tag("use")
+  lazy val use = svgTag("use")
 
   /**
     * A view is a defined way to view the image, like a zoom level or a detail view.
     *
     * MDN
     */
-  lazy val view = tag("view")
+  lazy val view = svgTag("view")
 
   /**
     * The vertical distance between two glyphs in top-to-bottom fonts can be fine-tweaked with an vkern Element. This
@@ -619,6 +623,6 @@ trait SvgTags {
     *
     * MDN
     */
-  lazy val vkern = tag("vkern")
+  lazy val vkern = svgTag("vkern")
 
 }

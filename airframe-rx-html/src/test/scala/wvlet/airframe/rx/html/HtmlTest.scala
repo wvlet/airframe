@@ -16,7 +16,6 @@ package wvlet.airframe.rx.html
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html._
 import wvlet.airframe.rx.html.all._
-import wvlet.airframe.rx.html.svgTags._
 import wvlet.airspec.AirSpec
 
 /**
@@ -198,6 +197,21 @@ class HtmlTest extends AirSpec {
       circle(
         color -> "",
         svgTags.title("circle description")
+      )
+    )
+  }
+
+  test("svg group") {
+    import svgTags._
+    import svgAttrs._
+    g(
+      // timeline background
+      rect(
+        x      -> 0,
+        y      -> 0,
+        width  -> 100,
+        height -> 200,
+        fill   -> "#fafafa"
       )
     )
   }
