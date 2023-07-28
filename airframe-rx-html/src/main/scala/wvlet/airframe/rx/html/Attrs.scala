@@ -386,7 +386,7 @@ trait WindowEventAttrs extends SharedEventAttrs {
   /**
     * Script to be run when a user navigates to a page
     */
-  lazy val onpageshow = attr("onpageshow")
+  lazy val onpageshow: HtmlAttributeOf = attr("onpageshow")
 
   /**
     * Script to be run when the window's history changes

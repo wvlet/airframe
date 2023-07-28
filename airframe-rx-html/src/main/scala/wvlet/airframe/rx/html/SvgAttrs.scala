@@ -520,14 +520,16 @@ trait SvgAttrs {
   /**
     * MDN
     */
-  lazy val height = attr("height")
+  // Conflicts with Attr.height
+  // lazy val height = attr("height")
 
   /**
     * MDN
     */
   lazy val imageRendering = attr("imageRendering")
 
-  lazy val id = attr("id")
+  // id is already available in Attrs
+  // lazy val id = attr("id")
 
   /**
     * MDN
@@ -995,7 +997,8 @@ trait SvgAttrs {
    *
    * MDN
    */
-  lazy val width = attr("width")
+  // width conflicts with Attr.width
+  // lazy val width = attr("width")
 
   /*
    *

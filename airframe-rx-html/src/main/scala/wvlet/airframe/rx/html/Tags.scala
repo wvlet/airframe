@@ -170,8 +170,7 @@ trait Tags {
   lazy val summary: HtmlElement = tag("summary")
   // Defines superscripted text
   lazy val sup: HtmlElement = tag("sup")
-  // Defines a container for SVG graphics
-  lazy val svg: HtmlElement = tag("svg")
+
   // Defines a table
   lazy val table: HtmlElement = tag("table")
   // Groups the body content in a table
