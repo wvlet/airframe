@@ -25,6 +25,7 @@ package object html extends HtmlCompat with RxEmbedding {
 
   object all extends Tags with Attrs with RxEmbedding
 
+  // Note: SVG tags and attributes are defined separately to resolve naming conflicts with regular HTML tags and attributes
   object svgTags  extends SvgTags
   object svgAttrs extends SvgAttrs
 
