@@ -16,7 +16,7 @@ package wvlet.airframe.http.client
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.CircuitBreaker
 import wvlet.airframe.control.Retry.RetryContext
-import wvlet.airframe.http.HttpMessage.Request
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http._
 
 import java.util.concurrent.TimeUnit
@@ -29,6 +29,7 @@ case class HttpClientConfig(
     name: String = "default",
     backend: HttpClientBackend = Compat.defaultHttpClientBackend,
     requestFilter: Request => Request = identity,
+    responseFilter: Response => Response = identity,
     rpcEncoding: RPCEncoding = RPCEncoding.JSON,
     retryContext: RetryContext = Compat.defaultHttpClientBackend.defaultRequestRetryer,
     codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
@@ -70,8 +71,16 @@ case class HttpClientConfig(
     */
   def withRequestFilter(newRequestFilter: Request => Request): HttpClientConfig =
     this.copy(requestFilter = requestFilter.andThen(newRequestFilter))
-
   def noRequestFilter: HttpClientConfig = this.copy(requestFilter = identity)
+
+  /**
+    * Add a custom response filter, mostly for debugging purpose
+    * @param newResponseFilter
+    * @return
+    */
+  def withResponseFilter(newResponseFilter: Response => Response): HttpClientConfig =
+    this.copy(responseFilter = newResponseFilter)
+  def noResponseFilter: HttpClientConfig = this.copy(responseFilter = identity)
 
   def withRPCEncoding(newEncoding: RPCEncoding): HttpClientConfig = {
     this.copy(rpcEncoding = newEncoding)

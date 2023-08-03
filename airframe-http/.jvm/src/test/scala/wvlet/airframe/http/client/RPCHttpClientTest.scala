@@ -35,5 +35,4 @@ object RPCHttpClientTest extends AirSpec {
     debug(response)
     response.headers.get("Content-Type") shouldBe Some(MediaType.ApplicationJson)
   }
-
 }

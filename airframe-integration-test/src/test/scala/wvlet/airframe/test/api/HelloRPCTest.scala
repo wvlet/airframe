@@ -14,7 +14,7 @@
 package wvlet.airframe.test.api
 
 import wvlet.airframe.Design
-import wvlet.airframe.http.{Http, RxRouter}
+import wvlet.airframe.http.{Http, RPCEncoding, RxRouter}
 import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.airframe.test.api.HelloRPC.VariousParams
 import wvlet.airframe.test.api.Status
@@ -52,6 +52,22 @@ class HelloRPCTest extends AirSpec {
       test("case class with various data types") {
         val resp = client.HelloRPC.variousParams(VariousParams(p1 = 1L, p2 = true, p3 = 1.0))
         resp shouldBe VariousParams(p1 = 1L, p2 = true, p3 = 1.0)
+      }
+
+      test("json encoding") {
+        client
+          .withRPCEncoding(RPCEncoding.JSON).withResponseFilter { resp =>
+            resp.isContentTypeJson shouldBe true
+            resp
+          }.HelloRPC.serverStatus() shouldBe Status.OK
+      }
+
+      test("msgpack encoding") {
+        client
+          .withRPCEncoding(RPCEncoding.MsgPack).withResponseFilter { resp =>
+            resp.isContentTypeMsgPack shouldBe true
+            resp
+          }.HelloRPC.serverStatus() shouldBe Status.OK
       }
     }
 
