@@ -334,20 +334,20 @@ This is useful for sharing objects initialized only once at the beginning with t
 </ul></li>
 </ul>
 <p>To configure the design of objects that will be created in each session,
-override <code>protected def design:Design</code> or <code>protected def localDesign: Design</code> methods in AirSpec.</p>
+configure design by calling <code>initDesign(d: Design =&gt; Design)</code> (global design) or <code>initLocalDesign(d: Design =&gt; Design)</code>. It is also possible to customie design by overriding <code>protected def design:Design</code> or <code>protected def localDesign: Design</code> methods in AirSpec. initDesign and initLocalDesign methods are shortcuts for configuring design and localDesign methods.</p>
 <h3><a class="anchor" aria-hidden="true" id="session-lifecycle"></a><a href="#session-lifecycle" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Session LifeCycle</h3>
 <p>AirSpec manages global/local sessions in this order:</p>
 <ul>
 <li>Create a new instance of AirSpec
 <ul>
 <li>Run <code>beforeAll</code></li>
-<li>Call <code>design</code> to prepare a new global design</li>
+<li>Call <code>initDesign(design)</code> to prepare a new global design</li>
 <li>Start a new global session
 <ul>
 <li>for each test method <em>m</em>:
 <ul>
 <li>Call <code>before</code></li>
-<li>Call <code>localDesign</code> to prepare a new local design</li>
+<li>Call <code>initLocalDesign(localDesign)</code> to prepare a new local design</li>
 <li>Start a new local session
 <ul>
 <li>Call the test method <em>m</em> by building method arguments using the local session (and the global session). See also <a href="https://wvlet.org/airframe/docs/airframe.html#child-sessions">Airframe DI: Child Sessions</a> to learn more about the dependency resolution order.</li>
@@ -364,14 +364,13 @@ override <code>protected def design:Design</code> or <code>protected def localDe
 <h2><a class="anchor" aria-hidden="true" id="di-example"></a><a href="#di-example" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>DI Example</h2>
 <p>This is an example to utilize a global session to share the same service instance between test methods:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airspec._
-<span class="hljs-keyword">import</span> wvlet.airframe._
 
 <span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServiceConfig</span>(<span class="hljs-params">port:<span class="hljs-type">Int</span></span>)</span>
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Service</span>(<span class="hljs-params">val config:<span class="hljs-type">ServiceConfig</span></span>)</span>
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServiceSpec</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
-  <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">design</span></span>: <span class="hljs-type">Design</span> = {
-    newDesign
+  initDesign { design =&gt;
+    design
       .bind[<span class="hljs-type">ServiceConfig</span>].toInstance(<span class="hljs-type">ServiceConfig</span>(port=<span class="hljs-number">8080</span>))
       .bind[<span class="hljs-type">Service</span>].toSingleton
       .onStart{x =&gt; info(<span class="hljs-string">s"Starting a server at <span class="hljs-subst">${x.config.port}</span>"</span>)}
@@ -400,8 +399,8 @@ override <code>protected def design:Design</code> or <code>protected def localDe
 </code></pre>
 <p>It is also possible to reuse the same injected instance by nesting <code>test</code> methods:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServiceSpec</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
-  <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">design</span></span>: <span class="hljs-type">Design</span> = ...
-  test(<span class="hljs-string">"server test"</span>) { service:<span class="hljs-type">Service</span> =&gt;
+  initDesign { _.bind[<span class="hljs-type">Service</span>].toInstance(...) }
+  test(<span class="hljs-string">"server test"</span>) { (service:<span class="hljs-type">Service</span>) =&gt;
     test(<span class="hljs-string">"test 1"</span>) {
       info(<span class="hljs-string">s"server id: <span class="hljs-subst">${service.hashCode}</span>"</span>)
     }
@@ -420,9 +419,8 @@ override <code>protected def design:Design</code> or <code>protected def localDe
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">OverrideTest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
 
-  <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">design</span></span>: <span class="hljs-type">Design</span> = {
-    newDesign
-      .bind[<span class="hljs-type">String</span>].toInstance(<span class="hljs-string">"hello"</span>)
+  initDesign {
+    _.bind[<span class="hljs-type">String</span>].toInstance(<span class="hljs-string">"hello"</span>)
   }
 
   <span class="hljs-comment">// Pass Session to override the design</span>
@@ -484,7 +482,7 @@ If you need to switch some implementations or configurations for your tests, ove
 <span class="hljs-keyword">import</span> wvlet.airspec._
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AppTest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
   <span class="hljs-comment">// Use the testing design</span>
-  <span class="hljs-keyword">protected</span> <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">design</span> </span>= <span class="hljs-type">AppTestModule</span>.serviceDesignForTests
+  initDesign(_ + <span class="hljs-type">AppTestModule</span>.serviceDesignForTests)
 
   <span class="hljs-comment">// Inject a Service object initialized with a test configuration</span>
   test(<span class="hljs-string">"start up test"</span>) { (service:<span class="hljs-type">Service</span>) =&gt;
