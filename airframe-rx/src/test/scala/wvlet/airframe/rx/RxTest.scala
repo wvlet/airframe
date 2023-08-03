@@ -260,6 +260,30 @@ object RxTest extends AirSpec {
     )
   }
 
+  test("zip5") {
+    val a = Rx.variable(1)
+    val b = Rx.variable("a")
+    val c = Rx.variable(true)
+    val d = Rx.variable(false)
+    val e = Rx.variable(10)
+
+    val x  = a.zip(b, c, d, e)
+    val ev = Seq.newBuilder[RxEvent]
+    val ca = RxRunner.runContinuously(x)(ev += _)
+
+    a := 2
+    b := "b"
+    c := false
+    d := true
+    e := 20
+
+    val events = ev.result()
+    events shouldBe Seq(
+      OnNext(1, "a", true, false, 10),
+      OnNext(2, "b", false, true, 20)
+    )
+  }
+
   test("join") {
     val x  = Rx.variable(1)
     val y  = Rx.variable("a")
@@ -338,6 +362,39 @@ object RxTest extends AirSpec {
       OnNext(1, "c", false, 20),
       OnNext(2, "c", false, 20),
       OnNext(2, "d", false, 20)
+    )
+  }
+
+  test("join5") {
+    val x  = Rx.variable(1)
+    val y  = Rx.variable("a")
+    val z  = Rx.variable(true)
+    val w  = Rx.variable(10)
+    val v  = Rx.variable(false)
+    val rx = x.join(y, z, w, v)
+
+    val b = Seq.newBuilder[RxEvent]
+    RxRunner.run(rx)(b += _)
+
+    y := "b"
+    y := "c"
+    w := 20
+    z := false
+    x := 2
+    y := "d"
+    v := true
+
+    val events = b.result()
+    debug(events)
+    events shouldBe Seq(
+      OnNext(1, "a", true, 10, false),
+      OnNext(1, "b", true, 10, false),
+      OnNext(1, "c", true, 10, false),
+      OnNext(1, "c", true, 20, false),
+      OnNext(1, "c", false, 20, false),
+      OnNext(2, "c", false, 20, false),
+      OnNext(2, "d", false, 20, false),
+      OnNext(2, "d", false, 20, true)
     )
   }
 

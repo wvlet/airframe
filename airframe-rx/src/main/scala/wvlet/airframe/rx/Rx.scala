@@ -114,9 +114,10 @@ trait Rx[+A] extends RxOps[A] {
     * Combine two Rx streams to form a sequence of pairs. This will emit a new pair when both of the streams are
     * updated.
     */
-  def zip[B](other: Rx[B]): Rx[(A, B)]                             = Rx.zip(this, other)
-  def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Rx.zip(this, b, c)
-  def zip[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Rx.zip(this, b, c, d)
+  def zip[B](other: Rx[B]): Rx[(A, B)]                                             = Rx.zip(this, other)
+  def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                                 = Rx.zip(this, b, c)
+  def zip[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)]                 = Rx.zip(this, b, c, d)
+  def zip[B, C, D, E](b: Rx[B], c: Rx[C], d: Rx[D], e: Rx[E]): Rx[(A, B, C, D, E)] = Rx.zip(this, b, c, d, e)
 
   /**
     * Emit a new output if one of Rx[A] or Rx[B] is changed.
@@ -126,9 +127,10 @@ trait Rx[+A] extends RxOps[A] {
     * Using joins will be more intuitive than nesting multiple Rx operators like Rx[A].map { x => ... Rx[B].map { ...}
     * }.
     */
-  def join[B](other: Rx[B]): Rx[(A, B)]                             = Rx.join(this, other)
-  def join[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Rx.join(this, b, c)
-  def join[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Rx.join(this, b, c, d)
+  def join[B](other: Rx[B]): Rx[(A, B)]                                             = Rx.join(this, other)
+  def join[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                                 = Rx.join(this, b, c)
+  def join[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)]                 = Rx.join(this, b, c, d)
+  def join[B, C, D, E](b: Rx[B], c: Rx[C], d: Rx[D], e: Rx[E]): Rx[(A, B, C, D, E)] = Rx.join(this, b, c, d, e)
 
   /**
     * Combine Rx stream and Future operators.
@@ -278,10 +280,13 @@ object Rx extends LogSupport {
   def join[A, B](a: Rx[A], b: Rx[B]): Rx[(A, B)]                                 = JoinOp(a, b)
   def join[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Join3Op(a, b, c)
   def join[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Join4Op(a, b, c, d)
+  def join[A, B, C, D, E](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D], e: Rx[E]): Rx[(A, B, C, D, E)] =
+    Join5Op(a, b, c, d, e)
 
-  def zip[A, B](a: Rx[A], b: Rx[B]): Rx[(A, B)]                                 = ZipOp(a, b)
-  def zip[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Zip3Op(a, b, c)
-  def zip[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Zip4Op(a, b, c, d)
+  def zip[A, B](a: Rx[A], b: Rx[B]): Rx[(A, B)]                                                 = ZipOp(a, b)
+  def zip[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                                 = Zip3Op(a, b, c)
+  def zip[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)]                 = Zip4Op(a, b, c, d)
+  def zip[A, B, C, D, E](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D], e: Rx[E]): Rx[(A, B, C, D, E)] = Zip5Op(a, b, c, d, e)
 
   def concat[A, A1 >: A](a: Rx[A], b: Rx[A1]): Rx[A1] = ConcatOp(a, b)
 
@@ -373,6 +378,10 @@ object Rx extends LogSupport {
   case class Zip4Op[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]) extends Rx[(A, B, C, D)] {
     override def parents: Seq[Rx[_]] = Seq(a, b, c, d)
   }
+  case class Zip5Op[A, B, C, D, E](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D], e: Rx[E]) extends Rx[(A, B, C, D, E)] {
+    override def parents: Seq[Rx[_]] = Seq(a, b, c, d, e)
+  }
+
   case class JoinOp[A, B](a: Rx[A], b: Rx[B]) extends Rx[(A, B)] {
     override def parents: Seq[Rx[_]] = Seq(a, b)
   }
@@ -381,6 +390,9 @@ object Rx extends LogSupport {
   }
   case class Join4Op[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]) extends Rx[(A, B, C, D)] {
     override def parents: Seq[Rx[_]] = Seq(a, b, c, d)
+  }
+  case class Join5Op[A, B, C, D, E](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D], e: Rx[E]) extends Rx[(A, B, C, D, E)] {
+    override def parents: Seq[Rx[_]] = Seq(a, b, c, d, e)
   }
 
   case class ConcatOp[A](first: Rx[A], next: Rx[A]) extends Rx[A] {

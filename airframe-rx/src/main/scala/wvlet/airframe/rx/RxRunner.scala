@@ -381,11 +381,15 @@ class RxRunner(
         zip(z)(effect)
       case z @ Zip4Op(r1, r2, r3, r4) =>
         zip(z)(effect)
+      case z @ Zip5Op(r1, r2, r3, r4, r5) =>
+        zip(z)(effect)
       case j @ JoinOp(r1, r2) =>
         join(j)(effect)
       case j @ Join3Op(r1, r2, r3) =>
         join(j)(effect)
       case j @ Join4Op(r1, r2, r3, r4) =>
+        join(j)(effect)
+      case j @ Join5Op(r1, r2, r3, r4, r5) =>
         join(j)(effect)
       case RxOptionOp(in) =>
         run(in) {
@@ -541,8 +545,10 @@ class RxRunner(
                 effect(OnNext((values(0), values(1), values(2)).asInstanceOf[A]))
               case 4 =>
                 effect(OnNext((values(0), values(1), values(2), values(3)).asInstanceOf[A]))
-              case _ =>
-                ???
+              case 5 =>
+                effect(OnNext((values(0), values(1), values(2), values(3), values(4)).asInstanceOf[A]))
+              case other =>
+                throw new NotImplementedError(s"combining 5+ more Rx operators is not yet supported: ${other}")
             }
         }
         toContinue
