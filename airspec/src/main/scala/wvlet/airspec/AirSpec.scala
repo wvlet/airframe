@@ -54,6 +54,8 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
       }
     }
   }
+  private[airspec] var _designInitializer: Design => Design      = identity
+  private[airspec] var _localDesignInitializer: Design => Design = identity
 
   /**
     * Register a new test. If a custom Design is provided, it will be used to populate the arguments of the test body
@@ -86,11 +88,25 @@ private[airspec] trait AirSpecSpi extends AirSpecSpiCompat {
 
   /**
     * Provide a test-case local design in the spec.
-    *
-    * Note that if you override a global design in this method, test cases will create test-case local instances
-    * (singletons)
     */
   protected def localDesign: Design = Design.empty
+
+  /**
+    * Initialize the design before starting tests in this spec
+    * @param design
+    *   update the function
+    */
+  protected def initDesign(design: Design => Design): Unit = {
+    _designInitializer = design
+  }
+
+  /**
+    * Initialize the test-case local design before running each test
+    * @param design
+    */
+  protected def initLocalDesign(design: Design => Design): Unit = {
+    _localDesignInitializer = design
+  }
 
   protected def beforeAll: Unit = {}
   protected def before: Unit    = {}
@@ -120,8 +136,8 @@ private[airspec] object AirSpecSpi {
     * This wrapper is used for accessing protected methods in AirSpec
     */
   private[airspec] implicit class AirSpecAccess(val airSpec: AirSpecSpi) extends AnyVal {
-    def callDesign: Design      = airSpec.design
-    def callLocalDesign: Design = airSpec.localDesign
+    def callDesign: Design      = airSpec._designInitializer(airSpec.design)
+    def callLocalDesign: Design = airSpec._localDesignInitializer(airSpec.localDesign)
     def callBeforeAll: Unit     = airSpec.beforeAll
     def callBefore: Unit        = airSpec.before
     def callAfter: Unit         = airSpec.after
