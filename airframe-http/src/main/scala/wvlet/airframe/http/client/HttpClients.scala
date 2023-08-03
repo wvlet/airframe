@@ -396,6 +396,7 @@ object HttpClients extends LogSupport {
       Http
         .POST(resourcePath)
         .withContentType(config.rpcEncoding.applicationType)
+        .withAccept(config.rpcEncoding.applicationType)
         // Encode request body
         .withContent(config.rpcEncoding.encodeWithCodec[Any](requestContent, requestEncoder))
     } catch {
