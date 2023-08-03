@@ -85,7 +85,7 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
           .andThen(req => Rx.single(channel.send(req, config)))
           .apply(request)
           .run { resp =>
-            lastResponse = Some(resp)
+            lastResponse = Some(config.responseFilter(resp))
           }
         lastResponse.get
       }
@@ -198,7 +198,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
           .apply(request)
           .map { resp =>
             // Remember the last response for error reporting purpose
-            lastResponse = Some(resp)
+            lastResponse = Some(config.responseFilter(resp))
             resp
           }
       }
@@ -396,6 +396,7 @@ object HttpClients extends LogSupport {
       Http
         .POST(resourcePath)
         .withContentType(config.rpcEncoding.applicationType)
+        .withAccept(config.rpcEncoding.applicationType)
         // Encode request body
         .withContent(config.rpcEncoding.encodeWithCodec[Any](requestContent, requestEncoder))
     } catch {
