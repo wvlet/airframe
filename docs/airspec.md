@@ -334,7 +334,7 @@ AirSpec manages two types of sessions: _global_ and _local_:
   - It is possible to override the local design by using `test(..., design = ...)` function.
 
 To configure the design of objects that will be created in each session,
-override `protected def design:Design` or `protected def localDesign: Design` methods in AirSpec.
+configure design by calling `initDesign(d: Design => Design)` (global design) or `initLocalDesign(d: Design => Design)`. It is also possible to customie design by overriding `protected def design:Design` or `protected def localDesign: Design` methods in AirSpec. initDesign and initLocalDesign methods are shortcuts for configuring design and localDesign methods.
 
 ### Session LifeCycle
 
@@ -342,11 +342,11 @@ AirSpec manages global/local sessions in this order:
 
 - Create a new instance of AirSpec
   - Run `beforeAll`
-  - Call `design` to prepare a new global design
+  - Call `initDesign(design)` to prepare a new global design
   - Start a new global session
      - for each test method _m_:
        - Call `before`
-       - Call `localDesign` to prepare a new local design
+       - Call `initLocalDesign(localDesign)` to prepare a new local design
        - Start a new local session
           - Call the test method _m_ by building method arguments using the local session (and the global session). See also [Airframe DI: Child Sessions](https://wvlet.org/airframe/docs/airframe.html#child-sessions) to learn more about the dependency resolution order.
        - Shutdown the local session. All data in the local session will be discarded
@@ -360,14 +360,13 @@ AirSpec manages global/local sessions in this order:
 This is an example to utilize a global session to share the same service instance between test methods:
 ```scala
 import wvlet.airspec._
-import wvlet.airframe._
 
 case class ServiceConfig(port:Int)
 class Service(val config:ServiceConfig)
 
 class ServiceSpec extends AirSpec {
-  override protected def design: Design = {
-    newDesign
+  initDesign { design =>
+    design
       .bind[ServiceConfig].toInstance(ServiceConfig(port=8080))
       .bind[Service].toSingleton
       .onStart{x => info(s"Starting a server at ${x.config.port}")}
@@ -401,8 +400,8 @@ It is also possible to reuse the same injected instance by nesting `test` method
 
 ```scala
 class ServiceSpec extends AirSpec {
-  override protected def design: Design = ...
-  test("server test") { service:Service =>
+  initDesign { _.bind[Service].toInstance(...) }
+  test("server test") { (service:Service) =>
     test("test 1") {
       info(s"server id: ${service.hashCode}")
     }
@@ -425,9 +424,8 @@ import wvlet.airframe._
 
 class OverrideTest extends AirSpec {
 
-  override protected def design: Design = {
-    newDesign
-      .bind[String].toInstance("hello")
+  initDesign {
+    _.bind[String].toInstance("hello")
   }
 
   // Pass Session to override the design
@@ -502,7 +500,7 @@ object AppTestModule {
 import wvlet.airspec._
 class AppTest extends AirSpec {
   // Use the testing design
-  protected override def design = AppTestModule.serviceDesignForTests
+  initDesign(_ + AppTestModule.serviceDesignForTests)
 
   // Inject a Service object initialized with a test configuration
   test("start up test") { (service:Service) =>
