@@ -174,6 +174,12 @@ object RxTest extends AirSpec {
     n.run(x => fail("cannot reach here"))
   }
 
+  test("flatMap with RxOption") {
+    Rx.const(1)
+      .flatMap { v => Rx.option(Some(v)) }
+      .map { case Some(x) => x shouldBe 1 }
+  }
+
   test("zip") {
     val a = Rx.variable(1)
     val b = Rx.variable("a")
