@@ -260,7 +260,7 @@ object Rx extends LogSupport {
   /**
     * Create a lazily evaluated single value
     */
-  def single[A](v: => A): Rx[A]         = SingleOp(LazyF0(v))
+  def single[A](v: => A): Rx[A]         = SingleOp(LazyF0.apply(v))
   def exception[A](e: Throwable): Rx[A] = fromTry(Failure[A](e))
 
   /**
