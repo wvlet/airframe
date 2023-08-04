@@ -31,7 +31,6 @@ object RPCClientGenerator extends HttpClientGenerator {
     def code: String =
       s"""${header(src.destPackageName)}
          |
-         |import scala.concurrent.Future
          |import wvlet.airframe.http._
          |import wvlet.airframe.http.client.{HttpClientConfig, SyncClient, AsyncClient}
          |import wvlet.airframe.surface.Surface
