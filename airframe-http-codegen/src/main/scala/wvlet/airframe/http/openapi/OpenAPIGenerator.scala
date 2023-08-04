@@ -156,7 +156,8 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
           // If there is default value, the parameter can be optional
           false
         } else {
-          // Java run-time reflection is necessary for extracting the default value of a method parameter
+          // In Scala 2 JVM version of Surface, Java run-time reflection is necessary for extracting the default value of a method parameter
+          // In Scala 3, getDefaultValue can be resolved through RxRouter and CompileTimeSurfaceFactory, so this pass will not be used
           p match {
             case m: MethodParameter =>
               // Use Java runtime-reflection to get the default value of this method parameter
