@@ -177,7 +177,10 @@ object RxTest extends AirSpec {
   test("flatMap with RxOption") {
     Rx.const(1)
       .flatMap { v => Rx.option(Some(v)) }
-      .map { case Some(x) => x shouldBe 1 }
+      .map {
+        case Some(x) => x shouldBe 1
+        case _       => fail("can't reach here")
+      }
   }
 
   test("zip") {

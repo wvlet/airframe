@@ -12,7 +12,21 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx
-import wvlet.airframe.rx.Rx.{CacheOp, FlatMapOp, MapOp, RecoverOp, RecoverWithOp}
+import wvlet.airframe.rx.Rx.{
+  CacheOp,
+  FlatMapOp,
+  Join3Op,
+  Join4Op,
+  Join5Op,
+  JoinOp,
+  MapOp,
+  RecoverOp,
+  RecoverWithOp,
+  Zip3Op,
+  Zip4Op,
+  Zip5Op,
+  ZipOp
+}
 
 import java.util.concurrent.TimeUnit
 
@@ -33,7 +47,7 @@ trait RxOption[+A] extends RxOps[Option[A]] {
     }
   }
 
-  def flatMap[B](f: A => Rx[B]): RxOption[B] = {
+  def flatMap[B](f: A => RxOps[B]): RxOption[B] = {
     RxOptionOp[B](
       transformRx {
         case Some(x) =>
@@ -44,6 +58,17 @@ trait RxOption[+A] extends RxOps[Option[A]] {
     )
   }
 
+  def join[B](b: RxOps[B]): Rx[(Option[A], B)]                                       = JoinOp(this, b)
+  def join[B, C](b: RxOps[B], c: RxOps[C]): Rx[(Option[A], B, C)]                    = Join3Op(this, b, c)
+  def join[B, C, D](b: RxOps[B], c: RxOps[C], d: RxOps[D]): Rx[(Option[A], B, C, D)] = Join4Op(this, b, c, d)
+  def join[B, C, D, E](b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E]): Rx[(Option[A], B, C, D, E)] =
+    Join5Op(this, b, c, d, e)
+  def zip[B](b: RxOps[B]): Rx[(Option[A], B)]                                       = ZipOp(this, b)
+  def zip[B, C](b: RxOps[B], c: RxOps[C]): Rx[(Option[A], B, C)]                    = Zip3Op(this, b, c)
+  def zip[B, C, D](b: RxOps[B], c: RxOps[C], d: RxOps[D]): Rx[(Option[A], B, C, D)] = Zip4Op(this, b, c, d)
+  def zip[B, C, D, E](b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E]): Rx[(Option[A], B, C, D, E)] =
+    Zip5Op(this, b, c, d, e)
+
   def transform[B](f: Option[A] => B): Rx[B] = {
     MapOp(
       in,
@@ -53,7 +78,7 @@ trait RxOption[+A] extends RxOps[Option[A]] {
     )
   }
 
-  def transformRx[B](f: Option[A] => Rx[B]): Rx[B] = {
+  def transformRx[B](f: Option[A] => RxOps[B]): Rx[B] = {
     in.flatMap(f)
   }
 
@@ -86,7 +111,7 @@ trait RxOption[+A] extends RxOps[Option[A]] {
     }
   }
 
-  def getOrElseRx[A1 >: A](default: => Rx[A1]): Rx[A1] = {
+  def getOrElseRx[A1 >: A](default: => RxOps[A1]): Rx[A1] = {
     transformRx {
       case Some(v) => Rx.single(v.asInstanceOf[A1])
       case None    => default
@@ -97,7 +122,15 @@ trait RxOption[+A] extends RxOps[Option[A]] {
     transformOption(_.orElse(default))
   }
 
-  def filter(f: A => Boolean): RxOption[A]     = transformOption(_.filter(f))
+  def filter(f: A => Boolean): RxOption[A] = transformOption(_.filter(f))
+
+  /**
+    * An alias for filter
+    * @param cond
+    * @return
+    */
+  def when(cond: A => Boolean): RxOption[A] = filter(cond)
+
   def withFilter(f: A => Boolean): RxOption[A] = filter(f)
 
   def cache[A1 >: A]: RxOptionCache[A1] = RxOptionCacheOp(CacheOp(this.toRx))
@@ -125,7 +158,7 @@ case class RxOptionOp[+A](override protected val in: Rx[Option[A]]) extends RxOp
 class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarOps[Option[A]] {
   override def toString: String            = s"RxOptionVar(${variable.get})"
   override protected def in: Rx[Option[A]] = variable
-  override def parents: Seq[Rx[_]]         = Seq(in)
+  override def parents: Seq[RxOps[_]]      = Seq(in)
 
   override def get: Option[A] = variable.get
   override def foreach[U](f: Option[A] => U): Cancelable = {
@@ -150,7 +183,7 @@ class RxOptionVar[A](variable: RxVar[Option[A]]) extends RxOption[A] with RxVarO
 case class RxOptionCacheOp[A](input: RxCache[Option[A]]) extends RxOptionCache[A] {
   override def getCurrent: Option[A]       = input.getCurrent.flatten
   override protected def in: Rx[Option[A]] = input.toRx
-  override def parents: Seq[Rx[_]]         = input.parents
+  override def parents: Seq[RxOps[_]]      = input.parents
 
   override def expireAfterWrite(time: Long, unit: TimeUnit): RxOptionCache[A] =
     this.copy(input = input.expireAfterWrite(time, unit))
