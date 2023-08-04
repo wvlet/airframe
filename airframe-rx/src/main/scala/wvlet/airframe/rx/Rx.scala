@@ -98,8 +98,8 @@ trait Rx[+A] extends RxOps[A] {
   def withName(name: String): Rx[A] = NamedOp(this, name)
 
   // def map[B](f: A => B): Rx[B]           = MapOp[A, B](this, f)
-  def flatMap[B](f: A => Rx[B]): Rx[B] = FlatMapOp(this, f)
-  def filter(f: A => Boolean): Rx[A]   = FilterOp(this, f)
+  def flatMap[B](f: A => RxOps[B]): Rx[B] = FlatMapOp(this, f)
+  def filter(f: A => Boolean): Rx[A]      = FilterOp(this, f)
 
   def withFilter(f: A => Boolean): Rx[A] = FilterOp(this, f)
 
@@ -247,7 +247,7 @@ object Rx extends LogSupport {
     * Provide a constant value by immediately evaluating the given input
     */
   def const[A](v: => A): Rx[A] = {
-    // wrap the value with Try to propaget exception through Rx
+    // wrap the value with Try to propagate exception through Rx
     fromTry(Try(v))
   }
 
@@ -366,9 +366,9 @@ object Rx extends LogSupport {
     override def parents: Seq[Rx[_]] = Seq(input)
   }
 
-  case class MapOp[A, B](input: Rx[A], f: A => B)          extends UnaryRx[A, B]
-  case class FlatMapOp[A, B](input: Rx[A], f: A => Rx[B])  extends UnaryRx[A, B]
-  case class FilterOp[A](input: Rx[A], cond: A => Boolean) extends UnaryRx[A, A]
+  case class MapOp[A, B](input: Rx[A], f: A => B)            extends UnaryRx[A, B]
+  case class FlatMapOp[A, B](input: Rx[A], f: A => RxOps[B]) extends UnaryRx[A, B]
+  case class FilterOp[A](input: Rx[A], cond: A => Boolean)   extends UnaryRx[A, A]
   case class ZipOp[A, B](a: Rx[A], b: Rx[B]) extends Rx[(A, B)] {
     override def parents: Seq[Rx[_]] = Seq(a, b)
   }
