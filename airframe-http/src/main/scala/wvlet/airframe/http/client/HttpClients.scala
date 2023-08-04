@@ -194,7 +194,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
         loggingFilter
           .andThen(config.clientFilter)
           .apply(context)
-          .andThen(req => channel.sendstatAsync(req, config))
+          .andThen(req => channel.sendAsync(req, config))
           .apply(request)
           .map { resp =>
             // Remember the last response for error reporting purpose
