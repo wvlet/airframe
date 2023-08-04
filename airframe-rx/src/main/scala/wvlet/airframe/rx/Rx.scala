@@ -21,8 +21,12 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
 
+/**
+  * A common interface for Rx and RxOption operators
+  * @tparam A
+  */
 trait RxOps[+A] { self =>
-  def parents: Seq[Rx[_]]
+  def parents: Seq[RxOps[_]]
 
   def toRx: Rx[A]
 
@@ -34,7 +38,7 @@ trait RxOps[+A] { self =>
   /**
     * Recover from a known error and emit replacement values from a given Rx
     */
-  def recoverWith[A](f: PartialFunction[Throwable, Rx[A]]): Rx[A] = RecoverWithOp(this.toRx, f)
+  def recoverWith[A](f: PartialFunction[Throwable, RxOps[A]]): Rx[A] = RecoverWithOp(this.toRx, f)
 
   /**
     * Evaluate this Rx[A] and apply the given effect function. Once OnError(e) or OnCompletion is observed, it will stop
@@ -114,10 +118,11 @@ trait Rx[+A] extends RxOps[A] {
     * Combine two Rx streams to form a sequence of pairs. This will emit a new pair when both of the streams are
     * updated.
     */
-  def zip[B](other: Rx[B]): Rx[(A, B)]                                             = Rx.zip(this, other)
-  def zip[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                                 = Rx.zip(this, b, c)
-  def zip[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)]                 = Rx.zip(this, b, c, d)
-  def zip[B, C, D, E](b: Rx[B], c: Rx[C], d: Rx[D], e: Rx[E]): Rx[(A, B, C, D, E)] = Rx.zip(this, b, c, d, e)
+  def zip[B](other: RxOps[B]): Rx[(A, B)]                                   = Rx.zip(this, other)
+  def zip[B, C](b: RxOps[B], c: RxOps[C]): Rx[(A, B, C)]                    = Rx.zip(this, b, c)
+  def zip[B, C, D](b: RxOps[B], c: RxOps[C], d: RxOps[D]): Rx[(A, B, C, D)] = Rx.zip(this, b, c, d)
+  def zip[B, C, D, E](b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E]): Rx[(A, B, C, D, E)] =
+    Rx.zip(this, b, c, d, e)
 
   /**
     * Emit a new output if one of Rx[A] or Rx[B] is changed.
@@ -127,10 +132,11 @@ trait Rx[+A] extends RxOps[A] {
     * Using joins will be more intuitive than nesting multiple Rx operators like Rx[A].map { x => ... Rx[B].map { ...}
     * }.
     */
-  def join[B](other: Rx[B]): Rx[(A, B)]                                             = Rx.join(this, other)
-  def join[B, C](b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                                 = Rx.join(this, b, c)
-  def join[B, C, D](b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)]                 = Rx.join(this, b, c, d)
-  def join[B, C, D, E](b: Rx[B], c: Rx[C], d: Rx[D], e: Rx[E]): Rx[(A, B, C, D, E)] = Rx.join(this, b, c, d, e)
+  def join[B](other: RxOps[B]): Rx[(A, B)]                                   = Rx.join(this, other)
+  def join[B, C](b: RxOps[B], c: RxOps[C]): Rx[(A, B, C)]                    = Rx.join(this, b, c)
+  def join[B, C, D](b: RxOps[B], c: RxOps[C], d: RxOps[D]): Rx[(A, B, C, D)] = Rx.join(this, b, c, d)
+  def join[B, C, D, E](b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E]): Rx[(A, B, C, D, E)] =
+    Rx.join(this, b, c, d, e)
 
   /**
     * Combine Rx stream and Future operators.
@@ -151,7 +157,7 @@ trait Rx[+A] extends RxOps[A] {
     * Transform the input value by wrapping it with Try regardless of success or failure. This is useful when you need
     * to handle both success and failure cases in the same way.
     */
-  def transformRx[B](f: Try[A] => Rx[B]): Rx[B] = {
+  def transformRx[B](f: Try[A] => RxOps[B]): Rx[B] = {
     TransformRxOp(this, f)
   }
 
@@ -275,20 +281,22 @@ object Rx extends LogSupport {
   def variable[A](v: A): RxVar[A]                     = new RxVar(v)
   def optionVariable[A](v: Option[A]): RxOptionVar[A] = variable(v).toOption
   def option[A](v: => Option[A]): RxOption[A]         = RxOptionOp(single(v))
-  val none: RxOption[Nothing]                         = RxOptionOp(single(None))
+  def some[A](v: => A): RxOption[A]                   = option(Some(v))
+  val none: RxOption[Nothing]                         = option(None)
 
-  def join[A, B](a: Rx[A], b: Rx[B]): Rx[(A, B)]                                 = JoinOp(a, b)
-  def join[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                 = Join3Op(a, b, c)
-  def join[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)] = Join4Op(a, b, c, d)
-  def join[A, B, C, D, E](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D], e: Rx[E]): Rx[(A, B, C, D, E)] =
+  def join[A, B](a: RxOps[A], b: RxOps[B]): Rx[(A, B)]                                       = JoinOp(a, b)
+  def join[A, B, C](a: RxOps[A], b: RxOps[B], c: RxOps[C]): Rx[(A, B, C)]                    = Join3Op(a, b, c)
+  def join[A, B, C, D](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D]): Rx[(A, B, C, D)] = Join4Op(a, b, c, d)
+  def join[A, B, C, D, E](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E]): Rx[(A, B, C, D, E)] =
     Join5Op(a, b, c, d, e)
 
-  def zip[A, B](a: Rx[A], b: Rx[B]): Rx[(A, B)]                                                 = ZipOp(a, b)
-  def zip[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]): Rx[(A, B, C)]                                 = Zip3Op(a, b, c)
-  def zip[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]): Rx[(A, B, C, D)]                 = Zip4Op(a, b, c, d)
-  def zip[A, B, C, D, E](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D], e: Rx[E]): Rx[(A, B, C, D, E)] = Zip5Op(a, b, c, d, e)
+  def zip[A, B](a: RxOps[A], b: RxOps[B]): Rx[(A, B)]                                       = ZipOp(a, b)
+  def zip[A, B, C](a: RxOps[A], b: RxOps[B], c: RxOps[C]): Rx[(A, B, C)]                    = Zip3Op(a, b, c)
+  def zip[A, B, C, D](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D]): Rx[(A, B, C, D)] = Zip4Op(a, b, c, d)
+  def zip[A, B, C, D, E](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E]): Rx[(A, B, C, D, E)] =
+    Zip5Op(a, b, c, d, e)
 
-  def concat[A, A1 >: A](a: Rx[A], b: Rx[A1]): Rx[A1] = ConcatOp(a, b)
+  def concat[A, A1 >: A](a: RxOps[A], b: RxOps[A1]): Rx[A1] = ConcatOp(a, b)
 
   /**
     * Periodically trigger an event and report the interval millis. After running Rx with an interval, the cancel method
@@ -342,86 +350,88 @@ object Rx extends LogSupport {
   }
 
   abstract class UnaryRx[I, A] extends Rx[A] {
-    def input: Rx[I]
-    override def parents: Seq[Rx[_]] = Seq(input)
+    def input: RxOps[I]
+    override def parents: Seq[RxOps[_]] = Seq(input)
   }
 
   case class SingleOp[A](v: LazyF0[A]) extends Rx[A] {
-    override def parents: Seq[Rx[_]] = Seq.empty
+    override def parents: Seq[RxOps[_]] = Seq.empty
   }
   case class SeqOp[A](lst: LazyF0[Seq[A]]) extends Rx[A] {
-    override def parents: Seq[Rx[_]] = Seq.empty
+    override def parents: Seq[RxOps[_]] = Seq.empty
   }
   case class TryOp[A](v: LazyF0[Try[A]]) extends Rx[A] {
-    override def parents: Seq[Rx[_]] = Seq.empty
+    override def parents: Seq[RxOps[_]] = Seq.empty
   }
-  case class TransformRxOp[A, B](input: Rx[A], f: Try[A] => Rx[B]) extends Rx[B] {
-    override def parents: Seq[Rx[_]] = Seq(input)
+  case class TransformRxOp[A, B](input: Rx[A], f: Try[A] => RxOps[B]) extends Rx[B] {
+    override def parents: Seq[RxOps[_]] = Seq(input)
   }
   case class TransformOp[A, B](input: Rx[A], f: Try[A] => B) extends Rx[B] {
-    override def parents: Seq[Rx[_]] = Seq(input)
+    override def parents: Seq[RxOps[_]] = Seq(input)
   }
 
   case class TransformTryOp[A, B](input: Rx[A], f: Try[A] => Try[B]) extends Rx[B] {
-    override def parents: Seq[Rx[_]] = Seq(input)
+    override def parents: Seq[RxOps[_]] = Seq(input)
   }
 
   case class MapOp[A, B](input: Rx[A], f: A => B)            extends UnaryRx[A, B]
   case class FlatMapOp[A, B](input: Rx[A], f: A => RxOps[B]) extends UnaryRx[A, B]
   case class FilterOp[A](input: Rx[A], cond: A => Boolean)   extends UnaryRx[A, A]
-  case class ZipOp[A, B](a: Rx[A], b: Rx[B]) extends Rx[(A, B)] {
-    override def parents: Seq[Rx[_]] = Seq(a, b)
+  case class ZipOp[A, B](a: RxOps[A], b: RxOps[B]) extends Rx[(A, B)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b)
   }
-  case class Zip3Op[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]) extends Rx[(A, B, C)] {
-    override def parents: Seq[Rx[_]] = Seq(a, b, c)
+  case class Zip3Op[A, B, C](a: RxOps[A], b: RxOps[B], c: RxOps[C]) extends Rx[(A, B, C)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c)
   }
-  case class Zip4Op[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]) extends Rx[(A, B, C, D)] {
-    override def parents: Seq[Rx[_]] = Seq(a, b, c, d)
+  case class Zip4Op[A, B, C, D](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D]) extends Rx[(A, B, C, D)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d)
   }
-  case class Zip5Op[A, B, C, D, E](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D], e: Rx[E]) extends Rx[(A, B, C, D, E)] {
-    override def parents: Seq[Rx[_]] = Seq(a, b, c, d, e)
-  }
-
-  case class JoinOp[A, B](a: Rx[A], b: Rx[B]) extends Rx[(A, B)] {
-    override def parents: Seq[Rx[_]] = Seq(a, b)
-  }
-  case class Join3Op[A, B, C](a: Rx[A], b: Rx[B], c: Rx[C]) extends Rx[(A, B, C)] {
-    override def parents: Seq[Rx[_]] = Seq(a, b, c)
-  }
-  case class Join4Op[A, B, C, D](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D]) extends Rx[(A, B, C, D)] {
-    override def parents: Seq[Rx[_]] = Seq(a, b, c, d)
-  }
-  case class Join5Op[A, B, C, D, E](a: Rx[A], b: Rx[B], c: Rx[C], d: Rx[D], e: Rx[E]) extends Rx[(A, B, C, D, E)] {
-    override def parents: Seq[Rx[_]] = Seq(a, b, c, d, e)
+  case class Zip5Op[A, B, C, D, E](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E])
+      extends Rx[(A, B, C, D, E)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e)
   }
 
-  case class ConcatOp[A](first: Rx[A], next: Rx[A]) extends Rx[A] {
-    override def parents: Seq[Rx[_]] = Seq(first, next)
+  case class JoinOp[A, B](a: RxOps[A], b: RxOps[B]) extends Rx[(A, B)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b)
   }
-  case class LastOp[A](input: Rx[A]) extends Rx[Option[A]] {
-    override def parents: Seq[Rx[_]] = Seq(input)
+  case class Join3Op[A, B, C](a: RxOps[A], b: RxOps[B], c: RxOps[C]) extends Rx[(A, B, C)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c)
   }
-  case class NamedOp[A](input: Rx[A], name: String) extends UnaryRx[A, A] {
+  case class Join4Op[A, B, C, D](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D]) extends Rx[(A, B, C, D)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d)
+  }
+  case class Join5Op[A, B, C, D, E](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E])
+      extends Rx[(A, B, C, D, E)] {
+    override def parents: Seq[RxOps[_]] = Seq(a, b, c, d, e)
+  }
+
+  case class ConcatOp[A](first: RxOps[A], next: RxOps[A]) extends Rx[A] {
+    override def parents: Seq[RxOps[_]] = Seq(first, next)
+  }
+  case class LastOp[A](input: RxOps[A]) extends Rx[Option[A]] {
+    override def parents: Seq[RxOps[_]] = Seq(input)
+  }
+  case class NamedOp[A](input: RxOps[A], name: String) extends UnaryRx[A, A] {
     override def toString: String = s"${name}:${input}"
   }
-  case class RecoverOp[A, U](input: Rx[A], f: PartialFunction[Throwable, U])         extends UnaryRx[A, U]
-  case class RecoverWithOp[A, U](input: Rx[A], f: PartialFunction[Throwable, Rx[U]]) extends UnaryRx[A, U]
+  case class RecoverOp[A, U](input: RxOps[A], f: PartialFunction[Throwable, U])            extends UnaryRx[A, U]
+  case class RecoverWithOp[A, U](input: RxOps[A], f: PartialFunction[Throwable, RxOps[U]]) extends UnaryRx[A, U]
 
   case class IntervalOp(interval: Long, unit: TimeUnit) extends Rx[Long] {
-    override def parents: Seq[Rx[_]] = Seq.empty
+    override def parents: Seq[RxOps[_]] = Seq.empty
   }
   case class TimerOp(interval: Long, unit: TimeUnit) extends Rx[Long] {
-    override def parents: Seq[Rx[_]] = Seq.empty
+    override def parents: Seq[RxOps[_]] = Seq.empty
   }
 
-  case class TakeOp[A](input: Rx[A], n: Long) extends Rx[A] {
-    override def parents: Seq[Rx[_]] = Seq(input)
+  case class TakeOp[A](input: RxOps[A], n: Long) extends Rx[A] {
+    override def parents: Seq[RxOps[_]] = Seq(input)
   }
-  case class ThrottleFirstOp[A](input: Rx[A], interval: Long, unit: TimeUnit) extends UnaryRx[A, A]
-  case class ThrottleLastOp[A](input: Rx[A], interval: Long, unit: TimeUnit)  extends UnaryRx[A, A]
+  case class ThrottleFirstOp[A](input: RxOps[A], interval: Long, unit: TimeUnit) extends UnaryRx[A, A]
+  case class ThrottleLastOp[A](input: RxOps[A], interval: Long, unit: TimeUnit)  extends UnaryRx[A, A]
 
   case class CacheOp[A](
-      input: Rx[A],
+      input: RxOps[A],
       var lastValue: Option[A] = None,
       var lastUpdatedNanos: Long = System.nanoTime(),
       expirationAfterWriteNanos: Option[Long] = None,
