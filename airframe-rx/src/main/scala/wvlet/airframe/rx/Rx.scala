@@ -157,7 +157,7 @@ trait Rx[+A] extends RxOps[A] {
     * Transform the input value by wrapping it with Try regardless of success or failure. This is useful when you need
     * to handle both success and failure cases in the same way.
     */
-  def transformRx[B](f: Try[A] => Rx[B]): Rx[B] = {
+  def transformRx[B](f: Try[A] => RxOps[B]): Rx[B] = {
     TransformRxOp(this, f)
   }
 
@@ -363,7 +363,7 @@ object Rx extends LogSupport {
   case class TryOp[A](v: LazyF0[Try[A]]) extends Rx[A] {
     override def parents: Seq[RxOps[_]] = Seq.empty
   }
-  case class TransformRxOp[A, B](input: Rx[A], f: Try[A] => Rx[B]) extends Rx[B] {
+  case class TransformRxOp[A, B](input: Rx[A], f: Try[A] => RxOps[B]) extends Rx[B] {
     override def parents: Seq[RxOps[_]] = Seq(input)
   }
   case class TransformOp[A, B](input: Rx[A], f: Try[A] => B) extends Rx[B] {

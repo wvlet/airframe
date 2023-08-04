@@ -194,11 +194,11 @@ class RxRunner(
           }
         }
       case TransformRxOp(in, f) =>
-        val tryFunc = f.asInstanceOf[Try[_] => Rx[_]]
+        val tryFunc = f.asInstanceOf[Try[_] => RxOps[_]]
         // A place holder for properly cancel the subscription against the result of Try[_] => Rx[_]
         var c1: Cancelable = Cancelable.empty
 
-        def evalRx(rxb: Rx[_]): RxResult = {
+        def evalRx(rxb: RxOps[_]): RxResult = {
           c1.cancel
           c1 = run(rxb) {
             case OnNext(x) =>
