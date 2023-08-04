@@ -112,14 +112,14 @@ object DOMRenderer extends LogSupport {
     * document.
     */
   private class RenderingContext() {
-    private val onRenderHooks = List.newBuilder[() => Unit]
+    private var onRenderHooks = List.empty[() => Unit]
 
     def onFinish(): Unit = {
-      onRenderHooks.result().foreach { f => f() }
+      onRenderHooks.reverse.foreach { f => f() }
     }
 
     def addOnRenderHook(f: () => Unit): RenderingContext = {
-      onRenderHooks += f
+      onRenderHooks = f :: onRenderHooks
       this
     }
   }

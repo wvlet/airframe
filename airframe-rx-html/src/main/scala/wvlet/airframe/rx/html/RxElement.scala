@@ -73,7 +73,6 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
 }
 
 object RxElement {
-
   def apply(a: RxElement): RxElement =
     new RxElement() {
       override def render: RxElement = a
