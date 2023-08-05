@@ -1,6 +1,6 @@
 import wvlet.airframe.sbt.http.AirframeHttpPlugin
 
-val AIRSPEC_VERSION = "23.5.6"
+val AIRSPEC_VERSION = "23.8.0"
 
 val buildSettings: Seq[Def.Setting[_]] = Seq(
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
