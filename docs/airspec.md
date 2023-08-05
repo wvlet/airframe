@@ -523,12 +523,6 @@ AirSpecContext also contains the name of test classes and method names, which wo
 Optionally AirSpec can integrate with [ScalaCheck](https://github.com/typelevel/scalacheck/blob/master/doc/UserGuide.md).
 Add `wvlet.airspec.spi.PropertyCheck` trait to your spec, and use `forAll` methods.
 
-__build.sbt__
-```scala
-// Use %%% for Scala.js
-libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.15.4" % "test"
-```
-
 ```scala
 import wvlet.airspec._
 
