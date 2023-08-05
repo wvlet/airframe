@@ -128,7 +128,8 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
-/** AirSpec build definitions.
+/**
+  * AirSpec build definitions.
   *
   * To make AirSpec a standalone library without any cyclic project references, AirSpec embeds the source code of
   * airframe-log, di, surface, etc.
@@ -320,7 +321,7 @@ lazy val airspec =
       name        := "airspec",
       description := "AirSpec: A Functional Testing Framework for Scala",
       libraryDependencies ++= Seq(
-        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % Optional
+        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION
       ),
       // A workaround for bloop, which cannot resolve Optional dependencies
       pomPostProcess := excludePomDependency(Seq("airspec-deps", "airspec_2.12", "airspec_2.13"))
