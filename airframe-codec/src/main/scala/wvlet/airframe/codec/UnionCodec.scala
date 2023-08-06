@@ -15,12 +15,11 @@ package wvlet.airframe.codec
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 import wvlet.airframe.surface.{Surface, Union}
-import wvlet.log.LogSupport
 
 /**
   * Codec for union classes (e.g., A or B) This codec is necessary for defining OpenAPI's model classes
   */
-case class UnionCodec(codecs: Map[Surface, MessageCodec[_]]) extends MessageCodec[Union] with LogSupport {
+case class UnionCodec(codecs: Map[Surface, MessageCodec[_]]) extends MessageCodec[Union] {
   override def pack(p: Packer, v: Union): Unit = {
     val cl = v.getElementClass
     codecs.find(_._1.rawType.isAssignableFrom(cl)).map(_._2) match {
