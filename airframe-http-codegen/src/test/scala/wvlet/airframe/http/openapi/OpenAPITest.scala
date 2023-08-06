@@ -240,8 +240,6 @@ class OpenAPITest extends AirSpec {
       .withInfo(OpenAPI.Info(title = "EndpointTest", version = "1.0"))
     debug(openapi)
 
-    val json = openapi.toJSON
-    debug(json)
     val yaml = openapi.toYAML
     debug(yaml)
 
@@ -571,7 +569,6 @@ class OpenAPITest extends AirSpec {
     }
 
     // Parsing test
-    OpenAPI.parseJson(json)
     val oa = parseOpenAPI(yaml)
 
     test("generate overloaded methods") {

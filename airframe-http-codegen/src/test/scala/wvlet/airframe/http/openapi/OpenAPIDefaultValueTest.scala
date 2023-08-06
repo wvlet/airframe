@@ -37,7 +37,7 @@ object OpenAPIDefaultValueTest extends AirSpec {
       OpenAPIGeneratorConfig(basePackages = Seq("wvlet.airframe.http.openapi.OpenAPIDefaultValueTest"))
     )
     val yaml = openapi.toYAML
-    info(yaml)
+    debug(yaml)
 
     yaml shouldContain "- p"            // as a required parameter
     yaml shouldContain "default: '0.1'" // default value for p1
