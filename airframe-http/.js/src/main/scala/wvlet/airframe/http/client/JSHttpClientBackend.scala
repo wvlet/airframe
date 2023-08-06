@@ -15,12 +15,13 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.control.Retry
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{HttpClient, HttpClientException, ServerAddress}
+import wvlet.airframe.http.{HttpClientException, ServerAddress}
+import wvlet.airframe.http.client.HttpClients
 
 object JSHttpClientBackend extends HttpClientBackend {
 
   override def defaultRequestRetryer: Retry.RetryContext = {
-    HttpClient
+    HttpClients
       .baseHttpClientRetry[Request, Response]
       // defaultHttpClientRetry has many JVM specific exception classifiers,
       // so we need to use a simple one for Scala.js
