@@ -571,8 +571,8 @@ class OpenAPITest extends AirSpec {
     }
 
     // Parsing test
-    OpenAPI.parseJson(json)
     val oa = parseOpenAPI(yaml)
+    OpenAPI.parseJson(json)
 
     test("generate overloaded methods") {
       val mm = oa.getPaths.get("/v1/multi_method")

@@ -14,6 +14,8 @@
 package wvlet.airframe.http.codegen
 import example.generic.{GenericRequestService, GenericService}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.RxRouter
+import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future
@@ -22,14 +24,14 @@ import scala.concurrent.Future
   */
 class GenericServiceTest extends AirSpec {
 
-  private val router = RouteScanner.buildRouter(Seq(classOf[GenericService[Future]]))
+  private val router = RxRouter.of[GenericService[Rx]]
 
   test("support F and Future return values in async clients") {
     debug(router)
 
     val code = HttpCodeGenerator.generate(router, HttpClientGeneratorConfig("example.generic:async"))
-    code.contains(": F[String]") shouldBe true
-    code.contains(": F[Int]") shouldBe true
+    code shouldContain ": F[String]"
+    code shouldContain ": F[Int]"
     code.contains("import wvlet.airframe.http.HttpMessage.Response") shouldBe false
   }
 
@@ -37,14 +39,14 @@ class GenericServiceTest extends AirSpec {
     debug(router)
 
     val code = HttpCodeGenerator.generate(router, HttpClientGeneratorConfig("example.generic:sync"))
-    code.contains(": String = {") shouldBe true
-    code.contains(": Int = {") shouldBe true
+    code shouldContain ": String = {"
+    code shouldContain ": Int = {"
     code.contains("import wvlet.airframe.http.HttpMessage.Response") shouldBe false
   }
 
   test("abstract request type") {
     pending("Not sure using backend specific request/response in IDL is a good idea")
-    val r = RouteScanner.buildRouter(Seq(classOf[GenericRequestService[Future, Request, Response]]))
+    val r = RouteScanner.buildRxRouter(Seq(classOf[GenericRequestService[Future, Request, Response]].getPackageName))
     debug(r)
     val code = HttpCodeGenerator.generate(r, HttpClientGeneratorConfig("example.generic.GenericRequestService:async"))
   }

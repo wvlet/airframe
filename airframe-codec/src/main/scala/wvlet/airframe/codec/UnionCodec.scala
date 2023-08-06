@@ -19,10 +19,10 @@ import wvlet.airframe.surface.{Surface, Union}
 /**
   * Codec for union classes (e.g., A or B) This codec is necessary for defining OpenAPI's model classes
   */
-case class UnionCodec(codecs: Seq[MessageCodec[_]]) extends MessageCodec[Union] {
+case class UnionCodec(codecs: Map[Surface, MessageCodec[_]]) extends MessageCodec[Union] {
   override def pack(p: Packer, v: Union): Unit = {
     val cl = v.getElementClass
-    wvlet.airframe.codec.Compat.codecOfClass(cl) match {
+    codecs.find(_._1.rawType.isAssignableFrom(cl)).map(_._2) match {
       case Some(codec) =>
         codec.asInstanceOf[MessageCodec[Any]].pack(p, v)
       case None =>
@@ -34,11 +34,12 @@ case class UnionCodec(codecs: Seq[MessageCodec[_]]) extends MessageCodec[Union] 
     // Read the value first
     val msgPack = u.unpackValue.toMsgpack
     // Try each codec
-    val found = codecs.find { x =>
-      x.unpackMsgPack(msgPack).map { (a: Any) =>
-          v.setObject(a)
-        }.isDefined
-    }.isDefined
+    val found = codecs
+      .map(_._2).find { x =>
+        x.unpackMsgPack(msgPack).map { (a: Any) =>
+            v.setObject(a)
+          }.isDefined
+      }.isDefined
     if (!found) {
       v.setError(
         new MessageCodecException(

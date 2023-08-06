@@ -82,7 +82,7 @@ object MessageCodecFinder extends LogSupport {
       // Union Type
       case g: Surface if classOf[Union2[_, _]] == g.rawType || classOf[Union3[_, _, _]] == g.rawType =>
         // Resolving classes extending Union2 or Union3 here to avoid infinite loop
-        UnionCodec(g.typeArgs.map(x => factory.ofSurface(x, seenSet)))
+        UnionCodec(g.typeArgs.map(x => x -> factory.ofSurface(x, seenSet)).toMap)
       // Tuple
       case g: GenericSurface
           if classOf[Product].isAssignableFrom(g.rawType) && g.rawType.getName.startsWith("scala.Tuple") =>

@@ -14,6 +14,7 @@
 package wvlet.airframe.http.openapi
 
 import wvlet.airframe.http.{RPC, Router, RxRouter}
+import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 object OpenAPIDefaultValueTest extends AirSpec {
@@ -37,7 +38,7 @@ object OpenAPIDefaultValueTest extends AirSpec {
       OpenAPIGeneratorConfig(basePackages = Seq("wvlet.airframe.http.openapi.OpenAPIDefaultValueTest"))
     )
     val yaml = openapi.toYAML
-    info(yaml)
+    debug(yaml)
 
     yaml shouldContain "- p"            // as a required parameter
     yaml shouldContain "default: '0.1'" // default value for p1
