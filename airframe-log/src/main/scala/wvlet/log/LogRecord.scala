@@ -15,17 +15,6 @@ package wvlet.log
 
 import java.util.{logging => jl}
 
-/**
-  * Source code location where the log is
-  *
-  * @param fileName
-  * @param line
-  * @param col
-  */
-case class LogSource(private val filePath: String, fileName: String, line: Int, col: Int) {
-  def fileLoc = s"${fileName}:${line}"
-}
-
 object LogRecord {
   def apply(record: jl.LogRecord): LogRecord = {
     val l = LogRecord(LogLevel(record.getLevel), None, record.getMessage, Option(record.getThrown))
