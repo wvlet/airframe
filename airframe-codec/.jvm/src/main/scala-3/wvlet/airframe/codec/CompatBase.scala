@@ -16,17 +16,9 @@ import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 
 trait CompatBase {
-  inline def codecOf[A]: MessageCodec[A] = ${ CompatBase.codecOf[A] }
-  // TODO Implementation
-  def surfaceOfClass(cl: Class[_]): Surface = ReflectSurfaceFactory.ofClass(cl)
-}
-
-private[codec] object CompatBase {
-  import scala.quoted._
-
-  def codecOf[A](using t: Type[A], quotes: Quotes): Expr[MessageCodec[A]] = {
-    import quotes._
-    '{ MessageCodecFactory.defaultFactory.of[A] }
+  inline def codecOf[A]: MessageCodec[A] = {
+    MessageCodecFactory.defaultFactory.of[A]
   }
-
+  // TODO Remove this method usage as runtime-reflection in Scala 3 is unstable and slow
+  def surfaceOfClass(cl: Class[_]): Surface = ReflectSurfaceFactory.ofClass(cl)
 }
