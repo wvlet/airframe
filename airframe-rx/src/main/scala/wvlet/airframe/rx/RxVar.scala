@@ -45,7 +45,9 @@ class RxVar[A](private var currentValue: A) extends Rx[A] with RxVarOps[A] {
 
   override def foreachEvent[U](effect: RxEvent => U): Cancelable = {
     // Register a subscriber for propagating future changes
-    subscribers += effect
+    synchronized {
+      subscribers += effect
+    }
     effect(OnNext(currentValue))
     Cancelable { () =>
       // #3109 Avoid concurrent modification of the subscriber list
