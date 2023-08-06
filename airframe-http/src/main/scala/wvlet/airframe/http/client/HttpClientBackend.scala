@@ -15,12 +15,12 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{HttpClient, ServerAddress}
+import wvlet.airframe.http.ServerAddress
 
 /**
   */
 trait HttpClientBackend {
-  def defaultRequestRetryer: RetryContext = HttpClient.defaultHttpClientRetry[Request, Response]
+  def defaultRequestRetryer: RetryContext = HttpClients.defaultHttpClientRetry[Request, Response]
 
   def newHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig): HttpChannel
 

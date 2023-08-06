@@ -97,7 +97,7 @@ object ElapsedTime {
         1000 * 60 * 60
       case DAYS =>
         1000 * 60 * 60 * 24
-      case _ =>
+      case null =>
         throw new IllegalArgumentException("Unsupported time unit " + timeUnit)
     }
 
@@ -117,7 +117,7 @@ object ElapsedTime {
         "h"
       case DAYS =>
         "d"
-      case _ =>
+      case null =>
         throw new IllegalArgumentException("Unsupported time unit " + timeUnit)
     }
   }

@@ -15,9 +15,10 @@ package wvlet.airframe.http
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.RetryContext
-import wvlet.airframe.http.HttpClient.urlEncode
+import wvlet.airframe.http.client.HttpClients.urlEncode
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.internal.HttpResponseBodyCodec
+import wvlet.airframe.http.client.HttpClients.urlEncode
 import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -150,88 +151,4 @@ class HttpSyncClientAdapter[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Res
   }
 }
 
-object HttpClient extends LogSupport {
-
-  private[http] def baseHttpClientRetry[Req: HttpRequestAdapter: ClassTag, Resp: HttpResponseAdapter]: RetryContext = {
-    Retry
-      .withJitter(maxRetry = 15)
-      .withResultClassifier(HttpClientException.classifyHttpResponse[Resp])
-      .beforeRetry(defaultBeforeRetryAction[Req])
-  }
-
-  def defaultHttpClientRetry[Req: HttpRequestAdapter: ClassTag, Resp: HttpResponseAdapter]: RetryContext = {
-    baseHttpClientRetry[Req, Resp]
-      // JVM specific error handler
-      .withErrorClassifier(HttpClientException.classifyExecutionFailure)
-  }
-
-  def defaultBeforeRetryAction[Req: HttpRequestAdapter: ClassTag](ctx: RetryContext): Any = {
-    val cls = implicitly[ClassTag[Req]].runtimeClass
-
-    val errorMessage = ctx.context match {
-      case Some(r) if cls.isAssignableFrom(r.getClass) =>
-        val adapter = implicitly[HttpRequestAdapter[Req]]
-        val req     = r.asInstanceOf[Req]
-        val path    = adapter.pathOf(req)
-        s"Request to ${path} is failed: ${ctx.lastError.getMessage}"
-      case _ =>
-        s"Request is failed: ${ctx.lastError.getMessage}"
-    }
-
-    val nextWaitMillis = ctx.nextWaitMillis
-    warn(
-      f"[${ctx.retryCount}/${ctx.maxRetry}] ${errorMessage}. Retry the request in ${nextWaitMillis / 1000.0}%.3f sec."
-    )
-  }
-
-  def urlEncode(s: String): String = {
-    compat.urlEncode(s)
-  }
-
-  /**
-    * Generate a GET resource url by embedding the resource object into query parameters
-    * @param path
-    * @param resource
-    * @param resourceSurface
-    * @tparam Resource
-    * @return
-    */
-  private[http] def buildResourceUri[Resource](path: String, resource: Resource, resourceSurface: Surface): String = {
-    val queryParams    = HttpClient.flattenResourceToQueryParams(resource, resourceSurface)
-    val pathWithParams = new StringBuilder()
-    pathWithParams.append(path)
-    if (queryParams.nonEmpty) {
-      val queryParamString = queryParams.entries.map(x => s"${x.key}=${x.value}").mkString("&")
-      pathWithParams.append("?")
-      pathWithParams.append(queryParamString)
-    }
-    pathWithParams.result()
-  }
-
-  /**
-    * Flatten resource objects into query parameters for GET request
-    * @param resource
-    * @param resourceSurface
-    * @tparam Resource
-    * @return
-    */
-  private[http] def flattenResourceToQueryParams[Resource](
-      resource: Resource,
-      resourceSurface: Surface
-  ): HttpMultiMap = {
-    val resourceCodec = MessageCodec.ofSurface(resourceSurface).asInstanceOf[MessageCodec[Resource]]
-    val resourceJson  = Try(resourceCodec.toJSONObject(resource)).getOrElse(JSONObject.empty)
-
-    val queryParams = HttpMultiMap.newBuilder
-    resourceJson.v.map {
-      case (k, j @ JSONArray(_)) =>
-        queryParams += urlEncode(k) -> urlEncode(j.toJSON) // Flatten the JSON array value
-      case (k, j @ JSONObject(_)) =>
-        queryParams += urlEncode(k) -> urlEncode(j.toJSON) // Flatten the JSON object value
-      case (k, other) =>
-        queryParams += urlEncode(k) -> urlEncode(other.toString)
-    }
-    queryParams.result()
-  }
-
-}
+object HttpClient extends LogSupport {}

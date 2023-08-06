@@ -23,7 +23,7 @@ import wvlet.log.Logger
 /**
   */
 class HttpClientTest extends AirSpec {
-  import HttpClient._
+  import wvlet.airframe.http.client.HttpClients._
   abstract class RetryTest(expectedRetryCount: Int, expectedExecCount: Int) {
     val retryer = defaultHttpClientRetry[HttpMessage.Request, HttpMessage.Response]
       .withBackOff(initialIntervalMillis = 0)
