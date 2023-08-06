@@ -9,7 +9,7 @@ val targetScalaVersions = SCALA_3 :: uptoScala2
 // Add this for using snapshot versions
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
-val AIRSPEC_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "23.6.1")
+val AIRSPEC_VERSION                 = sys.env.getOrElse("AIRSPEC_VERSION", "23.8.0")
 val SCALACHECK_VERSION              = "1.17.0"
 val MSGPACK_VERSION                 = "0.9.5"
 val SCALA_PARSER_COMBINATOR_VERSION = "2.3.0"
@@ -691,6 +691,7 @@ lazy val httpCodeGen =
       description        := "REST and RPC code generator",
       packMain           := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
       packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13", "airspec_3"),
+      runTestSequentially,
       libraryDependencies ++= Seq(
         // Use swagger-parser only for validating YAML format in tests
         "io.swagger.parser.v3" % "swagger-parser" % "2.1.16" % Test,

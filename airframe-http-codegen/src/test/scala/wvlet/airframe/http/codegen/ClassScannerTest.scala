@@ -26,6 +26,9 @@ class ClassScannerTest extends AirSpec {
   }
 
   test("Skip abstract class") {
+    if (isScala3) {
+      skip(s"Runtime reflection doesn't work in Scala 3")
+    }
     // https://github.com/wvlet/airframe/issues/1607
     val cl = classOf[io.grpc.stub.AbstractStub[_]]
     val s  = ReflectSurfaceFactory.ofClass(cl)

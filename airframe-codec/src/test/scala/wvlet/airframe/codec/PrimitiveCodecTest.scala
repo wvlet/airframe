@@ -422,9 +422,6 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
   case class Person(id: Int, name: String)
 
   test("find the actual codec for Any class") {
-    if (isScalaJS) {
-      pending("Scala.js doesn't support runtime reflection")
-    }
     val anyCodec = new AnyCodec(knownSurfaces = Seq(Surface.of[Person]))
     val json     = anyCodec.toJson(Person(1, "leo"))
     json shouldBe """{"id":1,"name":"leo"}"""
@@ -438,6 +435,11 @@ object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
   }
 
   test("find the actual codec for Any case objects") {
+    if (isScala3) {
+      pending(
+        "ReflectSurfaceFactory.ofClass(cl) causes illegal multithreaded access to ContextBase: https://github.com/wvlet/airframe/issues/1698"
+      )
+    }
     val v     = Seq(RED, BLUE)
     val codec = MessageCodec.of[Seq[Any]]
     val json  = codec.toJson(v)

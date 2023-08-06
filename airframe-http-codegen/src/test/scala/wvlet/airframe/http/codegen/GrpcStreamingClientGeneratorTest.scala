@@ -20,7 +20,7 @@ import wvlet.airspec.AirSpec
 class GrpcStreamingClientGeneratorTest extends AirSpec {
   test("server streaming code") {
     val code = HttpCodeGenerator.generate(
-      RouteScanner.buildRouter(Seq(classOf[Streaming])),
+      Streaming.router,
       HttpClientGeneratorConfig("example.grpc:grpc")
     )
     debug(code)
