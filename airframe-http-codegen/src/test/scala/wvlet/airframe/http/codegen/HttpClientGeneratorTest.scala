@@ -23,16 +23,11 @@ import wvlet.airframe.http.Router
   */
 class HttpClientGeneratorTest extends AirSpec {
   private val router = Router.fromRxRouter {
-    if (isScala3) {
-      // In Scala 3, reflection-based router will not be supported
-      RxRouter.of(
-        RxRouter.of[ResourceApi],
-        RxRouter.of[QueryApi],
-        RxRouter.of[BookApi]
-      )
-    } else {
-      RouteScanner.buildRxRouter(Seq(classOf[ResourceApi].getPackageName))
-    }
+    RxRouter.of(
+      RxRouter.of[ResourceApi],
+      RxRouter.of[QueryApi],
+      RxRouter.of[BookApi]
+    )
   }
 
   test("build router") {
