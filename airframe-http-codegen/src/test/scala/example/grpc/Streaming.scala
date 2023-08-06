@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package example.grpc
-import wvlet.airframe.http.RPC
+import wvlet.airframe.http.{RPC, RxRouter, RxRouterProvider}
 import wvlet.airframe.rx.Rx
 
 /**
@@ -28,4 +28,8 @@ trait Streaming {
   def bidiStreaming(input: Rx[String]): Rx[String] = {
     input.map(x => s"Hello ${x}!")
   }
+}
+
+object Streaming extends RxRouterProvider {
+  override def router: RxRouter = RxRouter.of[Streaming]
 }

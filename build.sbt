@@ -691,6 +691,7 @@ lazy val httpCodeGen =
       description        := "REST and RPC code generator",
       packMain           := Map("airframe-http-code-generator" -> "wvlet.airframe.http.codegen.HttpCodeGenerator"),
       packExcludeLibJars := Seq("airspec_2.12", "airspec_2.13", "airspec_3"),
+      runTestSequentially,
       libraryDependencies ++= Seq(
         // Use swagger-parser only for validating YAML format in tests
         "io.swagger.parser.v3" % "swagger-parser" % "2.1.16" % Test,

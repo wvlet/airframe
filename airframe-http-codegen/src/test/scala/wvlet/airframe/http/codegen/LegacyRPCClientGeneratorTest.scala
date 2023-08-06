@@ -12,13 +12,13 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.codegen
-import example.rpc.RPCTestService
+import wvlet.airframe.http.Router
 import wvlet.airspec.AirSpec
 
 /**
   */
 class LegacyRPCClientGeneratorTest extends AirSpec {
-  val router = RouteScanner.buildRouter(Seq(classOf[RPCTestService]))
+  val router = Router.fromRxRouter(RouteScanner.buildRxRouter(Seq("example.rpc")))
 
   test("avoid duplicate route entries") {
     val r = router.toString
