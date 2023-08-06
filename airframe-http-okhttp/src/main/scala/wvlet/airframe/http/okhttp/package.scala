@@ -45,7 +45,7 @@ package object okhttp {
       new LazyByteArrayMessage({
         val sink: BufferedSink = new Buffer()
         Option(request.body()).foreach(_.writeTo(sink))
-        sink.buffer().readByteArray()
+        sink.getBuffer().readByteArray()
       })
     }
     override def contentTypeOf(request: Request): Option[String] = Option(request.body()).map(_.contentType().toString)
