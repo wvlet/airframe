@@ -20,21 +20,20 @@ import wvlet.airframe.http.client.AsyncClient
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 
-import scala.language.higherKinds
-
-class ServiceClient[F[_], Req, Resp](private val client: HttpClient[F, Req, Resp]) extends AutoCloseable {
-  override def close(): Unit              = { client.close() }
-  def getClient: HttpClient[F, Req, Resp] = client
-  object Greeter {
-    def hello(name: String, requestFilter: Req => Req = identity): F[String] = {
-      client.postOps[Map[String, Any], String](
-        resourcePath = s"/wvlet.airframe.benchmark.http.Greeter/hello",
-        Map("name" -> name),
-        requestFilter = requestFilter
-      )
-    }
-  }
-}
+//import scala.language.higherKinds
+//class ServiceClient[F[_], Req, Resp](private val client: HttpClient[F, Req, Resp]) extends AutoCloseable {
+//  override def close(): Unit              = { client.close() }
+//  def getClient: HttpClient[F, Req, Resp] = client
+//  object Greeter {
+//    def hello(name: String, requestFilter: Req => Req = identity): F[String] = {
+//      client.postOps[Map[String, Any], String](
+//        resourcePath = s"/wvlet.airframe.benchmark.http.Greeter/hello",
+//        Map("name" -> name),
+//        requestFilter = requestFilter
+//      )
+//    }
+//  }
+//}
 
 class NewServiceAsyncClient(private val client: AsyncClient) extends AutoCloseable {
   override def close(): Unit = { client.close() }

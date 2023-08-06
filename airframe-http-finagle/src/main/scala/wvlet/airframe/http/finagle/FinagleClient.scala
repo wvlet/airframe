@@ -14,7 +14,6 @@
 package wvlet.airframe.http.finagle
 
 import java.util.concurrent.TimeUnit
-
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Http, Service, http}
 import com.twitter.util._
@@ -22,6 +21,7 @@ import wvlet.airframe.Design
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http._
+import wvlet.airframe.http.client.HttpClients
 import wvlet.airframe.http.internal.HttpResponseBodyCodec
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -250,7 +250,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   ): Future[Resource] = {
 
     val resourceSurface = Surface.of[ResourceRequest]
-    val path            = HttpClient.buildResourceUri(resourcePath, resourceRequest, resourceSurface)
+    val path            = HttpClients.buildResourceUri(resourcePath, resourceRequest, resourceSurface)
     convert[Resource](send(newRequest(HttpMethod.GET, path), requestFilter))
   }
   override def list[OperationResponse: ru.TypeTag](
@@ -375,7 +375,7 @@ object FinagleClient extends LogSupport {
     x.withSessionQualifier.noFailureAccrual
   }
   def defaultRetryContext: RetryContext = {
-    HttpClient.defaultHttpClientRetry[http.Request, http.Response]
+    HttpClients.defaultHttpClientRetry[http.Request, http.Response]
   }
   def newClient(hostAndPort: String, config: FinagleClientConfig = FinagleClientConfig()): FinagleClient = {
     new FinagleClient(address = ServerAddress(hostAndPort), config)

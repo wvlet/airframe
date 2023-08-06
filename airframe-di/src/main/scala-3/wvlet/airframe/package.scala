@@ -77,7 +77,7 @@ package object airframe {
     }
     val isTaggedType = a.fullName.startsWith("wvlet.airframe.surface.tag.")
     val isSealedType = a.flags.is(Flags.Sealed)
-    val isStatic     = a.flags.is(Flags.Static)
+    val isStatic     = a.flags.is(Flags.JavaStatic)
     val isLocal      = a.flags.is(Flags.Local)
     val isTrait      = a.flags.is(Flags.Trait)
 

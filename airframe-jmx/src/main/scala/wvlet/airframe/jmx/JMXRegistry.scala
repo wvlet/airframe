@@ -78,7 +78,7 @@ object JMXRegistry {
 
     // When class is an anonymous trait
     if (name.contains("$anon$")) {
-      import collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
       val interfaces = cl.getInterfaces
       if (interfaces != null && interfaces.length > 0) {
         // Use the first interface name instead of the anonymous name

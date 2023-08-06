@@ -69,7 +69,7 @@ object GenericException {
         lineNumber = x.getLineNumber
       )
     }
-    stackTrace
+    stackTrace.toIndexedSeq
   }
 
   def fromThrowable(e: Throwable, seen: Set[Throwable] = Set.empty): GenericException = {
