@@ -53,6 +53,8 @@ jobs:
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report Scala 2.12
+          annotate_only: true
+          detailed_summary: true
   test_2_13:
     name: Scala 2.13
     runs-on: ubuntu-latest
@@ -70,6 +72,8 @@ jobs:
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report Scala 2.13
+          annotate_only: true
+          detailed_summary: true
   test_2_13_legacy_jdk:
     name: Scala 2.13 + JDK11
     runs-on: ubuntu-latest
@@ -87,6 +91,8 @@ jobs:
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report Scala 2.13 + JDK11
+          annotate_only: true
+          detailed_summary: true
   test_2_13_latest_jdk:
     name: Scala 2.13 + JDK20
     runs-on: ubuntu-latest
@@ -104,6 +110,8 @@ jobs:
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report Scala 2.13 + JDK20
+          annotate_only: true
+          detailed_summary: true
   test_3:
     name: Scala 3.x (Dotty)
     runs-on: ubuntu-latest
@@ -122,6 +130,8 @@ jobs:
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report Scala 3.x
+          annotate_only: true
+          detailed_summary: true
   test_integration:
     name: Scala 3 integration test
     runs-on: ubuntu-latest
@@ -139,6 +149,8 @@ jobs:
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report Integration Test
+          annotate_only: true
+          detailed_summary: true
   test_js:
     name: Scala.js / Scala 2.12
     runs-on: ubuntu-latest
@@ -161,6 +173,8 @@ jobs:
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report Scala.js / Scala 2.12
+          annotate_only: true
+          detailed_summary: true
   test_js_2_13:
     name: Scala.js / Scala 2.13
     runs-on: ubuntu-latest
@@ -183,6 +197,8 @@ jobs:
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report Scala.js / Scala 2.13
+          annotate_only: true
+          detailed_summary: true
   test_js_3:
     name: Scala.js / Scala 3
     runs-on: ubuntu-latest
@@ -205,6 +221,8 @@ jobs:
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report Scala.js / Scala 3
+          annotate_only: true
+          detailed_summary: true
   test_airspec:
     name: AirSpec
     runs-on: ubuntu-latest
@@ -223,3 +241,5 @@ jobs:
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
           check_name: Test Report AirSpec
+          annotate_only: true
+          detailed_summary: true
