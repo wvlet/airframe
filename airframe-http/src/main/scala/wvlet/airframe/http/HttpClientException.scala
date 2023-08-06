@@ -12,7 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
-import wvlet.airframe
+import wvlet.airframe.control.ResultClass.{Failed, Succeeded, nonRetryableFailure, retryableFailure}
+import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.control.{CircuitBreakerOpenException, ResultClass}
+import wvlet.log.LogSupport
 
 import java.io.EOFException
 import java.lang.reflect.InvocationTargetException
@@ -20,12 +23,6 @@ import java.net._
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.{ExecutionException, TimeoutException}
 import javax.net.ssl.{SSLException, SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
-import wvlet.airframe.control.{CircuitBreakerOpenException, ResultClass, Retry}
-import wvlet.airframe.control.ResultClass.{Failed, Succeeded, nonRetryableFailure, retryableFailure}
-import wvlet.airframe.control.Retry.RetryContext
-import wvlet.airframe.http.client.HttpClients
-import wvlet.log.LogSupport
-
 import scala.annotation.tailrec
 import scala.language.existentials
 
