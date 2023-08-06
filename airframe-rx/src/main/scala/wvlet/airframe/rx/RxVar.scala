@@ -15,7 +15,7 @@ package wvlet.airframe.rx
 
 import scala.collection.mutable.ArrayBuffer
 import scala.language.higherKinds
-import scala.util.Try
+import scala.util.control.NonFatal
 
 /**
   * A reactive variable supporting update and propagation of the updated value to the chained operators
@@ -45,11 +45,16 @@ class RxVar[A](private var currentValue: A) extends Rx[A] with RxVarOps[A] {
 
   override def foreachEvent[U](effect: RxEvent => U): Cancelable = {
     // Register a subscriber for propagating future changes
-    subscribers += effect
+    synchronized {
+      subscribers += effect
+    }
     effect(OnNext(currentValue))
     Cancelable { () =>
-      // Unsubscribe if cancelled
-      subscribers -= effect
+      // #3109 Avoid concurrent modification of the subscriber list
+      synchronized {
+        // Unsubscribe if cancelled
+        subscribers -= effect
+      }
     }
   }
 
@@ -75,9 +80,20 @@ class RxVar[A](private var currentValue: A) extends Rx[A] with RxVarOps[A] {
   }
 
   private def propagateEvent(e: RxEvent): Unit = {
-    subscribers.foreach { s =>
-      // The subscriber instance might be null if it is cleaned up in JS
-      Option(s).foreach(subscriber => Try(subscriber(e)))
+    // Wrap with a synchrnoized block to avoid concurrent modification of subscribers
+    synchronized {
+      subscribers.foreach { s =>
+        // The subscriber instance might be null if it is cleaned up in JS
+        Option(s).foreach { subscriber =>
+          try {
+            subscriber(e)
+          } catch {
+            case NonFatal(e) =>
+              // This is an unusual path because errors should be propagated to the downstream subscribers
+              subscriber(OnError(e))
+          }
+        }
+      }
     }
   }
 

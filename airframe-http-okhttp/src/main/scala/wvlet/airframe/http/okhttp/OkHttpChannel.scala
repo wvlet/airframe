@@ -101,7 +101,7 @@ class OkHttpChannel(serverAddress: ServerAddress, config: HttpClientConfig) exte
       case _ =>
         resp = resp.method(
           request.method,
-          RequestBody.create(request.contentType.map(MediaType.parse(_)).orNull, request.contentBytes)
+          RequestBody.create(request.contentBytes, request.contentType.map(MediaType.parse(_)).orNull)
         )
     }
     resp.build()
