@@ -124,7 +124,6 @@ val buildSettings = Seq[Setting[_]](
       )
     }
   },
-  Test / parallelExecution := false,
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(
     "org.wvlet.airframe" %%% "airspec"    % AIRSPEC_VERSION    % Test,

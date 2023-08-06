@@ -14,6 +14,7 @@
 package wvlet.airframe.http.openapi
 
 import wvlet.airframe.http.{RPC, Router, RxRouter}
+import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 object OpenAPIDefaultValueTest extends AirSpec {

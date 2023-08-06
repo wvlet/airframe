@@ -22,7 +22,7 @@ import scala.concurrent.Future
   */
 class GenericServiceTest extends AirSpec {
 
-  private val router = RouteScanner.buildRouter(Seq(classOf[GenericService[Future]]))
+  private val router = RouteScanner.buildRxRouter(Seq(classOf[GenericService[Future]].getPackageName))
 
   test("support F and Future return values in async clients") {
     debug(router)
@@ -44,7 +44,7 @@ class GenericServiceTest extends AirSpec {
 
   test("abstract request type") {
     pending("Not sure using backend specific request/response in IDL is a good idea")
-    val r = RouteScanner.buildRouter(Seq(classOf[GenericRequestService[Future, Request, Response]]))
+    val r = RouteScanner.buildRxRouter(Seq(classOf[GenericRequestService[Future, Request, Response]].getPackageName))
     debug(r)
     val code = HttpCodeGenerator.generate(r, HttpClientGeneratorConfig("example.generic.GenericRequestService:async"))
   }

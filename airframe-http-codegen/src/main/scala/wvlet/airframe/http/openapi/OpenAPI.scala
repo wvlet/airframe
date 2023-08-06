@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.openapi
 
-import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.openapi.OpenAPI._
 import wvlet.airframe.json.YAMLFormatter
@@ -48,7 +48,7 @@ case class OpenAPI(
   * A subset of Open API objects necessary for describing Airframe RPC interfaces
   */
 object OpenAPI {
-  private val codec = MessageCodecFactory.defaultFactoryForJSON.of[OpenAPI]
+  private val codec = MessageCodec.of[OpenAPI]
 
   def parseJson(json: String): OpenAPI = codec.fromJson(json)
   // TODO: Create airframe-yaml https://github.com/wvlet/airframe/issues/1185
