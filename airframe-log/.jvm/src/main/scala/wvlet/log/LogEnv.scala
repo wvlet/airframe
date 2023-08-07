@@ -35,7 +35,7 @@ private[log] object LogEnv extends LogEnvBase {
   override val defaultConsoleOutput: PrintStream = {
     // Note: In normal circumstances, using System.err here is fine, but
     // System.err can be replaced with other implementation
-    // (e.g., airlift.Logging, which is used in Trino https://github.com/airlift/airlift/blob/master/log-manager/src/main/java/io/airlift/log/Logging.java),
+    // (e.g., airlift.Logging, which is used in Trino https://github.com/airlift/airlift/blob/main/log-manager/src/main/java/io/airlift/log/Logging.java),
     // If that happens, we may need to create a stderr stream explicitly like this
     // new PrintStream(new FileOutputStream(FileDescriptor.err))
 

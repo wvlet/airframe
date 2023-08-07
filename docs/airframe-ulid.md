@@ -16,7 +16,7 @@ Uses Crockford's base32 for better efficiency and readability (5 bits per charac
 - No special characters (URL safe)
 - Monotonic sort order (correctly detects and handles the same millisecond)
 
-[Source code of airframe-ulid at GitHub](https://github.com/wvlet/airframe/tree/master/airframe-ulid)
+[Source code of airframe-ulid at GitHub](https://github.com/wvlet/airframe/tree/main/airframe-ulid)
 
 ## ULID Format
 
@@ -141,7 +141,7 @@ Comparison targets:
 - [scala-ulid (by Chatwork)](https://github.com/chatwork/scala-ulid)
 - Java's UUID.randomUUID()
 
-[Benchmark code](https://github.com/wvlet/airframe/blob/master/airframe-benchmark/src/main/scala/wvlet/airframe/benchmark/ulid/ULIDBenchmark.scala) using JMH.
+[Benchmark code](https://github.com/wvlet/airframe/blob/main/airframe-benchmark/src/main/scala/wvlet/airframe/benchmark/ulid/ULIDBenchmark.scala) using JMH.
 
 
 ### Scala.js-specific Note

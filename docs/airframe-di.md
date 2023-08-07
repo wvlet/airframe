@@ -538,7 +538,7 @@ While debugging the code in your test cases, you can also use `log-test.properti
 ```
 wvlet.airframe.di=debug
 ```
-See [airframe-log configuration](https://github.com/wvlet/airframe/blob/master/log/README.md#configuring-log-levels) for the details of log level configurations.
+See [airframe-log configuration](https://github.com/wvlet/airframe/blob/main/log/README.md#configuring-log-levels) for the details of log level configurations.
 
 
 Then you will see the log messages that show the object bindings and injection activities:
@@ -756,7 +756,7 @@ session.get(Surface.of[X])
 
 ### Surface
 
-Airframe uses `Surface.of[X]` as identifiers of object types. [Surface](https://github.com/wvlet/airframe/tree/master/surface) is an object type inspection library.
+Airframe uses `Surface.of[X]` as identifiers of object types. [Surface](https://github.com/wvlet/airframe/tree/main/surface) is an object type inspection library.
 
 Here are some examples of Surface:
 ```scala

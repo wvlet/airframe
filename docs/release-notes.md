@@ -2109,7 +2109,7 @@ internal changes:
 
 ## 19.8.1
 -  **AirSpec**: Added a new function-based testing library for Scala and Scala.js [#580](https://github.com/wvlet/airframe/pull/580)
-   - source code: https://github.com/wvlet/airframe/tree/master/airspec
+   - source code: https://github.com/wvlet/airframe/tree/main/airspec
 -  airframe-scalatest: Rename airframe-spec to airframe-scalatest [[51f8922](https://github.com/wvlet/airframe/commit/51f8922)]
 -  airframe-surfaace: Support symbolic method names in Scala.js [[57d67fe](https://github.com/wvlet/airframe/commit/57d67fe)]
 -  airframe-surface: Sort methodSurface based on the source code order [[bdf1a86](https://github.com/wvlet/airframe/commit/bdf1a86)]
@@ -2196,7 +2196,7 @@ internal changes:
 
 -  The first release of the new Reiwa era! 
 -  From this version, we will no longer support Scala 2.11. This is because Spark 2.4.2 now uses Scala 2.12 by default, and Spark has been the only reason for us to keep maintaining Airframe releases for Scala 2.11. ([#496](https://github.com/wvlet/airframe/issues/496)) [[4e37be8](https://github.com/wvlet/airframe/commit/4e37be8)]
--  Add more [Airframe DI code examples](https://github.com/wvlet/airframe/tree/master/examples/src/main/scala/wvlet/airframe/examples/di) ([#495](https://github.com/wvlet/airframe/issues/495)) [[8d3b311](https://github.com/wvlet/airframe/commit/8d3b311)]
+-  Add more [Airframe DI code examples](https://github.com/wvlet/airframe/tree/main/examples/src/main/scala/wvlet/airframe/examples/di) ([#495](https://github.com/wvlet/airframe/issues/495)) [[8d3b311](https://github.com/wvlet/airframe/commit/8d3b311)]
 
 ## 19.4.2
 -  airframe-http: Add HttpClient ([#482](https://github.com/wvlet/airframe/issues/482)) [[4bb9463](https://github.com/wvlet/airframe/commit/4bb9463)]
@@ -2336,7 +2336,7 @@ internal changes:
 
 - Airframe now has its brand logo!
 <p>
-<img src="https://github.com/wvlet/airframe/raw/master/logos/airframe_icon_small.png" alt="logo" width="150px">
+<img src="https://github.com/wvlet/airframe/raw/main/logos/airframe_icon_small.png" alt="logo" width="150px">
 </p>
 
 -  airframe-launcher: Fix sub method command help message [[3b22d74](https://github.com/wvlet/airframe/commit/3b22d74)]
@@ -2536,7 +2536,7 @@ internal changes:
 ## 0.34
  - No major change in terms of features, API.
  - Airframe now uses [sbt-dnyver](https://github.com/dwijnand/sbt-dynver) for auto versioning.
- - For each commit in the master branch, you can find a snapshot version from https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/
+ - For each commit in the main branch, you can find a snapshot version from https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/
    - For example, [airframe-log_2.12/0.33.1+12-682c4e07-SNAPSHOT](https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/airframe-log_2.12/0.33.1+12-682c4e07-SNAPSHOT/), means that this version is based on the version `0.33.1` and `12` commits away from the previous version tag, and using git revision `682c4e07`.
  - The release versions will be like `0.34` as usual and available from Maven central.
 
@@ -2564,7 +2564,7 @@ internal changes:
  - Dropped support of Scala.js + Scala 2.11 combination. Scala.js libraries will support only Scala 2.12 (or higher) in upcoming releases
 
 ## 0.26
- - Add an initial version of [airframe-tablet](https://github.com/wvlet/airframe/tree/master/tablet), a [MessagePack](https://msgpack.org) based data transcoder
+ - Add an initial version of [airframe-tablet](https://github.com/wvlet/airframe/tree/main/tablet), a [MessagePack](https://msgpack.org) based data transcoder
 
 ## 0.25
  - **airframe-log** Upgrade the internal log rotation library to logback-core 1.2.3
@@ -2582,14 +2582,14 @@ internal changes:
  - Apply scalafmt code style 
 
 ## 0.21
- - Add [airframe-launcher](https://github.com/wvlet/airframe/tree/master/airframe-opts) command line parser.
+ - Add [airframe-launcher](https://github.com/wvlet/airframe/tree/main/airframe-opts) command line parser.
 
 ## 0.20
- - Migrated [airframe-log](https://github.com/wvlet/airframe/tree/master/airframe-log) from [wvlet-log](https://github.com/wvlet/log) because 
+ - Migrated [airframe-log](https://github.com/wvlet/airframe/tree/main/airframe-log) from [wvlet-log](https://github.com/wvlet/log) because 
 these are often commonly used.
 
 ## 0.19
- - Add [airframe-jmx](https://github.com/wvlet/airframe/tree/master/airframe-jmx) to expose object parameters through JMX
+ - Add [airframe-jmx](https://github.com/wvlet/airframe/tree/main/airframe-jmx) to expose object parameters through JMX
 
 ## 0.18
  - Add beforeShutdown, onInject lifecycle hooks
@@ -2616,7 +2616,7 @@ these are often commonly used.
  - Merged wvlet-config as airframe-config. This module is useful for creating configuration objects from YAML file.
 
 ## 0.14
- - [Surface](https://github.com/wvlet/airframe/tree/master/surface) is now a part of Airframe
+ - [Surface](https://github.com/wvlet/airframe/tree/main/surface) is now a part of Airframe
  - Added RuntimeSurface for the convenience of creating Surface from runtime-type information (reflect.universe.Type)
  - Added ObjectBuilder to build objects from Surface information
 

@@ -75,7 +75,7 @@ libraryDependencies ++= Seq(
 )
 ```
 
-If you need an early access to the latest features, [snapshot versions](https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/) are also available for each master branch commit. To use snapshot versions, add Sonatype snapshot repository to your resolver setting:
+If you need an early access to the latest features, [snapshot versions](https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/) are also available for each main branch commit. To use snapshot versions, add Sonatype snapshot repository to your resolver setting:
 
 ```scala
 resolvers += Resolver.sonatypeRepo("snapshots")

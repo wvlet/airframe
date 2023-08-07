@@ -656,7 +656,7 @@ While debugging the code in your test cases, you can also use `log-test.properti
 ```
 wvlet.airframe=debug
 ```
-See [airframe-log configuration](https://github.com/wvlet/airframe/blob/master/log/README.md#configuring-log-levels) for the details of log level configurations.
+See [airframe-log configuration](https://github.com/wvlet/airframe/blob/main/log/README.md#configuring-log-levels) for the details of log level configurations.
 
 
 Then you will see the log messages that show the object bindings and injection activities:
@@ -1029,7 +1029,7 @@ val app: App =
 }.apply(session)
 ```
 
-To generate the above code, Airframe is using [Scala Macros](http://docs.scala-lang.org/overviews/macros/overview.html). You can find the actual macro definitions in [AirframeMacros.scala](https://github.com/wvlet/airframe/blob/master/airframe-macros/shared/src/main/scala/wvlet/airframe/AirframeMacros.scala)
+To generate the above code, Airframe is using [Scala Macros](http://docs.scala-lang.org/overviews/macros/overview.html). You can find the actual macro definitions in [AirframeMacros.scala](https://github.com/wvlet/airframe/blob/main/airframe-macros/shared/src/main/scala/wvlet/airframe/AirframeMacros.scala)
 
 When `bind[X]` is called, the active session must be found. So if you try to instantiate A without using `session.build[A]`, `MISSING_SESSION` runtime-error will be thrown:
 
@@ -1122,7 +1122,7 @@ session.get(Surface.of[X])
 
 ### Surface
 
-Airframe uses `Surface.of[X]` as identifiers of object types. [Surface](https://github.com/wvlet/airframe/tree/master/surface) is an object type inspection library.
+Airframe uses `Surface.of[X]` as identifiers of object types. [Surface](https://github.com/wvlet/airframe/tree/main/surface) is an object type inspection library.
 
 Here are some examples of Surface:
 ```scala
