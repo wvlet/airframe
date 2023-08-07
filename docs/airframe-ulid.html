@@ -74,7 +74,7 @@ Uses Crockford's base32 for better efficiency and readability (5 bits per charac
 <li>No special characters (URL safe)</li>
 <li>Monotonic sort order (correctly detects and handles the same millisecond)</li>
 </ul>
-<p><a href="https://github.com/wvlet/airframe/tree/master/airframe-ulid">Source code of airframe-ulid at GitHub</a></p>
+<p><a href="https://github.com/wvlet/airframe/tree/main/airframe-ulid">Source code of airframe-ulid at GitHub</a></p>
 <h2><a class="anchor" aria-hidden="true" id="ulid-format"></a><a href="#ulid-format" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>ULID Format</h2>
 <p>The ULID is a 26-character string encoded with <a href="https://www.crockford.com/base32.html">Crockford's Base32</a>, which excludes letters like I, L, O, and U to avoid confusion.</p>
 <pre><code class="hljs"> <span class="hljs-number">01</span>AN4Z07BY      <span class="hljs-number">79</span>KA1307SR9X4MV3
@@ -172,7 +172,7 @@ ulid2.epochMillis <span class="hljs-comment">// 1618733434509</span>
 <li><a href="https://github.com/chatwork/scala-ulid">scala-ulid (by Chatwork)</a></li>
 <li>Java's UUID.randomUUID()</li>
 </ul>
-<p><a href="https://github.com/wvlet/airframe/blob/master/airframe-benchmark/src/main/scala/wvlet/airframe/benchmark/ulid/ULIDBenchmark.scala">Benchmark code</a> using JMH.</p>
+<p><a href="https://github.com/wvlet/airframe/blob/main/airframe-benchmark/src/main/scala/wvlet/airframe/benchmark/ulid/ULIDBenchmark.scala">Benchmark code</a> using JMH.</p>
 <h3><a class="anchor" aria-hidden="true" id="scalajs-specific-note"></a><a href="#scalajs-specific-note" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Scala.js-specific Note</h3>
 <p>For Scala.js 1.10.0 or later, ULID generator uses scalajs-java-securerandom library for generating ULIDs using a Cryptographically-Secure-Pseudo-Random-Number-Generator (CSPRNG).
 If none of Node.js crypto module or Web Crypto API in Web browsers is available, airframe-ulid falls back to a non-secure random generator, which is useful only for testing purpose at JSDOM environment, which doesn't support crypto module.</p>
