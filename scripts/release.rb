@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 current_branch = `git rev-parse --abbrev-ref HEAD`.strip
-abort("release.rb must run on master or main branch. The current branch is #{current_branch}") unless ["master", "main"].include?(current_branch)
+abort("release.rb must run on main branch. The current branch is #{current_branch}") unless ["main"].include?(current_branch)
 
 last_tag = `git describe --tags --abbrev=0`.chomp
 last_version = last_tag.sub("v", "")

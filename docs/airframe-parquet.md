@@ -160,7 +160,7 @@ reader.close()
 ## Applying Row Group Filter with Parquet FilterApi
 
 Parquet can skip reading records by using row group filters.
-You can use [FilterAPI of parquet-mr](https://github.com/justcodeforfun/parquet-mr/blob/master/parquet-column/src/main/java/org/apache/parquet/filter2/predicate/FilterApi.java) to build such a filter:
+You can use [FilterAPI of parquet-mr](https://github.com/justcodeforfun/parquet-mr/blob/main/parquet-column/src/main/java/org/apache/parquet/filter2/predicate/FilterApi.java) to build such a filter:
 
 ```scala
 import org.apache.parquet.filter2.compat.FilterCompat

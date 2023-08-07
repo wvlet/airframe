@@ -6,19 +6,19 @@ on:
       - '**.scala'
       - '**.java'
       - '**.sbt'
-      - '**/codecov.yml'  
+      - '**/codecov.yml'
       - '.scalafmt.conf'
-      - 'project/build.properties'      
+      - 'project/build.properties'
   push:
     branches:
-      - master
+      - main
     paths:
       - '**.scala'
       - '**.java'
       - '**.sbt'
       - '**/codecov.yml'
       - '.scalafmt.conf'
-      - 'project/build.properties'      
+      - 'project/build.properties'
 
 jobs:
   coverage:

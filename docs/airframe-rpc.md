@@ -306,7 +306,7 @@ Supported client types are:
 - __async__: (legacy client. Use rpc instead) Create an async HTTP client (ServiceClient) for Scala (JVM) using Future
   abstraction (`F`). The `F` can be `scala.concurrent.Future` or twitter-util's Future.
 
-Internally, sbt-airframe generates these clients using [HTTP code generators](https://github.com/wvlet/airframe/blob/master/airframe-http-codegen/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClientGenerator.scala). This code reads a Router definition of RPC interfaces, and generate client code for calling RPC endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would
+Internally, sbt-airframe generates these clients using [HTTP code generators](https://github.com/wvlet/airframe/blob/main/airframe-http-codegen/src/main/scala/wvlet/airframe/http/codegen/client/ScalaHttpClientGenerator.scala). This code reads a Router definition of RPC interfaces, and generate client code for calling RPC endpoints. Currently, we only supports generating HTTP clients for Scala. In near future, we would
 like to add Open API spec generator so that many programming languages can be used with Airframe
 RPC.
 
@@ -522,7 +522,7 @@ trait MyAPI {
 
 ### Reporting Errors with RPCStatus
 
-Airframe RPC provides predefined [RPCStatus](https://github.com/wvlet/airframe/blob/master/airframe-http/src/main/scala/wvlet/airframe/http/RPCStatus.scala) code for reporting application errors at ease. In your RPC implementation, use one of the RPCStatus codes and create an exception with `.newException(...)` method to report an error:
+Airframe RPC provides predefined [RPCStatus](https://github.com/wvlet/airframe/blob/main/airframe-http/src/main/scala/wvlet/airframe/http/RPCStatus.scala) code for reporting application errors at ease. In your RPC implementation, use one of the RPCStatus codes and create an exception with `.newException(...)` method to report an error:
 
 
 ```scala
@@ -594,7 +594,7 @@ val rpcClient = ServiceRPC.newSyncClient(httpClient)
 
 ### Reading RPCException at the client
 
-To read the RPCStatus and error details at the RPC client side, catch [RPCException](https://github.com/wvlet/airframe/blob/master/airframe-http/src/main/scala/wvlet/airframe/http/RPCException.scala):
+To read the RPCStatus and error details at the RPC client side, catch [RPCException](https://github.com/wvlet/airframe/blob/main/airframe-http/src/main/scala/wvlet/airframe/http/RPCException.scala):
 
 ```scala
 try {
@@ -621,7 +621,7 @@ RPC calls per second. Airframe gRPC requires no Protobuf definitions. You can us
 interface and case classes to define gRPC services.
 
 Example gRPC projects can be found
-from [here](https://github.com/wvlet/airframe/tree/master/examples/rpc-examples).
+from [here](https://github.com/wvlet/airframe/tree/main/examples/rpc-examples).
 
 __build.sbt__
 
@@ -825,7 +825,7 @@ request message body of an RPC request is a MessagePack Map representation of a 
 key-value pairs of `(method argument name)` -> `(method argument value)`.
 
 When gRPC backend is used, the client must use HTTP/2 and the message body must be encoded
-as [Length-Prefixed-Message](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md#requests)
+as [Length-Prefixed-Message](https://github.com/grpc/grpc/blob/main/doc/PROTOCOL-HTTP2.md#requests)
 defined in gRPC protocol.
 
 ### RPC Protocol
@@ -886,7 +886,7 @@ case class HelloResponse(message: String)
 ### RPC Protocol (HTTP/2 for gRPC)
 
 For gRPC backend, see
-also [gRPC over HTTP2](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md) protocol for
+also [gRPC over HTTP2](https://github.com/grpc/grpc/blob/main/doc/PROTOCOL-HTTP2.md) protocol for
 the other HTTP headers.
 
 ```aidl

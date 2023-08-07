@@ -11,7 +11,7 @@ on:
       - 'project/build.properties'
   push:
     branches:
-      - master
+      - main
     paths:
       - '**.scala'
       - '**.java'

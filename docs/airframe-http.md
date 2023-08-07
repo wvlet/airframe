@@ -169,7 +169,7 @@ server.start { server =>
 }
 ```
 
-See also the examples in [here](https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala)
+See also the examples in [here](https://github.com/wvlet/airframe/blob/main/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala)
 
 ## Integration with Airframe DI
 

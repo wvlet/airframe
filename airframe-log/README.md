@@ -41,7 +41,7 @@ libraryDependencies += "org.wvlet.airframe" %%% "airframe-log" % "(version)"
   - Scala 2.12, 2.13, Scala.js support
 
 ## Resources
-- GitHub: [airframe-log](https://github.com/wvlet/airframe/tree/master/airframe-log)
+- GitHub: [airframe-log](https://github.com/wvlet/airframe/tree/main/airframe-log)
 - Blog post: [Airframe Log: A Modern Logging Library for Scala](https://medium.com/@taroleo/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc)
  
 
@@ -123,7 +123,7 @@ call `Logger.scheduleLogLevelScan` before running test cases. This is useful for
 
 To scan log level properties periodically with [ScalaTest](http://www.scalatest.org/), define the base trait as follows:
 
-**[Spec.scala](https://github.com/wvlet/log/blob/master/src/test/scala/wvlet/log/Spec.scala)**
+**[Spec.scala](https://github.com/wvlet/airframe/blob/airframe-log/main/src/test/scala/wvlet/log/Spec.scala)**
 ```scala
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpec, _}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
@@ -161,7 +161,7 @@ You can show the source code location where the log message is generated:
 ```scala
 import wvlet.log._
 
-object MyApp with LogSupport {
+object MyApp extends LogSupport {
    Logger.setDefaultFormatter(LogFormatter.SourceCodeLogFormatter)
    info("log with source code")
 }
@@ -194,7 +194,7 @@ object CustomLogFormatter extends LogFormatter {
 
 Logger.setDefaultFormatter(CustomLogFormatter)
 ```
-See also the examples in [LogFormat.scala](https://github.com/wvlet/airframe/blob/master/airframe-log/shared/src/main/scala/wvlet/log/LogFormat.scala):
+See also the examples in [LogFormat.scala](https://github.com/wvlet/airframe/blob/main/airframe-log/shared/src/main/scala/wvlet/log/LogFormat.scala):
 
 ### Using airframe-log in Scala.js
 

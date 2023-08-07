@@ -4,9 +4,9 @@ layout: docs
 title: AirSpec: Testing Framework
 ---
 
-[AirSpec](https://github.com/wvlet/airframe/tree/master/airspec) is a new functional testing framework for Scala and Scala.js.
+[AirSpec](https://github.com/wvlet/airframe/tree/main/airspec) is a new functional testing framework for Scala and Scala.js.
 
-- [GitHub: AirSpec](https://github.com/wvlet/airframe/tree/master/airspec)
+- [GitHub: AirSpec](https://github.com/wvlet/airframe/tree/main/airspec)
 - [Background and Motivation](#background--motivation)
 
 AirSpec uses just `test("...") { ... }` syntax for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are supported optionally.
@@ -520,7 +520,7 @@ AirSpecContext also contains the name of test classes and method names, which wo
 
 ## Property Based Testing with ScalaCheck
 
-Optionally AirSpec can integrate with [ScalaCheck](https://github.com/typelevel/scalacheck/blob/master/doc/UserGuide.md).
+Optionally AirSpec can integrate with [ScalaCheck](https://github.com/typelevel/scalacheck/blob/main/doc/UserGuide.md).
 Add `wvlet.airspec.spi.PropertyCheck` trait to your spec, and use `forAll` methods.
 
 ```scala

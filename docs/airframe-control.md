@@ -6,7 +6,7 @@ title: airframe-control: Retry/Rate Control
 airframe-control is a colleciton of libraries to manage control flows, that are especially useul for making remote API calls.
 For example, airframe-control has exponential back-off retry, jittering, circuit breaker, parallel task execution support, etc.
 
-- [Source Code at GitHub](https://github.com/wvlet/airframe/tree/master/airframe-control)
+- [Source Code at GitHub](https://github.com/wvlet/airframe/tree/main/airframe-control)
 
 # Usage
 
@@ -210,7 +210,7 @@ val result = source.parallel.withParallelism(4).map { i =>
 }
 ```
 
-You can monitor metrics of parallel execution via JMX using [airframe-jmx](https://github.com/wvlet/airframe/tree/master/airframe-jmx).
+You can monitor metrics of parallel execution via JMX using [airframe-jmx](https://github.com/wvlet/airframe/tree/main/airframe-jmx).
 
 ```scala
 JMXAgent.defaultAgent.register[Parallel.ParallelExecutionStats](Parallel.jmxStats)
