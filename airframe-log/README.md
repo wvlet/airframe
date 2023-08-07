@@ -123,7 +123,7 @@ call `Logger.scheduleLogLevelScan` before running test cases. This is useful for
 
 To scan log level properties periodically with [ScalaTest](http://www.scalatest.org/), define the base trait as follows:
 
-**[Spec.scala](https://github.com/wvlet/log/blob/main/src/test/scala/wvlet/log/Spec.scala)**
+**[Spec.scala](https://github.com/wvlet/airframe/blob/airframe-log/main/src/test/scala/wvlet/log/Spec.scala)**
 ```scala
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpec, _}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
@@ -161,7 +161,7 @@ You can show the source code location where the log message is generated:
 ```scala
 import wvlet.log._
 
-object MyApp with LogSupport {
+object MyApp extends LogSupport {
    Logger.setDefaultFormatter(LogFormatter.SourceCodeLogFormatter)
    info("log with source code")
 }
