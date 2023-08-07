@@ -306,6 +306,46 @@ object RxRenderingTest extends AirSpec {
     updated shouldBe true
   }
 
+  test("call onMount hook in nested RxElements") {
+    val page = Rx.variable("main")
+
+    var topLevelOnMountCallCount = 0
+    var nestedOnMountCallCount   = 0
+    var foundElement             = false
+
+    val infoPage = new RxElement() {
+      override def onMount {
+        nestedOnMountCallCount += 1
+        Option(org.scalajs.dom.document.getElementById("id001")).collect { case e: HTMLElement =>
+          foundElement = true
+        }
+      }
+      override def render: RxElement = div(id -> "id001", "render: info")
+    }
+
+    val nested = new RxElement() {
+      override def onMount: Unit = {
+        topLevelOnMountCallCount += 1
+      }
+
+      override def render = page.map {
+        case "main" =>
+          div("main")
+        case "info" =>
+          infoPage
+      }
+    }
+
+    val c = nested.renderTo("main")
+    page := "info"
+    org.scalajs.dom.document.getElementById("id001") shouldMatch { case e: HTMLElement =>
+      e.innerHTML shouldContain "render: info"
+    }
+    topLevelOnMountCallCount shouldBe 1
+    nestedOnMountCallCount shouldBe 1
+    foundElement shouldBe true
+  }
+
   test("refresh attribute with RxVar") {
     val show = Rx.variable(true)
     val e = new RxElement {
