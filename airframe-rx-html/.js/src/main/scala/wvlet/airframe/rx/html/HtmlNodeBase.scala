@@ -13,8 +13,7 @@
  */
 package wvlet.airframe.rx.html
 
-import org.scalajs.dom
-import wvlet.airframe.rx.Cancelable
+import org.scalajs.dom.EventTarget
 
 trait HtmlNodeBase { self: HtmlNode =>
 
@@ -24,9 +23,20 @@ trait HtmlNodeBase { self: HtmlNode =>
     *
     * @param nodeId
     * @return
-    *   A pair of DOM node and a Cancelable object to clean up the rendered elements
+    *   A cancelable RxDOMNode
     */
-  def renderTo(nodeId: String): (dom.Node, Cancelable) = {
-    DOMRenderer.renderToNode(nodeId, this)
+  def renderTo(nodeId: String): RxDOMNode = renderNode(nodeId)
+
+  /**
+    * (Scala.js only) Render this element to the DOM node of the given ID. If the corresponding DOM node is not found,
+    * this method will create a new DOM node.
+    *
+    * @param nodeId
+    * @return
+    *   A cancelable RxDOMNode
+    */
+  def renderNode(nodeId: String): RxDOMNode = {
+    val (node, c) = DOMRenderer.renderToNode(nodeId, this)
+    RxDOMNode(node, c)
   }
 }

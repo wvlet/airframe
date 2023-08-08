@@ -58,6 +58,11 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
     }
   }
 
+  /**
+    * Add child nodes (elements or attributes) to this element
+    * @param xs
+    * @return
+    */
   def addModifier(xs: HtmlNode*): RxElement = add(xs: _*)
 
   def add(xs: HtmlNode*): RxElement = {
@@ -72,7 +77,6 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
     }
     Cancelable.merge(cancelables)
   }
-
 }
 
 object RxElement {
