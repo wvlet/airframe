@@ -255,7 +255,7 @@ private[airspec] class AirSpecTaskRunner(
         m.run(context, childSession) match {
           // When the test case returns a Future, we need to chain the next action
           case future: Future[_] => future
-          case rx: Rx[_] =>
+          case rx: RxOps[_] =>
             val p = Promise[Any]()
             val c: Cancelable = RxRunner.run(rx) {
               case OnNext(v) =>
