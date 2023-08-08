@@ -47,6 +47,9 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
     */
   def beforeUnmount: Unit = {}
 
+  /**
+    * Add child elements or attributes to this element and return this element
+    */
   def apply(xs: HtmlNode*): RxElement = {
     if (xs.isEmpty) {
       this
@@ -60,13 +63,13 @@ abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extend
     * @param xs
     * @return
     */
+  def addModifier(xs: HtmlNode*): RxElement = add(xs: _*)
+
   def add(xs: HtmlNode*): RxElement = {
     new RxElement(xs :: modifiers) {
       override def render = self.render
     }
   }
-
-  def addModifier(xs: HtmlNode*): RxElement = add(xs: _*)
 
   private[html] def traverseModifiers(f: HtmlNode => Cancelable): Cancelable = {
     val cancelables = for (g <- modifiers.reverse; m <- g) yield {
