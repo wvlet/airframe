@@ -77,4 +77,14 @@ class RxElementTest extends AirSpec {
       }
     }
   }
+
+  test("logging in RxElements") {
+    new RxElement() {
+      info("RxElement logging test")
+      debug("RxElement logging test")
+      override def render: RxElement = {
+        div("hello")
+      }
+    }
+  }
 }
