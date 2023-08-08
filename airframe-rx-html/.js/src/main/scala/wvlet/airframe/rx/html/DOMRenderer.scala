@@ -171,7 +171,6 @@ object DOMRenderer extends LogSupport {
           val elem = node.lastChild
           val c2   = rx.traverseModifiers(m => renderToInternal(localContext, elem, m))
           node.mountHere(elem, anchor)
-          trace(s"add onRenderHook for ${rx}")
           localContext.addOnRenderHook(() => rx.onMount)
           Cancelable.merge(Cancelable(() => rx.beforeUnmount), Cancelable.merge(c1, c2))
         case s: String =>
