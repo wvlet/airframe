@@ -2,7 +2,7 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 val AIRFRAME_VERSION = sys.env.getOrElse("AIRFRAME_VERSION", "23.8.0")
-val AIRSPEC_VERSION  = "23.8.0"
+val AIRSPEC_VERSION  = sys.env.getOrElse("AIRSPEC_VERSION", IO.read(file("../AIRSPEC_VERSION")).trim)
 val SCALA_2_12       = "2.12.18"
 
 ThisBuild / organization := "org.wvlet.airframe"
@@ -70,8 +70,9 @@ lazy val sbtAirframe =
         scriptedLaunchOpts.value ++
           Seq(
             "-Xmx1024M",
-            "-Dplugin.version=" + version.value,
-            "-Dairframe.version=" + AIRFRAME_VERSION
+            s"-Dplugin.version=${version.value}",
+            s"-Dairframe.version=${AIRFRAME_VERSION}",
+            s"-Dairspec.version=${AIRSPEC_VERSION}"
           )
       },
       scriptedBufferLog := false
