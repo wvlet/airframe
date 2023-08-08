@@ -313,7 +313,7 @@ object RxRenderingTest extends AirSpec {
     var nestedOnMountCallCount   = 0
     var foundElement             = false
 
-    val infoPage = new RxElement() {
+    object infoPage extends RxElement {
       override def onMount {
         nestedOnMountCallCount += 1
         Option(org.scalajs.dom.document.getElementById("id001")).collect { case e: HTMLElement =>
@@ -323,7 +323,7 @@ object RxRenderingTest extends AirSpec {
       override def render: RxElement = div(id -> "id001", "render: info")
     }
 
-    val nested = new RxElement() {
+    object nestedPage extends RxElement() {
       override def onMount: Unit = {
         topLevelOnMountCallCount += 1
       }
@@ -336,7 +336,7 @@ object RxRenderingTest extends AirSpec {
       }
     }
 
-    val c = nested.renderTo("main")
+    val c = nestedPage.renderTo("main")
     page := "info"
     org.scalajs.dom.document.getElementById("id001") shouldMatch { case e: HTMLElement =>
       e.innerHTML shouldContain "render: info"

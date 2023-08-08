@@ -130,13 +130,13 @@ object DOMRenderer extends LogSupport {
       htmlNode: HtmlNode,
       modifier: dom.Node => dom.Node = identity
   ): Cancelable = {
-    def traverse(v: Any, anchor: Option[dom.Node]): Cancelable = {
+    def traverse(v: Any, anchor: Option[dom.Node], localContext: RenderingContext): Cancelable = {
       v match {
         case HtmlNode.empty =>
           Cancelable.empty
         case e: HtmlElement =>
           val elem = createNode(e)
-          val c    = e.traverseModifiers(m => renderToInternal(context, elem, m))
+          val c    = e.traverseModifiers(m => renderToInternal(localContext, elem, m))
           node.mountHere(elem, anchor)
           c
         case rx: RxOps[_] =>
@@ -149,7 +149,10 @@ object DOMRenderer extends LogSupport {
             c1.cancel
             ev match {
               case OnNext(value) =>
-                c1 = traverse(value, Some(start))
+                // When updating a local DOM node, creata a localized context for collecting onRender hooks
+                val ctx = new RenderingContext()
+                c1 = traverse(value, Some(start), ctx)
+                ctx.onFinish()
               case other =>
                 c1 = Cancelable.empty
             }
@@ -161,14 +164,15 @@ object DOMRenderer extends LogSupport {
           node.mountHere(n, anchor)
           Cancelable.empty
         case e: Embedded =>
-          traverse(e.v, anchor)
+          traverse(e.v, anchor, localContext)
         case rx: RxElement =>
           rx.beforeRender
-          val c1   = renderToInternal(context, node, rx.render)
+          val c1   = renderToInternal(localContext, node, rx.render)
           val elem = node.lastChild
-          val c2   = rx.traverseModifiers(m => renderToInternal(context, elem, m))
+          val c2   = rx.traverseModifiers(m => renderToInternal(localContext, elem, m))
           node.mountHere(elem, anchor)
-          context.addOnRenderHook(() => rx.onMount)
+          trace(s"add onRenderHook for ${rx}")
+          localContext.addOnRenderHook(() => rx.onMount)
           Cancelable.merge(Cancelable(() => rx.beforeUnmount), Cancelable.merge(c1, c2))
         case s: String =>
           val textNode = newTextNode(s)
@@ -218,10 +222,10 @@ object DOMRenderer extends LogSupport {
         case None =>
           Cancelable.empty
         case Some(x) =>
-          traverse(x, anchor)
+          traverse(x, anchor, localContext)
         case s: Iterable[_] =>
           val cancelables = for (el <- s) yield {
-            traverse(el, anchor)
+            traverse(el, anchor, localContext)
           }
           Cancelable.merge(cancelables)
         case other =>
@@ -229,7 +233,7 @@ object DOMRenderer extends LogSupport {
       }
     }
 
-    traverse(htmlNode, anchor = None)
+    traverse(htmlNode, anchor = None, context)
   }
 
   private def removeStringFromAttributeValue(
