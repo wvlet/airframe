@@ -314,7 +314,7 @@ object RxRenderingTest extends AirSpec {
     var foundElement             = false
 
     object infoPage extends RxElement {
-      override def onMount {
+      override def onMount: Unit = {
         nestedOnMountCallCount += 1
         Option(org.scalajs.dom.document.getElementById("id001")).collect { case e: HTMLElement =>
           foundElement = true
