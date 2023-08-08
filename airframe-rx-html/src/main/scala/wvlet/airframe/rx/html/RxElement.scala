@@ -19,7 +19,7 @@ import wvlet.airframe.rx.html.RxEmbedding._
 
 /**
   */
-abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extends HtmlNode { self =>
+abstract class RxElement(val modifiers: List[Seq[HtmlNode]] = List.empty) extends HtmlNode with LogSupport { self =>
 
   /**
     * Render this element
