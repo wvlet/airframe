@@ -422,7 +422,7 @@ object RxTest extends AirSpec {
           p.failure(new IllegalStateException())
         }
     }
-    p.future.foreach { x => x shouldBe 1 }
+    p.future.map { x => x shouldBe 1 }
   }
 
   test("from Future[Exception]") {
