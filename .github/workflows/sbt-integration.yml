@@ -9,6 +9,7 @@ on:
       - '.scalafmt.conf'
       - '.github/workflows/sbt-integration.yml'
       - 'project/build.properties'
+      - AIRSPEC_VERSION
   push:
     branches:
       - main
@@ -19,6 +20,7 @@ on:
       - '.scalafmt.conf'
       - '.github/workflows/sbt-integration.yml'
       - 'project/build.properties'
+      - AIRSPEC_VERSION
 
 jobs:
   sbt_airframe:
