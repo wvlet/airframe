@@ -257,7 +257,9 @@ lazy val projectJVM =
     .settings(noPublish)
     .settings(
       // Skip importing aggregated projects in IntelliJ IDEA
-      ideSkipProject := true
+      ideSkipProject := true,
+      // Use a stable coverage directory name without containing scala version
+      coverageDataDir := target.value
     )
     .aggregate(jvmProjects: _*)
 
