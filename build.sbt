@@ -659,7 +659,8 @@ lazy val http =
       name             := "airframe-http",
       description      := "REST and RPC Framework",
       buildInfoKeys    := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-      buildInfoPackage := "wvlet.airframe.http"
+      buildInfoPackage := "wvlet.airframe.http",
+      buildInfoObject  := "AirframeHttpBuildInfo"
     )
     .jvmSettings(
       libraryDependencies += "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION % Test,

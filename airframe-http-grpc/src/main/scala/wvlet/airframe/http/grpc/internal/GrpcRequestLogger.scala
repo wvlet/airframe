@@ -14,7 +14,7 @@
 package wvlet.airframe.http.grpc.internal
 
 import io.grpc.{Attributes, Metadata, MethodDescriptor}
-import wvlet.airframe.http.BuildInfo
+import wvlet.airframe.http.AirframeHttpBuildInfo
 import wvlet.airframe.http.HttpAccessLogWriter
 import wvlet.airframe.http.grpc.GrpcContext
 import wvlet.airframe.http.internal.{HttpLogs, RPCCallContext}
@@ -45,7 +45,7 @@ class DefaultGrpcRequestLogger(serverName: String, logWriter: HttpAccessLogWrite
   private def logDefault(grpcContext: Option[GrpcContext], rpcCallContext: RPCCallContext): Map[String, Any] = {
     val m = {
       HttpLogs.unixTimeLogs() ++
-        ListMap("server_name" -> serverName, "x_airframe_server_version" -> BuildInfo.version) ++
+        ListMap("server_name" -> serverName, "x_airframe_server_version" -> AirframeHttpBuildInfo.version) ++
         GrpcRequestLogger.logGrpcContext(grpcContext) ++
         HttpLogs.rpcLogs(rpcCallContext)
     }

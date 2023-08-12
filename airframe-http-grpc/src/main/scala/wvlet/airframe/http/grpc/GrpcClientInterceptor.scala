@@ -23,7 +23,7 @@ object GrpcClientInterceptor {
     val newHeaders = new Metadata()
     newHeaders.put(
       Metadata.Key.of("x-airframe-client-version", Metadata.ASCII_STRING_MARSHALLER),
-      wvlet.airframe.http.BuildInfo.version
+      wvlet.airframe.http.AirframeHttpBuildInfo.version
     )
     newHeaders.setAccept(encoding.applicationType)
     val interceptor = MetadataUtils.newAttachHeadersInterceptor(newHeaders)
