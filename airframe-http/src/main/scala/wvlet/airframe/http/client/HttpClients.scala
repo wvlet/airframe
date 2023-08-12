@@ -332,6 +332,9 @@ object HttpClients extends LogSupport {
           // Throw as is for known client exception
           throw e
       }
+    case e: RPCException =>
+      val resp = e.toResponse
+      throw new HttpClientException(resp, e.status.httpStatus, e.message, e)
     case e: CircuitBreakerOpenException =>
       val resp = lastResponse.getOrElse(Http.response(HttpStatus.ServiceUnavailable_503))
       throw new HttpClientException(
