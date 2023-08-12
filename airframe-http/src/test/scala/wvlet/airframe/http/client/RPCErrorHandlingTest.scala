@@ -54,7 +54,7 @@ object RPCErrorHandlingTest extends AirSpec {
     var observedRetry = false
     val myClient = client.withClientFilter(new RxHttpFilter {
       override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[Response] = {
-        next(request).runOn {
+        next(request).tapOn {
           case Success(x) =>
             x.status match {
               case HttpStatus.InternalServerError_500 =>

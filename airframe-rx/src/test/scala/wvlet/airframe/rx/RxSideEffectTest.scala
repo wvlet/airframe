@@ -18,12 +18,10 @@ import wvlet.airspec.AirSpec
 import scala.util.{Failure, Success}
 
 class RxSideEffectTest extends AirSpec {
-  test("Rx.runOn(Success(x))") {
+  test("Rx.tap(x)") {
     val observed = Seq.newBuilder[Int]
     Rx.fromSeq(Seq(1, 2, 3))
-      .runOn { case Success(v) =>
-        observed += v
-      }
+      .tap { v => observed += v }
       .lastOption
       .map { x =>
         x shouldBe 3
@@ -31,30 +29,35 @@ class RxSideEffectTest extends AirSpec {
       }
   }
 
-  test("Rx.runOn(Failure(e))") {
-    val observed = Seq.newBuilder[Int]
+  test("Rx.tapOn(...)") {
+    val observed        = Seq.newBuilder[Int]
+    val observedFailure = Seq.newBuilder[Throwable]
     Rx.fromSeq(Seq(1, 2, 3))
       .map { x =>
         if (x == 2) throw new Exception("failed")
         x
       }
-      .runOn { case Success(v) =>
-        observed += v
+      .tapOn {
+        case Success(v) =>
+          observed += v
+        case Failure(e) =>
+          observedFailure += e
       }
       .recover {
         case e: Exception if e.getMessage == "failed" =>
           observed.result() shouldBe Seq(1)
+          observedFailure.result().size shouldBe 1
       }
   }
 
-  test("Rx.runOn(only Failure(e))") {
+  test("Rx.tapOnFailure(...)") {
     val observed = Seq.newBuilder[Throwable]
     Rx.fromSeq(Seq(1, 2, 3))
       .map { x =>
         if (x == 2) throw new Exception("failed")
         x
       }
-      .runOn { case Failure(e) =>
+      .tapOnFailure { e =>
         observed += e
       }
       .recover {

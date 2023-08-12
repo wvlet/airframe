@@ -459,7 +459,7 @@ class RxRunner(
         Cancelable { () =>
           c1.cancel; c2.cancel
         }
-      case RunOnOp(in, f) =>
+      case TapOnOp(in, f) =>
         val f0 = f.asInstanceOf[PartialFunction[Try[_], Unit]]
         run(in) { ev =>
           ev match {
