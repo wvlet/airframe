@@ -34,7 +34,7 @@ object RPCErrorHandlingTest extends AirSpec {
           // For retry test
           Rx.single(Http.response(HttpStatus.InternalServerError_500))
         case _ =>
-          Rx.single(RPCStatus.INVALID_REQUEST_U1.newException("RPC error").toResponse)
+          throw RPCStatus.INVALID_REQUEST_U1.newException("RPC error")
       }
     }
     override def close(): Unit = {}
