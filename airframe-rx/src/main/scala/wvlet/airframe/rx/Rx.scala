@@ -14,9 +14,7 @@
 package wvlet.airframe.rx
 
 import java.util.concurrent.TimeUnit
-import wvlet.airframe.rx.Rx.{RecoverOp, RecoverWithOp}
 import wvlet.log.LogSupport
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
@@ -26,6 +24,8 @@ import scala.util.{Failure, Success, Try}
   * @tparam A
   */
 trait RxOps[+A] { self =>
+  import Rx._
+
   def parents: Seq[RxOps[_]]
 
   def toRx: Rx[A]
@@ -33,12 +33,55 @@ trait RxOps[+A] { self =>
   /**
     * Recover from a known error and emit a replacement value
     */
-  def recover[U](f: PartialFunction[Throwable, U]): Rx[U] = RecoverOp(this.toRx, f)
+  def recover[U](f: PartialFunction[Throwable, U]): Rx[U] = RecoverOp(this, f)
 
   /**
     * Recover from a known error and emit replacement values from a given Rx
     */
-  def recoverWith[A](f: PartialFunction[Throwable, RxOps[A]]): Rx[A] = RecoverWithOp(this.toRx, f)
+  def recoverWith[A](f: PartialFunction[Throwable, RxOps[A]]): Rx[A] = RecoverWithOp(this, f)
+
+  /**
+    * Applies `f` to the value for having a side effect, and return the original value.
+    *
+    * This method is useful for debugging Rx chains. For example:
+    *
+    * {{{
+    *   rx.tapOn {
+    *     case Success(v) => debug(s"received ${v}")
+    *     case Failure(e) => error(s"request failed", e)
+    *   }
+    * }}}
+    *
+    * @param f
+    *   partial function for the side effect
+    * @return
+    *   the original Rx event
+    */
+  def tapOn(f: PartialFunction[Try[A], Unit]): Rx[A] = TapOnOp(this, f)
+
+  /**
+    * Applies `f` to the value for having a side effect, and return the original value.
+    *
+    * The difference from [[tapOn]] is that this method will not receive an input failure.
+    *
+    * @param f
+    *   side-effect function used when observing a value
+    * @return
+    *   the original Rx event
+    */
+  def tap(f: A => Unit): Rx[A] = tapOn({ case Success(v) => f(v) })
+
+  /**
+    * Applies `f` to the error if it happens, and return the original value.
+    *
+    * This method is useful for logging the error.
+    *
+    * @param f
+    *   side-effect function used when observing an error
+    * @return
+    *   the original Rx event
+    */
+  def tapOnFailure(f: Throwable => Unit): Rx[A] = tapOn({ case Failure(e) => f(e) })
 
   /**
     * Evaluate this Rx[A] and apply the given effect function. Once OnError(e) or OnCompletion is observed, it will stop
@@ -416,6 +459,8 @@ object Rx extends LogSupport {
   }
   case class RecoverOp[A, U](input: RxOps[A], f: PartialFunction[Throwable, U])            extends UnaryRx[A, U]
   case class RecoverWithOp[A, U](input: RxOps[A], f: PartialFunction[Throwable, RxOps[U]]) extends UnaryRx[A, U]
+
+  case class TapOnOp[A](input: RxOps[A], f: PartialFunction[Try[A], Unit]) extends UnaryRx[A, A]
 
   case class IntervalOp(interval: Long, unit: TimeUnit) extends Rx[Long] {
     override def parents: Seq[RxOps[_]] = Seq.empty
