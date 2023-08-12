@@ -54,7 +54,7 @@ trait RxOps[+A] { self =>
     *
     * @param f
     * @return
-    *   the original input value as is
+    *   the original input Rx stream
     */
   def runOn(f: PartialFunction[Try[A], Unit]): Rx[A] = RunOnOp(this, f)
 
