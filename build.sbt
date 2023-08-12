@@ -66,16 +66,8 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 // Disable the pipelining available since sbt-1.4.0. It caused compilation failure
 ThisBuild / usePipelining := false
 
-// A build configuration switch for working on Dotty migration. This needs to be removed eventually
-val DOTTY = sys.env.isDefinedAt("DOTTY")
-
-// If DOTTY is set, use Scala 3 by default. This is for the convenience of working on Scala 3 projects
-ThisBuild / scalaVersion := {
-  if (DOTTY)
-    SCALA_3
-  else
-    SCALA_2_13
-}
+// Use Scala 3 by default as scala-2 specific source code is relatively small now
+ThisBuild / scalaVersion := SCALA_3
 
 ThisBuild / organization := "org.wvlet.airframe"
 
@@ -253,17 +245,29 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
 lazy val communityBuild =
   project
     .settings(noPublish)
+    .settings(
+      // Skip importing aggregated projects in IntelliJ IDEA
+      ideSkipProject := true
+    )
     .aggregate(communityBuildProjects: _*)
 
 // For Scala 2.12
 lazy val projectJVM =
   project
     .settings(noPublish)
+    .settings(
+      // Skip importing aggregated projects in IntelliJ IDEA
+      ideSkipProject := true
+    )
     .aggregate(jvmProjects: _*)
 
 lazy val projectJS =
   project
     .settings(noPublish)
+    .settings(
+      // Skip importing aggregated projects in IntelliJ IDEA
+      ideSkipProject := true
+    )
     .aggregate(jsProjects: _*)
 
 // A scoped project only for Dotty (Scala 3).
@@ -271,6 +275,10 @@ lazy val projectJS =
 lazy val projectDotty =
   project
     .settings(noPublish)
+    .settings(
+      // Skip importing aggregated projects in IntelliJ IDEA
+      ideSkipProject := true
+    )
     .aggregate(
       diMacros.jvm,
       di.jvm,

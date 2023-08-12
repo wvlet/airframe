@@ -16,7 +16,7 @@
 
 <p><img src="https://github.com/wvlet/airframe/raw/main/logos/airframe-badge-light.png" alt="logo" width="300px"></p>
 
-Airframe https://wvlet.org/airframe is a collection of [lightweight building blocks](https://wvlet.org/airframe/docs/) for Scala.
+Airframe https://wvlet.org/airframe is essential building blocks for developing applications in Scala, including logging, object serialization using JSON or MessagePack, dependency injection, http server/client with RPC support, functional testing with AirSpec, etc. 
 
 ## Resources
 
@@ -38,24 +38,7 @@ Airframe https://wvlet.org/airframe is a collection of [lightweight building blo
 
 ## For Developers
 
-### Dotty (Scala 3)
-
-For developing with Dotty (Scala 3), use DOTTY=true environment variable:
-```
-$ DOTTY=true ./sbt
-> logJVM/test
-```
-
-Or use `++ 3` in the sbt console:
-```
-# Switch to Scala 3
-> ++ 3
-```
-
-For starting a migration of some project to Scala 3, create a PR that removes `.settings(scala2Only)` from build.sbt to use Scala 3 in the project, and add the project to `projectDotty`. After all tests pass, the PR can be merged.
-
-
-Here is the list of milestones for Dotty support: [#1077](https://github.com/wvlet/airframe/issues/1077)
+Airframe uses Scala 3 as the default Scala version. To use Scala 2.x versions, run `++ 2.12` or `++ 2.13` in the sbt console.
 
 ### Releasing
 
@@ -74,7 +57,7 @@ After that, the artifacts will be published to Sonatype (a.k.a. Maven Central). 
 
 Note: Do not create a new tag from GitHub release pages, because it will not trigger the GitHub Actions for the release.
 
-### Binary Compabibility
+### Binary Compatibility
 
 When changing some interfaces, binary compatibility should be checked so as not to break applications using older versions of Airframe. In build.sbt, set AIRFRAME_BINARY_COMPAT_VERSION to the previous version of Airframe as a comparison target. Then run `sbt mimaReportBinaryIssues` to check the binary compatibility.
 
