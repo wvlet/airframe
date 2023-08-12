@@ -124,9 +124,6 @@ trait RxOps[+A] { self =>
   * Scala-collection like operators (e.g., map, filter, etc.)
   */
 trait Rx[+A] extends RxOps[A] {
-  def map[B](f: A => B): Rx[B] = {
-    Rx.MapOp(this.toRx, f)
-  }
 
   /**
     * Materialize the stream as Seq[A]. This works only for the finite stream and for Scala JVM.
@@ -144,10 +141,42 @@ trait Rx[+A] extends RxOps[A] {
 
   def withName(name: String): Rx[A] = NamedOp(this, name)
 
-  // def map[B](f: A => B): Rx[B]           = MapOp[A, B](this, f)
-  def flatMap[B](f: A => RxOps[B]): Rx[B] = FlatMapOp(this, f)
-  def filter(f: A => Boolean): Rx[A]      = FilterOp(this, f)
+  /**
+    * Applies `f` to the input value and return the result.
+    * @param f
+    * @tparam B
+    * @return
+    */
+  def map[B](f: A => B): Rx[B] = MapOp(this, f)
 
+  /**
+    * Applies `f` to the input value that produces another Rx stream. This method is an alias of flatMap(f)
+    * @param f
+    * @tparam B
+    * @return
+    */
+  def mapToRx[B](f: A => RxOps[B]): Rx[B] = FlatMapOp(this, f)
+
+  /**
+    * Applies `f` to the input value that produces another Rx stream.
+    * @param f
+    * @tparam B
+    * @return
+    */
+  def flatMap[B](f: A => RxOps[B]): Rx[B] = FlatMapOp(this, f)
+
+  /**
+    * Applies the given filter and emit the value only when the filter condition matches
+    * @param f
+    * @return
+    */
+  def filter(f: A => Boolean): Rx[A] = FilterOp(this, f)
+
+  /**
+    * An alias of filter
+    * @param f
+    * @return
+    */
   def withFilter(f: A => Boolean): Rx[A] = FilterOp(this, f)
 
   /**
@@ -161,9 +190,45 @@ trait Rx[+A] extends RxOps[A] {
     * Combine two Rx streams to form a sequence of pairs. This will emit a new pair when both of the streams are
     * updated.
     */
-  def zip[B](other: RxOps[B]): Rx[(A, B)]                                   = Rx.zip(this, other)
-  def zip[B, C](b: RxOps[B], c: RxOps[C]): Rx[(A, B, C)]                    = Rx.zip(this, b, c)
+  def zip[B](other: RxOps[B]): Rx[(A, B)] = Rx.zip(this, other)
+
+  /**
+    * Combine three Rx streams to form a sequence of triples. This will emit a new triple when all of the streams are
+    * updated.
+    * @param b
+    * @param c
+    * @tparam B
+    * @tparam C
+    * @return
+    */
+  def zip[B, C](b: RxOps[B], c: RxOps[C]): Rx[(A, B, C)] = Rx.zip(this, b, c)
+
+  /**
+    * Combine four Rx streams to form a sequence of quadruples. This will emit a new quadruple when all of the streams
+    * are updated.
+    * @param b
+    * @param c
+    * @param d
+    * @tparam B
+    * @tparam C
+    * @tparam D
+    * @return
+    */
   def zip[B, C, D](b: RxOps[B], c: RxOps[C], d: RxOps[D]): Rx[(A, B, C, D)] = Rx.zip(this, b, c, d)
+
+  /**
+    * Combine five Rx streams to form a sequence of quintuples. This will emit a new quintuple when all of the streams
+    * are updated.
+    * @param b
+    * @param c
+    * @param d
+    * @param e
+    * @tparam B
+    * @tparam C
+    * @tparam D
+    * @tparam E
+    * @return
+    */
   def zip[B, C, D, E](b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E]): Rx[(A, B, C, D, E)] =
     Rx.zip(this, b, c, d, e)
 
@@ -175,9 +240,42 @@ trait Rx[+A] extends RxOps[A] {
     * Using joins will be more intuitive than nesting multiple Rx operators like Rx[A].map { x => ... Rx[B].map { ...}
     * }.
     */
-  def join[B](other: RxOps[B]): Rx[(A, B)]                                   = Rx.join(this, other)
-  def join[B, C](b: RxOps[B], c: RxOps[C]): Rx[(A, B, C)]                    = Rx.join(this, b, c)
+  def join[B](other: RxOps[B]): Rx[(A, B)] = Rx.join(this, other)
+
+  /**
+    * Emit a new output if one of Rx[A], Rx[B], or Rx[C] is changed.
+    * @param b
+    * @param c
+    * @tparam B
+    * @tparam C
+    * @return
+    */
+  def join[B, C](b: RxOps[B], c: RxOps[C]): Rx[(A, B, C)] = Rx.join(this, b, c)
+
+  /**
+    * Emit a new output if one of Rx[A], Rx[B], Rx[C], or Rx[D] is changed.
+    * @param b
+    * @param c
+    * @param d
+    * @tparam B
+    * @tparam C
+    * @tparam D
+    * @return
+    */
   def join[B, C, D](b: RxOps[B], c: RxOps[C], d: RxOps[D]): Rx[(A, B, C, D)] = Rx.join(this, b, c, d)
+
+  /**
+    * Emit a new output if one of Rx[A], Rx[B], Rx[C], Rx[D], or Rx[E] is changed.
+    * @param b
+    * @param c
+    * @param d
+    * @param e
+    * @tparam B
+    * @tparam C
+    * @tparam D
+    * @tparam E
+    * @return
+    */
   def join[B, C, D, E](b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E]): Rx[(A, B, C, D, E)] =
     Rx.join(this, b, c, d, e)
 
