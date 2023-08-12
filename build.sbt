@@ -63,6 +63,9 @@ addCommandAlias(
 // Reload build.sbt on changes
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
+// ideSkipProject is used only for IntelliJ IDEA
+Global / excludeLintKeys ++= Set(ideSkipProject)
+
 // Disable the pipelining available since sbt-1.4.0. It caused compilation failure
 ThisBuild / usePipelining := false
 
