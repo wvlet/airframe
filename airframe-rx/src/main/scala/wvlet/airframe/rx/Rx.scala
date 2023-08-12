@@ -55,7 +55,7 @@ trait RxOps[+A] { self =>
     * @param f
     *   partial function for the side effect
     * @return
-    *   the original input Rx stream
+    *   the original Rx event
     */
   def tapOn(f: PartialFunction[Try[A], Unit]): Rx[A] = TapOnOp(this, f)
 
@@ -65,13 +65,14 @@ trait RxOps[+A] { self =>
     * The difference from [[tapOn]] is that this method will not receive an input failure.
     *
     * @param f
+    *   side-effect function used when observing a value
     * @return
     *   the original Rx event
     */
   def tap(f: A => Unit): Rx[A] = tapOn({ case Success(v) => f(v) })
 
   /**
-    * Applied `f` if the input has an error, and return the original exception.
+    * Applies `f` to the error if it happens, and return the original value.
     *
     * This method is useful for logging the error.
     *

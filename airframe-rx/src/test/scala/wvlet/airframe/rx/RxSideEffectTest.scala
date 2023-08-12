@@ -67,4 +67,38 @@ class RxSideEffectTest extends AirSpec {
       }
   }
 
+  test("handle error in the side effect") {
+    val observed = Seq.newBuilder[Int]
+    Rx.fromSeq(Seq(1, 2, 3))
+      .tap { x =>
+        if (x == 2) throw new Exception("failed")
+        observed += x
+      }
+      .recover {
+        case e: Exception if e.getMessage == "failed" =>
+          observed.result() shouldBe Seq(1, 2)
+          0
+      }
+      .map { x =>
+        x shouldBe 1
+      }
+  }
+
+  test("handle error in the error-handling side effect") {
+    val observed = Seq.newBuilder[Int]
+    Rx.fromSeq(Seq(1, 2, 3))
+      .map { x =>
+        if (x == 2) throw new Exception("failed")
+        observed += x
+      }
+      .tapOnFailure {
+        case e: Exception if e.getMessage == "failed" =>
+          throw new IllegalStateException("test failure")
+      }
+      .recover {
+        case e: IllegalStateException if e.getMessage == "test failure" =>
+          observed.result() shouldBe Seq(1)
+      }
+  }
+
 }

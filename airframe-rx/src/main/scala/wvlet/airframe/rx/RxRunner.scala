@@ -464,13 +464,22 @@ class RxRunner(
         run(in) { ev =>
           ev match {
             case OnNext(v) =>
-              // Skip the error handling so as not to discard the input event
-              Try(f0.applyOrElse(Success(v), (_: Try[_]) => ()))
+              Try(f0.applyOrElse(Success(v), (_: Try[_]) => ())) match {
+                case Success(value) =>
+                  effect(ev)
+                case Failure(e) =>
+                  effect(OnError(e))
+              }
             case OnError(e) =>
-              Try(f0.applyOrElse(Failure(e), (_: Try[_]) => ()))
+              Try(f0.applyOrElse(Failure(e), (_: Try[_]) => ())) match {
+                case Success(value) =>
+                  effect(ev)
+                case Failure(e) =>
+                  effect(OnError(e))
+              }
             case _ =>
+              effect(ev)
           }
-          effect(ev)
         }
       case SingleOp(v) =>
         Try(effect(OnNext(v.eval))) match {
