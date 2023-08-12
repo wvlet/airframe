@@ -2,13 +2,11 @@ package wvlet.airframe.rx
 
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-
 import wvlet.log.LogSupport
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
 import scala.util.{Failure, Success, Try}
-import Rx._
 
 /**
   * States for propagating the result of the downstream operators.
@@ -74,6 +72,8 @@ class RxRunner(
     // If this value is true, evaluating Rx keeps reporting events after OnError or OnCompletion is observed
     continuous: Boolean
 ) extends LogSupport { runner =>
+
+  import Rx._
 
   /**
     * Build an executable chain of Rx operators. The resulting chain will be registered as a subscriber to the root node
@@ -458,6 +458,19 @@ class RxRunner(
         }
         Cancelable { () =>
           c1.cancel; c2.cancel
+        }
+      case RunOnOp(in, f) =>
+        val f0 = f.asInstanceOf[PartialFunction[Try[_], Unit]]
+        run(in) { ev =>
+          ev match {
+            case OnNext(v) =>
+              // Skip the error handling so as not to discard the input event
+              Try(f0.applyOrElse(Success(v), (_: Try[_]) => ()))
+            case OnError(e) =>
+              Try(f0.applyOrElse(Failure(e), (_: Try[_]) => ()))
+            case _ =>
+          }
+          effect(ev)
         }
       case SingleOp(v) =>
         Try(effect(OnNext(v.eval))) match {
