@@ -82,6 +82,7 @@ object HttpClients extends LogSupport {
           throw e
       }
     case e: RPCException =>
+      // This path is used only for local RPC client tests, which do not launch any real HTTP server
       val resp = e.toResponse
       throw new HttpClientException(resp, e.status.httpStatus, e.message, e)
     case e: CircuitBreakerOpenException =>

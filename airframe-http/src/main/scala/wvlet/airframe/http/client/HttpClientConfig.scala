@@ -24,6 +24,16 @@ import scala.collection.immutable.ListMap
 import scala.concurrent.duration.Duration
 
 /**
+  * A common immutable configuration for all HTTP clients in airframe-http. To modify any configuration, use withXXX
+  * methods.
+  *
+  * The generated HTTP client has multiple layers of filters:
+  *   - requestFilter: A filter to modify the request before sending it to the backend. This can be used for adding
+  *     common HTTP headers (e.g., User-Agent, Authentication header, etc.)
+  *   - clientFilter: A filter to modify the request/response.
+  *   - loggingFilter: A filter to log individual requests and responses, including retried requests. The default
+  *     behavior is logging each request with its response stats to log/http_client.json file.
+  *   - responseFilter: A filter to modify the response before returning it to the caller.
   */
 case class HttpClientConfig(
     name: String = "default",
@@ -39,7 +49,7 @@ case class HttpClientConfig(
     connectTimeout: Duration = Duration(90, TimeUnit.SECONDS),
     // timeout applied when receiving data from the target host
     readTimeout: Duration = Duration(90, TimeUnit.SECONDS),
-    clientFilter: HttpClientFilter = HttpClientFilter.identity,
+    clientFilter: RxHttpFilter = RxHttpFilter.identity,
     httpLoggerConfig: HttpLoggerConfig = HttpLoggerConfig(logFileName = "log/http_client.json"),
     httpLoggerProvider: HttpLoggerConfig => HttpLogger = Compat.defaultHttpClientLoggerFactory,
     loggingFilter: HttpLogger => HttpClientFilter = { (l: HttpLogger) => new HttpClientLoggingFilter(l) }
@@ -106,28 +116,19 @@ case class HttpClientConfig(
   }
 
   /**
-    * Add a new HttpClientFilter. This filter is useful for adding a common error handling logic for the Rx[Response].
-    * @param filter
-    * @return
-    */
-  def withClientFilter(filter: HttpClientFilter): HttpClientConfig = {
-    this.copy(clientFilter = clientFilter.andThen(filter))
-  }
-
-  /**
     * Add a new RxClientFilter. This filter is useful for adding a common error handling logic for the Rx[Response].
     *
     * @param filter
     * @return
     */
   def withClientFilter(filter: RxHttpFilter): HttpClientConfig = {
-    this.copy(clientFilter = clientFilter.andThen(HttpClientFilter.wrap(filter)))
+    this.copy(clientFilter = clientFilter.andThen(filter))
   }
 
   /**
     * Remove any client-side filter
     */
-  def noClientFilter: HttpClientConfig = this.copy(clientFilter = HttpClientFilter.identity)
+  def noClientFilter: HttpClientConfig = this.copy(clientFilter = RxHttpFilter.identity)
 
   /**
     * Customize logger configuration

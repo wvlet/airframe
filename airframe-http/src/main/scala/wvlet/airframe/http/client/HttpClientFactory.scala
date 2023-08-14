@@ -42,9 +42,6 @@ trait HttpClientFactory[ClientImpl] {
   def withResponseFilter(responseFilter: Response => Response): ClientImpl = {
     build(config.withResponseFilter(responseFilter))
   }
-  def withClientFilter(filter: HttpClientFilter): ClientImpl = {
-    build(config.withClientFilter(filter))
-  }
   def withClientFilter(filter: RxHttpFilter): ClientImpl = {
     build(config.withClientFilter(filter))
   }

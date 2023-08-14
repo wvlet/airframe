@@ -22,7 +22,7 @@ import wvlet.airframe.surface.Surface
 /**
   * A standard async http client interface for Rx[_]
   */
-trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] with AutoCloseable {
+trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] with AutoCloseable with LogSupport {
   protected def channel: HttpChannel
   def config: HttpClientConfig
 
@@ -46,22 +46,34 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
   def send(req: Request, context: HttpClientContext = HttpClientContext.empty): Rx[Response] = {
     val request                        = config.requestFilter(req)
     var lastResponse: Option[Response] = None
-    config.retryContext
-      .runAsyncWithContext(request, circuitBreaker) {
-        loggingFilter
-          .andThen(config.clientFilter)
-          .apply(context)
-          .andThen(req => channel.sendAsync(req, config))
-          .apply(request)
+    val rx = config.clientFilter
+      .andThen { req =>
+        // Wrap http requests with the default error retryer
+        config.retryContext
+          .runAsyncWithContext(req, circuitBreaker) {
+            loggingFilter(context)
+              .andThen { req =>
+                channel
+                  .sendAsync(req, config)
+                  .map { resp =>
+                    // Remember the last response for error reporting purpose
+                    lastResponse = Some(resp)
+                    resp
+                  }
+              }
+              .apply(req)
+          }
           .map { resp =>
-            // Remember the last response for error reporting purpose
-            lastResponse = Some(config.responseFilter(resp))
-            resp
+            config.responseFilter(resp)
+          }
+          .recover {
+            val response = lastResponse.map(config.responseFilter(_))
+            HttpClients.defaultHttpClientErrorHandler(response)
           }
       }
-      .recover {
-        HttpClients.defaultHttpClientErrorHandler(lastResponse)
-      }
+
+    // Run the filter chain
+    rx.apply(request)
   }
 
   /**
