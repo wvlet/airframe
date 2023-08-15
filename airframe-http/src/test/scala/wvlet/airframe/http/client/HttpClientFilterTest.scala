@@ -14,22 +14,13 @@
 package wvlet.airframe.http.client
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.{
-  Http,
-  HttpMessage,
-  HttpStatus,
-  RPCException,
-  RPCMethod,
-  RPCStatus,
-  RxHttpEndpoint,
-  RxHttpFilter
-}
+import wvlet.airframe.http._
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 import java.util.concurrent.atomic.AtomicInteger
-import scala.util.{Failure, Success}
+import scala.concurrent.TimeoutException
 
 object HttpClientFilterTest extends AirSpec {
 
@@ -76,11 +67,10 @@ object HttpClientFilterTest extends AirSpec {
         }
       }
     )
-    client.rpc[Map[String, Any], String](dummyRPCMethod, Map("message" -> "world")).transform {
-      case scala.util.Failure(e) =>
+    client.rpc[Map[String, Any], String](dummyRPCMethod, Map("message" -> "world")).recover {
+      case e: RPCException if e.status == RPCStatus.INVALID_REQUEST_U1 =>
         e.getMessage shouldContain "RPC dummy error"
-      case _ =>
-        fail("should fail")
+        observedError shouldBe true
     }
   }
 
@@ -99,6 +89,31 @@ object HttpClientFilterTest extends AirSpec {
     client.sendSafe(Http.request("/")).recover {
       case e: RPCException if e.status == RPCStatus.PERMISSION_DENIED_U14 =>
         e.getMessage shouldContain "test client filter error"
+    }
+  }
+
+  test("handle last error response") {
+    val client = newDummyClient(
+      Http.client.withRetryContext(_.noRetry),
+      { case req: Request => throw new TimeoutException("timeout") }
+    )
+
+    client.sendSafe(Http.request("/")).map { resp =>
+      resp.status shouldBe HttpStatus.InternalServerError_500
+    }
+  }
+
+  test("add a custom header") {
+    val client = newDummyClient(
+      Http.client.withRequestFilter(_.withAuthorization("Bearer xxx")),
+      { case req: Request =>
+        req.authorization shouldBe Some("Bearer xxx")
+        Http.response(HttpStatus.Ok_200)
+      }
+    )
+
+    client.sendSafe(Http.request("/")).map { resp =>
+      resp.status shouldBe HttpStatus.Ok_200
     }
   }
 
