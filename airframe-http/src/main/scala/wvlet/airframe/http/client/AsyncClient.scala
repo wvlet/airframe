@@ -123,9 +123,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
     * @tparam Req
     * @tparam Resp
     * @return
-    *
-    * @throws RPCException
-    *   when RPC request fails
+    *   Rx of the response. If the RPC request fails, Rx[RPCException] will be returned.
     */
   def rpc[Req, Resp](
       method: RPCMethod,

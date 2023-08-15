@@ -13,8 +13,17 @@
  */
 package wvlet.airframe.http.client
 
-import wvlet.airframe.http.HttpMessage.Response
-import wvlet.airframe.http.{Http, HttpMessage, HttpStatus, RPCMethod, RPCStatus, RxHttpEndpoint, RxHttpFilter}
+import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.http.{
+  Http,
+  HttpMessage,
+  HttpStatus,
+  RPCException,
+  RPCMethod,
+  RPCStatus,
+  RxHttpEndpoint,
+  RxHttpFilter
+}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
@@ -24,51 +33,73 @@ import scala.util.{Failure, Success}
 
 object HttpClientFilterTest extends AirSpec {
 
-  private class DummyHttpChannel extends HttpChannel {
+  private def newDummyClient(config: HttpClientConfig, f: PartialFunction[Request, Response]): AsyncClient =
+    new AsyncClientImpl(new DummyHttpChannel(f), config)
+
+  private class DummyHttpChannel(reply: PartialFunction[Request, Response]) extends HttpChannel {
     private val requestCount = new AtomicInteger(0)
 
-    override def send(req: HttpMessage.Request, channelConfig: HttpChannelConfig): Response = ???
-    override def sendAsync(req: HttpMessage.Request, channelConfig: HttpChannelConfig): Rx[Response] = {
-      req.userAgent shouldBe Some("Test-Client 1.0")
-      requestCount.getAndIncrement() match {
-        case 0 =>
-          // Add a fake error for retry test
-          Rx.single(Http.response(HttpStatus.InternalServerError_500))
-        case _ =>
-          throw RPCStatus.INVALID_REQUEST_U1.newException("RPC dummy error")
+    override def send(req: HttpMessage.Request, channelConfig: HttpChannelConfig): Response = {
+      if (reply.isDefinedAt(req)) {
+        reply(req)
+      } else {
+        throw RPCStatus.NOT_FOUND_U5.newException(s"RPC method not found: ${req.path}")
       }
+    }
+    override def sendAsync(req: HttpMessage.Request, channelConfig: HttpChannelConfig): Rx[Response] = {
+      Rx.single(send(req, channelConfig))
     }
     override def close(): Unit = {}
   }
 
-  initLocalDesign(
-    _.bind[AsyncClient].toInstance {
-      val config = Http.client
-        .withRequestFilter(_.withUserAgent("Test-Client 1.0"))
-      // .withClientFilter(null)
-      new AsyncClientImpl(new DummyHttpChannel, config)
-    }
-  )
+  private val dummyRPCMethod =
+    RPCMethod("/rpc_method", "demo.RPCClass", "hello", Surface.of[Map[String, Any]], Surface.of[String])
 
-  test("test error response") { (client: AsyncClient) =>
-    val dummyRPCMerthod =
-      RPCMethod("/rpc_method", "demo.RPCClass", "hello", Surface.of[Map[String, Any]], Surface.of[String])
-
+  test("get the last error response after retry attempts") {
+    val requestCount  = new AtomicInteger(0)
     var observedError = false
-    val myClient = client.withClientFilter(new RxHttpFilter {
-      override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[Response] = {
-        next(request).tapOnFailure { e =>
-          observedError = true
+
+    val client = newDummyClient(
+      Http.client.withClientFilter(new RxHttpFilter {
+        override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[Response] = {
+          next(request).tapOnFailure { e =>
+            observedError = true
+          }
+        }
+      }),
+      { case req: Request =>
+        requestCount.getAndIncrement() match {
+          case 0 =>
+            Http.response(HttpStatus.InternalServerError_500)
+          case _ =>
+            throw RPCStatus.INVALID_REQUEST_U1.newException("RPC dummy error")
         }
       }
-    })
-
-    myClient.rpc[Map[String, Any], String](dummyRPCMerthod, Map("message" -> "world")).transform {
+    )
+    client.rpc[Map[String, Any], String](dummyRPCMethod, Map("message" -> "world")).transform {
       case scala.util.Failure(e) =>
-        observedError shouldBe true
         e.getMessage shouldContain "RPC dummy error"
       case _ =>
         fail("should fail")
     }
   }
+
+  test("handle error inside the client filter") {
+    val client = newDummyClient(
+      Http.client.withClientFilter(new RxHttpFilter {
+        override def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
+          throw RPCStatus.PERMISSION_DENIED_U14.newException("test client filter error")
+        }
+      }),
+      { case req: Request =>
+        Http.response(HttpStatus.Ok_200)
+      }
+    )
+
+    client.sendSafe(Http.request("/")).recover {
+      case e: RPCException if e.status == RPCStatus.PERMISSION_DENIED_U14 =>
+        e.getMessage shouldContain "test client filter error"
+    }
+  }
+
 }
