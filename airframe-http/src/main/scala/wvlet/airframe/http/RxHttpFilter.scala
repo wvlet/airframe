@@ -59,11 +59,16 @@ trait RxHttpFilter {
     * @param body
     * @return
     */
-  def andThen(body: Request => Rx[Response]): RxHttpEndpoint = new RxHttpEndpoint {
+  def andThen(body: Request => Rx[Response]): RxHttpEndpoint = andThen(new RxHttpEndpoint {
     override def apply(request: Request): Rx[Response] = {
-      body(request)
+      try {
+        body(request)
+      } catch {
+        case NonFatal(e) =>
+          Rx.exception(e)
+      }
     }
-  }
+  })
 
 }
 

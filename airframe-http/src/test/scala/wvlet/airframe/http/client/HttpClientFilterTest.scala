@@ -22,7 +22,7 @@ import wvlet.airspec.AirSpec
 import java.util.concurrent.atomic.AtomicInteger
 import scala.util.{Failure, Success}
 
-object RPCErrorFilterTest extends AirSpec {
+object HttpClientFilterTest extends AirSpec {
 
   private class DummyHttpChannel extends HttpChannel {
     private val requestCount = new AtomicInteger(0)
@@ -41,39 +41,31 @@ object RPCErrorFilterTest extends AirSpec {
     override def close(): Unit = {}
   }
 
-  initDesign {
+  initLocalDesign(
     _.bind[AsyncClient].toInstance {
       val config = Http.client
         .withRequestFilter(_.withUserAgent("Test-Client 1.0"))
       // .withClientFilter(null)
       new AsyncClientImpl(new DummyHttpChannel, config)
     }
-  }
+  )
 
   test("test error response") { (client: AsyncClient) =>
     val dummyRPCMerthod =
       RPCMethod("/rpc_method", "demo.RPCClass", "hello", Surface.of[Map[String, Any]], Surface.of[String])
 
-    var observedRetry = false
+    var observedError = false
     val myClient = client.withClientFilter(new RxHttpFilter {
       override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[Response] = {
-        next(request).tapOn {
-          case Success(x) =>
-            logger.info(s"===${x}")
-            x.status match {
-              case HttpStatus.InternalServerError_500 =>
-                observedRetry = true
-              case _ =>
-            }
-          case Failure(e) =>
-            logger.info(e)
+        next(request).tapOnFailure { e =>
+          observedError = true
         }
       }
     })
 
     myClient.rpc[Map[String, Any], String](dummyRPCMerthod, Map("message" -> "world")).transform {
       case scala.util.Failure(e) =>
-        // observedRetry shouldBe true
+        observedError shouldBe true
         e.getMessage shouldContain "RPC dummy error"
       case _ =>
         fail("should fail")

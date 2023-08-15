@@ -49,9 +49,9 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
     *   for non-retryable error is occurred
     */
   def send(req: Request, context: HttpClientContext = HttpClientContext.empty): Response = {
-    val request = config.requestFilter(req)
-
+    val request                        = config.requestFilter(req)
     var lastResponse: Option[Response] = None
+
     try {
       config.retryContext.runWithContext(request, circuitBreaker) {
         loggingFilter

@@ -46,27 +46,32 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
   def send(req: Request, context: HttpClientContext = HttpClientContext.empty): Rx[Response] = {
     val request                        = config.requestFilter(req)
     var lastResponse: Option[Response] = None
-    val rx = config.clientFilter
-      .andThen { req =>
-        // Wrap http requests with the default error retryer
+    // Build a chain of request filters
+    def requestPipeline =
+      loggingFilter(context)
+        .andThen { req =>
+          channel
+            .sendAsync(req, config)
+            .tap { resp =>
+              // Remember the last response for the error reporting purpose
+              lastResponse = Some(resp)
+            }
+        }
+
+    val rx =
+      // Apply the client filter first to handle only the last response
+      config.clientFilter.andThen { req =>
+        // Wrap http request with the default error retry handler
         config.retryContext
           .runAsyncWithContext(req, circuitBreaker) {
-            loggingFilter(context)
-              .andThen { req =>
-                channel
-                  .sendAsync(req, config)
-                  .map { resp =>
-                    // Remember the last response for error reporting purpose
-                    lastResponse = Some(resp)
-                    resp
-                  }
-              }
-              .apply(req)
+            requestPipeline(req)
           }
           .map { resp =>
+            // Apply the response filter for the successful response
             config.responseFilter(resp)
           }
           .recover {
+            // Or if request has been failing, apply the response filter only to the last response
             val response = lastResponse.map(config.responseFilter(_))
             HttpClients.defaultHttpClientErrorHandler(response)
           }
