@@ -1138,4 +1138,15 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
       col.sourceColumn.head.fullName shouldBe "A.id"
     }
   }
+
+  test("Resolve identifier refers to column alias for qualified column") {
+    val p1 = analyze("select count(xid) from (select n1.id as xid from A n1 inner join B on n1.id = B.id)")
+    p1.outputAttributes shouldMatch { case List(SingleColumn(f: FunctionCall, None, None, _)) =>
+      f.functionName shouldBe "count"
+      f.args shouldMatch { case Seq(col: ResolvedAttribute) =>
+        col.fullName shouldBe "xid"
+        col.sourceColumn.map(_.column) shouldBe Some(a1)
+      }
+    }
+  }
 }
