@@ -26,7 +26,8 @@ class RecursiveSurfaceTest extends SurfaceSpec {
 
   test("find surface from full type name string") {
     val s = Surface.of[Leaf]
-    assert(wvlet.airframe.surface.getCached("wvlet.airframe.surface.RecursiveSurfaceTest.Leaf") == s)
+    // In Scala 3, Surface will not be cached to save the byte code size
+    // assert(wvlet.airframe.surface.getCached("wvlet.airframe.surface.RecursiveSurfaceTest.Leaf") == s)
   }
 
   test("support recursive type") {
