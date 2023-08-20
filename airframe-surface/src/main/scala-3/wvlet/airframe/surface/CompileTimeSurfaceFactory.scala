@@ -76,14 +76,16 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     surfaceOf(TypeRepr.of(using tpe))
   }
 
-  private val seen = scala.collection.mutable.Set[TypeRepr]()
-  private val memo = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
+  private val seen        = scala.collection.mutable.Set[TypeRepr]()
+  private val memo        = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
+  private val lazySurface = scala.collection.mutable.Set[TypeRepr]()
 
   private def surfaceOf(t: TypeRepr): Expr[Surface] = {
     if (seen.contains(t)) {
       if (memo.contains(t)) {
         memo(t)
       } else {
+        lazySurface += t
         '{ LazySurface(${ clsOf(t) }, ${ Expr(fullTypeNameOf(t)) }) }
       }
     } else {
@@ -91,27 +93,36 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       // For debugging
       // println(s"[${typeNameOf(t)}]\n  ${t}\nfull type name: ${fullTypeNameOf(t)}\nclass: ${t.getClass}")
       val generator = factory.andThen { expr =>
-        val cacheKey = if (typeNameOf(t) == "scala.Any") {
-          t match {
-            case ParamRef(TypeLambda(typeNames, _, _), _) =>
-              // Distinguish scala.Any and type bounds (such as _)
-              s"${fullTypeNameOf(t)} for ${t}"
-            case TypeBounds(_, _) =>
-              // This ensures different cache key for each Type Parameter (such as T and U).
-              // This is required because fullTypeNameOf of every Type Parameters is `scala.Any`.
-              s"${fullTypeNameOf(t)} for ${t}"
-            case _ =>
-              fullTypeNameOf(t)
-          }
+        if (!lazySurface.contains(t)) {
+          expr
         } else {
-          fullTypeNameOf(t)
-        }
-        '{
-          val key = ${ Expr(cacheKey) }
-          if (!wvlet.airframe.surface.surfaceCache.contains(key)) {
-            wvlet.airframe.surface.surfaceCache += key -> ${ expr }
+          // Need to cache the recursive Surface to be referenced in a LazySurface
+          val cacheKey = if (typeNameOf(t) == "scala.Any") {
+            t match {
+              case ParamRef(TypeLambda(typeNames, _, _), _) =>
+                // Distinguish scala.Any and type bounds (such as _)
+                s"${fullTypeNameOf(t)} for ${t}"
+              case TypeBounds(_, _) =>
+                // This ensures different cache key for each Type Parameter (such as T and U).
+                // This is required because fullTypeNameOf of every Type Parameters is `scala.Any`.
+                s"${fullTypeNameOf(t)} for ${t}"
+              case _ =>
+                fullTypeNameOf(t)
+            }
+          } else {
+            fullTypeNameOf(t)
           }
-          wvlet.airframe.surface.surfaceCache(key)
+          '{
+            val key = ${
+              Expr(cacheKey)
+            }
+            if (!wvlet.airframe.surface.surfaceCache.contains(key)) {
+              wvlet.airframe.surface.surfaceCache += key -> ${
+                expr
+              }
+            }
+            wvlet.airframe.surface.surfaceCache(key)
+          }
         }
       }
       val surface = generator(t)
@@ -693,6 +704,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         }
       }
       val expr = Expr.ofSeq(methodSurfaces)
+      // println(s"methodOf: ${targetType.typeSymbol.fullName} => \n${expr.show}")
       methodMemo += targetType -> expr
       expr
     }

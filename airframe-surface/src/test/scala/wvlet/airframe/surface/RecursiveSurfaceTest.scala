@@ -24,9 +24,9 @@ object RecursiveSurfaceTest {
 class RecursiveSurfaceTest extends SurfaceSpec {
   import RecursiveSurfaceTest._
 
-  test("find surface from full type name string") {
-    val s = Surface.of[Leaf]
-    assert(wvlet.airframe.surface.getCached("wvlet.airframe.surface.RecursiveSurfaceTest.Leaf") == s)
+  test("find recursive surface cache from the full type name string") {
+    val s = Surface.of[Cons]
+    assert(wvlet.airframe.surface.getCached("wvlet.airframe.surface.RecursiveSurfaceTest.Cons") == s)
   }
 
   test("support recursive type") {

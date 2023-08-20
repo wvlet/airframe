@@ -90,20 +90,24 @@ class SurfaceTest extends SurfaceSpec {
   test("be equal") {
     val a1 = Surface.of[A]
     val a2 = Surface.of[A]
-    assert(a1 eq a2)
+
+    // In Scala 3, Surface instance identity is not guaranteed
+    // assert(a1 eq a2)
+
     // equality
     assert(a1 == a2)
     assert(a1.hashCode() == a2.hashCode())
 
     val b  = Surface.of[B]
     val a3 = b.params.head.surface
-    assert(a1 eq a3)
+
+    // assert(a1 eq a3)
 
     // Generic surface
     val c1 = Surface.of[Seq[Int]]
     val c2 = Surface.of[Seq[Int]]
     assert(c1.equals(c2) == true)
-    assert(c1 eq c2)
+    // assert(c1 eq c2)
     assert(c1.hashCode() == c2.hashCode())
 
     assert(c1 ne a1)
