@@ -76,8 +76,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     surfaceOf(TypeRepr.of(using tpe))
   }
 
-  private val seen = scala.collection.mutable.Set[TypeRepr]()
-  private val memo = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
+  private val seen        = scala.collection.mutable.Set[TypeRepr]()
+  private val memo        = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
   private val lazySurface = scala.collection.mutable.Set[TypeRepr]()
 
   private def surfaceOf(t: TypeRepr): Expr[Surface] = {
@@ -93,10 +93,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       // For debugging
       // println(s"[${typeNameOf(t)}]\n  ${t}\nfull type name: ${fullTypeNameOf(t)}\nclass: ${t.getClass}")
       val generator = factory.andThen { expr =>
-        if(!lazySurface.contains(t)) {
+        if (!lazySurface.contains(t)) {
           expr
-        }
-        else {
+        } else {
           // Need to cache the recursive Surface to be referenced in a LazySurface
           val cacheKey = if (typeNameOf(t) == "scala.Any") {
             t match {
@@ -110,8 +109,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
               case _ =>
                 fullTypeNameOf(t)
             }
-          }
-          else {
+          } else {
             fullTypeNameOf(t)
           }
           '{
@@ -706,7 +704,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         }
       }
       val expr = Expr.ofSeq(methodSurfaces)
-      println(s"methodOf: ${targetType.typeSymbol.fullName} => \n${expr.show}")
+      // println(s"methodOf: ${targetType.typeSymbol.fullName} => \n${expr.show}")
       methodMemo += targetType -> expr
       expr
     }
