@@ -575,6 +575,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     methodParametersOf(t, t.typeSymbol.primaryConstructor)
   }
 
+  private val methodRefCache = scala.collection.mutable.Map[Symbol, Expr[MethodRef]]()
+
   private def methodParametersOf(t: TypeRepr, method: Symbol): Expr[Seq[MethodParameter]] = {
     val methodName = method.name
     val methodArgs = methodArgsOf(t, method).flatten
@@ -582,14 +584,20 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       clsOf(arg.tpe.dealias)
     }
     val isConstructor = t.typeSymbol.primaryConstructor == method
-    val constructorRef = '{
-      MethodRef(
-        owner = ${ clsOf(t) },
-        name = ${ Expr(methodName) },
-        paramTypes = ${ Expr.ofSeq(argClasses) },
-        isConstructor = ${ Expr(isConstructor) }
-      )
+    val constructorRef: Expr[MethodRef] = if(methodRefToVar.contains(method)) {
+      Ref(methodRefToVar(method)).asExprOf[MethodRef]
     }
+    else {
+      '{
+        MethodRef(
+          owner = ${ clsOf(t) },
+          name = ${ Expr(methodName) },
+          paramTypes = ${ Expr.ofSeq(argClasses) },
+          isConstructor = ${ Expr(isConstructor) }
+        )
+      }
+    }
+    methodRefCache += method -> constructorRef
 
     // println(s"======= ${t.typeSymbol.memberMethods}")
 
@@ -684,6 +692,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
   // To reduce the byte code size, we need to memoize the generated surface bound to a variable
   private val surfaceToVar = scala.collection.mutable.Map[TypeRepr, Symbol]()
+  private val methodRefToVar = scala.collection.mutable.Map[Symbol, Symbol]()
 
   private def methodsOf(t: TypeRepr): Expr[Seq[MethodSurface]] = {
     // Run just for collecting known surfaces. seen variable will be updated
@@ -696,19 +705,38 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       .filterNot(primitiveTypeFactory.isDefinedAt)
       .foreach { s =>
       // Update the cache so that the next call of surfaceOf method will use the local varaible reference
-      surfaceToVar += s -> Symbol.newVal(
+        surfaceToVar += s -> Symbol.newVal(
+          Symbol.spliceOwner,
+          s"__s${count}",
+          TypeRepr.of[Surface],
+          Flags.EmptyFlags,
+          Symbol.noSymbol
+        )
+        count += 1
+      }
+
+    var methodRefCount = 0
+    methodRefCache.foreach { case (sym, expr) =>
+      methodRefToVar += sym -> Symbol.newVal(
         Symbol.spliceOwner,
-        s"__s${count}",
-        TypeRepr.of[Surface],
+        s"__m${methodRefCount}",
+        TypeRepr.of[MethodRef],
         Flags.EmptyFlags,
         Symbol.noSymbol
       )
-      count += 1
+      methodRefCount += 1
     }
+
+
     val surfaceDefs: List[ValDef] = surfaceToVar.map { x =>
       val sym = x._2
       ValDef(sym, Some(memo(x._1).asTerm))
     }.toList
+    val methodRefDefs: List[ValDef] = methodRefToVar.map { x =>
+      val sym = x._2
+      ValDef(sym, Some(methodRefCache(x._1).asTerm))
+    }.toList
+
 
     // Clear method observation cache
     seenMethodParent.clear()
@@ -719,7 +747,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       * ClassMethodSurface( .... ) }}
       */
     val expr = Block(
-      surfaceDefs,
+      surfaceDefs ++ methodRefDefs,
       methodsOfInternal(t).asTerm
     ).asExprOf[Seq[MethodSurface]]
 
