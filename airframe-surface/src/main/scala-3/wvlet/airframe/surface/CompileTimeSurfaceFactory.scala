@@ -728,7 +728,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
   private def methodsOfInternal(targetType: TypeRepr): Expr[Seq[MethodSurface]] = {
     if (seenMethodParent.contains(targetType)) {
-      sys.error(s"recurcive method in: ${targetType.typeSymbol.fullName}")
+      sys.error(s"recursive method found in: ${targetType.typeSymbol.fullName}")
     } else {
       seenMethodParent += targetType
       val localMethods = localMethodsOf(targetType).distinct.sortBy(_.name)
