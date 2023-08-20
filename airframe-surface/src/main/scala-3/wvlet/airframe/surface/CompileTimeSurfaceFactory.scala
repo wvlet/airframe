@@ -288,8 +288,18 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       '{ ExistentialType }
   }
 
+  private val clsOfCache: scala.collection.mutable.Map[TypeRepr, Expr[Class[_]]] =
+    scala.collection.mutable.Map()
+
   private def clsOf(t: TypeRepr): Expr[Class[_]] = {
-    Literal(ClassOfConstant(t)).asExpr.asInstanceOf[Expr[Class[_]]]
+    if(clsOfToVar.contains(t)) {
+      Ref(clsOfToVar(t)).asExprOf[Class[_]]
+    }
+    else {
+      val expr = Literal(ClassOfConstant(t)).asExpr.asInstanceOf[Expr[Class[_]]]
+      clsOfCache += t -> expr
+      expr
+    }
   }
 
   private def newGenericSurfaceOf(t: TypeRepr): Expr[Surface] = {
@@ -575,7 +585,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     methodParametersOf(t, t.typeSymbol.primaryConstructor)
   }
 
-  private val methodRefCache = scala.collection.mutable.Map[Symbol, Expr[MethodRef]]()
 
   private def methodParametersOf(t: TypeRepr, method: Symbol): Expr[Seq[MethodParameter]] = {
     val methodName = method.name
@@ -584,11 +593,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       clsOf(arg.tpe.dealias)
     }
     val isConstructor = t.typeSymbol.primaryConstructor == method
-    val constructorRef: Expr[MethodRef] = if(methodRefToVar.contains(method)) {
-      Ref(methodRefToVar(method)).asExprOf[MethodRef]
-    }
-    else {
-      '{
+    val constructorRef: Expr[MethodRef] = '{
         MethodRef(
           owner = ${ clsOf(t) },
           name = ${ Expr(methodName) },
@@ -596,8 +601,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           isConstructor = ${ Expr(isConstructor) }
         )
       }
-    }
-    methodRefCache += method -> constructorRef
 
     // println(s"======= ${t.typeSymbol.memberMethods}")
 
@@ -692,10 +695,30 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
   // To reduce the byte code size, we need to memoize the generated surface bound to a variable
   private val surfaceToVar = scala.collection.mutable.Map[TypeRepr, Symbol]()
-  private val methodRefToVar = scala.collection.mutable.Map[Symbol, Symbol]()
+  private val clsOfToVar = scala.collection.mutable.Map[TypeRepr, Symbol]()
 
   private def methodsOf(t: TypeRepr): Expr[Seq[MethodSurface]] = {
     // Run just for collecting known surfaces. seen variable will be updated
+    methodsOfInternal(t)
+
+    var clsVarCount = 0
+    clsOfCache.foreach { case (cl, expr) =>
+      clsOfToVar += cl -> Symbol.newVal(
+        Symbol.spliceOwner,
+        s"__cl${clsVarCount}",
+        TypeRepr.of[Class[_]],
+        Flags.EmptyFlags,
+        Symbol.noSymbol
+      )
+      clsVarCount += 1
+    }
+
+    // Clear surface cache
+    memo.clear()
+    seen.clear()
+    seenMethodParent.clear()
+
+    // Replace classOf[xxx] to __cl0, __cl1, ...
     methodsOfInternal(t)
 
     var count = 0
@@ -715,26 +738,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         count += 1
       }
 
-    var methodRefCount = 0
-    methodRefCache.foreach { case (sym, expr) =>
-      methodRefToVar += sym -> Symbol.newVal(
-        Symbol.spliceOwner,
-        s"__m${methodRefCount}",
-        TypeRepr.of[MethodRef],
-        Flags.EmptyFlags,
-        Symbol.noSymbol
-      )
-      methodRefCount += 1
-    }
-
+    val clsOfDefs: List[ValDef] = clsOfToVar.map { x =>
+      val sym = x._2
+      ValDef(sym, Some(clsOfCache(x._1).asTerm))
+    }.toList
 
     val surfaceDefs: List[ValDef] = surfaceToVar.map { x =>
       val sym = x._2
       ValDef(sym, Some(memo(x._1).asTerm))
-    }.toList
-    val methodRefDefs: List[ValDef] = methodRefToVar.map { x =>
-      val sym = x._2
-      ValDef(sym, Some(methodRefCache(x._1).asTerm))
     }.toList
 
 
@@ -747,7 +758,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       * ClassMethodSurface( .... ) }}
       */
     val expr = Block(
-      surfaceDefs ++ methodRefDefs,
+      clsOfDefs ++ surfaceDefs,
       methodsOfInternal(t).asTerm
     ).asExprOf[Seq[MethodSurface]]
 
