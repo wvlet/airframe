@@ -81,7 +81,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private val lazySurface = scala.collection.mutable.Set[TypeRepr]()
 
   private def surfaceOf(t: TypeRepr): Expr[Surface] = {
-    if (seen.contains(t)) {
+    if (surfaceToVar.contains(t)) {
+      // println(s"==== ${t} is already cached")
+      Ref(surfaceToVar(t)).asExprOf[Surface]
+    } else if (seen.contains(t)) {
       if (memo.contains(t)) {
         memo(t)
       } else {
@@ -679,15 +682,45 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     methodsOf(TypeRepr.of(using t))
   }
 
-  private val methodMemo = scala.collection.mutable.Map[TypeRepr, Expr[Seq[MethodSurface]]]()
-  private val methodSeen = scala.collection.mutable.Set[TypeRepr]()
+  // To reduce the byte code size, we need to memoize the generated surface bound to a variable
+  private val surfaceToVar = scala.collection.mutable.Map[TypeRepr, Symbol]()
 
-  private def methodsOf(targetType: TypeRepr): Expr[Seq[MethodSurface]] = {
-    if (methodMemo.contains(targetType)) methodMemo(targetType)
-    else if (seen.contains(targetType)) {
-      sys.error(s"recurcive type in method: ${targetType.typeSymbol.fullName}")
+  private def methodsOf(t: TypeRepr): Expr[Seq[MethodSurface]] = {
+    // Run to collect known surfaces
+    methodsOfInternal(t)
+    var count = 0
+    seen.foreach { s =>
+      // Bind the surface to the variable
+      surfaceToVar += s -> Symbol.newVal(
+        Symbol.spliceOwner,
+        s"__s${count}",
+        TypeRepr.of[Surface],
+        Flags.EmptyFlags,
+        Symbol.noSymbol
+      )
+      count += 1
+    }
+
+    val surfaceDefs: List[ValDef] = surfaceToVar.map { x =>
+      val sym = x._2
+      ValDef(sym, Some(memo(x._1).asTerm))
+    }.toList
+
+    val expr = Block(
+      surfaceDefs,
+      methodsOfInternal(t).asTerm
+    ).asExprOf[Seq[MethodSurface]]
+
+    // println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
+    expr
+  }
+
+  private val seenMethod = scala.collection.mutable.Set[TypeRepr]()
+
+  private def methodsOfInternal(targetType: TypeRepr): Expr[Seq[MethodSurface]] = {
+    if (seenMethod.contains(targetType)) {
+      sys.error(s"recurcive method in: ${targetType.typeSymbol.fullName}")
     } else {
-      methodSeen += targetType
       val localMethods = localMethodsOf(targetType).distinct.sortBy(_.name)
       val methodSurfaces = localMethods.map(m => (m, m.tree)).collect { case (m, df: DefDef) =>
         val mod   = Expr(modifierBitMaskOf(m))
@@ -704,8 +737,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         }
       }
       val expr = Expr.ofSeq(methodSurfaces)
-      // println(s"methodOf: ${targetType.typeSymbol.fullName} => \n${expr.show}")
-      methodMemo += targetType -> expr
       expr
     }
   }
