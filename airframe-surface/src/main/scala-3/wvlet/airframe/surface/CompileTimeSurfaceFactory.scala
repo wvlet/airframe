@@ -686,11 +686,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private val surfaceToVar = scala.collection.mutable.Map[TypeRepr, Symbol]()
 
   private def methodsOf(t: TypeRepr): Expr[Seq[MethodSurface]] = {
-    // Run to collect known surfaces
+    // Run just for collecting known surfaces. seen variable will be updated
     methodsOfInternal(t)
+
     var count = 0
+    // Bind the observed surfaces to local variables __s0, __s1, ...
     seen.foreach { s =>
-      // Bind the surface to the variable
+      // Update the cache so that the next call of surfaceOf method will use the local varaible reference
       surfaceToVar += s -> Symbol.newVal(
         Symbol.spliceOwner,
         s"__s${count}",
@@ -700,7 +702,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       )
       count += 1
     }
-
     val surfaceDefs: List[ValDef] = surfaceToVar.map { x =>
       val sym = x._2
       ValDef(sym, Some(memo(x._1).asTerm))
@@ -709,6 +710,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     // Clear method observation cache
     seenMethodParent.clear()
 
+    /**
+      * Generate a code like this: {{ val __s0 = Surface.of[A] val __s1 = Surface.of[B] ...
+      *
+      * ClassMethodSurface( .... ) }}
+      */
     val expr = Block(
       surfaceDefs,
       methodsOfInternal(t).asTerm
