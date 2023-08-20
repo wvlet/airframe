@@ -706,6 +706,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       ValDef(sym, Some(memo(x._1).asTerm))
     }.toList
 
+    // Clear method observation cache
+    seenMethodParent.clear()
+
     val expr = Block(
       surfaceDefs,
       methodsOfInternal(t).asTerm
@@ -715,12 +718,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     expr
   }
 
-  private val seenMethod = scala.collection.mutable.Set[TypeRepr]()
+  private val seenMethodParent = scala.collection.mutable.Set[TypeRepr]()
 
   private def methodsOfInternal(targetType: TypeRepr): Expr[Seq[MethodSurface]] = {
-    if (seenMethod.contains(targetType)) {
+    if (seenMethodParent.contains(targetType)) {
       sys.error(s"recurcive method in: ${targetType.typeSymbol.fullName}")
     } else {
+      seenMethodParent += targetType
       val localMethods = localMethodsOf(targetType).distinct.sortBy(_.name)
       val methodSurfaces = localMethods.map(m => (m, m.tree)).collect { case (m, df: DefDef) =>
         val mod   = Expr(modifierBitMaskOf(m))
