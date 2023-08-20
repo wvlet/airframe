@@ -691,7 +691,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
     var count = 0
     // Bind the observed surfaces to local variables __s0, __s1, ...
-    seen.foreach { s =>
+    seen
+      // Skip primitive types
+      .filterNot(primitiveTypeFactory.isDefinedAt)
+      .foreach { s =>
       // Update the cache so that the next call of surfaceOf method will use the local varaible reference
       surfaceToVar += s -> Symbol.newVal(
         Symbol.spliceOwner,
@@ -720,7 +723,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       methodsOfInternal(t).asTerm
     ).asExprOf[Seq[MethodSurface]]
 
-    // println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
+    //println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
     expr
   }
 
