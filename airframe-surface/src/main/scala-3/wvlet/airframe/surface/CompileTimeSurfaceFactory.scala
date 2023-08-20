@@ -398,7 +398,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
                 index += 1
                 // args(i+1).asInstanceOf[A]
                 // TODO: Cast primitive values to target types
-                Select.unique(extracted, "asInstanceOf").appliedToType(a.tpe)
+                clsCast(extracted, a.tpe)
               }
               Apply(prev, argExtractors.toList)
             }
@@ -634,7 +634,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           tpe = MethodType(List("x"))(_ => List(TypeRepr.of[Any]), _ => TypeRepr.of[Any]),
           rhsFn = (sym, params) => {
             val x    = params.head.asInstanceOf[Term]
-            val expr = Select.unique(Select.unique(x, "asInstanceOf").appliedToType(t), paramName)
+            val expr = Select.unique(clsCast(x, t), paramName)
             expr.changeOwner(sym)
           }
         )
@@ -656,7 +656,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             tpe = MethodType(List("x"))(_ => List(TypeRepr.of[Any]), _ => TypeRepr.of[Any]),
             rhsFn = (sym, params) => {
               val x    = params.head.asInstanceOf[Term]
-              val expr = Select.unique(x, "asInstanceOf").appliedToType(t).select(m)
+              val expr = clsCast(x, t).select(m)
               expr.changeOwner(sym)
             }
           )
@@ -706,7 +706,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       clsOfToVar += cl -> Symbol.newVal(
         Symbol.spliceOwner,
         s"__cl${clsVarCount}",
-        TypeRepr.of[Class[_]],
+        TypeRepr.of[Class].appliedTo(cl),
         Flags.EmptyFlags,
         Symbol.noSymbol
       )
@@ -800,6 +800,18 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     }
   }
 
+
+  private def clsCast(term: Term, t: TypeRepr): Term = {
+    if(clsOfToVar.contains(t)) {
+      // TODO Use Class.cast
+      Select.unique(Ref(clsOfToVar(t)), "cast").appliedToArgs(List(term))
+      //Select.unique(term, "asInstanceOf").appliedToType(t)
+    }
+    else {
+      Select.unique(term, "asInstanceOf").appliedToType(t)
+    }
+  }
+
   private def createMethodCaller(
       objectType: TypeRepr,
       m: Symbol,
@@ -821,13 +833,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       rhsFn = (sym, params) => {
         val x    = params(0).asInstanceOf[Term]
         val args = params(1).asInstanceOf[Term]
-        val expr = Select.unique(x, "asInstanceOf").appliedToType(objectType).select(m)
+        val expr = clsCast(x, objectType).select(m)
         val argList = methodArgs.zipWithIndex.collect {
           // If the arg is implicit, no need to explicitly bind it
           case (arg, i) if !arg.isImplicit =>
-            // args(i).asInstanceOf[ArgType]
             val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(i)))
-            Select.unique(extracted, "asInstanceOf").appliedToType(arg.tpe)
+            clsCast(extracted, arg.tpe)
         }
         if (argList.isEmpty) {
           val newExpr = m.tree match {
