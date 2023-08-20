@@ -803,9 +803,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
   private def clsCast(term: Term, t: TypeRepr): Term = {
     if(clsOfToVar.contains(t)) {
-      // TODO Use Class.cast
+      // __cl0.cast(term)
       Select.unique(Ref(clsOfToVar(t)), "cast").appliedToArgs(List(term))
-      //Select.unique(term, "asInstanceOf").appliedToType(t)
     }
     else {
       Select.unique(term, "asInstanceOf").appliedToType(t)
