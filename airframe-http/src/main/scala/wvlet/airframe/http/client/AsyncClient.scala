@@ -82,7 +82,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
           }
           .recover {
             // Or if request has been failing, apply the response filter only to the last response
-            val response = lastResponse.map(config.responseFilter(_))zz
+            val response = lastResponse.map(config.responseFilter(_))
             HttpClients.defaultHttpClientErrorHandler(response)
           }
       }
