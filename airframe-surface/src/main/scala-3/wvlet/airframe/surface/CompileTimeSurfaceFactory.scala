@@ -723,7 +723,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       methodsOfInternal(t).asTerm
     ).asExprOf[Seq[MethodSurface]]
 
-    //println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
+    println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
     expr
   }
 
