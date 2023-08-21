@@ -1,5 +1,6 @@
 package wvlet.airframe.surface
 import java.util.concurrent.atomic.AtomicInteger
+import scala.collection.immutable.ListMap
 import scala.quoted.*
 
 private[surface] object CompileTimeSurfaceFactory {
@@ -78,7 +79,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   private var observedSurfaceCount = new AtomicInteger(0)
-  private val seen                 = scala.collection.mutable.Map[TypeRepr, Int]()
+  private var seen                 = ListMap[TypeRepr, Int]()
   private val memo                 = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
   private val lazySurface          = scala.collection.mutable.Set[TypeRepr]()
 
@@ -289,8 +290,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       '{ ExistentialType }
   }
 
-  private val clsOfCache: scala.collection.mutable.Map[TypeRepr, Expr[Class[_]]] =
-    scala.collection.mutable.Map()
+  private var clsOfCache = ListMap.empty[TypeRepr, Expr[Class[_]]]
 
   private def clsOf(t: TypeRepr): Expr[Class[_]] = {
     if (clsOfToVar.contains(t)) {
@@ -711,8 +711,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   // To reduce the byte code size, we need to memoize the generated surface bound to a variable
-  private val surfaceToVar = scala.collection.mutable.ListMap[TypeRepr, Symbol]()
-  private val clsOfToVar   = scala.collection.mutable.Map[TypeRepr, Symbol]()
+  private var surfaceToVar = ListMap.empty[TypeRepr, Symbol]
+  private var clsOfToVar   = ListMap.empty[TypeRepr, Symbol]
 
   private def methodsOf(t: TypeRepr): Expr[Seq[MethodSurface]] = {
     // Run just for collecting known surfaces. seen variable will be updated
@@ -730,9 +730,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         // Update the cache so that the next call of surfaceOf method will use the local varaible reference
         surfaceToVar += tpe -> Symbol.newVal(
           Symbol.spliceOwner,
-          s"__s${surfaceVarCount}",
+          f"__s${surfaceVarCount}%03d",
           TypeRepr.of[Surface],
-          Flags.EmptyFlags,
+          // Use lazy val to avoid forward reference error
+          Flags.Lazy,
           Symbol.noSymbol
         )
         surfaceVarCount += 1
@@ -753,27 +754,21 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
     // Clear surface cache
     memo.clear()
-    seen.clear()
+    seen = ListMap.empty
     seenMethodParent.clear()
-    // Replace classOf[xxx] to __cl0, __cl1, ...
-    methodsOfInternal(t)
 
     val clsOfDefs: List[ValDef] = clsOfToVar.map { x =>
       val sym = x._2
       ValDef(sym, Some(clsOfCache(x._1).asTerm))
     }.toList
 
-    val surfaceDefs: List[ValDef] = surfaceToVar.toSeq
-      .map { case (tpe, sym) =>
-        ValDef(sym, Some(surfaceOf(tpe, useVarRef = false).asTerm))
-      }.sortBy(_.symbol.toString).toList
+    val surfaceDefs: List[ValDef] = surfaceToVar.toSeq.map { case (tpe, sym) =>
+      ValDef(sym, Some(surfaceOf(tpe, useVarRef = false).asTerm))
+    }.toList
 
-    println(
-      s"==== methodsOf ${t.typeSymbol}:\n${clsOfDefs.map(_.show).mkString("\n")}\n${surfaceDefs.map(_.show).mkString("\n")}"
-    )
-
-    // Clear method observation cache
-    seenMethodParent.clear()
+//    println(
+//      s"==== methodsOf ${t.typeSymbol}:\n${clsOfDefs.map(_.show).mkString("\n")}\n${surfaceDefs.map(_.show).mkString("\n")}"
+//    )
 
     /**
       * Generate a code like this: {{ val __s0 = Surface.of[A] val __s1 = Surface.of[B] ...
