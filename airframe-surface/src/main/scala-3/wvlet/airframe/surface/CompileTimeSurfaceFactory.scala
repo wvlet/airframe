@@ -1,5 +1,6 @@
 package wvlet.airframe.surface
-import scala.quoted._
+import java.util.concurrent.atomic.AtomicInteger
+import scala.quoted.*
 
 private[surface] object CompileTimeSurfaceFactory {
 
@@ -76,13 +77,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     surfaceOf(TypeRepr.of(using tpe))
   }
 
-  private val seen        = scala.collection.mutable.Set[TypeRepr]()
-  private val memo        = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
-  private val lazySurface = scala.collection.mutable.Set[TypeRepr]()
+  private var observedSurfaceCount = new AtomicInteger(0)
+  private val seen                 = scala.collection.mutable.Map[TypeRepr, Int]()
+  private val memo                 = scala.collection.mutable.Map[TypeRepr, Expr[Surface]]()
+  private val lazySurface          = scala.collection.mutable.Set[TypeRepr]()
 
-  private def surfaceOf(t: TypeRepr): Expr[Surface] = {
-    if (surfaceToVar.contains(t)) {
-      // println(s"==== ${t} is already cached")
+  private def surfaceOf(t: TypeRepr, useVarRef: Boolean = true): Expr[Surface] = {
+    if (useVarRef && surfaceToVar.contains(t)) {
       Ref(surfaceToVar(t)).asExprOf[Surface]
     } else if (seen.contains(t)) {
       if (memo.contains(t)) {
@@ -92,7 +93,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         '{ LazySurface(${ clsOf(t) }, ${ Expr(fullTypeNameOf(t)) }) }
       }
     } else {
-      seen += t
+      seen += t -> observedSurfaceCount.getAndIncrement()
       // For debugging
       // println(s"[${typeNameOf(t)}]\n  ${t}\nfull type name: ${fullTypeNameOf(t)}\nclass: ${t.getClass}")
       val generator = factory.andThen { expr =>
@@ -395,8 +396,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
                 // args(i+1)
                 val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(index)))
                 index += 1
-                // args(i+1).asInstanceOf[A]
-                // TODO: Cast primitive values to target types
+                // classOf[A].cast(args(i+1))
                 clsCast(extracted, a.tpe)
               }
               Apply(prev, argExtractors.toList)
@@ -406,9 +406,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           }
         )
         val expr = '{
-          new wvlet.airframe.surface.ObjectFactory {
-            override def newInstance(args: Seq[Any]): Any = { ${ newClassFn.asExprOf[Seq[Any] => Any] }(args) }
-          }
+          ObjectFactory.newFactory(${ newClassFn.asExprOf[Seq[Any] => Any] })
         }
         expr
       }
@@ -645,7 +643,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         val typedAccessor = objRef.select(accessorMethod).appliedToTypes(List(t1, t2))
         val methodCall    = typedAccessor.appliedToArgs(List(Literal(ClassOfConstant(t1))))
 
-        val lambda2 = Lambda(
+        val lambda = Lambda(
           owner = Symbol.spliceOwner,
           tpe = MethodType(List("x"))(_ => List(t1), _ => t2),
           rhsFn = (sym, params) => {
@@ -654,7 +652,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             expr.changeOwner(sym)
           }
         )
-        val accMethod = methodCall.appliedToArgs(List(lambda2))
+        val accMethod = methodCall.appliedToArgs(List(lambda))
         // println(s"=== ${accMethod.show}")
 
         // Generate code like :
@@ -713,12 +711,32 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   // To reduce the byte code size, we need to memoize the generated surface bound to a variable
-  private val surfaceToVar = scala.collection.mutable.Map[TypeRepr, Symbol]()
+  private val surfaceToVar = scala.collection.mutable.ListMap[TypeRepr, Symbol]()
   private val clsOfToVar   = scala.collection.mutable.Map[TypeRepr, Symbol]()
 
   private def methodsOf(t: TypeRepr): Expr[Seq[MethodSurface]] = {
     // Run just for collecting known surfaces. seen variable will be updated
     methodsOfInternal(t)
+
+    // Create a var def table for replacing surfaceOf[xxx] to __s0, __s1, ...
+    var surfaceVarCount = 0
+    seen
+      // Exclude primitive type surface
+      .toSeq
+      .filterNot(x => primitiveTypeFactory.isDefinedAt(x._1))
+      .sortBy(_._2)
+      .reverse
+      .map { case (tpe, order) =>
+        // Update the cache so that the next call of surfaceOf method will use the local varaible reference
+        surfaceToVar += tpe -> Symbol.newVal(
+          Symbol.spliceOwner,
+          s"__s${surfaceVarCount}",
+          TypeRepr.of[Surface],
+          Flags.EmptyFlags,
+          Symbol.noSymbol
+        )
+        surfaceVarCount += 1
+      }
 
     // Create a var def table for replacing classOf[xxx] to __cl0, __cl1, ...
     var clsVarCount = 0
@@ -737,36 +755,22 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     memo.clear()
     seen.clear()
     seenMethodParent.clear()
-
     // Replace classOf[xxx] to __cl0, __cl1, ...
     methodsOfInternal(t)
-
-    var count = 0
-    // Bind the observed surfaces to local variables __s0, __s1, ...
-    seen
-      // Skip primitive types
-      .filterNot(primitiveTypeFactory.isDefinedAt)
-      .foreach { s =>
-        // Update the cache so that the next call of surfaceOf method will use the local varaible reference
-        surfaceToVar += s -> Symbol.newVal(
-          Symbol.spliceOwner,
-          s"__s${count}",
-          TypeRepr.of[Surface],
-          Flags.EmptyFlags,
-          Symbol.noSymbol
-        )
-        count += 1
-      }
 
     val clsOfDefs: List[ValDef] = clsOfToVar.map { x =>
       val sym = x._2
       ValDef(sym, Some(clsOfCache(x._1).asTerm))
     }.toList
 
-    val surfaceDefs: List[ValDef] = surfaceToVar.map { x =>
-      val sym = x._2
-      ValDef(sym, Some(memo(x._1).asTerm))
-    }.toList
+    val surfaceDefs: List[ValDef] = surfaceToVar.toSeq
+      .map { case (tpe, sym) =>
+        ValDef(sym, Some(surfaceOf(tpe, useVarRef = false).asTerm))
+      }.sortBy(_.symbol.toString).toList
+
+    println(
+      s"==== methodsOf ${t.typeSymbol}:\n${clsOfDefs.map(_.show).mkString("\n")}\n${surfaceDefs.map(_.show).mkString("\n")}"
+    )
 
     // Clear method observation cache
     seenMethodParent.clear()
