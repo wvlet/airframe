@@ -548,8 +548,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
                 case other =>
                   other
               }
-              println(s"------- ${a} ---------- ${resolvedTypeArgs}")
-              a.appliedTo(resolvedTypeArgs)
+              // Need to use the base type of the applied type to replace the type parameters
+              a.tycon.appliedTo(resolvedTypeArgs)
             case TypeRef(_, name) if typeArgTable.contains(name) =>
               typeArgTable(name)
             case other =>
@@ -628,34 +628,17 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       // println(s"${paramName} ${paramIsAccessible}")
 
       val accessor: Expr[Option[Any => Any]] = if (method.isClassConstructor && paramIsAccessible) {
-//        val lambda = Lambda(
-//          owner = Symbol.spliceOwner,
-//          tpe = MethodType(List("x"))(_ => List(TypeRepr.of[Any]), _ => TypeRepr.of[Any]),
-//          rhsFn = (sym, params) => {
-//            val x    = params.head.asInstanceOf[Term]
-//            val expr = Select.unique(clsCast(x, t), paramName)
-//            expr.changeOwner(sym)
-//          }
-//        )
-        // println(t.typeSymbol)
-        // println(paramType.typeSymbol.flags.show)
-        // println(lambda.show)
-        // println(lambda.show(using Printer.TreeStructure))
-
         // MethodParameter.accessor[(owner type), (parameter type]]
         val accessorMethod: Symbol = TypeRepr.of[MethodParameter.type].typeSymbol.methodMember("accessor").head
         val objRef                 = Ref(TypeRepr.of[MethodParameter].typeSymbol.companionModule)
 
         def resolveType(tpe: TypeRepr): TypeRepr = tpe match {
           case b: TypeBounds =>
-            // Need to resolve generic type to Any type
             TypeRepr.of[Any]
-//          case _ if fullTypeNameOf(tpe).contains("TypedCons") =>
-//            println(s"==== ${tpe.show} ${tpe}")
-//            tpe
           case _ =>
             tpe
         }
+
         val t1 = resolveType(t)
         val t2 = resolveType(paramType)
 
@@ -673,9 +656,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         )
         val accMethod = methodCall.appliedToArgs(List(lambda2))
         // println(s"=== ${accMethod.show}")
+
+        // Generate code like :
+        // {{{
+        //   MethodParameter.accessor[t1, t2](classOf[t1]){(x:t1) => x.(field name) }
+        // }}}
         '{ Some(${ accMethod.asExprOf[Any => Any] }) }
-        // Generate parameter accessor: { (x:Any) => x.asInstanceOf[A].(field name) }
-        // '{ Some(${ lambda.asExprOf[Any => Any] }) }
       } else {
         '{ None }
       }
