@@ -723,8 +723,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       .toSeq
       // Exclude primitive surfaces as it is already defined in Primitive object
       .filterNot(x => primitiveTypeFactory.isDefinedAt(x._1))
-      // Do not generate lazy surface inside lazy val for avoiding infinite loop
-      // .filterNot(x => lazySurface.contains(x._1))
       .sortBy(_._2)
       .reverse
       .map { case (tpe, order) =>
@@ -734,9 +732,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           // Use alphabetically ordered variable names
           f"__s${surfaceVarCount}%03X",
           TypeRepr.of[Surface],
-          // Use lazy val to avoid forward reference error
-          // If the surface itself is lazy, we need to eagerly initialize it to update the surface cache
-          if (lazySurface.contains(tpe)) Flags.EmptyFlags else Flags.Lazy,
+          if (lazySurface.contains(tpe)) {
+            // If the surface itself is lazy, we need to eagerly initialize it to update the surface cache
+            Flags.EmptyFlags
+          } else {
+            // Use lazy val to avoid forward reference error
+            Flags.Lazy
+          },
           Symbol.noSymbol
         )
         surfaceVarCount += 1
@@ -752,7 +754,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     }.toList
 
     /**
-      * Generate a code like this: {{ val __s0 = Surface.of[A] val __s1 = Surface.of[B] ...
+      * Generate a code like this:
+      *
+      * {{ lazy val __s000 = Surface.of[A]; lazy val __s001 = Surface.of[B] ...
       *
       * ClassMethodSurface( .... ) }}
       */
