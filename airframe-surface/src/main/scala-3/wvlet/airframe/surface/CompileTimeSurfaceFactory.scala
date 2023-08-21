@@ -295,16 +295,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       '{ ExistentialType }
   }
 
-  private var clsOfCache = ListMap.empty[TypeRepr, Expr[Class[_]]]
-
   private def clsOf(t: TypeRepr): Expr[Class[_]] = {
-//    if (clsOfToVar.contains(t)) {
-//      Ref(clsOfToVar(t)).asExprOf[Class[_]]
-//    } else {
-    val expr = Literal(ClassOfConstant(t)).asExpr.asInstanceOf[Expr[Class[_]]]
-    clsOfCache += t -> expr
-    expr
-    // }
+    Literal(ClassOfConstant(t)).asExpr.asInstanceOf[Expr[Class[_]]]
   }
 
   private def newGenericSurfaceOf(t: TypeRepr): Expr[Surface] = {
