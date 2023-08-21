@@ -449,7 +449,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         ),
         rhsFn = (sym: Symbol, paramRefs: List[Tree]) => {
           val strVarRef = paramRefs(1).asExprOf[String].asTerm
-          Select.unique(Apply(m, List(strVarRef)), "asInstanceOf").appliedToType(TypeRepr.of[Option[Any]])
+          val expr = Select.unique(Apply(m, List(strVarRef)), "asInstanceOf").appliedToType(TypeRepr.of[Option[Any]])
+          expr.changeOwner(sym)
+
         }
       )
       '{
@@ -723,6 +725,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     seen
       // Exclude primitive type surface
       .toSeq
+      // Exclude primitive surfaces as it is already defined in Primitive object
       .filterNot(x => primitiveTypeFactory.isDefinedAt(x._1))
       .sortBy(_._2)
       .reverse
@@ -730,7 +733,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         // Update the cache so that the next call of surfaceOf method will use the local varaible reference
         surfaceToVar += tpe -> Symbol.newVal(
           Symbol.spliceOwner,
-          f"__s${surfaceVarCount}%03d",
+          // Use alphabetically ordered variable names
+          f"__s${surfaceVarCount}%03X",
           TypeRepr.of[Surface],
           // Use lazy val to avoid forward reference error
           Flags.Lazy,
@@ -739,18 +743,32 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         surfaceVarCount += 1
       }
 
+//    def erase(tpe: TypeRepr): TypeRepr = {
+//      tpe match {
+//        case tb: TypeBounds =>
+//          TypeBounds.empty
+//        case a: AppliedType =>
+//          a.tycon.appliedTo(a.typeArgs.map(erase(_)))
+//        case _ =>
+//          tpe
+//      }
+//    }
+
     // Create a var def table for replacing classOf[xxx] to __cl0, __cl1, ...
     var clsVarCount = 0
-    clsOfCache.toSeq.distinctBy(x => fullTypeNameOf(x._1)).foreach { case (cl, expr) =>
-      clsOfToVar += cl -> Symbol.newVal(
-        Symbol.spliceOwner,
-        s"__cl${clsVarCount}",
-        TypeRepr.of[Class].appliedTo(cl),
-        Flags.EmptyFlags,
-        Symbol.noSymbol
-      )
-      clsVarCount += 1
-    }
+    clsOfCache.toSeq
+      .distinctBy(x => fullTypeNameOf(x._1)).foreach { case (cl, expr) =>
+        // val erasedClsType = erase(cl)
+        // println(s"=== ${fullTypeNameOf(cl)} -> ${fullTypeNameOf(erasedClsType)}")
+//        clsOfToVar += cl -> Symbol.newVal(
+//          Symbol.spliceOwner,
+//          s"__cl${clsVarCount}",
+//          TypeRepr.of[Class].appliedTo(cl.dealias),
+//          Flags.EmptyFlags,
+//          Symbol.noSymbol
+//        )
+        clsVarCount += 1
+      }
 
     // Clear surface cache
     memo.clear()
