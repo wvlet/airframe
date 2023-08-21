@@ -548,6 +548,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
                 case other =>
                   other
               }
+              println(s"------- ${a} ---------- ${resolvedTypeArgs}")
               a.appliedTo(resolvedTypeArgs)
             case TypeRef(_, name) if typeArgTable.contains(name) =>
               typeArgTable(name)
@@ -644,12 +645,26 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         // MethodParameter.accessor[(owner type), (parameter type]]
         val accessorMethod: Symbol = TypeRepr.of[MethodParameter.type].typeSymbol.methodMember("accessor").head
         val objRef                 = Ref(TypeRepr.of[MethodParameter].typeSymbol.companionModule)
-        val typedAccessor          = objRef.select(accessorMethod).appliedToTypes(List(t, paramType))
-        val methodCall             = typedAccessor.appliedToArgs(List(Literal(ClassOfConstant(t))))
+
+        def resolveType(tpe: TypeRepr): TypeRepr = tpe match {
+          case b: TypeBounds =>
+            // Need to resolve generic type to Any type
+            TypeRepr.of[Any]
+//          case _ if fullTypeNameOf(tpe).contains("TypedCons") =>
+//            println(s"==== ${tpe.show} ${tpe}")
+//            tpe
+          case _ =>
+            tpe
+        }
+        val t1 = resolveType(t)
+        val t2 = resolveType(paramType)
+
+        val typedAccessor = objRef.select(accessorMethod).appliedToTypes(List(t1, t2))
+        val methodCall    = typedAccessor.appliedToArgs(List(Literal(ClassOfConstant(t1))))
 
         val lambda2 = Lambda(
           owner = Symbol.spliceOwner,
-          tpe = MethodType(List("x"))(_ => List(t), _ => paramType),
+          tpe = MethodType(List("x"))(_ => List(t1), _ => t2),
           rhsFn = (sym, params) => {
             val x    = params.head.asInstanceOf[Term]
             val expr = Select.unique(x, paramName)
@@ -657,7 +672,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           }
         )
         val accMethod = methodCall.appliedToArgs(List(lambda2))
-        println(s"=== ${accMethod.show}")
+        // println(s"=== ${accMethod.show}")
         '{ Some(${ accMethod.asExprOf[Any => Any] }) }
         // Generate parameter accessor: { (x:Any) => x.asInstanceOf[A].(field name) }
         // '{ Some(${ lambda.asExprOf[Any => Any] }) }
@@ -719,6 +734,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     // Run just for collecting known surfaces. seen variable will be updated
     methodsOfInternal(t)
 
+    // Create a var def table for replacing classOf[xxx] to __cl0, __cl1, ...
     var clsVarCount = 0
     clsOfCache.foreach { case (cl, expr) =>
       clsOfToVar += cl -> Symbol.newVal(
