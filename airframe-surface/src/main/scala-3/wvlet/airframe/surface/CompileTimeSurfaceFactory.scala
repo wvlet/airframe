@@ -741,7 +741,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
     // Create a var def table for replacing classOf[xxx] to __cl0, __cl1, ...
     var clsVarCount = 0
-    clsOfCache.foreach { case (cl, expr) =>
+    clsOfCache.toSeq.distinctBy(x => fullTypeNameOf(x._1)).foreach { case (cl, expr) =>
       clsOfToVar += cl -> Symbol.newVal(
         Symbol.spliceOwner,
         s"__cl${clsVarCount}",
@@ -780,7 +780,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       methodsOfInternal(t).asTerm
     ).asExprOf[Seq[MethodSurface]]
 
-    // println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
+    println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
     expr
   }
 
