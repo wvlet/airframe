@@ -293,13 +293,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private var clsOfCache = ListMap.empty[TypeRepr, Expr[Class[_]]]
 
   private def clsOf(t: TypeRepr): Expr[Class[_]] = {
-    if (clsOfToVar.contains(t)) {
-      Ref(clsOfToVar(t)).asExprOf[Class[_]]
-    } else {
-      val expr = Literal(ClassOfConstant(t)).asExpr.asInstanceOf[Expr[Class[_]]]
-      clsOfCache += t -> expr
-      expr
-    }
+//    if (clsOfToVar.contains(t)) {
+//      Ref(clsOfToVar(t)).asExprOf[Class[_]]
+//    } else {
+    val expr = Literal(ClassOfConstant(t)).asExpr.asInstanceOf[Expr[Class[_]]]
+    clsOfCache += t -> expr
+    expr
+    // }
   }
 
   private def newGenericSurfaceOf(t: TypeRepr): Expr[Surface] = {
@@ -714,7 +714,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
   // To reduce the byte code size, we need to memoize the generated surface bound to a variable
   private var surfaceToVar = ListMap.empty[TypeRepr, Symbol]
-  private var clsOfToVar   = ListMap.empty[TypeRepr, Symbol]
+  // private var clsOfToVar   = ListMap.empty[TypeRepr, Symbol]
 
   private def methodsOf(t: TypeRepr): Expr[Seq[MethodSurface]] = {
     // Run just for collecting known surfaces. seen variable will be updated
@@ -755,31 +755,31 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 //    }
 
     // Create a var def table for replacing classOf[xxx] to __cl0, __cl1, ...
-    var clsVarCount = 0
-    clsOfCache.toSeq
-      .distinctBy(x => fullTypeNameOf(x._1)).foreach { case (cl, expr) =>
-        // val erasedClsType = erase(cl)
-        // println(s"=== ${fullTypeNameOf(cl)} -> ${fullTypeNameOf(erasedClsType)}")
-//        clsOfToVar += cl -> Symbol.newVal(
-//          Symbol.spliceOwner,
-//          s"__cl${clsVarCount}",
-//          TypeRepr.of[Class].appliedTo(cl.dealias),
-//          Flags.EmptyFlags,
-//          Symbol.noSymbol
-//        )
-        clsVarCount += 1
-      }
+//    var clsVarCount = 0
+//    clsOfCache.toSeq
+//      .distinctBy(x => fullTypeNameOf(x._1)).foreach { case (cl, expr) =>
+//        // val erasedClsType = erase(cl)
+//        // println(s"=== ${fullTypeNameOf(cl)} -> ${fullTypeNameOf(erasedClsType)}")
+////        clsOfToVar += cl -> Symbol.newVal(
+////          Symbol.spliceOwner,
+////          s"__cl${clsVarCount}",
+////          TypeRepr.of[Class].appliedTo(cl.dealias),
+////          Flags.EmptyFlags,
+////          Symbol.noSymbol
+////        )
+//        clsVarCount += 1
+//      }
 
     // Clear surface cache
     memo.clear()
     seen = ListMap.empty
     seenMethodParent.clear()
 
-    val clsOfDefs: List[ValDef] = clsOfToVar.map { x =>
-      val sym = x._2
-      ValDef(sym, Some(clsOfCache(x._1).asTerm))
-    }.toList
-
+//    val clsOfDefs: List[ValDef] = clsOfToVar.map { x =>
+//      val sym = x._2
+//      ValDef(sym, Some(clsOfCache(x._1).asTerm))
+//    }.toList
+//
     val surfaceDefs: List[ValDef] = surfaceToVar.toSeq.map { case (tpe, sym) =>
       ValDef(sym, Some(surfaceOf(tpe, useVarRef = false).asTerm))
     }.toList
@@ -794,7 +794,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       * ClassMethodSurface( .... ) }}
       */
     val expr = Block(
-      clsOfDefs ++ surfaceDefs,
+      surfaceDefs,
       methodsOfInternal(t).asTerm
     ).asExprOf[Seq[MethodSurface]]
 
@@ -837,12 +837,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   private def clsCast(term: Term, t: TypeRepr): Term = {
-    if (clsOfToVar.contains(t)) {
-      // __cl0.cast(term)
-      Select.unique(Ref(clsOfToVar(t)), "cast").appliedToArgs(List(term))
-    } else {
-      Select.unique(term, "asInstanceOf").appliedToType(t)
-    }
+//    if (clsOfToVar.contains(t)) {
+//      // __cl0.cast(term)
+//      Select.unique(Ref(clsOfToVar(t)), "cast").appliedToArgs(List(term))
+//    } else {
+    Select.unique(term, "asInstanceOf").appliedToType(t)
   }
 
   private def createMethodCaller(
