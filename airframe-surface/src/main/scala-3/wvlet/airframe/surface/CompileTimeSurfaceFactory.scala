@@ -719,7 +719,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
   // To reduce the byte code size, we need to memoize the generated surface bound to a variable
   private var surfaceToVar = ListMap.empty[TypeRepr, Symbol]
-  // private var clsOfToVar   = ListMap.empty[TypeRepr, Symbol]
 
   private def methodsOf(t: TypeRepr): Expr[Seq[MethodSurface]] = {
     // Run just for collecting known surfaces. seen variable will be updated
@@ -751,39 +750,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         surfaceVarCount += 1
       }
 
-    // Create a var def table for replacing classOf[xxx] to __cl0, __cl1, ...
-//    var clsVarCount = 0
-//    clsOfCache.toSeq
-//      .distinctBy(x => fullTypeNameOf(x._1)).foreach { case (cl, expr) =>
-//        // val erasedClsType = erase(cl)
-//        // println(s"=== ${fullTypeNameOf(cl)} -> ${fullTypeNameOf(erasedClsType)}")
-////        clsOfToVar += cl -> Symbol.newVal(
-////          Symbol.spliceOwner,
-////          s"__cl${clsVarCount}",
-////          TypeRepr.of[Class].appliedTo(cl.dealias),
-////          Flags.EmptyFlags,
-////          Symbol.noSymbol
-////        )
-//        clsVarCount += 1
-//      }
-
     // Clear surface cache
     memo.clear()
     seen = ListMap.empty
     seenMethodParent.clear()
 
-//    val clsOfDefs: List[ValDef] = clsOfToVar.map { x =>
-//      val sym = x._2
-//      ValDef(sym, Some(clsOfCache(x._1).asTerm))
-//    }.toList
-//
     val surfaceDefs: List[ValDef] = surfaceToVar.toSeq.map { case (tpe, sym) =>
       ValDef(sym, Some(surfaceOf(tpe, useVarRef = false).asTerm))
     }.toList
-
-//    println(
-//      s"==== methodsOf ${t.typeSymbol}:\n${clsOfDefs.map(_.show).mkString("\n")}\n${surfaceDefs.map(_.show).mkString("\n")}"
-//    )
 
     /**
       * Generate a code like this: {{ val __s0 = Surface.of[A] val __s1 = Surface.of[B] ...
@@ -795,9 +769,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       methodsOfInternal(t).asTerm
     ).asExprOf[Seq[MethodSurface]]
 
-    if (t.typeSymbol.fullName.contains("RecursiveTypeApi")) {
-      println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
-    }
+    // println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
     expr
   }
 
@@ -836,10 +808,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   private def clsCast(term: Term, t: TypeRepr): Term = {
-//    if (clsOfToVar.contains(t)) {
-//      // __cl0.cast(term)
-//      Select.unique(Ref(clsOfToVar(t)), "cast").appliedToArgs(List(term))
-//    } else {
     Select.unique(term, "asInstanceOf").appliedToType(t)
   }
 
