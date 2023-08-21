@@ -84,14 +84,22 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private val lazySurface          = scala.collection.mutable.Set[TypeRepr]()
 
   private def surfaceOf(t: TypeRepr, useVarRef: Boolean = true): Expr[Surface] = {
+    def buildLazySurface: Expr[Surface] = {
+      '{ LazySurface(${ clsOf(t) }, ${ Expr(fullTypeNameOf(t)) }) }
+    }
+
     if (useVarRef && surfaceToVar.contains(t)) {
-      Ref(surfaceToVar(t)).asExprOf[Surface]
+      if (lazySurface.contains(t)) {
+        buildLazySurface
+      } else {
+        Ref(surfaceToVar(t)).asExprOf[Surface]
+      }
     } else if (seen.contains(t)) {
       if (memo.contains(t)) {
         memo(t)
       } else {
         lazySurface += t
-        '{ LazySurface(${ clsOf(t) }, ${ Expr(fullTypeNameOf(t)) }) }
+        buildLazySurface
       }
     } else {
       seen += t -> observedSurfaceCount.getAndIncrement()
@@ -99,6 +107,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       // println(s"[${typeNameOf(t)}]\n  ${t}\nfull type name: ${fullTypeNameOf(t)}\nclass: ${t.getClass}")
       val generator = factory.andThen { expr =>
         if (!lazySurface.contains(t)) {
+          // Generate the surface code without using the cache
           expr
         } else {
           // Need to cache the recursive Surface to be referenced in a LazySurface
@@ -117,16 +126,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           } else {
             fullTypeNameOf(t)
           }
+          val key = Literal(StringConstant(cacheKey)).asExprOf[String]
           '{
-            val key = ${
-              Expr(cacheKey)
+            if (!wvlet.airframe.surface.surfaceCache.contains(${ key })) {
+              wvlet.airframe.surface.surfaceCache += ${ key } -> ${ expr }
             }
-            if (!wvlet.airframe.surface.surfaceCache.contains(key)) {
-              wvlet.airframe.surface.surfaceCache += key -> ${
-                expr
-              }
-            }
-            wvlet.airframe.surface.surfaceCache(key)
+            wvlet.airframe.surface.surfaceCache.apply(${ key })
           }
         }
       }
@@ -727,6 +732,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       .toSeq
       // Exclude primitive surfaces as it is already defined in Primitive object
       .filterNot(x => primitiveTypeFactory.isDefinedAt(x._1))
+      // Do not generate lazy surface inside lazy val for avoiding infinite loop
+      // .filterNot(x => lazySurface.contains(x._1))
       .sortBy(_._2)
       .reverse
       .map { case (tpe, order) =>
@@ -737,7 +744,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           f"__s${surfaceVarCount}%03X",
           TypeRepr.of[Surface],
           // Use lazy val to avoid forward reference error
-          Flags.Lazy,
+          // If the surface itself is lazy, we need to eagerly initialize it to update the surface cache
+          if (lazySurface.contains(tpe)) Flags.EmptyFlags else Flags.Lazy,
           Symbol.noSymbol
         )
         surfaceVarCount += 1
@@ -787,7 +795,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       methodsOfInternal(t).asTerm
     ).asExprOf[Seq[MethodSurface]]
 
-    // println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
+    if (t.typeSymbol.fullName.contains("RecursiveTypeApi")) {
+      println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
+    }
     expr
   }
 
