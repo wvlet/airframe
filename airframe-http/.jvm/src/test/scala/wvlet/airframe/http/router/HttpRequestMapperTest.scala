@@ -41,7 +41,7 @@ object HttpRequestMapperTest extends AirSpec {
     def rpc5(p1: Option[String]): Unit            = {}
     def rpc6(p1: Option[NestedRequest]): Unit     = {}
     def rpc7(
-        request: HttpMessage.Request,
+        request: Request,
         context: HttpContext[Request, Response, Future],
         req: HttpRequest[Request]
     ): Unit = {}
@@ -64,8 +64,10 @@ object HttpRequestMapperTest extends AirSpec {
     def endpoint4(p1: Option[Seq[String]]): Unit = {}
   }
 
-  private val api    = new MyApi {}
-  private val router = Router.add[MyApi].add[MyApi2]
+  private val api = new MyApi {}
+  private val router = Router
+    .add[MyApi]
+    .add[MyApi2]
 
   private val mockContext = HttpContext.mockContext
   private def mapArgs(

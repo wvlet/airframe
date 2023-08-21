@@ -109,6 +109,8 @@ val buildSettings = Seq[Setting[_]](
   scalacOptions ++= Seq(
     "-feature",
     "-deprecation"
+    // Use this for debugging Macros
+    // "-Xcheck-macros"
   ) ++ {
     if (scalaVersion.value.startsWith("3.")) {
       Seq.empty
