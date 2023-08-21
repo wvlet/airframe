@@ -743,17 +743,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
         surfaceVarCount += 1
       }
 
-//    def erase(tpe: TypeRepr): TypeRepr = {
-//      tpe match {
-//        case tb: TypeBounds =>
-//          TypeBounds.empty
-//        case a: AppliedType =>
-//          a.tycon.appliedTo(a.typeArgs.map(erase(_)))
-//        case _ =>
-//          tpe
-//      }
-//    }
-
     // Create a var def table for replacing classOf[xxx] to __cl0, __cl1, ...
 //    var clsVarCount = 0
 //    clsOfCache.toSeq
@@ -798,7 +787,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       methodsOfInternal(t).asTerm
     ).asExprOf[Seq[MethodSurface]]
 
-    println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
+    // println(s"===  methodOf: ${t.typeSymbol.fullName} => \n${expr.show}")
     expr
   }
 
