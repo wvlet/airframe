@@ -292,10 +292,9 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     scala.collection.mutable.Map()
 
   private def clsOf(t: TypeRepr): Expr[Class[_]] = {
-    if(clsOfToVar.contains(t)) {
+    if (clsOfToVar.contains(t)) {
       Ref(clsOfToVar(t)).asExprOf[Class[_]]
-    }
-    else {
+    } else {
       val expr = Literal(ClassOfConstant(t)).asExpr.asInstanceOf[Expr[Class[_]]]
       clsOfCache += t -> expr
       expr
@@ -585,7 +584,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     methodParametersOf(t, t.typeSymbol.primaryConstructor)
   }
 
-
   private def methodParametersOf(t: TypeRepr, method: Symbol): Expr[Seq[MethodParameter]] = {
     val methodName = method.name
     val methodArgs = methodArgsOf(t, method).flatten
@@ -594,13 +592,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     }
     val isConstructor = t.typeSymbol.primaryConstructor == method
     val constructorRef: Expr[MethodRef] = '{
-        MethodRef(
-          owner = ${ clsOf(t) },
-          name = ${ Expr(methodName) },
-          paramTypes = ${ Expr.ofSeq(argClasses) },
-          isConstructor = ${ Expr(isConstructor) }
-        )
-      }
+      MethodRef(
+        owner = ${ clsOf(t) },
+        name = ${ Expr(methodName) },
+        paramTypes = ${ Expr.ofSeq(argClasses) },
+        isConstructor = ${ Expr(isConstructor) }
+      )
+    }
 
     // println(s"======= ${t.typeSymbol.memberMethods}")
 
@@ -629,20 +627,40 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       // println(s"${paramName} ${paramIsAccessible}")
 
       val accessor: Expr[Option[Any => Any]] = if (method.isClassConstructor && paramIsAccessible) {
-        val lambda = Lambda(
-          owner = Symbol.spliceOwner,
-          tpe = MethodType(List("x"))(_ => List(TypeRepr.of[Any]), _ => TypeRepr.of[Any]),
-          rhsFn = (sym, params) => {
-            val x    = params.head.asInstanceOf[Term]
-            val expr = Select.unique(clsCast(x, t), paramName)
-            expr.changeOwner(sym)
-          }
-        )
+//        val lambda = Lambda(
+//          owner = Symbol.spliceOwner,
+//          tpe = MethodType(List("x"))(_ => List(TypeRepr.of[Any]), _ => TypeRepr.of[Any]),
+//          rhsFn = (sym, params) => {
+//            val x    = params.head.asInstanceOf[Term]
+//            val expr = Select.unique(clsCast(x, t), paramName)
+//            expr.changeOwner(sym)
+//          }
+//        )
         // println(t.typeSymbol)
         // println(paramType.typeSymbol.flags.show)
         // println(lambda.show)
         // println(lambda.show(using Printer.TreeStructure))
-        '{ Some(${ lambda.asExprOf[Any => Any] }) }
+
+        // MethodParameter.accessor[(owner type), (parameter type]]
+        val accessorMethod: Symbol = TypeRepr.of[MethodParameter.type].typeSymbol.methodMember("accessor").head
+        val objRef                 = Ref(TypeRepr.of[MethodParameter].typeSymbol.companionModule)
+        val typedAccessor          = objRef.select(accessorMethod).appliedToTypes(List(t, paramType))
+        val methodCall             = typedAccessor.appliedToArgs(List(Literal(ClassOfConstant(t))))
+
+        val lambda2 = Lambda(
+          owner = Symbol.spliceOwner,
+          tpe = MethodType(List("x"))(_ => List(t), _ => paramType),
+          rhsFn = (sym, params) => {
+            val x    = params.head.asInstanceOf[Term]
+            val expr = Select.unique(x, paramName)
+            expr.changeOwner(sym)
+          }
+        )
+        val accMethod = methodCall.appliedToArgs(List(lambda2))
+        println(s"=== ${accMethod.show}")
+        '{ Some(${ accMethod.asExprOf[Any => Any] }) }
+        // Generate parameter accessor: { (x:Any) => x.asInstanceOf[A].(field name) }
+        // '{ Some(${ lambda.asExprOf[Any => Any] }) }
       } else {
         '{ None }
       }
@@ -695,7 +713,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
   // To reduce the byte code size, we need to memoize the generated surface bound to a variable
   private val surfaceToVar = scala.collection.mutable.Map[TypeRepr, Symbol]()
-  private val clsOfToVar = scala.collection.mutable.Map[TypeRepr, Symbol]()
+  private val clsOfToVar   = scala.collection.mutable.Map[TypeRepr, Symbol]()
 
   private def methodsOf(t: TypeRepr): Expr[Seq[MethodSurface]] = {
     // Run just for collecting known surfaces. seen variable will be updated
@@ -727,7 +745,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       // Skip primitive types
       .filterNot(primitiveTypeFactory.isDefinedAt)
       .foreach { s =>
-      // Update the cache so that the next call of surfaceOf method will use the local varaible reference
+        // Update the cache so that the next call of surfaceOf method will use the local varaible reference
         surfaceToVar += s -> Symbol.newVal(
           Symbol.spliceOwner,
           s"__s${count}",
@@ -747,7 +765,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       val sym = x._2
       ValDef(sym, Some(memo(x._1).asTerm))
     }.toList
-
 
     // Clear method observation cache
     seenMethodParent.clear()
@@ -800,13 +817,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     }
   }
 
-
   private def clsCast(term: Term, t: TypeRepr): Term = {
-    if(clsOfToVar.contains(t)) {
+    if (clsOfToVar.contains(t)) {
       // __cl0.cast(term)
       Select.unique(Ref(clsOfToVar(t)), "cast").appliedToArgs(List(term))
-    }
-    else {
+    } else {
       Select.unique(term, "asInstanceOf").appliedToType(t)
     }
   }

@@ -75,6 +75,12 @@ trait MethodParameter extends Parameter {
   def getMethodArgDefaultValue(methodOwner: Any): Option[Any] = getDefaultValue
 }
 
+object MethodParameter {
+  def accessor[A, B](cl: Class[A])(body: A => B): Any => B = { (x: Any) =>
+    body(cl.cast(x))
+  }
+}
+
 trait MethodSurface extends ParameterBase {
   def mod: Int
   def owner: Surface
