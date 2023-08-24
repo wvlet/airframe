@@ -70,7 +70,7 @@ object RPCClientGenerator extends HttpClientGenerator {
     def rpcMethodDefs(svc: ClientServiceDef): String = {
       svc.methods
         .map { m =>
-          s"""val __m_${m.name} = RPCMethod("${m.path}", "${svc.interfaceName}", "${m.name}", Surface.of[${m.requestModelClassType}], Surface.of[${m.returnType.fullTypeName}])"""
+          s"""lazy val __m_${m.name} = RPCMethod("${m.path}", "${svc.interfaceName}", "${m.name}", Surface.of[${m.requestModelClassType}], Surface.of[${m.returnType.fullTypeName}])"""
         }.mkString("\n")
     }
 
