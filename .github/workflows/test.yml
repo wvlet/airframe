@@ -95,23 +95,23 @@ jobs:
           check_name: Test Report Scala 2.13 + JDK11
           annotate_only: true
           detailed_summary: true
-  test_2_13_latest_jdk:
-    name: Scala 2.13 + JDK20
+  test_3_latest_jdk:
+    name: Scala 3 + JDK21
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '20'
-      - name: Scala 2.13 + JDK20 test
-        run: ./sbt ++2.13 projectJVM/test
+          distribution: 'zulu'
+          java-version: '21'
+      - name: Scala 3+ JDK21
+        run: ./sbt "++ 3; projectDotty/test; dottyTest/run"
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v3
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
-          check_name: Test Report Scala 2.13 + JDK20
+          check_name: Test Report Scala 3 + JDK21
           annotate_only: true
           detailed_summary: true
   test_3:
