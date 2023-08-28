@@ -107,7 +107,7 @@ private[airspec] object AirSpecMacros {
   def test2Impl[D1, D2, R](
       self: Expr[AirSpecTestBuilder],
       body: Expr[(D1, D2) => R]
-  )(using Type[D1], Type[D2], Quotes): Expr[Unit] = {
+  )(using Type[D1], Type[D2], Type[R], Quotes): Expr[Unit] = {
     '{
       import AirSpecTestBuilder._
       ${ self }.addF2(Surface.of[D1], Surface.of[D2], ${ body })
@@ -117,7 +117,7 @@ private[airspec] object AirSpecMacros {
   def test3Impl[D1, D2, D3, R](
       self: Expr[AirSpecTestBuilder],
       body: Expr[(D1, D2, D3) => R]
-  )(using Type[D1], Type[D2], Type[D3], Quotes): Expr[Unit] = {
+  )(using Type[D1], Type[D2], Type[D3], Type[R], Quotes): Expr[Unit] = {
     '{
       import AirSpecTestBuilder._
       ${ self }.addF3(Surface.of[D1], Surface.of[D2], Surface.of[D3], ${ body })
@@ -127,7 +127,7 @@ private[airspec] object AirSpecMacros {
   def test4Impl[D1, D2, D3, D4, R](
       self: Expr[AirSpecTestBuilder],
       body: Expr[(D1, D2, D3, D4) => R]
-  )(using Type[D1], Type[D2], Type[D3], Type[D4], Quotes): Expr[Unit] = {
+  )(using Type[D1], Type[D2], Type[D3], Type[D4], Type[R], Quotes): Expr[Unit] = {
     '{
       import AirSpecTestBuilder._
       ${ self }.addF4(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4], ${ body })
@@ -137,7 +137,7 @@ private[airspec] object AirSpecMacros {
   def test5Impl[D1, D2, D3, D4, D5, R](
       self: Expr[AirSpecTestBuilder],
       body: Expr[(D1, D2, D3, D4, D5) => R]
-  )(using Type[D1], Type[D2], Type[D3], Type[D4], Type[D5], Quotes): Expr[Unit] = {
+  )(using Type[D1], Type[D2], Type[D3], Type[D4], Type[D5], Type[R], Quotes): Expr[Unit] = {
     '{
       import AirSpecTestBuilder._
       ${ self }.addF5(
