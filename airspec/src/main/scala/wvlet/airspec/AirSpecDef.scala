@@ -51,7 +51,6 @@ private[airspec] case class MethodAirSpecDef(methodSurface: MethodSurface) exten
 private[airspec] case class AirSpecDefF0[R](
     name: String,
     design: Design => Design,
-    returnType: Surface,
     body: LazyF0[R]
 ) extends AirSpecDef {
   override def run(context: AirSpecContext, session: Session): Any = {
@@ -63,7 +62,6 @@ private[airspec] case class AirSpecDefF1[D1, R](
     name: String,
     design: Design => Design,
     dep1Type: Surface,
-    returnType: Surface,
     body: D1 => R
 ) extends AirSpecDef {
 
@@ -78,7 +76,6 @@ private[airspec] case class AirSpecDefF2[D1, D2, R](
     design: Design => Design,
     dep1Type: Surface,
     dep2Type: Surface,
-    returnType: Surface,
     body: (D1, D2) => R
 ) extends AirSpecDef {
 
@@ -95,7 +92,6 @@ private[airspec] case class AirSpecDefF3[D1, D2, D3, R](
     dep1Type: Surface,
     dep2Type: Surface,
     dep3Type: Surface,
-    returnType: Surface,
     body: (D1, D2, D3) => R
 ) extends AirSpecDef {
 
@@ -114,7 +110,6 @@ private[airspec] case class AirSpecDefF4[D1, D2, D3, D4, R](
     dep2Type: Surface,
     dep3Type: Surface,
     dep4Type: Surface,
-    returnType: Surface,
     body: (D1, D2, D3, D4) => R
 ) extends AirSpecDef {
 
@@ -135,7 +130,6 @@ private[airspec] case class AirSpecDefF5[D1, D2, D3, D4, D5, R](
     dep3Type: Surface,
     dep4Type: Surface,
     dep5Type: Surface,
-    returnType: Surface,
     body: (D1, D2, D3, D4, D5) => R
 ) extends AirSpecDef {
 
