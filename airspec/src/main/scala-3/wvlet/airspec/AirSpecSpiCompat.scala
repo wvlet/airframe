@@ -118,7 +118,8 @@ private[airspec] object AirSpecMacros {
       self: Expr[AirSpecTestBuilder],
       body: Expr[(D1, D2, D3) => Unit]
   )(using Type[D1], Type[D2], Type[D3], Quotes): Expr[Unit] = {
-    '{      import AirSpecTestBuilder._
+    '{
+      import AirSpecTestBuilder._
       ${ self }.addF3(Surface.of[D1], Surface.of[D2], Surface.of[D3], ${ body })
     }
   }
