@@ -41,34 +41,33 @@ class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Des
 
 object AirSpecTestBuilder {
   implicit class Helper(val v: AirSpecTestBuilder) extends AnyVal {
-    def addF0[R](r: Surface, body: wvlet.airframe.LazyF0[R]): Unit = {
-      v.spec.addLocalTestDef(AirSpecDefF0(v.name, v.design, r, body))
+    def addF0[R](body: wvlet.airframe.LazyF0[R]): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF0(v.name, v.design, body))
     }
-    def addF1[D1, R](d1: Surface, r: Surface, body: D1 => R): Unit = {
+    def addF1[D1, R](d1: Surface, body: D1 => R): Unit = {
       val spec = body match {
         case s: Seq[_] =>
           // Workaround for: https://github.com/wvlet/airframe/issues/1845
-          AirSpecDefF0(v.name, v.design, r, wvlet.airframe.LazyF0(() => body))
+          AirSpecDefF0(v.name, v.design, wvlet.airframe.LazyF0(() => body))
         case _ =>
-          AirSpecDefF1(v.name, v.design, d1, r, body)
+          AirSpecDefF1(v.name, v.design, d1, body)
       }
       v.spec.addLocalTestDef(spec)
     }
-    def addF2[D1, D2, R](d1: Surface, d2: Surface, r: Surface, body: (D1, D2) => R): Unit = {
-      v.spec.addLocalTestDef(AirSpecDefF2(v.name, v.design, d1, d2, r, body))
+    def addF2[D1, D2, R](d1: Surface, d2: Surface, body: (D1, D2) => R): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF2(v.name, v.design, d1, d2, body))
     }
-    def addF3[D1, D2, D3, R](d1: Surface, d2: Surface, d3: Surface, r: Surface, body: (D1, D2, D3) => R): Unit = {
-      v.spec.addLocalTestDef(AirSpecDefF3(v.name, v.design, d1, d2, d3, r, body))
+    def addF3[D1, D2, D3, R](d1: Surface, d2: Surface, d3: Surface, body: (D1, D2, D3) => R): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF3(v.name, v.design, d1, d2, d3, body))
     }
     def addF4[D1, D2, D3, D4, R](
         d1: Surface,
         d2: Surface,
         d3: Surface,
         d4: Surface,
-        r: Surface,
         body: (D1, D2, D3, D4) => R
     ): Unit = {
-      v.spec.addLocalTestDef(AirSpecDefF4(v.name, v.design, d1, d2, d3, d4, r, body))
+      v.spec.addLocalTestDef(AirSpecDefF4(v.name, v.design, d1, d2, d3, d4, body))
     }
     def addF5[D1, D2, D3, D4, D5, R](
         d1: Surface,
@@ -76,10 +75,9 @@ object AirSpecTestBuilder {
         d3: Surface,
         d4: Surface,
         d5: Surface,
-        r: Surface,
         body: (D1, D2, D3, D4, D5) => R
     ): Unit = {
-      v.spec.addLocalTestDef(AirSpecDefF5(v.name, v.design, d1, d2, d3, d4, d5, r, body))
+      v.spec.addLocalTestDef(AirSpecDefF5(v.name, v.design, d1, d2, d3, d4, d5, body))
     }
   }
 }
