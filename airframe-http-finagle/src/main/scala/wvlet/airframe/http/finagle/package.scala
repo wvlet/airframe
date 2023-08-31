@@ -180,7 +180,7 @@ package object finagle {
 
   def convertToFinagleRequest(request: HttpMessage.Request): Request = {
     val req = if (request.method == "GET") {
-      val params = request.query.toSeq.map((e) => (e.key, e.value))
+      val params = request.query.toSeq.map(e => (e.key, e.value))
       http.Request(s"${request.path}", params: _*)
     } else {
       http.Request(http.Method(request.method), s"${request.path}")
