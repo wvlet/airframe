@@ -179,7 +179,12 @@ package object finagle {
   }
 
   def convertToFinagleRequest(request: HttpMessage.Request): Request = {
-    val req = http.Request()
+    val req = if (request.method == "GET") {
+      val params = request.query.toSeq.map((e) => (e.key, e.value))
+      http.Request(s"${request.path}", params: _*)
+    } else {
+      http.Request(http.Method(request.method), s"${request.path}")
+    }
     for (h <- request.header.entries) {
       req.headerMap.add(h.key, h.value)
     }
