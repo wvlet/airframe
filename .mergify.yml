@@ -7,7 +7,7 @@ pull_request_rules:
       - check-success=Code format
       - check-success=Scala 2.12
       - check-success=Scala 2.13 + JDK11
-      - check-success=Scala 2.13 + JDK20
+      - check-success=Scala 2.13 + JDK21
       - check-success=Scala 3.x (Dotty)
       - check-success=Scala.js / Scala 2.12
       - check-success=Scala.js / Scala 2.13
