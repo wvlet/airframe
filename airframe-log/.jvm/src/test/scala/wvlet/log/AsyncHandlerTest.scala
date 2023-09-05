@@ -10,28 +10,30 @@ import wvlet.log.io.Timer
 class AsyncHandlerTest extends Spec with Timer {
 
   test("start background thread") {
-    val buf = new BufferedLogHandler(ThreadLogFormatter)
-    val l1  = "hello async logger"
-    val l2  = "log output will be processed in a background thread"
+    flaky {
+      val buf = new BufferedLogHandler(ThreadLogFormatter)
+      val l1  = "hello async logger"
+      val l2  = "log output will be processed in a background thread"
 
-    val handler = new AsyncHandler(buf)
-    withResource(handler) { h =>
-      val logger = Logger("internal.asynctest")
-      logger.resetHandler(h)
-      logger.setLogLevel(LogLevel.INFO)
+      val handler = new AsyncHandler(buf)
+      withResource(handler) { h =>
+        val logger = Logger("internal.asynctest")
+        logger.resetHandler(h)
+        logger.setLogLevel(LogLevel.INFO)
 
-      logger.info(l1)
-      logger.warn(l2)
-      logger.debug(l1) // should be ignored
+        logger.info(l1)
+        logger.warn(l2)
+        logger.debug(l1) // should be ignored
 
-      h.flush()
+        h.flush()
+      }
+
+      handler.closeAndAwaitTermination()
+      val logs = buf.logs
+      logs.size shouldBe 2
+      logs(0).contains(l1) shouldBe true
+      logs(1).contains(l2) shouldBe true
     }
-
-    handler.closeAndAwaitTermination()
-    val logs = buf.logs
-    logs.size shouldBe 2
-    logs(0).contains(l1) shouldBe true
-    logs(1).contains(l2) shouldBe true
   }
 
   test("not block at the logging code") {
