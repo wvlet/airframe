@@ -29,7 +29,7 @@ val buildSettings = Seq[Setting[_]](
   crossPaths          := true,
   publishMavenStyle   := true,
   publishTo           := sonatypePublishToBundle.value,
-  javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
+  javacOptions ++= Seq("-source", "11", "-target", "11"),
   scalacOptions ++= Seq(
     "-feature",
     "-deprecation"
