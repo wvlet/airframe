@@ -72,7 +72,18 @@ object HttpClientGeneratorConfig {
     HttpClientGeneratorConfig(
       apiPackageName = packageName,
       clientType = HttpClientGenerator.findClient(tpe).getOrElse {
-        throw new IllegalArgumentException(s"Unknown client type: ${tpe}")
+        tpe match {
+          case "scalajs" =>
+            throw new IllegalArgumentException(
+              s"Unknown client type: ${tpe}. \"scalajs\" is obsoleted. Use \"rpc\" instead}"
+            )
+          case _ =>
+            throw new IllegalArgumentException(
+              s"Unknown client type: ${tpe}. Supported client types: ${HttpClientGenerator.predefinedClients
+                  .map(_.name).mkString(", ")}"
+            )
+        }
+
       },
       targetPackageName = targetPackage,
       targetClassName = targetCls
