@@ -75,7 +75,7 @@ object HttpClientGeneratorConfig {
         tpe match {
           case "scalajs" =>
             throw new IllegalArgumentException(
-              s"Unknown client type: ${tpe}. \"scalajs\" is obsoleted. Use \"rpc\" instead}"
+              s"Unknown client type: ${tpe}. scalajs is obsoleted. Use rpc instead}"
             )
           case _ =>
             throw new IllegalArgumentException(
