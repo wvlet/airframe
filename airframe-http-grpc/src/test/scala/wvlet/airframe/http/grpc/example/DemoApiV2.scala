@@ -30,7 +30,7 @@ import wvlet.airframe.http.router.Route
   * Demo gRPC API used for GrpcClientTest
   */
 @RPC
-trait DemoApiV2 extends LogSupport {
+class DemoApiV2 extends LogSupport {
   def hello(name: String): String = {
     name match {
       case "XXX" =>

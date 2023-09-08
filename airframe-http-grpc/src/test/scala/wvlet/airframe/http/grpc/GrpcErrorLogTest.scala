@@ -16,11 +16,9 @@ package wvlet.airframe.http.grpc
 import wvlet.airframe.http.grpc.example.DemoApi
 import wvlet.airframe.http.grpc.example.DemoApi.DemoApiClient
 import wvlet.airframe.http.grpc.internal.GrpcRequestLogger
-import wvlet.airframe.http.Router
-import wvlet.airframe.http.HttpAccessLogWriter
-import wvlet.airspec.AirSpec
+import wvlet.airframe.http.{HttpAccessLogWriter, Router, RxRouter}
 import wvlet.airframe.rx.Rx
-import wvlet.log.Logger
+import wvlet.airspec.AirSpec
 
 import scala.util.{Failure, Try}
 
@@ -44,7 +42,7 @@ object GrpcErrorLogTest extends AirSpec {
     }
   }
 
-  private val router = Router.of[DemoApiDebug]
+  private val router = RxRouter.of[DemoApiDebug]
 
   protected override def design = {
     gRPC.server
@@ -55,6 +53,7 @@ object GrpcErrorLogTest extends AirSpec {
           .newLogger(config.name, inMemoryLogWriter)
       }
       .designWithChannel
+      .bind[Router].toInstance(Router.of[DemoApiDebug])
   }
 
   private def captureAll(body: => Unit): Seq[Map[String, Any]] = {
