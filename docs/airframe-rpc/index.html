@@ -68,10 +68,13 @@ servers and clients.</p>
 <p><strong>Airframe RPC Features</strong>:</p>
 <ul>
 <li>Use plain Scala functions as RPC endpoints.</li>
-<li>Support <a href="https://twitter.github.io/finagle/">Finagle</a> (HTTP/1) or <a href="https://grpc.io/">gRPC</a> (HTTP/2) backends.</li>
+<li>Support <a href="https://netty.io/">Netty</a> (HTTP/1) or <a href="https://grpc.io/">gRPC</a> (HTTP/2) backends.</li>
 <li><a href="#sbt-airframe-plugin">sbt-airframe</a> plugin to generate RPC clients. No need to make HTTP requests
 by yourself.</li>
-<li><a href="https://www.scala-js.org/">Scala.js</a> support for building interactive web browser applications.</li>
+<li>Support Scala 2.13, 3.x, and Scala.js
+<ul>
+<li><a href="https://www.scala-js.org/">Scala.js</a> can be used for building interactive web browser applications with RPC.</li>
+</ul></li>
 <li><a href="https://www.openapis.org/">Open API</a> schema generation.</li>
 </ul>
 <h2><a class="anchor" aria-hidden="true" id="why-airframe-rpc"></a><a href="#why-airframe-rpc" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Why Airframe RPC?</h2>
@@ -104,10 +107,7 @@ however, is a data-format agnostic framework. So, in order to naturally use Scal
 extended gRPC to support MessagePack (a compact binary alternative of JSON) and
 used <a href="/airframe/docs/airframe-codec">airframe-codec</a> for message serialization so that we can create RPC
 services without introducing ProtocolBuffers.</p>
-<p>Airframe RPC also supports building HTTP/1 services backed
-by <a href="https://twitter.github.io/finagle/">Finagle</a>. Supporting both HTTP/1 and HTTP/2 is important
-because gRPC heavily uses HTTP/2 features, but HTTP/1-based web clients including web browsers still
-don't fully support HTTP/2.</p>
+<p>Airframe RPC also supports building HTTP/1 services backed by Netty. Supporting both HTTP/1 and HTTP/2 is important because gRPC heavily uses HTTP/2 features, but HTTP/1-based web clients including web browsers still don't fully support HTTP/2.</p>
 <p>In 2020, Scala.js, which can compile Scala code into JavaScript,
 finally <a href="https://www.scala-js.org/news/2020/02/25/announcing-scalajs-1.0.0/">became 1.0.0 after 7 years of development</a>
 . This also has paved a way for using Scala both for servers (Scala JVM) and clients (Scala.js with
@@ -164,18 +164,18 @@ messages, you can use case classes.</p>
   <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">hello</span></span>(person: <span class="hljs-type">Person</span>): <span class="hljs-type">String</span> = <span class="hljs-string">s"Hello <span class="hljs-subst">${person.name}</span> (id=<span class="hljs-subst">${person.id}</span>)!"</span>
 }
 </code></pre>
-<p>To start an RPC web server, Airfarme RPC provides Finagle-based web server implementation. The
+<p>To start an RPC web server, Airfarme RPC provides Netty-based web server implementation. The
 following code starts an RPC web server at <code>http://localhost:8080/</code>:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// Create a Router</span>
-<span class="hljs-keyword">val</span> router = <span class="hljs-type">Router</span>.add[<span class="hljs-type">MyServiceImpl</span>]
+<span class="hljs-keyword">val</span> router = <span class="hljs-type">RxRouter</span>.of[<span class="hljs-type">MyServiceImpl</span>]
 
 <span class="hljs-comment">// Starting a new RPC server.</span>
-<span class="hljs-type">Finagle</span>
+<span class="hljs-type">Netty</span>
   .server
   .withRouter(router)
   .withPort(<span class="hljs-number">8080</span>)
   .start { server =&gt;
-     server.waitForTermination
+     server.awaitTermination()
   }
 </code></pre>
 <p>To access the RPC server, we need to generate an RPC client from the RPC interface definition. We
@@ -199,19 +199,19 @@ RPC also supports asynchronous clients using Future.</p>
 <ol>
 <li>Define RPC interfaces with <code>@RPC</code> annotation</li>
 <li>Implement the RPC interfaces in Scala</li>
-<li>Create <code>wvlet.airframe.http.Router</code> by adding the RPC interface implementation classes.</li>
+<li>Create <code>wvlet.airframe.http.RxRouter</code> by adding the RPC interface implementation classes.</li>
 <li>Generate RPC client code with sbt-airframe plugin</li>
 </ol>
 <h3><a class="anchor" aria-hidden="true" id="basic-project-structure"></a><a href="#basic-project-structure" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Basic Project Structure</h3>
 <p>Here is an example build configurations for using Airframe RPC with Scala and Scala.js.</p>
-<p><a href="https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22"><img src="https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central" alt="maven central"></a></p>
+<p><a href="https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.13%22"><img src="https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central" alt="maven central"></a></p>
 <p><strong>project/plugins.sbt</strong></p>
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// For RPC client generation</span>
 addSbtPlugin(<span class="hljs-string">"org.wvlet.airframe"</span> % <span class="hljs-string">"sbt-airframe"</span> % <span class="hljs-string">"(version)"</span>)
 
 <span class="hljs-comment">// [optional] For Scala.js</span>
-addSbtPlugin(<span class="hljs-string">"org.scala-js"</span> % <span class="hljs-string">"sbt-scalajs"</span> % <span class="hljs-string">"1.1.0"</span>)
-addSbtPlugin(<span class="hljs-string">"org.portable-scala"</span> % <span class="hljs-string">"sbt-scalajs-crossproject"</span> % <span class="hljs-string">"1.0.0"</span>)
+addSbtPlugin(<span class="hljs-string">"org.scala-js"</span> % <span class="hljs-string">"sbt-scalajs"</span> % <span class="hljs-string">"1.13.2"</span>)
+addSbtPlugin(<span class="hljs-string">"org.portable-scala"</span> % <span class="hljs-string">"sbt-scalajs-crossproject"</span> % <span class="hljs-string">"1.3.2"</span>)
 </code></pre>
 <p><strong>build.sbt</strong></p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> <span class="hljs-type">AIRFRAME_VERSION</span> = <span class="hljs-string">"(version)"</span>
@@ -219,7 +219,7 @@ addSbtPlugin(<span class="hljs-string">"org.portable-scala"</span> % <span class
 <span class="hljs-comment">// Common build settings</span>
 <span class="hljs-keyword">val</span> buildSettings = <span class="hljs-type">Seq</span>(
   organization := <span class="hljs-string">"(your organization)"</span>,
-  scalaVersion := <span class="hljs-string">"2.12.10"</span>
+  scalaVersion := <span class="hljs-string">"3.3.1"</span>
   <span class="hljs-comment">// Add your own settings here</span>
 )
 
@@ -230,57 +230,35 @@ addSbtPlugin(<span class="hljs-string">"org.portable-scala"</span> % <span class
     .in(file(<span class="hljs-string">"myapp-api"</span>))
     .settings(
        buildSettings,
-       libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-http"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>
+       libraryDependencies ++= <span class="hljs-type">Seq</span>(
+         <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-http"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>
+       )
     )
 
-<span class="hljs-keyword">lazy</span> <span class="hljs-keyword">val</span> apiJVM = api.jvm
-<span class="hljs-keyword">lazy</span> <span class="hljs-keyword">val</span> apiJS = api.js
-
-<span class="hljs-comment">// RPC server project</span>
+<span class="hljs-comment">// RPC server project (JVM)</span>
 <span class="hljs-keyword">lazy</span> <span class="hljs-keyword">val</span> server =
   project
     .in(file(<span class="hljs-string">"myapp-server"</span>))
     .settings(
       buildSettings,
       libraryDependencies ++= <span class="hljs-type">Seq</span>(
-        <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-finagle"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>,
-        <span class="hljs-comment">// [For gRPC] Use airframe-http-grpc instead of Finagle</span>
-        <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-grpc"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>
+        <span class="hljs-comment">// Add Netty backend</span>
+        <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-netty"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>
       )
     )
-    .dependsOn(apiJVM)
+    .dependsOn(api.jvm)
 
-<span class="hljs-comment">// RPC client project</span>
+<span class="hljs-comment">// RPC client project (JVM and Scala.js)</span>
 <span class="hljs-keyword">lazy</span> <span class="hljs-keyword">val</span> client =
-  project
+  crossProject(<span class="hljs-type">JSPlatform</span>, <span class="hljs-type">JVMPlatform</span>)
     .in(file(<span class="hljs-string">"myapp-client"</span>))
     .enablePlugins(<span class="hljs-type">AirframeHttpPlugin</span>)
     .settings(
       buildSettings,
       <span class="hljs-comment">// Generate an RPC client for myapp.app.v1 package</span>
-      airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"myapp.app.v1:rpc"</span>),
-      <span class="hljs-comment">// Enable debug logging of sbt-airframe</span>
-      airframeHttpGeneratorOption := <span class="hljs-string">"-l debug"</span>,
-      libraryDependencies ++= <span class="hljs-type">Seq</span>(
-        <span class="hljs-comment">// Add this for using gRPC</span>
-        <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-grpc"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>
-      )
+      airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"myapp.app.v1:rpc"</span>)
    )
-   .dependsOn(apiJVM)
-
-<span class="hljs-comment">// [optional] Scala.js UI using RPC</span>
-<span class="hljs-keyword">lazy</span> <span class="hljs-keyword">val</span> ui =
-  project
-    .in(file(<span class="hljs-string">"myapp-ui"</span>))
-    .enablePlugins(<span class="hljs-type">ScalaJSPlugin</span>, <span class="hljs-type">AirframeHttpPlugin</span>)
-    .settings(
-      buildSettings,
-      <span class="hljs-comment">// Scala.js only supports async clients</span>
-      airframeHttpClients := <span class="hljs-type">Seq</span>(<span class="hljs-string">"myapp.app.v1:rpc"</span>),
-      <span class="hljs-comment">// Enable debug logging of sbt-airframe</span>
-      airframeHttpGeneratorOption := <span class="hljs-string">"-l debug"</span>
-    )
-    .dependsOn(apiJS)
+   .dependsOn(api)
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="sbt-airframe-plugin"></a><a href="#sbt-airframe-plugin" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>sbt-airframe plugin</h3>
 <p>sbt-airframe plugins supports generating HTTP clients for making RPC calls. sbt-airframe supports
@@ -350,7 +328,7 @@ airframeHttpOpenAPIConfig := <span class="hljs-type">OpenAPIConfig</span>(
 </code></pre>
 <p>It will generate <code>target/openapi.yaml</code> file.</p>
 <h3><a class="anchor" aria-hidden="true" id="rpc-logging"></a><a href="#rpc-logging" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>RPC Logging</h3>
-<p>Airframe RPC stores HTTP access logs to <code>log/http-access.json</code> by default. This json logs contains
+<p>Airframe RPC stores HTTP access logs to <code>log/http_server.json</code> by default. This json logs contains
 HTTP request related parameters and RPC-specific fields described below:</p>
 <ul>
 <li><strong>rpc_interface</strong>: RPC interface class name</li>
@@ -367,12 +345,11 @@ use cases would be adding an authentication filter for RPC calls:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.http._
 <span class="hljs-keyword">import</span> wvlet.airframe.http.<span class="hljs-type">HttpMessage</span>.{<span class="hljs-type">Request</span>,<span class="hljs-type">Response</span>}
 
-<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">AuthFilter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Http</span>.<span class="hljs-title">Filter</span> </span>{
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">apply</span></span>(request: <span class="hljs-type">Request</span>, context: <span class="hljs-type">Context</span>): <span class="hljs-type">Future</span>[<span class="hljs-type">Response</span>] = {
-    <span class="hljs-keyword">val</span> auth = request.authorization
-    <span class="hljs-keyword">if</span> (isValidAuth(auth)) {
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AuthFilter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">RxHttpFilter</span> </span>{
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">apply</span></span>(request: <span class="hljs-type">Request</span>, next: <span class="hljs-type">RxHttpEndpoint</span>): <span class="hljs-type">Rx</span>[<span class="hljs-type">Response</span>] = {
+    <span class="hljs-keyword">if</span> (isValidAuth(request.authorization)) {
       <span class="hljs-comment">// Call the next filter chain</span>
-      context(request)
+      next(request)
     }
     <span class="hljs-keyword">else</span> {
       <span class="hljs-comment">// Reject the request</span>
@@ -382,42 +359,38 @@ use cases would be adding an authentication filter for RPC calls:</p>
 }
 </code></pre>
 <pre><code class="hljs css language-scala"><span class="hljs-comment">// Router for RPC</span>
-<span class="hljs-keyword">val</span> rpcRouter = <span class="hljs-type">Router</span>.add[<span class="hljs-type">MyApp</span>]
+<span class="hljs-keyword">val</span> rpcRouter = <span class="hljs-type">RxRouter</span>.of[<span class="hljs-type">MyApp</span>]
 
 <span class="hljs-comment">// Add a filter before processing RPC requests</span>
-<span class="hljs-keyword">val</span> router = <span class="hljs-type">Router</span>
-        .add(<span class="hljs-type">AuthFilter</span>)
-        .andThen(rpcRouterr)
+<span class="hljs-keyword">val</span> router = 
+  <span class="hljs-type">RxRouter</span>
+    .filter[<span class="hljs-type">AuthFilter</span>]
+    .andThen(rpcRouter)
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="di-integration"></a><a href="#di-integration" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>DI Integration</h3>
 <p>Airframe RPC natively supports <a href="/airframe/docs/airframe-di">Airframe DI</a> for dependency injection so that you can
-inject necessary components for running your web service using <code>bind[X]</code> syntax or constructor
-injection. DI is useful when building web applications requiring many components and if you need to
+inject necessary components for running your web service through constructor parameters. DI is useful when building web applications requiring many components and if you need to
 decouple component implementations from the service implementations. Airframe DI also supports
 switching component implementations between production and tests for the convenience of module
 tests.</p>
 <p>Here is an example of using Airframe DI for starting an RPC server:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
 
-<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyAPIImpl</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">MyAPI</span> </span>{
-  <span class="hljs-comment">// Inject your component</span>
-  <span class="hljs-keyword">private</span>
-  <span class="hljs-keyword">val</span> myService = bind[<span class="hljs-type">MyService</span>]
-
-  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">hello</span></span>(
-  ...) =...
+<span class="hljs-comment">// Inject your component as constructor arguments</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyAPIImpl</span>(<span class="hljs-params">myService: <span class="hljs-type">MyService</span></span>) <span class="hljs-keyword">extends</span> <span class="hljs-title">MyAPI</span> </span>{
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">hello</span></span>(...) =...
 }
 
-<span class="hljs-keyword">val</span> router = <span class="hljs-type">Router</span>.add[<span class="hljs-type">MyAPIImpl</span>]
+<span class="hljs-keyword">val</span> router = <span class="hljs-type">RxRouter</span>.of[<span class="hljs-type">MyAPIImpl</span>]
 
 <span class="hljs-comment">// Define the component implementation to use</span>
 <span class="hljs-keyword">val</span> design = newDesign
   .bind[<span class="hljs-type">MyService</span>].toInstance(<span class="hljs-keyword">new</span> <span class="hljs-type">MyServiceImpl</span>(...))
-  .add(<span class="hljs-type">Finagle</span>.server.withRouter(router).design)
+  .add(<span class="hljs-type">Netty</span>.server.withRouter(router).design)
 
-<span class="hljs-comment">// Launch a Finagle Server</span>
-design.build[<span class="hljs-type">FinagleServer</span>] { server =&gt;
-  server.waitForTermination
+<span class="hljs-comment">// Launch a Netty Server</span>
+design.build[<span class="hljs-type">NettyServer</span>] { server =&gt;
+  server.awaitForTerimination()
 }
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="object-serialization"></a><a href="#object-serialization" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Object Serialization</h3>
@@ -471,7 +444,7 @@ String &quot;100&quot; will be translated into an Int value <code>100</code> aut
   }
 }
 </code></pre>
-<p>RPCContext is available both for Finagle and gRPC backend.</p>
+<p>RPCContext is available both for Netty and gRPC backend.</p>
 <h3><a class="anchor" aria-hidden="true" id="receiving-raw-http-responses"></a><a href="#receiving-raw-http-responses" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Receiving Raw HTTP Responses</h3>
 <blockquote>
 <p>⚠️ Since Airframe 22.8.0, we no longer recommend adding Request as RPC parameters.  Use RPCContext.current.httpRequest instead</p>
@@ -610,7 +583,7 @@ gRPC.server
   <span class="hljs-comment">//.withInterceptor(...)</span>
   <span class="hljs-comment">// [optional] you can customize gRPC server here</span>
   <span class="hljs-comment">//.withServerInitializer{ x: ServerBuilder =&gt; x.addMethod(...); x }</span>
-  <span class="hljs-comment">// [optional] Disable the default logging to log/http-access.json file</span>
+  <span class="hljs-comment">// [optional] Disable the default logging to log/http_server.json file</span>
   <span class="hljs-comment">//.noRequestLogging</span>
   .start { server =&gt;
     <span class="hljs-comment">// gRPC server (based on Netty) starts at localhost:8080</span>
