@@ -13,7 +13,7 @@
  */
 package wvlet.airspec.runner
 
-import sbt.testing._
+import sbt.testing.*
 import wvlet.airframe.{Design, Session}
 import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
 import wvlet.airspec.spi.{AirSpecContext, AirSpecException}
@@ -38,7 +38,7 @@ private[airspec] class AirSpecTaskRunner(
     eventHandler: EventHandler,
     classLoader: ClassLoader
 ) extends LogSupport {
-  import wvlet.airspec._
+  import wvlet.airspec.*
 
   private implicit val ec: ExecutionContext = Compat.executionContext
 
@@ -249,7 +249,7 @@ private[airspec] class AirSpecTaskRunner(
     }
 
     def runTest(childSession: Session, context: AirSpecContext): Future[_] = {
-      import wvlet.airframe.rx._
+      import wvlet.airframe.rx.*
 
       try {
         m.run(context, childSession) match {

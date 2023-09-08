@@ -15,7 +15,7 @@ package wvlet.airspec.spi
 
 import sbt.testing.Status
 import wvlet.airframe.SourceCode
-import wvlet.airspec._
+import wvlet.airspec.*
 
 /**
   * Define exceptions that will be used for various test failures

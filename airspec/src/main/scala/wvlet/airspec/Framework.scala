@@ -21,7 +21,7 @@ import wvlet.airspec.runner.AirSpecSbtRunner
   * Include this class to your build.sbt: testFrameworks += new TestFramework("wvlet.airspec.AirSpecFramework")
   */
 class Framework extends sbt.testing.Framework {
-  import Framework._
+  import Framework.*
   override def name(): String                     = "airspec"
   override def fingerprints(): Array[Fingerprint] = Array(AirSpecClassFingerPrint, AirSpecObjectFingerPrint)
   override def runner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): testing.Runner = {

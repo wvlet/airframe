@@ -14,7 +14,7 @@
 package examples
 
 import wvlet.airspec.AirSpec
-import wvlet.airframe.rx._
+import wvlet.airframe.rx.*
 
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 

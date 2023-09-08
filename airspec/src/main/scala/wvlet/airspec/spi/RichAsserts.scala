@@ -17,7 +17,7 @@ import java.util
 
 import wvlet.airframe.SourceCode
 import wvlet.airspec.AirSpecSpi
-import wvlet.airspec.spi.Asserts._
+import wvlet.airspec.spi.Asserts.*
 import wvlet.log.LogSupport
 
 /**

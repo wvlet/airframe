@@ -19,7 +19,7 @@ import wvlet.airspec.AirSpec
 /**
   */
 class DITest extends AirSpec {
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   protected val v: Int = 1000
 

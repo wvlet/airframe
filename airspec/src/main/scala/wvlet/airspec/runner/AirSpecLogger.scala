@@ -15,7 +15,7 @@ package wvlet.airspec.runner
 
 import java.util.concurrent.TimeUnit
 
-import sbt.testing._
+import sbt.testing.*
 import wvlet.airframe.log.AnsiColorPalette
 import wvlet.airframe.metrics.ElapsedTime
 import wvlet.airspec.spi.AirSpecFailureBase

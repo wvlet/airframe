@@ -1,7 +1,7 @@
 package wvlet.airspec
 
 import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
-import wvlet.airframe._
+import wvlet.airframe.*
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.airspec.spi.{AirSpecContext, MissingTestDependency}
 

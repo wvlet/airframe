@@ -7,21 +7,21 @@ import scala.reflect.macros.{blackbox => sm}
   */
 private[airspec] object AirSpecMacros {
   def sourceCode(c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     c.internal.enclosingOwner
     val pos = c.enclosingPosition
     q"wvlet.airframe.SourceCode(${""}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
   }
 
   def pendingImpl(c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     q"""
        throw wvlet.airspec.spi.Pending("pending", ${sourceCode(c)})
      """
   }
 
   def test0Impl[R: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     q"""{
       import wvlet.airspec.AirSpecTestBuilder._
       val self = ${c.prefix}
@@ -30,7 +30,7 @@ private[airspec] object AirSpecMacros {
   }
 
   def test1Impl[D1: c.WeakTypeTag, R: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val d1 = implicitly[c.WeakTypeTag[D1]].tpe
     q"""{
       import wvlet.airspec.AirSpecTestBuilder._
@@ -41,7 +41,7 @@ private[airspec] object AirSpecMacros {
   }
 
   def test2Impl[D1: c.WeakTypeTag, D2: c.WeakTypeTag, R: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val d1 = implicitly[c.WeakTypeTag[D1]].tpe
     val d2 = implicitly[c.WeakTypeTag[D2]].tpe
     q"""{
@@ -56,7 +56,7 @@ private[airspec] object AirSpecMacros {
   def test3Impl[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, R: c.WeakTypeTag](
       c: sm.Context
   )(body: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val d1 = implicitly[c.WeakTypeTag[D1]].tpe
     val d2 = implicitly[c.WeakTypeTag[D2]].tpe
     val d3 = implicitly[c.WeakTypeTag[D3]].tpe
@@ -73,7 +73,7 @@ private[airspec] object AirSpecMacros {
   def test4Impl[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, R: c.WeakTypeTag](
       c: sm.Context
   )(body: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val d1 = implicitly[c.WeakTypeTag[D1]].tpe
     val d2 = implicitly[c.WeakTypeTag[D2]].tpe
     val d3 = implicitly[c.WeakTypeTag[D3]].tpe
@@ -99,7 +99,7 @@ private[airspec] object AirSpecMacros {
   ](
       c: sm.Context
   )(body: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val d1 = implicitly[c.WeakTypeTag[D1]].tpe
     val d2 = implicitly[c.WeakTypeTag[D2]].tpe
     val d3 = implicitly[c.WeakTypeTag[D3]].tpe

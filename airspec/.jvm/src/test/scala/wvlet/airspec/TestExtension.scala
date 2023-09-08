@@ -16,7 +16,7 @@ package wvlet.airspec
 import java.util.concurrent.atomic.AtomicInteger
 
 import javax.annotation.{PostConstruct, PreDestroy}
-import wvlet.airframe.{Design, _}
+import wvlet.airframe.{Design, *}
 import wvlet.log.LogSupport
 
 case class MyServerConfig(name: String)
