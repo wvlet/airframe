@@ -23,6 +23,9 @@ object TraitFactoryTest extends AirSpec {
   trait A
 
   test("register trait factory") {
+    if (isScala3) {
+      pending("In Scala 3.3.1, creating a new trait instance via macro is still experimental")
+    }
     registerTraitFactory[A]
     traitFactoryCache.get(Surface.of[A]) shouldBe defined
   }

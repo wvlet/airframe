@@ -4,7 +4,7 @@ import wvlet.airframe.http._
 import wvlet.log.LogSupport
 
 @RPC
-trait MyRPCApi extends LogSupport {
+class MyRPCApi extends LogSupport {
   import MyRPCApi._
   def helloRPC(request: HelloRequest): HelloResponse = {
     val message = s"Hello ${request.name}!"

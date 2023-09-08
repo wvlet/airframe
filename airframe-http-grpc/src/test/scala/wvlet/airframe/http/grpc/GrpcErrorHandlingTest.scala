@@ -16,7 +16,7 @@ package wvlet.airframe.http.grpc
 import io.grpc.Status
 import io.grpc.Status.Code
 import io.grpc.StatusRuntimeException
-import wvlet.airframe.http.{RPCException, RPCStatus, Router}
+import wvlet.airframe.http.{RPCException, RPCStatus, Router, RxRouter}
 import wvlet.airframe.http.grpc.GrpcErrorLogTest.DemoApiDebug
 import wvlet.airframe.http.grpc.example.DemoApi.DemoApiClient
 import wvlet.airframe.http.grpc.internal.GrpcException
@@ -30,7 +30,7 @@ object GrpcErrorHandlingTest extends AirSpec {
   protected override def design = {
     gRPC.server
       .withName("error-handling-test-api")
-      .withRouter(Router.add[DemoApiDebug])
+      .withRouter(RxRouter.of[DemoApiDebug])
       .designWithChannel
   }
 
@@ -45,6 +45,7 @@ object GrpcErrorHandlingTest extends AirSpec {
       l.setLogLevel(previousLogLevel)
     }
   }
+
   test("exception test") { (client: DemoApiClient) =>
     warn("Starting a gRPC error handling test")
     suppressLog("wvlet.airframe.http.grpc.internal") {

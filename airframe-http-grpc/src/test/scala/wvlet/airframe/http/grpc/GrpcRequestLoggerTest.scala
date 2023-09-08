@@ -56,7 +56,7 @@ class GrpcRequestLoggerTest extends AirSpec {
       log("path") shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/hello"
       log("content_type") shouldBe "application/grpc"
       log("rpc_interface") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
-      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
+      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.example.DemoApiImpl"
       log("rpc_method") shouldBe "hello"
       log("rpc_args") shouldBe Map("name" -> "gRPC")
       log.contains("time") shouldBe true
@@ -78,7 +78,7 @@ class GrpcRequestLoggerTest extends AirSpec {
       log("path") shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/helloClientStreaming"
       log("content_type") shouldBe "application/grpc"
       log("rpc_interface") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
-      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
+      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.example.DemoApiImpl"
       log("rpc_method") shouldBe "helloClientStreaming"
       // Do not record rpc_args for client-streaming
       log.get("rpc_args") shouldBe empty
@@ -102,7 +102,7 @@ class GrpcRequestLoggerTest extends AirSpec {
       log("path") shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/helloStreaming"
       log("content_type") shouldBe "application/grpc"
       log("rpc_interface") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
-      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
+      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.example.DemoApiImpl"
       log("rpc_method") shouldBe "helloStreaming"
       // Do not record rpc_args for client-streaming
       log("rpc_args") shouldBe Map("name" -> "gRPC")
@@ -126,7 +126,7 @@ class GrpcRequestLoggerTest extends AirSpec {
       log("path") shouldBe "/wvlet.airframe.http.grpc.example.DemoApi/helloBidiStreaming"
       log("content_type") shouldBe "application/grpc"
       log("rpc_interface") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
-      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.example.DemoApi"
+      log("rpc_class") shouldBe "wvlet.airframe.http.grpc.example.DemoApiImpl"
       log("rpc_method") shouldBe "helloBidiStreaming"
       // Do not record rpc_args for client-streaming
       log.get("rpc_args") shouldBe empty

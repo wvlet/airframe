@@ -14,7 +14,7 @@
 package wvlet.airframe.http.grpc
 
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.grpc.example.DemoApi
+import wvlet.airframe.http.grpc.example.{DemoApi, DemoApiImpl}
 import wvlet.airframe.http.grpc.example.DemoApi.DemoApiClient
 import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec
@@ -23,7 +23,7 @@ import wvlet.airspec.AirSpec
   */
 object GrpcStreamingTest extends AirSpec {
 
-  private lazy val router: Router = Router.add[DemoApi]
+  private lazy val router: Router = Router.add[DemoApiImpl]
   protected override def design = {
     gRPC.server.withRouter(router).designWithChannel
   }

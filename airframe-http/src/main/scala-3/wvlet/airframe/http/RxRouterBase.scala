@@ -19,19 +19,19 @@ import wvlet.airframe.surface.Surface
 
 trait RxRouterObjectBase {
   inline def of[Controller]: RxRouter = {
-    wvlet.airframe.registerTraitFactory[Controller]
+    // wvlet.airframe.registerTraitFactory[Controller]
     RxRouter.EndpointNode(Surface.of[Controller], Surface.methodsOf[Controller], None)
   }
 
   inline def filter[Filter <: RxHttpFilter]: RxRouter.FilterNode = {
-    wvlet.airframe.registerTraitFactory[Filter]
+    // wvlet.airframe.registerTraitFactory[Filter]
     RxRouter.FilterNode(None, Surface.of[Filter])
   }
 }
 
 trait RxRouteFilterBase { self: RxRouter.FilterNode =>
   inline def andThen[Filter <: RxHttpFilter]: RxRouter.FilterNode = {
-    wvlet.airframe.registerTraitFactory[Filter]
+    // wvlet.airframe.registerTraitFactory[Filter]
     val next = RxRouter.FilterNode(None, Surface.of[Filter])
     self.andThen(next)
   }

@@ -16,7 +16,7 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     */
   inline def to[B <: A]: DesignWithContext[B] = {
     {
-      registerTraitFactory[B]
+      // registerTraitFactory[B]
       val to = Surface.of[B]
       if (self.from == to) {
         wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
@@ -28,7 +28,7 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
 
   inline def toEagerSingletonOf[B <: A]: DesignWithContext[B] = {
     {
-      registerTraitFactory[B]
+      // registerTraitFactory[B]
       val to = Surface.of[B]
       if (self.from == to) {
         wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
@@ -39,7 +39,7 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
   }
 
   inline def toProvider[D1](factory: D1 => A): DesignWithContext[A] = {
-    registerTraitFactory[D1]
+    // registerTraitFactory[D1]
     self.design.addBinding[A](
       ProviderBinding(
         DependencyFactory(self.from, Seq(Surface.of[D1]), factory),
@@ -50,8 +50,8 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     )
   }
   inline def toProvider[D1, D2](factory: (D1, D2) => A): DesignWithContext[A] = {
-    registerTraitFactory[D1]
-    registerTraitFactory[D2]
+    // registerTraitFactory[D1]
+    // registerTraitFactory[D2]
     self.design.addBinding[A](
       ProviderBinding(
         DependencyFactory(self.from, Seq(Surface.of[D1], Surface.of[D2]), factory),
@@ -62,9 +62,9 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     )
   }
   inline def toProvider[D1, D2, D3](factory: (D1, D2, D3) => A): DesignWithContext[A] = {
-    registerTraitFactory[D1]
-    registerTraitFactory[D2]
-    registerTraitFactory[D3]
+    // registerTraitFactory[D1]
+    // registerTraitFactory[D2]
+    // registerTraitFactory[D3]
     self.design.addBinding[A](
       ProviderBinding(
         DependencyFactory(self.from, Seq(Surface.of[D1], Surface.of[D2], Surface.of[D3]), factory),
@@ -75,10 +75,10 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     )
   }
   inline def toProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): DesignWithContext[A] = {
-    registerTraitFactory[D1]
-    registerTraitFactory[D2]
-    registerTraitFactory[D3]
-    registerTraitFactory[D4]
+    // registerTraitFactory[D1]
+    // registerTraitFactory[D2]
+    // registerTraitFactory[D3]
+    // registerTraitFactory[D4]
     self.design.addBinding[A](
       ProviderBinding(
         DependencyFactory(self.from, Seq(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4]), factory),
@@ -89,11 +89,11 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     )
   }
   inline def toProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): DesignWithContext[A] = {
-    registerTraitFactory[D1]
-    registerTraitFactory[D2]
-    registerTraitFactory[D3]
-    registerTraitFactory[D4]
-    registerTraitFactory[D5]
+    // registerTraitFactory[D1]
+    // registerTraitFactory[D2]
+    // registerTraitFactory[D3]
+    // registerTraitFactory[D4]
+    // registerTraitFactory[D5]
     self.design.addBinding[A](
       ProviderBinding(
         DependencyFactory(
@@ -109,7 +109,7 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
   }
 
   inline def toEagerSingletonProvider[D1](factory: D1 => A): DesignWithContext[A] = {
-    registerTraitFactory[D1]
+    // registerTraitFactory[D1]
     self.design.addBinding[A](
       ProviderBinding(
         DependencyFactory(self.from, Seq(Surface.of[D1]), factory),
@@ -120,8 +120,8 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     )
   }
   inline def toEagerSingletonProvider[D1, D2](factory: (D1, D2) => A): DesignWithContext[A] = {
-    registerTraitFactory[D1]
-    registerTraitFactory[D2]
+    // registerTraitFactory[D1]
+    // registerTraitFactory[D2]
     self.design.addBinding[A](
       ProviderBinding(
         DependencyFactory(self.from, Seq(Surface.of[D1], Surface.of[D2]), factory),
@@ -132,9 +132,9 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     )
   }
   inline def toEagerSingletonProvider[D1, D2, D3](factory: (D1, D2, D3) => A): DesignWithContext[A] = {
-    registerTraitFactory[D1]
-    registerTraitFactory[D2]
-    registerTraitFactory[D3]
+    // registerTraitFactory[D1]
+    // registerTraitFactory[D2]
+    // registerTraitFactory[D3]
     self.design.addBinding[A](
       ProviderBinding(
         DependencyFactory(self.from, Seq(Surface.of[D1], Surface.of[D2], Surface.of[D3]), factory),
@@ -145,10 +145,10 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     )
   }
   inline def toEagerSingletonProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): DesignWithContext[A] = {
-    registerTraitFactory[D1]
-    registerTraitFactory[D2]
-    registerTraitFactory[D3]
-    registerTraitFactory[D4]
+    // registerTraitFactory[D1]
+    // registerTraitFactory[D2]
+    // registerTraitFactory[D3]
+    // registerTraitFactory[D4]
     self.design.addBinding[A](
       ProviderBinding(
         DependencyFactory(self.from, Seq(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4]), factory),
@@ -159,11 +159,11 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     )
   }
   inline def toEagerSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): DesignWithContext[A] = {
-    registerTraitFactory[D1]
-    registerTraitFactory[D2]
-    registerTraitFactory[D3]
-    registerTraitFactory[D4]
-    registerTraitFactory[D5]
+    // registerTraitFactory[D1]
+    // registerTraitFactory[D2]
+    // registerTraitFactory[D3]
+    // registerTraitFactory[D4]
+    // registerTraitFactory[D5]
     self.design.addBinding[A](
       ProviderBinding(
         DependencyFactory(

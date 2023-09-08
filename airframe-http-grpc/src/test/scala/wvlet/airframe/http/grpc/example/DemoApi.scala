@@ -35,6 +35,8 @@ import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 import wvlet.airframe.http.router.Route
 
+class DemoApiImpl extends DemoApi
+
 @RPC
 trait DemoApi extends LogSupport {
   def getContext: String = {
@@ -132,20 +134,14 @@ object DemoApi extends LogSupport {
     }
   }
 
+  val router = Router.add[DemoApiImpl]
+
   def design: Design = gRPC.server
     .withRouter(router)
     .withName("DemoApi")
     .withInterceptor(contextTestInterceptor)
     .designWithChannel
     .bind[DemoApiClient].toProvider { (channel: Channel) => new DemoApiClient(channel) }
-
-  val router = Router.add[DemoApi]
-
-  private def getRoute(name: String): Route = {
-    router.routes.find(_.methodSurface.name == name).getOrElse {
-      throw new IllegalArgumentException(s"Route is not found :${name}")
-    }
-  }
 
   /**
     * Manually build a gRPC client here as we can't use sbt-airframe.
@@ -163,6 +159,13 @@ object DemoApi extends LogSupport {
     override def build(channel: Channel, callOptions: CallOptions): DemoApiClient = {
       new DemoApiClient(channel, callOptions)
     }
+
+    private def getRoute(name: String): Route = {
+      router.routes.find(_.methodSurface.name == name).getOrElse {
+        throw new IllegalArgumentException(s"Route is not found :${name}")
+      }
+    }
+
     private val codec = codecFactory.of[Map[String, Any]]
     private val getContextMethodDescriptor =
       GrpcServiceBuilder.buildMethodDescriptor(getRoute("getContext"), codecFactory)

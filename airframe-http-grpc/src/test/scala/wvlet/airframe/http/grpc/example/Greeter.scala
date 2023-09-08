@@ -22,7 +22,7 @@ import wvlet.airframe.http.router.Route
 /**
   */
 @RPC
-trait Greeter {
+class Greeter {
   def hello(name: String): String = s"Hello ${name}!"
 }
 
