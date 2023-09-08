@@ -77,7 +77,7 @@ private[wvlet] object AirframeMacros {
     def newInstanceBinder(t: c.Type): c.Tree = {
       if (shouldGenerateTrait(t)) {
         q"""{
-             ss : wvlet.airframe.Session =>
+             (ss : wvlet.airframe.Session) =>
              ss.getOrElse(${surfaceOf(t)},
               (new $t with wvlet.airframe.DISupport { override def session() = ss }).asInstanceOf[$t]
              )
@@ -90,7 +90,7 @@ private[wvlet] object AirframeMacros {
     def createNewInstanceOf(t: c.Type): c.Tree = {
       if (shouldGenerateTrait(t)) {
         q"""{
-             ss : wvlet.airframe.Session =>
+             (ss : wvlet.airframe.Session) =>
              ss.createNewInstanceOf(${surfaceOf(t)},
               (new $t with wvlet.airframe.DISupport { override def session() = ss }).asInstanceOf[$t]
              )
@@ -846,7 +846,7 @@ private[wvlet] object AirframeMacros {
     val i1 = t.typeArgs(0)                    // I1
     val a  = t.typeArgs(1)                    // A
     val h  = new BindHelper[c.type](c)
-    q"""{ i1: ${i1} =>
+    q"""{ (i1: ${i1}) =>
           val session = ${h.findSession}.newSharedChildSession(wvlet.airframe.newDesign.bindSurface(${h
         .surfaceOf(i1)}).toLazyInstance(i1))
           ${h.createNewInstanceOf(a)}(session)
