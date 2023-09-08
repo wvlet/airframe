@@ -53,7 +53,7 @@ object Launcher extends LauncherCompat with LogSupport {
     val defaultUsage =
       parser.schema.args.map(x => s"[${x}]").mkString(" ")
 
-    import wvlet.airframe.surface.reflect._
+    import wvlet.airframe.surface.reflect.*
     val command = surface.findAnnotationOf[command]
     // If the user specified usage and description via @command annotation, use them.
     val commandUsage       = command.map(_.usage()).find(_.nonEmpty).getOrElse(defaultUsage)
@@ -61,7 +61,7 @@ object Launcher extends LauncherCompat with LogSupport {
     val commandName        = if (name.nonEmpty) name else CName.toNaturalName(surface.name).replaceAll("\\s+", "_")
 
     // Find sub commands marked with [[wvlet.airframe.opts.command]] annotation
-    import wvlet.airframe.surface.reflect._
+    import wvlet.airframe.surface.reflect.*
     val subCommands = for (m <- methods; c <- m.findAnnotationOf[command]) yield {
       newMethodLauncher(m, c)
     }
@@ -69,7 +69,7 @@ object Launcher extends LauncherCompat with LogSupport {
     // Find the default command
     val defaultCommand = methods
       .find { m =>
-        import wvlet.airframe.surface.reflect._
+        import wvlet.airframe.surface.reflect.*
         m.findAnnotationOf[command] match {
           case Some(cmd) => cmd.isDefault
           case None      => false

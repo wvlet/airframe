@@ -82,7 +82,7 @@ case class ConfigChange(tpe: Surface, key: ConfigKey, default: Any, current: Any
   override def toString = s"[${tpe}] ${key} = ${current} (default = ${default})"
 }
 
-import wvlet.airframe.config.Config._
+import wvlet.airframe.config.Config.*
 
 case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHolder])
     extends ConfigCompat
@@ -91,7 +91,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     with LogSupport {
   override def toString: String = printConfig
 
-  import wvlet.airframe.surface.reflect._
+  import wvlet.airframe.surface.reflect.*
 
   /**
     * Create a map representation of this config for display purpose. Parameters with @secret annotation will be hidden.

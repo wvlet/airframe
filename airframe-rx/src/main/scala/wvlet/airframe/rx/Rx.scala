@@ -24,7 +24,7 @@ import scala.util.{Failure, Success, Try}
   * @tparam A
   */
 trait RxOps[+A] { self =>
-  import Rx._
+  import Rx.*
 
   def parents: Seq[RxOps[_]]
 
@@ -132,7 +132,7 @@ trait Rx[+A] extends RxOps[A] {
     compat.toSeq(this)
   }
 
-  import Rx._
+  import Rx.*
 
   override def toRx: Rx[A] = this
   def toOption[X, A1 >: A](implicit ev: A1 <:< Option[X]): RxOption[X] = RxOptionOp(

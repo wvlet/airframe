@@ -16,7 +16,7 @@ package wvlet.airframe.http.client
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.control.IO
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.rx.Rx
 
 import java.io.InputStream
@@ -27,7 +27,7 @@ import java.net.http.HttpResponse.BodyHandlers
 import java.net.http.{HttpClient, HttpRequest, HttpResponse}
 import java.util.function.Consumer
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 /**
   * Http connection implementation using Http Client of Java 11

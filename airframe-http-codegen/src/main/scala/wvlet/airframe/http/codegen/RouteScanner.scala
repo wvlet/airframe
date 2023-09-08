@@ -111,7 +111,7 @@ object RouteScanner extends LogSupport {
     // This is because we generally cannot call classOf[MyObj$] in Scala other than scanning classes directly from class loaders.
     for (cl <- classes if !cl.getName.endsWith("$")) {
       trace(f"Searching ${cl} for HTTP endpoints")
-      import wvlet.airframe.surface.reflect._
+      import wvlet.airframe.surface.reflect.*
       lazy val s       = ReflectSurfaceFactory.ofClass(cl)
       lazy val methods = ReflectSurfaceFactory.methodsOfClass(cl)
       val hasRPC       = findDeclaredAnnotation[RPC](cl).isDefined

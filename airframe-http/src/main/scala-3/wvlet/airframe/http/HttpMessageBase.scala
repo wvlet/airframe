@@ -36,7 +36,7 @@ trait HttpMessageBase[Raw] {
     * Set the content body using a given object. Encoding can be JSON or MsgPack based on Content-Type header.
     */
   inline def withContentOf[A](a: A): Raw = {
-    if (self.isContentTypeMsgPack) {
+    if self.isContentTypeMsgPack then {
       self.withMsgPack(MessageCodec.of[A].toMsgPack(a))
     } else {
       self.withJson(MessageCodec.of[A].toJson(a))
@@ -48,7 +48,7 @@ trait HttpMessageBase[Raw] {
     * header.
     */
   inline def withContentOf[A](a: A, codecFactory: MessageCodecFactory): Raw = {
-    if (self.isContentTypeMsgPack) {
+    if self.isContentTypeMsgPack then {
       self.withMsgPack(codecFactory.of[A].toMsgPack(a))
     } else {
       self.withJson(codecFactory.of[A].toJson(a))

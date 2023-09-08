@@ -30,7 +30,7 @@ object TracerTest extends LogSupport {
 /**
   */
 class TracerTest extends AirSpec {
-  import TracerTest._
+  import TracerTest.*
 
   test("should trace events") {
     val d = newDesign.noLifeCycleLogging

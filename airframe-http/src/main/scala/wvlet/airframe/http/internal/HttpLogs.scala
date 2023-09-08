@@ -14,7 +14,7 @@
 package wvlet.airframe.http.internal
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.http.client.HttpClientContext
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.{Parameter, Surface, TypeName}
@@ -276,7 +276,7 @@ object HttpLogs {
     }.mkString
   }
 
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
   private val headerSanitizeCache = new ConcurrentHashMap[String, String]().asScala
 
   private def sanitizeHeader(h: String): String = {

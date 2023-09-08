@@ -20,7 +20,7 @@ import wvlet.log.LogSupport
   * as different types when binding dependencies.
   */
 object DI_10_TypeAliasBinding extends App {
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   case class DbConfig(db: String)
 

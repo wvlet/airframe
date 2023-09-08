@@ -42,7 +42,7 @@ object ObjectCodecTest {
 /**
   */
 class ObjectCodecTest extends CodecSpec {
-  import wvlet.airframe.codec.ObjectCodecTest._
+  import wvlet.airframe.codec.ObjectCodecTest.*
 
   val codec = MessageCodec.of[A1].asInstanceOf[ObjectMapCodec[A1]]
 

@@ -18,7 +18,7 @@ import java.time.Instant
 import java.util
 import java.util.Base64
 
-import wvlet.airframe.msgpack.spi.MessageException._
+import wvlet.airframe.msgpack.spi.MessageException.*
 
 /**
   */
@@ -310,7 +310,7 @@ object Value {
 }
 
 object ValueFactory {
-  import Value._
+  import Value.*
   def newNil                            = NilValue
   def newBoolean(b: Boolean)            = BooleanValue(b)
   def newInteger(i: Int)                = LongValue(i)

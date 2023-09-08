@@ -26,7 +26,7 @@ object ValueCodecTest {
   case class RawMsgpackTest2(msgpack: MsgPack)
 }
 
-import wvlet.airframe.codec.ValueCodecTest._
+import wvlet.airframe.codec.ValueCodecTest.*
 
 /**
   */

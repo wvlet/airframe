@@ -28,7 +28,7 @@ import scala.util.Try
   */
 object RPCStatus {
 
-  import RPCStatusType._
+  import RPCStatusType.*
 
   // These variables need to be lazy to avoid NPE during the initialization
   private lazy val codeTable: Map[Int, RPCStatus]        = all.map { x => x.code -> x }.toMap
@@ -58,7 +58,7 @@ object RPCStatus {
     GrpcStatus.UNAUTHENTICATED_16    -> RPCStatus.UNAUTHENTICATED_U13
   )
 
-  import HttpStatus._
+  import HttpStatus.*
   private lazy val httpStatusMapping: Map[HttpStatus, RPCStatus] = Map(
     Unknown_000                       -> UNKNOWN_I1,
     Continue_100                      -> UNKNOWN_I1,
@@ -432,7 +432,7 @@ sealed abstract class RPCStatus(
   assert(statusType.isValidCode(code), s"Status code ${code} is invalid for ${statusType} status type")
   assert(statusType.isValidHttpStatus(httpStatus), s"Unexpected http status ${httpStatus} for the code: ${name}")
 
-  import RPCStatus._
+  import RPCStatus.*
 
   def isSuccess: Boolean = statusType == RPCStatusType.SUCCESS
   def isFailure: Boolean = !isSuccess

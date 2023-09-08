@@ -21,7 +21,7 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object ParquetRecordReader extends LogSupport {
   private class IntConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
@@ -64,7 +64,7 @@ object ParquetRecordReader extends LogSupport {
 
 }
 
-import ParquetRecordReader._
+import ParquetRecordReader.*
 
 class ParquetRecordReader[A](
     surface: Surface,

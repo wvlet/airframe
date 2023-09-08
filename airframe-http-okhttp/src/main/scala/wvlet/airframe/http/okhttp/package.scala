@@ -6,7 +6,7 @@ import wvlet.airframe.http.HttpMessage.{ByteArrayMessage, EmptyMessage, LazyByte
 import wvlet.log.LogSupport
 
 import java.io.EOFException
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 package object okhttp {
 

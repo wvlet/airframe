@@ -19,7 +19,7 @@ import java.util
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil.withResource
-import wvlet.airframe.codec.JDBCCodec._
+import wvlet.airframe.codec.JDBCCodec.*
 
 /**
   */

@@ -15,7 +15,7 @@ package wvlet.airframe.http.netty
 
 import io.netty.buffer.Unpooled
 import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, SimpleChannelInboundHandler}
-import io.netty.handler.codec.http._
+import io.netty.handler.codec.http.*
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.internal.RPCResponseFilter
 import wvlet.airframe.http.{
@@ -32,8 +32,8 @@ import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.log.LogSupport
 
 import java.net.InetSocketAddress
-import scala.jdk.CollectionConverters._
-import NettyRequestHandler._
+import scala.jdk.CollectionConverters.*
+import NettyRequestHandler.*
 
 class NettyRequestHandler(config: NettyServerConfig, dispatcher: NettyBackend.Filter)
     extends SimpleChannelInboundHandler[FullHttpRequest]

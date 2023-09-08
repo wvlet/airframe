@@ -1,6 +1,6 @@
 package wvlet.airframe
 
-import wvlet.airframe.AirframeMacros._
+import wvlet.airframe.AirframeMacros.*
 import wvlet.log.LogSupport
 
 import scala.language.experimental.macros

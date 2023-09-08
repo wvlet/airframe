@@ -15,7 +15,7 @@ package wvlet.airframe.benchmark.rpc_grpc
 
 import io.grpc.Channel
 import io.grpc.stub.StreamObserver
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
 import wvlet.airframe.benchmark.http.HttpBenchmark.asyncIteration

@@ -18,7 +18,7 @@ import wvlet.airframe.http.{RPC, RxRouter, RxRouterProvider}
   */
 @RPC
 trait RPCTestService {
-  import RPCTestService._
+  import RPCTestService.*
   def addUser(request: CreateUserRequest): User
 }
 
@@ -31,7 +31,7 @@ object RPCTestService extends RxRouterProvider {
 
 @RPC
 trait RPCExample {
-  import RPCExample._
+  import RPCExample.*
 
   def zeroAryRPC: Unit
   def rpcWithPrimitive(p1: Int): Int

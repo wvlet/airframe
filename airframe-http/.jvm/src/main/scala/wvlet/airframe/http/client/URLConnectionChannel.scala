@@ -15,14 +15,14 @@ package wvlet.airframe.http.client
 
 import wvlet.airframe.control.{Control, IO}
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.rx.Rx
 
 import java.io.{IOException, InputStream, OutputStream}
 import java.net.HttpURLConnection
 import java.util.zip.{GZIPInputStream, InflaterInputStream}
 import scala.concurrent.duration.Duration
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 class URLConnectionChannel(serverAddress: ServerAddress, config: HttpClientConfig) extends HttpChannel {
   override def send(request: Request, channelConfig: HttpChannelConfig): Response = {

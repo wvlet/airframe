@@ -14,7 +14,7 @@
 package wvlet.airframe.legacy
 
 import wvlet.airspec.AirSpec
-import wvlet.airframe._
+import wvlet.airframe.*
 
 object FactoryBindingTest {
   case class MyConfig(a: Int)
@@ -59,7 +59,7 @@ object FactoryBindingTest {
 /**
   */
 class FactoryBindingTest extends AirSpec {
-  import FactoryBindingTest._
+  import FactoryBindingTest.*
 
   val c1 = MyConfig(10)
   val c2 = MyConfig2(20)

@@ -20,7 +20,7 @@ import scala.util.parsing.combinator.RegexParsers
 
 object DataTypeParser extends RegexParsers with LogSupport {
 
-  import DataType._
+  import DataType.*
 
   override def skipWhitespace = true
 

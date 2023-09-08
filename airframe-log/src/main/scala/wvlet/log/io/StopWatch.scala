@@ -89,7 +89,7 @@ import scala.collection.mutable.LinkedHashMap
   *   leo
   */
 trait Timer extends Serializable {
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
   @transient private[this] val holder =
     new ThreadLocal[util.ArrayDeque[TimeReport]] {
       override def initialValue() = new util.ArrayDeque[TimeReport]()
@@ -110,7 +110,7 @@ trait Timer extends Serializable {
       def body()           = f
     }
 
-  import wvlet.log.LogLevel._
+  import wvlet.log.LogLevel.*
 
   /**
     * Measure the execution time of the code block

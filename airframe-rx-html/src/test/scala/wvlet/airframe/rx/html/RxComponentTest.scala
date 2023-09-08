@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.rx.html
 
-import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.all.*
 import wvlet.airspec.AirSpec
 
 /**

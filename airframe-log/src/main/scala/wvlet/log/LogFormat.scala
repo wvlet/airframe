@@ -36,7 +36,7 @@ trait LogFormatter extends Formatter {
 }
 
 object LogFormatter extends AnsiColorPalette {
-  import LogTimestampFormatter._
+  import LogTimestampFormatter.*
 
   def currentThreadName: String = Thread.currentThread().getName
 

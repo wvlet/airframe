@@ -17,7 +17,7 @@ package wvlet.airframe.examples.di
   * An example of manually creating a session
   */
 object DI_04_Session extends App {
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   trait MyApp
 

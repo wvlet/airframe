@@ -20,7 +20,7 @@ import wvlet.log.LogSupport
   * bindFactory[X => Y] example
   */
 object BindFactory {
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   trait X {
     def hello: String   = "Hello"

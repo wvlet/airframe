@@ -22,7 +22,7 @@ object RecursiveMethodParamTest {
 }
 
 class RecursiveMethodParamTest extends munit.FunSuite {
-  import RecursiveMethodParamTest._
+  import RecursiveMethodParamTest.*
 
   // ....
   test("Compile method surfaces with recursive method param") {

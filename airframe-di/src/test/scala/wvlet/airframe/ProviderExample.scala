@@ -35,7 +35,7 @@ object ProviderVal {
 }
 
 object ProviderSerializationExample extends Serializable {
-  import wvlet.airframe.ProviderVal._
+  import wvlet.airframe.ProviderVal.*
 
   val d1 = D1(1)
   val d2 = D2(2)

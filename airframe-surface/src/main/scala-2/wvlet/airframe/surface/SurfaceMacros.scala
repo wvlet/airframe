@@ -23,7 +23,7 @@ import scala.reflect.macros.{blackbox => sm}
   */
 private[surface] object SurfaceMacros {
   def surfaceOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val targetType = implicitly[c.WeakTypeTag[A]].tpe
     val t          = targetType.typeSymbol
     if (t.isStatic) {
@@ -41,7 +41,7 @@ private[surface] object SurfaceMacros {
   }
 
   def methodSurfaceOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val targetType = implicitly[c.WeakTypeTag[A]].tpe
     q"wvlet.airframe.surface.SurfaceFactory.methodsOf[${targetType}]"
   }
@@ -62,7 +62,7 @@ private[surface] object SurfaceMacros {
   }
 
   private[surface] class SurfaceGenerator[C <: sm.Context](val c: C) {
-    import c.universe._
+    import c.universe.*
 
     private val seen       = scala.collection.mutable.Set[Type]()
     private val memo       = scala.collection.mutable.Map[Type, c.Tree]()

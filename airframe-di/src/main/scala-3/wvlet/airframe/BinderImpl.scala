@@ -3,7 +3,7 @@ package wvlet.airframe
 import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
-import wvlet.airframe.Binder._
+import wvlet.airframe.Binder.*
 
 /**
   */
@@ -18,7 +18,7 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     {
       // registerTraitFactory[B]
       val to = Surface.of[B]
-      if (self.from == to) {
+      if self.from == to then {
         wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
         throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(List(to), SourceCode())
       }
@@ -30,7 +30,7 @@ private[airframe] trait BinderImpl[A] extends LogSupport { self: Binder[A] =>
     {
       // registerTraitFactory[B]
       val to = Surface.of[B]
-      if (self.from == to) {
+      if self.from == to then {
         wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
         throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(List(to), SourceCode())
       }

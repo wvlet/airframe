@@ -30,7 +30,7 @@ private[grpc] object GrpcResponseHeaderInterceptor extends ServerInterceptor {
     next.startCall(
       new SimpleForwardingServerCall[ReqT, RespT](call) {
         override def sendHeaders(responseHeaders: Metadata): Unit = {
-          import GrpcContext._
+          import GrpcContext.*
           // [warning] Currently setting the content-type here has no effect because
           // grpc-java always uses content-type: application/grpc
           // https://github.com/grpc/grpc-java/issues/7321

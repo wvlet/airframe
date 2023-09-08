@@ -30,7 +30,7 @@ final class UnsafeCanvas(
     // so that it cannot be released by GC.
     private[canvas] val reference: AnyRef
 ) extends Canvas {
-  import UnsafeUtil._
+  import UnsafeUtil.*
 
   override def readByte(offset: Long): Byte = {
     unsafe.getByte(base, address + offset)

@@ -258,7 +258,7 @@ object DOMRenderer extends LogSupport {
     } else {
       val targetValueToRemove = toRemove.trim
 
-      import scala.util.chaining._
+      import scala.util.chaining.*
       styleValue.trim
         .split(""";\s*""")
         .map(x => s"${x};")

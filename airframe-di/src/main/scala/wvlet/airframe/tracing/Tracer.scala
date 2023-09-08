@@ -15,7 +15,7 @@ package wvlet.airframe.tracing
 
 import wvlet.airframe.lifecycle.Injectee
 import wvlet.airframe.surface.Surface
-import wvlet.airframe.tracing.TraceEvent._
+import wvlet.airframe.tracing.TraceEvent.*
 import wvlet.airframe.Session
 import wvlet.log.LogSupport
 

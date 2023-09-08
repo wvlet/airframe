@@ -14,7 +14,7 @@
 package wvlet.airframe.benchmark.ulid
 
 import com.chatwork.scala.ulid.{ULID => ChatworkULID}
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.ulid.{ULID => AirframeULID}
 

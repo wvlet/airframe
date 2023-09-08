@@ -34,7 +34,7 @@ object DI_07_JSR250Annotation extends App {
     }
   }
 
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   newSilentDesign.build[MyService] { service =>
     // PostConstrct method will be called here

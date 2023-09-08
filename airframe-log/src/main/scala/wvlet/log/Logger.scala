@@ -208,7 +208,7 @@ class Logger(
 object Logger {
   LogEnv.initLogManager()
 
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
 
   private lazy val loggerCache = new ConcurrentHashMap[String, Logger].asScala
 

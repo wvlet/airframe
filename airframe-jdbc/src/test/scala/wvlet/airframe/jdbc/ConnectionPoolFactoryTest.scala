@@ -16,7 +16,7 @@ package wvlet.airframe.jdbc
 import java.sql.SQLException
 
 import wvlet.log.LogSupport
-import wvlet.airframe._
+import wvlet.airframe.*
 import wvlet.airframe.control.Control
 import wvlet.airspec.AirSpec
 
@@ -26,7 +26,7 @@ object ConnectionPoolFactoryTest {
   type MyDbConfig3 = DbConfig
 }
 
-import wvlet.airframe.jdbc.ConnectionPoolFactoryTest._
+import wvlet.airframe.jdbc.ConnectionPoolFactoryTest.*
 
 class TestConnection(connectionPoolFactory: ConnectionPoolFactory, c1: MyDbConfig1, c2: MyDbConfig2, c3: MyDbConfig3)
     extends LogSupport {

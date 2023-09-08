@@ -21,7 +21,7 @@ import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
 

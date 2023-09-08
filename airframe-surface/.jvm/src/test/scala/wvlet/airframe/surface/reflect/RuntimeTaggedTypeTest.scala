@@ -15,7 +15,7 @@ package wvlet.airframe.surface.reflect
 
 import wvlet.airframe.surface.{Surface, SurfaceSpec}
 
-import wvlet.airframe.surface.tag._
+import wvlet.airframe.surface.tag.*
 
 object RuntimeTaggedTypeTest {
   case class Person(id: Int, name: String)
@@ -29,7 +29,7 @@ object RuntimeTaggedTypeTest {
 
 /**
   */
-import RuntimeTaggedTypeTest._
+import RuntimeTaggedTypeTest.*
 class RuntimeTaggedTypeTest extends SurfaceSpec {
   test("pass sanity check") {
     val e: Person @@ Employee = new Person(1, "leo").taggedWith[Employee]

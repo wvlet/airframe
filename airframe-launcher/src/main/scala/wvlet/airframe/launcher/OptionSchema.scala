@@ -51,7 +51,7 @@ sealed trait OptionSchema extends LogSupport {
 }
 
 object ClassOptionSchema extends LogSupport {
-  import wvlet.airframe.surface.reflect._
+  import wvlet.airframe.surface.reflect.*
 
   /**
     * Create an option schema from a given class definition
@@ -96,7 +96,7 @@ class ClassOptionSchema(val surface: Surface, val options: Seq[CLOption], val ar
     extends OptionSchema {}
 
 object MethodOptionSchema {
-  import wvlet.airframe.surface.reflect._
+  import wvlet.airframe.surface.reflect.*
 
   def apply(method: MethodSurface, path: Path = Path.current, argIndexOffset: Int = 0): MethodOptionSchema = {
     // TODO Merge this method with ClassOptionSchema.apply as the logic is almost the same

@@ -21,7 +21,7 @@ import wvlet.log.LogSupport
   * An example of adding lifecycle hooks to the injected service
   */
 object DI_05_LifecycleHooks extends App {
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   trait MyApp extends LogSupport {
     private val threadManager = bind[ExecutorService] { Executors.newCachedThreadPool() }

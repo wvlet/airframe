@@ -30,7 +30,7 @@ object EnumTest {
 }
 
 class EnumTest extends munit.FunSuite {
-  import EnumTest._
+  import EnumTest.*
 
   test("Find Surface.stringExtractor") {
     Surface.of[Color] match {

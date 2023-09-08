@@ -17,12 +17,12 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import wvlet.airspec.AirSpec
 
-import wvlet.airframe._
+import wvlet.airframe.*
 
 /**
   */
 class BindLocalTest extends AirSpec {
-  import BindLocalTest._
+  import BindLocalTest.*
 
   class LocalX(counter: AtomicInteger) extends AutoCloseable {
     override def close(): Unit = {

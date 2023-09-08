@@ -20,7 +20,7 @@ import wvlet.airframe.tracing.ChromeTracer
   * Trace Event Format: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview
   */
 object DI_90_Tracing extends App {
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   case class MyAppConfig(port: Int = 8080)
 

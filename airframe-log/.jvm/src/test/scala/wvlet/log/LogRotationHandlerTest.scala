@@ -15,7 +15,7 @@ package wvlet.log
 
 import java.io.File
 
-import wvlet.log.io.IOUtil._
+import wvlet.log.io.IOUtil.*
 
 /**
   */

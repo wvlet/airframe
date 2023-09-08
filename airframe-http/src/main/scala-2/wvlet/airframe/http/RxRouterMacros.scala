@@ -18,7 +18,7 @@ import scala.reflect.macros.{blackbox => sm}
 private[http] object RxRouterMacros {
 
   def of[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
 
     q"""
@@ -30,7 +30,7 @@ private[http] object RxRouterMacros {
   }
 
   def filter[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
 
     if (t <:< c.typeTag[wvlet.airframe.http.RxHttpFilter].tpe) {
@@ -47,7 +47,7 @@ private[http] object RxRouterMacros {
   }
 
   def andThenFilter[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
 
     if (t <:< c.typeTag[wvlet.airframe.http.RxHttpFilter].tpe) {

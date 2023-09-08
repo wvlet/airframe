@@ -24,7 +24,7 @@ object ImplicitArgTest {
 /**
   */
 class ImplicitArgTest extends AirSpec {
-  import ImplicitArgTest._
+  import ImplicitArgTest.*
 
   test("support implicit args") {
     val d = Design.newDesign

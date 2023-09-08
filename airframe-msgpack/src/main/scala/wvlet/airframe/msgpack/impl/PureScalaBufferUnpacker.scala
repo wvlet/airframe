@@ -16,7 +16,7 @@ package wvlet.airframe.msgpack.impl
 import java.math.BigInteger
 import java.time.Instant
 
-import wvlet.airframe.msgpack.spi._
+import wvlet.airframe.msgpack.spi.*
 
 /**
   */

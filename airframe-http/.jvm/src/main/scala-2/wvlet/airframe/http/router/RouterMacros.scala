@@ -25,7 +25,7 @@ import scala.reflect.macros.{blackbox => sm}
   */
 object RouterMacros {
   def of[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
 
     if (t <:< c.typeTag[HttpFilterType].tpe) {
@@ -45,7 +45,7 @@ object RouterMacros {
   }
 
   def add[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
 
     q"""
@@ -58,7 +58,7 @@ object RouterMacros {
   }
 
   def andThen[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
 
     q"""

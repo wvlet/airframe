@@ -39,7 +39,7 @@ object HigherKindTypeTest {
   }
 }
 
-import HigherKindTypeTest._
+import HigherKindTypeTest.*
 
 class HigherKindTypeTest extends AirSpec {
   val d =

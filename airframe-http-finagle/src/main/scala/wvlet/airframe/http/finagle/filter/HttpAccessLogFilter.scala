@@ -16,7 +16,7 @@ import com.twitter.finagle.http.{HeaderMap, Request, Response}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
 import wvlet.airframe.control.MultipleExceptions
-import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter._
+import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter.*
 import wvlet.airframe.http.finagle.{FinagleBackend, FinagleServer}
 import wvlet.airframe.http.internal.{HttpLogs, RPCCallContext}
 import wvlet.airframe.http.{HttpAccessLogWriter, HttpBackend, HttpHeader, HttpStatus}

@@ -25,7 +25,7 @@ object DefaultValueTest {
 /**
   */
 class DefaultValueTest extends AirSpec {
-  import DefaultValueTest._
+  import DefaultValueTest.*
   test("populate default values") { (b: B) =>
     b.a shouldBe A()
   }

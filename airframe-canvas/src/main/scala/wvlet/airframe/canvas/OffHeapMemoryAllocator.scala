@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 import wvlet.log.LogSupport
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 private[canvas] case class MemoryRefHolder(ref: MemoryReference, size: Long)
 

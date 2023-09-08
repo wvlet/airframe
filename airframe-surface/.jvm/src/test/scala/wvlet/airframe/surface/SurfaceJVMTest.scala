@@ -21,7 +21,7 @@ object SurfaceJVMTest {
   type MyChrono = ChronoUnit
 }
 
-import SurfaceJVMTest._
+import SurfaceJVMTest.*
 class SurfaceJVMTest extends SurfaceSpec {
   test("resolve ParSeq") {
     pendingUntil("ParSeq is not available in Scala 2.13")

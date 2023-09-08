@@ -17,7 +17,7 @@ import wvlet.log.LogSupport
 /**
   */
 object DI_03_InTraitInjection extends App {
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   case class MyAppConfig(port: Int = 8080)
 

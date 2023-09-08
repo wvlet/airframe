@@ -21,7 +21,7 @@ import java.math.BigInteger
 /**
   */
 class ZeroTest extends SurfaceSpec {
-  import ZeroTest._
+  import ZeroTest.*
 
   protected def zeroCheck[P](surface: Surface, v: P): P = {
     val z = Zero.zeroOf(surface).asInstanceOf[P]

@@ -23,7 +23,7 @@ import com.twitter.util.{Await, Future}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.{JSONCodec, MessageCodec}
 import wvlet.airframe.control.Control
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
 import wvlet.airspec.spi.AirSpecContext

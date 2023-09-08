@@ -48,7 +48,7 @@ class LifeCycleManager(
 ) extends LogSupport {
   self =>
 
-  import LifeCycleManager._
+  import LifeCycleManager.*
 
   private val state                = new AtomicReference[LifeCycleStage](INIT)
   def currentState: LifeCycleStage = state.get()

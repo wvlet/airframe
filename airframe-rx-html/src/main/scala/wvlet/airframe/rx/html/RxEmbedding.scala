@@ -20,7 +20,7 @@ import scala.language.higherKinds
 import scala.language.implicitConversions
 
 trait RxEmbedding {
-  import RxEmbedding._
+  import RxEmbedding.*
   implicit def embedAsNode[A: EmbeddableNode](v: A): RxElement = Embedded(v)
 }
 

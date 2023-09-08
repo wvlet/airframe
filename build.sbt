@@ -100,7 +100,7 @@ val buildSettings = Seq[Setting[_]](
   mimaPreviousArtifacts := Set("org.wvlet.airframe" %%% s"${name.value}" % AIRFRAME_BINARY_COMPAT_VERSION),
   mimaFailOnNoPrevious  := false,
   mimaBinaryIssueFilters ++= {
-    import com.typesafe.tools.mima.core._
+    import com.typesafe.tools.mima.core.*
     Seq(
       ProblemFilters.exclude[MissingClassProblem]("wvlet.airframe.http.internal.*")
     )
@@ -109,17 +109,17 @@ val buildSettings = Seq[Setting[_]](
   scalacOptions ++= Seq(
     "-feature",
     "-deprecation"
-    // Use this for debugging Macros
-    // "-Xcheck-macros"
+    // Use this flag for debugging Macros
+    // "-Xcheck-macros",
   ) ++ {
     if (scalaVersion.value.startsWith("3.")) {
       Seq.empty
     } else {
       Seq(
-        // For using import * syntax
-        "-Xsource:3",
         // Necessary for tracking source code range in airframe-rx demo
-        "-Yrangepos"
+        "-Yrangepos",
+        // For using the new import * syntax even in Scala 2.x
+        "-Xsource:3"
       )
     }
   },
@@ -341,7 +341,7 @@ def parallelCollection(scalaVersion: String) = {
 }
 
 // https://stackoverflow.com/questions/41670018/how-to-prevent-sbt-to-include-test-dependencies-into-the-pom
-import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, _}
+import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, *}
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 
 def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>

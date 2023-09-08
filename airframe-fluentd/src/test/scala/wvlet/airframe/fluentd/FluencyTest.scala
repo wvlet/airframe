@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
-import wvlet.airframe._
+import wvlet.airframe.*
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil

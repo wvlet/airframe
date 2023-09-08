@@ -16,7 +16,7 @@ package wvlet.airframe.codec
 import wvlet.airframe.surface.Surface
 
 import scala.language.experimental.macros
-import scala.reflect.runtime.universe._
+import scala.reflect.runtime.universe.*
 
 object ScalaCompat {
 

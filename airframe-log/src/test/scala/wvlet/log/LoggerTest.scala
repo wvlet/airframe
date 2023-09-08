@@ -16,7 +16,7 @@ package wvlet.log
 import java.io.{ByteArrayOutputStream, PrintStream}
 import java.util.{logging => jul}
 
-import wvlet.log.LogFormatter._
+import wvlet.log.LogFormatter.*
 import wvlet.log.LogLevel.LogOrdering
 import wvlet.log.LoggerTest.capture
 

@@ -1,7 +1,7 @@
 package examples
 
-import wvlet.airspec._
-import wvlet.airframe._
+import wvlet.airspec.*
+import wvlet.airframe.*
 
 class TestSyntaxSpec extends AirSpec {
   override protected def design =

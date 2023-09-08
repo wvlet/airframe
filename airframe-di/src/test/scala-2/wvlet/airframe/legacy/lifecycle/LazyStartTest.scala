@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import wvlet.airframe.{bind, newSilentDesign}
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
-import wvlet.airframe._
+import wvlet.airframe.*
 
 object LazyStartTest {
   type F1 = AtomicBoolean
@@ -40,7 +40,7 @@ object LazyStartTest {
 /**
   */
 class LazyStartTest extends AirSpec {
-  import LazyStartTest._
+  import LazyStartTest.*
 
   val f1 = new AtomicBoolean(false)
   val f2 = new AtomicBoolean(false)

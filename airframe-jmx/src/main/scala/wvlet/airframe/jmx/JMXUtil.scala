@@ -64,7 +64,7 @@ object JMXUtil extends LogSupport {
     p.setProperty("com.sun.management.jmxremote.authenticate", "false")
     p.setProperty("com.sun.management.jmxremote.ssl", "false")
 
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     if (isAtLeastJava9) {
       // TODO Java9 support
 //      Try {

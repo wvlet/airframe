@@ -21,7 +21,7 @@ import org.apache.parquet.schema.{LogicalTypeAnnotation, Type}
 import wvlet.log.LogSupport
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 case class ColumnStatistics(
     numNulls: Option[Long] = None,

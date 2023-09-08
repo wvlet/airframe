@@ -15,7 +15,7 @@ package wvlet.airframe.http.router
 
 import wvlet.airframe.{Session, http}
 import wvlet.airframe.codec.{MISSING_PARAMETER, MessageCodecException, MessageCodecFactory}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.http.internal.RPCCallContext
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.{MethodSurface, Surface}

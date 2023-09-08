@@ -74,7 +74,7 @@ object CircuitBreaker extends LogSupport {
   }
 }
 
-import CircuitBreaker._
+import CircuitBreaker.*
 
 /**
   * A safe interface for accessing CircuitBreaker states when handling events.

@@ -13,12 +13,12 @@
  */
 package wvlet.airframe.benchmark.rpc_netty
 
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.Session
 import wvlet.airframe.benchmark.http.HttpBenchmark.asyncIteration
 import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewServiceSyncClient}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.http.client.{AsyncClient, SyncClient}
 import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.log.LogSupport

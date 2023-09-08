@@ -14,7 +14,7 @@
 package wvlet.airframe.rx.html.widget.ui.bootstrap
 
 import wvlet.airframe.rx.html.{RxElement, tags}
-import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.all.*
 
 /**
   * Twitter Bootstrap extensions

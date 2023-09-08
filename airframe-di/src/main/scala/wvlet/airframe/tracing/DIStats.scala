@@ -20,7 +20,7 @@ import wvlet.airframe.surface.Surface
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 case class DIStatsReport(
     coverage: Double,

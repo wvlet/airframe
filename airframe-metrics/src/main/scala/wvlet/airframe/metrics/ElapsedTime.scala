@@ -6,13 +6,13 @@ import java.util.regex.Pattern
 import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.annotation.tailrec
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 /**
   * Scala version of io.airlift.unit.Duration
   */
 case class ElapsedTime(value: Double, unit: TimeUnit) extends Comparable[ElapsedTime] {
-  import ElapsedTime._
+  import ElapsedTime.*
 
   require(!value.isInfinite, s"infinite size")
   require(!value.isNaN, s"value is not a number")

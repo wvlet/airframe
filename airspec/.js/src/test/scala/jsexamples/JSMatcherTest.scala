@@ -27,7 +27,7 @@ object JSMatcherTest {
 /**
   */
 class JSMatcherTest extends AirSpec {
-  import JSMatcherTest._
+  import JSMatcherTest.*
 
   test("equal if both are empty") {
     new js.Object() shouldNotBeTheSameInstanceAs new js.Object()

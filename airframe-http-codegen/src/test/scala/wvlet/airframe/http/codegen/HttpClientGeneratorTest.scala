@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.http.codegen
 import java.net.URLClassLoader
-import example.api._
-import wvlet.airframe.http._
+import example.api.*
+import wvlet.airframe.http.*
 import wvlet.airframe.http.codegen.client.{AsyncClientGenerator, GrpcClientGenerator}
 import wvlet.airspec.AirSpec
 import wvlet.airframe.http.Router

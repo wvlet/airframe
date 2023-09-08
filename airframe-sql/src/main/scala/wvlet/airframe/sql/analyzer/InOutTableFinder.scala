@@ -16,7 +16,7 @@ package wvlet.airframe.sql.analyzer
 import wvlet.airframe.sql.analyzer.InOutTableFinder.TableScanContext
 import wvlet.airframe.sql.analyzer.TableGraph.{Alias, SourceTable, TargetTable}
 import wvlet.airframe.sql.model.LogicalPlan
-import wvlet.airframe.sql.model.LogicalPlan._
+import wvlet.airframe.sql.model.LogicalPlan.*
 
 /**
   * Find input/output tables in an SQL statement

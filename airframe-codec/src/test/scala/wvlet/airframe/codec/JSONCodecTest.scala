@@ -81,7 +81,7 @@ class JSONCodecTest extends AirSpec {
   }
 
   test("support Instant") {
-    import JSONCodecTest._
+    import JSONCodecTest.*
     val codec        = MessageCodec.of[WithTimestamp]
     val v            = WithTimestamp(Instant.ofEpochMilli(1500000000000L))
     val jsonObj      = codec.toJSONObject(v)

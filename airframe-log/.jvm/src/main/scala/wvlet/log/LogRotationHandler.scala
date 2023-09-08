@@ -68,7 +68,7 @@ class LogRotationHandler(
 ) extends jl.Handler
     with AutoCloseable
     with Flushable {
-  import LogRotationHandler._
+  import LogRotationHandler.*
 
   recoverTempFiles(fileName)
   setFormatter(formatter)

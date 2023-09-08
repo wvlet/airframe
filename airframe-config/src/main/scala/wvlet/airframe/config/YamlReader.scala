@@ -20,11 +20,11 @@ import org.yaml.snakeyaml.Yaml
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.msgpack.spi.{MessagePack, Packer}
 import wvlet.log.LogSupport
-import wvlet.log.io.IOUtil._
+import wvlet.log.io.IOUtil.*
 import wvlet.airframe.surface.{Surface, Zero}
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.collection.immutable.ListMap
 
 object YamlReader extends YamlReaderCompat with LogSupport {

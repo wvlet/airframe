@@ -17,7 +17,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.CircuitBreaker
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 
 import java.util.concurrent.TimeUnit
 import scala.collection.immutable.ListMap

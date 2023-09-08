@@ -17,7 +17,7 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.internal.RPCCallContext
 import wvlet.airframe.surface.{Parameter, Surface, TypeName}
 import wvlet.airframe.ulid.ULID
-import wvlet.log._
+import wvlet.log.*
 
 import java.lang.reflect.InvocationTargetException
 import java.util.Locale
@@ -200,7 +200,7 @@ object HttpAccessLogWriter {
     rpcArgsBuilder.result()
   }
 
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
   private val headerSanitizeCache = new ConcurrentHashMap[String, String]().asScala
 
   private[http] def sanitizeHeader(h: String): String = {

@@ -33,7 +33,7 @@ object LogRecord {
   private[log] val leafLoggerNameCache = collection.mutable.Map[String, String]()
 }
 
-import wvlet.log.LogRecord._
+import wvlet.log.LogRecord.*
 
 case class LogRecord(level: LogLevel, source: Option[LogSource], message: String, cause: Option[Throwable])
     extends jl.LogRecord(level.jlLevel, message) {

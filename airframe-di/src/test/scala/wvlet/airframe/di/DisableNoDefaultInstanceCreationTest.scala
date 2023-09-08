@@ -23,7 +23,7 @@ object DisableNoDefaultInstanceCreationTest {
 }
 
 class DisableNoDefaultInstanceCreationTest extends AirSpec {
-  import DisableNoDefaultInstanceCreationTest._
+  import DisableNoDefaultInstanceCreationTest.*
 
   test("disable implicit instance creation") {
     val d = Design.newSilentDesign.bind[Component].toSingleton.noDefaultInstanceInjection

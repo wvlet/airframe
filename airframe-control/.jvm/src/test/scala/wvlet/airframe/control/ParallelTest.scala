@@ -115,7 +115,7 @@ class ParallelTest extends AirSpec {
   }
 
   test("be run for Seq using syntax sugar") {
-    import wvlet.airframe.control.parallel._
+    import wvlet.airframe.control.parallel.*
 
     Parallel.stats.startedTasks.set(0)
     Parallel.stats.finishedTasks.set(0)
@@ -130,7 +130,7 @@ class ParallelTest extends AirSpec {
   }
 
   test("be run for Iterator using syntax sugar") {
-    import wvlet.airframe.control.parallel._
+    import wvlet.airframe.control.parallel.*
 
     Parallel.stats.startedTasks.set(0)
     Parallel.stats.finishedTasks.set(0)

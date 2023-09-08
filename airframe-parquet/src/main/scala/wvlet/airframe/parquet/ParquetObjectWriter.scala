@@ -24,7 +24,7 @@ import wvlet.airframe.msgpack.spi.{Code, MessagePack, MsgPack, Value}
 import wvlet.airframe.surface.{CName, Parameter, Surface}
 import wvlet.log.LogSupport
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 trait ParquetFieldWriter extends LogSupport {
   def index: Int

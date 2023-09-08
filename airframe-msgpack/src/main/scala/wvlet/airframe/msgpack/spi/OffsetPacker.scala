@@ -17,7 +17,7 @@ import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 
-import wvlet.airframe.msgpack.spi.Code._
+import wvlet.airframe.msgpack.spi.Code.*
 
 /**
   * Write MessagePack code at a given position on the buffer and return the written byte length

@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.config
-import wvlet.airframe._
-import wvlet.airframe.surface.tag._
+import wvlet.airframe.*
+import wvlet.airframe.surface.tag.*
 import wvlet.airspec.AirSpec
 
 trait AppTag

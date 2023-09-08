@@ -38,7 +38,7 @@ package object airframe {
     */
   def newSilentDesign: Design = newDesign.noLifeCycleLogging
 
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
 
   // This will not be used in Scala 3, but left for the compatibility with Scala 2
   val traitFactoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
@@ -52,14 +52,14 @@ package object airframe {
     // registerTraitFactoryImpl[A]
   }
 
-  import scala.quoted._
+  import scala.quoted.*
 
   private def shouldGenerateTrait[A](using
       tpe: Type[A],
       q: Quotes
   ): Boolean = {
-    import quotes._
-    import quotes.reflect._
+    import quotes.*
+    import quotes.reflect.*
 
     val t = TypeRepr.of[A]
     val a = t.typeSymbol
@@ -82,18 +82,18 @@ package object airframe {
     val isLocal      = a.flags.is(Flags.Local)
     val isTrait      = a.flags.is(Flags.Trait)
 
-    val shouldInstantiateTrait = if (!isStatic) {
+    val shouldInstantiateTrait = if !isStatic then {
       // = Non static type
       // If X is non static type (= local class or trait),
       // we need to instantiate it first in order to populate its $outer variables
 
       // We cannot instantiate path-dependent types
-      if (a.fullName.contains("#")) {
+      if a.fullName.contains("#") then {
         false
       } else {
         !hasAbstractMethods && hasPublicDefaultConstructor
       }
-    } else if (a.isAbstractType) {
+    } else if a.isAbstractType then {
       // = Abstract type
       // We cannot build abstract type X that has abstract methods, so bind[X].to[ConcreteType]
       // needs to be found in the design
@@ -119,10 +119,10 @@ package object airframe {
       tpe: Type[A],
       q: Quotes
   ): Expr[Unit] = {
-    import quotes._
-    import quotes.reflect._
+    import quotes.*
+    import quotes.reflect.*
 
-    if (!shouldGenerateTrait[A]) {
+    if !shouldGenerateTrait[A] then {
       '{}
     } else {
       val name    = "$anon"

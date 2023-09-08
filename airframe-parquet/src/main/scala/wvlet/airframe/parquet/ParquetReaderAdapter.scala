@@ -20,12 +20,12 @@ import org.apache.parquet.hadoop.api.ReadSupport.ReadContext
 import org.apache.parquet.hadoop.api.{InitContext, ReadSupport}
 import org.apache.parquet.hadoop.util.HadoopInputFile
 import org.apache.parquet.io.InputFile
-import org.apache.parquet.io.api._
+import org.apache.parquet.io.api.*
 import org.apache.parquet.schema.MessageType
 import wvlet.airframe.surface.{CName, Surface}
 
 import java.util
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object ParquetReaderAdapter {
 

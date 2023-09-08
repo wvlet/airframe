@@ -25,7 +25,7 @@ object ControllerExample {
 /**
   */
 trait ControllerExample extends LogSupport {
-  import ControllerExample._
+  import ControllerExample.*
 
   @Endpoint(path = "/user/:id", method = HttpMethod.GET)
   def getUser(id: String): User = {

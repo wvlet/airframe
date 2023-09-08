@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.codec
 import java.sql.{ResultSet, Time, Timestamp, Types}
-import wvlet.airframe.codec.PrimitiveCodec._
+import wvlet.airframe.codec.PrimitiveCodec.*
 import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, ValueType}
 import wvlet.log.LogSupport
 

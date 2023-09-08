@@ -22,7 +22,7 @@ object HttpMacros {
   def read0[Resp: c.WeakTypeTag](c: sm.Context)(
       request: c.Tree
   ): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val respType = implicitly[c.WeakTypeTag[Resp]]
     q"""{
@@ -37,7 +37,7 @@ object HttpMacros {
       request: c.Tree,
       requestContent: c.Tree
   ): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val reqType  = implicitly[c.WeakTypeTag[Req]]
     val respType = implicitly[c.WeakTypeTag[Resp]]
@@ -55,7 +55,7 @@ object HttpMacros {
   def read0Async[Resp: c.WeakTypeTag](c: sm.Context)(
       request: c.Tree
   ): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val respType = implicitly[c.WeakTypeTag[Resp]]
     q"""{
@@ -70,7 +70,7 @@ object HttpMacros {
       request: c.Tree,
       requestContent: c.Tree
   ): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val reqType  = implicitly[c.WeakTypeTag[Req]]
     val respType = implicitly[c.WeakTypeTag[Resp]]
@@ -86,7 +86,7 @@ object HttpMacros {
   }
 
   def toJsonWithCodecFactory[A: c.WeakTypeTag](c: sm.Context)(a: c.Tree, codecFactory: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val tpe = implicitly[c.WeakTypeTag[A]].tpe
     q"""{
@@ -96,7 +96,7 @@ object HttpMacros {
   }
 
   def toJson[A: c.WeakTypeTag](c: sm.Context)(a: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val tpe = implicitly[c.WeakTypeTag[A]].tpe
     q"""{
@@ -106,7 +106,7 @@ object HttpMacros {
   }
 
   def toMsgPackWithCodecFactory[A: c.WeakTypeTag](c: sm.Context)(a: c.Tree, codecFactory: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val tpe = implicitly[c.WeakTypeTag[A]].tpe
     q"""{
@@ -116,7 +116,7 @@ object HttpMacros {
   }
 
   def toMsgPack[A: c.WeakTypeTag](c: sm.Context)(a: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val tpe = implicitly[c.WeakTypeTag[A]].tpe
     q"""{
@@ -128,7 +128,7 @@ object HttpMacros {
   def toContentWithCodecFactory[A: c.WeakTypeTag](
       c: sm.Context
   )(a: c.Tree, codecFactory: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     q"""{
         if(${c.prefix}.isContentTypeMsgPack) {
           ${toMsgPackWithCodecFactory[A](c)(a, codecFactory)}
@@ -139,7 +139,7 @@ object HttpMacros {
   }
 
   def toContentOf[A: c.WeakTypeTag](c: sm.Context)(a: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val tpe = implicitly[c.WeakTypeTag[A]].tpe
     q"""{

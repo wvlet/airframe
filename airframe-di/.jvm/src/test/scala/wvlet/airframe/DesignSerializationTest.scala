@@ -15,7 +15,7 @@ package wvlet.airframe
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, ObjectInputStream, ObjectOutputStream}
 
-import DesignTest._
+import DesignTest.*
 import wvlet.airspec.AirSpec
 
 class CustomClassLoader(in: InputStream) extends ObjectInputStream(in) {
@@ -47,7 +47,7 @@ object DesignSerializationTest {
 /**
   */
 class DesignSerializationTest extends AirSpec {
-  import DesignSerializationTest._
+  import DesignSerializationTest.*
 
   test("be serializable") {
     val b   = serialize(d1)

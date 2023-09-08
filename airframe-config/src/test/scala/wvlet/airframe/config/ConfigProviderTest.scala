@@ -20,7 +20,7 @@ object ConfigProviderTest {
 //    val configA = bind[ConfigA]
   }
 }
-import ConfigProviderTest._
+import ConfigProviderTest.*
 import wvlet.airspec.AirSpec
 
 /**

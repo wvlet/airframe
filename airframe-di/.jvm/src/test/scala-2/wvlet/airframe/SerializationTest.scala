@@ -45,8 +45,8 @@ object SerializationTest extends AirSpec {
   }
 
   test("serialize provider that involves toInstance of local var") {
-    import ProviderSerializationExample._
-    import ProviderVal._
+    import ProviderSerializationExample.*
+    import ProviderVal.*
 
     val d = newDesign
       .bind[D1].toInstance(d1)

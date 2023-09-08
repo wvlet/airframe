@@ -22,7 +22,7 @@ import wvlet.airspec.AirSpec
 /**
   */
 class FinagleTest extends AirSpec {
-  import wvlet.airframe.http.finagle._
+  import wvlet.airframe.http.finagle.*
 
   test("provide facade of http requests") {
     Seq(

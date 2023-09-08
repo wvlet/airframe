@@ -2,7 +2,7 @@ package wvlet.log
 
 import java.util.concurrent.{ExecutorService, Executors, TimeUnit}
 import wvlet.log.LogFormatter.{BareFormatter, ThreadLogFormatter}
-import wvlet.log.io.IOUtil._
+import wvlet.log.io.IOUtil.*
 import wvlet.log.io.Timer
 
 /**

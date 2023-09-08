@@ -16,7 +16,7 @@ package wvlet.airframe.codec
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 
-import scala.reflect.runtime.universe._
+import scala.reflect.runtime.universe.*
 
 /**
   */

@@ -32,7 +32,9 @@ val buildSettings = Seq[Setting[_]](
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
   scalacOptions ++= Seq(
     "-feature",
-    "-deprecation"
+    "-deprecation",
+    // For using import * syntax
+    "-Xsource:3"
   ),
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
   libraryDependencies ++= Seq(

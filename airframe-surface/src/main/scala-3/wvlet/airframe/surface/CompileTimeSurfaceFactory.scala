@@ -8,14 +8,14 @@ private[surface] object CompileTimeSurfaceFactory {
   type SurfaceMatcher = PartialFunction[Type[_], Expr[Surface]]
 
   def surfaceOf[A](using tpe: Type[A], quotes: Quotes): Expr[Surface] = {
-    import quotes._
-    import quotes.reflect._
+    import quotes.*
+    import quotes.reflect.*
 
     val f           = new CompileTimeSurfaceFactory(using quotes)
     val surfaceExpr = f.surfaceOf(tpe)
     val t           = TypeRepr.of[A]
     val flags       = t.typeSymbol.flags
-    if (!flags.is(Flags.JavaStatic) && flags.is(Flags.NoInits)) {
+    if !flags.is(Flags.JavaStatic) && flags.is(Flags.NoInits) then {
       t.typeSymbol.maybeOwner match {
         // For inner-class definitions
         case s: Symbol
@@ -41,10 +41,10 @@ private[surface] object CompileTimeSurfaceFactory {
 }
 
 private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
-  import quotes._
-  import quotes.reflect._
+  import quotes.*
+  import quotes.reflect.*
 
-  private def fullTypeNameOf(t: Type[_]): String = {
+  private def fullTypeNameOf(t: Type[?]): String = {
     fullTypeNameOf(TypeRepr.of(using t))
   }
 
@@ -74,7 +74,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
   private type Factory = PartialFunction[TypeRepr, Expr[Surface]]
 
-  def surfaceOf(tpe: Type[_]): Expr[Surface] = {
+  def surfaceOf(tpe: Type[?]): Expr[Surface] = {
     surfaceOf(TypeRepr.of(using tpe))
   }
 
@@ -88,14 +88,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       '{ LazySurface(${ clsOf(t) }, ${ Expr(fullTypeNameOf(t)) }) }
     }
 
-    if (useVarRef && surfaceToVar.contains(t)) {
-      if (lazySurface.contains(t)) {
+    if useVarRef && surfaceToVar.contains(t) then {
+      if lazySurface.contains(t) then {
         buildLazySurface
       } else {
         Ref(surfaceToVar(t)).asExprOf[Surface]
       }
-    } else if (seen.contains(t)) {
-      if (memo.contains(t)) {
+    } else if seen.contains(t) then {
+      if memo.contains(t) then {
         memo(t)
       } else {
         lazySurface += t
@@ -106,12 +106,12 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       // For debugging
       // println(s"[${typeNameOf(t)}]\n  ${t}\nfull type name: ${fullTypeNameOf(t)}\nclass: ${t.getClass}")
       val generator = factory.andThen { expr =>
-        if (!lazySurface.contains(t)) {
+        if !lazySurface.contains(t) then {
           // Generate the surface code without using the cache
           expr
         } else {
           // Need to cache the recursive Surface to be referenced in a LazySurface
-          val cacheKey = if (typeNameOf(t) == "scala.Any") {
+          val cacheKey = if typeNameOf(t) == "scala.Any" then {
             t match {
               case ParamRef(TypeLambda(typeNames, _, _), _) =>
                 // Distinguish scala.Any and type bounds (such as _)
@@ -128,7 +128,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           }
           val key = Literal(StringConstant(cacheKey)).asExprOf[String]
           '{
-            if (!wvlet.airframe.surface.surfaceCache.contains(${ key })) {
+            if !wvlet.airframe.surface.surfaceCache.contains(${ key }) then {
               wvlet.airframe.surface.surfaceCache += ${ key } -> ${ expr }
             }
             wvlet.airframe.surface.surfaceCache.apply(${ key })
@@ -200,7 +200,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           // t.dealias does not dealias for path dependent types, so extracting the dealiased type from AST.
           surfaceOf(b.tpe)
         case _ =>
-          if (t != dealiased) {
+          if t != dealiased then {
             surfaceOf(dealiased)
           } else {
             surfaceOf(t.simplified)
@@ -357,7 +357,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       case pc =>
         // val cstr = Select.apply(New(TypeIdent(ts)), "<init>")
         val cstr = New(Inferred(t)).select(pc)
-        if (ts.typeMembers.isEmpty) {
+        if ts.typeMembers.isEmpty then {
           Some(cstr)
         } else {
           val lookupTable = typeMappingTable(t, pc)
@@ -373,11 +373,10 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private def createObjectFactoryOf(targetType: TypeRepr): Option[Expr[ObjectFactory]] = {
     val ts    = targetType.typeSymbol
     val flags = ts.flags
-    if (
-      flags.is(Flags.Abstract) || flags.is(Flags.Module) || hasAbstractMethods(targetType) || isPathDependentType(
+    if flags.is(Flags.Abstract) || flags.is(Flags.Module) || hasAbstractMethods(targetType) || isPathDependentType(
         targetType
       )
-    ) {
+    then {
       None
     } else {
       getResolvedConstructorOf(targetType).map { cstr =>
@@ -462,7 +461,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   private def hasOptionReturnType(d: DefDef, retElementType: TypeRepr): Boolean = {
-    if (d.returnTpt.tpe <:< TypeRepr.of[Option[_]]) {
+    if d.returnTpt.tpe <:< TypeRepr.of[Option[_]] then {
       val typeArgs = typeArgsOf(d.returnTpt.tpe)
       typeArgs.headOption match {
         case Some(t) if t =:= retElementType => true
@@ -523,8 +522,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
     val declaredTypes = t.typeSymbol.declaredTypes.filterNot(_.flags.is(Flags.Module))
     val paramss = {
-      if (origParamSymss.nonEmpty && declaredTypes.nonEmpty)
-        origParamSymss.tail
+      if origParamSymss.nonEmpty && declaredTypes.nonEmpty then origParamSymss.tail
       else {
         origParamSymss
       }
@@ -624,7 +622,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       }
       // println(s"${paramName} ${paramIsAccessible}")
 
-      val accessor: Expr[Option[Any => Any]] = if (method.isClassConstructor && paramIsAccessible) {
+      val accessor: Expr[Option[Any => Any]] = if method.isClassConstructor && paramIsAccessible then {
         // MethodParameter.accessor[(owner type), (parameter type]]
         val accessorMethod: Symbol = TypeRepr.of[MethodParameter.type].typeSymbol.methodMember("accessor").head
         val objRef                 = Ref(TypeRepr.of[MethodParameter].typeSymbol.companionModule)
@@ -698,14 +696,14 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     Expr.ofSeq(paramExprs)
   }
 
-  private def getTree(e: Expr[_]): Tree = {
+  private def getTree(e: Expr[?]): Tree = {
     val f = e.getClass().getDeclaredField("tree")
     f.setAccessible(true)
     val tree = f.get(e)
     tree.asInstanceOf[Tree]
   }
 
-  def methodsOf(t: Type[_]): Expr[Seq[MethodSurface]] = {
+  def methodsOf(t: Type[?]): Expr[Seq[MethodSurface]] = {
     methodsOf(TypeRepr.of(using t))
   }
 
@@ -732,7 +730,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           // Use alphabetically ordered variable names
           f"__s${surfaceVarCount}%03X",
           TypeRepr.of[Surface],
-          if (lazySurface.contains(tpe)) {
+          if lazySurface.contains(tpe) then {
             // If the surface itself is lazy, we need to eagerly initialize it to update the surface cache
             Flags.EmptyFlags
           } else {
@@ -772,7 +770,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private val seenMethodParent = scala.collection.mutable.Set[TypeRepr]()
 
   private def methodsOfInternal(targetType: TypeRepr): Expr[Seq[MethodSurface]] = {
-    if (seenMethodParent.contains(targetType)) {
+    if seenMethodParent.contains(targetType) then {
       sys.error(s"recursive method found in: ${targetType.typeSymbol.fullName}")
     } else {
       seenMethodParent += targetType
@@ -835,7 +833,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
             val extracted = Select.unique(args, "apply").appliedTo(Literal(IntConstant(i)))
             clsCast(extracted, arg.tpe)
         }
-        if (argList.isEmpty) {
+        if argList.isEmpty then {
           val newExpr = m.tree match {
             case d: DefDef if d.trailingParamss.nonEmpty =>
               // An empty arg method, e.g., def methodName()
@@ -847,7 +845,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           newExpr.changeOwner(sym)
         } else {
           // Bind to function arguments
-          val newExpr = if (methodTypeParams.isEmpty) {
+          val newExpr = if methodTypeParams.isEmpty then {
             expr.appliedToArgs(argList.toList)
           } else {
             // For generic functions, type params also need to be applied
@@ -909,32 +907,32 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   private def modifierBitMaskOf(m: Symbol): Int = {
     var mod = 0
 
-    if (!m.flags.is(Flags.Private) && !m.flags.is(Flags.Protected) && !m.flags.is(Flags.PrivateLocal)) {
+    if !m.flags.is(Flags.Private) && !m.flags.is(Flags.Protected) && !m.flags.is(Flags.PrivateLocal) then {
       mod |= MethodModifier.PUBLIC
     }
-    if (m.flags.is(Flags.Private)) {
+    if m.flags.is(Flags.Private) then {
       mod |= MethodModifier.PRIVATE
     }
-    if (m.flags.is(Flags.Protected)) {
+    if m.flags.is(Flags.Protected) then {
       mod |= MethodModifier.PROTECTED
     }
-    if (m.flags.is(Flags.JavaStatic)) {
+    if m.flags.is(Flags.JavaStatic) then {
       mod |= MethodModifier.STATIC
     }
-    if (m.flags.is(Flags.Final)) {
+    if m.flags.is(Flags.Final) then {
       mod |= MethodModifier.FINAL
     }
-    if (m.flags.is(Flags.Abstract)) {
+    if m.flags.is(Flags.Abstract) then {
       mod |= MethodModifier.ABSTRACT
     }
     mod
   }
 
-  def surfaceFromClass(cl: Class[_]): Expr[Surface] = {
+  def surfaceFromClass(cl: Class[?]): Expr[Surface] = {
     val name         = cl.getName
     val rawType      = Class.forName(name)
     val constructors = rawType.getConstructors
-    val (typeArgs, params) = if (constructors.nonEmpty) {
+    val (typeArgs, params) = if constructors.nonEmpty then {
       val primaryConstructor = constructors(0)
       val paramSurfaces: Seq[Expr[Surface]] = primaryConstructor.getParameterTypes.map { paramType =>
         val tastyType = quotes.reflect.TypeRepr.typeConstructorOf(paramType)

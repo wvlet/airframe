@@ -14,7 +14,7 @@
 package wvlet.airframe.di
 import wvlet.airframe.Design
 import wvlet.airframe.surface.Surface
-import wvlet.airframe.surface.tag._
+import wvlet.airframe.surface.tag.*
 import wvlet.airspec.AirSpec
 
 /**

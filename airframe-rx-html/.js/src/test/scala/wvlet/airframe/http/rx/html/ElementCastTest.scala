@@ -14,7 +14,7 @@
 package wvlet.airframe.http.rx.html
 
 import org.scalajs.dom.HTMLElement
-import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.all.*
 import wvlet.airframe.rx.html.compat.MouseEvent
 import wvlet.airframe.rx.html.{RxDOM, RxElement}
 import wvlet.airspec.AirSpec
@@ -31,7 +31,7 @@ class ElementCastTest extends AirSpec {
   }
 
   test("cast with helper method") {
-    import RxDOM._
+    import RxDOM.*
     var handled = false
     val rx = new RxElement {
       override def render = div(

@@ -15,7 +15,7 @@ package wvlet
 
 import java.util.concurrent.ConcurrentHashMap
 
-import wvlet.airframe.AirframeMacros._
+import wvlet.airframe.AirframeMacros.*
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
@@ -128,7 +128,7 @@ package object airframe {
   // For internal use to hold caches of factories of trait with a session
   def registerTraitFactory[A]: Surface = macro registerTraitFactoryImpl[A]
 
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
   val traitFactoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
   def getOrElseUpdateTraitFactoryCache(s: Surface, factory: Session => Any): Session => Any = {
     traitFactoryCache.getOrElseUpdate(s, factory)

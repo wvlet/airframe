@@ -15,7 +15,7 @@ package wvlet.airframe.http.router
 
 import wvlet.airframe.Session
 import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.log.LogSupport
 
 import scala.language.higherKinds

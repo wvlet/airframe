@@ -14,13 +14,13 @@
 package wvlet.airframe.control
 
 import java.util.UUID
-import java.util.concurrent._
+import java.util.concurrent.*
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong, AtomicReference}
 
 import wvlet.log.LogSupport
 
 import scala.reflect.ClassTag
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.util.control.{ControlThrowable, NonFatal}
 
 /**

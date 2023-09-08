@@ -16,12 +16,12 @@ package wvlet.airframe.legacy
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
-import wvlet.airframe._
+import wvlet.airframe.*
 
 /**
   */
 class AssistedInjectionTest extends AirSpec {
-  import AssistedInjectionTest._
+  import AssistedInjectionTest.*
 
   test("support assisted injection") {
     newSilentDesign

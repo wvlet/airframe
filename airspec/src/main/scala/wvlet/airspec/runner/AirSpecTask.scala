@@ -13,7 +13,7 @@
  */
 package wvlet.airspec.runner
 
-import sbt.testing._
+import sbt.testing.*
 import wvlet.airframe.Design
 import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
 import wvlet.log.LogSupport

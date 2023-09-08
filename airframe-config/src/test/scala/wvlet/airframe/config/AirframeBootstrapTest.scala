@@ -14,7 +14,7 @@
 package wvlet.airframe.config
 
 import wvlet.airframe.Design
-import wvlet.airframe.surface._
+import wvlet.airframe.surface.*
 import wvlet.airspec.AirSpec
 
 object AirframeBootstrapTest {
@@ -22,7 +22,7 @@ object AirframeBootstrapTest {
   case class App2Config(name: String)
   case class DBConfig(host: String, private val port: Option[Int] = None)
 
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   val module1 =
     newDesign
@@ -42,7 +42,7 @@ object AirframeBootstrapTest {
 /**
   */
 class AirframeBootstrapTest extends AirSpec {
-  import AirframeBootstrapTest._
+  import AirframeBootstrapTest.*
 
   test("bind configs") {
     module1.noLifeCycleLogging.showConfig

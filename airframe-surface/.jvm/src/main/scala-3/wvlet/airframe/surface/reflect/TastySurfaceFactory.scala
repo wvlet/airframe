@@ -5,8 +5,8 @@ import wvlet.airframe.surface.{MethodSurface, Surface, Primitive}
 import wvlet.airframe.surface.CompileTimeSurfaceFactory
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.quoted._
-import scala.tasty.inspector._
+import scala.quoted.*
+import scala.tasty.inspector.*
 
 object TastySurfaceFactory extends LogSupport {
 
@@ -14,17 +14,17 @@ object TastySurfaceFactory extends LogSupport {
 
   inline def of[A]: Surface = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
 
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
   private val cache = new ConcurrentHashMap[Class[_], Surface]().asScala
 
-  def ofClass(cl: Class[_]): Surface = {
+  def ofClass(cl: Class[?]): Surface = {
     debug(s"ofClass: ${cl}")
     cache.getOrElseUpdate(
       cl, {
         debug(s"Update cache for ${cl}")
         // Generates Surface from a runtime class
         staging.run { (quotes: Quotes) ?=>
-          import quotes.reflect._
+          import quotes.reflect.*
           val tastyType = quotes.reflect.TypeRepr.typeConstructorOf(cl)
           debug(tastyType)
           val f = new CompileTimeSurfaceFactory(using quotes)
@@ -40,10 +40,10 @@ object TastySurfaceFactory extends LogSupport {
     )
   }
 
-  def methodsOfClass(cl: Class[_]): Seq[MethodSurface] = {
+  def methodsOfClass(cl: Class[?]): Seq[MethodSurface] = {
     // Generates Surface from a runtime class
     val code: Seq[MethodSurface] = staging.run { (quotes: Quotes) ?=>
-      import quotes.reflect._
+      import quotes.reflect.*
       val tastyType = quotes.reflect.TypeRepr.typeConstructorOf(cl)
       debug(tastyType)
       val f = new CompileTimeSurfaceFactory(using quotes)

@@ -96,7 +96,7 @@ object JSONScanner {
   private[json] final val whiteSpaceBitVector: Array[Long] = {
     val b = new Array[Long](256 / 64)
     for (i <- 0 until 256) {
-      import JSONToken._
+      import JSONToken.*
       i match {
         case WS | WS_T | WS_R | WS_N =>
           b(i / 64) |= (1L << (i % 64))
@@ -140,8 +140,8 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
   private[this] var line: Int         = 0
   private[this] val sb                = new StringBuilder()
 
-  import JSONScanner._
-  import JSONToken._
+  import JSONScanner.*
+  import JSONToken.*
 
   private def skipWhiteSpaces: Unit = {
     var toContinue = true

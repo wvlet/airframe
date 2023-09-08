@@ -16,7 +16,7 @@ package wvlet.airframe.metrics
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.duration.TimeUnit
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 /**
   */
@@ -91,7 +91,7 @@ class ElapsedTimeTest extends AirSpec {
     ConversionExample(DAYS, HOURS, 24),
     ConversionExample(DAYS, DAYS, 1)
   )
-  import ElapsedTime._
+  import ElapsedTime.*
 
   test("parse time") {
     examples.foreach { x => ElapsedTime(x.str) shouldBe ElapsedTime(x.value, x.unit) }

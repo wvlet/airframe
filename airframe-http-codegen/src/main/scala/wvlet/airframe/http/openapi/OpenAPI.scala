@@ -15,7 +15,7 @@ package wvlet.airframe.http.openapi
 
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.openapi.OpenAPI._
+import wvlet.airframe.http.openapi.OpenAPI.*
 import wvlet.airframe.json.YAMLFormatter
 import wvlet.airframe.surface.{Union2, Union3}
 

@@ -18,7 +18,7 @@ object QuoteParamTest {
 }
 
 class QuoteParamTest extends SurfaceSpec {
-  import QuoteParamTest._
+  import QuoteParamTest.*
 
   test("read quoted params") {
     val s   = Surface.of[QP]

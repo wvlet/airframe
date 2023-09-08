@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.grpc.internal
 
-import io.grpc._
+import io.grpc.*
 import wvlet.airframe.http.{Compat, RPCContext}
 import wvlet.airframe.http.grpc.GrpcContext
 import wvlet.log.LogSupport

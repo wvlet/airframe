@@ -17,7 +17,7 @@ import wvlet.airframe.http.{RPCEncoding, Router}
 import wvlet.airframe.http.grpc.example.{DemoApi, DemoApiImpl}
 import wvlet.airframe.http.grpc.example.DemoApi.DemoApiClient
 import wvlet.airspec.AirSpec
-import wvlet.airframe.rx._
+import wvlet.airframe.rx.*
 
 /**
   */

@@ -15,7 +15,7 @@ package wvlet.airframe.benchmark.http
 
 import wvlet.airframe.benchmark.http.Greeter.GreeterResponse
 import wvlet.airframe.http.codegen.{HttpClientGeneratorConfig, HttpCodeGenerator}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 
 @RPC
 class Greeter {

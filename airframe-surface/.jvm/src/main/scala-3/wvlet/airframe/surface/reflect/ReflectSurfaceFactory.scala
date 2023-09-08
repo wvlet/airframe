@@ -14,9 +14,9 @@
 package wvlet.airframe.surface.reflect
 
 import wvlet.log.LogSupport
-import wvlet.airframe.surface._
+import wvlet.airframe.surface.*
 
 object ReflectSurfaceFactory {
-  def ofClass(cl: Class[_]): Surface                   = TastySurfaceFactory.ofClass(cl)
-  def methodsOfClass(cl: Class[_]): Seq[MethodSurface] = TastySurfaceFactory.methodsOfClass(cl)
+  def ofClass(cl: Class[?]): Surface                   = TastySurfaceFactory.ofClass(cl)
+  def methodsOfClass(cl: Class[?]): Seq[MethodSurface] = TastySurfaceFactory.methodsOfClass(cl)
 }

@@ -37,7 +37,7 @@ object EnumCodecTest extends AirSpec {
     codec.unpackMsgPack(StringCodec.toMsgPack("Green")) shouldBe empty
   }
 
-  import enumtest._
+  import enumtest.*
 
   test("find unapply(String) from the object") {
     val codec = MessageCodec.of[Status]

@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.netty
 
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.http.client.{HttpClientConfig, SyncClient}
 import wvlet.airframe.http.netty.MyRPCClient.RPCSyncClient
 import wvlet.airframe.http.netty.RPCClientBindingTest.MyApi.{HelloRequest, HelloResponse}
@@ -52,7 +52,7 @@ object MyRPCClient {
 
     object MyRPCApi {
 
-      import internal.MyRPCApiInternals._
+      import internal.MyRPCApiInternals.*
 
       def helloRPC(request: HelloRequest): HelloResponse = {
         client.rpc[__helloRPC_request, HelloResponse](
@@ -65,7 +65,7 @@ object MyRPCClient {
 }
 
 object RPCClientBindingTest extends AirSpec {
-  import MyApi._
+  import MyApi.*
   @RPC
   class MyApi {
     def hello(request: HelloRequest): HelloResponse = HelloResponse(s"Hello ${request.msg}!")

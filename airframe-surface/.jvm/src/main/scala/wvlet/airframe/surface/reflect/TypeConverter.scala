@@ -22,14 +22,14 @@ import wvlet.airframe.surface.{Primitive, Surface, Zero}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 /**
   */
 object TypeConverter extends LogSupport {
   import java.lang.{reflect => jr}
 
-  import ReflectTypeUtil._
+  import ReflectTypeUtil.*
 
   def convert[T](value: T, targetType: Surface): Option[Any] = {
     if (value == null) {

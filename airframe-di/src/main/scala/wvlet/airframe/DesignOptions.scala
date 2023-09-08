@@ -29,7 +29,7 @@ case class DesignOptions(
     options: Map[String, Any] = Map.empty
 ) extends Serializable {
 
-  import DesignOptions._
+  import DesignOptions.*
 
   def +(other: DesignOptions): DesignOptions = {
     // configs will be overwritten

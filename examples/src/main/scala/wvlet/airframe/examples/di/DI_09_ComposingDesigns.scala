@@ -19,7 +19,7 @@ import wvlet.log.LogSupport
   * Design objects are composable
   */
 object DI_09_ComposingDesigns extends App with LogSupport {
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   val d1 = newSilentDesign
     .bind[Int].toInstance(10)

@@ -18,8 +18,8 @@ import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.{DIStats, Tracer}
 import wvlet.log.LogSupport
 
-import Design._
-import DesignOptions._
+import Design.*
+import DesignOptions.*
 import wvlet.airframe.lifecycle.LifeCycleHookType
 
 /**

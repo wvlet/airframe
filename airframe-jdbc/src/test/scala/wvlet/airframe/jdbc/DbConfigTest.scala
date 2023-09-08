@@ -39,7 +39,7 @@ class DbConfigTest extends AirSpec {
   }
 
   test("bind config") {
-    import wvlet.airframe.config._
+    import wvlet.airframe.config.*
     val d = Design.newSilentDesign
       .bindConfigFromYaml[DbConfig]("dbconfig.yml")
       .overrideConfigWithPropertiesFile("config.properties")

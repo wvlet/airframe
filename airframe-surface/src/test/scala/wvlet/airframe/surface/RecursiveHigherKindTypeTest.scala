@@ -25,7 +25,7 @@ object RecursiveHigherKindTypeTest {
     def bySkinny: Holder[BySkinny] = new InterpretedHolder
   }
 
-  import Holder._
+  import Holder.*
   class InterpretedHolder extends Holder[BySkinny] {}
 }
 
@@ -33,7 +33,7 @@ object RecursiveHigherKindTypeTest {
   */
 class RecursiveHigherKindTypeTest extends SurfaceSpec {
 
-  import RecursiveHigherKindTypeTest._
+  import RecursiveHigherKindTypeTest.*
   import Holder.BySkinny
 
   test("support recursive higher kind types") {

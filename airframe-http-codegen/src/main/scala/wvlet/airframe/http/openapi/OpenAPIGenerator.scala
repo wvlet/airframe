@@ -21,8 +21,8 @@ import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
 import wvlet.airframe.metrics.{Count, DataSize, ElapsedTime}
 import wvlet.airframe.msgpack.spi.{MsgPack, Value}
-import wvlet.airframe.surface._
-import wvlet.airframe.surface.reflect._
+import wvlet.airframe.surface.*
+import wvlet.airframe.surface.reflect.*
 import wvlet.airframe.ulid.ULID
 import wvlet.log.LogSupport
 
@@ -55,7 +55,7 @@ case class OpenAPIGeneratorConfig(
   */
 private[openapi] object OpenAPIGenerator extends LogSupport {
 
-  import OpenAPI._
+  import OpenAPI.*
 
   private[openapi] def buildFromRouter(router: Router, config: OpenAPIGeneratorConfig): OpenAPI = {
     val g = new OpenAPIGenerator(config)
@@ -178,10 +178,10 @@ private[openapi] object OpenAPIGenerator extends LogSupport {
 }
 
 class OpenAPIGenerator(config: OpenAPIGeneratorConfig) extends LogSupport {
-  import OpenAPI._
-  import OpenAPIGenerator._
+  import OpenAPI.*
+  import OpenAPIGenerator.*
 
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
   private val schemaCache = {
     new ConcurrentHashMap[Surface, SchemaOrRef]().asScala
   }

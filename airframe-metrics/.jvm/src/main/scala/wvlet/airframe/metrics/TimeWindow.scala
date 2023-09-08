@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.metrics
 
-import java.time._
+import java.time.*
 import java.time.temporal.ChronoUnit
 
 import wvlet.log.LogSupport
@@ -137,7 +137,7 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
 
 object TimeWindow extends LogSupport {
   def withTimeZone(zoneName: String): TimeWindowBuilder = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     // Add commonly used daylight saving times
     val idMap = ZoneId.SHORT_IDS.asScala ++
       Map("PDT" -> "-07:00", "EDT" -> "-04:00", "CDT" -> "-05:00", "MDT" -> "-06:00")

@@ -15,7 +15,7 @@ package wvlet.airframe.http.okhttp
 
 import okhttp3.{HttpUrl, MediaType, RequestBody}
 import wvlet.airframe.http.client.{HttpChannelConfig, HttpChannel, HttpClientConfig}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 

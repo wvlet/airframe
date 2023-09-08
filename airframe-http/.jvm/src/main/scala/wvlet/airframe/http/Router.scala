@@ -17,7 +17,7 @@ import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.Router.extractEndpointRoutes
 import wvlet.airframe.http.router.Automaton.DFA
 import wvlet.airframe.http.RxRouter.{EndpointNode, FilterNode, RxEndpointNode, StemNode}
-import wvlet.airframe.surface._
+import wvlet.airframe.surface.*
 import wvlet.log.LogSupport
 import wvlet.airframe.http.router.{ControllerRoute, RedirectToRxEndpoint, Route, RouteMatch, RouteMatcher}
 
@@ -132,7 +132,7 @@ case class Router(
     */
   def addInternal(controllerSurface: Surface, controllerMethodSurfaces: Seq[MethodSurface]): Router = {
     // Import ReflectSurface to find method annotations (Endpoint)
-    import wvlet.airframe.surface.reflect._
+    import wvlet.airframe.surface.reflect.*
 
     val endpointOpt = controllerSurface.findAnnotationOf[Endpoint]
     val rpcOpt      = controllerSurface.findAnnotationOf[RPC]
@@ -246,7 +246,7 @@ object Router extends router.RouterObjectBase with LogSupport {
 
   private[http] def findRPCInterfaceCls(controllerSurface: Surface): Class[_] = {
     // Import ReflectSurface to find RPC annotation
-    import wvlet.airframe.surface.reflect._
+    import wvlet.airframe.surface.reflect.*
 
     // We need to find the owner class of the RPC interface because the controller might be extending the RPC interface (e.g., RPCImpl)
     val rpcInterfaceCls = controllerSurface
@@ -261,7 +261,7 @@ object Router extends router.RouterObjectBase with LogSupport {
   }
 
   // Import ReflectSurface to find method annotations (RPC or Endpoint)
-  import wvlet.airframe.surface.reflect._
+  import wvlet.airframe.surface.reflect.*
 
   private def extractEndpointRoutes(
       controllerSurface: Surface,

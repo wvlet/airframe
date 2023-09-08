@@ -147,7 +147,7 @@ object HttpCodeGenerator extends LogSupport {
 
 }
 
-import wvlet.airframe.launcher._
+import wvlet.airframe.launcher.*
 
 case class HttpCodeGeneratorOption(
     @option(prefix = "-cp", description = "application classpaths")

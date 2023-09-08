@@ -17,7 +17,7 @@ import scala.language.experimental.macros
 /**
   */
 trait LoggerBase {
-  import LogMacros._
+  import LogMacros.*
 
   def error(message: Any): Unit = macro errorLogMethod
   def error(message: Any, cause: Throwable): Unit =
@@ -41,7 +41,7 @@ trait LoggerBase {
 /**
   */
 trait LoggingMethods extends Serializable {
-  import wvlet.log.LogMacros._
+  import wvlet.log.LogMacros.*
 
   protected def error(message: Any): Unit = macro errorLog
   protected def error(message: Any, cause: Throwable): Unit =

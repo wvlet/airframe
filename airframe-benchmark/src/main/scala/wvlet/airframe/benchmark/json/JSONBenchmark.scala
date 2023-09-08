@@ -15,7 +15,7 @@ package wvlet.airframe.benchmark.json
 
 import java.util.concurrent.TimeUnit
 
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.json.JSON.{JSONArray, JSONString}
 import wvlet.airframe.json.{JSON, JSONSource, JSONTraverser, JSONVisitor, NullJSONContext}

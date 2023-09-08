@@ -17,9 +17,9 @@ import org.antlr.v4.runtime.{ParserRuleContext, Token}
 import org.antlr.v4.runtime.tree.TerminalNode
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.log.LogSupport
-import wvlet.airframe.sql.model._
-import wvlet.airframe.sql.model.LogicalPlan._
-import wvlet.airframe.sql.parser.SqlBaseParser._
+import wvlet.airframe.sql.model.*
+import wvlet.airframe.sql.model.LogicalPlan.*
+import wvlet.airframe.sql.parser.SqlBaseParser.*
 
 object SQLInterpreter {
   private[parser] def unquote(s: String): String = {
@@ -31,10 +31,10 @@ object SQLInterpreter {
   * ANTLR parse tree -> SQL LogicalPlan
   */
 class SQLInterpreter(withNodeLocation: Boolean = true) extends SqlBaseBaseVisitor[Any] with LogSupport {
-  import SQLInterpreter._
-  import wvlet.airframe.sql.model.Expression._
+  import SQLInterpreter.*
+  import wvlet.airframe.sql.model.Expression.*
 
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
 
   private val parserRules            = SqlBaseParser.ruleNames.toList.asJava
   private var parameterPosition: Int = 0

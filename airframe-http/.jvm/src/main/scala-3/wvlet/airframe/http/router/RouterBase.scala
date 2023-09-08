@@ -38,13 +38,13 @@ trait RouterObjectBase {
 }
 
 private[router] object RouterObjectMacros {
-  import scala.quoted._
+  import scala.quoted.*
 
   def routerOf[Controller: Type](using quotes: Quotes): Expr[Router] = {
-    import quotes._
-    import quotes.reflect._
+    import quotes.*
+    import quotes.reflect.*
 
-    if (TypeRepr.of[Controller] <:< TypeRepr.of[HttpFilterType]) {
+    if TypeRepr.of[Controller] <:< TypeRepr.of[HttpFilterType] then {
       '{
         wvlet.airframe.registerTraitFactory[Controller]
         Router(filterSurface = Some(Surface.of[Controller]))

@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
   * Create a default instance (zero) from Surface
   */
 object Zero extends LogSupport {
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
   private val preregisteredZeroInstance = new ConcurrentHashMap[Surface, Any]().asScala
 
   /**

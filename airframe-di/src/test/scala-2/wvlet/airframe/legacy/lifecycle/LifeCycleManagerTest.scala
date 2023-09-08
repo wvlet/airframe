@@ -19,7 +19,7 @@ import wvlet.airframe.AirframeException.{MULTIPLE_SHUTDOWN_FAILURES, SHUTDOWN_FA
 import wvlet.airframe.{bind, newDesign, newSilentDesign}
 import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
-import wvlet.airframe._
+import wvlet.airframe.*
 
 class Counter extends LogSupport {
   val initialized = new AtomicInteger(0)
