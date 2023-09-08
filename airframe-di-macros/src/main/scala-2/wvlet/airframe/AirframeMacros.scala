@@ -79,11 +79,11 @@ private[wvlet] object AirframeMacros {
         q"""{
              ss : wvlet.airframe.Session =>
              ss.getOrElse(${surfaceOf(t)},
-              (new $t with wvlet.airframe.DISupport { def session = ss }).asInstanceOf[$t]
+              (new $t with wvlet.airframe.DISupport { override def session() = ss }).asInstanceOf[$t]
              )
             }"""
       } else {
-        q"""{ session : wvlet.airframe.Session => session.get[$t](${surfaceOf(t)}) }"""
+        q"""{ (session : wvlet.airframe.Session) => session.get[$t](${surfaceOf(t)}) }"""
       }
     }
 
@@ -92,11 +92,11 @@ private[wvlet] object AirframeMacros {
         q"""{
              ss : wvlet.airframe.Session =>
              ss.createNewInstanceOf(${surfaceOf(t)},
-              (new $t with wvlet.airframe.DISupport { def session = ss }).asInstanceOf[$t]
+              (new $t with wvlet.airframe.DISupport { override def session() = ss }).asInstanceOf[$t]
              )
             }"""
       } else {
-        q"""{ session : wvlet.airframe.Session => session.createNewInstanceOf[$t](${surfaceOf(t)}) }"""
+        q"""{ (session : wvlet.airframe.Session) => session.createNewInstanceOf[$t](${surfaceOf(t)}) }"""
       }
     }
 
@@ -111,7 +111,7 @@ private[wvlet] object AirframeMacros {
         q""" {
            val s = ${surfaceOf(t)}
            wvlet.airframe.getOrElseUpdateTraitFactoryCache(s,
-             { ss: wvlet.airframe.Session => (new $t with wvlet.airframe.DISupport { def session = ss }).asInstanceOf[Any] }
+             { (ss: wvlet.airframe.Session) => (new $t with wvlet.airframe.DISupport { override def session() = ss }).asInstanceOf[Any] }
            )
            s
          }
@@ -711,7 +711,7 @@ private[wvlet] object AirframeMacros {
     q"""{
           val surface = ${h.surfaceOf(a)}
           val session = ${h.findSession}
-          val newChildDesign = wvlet.airframe.newDesign.bind(surface).toLazyInstance(${provider})
+          val newChildDesign = wvlet.airframe.newDesign.bindSurface(surface).toLazyInstance(${provider})
           val localSession = session.newSharedChildSession(newChildDesign)
           localSession.get[$a](surface)
         }
@@ -728,7 +728,7 @@ private[wvlet] object AirframeMacros {
     q"""{
           val surface = ${h.surfaceOf(a)}
           val session = ${h.findSession}
-          val newChildDesign = wvlet.airframe.newDesign.bind(surface).toLazyInstance($provider($dep1(session)))
+          val newChildDesign = wvlet.airframe.newDesign.bindSurface(surface).toLazyInstance($provider($dep1(session)))
           val localSession = session.newSharedChildSession(newChildDesign)
           localSession.get[$a](surface)
         }
@@ -749,7 +749,7 @@ private[wvlet] object AirframeMacros {
     q"""{
           val surface = ${h.surfaceOf(a)}
           val session = ${h.findSession}
-          val newChildDesign = wvlet.airframe.newDesign.bind(surface).toLazyInstance($provider($dep1(session), $dep2(session)))
+          val newChildDesign = wvlet.airframe.newDesign.bindSurface(surface).toLazyInstance($provider($dep1(session), $dep2(session)))
           val localSession = session.newSharedChildSession(newChildDesign)
           localSession.get[$a](surface)
         }
@@ -772,7 +772,7 @@ private[wvlet] object AirframeMacros {
     q"""{
           val surface = ${h.surfaceOf(a)}
           val session = ${h.findSession}
-          val newChildDesign = wvlet.airframe.newDesign.bind(surface).toLazyInstance($provider($dep1(session), $dep2(session), $dep3(session)))
+          val newChildDesign = wvlet.airframe.newDesign.bindSurface(surface).toLazyInstance($provider($dep1(session), $dep2(session), $dep3(session)))
           val localSession = session.newSharedChildSession(newChildDesign)
           localSession.get[$a](surface)
         }
@@ -797,7 +797,7 @@ private[wvlet] object AirframeMacros {
     q"""{
           val surface = ${h.surfaceOf(a)}
           val session = ${h.findSession}
-          val newChildDesign = wvlet.airframe.newDesign.bind(surface).toLazyInstance($provider($dep1(session), $dep2(session), $dep3(session), $dep4(session)))
+          val newChildDesign = wvlet.airframe.newDesign.bindSurface(surface).toLazyInstance($provider($dep1(session), $dep2(session), $dep3(session), $dep4(session)))
           val localSession = session.newSharedChildSession(newChildDesign)
           localSession.get[$a](surface)
         }
@@ -831,7 +831,7 @@ private[wvlet] object AirframeMacros {
     q"""{
         val surface = ${h.surfaceOf(a)}
         val session = ${h.findSession}
-        val newChildDesign = wvlet.airframe.newDesign.bind(surface).toLazyInstance($provider($dep1(session), $dep2(session), $dep3(session), $dep4(session), $dep5(session)))
+        val newChildDesign = wvlet.airframe.newDesign.bindSurface(surface).toLazyInstance($provider($dep1(session), $dep2(session), $dep3(session), $dep4(session), $dep5(session)))
         val localSession = session.newSharedChildSession(newChildDesign)
         localSession.get[$a](surface)
       }
@@ -847,7 +847,7 @@ private[wvlet] object AirframeMacros {
     val a  = t.typeArgs(1)                    // A
     val h  = new BindHelper[c.type](c)
     q"""{ i1: ${i1} =>
-          val session = ${h.findSession}.newSharedChildSession(wvlet.airframe.newDesign.bind(${h
+          val session = ${h.findSession}.newSharedChildSession(wvlet.airframe.newDesign.bindSurface(${h
         .surfaceOf(i1)}).toLazyInstance(i1))
           ${h.createNewInstanceOf(a)}(session)
         }
@@ -866,8 +866,8 @@ private[wvlet] object AirframeMacros {
     q"""{ (i1: ${i1}, i2: ${i2}) =>
          val session = ${h.findSession}.newSharedChildSession(
            wvlet.airframe.newDesign
-           .bind(${h.surfaceOf(i1)}).toLazyInstance(i1)
-           .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
+           .bindSurface(${h.surfaceOf(i1)}).toLazyInstance(i1)
+           .bindSurface(${h.surfaceOf(i2)}).toLazyInstance(i2)
          )
          ${h.createNewInstanceOf(a)}(session)
         }
@@ -887,9 +887,9 @@ private[wvlet] object AirframeMacros {
     q"""{ (i1: ${i1}, i2: ${i2}, i3:${i3}) =>
          val session = ${h.findSession}.newSharedChildSession(
            wvlet.airframe.newDesign
-           .bind(${h.surfaceOf(i1)}).toLazyInstance(i1)
-           .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
-           .bind(${h.surfaceOf(i3)}).toLazyInstance(i3)
+           .bindSurface(${h.surfaceOf(i1)}).toLazyInstance(i1)
+           .bindSurface(${h.surfaceOf(i2)}).toLazyInstance(i2)
+           .bindSurface(${h.surfaceOf(i3)}).toLazyInstance(i3)
          )
          ${h.createNewInstanceOf(a)}(session)
         }
@@ -910,10 +910,10 @@ private[wvlet] object AirframeMacros {
     q"""{ (i1: ${i1}, i2: ${i2}, i3:${i3}, i4:${i4}) =>
          val session = ${h.findSession}.newSharedChildSession(
            wvlet.airframe.newDesign
-           .bind(${h.surfaceOf(i1)}).toLazyInstance(i1)
-           .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
-           .bind(${h.surfaceOf(i3)}).toLazyInstance(i3)
-           .bind(${h.surfaceOf(i4)}).toLazyInstance(i4)
+           .bindSurface(${h.surfaceOf(i1)}).toLazyInstance(i1)
+           .bindSurface(${h.surfaceOf(i2)}).toLazyInstance(i2)
+           .bindSurface(${h.surfaceOf(i3)}).toLazyInstance(i3)
+           .bindSurface(${h.surfaceOf(i4)}).toLazyInstance(i4)
          )
          ${h.createNewInstanceOf(a)}(session)
         }
@@ -935,11 +935,11 @@ private[wvlet] object AirframeMacros {
     q"""{ (i1: ${i1}, i2: ${i2}, i3:${i3}, i4:${i4}, i5:${i5}) =>
          val session = ${h.findSession}.newSharedChildSession(
            wvlet.airframe.newDesign
-           .bind(${h.surfaceOf(i1)}).toLazyInstance(i1)
-           .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
-           .bind(${h.surfaceOf(i3)}).toLazyInstance(i3)
-           .bind(${h.surfaceOf(i4)}).toLazyInstance(i4)
-           .bind(${h.surfaceOf(i5)}).toLazyInstance(i5)
+           .bindSurface(${h.surfaceOf(i1)}).toLazyInstance(i1)
+           .bindSurface(${h.surfaceOf(i2)}).toLazyInstance(i2)
+           .bindSurface(${h.surfaceOf(i3)}).toLazyInstance(i3)
+           .bindSurface(${h.surfaceOf(i4)}).toLazyInstance(i4)
+           .bindSurface(${h.surfaceOf(i5)}).toLazyInstance(i5)
          )
          ${h.createNewInstanceOf(a)}(session)
         }

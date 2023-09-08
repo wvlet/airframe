@@ -95,7 +95,7 @@ class Design(
 
   def +(other: Design): Design = add(other)
 
-  def bind(t: Surface)(implicit sourceCode: SourceCode): Binder[Any] = {
+  def bindSurface(t: Surface)(implicit sourceCode: SourceCode): Binder[Any] = {
     trace(s"bind($t) ${t.isAlias}")
     val b = new Binder[Any](this, t, sourceCode)
     b
