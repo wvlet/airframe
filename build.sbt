@@ -116,6 +116,8 @@ val buildSettings = Seq[Setting[_]](
       Seq.empty
     } else {
       Seq(
+        // For using import * syntax
+        "-Xsource:3",
         // Necessary for tracking source code range in airframe-rx demo
         "-Yrangepos"
       )
