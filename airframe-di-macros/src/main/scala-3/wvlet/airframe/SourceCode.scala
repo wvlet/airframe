@@ -30,12 +30,12 @@ case class SourceCode(
 object SourceCode {
   def apply()(implicit code: SourceCode) = code
 
-  import scala.quoted._
+  import scala.quoted.*
 
   inline implicit def generate: SourceCode = ${ generateImpl }
 
   private def generateImpl(using q: Quotes): Expr[SourceCode] = {
-    import q.reflect._
+    import q.reflect.*
     val pos    = Position.ofMacroExpansion
     val line   = Expr(pos.startLine)
     val column = Expr(pos.endColumn)

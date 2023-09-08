@@ -19,7 +19,7 @@ package wvlet.airframe.surface
   * in the same file, so this interface is copied.
   */
 trait Surface extends Serializable {
-  def rawType: Class[_]
+  def rawType: Class[?]
   def typeArgs: Seq[Surface]
   def params: Seq[Parameter]
   def name: String
@@ -44,7 +44,7 @@ trait Surface extends Serializable {
 object Surface {
   private[surface] val scalaMajorVersion: Int = 3
 
-  import scala.quoted._
+  import scala.quoted.*
 
   inline def of[A]: Surface                   = ${ CompileTimeSurfaceFactory.surfaceOf[A] }
   inline def methodsOf[A]: Seq[MethodSurface] = ${ CompileTimeSurfaceFactory.methodsOf[A] }

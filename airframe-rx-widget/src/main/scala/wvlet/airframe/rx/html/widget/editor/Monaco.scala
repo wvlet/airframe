@@ -3987,9 +3987,10 @@ package editor {
         @JSGlobal("monaco.languages.typescript")
         object Typescript extends js.Object {
           type CompilerOptionsValue =
-            String | Double | Boolean | js.Array[String | Double] | js.Array[String] | MapLike[
-              js.Array[String]
-            ] | Null | Unit
+            String | Double | Boolean | js.Array[String | Double] | js.Array[String] |
+              MapLike[
+                js.Array[String]
+              ] | Null | Unit
         }
 
       }
@@ -4342,9 +4343,10 @@ package editor {
         type IMonarchLanguageRule =
           IShortMonarchLanguageRule1 | IShortMonarchLanguageRule2 | IExpandedMonarchLanguageRule
         type IShortMonarchLanguageAction = String
-        type IMonarchLanguageAction = IShortMonarchLanguageAction | IExpandedMonarchLanguageAction | js.Array[
-          IShortMonarchLanguageAction
-        ] | js.Array[IExpandedMonarchLanguageAction]
+        type IMonarchLanguageAction = IShortMonarchLanguageAction | IExpandedMonarchLanguageAction |
+          js.Array[
+            IShortMonarchLanguageAction
+          ] | js.Array[IExpandedMonarchLanguageAction]
       }
 
     }

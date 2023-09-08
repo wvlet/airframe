@@ -38,7 +38,7 @@ trait HttpServerExceptionBase {
     * Set the content body using a given object. Encoding can be JSON or MsgPack based on Content-Type header.
     */
   inline def withContentOf[A](a: A): HttpServerException = {
-    if (self.isContentTypeMsgPack) {
+    if self.isContentTypeMsgPack then {
       self.withMsgPack(MessageCodec.of[A].toMsgPack(a))
     } else {
       self.withJson(MessageCodec.of[A].toJson(a))
@@ -50,7 +50,7 @@ trait HttpServerExceptionBase {
     * header.
     */
   inline def withContentOf[A](a: A, codecFactory: MessageCodecFactory): HttpServerException = {
-    if (self.isContentTypeMsgPack) {
+    if self.isContentTypeMsgPack then {
       self.withMsgPack(codecFactory.of[A].toMsgPack(a))
     } else {
       self.withJson(codecFactory.of[A].toJson(a))

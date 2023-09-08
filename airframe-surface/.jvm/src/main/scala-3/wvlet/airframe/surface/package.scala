@@ -2,7 +2,7 @@ package wvlet.airframe
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 package object surface {
   val surfaceCache       = new ConcurrentHashMap[String, Surface]().asScala

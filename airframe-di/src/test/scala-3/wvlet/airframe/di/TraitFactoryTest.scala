@@ -15,7 +15,7 @@ package wvlet.airframe.di
 
 import wvlet.airspec.AirSpec
 import scala.language.experimental
-import wvlet.airframe._
+import wvlet.airframe.*
 import wvlet.airframe.surface.Surface
 
 object TraitFactoryTest extends AirSpec {
@@ -23,7 +23,7 @@ object TraitFactoryTest extends AirSpec {
   trait A
 
   test("register trait factory") {
-    if (isScala3) {
+    if isScala3 then {
       pending("In Scala 3.3.1, creating a new trait instance via macro is still experimental")
     }
     registerTraitFactory[A]
