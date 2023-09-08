@@ -30,14 +30,14 @@ private[airspec] case class AirSpecEvent(
     override val throwable: OptionalThrowable,
     durationNanos: Long
 ) extends Event {
-  override def fullyQualifiedName: String = {
+  override def fullyQualifiedName(): String = {
     testName.getOrElse(taskDef.fullyQualifiedName())
   }
   override def fingerprint(): Fingerprint = taskDef.fingerprint()
   override def selector(): Selector = {
     testName match {
       case Some(x) => new TestSelector(x)
-      case _       => taskDef.selectors.headOption.getOrElse(new SuiteSelector)
+      case _       => taskDef.selectors().headOption.getOrElse(new SuiteSelector)
     }
   }
   override def duration(): Long = TimeUnit.NANOSECONDS.toMillis(durationNanos)
@@ -117,7 +117,7 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
 
     val prefix = {
       if (showTestName) {
-        s"${withColor(GRAY, " -")} ${withColor(baseColor, e.fullyQualifiedName)} ${elapsedTime}"
+        s"${withColor(GRAY, " -")} ${withColor(baseColor, e.fullyQualifiedName())} ${elapsedTime}"
       } else {
         s"${withColor(GRAY, " <")} ${elapsedTime}"
       }
