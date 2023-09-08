@@ -11,10 +11,11 @@ servers and clients.
 **Airframe RPC Features**:
 
 - Use plain Scala functions as RPC endpoints.
-- Support [Finagle](https://twitter.github.io/finagle/) (HTTP/1) or [gRPC](https://grpc.io/) (HTTP/2) backends.
+- Support [Netty](https://netty.io/) (HTTP/1) or [gRPC](https://grpc.io/) (HTTP/2) backends.
 - [sbt-airframe](#sbt-airframe-plugin) plugin to generate RPC clients. No need to make HTTP requests
   by yourself.
-- [Scala.js](https://www.scala-js.org/) support for building interactive web browser applications.
+- Support Scala 2.13, 3.x, and Scala.js
+  - [Scala.js](https://www.scala-js.org/) can be used for building interactive web browser applications with RPC.
 - [Open API](https://www.openapis.org/) schema generation.
 
 ## Why Airframe RPC?
@@ -53,10 +54,7 @@ extended gRPC to support MessagePack (a compact binary alternative of JSON) and
 used [airframe-codec](airframe-codec.md) for message serialization so that we can create RPC
 services without introducing ProtocolBuffers.
 
-Airframe RPC also supports building HTTP/1 services backed
-by [Finagle](https://twitter.github.io/finagle/). Supporting both HTTP/1 and HTTP/2 is important
-because gRPC heavily uses HTTP/2 features, but HTTP/1-based web clients including web browsers still
-don't fully support HTTP/2.
+Airframe RPC also supports building HTTP/1 services backed by Netty. Supporting both HTTP/1 and HTTP/2 is important because gRPC heavily uses HTTP/2 features, but HTTP/1-based web clients including web browsers still don't fully support HTTP/2.
 
 In 2020, Scala.js, which can compile Scala code into JavaScript,
 finally [became 1.0.0 after 7 years of development](https://www.scala-js.org/news/2020/02/25/announcing-scalajs-1.0.0/)
@@ -122,20 +120,20 @@ class MyServiceImpl extends MyService {
 }
 ```
 
-To start an RPC web server, Airfarme RPC provides Finagle-based web server implementation. The
+To start an RPC web server, Airfarme RPC provides Netty-based web server implementation. The
 following code starts an RPC web server at `http://localhost:8080/`:
 
 ```scala
 // Create a Router
-val router = Router.add[MyServiceImpl]
+val router = RxRouter.of[MyServiceImpl]
 
 // Starting a new RPC server.
-Finagle
+Netty
   .server
   .withRouter(router)
   .withPort(8080)
   .start { server =>
-     server.waitForTermination
+     server.awaitTermination()
   }
 ```
 
@@ -166,15 +164,14 @@ The basic flow of using Airframe RPC is as follows:
 
 1. Define RPC interfaces with `@RPC` annotation
 1. Implement the RPC interfaces in Scala
-1. Create `wvlet.airframe.http.Router` by adding the RPC interface implementation classes.
+1. Create `wvlet.airframe.http.RxRouter` by adding the RPC interface implementation classes.
 1. Generate RPC client code with sbt-airframe plugin
 
 ### Basic Project Structure
 
 Here is an example build configurations for using Airframe RPC with Scala and Scala.js.
 
-[![maven central](https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central)](https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
-)
+[![maven central](https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central)](https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.13%22)
 
 __project/plugins.sbt__
 
@@ -183,8 +180,8 @@ __project/plugins.sbt__
 addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % "(version)")
 
 // [optional] For Scala.js
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.1.0")
-addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.13.2")
+addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.3.2")
 ```
 
 __build.sbt__
@@ -195,7 +192,7 @@ val AIRFRAME_VERSION = "(version)"
 // Common build settings
 val buildSettings = Seq(
   organization := "(your organization)",
-  scalaVersion := "2.12.10"
+  scalaVersion := "3.3.1"
   // Add your own settings here
 )
 
@@ -206,57 +203,35 @@ lazy val api =
     .in(file("myapp-api"))
     .settings(
        buildSettings,
-       libraryDependencies += "org.wvlet.airframe" %%% "airframe-http" % AIRFRAME_VERSION
+       libraryDependencies ++= Seq(
+         "org.wvlet.airframe" %%% "airframe-http" % AIRFRAME_VERSION
+       )
     )
 
-lazy val apiJVM = api.jvm
-lazy val apiJS = api.js
-
-// RPC server project
+// RPC server project (JVM)
 lazy val server =
   project
     .in(file("myapp-server"))
     .settings(
       buildSettings,
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION,
-        // [For gRPC] Use airframe-http-grpc instead of Finagle
-        "org.wvlet.airframe" %% "airframe-http-grpc" % AIRFRAME_VERSION
+        // Add Netty backend
+        "org.wvlet.airframe" %% "airframe-http-netty" % AIRFRAME_VERSION
       )
     )
-    .dependsOn(apiJVM)
+    .dependsOn(api.jvm)
 
-// RPC client project
+// RPC client project (JVM and Scala.js)
 lazy val client =
-  project
+  crossProject(JSPlatform, JVMPlatform)
     .in(file("myapp-client"))
     .enablePlugins(AirframeHttpPlugin)
     .settings(
       buildSettings,
       // Generate an RPC client for myapp.app.v1 package
-      airframeHttpClients := Seq("myapp.app.v1:rpc"),
-      // Enable debug logging of sbt-airframe
-      airframeHttpGeneratorOption := "-l debug",
-      libraryDependencies ++= Seq(
-        // Add this for using gRPC
-        "org.wvlet.airframe" %% "airframe-http-grpc" % AIRFRAME_VERSION
-      )
+      airframeHttpClients := Seq("myapp.app.v1:rpc")
    )
-   .dependsOn(apiJVM)
-
-// [optional] Scala.js UI using RPC
-lazy val ui =
-  project
-    .in(file("myapp-ui"))
-    .enablePlugins(ScalaJSPlugin, AirframeHttpPlugin)
-    .settings(
-      buildSettings,
-      // Scala.js only supports async clients
-      airframeHttpClients := Seq("myapp.app.v1:rpc"),
-      // Enable debug logging of sbt-airframe
-      airframeHttpGeneratorOption := "-l debug"
-    )
-    .dependsOn(apiJS)
+   .dependsOn(api)
 ```
 
 ### sbt-airframe plugin
@@ -363,7 +338,7 @@ It will generate `target/openapi.yaml` file.
 
 ### RPC Logging
 
-Airframe RPC stores HTTP access logs to `log/http-access.json` by default. This json logs contains
+Airframe RPC stores HTTP access logs to `log/http_server.json` by default. This json logs contains
 HTTP request related parameters and RPC-specific fields described below:
 
 - __rpc_interface__: RPC interface class name
@@ -386,12 +361,11 @@ use cases would be adding an authentication filter for RPC calls:
 import wvlet.airframe.http._
 import wvlet.airframe.http.HttpMessage.{Request,Response}
 
-object AuthFilter extends Http.Filter {
-  def apply(request: Request, context: Context): Future[Response] = {
-    val auth = request.authorization
-    if (isValidAuth(auth)) {
+class AuthFilter extends RxHttpFilter {
+  def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
+    if (isValidAuth(request.authorization)) {
       // Call the next filter chain
-      context(request)
+      next(request)
     }
     else {
       // Reject the request
@@ -403,19 +377,19 @@ object AuthFilter extends Http.Filter {
 
 ```scala
 // Router for RPC
-val rpcRouter = Router.add[MyApp]
+val rpcRouter = RxRouter.of[MyApp]
 
 // Add a filter before processing RPC requests
-val router = Router
-        .add(AuthFilter)
-        .andThen(rpcRouterr)
+val router = 
+  RxRouter
+    .filter[AuthFilter]
+    .andThen(rpcRouter)
 ```
 
 ### DI Integration
 
 Airframe RPC natively supports [Airframe DI](airframe-di.md) for dependency injection so that you can
-inject necessary components for running your web service using `bind[X]` syntax or constructor
-injection. DI is useful when building web applications requiring many components and if you need to
+inject necessary components for running your web service through constructor parameters. DI is useful when building web applications requiring many components and if you need to
 decouple component implementations from the service implementations. Airframe DI also supports
 switching component implementations between production and tests for the convenience of module
 tests.
@@ -425,25 +399,21 @@ Here is an example of using Airframe DI for starting an RPC server:
 ```scala
 import wvlet.airframe._
 
-trait MyAPIImpl extends MyAPI {
-  // Inject your component
-  private
-  val myService = bind[MyService]
-
-  override def hello(
-  ...) =...
+// Inject your component as constructor arguments
+class MyAPIImpl(myService: MyService) extends MyAPI {
+  override def hello(...) =...
 }
 
-val router = Router.add[MyAPIImpl]
+val router = RxRouter.of[MyAPIImpl]
 
 // Define the component implementation to use
 val design = newDesign
   .bind[MyService].toInstance(new MyServiceImpl(...))
-  .add(Finagle.server.withRouter(router).design)
+  .add(Netty.server.withRouter(router).design)
 
-// Launch a Finagle Server
-design.build[FinagleServer] { server =>
-  server.waitForTermination
+// Launch a Netty Server
+design.build[NettyServer] { server =>
+  server.awaitForTerimination()
 }
 ```
 
@@ -501,7 +471,7 @@ trait MyAPI {
 }
 ```
 
-RPCContext is available both for Finagle and gRPC backend.
+RPCContext is available both for Netty and gRPC backend.
 
 ### Receiving Raw HTTP Responses
 
@@ -678,7 +648,7 @@ gRPC.server
   //.withInterceptor(...)
   // [optional] you can customize gRPC server here
   //.withServerInitializer{ x: ServerBuilder => x.addMethod(...); x }
-  // [optional] Disable the default logging to log/http-access.json file
+  // [optional] Disable the default logging to log/http_server.json file
   //.noRequestLogging
   .start { server =>
     // gRPC server (based on Netty) starts at localhost:8080
