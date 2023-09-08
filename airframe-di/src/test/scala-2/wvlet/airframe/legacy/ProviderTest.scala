@@ -63,7 +63,7 @@ trait ProviderExample {
 
   // Provider binding
   val p0 = bind { App() }
-  val p1 = bind { d1: D1 => App(d1) }
+  val p1 = bind { (d1: D1) => App(d1) }
   val p2 = bind { (d1: D1, d2: D2) => App(d1, d2) }
   val p3 = bind { (d1: D1, d2: D2, d3: D3) => App(d1, d2, d3) }
   val p4 = bind { (d1: D1, d2: D2, d3: D3, d4: D4) => App(d1, d2, d3, d4) }
@@ -177,7 +177,7 @@ class ProviderTest extends AirSpec {
 class SingletonProviderTest extends AirSpec {
   test("build singleton from provider bindings") {
     val s1 = providerDesign
-      .bind[App].toProvider { d1: D1 => App(d1) }
+      .bind[App].toProvider { (d1: D1) => App(d1) }
       .newSession
     val p1 = s1.build[App]
     p1 shouldBe App(d1, z2, z3, z4, z5)

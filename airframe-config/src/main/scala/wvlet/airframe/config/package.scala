@@ -62,7 +62,7 @@ package object config {
     private[config] def bindConfigInternal[A](surface: Surface, config: A)(implicit sourceCode: SourceCode): Design = {
       val configHolder = currentConfig.registerOfSurface[A](surface, config)
       d.withConfig(configHolder)
-        .bind(surface)(sourceCode).toInstance(config)
+        .bindSurface(surface)(sourceCode).toInstance(config)
     }
 
     private[config] def bindConfigFromYamlInternal[A](
@@ -71,7 +71,7 @@ package object config {
     )(implicit sourceCode: SourceCode): Design = {
       val configHolder = currentConfig.registerFromYaml[A](surface, yamlFile)
       d.withConfig(configHolder)
-        .bind(surface)(sourceCode).toInstance(configHolder.ofSurface[A](surface))
+        .bindSurface(surface)(sourceCode).toInstance(configHolder.ofSurface[A](surface))
     }
 
     private[config] def bindConfigFromYamlInternal[A](surface: Surface, yamlFile: String, defaultValue: => A)(implicit
@@ -80,7 +80,7 @@ package object config {
       val configHolder = currentConfig.registerFromYamlOrElse[A](surface, yamlFile, defaultValue)
       val newConfig    = configHolder.ofSurface[A](surface)
       d.withConfig(configHolder)
-        .bind(surface)(sourceCode).toInstance(newConfig)
+        .bindSurface(surface)(sourceCode).toInstance(newConfig)
     }
 
     /**
@@ -119,7 +119,7 @@ package object config {
 
       // Override already bounded config instances
       val d3 = configHolder.getAll.foldLeft(d2) { (d: Design, c: ConfigHolder) =>
-        d.bind(c.tpe)(sourceCode).toInstance(c.value)
+        d.bindSurface(c.tpe)(sourceCode).toInstance(c.value)
       }
       d3
     }

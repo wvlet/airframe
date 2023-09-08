@@ -57,7 +57,7 @@ class BindLocalTest extends AirSpec {
   }
 
   trait LocalProviderTest {
-    val x1 = bindLocal { d1: D1 => X(d1 = d1) }
+    val x1 = bindLocal { (d1: D1) => X(d1 = d1) }
     val x2 = bindLocal { (d1: D1, d2: D2) => X(d1 = d1, d2 = d2) }
     val x3 = bindLocal { (d1: D1, d2: D2, d3: D3) => X(d1 = d1, d2 = d2, d3 = d3) }
     val x4 = bindLocal { (d1: D1, d2: D2, d3: D3, d4: D4) => X(d1 = d1, d2 = d2, d3 = d3, d4 = d4) }
