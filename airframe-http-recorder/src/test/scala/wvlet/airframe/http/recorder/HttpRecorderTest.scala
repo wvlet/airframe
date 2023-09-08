@@ -19,7 +19,7 @@ import wvlet.airframe.http.{Http, HttpHeader, HttpStatus}
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.recorder.HttpRequestMatcher.PathOnlyMatcher
-import wvlet.airframe.json._
+import wvlet.airframe.json.*
 import wvlet.airspec.AirSpec
 
 import scala.util.{Random, Using}

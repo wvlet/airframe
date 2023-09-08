@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.grpc
 
-import io.grpc._
+import io.grpc.*
 import wvlet.airframe.http.{Http, HttpMessage, RPCContext, RPCEncoding}
 import wvlet.log.LogSupport
 
@@ -49,7 +49,7 @@ object GrpcContext {
 
 }
 
-import GrpcContext._
+import GrpcContext.*
 
 case class GrpcContext(
     authority: Option[String],
@@ -87,7 +87,7 @@ case class GrpcContext(
   }
 
   override def httpRequest: HttpMessage.Request = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     var request = Http.POST(s"/${descriptor.getFullMethodName}")
     for (k <- metadata.keys().asScala) {
       request = request.withHeader(k, metadata.get(Metadata.Key.of(k, Metadata.ASCII_STRING_MARSHALLER)))

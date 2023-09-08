@@ -19,7 +19,7 @@ import wvlet.log.LogSupport
 
 import scala.collection.mutable.WeakHashMap
 import scala.sys.process.{Process, ProcessLogger}
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
 /**
@@ -307,7 +307,7 @@ object Shell extends LogSupport {
       val java_home: Option[String] = {
         val e = findJavaHome
 
-        import OSType._
+        import OSType.*
         e match {
           case Some(x) => e
           case None => {

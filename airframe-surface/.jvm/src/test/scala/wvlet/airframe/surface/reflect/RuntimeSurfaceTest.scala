@@ -45,7 +45,7 @@ object RuntimeExamples {
 /**
   */
 class RuntimeSurfaceTest extends SurfaceSpec {
-  import RuntimeExamples._
+  import RuntimeExamples.*
 
   test("resolve types") {
     val a = check(RuntimeSurface.of[A], "A")

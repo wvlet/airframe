@@ -20,7 +20,7 @@ object GenericMethodTest {
 }
 
 class GenericMethodTest extends SurfaceSpec {
-  import GenericMethodTest._
+  import GenericMethodTest.*
 
   test("generic method") {
     val methods = Surface.methodsOf[A]

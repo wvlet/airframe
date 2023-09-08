@@ -17,16 +17,16 @@ import wvlet.airframe.surface.TypeName.sanitizeTypeName
 
 import java.lang.reflect.{Constructor, InvocationTargetException}
 import java.util.concurrent.ConcurrentHashMap
-import wvlet.airframe.surface._
+import wvlet.airframe.surface.*
 import wvlet.log.LogSupport
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.reflect.runtime.{universe => ru}
 
 /**
   */
 object ReflectSurfaceFactory extends LogSupport {
-  import ru._
+  import ru.*
 
   private type TypeName = String
 

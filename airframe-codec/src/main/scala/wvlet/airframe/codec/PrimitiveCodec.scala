@@ -16,7 +16,7 @@ package wvlet.airframe.codec
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
 import wvlet.airframe.msgpack.spi.Value.ExtensionValue
-import wvlet.airframe.msgpack.spi._
+import wvlet.airframe.msgpack.spi.*
 import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.airframe.ulid.{PrefixedULID, ULID}
 

@@ -49,7 +49,7 @@ object SingletonTest {
 /**
   */
 class SingletonTest extends AirSpec {
-  import wvlet.airframe.di.SingletonTest._
+  import wvlet.airframe.di.SingletonTest.*
 
   val d =
     Design.newDesign

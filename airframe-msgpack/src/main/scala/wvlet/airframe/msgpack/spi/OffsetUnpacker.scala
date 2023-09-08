@@ -18,9 +18,9 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 
 import wvlet.airframe.msgpack.spi.ErrorCode.{INVALID_EXT_FORMAT, INVALID_TYPE, NEVER_USED_FORMAT}
-import wvlet.airframe.msgpack.spi.MessageException._
-import wvlet.airframe.msgpack.spi.MessageFormat._
-import wvlet.airframe.msgpack.spi.Value._
+import wvlet.airframe.msgpack.spi.MessageException.*
+import wvlet.airframe.msgpack.spi.MessageFormat.*
+import wvlet.airframe.msgpack.spi.Value.*
 
 import scala.collection.immutable.ListMap
 import scala.collection.mutable

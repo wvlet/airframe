@@ -31,7 +31,7 @@ class ExtendedCloseableTest extends AirSpec {
 
   trait B extends A
 
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   test("close only once") {
     val d = newSilentDesign

@@ -22,7 +22,7 @@ package wvlet.airframe.launcher
 
 import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.launcher.StringTree.{Leaf, SeqLeaf}
-import wvlet.airframe.surface._
+import wvlet.airframe.surface.*
 import wvlet.airframe.surface.reflect.{GenericBuilder, ObjectBuilder, Path, ReflectSurfaceFactory}
 import wvlet.log.{LogSupport, Logger}
 
@@ -86,7 +86,7 @@ object OptionParser extends LogSupport {
 
   abstract class CLOptionItemBase(val param: Parameter) extends CLOptionItem {
     override def takesMultipleArguments: Boolean = {
-      import wvlet.airframe.surface.reflect.ReflectTypeUtil._
+      import wvlet.airframe.surface.reflect.ReflectTypeUtil.*
       val t: Class[_] = param.surface.rawType
       isArrayCls(t) || isSeq(t)
     }
@@ -175,7 +175,7 @@ object OptionParser extends LogSupport {
 class OptionParser(val schema: OptionSchema) extends LogSupport {
   def this(m: MethodSurface) = this(MethodOptionSchema(m))
 
-  import OptionParser._
+  import OptionParser.*
 
   /**
     * Parse the command-line arguments

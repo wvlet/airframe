@@ -17,7 +17,7 @@ import java.math.BigInteger
 import org.msgpack.core.{MessageBufferPacker, MessagePacker}
 import org.msgpack.{value => v8}
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
-import wvlet.airframe.msgpack.spi._
+import wvlet.airframe.msgpack.spi.*
 
 /**
   * Adapter to msgpack-core's MessagePacker
@@ -142,7 +142,7 @@ object PackerImpl {
   }
 
   def toMsgPackV8Value(v: Value): v8.Value = {
-    import wvlet.airframe.msgpack.spi.Value._
+    import wvlet.airframe.msgpack.spi.Value.*
     v match {
       case NilValue                   => v8.ValueFactory.newNil()
       case BooleanValue(v)            => v8.ValueFactory.newBoolean(v)
@@ -157,7 +157,7 @@ object PackerImpl {
         v8.ValueFactory.newExtension(-1, extBytes)
       }
       case ArrayValue(elems) =>
-        import scala.jdk.CollectionConverters._
+        import scala.jdk.CollectionConverters.*
         val values = elems.map(x => toMsgPackV8Value(x)).toList.asJava
         v8.ValueFactory.newArray(values)
       case MapValue(entries) =>

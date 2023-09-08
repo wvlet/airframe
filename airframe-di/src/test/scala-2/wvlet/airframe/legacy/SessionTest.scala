@@ -14,7 +14,7 @@
 package wvlet.airframe.legacy
 
 import wvlet.airspec.AirSpec
-import wvlet.airframe._
+import wvlet.airframe.*
 
 trait HelloBind {}
 

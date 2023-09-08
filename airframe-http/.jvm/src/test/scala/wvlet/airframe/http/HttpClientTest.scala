@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 import java.io.EOFException
 import java.lang.reflect.InvocationTargetException
-import java.net._
+import java.net.*
 import java.util.concurrent.{ExecutionException, TimeoutException}
 import javax.net.ssl.{SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
 import wvlet.airspec.AirSpec
@@ -23,7 +23,7 @@ import wvlet.log.Logger
 /**
   */
 class HttpClientTest extends AirSpec {
-  import wvlet.airframe.http.client.HttpClients._
+  import wvlet.airframe.http.client.HttpClients.*
   abstract class RetryTest(expectedRetryCount: Int, expectedExecCount: Int) {
     val retryer = defaultHttpClientRetry[HttpMessage.Request, HttpMessage.Response]
       .withBackOff(initialIntervalMillis = 0)

@@ -14,7 +14,7 @@
 package wvlet.airframe.http.netty
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 

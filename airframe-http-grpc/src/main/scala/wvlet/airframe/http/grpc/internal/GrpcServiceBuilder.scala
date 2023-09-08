@@ -29,7 +29,7 @@ import wvlet.airframe.http.grpc.{
 import wvlet.airframe.http.router.{Route, HttpRequestMapper}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.surface.{MethodParameter, MethodSurface, Surface, TypeName}
-import wvlet.airframe.rx._
+import wvlet.airframe.rx.*
 
 import java.util.concurrent.ExecutorService
 

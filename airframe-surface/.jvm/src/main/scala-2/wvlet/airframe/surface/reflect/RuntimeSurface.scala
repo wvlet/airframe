@@ -14,7 +14,7 @@
 package wvlet.airframe.surface.reflect
 
 import wvlet.log.LogSupport
-import wvlet.airframe.surface._
+import wvlet.airframe.surface.*
 
 import scala.reflect.runtime.{universe => ru}
 

@@ -32,7 +32,7 @@ import wvlet.airframe.surface.{
 import wvlet.airframe.ulid.ULID
 
 import java.util.UUID
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object ParquetSchema {
 

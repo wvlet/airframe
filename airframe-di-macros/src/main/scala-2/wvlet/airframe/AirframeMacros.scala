@@ -19,7 +19,7 @@ import scala.reflect.macros.{blackbox => sm}
 
 private[wvlet] object AirframeMacros {
   private[wvlet] class BindHelper[C <: Context](val c: C) {
-    import c.universe._
+    import c.universe.*
 
     def shouldGenerateTrait(t: c.Type): Boolean = {
       val a = t.typeSymbol
@@ -254,7 +254,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def designBindImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     q"""{
@@ -264,7 +264,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def designRemoveImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     q"""{
@@ -276,7 +276,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def binderToImpl[B: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[B]].tpe
     val h = new BindHelper[c.type](c)
     q""" {
@@ -287,7 +287,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def binderToSingletonOfImpl[B: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[B]].tpe
     val h = new BindHelper[c.type](c)
     q""" {
@@ -302,7 +302,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def binderToEagerSingletonOfImpl[B: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[B]].tpe
     val h = new BindHelper[c.type](c)
     q""" {
@@ -457,7 +457,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def buildWithSession[A: c.WeakTypeTag](c: sm.Context)(body: c.Expr[A => Any]): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
     // Bind the code block to a local variable to resolve the issue #373
     val e = q"""
@@ -473,7 +473,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def runWithSession[A: c.WeakTypeTag, B: c.WeakTypeTag](c: sm.Context)(body: c.Expr[A => B]): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val a = implicitly[c.WeakTypeTag[A]].tpe
     val b = implicitly[c.WeakTypeTag[B]].tpe
     // Bind the code block to a local variable to resolve the issue #373
@@ -490,7 +490,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def addLifeCycle[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
@@ -502,7 +502,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def addInitLifeCycle[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     q"""{
@@ -515,7 +515,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def addInjectLifeCycle[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     q"""{
@@ -529,7 +529,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def addStartLifeCycle[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     q"""{
@@ -543,7 +543,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def addStartLifeCycleForFactory[F: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t  = implicitly[c.WeakTypeTag[F]].tpe
     val i1 = t.typeArgs(0)
     val a  = t.typeArgs(1)
@@ -559,7 +559,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def addPreShutdownLifeCycle[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     q"""{
@@ -573,7 +573,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def addShutdownLifeCycle[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     q"""{
@@ -593,7 +593,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def bind0Impl[A: c.WeakTypeTag](c: sm.Context)(provider: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     q"""{
@@ -604,7 +604,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def bind1Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag](c: sm.Context)(provider: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val h    = new BindHelper[c.type](c)
     val t    = implicitly[c.WeakTypeTag[A]].tpe
     val d1   = implicitly[c.WeakTypeTag[D1]].tpe
@@ -617,7 +617,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def bind2Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag](c: sm.Context)(provider: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val h    = new BindHelper[c.type](c)
     val t    = implicitly[c.WeakTypeTag[A]].tpe
     val d1   = implicitly[c.WeakTypeTag[D1]].tpe
@@ -634,7 +634,7 @@ private[wvlet] object AirframeMacros {
   def bind3Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag](
       c: sm.Context
   )(provider: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val h    = new BindHelper[c.type](c)
     val t    = implicitly[c.WeakTypeTag[A]].tpe
     val d1   = implicitly[c.WeakTypeTag[D1]].tpe
@@ -653,7 +653,7 @@ private[wvlet] object AirframeMacros {
   def bind4Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag](
       c: sm.Context
   )(provider: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val h    = new BindHelper[c.type](c)
     val t    = implicitly[c.WeakTypeTag[A]].tpe
     val d1   = implicitly[c.WeakTypeTag[D1]].tpe
@@ -681,7 +681,7 @@ private[wvlet] object AirframeMacros {
       D4: c.WeakTypeTag,
       D5: c.WeakTypeTag
   ](c: sm.Context)(provider: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val h    = new BindHelper[c.type](c)
     val t    = implicitly[c.WeakTypeTag[A]].tpe
     val d1   = implicitly[c.WeakTypeTag[D1]].tpe
@@ -704,7 +704,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def bindLocal0Impl[A: c.WeakTypeTag](c: sm.Context)(provider: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val a = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
@@ -719,7 +719,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def bindLocal1Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag](c: sm.Context)(provider: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val a    = implicitly[c.WeakTypeTag[A]].tpe
     val d1   = implicitly[c.WeakTypeTag[D1]].tpe
@@ -738,7 +738,7 @@ private[wvlet] object AirframeMacros {
   def bindLocal2Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag](
       c: sm.Context
   )(provider: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val a    = implicitly[c.WeakTypeTag[A]].tpe
     val d1   = implicitly[c.WeakTypeTag[D1]].tpe
@@ -759,7 +759,7 @@ private[wvlet] object AirframeMacros {
   def bindLocal3Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag](
       c: sm.Context
   )(provider: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val a    = implicitly[c.WeakTypeTag[A]].tpe
     val d1   = implicitly[c.WeakTypeTag[D1]].tpe
@@ -782,7 +782,7 @@ private[wvlet] object AirframeMacros {
   def bindLocal4Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag](
       c: sm.Context
   )(provider: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val a    = implicitly[c.WeakTypeTag[A]].tpe
     val d1   = implicitly[c.WeakTypeTag[D1]].tpe
@@ -814,7 +814,7 @@ private[wvlet] object AirframeMacros {
   ](
       c: sm.Context
   )(provider: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val a    = implicitly[c.WeakTypeTag[A]].tpe
     val d1   = implicitly[c.WeakTypeTag[D1]].tpe
@@ -839,7 +839,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def bindFactoryImpl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[I1, A]
@@ -855,7 +855,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def bindFactory2Impl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2), A]
@@ -875,7 +875,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def bindFactory3Impl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2, I3), A]
@@ -897,7 +897,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def bindFactory4Impl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2, I3, I4), A]
@@ -921,7 +921,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def bindFactory5Impl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2, I3, I4, I4), A]
@@ -947,7 +947,7 @@ private[wvlet] object AirframeMacros {
   }
 
   def sourceCode(c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     c.internal.enclosingOwner
     val pos = c.enclosingPosition
     q"wvlet.airframe.SourceCode(${""}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"

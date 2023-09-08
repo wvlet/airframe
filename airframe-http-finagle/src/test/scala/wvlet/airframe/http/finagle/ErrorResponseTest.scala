@@ -14,7 +14,7 @@
 package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.Request
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 

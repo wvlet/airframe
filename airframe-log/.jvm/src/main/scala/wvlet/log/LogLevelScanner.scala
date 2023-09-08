@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 
 import wvlet.log.LogLevelScanner.ScannerState
 import wvlet.log.io.{IOUtil, Resource}
-import wvlet.log.io.IOUtil._
+import wvlet.log.io.IOUtil.*
 
 import scala.annotation.tailrec
 import scala.concurrent.duration.Duration
@@ -162,7 +162,7 @@ case class LogLevelScannerConfig(
     scanInterval: Duration = Duration(1, TimeUnit.MINUTES)
 )
 
-import wvlet.log.LogLevelScanner._
+import wvlet.log.LogLevelScanner.*
 
 private[log] class LogLevelScanner extends Guard { scanner =>
   private val config: AtomicReference[LogLevelScannerConfig] = new AtomicReference(LogLevelScannerConfig(List.empty))

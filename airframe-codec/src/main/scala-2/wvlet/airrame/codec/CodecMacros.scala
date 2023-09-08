@@ -19,7 +19,7 @@ import scala.reflect.macros.{blackbox => sm}
   */
 object CodecMacros {
   def codecOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
+    import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
     q"wvlet.airframe.codec.MessageCodec.ofSurface(wvlet.airframe.surface.Surface.of[${t}]).asInstanceOf[wvlet.airframe.codec.MessageCodec[${t}]]"
   }

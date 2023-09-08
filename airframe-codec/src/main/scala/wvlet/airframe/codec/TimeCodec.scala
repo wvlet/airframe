@@ -16,7 +16,7 @@ import java.time.Instant
 import java.util.Date
 
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
-import wvlet.airframe.msgpack.spi._
+import wvlet.airframe.msgpack.spi.*
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}

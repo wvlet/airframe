@@ -14,8 +14,8 @@
 package wvlet.airframe.rx.html
 
 import wvlet.airframe.rx.Rx
-import wvlet.airframe.rx.html._
-import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.*
+import wvlet.airframe.rx.html.all.*
 import wvlet.airspec.AirSpec
 
 /**
@@ -146,7 +146,7 @@ class HtmlTest extends AirSpec {
   }
 
   test("extra tags") {
-    import tags_extra._
+    import tags_extra.*
     div(
       abbr(),
       acronym(),
@@ -191,8 +191,8 @@ class HtmlTest extends AirSpec {
   }
 
   test(s"svg tags") {
-    import svgTags._
-    import svgAttrs._
+    import svgTags.*
+    import svgAttrs.*
     svg(
       circle(
         color -> "",
@@ -202,8 +202,8 @@ class HtmlTest extends AirSpec {
   }
 
   test("svg group") {
-    import svgTags._
-    import svgAttrs._
+    import svgTags.*
+    import svgAttrs.*
     g(
       // timeline background
       rect(

@@ -16,9 +16,9 @@ package wvlet.airframe.jmx
 import java.lang.annotation.Annotation
 import java.lang.reflect.Method
 
-import javax.management._
+import javax.management.*
 import wvlet.log.LogSupport
-import wvlet.airframe.surface.reflect._
+import wvlet.airframe.surface.reflect.*
 import wvlet.airframe.surface.{MethodSurface, Parameter, ParameterBase, Surface}
 
 import wvlet.airframe.{jmx => aj}
@@ -48,7 +48,7 @@ case class JMXMBean(obj: AnyRef, mBeanInfo: MBeanInfo, attributes: Seq[MBeanPara
 
   override def setAttributes(attributes: AttributeList): AttributeList = {
     val l = new AttributeList(attributes.size())
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     for (a <- attributes.asList().asScala) {
       l.add(setAttribute(a))
     }
@@ -151,7 +151,7 @@ object JMXMBean extends JMXMBeanCompat with LogSupport {
   }
 
   private def isNestedMBean(p: ParameterBase): Boolean = {
-    import wvlet.airframe.surface.reflect._
+    import wvlet.airframe.surface.reflect.*
 
     // We can support only nested parameters
     p.surface.params.exists(x => x.findAnnotationOf[aj.JMX].isDefined)

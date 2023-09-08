@@ -23,7 +23,7 @@ object AirSpec_03_DI extends AirSpec {
   class MyService(val config: Config)
 
   protected override def design: Design = {
-    import wvlet.airframe._
+    import wvlet.airframe.*
 
     val d = newDesign
       .bind[Config].toInstance(Config(port = 8080))

@@ -15,7 +15,7 @@ package wvlet.airframe.legacy
 
 import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
 import wvlet.airspec.AirSpec
-import wvlet.airframe._
+import wvlet.airframe.*
 
 object DisableNoDefaultInstanceCreationTest {
   case class Component(config: Config)
@@ -23,7 +23,7 @@ object DisableNoDefaultInstanceCreationTest {
 }
 
 class DisableNoDefaultInstanceCreationTest extends AirSpec {
-  import DisableNoDefaultInstanceCreationTest._
+  import DisableNoDefaultInstanceCreationTest.*
 
   test("disable implicit instance creation") {
     val d = Design.newDesign.bind[Component].toSingleton.noDefaultInstanceInjection

@@ -13,14 +13,14 @@
  */
 package wvlet.airframe.benchmark.rpc_request
 
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.benchmark.http.Greeter
 import wvlet.airframe.benchmark.http.Greeter.GreeterResponse
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.client.{HttpChannel, HttpChannelConfig, HttpClients, SyncClientImpl}
 import wvlet.airframe.http.netty.NettyRequestHandler
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport

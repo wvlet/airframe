@@ -41,11 +41,11 @@ object ScalaHttpClientGenerator {
   }
 }
 
-import ScalaHttpClientGenerator._
+import ScalaHttpClientGenerator.*
 
 object AsyncClientGenerator extends HttpClientGenerator with LogSupport {
 
-  import HttpClientGenerator._
+  import HttpClientGenerator.*
 
   override def name: String             = "async"
   override def defaultClassName: String = "ServiceClient"
@@ -105,7 +105,7 @@ object AsyncClientGenerator extends HttpClientGenerator with LogSupport {
 
 object SyncClientGenerator extends HttpClientGenerator {
 
-  import HttpClientGenerator._
+  import HttpClientGenerator.*
 
   override def name: String             = "sync"
   override def defaultClassName: String = "ServiceSyncClient"

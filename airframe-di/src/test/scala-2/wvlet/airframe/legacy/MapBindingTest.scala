@@ -14,15 +14,15 @@
 package wvlet.airframe.legacy
 
 import wvlet.log.LogSupport
-import wvlet.airframe.surface.tag._
+import wvlet.airframe.surface.tag.*
 import wvlet.airspec.AirSpec
 
-import wvlet.airframe._
+import wvlet.airframe.*
 
 /**
   */
 class MapBindingTest extends AirSpec {
-  import MapBindingTest._
+  import MapBindingTest.*
 
   test("support map binding") {
     val d = newSilentDesign.bind[Mapper].toSingleton.bind[String @@ InfoHandler].toInstance("info")

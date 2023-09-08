@@ -16,7 +16,7 @@ package wvlet.airframe.rx.html.widget.auth
 /**
   */
 
-import wvlet.airframe.rx._
+import wvlet.airframe.rx.*
 import wvlet.log.LogSupport
 
 import scala.concurrent.Promise

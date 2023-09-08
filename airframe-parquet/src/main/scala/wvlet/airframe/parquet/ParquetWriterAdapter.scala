@@ -26,7 +26,7 @@ import org.apache.parquet.schema.MessageType
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 /**
   */
@@ -78,7 +78,7 @@ class ParquetWriteSupportAdapter[A](surface: Surface) extends WriteSupport[A] wi
   }
 
   private var recordConsumer: RecordConsumer = null
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
 
   override def init(configuration: Configuration): WriteSupport.WriteContext = {
     val extraMetadata: Map[String, String] = Map.empty

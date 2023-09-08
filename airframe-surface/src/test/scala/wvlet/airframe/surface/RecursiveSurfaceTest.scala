@@ -22,7 +22,7 @@ object RecursiveSurfaceTest {
 /**
   */
 class RecursiveSurfaceTest extends SurfaceSpec {
-  import RecursiveSurfaceTest._
+  import RecursiveSurfaceTest.*
 
   test("find recursive surface cache from the full type name string") {
     val s = Surface.of[Cons]

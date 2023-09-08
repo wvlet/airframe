@@ -16,7 +16,7 @@ package wvlet.airframe.log
 import java.util.logging
 
 import wvlet.airspec.AirSpec
-import wvlet.log.LogFormatter._
+import wvlet.log.LogFormatter.*
 import wvlet.log.{LocalLogSupport, LogFormatter, LogLevel, LogSupport, NullHandler}
 
 /**

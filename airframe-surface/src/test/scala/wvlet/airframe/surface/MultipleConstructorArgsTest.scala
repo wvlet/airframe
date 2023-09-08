@@ -19,7 +19,7 @@ object MultipleConstructorArgsTest {
   }
 }
 
-import MultipleConstructorArgsTest._
+import MultipleConstructorArgsTest.*
 class MultipleConstructorArgsTest extends SurfaceSpec {
   test("support muliple constructor args") {
     val s: Surface = Surface.of[MultiC]

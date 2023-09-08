@@ -18,7 +18,7 @@ import wvlet.log.LogSupport
   * A basic example of three-step DI: Bind - Design - Build
   */
 object DI_01_HelloAirframe extends App {
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   case class MyAppConfig(name: String)
 

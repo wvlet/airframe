@@ -13,7 +13,7 @@
  */
 
 package wvlet.airframe.sql.catalog
-import wvlet.airframe.sql.catalog.DataType._
+import wvlet.airframe.sql.catalog.DataType.*
 import wvlet.airspec.AirSpec
 
 class DataTypeTest extends AirSpec {

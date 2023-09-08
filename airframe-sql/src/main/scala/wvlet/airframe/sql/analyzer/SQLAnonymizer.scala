@@ -16,7 +16,7 @@ package wvlet.airframe.sql.analyzer
 import java.util.concurrent.atomic.AtomicInteger
 
 import wvlet.log.LogSupport
-import wvlet.airframe.sql.model._
+import wvlet.airframe.sql.model.*
 import wvlet.airframe.sql.parser.{SQLGenerator, SQLParser}
 
 class SQLAnonymizer(dict: Map[Expression, Expression]) {
@@ -66,7 +66,7 @@ object SQLAnonymizer extends LogSupport {
     b.build
   }
 
-  import Expression._
+  import Expression.*
 
   private class DictBuilder {
     val m                  = Map.newBuilder[Expression, Expression]

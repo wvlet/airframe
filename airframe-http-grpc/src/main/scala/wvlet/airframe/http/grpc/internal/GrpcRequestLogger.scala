@@ -87,7 +87,7 @@ object GrpcRequestLogger extends LogSupport {
       }.getOrElse(Map.empty)
   }
 
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
 
   private def logAttributes(a: Attributes): Map[String, Any] = {
     val m = ListMap.newBuilder[String, Any]

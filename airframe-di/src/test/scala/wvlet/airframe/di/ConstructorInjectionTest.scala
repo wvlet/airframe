@@ -32,7 +32,7 @@ object ConstructorInjectionTest {
   */
 class ConstructorInjectionTest extends AirSpec {
 
-  import ConstructorInjectionTest._
+  import ConstructorInjectionTest.*
 
   test("constructor injection should bind singleton to the same type") {
     Design.newSilentDesign.build[Rep] { r =>

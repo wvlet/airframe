@@ -19,7 +19,7 @@ import wvlet.log.LogSupport
 
 import java.io.EOFException
 import java.lang.reflect.InvocationTargetException
-import java.net._
+import java.net.*
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.{ExecutionException, TimeoutException}
 import javax.net.ssl.{SSLException, SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}

@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
-import wvlet.airframe._
+import wvlet.airframe.*
 import wvlet.airframe.fluentd.FluentdLoggerTest.{
   Logger1,
   Logger2,

@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.jmx
 
-import javax.management._
+import javax.management.*
 
 import wvlet.log.LogSupport
 
@@ -78,7 +78,7 @@ object JMXRegistry {
 
     // When class is an anonymous trait
     if (name.contains("$anon$")) {
-      import scala.jdk.CollectionConverters._
+      import scala.jdk.CollectionConverters.*
       val interfaces = cl.getInterfaces
       if (interfaces != null && interfaces.length > 0) {
         // Use the first interface name instead of the anonymous name

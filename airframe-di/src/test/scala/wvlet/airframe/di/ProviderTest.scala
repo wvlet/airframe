@@ -54,7 +54,7 @@ object ProviderExample extends Serializable {
   def provider5(d1: D1, d2: D2, d3: D3, d4: D4, d5: D5): App = App(d1, d2, d3, d4, d5)
 }
 
-import wvlet.airframe.di.ProviderExample._
+import wvlet.airframe.di.ProviderExample.*
 
 class SingletonProviderTest extends AirSpec {
   test("build singleton from provider bindings") {

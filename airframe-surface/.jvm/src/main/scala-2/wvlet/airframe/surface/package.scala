@@ -17,7 +17,7 @@ import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 /**
   */

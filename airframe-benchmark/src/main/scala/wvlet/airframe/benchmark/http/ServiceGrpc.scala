@@ -72,7 +72,7 @@ object ServiceGrpc {
       private val descriptors = new GreeterDescriptors(codecFactory)
 
       import io.grpc.stub.ClientCalls
-      import GreeterModels._
+      import GreeterModels.*
 
       def hello(name: String): String = {
         val __m   = Map("name" -> name)
@@ -112,7 +112,7 @@ object ServiceGrpc {
       private val descriptors = new GreeterDescriptors(codecFactory)
 
       import io.grpc.stub.ClientCalls
-      import GreeterModels._
+      import GreeterModels.*
 
       def hello(name: String, responseObserver: io.grpc.stub.StreamObserver[String]): Unit = {
         val __m   = Map("name" -> name)

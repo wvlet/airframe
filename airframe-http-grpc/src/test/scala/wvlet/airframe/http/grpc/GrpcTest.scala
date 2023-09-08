@@ -14,7 +14,7 @@
 package wvlet.airframe.http.grpc
 
 import io.grpc.MethodDescriptor.MethodType
-import io.grpc._
+import io.grpc.*
 import io.grpc.stub.{AbstractBlockingStub, ClientCalls, ServerCalls, StreamObserver}
 import wvlet.airframe.Design
 import wvlet.airspec.AirSpec

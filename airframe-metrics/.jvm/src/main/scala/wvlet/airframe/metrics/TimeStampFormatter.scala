@@ -20,7 +20,7 @@ import java.util.Locale
 /**
   */
 object TimeStampFormatter {
-  import java.time.temporal.ChronoField._
+  import java.time.temporal.ChronoField.*
 
   val noSpaceTimestampFormat = new DateTimeFormatterBuilder()
     .parseCaseInsensitive()

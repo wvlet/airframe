@@ -81,7 +81,9 @@ val buildSettings = Seq[Setting[_]](
     } else {
       Seq(
         // Necessary for tracking source code range in airframe-rx demo
-        "-Yrangepos"
+        "-Yrangepos",
+        // For using import * syntax
+        "-Xsource:3"
       )
     }
   },
@@ -105,7 +107,7 @@ def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: Stri
 // https://stackoverflow.com/questions/41670018/how-to-prevent-sbt-to-include-test-dependencies-into-the-pom
 import sbt.ThisBuild
 
-import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, _}
+import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, *}
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 
 def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
@@ -128,7 +130,8 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
-/** AirSpec build definitions.
+/**
+  * AirSpec build definitions.
   *
   * To make AirSpec a standalone library without any cyclic project references, AirSpec embeds the source code of
   * airframe-log, di, surface, etc.

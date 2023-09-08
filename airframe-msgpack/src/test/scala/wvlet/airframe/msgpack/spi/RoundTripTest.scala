@@ -117,7 +117,7 @@ class RoundTripTest extends AirSpec with PropertyCheck {
   }
 
   test("pack/unpack values") {
-    import ValueFactory._
+    import ValueFactory.*
     val list: Seq[Value] = Seq(
       newNil,
       newBoolean(true),

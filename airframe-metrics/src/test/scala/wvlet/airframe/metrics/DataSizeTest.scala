@@ -18,7 +18,7 @@ import wvlet.airspec.AirSpec
 /**
   */
 class DataSizeTest extends AirSpec {
-  import DataSize._
+  import DataSize.*
 
   test("parse string") {
     DataSize(1234) shouldBe DataSize(1234, DataSize.BYTE)

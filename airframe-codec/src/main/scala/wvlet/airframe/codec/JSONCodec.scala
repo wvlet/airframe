@@ -14,8 +14,8 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.json.{JSON, Json}
-import wvlet.airframe.json.JSON._
-import wvlet.airframe.msgpack.spi._
+import wvlet.airframe.json.JSON.*
+import wvlet.airframe.msgpack.spi.*
 import wvlet.airframe.msgpack.spi.Value.TimestampValue
 
 /**
@@ -38,7 +38,7 @@ object JSONCodec extends MessageCodec[String] {
   }
 
   def packJsonValue(p: Packer, v: JSONValue): Unit = {
-    import wvlet.airframe.json.JSON._
+    import wvlet.airframe.json.JSON.*
     v match {
       case JSONObject(map) =>
         p.packMapHeader(map.size)

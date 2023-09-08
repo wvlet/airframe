@@ -17,7 +17,7 @@ import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.util.Await
 import wvlet.airframe.Design
 import wvlet.airframe.control.Control.withResource
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 

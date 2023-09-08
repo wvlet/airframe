@@ -12,10 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.tracing
-import java.io._
+import java.io.*
 
-import wvlet.airframe.tracing.ChromeTracer._
-import wvlet.airframe.tracing.TraceEvent._
+import wvlet.airframe.tracing.ChromeTracer.*
+import wvlet.airframe.tracing.TraceEvent.*
 
 /**
   * Tracer for producing DI events in Trace Event Format (JSON):

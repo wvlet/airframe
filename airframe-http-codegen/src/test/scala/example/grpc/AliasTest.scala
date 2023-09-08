@@ -17,7 +17,7 @@ import wvlet.airframe.http.RPC
 
 @RPC
 trait AliasTest {
-  import AliasTest._
+  import AliasTest.*
   def m1(userId: UserID): StatusCode
 }
 

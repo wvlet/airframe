@@ -14,13 +14,13 @@
 package wvlet.airframe.legacy
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
-import wvlet.airframe._
+import wvlet.airframe.*
 
 /**
   */
 class PathDependentTypeTest extends AirSpec {
   test("pass dependent types") {
-    import PathDependentType._
+    import PathDependentType.*
     val s = Surface.of[JdbcProfile#Backend#Database]
 
     val d = newDesign.noLifeCycleLogging

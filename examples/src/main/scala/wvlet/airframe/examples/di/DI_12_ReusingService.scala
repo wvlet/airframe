@@ -26,7 +26,7 @@ import wvlet.log.LogSupport
   * multiple times, shutdown hooks will be called only once per the resource.
   */
 object DI_12_ReusingService extends App {
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   trait DB extends LogSupport {
     def query(sql: String) = {}

@@ -16,10 +16,10 @@ package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.analyzer.AnalyzerContext
 import wvlet.airframe.sql.catalog.DataType
-import wvlet.airframe.sql.catalog.DataType._
+import wvlet.airframe.sql.catalog.DataType.*
 import wvlet.airframe.sql.model.Expression.{AllColumns, MultiSourceColumn}
 import wvlet.airframe.sql.parser.SQLGenerator
-import wvlet.airframe.sql.Assertion._
+import wvlet.airframe.sql.Assertion.*
 import wvlet.log.LogSupport
 
 import java.util.Locale

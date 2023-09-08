@@ -16,8 +16,8 @@ package wvlet.airframe.rx.html
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html.DOMRenderer
 import wvlet.airspec.AirSpec
-import wvlet.airframe.rx.html._
-import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.*
+import wvlet.airframe.rx.html.all.*
 import org.scalajs.dom.HTMLElement
 import org.scalajs.dom.MouseEvent
 

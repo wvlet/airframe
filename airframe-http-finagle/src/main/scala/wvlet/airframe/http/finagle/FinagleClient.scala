@@ -16,11 +16,11 @@ package wvlet.airframe.http.finagle
 import java.util.concurrent.TimeUnit
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Http, Service, http}
-import com.twitter.util._
+import com.twitter.util.*
 import wvlet.airframe.Design
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.http.client.HttpClients
 import wvlet.airframe.http.internal.HttpResponseBodyCodec
 import wvlet.airframe.surface.Surface

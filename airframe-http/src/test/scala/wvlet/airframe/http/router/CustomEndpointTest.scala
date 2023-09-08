@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec

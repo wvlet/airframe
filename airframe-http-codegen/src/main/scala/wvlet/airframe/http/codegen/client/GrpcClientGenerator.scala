@@ -29,7 +29,7 @@ import wvlet.log.LogSupport
   */
 object GrpcClientGenerator extends HttpClientGenerator with LogSupport {
 
-  import HttpClientGenerator._
+  import HttpClientGenerator.*
 
   override def name: String             = "grpc"
   override def defaultClassName: String = "ServiceGrpc"

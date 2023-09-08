@@ -14,7 +14,7 @@
 
 package wvlet.airframe.surface
 
-import wvlet.airframe.surface.tag._
+import wvlet.airframe.surface.tag.*
 
 object TaggedTypeTest {
   case class Person(id: Int, name: String)
@@ -26,7 +26,7 @@ object TaggedTypeTest {
   type Name = String
 }
 
-import TaggedTypeTest._
+import TaggedTypeTest.*
 class TaggedTypeTest extends SurfaceSpec {
   test("pass sanity check") {
     val e: Person @@ Employee = new Person(1, "leo").taggedWith[Employee]

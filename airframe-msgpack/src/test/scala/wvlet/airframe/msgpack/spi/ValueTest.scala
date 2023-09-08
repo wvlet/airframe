@@ -18,8 +18,8 @@ import java.util.Base64
 
 import org.scalacheck.Gen
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
-import wvlet.airframe.msgpack.spi.Value._
-import wvlet.airframe.msgpack.spi.ValueFactory._
+import wvlet.airframe.msgpack.spi.Value.*
+import wvlet.airframe.msgpack.spi.ValueFactory.*
 import wvlet.airspec.spi.PropertyCheck
 import wvlet.airspec.AirSpec
 
@@ -167,7 +167,7 @@ class ValueTest extends AirSpec with PropertyCheck {
   test("check appropriate range for integers") {
     import java.lang.{Byte, Short}
 
-    import ValueFactory._
+    import ValueFactory.*
 
     newInteger(Byte.MAX_VALUE).asByte shouldBe Byte.MAX_VALUE
     newInteger(Byte.MIN_VALUE).asByte shouldBe Byte.MIN_VALUE

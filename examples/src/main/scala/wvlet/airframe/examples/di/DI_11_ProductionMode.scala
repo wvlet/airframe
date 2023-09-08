@@ -19,7 +19,7 @@ import wvlet.log.LogSupport
 /**
   */
 object DI_11_ProductionMode extends App with LogSupport {
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   trait MyService extends LogSupport {
     @PostConstruct

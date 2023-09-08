@@ -18,7 +18,7 @@ import com.twitter.util.Future
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Resource
 import wvlet.airframe.http.HttpAccessLogWriter.JSONHttpAccessLogWriter
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.newDesign
 import wvlet.airframe.surface.secret

@@ -17,7 +17,7 @@ import com.google.common.util.concurrent.{FutureCallback, Futures}
 import io.grpc.ManagedChannelBuilder
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc.stub.StreamObserver
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.benchmark.http.HttpBenchmark.asyncIteration
 import wvlet.airframe.benchmark.http.protojava

@@ -31,7 +31,7 @@ object LazyStartTest {
   */
 class LazyStartTest extends AirSpec {
 
-  import LazyStartTest._
+  import LazyStartTest.*
 
   val f1 = new AtomicBoolean(false)
   val f2 = new AtomicBoolean(false)

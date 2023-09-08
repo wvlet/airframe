@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.html
-import wvlet.airframe.rx.html.RxEmbedding._
+import wvlet.airframe.rx.html.RxEmbedding.*
 
 trait HtmlNode extends HtmlNodeBase {
   @deprecated("Use html.when(cond, node)", since = "23.7.0")

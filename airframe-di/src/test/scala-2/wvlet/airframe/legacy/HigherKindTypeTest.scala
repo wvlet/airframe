@@ -16,7 +16,7 @@ package wvlet.airframe.legacy
 import wvlet.airspec.AirSpec
 
 import scala.language.higherKinds
-import wvlet.airframe._
+import wvlet.airframe.*
 
 object HigherKindTypeTest {
   trait Holder[M[_]] {
@@ -38,7 +38,7 @@ object HigherKindTypeTest {
   }
 }
 
-import HigherKindTypeTest._
+import HigherKindTypeTest.*
 
 class HigherKindTypeTest extends AirSpec {
   val d =

@@ -18,7 +18,7 @@ import java.time.Instant
 import org.msgpack.core.{MessageInsufficientBufferException, MessageIntegerOverflowException, MessageUnpacker}
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
 import wvlet.airframe.msgpack.spi.Value.{ExtensionValue, TimestampValue}
-import wvlet.airframe.msgpack.spi._
+import wvlet.airframe.msgpack.spi.*
 
 import scala.collection.immutable.ListMap
 
@@ -189,9 +189,9 @@ object UnpackerImpl {
   }
 
   import org.msgpack.{value => v8}
-  import wvlet.airframe.msgpack.spi.Value._
+  import wvlet.airframe.msgpack.spi.Value.*
 
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
 
   def fromMsgPackV8Value(v: v8.Value): Value = {
     v match {

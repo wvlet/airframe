@@ -1,7 +1,7 @@
 package wvlet.airframe.rx.html.widget
 
 import scala.scalajs.js
-import js.annotation._
+import js.annotation.*
 import js.|
 
 package editor {

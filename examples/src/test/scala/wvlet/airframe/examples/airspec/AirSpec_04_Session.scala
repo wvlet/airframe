@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.examples.airspec
 
-import wvlet.airframe._
+import wvlet.airframe.*
 import wvlet.airspec.AirSpec
 
 /**

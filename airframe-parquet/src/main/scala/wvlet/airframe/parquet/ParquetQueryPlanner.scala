@@ -36,8 +36,8 @@ case class ParquetQueryPlan(
   */
 object ParquetQueryPlanner extends LogSupport {
 
-  import LogicalPlan._
-  import wvlet.airframe.sql.model.Expression._
+  import LogicalPlan.*
+  import wvlet.airframe.sql.model.Expression.*
 
   def parse(sql: String, schema: MessageType): ParquetQueryPlan = {
     new PlanBuilder(schema).parse(sql)
@@ -75,7 +75,7 @@ object ParquetQueryPlanner extends LogSupport {
     }
 
     private def findParameterType(name: String): Option[PrimitiveTypeName] = {
-      import scala.jdk.CollectionConverters._
+      import scala.jdk.CollectionConverters.*
       schema.getFields.asScala.find(f => f.getName == name && f.isPrimitive).map { f =>
         f.asPrimitiveType().getPrimitiveTypeName
       }

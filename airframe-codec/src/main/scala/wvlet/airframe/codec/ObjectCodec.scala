@@ -14,7 +14,7 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
-import wvlet.airframe.surface._
+import wvlet.airframe.surface.*
 import wvlet.log.LogSupport
 import wvlet.airframe.json.JSONParseException
 import scala.util.{Failure, Success, Try}

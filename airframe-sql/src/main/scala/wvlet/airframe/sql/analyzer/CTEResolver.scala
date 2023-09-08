@@ -15,7 +15,7 @@ package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.airframe.sql.model.LogicalPlan
-import wvlet.airframe.sql.model.LogicalPlan._
+import wvlet.airframe.sql.model.LogicalPlan.*
 import wvlet.log.LogSupport
 
 /**

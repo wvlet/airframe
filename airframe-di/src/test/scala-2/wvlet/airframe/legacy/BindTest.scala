@@ -15,7 +15,7 @@ package wvlet.airframe.legacy
 
 import wvlet.airspec.AirSpec
 
-import wvlet.airframe._
+import wvlet.airframe.*
 
 object BindTest {
   class X {
@@ -30,7 +30,7 @@ object BindTest {
 /**
   */
 class BindTest extends AirSpec {
-  import BindTest._
+  import BindTest.*
 
   test("allow provider based initialization") {
     val s = newSilentDesign.build[Bind] { b =>

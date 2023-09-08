@@ -15,17 +15,17 @@ package wvlet.airframe.http.netty
 
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.PooledByteBufAllocator
-import io.netty.channel._
+import io.netty.channel.*
 import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel}
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.unix.UnixChannelOption
-import io.netty.handler.codec.http._
+import io.netty.handler.codec.http.*
 import io.netty.handler.stream.ChunkedWriteHandler
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http.HttpMessage.Response
-import wvlet.airframe.http.{HttpMessage, _}
+import wvlet.airframe.http.{HttpMessage, *}
 import wvlet.airframe.http.client.{AsyncClient, SyncClient}
 import wvlet.airframe.http.internal.{RPCLoggingFilter, LogRotationHttpLogger, RPCResponseFilter}
 import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}

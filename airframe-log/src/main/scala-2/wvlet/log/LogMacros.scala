@@ -25,7 +25,7 @@ import scala.reflect.macros.blackbox.Context
   */
 private[log] object LogMacros {
   private class MacroHelper[C <: Context](val c: C) {
-    import c.universe._
+    import c.universe.*
 
     val disabledLevels: Set[c.Tree] = {
       val SettingsPrefix = "wvlet.log.disable."
@@ -78,107 +78,107 @@ private[log] object LogMacros {
   }
 
   def logAtImpl(c: Context)(logLevel: c.Tree, message: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).log(logLevel, message)
   }
 
   def errorLog(c: Context)(message: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).log(q"wvlet.log.LogLevel.ERROR", message)
   }
 
   def errorLogWithCause(c: Context)(message: c.Tree, cause: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logWithCause(q"wvlet.log.LogLevel.ERROR", message, cause)
   }
 
   def errorLogMethod(c: Context)(message: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logMethod(q"wvlet.log.LogLevel.ERROR", message)
   }
 
   def errorLogMethodWithCause(c: Context)(message: c.Tree, cause: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logMethodWithCause(q"wvlet.log.LogLevel.ERROR", message, cause)
   }
 
   def warnLog(c: Context)(message: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).log(q"wvlet.log.LogLevel.WARN", message)
   }
 
   def warnLogWithCause(c: Context)(message: c.Tree, cause: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logWithCause(q"wvlet.log.LogLevel.WARN", message, cause)
   }
 
   def warnLogMethod(c: Context)(message: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logMethod(q"wvlet.log.LogLevel.WARN", message)
   }
 
   def warnLogMethodWithCause(c: Context)(message: c.Tree, cause: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logMethodWithCause(q"wvlet.log.LogLevel.WARN", message, cause)
   }
 
   def infoLog(c: Context)(message: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).log(q"wvlet.log.LogLevel.INFO", message)
   }
 
   def infoLogWithCause(c: Context)(message: c.Tree, cause: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logWithCause(q"wvlet.log.LogLevel.INFO", message, cause)
   }
 
   def infoLogMethod(c: Context)(message: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logMethod(q"wvlet.log.LogLevel.INFO", message)
   }
 
   def infoLogMethodWithCause(c: Context)(message: c.Tree, cause: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logMethodWithCause(q"wvlet.log.LogLevel.INFO", message, cause)
   }
 
   def debugLog(c: Context)(message: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).log(q"wvlet.log.LogLevel.DEBUG", message)
   }
 
   def debugLogWithCause(c: Context)(message: c.Tree, cause: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logWithCause(q"wvlet.log.LogLevel.DEBUG", message, cause)
   }
 
   def debugLogMethod(c: Context)(message: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logMethod(q"wvlet.log.LogLevel.DEBUG", message)
   }
 
   def debugLogMethodWithCause(c: Context)(message: c.Tree, cause: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logMethodWithCause(q"wvlet.log.LogLevel.DEBUG", message, cause)
   }
 
   def traceLog(c: Context)(message: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).log(q"wvlet.log.LogLevel.TRACE", message)
   }
 
   def traceLogWithCause(c: Context)(message: c.Tree, cause: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logWithCause(q"wvlet.log.LogLevel.TRACE", message, cause)
   }
 
   def traceLogMethod(c: Context)(message: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logMethod(q"wvlet.log.LogLevel.TRACE", message)
   }
 
   def traceLogMethodWithCause(c: Context)(message: c.Tree, cause: c.Tree): c.Tree = {
-    import c.universe._
+    import c.universe.*
     new MacroHelper[c.type](c).logMethodWithCause(q"wvlet.log.LogLevel.TRACE", message, cause)
   }
 }

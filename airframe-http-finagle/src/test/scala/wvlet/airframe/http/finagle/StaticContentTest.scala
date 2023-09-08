@@ -15,7 +15,7 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.Response
 import wvlet.airframe.Design
 import wvlet.airframe.control.Control
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airspec.AirSpec
 import wvlet.log.io.{IOUtil, Resource}
 

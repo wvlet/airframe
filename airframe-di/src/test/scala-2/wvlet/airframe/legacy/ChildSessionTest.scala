@@ -18,7 +18,7 @@ import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 import scala.util.Random
-import wvlet.airframe._
+import wvlet.airframe.*
 
 object ChildSessionTest {
   case class HttpRequest(path: String, userName: String)
@@ -107,7 +107,7 @@ object ChildSessionTest {
 /**
   */
 class ChildSessionTest extends AirSpec {
-  import ChildSessionTest._
+  import ChildSessionTest.*
   test("support creating a child session") {
     requestCount.get() shouldBe 0
     serverDesign.build[HttpServer] { server =>

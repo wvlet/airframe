@@ -17,8 +17,8 @@ import org.scalajs.dom.{HTMLElement, document}
 import wvlet.airframe.rx.{Cancelable, Rx, html}
 import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxElement}
 import wvlet.airspec.AirSpec
-import wvlet.airframe.rx.html._
-import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.*
+import wvlet.airframe.rx.html.all.*
 
 /**
   */

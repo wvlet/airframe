@@ -24,7 +24,7 @@ import wvlet.airframe.http.{RPCEncoding, RPCStatus}
 import wvlet.airframe.http.router.{Route, HttpRequestMapper}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.msgpack.spi.Value.MapValue
-import wvlet.airframe.rx._
+import wvlet.airframe.rx.*
 import wvlet.airframe.surface.{CName, MethodSurface, Surface}
 import wvlet.log.LogSupport
 

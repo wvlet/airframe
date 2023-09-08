@@ -15,7 +15,7 @@ package wvlet.airframe.http.client
 import org.scalajs.dom
 import org.scalajs.dom.ext.Ajax.InputData
 import wvlet.airframe.http.HttpMessage.Response
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 

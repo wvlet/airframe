@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.sql.catalog
 
-import wvlet.airframe.sql.Assertion._
+import wvlet.airframe.sql.Assertion.*
 
 /**
   * Manage the list of unbounded functions, whose types are not resolved yet.

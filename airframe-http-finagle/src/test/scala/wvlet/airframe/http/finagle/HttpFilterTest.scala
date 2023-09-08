@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.{Request, Response, Status, Version}
 import com.twitter.util.{Await, Future}
 import wvlet.airframe.control.Control.withResource
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -51,7 +51,7 @@ class LogStore extends LogSupport {
 }
 
 trait LogFilterExample extends FinagleFilter {
-  import wvlet.airframe._
+  import wvlet.airframe.*
   private val logStore = bind[LogStore]
 
   override def apply(request: Request, context: FinagleContext): Future[Response] = {

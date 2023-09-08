@@ -16,7 +16,7 @@ package wvlet.airframe.benchmark.msgpack
 import java.util.concurrent.TimeUnit
 
 import org.msgpack.core.MessageUnpacker
-import org.openjdk.jmh.annotations._
+import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker}
 

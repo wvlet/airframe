@@ -14,7 +14,7 @@ object SerializationTest {
 /**
   */
 class SerializationTest extends Spec {
-  import SerializationTest._
+  import SerializationTest.*
 
   test("logger should be serializable") {
     val a = new A {}

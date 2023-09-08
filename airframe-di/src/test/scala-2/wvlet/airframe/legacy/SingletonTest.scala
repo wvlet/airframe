@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
-import wvlet.airframe._
+import wvlet.airframe.*
 
 object SingletonTest {
   type TraitCounter = AtomicInteger
@@ -60,7 +60,7 @@ object SingletonTest {
   }
 }
 
-import SingletonTest._
+import SingletonTest.*
 
 /**
   */

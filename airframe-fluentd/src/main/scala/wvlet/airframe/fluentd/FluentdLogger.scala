@@ -60,7 +60,7 @@ class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: 
   }
 
   private def toJavaMap(event: Map[String, Any]): java.util.Map[String, AnyRef] = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     (for ((k, v) <- event) yield {
       k -> v.asInstanceOf[AnyRef]
     }).asJava

@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.sql.model
 import wvlet.airframe.sql.analyzer.{QuerySignatureConfig}
-import wvlet.airframe.sql.Assertion._
+import wvlet.airframe.sql.Assertion.*
 import wvlet.log.LogSupport
 
 import java.util.UUID
@@ -474,7 +474,7 @@ trait SQLSig {
 }
 
 object LogicalPlan {
-  import Expression._
+  import Expression.*
 
   private def isSelectAll(selectItems: Seq[Attribute]): Boolean = {
     selectItems.exists {

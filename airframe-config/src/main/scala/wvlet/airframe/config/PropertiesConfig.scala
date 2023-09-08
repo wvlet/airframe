@@ -15,7 +15,7 @@ package wvlet.airframe.config
 
 import java.util.Properties
 
-import wvlet.airframe.surface.CanonicalNameFormatter._
+import wvlet.airframe.surface.CanonicalNameFormatter.*
 import wvlet.airframe.surface.reflect.ObjectBuilder
 import wvlet.airframe.surface.{Surface, TaggedSurface}
 import wvlet.log.LogSupport
@@ -86,7 +86,7 @@ object PropertiesConfig extends LogSupport {
 
   def overrideWithProperties(config: Config, props: Properties, onUnusedProperties: Properties => Unit): Config = {
     val overrides: Seq[ConfigProperty] = {
-      import scala.jdk.CollectionConverters._
+      import scala.jdk.CollectionConverters.*
       val b = Seq.newBuilder[ConfigProperty]
       for ((k, v) <- props.asScala) yield {
         val key = configKeyOf(k)

@@ -20,7 +20,7 @@ import scala.reflect.macros.{blackbox => sm}
   */
 private[html] object RxHtmlMacros {
   def code(c: sm.Context)(rxElements: c.Tree*): c.Tree = {
-    import c.universe._
+    import c.universe.*
 
     val codes = for (rxElement <- rxElements) yield {
       val pos = rxElement.pos

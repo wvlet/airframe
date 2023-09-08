@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.benchmark.http
 
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.http.client.SyncClient
 
 //class ServiceSyncClient[Req, Resp](private val client: HttpSyncClient[Req, Resp]) extends AutoCloseable {

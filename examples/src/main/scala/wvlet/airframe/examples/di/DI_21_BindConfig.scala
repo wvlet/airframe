@@ -22,9 +22,9 @@ object DI_21_BindConfig extends App {
   case class ServerConfig(host: String)
   case class X()
 
-  import wvlet.airframe._
+  import wvlet.airframe.*
   // Import config._ to use bindConfigXXX methods
-  import wvlet.airframe.config._
+  import wvlet.airframe.config.*
 
   // Load "production" configurations from Yaml files
   val design =

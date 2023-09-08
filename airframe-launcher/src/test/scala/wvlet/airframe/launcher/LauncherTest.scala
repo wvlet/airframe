@@ -27,7 +27,7 @@ import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 class LauncherTest extends AirSpec {
-  import LauncherTest._
+  import LauncherTest.*
   test("populate arguments in constructor") {
     capture {
       val l = Launcher.execute[GlobalOption]("-h -l debug")

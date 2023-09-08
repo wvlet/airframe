@@ -18,7 +18,7 @@ import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.Surface
 
 import scala.collection.immutable.ListMap
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 /**
   */

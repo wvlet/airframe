@@ -13,14 +13,14 @@
  */
 package wvlet.airframe.http.finagle
 import java.lang.reflect.InvocationTargetException
-import com.twitter.finagle._
+import com.twitter.finagle.*
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.stats.StatsReceiver
 import com.twitter.finagle.tracing.Tracer
 import com.twitter.util.{Await, Future}
 
 import javax.annotation.PostConstruct
-import wvlet.airframe._
+import wvlet.airframe.*
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService

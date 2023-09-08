@@ -25,7 +25,7 @@ object ConfigOverrideTest {
 /**
   */
 class ConfigOverrideTest extends AirSpec {
-  import ConfigOverrideTest._
+  import ConfigOverrideTest.*
 
   private def newConfig: Config = Config(env = "default").register[MyAppConfig](MyAppConfig())
 

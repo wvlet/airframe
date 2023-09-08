@@ -16,7 +16,7 @@ package wvlet.airframe.surface.reflect
 import java.{lang => jl}
 import java.lang.invoke.MethodHandles
 import java.lang.reflect.Method
-import wvlet.airframe.surface._
+import wvlet.airframe.surface.*
 import wvlet.log.LogSupport
 
 import scala.util.Try

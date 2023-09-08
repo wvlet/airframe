@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.sql.parser
 
-import org.antlr.v4.runtime.{DefaultErrorStrategy, RecognitionException, _}
+import org.antlr.v4.runtime.{DefaultErrorStrategy, RecognitionException, *}
 import wvlet.airframe.sql.SQLErrorCode
 import wvlet.log.LogSupport
 import wvlet.airframe.sql.model.{Expression, LogicalPlan, NodeLocation}

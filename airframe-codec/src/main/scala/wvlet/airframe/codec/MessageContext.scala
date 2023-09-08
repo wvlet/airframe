@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.codec.DataType._
+import wvlet.airframe.codec.DataType.*
 
 /**
   * MessageContext is used for passing the parsing configuration and the last value read by codec.

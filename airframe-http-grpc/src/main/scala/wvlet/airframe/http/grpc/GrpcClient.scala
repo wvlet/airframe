@@ -38,7 +38,7 @@ case class GrpcMethod[Req, Resp](
 )
 
 class GrpcClient(channel: io.grpc.Channel, config: GrpcClientConfig) {
-  import GrpcClient._
+  import GrpcClient.*
 
   private def prepareRPCRequestBody[Req, Resp](method: GrpcMethod[Req, Resp], request: Req): Array[Byte] = {
     try {

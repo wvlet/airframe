@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.json
-import wvlet.airframe.json.JSON._
+import wvlet.airframe.json.JSON.*
 import wvlet.airspec.AirSpec
 
 /**

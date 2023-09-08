@@ -13,11 +13,11 @@
  */
 package wvlet.airframe.test.api
 
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 
 @RPC
 trait HelloRPC {
-  import HelloRPC._
+  import HelloRPC.*
 
   def hello(name: String): String
   def serverStatus: Status

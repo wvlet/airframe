@@ -75,7 +75,7 @@ object ArgProcessorTest {
 }
 
 class ArgProcessorTest extends AirSpec {
-  import ArgProcessorTest._
+  import ArgProcessorTest.*
 
   test("should run the default command") {
     val c = capture {

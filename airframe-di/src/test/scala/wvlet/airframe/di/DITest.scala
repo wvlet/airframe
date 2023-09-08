@@ -11,7 +11,7 @@ import java.io.PrintStream
 import java.util.concurrent.atomic.AtomicInteger
 import scala.util.Random
 
-import wvlet.airframe._
+import wvlet.airframe.*
 
 /**
   */

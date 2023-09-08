@@ -52,7 +52,7 @@ object MethodExamples {
   }
 }
 
-import wvlet.airframe.surface.MethodExamples._
+import wvlet.airframe.surface.MethodExamples.*
 
 /**
   */

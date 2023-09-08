@@ -13,14 +13,14 @@
  */
 package wvlet.airframe.surface.reflect
 
-import wvlet.airframe.surface.CanonicalNameFormatter._
-import wvlet.airframe.surface._
-import wvlet.airframe.surface.reflect.ReflectTypeUtil._
+import wvlet.airframe.surface.CanonicalNameFormatter.*
+import wvlet.airframe.surface.*
+import wvlet.airframe.surface.reflect.ReflectTypeUtil.*
 import wvlet.log.LogSupport
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.language.existentials
 
 //--------------------------------------
@@ -72,7 +72,7 @@ trait ObjectBuilder extends GenericBuilder {
   * ObjectBuilder support overriding nested parameters by specifying a parameter path (Path)
   */
 trait StandardBuilder extends GenericBuilder with LogSupport {
-  import ObjectBuilder._
+  import ObjectBuilder.*
 
   protected val holder = collection.mutable.Map.empty[String, BuilderElement]
 

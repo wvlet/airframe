@@ -18,7 +18,7 @@ package example.api
 import java.util.UUID
 
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 
 import scala.concurrent.Future
 

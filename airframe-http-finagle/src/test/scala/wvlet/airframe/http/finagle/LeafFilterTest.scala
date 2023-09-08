@@ -31,7 +31,7 @@ object LeafFilterTest {
 /**
   */
 class LeafFilterTest extends AirSpec {
-  import LeafFilterTest._
+  import LeafFilterTest.*
 
   override protected def design: Design = {
     newFinagleServerDesign(name = "leaf-filter-test", router = Router.add[MyFilter])

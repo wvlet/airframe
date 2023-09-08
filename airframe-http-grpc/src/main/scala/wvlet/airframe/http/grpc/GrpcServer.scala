@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.grpc
 
-import io.grpc._
+import io.grpc.*
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.{Router, RxRouter}
 import wvlet.airframe.http.grpc.internal.{GrpcRequestLogger, GrpcServiceBuilder}

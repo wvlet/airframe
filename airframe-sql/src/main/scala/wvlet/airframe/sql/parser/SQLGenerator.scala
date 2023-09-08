@@ -14,14 +14,14 @@
 
 package wvlet.airframe.sql.parser
 import wvlet.log.LogSupport
-import wvlet.airframe.sql.model._
-import wvlet.airframe.sql.model.LogicalPlan._
+import wvlet.airframe.sql.model.*
+import wvlet.airframe.sql.model.LogicalPlan.*
 
 /**
   * Print LogicalPlans As SQL statements
   */
 object SQLGenerator extends LogSupport {
-  import Expression._
+  import Expression.*
 
   private def unknown(e: Any): String = {
     if (e != null) {

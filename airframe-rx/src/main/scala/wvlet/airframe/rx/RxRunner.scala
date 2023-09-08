@@ -73,7 +73,7 @@ class RxRunner(
     continuous: Boolean
 ) extends LogSupport { runner =>
 
-  import Rx._
+  import Rx.*
 
   /**
     * Build an executable chain of Rx operators. The resulting chain will be registered as a subscriber to the root node

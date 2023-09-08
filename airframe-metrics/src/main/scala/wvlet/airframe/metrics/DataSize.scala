@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.metrics
 
-import wvlet.airframe.metrics.DataSize._
+import wvlet.airframe.metrics.DataSize.*
 import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.annotation.tailrec

@@ -16,7 +16,7 @@ package wvlet.airframe.http.client
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.json.JSON
 import wvlet.airframe.rx.Rx
 import wvlet.airspec.AirSpec

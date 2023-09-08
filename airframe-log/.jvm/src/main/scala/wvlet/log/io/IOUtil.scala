@@ -13,7 +13,7 @@
  */
 package wvlet.log.io
 
-import java.io._
+import java.io.*
 import java.net.{ServerSocket, URL}
 import java.nio.charset.StandardCharsets
 

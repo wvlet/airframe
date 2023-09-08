@@ -18,7 +18,7 @@ import wvlet.airframe.surface.SurfaceSpec
 /**
   */
 class PathTest extends SurfaceSpec {
-  import Path._
+  import Path.*
 
   test("define root") {
     val r = Path.root

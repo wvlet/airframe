@@ -21,7 +21,7 @@ import scala.concurrent.Future
   */
 @RPC
 trait OpenAPIRPCExample {
-  import OpenAPIRPCExample._
+  import OpenAPIRPCExample.*
 
   def zeroAryRPC: Unit
   def rpcWithPrimitive(p1: Int): Int
@@ -51,7 +51,7 @@ object OpenAPIRPCExample {
 }
 
 trait OpenAPIEndpointExample {
-  import OpenAPIEndpointExample._
+  import OpenAPIEndpointExample.*
 
   @Endpoint(method = HttpMethod.GET, path = "/v1/get0")
   def get0(): Unit

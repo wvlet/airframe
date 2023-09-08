@@ -21,7 +21,7 @@ import wvlet.airframe.http.codegen.client.HttpClientGenerator.RichSurface
   * The default RPC client generator using Http.client.Sync/AsyncClient
   */
 object RPCClientGenerator extends HttpClientGenerator {
-  import ScalaHttpClientGenerator._
+  import ScalaHttpClientGenerator.*
 
   override def name: String = "rpc"
 

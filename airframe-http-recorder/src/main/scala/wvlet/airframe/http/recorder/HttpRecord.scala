@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.recorder
-import wvlet.airframe.codec._
+import wvlet.airframe.codec.*
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.recorder.HttpRecord.headerCodec

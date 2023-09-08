@@ -14,7 +14,7 @@
 
 package wvlet.airframe.surface
 
-import wvlet.airframe.surface.tag._
+import wvlet.airframe.surface.tag.*
 
 object ClassSurfaceTest {
   class A(val id: Int)(implicit val context: String)
@@ -23,7 +23,7 @@ object ClassSurfaceTest {
   case class B(v: Int @@ MyTag)
 }
 
-import wvlet.airframe.surface.ClassSurfaceTest._
+import wvlet.airframe.surface.ClassSurfaceTest.*
 
 class ClassSurfaceTest extends SurfaceSpec {
   test("support multiple param blocks") {

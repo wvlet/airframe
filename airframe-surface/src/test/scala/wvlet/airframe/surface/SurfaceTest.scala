@@ -47,7 +47,7 @@ object Examples {
   case class F(p0: Int = 10)
 }
 
-import wvlet.airframe.surface.Examples._
+import wvlet.airframe.surface.Examples.*
 
 /**
   */

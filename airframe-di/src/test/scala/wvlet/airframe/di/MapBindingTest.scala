@@ -20,7 +20,7 @@ import wvlet.airspec.AirSpec
 /**
   */
 class MapBindingTest extends AirSpec {
-  import MapBindingTest._
+  import MapBindingTest.*
 
   test("support map binding") {
     val d = Design.newSilentDesign

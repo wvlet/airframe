@@ -20,7 +20,7 @@ import wvlet.airspec.AirSpec
   */
 class PathDependentTypeTest extends AirSpec {
   test("pass dependent types") {
-    import PathDependentType._
+    import PathDependentType.*
     val s = Surface.of[JdbcProfile#Backend#Database]
 
     val d = Design.newSilentDesign

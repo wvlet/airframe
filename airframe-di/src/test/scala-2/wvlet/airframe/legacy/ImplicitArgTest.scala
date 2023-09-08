@@ -14,7 +14,7 @@
 package wvlet.airframe.legacy
 
 import wvlet.airspec.AirSpec
-import wvlet.airframe._
+import wvlet.airframe.*
 
 object ImplicitArgTest {
   case class ImplA(a: String)(implicit val b: Int)
@@ -24,7 +24,7 @@ object ImplicitArgTest {
 /**
   */
 class ImplicitArgTest extends AirSpec {
-  import ImplicitArgTest._
+  import ImplicitArgTest.*
 
   test("support implicit args") {
     val d = newDesign

@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.util.DefaultTimer
 import com.twitter.finagle.{Service, SimpleFilter, http}
-import com.twitter.util._
+import com.twitter.util.*
 import wvlet.airframe.control.ResultClass
 import wvlet.airframe.control.Retry.{MaxRetryException, RetryContext}
 import wvlet.airframe.http.{HttpClientException, HttpClientMaxRetryException}
@@ -28,7 +28,7 @@ import wvlet.log.LogSupport
 class FinagleRetryFilter(retry: RetryContext, timer: Timer = DefaultTimer)
     extends SimpleFilter[http.Request, http.Response]
     with LogSupport {
-  import com.twitter.conversions.DurationOps._
+  import com.twitter.conversions.DurationOps.*
 
   private[this] def schedule(d: Duration)(f: => Future[Response]) = {
     if (d > 0.seconds) {

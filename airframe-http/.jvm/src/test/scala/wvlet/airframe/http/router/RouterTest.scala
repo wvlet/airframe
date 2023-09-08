@@ -16,8 +16,8 @@ package wvlet.airframe.http.router
 import wvlet.airframe.Session
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.router.example.ControllerExample.User
-import wvlet.airframe.http.router.example._
-import wvlet.airframe.http._
+import wvlet.airframe.http.router.example.*
+import wvlet.airframe.http.*
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 

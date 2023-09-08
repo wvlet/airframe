@@ -148,7 +148,7 @@ object NettyHttp {
 @OutputTimeUnit(TimeUnit.SECONDS)
 class NettyHttp {
 
-  import NettyHttp._
+  import NettyHttp.*
 
   private val port   = IOUtil.unusedPort
   private val server = new Server(port)

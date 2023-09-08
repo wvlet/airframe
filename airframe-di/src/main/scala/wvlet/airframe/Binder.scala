@@ -88,7 +88,7 @@ object Binder {
   }
 }
 
-import wvlet.airframe.Binder._
+import wvlet.airframe.Binder.*
 
 /**
   */

@@ -16,7 +16,7 @@ package wvlet.airframe.legacy
 import wvlet.airspec.AirSpec
 
 import scala.util.Random
-import wvlet.airframe._
+import wvlet.airframe.*
 
 object ConstructorInjectionTest {
 
@@ -32,7 +32,7 @@ object ConstructorInjectionTest {
   */
 class ConstructorInjectionTest extends AirSpec {
 
-  import ConstructorInjectionTest._
+  import ConstructorInjectionTest.*
 
   test("constructor injection should bind singleton to the same type") {
     newSilentDesign.build[Rep] { r =>

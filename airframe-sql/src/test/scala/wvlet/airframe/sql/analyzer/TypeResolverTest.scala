@@ -13,11 +13,11 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.sql.catalog.Catalog._
+import wvlet.airframe.sql.catalog.Catalog.*
 import wvlet.airframe.sql.catalog.{Catalog, DataType, InMemoryCatalog}
-import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan._
-import wvlet.airframe.sql.model._
+import wvlet.airframe.sql.model.Expression.*
+import wvlet.airframe.sql.model.LogicalPlan.*
+import wvlet.airframe.sql.model.*
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airspec.AirSpec
 import wvlet.airspec.spi.AssertionFailure

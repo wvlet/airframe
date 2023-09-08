@@ -15,7 +15,7 @@ package wvlet.airframe.http.router
 
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future

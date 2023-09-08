@@ -21,7 +21,7 @@ import wvlet.log.LogSupport
   * bindSingleton[X] example
   */
 object BindSingleton {
-  import wvlet.airframe._
+  import wvlet.airframe.*
 
   trait X {
     def hello: String   = "Hello"

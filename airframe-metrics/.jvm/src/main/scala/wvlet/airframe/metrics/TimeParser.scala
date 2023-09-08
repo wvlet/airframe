@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.metrics
 
-import java.time._
+import java.time.*
 import java.time.format.DateTimeFormatter
 
 import wvlet.log.LogSupport

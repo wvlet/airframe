@@ -7,7 +7,7 @@ import java.util.Locale
 /**
   */
 object LogTimestampFormatter {
-  import java.time.temporal.ChronoField._
+  import java.time.temporal.ChronoField.*
 
   val systemZone = ZoneId.systemDefault().normalized()
   val noSpaceTimestampFormat = new DateTimeFormatterBuilder()

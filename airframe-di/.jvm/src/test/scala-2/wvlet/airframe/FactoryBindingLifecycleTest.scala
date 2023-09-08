@@ -50,7 +50,7 @@ object FactoryBindingLifecycleTest {
 /**
   */
 class FactoryBindingLifecycleTest extends AirSpec {
-  import FactoryBindingLifecycleTest._
+  import FactoryBindingLifecycleTest.*
 
   test("run shutdown hooks") {
     threadCounter.get() shouldBe 0

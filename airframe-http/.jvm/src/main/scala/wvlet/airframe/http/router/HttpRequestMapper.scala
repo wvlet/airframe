@@ -15,12 +15,12 @@ package wvlet.airframe.http.router
 
 import wvlet.airframe.codec.PrimitiveCodec.{StringCodec, ValueCodec}
 import wvlet.airframe.codec.{JSONCodec, MessageCodecFactory}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.http.internal.HttpMultiMapCodec
 import wvlet.airframe.json.JSON
 import wvlet.airframe.msgpack.spi.Value.MapValue
 import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack, Value}
-import wvlet.airframe.surface._
+import wvlet.airframe.surface.*
 import wvlet.log.LogSupport
 
 import scala.language.higherKinds

@@ -15,7 +15,7 @@ object DefaultValueTest {
 /**
   */
 class DefaultValueTest extends AirSpec {
-  import DefaultValueTest._
+  import DefaultValueTest.*
   test("populate default values") {
     Design.newSilentDesign.build[B] { b =>
       b.a shouldBe A()

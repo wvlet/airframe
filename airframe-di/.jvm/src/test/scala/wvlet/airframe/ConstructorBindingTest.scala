@@ -19,7 +19,7 @@ import wvlet.airspec.AirSpec
   * TODO: This works only in JVM, because we cannot extract constructor default parameters in Scala.js
   */
 class ConstructorBindingTest extends AirSpec {
-  import ConstructorBindingTest._
+  import ConstructorBindingTest.*
 
   test("build objects using default constructor parameters") {
     newSilentDesign.build[CbTest] { a =>

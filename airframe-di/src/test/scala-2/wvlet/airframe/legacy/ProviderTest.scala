@@ -16,7 +16,7 @@ package wvlet.airframe.legacy
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
-import wvlet.airframe._
+import wvlet.airframe.*
 
 object ProviderExample extends Serializable {
   case class D1(id: Int)
@@ -55,7 +55,7 @@ object ProviderExample extends Serializable {
   def provider5(d1: D1, d2: D2, d3: D3, d4: D4, d5: D5): App = App(d1, d2, d3, d4, d5)
 }
 
-import wvlet.airframe.legacy.ProviderExample._
+import wvlet.airframe.legacy.ProviderExample.*
 
 trait ProviderExample {
   // Constructor binding (singleton)

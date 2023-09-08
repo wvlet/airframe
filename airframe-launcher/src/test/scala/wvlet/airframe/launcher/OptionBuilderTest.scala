@@ -27,7 +27,7 @@ object OptionBuilderTest {
 /**
   */
 class OptionBuilderTest extends AirSpec {
-  import OptionBuilderTest._
+  import OptionBuilderTest.*
 
   test("read default value") {
     val l   = Launcher.of[Main1]

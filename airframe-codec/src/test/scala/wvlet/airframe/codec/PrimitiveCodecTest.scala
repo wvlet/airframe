@@ -30,9 +30,9 @@ import scala.util.Random
   */
 object PrimitiveCodecTest extends CodecSpec with PropertyCheck {
 
-  import org.scalacheck._
+  import org.scalacheck.*
 
-  import scala.jdk.CollectionConverters._
+  import scala.jdk.CollectionConverters.*
 
   protected def roundTripTest[T](surface: Surface, dataType: DataType)(implicit
       a1: Arbitrary[T],

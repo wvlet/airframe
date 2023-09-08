@@ -14,9 +14,9 @@
 package wvlet.airframe.sql.analyzer
 import wvlet.airframe.sql.{SQLError, SQLErrorCode}
 import wvlet.airframe.sql.analyzer.RewriteRule.PlanRewriter
-import wvlet.airframe.sql.model.Expression._
-import wvlet.airframe.sql.model.LogicalPlan._
-import wvlet.airframe.sql.model._
+import wvlet.airframe.sql.model.Expression.*
+import wvlet.airframe.sql.model.LogicalPlan.*
+import wvlet.airframe.sql.model.*
 import wvlet.log.LogSupport
 
 import scala.annotation.tailrec

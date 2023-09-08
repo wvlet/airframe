@@ -114,7 +114,7 @@ object StaticContent extends LogSupport {
   def fromDirectory(basePath: String): StaticContent = StaticContent().fromDirectory(basePath)
 }
 
-import wvlet.airframe.http.StaticContent._
+import wvlet.airframe.http.StaticContent.*
 
 case class StaticContent(resourcePaths: List[StaticContent.ResourceType] = List.empty) {
   def fromDirectory(basePath: String): StaticContent = {

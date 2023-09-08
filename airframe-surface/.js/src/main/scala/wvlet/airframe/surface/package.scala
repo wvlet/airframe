@@ -15,7 +15,7 @@ package wvlet.airframe
 
 import java.util.concurrent.ConcurrentHashMap
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.collection.mutable
 
 /**

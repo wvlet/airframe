@@ -19,7 +19,7 @@ import wvlet.airframe.http.RPCEncoding
 
 object GrpcClientInterceptor {
   def wrap(c: Channel, encoding: RPCEncoding = RPCEncoding.MsgPack): Channel = {
-    import GrpcContext._
+    import GrpcContext.*
     val newHeaders = new Metadata()
     newHeaders.put(
       Metadata.Key.of("x-airframe-client-version", Metadata.ASCII_STRING_MARSHALLER),
