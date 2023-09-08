@@ -19,7 +19,7 @@ import scala.scalajs.js
   */
 private[airspec] object JsObjectMatcher {
 
-  import Asserts._
+  import Asserts.*
 
   def matcher: PartialFunction[(Any, Any), TestResult] = { case (a: js.Object, b: js.Object) =>
     check(jsObjEquals(a, b))
