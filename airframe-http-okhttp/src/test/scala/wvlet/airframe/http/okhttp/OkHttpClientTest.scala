@@ -19,7 +19,7 @@ case class User(id: Int, name: String, requestId: String) {
 case class UserRequest(id: Int, name: String)
 case class DeleteRequestBody(force: Boolean)
 
-trait NettyTestApi extends LogSupport {
+class NettyTestApi extends LogSupport {
   import wvlet.airframe.http.{Endpoint, HttpMethod}
 
   @Endpoint(method = HttpMethod.GET, path = "/")
