@@ -47,8 +47,9 @@ package object airframe {
     traitFactoryCache.getOrElseUpdate(s, factory)
   }
 
-  inline def registerTraitFactory[A]: Unit = ${
-    registerTraitFactoryImpl[A]
+  @deprecated("Instantiating trait is still experimental in Scala 3.3.1", "23.9.1")
+  inline def registerTraitFactory[A]: Unit = {
+    // registerTraitFactoryImpl[A]
   }
 
   import scala.quoted._
