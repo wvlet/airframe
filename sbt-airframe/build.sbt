@@ -62,7 +62,7 @@ lazy val sbtAirframe =
       scalaVersion     := SCALA_2_12,
       libraryDependencies ++= Seq(
         "io.get-coursier"    %% "coursier"              % "2.1.6",
-        "org.apache.commons"  % "commons-compress"      % "1.23.0",
+        "org.apache.commons"  % "commons-compress"      % "1.24.0",
         "org.wvlet.airframe" %% "airframe-control"      % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-codec"        % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-log"          % AIRFRAME_VERSION,
