@@ -15,11 +15,10 @@ package wvlet.airframe.rx.html.widget
 
 import org.scalajs.dom
 import wvlet.airframe.rx.Rx
-import wvlet.airframe.rx.html.*
 import wvlet.airframe.rx.html.all.*
 import wvlet.airframe.rx.html.{DOMRenderer, Embedded, RxComponent, RxElement}
 import wvlet.airframe.rx.html.widget.ui.bootstrap.*
-import wvlet.airspec.*
+import wvlet.airspec.AirSpec
 
 object RxWidgetTest {}
 

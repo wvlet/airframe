@@ -92,11 +92,11 @@ object HttpAccessLogTest extends AirSpec {
       .withRouter(router)
       .design
       .add(Finagle.client.noRetry.syncClientDesign)
-  ) { client: FinagleSyncClient =>
+  ) { (client: FinagleSyncClient) =>
     test("basic log entries") {
       val resp = client.get[String](
         "/user/1?session_id=xxx",
-        { r: Request =>
+        { (r: Request) =>
           // Add a custom header
           r.headerMap.put("X-App-Version", "1.0")
           r
@@ -210,7 +210,7 @@ object HttpAccessLogTest extends AirSpec {
   test(
     "JSON access log",
     design = _.bind[Resource[File]].toInstance(Resource.newTempFile("target/http_access_log_test.json"))
-  ) { file: Resource[File] =>
+  ) { (file: Resource[File]) =>
     test(
       "Write logs in JSON",
       design = _ + Finagle.server
@@ -221,7 +221,7 @@ object HttpAccessLogTest extends AirSpec {
           )
         )
         .designWithSyncClient
-    ) { client: FinagleSyncClient =>
+    ) { (client: FinagleSyncClient) =>
       val resp = client.get[String]("/user/2")
       resp shouldBe "hello user:2"
     }

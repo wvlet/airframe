@@ -120,25 +120,25 @@ object StringTree extends LogSupport {
   val empty: StringTree = EmptyNode
 
   private[launcher] case object EmptyNode extends StringTree {
-    def setNode(path: Path, value: StringTree) = {
+    override def setNode(path: Path, value: StringTree): StringTree = {
       if (path.isEmpty) {
         value
       } else {
         Node(IMap.empty[String, StringTree]).setNode(path, value)
       }
     }
-    def get(path: Path)     = EmptyNode
-    def extract(path: Path) = EmptyNode
+    override def get(path: Path): StringTree = EmptyNode
+    def extract(path: Path)                  = EmptyNode
 
-    def dfs(path: Path)  = Iterator.empty
-    override def isEmpty = true
+    override def dfs(path: Path): Iterator[(Path, String)] = Iterator.empty
+    override def isEmpty                                   = true
   }
 
   private[launcher] case class Node(child: IMap[String, StringTree]) extends StringTree {
     override def toString: String =
       s"{${child.map(e => s"${e._1}:${e._2}").mkString(", ")}}"
 
-    def setNode(path: Path, value: StringTree): StringTree = {
+    override def setNode(path: Path, value: StringTree): StringTree = {
       if (path.isEmpty) {
         throw new IllegalStateException("path cannot be empty")
       } else {
@@ -147,7 +147,7 @@ object StringTree extends LogSupport {
       }
     }
 
-    def get(path: Path) = {
+    override def get(path: Path): StringTree = {
       if (path.isEmpty) {
         this
       } else {
@@ -155,16 +155,17 @@ object StringTree extends LogSupport {
       }
     }
 
-    def dfs(path: Path) = (for ((name, h) <- child) yield h.dfs(path / name)).reduce(_ ++ _)
+    override def dfs(path: Path): Iterator[(Path, String)] =
+      (for ((name, h) <- child) yield h.dfs(path / name)).reduce(_ ++ _)
   }
 
   private[launcher] case class Leaf(value: String) extends StringTree {
     override def toString = value.toString
-    def setNode(path: Path, value: StringTree) = {
+    override def setNode(path: Path, value: StringTree): StringTree = {
       SeqLeaf(Seq(this, EmptyNode.setNode(path, value)))
     }
 
-    def get(path: Path) = {
+    override def get(path: Path): StringTree = {
       if (path.isEmpty) {
         this
       } else {
@@ -182,7 +183,7 @@ object StringTree extends LogSupport {
   private[launcher] case class SeqLeaf(elems: Seq[StringTree]) extends StringTree {
     override def toString = s"[${elems.mkString(", ")}]"
 
-    def setNode(path: Path, value: StringTree) = {
+    override def setNode(path: Path, value: StringTree): StringTree = {
       SeqLeaf(elems :+ EmptyNode.setNode(path, value))
     }
 
@@ -193,6 +194,6 @@ object StringTree extends LogSupport {
         EmptyNode
       }
 
-    def dfs(path: Path) = elems.map(e => e.dfs(path)).reduce(_ ++ _)
+    override def dfs(path: Path): Iterator[(Path, String)] = elems.map(e => e.dfs(path)).reduce(_ ++ _)
   }
 }

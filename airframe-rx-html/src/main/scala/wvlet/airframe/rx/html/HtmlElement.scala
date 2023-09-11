@@ -12,12 +12,15 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.html
-import org.scalajs.dom
-import HtmlTags.*
 
-/**
-  */
-object events {
-  def onClick(f: () => Unit)             = attributeOf("onClick")(f)
-  def onClick(f: dom.MouseEvent => Unit) = attributeOf("onClick")(f)
+case class HtmlElement(
+    name: String,
+    namespace: Namespace = Namespace.xhtml,
+    override val modifiers: List[Seq[HtmlNode]] = List.empty
+) extends RxElement(modifiers) {
+  def render: RxElement = this
+
+  override def addModifier(cs: HtmlNode*): HtmlElement = {
+    HtmlElement(name, namespace, cs :: modifiers)
+  }
 }

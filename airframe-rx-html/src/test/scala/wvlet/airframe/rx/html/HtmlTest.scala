@@ -137,6 +137,8 @@ class HtmlTest extends AirSpec {
   }
 
   test("create new tags") {
+    import HtmlTags.*
+
     div(
       tagOf("mytag", Namespace.xhtml)(
         attr("myattr", Namespace.xhtml) -> "attr_value",

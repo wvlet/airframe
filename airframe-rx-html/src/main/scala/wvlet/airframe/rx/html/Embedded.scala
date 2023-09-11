@@ -12,12 +12,19 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.html
-import org.scalajs.dom
-import HtmlTags.*
+
+import wvlet.log.LogSupport
 
 /**
+  * Holder for embedding various types as tag contents
+  *
+  * @param v
   */
-object events {
-  def onClick(f: () => Unit)             = attributeOf("onClick")(f)
-  def onClick(f: dom.MouseEvent => Unit) = attributeOf("onClick")(f)
+private[html] case class Embedded(v: Any) extends RxElement with LogSupport {
+  override def render: RxElement = {
+    warn(s"render is called for a placeholder ${v}")
+    ???
+  }
 }
+
+private[rx] case class RxCode(rxElements: Seq[RxElement], sourceCode: String)

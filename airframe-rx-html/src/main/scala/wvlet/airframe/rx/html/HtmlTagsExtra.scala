@@ -16,7 +16,8 @@ package wvlet.airframe.rx.html
 /**
   * Contains tags that are rarely used
   */
-trait TagsExtra {
+trait HtmlTagsExtra {
+  import HtmlTags.*
 
   // Defines an abbreviation or an acronym
   def abbr: HtmlElement = tag("abbr")

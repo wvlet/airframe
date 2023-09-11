@@ -17,7 +17,8 @@ import org.scalajs.dom
 import org.scalajs.dom.document
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html.all._
-import wvlet.airframe.rx.html.{DOMRenderer, RxCode, RxComponent, RxElement, extractCode, tags}
+import wvlet.airframe.rx.html.{DOMRenderer, RxCode, RxComponent, RxElement, tags}
+import wvlet.airframe.rx.html.HtmlCompat.extractCode
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}

@@ -36,27 +36,25 @@ object Path extends LogSupport {
   }
 
   private class AbsolutePath(val parent: Option[Path], val name: String) extends Path {
-    def fullPath = "/" + this.mkString("/")
-
-    def /(child: String) = new AbsolutePath(Some(this), child)
-
-    def isRelative = false
+    override def fullPath               = "/" + this.mkString("/")
+    override def /(child: String): Path = new AbsolutePath(Some(this), child)
+    override def isRelative             = false
   }
 
   private class RelativePath(val parent: Option[Path], val name: String) extends Path {
-    def fullPath         = this.mkString("/")
-    def /(child: String) = new RelativePath(Some(this), child)
-    def isRelative       = true
-    def getParent        = parent
+    override def fullPath               = this.mkString("/")
+    override def /(child: String): Path = new RelativePath(Some(this), child)
+    override def isRelative             = true
+    def getParent                       = parent
   }
 
   private case object Root extends AbsolutePath(None, "") {
-    override def iterator         = Iterator.empty
-    override def /(child: String) = new AbsolutePath(None, child)
+    override def iterator: Iterator[String] = Iterator.empty
+    override def /(child: String): Path     = new AbsolutePath(None, child)
   }
   private[Path] case object Current extends RelativePath(None, "") {
-    override def iterator         = Iterator.empty
-    override def /(child: String) = new RelativePath(None, child)
+    override def iterator: Iterator[String] = Iterator.empty
+    override def /(child: String): Path     = new RelativePath(None, child)
   }
 }
 

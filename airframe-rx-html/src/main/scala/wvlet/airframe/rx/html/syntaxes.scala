@@ -12,12 +12,16 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.html
-import org.scalajs.dom
-import HtmlTags.*
 
-/**
-  */
-object events {
-  def onClick(f: () => Unit)             = attributeOf("onClick")(f)
-  def onClick(f: dom.MouseEvent => Unit) = attributeOf("onClick")(f)
-}
+object tags extends HtmlTags
+
+object tags_extra extends HtmlTagsExtra
+
+object attrs extends HtmlAttrs
+
+object all extends HtmlTags with HtmlAttrs with RxEmbedding
+
+// Note: SVG tags and attributes are defined separately to resolve naming conflicts with regular HTML tags and attributes
+object svgTags extends HtmlSvgTags
+
+object svgAttrs extends HtmlSvgAttrs

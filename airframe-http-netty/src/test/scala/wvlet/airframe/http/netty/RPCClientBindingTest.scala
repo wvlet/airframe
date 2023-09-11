@@ -76,12 +76,15 @@ object RPCClientBindingTest extends AirSpec {
     case class HelloResponse(msg: String)
   }
 
-  protected override def design =
-    Netty.server
-      .withRouter(RxRouter.of[MyApi]).design
-      .bind[MyRPCClient.RPCSyncClient].toProvider { (server: NettyServer) =>
-        MyRPCClient.newRPCSyncClient(Http.client.newSyncClient(server.localAddress))
-      }
+  initDesign(
+    _.add(
+      Netty.server
+        .withRouter(RxRouter.of[MyApi]).design
+        .bind[MyRPCClient.RPCSyncClient].toProvider { (server: NettyServer) =>
+          MyRPCClient.newRPCSyncClient(Http.client.newSyncClient(server.localAddress))
+        }
+    )
+  )
 
   test("Create a surface of an RPC client") {
     Surface.of[RPCSyncClient]

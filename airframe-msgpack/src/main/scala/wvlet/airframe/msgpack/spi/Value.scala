@@ -44,22 +44,22 @@ trait Value {
 
 object Value {
   case object NilValue extends Value {
-    override def toJson    = "null"
-    override def valueType = ValueType.NIL
+    override def toJson               = "null"
+    override def valueType: ValueType = ValueType.NIL
     override def writeTo(packer: Packer): Unit = {
       packer.packNil
     }
   }
   case class BooleanValue(v: Boolean) extends Value {
-    override def toJson    = if (v) "true" else "false"
-    override def valueType = ValueType.BOOLEAN
+    override def toJson               = if (v) "true" else "false"
+    override def valueType: ValueType = ValueType.BOOLEAN
     override def writeTo(packer: Packer): Unit = {
       packer.packBoolean(v)
     }
   }
 
   trait IntegerValue extends Value {
-    override def valueType = ValueType.INTEGER
+    override def valueType: ValueType = ValueType.INTEGER
     def isValidByte: Boolean
     def isValidShort: Boolean
     def isValidInt: Boolean
@@ -145,7 +145,7 @@ object Value {
   case class StringValue(v: String) extends RawValue {
     override def toString                      = v
     override protected def toRawString: String = v
-    override def valueType                     = ValueType.STRING
+    override def valueType: ValueType          = ValueType.STRING
     override def writeTo(packer: Packer): Unit = {
       packer.packString(v)
     }
