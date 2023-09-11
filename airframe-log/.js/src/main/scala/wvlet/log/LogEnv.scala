@@ -8,8 +8,8 @@ private[log] object LogEnv extends LogEnvBase {
   override def isScalaJS: Boolean        = true
   override def defaultLogLevel: LogLevel = LogLevel.INFO
 
-  override def defaultConsoleOutput: PrintStream = Console.out
-  override def defaultHandler                    = JSConsoleLogHandler()
+  override def defaultConsoleOutput: PrintStream         = Console.out
+  override def defaultHandler: java.util.logging.Handler = JSConsoleLogHandler()
 
   override def getLoggerName(cl: Class[_]): String = {
     var name = cl.getName

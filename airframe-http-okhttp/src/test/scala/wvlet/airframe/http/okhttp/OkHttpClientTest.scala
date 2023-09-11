@@ -98,15 +98,17 @@ class NettyTestApi extends LogSupport {
 class OkHttpClientTest extends AirSpec {
   private val r = RxRouter.of[NettyTestApi]
 
-  override protected def design = {
-    Netty.server
-      .withRouter(r).design
-      .bind[SyncClient].toProvider { (server: NettyServer) =>
-        OkHttp.client.newSyncClient(server.localAddress)
-      }
-      .bind[AsyncClient].toProvider { (server: NettyServer) =>
-        OkHttp.client.newAsyncClient(server.localAddress)
-      }
+  initDesign {
+    _.add(
+      Netty.server
+        .withRouter(r).design
+        .bind[SyncClient].toProvider { (server: NettyServer) =>
+          OkHttp.client.newSyncClient(server.localAddress)
+        }
+        .bind[AsyncClient].toProvider { (server: NettyServer) =>
+          OkHttp.client.newAsyncClient(server.localAddress)
+        }
+    )
   }
 
   def addRequestId: HttpMultiMap => HttpMultiMap = { (request: HttpMultiMap) =>

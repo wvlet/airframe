@@ -86,11 +86,13 @@ class TestConnection(connectionPoolFactory: ConnectionPoolFactory, c1: MyDbConfi
   */
 class ConnectionPoolFactoryTest extends AirSpec {
 
-  override def design = newDesign
-    .bind[ConnectionPoolFactory].toSingleton
-    .bind[MyDbConfig1].toInstance(DbConfig.ofSQLite(path = "target/test/mydb1.sqlite"))
-    .bind[MyDbConfig2].toInstance(DbConfig.ofSQLite(path = "target/test/mydb2.sqlite"))
-    .bind[MyDbConfig3].toInstance(DbConfig.ofPostgreSQL(database = "travis_ci_test").withUser(user = "postgres"))
+  initDesign { design =>
+    design
+      .bind[ConnectionPoolFactory].toSingleton
+      .bind[MyDbConfig1].toInstance(DbConfig.ofSQLite(path = "target/test/mydb1.sqlite"))
+      .bind[MyDbConfig2].toInstance(DbConfig.ofSQLite(path = "target/test/mydb2.sqlite"))
+      .bind[MyDbConfig3].toInstance(DbConfig.ofPostgreSQL(database = "travis_ci_test").withUser(user = "postgres"))
+  }
 
   test("use multiple SQLite configs") { (t: TestConnection) =>
     t.test(t.pool1)

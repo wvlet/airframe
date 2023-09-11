@@ -135,7 +135,9 @@ class FinagleRouterTest extends AirSpec {
     Finagle.server
       .withRouter(Router.add[MyApi])
       .design
-      .bind[FinagleClient].toProvider { server: FinagleServer => Finagle.client.noRetry.newClient(server.localAddress) }
+      .bind[FinagleClient].toProvider { (server: FinagleServer) =>
+        Finagle.client.noRetry.newClient(server.localAddress)
+      }
   }
 
   test("support Router.of[X] and Router.add[X]") {

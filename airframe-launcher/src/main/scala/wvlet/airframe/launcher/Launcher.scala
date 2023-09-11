@@ -118,7 +118,7 @@ private[launcher] case class LauncherConfig(
     defaultCommand: LauncherInstance => Any = { (li: LauncherInstance) => println("Type --help to see the usage") }
 )
 
-case class Launcher private[launcher] (config: LauncherConfig, private[launcher] val mainLauncher: CommandLauncher)
+case class Launcher(config: LauncherConfig, private[launcher] val mainLauncher: CommandLauncher)
     extends LauncherBaseCompat {
   def printHelp: Unit = {
     mainLauncher.printHelpInternal(config, List(mainLauncher))

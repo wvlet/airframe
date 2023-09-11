@@ -88,7 +88,7 @@ object PrimitiveCodec {
   }
 
   object ByteCodec extends PrimitiveCodec[Byte] {
-    def surface = Primitive.Byte
+    override def surface: Surface = Primitive.Byte
 
     override def pack(p: Packer, v: Byte): Unit = {
       p.packByte(v)
@@ -131,7 +131,7 @@ object PrimitiveCodec {
   }
 
   object CharCodec extends PrimitiveCodec[Char] {
-    def surface = Primitive.Char
+    override def surface: Surface = Primitive.Char
 
     override def pack(p: Packer, v: Char): Unit = {
       p.packInt(v)
@@ -178,7 +178,7 @@ object PrimitiveCodec {
   }
 
   object ShortCodec extends PrimitiveCodec[Short] {
-    def surface = Primitive.Short
+    override def surface: Surface = Primitive.Short
     override def pack(p: Packer, v: Short): Unit = {
       p.packShort(v)
     }
@@ -220,7 +220,7 @@ object PrimitiveCodec {
   }
 
   object IntCodec extends PrimitiveCodec[Int] {
-    def surface = Primitive.Int
+    override def surface: Surface = Primitive.Int
     override def pack(p: Packer, v: Int): Unit = {
       p.packInt(v)
     }
@@ -262,7 +262,7 @@ object PrimitiveCodec {
   }
 
   object LongCodec extends PrimitiveCodec[Long] {
-    def surface = Primitive.Long
+    override def surface: Surface = Primitive.Long
 
     override def pack(p: Packer, v: Long): Unit = {
       p.packLong(v)
@@ -304,7 +304,7 @@ object PrimitiveCodec {
   }
 
   object BigIntCodec extends PrimitiveCodec[BigInt] {
-    def surface = Primitive.BigInt
+    override def surface: Surface = Primitive.BigInt
 
     override def pack(p: Packer, v: BigInt): Unit = {
       if (v.compareTo(BigInt(Long.MaxValue)) <= 0) {
@@ -350,7 +350,7 @@ object PrimitiveCodec {
   }
 
   object BigIntegerCodec extends PrimitiveCodec[java.math.BigInteger] {
-    def surface = Primitive.BigInteger
+    override def surface: Surface = Primitive.BigInteger
 
     override def pack(p: Packer, v: java.math.BigInteger): Unit = {
       if (v.compareTo(java.math.BigInteger.valueOf(Long.MaxValue)) <= 0) {
@@ -396,7 +396,7 @@ object PrimitiveCodec {
   }
 
   object StringCodec extends PrimitiveCodec[String] {
-    def surface = Primitive.String
+    override def surface: Surface = Primitive.String
 
     override def pack(p: Packer, v: String): Unit = {
       if (v == null) {
@@ -448,7 +448,7 @@ object PrimitiveCodec {
   }
 
   object BooleanCodec extends PrimitiveCodec[Boolean] {
-    def surface = Primitive.Boolean
+    override def surface: Surface = Primitive.Boolean
     override def pack(p: Packer, v: Boolean): Unit = {
       p.packBoolean(v)
     }
@@ -489,7 +489,7 @@ object PrimitiveCodec {
   }
 
   object FloatCodec extends PrimitiveCodec[Float] {
-    def surface = Primitive.Float
+    override def surface: Surface = Primitive.Float
     override def pack(p: Packer, v: Float): Unit = {
       p.packFloat(v)
     }
@@ -525,7 +525,7 @@ object PrimitiveCodec {
   }
 
   object DoubleCodec extends PrimitiveCodec[Double] {
-    def surface = Primitive.Double
+    override def surface: Surface = Primitive.Double
 
     override def pack(p: Packer, v: Double): Unit = {
       p.packDouble(v)

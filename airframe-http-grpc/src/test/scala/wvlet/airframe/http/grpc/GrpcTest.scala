@@ -77,24 +77,26 @@ object GrpcTest extends AirSpec {
 
   private val port = IOUtil.randomPort
 
-  override protected def design =
-    Design.newDesign
-      .bind[Server].toInstance(
-        ServerBuilder.forPort(port).addService(service).build()
-      ).onStart { server =>
-        server.start()
-        info(s"Starting gRPC server localhost:${port}")
-      }
-      .onShutdown { server =>
-        info(s"Shutting down gRPC server localhost:${port}")
-        server.shutdownNow()
-      }
-      .bind[ManagedChannel].toProvider { (server: Server) =>
-        ManagedChannelBuilder.forTarget(s"localhost:${server.getPort}").usePlaintext().build()
-      }
-      .onShutdown { channel =>
-        channel.shutdownNow()
-      }
+  initDesign { design =>
+    design +
+      Design.newDesign
+        .bind[Server].toInstance(
+          ServerBuilder.forPort(port).addService(service).build()
+        ).onStart { server =>
+          server.start()
+          info(s"Starting gRPC server localhost:${port}")
+        }
+        .onShutdown { server =>
+          info(s"Shutting down gRPC server localhost:${port}")
+          server.shutdownNow()
+        }
+        .bind[ManagedChannel].toProvider { (server: Server) =>
+          ManagedChannelBuilder.forTarget(s"localhost:${server.getPort}").usePlaintext().build()
+        }
+        .onShutdown { channel =>
+          channel.shutdownNow()
+        }
+  }
 
   test("run server") { (server: Server, channel: ManagedChannel) =>
     val client = MyService.newBlockingStub(channel)

@@ -77,12 +77,12 @@ class ThreadLocalStorageTest extends AirSpec {
   override protected def design: Design = {
     val router = Router.add[TLSReaderFilter].andThen[MyApp]
     newFinagleServerDesign(name = "tls-test", router = router)
-      .bind[FinagleSyncClient].toProvider { server: FinagleServer =>
+      .bind[FinagleSyncClient].toProvider { (server: FinagleServer) =>
         Finagle.client.noRetry.newSyncClient(server.localAddress)
       }
   }
 
-  test("tls test") { client: FinagleSyncClient =>
+  test("tls test") { (client: FinagleSyncClient) =>
     test("read thread-local data set at the leaf filter") {
       val resp = client.get[String]("/get")
       resp shouldBe "hello tls"
@@ -104,7 +104,7 @@ class ThreadLocalStorageTest extends AirSpec {
     }
 
     test("Get request header from RPCContext") {
-      val resp = client.get[String]("/rpc-header", { req: Request => req.authorization = "Bearer xxxx"; req })
+      val resp = client.get[String]("/rpc-header", { (req: Request) => req.authorization = "Bearer xxxx"; req })
       resp shouldBe "Ok"
     }
   }

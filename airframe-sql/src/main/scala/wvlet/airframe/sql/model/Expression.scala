@@ -1276,7 +1276,7 @@ object Expression {
 
   case class Cast(expr: Expression, tpe: String, tryCast: Boolean = false, nodeLocation: Option[NodeLocation])
       extends UnaryExpression {
-    def child = expr
+    override def child: Expression = expr
   }
 
   case class SchemaProperty(key: Identifier, value: Expression, nodeLocation: Option[NodeLocation]) extends Expression {
@@ -1286,20 +1286,20 @@ object Expression {
   case class ColumnDef(columnName: Identifier, tpe: ColumnType, nodeLocation: Option[NodeLocation])
       extends TableElement
       with UnaryExpression {
-    def child = columnName
+    override def child: Expression = columnName
   }
 
   case class ColumnType(tpe: String, nodeLocation: Option[NodeLocation]) extends LeafExpression
   case class ColumnDefLike(tableName: QName, includeProperties: Boolean, nodeLocation: Option[NodeLocation])
       extends TableElement
       with UnaryExpression {
-    def child = tableName
+    override def child: Expression = tableName
   }
 
   // Aggregation
   trait GroupingKey extends UnaryExpression {
     def index: Option[Int]
-    def child: Expression
+    override def child: Expression
     override def sqlExpr: String = {
       index match {
         case Some(i) => s"${i}"

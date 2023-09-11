@@ -84,7 +84,7 @@ case class ConfigChange(tpe: Surface, key: ConfigKey, default: Any, current: Any
 
 import wvlet.airframe.config.Config.*
 
-case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHolder])
+case class Config(env: ConfigEnv, holder: Map[Surface, ConfigHolder])
     extends ConfigCompat
     with Iterable[ConfigHolder]
     with DesignOptions.AdditiveDesignOption[Config]

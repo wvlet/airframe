@@ -63,7 +63,7 @@ object CustomCodecTest extends AirSpec {
         .withCustomCodec(Map(Surface.of[Suit] -> SuitCodec))
         .design
     ).add(Finagle.client.syncClientDesign)
-  ) { client: FinagleSyncClient =>
+  ) { (client: FinagleSyncClient) =>
     client.send(Request("/hello?suit=Spade")).contentString shouldBe "Spade"
     client.send(Request("/hello?suit=Heart")).contentString shouldBe "Heart"
   }

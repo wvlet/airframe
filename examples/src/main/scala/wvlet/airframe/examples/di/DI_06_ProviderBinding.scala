@@ -27,7 +27,7 @@ object DI_06_ProviderBinding extends App {
 
   trait MyApp extends LogSupport {
     // MyAppConfig will be injected from the session
-    private val threadManager = bind { config: MyAppConfig =>
+    private val threadManager = bind { (config: MyAppConfig) =>
       info(s"config: numThreads = ${config.numThreads}")
       // Create a thread manager using the given config
       Executors.newFixedThreadPool(config.numThreads)

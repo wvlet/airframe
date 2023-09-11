@@ -97,13 +97,13 @@ object OpenAPI {
       deprecated: Option[Boolean] = None,
       allowEmptyValue: Option[Boolean] = None
   ) extends Union2[Parameter, ParameterRef] {
-    override def getElementClass = classOf[Parameter]
+    override def getElementClass: Class[_] = classOf[Parameter]
   }
 
   case class ParameterRef(
       `$ref`: String
   ) extends Union2[Parameter, ParameterRef] {
-    override def getElementClass = classOf[ParameterRef]
+    override def getElementClass: Class[_] = classOf[ParameterRef]
   }
 
   sealed trait In
@@ -139,13 +139,13 @@ object OpenAPI {
   case class OneOf(
       oneOf: Seq[SchemaOrRef]
   ) extends Union3[Schema, SchemaRef, OneOf] {
-    override def getElementClass = classOf[OneOf]
+    override def getElementClass: Class[_] = classOf[OneOf]
   }
 
   case class SchemaRef(
       `$ref`: String
   ) extends Union3[Schema, SchemaRef, OneOf] {
-    override def getElementClass = classOf[SchemaRef]
+    override def getElementClass: Class[_] = classOf[SchemaRef]
   }
 
   case class Schema(
@@ -162,7 +162,7 @@ object OpenAPI {
       nullable: Option[Boolean] = None,
       `enum`: Option[Seq[String]] = None
   ) extends Union3[Schema, SchemaRef, OneOf] {
-    override def getElementClass = classOf[Schema]
+    override def getElementClass: Class[_] = classOf[Schema]
 
     def withDescription(description: Option[String]) = {
       this.copy(description = description)
@@ -174,7 +174,7 @@ object OpenAPI {
   case class ResponseRef(
       `$ref`: String
   ) extends Union2[Response, ResponseRef] {
-    def getElementClass = classOf[ResponseRef]
+    def getElementClass: Class[_] = classOf[ResponseRef]
   }
 
   case class Response(
@@ -183,7 +183,7 @@ object OpenAPI {
       // Status code string -> MediaType
       content: Map[String, MediaType] = Map.empty
   ) extends Union2[Response, ResponseRef] {
-    override def getElementClass = classOf[Response]
+    override def getElementClass: Class[_] = classOf[Response]
   }
 
   case class Header()

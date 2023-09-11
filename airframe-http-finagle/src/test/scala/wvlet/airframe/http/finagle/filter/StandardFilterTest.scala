@@ -51,17 +51,17 @@ object StandardFilterTest extends AirSpec {
 
   private val router = Router.add(MyFilter).andThen[MyAPI]
 
-  protected override def design =
-    Design.newDesign
-      .add(Finagle.server.withRouter(router).design)
+  initDesign {
+    _.add(Finagle.server.withRouter(router).design)
       .bind[SyncClient]
-      .toProvider { server: FinagleServer =>
+      .toProvider { (server: FinagleServer) =>
         Http.client
           .withRetryContext(_.noRetry)
           .newSyncClient(server.localAddress)
       }
+  }
 
-  test("use standard filter") { client: SyncClient =>
+  test("use standard filter") { (client: SyncClient) =>
     val resp = client.send(Http.request("/"))
     resp.contentString shouldBe "[Filtered] [xxxx] Hello myapp!"
   }

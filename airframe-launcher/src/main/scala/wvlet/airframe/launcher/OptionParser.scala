@@ -60,19 +60,19 @@ object OptionParser extends LogSupport {
     def path: (Path, StringTree)
   }
   case class OptSetFlag(opt: CLOption) extends OptionMapping {
-    def path = opt.path -> Leaf("true")
+    override def path: (Path, StringTree) = opt.path -> Leaf("true")
   }
   case class OptMapping(opt: CLOption, value: String) extends OptionMapping {
-    def path = opt.path -> Leaf(value)
+    override def path: (Path, StringTree) = opt.path -> Leaf(value)
   }
   case class OptMappingMultiple(opt: CLOption, value: Seq[String]) extends OptionMapping {
-    def path = opt.path -> SeqLeaf(value.map(Leaf(_)))
+    override def path: (Path, StringTree) = opt.path -> SeqLeaf(value.map(Leaf(_)))
   }
   case class ArgMapping(opt: CLArgItem, value: String) extends OptionMapping {
-    def path = opt.path -> Leaf(value)
+    override def path: (Path, StringTree) = opt.path -> Leaf(value)
   }
   case class ArgMappingMultiple(opt: CLArgument, value: Seq[String]) extends OptionMapping {
-    def path = opt.path -> SeqLeaf(value.map(Leaf(_)))
+    override def path: (Path, StringTree) = opt.path -> SeqLeaf(value.map(Leaf(_)))
   }
 
   /**

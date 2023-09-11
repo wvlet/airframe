@@ -44,16 +44,17 @@ object GrpcErrorLogTest extends AirSpec {
 
   private val router = RxRouter.of[DemoApiDebug]
 
-  protected override def design = {
-    gRPC.server
-      .withName("demo-api-debug")
-      .withRouter(router)
-      .withRequestLoggerProvider { (config: GrpcServerConfig) =>
-        GrpcRequestLogger
-          .newLogger(config.name, inMemoryLogWriter)
-      }
-      .designWithChannel
-      .bind[Router].toInstance(Router.of[DemoApiDebug])
+  initDesign { design =>
+    design +
+      gRPC.server
+        .withName("demo-api-debug")
+        .withRouter(router)
+        .withRequestLoggerProvider { (config: GrpcServerConfig) =>
+          GrpcRequestLogger
+            .newLogger(config.name, inMemoryLogWriter)
+        }
+        .designWithChannel
+        .bind[Router].toInstance(Router.of[DemoApiDebug])
   }
 
   private def captureAll(body: => Unit): Seq[Map[String, Any]] = {

@@ -73,7 +73,7 @@ class HttpClientTest extends AirSpec {
     Logger("wvlet.airframe.http.HttpClient").suppressWarnings {
       retryableResponses.foreach { r =>
         new RetryTest(expectedRetryCount = 1, expectedExecCount = 2) {
-          override def body = r
+          override def body: HttpMessage.Response = r
         }
       }
     }
@@ -89,7 +89,7 @@ class HttpClientTest extends AirSpec {
 
     nonRetryableResponses.foreach { r =>
       new RetryTest(expectedRetryCount = 0, expectedExecCount = 1) {
-        def body = r
+        override def body: HttpMessage.Response = r
       }
     }
   }
@@ -114,7 +114,7 @@ class HttpClientTest extends AirSpec {
     Logger("wvlet.airframe.http.HttpClient").suppressLogs {
       retryableExceptions.foreach { e =>
         new RetryTest(expectedRetryCount = 1, expectedExecCount = 2) {
-          override def body = throw e
+          override def body: HttpMessage.Response = throw e
         }
       }
     }
@@ -131,7 +131,7 @@ class HttpClientTest extends AirSpec {
 
     nonRetryableExceptions.foreach { e =>
       new RetryTest(expectedRetryCount = 0, expectedExecCount = 1) {
-        def body = throw e
+        override def body: HttpMessage.Response = throw e
       }
     }
   }
