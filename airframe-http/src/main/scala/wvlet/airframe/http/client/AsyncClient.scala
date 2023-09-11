@@ -18,6 +18,7 @@ import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.{HttpClientException, HttpLogger, RPCException, RPCMethod}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 /**
   * A standard async http client interface for Rx[_]

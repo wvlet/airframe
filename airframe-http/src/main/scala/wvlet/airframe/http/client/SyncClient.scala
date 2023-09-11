@@ -19,7 +19,6 @@ import wvlet.airframe.http.*
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 
-
 /**
   * A standard blocking http client interface
   */
@@ -136,7 +135,6 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
     }
   }
 }
-
 
 class SyncClientImpl(protected val channel: HttpChannel, val config: HttpClientConfig) extends SyncClient {
   override protected def build(newConfig: HttpClientConfig): SyncClient = {
