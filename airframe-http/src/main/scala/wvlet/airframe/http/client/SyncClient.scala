@@ -81,13 +81,7 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
           }
       }
 
-    RxRunner.run(rx(request)) {
-      case OnError(e) =>
-        throw e
-      case _ =>
-      //
-    }
-    lastResponse.get
+    rx.apply(request).await
   }
 
   /**

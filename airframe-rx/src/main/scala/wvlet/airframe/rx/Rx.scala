@@ -117,6 +117,8 @@ trait RxOps[+A] { self =>
   }
 
   def subscribe[U](subscriber: A => U): Cancelable = runContinuously(subscriber)
+
+  def await: A = compat.await(self)
 }
 
 /**

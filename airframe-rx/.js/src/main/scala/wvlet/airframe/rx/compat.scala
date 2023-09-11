@@ -57,4 +57,8 @@ object compat {
   def toSeq[A](rx: Rx[A]): Seq[A] = {
     throw new UnsupportedOperationException("Rx.toSeq is unsupported in Scala.js")
   }
+
+  private[rx] def await[A](rx: RxOps[A]): A = {
+    throw new UnsupportedOperationException("Rx.await is unsupported in Scala.js")
+  }
 }
