@@ -13,14 +13,15 @@
  */
 package wvlet.airframe.rx.html
 
-object HtmlCompat {
+object tags extends HtmlTags
 
-  /**
-    * Extracting the source code of rxElement for demoing purpose
-    * @param rxElements
-    * @return
-    */
-  private[rx] def extractCode(rxElements: RxElement*): RxCode = {
-    ???
-  }
-}
+object tags_extra extends HtmlTagsExtra
+
+object attrs extends HtmlAttrs
+
+object all extends HtmlTags with HtmlAttrs with RxEmbedding
+
+// Note: SVG tags and attributes are defined separately to resolve naming conflicts with regular HTML tags and attributes
+object svgTags extends HtmlSvgTags
+
+object svgAttrs extends HtmlSvgAttrs

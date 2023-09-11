@@ -93,15 +93,3 @@ object RxElement {
 case class LazyRxElement[A: EmbeddableNode](v: () => A) extends RxElement() with LogSupport {
   override def render: RxElement = Embedded(v())
 }
-
-case class HtmlElement(
-    name: String,
-    namespace: Namespace = Namespace.xhtml,
-    override val modifiers: List[Seq[HtmlNode]] = List.empty
-) extends RxElement(modifiers) {
-  def render: RxElement = this
-
-  override def addModifier(cs: HtmlNode*): HtmlElement = {
-    HtmlElement(name, namespace, cs :: modifiers)
-  }
-}

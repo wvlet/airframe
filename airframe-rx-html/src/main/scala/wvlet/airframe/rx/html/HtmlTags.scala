@@ -13,9 +13,28 @@
  */
 package wvlet.airframe.rx.html
 
+object HtmlTags {
+  def tag(name: String): HtmlElement = new HtmlElement(name)
+
+  def tagOf(name: String, namespace: Namespace) = new HtmlElement(name, namespace)
+
+  def attr(name: String): HtmlAttributeOf = new HtmlAttributeOf(name)
+
+  def attr(name: String, namespace: Namespace): HtmlAttributeOf = new HtmlAttributeOf(name, namespace)
+
+  def attributeOf(name: String): HtmlAttributeOf = attr(name)
+
+  def svgTag(name: String) = new HtmlElement(name, Namespace.svg)
+
+  def handler[T](name: String): HtmlEventHandlerOf[T] = new HtmlEventHandlerOf[T](name)
+
+  def handler[T](name: String, namespace: Namespace): HtmlEventHandlerOf[T] = new HtmlEventHandlerOf[T](name, namespace)
+}
+
 /**
   */
-trait Tags {
+trait HtmlTags {
+  import HtmlTags.*
 
   // Defines a hyperlink
   lazy val a: HtmlElement = tag("a")

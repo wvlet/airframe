@@ -16,7 +16,8 @@ package wvlet.airframe.rx.html
 /**
   * Contains Tags which are only used for SVG. These are not imported by default to avoid namespace pollution.
   */
-trait SvgTags {
+trait HtmlSvgTags {
+  import HtmlTags.*
 
   /**
     * The altGlyph element allows sophisticated selection of the glyphs used to render its child character data.

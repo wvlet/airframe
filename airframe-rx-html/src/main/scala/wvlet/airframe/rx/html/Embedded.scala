@@ -13,14 +13,18 @@
  */
 package wvlet.airframe.rx.html
 
-object HtmlCompat {
+import wvlet.log.LogSupport
 
-  /**
-    * Extracting the source code of rxElement for demoing purpose
-    * @param rxElements
-    * @return
-    */
-  private[rx] def extractCode(rxElements: RxElement*): RxCode = {
+/**
+  * Holder for embedding various types as tag contents
+  *
+  * @param v
+  */
+private[html] case class Embedded(v: Any) extends RxElement with LogSupport {
+  override def render: RxElement = {
+    warn(s"render is called for a placeholder ${v}")
     ???
   }
 }
+
+private[rx] case class RxCode(rxElements: Seq[RxElement], sourceCode: String)

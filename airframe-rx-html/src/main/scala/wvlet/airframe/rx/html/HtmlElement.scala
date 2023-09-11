@@ -13,14 +13,14 @@
  */
 package wvlet.airframe.rx.html
 
-object HtmlCompat {
+case class HtmlElement(
+    name: String,
+    namespace: Namespace = Namespace.xhtml,
+    override val modifiers: List[Seq[HtmlNode]] = List.empty
+) extends RxElement(modifiers) {
+  def render: RxElement = this
 
-  /**
-    * Extracting the source code of rxElement for demoing purpose
-    * @param rxElements
-    * @return
-    */
-  private[rx] def extractCode(rxElements: RxElement*): RxCode = {
-    ???
+  override def addModifier(cs: HtmlNode*): HtmlElement = {
+    HtmlElement(name, namespace, cs :: modifiers)
   }
 }

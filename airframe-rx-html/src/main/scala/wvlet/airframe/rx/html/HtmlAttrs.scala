@@ -14,6 +14,7 @@
 package wvlet.airframe.rx.html
 
 import scala.language.dynamics
+import HtmlTags.*
 
 /**
   * This code is borrowed from ScalaTags by Li Haoyi: from
@@ -879,10 +880,10 @@ trait InputAttrs extends GlobalAttrs {
 }
 
 /**
-  * Trait containing the contents of the [[Attrs]] module, so they can be mixed in to other objects if needed. This
+  * Trait containing the contents of the [[HtmlAttrs]] module, so they can be mixed in to other objects if needed. This
   * should contain "all" attributes and mix in other traits (defined above) as needed to get full coverage.
   */
-trait Attrs
+trait HtmlAttrs
     extends InputAttrs
     with ClipboardEventAttrs
     with MediaEventAttrs

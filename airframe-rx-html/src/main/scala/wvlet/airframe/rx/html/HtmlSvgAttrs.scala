@@ -16,7 +16,8 @@ package wvlet.airframe.rx.html
 /**
   * SVG attribute definitions
   */
-trait SvgAttrs {
+trait HtmlSvgAttrs {
+  import HtmlTags.*
 
   // private def attr(name: String): HtmlAttributeOf = html.attr(name, Namespace.svg)
 
