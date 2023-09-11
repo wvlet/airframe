@@ -119,8 +119,12 @@ trait RxOps[+A] { self =>
   def subscribe[U](subscriber: A => U): Cancelable = runContinuously(subscriber)
 
   /**
-    * Await the completion of the first Rx result.
+    * Await the completion of the first Rx result. This method is available only in Scala JVM.
+    *
+    * Note: Generally speaking, blocking operations should be avoided in reactive programming. Use this method only for
+    * testing purpose. Both airframe-http and AirSpec supports evaluating Rx[X] result (async) in a non-blocking way.
     * @return
+    *   the result
     */
   def await: A = compat.await(self)
 }
