@@ -89,11 +89,15 @@ object compat {
 
   private[rx] def await[A](rx: RxOps[A]): A = {
     val p = Promise[A]()
-    RxRunner.run(rx) {
+    val c = RxRunner.runOnce(rx) {
       case OnNext(v)    => p.success(v.asInstanceOf[A])
       case OnError(e)   => p.failure(e)
-      case OnCompletion =>
+      case OnCompletion => p.failure(new IllegalStateException(s"OnCompletion should not be issued in: ${rx}"))
     }
-    Await.result(p.future, Duration.Inf)
+    try {
+      Await.result(p.future, Duration.Inf)
+    } finally {
+      c.cancel
+    }
   }
 }

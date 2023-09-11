@@ -118,6 +118,10 @@ trait RxOps[+A] { self =>
 
   def subscribe[U](subscriber: A => U): Cancelable = runContinuously(subscriber)
 
+  /**
+    * Await the completion of the first Rx result.
+    * @return
+    */
   def await: A = compat.await(self)
 }
 
