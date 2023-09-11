@@ -95,4 +95,17 @@ class RxTransformTest extends AirSpec {
           fail(s"Unexpected: ${other}")
       }
   }
+
+  test("Rx.transformFailure") {
+    Rx.fromTry(Failure(new UnsupportedOperationException("N/A")))
+      .transformFailure { case ex: UnsupportedOperationException =>
+        new IllegalStateException("unimplemented")
+      }
+      .recover {
+        case e: IllegalStateException =>
+          "ok"
+        case other =>
+          fail(s"Unexpected: ${other}")
+      }
+  }
 }
