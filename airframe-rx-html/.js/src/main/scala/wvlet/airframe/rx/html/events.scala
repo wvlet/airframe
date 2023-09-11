@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.rx.html
 import org.scalajs.dom
+import HtmlTags.*
 
 /**
   */
