@@ -312,6 +312,12 @@ trait Rx[+A] extends RxOps[A] {
     TransformRxOp(this, f)
   }
 
+  /**
+    * Transform a Success(v) or Failure(Throwable) input with a given function.
+    * @param f
+    * @tparam B
+    * @return
+    */
   def transform[B](f: Try[A] => B): Rx[B] = {
     TransformOp(this, f)
   }
@@ -322,6 +328,18 @@ trait Rx[+A] extends RxOps[A] {
     */
   def transformTry[B](f: Try[A] => Try[B]): Rx[B] = {
     TransformTryOp(this, f)
+  }
+
+  /**
+    * Transform a specific type of an exception into another exception. This is useful for handling exceptions.
+    * @param f
+    * @return
+    */
+  def transformFailure(f: PartialFunction[Throwable, Throwable]): Rx[A] = {
+    transformTry[A] {
+      case Failure(ex) if f.isDefinedAt(ex) => Failure(f.apply(ex))
+      case other                            => other
+    }
   }
 
   def concat[A1 >: A](other: Rx[A1]): Rx[A1] = Rx.concat(this, other)
