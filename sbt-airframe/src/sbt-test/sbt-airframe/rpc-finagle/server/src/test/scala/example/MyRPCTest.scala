@@ -7,7 +7,7 @@ import wvlet.airframe.http.finagle.{Finagle, FinagleServer}
 import example.api.MyRPCApi
 import example.api.MyRPCApi.{HelloRequest, HelloResponse}
 import example.api.MyRPCClient
-import example.api.MyRPCClient.RPCSyncClient
+import example.api.MyRPCClient.RPCAsyncClient
 
 class MyRPCTest extends AirSpec {
 
@@ -16,12 +16,14 @@ class MyRPCTest extends AirSpec {
   override protected def design: Design = {
     Finagle.server
       .withRouter(router).design
-      .bind[RPCSyncClient].toProvider { (server: FinagleServer) =>
-        MyRPCClient.newRPCSyncClient(Http.client.newSyncClient(server.localAddress))
+      .bind[RPCAsyncClient].toProvider { (server: FinagleServer) =>
+        MyRPCClient.newRPCAsyncClient(Http.client.newAsyncClient(server.localAddress))
       }
   }
 
-  test("Access RPC") { (client: RPCSyncClient) =>
-    client.MyRPCApi.helloRPC(HelloRequest("Airframe")) shouldBe HelloResponse("Hello Airframe!")
+  test("Access RPC") { (client: RPCAsyncClient) =>
+    client.MyRPCApi.helloRPC(HelloRequest("Airframe")).map { ret =>
+      ret shouldBe HelloResponse("Hello Airframe!")
+    }
   }
 }
