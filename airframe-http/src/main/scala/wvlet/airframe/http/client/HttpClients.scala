@@ -17,9 +17,8 @@ import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.codec.PrimitiveCodec.UnitCodec
 import wvlet.airframe.control.Retry.{MaxRetryException, RetryContext}
 import wvlet.airframe.control.{CircuitBreakerOpenException, Retry}
-import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.*
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 

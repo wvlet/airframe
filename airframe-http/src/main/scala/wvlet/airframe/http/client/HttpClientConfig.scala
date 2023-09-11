@@ -84,7 +84,7 @@ case class HttpClientConfig(
   def noRequestFilter: HttpClientConfig = this.copy(requestFilter = identity)
 
   /**
-    * Add a custom response filter, mostly for debugging purpose
+    * Add a custom response filter to the last response, mostly for debugging purpose
     * @param newResponseFilter
     * @return
     */
