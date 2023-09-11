@@ -4,11 +4,12 @@ import wvlet.airspec.*
 import wvlet.airframe.*
 
 class TestSyntaxSpec extends AirSpec {
-  override protected def design =
-    newDesign
+  initDesign { design =>
+    design
       .bind[String].toInstance("hello")
       .bind[Int].toInstance(10)
       .bind[Boolean].toInstance(true)
+  }
 
   test("support test syntax") {
     debug("hello AirSpec test()")
