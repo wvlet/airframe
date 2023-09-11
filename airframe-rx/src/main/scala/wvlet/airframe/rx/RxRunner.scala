@@ -54,6 +54,22 @@ object RxRunner extends LogSupport {
     }
   }
 
+  /**
+    * Run until the first event is observed
+    */
+  def runOnce[A, U](rx: RxOps[A])(effect: RxEvent => U): Cancelable = {
+    defaultRunner.run(rx) { ev =>
+      ev match {
+        case v @ OnNext(_) =>
+          effect(v)
+          RxResult.Stop
+        case other =>
+          effect(other)
+          RxResult.Stop
+      }
+    }
+  }
+
   def runContinuously[A, U](rx: RxOps[A])(effect: RxEvent => U): Cancelable = {
     continuousRunner.run(rx) { ev =>
       ev match {

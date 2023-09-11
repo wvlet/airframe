@@ -18,11 +18,12 @@ import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.{HttpClientException, HttpLogger, RPCException, RPCMethod}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 /**
   * A standard async http client interface for Rx[_]
   */
-trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] with AutoCloseable {
+trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] with AutoCloseable with LogSupport {
   protected def channel: HttpChannel
   def config: HttpClientConfig
 
@@ -46,22 +47,39 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
   def send(req: Request, context: HttpClientContext = HttpClientContext.empty): Rx[Response] = {
     val request                        = config.requestFilter(req)
     var lastResponse: Option[Response] = None
-    config.retryContext
-      .runAsyncWithContext(request, circuitBreaker) {
-        loggingFilter
-          .andThen(config.clientFilter)
-          .apply(context)
-          .andThen(req => channel.sendAsync(req, config))
-          .apply(request)
+    // Build a chain of request filters
+    def requestPipeline =
+      loggingFilter(context)
+        .andThen { req =>
+          channel
+            .sendAsync(req, config)
+            .tap { resp =>
+              // Remember the last response for the error reporting purpose
+              lastResponse = Some(resp)
+            }
+        }
+
+    val rx =
+      // Apply the client filter first to handle only the last response
+      config.clientFilter.andThen { req =>
+        // Wrap http request with the default error retry handler
+        config.retryContext
+          .runAsyncWithContext(req, circuitBreaker) {
+            requestPipeline(req)
+          }
           .map { resp =>
-            // Remember the last response for error reporting purpose
-            lastResponse = Some(config.responseFilter(resp))
-            resp
+            // Apply the response filter for the successful response
+            config.responseFilter(resp)
+          }
+          .recover {
+            // Or if request has been failing, apply the response filter only to the last response
+            val response = lastResponse.map(config.responseFilter(_))
+            HttpClients.defaultHttpClientErrorHandler(response)
           }
       }
-      .recover {
-        HttpClients.defaultHttpClientErrorHandler(lastResponse)
-      }
+
+    // Run the filter chain
+    rx.apply(request)
   }
 
   /**
@@ -106,9 +124,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
     * @tparam Req
     * @tparam Resp
     * @return
-    *
-    * @throws RPCException
-    *   when RPC request fails
+    *   Rx of the response. If the RPC request fails, Rx[RPCException] will be returned.
     */
   def rpc[Req, Resp](
       method: RPCMethod,

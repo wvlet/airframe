@@ -16,7 +16,7 @@ package wvlet.airframe.http.client
 import wvlet.airframe.control.CircuitBreaker
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.*
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.{OnCompletion, OnError, OnNext, Rx, RxRunner}
 import wvlet.airframe.surface.Surface
 
 /**
@@ -48,24 +48,41 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
     *   for non-retryable error is occurred
     */
   def send(req: Request, context: HttpClientContext = HttpClientContext.empty): Response = {
-    val request = config.requestFilter(req)
-
+    val request                        = config.requestFilter(req)
     var lastResponse: Option[Response] = None
-    try {
-      config.retryContext.runWithContext(request, circuitBreaker) {
-        loggingFilter
-          .andThen(config.clientFilter)
-          .apply(context)
-          .andThen(req => Rx.single(channel.send(req, config)))
-          .apply(request)
-          .run { resp =>
-            lastResponse = Some(config.responseFilter(resp))
-          }
-        lastResponse.get
-      }
-    } catch {
-      HttpClients.defaultHttpClientErrorHandler(lastResponse)
+
+    // Build a chain of request filters
+    def requestPipeline: RxHttpEndpoint = {
+      loggingFilter(context)
+        .andThen { req =>
+          Rx.single(channel.send(req, config))
+            .tap { resp =>
+              // Remember the last response for the error reporting purpose
+              lastResponse = Some(resp)
+            }
+        }
     }
+
+    val rx =
+      // Apply the client filter first to handle only the last response
+      config.clientFilter.andThen { req =>
+        config.retryContext
+          .runAsyncWithContext(req, circuitBreaker) {
+            requestPipeline(req)
+          }
+          .map { resp =>
+            // Apply the response filter for the successful response
+            config.responseFilter(resp)
+          }
+          .recover {
+            // Or if request has been failing, apply the response filter only to the last response
+            val response = lastResponse.map(config.responseFilter(_))
+            HttpClients.defaultHttpClientErrorHandler(response)
+          }
+      }
+
+    // Await the response
+    rx.apply(request).await
   }
 
   /**

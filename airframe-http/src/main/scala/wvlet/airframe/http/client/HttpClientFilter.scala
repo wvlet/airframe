@@ -16,10 +16,17 @@ package wvlet.airframe.http.client
 import wvlet.airframe.http.RxHttpFilter
 
 /**
-  * A filter for intercepting HTTP requests by using
+  * A filter for intercepting HTTP requests using the information of HttpClientContext. If HttpClientContext is not
+  * required, use RxHttpFilter instead.
   */
 trait HttpClientFilter { self =>
   def apply(context: HttpClientContext): RxHttpFilter
+
+  def andThen(next: RxHttpFilter): HttpClientFilter = new HttpClientFilter {
+    override def apply(context: HttpClientContext): RxHttpFilter = {
+      self.apply(context).andThen(next)
+    }
+  }
 
   def andThen(next: HttpClientFilter): HttpClientFilter = new HttpClientFilter {
     override def apply(context: HttpClientContext): RxHttpFilter = {

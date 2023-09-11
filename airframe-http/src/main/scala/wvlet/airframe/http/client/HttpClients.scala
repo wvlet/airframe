@@ -16,16 +16,18 @@ package wvlet.airframe.http.client
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.codec.PrimitiveCodec.UnitCodec
 import wvlet.airframe.control.Retry.{MaxRetryException, RetryContext}
-import wvlet.airframe.control.{CircuitBreaker, CircuitBreakerOpenException, Retry}
-import wvlet.airframe.http.HttpMessage.{Request, Response}
+import wvlet.airframe.control.{CircuitBreakerOpenException, Retry}
 import wvlet.airframe.http.*
-import wvlet.airframe.rx.Rx
+import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 import scala.util.Try
 import scala.util.control.NonFatal
 
+/**
+  * Implements a common logic for HTTP clients, such as retry patterns, error handling, RPC response handling, etc.
+  */
 object HttpClients extends LogSupport {
   import wvlet.airframe.http.internal.HttpResponseBodyCodec
   import wvlet.airframe.http.{HttpRequestAdapter, HttpResponseAdapter}
@@ -82,6 +84,7 @@ object HttpClients extends LogSupport {
           throw e
       }
     case e: RPCException =>
+      // This path is used only for local RPC client tests, which do not launch any real HTTP server
       val resp = e.toResponse
       throw new HttpClientException(resp, e.status.httpStatus, e.message, e)
     case e: CircuitBreakerOpenException =>

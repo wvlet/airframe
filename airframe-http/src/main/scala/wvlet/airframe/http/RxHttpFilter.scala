@@ -53,6 +53,23 @@ trait RxHttpFilter {
   def andThen(endpoint: RxHttpEndpoint): RxHttpEndpoint = {
     new RxHttpFilter.FilterAndThenEndpoint(this, endpoint)
   }
+
+  /**
+    * A handy method to create RxHttpEndpoint from a given function.
+    * @param body
+    * @return
+    */
+  def andThen(body: Request => Rx[Response]): RxHttpEndpoint = andThen(new RxHttpEndpoint {
+    override def apply(request: Request): Rx[Response] = {
+      try {
+        body(request)
+      } catch {
+        case NonFatal(e) =>
+          Rx.exception(e)
+      }
+    }
+  })
+
 }
 
 object RxHttpFilter {

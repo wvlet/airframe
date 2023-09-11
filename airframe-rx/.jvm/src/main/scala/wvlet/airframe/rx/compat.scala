@@ -13,8 +13,10 @@
  */
 package wvlet.airframe.rx
 import java.util.TimerTask
-import java.util.concurrent.{ExecutorService, Executors, TimeUnit}
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.{Executors, TimeUnit}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Promise}
 
 /**
   */
@@ -83,5 +85,19 @@ object compat {
     }
     while (!ready.get()) {}
     s.result()
+  }
+
+  private[rx] def await[A](rx: RxOps[A]): A = {
+    val p = Promise[A]()
+    val c = RxRunner.runOnce(rx) {
+      case OnNext(v)    => p.success(v.asInstanceOf[A])
+      case OnError(e)   => p.failure(e)
+      case OnCompletion => p.failure(new IllegalStateException(s"OnCompletion should not be issued in: ${rx}"))
+    }
+    try {
+      Await.result(p.future, Duration.Inf)
+    } finally {
+      c.cancel
+    }
   }
 }
