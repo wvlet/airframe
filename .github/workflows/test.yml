@@ -50,7 +50,7 @@ jobs:
       - name: Scala 2.12 test
         run: ./sbt "++2.12; projectJVM/test"
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
@@ -69,7 +69,7 @@ jobs:
       - name: Scala 2.13 test
         run: ./sbt "++2.13; projectJVM/test"
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
@@ -88,7 +88,7 @@ jobs:
       - name: Scala 2.13 + JDK11 test
         run: ./sbt ++2.13 projectJVM/test
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
@@ -107,7 +107,7 @@ jobs:
       - name: Scala 2.13 + JDK21 test
         run: ./sbt ++2.13 projectJVM/test
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
@@ -127,7 +127,7 @@ jobs:
         # Test only Scala 3 supported projects
         run: ./sbt "++ 3; projectDotty/test; dottyTest/run"
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
@@ -146,7 +146,7 @@ jobs:
       - name: Scala 3 integration test
         run: ./sbt "++ 3; integrationTest/test"
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
@@ -170,7 +170,7 @@ jobs:
       - name: Scala.js test
         run: JVM_OPTS=-Xmx4g ./sbt "++ 2.12; projectJS/test"
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
@@ -194,7 +194,7 @@ jobs:
       - name: Scala.js test
         run: JVM_OPTS=-Xmx4g ./sbt "++ 2.13; projectJS/test"
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
@@ -218,7 +218,7 @@ jobs:
       - name: Scala.js test
         run: JVM_OPTS=-Xmx4g ./sbt "++ 3; projectJS/test"
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
@@ -238,7 +238,7 @@ jobs:
         run: ../sbt "++airspecJVM/test; ++airspecJS/test"
         working-directory: ./airspec
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
+        uses: mikepenz/action-junit-report@v4
         if: always() # always run even if the previous step fails
         with:
           report_paths: '**/target/test-reports/TEST-*.xml'
