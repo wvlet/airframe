@@ -81,6 +81,7 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
           }
       }
 
+    // Await the response
     rx.apply(request).await
   }
 
