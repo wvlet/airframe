@@ -44,9 +44,17 @@ object Cors {
   /**
     * Create a new RxHttpFilter to add headers to support Cross-origin resource sharing (CORS).
     *
-    * {{ Cors.newFilter(Cors.Policy( allowsOrigin = origin => { origin match { case x if x.endsWith("mydomain.com") =>
-    * Some(origin) case _ => None }, allowsMethods = _ => Some(Seq(HttpMethod.POST)), allowsHeaders = headers =>
-    * Some(headers) )) }}
+    * {{{
+    *   Cors.newFilter(
+    *     Cors.Policy(
+    *       allowsOrigin = origin => { origin match {
+    *         case x if x.endsWith("mydomain.com") => Some(origin)
+    *         case _ => None
+    *       }},
+    *       allowsMethods = _ => Some(Seq(HttpMethod.POST)),
+    *       allowsHeaders = headers => Some(headers)
+    *    ))
+    * }}}
     *
     * @param policy
     */
