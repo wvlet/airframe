@@ -103,7 +103,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: '21-ea'
+          java-version: '21'
       - name: Scala 2.13 + JDK21 test
         run: ./sbt ++2.13 projectJVM/test
       - name: Publish Test Report

@@ -138,12 +138,12 @@ object Parallel extends LogSupport {
     val executionId = UUID.randomUUID.toString
     trace(s"$executionId - Begin Parallel.iterate (parallelism = ${parallelism})")
 
-    val requestQueue = new LinkedBlockingQueue[Worker[T, R]](parallelism)
-    val resultQueue  = new LinkedBlockingQueue[Option[R]]()
-    val interrupted  = new AtomicBoolean(false)
+    val requestQueue    = new LinkedBlockingQueue[Worker[T, R]](parallelism)
+    val resultQueue     = new LinkedBlockingQueue[Option[R]]()
+    val interruptedFlag = new AtomicBoolean(false)
 
     Range(0, parallelism).foreach { i =>
-      val worker = new Worker[T, R](executionId, i.toString, requestQueue, resultQueue, interrupted, f)
+      val worker = new Worker[T, R](executionId, i.toString, requestQueue, resultQueue, interruptedFlag, f)
       requestQueue.put(worker)
     }
 
@@ -154,9 +154,9 @@ object Parallel extends LogSupport {
 
         try {
           // Process all elements of source
-          while (source.hasNext && !interrupted.get()) {
+          while (source.hasNext && !interruptedFlag.get()) {
             val worker = requestQueue.take()
-            if (!interrupted.get()) {
+            if (!interruptedFlag.get()) {
               worker.message.set(source.next())
               executor.execute(worker)
             } else {
