@@ -13,11 +13,29 @@
  */
 package wvlet.airframe.jdbc
 
+import wvlet.airframe.ulid.ULID
 import wvlet.airspec.AirSpec
 
+import java.nio.file.{FileSystems, Files, Paths}
 import scala.util.Using
 
 class DuckDBTest extends AirSpec {
+
+  private val testDbFile = s"target/duckdb/duckdb-test-${ULID.newULID}.db"
+
+  override protected def beforeAll: Unit = {
+    Using.resource(DbConfig.ofDuckDB(testDbFile).newConnectionPool) { pool =>
+      pool.executeUpdate("drop table if exists person")
+      pool.executeUpdate("create table person(id int, name text)")
+      pool.executeUpdate("insert into person values(1, 'leo')")
+      pool.executeUpdate("insert into person values(2, 'yui')")
+    }
+  }
+
+  override protected def afterAll: Unit = {
+    Files.deleteIfExists(FileSystems.getDefault.getPath(testDbFile))
+  }
+
   test("duckdb connection") {
     Using.resource(DbConfig.ofDuckDB().newConnectionPool) { pool =>
       pool.querySingle("select 1") { rs =>
@@ -30,7 +48,7 @@ class DuckDBTest extends AirSpec {
 
   test("read a duckdb file at a path") {
     val result = Seq.newBuilder[Person]
-    Using.resource(DbConfig.ofDuckDB("airframe-jdbc/src/test/resources/duckdb-test.db").newConnectionPool) { pool =>
+    Using.resource(DbConfig.ofDuckDB(testDbFile).newConnectionPool) { pool =>
       pool.query("select * from person order by id") { rs =>
         result += Person(rs.getInt(1), rs.getString(2))
       }
