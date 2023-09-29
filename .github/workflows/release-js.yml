@@ -19,12 +19,12 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: '11'
+          java-version: '17'
       - name: Setup GPG
         env:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
         run: echo $PGP_SECRET | base64 --decode | gpg --import --batch --yes
-      - name: Build for Scala.js 1.0.x
+      - name: Build for Scala.js
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
         run: ./sbt publishJSSigned
