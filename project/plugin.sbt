@@ -11,7 +11,7 @@ addSbtPlugin("com.eed3si9n"        % "sbt-buildinfo"            % "0.11.0")
 addSbtPlugin("org.jetbrains.scala" % "sbt-ide-settings"         % "1.1.2")
 
 // For integration testing
-val SBT_AIRFRAME_VERSION = sys.env.getOrElse("SBT_AIRFRAME_VERSION", "23.6.2")
+val SBT_AIRFRAME_VERSION = sys.env.getOrElse("SBT_AIRFRAME_VERSION", "23.9.3")
 addSbtPlugin("org.wvlet.airframe" % "sbt-airframe" % SBT_AIRFRAME_VERSION)
 
 addDependencyTreePlugin
