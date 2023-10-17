@@ -105,7 +105,7 @@ val buildSettings = Seq[Setting[_]](
       ProblemFilters.exclude[MissingClassProblem]("wvlet.airframe.http.internal.*")
     )
   },
-  javacOptions ++= Seq("-source", "11", "-target", "11"),
+  javacOptions ++= Seq("--release", "17"),
   scalacOptions ++= Seq(
     "-feature",
     "-deprecation"
