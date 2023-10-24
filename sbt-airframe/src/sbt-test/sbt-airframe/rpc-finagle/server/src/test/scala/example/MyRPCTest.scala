@@ -1,8 +1,8 @@
 package example
 
 import wvlet.airspec.AirSpec
-import wvlet.airframe._
-import wvlet.airframe.http._
+import wvlet.airframe.*
+import wvlet.airframe.http.*
 import wvlet.airframe.http.finagle.{Finagle, FinagleServer}
 import example.api.MyRPCApi
 import example.api.MyRPCApi.{HelloRequest, HelloResponse}

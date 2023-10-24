@@ -14,7 +14,7 @@
 package example
 import java.util.UUID
 
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 
 import scala.concurrent.Future
 

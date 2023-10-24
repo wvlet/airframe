@@ -16,13 +16,13 @@ package example.ui
 import example.api.ServiceRPC
 import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.rx.{Rx, RxOption}
 import wvlet.airframe.rx.html.{DOMRenderer, RxElement}
 
 import scala.scalajs.js.annotation.JSExport
-import wvlet.airframe.rx.html._
-import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.*
+import wvlet.airframe.rx.html.all.*
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 /**

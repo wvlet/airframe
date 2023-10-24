@@ -13,7 +13,7 @@ t * See the License for the specific language governing permissions and
  */
 package example.api
 
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 
 @RPC
 trait HelloApi {

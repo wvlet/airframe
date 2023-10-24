@@ -1,6 +1,6 @@
 package example.api
 
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.rx.Rx
 
 @RPC

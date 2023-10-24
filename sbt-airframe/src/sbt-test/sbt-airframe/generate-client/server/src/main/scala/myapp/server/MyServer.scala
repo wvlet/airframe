@@ -1,11 +1,11 @@
 package myapp.server
 
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.netty.Netty
 import wvlet.log.LogSupport
 import myapp.spi.MyService
-import myapp.spi.MyRPC._
+import myapp.spi.MyRPC.*
 
 class MyServiceImpl extends myapp.spi.MyService {
   override def hello(id: Int): String    = s"hello ${id}"

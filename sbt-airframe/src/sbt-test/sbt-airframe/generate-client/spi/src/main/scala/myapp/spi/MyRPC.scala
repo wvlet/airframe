@@ -1,10 +1,10 @@
 package myapp.spi
 
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 
 @RPC
 trait MyRPC {
-  import MyRPC._
+  import MyRPC.*
 
   def world(): World
   def addEntry(id: Int, name: String): String

@@ -16,17 +16,17 @@ package wvlet.airframe.sbt.http
 import java.io.{File, FileInputStream}
 import java.nio.file.Files
 import java.util.zip.GZIPInputStream
-import coursier._
+import coursier.*
 import coursier.core.Extension
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.utils.IOUtils
-import sbt._
+import sbt.*
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.OS
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil.withResource
 
-import scala.sys.process._
+import scala.sys.process.*
 
 /**
   * sbt plugin for supporting Airframe HTTP development.
@@ -43,7 +43,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
 
   object autoImport extends Keys
 
-  import autoImport._
+  import autoImport.*
 
   override def requires: Plugins = sbt.plugins.JvmPlugin
   override def trigger           = noTrigger
@@ -90,7 +90,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
   private val cacheFileName = "generated.cache"
 
   def httpProjectSettings = {
-    import sbt.Keys._
+    import sbt.Keys.*
     Seq(
       airframeHttpClients := Seq.empty,
       airframeHttpClasspass := {
@@ -127,7 +127,7 @@ object AirframeHttpPlugin extends AutoPlugin with LogSupport {
 
         if (needsUpdate) {
           // Download airframe-http.tgz with coursier
-          import coursier._
+          import coursier.*
           val moduleName = s"airframe-http-codegen_${scalaBinaryVersion.value}"
           val d =
             Dependency(

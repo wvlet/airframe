@@ -1,7 +1,7 @@
 package example
 
 import wvlet.airspec.AirSpec
-import wvlet.airframe._
+import wvlet.airframe.*
 import wvlet.airframe.http.Http
 import wvlet.airframe.http.netty.{Netty, NettyServer}
 import example.api.MyRPCApi

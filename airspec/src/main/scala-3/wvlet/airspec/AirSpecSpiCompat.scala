@@ -73,11 +73,11 @@ object AirSpecTestBuilder extends wvlet.log.LogSupport {
 }
 
 private[airspec] object AirSpecMacros {
-  import scala.quoted._
+  import scala.quoted.*
 
   def test0Impl[R](self: Expr[AirSpecTestBuilder], body: Expr[R])(using Type[R], Quotes): Expr[Unit] = {
     '{
-      import AirSpecTestBuilder._
+      import AirSpecTestBuilder.*
       ${ self }.addF0(LazyF0(${ body }))
     }
   }
@@ -93,12 +93,12 @@ private[airspec] object AirSpecMacros {
       // Nil or Seq[_], Scala 3 complier passes Function1[Int, R] as a body even if the code block take no argument.
       case '{ $x: t } if TypeRepr.of[t] =:= TypeRepr.of[Nil.type] || TypeRepr.of[t] <:< TypeRepr.of[Seq[_]] =>
         '{
-          import AirSpecTestBuilder._
+          import AirSpecTestBuilder.*
           ${ self }.addF0(LazyF0.apply(${ body }))
         }
       case _ =>
         '{
-          import AirSpecTestBuilder._
+          import AirSpecTestBuilder.*
           ${ self }.addF1(Surface.of[D1], ${ body })
         }
     }
@@ -109,7 +109,7 @@ private[airspec] object AirSpecMacros {
       body: Expr[(D1, D2) => R]
   )(using Type[D1], Type[D2], Type[R], Quotes): Expr[Unit] = {
     '{
-      import AirSpecTestBuilder._
+      import AirSpecTestBuilder.*
       ${ self }.addF2(Surface.of[D1], Surface.of[D2], ${ body })
     }
   }
@@ -119,7 +119,7 @@ private[airspec] object AirSpecMacros {
       body: Expr[(D1, D2, D3) => R]
   )(using Type[D1], Type[D2], Type[D3], Type[R], Quotes): Expr[Unit] = {
     '{
-      import AirSpecTestBuilder._
+      import AirSpecTestBuilder.*
       ${ self }.addF3(Surface.of[D1], Surface.of[D2], Surface.of[D3], ${ body })
     }
   }
@@ -129,7 +129,7 @@ private[airspec] object AirSpecMacros {
       body: Expr[(D1, D2, D3, D4) => R]
   )(using Type[D1], Type[D2], Type[D3], Type[D4], Type[R], Quotes): Expr[Unit] = {
     '{
-      import AirSpecTestBuilder._
+      import AirSpecTestBuilder.*
       ${ self }.addF4(Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4], ${ body })
     }
   }
@@ -139,7 +139,7 @@ private[airspec] object AirSpecMacros {
       body: Expr[(D1, D2, D3, D4, D5) => R]
   )(using Type[D1], Type[D2], Type[D3], Type[D4], Type[D5], Type[R], Quotes): Expr[Unit] = {
     '{
-      import AirSpecTestBuilder._
+      import AirSpecTestBuilder.*
       ${ self }.addF5(
         Surface.of[D1],
         Surface.of[D2],

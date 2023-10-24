@@ -1,7 +1,7 @@
 package dotty.test
 
 import wvlet.log.{LogFormatter, LogLevel, LogSupport, Logger}
-import wvlet.airframe._
+import wvlet.airframe.*
 import wvlet.airframe.surface.Surface
 
 object DITest extends LogSupport {

@@ -13,7 +13,7 @@
  */
 package wvlet.airframe
 
-import org.scalatest._
+import org.scalatest.*
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.{LogSupport, Logger}
 

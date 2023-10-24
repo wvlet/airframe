@@ -12,13 +12,13 @@
  * limitations under the License.
  */
 package example.api
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 
 /**
   */
 @RPC
 trait OpenAPIRPCExample {
-  import OpenAPIRPCExample._
+  import OpenAPIRPCExample.*
 
   def zeroAryRPC: Unit
   def rpcWithPrimitive(p1: Int): Int
