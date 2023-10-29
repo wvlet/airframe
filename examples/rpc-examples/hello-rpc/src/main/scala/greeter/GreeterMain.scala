@@ -14,7 +14,7 @@
 package greeter
 
 import greeter.api.{GreeterApi, GreeterRPC}
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.http.netty.Netty
 import wvlet.airframe.launcher.{Launcher, command, option}
 import wvlet.log.{LogSupport, Logger}

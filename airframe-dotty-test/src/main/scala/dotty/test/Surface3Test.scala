@@ -2,33 +2,33 @@ package dotty.test
 
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
-import wvlet.airframe.surface.tag._
+import wvlet.airframe.surface.tag.*
 
 object Surface3Test extends LogSupport {
-  import scala.quoted._
+  import scala.quoted.*
 
-  inline def test(s:Surface, expected: String): Unit = {
+  inline def test(s: Surface, expected: String): Unit = {
     s match {
       case null =>
         warn(s"Surface: expected: ${expected}, but null")
       case _ =>
         val str = s.toString
         // info(s"${s}: ${s.getClass}")
-        if(str != expected) {
+        if (str != expected) {
           warn(s"Surface: expected: ${expected}, but ${str}")
         }
     }
   }
 
   inline def assert(v: Any, expected: Any): Unit = {
-    if(v != expected) {
+    if (v != expected) {
       warn(s"Expected: ${expected}, but ${v}")
     }
   }
 
-  case class Person(id:Int = -1, name:String)
+  case class Person(id: Int = -1, name: String)
 
-  trait Label 
+  trait Label
   type MyString = String
 
   trait Holder[M[_]] {
@@ -38,8 +38,8 @@ object Surface3Test extends LogSupport {
   trait Task[A]
 
   class Hello {
-    def hello(msg:String): String = msg
-    private def hiddemMethod: Int = 1
+    def hello(msg: String): String           = msg
+    private def hiddemMethod: Int            = 1
     protected def hiddenMethod2: Option[Int] = None
   }
 
@@ -47,9 +47,9 @@ object Surface3Test extends LogSupport {
     def hello2: String = "hello2"
   }
 
-  case class MyOpt(a:Option[String])
+  case class MyOpt(a: Option[String])
 
-  def run:Unit = {
+  def run: Unit = {
     test(Surface.of[Int], "Int")
     test(Surface.of[Boolean], "Boolean")
     test(Surface.of[Long], "Long")
@@ -84,7 +84,7 @@ object Surface3Test extends LogSupport {
     // Case class surface tests
     val s = Surface.of[Person]
     assert(s.params.mkString(","), "id:Int,name:String")
-    val p = Person(1, "leo")
+    val p  = Person(1, "leo")
     val p0 = s.params(0)
     assert(p0.name, "id")
     assert(p0.getDefaultValue, Some(-1))
@@ -94,7 +94,7 @@ object Surface3Test extends LogSupport {
 
     val ms = Surface.methodsOf[Hello]
     debug(ms)
-    val h = new Hello
+    val h   = new Hello
     val res = ms(0).call(h, "hello surface")
     assert(res, "hello surface")
 
@@ -108,6 +108,5 @@ object Surface3Test extends LogSupport {
     val sc = Surface.of[MyOpt]
     info(sc.params)
   }
-
 
 }

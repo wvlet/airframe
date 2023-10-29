@@ -11,7 +11,10 @@ val AIRSPEC_VERSION = sys.props("airspec.version")
 
 val buildSettings: Seq[Def.Setting[_]] = Seq(
   testFrameworks += new TestFramework("wvlet.airspec.Framework"),
-  libraryDependencies += "org.wvlet.airframe" %% "airspec" % AIRSPEC_VERSION % Test
+  libraryDependencies += "org.wvlet.airframe" %% "airspec" % AIRSPEC_VERSION % Test,
+  scalacOptions ++= Seq(
+    "-Xsource:3"
+  )
 )
 
 lazy val root =

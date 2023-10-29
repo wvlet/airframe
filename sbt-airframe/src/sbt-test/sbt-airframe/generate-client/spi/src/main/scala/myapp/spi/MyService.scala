@@ -1,6 +1,6 @@
 package myapp.spi
 
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 
 trait MyService {
   @Endpoint(method = HttpMethod.GET, path = "/v1/hello/:id")

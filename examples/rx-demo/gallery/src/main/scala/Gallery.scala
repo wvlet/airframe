@@ -16,7 +16,7 @@ package wvlet.airframe.rx.html.widget.demo
 import org.scalajs.dom
 import org.scalajs.dom.document
 import wvlet.airframe.rx.Rx
-import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.all.*
 import wvlet.airframe.rx.html.{DOMRenderer, RxCode, RxComponent, RxElement, tags}
 import wvlet.airframe.rx.html.HtmlCompat.extractCode
 import wvlet.log.{LogLevel, LogSupport, Logger}
@@ -125,7 +125,7 @@ object Gallery extends LogSupport {
   def buttonSmallDemo: Example = Example(
     "Small buttons",
     extractCode {
-      import wvlet.airframe.rx.html.all._
+      import wvlet.airframe.rx.html.all.*
 
       def smallButton(style: String) =
         button(tpe -> "button", cls -> s"btn btn-sm btn-${style}", style)
@@ -196,7 +196,7 @@ object Gallery extends LogSupport {
 
       // Creating a new canvas
       val c = newCanvas(50, 50)
-      import c._
+      import c.*
       context.fillStyle = "#99CCFF"
       context.fillRect(0, 0, c.canvas.width, c.canvas.height)
       context.strokeStyle = "#336699"
@@ -210,8 +210,8 @@ object Gallery extends LogSupport {
   def svgDemo = Example(
     "SVG",
     extractCode {
-      import wvlet.airframe.rx.html.svgAttrs._
-      import wvlet.airframe.rx.html.svgTags._
+      import wvlet.airframe.rx.html.svgAttrs.*
+      import wvlet.airframe.rx.html.svgTags.*
 
       val circleColor = Rx.variable("white")
 
@@ -245,7 +245,7 @@ object Gallery extends LogSupport {
   def elementGallery = Example(
     "RxElement",
     extractCode {
-      import wvlet.airframe.rx.html.all._
+      import wvlet.airframe.rx.html.all.*
 
       class MyButton(name: String) extends RxElement {
         def render: RxElement = button(cls -> "btn btn-outline-primary", name)
@@ -258,7 +258,7 @@ object Gallery extends LogSupport {
   def customElementGallery = Example(
     "Customize RxElement",
     extractCode {
-      import wvlet.airframe.rx.html.all._
+      import wvlet.airframe.rx.html.all.*
 
       def myButton = button(cls -> "btn btn-outline-primary")
 
@@ -270,7 +270,7 @@ object Gallery extends LogSupport {
   def componentGallery = Example(
     "RxComponent",
     extractCode {
-      import wvlet.airframe.rx.html.all._
+      import wvlet.airframe.rx.html.all.*
 
       // RxComponent is the unit of a reactive widget that can enclose other components or elements.
       class MyComponent extends RxComponent {
@@ -285,7 +285,7 @@ object Gallery extends LogSupport {
   def timer = Example(
     "Timer",
     extractCode {
-      import wvlet.airframe.rx.html.all._
+      import wvlet.airframe.rx.html.all.*
       var i = 0
 
       // Run the code every 1 second (1000 milliseconds)

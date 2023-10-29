@@ -13,11 +13,11 @@
  */
 package myapp.spi
 
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 
 @RPC
 trait MyRPC {
-  import MyRPC._
+  import MyRPC.*
   def hello(time: Long, request: HelloRequest): String
 }
 

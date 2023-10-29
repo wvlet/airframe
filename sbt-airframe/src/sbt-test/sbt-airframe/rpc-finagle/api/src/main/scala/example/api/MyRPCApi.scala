@@ -1,11 +1,11 @@
 package example.api
 
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.log.LogSupport
 
 @RPC
 trait MyRPCApi extends LogSupport {
-  import MyRPCApi._
+  import MyRPCApi.*
   def helloRPC(request: HelloRequest): HelloResponse = {
     val message = s"Hello ${request.name}!"
     HelloResponse(message)

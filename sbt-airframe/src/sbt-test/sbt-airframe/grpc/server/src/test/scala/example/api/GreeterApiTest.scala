@@ -1,9 +1,9 @@
 package example.api
 
-import wvlet.airspec._
-import wvlet.airframe._
+import wvlet.airspec.*
+import wvlet.airframe.*
 import wvlet.airframe.rx.Rx
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.airframe.http.grpc.gRPC
 import wvlet.airframe.http.grpc.GrpcServer
 import io.grpc.ManagedChannelBuilder

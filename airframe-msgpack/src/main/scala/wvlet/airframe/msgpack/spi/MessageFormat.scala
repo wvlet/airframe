@@ -84,7 +84,7 @@ object MessageFormat {
   def of(code: Byte): MessageFormat = formatTable(code & 0xff)
 
   /**
-    * Converting a byte value into MessageFormat. For faster performance, use {@link #valueOf}
+    * Converting a byte value into MessageFormat. For faster performance, use [[valueOf(byte)]] instead.
     *
     * @param b
     *   MessageFormat of the given byte

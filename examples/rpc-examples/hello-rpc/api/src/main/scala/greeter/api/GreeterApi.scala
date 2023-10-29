@@ -1,6 +1,6 @@
 package greeter.api
 
-import wvlet.airframe.http._
+import wvlet.airframe.http.*
 import wvlet.log.LogSupport
 
 @RPC
