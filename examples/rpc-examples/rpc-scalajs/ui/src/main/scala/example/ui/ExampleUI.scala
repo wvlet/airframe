@@ -57,7 +57,6 @@ class MainUI extends RxElement with LogSupport {
           debug(s"Sending an RPC request")
           rpcClient.HelloApi
             .hello(s"RPC ${counter}")
-            .toRx
             .map { resp =>
               message := resp
             }
