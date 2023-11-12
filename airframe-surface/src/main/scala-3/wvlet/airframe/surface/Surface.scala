@@ -34,6 +34,11 @@ trait Surface extends Serializable {
   def isMap: Boolean   = classOf[Map[_, _]].isAssignableFrom(rawType)
   def isArray: Boolean = this.isInstanceOf[ArraySurface]
 
+  /**
+    * True if this surface is a Scala3 enum
+    */
+  def isEnum: Boolean = classOf[scala.reflect.Enum].isAssignableFrom(rawType)
+
   def objectFactory: Option[ObjectFactory] = None
   def withOuter(outer: AnyRef): Surface    = this
 }
