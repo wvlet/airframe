@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.codec
 
+import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
 
 object Scala3EnumCodecTest extends AirSpec:
@@ -22,9 +23,16 @@ object Scala3EnumCodecTest extends AirSpec:
   test("pack Scala 3 Enum") {
     val codec = MessageCodec.of[Color]
     Color.values.foreach { c =>
-      val packed = codec.pack(c)
-      debug(packed)
+      val packed   = codec.pack(c)
       val unpacked = codec.unpack(packed)
       unpacked shouldBe c
+    }
+  }
+
+  test("handle invalid enum value input") {
+    val codec   = MessageCodec.of[Color]
+    val msgpack = MessagePack.newBufferPacker.packString("Black").toByteArray
+    intercept[IllegalArgumentException] {
+      codec.unpack(msgpack)
     }
   }
