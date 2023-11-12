@@ -34,8 +34,8 @@ trait Surface extends Serializable {
   def isArray: Boolean = this.isInstanceOf[ArraySurface]
 
   /**
-   * True if this surface is a Scala3 enum. In Scala 2, it always returns false
-   */
+    * True if this surface is a Scala3 enum. In Scala 2, it always returns false
+    */
   def isEnum: Boolean = false
 
   def objectFactory: Option[ObjectFactory] = None
