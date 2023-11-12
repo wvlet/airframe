@@ -140,6 +140,11 @@ val scala2Only = Seq[Setting[_]](
   crossScalaVersions := uptoScala2
 )
 
+val scala3Only = Seq[Setting[_]](
+  scalaVersion       := SCALA_3,
+  crossScalaVersions := List(SCALA_3)
+)
+
 // Do not run tests concurrently to avoid JMX registration failures
 val runTestSequentially = Seq[Setting[_]](Test / parallelExecution := false)
 
@@ -225,9 +230,7 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
   finagle,
   benchmark,
   sql,
-  examples,
-  integrationTestApi,
-  integrationTest
+  examples
 )
 
 // Scala.js build (Scala 2.12, 2.13, and 3.x)
@@ -316,7 +319,9 @@ lazy val projectDotty =
       rx.jvm,
       rxHtml.jvm,
       sql,
-      ulid.jvm
+      ulid.jvm,
+      integrationTestApi,
+      integrationTest
     )
 
 lazy val docs =
@@ -1007,18 +1012,20 @@ lazy val dottyTest =
     )
     .dependsOn(log.jvm, surface.jvm, di.jvm, codec.jvm)
 
+// Integration test for Scala 3
 lazy val integrationTestApi =
   project
     .in(file("airframe-integration-test-api"))
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
-      name               := "airframe-integration-test-api",
-      description        := "APIs for integration test",
-      crossScalaVersions := targetScalaVersions
+      scala3Only,
+      name        := "airframe-integration-test-api",
+      description := "APIs for integration test"
     )
     .dependsOn(http.jvm)
 
+// Integration test for Scala 3
 lazy val integrationTest =
   project
     .in(file("airframe-integration-test"))
@@ -1026,9 +1033,9 @@ lazy val integrationTest =
     .settings(buildSettings)
     .settings(noPublish)
     .settings(
+      scala3Only,
       name                := "airframe-integration-test",
       description         := "integration test project",
-      crossScalaVersions  := targetScalaVersions,
       airframeHttpClients := Seq("wvlet.airframe.test.api:rpc")
     )
     .dependsOn(integrationTestApi, netty)

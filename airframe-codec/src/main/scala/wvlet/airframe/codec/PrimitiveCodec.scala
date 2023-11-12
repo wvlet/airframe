@@ -923,7 +923,8 @@ object PrimitiveCodec {
   class AnyCodec(
       codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactoryForJSON,
       knownSurfaces: Seq[Surface] = Seq.empty
-  ) extends MessageCodec[Any] {
+  ) extends MessageCodec[Any]
+      with AnyCodecCompat {
 
     private val knownSurfaceTable = knownSurfaces.map(s => s.rawType -> s).toMap[Class[_], Surface]
 
@@ -991,6 +992,9 @@ object PrimitiveCodec {
           }
         case v: Throwable =>
           ThrowableCodec.pack(p, v)
+        case e if isEnum(e) =>
+          // Scala 3 EnumValue
+          StringCodec.pack(p, e.toString)
         case _ =>
           val cl = v.getClass
           knownSurfaceTable.get(cl) match {
