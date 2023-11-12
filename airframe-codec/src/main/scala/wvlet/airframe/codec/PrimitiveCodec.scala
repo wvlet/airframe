@@ -991,6 +991,10 @@ object PrimitiveCodec {
           }
         case v: Throwable =>
           ThrowableCodec.pack(p, v)
+        case e if e.getClass.getInterfaces.exists(_.getName.startsWith("scala.runtime.Enum")) =>
+          // Scala 3 EnumValue
+          // Use interface name match as scala.runtime.EnumValue is not available in Scala 2.x
+          StringCodec.pack(p, e.toString)
         case _ =>
           val cl = v.getClass
           knownSurfaceTable.get(cl) match {

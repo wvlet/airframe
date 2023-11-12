@@ -17,7 +17,6 @@ import wvlet.airframe.Design
 import wvlet.airframe.http.{Http, RPCEncoding, RxRouter}
 import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.airframe.test.api.HelloRPC.VariousParams
-import wvlet.airframe.test.api.Status
 import wvlet.airspec.AirSpec
 
 class HelloRPCTest extends AirSpec {

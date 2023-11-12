@@ -35,24 +35,8 @@ object HelloRPC extends RxRouterProvider {
   )
 }
 
-sealed trait Status {
-  def isDone: Boolean
-
-  def name: String = toString
-}
-
-object Status {
-  case object OK extends Status {
-    override def isDone: Boolean = true
-  }
-
-  case object NG extends Status {
-    override def isDone: Boolean = true
-  }
-
-  def all: Seq[Status] = Seq(OK, NG)
-
-  def unapply(s: String): Option[Status] = {
-    all.find(_.toString == s)
-  }
+enum Status(isDone: Boolean) {
+  def name: String = this.toString
+  case OK extends Status(isDone = true)
+  case NG extends Status(isDone = true)
 }

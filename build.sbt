@@ -1007,6 +1007,7 @@ lazy val dottyTest =
     )
     .dependsOn(log.jvm, surface.jvm, di.jvm, codec.jvm)
 
+// Integration test for Scala 3
 lazy val integrationTestApi =
   project
     .in(file("airframe-integration-test-api"))
@@ -1019,6 +1020,7 @@ lazy val integrationTestApi =
     )
     .dependsOn(http.jvm)
 
+// Integration test for Scala 3
 lazy val integrationTest =
   project
     .in(file("airframe-integration-test"))
