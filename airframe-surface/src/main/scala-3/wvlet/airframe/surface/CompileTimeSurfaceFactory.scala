@@ -432,6 +432,44 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       '{ new GenericSurface(${ clsOf(a1) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
     case r: Refinement =>
       newGenericSurfaceOf(r.info)
+    case t if t <:< TypeRepr.of[scala.reflect.Enum] && !(t =:= TypeRepr.of[Nothing]) =>
+      /**
+        * Build a code for finding Enum instance from an input string value: {{ (cl: Class[_], s: String) =>
+        * Try(EnumType.valueOf(s)).toOption }}
+        */
+      val enumType = t.typeSymbol.companionModule
+      val valueOfMethod = enumType.methodMember("valueOf").headOption match {
+        case Some(m) => m
+        case None =>
+          sys.error(s"valueOf method not found in ${t}")
+      }
+      val newFn = Lambda(
+        owner = Symbol.spliceOwner,
+        tpe = MethodType(List("cl", "s"))(
+          _ => List(TypeRepr.of[Class[_]], TypeRepr.of[String]),
+          _ => TypeRepr.of[Option[Any]]
+        ),
+        rhsFn = (sym: Symbol, paramRefs: List[Tree]) => {
+          val strVarRef = paramRefs(1).asExprOf[String].asTerm
+          val expr: Term =
+            Select
+              .unique(
+                Apply(Select.unique(Ref(t.typeSymbol.companionModule), "valueOf"), List(strVarRef)),
+                "asInstanceOf"
+              ).appliedToType(TypeRepr.of[Any])
+          val expr2 = ('{
+            scala.util.Try(${ expr.asExprOf[Any] }).toOption
+          }).asExprOf[Option[Any]].asTerm
+          expr2.changeOwner(sym)
+        }
+      )
+
+      '{
+        EnumSurface(
+          ${ clsOf(t) },
+          ${ newFn.asExprOf[(Class[_], String) => Option[Any]] }
+        )
+      }
     case t if hasStringUnapply(t) =>
       // Build EnumSurface.apply code
       // EnumSurface(classOf[t], { (cl: Class[_], s: String) => (companion object).unapply(s).asInstanceOf[Option[Any]] }
@@ -447,7 +485,6 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
           val strVarRef = paramRefs(1).asExprOf[String].asTerm
           val expr = Select.unique(Apply(m, List(strVarRef)), "asInstanceOf").appliedToType(TypeRepr.of[Option[Any]])
           expr.changeOwner(sym)
-
         }
       )
       '{
