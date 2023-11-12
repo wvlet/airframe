@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.codec
 
+import wvlet.airframe.codec.PrimitiveCodec.AnyCodec
 import wvlet.airframe.json.JSON
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
@@ -69,4 +70,10 @@ object Scala3EnumCodecTest extends AirSpec:
     val p     = OptColor(None)
     val json  = codec.toJson(p)
     json shouldBe """{}"""
+  }
+
+  test("Pack with AnyCodec") {
+    val codec   = AnyCodec.default
+    val msgpack = codec.toMsgPack(Color.Green)
+    MessageCodec.of[Color].unpack(msgpack) shouldBe Color.Green
   }
