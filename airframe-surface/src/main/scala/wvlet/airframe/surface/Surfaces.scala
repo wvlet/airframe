@@ -256,6 +256,11 @@ case class OptionSurface(override val rawType: Class[_], elementSurface: Surface
 }
 case class JavaEnumSurface(override val rawType: Class[_]) extends GenericSurface(rawType)
 
+/**
+  * Enum-like surface for Scala 2.x and Scala 3
+  * @param rawType
+  * @param stringExtractor
+  */
 case class EnumSurface(override val rawType: Class[_], stringExtractor: (Class[_], String) => Option[Any])
     extends GenericSurface(rawType)
 
