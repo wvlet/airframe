@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.codec
 
+import wvlet.airframe.json.JSON
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
 
@@ -45,4 +46,27 @@ object Scala3EnumCodecTest extends AirSpec:
     val packed   = codec.pack(p)
     val unpacked = codec.unpack(packed)
     unpacked shouldBe p
+  }
+
+  test("toJson") {
+    val codec = MessageCodec.of[Point]
+    val p     = Point(1, 2, Color.Red)
+    val json  = codec.toJson(p)
+    json shouldBe """{"x":1,"y":2,"c":"Red"}"""
+  }
+
+  case class OptColor(p: Option[Color])
+
+  test("Option[Enum]") {
+    val codec = MessageCodec.of[OptColor]
+    val p     = OptColor(Some(Color.Red))
+    val json  = codec.toJson(p)
+    json shouldBe """{"p":"Red"}"""
+  }
+
+  test("Option[Enum] with None") {
+    val codec = MessageCodec.of[OptColor]
+    val p     = OptColor(None)
+    val json  = codec.toJson(p)
+    json shouldBe """{}"""
   }
