@@ -432,7 +432,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       '{ new GenericSurface(${ clsOf(a1) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
     case r: Refinement =>
       newGenericSurfaceOf(r.info)
-    case t if t <:< TypeRepr.of[scala.reflect.Enum] =>
+    case t if t <:< TypeRepr.of[scala.reflect.Enum] && !(t =:= TypeRepr.of[Nothing]) =>
       /**
         * Build a code for finding Enum instance from an input string value: {{ (cl: Class[_], s: String) =>
         * Try(EnumType.valueOf(s)).toOption }}
