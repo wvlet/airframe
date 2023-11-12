@@ -36,3 +36,13 @@ object Scala3EnumCodecTest extends AirSpec:
       codec.unpack(msgpack)
     }
   }
+
+  case class Point(x: Int, y: Int, c: Color)
+
+  test("pack case class with Enum") {
+    val codec    = MessageCodec.of[Point]
+    val p        = Point(1, 2, Color.Red)
+    val packed   = codec.pack(p)
+    val unpacked = codec.unpack(packed)
+    unpacked shouldBe p
+  }
