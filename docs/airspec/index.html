@@ -506,7 +506,7 @@ Add <code>wvlet.airspec.spi.PropertyCheck</code> trait to your spec, and use <co
   }
 
   test(<span class="hljs-string">"testCommutativity"</span>) {
-    forAll{ (x:<span class="hljs-type">Int</span>, y:<span class="hljs-type">Int</span>) =&gt; x+y == y+x }
+    forAll{ (x:<span class="hljs-type">Int</span>, y:<span class="hljs-type">Int</span>) =&gt; x+y shouldBe y+x }
   }
 
   <span class="hljs-comment">// Using custom genrators of ScalaCheck</span>
