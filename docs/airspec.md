@@ -532,7 +532,7 @@ class PropertyBasedTest extends AirSpec with PropertyCheck {
   }
 
   test("testCommutativity") {
-    forAll{ (x:Int, y:Int) => x+y == y+x }
+    forAll{ (x:Int, y:Int) => x+y shouldBe y+x }
   }
 
   // Using custom genrators of ScalaCheck
