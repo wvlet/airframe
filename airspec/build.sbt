@@ -130,8 +130,7 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
-/**
-  * AirSpec build definitions.
+/** AirSpec build definitions.
   *
   * To make AirSpec a standalone library without any cyclic project references, AirSpec embeds the source code of
   * airframe-log, di, surface, etc.
@@ -215,7 +214,7 @@ lazy val airspecLog =
       airspecJVMBuildSettings,
       libraryDependencies ++= Seq(
         // For rotating log files
-        "ch.qos.logback" % "logback-core" % "1.3.9"
+        "ch.qos.logback" % "logback-core" % "1.3.13"
       )
     )
     .jsSettings(
