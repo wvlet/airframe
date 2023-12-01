@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.rx.html
 
-import org.scalajs.dom.EventTarget
-
 trait HtmlNodeBase { self: HtmlNode =>
 
   /**
