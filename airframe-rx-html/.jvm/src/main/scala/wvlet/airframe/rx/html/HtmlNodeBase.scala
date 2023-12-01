@@ -16,4 +16,18 @@ package wvlet.airframe.rx.html
 /**
   * A trait for adding different methods between Scala JVM and Scala.js
   */
-trait HtmlNodeBase {}
+trait HtmlNodeBase {
+
+  /**
+    * (Scala.js only) Render this element to the DOM node of the given ID. If the corresponding DOM node is not found,
+    * this method will create a new DOM node.
+    *
+    * @param nodeId
+    * @return
+    *   A cancelable RxDOMNode
+    */
+  def renderTo(nodeId: String): Unit = {
+    // Adding this method to Scala JVM as IntelliJ may not recognize this method
+    ???
+  }
+}
