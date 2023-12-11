@@ -34,7 +34,7 @@ addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.5.1")
 addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.3")
 
 // For JMH benchmark
-addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.4.6")
+addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.4.7")
 addSbtPlugin("org.xerial.sbt"     % "sbt-pack" % "0.18")
 
 scalacOptions ++= Seq("-deprecation", "-feature")
