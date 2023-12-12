@@ -35,14 +35,14 @@ Airframe is a collection of essential libraries. Add necessary modules for your 
 ```scala
 val AIRFRAME_VERSION="(version)"
 
-// For Scala 2.12, 2.13, 3.0
+// For Scala 2.12, 2.13, 3.x
 libraryDependencies ++= Seq(
   "org.wvlet.airframe" %% "airframe"               % AIRFRAME_VERSION, // Dependency injection
   "org.wvlet.airframe" %% "airframe-codec"         % AIRFRAME_VERSION, // MessagePack-based schema-on-read codec
   "org.wvlet.airframe" %% "airframe-config"        % AIRFRAME_VERSION, // YAML-based configuration
   "org.wvlet.airframe" %% "airframe-control"       % AIRFRAME_VERSION, // Library for retryable execution
-  "org.wvlet.airframe" %% "airframe-http"          % AIRFRAME_VERSION, // HTTP RPC/REST API
-  "org.wvlet.airframe" %% "airframe-http-finagle"  % AIRFRAME_VERSION, // HTTP server (Finagle backend)
+  "org.wvlet.airframe" %% "airframe-http"          % AIRFRAME_VERSION, // HTTP RPC/REST API and clients
+  "org.wvlet.airframe" %% "airframe-http-netty"    % AIRFRAME_VERSION, // HTTP server (Netty backend)
   "org.wvlet.airframe" %% "airframe-http-grpc"     % AIRFRAME_VERSION, // HTTP/2 server (gRPC backend)
   "org.wvlet.airframe" %% "airframe-http-recorder" % AIRFRAME_VERSION, // HTTP recorder and replayer
   "org.wvlet.airframe" %% "airframe-jmx"           % AIRFRAME_VERSION, // JMX monitoring
