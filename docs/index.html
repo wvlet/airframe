@@ -85,14 +85,14 @@
 <p><strong>build.sbt</strong></p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> <span class="hljs-type">AIRFRAME_VERSION</span>=<span class="hljs-string">"(version)"</span>
 
-<span class="hljs-comment">// For Scala 2.12, 2.13, 3.0</span>
+<span class="hljs-comment">// For Scala 2.12, 2.13, 3.x</span>
 libraryDependencies ++= <span class="hljs-type">Seq</span>(
   <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe"</span>               % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Dependency injection</span>
   <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-codec"</span>         % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// MessagePack-based schema-on-read codec</span>
   <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-config"</span>        % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// YAML-based configuration</span>
   <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-control"</span>       % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Library for retryable execution</span>
-  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http"</span>          % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// HTTP RPC/REST API</span>
-  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-finagle"</span>  % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// HTTP server (Finagle backend)</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http"</span>          % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// HTTP RPC/REST API and clients</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-netty"</span>    % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// HTTP server (Netty backend)</span>
   <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-grpc"</span>     % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// HTTP/2 server (gRPC backend)</span>
   <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-recorder"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// HTTP recorder and replayer</span>
   <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-jmx"</span>           % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// JMX monitoring</span>
