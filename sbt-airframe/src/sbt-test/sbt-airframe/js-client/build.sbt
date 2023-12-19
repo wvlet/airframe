@@ -1,6 +1,6 @@
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
-ThisBuild / scalaVersion := "3.3.1"
+ThisBuild / scalaVersion := "3.3.2-RC1"
 
 lazy val root =
   project.aggregate(spi.js, client.js)
@@ -24,7 +24,7 @@ lazy val client =
     )
     .jsSettings(
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % "2.1.0"
+        "org.scala-js" %%% "scalajs-dom" % "2.8.0"
       )
     )
     .dependsOn(spi)
