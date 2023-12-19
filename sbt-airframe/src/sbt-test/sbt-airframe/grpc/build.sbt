@@ -8,7 +8,7 @@ val buildSettings: Seq[Def.Setting[_]] = Seq(
 )
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 // TODO: To use Scala 3, https://github.com/wvlet/airframe/issues/2883 needs to be fixed
-ThisBuild / scalaVersion := "3.3.0"
+ThisBuild / scalaVersion := "3.3.1"
 // ThisBuild / crossScalaVersions := Seq("2.13.12", "3.2.2")
 
 lazy val root =
