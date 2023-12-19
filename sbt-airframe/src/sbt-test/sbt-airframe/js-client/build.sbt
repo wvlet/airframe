@@ -1,6 +1,6 @@
 ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("snapshots")
 
-ThisBuild / scalaVersion := "3.3.2-RC1"
+ThisBuild / scalaVersion := "3.3.1"
 
 lazy val root =
   project.aggregate(spi.js, client.js)
