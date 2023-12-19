@@ -967,6 +967,30 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
         ResolvedAttribute("value", DataType.LongType, Some("t"), None, None, None)
       )
     }
+
+    test("un3: resolve UNNEST array column without CROSS JOIN") {
+      val p = analyze("SELECT id, n FROM A, UNNEST (name) AS t (n)")
+      p.outputAttributes shouldMatch { case List(c1: Attribute, c2: Attribute) =>
+        c1.fullName shouldBe "id"
+        c2.fullName shouldBe "n"
+      }
+    }
+
+    test("un4: resolve UNNEST array column with the same output name") {
+      val p = analyze("SELECT id, t.name FROM A CROSS JOIN UNNEST (name) AS t (name)")
+      p.outputAttributes shouldMatch { case List(c1: Attribute, c2: Attribute) =>
+        c1.fullName shouldBe "id"
+        c2.fullName shouldBe "t.name"
+      }
+    }
+
+    test("un5: resolve UNNEST array column with qualifier") {
+      val p = analyze("SELECT id, t.name FROM A CROSS JOIN UNNEST (A.name) AS t (name)")
+      p.outputAttributes shouldMatch { case List(c1: Attribute, c2: Attribute) =>
+        c1.fullName shouldBe "id"
+        c2.fullName shouldBe "t.name"
+      }
+    }
   }
 
   test("resolve select from values") {
