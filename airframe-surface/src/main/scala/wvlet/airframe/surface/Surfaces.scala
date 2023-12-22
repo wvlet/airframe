@@ -282,6 +282,26 @@ case class TaggedSurface(base: Surface, tag: Surface) extends Surface {
   override def objectFactory: Option[ObjectFactory] = base.objectFactory
 }
 
+/**
+  * Represents Scala 3 intersection types, in which the left type is the primary type. This is because applying
+  * intersection is difficult without knowing the application context.
+  * @param left
+  * @param right
+  */
+case class IntersectionSurface(left: Surface, right: Surface) extends Surface {
+  override def toString: String                     = name
+  override def rawType: Class[_]                    = left.rawType
+  override def typeArgs: Seq[Surface]               = left.typeArgs
+  override def params: Seq[Parameter]               = left.params
+  override def name: String                         = s"${left.name}&${right.name}"
+  override def fullName: String                     = s"${left.fullName}&${right.fullName}"
+  override def isOption: Boolean                    = left.isOption
+  override def isAlias: Boolean                     = left.isAlias
+  override def isPrimitive: Boolean                 = left.isPrimitive
+  override def dealias: Surface                     = left.dealias
+  override def objectFactory: Option[ObjectFactory] = left.objectFactory
+}
+
 case object AnyRefSurface extends GenericSurface(classOf[AnyRef]) {
   override def name: String = "AnyRef"
 }
