@@ -83,6 +83,22 @@ Surface.of[UserName] //  Returns UserName:=String
 
 ```
 
+### Intersection Type
+
+In Scala3, you can use [intersection types](https://docs.scala-lang.org/scala3/reference/new-types/intersection-types.html) for labeling types.
+
+For example, you can use `String & Environment` and `String & Stage` for differentiating the same type for different purposes:
+```scala
+import wvlet.airframe.surface.Surface
+
+trait Environment
+trait Stage
+
+Surface.of[String & Environment]
+Surface.of[String & Stage]
+```
+
+
 ### Tagged Type
 
 To have different surfaces for the same type, you can use tagged type (@@):
