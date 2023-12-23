@@ -213,7 +213,7 @@ case class Alias(
     override val name: String,
     override val fullName: String,
     ref: Surface,
-    override val typeArgs: Seq[Surface]
+    override val typeArgs: Seq[Surface] = Seq.empty
 ) extends GenericSurface(ref.rawType, typeArgs, ref.params, ref.objectFactory) {
   override def toString: String = {
     val typeSuffix = if (typeArgs.isEmpty) {
