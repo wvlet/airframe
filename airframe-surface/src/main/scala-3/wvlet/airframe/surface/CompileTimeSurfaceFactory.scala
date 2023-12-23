@@ -205,7 +205,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       val inner    = surfaceOf(t.dealias)
       val name     = Expr(alias.name)
       val fullName = Expr(fullTypeNameOf(t))
-      '{ Alias(${ name }, ${ fullName }, ${ inner }) }
+      val typeArgs = typeArgsOf(t.simplified).map(surfaceOf(_))
+      '{ Alias(${ name }, ${ fullName }, ${ inner }, ${ Expr.ofSeq(typeArgs) }) }
     case t if t.typeSymbol.isType && t.typeSymbol.isAliasType && !belongsToScalaDefault(t) =>
       val dealiased = t.dealias
       // println(s"=== alias factory: ${t}, ${dealiased}, ${t.simplified}")
@@ -224,7 +225,8 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
       val s        = t.typeSymbol
       val name     = Expr(s.name)
       val fullName = Expr(fullTypeNameOf(t.asType))
-      '{ Alias(${ name }, ${ fullName }, ${ inner }) }
+      val typeArgs = typeArgsOf(t.simplified).map(surfaceOf(_))
+      '{ Alias(${ name }, ${ fullName }, ${ inner }, ${ Expr.ofSeq(typeArgs) }) }
   }
 
   private def higherKindedTypeFactory: Factory = {
@@ -437,7 +439,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
   private def genericTypeFactory: Factory = {
     case t if t =:= TypeRepr.of[Any] =>
-      '{ Alias("Any", "scala.Any", AnyRefSurface) }
+      '{ Alias("Any", "scala.Any", AnyRefSurface, Seq.empty) }
     case a: AppliedType =>
       val typeArgs = a.args.map(surfaceOf(_))
       '{ new GenericSurface(${ clsOf(a) }, typeArgs = ${ Expr.ofSeq(typeArgs) }.toIndexedSeq) }
