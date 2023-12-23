@@ -81,13 +81,31 @@ type UserName = String
 Surface.of[UserName] //  Returns UserName:=String
 ```
 
-Warning: In Scala 3, due to the eager type alias expansion https://github.com/wvlet/airframe/issues/2200, the surface of a type alias will be the same surface of the referenced type. If you need to differentiate the same type with different names, use intersection types.
+In Scala 3, [opaque type aliases](https://docs.scala-lang.org/scala3/reference/other-new-features/opaques.html) are also supported:
+
+```scala
+opaque type UserName = String
+Surface.of[UserName] // Returns UserName:=String
+```
+
+Warning: In Scala 3, due to the eager type alias expansion https://github.com/wvlet/airframe/issues/2200, the surface of a type alias can be the same surface of the referenced type. If you need to differentiate the same type with different names, use intersection types.
+
+```scala
+type UserName = String
+
+// In Scala 3, this function can be resolved as String => Int:
+val f1 = { (x: UserName) => x.toString.length }
+
+// To resolve this as UserName => Int, explicitly specify the function type:
+val f2: Funciton1[UserName, Int] = { (x: UserName) => x.toString.length }
+```
 
 ### Intersection Types
 
 In Scala3, you can use [intersection types](https://docs.scala-lang.org/scala3/reference/new-types/intersection-types.html) for labeling types.
 
 For example, you can use `String & Environment` and `String & Stage` for differentiating the same type for different purposes:
+
 ```scala
 import wvlet.airframe.surface.Surface
 

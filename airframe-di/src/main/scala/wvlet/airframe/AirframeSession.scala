@@ -280,7 +280,7 @@ private[airframe] class AirframeSession(
 
     trace(s"[${name}] Search bindings for ${tpe}, dependencies:[${seen.mkString(" <- ")}]")
     if (seen.contains(tpe)) {
-      error(s"Found cyclic dependencies: ${seen} at ${sourceCode}")
+      error(s"Found cyclic dependencies within types [${seen.mkString(", ")}] at ${sourceCode}")
       throw new CYCLIC_DEPENDENCY(seen, sourceCode)
     }
 
