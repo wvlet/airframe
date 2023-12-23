@@ -76,14 +76,14 @@ h.args(0).surface // Surface.of[String]
 ### Type alias
 
 ```scala
-
 type UserName = String
 
 Surface.of[UserName] //  Returns UserName:=String
-
 ```
 
-### Intersection Type
+Warning: In Scala 3, due to the eager type alias expansion https://github.com/wvlet/airframe/issues/2200, the surface of a type alias will be the same surface of the referenced type. If you need to differentiate the same type with different names, use intersection types.
+
+### Intersection Types
 
 In Scala3, you can use [intersection types](https://docs.scala-lang.org/scala3/reference/new-types/intersection-types.html) for labeling types.
 
@@ -98,8 +98,14 @@ Surface.of[String & Environment]
 Surface.of[String & Stage]
 ```
 
+Union type `A | B` is also supported:
+```scala
+import wvlet.airframe.surface.Surface
 
-### Tagged Type
+Surface.of[String | Int]
+```
+
+### Tagged Types
 
 To have different surfaces for the same type, you can use tagged type (@@):
 

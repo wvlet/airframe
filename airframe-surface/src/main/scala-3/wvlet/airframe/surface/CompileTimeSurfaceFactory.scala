@@ -143,7 +143,7 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
 
   private def factory: Factory = {
     taggedTypeFactory orElse
-      intersectionTypeFactory orElse
+      andOrTypeFactory orElse
       aliasFactory orElse
       higherKindedTypeFactory orElse
       primitiveTypeFactory orElse
@@ -191,8 +191,11 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
     scalaDefaultPackages.exists(p => nme.startsWith(p))
   }
 
-  private def intersectionTypeFactory: Factory = { case t: AndOrType =>
-    '{ IntersectionSurface(${ surfaceOf(t.left) }, ${ surfaceOf(t.right) }) }
+  private def andOrTypeFactory: Factory = {
+    case t: AndType =>
+      '{ IntersectionSurface(${ surfaceOf(t.left) }, ${ surfaceOf(t.right) }) }
+    case t: OrType =>
+      '{ UnionSurface(${ surfaceOf(t.left) }, ${ surfaceOf(t.right) }) }
   }
 
   private def aliasFactory: Factory = {
