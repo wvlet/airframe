@@ -38,3 +38,36 @@ object Scala3NewTypeTest extends AirSpec:
     }
     s shouldNotBe Surface.of[String]
   }
+
+  opaque type MyEnv = String
+
+  test("opaque types") {
+    val s = Surface.of[MyEnv]
+    s.name shouldBe "MyEnv"
+    s.fullName shouldBe "wvlet.airframe.surface.Scala3NewTypeTest.MyEnv"
+    s shouldNotBe Surface.of[String]
+    s.dealias shouldBe Surface.of[String]
+  }
+
+  test("opaque type in function types") {
+    val s = Surface.of[MyEnv => String]
+    s.name shouldBe "Function1[MyEnv,String]"
+  }
+
+  case class MyString(env: MyEnv)
+
+  test("opaque type in constructor args") {
+    val s = Surface.of[MyString]
+    s.name shouldBe "MyString"
+    s.params(0).surface.name shouldBe "MyEnv"
+  }
+
+  class A {
+    def hello(env: MyEnv): String = env
+  }
+
+  test("opaque type in method args") {
+    val m = Surface.methodsOf[A].find(_.name == "hello")
+    m shouldBe defined
+    m.get.args(0).surface.name shouldBe "MyEnv"
+  }

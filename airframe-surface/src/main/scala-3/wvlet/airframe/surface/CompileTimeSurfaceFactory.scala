@@ -199,6 +199,13 @@ private[surface] class CompileTimeSurfaceFactory[Q <: Quotes](using quotes: Q) {
   }
 
   private def aliasFactory: Factory = {
+    case t if t.typeSymbol.typeRef.isOpaqueAlias =>
+      // Treat opaque types in Scala 3 as alias types
+      val alias    = t.typeSymbol
+      val inner    = surfaceOf(t.dealias)
+      val name     = Expr(alias.name)
+      val fullName = Expr(fullTypeNameOf(t))
+      '{ Alias(${ name }, ${ fullName }, ${ inner }) }
     case t if t.typeSymbol.isType && t.typeSymbol.isAliasType && !belongsToScalaDefault(t) =>
       val dealiased = t.dealias
       // println(s"=== alias factory: ${t}, ${dealiased}, ${t.simplified}")
