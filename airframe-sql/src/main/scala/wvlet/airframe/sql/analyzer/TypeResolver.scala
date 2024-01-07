@@ -38,6 +38,7 @@ object TypeResolver extends LogSupport {
       resolveTableRef ::
       resolveJoinUsing ::
       resolveSubquery ::
+      resolveJoinUnnest ::
       resolveRegularRelation ::
       resolveColumns ::
       resolveAggregationIndexes ::
@@ -231,6 +232,22 @@ object TypeResolver extends LogSupport {
     }
   }
 
+  object resolveJoinUnnest extends RewriteRule {
+    override def apply(context: AnalyzerContext): PlanRewriter = {
+      case j @ Join(_, _, a @ AliasedRelation(u: Unnest, _, _, _), _, _) =>
+        j.copy(right = a.copy(child = resolveUnnest(u, j, context)))
+      case j @ Join(_, a @ AliasedRelation(u: Unnest, _, _, _), _, _, _) =>
+        j.copy(left = a.copy(child = resolveUnnest(u, j, context)))
+    }
+
+    private def resolveUnnest(u: Unnest, j: Join, context: AnalyzerContext): Unnest = {
+      val resolvedAttributes = j.outputAttributes.filter(_.resolved)
+      u.transformUpExpressions { case x: Identifier =>
+        resolveExpression(context, x, resolvedAttributes)
+      }.asInstanceOf[Unnest]
+    }
+  }
+
   object resolveJoinUsing extends RewriteRule {
     def apply(context: AnalyzerContext): PlanRewriter = {
       case j @ Join(joinType, left, right, u @ JoinUsing(joinKeys, _), _) =>
@@ -375,8 +392,8 @@ object TypeResolver extends LogSupport {
         } else {
           a.copy(expr = resolved)
         }
-      case SingleColumn(a: Attribute, qualifier, _, _) if a.resolved =>
-        a
+      case SingleColumn(a: Attribute, qualifier, tableAlias, _) if a.resolved =>
+        a.withQualifier(qualifier).withTableAlias(tableAlias)
       case m: MultiSourceColumn =>
         var changed = false
         val resolvedInputs = m.inputs.map {
