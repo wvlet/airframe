@@ -967,6 +967,34 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
         ResolvedAttribute("value", DataType.LongType, Some("t"), None, None, None)
       )
     }
+
+    test("un3: resolve UNNEST array column without CROSS JOIN") {
+      val p = analyze("SELECT id, n FROM A, UNNEST (name) AS t (n)")
+      p.outputAttributes shouldMatch { case List(c1: Attribute, c2: Attribute) =>
+        c1.fullName shouldBe "id"
+        c2.fullName shouldBe "n"
+      }
+    }
+
+    test("un4: resolve UNNEST array column with the same output name") {
+      val p = analyze("SELECT id, t.name FROM A CROSS JOIN UNNEST (name) AS t (name)")
+      p.outputAttributes shouldMatch { case List(c1: Attribute, c2: Attribute) =>
+        c1.fullName shouldBe "id"
+        c1.sourceColumns.map(_.column) shouldBe Seq(a1)
+        c2.fullName shouldBe "t.name"
+        c2.sourceColumns.map(_.column) shouldBe Seq(a2)
+      }
+    }
+
+    test("un5: resolve UNNEST array column with qualifier") {
+      val p = analyze("SELECT A.id, t.name FROM A INNER JOIN B ON A.id = B.id CROSS JOIN UNNEST (A.name) AS t (name)")
+      p.outputAttributes shouldMatch { case List(c1: Attribute, c2: Attribute) =>
+        c1.fullName shouldBe "A.id"
+        c1.sourceColumns.map(_.column) shouldBe Seq(a1)
+        c2.fullName shouldBe "t.name"
+        c2.sourceColumns.map(_.column) shouldBe Seq(a2)
+      }
+    }
   }
 
   test("resolve select from values") {
@@ -1147,6 +1175,21 @@ class TypeResolverTest extends AirSpec with ResolverTestHelper {
         col.fullName shouldBe "xid"
         col.sourceColumn.map(_.column) shouldBe Some(a1)
       }
+    }
+  }
+
+  test("Resolve identifier refers to column in AliasedRelation") {
+    // with column alias (id -> t.xid)
+    val p1 = analyze("select t.xid from (select id from A) as t(xid)")
+    p1.outputAttributes shouldMatch { case List(col: ResolvedAttribute) =>
+      col.fullName shouldBe "t.xid"
+      col.sourceColumn.map(_.column) shouldBe Some(a1)
+    }
+    // without column alias (id -> t.td)
+    val p2 = analyze("select t.id from (select id from A) as t(id)")
+    p2.outputAttributes shouldMatch { case List(col: ResolvedAttribute) =>
+      col.fullName shouldBe "t.id"
+      col.sourceColumn.map(_.column) shouldBe Some(a1)
     }
   }
 }
