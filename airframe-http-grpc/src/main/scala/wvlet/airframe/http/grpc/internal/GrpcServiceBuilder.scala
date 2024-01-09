@@ -36,7 +36,7 @@ import java.util.concurrent.ExecutorService
 /**
   */
 object GrpcServiceBuilder {
-  private implicit class RichMethod(val m: MethodSurface) extends AnyVal {
+  private implicit class RichMethod(private val m: MethodSurface) extends AnyVal {
 
     private def findClientStreamingArg: Option[MethodParameter] = {
       m.args.find(x => classOf[Rx[_]].isAssignableFrom(x.surface.rawType))
