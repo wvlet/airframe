@@ -17,7 +17,7 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
   */
 package object rx {
-  implicit class FutureConverter[A](val f: Future[A]) extends AnyVal {
+  implicit class FutureConverter[A](private val f: Future[A]) extends AnyVal {
     def toRx(implicit ec: ExecutionContext): RxOption[A] = Rx.fromFuture(f)(ec)
   }
 }

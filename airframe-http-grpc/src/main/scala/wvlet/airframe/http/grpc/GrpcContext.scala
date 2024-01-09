@@ -35,7 +35,7 @@ object GrpcContext {
   private[grpc] val KEY_ACCEPT       = Metadata.Key.of("accept", Metadata.ASCII_STRING_MARSHALLER)
   private[grpc] val KEY_CONTENT_TYPE = Metadata.Key.of("content-type", Metadata.ASCII_STRING_MARSHALLER)
 
-  private[grpc] implicit class RichMetadata(val m: Metadata) extends AnyVal {
+  private[grpc] implicit class RichMetadata(private val m: Metadata) extends AnyVal {
     def accept: String = Option(m.get(KEY_ACCEPT)).getOrElse(RPCEncoding.ApplicationMsgPack)
     def setAccept(s: String): Unit = {
       m.removeAll(KEY_ACCEPT)

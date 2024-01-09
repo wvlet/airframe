@@ -29,11 +29,11 @@ package object json {
   // Alias to encode msgpack into JSON strings with airframe-codec
   type Json = String
 
-  implicit class RichJson(val json: Json) extends AnyVal {
+  implicit class RichJson(private val json: Json) extends AnyVal {
     def toJSONValue: JSONValue = JSON.parseAny(json)
   }
 
-  implicit class JSONValueOps(val jsonValue: JSONValue) extends AnyVal {
+  implicit class JSONValueOps(private val jsonValue: JSONValue) extends AnyVal {
     def /(name: String): Seq[JSONValue] = {
       jsonValue match {
         case jsonObject: JSONObject =>
@@ -95,7 +95,7 @@ package object json {
     }
   }
 
-  implicit class JSONValueSeqOps(val jsonValues: Seq[JSONValue]) extends AnyVal {
+  implicit class JSONValueSeqOps(private val jsonValues: Seq[JSONValue]) extends AnyVal {
     def /(name: String): Seq[JSONValue] = {
       jsonValues.flatMap { jsonValue => jsonValue / name }
     }

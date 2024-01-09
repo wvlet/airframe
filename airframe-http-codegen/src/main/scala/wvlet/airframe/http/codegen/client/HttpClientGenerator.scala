@@ -43,7 +43,7 @@ object HttpClientGenerator extends LogSupport {
     }
   }
 
-  private[client] implicit class RichSurface(val s: Surface) extends AnyVal {
+  private[client] implicit class RichSurface(private val s: Surface) extends AnyVal {
     def fullTypeName: String = fullTypeNameOf(s)
   }
 
