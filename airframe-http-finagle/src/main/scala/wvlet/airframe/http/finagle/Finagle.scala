@@ -19,6 +19,7 @@ package wvlet.airframe.http.finagle
 object Finagle {
   @deprecated("Use Http.client", "23.5.0")
   def client: FinagleClientConfig = FinagleClientConfig()
+  @deprecated("Use Netty.server in airframe-http-netty instead", "24.1.0")
   def server: FinagleServerConfig = FinagleServerConfig()
 
   @deprecated("Use Http.client.newAsyncClient", "23.5.0")
