@@ -21,11 +21,9 @@ import wvlet.airframe.tracing.DIStats
   */
 object DI_91_Stats extends App {
   import wvlet.airframe.*
-  trait A {
-    val b = bind[B]
-  }
-  trait B
-  trait C
+  class A(b: B)
+  class B
+  class C
 
   val stats = new DIStats()
   val d = newSilentDesign

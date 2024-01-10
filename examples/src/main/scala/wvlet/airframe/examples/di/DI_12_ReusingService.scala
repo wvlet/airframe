@@ -28,52 +28,39 @@ import wvlet.log.LogSupport
 object DI_12_ReusingService extends App {
   import wvlet.airframe.*
 
-  trait DB extends LogSupport {
+  class DB extends LogSupport with AutoCloseable {
     def query(sql: String) = {}
     def connect: Unit = {
       info("connected")
     }
-    def close(): Unit = {
+    override def close(): Unit = {
       info("closed")
     }
   }
-  trait HttpClient extends LogSupport {
+  class HttpClient extends LogSupport with AutoCloseable {
     def send(request: String) = {}
     def connect: Unit = {
       info("connected")
     }
-    def close(): Unit = {
+    override def close(): Unit = {
       info("closed")
     }
   }
 
-  trait DBService {
-    val db = bind[DB]
-      .onStart(_.connect)
-      .onShutdown(_.close())
-  }
-
-  trait HttpClientService {
-    // Binding will inject a singleton by default
-    val httpClient = bind[HttpClient]
-      .onStart(_.connect)
-      .onShutdown(_.close())
-  }
-
-  trait C1 extends DBService with HttpClientService {
+  class C1(db: DB, httpClient: HttpClient) {
     db.query("select 1")
     httpClient.send("GET /")
   }
 
-  trait C2 extends HttpClientService {
+  class C2(httpClient: HttpClient) {
     // Sharing the same http client instance with C1
     httpClient.send("POST /data")
   }
 
-  trait MyApp {
-    val c1 = bind[C1] // Uses db and httpClient
-    val c2 = bind[C2] // uses httpClient
-  }
+  class MyApp(
+      c1: C1, // Uses db and httpClient
+      c2: C2  // uses httpClient
+  )
 
   val d = newSilentDesign
   d.build[MyApp] { app =>

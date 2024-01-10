@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.examples.http
 
-import wvlet.airframe.http.finagle.{FinagleServer, newFinagleServerDesign}
-import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
+import wvlet.airframe.http.{Endpoint, HttpMethod, RxRouter}
+import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.log.LogSupport
 
 /**
@@ -30,10 +30,10 @@ object Http_01_Interface extends App {
     }
   }
 
-  val router = Router.add[MyApp]
-  val design = newFinagleServerDesign(name = "myapp", port = 18080, router = router)
+  val router = RxRouter.of[MyApp]
+  val design = Netty.server.withName("myapp").withPort(18080).withRouter(router).design
 
-  design.build[FinagleServer] { server =>
+  design.build[NettyServer] { server =>
     val serverAddress = server.localAddress
 
     // Wait server termination

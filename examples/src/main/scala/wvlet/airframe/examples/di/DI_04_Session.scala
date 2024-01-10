@@ -19,7 +19,7 @@ package wvlet.airframe.examples.di
 object DI_04_Session extends App {
   import wvlet.airframe.*
 
-  trait MyApp
+  class MyApp()
 
   val d = newDesign
 

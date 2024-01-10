@@ -22,10 +22,8 @@ object DI_01_HelloAirframe extends App {
 
   case class MyAppConfig(name: String)
 
-  trait MyApp extends LogSupport {
-    // Bind a configuration
-    private val config = bind[MyAppConfig]
-
+  // Bind a configuration
+  class MyApp(config: MyAppConfig) extends LogSupport {
     def run: Unit = {
       info(s"Hello ${config.name}!")
     }

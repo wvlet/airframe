@@ -24,9 +24,7 @@ object DI_90_Tracing extends App {
 
   case class MyAppConfig(port: Int = 8080)
 
-  trait MyApp {
-    val config = bind[MyAppConfig]
-  }
+  class MyApp(config: MyAppConfig)
 
   val d = newSilentDesign
     .withTracer(ChromeTracer.newTracer("target/trace.json"))

@@ -21,21 +21,19 @@ import wvlet.log.LogSupport
 object DI_08_OverrideBinding extends App {
   import wvlet.airframe.*
 
-  trait DB extends LogSupport {
+  class DB extends LogSupport {
     def query(sql: String): Unit = {
       info(s"Execute: ${sql}")
     }
   }
 
-  trait MockDB extends DB {
+  class MockDB extends DB {
     override def query(sql: String): Unit = {
       info(s"Dryrun: ${sql}")
     }
   }
 
-  trait MyApp extends LogSupport {
-    private val db = bind[DB]
-
+  class MyApp(db: DB) extends LogSupport {
     def run: Unit = {
       db.query("select 1")
     }

@@ -995,7 +995,7 @@ lazy val examples =
       launcher,
       jmx,
       jdbc,
-      finagle
+      netty
     )
 
 // Dotty test project
