@@ -262,7 +262,7 @@ class OkHttpClientTest extends AirSpec {
 
   test(
     "read timeout",
-    design = _.bind[SyncClient].toProvider { (server: NettyServer) =>
+    design = _.bind[SyncClient].toProvider { (server: HttpServer) =>
       OkHttp.client
         .withReadTimeout(Duration(10, TimeUnit.MILLISECONDS))
         .withRetryContext(_.withMaxRetry(1))
