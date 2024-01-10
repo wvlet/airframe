@@ -397,7 +397,8 @@ tests.
 Here is an example of using Airframe DI for starting an RPC server:
 
 ```scala
-import wvlet.airframe._
+import wvlet.airframe.*
+import wvlet.airframe.http.*
 
 // Inject your component as constructor arguments
 class MyAPIImpl(myService: MyService) extends MyAPI {
@@ -412,8 +413,8 @@ val design = newDesign
   .add(Netty.server.withRouter(router).design)
 
 // Launch a Netty Server
-design.build[NettyServer] { server =>
-  server.awaitForTerimination()
+design.build[HttpServer] { server =>
+  server.awaitTerimination()
 }
 ```
 

@@ -14,8 +14,8 @@
 package wvlet.airframe.examples.http
 
 import wvlet.airframe.control.Control.withResource
-import wvlet.airframe.http.{Endpoint, Http, HttpMessage, HttpMethod, HttpStatus, RxRouter}
-import wvlet.airframe.http.netty.{Netty, NettyServer}
+import wvlet.airframe.http.*
+import wvlet.airframe.http.netty.{Netty}
 import wvlet.log.LogSupport
 
 /**
@@ -64,7 +64,7 @@ object Http_02_ObjectMapping extends App with LogSupport {
       .withRouter(router)
       .design
 
-  design.build[NettyServer] { server =>
+  design.build[HttpServer] { server =>
     withResource(Http.client.newSyncClient(server.localAddress)) { client =>
       val appInfo = client.readAs[AppInfo](Http.GET("/v1/info"))
       info(appInfo) // AppInfo(myapp,1.0)

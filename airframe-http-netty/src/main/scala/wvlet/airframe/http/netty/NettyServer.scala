@@ -87,13 +87,13 @@ case class NettyServerConfig(
   }
   def design: Design = {
     Design.newDesign
-      .bind[NettyServerConfig].toInstance(this)
-      .bind[NettyServer].toSingleton
+      .bind[NettyServer].toProvider { (s: Session) => newServer(s) }
+      .bind[HttpServer].to[NettyServer]
   }
 
   def designWithSyncClient: Design = {
     design
-      .bind[SyncClient].toProvider { (server: NettyServer) =>
+      .bind[SyncClient].toProvider { (server: HttpServer) =>
         Http.client.newSyncClient(server.localAddress)
       }
   }
@@ -109,7 +109,7 @@ case class NettyServerConfig(
   }
 }
 
-class NettyServer(config: NettyServerConfig, session: Session) extends AutoCloseable with LogSupport {
+class NettyServer(config: NettyServerConfig, session: Session) extends HttpServer with LogSupport {
 
   private val httpLogger: HttpLogger      = config.newHttpLogger
   private val loggingFilter: RxHttpFilter = config.loggingFilter(httpLogger)
@@ -134,7 +134,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
 
   private var channelFuture: Option[Channel] = None
 
-  val localAddress: String = s"localhost:${config.port}"
+  override def localAddress: String = s"localhost:${config.port}"
 
   private def attachContextFilter = new RxHttpFilter {
     override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[Response] = {
@@ -248,7 +248,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     channelFuture = Some(b.bind(config.port).sync().channel())
   }
 
-  def stop(): Unit = {
+  override def stop(): Unit = {
     if (stopped.compareAndSet(false, true)) {
       info(s"Stopping ${config.name} server at ${localAddress}")
       workerGroup.shutdownGracefully(0, 0, TimeUnit.SECONDS)
@@ -258,15 +258,11 @@ class NettyServer(config: NettyServerConfig, session: Session) extends AutoClose
     }
   }
 
-  override def close(): Unit = {
-    stop()
-  }
-
   /**
     * Await and block until the server terminates. If the server is already terminated (via close()), this method
     * returns immediately.
     */
-  def awaitTermination(): Unit = {
+  override def awaitTermination(): Unit = {
     channelFuture.foreach(_.closeFuture().sync())
   }
 }

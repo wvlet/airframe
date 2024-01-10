@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.examples.http
 
-import wvlet.airframe.http.{Endpoint, HttpMethod, RxRouter}
+import wvlet.airframe.http.{Endpoint, HttpMethod, HttpServer, RxRouter}
 import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.log.LogSupport
 
@@ -22,7 +22,7 @@ import wvlet.log.LogSupport
 object Http_01_Interface extends App {
   case class User(id: String, name: String)
 
-  trait MyApp extends LogSupport {
+  class MyApp extends LogSupport {
     @Endpoint(method = HttpMethod.GET, path = "/user/:id")
     def getUser(id: String): User = {
       info(s"lookup user: ${id}")
@@ -33,7 +33,7 @@ object Http_01_Interface extends App {
   val router = RxRouter.of[MyApp]
   val design = Netty.server.withName("myapp").withPort(18080).withRouter(router).design
 
-  design.build[NettyServer] { server =>
+  design.build[HttpServer] { server =>
     val serverAddress = server.localAddress
 
     // Wait server termination

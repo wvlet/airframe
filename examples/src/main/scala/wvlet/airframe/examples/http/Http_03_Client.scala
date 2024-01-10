@@ -16,7 +16,7 @@ package wvlet.airframe.examples.http
 import wvlet.airframe.Design
 
 import java.util.concurrent.TimeUnit
-import wvlet.airframe.http.{Endpoint, Http, HttpMethod, RxRouter}
+import wvlet.airframe.http.{Endpoint, Http, HttpMethod, HttpServer, RxRouter}
 import wvlet.airframe.http.client.SyncClient
 import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.log.LogSupport
@@ -27,7 +27,7 @@ import scala.concurrent.duration.Duration
   */
 object Http_03_Client extends App with LogSupport {
   case class User(id: String, name: String)
-  trait MyApp extends LogSupport {
+  class MyApp extends LogSupport {
     @Endpoint(method = HttpMethod.GET, path = "/user/:id")
     def getUser(id: String): User = {
       User(id, "xxx")
@@ -43,7 +43,7 @@ object Http_03_Client extends App with LogSupport {
 
   val clientDesign =
     Design.newDesign
-      .bind[SyncClient].toProvider { (server: NettyServer) =>
+      .bind[SyncClient].toProvider { (server: HttpServer) =>
         Http.client
           // Configure the request retry method
           .withRetryContext(

@@ -14,8 +14,8 @@
 package wvlet.airframe.test.api
 
 import wvlet.airframe.Design
-import wvlet.airframe.http.{Http, RPCEncoding, RxRouter}
-import wvlet.airframe.http.netty.{Netty, NettyServer}
+import wvlet.airframe.http.netty.Netty
+import wvlet.airframe.http.{Http, HttpServer, RPCEncoding, RxRouter}
 import wvlet.airframe.test.api.HelloRPC.VariousParams
 import wvlet.airspec.AirSpec
 
@@ -26,15 +26,15 @@ class HelloRPCTest extends AirSpec {
       .withName("hello-rpc-test")
       .withRouter(RxRouter.of[HelloRPCImpl])
       .design
-      .bind[ServiceRPC.RPCSyncClient].toProvider { (server: NettyServer) =>
+      .bind[ServiceRPC.RPCSyncClient].toProvider { (server: HttpServer) =>
         ServiceRPC.newRPCSyncClient(Http.client.newSyncClient(server.localAddress))
       }
-      .bind[ServiceRPC.RPCAsyncClient].toProvider { (server: NettyServer) =>
+      .bind[ServiceRPC.RPCAsyncClient].toProvider { (server: HttpServer) =>
         ServiceRPC.newRPCAsyncClient(Http.client.newAsyncClient(server.localAddress))
       }
   }
 
-  test("rpc") { (server: NettyServer) =>
+  test("rpc") { (server: HttpServer) =>
     test("sync client") { (client: ServiceRPC.RPCSyncClient) =>
       test("String response") {
         client.HelloRPC.hello("RPC") shouldBe "Hello RPC!"
