@@ -28,7 +28,7 @@ object DI_06_ProviderBinding extends App with LogSupport {
     def run: Unit = {
       threadManager.submit(new Runnable {
         override def run(): Unit = {
-          info("Hello Provider!")
+          logger.info("Hello Provider!")
         }
       })
     }
