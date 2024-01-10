@@ -21,14 +21,14 @@ import wvlet.log.LogSupport
 object DI_11_ProductionMode extends App with LogSupport {
   import wvlet.airframe.*
 
-  trait MyService extends LogSupport {
+  class MyService extends LogSupport {
     @PostConstruct
     def init: Unit = {
       info("initialized")
     }
   }
 
-  trait MyApp {}
+  class MyApp {}
 
   val d = newSilentDesign
     .bind[MyService].toSingleton // To eagerly initialize the service, you must bind it to the design

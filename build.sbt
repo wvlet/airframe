@@ -222,15 +222,15 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   rx.jvm,
   rxHtml.jvm,
   surface.jvm,
-  ulid.jvm
+  ulid.jvm,
+  examples
 )
 
 // Other JVM projects supporting Scala 2.12 - Scala 2.13
 lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[ProjectReference](
   finagle,
   benchmark,
-  sql,
-  examples
+  sql
 )
 
 // Scala.js build (Scala 2.12, 2.13, and 3.x)
@@ -321,7 +321,8 @@ lazy val projectDotty =
       sql,
       ulid.jvm,
       integrationTestApi,
-      integrationTest
+      integrationTest,
+      examples
     )
 
 lazy val docs =
@@ -995,7 +996,7 @@ lazy val examples =
       launcher,
       jmx,
       jdbc,
-      finagle
+      netty
     )
 
 // Dotty test project

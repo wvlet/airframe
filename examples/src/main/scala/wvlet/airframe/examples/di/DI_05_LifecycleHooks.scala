@@ -20,19 +20,15 @@ import wvlet.log.LogSupport
 /**
   * An example of adding lifecycle hooks to the injected service
   */
-object DI_05_LifecycleHooks extends App {
+object DI_05_LifecycleHooks extends App with LogSupport {
   import wvlet.airframe.*
 
-  trait MyApp extends LogSupport {
-    private val threadManager = bind[ExecutorService] { Executors.newCachedThreadPool() }
-      .onStart { x => info(f"Started a thread manager: ${x.hashCode()}%x") }
-      .onShutdown { x =>
-        info(f"Shutting down the thread manager: ${x.hashCode()}%x")
-        x.shutdown()
-      }
-  }
+  class MyApp(threadManager: ExecutorService)
 
   val d = newDesign
+    .bind[ExecutorService].toInstance(Executors.newCachedThreadPool)
+    .onStart { x => info(f"Started a thread manager: ${x.hashCode()}%x") }
+    .onShutdown { x => info(f"Shutting down the thread manager: ${x.hashCode()}%x") }
 
   d.build[MyApp] { app =>
     // Thread manager will start here

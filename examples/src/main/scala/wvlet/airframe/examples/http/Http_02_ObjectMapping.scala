@@ -13,10 +13,9 @@
  */
 package wvlet.airframe.examples.http
 
-import com.twitter.finagle.http.Response
 import wvlet.airframe.control.Control.withResource
-import wvlet.airframe.http.finagle.{Finagle, FinagleClient, FinagleServer}
-import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
+import wvlet.airframe.http.{Endpoint, Http, HttpMessage, HttpMethod, HttpStatus, RxRouter}
+import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.log.LogSupport
 
 /**
@@ -29,7 +28,7 @@ object Http_02_ObjectMapping extends App with LogSupport {
 
   case class AppInfo(name: String, version: String = "1.0")
 
-  trait MyApp extends LogSupport {
+  class MyApp(session: Session) extends LogSupport {
     @Endpoint(method = HttpMethod.GET, path = "/v1/info")
     def appInfo: AppInfo = {
       info(s"showing app info")
@@ -47,13 +46,9 @@ object Http_02_ObjectMapping extends App with LogSupport {
     }
 
     @Endpoint(method = HttpMethod.GET, path = "/v1/resource/*path")
-    def getResource(path: String): Response = {
-      val response = Response()
-      response.contentString = s"resource at ${path}"
-      response
+    def getResource(path: String): HttpMessage.Response = {
+      Http.response(HttpStatus.Ok_200, s"resource at ${path}")
     }
-
-    private val session = bind[Session]
 
     @Endpoint(method = HttpMethod.POST, path = "/admin/shutdown")
     def shutdown: Unit = {
@@ -62,21 +57,21 @@ object Http_02_ObjectMapping extends App with LogSupport {
     }
   }
 
-  val router = Router.add[MyApp]
+  val router = RxRouter.of[MyApp]
   val design =
-    Finagle.server
+    Netty.server
       .withName("myapp")
       .withRouter(router)
       .design
 
-  design.build[FinagleServer] { server =>
-    withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
-      val appInfo = client.get[AppInfo]("/v1/info")
+  design.build[NettyServer] { server =>
+    withResource(Http.client.newSyncClient(server.localAddress)) { client =>
+      val appInfo = client.readAs[AppInfo](Http.GET("/v1/info"))
       info(appInfo) // AppInfo(myapp,1.0)
 
-      client.get[ListResponse]("/v1/list")
+      client.readAs[ListResponse](Http.GET("/v1/list"))
 
-      client.get[Response]("/v1/resource/resource_path")
+      client.send(Http.GET("/v1/resource/resource_path"))
     }
     // Add this code to keep running the server process
     // server.waitServerTermination

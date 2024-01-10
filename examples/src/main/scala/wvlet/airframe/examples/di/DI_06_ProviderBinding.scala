@@ -13,26 +13,18 @@
  */
 package wvlet.airframe.examples.di
 
-import java.util.concurrent.Executors
-
+import java.util.concurrent.{ExecutorService, Executors}
 import wvlet.log.LogSupport
 
 /**
   * Provider binding is useful to build objects by using dependencies defined in Design.
   */
-object DI_06_ProviderBinding extends App {
+object DI_06_ProviderBinding extends App with LogSupport {
   import wvlet.airframe.*
 
   case class MyAppConfig(numThreads: Int = 5)
 
-  trait MyApp extends LogSupport {
-    // MyAppConfig will be injected from the session
-    private val threadManager = bind { (config: MyAppConfig) =>
-      info(s"config: numThreads = ${config.numThreads}")
-      // Create a thread manager using the given config
-      Executors.newFixedThreadPool(config.numThreads)
-    }.onShutdown(_.shutdown()) // Add a clean-up step
-
+  class MyApp(threadManager: ExecutorService) extends LogSupport {
     def run: Unit = {
       threadManager.submit(new Runnable {
         override def run(): Unit = {
@@ -44,6 +36,12 @@ object DI_06_ProviderBinding extends App {
 
   val d = newSilentDesign
     .bind[MyAppConfig].toInstance(MyAppConfig(numThreads = 2))
+    .bind[ExecutorService].toProvider { (config: MyAppConfig) =>
+      info(s"config: numThreads = ${config.numThreads}")
+      // Create a thread manager using the given config
+      Executors.newFixedThreadPool(config.numThreads)
+    }
+    .onShutdown(_.shutdownNow())
 
   d.build[MyApp] { app => app.run }
 }

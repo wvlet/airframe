@@ -13,14 +13,15 @@
  */
 package wvlet.airframe.examples.http
 
-import java.util.concurrent.TimeUnit
+import wvlet.airframe.Design
 
-import com.twitter.finagle.Http
-import com.twitter.finagle.http.Request
-import com.twitter.util.Duration
-import wvlet.airframe.http.finagle.{Finagle, FinagleSyncClient}
-import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
+import java.util.concurrent.TimeUnit
+import wvlet.airframe.http.{Endpoint, Http, HttpMethod, RxRouter}
+import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.netty.{Netty, NettyServer}
 import wvlet.log.LogSupport
+
+import scala.concurrent.duration.Duration
 
 /**
   */
@@ -33,36 +34,40 @@ object Http_03_Client extends App with LogSupport {
     }
   }
 
-  val router = Router.add[MyApp]
+  val router = RxRouter.of[MyApp]
 
-  val serverDesign = Finagle.server
+  val serverDesign = Netty.server
     .withName("myapp")
     .withRouter(router)
     .design
 
-  val clietnDesign =
-    Finagle.client
-      // Max retry attempts
-      .withMaxRetry(3)
-      // Use backoff (or jittering)
-      .withBackOff(1)
-      // Set request timeout
-      .withTimeout(Duration(90, TimeUnit.SECONDS))
-      // Add Finagle specific configuration
-      .withInitializer { (client: Http.Client) => client.withHttp2 } // optional
-      // Create a new http client to access the server.
-      .syncClientDesign
+  val clientDesign =
+    Design.newDesign
+      .bind[SyncClient].toProvider { (server: NettyServer) =>
+        Http.client
+          // Configure the request retry method
+          .withRetryContext(
+            // Max retry attempts
+            _.withMaxRetry(3)
+              // Use backoff (or jittering)
+              .withBackOff()
+          )
+          // Set timeout
+          .withConnectTimeout(Duration(10, TimeUnit.SECONDS))
+          // Create a new http client to access the server.
+          .newSyncClient(server.localAddress)
+      }
 
-  val design = serverDesign + clietnDesign
+  val design = serverDesign + clientDesign
 
-  design.build[FinagleSyncClient] { client =>
-    // FinagleServer will be started here
+  design.build[SyncClient] { client =>
+    // An HTTP Server will start here
     // Read the JSON response as an object
-    val user = client.get[User]("/user/1")
+    val user = client.readAs[User](Http.GET("/user/1"))
     debug(user)
 
     // Read the response as is
-    val request = client.send(Request("/user/2"))
+    val request = client.send(Http.GET("/user/2"))
     val content = request.contentString
     debug(content)
   }

@@ -21,9 +21,7 @@ import wvlet.log.LogSupport
 object DI_20_BindSession extends App {
   import wvlet.airframe.*
 
-  trait MyApi extends LogSupport {
-    private val session = bind[Session]
-
+  class MyApi(session: Session) extends LogSupport {
     def shutdown = {
       warn("shutdown is called")
       session.shutdown

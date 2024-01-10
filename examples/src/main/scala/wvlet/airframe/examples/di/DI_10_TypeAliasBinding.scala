@@ -28,10 +28,7 @@ object DI_10_TypeAliasBinding extends App {
   type LogDbConfig  = DbConfig
   type ChatDbConfig = DbConfig
 
-  trait MyApp extends LogSupport {
-    val logDbConfig  = bind[LogDbConfig]
-    val chatDbConfig = bind[ChatDbConfig]
-
+  class MyApp(logDbConfig: LogDbConfig, chatDbConfig: ChatDbConfig) extends LogSupport {
     def run: Unit = {
       info(s"logdb: ${logDbConfig}, chatdb: ${chatDbConfig}")
     }
