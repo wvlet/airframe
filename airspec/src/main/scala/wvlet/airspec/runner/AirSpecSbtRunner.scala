@@ -54,6 +54,18 @@ private[airspec] class AirSpecSbtRunner(config: AirSpecConfig, val remoteArgs: A
 
 private[airspec] object AirSpecSbtRunner extends LogSupport {
   def newRunner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): AirSpecSbtRunner = {
+
+    // Set log levels given in the command line args: -L(package)=(log level)
+    args.filter(_.startsWith("-L")).foreach { l =>
+      l.stripPrefix("-L").split("=") match {
+        case Array(pkg, level) =>
+          val logLevel = wvlet.log.LogLevel(level)
+          wvlet.log.Logger(pkg).setLogLevel(logLevel)
+        case _ =>
+          warn(s"Ignoring invalid argument: ${l}. Use -L(package)=(log level) to set log levels")
+      }
+    }
+
     new AirSpecSbtRunner(AirSpecConfig(args), remoteArgs, testClassLoader)
   }
 
