@@ -98,7 +98,8 @@ object HttpRequestDispatcher extends LogSupport {
             case rxFilter: RxHttpFilter =>
               backend.rxFilterAdapter(rxFilter)
             case legacyFilter: HttpFilter[Req, Resp, F] @unchecked =>
-              legacyFilter
+              warn(s"here: ${legacyFilter}")
+              backend.filterAdapter(legacyFilter)
             case other =>
               throw RPCStatus.UNIMPLEMENTED_U8.newException(s"Invalid filter type: ${other}") //
           }
