@@ -382,7 +382,8 @@ object Router extends router.RouterObjectBase with LogSupport {
                     p.parent,
                     Router(
                       children = Seq(r),
-                      filterSurface = Some(p.filterSurface)
+                      filterSurface = Some(p.filterSurface),
+                      filterInstance = p.filterInstance
                     )
                   )
               }
@@ -390,7 +391,8 @@ object Router extends router.RouterObjectBase with LogSupport {
 
             val leafRouter = Router(
               children = s.children.map(fromRxRouter),
-              filterSurface = s.filter.map(_.filterSurface)
+              filterSurface = s.filter.map(_.filterSurface),
+              filterInstance = s.filter.flatMap(_.filterInstance)
             )
             wrapWithFilter(f.parent, leafRouter)
         }

@@ -134,7 +134,8 @@ object RxRouter extends RxRouterObjectBase {
     */
   case class FilterNode(
       parent: Option[FilterNode],
-      filterSurface: Surface
+      filterSurface: Surface,
+      filterInstance: Option[RxHttpFilter] = None
   ) extends RxRouteFilterBase {
     def name: String = filterSurface.name
 
@@ -147,6 +148,10 @@ object RxRouter extends RxRouterObjectBase {
         case None    => Some(this)
       }
     }
+    def andThen(next: RxHttpEndpoint): RxRouter = {
+      of(next).wrapWithFilter(this)
+    }
+
     def andThen(next: RxRouter*): RxRouter = {
       of(next: _*).wrapWithFilter(this)
     }

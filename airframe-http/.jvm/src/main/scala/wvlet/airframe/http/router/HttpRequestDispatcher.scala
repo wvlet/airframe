@@ -86,25 +86,21 @@ object HttpRequestDispatcher extends LogSupport {
         parentFilter: HttpFilter[Req, Resp, F]
     ): Map[Route, RouteFilter[Req, Resp, F]] = {
       val localFilterOpt: Option[HttpFilter[Req, Resp, F]] =
-        router.filterSurface
-          .map(fs => controllerProvider.findController(session, fs))
-          .filter(_.isDefined)
-          .map { filter =>
-            filter.get match {
-              case legacyFilter: HttpFilter[Req, Resp, F] @unchecked =>
-                legacyFilter
-              case rxFilter: RxHttpFilter =>
-                backend.rxFilterAdapter(rxFilter)
-              case other =>
-                throw RPCStatus.UNIMPLEMENTED_U8.newException(s"Invalid filter type: ${other.getClass.getName}")
-            }
-          }
+        // Use a given filter instance or one created from the DI session
+        router.filterInstance
           .orElse {
-            router.filterInstance
-              .asInstanceOf[Option[HttpFilter[Req, Resp, F]]]
+            router.filterSurface
+              .map(fs => controllerProvider.findController(session, fs))
+              .filter(_.isDefined)
+              .map(_.get)
           }
-          .map { filter =>
-            backend.filterAdapter(filter)
+          .map {
+            case rxFilter: RxHttpFilter =>
+              backend.rxFilterAdapter(rxFilter)
+            case legacyFilter: HttpFilter[Req, Resp, F] @unchecked =>
+              legacyFilter
+            case other =>
+              throw RPCStatus.UNIMPLEMENTED_U8.newException(s"Invalid filter type: ${other}") //
           }
 
       val currentFilter: HttpFilter[Req, Resp, F] =

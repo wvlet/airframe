@@ -27,6 +27,11 @@ trait RxRouterObjectBase {
     // wvlet.airframe.registerTraitFactory[Filter]
     RxRouter.FilterNode(None, Surface.of[Filter])
   }
+
+  inline def filter[Filter <: RxHttpFilter](filterInstance: Filter): RxRouter.FilterNode = {
+    // wvlet.airframe.registerTraitFactory[Filter]
+    RxRouter.FilterNode(None, Surface.of[Filter], Some(filterInstance))
+  }
 }
 
 trait RxRouteFilterBase { self: RxRouter.FilterNode =>
@@ -34,5 +39,9 @@ trait RxRouteFilterBase { self: RxRouter.FilterNode =>
     // wvlet.airframe.registerTraitFactory[Filter]
     val next = RxRouter.FilterNode(None, Surface.of[Filter])
     self.andThen(next)
+  }
+
+  inline def andThen[Filter <: RxHttpFilter](filterInstance: Filter): RxRouter.FilterNode = {
+    self.andThen(RxRouter.FilterNode(None, Surface.of[Filter], Some(filterInstance)))
   }
 }
