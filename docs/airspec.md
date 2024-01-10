@@ -169,6 +169,9 @@ $ sbt
 > testOnly -- (pattern)                  # Run all test matching the pattern 
 > testOnly -- (pattern)/(pattern)        # Run nested tests matching the nested pattern (/ is a dlimiter)
 
+# Configure log levels of airframe-log
+> testOnly -- -L(package):(level)        # Set log level for a package
+
 # sbt's default test functionalities:
 > testQuick                              # Run only previously failed test specs
 > testOnly (class name)                  # Run tests only in specific classes matching a pattern (wildcard is supported)
@@ -187,6 +190,16 @@ Test names will be checked as case-insensitive partial match, so you only need t
 
 ![image](https://wvlet.org/airframe/img/airspec/airspec.png)
 
+### Configure Log Levels
+
+AirSpec natively supports [airframe-log](https://wvlet.org/airframe/docs/airframe-log.html) for logging. To temporally change the log level of your test classes, use `-L` option:
+
+```scala
+> testOnly -- -Lorg.mydomain.myapp:debug
+```
+You can use multiple `-L` options to set different log levels for multiple packages.
+
+
 ### Disable Parallel Test Execution
 
 sbt 1.x or higher runs tests in parallel. This is fast, but it messes up console log messages.
@@ -195,7 +208,8 @@ If you prefer sequential test execution, set `parallelExecution in Test` to fals
 ```scala
 parallelExecution in Test := false
 ```
- 
+
+
 ## Running Tests with scala-cli
 
 For quickly writing tests, you can use [scala-cli](https://scala-cli.virtuslab.org/docs/commands/test). Add AirSpec configurations with `//> using` directive as follows:
