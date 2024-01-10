@@ -46,8 +46,7 @@ private[http] object RxRouterMacros {
     }
   }
 
-  def filterInstance[A](c: sm.Context)(filterInstance: c.Expr[A]): c.Tree =
-  {
+  def filterInstance[A](c: sm.Context)(filterInstance: c.Expr[A]): c.Tree = {
     import c.universe.*
     q"""
        {
