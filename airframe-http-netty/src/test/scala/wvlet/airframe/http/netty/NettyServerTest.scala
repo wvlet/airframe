@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.netty
 
+import wvlet.airframe.http.HttpServer
 import wvlet.airspec.AirSpec
 
 class NettyServerTest extends AirSpec {
@@ -34,7 +35,7 @@ class NettyServerTest extends AirSpec {
     }
   }
 
-  test("safely close multiple times") { (server: NettyServer) =>
+  test("safely close multiple times") { (server: HttpServer) =>
     server.close()
     server.close()
   }

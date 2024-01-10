@@ -20,7 +20,7 @@ import wvlet.airframe.benchmark.http.HttpBenchmark.asyncIteration
 import wvlet.airframe.benchmark.http.{Greeter, NewServiceAsyncClient, NewServiceSyncClient}
 import wvlet.airframe.http.*
 import wvlet.airframe.http.client.{AsyncClient, SyncClient}
-import wvlet.airframe.http.netty.{Netty, NettyServer}
+import wvlet.airframe.http.netty.Netty
 import wvlet.log.LogSupport
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -37,10 +37,10 @@ class AirframeRPCNetty extends LogSupport {
       .withRouter(Greeter.router)
       .noLogging
       .design
-      .bind[SyncClient].toProvider { (server: NettyServer) =>
+      .bind[SyncClient].toProvider { (server: HttpServer) =>
         Http.client.noLogging.noClientFilter.newSyncClient(server.localAddress)
       }
-      .bind[AsyncClient].toProvider { (server: NettyServer) =>
+      .bind[AsyncClient].toProvider { (server: HttpServer) =>
         Http.client.noLogging.noClientFilter.newAsyncClient(server.localAddress)
       }
       .withProductionMode

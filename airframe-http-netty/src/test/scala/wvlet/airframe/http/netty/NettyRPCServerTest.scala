@@ -55,12 +55,12 @@ object NettyRPCServerTest extends AirSpec {
     }
   }
 
-  test("await server test") { (server: NettyServer) =>
+  test("await server test") { (server: HttpServer) =>
     Rx.delay(100, TimeUnit.MILLISECONDS).map(_ => server.close())
       .join(Rx.single(() => server.awaitTermination()))
   }
 
-  test("close and await") { (server: NettyServer) =>
+  test("close and await") { (server: HttpServer) =>
     server.close()
     server.awaitTermination()
   }

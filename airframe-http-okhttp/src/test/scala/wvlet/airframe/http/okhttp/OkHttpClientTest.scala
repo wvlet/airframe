@@ -2,10 +2,10 @@ package wvlet.airframe.http.okhttp
 
 import wvlet.airframe.Design
 import wvlet.airframe.control.Control.withResource
+import wvlet.airframe.http.*
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.client.{AsyncClient, SyncClient}
-import wvlet.airframe.http.netty.{Netty, NettyServer}
-import wvlet.airframe.http.*
+import wvlet.airframe.http.netty.Netty
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
@@ -102,10 +102,10 @@ class OkHttpClientTest extends AirSpec {
     _.add(
       Netty.server
         .withRouter(r).design
-        .bind[SyncClient].toProvider { (server: NettyServer) =>
+        .bind[SyncClient].toProvider { (server: HttpServer) =>
           OkHttp.client.newSyncClient(server.localAddress)
         }
-        .bind[AsyncClient].toProvider { (server: NettyServer) =>
+        .bind[AsyncClient].toProvider { (server: HttpServer) =>
           OkHttp.client.newAsyncClient(server.localAddress)
         }
     )
@@ -227,7 +227,7 @@ class OkHttpClientTest extends AirSpec {
 
   test(
     "fail request",
-    design = _.bind[SyncClient].toProvider { (server: NettyServer) =>
+    design = _.bind[SyncClient].toProvider { (server: HttpServer) =>
       OkHttp.client
         .withRetryContext(_.withMaxRetry(3))
         .noCircuitBreaker
@@ -262,7 +262,7 @@ class OkHttpClientTest extends AirSpec {
 
   test(
     "read timeout",
-    design = _.bind[SyncClient].toProvider { (server: NettyServer) =>
+    design = _.bind[SyncClient].toProvider { (server: HttpServer) =>
       OkHttp.client
         .withReadTimeout(Duration(10, TimeUnit.MILLISECONDS))
         .withRetryContext(_.withMaxRetry(1))
