@@ -11,19 +11,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.finagle
-import com.twitter.finagle.http
-import com.twitter.finagle.http.Method
 import wvlet.airframe.Design
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
-import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
+import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.netty.Netty
+import wvlet.airframe.http.{Endpoint, Http, HttpMethod, HttpStatus, Router, RxRouter}
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airspec.AirSpec
 
 case class SampleResponse(id: Int, name: String)
 
-trait TestMessagePackApi {
+class TestMessagePackApi {
   @Endpoint(path = "/v1/hello")
   def hello: SampleResponse = {
     SampleResponse(1, "leo")
@@ -46,60 +45,43 @@ trait TestMessagePackApi {
   */
 class MessagePackResponseTest extends AirSpec {
 
-  val router = Router.of[TestMessagePackApi]
+  val router = RxRouter.of[TestMessagePackApi]
 
   override protected def design: Design =
-    Finagle.server.withRouter(router).design +
-      Finagle.client.syncClientDesign
+    Netty.server.withRouter(router).designWithSyncClient
 
-  test("support Accept: application/x-msgpack") { (client: FinagleSyncClient) =>
-    val req = http.Request("/v1/hello")
-    req.accept = "application/x-msgpack"
-    val resp    = client.send(req)
-    val c       = resp.content
-    val msgpack = new Array[Byte](c.length)
-    c.write(msgpack, 0)
-
-    val decoded = MessageCodec.of[SampleResponse].fromMsgPack(msgpack)
+  test("support Accept: application/x-msgpack") { (client: SyncClient) =>
+    val req                  = Http.GET("/v1/hello").withAcceptMsgPack
+    val resp                 = client.send(req)
+    val msgpack: Array[Byte] = resp.contentBytes
+    val decoded              = MessageCodec.of[SampleResponse].fromMsgPack(msgpack)
     debug(decoded)
     decoded shouldBe SampleResponse(1, "leo")
   }
 
-  test("support raw String response with application/x-msgpack") { (client: FinagleSyncClient) =>
-    val req = http.Request("/v1/hello_string")
-    req.accept = "application/x-msgpack"
+  test("support raw String response with application/x-msgpack") { (client: SyncClient) =>
+    val req     = Http.GET("/v1/hello_string").withAcceptMsgPack
     val resp    = client.send(req)
-    val c       = resp.content
-    val msgpack = new Array[Byte](c.length)
-    c.write(msgpack, 0)
-
+    val msgpack = resp.contentBytes
     val decoded = StringCodec.fromMsgPack(msgpack)
     debug(decoded)
     decoded shouldBe "hello"
   }
 
-  test("support raw MsgPack response with application/x-msgpack") { (client: FinagleSyncClient) =>
-    val req = http.Request("/v1/hello_msgpack")
-    req.accept = "application/x-msgpack"
+  test("support raw MsgPack response with application/x-msgpack") { (client: SyncClient) =>
+    val req     = Http.GET("/v1/hello_msgpack").withAcceptMsgPack
     val resp    = client.send(req)
-    val c       = resp.content
-    val msgpack = new Array[Byte](c.length)
-    c.write(msgpack, 0)
-
+    val msgpack = resp.contentBytes
     val decoded = MessageCodec.of[Seq[String]].fromMsgPack(msgpack)
     debug(decoded)
     decoded shouldBe Seq("hello", "msgpack")
   }
 
-  test("DELETE response should have no content body") { (client: FinagleSyncClient) =>
-    val req = http.Request("/v1/resource/100")
-    req.method = Method.Delete
-    req.contentType = "application/x-msgpack"
-    req.accept = "application/x-msgpack"
-
+  test("DELETE response should have no content body") { (client: SyncClient) =>
+    val req  = Http.DELETE("/v1/resource/100").withContentTypeMsgPack.withAcceptMsgPack
     val resp = client.send(req)
-    val c    = resp.content
-    resp.status.code shouldBe 204
+    val c    = resp.contentBytes
+    resp.status shouldBe HttpStatus.NoContent_204
     c.length shouldBe 0
   }
 }

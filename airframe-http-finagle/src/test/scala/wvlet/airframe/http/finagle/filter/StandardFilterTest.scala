@@ -53,8 +53,7 @@ object StandardFilterTest extends AirSpec {
 
   initDesign {
     _.add(Finagle.server.withRouter(router).design)
-      .bind[SyncClient]
-      .toProvider { (server: FinagleServer) =>
+      .bind[SyncClient].toProvider { (server: FinagleServer) =>
         Http.client
           .withRetryContext(_.noRetry)
           .newSyncClient(server.localAddress)

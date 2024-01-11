@@ -46,6 +46,15 @@ private[http] object RxRouterMacros {
     }
   }
 
+  def filterInstance[A](c: sm.Context)(filterInstance: c.Expr[A]): c.Tree = {
+    import c.universe.*
+    q"""
+       {
+         wvlet.airframe.http.RxRouter.FilterNode(None, wvlet.airframe.surface.Surface.of[Any], Some(${filterInstance}))
+       }
+    """
+  }
+
   def andThenFilter[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe.*
     val t = implicitly[c.WeakTypeTag[A]].tpe
@@ -63,4 +72,15 @@ private[http] object RxRouterMacros {
       q""""""
     }
   }
+
+  def andThenFilterInstance[A](c: sm.Context)(filterInstance: c.Expr[A]): c.Tree = {
+    import c.universe.*
+    q"""
+     {
+       val next = wvlet.airframe.http.RxRouter.FilterNode(None, wvlet.airframe.surface.Surface.of[Any], Some(${filterInstance}))
+       ${c.prefix}.andThen(next)
+     }
+   """
+  }
+
 }

@@ -188,9 +188,10 @@ object RxRouterTest extends AirSpec {
 
     r.children(0) shouldMatch { case StemNode(filter, child) =>
       filter shouldBe defined
-      filter.get shouldMatch { case RxRouter.FilterNode(parent, filterSurface) =>
+      filter.get shouldMatch { case RxRouter.FilterNode(parent, filterSurface, filterInstance) =>
         parent shouldBe empty
         filterSurface shouldBe Surface.of[AuthFilter]
+        filterInstance shouldBe empty
       }
       child(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces, None) =>
         controllerSurface shouldBe Surface.of[MyApi]
@@ -201,9 +202,10 @@ object RxRouterTest extends AirSpec {
 
     r.children(1) shouldMatch { case StemNode(filter, child) =>
       filter shouldBe defined
-      filter.get shouldMatch { case RxRouter.FilterNode(parent, filterSurface) =>
+      filter.get shouldMatch { case RxRouter.FilterNode(parent, filterSurface, filterInstance) =>
         parent shouldBe empty
         filterSurface shouldBe Surface.of[LogFilter]
+        filterInstance shouldBe empty
       }
       child(0) shouldMatch { case RxRouter.EndpointNode(controllerSurface, methodSurfaces, None) =>
         controllerSurface shouldBe Surface.of[MyApi2]

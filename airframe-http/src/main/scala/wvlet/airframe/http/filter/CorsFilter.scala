@@ -17,13 +17,14 @@ import wvlet.airframe.http.Http
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.{HttpMessage, HttpMethod, RxHttpEndpoint, RxHttpFilter}
 import wvlet.airframe.rx.Rx
+import wvlet.log.LogSupport
 
 import scala.concurrent.duration.Duration
 
 /**
   * Implements https://fetch.spec.whatwg.org/#http-cors-protocol
   */
-object Cors {
+object Cors extends LogSupport {
   case class Policy(
       allowsOrigin: String => Option[String],
       allowsMethods: String => Option[Seq[String]],

@@ -23,7 +23,7 @@ import scala.util.control.NonFatal
   * An [[RxHttpFilter]] is a filter for receiving the response from the endpoint via `endpoint.apply(request)`, and
   * transforming it into another `Rx[Response]`.
   */
-trait RxHttpFilter {
+trait RxHttpFilter extends HttpFilterType {
 
   /**
     * Apply a filter before sending the request to the endpoint, and handle its response before returning the client.

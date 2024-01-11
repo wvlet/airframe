@@ -17,8 +17,12 @@ import scala.language.experimental.macros
 trait RxRouterObjectBase {
   def of[Controller]: RxRouter = macro RxRouterMacros.of[Controller]
   def filter[Filter <: RxHttpFilter]: RxRouter.FilterNode = macro RxRouterMacros.filter[Filter]
+  def filter[Filter <: RxHttpFilter](filterInstance: Filter): RxRouter.FilterNode =
+    macro RxRouterMacros.filterInstance[Filter]
 }
 
 trait RxRouteFilterBase {
   def andThen[Filter <: RxHttpFilter]: RxRouter.FilterNode = macro RxRouterMacros.andThenFilter[Filter]
+  def andThen[Filter <: RxHttpFilter](filterInstance: Filter): RxRouter.FilterNode =
+    macro RxRouterMacros.andThenFilterInstance[Filter]
 }
