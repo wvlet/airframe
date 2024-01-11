@@ -22,14 +22,15 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.unix.UnixChannelOption
 import io.netty.handler.codec.http.*
 import io.netty.handler.stream.ChunkedWriteHandler
-import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http.HttpMessage.Response
 import wvlet.airframe.http.{HttpMessage, *}
 import wvlet.airframe.http.client.{AsyncClient, SyncClient}
-import wvlet.airframe.http.internal.{RPCLoggingFilter, LogRotationHttpLogger, RPCResponseFilter}
+import wvlet.airframe.http.internal.{LogRotationHttpLogger, RPCLoggingFilter, RPCResponseFilter}
 import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
 import wvlet.airframe.rx.Rx
+import wvlet.airframe.surface.Surface
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -50,7 +51,8 @@ case class NettyServerConfig(
     httpLoggerProvider: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) =>
       new LogRotationHttpLogger(config)
     },
-    loggingFilter: HttpLogger => RxHttpFilter = { new RPCLoggingFilter(_) }
+    loggingFilter: HttpLogger => RxHttpFilter = { new RPCLoggingFilter(_) },
+    customCodec: PartialFunction[Surface, MessageCodec[_]] = PartialFunction.empty
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -78,6 +80,15 @@ case class NettyServerConfig(
       loggingFilter = { _ => RxHttpFilter.identity },
       httpLoggerProvider = HttpLogger.emptyLogger(_)
     )
+  }
+
+  def withCustomCodec(p: PartialFunction[Surface, MessageCodec[_]]): NettyServerConfig = {
+    this.copy(customCodec = p)
+  }
+  def withCustomCodec(m: Map[Surface, MessageCodec[_]]): NettyServerConfig = {
+    this.copy(customCodec = customCodec.orElse {
+      case s: Surface if m.contains(s) => m(s)
+    })
   }
 
   def newServer(session: Session): NettyServer = {
@@ -219,7 +230,8 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
               config.controllerProvider,
               NettyBackend,
               new NettyResponseHandler,
-              MessageCodecFactory.defaultFactoryForJSON
+              // Set a custom codec and use JSON map output
+              MessageCodecFactory.newFactory(config.customCodec).withMapOutput
             )
           )
       }
