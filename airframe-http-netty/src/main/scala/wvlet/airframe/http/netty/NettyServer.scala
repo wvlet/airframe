@@ -109,6 +109,13 @@ case class NettyServerConfig(
       }
   }
 
+  def designWithAsyncClient: Design = {
+    design
+      .bind[AsyncClient].toProvider { (server: HttpServer) =>
+        Http.client.newAsyncClient(server.localAddress)
+      }
+  }
+
   def start[U](body: NettyServer => U): U = {
     this.design.run[NettyServer, U] { server =>
       body(server)
