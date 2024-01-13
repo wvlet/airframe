@@ -15,7 +15,7 @@ package wvlet.airspec.runner
 
 import sbt.testing.{Task, TaskDef}
 import wvlet.airspec.runner.AirSpecSbtRunner.AirSpecConfig
-import wvlet.log.{LogSupport, Logger}
+import wvlet.log.{LogSupport, Logger, LogLevel}
 
 import scala.util.matching.Regex
 
@@ -39,6 +39,7 @@ private[airspec] class AirSpecSbtRunner(config: AirSpecConfig, val remoteArgs: A
     // use airframe's code before sbt detaches the class loader
     taskLogger.clearHandlers
     Logger.clearAllHandlers
+    Logger.setDefaultLogLevel(LogLevel.INFO)
     ""
   }
 
@@ -55,18 +56,31 @@ private[airspec] class AirSpecSbtRunner(config: AirSpecConfig, val remoteArgs: A
 private[airspec] object AirSpecSbtRunner extends LogSupport {
   def newRunner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): AirSpecSbtRunner = {
 
-    // Set log levels given in the command line args: -L(package)=(log level)
-    args.filter(_.startsWith("-L")).foreach { l =>
-      l.stripPrefix("-L").split("=") match {
-        case Array(pkg, level) =>
-          val logLevel = wvlet.log.LogLevel(level)
-          wvlet.log.Logger(pkg).setLogLevel(logLevel)
-        case _ =>
-          warn(s"Ignoring invalid argument: ${l}. Use -L(package)=(log level) to set log levels")
+    // Set log level with -l (log level)
+    val remaining          = Array.newBuilder[String]
+    var i                  = 0
+    var logLevel: LogLevel = Logger.getDefaultLogLevel
+    while (i < args.length) {
+      args(i) match {
+        case "-l" if i < args.length - 1 =>
+          val logLevel = LogLevel(args(i + 1))
+          Logger.setDefaultLogLevel(logLevel)
+          i += 1
+        case arg if arg.startsWith("-L") =>
+          arg.stripPrefix("-L").split("=") match {
+            case Array(pkg, level) =>
+              val logLevel = LogLevel(level)
+              Logger(pkg).setLogLevel(logLevel)
+            case _ =>
+              warn(s"Ignoring invalid argument: ${arg}. Use -L(package)=(log level) to set log levels")
+          }
+        case other =>
+          remaining += other
       }
+      i += 1
     }
 
-    new AirSpecSbtRunner(AirSpecConfig(args), remoteArgs, testClassLoader)
+    new AirSpecSbtRunner(AirSpecConfig(remaining.result()), remoteArgs, testClassLoader)
   }
 
   case class AirSpecConfig(args: Array[String]) {

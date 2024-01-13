@@ -170,6 +170,7 @@ $ sbt
 > testOnly -- (pattern)/(pattern)        # Run nested tests matching the nested pattern (/ is a dlimiter)
 
 # Configure log levels of airframe-log
+> testOnly -- -l (level)                 # Set the default log level
 > testOnly -- -L(package):(level)        # Set log level for a package
 
 # sbt's default test functionalities:
@@ -192,7 +193,13 @@ Test names will be checked as case-insensitive partial match, so you only need t
 
 ### Configure Log Levels
 
-AirSpec natively supports [airframe-log](https://wvlet.org/airframe/docs/airframe-log.html) for logging. To temporally change the log level of your test classes, use `-L` option:
+AirSpec natively supports [airframe-log](https://wvlet.org/airframe/docs/airframe-log.html) for logging. To temporally change the log level, use `-l (log level)` option:
+
+```scala
+> testOnly -- -l debug
+```
+
+To change the log level only for a specific package or a class, use `-L(package or class)=(log level)` option:
 
 ```scala
 > testOnly -- -Lorg.mydomain.myapp:debug
