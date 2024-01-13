@@ -52,8 +52,6 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
   private val airSpecLogger = {
     // Use a different spec logger for each AirSpecRunner
     val l = Logger(f"wvlet.airspec.runner.AirSpecLogger_${hashCode()}%x")
-    // Airspec logger needs to report at least INFO level log regardless of the global log level
-    l.setLogLevel(wvlet.log.LogLevel.INFO)
     l.setFormatter(BareFormatter)
     l
   }

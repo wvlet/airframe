@@ -63,8 +63,8 @@ private[airspec] object AirSpecSbtRunner extends LogSupport {
     while (i < args.length) {
       args(i) match {
         case "-l" if i < args.length - 1 =>
-          val logLevel = LogLevel(args(i + 1))
-          Logger.setDefaultLogLevel(logLevel)
+          // Set the default log level for the test spec
+          logLevel = LogLevel(args(i + 1))
           i += 1
         case arg if arg.startsWith("-L") =>
           arg.stripPrefix("-L").split("=") match {
@@ -80,10 +80,10 @@ private[airspec] object AirSpecSbtRunner extends LogSupport {
       i += 1
     }
 
-    new AirSpecSbtRunner(AirSpecConfig(remaining.result()), remoteArgs, testClassLoader)
+    new AirSpecSbtRunner(AirSpecConfig(remaining.result(), logLevel), remoteArgs, testClassLoader)
   }
 
-  case class AirSpecConfig(args: Array[String]) {
+  case class AirSpecConfig(args: Array[String], defaultLogLevel: LogLevel = LogLevel.INFO) {
     val specMatcher: AirSpecMatcher = {
       // For now, we only support regex-based test name matcher using the first argument
       args.find(x => !x.startsWith("-")) match {
