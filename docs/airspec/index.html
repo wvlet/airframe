@@ -212,8 +212,8 @@ testFrameworks += <span class="hljs-keyword">new</span> <span class="hljs-type">
 &gt; testOnly -- (pattern)/(pattern)        # <span class="hljs-type">Run</span> nested tests matching the nested pattern (/ is a dlimiter)
 
 # <span class="hljs-type">Configure</span> log levels of airframe-log
-&gt; testOnly -- -l (level)                 # <span class="hljs-type">Set</span> the <span class="hljs-keyword">default</span> log level
-&gt; testOnly -- -<span class="hljs-type">L</span>(<span class="hljs-keyword">package</span>):(level)        # <span class="hljs-type">Set</span> log level <span class="hljs-keyword">for</span> a <span class="hljs-keyword">package</span>
+&gt; testOnly -- -l (level)                 # <span class="hljs-type">Set</span> the log level <span class="hljs-keyword">for</span> the test target classes
+&gt; testOnly -- -<span class="hljs-type">L</span>(<span class="hljs-keyword">package</span>):(level)        # <span class="hljs-type">Set</span> log level <span class="hljs-keyword">for</span> a specific <span class="hljs-keyword">package</span> or <span class="hljs-class"><span class="hljs-keyword">class</span></span>
 
 # sbt<span class="hljs-symbol">'s</span> <span class="hljs-keyword">default</span> test functionalities:
 &gt; testQuick                              # <span class="hljs-type">Run</span> only previously failed test specs
@@ -231,6 +231,7 @@ testFrameworks += <span class="hljs-keyword">new</span> <span class="hljs-type">
 <p>AirSpec natively supports <a href="https://wvlet.org/airframe/docs/airframe-log.html">airframe-log</a> for logging. To temporally change the log level, use <code>-l (log level)</code> option:</p>
 <pre><code class="hljs css language-scala">&gt; testOnly -- -l debug
 </code></pre>
+<p>This will set the log level to debug for all test classes.</p>
 <p>To change the log level only for a specific package or a class, use <code>-L(package or class)=(log level)</code> option:</p>
 <pre><code class="hljs css language-scala">&gt; testOnly -- -<span class="hljs-type">Lorg</span>.mydomain.myapp:debug
 </code></pre>
