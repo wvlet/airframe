@@ -170,8 +170,8 @@ $ sbt
 > testOnly -- (pattern)/(pattern)        # Run nested tests matching the nested pattern (/ is a dlimiter)
 
 # Configure log levels of airframe-log
-> testOnly -- -l (level)                 # Set the default log level
-> testOnly -- -L(package):(level)        # Set log level for a package
+> testOnly -- -l (level)                 # Set the log level for the test target classes
+> testOnly -- -L(package):(level)        # Set log level for a specific package or class
 
 # sbt's default test functionalities:
 > testQuick                              # Run only previously failed test specs
@@ -198,6 +198,8 @@ AirSpec natively supports [airframe-log](https://wvlet.org/airframe/docs/airfram
 ```scala
 > testOnly -- -l debug
 ```
+This will set the log level to debug for all test classes.
+
 
 To change the log level only for a specific package or a class, use `-L(package or class)=(log level)` option:
 
