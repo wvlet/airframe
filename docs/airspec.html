@@ -212,6 +212,7 @@ testFrameworks += <span class="hljs-keyword">new</span> <span class="hljs-type">
 &gt; testOnly -- (pattern)/(pattern)        # <span class="hljs-type">Run</span> nested tests matching the nested pattern (/ is a dlimiter)
 
 # <span class="hljs-type">Configure</span> log levels of airframe-log
+&gt; testOnly -- -l (level)                 # <span class="hljs-type">Set</span> the <span class="hljs-keyword">default</span> log level
 &gt; testOnly -- -<span class="hljs-type">L</span>(<span class="hljs-keyword">package</span>):(level)        # <span class="hljs-type">Set</span> log level <span class="hljs-keyword">for</span> a <span class="hljs-keyword">package</span>
 
 # sbt<span class="hljs-symbol">'s</span> <span class="hljs-keyword">default</span> test functionalities:
@@ -227,7 +228,10 @@ testFrameworks += <span class="hljs-keyword">new</span> <span class="hljs-type">
 <p>Test names will be checked as case-insensitive partial match, so you only need to specify substrings of test names like <code>A</code>, <code>A/1</code>, 'a/2', etc. to simplify the pattern matching.</p>
 <p><img src="https://wvlet.org/airframe/img/airspec/airspec.png" alt="image"></p>
 <h3><a class="anchor" aria-hidden="true" id="configure-log-levels"></a><a href="#configure-log-levels" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Configure Log Levels</h3>
-<p>AirSpec natively supports <a href="https://wvlet.org/airframe/docs/airframe-log.html">airframe-log</a> for logging. To temporally change the log level of your test classes, use <code>-L</code> option:</p>
+<p>AirSpec natively supports <a href="https://wvlet.org/airframe/docs/airframe-log.html">airframe-log</a> for logging. To temporally change the log level, use <code>-l (log level)</code> option:</p>
+<pre><code class="hljs css language-scala">&gt; testOnly -- -l debug
+</code></pre>
+<p>To change the log level only for a specific package or a class, use <code>-L(package or class)=(log level)</code> option:</p>
 <pre><code class="hljs css language-scala">&gt; testOnly -- -<span class="hljs-type">Lorg</span>.mydomain.myapp:debug
 </code></pre>
 <p>You can use multiple <code>-L</code> options to set different log levels for multiple packages.</p>
