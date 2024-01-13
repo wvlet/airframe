@@ -256,7 +256,7 @@ object Logger {
   def apply(loggerName: String): Logger = {
     loggerCache.getOrElseUpdate(loggerName, new Logger(loggerName, jl.Logger.getLogger(loggerName)))
   }
-  
+
   def getDefaultLogLevel: LogLevel = rootLogger.getLogLevel
 
   def setDefaultLogLevel(level: LogLevel): Unit = {
