@@ -107,7 +107,7 @@ def crossBuildSources(scalaBinaryVersion: String, baseDir: String, srcType: Stri
 // https://stackoverflow.com/questions/41670018/how-to-prevent-sbt-to-include-test-dependencies-into-the-pom
 import sbt.ThisBuild
 
-import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, *}
+import scala.xml.{Comment, Elem, Node => XmlNode, NodeSeq => XmlNodeSeq}
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 
 def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
@@ -130,7 +130,8 @@ def excludePomDependency(excludes: Seq[String]) = { node: XmlNode =>
   }).transform(node).head
 }
 
-/** AirSpec build definitions.
+/**
+  * AirSpec build definitions.
   *
   * To make AirSpec a standalone library without any cyclic project references, AirSpec embeds the source code of
   * airframe-log, di, surface, etc.
@@ -224,9 +225,6 @@ lazy val airspecLog =
       )
     )
 
-lazy val airspecLogJVM = airspecLog.jvm
-lazy val airspecLogJS  = airspecLog.js
-
 lazy val airspecCore =
   crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
@@ -262,19 +260,16 @@ lazy val airspecCore =
           case _ => Seq.empty
         }
       },
-      Compile / packageBin / mappings ++= (airspecLogJVM / Compile / packageBin / mappings).value,
-      Compile / packageSrc / mappings ++= (airspecLogJVM / Compile / packageSrc / mappings).value
+      Compile / packageBin / mappings ++= (airspecLog.jvm / Compile / packageBin / mappings).value,
+      Compile / packageSrc / mappings ++= (airspecLog.js / Compile / packageSrc / mappings).value
     )
     .jsSettings(
       airspecJSBuildSettings,
-      Compile / packageBin / mappings ++= (airspecLogJS / Compile / packageBin / mappings).value
+      Compile / packageBin / mappings ++= (airspecLog.js / Compile / packageBin / mappings).value
         .filter(x => x._2 != "JS_DEPENDENCIES"),
-      Compile / packageSrc / mappings ++= (airspecLogJS / Compile / packageSrc / mappings).value
+      Compile / packageSrc / mappings ++= (airspecLog.js / Compile / packageSrc / mappings).value
     )
     .dependsOn(airspecLog)
-
-lazy val airspecCoreJVM = airspecCore.jvm
-lazy val airspecCoreJS  = airspecCore.js
 
 lazy val airspecDeps =
   crossProject(JSPlatform, JVMPlatform)
@@ -293,23 +288,20 @@ lazy val airspecDeps =
       libraryDependencies ++= Seq(
         "javax.annotation" % "javax.annotation-api" % JAVAX_ANNOTATION_API_VERSION
       ),
-      Compile / packageBin / mappings ++= (airspecCoreJVM / Compile / packageBin / mappings).value,
-      Compile / packageSrc / mappings ++= (airspecCoreJVM / Compile / packageSrc / mappings).value
+      Compile / packageBin / mappings ++= (airspecCore.jvm / Compile / packageBin / mappings).value,
+      Compile / packageSrc / mappings ++= (airspecCore.jvm / Compile / packageSrc / mappings).value
     )
     .jsSettings(
       airspecJSBuildSettings,
-      Compile / packageBin / mappings ++= (airspecCoreJS / Compile / packageBin / mappings).value
+      Compile / packageBin / mappings ++= (airspecCore.js / Compile / packageBin / mappings).value
         .filter(x => x._2 != "JS_DEPENDENCIES"),
-      Compile / packageSrc / mappings ++= (airspecCoreJS / Compile / packageSrc / mappings).value,
+      Compile / packageSrc / mappings ++= (airspecCore.js / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
         // Necessary for async testing
         "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1"
       )
     )
     .dependsOn(airspecCore)
-
-lazy val airspecDepsJVM = airspecDeps.jvm
-lazy val airspecDepsJS  = airspecDeps.js
 
 lazy val airspec =
   crossProject(JSPlatform, JVMPlatform)
@@ -329,8 +321,8 @@ lazy val airspec =
     )
     .jvmSettings(
       // Embed dependent project codes to make airspec a single jar
-      Compile / packageBin / mappings ++= (airspecDepsJVM / Compile / packageBin / mappings).value,
-      Compile / packageSrc / mappings ++= (airspecDepsJVM / Compile / packageSrc / mappings).value,
+      Compile / packageBin / mappings ++= (airspecDeps.jvm / Compile / packageBin / mappings).value,
+      Compile / packageSrc / mappings ++= (airspecDeps.jvm / Compile / packageSrc / mappings).value,
       libraryDependencies ++= {
         scalaVersion.value match {
           case sv if sv.startsWith("3.") =>
@@ -346,9 +338,9 @@ lazy val airspec =
       }
     )
     .jsSettings(
-      Compile / packageBin / mappings ++= (airspecDepsJS / Compile / packageBin / mappings).value
+      Compile / packageBin / mappings ++= (airspecDeps.js / Compile / packageBin / mappings).value
         .filter(x => x._2 != "JS_DEPENDENCIES"),
-      Compile / packageSrc / mappings ++= (airspecDepsJS / Compile / packageSrc / mappings).value,
+      Compile / packageSrc / mappings ++= (airspecDeps.js / Compile / packageSrc / mappings).value,
       libraryDependencies ++= Seq(
         ("org.scala-js"        %% "scalajs-test-interface" % scalaJSVersion).cross(CrossVersion.for3Use2_13),
         ("org.portable-scala" %%% "portable-scala-reflect" % "1.1.2").cross(CrossVersion.for3Use2_13),
@@ -359,6 +351,3 @@ lazy val airspec =
     // This should be Optional dependency, but using Provided dependency for bloop which doesn't support Optional.
     // This provided dependency will be removed later with pomPostProcess
     .dependsOn(airspecDeps % Provided)
-
-lazy val airspecJVM = airspec.jvm
-lazy val airspecJS  = airspec.js
