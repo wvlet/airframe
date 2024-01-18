@@ -101,7 +101,7 @@ object ParquetTest extends AirSpec {
       p7: Boolean = true,
       p8: Boolean = false,
       json: Json = """{"id":1,"param":"json param"}""",
-      // jsonValue: JSONValue = JSON.parse("""{"id":2,"param":"json param2"}"""),
+      jsonValue: JSONValue = JSON.parse("""{"id":2,"param":"json param2"}"""),
       seqValue: Seq[String] = Seq("s1", "s2"),
       mapValue: Map[String, Any] = Map("param1" -> "hello", "feature1" -> true),
       ulid: ULID = ULID.newULID,
