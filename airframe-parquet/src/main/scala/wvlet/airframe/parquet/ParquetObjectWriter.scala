@@ -82,8 +82,11 @@ class ParquetOptionWriter(parameterCodec: ParquetParameterWriter) extends Parque
     v match {
       case Some(x) =>
         parameterCodec.write(recordConsumer, x)
-      case _ => // None or null
-      // Skip writing Optional parameter
+      case null | None =>
+      // Skip writing None or null parameter
+      case _ =>
+        // Write other values (e.g., Map binary)
+        parameterCodec.write(recordConsumer, v)
     }
   }
 
@@ -256,7 +259,7 @@ case class ParquetObjectWriter(paramWriters: Seq[ParquetFieldWriter], params: Se
   }
 }
 
-object ParquetObjectWriter {
+object ParquetObjectWriter extends LogSupport {
   def buildFromSurface(surface: Surface, schema: MessageType): ParquetObjectWriter = {
     val paramCodecs = surface.params.zip(schema.getFields.asScala).map { case (param, tpe) =>
       // Resolve the element type X of Option[X], Seq[X], etc.

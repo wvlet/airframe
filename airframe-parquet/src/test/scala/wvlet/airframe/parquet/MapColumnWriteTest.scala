@@ -33,7 +33,7 @@ object MapColumnWriteTest extends AirSpec {
         MapRecord(2, Map(1 -> 10L, 2 -> 20L, 3 -> 30L))
       )
       Using.resource(Parquet.newWriter[MapRecord](file.getPath)) { writer =>
-        data.foreach(writer.write)
+        data.foreach(writer.write(_))
       }
 
       Using.resource(Parquet.newReader[MapRecord](file.getPath)) { reader =>
