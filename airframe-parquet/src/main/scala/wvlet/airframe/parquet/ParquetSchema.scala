@@ -18,6 +18,7 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.Type.Repetition
 import org.apache.parquet.schema.{LogicalTypeAnnotation, MessageType, PrimitiveType, Type, Types}
 import org.apache.parquet.schema.Types.{MapBuilder, PrimitiveBuilder}
+import wvlet.airframe.json.Json
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.surface.Primitive.PrimitiveSurface
 import wvlet.airframe.surface.{
@@ -81,7 +82,7 @@ object ParquetSchema extends LogSupport {
         buildParquetType(o.elementSurface, Some(Repetition.OPTIONAL))
       case s: Surface if s == Surface.of[MsgPack] =>
         Types.primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL))
-      case s: Surface if s == Surface.of[wvlet.airframe.json.Json] =>
+      case s: Surface if s == Surface.of[Json] =>
         Types.primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL)).as(jsonType())
       case s: Surface if classOf[wvlet.airframe.msgpack.spi.Value].isAssignableFrom(s.rawType) =>
         Types.primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL))
@@ -133,8 +134,11 @@ object ParquetSchema extends LogSupport {
             Primitive.String
           case PrimitiveTypeName.BINARY if p.getLogicalTypeAnnotation == jsonType() =>
             Primitive.String
-          case _ =>
+          case PrimitiveTypeName.BINARY =>
             Surface.of[MsgPack]
+          case _ =>
+            // Use JSON for other types
+            Surface.of[Json]
         }
       } else {
         val g = t.asGroupType()

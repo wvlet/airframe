@@ -29,7 +29,7 @@ import wvlet.airframe.codec.PrimitiveCodec.{
   ValueCodec
 }
 import wvlet.airframe.msgpack.spi.MsgPack
-import wvlet.airframe.msgpack.spi.Value.StringValue
+import wvlet.airframe.msgpack.spi.Value.{StringValue, TimestampValue}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
@@ -113,8 +113,7 @@ object ParquetWriteCodec extends LogSupport {
         case PrimitiveTypeName.BINARY if tpe.getLogicalTypeAnnotation == jsonType() =>
           new PrimitiveParquetCodec(codec) {
             override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
-              val json = ValueCodec.fromMsgPack(msgpack).toJson.stripPrefix("\"").stripSuffix("\"")
-              warn(s"write json: ${json}")
+              val json: String = ValueCodec.fromMsgPack(msgpack).toUnquotedString
               recordConsumer.addBinary(Binary.fromString(json))
             }
           }

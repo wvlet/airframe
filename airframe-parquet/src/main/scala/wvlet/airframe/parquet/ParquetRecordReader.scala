@@ -63,9 +63,15 @@ object ParquetRecordReader extends LogSupport {
   }
   private class JsonConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
     override def addBinary(value: Binary): Unit = {
-      val json = value.toStringUsingUTF8
-      warn(s"read json: ${json}")
-      holder.add(fieldName, json)
+      val jsonStr = value.toStringUsingUTF8
+      val obj: Any =
+        if (jsonStr.startsWith("{") || jsonStr.endsWith("[")) {
+          // Map to message pack value for handling nested objects
+          ValueCodec.fromJson(jsonStr)
+        } else {
+          jsonStr
+        }
+      holder.add(fieldName, obj)
     }
   }
 
@@ -141,7 +147,6 @@ class ParquetRecordReader[A](
 
   def currentRecord: A = {
     val m = recordBuilder.toMap
-    warn(s"currentRecord: ${m}")
     codec.fromMap(m).asInstanceOf[A]
   }
 
