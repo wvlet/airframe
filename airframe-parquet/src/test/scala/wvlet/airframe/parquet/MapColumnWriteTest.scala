@@ -46,4 +46,31 @@ object MapColumnWriteTest extends AirSpec {
       }
     }
   }
+
+  import scala.collection.immutable.ListMap
+  case class ListMapRecord(id: Int, m: ListMap[Int, Long])
+
+  test("write ListMap column") {
+    val schema = Parquet.toParquetSchema(Surface.of[ListMapRecord])
+    debug(schema)
+
+    IOUtil.withTempFile("target/tmp-list-map-record", ".parquet") { file =>
+      val data = Seq(
+        ListMapRecord(1, ListMap(1 -> 10L, 2 -> 20L)),
+        ListMapRecord(2, ListMap(1 -> 10L, 2 -> 20L, 3 -> 30L))
+      )
+      Using.resource(Parquet.newWriter[ListMapRecord](file.getPath)) { writer =>
+        data.foreach(writer.write(_))
+      }
+
+      Using.resource(Parquet.newReader[ListMapRecord](file.getPath)) { reader =>
+        val r0 = reader.read()
+        debug(s"${r0}")
+        val r1 = reader.read()
+        debug(s"${r1}")
+        r0 shouldBe data(0)
+        r1 shouldBe data(1)
+      }
+    }
+  }
 }
