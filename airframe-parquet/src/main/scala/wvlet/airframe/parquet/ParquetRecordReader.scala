@@ -16,11 +16,12 @@ package wvlet.airframe.parquet
 import org.apache.parquet.io.api.{Binary, Converter, GroupConverter, PrimitiveConverter, RecordMaterializer}
 import org.apache.parquet.schema.{GroupType, MessageType}
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
-import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
+import org.apache.parquet.schema.LogicalTypeAnnotation.{jsonType, stringType}
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
+
 import scala.jdk.CollectionConverters.*
 
 object ParquetRecordReader extends LogSupport {
@@ -56,7 +57,15 @@ object ParquetRecordReader extends LogSupport {
   }
   private class MsgPackConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
     override def addBinary(value: Binary): Unit = {
-      holder.add(fieldName, ValueCodec.fromMsgPack(value.getBytes))
+      val v = ValueCodec.fromMsgPack(value.getBytes)
+      holder.add(fieldName, v)
+    }
+  }
+  private class JsonConverter(fieldName: String, holder: RecordBuilder) extends PrimitiveConverter {
+    override def addBinary(value: Binary): Unit = {
+      val json = value.toStringUsingUTF8
+      warn(s"read json: ${json}")
+      holder.add(fieldName, json)
     }
   }
 
@@ -84,8 +93,10 @@ class ParquetRecordReader[A](
           case PrimitiveTypeName.BOOLEAN => new BooleanConverter(f.getName, recordBuilder)
           case PrimitiveTypeName.FLOAT   => new FloatConverter(f.getName, recordBuilder)
           case PrimitiveTypeName.DOUBLE  => new DoubleConverter(f.getName, recordBuilder)
-          case PrimitiveTypeName.BINARY if p.getLogicalTypeAnnotation == stringType =>
+          case PrimitiveTypeName.BINARY if p.getLogicalTypeAnnotation == stringType() =>
             new StringConverter(f.getName, recordBuilder)
+          case PrimitiveTypeName.BINARY if p.getLogicalTypeAnnotation == jsonType() =>
+            new JsonConverter(f.getName, recordBuilder)
           case PrimitiveTypeName.BINARY =>
             new MsgPackConverter(f.getName, recordBuilder)
           case _ => ???
@@ -130,6 +141,7 @@ class ParquetRecordReader[A](
 
   def currentRecord: A = {
     val m = recordBuilder.toMap
+    warn(s"currentRecord: ${m}")
     codec.fromMap(m).asInstanceOf[A]
   }
 

@@ -244,7 +244,17 @@ object Value {
     def isEmpty: Boolean  = entries.isEmpty
     def nonEmpty: Boolean = entries.nonEmpty
     override def toJson: String = {
-      s"{${entries.map(x => s"${x._1.toJson}:${x._2.toJson}").mkString(",")}}"
+      entries
+        .map { kv =>
+          kv._1 match {
+            case StringValue(s) => s"${kv._1.toJson}:${kv._2.toJson}"
+            case _              =>
+              // JSON requires Map key must be a quoted UTF-8 string
+              val jsonKey = new StringBuilder()
+              appendJsonString(jsonKey, kv._1.toJson)
+              s"${jsonKey.result()}:${kv._2.toJson}"
+          }
+        }.mkString("{", ",", "}")
     }
     override def valueType: ValueType = ValueType.MAP
     override def writeTo(packer: Packer): Unit = {
