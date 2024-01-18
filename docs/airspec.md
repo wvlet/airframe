@@ -171,7 +171,7 @@ $ sbt
 
 # Configure log levels of airframe-log
 > testOnly -- -l (level)                 # Set the log level for the test target classes
-> testOnly -- -L(package):(level)        # Set log level for a specific package or class
+> testOnly -- -L(package)=(level)        # Set log level for a specific package or class
 
 # sbt's default test functionalities:
 > testQuick                              # Run only previously failed test specs
@@ -258,7 +258,7 @@ This will set the log level to debug for all test classes.
 To change the log level only for a specific package or a class, use `-L(package or class)=(log level)` option:
 
 ```scala
-> testOnly -- -Lorg.mydomain.myapp:debug
+> testOnly -- -Lorg.mydomain.myapp=debug
 ```
 You can use multiple `-L` options to set different log levels for multiple packages.
 
