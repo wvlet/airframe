@@ -191,23 +191,6 @@ Test names will be checked as case-insensitive partial match, so you only need t
 
 ![image](https://wvlet.org/airframe/img/airspec/airspec.png)
 
-### Configure Log Levels
-
-AirSpec natively supports [airframe-log](https://wvlet.org/airframe/docs/airframe-log.html) for logging. To temporally change the log level, use `-l (log level)` option:
-
-```scala
-> testOnly -- -l debug
-```
-This will set the log level to debug for all test classes.
-
-
-To change the log level only for a specific package or a class, use `-L(package or class)=(log level)` option:
-
-```scala
-> testOnly -- -Lorg.mydomain.myapp:debug
-```
-You can use multiple `-L` options to set different log levels for multiple packages.
-
 
 ### Disable Parallel Test Execution
 
@@ -262,7 +245,25 @@ class MyTest extends AirSpec {
 
 Similarly, if you include `wvlet.log.LogSupport` to your application classes, you can add log messages to these classes.
 
-### Changing Log Levels
+### Configure Log Levels
+
+AirSpec natively supports [airframe-log](https://wvlet.org/airframe/docs/airframe-log.html) for logging. To temporally change the log level, use `-l (log level)` option:
+
+```scala
+> testOnly -- -l debug
+```
+This will set the log level to debug for all test classes.
+
+
+To change the log level only for a specific package or a class, use `-L(package or class)=(log level)` option:
+
+```scala
+> testOnly -- -Lorg.mydomain.myapp:debug
+```
+You can use multiple `-L` options to set different log levels for multiple packages.
+
+
+### Configure Log Levels in log-test.properties
 
 To change the log level for your packages and classes, add _log-test.properties_ file to your test resource folder `src/test/resources`. For multi-module projects, put this file under `(project folder)/src/test/resources` folder.
 
