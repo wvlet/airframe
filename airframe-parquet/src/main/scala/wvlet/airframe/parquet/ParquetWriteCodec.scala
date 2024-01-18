@@ -14,11 +14,11 @@
 package wvlet.airframe.parquet
 
 import org.apache.parquet.io.api.{Binary, RecordConsumer}
-import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
+import org.apache.parquet.schema.LogicalTypeAnnotation.{jsonType, stringType}
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.{MessageType, Type}
 import org.apache.parquet.schema.Type.Repetition
-import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.codec.{JSONCodec, MessageCodec}
 import wvlet.airframe.codec.PrimitiveCodec.{
   BooleanCodec,
   DoubleCodec,
@@ -29,6 +29,7 @@ import wvlet.airframe.codec.PrimitiveCodec.{
   ValueCodec
 }
 import wvlet.airframe.msgpack.spi.MsgPack
+import wvlet.airframe.msgpack.spi.Value.{StringValue, TimestampValue}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
@@ -103,10 +104,17 @@ object ParquetWriteCodec extends LogSupport {
               recordConsumer.addDouble(DoubleCodec.fromMsgPack(msgpack))
             }
           }
-        case PrimitiveTypeName.BINARY if tpe.getLogicalTypeAnnotation == stringType =>
+        case PrimitiveTypeName.BINARY if tpe.getLogicalTypeAnnotation == stringType() =>
           new PrimitiveParquetCodec(codec) {
             override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
               recordConsumer.addBinary(Binary.fromString(StringCodec.fromMsgPack(msgpack)))
+            }
+          }
+        case PrimitiveTypeName.BINARY if tpe.getLogicalTypeAnnotation == jsonType() =>
+          new PrimitiveParquetCodec(codec) {
+            override protected def writeValue(recordConsumer: RecordConsumer, msgpack: MsgPack): Unit = {
+              val json: String = ValueCodec.fromMsgPack(msgpack).toUnquotedString
+              recordConsumer.addBinary(Binary.fromString(json))
             }
           }
         case _ =>

@@ -101,7 +101,7 @@ object ParquetTest extends AirSpec {
       p7: Boolean = true,
       p8: Boolean = false,
       json: Json = """{"id":1,"param":"json param"}""",
-      jsonValue: JSONValue = JSON.parse("""{"id":1,"param":"json param"}"""),
+      jsonValue: JSONValue = JSON.parse("""{"id":2,"param":"json param2"}"""),
       seqValue: Seq[String] = Seq("s1", "s2"),
       mapValue: Map[String, Any] = Map("param1" -> "hello", "feature1" -> true),
       ulid: ULID = ULID.newULID,
@@ -127,6 +127,7 @@ object ParquetTest extends AirSpec {
 
       withResource(Parquet.newReader[MyData](path = file.getPath)) { reader =>
         val r1 = reader.read()
+        r1.json shouldBe d1.json
         r1 shouldBe d1
         val r2 = reader.read()
         r2 shouldBe d2

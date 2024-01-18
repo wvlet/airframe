@@ -13,14 +13,16 @@
  */
 package wvlet.airframe.parquet
 
-import org.apache.parquet.schema.LogicalTypeAnnotation.stringType
+import org.apache.parquet.schema.LogicalTypeAnnotation.{jsonType, stringType}
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName
 import org.apache.parquet.schema.Type.Repetition
 import org.apache.parquet.schema.{LogicalTypeAnnotation, MessageType, PrimitiveType, Type, Types}
 import org.apache.parquet.schema.Types.{MapBuilder, PrimitiveBuilder}
+import wvlet.airframe.json.Json
 import wvlet.airframe.msgpack.spi.MsgPack
 import wvlet.airframe.surface.Primitive.PrimitiveSurface
 import wvlet.airframe.surface.{
+  Alias,
   ArraySurface,
   OptionSurface,
   Parameter,
@@ -30,11 +32,12 @@ import wvlet.airframe.surface.{
   Surface
 }
 import wvlet.airframe.ulid.ULID
+import wvlet.log.LogSupport
 
 import java.util.UUID
 import scala.jdk.CollectionConverters.*
 
-object ParquetSchema {
+object ParquetSchema extends LogSupport {
 
   // Convert surface into primitive
   private def toParquetPrimitiveTypeName(s: PrimitiveSurface): PrimitiveTypeName = {
@@ -77,12 +80,18 @@ object ParquetSchema {
         toParquetPrimitive(p, rep)
       case o: OptionSurface =>
         buildParquetType(o.elementSurface, Some(Repetition.OPTIONAL))
+      case s: Surface if s == Surface.of[MsgPack] =>
+        Types.primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL))
+      case s: Surface if s == Surface.of[Json] =>
+        Types.primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL)).as(jsonType())
+      case s: Surface if classOf[wvlet.airframe.msgpack.spi.Value].isAssignableFrom(s.rawType) =>
+        Types.primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL))
       case s: Surface if s.isSeq || s.isArray =>
         val elementSurface = s.typeArgs(0)
         buildParquetType(elementSurface, Some(Repetition.REPEATED))
       case m: Surface if m.isMap =>
-        // Encode Map[_, _] type as Binary and make it optional as Map can be empty
-        Types.primitive(PrimitiveTypeName.BINARY, Repetition.OPTIONAL)
+        // Encode Map[_, _] type as Json and make it optional as Map can be empty
+        Types.primitive(PrimitiveTypeName.BINARY, Repetition.OPTIONAL).as(jsonType())
 //      case m: Surface if m.isMap =>
 //        val keySurface   = m.typeArgs(0)
 //        val valueSurface = m.typeArgs(1)
@@ -101,8 +110,8 @@ object ParquetSchema {
         }
         groupType
       case s: Surface =>
-        // Use MsgPack for other types
-        Types.primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL))
+        // Use JSON for other types
+        Types.primitive(PrimitiveTypeName.BINARY, rep.getOrElse(Repetition.OPTIONAL)).as(jsonType())
     }
   }
 
@@ -123,8 +132,13 @@ object ParquetSchema {
             Primitive.Boolean
           case PrimitiveTypeName.BINARY if p.getLogicalTypeAnnotation == stringType() =>
             Primitive.String
-          case _ =>
+          case PrimitiveTypeName.BINARY if p.getLogicalTypeAnnotation == jsonType() =>
+            Primitive.String
+          case PrimitiveTypeName.BINARY =>
             Surface.of[MsgPack]
+          case _ =>
+            // Use JSON for other types
+            Surface.of[Json]
         }
       } else {
         val g = t.asGroupType()

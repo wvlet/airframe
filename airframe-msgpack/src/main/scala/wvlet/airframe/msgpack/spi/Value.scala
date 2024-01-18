@@ -25,6 +25,12 @@ import wvlet.airframe.msgpack.spi.MessageException.*
 trait Value {
   override def toString = toJson
   def toJson: String
+
+  /**
+    * Unlike toJson, toUnquotedString does not quote string/timestamp values.
+    * @return
+    */
+  def toUnquotedString: String = toJson
   def valueType: ValueType
 
   /**
@@ -139,13 +145,14 @@ object Value {
       appendJsonString(b, toRawString)
       b.result()
     }
-    protected def toRawString: String
+    def toRawString: String
   }
 
   case class StringValue(v: String) extends RawValue {
-    override def toString                      = v
-    override protected def toRawString: String = v
-    override def valueType: ValueType          = ValueType.STRING
+    override def toString: String         = v
+    override def toUnquotedString: String = v
+    override def toRawString: String      = v
+    override def valueType: ValueType     = ValueType.STRING
     override def writeTo(packer: Packer): Unit = {
       packer.packString(v)
     }
@@ -153,15 +160,15 @@ object Value {
 
   case class BinaryValue(v: Array[Byte]) extends RawValue {
     @transient private var decodedStringCache: String = null
-
-    override def valueType: ValueType = ValueType.BINARY
+    override def toUnquotedString: String             = toRawString
+    override def valueType: ValueType                 = ValueType.BINARY
     override def writeTo(packer: Packer): Unit = {
       packer.packBinaryHeader(v.length)
       packer.writePayload(v)
     }
 
     // Produces Base64 encoded strings
-    override protected def toRawString: String = {
+    override def toRawString: String = {
       synchronized {
         if (decodedStringCache == null) {
           decodedStringCache = Base64.getEncoder.encodeToString(v)
@@ -212,8 +219,10 @@ object Value {
       appendJsonString(b, toRawString)
       b.result()
     }
-    def toRawString                   = v.toString
-    override def valueType: ValueType = ValueType.EXTENSION // ValueType.TIMESTAMP
+
+    override def toUnquotedString: String = toRawString
+    def toRawString                       = v.toString
+    override def valueType: ValueType     = ValueType.EXTENSION // ValueType.TIMESTAMP
     override def writeTo(packer: Packer): Unit = {
       packer.packTimestamp(v)
     }
@@ -244,7 +253,13 @@ object Value {
     def isEmpty: Boolean  = entries.isEmpty
     def nonEmpty: Boolean = entries.nonEmpty
     override def toJson: String = {
-      s"{${entries.map(x => s"${x._1.toJson}:${x._2.toJson}").mkString(",")}}"
+      entries
+        .map { kv =>
+          // JSON requires Map key must be a quoted UTF-8 string
+          val jsonKey = new StringBuilder()
+          appendJsonString(jsonKey, kv._1.toUnquotedString)
+          s"""${jsonKey.result()}:${kv._2.toJson}"""
+        }.mkString("{", ",", "}")
     }
     override def valueType: ValueType = ValueType.MAP
     override def writeTo(packer: Packer): Unit = {
