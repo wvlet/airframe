@@ -157,7 +157,7 @@ class NettyRESTServerTest extends AirSpec {
         client.send(Http.GET("/v1/rich_info")).map { response => response.contentString }
       }
       Rx.fromSeq(futures).map { result =>
-        info(result.mkString(", "))
+        info(result)
       }
     }
 //

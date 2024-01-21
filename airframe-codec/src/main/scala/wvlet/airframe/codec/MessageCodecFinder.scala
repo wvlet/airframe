@@ -56,6 +56,14 @@ object MessageCodecFinder extends LogSupport {
       }
     }
 
+  def newCodecFinder(codecTable: PartialFunction[Surface, MessageCodec[_]]): MessageCodecFinder =
+    new MessageCodecFinder {
+      override def findCodec(
+          factory: MessageCodecFactory,
+          seenSet: Set[Surface]
+      ): PartialFunction[Surface, MessageCodec[_]] = codecTable
+    }
+
   val defaultKnownCodecs: Map[Surface, MessageCodec[_]] = {
     StandardCodec.standardCodec ++
       MetricsCodec.metricsCodec ++

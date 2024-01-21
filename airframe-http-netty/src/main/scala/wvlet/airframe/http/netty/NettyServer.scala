@@ -238,7 +238,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
               NettyBackend,
               new NettyResponseHandler,
               // Set a custom codec and use JSON map output
-              MessageCodecFactory.newFactory(config.customCodec).withMapOutput
+              MessageCodecFactory.defaultFactoryForJSON.withCodecs(config.customCodec)
             )
           )
       }

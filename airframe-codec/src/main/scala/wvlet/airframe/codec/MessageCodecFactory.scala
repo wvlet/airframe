@@ -11,7 +11,10 @@ case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageC
   private[this] var cache = Map.empty[String, MessageCodec[_]]
 
   def withCodecs(additionalCodecs: Map[Surface, MessageCodec[_]]): MessageCodecFactory = {
-    this.copy(codecFinder = codecFinder orElse MessageCodecFinder.newCodecFinder(additionalCodecs))
+    this.copy(codecFinder = MessageCodecFinder.newCodecFinder(additionalCodecs) orElse codecFinder)
+  }
+  def withCodecs(additionalCodecs: PartialFunction[Surface, MessageCodec[_]]): MessageCodecFactory = {
+    this.copy(codecFinder = MessageCodecFinder.newCodecFinder(additionalCodecs) orElse codecFinder)
   }
 
   // Generate a codec that outputs objects as Map type. This should be enabled for generating JSON data
