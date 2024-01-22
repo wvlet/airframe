@@ -70,7 +70,8 @@ object HttpClients extends LogSupport {
   }
 
   private[client] def defaultHttpClientErrorHandler(
-      lastResponse: Option[Response]
+      // Need to evaluate the last response lazily because it may not be available when this method is called
+      lastResponse: () => Option[Response]
   ): PartialFunction[Throwable, Nothing] = {
     case e: HttpClientException =>
       val resp = e.response.toHttpResponse
@@ -88,7 +89,7 @@ object HttpClients extends LogSupport {
       val resp = e.toResponse
       throw new HttpClientException(resp, e.status.httpStatus, e.message, e)
     case e: CircuitBreakerOpenException =>
-      val resp = lastResponse.getOrElse(Http.response(HttpStatus.ServiceUnavailable_503))
+      val resp = lastResponse().getOrElse(Http.response(HttpStatus.ServiceUnavailable_503))
       throw new HttpClientException(
         resp,
         status = resp.status,
@@ -97,12 +98,12 @@ object HttpClients extends LogSupport {
       )
     case e: MaxRetryException =>
       throw HttpClientMaxRetryException(
-        lastResponse.getOrElse(Http.response(HttpStatus.InternalServerError_500)),
+        lastResponse().getOrElse(Http.response(HttpStatus.InternalServerError_500)),
         e.retryContext,
         e.retryContext.lastError
       )
     case NonFatal(e) =>
-      val resp = lastResponse.getOrElse(Http.response(HttpStatus.InternalServerError_500))
+      val resp = lastResponse().getOrElse(Http.response(HttpStatus.InternalServerError_500))
       throw new HttpClientException(
         resp,
         status = resp.status,

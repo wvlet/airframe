@@ -20,6 +20,8 @@ import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
+import java.util.concurrent.atomic.AtomicReference
+
 /**
   * A standard async http client interface for Rx[_]
   */
@@ -73,8 +75,7 @@ trait AsyncClient extends AsyncClientCompat with HttpClientFactory[AsyncClient] 
           }
           .recover {
             // Or if request has been failing, apply the response filter only to the last response
-            val response = lastResponse.map(config.responseFilter(_))
-            HttpClients.defaultHttpClientErrorHandler(response)
+            HttpClients.defaultHttpClientErrorHandler(() => lastResponse.map(config.responseFilter(_)))
           }
       }
 

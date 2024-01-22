@@ -213,15 +213,15 @@ class NettyRESTServerTest extends AirSpec {
       }
     }
 
-//    test("test error response") {
-//      warn("Exception response test")
-//      // Receive the raw error response
-//      client.withConfig(_.noRetry).sendSafe(Http.GET("/v1/error")).map { ret =>
-//        ret.statusCode shouldBe 500
-//        ret.header.get(HttpHeader.xAirframeRPCStatus) shouldBe defined
-//      }
-//    }
-//
+    test("test error response") {
+      warn("Exception response test")
+      // Receive the raw error response
+      client.withConfig(_.noRetry).sendSafe(Http.GET("/v1/error")).map { ret =>
+        ret.statusCode shouldBe 500
+        ret.header.get(HttpHeader.xAirframeRPCStatus) shouldBe defined
+      }
+    }
+
     test("MsgPack response") {
       test("MessagePack request") {
         val msgpack = JSONCodec.toMsgPack("""{"id":10, "name":"leo"}""")
