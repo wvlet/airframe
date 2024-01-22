@@ -156,8 +156,9 @@ class NettyRESTServerTest extends AirSpec {
       val futures = (0 until 5).map { x =>
         client.send(Http.GET("/v1/rich_info")).map { response => response.contentString }
       }
+      // TODO Support merging sequence of Seq(Rx, Rx, Rx, ...)
       Rx.fromSeq(futures).map { result =>
-        info(result)
+        debug(result)
       }
     }
 //
