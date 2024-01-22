@@ -163,91 +163,71 @@ class NettyRESTServerTest extends AirSpec {
     }
   }
 
-//  test("test various responses") { (client: FinagleClient) =>
-//    test("support JSON response") {
-//      // JSON response
-//      val json = Await.result(client.send(Request("/v1/rich_info_future")).map { response => response.contentString })
-//
-//      json shouldBe """{"version":"0.1","name":"MyApi","details":{"serverType":"test-server"}}"""
-//    }
-//
-//    test("support JSON POST request") {
-//      val request = Request("/v1/json_api")
-//      request.method = Method.Post
-//      request.contentString = """{"id":10, "name":"leo"}"""
-//      val ret = Await.result(client.send(request).map(_.contentString))
-//      ret shouldBe """RichRequest(10,leo)"""
-//    }
-//
-//    test("return a response header except for Content-Type") {
-//      val request = Request("/v1/http_header_test")
-//      val ret     = Await.result(client.send(request))
-//
-//      ret.headerMap.getOrElse("Server", "") shouldBe "Airframe"
-//      ret.contentString shouldBe """Hello"""
-//    }
-//
-//    test("JSON POST request with explicit JSON content type") {
-//      val request = Request("/v1/json_api")
-//      request.method = Method.Post
-//      request.contentString = """{"id":10, "name":"leo"}"""
-//      request.setContentTypeJson()
-//      val ret = Await.result(client.send(request).map(_.contentString))
-//      ret shouldBe """RichRequest(10,leo)"""
-//    }
-//
-//    test("test parameter mappings") {
-//      // Use the default argument
-//      {
-//        val request = Request("/v1/json_api_default")
-//        request.method = Method.Post
-//        val ret = Await.result(client.send(request).map(_.contentString))
-//        ret shouldBe """RichRequest(100,dummy)"""
-//      }
-//
-//      // GET requests with query parameters
-//      {
-//        val request = Request("/v1/json_api?id=10&name=leo")
-//        request.method = Method.Get
-//        val ret = Await.result(client.send(request).map(_.contentString))
-//        ret shouldBe """RichRequest(10,leo)"""
-//      }
-//
-//      // JSON requests with POST
-//      {
-//        val request = Request("/v1/json_api")
-//        request.method = Method.Post
-//        request.contentString = """{"id":10, "name":"leo"}"""
-//        val ret = Await.result(client.send(request).map(_.contentString))
-//        ret shouldBe """RichRequest(10,leo)"""
-//      }
-//    }
-//
+  test("test various responses") { (client: AsyncClient) =>
+    test("support JSON response") {
+      // JSON response
+      client.send(Http.GET("/v1/rich_info_future")).map { response =>
+        response.contentString shouldBe """{"version":"0.1","name":"MyApi","details":{"serverType":"test-server"}}"""
+      }
+    }
+
+    test("support JSON POST request") {
+      val request = Http.POST("/v1/json_api").withJson("""{"id":10, "name":"leo"}""")
+      client.send(request).map {
+        _.contentString shouldBe """RichRequest(10,leo)"""
+      }
+    }
+
+    test("return a response header except for Content-Type") {
+      val request = Http.GET("/v1/http_header_test")
+      client.send(request).map { ret =>
+        ret.header.getOrElse("Server", "") shouldBe "Airframe"
+        ret.contentString shouldBe """Hello"""
+      }
+    }
+
+    test("JSON POST request with explicit JSON content type") {
+      val request = Http.POST("/v1/json_api").withJson("""{"id":10, "name":"leo"}""")
+      client.send(request).map {
+        _.contentString shouldBe """RichRequest(10,leo)"""
+      }
+    }
+
+    test("test parameter mappings") {
+      test("Use the default argument") {
+        client.send(Http.POST("/v1/json_api_default")).map {
+          _.contentString shouldBe """RichRequest(100,dummy)"""
+        }
+      }
+
+      test("GET request with query parameters") {
+        client.send(Http.GET("/v1/json_api?id=10&name=leo")).map {
+          _.contentString shouldBe """RichRequest(10,leo)"""
+        }
+      }
+
+      // JSON requests with POST
+      test("JSON POST request with explicit JSON content type") {
+        val request = Http.POST("/v1/json_api").withJson("""{"id":10, "name":"leo"}""")
+        client.send(request).map(_.contentString shouldBe """RichRequest(10,leo)""")
+      }
+    }
+
 //    test("test error response") {
 //      warn("Exception response test")
-//      val l  = Logger.of[FinagleServer]
-//      val lv = l.getLogLevel
-//      l.setLogLevel(LogLevel.ERROR)
-//      try {
-//        val request = Request("/v1/error")
-//        val ret     = Await.result(client.sendSafe(request)) // Receive the raw error response
+//      // Receive the raw error response
+//      client.withConfig(_.noRetry).sendSafe(Http.GET("/v1/error")).map { ret =>
 //        ret.statusCode shouldBe 500
-//      } finally {
-//        l.setLogLevel(lv)
+//        ret.header.get(HttpHeader.xAirframeRPCStatus) shouldBe defined
 //      }
 //    }
 //
-//    test("MsgPack response") {
-//      // MessagePack request
-//      {
-//        val request = Request("/v1/json_api")
-//        request.method = Method.Post
-//        val msgpack = JSONCodec.toMsgPack("""{"id":10, "name":"leo"}""")
-//        request.content = ByteArray.Owned(msgpack)
-//        request.contentType = "application/x-msgpack"
-//        val ret = Await.result(client.send(request).map(_.contentString))
-//        ret shouldBe """RichRequest(10,leo)"""
-//      }
+    test("MsgPack response") {
+      test("MessagePack request") {
+        val msgpack = JSONCodec.toMsgPack("""{"id":10, "name":"leo"}""")
+        val request = Http.POST("/v1/json_api").withMsgPack(msgpack)
+        client.send(request).map(_.contentString shouldBe """RichRequest(10,leo)""")
+      }
 //
 //      // Receive MessagePack
 //      {
@@ -363,6 +343,6 @@ class NettyRESTServerTest extends AirSpec {
 //      val result = Await.result(client.send(r))
 //      result.statusCode shouldBe HttpStatus.Ok_200.code
 //      result.contentString shouldBe "1:unknown"
-//    }
-//  }
+    }
+  }
 }
