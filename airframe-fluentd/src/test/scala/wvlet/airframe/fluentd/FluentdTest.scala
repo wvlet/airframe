@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.fluentd
 import org.komamitsu.fluency.ingester.sender.ErrorHandler
-import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
+import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
 
@@ -82,7 +83,7 @@ object FluentdTest extends AirSpec {
     })
     config.errorHandler shouldNotBe null
 
-    val c = MessageCodecFactory.defaultFactoryForJSON.withCodecs(Map.empty)
+    val c = MessageCodecFactory.defaultFactoryForJSON.withCodecs(Map.empty[Surface, MessageCodec[_]])
     config = config.withMessageCodecFactory(c)
     config.codecFactory shouldBeTheSameInstanceAs c
   }

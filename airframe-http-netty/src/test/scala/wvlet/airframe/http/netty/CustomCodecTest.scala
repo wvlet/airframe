@@ -11,11 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.finagle
-import com.twitter.finagle.http.Request
+package wvlet.airframe.http.netty
+
 import wvlet.airframe.codec.{MessageCodec, MessageContext}
 import wvlet.airframe.control.Control
-import wvlet.airframe.http.{Endpoint, RPC, Router}
+import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.{Endpoint, Http, RPC, Router, RxRouter}
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
@@ -58,14 +59,13 @@ object CustomCodecTest extends AirSpec {
   test(
     s"custom codec",
     design = _.add(
-      Finagle.server
-        .withRouter(Router.add[MyApi])
+      Netty.server
+        .withRouter(RxRouter.of[MyApi])
         .withCustomCodec(Map(Surface.of[Suit] -> SuitCodec))
-        .design
-    ).add(Finagle.client.syncClientDesign)
-  ) { (client: FinagleSyncClient) =>
-    client.send(Request("/hello?suit=Spade")).contentString shouldBe "Spade"
-    client.send(Request("/hello?suit=Heart")).contentString shouldBe "Heart"
+        .designWithSyncClient
+    )
+  ) { (client: SyncClient) =>
+    client.send(Http.GET("/hello?suit=Spade")).contentString shouldBe "Spade"
+    client.send(Http.GET("/hello?suit=Heart")).contentString shouldBe "Heart"
   }
-
 }
