@@ -465,7 +465,34 @@ object Rx extends LogSupport {
   def zip[A, B, C, D, E](a: RxOps[A], b: RxOps[B], c: RxOps[C], d: RxOps[D], e: RxOps[E]): Rx[(A, B, C, D, E)] =
     Zip5Op(a, b, c, d, e)
 
+  /**
+    * Combine a sequence of Rx[A] into a single Rx[Seq[A]]
+    * @param seq
+    * @tparam A
+    * @return
+    */
+  def zip[A](seq: Seq[Rx[A]]): Rx[Seq[A]] = {
+    if (seq.isEmpty) {
+      Rx.single(Seq.empty[A])
+    } else {
+      seq.head.zip(zip(seq.tail)).map { case (head, tail) => head +: tail }
+    }
+  }
+
   def concat[A, A1 >: A](a: RxOps[A], b: RxOps[A1]): Rx[A1] = ConcatOp(a, b)
+
+  /**
+    * Concatenate a sequence of Rx[A] into a single Rx[A]
+    * @param seq
+    * @tparam A
+    * @tparam A1
+    * @return
+    */
+  def concatRx[A, A1 >: A](seq: Seq[RxOps[A1]]): Rx[A1] = {
+    seq.foldLeft[Rx[A1]](Rx.empty) { (a, b) =>
+      concat(a, b)
+    }
+  }
 
   /**
     * Periodically trigger an event and report the interval millis. After running Rx with an interval, the cancel method

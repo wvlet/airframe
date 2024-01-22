@@ -293,6 +293,20 @@ object RxTest extends AirSpec {
     )
   }
 
+  test("zip Seq[Rx[A]]") {
+    val a = Rx.variable(1)
+    val b = Rx.variable("a")
+    val c = Rx.variable(true)
+    val d = Rx.variable(false)
+    val e = Rx.variable(10)
+
+    Rx.zip(Seq(a, b, c, d, e)).map { seq =>
+      seq shouldMatch { case Seq(1, "a", true, false, 10) =>
+        debug(seq)
+      }
+    }
+  }
+
   test("join") {
     val x  = Rx.variable(1)
     val y  = Rx.variable("a")

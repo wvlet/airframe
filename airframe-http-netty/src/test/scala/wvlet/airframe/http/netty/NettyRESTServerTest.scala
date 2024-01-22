@@ -153,20 +153,14 @@ class NettyRESTServerTest extends AirSpec {
 
     test("multiple rx responses") {
       // making many requests
-      val futures = (0 until 5).map { x =>
+      val rxList = (0 until 5).map { x =>
         client.send(Http.GET("/v1/rich_info")).map { response => response.contentString }
       }
-      // TODO Support merging sequence of Seq(Rx, Rx, Rx, ...)
-      Rx.fromSeq(futures).map { result =>
-        debug(result)
+      Rx.zip(rxList).map { result =>
+        result.size shouldBe 5
+        result.forall(_ == """{"version":"0.1","name":"MyApi","details":{"serverType":"test-server"}}""") shouldBe true
       }
     }
-//
-//    val result = Await.result(Future.collect(futures))
-//    debug(result.mkString(", "))
-//
-//    // Future response
-//    Await.result(client.send(Request("/v1/future")).map { response => response.contentString }) shouldBe "hello"
   }
 
 //  test("test various responses") { (client: FinagleClient) =>
