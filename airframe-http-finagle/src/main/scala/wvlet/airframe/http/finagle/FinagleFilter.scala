@@ -37,7 +37,8 @@ class FinagleRouter(session: Session, private[finagle] val config: FinagleServer
       config.controllerProvider,
       FinagleBackend,
       config.responseHandler,
-      MessageCodecFactory.defaultFactory.orElse(MessageCodecFactory.newFactory(config.customCodec))
+      MessageCodecFactory.defaultFactory.orElse(MessageCodecFactory.newFactory(config.customCodec)),
+      config.executionContext
     )
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
