@@ -39,13 +39,8 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
   }
 
   override def toFuture[A](a: Future[A], ex: ExecutionContext): Rx[A] = {
-    val rx = Rx.future(a)(ex)
-    // Run once to skip the initial None state of Rx[A]
-    if (!a.isCompleted) {
-      // TODO Find a better way to run Rx[A]
-      rx.run { effect => }
-    }
-    rx
+    val v = Await.result(a, scala.concurrent.duration.Duration.Inf)
+    Rx.single(v)
   }
 
   override def toScalaFuture[A](a: Rx[A]): Future[A] = {
