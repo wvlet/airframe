@@ -122,7 +122,7 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
       case b: MsgPack if isMsgPackRequest(request) =>
         val r = newResponse(route, request, responseSurface)
         r.contentType = xMsgPack
-        r.content = Buf.ByteArray.Owned(b)
+        r.content = Buf.Byt1eArray.Owned(b)
         r
       case s: String if !isMsgPackRequest(request) =>
         val r = newResponse(route, request, responseSurface)

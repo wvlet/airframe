@@ -18,6 +18,7 @@ import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.http.*
 import wvlet.log.LogSupport
 
+import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
 /**
@@ -42,7 +43,8 @@ object HttpRequestDispatcher extends LogSupport {
       controllerProvider: ControllerProvider,
       backend: HttpBackend[Req, Resp, F],
       responseHandler: ResponseHandler[Req, Resp],
-      codecFactory: MessageCodecFactory
+      codecFactory: MessageCodecFactory,
+      executionContext: ExecutionContext
   ): HttpFilter[Req, Resp, F] = {
     // Generate a table for Route -> matching HttpFilter
     val routingTable = buildRoutingTable(backend, session, router, backend.defaultFilter, controllerProvider)
@@ -54,9 +56,16 @@ object HttpRequestDispatcher extends LogSupport {
           val routeFilter = routingTable.findFilter(routeMatch.route)
           // Create a new context for processing the matched route with the controller
           val context =
-            new HttpEndpointExecutionContext(backend, routeMatch, responseHandler, routeFilter.controller, codecFactory)
+            new HttpEndpointExecutionContext(
+              backend,
+              routeMatch,
+              responseHandler,
+              routeFilter.controller,
+              codecFactory,
+              executionContext
+            )
           val currentService = routeFilter.filter.andThen(context)
-          currentService(request)
+          currentService.apply(request)
         case None =>
           // If no matching route is found, use the leaf filter if exists
           routingTable.leafFilter match {

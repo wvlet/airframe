@@ -35,10 +35,11 @@ import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{Executors, TimeUnit}
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.annotation.PostConstruct
 import scala.collection.immutable.ListMap
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 case class NettyServerConfig(
@@ -52,7 +53,15 @@ case class NettyServerConfig(
       new LogRotationHttpLogger(config)
     },
     loggingFilter: HttpLogger => RxHttpFilter = { new RPCLoggingFilter(_) },
-    customCodec: PartialFunction[Surface, MessageCodec[_]] = PartialFunction.empty
+    customCodec: PartialFunction[Surface, MessageCodec[_]] = PartialFunction.empty,
+    // Thread manager for handling Future[_] responses
+    executionContext: ExecutionContext = {
+      // Using the global thread pool causes an issue in sbt's layered class loader #918
+      // So need to use the local daemon thread pool
+      ExecutionContext.fromExecutorService(
+        Executors.newCachedThreadPool(ThreadUtil.newDaemonThreadFactory("airframe-netty"))
+      )
+    }
 ) {
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)
 
@@ -149,7 +158,6 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
       new NioEventLoopGroup(numWorkers, tf)
     }
   }
-
   private var channelFuture: Option[Channel] = None
 
   override def localAddress: String = s"localhost:${config.port}"
@@ -238,7 +246,8 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
               NettyBackend,
               new NettyResponseHandler,
               // Set a custom codec and use JSON map output
-              MessageCodecFactory.defaultFactoryForJSON.withCodecs(config.customCodec)
+              MessageCodecFactory.defaultFactoryForJSON.withCodecs(config.customCodec),
+              config.executionContext
             )
           )
       }

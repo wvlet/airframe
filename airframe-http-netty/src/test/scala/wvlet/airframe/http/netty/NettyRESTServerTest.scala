@@ -92,7 +92,7 @@ class MyApi extends LogSupport {
 
   @Endpoint(path = "/v1/scala-future", method = HttpMethod.GET)
   def scalaFutureResponse: scala.concurrent.Future[String] = {
-    scala.concurrent.Future.successful("Hello Scala Future")
+    Future.successful("Hello Scala Future")
   }
 
   @Endpoint(path = "/v1/scala-future2", method = HttpMethod.GET)
@@ -125,7 +125,7 @@ class NettyRESTServerTest extends AirSpec {
   }
 
   test("support production mode") { (server: HttpServer) =>
-    // #432: Just need to check the startup of finagle without MISSING_DEPENDENCY error
+    // #432: Just need to check the startup of NettyServer (HttpServer interface) without causing MISSING_DEPENDENCY error
   }
 
   test("async responses") { (client: AsyncClient) =>
@@ -238,19 +238,20 @@ class NettyRESTServerTest extends AirSpec {
       }
     }
 
-//    test("support scala.concurrent.Future[X]") {
-//      client.send(Http.GET("/v1/scala-future")).map { response =>
-//        response.status shouldBe HttpStatus.Ok_200
-//        response.contentString shouldBe "Hello Scala Future"
-//      }
-//    }
+    test("support scala.concurrent.Future[X]") {
+      client.send(Http.GET("/v1/scala-future")).map { response =>
+        response.status shouldBe HttpStatus.Ok_200
+        response.contentString shouldBe "Hello Scala Future"
+      }
+    }
 
-//    test("support scala.concurrent.Future[Response]") {
-//      val result = Await.result(client.send(Request(Method.Get, "/v1/scala-future2")))
-//      result.statusCode shouldBe HttpStatus.Ok_200.code
-//      result.contentString shouldBe "Hello Scala Future"
-//    }
-//
+    test("support scala.concurrent.Future[Response]") {
+      client.send(Http.GET("/v1/scala-future2")).map { response =>
+        response.status shouldBe HttpStatus.Ok_200
+        response.contentString shouldBe "Hello Scala Future"
+      }
+    }
+
     test("support query parameter mapping") {
       client.send(Http.GET("/v1/user/1/profile?session_id=xyz")).map { result =>
         result.status shouldBe HttpStatus.Ok_200
