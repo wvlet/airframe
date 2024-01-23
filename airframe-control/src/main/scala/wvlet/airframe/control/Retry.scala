@@ -199,7 +199,7 @@ object Retry extends LogSupport {
     }
 
     def noRetry: RetryContext = {
-      this.copy(maxRetry = 0, errorClassifier = ResultClass.NO_RETRY)
+      this.copy(maxRetry = 0)
     }
 
     def withBackOff(
