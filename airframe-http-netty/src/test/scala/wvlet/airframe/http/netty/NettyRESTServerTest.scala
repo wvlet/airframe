@@ -18,6 +18,7 @@ import wvlet.airframe.Design
 import wvlet.airframe.codec.{JSONCodec, MessageCodec}
 import wvlet.airframe.control.Control
 import wvlet.airframe.http.*
+import wvlet.airframe.http.HttpHeader.MediaType
 import wvlet.airframe.http.client.{AsyncClient, SyncClient}
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
@@ -85,20 +86,6 @@ class MyApi extends LogSupport {
   def throw_ex: String = {
     throw new InvocationTargetException(new IllegalArgumentException("test error"))
   }
-
-//  @Endpoint(path = "/v1/reader")
-//  def reader: Reader[Buf] = {
-//    val json = MessageCodec.of[RichInfo].toJson(getRichInfo)
-//    Reader.fromBuf(Buf.Utf8(json))
-//  }
-//
-//  @Endpoint(path = "/v1/reader-seq")
-//  def readerSeq: Reader[RichInfo] = {
-//    val r1     = Reader.fromSeq(Seq(getRichInfo))
-//    val r2     = Reader.fromSeq(Seq(getRichInfo))
-//    val stream = AsyncStream.fromSeq(Seq(r1, r2))
-//    Reader.concat(stream)
-//  }
 
   @Endpoint(path = "/v1/delete", method = HttpMethod.DELETE)
   def emptyResponse: Unit = {}
@@ -228,121 +215,81 @@ class NettyRESTServerTest extends AirSpec {
         val request = Http.POST("/v1/json_api").withMsgPack(msgpack)
         client.send(request).map(_.contentString shouldBe """RichRequest(10,leo)""")
       }
-//
-//      // Receive MessagePack
-//      {
-//        val request = Request("/v1/raw_string_arg")
-//        request.method = Method.Post
-//        request.contentType = "application/x-msgpack"
-//        val msgpack = MessagePack.newBufferPacker.packString("1.0").toByteArray
-//        request.content = ByteArray.Owned(msgpack)
-//        val response = Await.result(client.send(request))
-//        response.contentString shouldBe "1.0"
-//        response.statusCode shouldBe HttpStatus.Ok_200.code
-//      }
-//    }
-//
-//    test("Raw string request") {
-//      // Raw string arg
-//      val request = Request("/v1/raw_string_arg")
-//      request.method = Method.Post
-//      request.contentString = "1.0"
-//      Await.result(client.send(request).map(_.contentString)) shouldBe "1.0"
-//    }
-//
-//    test("Finagle Reader[Buf] response") {
-//      val request = Request("/v1/reader")
-//      request.method = Method.Get
-//      val json  = Await.result(client.send(request).map(_.contentString))
-//      val codec = MessageCodec.of[RichInfo]
-//      codec.unpackJson(json) shouldBe Some(RichInfo("0.1", "MyApi", RichNestedInfo("test-server")))
-//    }
-//
-//    val richInfo = RichInfo("0.1", "MyApi", RichNestedInfo("test-server"))
-//
-//    test("convert Reader[X] response to JSON stream") {
-//      val request = Request("/v1/reader-seq")
-//      request.method = Method.Get
-//      val json = Await.result(client.send(request).map(_.contentString))
-//      debug(json)
-//      val codec = MessageCodec.of[Seq[RichInfo]]
-//      codec.fromJson(json) shouldBe Seq(richInfo, richInfo)
-//    }
-//
-//    test("Convert Reader[X] response to MsgPack stream") {
-//      val request = Request("/v1/reader-seq")
-//      request.method = Method.Get
-//      request.accept = "application/x-msgpack"
-//      val msgpack = Await.result {
-//        client.send(request).map { resp =>
-//          val c       = resp.content
-//          val msgpack = new Array[Byte](c.length)
-//          c.write(msgpack, 0)
-//          msgpack
-//        }
-//      }
-//      val codec = MessageCodec.of[RichInfo]
-//
-//      Control.withResource(MessagePack.newUnpacker(msgpack)) { unpacker =>
-//        while (unpacker.hasNext) {
-//          val v = unpacker.unpackValue
-//          codec.fromMsgPack(v.toMsgpack) shouldBe richInfo
-//        }
-//      }
-//    }
-//
-//    test("return 204 for Unit response") {
-//      val result = Await.result(client.send(Request(Method.Delete, "/v1/delete")))
-//      result.statusCode shouldBe HttpStatus.NoContent_204.code
-//    }
-//
+
+      test("Receive MessagePack") {
+        val msgpack = MessagePack.newBufferPacker.packString("1.0").toByteArray
+        val request = Http.POST("/v1/raw_string_arg").withMsgPack(msgpack)
+        client.send(request).map { response =>
+          response.contentString shouldBe "1.0"
+          response.statusCode shouldBe HttpStatus.Ok_200.code
+        }
+      }
+    }
+
+    test("Raw string request") {
+      // Raw string arg
+      val request = Http.POST("/v1/raw_string_arg").withContent("1.0")
+      client.send(request).map(_.contentString shouldBe "1.0")
+    }
+
+    test("return 204 for Unit response") {
+      client.send(Http.DELETE("/v1/delete")).map { response =>
+        response.status shouldBe HttpStatus.NoContent_204
+      }
+    }
+
 //    test("support scala.concurrent.Future[X]") {
-//      val result = Await.result(client.send(Request(Method.Get, "/v1/scala-future")))
-//      result.statusCode shouldBe HttpStatus.Ok_200.code
-//      result.contentString shouldBe "Hello Scala Future"
+//      client.send(Http.GET("/v1/scala-future")).map { response =>
+//        response.status shouldBe HttpStatus.Ok_200
+//        response.contentString shouldBe "Hello Scala Future"
+//      }
 //    }
-//
+
 //    test("support scala.concurrent.Future[Response]") {
 //      val result = Await.result(client.send(Request(Method.Get, "/v1/scala-future2")))
 //      result.statusCode shouldBe HttpStatus.Ok_200.code
 //      result.contentString shouldBe "Hello Scala Future"
 //    }
 //
-//    test("support query parameter mapping") {
-//      val result = Await.result(client.send(Request(Method.Get, "/v1/user/1/profile?session_id=xyz")))
-//      result.statusCode shouldBe HttpStatus.Ok_200.code
-//      result.contentString shouldBe "1:xyz"
-//    }
-//
-//    test("support missing query parameter mapping") {
-//      val result = Await.result(client.send(Request(Method.Get, "/v1/user/1/profile")))
-//      result.statusCode shouldBe HttpStatus.Ok_200.code
-//      result.contentString shouldBe "1:unknown"
-//    }
-//
-//    test("support query parameter mapping for POST") {
-//      val r = Request(Method.Post, "/v1/user/1/profile?session_id=xyz")
-//      r.contentString = "hello"
-//      val result = Await.result(client.send(r))
-//      result.statusCode shouldBe HttpStatus.Ok_200.code
-//      result.contentString shouldBe "1:xyz"
-//    }
-//
-//    test("support option parameter mapping for POST") {
-//      val r = Request(Method.Post, "/v1/user/1/profile")
-//      r.contentString = "hello"
-//      val result = Await.result(client.send(r))
-//      result.statusCode shouldBe HttpStatus.Ok_200.code
-//      result.contentString shouldBe "1:hello"
-//    }
-//
-//    test("skip content body mapping for application/octet-stream requests") {
-//      val r = Request(Method.Post, "/v1/user/1/profile")
-//      r.contentString = "hello" // This content should not be used for RPC binding
-//      r.contentType = MediaType.OctetStream
-//      val result = Await.result(client.send(r))
-//      result.statusCode shouldBe HttpStatus.Ok_200.code
-//      result.contentString shouldBe "1:unknown"
+    test("support query parameter mapping") {
+      client.send(Http.GET("/v1/user/1/profile?session_id=xyz")).map { result =>
+        result.status shouldBe HttpStatus.Ok_200
+        result.contentString shouldBe "1:xyz"
+      }
+    }
+
+    test("support missing query parameter mapping") {
+      client.send(Http.GET("/v1/user/1/profile")).map { result =>
+        result.status shouldBe HttpStatus.Ok_200
+        result.contentString shouldBe "1:unknown"
+      }
+    }
+
+    test("support query parameter mapping for POST") {
+      val r = Http.POST("/v1/user/1/profile?session_id=xyz")
+      client.send(r).map { result =>
+        result.status shouldBe HttpStatus.Ok_200
+        result.contentString shouldBe "1:xyz"
+      }
+    }
+
+    test("support option parameter mapping for POST") {
+      val r = Http.POST("/v1/user/1/profile")
+      client.send(r).map { result =>
+        result.status shouldBe HttpStatus.Ok_200
+        result.contentString shouldBe "1:unknown"
+      }
+    }
+
+    test("skip content body mapping for application/octet-stream requests") {
+      val r = Http
+        .POST("/v1/user/1/profile")
+        .withContent("hello") // This content should not be used for RPC binding
+        .withContentType(MediaType.OctetStream)
+      client.send(r).map { result =>
+        result.status shouldBe HttpStatus.Ok_200
+        result.contentString shouldBe "1:unknown"
+      }
     }
   }
 }
