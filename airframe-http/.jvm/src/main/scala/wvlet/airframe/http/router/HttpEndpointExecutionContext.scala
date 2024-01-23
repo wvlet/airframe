@@ -14,11 +14,12 @@
 package wvlet.airframe.http.router
 
 import java.lang.reflect.InvocationTargetException
-
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
+import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http.{HttpBackend, HttpContext, HttpRequestAdapter}
 import wvlet.log.LogSupport
 
+import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
@@ -32,7 +33,8 @@ class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
     routeMatch: RouteMatch,
     responseHandler: ResponseHandler[Req, Resp],
     controller: Any,
-    codecFactory: MessageCodecFactory
+    codecFactory: MessageCodecFactory,
+    executionContext: ExecutionContext
 ) extends HttpContext[Req, Resp, F]
     with LogSupport {
 
@@ -70,19 +72,17 @@ class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
         // Check the type of X
         val futureValueSurface = route.returnTypeSurface.typeArgs(0)
 
-        // TODO: Is using global execution a right choice?
-        val ex = ExecutionContext.global
         futureValueSurface.rawType match {
           // If X is the backend Response type, return as is:
           case valueCls if backend.isRawResponseType(valueCls) =>
-            // Convert Scala Future to Finagle Future
-            backend.toFuture(result.asInstanceOf[scala.concurrent.Future[Resp]], ex)
+            // Convert Scala Future to the backend-specific Future
+            backend.toFuture(result.asInstanceOf[scala.concurrent.Future[Resp]], executionContext)
           case other =>
             // If X is other type, convert X into an HttpResponse
             val scalaFuture = result
               .asInstanceOf[scala.concurrent.Future[_]]
-              .map { x => responseHandler.toHttpResponse(route, request, futureValueSurface, x) }(ex)
-            backend.toFuture(scalaFuture, ex)
+              .map { x => responseHandler.toHttpResponse(route, request, futureValueSurface, x) }(executionContext)
+            backend.toFuture(scalaFuture, executionContext)
         }
       case _ =>
         // If the route returns non future value, convert it into Future response

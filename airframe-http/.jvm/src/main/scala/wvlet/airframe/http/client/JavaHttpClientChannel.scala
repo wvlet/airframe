@@ -18,6 +18,7 @@ import wvlet.airframe.control.IO
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.*
 import wvlet.airframe.rx.Rx
+import wvlet.log.LogSupport
 
 import java.io.InputStream
 import java.net.URI
@@ -35,7 +36,8 @@ import scala.jdk.CollectionConverters.*
   * @param config
   */
 class JavaHttpClientChannel(serverAddress: ServerAddress, private[http] val config: HttpClientConfig)
-    extends HttpChannel {
+    extends HttpChannel
+    with LogSupport {
   private val javaHttpClient: HttpClient = initClient(config)
 
   private def initClient(config: HttpClientConfig): HttpClient = {

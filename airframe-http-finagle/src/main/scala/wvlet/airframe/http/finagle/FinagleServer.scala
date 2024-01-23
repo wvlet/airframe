@@ -22,7 +22,7 @@ import com.twitter.util.{Await, Future}
 import javax.annotation.PostConstruct
 import wvlet.airframe.*
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.control.MultipleExceptions
+import wvlet.airframe.control.{MultipleExceptions, ThreadUtil}
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airframe.http.finagle.filter.HttpAccessLogFilter
 import wvlet.airframe.http.{
@@ -40,9 +40,10 @@ import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
+import java.util.concurrent.Executors
 import scala.annotation.tailrec
 import scala.collection.parallel.immutable.ParVector
-import scala.concurrent.ExecutionException
+import scala.concurrent.{ExecutionContext, ExecutionException}
 import scala.util.Try
 import scala.util.control.NonFatal
 
@@ -62,7 +63,15 @@ case class FinagleServerConfig(
     // A top-level filter applied before routing requests
     beforeRoutingFilter: Filter[Request, Response, Request, Response] = Filter.identity,
     // Service called when no matching route is found
-    fallbackService: Service[Request, Response] = FinagleServer.notFound
+    fallbackService: Service[Request, Response] = FinagleServer.notFound,
+    // Thread manager for handling Future[_] responses
+    executionContext: ExecutionContext = {
+      // Using the global thread pool causes an issue in sbt's layered class loader #918
+      // So need to use the local daemon thread pool
+      ExecutionContext.fromExecutorService(
+        Executors.newCachedThreadPool(ThreadUtil.newDaemonThreadFactory("airframe-finagle"))
+      )
+    }
 ) {
   // Lazily acquire an unused port to avoid conflicts between multiple servers
   lazy val port = serverPort.getOrElse(IOUtil.unusedPort)

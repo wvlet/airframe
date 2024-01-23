@@ -76,8 +76,7 @@ trait SyncClient extends SyncClientCompat with HttpClientFactory[SyncClient] wit
           }
           .recover {
             // Or if request has been failing, apply the response filter only to the last response
-            val response = lastResponse.map(config.responseFilter(_))
-            HttpClients.defaultHttpClientErrorHandler(response)
+            HttpClients.defaultHttpClientErrorHandler(() => lastResponse.map(config.responseFilter(_)))
           }
       }
 

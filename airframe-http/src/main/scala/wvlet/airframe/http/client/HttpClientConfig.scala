@@ -102,6 +102,9 @@ case class HttpClientConfig(
     this.copy(codecFactory = newCodecFactory)
   def withRetryContext(filter: RetryContext => RetryContext): HttpClientConfig =
     this.copy(retryContext = filter(retryContext))
+  def noRetry: HttpClientConfig = {
+    this.copy(retryContext = retryContext.noRetry)
+  }
   def withCircuitBreaker(f: CircuitBreaker => CircuitBreaker): HttpClientConfig = {
     this.copy(circuitBreaker = f(circuitBreaker))
   }

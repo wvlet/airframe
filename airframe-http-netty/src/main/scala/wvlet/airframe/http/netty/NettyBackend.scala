@@ -19,7 +19,8 @@ import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
 import scala.collection.mutable
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
+import scala.util.{Failure, Success}
 
 object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport { self =>
   private val rxBackend = new RxNettyBackend
@@ -37,17 +38,18 @@ object NettyBackend extends HttpBackend[Request, Response, Rx] with LogSupport {
     Rx.single(a)
   }
 
-  override def toFuture[A](a: Future[A], e: ExecutionContext): Rx[A] = {
-    Rx.future(a)(e)
+  override def toFuture[A](a: Future[A], ex: ExecutionContext): Rx[A] = {
+    val v = Await.result(a, scala.concurrent.duration.Duration.Inf)
+    Rx.single(v)
   }
 
   override def toScalaFuture[A](a: Rx[A]): Future[A] = {
     val promise: Promise[A] = Promise()
-    a.toRx
-      .map { x =>
-        promise.success(x)
-      }
-      .recover { case e: Throwable => promise.failure(e) }
+    val rx = a.transform {
+      case Success(x)  => promise.success(x)
+      case Failure(ex) => promise.failure(ex)
+    }
+    rx.run { effect => }
     promise.future
   }
 
