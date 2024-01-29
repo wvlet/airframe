@@ -19,18 +19,18 @@ import wvlet.airframe.http.client.HttpClientContext
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.{Parameter, Surface, TypeName}
 import wvlet.airframe.ulid.ULID
-import wvlet.log.LogTimestampFormatter
+import wvlet.log.{LogSupport, LogTimestampFormatter}
 
 import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.concurrent.ExecutionException
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /**
   * Internal utilities for HTTP request/response logging
   */
-object HttpLogs {
+object HttpLogs extends LogSupport {
 
   def reportLog(
       httpLogger: HttpLogger,
@@ -67,20 +67,18 @@ object HttpLogs {
     next
       .apply(request)
       .toRx
-      .map { resp =>
-        m ++= durationLogs(baseTime, start)
-        rpcCallLogs()
-        m ++= commonResponseLogs(resp)
-        m ++= responseHeaderLogs(resp, excludeHeaders)
-        reportLogs
-        resp
-      }
-      .recoverWith { case e: Throwable =>
-        m ++= durationLogs(baseTime, start)
-        rpcCallLogs()
-        m ++= errorLogs(e)
-        reportLogs
-        Rx.exception(e)
+      .tapOn {
+        case Success(resp) =>
+          m ++= durationLogs(baseTime, start)
+          rpcCallLogs()
+          m ++= commonResponseLogs(resp)
+          m ++= responseHeaderLogs(resp, excludeHeaders)
+          reportLogs
+        case Failure(e) =>
+          m ++= durationLogs(baseTime, start)
+          rpcCallLogs()
+          m ++= errorLogs(e)
+          reportLogs
       }
   }
 
