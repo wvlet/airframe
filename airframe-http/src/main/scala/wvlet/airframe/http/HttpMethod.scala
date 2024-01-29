@@ -24,4 +24,5 @@ object HttpMethod {
   final val OPTIONS = "OPTIONS"
   final val TRACE   = "TRACE"
   final val HEAD    = "HEAD"
+  final val CONNECT = "CONNECT"
 }

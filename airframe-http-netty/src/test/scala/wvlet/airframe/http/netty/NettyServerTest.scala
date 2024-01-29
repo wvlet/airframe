@@ -13,25 +13,25 @@
  */
 package wvlet.airframe.http.netty
 
-import wvlet.airframe.http.HttpServer
+import wvlet.airframe.control.Control
+import wvlet.airframe.control.Control.withResource
+import wvlet.airframe.http.client.SyncClient
+import wvlet.airframe.http.{Http, HttpMethod, HttpServer, HttpStatus}
 import wvlet.airspec.AirSpec
 
 class NettyServerTest extends AirSpec {
-
-  override def design = {
-    Netty.server.designWithSyncClient
-  }
+  initDesign(_ + Netty.server.design)
 
   test("NettyServer should be available") { (server: NettyServer) =>
     test("double start should be ignored") {
       server.start
     }
+  }
 
-    test("can't start server after closing it") {
-      server.close()
-      intercept[IllegalStateException] {
-        server.start
-      }
+  test("can't start server after closing it") { (server: NettyServer) =>
+    server.close()
+    intercept[IllegalStateException] {
+      server.start
     }
   }
 
