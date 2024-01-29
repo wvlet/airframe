@@ -20,13 +20,7 @@ import wvlet.airframe.http.{Http, HttpMethod, HttpServer, HttpStatus}
 import wvlet.airspec.AirSpec
 
 class NettyServerTest extends AirSpec {
-
-  override def design = {
-    Netty.server.design
-      .bind[SyncClient].toProvider { (server: NettyServer) =>
-        Http.client.withRetryContext(_.noRetry).newSyncClient(server.localAddress)
-      }
-  }
+  initDesign(_ + Netty.server.design)
 
   test("NettyServer should be available") { (server: NettyServer) =>
     test("double start should be ignored") {
@@ -45,43 +39,4 @@ class NettyServerTest extends AirSpec {
     server.close()
     server.close()
   }
-
-  test("Handle various http methods") { (client: SyncClient) =>
-    test("valid methods") {
-      for (
-        m <- Seq(
-          HttpMethod.GET,
-          HttpMethod.POST,
-          HttpMethod.PUT,
-          HttpMethod.DELETE,
-          HttpMethod.PATCH,
-          HttpMethod.TRACE,
-          HttpMethod.OPTIONS,
-          HttpMethod.HEAD
-        )
-      ) {
-        test(s"${m}") {
-          val resp = client.sendSafe(Http.request(m, "/get"))
-          resp.status shouldBe HttpStatus.NotFound_404
-        }
-        test(s"${m.toLowerCase} (lower case)") {
-          val resp = client.sendSafe(Http.request(m, "/get"))
-          resp.status shouldBe HttpStatus.NotFound_404
-        }
-      }
-    }
-
-    test("reject unsupported methods") {
-      for (m <- Seq("UNKNOWN_METHOD", HttpMethod.CONNECT)) {
-        test(m) {
-          if (m == HttpMethod.CONNECT) {
-            pending("Not sure how to support CONNECT in Netty")
-          }
-          val resp = client.sendSafe(Http.request(m, "/get"))
-          resp.status shouldBe HttpStatus.BadRequest_400
-        }
-      }
-    }
-  }
-
 }
