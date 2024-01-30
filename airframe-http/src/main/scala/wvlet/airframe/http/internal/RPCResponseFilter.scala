@@ -38,7 +38,7 @@ import scala.util.{Failure, Success}
 class RPCResponseFilter(httpLogger: HttpLogger) extends RxHttpFilter with LogSupport {
   override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {
 
-    val logContext = HttpLogs.LogContext(request, httpLogger, None, Some(RPCContext.current))
+    val logContext = new HttpLogs.LogContext(request, httpLogger, None, Some(RPCContext.current))
 
     next(request)
       .transform {

@@ -30,7 +30,7 @@ class HttpClientLoggingFilter(httpLogger: HttpLogger) extends HttpClientFilter w
 
   def apply(context: HttpClientContext): RxHttpFilter = new RxHttpFilter {
     override def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
-      val logContext = HttpLogs.LogContext(request, httpLogger, Some(context), None)
+      val logContext = new HttpLogs.LogContext(request, httpLogger, Some(context), None)
       next(request)
         .tap { resp =>
           // TODO Record exceptions returned from the server
