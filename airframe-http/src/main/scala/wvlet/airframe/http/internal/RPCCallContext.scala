@@ -24,6 +24,6 @@ case class RPCCallContext(
   // The full class name of the RPC implementation class
   def rpcClassName: String                           = TypeName.sanitizeTypeName(rpcMethodSurface.owner.fullName)
   def rpcInterfaceName: String                       = rpcMethod.rpcInterfaceName
-  def rpcMethodName: String                          = rpcMethodSurface.name
+  def rpcMethodName: String                          = rpcMethod.methodName
   def withRPCArgs(rpcArgs: Seq[Any]): RPCCallContext = this.copy(rpcArgs = rpcArgs)
 }

@@ -18,20 +18,27 @@ import wvlet.airframe.http.{HttpLogger, HttpLoggerConfig, HttpMultiMap, RxHttpEn
 import wvlet.airframe.rx.Rx
 import wvlet.log.LogSupport
 
+import scala.util.{Failure, Success}
+
 /**
   * A client-side filter for logging HTTP requests and responses
   */
 class HttpClientLoggingFilter(httpLogger: HttpLogger) extends HttpClientFilter with AutoCloseable with LogSupport {
-
-  private val excludeHeaders = HttpMultiMap.fromHeaderNames(httpLogger.config.excludeHeaders)
-
   override def close(): Unit = {
     httpLogger.close()
   }
 
   def apply(context: HttpClientContext): RxHttpFilter = new RxHttpFilter {
     override def apply(request: Request, next: RxHttpEndpoint): Rx[Response] = {
-      HttpLogs.reportLog(httpLogger, excludeHeaders, request, next, Some(context))
+      val logContext = new HttpLogs.LogContext(request, httpLogger, Some(context), None)
+      next(request)
+        .tap { resp =>
+          // TODO Record exceptions returned from the server
+          logContext.logResponse(resp, None)
+        }
+        .tapOnFailure { ex =>
+          logContext.logError(ex)
+        }
     }
   }
 }

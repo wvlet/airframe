@@ -19,69 +19,68 @@ import wvlet.airframe.http.client.HttpClientContext
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.{Parameter, Surface, TypeName}
 import wvlet.airframe.ulid.ULID
-import wvlet.log.LogTimestampFormatter
+import wvlet.log.{LogSupport, LogTimestampFormatter}
 
 import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.concurrent.ExecutionException
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /**
   * Internal utilities for HTTP request/response logging
   */
-object HttpLogs {
+object HttpLogs extends LogSupport {
 
-  def reportLog(
-      httpLogger: HttpLogger,
-      excludeHeaders: HttpMultiMap,
+  class LogContext(
       request: Request,
-      next: RxHttpEndpoint,
-      clientContext: Option[HttpClientContext] = None,
-      rpcContext: Option[RPCContext] = None
-  ): Rx[Response] = {
-    val baseTime = System.currentTimeMillis()
-    val start    = System.nanoTime()
-    val m        = ListMap.newBuilder[String, Any]
-    m ++= unixTimeLogs(baseTime)
-    m ++= commonRequestLogs(request)
-    m ++= requestHeaderLogs(request, excludeHeaders)
+      httpLogger: HttpLogger,
+      clientContext: Option[HttpClientContext],
+      rpcContext: Option[RPCContext]
+  ) {
+    private val baseTime = System.currentTimeMillis()
+    private val start    = System.nanoTime()
+    private val m        = ListMap.newBuilder[String, Any]
 
-    def reportLogs: Unit = {
-      // Finally, write the log
-      httpLogger.write(httpLogger.config.logFilter(m.result()))
-    }
+    init()
 
-    def rpcCallLogs(): Unit = {
-      // RPC call context will be set to a TLS after dispatching an event
-      // TODO Pass RPC call context without using TLS
+    private def init(): Unit = {
+      m ++= unixTimeLogs(baseTime)
+      m ++= commonRequestLogs(request)
+      m ++= requestHeaderLogs(request, httpLogger.excludeHeaders)
+
+      // Log RPC context in the client side
+      clientContext.foreach {
+        _.rpcMethod.map { rpc => m ++= rpcMethodLogs(rpc) }
+      }
+      // Log RPC context in the server side
       rpcContext.flatMap(_.rpcCallContext).foreach { rcc =>
         m ++= rpcLogs(rcc)
       }
     }
 
-    clientContext.foreach {
-      _.rpcMethod.map { rpc => m ++= rpcMethodLogs(rpc) }
+    private def logResponse(): Unit = {
+      m ++= durationLogs(baseTime, start)
     }
 
-    next
-      .apply(request)
-      .toRx
-      .map { resp =>
-        m ++= durationLogs(baseTime, start)
-        rpcCallLogs()
-        m ++= commonResponseLogs(resp)
-        m ++= responseHeaderLogs(resp, excludeHeaders)
-        reportLogs
-        resp
-      }
-      .recoverWith { case e: Throwable =>
-        m ++= durationLogs(baseTime, start)
-        rpcCallLogs()
-        m ++= errorLogs(e)
-        reportLogs
-        Rx.exception(e)
-      }
+    def logResponse(response: Response, exception: Option[Throwable]): Response = {
+      logResponse()
+      m ++= commonResponseLogs(response)
+      m ++= responseHeaderLogs(response, httpLogger.excludeHeaders)
+      exception.foreach(ex => m ++= errorLogs(ex))
+
+      // Write the log
+      httpLogger.write(httpLogger.config.logFilter(m.result()))
+      response
+    }
+
+    def logError(e: Throwable): Unit = {
+      logResponse()
+      m ++= errorLogs(e)
+
+      // Write the log
+      httpLogger.write(httpLogger.config.logFilter(m.result()))
+    }
   }
 
   def durationLogs(baseTime: Long, sinceNano: Long): ListMap[String, Any] = {

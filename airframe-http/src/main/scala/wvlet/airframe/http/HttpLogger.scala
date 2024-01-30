@@ -21,6 +21,9 @@ import wvlet.log.LogSupport
   * Interface for writing HTTP request/response logs
   */
 trait HttpLogger extends AutoCloseable {
+  // Headers to exclude from the logs
+  val excludeHeaders: HttpMultiMap = HttpMultiMap.fromHeaderNames(config.excludeHeaders)
+
   def config: HttpLoggerConfig
 
   final def write(log: Map[String, Any]): Unit = {
