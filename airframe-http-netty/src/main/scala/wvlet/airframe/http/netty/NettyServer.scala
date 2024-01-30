@@ -25,18 +25,18 @@ import io.netty.handler.stream.ChunkedWriteHandler
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.ThreadUtil
 import wvlet.airframe.http.HttpMessage.Response
-import wvlet.airframe.http.{HttpMessage, *}
 import wvlet.airframe.http.client.{AsyncClient, SyncClient}
-import wvlet.airframe.http.internal.{LogRotationHttpLogger, RPCLoggingFilter, RPCResponseFilter}
+import wvlet.airframe.http.internal.{LogRotationHttpLogger, RPCResponseFilter}
 import wvlet.airframe.http.router.{ControllerProvider, HttpRequestDispatcher}
+import wvlet.airframe.http.{HttpMessage, *}
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
-import java.util.concurrent.{Executors, TimeUnit}
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.{Executors, TimeUnit}
 import javax.annotation.PostConstruct
 import scala.collection.immutable.ListMap
 import scala.concurrent.ExecutionContext
@@ -52,7 +52,6 @@ case class NettyServerConfig(
     httpLoggerProvider: HttpLoggerConfig => HttpLogger = { (config: HttpLoggerConfig) =>
       new LogRotationHttpLogger(config)
     },
-    loggingFilter: HttpLogger => RxHttpFilter = { new RPCLoggingFilter(_) },
     customCodec: PartialFunction[Surface, MessageCodec[_]] = PartialFunction.empty,
     // Thread manager for handling Future[_] responses
     executionContext: ExecutionContext = {
@@ -86,7 +85,6 @@ case class NettyServerConfig(
   }
   def noLogging: NettyServerConfig = {
     this.copy(
-      loggingFilter = { _ => RxHttpFilter.identity },
       httpLoggerProvider = HttpLogger.emptyLogger(_)
     )
   }
@@ -138,8 +136,8 @@ case class NettyServerConfig(
 
 class NettyServer(config: NettyServerConfig, session: Session) extends HttpServer with LogSupport {
 
-  private val httpLogger: HttpLogger      = config.newHttpLogger
-  private val loggingFilter: RxHttpFilter = config.loggingFilter(httpLogger)
+  private val httpLogger: HttpLogger  = config.newHttpLogger
+  private val rpcFilter: RxHttpFilter = new RPCResponseFilter(httpLogger)
 
   private val bossGroup = {
     val tf = ThreadUtil.newDaemonThreadFactory("airframe-netty-boss")
@@ -235,8 +233,7 @@ class NettyServer(config: NettyServerConfig, session: Session) extends HttpServe
         NettyBackend
           .rxFilterAdapter(
             attachContextFilter
-              .andThen(loggingFilter)
-              .andThen(RPCResponseFilter)
+              .andThen(rpcFilter)
           )
           .andThen(
             HttpRequestDispatcher.newDispatcher(

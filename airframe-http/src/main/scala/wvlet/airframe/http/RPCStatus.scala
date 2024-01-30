@@ -439,6 +439,7 @@ sealed abstract class RPCStatus(
 
   def shouldReportStackTrace: Boolean = {
     this match {
+      // Do not report stack traces for non-authorized user requests by default
       case UNAUTHENTICATED_U13 | PERMISSION_DENIED_U14 => false
       case _                                           => true
     }

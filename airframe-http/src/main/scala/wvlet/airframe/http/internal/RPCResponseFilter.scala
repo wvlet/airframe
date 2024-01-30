@@ -16,9 +16,12 @@ package wvlet.airframe.http.internal
 import wvlet.airframe.http.{
   Http,
   HttpHeader,
+  HttpLogger,
   HttpMessage,
+  HttpMultiMap,
   HttpServerException,
   HttpStatus,
+  RPCContext,
   RPCException,
   RPCStatus,
   RxHttpEndpoint,
@@ -30,23 +33,28 @@ import wvlet.log.LogSupport
 import scala.util.{Failure, Success}
 
 /**
-  * Add RPCStatus to the response header and embed the error message to the request body
+  * A filter for managing RPC status header, logs, and errors. Exception messages will be embedded to the response body.
   */
-object RPCResponseFilter extends RxHttpFilter with LogSupport {
+class RPCResponseFilter(httpLogger: HttpLogger) extends RxHttpFilter with LogSupport {
   override def apply(request: HttpMessage.Request, next: RxHttpEndpoint): Rx[HttpMessage.Response] = {
+
+    val logContext = HttpLogs.LogContext(request, httpLogger, None, Some(RPCContext.current))
+
     next(request)
       .transform {
         case Success(resp) =>
-          setRPCStatus(resp)
+          logContext.logResponse(setRPCStatus(resp), None)
         case Failure(e) =>
           e match {
             case ex: HttpServerException =>
               val re = RPCStatus.fromHttpStatus(ex.status).newException(ex.getMessage, ex.getCause)
-              re.toResponse
+              logContext.logResponse(re.toResponse, Some(re))
             case ex: RPCException =>
-              ex.toResponse
+              logContext.logResponse(ex.toResponse, Some(ex))
             case other =>
-              RPCStatus.INTERNAL_ERROR_I0.newException(other.getMessage, other).toResponse
+              val ex = RPCStatus.INTERNAL_ERROR_I0.newException(other.getMessage, other)
+              // Report the original error to the log
+              logContext.logResponse(ex.toResponse, Some(other))
           }
       }
   }
