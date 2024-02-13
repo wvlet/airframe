@@ -88,8 +88,7 @@ class JSFetchChannel(serverAddress: ServerAddress, config: HttpClientConfig) ext
           resp.text().toFuture.map { body =>
             r.withContent(body)
           }
-        }
-        else {
+        } else {
           resp.arrayBuffer().toFuture.map { body =>
             r.withContent(new Int8Array(body).toArray)
           }
